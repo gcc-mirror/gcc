@@ -41,17 +41,74 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.rmi.server.RMIClassLoader;
+import java.rmi.Remote;
+import java.rmi.server.RemoteStub;
+import java.rmi.server.ObjID;
 
 public class RMIObjectOutputStream
 	extends ObjectOutputStream {
 
 public RMIObjectOutputStream(OutputStream strm) throws IOException {
 	super(strm);
+	enableReplaceObject(true);
+}
+
+//Separate it for override by MarshalledObject
+protected void setAnnotation(String annotation) throws IOException{
+    writeObject(annotation);
 }
 
 protected void annotateClass(Class cls) throws IOException {
-//System.out.println("Annotating class: " + cls);
-	writeObject(RMIClassLoader.getClassAnnotation(cls));
+	setAnnotation(RMIClassLoader.getClassAnnotation(cls));
+}
+
+protected void annotateProxyClass(Class cls)
+        throws IOException
+{
+    annotateClass(cls);
+}
+    
+protected Object replaceObject(Object obj)
+        throws IOException
+{
+    if((obj instanceof Remote) && !(obj instanceof RemoteStub)){
+	    UnicastServerRef ref = new UnicastServerRef(new ObjID(), 0, null);
+		try{
+		    return ref.exportObject((Remote)obj);
+		}catch(Exception e){}
+    }
+    return obj;
+}
+
+protected void writeValue(Object value, Class valueClass) throws IOException{
+    if(valueClass.isPrimitive()){
+        if(valueClass == Boolean.TYPE)
+            writeBoolean(((Boolean)value).booleanValue());
+        else
+        if(valueClass == Byte.TYPE)
+            writeByte(((Byte)value).byteValue());
+        else
+        if(valueClass == Character.TYPE)
+            writeChar(((Character)value).charValue());
+        else
+        if(valueClass == Short.TYPE)
+            writeShort(((Short)value).shortValue());
+        else
+        if(valueClass == Integer.TYPE)
+            writeInt(((Integer)value).intValue());
+        else
+        if(valueClass == Long.TYPE)
+            writeLong(((Long)value).longValue());
+        else
+        if(valueClass == Float.TYPE)
+            writeFloat(((Float)value).floatValue());
+        else
+        if(valueClass == Double.TYPE)
+            writeDouble(((Double)value).doubleValue());
+        else
+            throw new Error("Unsupported primitive class: " + valueClass);
+    } else
+        writeObject(value);
 }
 
 }

@@ -42,9 +42,16 @@ import java.rmi.Remote;
 import java.rmi.server.RemoteRef;
 import java.rmi.NoSuchObjectException;
 import gnu.java.rmi.server.UnicastServerRef;
+import gnu.java.rmi.server.UnicastServer;
 
 public class UnicastRemoteObject
 	extends RemoteServer {
+
+private static final long serialVersionUID = 4974527148936298033L;
+//The following serialized fields are from Java API Documentation "Serialized form"
+private int port = 0;
+private RMIClientSocketFactory csf = null;
+private RMIServerSocketFactory ssf = null;
 
 protected UnicastRemoteObject() throws RemoteException {
 	this(0);
@@ -55,11 +62,21 @@ protected UnicastRemoteObject(int port) throws RemoteException {
 }
 
 protected UnicastRemoteObject(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-	super(new UnicastServerRef(new ObjID(), port, ssf));
+  this.port = port;
+  //Is RMIXXXSocketFactory serializable
+  //this.csf = csf;
+  //this.ssf = ssf;
+  this.ref = new UnicastServerRef(new ObjID(), port, ssf);
+  //Should we export it here?
+  // if we export, we got infinite recursive call:
+  //  UnicastRemoteObject.<init>->...->UnicastServer.startDGC()->UnicastRemoteObject.<init>->...
+  //exportObject(this);
 }
 
 protected UnicastRemoteObject(RemoteRef ref) throws RemoteException {
 	super((UnicastServerRef)ref);
+       //Should we export it here?
+       //exportObject(this);
 }
 
 public Object clone() throws CloneNotSupportedException {
@@ -71,16 +88,46 @@ public static RemoteStub exportObject(Remote obj) throws RemoteException {
 	return (sref.exportObject(obj));
 }
 
-public static Remote exportObject(Remote obj, int port) throws RemoteException {
-	return (exportObject(obj));
-}
+  public static Remote exportObject(Remote obj, int port) throws RemoteException 
+  {
+    return exportObject(obj, port, null);
+  }
+  
+  protected static Remote exportObject(Remote obj, int port, RMIServerSocketFactory ssf) 
+    throws RemoteException 
+  {
+    UnicastServerRef sref = null;
+    if (obj instanceof RemoteObject)
+      sref = (UnicastServerRef)((RemoteObject)obj).getRef ();
+    if(sref == null)
+      {
+	sref = new UnicastServerRef(new ObjID (), port, ssf);
+      }
+    return (sref.exportObject (obj)); 
+  }
 
-public static Remote exportObject(Remote obj, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-	return (exportObject(obj));
-}
+  /**
+   * FIX ME
+   */
+  public static Remote exportObject(Remote obj, int port, RMIClientSocketFactory csf, 
+				    RMIServerSocketFactory ssf) 
+    throws RemoteException 
+  {
+    return (exportObject(obj, port, ssf));
+  }
 
-public static boolean unexportObject(Remote obj, boolean force) throws NoSuchObjectException {
-	throw new Error("Not implemented");
-}
+  public static boolean unexportObject(Remote obj, boolean force) 
+    throws RemoteException, NoSuchObjectException 
+  {
+    if (obj instanceof RemoteObject)
+      {
+	UnicastServerRef sref = (UnicastServerRef)((RemoteObject)obj).getRef();
+	return sref.unexportObject(obj, force);
+      }
+    else
+      //FIX ME
+      ;
+    return true;
+  }
 
 }

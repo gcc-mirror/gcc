@@ -38,24 +38,73 @@ exception statement from your version. */
 package java.rmi;
 
 import java.io.Serializable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import gnu.java.rmi.RMIMarshalledObjectInputStream;
+import gnu.java.rmi.RMIMarshalledObjectOutputStream;
 
+/**
+ * FIXME - doc missing
+ */
 public final class MarshalledObject
-	extends Object implements Serializable {
-
-public MarshalledObject(Object obj) {
-	throw new Error("Not implemented");
+  extends Object implements Serializable 
+{
+  
+  //The following fields are from Java API Documentation "Serialized form"
+  private static final long serialVersionUID = 8988374069173025854L;
+  byte[] objBytes;
+  byte[] locBytes;
+  int hash;
+  
+  public MarshalledObject(Object obj) throws java.io.IOException
+  {
+    ByteArrayOutputStream objStream = new ByteArrayOutputStream();
+    RMIMarshalledObjectOutputStream stream = new RMIMarshalledObjectOutputStream(objStream);
+    stream.writeObject(obj);
+    stream.flush();
+    objBytes = objStream.toByteArray();
+    locBytes = stream.getLocBytes();
+    
+    //The following algorithm of calculating hashCode is similar to String
+    hash = 0;
+    for (int i = 0; i < objBytes.length; i++)
+      hash = hash * 31 + objBytes[i];
+    if(locBytes != null)
+      for (int i = 0; i < locBytes.length; i++)
+	hash = hash * 31 + locBytes[i];
+  }
+  
+  public boolean equals(Object obj) 
+  {
+    if(obj == null || !(obj instanceof MarshalledObject) )
+      return false;
+    
+    MarshalledObject aobj = (MarshalledObject)obj;
+    if (objBytes == null || aobj.objBytes == null)
+      return objBytes == aobj.objBytes;
+    if (objBytes.length != aobj.objBytes.length)
+      return false;
+    for (int i = 0; i < objBytes.length; i++) 
+      {
+	if (objBytes[i] != aobj.objBytes[i])
+	  return false;
+      }
+    // Ignore comparison of locBytes(annotation)
+    return true;
+  }
+  
+public Object get() 
+  throws java.io.IOException, java.lang.ClassNotFoundException
+{
+  if(objBytes == null)
+    return null;
+  RMIMarshalledObjectInputStream stream = 
+    new RMIMarshalledObjectInputStream(objBytes, locBytes);
+  return stream.readObject();
 }
-
-public boolean equals(Object obj) {
-	throw new Error("Not implemented");
-}
-
-public Object get() {
-	throw new Error("Not implemented");
-}
-
-public int hashCode() {
-	throw new Error("Not implemented");
-}
-
+  
+  public int hashCode() {
+    return hash;
+  }
+  
 }

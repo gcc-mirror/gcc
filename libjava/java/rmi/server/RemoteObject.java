@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ClassNotFoundException;
 import java.lang.InstantiationException;
 import java.lang.IllegalAccessException;
+import java.lang.reflect.Constructor;
 
 public abstract class RemoteObject
 	implements Remote, Serializable {
@@ -68,9 +69,22 @@ public RemoteRef getRef() {
 	return (ref);
 }
 
-public static Remote toStub(Remote obj) throws NoSuchObjectException {
-	throw new Error("Not implemented");
-}
+  public static Remote toStub(Remote obj) throws NoSuchObjectException 
+  {
+    Class cls = obj.getClass();
+    String classname = cls.getName();
+    ClassLoader cl = cls.getClassLoader();
+    try 
+      {
+	Class scls = cl.loadClass(classname + "_Stub");
+	// JDK 1.2 stubs
+	Class[] stubprototype = new Class[] { RemoteRef.class };
+	Constructor con = scls.getConstructor(stubprototype);
+	return (Remote)(con.newInstance(new Object[]{obj}));
+      }
+    catch (Exception e) {}
+    throw new NoSuchObjectException(obj.getClass().getName());
+  }
 
 public int hashCode() {
 	if (ref == null) {
@@ -86,30 +100,46 @@ public boolean equals(Object obj) {
 	return (this == obj);
 }
 
-public String toString() {
-	return (ref.toString());
-}
+  public String toString() 
+  {
+    if (ref == null)
+      return getClass ().toString ();
+    return (ref.toString ());
+  }
+  
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException 
+  {
+    String cname = in.readUTF();
+    if (!cname.equals("")) 
+      {
+	if (cname.equals ("UnicastRef2"))
+	  { 
+	    // hack for interoperating with JDK
+	    cname = "UnicastRef";
+	    in.read (); //some unknown UnicastRef2 field
+	  }
 
-private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-	String cname = in.readUTF();
-	if (!cname.equals("")) {
-		cname = RemoteRef.packagePrefix + '.' + cname;
-		try {
-			Class cls = Class.forName(cname);
-			ref = (RemoteRef)cls.newInstance();
-		}
-		catch (InstantiationException e1) {
-			throw new UnmarshalException("failed to create ref");
-		}
-		catch (IllegalAccessException e2) {
-			throw new UnmarshalException("failed to create ref");
-		}
-		ref.readExternal(in);
-	}
-	else {
-		ref = (RemoteRef)in.readObject();
-	}
-}
+	cname = RemoteRef.packagePrefix + '.' + cname;
+	try 
+	  {
+	    Class cls = Class.forName(cname);
+	    ref = (RemoteRef)cls.newInstance();
+	  }
+	catch (InstantiationException e1) 
+	  {
+	    throw new UnmarshalException("failed to create ref");
+	  }
+	catch (IllegalAccessException e2) 
+	  {
+	    throw new UnmarshalException("failed to create ref");
+	  }
+	ref.readExternal(in);
+      }
+    else 
+      {
+	ref = (RemoteRef)in.readObject();
+      }
+  }
 
 private void writeObject(ObjectOutputStream out) throws IOException, ClassNotFoundException {
 	if (ref == null) {

@@ -65,6 +65,13 @@ public static void exportObject(UnicastServerRef obj) {
 	obj.manager.startServer();
 }
 
+// FIX ME: I haven't handle force parameter
+public static boolean unexportObject(UnicastServerRef obj, boolean force) {
+	objects.remove(obj.objid);
+	obj.manager.stopServer();
+	return true;
+}
+
 private static synchronized void startDGC() {
 	if (dgc == null) {
 		try {
@@ -100,10 +107,14 @@ private static void incomingMessageCall(UnicastConnection conn) throws IOExcepti
 	UnicastServerRef uref = (UnicastServerRef)objects.get(objid);
 	Object returnval;
 	int returncode = RETURN_ACK;
+	// returnval is from Method.invoke(), so we must check the return class to see
+	// if it's primitive type
+	Class returncls = null;
 	if (uref != null) {
 		try {
 			// Dispatch the call to it.
 			returnval = uref.incomingMessageCall(conn, method, hash);
+			returncls = uref.getMethodReturnType(method, hash);
 		}
 		catch (Exception e) {
 			returnval = e;
@@ -121,7 +132,10 @@ private static void incomingMessageCall(UnicastConnection conn) throws IOExcepti
 
 	out.writeByte(returncode);
 	(new UID()).write(out);
-	out.writeObject(returnval);
+	if(returnval != null && returncls != null)
+	    ((RMIObjectOutputStream)out).writeValue(returnval, returncls);
+	else
+	    out.writeObject(returnval);
 
 	out.flush();
 }

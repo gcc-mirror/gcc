@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* gnu.java.rmi.RMIMarshalledObjectInputStream
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,35 +35,36 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package gnu.java.rmi.dgc;
 
-import java.rmi.dgc.DGC;
-import java.rmi.dgc.Lease;
-import java.rmi.dgc.VMID;
-import java.rmi.server.ObjID;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.rmi.server.RMISocketFactory;
-import gnu.java.rmi.server.UnicastServerRef;
+package gnu.java.rmi;
 
-public class DGCImpl
-	extends UnicastRemoteObject implements DGC {
+import gnu.java.rmi.server.RMIObjectInputStream;
+import java.io.ObjectInputStream;
+import java.io.IOException;
+import java.io.ByteArrayInputStream;
 
-private static final long leaseValue = 600000L;
+/**
+ * This class is only for java.rmi.MarshalledObject to deserialize object from 
+ * objBytes and locBytes
+ */
 
-public DGCImpl() throws RemoteException {
-	super(new UnicastServerRef(new ObjID(ObjID.DGC_ID), 0, RMISocketFactory.getSocketFactory()));
-}
-
-public Lease dirty(ObjID[] ids, long sequenceNum, Lease lease) throws RemoteException {
-	VMID vmid = lease.getVMID();
-    lease = new Lease(vmid, leaseValue);
-	System.out.println("DGCImpl.dirty - not completely implemented");
-	return (lease);
-}
-
-public void clean(ObjID[] ids, long sequenceNum, VMID vmid, boolean strong) throws RemoteException {
-	System.out.println("DGCImpl.clean - not implemented");
-}
-
-}
+public class RMIMarshalledObjectInputStream extends RMIObjectInputStream
+{
+  private ObjectInputStream locStream;
+  
+  public RMIMarshalledObjectInputStream(byte[] objBytes, byte[] locBytes) throws IOException
+  {
+    super(new ByteArrayInputStream(objBytes));
+    if(locBytes != null)
+      locStream = new ObjectInputStream(new ByteArrayInputStream(locBytes));
+  }
+  
+  //This method overrides RMIObjectInputStream's
+  protected Object getAnnotation() throws IOException, ClassNotFoundException
+  {
+    if(locStream == null)
+      return null;
+    return locStream.readObject();
+  }
+  
+} // End of RMIMarshalledObjectInputStream

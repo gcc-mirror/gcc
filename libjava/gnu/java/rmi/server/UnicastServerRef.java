@@ -66,14 +66,15 @@ import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 
 public class UnicastServerRef
-	extends UnicastRef {
+	extends UnicastRef 
+	implements ServerRef{ //SHOULD implement ServerRef
 
 final static private Class[] stubprototype = new Class[] { RemoteRef.class };
 
 Remote myself;
 private Skeleton skel;
 private RemoteStub stub;
-private Hashtable methods;
+private Hashtable methods = new Hashtable();
 
 public UnicastServerRef(ObjID id, int port, RMIServerSocketFactory ssf) {
 	super(id);
@@ -95,7 +96,7 @@ public RemoteStub exportObject(Remote obj) throws RemoteException {
 		skel = (Skeleton)getHelperClass(cls, "_Skel");
 
 		// Build hash of methods which may be called.
-		buildMethodHash(obj.getClass());
+		buildMethodHash(obj.getClass(), true);
 
 		// Export it.
 		UnicastServer.exportObject(this);
@@ -104,10 +105,25 @@ public RemoteStub exportObject(Remote obj) throws RemoteException {
 	return (stub);
 }
 
+public RemoteStub exportObject(Remote remote, Object obj)
+        throws RemoteException
+{
+    //FIX ME
+	return exportObject(remote);
+}
+
+
+public boolean unexportObject(Remote obj, boolean force) throws RemoteException {
+    // Remove all hashes of methods which may be called.
+    buildMethodHash(obj.getClass(), false);
+    return UnicastServer.unexportObject(this, force);
+}
+
 private Object getHelperClass(Class cls, String type) {
 	try {   
-		String classname = cls.getName();
-		Class scls = Class.forName(classname + type);
+	    String classname = cls.getName();
+		ClassLoader cl = cls.getClassLoader(); //DONT use "Class scls = Class.forName(classname + type);"
+		Class scls = cl.loadClass(classname + type);
 		if (type.equals("_Stub")) {
 			try {
 				// JDK 1.2 stubs
@@ -147,8 +163,7 @@ public String getClientHost() throws ServerNotActiveException {
 	throw new Error("Not implemented");
 }
 
-private void buildMethodHash(Class cls) {
-	methods = new Hashtable();
+private void buildMethodHash(Class cls, boolean build) {
 	Method[] meths = cls.getMethods();
 	for (int i = 0; i < meths.length; i++) {
 		/* Don't need to include any java.xxx related stuff */
@@ -156,9 +171,21 @@ private void buildMethodHash(Class cls) {
 			continue;
 		}
 		long hash = RMIHashes.getMethodHash(meths[i]);
-		methods.put(new Long (hash), meths[i]);
+		if(build)
+		    methods.put(new Long (hash), meths[i]);
+		else
+		    methods.remove(new Long (hash));
 //System.out.println("meth = " + meths[i] + ", hash = " + hash);
 	}
+}
+
+Class getMethodReturnType(int method, long hash) throws Exception
+{
+    if (method == -1) {
+        Method meth = (Method)methods.get(new Long (hash));
+        return meth.getReturnType();
+    }else
+        return null;
 }
 
 public Object incomingMessageCall(UnicastConnection conn, int method, long hash) throws Exception {
@@ -189,7 +216,15 @@ public Object incomingMessageCall(UnicastConnection conn, int method, long hash)
 				throw t;
 			}
 		}
-		return (meth.invoke(myself, args));
+		//We must reinterpret the exception thrown by meth.invoke()
+		//return (meth.invoke(myself, args));
+		Object ret = null;
+		try{
+		    ret = meth.invoke(myself, args);
+		}catch(InvocationTargetException e){
+		    throw (Exception)(e.getTargetException());
+		}
+		return ret;
 	}
 	// Otherwise this is JDK 1.1 style RMI - we find the skeleton
 	// and invoke it using the method number.  We wrap up our

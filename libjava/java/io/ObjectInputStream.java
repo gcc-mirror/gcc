@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import gnu.classpath.Configuration;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -527,6 +528,32 @@ public class ObjectInputStream extends InputStream
   }
 
 
+  protected Class resolveProxyClass (String[] intfs)
+    throws IOException, ClassNotFoundException
+  {
+    SecurityManager sm = System.getSecurityManager ();
+    
+    if (sm == null)
+      sm = new SecurityManager () {};
+    
+    ClassLoader cl = currentClassLoader (sm);
+    
+    Class[] clss = new Class[intfs.length];
+    if(cl == null){
+      for (int i = 0; i < intfs.length; i++)
+	clss[i] = Class.forName(intfs[i]);
+      cl = ClassLoader.getSystemClassLoader();
+    }
+    else
+      for (int i = 0; i < intfs.length; i++)
+	clss[i] = cl.loadClass(intfs[i]);
+    try {
+      return Proxy.getProxyClass(cl, clss);
+    } catch (IllegalArgumentException e) {
+      throw new ClassNotFoundException(null, e);
+    }
+  }
+  
   /**
      If <code>enable</code> is <code>true</code> and this object is
      trusted, then <code>resolveObject (Object)</code> will be called

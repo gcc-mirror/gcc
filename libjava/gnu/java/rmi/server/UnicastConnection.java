@@ -44,6 +44,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.IOException;
@@ -65,9 +67,10 @@ UnicastConnection(UnicastConnectionManager man, Socket sock) {
 }
 
 void acceptConnection() throws IOException {
-//System.out.println("Accepting connection on " + lport);
-	din = new DataInputStream(sock.getInputStream());
-	dout = new DataOutputStream(sock.getOutputStream());
+//System.out.println("Accepting connection on " + sock);
+    //Use BufferedXXXStream would be more efficient
+	din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+	dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
 	int sig = din.readInt();
 	if (sig != PROTOCOL_HEADER) {
@@ -85,6 +88,7 @@ void acceptConnection() throws IOException {
 		// Send my hostname and port
 		dout.writeUTF(manager.serverName);
 		dout.writeInt(manager.serverPort);
+		dout.flush();
 
 		// Read their hostname and port
 		String rhost = din.readUTF();
@@ -94,15 +98,16 @@ void acceptConnection() throws IOException {
 }
 
 void makeConnection(int protocol) throws IOException {
-	dout = new DataOutputStream(sock.getOutputStream());
-	din = new DataInputStream(sock.getInputStream());
+    //Use BufferedXXXStream would be more efficient
+	din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+	dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
 	// Send header
 	dout.writeInt(PROTOCOL_HEADER);
 	dout.writeShort(PROTOCOL_VERSION);
 	dout.writeByte(protocol);
-	dout.flush();
-
+    dout.flush();
+    
 	if (protocol != SINGLE_OP_PROTOCOL) {
 		// Get back ack.
 		int ack = din.readUnsignedByte();
@@ -117,6 +122,7 @@ void makeConnection(int protocol) throws IOException {
 		// Send them my endpoint
 		dout.writeUTF(manager.serverName);
 		dout.writeInt(manager.serverPort);
+		dout.flush();
 	}
 	// Okay, ready to roll ...
 }
@@ -144,13 +150,15 @@ ObjectOutputStream getObjectOutputStream() throws IOException {
 }
 
 void disconnect() {
-	oin = null;
-	oout = null;
 	try {
-		sock.close();
+	    if(oout != null)
+	        oout.close();
 	}
 	catch (IOException _) {
-	}
+    }
+
+	oin = null;
+    oout = null;
 	din = null;
 	dout = null;
 	sock = null;

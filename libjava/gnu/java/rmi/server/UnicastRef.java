@@ -107,6 +107,7 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 		objid.write(out);
 		out.writeInt(opnum);
 		out.writeLong(hash);
+		/*
 		if (params != null) {
 			for (int i = 0; i < params.length; i++) {
 				if (params[i] instanceof UnicastRemoteObject) {
@@ -117,6 +118,11 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 				}
 			}
 		}
+		*/
+		// must handle primitive class and their wrapper classes
+		Class clss[] = method.getParameterTypes();
+	    for(int i = 0; i < clss.length; i++)
+	        ((RMIObjectOutputStream)out).writeValue(params[i], clss[i]);
 
 		out.flush();
 	}
@@ -139,12 +145,25 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 
 		returncode = in.readUnsignedByte();
 		ack = UID.read(in);
-		returnval = in.readObject();
+		//returnval = in.readObject();
+		Class cls = method.getReturnType();
+        if(cls == Void.TYPE){
+            returnval = null;
+        }else
+            returnval = ((RMIObjectInputStream)in).readValue(cls);
 	}
 	catch (IOException e3) {
 		throw new RemoteException("call return failed: ", e3);
 	}
 
+    /* if DGCAck is necessary
+    //According to RMI wire protocol, send a DGCAck 
+    // to indicate receiving return value
+    dout.writeByte(MESSAGE_DGCACK);
+    ack.write(dout);
+    out.flush();
+    */
+    
 	manager.discardConnection(conn);
 
 	if (returncode != RETURN_ACK) {
@@ -183,13 +202,16 @@ public void writeExternal(ObjectOutput out) throws IOException {
 	}
 	manager.write(out);
 	objid.write(out);
-	out.writeByte(RETURN_ACK);
+	// This byte is somewhat confusing when interoperating with JDK
+	out.writeByte(0); //RETURN_ACK);
 }
 
 public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 	manager = UnicastConnectionManager.read(in);
 	objid = ObjID.read(in);
-	if (in.readByte() != RETURN_ACK) {
+	byte ack = in.readByte();
+	// This byte is somewhat confusing when interoperating with JDK
+	if (ack != RETURN_ACK && ack != 0/*jdk ack value*/) {
 		throw new IOException("no ack found");
 	}
 }

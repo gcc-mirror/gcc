@@ -39,21 +39,25 @@ package java.rmi.server;
 
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLClassLoader;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.net.MalformedURLException;
 import java.util.StringTokenizer;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.ArrayList;
 
 public class RMIClassLoader
 {
 
-  static private class MyClassLoader extends ClassLoader
+  static private class MyClassLoader extends URLClassLoader
   {
-    /**
-     * Non-private constructor to reduce bytecode emitted.
-     */
-    MyClassLoader()
+    private MyClassLoader(URL[] urls, ClassLoader parent)
     {
+      super (urls, parent);
     }
 
     Class defineClass(String name, byte[] data)
@@ -62,58 +66,133 @@ public class RMIClassLoader
     }
   }
 
-  static private MyClassLoader loader = new MyClassLoader();
-
+  private static Map cacheLoaders; //map annotations to loaders
+  private static Map cacheClasses; //map loader to classes that the loader loaded+
+  private static String defaultAnnotation;
+  private static URL defaultCodebase;
+  private static MyClassLoader defaultLoader;
+  
+  static
+  {
+    cacheLoaders = Collections.synchronizedMap(new WeakHashMap(5)); 
+    cacheClasses = Collections.synchronizedMap(new WeakHashMap(5));
+    defaultAnnotation = System.getProperty("java.rmi.server.defaultAnnotation");
+    try 
+      {
+	if (defaultAnnotation != null)
+	  defaultCodebase = new URL(defaultAnnotation);
+      }
+    catch(Exception _)
+      {
+	defaultCodebase = null;
+      }
+    if (defaultCodebase != null)
+      {
+        defaultLoader = new MyClassLoader(new URL[]{ defaultCodebase },
+					  Thread.currentThread().getContextClassLoader());
+        cacheLoaders.put(defaultAnnotation, defaultLoader);
+        cacheClasses.put(defaultLoader, Collections.synchronizedMap(new WeakHashMap())); 
+      }
+  }
+  
   /**
    * @deprecated
    */
   public static Class loadClass(String name)
     throws MalformedURLException, ClassNotFoundException
   {
-    return loadClass(System.getProperty("java.rmi.server.codebase"), name);
+    return (loadClass("", name));
   }
 
-  public static Class loadClass(URL codebase, String name)
-    throws MalformedURLException, ClassNotFoundException
+  public static Class loadClass(URL codebase, String name) 
+    throws MalformedURLException, ClassNotFoundException 
   {
     URL u = new URL(codebase, name + ".class");
-    try
+    try 
       {
-        URLConnection conn = u.openConnection();
-        DataInputStream strm = new DataInputStream(conn.getInputStream());
-        byte data[] = new byte[conn.getContentLength()];
-        strm.readFully(data);
-        return loader.defineClass(name, data);
+	URLConnection conn = u.openConnection();
+	DataInputStream strm = new DataInputStream(conn.getInputStream());
+	byte data[] = new byte[conn.getContentLength()];
+	strm.readFully(data);
+	return (defaultLoader.defineClass(name, data));
       }
-    catch (IOException _)
+    catch (IOException _) 
       {
-        throw new ClassNotFoundException(name);
+	throw new ClassNotFoundException(name);
       }
   }
-
-  public static Class loadClass(String codebase, String name)
-    throws MalformedURLException, ClassNotFoundException
+  
+  public static Class loadClass(String codebases, String name) 
+    throws MalformedURLException, ClassNotFoundException 
   {
-    StringTokenizer tok = new StringTokenizer(codebase, ":");
-    while (tok.hasMoreTokens())
+    ClassLoader loader = (ClassLoader)cacheLoaders.get(codebases);
+    if (loader == null)
       {
-        try
-          {
-            return loadClass(new URL(tok.nextToken()), name);
-          }
-        catch (ClassNotFoundException _)
-          {
-            // Ignore - try the next one.
-          }
+	if (codebases != "")
+	  {
+	    //codebases are separated by " "
+	    StringTokenizer tok = new StringTokenizer(codebases, " "); 
+	    ArrayList urls = new ArrayList();
+	    while (tok.hasMoreTokens())
+	      urls.add(new URL(tok.nextToken()));
+	    
+	    loader = new MyClassLoader((URL[])urls.toArray(new URL[urls.size()]),
+				       Thread.currentThread().getContextClassLoader());
+	    cacheLoaders.put(codebases, loader);
+	    cacheClasses.put(loader, Collections.synchronizedMap(new WeakHashMap())); 
+	  }
+	else
+	  {
+	    //if codebases is empty, construct a classloader 
+	    // based on current context classloader,
+	    // and we won't cache classloader for empty codebases
+	    loader = new MyClassLoader(new URL[]{ defaultCodebase },
+				       Thread.currentThread().getContextClassLoader());
+	  }
       }
-    throw new ClassNotFoundException(name);
-  }
 
+    Class c = null;
+    Map classes = (Map)cacheClasses.get(loader);
+    if (classes != null)
+      {
+        c = (Class)classes.get(name);
+        if (c == null)
+	  {
+            c = loader.loadClass(name);
+            classes.put(name, c); 
+	  }
+      }else
+        c = loader.loadClass(name);
+    
+    return c;
+  }
+  
   public static String getClassAnnotation(Class cl)
   {
-    return null; // We don't yet do this.
+    ClassLoader loader = cl.getClassLoader();
+    if (loader == null)
+      {
+	if (defaultCodebase != null)
+	  return defaultCodebase.toExternalForm();
+	else
+	  return null;
+      }
+    if (loader instanceof URLClassLoader)
+      {
+	URL[] urls = ((URLClassLoader)loader).getURLs();
+	if(urls.length == 0)
+	  return null;
+	StringBuffer annotation = new StringBuffer(urls[0].toExternalForm());
+	for(int i = 1; i < urls.length; i++)
+	  {
+	    annotation.append(' ');
+	    annotation.append(urls[i].toExternalForm());
+	  }
+	return annotation.toString();
+      }
+    return null;
   }
-
+  
   /**
    * @deprecated
    */
