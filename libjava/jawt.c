@@ -50,6 +50,8 @@ static void (JNICALL _Jv_FreeDrawingSurfaceInfo)
 static JAWT_DrawingSurface* (JNICALL _Jv_GetDrawingSurface) (JNIEnv* env,
 							     jobject canvas);
 static void (JNICALL _Jv_FreeDrawingSurface) (JAWT_DrawingSurface* surface);
+static void (JNICALL _Jv_AWTLock) (JNIEnv*);
+static void (JNICALL _Jv_AWTUnlock) (JNIEnv*);
 
 JNIEXPORT jboolean JNICALL
 JAWT_GetAWT (JNIEnv* env, JAWT* awt)
@@ -63,6 +65,8 @@ JAWT_GetAWT (JNIEnv* env, JAWT* awt)
 
   awt->GetDrawingSurface = _Jv_GetDrawingSurface;
   awt->FreeDrawingSurface = _Jv_FreeDrawingSurface;
+  awt->Lock = _Jv_AWTLock;
+  awt->Unlock = _Jv_AWTUnlock;
 
   return JNI_TRUE;
 }
@@ -103,6 +107,7 @@ static void
 
   surface_info_x11->display = NULL;
   surface_info_x11->drawable = 0;
+  surface_info_x11->visualID = 0;
 
   free (surface_info);
   surface_info = NULL;
@@ -142,6 +147,7 @@ static JAWT_DrawingSurface*
 
   surface_info_x11->display = classpath_jawt_get_default_display (env, canvas);
   surface_info_x11->drawable = classpath_jawt_get_drawable (env, canvas);
+  surface_info_x11->visualID = classpath_jawt_get_visualID (env, canvas);
 
   /* FIXME: also include bounding rectangle of drawing surface */
   /* FIXME: also include current clipping region */
@@ -154,3 +160,16 @@ static void
 {
   free (surface);
 }
+
+static void
+(JNICALL _Jv_AWTLock) (JNIEnv* env)
+{
+  classpath_jawt_lock ();
+}
+
+static void
+(JNICALL _Jv_AWTUnlock) (JNIEnv* env)
+{
+  classpath_jawt_unlock ();
+}
+
