@@ -21,8 +21,8 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    	NAME;C;RTYPE;ARGS;FILENAME;LINENO;
 
    NAME is the function's name.
-   C is "F" if the declaration is nested inside 'extern "C"' braces;
-   otherwise "f".
+   C is "I" if the function is declared as inline;  "F" if the
+   declaration is nested inside 'extern "C"' braces;  otherwise "f".
    RTYPE is the function's return type.
    ARGS is the function's argument list.
    FILENAME and LINENO is where the declarations was seen
@@ -58,18 +58,36 @@ char extern_C_braces[20];
    prefixed by extern "C". */
 int current_extern_C = 0;
 
+static void
+skip_to_closing_brace (fp)
+     FILE *fp;
+{
+  int nesting = 1;
+  for (;;)
+    {
+      int c = get_token (fp, &buf);
+      if (c == EOF)
+	break;
+      if (c == '{')
+	nesting++;
+      if (c == '}' && --nesting == 0)
+	break;
+    }
+}
+
 int
 main ()
 {
   FILE *fp = stdin;
   int c;
-  int saw_extern;
+  int saw_extern, saw_inline;
 
  new_statement:
   c = get_token (fp, &buf);
  handle_statement:
   current_extern_C = 0;
   saw_extern = 0;
+  saw_inline = 0;
   if (c == '}')
     {
       /* pop an 'extern "C"' nesting level, if appropriate */
@@ -97,6 +115,11 @@ main ()
       fprintf (stdout, "%s;M;\n", buf.base+16);
       goto new_statement;
     }
+  if (strcmp (buf.base, "inline") == 0)
+    {
+      saw_inline = 1;
+      c = get_token (fp, &buf);
+    }
   if (strcmp (buf.base, "extern") == 0)
     {
       saw_extern = 1;
@@ -117,6 +140,10 @@ main ()
   for (;;)
     {
       int followingc = getc (fp); /* char following token in buf */
+
+      MAKE_SSTRING_SPACE(&rtype, 1);
+      *rtype.ptr = 0;
+
       if (c == IDENTIFIER_TOKEN)
 	{
 	  int nextc = skip_spaces (fp, followingc);
@@ -124,12 +151,10 @@ main ()
 	    {
 	      int nesting = 1;
 
-	      MAKE_SSTRING_SPACE(&rtype, 1);
-	      *rtype.ptr = 0;
-
  	      fprintf (stdout, "%s;%s;%s;",
 		       buf.base,
-		       in_extern_C_brace || current_extern_C ? "F" : "f",
+		       saw_inline ? "I"
+		       : in_extern_C_brace || current_extern_C ? "F" : "f",
 		       rtype.base);
 	      c = skip_spaces (fp, ' ');
 	      for (;;)
@@ -148,7 +173,14 @@ main ()
 		}
 	      fprintf (stdout, ";%s;%d;\n",
 		       source_filename.base, source_lineno);
-	      goto new_statement;
+	      c = get_token (fp, &buf);
+	      if (c == '{')
+		{
+		  /* skip body of (normally) inline function */
+		  skip_to_closing_brace (fp);
+		  goto new_statement;
+		}
+	      goto handle_statement;
 	    }
 	  else if (nextc == ';' && saw_extern)
 	    {
