@@ -319,7 +319,10 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
-			   operand_subword_force (value, wordnum, fieldmode),
+			   operand_subword_force (value, wordnum,
+						  (GET_MODE (value) == VOIDmode
+						   ? fieldmode
+						   : GET_MODE (value))),
 			   align, total_size);
 	}
       return value;
