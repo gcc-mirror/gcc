@@ -1,3 +1,10 @@
+Thu Mar 26 11:31:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* acinclude.m4: Bring back changes lost during merge.
+	(mostly Cygwin, automake and EGCS_PROG_INSTALL stuff).
+	* aclocal.m4: Likewise.
+	* configure.in: Likewise.
+
 Tue Mar  3 13:29:17 1998  Karl Berry  <karl@cs.umb.edu>
 
 	* configure.in: Version 3.12.

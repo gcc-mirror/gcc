@@ -1,9 +1,24 @@
-dnl aclocal.m4 generated automatically by aclocal 1.2
+dnl aclocal.m4 generated automatically by aclocal 1.2e
+
+dnl Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+dnl This Makefile.in is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+dnl PARTICULAR PURPOSE.
 
 # Macro to add for using GNU gettext.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
+#
+# This file file be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
 
-# serial 2
+# serial 3
 
 AC_DEFUN(AM_WITH_NLS,
   [AC_MSG_CHECKING([whether NLS is requested])
@@ -97,7 +112,7 @@ AC_DEFUN(AM_WITH_NLS,
 		 CATOBJEXT=.cat
 		 INSTOBJEXT=.cat
 		 DATADIRNAME=lib
-		 INTLDEPS="../intl/libintl.a"
+		 INTLDEPS='$(top_builddir)/intl/libintl.a'
 		 INTLLIBS=$INTLDEPS
 		 LIBS=`echo $LIBS | sed -e 's/-lintl//'`
 		 nls_cv_header_intl=intl/libintl.h
@@ -126,7 +141,7 @@ AC_DEFUN(AM_WITH_NLS,
         CATOBJEXT=.gmo
         INSTOBJEXT=.mo
         DATADIRNAME=share
-	INTLDEPS="../intl/libintl.a"
+	INTLDEPS='$(top_builddir)/intl/libintl.a'
 	INTLLIBS=$INTLDEPS
 	LIBS=`echo $LIBS | sed -e 's/-lintl//'`
         nls_cv_header_intl=intl/libintl.h
@@ -186,6 +201,7 @@ AC_DEFUN(AM_WITH_NLS,
 AC_DEFUN(AM_GNU_GETTEXT,
   [AC_REQUIRE([AC_PROG_MAKE_SET])dnl
    AC_REQUIRE([AC_PROG_CC])dnl
+   AC_REQUIRE([AC_PROG_RANLIB])dnl
    AC_REQUIRE([AC_ISC_POSIX])dnl
    AC_REQUIRE([AC_HEADER_STDC])dnl
    AC_REQUIRE([AC_C_CONST])dnl
@@ -196,7 +212,7 @@ AC_DEFUN(AM_GNU_GETTEXT,
    AC_REQUIRE([AC_FUNC_MMAP])dnl
 
    AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h \
-unistd.h values.h])
+unistd.h values.h sys/param.h])
    AC_CHECK_FUNCS([getcwd munmap putenv setenv setlocale strchr strcasecmp \
 __argz_count __argz_stringify __argz_next])
 
@@ -231,6 +247,17 @@ __argz_count __argz_stringify __argz_next])
      fi
    fi
 
+   dnl The reference to <locale.h> in the installed <libintl.h> file
+   dnl must be resolved because we cannot expect the users of this
+   dnl to define HAVE_LOCALE_H.
+   if test $ac_cv_header_locale_h = yes; then
+     INCLUDE_LOCALE_H="#include <locale.h>"
+   else
+     INCLUDE_LOCALE_H="\
+/* The system does not provide the header <locale.h>.  Take care yourself.  */"
+   fi
+   AC_SUBST(INCLUDE_LOCALE_H)
+
    dnl Determine which catalog format we have (if any is needed)
    dnl For now we know about two different formats:
    dnl   Linux libc-5 and the normal X/Open format
@@ -263,10 +290,10 @@ __argz_count __argz_stringify __argz_next])
    dnl find the mkinstalldirs script in another subdir but ($top_srcdir).
    dnl Try to locate is.
    MKINSTALLDIRS=
-   if test $ac_aux_dir; then
+   if test -n "$ac_aux_dir"; then
      MKINSTALLDIRS="$ac_aux_dir/mkinstalldirs"
    fi
-   if test -z $MKINSTALLDIRS; then
+   if test -z "$MKINSTALLDIRS"; then
      MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
    fi
    AC_SUBST(MKINSTALLDIRS)
@@ -287,12 +314,18 @@ __argz_count __argz_stringify __argz_next])
    else
      posrcprefix="../"
    fi
+   rm -f po/POTFILES
    sed -e "/^#/d" -e "/^\$/d" -e "s,.*,	$posrcprefix& \\\\," -e "\$s/\(.*\) \\\\/\1/" \
 	< $srcdir/po/POTFILES.in > po/POTFILES
   ])
 
 # Search path for a program which passes the given test.
 # Ulrich Drepper <drepper@cygnus.com>, 1996.
+#
+# This file file be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
 
 # serial 1
 
@@ -336,6 +369,11 @@ AC_SUBST($1)dnl
 
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
+#
+# This file file be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
 
 # serial 1
 
@@ -395,8 +433,8 @@ fi
 ifelse([$3],,
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION"))
-AM_SANITY_CHECK
-AC_ARG_PROGRAM
+AC_REQUIRE([AM_SANITY_CHECK])
+AC_REQUIRE([AC_ARG_PROGRAM])
 dnl FIXME This is truly gross.
 missing_dir=`cd $ac_aux_dir && pwd`
 AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
@@ -404,7 +442,7 @@ AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
 AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
 AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
-AC_PROG_MAKE_SET])
+AC_REQUIRE([AC_PROG_MAKE_SET])])
 
 
 # serial 1
@@ -431,10 +469,21 @@ echo timestamp > conftestfile
 # directory).
 if (
    set X `ls -Lt $srcdir/configure conftestfile 2> /dev/null`
-   if test "$@" = "X"; then
+   if test "[$]*" = "X"; then
       # -L didn't work.
       set X `ls -t $srcdir/configure conftestfile`
    fi
+   if test "[$]*" != "X $srcdir/configure conftestfile" \
+      && test "[$]*" != "X conftestfile $srcdir/configure"; then
+
+      # If neither matched, then we have a broken ls.  This can happen
+      # if, for instance, CONFIG_SHELL is bash and it inherits a
+      # broken ls alias from the environment.  This has actually
+      # happened.  Such a system could not be considered "sane".
+      AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
+alias in your environment])
+   fi
+
    test "[$]2" = conftestfile
    )
 then
@@ -496,9 +545,10 @@ dnl environment. But if we're not, then it compiles a test program
 dnl to see if there is a suffix for executables.
 AC_DEFUN(AM_EXEEXT,
 [AC_REQUIRE([AM_CYGWIN32])
+AC_REQUIRE([AM_MINGW32])
 AC_MSG_CHECKING([for executable suffix])
 AC_CACHE_VAL(am_cv_exeext,
-[if test "$CYGWIN32" = yes; then
+[if test "$CYGWIN32" = yes || test "$MINGW32" = yes; then
 am_cv_exeext=.exe
 else
 cat > am_c_test.c << 'EOF'
@@ -515,6 +565,32 @@ EXEEXT=""
 test x"${am_cv_exeext}" != xno && EXEEXT=${am_cv_exeext}
 AC_MSG_RESULT(${am_cv_exeext})
 AC_SUBST(EXEEXT)])
+
+# Check to see if we're running under Cygwin32, without using
+# AC_CANONICAL_*.  If so, set output variable CYGWIN32 to "yes".
+# Otherwise set it to "no".
+
+dnl AM_CYGWIN32()
+AC_DEFUN(AM_CYGWIN32,
+[AC_CACHE_CHECK(for Cygwin32 environment, am_cv_cygwin32,
+[AC_TRY_COMPILE(,[return __CYGWIN32__;],
+am_cv_cygwin32=yes, am_cv_cygwin32=no)
+rm -f conftest*])
+CYGWIN32=
+test "$am_cv_cygwin32" = yes && CYGWIN32=yes])
+
+# Check to see if we're running under Mingw, without using
+# AC_CANONICAL_*.  If so, set output variable MINGW32 to "yes".
+# Otherwise set it to "no".
+
+dnl AM_MINGW32()
+AC_DEFUN(AM_MINGW32,
+[AC_CACHE_CHECK(for Mingw32 environment, am_cv_mingw32,
+[AC_TRY_COMPILE(,[return __MINGW32__;],
+am_cv_mingw32=yes, am_cv_mingw32=no)
+rm -f conftest*])
+MINGW32=
+test "$am_cv_mingw32" = yes && MINGW32=yes])
 
 AC_DEFUN(EGCS_PROG_INSTALL,
 [AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])dnl
@@ -579,17 +655,3 @@ AC_SUBST(INSTALL_PROGRAM)dnl
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 AC_SUBST(INSTALL_DATA)dnl
 ])
-
-# Check to see if we're running under Cygwin32, without using
-# AC_CANONICAL_*.  If so, set output variable CYGWIN32 to "yes".
-# Otherwise set it to "no".
-
-dnl AM_CYGWIN32()
-AC_DEFUN(AM_CYGWIN32,
-[AC_CACHE_CHECK(for Cygwin32 environment, am_cv_cygwin32,
-[AC_TRY_COMPILE(,[int main () { return __CYGWIN32__; }],
-am_cv_cygwin32=yes, am_cv_cygwin32=no)
-rm -f conftest*])
-CYGWIN32=
-test "$am_cv_cygwin32" = yes && CYGWIN32=yes])
-

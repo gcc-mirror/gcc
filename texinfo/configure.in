@@ -61,7 +61,9 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
 AC_FUNC_VPRINTF
-AC_FUNC_SETVBUF_REVERSED
+if test "$ac_cv_c_cross" = no; then
+  AC_FUNC_SETVBUF_REVERSED
+fi
 AC_CHECK_FUNCS(setvbuf getcwd memset bzero strchr strcasecmp \
   sigprocmask sigsetmask)
 dnl strcasecmp, strerror, xmalloc, xrealloc, probably others should be added.
