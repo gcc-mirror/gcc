@@ -5098,9 +5098,6 @@ static tree
 tsubst_friend_function (tree decl, tree args)
 {
   tree new_friend;
-  location_t saved_loc = input_location;
-
-  input_location = DECL_SOURCE_LOCATION (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL 
       && DECL_TEMPLATE_INSTANTIATION (decl)
@@ -5135,8 +5132,7 @@ tsubst_friend_function (tree decl, tree args)
 				       &new_args, 
 				       /*need_member_template=*/0,
 				       TREE_VEC_LENGTH (args));
-      new_friend = instantiate_template (tmpl, new_args, tf_error);
-      goto done;
+      return instantiate_template (tmpl, new_args, tf_error);
     }
 
   new_friend = tsubst (decl, args, tf_error | tf_warning, NULL_TREE);
@@ -5299,19 +5295,40 @@ tsubst_friend_function (tree decl, tree args)
 	  new_friend = old_decl;
 	}
     }
-  else if (COMPLETE_TYPE_P (DECL_CONTEXT (new_friend)))
+  else
     {
-      /* Check to see that the declaration is really present, and,
-	 possibly obtain an improved declaration.  */
-      tree fn = check_classfn (DECL_CONTEXT (new_friend), 
-			       new_friend, NULL_TREE);
-      
-      if (fn)
-	new_friend = fn;
+      tree context = DECL_CONTEXT (new_friend);
+      bool dependent_p;
+
+      /* In the code
+	   template <class T> class C {
+	     template <class U> friend void C1<U>::f (); // case 1
+	     friend void C2<T>::f ();			 // case 2
+	   };
+	 we only need to make sure CONTEXT is a complete type for
+	 case 2.  To distinguish between the two cases, we note that
+	 CONTEXT of case 1 remains dependent type after tsubst while
+	 this isn't true for case 2.  */
+      ++processing_template_decl;
+      dependent_p = dependent_type_p (context);
+      --processing_template_decl;
+
+      if (!dependent_p
+	  && !complete_type_or_else (context, NULL_TREE))
+	return error_mark_node;
+
+      if (COMPLETE_TYPE_P (context))
+	{
+	  /* Check to see that the declaration is really present, and,
+	     possibly obtain an improved declaration.  */
+	  tree fn = check_classfn (context,
+				   new_friend, NULL_TREE);
+
+	  if (fn)
+	    new_friend = fn;
+	}
     }
 
- done:
-  input_location = saved_loc;
   return new_friend;
 }
 
@@ -5815,6 +5832,12 @@ instantiate_class_template (tree type)
 	    {
 	      /* Build new DECL_FRIENDLIST.  */
 	      tree r;
+
+	      /* The the file and line for this declaration, to
+		 assist in error message reporting.  Since we
+		 called push_tinst_level above, we don't need to
+		 restore these.  */
+	      input_location = DECL_SOURCE_LOCATION (t);
 
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
 		{
