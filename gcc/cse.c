@@ -3405,12 +3405,18 @@ simplify_binary_operation (code, mode, op0, op1)
 	      else if (GET_CODE (op0) == CONST_INT)
 		return plus_constant (op1, INTVAL (op0));
 	      else
+		break;
+#if 0 /* No good, because this can produce the sum of two relocatable
+	 symbols, in an assembler instruction.  Most UNIX assemblers can't
+	 handle that.  */
+	      else
 		return gen_rtx (CONST, mode,
 				gen_rtx (PLUS, mode,
 					 GET_CODE (op0) == CONST
 					 ? XEXP (op0, 0) : op0,
 					 GET_CODE (op1) == CONST
 					 ? XEXP (op1, 0) : op1));
+#endif
 	    }
 	  else if (GET_CODE (op1) == CONST_INT
 		   && GET_CODE (op0) == PLUS
