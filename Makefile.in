@@ -90,8 +90,8 @@ CC = cc
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined
 # here so that they can be overridden by Makefile fragments.
 HOST_CC = $(CC_FOR_BUILD)
-HOST_PREFIX = 
-HOST_PREFIX_1 = loser-
+BUILD_PREFIX = 
+BUILD_PREFIX_1 = loser-
 
 # These flag values are normally overridden by the configure script.
 CFLAGS = -g
@@ -486,8 +486,8 @@ EXTRA_GCC_FLAGS = \
 	'CXX=$(CXX)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
 	'HOST_CC=$(CC_FOR_BUILD)' \
-	'HOST_PREFIX=$(HOST_PREFIX)' \
-	'HOST_PREFIX_1=$(HOST_PREFIX_1)' \
+	'BUILD_PREFIX=$(BUILD_PREFIX)' \
+	'BUILD_PREFIX_1=$(BUILD_PREFIX_1)' \
 	'NM=$(NM)' \
 	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \

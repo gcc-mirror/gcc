@@ -1,5 +1,9 @@
 2002-05-31  Nathanael Nerode  <neroden@twcny.rr.com>
 
+	* Makefile.in: Replace HOST_PREFIX, HOST_PREFIX_1 with BUILD_PREFIX,
+	BUILD_PREFIX_1, to correct nomenclature.
+	* configure: Likewise.
+
 	* Makefile.in: Eliminate version-specific references to tcl8.1, tk8.1.
 	* configure.in: Eliminate version-specific references to tcl8.1, tk8.1.
 
