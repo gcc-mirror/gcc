@@ -4660,6 +4660,13 @@ dbr_schedule (first, file)
     {
       int pred_flags;
 
+      if (GET_CODE (insn) == INSN)
+        {
+	  rtx pat = PATTERN (insn);
+
+	  if (GET_CODE (pat) == SEQUENCE)
+	    insn = XVECEXP (pat, 0, 0);
+	}
       if (GET_CODE (insn) != JUMP_INSN)
 	continue;
 

@@ -1,3 +1,286 @@
+Mon Aug 10 04:28:13 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+			  Richard Henderson  <rth@cygnus.com>
+	
+	Rewrite Sparc backend for better code generation and
+	improved sparc64 support.
+	* config/sparc/sp64-elf.h: Set JUMP_TABLES_IN_TEXT_SECTION to
+	zero.
+	* config/sparc/sysv4.h: Likewise.
+	* config/sparc/sparc.c (v8plus_regcmp_p, sparc_operand,
+	move_operand, v8plus_regcmp_op, emit_move_sequence,
+	singlemove_string, doublemove_string, mem_aligned_8,
+	output_move_double, output_move_quad, output_fp_move_double,
+	move_quad_direction, output_fp_move_quad, output_scc_insn):
+	Remove.
+	(small_int_or_double): New predicate.
+	(gen_compare_reg): Remove TARGET_V8PLUS cmpdi_v8plus emission.
+	(legitimize_pic_address): Emit movsi_{high,lo_sum}_pic instead of
+	old pic_{sethi,lo_sum}_si patterns.
+	(mem_min_alignment): New generic function to replace
+	mem_aligned_8, which uses REGNO_POINTER_ALIGN information when
+	available and can test for arbitrary alignments.  All callers
+	changed.
+	(save_regs, restore_regs, build_big_number,
+	output_function_prologue, output_cbranch, output_return,
+	sparc_flat_save_restore, sparc_flat_output_function_prologue,
+	sparc_flat_output_function_epilogue): Prettify
+	insn output.
+	(output_function_epilogue): Likewise and add code to output
+	deferred case vectors.
+	(output_v9branch): Likewise, add new arg INSN and use it to tack
+	on branch prediction settings.  All callers changed.
+	(print_operand): Likewise and output %l44 for LO_SUMs when
+	TARGET_CM_MEDMID.
+	(sparc_splitdi_legitimate): New function to make sure DImode
+	splits can be run properly when !arch64.
+	(sparc_initialize_trampoline, sparc64_initialize_trampoline):
+	Reformat example code in comments.
+	(set_extends): Remove UNSPEC/v8plus_clear_high case.
+	(sparc_addr_diff_list, sparc_addr_list): New statics to keep track
+	of deferred case vectors we need to output.
+	(sparc_defer_case_vector): Record a case vector.
+	(sparc_output_addr_vec, sparc_output_addr_diff_vec,
+	sparc_output_deferred_case_vectors): New functions to output them.
+	(sparc_emit_set_const32): New function to form 32-bit constants in
+	registers when that requires more than one instruction.
+	(safe_constDI, sparc_emit_set_const64_quick1,
+	sparc_emit_set_const64_quick2, sparc_emit_set_const64_longway,
+	analyze_64bit_constant, const64_is_2insns,
+	create_simple_focus_bits, sparc_emit_set_const64): New functions
+	which do the same for 64-bit constants when arch64.
+	(sparc_emit_set_symbolic_const64): New function to emit address
+	loading for all code models on v9.
+	* config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Do not make
+	%g1 fixed when arch64, unfix %g0 when TARGET_LIVE_G0.
+	(ALTER_HARD_SUBREG): Fix thinko, return REGNO + 1 not 1.
+	(SECONDARY_INPUT_RELOAD_CLASS, SECONDARY_OUTPUT_RELOAD_CLASS): Fix
+	inaccuracies in comments, add symbolic and text_segment operands
+	when TARGET_CM_MEDANY and TARGET_CM_EMBMEDANY respectively.  Use
+	GENERAL_REGS in these cases as a temp REG is needed to load these
+	addresses into a register properly.
+	(EXTRA_CONSTRAINT): Document more accurately, remove Q case as it
+	is no longer used.
+	(GO_IF_LEGITIMATE_ADDRESS): Allow TFmode for LO_SUM on v9 since fp
+	quads are guarenteed to have 16-byte alignment.
+	(LEGITIMIZE_ADDRESS): For SYMBOL_REF, CONST, and LABEL_REF use
+	copy_to_suggested_reg instead of explicit LO_SUM and HIGH.
+	(ASM_OUTPUT_ADDR_VEC, ASM_OUTPUT_ADDR_DIFF_VEC): New macros for
+	deferred case vector implementation.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Use fputc to output newline.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Parenthesize LABEL in macro calls.
+	Generate "internal label - label" instead of "label - 1b".
+	(PRINT_OPERAND_ADDRESS): For LO_SUM use %l44 on TARGET_CM_MEDMID.
+	(PREDICATE_CODES): Remove sparc_operand, move_operand,
+	v8plus_regcmp_op.  Add small_int_or_double, input_operand, and
+	zero_operand.
+	(doublemove_string, output_block_move, output_fp_move_double,
+	output_fp_move_quad, output_move_double, output_move_quad,
+	output_scc_insn, singlemove_string, mem_aligned_8, move_operand,
+	sparc_operand, v8plus_regcmp_op, v8plus_regcmp_p): Remove externs.
+	(sparc_emit_set_const32, sparc_emit_set_const64,
+	sparc_emit_set_symbolic_const64, input_operand, zero_operand,
+	mem_min_alignment, small_int_or_double): Add externs.
+	* config/sparc/sparc.md: Document the many uses of UNSPEC and
+	UNSPEC_VOLATILE in this backend.
+	(define_function_unit ieu): Rename to ieu_unnamed.  Add move and
+	unary to types which execute in it.
+	(define_function_unit ieu_shift): Rename to ieu0.
+	(define_function_unit ieu1): New, executes compare, call, and
+	uncond_branch type insns.
+	(define_function_units for type fdivs, fdivd, fsqrt): These
+	execute in the fpu multiply unit not the adder on UltraSparc.
+	(define_expand cmpdi): Disallow TARGET_V8PLUS.
+	(define_insn cmpsi_insn): Rename to cmpsi_insn_sp32.
+	(define_insn cmpsi_insn_sp64): New, same as sp32 variant except it
+	allows the arith_double_operand predicate and rHI constraint when
+	TARGET_ARCH64.
+	(define_insn cmpdi_sp64, cmpsf_fpe, cmpdf_fpe, cmptf_fpe,
+	cmpsf_fp, cmpdf_fp, cmptf_fp, sltu_insn, neg_sltu_insn,
+	neg_sltu_minux_x, neg_sltu_plus_x, sgeu_insn, neg_sgeu_insn,
+	sltu_plus_x, sltu_plus_x, sltu_plus_x_plus_y, x_minus_sltu,
+	sgeu_plus_x, x_minus_sgeu, movqi_cc_sp64, movhi_cc_sp64,
+	movsi_cc_sp64, movdi_cc_sp64, movsf_cc_sp64, movdf_cc_sp64,
+	movtf_cc_sp64, movqi_cc_reg_sp64, movhi_cc_reg_sp64,
+	movsi_cc_reg_sp64, movdi_cc_reg_sp64, movsf_cc_reg_sp64,
+	movdf_cc_reg_sp64, movtf_cc_reg_sp64, zero_extendhisi2_insn,
+	cmp_siqi_trunc, cmp_siqi_trunc_set, sign_extendhisi2_insn,
+	sign_extendqihi2_insn, sign_extendqisi2_insn,
+	sign_extendqidi2_insn, sign_extendhidi2_insn,
+	extendsfdf2, extendsftf2, extenddftf2, truncdfsf2, trunctfsf2,
+	trunctfdf2, floatsisf2, floatsidf2, floatsitf2, floatdisf2,
+	floatdidf2, floatditf2, fix_truncsfsi2, fix_truncdfsi2,
+	fix_trunctfsi2, fix_truncsfdi2, fix_truncdfdi2, fix_trunctfdi2,
+	adddi3_sp64, addsi3, cmp_ccx_plus, cmp_cc_plus_set, subdi_sp64,
+	subsi3, cmp_minus_ccx, cmp_minus_ccx_set, mulsi3, muldi3,
+	muldi3_v8plus, cmp_mul_set, mulsidi3, mulsidi3_v8plus,
+	const_mulsidi3_v8plus, mulsidi3_sp32, const_mulsidi3,
+	smulsi3_highpart_v8plus, unnamed subreg mult,
+	const_smulsi3_highpart_v8plus, smulsi3_highpart_sp32,
+	const_smulsi3_highpart, umulsidi3_v8plus, umulsidi3_sp32,
+	const_umulsidi3, const_umulsidi3_v8plus, umulsi3_highpart_v8plus,
+	const_umulsi3_highpart_v8plus, umulsi3_highpart_sp32,
+	const_umulsi3_highpart, divsi3, divdi3, cmp_sdiv_cc_set, udivsi3,
+	udivdi3, cmp_udiv_cc_set, smacsi, smacdi, umacdi, anddi3_sp64,
+	andsi3, and_not_di_sp64, and_not_si, iordi3_sp64, iorsi3,
+	or_not_di_sp64, or_not_si, xordi3_sp64, xorsi3, xor_not_di_sp64,
+	xor_not_si, cmp_cc_arith_op, cmp_ccx_arith_op,
+	cmp_cc_arith_op_set, cmp_ccx_arith_op_set, cmp_ccx_xor_not,
+	cmp_cc_xor_not_set, cmp_ccx_xor_not_set, cmp_cc_arith_op_not,
+	cmp_ccx_arith_op_not, cmp_cc_arith_op_not_set,
+	cmp_ccx_arith_op_not_set, negdi2_sp64, cmp_cc_neg, cmp_ccx_neg,
+	cmp_cc_set_neg, cmp_ccx_set_neg, one_cmpldi2_sp64, cmp_cc_not,
+	cmp_ccx_not, cmp_cc_set_not, cmp_ccx_set_not, addtf3, adddf3,
+	addsf3, subtf3, subdf3, subsf3, multf3, muldf3, mulsf3,
+	muldf3_extend, multf3_extend, divtf3, divdf3, divsf3, negtf2,
+	negdf2, negsf2, abstf2, absdf2, abssf2, sqrttf2, sqrtdf2, sqrtsf2,
+	ashlsi3, ashldi3, unnamed DI ashift, cmp_cc_ashift_1,
+	cmp_cc_set_ashift_1, ashrsi3, ashrdi3, unnamed DI ashiftrt,
+	ashrdi3_v8plus, lshrsi3, lshrdi3, unnamed DI lshiftrt,
+	lshrdi3_v8plus, tablejump_sp32, tablejump_sp64, call_address_sp32,
+	call_symbolic_sp32, call_address_sp64, call_symbolic_sp64,
+	call_address_struct_value_sp32, call_symbolic_struct_value_sp32,
+	call_address_untyped_struct_value_sp32,
+	call_symbolic_untyped_struct_value_sp32, call_value_address_sp32,
+	call_value_symbolic_sp32, call_value_address_sp64,
+	call_value_symbolic_sp64, branch_sp32, branch_sp64,
+	flush_register_windows, goto_handler_and_restore,
+	goto_handler_and_restore_v9, goto_handler_and_restore_v9_sp64,
+	flush, all ldd/std peepholes, return_qi, return_hi, return_si,
+	return_addsi, return_di, return_adddi, return_sf, all call+jump
+	peepholes, trap, unnamed trap insns): Prettify output strings.
+	(define_insn anddi3_sp32, and_not_di_sp32, iordi3_sp32,
+	or_not_di_sp32, xordi3_sp32, xor_not_di_sp32, one_cmpldi2):
+	Likewise and force + implement splits for integer cases.
+	(define_insn return_sf_no_fpu): Likewise and allow to match when
+	no-fpu because of our subreg SFmode splits.
+	(define_insn zero_extendqihi2, zero_extendqisi2_insn,
+	zero_extendqidi2_insn, zero_extendhidi2_insn,
+	zero_extendsidi2_insn, sign_extendsidi2_insn): Likewise and use
+	input_operand for second operand.
+	(cmp_minus_cc, cmp_minus_cc_set): Likewise and use
+	reg_or_0_operand for operand 2 so new splits can use it.
+	(cmp_zero_extendqisi2, cmp_zero_extendqisi2_set, cmp_cc_plus,
+	cmp_cc_xor_not): Likewise and don't forget to check TARGET_LIVE_G0
+	too.
+	(cmp_zero_extract, cmp_zero_extract_sp64): Likewise and allow
+	CONST_DOUBLEs for operand 2.
+	(define_insn move_label_di): Likewise and label distance
+	optimization because it no longer works with new deferred case
+	vector scheme.  To be revisited.
+	(define_insn x_minus_y_minus_sltu, x_minus_sltu_plus_y): Likewise
+	and allow reg_or_0_operand and J constraint for second operand.
+	(define_insn jump): Set branch predict taken on V9.
+	(define_insn tablejump): Emit LABEL_REF + PLUS memory address for
+	new deferred case vector scheme.
+	(define_insn pic_tablejump_32, pic_tablejump_64): Remove.
+	(define_insn negdi2_sp32): Force + implement splits.
+	(define_insn negsi2, one_cmplsi2): Rename to negsi2_not_liveg0 and
+	one_cmplsi2_not_liveg0 respectively, and create	expander of original
+	names which emit special rtl for TARGET_LIVE_G0.
+	(define_insn cmpdi_v8plus, scc_si, scc_di): Remove.
+	(define_insn seq, sne, slt, sge, sle, sltu, sgeu): Don't do
+	gen_compare_reg, FAIL instead.
+	(define_insn sgtu, sleu): Likewise and check gen_s*() return
+	values when trying to reverse condition codes, if they FAIL then
+	do likewise.
+	(define_insn snesi_zero, neg_snesi_zero, snesi_zero_extend,
+	snedi_zero, neg_snedi_zero, snedi_zero_trunc, seqsi_zero,
+	neg_seqsi_zero, seqsi_zero_extend, seqdi_zero, neg_seqdi_zero,
+	seqdi_zero_trunc, x_plus_i_ne_0, x_minus_i_ne_0, x_plus_i_eq_0,
+	x_minus_i_eq_0): Add new splits to perform these multi-insn cases,
+	set output string to # to indicate they are mandatory splits.
+	(define_insn pic_lo_sum_si, pic_sethi_si, pic_lo_sum_di,
+	pic_sethi_di, move_pic_label_si): Remove.
+	(define_insn movsi_low_sum, movsi_high, movsi_lo_sum_pic,
+	movsi_high_pic, movsi_pic_label_reg): New patterns to take their
+	place.
+	(define_expand movsi_pic_label_ref, define_insn
+	movsi_high_pic_label_ref, movsi_lo_sum_pic_label_ref): New
+	expander and insns to handle PIC label references and deferred
+	case vectors.
+	(define_insn get_pc_via_rdpc): Comment out as it is no longer
+	used.
+	(define_expand movqi, movhi, movsi, movdi, movsf, movdf, movtf):
+	Rewrite to not use emit_move_sequence, make use of new constant
+	formation code, and new splits for all multi-insn cases.
+	(define_insn movqi_insn): Remove sethi case, it can never happen.
+	Use reg_or_zero_operand instead of const0_rtx explicit test,
+	use input_operand instead of move_operand for source, and use
+	general_operand now for dest.
+	(define_insn movhi_insn): Similar but leave sethi case.
+	(define_insn lo_sum_qi, store_qi, store_hi): Remove.
+	(define_insn sethi_hi lo_sum_hi): Rename to movhi_high and
+	movhi_lo_sum respectively, prettify output string.
+	(define_insn movsi_zero_liveg0): New pattern to put zero into a
+	register when needed on TARGET_LIVE_G0.
+	(define_insn movsi_insn): Use general_operand and input_operand
+	for dest and src respectively.  Simplify applicability test.
+	Prettify output strings, and add clr alternative for J
+	constraint.
+	(define_insn movdi_sp32_v9, movdi_sp32, define_splits for
+	deprecated std and reg-reg DI moves): Remove and...
+	(define_insn movdi_insn_sp32, movdi_insn_sp64): Replace with new
+	implementation which uses forced splits for all non-single insn
+	cases.
+	(define_split DI move cases on !arch64): New splits to handle all
+	situations of 64-bit double register DImode on 32bit, and
+	unaligned registers and memory addresses for all subtargets.
+	(define_insn movsf_const_insn, movdf_const_insn, store_sf):
+	Remove.
+	(define_insn movsf_insn, movsf_no_f_insn): Use general_operand and
+	input_operand for dest and src respectively, prettify output
+	strings.
+	(define_insn movdf_insn, movdf_no_e_insn, store_df,
+	movtf_const_insn, movtf_insn, movtf_no_e_insn, store_tf): Remove
+	and...
+	(define_insn movdf_insn_sp32, movdf_no_e_insn_sp32,
+	movdf_insn_sp64, movdf_no_e_insn_sp64, movtf_insn,
+	movtf_no_e_insn_sp32, movtf_insn_hq_sp64, movtf_insn_sp64,
+	movtf_no_e_insn_sp64) Replace with new
+	implementation which uses forced splits for all non-single insn
+	cases.
+	(define_split DF move cases): New splits in similar vein to DI
+	move counterparts.
+	(define_insn sethi_di_medlow, sethi_di_medium_pic,
+	sethi_di_embmedany_data, sethi_di_embmedany_text, sethi_di_sp64,
+	movdi_sp64_insn): Remove old v9 code model and constant loading
+	support insns and..
+	(define_insn pic_lo_sum_di, pic_sethi_di,
+	sethi_di_medlow_embmedany_pic, sethi_di_medlow, losum_di_medlow,
+	seth44, setm44, setl44, sethh, setlm, sethm, setlo,
+	embmedany_sethi, embmedany_losum, embmedany_brsum,
+	embmedany_textuhi, embmedany_texthi, embmedany_textulo,
+	embmedany_textlo, movdi_lo_sum_sp64_cint, movdi_lo_sum_sp64_dbl,
+	movdi_high_sp64_cint, movdi_high_sp64_dbl): Replace with new
+	scheme, using unspecs, secondary reloads, and one to one sparc
+	insn to rtl insn mapping for better scheduling and code gen.
+	(define_expand reload_indi, reload_outdi): Reload helpers for
+	MEDANY and EMBMEDANY symbol address loading cases which require a
+	temporary register.
+	(define_expand movsicc): Remove v8plus_regcmp cases.
+	(define_insn movdi_cc_sp64_trunc, movdi_cc_reg_sp64_trunc,
+	cmp_zero_extendqidi2, cmp_zero_extendqidi2_set, cmp_qidi_trunc,
+	cmp_diqi_trunc_set): New patterns used by some of the new scc
+	splits on arch64.
+	(define_insn xordi3_sp64_dbl): New pattern used for constant
+	formation when crossing from 32-bit targets.
+	(define_insn movsi_cc_reg_v8plus, v8plus_clear_high, and helper
+	split): Remove.
+	(define_insn addx, subx): Make visible and prettify.
+	(define_insn adddi3_insn_sp32): Likewise and force split.
+	(define_insn addx_extend, subx_extend, unnamed): New patterns for
+	64bit scc split usage.
+	(define_insn unnamed plusDI zero_extend, unnamed minusDI
+	zero_extend, subdi3): Force and implement splits.
+	
+	* final.c (final_scan_insn): Don't output labels if target
+	specifies ASM_OUTPUT_ADDR_{DIFF}_VEC.  Do these macro operations
+	instead.
+	
+	* reorg.c (dbr_schedule): When taking on BR_PRED notes at the end,
+	don't forget to walk inside SEQUENCESs too as these are what the
+	delay slot scheduler will create.
+	
 Mon Aug 10 01:21:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (extxl+1,+2): New patterns to work around
