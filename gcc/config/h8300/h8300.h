@@ -1299,4 +1299,27 @@ struct cum_arg
 
 #define MOVE_RATIO 3
 
+/* Define the codes that are matched by predicates in h8300.c.  */
+
+#define PREDICATE_CODES					\
+  {"single_one_operand", {CONST_INT}},			\
+  {"single_zero_operand", {CONST_INT}},			\
+  {"call_insn_operand", {MEM}},				\
+  {"small_call_insn_operand", {MEM}},			\
+  {"jump_address_operand", {REG, MEM}},			\
+  {"two_insn_adds_subs_operand", {CONST_INT}},		\
+  {"bit_operand", {REG, SUBREG, MEM}},			\
+  {"bit_memory_operand", {MEM}},			\
+  {"stack_pointer_operand", {REG}},			\
+  {"const_int_le_2_operand", {CONST_INT}},		\
+  {"const_int_le_6_operand", {CONST_INT}},		\
+  {"const_int_gt_2_operand", {CONST_INT}},		\
+  {"const_int_ge_8_operand", {CONST_INT}},		\
+  {"const_int_qi_operand", {CONST_INT}},		\
+  {"const_int_hi_operand", {CONST_INT}},		\
+  {"incdec_operand", {CONST_INT}},			\
+  {"bit_operator", {XOR, AND, IOR}},			\
+  {"nshift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT}},	\
+  {"eqne_operator", {EQ, NE}},
+
 #endif /* ! GCC_H8300_H */
