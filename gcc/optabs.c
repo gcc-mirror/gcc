@@ -590,6 +590,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  || target == xop0 || target == xop1)
 	target = gen_reg_rtx (mode);
 
+      /* Indicate for flow that the entire target reg is being set.  */
+      if (GET_CODE (target) == REG)
+	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+
       /* Do the actual arithmetic.  */
       for (i = 0; i < nwords; i++)
 	{
