@@ -1,3 +1,8 @@
+Wed Oct 24 15:35:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (copy_rtx_and_substitute, case CALL): Fix error in last
+	change.
+
 Wed Oct 24 13:26:12 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.h (RETURN_ADDR_RTX): Remove old, incorrect definition.

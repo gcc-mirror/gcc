@@ -2190,7 +2190,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 			   copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
 						    map, 0));
 
-	  MEM_COPY_ATTRIBUTES (copy, orig);
+	  MEM_COPY_ATTRIBUTES (copy, XEXP (orig, 0));
 
 	  return
 	    gen_rtx_CALL (GET_MODE (orig), copy, 
