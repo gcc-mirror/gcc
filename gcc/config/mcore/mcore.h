@@ -367,7 +367,7 @@ extern int mcore_stack_increment;
    Aside from that, you can include as many other registers as you like.  */
 
 /* RBE: r15 {link register} not available across calls,
-   But we don't mark it that way here...  */
+   But we don't mark it that way here....  */
 #define CALL_USED_REGISTERS \
  /*  r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15 ap  c   fp x19 */ \
    { 1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1, 1}
@@ -474,7 +474,7 @@ enum reg_class
 
 #define N_REG_CLASSES  (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 #define REG_CLASS_NAMES  \
 {			\
   "NO_REGS",		\
@@ -959,7 +959,7 @@ extern const enum reg_class reg_class_from_letter[];
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-/* why is this defined??? -- dac */
+/* Why is this defined??? -- dac */
 #define NO_FUNCTION_CSE 1
 
 /* Chars and shorts should be passed as ints.  */
@@ -1177,7 +1177,7 @@ extern long mcore_current_compilation_timestamp;
 
 
 /* This says how to output an assembler line
-   to define a local common symbol...  */
+   to define a local common symbol....  */
 #undef  ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
   (fputs ("\t.lcomm\t", FILE),				\

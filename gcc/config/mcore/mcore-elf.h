@@ -139,7 +139,7 @@ exports_section ()						\
 #define ENDFILE_SPEC  "%{!mno-lsim:-lsim} crtend.o%s crtn.o%s"
 
 /* The subroutine calls in the .init and .fini sections create literal
-   pools which must be jumped around...  */
+   pools which must be jumped around....  */
 #define FORCE_CODE_SECTION_ALIGN	asm ("br 1f ; .literals ; 1:");
 
 #undef  CTORS_SECTION_ASM_OP

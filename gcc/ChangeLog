@@ -1,3 +1,11 @@
+2004-01-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mcore/lib1.asm: Fix comment formatting.
+	* config/mcore/mcore-elf.h: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/mcore/mcore.md: Likewise.
+
 2004-01-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (duplicate_decls): Break apart into...

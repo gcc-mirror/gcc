@@ -241,7 +241,7 @@ FUNC_END modsi3
    jump on to __cmpdf2 and __cmpsf2.
  
    All of these shortcircuit the return path so that __cmp{sd}f2
-   will go directly back to the caller. */
+   will go directly back to the caller.  */
 
 .macro  COMPARE_DF_JUMP name
 	.import SYM (cmpdf2)
