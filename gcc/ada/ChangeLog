@@ -1,3 +1,10 @@
+2004-09-21  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_entity) <E_General_Access_Type>: Check for a
+	dummy designated type via TYPE_MODE instead of COMPLETE_TYPE_P. This
+	ensures proper handling of types with rep clauses, which might have
+	their TYPE_SIZE set already.
+
 2004-09-21  Robert Dewar  <dewar@gnat.com>
 
 	* decl.c (gnat_to_gnu_type, case E_Modular_Integer_Type): Wrap modular
