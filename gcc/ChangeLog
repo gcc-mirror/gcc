@@ -1,3 +1,7 @@
+Tue Jun 12 19:01:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_replace_rtx_1): Fix previous patch.
+
 Tue Jun 12 17:25:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_replace_rtx_1): Do plus_constant call always.
