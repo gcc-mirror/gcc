@@ -2262,6 +2262,91 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
     }
 }
 
+/* Fixup all the delta entries in this vtable that need updating.
+   This happens when we have non-overridden virtual functions from a
+   virtual base class, that are at a different offset, in the new
+   hierarchy, because the layout of the virtual bases has changed.  */
+static void
+fixup_vtable_deltas (binfo, t)
+     tree binfo, t;
+{
+  tree virtuals = BINFO_VIRTUALS (binfo);
+  unsigned HOST_WIDE_INT n;
+  
+  n = 0;
+  /* Skip initial vtable length field and RTTI fake object. */
+  for (; virtuals && n < 1 + flag_dossier; n++)
+      virtuals = TREE_CHAIN (virtuals);
+  while (virtuals)
+    {
+      tree fndecl = TREE_VALUE (virtuals);
+      tree pfn = FNADDR_FROM_VTABLE_ENTRY (fndecl);
+      tree delta = DELTA_FROM_VTABLE_ENTRY (fndecl);
+      fndecl = TREE_OPERAND (pfn, 0);
+      if (fndecl)
+	{
+	  tree base_offset, offset;
+	  tree context = DECL_CLASS_CONTEXT (fndecl);
+	  tree vfield = CLASSTYPE_VFIELD (t);
+	  tree this_offset;
+
+	  offset = integer_zero_node;
+	  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
+	    {
+	      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
+	      if (offset == NULL_TREE)
+		{
+		  tree binfo = get_binfo (context, t, 0);
+		  offset = BINFO_OFFSET (binfo);
+		}
+	    }
+
+	  /* Find the right offset for the this pointer based on the
+	     base class we just found.  We have to take into
+	     consideration the virtual base class pointers that we
+	     stick in before the virtual function table pointer.
+
+	     Also, we want just the delta bewteen the most base class
+	     that we derived this vfield from and us.  */
+	  base_offset = size_binop (PLUS_EXPR,
+				    get_derived_offset (binfo),
+				    BINFO_OFFSET (binfo));
+	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
+
+	  if (! tree_int_cst_equal (this_offset, delta))
+	    {
+	      /* Make sure we can modify the derived association with immunity.  */
+	      if (TREE_USED (binfo))
+		my_friendly_assert (0, 999);
+
+	      if (binfo == TYPE_BINFO (t))
+		{
+		  /* In this case, it is *type*'s vtable we are modifying.
+		     We start with the approximation that it's vtable is that
+		     of the immediate base class.  */
+		  if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		    build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
+		}
+	      else
+		{
+		  /* This is our very own copy of `basetype' to play with.
+		     Later, we will fill in all the virtual functions
+		     that override the virtual functions in these base classes
+		     which are not defined by the current type.  */
+		  if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		    prepare_fresh_vtable (binfo, t);
+		}
+
+	      modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
+				   build_vtable_entry (this_offset, pfn),
+				   fndecl);
+	    }
+	}
+      ++n;
+      virtuals = TREE_CHAIN (virtuals);
+    }
+}
+
 /* These are the ones that are through virtual base classes. */
 static void
 modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl, pfn)
@@ -3533,6 +3618,19 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		vbases = TREE_CHAIN (vbases);
 	      }
 	  }
+	}
+
+      /* Now fixup any virtual function entries from virtual bases
+	 that have different deltas.  */
+      vbases = CLASSTYPE_VBASECLASSES (t);
+      while (vbases)
+	{
+	  /* We might be able to shorten the ammount of work we do by
+	     only doing this for vtables that come from virtual bases
+	     that have differing offsets, but don't want to miss any
+	     entries.  */
+	  fixup_vtable_deltas (vbases, t);
+	  vbases = TREE_CHAIN (vbases);
 	}
     }
 

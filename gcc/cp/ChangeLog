@@ -1,4 +1,64 @@
+Wed Jun 29 16:44:45 1994  Mike Stump  (mrs@cygnus.com)
+
+	Fixes a problem of the this pointer being wrong in virtual calls to
+	methods that are not overridden in more derived classes.
+
+	* class.c (fixup_vtable_delta): New routine.  It will fixup the
+	delta entries in vtables, wheever they need updating.
+	* class.c (finish_struct): Call the new routine for all virtual
+	bases, as they can have different offsets, than those used in base
+	classes that we derive our vtable from.
+
+Tue Jun 28 23:49:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_binary_op): Use the types before default
+	conversions in the error message.
+
+	* *.c: Use c_build_type_variant instead of build_type_variant where
+	the type might be an array.
+
+	* call.c (build_method_call): Call build_type_variant and
+	build_reference_type in the right order.
+	* decl.c (record_builtin_type): Ditto.
+
+Wed Jun 29 16:58:53 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): Call build_type_variant and
+	build_reference_type in the right order.
+	* decl.c (record_builtin_type): Ditto.
+
+Tue Jun 28 23:49:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_binary_op): Use the types before default
+	conversions in the error message.
+
+	* *.c: Use c_build_type_variant instead of build_type_variant where
+	the type might be an array.
+
+Sat Jun 25 11:50:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (convert_to_reference): Try UDC's before doing the
+	reinterpret_cast thang, though.
+
+Fri Jun 24 01:24:01 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (c_expand_return): Don't USE the return value location
+	after we've expanded the jump.
+
+	* decl2.c (finish_file): Make sure DECL_SAVED_INSNS is not 0 before
+	trying to write out an inline.
+
+	* cvt.c (build_up_reference): Also do address adjustment when the
+	target type uses MI.
+	(convert_to_reference): Try UDCs only after built-in conversions.
+	(build_type_conversion_1): Don't play games with the argument to the
+	method.
+	(build_type_conversion): #if 0 out code for binding to reference.
+
 Thu Jun 23 00:22:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl2.c (finish_file): Use TREE_SYMBOL_REFERENCED to decide
+	whether to emit inlines.
 
 	* decl.c (grokdeclarator): Set explicit_int for decls that just
 	specify, say, 'long'.

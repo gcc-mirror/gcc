@@ -507,6 +507,8 @@ lang_decode_option (p)
 	warn_conversion = setting;
       else if (!strcmp (p, "parentheses"))
 	warn_parentheses = setting;
+      else if (!strcmp (p, "non-virtual-dtor"))
+	warn_nonvdtor = setting;
       else if (!strcmp (p, "extern-inline"))
 	warn_extern_inline = setting;
       else if (!strcmp (p, "comment"))
@@ -2765,7 +2767,9 @@ finish_file ()
     {
       tree decl = TREE_VALUE (saved_inlines);
       saved_inlines = TREE_CHAIN (saved_inlines);
-      if (TREE_ASM_WRITTEN (decl))
+      /* Redefinition of a member function can cause DECL_SAVED_INSNS to be
+         0; don't crash.  */
+      if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
 	continue;
       if (DECL_FUNCTION_MEMBER_P (decl) && !TREE_PUBLIC (decl))
 	{
@@ -2778,7 +2782,8 @@ finish_file ()
 		   || (DECL_INLINE (decl) && ! flag_implement_inlines));
 	    }
 	}
-      if (TREE_PUBLIC (decl) || TREE_ADDRESSABLE (decl)
+      if (TREE_PUBLIC (decl)
+	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 	  || flag_keep_inline_functions)
 	{
 	  if (DECL_EXTERNAL (decl)
