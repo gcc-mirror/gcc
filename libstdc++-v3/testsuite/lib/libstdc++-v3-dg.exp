@@ -54,8 +54,8 @@ proc libstdc++-v3-init { args } {
     set dg-do-what-default run
 
     # Copy any required data files.
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/*/*.tst"] $outdir
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/*/*.txt"] $outdir
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.tst"] $outdir
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.txt"] $outdir
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     # locate libgcc.a so we don't need to account for different values of
@@ -233,7 +233,7 @@ proc libstdc++-v3-list-sourcefiles { } {
 	set f [open $files_file "w"]
 	set where_we_were [pwd]
 	cd $srcdir
-	foreach s [lsort [glob -nocomplain */*.cc]] {
+	foreach s [lsort [glob -nocomplain "{,*/}*/*.cc"]] {
 	    lappend sfiles ${srcdir}/${s}
 	    puts $f $s
 	}
