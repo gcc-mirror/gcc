@@ -1897,7 +1897,7 @@ operands_match_p (x, y)
 
 int
 n_occurrences (c, s)
-     char c;
+     int c;
      char *s;
 {
   int n = 0;
