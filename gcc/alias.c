@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "tm_p.h"
 #include "function.h"
+#include "insn-flags.h"
 #include "expr.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -32,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "splay-tree.h"
-#include "insn-flags.h"
+#include "ggc.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
    which MEMs can alias which other MEMs.  In general, two MEMs in
@@ -127,9 +128,9 @@ static int nonlocal_reference_p         PROTO((rtx));
    address.  The mode determines whether it is a function argument or
    other special value. */
 
-rtx *reg_base_value;
-rtx *new_reg_base_value;
-unsigned int reg_base_value_size;	/* size of reg_base_value array */
+static rtx *reg_base_value;
+static rtx *new_reg_base_value;
+static unsigned int reg_base_value_size;	/* size of reg_base_value array */
 #define REG_BASE_VALUE(X) \
   ((unsigned) REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
 
@@ -449,13 +450,16 @@ static void
 record_set (dest, set)
      rtx dest, set;
 {
-  register int regno;
+  register unsigned regno;
   rtx src;
 
   if (GET_CODE (dest) != REG)
     return;
 
   regno = REGNO (dest);
+
+  if (regno >= reg_base_value_size)
+    abort ();
 
   if (set)
     {
@@ -1533,12 +1537,15 @@ init_alias_analysis ()
      optimization.  Loop unrolling can create a large number of
      registers.  */
   reg_base_value_size = maxreg * 2;
-  reg_base_value = (rtx *)oballoc (reg_base_value_size * sizeof (rtx));
+  reg_base_value = (rtx *) xcalloc (reg_base_value_size, sizeof (rtx));
+  if (ggc_p)
+    ggc_add_rtx_root (reg_base_value, reg_base_value_size);
+
   new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
   reg_seen = (char *)alloca (reg_base_value_size);
-  bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
   if (! reload_completed && flag_unroll_loops)
     {
+      /* ??? Why are we realloc'ing if we're just going to zero it?  */
       alias_invariant = (rtx *)xrealloc (alias_invariant,
 					 reg_base_value_size * sizeof (rtx));
       bzero ((char *)alias_invariant, reg_base_value_size * sizeof (rtx));
@@ -1716,11 +1723,18 @@ void
 end_alias_analysis ()
 {
   reg_known_value = 0;
-  reg_base_value = 0;
+  reg_known_value_size = 0;
+  if (reg_base_value)
+    {
+      if (ggc_p)
+	ggc_del_root (reg_base_value);
+      free (reg_base_value);
+      reg_base_value = 0;
+    }
   reg_base_value_size = 0;
   if (alias_invariant)
     {
-      free ((char *)alias_invariant);
+      free (alias_invariant);
       alias_invariant = 0;
     }
 }
