@@ -411,7 +411,7 @@ static unsigned reg_number		PROTO((rtx));
 #endif /* UNALIGNED_INT_ASM_OP */
 
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
-   newline is produced.  When flag_verbose_asm is asserted, we add commnetary
+   newline is produced.  When flag_debug_asm is asserted, we add commnetary
    at the end of the line, so we must avoid output of a newline here.  */
 #ifndef ASM_OUTPUT_DWARF_STRING
 #define ASM_OUTPUT_DWARF_STRING(FILE,P) \
@@ -1225,7 +1225,7 @@ output_uleb128 (value)
     }
   while (value != 0);
 
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s ULEB128 0x%x", ASM_COMMENT_START, save_value);
 }
 
@@ -1256,7 +1256,7 @@ output_sleb128 (value)
     }
 
   while (more);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s SLEB128 %d", ASM_COMMENT_START, save_value);
 }
 
@@ -1272,7 +1272,7 @@ output_cfi (cfi, fde)
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f));
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_CFA_advance_loc 0x%x",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_offset);
       fputc ('\n', asm_out_file);
@@ -1283,7 +1283,7 @@ output_cfi (cfi, fde)
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_CFA_offset, column 0x%x",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
 
@@ -1296,7 +1296,7 @@ output_cfi (cfi, fde)
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_CFA_restore, column 0x%x",
 		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
 
@@ -1305,7 +1305,7 @@ output_cfi (cfi, fde)
   else
     {
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, cfi->dw_cfi_opc);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START,
 		 dwarf_cfi_name (cfi->dw_cfi_opc));
 
@@ -1434,7 +1434,7 @@ output_call_frame_info (for_eh)
     ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
   else
     ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Common Information Entry",
 	     ASM_COMMENT_START);
 
@@ -1442,7 +1442,7 @@ output_call_frame_info (for_eh)
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s CIE Identifier Tag", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -1453,7 +1453,7 @@ output_call_frame_info (for_eh)
     }
 
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_CIE_VERSION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s CIE Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -1462,30 +1462,30 @@ output_call_frame_info (for_eh)
       /* The FDE contains a pointer
 	 to the exception region info for the frame.  */
       ASM_OUTPUT_DWARF_STRING (asm_out_file, "e");
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
     }
   else
     {
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s CIE Augmentation (none)",
 		 ASM_COMMENT_START);
     }
 
   fputc ('\n', asm_out_file);
   output_uleb128 (1);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, " (CIE Code Alignment Factor)");
 
   fputc ('\n', asm_out_file);
   output_sleb128 (DWARF_CIE_DATA_ALIGNMENT);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, " (CIE Data Alignment Factor)");
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF_FRAME_RETURN_COLUMN);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s CIE RA Column", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -1508,7 +1508,7 @@ output_call_frame_info (for_eh)
 	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
       else
 	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE Length", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_LABEL (asm_out_file, l1);
@@ -1517,18 +1517,18 @@ output_call_frame_info (for_eh)
 	ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__FRAME_BEGIN__");
       else
 	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (FRAME_SECTION));
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE CIE offset", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, fde->dw_fde_begin);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE initial location", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file,
 				   fde->dw_fde_end, fde->dw_fde_begin);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE address range", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
@@ -1537,7 +1537,7 @@ output_call_frame_info (for_eh)
 	  /* For now, a pointer to the translation unit's info will do.
 	     ??? Eventually this should point to the function's info.  */
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s pointer to exception region info",
 		     ASM_COMMENT_START);
 	  fputc ('\n', asm_out_file);
@@ -4688,7 +4688,7 @@ output_value_format (v)
   enum dwarf_form form = value_format (v);
 
   output_uleb128 (form);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, " (%s)", dwarf_form_name (form));
 
   fputc ('\n', asm_out_file);
@@ -4708,12 +4708,12 @@ output_abbrev_section ()
       register dw_die_ref abbrev = abbrev_die_table[abbrev_id];
 
       output_uleb128 (abbrev_id);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, " (abbrev code)");
 
       fputc ('\n', asm_out_file);
       output_uleb128 (abbrev->die_tag);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, " (TAG: %s)",
 		 dwarf_tag_name (abbrev->die_tag));
 
@@ -4721,7 +4721,7 @@ output_abbrev_section ()
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP,
 	       abbrev->die_child != NULL ? DW_children_yes : DW_children_no);
 
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s %s",
 		 ASM_COMMENT_START,
 		 (abbrev->die_child != NULL
@@ -4733,7 +4733,7 @@ output_abbrev_section ()
 	   a_attr = a_attr->dw_attr_next)
 	{
 	  output_uleb128 (a_attr->dw_attr);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, " (%s)",
 		     dwarf_attr_name (a_attr->dw_attr));
 
@@ -4895,7 +4895,7 @@ output_die (die)
   register int i;
 
   output_uleb128 (die->die_abbrev);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, " (DIE (0x%x) %s)",
 	     die->die_offset, dwarf_tag_name (die->die_tag));
 
@@ -4926,7 +4926,7 @@ output_die (die)
 	      abort ();
 	    }
 
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s %s",
 		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
@@ -4936,7 +4936,7 @@ output_die (die)
 	    {
 	      /* Output the opcode.  */
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, loc->dw_loc_opc);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START,
 			 dwarf_stack_op_name (loc->dw_loc_opc));
 
@@ -4978,7 +4978,7 @@ output_die (die)
 
 	case dw_val_class_long_long:
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 8);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s %s",
 		   ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
@@ -4987,7 +4987,7 @@ output_die (die)
 				  a->dw_attr_val.v.val_long_long.hi,
 				  a->dw_attr_val.v.val_long_long.low);
 
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file,
 		     "\t%s long long constant", ASM_COMMENT_START);
 	  
@@ -4997,7 +4997,7 @@ output_die (die)
 	case dw_val_class_float:
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 				  a->dw_attr_val.v.val_float.length * 4);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s %s",
 		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
@@ -5006,7 +5006,7 @@ output_die (die)
 	    {
 	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
 				      a->dw_attr_val.v.val_float.array[i]);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s fp constant word %d",
 			 ASM_COMMENT_START, i);
 
@@ -5061,7 +5061,7 @@ output_die (die)
 	  && a->dw_attr_val.val_class != dw_val_class_long_long
 	  && a->dw_attr_val.val_class != dw_val_class_float)
 	{
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s %s",
 		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
@@ -5076,7 +5076,7 @@ output_die (die)
     {
       /* Add null byte to terminate sibling list. */
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s end of children of DIE 0x%x",
 		 ASM_COMMENT_START, die->die_offset);
 
@@ -5091,24 +5091,24 @@ static void
 output_compilation_unit_header ()
 {
   ASM_OUTPUT_DWARF_DATA (asm_out_file, next_die_offset - DWARF_OFFSET_SIZE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Compilation Unit Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DWARF version number", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (ABBREV_SECTION));
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset Into Abbrev. Section",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, PTR_SIZE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Pointer Size (in bytes)", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5163,25 +5163,25 @@ output_pubnames ()
 
   ASM_OUTPUT_DWARF_DATA (asm_out_file, pubnames_length);
 
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Public Names Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
 
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA (asm_out_file, next_die_offset);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Compilation Unit Length", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5190,13 +5190,13 @@ output_pubnames ()
       register pubname_ref pub = &pubname_table[i];
 
       ASM_OUTPUT_DWARF_DATA (asm_out_file, pub->die->die_offset);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DIE offset", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
 
       ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "%s external name", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
@@ -5238,29 +5238,29 @@ output_aranges ()
   register unsigned long aranges_length = size_of_aranges ();
 
   ASM_OUTPUT_DWARF_DATA (asm_out_file, aranges_length);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Address Ranges Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, PTR_SIZE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Size of Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Size of Segment Descriptor",
 	     ASM_COMMENT_START);
 
@@ -5269,18 +5269,18 @@ output_aranges ()
   if (PTR_SIZE == 8)
     fprintf (asm_out_file, ",0,0");
 
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
 	     ASM_COMMENT_START, 2 * PTR_SIZE);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, TEXT_SECTION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5299,7 +5299,7 @@ output_aranges ()
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, name);
 	}
 
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
@@ -5310,7 +5310,7 @@ output_aranges ()
 	ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file,
 				    get_AT_unsigned (a, DW_AT_byte_size));
 
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
@@ -5345,47 +5345,47 @@ output_line_info ()
   register unsigned long function;
 
   ASM_OUTPUT_DWARF_DATA (asm_out_file, size_of_line_info ());
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Source Line Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA (asm_out_file, size_of_line_prolog ());
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Prolog Length", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF_LINE_MIN_INSTR_LENGTH);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Minimum Instruction Length",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF_LINE_DEFAULT_IS_STMT_START);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Default is_stmt_start flag",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   fprintf (asm_out_file, "\t%s\t%d", ASM_BYTE_OP, DWARF_LINE_BASE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Line Base Value (Special Opcodes)",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   fprintf (asm_out_file, "\t%s\t%u", ASM_BYTE_OP, DWARF_LINE_RANGE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Line Range Value (Special Opcodes)",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   fprintf (asm_out_file, "\t%s\t%u", ASM_BYTE_OP, DWARF_LINE_OPCODE_BASE);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Special Opcode Base", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5405,25 +5405,25 @@ output_line_info ()
 	  break;
 	}
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, n_op_args);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s opcode: 0x%x has %d args",
 		 ASM_COMMENT_START, opc, n_op_args);
       fputc ('\n', asm_out_file);
     }
 
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "%s Include Directory Table\n", ASM_COMMENT_START);
 
   /* Include directory table is empty, at present */
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
   fputc ('\n', asm_out_file);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "%s File Name Table\n", ASM_COMMENT_START);
 
   for (ft_index = 1; ft_index < file_table_in_use; ++ft_index)
     {
       ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "%s File Entry: 0x%x",
 		 ASM_COMMENT_START, ft_index);
 
@@ -5448,7 +5448,7 @@ output_line_info ()
 
   /* Set the address register to the first location in the text section */
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5483,7 +5483,7 @@ output_line_info ()
 	{
 	  /* This can handle deltas up to 0xffff.  This takes 3 bytes.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
 		     ASM_COMMENT_START);
 
@@ -5495,7 +5495,7 @@ output_line_info ()
 	{
 	  /* This can handle any delta.  This takes 4+PTR_SIZE bytes.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 		     ASM_COMMENT_START);
 	  fputc ('\n', asm_out_file);
@@ -5515,12 +5515,12 @@ output_line_info ()
 	{
 	  current_file = line_info->dw_file_num;
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_set_file);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNS_set_file", ASM_COMMENT_START);
 
 	  fputc ('\n', asm_out_file);
 	  output_uleb128 (current_file);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, " (\"%s\")", file_table[current_file]);
 
 	  fputc ('\n', asm_out_file);
@@ -5538,7 +5538,7 @@ output_line_info ()
 	     takes 1 byte.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 				  DWARF_LINE_OPCODE_BASE + line_delta);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	      fprintf (asm_out_file,
 		       "\t%s line %d", ASM_COMMENT_START, current_line);
 
@@ -5549,7 +5549,7 @@ output_line_info ()
 	  /* This can handle any delta.  This takes at least 4 bytes, depending
 	     on the value being encoded.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s advance to line %d",
 		     ASM_COMMENT_START, current_line);
 
@@ -5565,7 +5565,7 @@ output_line_info ()
   if (0)
     {
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
 		 ASM_COMMENT_START);
 
@@ -5576,7 +5576,7 @@ output_line_info ()
   else
     {
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-      if (flag_verbose_asm)
+      if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
       output_uleb128 (1 + PTR_SIZE);
@@ -5589,7 +5589,7 @@ output_line_info ()
 
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DW_LNE_end_sequence", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
@@ -5617,7 +5617,7 @@ output_line_info ()
 
 	  /* Set the address register to the first line in the function */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 		     ASM_COMMENT_START);
 
@@ -5635,7 +5635,7 @@ output_line_info ()
 	  if (0)
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
 			 ASM_COMMENT_START);
 
@@ -5647,7 +5647,7 @@ output_line_info ()
 	  else
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 			 ASM_COMMENT_START);
 	      fputc ('\n', asm_out_file);
@@ -5667,12 +5667,12 @@ output_line_info ()
 	{
 	  current_file = line_info->dw_file_num;
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_set_file);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNS_set_file", ASM_COMMENT_START);
 
 	  fputc ('\n', asm_out_file);
 	  output_uleb128 (current_file);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, " (\"%s\")", file_table[current_file]);
 
 	  fputc ('\n', asm_out_file);
@@ -5689,7 +5689,7 @@ output_line_info ()
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 				      DWARF_LINE_OPCODE_BASE + line_delta);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file,
 			 "\t%s line %d", ASM_COMMENT_START, current_line);
 
@@ -5698,7 +5698,7 @@ output_line_info ()
 	  else
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s advance to line %d",
 			 ASM_COMMENT_START, current_line);
 
@@ -5724,7 +5724,7 @@ output_line_info ()
 	  if (0)
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
 			 ASM_COMMENT_START);
 
@@ -5736,7 +5736,7 @@ output_line_info ()
 	  else
 	    {
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-	      if (flag_verbose_asm)
+	      if (flag_debug_asm)
 		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 			 ASM_COMMENT_START);
 	      fputc ('\n', asm_out_file);
@@ -5750,7 +5750,7 @@ output_line_info ()
 
 	  /* Output the marker for the end of this sequence.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-	  if (flag_verbose_asm)
+	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNE_end_sequence",
 		     ASM_COMMENT_START);
 
