@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1658,10 +1658,16 @@ constrain_operands (insn_code_num, strict)
 	    switch (c)
 	      {
 	      case '?':
-	      case '#':
 	      case '!':
 	      case '*':
 	      case '%':
+		break;
+
+	      case '#':
+		/* Ignore rest of this alternative as far as
+		   constraint checking is concerned.  */
+		while (*p && *p != ',')
+		  p++;
 		break;
 
 	      case '=':
