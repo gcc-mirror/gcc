@@ -843,9 +843,9 @@ noce_try_cmove_arith (if_info)
     }
 
   /* ??? We could handle this if we knew that a load from A or B could
-     not fault.  This is true of stack memories or if we've already loaded
+     not fault.  This is also true if we've already loaded
      from the address along the path from ENTRY.  */
-  else if (GET_CODE (a) == MEM || GET_CODE (b) == MEM)
+  else if (may_trap_p (a) || may_trap_p (b))
     return FALSE;
 
   /* if (test) x = a + b; else x = c - d;
