@@ -709,7 +709,7 @@ avr-*-*)
 	use_fixproto=yes
 	;;
 c4x-*-rtems* | tic4x-*-rtems*)
-	tmake_file="c4x/t-c4x t-rtems"
+	tmake_file="c4x/t-c4x t-rtems c4x/t-rtems"
 	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
 	c_target_objs="c4x-c.o"
 	cxx_target_objs="c4x-c.o"

@@ -1,5 +1,10 @@
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
+	* config/c4x/t-rtems: New.
+	* config.gcc: Reflect having added c4x/t-rtems.
+
+2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
+
 	* config/arm/t-rtems: New.
 	* config.gcc: Reflect having added arm/t-rtems.
 
