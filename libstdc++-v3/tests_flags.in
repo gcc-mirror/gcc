@@ -41,7 +41,7 @@
 print_usage() {
     cat <<EOF
 Usage: 
-  tests_fags --compiler <build-dir> <src-dir>
+  tests_flags --compiler <build-dir> <src-dir>
              --built-library <build-dir>  <src-dir>
              --installed-library <build-dir> <src-dir> <install-dir>
 EOF
@@ -154,7 +154,11 @@ case ${query} in
 	   ${LIB_PATH}/../libsupc++/libsupc++.la  ${LIB_PATH}/libstdc++.la
 	   -no-install"
     LTEXE="${LIBTOOL} --mode=execute"
-    LIBS="-nodefaultlibs -lc -lgcc -lc"
+    case @target_os@ in
+        *cygwin*)  LIBS="-nodefaultlibs -lgcc -lcygwin -luser32
+                         -lkernel32 -ladvapi32 -lshell32" ;;
+        *)         LIBS="-nodefaultlibs -lc -lgcc -lc" ;;
+    esac
     ;;
     --installed-library)
     # For the installed version, we really only need to use libtool and
