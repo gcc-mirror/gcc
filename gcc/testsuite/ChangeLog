@@ -1,3 +1,7 @@
+2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/noncompile/init-4.c.c: New test.
+
 2003-04-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.misc-test/gcov-9.c: New test.
