@@ -1,3 +1,31 @@
+2004-07-23  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16688
+	PR tree-optimization/16689
+	* tree-ssa-alias.c (setup_pointers_and_addressables): Remove
+	unnecessary initialization of 'tag'.
+	(get_tmt_for): Check that the new type tag has the same alias
+	set as the pointed-to type.
+	(group_aliases): Only regular variables need to be removed
+	from the alias set of a name tag.
+	* tree-ssa-copy.c (may_propagate_copy): Do not allow copy
+	propagation if the two types are not compatible.
+	(merge_alias_info): Rename from replace_ssa_names_ann.
+	Add more checking.
+	(replace_exp_1): If both arguments are SSA_NAMEs, check that
+	the propagation can be done.
+	Only call merge_alias_info on pointers.
+	(propagate_value): Likewise.
+	* tree-ssa-copyrename.c: Include langhooks.h.
+	(copy_rename_partition_coalesce): Call replace_ssa_name_symbol
+	to do the merging.
+	Do not coalesce variables with incompatible types.
+	(rename_ssa_copies): Call replace_ssa_name_symbol.
+	* tree-ssa.c (verify_ssa_name): Verify that the SSA_NAME has
+	the same type as the underlying _DECL.
+	* tree-ssanames.c (replace_ssa_name_symbol): New function.
+	* tree.h (replace_ssa_name_symbol): Declare.
+
 2004-07-23  Richard Henderson  <rth@redhat.com>
 
 	PR c++/16277

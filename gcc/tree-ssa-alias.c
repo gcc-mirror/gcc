@@ -1225,7 +1225,8 @@ group_aliases (struct alias_info *ai)
 	{
 	  tree alias = VARRAY_TREE (aliases, j);
 	  var_ann_t ann = var_ann (alias);
-	  if (ann->may_aliases)
+
+	  if (ann->mem_tag_kind == NOT_A_TAG && ann->may_aliases)
 	    {
 	      tree new_alias;
 
@@ -1370,7 +1371,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	  && (bitmap_bit_p (ai->dereferenced_ptrs_store, v_ann->uid)
 	      || bitmap_bit_p (ai->dereferenced_ptrs_load, v_ann->uid)))
 	{
-	  tree tag = v_ann->type_mem_tag;
+	  tree tag;
 	  var_ann_t t_ann;
 
 	  /* If pointer VAR still doesn't have a memory tag associated
@@ -2169,6 +2170,14 @@ get_tmt_for (tree ptr, struct alias_info *ai)
       alias_map->set = tag_set;
       ai->pointers[ai->num_pointers++] = alias_map;
     }
+
+#if defined ENABLE_CHECKING
+  /* Make sure that the type tag has the same alias set as the
+     pointed-to type.  */
+  if (tag_set != get_alias_set (tag))
+    abort ();
+#endif
+
 
   return tag;
 }
