@@ -1,5 +1,14 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* target-def.h (TARGET_STRICT_ARGUMENT_NAMING): Define as
+	hook_bool_CUMULATIVE_ARGS_false.
+	* targhooks.c (default_strict_argument_naming): Rename to
+	hook_bool_CUMULATIVE_ARGS_false.
+	* targhooks.h: Update the prototype for
+	default_strict_argument_naming.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/sh/sh.c: Replace "gen_rtx (FOO, " with "gen_rtx_FOO (".
 	* config/sh/sh.h: Likewise.
 	* config/sh/sh.md: Likewise.
