@@ -890,7 +890,9 @@ reload (first, global, dumpfile)
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
       HOST_WIDE_INT starting_frame_size;
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       int previous_frame_pointer_needed = frame_pointer_needed;
+#endif
       static char *reg_class_names[] = REG_CLASS_NAMES;
 
       something_changed = 0;
@@ -6600,7 +6602,9 @@ emit_reload_insns (insn)
 	  && reload_reg_rtx[j] != 0)
 	{
 	  register rtx reloadreg = reload_reg_rtx[j];
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 	  register rtx second_reloadreg = 0;
+#endif
 	  rtx note, p;
 	  enum machine_mode mode;
 	  int special = 0;

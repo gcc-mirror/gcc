@@ -92,7 +92,9 @@ bitmap_element_allocate (head)
      bitmap head;
 {
   bitmap_element *element;
+#if BITMAP_ELEMENT_WORDS != 2
   int i;
+#endif
 
   if (bitmap_free != 0)
     {
@@ -246,7 +248,9 @@ bitmap_copy (to, from)
      bitmap from;
 {
   bitmap_element *from_ptr, *to_ptr = 0;
+#if BITMAP_ELEMENT_WORDS != 2
   int i;
+#endif
 
   bitmap_clear (to);
 
@@ -413,7 +417,9 @@ bitmap_operation (to, from1, from2, operation)
   bitmap_element *from1_tmp;
   bitmap_element *from2_tmp;
   unsigned int indx;
+#if BITMAP_ELEMENT_WORDS != 2
   int i;
+#endif
 
   /* To simplify things, always create a new list.  If the old list was one
      of the inputs, free it later.  Otherwise, free it now.  */

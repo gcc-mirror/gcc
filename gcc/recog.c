@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 91-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -466,7 +466,6 @@ validate_replace_rtx_1 (loc, from, to, object)
 	{
 	  enum machine_mode wanted_mode = VOIDmode;
 	  enum machine_mode is_mode = GET_MODE (to);
-	  int width = INTVAL (XEXP (x, 1));
 	  int pos = INTVAL (XEXP (x, 2));
 
 #ifdef HAVE_extzv

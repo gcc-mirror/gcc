@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1408,7 +1408,9 @@ copy_cost (x, mode, class, to_p)
      enum reg_class class;
      int to_p;
 {
+#ifdef HAVE_SECONDARY_RELOADS
   enum reg_class secondary_class = NO_REGS;
+#endif
 
   /* If X is a SCRATCH, there is actually nothing to move since we are
      assuming optimal allocation.  */

@@ -4659,7 +4659,6 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   struct induction *b;
   struct iv_class *bl;
   rtx set = single_set (insn);
-  rtx p;
 
   v->insn = insn;
   v->src_reg = src_reg;
@@ -5836,7 +5835,7 @@ static void
 combine_givs (bl)
      struct iv_class *bl;
 {
-  struct induction *g1, *g2, **giv_array, *temp_iv;
+  struct induction *g1, *g2, **giv_array;
   int i, j, giv_count, pass;
 
   /* Count givs, because bl->giv_count is incorrect here.  */
@@ -7682,7 +7681,6 @@ indirect_jump_in_function_p (start)
      rtx start;
 {
   rtx insn;
-  int is_indirect_jump = 0;
 
   for (insn = start; insn; insn = NEXT_INSN (insn))
     if (computed_jump_p (insn))
