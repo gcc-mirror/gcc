@@ -1,3 +1,21 @@
+2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips-protos.h (embedded_pic_fnaddr_reg): New.
+	* config/mips/mips.h (embedded_pic_fnaddr_rtx): Lose.
+	(mips16_gp_pseudo_rtx): Lose.
+	(INIT_EXPANDERS): Deleted.
+	* config/mips/mips.c (mips_init_machine_status): New.
+	(mips_free_machine_status): New.
+	(mips_mark_machine_status): New.
+	(override_options): Set them.
+	(embedded_pic_fnaddr_rtx, mips16_gp_pseudo_rtx): Moved to...
+	(struct machine_function): ... new.  Replaced all references.
+	(mips_add_gc_roots): Don't mark them.
+	(embedded_pic_fnaddr_reg): New, extracted from...
+	(embedded_pic_offset): ... here.
+	* config/mips/mips.md (movdi): Call embedded_pic_fnaddr_reg.
+	(movsi): Likewise.
+
 2002-03-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c: Revert -MD removal.
