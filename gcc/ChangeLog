@@ -1,3 +1,9 @@
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* integrate.c (try_constants, subst_constants, mark_stores):
+	Remove.
+	* integrate.h: Remove the prototype for try_constants.
+
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (enum impl_conv): Add ic_argpass_nonproto.

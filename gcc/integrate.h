@@ -142,8 +142,6 @@ extern tree copy_decl_for_inlining (tree, tree, tree);
    true otherwise.  */
 extern bool function_attribute_inlinable_p (tree);
 
-extern void try_constants (rtx, struct inline_remap *);
-
 /* Return the label indicated.  */
 extern rtx get_label_from_map (struct inline_remap *, int);
 
