@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Note that seq386gas.h is a GAS configuration that does not use this
+   file. */
 
 #include "i386.h"
 /* Use the bsd assembler syntax.  */
@@ -128,3 +130,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       (PTR) += 4;							\
     }									\
 }
+
+/* Define macro used to output shift-double opcodes when the shift
+   count is in %cl.  Some assemblers require %cl as an argument;
+   some don't.
+
+   GAS requires the %cl argument, so override unx386.h. */
+
+#undef AS3_SHIFT_DOUBLE
+#define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
+
+/* Print opcodes the way that GAS expects them. */
+#define GAS_MNEMONICS 1
