@@ -59,6 +59,7 @@ extern enum reg_class reload_reg_class[MAX_RELOADS];
 extern enum machine_mode reload_inmode[MAX_RELOADS];
 extern enum machine_mode reload_outmode[MAX_RELOADS];
 extern char reload_optional[MAX_RELOADS];
+extern char reload_nongroup[MAX_RELOADS];
 extern int reload_inc[MAX_RELOADS];
 extern int reload_opnum[MAX_RELOADS];
 extern int reload_secondary_p[MAX_RELOADS];
