@@ -48,6 +48,10 @@ static char *gen_decl			PROTO((tree, int, formals_style));
 
    This function is based on the one in libiberty.  */
 
+/* This definition will conflict with the one from prefix.c in
+   libcpp.a when linking cc1 and cc1obj.  So only provide it if we are
+   not using libcpp.a */
+#ifndef USE_CPPLIB
 char *
 concat VPROTO((const char *first, ...))
 {
@@ -99,6 +103,7 @@ concat VPROTO((const char *first, ...))
 
   return (newstr);
 }
+#endif /* ! USE_CPPLIB */
 
 /* Given a string representing an entire type or an entire declaration
    which only lacks the actual "data-type" specifier (at its left end),

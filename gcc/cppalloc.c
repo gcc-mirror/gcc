@@ -46,6 +46,16 @@ xmalloc (size)
 }
 
 PTR
+xcalloc (number, size)
+  size_t number, size;
+{
+  register PTR ptr = (PTR) calloc (number, size);
+  if (ptr == 0)
+    memory_full ();
+  return ptr;
+}
+
+PTR
 xrealloc (old, size)
   PTR old;
   size_t size;

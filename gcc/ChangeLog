@@ -1,3 +1,13 @@
+Mon Dec  7 15:38:25 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* gcc.c (default_compilers): Fix typo in USE_CPPLIB spec for cc1.
+
+Mon Dec  7 15:38:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * c-aux-info.c (concat): Wrap function definition in !USE_CPPLIB.
+        * cppalloc.c: Move function `xcalloc' from cpplib.c to here.
+        * cpplib.c: Move function `xcalloc' from here to cppalloc.c.
+
 Mon Dec  7 11:30:49 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* final.c (output_asm_name): Use tabs to seperate comments from

@@ -581,7 +581,7 @@ static struct compiler default_compilers[] =
   {"@c",
    {
 #if USE_CPPLIB
-     "%{E|M|MM:cpp -lang-c %(ansi:-std=c89} %{std*} %{nostdinc*}\
+     "%{E|M|MM:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
 	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
