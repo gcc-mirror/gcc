@@ -1,3 +1,10 @@
+2001-11-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG):  Run the test in
+	LANG_CPLUSPLUS mode.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2001-11-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* porting.texi:  Move...

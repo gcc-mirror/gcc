@@ -1500,8 +1500,10 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
 
-  AC_MSG_CHECKING([for enabled long long I/O support])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
 
+  AC_MSG_CHECKING([for enabled long long I/O support])
   # iostreams require strtoll, strtoull to compile
   AC_TRY_COMPILE([#include <stdlib.h>],
                  [char* tmp; strtoll("gnu", &tmp, 10);],,[enable_long_long=no])
@@ -1513,6 +1515,8 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
     AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
   fi
   AC_MSG_RESULT($enable_long_long)
+
+  AC_LANG_RESTORE
 ])
 
 
