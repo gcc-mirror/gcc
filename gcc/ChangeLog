@@ -1,5 +1,10 @@
 2002-02-13  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.h (MODES_TIEABLE_P): Accept a combination
+	of QImode and SImode.
+
+2002-02-13  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (h8300_adjust_insn_length): Correct the
 	length computation of movsi.
 	* config/h8300/h8300.md (movsi_h8300hs): Correct the length.
