@@ -648,7 +648,7 @@ digest_init (type, init, tail)
 
   /* Come here only for records and arrays (and unions with constructors).  */
 
-  if (TYPE_SIZE (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
+  if (COMPLETE_TYPE_P (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
     {
       cp_error ("variable-sized object of type `%T' may not be initialized",
 		type);
@@ -1267,11 +1267,8 @@ build_functional_cast (exp, parms)
 	 
      then the slot being initialized will be filled in.  */
 
-  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
-    {
-      cp_error ("type `%T' is not yet defined", type);
-      return error_mark_node;
-    }
+  if (!complete_type_or_else (type, NULL_TREE))
+    return error_mark_node;
   if (abstract_virtuals_error (NULL_TREE, type))
     return error_mark_node;
 
@@ -1474,7 +1471,7 @@ add_exception_specifier (list, spec, complain)
   else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
     ok = 1;
   else
-    ok = TYPE_SIZE (complete_type (core)) != NULL_TREE;
+    ok = COMPLETE_TYPE_P (complete_type (core));
   
   if (ok)
     {

@@ -100,7 +100,7 @@ repo_get_id (t)
       /* If we're not done setting up the class, we may not have set up
 	 the vtable, so going ahead would give the wrong answer.
          See g++.pt/instantiate4.C.  */
-      if (TYPE_SIZE (t) == NULL_TREE || TYPE_BEING_DEFINED (t))
+      if (!COMPLETE_TYPE_P (t) || TYPE_BEING_DEFINED (t))
 	my_friendly_abort (981113);
 
       t = TYPE_BINFO_VTABLE (t);

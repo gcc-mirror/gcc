@@ -90,8 +90,7 @@ require_complete_type (value)
     return error_mark_node;
 
   /* First, detect a valid value with a complete type.  */
-  if (TYPE_SIZE (type) != 0
-      && type != void_type_node)
+  if (COMPLETE_TYPE_P (type))
     return value;
 
   incomplete_type_error (value, type);
@@ -713,7 +712,7 @@ c_sizeof (type)
   if (code == ERROR_MARK)
     return size_one_node;
 
-  if (TYPE_SIZE (type) == 0)
+  if (!COMPLETE_TYPE_P (type))
     {
       error ("sizeof applied to an incomplete type");
       return size_zero_node;
@@ -734,7 +733,7 @@ c_sizeof_nowarn (type)
   if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK)
     return size_one_node;
 
-  if (TYPE_SIZE (type) == 0)
+  if (!COMPLETE_TYPE_P (type))
     return size_zero_node;
 
   /* Convert in case a char is more than one unit.  */
@@ -754,7 +753,7 @@ c_size_in_bytes (type)
   if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK)
     return size_one_node;
 
-  if (TYPE_SIZE (type) == 0)
+  if (!COMPLETE_OR_VOID_TYPE_P (type))
     {
       error ("arithmetic on pointer to an incomplete type");
       return size_one_node;
@@ -781,7 +780,7 @@ c_alignof (type)
   if (code == VOID_TYPE || code == ERROR_MARK)
     return size_one_node;
 
-  if (TYPE_SIZE (type) == 0)
+  if (!COMPLETE_TYPE_P (type))
     {
       error ("__alignof__ applied to an incomplete type");
       return size_zero_node;
@@ -1144,7 +1143,7 @@ build_component_ref (datum, component)
     {
       tree indirect = 0;
 
-      if (TYPE_SIZE (type) == 0)
+      if (!COMPLETE_TYPE_P (type))
 	{
 	  incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
@@ -1216,7 +1215,7 @@ build_indirect_ref (ptr, errorstring)
 	  register tree ref = build1 (INDIRECT_REF,
 				      TYPE_MAIN_VARIANT (t), pointer);
 
-	  if (TYPE_SIZE (t) == 0 && TREE_CODE (t) != ARRAY_TYPE)
+	  if (!COMPLETE_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {
 	      error ("dereferencing pointer to incomplete type");
 	      return error_mark_node;
@@ -1296,7 +1295,7 @@ build_array_ref (array, index)
 	 address arithmetic on its address.
 	 Likewise an array of elements of variable size.  */
       if (TREE_CODE (index) != INTEGER_CST
-	  || (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))) != 0
+	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
 	{
 	  if (mark_addressable (array) == 0)
@@ -1537,7 +1536,7 @@ convert_arguments (typelist, values, name, fundecl)
 	  /* Formal parm type is specified by a function prototype.  */
 	  tree parmval;
 
-	  if (TYPE_SIZE (type) == 0)
+	  if (!COMPLETE_TYPE_P (type))
 	    {
 	      error ("type of formal parameter %d is incomplete", parmnum + 1);
 	      parmval = val;
@@ -2176,8 +2175,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (comp_target_types (type0, type1))
 	    {
 	      result_type = common_type (type0, type1);
-	      if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
-		  != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
+	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
+		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
 		pedwarn ("comparison of complete and incomplete pointers");
 	      else if (pedantic 
 		       && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
@@ -2653,7 +2652,7 @@ pointer_diff (op0, op1)
   op0 = build_binary_op (MINUS_EXPR, convert (restype, op0),
 			 convert (restype, op1), 0);
   /* This generates an error if op1 is pointer to incomplete type.  */
-  if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
+  if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op1))))
     error ("arithmetic on pointer to an incomplete type");
 
   /* This generates an error if op0 is pointer to incomplete type.  */
@@ -2837,7 +2836,7 @@ build_unary_op (code, xarg, noconvert)
 	  {
 	    /* If pointer target is an undefined struct,
 	       we just cannot know how to do the arithmetic.  */
-	    if (TYPE_SIZE (TREE_TYPE (result_type)) == 0)
+	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (result_type)))
 	      error ("%s of pointer to unknown structure",
 		     code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
 		     ? "increment" : "decrement");
@@ -4666,7 +4665,7 @@ digest_init (type, init, require_constant, constructor_constant)
 
   /* Come here only for records and arrays.  */
 
-  if (TYPE_SIZE (type) && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (COMPLETE_TYPE_P (type) && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
       error_init ("variable-sized object may not be initialized");
       return error_mark_node;

@@ -200,7 +200,7 @@ build_vbase_pointer_fields (rli, empty_p)
       register tree base_binfo = TREE_VEC_ELT (binfos, i);
       register tree basetype = BINFO_TYPE (base_binfo);
 
-      if (TYPE_SIZE (basetype) == 0)
+      if (!COMPLETE_TYPE_P (basetype))
 	/* This error is now reported in xref_tag, thus giving better
 	   location information.  */
 	continue;
@@ -1876,7 +1876,7 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
       /* If the type of basetype is incomplete, then we already
 	 complained about that fact (and we should have fixed it up as
 	 well).  */
-      if (TYPE_SIZE (basetype) == 0)
+      if (!COMPLETE_TYPE_P (basetype))
 	{
 	  int j;
 	  /* The base type is of incomplete type.  It is
@@ -4246,7 +4246,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
   tree basetype = BINFO_TYPE (binfo);
   tree decl;
 
-  if (TYPE_SIZE (basetype) == 0)
+  if (!COMPLETE_TYPE_P (basetype))
     /* This error is now reported in xref_tag, thus giving better
        location information.  */
     return;
@@ -5133,7 +5133,7 @@ finish_struct_1 (t)
   tree vfield;
   int empty = 1;
 
-  if (TYPE_SIZE (t))
+  if (COMPLETE_TYPE_P (t))
     {
       if (IS_AGGR_TYPE (t))
 	cp_error ("redefinition of `%#T'", t);
@@ -5642,7 +5642,7 @@ pushclass (type, modify)
 
   if (previous_class_type != NULL_TREE
       && (type != previous_class_type 
-	  || TYPE_SIZE (previous_class_type) == NULL_TREE)
+	  || !COMPLETE_TYPE_P (previous_class_type))
       && current_class_depth == 1)
     {
       /* Forcibly remove any old class remnants.  */

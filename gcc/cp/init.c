@@ -1610,7 +1610,7 @@ build_offset_ref (type, name)
     name = ctor_identifier;
 #endif
 
-  if (TYPE_SIZE (complete_type (type)) == 0
+  if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))
     {
       cp_error ("incomplete type `%T' does not have member `%D'", type,

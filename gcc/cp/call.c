@@ -1514,7 +1514,7 @@ static int
 is_complete (t)
      tree t;
 {
-  return TYPE_SIZE (complete_type (t)) != NULL_TREE;
+  return COMPLETE_TYPE_P (complete_type (t));
 }
 
 /* Returns non-zero if TYPE is a promoted arithmetic type.  */
@@ -3736,7 +3736,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	       conversion because the type might be an incomplete
 	       array type, which is OK if some constructor for the
 	       destination type takes a pointer argument.  */
-	    if (TYPE_SIZE (TREE_TYPE (expr)) == 0)
+	    if (!COMPLETE_TYPE_P (TREE_TYPE (expr)))
 	      {
 		if (same_type_p (TREE_TYPE (expr), TREE_TYPE (convs)))
 		  incomplete_type_error (expr, TREE_TYPE (expr));
@@ -4313,7 +4313,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       /* XXX will LOOKUP_SPECULATIVELY be needed when this is done?  */
       if (flags & LOOKUP_SPECULATIVELY)
 	return NULL_TREE;
-      if (TYPE_SIZE (basetype) == 0)
+      if (!COMPLETE_TYPE_P (basetype))
 	incomplete_type_error (instance_ptr, basetype);
       else
 	cp_error ("no matching function for call to `%T::%D (%A)%V'",

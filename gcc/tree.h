@@ -468,6 +468,17 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 #define POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)
 
+/* Nonzero if this type is a complete type.  */
+#define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
+
+/* Nonzero if this type is complete or is cv void.  */
+#define COMPLETE_OR_VOID_TYPE_P(NODE) \
+    (COMPLETE_TYPE_P (NODE) || TREE_CODE (NODE) == VOID_TYPE)
+
+/* Nonzero if this type is complete or is an array with unspecified bound.  */
+#define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
+    (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : NODE))
+
 /* Nonzero if TYPE represents a type.  */
 
 #define TYPE_P(TYPE)	(TREE_CODE_CLASS (TREE_CODE (TYPE)) == 't')

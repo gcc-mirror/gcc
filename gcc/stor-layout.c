@@ -1163,7 +1163,7 @@ layout_type (type)
       break;
 
     case VOID_TYPE:
-      TYPE_SIZE (type) = bitsize_int (0);
+      /* VOID_TYPE is an incompletable type, it has no size */
       TYPE_SIZE_UNIT (type) = size_zero_node;
       TYPE_ALIGN (type) = 1;
       TYPE_MODE (type) = VOIDmode;

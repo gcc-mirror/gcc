@@ -125,7 +125,7 @@ convert_to_integer (type, expr)
 
   /* An INTEGER_TYPE cannot be incomplete, but an ENUMERAL_TYPE can
      be.  Consider `enum E = { a, b = (enum E) 3 };'.  */
-  if (!TYPE_SIZE (type))
+  if (!COMPLETE_TYPE_P (type))
     {
       error ("conversion to incomplete type");
       return error_mark_node;

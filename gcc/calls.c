@@ -1026,7 +1026,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       args[i].tree_value = TREE_VALUE (p);
 
       /* Replace erroneous argument with constant zero.  */
-      if (type == error_mark_node || TYPE_SIZE (type) == 0)
+      if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	args[i].tree_value = integer_zero_node, type = integer_type_node;
 
       /* If TYPE is a transparent union, pass things the way we would
@@ -1100,7 +1100,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 		 function being called.  */
 	      rtx copy;
 
-	      if (TYPE_SIZE (type) == 0
+	      if (!COMPLETE_TYPE_P (type)
 		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
 		      && (0 < compare_tree_int (TYPE_SIZE_UNIT (type),

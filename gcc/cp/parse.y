@@ -2206,7 +2206,7 @@ structsp:
 		      /* struct B: public A; is not accepted by the standard grammar.  */
 		      if (CLASS_TYPE_P ($$.t)
 			  && TYPE_BINFO_BASETYPES ($$.t) 
-			  && !TYPE_SIZE ($$.t)
+			  && !COMPLETE_TYPE_P ($$.t)
 			  && ! TYPE_BEING_DEFINED ($$.t))
 			cp_error ("base clause without member specification for `%#T'",
 				  $$.t);

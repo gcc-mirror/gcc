@@ -79,7 +79,7 @@ cp_convert_to_pointer (type, expr)
   if (IS_AGGR_TYPE (intype))
     {
       intype = complete_type (intype);
-      if (TYPE_SIZE (intype) == NULL_TREE)
+      if (!COMPLETE_TYPE_P (intype))
 	{
 	  cp_error ("can't convert from incomplete type `%T' to `%T'",
 		    intype, type);
@@ -901,7 +901,7 @@ convert_to_void (expr, implicit)
         int is_reference = TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
                            == REFERENCE_TYPE;
         int is_volatile = TYPE_VOLATILE (type);
-        int is_complete = TYPE_SIZE (complete_type (type)) != NULL_TREE;
+        int is_complete = COMPLETE_TYPE_P (complete_type (type));
         
         if (is_volatile && !is_complete)
           cp_warning ("object of incomplete type `%T' will not be accessed in %s",
@@ -920,7 +920,7 @@ convert_to_void (expr, implicit)
       {
         /* External variables might be incomplete.  */
         tree type = TREE_TYPE (expr);
-        int is_complete = TYPE_SIZE (complete_type (type)) != NULL_TREE;
+        int is_complete = COMPLETE_TYPE_P (complete_type (type));
         
         if (TYPE_VOLATILE (type) && !is_complete)
           cp_warning ("object `%E' of incomplete type `%T' will not be accessed in %s",

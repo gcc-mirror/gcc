@@ -1,5 +1,40 @@
 2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck.c (require_complete_type, complete_type,
+	complete_type_or_else, c_sizeof, c_sizeof_nowarn,
+	build_array_ref, convert_arguments, pointer_diff,
+	build_x_unary_op, build_unary_op, build_c_cast,
+	build_modify_expr): Use COMPLETE_TYPE_P etc.
+	* call.c (is_complete, convert_like_real,
+	build_new_method_call): Likewise.
+	* class.c (build_vbase_pointer_fields, check_bases,
+	build_base_field, finish_struct_1, pushclass): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_void): Likewise.
+	* decl.c (maybe_process_template_type_declaration, pushtag,
+	pushdecl, redeclaration_error_message, start_decl, start_decl_1,
+	layout_var_decl, check_initializer, cp_finish_decl,
+	grokdeclarator, require_complete_types_for_parms,
+	grok_op_properties, xref_tag, xref_basetypes,
+	check_function_type): Likewise.
+	* decl2.c (check_classfn, reparse_absdcl_as_casts): Likewise.
+	* friend.c (do_friend): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* parse.y (structsp): Likewise.
+	* pt.c (maybe_process_partial_specialization,
+	tsubst_friend_function, instantiate_class_template, tsubst,
+	do_type_instantiation, instantiate_pending_templates): Likewise.
+	* repo.c (repo_get_id): Likewise.
+	* rtti.c (build_typeid, get_typeid, build_dynamic_cast_1,
+	synthesize_tinfo_var, emit_support_tinfos): Likewise.
+	* search.c (lookup_fnfields_1, lookup_conversions): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+	* tree.c (build_cplus_method_type): Likewise.
+	* typeck2.c (digest_init, build_functional_cast,
+	add_exception_specifier): Likewise.
+	* parse.h, parse.c: Regenerated.
+
+2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* inc/cxxabi.h: New header file. Define new-abi entry points.
 	(__pointer_type_info::target): Rename member to ...
 	(__pointer_type_info::type): ... here.

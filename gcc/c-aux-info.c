@@ -334,7 +334,7 @@ gen_type (ret_val, t, style)
           return ret_val;
 
         case ARRAY_TYPE:
-	  if (TYPE_SIZE (t) == 0 || TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
+	  if (!COMPLETE_TYPE_P (t) || TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
 	    ret_val = gen_type (concat (ret_val, "[]", NULL_PTR),
 				TREE_TYPE (t), style);
 	  else if (int_size_in_bytes (t) == 0)

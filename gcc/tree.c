@@ -4731,7 +4731,7 @@ build_array_type (elt_type, index_type)
   hashcode = TYPE_HASH (elt_type) + TYPE_HASH (index_type);
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
   return t;
 }
@@ -4780,7 +4780,7 @@ build_function_type (value_type, arg_types)
   hashcode = TYPE_HASH (value_type) + type_hash_list (arg_types);
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
   return t;
 }
@@ -4817,7 +4817,7 @@ build_method_type (basetype, type)
   hashcode = TYPE_HASH (basetype) + TYPE_HASH (type);
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
 
   return t;
@@ -4844,7 +4844,7 @@ build_offset_type (basetype, type)
   hashcode = TYPE_HASH (basetype) + TYPE_HASH (type);
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
 
   return t;
@@ -4869,7 +4869,7 @@ build_complex_type (component_type)
   hashcode = TYPE_HASH (component_type);
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
 
   /* If we are writing Dwarf2 output we need to create a name,
