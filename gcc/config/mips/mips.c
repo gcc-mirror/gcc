@@ -3003,8 +3003,11 @@ mips_debugger_offset (addr, offset)
 
       offset = offset - frame_size;
     }
+  /* sdbout_parms does not want this to crash for unrecognized cases.  */
+#if 0
   else if (reg != arg_pointer_rtx)
     abort_with_insn (addr, "mips_debugger_offset called with non stack/frame/arg pointer.");
+#endif
 
   return offset;
 }
