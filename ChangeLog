@@ -1,3 +1,7 @@
+2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ltmain.sh (relink_command): Fix typo in previous change.
+
 2002-03-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltmain.sh (taglist): Initialized.  Don't let `CC' tag out of it.
