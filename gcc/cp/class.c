@@ -4318,6 +4318,12 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	  TREE_PRIVATE (x) = access == access_private_node;
 	  TREE_PROTECTED (x) = access == access_protected_node;
 
+	  if (TREE_CODE (x) == TEMPLATE_DECL)
+	    {
+	      TREE_PRIVATE (DECL_RESULT (x)) = TREE_PRIVATE (x);
+	      TREE_PROTECTED (DECL_RESULT (x)) = TREE_PROTECTED (x);
+	    }
+
 	  /* Check for inconsistent use of this name in the class body.
              Enums, types and static vars have already been checked.  */
 	  if (TREE_CODE (x) != TYPE_DECL && TREE_CODE (x) != USING_DECL
