@@ -897,7 +897,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 557))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegsmfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -908,7 +908,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 558))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegsmfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -919,7 +919,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 559))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegsmiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -930,7 +930,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 560))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegsmian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -941,7 +941,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 561))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegumiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -952,7 +952,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 562))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhegumian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -963,7 +963,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 563))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmfaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -974,7 +974,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 564))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmfanw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -984,7 +984,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 565))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1004,7 +1004,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 567))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1015,7 +1015,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 568))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1025,7 +1025,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 569))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhesmia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1046,7 +1046,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 571))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhessfaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1058,7 +1058,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 572))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhessfanw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1069,7 +1069,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 573))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhessfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1091,7 +1091,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 575))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhessiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1103,7 +1103,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 576))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhessianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1114,7 +1114,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 577))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmheumiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1125,7 +1125,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 578))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmheumianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1135,7 +1135,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 579))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmheumia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1156,7 +1156,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 581))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmheusiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1168,7 +1168,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 582))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmheusianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1179,7 +1179,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 583))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogsmfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1190,7 +1190,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 584))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogsmfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1201,7 +1201,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 585))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogsmiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1212,7 +1212,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 586))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogsmian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1223,7 +1223,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 587))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogumiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1234,7 +1234,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 588))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhogumian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1245,7 +1245,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 589))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmfaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1256,7 +1256,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 590))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmfanw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1275,7 +1275,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 592))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmf %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1286,7 +1286,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 593))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1297,7 +1297,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 594))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1307,7 +1307,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 595))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhosmia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1328,7 +1328,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 597))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhossfaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1340,7 +1340,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 598))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhossfanw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1352,7 +1352,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 599))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhossfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1374,7 +1374,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 601))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhossiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1386,7 +1386,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 602))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhossianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1397,7 +1397,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 603))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhoumiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1408,7 +1408,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 604))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhoumianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1418,7 +1418,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 605))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhoumia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1439,7 +1439,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 607))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhousiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1451,7 +1451,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 608))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmhousianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1479,7 +1479,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 611))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1498,7 +1498,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 613))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1518,7 +1518,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 615))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhssfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1547,7 +1547,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 629))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhumia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1567,7 +1567,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 635))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlsmiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1578,7 +1578,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 636))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlsmianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1590,7 +1590,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 641))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlssiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1602,7 +1602,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 642))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlssianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1613,7 +1613,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 643))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlumiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1624,7 +1624,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 644))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlumianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1634,7 +1634,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 645))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlumia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1655,7 +1655,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 647))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlusiaaw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1667,7 +1667,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 648))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwlusianw %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1678,7 +1678,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 649))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1689,7 +1689,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 650))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1699,7 +1699,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 651))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1719,7 +1719,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 653))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1730,7 +1730,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 654))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1740,7 +1740,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 655))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwsmia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1761,7 +1761,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 657))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwssfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1773,7 +1773,7 @@
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 658))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwssfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1784,7 +1784,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 659))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwssfa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1805,7 +1805,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 661))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwumiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1816,7 +1816,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 662))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwumian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1826,7 +1826,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 663))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwumia %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -1855,7 +1855,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 673))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evaddusiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1865,7 +1865,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 674))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evaddumiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1876,7 +1876,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 675))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evaddssiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1886,7 +1886,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 676))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evaddsmiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1924,7 +1924,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 679))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evsubfusiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1934,7 +1934,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 680))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evsubfumiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1945,7 +1945,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 681))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evsubfssiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -1955,7 +1955,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (reg:V2SI SPE_ACC_REGNO)] 682))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evsubfsmiaaw %0,%1"
   [(set_attr "type" "veccomplex")
@@ -2238,7 +2238,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 702))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhssfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2249,7 +2249,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 703))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhssmaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2259,7 +2259,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 704))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2269,7 +2269,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 705))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2280,7 +2280,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 706))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhusiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2290,7 +2290,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 707))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhumiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2301,7 +2301,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 708))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhssfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2312,7 +2312,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 709))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhssian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2322,7 +2322,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 710))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2332,7 +2332,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 711))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhsmian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2342,7 +2342,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 713))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhumian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2353,7 +2353,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 714))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgssfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2363,7 +2363,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 715))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgsmfaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2373,7 +2373,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 716))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgsmiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2383,7 +2383,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 717))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgumiaa %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2394,7 +2394,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 718))
    (clobber (reg:SI SPEFSCR_REGNO))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgssfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2404,7 +2404,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 719))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgsmfan %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2414,7 +2414,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 720))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgsmian %0,%1,%2"
   [(set_attr "type" "veccomplex")
@@ -2424,7 +2424,7 @@
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
                       (match_operand:V2SI 2 "gpc_reg_operand" "r")] 721))
-   (clobber (reg:V2SI SPE_ACC_REGNO))]
+   (set (reg:V2SI SPE_ACC_REGNO) (unspec:V2SI  [(const_int 0)] 0))]
   "TARGET_SPE"
   "evmwhgumian %0,%1,%2"
   [(set_attr "type" "veccomplex")
