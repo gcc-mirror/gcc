@@ -13541,25 +13541,6 @@ output_call (rtx insn, rtx call_dest, int operand_number)
 
 #endif /* RS6000_LONG_BRANCH */
 
-#define GEN_LOCAL_LABEL_FOR_SYMBOL(BUF,SYMBOL,LENGTH,N)		\
-  do {								\
-    const char *const symbol_ = (SYMBOL);			\
-    char *buffer_ = (BUF);					\
-    if (symbol_[0] == '"')					\
-      {								\
-        sprintf(buffer_, "\"L%d$%s", (N), symbol_+1);		\
-      }								\
-    else if (name_needs_quotes(symbol_))			\
-      {								\
-        sprintf(buffer_, "\"L%d$%s\"", (N), symbol_);		\
-      }								\
-    else							\
-      {								\
-        sprintf(buffer_, "L%d$%s", (N), symbol_);		\
-      }								\
-  } while (0)
-
-
 /* Generate PIC and indirect symbol stubs.  */
 
 void
@@ -13573,7 +13554,6 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);
 
-  label += 1;
 
   length = strlen (symb);
   symbol_name = alloca (length + 32);
@@ -13581,9 +13561,6 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
 
   lazy_ptr_name = alloca (length + 32);
   GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
-
-  local_label_0 = alloca (length + 32);
-  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_0, symb, length, 0);
 
   if (flag_pic == 2)
     machopic_picsymbol_stub1_section ();
@@ -13596,6 +13573,10 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
 
   if (flag_pic == 2)
     {
+      label++;
+      local_label_0 = alloca (sizeof("\"L0000000000$spb\""));
+      sprintf (local_label_0, "\"L%011d$spb\"", label);
+    
       fprintf (file, "\tmflr r0\n");
       fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
       fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
