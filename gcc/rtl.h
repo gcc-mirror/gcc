@@ -1,3 +1,4 @@
+
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
    Copyright (C) 1987, 1991 Free Software Foundation, Inc.
 
@@ -356,11 +357,19 @@ extern char *reg_note_name[];
 #define NOTE_INSN_DELETED_LABEL -12
 /* Don't forget to change note_insn_name in rtl.c.  */
 
+/* These macros are for recording block numbers temporarily
+   in NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.  */
+#define NOTE_BLOCK_NUMBER(INSN) ((int) NOTE_SOURCE_FILE (INSN))
+#define SET_NOTE_BLOCK_NUMBER(INSN, NUMBER) \
+  (NOTE_SOURCE_FILE (INSN) = (char *) (NUMBER))
+
+#if 0 /* These are not used, and I don't know what they were for. --rms.  */
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)
 #define NOTE_DECL_CODE(INSN) ((INSN)->fld[4].rtint)
 #define NOTE_DECL_RTL(INSN) ((INSN)->fld[5].rtx)
 #define NOTE_DECL_IDENTIFIER(INSN) ((INSN)->fld[6].rtint)
 #define NOTE_DECL_TYPE(INSN) ((INSN)->fld[7].rtint)
+#endif /* 0 */
 
 /* Names for NOTE insn's other than line numbers.  */
 
