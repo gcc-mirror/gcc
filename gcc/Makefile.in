@@ -391,7 +391,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # Header files that are made available under the same name
 # to programs compiled with GCC.
 USER_H = assert.h va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
-    va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h $(EXTRA_HEADERS)
+    va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h syslimits.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
 INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h
@@ -1461,7 +1461,7 @@ install-float-h: float.h install-dir
 	$(INSTALL_DATA) float.h $(libsubdir)/include/float.h
 	chmod a-x $(libsubdir)/include/float.h
 
-# Install limits.h, optionally inheriting from the standard system version.
+# Install limits.h.
 install-limits-h: xlimits.h install-dir
 	-rm -f $(libsubdir)/include/limits.h
 	$(INSTALL_DATA) xlimits.h $(libsubdir)/include/limits.h
@@ -1522,6 +1522,7 @@ install-fixincludes: install-headers
 	rm -rf *
 # Install fixed copies of system files.
 	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include /usr/include $(srcdir)
+	cd $(libsubdir)/include; if [ -f limits.h ]; mv limits.h ../tmp/syslimits.h; done
 # Bring back gcc's header files.
 	cd $(libsubdir)/include; mv ../tmp/* .; rmdir ../tmp
 # Install the README
