@@ -1,3 +1,9 @@
+2003-11-13  Tom Fitzsimmons  <fitzsim@redhat.com>
+
+	* libjava.jni/jniutf.c: New file.
+	* libjava.jni/jniutf.java: New file.
+	* libjava.jni/jniutf.out: New file.
+
 2003-11-11  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/12915:
