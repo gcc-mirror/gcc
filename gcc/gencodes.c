@@ -75,6 +75,8 @@ xrealloc (old, size)
   return ptr;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -94,7 +96,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   printf ("/* Generated automatically by the program `gencodes'\n\
@@ -135,15 +137,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#endif /* MAX_INSN_CODE */\n");
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
 get_insn_name (code)
-     int code;
+     int code ATTRIBUTE_UNUSED;
 {
   return NULL;
 }

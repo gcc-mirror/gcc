@@ -60,7 +60,7 @@ struct obstack *rtl_obstack = &obstack;
 /* The reason we use \% is to avoid sequences of the form %-capletter-%
    which SCCS treats as magic.  This gets warnings which you should ignore.  */
 
-const char *optabs[] =
+const char * const optabs[] =
 { "extendtab[(int) %B][(int) %A][0] = CODE_FOR_%(extend%a\%b2%)",
   "extendtab[(int) %B][(int) %A][1] = CODE_FOR_%(zero_extend%a\%b2%)",
   "fixtab[(int) %A][(int) %B][0] = CODE_FOR_%(fix%F\%a%I\%b2%)",
@@ -301,6 +301,8 @@ xrealloc (old, size)
   return ptr;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -320,7 +322,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   printf ("/* Generated automatically by the program `genopinit'\n\
@@ -356,15 +358,13 @@ from the machine description file `md'.  */\n\n");
   printf ("}\n");
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
 get_insn_name (code)
-     int code;
+     int code ATTRIBUTE_UNUSED;
 {
   return NULL;
 }

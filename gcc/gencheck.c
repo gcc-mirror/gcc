@@ -29,14 +29,20 @@ const char *tree_codes[] = {
 (char*)0
 };
 
-void usage ()
+static void usage PROTO ((void));
+
+static void
+usage ()
 {
   fprintf (stderr,"Usage: gencheck\n");
 }
 
-int main (argc, argv)
+extern int main PROTO ((int, char **));
+
+int
+main (argc, argv)
      int argc;
-     char *argv[] ATTRIBUTE_UNUSED;
+     char **argv ATTRIBUTE_UNUSED;
 {
   int i;
 
@@ -47,7 +53,7 @@ int main (argc, argv)
 
     default:
       usage ();
-      exit (1);
+      return (1);
     }
 
   printf ("/* This file is generated using gencheck. Do not edit. */\n");

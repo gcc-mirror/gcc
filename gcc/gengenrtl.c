@@ -391,6 +391,7 @@ xmalloc (nbytes)
 /* This is the main program.  We accept only one argument, "-h", which
    says we are writing the genrtl.h file.  Otherwise we are writing the
    genrtl.c file.  */
+extern int main PROTO ((int, char **));
 
 int
 main (argc, argv)
@@ -406,7 +407,5 @@ main (argc, argv)
     gencode ();
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }

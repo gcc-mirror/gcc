@@ -551,7 +551,7 @@ gen_split (split)
 {
   register int i;
   int operands;
-  char *name = "split";
+  const char *name = "split";
 
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     name = "peephole2";
@@ -769,6 +769,8 @@ xrealloc (old, size)
   return ptr;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -788,7 +790,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   /* Assign sequential codes to all entries in the machine description
@@ -860,15 +862,13 @@ from the machine description file `md'.  */\n\n");
   output_add_clobbers ();
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
 get_insn_name (code)
-     int code;
+     int code ATTRIBUTE_UNUSED;
 {
   return NULL;
 }

@@ -1721,6 +1721,8 @@ write_tree (tree, prevpos, afterward, initial, type)
       name_prefix = "recog";
       call_suffix = ", pnum_clobbers";
       break;
+    default:
+      abort();
     }
   if (! initial && tree->subroutine_number > 0)
     {
@@ -1868,6 +1870,8 @@ xmalloc (size)
   return val;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -1892,7 +1896,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   next_insn_code = 0;
@@ -1987,9 +1991,7 @@ from the machine description file `md'.  */\n\n");
     }
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
