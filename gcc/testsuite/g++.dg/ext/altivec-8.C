@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } { xfail powerpc-ibm-aix* } } */
 /* { dg-options "-maltivec" } */
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
 
