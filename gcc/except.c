@@ -1897,7 +1897,7 @@ dw2_build_landing_pads ()
       emit_move_insn (cfun->eh->exc_ptr,
 		      gen_rtx_REG (Pmode, EH_RETURN_DATA_REGNO (0)));
       emit_move_insn (cfun->eh->filter,
-		      gen_rtx_REG (Pmode, EH_RETURN_DATA_REGNO (1)));
+		      gen_rtx_REG (word_mode, EH_RETURN_DATA_REGNO (1)));
 
       seq = get_insns ();
       end_sequence ();
@@ -3035,6 +3035,8 @@ expand_eh_return ()
   else
 #endif
     {
+      rtx handler;
+
       ra = EH_RETURN_HANDLER_RTX;
       if (! ra)
 	{
@@ -3043,7 +3045,17 @@ expand_eh_return ()
 	}
 
       emit_move_insn (sa, cfun->eh->ehr_stackadj);
-      emit_move_insn (ra, cfun->eh->ehr_handler);
+
+      handler = cfun->eh->ehr_handler;
+      if (GET_MODE (ra) != Pmode)
+	{
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  handler = convert_memory_address (GET_MODE (ra), handler);
+#else
+	  handler = convert_to_mode (GET_MODE (ra), handler, 0);
+#endif
+	}
+      emit_move_insn (ra, handler);
     }
 
   emit_label (around_label);

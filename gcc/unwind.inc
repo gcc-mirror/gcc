@@ -135,8 +135,8 @@ static _Unwind_Reason_Code
 _Unwind_ForcedUnwind_Phase2(struct _Unwind_Exception *exc,
 			    struct _Unwind_Context *context)
 {
-  _Unwind_Stop_Fn stop = (_Unwind_Stop_Fn) exc->private_1;
-  void *stop_argument = (void *) exc->private_2;
+  _Unwind_Stop_Fn stop = (_Unwind_Stop_Fn) (_Unwind_Ptr) exc->private_1;
+  void *stop_argument = (void *) (_Unwind_Ptr) exc->private_2;
   _Unwind_Reason_Code code, stop_code;
 
   while (1)
