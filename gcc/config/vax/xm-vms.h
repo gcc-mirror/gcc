@@ -26,6 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #define STDC_HEADERS 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRING_H 1
+#ifdef __DECC
+#define HAVE_UNISTD_H 1
+#endif
 
 #if defined(VAXC) || defined(__DECC)
 /* if compiling with VAXC, need to fix problem with <stdio.h>
