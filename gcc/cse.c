@@ -3611,6 +3611,13 @@ fold_rtx (x, insn)
 	return x;
       }
 
+#ifdef NO_FUNCTION_CSE
+    case CALL:
+      if (CONSTANT_P (XEXP (XEXP (x, 0), 0)))
+	return x;
+      break;
+#endif
+
     case ASM_OPERANDS:
       for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
 	validate_change (insn, &ASM_OPERANDS_INPUT (x, i),
