@@ -1,3 +1,8 @@
+Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.c (notice_update_cc, output_float_compare): Disable
+	TARGET_CMOVE support.
+
 Wed May 13 15:28:59 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Make verbose output line up.
