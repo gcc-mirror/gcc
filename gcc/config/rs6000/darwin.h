@@ -349,7 +349,8 @@ do {									\
     || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)				\
    && TARGET_ALIGN_NATURAL == 0                         		\
    ? rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED)	\
-   : (TARGET_ALTIVEC && TREE_CODE (STRUCT) == VECTOR_TYPE) 		\
+   : (TREE_CODE (STRUCT) == VECTOR_TYPE					\
+      && ALTIVEC_VECTOR_MODE (TYPE_MODE (STRUCT))) 			\
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)          			 \
    : MAX ((COMPUTED), (SPECIFIED)))
 
