@@ -1,3 +1,11 @@
+Sat May  8 17:50:43 2004  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	
+	2004-02-24  Michael Matz  <matz@suse.de>
+	
+	* sta.c (ffesta_save_): Don't break aliasing rules.
+
 2004-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* g77.texi (Floating-point Errors): Avoid referencing 

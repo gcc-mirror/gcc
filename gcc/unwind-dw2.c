@@ -23,6 +23,9 @@
 #include "tsystem.h"
 #include "dwarf2.h"
 #include "unwind.h"
+#ifdef __USING_SJLJ_EXCEPTIONS__
+# define NO_SIZE_OF_ENCODED_VALUE
+#endif
 #include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
@@ -171,7 +174,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context)
 {
-  return (_Unwind_Word) context->cfa;
+  return (_Unwind_Ptr) context->cfa;
 }
 
 /* Overwrite the saved value for register REG in CONTEXT with VAL.  */

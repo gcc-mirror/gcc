@@ -337,7 +337,7 @@ ffesta_save_ (ffelexToken t)
     {				/* No handler in this list, try exec list if
 				   not tried yet. */
       if (ffesta_current_possible_
-	  == (ffestaPossible_) &ffesta_possible_nonexecs_)
+	  == (ffestaPossible_) &ffesta_possible_nonexecs_.first)
 	{
 	  ffesta_current_possible_ = ffesta_possible_execs_.first;
 	  ffesta_current_handler_ = ffesta_current_possible_->handler;
@@ -381,7 +381,7 @@ ffesta_save_ (ffelexToken t)
 		{
 		  if (possible->handler == NULL)
 		    {
-		      if (possible == (ffestaPossible_) &ffesta_possible_nonexecs_)
+		      if (possible == (ffestaPossible_) &ffesta_possible_nonexecs_.first)
 			{
 			  possible = first_exec = ffesta_possible_execs_.first;
 			  continue;

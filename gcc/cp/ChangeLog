@@ -1,3 +1,9 @@
+2004-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (cp/init.o): Depend on diagnostic.h.
+	* except.c (do_free_exception): Prototype.
+	* init.c: Include "diagnostic.h".
+
 2004-05-04  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tconfig.h"
 #include "tsystem.h"
 #include "unwind.h"
+#define NO_SIZE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
 
 typedef struct

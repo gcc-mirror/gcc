@@ -53,6 +53,7 @@ static bool is_admissible_throw_operand PARAMS ((tree));
 static int can_convert_eh PARAMS ((tree, tree));
 static void check_handlers_1 PARAMS ((tree, tree));
 static tree cp_protect_cleanup_actions PARAMS ((void));
+static tree do_free_exception PARAMS ((tree));
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */

@@ -110,6 +110,8 @@ static tree decl_for_component_ref	PARAMS ((tree));
 static rtx adjust_offset_for_component_ref PARAMS ((tree, rtx));
 static int nonoverlapping_memrefs_p	PARAMS ((rtx, rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
+static void set_reg_known_value		PARAMS ((unsigned int, rtx));
+static void set_reg_known_equiv_p	PARAMS ((unsigned int, int));
 
 static int nonlocal_mentioned_p_1       PARAMS ((rtx *, void *));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
@@ -1068,7 +1070,8 @@ clear_reg_alias_info (reg)
 /* If a value is known for REGNO, return it.  */
 
 rtx 
-get_reg_known_value (unsigned int regno)
+get_reg_known_value (regno)
+     unsigned int regno;
 {
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
@@ -1082,7 +1085,9 @@ get_reg_known_value (unsigned int regno)
 /* Set it.  */
 
 static void
-set_reg_known_value (unsigned int regno, rtx val)
+set_reg_known_value (regno, val)
+     unsigned int regno;
+     rtx val;
 {
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
@@ -1095,7 +1100,8 @@ set_reg_known_value (unsigned int regno, rtx val)
 /* Similarly for reg_known_equiv_p.  */
 
 bool
-get_reg_known_equiv_p (unsigned int regno)
+get_reg_known_equiv_p (regno)
+     unsigned int regno;
 {
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
@@ -1107,7 +1113,9 @@ get_reg_known_equiv_p (unsigned int regno)
 }
 
 static void
-set_reg_known_equiv_p (unsigned int regno, bool val)
+set_reg_known_equiv_p (regno, val)
+     unsigned int regno;
+     int val;
 {
   if (regno >= FIRST_PSEUDO_REGISTER)
     {

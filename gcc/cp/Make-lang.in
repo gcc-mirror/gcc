@@ -250,7 +250,7 @@ cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) \
      $(GGC_H) diagnostic.h gt-cp-call.h
 cp/friend.o: cp/friend.c $(CXX_TREE_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
 cp/init.o: cp/init.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
-  $(GGC_H) except.h
+  diagnostic.h $(GGC_H) except.h
 cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H) \
   $(TM_P_H) $(TARGET_H)
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h

@@ -52,6 +52,8 @@
 #define DW_EH_PE_indirect	0x80
 
 
+#ifndef NO_SIZE_OF_ENCODED_VALUE
+
 /* Given an encoding, return the number of bytes the format occupies.
    This is only defined for fixed-size encodings, and so does not
    include leb128.  */
@@ -75,6 +77,8 @@ size_of_encoded_value (unsigned char encoding)
     }
   __gxx_abort ();
 }
+
+#endif
 
 #ifndef NO_BASE_OF_ENCODED_VALUE
 
