@@ -3824,8 +3824,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	{
 	  /* At the virtual top of a converted loop, insns are again known to
 	     be executed each iteration: logically, the loop begins here
-	     even though the exit code has been duplicated.  */
-	  if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP && loop_depth == 0)
+	     even though the exit code has been duplicated.
+
+	     Insns are also again known to be executed each iteration at
+	     the LOOP_CONT note.  */
+	  if ((NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP
+	       || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_CONT)
+	      && loop_depth == 0)
 	    not_every_iteration = 0;
 	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
 	    loop_depth++;
@@ -4381,8 +4386,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	{
 	  /* At the virtual top of a converted loop, insns are again known to
 	     be executed each iteration: logically, the loop begins here
-	     even though the exit code has been duplicated.  */
-	  if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP && loop_depth == 0)
+	     even though the exit code has been duplicated.
+
+	     Insns are also again known to be executed each iteration at
+	     the LOOP_CONT note.  */
+	  if ((NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP
+	       || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_CONT)
+	      && loop_depth == 0)
 	    not_every_iteration = 0;
 	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
 	    loop_depth++;

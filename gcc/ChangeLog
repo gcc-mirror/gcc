@@ -9,6 +9,9 @@ Fri Feb  5 11:49:49 1999  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 Fri Feb  5 12:37:05 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (strength_reduce): Clear not_every_iteration when 
+	passing the NOTE_INSN_LOOP_CONT note.
+
 	* haifa-sched.c (add_dependence): Do not add a dependency on a
 	note.
 
