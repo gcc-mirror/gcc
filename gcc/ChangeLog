@@ -1,3 +1,9 @@
+2003-07-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/11279
+	* dwarf2out.c (gen_enumeration_type_die): Remember that
+	enumerators can be unsigned.
+
 2003-07-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (named_labels, shadowed_labels, label_level_chain)
