@@ -42,7 +42,7 @@
 # define C char
 #endif
 
-namespace std 
+namespace std
 {
   typedef basic_string<C> S;
 
@@ -50,17 +50,7 @@ namespace std
   template S operator+(const C*, const S&);
   template S operator+(C, const S&);
   template S operator+(const S&, const S&);
-} // namespace std
 
-namespace __gnu_cxx
-{
-  using std::S;
-  template bool operator==(const S::iterator&, const S::iterator&);
-  template bool operator==(const S::const_iterator&, const S::const_iterator&);
-}
-
-namespace std
-{
   // Only one template keyword allowed here. 
   // See core issue #46 (NAD)
   // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
@@ -100,3 +90,10 @@ namespace std
     S::_S_construct(const C*, const C*, const allocator<C>&,
 		    forward_iterator_tag);
 } // namespace std
+
+namespace __gnu_cxx
+{
+  using std::S;
+  template bool operator==(const S::iterator&, const S::iterator&);
+  template bool operator==(const S::const_iterator&, const S::const_iterator&);
+} // namespace __gnu_cxx

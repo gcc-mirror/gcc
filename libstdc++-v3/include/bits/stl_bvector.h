@@ -61,7 +61,7 @@
 #ifndef _BVECTOR_H
 #define _BVECTOR_H 1
 
-namespace std
+namespace __gnu_norm
 { 
   typedef unsigned long _Bit_type;
   enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
@@ -334,13 +334,12 @@ public:
   ~_Bvector_base() { _Base::_M_deallocate(); }
 };
 
-} // namespace std
+} // namespace __gnu_norm
 
 // Declare a partial specialization of vector<T, Alloc>.
 #include <bits/stl_vector.h>
-namespace std
+namespace __gnu_norm
 {
-
 template <typename _Alloc> 
   class vector<bool, _Alloc> : public _Bvector_base<_Alloc> 
   {
@@ -723,13 +722,8 @@ template <typename _Alloc>
     void clear() { erase(begin(), end()); }
   };
 
-// This typedef is non-standard.  It is provided for backward compatibility.
-typedef vector<bool, __alloc> bit_vector;
-
-} // namespace std 
+  // This typedef is non-standard.  It is provided for backward compatibility.
+  typedef vector<bool, __alloc> bit_vector;
+} // namespace __gnu_norm
 
 #endif /* _BVECTOR_H */
-
-// Local Variables:
-// mode:C++
-// End:

@@ -208,6 +208,8 @@ namespace __gnu_cxx
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
 
       return __lexicographical_compare_3way(__first1, __last1, __first2, __last2);
     }
@@ -226,6 +228,8 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIterator>::value_type >)
       __glibcxx_function_requires(_EqualityComparableConcept<_Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       for ( ; __first != __last; ++__first)
 	if (*__first == __value)
 	  ++__n;
@@ -241,6 +245,8 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       for ( ; __first != __last; ++__first)
 	if (__pred(*__first))
 	  ++__n;
@@ -262,6 +268,7 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 		typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       _Distance __remaining = std::distance(__first, __last);
       _Distance __m = min(__n, __remaining);
@@ -297,6 +304,7 @@ namespace __gnu_cxx
 		typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_UnaryFunctionConcept<
 		_RandomNumberGenerator, _Distance, _Distance>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       _Distance __remaining = std::distance(__first, __last);
       _Distance __m = min(__n, __remaining);
@@ -378,6 +386,8 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_valid_range(__out_first, __out_last);
 
       return __random_sample(__first, __last,
 			     __out_first, __out_last - __out_first);
@@ -399,46 +409,14 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_valid_range(__out_first, __out_last);
 
       return __random_sample(__first, __last,
 			     __out_first, __rand,
 			     __out_last - __out_first);
     }
   
-  // is_heap, a predicate testing whether or not a range is
-  // a heap.  This function is an extension, not part of the C++
-  // standard.
-
-  template<typename _RandomAccessIterator, typename _Distance>
-    bool
-    __is_heap(_RandomAccessIterator __first, _Distance __n)
-    {
-      _Distance __parent = 0;
-      for (_Distance __child = 1; __child < __n; ++__child) {
-	if (__first[__parent] < __first[__child]) 
-	  return false;
-	if ((__child & 1) == 0)
-	  ++__parent;
-      }
-      return true;
-    }
-
-  template<typename _RandomAccessIterator, typename _Distance,
-           typename _StrictWeakOrdering>
-    bool
-    __is_heap(_RandomAccessIterator __first, _StrictWeakOrdering __comp,
-	      _Distance __n)
-    {
-      _Distance __parent = 0;
-      for (_Distance __child = 1; __child < __n; ++__child) {
-	if (__comp(__first[__parent], __first[__child]))
-	  return false;
-	if ((__child & 1) == 0)
-	  ++__parent;
-      }
-      return true;
-    }
-
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
@@ -452,8 +430,9 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
-      return __is_heap(__first, __last - __first);
+      return std::__is_heap(__first, __last - __first);
     }
 
   /**
@@ -471,8 +450,9 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
 	    typename iterator_traits<_RandomAccessIterator>::value_type, 
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
-      return __is_heap(__first, __comp, __last - __first);
+      return std::__is_heap(__first, __comp, __last - __first);
     }
 
   // is_sorted, a predicated testing whether a range is sorted in
@@ -492,6 +472,7 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last)
 	return true;
@@ -519,6 +500,7 @@ namespace __gnu_cxx
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
 	    typename iterator_traits<_ForwardIterator>::value_type, 
 	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last)
 	return true;
@@ -531,7 +513,6 @@ namespace __gnu_cxx
 
       return true;
     }
-
 } // namespace __gnu_cxx
 
 #endif /* _EXT_ALGORITHM */

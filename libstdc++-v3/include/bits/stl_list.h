@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_norm
 {
   // Supporting structures are split into common and templated types; the
   // latter publicly inherits from the former in an effort to reduce code
@@ -89,9 +89,9 @@ namespace std
    *  @if maint
    *  @brief Common part of a list::iterator.
    *
-   *  A simple type to walk a doubly-linked list.  All operations here should
-   *  be self-explanatory after taking any decent introductory data structures
-   *  course.
+   *  A simple type to walk a doubly-linked list.  All operations here
+   *  should be self-explanatory after taking any decent introductory
+   *  data structures course.
    *  @endif
   */
   struct _List_iterator_base
@@ -233,17 +233,20 @@ namespace std
     { _M_node_allocator.deallocate(__p, 1); }
   
     // NOTA BENE
-    // The stored instance is not actually of "allocator_type"'s type.  Instead
-    // we rebind the type to Allocator<List_node<Tp>>, which according to
-    // [20.1.5]/4 should probably be the same.  List_node<Tp> is not the same
-    // size as Tp (it's two pointers larger), and specializations on Tp may go
-    // unused because List_node<Tp> is being bound instead.
+    // The stored instance is not actually of "allocator_type"'s type.
+    // Instead we rebind the type to Allocator<List_node<Tp>>, which
+    // according to [20.1.5]/4 should probably be the same.
+    // List_node<Tp> is not the same size as Tp (it's two pointers
+    // larger), and specializations on Tp may go unused because
+    // List_node<Tp> is being bound instead.
     //
-    // We put this to the test in get_allocator above; if the two types are
-    // actually different, there had better be a conversion between them.
+    // We put this to the test in get_allocator above; if the two
+    // types are actually different, there had better be a conversion
+    // between them.
     //
-    // None of the predefined allocators shipped with the library (as of 3.1)
-    // use this instantiation anyhow; they're all instanceless.
+    // None of the predefined allocators shipped with the library (as
+    // of 3.1) use this instantiation anyhow; they're all
+    // instanceless.
     typename _Alloc_traits<_List_node<_Tp>, _Allocator>::allocator_type
              _M_node_allocator;
   
@@ -329,36 +332,37 @@ namespace std
    *  <a href="tables.html#68">optional sequence requirements</a> with the
    *  %exception of @c at and @c operator[].
    *
-   *  This is a @e doubly @e linked %list.  Traversal up and down the %list
-   *  requires linear time, but adding and removing elements (or @e nodes) is
-   *  done in constant time, regardless of where the change takes place.
-   *  Unlike std::vector and std::deque, random-access iterators are not
-   *  provided, so subscripting ( @c [] ) access is not allowed.  For algorithms
-   *  which only need sequential access, this lack makes no difference.
+   *  This is a @e doubly @e linked %list.  Traversal up and down the
+   *  %list requires linear time, but adding and removing elements (or
+   *  @e nodes) is done in constant time, regardless of where the
+   *  change takes place.  Unlike std::vector and std::deque,
+   *  random-access iterators are not provided, so subscripting ( @c
+   *  [] ) access is not allowed.  For algorithms which only need
+   *  sequential access, this lack makes no difference.
    *
-   *  Also unlike the other standard containers, std::list provides specialized 
-   *  algorithms %unique to linked lists, such as splicing, sorting, and
-   *  in-place reversal.
+   *  Also unlike the other standard containers, std::list provides
+   *  specialized algorithms %unique to linked lists, such as
+   *  splicing, sorting, and in-place reversal.
    *
    *  @if maint
    *  A couple points on memory allocation for list<Tp>:
    *
-   *  First, we never actually allocate a Tp, we allocate List_node<Tp>'s
-   *  and trust [20.1.5]/4 to DTRT.  This is to ensure that after elements from
-   *  %list<X,Alloc1> are spliced into %list<X,Alloc2>, destroying the memory of
-   *  the second %list is a valid operation, i.e., Alloc1 giveth and Alloc2
-   *  taketh away.
+   *  First, we never actually allocate a Tp, we allocate
+   *  List_node<Tp>'s and trust [20.1.5]/4 to DTRT.  This is to ensure
+   *  that after elements from %list<X,Alloc1> are spliced into
+   *  %list<X,Alloc2>, destroying the memory of the second %list is a
+   *  valid operation, i.e., Alloc1 giveth and Alloc2 taketh away.
    *
    *  Second, a %list conceptually represented as
    *  @code
    *    A <---> B <---> C <---> D
    *  @endcode
-   *  is actually circular; a link exists between A and D.  The %list class
-   *  holds (as its only data member) a private list::iterator pointing to
-   *  @e D, not to @e A!  To get to the head of the %list, we start at the tail
-   *  and move forward by one.  When this member iterator's next/previous
-   *  pointers refer to itself, the %list is %empty.
-   *  @endif
+   *  is actually circular; a link exists between A and D.  The %list
+   *  class holds (as its only data member) a private list::iterator
+   *  pointing to @e D, not to @e A!  To get to the head of the %list,
+   *  we start at the tail and move forward by one.  When this member
+   *  iterator's next/previous pointers refer to itself, the %list is
+   *  %empty.  @endif
   */
   template<typename _Tp, typename _Alloc = allocator<_Tp> >
     class list : protected _List_base<_Tp, _Alloc>
@@ -505,18 +509,19 @@ namespace std
       { this->insert(begin(), __first, __last); }
   
     /**
-     *  No explicit dtor needed as the _Base dtor takes care of things.
-     *  The _Base dtor only erases the elements, and note that if the elements
-     *  themselves are pointers, the pointed-to memory is not touched in any
-     *  way.  Managing the pointer is the user's responsibilty.
+     *  No explicit dtor needed as the _Base dtor takes care of
+     *  things.  The _Base dtor only erases the elements, and note
+     *  that if the elements themselves are pointers, the pointed-to
+     *  memory is not touched in any way.  Managing the pointer is the
+     *  user's responsibilty.
     */
   
     /**
      *  @brief  %List assignment operator.
      *  @param  x  A %list of identical element and allocator types.
      * 
-     *  All the elements of @a x are copied, but unlike the copy constructor,
-     *  the allocator object is not copied.
+     *  All the elements of @a x are copied, but unlike the copy
+     *  constructor, the allocator object is not copied.
     */
     list&
     operator=(const list& __x);
@@ -526,13 +531,14 @@ namespace std
      *  @param  n  Number of elements to be assigned.
      *  @param  val  Value to be assigned.
      *
-     *  This function fills a %list with @a n copies of the given value.
-     *  Note that the assignment completely changes the %list and that the
-     *  resulting %list's size is the same as the number of elements assigned.
-     *  Old data may be lost.
+     *  This function fills a %list with @a n copies of the given
+     *  value.  Note that the assignment completely changes the %list
+     *  and that the resulting %list's size is the same as the number
+     *  of elements assigned.  Old data may be lost.
     */
     void
-    assign(size_type __n, const value_type& __val) { _M_fill_assign(__n, __val); }
+    assign(size_type __n, const value_type& __val) 
+    { _M_fill_assign(__n, __val); }
   
     /**
      *  @brief  Assigns a range to a %list.
@@ -568,44 +574,50 @@ namespace std
     begin() { return static_cast<_Node*>(this->_M_node._M_next); }
   
     /**
-     *  Returns a read-only (constant) iterator that points to the first element
-     *  in the %list.  Iteration is done in ordinary element order.
+     *  Returns a read-only (constant) iterator that points to the
+     *  first element in the %list.  Iteration is done in ordinary
+     *  element order.
     */
     const_iterator
     begin() const { return static_cast<_Node*>(this->_M_node._M_next); }
   
     /**
-     *  Returns a read/write iterator that points one past the last element in
-     *  the %list.  Iteration is done in ordinary element order.
+     *  Returns a read/write iterator that points one past the last
+     *  element in the %list.  Iteration is done in ordinary element
+     *  order.
     */
     iterator
     end() { return static_cast<_Node*>(&this->_M_node); }
   
     /**
-     *  Returns a read-only (constant) iterator that points one past the last
-     *  element in the %list.  Iteration is done in ordinary element order.
+     *  Returns a read-only (constant) iterator that points one past
+     *  the last element in the %list.  Iteration is done in ordinary
+     *  element order.
     */
     const_iterator
-    end() const { return const_cast<_Node *>(static_cast<const _Node*>(&this->_M_node)); }
+    end() const 
+    { return const_cast<_Node *>(static_cast<const _Node*>(&this->_M_node)); }
   
     /**
-     *  Returns a read/write reverse iterator that points to the last element in
-     *  the %list.  Iteration is done in reverse element order.
+     *  Returns a read/write reverse iterator that points to the last
+     *  element in the %list.  Iteration is done in reverse element
+     *  order.
     */
     reverse_iterator
     rbegin() { return reverse_iterator(end()); }
   
     /**
-     *  Returns a read-only (constant) reverse iterator that points to the last
-     *  element in the %list.  Iteration is done in reverse element order.
+     *  Returns a read-only (constant) reverse iterator that points to
+     *  the last element in the %list.  Iteration is done in reverse
+     *  element order.
     */
     const_reverse_iterator
     rbegin() const { return const_reverse_iterator(end()); }
   
     /**
-     *  Returns a read/write reverse iterator that points to one before the
-     *  first element in the %list.  Iteration is done in reverse element
-     *  order.
+     *  Returns a read/write reverse iterator that points to one
+     *  before the first element in the %list.  Iteration is done in
+     *  reverse element order.
     */
     reverse_iterator
     rend() { return reverse_iterator(begin()); }
@@ -621,7 +633,8 @@ namespace std
   
     // [23.2.2.2] capacity
     /**
-     *  Returns true if the %list is empty.  (Thus begin() would equal end().)
+     *  Returns true if the %list is empty.  (Thus begin() would equal
+     *  end().)
     */
     bool
     empty() const { return this->_M_node._M_next == &this->_M_node; }
@@ -635,14 +648,14 @@ namespace std
     max_size() const { return size_type(-1); }
   
     /**
-     *  @brief  Resizes the %list to the specified number of elements.
-     *  @param  new_size  Number of elements the %list should contain.
-     *  @param  x  Data with which new elements should be populated.
+     *  @brief Resizes the %list to the specified number of elements.
+     *  @param new_size Number of elements the %list should contain.
+     *  @param x Data with which new elements should be populated.
      *
-     *  This function will %resize the %list to the specified number of
-     *  elements.  If the number is smaller than the %list's current size the
-     *  %list is truncated, otherwise the %list is extended and new elements
-     *  are populated with given data.
+     *  This function will %resize the %list to the specified number
+     *  of elements.  If the number is smaller than the %list's
+     *  current size the %list is truncated, otherwise the %list is
+     *  extended and new elements are populated with given data.
     */
     void
     resize(size_type __new_size, const value_type& __x);
@@ -652,9 +665,9 @@ namespace std
      *  @param  new_size  Number of elements the %list should contain.
      *
      *  This function will resize the %list to the specified number of
-     *  elements.  If the number is smaller than the %list's current size the
-     *  %list is truncated, otherwise the %list is extended and new elements
-     *  are default-constructed.
+     *  elements.  If the number is smaller than the %list's current
+     *  size the %list is truncated, otherwise the %list is extended
+     *  and new elements are default-constructed.
     */
     void
     resize(size_type __new_size) { this->resize(__new_size, value_type()); }
@@ -675,8 +688,8 @@ namespace std
     front() const { return *begin(); }
   
     /**
-     *  Returns a read/write reference to the data at the last element of the
-     *  %list.
+     *  Returns a read/write reference to the data at the last element
+     *  of the %list.
     */
     reference
     back() { return *(--end()); }
@@ -693,10 +706,11 @@ namespace std
      *  @brief  Add data to the front of the %list.
      *  @param  x  Data to be added.
      *
-     *  This is a typical stack operation.  The function creates an element at
-     *  the front of the %list and assigns the given data to it.  Due to the
-     *  nature of a %list this operation can be done in constant time, and
-     *  does not invalidate iterators and references.
+     *  This is a typical stack operation.  The function creates an
+     *  element at the front of the %list and assigns the given data
+     *  to it.  Due to the nature of a %list this operation can be
+     *  done in constant time, and does not invalidate iterators and
+     *  references.
     */
     void
     push_front(const value_type& __x) { this->insert(begin(), __x); }
@@ -704,13 +718,14 @@ namespace std
     /**
      *  @brief  Removes first element.
      *
-     *  This is a typical stack operation.  It shrinks the %list by one.
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and only invalidates iterators/references to the element being
-     *  removed.
+     *  This is a typical stack operation.  It shrinks the %list by
+     *  one.  Due to the nature of a %list this operation can be done
+     *  in constant time, and only invalidates iterators/references to
+     *  the element being removed.
      *
-     *  Note that no data is returned, and if the first element's data is
-     *  needed, it should be retrieved before pop_front() is called.
+     *  Note that no data is returned, and if the first element's data
+     *  is needed, it should be retrieved before pop_front() is
+     *  called.
     */
     void
     pop_front() { this->erase(begin()); }
@@ -719,10 +734,11 @@ namespace std
      *  @brief  Add data to the end of the %list.
      *  @param  x  Data to be added.
      *
-     *  This is a typical stack operation.  The function creates an element at
-     *  the end of the %list and assigns the given data to it.  Due to the
-     *  nature of a %list this operation can be done in constant time, and
-     *  does not invalidate iterators and references.
+     *  This is a typical stack operation.  The function creates an
+     *  element at the end of the %list and assigns the given data to
+     *  it.  Due to the nature of a %list this operation can be done
+     *  in constant time, and does not invalidate iterators and
+     *  references.
     */
     void
     push_back(const value_type& __x) { this->insert(end(), __x); }
@@ -730,13 +746,13 @@ namespace std
     /**
      *  @brief  Removes last element.
      *
-     *  This is a typical stack operation.  It shrinks the %list by one.
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and only invalidates iterators/references to the element being
-     *  removed.
+     *  This is a typical stack operation.  It shrinks the %list by
+     *  one.  Due to the nature of a %list this operation can be done
+     *  in constant time, and only invalidates iterators/references to
+     *  the element being removed.
      *
-     *  Note that no data is returned, and if the last element's data is
-     *  needed, it should be retrieved before pop_back() is called.
+     *  Note that no data is returned, and if the last element's data
+     *  is needed, it should be retrieved before pop_back() is called.
     */
     void
     pop_back()
@@ -751,10 +767,10 @@ namespace std
      *  @param  x  Data to be inserted.
      *  @return  An iterator that points to the inserted data.
      *
-     *  This function will insert a copy of the given value before the specified
-     *  location.
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and does not invalidate iterators and references.
+     *  This function will insert a copy of the given value before the
+     *  specified location.  Due to the nature of a %list this
+     *  operation can be done in constant time, and does not
+     *  invalidate iterators and references.
     */
     iterator
     insert(iterator __position, const value_type& __x);
@@ -765,11 +781,12 @@ namespace std
      *  @param  n  Number of elements to be inserted.
      *  @param  x  Data to be inserted.
      *
-     *  This function will insert a specified number of copies of the given data
-     *  before the location specified by @a position.
+     *  This function will insert a specified number of copies of the
+     *  given data before the location specified by @a position.
      *
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and does not invalidate iterators and references.
+     *  Due to the nature of a %list this operation can be done in
+     *  constant time, and does not invalidate iterators and
+     *  references.
     */
     void
     insert(iterator __position, size_type __n, const value_type& __x)
@@ -781,16 +798,17 @@ namespace std
      *  @param  first  An input iterator.
      *  @param  last   An input iterator.
      *
-     *  This function will insert copies of the data in the range
-     *  [@a first,@a last) into the %list before the location specified by @a
-     *  position.
+     *  This function will insert copies of the data in the range [@a
+     *  first,@a last) into the %list before the location specified by
+     *  @a position.
      *
      *  Due to the nature of a %list this operation can be done in constant
      *  time, and does not invalidate iterators and references.
     */
     template<typename _InputIterator>
       void
-      insert(iterator __position, _InputIterator __first, _InputIterator __last)
+      insert(iterator __position, _InputIterator __first, 
+	     _InputIterator __last)
       {
         // Check whether it's an integral type.  If so, it's not an iterator.
         typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
@@ -805,13 +823,12 @@ namespace std
      *  This function will erase the element at the given position and thus
      *  shorten the %list by one.
      *
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and only invalidates iterators/references to the element being
-     *  removed.
-     *  The user is also cautioned that
-     *  this function only erases the element, and that if the element is itself
-     *  a pointer, the pointed-to memory is not touched in any way.  Managing
-     *  the pointer is the user's responsibilty.
+     *  Due to the nature of a %list this operation can be done in
+     *  constant time, and only invalidates iterators/references to
+     *  the element being removed.  The user is also cautioned that
+     *  this function only erases the element, and that if the element
+     *  is itself a pointer, the pointed-to memory is not touched in
+     *  any way.  Managing the pointer is the user's responsibilty.
     */
     iterator
     erase(iterator __position);
@@ -824,16 +841,16 @@ namespace std
      *  @return  An iterator pointing to the element pointed to by @a last
      *           prior to erasing (or end()).
      *
-     *  This function will erase the elements in the range @a [first,last) and
-     *  shorten the %list accordingly.
+     *  This function will erase the elements in the range @a
+     *  [first,last) and shorten the %list accordingly.
      *
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and only invalidates iterators/references to the element being
-     *  removed.
-     *  The user is also cautioned that
-     *  this function only erases the elements, and that if the elements
-     *  themselves are pointers, the pointed-to memory is not touched in any
-     *  way.  Managing the pointer is the user's responsibilty.
+     *  Due to the nature of a %list this operation can be done in
+     *  constant time, and only invalidates iterators/references to
+     *  the element being removed.  The user is also cautioned that
+     *  this function only erases the elements, and that if the
+     *  elements themselves are pointers, the pointed-to memory is not
+     *  touched in any way.  Managing the pointer is the user's
+     *  responsibilty.
     */
     iterator
     erase(iterator __first, iterator __last)
@@ -847,18 +864,19 @@ namespace std
      *  @brief  Swaps data with another %list.
      *  @param  x  A %list of the same element and allocator types.
      *
-     *  This exchanges the elements between two lists in constant time.
-     *  Note that the global std::swap() function is specialized such that
-     *  std::swap(l1,l2) will feed to this function.
+     *  This exchanges the elements between two lists in constant
+     *  time.  Note that the global std::swap() function is
+     *  specialized such that std::swap(l1,l2) will feed to this
+     *  function.
     */
     void
     swap(list& __x);
   
     /**
-     *  Erases all the elements.  Note that this function only erases the
-     *  elements, and that if the elements themselves are pointers, the
-     *  pointed-to memory is not touched in any way.  Managing the pointer is
-     *  the user's responsibilty.
+     *  Erases all the elements.  Note that this function only erases
+     *  the elements, and that if the elements themselves are
+     *  pointers, the pointed-to memory is not touched in any way.
+     *  Managing the pointer is the user's responsibilty.
     */
     void
     clear() { _Base::__clear(); }
@@ -869,8 +887,9 @@ namespace std
      *  @param  position  Iterator referencing the element to insert before.
      *  @param  x  Source list.
      *
-     *  The elements of @a x are inserted in constant time in front of the
-     *  element referenced by @a position.  @a x becomes an empty list.
+     *  The elements of @a x are inserted in constant time in front of
+     *  the element referenced by @a position.  @a x becomes an empty
+     *  list.
     */
     void
     splice(iterator __position, list& __x)
@@ -885,8 +904,8 @@ namespace std
      *  @param  x  Source list.
      *  @param  i  Iterator referencing the element to move.
      *
-     *  Removes the element in list @a x referenced by @a i and inserts it into the
-     *  current list before @a position.
+     *  Removes the element in list @a x referenced by @a i and
+     *  inserts it into the current list before @a position.
     */
     void
     splice(iterator __position, list&, iterator __i)
@@ -904,8 +923,8 @@ namespace std
      *  @param  first  Iterator referencing the start of range in x.
      *  @param  last  Iterator referencing the end of range in x.
      *
-     *  Removes elements in the range [first,last) and inserts them before
-     *  @a position in constant time.
+     *  Removes elements in the range [first,last) and inserts them
+     *  before @a position in constant time.
      *
      *  Undefined if @a position is in [first,last).
    */
@@ -920,11 +939,11 @@ namespace std
      *  @brief  Remove all elements equal to value.
      *  @param  value  The value to remove.
      *
-     *  Removes every element in the list equal to @a value.  Remaining
-     *  elements stay in list order.  Note that this function only erases the
-     *  elements, and that if the elements themselves are pointers, the
-     *  pointed-to memory is not touched in any way.  Managing the pointer is
-     *  the user's responsibilty.
+     *  Removes every element in the list equal to @a value.
+     *  Remaining elements stay in list order.  Note that this
+     *  function only erases the elements, and that if the elements
+     *  themselves are pointers, the pointed-to memory is not touched
+     *  in any way.  Managing the pointer is the user's responsibilty.
     */
     void
     remove(const _Tp& __value);
@@ -933,11 +952,12 @@ namespace std
      *  @brief  Remove all elements satisfying a predicate.
      *  @param  Predicate  Unary predicate function or object.
      *
-     *  Removes every element in the list for which the predicate returns
-     *  true.  Remaining elements stay in list order.  Note that this function
-     *  only erases the elements, and that if the elements themselves are
-     *  pointers, the pointed-to memory is not touched in any way.  Managing
-     *  the pointer is the user's responsibilty.
+     *  Removes every element in the list for which the predicate
+     *  returns true.  Remaining elements stay in list order.  Note
+     *  that this function only erases the elements, and that if the
+     *  elements themselves are pointers, the pointed-to memory is not
+     *  touched in any way.  Managing the pointer is the user's
+     *  responsibilty.
     */
     template<typename _Predicate>
       void
@@ -946,11 +966,12 @@ namespace std
     /**
      *  @brief  Remove consecutive duplicate elements.
      *
-     *  For each consecutive set of elements with the same value, remove all
-     *  but the first one.  Remaining elements stay in list order.  Note that
-     *  this function only erases the elements, and that if the elements
-     *  themselves are pointers, the pointed-to memory is not touched in any
-     *  way.  Managing the pointer is the user's responsibilty.
+     *  For each consecutive set of elements with the same value,
+     *  remove all but the first one.  Remaining elements stay in list
+     *  order.  Note that this function only erases the elements, and
+     *  that if the elements themselves are pointers, the pointed-to
+     *  memory is not touched in any way.  Managing the pointer is the
+     *  user's responsibilty.
     */
     void
     unique();
@@ -960,11 +981,12 @@ namespace std
      *  @param  BinaryPredicate  Binary predicate function or object.
      *
      *  For each consecutive set of elements [first,last) that satisfy
-     *  predicate(first,i) where i is an iterator in [first,last), remove all
-     *  but the first one.  Remaining elements stay in list order.  Note that
-     *  this function only erases the elements, and that if the elements
-     *  themselves are pointers, the pointed-to memory is not touched in any
-     *  way.  Managing the pointer is the user's responsibilty.
+     *  predicate(first,i) where i is an iterator in [first,last),
+     *  remove all but the first one.  Remaining elements stay in list
+     *  order.  Note that this function only erases the elements, and
+     *  that if the elements themselves are pointers, the pointed-to
+     *  memory is not touched in any way.  Managing the pointer is the
+     *  user's responsibilty.
     */
     template<typename _BinaryPredicate>
       void
@@ -975,9 +997,9 @@ namespace std
      *  @param  x  Sorted list to merge.
      *
      *  Assumes that both @a x and this list are sorted according to
-     *  operator<().  Merges elements of @a x into this list in sorted order,
-     *  leaving @a x empty when complete.  Elements in this list precede
-     *  elements in @a x that are equal.
+     *  operator<().  Merges elements of @a x into this list in sorted
+     *  order, leaving @a x empty when complete.  Elements in this
+     *  list precede elements in @a x that are equal.
     */
     void
     merge(list& __x);
@@ -988,9 +1010,10 @@ namespace std
      *  @param  StrictWeakOrdering  Comparison function definining sort order.
      *
      *  Assumes that both @a x and this list are sorted according to
-     *  StrictWeakOrdering.  Merges elements of @a x into this list in sorted
-     *  order, leaving @a x empty when complete.  Elements in this list precede
-     *  elements in @a x that are equivalent according to StrictWeakOrdering().
+     *  StrictWeakOrdering.  Merges elements of @a x into this list in
+     *  sorted order, leaving @a x empty when complete.  Elements in
+     *  this list precede elements in @a x that are equivalent
+     *  according to StrictWeakOrdering().
     */
     template<typename _StrictWeakOrdering>
       void
@@ -1007,8 +1030,8 @@ namespace std
     /**
      *  @brief  Sort the elements.
      *
-     *  Sorts the elements of this list in NlogN time.  Equivalent elements
-     *  remain in list order.
+     *  Sorts the elements of this list in NlogN time.  Equivalent
+     *  elements remain in list order.
     */
     void
     sort();
@@ -1016,8 +1039,8 @@ namespace std
     /**
      *  @brief  Sort the elements according to comparison function.
      *
-     *  Sorts the elements of this list in NlogN time.  Equivalent elements
-     *  remain in list order.
+     *  Sorts the elements of this list in NlogN time.  Equivalent
+     *  elements remain in list order.
     */
     template<typename _StrictWeakOrdering>
       void
@@ -1026,7 +1049,7 @@ namespace std
   protected:
     // Internal assign functions follow.
   
-    // called by the range assign to implement [23.1.1]/9
+    // Called by the range assign to implement [23.1.1]/9
     template<typename _Integer>
       void
       _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
@@ -1035,20 +1058,21 @@ namespace std
                        static_cast<value_type>(__val));
       }
   
-    // called by the range assign to implement [23.1.1]/9
+    // Called by the range assign to implement [23.1.1]/9
     template<typename _InputIterator>
       void
-      _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type);
+      _M_assign_dispatch(_InputIterator __first, _InputIterator __last, 
+			 __false_type);
   
-    // Called by assign(n,t), and the range assign when it turns out to be the
-    // same thing.
+    // Called by assign(n,t), and the range assign when it turns out
+    // to be the same thing.
     void
     _M_fill_assign(size_type __n, const value_type& __val);
   
   
     // Internal insert functions follow.
   
-    // called by the range insert to implement [23.1.1]/9
+    // Called by the range insert to implement [23.1.1]/9
     template<typename _Integer>
       void
       _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __x,
@@ -1058,7 +1082,7 @@ namespace std
                        static_cast<value_type>(__x));
       }
   
-    // called by the range insert to implement [23.1.1]/9
+    // Called by the range insert to implement [23.1.1]/9
     template<typename _InputIterator>
       void
       _M_insert_dispatch(iterator __pos,
@@ -1069,8 +1093,8 @@ namespace std
           insert(__pos, *__first);
       }
   
-    // Called by insert(p,n,x), and the range insert when it turns out to be
-    // the same thing.
+    // Called by insert(p,n,x), and the range insert when it turns out
+    // to be the same thing.
     void
     _M_fill_insert(iterator __pos, size_type __n, const value_type& __x)
     {
@@ -1105,9 +1129,9 @@ namespace std
    *  @param  y  A %list of the same type as @a x.
    *  @return  True iff the size and elements of the lists are equal.
    *
-   *  This is an equivalence relation.  It is linear in the size of the
-   *  lists.  Lists are considered equivalent if their sizes are equal,
-   *  and if corresponding elements compare equal.
+   *  This is an equivalence relation.  It is linear in the size of
+   *  the lists.  Lists are considered equivalent if their sizes are
+   *  equal, and if corresponding elements compare equal.
   */
   template<typename _Tp, typename _Alloc>
   inline bool
@@ -1174,6 +1198,6 @@ namespace std
     inline void
     swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _LIST_H */

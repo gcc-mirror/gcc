@@ -42,6 +42,10 @@
 
 namespace std
 {
+#ifdef _GLIBCXX_INST_ATOMICITY_LOCK
+  template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
+#endif
+
   // string related to iostreams
   template 
     basic_istream<char>& 
@@ -69,11 +73,7 @@ namespace std
     basic_istream<wchar_t>& 
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
-#ifdef _GLIBCXX_INST_ATOMICITY_LOCK
-  template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
-#endif
 } // namespace std
-
 
 namespace __gnu_cxx
 {

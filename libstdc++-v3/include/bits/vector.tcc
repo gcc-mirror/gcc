@@ -61,7 +61,7 @@
 #ifndef _VECTOR_TCC
 #define _VECTOR_TCC 1
 
-namespace std
+namespace __gnu_norm
 {
   template<typename _Tp, typename _Alloc>
     void
@@ -432,7 +432,8 @@ namespace std
             {
               __new_finish = std::uninitialized_copy(iterator(this->_M_start),
 						     __position, __new_start);
-              __new_finish = std::uninitialized_copy(__first, __last, __new_finish);
+              __new_finish = std::uninitialized_copy(__first, __last, 
+						     __new_finish);
               __new_finish = std::uninitialized_copy(__position,
 						     iterator(this->_M_finish),
 						     __new_finish);
@@ -452,6 +453,6 @@ namespace std
         }
       }
     }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _VECTOR_TCC */

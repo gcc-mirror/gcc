@@ -61,7 +61,7 @@
 #ifndef _DEQUE_TCC
 #define _DEQUE_TCC 1
 
-namespace std
+namespace __gnu_norm
 { 
   template <typename _Tp, typename _Alloc>
     deque<_Tp,_Alloc>&
@@ -707,6 +707,6 @@ namespace std
       this->_M_start._M_set_node(__new_nstart);
       this->_M_finish._M_set_node(__new_nstart + __old_num_nodes - 1);
     }
-} // namespace std 
+} // namespace __gnu_norm
   
 #endif

@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_norm
 {
   // Forward declaration of operators < and ==, needed for friend declaration.
   
@@ -632,6 +632,6 @@ namespace std
     swap(multimap<_Key,_Tp,_Compare,_Alloc>& __x,
          multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _MULTIMAP_H */

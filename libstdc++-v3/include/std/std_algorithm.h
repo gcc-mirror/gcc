@@ -69,7 +69,3 @@
 #include <bits/stl_algo.h>
 
 #endif /* _GLIBCXX_ALGORITHM */
-
-// Local Variables:
-// mode:C++
-// End:

@@ -67,8 +67,8 @@
 #include <bits/stl_map.h>
 #include <bits/stl_multimap.h>
 
-#endif /* _GLIBCXX_MAP */
+#ifdef _GLIBCXX_DEBUG
+# include <debug/map>
+#endif
 
-// Local Variables:
-// mode:C++
-// End:
+#endif /* _GLIBCXX_MAP */

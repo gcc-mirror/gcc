@@ -51,11 +51,28 @@
 # define _GLIBCXX_EXTERN_TEMPLATE 1
 #endif
 
-// To enable older, ARM-style iostreams and other anachronisms use this.
-//#define _GLIBCXX_DEPRECATED 1
+// To enable debug mode.
+namespace __gnu_norm 
+{ 
+  using namespace std; 
+}
 
-// Use corrected code from the committee library group's issues list.
-//#define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
+namespace __gnu_debug_def { }
+
+namespace __gnu_debug 
+{ 
+  using namespace std; 
+  using namespace __gnu_debug_def __attribute__ ((strong));
+}
+
+namespace std
+{
+#ifdef _GLIBCXX_DEBUG
+  using namespace __gnu_debug_def __attribute__ ((strong));
+#else
+  using namespace __gnu_norm __attribute__ ((strong));
+#endif
+}
 
 // The remainder of the prewritten config is automatic; all the
 // user hooks are listed above.

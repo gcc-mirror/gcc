@@ -37,6 +37,8 @@
 
 #pragma GCC system_header
 
+#include <debug/debug.h>
+
 namespace std
 {
   template<typename _Tp, typename _CharT = char, 
@@ -65,18 +67,33 @@ namespace std
       { }
 
       const _Tp&
-      operator*() const { return _M_value; }
+      operator*() const 
+      { 
+	__glibcxx_requires_cond(_M_ok,
+				_M_message(__gnu_debug::__msg_deref_istream)
+				._M_iterator(*this));
+	return _M_value;
+      }
 
       const _Tp*
       operator->() const { return &(operator*()); }
 
       istream_iterator& 
       operator++() 
-      { _M_read(); return *this; }
+      { 
+	__glibcxx_requires_cond(_M_ok,
+				_M_message(__gnu_debug::__msg_inc_istream)
+				._M_iterator(*this));
+	_M_read(); 
+	return *this; 
+      }
 
       istream_iterator 
       operator++(int)  
       {
+	__glibcxx_requires_cond(_M_ok,
+				_M_message(__gnu_debug::__msg_inc_istream)
+				._M_iterator(*this)); 
 	istream_iterator __tmp = *this;
 	_M_read();
 	return __tmp;
@@ -138,6 +155,9 @@ namespace std
       ostream_iterator& 
       operator=(const _Tp& __value) 
       { 
+	__glibcxx_requires_cond(_M_stream != 0,
+				_M_message(__gnu_debug::__msg_output_ostream)
+				._M_iterator(*this));
 	*_M_stream << __value;
 	if (_M_string) *_M_stream << _M_string;
 	return *this;

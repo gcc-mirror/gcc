@@ -50,13 +50,9 @@
 #define _GLIBCXX_FUNCTIONAL 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <cstddef>
 #include <bits/stl_function.h>
 
 #endif /* _GLIBCXX_FUNCTIONAL */
-
-// Local Variables:
-// mode:C++
-// End:
-

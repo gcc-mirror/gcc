@@ -74,6 +74,7 @@
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
+#include <debug/debug.h>
 
 namespace std
 {
@@ -333,6 +334,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
        typedef typename _Is_normal_iterator<_InputIterator>::_Normal __Normal;
        return std::__copy_ni1(__first, __last, __result, __Normal());
@@ -471,6 +473,7 @@ namespace std
       __glibcxx_function_requires(_ConvertibleConcept<
 	    typename iterator_traits<_BI1>::value_type,
 	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       typedef typename _Is_normal_iterator<_BI1>::_Normal __Normal;
       return std::__copy_backward_input_normal_iterator(__first, __last, __result,
@@ -495,6 +498,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
 	*__first = __value;
@@ -527,6 +531,7 @@ namespace std
   inline void
   fill(unsigned char* __first, unsigned char* __last, const unsigned char& __c)
   {
+    __glibcxx_requires_valid_range(__first, __last);
     unsigned char __tmp = __c;
     std::memset(__first, __tmp, __last - __first);
   }
@@ -534,6 +539,7 @@ namespace std
   inline void
   fill(signed char* __first, signed char* __last, const signed char& __c)
   {
+    __glibcxx_requires_valid_range(__first, __last);
     signed char __tmp = __c;
     std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
   }
@@ -541,6 +547,7 @@ namespace std
   inline void
   fill(char* __first, char* __last, const char& __c)
   {
+    __glibcxx_requires_valid_range(__first, __last);
     char __tmp = __c;
     std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
   }
@@ -594,6 +601,7 @@ namespace std
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       while (__first1 != __last1 && *__first1 == *__first2)
         {
@@ -625,6 +633,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       while (__first1 != __last1 && __binary_pred(*__first1, *__first2))
         {
@@ -655,6 +664,7 @@ namespace std
       __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_InputIterator1>::value_type,
 	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       for ( ; __first1 != __last1; ++__first1, ++__first2)
 	if (!(*__first1 == *__first2))
@@ -684,6 +694,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
       for ( ; __first1 != __last1; ++__first1, ++__first2)
 	if (!__binary_pred(*__first1, *__first2))
@@ -717,6 +728,8 @@ namespace std
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
 
       for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2) 
 	{
@@ -749,6 +762,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
 
       for ( ; __first1 != __last1 && __first2 != __last2
 	    ; ++__first1, ++__first2) 
@@ -767,6 +782,9 @@ namespace std
 			  const unsigned char* __first2, 
 			  const unsigned char* __last2)
   {
+    __glibcxx_requires_valid_range(__first1, __last1);
+    __glibcxx_requires_valid_range(__first2, __last2);
+
     const size_t __len1 = __last1 - __first1;
     const size_t __len2 = __last2 - __first2;
     const int __result = std::memcmp(__first1, __first2, std::min(__len1, __len2));
@@ -777,6 +795,9 @@ namespace std
   lexicographical_compare(const char* __first1, const char* __last1,
 			  const char* __first2, const char* __last2)
   {
+    __glibcxx_requires_valid_range(__first1, __last1);
+    __glibcxx_requires_valid_range(__first2, __last2);
+
 #if CHAR_MAX == SCHAR_MAX
     return std::lexicographical_compare((const signed char*) __first1,
 					(const signed char*) __last1,

@@ -1,3 +1,126 @@
+2003-11-11  Doug Gregor  <gregod@cs.rpi.edu>
+
+	* docs/html/debug.html: Document libstdc++ debug mode.
+	* docs/html/debug_mode.html: Document libstdc++ debug mode design.
+	* docs/html/test.html: Document how to test under debug mode.
+	* docs/html/17_intro/howto.html: Document debug-mode macros.
+	* include/Makefile.am: Install debug-mode headers.
+	* src/Makefile.am: Include debug.cc.
+	* include/bits/basic_string.tcc: 
+	  (basic_string::_S_construct): Fix NULL pointer check.
+	  (__is_null_pointer): New.
+	  Add precondition annotations.
+	* include/bits/stream_iterator.h (istream_iterator,
+	ostream_iterator): Added precondition annotations.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Ditto.
+	* include/bits/stl_queue.h (queue, priority_queue): Ditto.
+	* include/bits/stl_stack.h (stack): Ditto.
+	* include/bits/basic_string.h (basic_string): Ditto.
+	* include/bits/basic_string.tcc (basic_string): Ditto.
+	* include/std/std_memory.h (auto_ptr): Ditto.
+	* include/std/std_valarray.h (valarray): Ditto.
+	* include/bits/stl_algo.h: Added algorithm precondition
+	annotations.
+	* include/bits/stl_algobase.h: Added algorithm precondition
+	annotations.
+	* include/bits/stl_numeric.h: Ditto.
+	* include/ext/algorithm: Added algorithm precondition
+	annotations. 
+	(__is_heap): Moved away from here.
+	* include/bits/stl_heap.h: Added algorithm precondition
+	annotations. 
+	(__is_heap): Moved to the top of this file.
+	(__is_heap): Added iterator range overloads.
+	* testsuite/20_util/auto_ptr_neg.cc: Fix line numbers to match up
+	with changes in std_memory.h.
+	* testsuite/23_containers/list/operators/4.cc: Don't verify
+	performance guarantees when in debug mode.
+	* testsuite/23_containers/bitset/invalidation/1.cc: New.
+	* testsuite/23_containers/deque/invalidation/1.cc: New.
+	* testsuite/23_containers/deque/invalidation/2.cc: New.
+	* testsuite/23_containers/deque/invalidation/3.cc: New.
+	* testsuite/23_containers/deque/invalidation/4.cc: New.
+	* testsuite/23_containers/list/invalidation/1.cc: New.
+	* testsuite/23_containers/list/invalidation/2.cc: New.
+	* testsuite/23_containers/list/invalidation/3.cc: New.
+	* testsuite/23_containers/list/invalidation/4.cc: New.
+	* testsuite/23_containers/map/invalidation/1.cc: New.
+	* testsuite/23_containers/map/invalidation/2.cc: New.
+	* testsuite/23_containers/multimap/invalidation/1.cc: New.
+	* testsuite/23_containers/multimap/invalidation/2.cc: New.
+	* testsuite/23_containers/multiset/invalidation/1.cc: New.
+	* testsuite/23_containers/multiset/invalidation/2.cc: New.
+	* testsuite/23_containers/set/invalidation/1.cc: New.
+	* testsuite/23_containers/set/invalidation/2.cc: New.
+	* testsuite/23_containers/vector/invalidation/1.cc: New.
+	* testsuite/23_containers/vector/invalidation/2.cc: New.
+	* testsuite/23_containers/vector/invalidation/3.cc: New.
+	* testsuite/23_containers/vector/invalidation/4.cc: New.
+	* testsuite/25_algorithms/heap.cc: Don't verify
+	performance guarantees when in debug mode.
+	* include/debug/bitset: New.
+	* include/debug/debug.h: New.
+	* include/debug/deque: New.
+	* include/debug/formatter.h: New.
+	* include/debug/hash_map: New.
+	* include/debug/hash_map.h: New.	
+	* include/debug/hash_multimap.h: New.
+	* include/debug/hash_set: New.
+	* include/debug/hash_set.h: New.
+	* include/debug/hash_multiset.h: New.	
+	* include/debug/list: New.
+	* include/debug/map: New.
+	* include/debug/map.h: New.
+	* include/debug/multimap.h: New.
+	* include/debug/multiset.h: New.	
+	* include/debug/safe_base.h: New.
+	* include/debug/safe_iterator.h: New.
+	* include/debug/safe_iterator.tcc: New.
+	* include/debug/safe_sequence.h: New.
+	* include/debug/set: New.
+	* include/debug/set.h: New.	
+	* include/debug/string: New.
+	* include/debug/vector: New.
+	* src/debug.cc: New.
+	* config/linker-map.gnu: Add debug mode symbols.
+	
+2003-11-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/string-inst.cc: Tweak namespaces.
+	* src/misc-inst.cc: Same.
+	* docs/html/debug.html: Edits.
+	* config/link-map.gnu: Remove cruft.
+
+	* include/bits/c++config: Add in namespace associations.
+	* include/std/std_bitset.h: Adjust namespace to __gnu_norm,
+	comment tweaks.
+	* include/bits/deque.tcc: Same.
+	* include/bits/list.tcc: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/vector.tcc: Same.
+
+	* include/std/std_algorithm.h: Remove markup comments.
+	* include/std/std_functional.h: Same.
+	* include/std/std_iterator.h: Same.
+	* include/std/std_numeric.h: Same.
+	* include/std/std_utility.h: Same.
+	* include/bits/stl_queue.h: Formatting tweaks.
+	* include/bits/stl_stack.h: Same.
+	* include/std/std_deque.h: Include debugging version in debug mode.
+	* include/std/std_list.h: Same.
+	* include/std/std_map.h: Same.
+	* include/std/std_set.h: Same.
+	* include/std/std_vector.h: Same.	
+	* include/std/std_queue.h: Use deque, vector.
+	* include/std/std_stack.h: Same.
+
 2003-11-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (_M_insert_int,

@@ -45,6 +45,16 @@
 
 namespace std
 {
+  template<typename _Type>
+    inline bool
+    __is_null_pointer(_Type* __ptr)
+    { return __ptr == 0; }
+
+  template<typename _Type>
+    inline bool
+    __is_null_pointer(const _Type&)
+    { return false; }
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     const typename basic_string<_CharT, _Traits, _Alloc>::size_type 
     basic_string<_CharT, _Traits, _Alloc>::
@@ -141,8 +151,8 @@ namespace std
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 
-	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__beg == _InIterator(), 0))
+	// NB: Not required, but considered best practice. 
+	if (__builtin_expect(__is_null_pointer(__beg), 0))
 	  __throw_logic_error("basic_string::_S_construct NULL not valid");
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
@@ -215,12 +225,14 @@ namespace std
 			       __str._M_fold(__pos, __n), __a), __a)
     { }
 
+  // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, size_type __n, const _Alloc& __a)
     : _M_dataplus(_S_construct(__s, __s + __n, __a), __a)
     { }
 
+  // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, const _Alloc& __a)
@@ -233,7 +245,8 @@ namespace std
     basic_string(size_type __n, _CharT __c, const _Alloc& __a)
     : _M_dataplus(_S_construct(__n, __c, __a), __a)
     { }
- 
+
+  // TBD: DPG annotate 
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
     basic_string<_CharT, _Traits, _Alloc>::
@@ -275,6 +288,7 @@ namespace std
      basic_string<_CharT, _Traits, _Alloc>::
      assign(const _CharT* __s, size_type __n)
      {
+       __glibcxx_requires_string_len(__s, __n);
        if (__n > this->max_size())
 	 __throw_length_error("basic_string::assign");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
@@ -313,6 +327,7 @@ namespace std
      basic_string<_CharT, _Traits, _Alloc>::
      insert(size_type __pos, const _CharT* __s, size_type __n)
      {
+       __glibcxx_requires_string_len(__s, __n);
        const size_type __size = this->size();
        if (__pos > __size)
          __throw_out_of_range("basic_string::insert");
@@ -350,6 +365,7 @@ namespace std
      replace(size_type __pos, size_type __n1, const _CharT* __s,
 	     size_type __n2)
      {
+       __glibcxx_requires_string_len(__s, __n2);
        const size_type __size = this->size();
        if (__pos > __size)
          __throw_out_of_range("basic_string::replace");
@@ -727,6 +743,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     append(const _CharT* __s, size_type __n)
     {
+      __glibcxx_requires_string_len(__s, __n);
       const size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
@@ -749,6 +766,7 @@ namespace std
     operator+(const _CharT* __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     {
+      __glibcxx_requires_string(__lhs);
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
       const __size_type __len = _Traits::length(__lhs);
@@ -783,6 +801,8 @@ namespace std
       
       if (__n > this->size() - __pos)
 	__n = this->size() - __pos;
+
+      __glibcxx_requires_string_len(__s, __n);
       
       traits_type::copy(__s, _M_data() + __pos, __n);
       // 21.3.5.7 par 3: do not append null.  (good.)
@@ -794,6 +814,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       const size_type __size = this->size();
       size_t __xpos = __pos;
       const _CharT* __data = _M_data();
@@ -827,6 +849,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       const size_type __size = this->size();
       if (__n <= __size)
 	{
@@ -866,6 +890,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       for (; __n && __pos < this->size(); ++__pos)
 	{
 	  const _CharT* __p = traits_type::find(__s, __n, _M_data()[__pos]);
@@ -880,6 +906,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       size_type __size = this->size();
       if (__size && __n)
 	{ 
@@ -900,6 +928,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       size_t __xpos = __pos;
       for (; __xpos < this->size(); ++__xpos)
 	if (!traits_type::find(__s, __n, _M_data()[__xpos]))
@@ -924,6 +954,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      __glibcxx_requires_string_len(__s, __n);
+
       size_type __size = this->size();
       if (__size)
 	{ 
@@ -1004,6 +1036,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     compare(const _CharT* __s) const
     {
+      __glibcxx_requires_string(__s);
+
       const size_type __size = this->size();
       const size_type __osize = traits_type::length(__s);
       const size_type __len = std::min(__size, __osize);
@@ -1019,6 +1053,8 @@ namespace std
     basic_string <_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n1, const _CharT* __s) const
     {
+      __glibcxx_requires_string(__s);
+
       const size_type __size = this->size();
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
@@ -1038,6 +1074,8 @@ namespace std
     compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	    size_type __n2) const
     {
+      __glibcxx_requires_string_len(__s, __n2);
+
       const size_type __size = this->size();
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");

@@ -61,7 +61,7 @@
 #ifndef _LIST_TCC
 #define _LIST_TCC 1
 
-namespace std
+namespace __gnu_norm
 {
   template<typename _Tp, typename _Alloc>
     void
@@ -409,6 +409,6 @@ namespace std
         swap(__counter[__fill-1]);
       }
     }
-} // namespace std
+} // namespace __gnu_norm
 
 #endif /* _LIST_TCC */

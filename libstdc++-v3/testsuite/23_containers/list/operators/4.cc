@@ -76,14 +76,18 @@ test04()
   CompLastLt::reset();
   list0401.merge(list0402, lt);
   VERIFY(list0401 == list0404);
+#ifndef _GLIBCXX_DEBUG
   VERIFY(lt.count() <= (N + M - 1));
+#endif
 
   CompLastEq eq;
 
   CompLastEq::reset();
   list0401.unique(eq);
   VERIFY(list0401 == list0405);
+#ifndef _GLIBCXX_DEBUG
   VERIFY(eq.count() == (N + M - 1));
+#endif
 }
 
 int main()

@@ -67,8 +67,8 @@
 #include <bits/stl_set.h>
 #include <bits/stl_multiset.h>
 
-#endif /* _GLIBCXX_SET */
+#ifdef _GLIBCXX_DEBUG
+# include <debug/set>
+#endif
 
-// Local Variables:
-// mode:C++
-// End:
+#endif /* _GLIBCXX_SET */

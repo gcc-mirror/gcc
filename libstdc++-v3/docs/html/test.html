@@ -34,6 +34,7 @@
    <li><a href="#util">Utilities: abicheck and libv3test</a></li>
    <li><a href="#new">How to write a new test case</a></li>
    <li><a href="#check">Options for running the tests</a></li>
+   <li><a href="#debug">Running debug-mode tests</a></li>
    <li><a href="#future">Future</a></li>
    <li><a href="#internals">DejaGNU internals</a></li>
 </ul>
@@ -543,6 +544,19 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
       testsuite; please see <a href="faq/index.html#2_4">FAQ 2.4</a>
       for which files to examine.
    </p>
+
+<hr/>
+<h2><a name="debug">Running debug-mode tests</a></h2>
+<p>To run the libstdc++ test suite under the <a
+  href="debug.html#safe">debug mode</a>,
+  edit <code>libstdc++/scripts/testsuite_flags</code> to add the
+  compile-time flag <code>-D_GLIBCXX_DEBUG</code> to the result
+  printed by the <code>--build-cxx</code> option. Additionally, add
+  the <code>-D_GLIBCXX_DEBUG_PEDANTIC</code> flag to turn on pedantic
+  checking. The libstdc++ test suite should produce precisely the same
+  results under debug mode that it does under release mode: any
+  deviation indicates an error in either the library or the test
+  suite.</p>
 
 <hr />
 <h2><a name="future">Future</a></h2>

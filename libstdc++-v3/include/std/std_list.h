@@ -74,5 +74,9 @@
 # include <bits/list.tcc>
 #endif
 
+#ifdef _GLIBCXX_DEBUG
+# include <debug/list>
+#endif
+
 #endif /* _GLIBCXX_LIST */
 
