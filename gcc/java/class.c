@@ -1076,7 +1076,9 @@ build_static_field_ref (fdecl)
 {
   tree fclass = DECL_CONTEXT (fdecl);
   int is_compiled = is_compiled_class (fclass);
-  if (is_compiled)
+
+  /* Allow static final fields to fold to a constant.  */
+  if (is_compiled || FIELD_FINAL (fdecl))
     {
       if (!DECL_RTL_SET_P (fdecl))
 	{

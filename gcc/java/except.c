@@ -336,7 +336,7 @@ prepare_eh_table_type (type)
   else
     exp = fold (build 
 		(PLUS_EXPR, ptr_type_node,
-		 build_utf8_ref (build_internal_class_name (type)),
+		 build_utf8_ref (DECL_NAME (TYPE_NAME (type))),
 		 size_one_node));
   return exp;
 }

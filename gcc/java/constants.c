@@ -388,10 +388,12 @@ alloc_class_constant (clas)
 static tree
 build_constant_data_ref ()
 {
-  if (TYPE_CPOOL_DATA_REF (current_class))
-    current_constant_pool_data_ref = TYPE_CPOOL_DATA_REF (current_class);
+  tree cpool_data_ref = NULL_TREE;
 
-  else if (current_constant_pool_data_ref == NULL_TREE)
+  if (TYPE_CPOOL_DATA_REF (current_class))
+    cpool_data_ref = TYPE_CPOOL_DATA_REF (current_class);
+
+  if (cpool_data_ref == NULL_TREE)
     {
       tree decl;
       tree decl_name = mangled_classname ("_CD_", current_class);
@@ -400,10 +402,10 @@ build_constant_data_ref ()
 					   one_elt_array_domain_type));
       TREE_STATIC (decl) = 1;
       make_decl_rtl (decl, NULL);
-      TYPE_CPOOL_DATA_REF (current_class) = current_constant_pool_data_ref
+      TYPE_CPOOL_DATA_REF (current_class) = cpool_data_ref
 	= build1 (ADDR_EXPR, ptr_type_node, decl);
     }
-  return current_constant_pool_data_ref;
+  return cpool_data_ref;
 }
 
 /* Get the pointer value at the INDEX'th element of the constant pool. */
