@@ -3980,11 +3980,16 @@ make_return_insns (first)
       pat = PATTERN (insn);
       jump_insn = XVECEXP (pat, 0, 0);
 
-      /* If we can't make the jump into a RETURN, redirect it to the best
+      /* If we can't make the jump into a RETURN, try to redirect it to the best
 	 RETURN and go on to the next insn.  */
       if (! reorg_redirect_jump (jump_insn, NULL_RTX))
 	{
-	  reorg_redirect_jump (jump_insn, real_return_label);
+	  /* Make sure redirecting the jump will not invalidate the delay
+	     slot insns.  */
+	  if (redirect_with_delay_slots_safe_p (jump_insn,
+						real_return_label,
+						insn))
+	    reorg_redirect_jump (jump_insn, real_return_label);
 	  continue;
 	}
 
