@@ -1624,6 +1624,10 @@ invert_truthvalue (arg)
 		    invert_truthvalue (TREE_OPERAND (arg, 1)),
 		    invert_truthvalue (TREE_OPERAND (arg, 2)));
 
+    case COMPOUND_EXPR:
+      return build (COMPOUND_EXPR, type, TREE_OPERAND (arg, 0),
+		    invert_truthvalue (TREE_OPERAND (arg, 1)));
+
     case NON_LVALUE_EXPR:
       return invert_truthvalue (TREE_OPERAND (arg, 0));
 
@@ -3293,7 +3297,8 @@ fold (expr)
 	}
 
       /* If what we want is other than LT or EQ, invert the result.  */
-      if (code == GE_EXPR || code == LE_EXPR || code == NE_EXPR)
+      if ((code == GE_EXPR || code == LE_EXPR || code == NE_EXPR)
+	  && TREE_CODE (t) == INTEGER_CST)
 	TREE_INT_CST_LOW (t) ^= 1;
       TREE_TYPE (t) = type;
       return t;
