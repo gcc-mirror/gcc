@@ -666,8 +666,8 @@ namespace std
   // Forwarding functions to peel signed from unsigned integer types.
   template<typename _CharT>
     inline int
-    __int_to_char(_CharT* __out, const int __size, long __v,
-		  const _CharT* __lit, ios_base::fmtflags __flags)
+    __int_to_char(_CharT* __bufend, long __v, const _CharT* __lit,
+		  ios_base::fmtflags __flags)
     {
       unsigned long __ul = static_cast<unsigned long>(__v);
       bool __neg = false;
@@ -676,20 +676,20 @@ namespace std
 	  __ul = -__ul;
 	  __neg = true;
 	}
-      return __int_to_char(__out, __size, __ul, __lit, __flags, __neg); 
+      return __int_to_char(__bufend, __ul, __lit, __flags, __neg); 
     }
 
   template<typename _CharT>
     inline int
-    __int_to_char(_CharT* __out, const int __size, unsigned long __v,
-		  const _CharT* __lit, ios_base::fmtflags __flags)
-    { return __int_to_char(__out, __size, __v, __lit, __flags, false); }
+    __int_to_char(_CharT* __bufend, unsigned long __v, const _CharT* __lit,
+		  ios_base::fmtflags __flags)
+    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT>
     inline int
-    __int_to_char(_CharT* __out, const int __size, long long __v,
-		  const _CharT* __lit, ios_base::fmtflags __flags)
+    __int_to_char(_CharT* __bufend, long long __v, const _CharT* __lit,
+		  ios_base::fmtflags __flags)
     { 
       unsigned long long __ull = static_cast<unsigned long long>(__v);
       bool __neg = false;
@@ -698,25 +698,24 @@ namespace std
 	  __ull = -__ull;
 	  __neg = true;
 	}
-      return __int_to_char(__out, __size, __ull, __lit, __flags, __neg); 
+      return __int_to_char(__bufend, __ull, __lit, __flags, __neg); 
     }
 
   template<typename _CharT>
     inline int
-    __int_to_char(_CharT* __out, const int __size, unsigned long long __v,
-		  const _CharT* __lit, ios_base::fmtflags __flags)
-    { return __int_to_char(__out, __size, __v, __lit, __flags, false); }
+    __int_to_char(_CharT* __bufend, unsigned long long __v, const _CharT* __lit,
+		  ios_base::fmtflags __flags)
+    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
 #endif
       
   template<typename _CharT, typename _ValueT>
     int
-    __int_to_char(_CharT* __out, const int __size, _ValueT __v,
-		  const _CharT* __lit, ios_base::fmtflags __flags, bool __neg)
+    __int_to_char(_CharT* __bufend, _ValueT __v, const _CharT* __lit,
+		  ios_base::fmtflags __flags, bool __neg)
     {
       // Don't write base if already 0.
       const bool __showbase = (__flags & ios_base::showbase) && __v;
       const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
-      _CharT* const __bufend = __out + __size;
       _CharT* __buf = __bufend - 1;
 
       if (__builtin_expect(__basefield != ios_base::oct &&
@@ -823,7 +822,7 @@ namespace std
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	// Result is returned right-justified in the buffer.
 	int __len;
-	__len = __int_to_char(&__cs[0], __ilen, __v, __lit, __io.flags());
+	__len = __int_to_char(__cs + __ilen, __v, __lit, __io.flags());
 	__cs += __ilen - __len;
 	
 	// Add grouping, if necessary. 

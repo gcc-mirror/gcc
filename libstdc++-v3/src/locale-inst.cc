@@ -239,13 +239,13 @@ namespace std
 
   template
     int
-    __int_to_char(C*, const int, unsigned long, const C*, 
+    __int_to_char(C*, unsigned long, const C*,
 		  ios_base::fmtflags, bool);
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template
     int
-    __int_to_char(C*, const int, unsigned long long, const C*, 
+    __int_to_char(C*, unsigned long long, const C*, 
 		  ios_base::fmtflags, bool);
 #endif
 } // namespace std
