@@ -1,3 +1,9 @@
+2003-03-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Include $(build_tooldir)/sys-include in
+	FLAGS_FOR_TARGET.
+	* configure: Regenerated.
+
 2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Always pass down RANLIB.
