@@ -1,3 +1,14 @@
+Wed Dec 31 14:42:18 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Set and subsitute host_exeext.  Use it when creating
+	the assembler and linker symlinks.
+	* configure: Rebuild.
+	* Makefile.in (exeext): Set to @host_exeext@.
+	(build_exeext): New variable, set to @build_exeext@.
+	(FLAGS_TO_PASS): Pass down build_exeext.
+	(STAGESTUFF): Use build_exeext, not exeext, for gen* and bi*
+ 	programs.
+
 Wed Dec 31 10:05:44 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (addsi3, subsi3): Fix thinkos.
