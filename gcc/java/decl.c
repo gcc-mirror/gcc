@@ -318,6 +318,7 @@ tree error_mark_node;
    The first is of type `int', the second of type `void *'.  */
 tree integer_zero_node;
 tree null_pointer_node;
+tree empty_stmt_node;
 
 /* Nodes for boolean constants TRUE and FALSE. */
 tree boolean_true_node, boolean_false_node;
@@ -431,8 +432,6 @@ init_decl_processing ()
   TREE_TYPE (size_zero_node) = sizetype;
   size_one_node = build_int_2 (1, 0);
   TREE_TYPE (size_one_node) = sizetype;
-  /* Used by the parser to represent empty statements and blocks. */
-  CAN_COMPLETE_NORMALLY (size_zero_node) = 1;
 
   byte_type_node = make_signed_type (8);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("byte"), byte_type_node));
@@ -474,6 +473,10 @@ init_decl_processing ()
 
   null_pointer_node = build_int_2 (0, 0);
   TREE_TYPE (null_pointer_node) = ptr_type_node;
+
+  /* Used by the parser to represent empty statements and blocks. */
+  empty_stmt_node = build1 (NOP_EXPR, void_type_node, size_zero_node);
+  CAN_COMPLETE_NORMALLY (empty_stmt_node) = 1;
 
 #if 0
   /* Make a type to be the domain of a few array types

@@ -786,7 +786,7 @@ constructor_body:
 	   addition (super invocation and field initialization) */
 	block_begin block_end
 		{ 
-		  BLOCK_EXPR_BODY ($2) = size_zero_node;
+		  BLOCK_EXPR_BODY ($2) = empty_stmt_node;
 		  $$ = $2;
 		}
 |	block_begin explicit_constructor_invocation block_end
@@ -951,7 +951,7 @@ variable_initializers:
 /* 19.11 Production from 14: Blocks and Statements  */
 block:
 	OCB_TK CCB_TK
-		{ $$ = size_zero_node; }
+		{ $$ = empty_stmt_node; }
 |	block_begin block_statements block_end
 		{ $$ = $3; }
 ;
@@ -1033,7 +1033,7 @@ statement_without_trailing_substatement:
 
 empty_statement:
 	SC_TK
-		{ $$ = size_zero_node; }
+		{ $$ = empty_stmt_node; }
 ;
 
 label_decl:
@@ -1273,7 +1273,7 @@ for_statement:
 		  $$ = complete_for_loop (0, NULL_TREE, $4, $6);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY ($$), 0) = 
-		    size_zero_node;
+		    empty_stmt_node;
 		}
 |	for_begin SC_TK error
 		{yyerror ("Invalid control expression"); RECOVER;}
@@ -1291,7 +1291,7 @@ for_statement_nsi:
 		  $$ = complete_for_loop (0, NULL_TREE, $4, $6);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY ($$), 0) = 
-		    size_zero_node;
+		    empty_stmt_node;
 		}
 ;
 
@@ -1322,7 +1322,7 @@ for_begin:
 		}
 ;
 for_init:			/* Can be empty */
-		{ $$ = size_zero_node; }
+		{ $$ = empty_stmt_node; }
 |	statement_expression_list
 		{ 
 		  /* Init statement recorded within the previously
@@ -1340,7 +1340,7 @@ for_init:			/* Can be empty */
 ;
 
 for_update:			/* Can be empty */
-		{$$ = size_zero_node;}
+		{$$ = empty_stmt_node;}
 |	statement_expression_list
 		{ $$ = build_debugable_stmt (BUILD_LOCATION (), $1); }
 ;
@@ -1636,6 +1636,8 @@ dims:
 field_access:
 	primary DOT_TK identifier
 		{ $$ = make_qualified_primary ($1, $3, $2.location); }
+		/*  FIXME - REWRITE TO: 
+		{ $$ = build_binop (COMPONENT_REF, $2.location, $1, $3); } */
 |	SUPER_TK DOT_TK identifier
 		{
 		  tree super_wfl = 
@@ -2164,7 +2166,7 @@ parse_jdk1_1_error (msg)
 {
   sorry (": `%s' JDK1.1(TM) feature", msg);
   java_error_count++;
-  return size_zero_node;
+  return empty_stmt_node;
 }
 
 static int do_warning = 0;
@@ -4206,6 +4208,7 @@ java_check_regular_methods (class_decl)
 	 exceptions, if any */
       check_throws_clauses (method, method_wfl, found);
 
+#if 0
       /* If the method has default access in an other package, then
 	 issue a warning that the current method doesn't override the
 	 one that was found elsewhere. Do not issue this warning when
@@ -4220,6 +4223,7 @@ java_check_regular_methods (class_decl)
 	   lang_printable_name (found, 0),
 	   IDENTIFIER_POINTER (DECL_NAME (class_decl)),
 	   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
+#endif
 
       /* Inheriting multiple methods with the same signature. FIXME */
     }
@@ -5239,6 +5243,8 @@ java_complete_expand_method (mdecl)
   /* Expand functions that have a body */
   if (DECL_FUNCTION_BODY (mdecl))
     {
+      tree fbody = DECL_FUNCTION_BODY (mdecl);
+      tree block_body = BLOCK_EXPR_BODY (fbody);
       expand_start_java_method (mdecl);
 
       current_this 
@@ -5251,9 +5257,16 @@ java_complete_expand_method (mdecl)
       /* Install exceptions thrown with `throws' */
       PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
 
-      if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)))
-	java_complete_tree (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)));
+      if (block_body != NULL_TREE)
+	block_body = java_complete_tree (block_body);
+      BLOCK_EXPR_BODY (fbody) = block_body;
 
+      if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
+	{
+	  parse_error_context (fbody, "Missing return statement");
+	}
+      
       /* Don't go any further if we've found error(s) during the
          expansion */
       if (!java_error_count)
@@ -6040,26 +6053,14 @@ int not_accessible_p (reference, member, from_super)
       if (class_in_current_package (DECL_CONTEXT (member)))
 	return 0;
 
-      if (TREE_CODE (member) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (member))
-	{
-	  /* Access from SUPER is granted */
-	  if (from_super)
-	    return 0;
-	  /* Otherwise, access isn't granted */
-	  return 1;
-	}
-      else
-	{
-	  /* If accessed with the form `super.member', then access is
-             granted */
-	  if (from_super)
-	    return 0;
+      /* If accessed with the form `super.member', then access is granted */
+      if (from_super)
+	return 0;
 
-	  /* Otherwise, access is granted if occuring from the class where
-	     member is declared or a subclass of it */
-	  if (inherits_from_p (reference, current_class))
-	    return 0;
-	}
+      /* Otherwise, access is granted if occuring from the class where
+	 member is declared or a subclass of it */
+      if (inherits_from_p (reference, current_class))
+	return 0;
       return 1;
     }
 
@@ -6376,7 +6377,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 
   /* Check accessibility, position the is_static flag, build and
      return the call */
-  if (not_accessible_p (DECL_CONTEXT (list), list, 0))
+  if (not_accessible_p (DECL_CONTEXT (current_function_decl), list, 0))
     {
       char *fct_name = strdup (lang_printable_name (list, 0));
       parse_error_context 
@@ -6646,7 +6647,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	  if (argument_types_convertible (method, arglist))
 	    {
 	      /* Retain accessible methods only */
-	      if (!not_accessible_p (class, method, 0))
+	      if (!not_accessible_p (DECL_CONTEXT (current_function_decl), method, 0))
 		list = tree_cons (NULL_TREE, method, list);
 	      else
 	      /* Also retain all selected method here */
@@ -6884,7 +6885,8 @@ qualify_ambiguous_name (id)
     }
 
   /* Method call are expression name */
-  else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR)
+  else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
+	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF)
     RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
 
   /* Check here that NAME isn't declared by more than one
@@ -6942,22 +6944,6 @@ breakdown_qualified (left, right, source)
   *left = get_identifier (IDENTIFIER_POINTER (source));
   *p = '.';
   
-  return 0;
-}
-
-static int
-not_initialized_as_it_should_p (decl)
-     tree decl;
-{
-  if (DECL_P (decl))
-    {
-      if (FIELD_FINAL (decl))
-	return 0;
-      if (TREE_CODE (decl) == FIELD_DECL 
-	  && (METHOD_STATIC (current_function_decl)))
-	return 0;
-      return DECL_P (decl) && !INITIALIZED_P (decl);
-    }
   return 0;
 }
 
@@ -7127,6 +7113,7 @@ java_complete_tree (node)
 	 value is checked during code generation. The case
 	 expression is allright so far. */
       TREE_OPERAND (node, 0) = cn;
+      TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
       break;
 
@@ -7142,6 +7129,7 @@ java_complete_tree (node)
 	}
       else
 	SWITCH_HAS_DEFAULT (nn) = 1;
+      TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
       break;
 
@@ -7427,6 +7415,13 @@ java_complete_tree (node)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node, wfl_op1, wfl_op2);
 
+#if 0 
+    COMPONENT_REF:
+      /* Planned re-write FIXME */
+      TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
+      break;
+#endif
+
     case THIS_EXPR:
       /* Can't use THIS in a static environment */
       if (!current_this)
@@ -7490,11 +7485,6 @@ complete_function_arguments (node)
       parm = maybe_build_primttype_type_ref (parm, wfl);
 
       TREE_VALUE (cn) = parm;
-      if (not_initialized_as_it_should_p (parm))
-	{
-	  ERROR_VARIABLE_NOT_INITIALIZED (wfl, EXPR_WFL_NODE (wfl));
-	  INITIALIZED_P (parm) = 1;
-	}
     }
   ctxp->explicit_constructor_p -= (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
   return flag;
@@ -7622,14 +7612,14 @@ maybe_absorb_scoping_blocks ()
    are building incomplete tree nodes and the patch_* functions that
    are completing them.  */
 
-/* Build a super() constructor invocation. Returns size_zero_node if
+/* Build a super() constructor invocation. Returns empty_stmt_node if
    we're currently dealing with the class java.lang.Object. */
 
 static tree
 build_super_invocation ()
 {
   if (current_class == object_type_node)
-    return size_zero_node;
+    return empty_stmt_node;
   else
     {
       tree super_wfl = build_wfl_node (super_identifier_node, 
@@ -7878,14 +7868,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	       "needed to convert `%s' to `%s'"), operation, t1, t2);
       free (t1); free (t2);
       error_found = 1;
-    }
-
-  /* Before reporting type incompatibility errors, check that the rhs
-     is initialized, if a variable */
-  if (not_initialized_as_it_should_p (rhs))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (wfl_op2, DECL_NAME (rhs));
-      INITIALIZED_P (rhs) = 1;
     }
 
   /* Inline read access to java.lang.PRIMTYPE.TYPE */
@@ -8296,14 +8278,6 @@ patch_binop (node, wfl_op1, wfl_op2)
 
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 
-  /* Check initialization of LHS first. We then silence further error
-     message if the variable wasn't initialized */
-  if (not_initialized_as_it_should_p (cfi))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (cfi_wfl, DECL_NAME (cfi));
-      INITIALIZED_P (op1) = 1;
-    }
-
   switch (code)
     {
     /* 15.16 Multiplicative operators */
@@ -8579,16 +8553,6 @@ patch_binop (node, wfl_op1, wfl_op2)
 	}
       prom_type = boolean_type_node;
       break;
-    }
-
-  /* Then check the initialization of the RHS. We don't do that if
-     we're dealing with a node that is part of a compound
-     assignment. We then silence further error message if the variable
-     wasn't initialized */
-  if (not_initialized_as_it_should_p (op2) && !COMPOUND_ASSIGN_P (node))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (wfl_op2, DECL_NAME (op2));
-      INITIALIZED_P (op2) = 1;
     }
 
   if (error_found)
@@ -9424,10 +9388,8 @@ build_if_else_statement (location, expression, if_body, else_body)
      tree expression, if_body, else_body;
 {
   tree node;
-  /* FIXME: make else body be a void node, where this function is
-     called */
   if (!else_body)
-    else_body = build (COMPOUND_EXPR, void_type_node, NULL_TREE, NULL_TREE);
+    else_body = empty_stmt_node;
   node = build (COND_EXPR, NULL_TREE, expression, if_body, else_body);
   EXPR_WFL_LINECOL (node) = location;
   node = build_debugable_stmt (location, node);
@@ -9457,8 +9419,8 @@ patch_if_else_statement (node)
   TREE_TYPE (node) = void_type_node;
   TREE_SIDE_EFFECTS (node) = 1;
   CAN_COMPLETE_NORMALLY (node)
-    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))
-    | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1));
+    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1))
+    | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 2));
   return node;
 }
 
@@ -9584,7 +9546,7 @@ build_loop_body (location, condition, reversed)
   second = (reversed ? condition : body);
   return 
     build (COMPOUND_EXPR, NULL_TREE, 
-	   build (COMPOUND_EXPR, NULL_TREE, first, second), size_zero_node);
+	   build (COMPOUND_EXPR, NULL_TREE, first, second), empty_stmt_node);
 }
 
 /* Install CONDITION (if any) and loop BODY (using REVERSED to tell
