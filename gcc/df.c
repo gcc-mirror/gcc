@@ -2601,6 +2601,9 @@ df_insn_modify (df, bb, insn)
 
   uid = INSN_UID (insn);
 
+  if (uid >= df->insn_size)
+    df_insn_table_realloc (df, 0);
+
   bitmap_set_bit (df->bbs_modified, bb->index);
   bitmap_set_bit (df->insns_modified, uid);
 

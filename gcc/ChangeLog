@@ -1,3 +1,8 @@
+2001-08-26  Daniel Berlin  <dan@cgsoftware.com>
+
+	* df.c (df_insn_modify): Realloc the INSN table here, if
+	necessary, here, too.
+
 2001-08-26  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/mips/mips.c (mips_function_value): Handle complex return
