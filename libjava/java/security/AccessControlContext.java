@@ -1,5 +1,5 @@
 /* AccessControlContext.java --- Access Control Context Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,18 +38,18 @@ exception statement from your version. */
 package java.security;
 
 /**
-   AccessControlContext makes system resource access decsion 
-   based on permission rights.  
-
-   It is used for a specific context and has only one method
-   checkPermission. It is similar to AccessController except
-   that it makes decsions based on the current context instead
-   of the the current thread.
-
-   It is created by call AccessController.getContext method.
-
-   @author Mark Benvenuto
-   @since JDK 1.2
+ * AccessControlContext makes system resource access decsion 
+ * based on permission rights.  
+ *
+ * It is used for a specific context and has only one method
+ * checkPermission. It is similar to AccessController except
+ * that it makes decsions based on the current context instead
+ * of the the current thread.
+ *
+ * It is created by call AccessController.getContext method.
+ *
+ * @author Mark Benvenuto
+ * @since 1.2
  */
 public final class AccessControlContext
 {
@@ -57,11 +57,11 @@ public final class AccessControlContext
   private DomainCombiner combiner;
 
   /**
-     Construct a new AccessControlContext with the specified
-     ProtectionDomains. <code>context</code> must not be 
-     null and duplicates will be removed.
-
-     @param context The ProtectionDomains to use
+   * Construct a new AccessControlContext with the specified
+   * ProtectionDomains. <code>context</code> must not be 
+   * null and duplicates will be removed.
+   *
+   * @param context The ProtectionDomains to use
    */
   public AccessControlContext(ProtectionDomain[]context)
   {
@@ -91,12 +91,10 @@ public final class AccessControlContext
   }
 
   /**
-     Construct a new AccessControlContext with the specified
-     ProtectionDomains and DomainCombiner
-
-     @param context The ProtectionDomains to use
-
-     @since JDK 1.3
+   * Construct a new AccessControlContext with the specified
+   * ProtectionDomains and DomainCombiner
+   *
+   * @since 1.3
    */
   public AccessControlContext(AccessControlContext acc,
 			      DomainCombiner combiner)
@@ -106,9 +104,9 @@ public final class AccessControlContext
   }
 
   /**
-     Returns the Domain Combiner associated with the AccessControlContext
-
-     @returns the DomainCombiner
+   * Returns the Domain Combiner associated with the AccessControlContext
+   *
+   * @return the DomainCombiner
    */
   public DomainCombiner getDomainCombiner()
   {
@@ -116,12 +114,12 @@ public final class AccessControlContext
   }
 
   /**
-     Determines whether or not the specific permission is granted
-     depending on the context it is within. 
-
-     @param perm a permission to check
-
-     @throws AccessControlException if the permssion is not permitted
+   * Determines whether or not the specific permission is granted
+   * depending on the context it is within. 
+   *
+   * @param perm a permission to check
+   *
+   * @throws AccessControlException if the permssion is not permitted
    */
   public void checkPermission(Permission perm) throws AccessControlException
   {
@@ -133,14 +131,14 @@ public final class AccessControlContext
   }
 
   /**
-     Checks if two AccessControlContexts are equal.
-
-     It first checks if obj is an AccessControlContext class, and
-     then checks if each ProtectionDomain matches.
-
-     @param obj The object to compare this class to
-
-     @return true if equal, false otherwise
+   * Checks if two AccessControlContexts are equal.
+   *
+   * It first checks if obj is an AccessControlContext class, and
+   * then checks if each ProtectionDomain matches.
+   *
+   * @param obj The object to compare this class to
+   *
+   * @return true if equal, false otherwise
    */
   public boolean equals(Object obj)
   {
@@ -160,9 +158,9 @@ public final class AccessControlContext
   }
 
   /**
-     Computes a hash code of this class
-
-     @return a hash code representing this class
+   * Computes a hash code of this class
+   *
+   * @return a hash code representing this class
    */
   public int hashCode()
   {

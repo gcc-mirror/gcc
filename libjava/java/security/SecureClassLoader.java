@@ -1,5 +1,5 @@
 /* SecureClassLoader.java --- A Secure Class Loader
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,13 @@ exception statement from your version. */
 package java.security;
 
 /**
-   A Secure Class Loader for loading classes with additional 
-   support for specifying code source and permissions when
-   they are retrieved by the system policy handler.
-
-   @since JDK 1.2
-
-   @author Mark Benvenuto
+ * A Secure Class Loader for loading classes with additional 
+ * support for specifying code source and permissions when
+ * they are retrieved by the system policy handler.
+ *
+ * @since 1.2
+ *
+ * @author Mark Benvenuto
  */
 public class SecureClassLoader extends ClassLoader
 {
@@ -64,18 +64,18 @@ public class SecureClassLoader extends ClassLoader
   }
 
   /** 
-     Creates a class using an array of bytes and a 
-     CodeSource.
-
-     @param name the name to give the class.  null if unknown.
-     @param b the data representing the classfile, in classfile format.
-     @param off the offset into the data where the classfile starts.
-     @param len the length of the classfile data in the array.
-     @param cs the CodeSource for the class or null when unknown.
-
-     @return the class that was defined and optional CodeSource.
-
-     @exception ClassFormatError if the byte array is not in proper classfile format.
+   * Creates a class using an array of bytes and a 
+   * CodeSource.
+   *
+   * @param name the name to give the class.  null if unknown.
+   * @param b the data representing the classfile, in classfile format.
+   * @param off the offset into the data where the classfile starts.
+   * @param len the length of the classfile data in the array.
+   * @param cs the CodeSource for the class or null when unknown.
+   *
+   * @return the class that was defined and optional CodeSource.
+   *
+   * @exception ClassFormatError if the byte array is not in proper classfile format.
    */
   protected final Class defineClass(String name, byte[] b, int off, int len,
 				    CodeSource cs)
@@ -92,14 +92,13 @@ public class SecureClassLoader extends ClassLoader
   }
 
   /**
-     Returns a PermissionCollection for the specified CodeSource.
-     The default implementation invokes 
-     java.security.Policy.getPermissions.
-
-     This method is called by defineClass that takes a CodeSource
-     arguement to build a proper ProtectionDomain for the class
-     being defined.
-
+   * Returns a PermissionCollection for the specified CodeSource.
+   * The default implementation invokes 
+   * java.security.Policy.getPermissions.
+   *
+   * This method is called by defineClass that takes a CodeSource
+   * arguement to build a proper ProtectionDomain for the class
+   * being defined.
    */
   protected PermissionCollection getPermissions(CodeSource cs)
   {
