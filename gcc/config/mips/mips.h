@@ -1301,8 +1301,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000 },	/* no registers */	\
   { 0xffffffff, 0x00000000, 0x00000000 },	/* integer registers */	\
   { 0x00000000, 0xffffffff, 0x00000000 },	/* floating registers*/	\
-  { 0x00000000, 0x00000000, 0x00000001 },	/* lo register */	\
-  { 0x00000000, 0x00000000, 0x00000002 },	/* hi register */	\
+  { 0x00000000, 0x00000000, 0x00000001 },	/* hi register */	\
+  { 0x00000000, 0x00000000, 0x00000002 },	/* lo register */	\
   { 0x00000000, 0x00000000, 0x00000003 },	/* mul/div registers */	\
   { 0x00000000, 0x00000000, 0x00000004 },	/* status registers */	\
   { 0xffffffff, 0xffffffff, 0x00000007 }	/* all registers */	\
