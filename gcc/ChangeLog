@@ -1,3 +1,9 @@
+2002-02-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h (struct tree_common): Remove aux.  Add unused_0 at
+	end of first block of bitfields (which was only seven bits);
+	rename dummy to unused_1; remove comment which is no longer true.
+
 2002-02-19  Gaute B Strokkenes <gs234@cam.ac.uk>
 
 	* doc/c-tree.texi (Classes, TYPE_BINFO): Fix typo.

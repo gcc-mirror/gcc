@@ -122,8 +122,9 @@ struct tree_common
 {
   tree chain;
   tree type;
-  void *aux;
+
   ENUM_BITFIELD(tree_code) code : 8;
+
   unsigned side_effects_flag : 1;
   unsigned constant_flag : 1;
   unsigned addressable_flag : 1;
@@ -131,6 +132,7 @@ struct tree_common
   unsigned readonly_flag : 1;
   unsigned unsigned_flag : 1;
   unsigned asm_written_flag: 1;
+  unsigned unused_0 : 1;
 
   unsigned used_flag : 1;
   unsigned nothrow_flag : 1;
@@ -148,10 +150,7 @@ struct tree_common
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* This flag is presently unused.  However, language front-ends
-     should not make use of this flag; it is reserved for future
-     expansion.  */
-  unsigned dummy : 1;
+  unsigned unused_1 : 1;
 };
 
 /* The following table lists the uses of each of the above flags and
