@@ -1,3 +1,12 @@
+2005-03-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/memory: Forward to...
+	* include/tr1/boost_shared_ptr.h: ...here. Add Boost Software License.
+	* include/Makefile.am (tr1_headers): Add boost_shared_ptr.h.
+	* include/Makefile.in: Regenerate.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/cons/
+	auto_ptr_neg.cc: Adjust line numbers.
+
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/Makefile.am (all-local): Do not build testsuite_files.
@@ -56,7 +65,7 @@
 	(listdc++_build_support): New function.
 	* testsuite/libstdc++-dg/normal.exp: Rework to dynamically
 	generate list of tests.
-	
+
 2005-03-21  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/20577
