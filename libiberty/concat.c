@@ -74,6 +74,10 @@ NOTES
 #  endif
 # endif
 
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 static inline unsigned long vconcat_length PARAMS ((const char *, va_list));
 static inline unsigned long
 vconcat_length (first, args)
