@@ -1170,7 +1170,7 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   VA_START (ap, ident);
 #ifndef ANSI_PROTOTYPES
   real_name = va_arg (ap, char const *);
-  ident = va_arg (app, int);
+  ident = va_arg (ap, int);
 #endif
 
   /* Generate the pseudo type name. */
