@@ -2609,7 +2609,7 @@ if test "$THREADS" = yes; then
 fi
 
 INCLUDES=
-THREADLIB=
+THREADLIBS=
 case "$THREADS" in
  no | none | single)
     THREADS=none
@@ -2644,7 +2644,7 @@ EOF
 
 	;;
     esac
-    THREADLIB=-lpthread
+    THREADLIBS=-lpthread
     ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     { echo "configure: error: thread package $THREADS not yet supported" 1>&2; exit 1; }
@@ -3042,7 +3042,7 @@ s%@OBJEXT@%$OBJEXT%g
 s%@STRIP@%$STRIP%g
 s%@LIBTOOL@%$LIBTOOL%g
 s%@CXXCPP@%$CXXCPP%g
-s%@THREADLIB@%$THREADLIB%g
+s%@THREADLIBS@%$THREADLIBS%g
 s%@EXTRA_TEST_LIBS@%$EXTRA_TEST_LIBS%g
 s%@target_all@%$target_all%g
 s%@INCLUDES@%$INCLUDES%g

@@ -1,4 +1,4 @@
-// nogc.cc - Code to implement no GC.
+// nogc.cc - Implement null garbage collector.
 
 /* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
@@ -31,7 +31,7 @@ void *
 _Jv_AllocObj (jsize size, jclass klass)
 {
   total += size;
-  ptr_t obj = calloc (size, 1);
+  void *obj = calloc (size, 1);
   *((_Jv_VTable **) obj) = klass->vtable;
   return obj;
 }
@@ -40,7 +40,7 @@ void *
 _Jv_AllocArray (jsize size, jclass klass)
 {
   total += size;
-  ptr_t obj = calloc (size, 1);
+  void *obj = calloc (size, 1);
   *((_Jv_VTable **) obj) = klass->vtable;
   return obj;
 }

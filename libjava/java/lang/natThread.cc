@@ -50,24 +50,37 @@ struct natThread
   JNIEnv *jni_env;
 };
 
+static void finalize_native (jobject ptr);
+
 // This is called from the constructor to initialize the native side
 // of the Thread.
 void
 java::lang::Thread::initialize_native (void)
 {
-  // FIXME: this must interact with the GC in some logical way.  At
-  // the very least we must register a finalizer to clean up.  This
-  // isn't easy to do.  If the Thread object resurrects itself in its
-  // own finalizer then we will need to reinitialize this structure at
-  // any "interesting" point.
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
+  
+  // The native thread data is kept in a Object field, not a rawdata, so that
+  // the GC allocator can be used and a finalizer run after the thread becomes
+  // unreachable. Note that this relies on the GC's ability to finalize 
+  // non-Java objects. FIXME?
   data = reinterpret_cast<jobject> (nt);
+  
+  // Register a finalizer to clean up the native thread resources.
+  _Jv_RegisterFinalizer (data, finalize_native);
+
   _Jv_MutexInit (&nt->join_mutex);
   _Jv_CondInit (&nt->join_cond);
-  _Jv_ThreadInitData (&nt->thread, this);
+  nt->thread = _Jv_ThreadInitData (this);
   // FIXME: if JNI_ENV is set we will want to free it.  It is
   // malloc()d.
   nt->jni_env = NULL;
+}
+
+static void
+finalize_native (jobject ptr)
+{
+  natThread *nt = (natThread *) ptr;
+  _Jv_ThreadDestroyData (nt->thread);
 }
 
 jint

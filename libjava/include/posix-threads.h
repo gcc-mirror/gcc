@@ -169,7 +169,8 @@ _Jv_MutexDestroy (_Jv_Mutex_t *mu)
 
 void _Jv_InitThreads (void);
 
-void _Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *thread);
+_Jv_Thread_t *_Jv_ThreadInitData (java::lang::Thread *thread);
+void _Jv_ThreadDestroyData (_Jv_Thread_t *data);
 
 inline java::lang::Thread *
 _Jv_ThreadCurrent (void)

@@ -147,7 +147,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       else
 	r = pthread_cond_timedwait (&current->wait_cond, &current->wait_mutex, 
 				    &ts);
-				    
+
       // In older glibc's (prior to 2.1.3), the cond_wait functions may 
       // spuriously wake up on a signal. Catch that here.
       if (r != EINTR)
@@ -297,20 +297,25 @@ _Jv_InitThreads (void)
   sigaction (INTR, &act, NULL);
 }
 
-void
-_Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *obj)
+_Jv_Thread_t *
+_Jv_ThreadInitData (java::lang::Thread *obj)
 {
-  _Jv_Thread_t *info = new _Jv_Thread_t;
-  info->flags = 0;
-  info->thread_obj = obj;
+  _Jv_Thread_t *data = new _Jv_Thread_t;
+  data->flags = 0;
+  data->thread_obj = obj;
 
-  pthread_mutex_init (&info->wait_mutex, NULL);
-  pthread_cond_init (&info->wait_cond, NULL);
+  pthread_mutex_init (&data->wait_mutex, NULL);
+  pthread_cond_init (&data->wait_cond, NULL);
 
-  // FIXME register a finalizer for INFO here.
-  // FIXME also must mark INFO somehow.
+  return data;
+}
 
-  *data = info;
+void
+_Jv_ThreadDestroyData (_Jv_Thread_t *data)
+{
+  pthread_mutex_destroy (&data->wait_mutex);
+  pthread_cond_destroy (&data->wait_cond);
+  delete data;
 }
 
 void
@@ -352,12 +357,6 @@ really_start (void *x)
       pthread_mutex_unlock (&daemon_mutex);
     }
   
-#ifndef LINUX_THREADS
-  // Clean up. These calls do nothing on Linux.
-  pthread_mutex_destroy (&info->data->wait_mutex);
-  pthread_cond_destroy (&info->data->wait_cond);
-#endif /* ! LINUX_THREADS */
-
   return NULL;
 }
 
@@ -377,6 +376,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 
   pthread_attr_init (&attr);
   pthread_attr_setschedparam (&attr, &param);
+  pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
 
   // FIXME: handle marking the info object for GC.
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));

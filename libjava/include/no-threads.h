@@ -102,10 +102,15 @@ _Jv_InitThreads (void)
 {
 }
 
-inline void
-_Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *)
+inline _Jv_Thread_t *
+_Jv_ThreadInitData (java::lang::Thread *)
 {
-  *data = NULL;
+  return NULL;
+}
+
+inline void
+_Jv_ThreadDestroyData (_Jv_Thread_t *data)
+{
 }
 
 inline java::lang::Thread *
