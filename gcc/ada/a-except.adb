@@ -640,8 +640,14 @@ package body Ada.Exceptions is
    -- Exception_Information --
    ---------------------------
 
-   function Exception_Information (X : Exception_Occurrence) return String
-     renames Exception_Data.Exception_Information;
+   function Exception_Information (X : Exception_Occurrence) return String is
+   begin
+      if X.Id = Null_Id then
+         raise Constraint_Error;
+      end if;
+
+      return Exception_Data.Exception_Information (X);
+   end Exception_Information;
 
    -----------------------
    -- Exception_Message --

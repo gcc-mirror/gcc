@@ -29,7 +29,6 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
@@ -1684,15 +1683,7 @@ package body Sem_Aggr is
                   --  of a component the expander will generate calls to
                   --  the corresponding initialization subprogram.
 
-                  if Present (Base_Init_Proc (Etype (Component_Typ)))
-                    or else Has_Task (Base_Type (Component_Typ))
-                  then
-                     null;
-                  else
-                     Error_Msg_N
-                       ("(Ada 2005): no value supplied for this component",
-                        Assoc);
-                  end if;
+                  null;
 
                elsif not Resolve_Aggr_Expr (Expression (Assoc),
                                             Single_Elmt => Single_Choice)
@@ -1831,13 +1822,7 @@ package body Sem_Aggr is
                --  of a component the expander will generate calls to
                --  the corresponding initialization subprogram.
 
-               if Present (Base_Init_Proc (Etype (Component_Typ))) then
-                  null;
-               else
-                  Error_Msg_N
-                    ("(Ada 2005): no value supplied for these components",
-                     Assoc);
-               end if;
+               null;
 
             elsif not Resolve_Aggr_Expr (Expression (Assoc),
                                          Single_Elmt => False)
@@ -2965,20 +2950,24 @@ package body Sem_Aggr is
          Component := Node (Component_Elmt);
          Expr := Get_Value (Component, Component_Associations (N), True);
 
+         --  Ada 2005 (AI-287): Default initialized limited component are
+         --  passed to the expander, that will generate calls to the
+         --  corresponding IP.
+
          if Mbox_Present and then Is_Limited_Type (Etype (Component)) then
-
-            --  Ada 2005 (AI-287): In case of default initialization of
-            --  a limited component we pass the limited component to
-            --  the expander. The expander will generate calls to the
-            --  corresponding initialization subprograms.
-
             Add_Association
               (Component   => Component,
                Expr        => Empty,
                Box_Present => True);
 
+         --  Ada 2005 (AI-287): No value supplied for component
+
+         elsif Mbox_Present and No (Expr) then
+            null;
+
          elsif No (Expr) then
             Error_Msg_NE ("no value supplied for component &!", N, Component);
+
          else
             Resolve_Aggr_Expr (Expr, Component);
          end if;

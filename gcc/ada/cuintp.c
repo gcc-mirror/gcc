@@ -77,7 +77,7 @@ UI_To_gnu (Uint Input, tree type)
       tree gnu_base = convert (comp_type, build_int_2 (Base, 0));
 
       if (Length <= 0)
-	gigi_abort (601);
+	abort ();
 
       gnu_ret = convert (comp_type, build_int_2 (First, First < 0 ? -1 : 0));
       if (First < 0)

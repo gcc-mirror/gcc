@@ -360,6 +360,16 @@ package body VMS_Conv is
             Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
 
+         Setup =>
+           (Cname    => new S'("SETUP"),
+            Usage    => new S'("GNAT SETUP /qualifiers"),
+            VMS_Only => False,
+            Unixcmd  => new S'(""),
+            Unixsws  => null,
+            Switches => Setup_Switches'Access,
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
+            Defext   => "   "),
+
          Shared =>
            (Cname    => new S'("SHARED"),
             Usage    => new S'("GNAT SHARED [obj_&_lib_&_exe_&_opt"
