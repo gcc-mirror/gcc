@@ -1000,7 +1000,7 @@ convert_class_to_reference (t, s, expr)
   conv = build_conv (USER_CONV,
 		     non_reference (TREE_TYPE (TREE_TYPE (cand->fn))),
 		     conv);
-  TREE_OPERAND (conv, 1) = build_expr_ptr_wrapper (cand);
+  TREE_OPERAND (conv, 1) = build_ptr_wrapper (cand);
   ICS_USER_FLAG (conv) = 1;
   if (cand->viable == -1)
     ICS_BAD_FLAG (conv) = 1;
@@ -2516,7 +2516,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
-     expr, build_expr_ptr_wrapper (cand));
+     expr, build_ptr_wrapper (cand));
   ICS_USER_FLAG (cand->second_conv) = 1;
   if (cand->viable == -1)
     ICS_BAD_FLAG (cand->second_conv) = 1;
@@ -5039,7 +5039,7 @@ add_warning (winner, loser)
      struct z_candidate *winner, *loser;
 {
   winner->warnings = tree_cons (NULL_PTR,
-				build_expr_ptr_wrapper (loser),
+				build_ptr_wrapper (loser),
 				winner->warnings);
 }
 
