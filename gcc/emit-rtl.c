@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "regs.h"
+#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "real.h"
 #include "obstack.h"
@@ -681,6 +682,14 @@ gen_lowpart_common (mode, x)
 	       /* integrate.c can't handle parts of a return value register. */
 	       && (! REG_FUNCTION_VALUE_P (x)
 		   || ! rtx_equal_function_value_matters)
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+	       && ! (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (x))
+		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_INT
+		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_FLOAT
+		     && (TEST_HARD_REG_BIT
+			 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+			  REGNO (x))))
+#endif
 	       /* We want to keep the stack, frame, and arg pointers
 		  special.  */
 	       && x != frame_pointer_rtx

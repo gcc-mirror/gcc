@@ -1,3 +1,15 @@
+Thu Feb 19 01:32:37 1998  Jeffrey A Law  (law@cygnus.com)
+			  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (gen_lowpart_common): Suppress last change if __complex__.
+
+	* emit-rtl.c (hard-reg-set.h): Include.
+	(get_lowpart_common): Don't make new REG for hard reg in a 
+	class that cannot change size.
+	* Makefile.in (emit-rtl.o): Depend on hard-reg-set.h.
+
+	* combine.c: Revert previous patch.
+
 Tue Feb 17 23:34:29 1998 David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (MY_ISCOFF): Add numeric value of U803XTOCMAGIC.
