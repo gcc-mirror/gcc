@@ -3354,9 +3354,10 @@ expand_expr (exp, target, tmode, modifier)
 	   if there are any cleanups they most be contained here.  */
 	expand_start_bindings (0);
 
-	/* Mark the corresponding BLOCK for output.  */
-	if (TREE_OPERAND (exp, 2) != 0)
-	  TREE_USED (TREE_OPERAND (exp, 2)) = 1;
+	/* Mark the corresponding BLOCK for output in its proper place.  */
+	if (TREE_OPERAND (exp, 2) != 0
+	    && ! TREE_USED (TREE_OPERAND (exp, 2)))
+	  insert_block (TREE_OPERAND (exp, 2));
 
 	/* If VARS have not yet been expanded, expand them now.  */
 	while (vars)
