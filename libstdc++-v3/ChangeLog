@@ -1,3 +1,10 @@
+2003-12-16  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.ac (AM_INIT_AUTOMAKE):  Don't warn about GNU Make.
+	* configure:  Regenerated.
+	* Makefile.am (check-%):  New catch-all forwarding target.
+	* Makefile.in:  Regenerated.
+
 2003-12-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/container_benchmark.cc: New, a
