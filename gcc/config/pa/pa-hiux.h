@@ -17,38 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
-#endif
+/* HIUX is just a HPUX variant.  We can simply use the HPUX configuration
+   for just about everything.  */
+#include "pa/pa-hpux.h"
 
-#include "pa/pa.h"
-
-/* Make GCC agree with types.h.  */
-#undef SIZE_TYPE
-#undef PTRDIFF_TYPE
-
-#define SIZE_TYPE "unsigned int"
-#define PTRDIFF_TYPE "int"
-
-/* HPUX doesn't use any debugging format that GCC knows about.  */
-#undef DBX_DEBUGGING_INFO
-
-/* Like the default, except no -lg.  */
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-L/lib/libp/ -lc}%{pg:-L/lib/libp/ -lc}"
-
-#undef CPP_SPEC
-#if (TARGET_DEFAULT & 1) == 0
-#define CPP_SPEC "%{msnake:-D_PA_RISC1_1}\
- %{mpa-risc-1-1:-D_PA_RISC1_1}"
-#else
-#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:-D_PA_RISC1_1}}"
-#endif
-
-#undef CC1_SPEC
-#define CC1_SPEC "-fwritable-strings %{pg:} %{p:}"
-
+/* Predefines are the one noteworthy difference between HPUX and HIUX.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -DPWB -Dunix -D_HIUX_SOURCE -D__H3050R -D__H3050RX"
-
-#undef LINK_SPEC
-#define LINK_SPEC "-u main -a archive"
+#define CPP_PREDEFINES "-Dhppa -DPWB -Dunix -D_HIUX_SOURCE -D__H3050R -D__H3050RX -Asystem(unix) -Asystem(hiux) -Acpu(hppa) -Amachine(hppa)"
