@@ -1,3 +1,8 @@
+Fri Jul 10 12:53:58 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* jump.c (jump_optimize): If after_regscan and our transformations
+	generate new REGs, rerun reg_scan.
+
 Fri Jul 10 11:50:43 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* config/i960/i960.c (i960_address_cost): MEMA operands with
