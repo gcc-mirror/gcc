@@ -34,12 +34,12 @@
 # error "MMX instruction set not enabled"
 #else
 /* The data type intended for user use.  */
-typedef int __m64 __attribute__ ((vector_size (8)));
+typedef int __m64 __attribute__ ((__vector_size__ (8)));
 
 /* Internal data types for implementing the intrinsics.  */
-typedef int __v2si __attribute__ ((vector_size (8)));
-typedef short __v4hi __attribute__ ((vector_size (8)));
-typedef char __v8qi __attribute__ ((vector_size (8)));
+typedef int __v2si __attribute__ ((__vector_size__ (8)));
+typedef short __v4hi __attribute__ ((__vector_size__ (8)));
+typedef char __v8qi __attribute__ ((__vector_size__ (8)));
 
 /* Empty the multimedia state.  */
 static __inline void
