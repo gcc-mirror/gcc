@@ -3712,8 +3712,8 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
   else
     caller_udata->cfa = udata->cfa;
   if (caller_udata->indirect)
-    caller_udata->cfa = *(word_type *)((unsigned char *)caller_udata->cfa 
-				  + caller_udata->base_offset);
+    caller_udata->cfa = * (void **) ((unsigned char *)caller_udata->cfa 
+				     + caller_udata->base_offset);
   caller_udata->cfa += caller_udata->cfa_offset;
 
   return caller_udata;
