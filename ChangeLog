@@ -1,3 +1,7 @@
+2004-06-21  Matthew Sachs  <msachs@apple.com>
+
+	* MAINTAINERS: Added self to write-after-approval.
+
 2004-06-21  Christopher Faylor  <cgf@alum.bu.edu>
 
 	* configure.in: Check for srcdir/winsup rather than build directory
