@@ -1,3 +1,7 @@
+2004-11-22  Dale Johannesen  <dalej@apple.com>
+
+	* calls.c (expand_call): Do not call preserve_temp_slots.
+
 2004-11-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow.h: Remove the prototype for remove_phi_arg.

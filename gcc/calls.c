@@ -2819,7 +2819,6 @@ expand_call (tree exp, rtx target, int ignore)
 					       | TYPE_QUAL_CONST));
 
 	      target = assign_temp (nt, 0, 1, 1);
-	      preserve_temp_slots (target);
 	    }
 
 	  if (! rtx_equal_p (target, valreg))
