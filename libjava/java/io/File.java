@@ -40,6 +40,8 @@ exception statement from your version. */
 package java.io;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import gnu.classpath.Configuration;
 import gnu.gcj.runtime.FileDeleter;
@@ -872,6 +874,28 @@ public class File implements Serializable, Comparable
   public String toString()
   {
     return path;
+  }
+
+  /**
+   * @return A <code>URI</code> for this object.
+   */
+  public URI toURI()
+  {
+    String abspath = getAbsolutePath();
+
+    if (isDirectory())
+      abspath = abspath + separator;
+        
+    try
+      {
+	return new URI("file", "", abspath.replace(separatorChar, '/'));
+      }
+    catch (URISyntaxException use)
+      {
+        // Can't happen.
+        throw (InternalError) new InternalError("Unconvertible file: "
+						+ this).initCause(use);
+      }
   }
 
   /**
