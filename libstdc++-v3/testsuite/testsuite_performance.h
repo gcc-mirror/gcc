@@ -43,16 +43,33 @@
 #elif defined (__FreeBSD__)
 extern "C"
 {
-  struct mallinfo { int uordblks; };
-  struct mallinfo mallinfo(void)
-    { struct mallinfo m = { (((size_t) sbrk (0) + 1023) / 1024) }; return m; }
+  struct mallinfo
+  {
+    int uordblks;
+    int hblkhd;
+  };
+
+  struct mallinfo
+  mallinfo(void)
+  {
+    struct mallinfo m = { (((size_t) sbrk (0) + 1023) / 1024), 0 };
+    return m;
+  }
 }
 #else
 extern "C"
 {
-  struct mallinfo { int uordblks; };
-  struct mallinfo empty = { 0 };
-  struct mallinfo mallinfo(void) { return empty; }
+  struct mallinfo
+  {
+    int uordblks;
+    int hblkhd;
+  };
+
+  struct mallinfo empty = { 0, 0 };
+
+  struct mallinfo
+  mallinfo(void)
+  { return empty; }
 }
 #endif
 
@@ -101,9 +118,9 @@ namespace __gnu_test
 
   class resource_counter
   {
-    int		who;
-    rusage	rusage_begin;
-    rusage	rusage_end;
+    int                 who;
+    rusage	        rusage_begin;
+    rusage	        rusage_end;
     struct mallinfo  	allocation_begin;
     struct mallinfo  	allocation_end;
 
@@ -139,7 +156,8 @@ namespace __gnu_test
 
     int
     allocated_memory() const
-    { return allocation_end.uordblks - allocation_begin.uordblks; }
+    { return ((allocation_end.uordblks - allocation_begin.uordblks)
+	      + (allocation_end.hblkhd - allocation_begin.hblkhd)); }
     
     long 
     hard_page_fault() const
