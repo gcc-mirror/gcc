@@ -8789,9 +8789,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   tree t;
 
   if (raises)
-    {
-      type = build_exception_variant (type, raises);
-    }
+    type = build_exception_variant (type, raises);
 
   decl = build_lang_decl (FUNCTION_DECL, declarator, type);
   /* Propagate volatile out from type to decl. */
@@ -8902,7 +8900,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     }
 
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
-    grok_op_properties (decl, virtualp, check < 0);
+    grok_op_properties (decl, friendp);
 
   if (ctype && decl_function_context (decl))
     DECL_NO_STATIC_CHAIN (decl) = 1;
@@ -12053,90 +12051,150 @@ grokparms (first_parm)
 }
 
 
-/* D is a constructor or overloaded `operator='.  Returns non-zero if
-   D's arguments allow it to be a copy constructor, or copy assignment
+/* D is a constructor or overloaded `operator='.
+
+   Let T be the class in which D is declared. Then, this function
+   returns:
+
+   -1 if D's is an ill-formed constructor or copy assignment operator
+      whose first parameter is of type `T'.
+   0  if D is not a copy constructor or copy assignment
+      operator.
+   1  if D is a copy constructor or copy assignment operator whose
+      first parameter is a reference to const qualified T.
+   2  if D is a copy constructor or copy assignment operator whose
+      first parameter is a reference to non-const qualified T.
+
+   This function can be used as a predicate. Positive values indicate
+   a copy constructor and non-zero values indicate a copy assignment
    operator.  */
 
 int
-copy_args_p (d)
+copy_fn_p (d)
      tree d;
 {
-  tree t;
+  tree args;
+  tree arg_type;
+  int result = 1;
+  
+  my_friendly_assert (DECL_FUNCTION_MEMBER_P (d), 20011208);
 
-  if (!DECL_FUNCTION_MEMBER_P (d))
+  if (DECL_TEMPLATE_INFO (d) && is_member_template (DECL_TI_TEMPLATE (d)))
+    /* Instantiations of template member functions are never copy
+       functions.  Note that member functions of templated classes are
+       represented as template functions internally, and we must
+       accept those as copy functions.  */
+    return 0;
+    
+  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (!args)
     return 0;
 
-  t = FUNCTION_FIRST_USER_PARMTYPE (d);
-  if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
-	  == DECL_CONTEXT (d))
-      && (TREE_CHAIN (t) == NULL_TREE
-	  || TREE_CHAIN (t) == void_list_node
-	  || TREE_PURPOSE (TREE_CHAIN (t))))
-    return 1;
-  return 0;
+  arg_type = TREE_VALUE (args);
+
+  if (TYPE_MAIN_VARIANT (arg_type) == DECL_CONTEXT (d))
+    {
+      /* Pass by value copy assignment operator.  */
+      result = -1;
+    }
+  else if (TREE_CODE (arg_type) == REFERENCE_TYPE
+	   && TYPE_MAIN_VARIANT (TREE_TYPE (arg_type)) == DECL_CONTEXT (d))
+    {
+      if (CP_TYPE_CONST_P (TREE_TYPE (arg_type)))
+	result = 2;
+    }
+  else
+    return 0;
+  
+  args = TREE_CHAIN (args);
+
+  if (args && args != void_list_node && !TREE_PURPOSE (args))
+    /* There are more non-optional args.  */
+    return 0;
+
+  return result;
 }
 
-/* These memoizing functions keep track of special properties which
-   a class may have.  `grok_ctor_properties' notices whether a class
-   has a constructor of the form X(X&), and also complains
-   if the class has a constructor of the form X(X).
-   `grok_op_properties' takes notice of the various forms of
-   operator= which are defined, as well as what sorts of type conversion
-   may apply.  Both functions take a FUNCTION_DECL as an argument.  */
+/* Remember any special properties of member function DECL.  */
+
+void grok_special_member_properties (decl)
+     tree decl;
+{
+  if (!DECL_NONSTATIC_MEMBER_FUNCTION_P(decl))
+    ; /* Not special.  */
+  else if (DECL_CONSTRUCTOR_P (decl))
+    {
+      int ctor = copy_fn_p (decl);
+      
+      if (ctor > 0)
+	{
+	  /* [class.copy]
+	      
+     	     A non-template constructor for class X is a copy
+     	     constructor if its first parameter is of type X&, const
+     	     X&, volatile X& or const volatile X&, and either there
+     	     are no other parameters or else all other parameters have
+     	     default arguments.  */
+	  TYPE_HAS_INIT_REF (DECL_CONTEXT (decl)) = 1;
+	  if (ctor > 1)
+	    TYPE_HAS_CONST_INIT_REF (DECL_CONTEXT (decl)) = 1;
+	}
+      else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
+	TYPE_HAS_DEFAULT_CONSTRUCTOR (DECL_CONTEXT (decl)) = 1;
+    }
+  else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
+    {
+      /* [class.copy]
+	  
+     	 A non-template assignment operator for class X is a copy
+     	 assignment operator if its parameter is of type X, X&, const
+     	 X&, volatile X& or const volatile X&.  */
+      
+      int assop = copy_fn_p (decl);
+      
+      if (assop)
+	{
+	  TYPE_HAS_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
+	  if (assop != 1)
+	    TYPE_HAS_CONST_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
+	  if (DECL_PURE_VIRTUAL_P (decl))
+	    TYPE_HAS_ABSTRACT_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
+	}
+    }
+}
+
+/* Check a constructor DECL has the correct form.  Complains
+   if the class has a constructor of the form X(X).  */
 
 int
 grok_ctor_properties (ctype, decl)
      tree ctype, decl;
 {
-  tree parmtypes = FUNCTION_FIRST_USER_PARMTYPE (decl);
-  tree parmtype = parmtypes ? TREE_VALUE (parmtypes) : void_type_node;
+  int ctor_parm = copy_fn_p (decl);
 
-  /* [class.copy]
-
-     A non-template constructor for class X is a copy constructor if
-     its first parameter is of type X&, const X&, volatile X& or const
-     volatile X&, and either there are no other parameters or else all
-     other parameters have default arguments.  */
-  if (TREE_CODE (parmtype) == REFERENCE_TYPE
-      && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == ctype
-      && sufficient_parms_p (TREE_CHAIN (parmtypes))
-      && !(DECL_TEMPLATE_INSTANTIATION (decl)
-	   && is_member_template (DECL_TI_TEMPLATE (decl))))
+  if (ctor_parm < 0)
     {
-      TYPE_HAS_INIT_REF (ctype) = 1;
-      if (CP_TYPE_CONST_P (TREE_TYPE (parmtype)))
-	TYPE_HAS_CONST_INIT_REF (ctype) = 1;
-    }
-  /* [class.copy]
-
-     A declaration of a constructor for a class X is ill-formed if its
-     first parameter is of type (optionally cv-qualified) X and either
-     there are no other parameters or else all other parameters have
-     default arguments.
-
-     We *don't* complain about member template instantiations that
-     have this form, though; they can occur as we try to decide what
-     constructor to use during overload resolution.  Since overload
-     resolution will never prefer such a constructor to the
-     non-template copy constructor (which is either explicitly or
-     implicitly defined), there's no need to worry about their
-     existence.  Theoretically, they should never even be
-     instantiated, but that's hard to forestall.  */
-  else if (TYPE_MAIN_VARIANT (parmtype) == ctype
-	   && sufficient_parms_p (TREE_CHAIN (parmtypes))
-	   && !(DECL_TEMPLATE_INSTANTIATION (decl)
-		&& is_member_template (DECL_TI_TEMPLATE (decl))))
-    {
+      /* [class.copy]
+	  
+     	 A declaration of a constructor for a class X is ill-formed if
+     	 its first parameter is of type (optionally cv-qualified) X
+     	 and either there are no other parameters or else all other
+     	 parameters have default arguments.
+	  
+     	 We *don't* complain about member template instantiations that
+     	 have this form, though; they can occur as we try to decide
+     	 what constructor to use during overload resolution.  Since
+     	 overload resolution will never prefer such a constructor to
+     	 the non-template copy constructor (which is either explicitly
+     	 or implicitly defined), there's no need to worry about their
+     	 existence.  Theoretically, they should never even be
+     	 instantiated, but that's hard to forestall.  */
       cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
 		ctype, ctype);
       SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
       return 0;
     }
-  else if (TREE_CODE (parmtype) == VOID_TYPE
-	   || TREE_PURPOSE (parmtypes) != NULL_TREE)
-    TYPE_HAS_DEFAULT_CONSTRUCTOR (ctype) = 1;
-
+  
   return 1;
 }
 
@@ -12169,9 +12227,9 @@ unary_op_p (code)
 /* Do a little sanity-checking on how they declared their operator.  */
 
 void
-grok_op_properties (decl, virtualp, friendp)
+grok_op_properties (decl, friendp)
      tree decl;
-     int virtualp, friendp;
+     int friendp;
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
   tree argtype;
@@ -12341,37 +12399,7 @@ grok_op_properties (decl, virtualp, friendp)
 			 ref ? "a reference to " : "", what);
 	    }
 	}
-
-      if (DECL_ASSIGNMENT_OPERATOR_P (decl)
-	  && operator_code == NOP_EXPR)
-	{
-	  tree parmtype;
-
-	  if (arity != 2 && methodp)
-	    {
-	      cp_error ("`%D' must take exactly one argument", decl);
-	      return;
-	    }
-	  parmtype = TREE_VALUE (TREE_CHAIN (argtypes));
-
-	  /* [class.copy]
-
-	     A user-declared copy assignment operator X::operator= is
-	     a non-static non-template member function of class X with
-	     exactly one parameter of type X, X&, const X&, volatile
-	     X& or const volatile X&.  */
-	  if (copy_assignment_arg_p (parmtype, virtualp)
-	      && !(DECL_TEMPLATE_INSTANTIATION (decl)
-		   && is_member_template (DECL_TI_TEMPLATE (decl)))
-	      && ! friendp)
-	    {
-	      TYPE_HAS_ASSIGN_REF (current_class_type) = 1;
-	      if (TREE_CODE (parmtype) != REFERENCE_TYPE
-		  || CP_TYPE_CONST_P (TREE_TYPE (parmtype)))
-		TYPE_HAS_CONST_ASSIGN_REF (current_class_type) = 1;
-	    }
-	}
-      else if (operator_code == COND_EXPR)
+      if (operator_code == COND_EXPR)
 	{
 	  /* 13.4.0.3 */
 	  cp_error ("ISO C++ prohibits overloading operator ?:");
@@ -12507,7 +12535,7 @@ grok_op_properties (decl, virtualp, friendp)
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
 	cp_warning ("`%D' should return by value", decl);
 
-      /* 13.4.0.8 */
+      /* [over.oper]/8 */
       for (; argtypes && argtypes != void_list_node;
           argtypes = TREE_CHAIN (argtypes))
         if (TREE_PURPOSE (argtypes))
@@ -14244,14 +14272,7 @@ start_method (declspecs, declarator, attrlist)
 	  fndecl = copy_node (fndecl);
 	  TREE_CHAIN (fndecl) = NULL_TREE;
 	}
-
-      if (DECL_CONSTRUCTOR_P (fndecl))
-	{
-	  if (! grok_ctor_properties (current_class_type, fndecl))
-	    return void_type_node;
-	}
-      else if (IDENTIFIER_OPNAME_P (DECL_NAME (fndecl)))
-	grok_op_properties (fndecl, DECL_VIRTUAL_P (fndecl), 0);
+      grok_special_member_properties (fndecl);
     }
 
   cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);

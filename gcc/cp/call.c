@@ -4280,7 +4280,7 @@ build_over_call (cand, args, flags)
 	}
     }
   else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
-	   && copy_args_p (fn)
+	   && copy_fn_p (fn)
 	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
     {
       tree to = stabilize_reference

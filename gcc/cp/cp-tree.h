@@ -1841,7 +1841,7 @@ struct lang_decl
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
 #define DECL_COPY_CONSTRUCTOR_P(NODE) \
-  (DECL_CONSTRUCTOR_P (NODE) && copy_args_p (NODE))
+  (DECL_CONSTRUCTOR_P (NODE) && copy_fn_p (NODE) > 0)
 
 /* Nonzero if NODE is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
@@ -3690,9 +3690,10 @@ extern int complete_array_type			PARAMS ((tree, tree, int));
 extern tree build_ptrmemfunc_type		PARAMS ((tree));
 /* the grokdeclarator prototype is in decl.h */
 extern int parmlist_is_exprlist			PARAMS ((tree));
-extern int copy_args_p				PARAMS ((tree));
+extern int copy_fn_p				PARAMS ((tree));
+extern void grok_special_member_properties	PARAMS ((tree));
 extern int grok_ctor_properties			PARAMS ((tree, tree));
-extern void grok_op_properties			PARAMS ((tree, int, int));
+extern void grok_op_properties			PARAMS ((tree, int));
 extern tree xref_tag				PARAMS ((tree, tree, int));
 extern tree xref_tag_from_type			PARAMS ((tree, tree, int));
 extern void xref_basetypes			PARAMS ((tree, tree, tree, tree));
@@ -3757,7 +3758,6 @@ extern tree grokfield				PARAMS ((tree, tree, tree, tree, tree));
 extern tree grokbitfield			PARAMS ((tree, tree, tree));
 extern tree groktypefield			PARAMS ((tree, tree));
 extern tree grokoptypename			PARAMS ((tree, tree));
-extern int copy_assignment_arg_p		PARAMS ((tree, int));
 extern void cplus_decl_attributes		PARAMS ((tree *, tree, int));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
