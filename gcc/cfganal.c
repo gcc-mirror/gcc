@@ -87,7 +87,10 @@ can_fallthru (src, target)
   rtx insn = src->end;
   rtx insn2 = target->head;
 
-  if (src->index + 1 == target->index && !active_insn_p (insn2))
+  if (src->index + 1 != target->index)
+    return 0;
+
+  if (!active_insn_p (insn2))
     insn2 = next_active_insn (insn2);
 
   /* ??? Later we may add code to move jump tables offline.  */
