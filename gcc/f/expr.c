@@ -12853,7 +12853,11 @@ again:				/* :::::::::::::::::::: */
 	      : ffeinfo_basictype (info))
 	{
 	case FFEINFO_basictypeINTEGER:
-	  error = FALSE;
+	  /* Maybe this should be supported someday, but, right now,
+	     g77 can't generate a call to libf2c to write to an
+	     integer other than the default size.  */
+	  error = ((! ffeexpr_stack_->is_rhs)
+		   && ffeinfo_kindtype (info) != FFEINFO_kindtypeINTEGERDEFAULT);
 	  break;
 
 	default:

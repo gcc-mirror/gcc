@@ -1,5 +1,12 @@
 1999-02-18  Craig Burley  <craig@jcb-sc.com>
 
+	* expr.c (ffeexpr_finished_): Disallow non-default INTEGER
+	as argument for FILEINT and FILEASSOC as lhs.
+	* news.texi: Document fix.
+	* version.c: Bump.
+
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.texi: Clarify -fno-globals vs. -Wno-globals.
 
 1999-02-18  Craig Burley  <craig@jcb-sc.com>
