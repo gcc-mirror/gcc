@@ -1,3 +1,17 @@
+2001-06-20  Michael Meissner  <meissner@redhat.com>
+
+	* builtins.c (predict.h): Include.
+	(expand_builtin_expect): Update comment.
+	(expand_builtin_expect_jump): New function to expand
+	__builtin_expect inside of a conditional jump expansion.
+
+	* expr.c (do_jump): Special case __builtin_expect (<test>, 0) and
+	__builtin_expect (<test>, 1).
+
+	* Makefile.in (builtins.o): Depend on $(PREDICT_H).
+
+	* rtl.h (expand_builtin_expect_jump): Add prototype.
+
 2001-06-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/rtl.texi (Machine Modes): Correct description of
