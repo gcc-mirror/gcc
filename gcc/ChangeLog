@@ -1,3 +1,10 @@
+2001-09-07  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* real.c (EMUSHORT,EMUSHORT_SIZE): Use HImode if no 16-bit type is
+	available.
+	(UEMUSHORT): New. Use instead of unsigned EMUSHORT.
+	(m16m,edivm,emulm): Change declaration to match definition.
+
 2001-09-07  Roman Lechtchinsky <rl@cs.tu-berlin.de>
 
 	* reload.c (push_reload): Check for subreg_lowpart_p instead of
