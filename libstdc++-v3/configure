@@ -4819,11 +4819,18 @@ fi;
     { echo "$as_me:$LINENO: Only freestanding libraries will be built" >&5
 echo "$as_me: Only freestanding libraries will be built" >&6;}
     is_hosted=no
+    hosted_define=0
     enable_abi_check=no
     enable_libstdcxx_pch=no
   else
     is_hosted=yes
+    hosted_define=1
   fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_HOSTED $hosted_define
+_ACEOF
 
 
 
@@ -4862,7 +4869,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 4865 "configure"
+#line 4872 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
