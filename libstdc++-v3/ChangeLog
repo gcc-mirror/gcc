@@ -1,3 +1,13 @@
+2004-10-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_S_create): Use consistently
+	the exponential policy, simplify.
+	* testsuite/performance/21_strings/string_append_2.cc: New.
+
+	* include/ext/array_allocator.h (allocate): Fix bad_alloc check.
+	* testsuite/ext/array_allocator/2.cc: Fix wrt 64-bit archs (in
+	that case sizeof(_Rep) == 24).
+
 2004-10-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/17948
