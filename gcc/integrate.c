@@ -76,7 +76,6 @@ static void set_block_abstract_flags	PROTO((tree, int));
 static void process_reg_param		PROTO((struct inline_remap *, rtx,
 					       rtx));
 void set_decl_abstract_flags		PROTO((tree, int));
-static tree copy_and_set_decl_abstract_origin PROTO((tree));
 static rtx expand_inline_function_eh_labelmap PROTO((rtx));
 static void mark_stores                 PROTO((rtx, rtx, void *));
 
@@ -296,23 +295,56 @@ initialize_for_inline (fndecl)
   return arg_vector;
 }
 
-/* Copy NODE (as with copy_node).  NODE must be a DECL.  Set the
-   DECL_ABSTRACT_ORIGIN for the new accordinly.  */
+/* Copy NODE (which must be a DECL, but not a PARM_DECL).  The DECL
+   originally was in the FROM_FN, but now it will be in the 
+   TO_FN.  */
 
-static tree
-copy_and_set_decl_abstract_origin (node)
-     tree node;
+tree
+copy_decl_for_inlining (decl, from_fn, to_fn)
+     tree decl;
+     tree from_fn;
+     tree to_fn;
 {
-  tree copy = copy_node (node);
-  if (DECL_ABSTRACT_ORIGIN (copy) != NULL_TREE)
-    /* That means that NODE already had a DECL_ABSTRACT_ORIGIN.  (This
-       situation occurs if we inline a function which itself made
-       calls to inline functions.)  Since DECL_ABSTRACT_ORIGIN is the
-       most distant ancestor, we don't have to do anything here.  */
+  tree copy;
+
+  /* Copy the declaration.  */
+  if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == RESULT_DECL)
+    /* For a parameter, we must make an equivalent VAR_DECL, not a
+       new PARM_DECL.  */
+    copy = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  else
+    {
+      copy = copy_node (decl);
+      if (DECL_LANG_SPECIFIC (copy))
+	copy_lang_decl (copy);
+    }
+
+  /* Set the DECL_ABSTRACT_ORIGIN so the debugging routines know what
+     declaration inspired this copy.  */
+  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
+
+  /* The new variable/label has no RTL, yet.  */
+  DECL_RTL (copy) = NULL_RTX;
+
+  /* These args would always appear unused, if not for this.  */
+  TREE_USED (copy) = 1;
+
+  /* Set the context for the new declaration.  */
+  if (!DECL_CONTEXT (decl))
+    /* Globals stay global.  */
+	;
+  else if (DECL_CONTEXT (decl) != from_fn)
+    /* Things that weren't in the scope of the function we're inlining
+       from aren't in the scope we're inlining too, either.  */
+    ;
+  else if (TREE_STATIC (decl))
+    /* Function-scoped static variables should say in the original
+       function.  */
     ;
   else
-    /* The most distant ancestor must be NODE.  */
-    DECL_ABSTRACT_ORIGIN (copy) = node;
+    /* Ordinary automatic local variables are now in the scope of the
+       new function.  */
+    DECL_CONTEXT (copy) = to_fn;
 
   return copy;
 }
@@ -1384,20 +1416,14 @@ integrate_parm_decls (args, map, arg_vector)
 
   for (tail = args, i = 0; tail; tail = TREE_CHAIN (tail), i++)
     {
-      register tree decl = build_decl (VAR_DECL, DECL_NAME (tail),
-				       TREE_TYPE (tail));
+      tree decl = copy_decl_for_inlining (tail, map->fndecl,
+					  current_function_decl);
       rtx new_decl_rtl
 	= copy_rtx_and_substitute (RTVEC_ELT (arg_vector, i), map, 1);
 
-      DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (tail);
       /* We really should be setting DECL_INCOMING_RTL to something reasonable
 	 here, but that's going to require some more work.  */
       /* DECL_INCOMING_RTL (decl) = ?; */
-      /* These args would always appear unused, if not for this.  */
-      TREE_USED (decl) = 1;
-      /* Prevent warning for shadowing with these.  */
-      DECL_ABSTRACT_ORIGIN (decl) = DECL_ORIGIN (tail);
-      DECL_CONTEXT (decl) = current_function_decl;
       /* Fully instantiate the address with the equivalent form so that the
 	 debugging information contains the actual register, instead of the
 	 virtual register.   Do this by not passing an insn to
@@ -1433,7 +1459,7 @@ integrate_decl_tree (let, map)
 
       push_obstacks_nochange ();
       saveable_allocation ();
-      d = copy_and_set_decl_abstract_origin (t);
+      d = copy_decl_for_inlining (t, map->fndecl, current_function_decl);
       pop_obstacks ();
 
       if (DECL_RTL (t) != 0)
@@ -1447,29 +1473,6 @@ integrate_decl_tree (let, map)
 	  subst_constants (&DECL_RTL (d), NULL_RTX, map, 1);
 	  apply_change_group ();
 	}
-      /* These args would always appear unused, if not for this.  */
-      TREE_USED (d) = 1;
-
-      if (DECL_LANG_SPECIFIC (d))
-	copy_lang_decl (d);
-
-      /* Set the context for the new declaration.  */
-      if (!DECL_CONTEXT (t))
-	/* Globals stay global.  */
-	;
-      else if (DECL_CONTEXT (t) != map->fndecl)
-	/* Things that weren't in the scope of the function we're
-	   inlining from aren't in the scope we're inlining too,
-	   either.  */
-	;
-      else if (TREE_STATIC (t))
-	/* Function-scoped static variables should say in the original
-	   function.  */
-	;
-      else
-	/* Ordinary automatic local variables are now in the scope of
-	   the new function.  */
-	DECL_CONTEXT (d) = current_function_decl;
 
       /* Add this declaration to the list of variables in the new
 	 block.  */

@@ -1,3 +1,11 @@
+1999-11-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* integrate.h (copy_decl_for_inlining): New declaration.
+	* integrate.c (copy_and_set_decl_abstract_origin): Remove.
+	(copy_decl_for_inlining): New function.
+	(integrate_parm_decls): Use it.
+	(integrate_decl_tree): Likewise.
+
 1999-11-23  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (ISA_HAS_FP4,ISA_HAS_CONDMOVE,ISA_HAS_8CC): Split 
