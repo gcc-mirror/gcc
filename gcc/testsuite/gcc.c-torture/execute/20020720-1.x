@@ -11,6 +11,19 @@
 #     and can make the optimization.
 
 # Don't XFAIL at -O0, that should never fail.
+if { [istarget "i?86-*-*"] } {
+    set torture_eval_before_compile {
+        global compiler_conditional_xfail_data
+        set compiler_conditional_xfail_data {
+            "PR opt/10348" \
+            { "*-*-*" } \
+            { "-fpic" "-fPIC" } \
+            { "-O0" }
+        }
+    }
+    return 0
+}
+
 set torture_eval_before_compile {
     global compiler_conditional_xfail_data
     set compiler_conditional_xfail_data {
