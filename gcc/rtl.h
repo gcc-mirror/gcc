@@ -875,7 +875,7 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 #define MEM_IN_STRUCT_P(RTX) ((RTX)->in_struct)
 
 /* For a MEM rtx, 1 if it refers to a scalar.  If zero, RTX may or may
-   not refer to a scalar.*/
+   not refer to a scalar.  */
 #define MEM_SCALAR_P(RTX) ((RTX)->frame_related)
 
 /* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in

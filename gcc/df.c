@@ -1,5 +1,5 @@
 /* Dataflow support routines.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz,
                                     mhayes@redhat.com)
 
@@ -1088,7 +1088,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 				  insn, DF_REF_READ_WRITE);
 		  break;
 		}
-	      /* ... FALLTHRU ... */
+	      /* ... FALLTHRU ...  */
 	    case REG:
 	    case PC:
 	      break;

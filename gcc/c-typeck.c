@@ -4404,7 +4404,7 @@ warn_for_assignment (msgid, opname, function, argnum)
 	}
       else
 	{
-	  /* Function name unknown (call through ptr); just give arg number.*/
+	  /* Function name unknown (call through ptr); just give arg number.  */
 	  const char *const argnofun = _("passing arg %d of pointer to function");
 	  new_opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argnofun, argnum);

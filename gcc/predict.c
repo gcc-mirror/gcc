@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    [2] "Static Branch Frequency and Program Profile Analysis"
        Wu and Larus; MICRO-27.
    [3] "Corpus-based Static Branch Prediction"
-       Calder, Grunwald, Lindsay, Martin, Mozer, and Zorn; PLDI '95.   */
+       Calder, Grunwald, Lindsay, Martin, Mozer, and Zorn; PLDI '95.  */
 
 
 #include "config.h"

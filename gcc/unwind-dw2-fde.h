@@ -1,5 +1,6 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GCC.
@@ -54,7 +55,7 @@ struct object
       unsigned long mixed_encoding : 1;
       unsigned long encoding : 8;
       /* ??? Wish there was an easy way to detect a 64-bit host here;
-	 we've got 32 bits left to play with... */
+	 we've got 32 bits left to play with...  */
       unsigned long count : 21;
     } b;
     size_t i;

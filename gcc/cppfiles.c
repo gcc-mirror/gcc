@@ -94,7 +94,7 @@ struct include_file
 };
 
 /* Variable length record files on VMS will have a stat size that includes
-   record control characters that won't be included in the read size. */
+   record control characters that won't be included in the read size.  */
 #ifdef VMS
 # define FAB_C_VAR 2 /* variable length records (see Starlet fabdef.h) */
 # define STAT_SIZE_TOO_BIG(ST) ((ST).st_fab_rfm == FAB_C_VAR)
