@@ -51,14 +51,15 @@ proc default_g77_version { } {
 
     # verify that the compiler exists
     if { $compiler_name != 0 } then {
-	set tmp [remote_exec host "$compiler -v"]
-	set status [lindex $tmp 0];
-	set output [lindex $tmp 1];
-	regexp "version.*$" $output version
-	if { $status == 0 && [info exists version] } then {
+        set options ""
+
+        lappend options "additional_flags=-v"
+        set tmp [g77_target_compile "" "" "none" $options]
+	regexp "g77 version\[^\n\]*" $tmp version
+	if { [info exists version] } then {
 	    clone_output "$compiler_name $version\n"
 	} else {
-	    clone_output "Couldn't determine version of $compiler_name: $output\n"
+	    clone_output "Couldn't determine version of $compiler_name: $tmp\n"
 	}
     } else {
 	# compiler does not exist (this should have already been detected)

@@ -1,3 +1,8 @@
+Sun Jun 28 00:37:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/g77.exp (default_g77_version): Tweak to make it work in a build
+	directory when nothing has been installed yet.
+
 Sat Jun 27 23:23:18 1998  Carlo Wood  <carlo@runaway.xs4all.nl>
 
 	* gcc.c-torture/special/special.exp: Handle newer versions of
