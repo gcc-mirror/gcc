@@ -3592,12 +3592,12 @@ static GTY(()) unsigned ranges_table_in_use;
 /* Whether we have location lists that need outputting */
 static GTY(()) unsigned have_location_lists;
 
+/* Unique label counter.  */
+static GTY(()) unsigned int loclabel_num;
+
 #ifdef DWARF2_DEBUGGING_INFO
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
-
-/* Unique label counter.  */
-static unsigned int loclabel_num = 0;
 #endif
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
