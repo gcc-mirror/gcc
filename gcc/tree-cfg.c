@@ -3949,6 +3949,10 @@ thread_jumps (void)
       bb->flags &= ~BB_VISITED;
     }
 
+  /* We pretend to have ENTRY_BLOCK_PTR in WORKLIST.  This way,
+     ENTRY_BLOCK_PTR will never be entered into WORKLIST.  */
+  ENTRY_BLOCK_PTR->flags |= BB_VISITED;
+
   /* Initialize WORKLIST by putting non-forwarder blocks that
      immediately precede forwarder blocks because those are the ones
      that we know we can thread jumps from.  We use BB_VISITED to
@@ -3973,8 +3977,6 @@ thread_jumps (void)
 	  /* We are not interested in threading jumps from a forwarder
 	     block.  */
 	  if (!bb_ann (e->src)->forwardable
-	      /* We don't want to visit ENTRY_BLOCK_PTR.  */
-	      && e->src->index >= 0
 	      /* We don't want to put a duplicate into WORKLIST.  */
 	      && (e->src->flags & BB_VISITED) == 0)
 	    {
@@ -4014,8 +4016,6 @@ thread_jumps (void)
 		  /* We are not interested in threading jumps from a
 		     forwarder block.  */
 		  if (!bb_ann (f->src)->forwardable
-		      /* We don't want to visit ENTRY_BLOCK_PTR.  */
-		      && f->src->index >= 0
 		      /* We don't want to put a duplicate into WORKLIST.  */
 		      && (f->src->flags & BB_VISITED) == 0)
 		    {
@@ -4027,6 +4027,8 @@ thread_jumps (void)
 	    }
 	}
     }
+
+  ENTRY_BLOCK_PTR->flags &= ~BB_VISITED;
 
   free (worklist);
 
