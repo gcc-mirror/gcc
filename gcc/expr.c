@@ -95,6 +95,12 @@ int inhibit_defer_pop;
    function calls being expanded by expand_call.  */
 tree cleanups_this_call;
 
+/* When temporaries are created by TARGET_EXPRs, they are created at
+   this level of temp_slot_level, so that they can remain allocated
+   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
+   of TARGET_EXPRs.  */
+int target_temp_slot_level;
+
 /* Nonzero means __builtin_saveregs has already been done in this function.
    The value is the pseudoreg containing the value __builtin_saveregs
    returned.  */
@@ -4623,9 +4629,17 @@ expand_expr (exp, target, tmode, modifier)
 
     case CLEANUP_POINT_EXPR:
       {
+	extern int temp_slot_level;
 	tree old_cleanups = cleanups_this_call;
+	int old_temp_level = target_temp_slot_level;
+	push_temp_slots ();
+	target_temp_slot_level = temp_slot_level;
 	op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, modifier);
 	expand_cleanups_to (old_cleanups);
+	preserve_temp_slots (op0);
+	free_temp_slots ();
+	pop_temp_slots ();
+	target_temp_slot_level = old_temp_level;
       }
       return op0;
 
@@ -5695,7 +5709,7 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	    else
 	      {
-		target = assign_stack_temp (mode, int_size_in_bytes (type), 0);
+		target = assign_stack_temp (mode, int_size_in_bytes (type), 2);
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
