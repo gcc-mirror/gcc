@@ -1,3 +1,11 @@
+2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strcmp): Use const*_rtx when
+	expanding strcmp at compile-time.  Add another transformation.
+	(expand_builtin_strncmp): Add more transformations.  Call
+	expand_builtin_memcmp, not expand_builtin_strcmp, under
+	appropriate conditions if HAVE_cmpstrsi.
+
 2000-12-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (anddi3_internal[23]): Prefer rldic? over andis

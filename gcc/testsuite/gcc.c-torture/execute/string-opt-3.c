@@ -37,6 +37,18 @@ int main()
     abort ();
   if (strcmp (10 + foo, "dx") >= 0)
     abort ();
+  if (strcmp (bar, "") <= 0)
+    abort ();
+  if (strcmp ("", bar) >= 0)
+    abort ();
+  if (strcmp (bar+8, "") != 0)
+    abort ();
+  if (strcmp ("", bar+8) != 0)
+    abort ();
+  if (strcmp (bar+(--x), "") <= 0 || x != 6)
+    abort ();
+  if (strcmp ("", bar+(++x)) >= 0 || x != 7)
+    abort ();
   if (strrchr (foo, 'x'))
     abort ();
   if (strrchr (foo, 'o') != foo + 7)

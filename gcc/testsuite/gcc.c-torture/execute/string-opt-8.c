@@ -44,6 +44,103 @@ int main ()
   s2 = s1; s3 = s1+4;
   if (strncmp (++s2, ++s3, 0) != 0 || s2 != s1+1 || s3 != s1+5)
     abort();
+  s2 = s1;
+  if (strncmp (++s2, "", 1) <= 0 || s2 != s1+1)
+    abort();
+  if (strncmp ("", ++s2, 1) >= 0 || s2 != s1+2)
+    abort();
+  if (strncmp (++s2, "", 100) <= 0 || s2 != s1+3)
+    abort();
+  if (strncmp ("", ++s2, 100) >= 0 || s2 != s1+4)
+    abort();
+  if (strncmp (++s2+6, "", 100) != 0 || s2 != s1+5)
+    abort();
+  if (strncmp ("", ++s2+5, 100) != 0 || s2 != s1+6)
+    abort();
+  if (strncmp ("ozz", ++s2, 1) != 0 || s2 != s1+7)
+    abort();
+  if (strncmp (++s2, "rzz", 1) != 0 || s2 != s1+8)
+    abort();
+  s2 = s1; s3 = s1+4;
+  if (strncmp (++s2, ++s3+2, 1) >= 0 || s2 != s1+1 || s3 != s1+5)
+    abort();
+#if defined(__i386__)
+  /* These tests work on platforms which support cmpstrsi.  */
+  s2 = s1;
+  if (strncmp (++s2, "ello", 3) != 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("ello", ++s2, 3) != 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "ello", 4) != 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("ello", ++s2, 4) != 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "ello", 5) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("ello", ++s2, 5) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "ello", 6) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("ello", ++s2, 6) >= 0 || s2 != s1+1)
+    abort();
+
+  s2 = s1;
+  if (strncmp (++s2, "zllo", 3) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("zllo", ++s2, 3) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "zllo", 4) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("zllo", ++s2, 4) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "zllo", 5) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("zllo", ++s2, 5) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "zllo", 6) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("zllo", ++s2, 6) <= 0 || s2 != s1+1)
+    abort();
+
+  s2 = s1;
+  if (strncmp (++s2, "allo", 3) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("allo", ++s2, 3) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "allo", 4) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("allo", ++s2, 4) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "allo", 5) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("allo", ++s2, 5) >= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp (++s2, "allo", 6) <= 0 || s2 != s1+1)
+    abort();
+  s2 = s1;
+  if (strncmp ("allo", ++s2, 6) >= 0 || s2 != s1+1)
+    abort();
+#endif  
   
   return 0;
 }
