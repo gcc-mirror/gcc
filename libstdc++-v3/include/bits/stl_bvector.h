@@ -63,17 +63,19 @@
 
 namespace std
 { 
-  enum { _M_word_bit = int(CHAR_BIT * sizeof(unsigned long)) };
+  typedef unsigned long _Bit_type;
+  enum { _M_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
 
 struct _Bit_reference {
-  unsigned int* _M_p;
-  unsigned int _M_mask;
-  _Bit_reference(unsigned int* __x, unsigned int __y) 
+
+  _Bit_type * _M_p;
+  _Bit_type _M_mask;
+  _Bit_reference(_Bit_type * __x, _Bit_type __y) 
     : _M_p(__x), _M_mask(__y) {}
 
 public:
   _Bit_reference() : _M_p(0), _M_mask(0) {}
-  operator bool() const { return !(!(*_M_p & _M_mask)); }
+  operator bool() const { return !!(*_M_p & _M_mask); }
   _Bit_reference& operator=(bool __x)
   {
     if (__x)  *_M_p |= _M_mask;
@@ -84,9 +86,8 @@ public:
     { return *this = bool(__x); }
   bool operator==(const _Bit_reference& __x) const
     { return bool(*this) == bool(__x); }
-  bool operator<(const _Bit_reference& __x) const {
-    return !bool(*this) && bool(__x);
-  }
+  bool operator<(const _Bit_reference& __x) const
+    { return !bool(*this) && bool(__x); }
   void flip() { *_M_p ^= _M_mask; }
 };
 
@@ -99,10 +100,10 @@ inline void swap(_Bit_reference __x, _Bit_reference __y)
 
 struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
 {
-  unsigned int* _M_p;
+  _Bit_type * _M_p;
   unsigned int _M_offset;
 
-  _Bit_iterator_base(unsigned int* __x, unsigned int __y)
+  _Bit_iterator_base(_Bit_type * __x, unsigned int __y)
     : _M_p(__x), _M_offset(__y) {}
 
   void _M_bump_up() {
@@ -162,7 +163,7 @@ struct _Bit_iterator : public _Bit_iterator_base
   typedef _Bit_iterator   iterator;
 
   _Bit_iterator() : _Bit_iterator_base(0, 0) {}
-  _Bit_iterator(unsigned int* __x, unsigned int __y) 
+  _Bit_iterator(_Bit_type * __x, unsigned int __y) 
     : _Bit_iterator_base(__x, __y) {}
 
   reference operator*() const { return reference(_M_p, 1U << _M_offset); }
@@ -216,7 +217,7 @@ struct _Bit_const_iterator : public _Bit_iterator_base
   typedef _Bit_const_iterator  const_iterator;
 
   _Bit_const_iterator() : _Bit_iterator_base(0, 0) {}
-  _Bit_const_iterator(unsigned int* __x, unsigned int __y) 
+  _Bit_const_iterator(_Bit_type * __x, unsigned int __y) 
     : _Bit_iterator_base(__x, __y) {}
   _Bit_const_iterator(const _Bit_iterator& __x) 
     : _Bit_iterator_base(__x._M_p, __x._M_offset) {}
@@ -282,7 +283,7 @@ public:
     : _M_data_allocator(__a), _M_start(), _M_finish(), _M_end_of_storage(0) {}
 
 protected:
-  unsigned int* _M_bit_alloc(size_t __n) 
+  _Bit_type * _M_bit_alloc(size_t __n) 
     { return _M_data_allocator.allocate((__n + _M_word_bit - 1)/_M_word_bit); }
   void _M_deallocate() {
     if (_M_start._M_p)
@@ -290,11 +291,11 @@ protected:
                                    _M_end_of_storage - _M_start._M_p);
   }  
 
-  typename _Alloc_traits<unsigned int, _Allocator>::allocator_type 
+  typename _Alloc_traits<_Bit_type, _Allocator>::allocator_type 
           _M_data_allocator;
   _Bit_iterator _M_start;
   _Bit_iterator _M_finish;
-  unsigned int* _M_end_of_storage;
+  _Bit_type * _M_end_of_storage;
 };
 
 // Specialization for instanceless allocators.
@@ -309,10 +310,10 @@ public:
     : _M_start(), _M_finish(), _M_end_of_storage(0) {}
 
 protected:
-  typedef typename _Alloc_traits<unsigned int, _Allocator>::_Alloc_type
+  typedef typename _Alloc_traits<_Bit_type, _Allocator>::_Alloc_type
           _Alloc_type;
           
-  unsigned int* _M_bit_alloc(size_t __n) 
+  _Bit_type * _M_bit_alloc(size_t __n) 
     { return _Alloc_type::allocate((__n + _M_word_bit - 1)/_M_word_bit); }
   void _M_deallocate() {
     if (_M_start._M_p)
@@ -322,7 +323,7 @@ protected:
 
   _Bit_iterator _M_start;
   _Bit_iterator _M_finish;
-  unsigned int* _M_end_of_storage;
+  _Bit_type * _M_end_of_storage;
 };  
 
 template <class _Alloc>
@@ -379,7 +380,7 @@ template <typename _Alloc>
   
   protected:
     void _M_initialize(size_type __n) {
-      unsigned int* __q = _M_bit_alloc(__n);
+      _Bit_type * __q = _M_bit_alloc(__n);
       _M_end_of_storage = __q + (__n + _M_word_bit - 1)/_M_word_bit;
       _M_start = iterator(__q, 0);
       _M_finish = _M_start + difference_type(__n);
@@ -392,7 +393,7 @@ template <typename _Alloc>
       }
       else {
         size_type __len = size() ? 2 * size() : _M_word_bit;
-        unsigned int* __q = _M_bit_alloc(__len);
+        _Bit_type * __q = _M_bit_alloc(__len);
         iterator __i = copy(begin(), __position, iterator(__q, 0));
         *__i++ = __x;
         _M_finish = copy(__position, end(), __i);
@@ -443,7 +444,7 @@ template <typename _Alloc>
         }
         else {
           size_type __len = size() + max(size(), __n);
-          unsigned int* __q = _M_bit_alloc(__len);
+          _Bit_type * __q = _M_bit_alloc(__len);
           iterator __i = copy(begin(), __position, iterator(__q, 0));
           __i = copy(__first, __last, __i);
           _M_finish = copy(__position, end(), __i);
@@ -610,7 +611,7 @@ template <typename _Alloc>
   
     void reserve(size_type __n) {
       if (capacity() < __n) {
-        unsigned int* __q = _M_bit_alloc(__n);
+        _Bit_type * __q = _M_bit_alloc(__n);
         _M_finish = copy(begin(), end(), iterator(__q, 0));
         _M_deallocate();
         _M_start = iterator(__q, 0);
@@ -673,7 +674,7 @@ template <typename _Alloc>
       }
       else {
         size_type __len = size() + max(size(), __n);
-        unsigned int* __q = _M_bit_alloc(__len);
+        _Bit_type * __q = _M_bit_alloc(__len);
         iterator __i = copy(begin(), __position, iterator(__q, 0));
         fill_n(__i, __n, __x);
         _M_finish = copy(__position, end(), __i + difference_type(__n));
@@ -705,7 +706,7 @@ template <typename _Alloc>
         insert(end(), __new_size - size(), __x);
     }
     void flip() {
-      for (unsigned int* __p = _M_start._M_p; __p != _M_end_of_storage; ++__p)
+      for (_Bit_type * __p = _M_start._M_p; __p != _M_end_of_storage; ++__p)
         *__p = ~*__p;
     }
   
