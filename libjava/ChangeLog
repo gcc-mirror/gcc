@@ -1,3 +1,8 @@
+2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4 (CXX): AC_SUBST it, instead of glibcpp_CXX.
+	* aclocal.m4, configure: Rebuilt.
+
 2002-02-20  Per Bothner  <per@bothner.com>
 
 	* gnu/gcj/protocol/file/Connection.java (conect):  Open the input
