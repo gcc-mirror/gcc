@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -494,11 +494,11 @@ extern void override_options ();
    listed once, even those in FIXED_REGISTERS.
 
    We allocate in the following order:
-   $f1			(nonsaved floating-point register)
-   $f10-$f15		(likewise)
+   $f10-$f15		(nonsaved floating-point register)
    $f22-$f30		(likewise)
    $f21-$f16		(likewise, but input args)
    $f0			(nonsaved, but return value)
+   $f1			(nonsaved, but immediate before saved)
    $f2-$f9		(saved floating-point registers)
    $1-$8		(nonsaved integer registers)
    $22-$25		(likewise)
@@ -513,11 +513,10 @@ extern void override_options ();
    $30, $31, $f31	(stack pointer and always zero/ap & fp)  */
 
 #define REG_ALLOC_ORDER		\
-  {33,					\
-   42, 43, 44, 45, 46, 47,		\
+  {42, 43, 44, 45, 46, 47,		\
    54, 55, 56, 57, 58, 59, 60, 61, 62,	\
    53, 52, 51, 50, 49, 48,		\
-   32,					\
+   32, 33,				\
    34, 35, 36, 37, 38, 39, 40, 41,	\
    1, 2, 3, 4, 5, 6, 7, 8,		\
    22, 23, 24, 25,			\
