@@ -391,6 +391,9 @@ extern int flag_short_double;
 
 extern int flag_short_wchar;
 
+/* Nonzero means warn about use of multicharacter literals.  */
+extern int warn_multichar;
+
 /* Warn about *printf or *scanf format/argument anomalies.  */
 
 extern int warn_format;

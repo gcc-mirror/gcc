@@ -295,7 +295,16 @@ eval_token (pfile, token)
 
     case CPP_WCHAR:
     case CPP_CHAR:
-      op.value = cpp_interpret_charconst (pfile, token, 1, &temp, &unsignedp);
+      {
+	cppchar_t result = cpp_interpret_charconst (pfile, token,
+						    &temp, &unsignedp);
+	op.value = result;
+	/* Sign-extend the result if necessary.  */
+	if (!unsignedp && (cppchar_signed_t) result < 0
+	    && sizeof (HOST_WIDEST_INT) > sizeof (cppchar_t))
+	  op.value |= ~(((unsigned HOST_WIDEST_INT) 1 << BITS_PER_CPPCHAR_T)
+			- 1);
+      }
       break;
 
     case CPP_NAME:

@@ -1,3 +1,10 @@
+2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Make-lang.in (decl2.o): Update.
+	* cp-tree.h (warn_multichar): Remove.
+	* decl2.c: Include c-common.h.
+	(warn_multichar): Remove.
+
 2002-05-03  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build_cplus_array_type): Only const and volatile get

@@ -487,6 +487,7 @@ cpp_create_reader (lang)
 
   set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
+  CPP_OPTION (pfile, warn_multichar) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, discard_comments_in_macro_exp) = 1;
   CPP_OPTION (pfile, show_column) = 1;

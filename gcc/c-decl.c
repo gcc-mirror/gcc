@@ -426,10 +426,6 @@ int warn_sign_compare = -1;
 
 int warn_float_equal = 0;
 
-/* Nonzero means warn about use of multicharacter literals.  */
-
-int warn_multichar = 1;
-
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
