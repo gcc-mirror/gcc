@@ -21,7 +21,7 @@ DESCRIPTION
 #endif
 
 PTR
-DEFUN(memcpy, (out, in, length), PTR out AND CONST PTR in AND size_t length)
+DEFUN(memcpy, (out, in, length), PTR out AND const PTR in AND size_t length)
 {
     bcopy(in, out, length);
     return out;

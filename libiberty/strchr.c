@@ -21,7 +21,7 @@ BUGS
 
 char *
 strchr (s, c)
-  register CONST char *s;
+  register const char *s;
   int c;
 {
   do {

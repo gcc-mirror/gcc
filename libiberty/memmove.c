@@ -10,7 +10,7 @@
 PTR
 memmove (s1, s2, n)
      PTR s1;
-     CONST PTR s2;
+     const PTR s2;
      size_t n;
 {
   bcopy (s2, s1, n);

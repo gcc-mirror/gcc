@@ -279,7 +279,7 @@ put_field (data, order, total_len, start, len, stuff_to_put)
 
 void
 floatformat_from_double (fmt, from, to)
-     CONST struct floatformat *fmt;
+     const struct floatformat *fmt;
      double *from;
      char *to;
 {

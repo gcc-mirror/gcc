@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#ifndef IN_GCC
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -37,9 +36,6 @@
 #include <sys/time.h>
 #endif
 #include "ansidecl.h"
-#else
-#include "system.h"
-#endif
 
 /* We need to provide a type for gcc_uint64_t.  */
 #ifdef __GNUC__
