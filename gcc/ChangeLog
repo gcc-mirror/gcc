@@ -1,3 +1,29 @@
+2002-07-23	Paul Koning	<pkoning@equallogic.com>
+
+	* real.c (REAL_WORDS_BIG_ENDIAN): Make 1 for DEC.
+	(LARGEST_EXPONENT_IS_NORMAL): Ditto.
+	(VAX_HALFWORD_ORDER): Define (1 for DEC VAX, 0 otherwise).
+	(TARGET_G_FLOAT): Default to 0 if not defined.
+	(ieeetoe): New, common routine to convert target format floats 
+	to internal form.
+	(e24toe, e53toe): Change to use ieeetoe, distinguish DEC
+	vs. others.
+	(e113toe): Change to use ieeetoe.
+
+2002-07-23  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* real.c (REAL_WORDS_BIG_ENDIAN): Make sure it is 0 for DEC and 1 for
+	IBM.
+	(e53toe): Assume IEEE if non of DEC, IBM and C4X is defined.
+	(e64toe): Remove special cases for DEC and IBM. Remove support for
+	ARM_EXTENDED_IEEE_FORMAT.
+	(e24toe): Remove special cases for DEC.
+	(significand_size): Simplify. Indent.
+	(ieee_format, ieee_24, ieee_53, ieee_64, ieee_113): New.
+	(etoieee, toieee): New.
+	(etoe113, toe113, etoe64, toe64, etoe53, toe53, etoe24, toe24): Use
+	etoieee and toieee for IEEE arithmetic.
+
 2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* doc/extend.texi: Say ISO C90, not ISO C89.
