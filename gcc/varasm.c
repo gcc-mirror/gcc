@@ -3204,7 +3204,14 @@ output_constant_def (exp, defer)
      such as that it is a function name.  If the name is changed, the macro
      ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
-  ENCODE_SECTION_INFO (exp);
+  /* A previously-processed constant would already have section info
+     encoded in it.  */
+  if (! found)
+    {
+      ENCODE_SECTION_INFO (exp);
+      desc->rtl = TREE_CST_RTL (exp);
+      desc->label = XSTR (XEXP (desc->rtl, 0), 0);
+    }
 #endif
 
 #ifdef CONSTANT_AFTER_FUNCTION_P
