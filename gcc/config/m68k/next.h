@@ -20,17 +20,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Use new NeXT include file search path.  */
 
-#define INCLUDE_DEFAULTS                                \
-  {                                                     \
-    { "/NextDeveloper/Headers", 0},                     \
-    { "/NextDeveloper/Headers/ansi", 0},                \
-    { "/NextDeveloper/Headers/bsd", 0},                 \
-    { "/LocalDeveloper/Headers", 0},                    \
-    { "/LocalDeveloper/Headers/ansi", 0},               \
-    { "/LocalDeveloper/Headers/bsd", 0},                \
-    { "/NextDeveloper/2.0CompatibleHeaders", 0},        \
-    { 0, 0}                                             \
+#ifndef CROSS_COMPILE /* In a cross compiler with NeXT as target, don't expect
+			 the host to use Next's directory scheme.  */
+#define INCLUDE_DEFAULTS				\
+  {							\
+    { GPLUSPLUS_INCLUDE_DIR, 1},			\
+    { GCC_INCLUDE_DIR, 0},				\
+    { LOCAL_INCLUDE_DIR, 0},				\
+    { "/NextDeveloper/Headers", 0},			\
+    { "/NextDeveloper/Headers/ansi", 0},		\
+    { "/NextDeveloper/Headers/bsd", 0},			\
+    { "/LocalDeveloper/Headers", 0},			\
+    { "/LocalDeveloper/Headers/ansi", 0},		\
+    { "/LocalDeveloper/Headers/bsd", 0},		\
+    { "/NextDeveloper/2.0CompatibleHeaders", 0},	\
+    { STANDARD_INCLUDE_DIR, 0},				\
+    { 0, 0}						\
   }
+#endif /* CROSS_COMPILE */
 
 #define EXTRA_FORMAT_FUNCTIONS \
       "NXPrintf",	FALSE,	2,	FALSE,	\
