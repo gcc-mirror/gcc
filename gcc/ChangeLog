@@ -1,3 +1,8 @@
+1997-09-30  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* except.c (find_exception_handler_labels): Free LABELS when we're
+	done.
+
 Mon Sep 29 14:04:35 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
