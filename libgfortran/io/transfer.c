@@ -1074,6 +1074,7 @@ data_transfer_init (int read_flag)
   g.seen_dollar = 0;
   g.first_item = 1;
   g.item_count = 0;
+  sf_seen_eor = 0;
 
   pre_position ();
 
