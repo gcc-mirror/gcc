@@ -3249,10 +3249,18 @@ simple_stmt:
 	/* This is the case with input operands as well.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':' asm_operands ')' ';'
 		{ finish_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
+	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ')' ';'
+		{ finish_asm_stmt ($2, $4, NULL_TREE, $6, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
 	  asm_operands ':' asm_clobbers ')' ';'
 		{ finish_asm_stmt ($2, $4, $6, $8, $10); }
+	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ':'
+	  asm_clobbers ')' ';'
+		{ finish_asm_stmt ($2, $4, NULL_TREE, $6, $8); }
+	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands SCOPE
+	  asm_clobbers ')' ';'
+		{ finish_asm_stmt ($2, $4, $6, NULL_TREE, $8); }
 	| GOTO '*' expr ';'
                 { 
 		  if (pedantic)
