@@ -1,3 +1,8 @@
+2001-03-27  Richard Henderson  <rth@redhat.com>
+
+	* function.c (expand_function_start): Set DECL_REGISTER on
+	a pseudo used for DECL_RESULT.
+
 2001-03-27  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (objc_init): Use dump_base_name.
