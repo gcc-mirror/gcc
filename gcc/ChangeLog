@@ -1,3 +1,8 @@
+2003-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_va_arg): Fix alignment when retrieving 
+	non-integral types from integer register save area slots.
+
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/i386/svr3dbx.h: GNU CC -> GCC; Intel 385 -> Intel 386.
