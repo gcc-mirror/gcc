@@ -8851,6 +8851,12 @@ loc_descriptor_from_tree (tree loc, int addressp)
     case EXPR_WITH_FILE_LOCATION:
       return loc_descriptor_from_tree (EXPR_WFL_NODE (loc), addressp);
 
+    case FIX_TRUNC_EXPR:
+    case FIX_CEIL_EXPR:
+    case FIX_FLOOR_EXPR:
+    case FIX_ROUND_EXPR:
+      return 0;
+
     default:
       /* Leave front-end specific codes as simply unknown.  This comes
 	 up, for instance, with the C STMT_EXPR.  */

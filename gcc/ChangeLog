@@ -1,5 +1,10 @@
 2004-10-14  Richard Henderson  <rth@redhat.com>
 
+	PR debug/14492
+	* dwarf2out.c (loc_descriptor_from_tree): Handle FIX_*_EXPR.
+
+2004-10-14  Richard Henderson  <rth@redhat.com>
+
 	PR c/17023
 	* c-parse.in (compstmt_primary_start): Check last_tree non-null,
 	not current_function_decl non-null.
