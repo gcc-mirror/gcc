@@ -9267,6 +9267,37 @@ tree_expr_nonnegative_p (tree t)
     case RTL_EXPR:
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
 
+    case TARGET_EXPR:
+      {
+	tree temp = TARGET_EXPR_SLOT (t);
+	t = TARGET_EXPR_INITIAL (t);
+
+	/* If the initializer is non-void, then it's a normal expression
+	   that will be assigned to the slot.  */
+	if (!VOID_TYPE_P (t))
+	  return tree_expr_nonnegative_p (t);
+
+	/* Otherwise, the initializer sets the slot in some way.  One common
+	   way is an assignment statement at the end of the initializer.  */
+	while (1)
+	  {
+	    if (TREE_CODE (t) == BIND_EXPR)
+	      t = expr_last (BIND_EXPR_BODY (t));
+	    else if (TREE_CODE (t) == TRY_FINALLY_EXPR
+		     || TREE_CODE (t) == TRY_CATCH_EXPR)
+	      t = expr_last (TREE_OPERAND (t, 0));
+	    else if (TREE_CODE (t) == STATEMENT_LIST)
+	      t = expr_last (t);
+	    else
+	      break;
+	  }
+	if (TREE_CODE (t) == MODIFY_EXPR
+	    && TREE_OPERAND (t, 0) == temp)
+	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
+	return 0;
+      }
+
     case CALL_EXPR:
       {
 	tree fndecl = get_callee_fndecl (t);

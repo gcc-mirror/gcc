@@ -46,6 +46,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "target.h"
 #include "tree-iterator.h"
+#include "tree-gimple.h"
 
 
 /* Nonzero if we've already printed a "missing braces around initializer"
@@ -2201,17 +2202,6 @@ parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
   return result;
 }
 
-
-/* Return true if `t' is known to be non-negative.  */
-
-int
-c_tree_expr_nonnegative_p (tree t)
-{
-  if (TREE_CODE (t) == STMT_EXPR)
-    t = expr_last (STMT_EXPR_STMT (t));
-  return tree_expr_nonnegative_p (t);
-}
-
 /* Return a tree for the difference of pointers OP0 and OP1.
    The resulting tree has type int.  */
 
@@ -2810,8 +2800,8 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
 		 involving such literals) and it is non-negative.  */
-	      else if ((unsigned_op2 && c_tree_expr_nonnegative_p (op1))
-		       || (unsigned_op1 && c_tree_expr_nonnegative_p (op2)))
+	      else if ((unsigned_op2 && tree_expr_nonnegative_p (op1))
+		       || (unsigned_op1 && tree_expr_nonnegative_p (op2)))
 		/* OK */;
 	      else
 		warning ("signed and unsigned type in conditional expression");
@@ -6657,7 +6647,61 @@ c_finish_for_stmt (tree body, tree for_stmt)
   FOR_BODY (for_stmt) = body;
 }
 
-/* Create a statement expression.  */
+/* A helper routine for c_finish_expr_stmt and c_finish_stmt_expr.  */
+
+static void
+emit_side_effect_warnings (tree expr)
+{
+  if (!TREE_SIDE_EFFECTS (expr))
+    {
+      if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
+	warning ("%Hstatement with no effect",
+		 EXPR_LOCUS (expr) ? EXPR_LOCUS (expr) : &input_location);
+    }
+  else if (warn_unused_value)
+    warn_if_unused_value (expr, input_location);
+}
+
+/* Emit an expression as a statement.  */
+
+void
+c_finish_expr_stmt (tree expr)
+{
+  if (!expr)
+    return;
+
+  /* Do default conversion if safe and possibly important,
+     in case within ({...}).  */
+  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
+       && (flag_isoc99 || lvalue_p (expr)))
+      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
+    expr = default_conversion (expr);
+
+  if (warn_sequence_point)
+    verify_sequence_points (expr);
+
+  if (TREE_TYPE (expr) != error_mark_node
+      && !COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (expr))
+      && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
+    error ("expression statement has incomplete type");
+
+  /* If we're not processing a statement expression, warn about unused values.
+     Warnings for statement expressions will be emitted later, once we figure
+     out which is the result.  */
+  if (!STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
+      && (extra_warnings || warn_unused_value))
+    emit_side_effect_warnings (expr);
+
+  /* If the expression is not of a type to which we cannot assign a line
+     number, wrap the thing in a no-op NOP_EXPR.  */
+  if (DECL_P (expr) || TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
+    expr = build1 (NOP_EXPR, TREE_TYPE (expr), expr);
+
+  add_stmt (expr);
+}
+
+/* Do the opposite and emit a statement as an expression.  To begin,
+   create a new binding level and return it.  */
 
 tree
 c_begin_stmt_expr (void)
@@ -6679,63 +6723,77 @@ c_begin_stmt_expr (void)
 tree
 c_finish_stmt_expr (tree body)
 {
-  tree ret, last, type;
+  tree last, type, tmp, val;
   tree *last_p;
 
   body = c_end_compound_stmt (body, true);
 
-  /* Locate the last statement in BODY.  */
-  last = body, last_p = &body;
-  if (TREE_CODE (last) == BIND_EXPR)
-    {
-      last_p = &BIND_EXPR_BODY (last);
-      last = BIND_EXPR_BODY (last);
-    }
+  /* Locate the last statement in BODY.  See c_end_compound_stmt
+     about always returning a BIND_EXPR.  */
+  last_p = &BIND_EXPR_BODY (body);
+  last = BIND_EXPR_BODY (body);
+
+ continue_searching:
   if (TREE_CODE (last) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i = tsi_last (last);
-      if (tsi_end_p (i))
+      tree_stmt_iterator i;
+
+      /* This can happen with degenerate cases like ({ }).  No value.  */
+      if (!TREE_SIDE_EFFECTS (last))
+	return body;
+
+      /* If we're supposed to generate side effects warnings, process
+	 all of the statements except the last.  */
+      if (extra_warnings || warn_unused_value)
 	{
-	  type = void_type_node;
-	  /* ??? Warn */
-	  goto no_expr;
+	  for (i = tsi_start (last); !tsi_one_before_end_p (i); tsi_next (&i))
+	    emit_side_effect_warnings (tsi_stmt (i));
 	}
       else
-	{
-	  last_p = tsi_stmt_ptr (i);
-	  last = *last_p;
-	}
+	i = tsi_last (last);
+      last_p = tsi_stmt_ptr (i);
+      last = *last_p;
     }
 
-  /* If the last statement is an EXPR_STMT, then unwrap it.  Otherwise
-     voidify_wrapper_expr will stuff it inside a MODIFY_EXPR and we'll
-     fail gimplification.  */
-  /* ??? Should we go ahead and perform voidify_wrapper_expr here?
-     We've got about all the information we need here.  All we'd have
-     to do even for proper type safety is to create, in effect,
-	( ({ ...; tmp = last; }), tmp )
-     I.e. a COMPOUND_EXPR with the rhs being the compiler temporary.
-     Not going to try this now, since it's not clear what should
-     happen (wrt bindings) with new temporaries at this stage.  It's
-     easier once we begin gimplification.  */
-  if (TREE_CODE (last) == EXPR_STMT)
-    *last_p = last = EXPR_STMT_EXPR (last);
+  /* If the end of the list is exception related, then the list was split
+     by a call to push_cleanup.  Continue searching.  */
+  if (TREE_CODE (last) == TRY_FINALLY_EXPR
+      || TREE_CODE (last) == TRY_CATCH_EXPR)
+    {
+      last_p = &TREE_OPERAND (last, 0);
+      last = *last_p;
+      goto continue_searching;
+    }
+
+  /* In the case that the BIND_EXPR is not necessary, return the
+     expression out from inside it.  */
+  if (last == BIND_EXPR_BODY (body) && BIND_EXPR_VARS (body) == NULL)
+    return last;
 
   /* Extract the type of said expression.  */
   type = TREE_TYPE (last);
-  if (!type)
-    type = void_type_node;
 
- no_expr:
-  /* If what's left is compound, make sure we've got a BIND_EXPR, and
-     that it has the proper type.  */
-  ret = body;
-  if (TREE_CODE (ret) == STATEMENT_LIST)
-    ret = build (BIND_EXPR, type, NULL, ret, NULL);
-  else if (TREE_CODE (ret) == BIND_EXPR)
-    TREE_TYPE (ret) = type;
+  /* If we're not returning a value at all, then the BIND_EXPR that
+     we already have is a fine expression to return.  */
+  if (!type || VOID_TYPE_P (type))
+    return body;
 
-  return ret;
+  /* Now that we've located the expression containing the value, it seems
+     silly to make voidify_wrapper_expr repeat the process.  Create a
+     temporary of the appropriate type and stick it in a TARGET_EXPR.  */
+  tmp = create_tmp_var_raw (type, NULL);
+
+  /* Unwrap a no-op NOP_EXPR as added by c_finish_expr_stmt.  This avoids
+     tree_expr_nonnegative_p giving up immediately.  */
+  val = last;
+  if (TREE_CODE (val) == NOP_EXPR
+      && TREE_TYPE (val) == TREE_TYPE (TREE_OPERAND (val, 0)))
+    val = TREE_OPERAND (val, 0);
+
+  *last_p = build (MODIFY_EXPR, void_type_node, tmp, val);
+  SET_EXPR_LOCUS (*last_p, EXPR_LOCUS (last));
+
+  return build (TARGET_EXPR, type, tmp, body, NULL_TREE, NULL_TREE);
 }
 
 /* Begin and end compound statements.  This is as simple as pushing
@@ -6791,10 +6849,17 @@ c_end_compound_stmt (tree stmt, bool do_scope)
 void
 push_cleanup (tree decl ATTRIBUTE_UNUSED, tree cleanup, bool eh_only)
 {
-  enum tree_code code = eh_only ? TRY_CATCH_EXPR : TRY_FINALLY_EXPR;
-  tree stmt = build_stmt (code, NULL, cleanup);
+  enum tree_code code;
+  tree stmt, list;
+  bool stmt_expr;
+
+  code = eh_only ? TRY_CATCH_EXPR : TRY_FINALLY_EXPR;
+  stmt = build_stmt (code, NULL, cleanup);
   add_stmt (stmt);
-  TREE_OPERAND (stmt, 0) = push_stmt_list ();
+  stmt_expr = STATEMENT_LIST_STMT_EXPR (cur_stmt_list);
+  list = push_stmt_list ();
+  TREE_OPERAND (stmt, 0) = list;
+  STATEMENT_LIST_STMT_EXPR (list) = stmt_expr;
 }
 
 /* Build a binary-operation expression without default conversions.
@@ -7412,7 +7477,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		     constant expression involving such literals or a
 		     conditional expression involving such literals)
 		     and it is non-negative.  */
-		  if (c_tree_expr_nonnegative_p (sop))
+		  if (tree_expr_nonnegative_p (sop))
 		    /* OK */;
 		  /* Do not warn if the comparison is an equality operation,
 		     the unsigned quantity is an integral constant, and it

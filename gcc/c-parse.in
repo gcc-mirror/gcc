@@ -2210,7 +2210,7 @@ select_or_iter_stmt:
 
 for_init_stmt:
 	  xexpr ';'
-		{ add_stmt (build_stmt (EXPR_STMT, $1)); }
+		{ c_finish_expr_stmt ($1); }
 	| decl
 		{ check_for_loop_decls (); }
 	;
@@ -2226,7 +2226,7 @@ stmt:
 	  compstmt
 		{ stmt_count++; add_stmt ($1); }
 	| expr ';'
-		{ stmt_count++; c_expand_expr_stmt ($1); }
+		{ stmt_count++; c_finish_expr_stmt ($1); }
 	| c99_block_start select_or_iter_stmt
                 { add_stmt (c_end_compound_stmt ($1, flag_isoc99)); }
 	| BREAK ';'

@@ -1,3 +1,7 @@
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
+	* semantics.c (finish_expr_stmt): Call verify_sequence_points.
+
 2004-06-20  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h (add_decl_stmt): Declare.
