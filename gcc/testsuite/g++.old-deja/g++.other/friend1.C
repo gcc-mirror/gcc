@@ -46,10 +46,13 @@ struct R {
   X<&B::j> x;
 };
 
+B b;
+D d;
+
 void f()
 {
-    ((B*)0)->i = 3; // ERROR - protected
-    ((D*)0)->i = 4;
+    b.i = 3; // ERROR - protected
+    d.i = 4;
     B::j = 5;
     D::j = 6;
 }
@@ -57,8 +60,8 @@ void f()
 template <typename T>
 void g()
 {
-    ((B*)0)->i = 3; // ERROR - protected
-    ((D*)0)->i = 4;
+    b.i = 3; // ERROR - protected
+    d.i = 4;
     B::j = 5;
     D::j = 6;
 }
@@ -67,8 +70,8 @@ template void g<int>();
 
 void S::h()
 {
-  ((B*)0)->i = 3; // ERROR - protected
-  ((D*)0)->i = 4;
+  b.i = 3; // ERROR - protected
+  d.i = 4;
   B::j = 5;
   D::j = 6;
 }
@@ -76,8 +79,8 @@ void S::h()
 template <typename T>
 void R<T>::h() 
 {
-  ((B*)0)->i = 3; // ERROR - protected
-  ((D*)0)->i = 4;
+  b.i = 3; // ERROR - protected
+  d.i = 4;
   B::j = 5;
   D::j = 6;
 }

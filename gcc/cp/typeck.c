@@ -1999,6 +1999,8 @@ build_component_ref (datum, component, basetype_path, protect)
   register tree ref;
   tree field_type;
   int type_quals;
+  tree old_datum;
+  tree old_basetype;
 
   if (processing_template_decl)
     return build_min_nt (COMPONENT_REF, datum, component);
@@ -2202,6 +2204,9 @@ build_component_ref (datum, component, basetype_path, protect)
   if (TREE_DEPRECATED (field))
     warn_deprecated_use (field);
 
+  old_datum = datum;
+  old_basetype = basetype;
+
   /* See if we have to do any conversions so that we pick up the field from the
      right context.  */
   if (DECL_FIELD_CONTEXT (field) != basetype)
@@ -2215,12 +2220,17 @@ build_component_ref (datum, component, basetype_path, protect)
       /* Handle base classes here...  */
       if (base != basetype && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
 	{
- 	  tree binfo = lookup_base (TREE_TYPE (datum), base, ba_check, NULL);
- 
+	  base_kind kind;
+ 	  tree binfo = lookup_base (TREE_TYPE (datum), base, ba_check, &kind);
+
+	  /* Complain about use of offsetof which will break.  */
 	  if (TREE_CODE (datum) == INDIRECT_REF
-	      && integer_zerop (TREE_OPERAND (datum, 0)))
+	      && integer_zerop (TREE_OPERAND (datum, 0))
+	      && kind == bk_via_virtual)
 	    {
-	      error ("invalid reference to NULL ptr, use ptr-to-member instead");
+	      error ("\
+invalid offsetof from non-POD type `%#T'; use pointer to member instead",
+		     basetype);
 	      return error_mark_node;
 	    }
  	  datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
@@ -2238,6 +2248,18 @@ build_component_ref (datum, component, basetype_path, protect)
 	  return build_component_ref (subdatum, field, basetype_path, protect);
 	}
     }
+
+  /* Complain about other invalid uses of offsetof, even though they will
+     give the right answer.  Note that we complain whether or not they
+     actually used the offsetof macro, since there's no way to know at this
+     point.  So we just give a warning, instead of a pedwarn.  */
+  if (protect
+      && CLASSTYPE_NON_POD_P (old_basetype)
+      && TREE_CODE (old_datum) == INDIRECT_REF
+      && integer_zerop (TREE_OPERAND (old_datum, 0)))
+    warning ("\
+invalid offsetof from non-POD type `%#T'; use pointer to member instead",
+	     basetype);
 
   /* Compute the type of the field, as described in [expr.ref].  */
   type_quals = TYPE_UNQUALIFIED;
