@@ -599,8 +599,8 @@ expand_call (exp, target, ignore)
 	{
 	  if (!flag_no_inline
 	      && fndecl != current_function_decl
-	      && DECL_SAVED_INSNS (fndecl)
-	      && ! function_cannot_inline_p (fndecl))
+	      && DECL_INLINE (fndecl)
+	      && DECL_SAVED_INSNS (fndecl))
 	    is_integrable = 1;
 	  else if (! TREE_ADDRESSABLE (fndecl))
 	    {
