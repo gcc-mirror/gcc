@@ -3242,7 +3242,7 @@ eliminate_regs_in_insn (insn, replace)
      to a register that we eliminate and could cause a different number
      of spill registers to be needed in the final reload pass than in
      the pre-passes.  */
-  if (val)
+  if (val && REG_NOTES (insn) != 0)
     REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, NULL_RTX);
 
   if (! replace)
