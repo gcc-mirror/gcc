@@ -1,5 +1,5 @@
 /* BasicPermission.java -- implements a simple named permission
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,9 +71,8 @@ import java.util.Enumeration;
  * @since 1.1
  * @status updated to 1.4
  */
-public abstract class BasicPermission extends java.security.Permission
+public abstract class BasicPermission extends Permission
   implements Serializable
-  // FIXME extends with fully qualified classname is workaround for gcj 3.0.4.
 {
   /**
    * Compatible with JDK 1.1+.
