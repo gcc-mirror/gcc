@@ -1685,7 +1685,8 @@ copy_insn_notes (insns, map, eh_region_offset)
 	      next = XEXP (note, 1);
 	      if (REG_NOTE_KIND (note) == REG_LABEL)
 	        remove_note (new_insn, note);
-	      else if (REG_NOTE_KIND (note) == REG_EH_REGION)
+	      else if (REG_NOTE_KIND (note) == REG_EH_REGION
+		       && INTVAL (XEXP (note, 0)) > 0)
 	        XEXP (note, 0) = GEN_INT (INTVAL (XEXP (note, 0))
 					  + eh_region_offset);
 	    }

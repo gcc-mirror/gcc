@@ -1,3 +1,8 @@
+Thu Dec 27 09:50:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (copy_insn_notes): Don't adjust REG_EH_REGION note
+	if special value.
+
 2001-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (is_ctor_dtor): Const-ify.
