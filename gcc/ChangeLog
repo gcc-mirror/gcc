@@ -1,4 +1,4 @@
-2004-02-22  Christopher Faylor  <cgf@redhat.com>
+2004-02-21  Christopher Faylor  <cgf@redhat.com>
 
 	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): Specify extra host
 	object file when targetting cygwin.
