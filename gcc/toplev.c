@@ -2925,7 +2925,7 @@ rest_of_compilation (decl)
     }
 
   /* Instantiate any remaining CONSTANT_P_RTX nodes.  */
-  if (optimize > 0 && flag_gcse)
+  if (optimize > 0 && flag_gcse && current_function_calls_constant_p)
     purge_builtin_constant_p ();
 
   /* Move constant computations out of loops.  */

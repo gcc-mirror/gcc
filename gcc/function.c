@@ -6166,6 +6166,8 @@ prepare_function_start ()
   current_function_calls_longjmp = 0;
 
   current_function_calls_alloca = 0;
+  current_function_calls_eh_return = 0;
+  current_function_calls_constant_p = 0;
   current_function_contains_functions = 0;
   current_function_is_leaf = 0;
   current_function_nothrow = 0;

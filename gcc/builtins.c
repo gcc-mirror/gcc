@@ -1469,6 +1469,8 @@ expand_builtin_constant_p (exp)
      case is not obvious, so emit (constant_p_rtx (ARGLIST)) and let CSE
      get a chance to see if it can deduce whether ARGLIST is constant.  */
 
+  current_function_calls_constant_p = 1;
+
   tmp = expand_expr (arglist, NULL_RTX, VOIDmode, 0);
   tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
   return tmp;
