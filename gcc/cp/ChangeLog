@@ -1,3 +1,8 @@
+1999-04-22  Brendan Kehoe  <brendan@cygnus.com>
+
+	* tree.c (build_exception_variant): Fix typo: use the chain of U,
+	not trying V, while cycling through U.
+
 1999-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Remove returns_first_arg and
