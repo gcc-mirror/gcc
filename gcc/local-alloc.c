@@ -2293,11 +2293,7 @@ post_mark_life (int regno, enum machine_mode mode, int life, int birth,
 		int death)
 {
   int j = HARD_REGNO_NREGS (regno, mode);
-#ifdef HARD_REG_SET
-  /* Declare it register if it's a scalar.  */
-  register
-#endif
-    HARD_REG_SET this_reg;
+  HARD_REG_SET this_reg;
 
   CLEAR_HARD_REG_SET (this_reg);
   while (--j >= 0)

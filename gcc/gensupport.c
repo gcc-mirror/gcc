@@ -842,7 +842,7 @@ process_define_cond_exec (void)
 static char *
 save_string (const char *s, int len)
 {
-  register char *result = xmalloc (len + 1);
+  char *result = xmalloc (len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;
