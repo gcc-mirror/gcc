@@ -2365,7 +2365,9 @@ arith_reg_operand (op, mode)
     {
       if (GET_CODE (op) == REG)
 	return (REGNO (op) != T_REG
-		&& REGNO (op) != PR_REG);
+		&& REGNO (op) != PR_REG
+		&& REGNO (op) != MACH_REG
+		&& REGNO (op) != MACL_REG);
       return 1;
     }
   return 0;
