@@ -39,6 +39,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LINK_SPEC "%{Z*}"
 
+/* Dynix V3.0.12 doesn't accept -L at all.  */
+
+#define LINK_LIBGCC_SPECIAL
+
 /* Link with libg.a when debugging, for dbx's sake.  */
 
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} "
