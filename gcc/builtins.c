@@ -180,7 +180,7 @@ static void init_builtin_dconsts	PARAMS ((void));
 static tree fold_builtin_cabs		PARAMS ((tree, tree, tree));
 
 /* Initialize mathematical constants for constant folding builtins.
-   These constants need to be given to atleast 160 bits precision.  */
+   These constants need to be given to at least 160 bits precision.  */
 
 static void
 init_builtin_dconsts ()
