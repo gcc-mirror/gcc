@@ -1,8 +1,8 @@
-#ifndef _LIMITS_H_
+#ifndef _LIMITS_H___
 #ifndef _MACH_MACHLIMITS_H_
 
 /* _MACH_MACHLIMITS_H_ is used on OSF/1.  */
-#define _LIMITS_H_
+#define _LIMITS_H___
 #define _MACH_MACHLIMITS_H_
 
 /* Number of bits in a `char'.  */
@@ -80,4 +80,4 @@
 #endif
 
 #endif /* _MACH_MACHLIMITS_H_ */
-#endif /* _LIMITS_H_ */
+#endif /* _LIMITS_H___ */
