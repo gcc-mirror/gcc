@@ -5238,7 +5238,7 @@ expand_expr (exp, target, tmode, modifier)
 	  if (mode == VOIDmode)
 	    temp = const0_rtx;
 	  else
-	    temp = assign_temp (type, 0, 0, 0);
+	    temp = assign_temp (type, 3, 0, 0);
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
