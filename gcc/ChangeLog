@@ -1,3 +1,9 @@
+Tue Jun 15 01:55:20 1999  David O'Brien <obrien@FreeBSD.org>
+
+	* i386/freebsd-elf.h (LINK_SPEC): clean up the linking library
+	specifications and make it realistic.
+	(LIB_SPEC): Likewise.
+
 Mon Jun 14 03:55:40 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (rs6000-ibm-aix4.3*, powerpc-ibm-aix4.3*): Do not
