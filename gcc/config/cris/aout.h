@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CRIS_CPP_SUBTARGET_SPEC
 #define CRIS_CPP_SUBTARGET_SPEC \
  "-D__AOUT__\
-  %{melinux:-D__linux__ -D__unix__ -D__elinux__ -D__uclinux__\
+  %{melinux:-D__gnu_linux__ -D__linux__ -D__unix__ -D__elinux__ -D__uclinux__\
     %{!nostdinc:\
       %{!mbest-lib-options:%{isystem*}}\
       -isystem elinux/include%s\

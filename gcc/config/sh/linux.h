@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GNU CC.
@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dlinux -Asystem=posix"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dgnu_linux -Dlinux -Asystem=posix"
 
 #undef ASM_SPEC
 #define ASM_SPEC  "%{!mb:-little} %{mrelax:-relax}"

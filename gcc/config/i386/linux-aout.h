@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running Linux-based GNU systems using a.out.
-   Copyright (C) 1992, 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994, 1995, 1997, 1998, 2002 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dlinux -Asystem=posix"
+#define CPP_PREDEFINES "-Dunix -Dgnu_linux -Dlinux -Asystem=posix"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
