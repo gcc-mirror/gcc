@@ -1,3 +1,8 @@
+2002-07-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (eh_set_lr_si, eh_set_lr_di): Change
+	constraints to 'd'.
+
 2002-07-30  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/elf.h (STARTFILE_SPEC): Define differently if
