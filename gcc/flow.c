@@ -160,7 +160,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef HAVE_conditional_execution
 #ifndef REVERSE_CONDEXEC_PREDICATES_P
-#define REVERSE_CONDEXEC_PREDICATES_P(x, y) ((x) == reverse_condition (y))
+#define REVERSE_CONDEXEC_PREDICATES_P(x, y) \
+  (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
 #endif
 #endif
 
@@ -2996,7 +2997,7 @@ ior_reg_cond (rtx old, rtx x, int add)
   if (COMPARISON_P (old))
     {
       if (COMPARISON_P (x)
-	  && REVERSE_CONDEXEC_PREDICATES_P (GET_CODE (x), GET_CODE (old))
+	  && REVERSE_CONDEXEC_PREDICATES_P (x, old)
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const1_rtx;
       if (GET_CODE (x) == GET_CODE (old)
@@ -3079,14 +3080,11 @@ ior_reg_cond (rtx old, rtx x, int add)
 static rtx
 not_reg_cond (rtx x)
 {
-  enum rtx_code x_code;
-
   if (x == const0_rtx)
     return const1_rtx;
   else if (x == const1_rtx)
     return const0_rtx;
-  x_code = GET_CODE (x);
-  if (x_code == NOT)
+  if (GET_CODE (x) == NOT)
     return XEXP (x, 0);
   if (COMPARISON_P (x)
       && REG_P (XEXP (x, 0)))
@@ -3094,7 +3092,7 @@ not_reg_cond (rtx x)
       if (XEXP (x, 1) != const0_rtx)
 	abort ();
 
-      return gen_rtx_fmt_ee (reverse_condition (x_code),
+      return gen_rtx_fmt_ee (reversed_comparison_code (x, NULL),
 			     VOIDmode, XEXP (x, 0), const0_rtx);
     }
   return gen_rtx_NOT (0, x);
@@ -3108,7 +3106,7 @@ and_reg_cond (rtx old, rtx x, int add)
   if (COMPARISON_P (old))
     {
       if (COMPARISON_P (x)
-	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
+	  && GET_CODE (x) == reversed_comparison_code (old, NULL)
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const0_rtx;
       if (GET_CODE (x) == GET_CODE (old)
