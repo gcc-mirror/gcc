@@ -184,13 +184,35 @@ struct haifa_insn_data
 
 extern struct haifa_insn_data *h_i_d;
 
-/* Accessor macros for h_i_d.  There are more in haifa-sched.c.  */
+/* Accessor macros for h_i_d.  There are more in haifa-sched.c and
+   sched-rgn.c.  */
 #define INSN_DEPEND(INSN)	(h_i_d[INSN_UID (INSN)].depend)
 #define INSN_LUID(INSN)		(h_i_d[INSN_UID (INSN)].luid)
 #define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
 #define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
+#define INSN_PRIORITY(INSN)	(h_i_d[INSN_UID (INSN)].priority)
+#define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
+#define INSN_UNIT(INSN)		(h_i_d[INSN_UID (INSN)].units)
+#define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
+
+#define INSN_BLOCKAGE(INSN)	(h_i_d[INSN_UID (INSN)].blockage)
+#define UNIT_BITS		5
+#define BLOCKAGE_MASK		((1 << BLOCKAGE_BITS) - 1)
+#define ENCODE_BLOCKAGE(U, R)			\
+  (((U) << BLOCKAGE_BITS			\
+    | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS	\
+   | MAX_BLOCKAGE_COST (R))
+#define UNIT_BLOCKED(B)		((B) >> (2 * BLOCKAGE_BITS))
+#define BLOCKAGE_RANGE(B)                                                \
+  (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
+   | ((B) & BLOCKAGE_MASK))
+
+/* Encodings of the `<name>_unit_blockage_range' function.  */
+#define MIN_BLOCKAGE_COST(R) ((R) >> (HOST_BITS_PER_INT / 2))
+#define MAX_BLOCKAGE_COST(R) ((R) & ((1 << (HOST_BITS_PER_INT / 2)) - 1))
 
 extern FILE *sched_dump;
+extern int sched_verbose;
 
 #ifndef __GNUC__
 #define __inline
@@ -227,7 +249,28 @@ extern void init_dependency_caches PARAMS ((int));
 extern void free_dependency_caches PARAMS ((void));
 
 /* Functions in haifa-sched.c.  */
+extern void get_block_head_tail PARAMS ((int, rtx *, rtx *));
+extern int no_real_insns_p PARAMS ((rtx, rtx));
+
+extern void rm_line_notes PARAMS ((int));
+extern void save_line_notes PARAMS ((int));
+extern void restore_line_notes PARAMS ((int));
+extern void rm_redundant_line_notes PARAMS ((void));
+extern void rm_other_notes PARAMS ((rtx, rtx));
+
+extern int insn_issue_delay PARAMS ((rtx));
+extern int set_priorities PARAMS ((int));
+
+extern void schedule_block PARAMS ((int, int));
+extern void sched_init PARAMS ((FILE *));
+extern void sched_finish PARAMS ((void));
+
+extern void ready_add PARAMS ((struct ready_list *, rtx));
+
+/* The following are exported for the benefit of debugging functions.  It
+   would be nicer to keep them private to haifa-sched.c.  */
 extern int insn_unit PARAMS ((rtx));
+extern int insn_cost PARAMS ((rtx, rtx, rtx));
 extern rtx get_unit_last_insn PARAMS ((int));
 extern int actual_hazard_this_instance PARAMS ((int, int, rtx, int, int));
 
