@@ -1,5 +1,10 @@
 2004-12-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits (__is_enum_helper): Slightly simplify,
+	make __convert non template.
+
+2004-12-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_pod, has_trivial_constructor,
 	and has_trivial_destructor.
 	* testsuite/tr1/4_metaprogramming/type_properties/
