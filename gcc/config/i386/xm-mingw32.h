@@ -19,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-#define NO_STAB_H
-
 #ifndef USG
 #define USG 1
 #endif

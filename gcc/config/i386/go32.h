@@ -2,8 +2,6 @@
 
 #include "dbxcoff.h"
 
-#define NO_STAB_H /* DJGPP has no stab.h */
-
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 

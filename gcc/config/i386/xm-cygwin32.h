@@ -19,7 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-#define NO_STAB_H
 #define EXECUTABLE_SUFFIX ".exe"
 
 /* Even though we support "/", allow "\" since everybody tests both.  */

@@ -134,10 +134,11 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_VPRINTF
 
 #if defined(VAXC) || defined(__DECC)
+
 /* Customizations/kludges for building with DEC's VAX C compiler
    rather than GCC.  */
+
 #define NO_SYS_PARAMS_H		/* don't have <sys/params.h> */
-#define NO_STAB_H		/* don't have <stab.h> */
 #define USE_C_ALLOCA		/* using alloca.c */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 

@@ -3745,12 +3745,6 @@ no effect.  As soon as all of the machine descriptions are
 modified to have the appropriate number of arguments, this macro
 will be removed.
 
-@findex NO_STAB_H
-@item NO_STAB_H
-Define this if your system does not have the include file
-@file{stab.h}.  If @samp{USG} is defined, @samp{NO_STAB_H} is
-assumed.
-
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR
 Define this macro to be a C character constant representing the
