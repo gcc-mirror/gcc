@@ -134,6 +134,7 @@ namespace std
       {
  	_M_cfile = __file;
  	_M_cfile_created = false;
+	this->sync();
   	__ret = this;
       }
     return __ret;
@@ -201,7 +202,7 @@ namespace std
 	if (_M_cfile_created)
 	  fclose(_M_cfile);
 	else
-	  fflush(_M_cfile);
+	  this->sync();
 	_M_cfile = 0;
 	__ret = this;
       }
