@@ -37,8 +37,12 @@ exception statement from your version. */
 
 
 package java.util;
+
 import java.lang.reflect.InvocationTargetException;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * This class is an abstract base class for Calendars, which can be

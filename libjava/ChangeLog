@@ -1,5 +1,12 @@
 2003-12-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Calendar.java,
+	java/util/IdentityHashMap.java,
+	java/util/prefs/Preferences.java:
+	Import used classes explicitely.
+
+2003-12-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(close): Directly return if socket is closed.
 	* java/net/ServerSocket.java
