@@ -43,6 +43,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "libgcc2.h"
 
+#ifdef DECLARE_LIBRARY_RENAMES
+  DECLARE_LIBRARY_RENAMES
+#endif
+
 #if defined (L_negdi2)
 DWtype
 __negdi2 (DWtype u)

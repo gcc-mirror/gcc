@@ -4598,6 +4598,13 @@ remainder in division of one unsigned full-word by another.  If you do
 not define this macro, the default name is used, which is
 @code{__umoddi3}, a function defined in @file{libgcc.a}.
 
+@findex DECLARE_LIBRARY_RENAMES
+@item DECLARE_LIBRARY_RENAMES
+This macro, if defined, should expand to a piece of C code that will get
+expanded when compiling functions for libgcc.a.  It can be used to
+provide alternate names for gcc's internal library functions if there
+are ABI-mandated names that the compiler should provide.
+
 @findex INIT_TARGET_OPTABS
 @item INIT_TARGET_OPTABS
 Define this macro as a C statement that declares additional library

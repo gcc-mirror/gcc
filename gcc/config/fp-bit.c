@@ -74,6 +74,10 @@ Boston, MA 02111-1307, USA.  */
    are referenced from within libc, since libgcc goes before and after the
    system library.  */
 
+#ifdef DECLARE_LIBRARY_RENAMES
+  DECLARE_LIBRARY_RENAMES
+#endif
+
 #ifdef EXTENDED_FLOAT_STUBS
 __truncxfsf2 (){ abort(); }
 __extendsfxf2 (){ abort(); }
