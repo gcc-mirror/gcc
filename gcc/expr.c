@@ -1352,7 +1352,7 @@ convert_modes (mode, oldmode, x, unsignedp)
 	      && (val & ((HOST_WIDE_INT) 1 << (width - 1))))
 	    val |= (HOST_WIDE_INT) (-1) << width;
 
-	  return GEN_INT (trunc_int_for_mode (val, mode));
+	  return gen_int_mode (val, mode);
 	}
 
       return gen_lowpart (mode, x);
@@ -5150,8 +5150,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 
 	      if (unsignedp)
 		return expand_and (tmode, temp,
-				   GEN_INT (trunc_int_for_mode (width_mask,
-								tmode)),
+				   gen_int_mode (width_mask, tmode),
 				   NULL_RTX);
 
 	      count = build_int_2 (GET_MODE_BITSIZE (tmode) - bitsize, 0);

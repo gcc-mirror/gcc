@@ -2177,8 +2177,7 @@ rs6000_emit_move (dest, source, mode)
       /* FIXME.  This should never happen.  */
       /* Since it seems that it does, do the safe thing and convert
 	 to a CONST_INT.  */
-      operands[1] = 
-	GEN_INT (trunc_int_for_mode (CONST_DOUBLE_LOW (operands[1]), mode));
+      operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), mode);
     }
   if (GET_CODE (operands[1]) == CONST_DOUBLE
       && ! FLOAT_MODE_P (mode)
@@ -8312,10 +8311,8 @@ rs6000_emit_eh_toc_restore (stacksize)
 			       bottom_of_stack, stacksize,
 			       NULL_RTX, 1, OPTAB_WIDEN);
 
-  emit_move_insn (tocompare, 
-		  GEN_INT (trunc_int_for_mode (TARGET_32BIT 
-					       ? 0x80410014 
-					       : 0xE8410028, SImode)));
+  emit_move_insn (tocompare, gen_int_mode (TARGET_32BIT ? 0x80410014 
+					   : 0xE8410028, SImode));
 
   if (insn_after_throw == NULL_RTX)
     abort ();
