@@ -22,7 +22,7 @@
 __eabi:	mflr	0
 	bl	.Laddr				# get current address
 .Laddr:	mflr	11				# real address of .Ltable
-	lwz	12,(.Laddr-.Lptr)(11)		# linker generated address of .Ltable
+	lwz	12,(.Lptr-.Laddr)(11)		# linker generated address of .Ltable
 	add	12,12,11			# correct to real pointer
 	subf.	12,12,11			# calculate difference
 	bc	4,2,.Lreloc			# skip if we need to relocate
