@@ -1,3 +1,9 @@
+2002-10-12  Jonathan Wakely  <jw@kayari.org>
+            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* docs/html/21_strings/howto.html#5:  Correct nasting of XHTML
+	elements.  Correct allocator-related text.
+
 2002-10-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/static_members.cc (test02): Fix.

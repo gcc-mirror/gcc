@@ -350,26 +350,28 @@
    <p>That's the theory.  Remember however that basic_string has additional
       type parameters, which take default arguments based on the character
       type (called CharT here):
-      <pre>
+   </p>
+   <pre>
       template &lt;typename CharT,
                 typename Traits = char_traits&lt;CharT&gt;,
                 typename Alloc = allocator&lt;CharT&gt; &gt;
       class basic_string { .... };</pre>
-      Now, <code>allocator&lt;CharT&gt;</code> will probably Do The Right
-      Thing by default, unless you need to do something very strange with
-      memory allocation in your characters.
+   <p>Now, <code>allocator&lt;CharT&gt;</code> will probably Do The Right
+      Thing by default, unless you need to implement your own allocator
+      for your characters.
    </p>
    <p>But <code>char_traits</code> takes more work.  The char_traits
       template is <em>declared</em> but not <em>defined</em>.
       That means there is only
-      <pre>
+   </p>
+   <pre>
       template &lt;typename CharT&gt;
         struct char_traits
         {
             static void foo (type1 x, type2 y);
             ...
         };</pre>
-      and functions such as char_traits&lt;CharT&gt;::foo() are not
+   <p>and functions such as char_traits&lt;CharT&gt;::foo() are not
       actually defined anywhere for the general case.  The C++ standard
       permits this, because writing such a definition to fit all possible
       CharT's cannot be done.  (For a time, in earlier versions of GCC,
