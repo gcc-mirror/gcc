@@ -786,7 +786,7 @@ changequote([,])dnl
 		tmake_file=pa/t-pro
 		;;
 	hppa1.1-*-osf*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
@@ -802,7 +802,7 @@ changequote([,])dnl
 		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-bsd*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
@@ -839,7 +839,7 @@ changequote([,])dnl
 changequote(,)dnl
 	hppa1.1-*-hpux8.0[0-2]*)
 changequote([,])dnl
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -853,7 +853,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux8*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -876,7 +876,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -915,7 +915,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux* | hppa2*-*-hpux*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -938,7 +938,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa1.1-*-hiux* | hppa2*-*-hiux*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -961,7 +961,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa*-*-lites*)
-		target_cpu_default=1
+		target_cpu_default="MASK_SNAKE"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;

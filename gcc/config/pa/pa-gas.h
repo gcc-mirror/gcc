@@ -19,4 +19,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
+#define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY)

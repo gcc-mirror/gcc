@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* We can debug dynamically linked executables on hpux9; we also want
    dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1)
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) &  MASK_SNAKE)
 #define LINK_SPEC \
   "%{!mpa-risc-1-0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }} -z %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-b}"
 #else

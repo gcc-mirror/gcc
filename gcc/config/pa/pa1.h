@@ -19,8 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define TARGET_DEFAULT 0x89	/* TARGET_SNAKE + TARGET_GAS
-				   + TARGET_JUMP_IN_DELAY */
+#define TARGET_DEFAULT (MASK_GAS | MASK_SNAKE | MASK_JUMP_IN_DELAY)
 
 /* This is the same as pa.h, except that we generate snake code by
    default. */
