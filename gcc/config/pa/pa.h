@@ -1039,6 +1039,55 @@ extern union tree_node *current_function_decl;
   (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
    || (X) == CONST0_RTX (GET_MODE (X)))
 
+/* Subroutine for EXTRA_CONSTRAINT.  
+
+   Return 1 iff OP is a pseudo which did not get a hard register and
+   we are running the reload pass.  */
+
+#define IS_RELOADING_PSEUDO_P(OP) \
+  ((reload_in_progress					\
+    && GET_CODE (OP) == REG				\
+    && REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
+    && reg_renumber [REGNO (OP)] < 0))
+
+/* Optional extra constraints for this machine. Borrowed from sparc.h.
+
+   For the HPPA, `Q' means that this is a memory operand but not a
+   symbolic memory operand.  Note that an unassigned pseudo register
+   is such a memory operand.  Needed because reload will generate
+   these things in insns and then not re-recognize the insns, causing
+   constrain_operands to fail.
+
+   Also note `Q' accepts any memory operand during the reload pass.
+   This includes out-of-range displacements in reg+d addressing. 
+   This makes for better code.  (??? For 2.5 address this issue).
+
+   `R' is unused.
+
+   `S' handles constraints for calls.
+
+   `T' is for fp load and store addresses.*/
+#define EXTRA_CONSTRAINT(OP, C)				\
+  ((C) == 'Q' ?						\
+   (IS_RELOADING_PSEUDO_P (OP)				\
+    || (GET_CODE (OP) == MEM 				\
+	&& reload_in_progress)				\
+    || (GET_CODE (OP) == MEM				\
+	&& memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
+	&& ! symbolic_memory_operand (OP, VOIDmode)))	\
+   : ((C) == 'T' ? 					\
+      (IS_RELOADING_PSEUDO_P (OP)			\
+       || (GET_CODE (OP) == MEM				\
+	   && short_memory_operand (OP, VOIDmode)))	\
+   : ((C) == 'S' ?					\
+      ((CONSTANT_P (OP) && ! TARGET_LONG_CALLS)		\
+        || (reload_in_progress 				\
+	    ? strict_memory_address_p (Pmode, OP)	\
+	    : memory_address_p (Pmode, OP))		\
+	|| (reload_in_progress				\
+	    && GET_CODE (OP) == REG			\
+	    && reg_renumber[REGNO (OP)] > 0)) : 0)))
+
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -1051,43 +1100,6 @@ extern union tree_node *current_function_decl;
    Source files for reload pass need to be strict.
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
-
-/* Optional extra constraints for this machine. Borrowed from sparc.h.
-
-   For the HPPA, `Q' means that this is a memory operand but not a
-   symbolic memory operand.  Note that an unassigned pseudo register
-   is such a memory operand.  Needed because reload will generate
-   these things in insns and then not re-recognize the insns, causing
-   constrain_operands to fail.
-
-   `R' is unused.
-
-   `S' handles constraints for calls.
-
-   `T' is for fp load and store addresses.*/
-
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ?						\
-   ((GET_CODE (OP) == MEM				\
-     && memory_address_p (GET_MODE (OP), XEXP (OP, 0))	\
-     && ! symbolic_memory_operand (OP, VOIDmode))	\
-    || (GET_CODE (OP) == REG				\
-	&& REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
-	&& reg_renumber[REGNO (OP)] < 0))		\
-   : ((C) == 'S' ? 					\
-      ((CONSTANT_P (OP) && ! TARGET_LONG_CALLS)		\
-        || (reload_in_progress 				\
-	    ? strict_memory_address_p (Pmode, OP)	\
-	    : memory_address_p (Pmode, OP))		\
-       || (reload_in_progress				\
-	   && GET_CODE (OP) == REG			\
-	   && reg_renumber[REGNO (OP)] > 0))		\
-   : ((C) == 'T' ? 					\
-      ((GET_CODE (OP) == MEM				\
-	&& short_memory_operand (OP, VOIDmode))		\
-       || (GET_CODE (OP) == REG				\
-	   && REGNO (OP) >= FIRST_PSEUDO_REGISTER	\
-	   && reg_renumber[REGNO (OP)] < 0)) : 0)))
 
 #ifndef REG_OK_STRICT
 
