@@ -1185,8 +1185,8 @@ UDItype __umulsidi3 (USItype, USItype);
 #if (defined (__sparc_v9__) || (defined (__sparc__) && defined (__arch64__)) \
     || defined (__sparcv9)) && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl)				\
-  __asm__ ("addcc %4,%5,%1
-  	    add %2,%3,%0
+  __asm__ ("addcc %r4,%5,%1
+  	    add %r2,%3,%0
   	    bcs,a,pn %%xcc, 1f
   	    add %0, 1, %0
   	    1:"								\
@@ -1199,8 +1199,8 @@ UDItype __umulsidi3 (USItype, USItype);
 	   __CLOBBER_CC)
 
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) 				\
-  __asm__ ("subcc %4,%5,%1
-  	    sub %2,%3,%0
+  __asm__ ("subcc %r4,%5,%1
+  	    sub %r2,%3,%0
   	    bcs,a,pn %%xcc, 1f
   	    sub %0, 1, %0
   	    1:"								\

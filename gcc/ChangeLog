@@ -1,3 +1,8 @@
+1999-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* longlong.h (__sparc_v9__): Use %rDIGIT instead of %DIGIT where
+	appropriate.
+
 1999-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (string): With -Wtraditional, warn if ANSI string
