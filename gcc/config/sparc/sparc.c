@@ -377,8 +377,7 @@ v9_regcmp_p (code)
 /* Operand constraints.  */
 
 /* Return non-zero only if OP is a register of mode MODE,
-   or const0_rtx.  Don't allow const0_rtx if TARGET_LIVE_G0 because
-   %g0 may contain anything.  */
+   or const0_rtx.  */
 
 int
 reg_or_0_operand (op, mode)
@@ -387,8 +386,6 @@ reg_or_0_operand (op, mode)
 {
   if (register_operand (op, mode))
     return 1;
-  if (TARGET_LIVE_G0)
-    return 0;
   if (op == const0_rtx)
     return 1;
   if (GET_MODE (op) == VOIDmode && GET_CODE (op) == CONST_DOUBLE
@@ -1130,16 +1127,6 @@ clobbered_register (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == REG && call_used_regs[REGNO (op)]);
-}
-
-/* Return 1 if OP is const0_rtx, used for TARGET_LIVE_G0 insns.  */
-
-int
-zero_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return op == const0_rtx;
 }
 
 /* Return 1 if OP is a valid operand for the source of a move insn.  */
@@ -2369,12 +2356,6 @@ eligible_for_epilogue_delay (trial, slot)
   if (get_attr_length (trial) != 1)
     return 0;
 
-  /* If %g0 is live, there are lots of things we can't handle.
-     Rather than trying to find them all now, let's punt and only
-     optimize things as necessary.  */
-  if (TARGET_LIVE_G0)
-    return 0;
-    
   /* If there are any call-saved registers, we should scan TRIAL if it
      does not reference them.  For now just make it easy.  */
   if (num_gfregs)
@@ -2390,11 +2371,6 @@ eligible_for_epilogue_delay (trial, slot)
 		 == IN_BRANCH_DELAY_TRUE));
       return 0;
     }
-
-  /* If only trivial `restore' insns work, nothing can go in the
-     delay slot.  */
-  else if (TARGET_BROKEN_SAVERESTORE)
-    return 0;
 
   pat = PATTERN (trial);
 
@@ -3342,7 +3318,7 @@ output_function_prologue (file, size, leaf_function)
 
   if (actual_fsize == 0)
     /* do nothing.  */ ;
-  else if (! leaf_function && ! TARGET_BROKEN_SAVERESTORE)
+  else if (! leaf_function)
     {
       if (actual_fsize <= 4096)
 	fprintf (file, "\tsave\t%%sp, -%d, %%sp\n", actual_fsize);
@@ -3355,26 +3331,6 @@ output_function_prologue (file, size, leaf_function)
 	{
 	  build_big_number (file, -actual_fsize, "%g1");
 	  fprintf (file, "\tsave\t%%sp, %%g1, %%sp\n");
-	}
-    }
-  else if (! leaf_function && TARGET_BROKEN_SAVERESTORE)
-    {
-      /* We assume the environment will properly handle or otherwise avoid
-	 trouble associated with an interrupt occurring after the `save' or
-	 trap occurring during it.  */
-      fprintf (file, "\tsave\n");
-
-      if (actual_fsize <= 4096)
-	fprintf (file, "\tadd\t%%fp, -%d, %%sp\n", actual_fsize);
-      else if (actual_fsize <= 8192)
-	{
-	  fprintf (file, "\tadd\t%%fp, -4096, %%sp\n");
-	  fprintf (file, "\tadd\t%%fp, -%d, %%sp\n", actual_fsize - 4096);
-	}
-      else
-	{
-	  build_big_number (file, -actual_fsize, "%g1");
-	  fprintf (file, "\tadd\t%%fp, %%g1, %%sp\n");
 	}
     }
   else /* leaf function */
@@ -5632,8 +5588,7 @@ print_operand (file, x, code)
     {
       fputc ('[', file);
 	/* Poor Sun assembler doesn't understand absolute addressing.  */
-      if (CONSTANT_P (XEXP (x, 0))
-	  && ! TARGET_LIVE_G0)
+      if (CONSTANT_P (XEXP (x, 0)))
 	fputs ("%g0+", file);
       output_address (XEXP (x, 0));
       fputc (']', file);
@@ -6658,12 +6613,6 @@ sparc_flat_eligible_for_epilogue_delay (trial, slot)
   rtx pat = PATTERN (trial);
 
   if (get_attr_length (trial) != 1)
-    return 0;
-
-  /* If %g0 is live, there are lots of things we can't handle.
-     Rather than trying to find them all now, let's punt and only
-     optimize things as necessary.  */
-  if (TARGET_LIVE_G0)
     return 0;
 
   if (! reg_mentioned_p (stack_pointer_rtx, pat)

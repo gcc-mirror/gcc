@@ -21,20 +21,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include "sparc/aout.h"
 
-/* -mbroken-saverestore is not included here because the long term
-   default is -mno-broken-saverestore.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
-/* -mlive-g0 is only supported on the sparclet.  */
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
 {"big-endian", -MASK_LITTLE_ENDIAN, "Generate code for big endian" }, \
-{"little-endian", MASK_LITTLE_ENDIAN, "Generate code for little endian" }, \
-{"live-g0", MASK_LIVE_G0, "Use g0 as a normal register" }, \
-{"no-live-g0", -MASK_LIVE_G0, "Register g0 is fixed with a zero value" }, \
-{"broken-saverestore", MASK_BROKEN_SAVERESTORE, "Enable save/restore bug workarounds" }, \
-{"no-broken-saverestore", -MASK_BROKEN_SAVERESTORE, "Disable save/restore bug workarouns" },
+{"little-endian", MASK_LITTLE_ENDIAN, "Generate code for little endian" },
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mlittle-endian:-EL} %(asm_cpu)"
@@ -51,19 +44,3 @@ Boston, MA 02111-1307, USA.  */
 #define BYTES_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
 #undef WORDS_BIG_ENDIAN
 #define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
-
-#undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS 					\
-  do {									\
-    if (TARGET_LIVE_G0)							\
-      {									\
-	warning ("Option '-mlive-g0' deprecated.");			\
-        target_flags &= ~MASK_LIVE_G0;					\
-      }									\
-    else if (TARGET_BROKEN_SAVERESTORE)					\
-      {									\
-	warning ("Option '-mbroken-saverestore' deprecated.");		\
-        target_flags &= ~MASK_BROKEN_SAVERESTORE;			\
-      }									\
-  } while (0)
-
