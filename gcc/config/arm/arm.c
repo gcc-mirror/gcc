@@ -658,10 +658,10 @@ const_ok_for_arm (i)
 
   /* For machines with >32 bit HOST_WIDE_INT, the bits above bit 31 must 
      be all zero, or all one.  */
-  if ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) != 0
-      && ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) 
+  if ((i & ~(unsigned HOST_WIDE_INT) 0xffffffffUL) != 0
+      && ((i & ~(unsigned HOST_WIDE_INT) 0xffffffffUL) 
 	  != ((~(unsigned HOST_WIDE_INT) 0)
-	      & ~(unsigned HOST_WIDE_INT) 0xffffffff)))
+	      & ~(unsigned HOST_WIDE_INT) 0xffffffffUL)))
     return FALSE;
   
   /* Fast return for 0 and powers of 2 */
@@ -670,11 +670,11 @@ const_ok_for_arm (i)
 
   do
     {
-      if ((i & mask & (unsigned HOST_WIDE_INT) 0xffffffff) == 0)
+      if ((i & mask & (unsigned HOST_WIDE_INT) 0xffffffffUL) == 0)
         return TRUE;
       mask =
-	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
-			 >> (32 - 2)) | ~((unsigned HOST_WIDE_INT) 0xffffffff);
+	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffffUL)
+			 >> (32 - 2)) | ~((unsigned HOST_WIDE_INT) 0xffffffffUL);
     } while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
 
   return FALSE;
@@ -795,7 +795,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
   int set_zero_bit_copies = 0;
   int insns = 0;
   unsigned HOST_WIDE_INT temp1, temp2;
-  unsigned HOST_WIDE_INT remainder = val & 0xffffffff;
+  unsigned HOST_WIDE_INT remainder = val & 0xffffffffUL;
 
   /* find out which operations are safe for a given CODE.  Also do a quick
      check for degenerate cases; these can occur when DImode operations
@@ -814,7 +814,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       break;
 
     case IOR:
-      if (remainder == 0xffffffff)
+      if (remainder == 0xffffffffUL)
 	{
 	  if (generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target,
@@ -838,7 +838,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target, const0_rtx));
 	  return 1;
 	}
-      if (remainder == 0xffffffff)
+      if (remainder == 0xffffffffUL)
 	{
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
@@ -858,7 +858,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
-      if (remainder == 0xffffffff)
+      if (remainder == 0xffffffffUL)
 	{
 	  if (generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target,
@@ -988,15 +988,15 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	 word.  We only look for the simplest cases, to do more would cost
 	 too much.  Be careful, however, not to generate this when the
 	 alternative would take fewer insns.  */
-      if (val & 0xffff0000)
+      if (val & 0xffff0000UL)
 	{
-	  temp1 = remainder & 0xffff0000;
+	  temp1 = remainder & 0xffff0000UL;
 	  temp2 = remainder & 0x0000ffff;
 
 	  /* Overlaps outside this range are best done using other methods. */
 	  for (i = 9; i < 24; i++)
 	    {
-	      if ((((temp2 | (temp2 << i)) & 0xffffffff) == remainder)
+	      if ((((temp2 | (temp2 << i)) & 0xffffffffUL) == remainder)
 		  && ! const_ok_for_arm (temp2))
 		{
 		  rtx new_src = (subtargets
@@ -1134,11 +1134,11 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       /* See if two shifts will do 2 or more insn's worth of work.  */
       if (clear_sign_bit_copies >= 16 && clear_sign_bit_copies < 24)
 	{
-	  HOST_WIDE_INT shift_mask = ((0xffffffff 
+	  HOST_WIDE_INT shift_mask = ((0xffffffffUL 
 				       << (32 - clear_sign_bit_copies))
-				      & 0xffffffff);
+				      & 0xffffffffUL);
 
-	  if ((remainder | shift_mask) != 0xffffffff)
+	  if ((remainder | shift_mask) != 0xffffffffUL)
 	    {
 	      if (generate)
 		{
@@ -1171,7 +1171,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	{
 	  HOST_WIDE_INT shift_mask = (1 << clear_zero_bit_copies) - 1;
 	  
-	  if ((remainder | shift_mask) != 0xffffffff)
+	  if ((remainder | shift_mask) != 0xffffffffUL)
 	    {
 	      if (generate)
 		{
@@ -1213,9 +1213,9 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       num_bits_set++;
 
   if (code == AND || (can_invert && num_bits_set > 16))
-    remainder = (~remainder) & 0xffffffff;
+    remainder = (~remainder) & 0xffffffffUL;
   else if (code == PLUS && num_bits_set > 16)
-    remainder = (-remainder) & 0xffffffff;
+    remainder = (-remainder) & 0xffffffffUL;
   else
     {
       can_invert = 0;
@@ -1809,7 +1809,7 @@ arm_rtx_costs (x, code)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  unsigned HOST_WIDE_INT i = (INTVAL (XEXP (x, 1))
-				      & (unsigned HOST_WIDE_INT) 0xffffffff);
+				      & (unsigned HOST_WIDE_INT) 0xffffffffUL);
 	  int add_cost = const_ok_for_arm (i) ? 4 : 8;
 	  int j;
 	  /* Tune as appropriate */ 
@@ -3764,9 +3764,9 @@ arm_reload_in_hi (operands)
       if (lo == 4095)
 	lo &= 0x7ff;
 
-      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFF)
-	     ^ (HOST_WIDE_INT) 0x80000000)
-	    - (HOST_WIDE_INT) 0x80000000);
+      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFFUL)
+	     ^ (HOST_WIDE_INT) 0x80000000UL)
+	    - (HOST_WIDE_INT) 0x80000000UL);
 
       if (hi + lo != offset)
 	abort ();
@@ -3910,9 +3910,9 @@ arm_reload_out_hi (operands)
       if (lo == 4095)
 	lo &= 0x7ff;
 
-      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFF)
-	     ^ (HOST_WIDE_INT) 0x80000000)
-	    - (HOST_WIDE_INT) 0x80000000);
+      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFFUL)
+	     ^ (HOST_WIDE_INT) 0x80000000UL)
+	    - (HOST_WIDE_INT) 0x80000000UL);
 
       if (hi + lo != offset)
 	abort ();
