@@ -499,18 +499,15 @@ print_operand_address (file, addr)
     offset = const0_rtx;
   /* now, offset, base and indexexp are set */
   if (! base)
-#ifdef PC_RELATIVE
     {
-      if (GET_CODE (offset) == LABEL_REF || GET_CODE (offset) == SYMBOL_REF)
-	;
-      else
+#if defined (PC_RELATIVE) || defined (NO_ABSOLUTE_PREFIX_IF_SYMBOLIC)
+      if (! (GET_CODE (offset) == LABEL_REF
+	     || GET_CODE (offset) == SYMBOL_REF))
 #endif
 	PUT_ABSOLUTE_PREFIX (file);
-#ifdef PC_RELATIVE
     }
-#endif
 
-  output_addr_const (file,offset);
+  output_addr_const (file, offset);
   if (base) /* base can be (REG ...) or (MEM ...) */
     switch (GET_CODE (base))
       {
@@ -574,10 +571,12 @@ print_operand_address (file, addr)
 	output_addr_const (file, offset);
 	if (base)
 	  fprintf (file, "(%s)", reg_names[REGNO (base)]);
+#ifdef BASE_REG_NEEDED
 	else if (TARGET_SB)
 	  fprintf (file, "(sb)");
 	else
 	  abort ();
+#endif
 	fprintf (file, ")");
 	break;
 
