@@ -8101,7 +8101,8 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     ttype = target_type (type);
 
   if (! DECL_EXTERNAL (decl) && TREE_READONLY (decl)
-      && TYPE_NEEDS_CONSTRUCTING (type))
+      && (TYPE_NEEDS_CONSTRUCTING (type) 
+	  || TREE_CODE (type) == REFERENCE_TYPE))
     {
       /* Currently, GNU C++ puts constants in text space, making them
 	 impossible to initialize.  In the future, one would hope for
@@ -13106,24 +13107,36 @@ finish_enum (tree enumtype)
   highprec = min_precision (maxnode, unsignedp);
   precision = MAX (lowprec, highprec);
 
-  /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
-  TYPE_SIZE (enumtype) = NULL_TREE;
+  /* DR 377
+       
+     IF no integral type can represent all the enumerator values, the
+     enumeration is ill-formed.  */
+  if (precision > TYPE_PRECISION (long_long_integer_type_node))
+    {
+      error ("no integral type can represent all of the enumerator values "
+	     "for `%T'", enumtype);
+      precision = TYPE_PRECISION (long_long_integer_type_node);
+    }
+
+  /* Compute the minium and maximum values for the type, the size of
+     the type, and so forth.  */
   TYPE_PRECISION (enumtype) = precision;
+  TYPE_SIZE (enumtype) = NULL_TREE;
   if (unsignedp)
     fixup_unsigned_type (enumtype);
   else
     fixup_signed_type (enumtype);
 
-  if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
-    /* Use the width of the narrowest normal C type which is wide
-       enough.  */
-    TYPE_PRECISION (enumtype) = TYPE_PRECISION (c_common_type_for_size
-						(precision, 1));
-  else
-    TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-
-  TYPE_SIZE (enumtype) = NULL_TREE;
-  layout_type (enumtype);
+  /* We use "int" or "unsigned int" as the underlying type, unless all
+     the values will not fit or the user has requested that we try to
+     use shorter types where possible.  */
+  if (precision < TYPE_PRECISION (integer_type_node)
+      && !flag_short_enums)
+    {
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+      TYPE_SIZE (enumtype) = NULL_TREE;
+      layout_type (enumtype);
+    }
 
   /* Fix up all variant types of this enum type.  */
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
