@@ -44,6 +44,29 @@ struct block
 #define BLOCK_HEADER_LEN offsetof (struct block, text)
 #define BLOCK_LEN(TEXT_LEN) CPP_ALIGN (BLOCK_HEADER_LEN + TEXT_LEN)
 
+/* Structure holding information about a function-like macro
+   invocation.  */
+struct fun_macro
+{
+  /* Memory buffer holding the trad_arg array.  */
+  _cpp_buff *buff;
+
+  /* An array of size the number of macro parameters + 1, containing
+     the offsets of the start of each macro argument in the output
+     buffer.  The argument continues until the character before the
+     start of the next one.  */
+  size_t *args;
+
+  /* The hashnode of the macro.  */
+  cpp_hashnode *node;
+
+  /* The offset of the macro name in the output buffer.  */
+  size_t offset;
+
+  /* Zero-based index of argument being currently lexed.  */
+  unsigned int argc;
+};
+
 /* Lexing TODO: Handle -C, maybe -CC, and space in escaped newlines.
    Stop cpplex.c from recognizing comments and directives during its
    lexing pass.  Get rid of line_base usage - seems pointless?  Do we
@@ -62,7 +85,10 @@ static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
 static bool scan_parameters PARAMS ((cpp_reader *, cpp_macro *));
 static void save_replacement_text PARAMS ((cpp_reader *, cpp_macro *,
 					   unsigned int));
-static unsigned int replacement_length PARAMS ((cpp_macro *));
+static void maybe_start_funlike PARAMS ((cpp_reader *, cpp_hashnode *,
+					 const uchar *, struct fun_macro *));
+static void save_argument PARAMS ((struct fun_macro *, size_t));
+static void replace_args_and_push PARAMS ((cpp_reader *, struct fun_macro *));
 
 /* Ensures we have N bytes' space in the output buffer, and
    reallocates it if not.  */
@@ -205,10 +231,10 @@ lex_identifier (pfile, cur)
     {
       do
 	*out++ = *cur++;
-      while (ISIDNUM (*cur));
+      while (is_numchar (*cur));
       cur = skip_escaped_newlines (pfile, cur);
     }
-  while (ISIDNUM (*cur));
+  while (is_numchar (*cur));
 
   CUR (pfile->context) = cur;
   len = out - pfile->trad_out_cur;
@@ -226,7 +252,7 @@ _cpp_lex_identifier_trad (pfile)
 {
   const uchar *cur = skip_whitespace (pfile, CUR (pfile->context));
 
-  if (!ISIDST (*cur))
+  if (!is_idstart (*cur))
     {
       CUR (pfile->context) = cur;
       return NULL;
@@ -309,12 +335,45 @@ _cpp_read_logical_line_trad (pfile)
   return true;
 }
 
+/* Set up state for finding the opening '(' of a function-like
+   macro.  */
+static void
+maybe_start_funlike (pfile, node, start, macro)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+     const uchar *start;
+     struct fun_macro *macro;
+{
+  unsigned int n = node->value.macro->paramc + 1;
+
+  if (macro->buff)
+    _cpp_release_buff (pfile, macro->buff);
+  macro->buff = _cpp_get_buff (pfile, n * sizeof (size_t));
+  macro->args = (size_t *) BUFF_FRONT (macro->buff);
+  macro->node = node;
+  macro->offset = start - pfile->trad_out_base;
+  macro->argc = 0;
+
+  pfile->state.parsing_args = 1;
+}
+
+/* Save the OFFSET of the start of the next argument to MACRO.  */
+static void
+save_argument (macro, offset)
+     struct fun_macro *macro;
+     size_t offset;
+{
+  macro->argc++;
+  if (macro->argc <= macro->node->value.macro->paramc)
+    macro->args[macro->argc] = offset;
+}
+
 /* Copies the next logical line in the current buffer to the output
    buffer.  The output is guaranteed to terminate with a NUL
    character.
 
    If MACRO is non-NULL, then we are scanning the replacement list of
-   MACRO, and we call save_replacement_text every time we meet an
+   MACRO, and we call save_replacement_text() every time we meet an
    argument.  */
 static void
 scan_out_logical_line (pfile, macro)
@@ -323,9 +382,11 @@ scan_out_logical_line (pfile, macro)
 {
   cpp_context *context;
   const uchar *cur;
-  unsigned int c, quote = 0;
+  unsigned int c, paren_depth, quote = 0;
   uchar *out;
+  struct fun_macro fmacro;
 
+  fmacro.buff = NULL;
  new_context:
   context = pfile->context;
   cur = CUR (context);
@@ -357,16 +418,22 @@ scan_out_logical_line (pfile, macro)
 	  cur--;
 	  if (!pfile->buffer->from_stage3)
 	    cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
+	  if (pfile->state.parsing_args == 2)
+	    cpp_error (pfile, DL_ERROR,
+		       "unterminated argument list invoking macro \"%s\"",
+		       NODE_NAME (fmacro.node));
 	  pfile->line++;
-	  goto finish_output;
+	  goto done;
 
 	case '\r': case '\n':
 	  cur = handle_newline (pfile, cur - 1);
-	  out[-1] = '\0';
-	finish_output:
-	  CUR (context) = cur;
-	  pfile->trad_out_cur = out - 1;
-	  return;
+	  if (pfile->state.parsing_args == 2)
+	    {
+	      /* Newlines in arguments become a space.  */
+	      out[-1] = ' ';
+	      continue;
+	    }
+	  goto done;
 
 	case '"':
 	case '\'':
@@ -418,16 +485,25 @@ scan_out_logical_line (pfile, macro)
 	      pfile->trad_out_cur = --out;
 	      node = lex_identifier (pfile, cur - 1);
 
-	      if (node->type == NT_MACRO && !pfile->state.prevent_expansion)
+	      if (node->type == NT_MACRO
+		  && pfile->state.parsing_args != 2
+		  && !pfile->state.prevent_expansion)
 		{
-		  /* Remove the macro name from the output.  */
-		  pfile->trad_out_cur = out;
-		  push_replacement_text (pfile, node);
-		  goto new_context;
+		  if (node->value.macro->fun_like)
+		    maybe_start_funlike (pfile, node, out, &fmacro);
+		  else
+		    {
+		      /* Remove the object-like macro's name from the
+			 output, and push its replacement text.  */
+		      pfile->trad_out_cur = out;
+		      push_replacement_text (pfile, node);
+		      goto new_context;
+		    }
 		}
 	      else if (macro && node->arg_index)
 		{
-		  /* Remove the macro name from the output.  */
+		  /* Found a parameter in the replacement text of a
+		     #define.  Remove its name from the output.  */
 		  pfile->trad_out_cur = out;
 		  save_replacement_text (pfile, macro, node->arg_index);
 		}
@@ -437,15 +513,91 @@ scan_out_logical_line (pfile, macro)
 	    }
 	  break;
 
+	case '(':
+	  if (quote == 0)
+	    {
+	      paren_depth++;
+	      if (pfile->state.parsing_args == 1)
+		{
+		  const uchar *p = pfile->trad_out_base + fmacro.offset;
+
+		  /* Invoke a prior function-like macro if there is only
+		     white space in-between.  */
+		  while (is_numchar (*p))
+		    p++;
+		  while (is_space (*p))
+		    p++;
+
+		  if (p == out - 1)
+		    {
+		      pfile->state.parsing_args = 2;
+		      paren_depth = 1;
+		      out = pfile->trad_out_base + fmacro.offset;
+		      fmacro.args[0] = fmacro.offset;
+		    }
+		  else
+		    pfile->state.parsing_args = 0;
+		}
+	    }
+	  break;
+
+	case ',':
+	  if (quote == 0 && pfile->state.parsing_args == 2 && paren_depth == 1)
+	    save_argument (&fmacro, out - pfile->trad_out_base);
+	  break;
+
+	case ')':
+	  if (quote == 0)
+	    {
+	      paren_depth--;
+	      if (pfile->state.parsing_args == 2 && paren_depth == 0)
+		{
+		  cpp_macro *m = fmacro.node->value.macro;
+
+		  pfile->state.parsing_args = 0;
+		  save_argument (&fmacro, out - pfile->trad_out_base);
+
+		  /* A single whitespace argument is no argument.  */
+		  if (fmacro.argc == 1 && m->paramc == 0)
+		    {
+		      const uchar *p = pfile->trad_out_base;
+		      p += fmacro.args[0];
+		      while (is_space (*p))
+			p++;
+		      if (p == pfile->trad_out_base + fmacro.args[1])
+			fmacro.argc = 0;
+		    }
+
+		  if (_cpp_arguments_ok (pfile, m, fmacro.node, fmacro.argc))
+		    {
+		      /* Remove the macro's invocation from the
+			 output, and push its replacement text.  */
+		      pfile->trad_out_cur = (pfile->trad_out_base
+					     + fmacro.offset);
+		      CUR (context) = cur;
+		      replace_args_and_push (pfile, &fmacro);
+		      goto new_context;
+		    }
+		}
+	    }
+	  break;
+
 	default:
 	  break;
 	}
     }
+
+ done:
+  out[-1] = '\0';
+  CUR (context) = cur;
+  pfile->trad_out_cur = out - 1;
+  if (fmacro.buff)
+    _cpp_release_buff (pfile, fmacro.buff);
 }
 
 /* Push a context holding the replacement text of the macro NODE on
-   the context stack.  Doesn't yet handle special built-ins or
-   function-like macros.  */
+   the context stack.  NODE is either object-like, or a function-like
+   macro with no arguments.  */
 static void
 push_replacement_text (pfile, node)
      cpp_reader *pfile;
@@ -453,9 +605,70 @@ push_replacement_text (pfile, node)
 {
   cpp_macro *macro = node->value.macro;
 
-  _cpp_push_text_context (pfile, node,
-			  macro->exp.text,
-			  macro->exp.text + macro->count);
+  _cpp_push_text_context (pfile, node, macro->exp.text, macro->count);
+}
+
+/* Push a context holding the replacement text of the macro NODE on
+   the context stack.  NODE is either object-like, or a function-like
+   macro with no arguments.  */
+static void
+replace_args_and_push (pfile, fmacro)
+     cpp_reader *pfile;
+     struct fun_macro *fmacro;
+{
+  cpp_macro *macro = fmacro->node->value.macro;
+
+  if (macro->paramc == 0)
+    push_replacement_text (pfile, fmacro->node);
+  else
+    {
+      const uchar *exp;
+      uchar *p;
+      _cpp_buff *buff;
+      size_t len = 0;
+
+      /* Calculate the length of the argument-replaced text.  */
+      for (exp = macro->exp.text;;)
+	{
+	  struct block *b = (struct block *) exp;
+
+	  len += b->text_len;
+	  if (b->arg_index == 0)
+	    break;
+	  len += (fmacro->args[b->arg_index]
+		  - fmacro->args[b->arg_index - 1] - 1);
+	  exp += BLOCK_LEN (b->text_len);
+	}
+
+      /* Allocate room for the expansion plus NUL.  */
+      buff = _cpp_get_buff (pfile, len + 1);
+
+      /* Copy the expansion and replace arguments.  */
+      p = BUFF_FRONT (buff);
+      for (exp = macro->exp.text;;)
+	{
+	  struct block *b = (struct block *) exp;
+	  size_t arglen;
+
+	  memcpy (p, b->text, b->text_len);
+	  p += b->text_len;
+	  if (b->arg_index == 0)
+	    break;
+	  arglen = (fmacro->args[b->arg_index]
+		    - fmacro->args[b->arg_index - 1] - 1);
+	  memcpy (p, pfile->trad_out_base + fmacro->args[b->arg_index - 1],
+		  arglen);
+	  p += arglen;
+	  exp += BLOCK_LEN (b->text_len);
+	}
+
+      /* NUL-terminate.  */
+      *p = '\0';
+      _cpp_push_text_context (pfile, fmacro->node, BUFF_FRONT (buff), len);
+
+      /* So we free buffer allocation when macro is left.  */
+      pfile->context->buff = buff;
+    }
 }
 
 /* Read and record the parameters, if any, of a function-like macro
@@ -476,7 +689,7 @@ scan_parameters (pfile, macro)
     {
       cur = skip_whitespace (pfile, cur);
 
-      if (ISIDST (*cur))
+      if (is_idstart (*cur))
 	{
 	  ok = false;
 	  if (_cpp_save_parameter (pfile, macro, lex_identifier (pfile, cur)))
@@ -498,25 +711,6 @@ scan_parameters (pfile, macro)
   CUR (pfile->context) = cur + (*cur == ')');
 
   return ok;
-}
-
-/* Calculate the length of the replacement text of MACRO.  */
-static unsigned int
-replacement_length (macro)
-     cpp_macro *macro;
-{
-  unsigned int result = 0;
-  const uchar *exp = macro->exp.text;
-
-  for (;;)
-    {
-      struct block *block = (struct block *) exp;
-
-      result += block->text_len;
-      if (block->arg_index == 0)
-	return result;
-      exp += BLOCK_LEN (block->text_len);
-    }
 }
 
 /* Save the text from pfile->trad_out_base to pfile->trad_out_cur as
@@ -568,10 +762,7 @@ save_replacement_text (pfile, macro, arg_index)
 	 in the replacement list, excluding the parameter names, and
 	 save this in macro->count, else store the total bytes in the
 	 replacement text so far (including block headers).  */
-      if (arg_index == 0)
-	macro->count = replacement_length (macro);
-      else
-	macro->count += blen;
+      macro->count += blen;
     }
 }
 
@@ -585,13 +776,11 @@ _cpp_create_trad_definition (pfile, macro)
   const uchar *cur;
   uchar *limit;
 
-  /* Skip leading whitespace now.  */
-  CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
-
   /* Is this a function-like macro?  */
   if (* CUR (pfile->context) == '(')
     {
-      /* Setting macro to NULL indicates an error occurred.  */
+      /* Setting macro to NULL indicates an error occurred, and
+	 prevents unnecessary work in scan_out_logical_line.  */
       if (!scan_parameters (pfile, macro))
 	macro = NULL;
       else
@@ -601,9 +790,10 @@ _cpp_create_trad_definition (pfile, macro)
 	  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
 	  macro->fun_like = 1;
 	}
-
-      CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
     }
+
+  /* Skip leading whitespace in the replacement text.  */
+  CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
 
   pfile->trad_out_cur = pfile->trad_out_base;
   pfile->state.prevent_expansion++;

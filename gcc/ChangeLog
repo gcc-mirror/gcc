@@ -1,3 +1,21 @@
+2002-06-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (_cpp_push_text_context): Update.
+	(_cpp_arguments_ok): New.
+	* cppmacro.c (_cpp_arguments_ok): New, split out from...
+	(collect_args): ...here.
+	(_cpp_push_text_context): Change inputs.
+	* cpptrad.c (struct fun_macro, maybe_start_funlike, save_argument,
+	replace_args_and_push): New.
+	(lex_identifier, _cpp_lex_identifier_trad, scan_parameters):
+	Don't use IS macros directly.
+	(scan_out_logical_line): Handle function-like macro argument
+	collection.
+	(push_replacement_text): Update.
+	(replacement_length): Remove.
+	(_cpp_create_trad_definition): Don't skip whitespace before
+	checking for '('.
+
 2002-06-09  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_mcu_types): Update for new devices.

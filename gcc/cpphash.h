@@ -438,9 +438,12 @@ extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern bool _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_pop_context		PARAMS ((cpp_reader *));
 extern void _cpp_push_text_context	PARAMS ((cpp_reader *, cpp_hashnode *,
-						 const uchar *, const uchar*));
+						 const uchar *, size_t));
 extern bool _cpp_save_parameter		PARAMS ((cpp_reader *, cpp_macro *,
 						 cpp_hashnode *));
+extern bool _cpp_arguments_ok		PARAMS ((cpp_reader *, cpp_macro *,
+						 const cpp_hashnode *,
+						 unsigned int));
 
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
