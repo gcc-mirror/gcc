@@ -2925,9 +2925,11 @@ build_unary_op (code, xarg, noconvert)
       if (typecode != POINTER_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
 	{
-	  error ("wrong type argument to %s",
-		 code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		 ? "increment" : "decrement");
+	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+            error ("wrong type argument to increment");
+          else
+            error ("wrong type argument to decrement");
+
 	  return error_mark_node;
 	}
 
@@ -2945,15 +2947,22 @@ build_unary_op (code, xarg, noconvert)
 	    /* If pointer target is an undefined struct,
 	       we just cannot know how to do the arithmetic.  */
 	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (result_type)))
-	      error ("%s of pointer to unknown structure",
-		     code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		     ? "increment" : "decrement");
+	      {
+		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+		  error ("increment of pointer to unknown structure");
+		else
+		  error ("decrement of pointer to unknown structure");
+	      }
 	    else if ((pedantic || warn_pointer_arith)
 		     && (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
 			 || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
-	      pedwarn ("wrong type argument to %s",
-		       code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		       ? "increment" : "decrement");
+              {
+		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+		  pedwarn ("wrong type argument to increment");
+		else
+		  pedwarn ("wrong type argument to decrement");
+	      }
+
 	    inc = c_size_in_bytes (TREE_TYPE (result_type));
 	  }
 	else
@@ -3024,7 +3033,7 @@ build_unary_op (code, xarg, noconvert)
 	  readonly_warning (arg, 
 			    ((code == PREINCREMENT_EXPR
 			      || code == POSTINCREMENT_EXPR)
-			     ? "increment" : "decrement"));
+			     ? _("increment") : _("decrement")));
 
 	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
 	  val = boolean_increment (code, arg);

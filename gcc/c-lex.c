@@ -1258,9 +1258,9 @@ lex_number (str, len)
 	  pedwarn ("integer constant larger than the maximum value of %s",
 		   (flag_isoc99
 		    ? (TREE_UNSIGNED (type)
-		       ? "an unsigned long long int"
-		       : "a long long int")
-		    : "an unsigned long int"));
+		       ? _("an unsigned long long int")
+		       : _("a long long int"))
+		    : _("an unsigned long int")));
 	}
 
       if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
@@ -1333,7 +1333,7 @@ lex_string (str, len, wide)
       char_len = local_mbtowc (&wc, p, limit - p);
       if (char_len == -1)
 	{
-	  warning ("Ignoring invalid multibyte character");
+	  warning ("ignoring invalid multibyte character");
 	  char_len = 1;
 	  c = *p++;
 	}
