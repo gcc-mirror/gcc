@@ -8055,6 +8055,9 @@ Work around certain R4000 CPU errata:
 @item
 A double-word or a variable shift may give an incorrect result if executed
 immediately after starting an integer division.
+@item
+A double-word or a variable shift may give an incorrect result if executed
+while an integer multiplication is in progress.
 @end itemize
 
 @item -mfix-sb1
