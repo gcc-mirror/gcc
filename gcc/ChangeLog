@@ -1,3 +1,7 @@
+Thu May 24 15:56:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (incdec_operand): Accept only 1 and -1.
+
 2001-05-23  Kelley Cook  <kelley.cook@home.com>
 
 	* Makefile.in: Move many of the *_H definitions eariler in the
