@@ -784,10 +784,6 @@ package body).  Such files are also called @dfn{bodies}.
 @c @var{file}.p
 @c @var{file}.pas
 
-@item @var{file}.ch
-@itemx @var{file}.chi
-CHILL source code (preprocessed with the traditional preprocessor).
-
 @item @var{file}.s
 Assembler code.
 
@@ -814,7 +810,6 @@ c++  c++-cpp-output
 objective-c  objc-cpp-output
 assembler  assembler-with-cpp
 ada
-chill
 f77  f77-cpp-input  ratfor
 java
 @end example
