@@ -1140,6 +1140,16 @@ m68hc11_non_shift_operator (op, mode)
     || GET_CODE (op) == PLUS || GET_CODE (op) == MINUS;
 }
 
+/* Return true if op is a shift operator.  */
+int
+m68hc11_shift_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return GET_CODE (op) == ROTATE || GET_CODE (op) == ROTATERT
+    || GET_CODE (op) == LSHIFTRT || GET_CODE (op) == ASHIFT
+    || GET_CODE (op) == ASHIFTRT;
+}
 
 int
 m68hc11_unary_operator (op, mode)

@@ -1,5 +1,5 @@
 /* libgcc routines for M68HC11 & M68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -575,6 +575,47 @@ Return:
 Return_zero:
 	clra
 	clrb
+	rts
+#endif
+
+#ifdef L_rotrhi3
+	.sect .text
+	.globl ___rotrhi3
+
+___rotrhi3:
+	xgdx
+	clra
+	andb	#0x0f
+	xgdx
+	beq	Return
+Loop:
+	tap
+	rorb
+	rora
+	dex
+	bne	Loop
+Return:
+	rts
+#endif
+
+#ifdef L_rotlhi3
+	.sect .text
+	.globl ___rotlhi3
+
+___rotlhi3:
+	xgdx
+	clra
+	andb	#0x0f
+	xgdx
+	beq	Return
+Loop:
+	asrb
+	rolb
+	rola
+	rolb
+	dex
+	bne	Loop
+Return:
 	rts
 #endif
 
