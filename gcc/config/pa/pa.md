@@ -1164,27 +1164,14 @@
 ;; This pattern forces (set (reg:DF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movdf pattern.
-;; In the 3rd alternative case -- we know we will not be using a 
-;; general register, so we can be sure length is just 1.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,r,fx")
-	(match_operand:DF 1 "" "?E,G,m"))]
+  [(set (match_operand:DF 0 "general_operand" "=fx")
+	(match_operand:DF 1 "" "m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (DFmode)"
-  "*
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return output_move_double (operands);
-    case 1:
-      return \"copy 0,%0\;copy 0,%R0\";
-    case 2:
-      return output_fp_move_double (operands);
-    }
-}"
-  [(set_attr "type" "load,move,fpload")
-   (set_attr "length" "3,2,1")])
+  "fldds%F1 %1,%0"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "1")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -1504,8 +1491,6 @@
 ;; This pattern forces (set (reg:SF ...) (float:SF (const_int ...)))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsisf2 pattern.
-;; Note length will always be 2 since we know we are loading
-;; operand 1 from memory and the target is a FP register.
 (define_insn ""
   [(set (match_operand:SF 0 "general_operand" "=fx")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
@@ -1514,8 +1499,6 @@
   [(set_attr "type" "fpalu")
    (set_attr "length" "2")])
 
-;; Note length will always be 1 since we only allow FP registers
-;; for the source and target.
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "general_operand" "=fx")
 	(float:SF (match_operand:SI 1 "register_operand" "fx")))]
@@ -1527,8 +1510,6 @@
 ;; This pattern forces (set (reg:DF ...) (float:DF (const_int ...)))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsidf2 pattern.
-;; Note length will always be 2 since we know we are loading
-;; operand 1 from memory and the target is a FP register.
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=fx")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
@@ -1537,8 +1518,6 @@
   [(set_attr "type" "fpalu")
    (set_attr "length" "2")])
 
-;; Note length will always be 1 since we only allow FP registers
-;; for the source and target.
 (define_insn "floatsidf2"
   [(set (match_operand:DF 0 "general_operand" "=fx")
 	(float:DF (match_operand:SI 1 "register_operand" "fx")))]
