@@ -73,6 +73,8 @@ DEF_MACHMODE (PDImode, "PDI", MODE_PARTIAL_INT, 8, 8, VOIDmode)
 DEF_MACHMODE (DImode, "DI", MODE_INT, 8, 8, TImode)
 DEF_MACHMODE (TImode, "TI", MODE_INT, 16, 16, VOIDmode)
 
+DEF_MACHMODE (QFmode, "QF", MODE_FLOAT, 1, 1, HFmode)
+DEF_MACHMODE (HFmode, "HF", MODE_FLOAT, 2, 2, SFmode)
 DEF_MACHMODE (SFmode, "SF", MODE_FLOAT, 4, 4, DFmode)
 DEF_MACHMODE (DFmode, "DF", MODE_FLOAT, 8, 8, XFmode)
 DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, 12, 12, TFmode)   /* IEEE extended */
