@@ -1,3 +1,9 @@
+2002-08-30  Krister Walfridsson  <cato@df.lth.se>
+
+	* config/arm/arm.c (arm_asm_output_labelref): New function.
+	* config/arm/arm.h (ASM_OUTPUT_LABELREF): Call arm_asm_output_labelref.
+	* config/arm/arm-protos.h: Add prototype for arm_asm_output_labelref.
+
 2002-08-29  Rodney Brown  <rbrown64@csc.com.au>
 
 	* doc/install.texi (Specific, alpha*-dec-osf*): Add "virtual
