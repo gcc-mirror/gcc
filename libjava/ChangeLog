@@ -1,5 +1,10 @@
 2002-02-04  Adam Megacz <adam@xwt.org>
 
+        * configure.in: Add -lgdi32 -lwsock32 -lws2_32 to libgcj.spec
+          if compiling for win32
+
+2002-02-04  Adam Megacz <adam@xwt.org>
+
         * win32-threads.cc: #undef STRICT after gc.h inclusion
 
 2002-02-02  Tom Tromey  <tromey@redhat.com>
