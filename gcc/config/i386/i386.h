@@ -410,9 +410,10 @@ extern int ix86_arch;
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 32
 
-/* We want to keep the stack aligned to 64bits when possible.  But the
-   compiler can not rely on the stack having this alignment.*/
-#define PREFERRED_STACK_BOUNDARY 64
+/* We want to keep the stack aligned to 128 bits when possible, for the
+   benefit of doubles and SSE __m128.  But the compiler can not rely on
+   the stack having this alignment.*/
+#define PREFERRED_STACK_BOUNDARY 128
 
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
