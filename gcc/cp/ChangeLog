@@ -1,3 +1,9 @@
+2004-09-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17618
+	* cvt.c (cp_convert_to_pointer): Return early when the type is
+	an error_mark_node.
+
 2004-09-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/17596

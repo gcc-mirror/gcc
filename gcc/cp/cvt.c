@@ -79,6 +79,8 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
   tree intype = TREE_TYPE (expr);
   enum tree_code form;
   tree rval;
+  if (intype == error_mark_node)
+    return error_mark_node;
 
   if (IS_AGGR_TYPE (intype))
     {
