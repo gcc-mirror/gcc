@@ -1,3 +1,12 @@
+2001-06-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* include/bits/char_traits.h (move): Qualify memmove with std::.
+	(copy): Qualify memcpy with std::.
+	* testsuite/27_io/filebuf_virtuals.cc (test01): Qualify strlen and
+	strncmp with std::.
+	(test02): Likewise.
+	* testsuite/27_io/stringbuf_virtuals.cc (test01): Likewise.
+
 2001-06-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* libsupc++/Makefile.am (install-glibcppinstallHEADERS,
