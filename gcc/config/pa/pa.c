@@ -1192,6 +1192,15 @@ emit_move_sequence (operands, mode, scratch_reg)
     }
   else if (GET_CODE (operand0) == MEM)
     {
+      if (mode == DFmode && operand1 == CONST0_RTX (mode)
+	  && !(reload_in_progress || reload_completed))
+	{
+	  rtx temp = gen_reg_rtx (DFmode);
+
+	  emit_insn (gen_rtx (SET, VOIDmode, temp, operand1));
+	  emit_insn (gen_rtx (SET, VOIDmode, operand0, temp));
+	  return 1;
+	}
       if (register_operand (operand1, mode) || operand1 == CONST0_RTX (mode))
 	{
 	  /* Run this case quickly.  */
