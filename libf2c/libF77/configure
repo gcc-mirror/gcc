@@ -1310,6 +1310,10 @@ cat >> confdefs.h <<\EOF
 #define Skip_f2c_Undefs 1
 EOF
 
+cat >> confdefs.h <<\EOF
+#define IEEE_COMPLEX_DIVIDE 1
+EOF
+
 
 trap '' 1 2 15
 cat > confcache <<\EOF
