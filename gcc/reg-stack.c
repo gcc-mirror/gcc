@@ -921,10 +921,10 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   int malformed_asm = 0;
   rtx body = PATTERN (insn);
 
-  int *operand_matches = (int *) alloca (n_operands * sizeof (int *));
+  int *operand_matches = (int *) alloca (n_operands * sizeof (int));
 
   enum reg_class *operand_class 
-    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class *));
+    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class));
 
   int reg_used_as_output[FIRST_PSEUDO_REGISTER];
   int implicitly_dies[FIRST_PSEUDO_REGISTER];
@@ -950,7 +950,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
 
   if (GET_CODE (body) == PARALLEL)
     {
-      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
+      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx));
 
       for (i = 0; i < XVECLEN (body, 0); i++)
 	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
@@ -2443,9 +2443,9 @@ subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
   int first_input = n_outputs;
   rtx body = PATTERN (insn);
 
-  int *operand_matches = (int *) alloca (n_operands * sizeof (int *));
+  int *operand_matches = (int *) alloca (n_operands * sizeof (int));
   enum reg_class *operand_class 
-    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class *));
+    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class));
 
   rtx *note_reg;		/* Array of note contents */
   rtx **note_loc;		/* Address of REG field of each note */
@@ -2517,8 +2517,8 @@ subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
 
   if (GET_CODE (body) == PARALLEL)
     {
-      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
-      clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx **));
+      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx));
+      clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx *));
 
       for (i = 0; i < XVECLEN (body, 0); i++)
 	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)

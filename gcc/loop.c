@@ -3573,8 +3573,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   int loop_depth = 0;
 
   reg_iv_type = (enum iv_mode *) alloca (max_reg_before_loop
-					 * sizeof (enum iv_mode *));
-  bzero ((char *) reg_iv_type, max_reg_before_loop * sizeof (enum iv_mode *));
+					 * sizeof (enum iv_mode));
+  bzero ((char *) reg_iv_type, max_reg_before_loop * sizeof (enum iv_mode));
   reg_iv_info = (struct induction **)
     alloca (max_reg_before_loop * sizeof (struct induction *));
   bzero ((char *) reg_iv_info, (max_reg_before_loop

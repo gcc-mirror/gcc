@@ -633,7 +633,7 @@ memref_used_between_p (memref, start, end)
 static void
 update_equiv_regs ()
 {
-  rtx *reg_equiv_init_insn = (rtx *) alloca (max_regno * sizeof (rtx *));
+  rtx *reg_equiv_init_insn = (rtx *) alloca (max_regno * sizeof (rtx));
   /* Set when an attempt should be made to replace a register with the
      associated reg_equiv_replacement entry at the end of this function.  */
   char *reg_equiv_replace
@@ -641,10 +641,10 @@ update_equiv_regs ()
   rtx insn;
   int block, depth;
 
-  reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx *));
+  reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx));
 
-  bzero ((char *) reg_equiv_init_insn, max_regno * sizeof (rtx *));
-  bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx *));
+  bzero ((char *) reg_equiv_init_insn, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_replace, max_regno * sizeof *reg_equiv_replace);
 
   init_alias_analysis ();

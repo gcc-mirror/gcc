@@ -997,10 +997,10 @@ output_data ()
       bzero (line_exists, s_ptr->maxlineno);
       if (output_branch_probs)
 	{
-	  branch_probs = (struct arcdata **) xmalloc (sizeof (struct arcdata **)
+	  branch_probs = (struct arcdata **) xmalloc (sizeof (struct arcdata *)
 						      * s_ptr->maxlineno);
 	  bzero ((char *) branch_probs, 
-		 sizeof (struct arcdata **) * s_ptr->maxlineno);
+		 sizeof (struct arcdata *) * s_ptr->maxlineno);
 	}
       
       /* There will be a zero at the beginning of the bb info, before the

@@ -2522,11 +2522,11 @@ add_preprocessor_option (option, len)
 									
   if (! preprocessor_options)						
     preprocessor_options							
-      = (char **) xmalloc (n_preprocessor_options * sizeof (char **));	
+      = (char **) xmalloc (n_preprocessor_options * sizeof (char *));	
   else									
     preprocessor_options							
       = (char **) xrealloc (preprocessor_options,				
-			    n_preprocessor_options * sizeof (char **));	
+			    n_preprocessor_options * sizeof (char *));	
   									
   preprocessor_options [n_preprocessor_options - 1] = save_string (option, len);  
 }
@@ -2540,11 +2540,11 @@ add_assembler_option (option, len)
 									
   if (! assembler_options)						
     assembler_options							
-      = (char **) xmalloc (n_assembler_options * sizeof (char **));	
+      = (char **) xmalloc (n_assembler_options * sizeof (char *));	
   else									
     assembler_options							
       = (char **) xrealloc (assembler_options,				
-			    n_assembler_options * sizeof (char **));	
+			    n_assembler_options * sizeof (char *));	
   									
   assembler_options [n_assembler_options - 1] = save_string (option, len);  
 }
@@ -2558,11 +2558,11 @@ add_linker_option (option, len)
 									
   if (! linker_options)						
     linker_options							
-      = (char **) xmalloc (n_linker_options * sizeof (char **));	
+      = (char **) xmalloc (n_linker_options * sizeof (char *));	
   else									
     linker_options							
       = (char **) xrealloc (linker_options,				
-			    n_linker_options * sizeof (char **));	
+			    n_linker_options * sizeof (char *));	
   									
   linker_options [n_linker_options - 1] = save_string (option, len);  
 }

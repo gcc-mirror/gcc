@@ -4547,7 +4547,7 @@ dbr_schedule (first, file)
 	epilogue_insn = insn;
     }
 
-  uid_to_ruid = (int *) alloca ((max_uid + 1) * sizeof (int *));
+  uid_to_ruid = (int *) alloca ((max_uid + 1) * sizeof (int));
   for (i = 0, insn = first; insn; i++, insn = NEXT_INSN (insn))
     uid_to_ruid[INSN_UID (insn)] = i;
   
