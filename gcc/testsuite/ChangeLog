@@ -1,3 +1,10 @@
+2004-08-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/enum2.c: New test.
+	* gcc.dg/symbian3.c: Likewise.
+	* gcc.dg/symbian4.c: Likewise.
+	* gcc.dg/wchar_t-2.c: Likewise.
+
 2004-08-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/ext/visibility/visibility-8.C: Add constructor and

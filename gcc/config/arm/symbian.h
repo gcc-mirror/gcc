@@ -35,8 +35,8 @@
    Make all symbols hidden by default.  Symbian OS expects that all
    exported symbols will be explicitly marked with
    "__declspec(dllexport)".  */
-#define CC1_SPEC "-fno-builtin -fvisibility=hidden"
-#define CC1PLUS_SPEC "-fno-builtin -fvisibility=hidden"
+#define CC1_SPEC "-fno-builtin -fvisibility=hidden -fno-short-enums"
+#define CC1PLUS_SPEC CC1_SPEC
 
 /* Symbian OS does not use crt0.o, unlike the generic unknown-elf
    configuration.  */
