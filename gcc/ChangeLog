@@ -1,5 +1,10 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/sh/sh.h (PROMOTE_FUNCTION_ARGS): Remove.
+	(PROMOTE_FUNCTION_RETURN): Likewise.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mn10300/mn10300-protos.h: Remove the prototype for
 	mn10300_builtin_saveregs.
 	* config/mn10300/mn10300.c (TARGET_PROMOTE_PROTOTYPES): New.
