@@ -2413,6 +2413,7 @@ init_cumulative_args (cum, fntype, libname)
      tree fntype;		/* tree ptr for function decl */
      rtx libname;		/* SYMBOL_REF of library name or 0 */
 {
+  static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
 
   if (TARGET_DEBUG_E_MODE)
@@ -2430,9 +2431,7 @@ init_cumulative_args (cum, fntype, libname)
 	}
     }
 
-  cum->gp_reg_found = 0;
-  cum->arg_number = 0;
-  cum->arg_words = 0;
+  *cum = zero_cum;
 
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
@@ -2461,7 +2460,7 @@ function_arg_advance (cum, mode, type, named)
 {
   if (TARGET_DEBUG_E_MODE)
     fprintf (stderr,
-	     "function_adv( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, 0x%.8x, %d )\n",
+	     "function_adv( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, 0x%.8x, %d )\n\n",
 	     cum->gp_reg_found, cum->arg_number, cum->arg_words, GET_MODE_NAME (mode),
 	     type, named);
 
@@ -2512,8 +2511,12 @@ function_arg (cum, mode, type, named)
      tree type;			/* type of the argument or 0 if lib support */
      int named;			/* != 0 for normal args, == 0 for ... args */
 {
+  rtx ret;
   int regbase = -1;
   int bias = 0;
+  int struct_p = ((type != (tree)0)
+		  && (TREE_CODE (type) == RECORD_TYPE
+		      || TREE_CODE (type) == UNION_TYPE));
 
   if (TARGET_DEBUG_E_MODE)
     fprintf (stderr,
@@ -2567,18 +2570,42 @@ function_arg (cum, mode, type, named)
   if (cum->arg_words >= MAX_ARGS_IN_REGISTERS)
     {
       if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "<stack>\n");
+	fprintf (stderr, "<stack>%s\n", struct_p ? ", [struct]" : "");
 
-      return 0;
+      ret = (rtx)0;
+    }
+  else
+    {
+      if (regbase == -1)
+	abort ();
+
+      ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+
+      if (TARGET_DEBUG_E_MODE)
+	fprintf (stderr, "%s%s\n", reg_names[regbase + cum->arg_words + bias],
+		 struct_p ? ", [struct]" : "");
+
+      /* The following is a hack in order to pass 1 byte structures
+	 the same way that the MIPS compiler does (namely by passing
+	 the structure in the high byte or half word of the register).
+	 This also makes varargs work.  If we have such a structure,
+	 we save the adjustment RTL, and the call define expands will
+	 emit them.  For the VOIDmode argument (argument after the
+	 last real argument, pass back a parallel vector holding each
+	 of the adjustments.  */
+
+      if (struct_p && (mode == QImode || mode == HImode))
+	{
+	  rtx amount = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (mode));
+	  rtx reg = gen_rtx (REG, SImode, regbase + cum->arg_words + bias);
+	  cum->adjust[ cum->num_adjusts++ ] = gen_ashlsi3 (reg, reg, amount);
+	}
     }
 
-  if (regbase == -1)
-    abort ();
+  if (mode == VOIDmode && cum->num_adjusts > 0)
+    ret = gen_rtx (PARALLEL, VOIDmode, gen_rtvec_v (cum->num_adjusts, cum->adjust));
 
-  if (TARGET_DEBUG_E_MODE)
-    fprintf (stderr, "%s\n", reg_names[regbase + cum->arg_words + bias]);
-
-  return gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+  return ret;
 }
 
 
@@ -4237,20 +4264,56 @@ mips_expand_prologue ()
 {
   int regno;
   long tsize;
-  tree fndecl = current_function_decl; /* current... is tooo long */
-  tree fntype = TREE_TYPE (fndecl);
-  tree fnargs = (TREE_CODE (fntype) != METHOD_TYPE)
-			? DECL_ARGUMENTS (fndecl)
-			: 0;
-  tree next_arg;
-  tree cur_arg;
   rtx tmp_rtx	 = (rtx)0;
   char *arg_name = (char *)0;
+  tree fndecl	 = current_function_decl;
+  tree fntype	 = TREE_TYPE (fndecl);
+  tree fnargs	 = (TREE_CODE (fntype) != METHOD_TYPE)
+			? DECL_ARGUMENTS (fndecl)
+			: 0;
+  rtx next_arg_reg;
+  int i;
+  tree next_arg;
+  tree cur_arg;
   CUMULATIVE_ARGS args_so_far;
 
   /* Determine the last argument, and get its name.  */
+
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, (rtx)0);
+  regno = GP_ARG_FIRST;
+
   for (cur_arg = fnargs; cur_arg != (tree)0; cur_arg = next_arg)
     {
+      tree type = DECL_ARG_TYPE (cur_arg);
+      enum machine_mode passed_mode = TYPE_MODE (type);
+      rtx entry_parm = FUNCTION_ARG (args_so_far,
+				     passed_mode,
+				     DECL_ARG_TYPE (cur_arg),
+				     1);
+
+      if (entry_parm)
+	{
+	  int words;
+
+	  /* passed in a register, so will get homed automatically */
+	  if (GET_MODE (entry_parm) == BLKmode)
+	    words = (int_size_in_bytes (type) + 3) / 4;
+	  else
+	    words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
+
+	  regno = REGNO (entry_parm) + words - 1;
+	}
+      else
+	{
+	  regno = GP_ARG_LAST+1;
+	  break;
+	}
+
+      FUNCTION_ARG_ADVANCE (args_so_far,
+			    passed_mode,
+			    DECL_ARG_TYPE (cur_arg),
+			    1);
+
       next_arg = TREE_CHAIN (cur_arg);
       if (next_arg == (tree)0)
 	{
@@ -4261,52 +4324,39 @@ mips_expand_prologue ()
 	}
     }
 
+  /* In order to pass small structures by value in registers
+     compatibly with the MIPS compiler, we need to shift the value
+     into the high part of the register.  Function_arg has encoded a
+     PARALLEL rtx, holding a vector of adjustments to be made as the
+     next_arg_reg variable, so we split up the insns, and emit them
+     separately.  */
+
+  next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
+  if (next_arg_reg != (rtx)0 && GET_CODE (next_arg_reg) == PARALLEL)
+    {
+      rtvec adjust = XVEC (next_arg_reg, 0);
+      int num = GET_NUM_ELEM (adjust);
+
+      for (i = 0; i < num; i++)
+	{
+	  rtx pattern = RTVEC_ELT (adjust, i);
+	  if (GET_CODE (pattern) != SET
+	      || GET_CODE (SET_SRC (pattern)) != ASHIFT)
+	    abort_with_insn (pattern, "Insn is not a shift");
+
+	  PUT_CODE (SET_SRC (pattern), ASHIFTRT);
+	  emit_insn (pattern);
+	}
+    }
+
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($4 - $7) on the stack.  */
   if ((TYPE_ARG_TYPES (fntype) != 0
        && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype))) != void_type_node))
-      || (arg_name
-	  && (strcmp (arg_name, "__builtin_va_alist") == 0
-	      || strcmp (arg_name, "va_alist") == 0)))
+      || (arg_name != (char *)0
+	  && ((arg_name[0] == '_' && strcmp (arg_name, "__builtin_va_alist") == 0)
+	      || (arg_name[0] == 'v' && strcmp (arg_name, "va_alist") == 0))))
     {
-      tree parm;
-
-      regno = GP_ARG_FIRST;
-      INIT_CUMULATIVE_ARGS (args_so_far, fntype, (rtx)0);
-
-      for (parm = fnargs; (parm && (regno <= GP_ARG_LAST)); parm = TREE_CHAIN (parm))
-	{
-	  rtx entry_parm;
-	  enum machine_mode passed_mode;
-	  tree type;
-
-	  type = DECL_ARG_TYPE (parm);
-	  passed_mode = TYPE_MODE (type);
-	  entry_parm = FUNCTION_ARG (args_so_far, passed_mode,
-				     DECL_ARG_TYPE (parm), 1);
-
-	  if (entry_parm)
-	    {
-	      int words;
-
-	      /* passed in a register, so will get homed automatically */
-	      if (GET_MODE (entry_parm) == BLKmode)
-		words = (int_size_in_bytes (type) + 3) / 4;
-	      else
-		words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
-
-	      regno = REGNO (entry_parm) + words - 1;
-	    }
-	  else
-	    {
-	      regno = GP_ARG_LAST+1;
-	      break;
-	    }
-
-	  FUNCTION_ARG_ADVANCE (args_so_far, passed_mode,
-				DECL_ARG_TYPE (parm), 1);
-	}
-
       for (; regno <= GP_ARG_LAST; regno++)
 	{
 	  rtx ptr = stack_pointer_rtx;

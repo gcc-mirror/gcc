@@ -483,7 +483,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 32]"
+#define MIPS_VERSION "[AL 1.1, MM 33]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1809,9 +1809,12 @@ extern struct mips_frame_info current_frame_info;
 */
 
 typedef struct mips_args {
-  int gp_reg_found;
-  int arg_number;
-  int arg_words;
+  int gp_reg_found;		/* whether a gp register was found yet */
+  int arg_number;		/* argument number */
+  int arg_words;		/* # total words the arguments take */
+  int num_adjusts;		/* number of adjustments made */
+				/* Adjustments made to args pass in regs.  */
+  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -3525,3 +3528,15 @@ while (0)
 #define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
 #define MIPS_MARK_STAB(code) ((code)+CODE_MASK)
 #define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
+
+
+/* Default definitions for size_t and ptrdiff_t.  */
+
+#ifndef SIZE_TYPE
+#define SIZE_TYPE	"unsigned int"
+#endif
+
+#ifndef PTRDIFF_TYPE
+#define PTRDIFF_TYPE	"int"
+#endif
+
