@@ -2059,10 +2059,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL
 		  && DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
 		{
-		  tree fndecl;
-
-		  basetype = TYPE_MAIN_VARIANT (TREE_PURPOSE (fndecls));
-		  fndecl = TREE_VALUE (fndecls);
+		  tree fndecl = TREE_VALUE (fndecls);
 		  enforce_access (TREE_PURPOSE (fndecls), fndecl);
 		  mark_used (fndecl);
 		  return fndecl;

@@ -1,4 +1,10 @@
+1998-11-24  Graham <grahams@rcp.co.uk>
+
+	* typeck.c (build_component_ref): Remove unused statement.
+
 1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (add_method): Catch invalid overloads.
 
 	* class.c (add_method): Build up OVERLOADs properly for conversion ops.
 	* search.c (lookup_conversions): Handle getting real OVERLOADs.

@@ -1208,6 +1208,26 @@ add_method (type, fields, method)
 
 		  if (TREE_CODE (method) != TEMPLATE_DECL)
 		    {
+		      /* [over.load] Member function declarations with the
+			 same name and the same parameter types cannot be
+			 overloaded if any of them is a static member
+			 function declaration.  */
+		      if (DECL_STATIC_FUNCTION_P (fn)
+			  != DECL_STATIC_FUNCTION_P (method))
+			{
+			  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
+			  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
+
+			  if (! DECL_STATIC_FUNCTION_P (fn))
+			    parms1 = TREE_CHAIN (parms1);
+			  else
+			    parms2 = TREE_CHAIN (parms2);
+
+			  if (compparms (parms1, parms2))
+			    cp_error ("`%#D' and `%#D' cannot be overloaded",
+				      fn, method);
+			}
+
 		      /* Since this is an ordinary function in a
 			 non-template class, it's mangled name can be
 			 used as a unique identifier.  This technique
