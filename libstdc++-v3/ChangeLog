@@ -1,3 +1,11 @@
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/3243
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Add relative path to
+	staged/installed area to support -I-.  Document.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2001-06-27  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/backward/algo.h:  Add "GPL plus runtime exception" comment
