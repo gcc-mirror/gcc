@@ -4763,11 +4763,11 @@ for machine in $build $host $target; do
 	fi
 
 	# No need for collect2 if we have the GNU linker.
-	case x$gnu_ld in
-	xyes)
-		use_collect2=
-		;;
-	esac
+	# Actually, there is now; GNU ld doesn't handle the EH info or
+	# collecting for shared libraries.
+	# Instead we always turn on use_collect2; it's a rather heavyweight
+	# solution to the problem, but it works.
+	use_collect2=yes
 
 # Save data on machine being used to compile GCC in build_xm_file.
 # Save data on host machine in vars host_xm_file and host_xmake_file.

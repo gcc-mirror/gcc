@@ -1624,6 +1624,11 @@ output_cfi (cfi, fde)
 #endif
 #endif
 
+/* If we aren't using crtstuff to run ctors, don't use it for EH.  */
+#if !defined (HAS_INIT_SECTION) && !defined (INIT_SECTION_ASM_OP)
+#undef EH_FRAME_SECTION
+#endif
+
 /* Output the call frame information used to used to record information
    that relates to calculating the frame pointer, and records the
    location of saved registers.  */
