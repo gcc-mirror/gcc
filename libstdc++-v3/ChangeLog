@@ -1,3 +1,14 @@
+2005-01-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/istream.cc (basic_istream<char>::ignore(streamsize),
+	basic_istream<char>::ignore(streamsize, int_type),
+	basic_istream<wchar_t>::ignore(streamsize),
+	basic_istream<wchar_t>::ignore(streamsize, int_type)): Avoid
+	_M_gcount overflows. 	
+	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
+	int_type)): Likewise; use snextc in the main loop, consistently
+	with the specializations above.
+
 2005-01-02  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/stl_algobase.h (mismatch): Correct concept check.

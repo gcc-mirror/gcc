@@ -1,6 +1,6 @@
 // Input streams -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,28 +124,33 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
 	      
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof))
+	      while (true)
 		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
-
-		  if (__size > 1)
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof))
 		    {
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
+		      streamsize __size = std::min(streamsize(__sb->egptr()
+							      - __sb->gptr()),
+						   streamsize(__n - _M_gcount));
+		      if (__size > 1)
+			{
+			  __sb->gbump(__size);
+			  _M_gcount += __size;
+			  __c = __sb->sgetc();
+			}
+		      else
+			{
+			  ++_M_gcount;
+			  __c = __sb->snextc();
+			} 
 		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof))
+		    _M_gcount == 0;
 		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
+		    break;
 		}
+
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
@@ -177,34 +182,40 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
 
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof)
-		     && !traits_type::eq_int_type(__c, __delim))
+	      while (true)
 		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
-
-		  if (__size > 1)
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof)
+			 && !traits_type::eq_int_type(__c, __delim))
 		    {
-		      const char_type* __p = traits_type::find(__sb->gptr(),
-							       __size,
-							       __cdelim);
-		      if (__p)
-			__size = __p - __sb->gptr();
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
+		      streamsize __size = std::min(streamsize(__sb->egptr()
+							      - __sb->gptr()),
+						   streamsize(__n - _M_gcount));
+		      if (__size > 1)
+			{
+			  const char_type* __p = traits_type::find(__sb->gptr(),
+								   __size,
+								   __cdelim);
+			  if (__p)
+			    __size = __p - __sb->gptr();
+			  __sb->gbump(__size);
+			  _M_gcount += __size;
+			  __c = __sb->sgetc();
+			}
+		      else
+			{
+			  ++_M_gcount;
+			  __c = __sb->snextc();
+			}
 		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof)
+		      && !traits_type::eq_int_type(__c, __delim))
+		    _M_gcount = 0;
 		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
+		    break;
 		}
+
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __delim))
@@ -390,29 +401,34 @@ namespace std
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof))
-		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
 
-		  if (__size > 1)
+	      while (true)
+		{
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof))
 		    {
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
+		      streamsize __size = std::min(streamsize(__sb->egptr()
+							      - __sb->gptr()),
+						   streamsize(__n - _M_gcount));
+		      if (__size > 1)
+			{
+			  __sb->gbump(__size);
+			  _M_gcount += __size;
+			  __c = __sb->sgetc();
+			}
+		      else
+			{
+			  ++_M_gcount;
+			  __c = __sb->snextc();
+			}
 		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof))
+		    _M_gcount == 0;
 		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
+		    break;
 		}
+
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
@@ -444,34 +460,40 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
 
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof)
-		     && !traits_type::eq_int_type(__c, __delim))
+	      while (true)
 		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
-
-		  if (__size > 1)
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof)
+			 && !traits_type::eq_int_type(__c, __delim))
 		    {
-		      const char_type* __p = traits_type::find(__sb->gptr(),
-							       __size,
-							       __cdelim);
-		      if (__p)
-			__size = __p - __sb->gptr();
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
+		      streamsize __size = std::min(streamsize(__sb->egptr()
+							      - __sb->gptr()),
+						   streamsize(__n - _M_gcount));
+		      if (__size > 1)
+			{
+			  const char_type* __p = traits_type::find(__sb->gptr(),
+								   __size,
+								   __cdelim);
+			  if (__p)
+			    __size = __p - __sb->gptr();
+			  __sb->gbump(__size);
+			  _M_gcount += __size;
+			  __c = __sb->sgetc();
+			}
+		      else
+			{
+			  ++_M_gcount;
+			  __c = __sb->snextc();
+			}
 		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof)
+		      && !traits_type::eq_int_type(__c, __delim))
+		    _M_gcount = 0;
 		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
+		    break;
 		}
+
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __delim))
