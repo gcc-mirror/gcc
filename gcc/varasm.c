@@ -275,8 +275,8 @@ function_section (decl)
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE)
     named_section (decl, (char *) 0);
- else
-   text_section ();
+  else
+    text_section ();
 }
 
 /* Create the rtl to represent a function, for a function definition.
