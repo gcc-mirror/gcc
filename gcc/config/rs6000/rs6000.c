@@ -1772,6 +1772,8 @@ build_mask64_2_operands (in, out)
   out[2] = GEN_INT (shift);
   out[3] = GEN_INT (m2);
 #else
+  (void)in;
+  (void)out;
   abort ();
 #endif
 }
@@ -8529,7 +8531,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
      would treat EQ different to UNORDERED, we can't do it.  */
   if (! flag_unsafe_math_optimizations
       && code != GT && code != UNGE
-      && (GET_CODE (op1) != CONST_DOUBLE || target_isinf (c1))
+      && (GET_CODE (op1) != CONST_DOUBLE || real_isinf (&c1))
       /* Constructs of the form (a OP b ? a : b) are safe.  */
       && ((! rtx_equal_p (op0, false_cond) && ! rtx_equal_p (op1, false_cond))
 	  || (! rtx_equal_p (op0, true_cond) 
