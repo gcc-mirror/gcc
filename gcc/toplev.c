@@ -5012,8 +5012,8 @@ lang_independent_init ()
 
   /* Set the language-dependent identifier size.  */
   tree_code_length[(int) IDENTIFIER_NODE]
-    = ((lang_hooks.identifier_size - sizeof (struct tree_common))
-       / sizeof (tree));
+    = ((lang_hooks.identifier_size - sizeof (struct tree_common)
+	+ sizeof (tree) - 1) / sizeof (tree));
 
   /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
