@@ -202,3 +202,11 @@ do {								\
 #define TARGET_INIT_LIBFUNCS ia64_hpux_init_libfuncs
 
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
+
+/* Put all *xf routines in libgcc, regardless of long double size.  */
+#undef LIBGCC2_HAS_XF_MODE
+#define LIBGCC2_HAS_XF_MODE 1
+
+/* Put all *tf routines in libgcc, regardless of long double size.  */
+#undef LIBGCC2_HAS_TF_MODE
+#define LIBGCC2_HAS_TF_MODE 1

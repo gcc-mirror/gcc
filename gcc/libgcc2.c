@@ -1155,7 +1155,7 @@ __ucmpdi2 (DWtype a, DWtype b)
 }
 #endif
 
-#if defined(L_fixunstfdi) && defined(HAVE_TFMODE)
+#if defined(L_fixunstfdi) && LIBGCC2_HAS_TF_MODE
 DWtype
 __fixunstfDI (TFtype a)
 {
@@ -1181,7 +1181,7 @@ __fixunstfDI (TFtype a)
 }
 #endif
 
-#if defined(L_fixtfdi) && defined(HAVE_TFMODE)
+#if defined(L_fixtfdi) && LIBGCC2_HAS_TF_MODE
 DWtype
 __fixtfdi (TFtype a)
 {
@@ -1191,7 +1191,7 @@ __fixtfdi (TFtype a)
 }
 #endif
 
-#if defined(L_fixunsxfdi) && defined(HAVE_XFMODE)
+#if defined(L_fixunsxfdi) && LIBGCC2_HAS_XF_MODE
 DWtype
 __fixunsxfDI (XFtype a)
 {
@@ -1217,7 +1217,7 @@ __fixunsxfDI (XFtype a)
 }
 #endif
 
-#if defined(L_fixxfdi) && defined(HAVE_XFMODE)
+#if defined(L_fixxfdi) && LIBGCC2_HAS_XF_MODE
 DWtype
 __fixxfdi (XFtype a)
 {
@@ -1227,7 +1227,7 @@ __fixxfdi (XFtype a)
 }
 #endif
 
-#if defined(L_fixunsdfdi) && defined(HAVE_DFMODE)
+#if defined(L_fixunsdfdi) && LIBGCC2_HAS_DF_MODE
 DWtype
 __fixunsdfDI (DFtype a)
 {
@@ -1246,7 +1246,7 @@ __fixunsdfDI (DFtype a)
 }
 #endif
 
-#if defined(L_fixdfdi) && defined(HAVE_DFMODE)
+#if defined(L_fixdfdi) && LIBGCC2_HAS_DF_MODE
 DWtype
 __fixdfdi (DFtype a)
 {
@@ -1260,7 +1260,7 @@ __fixdfdi (DFtype a)
 DWtype
 __fixunssfDI (SFtype a)
 {
-#if defined(HAVE_DFMODE)
+#if LIBGCC2_HAS_DF_MODE
   /* Convert the SFtype to a DFtype, because that is surely not going
      to lose any bits.  Some day someone else can write a faster version
      that avoids converting to DFtype, and verify it really works right.  */
@@ -1330,7 +1330,7 @@ __fixsfdi (SFtype a)
 }
 #endif
 
-#if defined(L_floatdixf) && defined(HAVE_XFMODE)
+#if defined(L_floatdixf) && LIBGCC2_HAS_XF_MODE
 XFtype
 __floatdixf (DWtype u)
 {
@@ -1341,7 +1341,7 @@ __floatdixf (DWtype u)
 }
 #endif
 
-#if defined(L_floatditf) && defined(HAVE_TFMODE)
+#if defined(L_floatditf) && LIBGCC2_HAS_TF_MODE
 TFtype
 __floatditf (DWtype u)
 {
@@ -1352,7 +1352,7 @@ __floatditf (DWtype u)
 }
 #endif
 
-#if defined(L_floatdidf) && defined(HAVE_DFMODE)
+#if defined(L_floatdidf) && LIBGCC2_HAS_DF_MODE
 DFtype
 __floatdidf (DWtype u)
 {
@@ -1376,7 +1376,7 @@ __floatdisf (DWtype u)
   f *= Wtype_MAXp1_F;
   f += (UWtype)u;
   return f;
-#elif defined(HAVE_DFMODE)
+#elif LIBGCC2_HAS_DF_MODE
 
 #if LIBGCC2_DOUBLE_TYPE_SIZE == 64
 #define DF_SIZE DBL_MANT_DIG
@@ -1451,7 +1451,7 @@ __floatdisf (DWtype u)
 }
 #endif
 
-#if defined(L_fixunsxfsi) && defined(HAVE_XFMODE)
+#if defined(L_fixunsxfsi) && LIBGCC2_HAS_XF_MODE
 /* Reenable the normal types, in case limits.h needs them.  */
 #undef char
 #undef short
@@ -1473,7 +1473,7 @@ __fixunsxfSI (XFtype a)
 }
 #endif
 
-#if defined(L_fixunsdfsi) && defined(HAVE_DFMODE)
+#if defined(L_fixunsdfsi) && LIBGCC2_HAS_DF_MODE
 /* Reenable the normal types, in case limits.h needs them.  */
 #undef char
 #undef short
@@ -1521,9 +1521,9 @@ __fixunssfSI (SFtype a)
    exponents.  */
 
 #if defined(L_powisf2) \
-    || (defined(L_powidf2) && defined(HAVE_DFMODE)) \
-    || (defined(L_powixf2) && defined(HAVE_XFMODE)) \
-    || (defined(L_powitf2) && defined(HAVE_TFMODE))
+    || (defined(L_powidf2) && LIBGCC2_HAS_DF_MODE) \
+    || (defined(L_powixf2) && LIBGCC2_HAS_XF_MODE) \
+    || (defined(L_powitf2) && LIBGCC2_HAS_TF_MODE)
 # if defined(L_powisf2)
 #  define TYPE SFtype
 #  define NAME __powisf2
@@ -1555,9 +1555,9 @@ NAME (TYPE x, Wtype m)
 #endif
 
 #if defined(L_mulsc3) || defined(L_divsc3) \
-    || ((defined(L_muldc3) || defined(L_divdc3)) && defined(HAVE_DFMODE)) \
-    || ((defined(L_mulxc3) || defined(L_divxc3)) && defined(HAVE_XFMODE)) \
-    || ((defined(L_multc3) || defined(L_divtc3)) && defined(HAVE_TFMODE))
+    || ((defined(L_muldc3) || defined(L_divdc3)) && LIBGCC2_HAS_DF_MODE) \
+    || ((defined(L_mulxc3) || defined(L_divxc3)) && LIBGCC2_HAS_XF_MODE) \
+    || ((defined(L_multc3) || defined(L_divtc3)) && LIBGCC2_HAS_TF_MODE)
 
 #undef float
 #undef double
