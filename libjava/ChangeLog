@@ -1,3 +1,10 @@
+2000-01-05  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natMethod.cc (get_ffi_type): Test size of
+	jboolean and select correct ffi type on that basis.
+	(_Jv_CallNonvirtualMethodA): Handle `void' return type.
+	Constructor call always has `void' return type.
+
 2000-01-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/Class.h (getSignature): Updated.

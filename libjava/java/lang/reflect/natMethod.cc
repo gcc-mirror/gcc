@@ -131,8 +131,14 @@ get_ffi_type (jclass klass)
     r = &ffi_type_double;
   else if (klass == JvPrimClass (boolean))
     {
-      // FIXME.
-      r = &ffi_type_sint8;
+      // On some platforms a bool is a byte, on others an int.
+      if (sizeof (jboolean) == sizeof (jbyte))
+	r = &ffi_type_sint8;
+      else
+	{
+	  JvAssert (sizeof (jboolean) == sizeof (jint));
+	  r = &ffi_type_sint32;
+	}
     }
   else if (klass == JvPrimClass (char))
     r = &ffi_type_uint16;
@@ -333,7 +339,12 @@ _Jv_CallNonvirtualMethodA (jobject obj,
   if (needs_this)
     ++param_count;
 
-  ffi_type *rtype = get_ffi_type (return_type);
+  ffi_type *rtype;
+  // A constructor itself always returns void.
+  if (is_constructor || return_type == JvPrimClass (void))
+    rtype = &ffi_type_void;
+  else
+    rtype = get_ffi_type (return_type);
   ffi_type **argtypes = (ffi_type **) alloca (param_count
 					      * sizeof (ffi_type *));
 
@@ -451,7 +462,9 @@ _Jv_CallNonvirtualMethodA (jobject obj,
 
   jobject r;
 #define VAL(Wrapper, Type)  (new Wrapper (* (Type *) &ret_value))
-  if (return_type == JvPrimClass (byte))
+  if (is_constructor)
+    r = obj;
+  else if (return_type == JvPrimClass (byte))
     r = VAL (java::lang::Byte, jbyte);
   else if (return_type == JvPrimClass (short))
     r = VAL (java::lang::Short, jshort);
