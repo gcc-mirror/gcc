@@ -60,6 +60,9 @@ struct line_maps
      has been listed yet.  */
   int last_listed;
 
+  /* Depth of the include stack, including the current file.  */
+  unsigned int depth;
+
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 };

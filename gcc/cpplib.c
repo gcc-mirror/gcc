@@ -614,7 +614,7 @@ do_include_common (pfile, type)
   if (!parse_include (pfile, &header))
     {
       /* Prevent #include recursion.  */
-      if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
+      if (pfile->line_maps.depth >= CPP_STACK_MAX)
 	cpp_fatal (pfile, "#include nested too deeply");
       else
 	{
@@ -1764,7 +1764,6 @@ cpp_push_buffer (pfile, buffer, len, type, return_at_eof)
   new->pfile = pfile;
   new->return_at_eof = return_at_eof;
 
-  pfile->buffer_stack_depth++;
   pfile->buffer = new;
 
   return new;
@@ -1788,7 +1787,6 @@ _cpp_pop_buffer (pfile)
 
   /* Update the reader's buffer before _cpp_do_file_change.  */
   pfile->buffer = buffer->prev;
-  pfile->buffer_stack_depth--;
 
   if (buffer->type == BUF_FILE)
     {

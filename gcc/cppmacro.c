@@ -164,10 +164,10 @@ builtin_macro (pfile, token)
       break;
 	
     case BT_INCLUDE_LEVEL:
-      /* pfile->include_depth counts the primary source as level 1,
-	 but historically __INCLUDE_DEPTH__ has called the primary
-	 source level 0.  */
-      make_number_token (pfile, token, pfile->include_depth - 1);
+      /* The line map depth counts the primary source as level 1, but
+	 historically __INCLUDE_DEPTH__ has called the primary source
+	 level 0.  */
+      make_number_token (pfile, token, pfile->line_maps.depth - 1);
       break;
 
     case BT_SPECLINE:

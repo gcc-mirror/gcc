@@ -279,15 +279,6 @@ struct cpp_reader
   unsigned char *macro_buffer;
   unsigned int macro_buffer_len;
 
-  /* Current depth in #include directives that use <...>.  */
-  unsigned int system_include_depth;
-
-  /* Current depth of buffer stack.  */
-  unsigned int buffer_stack_depth;
-
-  /* Current depth in #include directives.  */
-  unsigned int include_depth;
-
   /* Tree of other included files.  See cppfiles.c.  */
   struct splay_tree_s *all_include_files;
 
