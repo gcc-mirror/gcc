@@ -805,6 +805,31 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
       return;
     }
 
+  /* If the RHS is scalarizable, handle it.  There are only two cases.  */
+  if (rhs_elt)
+    {
+      if (!rhs_elt->is_scalar)
+	fns->ldst (rhs_elt, lhs, bsi, false);
+      else
+	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false);
+    }
+
+  /* If it isn't scalarizable, there may be scalarizable variables within, so
+     check for a call or else walk the RHS to see if we need to do any
+     copy-in operations.  We need to do it before the LHS is scalarized so
+     that the statements get inserted in the proper place, before any
+     copy-out operations.  */
+  else
+    {
+      tree call = get_call_expr_in (rhs);
+      if (call)
+	sra_walk_call_expr (call, bsi, fns);
+      else
+	sra_walk_expr (&TREE_OPERAND (expr, 1), bsi, false, fns);
+    }
+
+  /* Likewise, handle the LHS being scalarizable.  We have cases similar
+     to those above, but also want to handle RHS being constant.  */
   if (lhs_elt)
     {
       /* If this is an assignment from a constant, or constructor, then
@@ -834,31 +859,12 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
       else
 	fns->use (lhs_elt, &TREE_OPERAND (expr, 0), bsi, true);
     }
-  else
-    {
-      /* LHS_ELT being null only means that the LHS as a whole is not a
-	 scalarizable reference.  There may be occurrences of scalarizable
-	 variables within, which implies a USE.  */
-      sra_walk_expr (&TREE_OPERAND (expr, 0), bsi, true, fns);
-    }
 
-  /* Likewise for the right-hand side.  The only difference here is that
-     we don't have to handle constants, and the RHS may be a call.  */
-  if (rhs_elt)
-    {
-      if (!rhs_elt->is_scalar)
-	fns->ldst (rhs_elt, lhs, bsi, false);
-      else
-	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false);
-    }
+  /* Similarly to above, LHS_ELT being null only means that the LHS as a
+     whole is not a scalarizable reference.  There may be occurrences of
+     scalarizable variables within, which implies a USE.  */
   else
-    {
-      tree call = get_call_expr_in (rhs);
-      if (call)
-	sra_walk_call_expr (call, bsi, fns);
-      else
-	sra_walk_expr (&TREE_OPERAND (expr, 1), bsi, false, fns);
-    }
+    sra_walk_expr (&TREE_OPERAND (expr, 0), bsi, true, fns);
 }
 
 /* Entry point to the walk functions.  Search the entire function,
