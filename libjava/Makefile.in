@@ -2056,6 +2056,7 @@ java/security/DummySignature.java \
 java/security/DigestInputStream.java \
 java/security/DomainCombiner.java \
 java/security/DummyMessageDigest.java \
+java/security/Engine.java \
 java/security/GeneralSecurityException.java \
 java/security/Guard.java \
 java/security/GuardedObject.java \
@@ -2136,6 +2137,7 @@ java/security/interfaces/DSAParams.java \
 java/security/interfaces/DSAPrivateKey.java \
 java/security/interfaces/DSAPublicKey.java \
 java/security/interfaces/RSAKey.java \
+java/security/interfaces/RSAMultiPrimePrivateCrtKey.java \
 java/security/interfaces/RSAPrivateCrtKey.java \
 java/security/interfaces/RSAPrivateKey.java \
 java/security/interfaces/RSAPublicKey.java \
@@ -2148,7 +2150,10 @@ java/security/spec/InvalidKeySpecException.java \
 java/security/spec/InvalidParameterSpecException.java \
 java/security/spec/KeySpec.java \
 java/security/spec/PKCS8EncodedKeySpec.java \
+java/security/spec/PSSParameterSpec.java \
 java/security/spec/RSAKeyGenParameterSpec.java \
+java/security/spec/RSAMultiPrimePrivateCrtKeySpec.java\
+java/security/spec/RSAOtherPrimeInfo.java \
 java/security/spec/RSAPrivateCrtKeySpec.java \
 java/security/spec/RSAPrivateKeySpec.java \
 java/security/spec/RSAPublicKeySpec.java \
@@ -3571,7 +3576,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/DomainCombiner.P \
 .deps/java/security/DummyKeyPairGenerator.P \
 .deps/java/security/DummyMessageDigest.P \
-.deps/java/security/DummySignature.P \
+.deps/java/security/DummySignature.P .deps/java/security/Engine.P \
 .deps/java/security/GeneralSecurityException.P \
 .deps/java/security/Guard.P .deps/java/security/GuardedObject.P \
 .deps/java/security/Identity.P .deps/java/security/IdentityScope.P \
@@ -3636,6 +3641,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/interfaces/DSAPrivateKey.P \
 .deps/java/security/interfaces/DSAPublicKey.P \
 .deps/java/security/interfaces/RSAKey.P \
+.deps/java/security/interfaces/RSAMultiPrimePrivateCrtKey.P \
 .deps/java/security/interfaces/RSAPrivateCrtKey.P \
 .deps/java/security/interfaces/RSAPrivateKey.P \
 .deps/java/security/interfaces/RSAPublicKey.P \
@@ -3648,7 +3654,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/spec/InvalidParameterSpecException.P \
 .deps/java/security/spec/KeySpec.P \
 .deps/java/security/spec/PKCS8EncodedKeySpec.P \
+.deps/java/security/spec/PSSParameterSpec.P \
 .deps/java/security/spec/RSAKeyGenParameterSpec.P \
+.deps/java/security/spec/RSAMultiPrimePrivateCrtKeySpec.P \
+.deps/java/security/spec/RSAOtherPrimeInfo.P \
 .deps/java/security/spec/RSAPrivateCrtKeySpec.P \
 .deps/java/security/spec/RSAPrivateKeySpec.P \
 .deps/java/security/spec/RSAPublicKeySpec.P \

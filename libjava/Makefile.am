@@ -2294,6 +2294,7 @@ java/security/DummySignature.java \
 java/security/DigestInputStream.java \
 java/security/DomainCombiner.java \
 java/security/DummyMessageDigest.java \
+java/security/Engine.java \
 java/security/GeneralSecurityException.java \
 java/security/Guard.java \
 java/security/GuardedObject.java \
@@ -2374,6 +2375,7 @@ java/security/interfaces/DSAParams.java \
 java/security/interfaces/DSAPrivateKey.java \
 java/security/interfaces/DSAPublicKey.java \
 java/security/interfaces/RSAKey.java \
+java/security/interfaces/RSAMultiPrimePrivateCrtKey.java \
 java/security/interfaces/RSAPrivateCrtKey.java \
 java/security/interfaces/RSAPrivateKey.java \
 java/security/interfaces/RSAPublicKey.java \
@@ -2386,7 +2388,10 @@ java/security/spec/InvalidKeySpecException.java \
 java/security/spec/InvalidParameterSpecException.java \
 java/security/spec/KeySpec.java \
 java/security/spec/PKCS8EncodedKeySpec.java \
+java/security/spec/PSSParameterSpec.java \
 java/security/spec/RSAKeyGenParameterSpec.java \
+java/security/spec/RSAMultiPrimePrivateCrtKeySpec.java\
+java/security/spec/RSAOtherPrimeInfo.java \
 java/security/spec/RSAPrivateCrtKeySpec.java \
 java/security/spec/RSAPrivateKeySpec.java \
 java/security/spec/RSAPublicKeySpec.java \

@@ -1,7 +1,7 @@
 /* Identity.java --- Identity Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, Free Software Foundation, Inc.
 
-   This file is part of GNU Classpath.
+This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,31 +36,36 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.security;
+
 import java.io.Serializable;
 import java.util.Vector;
 
 /**
-   The Identity class is used to repsent people and companies that 
-   can be authenticated using public key encryption. The identities
-   can also be abstract objects such as smart cards.
-
-   Identity object store a name and public key for each identity.
-   The names cannot be changed and the identities can be scoped.
-   Each identity (name and public key) within a scope is unique 
-   to that scope.
-
-   Each identity has a set of ceritificates which all specify the 
-   same public key but not necessarily the same name.
-
-   The Identity class can be subclassed to allow additional 
-   information to be attached to it.
-
-   @since JDK 1.1
-
-   @deprecated Use java.security.KeyStore, the java.security.cert 
-   package, and java.security.Principal. 
-
-   @author Mark Benvenuto       
+ * <p>This class represents identities: real-world objects such as people,
+ * companies or organizations whose identities can be authenticated using their
+ * public keys. Identities may also be more abstract (or concrete) constructs,
+ * such as daemon threads or smart cards.</p>
+ *
+ * <p>All Identity objects have a <i>name</i> and a <i>public key</i>. Names
+ * are immutable. <i>Identities</i> may also be <b>scoped</b>. That is, if an
+ * <i>Identity</i> is specified to have a particular <i>scope</i>, then the
+ * <i>name</i> and <i>public key</i> of the <i>Identity</i> are unique within
+ * that <i>scope</i>.</p>
+ *
+ * <p>An <i>Identity</i> also has a <i>set of certificates</i> (all certifying
+ * its own <i>public key</i>). The <i>Principal</i> names specified in these
+ * certificates need not be the same, only the key.</p>
+ *
+ * <p>An <i>Identity</i> can be subclassed, to include postal and email
+ * addresses, telephone numbers, images of faces and logos, and so on.</p>
+ *
+ * @author Mark Benvenuto
+ * @see IdentityScope
+ * @see Signer
+ * @see Principal
+ * @deprecated This class is no longer used. Its functionality has been replaced
+ * by <code>java.security.KeyStore</code>, the <code>java.security.cert</code>
+ * package, and <code>java.security.Principal</code>.
  */
 public abstract class Identity implements Principal, Serializable
 {
@@ -72,22 +77,18 @@ public abstract class Identity implements Principal, Serializable
   private String info;
   private Vector certificates;
 
-  /**
-     Creates a new instance of Identity from Serialized Data
-   */
+  /** Constructor for serialization only. */
   protected Identity()
   {
   }
 
   /**
-     Creates a new instance of Identity with the specified name 
-     and IdentityScope.
-
-     @param name the name to use
-     @param scope the scope to use
-
-     @throws KeyManagementException if the identity is already 
-     present
+   * Constructs an identity with the specified name and scope.
+   *
+   * @param name the identity name.
+   * @param scope the scope of the identity.
+   * @throws KeyManagementException if there is already an identity with the
+   * same name in the scope.
    */
   public Identity(String name, IdentityScope scope)
     throws KeyManagementException
@@ -97,10 +98,9 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Creates a new instance of Identity with the specified name 
-     and no scope.
-
-     @param name the name to use
+   * Constructs an identity with the specified name and no scope.
+   *
+   * @param name the identity name.
    */
   public Identity(String name)
   {
@@ -109,9 +109,9 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Gets the name for this Identity.
-
-     @return the name
+   * Returns this identity's name.
+   *
+   * @return the name of this identity.
    */
   public final String getName()
   {
@@ -119,9 +119,9 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Gets the scope for this Identity.
-
-     @return the scope
+   * Returns this identity's scope.
+   *
+   * @return the scope of this identity.
    */
   public final IdentityScope getScope()
   {
@@ -129,9 +129,10 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Gets the public key for this identity.
-
-     @return the public key
+   * Returns this identity's public key.
+   *
+   * @return the public key for this identity.
+   * @see #setPublicKey(java.security.PublicKey)
    */
   public PublicKey getPublicKey()
   {
@@ -139,18 +140,21 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Sets the public key for this identity.
-     The old key and all certificates are removed.
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "setIdentityPublicKey".
-
-     @param key the public key to use
-
-     @throws KeyManagementException if this public key is used by 
-     another identity in the current scope.
-     @throws SecurityException - if the security manager denies 
-     access to "setIdentityPublicKey"
+   * <p>Sets this identity's public key. The old key and all of this identity's
+   * certificates are removed by this operation.</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"setIdentityPublicKey"</code> as its
+   * argument to see if it's ok to set the public key.</p>
+   *
+   * @param key the public key for this identity.
+   * @throws KeyManagementException if another identity in the identity's scope
+   * has the same public key, or if another exception occurs.
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()<code> method doesn't allow setting the public
+   * key.
+   * @see #getPublicKey()
+   * @see SecurityManager#checkSecurityAccess(String)
    */
   public void setPublicKey(PublicKey key) throws KeyManagementException
   {
@@ -162,15 +166,18 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Sets the general information string.
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "setIdentityInfo".
-
-     @param info the general information string.
-
-     @throws SecurityException - if the security manager denies 
-     access to "setIdentityInfo"
+   * <p>Specifies a general information string for this identity.</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"setIdentityInfo"</code> as its
+   * argument to see if it's ok to specify the information string.</p>
+   *
+   * @param info the information string.
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()</code> method doesn't allow setting the
+   * information string.
+   * @see #getInfo()
+   * @see SecurityManager#checkSecurityAccess(String)
    */
   public void setInfo(String info)
   {
@@ -182,9 +189,10 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Gets the general information string.
-
-     @return the string
+   * Returns general information previously specified for this identity.
+   *
+   * @return general information about this identity.
+   * @see #setInfo(String)
    */
   public String getInfo()
   {
@@ -192,50 +200,54 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Adds a certificate to the list of ceritificates for this 
-     identity. The public key in this certificate must match the 
-     existing public key if it exists.
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "addIdentityCertificate".
-
-     @param certificate the certificate to add
-
-     @throws KeyManagementException if the certificate is invalid
-     or the public key conflicts
-     @throws SecurityException - if the security manager denies 
-     access to "addIdentityCertificate"
+   * <p>Adds a certificate for this identity. If the identity has a public key,
+   * the public key in the certificate must be the same, and if the identity
+   * does not have a public key, the identity's public key is set to be that
+   * specified in the certificate.</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"addIdentityCertificate"</code> as its
+   * argument to see if it's ok to add a certificate.</p>
+   *
+   * @param certificate the certificate to be added.
+   * @throws KeyManagementException if the certificate is not valid, if the
+   * public key in the certificate being added conflicts with this identity's
+   * public key, or if another exception occurs.
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()</code> method doesn't allow adding a
+   * certificate.
+   * @see SecurityManager#checkSecurityAccess(String)
    */
-  public void addCertificate(java.security.Certificate certificate)
+  public void addCertificate(Certificate certificate)
     throws KeyManagementException
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkSecurityAccess("addIdentityCertificate");
 
-    //Check public key of this certificate against the first one 
-    //in the vector
+    // Check public key of this certificate against the first one in the vector
     if (certificates.size() > 0)
       {
-	if (((Certificate) certificates.firstElement()).getPublicKey() !=
-	    publicKey)
+	if (((Certificate) certificates.firstElement()).getPublicKey() != publicKey)
 	  throw new KeyManagementException("Public key does not match");
       }
     certificates.addElement(certificate);
   }
 
   /**
-     Removes a certificate from the list of ceritificates for this 
-     identity. 
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "removeIdentityCertificate".
-
-     @param certificate the certificate to add
-
-     @throws KeyManagementException if the certificate is invalid
-     @throws SecurityException - if the security manager denies 
-     access to "removeIdentityCertificate"
+   * <p>Removes a certificate from this identity.</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"removeIdentityCertificate"</code> as
+   * its argument to see if it's ok to remove a certificate.</p>
+   *
+   * @param certificate the certificate to be removed.
+   * @throws KeyManagementException if the certificate is missing, or if
+   * another exception occurs.
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()</code> method doesn't allow removing a
+   * certificate.
+   * @see SecurityManager#checkSecurityAccess(String)
    */
   public void removeCertificate(Certificate certificate)
     throws KeyManagementException
@@ -251,9 +263,9 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Returns an array of certificates for this identity.
-
-     @returns array of certificates
+   * Returns a copy of all the certificates for this identity.
+   *
+   * @return a copy of all the certificates for this identity.
    */
   public Certificate[] certificates()
   {
@@ -261,16 +273,22 @@ public abstract class Identity implements Principal, Serializable
     int max = certificates.size();
     for (int i = 0; i < max; i++)
       certs[i] = (Certificate) certificates.elementAt(i);
+
     return certs;
   }
 
   /**
-     Checks for equality between this Identity and the specified 
-     object. If first checks if they are the same object, then 
-     if the name and scope matches and returns true if successful.
-     If these tests fail, identityEquals is called.
-
-     @return true if they are equal, false otherwise
+   * Tests for equality between the specified object and this identity. This
+   * first tests to see if the entities actually refer to the same object, in
+   * which case it returns <code>true</code>. Next, it checks to see if the
+   * entities have the same <i>name</i> and the same <i>scope</i>. If they do,
+   * the method returns <code>true</code>. Otherwise, it calls
+   * <code>identityEquals()</code>, which subclasses should override.
+   *
+   * @param identity the object to test for equality with this identity.
+   * @return <code>true</code> if the objects are considered equal, <code>false
+   * </code>otherwise.
+   * @see #identityEquals(Identity)
    */
   public final boolean equals(Object identity)
   {
@@ -289,11 +307,15 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Checks for equality between this Identity and the specified 
-     object. A subclass should override this method. The default 
-     behavior is to return true if the public key and names match.
-
-     @return true if they are equal, false otherwise
+   * Tests for equality between the specified <code>identity</code> and this
+   * <i>identity</i>. This method should be overriden by subclasses to test for
+   * equality. The default behavior is to return <code>true</code> if the names
+   * and public keys are equal.
+   *
+   * @param identity the identity to test for equality with this identity.
+   * @return <code>true</code> if the identities are considered equal,
+   * <code>false</code> otherwise.
+   * @see #equals(Object)
    */
   protected boolean identityEquals(Identity identity)
   {
@@ -302,15 +324,19 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Returns a string representing this Identity.
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "printIdentity".
-
-     @returns a string representing this Identity.
-
-     @throws SecurityException - if the security manager denies 
-     access to "printIdentity"
+   * <p>Returns a short string describing this identity, telling its name and
+   * its scope (if any).</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"printIdentity"</code> as its argument
+   * to see if it's ok to return the string.</p>
+   *
+   * @return information about this identity, such as its name and the name of
+   * its scope (if any).
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()</code> method doesn't allow returning a string
+   * describing this identity.
+   * @see SecurityManager#checkSecurityAccess(String)
    */
   public String toString()
   {
@@ -323,18 +349,23 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Returns a detailed string representing this Identity.
-
-     This class checks the security manager with the call 
-     checkSecurityAccess with "printIdentity".
-
-     @param detailed indicates whether or not to provide detailed 
-     information
-
-     @returns a string representing this Identity.
-
-     @throws SecurityException - if the security manager denies 
-     access to "printIdentity"
+   * <p>Returns a string representation of this identity, with optionally more
+   * details than that provided by the <code>toString()</code> method without
+   * any arguments.</p>
+   *
+   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
+   * </code> method is called with <code>"printIdentity"</code> as its argument
+   * to see if it's ok to return the string.</p>
+   *
+   * @param detailed whether or not to provide detailed information.
+   * @return information about this identity. If detailed is <code>true</code>,
+   * then this method returns more information than that provided by the
+   * <code>toString()</code> method without any arguments.
+   * @throws SecurityException if a security manager exists and its
+   * <code>checkSecurityAccess()</code> method doesn't allow returning a string
+   * describing this identity.
+   * @see #toString()
+   * @see SecurityManager#checkSecurityAccess(String)
    */
   public String toString(boolean detailed)
   {
@@ -355,9 +386,9 @@ public abstract class Identity implements Principal, Serializable
   }
 
   /**
-     Gets the hashcode for this Identity.
-
-     @returns the hashcode
+   * Returns a hashcode for this identity.
+   *
+   * @return a hashcode for this identity.
    */
   public int hashCode()
   {

@@ -1,5 +1,5 @@
 /* KeyStore.java --- Key Store Class
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,36 +44,51 @@ import java.util.Date;
 import java.util.Enumeration;
 
 /**
-   Keystore represents an in-memory collection of keys and 
-   certificates. There are two types of entries:
-
-   * Key Entry
-
-   This type of keystore entry store sensitive crytographic key
-   information in a protected format.Typically this is a secret 
-   key or a private key with a certificate chain.
-
-
-   * Trusted Ceritificate Entry
-
-   This type of keystore entry contains a single public key 
-   certificate belonging to annother entity. It is called trusted
-   because the keystore owner trusts that the certificates
-   belongs to the subject (owner) of the certificate.
-
-   The keystore contains an "alias" string for each entry. 
-
-   The structure and persistentence of the key store is not 
-   specified. Any method could be used to protect sensitive 
-   (private or secret) keys. Smart cards or integrated 
-   cryptographic engines could be used or the keystore could 
-   be simply stored in a file. 
+ * Keystore represents an in-memory collection of keys and 
+ * certificates. There are two types of entries:
+ *
+ * <dl>
+ * <dt>Key Entry</dt>
+ *
+ * <dd><p>This type of keystore entry store sensitive crytographic key
+ * information in a protected format.Typically this is a secret 
+ * key or a private key with a certificate chain.</p></dd>
+ *
+ * <dt>Trusted Ceritificate Entry</dt>
+ *
+ * <dd><p>This type of keystore entry contains a single public key 
+ * certificate belonging to annother entity. It is called trusted
+ * because the keystore owner trusts that the certificates
+ * belongs to the subject (owner) of the certificate.</p></dd>
+ * </dl>
+ *
+ * <p>Entries in a key store are referred to by their "alias": a simple
+ * unique string.
+ *
+ * <p>The structure and persistentence of the key store is not 
+ * specified. Any method could be used to protect sensitive 
+ * (private or secret) keys. Smart cards or integrated 
+ * cryptographic engines could be used or the keystore could 
+ * be simply stored in a file.</p>
+ *
+ * @see java.security.cert.Certificate
+ * @see Key
  */
 public class KeyStore
 {
+
+  // Constants and fields.
+  // ------------------------------------------------------------------------
+
+  /** Service name for key stores. */
+  private static final String KEY_STORE = "KeyStore";
+
   private KeyStoreSpi keyStoreSpi;
   private Provider provider;
   private String type;
+
+  // Constructors.
+  // ------------------------------------------------------------------------
 
   /**
      Creates an instance of KeyStore
@@ -89,16 +104,18 @@ public class KeyStore
     this.type = type;
   }
 
+  // Class methods.
+  // ------------------------------------------------------------------------
+
   /** 
-     Gets an instance of the KeyStore class representing
-     the specified keystore. If the type is not 
-     found then, it throws KeyStoreException.
-
-     @param type the type of keystore to choose
-
-     @return a KeyStore repesenting the desired type
-
-     @throws KeyStoreException if the type of keystore is not implemented by providers
+   * Gets an instance of the KeyStore class representing
+   * the specified keystore. If the type is not 
+   * found then, it throws KeyStoreException.
+   *
+   * @param type the type of keystore to choose
+   * @return a KeyStore repesenting the desired type
+   * @throws KeyStoreException if the type of keystore is not implemented
+   *         by providers or the implementation cannot be instantiated.
    */
   public static KeyStore getInstance(String type) throws KeyStoreException
   {
@@ -106,95 +123,102 @@ public class KeyStore
 
     for (int i = 0; i < p.length; i++)
       {
-	String classname = p[i].getProperty("KeyStore." + type);
-	if (classname != null)
-	  return getInstance(classname, type, p[i]);
+        try
+          {
+            return getInstance(type, p[i]);
+          }
+        catch (KeyStoreException ignore)
+          {
+          }
       }
 
     throw new KeyStoreException(type);
   }
 
   /** 
-     Gets an instance of the KeyStore class representing
-     the specified key store from the specified provider. 
-     If the type is not found then, it throws KeyStoreException. 
-     If the provider is not found, then it throws 
-     NoSuchProviderException.
-
-     @param type the type of keystore to choose
-     @param provider the provider name
-
-     @return a KeyStore repesenting the desired type
-
-     @throws KeyStoreException if the type of keystore is not 
-              implemented by the given provider
-     @throws NoSuchProviderException if the provider is not found
-     @throws IllegalArgumentException if the provider string is 
-               null or empty
+   * Gets an instance of the KeyStore class representing
+   * the specified key store from the specified provider. 
+   * If the type is not found then, it throws KeyStoreException. 
+   * If the provider is not found, then it throws 
+   * NoSuchProviderException.
+   *
+   * @param type the type of keystore to choose
+   * @param provider the provider name
+   * @return a KeyStore repesenting the desired type
+   * @throws KeyStoreException if the type of keystore is not 
+   *          implemented by the given provider
+   * @throws NoSuchProviderException if the provider is not found
+   * @throws IllegalArgumentException if the provider string is 
+   *           null or empty
    */
   public static KeyStore getInstance(String type, String provider)
     throws KeyStoreException, NoSuchProviderException
   {
     if (provider == null || provider.length() == 0)
       throw new IllegalArgumentException("Illegal provider");
+
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException();
 
-    return getInstance(p.getProperty("KeyStore." + type), type, p);
+    return getInstance(type, p);
   }
 
   /** 
-     Gets an instance of the KeyStore class representing
-     the specified key store from the specified provider. 
-     If the type is not found then, it throws KeyStoreException. 
-     If the provider is not found, then it throws 
-     NoSuchProviderException.
-
-     @param type the type of keystore to choose
-     @param provider the keystore provider
-
-     @return a KeyStore repesenting the desired type
-
-     @throws KeyStoreException if the type of keystore is not 
-              implemented by the given provider
-     @throws IllegalArgumentException if the provider object is null
-     @since 1.4
+   * Gets an instance of the KeyStore class representing
+   * the specified key store from the specified provider. 
+   * If the type is not found then, it throws KeyStoreException. 
+   * If the provider is not found, then it throws 
+   * NoSuchProviderException.
+   *
+   * @param type the type of keystore to choose
+   * @param provider the keystore provider
+   * @return a KeyStore repesenting the desired type
+   * @throws KeyStoreException if the type of keystore is not 
+   *          implemented by the given provider
+   * @throws IllegalArgumentException if the provider object is null
+   * @since 1.4
    */
   public static KeyStore getInstance(String type, Provider provider)
     throws KeyStoreException 
   {
     if (provider == null)
       throw new IllegalArgumentException("Illegal provider");
-
-    return getInstance(provider.getProperty("KeyStore." + type),
-		       type, provider);
-  }
-
-  private static KeyStore getInstance(String classname,
-				      String type,
-				      Provider provider)
-    throws KeyStoreException
-  {
     try
       {
-	return new KeyStore((KeyStoreSpi) Class.forName(classname).
-			    newInstance(), provider, type);
+        return new KeyStore(
+          (KeyStoreSpi) Engine.getInstance(KEY_STORE, type, provider),
+          provider, type);
       }
-    catch (ClassNotFoundException cnfe)
+    catch (NoSuchAlgorithmException nsae)
       {
-	throw new KeyStoreException("Class not found");
+        throw new KeyStoreException(type);
       }
-    catch (InstantiationException ie)
+    catch (ClassCastException cce)
       {
-	throw new KeyStoreException("Class instantiation failed");
-      }
-    catch (IllegalAccessException iae)
-      {
-	throw new KeyStoreException("Illegal Access");
+        throw new KeyStoreException(type);
       }
   }
 
+  /**
+   * Returns the default KeyStore type. This method looks up the
+   * type in <JAVA_HOME>/lib/security/java.security with the 
+   * property "keystore.type" or if that fails then "jks" .
+   */
+  public static final String getDefaultType()
+  {
+    // Security reads every property in java.security so it 
+    // will return this property if it exists. 
+    String tmp = Security.getProperty("keystore.type");
+
+    if (tmp == null)
+      tmp = "jks";
+
+    return tmp;
+  }
+
+  // Instance methods.
+  // ------------------------------------------------------------------------
 
   /**
      Gets the provider that the class is from.
@@ -471,21 +495,4 @@ public class KeyStore
     keyStoreSpi.engineLoad(stream, password);
   }
 
-  /**
-     Returns the default KeyStore type. This method looks up the
-     type in <JAVA_HOME>/lib/security/java.security with the 
-     property "keystore.type" or if that fails then "jks" .
-   */
-  public static final String getDefaultType()
-  {
-    String tmp;
-    //Security reads every property in java.security so it 
-    //will return this property if it exists. 
-    tmp = Security.getProperty("keystore.type");
-
-    if (tmp == null)
-      tmp = "jks";
-
-    return tmp;
-  }
 }
