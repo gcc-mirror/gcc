@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,16 +46,11 @@ namespace std
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_c_locale; }
-
-  codecvt<char, char, mbstate_t>::
-  codecvt(__c_locale __cloc, size_t __refs)
-  : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+  { }
 
   codecvt<char, char, mbstate_t>::
   ~codecvt()
-  { _S_destroy_c_locale(_M_c_locale_codecvt); }
+  { }
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
@@ -122,16 +117,11 @@ namespace std
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_c_locale; }
-
-  codecvt<wchar_t, char, mbstate_t>::
-  codecvt(__c_locale __cloc, size_t __refs)
-  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+  { }
 
   codecvt<wchar_t, char, mbstate_t>::
   ~codecvt()
-  { _S_destroy_c_locale(_M_c_locale_codecvt); }
+  { }
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::

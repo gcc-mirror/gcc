@@ -1,3 +1,17 @@
+2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Match 3.2.0 ABI.
+	* include/bits/stl_alloc.h: Revert.
+
+	* include/bits/codecvt.h: Revert.
+	* config/locale/gnu/codecvt_members.cc: Revert.
+	* src/codecvt.cc: Revert.
+	* src/localename.cc: Revert.
+
+	* include/bits/ios_base.h (ios_base::~ios_base): Revert.
+
+	* config/linker-map.gnu: Mostly match 3_2-branch file.
+	
 2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h: Move non-facet classes requiring

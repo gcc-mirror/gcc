@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -129,9 +129,7 @@ namespace std
     {
     private:
       static void* _S_oom_malloc(size_t);
-#ifdef _GLIBCPP_DEPRECATED
       static void* _S_oom_realloc(void*, size_t);
-#endif
       static void (* __malloc_alloc_oom_handler)();
 
     public:
@@ -148,7 +146,6 @@ namespace std
       deallocate(void* __p, size_t /* __n */)
       { free(__p); }
 
-#ifdef _GLIBCPP_DEPRECATED
       static void*
       reallocate(void* __p, size_t /* old_sz */, size_t __new_sz)
       {
@@ -157,7 +154,6 @@ namespace std
           __result = _S_oom_realloc(__p, __new_sz);
         return __result;
       }
-#endif
 
       static void (* __set_malloc_handler(void (*__f)()))()
       {
@@ -191,7 +187,6 @@ namespace std
         }
     }
 
-#ifdef _GLIBCPP_DEPRECATED
   template<int __inst>
     void*
     __malloc_alloc_template<__inst>::
@@ -211,7 +206,6 @@ namespace std
             return __result;
         }
     }
-#endif
 
   // Should not be referenced within the library anymore.
   typedef __new_alloc                 __mem_interface;
@@ -293,7 +287,6 @@ namespace std
         _Alloc::deallocate(__real_p, __n + (int) _S_extra);
       }
 
-#ifdef _GLIBCPP_DEPRECATED
       static void*
       reallocate(void* __p, size_t __old_sz, size_t __new_sz)
       {
@@ -305,7 +298,6 @@ namespace std
         *(size_t*)__result = __new_sz;
         return __result + (int) _S_extra;
       }
-#endif
     };
 
 
@@ -456,10 +448,8 @@ namespace std
 	  }
       }
 
-#ifdef _GLIBCPP_DEPRECATED
       static void*
       reallocate(void* __p, size_t __old_sz, size_t __new_sz);
-#endif
     };
 
   template<bool __threads, int __inst> _Atomic_word
@@ -591,7 +581,6 @@ namespace std
     }
 
 
-#ifdef _GLIBCPP_DEPRECATED
   template<bool threads, int inst>
     void*
     __default_alloc_template<threads, inst>::
@@ -610,7 +599,6 @@ namespace std
       deallocate(__p, __old_sz);
       return __result;
     }
-#endif
 
   template<bool __threads, int __inst>
     _STL_mutex_lock

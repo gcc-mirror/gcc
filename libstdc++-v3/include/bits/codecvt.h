@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -164,18 +164,12 @@
       typedef _ExternT 			extern_type;
       typedef _StateT  			state_type;
 
-    protected:
-      __c_locale			_M_c_locale_codecvt;
-
     public:
       static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0) 
       : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs) { }
-
-      explicit 
-      codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       virtual 
@@ -225,17 +219,11 @@
       typedef char 			extern_type;
       typedef mbstate_t 		state_type;
 
-    protected:
-      __c_locale			_M_c_locale_codecvt;
-
     public:
       static locale::id id;
 
       explicit 
       codecvt(size_t __refs = 0);
-
-      explicit 
-      codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       virtual 
@@ -283,17 +271,11 @@
       typedef char 			extern_type;
       typedef mbstate_t 		state_type;
 
-    protected:
-      __c_locale			_M_c_locale_codecvt;
-
     public:
       static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0);
-
-      explicit 
-      codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       virtual 
@@ -338,13 +320,8 @@
     {
     public:
       explicit 
-      codecvt_byname(const char* __s, size_t __refs = 0) 
-      : codecvt<_InternT, _ExternT, _StateT>(__refs)
-      { 
-	if (_M_c_locale_codecvt != _S_c_locale)
-	  _S_destroy_c_locale(_M_c_locale_codecvt);
-	_S_create_c_locale(_M_c_locale_codecvt, __s); 
-      }
+      codecvt_byname(const char*, size_t __refs = 0) 
+      : codecvt<_InternT, _ExternT, _StateT>(__refs) { }
 
     protected:
       virtual 

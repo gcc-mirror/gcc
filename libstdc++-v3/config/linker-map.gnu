@@ -1,6 +1,6 @@
 ## Linker script for GNU ld 2.11.94+ only.
 ##
-## Copyright (C) 2002 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ##
@@ -250,12 +250,12 @@ GLIBCPP_3.2.1 {
 
 } GLIBCPP_3.2;
 
-
 GLIBCPP_3.2.2 {
 
   _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
 
 } GLIBCPP_3.2.1;
+
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {
