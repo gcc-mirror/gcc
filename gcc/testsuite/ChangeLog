@@ -1,3 +1,7 @@
+1998-10-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* lib/old-dejagnu.exp (old-dejagnu): support `Additional sources:'
+
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit74.C: New test.  Explicit
