@@ -1,3 +1,8 @@
+2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* config/mips/iris5.h:  Change WCHAR_TYPE to int.
+
 Mon Mar 12 16:32:21 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (trunctfdf2_2): Rename missnamed pattern.
