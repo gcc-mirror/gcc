@@ -1,3 +1,15 @@
+Sat Jan  9 08:19:14 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* jump.c (jump_optimize): Move simple optimizations in front
+	of complex ones.
+	Reset NEXT whenever deleting an insn in case NEXT was deleted.
+	Disable some conditional move optimizations if have 
+	conditional arithmetic or if CSE not run yet.
+	Add new optimization to conditionalize code if have conditional
+	arithmetic.
+	(can_reverse_comparison_p): Check REVERSIBLE_CC_MODE.
+	(condjump{,_in_parallel}_p): Simplify.
+
 Thu Jan  7 09:25:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* jump.c (delete_computation): Don't trust location of REG_DEAD
