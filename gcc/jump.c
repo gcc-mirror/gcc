@@ -1642,7 +1642,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      rtx prev_uses = prev_nonnote_insn (reallabelprev);
 	      rtx prev_label = JUMP_LABEL (insn);
 
-	      ++LABEL_NUSES (prev_label);
+	      if (prev_label)
+		++LABEL_NUSES (prev_label);
 
 	      if (invert_jump (insn, JUMP_LABEL (reallabelprev)))
 		{
@@ -1671,7 +1672,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	      /* We can now safely delete the label if it is unreferenced
 		 since the delete_insn above has deleted the BARRIER.  */
-	      if (--LABEL_NUSES (prev_label) == 0)
+	      if (prev_label && --LABEL_NUSES (prev_label) == 0)
 		delete_insn (prev_label);
 	      continue;
 	    }
