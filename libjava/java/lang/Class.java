@@ -172,32 +172,6 @@ public final class Class implements Serializable
       sm.checkMemberAccess(this, flags);
   }
 
-  // FIXME: this method exists only because we cannot catch Java
-  // exceptions from C++ code.  This is a helper for initializeClass.
-  private Throwable hackTrampoline (int what, Throwable old_exception)
-    {
-      Throwable new_val = null;
-      try
-	{
-	  if (what == 0)
-	    initializeClass ();
-	  else if (what == 1)
-	    hackRunInitializers ();
-	  else if (what == 2)
-	    new_val = new ExceptionInInitializerError (old_exception);
-	}
-      catch (Throwable t)
-	{
-	  new_val = t;
-	}
-      return new_val;
-    }
-
-  // FIXME: this is a hack to let us run the class initializers.  We
-  // could do it inline in initializeClass() if we could catch Java
-  // exceptions from C++.
-  private native void hackRunInitializers ();
-
   // Initialize the class.
   private native void initializeClass ();
 

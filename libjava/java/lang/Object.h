@@ -1,6 +1,6 @@
 // Object.h - Header file for java.lang.Object.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -69,8 +69,6 @@ private:
 
   // Initialize the sync_info field.
   void sync_init (void);
-
-  static void hack12_6 (jobject f);
 };
 
 #endif /* __JAVA_LANG_OBJECT_H__ */

@@ -1,6 +1,6 @@
 // natObject.cc - Implementation of the Object class.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -242,5 +242,13 @@ _Jv_MonitorExit (jobject obj)
 void
 _Jv_FinalizeObject (jobject obj)
 {
-  java::lang::Object::hack12_6(obj);
+  // Ignore exceptions.  From section 12.6 of the Java Language Spec.
+  try
+    {
+      obj->finalize ();
+    }
+  catch (java::lang::Throwable *t)
+    {
+      // Ignore.
+    }
 }

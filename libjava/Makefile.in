@@ -329,7 +329,6 @@ ordinary_java_source_files = $(convert_source_files) \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
-gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
@@ -739,7 +738,7 @@ THANKS acinclude.m4 aclocal.m4 configure configure.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -765,7 +764,6 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
 .deps/gnu/gcj/protocol/jar/Connection.P \
 .deps/gnu/gcj/protocol/jar/Handler.P \
-.deps/gnu/gcj/runtime/MethodInvocation.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \
 .deps/gnu/gcj/text/CharacterBreakIterator.P \
@@ -1284,7 +1282,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1563,11 +1561,6 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'java::lang::ClassLoader;' \
-	    $(basename $<)
-
-gnu/gcj/runtime/MethodInvocation.h: gnu/gcj/runtime/MethodInvocation.class libgcj.zip
-	$(GCJH) -classpath $(top_builddir) \
-	    -friend 'class _Jv_InterpMethod;' \
 	    $(basename $<)
 
 install-data-local:

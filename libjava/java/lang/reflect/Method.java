@@ -1,6 +1,6 @@
 // Method.java - Represent method of class or interface.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -67,30 +67,6 @@ public final class Method extends AccessibleObject implements Member
       // FIXME.
       return name.hashCode() + declaringClass.getName().hashCode();
     }
-
-  // This is used to perform an actual method call via ffi.
-  private static final native void hack_call (RawData cif,
-					      RawData method,
-					      RawData ret_value,
-					      RawData values);
-
-  // Perform an ffi call while capturing exceptions.  We have to do
-  // this because we can't catch Java exceptions from C++.
-  static final Throwable hack_trampoline (RawData cif,
-					  RawData method,
-					  RawData ret_value,
-					  RawData values)
-  {
-    try
-      {
-	hack_call (cif, method, ret_value, values);
-      }
-    catch (Throwable x)
-      {
-	return x;
-      }
-    return null;
-  }
 
   public native Object invoke (Object obj, Object[] args)
     throws IllegalAccessException, IllegalArgumentException,
