@@ -1,3 +1,8 @@
+2001-06-05  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* reload1.c (reload): Revert Schmidt's change so all USEs are not
+	deleted during reload.
+
 2001-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-semantics.c (genrtl_scope_stmt): Write out nested inline

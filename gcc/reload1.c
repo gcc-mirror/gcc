@@ -1187,7 +1187,7 @@ reload (first, global)
 					 CALL_INSN_FUNCTION_USAGE (insn));
 
 	if ((GET_CODE (PATTERN (insn)) == USE
-	     && INSN_UID (insn) >= reload_first_uid)
+	     && find_reg_note (insn, REG_EQUAL, NULL_RTX))
 	    || (GET_CODE (PATTERN (insn)) == CLOBBER
 		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != REG
 		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
