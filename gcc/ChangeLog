@@ -1,3 +1,8 @@
+Wed Jul 11 10:07:18 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (dwarf2out_init, dwarf2out_finish): Add dummy version
+	#ifndef DWARF2_DEBUGGING_INFO.
+
 2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* simplify-rtx.c (simplify_gen_subreg): Return null for QUEUED rtxes.
