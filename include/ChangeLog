@@ -1,3 +1,7 @@
+2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* ansidecl.h (ATTRIBUTE_PURE): New.
+
 2004-07-13  Bernardo Innocenti  <bernie@develer.com>
 
 	* libiberty.h (XNEW, XCNEW, XNEWVEC, XCNEWVEC, XOBNEW): Move here from

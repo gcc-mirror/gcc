@@ -277,6 +277,15 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 3.3 */
 #endif /* ATTRIBUTE_NONNULL */
 
+/* Attribute `pure' was valid as of gcc 3.0.  */
+#ifndef ATTRIBUTE_PURE
+# if (GCC_VERSION >= 3000)
+#  define ATTRIBUTE_PURE __attribute__ ((__pure__))
+# else
+#  define ATTRIBUTE_PURE
+# endif /* GNUC >= 3.0 */
+#endif /* ATTRIBUTE_PURE */
+
 /* Use ATTRIBUTE_PRINTF when the format specifier must not be NULL.
    This was the case for the `printf' format attribute by itself
    before GCC 3.3, but as of 3.3 we need to add the `nonnull'
