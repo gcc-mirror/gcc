@@ -3431,6 +3431,56 @@ insns that don't.  Instead, write two separate @code{define_split}
 definitions, one for the insns that are valid and one for the insns that
 are not valid.
 
+For the common case where the pattern of a define_split exactly matches the
+pattern of a define_insn, use @code{define_insn_and_split}.  It looks like
+this:
+
+@smallexample
+(define_insn_and_split
+  [@var{insn-pattern}]
+  "@var{condition}"
+  "@var{output-template}"
+  "@var{split-condition}"
+  [@var{new-insn-pattern-1}
+   @var{new-insn-pattern-2}
+   @dots{}]
+  "@var{preparation statements}"
+  [@var{insn-attributes}])
+
+@end smallexample
+
+@var{insn-pattern}, @var{condition}, @var{output-template}, and
+@var{insn-attributes} are used as in @code{define_insn}.  The
+@var{new-insn-pattern} vector and the @var{preparation-statements} are used as
+in a @code{define_split}.  The @var{split-condition} is also used as in
+@code{define_split}, with the additional behavior that if the condition starts
+with @samp{&&}, the condition used for the split will be the constructed as a
+logical "and" of the split condition with the insn condition.  For example,
+from i386.md:
+
+@smallexample
+(define_insn_and_split "zero_extendhisi2_and"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+     (zero_extend:SI (match_operand:HI 1 "register_operand" "0")))
+   (clobber (reg:CC 17))]
+  "TARGET_ZERO_EXTEND_WITH_AND && !optimize_size"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (and:SI (match_dup 0) (const_int 65535)))
+	      (clobber (reg:CC 17))])]
+  ""
+  [(set_attr "type" "alu1")])
+
+@end smallexample
+
+In this case, the actual split condition will be 
+"TARGET_ZERO_EXTEND_WITH_AND && !optimize_size && reload_completed."
+
+The @code{define_insn_and_split} construction provides exactly the same
+functionality as two separate @code{define_insn} and @code{define_split}
+patterns.  It exists for compactness, and as a maintenance tool to prevent
+having to ensure the two patterns' templates match.
+
 @node Peephole Definitions
 @section Machine-Specific Peephole Optimizers
 @cindex peephole optimizer definitions
