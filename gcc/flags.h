@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -132,6 +132,18 @@ extern int profile_flag;
 /* Nonzero if generating code to do profiling on the basis of basic blocks.  */
 
 extern int profile_block_flag;
+
+/* Nonzero if generating code to profile program flow graph arcs. */
+
+extern int profile_arc_flag;
+
+/* Nonzero if generating info for gcov to calculate line test coverage. */
+
+extern int flag_test_coverage;
+
+/* Nonzero indicates that branch taken probabilities should be calculated. */
+
+extern int flag_branch_probabilities;
 
 /* Nonzero for -pedantic switch: warn about anything
    that standard C forbids.  */
