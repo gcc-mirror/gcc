@@ -1,3 +1,8 @@
+2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
+	
+	* gcc/java/builtins.c (sqrt_builtin): Use BUILT_IN_SQRT, not
+	BUILT_IN_SQRTF.
+
 2002-01-22  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (java_init_decl_processing): Use add_predefined_file.
