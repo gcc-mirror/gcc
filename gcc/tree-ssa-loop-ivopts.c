@@ -4542,11 +4542,32 @@ static void
 rewrite_use_nonlinear_expr (struct ivopts_data *data,
 			    struct iv_use *use, struct iv_cand *cand)
 {
-  tree comp = unshare_expr (get_computation (data->current_loop,
-					     use, cand));
+  tree comp;
   tree op, stmts, tgt, ass;
   block_stmt_iterator bsi, pbsi;
- 
+
+  /* An important special case -- if we are asked to express value of
+     the original iv by itself, just exit; there is no need to
+     introduce a new computation (that might also need casting the
+     variable to unsigned and back).  */
+  if (cand->pos == IP_ORIGINAL
+      && TREE_CODE (use->stmt) == MODIFY_EXPR
+      && TREE_OPERAND (use->stmt, 0) == cand->var_after)
+    {
+      op = TREE_OPERAND (use->stmt, 1);
+
+      /* Be a bit careful.  In case variable is expressed in some
+	 complicated way, rewrite it so that we may get rid of this
+	 complicated expression.  */
+      if ((TREE_CODE (op) == PLUS_EXPR
+	   || TREE_CODE (op) == MINUS_EXPR)
+	  && TREE_OPERAND (op, 0) == cand->var_before
+	  && TREE_CODE (TREE_OPERAND (op, 1)) == INTEGER_CST)
+	return;
+    }
+
+  comp = unshare_expr (get_computation (data->current_loop,
+					use, cand));
   switch (TREE_CODE (use->stmt))
     {
     case PHI_NODE:
