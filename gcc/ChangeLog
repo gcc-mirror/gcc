@@ -1,5 +1,7 @@
 Sat Mar 28 14:37:20 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.h: Add declarations for many functions defined in pa.c.
+
 	* genpeep.c (main): Remove unused variable 'i' from the generated
 	file.
 

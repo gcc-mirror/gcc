@@ -2414,6 +2414,45 @@ extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
+extern int arith11_operand ();
+extern int int11_operand ();
+extern int reg_or_cint_move_operand ();
+extern int arith5_operand ();
+extern int uint5_operand ();
+extern int pic_label_operand ();
+extern int plus_xor_ior_operator ();
+extern int basereg_operand ();
+extern int shadd_operand ();
+extern int arith_operand ();
+extern int read_only_operand ();
+extern int move_operand ();
+extern int and_operand ();
+extern int ior_operand ();
+extern int arith32_operand ();
+extern int uint32_operand ();
+extern int reg_or_nonsymb_mem_operand ();
+extern int reg_or_0_operand ();
+extern int reg_or_0_or_nonsymb_mem_operand ();
+extern int pre_cint_operand ();
+extern int post_cint_operand ();
+extern int div_operand ();
+extern int int5_operand ();
+extern int movb_comparison_operator ();
+extern int ireg_or_int5_operand ();
+extern int fmpyaddoperands ();
+extern int fmpysuboperands ();
+extern int call_operand_address ();
+extern int cint_ok_for_move ();
+extern int ior_operand ();
+extern void emit_bcond_fp ();
+extern int emit_move_sequence ();
+extern int emit_hpdiv_const ();
+extern void hppa_expand_prologue ();
+extern void hppa_expand_epilogue ();
+extern int hppa_can_use_return_insn_p ();
+extern int is_function_label_plus_const ();
+extern int jump_in_call_delay ();
+
 
 /* Declare functions defined in pa.c and used in templates.  */
 
