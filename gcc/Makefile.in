@@ -1623,7 +1623,7 @@ reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
    $(REGS_H) toplev.h output.h $(EXPR_H) insn-flags.h ggc.h function.h \
-   cselib.h
+   cselib.h $(TREE_H)
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    $(RECOG_H) output.h reload.h $(REGS_H) hard-reg-set.h flags.h function.h \
    $(EXPR_H) insn-flags.h $(BASIC_BLOCK_H) toplev.h
