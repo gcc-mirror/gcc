@@ -1,3 +1,7 @@
+2000-01-16  Jeff Sturm  <jsturm@sigma6.com>
+
+	* java/io/StreamTokenizer.java (nextToken): Avoid unread(TT_EOF).
+
 2000-01-13  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natClassLoader.cc (_Jv_FindClass): Register `loader',
