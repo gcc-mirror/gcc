@@ -24,7 +24,6 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-#include <stdio.h>
 #include "config.h"
 #include "system.h"
 #include "tree.h"

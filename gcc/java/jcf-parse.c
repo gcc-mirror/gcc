@@ -1002,7 +1002,7 @@ DEFUN(jcf_figure_file_type, (jcf),
       && !open_in_zip (jcf, input_filename, NULL, 0))
     {
       localToFile = ALLOC (sizeof (struct ZipFileCache));
-      bcopy (SeenZipFiles, localToFile, sizeof (struct ZipFileCache));
+      bcopy ((PTR) SeenZipFiles, (PTR) localToFile, sizeof (struct ZipFileCache));
       process_zip_dir ();	/* Register all the class defined there */
       return JCF_ZIP;
     }
