@@ -1273,15 +1273,6 @@ check_inquiry (gfc_expr * e)
 
   int i;
 
-  /* These functions must have exactly one argument.  */
-  if (e->value.function.actual == NULL
-      || e->value.function.actual->next != NULL)
-    return FAILURE;
-
-  if (e->value.function.name != NULL
-      && e->value.function.name[0] != '\0')
-    return FAILURE;
-
   name = e->symtree->n.sym->name;
 
   for (i = 0; inquiry_function[i]; i++)
