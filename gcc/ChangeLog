@@ -1,3 +1,8 @@
+2000-06-09  Geoff Keating  <geoffk@cygnus.com>
+
+	* tree.h (VOID_TYPE_P): Don't look at the TYPE_MAIN_VARIANT
+	of an error_type_node.
+
 Fri Jun  9 20:35:13 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (asm_output_section_name): bugfix.
@@ -319,12 +324,12 @@ Mon Jun  5 06:46:28 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Makefile.in (intl.*): Honor non-zero exit codes in the intl
 	subdir.
 
-S2000-06-03  Geoff Keating  <geoffk@cygnus.com>
+2000-06-03  Geoff Keating  <geoffk@cygnus.com>
 
         * alias.c (record_component_aliases): Don't inspect
         DECL_NONADDRESSABLE_P of non-FIELD_DECL components of structures.
 
-at Jun  3 19:05:30 2000  Michael Meissner  <meissner@redhat.com>
+Sat Jun  3 19:05:30 2000  Michael Meissner  <meissner@redhat.com>
 
 	* ifcvt.c (process_insns): If IFCVT_MODIFY_INSN is defined, call
 	it with the pattern to do machine dependent work.

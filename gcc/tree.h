@@ -454,7 +454,7 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 #define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
 
 /* Nonzero if this type is the (possibly qualified) void type.  */
-#define VOID_TYPE_P(NODE) (TYPE_MAIN_VARIANT (NODE) == void_type_node)
+#define VOID_TYPE_P(NODE) (TREE_CODE (NODE) == VOID_TYPE)
 
 /* Nonzero if this type is complete or is cv void.  */
 #define COMPLETE_OR_VOID_TYPE_P(NODE) \
