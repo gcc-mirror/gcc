@@ -1602,7 +1602,7 @@ struct tree_block GTY(())
 #define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
   GET_MODE_NUNITS (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.mode)
 
-  /* Indicates that objects of this type must be initialized by calling a
+/* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
 #define TYPE_NEEDS_CONSTRUCTING(NODE) \
   (TYPE_CHECK (NODE)->type.needs_constructing_flag)
@@ -3468,6 +3468,9 @@ extern tree nondestructive_fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree nondestructive_fold_binary_to_constant (enum tree_code, tree, tree, tree);
 extern tree fold_read_from_constant_string (tree);
 extern tree int_const_binop (enum tree_code, tree, tree, int);
+extern tree build_fold_addr_expr (tree);
+extern tree build_fold_addr_expr_with_type (tree, tree);
+extern tree build_fold_indirect_ref (tree);
 
 /* In builtins.c */
 extern tree fold_builtin (tree);

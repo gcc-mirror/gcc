@@ -737,10 +737,18 @@ static GTY(()) HOST_WIDE_INT varargs_set = -1;
 HOST_WIDE_INT
 get_varargs_alias_set (void)
 {
+#if 1
+  /* We now lower VA_ARG_EXPR, and there's currently no way to attach the
+     varargs alias set to an INDIRECT_REF (FIXME!), so we can't
+     consistently use the varargs alias set for loads from the varargs
+     area.  So don't use it anywhere.  */
+  return 0;
+#else
   if (varargs_set == -1)
     varargs_set = new_alias_set ();
 
   return varargs_set;
+#endif
 }
 
 /* Likewise, but used for the fixed portions of the frame, e.g., register

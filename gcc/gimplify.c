@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "expr.h"
 #include "ggc.h"
+#include "target.h"
 
 static struct gimplify_ctx
 {
@@ -235,6 +236,15 @@ void
 append_to_statement_list_force (tree t, tree *list_p)
 {
   append_to_statement_list_1 (t, list_p, t != NULL);
+}
+
+/* Both gimplify the statement T and append it to LIST_P.  */
+
+void
+gimplify_and_add (tree t, tree *list_p)
+{
+  gimplify_stmt (&t);
+  append_to_statement_list (t, list_p);
 }
 
 /* Add T to the end of a COMPOUND_EXPR pointed by LIST_P.  The type
@@ -668,13 +678,17 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   else
     {
       TREE_VISITED (t) = 1;
-      if (TREE_CODE (*tp) == VA_ARG_EXPR)
+      if (TREE_CODE (*tp) == VA_ARG_EXPR
+	  && targetm.calls.gimplify_va_arg_expr == NULL)
 	{
 	  /* Mark any _DECL inside the operand as volatile to avoid
 	     the optimizers messing around with it. We have to do this
 	     early, otherwise we might mark a variable as volatile
 	     after we gimplify other statements that use the variable
 	     assuming it's not volatile.  */
+
+	  /* FIXME once most targets define the above hook, this should
+	     go away (perhaps along with the #include "target.h").  */
 	  walk_tree (&TREE_OPERAND (*tp, 0), mark_decls_volatile_r,
 		     NULL, NULL);
 	}
@@ -1633,39 +1647,6 @@ gimplify_minimax_expr (tree *expr_p, tree *pre_p, tree *post_p)
     return GS_OK;
 }
 
-/*  Build an expression for the address of T.  Folds away INDIRECT_REF to
-    avoid confusing the gimplify process.  */
-
-static tree
-build_addr_expr_with_type (tree t, tree ptrtype)
-{
-  if (TREE_CODE (t) == INDIRECT_REF)
-    {
-      t = TREE_OPERAND (t, 0);
-      if (TREE_TYPE (t) != ptrtype)
-	t = build1 (NOP_EXPR, ptrtype, t);
-    }
-  else
-    {
-      tree base = t;
-      while (TREE_CODE (base) == COMPONENT_REF
-	     || TREE_CODE (base) == ARRAY_REF)
-	base = TREE_OPERAND (base, 0);
-      if (DECL_P (base))
-	TREE_ADDRESSABLE (base) = 1;
-
-      t = build1 (ADDR_EXPR, ptrtype, t);
-    }
-
-  return t;
-}
-
-static tree
-build_addr_expr (tree t)
-{
-  return build_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
-}
-
 /* Subroutine of gimplify_compound_lval and gimplify_array_ref.
    Converts an ARRAY_REF to the equivalent *(&array + offset) form.  */
 
@@ -1716,7 +1697,7 @@ gimplify_array_ref_to_plus (tree *expr_p, tree *pre_p, tree *post_p)
   if (ret == GS_ERROR)
     return ret;
 
-  addr = build_addr_expr_with_type (array, ptrtype);
+  addr = build_fold_addr_expr_with_type (array, ptrtype);
   result = fold (build (add_code, ptrtype, addr, offset));
   *expr_p = build1 (INDIRECT_REF, elttype, result);
 
@@ -2533,9 +2514,9 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 	  t = TYPE_SIZE_UNIT (TREE_TYPE (*to_p));
 	  t = unshare_expr (t);
 	  args = tree_cons (NULL, t, NULL);
-	  t = build_addr_expr (*from_p);
+	  t = build_fold_addr_expr (*from_p);
 	  args = tree_cons (NULL, t, args);
-	  dest = build_addr_expr (*to_p);
+	  dest = build_fold_addr_expr (*to_p);
 	  args = tree_cons (NULL, dest, args);
 	  t = implicit_built_in_decls[BUILT_IN_MEMCPY];
 	  t = build_function_call_expr (t, args);
@@ -3239,14 +3220,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case VA_ARG_EXPR:
-	  /* Mark any _DECL inside the operand as volatile to avoid the
-	     optimizers messing around with it. FIXME: Remove this once
-	     VA_ARG_EXPRs are properly lowered.  */
-	  walk_tree (&TREE_OPERAND (*expr_p, 0), mark_decls_volatile_r,
-		     NULL, NULL);
-
-	  /* va_arg expressions are in GIMPLE form already.  */
-	  ret = GS_ALL_DONE;
+	  ret = gimplify_va_arg_expr (expr_p, pre_p, post_p);
 	  break;
 
 	case CONVERT_EXPR:
@@ -3586,7 +3560,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
       /* An lvalue will do.  Take the address of the expression, store it
 	 in a temporary, and replace the expression with an INDIRECT_REF of
 	 that temporary.  */
-      tmp = build_addr_expr (*expr_p);
+      tmp = build_fold_addr_expr (*expr_p);
       gimplify_expr (&tmp, pre_p, post_p, is_gimple_reg, fb_rvalue);
       *expr_p = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (tmp)), tmp);
     }

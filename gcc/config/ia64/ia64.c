@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hashtab.h"
 #include "langhooks.h"
 #include "cfglayout.h"
+#include "tree-gimple.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -273,6 +274,7 @@ static void ia64_vms_init_libfuncs (void)
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
+static void ia64_gimplify_va_arg (tree *, tree *, tree *);
 
 
 /* Table of valid machine attributes.  */
@@ -406,6 +408,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SETUP_INCOMING_VARARGS ia64_setup_incoming_varargs
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR ia64_gimplify_va_arg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3986,6 +3991,39 @@ ia64_va_arg (tree valist, tree type)
     }
 
   return std_expand_builtin_va_arg (valist, type);
+}
+
+static void
+ia64_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  tree valist = TREE_OPERAND (*expr_p, 0);
+  tree type = TREE_TYPE (*expr_p);
+
+  /* Variable sized types are passed by reference.  */
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    {
+      TREE_TYPE (*expr_p) = build_pointer_type (type);
+      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
+      *expr_p = build_fold_indirect_ref (*expr_p);
+      return;
+    }
+
+  /* Aggregate arguments with alignment larger than 8 bytes start at
+     the next even boundary.  Integer and floating point arguments
+     do so if they are larger than 8 bytes, whether or not they are
+     also aligned larger than 8 bytes.  */
+  if ((TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == INTEGER_TYPE)
+      ? int_size_in_bytes (type) > 8 : TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
+    {
+      tree t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
+		      build_int_2 (2 * UNITS_PER_WORD - 1, 0));
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
+		 build_int_2 (-2 * UNITS_PER_WORD, -1));
+      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+      gimplify_and_add (t, pre_p);
+    }
+
+  std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
 }
 
 /* Return 1 if function return value returned in memory.  Return 0 if it is

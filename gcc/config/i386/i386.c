@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "langhooks.h"
 #include "cgraph.h"
+#include "tree-gimple.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -877,6 +878,7 @@ static bool ix86_expand_carry_flag_compare (enum rtx_code, rtx, rtx, rtx*);
 static tree ix86_build_builtin_va_list (void);
 static void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
+static void ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p);
 
 struct ix86_address
 {
@@ -1068,6 +1070,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3409,6 +3414,258 @@ ix86_va_arg (tree valist, tree type)
     }
 
   return addr_rtx;
+}
+
+/* Lower VA_ARG_EXPR at gimplification time.  */
+
+void
+ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  tree valist = TREE_OPERAND (*expr_p, 0);
+  tree type = TREE_TYPE (*expr_p);
+  static const int intreg[6] = { 0, 1, 2, 3, 4, 5 };
+  tree f_gpr, f_fpr, f_ovf, f_sav;
+  tree gpr, fpr, ovf, sav, t;
+  int size, rsize;
+  tree lab_false, lab_over = NULL_TREE;
+  tree addr, t2;
+  rtx container;
+  int indirect_p = 0;
+  tree ptrtype;
+
+  /* Only 64bit target needs something special.  */
+  if (!TARGET_64BIT)
+    {
+      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
+      return;
+    }
+
+  f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_ovf = TREE_CHAIN (f_fpr);
+  f_sav = TREE_CHAIN (f_ovf);
+
+  valist = build_fold_indirect_ref (valist);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+
+  size = int_size_in_bytes (type);
+  if (size == -1)
+    {
+      /* Variable-size types are passed by reference.  */
+      indirect_p = 1;
+      type = build_pointer_type (type);
+      size = int_size_in_bytes (type);
+    }
+  rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  container = construct_container (TYPE_MODE (type), type, 0,
+				   REGPARM_MAX, SSE_REGPARM_MAX, intreg, 0);
+  /*
+   * Pull the value out of the saved registers ...
+   */
+
+  addr = create_tmp_var (ptr_type_node, "addr");
+  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
+
+  if (container)
+    {
+      int needed_intregs, needed_sseregs;
+      int need_temp;
+      tree int_addr, sse_addr;
+
+      lab_false = create_artificial_label ();
+      lab_over = create_artificial_label ();
+
+      examine_argument (TYPE_MODE (type), type, 0,
+		        &needed_intregs, &needed_sseregs);
+
+
+      need_temp = ((needed_intregs && TYPE_ALIGN (type) > 64)
+		   || TYPE_ALIGN (type) > 128);
+
+      /* In case we are passing structure, verify that it is consecutive block
+         on the register save area.  If not we need to do moves.  */
+      if (!need_temp && !REG_P (container))
+	{
+	  /* Verify that all registers are strictly consecutive  */
+	  if (SSE_REGNO_P (REGNO (XEXP (XVECEXP (container, 0, 0), 0))))
+	    {
+	      int i;
+
+	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
+		{
+		  rtx slot = XVECEXP (container, 0, i);
+		  if (REGNO (XEXP (slot, 0)) != FIRST_SSE_REG + (unsigned int) i
+		      || INTVAL (XEXP (slot, 1)) != i * 16)
+		    need_temp = 1;
+		}
+	    }
+	  else
+	    {
+	      int i;
+
+	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
+		{
+		  rtx slot = XVECEXP (container, 0, i);
+		  if (REGNO (XEXP (slot, 0)) != (unsigned int) i
+		      || INTVAL (XEXP (slot, 1)) != i * 8)
+		    need_temp = 1;
+		}
+	    }
+	}
+      if (!need_temp)
+	{
+	  int_addr = addr;
+	  sse_addr = addr;
+	}
+      else
+	{
+	  int_addr = create_tmp_var (ptr_type_node, "int_addr");
+	  DECL_POINTER_ALIAS_SET (int_addr) = get_varargs_alias_set ();
+	  sse_addr = create_tmp_var (ptr_type_node, "sse_addr");
+	  DECL_POINTER_ALIAS_SET (sse_addr) = get_varargs_alias_set ();
+	}
+      /* First ensure that we fit completely in registers.  */
+      if (needed_intregs)
+	{
+	  t = build_int_2 ((REGPARM_MAX - needed_intregs + 1) * 8, 0);
+	  TREE_TYPE (t) = TREE_TYPE (gpr);
+	  t = build2 (GE_EXPR, boolean_type_node, gpr, t);
+	  t2 = build1 (GOTO_EXPR, void_type_node, lab_false);
+	  t = build (COND_EXPR, void_type_node, t, t2, NULL_TREE);
+	  gimplify_and_add (t, pre_p);
+	}
+      if (needed_sseregs)
+	{
+	  t = build_int_2 ((SSE_REGPARM_MAX - needed_sseregs + 1) * 16
+			   + REGPARM_MAX * 8, 0);
+	  TREE_TYPE (t) = TREE_TYPE (fpr);
+	  t = build2 (GE_EXPR, boolean_type_node, fpr, t);
+	  t2 = build1 (GOTO_EXPR, void_type_node, lab_false);
+	  t = build (COND_EXPR, void_type_node, t, t2, NULL_TREE);
+	  gimplify_and_add (t, pre_p);
+	}
+
+      /* Compute index to start of area used for integer regs.  */
+      if (needed_intregs)
+	{
+	  /* int_addr = gpr + sav; */
+	  t = build2 (PLUS_EXPR, ptr_type_node, sav, gpr);
+	  t = build2 (MODIFY_EXPR, void_type_node, int_addr, t);
+	  gimplify_and_add (t, pre_p);
+	}
+      if (needed_sseregs)
+	{
+	  /* sse_addr = fpr + sav; */
+	  t = build2 (PLUS_EXPR, ptr_type_node, sav, fpr);
+	  t = build2 (MODIFY_EXPR, void_type_node, sse_addr, t);
+	  gimplify_and_add (t, pre_p);
+	}
+      if (need_temp)
+	{
+	  int i;
+	  tree temp = create_tmp_var (type, "va_arg_tmp");
+
+	  /* addr = &temp; */
+	  t = build1 (ADDR_EXPR, build_pointer_type (type), temp);
+	  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+	  gimplify_and_add (t, pre_p);
+	  
+	  for (i = 0; i < XVECLEN (container, 0); i++)
+	    {
+	      rtx slot = XVECEXP (container, 0, i);
+	      rtx reg = XEXP (slot, 0);
+	      enum machine_mode mode = GET_MODE (reg);
+	      tree piece_type = lang_hooks.types.type_for_mode (mode, 1);
+	      tree addr_type = build_pointer_type (piece_type);
+	      tree src_addr, src;
+	      int src_offset;
+	      tree dest_addr, dest;
+
+	      if (SSE_REGNO_P (REGNO (reg)))
+		{
+		  src_addr = sse_addr;
+		  src_offset = (REGNO (reg) - FIRST_SSE_REG) * 16;
+		}
+	      else
+		{
+		  src_addr = int_addr;
+		  src_offset = REGNO (reg) * 8;
+		}
+	      src_addr = convert (addr_type, src_addr);
+	      src_addr = fold (build2 (PLUS_EXPR, addr_type, src_addr,
+				       size_int (src_offset)));
+	      src = build_fold_indirect_ref (src_addr);
+
+	      dest_addr = convert (addr_type, addr);
+	      dest_addr = fold (build2 (PLUS_EXPR, addr_type, dest_addr,
+					size_int (INTVAL (XEXP (slot, 1)))));
+	      dest = build_fold_indirect_ref (dest_addr);
+
+	      t = build2 (MODIFY_EXPR, void_type_node, dest, src);
+	      gimplify_and_add (t, pre_p);
+	    }
+	}
+
+      if (needed_intregs)
+	{
+	  t = build2 (PLUS_EXPR, TREE_TYPE (gpr), gpr,
+		      build_int_2 (needed_intregs * 8, 0));
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+	  gimplify_and_add (t, pre_p);
+	}
+      if (needed_sseregs)
+	{
+	  t =
+	    build2 (PLUS_EXPR, TREE_TYPE (fpr), fpr,
+		   build_int_2 (needed_sseregs * 16, 0));
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr, t);
+	  gimplify_and_add (t, pre_p);
+	}
+
+      t = build1 (GOTO_EXPR, void_type_node, lab_over);
+      gimplify_and_add (t, pre_p);
+
+      t = build1 (LABEL_EXPR, void_type_node, lab_false);
+      append_to_statement_list (t, pre_p);
+    }
+
+  /* ... otherwise out of the overflow area.  */
+
+  /* Care for on-stack alignment if needed.  */
+  if (FUNCTION_ARG_BOUNDARY (VOIDmode, type) <= 64)
+    t = ovf;
+  else
+    {
+      HOST_WIDE_INT align = FUNCTION_ARG_BOUNDARY (VOIDmode, type) / 8;
+      t = build (PLUS_EXPR, TREE_TYPE (ovf), ovf, build_int_2 (align - 1, 0));
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+    }
+  gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
+
+  t2 = build2 (MODIFY_EXPR, void_type_node, addr, t);
+  gimplify_and_add (t2, pre_p);
+
+  t = build2 (PLUS_EXPR, TREE_TYPE (t), t,
+	      build_int_2 (rsize * UNITS_PER_WORD, 0));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  gimplify_and_add (t, pre_p);
+
+  if (container)
+    {
+      t = build1 (LABEL_EXPR, void_type_node, lab_over);
+      append_to_statement_list (t, pre_p);
+    }
+
+  ptrtype = build_pointer_type (type);
+  addr = convert (ptrtype, addr);
+
+  if (indirect_p)
+    addr = build_fold_indirect_ref (addr);
+  *expr_p = build_fold_indirect_ref (addr);
 }
 
 /* Return nonzero if OP is either a i387 or SSE fp register.  */
