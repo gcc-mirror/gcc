@@ -82,7 +82,7 @@ static rtx stack_temps[NUM_MACHINE_MODES];
 
 extern char *version_string, *language_string;
 
-struct option
+struct asm_option
 {
   char *string;
   int *variable;
@@ -115,9 +115,9 @@ static struct { char *name; int value; } m_options[] = TARGET_SWITCHES;
 void
 output_options (file, f_options, f_len, W_options, W_len)
      FILE *file;
-     struct option *f_options;
+     struct asm_option *f_options;
      int f_len;
-     struct option *W_options;
+     struct asm_option *W_options;
      int W_len;
 {
   int j;
@@ -1166,9 +1166,6 @@ expand_block_move_mem (mode, addr, orig_mem)
   rtx mem = gen_rtx (MEM, mode, addr);
   MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
   MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (orig_mem);
-  /* CYGNUS LOCAL unaligned-pointers */
-  MEM_UNALIGNED_P (mem) = MEM_UNALIGNED_P (orig_mem);
-  /* END CYGNUS LOCAL unaligned-pointers */
   return mem;
 }
 
