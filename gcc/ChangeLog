@@ -1,3 +1,13 @@
+Wed Dec 24 23:12:14 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* abi64.h (LONG_MAX_SPEC): Check MIPS_ABI_DEFAULT and TARGET_DEFAULT,
+	and define __LONG_MAX__ appropriately.  Add support for -mabi=X,
+	-mlong64, and -mgp{32,64} options.
+	* mips.c (mips_abi): Change type to int.
+	* mips.h (enum mips_abi_type): Delete.
+	(ABI_32, ABI_N32, ABI_64, ABI_EABI): Define as constants.
+	(mips_abi): Change type to int.
+
 Wed Dec 24 22:38:34 1997  John Carr  <jfc@mit.edu>
 
 	* flags.h, toplev.c, calls.c, alias.c: Remove flag_alias_check;
