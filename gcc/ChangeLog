@@ -1,3 +1,17 @@
+2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-protos.h (prefetch_operand): Delete.
+	(prefetch_cc_operand, prefetch_nocc_operand): New declations.
+	* pa.c (prefetch_operand): Delete.
+	(prefetch_cc_operand, prefetch_nocc_operand): New functions.
+	* pa.h (EXTRA_CONSTRAINT): Add `W' constraint.
+	(PREDICATE_CODES): Delete prefetch_operand.  Add prefetch_cc_operand
+	and prefetch_nocc_operand.
+	* pa.md (prefetch): Rework to avoid reload problems handling short
+	displacements when a cache control completer needs to be provided.
+	(prefetch_32, prefetch_64): Delete.
+	(prefetch_cc, prefetch_nocc): New patterns.
+
 2005-01-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Revert previous change.
