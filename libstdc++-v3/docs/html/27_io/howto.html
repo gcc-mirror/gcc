@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 27</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2001/05/30 21:55:03 pme Exp $ -->
+<!-- $Id: howto.html,v 1.6 2001/07/09 19:37:01 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -425,7 +425,7 @@
       involve doing very little buffering for the standard streams, leaving
       most of the buffering to the underlying C library.  (This kind of
       thing is <A HREF="../explanations.html#cstdio">tricky to get right</A>.)
-      The upside is that correctness is insured.  The downside is that
+      The upside is that correctness is ensured.  The downside is that
       writing through <TT>cout</TT> can quite easily lead to awful
       performance when the C++ I/O library is layered on top of the C I/O
       library (as it is for 3.0 by default).  Some patches are in the
@@ -447,9 +447,10 @@
       company will become fully buffered on their own.
    </P>
    <P>Note, by the way, that the synchronization requirement only applies to
-      the standard streams (cin, cout, cerr, clog, and thier wide-character
-      counterparts).  File stream objects that you create yourself have no
-      such requirement and are fully buffered.
+      the standard streams (<TT>cin</TT>, <TT>cout</TT>, <TT>cerr</TT>,
+      <TT>clog</TT>, and their wide-character counterparts).  File stream
+      objects that you create yourself have no such requirement and are fully
+      buffered.
    </P>
 
 
@@ -459,7 +460,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.5 2001/05/30 21:55:03 pme Exp $
+<BR> $Id: howto.html,v 1.6 2001/07/09 19:37:01 pme Exp $
 </EM></P>
 
 
