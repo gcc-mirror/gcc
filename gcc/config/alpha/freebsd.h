@@ -79,3 +79,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  DBX_CONTIN_CHAR
 #define DBX_CONTIN_CHAR	'?'
+
+/* Don't default to pcc-struct-return, we want to retain compatibility with
+   older FreeBSD releases AND pcc-struct-return may not be reentrant.  */
+
+#undef  DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 0

@@ -61,28 +61,21 @@ Boston, MA 02111-1307, USA.  */
 
 /* Don't assume anything about the header files.  */
 #undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C
+#define NO_IMPLICIT_EXTERN_C	1
 
 /* Allow #sccs in preprocessor.  */
 #undef  SCCS_DIRECTIVE
-#define SCCS_DIRECTIVE
+#define SCCS_DIRECTIVE	1
 
 /* Make gcc agree with FreeBSD's standard headers (<machine/ansi.h>, etc...)  */
 
 #undef  WCHAR_TYPE
-#define WCHAR_TYPE "int"
+#define WCHAR_TYPE	"int"
 
 #undef  WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
+#define WCHAR_UNSIGNED	0
 
 /* Code generation parameters.  */
-
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions
-   (even though the SVR4 ABI for the i386 says that records and unions are
-   returned in memory).  */
-#undef  DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Use periods rather than dollar signs in special g++ assembler names.
    This ensures the configuration knows our system correctly so we can link
@@ -92,37 +85,4 @@ Boston, MA 02111-1307, USA.  */
 /* Used by libgcc2.c.  We support file locking with fcntl / F_SETLKW.
    This enables the test coverage code to use file locking when exiting a
    program, which avoids race conditions if the program has forked.  */
-#define TARGET_HAS_F_SETLKW
-
-/* The prefix to add to user-visible assembler symbols.
-   For System V Release 4 & ELF the convention is *not* to prepend a leading
-   underscore onto user-level symbol names. Some CPU files such as
-   config/sparc/sparc.h set this wrong for ELF.  */
-
-#undef  USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-
-/* Handle #pragma weak and #pragma pack.  */
-#undef  HANDLE_SYSV_PRAGMA
-#define HANDLE_SYSV_PRAGMA
-
-/************************[  Assembler stuff  ]********************************/
-
-#undef  IDENT_ASM_OP
-#define IDENT_ASM_OP "\t.ident\t"
-
-/************************[  Debugger stuff  ]*********************************/
-
-/* All ELF targets can support DWARF-2.  */
-#undef  DWARF2_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO
-
-/* This is BSD, so we want the DBX format.  */
-#undef  DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-
-/* Even though this is BSD, ELF and the GNU tools operates better with dwarf2
-   than stabs.  Since we don't have any native tools to be compatible with,
-   defaulting to dwarf2 is OK.  */
-#undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#define TARGET_HAS_F_SETLKW	1
