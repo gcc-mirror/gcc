@@ -1,3 +1,7 @@
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Revert 05-18 change.
+
 2000-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi: Remove documentation for -fguiding-decls.

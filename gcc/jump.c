@@ -620,8 +620,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		  /* TARGET is nonzero if it is ok to cross jump
 		     to code before TARGET.  If so, see if matches.  */
 		  if (x != 0)
-		    find_cross_jump (insn, x,
-				     (optimize_size ? 1 : BRANCH_COST) + 1,
+		    find_cross_jump (insn, x, 2,
 				     &newjpos, &newlpos);
 
 		  if (newjpos != 0)
@@ -658,8 +657,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 
 		  /* TARGET is nonzero if it is ok to cross jump
 		     to code before TARGET.  If so, see if matches.  */
-		  find_cross_jump (insn, JUMP_LABEL (insn),
-				   optimize_size ? 1 : BRANCH_COST,
+		  find_cross_jump (insn, JUMP_LABEL (insn), 1,
 				   &newjpos, &newlpos);
 
 		  /* If cannot cross jump to code before the label,
@@ -674,8 +672,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 			  && JUMP_LABEL (target) == JUMP_LABEL (insn)
 			  /* Ignore TARGET if it's deleted.  */
 			  && ! INSN_DELETED_P (target))
-			find_cross_jump (insn, target,
-					 (optimize_size ? 1 : BRANCH_COST) + 1,
+			find_cross_jump (insn, target, 2,
 					 &newjpos, &newlpos);
 
 		  if (newjpos != 0)
@@ -706,8 +703,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		    if (target != insn
 			&& ! INSN_DELETED_P (target)
 			&& GET_CODE (PATTERN (target)) == RETURN)
-		      find_cross_jump (insn, target,
-				       (optimize_size ? 1 : BRANCH_COST) + 1,
+		      find_cross_jump (insn, target, 2,
 				       &newjpos, &newlpos);
 
 		  if (newjpos != 0)
