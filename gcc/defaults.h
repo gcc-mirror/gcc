@@ -4,7 +4,6 @@
    Copyright (C) 1992, 1996 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
-
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -117,6 +116,13 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 	fprintf (FILE, "\n");						\
   } while (0)
 #endif
+#endif
+
+/* This is how to output a reference to a user-level label named NAME.  */
+
+#ifndef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
+  do { fputs (USER_LABEL_PREFIX, FILE); fputs (NAME, FILE); } while (0)
 #endif
 
 /* This determines whether or not we support weak symbols.  */
