@@ -295,6 +295,15 @@
 	not required to set <code>gcount</code>).
     </dd>
 
+    <dt><a href="lwg-defects.html#103">103</a>:
+        <em>set::iterator is required to be modifiable, but this allows
+	    modification of keys.</em>
+    </dt>
+    <dd>For associative containers where the value type is the same as
+        the key type, both <code>iterator</code> and <code>const_iterator
+	</code> are constant iterators.
+    </dd>
+
     <dt><a href="lwg-defects.html#109">109</a>:
         <em>Missing binders for non-const sequence elements</em>
     </dt>

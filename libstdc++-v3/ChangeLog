@@ -1,5 +1,11 @@
 2004-03-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/howto.html: Add entry for DR 103 [WP].
+	* include/bits/stl_multiset.h: Add comment about DR 103.
+	* include/bits/stl_set.h: Likewise.
+
+2004-03-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
 	The value _space_ indicates that at least one space is required
 	at that position.
