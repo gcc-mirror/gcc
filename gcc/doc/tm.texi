@@ -6839,15 +6839,6 @@ restrictions require weak symbols to be left out of a static archive's
 table of contents.
 @end defmac
 
-@defmac TARGET_SUPPORTS_HIDDEN
-A C expression that evaluates to true if the target supports hidden
-visibility.  By default this expression is true if and only if
-@code{HAS_GAS_HIDDEN} is defined.  Set this macro if the
-@code{HAS_GAS_HIDDEN} macro gives the wrong answer for this
-target.  (For example, if the target's mechanism for supporting
-hidden visibility is not the same as GAS's.)
-@end defmac
-
 @defmac ASM_OUTPUT_EXTERNAL (@var{stream}, @var{decl}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} any text necessary for declaring the name of an external

@@ -1,5 +1,11 @@
+2004-11-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* defaults.h, config/darwin.h: Don't define TARGET_SUPPORTS_HIDDEN.
+	* system.h: Poison it.
+	* doc/tm.texi: Delete its documentation.
+
 2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/sol2-10.h, config/i386/t-sol2-10: New files.
 	* config/i386/i386.c (i386_solaris_elf_named_section): New
