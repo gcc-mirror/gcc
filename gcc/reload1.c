@@ -4333,9 +4333,31 @@ reload_as_needed (live_known)
 			  if (! n)
 			    continue;
 			  if (n == 1)
-			    n = validate_replace_rtx (reload_reg,
-						      gen_rtx (code, mode,
-							       reload_reg), p);
+			    {
+			      n = validate_replace_rtx (reload_reg,
+							gen_rtx (code, mode,
+								 reload_reg),
+							p);
+
+			      /* We must also verify that the constraints
+				 are met after the replacement.  */
+			      extract_insn (p);
+			      if (n)
+				n = constrain_operands (1);
+			      else
+				break;
+
+			      /* If the constraints were not met, then
+				 undo the replacement.  */
+			      if (!n)
+				{
+				  validate_replace_rtx (gen_rtx (code, mode,
+								 reload_reg),
+							reload_reg, p);
+				  break;
+				}
+				
+			    }
 			  break;
 			}
 		      if (n == 1)
