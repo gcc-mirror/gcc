@@ -18,6 +18,8 @@
 # define ASM __asm__("r12")
 #elif defined __hppa__
 # define ASM __asm__("%r30")
+#elif defined __xtensa__
+# define ASM __asm__("sp")
 #else
 # define ASM
 #endif
