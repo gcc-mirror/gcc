@@ -106,7 +106,7 @@ easy_expand_asm (str)
 
 
 #if 0
-/* This is the startup, and finish stuff per exception table. */
+/* This is the startup, and finish stuff per exception table.  */
 
 /* XXX - Tad: exception handling section */
 #ifndef EXCEPT_SECTION_ASM_OP
@@ -320,7 +320,7 @@ struct ehQueue {
 
 /* Holds the pc for doing "throw" */
 static tree saved_pc;
-/* Holds the type of the thing being thrown. */
+/* Holds the type of the thing being thrown.  */
 static tree saved_throw_type;
 /* Holds the value being thrown.  */
 static tree saved_throw_value;
@@ -919,11 +919,11 @@ build_eh_type_type (type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  /* peel back references, so they match. */
+  /* peel back references, so they match.  */
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  /* Peel off cv qualifiers. */
+  /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
   if (flag_rtti)
@@ -1015,7 +1015,7 @@ expand_start_catch_block (declspecs, declarator)
 	 a warning about an unused ((anonymous)).  */
       TREE_USED (decl) = 1;
 
-      /* Figure out the type that the initializer is. */
+      /* Figure out the type that the initializer is.  */
       init_type = TREE_TYPE (decl);
       if (TREE_CODE (init_type) != REFERENCE_TYPE
 	  && TREE_CODE (init_type) != POINTER_TYPE)
@@ -1054,7 +1054,7 @@ expand_start_catch_block (declspecs, declarator)
     {
       push_eh_cleanup ();
 
-      /* Fall into the catch all section. */
+      /* Fall into the catch all section.  */
     }
 
   emit_move_insn (DECL_RTL (saved_in_catch), const1_rtx);
@@ -1229,14 +1229,14 @@ do_unwind (inner_throw_label)
   rtx return_val_rtx;
 
 #if 0
-  /* I would like to do this here, but the move below doesn't seem to work. */
+  /* I would like to do this here, but the move below doesn't seem to work.  */
   /* call to  __builtin_return_address () */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
 
   emit_move_insn (return_val_rtx, inner_throw_label);
-  /* So, for now, just pass throw label to stack unwinder. */
+  /* So, for now, just pass throw label to stack unwinder.  */
 #endif
   params = tree_cons (NULL_TREE, make_tree (ptr_type_node,
 					    inner_throw_label), NULL_TREE);
@@ -1341,7 +1341,7 @@ expand_builtin_throw ()
   unwind_first = gen_label_rtx ();
 
   /* These two can be frontend specific.  If wanted, they can go in
-     expand_throw. */
+     expand_throw.  */
   /* Do we have a valid object we are throwing? */
   emit_cmp_insn (DECL_RTL (saved_throw_type), const0_rtx, EQ, NULL_RTX,
 		 GET_MODE (DECL_RTL (saved_throw_type)), 0, 0);
@@ -1415,7 +1415,7 @@ expand_builtin_throw ()
       emit_move_insn (ret_val, return_val_rtx);
 #endif
 
-    /* Fall into epilogue to unwind prologue. */
+    /* Fall into epilogue to unwind prologue.  */
   }
 
   expand_end_bindings (getdecls (), 1, 0);
@@ -1614,6 +1614,7 @@ tree
 start_anon_func ()
 {
   static int counter = 0;
+  int old_interface_unknown = interface_unknown;
   char name[32];
   tree params;
   tree t;
@@ -1623,6 +1624,8 @@ start_anon_func ()
 
   /* No need to mangle this.  */
   push_lang_context (lang_name_c);
+
+  interface_unknown = 1;
 
   params = void_list_node;
   /* tcf stands for throw clean funciton.  */
@@ -1637,6 +1640,8 @@ start_anon_func ()
   push_momentary ();
   expand_start_bindings (0);
   emit_line_note (input_filename, lineno);
+
+  interface_unknown = old_interface_unknown;
 
   pop_lang_context ();
 
@@ -1686,7 +1691,7 @@ expand_throw (exp)
       tree cleanup = empty_fndecl, e;
 
       /* throw expression */
-      /* First, decay it. */
+      /* First, decay it.  */
       exp = decay_conversion (exp);
 
       if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)

@@ -153,6 +153,7 @@ do_inline_function_hair (type, friend_list)
 
 /* Report an argument type mismatch between the best declared function
    we could find and the current argument list that we have.  */
+
 void
 report_type_mismatch (cp, parmtypes, name_kind)
      struct candidate *cp;
@@ -261,6 +262,7 @@ static int nofold;
   } while (0)
 
 /* Code to concatenate an asciified integer to a string.  */
+
 static
 #ifdef __GNUC__
 __inline
@@ -355,7 +357,8 @@ build_overload_nested_name (decl)
     build_overload_identifier (decl);
 }
 
-/* Encoding for an INTEGER_CST value. */
+/* Encoding for an INTEGER_CST value.  */
+
 static void
 build_overload_int (value)
      tree value;
@@ -499,7 +502,7 @@ build_overload_value (type, value)
 	{
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
-	      /* This is dangerous code, crack built up pointer to members. */
+	      /* This is dangerous code, crack built up pointer to members.  */
 	      tree args = CONSTRUCTOR_ELTS (value);
 	      tree a1 = TREE_VALUE (args);
 	      tree a2 = TREE_VALUE (TREE_CHAIN (args));
@@ -876,7 +879,7 @@ build_overload_name (parmtypes, begin, end)
 	      {
 		tree context = name;
 
-		/* If DECL_ASSEMBLER_NAME has been set properly, use it. */
+		/* If DECL_ASSEMBLER_NAME has been set properly, use it.  */
 		if (DECL_ASSEMBLER_NAME (context) != DECL_NAME (context))
 		  {
 		    OB_PUTID (DECL_ASSEMBLER_NAME (context));
@@ -946,7 +949,7 @@ build_overload_name (parmtypes, begin, end)
       if (nrepeats)
 	flush_repeats (typevec[maxtype-1]);
 
-      /* To get here, parms must end with `...'. */
+      /* To get here, parms must end with `...'.  */
       OB_PUTC ('e');
     }
 
@@ -974,6 +977,7 @@ build_static_name (basetype, name)
    FOR_METHOD is 1 if this overload is being performed
    for a method, rather than a function type.  It is 2 if
    this overload is being performed for a constructor.  */
+
 tree
 build_decl_overload (dname, parms, for_method)
      tree dname;
@@ -1058,6 +1062,7 @@ build_decl_overload (dname, parms, for_method)
 }
 
 /* Build an overload name for the type expression TYPE.  */
+
 tree
 build_typename_overload (type)
      tree type;
@@ -1103,7 +1108,7 @@ get_id_2 (name, name2)
 
 /* Top-level interface to explicit overload requests. Allow NAME
    to be overloaded. Error if NAME is already declared for the current
-   scope. Warning if function is redundantly overloaded. */
+   scope. Warning if function is redundantly overloaded.  */
 
 void
 declare_overloaded (name)
@@ -1139,6 +1144,7 @@ declare_overloaded (name)
 /* Check to see if NAME is overloaded. For first approximation,
    check to see if its TREE_OVERLOADED is set.  This is used on
    IDENTIFIER nodes.  */
+
 int
 is_overloaded (name)
      tree name;
@@ -1267,7 +1273,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	   
 	if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
 	  {
-	    /* Strip off the pointer and the array. */
+	    /* Strip off the pointer and the array.  */
 	    arg1 = TREE_TYPE (TREE_TYPE (arg1));
 
 	    while (TREE_CODE (arg1) == ARRAY_TYPE)
@@ -1325,7 +1331,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
       /* Try to fail. First, fail if unary */
       if (! try_second)
 	return rval;
-      /* Second, see if second argument is non-aggregate. */
+      /* Second, see if second argument is non-aggregate.  */
       type2 = TREE_TYPE (xarg2);
       if (TREE_CODE (type2) == OFFSET_TYPE)
 	type2 = TREE_TYPE (type2);
@@ -1727,11 +1733,11 @@ emit_thunk (thunk_fndecl)
   int failure = 0;
   int save_ofp;
 
-  /* Used to remember which regs we need to emit a USE rtx for. */
+  /* Used to remember which regs we need to emit a USE rtx for.  */
   rtx need_use[FIRST_PSEUDO_REGISTER];
   int need_use_count = 0;
 
-  /* rtx for the 'this' parameter. */
+  /* rtx for the 'this' parameter.  */
   rtx this_rtx = 0, this_reg_rtx = 0, fixed_this_rtx;
 
   char *(*save_decl_printable_name) () = decl_printable_name;
@@ -1775,7 +1781,7 @@ emit_thunk (thunk_fndecl)
 
   /* Now look through all the parameters, make sure that we
      don't clobber any registers used for parameters.
-     Also, pick up an rtx for the first "this" parameter. */
+     Also, pick up an rtx for the first "this" parameter.  */
   for (argp = TYPE_ARG_TYPES (TREE_TYPE (function));
        argp != NULL_TREE;
        argp = TREE_CHAIN (argp))
@@ -1949,6 +1955,7 @@ emit_thunk (thunk_fndecl)
 
 /* For the anonymous union in TYPE, return the member that is at least as
    large as the rest of the members, so we can copy it.  */
+
 static tree
 largest_union_member (type)
      tree type;
@@ -1965,6 +1972,7 @@ largest_union_member (type)
 }
 
 /* Generate code for default X(X&) constructor.  */
+
 void
 do_build_copy_constructor (fndecl)
      tree fndecl;

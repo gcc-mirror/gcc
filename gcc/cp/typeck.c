@@ -127,7 +127,7 @@ tree
 complete_type (type)
      tree type;
 {
-  if (TYPE_SIZE (type) != NULL_TREE)
+  if (type == error_mark_node || TYPE_SIZE (type) != NULL_TREE)
     ;
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
@@ -142,6 +142,7 @@ complete_type (type)
 }
 
 /* Return truthvalue of whether type of EXP is instantiated.  */
+
 int
 type_unknown_p (exp)
      tree exp;
@@ -153,6 +154,7 @@ type_unknown_p (exp)
 }
 
 /* Return truthvalue of whether T is function (or pfn) type.  */
+
 int
 fntype_p (t)
      tree t;
@@ -166,6 +168,7 @@ fntype_p (t)
 /* Do `exp = require_instantiated_type (type, exp);' to make sure EXP
    does not have an uninstantiated type.
    TYPE is type to instantiate with, if uninstantiated.  */
+
 tree
 require_instantiated_type (type, exp, errval)
      tree type, exp, errval;
@@ -541,7 +544,8 @@ common_type (t1, t2)
 	  tree b1 = TYPE_OFFSET_BASETYPE (t1);
 	  tree b2 = TYPE_OFFSET_BASETYPE (t2);
 
-	  if (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2))
+	  if (comptypes (b1, b2, 1)
+	      || (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2)))
 	    return build_type_attribute_variant (t2, attributes);
 	  else if (binfo_or_else (b2, b1))
 	    return build_type_attribute_variant (t1, attributes);
@@ -554,6 +558,7 @@ common_type (t1, t2)
 }
 
 /* Return 1 if TYPE1 and TYPE2 raise the same exceptions.  */
+
 int
 compexcepttypes (t1, t2)
      tree t1, t2;
@@ -616,6 +621,7 @@ comp_array_types (cmp, t1, t2, strict)
    pointer to a base classes. These allowances do not commute. In this
    case, TYPE1 is assumed to be the base class, and TYPE2 is assumed to
    be the derived class.  */
+
 int
 comptypes (type1, type2, strict)
      tree type1, type2;
@@ -931,6 +937,7 @@ comp_target_types (ttl, ttr, nptrs)
 /* If two types share a common base type, return that basetype.
    If there is not a unique most-derived base type, this function
    returns ERROR_MARK_NODE.  */
+
 tree
 common_base_type (tt1, tt2)
      tree tt1, tt2;
@@ -990,6 +997,7 @@ common_base_type (tt1, tt2)
    C++: See comment above about TYPE1, TYPE2, STRICT.
    If STRICT == 3, it means checking is strict, but do not compare
    default parameter values.  */
+
 int
 compparms (parms1, parms2, strict)
      tree parms1, parms2;
@@ -1036,6 +1044,7 @@ compparms (parms1, parms2, strict)
 
 /* This really wants return whether or not parameter type lists
    would make their owning functions assignment compatible or not.  */
+
 int
 comp_target_parms (parms1, parms2, strict)
      tree parms1, parms2;
@@ -1617,6 +1626,7 @@ build_object_ref (datum, basetype, field)
 
 /* Like `build_component_ref, but uses an already found field.
    Must compute access for current_class_ref.  Otherwise, ok.  */
+
 tree
 build_component_ref_1 (datum, field, protect)
      tree datum, field;
@@ -1689,6 +1699,7 @@ build_component_ref_1 (datum, field, protect)
    we're dealing with aggregates.  So, we now call this in unary_complex_lvalue,
    and in build_modify_expr.  The case (in particular) that led to this was
    with CODE == ADDR_EXPR, since it's not an lvalue when we'd get it there.  */
+
 static tree
 rationalize_conditional_expr (code, t)
      enum tree_code code;
@@ -1704,6 +1715,7 @@ rationalize_conditional_expr (code, t)
    FIELD_DECL for the field.  If not found return NULL_TREE.  Because
    anonymous unions can nest, we must also search all anonymous unions
    that are directly reachable.  */
+
 static tree
 lookup_anon_field (t, type)
      tree t, type;
@@ -1739,6 +1751,7 @@ lookup_anon_field (t, type)
 /* Build a COMPONENT_REF for a given DATUM, and it's member COMPONENT.
    COMPONENT can be an IDENTIFIER_NODE that is the name of the member
    that we are interested in, or it can be a FIELD_DECL.  */
+
 tree
 build_component_ref (datum, component, basetype_path, protect)
      tree datum, component, basetype_path;
@@ -1752,7 +1765,8 @@ build_component_ref (datum, component, basetype_path, protect)
   if (current_template_parms)
     return build_min_nt (COMPONENT_REF, datum, component);
 
-  /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference inside it. */
+  /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference
+     inside it.  */
   switch (TREE_CODE (datum))
     {
     case COMPOUND_EXPR:
@@ -1786,7 +1800,7 @@ build_component_ref (datum, component, basetype_path, protect)
       code = TREE_CODE (basetype);
     }
 
-  /* First, see if there is a field or component with name COMPONENT. */
+  /* First, see if there is a field or component with name COMPONENT.  */
   if (TREE_CODE (component) == TREE_LIST)
     {
       my_friendly_assert (!(TREE_CHAIN (component) == NULL_TREE
@@ -2076,13 +2090,13 @@ build_indirect_ref (ptr, errorstring)
    will inherit the type of the array, which will be some pointer type.  */
 
 tree
-build_x_array_ref (array, index)
-     tree array, index;
+build_x_array_ref (array, idx)
+     tree array, idx;
 {
-  tree rval = build_opfncall (ARRAY_REF, LOOKUP_NORMAL, array, index, NULL_TREE);
+  tree rval = build_opfncall (ARRAY_REF, LOOKUP_NORMAL, array, idx, NULL_TREE);
   if (rval)
     return rval;
-  return build_array_ref (array, index);
+  return build_array_ref (array, idx);
 }
 
 tree
@@ -2256,7 +2270,7 @@ build_x_function_call (function, params, decl)
       && TREE_CODE (function) == TREE_LIST
       && TREE_CHAIN (function) == NULL_TREE)
     {
-      /* Undo (Foo:bar)()... */
+      /* Undo (Foo:bar)()...  */
       type = TYPE_OFFSET_BASETYPE (type);
       function = TREE_VALUE (function);
       my_friendly_assert (TREE_CODE (function) == TREE_LIST, 999);
@@ -2341,7 +2355,7 @@ build_x_function_call (function, params, decl)
     {
       /* Should we undo what was done in build_component_ref? */
       if (TREE_CODE (TREE_PURPOSE (TREE_OPERAND (function, 1))) == TREE_VEC)
-	/* Get the name that build_component_ref hid. */
+	/* Get the name that build_component_ref hid.  */
 	function = DECL_NAME (TREE_VALUE (TREE_OPERAND (function, 1)));
       else
 	function = TREE_PURPOSE (TREE_OPERAND (function, 1));
@@ -2458,7 +2472,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
     {
-      tree fntype, index, e1, delta, delta2, e2, e3, aref, vtbl;
+      tree fntype, idx, e1, delta, delta2, e2, e3, aref, vtbl;
       tree instance;
 
       tree instance_ptr = *instance_ptrptr;
@@ -2470,16 +2484,16 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	function = save_expr (function);
 
       fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
-      index = save_expr (build_component_ref (function,
-					      index_identifier,
-					      NULL_TREE, 0));
-      e1 = build (GT_EXPR, boolean_type_node, index,
+      idx = save_expr (build_component_ref (function,
+					    index_identifier,
+					    NULL_TREE, 0));
+      e1 = build (GT_EXPR, boolean_type_node, idx,
 		  convert (delta_type_node, integer_zero_node));
       delta = convert (ptrdiff_type_node,
 		       build_component_ref (function, delta_identifier, NULL_TREE, 0));
       delta2 = DELTA2_FROM_PTRMEMFUNC (function);
 
-      /* convert down to the right base, before using the instance. */
+      /* convert down to the right base, before using the instance.  */
       instance
 	= convert_pointer_to_real (TYPE_METHOD_BASETYPE (TREE_TYPE (fntype)),
 				   instance_ptr);
@@ -2493,7 +2507,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 		 vtbl, convert (ptrdiff_type_node, delta2));
       vtbl = build_indirect_ref (vtbl, NULL_PTR);
       aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
-						     index,
+						     idx,
 						     integer_one_node, 1));
       if (! flag_vtable_thunks)
 	{
@@ -2783,7 +2797,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
       else if (TREE_CODE (val) == OFFSET_REF
 	    && TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
 	{
-	  /* This is unclean.  Should be handled elsewhere. */
+	  /* This is unclean.  Should be handled elsewhere.  */
 	  val = build_unary_op (ADDR_EXPR, val, 0);
 	}
       else if (TREE_CODE (val) == OFFSET_REF)
@@ -3646,7 +3660,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree primop0 = get_narrower (op0, &unsignedp0);
 	  tree primop1 = get_narrower (op1, &unsignedp1);
 
-	  /* Check for comparison of different enum types. */
+	  /* Check for comparison of different enum types.  */
 	  if (flag_int_enum_equivalence == 0 
 	      && TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE 
 	      && TREE_CODE (TREE_TYPE (orig_op1)) == ENUMERAL_TYPE 
@@ -3987,7 +4001,7 @@ build_x_unary_op (code, xarg)
     return build_min_nt (code, xarg, NULL_TREE);
 
   /* & rec, on incomplete RECORD_TYPEs is the simple opr &, not an
-     error message. */
+     error message.  */
   if (code == ADDR_EXPR
       && ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (xarg)))
 	   && TYPE_SIZE (TREE_TYPE (xarg)) == NULL_TREE)
@@ -4033,6 +4047,7 @@ condition_conversion (expr)
 
    NOCONVERT nonzero suppresses the default promotions
    (such as from short to int).  */
+
 tree
 build_unary_op (code, xarg, noconvert)
      enum tree_code code;
@@ -4198,7 +4213,7 @@ build_unary_op (code, xarg, noconvert)
 	      modify = build_modify_expr (arg, NOP_EXPR, incremented);
 	      compound = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
 
-	      /* Eliminate warning about unused result of + or -. */
+	      /* Eliminate warning about unused result of + or -.  */
 	      TREE_NO_UNUSED_WARNING (compound) = 1;
 	      return compound;
 	    }
@@ -4499,7 +4514,7 @@ unary_complex_lvalue (code, arg)
 
       t = TREE_OPERAND (arg, 1);
 
-      if (TREE_CODE (t) == FUNCTION_DECL) /* Check all this code for right semantics. */
+      if (TREE_CODE (t) == FUNCTION_DECL) /* Check all this code for right semantics.  */
 	return build_unary_op (ADDR_EXPR, t, 0);
       if (TREE_CODE (t) == VAR_DECL)
 	return build_unary_op (ADDR_EXPR, t, 0);
@@ -4646,6 +4661,10 @@ mark_addressable (exp)
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
+	return 1;
+
+      case CONSTRUCTOR:
+	TREE_ADDRESSABLE (x) = 1;
 	return 1;
 
       default:
@@ -4915,8 +4934,13 @@ build_conditional_expr (ifexp, op1, op2)
          a type is done using NOP_EXPRs.  */
       if (code1 == RECORD_TYPE && TYPE_HAS_CONVERSION (type1))
 	{
-	  tree tmp = build_pointer_type
-	    (build_type_variant (TREE_TYPE (type2), 1, 1));
+	  /* There are other types besides pointers and records.  */
+	  tree tmp;
+	  if (code2 == POINTER_TYPE)
+	      tmp = build_pointer_type
+		(build_type_variant (TREE_TYPE (type2), 1, 1));
+	  else
+	    tmp = type2;
 	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op1, 0);
 	  if (tmp == NULL_TREE)
 	    {
@@ -4928,13 +4952,18 @@ build_conditional_expr (ifexp, op1, op2)
 	    error ("ambiguous pointer conversion");
 	  else
 	    STRIP_NOPS (tmp);
-	  result_type = common_type (type1, TREE_TYPE (tmp));
+	  result_type = common_type (type2, TREE_TYPE (tmp));
 	  op1 = tmp;
 	}
       else if (code2 == RECORD_TYPE && TYPE_HAS_CONVERSION (type2))
 	{
-	  tree tmp = build_pointer_type
-	    (build_type_variant (TREE_TYPE (type1), 1, 1));
+	  tree tmp;
+	  if (code1 == POINTER_TYPE)
+	    tmp = build_pointer_type
+	      (build_type_variant (TREE_TYPE (type1), 1, 1));
+	  else
+	    tmp = type1;
+
 	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op2, 0);
 	  if (tmp == NULL_TREE)
 	    {
@@ -4976,6 +5005,7 @@ build_conditional_expr (ifexp, op1, op2)
 
 /* Handle overloading of the ',' operator when needed.  Otherwise,
    this function just builds an expression list.  */
+
 tree
 build_x_compound_expr (list)
      tree list;
@@ -5054,6 +5084,12 @@ tree
 build_static_cast (type, expr)
    tree type, expr;
 {
+  if (current_template_parms)
+    {
+      tree t = build_min (STATIC_CAST_EXPR, type, expr);
+      return t;
+    }
+
   return build_c_cast (type, expr, 0);
 }
 
@@ -5117,6 +5153,12 @@ build_const_cast (type, expr)
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
+
+  if (current_template_parms)
+    {
+      tree t = build_min (CONST_CAST_EXPR, type, expr);
+      return t;
+    }
 
   if (TYPE_PTRMEMFUNC_P (type))
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
@@ -5389,8 +5431,8 @@ expand_target_expr (t)
    to combine the old value of LHS with RHS to get the new value.
    Or else MODIFYCODE is NOP_EXPR meaning do a simple assignment.
 
-   C++: If MODIFYCODE is INIT_EXPR, then leave references unbashed.
-*/
+   C++: If MODIFYCODE is INIT_EXPR, then leave references unbashed.  */
+
 tree
 build_modify_expr (lhs, modifycode, rhs)
      tree lhs;
@@ -5782,7 +5824,7 @@ build_modify_expr (lhs, modifycode, rhs)
     }
   else
     {
-      /* Avoid warnings on enum bit fields. */
+      /* Avoid warnings on enum bit fields.  */
       if (TREE_CODE (olhstype) == ENUMERAL_TYPE
 	  && TREE_CODE (lhstype) == INTEGER_TYPE)
 	{
@@ -5858,7 +5900,7 @@ build_modify_expr (lhs, modifycode, rhs)
   if (olhstype == TREE_TYPE (result))
     return result;
   /* Avoid warnings converting integral types back into enums
-     for enum bit fields. */
+     for enum bit fields.  */
   if (TREE_CODE (TREE_TYPE (result)) == INTEGER_TYPE
       && TREE_CODE (olhstype) == ENUMERAL_TYPE)
     {
@@ -5903,6 +5945,7 @@ language_lvalue_valid (exp)
 /* Get difference in deltas for different pointer to member function
    types.  Return integer_zero_node, if FROM cannot be converted to a
    TO type.  If FORCE is true, then allow reverse conversions as well.  */
+
 static tree
 get_delta_difference (from, to, force)
      tree from, to;
@@ -5980,14 +6023,14 @@ build_ptrmemfunc (type, pfn, force)
      tree type, pfn;
      int force;
 {
-  tree index = integer_zero_node;
+  tree idx = integer_zero_node;
   tree delta = integer_zero_node;
   tree delta2 = integer_zero_node;
   tree vfield_offset;
   tree npfn;
   tree u;
 
-  /* Handle multiple conversions of pointer to member functions. */
+  /* Handle multiple conversions of pointer to member functions.  */
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
     {
       tree ndelta, ndelta2, nindex;
@@ -6000,17 +6043,17 @@ build_ptrmemfunc (type, pfn, force)
 	  tree e1, e2, e3;
 	  ndelta = convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
 	  ndelta2 = convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
-	  index = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
+	  idx = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
 	  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
 					TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 					force);
 	  delta = build_binary_op (PLUS_EXPR, delta, ndelta, 1);
 	  delta2 = build_binary_op (PLUS_EXPR, ndelta2, delta2, 1);
-	  e1 = fold (build (GT_EXPR, boolean_type_node, index, integer_zero_node));
+	  e1 = fold (build (GT_EXPR, boolean_type_node, idx, integer_zero_node));
 	  
 	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (delta2_identifier, delta2, NULL_TREE));
 	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-							   tree_cons (NULL_TREE, index,
+							   tree_cons (NULL_TREE, idx,
 								      tree_cons (NULL_TREE, u, NULL_TREE))));
 	  e2 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
 
@@ -6020,7 +6063,7 @@ build_ptrmemfunc (type, pfn, force)
 
 	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (pfn_identifier, npfn, NULL_TREE));
 	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-							   tree_cons (NULL_TREE, index,
+							   tree_cons (NULL_TREE, idx,
 								      tree_cons (NULL_TREE, u, NULL_TREE))));
 	  e3 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
 	  return build_conditional_expr (e1, e2, e3);
@@ -6056,7 +6099,7 @@ build_ptrmemfunc (type, pfn, force)
 	}
     }
 
-  /* Handle null pointer to member function conversions. */
+  /* Handle null pointer to member function conversions.  */
   if (integer_zerop (pfn))
     {
       pfn = build_c_cast (type, integer_zero_node, 0);
@@ -6077,7 +6120,7 @@ build_ptrmemfunc (type, pfn, force)
       pfn = build_addr_func (pfn);
     }
 
-  /* Allow pointer to member conversions here. */
+  /* Allow pointer to member conversions here.  */
   delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 				force);
@@ -6097,7 +6140,7 @@ build_ptrmemfunc (type, pfn, force)
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) == FUNCTION_DECL
       && DECL_VINDEX (TREE_OPERAND (pfn, 0)))
     {
-      /* Find the offset to the vfield pointer in the object. */
+      /* Find the offset to the vfield pointer in the object.  */
       vfield_offset = get_binfo (DECL_CONTEXT (TREE_OPERAND (pfn, 0)),
 				 DECL_CLASS_CONTEXT (TREE_OPERAND (pfn, 0)),
 				 0);
@@ -6105,14 +6148,14 @@ build_ptrmemfunc (type, pfn, force)
       delta2 = size_binop (PLUS_EXPR, vfield_offset, delta2);
 
       /* Map everything down one to make room for the null pointer to member.  */
-      index = size_binop (PLUS_EXPR,
-			  DECL_VINDEX (TREE_OPERAND (pfn, 0)),
-			  integer_one_node);
+      idx = size_binop (PLUS_EXPR,
+			DECL_VINDEX (TREE_OPERAND (pfn, 0)),
+			integer_one_node);
       u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (delta2_identifier, delta2, NULL_TREE));
     }
   else
     {
-      index = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+      idx = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
 
       if (type == TREE_TYPE (pfn))
 	{
@@ -6128,7 +6171,7 @@ build_ptrmemfunc (type, pfn, force)
     }
 
   u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-						   tree_cons (NULL_TREE, index,
+						   tree_cons (NULL_TREE, idx,
 							      tree_cons (NULL_TREE, u, NULL_TREE))));
   return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
 }
@@ -6573,7 +6616,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       else if (ctt == 0)
 	cp_error ("%s to `%T' from `%T'", errtype, ttl, ttr);
 
-      /* compatible pointer to member functions. */
+      /* compatible pointer to member functions.  */
       return build_ptrmemfunc (ttl, rhs, 0);
     }
   else if (codel == ERROR_MARK || coder == ERROR_MARK)
@@ -6612,6 +6655,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
    exist, an ambiguity exists.
 
    If flags doesn't include LOOKUP_COMPLAIN, don't complain about anything.  */
+
 tree
 convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
      tree exp, type, rhs;
@@ -7063,9 +7107,11 @@ c_expand_return (retval)
 	}
       else
 	{
-	  retval = convert_for_initialization (result, valtype, retval,
-					       LOOKUP_NORMAL,
-					       "return", NULL_TREE, 0);
+	  /* We already did this above, don't do it again.  */
+	  if (TREE_CODE (valtype) != REFERENCE_TYPE)
+	    retval = convert_for_initialization (result, valtype, retval,
+						 LOOKUP_NORMAL,
+						 "return", NULL_TREE, 0);
 	  DECL_INITIAL (result) = NULL_TREE;
 	}
       if (retval == error_mark_node)
@@ -7186,18 +7232,18 @@ c_expand_start_case (exp)
     }
   else
     {
-      tree index;
+      tree idx;
 
       exp = default_conversion (exp);
       type = TREE_TYPE (exp);
-      index = get_unwidened (exp, 0);
+      idx = get_unwidened (exp, 0);
       /* We can't strip a conversion from a signed type to an unsigned,
 	 because if we did, int_fits_type_p would do the wrong thing
 	 when checking case values for being in range,
 	 and it's too hard to do the right thing.  */
       if (TREE_UNSIGNED (TREE_TYPE (exp))
-	  == TREE_UNSIGNED (TREE_TYPE (index)))
-	exp = index;
+	  == TREE_UNSIGNED (TREE_TYPE (idx)))
+	exp = idx;
     }
 
   expand_start_case
@@ -7209,6 +7255,7 @@ c_expand_start_case (exp)
 
 /* CONSTP remembers whether or not all the intervening pointers in the `to'
    type have been const.  */
+
 int
 comp_ptr_ttypes_real (to, from, constp)
      tree to, from;
@@ -7242,6 +7289,7 @@ comp_ptr_ttypes_real (to, from, constp)
 /* When comparing, say, char ** to char const **, this function takes the
    'char *' and 'char const *'.  Do not pass non-pointer types to this
    function.  */
+
 int
 comp_ptr_ttypes (to, from)
      tree to, from;

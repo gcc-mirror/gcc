@@ -569,6 +569,7 @@ gen_assign(xf, name)
    of CLS.
 
    ??? Needs to handle nested classes.  */
+
 void
 GNU_xref_hier(cls, base, pub, virt, frnd)
    char *cls;

@@ -55,6 +55,7 @@ init_rtti_processing ()
    pointer somewhere, return a pointer to a possible sub-object that
    has a virtual table pointer in it that is the vtable parent for
    that sub-object.  */
+
 static tree
 build_headof_sub (exp)
      tree exp;
@@ -71,6 +72,7 @@ build_headof_sub (exp)
    object pointed to by EXP with type cv void*, if the class has any
    virtual functions (TYPE_VIRTUAL_P), else just return the
    expression.  */
+
 static tree
 build_headof (exp)
      tree exp;
@@ -112,6 +114,7 @@ build_headof (exp)
 /* Return the type_info node associated with the expression EXP.  If EXP is
    a reference to a polymorphic class, return the dynamic type; otherwise
    return the static type of the expression.  */
+
 tree
 build_typeid (exp)
      tree exp;
@@ -131,11 +134,11 @@ build_typeid (exp)
   if (TREE_CODE (exp) == VAR_DECL && TREE_CODE (type) == RECORD_TYPE)
     return get_typeid (type);
 
-  /* peel back references, so they match. */
+  /* peel back references, so they match.  */
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  /* Peel off cv qualifiers. */
+  /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
   /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
@@ -269,6 +272,7 @@ get_typeid_1 (type)
 }
   
 /* Return the type_info object for TYPE, creating it if necessary.  */
+
 tree
 get_typeid (type)
      tree type;
@@ -285,7 +289,7 @@ get_typeid (type)
     type = TREE_TYPE (type);
 
   /* The top-level cv-qualifiers of the lvalue expression or the type-id
-     that is the operand of typeid are always ignored. */
+     that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);
 
   return get_typeid_1 (type);
@@ -325,7 +329,8 @@ throw_bad_cast ()
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
    RESULT, it must have previously had a save_expr applied to it.  */
 
-tree ifnonnull (test, result)
+tree
+ifnonnull (test, result)
      tree test, result;
 {
   return build (COND_EXPR, TREE_TYPE (result),
@@ -349,6 +354,12 @@ build_dynamic_cast (type, expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
   
+  if (current_template_parms)
+    {
+      tree t = build_min (DYNAMIC_CAST_EXPR, type, expr);
+      return t;
+    }
+
   switch (tc)
     {
     case POINTER_TYPE:
@@ -539,7 +550,7 @@ build_dynamic_cast (type, expr)
 	      return build (COND_EXPR, type, result, result, expr1);
 	    }
 
-	  /* Now back to the type we want from a void*. */
+	  /* Now back to the type we want from a void*.  */
 	  result = convert (type, result);
           return ifnonnull (expr, result);
 	}
@@ -616,7 +627,7 @@ expand_si_desc (tdecl, type)
   expand_expr_stmt (fn);
 }
 
-/* Build an initializer for a __class_type_info node. */
+/* Build an initializer for a __class_type_info node.  */
 
 static void
 expand_class_desc (tdecl, type)
@@ -797,6 +808,7 @@ expand_class_desc (tdecl, type)
 }
 
 /* Build an initializer for a __pointer_type_info node.  */
+
 static void
 expand_ptr_desc (tdecl, type)
      tree tdecl;
@@ -1022,13 +1034,14 @@ synthesize_tinfo_fn (fndecl)
 
 #if 0
 /* This is the old dossier type descriptor generation code, it's much
-   more extended than rtti. It's reserved for later use. */
+   more extended than rtti. It's reserved for later use.  */
 /* Build an initializer for a __t_desc node.  So that we can take advantage
    of recursion, we accept NULL for TYPE.
    DEFINITION is greater than zero iff we must define the type descriptor
    (as opposed to merely referencing it).  1 means treat according to
    #pragma interface/#pragma implementation rules.  2 means define as
    global and public, no matter what.  */
+
 tree
 build_t_desc (type, definition)
      tree type;
@@ -1192,6 +1205,7 @@ build_t_desc (type, definition)
 }
 
 /* Build an initializer for a __i_desc node.  */
+
 tree
 build_i_desc (decl)
      tree decl;
@@ -1225,6 +1239,7 @@ build_i_desc (decl)
 }
 
 /* Build an initializer for a __m_desc node.  */
+
 tree
 build_m_desc (decl)
      tree decl;

@@ -135,7 +135,7 @@ empty_parms ()
 %token ELLIPSIS
 
 /* the reserved words */
-/* SCO include files test "ASM", so use something else. */
+/* SCO include files test "ASM", so use something else.  */
 %token SIZEOF ENUM /* STRUCT UNION */ IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
 %token BREAK CONTINUE RETURN GOTO ASM_KEYWORD GCC_ASM_KEYWORD TYPEOF ALIGNOF
 %token SIGOF
@@ -265,7 +265,7 @@ empty_parms ()
 %type <ttype> new_initializer new_placement
 %type <ttype> using_decl .poplevel
 
-/* in order to recognize aggr tags as defining and thus shadowing. */
+/* in order to recognize aggr tags as defining and thus shadowing.  */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
@@ -316,7 +316,7 @@ program: /* empty */
 
 /* the reason for the strange actions in this rule
  is so that notype_initdecls when reached via datadef
- can find a valid list of type and sc specs in $0. */
+ can find a valid list of type and sc specs in $0.  */
 
 extdefs:
 	  { $<ttype>$ = NULL_TREE; } lang_extdef
@@ -1314,7 +1314,7 @@ primary:
 		  class = TREE_CODE_CLASS (TREE_CODE ($$));
 		  if (class == 'e' || class == '1'
 		      || class == '2' || class == '<')
-                    /* This inhibits warnings in truthvalue_conversion. */
+                    /* This inhibits warnings in truthvalue_conversion.  */
 		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
 	| '(' expr_or_declarator ')'
 		{ char class;
@@ -1322,7 +1322,7 @@ primary:
 		  class = TREE_CODE_CLASS (TREE_CODE ($$));
 		  if (class == 'e' || class == '1'
 		      || class == '2' || class == '<')
-                    /* This inhibits warnings in truthvalue_conversion. */
+                    /* This inhibits warnings in truthvalue_conversion.  */
 		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
 	| '(' error ')'
 		{ $$ = error_mark_node; }
@@ -1510,7 +1510,7 @@ primary:
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
-		     in build_component_ref entirely yet, we cannot do this. */
+		     in build_component_ref entirely yet, we cannot do this.  */
 		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), $4, current_class_ref);
 		  if (TREE_CODE ($$) == CALL_EXPR
 		      && TREE_TYPE ($$) != void_type_node)
@@ -1525,7 +1525,7 @@ primary:
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
-		     in build_component_ref entirely yet, we cannot do this. */
+		     in build_component_ref entirely yet, we cannot do this.  */
 		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), NULL_TREE, current_class_ref);
 		  if (TREE_CODE ($$) == CALL_EXPR
 		      && TREE_TYPE ($$) != void_type_node)
@@ -2029,7 +2029,7 @@ nomods_initdcl0:
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax
-   so that the header files compile. */
+   so that the header files compile.  */
 maybe_attribute:
       /* empty */
   		{ $$ = NULL_TREE; }
@@ -2203,7 +2203,7 @@ structsp:
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 		  /* finish_struct nukes this anyway; if
-		     finish_exception does too, then it can go. */
+		     finish_exception does too, then it can go.  */
 		  if (semi)
 		    note_got_semicolon ($1);
 
@@ -2692,7 +2692,7 @@ component_decl_1:
 		{ $$ = do_class_using_decl ($1); }
 	;
 
-/* The case of exactly one component is handled directly by component_decl. */
+/* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */
 components:
 	  /* empty: possibly anonymous */
@@ -3100,7 +3100,7 @@ ptr_to_mem:
 	;
 
 /* All uses of explicit global scope must go through this nonterminal so
-   that got_scope will be set before yylex is called to get the next token. */
+   that got_scope will be set before yylex is called to get the next token.  */
 global_scope:
 	  SCOPE
 		{ got_scope = void_type_node; }
@@ -3738,7 +3738,7 @@ handler_args:
 	| '(' typed_typespecs after_type_declarator ')'
 		{ check_for_new_type ("inside exception declarations", $2);
 		  expand_start_catch_block ($2.t, $3); }
-	This allows reference parameters... */
+	This allows reference parameters...  */
 	| '(' parm ')'
 		{ check_for_new_type ("inside exception declarations", $2);
 		  expand_start_catch_block (TREE_PURPOSE ($2.t),

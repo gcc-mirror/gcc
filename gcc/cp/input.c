@@ -156,7 +156,7 @@ sub_getch ()
 	  input = inp->next;
 	  input_filename = inp->filename;
 	  lineno = inp->lineno;
-	  /* Get interface/implementation back in sync. */
+	  /* Get interface/implementation back in sync.  */
 	  extract_interface_info ();
 	  putback_char = inp->putback_char;
 	  free_input (inp);

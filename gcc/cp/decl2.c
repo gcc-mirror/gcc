@@ -56,7 +56,7 @@ tree pending_vtables;
 tree pending_statics;
 
 /* A list of functions which were declared inline, but which we
-   may need to emit outline anyway. */
+   may need to emit outline anyway.  */
 static tree saved_inlines;
 
 /* Used to help generate temporary names which are unique within
@@ -131,7 +131,7 @@ int flag_ansi;
 int flag_implement_inlines = 1;
 
 /* Nonzero means do emit exported implementations of templates, instead of
-   multiple static copies in each file that needs a definition. */
+   multiple static copies in each file that needs a definition.  */
 
 int flag_external_templates;
 
@@ -155,13 +155,9 @@ int warn_implicit = 1;
 int warn_ctor_dtor_privacy = 1;
 
 /* True if we want to implement vtables using "thunks".
-   The default is off by default, on if explicitly supported. */
+   The default is off by default, on if explicitly supported.  */
 
-#ifdef ASM_OUTPUT_MI_THUNK
-int flag_vtable_thunks = 1;
-#else
 int flag_vtable_thunks;
-#endif
 
 /* True if we want to deal with repository information.  */
 
@@ -214,7 +210,7 @@ int warn_missing_braces;
 
 int warn_sign_compare;
 
-/* Warn about *printf or *scanf format/argument anomalies. */
+/* Warn about *printf or *scanf format/argument anomalies.  */
 
 int warn_format;
 
@@ -236,7 +232,7 @@ int warn_parentheses;
 int warn_overloaded_virtual;
 
 /* Non-zero means warn when declaring a class that has a non virtual
-   destructor, when it really ought to have a virtual one. */
+   destructor, when it really ought to have a virtual one.  */
 int warn_nonvdtor;
 
 /* Non-zero means warn when a function is declared extern and later inline.  */
@@ -345,7 +341,7 @@ extern int flag_gnu_xref;
 int flag_assume_nonnull_objects = 1;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
-   objects. */
+   objects.  */
 
 int flag_huge_objects;
 
@@ -628,6 +624,7 @@ lang_decode_option (p)
 /* Incorporate `const' and `volatile' qualifiers for member functions.
    FUNCTION is a TYPE_DECL or a FUNCTION_DECL.
    QUALS is a list of qualifiers.  */
+
 tree
 grok_method_quals (ctype, function, quals)
      tree ctype, function, quals;
@@ -675,11 +672,12 @@ grok_method_quals (ctype, function, quals)
   return ctype;
 }
 
-#if 0				/* Not used. */
+#if 0				/* Not used.  */
 /* This routine replaces cryptic DECL_NAMEs with readable DECL_NAMEs.
    It leaves DECL_ASSEMBLER_NAMEs with the correct value.  */
 /* This does not yet work with user defined conversion operators
    It should.  */
+
 static void
 substitute_nice_name (decl)
      tree decl;
@@ -697,6 +695,7 @@ substitute_nice_name (decl)
 /* Warn when -fexternal-templates is used and #pragma
    interface/implementation is not used all the times it should be,
    inform the user.  */
+
 void
 warn_if_unknown_interface (decl)
      tree decl;
@@ -727,6 +726,7 @@ warn_if_unknown_interface (decl)
 }
 
 /* A subroutine of the parser, to handle a component list.  */
+
 tree
 grok_x_components (specs, components)
      tree specs, components;
@@ -1004,6 +1004,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 }
 
 /* Work on the expr used by alignof (this is only called by the parser).  */
+
 tree
 grok_alignof (expr)
      tree expr;
@@ -1047,6 +1048,7 @@ grok_alignof (expr)
 
 /* Create an ARRAY_REF, checking for the user doing things backwards
    along the way.  */
+
 tree
 grok_array_decl (array_expr, index_exp)
      tree array_expr, index_exp;
@@ -1120,6 +1122,7 @@ grok_array_decl (array_expr, index_exp)
    for doing an array delete.  If DOING_VEC is 2, they gave us the
    array size as an argument to delete.
    Implements ARM $5.3.4.  This is called from the parser.  */
+
 tree
 delete_sanity (exp, size, doing_vec, use_global_delete)
      tree exp, size;
@@ -1263,9 +1266,9 @@ check_classfn (ctype, function)
 		    return fndecl;
 #if 0
 		  /* This doesn't work for static member functions that are
-                     pretending to be methods. */
+                     pretending to be methods.  */
 		  /* We have to do more extensive argument checking here, as
-		     the name may have been changed by asm("new_name"). */
+		     the name may have been changed by asm("new_name").  */
 		  if (decls_match (function, fndecl))
 		    return fndecl;
 #else
@@ -1275,7 +1278,7 @@ check_classfn (ctype, function)
 		      tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
 		      /* Get rid of the this parameter on functions that become
-			 static. */
+			 static.  */
 		      if (DECL_STATIC_FUNCTION_P (fndecl)
 			  && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
 			p1 = TREE_CHAIN (p1);
@@ -1643,6 +1646,7 @@ grokbitfield (declarator, declspecs, width)
    buried in DECLSPECS.  Find the declarator, and
    return something that looks like it came from
    GROKFIELD.  */
+
 tree
 groktypefield (declspecs, parmlist)
      tree declspecs;
@@ -1899,7 +1903,7 @@ grok_function_init (decl, init)
 #if 0
       /* Mark this function as being "defined".  */
       DECL_INITIAL (decl) = error_mark_node;
-      /* pure virtual destructors must be defined. */
+      /* pure virtual destructors must be defined.  */
       /* pure virtual needs to be defined (as abort) only when put in 
 	 vtbl. For wellformed call, it should be itself. pr4737 */
       if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
@@ -1971,6 +1975,7 @@ cplus_decl_attributes (decl, attributes, prefix_attributes)
    specified class.  Argument can be RECORD_TYPE, TYPE_DECL, or
    IDENTIFIER_NODE.  When given a template, this routine doesn't
    lose the specialization.  */
+
 tree
 constructor_name_full (thing)
      tree thing;
@@ -1997,6 +2002,7 @@ constructor_name_full (thing)
    specified class.  Argument can be RECORD_TYPE, TYPE_DECL, or
    IDENTIFIER_NODE.  When given a template, return the plain
    unspecialized name.  */
+
 tree
 constructor_name (thing)
      tree thing;
@@ -2012,6 +2018,7 @@ constructor_name (thing)
 /* Cache the value of this class's main virtual function table pointer
    in a register variable.  This will save one indirection if a
    more than one virtual function call is made this function.  */
+
 void
 setup_vtbl_ptr ()
 {
@@ -2030,6 +2037,7 @@ setup_vtbl_ptr ()
 }
 
 /* Record the existence of an addressable inline function.  */
+
 void
 mark_inline_for_output (decl)
      tree decl;
@@ -2118,6 +2126,7 @@ get_temp_name (type, staticp)
    It is not entered into current_binding_level, because
    that breaks things when it comes time to do final cleanups
    (which take place "outside" the binding contour of the function).  */
+
 tree
 get_temp_regvar (type, init)
      tree type, init;
@@ -2143,6 +2152,7 @@ get_temp_regvar (type, init)
 
 /* Make the macro TEMP_NAME_P available to units which do not
    include c-tree.h.  */
+
 int
 temp_name_p (decl)
      tree decl;
@@ -2156,6 +2166,7 @@ temp_name_p (decl)
    union is an anonymous union, we arrange for that
    as well.  PUBLIC_P is nonzero if this union is
    not declared static.  */
+
 void
 finish_anon_union (anon_union_decl)
      tree anon_union_decl;
@@ -2240,6 +2251,7 @@ finish_anon_union (anon_union_decl)
    TYPE is the type of the table entry.
    INIT is all the elements in the table.
    PUBLICP is non-zero if this table should be given external access.  */
+
 tree
 finish_table (name, type, init, publicp)
      tree name, type, init;
@@ -2316,6 +2328,7 @@ finish_table (name, type, init, publicp)
    used in FIELDS.
 
    It is given the same alignment as ALIGN_TYPE.  */
+
 void
 finish_builtin_type (type, name, fields, len, align_type)
      tree type;
@@ -2601,7 +2614,8 @@ finish_vtable_vardecl (prev, vars)
 	   && ! DECL_ONE_ONLY (vars)
 #endif
 	   )
-	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
+	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
+	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
       /* Write it out.  */
@@ -2747,7 +2761,8 @@ import_export_decl (decl)
   if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
       DECL_NOT_REALLY_EXTERN (decl) = 1;
-      if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
+      if (DECL_IMPLICIT_INSTANTIATION (decl)
+	  && (flag_implicit_templates || DECL_THIS_INLINE (decl)))
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    {
@@ -2922,7 +2937,15 @@ finish_file ()
   for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
     {
       tree decl = TREE_VALUE (fnname);
-      instantiate_decl (decl);
+      if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
+	{
+	  instantiate_class_template (decl);
+	  if (CLASSTYPE_TEMPLATE_INSTANTIATION (decl))
+	    for (vars = TYPE_METHODS (decl); vars; vars = TREE_CHAIN (vars))
+	      instantiate_decl (vars);
+	}
+      else
+	instantiate_decl (decl);
     }
 
   /* Push into C language context, because that's all
@@ -2941,7 +2964,7 @@ finish_file ()
      virtual function tables, moving the implementation of this code to
      decl.c (where we can manipulate global_binding_level directly),
      popping the garbage after pushing it and slicing away the vtable
-     stuff, or just leaving it alone. */
+     stuff, or just leaving it alone.  */
 
   /* Make last thing in global scope not be a virtual function table.  */
 #if 0 /* not yet, should get fixed properly later */
@@ -2955,7 +2978,7 @@ finish_file ()
 #endif
 
   /* Walk to mark the inline functions we need, then output them so
-     that we can pick up any other tdecls that those routines need. */
+     that we can pick up any other tdecls that those routines need.  */
   walk_vtables ((void (*)())0, finish_prevtable_vardecl);
 
   for (vars = pending_statics; vars; vars = TREE_CHAIN (vars))
@@ -3267,7 +3290,7 @@ finish_file ()
 		    /* We can't inline this function after it's been
                        emitted, so just disable inlining.  We want a
                        variant of output_inline_function that doesn't
-                       prevent subsequent integration... */
+                       prevent subsequent integration...  */
 		    flag_no_inline = 1;
 		    temporary_allocation ();
 		    output_inline_function (decl);
@@ -3329,6 +3352,7 @@ finish_file ()
 
    Maybe this shouldn't be recursive, but how often will it actually be
    used?  (jason) */
+
 tree
 reparse_absdcl_as_expr (type, decl)
      tree type, decl;
@@ -3355,6 +3379,7 @@ reparse_absdcl_as_expr (type, decl)
 
    In the above example, DECL is the `(int)(int)(int)', and EXPR is the
    `1'.  */
+
 tree
 reparse_absdcl_as_casts (decl, expr)
      tree decl, expr;
@@ -3392,7 +3417,7 @@ reparse_absdcl_as_casts (decl, expr)
   return expr;
 }
 
-/* Given plain tree nodes for an expression, build up the full semantics. */
+/* Given plain tree nodes for an expression, build up the full semantics.  */
 
 tree
 build_expr_from_tree (t)
@@ -3422,6 +3447,18 @@ build_expr_from_tree (t)
 
     case REINTERPRET_CAST_EXPR:
       return build_reinterpret_cast
+	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case CONST_CAST_EXPR:
+      return build_const_cast
+	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case DYNAMIC_CAST_EXPR:
+      return build_dynamic_cast
+	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case STATIC_CAST_EXPR:
+      return build_static_cast
 	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
 
     case PREDECREMENT_EXPR:
@@ -3608,6 +3645,7 @@ build_expr_from_tree (t)
    build_expr_from_tree, above.
 
    In the above example, TYPE is `int' and DECL is `*a'.  */
+
 tree
 reparse_decl_as_expr (type, decl)
      tree type, decl;
@@ -3621,7 +3659,7 @@ reparse_decl_as_expr (type, decl)
 
 /* This is something of the form `int (*a)' that has turned out to be a
    decl.  It was only converted into parse nodes, so we need to do the
-   checking that make_{pointer,reference}_declarator do. */
+   checking that make_{pointer,reference}_declarator do.  */
 
 tree
 finish_decl_parsing (decl)
@@ -3692,6 +3730,7 @@ tree current_namespace;
 
 /* Get the inner part of a namespace id.  It doesn't have any prefix, nor
    postfix.  Returns 0 if in global namespace.  */
+
 tree
 get_namespace_id ()
 {
@@ -3701,7 +3740,8 @@ get_namespace_id ()
   return x;
 }
 
-/* Build up a DECL_ASSEMBLER_NAME for NAME in the current namespace. */
+/* Build up a DECL_ASSEMBLER_NAME for NAME in the current namespace.  */
+
 tree
 current_namespace_id (name)
      tree name;
@@ -3709,7 +3749,7 @@ current_namespace_id (name)
   tree old_id = get_namespace_id ();
   char *buf;
 
-  /* Global names retain old encoding. */
+  /* Global names retain old encoding.  */
   if (! old_id)
     return name;
 

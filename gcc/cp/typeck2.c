@@ -44,6 +44,7 @@ extern int sorrycount;
 
 /* Print an error message stemming from an attempt to use
    BASETYPE as a base class for TYPE.  */
+
 tree
 error_not_base_type (basetype, type)
      tree basetype, type;
@@ -75,6 +76,7 @@ binfo_or_else (parent_or_type, type)
    value may not be changed thereafter.  Thus, we emit hard errors for these,
    rather than just pedwarns.  If `SOFT' is 1, then we just pedwarn.  (For
    example, conversions to references.)  */
+
 void
 readonly_error (arg, string, soft)
      tree arg;
@@ -122,6 +124,7 @@ readonly_error (arg, string, soft)
 
 /* Print an error message for invalid use of a type which declares
    virtual functions which are not inheritable.  */
+
 void
 abstract_virtuals_error (decl, type)
      tree decl;
@@ -167,6 +170,7 @@ abstract_virtuals_error (decl, type)
 /* Print an error message for invalid use of a signature type.
    Signatures are treated similar to abstract classes here, they
    cannot be instantiated.  */
+
 void
 signature_error (decl, type)
      tree decl;
@@ -253,6 +257,7 @@ incomplete_type_error (value, type)
 }
 
 /* Like error(), but don't call report_error_function().  */
+
 static void
 ack (s, v, v2)
      char *s;
@@ -1182,9 +1187,7 @@ process_init_constructor (type, init, elts)
 
    x.A::ii refers to the ii member of the L part of
    of A part of the C object named by X.  In this case,
-   DATUM would be x, and BASETYPE would be A.
-
-*/
+   DATUM would be x, and BASETYPE would be A.  */
 
 tree
 build_scoped_ref (datum, basetype)
@@ -1242,6 +1245,7 @@ build_scoped_ref (datum, basetype)
    performed until an object which does not have the `->' operator
    overloaded is found.  An error is reported when circular pointer
    delegation is detected.  */
+
 tree
 build_x_arrow (datum)
      tree datum;
@@ -1320,6 +1324,7 @@ build_x_arrow (datum)
    As a special case, if there is only one method by that name,
    it is returned.  Otherwise we return an expression which other
    routines will have to know how to deal with later.  */
+
 tree
 build_m_component_ref (datum, component)
      tree datum, component;
@@ -1378,6 +1383,7 @@ build_m_component_ref (datum, component)
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
+
 tree
 build_functional_cast (exp, parms)
      tree exp;
@@ -1464,6 +1470,7 @@ build_functional_cast (exp, parms)
 
 /* Return the character string for the name that encodes the
    enumeral value VALUE in the domain TYPE.  */
+
 char *
 enum_name_string (value, type)
      tree value;
@@ -1495,6 +1502,7 @@ enum_name_string (value, type)
    TYPE is the type of the switch index expression.
    NEW is the new value that we were trying to add.
    OLD is the old value that stopped us from adding it.  */
+
 void
 report_case_error (code, type, new_value, old_value)
      int code;

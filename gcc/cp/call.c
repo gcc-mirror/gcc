@@ -21,7 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* High-level class interface. */
+/* High-level class interface.  */
 
 #include "config.h"
 #include "tree.h"
@@ -42,6 +42,7 @@ extern tree ctor_label, dtor_label;
 
 /* Compute the ease with which a conversion can be performed
    between an expected and the given type.  */
+
 static struct harshness_code convert_harshness PROTO((register tree, register tree, tree));
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
@@ -52,6 +53,7 @@ static struct harshness_code convert_harshness PROTO((register tree, register tr
 
 /* Ordering function for overload resolution.  Compare two candidates
    by gross quality.  */
+
 int
 rank_for_overload (x, y)
      struct candidate *x, *y;
@@ -79,6 +81,7 @@ rank_for_overload (x, y)
 }
 
 /* Compare two candidates, argument by argument.  */
+
 int
 rank_for_ideal (x, y)
      struct candidate *x, *y;
@@ -108,6 +111,7 @@ rank_for_ideal (x, y)
 /* TYPE is the type we wish to convert to.  PARM is the parameter
    we have to work with.  We use a somewhat arbitrary cost function
    to measure this conversion.  */
+
 static struct harshness_code
 convert_harshness (type, parmtype, parm)
      register tree type, parmtype;
@@ -315,7 +319,7 @@ convert_harshness (type, parmtype, parm)
 
 	  if (h2.distance)
 	    {
-	      /* This only works for pointers and references. */
+	      /* This only works for pointers and references.  */
 	      if (TREE_CODE (TREE_VALUE (p1)) != POINTER_TYPE
 		  && TREE_CODE (TREE_VALUE (p1)) != REFERENCE_TYPE)
 		return EVIL_RETURN (h);
@@ -947,8 +951,8 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 	      if (formal_type != error_mark_node
 		  && actual_type != error_mark_node)
 		{
-		  formal_type = TYPE_MAIN_VARIANT (formal_type);
-		  actual_type = TYPE_MAIN_VARIANT (actual_type);
+		  formal_type = complete_type (TYPE_MAIN_VARIANT (formal_type));
+		  actual_type = complete_type (TYPE_MAIN_VARIANT (actual_type));
 
 		  if (TYPE_HAS_CONSTRUCTOR (formal_type))
 		    {
@@ -1000,7 +1004,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
     }
 
   /* Const member functions get a small penalty because defaulting
-     to const is less useful than defaulting to non-const. */
+     to const is less useful than defaulting to non-const.  */
   /* This is bogus, it does not correspond to anything in the ARM.
      This code will be fixed when this entire section is rewritten
      to conform to the ARM.  (mrs)  */
@@ -1041,6 +1045,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 
 /* Subroutine of ideal_candidate.  See if X or Y is a better match
    than the other.  */
+
 static int
 strictly_better (x, y)
      unsigned short x, y;
@@ -1135,6 +1140,7 @@ ideal_candidate (candidates, n_candidates, len)
 /* Assume that if the class referred to is not in the
    current class hierarchy, that it may be remote.
    PARENT is assumed to be of aggregate type here.  */
+
 static int
 may_be_remote (parent)
      tree parent;
@@ -1180,6 +1186,7 @@ build_vfield_ref (datum, type)
 
 /* Build a call to a member of an object.  I.e., one that overloads
    operator ()(), or is a pointer-to-function or pointer-to-method.  */
+
 static tree
 build_field_call (basetype_path, instance_ptr, name, parms)
      tree basetype_path, instance_ptr, name, parms;
@@ -1314,6 +1321,7 @@ find_scoped_type (type, inner_name, inner_types)
    is a chain of nested type names (held together by SCOPE_REFs);
    OUTER_TYPE is the type we know to enclose INNER_TYPES.
    Returns NULL_TREE if there is an error.  */
+
 tree
 resolve_scope_to_name (outer_type, inner_stuff)
      tree outer_type, inner_stuff;
@@ -1400,6 +1408,7 @@ resolve_scope_to_name (outer_type, inner_stuff)
 
 /* Build a method call of the form `EXP->SCOPES::NAME (PARMS)'.
    This is how virtual function calls are avoided.  */
+
 tree
 build_scoped_method_call (exp, basetype, name, parms)
      tree exp, basetype, name, parms;
@@ -1523,6 +1532,7 @@ print_n_candidates (candidates, n)
 
 /* We want the address of a function or method.  We avoid creating a
    pointer-to-member function.  */
+
 tree
 build_addr_func (function)
      tree function;
@@ -1558,6 +1568,7 @@ build_addr_func (function)
 /* Build a CALL_EXPR, we can handle FUNCTION_TYPEs, METHOD_TYPEs, or
    POINTER_TYPE to those.  Note, pointer to member function types
    (TYPE_PTRMEMFUNC_P) must be handled by our callers.  */
+
 tree
 build_call (function, result_type, parms)
      tree function, result_type, parms;
@@ -1647,6 +1658,7 @@ default_parm_conversions (parms, last)
    Note that NAME may refer to an instance variable name.  If
    `operator()()' is defined for the type of that field, then we return
    that result.  */
+
 tree
 build_method_call (instance, name, parms, basetype_path, flags)
      tree instance, name, parms, basetype_path;
@@ -1697,7 +1709,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
     }
 
   /* This is the logic that magically deletes the second argument to
-     operator delete, if it is not needed. */
+     operator delete, if it is not needed.  */
   if (name == ansi_opname[(int) DELETE_EXPR] && list_length (parms)==2)
     {
       tree save_last = TREE_CHAIN (parms);
@@ -1707,7 +1719,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       result = build_method_call (instance, name, parms, basetype_path,
 				  (LOOKUP_SPECULATIVELY|flags)
 				  &~LOOKUP_COMPLAIN);
-      /* If it finds a match, return it. */
+      /* If it finds a match, return it.  */
       if (result)
 	return build_method_call (instance, name, parms, basetype_path, flags);
       /* If it doesn't work, two argument delete must work */
@@ -1789,7 +1801,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
       if (basetype != NULL_TREE)
 	;
-      /* call to a constructor... */
+      /* call to a constructor...  */
       else if (basetype_path)
 	{
 	  basetype = BINFO_TYPE (basetype_path);
@@ -2224,7 +2236,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		      cp->function = function;
 		      cp->basetypes = basetype_path;
 
-		      /* Don't allow non-converting constructors to convert. */
+		      /* Don't allow non-converting constructors to convert.  */
 		      if (flags & LOOKUP_ONLYCONVERTING
 			  && DECL_LANG_SPECIFIC (function)
 			  && DECL_NONCONVERTING_P (function))
@@ -2881,6 +2893,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
 }
 
 /* This requires a complete type on the result of the call.  */
+
 tree
 build_overload_call (fnname, parms, flags)
      tree fnname, parms;
