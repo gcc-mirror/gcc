@@ -5527,7 +5527,7 @@ variable will then be made to alias every call-clobbered variable.
 
 @item max-aliased-vops
 
-Maxiumum number of virtual operands allowed to represent aliases
+Maximum number of virtual operands allowed to represent aliases
 before triggering the alias grouping heuristic.  Alias grouping
 reduces compile times and memory consumption needed for aliasing at
 the expense of precision loss in alias information.
@@ -12109,9 +12109,9 @@ The default without @option{-fpic} is @code{initial-exec}; with
 @item -fvisibility=@var{default|internal|hidden|protected}
 @opindex fvisibility
 Set the default ELF image symbol visibility to the specified option - all
-symbols will be marked with this unless overrided within the code.
+symbols will be marked with this unless overridden within the code.
 Using this feature can very substantially improve linking and
-load times of shared object libraries, produce more optimised
+load times of shared object libraries, produce more optimized
 code, provide near-perfect API export and prevent symbol clashes.
 It is @strong{strongly} recommended that you use this in any shared objects
 you distribute.

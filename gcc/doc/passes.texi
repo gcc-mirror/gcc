@@ -79,7 +79,7 @@ usually most convenient to do this as each top level declaration or
 definition is seen.  There is also a distinction to be made between
 generating functional code and generating complete debug information.
 The only thing that is absolutely required for functional code is that
-function and data @emph{defintions} be passed to the middle-end.  For
+function and data @emph{definitions} be passed to the middle-end.  For
 complete debug information, function, data and type declarations 
 should all be passed as well.
 
@@ -244,7 +244,7 @@ and is described by @code{pass_referenced_vars}.
 
 This pass rewrites the function such that it is in SSA form.  After
 this pass, all @code{is_gimple_reg} variables will be referenced by
-@code{SSA_NAME}, and all occurences of other variables will be 
+@code{SSA_NAME}, and all occurrences of other variables will be 
 annotated with @code{VDEFS} and @code{VUSES}; phi nodes will have 
 been inserted as necessary for each basic block.  This pass is
 located in @file{tree-ssa.c} and is described by @code{pass_build_ssa}.
