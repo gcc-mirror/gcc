@@ -1,3 +1,11 @@
+2003-05-27  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	PR fortran/10843
+	* g77.dg/ffixed-form-1.f: New test
+	* g77.dg/ffixed-form-2.f: New test
+	* g77.dg/ffree-form-2.f: New test - XFAIL pending fix 
+	* g77.dg/ffree-form-3.f: New test
+
 2003-05-26  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* gcc.dg/wchar_t-1.c: XFAIL on darwin, no wchar.h available.
