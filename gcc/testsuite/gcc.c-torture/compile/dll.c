@@ -1,3 +1,5 @@
+/* { dg-require-dll "" } */
+
 __declspec (dllimport) int foo;
 extern int (* import) (void) __attribute__((dllimport));
 int func2 (void) __attribute__((dllexport));

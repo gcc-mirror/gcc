@@ -1,5 +1,5 @@
 # Expect driver script for GCC Regression Tests
-# Copyright (C) 1993, 1995, 1997 Free Software Foundation
+# Copyright (C) 1993, 1995, 1997, 2003 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,18 +18,17 @@
 # These tests come from Torbjorn Granlund's (tege@cygnus.com)
 # C torture test suite, and other contributors.
 
-if $tracelevel then {
-    strace $tracelevel
-}
+# Load support procs.
+load_lib gcc-dg.exp
 
-# load support procs
-load_lib c-torture.exp
+# Initialize `dg'.
+dg-init
 
-foreach testcase [glob -nocomplain $srcdir/$subdir/*.c] {
-    # If we're only testing specific files and this isn't one of them, skip it.
-    if ![runtest_file_p $runtests $testcase] then {
-	continue
-    }
+# Main loop.
+set saved-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default "assemble"
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-w"
+set dg-do-what-default ${saved-dg-do-what-default}
 
-    c-torture $testcase
-}
+# All done.
+dg-finish

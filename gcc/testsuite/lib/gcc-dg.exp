@@ -295,6 +295,30 @@ proc dg-require-gc-sections { args } {
     }
 }
 
+# If this target does not support DLL attributes skip this test.
+
+proc dg-require-dll { args } { 
+    global target_triplet
+    # As a special case, the mcore-*-elf supports dllimport/dllexport.
+    if { [string match "mcore-*-elf" $target_triplet] } {
+	return
+    }
+    # PE/COFF targets support dllimport/dllexport.
+    if { [gcc_target_object_format] == "pe" } {
+	return
+    }
+
+    upvar dg-do-what dg-do-what
+    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+}
+
+# Like check_conditional_xfail, but callable from a dg test.
+
+proc dg-xfail-if { args } {
+    eval check_conditional_xfail $args
+}
+
+
 # We need to make sure that additional_files and additional_sources
 # are both cleared out after every test.  It is not enough to clear
 # them out *before* the next test run because gcc-target-compile gets

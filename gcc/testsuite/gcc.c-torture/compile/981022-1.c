@@ -4,6 +4,6 @@ int x, y;
 
 int main ()
 {
-  (x ?: y) = 0;
+  (x ?: y) = 0; /* { dg-bogus "lvalue" "" { xfail *-*-* } } */
   return 0;
 }

@@ -1,3 +1,7 @@
+/* This test fails on HC11/HC12 when it is compiled without -mshort because 
+   the 'r0' array is too large.  Force to use 16-bit ints for it.  */
+/* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
+
 foo ()
 {
   int r0[8186 ];

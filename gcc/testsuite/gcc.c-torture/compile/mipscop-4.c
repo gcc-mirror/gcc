@@ -1,3 +1,5 @@
+/* { dg-do assemble {target *mips*-*-* } } */
+
 register unsigned long c3r1 asm ("$c3r1"), c3r2 asm ("$c3r2");
 
 extern unsigned long b, c;

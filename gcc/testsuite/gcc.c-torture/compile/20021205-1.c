@@ -1,5 +1,3 @@
-/* dg-do compile */
-/* dg-options "-O3" */
 typedef struct x x;
 extern void *baz(char *);
 struct x { char * (*bar) (int); };

@@ -1,3 +1,59 @@
+2003-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-require-dll): New function.
+	(dg-xfail-if): Likewise.
+	* gcc.c-torture/compile/compile.exp: Use dg rather than c-torture
+	driver.
+	
+	* gcc.c-torture/compile/20000804-1.c: Convert to dg format.
+	* gcc.c-torture/compile/20001205-1.c: Likewise.
+	* gcc.c-torture/compile/20001226-1.c: Likewise.
+	* gcc.c-torture/compile/20010518-2.c: Likewise.
+	* gcc.c-torture/compile/20020312-1.c: Likewise.
+	* gcc.c-torture/compile/20020604-1.c: Likewise.
+	* gcc.c-torture/compile/920501-12.c: Likewise.
+	* gcc.c-torture/compile/920501-4.c: Likewise.
+	* gcc.c-torture/compile/920520-1.c: Likewise.
+	* gcc.c-torture/compile/920521-1.c: Likewise.
+	* gcc.c-torture/compile/920625-1.c: Likewise.
+	* gcc.c-torture/compile/961203-1.c: Likewise.
+	* gcc.c-torture/compile/980506-1.c: Likewise.
+	* gcc.c-torture/compile/981006-1.c: Likewise.
+	* gcc.c-torture/compile/981022-1.c: Likewise.
+	* gcc.c-torture/compile/981223-1.c: Likewise.
+	* gcc.c-torture/compile/990617-1.c: Likewise.
+	* gcc.c-torture/compile/dll.c: Likewise.
+	* gcc.c-torture/compile/labels-3.c: Likewise.
+	* gcc.c-torture/compile/mipscop-1.c: Likewise.
+	* gcc.c-torture/compile/mipscop-2.c: Likewise.
+	* gcc.c-torture/compile/mipscop-3.c: Likewise.
+	* gcc.c-torture/compile/mipscop-4.c: Likewise.
+	* gcc.c-torture/compile/simd-5.c: Likewise.
+	* gcc.c-torture/compile/20000804-1.x: Remove.
+	* gcc.c-torture/compile/20001205-1.x: Likewise.
+	* gcc.c-torture/compile/20001226-1.x: Likewise.
+	* gcc.c-torture/compile/20010518-2.x: Likewise.
+	* gcc.c-torture/compile/20020312-1.x: Likewise.
+	* gcc.c-torture/compile/20020604-1.x: Likewise.
+	* gcc.c-torture/compile/920501-12.x: Likewise.
+	* gcc.c-torture/compile/920501-4.x: Likewise.
+	* gcc.c-torture/compile/920520-1.x: Likewise.
+	* gcc.c-torture/compile/920521-1.x: Likewise.
+	* gcc.c-torture/compile/920625-1.x: Likewise.
+	* gcc.c-torture/compile/961203-1.x: Likewise.
+	* gcc.c-torture/compile/980506-1.x: Likewise.
+	* gcc.c-torture/compile/981006-1.x: Likewise.
+	* gcc.c-torture/compile/981022-1.x: Likewise.
+	* gcc.c-torture/compile/981223-1.x: Likewise.
+	* gcc.c-torture/compile/990617-1.x: Likewise.
+	* gcc.c-torture/compile/mipscop-1.x: Likewise.
+	* gcc.c-torture/compile/mipscop-2.x: Likewise.
+	* gcc.c-torture/compile/mipscop-3.x: Likewise.
+	* gcc.c-torture/compile/mipscop-4.x: Likewise.
+	* gcc.c-torture/compile/simd-5.x: Likewise.
+
+	* gcc.c-torture/compile/20021205-1.c: Remove bogus dg commands.
+
 2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20030611-1.c: New test.
