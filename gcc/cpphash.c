@@ -58,7 +58,7 @@ hashf (name, len, hashsize)
  */
 HASHNODE *
 cpp_lookup (pfile, name, len, hash)
-     struct parse_file *pfile;
+     cpp_reader *pfile;
      const U_CHAR *name;
      int len;
      int hash;
