@@ -1,3 +1,8 @@
+2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-4.c: AltiVec builtin predicates changed format.
+        Fix testcase accordingly.
+
 2002-02-04  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/built-in-setjmp.c: Prototype stuff.
