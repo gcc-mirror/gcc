@@ -4714,10 +4714,6 @@ convert_with_check (Entity_Id gnat_type,
   tree gnu_in_basetype = get_base_type (gnu_in_type);
   tree gnu_base_type = get_base_type (gnu_type);
   tree gnu_ada_base_type = get_ada_base_type (gnu_type);
-  tree gnu_in_lb = TYPE_MIN_VALUE (gnu_in_basetype);
-  tree gnu_in_ub = TYPE_MAX_VALUE (gnu_in_basetype);
-  tree gnu_out_lb = TYPE_MIN_VALUE (gnu_base_type);
-  tree gnu_out_ub = TYPE_MAX_VALUE (gnu_base_type);
   tree gnu_result = gnu_expr;
 
   /* If we are not doing any checks, the output is an integral type, and
@@ -4745,6 +4741,10 @@ convert_with_check (Entity_Id gnat_type,
       /* Ensure GNU_EXPR only gets evaluated once.  */
       tree gnu_input = protect_multiple_eval (gnu_result);
       tree gnu_cond = integer_zero_node;
+      tree gnu_in_lb = TYPE_MIN_VALUE (gnu_in_basetype);
+      tree gnu_in_ub = TYPE_MAX_VALUE (gnu_in_basetype);
+      tree gnu_out_lb = TYPE_MIN_VALUE (gnu_base_type);
+      tree gnu_out_ub = TYPE_MAX_VALUE (gnu_base_type);
 
       /* Convert the lower bounds to signed types, so we're sure we're
 	 comparing them properly.  Likewise, convert the upper bounds

@@ -404,7 +404,7 @@ dump_type (tree t, int flags)
 
     case TYPEOF_TYPE:
       pp_string (cxx_pp, "__typeof (");
-      dump_expr (TYPE_FIELDS (t), flags & ~TFF_EXPR_IN_PARENS);
+      dump_expr (TYPEOF_TYPE_EXPR (t), flags & ~TFF_EXPR_IN_PARENS);
       pp_right_paren (cxx_pp);
       break;
 

@@ -1,3 +1,14 @@
+2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.h (TYPE_LEFT_JUSTIFIED_MODULAR_P): Add checking.
+	(TYPE_CONTAINS_TEMPLATE_P, TYPE_OBJECT_RECORD_TYPE): Likewise.
+	(TYPE_RM_SIZE_INT): Directly use type.values.
+	(TREE_LOOP_ID): Clean up check.
+	* decl.c (gnat_to_gnu_entity, case E_Enumeration_Type): Use
+	TYPE_VALUES, not TYPE_FIELDS.
+	* trans.c (convert_with_check): Delay access of bounds of basetype
+	until sure is numeric.
+
 2004-03-18  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 5atpopsp.adb: Remove RTEMS from list of platforms using this file.

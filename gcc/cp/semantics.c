@@ -2685,7 +2685,7 @@ finish_typeof (tree expr)
   if (type_dependent_expression_p (expr))
     {
       type = make_aggr_type (TYPEOF_TYPE);
-      TYPE_FIELDS (type) = expr;
+      TYPEOF_TYPE_EXPR (type) = expr;
 
       return type;
     }

@@ -95,7 +95,8 @@ struct lang_type GTY(())
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
    a left-justified modular type (will only be true for RECORD_TYPE).  */
-#define TYPE_LEFT_JUSTIFIED_MODULAR_P(NODE) TYPE_LANG_FLAG_1 (NODE)
+#define TYPE_LEFT_JUSTIFIED_MODULAR_P(NODE) \
+  TYPE_LANG_FLAG_1 (REC_OR_UNION_CHECK (NODE))
 
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
    front-end.  */
@@ -107,7 +108,8 @@ struct lang_type GTY(())
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to
    its value (only true for RECORD_TYPE).  */
-#define TYPE_CONTAINS_TEMPLATE_P(NODE) TYPE_LANG_FLAG_3 (NODE)
+#define TYPE_CONTAINS_TEMPLATE_P(NODE) \
+  TYPE_LANG_FLAG_3 (REC_OR_UNION_CHECK (NODE))
 
 /* For INTEGER_TYPE, nonzero if this really represents a VAX
    floating-point type.  */
@@ -188,7 +190,7 @@ struct lang_type GTY(())
   (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *) (X))
 
 /* For INTEGER_TYPE, stores the RM_Size of the type.  */
-#define TYPE_RM_SIZE_INT(NODE)	TYPE_VALUES (INTEGER_TYPE_CHECK (NODE))
+#define TYPE_RM_SIZE_INT(NODE)	(INTEGER_TYPE_CHECK (NODE)->type.values)
 
 /* Likewise for ENUMERAL_TYPE.  */
 #define TYPE_RM_SIZE_ENUM(NODE)	\
@@ -224,8 +226,13 @@ struct lang_type GTY(())
   (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)(X))
 
 /* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
-   the template and object.  */
-#define TYPE_OBJECT_RECORD_TYPE(NODE) TYPE_MIN_VALUE (NODE)
+   the template and object.
+
+   ??? We also put this on an ENUMERAL_TYPE that's dummy.  Technically,
+   this is a conflict on the minval field, but there doesn't seem to be
+   simple fix, so we'll live with this kludge for now.  */
+#define TYPE_OBJECT_RECORD_TYPE(NODE) \
+  (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)->type.minval)
 
 /* Nonzero in a FUNCTION_DECL that represents a stubbed function
    discriminant.  */
@@ -277,7 +284,7 @@ struct lang_type GTY(())
 
 /* This is the loop id for a GNAT_LOOP_ID node.  */
 #define TREE_LOOP_ID(NODE) \
-  ((union lang_tree_node *) TREE_CHECK (NODE, GNAT_LOOP_ID))->loop_id.loop_id
+  ((union lang_tree_node *) GNAT_LOOP_ID_CHECK (NODE))->loop_id.loop_id
 
 /* Define fields and macros for statements.
 

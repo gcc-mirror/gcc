@@ -1798,7 +1798,6 @@ type_contains_placeholder_p (tree type)
     {
     case VOID_TYPE:
     case COMPLEX_TYPE:
-    case VECTOR_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case CHAR_TYPE:
@@ -1818,6 +1817,7 @@ type_contains_placeholder_p (tree type)
 
     case ARRAY_TYPE:
     case SET_TYPE:
+    case VECTOR_TYPE:
       /* We're already checked the component type (TREE_TYPE), so just check
 	 the index type.  */
       return type_contains_placeholder_p (TYPE_DOMAIN (type));
@@ -3080,34 +3080,95 @@ type_hash_list (tree list, hashval_t hashcode)
 
 /* These are the Hashtable callback functions.  */
 
-/* Returns true if the types are equal.  */
+/* Returns true iff the types are equivalent.  */
 
 static int
 type_hash_eq (const void *va, const void *vb)
 {
   const struct type_hash *a = va, *b = vb;
-  if (a->hash == b->hash
-      && TREE_CODE (a->type) == TREE_CODE (b->type)
-      && TREE_TYPE (a->type) == TREE_TYPE (b->type)
-      && attribute_list_equal (TYPE_ATTRIBUTES (a->type),
-			       TYPE_ATTRIBUTES (b->type))
-      && TYPE_ALIGN (a->type) == TYPE_ALIGN (b->type)
-      && (TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
-	  || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
-				 TYPE_MAX_VALUE (b->type)))
-      && (TYPE_MIN_VALUE (a->type) == TYPE_MIN_VALUE (b->type)
-	  || tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
-				 TYPE_MIN_VALUE (b->type)))
-      /* Note that TYPE_DOMAIN is TYPE_ARG_TYPES for FUNCTION_TYPE.  */
-      && (TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type)
-	  || (TYPE_DOMAIN (a->type)
-	      && TREE_CODE (TYPE_DOMAIN (a->type)) == TREE_LIST
-	      && TYPE_DOMAIN (b->type)
-	      && TREE_CODE (TYPE_DOMAIN (b->type)) == TREE_LIST
-	      && type_list_equal (TYPE_DOMAIN (a->type),
-				  TYPE_DOMAIN (b->type)))))
-    return 1;
-  return 0;
+
+  /* First test the things that are the same for all types.  */
+  if (a->hash != b->hash
+      || TREE_CODE (a->type) != TREE_CODE (b->type)
+      || TREE_TYPE (a->type) != TREE_TYPE (b->type)
+      || !attribute_list_equal (TYPE_ATTRIBUTES (a->type),
+				 TYPE_ATTRIBUTES (b->type))
+      || TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
+      || TYPE_MODE (a->type) != TYPE_MODE (b->type))
+    return 0;
+
+  switch (TREE_CODE (a->type))
+    {
+    case VOID_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      return 1;
+
+    case ENUMERAL_TYPE:
+      if (TYPE_VALUES (a->type) != TYPE_VALUES (b->type)
+	  && !(TYPE_VALUES (a->type)
+	       && TREE_CODE (TYPE_VALUES (a->type)) == TREE_LIST
+	       && TYPE_VALUES (b->type)
+	       && TREE_CODE (TYPE_VALUES (b->type)) == TREE_LIST
+	       && type_list_equal (TYPE_VALUES (a->type),
+				   TYPE_VALUES (b->type))))
+	return 0;
+
+      /* ... fall through ... */
+
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      return ((TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
+	       || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
+				      TYPE_MAX_VALUE (b->type)))
+	      && (TYPE_MIN_VALUE (a->type) == TYPE_MIN_VALUE (b->type)
+		  && tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
+					 TYPE_MIN_VALUE (b->type))));
+
+    case OFFSET_TYPE:
+      return TYPE_OFFSET_BASETYPE (a->type) == TYPE_OFFSET_BASETYPE (b->type);
+
+    case METHOD_TYPE:
+      return (TYPE_METHOD_BASETYPE (a->type) == TYPE_METHOD_BASETYPE (b->type)
+	      && (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+		  || (TYPE_ARG_TYPES (a->type)
+		      && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
+		      && TYPE_ARG_TYPES (b->type)
+		      && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
+		      && type_list_equal (TYPE_ARG_TYPES (a->type),
+					  TYPE_ARG_TYPES (b->type)))));
+								      
+    case ARRAY_TYPE:
+    case SET_TYPE:
+      return TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type);
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      return (TYPE_FIELDS (a->type) == TYPE_FIELDS (b->type)
+	      || (TYPE_FIELDS (a->type)
+		  && TREE_CODE (TYPE_FIELDS (a->type)) == TREE_LIST
+		  && TYPE_FIELDS (b->type)
+		  && TREE_CODE (TYPE_FIELDS (b->type)) == TREE_LIST
+		  && type_list_equal (TYPE_FIELDS (a->type),
+				      TYPE_FIELDS (b->type))));
+
+    case FUNCTION_TYPE:
+      return (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+	      || (TYPE_ARG_TYPES (a->type)
+		  && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
+		  && TYPE_ARG_TYPES (b->type)
+		  && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
+		  && type_list_equal (TYPE_ARG_TYPES (a->type),
+				      TYPE_ARG_TYPES (b->type))));
+
+    default:
+      return 0;
+    }
 }
 
 /* Return the cached hash value.  */
@@ -4894,6 +4955,7 @@ get_set_constructor_bytes (tree init, unsigned char *buffer, int wd_size)
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+
 /* Complain that the tree code of NODE does not match the expected CODE.
    FILE, LINE, and FUNCTION are of the caller.  */
 
@@ -4906,7 +4968,49 @@ tree_check_failed (const tree node, enum tree_code code, const char *file,
 		  function, trim_filename (file), line);
 }
 
-/* Similar to above, except that we check for a class of tree
+/* Similar to above except that we allowed the code to be one of two
+   different codes.  */
+
+void
+tree_check2_failed (const tree node, enum tree_code code1,
+		    enum tree_code code2, const char *file,
+		    int line, const char *function)
+{
+  internal_error ("tree check: expected %s or %s, have %s in %s, at %s:%d",
+		  tree_code_name[code1], tree_code_name[code2],
+		  tree_code_name[TREE_CODE (node)],
+		  function, trim_filename (file), line);
+}
+
+/* Likewise for three different codes.  */
+
+void
+tree_check3_failed (const tree node, enum tree_code code1,
+		    enum tree_code code2, enum tree_code code3,
+		    const char *file, int line, const char *function)
+{
+  internal_error ("tree check: expected %s, %s or %s; have %s in %s, at %s:%d",
+		  tree_code_name[code1], tree_code_name[code2],
+		  tree_code_name[code3], tree_code_name[TREE_CODE (node)],
+		  function, trim_filename (file), line);
+}
+
+/* ... and for four different codes.  */
+
+void
+tree_check5_failed (const tree node, enum tree_code code1,
+		    enum tree_code code2, enum tree_code code3,
+		    enum tree_code code4, enum tree_code code5,
+		    const char *file, int line, const char *function)
+{
+  internal_error
+    ("tree check: expected %s, %s, %s, %s or %s; have %s in %s, at %s:%d",
+     tree_code_name[code1], tree_code_name[code2], tree_code_name[code3],
+     tree_code_name[code4], tree_code_name[code5],
+     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+}
+
+/* Similar to tree_check_failed, except that we check for a class of tree
    code, given in CL.  */
 
 void

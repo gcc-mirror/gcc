@@ -1,8 +1,25 @@
+2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	
+	* tree.h (TREE_CHECK2, TREE_CHECK3, TREE_CHECK5): New macros.
+	(tree_check2_failed, tree_check3_failed, tree_check5_failed): New decl.
+	(FUNC_OR_METHOD_CHECK, SET_ARRAY_OR_VECTOR_CHECK): New macros.
+	(REC_OR_UNION_CHECK, NUMERICAL_TYPE_CHECK): Likewise.
+	(TYPE_VALUES, TYPE_DOMAIN, TYPE_FIELDS, TYPE_METHODS, TYPE_VFIELD):
+	Protect with proper check.
+	(TYPE_ARG_TYPES, TYPE_METHOD_BASETYPE, TYPE_OFFSET_BASETYPE): Likewise.
+	(TYPE_MIN_VALUE, TYPE_MAX_VALUE): Likewise.
+	* tree.c (type_hash_eq): Rewrite to access proper fields for each type.
+	(tree_check2_failed, tree_check3_failed, tree_check5_failed): New.
+	* c-typeck.c (build_array_ref): Use TYPE_DOMAIN, not TYPE_VALUES.
+	* dwarf2out.c (gen_enumeration_type_die): Use TYPE_VALUES,
+	not TYPE_FIELDS.
+
 2004-03-18  Mostafa Hagog  <mustafa@il.ibm.com>
 
 	* gcse.c (eliminate_partially_redundant_loads): Reject change if
 	dest is set between beginning and current insn.
 
+>>>>>>> 2.3204
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (grokdeclarator): Do not complain about redeclaring
@@ -47,6 +64,7 @@
         * config/rs6000/rs6000.h: Definition of DWARF_CIE_DATA_ALIGNMENT
         macro for mixed mode.
 
+>>>>>>> 2.3203
 2004-03-18  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (propagate_freq): Compute correctly frequency of
