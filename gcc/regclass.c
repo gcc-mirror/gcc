@@ -1058,11 +1058,16 @@ scan_one_insn (insn, pass)
 
       /* This makes one more setting of new insns's dest.  */
       REG_N_SETS (REGNO (recog_data.operand[0]))++;
+      REG_N_REFS (REGNO (recog_data.operand[0]))++;
 
       *recog_data.operand_loc[1] = recog_data.operand[0];
+      REG_N_REFS (REGNO (recog_data.operand[0]))++;
       for (i = recog_data.n_dups - 1; i >= 0; i--)
 	if (recog_data.dup_num[i] == 1)
-	  *recog_data.dup_loc[i] = recog_data.operand[0];
+	  {
+	    *recog_data.dup_loc[i] = recog_data.operand[0];
+	    REG_N_REFS (REGNO (recog_data.operand[0]))++;
+	  }
 
       return PREV_INSN (newinsn);
     }

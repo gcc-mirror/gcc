@@ -1,3 +1,8 @@
+Wed May  9 10:40:25 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* regclass.c (scan_one_insn): Update REG_N_REFS when optimizing
+	handling of two-address insns.
+
 Wed May  9 10:36:18 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (NM_FOR_TARGET): Look for ./nm, then
