@@ -1,3 +1,14 @@
+2001-05-29  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+ 
+       * include/c_std/bits/std_cstdlib.h:: Move C99 thingies to __gnu_cxx::. 
+       * include/c_std/bits/std_cwchar.h (__gnu_cxx): Likewise.
+ 
+2001-05-27  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+       * include/c_std/bits/std_cmath.h: Move C99 functions in __gnu_cxx::.
+       * include/c_std/bits/std_cstdlib.h: Same.
+       * include/c_std/bits/std_cwchar.h: Same.
+
 2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
 
 	* docs/html/17_intro/howto.html: Update link.
