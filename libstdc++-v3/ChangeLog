@@ -1,5 +1,9 @@
 2000-05-22  Phil Edwards  <pme@sourceware.cygnus.com>
 
+	* mkcheck.in:  Tweak for Solaris 8.  Additional minor output comment.
+
+2000-05-22  Phil Edwards  <pme@sourceware.cygnus.com>
+
 	* acinclude.m4:  If the new pragma isn't supported, don't kill -Werror;
 	  keep -Werror and add -Wno-unknown-pragma.  -Werror Is Good.
 	* aclocal.m4:  Regenerate.
