@@ -4,7 +4,7 @@ namespace bar
 {
   template<class T>
   void foo(); // trick it to provide some prior declaration
-  template<class T>class X;
+  template<class T>class X; // ERROR - previous declaration
 }
 
 template <typename T>
@@ -19,4 +19,4 @@ template<> void bar::foo<int>()
 }
 
 template<class T,class U>
-class bar::X{};         // ERROR - does not match declaration - XFAIL *-*-*
+class bar::X{};         // ERROR - does not match declaration
