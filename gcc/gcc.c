@@ -613,7 +613,7 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
-		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
+		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 		   %{aux-info*}\
@@ -647,7 +647,7 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
-		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
+		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
     		   -lang-objc %{gen-decls} \
@@ -672,7 +672,7 @@ static struct compiler default_compilers[] =
         %i %W{o*}"},
   {".i", "@cpp-output"},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
+   "%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
 			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 			%{aux-info*}\
