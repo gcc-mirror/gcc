@@ -1,3 +1,16 @@
+Mon Aug 21 07:41:12 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* global.c (global_alloc): Avoid passing dumpfile argument to
+	reload routines.
+	* toplev.c (rest_of_compilation): Likewise.
+	* reload.h (reload): Remove dumpfile argument.  Callers changed.
+	(debug_reload, debug_reload_to_stream): Move prototypes here.
+	* rtl.h  (reload): Remove dumpfile argument.
+	* reload.c (debug_reload): Remove prototype.
+	(debug_reload_to_stream): Likewise.
+	* reload1.c: Avoid passing dumpfile around, rely on rtl_dump_file
+	instead.
+
 2000-08-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* diagnostic.c (context_as_prefix): Export.

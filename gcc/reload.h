@@ -348,7 +348,7 @@ extern int reloads_conflict		PARAMS ((int, int));
 extern void init_reload PARAMS ((void));
 
 /* The reload pass itself.  */
-extern int reload PARAMS ((rtx, int, FILE *));
+extern int reload PARAMS ((rtx, int));
 
 /* Mark the slots in regs_ever_live for the hard regs
    used by pseudo-reg number REGNO.  */
@@ -382,3 +382,7 @@ extern void save_call_clobbered_regs PARAMS ((void));
 
 /* Replace (subreg (reg)) with the appropriate (reg) for any operands.  */
 extern void cleanup_subreg_operands PARAMS ((rtx));
+
+/* Debugging support.  */
+extern void debug_reload_to_stream PARAMS ((FILE *));
+extern void debug_reload PARAMS ((void));

@@ -578,7 +578,7 @@ global_alloc (file)
 #endif
     {
       build_insn_chain (get_insns ());
-      retval = reload (get_insns (), 1, file);
+      retval = reload (get_insns (), 1);
     }
 
   /* Clean up.  */

@@ -3362,7 +3362,7 @@ rest_of_compilation (decl)
   else
     {
       build_insn_chain (insns);
-      failure = reload (insns, 0, rtl_dump_file);
+      failure = reload (insns, 0);
     }
 
   timevar_pop (TV_GLOBAL_ALLOC);
