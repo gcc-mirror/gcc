@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 1992-1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992-1999, 2000 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -1793,7 +1793,7 @@ void
 push_ehqueue ()
 {
   struct eh_queue *q;
-  q = xcalloc (1, sizeof (struct eh_queue));
+  q = (struct eh_queue *) xcalloc (1, sizeof (struct eh_queue));
   q->next = ehqueue;
   ehqueue = q;
 }

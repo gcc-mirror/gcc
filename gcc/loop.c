@@ -4198,7 +4198,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		fprintf (loop_dump_stream, "is giv of biv %d\n", bl2->regno);
 	      /* Let this giv be discovered by the generic code.  */
 	      REG_IV_TYPE (bl->regno) = UNKNOWN_INDUCT;
-	      reg_biv_class[bl->regno] = NULL_PTR;
+	      reg_biv_class[bl->regno] = (struct iv_class *) NULL_PTR;
 	      /* We can get better optimization if we can move the giv setting
 		 before the first giv use.  */
 	      if (dominator
