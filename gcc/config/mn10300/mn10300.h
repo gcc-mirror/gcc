@@ -215,7 +215,8 @@ extern GTY(()) int mn10300_unspec_int_label_counter;
 	fixed_regs[i] = call_used_regs[i] = 1;	\
     }						\
   if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] =       \
+    call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
