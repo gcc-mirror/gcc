@@ -82,6 +82,7 @@ static int  type_unification_real PROTO((tree, tree *, tree, tree, int*,
 					 int, int, int));
 static int processing_explicit_specialization PROTO((int));
 static void note_template_header PROTO((int));
+static tree maybe_fold_nontype_arg PROTO((tree));
 
 /* Restore the template parameter context. */
 
