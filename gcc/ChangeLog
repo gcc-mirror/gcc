@@ -1,3 +1,9 @@
+2002-08-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-opts.c (lang_flags): Const-ify.
+	* ra-build.c (undef_table): Likewise.
+	* ra.c (eliminables): Likewise.
+
 2002-08-14  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* tree.h: Guard against multiple inclusion.

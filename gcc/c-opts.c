@@ -529,7 +529,7 @@ c_common_decode_option (argc, argv)
      int argc;
      char **argv;
 {
-  static int lang_flags[] = {CL_C_ONLY, CL_C, CL_CXX_ONLY, CL_CXX};
+  static const int lang_flags[] = {CL_C_ONLY, CL_C, CL_CXX_ONLY, CL_CXX};
   size_t opt_index;
   const char *opt, *arg = 0;
   char *dup = 0;
