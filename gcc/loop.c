@@ -9013,14 +9013,19 @@ update_reg_last_use (x, insn)
    If EARLIEST is non-zero, it is a pointer to a place where the earliest
    insn used in locating the condition was found.  If a replacement test
    of the condition is desired, it should be placed in front of that
-   insn and we will be sure that the inputs are still valid.  */
+   insn and we will be sure that the inputs are still valid.
+
+   If WANT_REG is non-zero, we wish the condition to be relative to that
+   register, if possible.  Therefore, do not canonicalize the condition
+   further.  */
 
 rtx
-canonicalize_condition (insn, cond, reverse, earliest)
+canonicalize_condition (insn, cond, reverse, earliest, want_reg)
      rtx insn;
      rtx cond;
      int reverse;
      rtx *earliest;
+     rtx want_reg;
 {
   enum rtx_code code;
   rtx prev = insn;
@@ -9050,7 +9055,9 @@ canonicalize_condition (insn, cond, reverse, earliest)
      the same tests as a function of STORE_FLAG_VALUE as find_comparison_args
      in cse.c  */
 
-  while (GET_RTX_CLASS (code) == '<' && op1 == CONST0_RTX (GET_MODE (op0)))
+  while (GET_RTX_CLASS (code) == '<'
+         && op1 == CONST0_RTX (GET_MODE (op0))
+	 && op0 != want_reg)
     {
       /* Set non-zero when we find something of interest.  */
       rtx x = 0;
@@ -9291,7 +9298,7 @@ get_condition (jump, earliest)
     = GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
       && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump);
 
-  return canonicalize_condition (jump, cond, reverse, earliest);
+  return canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX);
 }
 
 /* Similar to above routine, except that we also put an invariant last

@@ -190,29 +190,46 @@ static rtx find_expected_value		PARAMS ((rtx, rtx));
 void
 expected_value_to_br_prob ()
 {
-  rtx insn, cond, earliest, ev;
+  rtx insn, cond, ev = NULL_RTX, ev_reg;
 
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
-      /* Look for simple conditional branches.  */
-      if (GET_CODE (insn) != JUMP_INSN)
-	continue;
-      if (! condjump_p (insn) || simplejump_p (insn))
-	continue;
+      switch (GET_CODE (insn))
+	{
+	case NOTE:
+	  /* Look for expected value notes.  */
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EXPECTED_VALUE)
+	    {
+	      ev = NOTE_EXPECTED_VALUE (insn);
+	      ev_reg = XEXP (ev, 0);
+	    }
+	  continue;
 
-      /* Collect the branch condition.  Some machines can branch on
-	 user values directly, others need a compare instruction.  If
-	 the branch condition involves a MODE_INT register, try that
-	 expression first.  Otherwise use get_condition.  */
+	case CODE_LABEL:
+	  /* Never propagate across labels.  */
+	  ev = NULL_RTX;
+	  continue;
+
+	default:
+	  /* Look for insns that clobber the EV register.  */
+	  if (ev && reg_set_p (ev_reg, insn))
+	    ev = NULL_RTX;
+	  continue;
+
+	case JUMP_INSN:
+	  /* Look for simple conditional branches.  If we havn't got an
+	     expected value yet, no point going further.  */
+	  if (GET_CODE (insn) != JUMP_INSN || ev == NULL_RTX)
+	    continue;
+	  if (! condjump_p (insn) || simplejump_p (insn))
+	    continue;
+	  break;
+	}
+
+      /* Collect the branch condition, hopefully relative to EV_REG.  */
       cond = XEXP (SET_SRC (PATTERN (insn)), 0);
-      if (GET_RTX_CLASS (GET_CODE (cond)) != '<')
-	abort ();
-      if (GET_CODE (XEXP (cond, 0)) == REG
-	  && GET_MODE_CLASS (GET_MODE (XEXP (cond, 0))) == MODE_INT
-	  && (ev = find_expected_value (cond, insn)) != NULL_RTX)
-	;
-      else if ((cond = get_condition (insn, &earliest)) == NULL_RTX
-	       || (ev = find_expected_value (cond, earliest)) == NULL_RTX)
+      cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg);
+      if (! cond || XEXP (cond, 0) != ev_reg)
 	continue;
 
       /* Substitute and simplify.  Given that the expression we're 
@@ -223,48 +240,10 @@ expected_value_to_br_prob ()
       cond = simplify_rtx (cond);
 
       /* Turn the condition into a scaled branch probability.  */
-      if (cond == const0_rtx)
-	cond = const1_rtx;
-      else if (cond == const1_rtx)
-	cond = GEN_INT (REG_BR_PROB_BASE - 1);
-      else
+      if (cond == const1_rtx)
+	cond = GEN_INT (REG_BR_PROB_BASE);
+      else if (cond != const0_rtx)
 	abort ();
       REG_NOTES (insn) = alloc_EXPR_LIST (REG_BR_PROB, cond, REG_NOTES (insn));
     }
-}
-
-/* Search backwards for a NOTE_INSN_EXPECTED_VALUE note with a register
-   that matches the condition.  */
-
-static rtx
-find_expected_value (cond, earliest)
-     rtx cond, earliest;
-{
-  rtx insn, reg = XEXP (cond, 0);
-  int timeout;
-
-  /* The condition should be (op (reg) (const_int)), otherwise we
-     won't be able to intuit anything about it.  */
-  if (GET_CODE (reg) != REG
-      || GET_CODE (XEXP (cond, 1)) != CONST_INT
-      || GET_MODE_CLASS (GET_MODE (reg)) != MODE_INT)
-    return NULL_RTX;
-
-  /* Assuming the user wrote something like `if (__builtin_expect(...))',
-     we shouldn't have to search too far.  Also stop if we reach a code
-     label or if REG is modified.  */
-  for (insn = earliest, timeout = 10;
-       insn && timeout > 0;
-       insn = PREV_INSN (insn), --timeout)
-    {
-      if (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EXPECTED_VALUE
-	  && XEXP (NOTE_EXPECTED_VALUE (insn), 0) == reg)
-	return NOTE_EXPECTED_VALUE (insn);
-
-      if (GET_CODE (insn) == CODE_LABEL || reg_set_p (reg, insn))
-	break;
-    }
-
-  return NULL_RTX;
 }
