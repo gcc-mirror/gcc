@@ -152,6 +152,8 @@ mandir = $(prefix)/man/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
 tooldir = $(prefix)/$(target)
+# Dir for temp files.
+tmpdir = /tmp
 
 # Additional system libraries to link with.
 CLIB=
@@ -578,8 +580,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
 	    echo $${name}; \
 	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s; file=$${name}.s; \
-	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
 	    else true; fi; \
 	    $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
@@ -633,8 +634,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
 	    echo $${name}; \
 	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s; file=$${name}.s; \
-	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
 	    else true; fi; \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
@@ -1411,10 +1411,13 @@ install-cross-rest: install-float-h-cross
 # Install float.h for cross compiler.
 # Run this on the target machine!
 install-float-h-cross:
-	if [ -f enquire ] ; then true; else false; done
-	-./enquire -f > float.h
+# I don't see what this line is for.
+# If you see what good it does, please tell me.  -- rms.
+	if [ -f enquire ] ; then true; else false; fi
+	-./enquire -f > $(tmpdir)/float.h
 	-rm -f $(libsubdir)/include/float.h
-	$(INSTALL_DATA) float.h $(libsubdir)/include/float.h
+	$(INSTALL_DATA) $(tmpdir)/float.h $(libsubdir)/include/float.h
+	-rm -f $(tmpdir)/float.h
 	chmod a-x $(libsubdir)/include/float.h
 
 # Create the installation directory.
@@ -1510,6 +1513,16 @@ install-libgcc: libgcc.a install-dir
 	  chmod a-x $(libsubdir)/libgcc.a; \
 	else true; fi
 
+# Install the objc run time library.
+install-libobjc: libobjc.a install-dir
+	-if [ -f libobjc.a ] ; then \
+	  rm -f $(libsubdir)/libobjc.a; \
+	  $(INSTALL_DATA) libobjc.a $(libsubdir)/libobjc.a; \
+	  if $(RANLIB_TEST) ; then \
+	    (cd $(libsubdir); $(RANLIB) libobjc.a); else true; fi; \
+	  chmod a-x $(libsubdir)/libobjc.a; \
+	else true; fi
+
 # Install all the header files for native compiler.
 install-headers: install-common-headers install-float-h install-limits-h
 
@@ -1598,7 +1611,10 @@ install-fixincludes: install-headers
 	rm -rf *
 # Install fixed copies of system files.
 	for dir in /usr/include $(OTHER_FIXINCLUDES_DIRS); do \
-	  $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
+	  if [ -d $$dir ]; \
+	  then \
+	    $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
+	  else true; fi \
 	done
 	-cd $(libsubdir)/include; \
 	if [ -f limits.h ]; then \
