@@ -1,3 +1,8 @@
+2002-04-09  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Add additional
+	information to .comm directive.
+
 2002-04-09  Richard Henderson  <rth@redhat.com>
 
 	PR c/5078
@@ -886,7 +891,7 @@ Sun Mar 31 14:43:24 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c (LIBGCC_SPEC): Folded %L and duplicate %G here...
 	(LINK_COMMAND_SPEC): ... from here.
-	(init_gcc_specs): Duplicate it here too, omitting 
+	(init_gcc_specs): Duplicate it here too, omitting
 	shared_name in the second copy.
 	(init_spec): Test for duplicate
 	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Remove `%L %G'.
@@ -926,7 +931,7 @@ Sun Mar 31 14:43:24 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (dwarf2out_define): Remove start_source_file call,
 	CPP will start the file for us.
- 
+
 2002-03-30  Richard Henderson  <rth@redhat.com>
 
 	PR target/5446
@@ -1296,7 +1301,7 @@ objc:
 	* gcc-common.c (lang_mark_false_label_stack): Remove.
 	* ggc.h (lang_mark_false_label_stack): Similarly.
 
-2002-03-26  Vladimir Makarov  <vmakarov@redhat.com> 
+2002-03-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* pa/pa-pro-end.h (CPP_PREDEFINES): Add -D__pro__.
 
@@ -1380,7 +1385,7 @@ objc:
 	* stmt.c (expand_end_case_type): When warn_switch_enum /
 	-Wswitch-enum, perform switch checks.
 	Fix PR c/5044.
-	
+
 2002-03-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (reload_mulsi3, reload_mulsi_compare0, reload_muladdsi)
@@ -1406,7 +1411,7 @@ objc:
 2002-03-26  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_epilogue): Change epilogue
-	code to not restoring global registers. 
+	code to not restoring global registers.
 
 2002-03-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
