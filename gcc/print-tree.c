@@ -534,7 +534,7 @@ print_node (file, prefix, node, indent)
       print_node (file, "chain", BLOCK_CHAIN (node), indent + 4);
       print_node (file, "abstract_origin",
 		  BLOCK_ABSTRACT_ORIGIN (node), indent + 4);
-      return;
+      break;
 
     case 'e':
     case '<':
@@ -547,7 +547,7 @@ print_node (file, prefix, node, indent)
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);
 	  print_node (file, "body", TREE_OPERAND (node, 1), indent + 4);
 	  print_node (file, "block", TREE_OPERAND (node, 2), indent + 4);
-	  return;
+	  break;
 	}
 
       len = tree_code_length[(int) TREE_CODE (node)];
