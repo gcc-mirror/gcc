@@ -1,3 +1,9 @@
+2004-10-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/cpp/direct2.c: Cope with different bison 'parse' or
+	'syntax' error messages.
+	* gcc.dg/cpp/direct2s.c: Likewise.
+
 2004-10-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/20041026-1.c: New.
