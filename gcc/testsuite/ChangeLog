@@ -1,3 +1,7 @@
+Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20000412-2.c: New test.
+
 2000-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc/execute/bf-20.m: New test.
