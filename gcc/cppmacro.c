@@ -62,8 +62,7 @@ static void push_token_context
   PARAMS ((cpp_reader *, cpp_macro *, const cpp_token *, unsigned int));
 static void push_ptoken_context
   PARAMS ((cpp_reader *, cpp_macro *, const cpp_token **, unsigned int));
-static enum cpp_ttype parse_arg PARAMS ((cpp_reader *, macro_arg *, int));
-static macro_arg *parse_args PARAMS ((cpp_reader *, const cpp_hashnode *));
+static _cpp_buff *collect_args PARAMS ((cpp_reader *, const cpp_hashnode *));
 static cpp_context *next_context PARAMS ((cpp_reader *));
 static const cpp_token *padding_token
   PARAMS ((cpp_reader *, const cpp_token *));
@@ -461,116 +460,131 @@ paste_all_tokens (pfile, lhs)
   push_token_context (pfile, NULL, pasted, 1);
 }
 
-/* Reads the unexpanded tokens of a macro argument into ARG.  VAR_ARGS
-   is non-zero if this is a variadic macro.  Returns the type of the
-   token that caused reading to finish.  */
-static enum cpp_ttype
-parse_arg (pfile, arg, variadic)
-     cpp_reader *pfile;
-     struct macro_arg *arg;
-     int variadic;
-{
-  enum cpp_ttype result;
-  unsigned int paren = 0;
-
-  arg->first = (const cpp_token **) POOL_FRONT (&pfile->argument_pool);
-  for (;; arg->count++)
-    {
-      const cpp_token *token;
-      const cpp_token **ptoken = &arg->first[arg->count];
-      if ((unsigned char *) (ptoken + 2) >= POOL_LIMIT (&pfile->argument_pool))
-	{
-	  _cpp_next_chunk (&pfile->argument_pool, 2 * sizeof (cpp_token *),
-			   (unsigned char **) &arg->first);
-	  ptoken = &arg->first[arg->count];
-	}
-
-      /* Drop leading padding.  */
-      do
-	token = cpp_get_token (pfile);
-      while (arg->count == 0 && token->type == CPP_PADDING);
-      *ptoken++ = token;
-      result = token->type;
-
-      if (result == CPP_OPEN_PAREN)
-	paren++;
-      else if (result == CPP_CLOSE_PAREN && paren-- == 0)
-	break;
-      /* Commas are not terminators within parantheses or variadic.  */
-      else if (result == CPP_COMMA && paren == 0 && !variadic)
-	break;
-      else if (result == CPP_EOF)
-	{
-	  /* We still need the EOF (added below) to end pre-expansion
-	     and directives.  */
-	  if (pfile->context->prev || pfile->state.in_directive)
-	    _cpp_backup_tokens (pfile, 1);
-	  /* Error reported by caller.  */
-	  break;
-	}
-      else if (result == CPP_HASH && token->flags & BOL)
-	{
-	  /* 6.10.3 paragraph 11: If there are sequences of
-	     preprocessing tokens within the list of arguments that
-	     would otherwise act as preprocessing directives, the
-	     behavior is undefined.
-
-	     This implementation will report a hard error, terminate
-	     the macro invocation, and proceed to process the
-	     directive.  */
-	  cpp_error (pfile,
-		     "directives may not be used inside a macro argument");
-	  _cpp_backup_tokens (pfile, 1);
-	  result = CPP_EOF;
-	  break;
-	}
-    }
-
-  /* Drop trailing padding.  */
-  while (arg->count > 0 && arg->first[arg->count - 1]->type == CPP_PADDING)
-    arg->count--;
-
-  /* Commit the memory used to store the arguments.  We make the last
-     argument a CPP_EOF, so that it terminates macro pre-expansion,
-     but it is not included in arg->count.  */
-  arg->first[arg->count] = &pfile->eof;  
-  POOL_COMMIT (&pfile->argument_pool, (arg->count + 1) * sizeof (cpp_token *));
-  return result;
-}
-
-/* Parse the arguments making up a macro invocation.  */
-static macro_arg *
-parse_args (pfile, node)
+/* Reads and returns the arguments to a function-like macro invocation.
+   Assumes the opening parenthesis has been processed.  If there is an
+   error, emits an appropriate diagnostic and returns NULL.  */
+static _cpp_buff *
+collect_args (pfile, node)
      cpp_reader *pfile;
      const cpp_hashnode *node;
 {
-  cpp_macro *macro = node->value.macro;
-  macro_arg *args, *cur;
-  enum cpp_ttype type;
-  int argc, error = 0;
+  _cpp_buff *buff, *base_buff;
+  cpp_macro *macro;
+  macro_arg *args, *arg;
+  const cpp_token *token;
+  unsigned int argc;
+  bool error = false;
 
-  /* Allocate room for at least one argument, and zero it out.  */
-  argc = macro->paramc ? macro->paramc: 1;
-  args = xcnewvec (macro_arg, argc);
+  macro = node->value.macro;
+  if (macro->paramc)
+    argc = macro->paramc;
+  else
+    argc = 1;
+  buff = _cpp_get_buff (pfile, argc * (50 * sizeof (cpp_token *)
+				       + sizeof (macro_arg)));
+  base_buff = buff;
+  args = (macro_arg *) buff->base;
+  memset (args, 0, argc * sizeof (macro_arg));
+  buff->cur = (char *) &args[argc];
+  arg = args, argc = 0;
 
-  for (cur = args, argc = 0; ;)
+  /* Collect the tokens making up each argument.  We don't yet know
+     how many arguments have been supplied, whether too many or too
+     few.  Hence the slightly bizarre usage of "argc" and "arg".  */
+  do
     {
+      unsigned int paren_depth = 0;
+      unsigned int ntokens = 0;
+
       argc++;
+      arg->first = (const cpp_token **) buff->cur;
 
-      type = parse_arg (pfile, cur, argc == macro->paramc && macro->variadic);
-      if (type == CPP_CLOSE_PAREN || type == CPP_EOF)
-	break;
+      for (;;)
+	{
+	  /* Require space for 2 new tokens (including a CPP_EOF).  */
+	  if ((char *) &arg->first[ntokens + 2] > buff->limit)
+	    {
+	      buff = _cpp_extend_buff (pfile, buff,
+				       1000 * sizeof (cpp_token *));
+	      arg->first = (const cpp_token **) buff->cur;
+	    }
 
-      /* Re-use the last argument for excess arguments.  */
-      if (argc < macro->paramc)
-	cur++;
+	  token = cpp_get_token (pfile);
+
+	  if (token->type == CPP_PADDING)
+	    {
+	      /* Drop leading padding.  */
+	      if (ntokens == 0)
+		continue;
+	    }
+	  else if (token->type == CPP_OPEN_PAREN)
+	    paren_depth++;
+	  else if (token->type == CPP_CLOSE_PAREN)
+	    {
+	      if (paren_depth-- == 0)
+		break;
+	    }
+	  else if (token->type == CPP_COMMA)
+	    {
+	      /* A comma does not terminate an argument within
+		 parentheses or as part of a variable argument.  */
+	      if (paren_depth == 0
+		  && ! (macro->variadic && argc == macro->paramc))
+		break;
+	    }
+	  else if (token->type == CPP_EOF
+		   || (token->type == CPP_HASH && token->flags & BOL))
+	    break;
+
+	  arg->first[ntokens++] = token;
+	}
+
+      /* Drop trailing padding.  */
+      while (ntokens > 0 && arg->first[ntokens - 1]->type == CPP_PADDING)
+	ntokens--;
+
+      arg->count = ntokens;
+      arg->first[ntokens] = &pfile->eof;
+
+      /* Terminate the argument.  Excess arguments loop back and
+	 overwrite the final legitimate argument, before failing.  */
+      if (argc <= macro->paramc)
+	{
+	  buff->cur = (char *) &arg->first[ntokens + 1];
+	  if (argc != macro->paramc)
+	    arg++;
+	}
     }
+  while (token->type != CPP_CLOSE_PAREN
+	 && token->type != CPP_EOF
+	 && token->type != CPP_HASH);
 
-  if (type == CPP_EOF)
+  if (token->type == CPP_EOF || token->type == CPP_HASH)
     {
+      bool step_back = false;
+
+      /* 6.10.3 paragraph 11: If there are sequences of preprocessing
+	 tokens within the list of arguments that would otherwise act
+	 as preprocessing directives, the behavior is undefined.
+
+	 This implementation will report a hard error, terminate the
+	 macro invocation, and proceed to process the directive.  */
+      if (token->type == CPP_HASH)
+	{
+	  cpp_error (pfile,
+		     "directives may not be used inside a macro argument");
+	  step_back = true;
+	}
+      else
+	/* We still need the CPP_EOF to end directives, and to end
+           pre-expansion of a macro argument.  */
+	step_back = (pfile->context->prev || pfile->state.in_directive);
+
+      if (step_back)
+	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, "unterminated argument list invoking macro \"%s\"",
 		 NODE_NAME (node));
-      error = 1;
+      error = true;
     }
   else if (argc < macro->paramc)
     {
@@ -592,28 +606,26 @@ parse_args (pfile, node)
 	  cpp_error (pfile,
 		     "macro \"%s\" requires %u arguments, but only %u given",
 		     NODE_NAME (node), macro->paramc, argc);
-	  error = 1;
+	  error = true;
 	}
     }
   else if (argc > macro->paramc)
     {
       /* Empty argument to a macro taking no arguments is OK.  */
-      if (argc != 1 || cur->count)
+      if (argc != 1 || arg->count)
 	{
 	  cpp_error (pfile,
 		     "macro \"%s\" passed %u arguments, but takes just %u",
 		     NODE_NAME (node), argc, macro->paramc);
-	  error = 1;
+	  error = true;
 	}
     }
 
-  if (error)
-    {
-      free (args);
-      args = 0;
-    }
+  if (!error)
+    return base_buff;
 
-  return args;
+  _cpp_release_buff (pfile, base_buff);
+  return NULL;
 }
 
 static int
@@ -622,7 +634,7 @@ funlike_invocation_p (pfile, node)
      const cpp_hashnode *node;
 {
   const cpp_token *maybe_paren;
-  macro_arg *args = 0;
+  _cpp_buff *buff = NULL;
 
   pfile->state.prevent_expansion++;
   pfile->keep_tokens++;
@@ -634,7 +646,7 @@ funlike_invocation_p (pfile, node)
   pfile->state.parsing_args = 2;
 
   if (maybe_paren->type == CPP_OPEN_PAREN)
-    args = parse_args (pfile, node);
+    buff = collect_args (pfile, node);
   else
     {
       _cpp_backup_tokens (pfile, 1);
@@ -648,14 +660,14 @@ funlike_invocation_p (pfile, node)
   pfile->keep_tokens--;
   pfile->state.prevent_expansion--;
 
-  if (args)
+  if (buff)
     {
       if (node->value.macro->paramc > 0)
-	replace_args (pfile, node->value.macro, args);
-      free (args);
+	replace_args (pfile, node->value.macro, (macro_arg *) buff->base);
+      _cpp_release_buff (pfile, buff);
     }
 
-  return args != 0;
+  return buff != 0;
 }
 
 /* Push the context of a macro onto the context stack.  TOKEN is the
@@ -694,8 +706,8 @@ enter_macro_context (pfile, node)
 }
 
 /* Take the expansion of a function-like MACRO, replacing parameters
-   with the actual arguments.  Each instance is first macro-expanded,
-   unless that paramter is operated upon by the # or ## operators.  */
+   with the actual arguments.  Each argument is macro-expanded before
+   replacement, unless operated upon by the # or ## operators.  */
 static void
 replace_args (pfile, macro, args)
      cpp_reader *pfile;
@@ -904,7 +916,6 @@ expand_arg (pfile, arg)
 {
   unsigned int capacity;
 
-  arg->expanded_count = 0;
   if (arg->count == 0)
     return;
 

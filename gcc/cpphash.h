@@ -72,6 +72,21 @@ struct cpp_pool
   unsigned int locks;
 };
 
+/* A generic memory buffer.  */
+
+typedef struct _cpp_buff _cpp_buff;
+struct _cpp_buff
+{
+  struct _cpp_buff *next;
+  char *base, *cur, *limit;
+};
+
+extern _cpp_buff *_cpp_get_buff PARAMS ((cpp_reader *, unsigned int));
+extern void _cpp_release_buff PARAMS ((cpp_reader *, _cpp_buff *));
+extern _cpp_buff *_cpp_extend_buff PARAMS ((cpp_reader *, _cpp_buff *,
+					    unsigned int));
+extern void _cpp_free_buff PARAMS ((_cpp_buff *));
+
 /* List of directories to look for include files in.  */
 struct search_path
 {
@@ -253,6 +268,9 @@ struct cpp_reader
 				   numbers and strings.  */
   cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
   cpp_pool argument_pool;	/* For macro arguments.  Temporary.   */
+
+  /* Memory buffers.  */
+  _cpp_buff *free_buffs;
 
   /* Context stack.  */
   struct cpp_context base_context;

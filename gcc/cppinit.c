@@ -591,6 +591,7 @@ cpp_destroy (pfile)
   _cpp_free_pool (&pfile->ident_pool);
   _cpp_free_pool (&pfile->macro_pool);
   _cpp_free_pool (&pfile->argument_pool);
+  _cpp_free_buff (pfile->free_buffs);
 
   for (run = &pfile->base_run; run; run = runn)
     {
