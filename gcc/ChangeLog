@@ -1,3 +1,10 @@
+2002-12-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (CONST_OK_FOR_J): Remove.
+	(CONST_OK_FOR_K): Likewise.
+	(CONST_OK_FOR_M): Likewise.
+	(CONST_OK_FOR_LETTER_P): Do not use the above macros.
+
 2002-12-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.c (builtin_define_type_max): Handle unsigned
