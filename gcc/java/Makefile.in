@@ -177,14 +177,13 @@ JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist` ../ggc-callbacks.o
-OBJDEPS = ../stamp-objlist ../ggc-callbacks.o
+BACKEND = ../toplev.o ../ggc-callbacks.o ../libbackend.a
 
 compiler: ../jc1$(exeext) ../jv-scan$(exeext)
-../jc1$(exeext): $(P) $(JAVA_OBJS) $(OBJDEPS) $(LIBDEPS)
+../jc1$(exeext): $(P) $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f ../jc1$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS) $(OBJS) $(LIBS)
-../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) $(OBJDEPS) ../version.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS) $(BACKEND) $(LIBS)
+../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) ../version.o $(LIBDEPS)
 	rm -f ../jv-scan$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS_LITE) ../version.o $(LIBS)
 

@@ -1,3 +1,9 @@
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in (cc1chill): Depend on $(BACKEND), not stamp-objlist.
+	* Makefile.in (cc1chill): Link with $(BACKEND).  Define BACKEND,
+	eliminate C_OBJS (was commented out), OBJS, OBJDEPS.
+
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* lang-specs.h: Rename cpp to cpp0 and/or tradcpp to tradcpp0.

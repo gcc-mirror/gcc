@@ -1,3 +1,26 @@
+2000-08-04  Andreas Schwab  <schwab@suse.de>
+
+	* cppmain.c (cb_def_pragma): Skip the first two tokens from the
+	token list, which are always `#' and `pragma'.
+
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tree.c (tree_expr_nonnegative_p): Move to...
+	* fold-const.c: ... here.  Also handle BIND_EXPR and RTL_EXPR.
+	(rtl_expr_nonnegative_p): New.                                
+	* tree.h: Add prototype for rtl_expr_nonnegative_p.
+
+	* real.h (CONST_DOUBLE_LOW, CONST_DOUBLE_HIGH, CONST_DOUBLE_MEM,
+	CONST_DOUBLE_CHAIN: Move to...
+	* rtl.h: ...here.  Use XCINT/XCEXP.
+
+	* Makefile.in: Remove toplev.o from OBJS.  Add rule to make
+	libbackend.a; add libbackend.a to STAGESTUFF.  Add BACKEND
+	variable.  Use BACKEND when linking cc1, not OBJS.  Add BACKEND
+	to VOL_FILES.
+
+	* objc/Make-lang.in (cc1obj): Link with $(BACKEND).
+
 2000-08-05  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
         * config/c4x/c4x.md (return_indirect_internal): New.

@@ -1,3 +1,10 @@
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in (jc1, jv-scan): Depend on $(BACKEND), not stamp-objlist.
+	* Makefile.in: Add BACKEND; delete OBJS, OBJDEPS.
+	(jc1): Link with $(BACKEND).
+	(jv-scan): Depend on version.o, not all of $(OBJS) or $(BACKEND).
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* jvspec.c: Adjust type of second argument to

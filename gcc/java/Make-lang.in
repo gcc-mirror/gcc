@@ -77,7 +77,7 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
   $(srcdir)/java/check-init.c $(srcdir)/java/lex.c $(srcdir)/java/boehm.c \
   $(srcdir)/java/jcf-depend.c  $(srcdir)/java/jcf-path.c
 
-jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist ggc-callbacks.o
+jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) $(BACKEND) ggc-callbacks.o
 	cd java; $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
 
 jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H)
@@ -138,7 +138,7 @@ $(PARSE_SCAN_C):  $(srcdir)/java/parse-scan.y
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
        $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
 
-jv-scan$(exeext): $(JV_SCAN_SOURCES) stamp-objlist $(LIBDEPS)
+jv-scan$(exeext): $(JV_SCAN_SOURCES) $(BACKEND) $(LIBDEPS)
 	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
