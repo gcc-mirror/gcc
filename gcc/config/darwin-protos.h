@@ -70,7 +70,6 @@ extern void machopic_select_rtx_section (enum machine_mode, rtx,
 
 extern void darwin_unique_section (tree decl, int reloc);
 extern void darwin_asm_named_section (const char *, unsigned int, tree);
-extern unsigned int darwin_section_type_flags (tree, const char *, int);
 extern void darwin_non_lazy_pcrel (FILE *, rtx);
 
 extern void darwin_emit_unwind_label (FILE *, tree, int, int);
@@ -81,12 +80,17 @@ extern void darwin_pragma_unused (struct cpp_reader *);
 
 extern void darwin_file_end (void);
 
-extern void darwin_make_decl_one_only (tree decl);
 extern void darwin_mark_decl_preserved (const char *);
 
 /* Expanded by EXTRA_SECTION_FUNCTIONS into varasm.o.  */
+extern void text_coal_section (void);
+extern void text_unlikely_section (void);
+extern void text_unlikely_coal_section (void);
 extern void const_section (void);
+extern void const_coal_section (void);
 extern void const_data_section (void);
+extern void const_data_coal_section (void);
+extern void data_coal_section (void);
 extern void cstring_section (void);
 extern void literal4_section (void);
 extern void literal8_section (void);

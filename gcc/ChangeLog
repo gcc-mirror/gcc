@@ -1,3 +1,47 @@
+2004-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_SPEC): Default weak_reference_mismatches
+	to 'non-weak'.
+	(MAKE_DECL_ONE_ONLY): Set DECL_WEAK.
+	(ASM_MAKE_LABEL_LINKONCE): Delete.
+	(ASM_WEAKEN_DECL): New.
+	(ASM_DECLARE_OBJECT_NAME): Look at DECL_WEAK not DECL_ONE_ONLY.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(TEXT_SECTION_ASM_OP): Add a tab.
+	(DATA_SECTION_ASM_OP): Likewise.
+	(SECTION_FUNCTION): Add a tab.  Use fputs.  Don't call
+	data_section on every section change.
+	(EXTRA_SECTIONS): Add a bunch of new extra sections.
+	(EXTRA_SECTION_FUNCTIONS): Likewise.
+	(USE_SELECT_SECTION_FOR_FUNCTIONS): Define.
+	(JCR_SECTION_NAME): Define.
+	(TARGET_SECTION_TYPE_FLAGS): Don't define.
+	* config/darwin.c (darwin_encode_section_info): A symbol is defined
+	in this file if it is not weak.
+	(textcoal_section): Delete.
+	(datacoal_section): Delete.
+	(darwin_make_decl_one_only): Delete.
+	(machopic_select_section): Handle functions.
+	(darwin_asm_named_section): Add a tab.
+	(darwin_section_type_flags): Delete.
+	(darwin_unique_section): Delete contents.
+	(darwin_emit_unwind_label): Add a tab.  Make decls weak if
+	DECL_WEAK is set.
+	* config/darwin-protos.h (darwin_section_type_flags): Delete.
+	(darwin_make_decl_one_only): Delete.
+	(text_coal_section): New.
+	(text_unlikely_section): New.
+	(text_unlikely_coal_section): New.
+	(const_coal_section): New.
+	(data_coal_section): New.
+	(const_data_coal_section): New.
+	* varasm.c (function_section): Honour
+	USE_SELECT_SECTION_FOR_FUNCTIONS.
+	* dwarf2out.c (output_call_frame_info): Look at DECL_WEAK when
+	TARGET_USES_WEAK_UNWIND_INFO is in effect.
+	* dbxout.c (dbxout_source_file): Don't change sections while
+	a function is being output.
+
 2004-10-25  David Ayers  <d.ayers@inode.at>
 
 	* c-common.h: Remove RID_ID.

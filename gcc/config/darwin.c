@@ -976,7 +976,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
 
   if (!DECL_EXTERNAL (decl)
-      && (!TREE_PUBLIC (decl) || (!DECL_ONE_ONLY (decl) && !DECL_WEAK (decl)))
+      && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
 	  || (!DECL_COMMON (decl) && DECL_INITIAL (decl)
@@ -987,29 +987,6 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
       && indirect_data (sym_ref)
       && ! TREE_PUBLIC (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_STATIC;
-}
-
-static GTY(()) tree textcoal_section = 0;
-static GTY(()) tree datacoal_section = 0;
-
-void
-darwin_make_decl_one_only (tree decl)
-{
-  tree sec = 0;
-  if (textcoal_section == 0)
-    {
-      static const char *ts = "__TEXT,__textcoal_nt,coalesced";
-      static const char *ds = "__DATA,__datacoal_nt,coalesced";
-      textcoal_section = build_string (strlen (ts), ts);
-      datacoal_section = build_string (strlen (ds), ds);
-    }
-
-  sec = TREE_CODE (decl) == FUNCTION_DECL
-    ? textcoal_section
-    : datacoal_section;
-  TREE_PUBLIC (decl) = 1;
-  DECL_ONE_ONLY (decl) = 1;
-  DECL_SECTION_NAME (decl) = sec;
 }
 
 void
@@ -1025,13 +1002,23 @@ machopic_select_section (tree exp, int reloc,
 			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   void (*base_function)(void);
+  bool weak_p = DECL_P (exp) && DECL_WEAK (exp);
+  static void (* const base_funs[][2])(void) = {
+    { text_section, text_coal_section },
+    { text_unlikely_section, text_unlikely_coal_section },
+    { readonly_data_section, const_coal_section },
+    { const_data_section, const_data_coal_section },
+    { data_section, data_coal_section }
+  };
 
-  if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))
-    base_function = readonly_data_section;
+  if (TREE_CODE (exp) == FUNCTION_DECL)
+    base_function = base_funs[reloc][weak_p];
+  else if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))
+    base_function = base_funs[2][weak_p];
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
-    base_function = const_data_section;
+    base_function = base_funs[3][weak_p];
   else
-    base_function = data_section;
+    base_function = base_funs[4][weak_p];
 
   if (TREE_CODE (exp) == STRING_CST
       && ((size_t) TREE_STRING_LENGTH (exp)
@@ -1125,6 +1112,28 @@ machopic_select_section (tree exp, int reloc,
       else
 	base_function ();
     }
+  /* ::operator new and ::operator delete must be coalesced, even
+     if not weak.  There are 8 variants that we look for.  */
+  else if (TREE_CODE (exp) == FUNCTION_DECL
+	   && ! DECL_ONE_ONLY (exp))
+    {
+      const char * name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (exp));
+      if (name[0] == '_' && name[1] == 'Z'
+	  && ((name[2] == 'n' && (name[3] == 'a' || name[3] == 'w')
+	       && name[4] == 'm')
+	      || (name[2] == 'd' && (name[3] == 'a' || name[3] == 'l')
+		  && name[4] == 'P' && name[5] == 'v')))
+	{
+	  bool delete_p = name[2] == 'd';
+	  if (name[5 + delete_p] == 0
+	      || strcmp (name + 5 + delete_p, "KSt9nothrow_t") == 0)
+	    base_funs[reloc][1] ();
+	  else
+	    base_function ();
+	}
+      else
+	base_function ();
+    }
   else
     base_function ();
 }
@@ -1191,30 +1200,13 @@ darwin_asm_named_section (const char *name,
 			  unsigned int flags ATTRIBUTE_UNUSED,
 			  tree decl ATTRIBUTE_UNUSED)
 {
-  fprintf (asm_out_file, ".section %s\n", name);
+  fprintf (asm_out_file, "\t.section %s\n", name);
 }
 
-unsigned int
-darwin_section_type_flags (tree decl, const char *name, int reloc)
-{
-  unsigned int flags = default_section_type_flags (decl, name, reloc);
- 
-  /* Weak or linkonce variables live in a writable section.  */
-  if (decl != 0 && TREE_CODE (decl) != FUNCTION_DECL
-      && (DECL_WEAK (decl) || DECL_ONE_ONLY (decl)))
-    flags |= SECTION_WRITE;
-  
-  return flags;
-}              
-
 void 
-darwin_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
+darwin_unique_section (tree decl ATTRIBUTE_UNUSED, int reloc ATTRIBUTE_UNUSED)
 {
-  /* Darwin does not use unique sections.  However, the target's
-     unique_section hook is called for linkonce symbols.  We need
-     to set an appropriate section for such symbols. */
-  if (DECL_ONE_ONLY (decl) && !DECL_SECTION_NAME (decl))
-    darwin_make_decl_one_only (decl);
+  /* Darwin does not use unique sections.  */
 }
 
 #define HAVE_DEAD_STRIP 0
@@ -1265,14 +1257,14 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
     strcat(lab, "\"");
 
   if (TREE_PUBLIC (decl))
-    fprintf (file, "%s %s\n",
+    fprintf (file, "\t%s %s\n",
 	     (DECL_VISIBILITY (decl) != VISIBILITY_HIDDEN
 	      ? ".globl"
 	      : ".private_extern"),
 	     lab);
 
-  if (DECL_ONE_ONLY (decl) && TREE_PUBLIC (decl))
-    fprintf (file, ".weak_definition %s\n", lab);
+  if (DECL_WEAK (decl))
+    fprintf (file, "\t.weak_definition %s\n", lab);
 
   if (empty)
     {

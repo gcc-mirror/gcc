@@ -574,13 +574,19 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 void
 function_section (tree decl)
 {
+#ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
+  bool unlikely = scan_ahead_for_unlikely_executed_note (get_insns());
+  
+  targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
+#else
   if (scan_ahead_for_unlikely_executed_note (get_insns()))
     unlikely_text_section ();
   else if (decl != NULL_TREE
 	   && DECL_SECTION_NAME (decl) != NULL_TREE)
     named_section (decl, (char *) 0, 0);
   else
-    text_section (); 
+    text_section ();
+#endif
 }
 
 /* Switch to read-only data section associated with function DECL.  */

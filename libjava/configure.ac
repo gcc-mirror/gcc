@@ -427,6 +427,12 @@ AM_CONDITIONAL(USING_WIN32_PLATFORM, test "$PLATFORM" = Win32)
 AM_CONDITIONAL(USING_POSIX_PLATFORM, test "$PLATFORM" = Posix)
 AM_CONDITIONAL(USING_ECOS_PLATFORM, test "$PLATFORM" = Ecos)
 
+case "$host" in
+  *-darwin*) DARWIN_CRT=true ;;
+  *) DARWIN_CRT=false ;;
+esac
+AM_CONDITIONAL(USING_DARWIN_CRT, $DARWIN_CRT)
+
 # These may not be defined in a non-ANS conformant embedded system.
 # FIXME: Should these case a runtime exception in that case?
 AC_EGREP_HEADER(mktime, time.h, AC_DEFINE(HAVE_MKTIME, 1,

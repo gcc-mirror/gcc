@@ -2261,8 +2261,8 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	javax/transaction/UserTransaction.java \
 	java/lang/ConcreteProcess.java \
 	gnu/classpath/Configuration.java boehm.cc nogc.cc \
-	sysdep/dwarf2-backtrace.cc posix.cc win32.cc posix-threads.cc \
-	win32-threads.cc no-threads.cc
+	sysdep/dwarf2-backtrace.cc posix.cc win32.cc darwin.cc \
+	posix-threads.cc win32-threads.cc no-threads.cc
 am__objects_6 = gnu/gcj/natCore.lo \
 	gnu/gcj/convert/JIS0208_to_Unicode.lo \
 	gnu/gcj/convert/JIS0212_to_Unicode.lo \
@@ -4028,15 +4028,17 @@ am__objects_16 = java/lang/ConcreteProcess.lo \
 @USING_POSIX_PLATFORM_TRUE@am__objects_20 = posix.lo
 @USING_WIN32_PLATFORM_TRUE@am__objects_21 = win32.lo
 @USING_ECOS_PLATFORM_TRUE@am__objects_22 = posix.lo
-@USING_POSIX_THREADS_TRUE@am__objects_23 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_24 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_25 = no-threads.lo
+@USING_DARWIN_CRT_TRUE@am__objects_23 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_24 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_25 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_26 = no-threads.lo
 am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo resolve.lo \
 	defineclass.lo interpret.lo verify.lo $(am__objects_6) \
 	$(am__objects_7) $(am__objects_15) $(am__objects_16) \
 	$(am__objects_17) $(am__objects_18) $(am__objects_19) \
 	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
-	$(am__objects_23) $(am__objects_24) $(am__objects_25)
+	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
+	$(am__objects_26)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
@@ -4243,6 +4245,8 @@ THREADSPEC = @THREADSPEC@
 TOOLKIT = @TOOLKIT@
 USING_BOEHMGC_FALSE = @USING_BOEHMGC_FALSE@
 USING_BOEHMGC_TRUE = @USING_BOEHMGC_TRUE@
+USING_DARWIN_CRT_FALSE = @USING_DARWIN_CRT_FALSE@
+USING_DARWIN_CRT_TRUE = @USING_DARWIN_CRT_TRUE@
 USING_ECOS_PLATFORM_FALSE = @USING_ECOS_PLATFORM_FALSE@
 USING_ECOS_PLATFORM_TRUE = @USING_ECOS_PLATFORM_TRUE@
 USING_GCC_FALSE = @USING_GCC_FALSE@
@@ -4355,6 +4359,8 @@ ACLOCAL_AMFLAGS = -I . -I ../config
 @USING_NO_THREADS_TRUE@NO_THREAD_SRC = no-threads.cc
 @TESTSUBDIR_FALSE@SUBDIRS = $(DIRLTDL) gcj include
 @TESTSUBDIR_TRUE@SUBDIRS = $(DIRLTDL) testsuite gcj include
+@USING_DARWIN_CRT_FALSE@DARWIN_CRT_SRC = 
+@USING_DARWIN_CRT_TRUE@DARWIN_CRT_SRC = darwin.cc
 
 # write_entries_to_file - writes each entry in a list
 # to the specified file. Each entry is written individually
@@ -4426,6 +4432,7 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
 	$(BACKTRACE_SRC) \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
+	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 
 libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
@@ -18976,6 +18983,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boehm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/darwin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defineclass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exception.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gij.Plo@am__quote@

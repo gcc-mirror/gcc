@@ -172,6 +172,13 @@ case "${host_os}" in
   cygwin*)
     os_include_dir="os/newlib"
     ;;
+  darwin*)
+    # On Darwin, performance is improved if libstdc++ is single-module.
+    # Up to at least 10.3.5, -flat_namespace is required for proper
+    # treatment of coalesced symbols.
+    OPT_LDFLAGS="${OPT_LDFLAGS} -Wl,-single_module -Wl,-flat_namespace"
+    os_include_dir="os/generic"
+    ;;
   *djgpp*)      # leading * picks up "msdosdjgpp"
     os_include_dir="os/djgpp"
     ;;

@@ -39,7 +39,7 @@ using std::free;
 extern "C" void free(void *);
 #endif
 
-void
+__attribute__((weak)) void
 operator delete (void *ptr) throw ()
 {
   if (ptr)

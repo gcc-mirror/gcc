@@ -30,7 +30,7 @@
 
 #include "new"
 
-void *
+__attribute__((weak)) void *
 operator new[] (std::size_t sz) throw (std::bad_alloc)
 {
   return ::operator new(sz);

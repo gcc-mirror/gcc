@@ -2050,7 +2050,7 @@ output_call_frame_info (int for_eh)
   /* If we make FDEs linkonce, we may have to emit an empty label for
      an FDE that wouldn't otherwise be emitted.  We want to avoid
      having an FDE kept around when the function it refers to is
-     discarded. (Example where this matters: a primary function
+     discarded.  Example where this matters: a primary function
      template in C++ requires EH information, but an explicit
      specialization doesn't.  */
   if (TARGET_USES_WEAK_UNWIND_INFO
@@ -2059,7 +2059,7 @@ output_call_frame_info (int for_eh)
     for (i = 0; i < fde_table_in_use; i++)
       if ((fde_table[i].nothrow || fde_table[i].all_throwers_are_sibcalls)
           && !fde_table[i].uses_eh_lsda
-	  && ! DECL_ONE_ONLY (fde_table[i].decl))
+	  && ! DECL_WEAK (fde_table[i].decl))
 	targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl,
 				      for_eh, /* empty */ 1);
 
@@ -2074,8 +2074,7 @@ output_call_frame_info (int for_eh)
       for (i = 0; i < fde_table_in_use; i++)
 	if (fde_table[i].uses_eh_lsda)
 	  any_eh_needed = any_lsda_needed = true;
-        else if (TARGET_USES_WEAK_UNWIND_INFO
-		 && DECL_ONE_ONLY (fde_table[i].decl))
+        else if (TARGET_USES_WEAK_UNWIND_INFO && DECL_WEAK (fde_table[i].decl))
 	  any_eh_needed = true;
 	else if (! fde_table[i].nothrow
 		 && ! fde_table[i].all_throwers_are_sibcalls)
@@ -2222,7 +2221,7 @@ output_call_frame_info (int for_eh)
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
       if (for_eh && !flag_asynchronous_unwind_tables && flag_exceptions
 	  && (fde->nothrow || fde->all_throwers_are_sibcalls)
-	  && (! TARGET_USES_WEAK_UNWIND_INFO || ! DECL_ONE_ONLY (fde->decl))
+	  && ! (TARGET_USES_WEAK_UNWIND_INFO && DECL_WEAK (fde_table[i].decl))
 	  && !fde->uses_eh_lsda)
 	continue;
 

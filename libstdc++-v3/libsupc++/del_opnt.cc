@@ -32,7 +32,7 @@
 
 extern "C" void free (void *);
 
-void
+__attribute__((weak)) void
 operator delete (void *ptr, const std::nothrow_t&) throw ()
 {
   if (ptr)
