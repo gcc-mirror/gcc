@@ -1,3 +1,21 @@
+2001-05-23  Zack Weinberg  <zackw@stanford.edu>
+
+	* diagnostic.c (vnotice): Kill.
+	(fnotice): Call vfprintf directly.
+	(diagnostic_for_decl, output_do_verbatim, output_verbatim,
+	verbatim, set_diagnostic_context): Rename string argument to
+	indicate that it is run through gettext.
+	(vbuild_message_string, build_message_string, output_do_printf):
+	Rename string argument to indicate that it is NOT run through
+	gettext.
+	(output_printf, diagnostic_for_decl, fatal_io_error, sorry,
+	output_do_verbatim, set_diagnostic_context, fnotice, _fatal_insn):
+	Run msgid argument through gettext.
+	(default_print_error_function): Run constant strings through
+	gettext when nothing else will.
+	(fatal_error, internal_error, error_recursion): Use fnotice.
+	Present complete sentences to gettext.
+
 2001-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Fix thinko in 2001-05-19 change.
@@ -26,7 +44,7 @@
 	* builtins.c (expand_builtin_longjmp): A longjmp can be a call too.
 	* config/ia64/ia64.md (nonlocal_goto): Reverse label and frame pointer
 	parameters to __ia64_nonlocal_goto. Flag as NO_RETURN.
-	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing 
+	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing
 	"r2" to the assembly file. Only issue allocs with non-zero parameters.
 
 2001-05-22  Richard Henderson  <rth@redhat.com>
@@ -46,7 +64,7 @@
 	(ASM_PREFERRED_EH_DATA_FORMAT): New.
 
 2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* doc/install.texi (Specific): Remove a bogus and duplicate part
 	copied from the end of the document.
 
@@ -102,7 +120,7 @@
 
 2001-05-20  Mark Mitchell  <mark@codesourcery.com>
 	    Jim Wilson  <wilson@redhat.com>
-	
+
 	* libgcc2.h (TItype): Do not assume that the host has 64-bit ntegers.
 	(W_TYPE_SIZE): Likewise.
 
@@ -202,7 +220,7 @@ Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 	(eh_set_lr_si): Likewise.
 	(eh_set_lr_di): Likewise.
 	Add splitter to perform EH return after reload.
-		
+
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Tidy previous change.
@@ -223,7 +241,7 @@ Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Tidy previous change.
-	
+
 	* jump.c (jump_optimize_1): Tidy.
 	(mark_jump_label): When changing the label in a LABEL_REF, change
 	update any REG_EQUAL notes as well.
@@ -234,9 +252,9 @@ Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 	Document it.
 	* toplev.c (main): If the target does not allow profiling without
 	a frame pointer, issue an error message.
-	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): 
+	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER):
 	Define it to false.
-	
+
 Sat May 19 09:40:45 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* regrename.c (regrename_optimize): frame pointer register can
@@ -336,7 +354,7 @@ Fri May 18 10:12:19 2001  Jeffrey A Law  (law@cygnus.com)
 	variable.
 	* varasm.c (assemble_external): Abort if we have not yet
 	opened the assembly output file.
-	
+
 Thu May 17 11:53:49 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (hppa_init_pic_save): No longer update last_parm_insn.
@@ -397,8 +415,8 @@ Thu May 17 11:53:49 2001  Jeffrey A Law  (law@cygnus.com)
 	* mklibgcc.in: Add support for LIB2FUNCS_ST.
 
 	* config/t-freebsd, config/t-linux, config/t-linux-aout,
-	config/t-netbsd, config/t-openbsd, config/t-rtems, config/x-linux, 
-	config/alpha/t-interix, config/i386/t-beos, config/i386/t-interix, 
+	config/t-netbsd, config/t-openbsd, config/t-rtems, config/x-linux,
+	config/alpha/t-interix, config/i386/t-beos, config/i386/t-interix,
 	config/mcore/t-mcore, config/mcore/t-mcore-pe:
 	No need to set INSTALL_ASSERT_H.
 

@@ -78,10 +78,8 @@ static void format_with_decl PARAMS ((output_buffer *, tree));
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
 static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *, int));
 static void diagnostic_for_decl PARAMS ((tree, const char *, va_list *, int));
-static void vnotice PARAMS ((FILE *, const char *, va_list))
-     ATTRIBUTE_PRINTF (2, 0);
 static void set_real_maximum_length PARAMS ((output_buffer *));
-                                          
+
 static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_decimal PARAMS ((output_buffer *, long int));
 static void output_long_unsigned_decimal PARAMS ((output_buffer *,
@@ -796,35 +794,35 @@ output_format (buffer)
 }
 
 static char *
-vbuild_message_string (msgid, ap)
-     const char *msgid;
+vbuild_message_string (msg, ap)
+     const char *msg;
      va_list ap;
 {
   char *str;
 
-  vasprintf (&str, msgid, ap);
+  vasprintf (&str, msg, ap);
   return str;
 }
 
-/*  Return a malloc'd string containing MSGID formatted a la
+/*  Return a malloc'd string containing MSG formatted a la
     printf.  The caller is reponsible for freeing the memory.  */
 
 static char *
-build_message_string VPARAMS ((const char *msgid, ...))
+build_message_string VPARAMS ((const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  const char *msgid;
+  const char *msg;
 #endif
   va_list ap;
   char *str;
 
-  VA_START (ap, msgid);
+  VA_START (ap, msg);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
+  msg = va_arg (ap, const char *);
 #endif
 
-  str = vbuild_message_string (msgid, ap);
+  str = vbuild_message_string (msg, ap);
 
   va_end (ap);
 
@@ -843,14 +841,14 @@ context_as_prefix (file, line, warn)
   if (file)
     {
       if (warn)
-	return build_message_string ("%s:%d: warning: ", file, line);
+	return build_message_string (_("%s:%d: warning: "), file, line);
       else
 	return build_message_string ("%s:%d: ", file, line);
     }
   else
     {
       if (warn)
-	return build_message_string ("%s: warning: ", progname);
+	return build_message_string (_("%s: warning: "), progname);
       else
 	return build_message_string ("%s: ", progname);
     }
@@ -868,11 +866,11 @@ file_name_as_prefix (f)
 /* Format a MESSAGE into BUFFER.  Automatically wrap lines.  */
 
 static void
-output_do_printf (buffer, msgid)
+output_do_printf (buffer, msg)
      output_buffer *buffer;
-     const char *msgid;
+     const char *msg;
 {
-  char *message = vbuild_message_string (msgid,
+  char *message = vbuild_message_string (msg,
                                          output_buffer_format_args (buffer));
 
   wrap_text (buffer, message, message + strlen (message));
@@ -899,20 +897,9 @@ output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
 #endif
   old_args = output_buffer_ptr_to_format_args (buffer);
   output_buffer_ptr_to_format_args (buffer) = &ap;
-  output_do_printf (buffer, msgid);
+  output_do_printf (buffer, _(msgid));
   output_buffer_ptr_to_format_args (buffer) = old_args;
   va_end (ap);
-}
-
-/* Print the message MSGID in FILE.  */
-
-static void
-vnotice (file, msgid, ap)
-     FILE *file;
-     const char *msgid;
-     va_list ap;
-{
-  vfprintf (file, _(msgid), ap);
 }
 
 /* Print a message relevant to the given DECL.  */
@@ -1025,9 +1012,9 @@ diagnostic_for_asm (insn, msg, args_ptr, warn)
    name; subsequent substitutions are a la output_format.  */
 
 static void
-diagnostic_for_decl (decl, msg, args_ptr, warn)
+diagnostic_for_decl (decl, msgid, args_ptr, warn)
      tree decl;
-     const char *msg;
+     const char *msgid;
      va_list *args_ptr;
      int warn;
 {
@@ -1044,7 +1031,7 @@ diagnostic_for_decl (decl, msg, args_ptr, warn)
 	(diagnostic_buffer, context_as_prefix
 	 (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn));
       output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
-      output_buffer_text_cursor (diagnostic_buffer) = msg;
+      output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
       format_with_decl (diagnostic_buffer, decl);
       finish_diagnostic ();
       output_destroy_prefix (diagnostic_buffer);
@@ -1083,7 +1070,8 @@ count_error (warningp)
   return 1;
 }
 
-/* Print a diagnistic MSGID on FILE.  */
+/* Print a diagnostic MSGID on FILE.  This is just fprintf, except it
+   runs its second argument through gettext.  */
 
 void
 fnotice VPARAMS ((FILE *file, const char *msgid, ...))
@@ -1101,7 +1089,7 @@ fnotice VPARAMS ((FILE *file, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  vnotice (file, msgid, ap);
+  vfprintf (file, _(msgid), ap);
   va_end (ap);
 }
 
@@ -1127,7 +1115,7 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
 
   output_printf (diagnostic_buffer, "%s: %s: ", progname, xstrerror (errno));
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
-  output_buffer_text_cursor (diagnostic_buffer) = msgid;
+  output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
   finish_diagnostic ();
   output_buffer_state (diagnostic_buffer) = os;
@@ -1235,7 +1223,7 @@ sorry VPARAMS ((const char *msgid, ...))
     (diagnostic_buffer, context_as_prefix (input_filename, lineno, 0));
   output_printf (diagnostic_buffer, "sorry, not implemented: ");
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
-  output_buffer_text_cursor (diagnostic_buffer) = msgid;
+  output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
   finish_diagnostic ();
   output_buffer_state (diagnostic_buffer) = os;
@@ -1277,7 +1265,7 @@ default_print_error_function (file)
       output_set_prefix (diagnostic_buffer, prefix);
       
       if (current_function_decl == NULL)
-          output_add_string (diagnostic_buffer, "At top level:");
+          output_add_string (diagnostic_buffer, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
@@ -1421,7 +1409,7 @@ fatal_error VPARAMS ((const char *msgid, ...))
   report_diagnostic (&dc);
   va_end (ap);
 
-  fprintf (stderr, "compilation terminated.\n");
+  fnotice (stderr, "compilation terminated.\n");
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1456,7 +1444,7 @@ internal_error VPARAMS ((const char *msgid, ...))
 
   if (errorcount > 0 || sorrycount > 0)
     {
-      fprintf (stderr, "%s:%d: confused by earlier errors, bailing out\n",
+      fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
 	       input_filename, lineno);
       exit (FATAL_EXIT_CODE);
     }
@@ -1469,9 +1457,10 @@ internal_error VPARAMS ((const char *msgid, ...))
   report_diagnostic (&dc);
   va_end (ap);
 
-  fprintf (stderr, "Please submit a full bug report, ");
-  fprintf (stderr, "with preprocessed source if appropriate.\n");
-  fprintf (stderr, "See %s for instructions.\n", GCCBUGURL);
+  fnotice (stderr,
+"Please submit a full bug report,\n\
+with preprocessed source if appropriate.\n\
+See %s for instructions.\n", GCCBUGURL);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1483,7 +1472,7 @@ _fatal_insn (msgid, insn, file, line, function)
      int line;
      const char *function;
 {
-  error ("%s", msgid);
+  error ("%s", _(msgid));
 
   /* The above incremented error_count, but isn't an error that we want to
      count, so reset it here.  */
@@ -1608,9 +1597,9 @@ finish_diagnostic ()
    settings needed by BUFFER for a verbatim formatting.  */
 
 static void
-output_do_verbatim (buffer, msg, args_ptr)
+output_do_verbatim (buffer, msgid, args_ptr)
      output_buffer *buffer;
-     const char *msg;
+     const char *msgid;
      va_list *args_ptr;
 {
   output_state os;
@@ -1618,7 +1607,7 @@ output_do_verbatim (buffer, msg, args_ptr)
   os = output_buffer_state (buffer);
   output_prefix (buffer) = NULL;
   prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  output_buffer_text_cursor (buffer) = msg;
+  output_buffer_text_cursor (buffer) = _(msgid);
   output_buffer_ptr_to_format_args (buffer) = args_ptr;
   output_set_maximum_length (buffer, 0);
   output_format (buffer);
@@ -1628,38 +1617,38 @@ output_do_verbatim (buffer, msg, args_ptr)
 /* Output MESSAGE verbatim into BUFFER.  */
 
 void
-output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
+output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   output_buffer *buffer;
-  const char *msg;
+  const char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, msg);
+  VA_START (ap, msgid);
 #ifndef ANSI_PROTOTYPES
   buffer = va_arg (ap, output_buffer *);
-  msg = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
-  output_do_verbatim (buffer, msg, &ap);
+  output_do_verbatim (buffer, msgid, &ap);
   va_end (ap);
 }
 
 /* Same as above but use diagnostic_buffer.  */
 
 void
-verbatim VPARAMS ((const char *msg, ...))
+verbatim VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  const char *msg;
+  const char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, msg);
+  VA_START (ap, msgid);
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
-  output_do_verbatim (diagnostic_buffer, msg, &ap);
+  output_do_verbatim (diagnostic_buffer, msgid, &ap);
   output_to_stream (diagnostic_buffer, stderr);
   va_end (ap);
 }
@@ -1696,7 +1685,8 @@ report_diagnostic (dc)
 
 /* Inform the user that an error occurred while trying to report some
    other error.  This indicates catastrophic internal inconsistencies,
-   so give up now.  But do try to flush out the previous error.  */
+   so give up now.  But do try to flush out the previous error.
+   This mustn't use internal_error, that will cause infinite recursion.  */
 
 static void
 error_recursion ()
@@ -1704,8 +1694,13 @@ error_recursion ()
   if (diagnostic_lock < 3)
     finish_diagnostic ();
 
-  internal_error
-    ("Internal compiler error: Error reporting routines re-entered.");
+  fnotice (stderr,
+	   "Internal compiler error: Error reporting routines re-entered.\n");
+  fnotice (stderr,
+"Please submit a full bug report,\n\
+with preprocessed source if appropriate.\n\
+See %s for instructions.\n", GCCBUGURL);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -1771,16 +1766,16 @@ fancy_abort (file, line, function)
    by FILE and LINE.  */
 
 void
-set_diagnostic_context (dc, message, args_ptr, file, line, warn)
+set_diagnostic_context (dc, msgid, args_ptr, file, line, warn)
      diagnostic_context *dc;
-     const char *message;
+     const char *msgid;
      va_list *args_ptr;
      const char *file;
      int line;
      int warn;
 {
   memset (dc, 0, sizeof (diagnostic_context));
-  diagnostic_message (dc) = message;
+  diagnostic_message (dc) = _(msgid);
   diagnostic_argument_list (dc) = args_ptr;
   diagnostic_file_location (dc) = file;
   diagnostic_line_location (dc) = line;
