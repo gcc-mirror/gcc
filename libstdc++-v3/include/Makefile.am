@@ -510,10 +510,30 @@ ${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}
 # `$(mkinstalldirs)' instead of `mkdir -p'.  In particular,
 # host_headers_extra are taken out of the build tree staging area;
 # the rest are taken from the original source tree.
-gxx_include_dir = @gxx_include_dir@
 
+if GLIBCXX_HOSTED
 install-data-local: install-headers ${pch_install}
+else
+install-data-local: install-freestanding-headers
+endif
 
+# This is a subset of the full install-headers rule.  We only need <cstddef>,
+# <limits>, <cstdlib>, <cstdarg>, <new>, <typeinfo>, <exception>, and any
+# files which they include (and which we provide).  The last three headers
+# are installed by libsupc++, so only the first four and the sub-includes
+# are copied here.
+install-freestanding-headers:
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${host_builddir}
+	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${host_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
+	$(INSTALL_DATA) ${std_builddir}/limits $(DESTDIR)${gxx_include_dir}/${std_builddir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
+	for file in cstddef cstdlib cstdarg; do \
+	  $(INSTALL_DATA) ${c_base_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
+
+# The real deal.
 install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${bits_builddir}

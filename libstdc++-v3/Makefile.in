@@ -94,6 +94,8 @@ GLIBCXX_C_HEADERS_C_FALSE = @GLIBCXX_C_HEADERS_C_FALSE@
 GLIBCXX_C_HEADERS_C_STD_FALSE = @GLIBCXX_C_HEADERS_C_STD_FALSE@
 GLIBCXX_C_HEADERS_C_STD_TRUE = @GLIBCXX_C_HEADERS_C_STD_TRUE@
 GLIBCXX_C_HEADERS_C_TRUE = @GLIBCXX_C_HEADERS_C_TRUE@
+GLIBCXX_HOSTED_FALSE = @GLIBCXX_HOSTED_FALSE@
+GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 GLIBCXX_TEST_ABI_FALSE = @GLIBCXX_TEST_ABI_FALSE@
 GLIBCXX_TEST_ABI_TRUE = @GLIBCXX_TEST_ABI_TRUE@
@@ -216,8 +218,8 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
-
-SUBDIRS = include libmath libsupc++ src po testsuite 
+@GLIBCXX_HOSTED_TRUE@hosted_source = src po
+SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite 
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -296,7 +298,7 @@ DIST_COMMON = README $(top_srcdir)/fragment.am ../ABOUT-NLS ../COPYING \
 	../ltconfig ../ltmain.sh ../missing ../mkinstalldirs ../ylwrap \
 	ChangeLog Makefile.am Makefile.in acconfig.h acinclude.m4 \
 	aclocal.m4 config.h.in configure configure.ac
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = include libmath libsupc++ src po testsuite
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -491,7 +493,7 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-	list='$(SUBDIRS)'; for subdir in $$list; do \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
 	  if test "$$subdir" = .; then :; else \
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
@@ -669,6 +671,8 @@ uninstall-info: uninstall-info-recursive
 	tags-recursive uninstall uninstall-am uninstall-info-am \
 	uninstall-info-recursive uninstall-recursive
 
+
+@GLIBCXX_HOSTED_TRUE@  # Possibly libmath as well...
 
 # These rules are messy, but are hella worth it.
 doxygen:

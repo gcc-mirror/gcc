@@ -70,10 +70,15 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 #AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10
 
+# Possibly disable most of the library.
+## XXX Consider skipping unncessary tests altogether in this case, rather
+## than just ignoring the results.  Faster /and/ more correct, win win.
+GLIBCXX_ENABLE_HOSTED
+
 # Check for support bits and g++ features that don't require linking.
 GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
 GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS
-GLIBCXX_ENABLE_PCH([yes])
+GLIBCXX_ENABLE_PCH($is_hosted)
 
 # Enable all the variable C++ runtime options.  
 # NB: C_MBCHAR must come early.
@@ -266,6 +271,7 @@ AC_SUBST(OS_INC_SRCDIR)
 #AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
 # from GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT:
 #AM_CONDITIONAL(GLIBCXX_BUILD_LIBMATH,  test $need_libmath = yes)
+GLIBCXX_EVALUATE_CONDITIONALS
  
 AC_CACHE_SAVE
 

@@ -1,5 +1,22 @@
 
 dnl
+dnl GLIBCXX_CONDITIONAL (NAME, SHELL-TEST)
+dnl
+dnl Exactly like AM_CONDITIONAL, but delays evaluation of the test until the
+dnl end of configure.  This lets tested variables be reassigned, and the
+dnl conditional will depend on the final state of the variable.  For a simple
+dnl example of why this is needed, see GLIBCXX_ENABLE_HOSTED.
+dnl
+m4_define([_m4_divert(glibcxx_diversion)], 8000)dnl
+AC_DEFUN(GLIBCXX_CONDITIONAL, [dnl
+  m4_divert_text([glibcxx_diversion],dnl
+   AM_CONDITIONAL([$1],[$2])
+  )dnl
+])dnl
+AC_DEFUN(GLIBCXX_EVALUATE_CONDITIONALS, [m4_undivert([glibcxx_diversion])])dnl
+
+
+dnl
 dnl Check to see what architecture and operating system we are compiling
 dnl for.  Also, if architecture- or OS-specific flags are required for
 dnl compilation, pick them up here.
@@ -143,7 +160,10 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
 
   AM_MAINTAINER_MODE
 
-  # Set up safe default values for all subsequent AM_CONDITIONAL tests.
+  # Set up safe default values for all subsequent AM_CONDITIONAL tests
+  # which are themselves conditionally expanded.
+  ## (Right now, this only matters for enable_wchar_t, but nothing prevents
+  ## other macros from doing the same.  This should be automated.)  -pme
   need_libmath=no
   enable_wchar_t=no
   #enable_libstdcxx_debug=no
@@ -152,6 +172,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
   #c_compatibility=no
   #enable_abi_check=no
   #enable_symvers=no
+  #enable_hosted_libstdcxx=yes
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
@@ -560,7 +581,7 @@ dnl Substs:
 dnl  baseline_dir
 dnl
 AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
-  if $GLIBCXX_IS_NATIVE; then
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
     # Do checks for memory limit functions.
     GLIBCXX_CHECK_SETRLIMIT
 
@@ -573,7 +594,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
   AC_SUBST(baseline_dir)
 
   # Determine if checking the ABI is desirable.
-  if test $enable_symvers = no; then
+  if test $enable_symvers = no || test $is_hosted = no; then
     enable_abi_check=no
   else
     case "$host" in
@@ -584,8 +605,8 @@ AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
     esac
   fi
 
-  AM_CONDITIONAL(GLIBCXX_TEST_WCHAR_T, test $enable_wchar_t = yes)
-  AM_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_TEST_WCHAR_T, test $enable_wchar_t = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)
 ])
 
 
@@ -897,9 +918,9 @@ AC_DEFUN(GLIBCXX_ENABLE_CHEADERS, [
   C_INCLUDE_DIR='${glibcxx_srcdir}/include/'$enable_cheaders
 
   AC_SUBST(C_INCLUDE_DIR)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
 ])
 
 
@@ -1213,7 +1234,7 @@ AC_DEFUN(GLIBCXX_ENABLE_DEBUG, [
   AC_MSG_CHECKING([for additional debug build])
   GLIBCXX_ENABLE(libstdcxx-debug,$1,,[build extra debug library])
   AC_MSG_RESULT($enable_libstdcxx_debug)
-  AM_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
 ])
 
 
@@ -1243,6 +1264,34 @@ AC_DEFUN(GLIBCXX_ENABLE_DEBUG_FLAGS, [
   AC_SUBST(DEBUG_FLAGS)
 
   AC_MSG_NOTICE([Debug build flags set to $DEBUG_FLAGS])
+])
+
+
+dnl
+dnl Check if the user only wants a freestanding library implementation.
+dnl
+dnl --disable-hosted-libstdcxx will turn off most of the library build,
+dnl installing only the headers required by [17.4.1.3] and the language
+dnl support library.  More than that will be built (to keep the Makefiles
+dnl conveniently clean), but not installed.
+dnl
+dnl Sets:
+dnl  is_hosted  (yes/no)
+dnl
+AC_DEFUN(GLIBCXX_ENABLE_HOSTED, [
+  AC_ARG_ENABLE([hosted-libstdcxx],
+    AC_HELP_STRING([--disable-hosted-libstdcxx],
+                   [only build freestanding C++ runtime support]),,
+    [enable_hosted_libstdcxx=yes])
+  if test "$enable_hosted_libstdcxx" = no; then
+    AC_MSG_NOTICE([Only freestanding libraries will be built])
+    is_hosted=no
+    enable_abi_check=no
+    enable_libstdcxx_pch=no
+  else
+    is_hosted=yes
+  fi
+  GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
 ])
 
 
@@ -1351,7 +1400,7 @@ AC_DEFUN(GLIBCXX_ENABLE_PCH, [
     enable_libstdcxx_pch=$glibcxx_cv_prog_CXX_pch
   fi
 
-  AM_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
   if test $enable_libstdcxx_pch = yes; then
     glibcxx_PCHFLAGS="-include bits/stdc++.h"
   else
@@ -1523,7 +1572,7 @@ esac
 
 AC_SUBST(SYMVER_MAP)
 AC_SUBST(port_specific_symbol_files)
-AM_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])
 
