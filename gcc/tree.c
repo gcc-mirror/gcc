@@ -1078,6 +1078,27 @@ make_node (code)
     case 'c':
       TREE_CONSTANT (t) = 1;
       break;
+
+    case 'e':
+      switch (code)
+	{
+	case INIT_EXPR:
+	case MODIFY_EXPR:
+	case VA_ARG_EXPR:
+	case RTL_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  /* All of these have side-effects, no matter what their
+	     operands are.  */
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  break;
+	  
+	default:
+	  break;
+	}
+      break;
     }
 
   return t;
