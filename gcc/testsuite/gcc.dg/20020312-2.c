@@ -40,8 +40,6 @@
 /* No pic register.  */
 #elif defined(__m68k__)
 # define PIC_REG  "a5"
-#elif defined(__m88k__)
-# define PIC_REG  "25"
 #elif defined(__mc68hc1x__)
 /* No pic register.  */
 #elif defined(__mcore__)
@@ -49,8 +47,6 @@
 #elif defined(__mips__)
 /* PIC register is $28, but is used even without -fpic.  */
 #elif defined(__MMIX__)
-/* No pic register.  */
-#elif defined(__mn10200__)
 /* No pic register.  */
 #elif defined(__mn10300__)
 /* No pic register.  */
@@ -66,8 +62,6 @@
 # else
 #  define PIC_REG  "30"
 # endif
-#elif defined(__ibm032__) /* aka romp */
-/* No pic register.  */
 #elif defined(__s390__)
 # define PIC_REG  "12"
 #elif defined(__sparc__)
