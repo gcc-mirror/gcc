@@ -35,13 +35,12 @@ Boston, MA 02111-1307, USA.  */
 static tree bot_manip PARAMS ((tree *, int *, void *));
 static tree bot_replace PARAMS ((tree *, int *, void *));
 static tree build_cplus_array_type_1 PARAMS ((tree, tree));
-static void list_hash_add PARAMS ((int, tree));
-static int list_hash PARAMS ((tree, tree, tree));
-static tree list_hash_lookup PARAMS ((int, tree, tree, tree));
+static int list_hash_eq PARAMS ((const void *, const void *));
+static hashval_t list_hash_pieces PARAMS ((tree, tree, tree));
+static hashval_t list_hash PARAMS ((const void *));
 static cp_lvalue_kind lvalue_p_1 PARAMS ((tree, int));
 static tree no_linkage_helper PARAMS ((tree *, int *, void *));
 static tree build_srcloc PARAMS ((const char *, int));
-static void mark_list_hash PARAMS ((void *));
 static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
 static tree cp_unsave_r PARAMS ((tree *, int *, void *));
 static void cp_unsave PARAMS ((tree *));
@@ -695,38 +694,52 @@ unshare_base_binfos (binfo)
 /* Hashing of lists so that we don't make duplicates.
    The entry point is `list_hash_canon'.  */
 
-/* Each hash table slot is a bucket containing a chain
-   of these structures.  */
-
-struct list_hash
-{
-  struct list_hash *next;	/* Next structure in the bucket.  */
-  int hashcode;			/* Hash code of this list.  */
-  tree list;			/* The list recorded here.  */
-};
-
 /* Now here is the hash table.  When recording a list, it is added
    to the slot whose index is the hash code mod the table size.
    Note that the hash table is used for several kinds of lists.
    While all these live in the same table, they are completely independent,
    and the hash code is computed differently for each of these.  */
 
-#define TYPE_HASH_SIZE 59
-static struct list_hash *list_hash_table[TYPE_HASH_SIZE];
+static htab_t list_hash_table;
+
+struct list_proxy 
+{
+  tree purpose;
+  tree value;
+  tree chain;
+};
+
+/* Compare ENTRY (an entry in the hash table) with DATA (a list_proxy
+   for a node we are thinking about adding).  */
+
+static int
+list_hash_eq (entry, data)
+     const void *entry;
+     const void *data;
+{
+  tree t = (tree) entry;
+  struct list_proxy *proxy = (struct list_proxy *) data;
+
+  return (TREE_VALUE (t) == proxy->value
+	  && TREE_PURPOSE (t) == proxy->purpose
+	  && TREE_CHAIN (t) == proxy->chain);
+}
 
 /* Compute a hash code for a list (chain of TREE_LIST nodes
    with goodies in the TREE_PURPOSE, TREE_VALUE, and bits of the
    TREE_COMMON slots), by adding the hash codes of the individual entries.  */
 
-static int
-list_hash (purpose, value, chain)
-     tree purpose, value, chain;
+static hashval_t
+list_hash_pieces (purpose, value, chain)
+     tree purpose;
+     tree value;
+     tree chain;
 {
-  register int hashcode = 0;
-
+  hashval_t hashcode = 0;
+  
   if (chain)
     hashcode += TYPE_HASH (chain);
-
+  
   if (value)
     hashcode += TYPE_HASH (value);
   else
@@ -738,72 +751,44 @@ list_hash (purpose, value, chain)
   return hashcode;
 }
 
-/* Look in the type hash table for a type isomorphic to TYPE.
-   If one is found, return it.  Otherwise return 0.  */
+/* Hash an already existing TREE_LIST.  */
 
-static tree
-list_hash_lookup (hashcode, purpose, value, chain)
-     int hashcode;
-     tree purpose, value, chain;
+static hashval_t
+list_hash (p)
+     const void *p;
 {
-  register struct list_hash *h;
-
-  for (h = list_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
-    if (h->hashcode == hashcode
-	&& TREE_PURPOSE (h->list) == purpose
-	&& TREE_VALUE (h->list) == value
-	&& TREE_CHAIN (h->list) == chain)
-      return h->list;
-  return 0;
-}
-
-/* Add an entry to the list-hash-table
-   for a list TYPE whose hash code is HASHCODE.  */
-
-static void
-list_hash_add (hashcode, list)
-     int hashcode;
-     tree list;
-{
-  register struct list_hash *h;
-
-  h = (struct list_hash *) obstack_alloc (&permanent_obstack, sizeof (struct list_hash));
-  h->hashcode = hashcode;
-  h->list = list;
-  h->next = list_hash_table[hashcode % TYPE_HASH_SIZE];
-  list_hash_table[hashcode % TYPE_HASH_SIZE] = h;
+  tree t = (tree) p;
+  return list_hash_pieces (TREE_PURPOSE (t), 
+			   TREE_VALUE (t), 
+			   TREE_CHAIN (t));
 }
 
 /* Given list components PURPOSE, VALUE, AND CHAIN, return the canonical
    object for an identical list if one already exists.  Otherwise, build a
    new one, and record it as the canonical object.  */
 
-/* Set to 1 to debug without canonicalization.  Never set by program.  */
-
-static int debug_no_list_hash = 0;
-
 tree
 hash_tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
-  tree t;
   int hashcode = 0;
+  PTR* slot;
+  struct list_proxy proxy;
 
-  if (! debug_no_list_hash)
-    {
-      hashcode = list_hash (purpose, value, chain);
-      t = list_hash_lookup (hashcode, purpose, value, chain);
-      if (t)
-	return t;
-    }
-
-  t = tree_cons (purpose, value, chain);
-
-  /* If this is a new list, record it for later reuse.  */
-  if (! debug_no_list_hash)
-    list_hash_add (hashcode, t);
-
-  return t;
+  /* Hash the list node.  */
+  hashcode = list_hash_pieces (purpose, value, chain);
+  /* Create a proxy for the TREE_LIST we would like to create.  We
+     don't actually create it so as to avoid creating garbage.  */
+  proxy.purpose = purpose;
+  proxy.value = value;
+  proxy.chain = chain;
+  /* See if it is already in the table.  */
+  slot = htab_find_slot_with_hash (list_hash_table, &proxy, hashcode,
+				   INSERT);
+  /* If not, create a new node.  */
+  if (!*slot)
+    *slot = (PTR) tree_cons (purpose, value, chain);
+  return *slot;
 }
 
 /* Constructor for hashed lists.  */
@@ -2382,18 +2367,6 @@ make_ptrmem_cst (type, member)
   return ptrmem_cst;
 }
 
-/* Mark ARG (which is really a list_hash_table **) for GC.  */
-
-static void
-mark_list_hash (arg)
-     void *arg;
-{
-  struct list_hash *lh;
-
-  for (lh = * ((struct list_hash **) arg); lh; lh = lh->next)
-    ggc_mark_tree (lh->list);
-}
-
 /* Initialize tree.c.  */
 
 void
@@ -2402,10 +2375,10 @@ init_tree ()
   make_lang_type_fn = cp_make_lang_type;
   lang_unsave = cp_unsave;
   lang_statement_code_p = cp_statement_code_p;
-  ggc_add_root (list_hash_table, 
-		ARRAY_SIZE (list_hash_table),
-		sizeof (struct list_hash *),
-		mark_list_hash);
+  list_hash_table = htab_create (31, list_hash, list_hash_eq, NULL);
+  ggc_add_root (&list_hash_table, 1, 
+		sizeof (list_hash_table),
+		mark_tree_hashtable);
 }
 
 /* The SAVE_EXPR pointed to by TP is being copied.  If ST contains
