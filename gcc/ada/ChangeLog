@@ -1,5 +1,11 @@
 2004-10-04  Jose Ruiz  <ruiz@act-europe.fr>
 
+	* s-tposen.adb (Service_Entry): The object must be always unlocked at
+	the end of this procedure now that the unlock operation was inserted
+	by the expander.
+
+2004-10-04  Jose Ruiz  <ruiz@act-europe.fr>
+
 	* targparm.ads, targparm.adb (Targparm_Tags): Add PAS value
 	corresponding to the Preallocated_Stacks flags in System.
 	(Get_Target_Parameters): Including the processing for
