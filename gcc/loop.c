@@ -8613,7 +8613,7 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
 #ifdef AVOID_CCMODE_COPIES
       /* Don't try to move insns which set CC registers if we should not
 	 create CCmode register copies.  */
-      for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
+      for (i = max_reg_num () - 1; i >= FIRST_PSEUDO_REGISTER; i--)
 	if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
 	  VARRAY_CHAR (may_not_optimize, i) = 1;
 #endif
