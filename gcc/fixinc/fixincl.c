@@ -647,6 +647,7 @@ fi";
   default:
     fprintf (stderr, "Script yielded bogus result of `%s':\n%s\n\n",
              pz_res, cmd_buf );
+    res = SKIP_FIX;
   }
 
   free ((void *) pz_res);
@@ -1027,7 +1028,10 @@ start_fixer (int read_fd, tFixDesc* p_fixd, char* pz_fix_file)
     return internal_fix (read_fd, p_fixd);
 
   if ((p_fixd->fd_flags & FD_SHELL_SCRIPT) == 0)
-    pz_cmd = (char*)NULL;
+    {
+      pz_cmd = NULL;
+      pz_cmd_save = NULL;
+    }
   else
     {
       tSCC z_cmd_fmt[] = "file='%s'\n%s";
