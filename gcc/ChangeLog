@@ -1,3 +1,9 @@
+2002-03-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Correct
+	unwind information when frame_pointer_needed.
+	(mmix_assemble_integer): Tweak wording in comment.
+
 2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (except.o): Update.

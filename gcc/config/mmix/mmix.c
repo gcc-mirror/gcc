@@ -734,8 +734,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
 		     setting; they don't accumulate.  We must keep track
 		     of the offset ourselves.  */
 		  cfa_offset += stack_chunk;
-		  dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				     cfa_offset);
+		  if (!frame_pointer_needed)
+		    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+				       cfa_offset);
 		}
 	      offset += stack_chunk;
 	      stack_space_to_allocate -= stack_chunk;
@@ -768,11 +769,7 @@ mmix_target_asm_function_prologue (stream, locals_size)
 		   reg_names[MMIX_STACK_POINTER_REGNUM],
 		   stack_chunk);
 	  if (doing_dwarf)
-	    {
-	      cfa_offset += stack_chunk;
-	      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				 cfa_offset);
-	    }
+	    cfa_offset += stack_chunk;
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
 	}
@@ -785,8 +782,18 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	       reg_names[MMIX_STACK_POINTER_REGNUM],
 	       offset + 8);
       if (doing_dwarf)
-	dwarf2out_reg_save ("", MMIX_FRAME_POINTER_REGNUM,
-			    -cfa_offset + offset);
+	{
+	  /* If we're using the frame-pointer, then we just need this CFA
+	     definition basing on that value (often equal to the CFA).
+	     Further changes to the stack-pointer do not affect the
+	     frame-pointer, so we conditionalize them below on
+	     !frame_pointer_needed.  */
+	  dwarf2out_def_cfa ("", MMIX_FRAME_POINTER_REGNUM,
+			     -cfa_offset + offset + 8);
+
+	  dwarf2out_reg_save ("", MMIX_FRAME_POINTER_REGNUM,
+			      -cfa_offset + offset);
+	}
 
       offset -= 8;
     }
@@ -811,8 +818,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	  if (doing_dwarf)
 	    {
 	      cfa_offset += stack_chunk;
-	      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				 cfa_offset);
+	      if (!frame_pointer_needed)
+		dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+				   cfa_offset);
 	    }
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -850,7 +858,8 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	  if (doing_dwarf)
 	    {
 	      cfa_offset += stack_chunk;
-	      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+	      if (!frame_pointer_needed)
+		dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
 				 cfa_offset);
 	    }
 	}
@@ -910,8 +919,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
 		if (doing_dwarf)
 		  {
 		    cfa_offset += stack_chunk;
-		    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				       cfa_offset);
+		    if (!frame_pointer_needed)
+		      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+					 cfa_offset);
 		  }
 	      }
 	    else
@@ -925,8 +935,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
 		if (doing_dwarf)
 		  {
 		    cfa_offset += stack_chunk;
-		    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				       cfa_offset);
+		    if (!frame_pointer_needed)
+		      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+					 cfa_offset);
 		  }
 	      }
 
@@ -965,8 +976,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
       if (doing_dwarf)
 	{
 	  cfa_offset += stack_space_to_allocate;
-	  dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-			     cfa_offset);
+	  if (!frame_pointer_needed)
+	    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
+			       cfa_offset);
 	}
     }
 
@@ -1913,13 +1925,12 @@ mmix_assemble_integer (x, size, aligned_p)
       {
 	/* We handle a limited number of types of operands in here.  But
 	   that's ok, because we can punt to generic functions.  We then
-	   pretend that we don't emit aligned data is needed, so the usual
-	   .pseudo syntax is used (which work for aligned data too).  We
-	   actually *must* do that, since we say we don't have simple
-	   aligned pseudos, causing this function to be called.  We just
-	   try and keep as much compatibility as possible with mmixal
-	   syntax for normal cases (i.e. without GNU extensions and C
-	   only).  */
+	   pretend that aligned data isn't needed, so the usual .<pseudo>
+	   syntax is used (which works for aligned data too).  We actually
+	   *must* do that, since we say we don't have simple aligned
+	   pseudos, causing this function to be called.  We just try and
+	   keep as much compatibility as possible with mmixal syntax for
+	   normal cases (i.e. without GNU extensions and C only).  */
       case 1:
 	if (GET_CODE (x) != CONST_INT)
 	  {
