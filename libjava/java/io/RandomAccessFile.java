@@ -488,8 +488,6 @@ public class RandomAccessFile implements DataOutput, DataInput
    * @exception IOException If an error occurs
    *
    * @see DataOutput
-   *
-   * @deprecated
    */
   public final String readLine () throws IOException
   {
@@ -962,7 +960,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public synchronized FileChannel getChannel ()
+  public final synchronized FileChannel getChannel ()
   {
     if (ch == null)
       ch = new FileChannelImpl (fd, true, this);
