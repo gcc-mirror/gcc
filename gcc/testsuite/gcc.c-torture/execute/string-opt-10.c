@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation.
+/* Copyright (C) 2000, 2003  Free Software Foundation.
 
    Ensure all expected transformations of builtin strncat occur and
    perform correctly.
@@ -9,7 +9,7 @@ extern void abort (void);
 typedef __SIZE_TYPE__ size_t;
 extern char *strncat (char *, const char *, size_t);
 extern char *strcpy (char *, const char *);
-extern char *strcmp (const char *, const char *);
+extern int strcmp (const char *, const char *);
 int x = 123;
 
 int main ()

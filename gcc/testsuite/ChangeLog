@@ -1,3 +1,8 @@
+2003-07-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-9.c: strcmp returns int.
+	* gcc.c-torture/execute/string-opt-10.c: Likewise.
+
 2003-07-28  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/11530
