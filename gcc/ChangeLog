@@ -1,5 +1,8 @@
 Thu Sep 30 18:04:13 1999  Richard Henderson  <rth@cygnus.com>
 
+	* jump.c (jump_optimize_1): Amend last change to test only the
+	form of the operand, not the insn.
+
 	* jump.c (jump_optimize_1) [conditional_move]: Use general_operand
 	not register_operand to determine when B may need preloading.
 
