@@ -1730,7 +1730,7 @@ toc_section ()						\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
       fprintf (FILE, "\n");					\
     }								\
-  else if (write_symbols == XCOFF_DEBUG)			\
+  else								\
     {								\
       fprintf (FILE, "\t.lglobl .");				\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
