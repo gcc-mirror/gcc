@@ -2571,15 +2571,6 @@ unmarked_pushdecls_p (binfo, data)
 #if 0
 static int dfs_search_slot_nonempty_p (binfo) tree binfo;
 { return CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) != 0; }
-
-static tree 
-dfs_debug_unmarkedp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{ 
-  return (!CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) 
-	  ? binfo : NULL_TREE);
-}
 #endif
 
 /* The worker functions for `dfs_walk'.  These do not need to
@@ -2639,36 +2630,6 @@ dfs_unmark_new_vtable (binfo) tree binfo;
 static void
 dfs_clear_search_slot (binfo) tree binfo;
 { CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) = 0; }
-
-/* Keep this code around in case we later want to control debug info
-   based on whether a type is "used".  Currently, we only suppress debug
-   info if we can emit it with the vtable.  jason 1999-11-11) */
-static tree
-dfs_debug_mark (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree t = BINFO_TYPE (binfo);
-
-  CLASSTYPE_DEBUG_REQUESTED (t) = 1;
-
-  /* If interface info is known, either we've already emitted the debug
-     info or we don't need to.  */
-  if (CLASSTYPE_INTERFACE_KNOWN (t))
-    return NULL_TREE;
-
-  /* If the class has virtual functions, we'll emit the debug info
-     with the vtable.  */
-  if (TYPE_POLYMORPHIC_P (t))
-    return NULL_TREE;
-
-  /* We cannot rely on some alien method to solve our problems,
-     so we must write out the debug info ourselves.  */
-  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
-  rest_of_type_compilation (t, toplevel_bindings_p ());
-
-  return NULL_TREE;
-}
 #endif
 
 struct vbase_info 
@@ -3254,44 +3215,58 @@ maybe_suppress_debug_info (t)
   /* Otherwise, just emit the debug info normally.  */
 }
 
-#if 0
-/* Keep this code around in case we later want to control debug info
-   based on whether a type is "used".  Currently, we only suppress debug
-   info if we can emit it with the vtable.  jason 1999-11-11) */
+/* Note that we want debugging information for a base class of a class
+   whose vtable is being emitted.  Normally, this would happen because
+   calling the constructor for a derived class implies calling the
+   constructors for all bases, which involve initializing the
+   appropriate vptr with the vtable for the base class; but in the
+   presence of optimization, this initialization may be optimized
+   away, so we tell finish_vtable_vardecl that we want the debugging
+   information anyway.  */
 
-/* If we want debug info for a type TYPE, make sure all its base types
-   are also marked as being potentially interesting.  This avoids
-   the problem of not writing any debug info for intermediate basetypes
-   that have abstract virtual functions.  Also mark member types.  */
+static tree
+dfs_debug_mark (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  tree t = BINFO_TYPE (binfo);
+
+  CLASSTYPE_DEBUG_REQUESTED (t) = 1;
+
+  return NULL_TREE;
+}
+
+/* Returns BINFO if we haven't already noted that we want debugging
+   info for this base class.  */
+
+static tree 
+dfs_debug_unmarkedp (binfo, data) 
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{ 
+  return (!CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) 
+	  ? binfo : NULL_TREE);
+}
+
+/* Write out the debugging information for TYPE, whose vtable is being
+   emitted.  Also walk through our bases and note that we want to
+   write out information for them.  This avoids the problem of not
+   writing any debug info for intermediate basetypes whose
+   constructors, and thus the references to their vtables, and thus
+   the vtables themselves, were optimized away.  */
 
 void
 note_debug_info_needed (type)
      tree type;
 {
-  tree field;
-
-  if (current_template_parms)
-    return;
-    
-  if (TYPE_BEING_DEFINED (type))
-    /* We can't go looking for the base types and fields just yet.  */
+  if (! TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
     return;
 
-  /* See the comment in maybe_suppress_debug_info.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == NO_DEBUG)
-    return;
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)) = 0;
+  rest_of_type_compilation (type, toplevel_bindings_p ());
 
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp, 0);
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    {
-      tree ttype;
-      if (TREE_CODE (field) == FIELD_DECL
-	  && IS_AGGR_TYPE (ttype = target_type (TREE_TYPE (field)))
-	  && dfs_debug_unmarkedp (TYPE_BINFO (ttype), 0))
-	note_debug_info_needed (ttype);
-    }
 }
-#endif
 
 /* Subroutines of push_class_decls ().  */
 
