@@ -1262,6 +1262,14 @@ no_vlist_base_init (rval, exp, init, binfo, flags)
   my_friendly_assert (TREE_CODE (func) == CALL_EXPR, 20000131);
   func = TREE_OPERAND (func, 0);
   my_friendly_assert (TREE_CODE (func) == ADDR_EXPR, 20000132);
+  func = TREE_OPERAND (func, 0);
+  my_friendly_assert (TREE_CODE (func) == FUNCTION_DECL, 20000133);  
+
+  /* If we have already seen a definition for the wrapped function,
+     we don't need to declare it weak. Also, declare_weak will complain
+     if we do.  */
+  if (!TREE_ASM_WRITTEN (func))
+    declare_weak (func);
 
   if (init == NULL_TREE
       || (TREE_CODE (init) == TREE_LIST && ! TREE_TYPE (init)))

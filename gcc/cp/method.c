@@ -2241,12 +2241,17 @@ emit_thunk (thunk_fndecl)
 }
 
 void
-make_vlist_ctor_wrapper (fn)
+maybe_vlist_ctor_wrapper (fn, definep)
   tree fn;
+  int definep;
 {
   tree fntype, decl;
   tree arg_types, parms, parm, basetype, pbasetype;
   tree t, ctors;
+
+  if (!flag_vtable_thunks_compat
+      || !DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
+    return;
 
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
   pbasetype = TREE_VALUE (arg_types);
@@ -2324,15 +2329,23 @@ make_vlist_ctor_wrapper (fn)
   /* Remember the original function.  */
   DECL_VLIST_CTOR_WRAPPED (decl) = fn;
 
-  /* When fn is declared, DECL_INITIAL is null. When it is defined,
-     DECL_INITIAL will be error_mark_node.  */
-  if (DECL_INITIAL (fn) == error_mark_node)
+  /* If this is called from start_method, definep is -1. Then we
+     are inside the class, and fn is inline by default.  */
+  if (definep)
     {
       /* Record that the ctor is being defined, so we also emit the
-	 wrapper later.  */
-      TREE_USED (decl) = 1;
-      DECL_NOT_REALLY_EXTERN (decl) = 1;
-      DECL_INITIAL (decl) = NULL_TREE;
+	 wrapper later. */
+      if (DECL_THIS_INLINE (fn)  || (definep == -1))
+	{
+	  DECL_THIS_INLINE (decl) = 1;
+	  DECL_INLINE (decl) = 1;
+	  pushdecl_top_level (decl);
+	}
+      else
+	{
+	  TREE_USED (decl) = 1;
+	  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = 1;
+	}
       mark_inline_for_output (decl);
     }
 }
@@ -2651,6 +2664,3 @@ synthesize_method (fndecl)
   else if (nested)
     pop_cp_function_context (context);
 }
-
-
-

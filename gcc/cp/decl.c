@@ -8967,8 +8967,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    template_count, 
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
+
       if (decl == error_mark_node)
 	return NULL_TREE;
+
+      maybe_vlist_ctor_wrapper (decl, funcdef_flag);
 
       if ((! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
 	  && check)
@@ -12170,6 +12173,8 @@ grok_ctor_properties (ctype, decl)
       parmtypes = TREE_CHAIN (parmtypes);
       parmtype = TREE_VALUE (parmtypes);
     }
+
+  maybe_vlist_ctor_wrapper (decl, 0);
 
   /* [class.copy]
 

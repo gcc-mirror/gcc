@@ -980,7 +980,11 @@ maybe_retrofit_in_chrg (fn)
   if (DECL_CONSTRUCTOR_P (fn))
     {
       if (TYPE_USES_PVBASES (DECL_CLASS_CONTEXT (fn)))
-	DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_PVBASE;
+	{
+	  DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_PVBASE;
+	  if (flag_vtable_thunks_compat && varargs_function_p (fn))
+	    sorry ("-fvtable-thunks=2 for vararg constructor", fn);
+	}
       else
 	DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_VBASE;
     }
@@ -1028,10 +1032,6 @@ maybe_retrofit_in_chrg (fn)
     fntype = build_exception_variant (fntype,
 				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)));
   TREE_TYPE (fn) = fntype;
-
-  if (flag_vtable_thunks_compat
-      && DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
-    make_vlist_ctor_wrapper (fn);
 }
 
 /* Classes overload their constituent function names automatically.
@@ -2854,6 +2854,30 @@ import_export_decl (decl)
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
     }
+  else if (DECL_VLIST_CTOR_WRAPPER_P (decl))
+    {
+      int implement;
+      tree ctype = DECL_CLASS_CONTEXT (decl);
+      import_export_class (ctype);
+      if (!DECL_THIS_INLINE (DECL_VLIST_CTOR_WRAPPED (decl)))
+	{
+	  /* No change.  */
+	}	  
+      else if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+	{
+	  implement = !CLASSTYPE_INTERFACE_ONLY (ctype) 
+	    && flag_implement_inlines;
+	  DECL_NOT_REALLY_EXTERN (decl) = implement;
+	  DECL_EXTERNAL (decl) = !implement;
+	}
+      else
+	{
+	  DECL_NOT_REALLY_EXTERN (decl) = 1;
+	  DECL_EXTERNAL (decl) = 1;
+	}
+      if (flag_weak)
+	comdat_linkage (decl);
+    }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
@@ -3606,6 +3630,33 @@ generate_ctor_and_dtor_functions_for_priority (n, data)
   return 0;
 }
 
+/* Returns non-zero if T is a vlist ctor wrapper.  */
+
+static int
+vlist_ctor_wrapper_p (t, data)
+     tree t;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return (TREE_CODE (t) == FUNCTION_DECL) && DECL_VLIST_CTOR_WRAPPER_P (t);
+}
+
+/* Emits a vlist ctor wrapper if necessary.  */
+
+static int
+finish_vlist_ctor_wrapper (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
+{
+  import_export_decl (*t);
+  if (!DECL_EXTERNAL (*t) && !TREE_USED (*t))
+    {
+      mark_used (*t);
+      synthesize_method (*t);
+      return 1;
+    }
+  return 0;
+}
+
 /* This routine is called from the last rule in yyparse ().
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -3682,6 +3733,12 @@ finish_file ()
 			/*data=*/0))
 	reconsider = 1;
       
+      if (walk_globals (vlist_ctor_wrapper_p,
+			finish_vlist_ctor_wrapper,
+			/*data=*/0))
+	reconsider = 1;
+      
+
       /* The list of objects with static storage duration is built up
 	 in reverse order, so we reverse it here.  We also clear
 	 STATIC_AGGREGATES so that any new aggregates added during the

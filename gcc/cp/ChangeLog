@@ -1,3 +1,19 @@
+Fri Jun  9 17:55:08 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-02-07    <loewis@informatik.hu-berlin.de>
+	* decl2.c (import_export_decl): vlist ctor wrappers follow virtual
+	methods in their interface.
+	(vlist_ctor_wrapper_p): new function.
+	(finish_vlist_ctor_wrapper): likewise.
+
+	2000-02-06    <loewis@informatik.hu-berlin.de>
+	* decl2.c (maybe_retrofit_in_chrg): Move call to
+	make_vlist_ctor_wrapper from here ...
+	* decl.c (grok_ctor_properties): ... to here.
+	* decl.c (grokfndecl): ... and here.
+	* init.c (no_vlist_base_init): Declare unseen Vlist ctor weak.
+	* decl2.c (maybe_retrofit_in_chrg): Be sorry about varargs ctors.
+
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* exception.cc (__cp_pop_exception): Cleanup the original object.
