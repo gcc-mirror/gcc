@@ -1,3 +1,8 @@
+Sat Sep 11 16:46:44 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (find_applicable_accessible_methods_list): Search
+ 	abstract classes as interfaces.
+
 Thu Sep  9 17:33:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (finish_class): We're now outside a valid method
