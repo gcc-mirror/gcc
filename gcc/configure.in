@@ -1063,7 +1063,7 @@ for machine in $build $host $target; do
 		tm_file=i386/dgux.h
 		tmake_file=i386/t-dgux
 		xmake_file=i386/x-dgux
-		fixincludes=fixinc.dgux
+		fixincludes=Makefile.in # There is nothing to fix
 		install_headers_dir=install-headers-cpio
               ;;
 	i860-alliant-*)		# Alliant FX/2800
