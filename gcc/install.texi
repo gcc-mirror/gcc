@@ -283,19 +283,15 @@ the subdirectory @file{config} and its name is often
 @itemx --disable-nls
 The @samp{--enable-nls} option enables Native Language Support (NLS),
 which lets GCC output diagnostics in languages other than American
-English.  No translations are available yet, so the main users of this
-option now are those translating GCC's diagnostics who want to test
-their work.  Once translations become available, Native Language Support
-will become enabled by default.  The @samp{--disable-nls} option
-disables NLS.
+English. Native Language Support is enabled by default if not doing a 
+canadian cross build. The @samp{--disable-nls} option disables NLS.
 
 @cindex @code{gettext}
 @item --with-included-gettext
-If NLS is enabled, the GCC build procedure normally attempts to use the
-host's @code{gettext} libraries, and falls back on GCC's copy of the GNU
-@code{gettext} library only if the host libraries do not suffice.  The
-@samp{--with-included-gettext} option causes the build procedure to
-prefer its copy of GNU @code{gettext}.
+If NLS is enbled, the @samp{--with-included-gettext} option causes the build
+procedure to prefer its copy of GNU @code{gettext}. This is the default. If
+you want the GCC build procedure to prefer the host's @code{gettext}
+libraries, use @samp{--without-included-gettext}.
 
 @cindex @code{catgets}
 @item --with-catgets
@@ -304,6 +300,15 @@ inferior @code{catgets} interface, the GCC build procedure normally
 ignores @code{catgets} and instead uses GCC's copy of the GNU
 @code{gettext} library.  The @samp{--with-catgets} option causes the
 build procedure to use the host's @code{catgets} in this situation.
+
+@cindex @code{maintainer-mode}
+@item --enable-maintainer-mode
+The build rules that regenerate the GCC master message catalog
+@code{gcc.pot} are normally disabled. This is because it can only be rebuilt
+if the complete source tree is present. If you have changed the sources and
+want to rebuild the catalog, configuring with
+@samp{--enable-maintainer-mode} will enable this. Note that you need a
+special version of the @code{gettext} tools to do so.
 
 @cindex Windows32 Registry support
 @item --enable-win32-registry

@@ -3299,7 +3299,7 @@ should work just fine for standard-conforming code.
 Previously it was possible to use an empty prototype parameter list to
 indicate an unspecified number of parameters (like C), rather than no
 parameters, as C++ demands. This feature has been removed, except where
-it is required for backwards compatibility @xref{Backwards Compatibility}
+it is required for backwards compatibility @xref{Backwards Compatibility}.
 
 @end table
 
