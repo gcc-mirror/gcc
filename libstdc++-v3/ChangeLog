@@ -1,3 +1,9 @@
+2004-07-06  Anssi Hannula  <anssi.hannula@mbnet.fi>
+
+	PR libstdc++/15928
+	* crossconfig.m4: Add in bits for djgpp.
+	* configure: Regenerate.
+
 2004-07-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16210
