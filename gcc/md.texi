@@ -1956,6 +1956,12 @@ destination, in the form of a @code{const_int} rtx.  Thus, if the
 compiler knows that both source and destination are word-aligned,
 it may provide the value 4 for this operand.
 
+Descriptions of multiple @code{movstr@var{m}} patterns can only be
+beneficial if the patterns for smaller modes have less restrictions
+on their first, second and fourth operands.  Note that the mode @var{m}
+in @code{movstr@var{m}} does not impose any restriction on the mode of
+individually moved data units in the block.
+
 These patterns need not give special consideration to the possibility
 that the source and destination strings might overlap.
 
@@ -1969,6 +1975,8 @@ The third operand is the known alignment of the destination, in the form
 of a @code{const_int} rtx.  Thus, if the compiler knows that the
 destination is word-aligned, it may provide the value 4 for this
 operand.
+
+The use for multiple @code{clrstr@var{m}} is as for @code{movstr@var{m}}.
 
 @cindex @code{cmpstr@var{m}} instruction pattern
 @item @samp{cmpstr@var{m}}
