@@ -157,10 +157,11 @@ namespace std
 	int_type __ret = __eof;
 	if (_M_sbuf)
 	  {
-	    if (!traits_type::eq_int_type(_M_c, __eof)
-		|| !traits_type::eq_int_type((_M_c = _M_sbuf->sgetc()),
-					     __eof))
+	    if (!traits_type::eq_int_type(_M_c, __eof))
 	      __ret = _M_c;
+	    else if (!traits_type::eq_int_type((__ret = _M_sbuf->sgetc()),
+					       __eof))
+	      _M_c = __ret;
 	    else
 	      _M_sbuf = 0;
 	  }
