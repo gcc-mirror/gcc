@@ -1,3 +1,51 @@
+2003-12-22  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (CP_DYNAMIC_ARRAYS): Define if compiler supports
+	dynamic arrays.
+	(struct d_operator_info): Add len field.
+	(struct d_builtin_type_info): Add len and java_len fields.
+	(struct d_standard_sub_info): Add simple_len, full_len, and
+	set_last_name_len fields.
+	(struct d_comp): Add len field to s_string.
+	(struct d_info): Add send, did_subs, and expansion fields.
+	(d_append_string_constant): Define.
+	(d_append_string): Remove.  Change all users to use
+	d_append_string_constant or d_append_buffer instead.
+	(d_make_sub): Add len parameter.  Change all callers.
+	(d_name): Increase expansion when substituting std::.
+	(d_unqualified_name): Increase expansion for an operator.
+	(d_number): Don't use multiplication for negative numbers.
+	(d_identifier): Make sure there are enough characters in the
+	string for the specified length.  Adjust expansion for an
+	anonymous namespace.
+	(d_operators): Initialize len field.
+	(d_special_name, d_ctor_dtor_name): Increase expansion.
+	(d_builtin_types): Initialize len and java_len fields.
+	(d_type): Increase expansion for a builtin type.
+	(d_cv_qualifiers): Increase expansion for each qualifier.
+	(d_bare_function_type): Decrease expansion when removing single
+	void parameter.
+	(d_template_param): Increment did_subs.
+	(d_expression): Increase expansion for an operator.
+	(d_expr_primary): Decrease expansion for a type we will print
+	specially.
+	(standard_subs): Initialize new fields.
+	(d_substitution): Increment did_subs when doing a normal
+	substitution.  Increase expansion for a special substitution.
+	(d_print): Add estimate parameter.  Change all callers.
+	(d_print_comp) [D_COMP_NAME]: Handle C++ case inline.
+	(d_print_comp) [D_COMP_BINARY]: Use length to avoid strcmp call.
+	(d_print_java_identifier): Rename from d_print_identifier.  Handle
+	only Java case.  Change caller.
+	(d_init_info): Change return type to void.  Change all callers.
+	Initialize send, did_subs, and expansion fields.  Do not
+	initialize comps and subs fields.
+	(d_demangle): Ifdef CP_DYNAMIC_ARRAYS, allocate comps and subs
+	arrays on stack.  Make an estimate of the length of the demangled
+	name.  Ifdef CP_DEMANGLE_DEBUG, print estimation failures.
+	(is_ctor_or_dtor): Ifdef CP_DYNAMIC_ARRAYS, allocate comps and
+	subs arrays on stack.
+
 2003-12-20  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (d_identifier): In Java mode, skip an optional '$'
