@@ -1,3 +1,7 @@
+2001-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* lib/g++.exp: Use testsuite_flags.
+	
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c-torture/execute/ieee/rbug.x: XFAIL FreeBSD 4.x.
@@ -17,7 +21,7 @@
 2001-05-09  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.dg/cpp/direct2.c: New test.
-	* gcc.dg/cpp/direct2s.c: New test.
+	* gccq.dg/cpp/direct2s.c: New test.
 
 	* gcc.c-torture/execute/920730-1t.c: #undef __GNUC__ at head.
 
