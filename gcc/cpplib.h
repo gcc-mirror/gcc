@@ -462,7 +462,9 @@ enum builtin_type
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
-  BT_STDC			/* `__STDC__' */
+  BT_STDC,			/* `__STDC__' */
+  BT_WEAK                       /* Whether or not G++ supports weak 
+				   symbols.  */
 };
 
 /* There is a slot in the hashnode for use by front ends when integrated

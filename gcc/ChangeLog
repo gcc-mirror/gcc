@@ -1,3 +1,12 @@
+2001-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cppinit.c (BC): New macro.
+	(builtin_array): Add __GXX_WEAK__.
+	* cpplib.h (builtin_type): Add BT_WEAK.
+	* cppmacro.c (builtin_macro): Handle BT_WEAK.
+	* defaults.h (SUPPORTS_ONE_ONLY): Define.
+	* varasm.c (SUPPORTS_ONE_ONLY): Do not define.
+
 2001-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* cppinit.c (append_include_chain): Honor NO_IMPLICIT_EXTERN_C.
@@ -81,7 +90,7 @@ Fri Feb  2 20:03:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(init_spec): Use it.
 	* testsuite/lib/g++.exp: Include the directory where libgcc
 	is located to the LD_LIBRARY_PATH list.
-	* inovke.texi (-shared-libgcc): Document the cases in which
+	* invoke.texi (-shared-libgcc): Document the cases in which
 	GCC defaults to using the shared libgcc.
 	
 2001-02-02  Alexandre Oliva  <aoliva@redhat.com>
