@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2197,8 +2197,12 @@ expand_assignment (to, from, want_value, suggest_reg)
       preserve_temp_slots (result);
       free_temp_slots ();
 
-      return convert_to_mode (TYPE_MODE (TREE_TYPE (to)), result,
-			      TREE_UNSIGNED (TREE_TYPE (to)));
+      /* If we aren't returning a result, just pass on what expand_expr
+	 returned; it was probably const0_rtx.  Otherwise, convert RESULT
+	 to the proper mode.  */
+      return (want_value ? convert_to_mode (TYPE_MODE (TREE_TYPE (to)), result,
+					    TREE_UNSIGNED (TREE_TYPE (to)))
+	      : result);
     }
 
   /* Ordinary treatment.  Expand TO to get a REG or MEM rtx.
