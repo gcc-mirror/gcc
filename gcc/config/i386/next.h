@@ -17,8 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "i386/i386.h"
-#include "i386/bsd.h"
+#include "i386/gas.h"
 #include "nextstep.h"
 
 /* By default, target has a 80387, with IEEE FP.  */
@@ -117,6 +116,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define OBJC_FORWARDING_STACK_OFFSET 8
 #define OBJC_FORWARDING_MIN_OFFSET 8
+
+/* Compensate for botch in dbxout_init/dbxout_source_file which
+   unconditionally drops the first character from ltext_label_name */
+
+#undef	ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
+    sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
