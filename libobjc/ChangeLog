@@ -1,3 +1,7 @@
+2000-04-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* Object.m (strlen): 64-bit PowerPC is a 64bit platform as well.
+
 2000-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* Object.m (strlen): Provide prototype on all 64bit platforms,
