@@ -1,4 +1,5 @@
 2004-05-18  Paul Brook  <paul@codesourcery.com>
+	Feng Wang  <fengwang@nudt.edu.cn>
 
 	* Makefile.am (i_pow_c): Set it. Add build rule.
 	(gfor_built_src): Use it.

@@ -1,4 +1,5 @@
-2004-05-18  Paul Brook  <paul@codesourcery.com>
+2004-05-18  Feng Wang  <fengwang@nudt.edu.cn>
+	Paul Brook  <paul@codesourcery.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Use vold_list_node.
 	Create decls for __builtin_pow{,f}.
