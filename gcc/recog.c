@@ -3003,6 +3003,7 @@ peephole2_optimize (dump_file)
   bool changed;
 #endif
   bool do_cleanup_cfg = false;
+  bool do_rebuild_jump_labels = false;
 
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
@@ -3045,7 +3046,7 @@ peephole2_optimize (dump_file)
 	  prev = PREV_INSN (insn);
 	  if (INSN_P (insn))
 	    {
-	      rtx try, before_try;
+	      rtx try, before_try, x;
 	      int match_len;
 	      rtx note;
 
@@ -3139,7 +3140,6 @@ peephole2_optimize (dump_file)
 		  /* Re-insert the EH_REGION notes.  */
 		  if (note)
 		    {
-		      rtx x;
 		      edge eh_edge;
 
 		      for (eh_edge = bb->succ; eh_edge
@@ -3209,25 +3209,35 @@ peephole2_optimize (dump_file)
 		  COPY_REG_SET (live, peep2_insn_data[i].live_before);
 
 		  /* Update life information for the new sequence.  */
+		  x = try;
 		  do
 		    {
-		      if (INSN_P (try))
+		      if (INSN_P (x))
 			{
 			  if (--i < 0)
 			    i = MAX_INSNS_PER_PEEP2;
-			  peep2_insn_data[i].insn = try;
-			  propagate_one_insn (pbi, try);
+			  peep2_insn_data[i].insn = x;
+			  propagate_one_insn (pbi, x);
 			  COPY_REG_SET (peep2_insn_data[i].live_before, live);
 			}
-		      try = PREV_INSN (try);
+		      x = PREV_INSN (x);
 		    }
-		  while (try != prev);
+		  while (x != prev);
 
 		  /* ??? Should verify that LIVE now matches what we
 		     had before the new sequence.  */
 
 		  peep2_current = i;
 #endif
+
+		  /* If we generated a jump instruction, it won't have
+		     JUMP_LABEL set.  Recompute after we're done.  */
+		  for (x = try; x != before_try; x = PREV_INSN (x))
+		    if (GET_CODE (x) == JUMP_INSN)
+		      {
+		        do_rebuild_jump_labels = true;
+			break;
+		      }
 		}
 	    }
 
@@ -3241,6 +3251,9 @@ peephole2_optimize (dump_file)
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
     FREE_REG_SET (peep2_insn_data[i].live_before);
   FREE_REG_SET (live);
+
+  if (do_rebuild_jump_labels)
+    rebuild_jump_labels (get_insns ());
 
   /* If we eliminated EH edges, we may be able to merge blocks.  Further,
      we've changed global life since exception handlers are no longer
