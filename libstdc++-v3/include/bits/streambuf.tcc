@@ -198,29 +198,31 @@ namespace std {
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
       bool __testput = __sbout->_M_mode & ios_base::out;
-      try {
-	while (__testput && __bufsize != -1)
-	  {
-	    __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
-	    __ret += __xtrct;
-	    __sbin->_M_in_cur_move(__xtrct);
-	    if (__xtrct == __bufsize)
-	      {
-		if (__sbin->sgetc() == _Traits::eof())
-		  break;
-		__bufsize = __sbin->in_avail();
-	      }
-	    else
-	      break;
-	  }
-      }
-      catch(exception& __fail) {
-	if ((__ios.exceptions() & ios_base::failbit) != 0)
-	  __throw_exception_again;
-      }
+      try 
+	{
+	  while (__testput && __bufsize != -1)
+	    {
+	      __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
+	      __ret += __xtrct;
+	      __sbin->_M_in_cur_move(__xtrct);
+	      if (__xtrct == __bufsize)
+		{
+		  if (__sbin->sgetc() == _Traits::eof())
+		    break;
+		  __bufsize = __sbin->in_avail();
+		}
+	      else
+		break;
+	    }
+	}
+      catch(exception& __fail) 
+	{
+	  __ios.setstate(ios_base::failbit);
+	  if ((__ios.exceptions() & ios_base::failbit) != 0)
+	    __throw_exception_again;
+	}
       return __ret;
     }
 } // namespace std
 
 #endif // _CPP_BITS_STREAMBUF_TCC
-

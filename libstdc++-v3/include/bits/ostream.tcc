@@ -111,6 +111,38 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>& 
+    basic_ostream<_CharT, _Traits>::operator<<(__streambuf_type* __sbin)
+    {
+      sentry __cerb(*this);
+      if (__cerb)
+	{
+	  try
+	    {
+	      streamsize __xtrct = 0;
+	      if (__sbin)
+		{
+		  __streambuf_type* __sbout = this->rdbuf();
+		  __xtrct = __copy_streambufs(*this, __sbin, __sbout);
+		}
+	      else
+		this->setstate(ios_base::badbit);
+	      if (!__xtrct)
+		this->setstate(ios_base::failbit);
+	    }
+	  catch(exception& __fail)
+	    {
+	      // 27.6.2.5.1 Common requirements.
+	      // Turn this on without causing an ios::failure to be thrown.
+	      this->setstate(ios_base::badbit);
+	      if ((this->exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
+	    }
+	}
+      return *this;
+    }
+
+  template<typename _CharT, typename _Traits>
+    basic_ostream<_CharT, _Traits>& 
     basic_ostream<_CharT, _Traits>::operator<<(bool __n)
     {
       sentry __cerb(*this);
@@ -337,20 +369,6 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>& 
-    basic_ostream<_CharT, _Traits>::operator<<(__streambuf_type* __sbin)
-    {
-      streamsize __xtrct = 0;
-      __streambuf_type* __sbout = this->rdbuf();
-      sentry __cerb(*this);
-      if (__sbin && __cerb)
-	__xtrct = __copy_streambufs(*this, __sbin, __sbout);
-      if (!__sbin || !__xtrct)
-	this->setstate(ios_base::failbit);
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
     basic_ostream<_CharT, _Traits>::put(char_type __c)
     { 
@@ -418,7 +436,7 @@ namespace std
 
 // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
-	    this->setstate(failbit);
+	    this->setstate(ios_base::failbit);
 #endif
 	}
       return *this;
@@ -440,7 +458,7 @@ namespace std
 
 // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
-	    this->setstate(failbit);
+	    this->setstate(ios_base::failbit);
 	}
 #endif
       return *this;
@@ -753,4 +771,3 @@ namespace std
 // Local Variables:
 // mode:C++
 // End:
-

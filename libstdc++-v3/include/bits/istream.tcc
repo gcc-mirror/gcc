@@ -454,14 +454,30 @@ namespace std
     basic_istream<_CharT, _Traits>::
     operator>>(__streambuf_type* __sbout)
     {
-      streamsize __xtrct = 0;
-      __streambuf_type* __sbin = this->rdbuf();
-      sentry __cerb(*this, false);
-      if (__sbout && __cerb)
-	__xtrct = __copy_streambufs(*this, __sbin, __sbout);
-      if (!__sbout || !__xtrct)
-	this->setstate(ios_base::failbit);
-      return *this;
+       sentry __cerb(*this, false);
+       if (__cerb)
+	 {
+	   try
+	     {
+	       streamsize __xtrct = 0;
+	       if (__sbout)
+		 {
+		   __streambuf_type* __sbin = this->rdbuf();
+		   __xtrct = __copy_streambufs(*this, __sbin, __sbout);
+		 }
+	       if (!__sbout || !__xtrct)
+		 this->setstate(ios_base::failbit);
+	     }
+	   catch(exception& __fail)
+	     {
+	       // 27.6.2.5.1 Common requirements.
+	       // Turn this on without causing an ios::failure to be thrown.
+	       this->setstate(ios_base::badbit);
+	       if ((this->exceptions() & ios_base::badbit) != 0)
+		 __throw_exception_again;
+	     }
+	 }
+       return *this;
     }
 
   template<typename _CharT, typename _Traits>
@@ -963,7 +979,7 @@ namespace std
 
 // 129. Need error indication from seekp() and seekg()
 	      if (__err == pos_type(off_type(-1)))
-		this->setstate(failbit);
+		this->setstate(ios_base::failbit);
 #endif
 	    }
 	  catch(exception& __fail)
@@ -996,7 +1012,7 @@ namespace std
 
 // 129. Need error indication from seekp() and seekg()
 	      if (__err == pos_type(off_type(-1)))
-		this->setstate(failbit);
+		this->setstate(ios_base::failbit);
 #endif
 	    }
 	  catch(exception& __fail)
