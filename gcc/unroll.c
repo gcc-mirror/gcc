@@ -201,6 +201,7 @@ static rtx approx_final_value ();
 static int find_splittable_regs ();
 static int find_splittable_givs ();
 static rtx fold_rtx_mult_add ();
+static rtx remap_split_bivs ();
 
 /* Try to unroll one loop and split induction variables in the loop.
 
@@ -1032,47 +1033,15 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   /* If the loop is being partially unrolled, and the iteration variables
      are being split, and are being renamed for the split, then must fix up
-     the compare instruction at the end of the loop to refer to the new
+     the compare/jump instruction at the end of the loop to refer to the new
      registers.  This compare isn't copied, so the registers used in it
      will never be replaced if it isn't done here.  */
 
   if (unroll_type == UNROLL_MODULO)
     {
       insn = NEXT_INSN (copy_end);
-      if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET)
-	{
-#if 0
-	  /* If non-reduced/final-value givs were split, then this would also
-	     have to remap those givs.  */
-#endif
-
-	  tem = SET_SRC (PATTERN (insn));
-	  /* The set source is a register.  */
-	  if (GET_CODE (tem) == REG)
-	    {
-	      if (REGNO (tem) < max_reg_before_loop
-		  && reg_iv_type[REGNO (tem)] == BASIC_INDUCT)
-		SET_SRC (PATTERN (insn))
-		  = reg_biv_class[REGNO (tem)]->biv->src_reg;
-	    }
-	  else
-	    {
-	      /* The set source is a compare of some sort.  */
-	      tem = XEXP (SET_SRC (PATTERN (insn)), 0);
-	      if (GET_CODE (tem) == REG
-		  && REGNO (tem) < max_reg_before_loop
-		  && reg_iv_type[REGNO (tem)] == BASIC_INDUCT)
-		XEXP (SET_SRC (PATTERN (insn)), 0)
-		  = reg_biv_class[REGNO (tem)]->biv->src_reg;
-	      
-	      tem = XEXP (SET_SRC (PATTERN (insn)), 1);
-	      if (GET_CODE (tem) == REG
-		  && REGNO (tem) < max_reg_before_loop
-		  && reg_iv_type[REGNO (tem)] == BASIC_INDUCT)
-		XEXP (SET_SRC (PATTERN (insn)), 1)
-		  = reg_biv_class[REGNO (tem)]->biv->src_reg;
-	    }
-	}
+      if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
+	PATTERN (insn) = remap_split_bivs (PATTERN (insn));
     }
 
   /* For unroll_number - 1 times, make a copy of each instruction
@@ -3310,4 +3279,57 @@ loop_iterations (loop_start, loop_end)
     return 0;
 
   return tempu / i + ((tempu % i) != 0);
+}
+
+/* Replace uses of split bivs with their split psuedo register.  This is
+   for original instructions which remain after loop unrolling without
+   copying.  */
+
+static rtx
+remap_split_bivs (x)
+     rtx x;
+{
+  register enum rtx_code code;
+  register int i;
+  register char *fmt;
+
+  if (x == 0)
+    return x;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case SCRATCH:
+    case PC:
+    case CC0:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return x;
+
+    case REG:
+#if 0
+      /* If non-reduced/final-value givs were split, then this would also
+	 have to remap those givs also.  */
+#endif
+      if (REGNO (x) < max_reg_before_loop
+	  && reg_iv_type[REGNO (x)] == BASIC_INDUCT)
+	return reg_biv_class[REGNO (x)]->biv->src_reg;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	XEXP (x, i) = remap_split_bivs (XEXP (x, i));
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    XVECEXP (x, i, j) = remap_split_bivs (XVECEXP (x, i, j));
+	}
+    }
+  return x;
 }
