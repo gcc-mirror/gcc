@@ -873,8 +873,9 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
       return;
     }
 
-  /* NULL is _always_ represented as a plain zero.  */
-  if (addr == const0_rtx)
+  /* NULL is _always_ represented as a plain zero, as is 1 for Ada's
+     "all others".  */
+  if (addr == const0_rtx || addr == const1_rtx)
     assemble_integer (addr, size, BITS_PER_UNIT, 1);
   else
     {
