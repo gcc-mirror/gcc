@@ -1,3 +1,11 @@
+2001-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (cxx_keywords): Const-ification.
+	* keyword.gperf (java_keyword): Likewise.
+	* lang.c (java_tree_code_name): Likewise.
+	* lex.c (cxx_keywords): Likewise.
+	* parse.y (java_parser_context_suspend, merge_string_cste): Likewise.
+
 2001-09-11  Richard Henderson  <rth@redhat.com>
 
 	* parse.h (ctxp_for_generation): Mark extern.
