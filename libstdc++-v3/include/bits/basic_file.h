@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,8 +39,8 @@
 #include <bits/c++config.h>
 #include <bits/std_ios.h>
 
-namespace std {
-
+namespace std 
+{
   // Ulrich is going to make some detailed comment here, explaining
   // all this unpleasantness, providing detailed performance analysis
   // as to why we have to do all this lame vtable hacking instead of a
@@ -48,67 +48,67 @@ namespace std {
   // and detailed description of the whole object-layout,
   // vtable-swapping, sordid history of this hack.
   template<typename _CharT>
-  struct __basic_file_base: public __c_file_type
-  {
-    virtual 
-    ~__basic_file_base() { };
+    struct __basic_file_base: public __c_file_type
+    {
+      virtual 
+      ~__basic_file_base() { };
 
-    virtual int 
-    overflow(int __c = EOF) = 0;
+      virtual int 
+      overflow(int __c = EOF) = 0;
 
-    virtual int 
-    underflow() = 0;
+      virtual int 
+      underflow() = 0;
 
-    virtual int 
-    uflow() = 0;
+      virtual int 
+      uflow() = 0;
 
-    virtual int 
-    pbackfail(int __c) = 0;
+      virtual int 
+      pbackfail(int __c) = 0;
 
-    virtual streamsize 
-    xsputn(const _CharT* __s, streamsize __n) = 0;
+      virtual streamsize 
+      xsputn(const _CharT* __s, streamsize __n) = 0;
 
-    virtual streamsize 
-    xsgetn(_CharT* __s, streamsize __n) = 0;
+      virtual streamsize 
+      xsgetn(_CharT* __s, streamsize __n) = 0;
 
-    virtual streamoff
-    seekoff(streamoff __off, ios_base::seekdir __way,
-	    ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
+      virtual streamoff
+      seekoff(streamoff __off, ios_base::seekdir __way,
+	      ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
 
-    virtual streamoff
-    seekpos(streamoff __pos, 
-	    ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
+      virtual streamoff
+      seekpos(streamoff __pos, 
+	      ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
 
-    virtual streambuf* 
-    setbuf(_CharT* __b, int __len) = 0;
+      virtual streambuf* 
+      setbuf(_CharT* __b, int __len) = 0;
 
-    virtual int 
-    sync() = 0;
+      virtual int 
+      sync() = 0;
 
-    virtual int 
-    doallocate() = 0;
+      virtual int 
+      doallocate() = 0;
 
-    virtual streamsize 
-    sys_read(_CharT* __s, streamsize __n) = 0;
+      virtual streamsize 
+      sys_read(_CharT* __s, streamsize __n) = 0;
 
-    virtual streamsize 
-    sys_write(const _CharT* __s, streamsize __n) = 0;
+      virtual streamsize 
+      sys_write(const _CharT* __s, streamsize __n) = 0;
 
-    virtual streamoff
-    sys_seek(streamoff __off, ios_base::seekdir __way) = 0;
+      virtual streamoff
+      sys_seek(streamoff __off, ios_base::seekdir __way) = 0;
 
-    virtual int 
-    sys_close() = 0;
+      virtual int 
+      sys_close() = 0;
 
-    virtual int 
-    sys_stat(void* __v) = 0;
+      virtual int 
+      sys_stat(void* __v) = 0;
 
-    virtual int 
-    showmanyc() = 0;
+      virtual int 
+      showmanyc() = 0;
 
-    virtual void 
-    imbue(void* __v) = 0;
-  };
+      virtual void 
+      imbue(void* __v) = 0;
+    };
 
   // Some of these member functions are based on libio/filebuf.cc.
   // Also note that the order and number of virtual functions has to precisely
@@ -241,12 +241,9 @@ namespace std {
     };
 } // namespace std
 
-#endif	/* _CPP_BASIC_FILE */
+// Now include the bits that are dependant on the underlying I/O
+// model chosen at configure time.
+#include <bits/basic_file_model.h>
 
-
-
-
-
-
-
+#endif	// _CPP_BASIC_FILE
 
