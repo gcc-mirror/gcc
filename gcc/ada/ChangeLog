@@ -1,3 +1,41 @@
+2005-02-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-rbtgso.adb, a-crbtgo.ads, a-crbtgo.adb, a-crbtgk.ads,
+	a-crbtgk.adb, a-crbltr.ads, a-coprnu.ads, a-coprnu.adb,
+	a-coorse.ads, a-coorse.adb, a-convec.ads, a-convec.adb,
+	a-contai.ads, a-coinve.ads, a-coinve.adb, a-cohata.ads,
+	a-cohama.ads, a-cohama.adb, a-ciorse.ads, a-ciorse.adb,
+	a-cihama.ads, a-cihama.adb, a-cidlli.ads, a-cidlli.adb,
+	a-chtgop.ads, a-chtgop.adb, a-cgcaso.ads, a-cgcaso.adb,
+	a-cgarso.ads, a-cgarso.adb, a-cdlili.ads, a-cdlili.adb,
+	a-cgaaso.adb, a-coormu.adb, a-ciormu.adb, a-cihase.adb,
+	a-cihase.ads, a-cohase.adb, a-cohase.ads, a-ciorma.ads,
+	a-coorma.ads, a-swunha.ads, a-stunha.ads, a-ciormu.ads,
+	a-coormu.ads, a-rbtgso.ads, a-swunha.adb, a-stunha.adb,
+	a-cgaaso.ads, a-ciorma.adb, a-coorma.adb, a-secain.adb,
+	a-secain.ads, a-slcain.ads, a-slcain.adb, a-shcain.ads,
+	a-shcain.adb, a-chtgke.ads, a-chtgke.adb, a-stwiha.ads,
+	a-stwiha.adb, a-strhas.ads, a-strhas.adb, a-chzla1.ads,
+	a-chzla9.ads, a-lfztio.ads, a-liztio.ads, a-llfzti.ads,
+	a-llizti.ads, a-sfztio.ads, a-siztio.ads, a-ssizti.ads,
+	a-stzbou.adb, a-stzbou.ads, a-stzfix.adb, a-stzfix.ads,
+	a-stzhas.adb, a-stzhas.ads, a-stzmap.adb, a-stzmap.ads,
+	a-stzsea.adb, a-stzsea.ads, a-stzsup.adb, a-stzsup.ads,
+	a-stzunb.adb, a-stzunb.ads, a-swunau.adb, a-swunau.ads,
+	a-szmzco.ads, a-szunau.adb, a-szunau.ads, a-szunha.adb,
+	a-szunha.ads, a-szuzti.adb, a-szuzti.ads, a-tiunio.ads,
+	a-wwunio.ads, a-ztcoau.adb, a-ztcoau.ads, a-ztcoio.adb,
+	a-ztcoio.ads, a-ztcstr.adb, a-ztcstr.ads, a-ztdeau.adb,
+	a-ztdeau.ads, a-ztdeio.adb, a-ztdeio.ads, a-ztedit.adb,
+	a-ztedit.ads, a-ztenau.adb, a-ztenau.ads, a-ztenio.adb,
+	a-ztenio.ads, a-ztexio.adb, a-ztexio.ads, a-ztfiio.adb,
+	a-ztfiio.ads, a-ztflau.adb, a-ztflau.ads, a-ztflio.adb,
+	a-ztflio.ads, a-ztgeau.adb, a-ztgeau.ads, a-ztinau.adb,
+	a-ztinau.ads, a-ztinio.adb, a-ztinio.ads, a-ztmoau.adb,
+	a-ztmoau.ads, a-ztmoio.adb, a-ztmoio.ads, a-zttest.adb,
+	a-zttest.ads, a-zzunio.ads: New files. Part of new Ada 2005
+	library.
+
 2005-01-27  Laurent GUERBY <laurent@guerby.net>
 
 	* Makefile.in: Fix a-intnam.ads from previous commit,
