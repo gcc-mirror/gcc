@@ -66,6 +66,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_NO_SKIP_IN_TEXT 1
 
+#undef BSS_SECTION_FUNCTION  /* Override the definition from svr3.h.  */
 #define BSS_SECTION_FUNCTION \
 void								\
 bss_section ()							\
