@@ -20,6 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
+#include "gansidecl.h"	/* For the PROTO macro  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mv*:-mv%*}"
@@ -78,7 +79,7 @@ extern int target_flags;
      * Doubles are normally 4 byte aligned, except in argument
      lists where they are 8 byte aligned.  Is the alignment
      in the argument list based on the first parameter,
-     first stack parameter, etc., etc.
+     first stack parameter, etc etc.
 
      * Passing/returning of large structures probably isn't the same
      as GHS.  We don't have enough documentation on their conventions
@@ -112,21 +113,27 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-  {{ "ghs",			 MASK_GHS },				\
-   { "no-ghs",			-MASK_GHS },				\
-   { "long-calls",		 MASK_LONG_CALLS },			\
-   { "no-long-calls",		-MASK_LONG_CALLS },			\
-   { "ep",			 MASK_EP },				\
-   { "no-ep",			-MASK_EP },				\
-   { "prolog-function",		 MASK_PROLOG_FUNCTION },		\
-   { "no-prolog-function",	-MASK_PROLOG_FUNCTION },		\
-   { "space",			 MASK_EP | MASK_PROLOG_FUNCTION },	\
-   { "debug",			 MASK_DEBUG },				\
-   { "v850",		 	 MASK_V850 },				\
-   { "v850",		 	 -(MASK_V850 ^ MASK_CPU) },		\
-   { "big-switch",		 MASK_BIG_SWITCH },			\
+  {{ "ghs",			 MASK_GHS, "Support Green Hills ABI" },	\
+   { "no-ghs",			-MASK_GHS, "" },			\
+   { "long-calls",		 MASK_LONG_CALLS, 			\
+       				"Prohibit PC relative function calls" },\
+   { "no-long-calls",		-MASK_LONG_CALLS, "" },			\
+   { "ep",			 MASK_EP,				\
+                                "Reuse r30 on a per function basis" },  \
+   { "no-ep",			-MASK_EP, "" },				\
+   { "prolog-function",		 MASK_PROLOG_FUNCTION, 			\
+       				"Use stubs for function prologues" },	\
+   { "no-prolog-function",	-MASK_PROLOG_FUNCTION, "" },		\
+   { "space",			 MASK_EP | MASK_PROLOG_FUNCTION, 	\
+       				"Same as: -mep -mprolog-function" },	\
+   { "debug",			 MASK_DEBUG, "Enable backend debugging" }, \
+   { "v850",		 	 MASK_V850,				\
+                                "Compile for the v850 processor" },	\
+   { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
+   { "big-switch",		 MASK_BIG_SWITCH, 			\
+       				"Use 4 byte entries in switch tables" },\
    EXTRA_SWITCHES							\
-   { "",			 TARGET_DEFAULT}}
+   { "",			 TARGET_DEFAULT, ""}}
 
 #ifndef EXTRA_SWITCHES
 #define EXTRA_SWITCHES
@@ -176,12 +183,15 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 #define TARGET_OPTIONS							\
 {									\
-  { "tda=",	&small_memory[ (int)SMALL_MEMORY_TDA ].value },		\
-  { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value },		\
-  { "sda=",	&small_memory[ (int)SMALL_MEMORY_SDA ].value },		\
-  { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value },		\
-  { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value },		\
-  { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value },		\
+  { "tda=",	&small_memory[ (int)SMALL_MEMORY_TDA ].value,		\
+      "Set the max size of data eligible for the TDA area"  },		\
+  { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value, "" },	\
+  { "sda=",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, 		\
+      "Set the max size of data eligible for the SDA area"  },		\
+  { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, "" },	\
+  { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, 		\
+      "Set the max size of data eligible for the ZDA area"  },		\
+  { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, "" },	\
 }
 
 /* Sometimes certain combinations of command options do not make
@@ -405,7 +415,8 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
    
-enum reg_class {
+enum reg_class
+{
   NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -581,13 +592,14 @@ enum reg_class {
 
    Do not define this macro if it would be the same as
    `FRAME_POINTER_REGNUM'. */
+#undef  HARD_FRAME_POINTER_REGNUM 
 #define HARD_FRAME_POINTER_REGNUM 29
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 33
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM 5
+#define STATIC_CHAIN_REGNUM 20
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -690,7 +702,6 @@ struct cum_arg { int nbytes; };
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-struct rtx_def *function_arg();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
@@ -1035,17 +1046,29 @@ do {									\
    into an indirect call.  */
 #define NO_FUNCTION_CSE
 
+/* The four different data regions on the v850.  */
+typedef enum 
+{
+  DATA_AREA_NORMAL,
+  DATA_AREA_SDA,
+  DATA_AREA_TDA,
+  DATA_AREA_ZDA
+} v850_data_area;
+
 /* A list of names for sections other than the standard two, which are
    `in_text' and `in_data'.  You need not define this macro on a
    system with no other sections (that GCC needs to use).  */
 #undef	EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_tdata, in_sdata, in_zdata, in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_tdata, in_sdata, in_zdata, in_const, in_ctors, \
+in_dtors, in_rozdata, in_rosdata, in_sbss, in_zbss, in_zcommon, in_scommon
 
 /* One or more functions to be defined in `varasm.c'.  These
    functions should do jobs analogous to those of `text_section' and
    `data_section', for your additional sections.  Do not define this
    macro if you do not define `EXTRA_SECTIONS'. */
 #undef	EXTRA_SECTION_FUNCTIONS
+
+/* This could be done a lot more cleanly using ANSI C ... */
 #define EXTRA_SECTION_FUNCTIONS						\
 CONST_SECTION_FUNCTION							\
 CTORS_SECTION_FUNCTION							\
@@ -1058,6 +1081,26 @@ sdata_section ()							\
     {									\
       fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
       in_section = in_sdata;						\
+    }									\
+}									\
+									\
+void									\
+rosdata_section ()							\
+{									\
+  if (in_section != in_rosdata)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", ROSDATA_SECTION_ASM_OP);		\
+      in_section = in_sdata;						\
+    }									\
+}									\
+									\
+void									\
+sbss_section ()								\
+{									\
+  if (in_section != in_sbss)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
+      in_section = in_sbss;						\
     }									\
 }									\
 									\
@@ -1079,16 +1122,42 @@ zdata_section ()							\
       fprintf (asm_out_file, "%s\n", ZDATA_SECTION_ASM_OP);		\
       in_section = in_zdata;						\
     }									\
+}									\
+									\
+void									\
+rozdata_section ()							\
+{									\
+  if (in_section != in_rozdata)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", ROZDATA_SECTION_ASM_OP);		\
+      in_section = in_rozdata;						\
+    }									\
+}									\
+									\
+void									\
+zbss_section ()								\
+{									\
+  if (in_section != in_zbss)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", ZBSS_SECTION_ASM_OP);		\
+      in_section = in_zbss;						\
+    }									\
 }
 
-#define TEXT_SECTION_ASM_OP "\t.section .text"
-#define DATA_SECTION_ASM_OP "\t.section .data"
-#define BSS_SECTION_ASM_OP "\t.section .bss"
+#define TEXT_SECTION_ASM_OP  "\t.section .text"
+#define DATA_SECTION_ASM_OP  "\t.section .data"
+#define BSS_SECTION_ASM_OP   "\t.section .bss"
 #define SDATA_SECTION_ASM_OP "\t.section .sdata,\"aw\""
-#define SBSS_SECTION_ASM_OP "\t.section .sbss,\"aw\""
+#define SBSS_SECTION_ASM_OP  "\t.section .sbss,\"aw\""
 #define ZDATA_SECTION_ASM_OP "\t.section .zdata,\"aw\""
-#define ZBSS_SECTION_ASM_OP "\t.section .zbss,\"aw\""
+#define ZBSS_SECTION_ASM_OP  "\t.section .zbss,\"aw\""
 #define TDATA_SECTION_ASM_OP "\t.section .tdata,\"aw\""
+#define ROSDATA_SECTION_ASM_OP "\t.section .rosdata,\"a\""
+#define ROZDATA_SECTION_ASM_OP "\t.section .rozdata,\"a\""
+
+#define SCOMMON_ASM_OP 	       ".scomm"
+#define ZCOMMON_ASM_OP 	       ".zcomm"
+#define TCOMMON_ASM_OP 	       ".tcomm"
 
 /* A C statement or statements to switch to the appropriate section
    for output of EXP.  You can assume that EXP is either a `VAR_DECL'
@@ -1099,18 +1168,48 @@ zdata_section ()							\
 
    Do not define this macro if you put all read-only variables and
    constants in the read-only data section (usually the text section).  */
-#undef	SELECT_SECTION
+#undef  SELECT_SECTION
 #define SELECT_SECTION(EXP, RELOC)					\
 do {									\
   if (TREE_CODE (EXP) == VAR_DECL)					\
     {									\
-      if (!TREE_READONLY (EXP) || TREE_SIDE_EFFECTS (EXP)		\
+      int is_const;							\
+      if (!TREE_READONLY (EXP)						\
+	  || TREE_SIDE_EFFECTS (EXP)					\
 	  || !DECL_INITIAL (EXP)					\
 	  || (DECL_INITIAL (EXP) != error_mark_node			\
 	      && !TREE_CONSTANT (DECL_INITIAL (EXP))))			\
-	data_section ();						\
+        is_const = FALSE;						\
       else								\
-	const_section ();						\
+        is_const = TRUE;						\
+									\
+      switch (v850_get_data_area (EXP))					\
+        {								\
+        case DATA_AREA_ZDA:						\
+	  if (is_const)	        					\
+	    rozdata_section ();						\
+	  else								\
+	    zdata_section ();						\
+	  break;							\
+									\
+        case DATA_AREA_TDA:						\
+	  tdata_section ();						\
+	  break;							\
+									\
+        case DATA_AREA_SDA:						\
+	  if (is_const)		                        		\
+	    rosdata_section ();						\
+	  else								\
+	    sdata_section ();						\
+	  break;							\
+									\
+        default:							\
+          if (is_const)							\
+	    const_section ();						\
+	  else								\
+	    data_section ();						\
+	  break;							\
+        }								\
     }									\
   else if (TREE_CODE (EXP) == STRING_CST)				\
     {									\
@@ -1203,6 +1302,24 @@ do { char dstr[30];					\
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
+#undef  ASM_OUTPUT_ALIGNED_BSS 
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  v850_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
+/* This says how to output the assembler to define a global
+   uninitialized, common symbol. */
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#undef  ASM_OUTPUT_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN) \
+     v850_output_common (FILE, DECL, NAME, SIZE, ALIGN)
+
+/* This says how to output the assembler to define a local
+   uninitialized symbol. */
+#undef  ASM_OUTPUT_ALIGNED_LOCAL
+#undef  ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
+     v850_output_local (FILE, DECL, NAME, SIZE, ALIGN)
+     
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
@@ -1266,7 +1383,7 @@ do { char dstr[30];					\
 /* Print an instruction operand X on file FILE.
    look in v850.c for details */
 
-#define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE,X,CODE)
+#define PRINT_OPERAND(FILE, X, CODE)  print_operand (FILE, X, CODE)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '.')
@@ -1377,15 +1494,69 @@ do { char dstr[30];					\
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-v850_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
+  v850_valid_machine_decl_attribute (DECL, IDENTIFIER, ARGS)
 
-/* Tell compiler we have {ZDA,TDA,SDA} small data regions */
-#define HAVE_ZDA 1
-#define HAVE_SDA 1
-#define HAVE_TDA 1
+/* A C statement that assigns default attributes to a newly created DECL.  */
+#define SET_DEFAULT_DECL_ATTRIBUTES(decl, attr) \
+     v850_set_default_decl_attr (decl)
 
 /* Tell compiler we want to support GHS pragmas */
-#define HANDLE_GHS_PRAGMA
+#define HANDLE_PRAGMA(get, unget, name) v850_handle_pragma (get, unget, name)
+
+enum v850_pragma_state
+{
+  V850_PS_START,
+  V850_PS_SHOULD_BE_DONE,
+  V850_PS_BAD,
+  V850_PS_MAYBE_SECTION_NAME,
+  V850_PS_EXPECTING_EQUALS,
+  V850_PS_EXPECTING_SECTION_ALIAS,
+  V850_PS_MAYBE_COMMA
+};
+
+enum v850_pragma_type
+{
+  V850_PT_UNKNOWN,
+  V850_PT_INTERRUPT,
+  V850_PT_SECTION,
+  V850_PT_START_SECTION,
+  V850_PT_END_SECTION
+};
+
+/* enum GHS_SECTION_KIND is an enumeration of the kinds of sections that
+   can appear in the "ghs section" pragma.  These names are used to index
+   into the GHS_default_section_names[] and GHS_current_section_names[]
+   that are defined in v850.c, and so the ordering of each must remain
+   consistant. 
+
+   These arrays give the default and current names for each kind of 
+   section defined by the GHS pragmas.  The current names can be changed
+   by the "ghs section" pragma.  If the current names are null, use 
+   the default names.  Note that the two arrays have different types.
+
+   For the *normal* section kinds (like .data, .text, etc.) we do not
+   want to explicitly force the name of these sections, but would rather
+   let the linker (or at least the back end) choose the name of the 
+   section, UNLESS the user has force a specific name for these section
+   kinds.  To accomplish this set the name in ghs_default_section_names
+   to null.  */
+
+enum GHS_section_kind
+{ 
+  GHS_SECTION_KIND_DEFAULT,
+
+  GHS_SECTION_KIND_TEXT,
+  GHS_SECTION_KIND_DATA, 
+  GHS_SECTION_KIND_RODATA,
+  GHS_SECTION_KIND_BSS,
+  GHS_SECTION_KIND_SDATA,
+  GHS_SECTION_KIND_ROSDATA,
+  GHS_SECTION_KIND_TDATA,
+  GHS_SECTION_KIND_ZDATA,
+  GHS_SECTION_KIND_ROZDATA,
+
+  COUNT_OF_GHS_SECTION_KINDS  /* must be last */
+};
 
 /* The assembler op to start the file.  */
 
@@ -1444,34 +1615,52 @@ do {									\
 { "register_is_ok_for_epilogue",{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
 
-extern void override_options ();
-extern void asm_file_start ();
-extern int function_arg_partial_nregs ();
-extern int const_costs ();
-extern void print_operand ();
-extern void print_operand_address ();
-extern char *output_move_double ();
-extern char *output_move_single ();
-extern int ep_operand ();
-extern int reg_or_0_operand ();
-extern int reg_or_int5_operand ();
-extern int call_address_operand ();
-extern int movsi_source_operand ();
-extern int power_of_two_operand ();
-extern int not_power_of_two_operand ();
-extern void v850_reorg ();
-extern int compute_register_save_size ();
-extern int compute_frame_size ();
-extern void expand_prologue ();
-extern void expand_epilogue ();
-extern void notice_update_cc ();
-extern int v850_valid_machine_decl_attribute ();
-extern int v850_interrupt_function_p ();
+  /* Note, due to dependency and search path conflicts, prototypes
+     involving the FILE, rtx or tree types cannot be included here.
+     They are included at the start of v850.c  */
+  
+extern void   asm_file_start                ();
+extern void   print_operand                 ();
+extern void   print_operand_address         ();
+extern int    function_arg_partial_nregs    ();
+extern int    const_costs                   ();
+extern char * output_move_double            ();
+extern char * output_move_single            ();
+extern int    ep_memory_operand             ();
+extern int    reg_or_0_operand              ();
+extern int    reg_or_int5_operand           ();
+extern int    call_address_operand          ();
+extern int    movsi_source_operand          ();
+extern int    power_of_two_operand          ();
+extern int    not_power_of_two_operand      ();
+extern int    special_symbolref_operand     ();
+extern void   v850_reorg                    ();
+extern void   notice_update_cc              ();
+extern int    v850_valid_machine_decl_attribute ();
+extern int    v850_interrupt_function_p     ();
+extern int    pattern_is_ok_for_prologue    ();
+extern int    pattern_is_ok_for_epilogue    ();
+extern int    register_is_ok_for_epilogue   ();
+extern char * construct_save_jarl           ();
+extern char * construct_restore_jr          ();
 
-extern int pattern_is_ok_for_prologue();
-extern int pattern_is_ok_for_epilogue();
-extern int register_is_ok_for_epilogue ();
-extern char *construct_save_jarl ();
-extern char *construct_restore_jr ();
+extern void   override_options              PROTO ((void));
+extern int    compute_register_save_size    PROTO ((long *));
+extern int    compute_frame_size            PROTO ((int, long *));
+extern void   expand_prologue               PROTO ((void));
+extern void   expand_epilogue               PROTO ((void));
 
-
+extern void   v850_output_aligned_bss       ();
+extern void   v850_output_common            ();
+extern void   v850_output_local             ();
+extern void   sdata_section                 PROTO ((void));
+extern void   rosdata_section               PROTO ((void));
+extern void   sbss_section                  PROTO ((void));
+extern void   tdata_section                 PROTO ((void));
+extern void   zdata_section                 PROTO ((void));
+extern void   rozdata_section               PROTO ((void));
+extern void   zbss_section                  PROTO ((void));
+extern int    v850_handle_pragma            PROTO ((int (*)(void), void (*)(int), char *));
+extern void   v850_encode_data_area         ();
+extern void   v850_set_default_decl_attr    ();
+extern v850_data_area v850_get_data_area    ();

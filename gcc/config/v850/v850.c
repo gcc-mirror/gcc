@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <ctype.h>
 #include "config.h"
+#include "tree.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -34,8 +35,64 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "expr.h"
-#include "tree.h"
 #include "obstack.h"
+#include "toplev.h"
+
+#ifndef streq
+#define streq(a,b) (strcmp (a, b) == 0)
+#endif
+
+/* Function prototypes that cannot exist in v850.h due to dependency
+   compilcations.  */
+extern rtx    function_arg
+  PROTO ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
+extern int    function_arg_partial_nregs
+  PROTO ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
+extern void   asm_file_start                PROTO ((FILE *));
+extern void   print_operand                 PROTO ((FILE *, rtx, int ));
+extern void   print_operand_address         PROTO ((FILE *, rtx));
+extern void   v850_output_aligned_bss
+  PROTO ((FILE *, tree, char *, int, int));
+extern void   v850_output_common
+  PROTO ((FILE *, tree, char *, int, int));
+extern void   v850_output_local
+  PROTO ((FILE *, tree, char *, int, int));
+extern int    const_costs                   PROTO ((rtx, enum rtx_code));
+extern char * output_move_double            PROTO ((rtx *));
+extern char * output_move_single            PROTO ((rtx *));
+extern int    ep_memory_operand
+  PROTO ((rtx, enum machine_mode, int));
+extern int    reg_or_0_operand              PROTO ((rtx, enum machine_mode));
+extern int    reg_or_int5_operand           PROTO ((rtx, enum machine_mode));
+extern int    call_address_operand          PROTO ((rtx, enum machine_mode));
+extern int    movsi_source_operand          PROTO ((rtx, enum machine_mode));
+extern int    power_of_two_operand          PROTO ((rtx, enum machine_mode));
+extern int    not_power_of_two_operand      PROTO ((rtx, enum machine_mode));
+extern int    special_symbolref_operand     PROTO ((rtx, enum machine_mode));
+extern void   v850_reorg                    PROTO ((rtx));
+extern void   notice_update_cc              PROTO ((rtx, rtx));
+extern int    v850_valid_machine_decl_attribute
+  PROTO ((tree, tree, tree));
+extern int    v850_interrupt_function_p     PROTO ((tree));
+extern int    pattern_is_ok_for_prologue    PROTO ((rtx, enum machine_mode));
+extern int    pattern_is_ok_for_epilogue    PROTO ((rtx, enum machine_mode));
+extern int    register_is_ok_for_epilogue   PROTO ((rtx, enum machine_mode));
+extern char * construct_save_jarl           PROTO ((rtx));
+extern char * construct_restore_jr          PROTO ((rtx));
+extern void   v850_encode_data_area         PROTO ((tree));
+extern void   v850_set_default_decl_attr    PROTO ((tree));
+
+/* Function prototypes for stupid compilers:  */
+static void const_double_split
+  PROTO ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
+static int  const_costs_int        PROTO ((HOST_WIDE_INT, int));
+static void substitute_ep_register PROTO ((rtx, rtx, int, int, rtx *, rtx *));
+static int  push_data_area         PROTO ((v850_data_area));
+static int  pop_data_area          PROTO ((v850_data_area));
+static int  parse_ghs_pragma_token PROTO ((char *));
+static int  ep_memory_offset       PROTO ((enum machine_mode, int));
+static int  mark_current_function_as_interrupt PROTO ((void));
+static void v850_set_data_area     PROTO ((tree, v850_data_area));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -70,7 +127,7 @@ void
 override_options ()
 {
   int i;
-  extern int atoi ();
+  extern int atoi PROTO ((const char *));
 
   /* Parse -m{s,t,z}da=nnn switches */
   for (i = 0; i < (int)SMALL_MEMORY_max; i++)
@@ -235,6 +292,9 @@ const_double_split (x, p_high, p_low)
 	  *p_high = CONST_DOUBLE_HIGH (x);
 	  *p_low  = CONST_DOUBLE_LOW (x);
 	  return;
+
+	default:
+	  break;
 	}
     }
 
@@ -437,13 +497,16 @@ print_operand (file, x, code)
     case 'R':		/* 2nd word of a double.  */
       switch (GET_CODE (x))
 	{
-	  case REG:
-	    fprintf (file, reg_names[REGNO (x) + 1]);
-	    break;
-	  case MEM:
-	    print_operand_address (file,
-				   XEXP (adj_offsettable_operand (x, 4), 0));
-	    break;
+	case REG:
+	  fprintf (file, reg_names[REGNO (x) + 1]);
+	  break;
+	case MEM:
+	  print_operand_address (file,
+				 XEXP (adj_offsettable_operand (x, 4), 0));
+	  break;
+	  
+	default:
+	  break;
 	}
       break;
     case 'S':
@@ -724,7 +787,8 @@ output_move_single (operands)
 }
 
 
-/* Return appropriate code to load up an 8 byte integer or floating point value */
+/* Return appropriate code to load up an 8 byte integer or
+   floating point value */
 
 char *
 output_move_double (operands)
@@ -805,10 +869,10 @@ output_move_double (operands)
 /* Return maximum offset supported for a short EP memory reference of mode
    MODE and signedness UNSIGNEDP.  */
 
-int
+static int
 ep_memory_offset (mode, unsignedp)
      enum machine_mode mode;
-     int unsignedp;
+     int ATTRIBUTE_UNUSED unsignedp;
 {
   int max_offset = 0;
 
@@ -825,6 +889,9 @@ ep_memory_offset (mode, unsignedp)
     case SImode:
     case SFmode:
       max_offset = (1 << 8);
+      break;
+      
+    default:
       break;
     }
 
@@ -920,7 +987,7 @@ reg_or_int5_operand (op, mode)
 int
 call_address_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   /* Only registers are valid call operands if TARGET_LONG_CALLS.  */
   if (TARGET_LONG_CALLS)
@@ -931,7 +998,7 @@ call_address_operand (op, mode)
 int
 special_symbolref_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   if (GET_CODE (op) == SYMBOL_REF)
     return ENCODED_NAME_P (XSTR (op, 0));
@@ -968,7 +1035,7 @@ movsi_source_operand (op, mode)
 int
 power_of_two_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -1017,7 +1084,6 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 {
   rtx reg = gen_rtx (REG, Pmode, regno);
   rtx insn;
-  int i;
 
   if (!*p_r1)
     {
@@ -1027,7 +1093,8 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
     }
 
   if (TARGET_DEBUG)
-    fprintf (stderr, "Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, ending at %d\n",
+    fprintf (stderr, "\
+Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, ending at %d\n",
 	     2 * (uses - 3), uses, reg_names[regno],
 	     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
 	     INSN_UID (first_insn), INSN_UID (last_insn));
@@ -1073,7 +1140,7 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && REGNO (XEXP (addr, 0)) == regno
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			   && ((INTVAL (XEXP (addr, 1)))
 			       < ep_memory_offset (GET_MODE (*p_mem),
 						   unsignedp)))
 		    *p_mem = change_address (*p_mem, VOIDmode,
@@ -1110,11 +1177,13 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 void v850_reorg (start_insn)
      rtx start_insn;
 {
-  struct {
+  struct
+  {
     int uses;
     rtx first_insn;
     rtx last_insn;
-  } regs[FIRST_PSEUDO_REGISTER];
+  }
+  regs[FIRST_PSEUDO_REGISTER];
 
   int i;
   int use_ep = FALSE;
@@ -1215,7 +1284,7 @@ void v850_reorg (start_insn)
 		  else if (GET_CODE (addr) == PLUS
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			   && ((INTVAL (XEXP (addr, 1)))
 			       < ep_memory_offset (GET_MODE (mem), unsignedp)))
 		    {
 		      short_p = TRUE;
@@ -1274,7 +1343,8 @@ void v850_reorg (start_insn)
 			{
 			  substitute_ep_register (regs[max_regno].first_insn,
 						  regs[max_regno].last_insn,
-						  max_uses, max_regno, &r1, &ep);
+						  max_uses, max_regno, &r1,
+						  &ep);
 
 			  /* Since we made a substitution, zap all remembered
 			     registers.  */
@@ -1397,8 +1467,8 @@ expand_prologue ()
   unsigned int init_stack_alloc = 0;
   rtx save_regs[32];
   rtx save_all;
-  int num_save;
-  int default_stack;
+  unsigned int num_save;
+  unsigned int default_stack;
   int code;
   int interrupt_handler = v850_interrupt_function_p (current_function_decl);
   long reg_saved = 0;
@@ -1476,7 +1546,8 @@ expand_prologue ()
 	 stack space is allocated.  */
       if (save_func_len < save_normal_len)
 	{
-	  save_all = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
+	  save_all = gen_rtx (PARALLEL, VOIDmode,
+			      rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
 	  XVECEXP (save_all, 0, 0) = gen_rtx (SET, VOIDmode,
 					      stack_pointer_rtx,
 					      gen_rtx (PLUS, Pmode,
@@ -1508,7 +1579,8 @@ expand_prologue ()
 	      actual_fsize -= alloc_stack;
 
 	      if (TARGET_DEBUG)
-		fprintf (stderr, "Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
+		fprintf (stderr, "\
+Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
 			 save_normal_len - save_func_len,
 			 save_normal_len, save_func_len,
 			 IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
@@ -1518,8 +1590,8 @@ expand_prologue ()
 	}
     }
 
-  /* If no prolog save function is available, store the registers the old fashioned
-     way (one by one). */
+  /* If no prolog save function is available, store the registers the old
+     fashioned way (one by one). */
   if (!save_all)
     {
       /* Special case interrupt functions that save all registers for a call.  */
@@ -1600,8 +1672,8 @@ expand_epilogue ()
   unsigned int init_stack_free = 0;
   rtx restore_regs[32];
   rtx restore_all;
-  int num_restore;
-  int default_stack;
+  unsigned int num_restore;
+  unsigned int default_stack;
   int code;
   int interrupt_handler = v850_interrupt_function_p (current_function_decl);
 
@@ -1637,7 +1709,8 @@ expand_epilogue ()
   /* See if we have an insn that restores the particular registers we
      want to.  */
   restore_all = NULL_RTX;
-  if (TARGET_PROLOG_FUNCTION && num_restore > 0 && actual_fsize >= default_stack
+  if (TARGET_PROLOG_FUNCTION && num_restore > 0
+      && actual_fsize >= default_stack
       && !interrupt_handler)
     {
       int alloc_stack = (4 * num_restore) + default_stack;
@@ -1675,7 +1748,8 @@ expand_epilogue ()
 		= gen_rtx (SET, VOIDmode,
 			   restore_regs[i],
 			   gen_rtx (MEM, Pmode,
-				    plus_constant (stack_pointer_rtx, offset)));
+				    plus_constant
+				    (stack_pointer_rtx, offset)));
 	      offset -= 4;
 	    }
 
@@ -1705,7 +1779,8 @@ expand_epilogue ()
 	      INSN_CODE (insn) = code;
 
 	      if (TARGET_DEBUG)
-		fprintf (stderr, "Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
+		fprintf (stderr, "\
+Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 			 restore_normal_len - restore_func_len,
 			 restore_normal_len, restore_func_len,
 			 IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
@@ -1727,9 +1802,13 @@ expand_epilogue ()
 
       /* Deallocate the rest of the stack if it is > 32K or if extra stack
 	 was allocated for an interrupt handler that makes a call.  */
-      if (actual_fsize > init_stack_free || (interrupt_handler && actual_fsize))
+      if (actual_fsize > init_stack_free
+	  || (interrupt_handler && actual_fsize))
 	{
-	  int diff = actual_fsize - ((interrupt_handler) ? 0 : init_stack_free);
+	  int diff;
+
+	  diff = actual_fsize - ((interrupt_handler) ? 0 : init_stack_free);
+	  
 	  if (CONST_OK_FOR_K (diff))
 	    emit_insn (gen_addsi3 (stack_pointer_rtx,
 				   stack_pointer_rtx,
@@ -1843,24 +1922,59 @@ notice_update_cc (body, insn)
       break;
     }
 }
+
+/* Retrieve the data area that has been chosen for the given decl.  */
 
+v850_data_area
+v850_get_data_area (decl)
+     tree decl;
+{
+  if (lookup_attribute ("sda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+    return DATA_AREA_SDA;
+  
+  if (lookup_attribute ("tda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+    return DATA_AREA_TDA;
+  
+  if (lookup_attribute ("zda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+    return DATA_AREA_ZDA;
+
+  return DATA_AREA_NORMAL;
+}
+
+/* Store the indicated data area in the decl's attributes.  */
+
+static void
+v850_set_data_area (decl, data_area)
+     tree decl;
+     v850_data_area data_area;
+{
+  tree name;
+  
+  switch (data_area)
+    {
+    case DATA_AREA_SDA: name = get_identifier ("sda"); break;
+    case DATA_AREA_TDA: name = get_identifier ("tda"); break;
+    case DATA_AREA_ZDA: name = get_identifier ("zda"); break;
+    default:
+      return;
+    }
+
+  DECL_MACHINE_ATTRIBUTES (decl) = tree_cons
+    (name, NULL, DECL_MACHINE_ATTRIBUTES (decl));
+}
 
 /* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.
-
-   Supported attributes:
-
-   interrupt_handler or interrupt: output a prologue and epilogue suitable
-   for an interrupt handler.  */
+   ARGS are the arguments supplied with ATTR.  */
 
 int
-v850_valid_machine_decl_attribute (decl, attributes, attr, args)
+v850_valid_machine_decl_attribute (decl, attr, args)
      tree decl;
-     tree attributes;
      tree attr;
      tree args;
 {
+  v850_data_area data_area;
+  v850_data_area area;
+  
   if (args != NULL_TREE)
     return 0;
 
@@ -1868,6 +1982,37 @@ v850_valid_machine_decl_attribute (decl, attributes, attr, args)
       || is_attribute_p ("interrupt", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
 
+  /* Implement data area attribute.  */
+  if (is_attribute_p ("sda", attr))
+    data_area = DATA_AREA_SDA;
+  else if (is_attribute_p ("tda", attr))
+    data_area = DATA_AREA_TDA;
+  else if (is_attribute_p ("zda", attr))
+    data_area = DATA_AREA_ZDA;
+  else
+    return 0;
+  
+  switch (TREE_CODE (decl))
+    {
+    case VAR_DECL:
+      if (current_function_decl != NULL_TREE)
+	error_with_decl (decl, "\
+a data area attribute cannot be specified for local variables");
+      
+      /* Drop through.  */
+
+    case FUNCTION_DECL:
+      area = v850_get_data_area (decl);
+      if (area != DATA_AREA_NORMAL && data_area != area)
+	error_with_decl (decl, "\
+data area of '%s' conflicts with previous declaration");
+      
+      return 1;
+      
+    default:
+      break;
+    }
+  
   return 0;
 }
 
@@ -1907,18 +2052,67 @@ v850_interrupt_function_p (func)
 }
 
 
-extern struct obstack *saveable_obstack;
+extern struct obstack * saveable_obstack;
 
+void
 v850_encode_data_area (decl)
      tree decl;
 {
-  char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  int len = strlen (str);
-  char *newstr;
+  char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  int    len = strlen (str);
+  char * newstr;
 
-  /* In the Cygnus sources we actually do something; this is just
-     here to make merges easier.  */
-  return;
+  /* Map explict sections into the appropriate attribute */
+  if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
+    {
+      if (DECL_SECTION_NAME (decl))
+	{
+	  char * name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  
+	  if (streq (name, ".zdata") || streq (name, ".zbss"))
+	    v850_set_data_area (decl, DATA_AREA_ZDA);
+
+	  else if (streq (name, ".sdata") || streq (name, ".sbss"))
+	    v850_set_data_area (decl, DATA_AREA_SDA);
+
+	  else if (streq (name, ".tdata"))
+	    v850_set_data_area (decl, DATA_AREA_TDA);
+	}
+
+      /* If no attribute, support -m{zda,sda,tda}=n */
+      else
+	{
+	  int size = int_size_in_bytes (TREE_TYPE (decl));
+	  if (size <= 0)
+	    ;
+
+	  else if (size <= small_memory [(int) SMALL_MEMORY_TDA].max)
+	    v850_set_data_area (decl, DATA_AREA_TDA);
+
+	  else if (size <= small_memory [(int) SMALL_MEMORY_SDA].max)
+	    v850_set_data_area (decl, DATA_AREA_SDA);
+
+	  else if (size <= small_memory [(int) SMALL_MEMORY_ZDA].max)
+	    v850_set_data_area (decl, DATA_AREA_ZDA);
+	}
+      
+      if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
+	return;
+    }
+
+  newstr = obstack_alloc (saveable_obstack, len + 2);
+
+  strcpy (newstr + 1, str);
+
+  switch (v850_get_data_area (decl))
+    {
+    case DATA_AREA_ZDA: *newstr = ZDA_NAME_FLAG_CHAR; break;
+    case DATA_AREA_TDA: *newstr = TDA_NAME_FLAG_CHAR; break;
+    case DATA_AREA_SDA: *newstr = SDA_NAME_FLAG_CHAR; break;
+    default: abort ();
+    }
+
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
 
 /* Return true if the given RTX is a register which can be restored
@@ -1926,7 +2120,7 @@ v850_encode_data_area (decl)
 int
 register_is_ok_for_epilogue (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   /* The save/restore routines can only cope with registers 2, and 20 - 31 */
   return (GET_CODE (op) == REG)
@@ -1939,7 +2133,7 @@ register_is_ok_for_epilogue (op, mode)
 int
 pattern_is_ok_for_epilogue (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   int count = XVECLEN (op, 0);
   int i;
@@ -2085,7 +2279,7 @@ construct_restore_jr (op)
 
   /* Note, it is possible to have gaps in the register mask.
      We ignore this here, and generate a JR anyway.  We will
-     be popping more registers thatn is strictly necessary, but
+     be popping more registers than is strictly necessary, but
      it does save code space.  */
   
   if (first == last)
@@ -2102,7 +2296,7 @@ construct_restore_jr (op)
 int
 pattern_is_ok_for_prologue (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode ATTRIBUTE_UNUSED mode;
 {
   int count = XVECLEN (op, 0);
   int i; 
@@ -2271,7 +2465,7 @@ construct_save_jarl (op)
 
   /* Note, it is possible to have gaps in the register mask.
      We ignore this here, and generate a JARL anyway.  We will
-     be pushing more registers thatn is strictly necessary, but
+     be pushing more registers than is strictly necessary, but
      it does save code space.  */
   
   if (first == last)
@@ -2283,3 +2477,577 @@ construct_save_jarl (op)
   return buff;
 }
 
+extern tree last_assemble_variable_decl;
+extern int size_directive_output;
+
+/* A version of asm_output_aligned_bss() that copes with the special
+   data areas of the v850. */
+void
+v850_output_aligned_bss (file, decl, name, size, align)
+     FILE * file;
+     tree decl;
+     char * name;
+     int size;
+     int align;
+{
+  ASM_GLOBALIZE_LABEL (file, name);
+  
+  switch (v850_get_data_area (decl))
+    {
+    case DATA_AREA_ZDA:
+      zbss_section ();
+      break;
+
+    case DATA_AREA_SDA:
+      sbss_section ();
+      break;
+
+    case DATA_AREA_TDA:
+      tdata_section ();
+      
+    default:
+      bss_section ();
+      break;
+    }
+  
+  ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
+#ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (file, name, decl);
+#else
+  /* Standard thing is just output label for the object.  */
+  ASM_OUTPUT_LABEL (file, name);
+#endif /* ASM_DECLARE_OBJECT_NAME */
+  ASM_OUTPUT_SKIP (file, size ? size : 1);
+}
+
+/* Called via the macro ASM_OUTPUT_DECL_COMMON */
+void
+v850_output_common (file, decl, name, size, align)
+     FILE * file;
+     tree decl;
+     char * name;
+     int size;
+     int align;
+{
+  if (decl == NULL_TREE)
+    {
+      fprintf (file, "\t%s\t", COMMON_ASM_OP);
+    }
+  else
+    {
+      switch (v850_get_data_area (decl))
+	{
+	case DATA_AREA_ZDA:
+	  fprintf (file, "\t%s\t", ZCOMMON_ASM_OP);
+	  break;
+
+	case DATA_AREA_SDA:
+	  fprintf (file, "\t%s\t", SCOMMON_ASM_OP);
+	  break;
+
+	case DATA_AREA_TDA:
+	  fprintf (file, "\t%s\t", TCOMMON_ASM_OP);
+	  break;
+      
+	default:
+	  fprintf (file, "\t%s\t", COMMON_ASM_OP);
+	  break;
+	}
+    }
+  
+  assemble_name (file, name);
+  fprintf (file, ",%u,%u\n", size, align / BITS_PER_UNIT);
+}
+
+/* Called via the macro ASM_OUTPUT_DECL_LOCAL */
+void
+v850_output_local (file, decl, name, size, align)
+     FILE * file;
+     tree decl;
+     char * name;
+     int size;
+     int align;
+{
+  fprintf (file, "\t%s\t", LOCAL_ASM_OP);
+  assemble_name (file, name);
+  fprintf (file, "\n");
+  
+  ASM_OUTPUT_ALIGNED_DECL_COMMON (file, decl, name, size, align);
+}
+
+/* The following code is for handling pragmas supported by the
+   v850 compiler produced by Green Hills Software.  This is at
+   the specific request of a customer.  */
+
+/* Track the current data area set by the data area pragma (which 
+   can be nested).  Tested by check_default_data_area. */
+
+typedef struct data_area_stack_element
+{
+  struct data_area_stack_element * prev;
+  v850_data_area                   data_area; /* current default data area. */
+} data_area_stack_element;
+
+static data_area_stack_element * data_area_stack = NULL;
+
+/* Names of the various data areas used on the v850.  */
+static tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+static tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+
+/* Push a data area onto the stack.  */
+static int
+push_data_area (data_area)
+     v850_data_area data_area;
+{
+  data_area_stack_element * elem;
+
+  elem = (data_area_stack_element *) xmalloc (sizeof (* elem));
+
+  if (elem == NULL)
+    return 0;
+
+  elem->prev      = data_area_stack;
+  elem->data_area = data_area;
+
+  data_area_stack = elem;
+
+  return 1;
+}
+
+/* Remove a data area from the stack.  */
+static int
+pop_data_area (data_area)
+     v850_data_area data_area;
+{
+  if (data_area_stack == NULL)
+    warning ("#pragma GHS endXXXX found without previous startXXX");
+  else if (data_area != data_area_stack->data_area)
+    warning ("#pragma GHS endXXX does not match previous startXXX");
+  else
+    {
+      data_area_stack_element * elem;
+
+      elem = data_area_stack;
+      data_area_stack = data_area_stack->prev;
+
+      free (elem);
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Set the machine specific 'interrupt' attribute on the current function.  */
+static int
+mark_current_function_as_interrupt ()
+{
+  tree name;
+  
+  if (current_function_decl ==  NULL_TREE)
+    {
+      warning ("Cannot set interrupt attribute: no current function");
+      return 0;
+    }
+
+  name = get_identifier ("interrupt");
+
+  if (name == NULL_TREE || TREE_CODE (name) != IDENTIFIER_NODE)
+    {
+      warning ("Cannot set interrupt attribute: no such identifier");
+      return 0;
+    }
+  
+  return valid_machine_attribute
+    (name, NULL_TREE, current_function_decl, NULL_TREE);
+}
+
+/* Parse STRING as part of a GHS pragma.
+   Returns 0 if the pragma has been parsed and there was a problem,
+   non-zero in all other cases.  */
+static int
+parse_ghs_pragma_token (string)
+     char * string;
+{
+  static enum v850_pragma_state state = V850_PS_START;
+  static enum v850_pragma_type  type  = V850_PT_UNKNOWN;
+  static v850_data_area         data_area = DATA_AREA_NORMAL;
+  static char *                 data_area_name;
+  static enum GHS_section_kind  GHS_section_kind = GHS_SECTION_KIND_DEFAULT;
+
+  /* If the string is NULL then we have reached the end of the
+     #pragma construct.  Make sure that we are in an end state, and
+     then implement the pragma's directive.  */
+  if (string == NULL)
+    {
+      int ret_val = 1;
+      
+      if (state != V850_PS_SHOULD_BE_DONE
+	  && state != V850_PS_MAYBE_COMMA
+	  && state != V850_PS_MAYBE_SECTION_NAME)
+	{
+	  if (state != V850_PS_BAD)
+	    warning ("Incomplete #pragma ghs");
+
+	  ret_val = 0;
+	}
+      else switch (type)
+	{
+	case V850_PT_UNKNOWN:
+	  warning ("Nothing follows #pragma ghs");
+	  ret_val = 0;
+	  break;
+	  
+	case V850_PT_INTERRUPT:
+	  ret_val = mark_current_function_as_interrupt ();
+	  break;
+	  
+	case V850_PT_SECTION:
+	  /* If a section kind has not been specified, then reset
+	     all section names back to their defaults.  */
+	  if (GHS_section_kind == GHS_SECTION_KIND_DEFAULT)
+	    {
+	      int i;
+	      
+	      for (i = COUNT_OF_GHS_SECTION_KINDS; i--;)
+		GHS_current_section_names [i] = NULL;
+	    }
+	  /* If a section has been specified, then this will be handled
+	     by check_default_section_name ().  */
+	  break;
+	  
+	case V850_PT_START_SECTION:
+	  ret_val = push_data_area (data_area);
+	  break;
+	  
+	case V850_PT_END_SECTION:
+	  ret_val = pop_data_area (data_area);
+	  break;
+	}
+
+      state = V850_PS_START;
+      type  = V850_PT_UNKNOWN;
+      
+      return ret_val;
+    }
+  
+  switch (state)
+    {
+    case V850_PS_START:
+      data_area = DATA_AREA_NORMAL;
+      data_area_name = NULL;
+      
+      if (streq (string, "interrupt"))
+	{
+	  type = V850_PT_INTERRUPT;
+	  state = V850_PS_SHOULD_BE_DONE;
+	}
+      else if (streq (string, "section"))
+	{
+	  type = V850_PT_SECTION;
+	  state = V850_PS_MAYBE_SECTION_NAME;
+	  GHS_section_kind = GHS_SECTION_KIND_DEFAULT;
+	}
+      else if (streq (string, "starttda"))
+	{
+	  type = V850_PT_START_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_TDA;
+	}
+      else if (streq (string, "endtda"))
+	{
+	  type = V850_PT_END_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_TDA;
+	}
+      else if (streq (string, "startsda"))
+	{
+	  type = V850_PT_START_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_SDA;
+	}
+      else if (streq (string, "endsda"))
+	{
+	  type = V850_PT_END_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_SDA;
+	}
+      else if (streq (string, "startzda"))
+	{
+	  type = V850_PT_START_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_ZDA;
+	}
+      else if (streq (string, "endzda"))
+	{
+	  type = V850_PT_END_SECTION;
+	  state = V850_PS_SHOULD_BE_DONE;
+	  data_area = DATA_AREA_ZDA;
+	}
+      else
+	{
+	  warning ("Unrecognised GHS pragma: '%s'\n", string);
+	  state = V850_PS_BAD;
+	}
+      break;
+      
+    case V850_PS_SHOULD_BE_DONE:
+      warning ("Extra text after valid #pragma: '%s'", string);
+      state = V850_PS_BAD;
+      break;
+      
+    case V850_PS_BAD:
+      /* Ignore tokens in a pragma that has been diagnosed as being corrupt. */
+      break;
+
+    case V850_PS_MAYBE_SECTION_NAME:
+      state = V850_PS_EXPECTING_EQUALS;
+      
+           if (streq (string, "data"))	  GHS_section_kind = GHS_SECTION_KIND_DATA;
+      else if (streq (string, "text"))	  GHS_section_kind = GHS_SECTION_KIND_TEXT;
+      else if (streq (string, "rodata"))  GHS_section_kind = GHS_SECTION_KIND_RODATA;
+      else if (streq (string, "const"))	  GHS_section_kind = GHS_SECTION_KIND_RODATA;
+      else if (streq (string, "rosdata")) GHS_section_kind = GHS_SECTION_KIND_ROSDATA;
+      else if (streq (string, "rozdata")) GHS_section_kind = GHS_SECTION_KIND_ROZDATA;
+      else if (streq (string, "sdata"))	  GHS_section_kind = GHS_SECTION_KIND_SDATA;
+      else if (streq (string, "tdata"))	  GHS_section_kind = GHS_SECTION_KIND_TDATA;
+      else if (streq (string, "zdata"))	  GHS_section_kind = GHS_SECTION_KIND_ZDATA;
+      /* According to GHS beta documentation, the following should not be allowed!  */
+      else if (streq (string, "bss"))	  GHS_section_kind = GHS_SECTION_KIND_BSS;
+      else if (streq (string, "zbss"))	  GHS_section_kind = GHS_SECTION_KIND_ZDATA;
+      else
+	{
+	  warning ("Unrecognised section name '%s' in GHS section pragma",
+		   string);
+	  state = V850_PS_BAD;
+	}
+      break;
+
+    case V850_PS_EXPECTING_EQUALS:
+      if (streq (string, "="))
+	state = V850_PS_EXPECTING_SECTION_ALIAS;
+      else
+	{
+	  warning ("Missing '=' in GHS section pragma");
+	  state = V850_PS_BAD;
+	}
+      break;
+      
+    case V850_PS_EXPECTING_SECTION_ALIAS:
+      if (streq (string, "default"))
+	GHS_current_section_names [GHS_section_kind] = NULL;
+      else
+	GHS_current_section_names [GHS_section_kind] =
+	  build_string (strlen (string) + 1, string);
+      
+      state = V850_PS_MAYBE_COMMA;
+      break;
+      
+    case V850_PS_MAYBE_COMMA:
+      if (streq (string, ","))
+	state = V850_PS_MAYBE_SECTION_NAME;
+      else
+	{
+	  warning
+	    ("Malformed GHS section pragma: found '%s' instead of a comma",
+	     string);
+	  state = V850_PS_BAD;
+	}
+      break;
+    }
+  
+  return 1;
+}
+
+/* Handle the parsing of an entire GHS pragma.  */
+int
+v850_handle_pragma (p_getc, p_ungetc, name)
+     int (*  p_getc) PROTO ((void));
+     void (* p_ungetc) PROTO ((int));
+     char *  name;
+{
+  /* Parse characters in the input stream until:
+
+   * end of line
+   * end of file
+   * a complete GHS pragma has been parsed
+   * a corrupted GHS pragma has been parsed
+   * an unknown pragma is encountered.
+
+   If an unknown pragma is encountered, we must return with
+   the input stream in the same state as upon entry to this function.
+   
+   The first token in the input stream has already been parsed
+   for us, and is passed as 'name'.  */
+  
+  if (! streq (name, "ghs"))
+    return 0;
+
+  /* We now know that we are parsing a GHS pragma, so we do
+     not need to preserve the original input stream state.  */
+  for (;;)
+    {
+      static char buffer [128];
+      int         c;
+      char *      buff;
+      
+      /* Skip white space.  */
+      do
+	c = p_getc ();
+      while (c == ' ' || c == '\t');
+      
+      p_ungetc (c);
+      
+      if (c == '\n' || c == EOF || c == '\r')
+	return parse_ghs_pragma_token (NULL);
+
+      /* Read next word.  We have to do the parsing ourselves, rather
+	 than calling yylex() because we can be built with front ends
+	 that do not provide such functions.  */
+      buff = buffer;
+      * buff ++ = (c = p_getc ());
+
+      switch (c)
+	{
+	case ',':
+	case '=':
+	  * buff ++ = (c = p_getc ());
+	  break;
+	  
+	case '"':
+	  /* Skip opening double parenthesis.  */
+	  -- buff;
+
+	  /* Read string.  */
+	  do
+	    * buff ++ = (c = p_getc ());
+	  while (c != EOF && isascii (c)
+		 && (isalnum (c) || c == '_' || c == '.' || c == ' ')
+		 && (buff < buffer + 126));
+	  
+	  if (c != '"')
+	    warning ("Missing trailing \" in #pragma ghs");
+	  else
+	    c = p_getc ();
+	  break;
+
+	default:
+	  while (c != EOF && isascii (c)
+		 && (isalnum (c) || c == '_' || c == '.')
+		 && (buff < buffer + 126))
+	    * buff ++ = (c = p_getc ());
+	  break;
+	}
+
+      p_ungetc (c);
+
+      /* If nothing was read then terminate the parsing.  */
+      if (buff == buffer + 1)
+	return parse_ghs_pragma_token (NULL);
+
+      /* Parse and continue.  */
+      * -- buff = 0;
+      
+      parse_ghs_pragma_token (buffer);
+    }
+}
+
+/* Add data area to the given declaration if a ghs data area pragma is
+   currently in effect (#pragma ghs startXXX/endXXX).  */
+void
+v850_set_default_decl_attr (decl)
+     tree decl;
+{
+  if (data_area_stack
+      && data_area_stack->data_area
+      && current_function_decl == NULL_TREE
+      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL)
+      && v850_get_data_area (decl) == DATA_AREA_NORMAL)
+    v850_set_data_area (decl, data_area_stack->data_area);
+
+  /* Initialise the default names of the v850 specific sections,
+     if this has not been done before.  */
+  
+  if (GHS_default_section_names [(int) GHS_SECTION_KIND_SDATA] == NULL)
+    {
+      GHS_default_section_names [(int) GHS_SECTION_KIND_SDATA]
+	= build_string (sizeof (".sdata")-1, ".sdata");
+
+      GHS_default_section_names [(int) GHS_SECTION_KIND_ROSDATA]
+	= build_string (sizeof (".rosdata")-1, ".rosdata");
+
+      GHS_default_section_names [(int) GHS_SECTION_KIND_TDATA]
+	= build_string (sizeof (".tdata")-1, ".tdata");
+      
+      GHS_default_section_names [(int) GHS_SECTION_KIND_ZDATA]
+	= build_string (sizeof (".zdata")-1, ".zdata");
+
+      GHS_default_section_names [(int) GHS_SECTION_KIND_ROZDATA]
+	= build_string (sizeof (".rozdata")-1, ".rozdata");
+    }
+  
+  if (current_function_decl == NULL_TREE
+      && (TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == CONST_DECL
+	  || TREE_CODE (decl) == FUNCTION_DECL)
+      && (!DECL_EXTERNAL (decl) || DECL_INITIAL (decl))
+      && !DECL_SECTION_NAME (decl))
+    {
+      enum GHS_section_kind kind = GHS_SECTION_KIND_DEFAULT;
+      tree chosen_section;
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	kind = GHS_SECTION_KIND_TEXT;
+      else
+	{
+	  /* First choose a section kind based on the data area of the decl. */
+	  switch (v850_get_data_area (decl))
+	    {
+	    default:
+	      abort ();
+	      
+	    case DATA_AREA_SDA:
+	      kind = ((TREE_READONLY (decl))
+		      ? GHS_SECTION_KIND_ROSDATA
+		      : GHS_SECTION_KIND_SDATA);
+	      break;
+	      
+	    case DATA_AREA_TDA:
+	      kind = GHS_SECTION_KIND_TDATA;
+	      break;
+	      
+	    case DATA_AREA_ZDA:
+	      kind = ((TREE_READONLY (decl))
+		      ? GHS_SECTION_KIND_ROZDATA
+		      : GHS_SECTION_KIND_ZDATA);
+	      break;
+	      
+	    case DATA_AREA_NORMAL:		 /* default data area */
+	      if (TREE_READONLY (decl))
+		kind = GHS_SECTION_KIND_RODATA;
+	      else if (DECL_INITIAL (decl))
+		kind = GHS_SECTION_KIND_DATA;
+	      else
+		kind = GHS_SECTION_KIND_BSS;
+	    }
+	}
+
+      /* Now, if the section kind has been explicitly renamed,
+         then attach a section attribute. */
+      chosen_section = GHS_current_section_names [(int) kind];
+
+      /* Otherwise, if this kind of section needs an explicit section
+         attribute, then also attach one. */
+      if (chosen_section == NULL)
+        chosen_section = GHS_default_section_names [(int) kind];
+
+      if (chosen_section)
+	{
+	  /* Only set the section name if specified by a pragma, because
+	     otherwise it will force those variables to get allocated storage
+	     in this module, rather than by the linker.  */
+	  DECL_SECTION_NAME (decl) = chosen_section;
+	}
+    }
+}
