@@ -62,7 +62,7 @@ _Jv_StringFindSlot (jchar* data, jint len, jint hash)
 
   int index = start_index;
   /* step must be non-zero, and relatively prime with strhash_size. */
-  int step = 8 * hash + 7;
+  jint step = (hash ^ (hash >> 16)) | 1;
   for (;;)
     {
       jstring* ptr = &strhash[index];
@@ -145,7 +145,7 @@ java::lang::String::rehash()
 	  jstring val = (jstring) UNMASK_PTR (*ptr);
 	  jint hash = val->hashCode();
 	  jint index = hash & (nsize - 1);
-	  jint step = 8 * hash + 7;
+	  jint step = (hash ^ (hash >> 16)) | 1;
 	  for (;;)
 	    {
 	      if (next[index] == NULL)
@@ -166,7 +166,7 @@ jstring
 java::lang::String::intern()
 {
   JvSynchronize sync (&StringClass);
-  if (4 * strhash_count >= 3 * strhash_size)
+  if (3 * strhash_count >= 2 * strhash_size)
     rehash();
   jstring* ptr = _Jv_StringGetSlot(this);
   if (*ptr != NULL && *ptr != DELETED_STRING)
@@ -265,14 +265,18 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
       chrs = JvGetStringChars(jstr);
     }
 
+  jint hash = 0;
   while (data < limit)
-    *chrs++ = UTF8_GET(data, limit);
+    {
+      jchar ch = UTF8_GET(data, limit);
+      hash = (31 * hash) + ch;
+      *chrs++ = ch;
+    }
   chrs -= length;
 
   JvSynchronize sync (&StringClass);
-  if (4 * strhash_count >= 3 * strhash_size)
+  if (3 * strhash_count >= 2 * strhash_size)
     java::lang::String::rehash();
-  int hash = str->hash;
   jstring* ptr = _Jv_StringFindSlot (chrs, length, hash);
   if (*ptr != NULL && *ptr != DELETED_STRING)
     return (jstring) UNMASK_PTR (*ptr);
@@ -285,6 +289,8 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
     }
   *ptr = jstr;
   SET_STRING_IS_INTERNED(jstr);
+  // When string is GC'd, clear the slot in the hash table.
+  _Jv_RegisterFinalizer ((void *) jstr, unintern);
   return jstr;
 }
 
