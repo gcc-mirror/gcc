@@ -1,5 +1,9 @@
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * gcc.dg/cpp/multiline.c: New test.
+
+2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * g++.old-deja/g++.other/syshdr1.C: Update.
         * gcc.dg/cpp/lineflags.c: Remove temporarily.
 
