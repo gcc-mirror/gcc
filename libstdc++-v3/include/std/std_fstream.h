@@ -44,8 +44,8 @@
 
 #include <istream>
 #include <ostream>
-#include <bits/basic_file.h>
 #include <locale>	// For codecvt
+#include <bits/basic_file.h>
 #include <bits/gthr.h>
 
 namespace std 
@@ -72,7 +72,7 @@ namespace std
 
       friend class ios_base; // For sync_with_stdio.
 
-    private:
+    protected:
       // Data Members:
       // External buffer.
       __file_type* 		_M_file;
@@ -422,7 +422,6 @@ namespace std
     };
 } // namespace std
 
-
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
 #ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
@@ -431,4 +430,3 @@ namespace std
 #endif
 
 #endif	
-
