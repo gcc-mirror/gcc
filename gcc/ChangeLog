@@ -1,3 +1,8 @@
+Sun Aug 29 05:01:17 1999  John David Anglin <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (interspace_jump): New pattern.
+	(builtin_longjmp): New expander.
+
 1999-08-29  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* fp-bit.c (add, sub, multiply, divide, compare, _eq_f2, _ne_f2,
