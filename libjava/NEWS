@@ -1,19 +1,31 @@
 New in libgcj X.XX:
 
-* libgcj now includes a bytecode interpreter.
+* libgcj now includes a bytecode interpreter. If a compiled version of a class 
+is not found in the application binary or linked shared libraries, the
+class loader will search for a bytecode version in the CLASSPATH and execute
+it using the interpreter. A new front end that behaves like the traditional
+`java' command is provided: `gij'.
 
-* Support for specifying java system properties, both compiled in to the
-application and at runtime via an environment variable.
+* Support for specifying java system properties. Properties can either be set 
+at runtime via the GCJ_PROPERTIES environment variable in the format 
+"<name>=<value> ..."'; or can be compiled into an application binary using 
+-D<name>=<value>.
+
+* Support for setjmp/longjmp (sjlj) exception handling has been added, as an
+alternative to the existing range-table based mechanism. sljl is the default
+on non-sparc, non-x86 targets, or can be specified with the 
+`--enable-sjlj-exceptions' configure parameter.
 
 * Complete JDK 1.1 reflection support, including invocation.
 
-* Support for setjmp/longjmp (sjlj) exception handling has been added, as an
-alternative to the existing range-table based mechanism.
-
 * Throwable.printStackTrace() has been implemented.
 
-* Runtime.loadLibrary() has been implemented, and Class.forName() can now
-dynamically load shared objects in order to find a requested class.
+* Runtime.loadLibrary() has been implemented. In addition, Class.forName() 
+will try to load a series of shared objects in order to find the requested 
+class.  If a class `gnu.quux.whatever' is requested, libgcj will first look 
+for `gnu-quux-whatever.so', then `gnu-quux.so', and finally `gnu.so'.
+
+* A pure-java implementation of java.math.BigInteger.
 
 New in libgcj 2.95:
 
