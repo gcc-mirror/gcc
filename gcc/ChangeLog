@@ -1,3 +1,12 @@
+2003-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	
+	* doc/contrib.texi (Contributors): Add entries for Wolfgang
+	Bangerth, DJ Delorie, Christian Ehrhardt, Christopher Faylor,
+	Nathanael Nerode, Diego Novillo, Hartmut Penner, Volker Reichelt,
+	Danny Smith, and Ulrich Weigand.
+	Update Kriang Lerdsuwanakij and fix a typo in Janis Johnson's
+	entry.
+
 2003-04-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/sparc/sol2-bi.h: Revert previous delta.
