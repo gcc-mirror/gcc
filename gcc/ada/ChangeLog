@@ -1,3 +1,7 @@
+2001-10-30  Richard Kenner <kenner@gnat.com>
+
+	* utils2.c (build_allocator): Test for SIZE overflow in array case too
+
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
 	* ali-util.adb (Initialize_Checksum): Use out-mode instead of in out. 
