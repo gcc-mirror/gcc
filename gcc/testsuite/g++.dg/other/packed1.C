@@ -1,4 +1,4 @@
-// { dg-do run { xfail arm-*-* hppa*-*-* mips*-*-* powerpc-*-* sh-*-* sparc*-*-* ia64-hp-hpux* } }
+// { dg-do run { xfail arm-*-* sh-*-* ia64-hp-hpux* } }
 
 // NMS:2003-04-21 this fails on strict aligned architectures again,
 // the patch was reverted because it broke something more important.

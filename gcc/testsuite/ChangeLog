@@ -1,3 +1,7 @@
+2004-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/other/packed1.C: UnXFAIL on SPARC, PA, MIPS and PowerPC.
+
 2004-11-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/expr/unary1.C, g++.dg/expr/unary2.C: New tests.
