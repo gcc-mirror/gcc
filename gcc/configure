@@ -58,7 +58,7 @@ ac_help="$ac_help
   --enable-objc-gc	  enable the use of Boehm's garbage collector with
 			  the GNU Objective-C runtime."
 ac_help="$ac_help
-  --enable-dwarf2	  enable DWARF2 debugging as default."
+  --with-dwarf2	  force the default debug format to be DWARF2."
 ac_help="$ac_help
   --enable-nls            use Native Language Support (disabled by default)"
 ac_help="$ac_help
@@ -6447,7 +6447,7 @@ then tmake_file=$cpu_type/t-$cpu_type
 fi
 
 if test x"$dwarf2" = xyes
-then tm_file="tm-dwarf2.h $tm_file"
+then tm_file="$tm_file tm-dwarf2.h"
 fi
 
 if test x$float_format = x
