@@ -62,19 +62,26 @@ do {									\
   unsigned int bit_num_ = (MIN) % (unsigned int) SBITMAP_ELT_BITS;	\
   unsigned int size_ = (SBITMAP)->size;					\
   SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
-  SBITMAP_ELT_TYPE word_ = ptr_[word_num_] >> bit_num_;			\
+  SBITMAP_ELT_TYPE word_;						\
 									\
-  for (;								\
-       word_num_ < size_;						\
-       word_num_++, bit_num_ = 0, word_ = ptr_[word_num_])		\
+  if (word_num_ < size_)						\
     {									\
-      for (; word_ != 0; word_ >>= 1, bit_num_++)			\
+      word_ = ptr_[word_num_] >> bit_num_;				\
+									\
+      while (1)								\
 	{								\
-	  if ((word_ & 1) != 0)						\
+	  for (; word_ != 0; word_ >>= 1, bit_num_++)			\
 	    {								\
-	      (N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;		\
-	      CODE;							\
+	      if ((word_ & 1) != 0)					\
+		{							\
+		  (N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;	\
+		  CODE;							\
+		}							\
 	    }								\
+	  word_num_++;							\
+	  if (word_num_ >= size_)					\
+	    break;							\
+	  bit_num_ = 0, word_ = ptr_[word_num_];			\
 	}								\
     }									\
 } while (0)
