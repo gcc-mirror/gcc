@@ -68,8 +68,8 @@ gcc/c-parse.c: gcc/c-parse.y
 gcc/c-parse.h: gcc/c-parse.c
 gcc/c-gperf.h: gcc/c-parse.gperf
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
-gcc/fixinc/inclhack.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl gcc/fixinc/hackshell.tpl
-gcc/fixinc/fixincl.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl
+gcc/fixinc/inclhack.sh: gcc/fixinc/inclhack.def gcc/fixinc/hackshell.tpl
+gcc/fixinc/fixincl.sh: gcc/fixinc/inclhack.def
 # And then, language-specific files
 gcc/cp/parse.c: gcc/cp/parse.y
 gcc/cp/parse.h: gcc/cp/parse.c
