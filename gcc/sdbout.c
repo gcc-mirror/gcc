@@ -422,7 +422,7 @@ sdbout_record_type_name (type)
       tree t = 0;
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	  t = TYPE_NAME (type);
+	t = TYPE_NAME (type);
       else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
 	{
 	  t = DECL_NAME (TYPE_NAME (type));
@@ -784,10 +784,7 @@ sdbout_symbol (decl, local)
 	return;
 
       /* Record the name for, starting a symtab entry.  */
-      if (DECL_LANG_SPECIFIC (decl))
-	name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      else
-	name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
       if (GET_CODE (value) == MEM
 	  && GET_CODE (XEXP (value, 0)) == SYMBOL_REF)
@@ -1155,10 +1152,7 @@ sdbout_one_type (type)
 		char *name;
 
 		CONTIN;
-		if (DECL_LANG_SPECIFIC (tem))
-		  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem));
-		else
-		  name = IDENTIFIER_POINTER (DECL_NAME (tem));
+		name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem));
 		PUT_SDB_DEF (name);
 		if (DECL_BIT_FIELD_TYPE (tem))
 		  {
