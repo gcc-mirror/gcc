@@ -847,7 +847,7 @@ struct tree_type
    
 #define BINFO_OFFSET(NODE) TREE_VEC_ELT ((NODE), 1)
 #define TYPE_BINFO_OFFSET(NODE) BINFO_OFFSET (TYPE_BINFO (NODE))
-#define BINFO_OFFSET_ZEROP(NODE) (BINFO_OFFSET (NODE) == integer_zero_node)
+#define BINFO_OFFSET_ZEROP(NODE) (integer_zerop (BINFO_OFFSET (NODE)))
 
 /* The virtual function table belonging to this basetype.  Virtual
    function tables provide a mechanism for run-time method dispatching.
@@ -875,15 +875,18 @@ struct tree_type
 #define BINFO_BASETYPES(NODE) TREE_VEC_ELT ((NODE), 4)
 #define TYPE_BINFO_BASETYPES(NODE) TREE_VEC_ELT (TYPE_BINFO (NODE), 4)
 
-/* For a BINFO record describing an inheritance, this yields a pointer
-   to the artificial FIELD_DECL node which contains the "virtual base
-   class pointer" for the given inheritance.  */
-
-#define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
-
 /* Accessor macro to get to the Nth basetype of this basetype.  */
 #define BINFO_BASETYPE(NODE,N) TREE_VEC_ELT (BINFO_BASETYPES (NODE), (N))
 #define TYPE_BINFO_BASETYPE(NODE,N) BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
+
+/* For a BINFO record describing an inheritance, this yields a pointer
+   to the artificial FIELD_DECL node which contains the "virtual base
+   class pointer" for the given inheritance.  */
+#define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
+
+/* The size of a base class subobject of this type.  */
+#define BINFO_SIZE(NODE) TREE_VEC_ELT ((NODE), 6)
+#define TYPE_BINFO_SIZE(NODE) BINFO_SIZE (TYPE_BINFO (NODE))
 
 /* Slot used to build a chain that represents a use of inheritance.
    For example, if X is derived from Y, and Y is derived from Z,
