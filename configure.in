@@ -1703,12 +1703,6 @@ qRAW_CXX_FOR_TARGET=`echo "$RAW_CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
 qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 qqRAW_CXX_FOR_TARGET=`echo "$qRAW_CXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
-# BASE_CC_FOR_TARGET is the actual program file of CC_FOR_TARGET,
-# for use in dependencies.  Replace $$r with a relative
-# path if it's present.
-set dummy $CC_FOR_TARGET; cc_for_target_first_word=$2
-BASE_CC_FOR_TARGET=`echo "$cc_for_target_first_word" | sed -e 's,[$][$]r,.,'`
-
 sedtemp=sed.$$
 cat >$sedtemp <<EOF
 s%@GDB_TK@%${GDB_TK}%
@@ -1727,7 +1721,6 @@ s:@target_configdirs@:${target_configdirs}:
 s%@target_configargs@%${targargs}%
 s%@FLAGS_FOR_TARGET@%${FLAGS_FOR_TARGET}%
 s%@CC_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}%
-s%@BASE_CC_FOR_TARGET@%${BASE_CC_FOR_TARGET}%
 s%@GCJ_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}%
 s%@CXX_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}%
 s%@RAW_CXX_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${qRAW_CXX_FOR_TARGET}%
