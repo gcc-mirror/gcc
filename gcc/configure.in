@@ -1,7 +1,7 @@
 # configure.in for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1136,10 +1136,10 @@ extra_headers_list=
 if test "x$extra_headers" = x
 then true
 else
-	# Prepend ${srcdir}/ginclude/ to every entry in extra_headers.
+	# Prepend ${srcdir}/config/${cpu_type}/ to every entry in extra_headers.
 	for file in $extra_headers;
 	do
-		extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/${file}"
+		extra_headers_list="${extra_headers_list} \$(srcdir)/config/${cpu_type}/${file}"
 	done
 fi
 
