@@ -1,3 +1,7 @@
+Sun May  9 13:19:12 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (cprop_insn): Do not try to simplify a simple jump.
+
 Sun May  9 11:12:19 1999  Philip Blundell <bp@nexus.co.uk>
 
 	* config/arm/arm.h (ASM_OUTPUT_MI_THUNK): Add (PLT) to branch if
