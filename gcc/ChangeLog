@@ -1,3 +1,11 @@
+2003-06-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* common.opt: Add -finline-limit.
+	* opts.c (common_handle_options): Handle it.
+	* opts.sh: Temporary kludge for -finline-limit.
+	* toplev.c (decode_f_option, independent_decode_option): Die.
+	(parse_options_and_default_flags): No independent_decode_option.
+
 2003-06-22  Andreas Jaeger  <aj@suse.de>
 
 	* calls.c (emit_call_1): Readd lost ATTRIBUTE_UNUSED.
