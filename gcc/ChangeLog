@@ -1,3 +1,28 @@
+Sun Feb  1 12:39:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (get_inner_reference): Use sbitsizetype for type sizes.
+	* fold-const.c (size_int): Replace with
+	(size_int_wide).
+	(make_bit_field_ref): Use bitsize_int for bit position.
+	* stor-layout.c (sizetype): Delete.
+	(sizetype_tab, sbitsizetype, ubitsizetype): Declare.
+	(layout_record, layout_union, layout_type):
+	Use bitsize_int for bit size.
+	(set_sizetype): New function.
+	(make_signed_type, make_unsigned_type): Use it.
+	* c-decl.c (init_decl_processing): Likewise.
+	* tree.h (size_int): Don't delcare, #define.
+	(size_int_wide, sizetype_tab, sbitsize, ubitsize): Declare.
+	(set_sizetype): Declare.
+	(bitsize_int, size_int_2, BITS_PER_UNIT_LOG, sizetype, bitsizetype):
+	Define.
+	* c-typeck.c (c_sizeof, c_sizeof_nowarn, c_size_in_bytes):
+	Convert result to sizetype.
+	(really_start_incremental_init, push_init_level):
+	Set type of constructor_bit_index to sbitsizetype.
+	(push_init_level): Use unsigned arithmetic to determine padding.
+	(output_init_element): Likewise.
+
 Sun Feb  1 03:32:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (simplify_shift_const): Fix typo in last change.

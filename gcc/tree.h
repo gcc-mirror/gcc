@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1295,6 +1295,7 @@ extern tree build_block			PROTO((tree, tree, tree, tree, tree));
 
 extern tree make_signed_type		PROTO((int));
 extern tree make_unsigned_type		PROTO((int));
+extern void set_sizetype		PROTO((tree));
 extern tree signed_or_unsigned_type 	PROTO((int, tree));
 extern void fixup_unsigned_type		PROTO((tree));
 extern tree build_pointer_type		PROTO((tree));
@@ -1398,14 +1399,28 @@ extern tree convert			PROTO((tree, tree));
 extern tree size_in_bytes		PROTO((tree));
 extern int int_size_in_bytes		PROTO((tree));
 extern tree size_binop			PROTO((enum tree_code, tree, tree));
-extern tree size_int			PROTO((unsigned HOST_WIDE_INT));
+extern tree size_int_wide		PROTO((unsigned HOST_WIDE_INT,
+					       unsigned HOST_WIDE_INT, int));
+#define size_int(L) size_int_2 ((L), 0, 0)
+#define bitsize_int(L, H) size_int_2 ((L), (H), 1)
+#define size_int_2(L, H, T)			\
+  size_int_wide ((unsigned HOST_WIDE_INT) (L),	\
+		 (unsigned HOST_WIDE_INT) (H), (T))
+
 extern tree round_up			PROTO((tree, int));
 extern tree get_pending_sizes		PROTO((void));
 extern void put_pending_sizes		PROTO((tree));
 
 /* Type for sizes of data-type.  */
 
-extern tree sizetype;
+#define BITS_PER_UNIT_LOG \
+  ((BITS_PER_UNIT > 1) + (BITS_PER_UNIT > 2) + (BITS_PER_UNIT > 4) \
+   + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
+   + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
+
+extern tree sizetype_tab[2], sbitsizetype, ubitsizetype;
+#define sizetype sizetype_tab[0]
+#define bitsizetype sizetype_tab[1]
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits. */
 extern int maximum_field_alignment;

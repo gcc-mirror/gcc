@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
    It is the first integer type laid out.
    In C, this is int.  */
 
-tree sizetype;
+tree sizetype_tab[2], sbitsizetype, ubitsizetype;
 
 /* An integer constant with value 0 whose type is sizetype.  */
 
@@ -419,7 +419,7 @@ layout_record (rec)
 	    {
 	      if (const_size > 0)
 		var_size = size_binop (PLUS_EXPR, var_size,
-				       size_int (const_size));
+				       bitsize_int (const_size, 0L));
 	      const_size = 0;
 	      var_size = round_up (var_size, desired_align);
 	      var_align = MIN (var_align, desired_align);
@@ -483,7 +483,7 @@ layout_record (rec)
 
       if (var_size && const_size)
 	DECL_FIELD_BITPOS (field)
-	  = size_binop (PLUS_EXPR, var_size, size_int (const_size));
+	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size, 0L));
       else if (var_size)
 	DECL_FIELD_BITPOS (field) = var_size;
       else
@@ -536,7 +536,7 @@ layout_record (rec)
     {
       if (const_size)
 	var_size
-	  = size_binop (PLUS_EXPR, var_size, size_int (const_size));
+	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size, 0L));
       TYPE_SIZE (rec) = var_size;
     }
 
@@ -595,7 +595,7 @@ layout_union (rec)
 	continue;
 
       layout_decl (field, 0);
-      DECL_FIELD_BITPOS (field) = size_int (0);
+      DECL_FIELD_BITPOS (field) = bitsize_int (0L, 0L);
 
       /* Union must be at least as aligned as any field requires.  */
 
@@ -625,7 +625,7 @@ layout_union (rec)
       else if (TREE_CODE (rec) == QUAL_UNION_TYPE)
 	var_size = fold (build (COND_EXPR, sizetype, DECL_QUALIFIER (field),
 				DECL_SIZE (field),
-				var_size ? var_size : integer_zero_node));
+				var_size ? var_size : bitsize_int (0L, 0L)));
       }
 
   if (TREE_CODE (rec) == QUAL_UNION_TYPE)
@@ -633,13 +633,13 @@ layout_union (rec)
 
   /* Determine the ultimate size of the union (in bytes).  */
   if (NULL == var_size)
-    TYPE_SIZE (rec) = size_int (CEIL (const_size, BITS_PER_UNIT)
-				* BITS_PER_UNIT);
+    TYPE_SIZE (rec) = bitsize_int (CEIL (const_size, BITS_PER_UNIT)
+				   * BITS_PER_UNIT, 0L);
   else if (const_size == 0)
     TYPE_SIZE (rec) = var_size;
   else
     TYPE_SIZE (rec) = size_binop (MAX_EXPR, var_size,
-				  round_up (size_int (const_size),
+				  round_up (bitsize_int (const_size, 0L),
 					    BITS_PER_UNIT));
 
   /* Determine the desired alignment.  */
@@ -712,12 +712,12 @@ layout_type (type)
 
       TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
 						 MODE_INT);
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
       break;
 
     case REAL_TYPE:
       TYPE_MODE (type) = mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0);
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
       break;
 
     case COMPLEX_TYPE:
@@ -727,7 +727,7 @@ layout_type (type)
 			 (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 			  ? MODE_COMPLEX_INT : MODE_COMPLEX_FLOAT),
 			 0);
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
       break;
 
     case VOID_TYPE:
@@ -737,7 +737,7 @@ layout_type (type)
       break;
 
     case OFFSET_TYPE:
-      TYPE_SIZE (type) = size_int (POINTER_SIZE);
+      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
       TYPE_MODE (type) = ptr_mode;
       break;
 
@@ -750,7 +750,7 @@ layout_type (type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       TYPE_MODE (type) = ptr_mode;
-      TYPE_SIZE (type) = size_int (POINTER_SIZE);
+      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
       TREE_UNSIGNED (type) = 1;
       TYPE_PRECISION (type) = POINTER_SIZE;
       break;
@@ -798,8 +798,8 @@ layout_type (type)
 		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
 	      length = size_binop (MAX_EXPR, length, size_zero_node);
 
-	    TYPE_SIZE (type) = size_binop (MULT_EXPR, length,
-					   TYPE_SIZE (element));
+	    TYPE_SIZE (type) = size_binop (MULT_EXPR, TYPE_SIZE (element),
+					   length);
 	  }
 
 	/* Now round the alignment and size,
@@ -972,7 +972,7 @@ layout_type (type)
 	    TYPE_MODE (type) = BLKmode;
 	  else
 	    TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
-	  TYPE_SIZE (type) = size_int (rounded_size);
+	  TYPE_SIZE (type) = bitsize_int (rounded_size, 0L);
 	  TYPE_ALIGN (type) = alignment;
 	  TYPE_PRECISION (type) = size_in_bits;
 	}
@@ -1066,9 +1066,7 @@ make_signed_type (precision)
      is the type for size values.  */
 
   if (sizetype == 0)
-    {
-      sizetype = type;
-    }
+    set_sizetype (type);
 
   /* Lay out the type: set its alignment, size, etc.  */
 
@@ -1092,11 +1090,47 @@ make_unsigned_type (precision)
 
   if (sizetype == 0)
     {
-      sizetype = type;
+      TREE_UNSIGNED (type) = 1;
+      set_sizetype (type);
     }
 
   fixup_unsigned_type (type);
   return type;
+}
+
+/* Set sizetype to TYPE, and initialize *bitsizetype accordingly.
+   Also update the type of any standard type's sizes made so far.  */
+
+void
+set_sizetype (type)
+     tree type;
+{
+  int precision = TYPE_PRECISION (type);
+
+  sizetype = type;
+
+  /* The *bitsizetype types use a precision that avoids overflows when
+     calculating signed sizes / offsets in bits.
+
+     We are allocating bitsizetype once and change it in place when
+     we decide later that we want to change it.  This way, we avoid the
+     hassle of changing all the TYPE_SIZE (TREE_TYPE (sometype))
+     individually in each front end.  */
+  if (! bitsizetype)
+    bitsizetype = make_node (INTEGER_TYPE);
+
+  precision += BITS_PER_UNIT_LOG + 1;
+  /* However, when cross-compiling from a 32 bit to a 64 bit host,
+     we are limited to 64 bit precision.  */
+  if (precision > 2 * HOST_BITS_PER_WIDE_INT)
+    precision = 2 * HOST_BITS_PER_WIDE_INT;
+  TYPE_PRECISION (bitsizetype) = precision;
+  (TREE_UNSIGNED (type) ? fixup_unsigned_type : fixup_signed_type)
+    (bitsizetype);
+  layout_type (bitsizetype);
+
+  sbitsizetype = make_signed_type (precision);
+  ubitsizetype = make_unsigned_type (precision);
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,

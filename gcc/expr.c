@@ -4358,8 +4358,14 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  if (! integer_zerop (low_bound))
 	    index = fold (build (MINUS_EXPR, index_type, index, low_bound));
 
-	  index = fold (build (MULT_EXPR, index_type, index,
-			       convert (index_type,
+	  if (TREE_CODE (index) == INTEGER_CST)
+	    {
+	      index = convert (sbitsizetype, index);
+	      index_type = TREE_TYPE (index);
+	    }
+
+	  index = fold (build (MULT_EXPR, sbitsizetype, index,
+			       convert (sbitsizetype,
 					TYPE_SIZE (TREE_TYPE (exp)))));
 
 	  if (TREE_CODE (index) == INTEGER_CST
@@ -4368,9 +4374,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  else
 	    {
 	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (FLOOR_DIV_EXPR, index,
-					       size_int (BITS_PER_UNIT)));
-
+				   convert (sizetype,
+					    size_binop (FLOOR_DIV_EXPR, index,
+							size_int (BITS_PER_UNIT))));
 	      if (contains_placeholder_p (offset))
 		offset = build (WITH_RECORD_EXPR, sizetype, offset, exp);
 	    }
