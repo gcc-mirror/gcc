@@ -1,3 +1,9 @@
+2003-06-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (missing_arg): Make non-static.
+	(c_common_handle_option): Don't check for missing arguments.
+	* opts.c (handle_option): Check for missing arguments.
+
 2003-06-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md (power4-veccomplex): Correct latency.

@@ -368,6 +368,12 @@ handle_option (char **argv, unsigned int lang_mask)
 	  goto done;
 	}
 
+      if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+	{
+	  error ("missing argument to \"-%s\"", argv[0]);
+	  goto done;
+	}
+
       /* If the switch takes an integer, convert it.  */
       if (arg && (option->flags & CL_UINTEGER))
 	{

@@ -1,3 +1,7 @@
+2003-06-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* const-str-2.m: Update.
+
 2003-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10990
