@@ -1,3 +1,9 @@
+2004-04-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/11608
+	* config/sh/elf.h (DBX_OUTPUT_MAIN_SOURCE_FILE_END): Update and make it
+	more like the one in config/dbxelf.h.
+
 2004-04-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h (SET_ARRAY_OR_VECTOR_CHECK): Rename to SET_OR_ARRAY_CHECK
