@@ -12,7 +12,7 @@ gt-darwin.h : s-gtype ; @true
 
 # Explain how to build crt2.o
 $(T)crt2$(objext): $(srcdir)/config/darwin-crt2.c $(GCC_PASSES) \
-	$(TCONFIG_H) tsystem.h
+	$(TCONFIG_H) stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
 	  -c $(srcdir)/config/darwin-crt2.c -o $(T)crt2$(objext)
 
