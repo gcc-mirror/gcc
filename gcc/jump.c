@@ -843,6 +843,17 @@ mark_all_labels (f, cross_jump)
 	    mark_all_labels (XEXP (PATTERN (insn), 0), cross_jump);
 	    mark_all_labels (XEXP (PATTERN (insn), 1), cross_jump);
 	    mark_all_labels (XEXP (PATTERN (insn), 2), cross_jump);
+
+	    /* Canonicalize the tail recursion label attached to the
+	       CALL_PLACEHOLDER insn.  */
+	    if (XEXP (PATTERN (insn), 3))
+	      {
+		rtx label_ref = gen_rtx_LABEL_REF (VOIDmode,
+						   XEXP (PATTERN (insn), 3));
+		mark_jump_label (label_ref, insn, cross_jump, 0);
+		XEXP (PATTERN (insn), 3) = XEXP (label_ref, 0);
+	      }
+
 	    continue;
 	  }
 
