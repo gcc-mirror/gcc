@@ -655,6 +655,7 @@ parse_include (pfile)
       return NULL;
     }
 
+  check_eol (pfile);
   return header;
 }
 
@@ -664,39 +665,25 @@ do_include_common (pfile, type)
      cpp_reader *pfile;
      enum include_type type;
 {
-  const cpp_token *header;
+  const cpp_token *header = parse_include (pfile);
+  if (!header)
+    return;
 
-  /* For #include_next, if this is the primary source file, warn and
-     use the normal search logic.  */
-  if (type == IT_INCLUDE_NEXT && ! pfile->buffer->prev)
+  /* Prevent #include recursion.  */
+  if (pfile->line_maps.depth >= CPP_STACK_MAX)
     {
-      cpp_error (pfile, DL_WARNING, "#include_next in primary source file");
-      type = IT_INCLUDE;
-    }
-  else if (type == IT_IMPORT && CPP_OPTION (pfile, warn_import))
-    {
-      CPP_OPTION (pfile, warn_import) = 0;
-      cpp_error (pfile, DL_WARNING,
-	   "#import is obsolete, use an #ifndef wrapper in the header file");
+      cpp_error (pfile, DL_ERROR, "#include nested too deeply");
+      return;
     }
 
-  header = parse_include (pfile);
-  if (header)
-    {
-      /* Prevent #include recursion.  */
-      if (pfile->line_maps.depth >= CPP_STACK_MAX)
-	cpp_error (pfile, DL_ERROR, "#include nested too deeply");
-      else
-	{
-	  check_eol (pfile);
-	  /* Get out of macro context, if we are.  */
-	  skip_rest_of_line (pfile);
-	  if (pfile->cb.include)
-	    (*pfile->cb.include) (pfile, pfile->directive_line,
-				  pfile->directive->name, header);
-	  _cpp_execute_include (pfile, header, type);
-	}
-    }
+  /* Get out of macro context, if we are.  */
+  skip_rest_of_line (pfile);
+
+  if (pfile->cb.include)
+    (*pfile->cb.include) (pfile, pfile->directive_line,
+			  pfile->directive->name, header);
+
+  _cpp_execute_include (pfile, header, type);
 }
 
 static void
@@ -710,6 +697,13 @@ static void
 do_import (pfile)
      cpp_reader *pfile;
 {
+  if (CPP_OPTION (pfile, warn_import))
+    {
+      CPP_OPTION (pfile, warn_import) = 0;
+      cpp_error (pfile, DL_WARNING,
+   "#import is obsolete, use an #ifndef wrapper in the header file");
+    }
+
   do_include_common (pfile, IT_IMPORT);
 }
 
@@ -717,7 +711,17 @@ static void
 do_include_next (pfile)
      cpp_reader *pfile;
 {
-  do_include_common (pfile, IT_INCLUDE_NEXT);
+  enum include_type type = IT_INCLUDE_NEXT;
+
+  /* If this is the primary source file, warn and use the normal
+     search logic.  */
+  if (! pfile->buffer->prev)
+    {
+      cpp_error (pfile, DL_WARNING,
+		 "#include_next in primary source file");
+      type = IT_INCLUDE;
+    }
+  do_include_common (pfile, type);
 }
 
 /* Subroutine of do_linemarker.  Read possible flags after file name.
