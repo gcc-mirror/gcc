@@ -1,5 +1,15 @@
 2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* frv-protos.h (frv_init_builtins, frv_expand_builtin,
+	frv_select_section, frv_select_rtx_section,
+	frv_encode_section_info, frv_unique_section): Delete.
+	* frv.c: Update for target hooks.
+	* frv.h (STRIP_NAME_ENCODING, SLOW_ZERO_EXTEND, SELECT_SECTION,
+	SELECT_RTX_SECTION, ENCODE_SECTION_INFO, UNIQUE_SECTION,
+	EASY_DIV_EXPR, MD_INIT_BUILTINS, MD_EXPAND_BUILTIN): Delete.
+
+2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* ip2k-protos.h (function_prologue, function_epilogue,
 	encode_section_info): Update to match target hook specification.
 	* ip2k.c: Wrap `MDR' code in IP2K_MD_REORG_PASS.

@@ -274,6 +274,13 @@ static void frv_pack_insns			PARAMS ((void));
 static void frv_function_prologue		PARAMS ((FILE *, HOST_WIDE_INT));
 static void frv_function_epilogue		PARAMS ((FILE *, HOST_WIDE_INT));
 static bool frv_assemble_integer		PARAMS ((rtx, unsigned, int));
+static const char * frv_strip_name_encoding	PARAMS ((const char *));
+static void frv_encode_section_info		PARAMS ((tree, int));
+static void frv_unique_section			PARAMS ((tree, int));
+static void frv_init_builtins			PARAMS ((void));
+static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static void frv_select_section			PARAMS ((tree, int, unsigned HOST_WIDE_INT));
+static void frv_select_rtx_section		PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -282,6 +289,20 @@ static bool frv_assemble_integer		PARAMS ((rtx, unsigned, int));
 #define TARGET_ASM_FUNCTION_EPILOGUE frv_function_epilogue
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER frv_assemble_integer
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING frv_strip_name_encoding
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO frv_encode_section_info
+#undef  TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION frv_unique_section
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS frv_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN frv_expand_builtin
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION frv_select_section
+#undef TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION frv_select_rtx_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -620,10 +641,11 @@ frv_optimization_options (level, size)
 
    Defined in svr4.h.  */
 
-void
-frv_select_section (decl, reloc)
+static void
+frv_select_section (decl, reloc, align)
      tree decl;
      int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
 
@@ -676,10 +698,11 @@ frv_select_section (decl, reloc)
 
    Defined in svr4.h.  */
 
-void
-frv_select_rtx_section (mode, op)
+static void
+frv_select_rtx_section (mode, op, align)
      enum machine_mode mode;
      rtx op ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   int size = (int) GET_MODE_SIZE (mode);
   if (size > 0 && size <= g_switch_value)
@@ -713,10 +736,13 @@ frv_string_begins_with (name, prefix)
 
 */
 
-void
-frv_encode_section_info (decl)
+static void
+frv_encode_section_info (decl, first)
      tree decl;
+     int first;
 {
+  if (first)
+    return;
   if (TREE_CODE (decl) == VAR_DECL)
     {
       int size = int_size_in_bytes (TREE_TYPE (decl));
@@ -757,7 +783,7 @@ frv_encode_section_info (decl)
     }
 }
 
-void
+static void
 frv_unique_section (decl, reloc)
      tree decl;
      int reloc;
@@ -767,7 +793,7 @@ frv_unique_section (decl, reloc)
   const char *name;
   char *string;
   const char *prefix;
-  static const char *prefixes[4][2] =
+  static const char *const prefixes[4][2] =
     {
       { ".text.", ".gnu.linkonce.t." },
       { ".rodata.", ".gnu.linkonce.r." },
@@ -777,7 +803,7 @@ frv_unique_section (decl, reloc)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     sec = 0;
-  else if (DECL_READONLY_SECTION (decl, reloc))
+  else if (decl_readonly_section (decl, reloc))
     sec = 1;
   else if (SDATA_NAME_P (XSTR (XEXP (DECL_RTL (decl), 0), 0)))
     sec = 3;
@@ -785,7 +811,7 @@ frv_unique_section (decl, reloc)
     sec = 2;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  STRIP_NAME_ENCODING (name, name);
+  name = (* targetm.strip_name_encoding) (name);
   prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
   len = strlen (name) + strlen (prefix);
   string = alloca (len + 1);
@@ -3480,7 +3506,7 @@ frv_regno_ok_for_base_p (regno, strict_p)
    with suitable punctuation to prevent any ambiguity.  Allocate the new name
    in `saveable_obstack'.  You will have to modify `ASM_OUTPUT_LABELREF' to
    remove and decode the added text and output the name accordingly, and define
-   `STRIP_NAME_ENCODING' to access the original name string.
+   `(* targetm.strip_name_encoding)' to access the original name string.
 
    You can check the information stored here into the `symbol_ref' in the
    definitions of the macros `GO_IF_LEGITIMATE_ADDRESS' and
@@ -8309,7 +8335,7 @@ frv_assemble_integer (value, size, aligned_p)
 	      const char *p;
 
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", label_num++);
-	      STRIP_NAME_ENCODING (p, buf);
+	      p = (* targetm.strip_name_encoding) (buf);
 
 	      fprintf (asm_out_file, "%s:\n", p);
 	      fprintf (asm_out_file, "%s\n", FIXUP_SECTION_ASM_OP);
@@ -9087,7 +9113,7 @@ static struct builtin_description bdesc_voidacc[] =
 
 /* Initialize media builtins. */
 
-void
+static void
 frv_init_builtins ()
 {
   tree endlink = void_list_node;
@@ -9706,7 +9732,7 @@ frv_expand_mwtacc_builtin (icode, arglist)
 
 /* Expand builtins. */
 
-rtx
+static rtx
 frv_expand_builtin (exp, target, subtarget, mode, ignore)
      tree exp;
      rtx target;
@@ -9853,4 +9879,13 @@ frv_expand_builtin (exp, target, subtarget, mode, ignore)
 	return frv_expand_voidaccop_builtin (d->icode, arglist);
     }
   return 0;
+}
+
+static const char *
+frv_strip_name_encoding (str)
+     const char *str;
+{
+  while (*str == '*' || *str == SDATA_FLAG_CHAR)
+    str++;
+  return str;
 }
