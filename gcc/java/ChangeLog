@@ -1,3 +1,9 @@
+2003-02-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Change base class access representation.
+	* java/class.c (set_super_info): Don't set TREE_VIA_PUBLIC.
+	(add_interface_do): Likewise.
+
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* decl.c (java_init_decl_processing): Change 

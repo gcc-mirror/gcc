@@ -4653,8 +4653,6 @@ build_special_member_call (tree instance, tree name, tree args,
 			  current_in_charge_parm, integer_zero_node),
 		   current_vtt_parm,
 		   vtt);
-      if (TREE_VIA_VIRTUAL (binfo))
-	binfo = binfo_for_vbase (class_type, current_class_type);
       my_friendly_assert (BINFO_SUBVTT_INDEX (binfo), 20010110);
       sub_vtt = build (PLUS_EXPR, TREE_TYPE (vtt), vtt,
 		       BINFO_SUBVTT_INDEX (binfo));

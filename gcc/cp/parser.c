@@ -12419,22 +12419,13 @@ cp_parser_base_clause (cp_parser* parser)
 static tree
 cp_parser_base_specifier (cp_parser* parser)
 {
-  static const tree *const access_nodes[][2] =
-  {
-    /* This ordering must match the access_kind enumeration.  */
-    {&access_default_node,   &access_default_virtual_node},
-    {&access_public_node,    &access_public_virtual_node},
-    {&access_protected_node, &access_protected_virtual_node},
-    {&access_private_node,   &access_private_virtual_node}
-  };
   cp_token *token;
   bool done = false;
   bool virtual_p = false;
   bool duplicate_virtual_error_issued_p = false;
   bool duplicate_access_error_issued_p = false;
   bool class_scope_p, template_p;
-  access_kind access = ak_none;
-  tree access_node;
+  tree access = access_default_node;
   tree type;
 
   /* Process the optional `virtual' and `access-specifier'.  */
@@ -12466,16 +12457,15 @@ cp_parser_base_specifier (cp_parser* parser)
 	case RID_PRIVATE:
 	  /* If more than one access specifier appears, issue an
 	     error.  */
-	  if (access != ak_none && !duplicate_access_error_issued_p)
+	  if (access != access_default_node
+	      && !duplicate_access_error_issued_p)
 	    {
 	      cp_parser_error (parser,
 			       "more than one access specifier in base-specified");
 	      duplicate_access_error_issued_p = true;
 	    }
 
-	  access = ((access_kind) 
-		    tree_low_cst (ridpointers[(int) token->keyword],
-				  /*pos=*/1));
+	  access = ridpointers[(int) token->keyword];
 
 	  /* Consume the access-specifier.  */
 	  cp_lexer_consume_token (parser->lexer);
@@ -12488,9 +12478,6 @@ cp_parser_base_specifier (cp_parser* parser)
 	}
     }
 
-  /* Map `virtual_p' and `access' onto one of the access tree-nodes.  */
-  access_node = *access_nodes[access][virtual_p];
-  
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  The simplest way to
@@ -12526,7 +12513,7 @@ cp_parser_base_specifier (cp_parser* parser)
   if (type == error_mark_node)
     return error_mark_node;
 
-  return finish_base_specifier (access_node, TREE_TYPE (type));
+  return finish_base_specifier (TREE_TYPE (type), access, virtual_p);
 }
 
 /* Exception handling [gram.exception] */

@@ -1,6 +1,6 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -127,7 +127,7 @@ dfs_initialize_vtbl_ptrs (binfo, data)
       expand_virtual_init (binfo, base_ptr);
     }
 
-  SET_BINFO_MARKED (binfo);
+  BINFO_MARKED (binfo) = 1;
 
   return NULL_TREE;
 }
@@ -149,10 +149,9 @@ initialize_vtbl_ptrs (addr)
      class.  We do these in pre-order because can't find the virtual
      bases for a class until we've initialized the vtbl for that
      class.  */
-  dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, 
-		 NULL, dfs_unmarked_real_bases_queue_p, list);
-  dfs_walk (TYPE_BINFO (type), dfs_unmark,
-	    dfs_marked_real_bases_queue_p, type);
+  dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs,
+		 NULL, unmarkedp, list);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, type);
 }
 
 /* Return an expression for the zero-initialization of an object with
@@ -1001,15 +1000,9 @@ expand_member_init (tree name, tree init)
 
       binfo = lookup_base (current_class_type, basetype, 
 			   ba_ignore, NULL);
-      if (binfo)
-	{
-	  if (TREE_VIA_VIRTUAL (binfo))
-	    binfo = binfo_for_vbase (basetype, current_class_type);
-	  else if (BINFO_INHERITANCE_CHAIN (binfo) 
-		   != TYPE_BINFO (current_class_type))
-	    binfo = NULL_TREE;
-	}
-      if (!binfo)
+      if (!binfo || (!TREE_VIA_VIRTUAL (binfo)
+		     && (BINFO_INHERITANCE_CHAIN (binfo)
+			 != TYPE_BINFO (current_class_type))))
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	    error ("type `%D' is not a direct or virtual base of `%T'",
@@ -1019,9 +1012,7 @@ expand_member_init (tree name, tree init)
 		   name, current_class_type);
 	  return NULL_TREE;
 	}
-
-      if (binfo)
-	return build_tree_list (binfo, init);
+      return build_tree_list (binfo, init);
     }
   else
     {

@@ -3818,7 +3818,7 @@ static void gen_field_die		PARAMS ((tree, dw_die_ref));
 static void gen_ptr_to_mbr_type_die	PARAMS ((tree, dw_die_ref));
 static dw_die_ref gen_compile_unit_die	PARAMS ((const char *));
 static void gen_string_type_die		PARAMS ((tree, dw_die_ref));
-static void gen_inheritance_die		PARAMS ((tree, dw_die_ref));
+static void gen_inheritance_die		PARAMS ((tree, tree, dw_die_ref));
 static void gen_member_die		PARAMS ((tree, dw_die_ref));
 static void gen_struct_or_union_type_die PARAMS ((tree, dw_die_ref));
 static void gen_subroutine_type_die	PARAMS ((tree, dw_die_ref));
@@ -11363,8 +11363,8 @@ gen_string_type_die (type, context_die)
 /* Generate the DIE for a base class.  */
 
 static void
-gen_inheritance_die (binfo, context_die)
-     tree binfo;
+gen_inheritance_die (binfo, access, context_die)
+     tree binfo, access;
      dw_die_ref context_die;
 {
   dw_die_ref die = new_die (DW_TAG_inheritance, context_die, binfo);
@@ -11375,9 +11375,9 @@ gen_inheritance_die (binfo, context_die)
   if (TREE_VIA_VIRTUAL (binfo))
     add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
 
-  if (TREE_VIA_PUBLIC (binfo))
+  if (access == access_public_node)
     add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_public);
-  else if (TREE_VIA_PROTECTED (binfo))
+  else if (access == access_protected_node)
     add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_protected);
 }
 
@@ -11389,6 +11389,7 @@ gen_member_die (type, context_die)
      dw_die_ref context_die;
 {
   tree member;
+  tree binfo = TYPE_BINFO (type);
   dw_die_ref child;
 
   /* If this is not an incomplete type, output descriptions of each of its
@@ -11404,14 +11405,17 @@ gen_member_die (type, context_die)
      the TREE node representing the appropriate (containing) type.  */
 
   /* First output info about the base classes.  */
-  if (TYPE_BINFO (type) && TYPE_BINFO_BASETYPES (type))
+  if (binfo && BINFO_BASETYPES (binfo))
     {
-      tree bases = TYPE_BINFO_BASETYPES (type);
+      tree bases = BINFO_BASETYPES (binfo);
+      tree accesses = BINFO_BASEACCESSES (binfo);
       int n_bases = TREE_VEC_LENGTH (bases);
       int i;
 
       for (i = 0; i < n_bases; i++)
-	gen_inheritance_die (TREE_VEC_ELT (bases, i), context_die);
+	gen_inheritance_die (TREE_VEC_ELT (bases, i),
+			     (accesses ? TREE_VEC_ELT (accesses, i)
+			      : access_public_node), context_die);
     }
 
   /* Now output info about the data members and type members.  */

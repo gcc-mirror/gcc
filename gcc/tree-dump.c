@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -273,18 +273,37 @@ dequeue_and_dump (di)
      more informative.  */
   if (dni->binfo_p)
     {
-      if (TREE_VIA_PUBLIC (t))
-	dump_string (di, "pub");
-      else if (TREE_VIA_PROTECTED (t))
-	dump_string (di, "prot");
-      else if (TREE_VIA_PRIVATE (t))
-	dump_string (di, "priv");
+      unsigned ix;
+      tree bases = BINFO_BASETYPES (t);
+      unsigned n_bases = bases ? TREE_VEC_LENGTH (bases): 0;
+      tree accesses = BINFO_BASEACCESSES (t);
+      
+      dump_child ("type", BINFO_TYPE (t));
+
       if (TREE_VIA_VIRTUAL (t))
 	dump_string (di, "virt");
 
-      dump_child ("type", BINFO_TYPE (t));
-      dump_child ("base", BINFO_BASETYPES (t));
+      dump_int (di, "bases", n_bases);
+      for (ix = 0; ix != n_bases; ix++)
+	{
+	  tree base = TREE_VEC_ELT (bases, ix);
+	  tree access = (accesses ? TREE_VEC_ELT (accesses, ix)
+			 : access_public_node);
+	  const char *string = NULL;
 
+	  if (access == access_public_node)
+	    string = "pub";
+	  else if (access == access_protected_node)
+	    string = "prot";
+	  else if (access == access_private_node)
+	    string = "priv";
+	  else
+	    abort ();
+	  
+	  dump_string (di, string);
+	  queue_and_dump_index (di, "binf", base, DUMP_BINFO);
+	}
+      
       goto done;
     }
 

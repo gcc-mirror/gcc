@@ -1,6 +1,6 @@
 /* Output dbx-format symbol table information from GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1577,15 +1577,19 @@ dbxout_type (type, full)
 	  }
 	for (i = 0; i < n_baseclasses; i++)
 	  {
-	    tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), i);
-
+	    tree binfo = TYPE_BINFO (type);
+	    tree child = BINFO_BASETYPE (binfo, i);
+	    tree access = (BINFO_BASEACCESSES (binfo)
+			   ? BINFO_BASEACCESS (binfo, i) : access_public_node);
+	    
 	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
 		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
-		putc (TREE_VIA_PUBLIC (child) ? '2' : '0', asmfile);
+		putc (access == access_public_node ? '2' : '0', asmfile);
 		CHARS (2);
-		if (TREE_VIA_VIRTUAL (child) && strcmp (lang_hooks.name, "GNU C++") == 0)
+		if (TREE_VIA_VIRTUAL (child)
+		    && strcmp (lang_hooks.name, "GNU C++") == 0)
 		  /* For a virtual base, print the (negative) offset within
 		     the vtable where we must look to find the necessary
 		     adjustment.  */

@@ -5146,7 +5146,8 @@ instantiate_class_template (type)
 {
   tree template, args, pattern, t, member;
   tree typedecl;
-
+  tree pbinfo;
+  
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -5277,10 +5278,13 @@ instantiate_class_template (type)
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
 
-  if (TYPE_BINFO_BASETYPES (pattern))
+  pbinfo = TYPE_BINFO (pattern);
+  
+  if (BINFO_BASETYPES (pbinfo))
     {
       tree base_list = NULL_TREE;
-      tree pbases = TYPE_BINFO_BASETYPES (pattern);
+      tree pbases = BINFO_BASETYPES (pbinfo);
+      tree paccesses = BINFO_BASEACCESSES (pbinfo);
       int i;
 
       /* Substitute into each of the bases to determine the actual
@@ -5292,33 +5296,15 @@ instantiate_class_template (type)
 	  tree pbase;
 
 	  pbase = TREE_VEC_ELT (pbases, i);
+	  access = TREE_VEC_ELT (paccesses, i);
 
 	  /* Substitute to figure out the base class.  */
 	  base = tsubst (BINFO_TYPE (pbase), args, tf_error, NULL_TREE);
 	  if (base == error_mark_node)
 	    continue;
-
-	  /* Calculate the correct access node.  */
-	  if (TREE_VIA_VIRTUAL (pbase)) 
-	    {
-	      if (TREE_VIA_PUBLIC (pbase))
-		access = access_public_virtual_node;
-	      else if (TREE_VIA_PROTECTED (pbase))
-		access = access_protected_virtual_node;
-	      else 
-		access = access_private_virtual_node;
-	    }
-	  else
-	    {
-	      if (TREE_VIA_PUBLIC (pbase))
-		access = access_public_node;
-	      else if (TREE_VIA_PROTECTED (pbase))
-		access = access_protected_node;
-	      else 
-		access = access_private_node;
-	    }
-
+	  
 	  base_list = tree_cons (access, base, base_list);
+	  TREE_VIA_VIRTUAL (base_list) = TREE_VIA_VIRTUAL (pbase);
 	}
 
       /* The list is now in reverse order; correct that.  */
@@ -9161,7 +9147,7 @@ get_template_base_recursive (tparms, targs, parm,
       /* When searching for a non-virtual, we cannot mark virtually
 	 found binfos.  */
       if (! this_virtual)
-	SET_BINFO_MARKED (base_binfo);
+	BINFO_MARKED (base_binfo) = 1;
       
       rval = get_template_base_recursive (tparms, targs,
 					  parm,

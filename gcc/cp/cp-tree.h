@@ -58,7 +58,7 @@ struct diagnostic_context;
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (in _TYPE).
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       ICS_ELLIPSIS_FLAG (in _CONV)
-      BINFO_ACCESS (in BINFO)
+      BINFO_DEPENDENT_BASE_P (in BINFO)
       DECL_INITIALIZED_P (in VAR_DECL)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORPHIC_P (in _TYPE)
@@ -79,7 +79,7 @@ struct diagnostic_context;
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
-   6: BINFO_ACCESS (in BINFO)
+   6: For future expansion
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -592,15 +592,6 @@ enum cp_tree_index
     CPTI_GLOBAL_DELETE_FNDECL,
     CPTI_AGGR_TAG,
 
-    CPTI_ACCESS_DEFAULT,
-    CPTI_ACCESS_PUBLIC,
-    CPTI_ACCESS_PROTECTED,
-    CPTI_ACCESS_PRIVATE,
-    CPTI_ACCESS_DEFAULT_VIRTUAL,
-    CPTI_ACCESS_PUBLIC_VIRTUAL,
-    CPTI_ACCESS_PROTECTED_VIRTUAL,
-    CPTI_ACCESS_PRIVATE_VIRTUAL,
-
     CPTI_CTOR_IDENTIFIER,
     CPTI_COMPLETE_CTOR_IDENTIFIER,
     CPTI_BASE_CTOR_IDENTIFIER,
@@ -682,19 +673,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 
-/* Define the sets of attributes that member functions and baseclasses
-   can have.  These are sensible combinations of {public,private,protected}
-   cross {virtual,non-virtual}.  */
-
-#define access_default_node             cp_global_trees[CPTI_ACCESS_DEFAULT]
-#define access_public_node              cp_global_trees[CPTI_ACCESS_PUBLIC]
-#define access_protected_node           cp_global_trees[CPTI_ACCESS_PROTECTED]
-#define access_private_node             cp_global_trees[CPTI_ACCESS_PRIVATE]
-#define access_default_virtual_node     cp_global_trees[CPTI_ACCESS_DEFAULT_VIRTUAL]
-#define access_public_virtual_node      cp_global_trees[CPTI_ACCESS_PUBLIC_VIRTUAL]
-#define access_protected_virtual_node   cp_global_trees[CPTI_ACCESS_PROTECTED_VIRTUAL]
-#define access_private_virtual_node     cp_global_trees[CPTI_ACCESS_PRIVATE_VIRTUAL]
-
 /* We cache these tree nodes so as to call get_identifier less
    frequently.  */
 
@@ -767,6 +745,11 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    emitted in this translation unit.  */
 
 #define keyed_classes                   cp_global_trees[CPTI_KEYED_CLASSES]
+
+/* Node to indicate default access. This must be distinct from the
+   access nodes in tree.h.  */
+
+#define access_default_node		null_node
 
 /* Global state.  */
 
@@ -1414,20 +1397,8 @@ struct lang_type GTY(())
 /* A chain of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
    order.  (In other words, these bases appear in the order that they
-   should be initialized.)  If a virtual base is primary, then the
-   primary copy will appear on this list.  Thus, the BINFOs on this
-   list are all "real"; they are the same BINFOs that will be
-   encountered when using dfs_unmarked_real_bases_queue_p and related
-   functions.  */
+   should be initialized.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
-
-/* For a non-virtual BINFO, the BINFO itself; for a virtual BINFO, the
-   binfo_for_vbase.  C is the most derived class for the hierarchy
-   containing BINFO.  */
-#define CANONICAL_BINFO(BINFO, C)		\
-  (TREE_VIA_VIRTUAL (BINFO)			\
-   ? binfo_for_vbase (BINFO_TYPE (BINFO), C)	\
-   : (BINFO))
 
 /* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
@@ -1551,63 +1522,28 @@ struct lang_type GTY(())
 /* Additional macros for inheritance information.  */
 
 /* The BINFO_INHERITANCE_CHAIN is used opposite to the description in
-   gcc/tree.h.  In particular if D is derived from B then the BINFO
-   for B (in D) will have a BINFO_INHERITANCE_CHAIN pointing to
-   D.  In tree.h, this pointer is described as pointing in other
-   direction.  There is a different BINFO for each path to a virtual
-   base; BINFOs for virtual bases are not shared.
-
-   We use TREE_VIA_PROTECTED and TREE_VIA_PUBLIC, but private
-   inheritance is indicated by the absence of the other two flags, not
-   by TREE_VIA_PRIVATE, which is unused.  */
-
-/* Mark the binfo, whether shared or not. Each instance of a virtual
-   base can be separately marked.  */
-#define BINFO_UNSHARED_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
+   gcc/tree.h.  In particular if D is non-virtually derived from B
+   then the BINFO for B (in D) will have a BINFO_INHERITANCE_CHAIN
+   pointing to D.  If D is virtually derived, its
+   BINFO_INHERITANCE_CHAIN will point to the most derived binfo. In
+   tree.h, this pointer is described as pointing in other
+   direction.  The binfos of virtual bases are shared.  */
 
 /* Nonzero means marked by DFS or BFS search.  */
-#define BINFO_MARKED(NODE)			\
-  (TREE_VIA_VIRTUAL (NODE)			\
-   ? CLASSTYPE_MARKED (BINFO_TYPE (NODE))	\
-   : TREE_LANG_FLAG_0 (NODE))
-/* Macros needed because of C compilers that don't allow conditional
-   expressions to be lvalues.  Grr!  */
-#define SET_BINFO_MARKED(NODE)			\
-  (TREE_VIA_VIRTUAL(NODE)			\
-   ? SET_CLASSTYPE_MARKED (BINFO_TYPE (NODE))	\
-   : (void)(TREE_LANG_FLAG_0 (NODE) = 1))
-#define CLEAR_BINFO_MARKED(NODE)		\
-  (TREE_VIA_VIRTUAL (NODE)			\
-   ? CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (NODE))	\
-   : (void)(TREE_LANG_FLAG_0 (NODE) = 0))
+#define BINFO_MARKED(NODE)   TREE_LANG_FLAG_0 (NODE)
 
 /* Nonzero means that this class is on a path leading to a new vtable.  */
-#define BINFO_VTABLE_PATH_MARKED(NODE)		\
-  (TREE_VIA_VIRTUAL (NODE)			\
-   ? CLASSTYPE_MARKED3 (BINFO_TYPE (NODE))	\
-   : TREE_LANG_FLAG_3 (NODE))
-#define SET_BINFO_VTABLE_PATH_MARKED(NODE)	\
-  (TREE_VIA_VIRTUAL(NODE)			\
-   ? SET_CLASSTYPE_MARKED3 (BINFO_TYPE (NODE))	\
-   : (TREE_LANG_FLAG_3 (NODE) = 1))
-#define CLEAR_BINFO_VTABLE_PATH_MARKED(NODE)	\
-  (TREE_VIA_VIRTUAL (NODE)			\
-   ? CLEAR_CLASSTYPE_MARKED3 (BINFO_TYPE (NODE))\
-   : (TREE_LANG_FLAG_3 (NODE) = 0))
+#define BINFO_VTABLE_PATH_MARKED(NODE) TREE_LANG_FLAG_3 (NODE)
 
-/* Nonzero means B (a BINFO) has its own vtable.  Under the old ABI,
-   secondary vtables are sometimes shared.  Any copies will not have
-   this flag set.
-
-   B is part of the hierarchy dominated by C.  */
-#define BINFO_NEW_VTABLE_MARKED(B, C) \
-  (TREE_LANG_FLAG_4 (CANONICAL_BINFO (B, C)))
+/* Nonzero means B (a BINFO) has its own vtable.  Any copies will not
+   have this flag set. */
+#define BINFO_NEW_VTABLE_MARKED(B) (TREE_LANG_FLAG_4 (B))
 
 /* Any subobject that needs a new vtable must have a vptr and must not
    be a non-virtual primary base (since it would then use the vtable from a
    derived class and never become non-primary.)  */
-#define SET_BINFO_NEW_VTABLE_MARKED(B, C)				 \
-  (BINFO_NEW_VTABLE_MARKED (B, C) = 1,					 \
+#define SET_BINFO_NEW_VTABLE_MARKED(B)					 \
+  (BINFO_NEW_VTABLE_MARKED (B) = 1,					 \
    my_friendly_assert (!BINFO_PRIMARY_P (B)				 \
 		       || TREE_VIA_VIRTUAL (B), 20000517),		 \
    my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
@@ -1615,8 +1551,6 @@ struct lang_type GTY(())
 
 /* Nonzero means this class has done dfs_pushdecls.  */
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
-#define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
-#define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Nonzero if this BINFO is a primary base class.  Note, this can be
    set for non-canononical virtual bases. For a virtual primary base
@@ -1642,6 +1576,10 @@ struct lang_type GTY(())
 /* C++ binfos have 3 additional entries.  */
 
 #define BINFO_LANG_ELTS (BINFO_ELTS + 3)
+
+/* Nonzero if this binfo is for a dependent base - one that should not
+   be searched.  */
+#define BINFO_DEPENDENT_BASE_P(NODE) TREE_LANG_FLAG_1(NODE)
 
 /* Nonzero if this binfo has lost its primary base binfo (because that
    is a nearly-empty virtual base that has been taken by some other
@@ -3077,7 +3015,7 @@ typedef enum tmpl_spec_kind {
 /* The various kinds of access.  BINFO_ACCESS depends on these being
    two bit quantities.  The numerical values are important; they are
    used to initialize RTTI data structures, so changing them changes
-   the ABI.  */
+   the ABI.   */
 typedef enum access_kind {
   ak_none = 0,             /* Inaccessible.  */
   ak_public = 1,           /* Accessible, as a `public' thing.  */
@@ -4142,28 +4080,24 @@ extern tree binfo_from_vbase			(tree);
 extern tree look_for_overrides_here		(tree, tree);
 extern int check_final_overrider		(tree, tree);
 extern tree dfs_walk                            (tree,
-						       tree (*) (tree, void *),
-						       tree (*) (tree, void *),
-						       void *);
+						 tree (*) (tree, void *),
+						 tree (*) (tree, int, void *),
+						 void *);
 extern tree dfs_walk_real                      (tree,
-						       tree (*) (tree, void *),
-						       tree (*) (tree, void *),
-						       tree (*) (tree, void *),
-						       void *);
+						tree (*) (tree, void *),
+						tree (*) (tree, void *),
+						tree (*) (tree, int, void *),
+						void *);
 extern tree dfs_unmark                          (tree, void *);
-extern tree markedp                             (tree, void *);
-extern tree unmarkedp                           (tree, void *);
-extern tree dfs_unmarked_real_bases_queue_p     (tree, void *);
-extern tree dfs_marked_real_bases_queue_p       (tree, void *);
-extern tree dfs_skip_vbases                     (tree, void *);
-extern tree marked_vtable_pathp                 (tree, void *);
-extern tree unmarked_vtable_pathp               (tree, void *);
-extern tree find_vbase_instance                 (tree, tree);
-extern tree binfo_for_vbase                     (tree, tree);
+extern tree markedp                             (tree, int, void *);
+extern tree unmarkedp                           (tree, int, void *);
 extern tree binfo_via_virtual                   (tree, tree);
 extern tree build_baselink                      (tree, tree, tree, tree);
 extern tree adjust_result_of_qualified_name_lookup
                                                 (tree, tree, tree);
+extern tree copied_binfo			(tree, tree);
+extern tree original_binfo			(tree, tree);
+
 /* in semantics.c */
 extern void push_deferring_access_checks	(bool defer_p);
 extern void resume_deferring_access_checks	(void);
@@ -4245,7 +4179,7 @@ extern void finish_default_args                 (void);
 extern tree finish_member_class_template        (tree);
 extern void finish_template_decl                (tree);
 extern tree finish_template_type                (tree, tree, int);
-extern tree finish_base_specifier               (tree, tree);
+extern tree finish_base_specifier               (tree, tree, bool);
 extern void finish_member_declaration           (tree);
 extern void check_multiple_declarators          (void);
 extern tree finish_typeof			(tree);
@@ -4275,7 +4209,7 @@ extern void init_tree			        (void);
 extern int pod_type_p				(tree);
 extern int zero_init_p				(tree);
 extern tree canonical_type_variant              (tree);
-extern void unshare_base_binfos			(tree);
+extern tree copy_base_binfos			(tree, tree, tree);
 extern int member_p				(tree);
 extern cp_lvalue_kind real_lvalue_p		(tree);
 extern int non_cast_lvalue_p			(tree);
@@ -4293,7 +4227,6 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree hash_chainon			(tree, tree);
 extern tree make_binfo				(tree, tree, tree, tree);
-extern tree reverse_path			(tree);
 extern int count_functions			(tree);
 extern int is_overloaded_fn			(tree);
 extern tree get_first_fn			(tree);

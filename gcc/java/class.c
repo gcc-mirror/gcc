@@ -363,7 +363,6 @@ set_super_info (int access_flags, tree this_class,
       tree super_binfo = make_tree_vec (BINFO_ELTS);
       BINFO_TYPE (super_binfo) = super_class;
       BINFO_OFFSET (super_binfo) = integer_zero_node;
-      TREE_VIA_PUBLIC (super_binfo) = 1;
       TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (this_class)), 0)
 	= super_binfo;
       CLASS_HAS_SUPER (this_class) = 1;
@@ -497,7 +496,6 @@ add_interface_do (tree basetype_vec, tree interface_class, int i)
   BINFO_OFFSET (interface_binfo) = integer_zero_node;
   BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;
   TREE_VIA_VIRTUAL (interface_binfo) = 1;
-  TREE_VIA_PUBLIC (interface_binfo) = 1;
   TREE_VEC_ELT (basetype_vec, i) = interface_binfo;
 }
 

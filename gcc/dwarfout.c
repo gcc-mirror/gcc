@@ -4179,7 +4179,8 @@ static void
 output_inheritance_die (arg)
      void *arg;
 {
-  tree binfo = arg;
+  tree binfo = ((tree *)arg)[0];
+  tree access = ((tree *)arg)[1];
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_inheritance);
   sibling_attribute ();
@@ -4190,12 +4191,12 @@ output_inheritance_die (arg)
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
       ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
-  if (TREE_VIA_PUBLIC (binfo))
+  if (access == access_public_node)
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_public);
       ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
-  else if (TREE_VIA_PROTECTED (binfo))
+  else if (access == access_protected_node)
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_protected);
       ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
@@ -4896,18 +4897,25 @@ output_type (type, containing_scope)
 
 	if (COMPLETE_TYPE_P (type))
 	  {
+	    tree binfo = TYPE_BINFO (type);
+	    
 	    /* First output info about the base classes.  */
-	    if (TYPE_BINFO (type) && TYPE_BINFO_BASETYPES (type))
+	    if (binfo)
 	      {
-		register tree bases = TYPE_BINFO_BASETYPES (type);
-		register int n_bases = TREE_VEC_LENGTH (bases);
+		tree bases = BINFO_BASETYPES (binfo);
+		tree accesses = BINFO_BASEACCESSES (binfo);
+		register int n_bases = BINFO_N_BASETYPES (binfo);
 		register int i;
 
 		for (i = 0; i < n_bases; i++)
 		  {
-		    tree binfo = TREE_VEC_ELT (bases, i);
+		    tree arg[2];
+
+		    arg[0] = TREE_VEC_ELT (bases, i);
+		    arg[1] = (accesses ? TREE_VEC_ELT (accesses, i)
+			      : access_public_node);
 		    output_type (BINFO_TYPE (binfo), containing_scope);
-		    output_die (output_inheritance_die, binfo);
+		    output_die (output_inheritance_die, arg);
 		  }
 	      }
 
