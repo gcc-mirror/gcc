@@ -1,3 +1,12 @@
+2001-09-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (AS_FOR_TARGET, LD_FOR_TARGET,
+	DLLTOOL_FOR_TARGET, WINDRES_FOR_TARGET, AR_FOR_TARGET,
+	RANLIB_FOR_TARGET, NM_FOR_TARGET): Don't use double quotes to
+	avoid quotes nesting problems.
+	(NATIVE_CHECK_MODULES): Ditto, just for consistency.
+	(DO_X): Export only variables that are set.
+
 2001-09-19  Ben Elliston  <bje@redhat.com>
 
 	* configure.in (sparc-sun-solaris2*): Don't use /usr/bin/which on
