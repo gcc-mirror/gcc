@@ -1,7 +1,11 @@
 2000-12-26  Kazu Hirata  <kazu@hxi.com>
 
-	* config/h8300/h8300.c (get_shift_alg): Fix a typo in the assembly
-	code for 12-bit ASHIFTRT in HImode.
+	* config/h8300/h8300.c: Fix a comment typo.
+	(get_shift_alg): Fix a typo in the assembly code for 12-bit
+	ASHIFTRT in HImode.  Do not output extra whitespace after one line
+	of assembly code.  Output a tab after an opcode instead of a
+	space.
+	(emit_a_shift): Output a tab after an opcode instead of a space.
 
 2000-12-23  Marek Michalkiewicz  <marekm@linux.org.pl>
 
