@@ -4351,10 +4351,11 @@ calc_live_regs (count_ptr, live_regs_mask)
 	  break;
 	}
   pr_initial = has_hard_reg_initial_val (Pmode,
-					 TARGET_SH5 ? PR_MEDIA_REG : PR_REG);
+					 TARGET_SHMEDIA
+					 ? PR_MEDIA_REG : PR_REG);
   pr_live = (pr_initial
-	     ? REGNO (pr_initial) != (TARGET_SH5 ? PR_MEDIA_REG : PR_REG)
-	     : regs_ever_live[TARGET_SH5 ? PR_MEDIA_REG : PR_REG]);
+	     ? REGNO (pr_initial) != (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
+	     : regs_ever_live[TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG]);
   /* Force PR to be live if the prologue has to call the SHmedia
      argument decoder or register saver.  */
   if (TARGET_SHCOMPACT
@@ -4364,7 +4365,7 @@ calc_live_regs (count_ptr, live_regs_mask)
     pr_live = 1;
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
-      if (reg == (TARGET_SH5 ? PR_MEDIA_REG : PR_REG)
+      if (reg == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
 	  ? pr_live
 	  : (interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
@@ -6705,7 +6706,7 @@ sh_adjust_cost (insn, link, dep_insn, cost)
 int
 sh_pr_n_sets ()
 {
-  return REG_N_SETS (TARGET_SH5 ? PR_MEDIA_REG : PR_REG);
+  return REG_N_SETS (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
 }
 
 /* SHmedia requires registers for branches, so we can't generate new
