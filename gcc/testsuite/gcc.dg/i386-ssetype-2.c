@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler "andpd" } } */
 /* { dg-final { scan-assembler "andnpd" } } */
 /* { dg-final { scan-assembler "xorpd" } } */
-/* { dg-final { scan-assembler "iorpd" } } */
+/* { dg-final { scan-assembler "orpd" } } */
 /* { dg-final { scan-assembler-not "movdqa" } } */
 /* { dg-final { scan-assembler "movapd" } } */
 
