@@ -8698,6 +8698,15 @@ Do not try and generate multiply-add floating point instructions
 Generate output containing library calls for floating point.
 @strong{Warning:} the requisite libraries may not be available.
 
+@item -mieee-compare
+@itemx -mno-ieee-compare
+@opindex mieee-compare
+@opindex mno-ieee-compare
+Control whether or not the compiler uses IEEE floating point
+comparisons.  These handle correctly the case where the result of a
+comparison is unordered.
+@strong{Warning:} the requisite kernel support may not be available.
+
 @item -mnobitfield
 @opindex mnobitfield
 Do not use the bit-field instructions.  On some machines it is faster to

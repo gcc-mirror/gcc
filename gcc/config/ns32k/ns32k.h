@@ -82,6 +82,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern int target_flags;
 
+/* Masks for target_flags */
 #define MASK_32081		1
 #define MASK_RTD		2
 #define MASK_REGPARM		4
@@ -93,6 +94,7 @@ extern int target_flags;
 #define MASK_32381		256
 #define MASK_MULT_ADD		512
 #define MASK_SRC		1024
+#define MASK_IEEE_COMPARE 2048
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -121,17 +123,19 @@ extern int target_flags;
 
 /* Ok to use the static base register (and presume it's 0) */
 #define TARGET_SB    ((target_flags & MASK_NO_SB) == 0)
+
 #define TARGET_HIMEM (target_flags & MASK_HIMEM)
 
 /* Compile using bitfield insns.  */
 #define TARGET_BITFIELD ((target_flags & MASK_NO_BITFIELD) == 0)
+
+#define TARGET_IEEE_FP (target_flags & MASK_IEEE_COMPARE)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
-
 #define TARGET_SWITCHES							\
   { { "32081", MASK_32081, N_("Use hardware fp")},			\
     { "soft-float", -(MASK_32081|MASK_32381),				\
@@ -148,17 +152,21 @@ extern int target_flags;
       N_("Register sb is zero. Use for absolute addressing")},		\
     { "nosb", MASK_NO_SB, N_("Do not use register sb")},		\
     { "bitfield", -MASK_NO_BITFIELD,					\
+      N_("Use bit-field instructions")},				\
+    { "nobitfield", MASK_NO_BITFIELD,					\
       N_("Do not use bit-field instructions")},				\
-    { "nobitfield", MASK_NO_BITFIELD, N_("Use bit-field instructions")},\
     { "himem", MASK_HIMEM, N_("Generate code for high memory")},	\
     { "nohimem", -MASK_HIMEM, N_("Generate code for low memory")},	\
     { "32381", MASK_32381, N_("32381 fpu")},				\
     { "mult-add", MASK_MULT_ADD,					\
       N_("Use multiply-accumulate fp instructions")},			\
     { "nomult-add", -MASK_MULT_ADD,					\
-      N_("Do not use multiply-accumulate fp instructions") }, 		\
+      N_("Do not use multiply-accumulate fp instructions") },		\
     { "src", MASK_SRC, N_("\"Small register classes\" kludge")},	\
     { "nosrc", -MASK_SRC, N_("No \"Small register classes\" kludge")},	\
+    { "ieee-compare", MASK_IEEE_COMPARE, N_("Use IEEE math for fp comparisons")},	\
+    { "noieee-compare", -MASK_IEEE_COMPARE,					\
+      N_("Do not use IEEE math for fp comparisons")},			\
     { "", TARGET_DEFAULT, 0}}
 
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
@@ -166,14 +174,18 @@ extern int target_flags;
 /* When we are generating PIC, the sb is used as a pointer
    to the GOT. 32381 is a superset of 32081  */
 
-#define OVERRIDE_OPTIONS				\
-{							\
-  if (flag_pic || TARGET_HIMEM)				\
-    target_flags |= MASK_NO_SB;				\
-  if (TARGET_32381)					\
-    target_flags |= MASK_32081;				\
-  else							\
-    target_flags &= ~MASK_MULT_ADD;			\
+#define OVERRIDE_OPTIONS			\
+{						\
+  if (target_flags & MASK_32532)		\
+    target_flags |= MASK_32332; 		\
+  if (flag_pic || TARGET_HIMEM)			\
+    target_flags |= MASK_NO_SB;			\
+  if (TARGET_32381)				\
+    target_flags |= MASK_32081;			\
+  else						\
+    target_flags &= ~MASK_MULT_ADD;		\
+  if (flag_unsafe_math_optimizations)		\
+     target_flags &= ~MASK_IEEE_COMPARE;		\
 }
 
 /* Zero or more C statements that may conditionally modify two
@@ -1179,6 +1191,10 @@ __transfer_from_trampoline ()		\
 /* This bit means that what ought to be in the Z bit
    is complemented in the F bit.  */
 #define CC_Z_IN_NOT_F 010000
+
+/* This bit means that the L bit indicates unordered (IEEE) comparison.
+ */
+#define CC_UNORD 020000
 
 /* Store in cc_status the expressions
    that the condition codes will describe

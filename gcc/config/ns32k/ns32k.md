@@ -94,6 +94,8 @@
   "TARGET_32081"
   "*
 { cc_status.flags |= CC_REVERSED;
+  if (TARGET_IEEE_COMPARE)
+    cc_status.flags |= CC_UNORD;
   operands[1] = CONST0_RTX (DFmode);
   return \"cmpl %1,%0\"; }")
 
@@ -103,6 +105,8 @@
   "TARGET_32081"
   "*
 { cc_status.flags |= CC_REVERSED;
+  if (TARGET_IEEE_COMPARE)
+    cc_status.flags |= CC_UNORD;
   operands[1] = CONST0_RTX (SFmode);
   return \"cmpf %1,%0\"; }")
 
@@ -202,14 +206,22 @@
 	(compare (match_operand:DF 0 "general_operand" "lmF")
 		 (match_operand:DF 1 "general_operand" "lmF")))]
   "TARGET_32081"
-  "cmpl %0,%1")
+  "*
+{
+  if (TARGET_IEEE_COMPARE)
+    cc_status.flags |= CC_UNORD;
+  return \"cmpl %0,%1\";}")
 
 (define_insn "cmpsf"
   [(set (cc0)
 	(compare (match_operand:SF 0 "general_operand" "fmF")
 		 (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_32081"
-  "cmpf %0,%1")
+  "*
+{
+  if (TARGET_IEEE_COMPARE)
+    cc_status.flags |= CC_UNORD;
+  return \"cmpf %0,%1\";}")
 
 ;; movdf and movsf copy between general and floating registers using
 ;; the stack. In principle, we could get better code not allowing
@@ -798,7 +810,7 @@
 
 ;; Multiply-add instructions
 (define_insn "*madddf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=v,v,lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=v,v,&lm")
 	(plus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF,0,0")
 		          (match_operand:DF 2 "general_operand" "lmF,lmF,lmF"))
                  (match_operand:DF 3 "general_operand" "0,lmF,lmF")))]
@@ -809,7 +821,7 @@
    mull %2,%0\;addl %3,%0")
 
 (define_insn "*maddsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=u,u,fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=u,u,&fm")
 	(plus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF,0,0")
 		          (match_operand:SF 2 "general_operand" "fmF,fmF,fmF"))
                  (match_operand:SF 3 "general_operand" "0,fmF,fmF")))]
@@ -822,7 +834,7 @@
 
 ;; Multiply-sub instructions
 (define_insn "*msubdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=v,lm")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=&v,&lm")
 	(minus:DF (mult:DF (match_operand:DF 1 "general_operand" "%lmF,0")
 		          (match_operand:DF 2 "general_operand" "lmF,lmF"))
                  (match_operand:DF 3 "general_operand" "lmF,lmF")))]
@@ -832,7 +844,7 @@
    mull %2,%0\;subl %3,%0")
 
 (define_insn "*msubsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=u,fm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=&u,&fm")
 	(minus:SF (mult:SF (match_operand:SF 1 "general_operand" "%fmF,0")
 		          (match_operand:SF 2 "general_operand" "fmF,fmF"))
                  (match_operand:SF 3 "general_operand" "fmF,fmF")))]
@@ -883,20 +895,6 @@
   return \"adjspd %n0\";
 }")
 
-(define_insn "*frame_addr"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
-	(plus:SI (reg:SI 24)
-		 (match_operand:SI 1 "immediate_operand" "i")))]
-  "GET_CODE (operands[1]) == CONST_INT"
-  "addr %c1(fp),%0")
-
-(define_insn "*stack_addr"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm<")
-	(plus:SI (reg:SI 25)
-		 (match_operand:SI 1 "immediate_operand" "i")))]
-  "GET_CODE (operands[1]) == CONST_INT"
-  "addr %c1(sp),%0")
-
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=ro")
 	(plus:DI (match_operand:DI 1 "general_operand" "%0")
@@ -940,9 +938,9 @@
 
 ;; See Note 1
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,=rm&<")
-	(plus:SI (match_operand:SI 1 "general_operand" "%0,r")
-		 (match_operand:SI 2 "general_operand" "g,i")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,=rm<,=rm<")
+	(plus:SI (match_operand:SI 1 "general_operand" "%0,r,xy")
+		 (match_operand:SI 2 "general_operand" "g,i,i")))]
   ""
   "*
 {
@@ -963,6 +961,14 @@
 	  else
 	    return \"addr %c2(%1),%0\";
         }
+    }
+  else if (which_alternative == 2)
+    {
+      if (GET_CODE (operands[2]) == CONST_INT &&
+          NS32K_DISPLACEMENT_P (INTVAL (operands[2])))
+        return \"addr %c2(%1),%0\";
+      else
+        return \"sprd %1,%0\;addd %2,%0\";
     }
   else if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -2313,7 +2319,13 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "blt %l0")
+  "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bhi 0f\;blt %l0\;0:\";
+    else
+      return \"blt %l0\";
+}")
 
 (define_insn "bltu"
   [(set (pc)
@@ -2349,7 +2361,13 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "ble %l0")
+  "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bhi 0f\;ble %l0\;0:\";
+    else
+      return \"ble %l0\";
+}")
 
 (define_insn "bleu"
   [(set (pc)
@@ -2399,7 +2417,13 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "ble %l0")
+  "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bhi 0f\;ble %l0\;0:\";
+    else
+      return \"ble %l0\";
+}")
 
 (define_insn "*bleu"
   [(set (pc)
@@ -2435,7 +2459,13 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "blt %l0")
+  "*
+{
+    if (cc_prev_status.flags & CC_UNORD)
+      return \"bhi 0f\;blt %l0\;0:\";
+    else
+      return \"blt %l0\";
+}")
 
 (define_insn "*bltu"
   [(set (pc)
