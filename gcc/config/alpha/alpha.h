@@ -1697,6 +1697,7 @@ literal_section ()						\
 
 #define PREDICATE_CODES \
   {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},	\
+  {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},		\
