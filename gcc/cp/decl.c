@@ -4206,7 +4206,9 @@ pushdecl (x)
 	  if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
 	      /* Inline decls shadow nothing.  */
 	      && !DECL_FROM_INLINE (x)
-	      && TREE_CODE (oldlocal) == PARM_DECL)
+	      && TREE_CODE (oldlocal) == PARM_DECL
+	      /* Don't check the `this' parameter.  */
+	      && !DECL_ARTIFICIAL (oldlocal))
 	    {
 	      bool err = false;
 
