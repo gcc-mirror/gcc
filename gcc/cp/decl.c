@@ -146,7 +146,6 @@ static void resume_binding_level PROTO((struct binding_level *));
 static struct binding_level *make_binding_level PROTO((void));
 static int namespace_bindings_p PROTO((void));
 static void declare_namespace_level PROTO((void));
-static tree get_unique_name PROTO((void));
 static void signal_catch PROTO((int));
 static void storedecls PROTO((tree));
 static void storetags PROTO((tree));
@@ -1733,50 +1732,6 @@ set_namespace_binding (name, scope, val)
   BINDING_VALUE (b) = val;
 }
 
-extern char * first_global_object_name;
-
-/* Get a unique name for each call to this routine for unnamed namespaces.
-   Mostly copied from get_file_function_name.  */
-
-static tree
-get_unique_name ()
-{
-  static int temp_name_counter = 0;
-  char *buf;
-  register char *p;
-
-  if (first_global_object_name)
-    p = first_global_object_name;
-  else if (main_input_filename)
-    p = main_input_filename;
-  else
-    p = input_filename;
-
-#define UNNAMED_NAMESPACE_FORMAT "__%s_%d"
-
-  buf = (char *) alloca (sizeof (UNNAMED_NAMESPACE_FORMAT) + strlen (p));
-
-  sprintf (buf, UNNAMED_NAMESPACE_FORMAT, p, temp_name_counter++);
-
-  /* Don't need to pull weird characters out of global names.  */
-  if (p != first_global_object_name)
-    {
-      for (p = buf+2; *p; p++)
-	if (! ((*p >= '0' && *p <= '9')
-#ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
-	       || *p == '$'
-#endif
-#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
-	       || *p == '.'
-#endif
-	       || (*p >= 'A' && *p <= 'Z')
-	       || (*p >= 'a' && *p <= 'z')))
-	  *p = '_';
-    }
-
-  return get_identifier (buf);
-}
-
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
    select a name that is unique to this compilation unit.  */
 
@@ -1796,7 +1751,16 @@ push_namespace (name)
     }
   else if (!name)
     {
-      name = get_unique_name ();
+      /* The name of anonymous namespace is unique for the translation
+         unit.  */
+      static tree anon_name = NULL_TREE;
+      if (!anon_name)
+        anon_name = get_file_function_name ('N');
+      name = anon_name;
+      d = IDENTIFIER_NAMESPACE_VALUE (name);
+      if (d)
+        /* Reopening anonymous namespace.  */
+        need_new = 0;
       implicit_use = 1;
     }
   else if (current_namespace == global_namespace

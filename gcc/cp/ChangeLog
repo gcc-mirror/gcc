@@ -1,3 +1,9 @@
+1998-05-25  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (push_namespace): Only produce one unique name for
+	anonymous namespaces.
+	(get_unique_name): Remove.
+
 1998-05-25  Mark Mitchell  <mark@markmitchell.com>
 
 	* call.c (tourney): Don't do any extra comparisons.
