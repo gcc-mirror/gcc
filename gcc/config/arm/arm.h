@@ -1594,7 +1594,7 @@ do { char dstr[30];							\
    arm_increase_location (1))
 
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
-  output_ascii_pseudo_op ((STREAM), (PTR), (LEN))
+  output_ascii_pseudo_op ((STREAM), (unsigned char *)(PTR), (LEN))
 
 /* Output a gap.  In fact we fill it with nulls.  */
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES)  \
