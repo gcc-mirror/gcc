@@ -132,6 +132,62 @@ enum mips_address_type {
   ADDRESS_SYMBOLIC
 };
 
+/* Classifies the prototype of a builtin function.  */
+enum mips_function_type
+{
+  MIPS_V2SF_FTYPE_V2SF,
+  MIPS_V2SF_FTYPE_V2SF_V2SF,
+  MIPS_V2SF_FTYPE_V2SF_V2SF_INT,
+  MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
+  MIPS_V2SF_FTYPE_SF_SF,
+  MIPS_INT_FTYPE_V2SF_V2SF,
+  MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
+  MIPS_INT_FTYPE_SF_SF,
+  MIPS_INT_FTYPE_DF_DF,
+  MIPS_SF_FTYPE_V2SF,
+  MIPS_SF_FTYPE_SF,
+  MIPS_SF_FTYPE_SF_SF,
+  MIPS_DF_FTYPE_DF,
+  MIPS_DF_FTYPE_DF_DF,
+
+  /* The last type.  */
+  MIPS_MAX_FTYPE_MAX
+};
+
+/* Specifies how a builtin function should be converted into rtl.  */
+enum mips_builtin_type
+{
+  /* The builtin corresponds directly to an .md pattern.  The return
+     value is mapped to operand 0 and the arguments are mapped to
+     operands 1 and above.  */
+  MIPS_BUILTIN_DIRECT,
+
+  /* The builtin corresponds to a comparison instruction followed by
+     a mips_cond_move_tf_ps pattern.  The first two arguments are the
+     values to compare and the second two arguments are the vector
+     operands for the movt.ps or movf.ps instruction (in assembly order).  */
+  MIPS_BUILTIN_MOVF,
+  MIPS_BUILTIN_MOVT,
+
+  /* The builtin corresponds to a V2SF comparison instruction.  Operand 0
+     of this instruction is the result of the comparison, which has mode
+     CCV2 or CCV4.  The function arguments are mapped to operands 1 and
+     above.  The function's return value is an SImode boolean that is
+     true under the following conditions:
+
+     MIPS_BUILTIN_CMP_ANY: one of the registers is true
+     MIPS_BUILTIN_CMP_ALL: all of the registers are true
+     MIPS_BUILTIN_CMP_LOWER: the first register is true
+     MIPS_BUILTIN_CMP_UPPER: the second register is true.  */
+  MIPS_BUILTIN_CMP_ANY,
+  MIPS_BUILTIN_CMP_ALL,
+  MIPS_BUILTIN_CMP_UPPER,
+  MIPS_BUILTIN_CMP_LOWER,
+
+  /* As above, but the instruction only sets a single $fcc register.  */
+  MIPS_BUILTIN_CMP_SINGLE
+};
+
 /* A function to save or store a register.  The first argument is the
    register and the second is the stack slot.  */
 typedef void (*mips_save_restore_fn) (rtx, rtx);
@@ -267,13 +323,11 @@ static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
 static rtx mips_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void mips_init_builtins (void);
-static rtx mips_expand_ps_cond_move_builtin (bool, enum insn_code, rtx, tree);
-static rtx mips_expand_compare_builtin (bool, rtx, rtx, rtx, int);
-static rtx mips_expand_scalar_compare_builtin (enum insn_code, rtx, tree);
-static rtx mips_expand_4s_compare_builtin (enum mips_cmp_choice,
-					   enum insn_code, rtx, tree);
-static rtx mips_expand_ps_compare_builtin (enum mips_cmp_choice,
-					   enum insn_code, rtx, tree);
+static rtx mips_expand_builtin_direct (enum insn_code, rtx, tree);
+static rtx mips_expand_builtin_movtf (enum mips_builtin_type,
+				      enum insn_code, rtx, tree);
+static rtx mips_expand_builtin_compare (enum mips_builtin_type,
+					enum insn_code, rtx, tree);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -9212,804 +9266,131 @@ mips_prefetch_cookie (rtx write, rtx locality)
 
 struct builtin_description
 {
-  /* Instruction code.  */
+  /* The code of the main .md file instruction.  See mips_builtin_type
+     for more information.  */
   enum insn_code icode;
-  /* Builtin function name.  */
+
+  /* The name of the builtin function.  */
   const char *name;              
-  /* Builtin code.  */
-  enum mips_builtins code;       
-  /* Function type.  */
-  enum mips_function_type ftype; 
-  /* The target flag required for this builtin function.  */
-  int target_flags;   
+
+  /* Specifies how the function should be expanded.  */
+  enum mips_builtin_type builtin_type;
+
+  /* The function's prototype.  */
+  enum mips_function_type function_type;
+
+  /* The target flags required for this function.  */
+  int target_flags;
 };
 
-/* NOTE: The order of mips_bdesc[] must be the same as the order of
-   enum mips_builtins{} in mips.h.  */
+/* Define a MIPS_BUILTIN_DIRECT function for instruction CODE_FOR_mips_<INSN>.
+   FUNCTION_TYPE and TARGET_FLAGS are builtin_description fields.  */
+#define DIRECT_BUILTIN(INSN, FUNCTION_TYPE, TARGET_FLAGS)		\
+  { CODE_FOR_mips_ ## INSN, "__builtin_mips_" #INSN,			\
+    MIPS_BUILTIN_DIRECT, FUNCTION_TYPE, TARGET_FLAGS }
+
+/* Define builtins for scalar comparison instructions CODE_FOR_mips_<INSN>_s
+   and CODE_FOR_mips_<INSN>_d, both of which require TARGET_FLAGS.  */
+#define CMP_SCALAR_BUILTINS(INSN, TARGET_FLAGS)				\
+  { CODE_FOR_mips_ ## INSN ## _s, "__builtin_mips_" #INSN "_s",		\
+    MIPS_BUILTIN_CMP_SINGLE, MIPS_INT_FTYPE_SF_SF, TARGET_FLAGS },	\
+  { CODE_FOR_mips_ ## INSN ## _d, "__builtin_mips_" #INSN "_d",		\
+    MIPS_BUILTIN_CMP_SINGLE, MIPS_INT_FTYPE_DF_DF, TARGET_FLAGS }
+
+/* Define builtins for PS comparison instruction CODE_FOR_mips_<INSN>_ps.
+   The lower and upper forms require TARGET_FLAGS while the any and all
+   forms require MASK_MIPS3D.  */
+#define CMP_PS_BUILTINS(INSN, TARGET_FLAGS)				\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_any_" #INSN "_ps",	\
+    MIPS_BUILTIN_CMP_ANY, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },	\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_all_" #INSN "_ps",	\
+    MIPS_BUILTIN_CMP_ALL, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },	\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_lower_" #INSN "_ps",	\
+    MIPS_BUILTIN_CMP_LOWER, MIPS_INT_FTYPE_V2SF_V2SF, TARGET_FLAGS },	\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_upper_" #INSN "_ps",	\
+    MIPS_BUILTIN_CMP_UPPER, MIPS_INT_FTYPE_V2SF_V2SF, TARGET_FLAGS }
+
+/* Define builtins for instruction CODE_FOR_mips_<INSN>_4s, which compares
+   two pairs of V2SF vectors.  The functions require MASK_MIPS3D.  */
+#define CMP_4S_BUILTINS(INSN)						\
+  { CODE_FOR_mips_ ## INSN ## _4s, "__builtin_mips_any_" #INSN "_4s",	\
+    MIPS_BUILTIN_CMP_ANY, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
+    MASK_MIPS3D },							\
+  { CODE_FOR_mips_ ## INSN ## _4s, "__builtin_mips_all_" #INSN "_4s",	\
+    MIPS_BUILTIN_CMP_ALL, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
+    MASK_MIPS3D }
+
+/* Define movt and movf builtins that use CODE_FOR_mips_<INSN>_ps as
+   the comparison instruction.  The comparison instruction requires
+   TARGET_FLAGS.  */
+#define MOVTF_BUILTINS(INSN, TARGET_FLAGS)				\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_movt_" #INSN "_ps",	\
+    MIPS_BUILTIN_MOVT, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
+    TARGET_FLAGS },							\
+  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_movf_" #INSN "_ps",	\
+    MIPS_BUILTIN_MOVF, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
+    TARGET_FLAGS }
+
+/* Define all the builtins related to c.cond.fmt condition COND.  */
+#define CMP_BUILTINS(COND)						\
+  MOVTF_BUILTINS (c_ ## COND, MASK_PAIRED_SINGLE),			\
+  MOVTF_BUILTINS (cabs_ ## COND, MASK_MIPS3D),				\
+  CMP_SCALAR_BUILTINS (cabs_ ## COND, MASK_MIPS3D),			\
+  CMP_PS_BUILTINS (c_ ## COND, MASK_PAIRED_SINGLE),			\
+  CMP_PS_BUILTINS (cabs_ ## COND, MASK_MIPS3D),				\
+  CMP_4S_BUILTINS (c_ ## COND),						\
+  CMP_4S_BUILTINS (cabs_ ## COND)
+
+/* __builtin_mips_abs_ps() maps to the standard absM2 pattern.  */
+#define CODE_FOR_mips_abs_ps CODE_FOR_absv2sf2
+
 static const struct builtin_description mips_bdesc[] =
 {
-  { CODE_FOR_mips_pll_ps, "__builtin_mips_pll_ps", MIPS_BUILTIN_PLL_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_pul_ps, "__builtin_mips_pul_ps", MIPS_BUILTIN_PUL_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_plu_ps, "__builtin_mips_plu_ps", MIPS_BUILTIN_PLU_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_puu_ps, "__builtin_mips_puu_ps", MIPS_BUILTIN_PUU_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_cvt_ps_s, "__builtin_mips_cvt_ps_s", MIPS_BUILTIN_CVT_PS_S,
-    MIPS_V2SF_FTYPE_SF_SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_cvt_s_pl, "__builtin_mips_cvt_s_pl", MIPS_BUILTIN_CVT_S_PL,
-    MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_cvt_s_pu, "__builtin_mips_cvt_s_pu", MIPS_BUILTIN_CVT_S_PU,
-    MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_absv2sf2, "__builtin_mips_abs_ps", MIPS_BUILTIN_ABS_PS,
-    MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_alnv_ps, "__builtin_mips_alnv_ps", MIPS_BUILTIN_ALNV_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF_INT, MASK_PAIRED_SINGLE },
+  DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (pul_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (plu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (puu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (cvt_ps_s, MIPS_V2SF_FTYPE_SF_SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (cvt_s_pl, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (cvt_s_pu, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (abs_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
 
-  { CODE_FOR_mips_addr_ps, "__builtin_mips_addr_ps", MIPS_BUILTIN_ADDR_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_mulr_ps, "__builtin_mips_mulr_ps", MIPS_BUILTIN_MULR_PS,
-    MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cvt_pw_ps, "__builtin_mips_cvt_pw_ps",
-    MIPS_BUILTIN_CVT_PW_PS, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cvt_ps_pw, "__builtin_mips_cvt_ps_pw",
-    MIPS_BUILTIN_CVT_PS_PW, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D },
+  DIRECT_BUILTIN (alnv_ps, MIPS_V2SF_FTYPE_V2SF_V2SF_INT, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (addr_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (mulr_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (cvt_pw_ps, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (cvt_ps_pw, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D),
 
-  { CODE_FOR_mips_recip1_s, "__builtin_mips_recip1_s", MIPS_BUILTIN_RECIP1_S,
-    MIPS_SF_FTYPE_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_recip1_d, "__builtin_mips_recip1_d", MIPS_BUILTIN_RECIP1_D,
-    MIPS_DF_FTYPE_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_recip1_ps, "__builtin_mips_recip1_ps",
-    MIPS_BUILTIN_RECIP1_PS, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_recip2_s, "__builtin_mips_recip2_s", MIPS_BUILTIN_RECIP2_S,
-    MIPS_SF_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_recip2_d, "__builtin_mips_recip2_d", MIPS_BUILTIN_RECIP2_D,
-    MIPS_DF_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_recip2_ps, "__builtin_mips_recip2_ps",
-    MIPS_BUILTIN_RECIP2_PS, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D },
+  DIRECT_BUILTIN (recip1_s, MIPS_SF_FTYPE_SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (recip1_d, MIPS_DF_FTYPE_DF, MASK_MIPS3D),
+  DIRECT_BUILTIN (recip1_ps, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (recip2_s, MIPS_SF_FTYPE_SF_SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (recip2_d, MIPS_DF_FTYPE_DF_DF, MASK_MIPS3D),
+  DIRECT_BUILTIN (recip2_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
 
-  { CODE_FOR_mips_rsqrt1_s, "__builtin_mips_rsqrt1_s", MIPS_BUILTIN_RSQRT1_S,
-    MIPS_SF_FTYPE_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_rsqrt1_d, "__builtin_mips_rsqrt1_d", MIPS_BUILTIN_RSQRT1_D,
-    MIPS_DF_FTYPE_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_rsqrt1_ps, "__builtin_mips_rsqrt1_ps",
-    MIPS_BUILTIN_RSQRT1_PS, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_rsqrt2_s, "__builtin_mips_rsqrt2_s", MIPS_BUILTIN_RSQRT2_S,
-    MIPS_SF_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_rsqrt2_d, "__builtin_mips_rsqrt2_d", MIPS_BUILTIN_RSQRT2_D,
-    MIPS_DF_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_rsqrt2_ps, "__builtin_mips_rsqrt2_ps",
-    MIPS_BUILTIN_RSQRT2_PS, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D },
+  DIRECT_BUILTIN (rsqrt1_s, MIPS_SF_FTYPE_SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (rsqrt1_d, MIPS_DF_FTYPE_DF, MASK_MIPS3D),
+  DIRECT_BUILTIN (rsqrt1_ps, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (rsqrt2_s, MIPS_SF_FTYPE_SF_SF, MASK_MIPS3D),
+  DIRECT_BUILTIN (rsqrt2_d, MIPS_DF_FTYPE_DF_DF, MASK_MIPS3D),
+  DIRECT_BUILTIN (rsqrt2_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
 
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_any_c_f_ps", MIPS_BUILTIN_ANY_C_F_PS,
-    MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_upper_c_f_ps",
-    MIPS_BUILTIN_UPPER_C_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_lower_c_f_ps",
-    MIPS_BUILTIN_LOWER_C_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_all_c_f_ps", MIPS_BUILTIN_ALL_C_F_PS,
-    MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_any_c_un_ps",
-    MIPS_BUILTIN_ANY_C_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_upper_c_un_ps",
-    MIPS_BUILTIN_UPPER_C_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_lower_c_un_ps",
-    MIPS_BUILTIN_LOWER_C_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_all_c_un_ps",
-    MIPS_BUILTIN_ALL_C_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_any_c_eq_ps",
-    MIPS_BUILTIN_ANY_C_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_upper_c_eq_ps",
-    MIPS_BUILTIN_UPPER_C_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_lower_c_eq_ps",
-    MIPS_BUILTIN_LOWER_C_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_all_c_eq_ps",
-    MIPS_BUILTIN_ALL_C_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_any_c_ueq_ps",
-    MIPS_BUILTIN_ANY_C_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_upper_c_ueq_ps",
-    MIPS_BUILTIN_UPPER_C_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_lower_c_ueq_ps",
-    MIPS_BUILTIN_LOWER_C_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_all_c_ueq_ps",
-    MIPS_BUILTIN_ALL_C_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_any_c_olt_ps",
-    MIPS_BUILTIN_ANY_C_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_upper_c_olt_ps",
-    MIPS_BUILTIN_UPPER_C_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_lower_c_olt_ps",
-    MIPS_BUILTIN_LOWER_C_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_all_c_olt_ps",
-    MIPS_BUILTIN_ALL_C_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_any_c_ult_ps",
-    MIPS_BUILTIN_ANY_C_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_upper_c_ult_ps",
-    MIPS_BUILTIN_UPPER_C_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_lower_c_ult_ps",
-    MIPS_BUILTIN_LOWER_C_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_all_c_ult_ps",
-    MIPS_BUILTIN_ALL_C_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_any_c_ole_ps",
-    MIPS_BUILTIN_ANY_C_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_upper_c_ole_ps",
-    MIPS_BUILTIN_UPPER_C_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_lower_c_ole_ps",
-    MIPS_BUILTIN_LOWER_C_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_all_c_ole_ps",
-    MIPS_BUILTIN_ALL_C_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_any_c_ule_ps",
-    MIPS_BUILTIN_ANY_C_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_upper_c_ule_ps",
-    MIPS_BUILTIN_UPPER_C_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_lower_c_ule_ps",
-    MIPS_BUILTIN_LOWER_C_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_all_c_ule_ps",
-    MIPS_BUILTIN_ALL_C_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_any_c_sf_ps",
-    MIPS_BUILTIN_ANY_C_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_upper_c_sf_ps",
-    MIPS_BUILTIN_UPPER_C_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_lower_c_sf_ps",
-    MIPS_BUILTIN_LOWER_C_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_all_c_sf_ps",
-    MIPS_BUILTIN_ALL_C_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_any_c_ngle_ps",
-    MIPS_BUILTIN_ANY_C_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_upper_c_ngle_ps",
-    MIPS_BUILTIN_UPPER_C_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_lower_c_ngle_ps",
-    MIPS_BUILTIN_LOWER_C_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_all_c_ngle_ps",
-    MIPS_BUILTIN_ALL_C_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_any_c_seq_ps",
-    MIPS_BUILTIN_ANY_C_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_upper_c_seq_ps",
-    MIPS_BUILTIN_UPPER_C_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_lower_c_seq_ps",
-    MIPS_BUILTIN_LOWER_C_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_all_c_seq_ps",
-    MIPS_BUILTIN_ALL_C_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_any_c_ngl_ps",
-    MIPS_BUILTIN_ANY_C_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_upper_c_ngl_ps",
-    MIPS_BUILTIN_UPPER_C_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_lower_c_ngl_ps",
-    MIPS_BUILTIN_LOWER_C_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_all_c_ngl_ps",
-    MIPS_BUILTIN_ALL_C_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_any_c_lt_ps",
-    MIPS_BUILTIN_ANY_C_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_upper_c_lt_ps",
-    MIPS_BUILTIN_UPPER_C_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_lower_c_lt_ps",
-    MIPS_BUILTIN_LOWER_C_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_all_c_lt_ps",
-    MIPS_BUILTIN_ALL_C_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_any_c_nge_ps",
-    MIPS_BUILTIN_ANY_C_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_upper_c_nge_ps",
-    MIPS_BUILTIN_UPPER_C_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_lower_c_nge_ps",
-    MIPS_BUILTIN_LOWER_C_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_all_c_nge_ps",
-    MIPS_BUILTIN_ALL_C_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_any_c_le_ps",
-    MIPS_BUILTIN_ANY_C_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_upper_c_le_ps",
-    MIPS_BUILTIN_UPPER_C_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_lower_c_le_ps",
-    MIPS_BUILTIN_LOWER_C_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_all_c_le_ps",
-    MIPS_BUILTIN_ALL_C_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_any_c_ngt_ps",
-    MIPS_BUILTIN_ANY_C_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_upper_c_ngt_ps",
-    MIPS_BUILTIN_UPPER_C_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_lower_c_ngt_ps",
-    MIPS_BUILTIN_LOWER_C_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_all_c_ngt_ps",
-    MIPS_BUILTIN_ALL_C_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_any_cabs_f_ps",
-    MIPS_BUILTIN_ANY_CABS_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_upper_cabs_f_ps",
-    MIPS_BUILTIN_UPPER_CABS_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_lower_cabs_f_ps",
-    MIPS_BUILTIN_LOWER_CABS_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_all_cabs_f_ps",
-    MIPS_BUILTIN_ALL_CABS_F_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_any_cabs_un_ps",
-    MIPS_BUILTIN_ANY_CABS_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_upper_cabs_un_ps",
-    MIPS_BUILTIN_UPPER_CABS_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_lower_cabs_un_ps",
-    MIPS_BUILTIN_LOWER_CABS_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_all_cabs_un_ps",
-    MIPS_BUILTIN_ALL_CABS_UN_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_any_cabs_eq_ps",
-    MIPS_BUILTIN_ANY_CABS_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_upper_cabs_eq_ps",
-    MIPS_BUILTIN_UPPER_CABS_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_lower_cabs_eq_ps",
-    MIPS_BUILTIN_LOWER_CABS_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_all_cabs_eq_ps",
-    MIPS_BUILTIN_ALL_CABS_EQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_any_cabs_ueq_ps",
-    MIPS_BUILTIN_ANY_CABS_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_upper_cabs_ueq_ps",
-    MIPS_BUILTIN_UPPER_CABS_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_lower_cabs_ueq_ps",
-    MIPS_BUILTIN_LOWER_CABS_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_all_cabs_ueq_ps",
-    MIPS_BUILTIN_ALL_CABS_UEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_any_cabs_olt_ps",
-    MIPS_BUILTIN_ANY_CABS_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_upper_cabs_olt_ps",
-    MIPS_BUILTIN_UPPER_CABS_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_lower_cabs_olt_ps",
-    MIPS_BUILTIN_LOWER_CABS_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_all_cabs_olt_ps",
-    MIPS_BUILTIN_ALL_CABS_OLT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_any_cabs_ult_ps",
-    MIPS_BUILTIN_ANY_CABS_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_upper_cabs_ult_ps",
-    MIPS_BUILTIN_UPPER_CABS_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_lower_cabs_ult_ps",
-    MIPS_BUILTIN_LOWER_CABS_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_all_cabs_ult_ps",
-    MIPS_BUILTIN_ALL_CABS_ULT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_any_cabs_ole_ps",
-    MIPS_BUILTIN_ANY_CABS_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_upper_cabs_ole_ps",
-    MIPS_BUILTIN_UPPER_CABS_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_lower_cabs_ole_ps",
-    MIPS_BUILTIN_LOWER_CABS_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_all_cabs_ole_ps",
-    MIPS_BUILTIN_ALL_CABS_OLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_any_cabs_ule_ps",
-    MIPS_BUILTIN_ANY_CABS_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_upper_cabs_ule_ps",
-    MIPS_BUILTIN_UPPER_CABS_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_lower_cabs_ule_ps",
-    MIPS_BUILTIN_LOWER_CABS_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_all_cabs_ule_ps",
-    MIPS_BUILTIN_ALL_CABS_ULE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_any_cabs_sf_ps",
-    MIPS_BUILTIN_ANY_CABS_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_upper_cabs_sf_ps",
-    MIPS_BUILTIN_UPPER_CABS_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_lower_cabs_sf_ps",
-    MIPS_BUILTIN_LOWER_CABS_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_all_cabs_sf_ps",
-    MIPS_BUILTIN_ALL_CABS_SF_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_any_cabs_ngle_ps",
-    MIPS_BUILTIN_ANY_CABS_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_upper_cabs_ngle_ps",
-    MIPS_BUILTIN_UPPER_CABS_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_lower_cabs_ngle_ps",
-    MIPS_BUILTIN_LOWER_CABS_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_all_cabs_ngle_ps",
-    MIPS_BUILTIN_ALL_CABS_NGLE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_any_cabs_seq_ps",
-    MIPS_BUILTIN_ANY_CABS_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_upper_cabs_seq_ps",
-    MIPS_BUILTIN_UPPER_CABS_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_lower_cabs_seq_ps",
-    MIPS_BUILTIN_LOWER_CABS_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_all_cabs_seq_ps",
-    MIPS_BUILTIN_ALL_CABS_SEQ_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_any_cabs_ngl_ps",
-    MIPS_BUILTIN_ANY_CABS_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_upper_cabs_ngl_ps",
-    MIPS_BUILTIN_UPPER_CABS_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_lower_cabs_ngl_ps",
-    MIPS_BUILTIN_LOWER_CABS_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_all_cabs_ngl_ps",
-    MIPS_BUILTIN_ALL_CABS_NGL_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_any_cabs_lt_ps",
-    MIPS_BUILTIN_ANY_CABS_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_upper_cabs_lt_ps",
-    MIPS_BUILTIN_UPPER_CABS_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_lower_cabs_lt_ps",
-    MIPS_BUILTIN_LOWER_CABS_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_all_cabs_lt_ps",
-    MIPS_BUILTIN_ALL_CABS_LT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_any_cabs_nge_ps",
-    MIPS_BUILTIN_ANY_CABS_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_upper_cabs_nge_ps",
-    MIPS_BUILTIN_UPPER_CABS_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_lower_cabs_nge_ps",
-    MIPS_BUILTIN_LOWER_CABS_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_all_cabs_nge_ps",
-    MIPS_BUILTIN_ALL_CABS_NGE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_any_cabs_le_ps",
-    MIPS_BUILTIN_ANY_CABS_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_upper_cabs_le_ps",
-    MIPS_BUILTIN_UPPER_CABS_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_lower_cabs_le_ps",
-    MIPS_BUILTIN_LOWER_CABS_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_all_cabs_le_ps",
-    MIPS_BUILTIN_ALL_CABS_LE_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_any_cabs_ngt_ps",
-    MIPS_BUILTIN_ANY_CABS_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_upper_cabs_ngt_ps",
-    MIPS_BUILTIN_UPPER_CABS_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_lower_cabs_ngt_ps",
-    MIPS_BUILTIN_LOWER_CABS_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_all_cabs_ngt_ps",
-    MIPS_BUILTIN_ALL_CABS_NGT_PS, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },
-
-  { CODE_FOR_mips_c_f_4s, "__builtin_mips_any_c_f_4s",
-    MIPS_BUILTIN_ANY_C_F_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_f_4s, "__builtin_mips_all_c_f_4s",
-    MIPS_BUILTIN_ALL_C_F_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF, MASK_MIPS3D },
-  { CODE_FOR_mips_c_un_4s, "__builtin_mips_any_c_un_4s",
-    MIPS_BUILTIN_ANY_C_UN_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_un_4s, "__builtin_mips_all_c_un_4s",
-    MIPS_BUILTIN_ALL_C_UN_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_eq_4s, "__builtin_mips_any_c_eq_4s",
-    MIPS_BUILTIN_ANY_C_EQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_eq_4s, "__builtin_mips_all_c_eq_4s",
-    MIPS_BUILTIN_ALL_C_EQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ueq_4s, "__builtin_mips_any_c_ueq_4s",
-    MIPS_BUILTIN_ANY_C_UEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ueq_4s, "__builtin_mips_all_c_ueq_4s",
-    MIPS_BUILTIN_ALL_C_UEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_olt_4s, "__builtin_mips_any_c_olt_4s",
-    MIPS_BUILTIN_ANY_C_OLT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_olt_4s, "__builtin_mips_all_c_olt_4s",
-    MIPS_BUILTIN_ALL_C_OLT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ult_4s, "__builtin_mips_any_c_ult_4s",
-    MIPS_BUILTIN_ANY_C_ULT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ult_4s, "__builtin_mips_all_c_ult_4s",
-    MIPS_BUILTIN_ALL_C_ULT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ole_4s, "__builtin_mips_any_c_ole_4s",
-    MIPS_BUILTIN_ANY_C_OLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ole_4s, "__builtin_mips_all_c_ole_4s",
-    MIPS_BUILTIN_ALL_C_OLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ule_4s, "__builtin_mips_any_c_ule_4s",
-    MIPS_BUILTIN_ANY_C_ULE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ule_4s, "__builtin_mips_all_c_ule_4s",
-    MIPS_BUILTIN_ALL_C_ULE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_sf_4s, "__builtin_mips_any_c_sf_4s",
-    MIPS_BUILTIN_ANY_C_SF_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_sf_4s, "__builtin_mips_all_c_sf_4s",
-    MIPS_BUILTIN_ALL_C_SF_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngle_4s, "__builtin_mips_any_c_ngle_4s",
-    MIPS_BUILTIN_ANY_C_NGLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngle_4s, "__builtin_mips_all_c_ngle_4s",
-    MIPS_BUILTIN_ALL_C_NGLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_seq_4s, "__builtin_mips_any_c_seq_4s",
-    MIPS_BUILTIN_ANY_C_SEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_seq_4s, "__builtin_mips_all_c_seq_4s",
-    MIPS_BUILTIN_ALL_C_SEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngl_4s, "__builtin_mips_any_c_ngl_4s",
-    MIPS_BUILTIN_ANY_C_NGL_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngl_4s, "__builtin_mips_all_c_ngl_4s",
-    MIPS_BUILTIN_ALL_C_NGL_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_lt_4s, "__builtin_mips_any_c_lt_4s",
-    MIPS_BUILTIN_ANY_C_LT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_lt_4s, "__builtin_mips_all_c_lt_4s",
-    MIPS_BUILTIN_ALL_C_LT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_nge_4s, "__builtin_mips_any_c_nge_4s",
-    MIPS_BUILTIN_ANY_C_NGE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_nge_4s, "__builtin_mips_all_c_nge_4s",
-    MIPS_BUILTIN_ALL_C_NGE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_le_4s, "__builtin_mips_any_c_le_4s",
-    MIPS_BUILTIN_ANY_C_LE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_le_4s, "__builtin_mips_all_c_le_4s",
-    MIPS_BUILTIN_ALL_C_LE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngt_4s, "__builtin_mips_any_c_ngt_4s",
-    MIPS_BUILTIN_ANY_C_NGT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_ngt_4s, "__builtin_mips_all_c_ngt_4s",
-    MIPS_BUILTIN_ALL_C_NGT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-
-  { CODE_FOR_mips_cabs_f_4s, "__builtin_mips_any_cabs_f_4s",
-    MIPS_BUILTIN_ANY_CABS_F_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_f_4s, "__builtin_mips_all_cabs_f_4s",
-    MIPS_BUILTIN_ALL_CABS_F_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_4s, "__builtin_mips_any_cabs_un_4s",
-    MIPS_BUILTIN_ANY_CABS_UN_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_4s, "__builtin_mips_all_cabs_un_4s",
-    MIPS_BUILTIN_ALL_CABS_UN_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_4s, "__builtin_mips_any_cabs_eq_4s",
-    MIPS_BUILTIN_ANY_CABS_EQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_4s, "__builtin_mips_all_cabs_eq_4s",
-    MIPS_BUILTIN_ALL_CABS_EQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_4s, "__builtin_mips_any_cabs_ueq_4s",
-    MIPS_BUILTIN_ANY_CABS_UEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_4s, "__builtin_mips_all_cabs_ueq_4s",
-    MIPS_BUILTIN_ALL_CABS_UEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_4s, "__builtin_mips_any_cabs_olt_4s",
-    MIPS_BUILTIN_ANY_CABS_OLT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_4s, "__builtin_mips_all_cabs_olt_4s",
-    MIPS_BUILTIN_ALL_CABS_OLT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_4s, "__builtin_mips_any_cabs_ult_4s",
-    MIPS_BUILTIN_ANY_CABS_ULT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_4s, "__builtin_mips_all_cabs_ult_4s",
-    MIPS_BUILTIN_ALL_CABS_ULT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_4s, "__builtin_mips_any_cabs_ole_4s",
-    MIPS_BUILTIN_ANY_CABS_OLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_4s, "__builtin_mips_all_cabs_ole_4s",
-    MIPS_BUILTIN_ALL_CABS_OLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_4s, "__builtin_mips_any_cabs_ule_4s",
-    MIPS_BUILTIN_ANY_CABS_ULE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_4s, "__builtin_mips_all_cabs_ule_4s",
-    MIPS_BUILTIN_ALL_CABS_ULE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_4s, "__builtin_mips_any_cabs_sf_4s",
-    MIPS_BUILTIN_ANY_CABS_SF_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_4s, "__builtin_mips_all_cabs_sf_4s",
-    MIPS_BUILTIN_ALL_CABS_SF_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_4s, "__builtin_mips_any_cabs_ngle_4s",
-    MIPS_BUILTIN_ANY_CABS_NGLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_4s, "__builtin_mips_all_cabs_ngle_4s",
-    MIPS_BUILTIN_ALL_CABS_NGLE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_4s, "__builtin_mips_any_cabs_seq_4s",
-    MIPS_BUILTIN_ANY_CABS_SEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_4s, "__builtin_mips_all_cabs_seq_4s",
-    MIPS_BUILTIN_ALL_CABS_SEQ_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_4s, "__builtin_mips_any_cabs_ngl_4s",
-    MIPS_BUILTIN_ANY_CABS_NGL_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_4s, "__builtin_mips_all_cabs_ngl_4s",
-    MIPS_BUILTIN_ALL_CABS_NGL_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_4s, "__builtin_mips_any_cabs_lt_4s",
-    MIPS_BUILTIN_ANY_CABS_LT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_4s, "__builtin_mips_all_cabs_lt_4s",
-    MIPS_BUILTIN_ALL_CABS_LT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_4s, "__builtin_mips_any_cabs_nge_4s",
-    MIPS_BUILTIN_ANY_CABS_NGE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_4s, "__builtin_mips_all_cabs_nge_4s",
-    MIPS_BUILTIN_ALL_CABS_NGE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_4s, "__builtin_mips_any_cabs_le_4s",
-    MIPS_BUILTIN_ANY_CABS_LE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_4s, "__builtin_mips_all_cabs_le_4s",
-    MIPS_BUILTIN_ALL_CABS_LE_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_4s, "__builtin_mips_any_cabs_ngt_4s",
-    MIPS_BUILTIN_ANY_CABS_NGT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_4s, "__builtin_mips_all_cabs_ngt_4s",
-    MIPS_BUILTIN_ALL_CABS_NGT_4S, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-
-  { CODE_FOR_mips_cabs_f_s, "__builtin_mips_cabs_f_s",
-    MIPS_BUILTIN_CABS_F_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_s, "__builtin_mips_cabs_un_s",
-    MIPS_BUILTIN_CABS_UN_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_s, "__builtin_mips_cabs_eq_s",
-    MIPS_BUILTIN_CABS_EQ_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_s, "__builtin_mips_cabs_ueq_s",
-    MIPS_BUILTIN_CABS_UEQ_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_s, "__builtin_mips_cabs_olt_s",
-    MIPS_BUILTIN_CABS_OLT_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_s, "__builtin_mips_cabs_ult_s",
-    MIPS_BUILTIN_CABS_ULT_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_s, "__builtin_mips_cabs_ole_s",
-    MIPS_BUILTIN_CABS_OLE_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_s, "__builtin_mips_cabs_ule_s",
-    MIPS_BUILTIN_CABS_ULE_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_s, "__builtin_mips_cabs_sf_s",
-    MIPS_BUILTIN_CABS_SF_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_s, "__builtin_mips_cabs_ngle_s",
-    MIPS_BUILTIN_CABS_NGLE_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_s, "__builtin_mips_cabs_seq_s",
-    MIPS_BUILTIN_CABS_SEQ_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_s, "__builtin_mips_cabs_ngl_s",
-    MIPS_BUILTIN_CABS_NGL_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_s, "__builtin_mips_cabs_lt_s",
-    MIPS_BUILTIN_CABS_LT_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_s, "__builtin_mips_cabs_nge_s",
-    MIPS_BUILTIN_CABS_NGE_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_s, "__builtin_mips_cabs_le_s",
-    MIPS_BUILTIN_CABS_LE_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_s, "__builtin_mips_cabs_ngt_s",
-    MIPS_BUILTIN_CABS_NGT_S, MIPS_INT_FTYPE_SF_SF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_f_d, "__builtin_mips_cabs_f_d",
-    MIPS_BUILTIN_CABS_F_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_d, "__builtin_mips_cabs_un_d",
-    MIPS_BUILTIN_CABS_UN_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_d, "__builtin_mips_cabs_eq_d",
-    MIPS_BUILTIN_CABS_EQ_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_d, "__builtin_mips_cabs_ueq_d",
-    MIPS_BUILTIN_CABS_UEQ_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_d, "__builtin_mips_cabs_olt_d",
-    MIPS_BUILTIN_CABS_OLT_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_d, "__builtin_mips_cabs_ult_d",
-    MIPS_BUILTIN_CABS_ULT_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_d, "__builtin_mips_cabs_ole_d",
-    MIPS_BUILTIN_CABS_OLE_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_d, "__builtin_mips_cabs_ule_d",
-    MIPS_BUILTIN_CABS_ULE_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_d, "__builtin_mips_cabs_sf_d",
-    MIPS_BUILTIN_CABS_SF_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_d, "__builtin_mips_cabs_ngle_d",
-    MIPS_BUILTIN_CABS_NGLE_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_d, "__builtin_mips_cabs_seq_d",
-    MIPS_BUILTIN_CABS_SEQ_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_d, "__builtin_mips_cabs_ngl_d",
-    MIPS_BUILTIN_CABS_NGL_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_d, "__builtin_mips_cabs_lt_d",
-    MIPS_BUILTIN_CABS_LT_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_d, "__builtin_mips_cabs_nge_d",
-    MIPS_BUILTIN_CABS_NGE_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_d, "__builtin_mips_cabs_le_d",
-    MIPS_BUILTIN_CABS_LE_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_d, "__builtin_mips_cabs_ngt_d",
-    MIPS_BUILTIN_CABS_NGT_D, MIPS_INT_FTYPE_DF_DF, MASK_MIPS3D },
-
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_movt_c_f_ps",
-    MIPS_BUILTIN_MOVT_C_F_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_movt_c_un_ps",
-    MIPS_BUILTIN_MOVT_C_UN_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_movt_c_eq_ps",
-    MIPS_BUILTIN_MOVT_C_EQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_movt_c_ueq_ps",
-    MIPS_BUILTIN_MOVT_C_UEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_movt_c_olt_ps",
-    MIPS_BUILTIN_MOVT_C_OLT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_movt_c_ult_ps",
-    MIPS_BUILTIN_MOVT_C_ULT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_movt_c_ole_ps",
-    MIPS_BUILTIN_MOVT_C_OLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_movt_c_ule_ps",
-    MIPS_BUILTIN_MOVT_C_ULE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_movt_c_sf_ps",
-    MIPS_BUILTIN_MOVT_C_SF_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_movt_c_ngle_ps",
-    MIPS_BUILTIN_MOVT_C_NGLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_movt_c_seq_ps",
-    MIPS_BUILTIN_MOVT_C_SEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_movt_c_ngl_ps",
-    MIPS_BUILTIN_MOVT_C_NGL_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_movt_c_lt_ps",
-    MIPS_BUILTIN_MOVT_C_LT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_movt_c_nge_ps",
-    MIPS_BUILTIN_MOVT_C_NGE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_movt_c_le_ps",
-    MIPS_BUILTIN_MOVT_C_LE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_movt_c_ngt_ps",
-    MIPS_BUILTIN_MOVT_C_NGT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_movt_cabs_f_ps",
-    MIPS_BUILTIN_MOVT_CABS_F_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_movt_cabs_un_ps",
-    MIPS_BUILTIN_MOVT_CABS_UN_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_movt_cabs_eq_ps",
-    MIPS_BUILTIN_MOVT_CABS_EQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_movt_cabs_ueq_ps",
-    MIPS_BUILTIN_MOVT_CABS_UEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_movt_cabs_olt_ps",
-    MIPS_BUILTIN_MOVT_CABS_OLT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_movt_cabs_ult_ps",
-    MIPS_BUILTIN_MOVT_CABS_ULT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_movt_cabs_ole_ps",
-    MIPS_BUILTIN_MOVT_CABS_OLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_movt_cabs_ule_ps",
-    MIPS_BUILTIN_MOVT_CABS_ULE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_movt_cabs_sf_ps",
-    MIPS_BUILTIN_MOVT_CABS_SF_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_movt_cabs_ngle_ps",
-    MIPS_BUILTIN_MOVT_CABS_NGLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_movt_cabs_seq_ps",
-    MIPS_BUILTIN_MOVT_CABS_SEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_movt_cabs_ngl_ps",
-    MIPS_BUILTIN_MOVT_CABS_NGL_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_movt_cabs_lt_ps",
-    MIPS_BUILTIN_MOVT_CABS_LT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_movt_cabs_nge_ps",
-    MIPS_BUILTIN_MOVT_CABS_NGE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_movt_cabs_le_ps",
-    MIPS_BUILTIN_MOVT_CABS_LE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_movt_cabs_ngt_ps",
-    MIPS_BUILTIN_MOVT_CABS_NGT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_c_f_ps, "__builtin_mips_movf_c_f_ps",
-    MIPS_BUILTIN_MOVF_C_F_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_un_ps, "__builtin_mips_movf_c_un_ps",
-    MIPS_BUILTIN_MOVF_C_UN_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_eq_ps, "__builtin_mips_movf_c_eq_ps",
-    MIPS_BUILTIN_MOVF_C_EQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ueq_ps, "__builtin_mips_movf_c_ueq_ps",
-    MIPS_BUILTIN_MOVF_C_UEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_olt_ps, "__builtin_mips_movf_c_olt_ps",
-    MIPS_BUILTIN_MOVF_C_OLT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ult_ps, "__builtin_mips_movf_c_ult_ps",
-    MIPS_BUILTIN_MOVF_C_ULT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ole_ps, "__builtin_mips_movf_c_ole_ps",
-    MIPS_BUILTIN_MOVF_C_OLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ule_ps, "__builtin_mips_movf_c_ule_ps",
-    MIPS_BUILTIN_MOVF_C_ULE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_sf_ps, "__builtin_mips_movf_c_sf_ps",
-    MIPS_BUILTIN_MOVF_C_SF_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngle_ps, "__builtin_mips_movf_c_ngle_ps",
-    MIPS_BUILTIN_MOVF_C_NGLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_seq_ps, "__builtin_mips_movf_c_seq_ps",
-    MIPS_BUILTIN_MOVF_C_SEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngl_ps, "__builtin_mips_movf_c_ngl_ps",
-    MIPS_BUILTIN_MOVF_C_NGL_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_lt_ps, "__builtin_mips_movf_c_lt_ps",
-    MIPS_BUILTIN_MOVF_C_LT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_nge_ps, "__builtin_mips_movf_c_nge_ps",
-    MIPS_BUILTIN_MOVF_C_NGE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_le_ps, "__builtin_mips_movf_c_le_ps",
-    MIPS_BUILTIN_MOVF_C_LE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_c_ngt_ps, "__builtin_mips_movf_c_ngt_ps",
-    MIPS_BUILTIN_MOVF_C_NGT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_PAIRED_SINGLE },
-  { CODE_FOR_mips_cabs_f_ps, "__builtin_mips_movf_cabs_f_ps",
-    MIPS_BUILTIN_MOVF_CABS_F_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_un_ps, "__builtin_mips_movf_cabs_un_ps",
-    MIPS_BUILTIN_MOVF_CABS_UN_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_eq_ps, "__builtin_mips_movf_cabs_eq_ps",
-    MIPS_BUILTIN_MOVF_CABS_EQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ueq_ps, "__builtin_mips_movf_cabs_ueq_ps",
-    MIPS_BUILTIN_MOVF_CABS_UEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_olt_ps, "__builtin_mips_movf_cabs_olt_ps",
-    MIPS_BUILTIN_MOVF_CABS_OLT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ult_ps, "__builtin_mips_movf_cabs_ult_ps",
-    MIPS_BUILTIN_MOVF_CABS_ULT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ole_ps, "__builtin_mips_movf_cabs_ole_ps",
-    MIPS_BUILTIN_MOVF_CABS_OLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ule_ps, "__builtin_mips_movf_cabs_ule_ps",
-    MIPS_BUILTIN_MOVF_CABS_ULE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_sf_ps, "__builtin_mips_movf_cabs_sf_ps",
-    MIPS_BUILTIN_MOVF_CABS_SF_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngle_ps, "__builtin_mips_movf_cabs_ngle_ps",
-    MIPS_BUILTIN_MOVF_CABS_NGLE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_seq_ps, "__builtin_mips_movf_cabs_seq_ps",
-    MIPS_BUILTIN_MOVF_CABS_SEQ_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngl_ps, "__builtin_mips_movf_cabs_ngl_ps",
-    MIPS_BUILTIN_MOVF_CABS_NGL_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_lt_ps, "__builtin_mips_movf_cabs_lt_ps",
-    MIPS_BUILTIN_MOVF_CABS_LT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_nge_ps, "__builtin_mips_movf_cabs_nge_ps",
-    MIPS_BUILTIN_MOVF_CABS_NGE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_le_ps, "__builtin_mips_movf_cabs_le_ps",
-    MIPS_BUILTIN_MOVF_CABS_LE_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-  { CODE_FOR_mips_cabs_ngt_ps, "__builtin_mips_movf_cabs_ngt_ps",
-    MIPS_BUILTIN_MOVF_CABS_NGT_PS, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-    MASK_MIPS3D },
-
+  CMP_BUILTINS (f),
+  CMP_BUILTINS (un),
+  CMP_BUILTINS (eq),
+  CMP_BUILTINS (ueq),
+  CMP_BUILTINS (olt),
+  CMP_BUILTINS (ult),
+  CMP_BUILTINS (ole),
+  CMP_BUILTINS (ule),
+  CMP_BUILTINS (sf),
+  CMP_BUILTINS (ngle),
+  CMP_BUILTINS (seq),
+  CMP_BUILTINS (ngl),
+  CMP_BUILTINS (lt),
+  CMP_BUILTINS (nge),
+  CMP_BUILTINS (le),
+  CMP_BUILTINS (ngt)
 };
 
 
@@ -10055,8 +9436,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		     enum machine_mode mode ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
-  rtx op0, op1, op2;
   enum insn_code icode;
+  enum mips_builtin_type type;
   tree fndecl, arglist;
   unsigned int fcode;
 
@@ -10067,380 +9448,26 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     return 0;
 
   icode = mips_bdesc[fcode].icode;
-  switch (fcode)
+  type = mips_bdesc[fcode].builtin_type;
+  switch (type)
     {
-    /* Two Operands.  */
-    case MIPS_BUILTIN_PLL_PS:
-    case MIPS_BUILTIN_PUL_PS:
-    case MIPS_BUILTIN_PLU_PS:
-    case MIPS_BUILTIN_PUU_PS:
-    case MIPS_BUILTIN_CVT_PS_S:
-    case MIPS_BUILTIN_ADDR_PS:
-    case MIPS_BUILTIN_MULR_PS:
-    case MIPS_BUILTIN_RECIP2_S:
-    case MIPS_BUILTIN_RECIP2_D:
-    case MIPS_BUILTIN_RECIP2_PS:
-    case MIPS_BUILTIN_RSQRT2_S:
-    case MIPS_BUILTIN_RSQRT2_D:
-    case MIPS_BUILTIN_RSQRT2_PS:
-      target = mips_prepare_builtin_target (icode, 0, target);
-      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-      emit_insn (GEN_FCN (icode) (target, op0, op1));
-      return target;
+    case MIPS_BUILTIN_DIRECT:
+      return mips_expand_builtin_direct (icode, target, arglist);
 
-    /* One Operand.  */
-    case MIPS_BUILTIN_CVT_S_PL:
-    case MIPS_BUILTIN_CVT_S_PU:
-    case MIPS_BUILTIN_ABS_PS:
-    case MIPS_BUILTIN_CVT_PW_PS:
-    case MIPS_BUILTIN_CVT_PS_PW:
-    case MIPS_BUILTIN_RECIP1_S:
-    case MIPS_BUILTIN_RECIP1_D:
-    case MIPS_BUILTIN_RECIP1_PS:
-    case MIPS_BUILTIN_RSQRT1_S:
-    case MIPS_BUILTIN_RSQRT1_D:
-    case MIPS_BUILTIN_RSQRT1_PS:
-      target = mips_prepare_builtin_target (icode, 0, target);
-      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-      emit_insn (GEN_FCN (icode) (target, op0));
-      return target;
+    case MIPS_BUILTIN_MOVT:
+    case MIPS_BUILTIN_MOVF:
+      return mips_expand_builtin_movtf (type, icode, target, arglist);
 
-    /* Three Operands.  */
-    case MIPS_BUILTIN_ALNV_PS:
-      target = mips_prepare_builtin_target (icode, 0, target);
-      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-      op2 = mips_prepare_builtin_arg (icode, 3, &arglist);
-      emit_insn (GEN_FCN (icode) (target, op0, op1, op2));
-      return target;
-
-    /* Paired Single Comparison.  */
-    case MIPS_BUILTIN_ANY_C_F_PS:
-    case MIPS_BUILTIN_ANY_C_UN_PS:
-    case MIPS_BUILTIN_ANY_C_EQ_PS:
-    case MIPS_BUILTIN_ANY_C_UEQ_PS:
-    case MIPS_BUILTIN_ANY_C_OLT_PS:
-    case MIPS_BUILTIN_ANY_C_ULT_PS:
-    case MIPS_BUILTIN_ANY_C_OLE_PS:
-    case MIPS_BUILTIN_ANY_C_ULE_PS:
-    case MIPS_BUILTIN_ANY_C_SF_PS:
-    case MIPS_BUILTIN_ANY_C_NGLE_PS:
-    case MIPS_BUILTIN_ANY_C_SEQ_PS:
-    case MIPS_BUILTIN_ANY_C_NGL_PS:
-    case MIPS_BUILTIN_ANY_C_LT_PS:
-    case MIPS_BUILTIN_ANY_C_NGE_PS:
-    case MIPS_BUILTIN_ANY_C_LE_PS:
-    case MIPS_BUILTIN_ANY_C_NGT_PS:
-    case MIPS_BUILTIN_ANY_CABS_F_PS:
-    case MIPS_BUILTIN_ANY_CABS_UN_PS:
-    case MIPS_BUILTIN_ANY_CABS_EQ_PS:
-    case MIPS_BUILTIN_ANY_CABS_UEQ_PS:
-    case MIPS_BUILTIN_ANY_CABS_OLT_PS:
-    case MIPS_BUILTIN_ANY_CABS_ULT_PS:
-    case MIPS_BUILTIN_ANY_CABS_OLE_PS:
-    case MIPS_BUILTIN_ANY_CABS_ULE_PS:
-    case MIPS_BUILTIN_ANY_CABS_SF_PS:
-    case MIPS_BUILTIN_ANY_CABS_NGLE_PS:
-    case MIPS_BUILTIN_ANY_CABS_SEQ_PS:
-    case MIPS_BUILTIN_ANY_CABS_NGL_PS:
-    case MIPS_BUILTIN_ANY_CABS_LT_PS:
-    case MIPS_BUILTIN_ANY_CABS_NGE_PS:
-    case MIPS_BUILTIN_ANY_CABS_LE_PS:
-    case MIPS_BUILTIN_ANY_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_ANY, icode,
-					     target, arglist);
-
-    /* Paired Single Comparison.  */
-    case MIPS_BUILTIN_UPPER_C_F_PS:
-    case MIPS_BUILTIN_UPPER_C_UN_PS:
-    case MIPS_BUILTIN_UPPER_C_EQ_PS:
-    case MIPS_BUILTIN_UPPER_C_UEQ_PS:
-    case MIPS_BUILTIN_UPPER_C_OLT_PS:
-    case MIPS_BUILTIN_UPPER_C_ULT_PS:
-    case MIPS_BUILTIN_UPPER_C_OLE_PS:
-    case MIPS_BUILTIN_UPPER_C_ULE_PS:
-    case MIPS_BUILTIN_UPPER_C_SF_PS:
-    case MIPS_BUILTIN_UPPER_C_NGLE_PS:
-    case MIPS_BUILTIN_UPPER_C_SEQ_PS:
-    case MIPS_BUILTIN_UPPER_C_NGL_PS:
-    case MIPS_BUILTIN_UPPER_C_LT_PS:
-    case MIPS_BUILTIN_UPPER_C_NGE_PS:
-    case MIPS_BUILTIN_UPPER_C_LE_PS:
-    case MIPS_BUILTIN_UPPER_C_NGT_PS:
-    case MIPS_BUILTIN_UPPER_CABS_F_PS:
-    case MIPS_BUILTIN_UPPER_CABS_UN_PS:
-    case MIPS_BUILTIN_UPPER_CABS_EQ_PS:
-    case MIPS_BUILTIN_UPPER_CABS_UEQ_PS:
-    case MIPS_BUILTIN_UPPER_CABS_OLT_PS:
-    case MIPS_BUILTIN_UPPER_CABS_ULT_PS:
-    case MIPS_BUILTIN_UPPER_CABS_OLE_PS:
-    case MIPS_BUILTIN_UPPER_CABS_ULE_PS:
-    case MIPS_BUILTIN_UPPER_CABS_SF_PS:
-    case MIPS_BUILTIN_UPPER_CABS_NGLE_PS:
-    case MIPS_BUILTIN_UPPER_CABS_SEQ_PS:
-    case MIPS_BUILTIN_UPPER_CABS_NGL_PS:
-    case MIPS_BUILTIN_UPPER_CABS_LT_PS:
-    case MIPS_BUILTIN_UPPER_CABS_NGE_PS:
-    case MIPS_BUILTIN_UPPER_CABS_LE_PS:
-    case MIPS_BUILTIN_UPPER_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_UPPER, icode,
-					     target, arglist);
-
-    /* Paired Single Comparison.  */
-    case MIPS_BUILTIN_LOWER_C_F_PS:
-    case MIPS_BUILTIN_LOWER_C_UN_PS:
-    case MIPS_BUILTIN_LOWER_C_EQ_PS:
-    case MIPS_BUILTIN_LOWER_C_UEQ_PS:
-    case MIPS_BUILTIN_LOWER_C_OLT_PS:
-    case MIPS_BUILTIN_LOWER_C_ULT_PS:
-    case MIPS_BUILTIN_LOWER_C_OLE_PS:
-    case MIPS_BUILTIN_LOWER_C_ULE_PS:
-    case MIPS_BUILTIN_LOWER_C_SF_PS:
-    case MIPS_BUILTIN_LOWER_C_NGLE_PS:
-    case MIPS_BUILTIN_LOWER_C_SEQ_PS:
-    case MIPS_BUILTIN_LOWER_C_NGL_PS:
-    case MIPS_BUILTIN_LOWER_C_LT_PS:
-    case MIPS_BUILTIN_LOWER_C_NGE_PS:
-    case MIPS_BUILTIN_LOWER_C_LE_PS:
-    case MIPS_BUILTIN_LOWER_C_NGT_PS:
-    case MIPS_BUILTIN_LOWER_CABS_F_PS:
-    case MIPS_BUILTIN_LOWER_CABS_UN_PS:
-    case MIPS_BUILTIN_LOWER_CABS_EQ_PS:
-    case MIPS_BUILTIN_LOWER_CABS_UEQ_PS:
-    case MIPS_BUILTIN_LOWER_CABS_OLT_PS:
-    case MIPS_BUILTIN_LOWER_CABS_ULT_PS:
-    case MIPS_BUILTIN_LOWER_CABS_OLE_PS:
-    case MIPS_BUILTIN_LOWER_CABS_ULE_PS:
-    case MIPS_BUILTIN_LOWER_CABS_SF_PS:
-    case MIPS_BUILTIN_LOWER_CABS_NGLE_PS:
-    case MIPS_BUILTIN_LOWER_CABS_SEQ_PS:
-    case MIPS_BUILTIN_LOWER_CABS_NGL_PS:
-    case MIPS_BUILTIN_LOWER_CABS_LT_PS:
-    case MIPS_BUILTIN_LOWER_CABS_NGE_PS:
-    case MIPS_BUILTIN_LOWER_CABS_LE_PS:
-    case MIPS_BUILTIN_LOWER_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_LOWER, icode,
-					     target, arglist);
-
-    /* Paired Single Comparison.  */
-    case MIPS_BUILTIN_ALL_C_F_PS:
-    case MIPS_BUILTIN_ALL_C_UN_PS:
-    case MIPS_BUILTIN_ALL_C_EQ_PS:
-    case MIPS_BUILTIN_ALL_C_UEQ_PS:
-    case MIPS_BUILTIN_ALL_C_OLT_PS:
-    case MIPS_BUILTIN_ALL_C_ULT_PS:
-    case MIPS_BUILTIN_ALL_C_OLE_PS:
-    case MIPS_BUILTIN_ALL_C_ULE_PS:
-    case MIPS_BUILTIN_ALL_C_SF_PS:
-    case MIPS_BUILTIN_ALL_C_NGLE_PS:
-    case MIPS_BUILTIN_ALL_C_SEQ_PS:
-    case MIPS_BUILTIN_ALL_C_NGL_PS:
-    case MIPS_BUILTIN_ALL_C_LT_PS:
-    case MIPS_BUILTIN_ALL_C_NGE_PS:
-    case MIPS_BUILTIN_ALL_C_LE_PS:
-    case MIPS_BUILTIN_ALL_C_NGT_PS:
-    case MIPS_BUILTIN_ALL_CABS_F_PS:
-    case MIPS_BUILTIN_ALL_CABS_UN_PS:
-    case MIPS_BUILTIN_ALL_CABS_EQ_PS:
-    case MIPS_BUILTIN_ALL_CABS_UEQ_PS:
-    case MIPS_BUILTIN_ALL_CABS_OLT_PS:
-    case MIPS_BUILTIN_ALL_CABS_ULT_PS:
-    case MIPS_BUILTIN_ALL_CABS_OLE_PS:
-    case MIPS_BUILTIN_ALL_CABS_ULE_PS:
-    case MIPS_BUILTIN_ALL_CABS_SF_PS:
-    case MIPS_BUILTIN_ALL_CABS_NGLE_PS:
-    case MIPS_BUILTIN_ALL_CABS_SEQ_PS:
-    case MIPS_BUILTIN_ALL_CABS_NGL_PS:
-    case MIPS_BUILTIN_ALL_CABS_LT_PS:
-    case MIPS_BUILTIN_ALL_CABS_NGE_PS:
-    case MIPS_BUILTIN_ALL_CABS_LE_PS:
-    case MIPS_BUILTIN_ALL_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_ALL, icode,
-					     target, arglist);
-
-    /* Four Single Comparison.  */
-    case MIPS_BUILTIN_ANY_C_F_4S:
-    case MIPS_BUILTIN_ANY_C_UN_4S:
-    case MIPS_BUILTIN_ANY_C_EQ_4S:
-    case MIPS_BUILTIN_ANY_C_UEQ_4S:
-    case MIPS_BUILTIN_ANY_C_OLT_4S:
-    case MIPS_BUILTIN_ANY_C_ULT_4S:
-    case MIPS_BUILTIN_ANY_C_OLE_4S:
-    case MIPS_BUILTIN_ANY_C_ULE_4S:
-    case MIPS_BUILTIN_ANY_C_SF_4S:
-    case MIPS_BUILTIN_ANY_C_NGLE_4S:
-    case MIPS_BUILTIN_ANY_C_SEQ_4S:
-    case MIPS_BUILTIN_ANY_C_NGL_4S:
-    case MIPS_BUILTIN_ANY_C_LT_4S:
-    case MIPS_BUILTIN_ANY_C_NGE_4S:
-    case MIPS_BUILTIN_ANY_C_LE_4S:
-    case MIPS_BUILTIN_ANY_C_NGT_4S:
-    case MIPS_BUILTIN_ANY_CABS_F_4S:
-    case MIPS_BUILTIN_ANY_CABS_UN_4S:
-    case MIPS_BUILTIN_ANY_CABS_EQ_4S:
-    case MIPS_BUILTIN_ANY_CABS_UEQ_4S:
-    case MIPS_BUILTIN_ANY_CABS_OLT_4S:
-    case MIPS_BUILTIN_ANY_CABS_ULT_4S:
-    case MIPS_BUILTIN_ANY_CABS_OLE_4S:
-    case MIPS_BUILTIN_ANY_CABS_ULE_4S:
-    case MIPS_BUILTIN_ANY_CABS_SF_4S:
-    case MIPS_BUILTIN_ANY_CABS_NGLE_4S:
-    case MIPS_BUILTIN_ANY_CABS_SEQ_4S:
-    case MIPS_BUILTIN_ANY_CABS_NGL_4S:
-    case MIPS_BUILTIN_ANY_CABS_LT_4S:
-    case MIPS_BUILTIN_ANY_CABS_NGE_4S:
-    case MIPS_BUILTIN_ANY_CABS_LE_4S:
-    case MIPS_BUILTIN_ANY_CABS_NGT_4S:
-      return mips_expand_4s_compare_builtin (MIPS_CMP_ANY, icode,
-					     target, arglist);
-
-    /* Four Single Comparison.  */
-    case MIPS_BUILTIN_ALL_C_F_4S:
-    case MIPS_BUILTIN_ALL_C_UN_4S:
-    case MIPS_BUILTIN_ALL_C_EQ_4S:
-    case MIPS_BUILTIN_ALL_C_UEQ_4S:
-    case MIPS_BUILTIN_ALL_C_OLT_4S:
-    case MIPS_BUILTIN_ALL_C_ULT_4S:
-    case MIPS_BUILTIN_ALL_C_OLE_4S:
-    case MIPS_BUILTIN_ALL_C_ULE_4S:
-    case MIPS_BUILTIN_ALL_C_SF_4S:
-    case MIPS_BUILTIN_ALL_C_NGLE_4S:
-    case MIPS_BUILTIN_ALL_C_SEQ_4S:
-    case MIPS_BUILTIN_ALL_C_NGL_4S:
-    case MIPS_BUILTIN_ALL_C_LT_4S:
-    case MIPS_BUILTIN_ALL_C_NGE_4S:
-    case MIPS_BUILTIN_ALL_C_LE_4S:
-    case MIPS_BUILTIN_ALL_C_NGT_4S:
-    case MIPS_BUILTIN_ALL_CABS_F_4S:
-    case MIPS_BUILTIN_ALL_CABS_UN_4S:
-    case MIPS_BUILTIN_ALL_CABS_EQ_4S:
-    case MIPS_BUILTIN_ALL_CABS_UEQ_4S:
-    case MIPS_BUILTIN_ALL_CABS_OLT_4S:
-    case MIPS_BUILTIN_ALL_CABS_ULT_4S:
-    case MIPS_BUILTIN_ALL_CABS_OLE_4S:
-    case MIPS_BUILTIN_ALL_CABS_ULE_4S:
-    case MIPS_BUILTIN_ALL_CABS_SF_4S:
-    case MIPS_BUILTIN_ALL_CABS_NGLE_4S:
-    case MIPS_BUILTIN_ALL_CABS_SEQ_4S:
-    case MIPS_BUILTIN_ALL_CABS_NGL_4S:
-    case MIPS_BUILTIN_ALL_CABS_LT_4S:
-    case MIPS_BUILTIN_ALL_CABS_NGE_4S:
-    case MIPS_BUILTIN_ALL_CABS_LE_4S:
-    case MIPS_BUILTIN_ALL_CABS_NGT_4S:
-      return mips_expand_4s_compare_builtin (MIPS_CMP_ALL, icode,
-					     target, arglist);
-
-    /* Single/Double Compare Absolute.  */
-    case MIPS_BUILTIN_CABS_F_S:
-    case MIPS_BUILTIN_CABS_UN_S:
-    case MIPS_BUILTIN_CABS_EQ_S:
-    case MIPS_BUILTIN_CABS_UEQ_S:
-    case MIPS_BUILTIN_CABS_OLT_S:
-    case MIPS_BUILTIN_CABS_ULT_S:
-    case MIPS_BUILTIN_CABS_OLE_S:
-    case MIPS_BUILTIN_CABS_ULE_S:
-    case MIPS_BUILTIN_CABS_SF_S:
-    case MIPS_BUILTIN_CABS_NGLE_S:
-    case MIPS_BUILTIN_CABS_SEQ_S:
-    case MIPS_BUILTIN_CABS_NGL_S:
-    case MIPS_BUILTIN_CABS_LT_S:
-    case MIPS_BUILTIN_CABS_NGE_S:
-    case MIPS_BUILTIN_CABS_LE_S:
-    case MIPS_BUILTIN_CABS_NGT_S:
-    case MIPS_BUILTIN_CABS_F_D:
-    case MIPS_BUILTIN_CABS_UN_D:
-    case MIPS_BUILTIN_CABS_EQ_D:
-    case MIPS_BUILTIN_CABS_UEQ_D:
-    case MIPS_BUILTIN_CABS_OLT_D:
-    case MIPS_BUILTIN_CABS_ULT_D:
-    case MIPS_BUILTIN_CABS_OLE_D:
-    case MIPS_BUILTIN_CABS_ULE_D:
-    case MIPS_BUILTIN_CABS_SF_D:
-    case MIPS_BUILTIN_CABS_NGLE_D:
-    case MIPS_BUILTIN_CABS_SEQ_D:
-    case MIPS_BUILTIN_CABS_NGL_D:
-    case MIPS_BUILTIN_CABS_LT_D:
-    case MIPS_BUILTIN_CABS_NGE_D:
-    case MIPS_BUILTIN_CABS_LE_D:
-    case MIPS_BUILTIN_CABS_NGT_D:
-      return mips_expand_scalar_compare_builtin (icode, target, arglist);
-
-    /* Conditional Move on True.  */
-    case MIPS_BUILTIN_MOVT_C_F_PS:
-    case MIPS_BUILTIN_MOVT_C_UN_PS:
-    case MIPS_BUILTIN_MOVT_C_EQ_PS:
-    case MIPS_BUILTIN_MOVT_C_UEQ_PS:
-    case MIPS_BUILTIN_MOVT_C_OLT_PS:
-    case MIPS_BUILTIN_MOVT_C_ULT_PS:
-    case MIPS_BUILTIN_MOVT_C_OLE_PS:
-    case MIPS_BUILTIN_MOVT_C_ULE_PS:
-    case MIPS_BUILTIN_MOVT_C_SF_PS:
-    case MIPS_BUILTIN_MOVT_C_NGLE_PS:
-    case MIPS_BUILTIN_MOVT_C_SEQ_PS:
-    case MIPS_BUILTIN_MOVT_C_NGL_PS:
-    case MIPS_BUILTIN_MOVT_C_LT_PS:
-    case MIPS_BUILTIN_MOVT_C_NGE_PS:
-    case MIPS_BUILTIN_MOVT_C_LE_PS:
-    case MIPS_BUILTIN_MOVT_C_NGT_PS:
-    case MIPS_BUILTIN_MOVT_CABS_F_PS:
-    case MIPS_BUILTIN_MOVT_CABS_UN_PS:
-    case MIPS_BUILTIN_MOVT_CABS_EQ_PS:
-    case MIPS_BUILTIN_MOVT_CABS_UEQ_PS:
-    case MIPS_BUILTIN_MOVT_CABS_OLT_PS:
-    case MIPS_BUILTIN_MOVT_CABS_ULT_PS:
-    case MIPS_BUILTIN_MOVT_CABS_OLE_PS:
-    case MIPS_BUILTIN_MOVT_CABS_ULE_PS:
-    case MIPS_BUILTIN_MOVT_CABS_SF_PS:
-    case MIPS_BUILTIN_MOVT_CABS_NGLE_PS:
-    case MIPS_BUILTIN_MOVT_CABS_SEQ_PS:
-    case MIPS_BUILTIN_MOVT_CABS_NGL_PS:
-    case MIPS_BUILTIN_MOVT_CABS_LT_PS:
-    case MIPS_BUILTIN_MOVT_CABS_NGE_PS:
-    case MIPS_BUILTIN_MOVT_CABS_LE_PS:
-    case MIPS_BUILTIN_MOVT_CABS_NGT_PS:
-      return mips_expand_ps_cond_move_builtin (true, icode, target, arglist);
-
-    /* Conditional Move on False.  */
-    case MIPS_BUILTIN_MOVF_C_F_PS:
-    case MIPS_BUILTIN_MOVF_C_UN_PS:
-    case MIPS_BUILTIN_MOVF_C_EQ_PS:
-    case MIPS_BUILTIN_MOVF_C_UEQ_PS:
-    case MIPS_BUILTIN_MOVF_C_OLT_PS:
-    case MIPS_BUILTIN_MOVF_C_ULT_PS:
-    case MIPS_BUILTIN_MOVF_C_OLE_PS:
-    case MIPS_BUILTIN_MOVF_C_ULE_PS:
-    case MIPS_BUILTIN_MOVF_C_SF_PS:
-    case MIPS_BUILTIN_MOVF_C_NGLE_PS:
-    case MIPS_BUILTIN_MOVF_C_SEQ_PS:
-    case MIPS_BUILTIN_MOVF_C_NGL_PS:
-    case MIPS_BUILTIN_MOVF_C_LT_PS:
-    case MIPS_BUILTIN_MOVF_C_NGE_PS:
-    case MIPS_BUILTIN_MOVF_C_LE_PS:
-    case MIPS_BUILTIN_MOVF_C_NGT_PS:
-    case MIPS_BUILTIN_MOVF_CABS_F_PS:
-    case MIPS_BUILTIN_MOVF_CABS_UN_PS:
-    case MIPS_BUILTIN_MOVF_CABS_EQ_PS:
-    case MIPS_BUILTIN_MOVF_CABS_UEQ_PS:
-    case MIPS_BUILTIN_MOVF_CABS_OLT_PS:
-    case MIPS_BUILTIN_MOVF_CABS_ULT_PS:
-    case MIPS_BUILTIN_MOVF_CABS_OLE_PS:
-    case MIPS_BUILTIN_MOVF_CABS_ULE_PS:
-    case MIPS_BUILTIN_MOVF_CABS_SF_PS:
-    case MIPS_BUILTIN_MOVF_CABS_NGLE_PS:
-    case MIPS_BUILTIN_MOVF_CABS_SEQ_PS:
-    case MIPS_BUILTIN_MOVF_CABS_NGL_PS:
-    case MIPS_BUILTIN_MOVF_CABS_LT_PS:
-    case MIPS_BUILTIN_MOVF_CABS_NGE_PS:
-    case MIPS_BUILTIN_MOVF_CABS_LE_PS:
-    case MIPS_BUILTIN_MOVF_CABS_NGT_PS:
-      return mips_expand_ps_cond_move_builtin (false, icode, target, arglist);
+    case MIPS_BUILTIN_CMP_ANY:
+    case MIPS_BUILTIN_CMP_ALL:
+    case MIPS_BUILTIN_CMP_UPPER:
+    case MIPS_BUILTIN_CMP_LOWER:
+    case MIPS_BUILTIN_CMP_SINGLE:
+      return mips_expand_builtin_compare (type, icode, target, arglist);
 
     default:
-      break;
+      return 0;
     }
-
-  return 0;
 }
 
 /* Init builtin functions.  This is called from TARGET_INIT_BUILTIN.  */
@@ -10517,19 +9544,53 @@ mips_init_builtins (void)
 
   for (d = mips_bdesc; d < &mips_bdesc[ARRAY_SIZE (mips_bdesc)]; d++)
     if ((d->target_flags & target_flags) == d->target_flags)
-      lang_hooks.builtin_function (d->name, types[d->ftype],
-				   d->code, BUILT_IN_MD, NULL, NULL_TREE);
+      lang_hooks.builtin_function (d->name, types[d->function_type],
+				   d - mips_bdesc, BUILT_IN_MD, NULL, NULL);
+}
+
+/* Expand a MIPS_BUILTIN_DIRECT function.  ICODE is the code of the
+   .md pattern and ARGLIST is the list of function arguments.  TARGET,
+   if nonnull, suggests a good place to put the result.  */
+
+static rtx
+mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist)
+{
+  rtx ops[MAX_RECOG_OPERANDS];
+  int i;
+
+  target = mips_prepare_builtin_target (icode, 0, target);
+  for (i = 1; i < insn_data[icode].n_operands; i++)
+    ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
+
+  switch (insn_data[icode].n_operands)
+    {
+    case 2:
+      emit_insn (GEN_FCN (icode) (target, ops[1]));
+      break;
+
+    case 3:
+      emit_insn (GEN_FCN (icode) (target, ops[1], ops[2]));
+      break;
+
+    case 4:
+      emit_insn (GEN_FCN (icode) (target, ops[1], ops[2], ops[3]));
+      break;
+
+    default:
+      abort ();
+    }
+  return target;
 }
 
 /* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
-   function (MOVE_ON_TRUE says which).  ARGLIST is the list of arguments
-   to the function and ICODE says which instruction should be used to
+   function (TYPE says which).  ARGLIST is the list of arguments to
+   the function and ICODE says which instruction should be used to
    compare the first two arguments.  TARGET, if nonnull, suggests a
    good place to put the result.  */
 
 static rtx
-mips_expand_ps_cond_move_builtin (bool move_on_true, enum insn_code icode,
-				  rtx target, tree arglist)
+mips_expand_builtin_movtf (enum mips_builtin_type type, enum insn_code icode,
+			   rtx target, tree arglist)
 {
   rtx cmp_result, op0, op1;
 
@@ -10540,7 +9601,7 @@ mips_expand_ps_cond_move_builtin (bool move_on_true, enum insn_code icode,
 
   icode = CODE_FOR_mips_cond_move_tf_ps;
   target = mips_prepare_builtin_target (icode, 0, target);
-  if (move_on_true)
+  if (type == MIPS_BUILTIN_MOVT)
     {
       op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
       op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
@@ -10554,32 +9615,77 @@ mips_expand_ps_cond_move_builtin (bool move_on_true, enum insn_code icode,
   return target;
 }
 
-/* Use comparison instruction PAT to set condition-code register REG.
-   If NONZERO_IF_EQUAL_P, return an rtx that is 1 if the new value of
-   REG equals CONSTANT and 0 otherwise.  Return the inverse if
-   !NONZERO_IF_EQUAL_P.  TARGET, if nonnull, suggests a good place
-   for the result.  */
+/* Expand a comparison builtin of type BUILTIN_TYPE.  ICODE is the code of
+   the comparison instruction and ARGLIST is the list of function arguments.
+   TARGET, if nonnull, suggests a good place to put the boolean result.  */
 
 static rtx
-mips_expand_compare_builtin (bool nonzero_if_equal_p, rtx target,
-			     rtx pat, rtx reg, int constant)
+mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
+			     enum insn_code icode, rtx target, tree arglist)
 {
   rtx label1, label2, if_then_else;
+  rtx pat, cmp_result, ops[MAX_RECOG_OPERANDS];
+  rtx target_if_equal, target_if_unequal;
+  int cmp_value, i;
 
   if (target == 0 || GET_MODE (target) != SImode)
     target = gen_reg_rtx (SImode);
 
-  /* First assume that REG == CONSTANT.  */
-  emit_move_insn (target, nonzero_if_equal_p ? const1_rtx : const0_rtx);
+  /* Prepare the operands to the comparison.  */
+  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
+  for (i = 1; i < insn_data[icode].n_operands; i++)
+    ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
 
-  /* Branch to LABEL1 if REG != CONSTANT.  */
+  switch (insn_data[icode].n_operands)
+    {
+    case 3:
+      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2]);
+      break;
+
+    case 5:
+      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2], ops[3], ops[4]);
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* If the comparison sets more than one register, we define the result
+     to be 0 if all registers are false and -1 if all registers are true.
+     The value of the complete result is indeterminate otherwise.  It is
+     possible to test individual registers using SUBREGs.
+
+     Set up CMP_RESULT, CMP_VALUE, TARGET_IF_EQUAL and TARGET_IF_UNEQUAL so
+     that the result should be TARGET_IF_EQUAL if (EQ CMP_RESULT CMP_VALUE)
+     and TARGET_IF_UNEQUAL otherwise.  */
+  if (builtin_type == MIPS_BUILTIN_CMP_ALL)
+    {
+      cmp_value = -1;
+      target_if_equal = const1_rtx;
+      target_if_unequal = const0_rtx;
+    }
+  else
+    {
+      cmp_value = 0;
+      target_if_equal = const0_rtx;
+      target_if_unequal = const1_rtx;
+      if (builtin_type == MIPS_BUILTIN_CMP_UPPER)
+	cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 4);
+      else if (builtin_type == MIPS_BUILTIN_CMP_LOWER)
+	cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 0);
+    }
+
+  /* First assume that CMP_RESULT == CMP_VALUE.  */
+  emit_move_insn (target, target_if_equal);
+
+  /* Branch to LABEL1 if CMP_RESULT != CMP_VALUE.  */
   emit_insn (pat);
   label1 = gen_label_rtx ();
   label2 = gen_label_rtx ();
   if_then_else
     = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (NE, GET_MODE (reg),
-					    reg, GEN_INT (constant)),
+			    gen_rtx_fmt_ee (NE, GET_MODE (cmp_result),
+					    cmp_result, GEN_INT (cmp_value)),
 			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
@@ -10587,138 +9693,11 @@ mips_expand_compare_builtin (bool nonzero_if_equal_p, rtx target,
   emit_barrier ();
   emit_label (label1);
 
-  /* Fix TARGET for REG != CONSTANT.  */
-  emit_move_insn (target, nonzero_if_equal_p ? const0_rtx : const1_rtx);
+  /* Fix TARGET for CMP_RESULT != CMP_VALUE.  */
+  emit_move_insn (target, target_if_unequal);
   emit_label (label2);
 
   return target;
-}
-
-/* Read two scalar arguments from ARGLIST and use instruction ICODE to
-   compare them.  Return the result as a boolean SImode value.  TARGET,
-   if nonnull, suggests a good place to put the result.  */
-
-rtx
-mips_expand_scalar_compare_builtin (enum insn_code icode, rtx target,
-				    tree arglist)
-{
-  rtx pat, cmp_result, op0, op1;
-
-  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-  pat = GEN_FCN (icode) (cmp_result, op0, op1);
-
-  return mips_expand_compare_builtin (false, target, pat, cmp_result, 0);
-}
-
-/* Read four V2SF arguments from ARGLIST and use instruction ICODE to
-   compare them.  Use CMP_CHOICE to convert the four condition codes
-   into an SImode value.  TARGET, if nonnull, suggests a good place
-   to put this value.  */
-
-rtx
-mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice,
-				enum insn_code icode, rtx target,
-				tree arglist)
-{
-  rtx pat, cmp_result, op0, op1, op2, op3;
-  int compare_value;
-
-  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-  op2 = mips_prepare_builtin_arg (icode, 3, &arglist);
-  op3 = mips_prepare_builtin_arg (icode, 4, &arglist);
-  pat = GEN_FCN (icode) (cmp_result, op0, op1, op2, op3);
-
-  /* We fake the value of CCV4 to be:
-     0 if all registers are false.
-     -1 if all registers are true.
-     an indeterminate value otherse.
- 
-     Thus, we can map "enum mips_cmp_choice" to RTL comparison operators:
-     MIPS_CMP_ANY ->   (NE 0)
-     MIPS_CMP_ALL ->   (EQ -1).
-
-     However, because MIPS doesn't have "branch_all" instructions, 
-     for MIPS_CMP_ALL, we will use (NE -1) and reverse the assignment of
-     the target to 1 first and then 0.  */
-  switch (cmp_choice)
-    {
-    case MIPS_CMP_ANY:
-      compare_value = 0;
-      break;
-
-    case MIPS_CMP_ALL:
-      compare_value = -1;
-      break;
-
-    default:
-      abort ();
-    }
-
-  return mips_expand_compare_builtin (cmp_choice == MIPS_CMP_ALL,
-				      target, pat, cmp_result, compare_value);
-}
-
-/* Like mips_expand_4s_compare_builtin, but compares two V2SF vectors rather
-   than four.  The arguments and return type are otherwise the same. */
-
-rtx
-mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice,
-				enum insn_code icode, rtx target,
-				tree arglist)
-{
-  rtx pat, cmp_result, op0, op1;
-  int compare_value;
-
-  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-  pat = GEN_FCN (icode) (cmp_result, op0, op1);
-
-  /* We fake the value of CCV2 to be:
-     0 if all registers are false.
-     -1 if all registers are true.
-     an indeterminate value otherse.
- 
-     Thus, we can map "enum mips_cmp_choice" to RTL comparison operators:
-     MIPS_CMP_ANY ->   (NE 0)
-     MIPS_CMP_ALL ->   (EQ -1).
-
-     However, because MIPS doesn't have "branch_all" instructions,
-     for MIPS_CMP_ALL, we will use (NE -1) and reverse the assignment of
-     the target to 1 first and then 0.
-
-     We handle MIPS_CMP_LOWER and MIPS_CMP_UPPER by taking the appropriate
-     CCmode subreg and comparing against zero in the normal way.  */
-  switch (cmp_choice)
-    {
-    case MIPS_CMP_ANY:
-      compare_value = 0;
-      break;
-
-    case MIPS_CMP_UPPER:
-      cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 4);
-      compare_value = 0;
-      break;
-
-    case MIPS_CMP_LOWER:
-      cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 0);
-      compare_value = 0;
-      break;
-
-    case MIPS_CMP_ALL:
-      compare_value = -1;
-      break;
-
-    default:
-      abort ();
-    }
-
-  return mips_expand_compare_builtin (cmp_choice == MIPS_CMP_ALL,
-				      target, pat, cmp_result, compare_value);
 }
 
 #include "gt-mips.h"
