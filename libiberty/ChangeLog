@@ -1,3 +1,16 @@
+2004-01-02  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_encoding): When DMGL_PARAMS is not set, strip
+	CV-qualifiers from D_COMP_LOCAL_NAME right subtree.
+	* cplus-dem.c (demangle_arm_hp_template): Set DMGL_PARAMS when
+	demangling template parameters.
+	* testsuite/test-demangle.c (fail): New static function.
+	(main): Support new options in input file: --no-params,
+	--is-v3-ctor, and --is-v3-dtor.
+	* testsuite/demangle-expected: Add --no-params to most tests, and
+	add the correct result when parameters are not demangled.  Add
+	some simple tests for V3 constructor/destructor recognition.
+
 2003-12-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-demangle.c (is_ctor_or_dtor): Fix error in last change.

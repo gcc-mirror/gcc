@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -1109,6 +1109,23 @@ d_encoding (di, top_level)
 		 || dc->type == D_COMP_VOLATILE_THIS
 		 || dc->type == D_COMP_CONST_THIS)
 	    dc = d_left (dc);
+
+	  /* If the top level is a D_COMP_LOCAL_NAME, then there may
+	     be CV-qualifiers on its right argument which really apply
+	     here; this happens when parsing a class which is local to
+	     a function.  */
+	  if (dc->type == D_COMP_LOCAL_NAME)
+	    {
+	      struct d_comp *dcr;
+
+	      dcr = d_right (dc);
+	      while (dcr->type == D_COMP_RESTRICT_THIS
+		     || dcr->type == D_COMP_VOLATILE_THIS
+		     || dcr->type == D_COMP_CONST_THIS)
+		dcr = d_left (dcr);
+	      dc->u.s_binary.right = dcr;
+	    }
+
 	  return dc;
 	}
 
