@@ -62,9 +62,7 @@ lang_init_options ()
 void
 lang_init ()
 {
-  /* If still "unspecified", make it match -fbounded-pointers.  */
-  if (flag_bounds_check < 0)
-    flag_bounds_check = flag_bounded_pointers;
+  c_common_lang_init ();
 
   /* If still unspecified, make it match pedantic && -std=c99.  */
   if (mesg_implicit_function_declaration < 0)

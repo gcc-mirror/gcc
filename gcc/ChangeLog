@@ -1,5 +1,14 @@
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (c_common_lang_init): New function.  Warn if format
+	warning options which only have effects when used with -Wformat
+	are used without -Wformat.
+	* c-common.h (c_common_lang_init): Declare.
+	* c-lang.c (lang_init): Call c_common_lang_init.
+	* objc/objc-act.c (lang_init): Call c_common_lang_init.
+
+2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* configure.in: Check for the mktemp command.
 	* configure: Regenerate.
 	* gccbug.in: Use a separate temporary file $TEMP0 for one use of

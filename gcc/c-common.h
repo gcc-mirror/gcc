@@ -513,6 +513,8 @@ extern void c_common_nodes_and_builtins		PARAMS ((void));
 
 extern tree build_va_arg			PARAMS ((tree, tree));
 
+extern void c_common_lang_init			PARAMS ((void));
+
 /* Nonzero if the type T promotes to itself.
    ANSI C states explicitly the list of types that promote;
    in particular, short promotes to int even if they have the same width.  */

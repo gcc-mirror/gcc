@@ -1,6 +1,6 @@
 /* Separate lexical analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -262,9 +262,7 @@ lang_init_options ()
 void
 lang_init ()
 {
-  /* If still "unspecified", make it match -fbounded-pointers.  */
-  if (flag_bounds_check < 0)
-    flag_bounds_check = flag_bounded_pointers;
+  c_common_lang_init ();
 
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
