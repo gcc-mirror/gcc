@@ -21,14 +21,24 @@ int main ()
   A *apd = &d;
   B1 *b1pd = &d;
   B2 *b2pd = &d;
+  C *cpd = &d;
   
 #if __GXX_ABI_VERSION >= 100
   if (static_cast <void *> (apc) != static_cast <void *> (b1pc))
     return 1;
-  if (static_cast <void *> (apd) != static_cast <void *> (b1pd))
+  if (static_cast <void *> (&c) != static_cast <void *> (b2pc))
     return 2;
-  if (static_cast <void *> (apd) != static_cast <void *> (&d))
+  if (static_cast <void *> (b1pc) == static_cast <void *> (b2pc))
     return 3;
+  
+  if (static_cast <void *> (apd) != static_cast <void *> (b1pd))
+    return 11;
+  if (static_cast <void *> (b2pd) != static_cast <void *> (&d))
+    return 12;
+  if (static_cast <void *> (b2pd) != static_cast <void *> (cpd))
+    return 13;
+  if (static_cast <void *> (b1pd) == static_cast <void *> (b2pd))
+    return 14;
 #endif
   return 0;
 }

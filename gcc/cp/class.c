@@ -190,6 +190,7 @@ static void build_vcall_and_vbase_vtbl_entries PARAMS ((tree,
 							vtbl_init_data *));
 static void force_canonical_binfo_r PARAMS ((tree, tree, tree, tree));
 static void force_canonical_binfo PARAMS ((tree, tree, tree, tree));
+static tree dfs_unshared_virtual_bases PARAMS ((tree, void *));
 static void mark_primary_bases PARAMS ((tree));
 static tree mark_primary_virtual_base PARAMS ((tree, tree, tree));
 static void clone_constructors_and_destructors PARAMS ((tree));
@@ -1596,12 +1597,12 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 {
   int n_baseclasses;
   int i;
-  int seen_nearly_empty_base_p;
+  int seen_non_virtual_nearly_empty_base_p;
   tree binfos;
 
   binfos = TYPE_BINFO_BASETYPES (t);
   n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-  seen_nearly_empty_base_p = 0;
+  seen_non_virtual_nearly_empty_base_p = 0;
 
   /* An aggregate cannot have baseclasses.  */
   CLASSTYPE_NON_AGGREGATE (t) |= (n_baseclasses != 0);
@@ -1662,19 +1663,23 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
                         basetype);
 	}
 
-      /* If the base class is not empty or nearly empty, then this
-	 class cannot be nearly empty.  */
-      if (!CLASSTYPE_NEARLY_EMPTY_P (basetype) && !is_empty_class (basetype))
-	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-      /* And if there is more than one nearly empty base, then the
-	 derived class is not nearly empty either.  */
-      else if (CLASSTYPE_NEARLY_EMPTY_P (basetype) 
-	       && seen_nearly_empty_base_p)
-	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-      /* If this is the first nearly empty base class, then remember
-	 that we saw it.  */
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	/* A virtual base does not effect nearly emptiness. */
+	;
       else if (CLASSTYPE_NEARLY_EMPTY_P (basetype))
-	seen_nearly_empty_base_p = 1;
+	{
+	  if (seen_non_virtual_nearly_empty_base_p)
+	    /* And if there is more than one nearly empty base, then the
+	       derived class is not nearly empty either.  */
+	    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+	  else
+	    /* Remember we've seen one. */
+	    seen_non_virtual_nearly_empty_base_p = 1;
+	}
+      else if (!is_empty_class (basetype))
+	/* If the base class is not empty or nearly empty, then this
+	   class cannot be nearly empty.  */
+	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 
       /* A lot of properties from the bases also apply to the derived
 	 class.  */
@@ -1814,6 +1819,23 @@ mark_primary_virtual_base (binfo, base_binfo, type)
   return base_binfo;
 }
 
+/* If BINFO is an unmarked virtual binfo for a class with a primary
+   base, then BINFO has no primary base in this graph.  Called from
+   mark_primary_bases. */
+
+static tree dfs_unshared_virtual_bases (binfo, data)
+     tree binfo;
+     void *data;
+{
+  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_MARKED (binfo)
+      && CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+    BINFO_LOST_PRIMARY_P (binfo) = 1;
+
+  CLEAR_BINFO_MARKED (binfo);
+  
+  return NULL;
+}
+
 /* Set BINFO_PRIMARY_BASE_OF for all binfos in the hierarchy
    dominated by TYPE that are primary bases.  */
 
@@ -1839,7 +1861,12 @@ mark_primary_bases (type)
 
       if (base_binfo)
         BINFO_PRIMARY_BASE_OF (base_binfo) = binfo;
+      SET_BINFO_MARKED (binfo);
     }
+  /* There could remain unshared virtual bases which were not visited
+     in the inheritance graph walk. These bases will have lost their
+     primary base (should they have one). We must now find them. */
+  dfs_walk (TYPE_BINFO (type), dfs_unshared_virtual_bases, NULL, NULL);
 }
 
 /* Make the BINFO the primary base of T.  */

@@ -1,4 +1,9 @@
 2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+	
+	* g++.old-deja/g++.abi/primary3.C (main): Correct expected layout.
+	* g++.old-deja/g++.abi/crash1.C: New test.
+
+2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash40.C: New test.
 
