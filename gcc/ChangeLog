@@ -1,3 +1,11 @@
+1999-10-15 11:16 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* cppexp.c (cpp_parse_escape): Make static.  Change second arg
+	to U_CHAR **.
+	(parse_charconst): Delete unnecessary cast when calling
+	cpp_parse_escape.
+	(cpplib.h): Kill prototype of cpp_parse_escape.
+
 Fri Oct 15 11:02:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	Based on patch from Michael Gschwind <mikeg@watson.ibm.com>:
