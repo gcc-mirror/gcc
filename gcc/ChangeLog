@@ -1,5 +1,7 @@
 2000-09-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-decl.c (do_case): Fix a typo.
+
 	* combine.c (simplify_if_then_else): Don't convert a == b ? b : a
 	to a if the comparison is floating mode and not -ffast-math.
 	* simplify-rtx.c (simplify_ternary_operation): Likewise.

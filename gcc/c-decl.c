@@ -6985,7 +6985,7 @@ do_case (low_value, high_value)
 	      error_with_decl (duplicate, "this is the first default label");
 	    }
 	  else
-	    error ("dupicate case value");
+	    error ("duplicate case value");
 	  if (high_value != NULL_TREE)
 	    error_with_decl (duplicate,
 			     "this is the first entry for that value");
