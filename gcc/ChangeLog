@@ -1,3 +1,9 @@
+2003-04-17  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/10375
+	* c-decl.c (duplicate_decls): Preserve "const" and "noreturn"
+	function attributes.
+
 2003-04-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Suites): Document support for testing

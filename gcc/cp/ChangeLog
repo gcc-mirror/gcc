@@ -1,3 +1,9 @@
+2003-04-17  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/10375
+	* decl.c (duplicate_decls): Preserve "const", "noreturn" and
+	"nothrow" function attributes.
+
 2003-04-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10347
