@@ -1942,6 +1942,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
+	  if (DECL_INLINE (newdecl))
+	    DECL_ABSTRACT_ORIGIN (newdecl) = olddecl;
 	}
     }
   if (different_binding_level)
