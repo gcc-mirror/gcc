@@ -58,7 +58,6 @@ static int finish_vtable_vardecl PROTO((tree, tree));
 static int prune_vtable_vardecl PROTO((tree, tree));
 static void finish_sigtable_vardecl PROTO((tree, tree));
 static int is_namespace_ancestor PROTO((tree, tree));
-static tree namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
@@ -3839,7 +3838,7 @@ is_namespace_ancestor (root, child)
 /* Return the namespace that is the common ancestor 
    of two given namespaces. */
 
-static tree
+tree
 namespace_ancestor (ns1, ns2)
      tree ns1, ns2;
 {
@@ -4495,10 +4494,16 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   if (BINDING_VALUE (decls) && is_overloaded_fn (BINDING_VALUE (decls)))
     {
       tree tmp, tmp1;
+
+      if (oldval && !is_overloaded_fn (oldval))
+	{
+	  duplicate_decls (OVL_CURRENT (BINDING_VALUE (decls)), oldval);
+	  oldval = NULL_TREE;
+	}
+
       *newval = oldval;
       for (tmp = BINDING_VALUE (decls); tmp; tmp = OVL_NEXT (tmp))
 	{
-
 	  /* Compare each new function with each old one.
 	     If the old function was also used, there is no conflict. */
 	  for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
@@ -4522,8 +4527,8 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   else 
     {
       *newval = BINDING_VALUE (decls);
-      if (oldval && oldval != *newval && !duplicate_decls (*newval, oldval))
-	*newval = oldval;
+      if (oldval)
+	duplicate_decls (*newval, oldval);
     } 
 
   *newtype = BINDING_TYPE (decls);
@@ -4563,27 +4568,28 @@ do_toplevel_using_decl (decl)
   return;
 }
 
+/* Process a using-declaration at function scope.  */
+
 void
 do_local_using_decl (decl)
      tree decl;
 {
   tree scope, name;
   tree oldval, oldtype, newval, newtype;
+
   decl = validate_nonmember_using_decl (decl, &scope, &name);
   if (decl == NULL_TREE)
     return;
 
-  /* XXX nested values */
-  oldval = IDENTIFIER_LOCAL_VALUE (name);
-  /* XXX get local type */
-  oldtype = NULL_TREE;
+  oldval = lookup_name_current_level (name);
+  oldtype = lookup_type_current_level (name);
 
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   if (newval)
-    /* XXX update bindings */
-    IDENTIFIER_LOCAL_VALUE (name) = newval;
-  /* XXX type */
+    set_identifier_local_value (name, newval);
+  if (newtype)
+    set_identifier_type_value (name, newtype);
 }
 
 tree
@@ -4638,9 +4644,7 @@ do_using_directive (namespace)
     }
   namespace = ORIGINAL_NAMESPACE (namespace);
   if (!toplevel_bindings_p ())
-    push_using_directive
-      (namespace, namespace_ancestor (current_decl_namespace(), 
-				      current_namespace));
+    push_using_directive (namespace);
   else
     /* direct usage */
     add_using_namespace (current_namespace, namespace, 0);

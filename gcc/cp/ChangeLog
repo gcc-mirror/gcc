@@ -1,5 +1,19 @@
 1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (qualify_lookup): Handle templates.
+
+	* decl2.c (do_using_directive): Don't pass ancestor.
+	* decl.c (push_using_directive): Calculate ancestor.
+
+	* decl2.c (do_nonmember_using_decl): Allow for type shadowing.
+	* decl.c (pushdecl): Move type shadowing handling from here...
+	(duplicate_decls): ...to here.
+	* decl.c (set_identifier_local_value_with_scope): New fn.
+	(pushdecl): Use it.
+	(set_identifier_local_value, lookup_type_current_level): New fns.
+	* decl2.c (do_local_using_decl): Handle types and binding level
+	stuff properly.
+
 	* init.c (build_offset_ref): Don't call mark_used on an OVERLOAD.
 	* decl.c (select_decl): Extract a lone function from an OVERLOAD.
 	(lookup_namespace_name): Likewise.
