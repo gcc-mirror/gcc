@@ -1,3 +1,19 @@
+2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (vrsave_operation): Recognize SETs in
+	parallel.
+	(is_gpr_return_reg): New.
+	(rs6000_emit_prologue): Call generate_set_vrsave with additional
+	argument.  Save only registers in the mask.  Attach
+	REG_FRAME_RELATED_EXPR note to altivec offsets.  Do not call
+	rs6000_frame_related when saving VRSAVE.
+	(rs6000_emit_epilogue): Call generate_set_vrsave with additional
+	argument.  Restore only registers in the mask.  Restore altivec
+	registers after we restore CR.
+	(generate_set_vrsave): New parameter epiloguep.  Generate unspec
+	sets instead of clobbers for call saved registers.
+	(altivec_frame_fixup): New.
+	
 2001-12-17  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.md (movdi_zero): Remove.
