@@ -1,3 +1,8 @@
+2000-10-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (instantiate_decl): Always instantiate static data members
+	initialized in-class.
+
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in: Move all build rules here from Makefile.in,

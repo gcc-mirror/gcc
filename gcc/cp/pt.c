@@ -9614,12 +9614,6 @@ instantiate_decl (d, defer_ok)
 	import_export_decl (d);
     }
 
-  /* Reject all external templates except inline functions.  */
-  if (DECL_INTERFACE_KNOWN (d)
-      && ! DECL_NOT_REALLY_EXTERN (d)
-      && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
-    goto out;
-
   /* We need to set up DECL_INITIAL regardless of pattern_defined if
      the variable is a static const initialized in the class body.  */
   if (TREE_CODE (d) == VAR_DECL 
@@ -9627,6 +9621,11 @@ instantiate_decl (d, defer_ok)
       && DECL_INITIAL (d) == NULL_TREE
       && DECL_INITIAL (code_pattern) != NULL_TREE)
     ;
+  /* Reject all external templates except inline functions.  */
+  else if (DECL_INTERFACE_KNOWN (d)
+	   && ! DECL_NOT_REALLY_EXTERN (d)
+	   && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
+    goto out;
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  We restore the source position here
      because it's used by add_pending_template.  */
