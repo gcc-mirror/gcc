@@ -1,3 +1,11 @@
+2002-02-01  DJ Delorie  <dj@redhat.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): If
+	we are given conflicting registers, switch to the other one we
+	had allocated for us.
+	* config/sparc/sparc.md (reload_indi, reload_outdi): Pass op[2]
+	as TImode so we know when the "other" register is available.
+
 2002-02-01  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/sparc/sol2-sld-64.h: Include sparc/biarch64.h rather than

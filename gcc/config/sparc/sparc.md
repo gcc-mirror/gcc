@@ -2734,8 +2734,7 @@
    && ! flag_pic"
   "
 {
-  sparc_emit_set_symbolic_const64 (operands[0], operands[1],
-                                   gen_rtx_REG (DImode, REGNO (operands[2])));
+  sparc_emit_set_symbolic_const64 (operands[0], operands[1], operands[2]);
   DONE;
 }")
 
@@ -2748,8 +2747,7 @@
    && ! flag_pic"
   "
 {
-  sparc_emit_set_symbolic_const64 (operands[0], operands[1],
-                                   gen_rtx_REG (DImode, REGNO (operands[2])));
+  sparc_emit_set_symbolic_const64 (operands[0], operands[1], operands[2]);
   DONE;
 }")
 
