@@ -474,6 +474,7 @@ Mon Sep 29 19:05:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-09-25  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/6222
 	* config/mips/mips.c (mips_va_arg): Handle arguments that must be
 	passed on the stack.
 
