@@ -147,7 +147,7 @@ all.indirect: Makefile ../cc1plus$(exeext)
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 
 # This is the variable actually used when we compile.
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) -W -Wall
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
