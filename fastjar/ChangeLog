@@ -1,3 +1,10 @@
+2003-07-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR java/9532
+	* jartool.c (add_to_jar): Return 1 on failure to open file.
+	Split out -C case to:
+	* jartool.c (add_to_jar_with_dir): New function.
+
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR java/9532
