@@ -1,3 +1,7 @@
+Wed Mar 29 13:44:23 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000329-1.c: New test.
+
 2000-03-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.ext/array4.C: New test.
