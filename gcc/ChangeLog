@@ -1,3 +1,10 @@
+2002-11-11  Graham Stott  <graham.stott@btinternet.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR 8502
+	* cfgrtl.c (try_redirect_by_replacing_jump): Do not kill computed
+	jumps post reload.
+
 2002-11-08  H.J. Lu <hjl@gnu.org>
 
 	Fix c/5351 and optimization/7591.
