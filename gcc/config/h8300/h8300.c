@@ -454,6 +454,24 @@ adds_subs_operand (op, mode)
   return 0;
 }
 
+/* Return nonzero if op is an adds/subs operand which only requires
+   one insn to implement.  It is assumed that OP is already an adds/subs
+   operand.  */
+int
+one_insn_adds_subs_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int val = INTVAL (op);
+
+  if (val == 1 || val == -1
+      || val == 2 || val == -2
+      || (TARGET_H8300H
+	  && (val == 4 || val == -4)))
+    return 1;
+  return 0;
+}
+
 char *
 output_adds_subs (operands)
      rtx *operands;
@@ -2252,4 +2270,77 @@ output_simode_bld (bild, log2, operands)
 
   /* All done.  */
   return "";
+}
+
+/* Given INSN and it's current length LENGTH, return the adjustment
+   (in bytes) to correctly compute INSN's length.
+
+   We use this to get the lengths of various memory references correct.  */
+
+h8300_adjust_insn_length (insn, length)
+     rtx insn;
+     int length;
+{
+  rtx pat = PATTERN (insn);
+
+  /* Adjust length for reg->mem and mem->reg copies.  */
+  if (GET_CODE (pat) == SET
+      && (GET_CODE (SET_SRC (pat)) == MEM
+	  || GET_CODE (SET_DEST (pat)) == MEM))
+    {
+      /* This insn might need a length adjustment.  */
+      rtx addr;
+
+      if (GET_CODE (SET_SRC (pat)) == MEM)
+	addr = XEXP (SET_SRC (pat), 0);
+      else
+	addr = XEXP (SET_DEST (pat), 0);
+
+      /* On the H8/300, only one adjustment is necessary; if the
+	 address mode is register indirect, then this insn is two
+	 bytes shorter than indicated in the machine description.  */
+      if (TARGET_H8300 && GET_CODE (addr) == REG)
+	return -2;
+
+      /* On the H8/300H, register indirect is 6 bytes shorter than
+	 indicated in the machine description.  */
+      if (TARGET_H8300H && GET_CODE (addr) == REG)
+	return -6;
+
+      /* On the H8/300H, reg + d, for small displacements is 4 bytes
+	 shorter than indicated in the machine description.  */
+      if (TARGET_H8300H
+	  && GET_CODE (addr) == PLUS
+	  && GET_CODE (XEXP (addr, 0)) == REG
+	  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+	  && INTVAL (XEXP (addr, 1)) > -32768
+	  && INTVAL (XEXP (addr, 1)) < 32767)
+	return -4;
+    }
+
+  /* Loading some constants needs adjustment.  */
+  if (GET_CODE (pat) == SET
+      && GET_CODE (SET_SRC (pat)) == CONST_INT
+      && GET_MODE (SET_DEST (pat)) == SImode
+      && INTVAL (SET_SRC (pat)) != 0)
+    {
+      if (TARGET_H8300
+	  && ((INTVAL (SET_SRC (pat)) & 0xffff) == 0
+	      || ((INTVAL (SET_SRC (pat)) >> 16) & 0xffff) == 0))
+	return -2;
+
+      if (TARGET_H8300H)
+	{
+	  int val = INTVAL (SET_SRC (pat));
+
+	  if (val == (val & 0xff)
+	      || val == (val & 0xff00))
+	    return -6;
+
+	  if (val == -4 || val == -2 || val == -1)
+	    return -6;
+	}
+    }
+
+  return 0;
 }
