@@ -2118,6 +2118,13 @@ expand_abs (mode, op0, target, unsignedp, safe)
     }
 
   /* If that does not win, use conditional jump and negate.  */
+
+  /* It is safe to use the target if it is the same
+     as the source if this is also a pseudo register */
+  if (op0 == target && GET_CODE (op0) == REG
+      && REGNO (op0) >= FIRST_PSEUDO_REGISTER)
+    safe = 1;
+
   op1 = gen_label_rtx ();
   if (target == 0 || ! safe
       || GET_MODE (target) != mode
