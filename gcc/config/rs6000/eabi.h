@@ -56,8 +56,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");
 
-/* FIXME: These should actually indicate PowerPC, when there is some
-   standard way of expressing that.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -Asystem(embedded) -Acpu(powerpc) -Amachine(powerpc)"
+
+/* Don't use startfiles or libraries except for libgcc.a */
+#undef  STARTFILE_SPEC
+#define	STARTFILE_SPEC ""
+
+#undef	LIB_SPEC
+#define	LIB_SPEC ""
+
+#undef	LIBGCC_SPEC
+#define	LIBGCC_SPEC "libgcc.a%s"
+
+#undef	ENDFILE_SPEC
+#define	ENDFILE_SPEC ""
+
