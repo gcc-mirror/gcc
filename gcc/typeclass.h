@@ -1,3 +1,33 @@
+/* Type class enum
+   Copyright (C) 2004 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
+
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
+#ifndef GCC_TYPECLASS_H
+#define GCC_TYPECLASS_H
+
 /* Values returned by __builtin_classify_type.  */
 
 enum type_class
@@ -12,3 +42,5 @@ enum type_class
   array_type_class, string_type_class, set_type_class, file_type_class,
   lang_type_class
 };
+
+#endif /* GCC_TYPECLASS_H */
