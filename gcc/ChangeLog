@@ -1,5 +1,8 @@
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* stor-layout.c (sizetype_set): Remove.
+	(set_sizetype): Don't test or set it.
+
 	* tree.h (size_int_type): Remove.
 	* fold-const.c: Do not #include gt-fold-const.h.
 	(size_htab_hash, size_htab_eq): Remove.
