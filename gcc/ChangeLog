@@ -1,3 +1,70 @@
+Sat Dec  5 21:02:13 1998  Paul Eggert  <eggert@twinsun.com>
+
+	Add new option --White-space, implied by -Wall.
+	If DEPENDENCIES_OUTPUT is `FILE TARGET', have TARGET depend on source.
+	Simplify VMS fwrite workaround.
+	Bug fixes (notably with backslash-newlines in strings).
+	Allow multiple-char constants like 'abcde' that are longer than long.
+	Other minor porting issues.
+	
+	* cpp.texi: Document -Wwhite-space, implied by -Wall.
+
+	* cccp.c (fwrite): New VMS macro.
+	(VMS_fwrite): New VMS function.
+	(strerror): Declare only if NEED_DECLARATION_STRERROR.
+	(warn_white_space): New var.
+	(do_warning): Remove.
+	(directive_table): Use do_error to print warnings.
+	(eprint_string): Remove.  All callers now use fwrite instead.
+	(check_white_space): New function.
+	(fatal): Now extern; it's needed by cexp.y on some platforms.
+	(main): Add new option --White-space, implied by -Wall.
+	If DEPENDENCIES_OUTPUT has the form `FILE TARGET',
+	have TARGET depend on the source file as well as the files
+	that it includes.
+	(newline_fix, name_newline_fix): Assume that *BP == '\\',
+	but don't assume that BP[1] == '\n'.  This shortens the callers' code.
+	All callers changed.
+	(rescan): Warn about white space at end of line in string.
+	Fix bug with counting newlines in strings as the result of
+	macro-expanding.
+	(expand_to_temp_buffer): Do not stomp on the output buffer length;
+	we need the length field for expand_size (see below).
+	All callers changed.
+	(handle_directive): No need to check bp < limit if *bp == '\n'.
+	Allocate a larger directive buffer; expand newline
+	to backslash-'n' in string literals.
+	(timestamp): Don't assume that localtime succeeds.
+	(finclude): Add call to check_white_space in included file.
+	(collect_expansion): No need to check for p < limit at backslash.
+	(do_line): Allow nulls in file name.
+	(do_error): Also do warnings.
+	(do_pragma): Handle escapes in strings correctly.
+	(skip_quoted_string): Don't say ``Unterminated string or
+	character'' if it's known to be a character.
+	Warn about white space at end of line in string.
+	(struct argdata): New member expand_size, giving allocated size
+	of expansion.
+	Rename member stringified_length to stringified_length_bound.
+	All uses changed.
+	(macroexpand): Record expand_size separately from expand_length.
+	Generate nothing for backslash-newline in a string.
+	Escape newlines in strings.
+	(macarg): Have macarg1 count newlines.  Escape newlines in strings.
+	(macarg1): Skip backslash-newline in strings.
+	(change_newlines): Now takes struct argdata * (not U_CHAR * and int)
+	returns void, not int.  Modify the arg in-place.
+	(change_newlines, make_definition): In strings, replace
+	backslash-newline with nothing, and non-backslashed newline
+	with backslash-'n'.
+
+	* cexp.y (fatal): New decl (exported by cccp.c).
+	(yylex): Allow multiple-char constants like 'abcde' that are longer
+	than long; draft C9x requires this.  Don't treat (char)-1 like EOF.
+	(parse_escape): Return -2 if backslash-newline is seen.
+	Parse backslash-newline in numeric escapes.
+	Parse \x using unsigned, not signed, for proper overflow detection.
+
 Fri Dec  4 16:24:36 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Defer some __builtin_constant_p elaborations until after cse;
