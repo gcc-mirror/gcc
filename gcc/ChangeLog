@@ -1,3 +1,8 @@
+Wed Apr 29 13:46:03 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (scope_die_for): If could not find proper scope,
+	check for and handle tagged type with incorrect TYPE_CONTEXT.
+
 Wed Apr 29 15:34:40 1998  John Carr  <jfc@mit.edu>
 
 	* calls.c (expand_call): Fix recognition of C++ operator new.
