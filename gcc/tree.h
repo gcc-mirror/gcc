@@ -3080,6 +3080,7 @@ extern const char *dump_flag_name (enum tree_dump_index);
 /* Assign the RTX to declaration.  */
 
 extern void set_decl_rtl (tree, rtx);
+extern void set_decl_incoming_rtl (tree, rtx);
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic

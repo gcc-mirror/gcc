@@ -1,3 +1,12 @@
+2004-02-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR/14058
+	* emit-rtl.c (set_decl_incoming_rtl): New.
+	* tree.h (set_decl_incoming_rtl): New.
+	* function.c (assign_parms): Use set_decl_incoming_rtl for setting
+	DECL_INCOMING_RTL.
+	* ada/misc.c (adjust_decl_rtl): Likewise.
+
 2004-02-10  Per Bothner  <per@bothner.com>
 
 	* c-opts.c (c_common_post_options):   Don't emit working directory

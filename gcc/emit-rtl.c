@@ -828,6 +828,40 @@ set_decl_rtl (tree t, rtx x)
     }
 }
 
+/* Assign the RTX X to parameter declaration T.  */
+void
+set_decl_incoming_rtl (tree t, rtx x)
+{
+  DECL_INCOMING_RTL (t) = x;
+
+  if (!x)
+    return;
+  /* For register, we maintain the reverse information too.  */
+  if (GET_CODE (x) == REG)
+    REG_ATTRS (x) = get_reg_attrs (t, 0);
+  else if (GET_CODE (x) == SUBREG)
+    REG_ATTRS (SUBREG_REG (x))
+      = get_reg_attrs (t, -SUBREG_BYTE (x));
+  if (GET_CODE (x) == CONCAT)
+    {
+      if (REG_P (XEXP (x, 0)))
+        REG_ATTRS (XEXP (x, 0)) = get_reg_attrs (t, 0);
+      if (REG_P (XEXP (x, 1)))
+	REG_ATTRS (XEXP (x, 1))
+	  = get_reg_attrs (t, GET_MODE_UNIT_SIZE (GET_MODE (XEXP (x, 0))));
+    }
+  if (GET_CODE (x) == PARALLEL)
+    {
+      int i;
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	{
+	  rtx y = XVECEXP (x, 0, i);
+	  if (REG_P (XEXP (y, 0)))
+	    REG_ATTRS (XEXP (y, 0)) = get_reg_attrs (t, INTVAL (XEXP (y, 1)));
+	}
+    }
+}
+
 /* Identify REG (which may be a CONCAT) as a user register.  */
 
 void
