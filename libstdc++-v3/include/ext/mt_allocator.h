@@ -613,13 +613,15 @@ namespace __gnu_cxx
           if (!_S_bin[bin].mutex) 
             __throw_bad_alloc();
 
-          /*
-           * This is not only ugly - it's extremly non-portable!
-           * However gthr.h does not currently provide a
-           * __gthread_mutex_init() call. The correct solution to
-           * this problem needs to be discussed.
-           */
-          pthread_mutex_init(_S_bin[bin].mutex, NULL);
+#ifdef __GTHREAD_MUTEX_INIT
+	  {
+	    // Do not copy a POSIX/gthr mutex once in use.
+	    __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
+	    *_S_bin[bin].mutex = __tmp;
+	  }
+#else
+	  { __GTHREAD_MUTEX_INIT_FUNCTION (_S_bin[bin].mutex); }
+#endif
 #endif
 
           for (size_t thread = 0; thread <= _S_max_threads; thread++)

@@ -7,6 +7,8 @@
 	* config/abi/alpha-freebsd5/baseline_symbols.txt: New file.
 	* config/abi/sparc-freebsd5/baseline_symbols.txt: New file.
 
+	* include/ext/mt_allocator.h: Portability.
+
 2003-06-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/17_intro/libstdc++-assign.txt: Update address.
