@@ -134,12 +134,14 @@ do {							\
 #define STANDARD_STARTFILE_PREFIX "/usr/lib/ia64l64/"
 #endif
 
+/* It is illegal to have relocations in shared segments on AIX.
+   Pretend flag_pic is always set.  */
 #undef	TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  ia64_aix_select_section
+#define TARGET_ASM_SELECT_SECTION  ia64_rwreloc_select_section
 #undef	TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION  ia64_aix_unique_section
+#define TARGET_ASM_UNIQUE_SECTION  ia64_rwreloc_unique_section
 #undef	TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION  ia64_aix_select_rtx_section
+#define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
 
 /* Override ia64/sysv4.h setting with that used by AIX5.  */
 #undef WCHAR_TYPE
