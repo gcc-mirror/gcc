@@ -10091,7 +10091,11 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size)
 
   emit_cmp_insn (op0, op1, code, size, mode, unsignedp);
 
+#if HAVE_cc0
   return gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+#else
+  return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
+#endif
 }
 
 /* Like do_compare_and_jump but expects the values to compare as two rtx's.
