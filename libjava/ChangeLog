@@ -1,3 +1,9 @@
+2005-01-09  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/17069
+	* java/net/InetAddress.java (getLocalHost):
+	Throw UnknownHostException if local hostname cannot be determined.
+
 2005-01-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (findClass): Fixed documentation.
