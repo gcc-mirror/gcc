@@ -105,7 +105,7 @@ struct chunk
    to the beginning of the block.
 
    If (pc < 0), the jcf_block is not an actual block (i.e. it has no
-   assocated code yet), but it is an undefined label.
+   associated code yet), but it is an undefined label.
 */
 
 struct jcf_block
@@ -2671,7 +2671,7 @@ perform_relocations (state)
 	  /* new_ptr and old_ptr point into the old and new buffers,
 	     respectively.  (If no relocations cause the buffer to
 	     grow, the buffer will be the same buffer, and new_ptr==old_ptr.)
-	     The bytes at higher adress have been copied and relocations
+	     The bytes at higher address have been copied and relocations
 	     handled; those at lower addresses remain to process. */
 
 	  /* Lower old index of piece to be copied with no relocation.

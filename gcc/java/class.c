@@ -351,7 +351,7 @@ push_class (class_type, class_name)
   signature = identifier_subst (class_name, "L", '.', '/', ";");
   IDENTIFIER_SIGNATURE_TYPE (signature) = build_pointer_type (class_type);
 
-  /* Setting DECL_ARTIFICAL forces dbxout.c to specific the type is
+  /* Setting DECL_ARTIFICIAL forces dbxout.c to specific the type is
      both a typedef and in the struct name-space.  We may want to re-visit
      this later, but for now it reduces the changes needed for gdb. */
   DECL_ARTIFICIAL (decl) = 1;
@@ -786,7 +786,7 @@ set_constant_value (field, constant)
   if (field == NULL_TREE)
     warning ("misplaced ConstantValue attribute (not in any field)");
   else if (DECL_INITIAL (field) != NULL_TREE)
-    warning ("duplicate ConstanValue atribute for field '%s'",
+    warning ("duplicate ConstantValue attribute for field '%s'",
 	     IDENTIFIER_POINTER (DECL_NAME (field)));
   else
     {

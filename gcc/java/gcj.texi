@@ -278,7 +278,7 @@ The classfile built by @code{gcj} for the class @code{java.lang.Object}
 attribute @code{gnu.gcj.gcj-compiled}. The compiler looks for this
 attribute when loading @code{java.lang.Object} and will report an error
 if it isn't found, unless it compiles to bytecode (the option
-@code{-fforce-classes-archive-check} can be used to overide this
+@code{-fforce-classes-archive-check} can be used to override this
 behavior in this particular case.)
 
 @table @gcctabopt

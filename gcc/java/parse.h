@@ -235,7 +235,7 @@ extern tree stabilize_reference PARAMS ((tree));
   }
 
 /* Build the string parm$<O> and store in into the identifier N. This
-   is used to contruct the name of hidden parameters used to
+   is used to construct the name of hidden parameters used to
    initialize outer scope aliases.  */
 #define MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID(N, O)		\
   {									\

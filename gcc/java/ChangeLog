@@ -1,3 +1,9 @@
+2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog, Make-lang.in, class.c, expr.c, gcj.texi, java-tree.h,
+	jcf-parse.c, jcf-write.c, lex.c, parse.h, parse.y, verify.c: Fix
+	spelling errors.
+
 2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (java_read_unicode, java_lex): Use hex_p/hex_value.
@@ -20,7 +26,7 @@
 	* class.c (build_method_symbols_entry): New function.
 	(make_method_value): Set "index" to to method's vtable index for
 	virtual methods when indirect-dispatch is not used.
-	(make_class_data): For indirect-dispatch, dont emit the dtable_decl,
+	(make_class_data): For indirect-dispatch, don't emit the dtable_decl,
 	and set vtable_method_count to -1. Set otable and otable_syms field
 	if indirect-dispatch is used and there was something to put in them.
 	(build_method_symbols_entry): New function.
@@ -2340,7 +2346,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* jvgenmain.c (main_method_prefix): Global variable removed.
 	(main_method_suffix): Likewise.
 	(do_mangle_classname): New function.
-	(main): Call it. Format changed to accomodate new mangling scheme.
+	(main): Call it. Format changed to accommodate new mangling scheme.
 	* lex.c: (utf8_cmp): Conditionally prototyped.
 	(cxx_keywords): Moved from class.c, conditionally defined.
 	(utf8_cmp, cxx_keyword_p): Likewise.
@@ -2911,7 +2917,7 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 	* jcf-parse.c (get_constant): Don't mess with obstacks.
 	(read_class): Likewise.
 	(jcf_parse): Likewise.
-	* lex.c (expresion_obstack): Remove.
+	* lex.c (expression_obstack): Remove.
 	(java_lex): Don't use obstack_free.
 	* parse.h (exit_java_complete_class): Don't mess with obstacks.
 	(MANGLE_OUTER_LOCAL_VARIABLE_NAME): Adjust.
@@ -2921,7 +2927,7 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 	(add_inner_class_fields): Adjust calls to MANGLE_* macros.
 	(lookup_field_wrapper): Likewise.
 	(obtain_incomplete_type): Don't mess with obstacks.
-	(build_alias_initializer_paramter_list): Adjust calls to MANGLE_*
+	(build_alias_initializer_parameter_list): Adjust calls to MANGLE_*
 	macros.
 	(craft_constructor): Don't mess with obstacks.
 	(safe_layout_class): Likewise.
@@ -3460,7 +3466,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	entering the function. `fprintf' format modified not to use
 	INNER_QUALIFIER.
 	(report_class_declaration): Assign `package_name' and
-	`current_class' to NULL separatly.
+	`current_class' to NULL separately.
 
 2000-07-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -4468,7 +4474,7 @@ Mon Mar 13 12:21:13 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(maybe_make_nested_class_name): Mark nested class name as
 	qualified when necessary.
 	(end_class_declaration): Don't call java_parse_context_resume when
-	one or more error occured.
+	one or more error occurred.
 	(add_inner_class_fields): Use SET_CPC_INITIALIZER_STMT.
 	(register_fields): Use SET_CPC_STATIC_INITIALIZER_STMT and
 	SET_CPC_INITIALIZER_STMT.
@@ -4771,7 +4777,7 @@ Sat Feb 12 04:34:04 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (outer_field_access_fix): First parameter now a tree
 	node. Check for assignement to final. First argument to
-	build_outer_field_access_fix modified to accomodate prototype.
+	build_outer_field_access_fix modified to accommodate prototype.
 	(build_outer_field_access): Don't check for assignment to final
 	here.
 	(java_complete_lhs): MODIFY_EXPR case: Check for `error_mark_node'
@@ -5729,7 +5735,7 @@ Wed Dec  1 04:25:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 Tue Nov 30 12:36:15 1999  Anthony Green  <green@cygnus.com>
 
 	* verify.c (verify_jvm_instructions): Create new return label
-	chain if non existant (don't rely on the verified state of the jsr
+	chain if non existent (don't rely on the verified state of the jsr
 	target.)
 
 Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
@@ -11705,7 +11711,7 @@ Tue Apr 14 15:59:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(yyerror): New static elc. Removed static error_line, error_pos.
 	New local code_from_source. Save ctxp->elc into elc at the first
 	pass. Call java_get_line_col to get a string of the line where
-	the error occured.
+	the error occurred.
 	(debug_line): Removed static function.
 	(parse_error_context, parse_warning_context): Parameter cl is now
 	a WFL node. Use its value to initialize ctxp->elc.
@@ -12277,7 +12283,7 @@ Fri Oct 17 15:56:37 1997  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h (PUSH_FIELD):  Set DECL_ARTIFICIAL.
 	* class.c (make_class_data):  Don't build fields_decl if no fields.
-	When building fields_decl, skip if DECL_ARTIFICAL.
+	When building fields_decl, skip if DECL_ARTIFICIAL.
 
 	* expr.c (java_stack_swap):  Update stack_type_map.
 	* verify.c (merge_types):  Handle array types better.
@@ -12835,7 +12841,7 @@ Tue May  6 22:08:24 1997  Per Bothner  <bothner@deneb.cygnus.com>
 	* java-opcodes.h:  Use javaop.def to avoid duplicated list.
 	* javaop.def:  Rename invokevirt -> invokevirtual.
 	* lang.c (use_handles):  Removed.
-	* parse.c:  Add support for ConstantValue atribute.
+	* parse.c:  Add support for ConstantValue attribute.
 	Handle nested loading of a class.  (JPOOL_UTF):  New.
 
 Tue Mar 11 20:11:05 1997  Per Bothner  <bothner@deneb.cygnus.com>

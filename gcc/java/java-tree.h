@@ -1263,7 +1263,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define ID_INIT_P(ID)   ((ID) == init_identifier_node)
 /* Match ID to either `$finit$' or `finit$', so that `$finit$'
    continues to be recognized as an equivalent to `finit$' which is
-   now the prefered name used for the field initialization special
+   now the preferred name used for the field initialization special
    method.  */
 #define ID_FINIT_P(ID)  ((ID) == finit_identifier_node \
 			 || (ID) == finit_leg_identifier_node)
@@ -1322,7 +1322,7 @@ extern char *instruction_bits;
 #define BCODE_JUMP_TARGET 2
 
 /* True iff there is a return to this location.
-   (I.e. the preceedng instruction was a call.) */
+   (I.e. the preceding instruction was a call.) */
 #define BCODE_RETURN_TARGET 4
 
 /* True iff this is the start of an exception handler. */
@@ -1417,12 +1417,12 @@ extern tree *type_map;
   TYPE_LANG_FLAG_5 (TYPE)
 
 /* True if class TYPE is currently being laid out. Helps in detection
-   of inheritance cycle occuring as a side effect of performing the
+   of inheritance cycle occurring as a side effect of performing the
    layout of a class.  */
 #define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
 
 /* True if class TYPE is currently being laid out. Helps in detection
-   of inheritance cycle occuring as a side effect of performing the
+   of inheritance cycle occurring as a side effect of performing the
    layout of a class.  */
 #define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
 
