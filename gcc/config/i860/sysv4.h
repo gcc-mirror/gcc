@@ -1,7 +1,6 @@
 /* Target definitions for GNU compiler for Intel 80860 running System V.4
-   Copyright (C) 1991 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com).
+   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
 
@@ -19,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "i860/i860.h"
-#include "svr4.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i860 System V Release 4)");
@@ -195,18 +191,3 @@ tdesc_section ()							\
     }									\
 }
 
-#ifdef OUTPUT_TDESC
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)					\
-do {				 				\
-     if (current_function_original_name != NULL) {		\
-       tdesc_section();						\
-       fprintf ((FILE), "%s __ETEXT\n", ASM_LONG);		\
-       fprintf ((FILE), "%s 0\n", ASM_LONG);			\
-       text_section();						\
-       fputs("__ETEXT:\n", (FILE));				\
-     }								\
-     fprintf ((FILE), "\t.ident\t\"GCC: (GNU) %s\"\n",		\
-	      version_string);					\
-   } while (0)
-#endif

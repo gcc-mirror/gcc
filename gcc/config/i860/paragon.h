@@ -1,10 +1,9 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
    Copyright (C) 1991, 1996 Free Software Foundation, Inc.
-
-   Based upon original work of Ron Guilmette (rfg@netcom.com).
-   Whacked into submission by Andy Pfiffer (andyp@ssd.intel.com).
+   Based upon original work of Ron Guilmette (rfg@monkeys.com).
+   Contributed by Andy Pfiffer (andyp@ssd.intel.com).
    Partially inspired by
-	Pete Beckman @ Indiana University (beckman@cs.indiana.edu)
+	Pete Beckman of Indiana University (beckman@cs.indiana.edu)
 	Harry Dolan of Intel Corporation (dolan@ssd.intel.com)
 
 This file is part of GNU CC.
@@ -23,9 +22,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "i860/i860.h"
-#include "svr3.h"
 
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
