@@ -2465,6 +2465,15 @@ do { ip = &instack[indepth];		\
 	  break;
 	}
 	++obp;		/* Copy the '#' after all */
+	/* Don't expand an identifier that could be a macro directive.
+	   (Section 3.8.3 of the ANSI C standard)			*/
+	SKIP_WHITE_SPACE (ibp);
+	if (is_idstart[*ibp])
+	  {
+	    *obp++ = *ibp++;
+	    while (is_idchar[*ibp])
+	      *obp++ = *ibp++;
+	  }
 	goto randomchar;
       }
 #ifdef USE_C_ALLOCA
