@@ -28,12 +28,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_BITS_PER_SHORT 16
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
+#define HOST_BITS_PER_LONGLONG 64
+
+#define HOST_WORDS_BIG_ENDIAN
 
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-#define USG
+/* If compiled with GNU C, use the built-in alloca */
+#ifdef __GNUC__
+#define alloca(x) __builtin_alloca(x)
+#endif
+
+/* target machine dependencies.
+   tm.h is a symbolic link to the actual target specific file.   */
+#include "tm.h"
 
 /* Don't try to use sys_siglist.  */
 #define NO_SYS_SIGLIST
@@ -41,18 +51,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't try including wait.h.  */
 #define NO_WAIT_H
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
-#ifdef __GNUC__
-#define alloca(n) __builtin_alloca(n)
-#endif
-
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 512
 #endif
+
+#include "xm-svr3.h"
