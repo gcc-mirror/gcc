@@ -1,7 +1,7 @@
 2003-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11546
-	* testsuite/g++.dg/template/lookup1.C: New test.
+	* g++.dg/template/lookup1.C: New test.
 
 2003-07-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
