@@ -1,3 +1,7 @@
+Mon Jun  7 19:27:07 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* pa.md (fmpyfadd, fmpynfadd, fnegabs): New patterns.
+
 Mon Jun  7 14:07:39 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* c-lex.c (GETC): Redefine to call getch.
