@@ -1268,7 +1268,7 @@ enum reg_class
       && GET_CODE (XEXP (X, 0)) == REG					\
       && XEXP (X, 0) == stack_pointer_rtx				\
       && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-      && ! THUMB_LEGITIMATE_OFFSET (MODE, INTVAL (XEXP (X, 1))))	\
+      && ! thumb_legitimate_offset_p (MODE, INTVAL (XEXP (X, 1))))	\
     {									\
       rtx orig_X = X;							\
       X = copy_rtx (X);							\
@@ -1897,6 +1897,8 @@ typedef struct
 	   || (X) == hard_frame_pointer_rtx	\
 	   || (X) == arg_pointer_rtx)))
 
+#define REG_STRICT_P 0
+
 #else /* REG_OK_STRICT */
 
 #define ARM_REG_OK_FOR_BASE_P(X) 		\
@@ -1904,6 +1906,8 @@ typedef struct
 
 #define THUMB_REG_MODE_OK_FOR_BASE_P(X, MODE)	\
   THUMB_REGNO_MODE_OK_FOR_BASE_P (REGNO (X), MODE)
+
+#define REG_STRICT_P 1
 
 #endif /* REG_OK_STRICT */
 
@@ -1932,145 +1936,32 @@ typedef struct
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS. */
+   that wants to use this address.  */
      
-/* --------------------------------arm version----------------------------- */
 #define ARM_BASE_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_BASE_P (X))
 
 #define ARM_INDEX_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_INDEX_P (X))
 
-#ifdef REG_OK_STRICT
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)	\
-  {							\
-    if (arm_legitimate_address_p (MODE, X, 1))		\
-      goto WIN;						\
+#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
+  {								\
+    if (arm_legitimate_address_p (MODE, X, REG_STRICT_P))	\
+      goto WIN;							\
   }
-#else
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)	\
-  {							\
-    if (arm_legitimate_address_p (MODE, X, 0))		\
-      goto WIN;						\
+
+#define THUMB_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
+  {								\
+    if (thumb_legitimate_address_p (MODE, X, REG_STRICT_P))	\
+      goto WIN;							\
   }
-#endif
 
-/* ---------------------thumb version----------------------------------*/     
-#define THUMB_LEGITIMATE_OFFSET(MODE, VAL)				\
-  (GET_MODE_SIZE (MODE) == 1 ? ((unsigned HOST_WIDE_INT) (VAL) < 32)	\
-   : GET_MODE_SIZE (MODE) == 2 ? ((unsigned HOST_WIDE_INT) (VAL) < 64	\
-	 			  && ((VAL) & 1) == 0)			\
-   : ((VAL) >= 0 && ((VAL) + GET_MODE_SIZE (MODE)) <= 128		\
-      && ((VAL) & 3) == 0))
-
-/* The AP may be eliminated to either the SP or the FP, so we use the
-   least common denominator, e.g. SImode, and offsets from 0 to 64.  */
-
-/* ??? Verify whether the above is the right approach.  */
-
-/* ??? Also, the FP may be eliminated to the SP, so perhaps that
-   needs special handling also.  */
-
-/* ??? Look at how the mips16 port solves this problem.  It probably uses
-   better ways to solve some of these problems.  */
-
-/* Although it is not incorrect, we don't accept QImode and HImode
-   addresses based on the frame pointer or arg pointer until the
-   reload pass starts.  This is so that eliminating such addresses
-   into stack based ones won't produce impossible code.  */
-#define THUMB_GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)			\
-{									\
-/* ??? Not clear if this is right.  Experiment.  */			\
-  if (GET_MODE_SIZE (MODE) < 4						\
-      && ! (reload_in_progress || reload_completed)			\
-      && (   reg_mentioned_p (frame_pointer_rtx, X)			\
-	  || reg_mentioned_p (arg_pointer_rtx, X)			\
-	  || reg_mentioned_p (virtual_incoming_args_rtx, X)		\
-	  || reg_mentioned_p (virtual_outgoing_args_rtx, X)		\
-	  || reg_mentioned_p (virtual_stack_dynamic_rtx, X)		\
-	  || reg_mentioned_p (virtual_stack_vars_rtx, X)))		\
-    ;									\
-  /* Accept any base register.  SP only in SImode or larger.  */	\
-  else if (GET_CODE (X) == REG						\
-	   && THUMB_REG_MODE_OK_FOR_BASE_P (X, MODE))			\
-    goto WIN;								\
-  /* This is PC relative data before MACHINE_DEPENDENT_REORG runs.  */	\
-  else if (GET_MODE_SIZE (MODE) >= 4 && CONSTANT_P (X)			\
-	   && GET_CODE (X) == SYMBOL_REF 				\
-           && CONSTANT_POOL_ADDRESS_P (X) && ! flag_pic)		\
-    goto WIN;								\
-  /* This is PC relative data after MACHINE_DEPENDENT_REORG runs.  */	\
-  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
-	   && (GET_CODE (X) == LABEL_REF				\
-	       || (GET_CODE (X) == CONST				\
-		   && GET_CODE (XEXP (X, 0)) == PLUS			\
-		   && GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF	\
-		   && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT)))	\
-    goto WIN;								\
-  /* Post-inc indexing only supported for SImode and larger.  */	\
-  else if (GET_CODE (X) == POST_INC && GET_MODE_SIZE (MODE) >= 4	\
-	   && GET_CODE (XEXP (X, 0)) == REG				\
-	   && THUMB_REG_OK_FOR_INDEX_P (XEXP (X, 0)))			\
-    goto WIN;								\
-  else if (GET_CODE (X) == PLUS)					\
-    {									\
-      /* REG+REG address can be any two index registers.  */		\
-      /* We disallow FRAME+REG addressing since we know that FRAME	\
-	 will be replaced with STACK, and SP relative addressing only	\
-	 permits SP+OFFSET.  */						\
-      if (GET_MODE_SIZE (MODE) <= 4					\
-	  && GET_CODE (XEXP (X, 0)) == REG				\
-	  && GET_CODE (XEXP (X, 1)) == REG				\
-	  && XEXP (X, 0) != frame_pointer_rtx				\
-	  && XEXP (X, 1) != frame_pointer_rtx				\
-	  && XEXP (X, 0) != virtual_stack_vars_rtx			\
-	  && XEXP (X, 1) != virtual_stack_vars_rtx			\
-	  && THUMB_REG_OK_FOR_INDEX_P (XEXP (X, 0))			\
-	  && THUMB_REG_OK_FOR_INDEX_P (XEXP (X, 1)))			\
-	goto WIN;							\
-      /* REG+const has 5-7 bit offset for non-SP registers.  */		\
-      else if (GET_CODE (XEXP (X, 0)) == REG				\
-	       && (THUMB_REG_OK_FOR_INDEX_P (XEXP (X, 0))		\
-		   || XEXP (X, 0) == arg_pointer_rtx)			\
-	       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	       && THUMB_LEGITIMATE_OFFSET (MODE, INTVAL (XEXP (X, 1))))	\
-	goto WIN;							\
-      /* REG+const has 10 bit offset for SP, but only SImode and	\
-	 larger is supported.  */					\
-      /* ??? Should probably check for DI/DFmode overflow here		\
-	 just like GO_IF_LEGITIMATE_OFFSET does.  */			\
-      else if (GET_CODE (XEXP (X, 0)) == REG				\
-	       && REGNO (XEXP (X, 0)) == STACK_POINTER_REGNUM		\
-	       && GET_MODE_SIZE (MODE) >= 4				\
-	       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	       && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (X, 1))	\
-		   + GET_MODE_SIZE (MODE)) <= 1024			\
-	       && (INTVAL (XEXP (X, 1)) & 3) == 0)			\
-	goto WIN;							\
-      else if (GET_CODE (XEXP (X, 0)) == REG				\
-	       && REGNO (XEXP (X, 0)) == FRAME_POINTER_REGNUM		\
-	       && GET_MODE_SIZE (MODE) >= 4				\
-	       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	       && (INTVAL (XEXP (X, 1)) & 3) == 0)			\
-	goto WIN;							\
-    }									\
-  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
-	   && GET_CODE (X) == SYMBOL_REF				\
-	   && CONSTANT_POOL_ADDRESS_P (X)				\
-	   && ! (flag_pic						\
-		 && symbol_mentioned_p (get_pool_constant (X))))	\
-    goto WIN;								\
-}
-
-/* ------------------------------------------------------------------- */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)				\
   if (TARGET_ARM)							\
     ARM_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)  			\
   else /* if (TARGET_THUMB) */						\
     THUMB_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)	
-/* ------------------------------------------------------------------- */
+
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.

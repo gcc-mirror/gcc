@@ -1,3 +1,18 @@
+2003-01-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb_base_register_rtx_p): New function.
+	(thumb_index_register_rtx_p): New function.
+	(thumb_legitimate_address_p): New function.
+	(thumb_legitimate_offset_p): New function.
+	* arm.h (REG_STRICT_P): Define according to setting of REG_OK_STRICT.
+	(ARM_GO_IF_LEGITIMATE_ADDRESS): Use REG_STRICT_P to avoid dumplicate
+	definitions.
+	(THUMB_GO_IF_LEGITIMATE_ADDRESS): Use thumb_legitimate_address_p.
+	(THUMB_LEGITIMATE_OFFSET): Delte.
+	(THUMB_LEGITIMIZE_RELOAD_ADDRESS): Use thumb_legitimate_offset.
+	* arm-protos.h (thumb_legitimate_address_p): Add prototype.
+	(thumb_legitimate_offset_p): Likewise.
+
 2003-01-23  Andreas Schwab  <schwab@suse.de>
 
 	* unwind.h (_Unwind_GetTextRelBase): Mark parameter as unused.
