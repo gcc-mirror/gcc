@@ -4617,7 +4617,12 @@ store_constructor (exp, target, cleared, size)
       if (need_to_clear && size > 0)
 	{
 	  if (! cleared)
-	    clear_storage (target, GEN_INT (size));
+	    {
+	      if (REG_P (target))
+		emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
+	      else
+		clear_storage (target, GEN_INT (size));
+	    }
 	  cleared = 1;
 	}
       else if (REG_P (target))
