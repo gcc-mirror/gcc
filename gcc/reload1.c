@@ -7478,7 +7478,7 @@ gen_reload (out, in, opnum, type)
 	    {
 	      /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
 	      REG_NOTES (insn)
-		= gen_rtx (EXPR_LIST, REG_EQUIV, in, REG_NOTES (insn));
+		= gen_rtx_EXPR_LIST (REG_EQUIV, in, REG_NOTES (insn));
 	      return insn;
 	    }
 	}
@@ -7487,7 +7487,7 @@ gen_reload (out, in, opnum, type)
 
       gen_reload (out, op1, opnum, type);
       insn = emit_insn (gen_add2_insn (out, op0));
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUIV, in, REG_NOTES (insn));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUIV, in, REG_NOTES (insn));
     }
 
 #ifdef SECONDARY_MEMORY_NEEDED

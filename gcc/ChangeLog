@@ -6,6 +6,13 @@ Wed Jun 24 16:27:23 1998  John Carr  <jfc@mit.edu>
 
 	* expmed.c (init_expmed): Initialize all elements of *_cost arrays.
 
+	* optabs.c: Use gen_rtx_FOO (...) instead of gen_rtx (FOO, ...).
+	* expr.c: Likewise.
+	* explow.c: Likewise.
+	* combine.c: Likewise.
+	* reload1.c: Likewise.
+	* gcse.c: Likewise.
+
 Wed Jun 24 15:13:01 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* README.gnat: Add patch for new lang_decode_options interface.

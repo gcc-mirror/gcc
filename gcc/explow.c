@@ -1258,9 +1258,9 @@ allocate_dynamic_stack_space (size, target, known_align)
 	{
  	  rtx note_target = get_last_insn ();
 
-	  REG_NOTES (note_target) = gen_rtx (EXPR_LIST, REG_SAVE_AREA,
-					     setjmpless_size,
-					     REG_NOTES (note_target));
+	  REG_NOTES (note_target)
+	    = gen_rtx_EXPR_LIST (REG_SAVE_AREA, setjmpless_size,
+				 REG_NOTES (note_target));
 	}
 #endif /* SETJMP_VIA_SAVE_AREA */
 #ifdef STACK_GROWS_DOWNWARD
