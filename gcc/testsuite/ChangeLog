@@ -1,3 +1,8 @@
+2003-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/7227
+	* gcc.dg/uninit-C.c: New test.
+	
 Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/8492
