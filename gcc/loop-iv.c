@@ -104,17 +104,17 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
       return;
     }
 
-  if (iv->step == const0_rtx)
-    {
-      fprintf (file, "invariant ");
-      print_rtl (file, iv->base);
-      return;
-    }
+  if (iv->step == const0_rtx
+      && !iv->first_special)
+    fprintf (file, "invariant ");
 
   print_rtl (file, iv->base);
-  fprintf (file, " + ");
-  print_rtl (file, iv->step);
-  fprintf (file, " * iteration");
+  if (iv->step != const0_rtx)
+    {
+      fprintf (file, " + ");
+      print_rtl (file, iv->step);
+      fprintf (file, " * iteration");
+    }
   fprintf (file, " (in %s)", GET_MODE_NAME (iv->mode));
 
   if (iv->mode != iv->extend_mode)
@@ -440,6 +440,21 @@ iv_constant (struct rtx_iv *iv, rtx cst, enum machine_mode mode)
 static bool
 iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
 {
+  /* If iv is invariant, just calculate the new value.  */
+  if (iv->step == const0_rtx
+      && !iv->first_special)
+    {
+      rtx val = get_iv_value (iv, const0_rtx);
+      val = lowpart_subreg (mode, val, iv->extend_mode);
+
+      iv->base = val;
+      iv->extend = NIL;
+      iv->mode = iv->extend_mode = mode;
+      iv->delta = const0_rtx;
+      iv->mult = const1_rtx;
+      return true;
+    }
+
   if (iv->extend_mode == mode)
     return true;
 
@@ -465,6 +480,21 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
 static bool
 iv_extend (struct rtx_iv *iv, enum rtx_code extend, enum machine_mode mode)
 {
+  /* If iv is invariant, just calculate the new value.  */
+  if (iv->step == const0_rtx
+      && !iv->first_special)
+    {
+      rtx val = get_iv_value (iv, const0_rtx);
+      val = simplify_gen_unary (extend, mode, val, iv->extend_mode);
+
+      iv->base = val;
+      iv->extend = NIL;
+      iv->mode = iv->extend_mode = mode;
+      iv->delta = const0_rtx;
+      iv->mult = const1_rtx;
+      return true;
+    }
+
   if (mode != iv->extend_mode)
     return false;
 
