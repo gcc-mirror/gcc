@@ -495,6 +495,11 @@ int flag_move_all_movables = 0;
 
 int flag_reduce_all_givs = 0;
 
+/* Nonzero to perform full register move optimization passes.  This is the
+   default for -O2.  */
+
+int flag_regmove = 0;
+
 /* Nonzero for -fwritable-strings:
    store string constants in data segment and don't uniquize them.  */
 
@@ -701,8 +706,6 @@ int flag_check_memory_usage = 0;
    -fcheck-memory-usage.  */
 int flag_prefix_function_name = 0;
 
-int flag_regmove = 0;
-
 /* 0 if pointer arguments may alias each other.  True in C.
    1 if pointer arguments may not alias each other but may alias
    global variables.
@@ -716,6 +719,8 @@ int flag_argument_noalias = 0;
    types do not alias expressions of certain other types.  Only used
    if alias analysis (in general) is enabled.  */
 int flag_strict_aliasing = 0;
+
+extern int flag_dump_unnumbered;
 
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -783,6 +788,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1},
   {"regmove", &flag_regmove, 1},
+  {"optimize-register-move", &flag_regmove, 1},
   {"pack-struct", &flag_pack_struct, 1},
   {"stack-check", &flag_stack_check, 1},
   {"argument-alias", &flag_argument_noalias, 0},
@@ -790,7 +796,8 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"argument-noalias-global", &flag_argument_noalias, 2},
   {"strict-aliasing", &flag_strict_aliasing, 1},
   {"check-memory-usage", &flag_check_memory_usage, 1},
-  {"prefix-function-name", &flag_prefix_function_name, 1}
+  {"prefix-function-name", &flag_prefix_function_name, 1},
+  {"dump-unnumbered", &flag_dump_unnumbered, 1}
 };
 
 /* Table of language-specific options.  */
@@ -3517,11 +3524,6 @@ rest_of_compilation (decl)
 	       failure = reload (insns, 0, rtl_dump_file);
 	   });
 
-  if (global_reg_dump)
-    {
-      TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
-      close_dump_file (print_rtl_with_bb, insns);
-    }
 
   if (failure)
     goto exit_rest_of_compilation;
@@ -3539,6 +3541,11 @@ rest_of_compilation (decl)
 
   thread_prologue_and_epilogue_insns (insns);
 
+  if (global_reg_dump)
+    {
+      TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
+      close_dump_file (print_rtl_with_bb, insns);
+    }
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       if (sched2_dump)

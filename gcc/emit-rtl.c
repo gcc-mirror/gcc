@@ -59,6 +59,7 @@ Boston, MA 02111-1307, USA.  */
 
 enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
 enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
+enum machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
 enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
@@ -3385,6 +3386,7 @@ init_emit_once (line_numbers)
 {
   int i;
   enum machine_mode mode;
+  enum machine_mode double_mode;
 
   no_line_numbers = ! line_numbers;
 
@@ -3394,6 +3396,7 @@ init_emit_once (line_numbers)
 
   byte_mode = VOIDmode;
   word_mode = VOIDmode;
+  double_mode = VOIDmode;
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
@@ -3405,6 +3408,18 @@ init_emit_once (line_numbers)
       if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
 	  && word_mode == VOIDmode)
 	word_mode = mode;
+    }
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
+	  && double_mode == VOIDmode)
+	double_mode = mode;
     }
 
   ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
@@ -3424,10 +3439,10 @@ init_emit_once (line_numbers)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  dconst0 = REAL_VALUE_ATOF ("0", DFmode);
-  dconst1 = REAL_VALUE_ATOF ("1", DFmode);
-  dconst2 = REAL_VALUE_ATOF ("2", DFmode);
-  dconstm1 = REAL_VALUE_ATOF ("-1", DFmode);
+  dconst0 = REAL_VALUE_ATOF ("0", double_mode);
+  dconst1 = REAL_VALUE_ATOF ("1", double_mode);
+  dconst2 = REAL_VALUE_ATOF ("2", double_mode);
+  dconstm1 = REAL_VALUE_ATOF ("-1", double_mode);
 
   for (i = 0; i <= 2; i++)
     {

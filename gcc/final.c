@@ -76,8 +76,9 @@ Boston, MA 02111-1307, USA.  */
 #if defined (USG) || !defined (HAVE_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
-#include <stab.h>  /* On BSD, use the system's stab.h.  */
-#endif /* not USG */
+#include <stab.h>
+#endif
+
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
 
 #ifdef XCOFF_DEBUGGING_INFO

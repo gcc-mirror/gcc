@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with pre-BFD
    a.out linkers.
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com)
 
 This file is part of GNU CC.

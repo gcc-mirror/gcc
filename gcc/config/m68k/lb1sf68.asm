@@ -1,5 +1,5 @@
 /* libgcc1 routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

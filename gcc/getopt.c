@@ -201,14 +201,17 @@ static char *posixly_correct;
 # define my_index	strchr
 #else
 
+# if HAVE_STRING_H
+#  include <string.h>
+# else
+#  include <strings.h>
+# endif
+
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
 
 #ifndef getenv
 extern char *getenv ();
-#endif
-#ifndef strncmp
-extern int strncmp ();
 #endif
 
 static char *

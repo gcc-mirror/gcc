@@ -2079,7 +2079,7 @@ do {									 \
   sprintf (LABEL, TARGET_SVR4 ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
 
 /* Internal macro to get a single precision floating point value into
-   an int, so we can print it's value in hex.  */
+   an int, so we can print its value in hex.  */
 #define FLOAT_TO_INT_INTERNAL( FVALUE, IVALUE )				\
   { union {								\
       REAL_VALUE_TYPE d;						\

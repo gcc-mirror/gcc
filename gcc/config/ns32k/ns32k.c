@@ -495,7 +495,7 @@ print_operand (file, x, code)
 	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
 	  PUT_IMMEDIATE_PREFIX(file);
 #ifdef SEQUENT_ASM
-	  /* Sequent likes it's floating point constants as integers */
+	  /* Sequent likes its floating point constants as integers */
 	  fprintf (file, "0Dx%08x%08x", u.i[1], u.i[0]);
 #else
 #ifdef ENCORE_ASM

@@ -1610,7 +1610,7 @@ extern tree save_expr			PROTO((tree));
 extern int first_rtl_op			PROTO((enum tree_code));
 
 /* unsave_expr (EXP) returns an expression equivalent to EXP but it
-   can be used multiple times and will evaluate EXP, in it's entirety
+   can be used multiple times and will evaluate EXP, in its entirety
    each time.  */
 
 extern tree unsave_expr			PROTO((tree));

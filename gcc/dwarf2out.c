@@ -59,6 +59,9 @@ int
 dwarf2out_do_frame ()
 {
   return (write_symbols == DWARF2_DEBUG
+#ifdef DWARF2_FRAME_INFO
+          || DWARF2_FRAME_INFO
+#endif
 #ifdef DWARF2_UNWIND_INFO
 	  || (flag_exceptions && ! exceptions_via_longjmp)
 #endif
@@ -9188,7 +9191,7 @@ gen_block_die (stmt, context_die, depth)
 }
 
 /* Generate all of the decls declared within a given scope and (recursively)
-   all of it's sub-blocks.  */
+   all of its sub-blocks.  */
 
 static void
 decls_for_scope (stmt, context_die, depth)

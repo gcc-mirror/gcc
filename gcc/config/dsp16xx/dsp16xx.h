@@ -138,7 +138,7 @@ extern char *output_block_move();
 /* Tell gcc where to look for the startfile */
 #define STANDARD_STARTFILE_PREFIX   "/d1600/lib"
 
-/* Tell gcc where to look for it's executables */
+/* Tell gcc where to look for its executables */
 #define STANDARD_EXEC_PREFIX  "/d1600/bin"
 
 /* Command line options to the AT&T assembler */

@@ -439,7 +439,7 @@ init_regs ()
        memory_move_secondary_cost.  */
     int i;
     for (i = 0; i < MAX_MACHINE_MODE; i++)
-      top_of_stack[i] = gen_rtx (MEM, i, stack_pointer_rtx);
+      top_of_stack[i] = gen_rtx_MEM (i, stack_pointer_rtx);
   }
 #endif
 }
