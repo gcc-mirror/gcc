@@ -1996,11 +1996,6 @@ extern int first_rtl_op			PARAMS ((enum tree_code));
 
 extern tree unsave_expr			PARAMS ((tree));
 
-/* safe_for_reeval_p (EXP) returns nonzero if it is possible to
-   expand EXP multiple times.  */
-
-extern int safe_for_reeval_p		PARAMS ((tree));
-
 /* Reset EXP in place so that it can be expaned again.  Does not
    recurse into subtrees.  */
 
@@ -2020,6 +2015,10 @@ extern void (*lang_unsave_expr_now)     PARAMS ((tree));
 
 /* If non-null, a language specific version of safe_for_unsave. */
 extern int (*lang_safe_for_unsave)	PARAMS ((tree));
+
+/* Return nonzero if it is safe to unsave EXPR, else return zero.
+   It is not safe to unsave EXPR if it contains any embedded RTL_EXPRs.  */
+extern int safe_for_unsave PARAMS ((tree));
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
