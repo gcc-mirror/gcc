@@ -315,6 +315,13 @@ do {									\
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
+#ifdef HAVE_AS_TLS
+#undef TARGET_SUN_TLS
+#undef TARGET_GNU_TLS
+#define TARGET_SUN_TLS 0
+#define TARGET_GNU_TLS 1
+#endif
+
 /* Don't be different from other Linux platforms in this regard.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 

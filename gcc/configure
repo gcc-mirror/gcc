@@ -6661,6 +6661,33 @@ foo:	.long	25
 	tls_first_minor=14
 	tls_as_opt="-m64 -Aesame"
 	;;
+  sparc*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	sethi	%tgd_hi22(foo), %o0
+	add	%o0, %tgd_lo10(foo), %o1
+	add	%l7, %o1, %o0, %tgd_add(foo)
+	call	__tls_get_addr, %tgd_call(foo)
+	sethi	%tldm_hi22(foo), %l1
+	add	%l1, %tldm_lo10(foo), %l2
+	add	%l7, %l2, %o0, %tldm_add(foo)
+	call	__tls_get_addr, %tldm_call(foo)
+	sethi	%tldo_hix22(foo), %l3
+	xor	%l3, %tldo_lox10(foo), %l4
+	add	%o0, %l4, %l5, %tldo_add(foo)
+	sethi	%tie_hi22(foo), %o3
+	add	%o3, %tie_lo10(foo), %o3
+	ld	[%l7 + %o3], %o2, %tie_ld(foo)
+	add	%g7, %o2, %o4, %tie_add(foo)
+	sethi	%tle_hix22(foo), %l1
+	xor	%l1, %tle_lox10(foo), %o5
+	ld	[%g7 + %o5], %o1'
+	tls_first_major=2
+	tls_first_minor=14
+	tls_as_opt=-32
+	;;
 esac
 if test -z "$tls_first_major"; then
   : # If we don't have a check, assume no support.

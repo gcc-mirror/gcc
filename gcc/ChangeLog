@@ -1,3 +1,61 @@
+2003-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (struct machine_function): New type.
+	(TARGET_HAVE_TLS, TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(sparc_override_options): Initialize init_machine_status.
+	(tls_symbolic_operand, tgd_symbolic_operand, tld_symbolic_operand,
+	tie_symbolic_operand, tle_symbolic_operand): New functions.
+	(symbolic_operand): Disallow tls_symbolic_operand.
+	(symbolic_memory_operand): Likewise.
+	(tls_call_delay, sparc_cannot_force_const_mem, legitimate_constant_p,
+	constant_address_p, legitimate_pic_operand_p, legitimate_address_p):
+	New functions.
+	(sparc_tls_symbol): New variable.
+	(sparc_tls_get_addr, sparc_tls_got, legitimize_tls_address,
+	legitimize_address): New functions.
+	(print_operand): Handle %&.
+	(sparc_init_machine_status, get_some_local_dynamic_name,
+	get_some_local_dynamic_name_1): New functions.
+	(sparc_output_dwarf_dtprel): New function.
+	* config/sparc/sparc.h (CONSTANT_ADDRESS_P): Moved into
+	constant_address_p.
+	(LEGITIMATE_PIC_OPERAND_P): Moved into legitimate_pic_operand_p.
+	(LEGITIMATE_CONSTANT_P): Moved into legitimate_constant_p.
+	(GO_IF_LEGITIMATE_ADDRESS): Moved into legitimate_address_p.
+	(LEGITIMIZE_ADDRESS): Moved into legitimize_address.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add '&'.
+	(TARGET_TLS, TARGET_SUN_TLS, TARGET_GNU_TLS): Define.
+	(ASM_OUTPUT_DWARF_DTPREL): Define.
+	(PREDICATE_CODES): Add tgd_symbolic_operand, tld_symbolic_operand,
+	tie_symbolic_operand, tle_symbolic_operand.
+	* config/sparc/sparc.md (UNSPEC_TLSGD, UNSPEC_TLSLDM, UNSPEC_TLSLDO,
+	UNSPEC_TLSIE, UNSPEC_TLSLE, UNSPEC_TLSLD_BASE): New constants.
+	(tls_call_delay): New attribute.
+	(in_call_delay): Use it.
+	(movqi, movhi, movsi, movdi): Call legitimize_tls_address if needed.
+	(tgd_hi22, tgd_lo10, tgd_add32, tgd_add64, tgd_call32, tgd_call64,
+	tldm_hi22, tldm_lo10, tldm_add32, tldm_add64, tldm_call32, tldm_call64,
+	tldo_hix22, tldo_lox10, tldo_add32, tldo_add64, tie_hi22, tie_lo10,
+	tie_ld32, tie_ld64, tie_add32, tie_add64, tle_hix22_sp32,
+	tle_lox10_sp32, tle_hix22_sp64, tle_lox10_sp64): New insns.
+	(tldo_ldub_sp32, tldo_ldub1_sp32, tldo_ldub2_sp32, tldo_ldsb1_sp32,
+	tldo_ldsb2_sp32, tldo_ldub_sp64, tldo_ldub1_sp64, tldo_ldub2_sp64,
+	tldo_ldub3_sp64, tldo_ldsb1_sp64, tldo_ldsb2_sp64, tldo_ldsb3_sp64,
+	tldo_lduh_sp32, tldo_lduh1_sp32, tldo_ldsh1_sp32, tldo_lduh_sp64,
+	tldo_lduh1_sp64, tldo_lduh2_sp64, tldo_ldsh1_sp64, tldo_ldsh2_sp64,
+	tldo_lduw_sp32, tldo_lduw_sp64, tldo_lduw1_sp64, tldo_ldsw1_sp64,
+	tldo_ldx_sp64, tldo_stb_sp32, tldo_stb_sp64, tldo_sth_sp32,
+	tldo_sth_sp64, tldo_stw_sp32, tldo_stw_sp64, tldo_stx_sp64): New
+	insns.
+	* config/sparc/sparc-protos.h (legitimate_constant_p,
+	constant_address_p, legitimate_pic_operand_p, legitimate_address_p,
+	legitimize_tls_address, legitimize_address, tls_symbolic_operand,
+	tls_call_delay, sparc_output_dwarf_dtprel): New prototypes.
+	* config/sparc/linux.h (TARGET_GNU_TLS, TARGET_SUN_TLS): Define.
+	* config/sparc/linux64.h (TARGET_GNU_TLS, TARGET_SUN_TLS): Likewise.
+	* configure.in (sparc*-*-*): Add TLS check.
+	* configure: Rebuilt.
+
 2003-09-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/11689

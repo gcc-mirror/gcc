@@ -120,6 +120,12 @@ char sparc_leaf_regs[] =
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1};
 
+struct machine_function GTY(())
+{
+  /* Some local-dynamic TLS symbol name.  */
+  const char *some_ld_name;
+};
+
 /* Name of where we pretend to think the frame pointer points.
    Normally, this is "%fp", but if we are in a leaf procedure,
    this is "%sp+something".  We record "something" separately as it may be
@@ -176,6 +182,12 @@ static void emit_hard_tfmode_operation (enum rtx_code, rtx *);
 static bool sparc_function_ok_for_sibcall (tree, tree);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
+static struct machine_function * sparc_init_machine_status (void);
+static bool sparc_cannot_force_const_mem (rtx);
+static rtx sparc_tls_get_addr (void);
+static rtx sparc_tls_got (void);
+static const char *get_some_local_dynamic_name (void);
+static int get_some_local_dynamic_name_1 (rtx *, void *);
 static bool sparc_rtx_costs (rtx, int, int, int *);
 
 /* Option handling.  */
@@ -239,6 +251,13 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL sparc_function_ok_for_sibcall
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM sparc_cannot_force_const_mem
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
@@ -448,6 +467,9 @@ sparc_override_options (void)
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
+
+  /* Set up function hooks.  */
+  init_machine_status = sparc_init_machine_status;
 }
 
 /* Miscellaneous utilities.  */
@@ -687,6 +709,41 @@ call_operand_address (rtx op, enum machine_mode mode)
   return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
 }
 
+/* If OP is a SYMBOL_REF of a thread-local symbol, return its TLS mode,
+   otherwise return 0.  */
+
+int
+tls_symbolic_operand (rtx op)
+{
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+  return SYMBOL_REF_TLS_MODEL (op);
+}
+
+int
+tgd_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return tls_symbolic_operand (op) == TLS_MODEL_GLOBAL_DYNAMIC;
+}
+
+int
+tld_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return tls_symbolic_operand (op) == TLS_MODEL_LOCAL_DYNAMIC;
+}
+
+int
+tie_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return tls_symbolic_operand (op) == TLS_MODEL_INITIAL_EXEC;
+}
+
+int
+tle_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return tls_symbolic_operand (op) == TLS_MODEL_LOCAL_EXEC;
+}
+
 /* Returns 1 if OP is either a symbol reference or a sum of a symbol
    reference and a constant.  */
 
@@ -701,12 +758,15 @@ symbolic_operand (register rtx op, enum machine_mode mode)
   switch (GET_CODE (op))
     {
     case SYMBOL_REF:
+      return !SYMBOL_REF_TLS_MODEL (op);
+
     case LABEL_REF:
       return 1;
 
     case CONST:
       op = XEXP (op, 0);
-      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+		&& !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
 
@@ -726,8 +786,9 @@ symbolic_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) != MEM)
     return 0;
   op = XEXP (op, 0);
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST
-	  || GET_CODE (op) == HIGH || GET_CODE (op) == LABEL_REF);
+  return ((GET_CODE (op) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (op))
+	  || GET_CODE (op) == CONST || GET_CODE (op) == HIGH
+	  || GET_CODE (op) == LABEL_REF);
 }
 
 /* Return truth value of statement that OP is a LABEL_REF of mode MODE.  */
@@ -2793,6 +2854,32 @@ eligible_for_epilogue_delay (rtx trial, int slot)
   return 0;
 }
 
+/* Return nonzero if TRIAL can go into the call delay slot.  */
+int
+tls_call_delay (rtx trial)
+{
+  rtx pat, unspec;
+
+  /* Binutils allows
+     call __tls_get_addr, %tgd_call (foo)
+      add %l7, %o0, %o0, %tgd_add (foo)
+     while Sun as/ld does not.  */
+  if (TARGET_GNU_TLS || !TARGET_TLS)
+    return 1;
+
+  pat = PATTERN (trial);
+  if (GET_CODE (pat) != SET || GET_CODE (SET_DEST (pat)) != PLUS)
+    return 1;
+
+  unspec = XEXP (SET_DEST (pat), 1);
+  if (GET_CODE (unspec) != UNSPEC
+      || (XINT (unspec, 1) != UNSPEC_TLSGD
+	  && XINT (unspec, 1) != UNSPEC_TLSLDM))
+    return 1;
+
+  return 0;
+}
+
 /* Return nonzero if TRIAL can go into the sibling call
    delay slot.  */
 
@@ -2965,6 +3052,45 @@ reg_unused_after (rtx reg, rtx insn)
   return 1;
 }
 
+/* Determine if it's legal to put X into the constant pool.  This
+   is not possible if X contains the address of a symbol that is
+   not constant (TLS) or not known at final link time (PIC).  */
+
+static bool
+sparc_cannot_force_const_mem (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+      /* Accept all non-symbolic constants.  */
+      return false;
+
+    case LABEL_REF:
+      /* Labels are OK iff we are non-PIC.  */
+      return flag_pic != 0;
+
+    case SYMBOL_REF:
+      /* 'Naked' TLS symbol references are never OK,
+	 non-TLS symbols are OK iff we are non-PIC.  */
+      if (SYMBOL_REF_TLS_MODEL (x))
+	return true;
+      else
+	return flag_pic != 0;
+
+    case CONST:
+      return sparc_cannot_force_const_mem (XEXP (x, 0));
+    case PLUS:
+    case MINUS:
+      return sparc_cannot_force_const_mem (XEXP (x, 0))
+         || sparc_cannot_force_const_mem (XEXP (x, 1));
+    case UNSPEC:
+      return true;
+    default:
+      abort ();
+    }
+}
+
 /* The table we use to reference PIC data.  */
 static GTY(()) rtx global_offset_table;
 
@@ -3009,6 +3135,391 @@ pic_address_needs_scratch (rtx x)
 
   return 0;
 }
+
+/* Determine if a given RTX is a valid constant.  We already know this
+   satisfies CONSTANT_P.  */
+
+bool
+legitimate_constant_p (rtx x)
+{
+  rtx inner;
+
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      /* TLS symbols are not constant.  */
+      if (SYMBOL_REF_TLS_MODEL (x))
+	return false;
+      break;
+
+    case CONST:
+      inner = XEXP (x, 0);
+
+      /* Offsets of TLS symbols are never valid.
+	 Discourage CSE from creating them.  */
+      if (GET_CODE (inner) == PLUS
+	  && tls_symbolic_operand (XEXP (inner, 0)))
+	return false;
+      break;
+
+    case CONST_DOUBLE:
+      if (GET_MODE (x) == VOIDmode)
+        return true;
+
+      /* Floating point constants are generally not ok.
+	 The only exception is 0.0 in VIS.  */
+      if (TARGET_VIS
+	  && (GET_MODE (x) == SFmode
+	      || GET_MODE (x) == DFmode
+	      || GET_MODE (x) == TFmode)
+	  && fp_zero_operand (x, GET_MODE (x)))
+	return true;
+
+      return false;
+
+    default:
+      break;
+    }
+
+  return true;
+}
+
+/* Determine if a given RTX is a valid constant address.  */
+
+bool
+constant_address_p (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case LABEL_REF:
+    case CONST_INT:
+    case HIGH:
+      return true;
+
+    case CONST:
+      if (flag_pic && pic_address_needs_scratch (x))
+	return false;
+      return legitimate_constant_p (x);
+
+    case SYMBOL_REF:
+      return !flag_pic && legitimate_constant_p (x);
+
+    default:
+      return false;
+    }
+}
+
+/* Nonzero if the constant value X is a legitimate general operand
+   when generating PIC code.  It is given that flag_pic is on and
+   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+
+bool
+legitimate_pic_operand_p (rtx x)
+{
+  if (pic_address_needs_scratch (x))
+    return false;
+  if (tls_symbolic_operand (x)
+      || (GET_CODE (x) == CONST
+	  && GET_CODE (XEXP (x, 0)) == PLUS
+	  && tls_symbolic_operand (XEXP (XEXP (x, 0), 0))))
+    return false;
+  return true;
+}
+
+/* Return nonzero if ADDR is a valid memory address.
+   STRICT specifies whether strict register checking applies.  */
+   
+int
+legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
+{
+  rtx rs1 = NULL, rs2 = NULL, imm1 = NULL, imm2;
+
+  if (REG_P (addr) || GET_CODE (addr) == SUBREG)
+    rs1 = addr;
+  else if (GET_CODE (addr) == PLUS)
+    {
+      rs1 = XEXP (addr, 0);
+      rs2 = XEXP (addr, 1);
+
+      /* Canonicalize.  REG comes first, if there are no regs,
+	 LO_SUM comes first.  */
+      if (!REG_P (rs1)
+	  && GET_CODE (rs1) != SUBREG
+	  && (REG_P (rs2)
+	      || GET_CODE (rs2) == SUBREG
+	      || (GET_CODE (rs2) == LO_SUM && GET_CODE (rs1) != LO_SUM)))
+	{
+	  rs1 = XEXP (addr, 1);
+	  rs2 = XEXP (addr, 0);
+	}
+
+      if ((flag_pic == 1
+	   && rs1 == pic_offset_table_rtx
+	   && !REG_P (rs2)
+	   && GET_CODE (rs2) != SUBREG
+	   && GET_CODE (rs2) != LO_SUM
+	   && GET_CODE (rs2) != MEM
+	   && !tls_symbolic_operand (rs2)
+	   && (! symbolic_operand (rs2, VOIDmode) || mode == Pmode)
+	   && (GET_CODE (rs2) != CONST_INT || SMALL_INT (rs2)))
+	  || ((REG_P (rs1)
+	       || GET_CODE (rs1) == SUBREG)
+	      && RTX_OK_FOR_OFFSET_P (rs2)))
+	{
+	  imm1 = rs2;
+	  rs2 = NULL;
+	}
+      else if ((REG_P (rs1) || GET_CODE (rs1) == SUBREG)
+	       && (REG_P (rs2) || GET_CODE (rs2) == SUBREG))
+	{
+	  /* We prohibit REG + REG for TFmode when there are no instructions
+	     which accept REG+REG instructions.  We do this because REG+REG
+	     is not an offsetable address.  If we get the situation in reload
+	     where source and destination of a movtf pattern are both MEMs with
+	     REG+REG address, then only one of them gets converted to an
+	     offsetable address.  */
+	  if (mode == TFmode
+	      && !(TARGET_FPU && TARGET_ARCH64 && TARGET_V9
+		   && TARGET_HARD_QUAD))
+	    return 0;
+
+	  /* We prohibit REG + REG on ARCH32 if not optimizing for
+	     DFmode/DImode because then mem_min_alignment is likely to be zero
+	     after reload and the  forced split would lack a matching splitter
+	     pattern.  */
+	  if (TARGET_ARCH32 && !optimize
+	      && (mode == DFmode || mode == DImode))
+	    return 0;
+	}
+      else if (USE_AS_OFFSETABLE_LO10
+	       && GET_CODE (rs1) == LO_SUM
+	       && TARGET_ARCH64
+	       && ! TARGET_CM_MEDMID
+	       && RTX_OK_FOR_OLO10_P (rs2))
+	{
+	  imm2 = rs2;
+	  rs2 = NULL;
+	  imm1 = XEXP (rs1, 1);
+	  rs1 = XEXP (rs1, 0);
+	  if (! CONSTANT_P (imm1) || tls_symbolic_operand (rs1))
+	    return 0;
+	}
+    }
+  else if (GET_CODE (addr) == LO_SUM)
+    {
+      rs1 = XEXP (addr, 0);
+      imm1 = XEXP (addr, 1);
+
+      if (! CONSTANT_P (imm1) || tls_symbolic_operand (rs1))
+	return 0;
+
+      /* We can't allow TFmode, because an offset greater than or equal to the
+         alignment (8) may cause the LO_SUM to overflow if !v9.  */
+      if (mode == TFmode && !TARGET_V9)
+	return 0;
+    }
+  else if (GET_CODE (addr) == CONST_INT && SMALL_INT (addr))
+    return 1;
+  else
+    return 0;
+
+  if (GET_CODE (rs1) == SUBREG)
+    rs1 = SUBREG_REG (rs1);
+  if (!REG_P (rs1))
+    return 0;
+
+  if (rs2)
+    {
+      if (GET_CODE (rs2) == SUBREG)
+	rs2 = SUBREG_REG (rs2);
+      if (!REG_P (rs2))
+	return 0;
+    }
+
+  if (strict)
+    {
+      if (!REGNO_OK_FOR_BASE_P (REGNO (rs1))
+	  || (rs2 && !REGNO_OK_FOR_BASE_P (REGNO (rs2))))
+	return 0;
+    }
+  else
+    {
+      if ((REGNO (rs1) >= 32
+	   && REGNO (rs1) != FRAME_POINTER_REGNUM
+	   && REGNO (rs1) < FIRST_PSEUDO_REGISTER)
+	  || (rs2
+	      && (REGNO (rs2) >= 32
+		  && REGNO (rs2) != FRAME_POINTER_REGNUM
+		  && REGNO (rs2) < FIRST_PSEUDO_REGISTER)))
+	return 0;
+    }
+  return 1;
+}
+
+/* Construct the SYMBOL_REF for the tls_get_offset function.  */
+
+static GTY(()) rtx sparc_tls_symbol;
+static rtx
+sparc_tls_get_addr (void)
+{
+  if (!sparc_tls_symbol)
+    sparc_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_addr");
+
+  return sparc_tls_symbol;
+}
+
+static rtx
+sparc_tls_got (void)
+{
+  rtx temp;
+  if (flag_pic)
+    {
+      current_function_uses_pic_offset_table = 1;
+      return pic_offset_table_rtx;
+    }
+
+  if (!global_offset_table)
+    global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  temp = gen_reg_rtx (Pmode);
+  emit_move_insn (temp, global_offset_table);
+  return temp;
+}
+
+
+/* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
+   this (thread-local) address.  */
+
+rtx
+legitimize_tls_address (rtx addr)
+{
+  rtx temp1, temp2, temp3, ret, o0, got, insn;
+
+  if (no_new_pseudos)
+    abort ();
+
+  if (GET_CODE (addr) == SYMBOL_REF)
+    switch (SYMBOL_REF_TLS_MODEL (addr))
+      {
+      case TLS_MODEL_GLOBAL_DYNAMIC:
+	start_sequence ();
+	temp1 = gen_reg_rtx (SImode);
+	temp2 = gen_reg_rtx (SImode);
+	ret = gen_reg_rtx (Pmode);
+	o0 = gen_rtx_REG (Pmode, 8);
+	got = sparc_tls_got ();
+	emit_insn (gen_tgd_hi22 (temp1, addr));
+	emit_insn (gen_tgd_lo10 (temp2, temp1, addr));
+	if (TARGET_ARCH32)
+	  {
+	    emit_insn (gen_tgd_add32 (o0, got, temp2, addr));
+	    insn = emit_call_insn (gen_tgd_call32 (o0, sparc_tls_get_addr (),
+						   addr, const1_rtx));
+	  }
+	else
+	  {
+	    emit_insn (gen_tgd_add64 (o0, got, temp2, addr));
+	    insn = emit_call_insn (gen_tgd_call64 (o0, sparc_tls_get_addr (),
+						   addr, const1_rtx));
+	  }
+        CALL_INSN_FUNCTION_USAGE (insn)
+	  = gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, o0),
+			       CALL_INSN_FUNCTION_USAGE (insn));
+	insn = get_insns ();
+	end_sequence ();
+	emit_libcall_block (insn, ret, o0, addr);
+	break;
+
+      case TLS_MODEL_LOCAL_DYNAMIC:
+	start_sequence ();
+	temp1 = gen_reg_rtx (SImode);
+	temp2 = gen_reg_rtx (SImode);
+	temp3 = gen_reg_rtx (Pmode);
+	ret = gen_reg_rtx (Pmode);
+	o0 = gen_rtx_REG (Pmode, 8);
+	got = sparc_tls_got ();
+	emit_insn (gen_tldm_hi22 (temp1));
+	emit_insn (gen_tldm_lo10 (temp2, temp1));
+	if (TARGET_ARCH32)
+	  {
+	    emit_insn (gen_tldm_add32 (o0, got, temp2));
+	    insn = emit_call_insn (gen_tldm_call32 (o0, sparc_tls_get_addr (),
+						    const1_rtx));
+	  }
+	else
+	  {
+	    emit_insn (gen_tldm_add64 (o0, got, temp2));
+	    insn = emit_call_insn (gen_tldm_call64 (o0, sparc_tls_get_addr (),
+						    const1_rtx));
+	  }
+        CALL_INSN_FUNCTION_USAGE (insn)
+	  = gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, o0),
+			       CALL_INSN_FUNCTION_USAGE (insn));
+	insn = get_insns ();
+	end_sequence ();
+	emit_libcall_block (insn, temp3, o0,
+			    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+					    UNSPEC_TLSLD_BASE));
+	temp1 = gen_reg_rtx (SImode);
+	temp2 = gen_reg_rtx (SImode);
+	emit_insn (gen_tldo_hix22 (temp1, addr));
+	emit_insn (gen_tldo_lox10 (temp2, temp1, addr));
+	if (TARGET_ARCH32)
+	  emit_insn (gen_tldo_add32 (ret, temp3, temp2, addr));
+	else
+	  emit_insn (gen_tldo_add64 (ret, temp3, temp2, addr));
+	break;
+
+      case TLS_MODEL_INITIAL_EXEC:
+	temp1 = gen_reg_rtx (SImode);
+	temp2 = gen_reg_rtx (SImode);
+	temp3 = gen_reg_rtx (Pmode);
+	got = sparc_tls_got ();
+	emit_insn (gen_tie_hi22 (temp1, addr));
+	emit_insn (gen_tie_lo10 (temp2, temp1, addr));
+	if (TARGET_ARCH32)
+	  emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
+	else
+	  emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
+        if (TARGET_SUN_TLS)
+	  {
+	    ret = gen_reg_rtx (Pmode);
+	    if (TARGET_ARCH32)
+	      emit_insn (gen_tie_add32 (ret, gen_rtx_REG (Pmode, 7),
+					temp3, addr));
+	    else
+	      emit_insn (gen_tie_add64 (ret, gen_rtx_REG (Pmode, 7),
+					temp3, addr));
+	  }
+	else
+	  ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, 7), temp3);
+	break;
+
+      case TLS_MODEL_LOCAL_EXEC:
+	temp1 = gen_reg_rtx (Pmode);
+	temp2 = gen_reg_rtx (Pmode);
+	if (TARGET_ARCH32)
+	  {
+	    emit_insn (gen_tle_hix22_sp32 (temp1, addr));
+	    emit_insn (gen_tle_lox10_sp32 (temp2, temp1, addr));
+	  }
+	else
+	  {
+	    emit_insn (gen_tle_hix22_sp64 (temp1, addr));
+	    emit_insn (gen_tle_lox10_sp64 (temp2, temp1, addr));
+	  }
+	ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, 7), temp2);
+	break;
+
+      default:
+	abort ();
+      }
+
+  else
+    abort ();  /* for now ... */
+
+  return ret;
+}
+
 
 /* Legitimize PIC addresses.  If the address is already position-independent,
    we return ORIG.  Newly generated position-independent addresses go into a
@@ -3115,6 +3626,52 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     current_function_uses_pic_offset_table = 1;
 
   return orig;
+}
+
+/* Try machine-dependent ways of modifying an illegitimate address X
+   to be legitimate.  If we find one, return the new, valid address.
+
+   OLDX is the address as it was before break_out_memory_refs was called.
+   In some cases it is useful to look at this to decide what needs to be done.
+
+   MODE is the mode of the operand pointed to by X.  */
+
+rtx
+legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
+{
+  rtx orig_x = x;
+
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT)
+    x = gen_rtx_PLUS (Pmode, XEXP (x, 1),
+		      force_operand (XEXP (x, 0), NULL_RTX));
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == MULT)
+    x = gen_rtx_PLUS (Pmode, XEXP (x, 0),
+		      force_operand (XEXP (x, 1), NULL_RTX));
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == PLUS)
+    x = gen_rtx_PLUS (Pmode, force_operand (XEXP (x, 0), NULL_RTX),
+		      XEXP (x, 1));
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == PLUS)
+    x = gen_rtx_PLUS (Pmode, XEXP (x, 0),
+		      force_operand (XEXP (x, 1), NULL_RTX));
+
+  if (x != orig_x && legitimate_address_p (mode, x, FALSE))
+    return x;
+
+  if (tls_symbolic_operand (x))
+    x = legitimize_tls_address (x);
+  else if (flag_pic)
+    x = legitimize_pic_address (x, mode, 0);
+  else if (GET_CODE (x) == PLUS && CONSTANT_ADDRESS_P (XEXP (x, 1)))
+    x = gen_rtx_PLUS (Pmode, XEXP (x, 0),
+		      copy_to_mode_reg (Pmode, XEXP (x, 1)));
+  else if (GET_CODE (x) == PLUS && CONSTANT_ADDRESS_P (XEXP (x, 0)))
+    x = gen_rtx_PLUS (Pmode, XEXP (x, 1),
+		      copy_to_mode_reg (Pmode, XEXP (x, 0)));
+  else if (GET_CODE (x) == SYMBOL_REF
+	   || GET_CODE (x) == CONST
+           || GET_CODE (x) == LABEL_REF)
+    x = copy_to_suggested_reg (x, NULL_RTX, Pmode);
+  return x;
 }
 
 /* Emit special PIC prologues.  */
@@ -6095,6 +6652,10 @@ print_operand (FILE *file, rtx x, int code)
       /* ??? What if offset is too big? Perhaps the caller knows it isn't? */
       fprintf (file, "%s+%d", frame_base_name, frame_base_offset);
       return;
+    case '&':
+      /* Print some local dynamic TLS name.  */
+      assemble_name (file, get_some_local_dynamic_name ());
+      return;
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
       if (GET_CODE (x) == CONST_INT)
@@ -8348,6 +8909,70 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
   epilogue_completed = 0;
   no_new_pseudos = 0;
+}
+
+/* How to allocate a 'struct machine_function'.  */
+
+static struct machine_function *
+sparc_init_machine_status (void)
+{
+  return ggc_alloc_cleared (sizeof (struct machine_function));
+}
+
+/* Locate some local-dynamic symbol still in use by this function
+   so that we can print its name in local-dynamic base patterns.  */
+
+static const char *
+get_some_local_dynamic_name (void)
+{
+  rtx insn;
+
+  if (cfun->machine->some_ld_name)
+    return cfun->machine->some_ld_name;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
+      return cfun->machine->some_ld_name;
+
+  abort ();
+}
+
+static int
+get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x = *px;
+
+  if (x
+      && GET_CODE (x) == SYMBOL_REF
+      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
+    {
+      cfun->machine->some_ld_name = XSTR (x, 0);
+      return 1;
+    }
+
+  return 0;
+}
+
+/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+   We need to emit DTP-relative relocations.  */
+
+void
+sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
+{
+  switch (size)
+    {
+    case 4:
+      fputs ("\t.word\t%r_tls_dtpoff32(", file);
+      break;
+    case 8:
+      fputs ("\t.xword\t%r_tls_dtpoff64(", file);
+      break;
+    default:
+      abort ();
+    }
+  output_addr_const (file, x);
+  fputs (")", file);
 }
 
 #include "gt-sparc.h"

@@ -2099,27 +2099,18 @@ do {									\
    When PIC, we do not accept an address that would require a scratch reg
    to load into a register.  */
 
-#define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH			\
-   || (GET_CODE (X) == CONST						\
-       && ! (flag_pic && pic_address_needs_scratch (X))))
+#define CONSTANT_ADDRESS_P(X) constant_address_p (X)
 
 /* Define this, so that when PIC, reload won't try to reload invalid
    addresses which require two reload registers.  */
 
-#define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
+#define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
 
 /* Nonzero if the constant value X is a legitimate general operand.
    Anything can be made to work except floating point constants.
    If TARGET_VIS, 0.0 can be made to work as well.  */
 
-#define LEGITIMATE_CONSTANT_P(X) 					\
-  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode || 		\
-   (TARGET_VIS &&							\
-    (GET_MODE (X) == SFmode || GET_MODE (X) == DFmode ||		\
-     GET_MODE (X) == TFmode) &&						\
-    fp_zero_operand (X, GET_MODE (X))))
+#define LEGITIMATE_CONSTANT_P(X) legitimate_constant_p (X)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -2226,110 +2217,19 @@ do {									\
 #define RTX_OK_FOR_OLO10_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
 
+#ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
-{ if (RTX_OK_FOR_BASE_P (X))				\
-    goto ADDR;						\
-  else if (GET_CODE (X) == PLUS)			\
-    {							\
-      register rtx op0 = XEXP (X, 0);			\
-      register rtx op1 = XEXP (X, 1);			\
-      if (flag_pic && op0 == pic_offset_table_rtx)	\
-	{						\
-	  if (RTX_OK_FOR_BASE_P (op1))			\
-	    goto ADDR;					\
-	  else if (flag_pic == 1			\
-		   && GET_CODE (op1) != REG		\
-		   && GET_CODE (op1) != LO_SUM		\
-		   && GET_CODE (op1) != MEM		\
-		   && (! SYMBOLIC_CONST (op1)		\
-		       || MODE == Pmode)		\
-		   && (GET_CODE (op1) != CONST_INT	\
-		       || SMALL_INT (op1)))		\
-	    goto ADDR;					\
-	}						\
-      else if (RTX_OK_FOR_BASE_P (op0))			\
-	{						\
-	  if ((RTX_OK_FOR_INDEX_P (op1)			\
- 	      /* We prohibit REG + REG for TFmode when	\
-		 there are no instructions which accept	\
-		 REG+REG instructions.  We do this	\
-		 because REG+REG is not an offsetable	\
-		 address.  If we get the situation	\
-		 in reload where source and destination	\
-		 of a movtf pattern are both MEMs with	\
-		 REG+REG address, then only one of them	\
-		 gets converted to an offsetable	\
-		 address.  */				\
- 	       && (MODE != TFmode			\
-		   || (TARGET_FPU && TARGET_ARCH64	\
-		       && TARGET_V9			\
-		       && TARGET_HARD_QUAD))		\
-	      /* We prohibit REG + REG on ARCH32 if	\
-		 not optimizing for DFmode/DImode	\
-		 because then mem_min_alignment is	\
-		 likely to be zero after reload and the \
-		 forced split would lack a matching	\
-		 splitter pattern.  */			\
-	       && (TARGET_ARCH64 || optimize		\
-		   || (MODE != DFmode			\
-		       && MODE != DImode)))		\
-	      || RTX_OK_FOR_OFFSET_P (op1))		\
-	    goto ADDR;					\
-	}						\
-      else if (RTX_OK_FOR_BASE_P (op1))			\
-	{						\
-	  if ((RTX_OK_FOR_INDEX_P (op0)			\
- 	      /* See the previous comment.  */		\
- 	       && (MODE != TFmode			\
-		  || (TARGET_FPU && TARGET_ARCH64	\
-		      && TARGET_V9			\
-		      && TARGET_HARD_QUAD))		\
-	       && (TARGET_ARCH64 || optimize		\
-		   || (MODE != DFmode			\
-		       && MODE != DImode)))		\
-	      || RTX_OK_FOR_OFFSET_P (op0))		\
-	    goto ADDR;					\
-	}						\
-      else if (USE_AS_OFFSETABLE_LO10			\
-	       && GET_CODE (op0) == LO_SUM		\
-	       && TARGET_ARCH64				\
-	       && ! TARGET_CM_MEDMID			\
-	       && RTX_OK_FOR_OLO10_P (op1))		\
-	{						\
-	  register rtx op00 = XEXP (op0, 0);		\
-	  register rtx op01 = XEXP (op0, 1);		\
-	  if (RTX_OK_FOR_BASE_P (op00)			\
-	      && CONSTANT_P (op01))			\
-	    goto ADDR;					\
-	}						\
-      else if (USE_AS_OFFSETABLE_LO10			\
-	       && GET_CODE (op1) == LO_SUM		\
-	       && TARGET_ARCH64				\
-	       && ! TARGET_CM_MEDMID			\
-	       && RTX_OK_FOR_OLO10_P (op0))		\
-	{						\
-	  register rtx op10 = XEXP (op1, 0);		\
-	  register rtx op11 = XEXP (op1, 1);		\
-	  if (RTX_OK_FOR_BASE_P (op10)			\
-	      && CONSTANT_P (op11))			\
-	    goto ADDR;					\
-	}						\
-    }							\
-  else if (GET_CODE (X) == LO_SUM)			\
-    {							\
-      register rtx op0 = XEXP (X, 0);			\
-      register rtx op1 = XEXP (X, 1);			\
-      if (RTX_OK_FOR_BASE_P (op0)			\
-	  && CONSTANT_P (op1)				\
-	  /* We can't allow TFmode, because an offset	\
-	     greater than or equal to the alignment (8)	\
-	     may cause the LO_SUM to overflow if !v9.  */\
-	  && (MODE != TFmode || TARGET_V9))		\
-	goto ADDR;					\
-    }							\
-  else if (GET_CODE (X) == CONST_INT && SMALL_INT (X))	\
+{							\
+  if (legitimate_address_p (MODE, X, 1))		\
     goto ADDR;						\
 }
+#else
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
+{							\
+  if (legitimate_address_p (MODE, X, 0))		\
+    goto ADDR;						\
+}
+#endif
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
@@ -2374,33 +2274,11 @@ do {									\
 
 /* On SPARC, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
-{ rtx sparc_x = (X);						\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
-			force_operand (XEXP (X, 0), NULL_RTX));	\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-			force_operand (XEXP (X, 1), NULL_RTX));	\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
-    (X) = gen_rtx_PLUS (Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
-			XEXP (X, 1));				\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
-    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-			force_operand (XEXP (X, 1), NULL_RTX));	\
-  if (sparc_x != (X) && memory_address_p (MODE, X))		\
-    goto WIN;							\
-  if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0);	\
-  else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-			copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
-  else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
-    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
-			copy_to_mode_reg (Pmode, XEXP (X, 0)));	\
-  else if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
-	   || GET_CODE (X) == LABEL_REF)			\
-    (X) = copy_to_suggested_reg (X, NULL_RTX, Pmode); 		\
-  if (memory_address_p (MODE, X))				\
-    goto WIN; }
+{						\
+  (X) = legitimize_address (X, OLDX, MODE);	\
+  if (memory_address_p (MODE, X))		\
+    goto WIN;					\
+}
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
@@ -2845,8 +2723,16 @@ do {									\
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
 
+/* Emit a dtp-relative reference to a TLS variable.  */
+
+#ifdef HAVE_AS_TLS
+#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
+  sparc_output_dwarf_dtprel (FILE, SIZE, X)
+#endif
+
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '(' || (CHAR) == '_')
+  ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^'		\
+   || (CHAR) == '(' || (CHAR) == '_' || (CHAR) == '&')
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
@@ -2933,6 +2819,14 @@ do {									\
     }								\
 }
 
+#ifdef HAVE_AS_TLS
+#define TARGET_TLS 1
+#else
+#define TARGET_TLS 0
+#endif
+#define TARGET_SUN_TLS TARGET_TLS
+#define TARGET_GNU_TLS 0
+
 /* Define the codes that are matched by predicates in sparc.c.  */
 
 #define PREDICATE_CODES							\
@@ -2980,7 +2874,11 @@ do {									\
 {"clobbered_register", {REG}},						\
 {"input_operand", {SUBREG, REG, CONST_INT, MEM, CONST}},		\
 {"const64_operand", {CONST_INT, CONST_DOUBLE}},				\
-{"const64_high_operand", {CONST_INT, CONST_DOUBLE}},
+{"const64_high_operand", {CONST_INT, CONST_DOUBLE}},			\
+{"tgd_symbolic_operand", {SYMBOL_REF}},					\
+{"tld_symbolic_operand", {SYMBOL_REF}},					\
+{"tie_symbolic_operand", {SYMBOL_REF}},					\
+{"tle_symbolic_operand", {SYMBOL_REF}},
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 12
