@@ -1,3 +1,15 @@
+2003-12-01  Jeff Sturm  <jsturm@one-point.com>
+
+	PR optimization/13024
+	* toplev.c (rest_of_handle_new_regalloc): Remove rebuild_notes
+	parameter.
+	(rest_of_handle_old_regalloc): Likewise.  Add rebuild_notes
+	declaration.  Rebuild jump labels following local_alloc if necessary.
+	(rest_of_compilation): Remove rebuild_label_notes_after_reload
+	declaration.  Don't pass rebuild_notes parameter to
+	rest_of_handle_new_regalloc and rest_of_handle_old_regalloc.
+	Don't rebuild jump labels.
+
 2003-12-01  Jeff Law  <law@redhat.com>
 
 	* flow.c (count_or_remove_death_notes_bb): New.  Extracted from
