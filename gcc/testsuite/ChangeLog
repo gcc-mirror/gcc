@@ -1,3 +1,33 @@
+2001-08-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* lib/g77.exp:  Load gcc-defs.exp for common procedures
+	(g77_pass, g77_fail, g77_finish, g77_exit,
+	${tool}_check_unsupported_p} Now redundant.  Deleted.
+
+2001-08-01 David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* g77.dg/fbackslash.f
+	* g77.dg/fcase-preserve.f
+	* g77.dg/ff90-1.f
+	* g77.dg/ffixed-line-length-0.f
+	* g77.dg/ffixed-line-length-132.f
+	* g77.dg/ffixed-line-length-7.f
+	* g77.dg/ffixed-line-length-72.f
+	* g77.dg/ffixed-line-length-none.f
+        * g77.dg/ffree-form-1.f
+	* g77.dg/fno-backslash.f
+	* g77.dg/fno-f90-1.f
+	* g77.dg/fno-fixed-form-1.f
+	* g77.dg/fno-onetrip.f
+	* g77.dg/fno-typeless-boz.f
+	* g77.dg/fno-underscoring.f
+	* g77.dg/fno-vxt-1.f
+	* g77.dg/fonetrip.f
+	* g77.dg/ftypeless-boz.f
+	* g77.dg/fugly-assumed.f
+	* g77.dg/funderscoring.f
+	* g77.dg/fvxt-1.f
+
 2001-08-01  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/fwd-proto-1.m: New.
