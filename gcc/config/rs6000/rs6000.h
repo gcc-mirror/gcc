@@ -1178,7 +1178,8 @@ enum reg_class
    'R' is for AIX TOC entries.
    'S' is a constant that can be placed into a 64-bit mask operand
    'T' is a constant that can be placed into a 32-bit mask operand
-   'U' is for V.4 small data references.  */
+   'U' is for V.4 small data references.
+   't' is for AND masks that can be performed by two rldic{l,r} insns.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
@@ -1187,6 +1188,10 @@ enum reg_class
    : (C) == 'T' ? mask_operand (OP, SImode)				\
    : (C) == 'U' ? (DEFAULT_ABI == ABI_V4				\
 		   && small_data_operand (OP, GET_MODE (OP)))		\
+   : (C) == 't' ? (mask64_2_operand (OP, DImode)			\
+		   && (fixed_regs[CR0_REGNO]				\
+		       || !logical_operand (OP, DImode))		\
+		   && !mask64_operand (OP, DImode))			\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2749,10 +2754,13 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"non_add_cint_operand", {CONST_INT}},				   \
   {"and_operand", {SUBREG, REG, CONST_INT}},				   \
   {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		   \
+  {"and64_2_operand", {SUBREG, REG, CONST_INT}},			   \
   {"logical_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		   \
   {"non_logical_cint_operand", {CONST_INT, CONST_DOUBLE}},		   \
   {"mask_operand", {CONST_INT}},					   \
-  {"mask64_operand", {CONST_INT, CONST_DOUBLE}},			   \
+  {"mask_operand_wrap", {CONST_INT}},					   \
+  {"mask64_operand", {CONST_INT}},					   \
+  {"mask64_2_operand", {CONST_INT}},					   \
   {"count_register_operand", {REG}},					   \
   {"xer_operand", {REG}},						   \
   {"symbol_ref_operand", {SYMBOL_REF}},					   \

@@ -64,8 +64,12 @@ extern int non_add_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int non_logical_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int logical_operand PARAMS ((rtx, enum machine_mode));
 extern int mask_operand PARAMS ((rtx, enum machine_mode));
+extern int mask_operand_wrap PARAMS ((rtx, enum machine_mode));
 extern int mask64_operand PARAMS ((rtx, enum machine_mode));
+extern int mask64_2_operand PARAMS ((rtx, enum machine_mode));
+extern void build_mask64_2_operands PARAMS ((rtx, rtx *));
 extern int and64_operand PARAMS ((rtx, enum machine_mode));
+extern int and64_2_operand PARAMS ((rtx, enum machine_mode));
 extern int and_operand PARAMS ((rtx, enum machine_mode));
 extern int count_register_operand PARAMS ((rtx, enum machine_mode));
 extern int xer_operand PARAMS ((rtx, enum machine_mode));
@@ -98,6 +102,8 @@ extern int addrs_ok_for_quad_peep PARAMS ((rtx, rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
 extern int ccr_bit PARAMS ((rtx, int));
+extern int extract_MB PARAMS ((rtx));
+extern int extract_ME PARAMS ((rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern enum rtx_code rs6000_reverse_condition PARAMS ((enum machine_mode,
