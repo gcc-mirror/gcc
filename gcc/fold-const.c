@@ -337,8 +337,10 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
       return;
     }
   
-  if (count >= prec)
-    count = (unsigned HOST_WIDE_INT) count & prec;
+#ifdef SHIFT_COUNT_TRUNCATED
+  if (SHIFT_COUNT_TRUNCATED)
+    count %= prec;
+#endif
 
   if (count >= HOST_BITS_PER_WIDE_INT)
     {
@@ -370,8 +372,10 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
 	      ? -((unsigned HOST_WIDE_INT) h1 >> (HOST_BITS_PER_WIDE_INT - 1))
 	      : 0);
 
-  if (count >= prec)
-    count = (unsigned HOST_WIDE_INT) count % prec;
+#ifdef SHIFT_COUNT_TRUNCATED
+  if (SHIFT_COUNT_TRUNCATED)
+    count %= prec;
+#endif
 
   if (count >= HOST_BITS_PER_WIDE_INT)
     {
