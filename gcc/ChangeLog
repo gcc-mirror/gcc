@@ -1,3 +1,11 @@
+2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/i386/netbsd64.h (CPP_LP64_SPEC): Define.
+	(CPP_SUBTARGET_SPEC): Define.
+	(SUBTARGET_EXTRA_SPECS): Redefine, adding cpp_lp64 and
+	cpp_subtarget specs. 
+	(CPP_SPEC): Redefine to include %(cpp_subtarget).               
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (Patterns): Note pattern condition pitfall

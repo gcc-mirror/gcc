@@ -48,6 +48,24 @@ Boston, MA 02111-1307, USA.  */
   "-D__NetBSD__ -D__ELF__ -Asystem=unix -Asystem=NetBSD"
 
 
+/* Provide some extra CPP specs needed by NetBSD/x86_64.  */
+#define CPP_LP64_SPEC "%{!m32:-D_LP64}"
+
+#define CPP_SUBTARGET_SPEC "%(cpp_lp64)"
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS						\
+  { "cpp_lp64", CPP_LP64_SPEC },					\
+  { "cpp_subtarget", CPP_SUBTARGET_SPEC },
+
+
+/* Provide a CPP_SPEC appropriate for NetBSD.  Currently we deal with
+   our subtarget specs and the GCC option `-posix'.  */
+
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %(cpp_subtarget) %{posix:-D_POSIX_SOURCE}"
+
+
 /* Output assembler code to FILE to call the profiler.  */
 
 #undef FUNCTION_PROFILER
