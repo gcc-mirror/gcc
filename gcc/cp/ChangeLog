@@ -1,3 +1,9 @@
+Thu Feb 19 10:04:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Preserve TREE_CONSTANT.
+	* typeck2.c (initializer_constant_valid_p): Allow conversions
+	between pointers and refrerences.
+
 1998-02-19  Brendan Kehoe  <brendan@cygnus.com>
 
 	* typeck.c (build_unary_op): Only warn about incr/decr a pointer
