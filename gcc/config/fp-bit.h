@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif /* ! FINE_GRAINED_LIBRARIES */
 
-#if __LDBL_MANT_DIG__ == 113
+#if __LDBL_MANT_DIG__ == 113 || __LDBL_MANT_DIG__ == 106
 # define TMODES
 #endif
 
@@ -150,6 +150,18 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #	define FRACHIGH  ((TItype)0x8 << 124)
 #	define FRACHIGH2 ((TItype)0xc << 124)
 #	define FRACBITS 112
+# endif
+
+# if __LDBL_MANT_DIG__ == 106 /* IBM extended (double+double) */
+#	define EXPBITS 11
+#	define EXPBIAS 1023
+#	define EXPMAX (0x7ff)
+#	define QUIET_NAN ((TItype)0x8 << (48 + 64))
+#	define FRACHIGH  ((TItype)0x8 << 124)
+#	define FRACHIGH2 ((TItype)0xc << 124)
+#	define FRACBITS 105
+#	define HALFFRACBITS 52
+#	define HALFSHIFT 64
 # endif
 
 #	define pack_d __pack_t

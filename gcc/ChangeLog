@@ -1,5 +1,12 @@
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* fp-bit.h: Define macros for TFmode floating-point constants
+	in IBM-extended TFmode types.
+	(TMODES): Define if __LDBL_MANT_DIG__ has the newly-supported
+	widths.
+	* config/fp-bit.c (pack_d, unpack_d): Support IBM-extended
+	TFmode type.
+
 	* config/fp-bit.h: Define macros for TFmode floating-point
 	constants in IEEE quad TFmode type.  Declare functions according
 	to L_ macros.
