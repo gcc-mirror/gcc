@@ -183,20 +183,13 @@ Boston, MA 02111-1307, USA.  */
 #define OBJC_FORWARDING_STACK_OFFSET 8
 #define OBJC_FORWARDING_MIN_OFFSET 8
 
-/* INITIALIZE_TRAMPOLINE is changed so that it also enables executable
-   stack.  The __enable_execute_stack also clears the insn cache. */
+/* FINALIZE_TRAMPOLINE enables executable stack.  The
+   __enable_execute_stack also clears the insn cache. */
 
-/* NOTE: part of this is copied from m68k.h */
-#undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                          \
-{                                                                          \
-  rtx _addr, _func;                                                        \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
-  _addr = memory_address (SImode, (TRAMP));                                  \
-  _func =  gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack");          \
-  emit_library_call (_func, 0, VOIDmode, 1, _addr, Pmode);                   \
-}
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)
+  emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__enable_execute_stack"),
+		    0, VOIDmode, 1, memory_address(SImode, (TRAMP)), Pmode)
 
 /* A C expression used to clear the instruction cache from 
    address BEG to address END.   On NeXTSTEP this i a system trap. */
