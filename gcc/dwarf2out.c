@@ -8066,14 +8066,19 @@ loc_descriptor_from_tree (loc, addressp)
 	return 0;
       break;
 
+    case TRUTH_AND_EXPR: 
+    case TRUTH_ANDIF_EXPR:
     case BIT_AND_EXPR:
       op = DW_OP_and;
       goto do_binop;
 
+    case TRUTH_XOR_EXPR:
     case BIT_XOR_EXPR:
       op = DW_OP_xor;
       goto do_binop;
 
+    case TRUTH_OR_EXPR:
+    case TRUTH_ORIF_EXPR:
     case BIT_IOR_EXPR:
       op = DW_OP_or;
       goto do_binop;
@@ -8167,6 +8172,7 @@ loc_descriptor_from_tree (loc, addressp)
       add_loc_descr (&ret, new_loc_descr (op, 0, 0));
       break;
 
+    case TRUTH_NOT_EXPR:
     case BIT_NOT_EXPR:
       op = DW_OP_not;
       goto do_unop;
@@ -10829,7 +10835,8 @@ gen_struct_or_union_type_die (type, context_die)
       add_AT_flag (type_die, DW_AT_declaration, 1);
 
       /* We don't need to do this for function-local types.  */
-      if (! decl_function_context (TYPE_STUB_DECL (type)))
+      if (TYPE_STUB_DECL (type)
+	  && ! decl_function_context (TYPE_STUB_DECL (type)))
 	VARRAY_PUSH_TREE (incomplete_types, type);
     }
 }

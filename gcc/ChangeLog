@@ -1,3 +1,9 @@
+Sun Jan 20 18:40:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (loc_descriptor_from_tree): Add TRUTH_*_EXPR cases.
+	(gen_struct_or_union_type_die): Don't SIGSEGV if no TYPE_STUB_DECL
+	in incomplete case.
+
 2002-01-20  Graham Stott  <grahams@redhat.com>
 
 	* cfgloop.c (flow_loop_preheader_scan): Fix typo.
