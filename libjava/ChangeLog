@@ -1,5 +1,73 @@
 2003-02-10  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/DoubleBuffer.java
+	(DoubleBuffer): Implements Comparable.
+	(endian): Removed.
+	(array_offset): New member variable.
+	(DoubleBuffer): New constuctor.
+	(get): May not be final.
+	(put): May not be final.
+	(arrayOffset): Implemented.
+	(order): Made abstract.
+	(order): Removed.
+	(as*Buffer): Removed.
+	(get*): Removed.
+	(put*): Removed.
+	* java/nio/FloatBuffer.java
+	(FloatBuffer): Implements Comparable.
+	(endian): Removed.
+	(array_offset): New member variable.
+	(FloatBuffer): New constuctor.
+	(get): May not be final.
+	(put): May not be final.
+	(arrayOffset): Implemented.
+	(order): Made abstract.
+	(order): Removed.
+	(as*Buffer): Removed.
+	(get*): Removed.
+	(put*): Removed.
+	* java/nio/IntBuffer.java
+	(IntBuffer): Implements Comparable.
+	(endian): Removed.
+	(array_offset): New member variable.
+	(IntBuffer): New constuctor.
+	(get): May not be final.
+	(put): May not be final.
+	(arrayOffset): Implemented.
+	(order): Made abstract.
+	(order): Removed.
+	(as*Buffer): Removed.
+	(get*): Removed.
+	(put*): Removed.
+	* java/nio/LongBuffer.java
+	(LongBuffer): Implements Comparable.
+	(endian): Removed.
+	(array_offset): New member variable.
+	(LongBuffer): New constuctor.
+	(get): May not be final.
+	(put): May not be final.
+	(arrayOffset): Implemented.
+	(order): Made abstract.
+	(order): Removed.
+	(as*Buffer): Removed.
+	(get*): Removed.
+	(put*): Removed.
+	* java/nio/ShortBuffer.java
+	(ShortBuffer): Implements Comparable.
+	(endian): Removed.
+	(array_offset): New member variable.
+	(ShortBuffer): New constuctor.
+	(get): May not be final.
+	(put): May not be final.
+	(arrayOffset): Implemented.
+	(order): Made abstract.
+	(order): Removed.
+	(as*Buffer): Removed.
+	(get*): Removed.
+	(put*): Removed.
+
+2003-02-10  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileLockImpl.java,
 	java/nio/channels/FileLock.java: New files.
 

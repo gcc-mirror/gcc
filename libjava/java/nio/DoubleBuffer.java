@@ -39,10 +39,10 @@ package java.nio;
 
 import gnu.java.nio.DoubleBufferImpl;
 
-public abstract class DoubleBuffer extends Buffer
+public abstract class DoubleBuffer extends Buffer implements Comparable
 {
-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
   protected double [] backing_buffer;
+  protected int array_offset;
 
   public static DoubleBuffer allocateDirect(int capacity)
   {
@@ -77,7 +77,12 @@ public abstract class DoubleBuffer extends Buffer
     return wrap(array, 0, array.length);
   }
 
-  final public DoubleBuffer get (double[] dst, int offset, int length)
+  DoubleBuffer (int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+  }
+  
+  public DoubleBuffer get (double[] dst, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       {
@@ -87,12 +92,12 @@ public abstract class DoubleBuffer extends Buffer
     return this;
   }
 
-  final public DoubleBuffer get(double[] dst)
+  public DoubleBuffer get (double[] dst)
   {
     return get(dst, 0, dst.length);
   }
 
-  final public DoubleBuffer put(DoubleBuffer src)
+  public DoubleBuffer put (DoubleBuffer src)
   {
     while (src.hasRemaining())
       put(src.get());
@@ -100,7 +105,7 @@ public abstract class DoubleBuffer extends Buffer
     return this;
   }
 
-  final public DoubleBuffer put (double[] src, int offset, int length)
+  public DoubleBuffer put (double[] src, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       put(src[i]);
@@ -125,7 +130,7 @@ public abstract class DoubleBuffer extends Buffer
 
   public final int arrayOffset()
   {
-    return 0;
+    return array_offset;
   }
 
   public int hashCode()
@@ -172,17 +177,7 @@ public abstract class DoubleBuffer extends Buffer
     return 0;
   }
 
-  public final ByteOrder order()
-  {
-    return endian;
-  }
-
-  public final DoubleBuffer order(ByteOrder bo)
-  {
-    endian = bo;
-    return this;
-  }
-
+  public abstract ByteOrder order ();
   public abstract double get();
   public abstract DoubleBuffer put (double b);
   public abstract double get(int index);
@@ -192,34 +187,4 @@ public abstract class DoubleBuffer extends Buffer
   public abstract DoubleBuffer slice();
   public abstract DoubleBuffer duplicate();
   public abstract DoubleBuffer asReadOnlyBuffer();
-  public abstract ShortBuffer asShortBuffer();
-  public abstract CharBuffer asCharBuffer();
-  public abstract IntBuffer asIntBuffer();
-  public abstract LongBuffer asLongBuffer();
-  public abstract FloatBuffer asFloatBuffer();
-  public abstract DoubleBuffer asDoubleBuffer();
-  public abstract char getChar();
-  public abstract DoubleBuffer putChar(char value);
-  public abstract char getChar(int index);
-  public abstract DoubleBuffer putChar(int index, char value);
-  public abstract short getShort();
-  public abstract DoubleBuffer putShort(short value);
-  public abstract short getShort(int index);
-  public abstract DoubleBuffer putShort(int index, short value);
-  public abstract int getInt();
-  public abstract DoubleBuffer putInt(int value);
-  public abstract int getInt(int index);
-  public abstract DoubleBuffer putInt(int index, int value);
-  public abstract long getLong();
-  public abstract DoubleBuffer putLong(long value);
-  public abstract long getLong(int index);
-  public abstract DoubleBuffer putLong(int index, long value);
-  public abstract float getFloat();
-  public abstract DoubleBuffer putFloat(float value);
-  public abstract float getFloat(int index);
-  public abstract DoubleBuffer putFloat(int index, float value);
-  public abstract double getDouble();
-  public abstract DoubleBuffer putDouble(double value);
-  public abstract double getDouble(int index);
-  public abstract DoubleBuffer putDouble(int index, double value);
 }
