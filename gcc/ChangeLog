@@ -1,3 +1,12 @@
+Fri Mar 27 08:56:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (stmp-fixinc): If we're actually fixing include
+	files, copy gcc's assert.h into the fixed include dir.
+	* fixincludes (assert.h): Avoid any attempts to fix a probably
+	broken system specific assert.h file.
+	* fixproto (stdlib.h): Make sure, it'll contain a definition of
+	size_t.
+
 Fri Mar 27 00:49:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* regclass.c (reg_scan_mark_refs): Be more selective about
