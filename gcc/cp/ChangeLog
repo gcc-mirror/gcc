@@ -1,3 +1,8 @@
+2002-01-10  Ira Ruben	<ira@apple.com>
+
+	PR c++/907
+	* decl.c (start_method): Handle attrlist.
+
 2002-01-07  Jason Merrill  <jason@redhat.com>
 
 	* method.c (make_thunk): If !flag_weak, give the thunk the
@@ -6,11 +11,13 @@
 
 2001-12-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4122
 	* class.c (update_vtable_entry_for_fn): Set delta to zero for a
 	lost primary.
 
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/3242
 	* class.c (add_method): Do compare 'this' quals when trying to match a
 	used function.  Don't defer to another used function.
 
