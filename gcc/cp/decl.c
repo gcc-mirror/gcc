@@ -9520,18 +9520,25 @@ build_enumerator (tree name, tree value, tree enumtype)
       /* Default based on previous value.  */
       if (value == NULL_TREE)
 	{
-	  tree prev_value;
-
 	  if (TYPE_VALUES (enumtype))
 	    {
-	      /* The next value is the previous value ...  */
-	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
-	      /* ... plus one.  */
-	      value = cp_build_binary_op (PLUS_EXPR,
-					  prev_value,
-					  integer_one_node);
+	      HOST_WIDE_INT hi;
+	      unsigned HOST_WIDE_INT lo;
+	      tree prev_value;
+	      bool overflowed;
 
-	      if (tree_int_cst_lt (value, prev_value))
+	      /* The next value is the previous value plus one.  We can
+	         safely assume that the previous value is an INTEGER_CST.
+		 add_double doesn't know the type of the target expression,
+		 so we must check with int_fits_type_p as well.  */
+	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
+	      overflowed = add_double (TREE_INT_CST_LOW (prev_value),
+				       TREE_INT_CST_HIGH (prev_value),
+				       1, 0, &lo, &hi);
+	      value = build_int_cst_wide (TREE_TYPE (prev_value), lo, hi);
+	      overflowed |= !int_fits_type_p (value, TREE_TYPE (prev_value));
+
+	      if (overflowed)
 		error ("overflow in enumeration values at `%D'", name);
 	    }
 	  else
