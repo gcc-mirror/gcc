@@ -1,3 +1,7 @@
+Mon May 11 17:24:27 1998  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.md (ffsdi2): Disable.  Simplify the expression as well.
+
 Mon May 11 13:30:44 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* varasm.c (make_decl_rtl): Disable April 1 change.
