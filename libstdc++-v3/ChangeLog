@@ -1,3 +1,11 @@
+2004-07-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16401
+	* include/bits/sstream.tcc (overflow): When reallocating _M_string
+	use an exponential grow policy.
+	* testsuite/27_io/basic_stringbuf/overflow/char/1.cc: New.
+	* testsuite/performance/27_io/stringbuf_overflow.cc: New.
+
 2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/concurrence.h: Tweak comments.
