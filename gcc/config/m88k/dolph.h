@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running the Dolphin UNIX System V/88 Release 3.2,
    Version 3.8/7.83 and 3.6/5.86
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,14 +41,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPU_DEFAULT
 #define CPU_DEFAULT MASK_88000
-
-#undef INITIALIZE_TRAMPOLINE 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
-  emit_call_insn (gen_call( gen_rtx (MEM, SImode,			\
-				     gen_rtx(SYMBOL_REF,Pmode,		\
-					     "__enable_execute_stack")), \
-			   const0_rtx));				\
-}
