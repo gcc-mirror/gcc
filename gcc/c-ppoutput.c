@@ -55,7 +55,7 @@ static void cb_line_change PARAMS ((cpp_reader *, const cpp_token *, int));
 static void cb_define	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
 static void cb_undef	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
 static void cb_include	PARAMS ((cpp_reader *, unsigned int,
-				 const unsigned char *, const cpp_token *));
+				 const unsigned char *, const char *, int));
 static void cb_ident	  PARAMS ((cpp_reader *, unsigned int,
 				   const cpp_string *));
 static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
@@ -345,15 +345,18 @@ cb_undef (pfile, line, node)
 }
 
 static void
-cb_include (pfile, line, dir, header)
-     cpp_reader *pfile;
+cb_include (pfile, line, dir, header, angle_brackets)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
      unsigned int line;
      const unsigned char *dir;
-     const cpp_token *header;
+     const char *header;
+     int angle_brackets;
 {
   maybe_print_line (print.map, line);
-  fprintf (print.outf, "#%s %s\n", dir,
-	   cpp_token_as_text (pfile, header));
+  if (angle_brackets)
+    fprintf (print.outf, "#%s <%s>\n", dir, header);
+  else
+    fprintf (print.outf, "#%s \"%s\"\n", dir, header);
   print.line++;
 }
 

@@ -498,11 +498,10 @@ extern void _cpp_destroy_hashtable	PARAMS ((cpp_reader *));
 extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_never_reread		PARAMS ((struct include_file *));
 extern bool _cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern bool _cpp_execute_include	PARAMS ((cpp_reader *,
-						 const cpp_token *,
-						 enum include_type));
-extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
-						 const cpp_token *));
+extern bool _cpp_execute_include	PARAMS ((cpp_reader *, const char *,
+						 int, enum include_type));
+extern int _cpp_compare_file_date       PARAMS ((cpp_reader *, const char *,
+						 int));
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));

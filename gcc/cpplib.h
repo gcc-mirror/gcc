@@ -375,7 +375,7 @@ struct cpp_callbacks
   void (*line_change) PARAMS ((cpp_reader *, const cpp_token *, int));
   void (*file_change) PARAMS ((cpp_reader *, const struct line_map *));
   void (*include) PARAMS ((cpp_reader *, unsigned int,
-			   const unsigned char *, const cpp_token *));
+			   const unsigned char *, const char *, int));
   void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
