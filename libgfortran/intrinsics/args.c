@@ -1,6 +1,6 @@
 /* Implementation of the GETARG and IARGC g77, and
    corresponding F2003, intrinsics. 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Bud Davis and Janne Blomqvist.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -78,7 +78,9 @@ getarg_i8 (GFC_INTEGER_8 *pos, char  *val, gfc_charlen_type val_len)
 }
 
 
-/* Return the number of commandline arguments.  */
+/* Return the number of commandline arguments.  The g77 info page 
+   states that iargc does not include the specification of the
+   program name itself.  */
 
 extern GFC_INTEGER_4 iargc (void);
 export_proto(iargc);
@@ -91,7 +93,7 @@ iargc (void)
 
   get_args (&argc, &argv);
 
-  return argc;
+  return (argc - 1);
 } 
 
 
