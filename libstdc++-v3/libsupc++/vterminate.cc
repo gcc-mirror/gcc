@@ -35,7 +35,7 @@
 
 #ifdef _GLIBCPP_HAVE_UNISTD_H
 # include <unistd.h>
-# define writestr(str)  write(2, str, sizeof(str) - 1)
+# define writestr(str)  write(2, str, __builtin_strlen(str))
 #else
 # include <cstdio>
 # define writestr(str)  std::fputs(str, stderr)
