@@ -7234,6 +7234,19 @@ mips_secondary_reload_class (class, mode, x, in_p)
 	}
       if (! gp_reg_p)
 	{
+	  /* The stack pointer isn't a valid operand to an add instruction,
+	     so we need to load it into M16_REGS first.  This can happen as
+	     a result of register elimination and form_sum converting
+	     (plus reg (plus SP CONST)) to (plus (plus reg SP) CONST).  We
+	     need an extra register if the dest is the same as the other
+	     register.  In that case, we can't fix the problem by loading SP
+	     into the dest first.  */
+	  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == REG
+	      && GET_CODE (XEXP (x, 1)) == REG
+	      && (XEXP (x, 0) == stack_pointer_rtx
+		  || XEXP (x, 1) == stack_pointer_rtx))
+	    return (class == M16_REGS ? M16_NA_REGS : M16_REGS);
+
 	  if (class == M16_REGS || class == M16_NA_REGS)
 	    return NO_REGS;
 	  return M16_REGS;

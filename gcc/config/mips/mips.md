@@ -5473,9 +5473,12 @@ move\\t%0,%z4\\n\\
 ;; so we use a mult.  ??? This is hideous, and we ought to figure out
 ;; something better.
 
+;; We use no predicate for operand1, because it may be a PLUS, and there
+;; is no convenient predicate for that.
+
 (define_expand "reload_insi"
   [(set (match_operand:SI 0 "register_operand" "=b")
-	(match_operand:SI 1 "register_operand" "b"))
+	(match_operand:SI 1 "" "b"))
    (clobber (match_operand:SI 2 "register_operand" "=&d"))]
   "TARGET_MIPS16"
   "
@@ -5499,6 +5502,56 @@ move\\t%0,%z4\\n\\
 					      gen_rtx (REG, SImode, 66)))));
       DONE;
     }
+
+  /* If this is a plus, then this must be an add of the stack pointer against
+     either a hard register or a pseudo.  */
+  if (TARGET_MIPS16 && GET_CODE (operands[1]) == PLUS)
+    {
+      rtx plus_op;
+
+      if (XEXP (operands[1], 0) == stack_pointer_rtx)
+	plus_op = XEXP (operands[1], 1);
+      else if (XEXP (operands[1], 1) == stack_pointer_rtx)
+	plus_op = XEXP (operands[1], 0);
+      else
+	abort ();
+
+      /* We should have a register now.  */
+      if (GET_CODE (plus_op) != REG)
+	abort ();
+
+      if (REGNO (plus_op) < FIRST_PSEUDO_REGISTER)
+	{
+	  /* We have to have at least one temporary register which is not
+	     overlapping plus_op.  */
+	  if (! rtx_equal_p (plus_op, operands[0]))
+	    {
+	      emit_move_insn (operands[0], stack_pointer_rtx);
+	      emit_insn (gen_addsi3 (operands[0], operands[0], plus_op));
+	    }
+	  else if (! rtx_equal_p (plus_op, operands[2]))
+	    {
+	      emit_move_insn (operands[2], stack_pointer_rtx);
+	      emit_insn (gen_addsi3 (operands[0], plus_op, operands[2]));
+	    }
+	  else
+	    abort ();
+	}
+      else
+	{
+	  /* We need two registers in this case.  */
+	  if (! rtx_equal_p (operands[0], operands[2]))
+	    {
+	      emit_move_insn (operands[0], stack_pointer_rtx);
+	      emit_move_insn (operands[2], plus_op);
+	      emit_insn (gen_addsi3 (operands[0], operands[0], operands[2]));
+	    }
+	  else
+	    abort ();
+	}
+      DONE;
+    }
+
   /* FIXME: I don't know how to get a value into the HI register.  */
   emit_move_insn (operands[0], operands[1]);
   DONE;
@@ -9039,9 +9092,9 @@ move\\t%0,%z4\\n\\
 	  if (GET_MODE (operands[0]) != HImode)
 	    abort ();
 	  if (!(Pmode == DImode))
-	    emit_jump_insn (gen_tablejump_mips161 (operands[0], operands[1]));
+	    emit_insn (gen_tablejump_mips161 (operands[0], operands[1]));
 	  else
-	    emit_jump_insn (gen_tablejump_mips162 (operands[0], operands[1]));
+	    emit_insn (gen_tablejump_mips162 (operands[0], operands[1]));
 	  DONE;
 	}
 
@@ -9110,7 +9163,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_extendhisi2 (t1, operands[0]));
       emit_move_insn (t2, gen_rtx (LABEL_REF, SImode, operands[1]));
       emit_insn (gen_addsi3 (t3, t1, t2));
-      emit_insn (gen_tablejump_internal1 (t3, operands[1]));
+      emit_jump_insn (gen_tablejump_internal1 (t3, operands[1]));
       DONE;
     }
 }")
@@ -9132,7 +9185,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_extendhidi2 (t1, operands[0]));
       emit_move_insn (t2, gen_rtx (LABEL_REF, DImode, operands[1]));
       emit_insn (gen_adddi3 (t3, t1, t2));
-      emit_insn (gen_tablejump_internal2 (t3, operands[1]));
+      emit_jump_insn (gen_tablejump_internal2 (t3, operands[1]));
       DONE;
     }
 }")
