@@ -1,3 +1,9 @@
+2001-03-13  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.c (find_gr_spill): Subtract frame_pointer_needed
+	from 80 in try_locals code.
+	(ia64_expand_prologue): Add comment pointing to find_gr_spill change.
+
 2001-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpp.texi (poison): Explain the macro expansion exception.
