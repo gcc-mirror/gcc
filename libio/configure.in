@@ -20,6 +20,7 @@ fi
 srctrigger=libioP.h
 srcname="input/output library"
 package_makefile_frag=Make.pack
+package_makefile_rules_frag=Make.pack.r
 
 # per-host:
 
@@ -115,7 +116,7 @@ INFO_FILES=iostream
 if [ -n "${with_cross_host}" -a -d ${topsrcdir}/gcc ]; then
     CHECK_SUBDIRS=testsuite
 fi
-(. ${srcdir}/config.shared) >${package_makefile_frag}
+(. ${srcdir}/config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
 
