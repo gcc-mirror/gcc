@@ -26,12 +26,17 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 
-/* If we are in gcc, or we have a config.h, we assume that
-   HAVE_SYS_FILE_H tells us whether to include sys/file.h.  However,
-   libiberty does not have a config.h, and instead arranges to define
-   NO_SYS_FILE_H on the command line when there is no sys/file.h.  */
+#ifdef IN_GCC
+#include "system.h"
+#else
 
-#if (defined (IN_GCC) || defined (HAVE_CONFIG_H)) ? defined (HAVE_SYS_FILE_H) : ! defined (NO_SYS_FILE_H)
+/* If we are in gcc, system.h has handled everything.  When not in
+   gcc, if we have a config.h we assume that HAVE_SYS_FILE_H tells us
+   whether to include sys/file.h.  However, libiberty does not have a
+   config.h, and instead arranges to define NO_SYS_FILE_H on the
+   command line when there is no sys/file.h.  */
+
+#if defined (HAVE_CONFIG_H) ? defined (HAVE_SYS_FILE_H) : ! defined (NO_SYS_FILE_H)
 #include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
@@ -43,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include <stdio.h>	/* May get P_tmpdir.  */
+#endif /* IN_GCC */
 
 #ifdef IN_GCC
 #include "gansidecl.h"

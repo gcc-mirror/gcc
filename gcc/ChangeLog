@@ -1,3 +1,9 @@
+Thu Apr  2 13:51:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (choose-temp.o): Depend on system.h.
+
+        * choose-temp.c: Include system.h when IN_GCC.
+
 Thu Apr  2 02:37:07 1998  Joern Rennecke  (amylaar@cygnus.co.uk)
 	 		  Richard Henderson  <rth@cygnus.com>
 
