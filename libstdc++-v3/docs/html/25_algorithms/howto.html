@@ -8,7 +8,7 @@
    <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 25</title>
 <link REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $ -->
+<!-- $Id: howto.html,v 1.5 2001/09/17 23:24:39 pme Exp $ -->
 </head>
 <body>
 
@@ -24,7 +24,7 @@
 <h1>Contents</h1>
 <ul>
    <li><a href="#1">Prerequisites</a>
-   <li><a href="#2">Topic</a>
+   <li><a href="#2">Special <code>swap</code>s</a>
 </ul>
 
 <hr>
@@ -71,8 +71,18 @@
    </p>
 
 <hr>
-<h2><a name="2">Topic</a></h2>
-   <p>Blah.
+<h2><a name="2">Special <code>swap</code>s</a></h2>
+   <p>If you call <code> std::swap(x,y); </code> where x and y are standard
+      containers, then the call will automatically be replaced by a call to
+      <code> x.swap(y); </code> instead.
+   </p>
+   <p>This allows member functions of each container class to take over, and
+      containers' swap functions should have O(1) complexity according to
+      the standard.  (And while &quot;should&quot; allows implementations to
+      behave otherwise and remain compliant, this implementation does in
+      fact use constant-time swaps.)  This should not be surprising, since
+      for two containers of the same type to swap contents, only some
+      internal pointers to storage need to be exchanged.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -87,7 +97,7 @@
 <P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
 <a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
-<br> $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $
+<br> $Id: howto.html,v 1.5 2001/09/17 23:24:39 pme Exp $
 </em></p>
 
 

@@ -1,3 +1,40 @@
+2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/20_util/howto.html:  Add anchor name.
+	* docs/html/23_containers/howto.html:  Line wrapping, another link.
+	* docs/html/25_algorithms/howto.html:  Another note.
+
+	* docs/html/ext/howto.html:  Link to SGI extensions.  List DRs and
+	link to them...
+	* docs/html/ext/lwg-active.html:  ...in this new file (from R19),
+	* docs/html/ext/lwg-defects.html:  and this new file (from R19).
+	* docs/html/ext/sgiexts.html:  New file.  Mention SGI extensions
+	carried over to libstdc++-v3.
+	* docs/html/faq/index.html:  Link to SGI extensions.  Mention the
+	"missing .." pseudobug.
+	* docs/html/faq/index.txt:  Regenerate.
+
+	* include/bits/ios_base.h:  DR-related comment cleanup.
+	* include/bits/istream.tcc:  Likewise.
+	* include/bits/locale_facets.h:  Likewise.
+	* include/bits/locale_facets.tcc:  Likewise.
+	* include/bits/ostream.tcc:  Likewise.
+	* include/bits/std_bitset.h:  Likewise.
+	* include/bits/std_iosfwd.h:  Likewise.
+	* include/bits/std_istream.h:  Likewise.
+	* include/bits/std_ostream.h:  Likewise.
+	* include/bits/std_streambuf.h:  Likewise.
+	* include/bits/stl_pair.h:  Likewise.
+	* include/bits/streambuf_iterator.h:  Likewise.
+
+	* include/bits/std_map.h:  Remove unused header inclusion guard
+	_CPP_BITS_STL_TREE_H from around bits/stl_tree.h.
+	* include/bits/std_set.h:  Likewise.
+
+	* include/bits/stl_function.h:  Doxygen markup.
+	* docs/doxygen/doxygroups.cc:  New file, specifying module grouping.
+	* libsupc++/typeinfo:  Doxygen markup tweak.
+
 2001-09-20  Scott Johnston <scott@accom.com>
 	    Peter Schmid <schmid@snake.iap.physik.tu-darmstadt.de>
 

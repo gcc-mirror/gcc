@@ -513,6 +513,7 @@ namespace std
 #endif
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+    // Side effect of DR 50.
     private:
       basic_streambuf(const __streambuf_type&);
 

@@ -1176,7 +1176,7 @@ namespace std
 	  __in.width(0);
 	}
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-// 2000-02-01 Number to be determined
+//211.  operator>>(istream&, string&) doesn't set failbit
       if (!__extracted)
 	__in.setstate (ios_base::failbit);
 #endif

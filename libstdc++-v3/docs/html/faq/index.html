@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.10 2001/07/18 21:37:06 pme Exp $ -->
+<!-- $Id: index.html,v 1.11 2001/09/17 23:24:40 pme Exp $ -->
 </head>
 <body>
 
@@ -368,6 +368,25 @@ which is no longer available, thanks deja...-->
    the mailing list or look through recent archives.   The RELEASE-
    NOTES and BUGS files are generally kept up-to-date.</em> 
 
+   <p>For 3.0.1, the most common &quot;bug&quot; is an apparently missing
+      &quot;<code>../</code>&quot; in include/Makefile, resulting in files
+      like gthr.h and gthr-single.h not being found.
+   </p>
+   <p>Please read
+      <a href="http://gcc.gnu.org/install/configure.html">the configuration
+      instructions for GCC</a>,
+      specifically the part about configuring in a seperate build directory,
+      and how strongly recommended it is.  Building in the source directory
+      is fragile, is rarely tested, and tends to break, as in this case.
+      Work has already gone into the source tree to make this less painful
+      for the next release.
+   </p>
+   <p><strong>Please do not report this as a bug.  We know about it.</strong>
+      Reporting this -- or any other problem that's already been fixed --
+      hinders the development of GCC, because we have to take time to
+      respond to your report.  Thank you.
+   </p>
+
    <h2><a name="4_1">4.1 What works already?</a></h2>
       <p>This is a verbatim clip from the &quot;Status&quot; section
           of the RELEASE-NOTES for the latest snapshot.
@@ -572,7 +591,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          libstdc++.  Some of that is already happening, see 4.2.  Some of
          those changes are being predicted by the library maintainers, and
          we add code to the library based on what the current proposed
-         resolution specifies.
+         resolution specifies.  Those additions are listed in
+	 <a href="../ext/howto.html#5">the extensions page</a>.
       </p>
       <li><p>Performance tuning.  Lots of performance tuning.  This too is
          already underway for post-3.0 releases, starting with memory
@@ -678,7 +698,7 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</a>.
 <P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
 <a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
-<br> $Id: index.html,v 1.10 2001/07/18 21:37:06 pme Exp $
+<br> $Id: index.html,v 1.11 2001/09/17 23:24:40 pme Exp $
 </em></p>
 
 

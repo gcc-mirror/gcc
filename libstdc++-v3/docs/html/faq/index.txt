@@ -286,6 +286,22 @@
    mailing  list  or look through recent archives. The RELEASE- NOTES and
    BUGS files are generally kept up-to-date.
 
+   For  3.0.1,  the  most  common "bug" is an apparently missing "../" in
+   include/Makefile, resulting in files like gthr.h and gthr-single.h not
+   being found.
+
+   Please  read  [58]the configuration instructions for GCC, specifically
+   the  part  about  configuring  in  a seperate build directory, and how
+   strongly  recommended  it  is.  Building  in  the  source directory is
+   fragile,  is  rarely tested, and tends to break, as in this case. Work
+   has  already  gone  into the source tree to make this less painful for
+   the next release.
+
+   Please  do  not report this as a bug. We know about it. Reporting this
+   --  or  any  other  problem  that's  already been fixed -- hinders the
+   development  of  GCC,  because we have to take time to respond to your
+   report. Thank you.
+
 4.1 What works already?
 
    This is a verbatim clip from the "Status" section of the RELEASE-NOTES
@@ -327,16 +343,16 @@ New:
 
 4.3 Bugs in the C++ language/lib specification
 
-   Yes,  unfortunately,  there  are  some.  In a [58]message to the list,
+   Yes,  unfortunately,  there  are  some.  In a [59]message to the list,
    Nathan  Myers  announced that he has started a list of problems in the
    ISO  C++  Standard itself, especially with regard to the chapters that
-   concern  the  library.  The  list itself is [59]posted on his website.
+   concern  the  library.  The  list itself is [60]posted on his website.
    Developers  who are having problems interpreting the Standard may wish
    to consult his notes.
 
    For  those  people  who  are  not part of the ISO Library Group (i.e.,
    nearly  all  of us needing to read this page in the first place :-), a
-   public list of the library defects is occasionally published [60]here.
+   public list of the library defects is occasionally published [61]here.
      _________________________________________________________________
 
 4.4 Things in libstdc++ that look like bugs
@@ -357,14 +373,14 @@ New:
    same  namespace  as other comparison functions (e.g., 'using' them and
    the  <iterator>  header),  then  you  will suddenly be faced with huge
    numbers  of  ambiguity  errors.  This  was  discussed on the -v3 list;
-   Nathan Myers [61]sums things up here.
+   Nathan Myers [62]sums things up here.
 
   The g++-3 headers are not ours
 
    If  you  have  found  an extremely broken header file which is causing
    problems  for  you, look carefully before submitting a "high" priority
    bug  report  (which  you  probably  shouldn't  do anyhow; see the last
-   paragraph of the page describing [62]the GCC bug database).
+   paragraph of the page describing [63]the GCC bug database).
 
    If  the headers are in ${prefix}/include/g++-3, then you are using the
    old  libstdc++-v2  library,  which is nonstandard and unmaintained. Do
@@ -372,7 +388,7 @@ New:
 
    Currently  our  header files are installed in ${prefix}/include/g++-v3
    (see  the  'v'?).  This may change with the next release of GCC, as it
-   may be too confusing, but [63]the question has not yet been decided.
+   may be too confusing, but [64]the question has not yet been decided.
 
    glibc  If you're on a GNU/Linux system and have just upgraded to glibc
    2.2,  but  are  still  using gcc 2.95.2, then you should have read the
@@ -385,7 +401,7 @@ type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 
-   Note  that  2.95.x  shipped  with  the  [64]old v2 library which is no
+   Note  that  2.95.x  shipped  with  the  [65]old v2 library which is no
    longer  maintained.  Also note that gcc 2.95.3 fixes this problem, but
    requires a separate patch for libstdc++-v3.
 
@@ -398,23 +414,23 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    visibility, or you just plain forgot, etc).
 
    More  information,  including  how  to  optionally  enable/disable the
-   checks, is available [65]here.
+   checks, is available [66]here.
      _________________________________________________________________
 
 4.5 Aw, that's easy to fix!
 
    If  you  have  found  a  bug  in  the library and you think you have a
    working  fix,  then  send  it  in!  The  main  GCC  site has a page on
-   [66]submitting  patches  that  covers the procedure, but for libstdc++
+   [67]submitting  patches  that  covers the procedure, but for libstdc++
    you  should also send the patch to our mailing list in addition to the
-   GCC  patches  mailing  list. The libstdc++ [67]contributors' page also
+   GCC  patches  mailing  list. The libstdc++ [68]contributors' page also
    talks about how to submit patches.
 
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test  for  the  presence of the bug that your patch fixes. Bugs have a
    way  of  being  reintroduced; if an old bug creeps back in, it will be
-   caught  immediately  by  the  [68]testsuite -- but only if such a test
+   caught  immediately  by  the  [69]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
 
@@ -448,7 +464,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        libstdc++.  Some  of  that  is already happening, see 4.2. Some of
        those  changes are being predicted by the library maintainers, and
        we  add  code  to  the  library based on what the current proposed
-       resolution specifies.
+       resolution  specifies.  Those  additions  are  listed  in  [70]the
+       extensions page.
     2. Performance  tuning.  Lots  of  performance  tuning.  This  too is
        already  underway  for  post-3.0  releases,  starting  with memory
        expansion  in  container  classes and buffer usage in synchronized
@@ -463,13 +480,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        type  from  C99.)  Bugfixes and rewrites (to improve or fix thread
        safety, for instance) will of course be a continuing task.
 
-   [69]This  question  about  the  next libstdc++ prompted some brief but
-   interesting [70]speculation.
+   [71]This  question  about  the  next libstdc++ prompted some brief but
+   interesting [72]speculation.
      _________________________________________________________________
 
 5.3 What about the STL from SGI?
 
-   The  [71]STL  from  SGI, version 3.3, was the most recent merge of the
+   The  [73]STL  from  SGI, version 3.3, was the most recent merge of the
    STL  codebase.  The code in libstdc++ contains many fixes and changes,
    and  it  is  very  likely  that the SGI code is no longer under active
    development. We expect that no future merges will take place.
@@ -490,7 +507,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        #include <ext/hash_map>
 
 
-   Extensions to the library have [72]their own page.
+   Extensions to the library have [74]their own page.
      _________________________________________________________________
 
 5.5 [removed]
@@ -506,8 +523,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    This  is  assuming  that  your  idea of "multithreaded" is the same as
    ours...  The  general  question  of multithreading and libstdc++-v3 is
-   addressed in the chapter-specific advice for [73]Library Introduction.
-   Threadsafe  containers  are covered in more detail in [74]the Received
+   addressed in the chapter-specific advice for [75]Library Introduction.
+   Threadsafe  containers  are covered in more detail in [76]the Received
    Wisdom section on containers.
      _________________________________________________________________
 
@@ -519,17 +536,17 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    their  two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right  [75]here. (And if you've already registered with them, clicking
-   this link will take you to directly to the place where you can [76]buy
+   right  [77]here. (And if you've already registered with them, clicking
+   this link will take you to directly to the place where you can [78]buy
    the standard on-line.
 
-   Who is your country's member body? Visit the [77]ISO homepage and find
+   Who is your country's member body? Visit the [79]ISO homepage and find
    out!
      _________________________________________________________________
 
-   Comments  and  suggestions  are  welcome,  and  may be sent to [78]the
+   Comments  and  suggestions  are  welcome,  and  may be sent to [80]the
    mailing list.
-   $Id: index.html,v 1.10 2001/07/18 21:37:06 pme Exp $ 
+   $Id: index.html,v 1.11 2001/09/17 23:24:40 pme Exp $ 
 
 References
 
@@ -590,24 +607,26 @@ References
   55. http://www.gnu.org/software/cvs/cvs.html
   56. http://www.cvshome.org/
   57. http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html
-  58. http://gcc.gnu.org/ml/libstdc++/1998/msg00006.html
-  59. http://www.cantrip.org/draft-bugs.txt
-  60. http://anubis.dkuug.dk/jtc1/sc22/wg21/
-  61. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
-  62. http://gcc.gnu.org/gnatswrite.html
-  63. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
-  64. ../faq/index.html#4_4_interface
-  65. ../19_diagnostics/howto.html#3
-  66. http://gcc.gnu.org/contribute.html
-  67. ../17_intro/contribute.html
-  68. ../faq/index.html#2_4
-  69. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
-  70. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
-  71. http://www.sgi.com/Technology/STL/
-  72. ../ext/howto.html
-  73. http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#3
-  74. http://gcc.gnu.org/onlinedocs/libstdc++/23_containers/howto.html
-  75. http://www.ansi.org/
-  76. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
-  77. http://www.iso.ch/
-  78. mailto:libstdc++@gcc.gnu.org
+  58. http://gcc.gnu.org/install/configure.html
+  59. http://gcc.gnu.org/ml/libstdc++/1998/msg00006.html
+  60. http://www.cantrip.org/draft-bugs.txt
+  61. http://anubis.dkuug.dk/jtc1/sc22/wg21/
+  62. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
+  63. http://gcc.gnu.org/gnatswrite.html
+  64. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
+  65. ../faq/index.html#4_4_interface
+  66. ../19_diagnostics/howto.html#3
+  67. http://gcc.gnu.org/contribute.html
+  68. ../17_intro/contribute.html
+  69. ../faq/index.html#2_4
+  70. ../ext/howto.html#5
+  71. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
+  72. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
+  73. http://www.sgi.com/Technology/STL/
+  74. ../ext/howto.html
+  75. http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#3
+  76. http://gcc.gnu.org/onlinedocs/libstdc++/23_containers/howto.html
+  77. http://www.ansi.org/
+  78. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+  79. http://www.iso.ch/
+  80. mailto:libstdc++@gcc.gnu.org

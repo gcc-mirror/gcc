@@ -580,6 +580,7 @@ namespace std
       { return do_get(__in, __end, __io, __err, __v); }
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+      //XXX.  What number?
       iter_type 
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, short& __v) const
@@ -661,6 +662,7 @@ namespace std
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+      //XXX.  What number?
       virtual iter_type 
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, short&) const;
       virtual iter_type 

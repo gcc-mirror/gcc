@@ -663,6 +663,7 @@ namespace std
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
   // NB: This is an unresolved library defect #17
+  //17.  Bad bool parsing
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -734,6 +735,7 @@ namespace std
 #endif
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+  //XXX.  Which number?  Presumably same as in locale_facets.h...
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::

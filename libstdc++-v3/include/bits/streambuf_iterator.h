@@ -173,7 +173,7 @@ namespace std
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
-      // NB: there is also number 111 pending on this function.
+      // NB: there is also number 111 (NAD, Future) pending on this function.
       bool 
       equal(const istreambuf_iterator& __b) const
       {

@@ -146,7 +146,7 @@ namespace std
     {
     public:
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      // Can't do exception(_msg) as defined in 27.4.2.1.1
+      //48.  Use of non-existent exception constructor
       explicit 
       failure(const string& __str) throw();
 
@@ -397,6 +397,7 @@ namespace std
     ios_base();
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+  //50.  Copy constructor and assignment operator of ios_base
   private:
     ios_base(const ios_base&);
 

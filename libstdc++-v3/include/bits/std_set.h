@@ -58,9 +58,7 @@
 
 #pragma GCC system_header
 
-#ifndef _CPP_BITS_STL_TREE_H  /* XXX is this guard needed? */
 #include <bits/stl_tree.h>
-#endif
 #include <bits/stl_set.h>
 #include <bits/stl_multiset.h>
 

@@ -8,7 +8,7 @@
    <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 23</title>
 <link REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.8 2001/09/15 00:41:11 pme Exp $ -->
+<!-- $Id: howto.html,v 1.9 2001/09/17 23:24:39 pme Exp $ -->
 </head>
 <body>
 
@@ -140,7 +140,8 @@
    <p><B>A container&lt;bool&gt;.&nbsp;&nbsp;</B>  The Committee made provision
       for the space savings possible with that (N/8) usage previously mentioned,
       so that you don't have to do wasteful things like
-      <code>Container&lt;char&gt;</code> or <code>Container&lt;short int&gt;</code>.
+      <code>Container&lt;char&gt;</code> or
+      <code>Container&lt;short int&gt;</code>.
       Specifically, <code>vector&lt;bool&gt;</code> is required to be
       specialized for that space savings.
    </p>
@@ -158,12 +159,14 @@
    <p><B>Extremely weird solutions.&nbsp;&nbsp;</B>  If you have access to
       the compiler and linker at runtime, you can do something insane, like
       figuring out just how many bits you need, then writing a temporary 
-      source code file.  That file contains an instantiation of <code>bitset</code>
+      source code file.  That file contains an instantiation of
+      <code>bitset</code>
       for the required number of bits, inside some wrapper functions with
       unchanging signatures.  Have your program then call the
       compiler on that file using Position Independant Code, then open the
       newly-created object file and load those wrapper functions.  You'll have
-      an instantiation of <code>bitset&lt;N&gt;</code> for the exact <code>N</code>
+      an instantiation of <code>bitset&lt;N&gt;</code> for the exact
+      <code>N</code>
       that you need at the time.  Don't forget to delete the temporary files.
       (Yes, this <em>can</em> be, and <em>has been</em>, done.)
    </p>
@@ -177,6 +180,9 @@
       really matters (don't just guess).  And, if you manage to do anything
       along the lines of the third category, the author would love to hear
       from you...
+   </p>
+   <p>Also note that the implementation of bitset used in libstdc++-v3 has
+      <a href="../ext/sgiexts.html#ch23">some extensions</a>.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -363,7 +369,7 @@
 <P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
 <a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
-<br> $Id: howto.html,v 1.8 2001/09/15 00:41:11 pme Exp $
+<br> $Id: howto.html,v 1.9 2001/09/17 23:24:39 pme Exp $
 </em></p>
 
 
