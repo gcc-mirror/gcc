@@ -96,3 +96,7 @@ Boston, MA 02111-1307, USA.  */
 /* hpux8 and later have C++ compatible include files, so do not
    pretend they are `extern "C"'.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* hpux11 and earlier don't have fputc_unlocked, so we must inhibit the
+   transformation of fputs_unlocked and fprintf_unlocked to fputc_unlocked.  */
+#define DONT_HAVE_FPUTC_UNLOCKED
