@@ -1050,7 +1050,6 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
    containing BITSIZE bits, starting at BITNUM,
    and put it in TARGET if possible (if TARGET is nonzero).
    Regardless of TARGET, we return the rtx for where the value is placed.
-   It may be a QUEUED.
 
    STR_RTX is the structure containing the byte (a REG or MEM).
    UNSIGNEDP is nonzero if this is an unsigned bit field.

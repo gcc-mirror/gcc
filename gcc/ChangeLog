@@ -1,3 +1,8 @@
+2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expmed.c: Remove more references to QUEUED in the comments.
+	* expr.c: Likewise.
+
 2004-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	Revert:
