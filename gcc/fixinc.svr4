@@ -148,7 +148,6 @@ while [ $# != 0 ]; do
   files=`find . -name '*.h' -type f -print`
   echo 'Checking header files:'
   for file in $files; do
-      echo Fixing $file
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1 || echo "Can't copy $file"
 	chmod +w $2/$file
@@ -197,6 +196,8 @@ while [ $# != 0 ]; do
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
 	   rm $2/$file
+	else
+	   Fixed $file
 	fi
       fi
   done
