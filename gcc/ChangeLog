@@ -1,3 +1,8 @@
+Thu Mar  8 19:42:08 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (move_for_stack_reg): Avoid non-popint fst for
+	TFmode too.
+
 Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.md (clrstrsi): Call ix86_set_move_mem_attrs.
