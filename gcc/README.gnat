@@ -122,7 +122,7 @@ diff -c ada/a-misc.c /home/brolley/comp/egcs/tmp/ada/a-misc.c
   
   void
 ! init_parse (filename)
-!      char *filename
+!      char *filename;
   {
     lang_expand_expr = gnat_expand_expr;
   
