@@ -1,3 +1,7 @@
+Sun Jan 13 06:55:31 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (mem_loc_descriptor, case ADDRESSOF): New case.
+
 2002-01-12  Tom Rix  <trix@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Use ior for 
