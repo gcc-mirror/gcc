@@ -50,6 +50,7 @@ done
 # and we want EXTRA_CC_MODES to be taken into account.
 echo "#ifndef GENERATOR_FILE"
 echo "#include \"insn-codes.h\""
+echo "#include \"insn-flags.h\""
 echo "#endif"
 
 exec >&-

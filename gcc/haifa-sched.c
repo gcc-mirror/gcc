@@ -144,7 +144,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
-#include "insn-flags.h"
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"

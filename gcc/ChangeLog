@@ -1,3 +1,34 @@
+2001-03-22  Richard Henderson  <rth@redhat.com>
+
+	* mkconfig.sh: Include insn-flags.h.
+	* Makefile.in (CONFIG_H): Include insn-flags.h.
+	(lots of objects): Remove insn-codes.h and insn-flags.h.
+
+	* alias.c, bb-reorder.c, calls.c, do-loop.c, flow.c, haifa-sched.c,
+	integrate.c, jump.c, loop.c, predict.c, profile.c, reg-stack.c,
+	regmove.c, reorg.c, a29k/a29k.c, alpha/alpha.c, arc/arc.c, arm/arm.c,
+	avr/avr.c, clipper/clipper.c, convex/convex.c, d30v/d30v.c,
+	dsp16xx/dsp16xx.c, fr30/fr30.c, h8300/h8300.c, i370/i370.c,
+	i386/i386.c, i860/i860.c, ia64/ia64.c, m32r/m32r.c, m68hc11/m68hc11.c,
+	m68k/m68k.c, m88k/m88k.c, mcore/mcore.c, mn10200/mn10200.c,
+	mn10300/mn10300.c, ns32k/ns32k.c, pa/pa.c, pdp11/pdp11.c,
+	pj/pj.c, romp/romp.c, rs6000/rs6000.c, sh/sh.c, sparc/sparc.c,
+	v850/v850.c, vax/vax.c:
+	Don't include insn-flags.h.
+
+	* diagnostic.c, expr.h, reload.c, toplev.c:
+	Don't include insn-codes.h.
+
+	* builtins.c, combine.c, except.c, explow.c, expmed.c, expr.c,
+	final.c, function.c, optabs.c, recog.c, reload1.c, stmt.c,
+	c4x/c4x.c, i960/i960.c, mips/mips.c:
+	Don't include insn-codes.h or insn-flags.h.
+
+	* genemit.c, genopinit.c, genoutput.c: Don't include insn-codes.h
+	or insn-flags.h in the generated code.
+	* genflags.c (gen_proto): Use "struct rtx_def *" instead of "rtx".
+	(main): Forward declare struct rtx_def.
+
 2001-03-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi (-ffast-math): Remove duplicate line about

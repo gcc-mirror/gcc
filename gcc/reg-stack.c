@@ -161,7 +161,6 @@
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "insn-flags.h"
 #include "toplev.h"
 #include "recog.h"
 #include "output.h"

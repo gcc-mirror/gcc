@@ -326,8 +326,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"flags.h\"\n");
-  printf ("#include \"insn-flags.h\"\n");
-  printf ("#include \"insn-codes.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"expr.h\"\n");
