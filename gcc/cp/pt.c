@@ -87,6 +87,8 @@ static htab_t local_specializations;
 #define UNIFY_ALLOW_DERIVED 4
 #define UNIFY_ALLOW_INTEGER 8
 #define UNIFY_ALLOW_OUTER_LEVEL 16
+#define UNIFY_ALLOW_OUTER_MORE_CV_QUAL 32
+#define UNIFY_ALLOW_OUTER_LESS_CV_QUAL 64
 
 #define GTB_VIA_VIRTUAL 1 /* The base class we are examining is
 			     virtual, or a base class of a virtual
@@ -111,7 +113,7 @@ static tree coerce_template_parms PARAMS ((tree, tree, tree, int, int));
 static void tsubst_enum	PARAMS ((tree, tree, tree));
 static tree add_to_template_args PARAMS ((tree, tree));
 static tree add_outermost_template_args PARAMS ((tree, tree));
-static void maybe_adjust_types_for_deduction PARAMS ((unification_kind_t, tree*,
+static int maybe_adjust_types_for_deduction PARAMS ((unification_kind_t, tree*,
 						    tree*)); 
 static int  type_unification_real PARAMS ((tree, tree, tree, tree,
 					 int, unification_kind_t, int, int));
@@ -121,7 +123,6 @@ static tree convert_nontype_argument PARAMS ((tree, tree));
 static tree convert_template_argument PARAMS ((tree, tree, tree, int,
 					      int , tree));
 static tree get_bindings_overload PARAMS ((tree, tree, tree));
-static tree get_bindings_order PARAMS ((tree, tree, int));
 static int for_each_template_parm PARAMS ((tree, tree_fn_t, void*));
 static tree build_template_parm_index PARAMS ((int, int, int, tree, tree));
 static int inline_needs_template_parms PARAMS ((tree));
@@ -136,7 +137,7 @@ static tree build_template_decl PARAMS ((tree, tree));
 static int mark_template_parm PARAMS ((tree, void *));
 static tree tsubst_friend_function PARAMS ((tree, tree));
 static tree tsubst_friend_class PARAMS ((tree, tree));
-static tree get_bindings_real PARAMS ((tree, tree, tree, int, int));
+static tree get_bindings_real PARAMS ((tree, tree, tree, int, int, int));
 static int template_decl_level PARAMS ((tree));
 static tree maybe_get_template_decl_from_type_decl PARAMS ((tree));
 static int check_cv_quals_for_unify PARAMS ((int, tree, tree));
@@ -7681,13 +7682,15 @@ instantiate_template (tmpl, targ_ptr)
      [temp.deduct.conv].
 
    DEDUCE_EXACT:
+     We are deducing arguments when doing an explicit instantiation
+     as in [temp.explicit], when determining an explicit specialization
+     as in [temp.expl.spec], or when taking the address of a function
+     template, as in [temp.deduct.funcaddr]. 
+
+   DEDUCE_ORDER:
      We are deducing arguments when calculating the partial
      ordering between specializations of function or class
-     templates, as in [temp.func.order] and [temp.class.order],
-     when doing an explicit instantiation as in [temp.explicit],
-     when determining an explicit specialization as in
-     [temp.expl.spec], or when taking the address of a function
-     template, as in [temp.deduct.funcaddr]. 
+     templates, as in [temp.func.order] and [temp.class.order].
 
    LEN is the number of parms to consider before returning success, or -1
    for all.  This is used in partial ordering to avoid comparing parms for
@@ -7793,12 +7796,14 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
    the argument passed to the call, or the type of the value
    initialized with the result of the conversion function.  */
 
-static void
+static int
 maybe_adjust_types_for_deduction (strict, parm, arg)
      unification_kind_t strict;
      tree* parm;
      tree* arg;
 {
+  int result = 0;
+  
   switch (strict)
     {
     case DEDUCE_CALL:
@@ -7817,8 +7822,43 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 
     case DEDUCE_EXACT:
       /* There is nothing to do in this case.  */
-      return;
+      return 0;
 
+    case DEDUCE_ORDER:
+      /* DR 214. [temp.func.order] is underspecified, and leads to no
+         ordering between things like `T *' and `T const &' for `U *'.
+         The former has T=U and the latter T=U*. The former looks more
+         specialized and John Spicer considers it well-formed (the EDG
+         compiler accepts it).
+
+         John also confirms that deduction should proceed as in a function
+         call. Which implies the usual ARG and PARM bashing as DEDUCE_CALL.
+         However, in ordering, ARG can have REFERENCE_TYPE, but no argument
+         to an actual call can have such a type.
+         
+         When deducing against a REFERENCE_TYPE, we can either not change
+         PARM's type, or we can change ARG's type too. The latter, though
+         seemingly more safe, turns out to give the following quirk. Consider
+         deducing a call to a `const int *' with the following template 
+         function parameters 
+           #1; T const *const &   ; T = int
+           #2; T *const &         ; T = const int
+           #3; T *                ; T = const int
+         It looks like #1 is the more specialized.  Taken pairwise, #1 is
+         more specialized than #2 and #2 is more specialized than #3, yet
+         there is no ordering between #1 and #3.
+         
+         So, if ARG is a reference, we look though it when PARM is
+         not a refence. When both are references we don't change either.  */
+      if (TREE_CODE (*arg) == REFERENCE_TYPE)
+        {
+          if (TREE_CODE (*parm) == REFERENCE_TYPE)
+            return 0;
+          *arg = TREE_TYPE (*arg);
+          result |= UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
+          goto skip_arg;
+        }
+      break;
     default:
       my_friendly_abort (0);
     }
@@ -7849,6 +7889,7 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 	*arg = TYPE_MAIN_VARIANT (*arg);
     }
   
+  skip_arg:;
   /* [temp.deduct.call]
      
      If P is a cv-qualified type, the top level cv-qualifiers
@@ -7857,7 +7898,11 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
      type deduction.  */
   *parm = TYPE_MAIN_VARIANT (*parm);
   if (TREE_CODE (*parm) == REFERENCE_TYPE)
-    *parm = TREE_TYPE (*parm);
+    {
+      *parm = TREE_TYPE (*parm);
+      result |= UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
+    }
+  return result;
 }
 
 /* Most parms like fn_type_unification.
@@ -7902,6 +7947,10 @@ type_unification_real (tparms, targs, parms, args, subr,
     case DEDUCE_EXACT:
       sub_strict = UNIFY_ALLOW_NONE;
       break;
+    
+    case DEDUCE_ORDER:
+      sub_strict = UNIFY_ALLOW_NONE;
+      break;
       
     default:
       my_friendly_abort (0);
@@ -7943,7 +7992,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 	      arg = NULL_TREE;
 	    }
 
-	  if (strict == DEDUCE_EXACT)
+	  if (strict == DEDUCE_EXACT || strict == DEDUCE_ORDER)
 	    {
 	      if (same_type_p (parm, type))
 		continue;
@@ -7976,12 +8025,16 @@ type_unification_real (tparms, targs, parms, args, subr,
 	    }
 	  arg = TREE_TYPE (arg);
 	}
+      
+      {
+        int arg_strict = sub_strict;
+        
+        if (!subr)
+	  arg_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg);
 
-      if (!subr)
-	maybe_adjust_types_for_deduction (strict, &parm, &arg);
-
-      if (unify (tparms, targs, parm, arg, sub_strict))
-        return 1;
+        if (unify (tparms, targs, parm, arg, arg_strict))
+          return 1;
+      }
 
       /* Are we done with the interesting parms?  */
       if (--len == 0)
@@ -8129,7 +8182,7 @@ try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
   if (uses_template_parms (arg))
     return 1;
 
-  maybe_adjust_types_for_deduction (strict, &parm, &arg);
+  sub_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg);
 
   /* We don't copy orig_targs for this because if we have already deduced
      some template args from previous args, unify would complain when we
@@ -8413,11 +8466,11 @@ check_cv_quals_for_unify (strict, arg, parm)
      tree arg;
      tree parm;
 {
-  if (!(strict & UNIFY_ALLOW_MORE_CV_QUAL)
+  if (!(strict & (UNIFY_ALLOW_MORE_CV_QUAL | UNIFY_ALLOW_OUTER_MORE_CV_QUAL))
       && !at_least_as_qualified_p (arg, parm))
     return 0;
 
-  if (!(strict & UNIFY_ALLOW_LESS_CV_QUAL)
+  if (!(strict & (UNIFY_ALLOW_LESS_CV_QUAL | UNIFY_ALLOW_OUTER_LESS_CV_QUAL))
       && !at_least_as_qualified_p (parm, arg))
     return 0;
 
@@ -8448,7 +8501,13 @@ check_cv_quals_for_unify (strict, arg, parm)
        have const qualified pointers leading up to the inner type which
        requires additional CV quals, except at the outer level, where const
        is not required [conv.qual]. It would be normal to set this flag in
-       addition to setting UNIFY_ALLOW_MORE_CV_QUAL.  */
+       addition to setting UNIFY_ALLOW_MORE_CV_QUAL.
+     UNIFY_ALLOW_OUTER_MORE_CV_QUAL:
+       This is the outermost level of a deduction, and PARM can be more CV
+       qualified at this point.
+     UNIFY_ALLOW_OUTER_LESS_CV_QUAL:
+       This is the outermost level of a deduction, and PARM can be less CV
+       qualified at this point.  */
 
 static int
 unify (tparms, targs, parm, arg, strict)
@@ -8498,6 +8557,8 @@ unify (tparms, targs, parm, arg, strict)
     strict &= ~UNIFY_ALLOW_MORE_CV_QUAL;
   strict &= ~UNIFY_ALLOW_OUTER_LEVEL;
   strict &= ~UNIFY_ALLOW_DERIVED;
+  strict &= ~UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
+  strict &= ~UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
   
   switch (TREE_CODE (parm))
     {
@@ -8963,6 +9024,8 @@ mark_decl_instantiated (result, extern_p)
 
 /* Given two function templates PAT1 and PAT2, return:
 
+   DEDUCE should be DEDUCE_EXACT or DEDUCE_ORDER.
+   
    1 if PAT1 is more specialized than PAT2 as described in [temp.func.order].
    -1 if PAT2 is more specialized than PAT1.
    0 if neither is more specialized.
@@ -8970,18 +9033,21 @@ mark_decl_instantiated (result, extern_p)
    LEN is passed through to fn_type_unification.  */
    
 int
-more_specialized (pat1, pat2, len)
+more_specialized (pat1, pat2, deduce, len)
      tree pat1, pat2;
+     int deduce;
      int len;
 {
   tree targs;
   int winner = 0;
 
-  targs = get_bindings_order (pat1, DECL_TEMPLATE_RESULT (pat2), len);
+  targs = get_bindings_real (pat1, DECL_TEMPLATE_RESULT (pat2),
+                             NULL_TREE, 0, deduce, len);
   if (targs)
     --winner;
 
-  targs = get_bindings_order (pat2, DECL_TEMPLATE_RESULT (pat1), len);
+  targs = get_bindings_real (pat2, DECL_TEMPLATE_RESULT (pat1),
+                             NULL_TREE, 0, deduce, len);
   if (targs)
     ++winner;
 
@@ -9018,12 +9084,12 @@ more_specialized_class (pat1, pat2)
    DECL from the function template FN, with the explicit template
    arguments EXPLICIT_ARGS.  If CHECK_RETTYPE is 1, the return type must
    also match.  Return NULL_TREE if no satisfactory arguments could be
-   found.  LEN is passed through to fn_type_unification.  */
+   found.  DEDUCE and LEN are passed through to fn_type_unification.  */
    
 static tree
-get_bindings_real (fn, decl, explicit_args, check_rettype, len)
+get_bindings_real (fn, decl, explicit_args, check_rettype, deduce, len)
      tree fn, decl, explicit_args;
-     int check_rettype, len;
+     int check_rettype, deduce, len;
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_tree_vec (ntparms);
@@ -9069,7 +9135,7 @@ get_bindings_real (fn, decl, explicit_args, check_rettype, len)
 			   decl_arg_types,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 	                    ? TREE_TYPE (decl_type) : NULL_TREE),
-			   DEDUCE_EXACT, len);
+			   deduce, len);
 
   if (i != 0)
     return NULL_TREE;
@@ -9083,7 +9149,7 @@ tree
 get_bindings (fn, decl, explicit_args)
      tree fn, decl, explicit_args;
 {
-  return get_bindings_real (fn, decl, explicit_args, 1, -1);
+  return get_bindings_real (fn, decl, explicit_args, 1, DEDUCE_EXACT, -1);
 }
 
 /* But for resolve_overloaded_unification, we only care about the parameter
@@ -9093,17 +9159,7 @@ static tree
 get_bindings_overload (fn, decl, explicit_args)
      tree fn, decl, explicit_args;
 {
-  return get_bindings_real (fn, decl, explicit_args, 0, -1);
-}
-
-/* And for more_specialized, we want to be able to stop partway.  */
-
-static tree
-get_bindings_order (fn, decl, len)
-     tree fn, decl;
-     int len;
-{
-  return get_bindings_real (fn, decl, NULL_TREE, 0, len);
+  return get_bindings_real (fn, decl, explicit_args, 0, DEDUCE_EXACT, -1);
 }
 
 /* Return the innermost template arguments that, when applied to a
@@ -9162,7 +9218,8 @@ most_specialized_instantiation (instantiations)
   champ = instantiations;
   for (fn = TREE_CHAIN (instantiations); fn; fn = TREE_CHAIN (fn))
     {
-      fate = more_specialized (TREE_VALUE (champ), TREE_VALUE (fn), -1);
+      fate = more_specialized (TREE_VALUE (champ), TREE_VALUE (fn),
+                               DEDUCE_EXACT, -1);
       if (fate == 1)
 	;
       else
@@ -9179,7 +9236,8 @@ most_specialized_instantiation (instantiations)
 
   for (fn = instantiations; fn && fn != champ; fn = TREE_CHAIN (fn))
     {
-      fate = more_specialized (TREE_VALUE (champ), TREE_VALUE (fn), -1);
+      fate = more_specialized (TREE_VALUE (champ), TREE_VALUE (fn),
+                               DEDUCE_EXACT, -1);
       if (fate != 1)
 	return error_mark_node;
     }

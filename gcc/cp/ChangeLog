@@ -1,3 +1,27 @@
+2001-01-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (unification_kind_t): Add DEDUCE_ORDER.
+	(more_specialized): Add deduction parameter.
+	* call.c (joust): Adjust more_specialized call.
+	* pt.c (UNIFY_ALLOW_OUTER_MORE_CV_QUAL,
+	UNIFY_ALLOW_OUTER_LESS_CV_QUAL): New unify flags.
+	(get_bindings_order): Remove.
+	(get_bindings_real): Add DEDUCE parameter.
+	(maybe_adjust_types_for_deduction): Return extra unify flags. Do
+	REFERENCE_TYPE jig for DEDUCE_ORDER.
+	(type_unification_real): Deal with DEDUCE_ORDER. Use result of
+	maybe_adjust_types_for_deduction.
+	(more_specialized): Add DEDUCE parameter. Call get_bindings_real
+	directly.
+	(try_one_overload): Use result of maybe_adjust_types_for_deduction.
+	(check_cv_quals_for_unify): Use new unify qualifier flags.
+	(unify): Clear new unify qualifier flags.
+	(get_bindings_real): Add DEDUCE parameter.
+	(get_bindings): Adjust call to get_bindings_real.
+	(get_bindings_overload): Likewise.
+	(most_specialized_instantiation): Adjust call to
+	more_specialized.
+
 2001-01-19  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (flag_vtable_thunks): Also depend on ENABLE_NEW_GXX_ABI.
