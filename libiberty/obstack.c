@@ -2,8 +2,8 @@
    Copyright (C) 1988,89,90,91,92,93,94,96,97 Free Software Foundation, Inc.
 
 
-   NOTE: The canonical source of this file is maintained with the GNU C Library.
-   Bugs can be reported to bug-glibc@gnu.org.
+   NOTE: This source is derived from an old version taken from the GNU C
+   Library (glibc).
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
