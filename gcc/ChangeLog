@@ -5,6 +5,8 @@
 	(perform_edge_inserts): Unconditionally call
 	free_dominator_info.
 
+	* tree-outof-ssa.c (analyze_edges_for_bb): Update a comment.
+
 2005-03-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Define.
