@@ -1,3 +1,9 @@
+2001-04-04 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* emit-rtl.c (mark_label_nuses) Increment the label uses for
+	all labels present in rtx.
+	(try_split) Call new function for all split insns.
+
 2001-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* recog.c (validate_replace_rtx_1): Instead of aborting just make
