@@ -1,3 +1,7 @@
+2004-06-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/union-1.c: New test.
+
 2004-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-41.c: New test case.
@@ -22718,3 +22722,4 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
