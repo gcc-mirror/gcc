@@ -1,3 +1,10 @@
+1998-02-05  Marc Lehmann  <pcg@goof.com>
+
+	* integrate.c (INTEGRATE_THRESHOLD): Inline only small functions
+	when -Os is specified.
+	* toplev.c (main): Don't disable flag_inline_functions anymore when
+	-Os is in effect.
+
 Fri Feb  6 00:27:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
         * regmove.c: Update.

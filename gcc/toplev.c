@@ -3798,12 +3798,6 @@ main (argc, argv, envp)
       flag_inline_functions = 1;
     }
 
-  /* Disable code bloating optimizations if optimizing for size. */
-  if (optimize_size)
-    {
-      flag_inline_functions = 0;
-    }
-
   /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
      modify it.  */
   target_flags = 0;
