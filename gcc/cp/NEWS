@@ -1,0 +1,139 @@
+*** Changes since G++ version 2.7.2:
+
+* A public review copy of the December 1996 Draft of the ANSI C++
+  proto-standard is now available. See
+
+	http://www.cygnus.com/misc/wp/
+
+  for more information.
+
+* Default function arguments in templates will not be evaluated (or
+  checked for semantic validity) unless they are needed.
+
+* The -ftemplate-depth-NN flag can be used to increase the maximum
+  recursive template instantiation depth, defaulting to 17. If you need
+  to use this flag, the compiler will tell you.
+
+* The internal interface between RTTI-using code and the RTTI support
+  library has changed, so code that uses dynamic_cast should be
+  recompiled. The RTTI support library has moved from libstdc++ to
+  libgcc, so you no longer need to link against libstdc++ for a program
+  that doesn't use the "hosted" library.
+
+* bool is now always the same size as another built-in type. Previously,
+  a 64-bit RISC target using a 32-bit ABI would have 32-bit pointers and a
+  64-bit bool. This should only affect Irix 6, which was not supported in
+  2.7.2.
+
+* new (nothrow) is now supported.
+
+* A flag -Weffc++ has been added for violations of some of the style 
+  guidelines in Scott Meyers' _Effective C++_ books.
+
+* On ELF systems, duplicate copies of symbols with 'initialized common'
+  linkage (such as template instantiations, vtables, and extern inlines)
+  will now be discarded by the GNU linker, so you don't need to use -frepo.
+  This support requires GNU ld from binutils 2.8 or later.
+
+* Partial specialization of class templates is now supported.
+
+* The overload resolution code has been rewritten to conform to the latest
+  C++ Working Paper.  Built-in operators are now considered as candidates
+  in operator overload resolution.  Function template overloading chooses
+  the more specialized template, and handles base classes in type deduction
+  and guiding declarations properly.  In this release the old code can
+  still be selected with -fno-ansi-overloading, although this is not
+  supported and will be removed in a future release.
+
+* RTTI support has been rewritten to work properly and is now on by default.
+  This means code that uses virtual functions will have a modest space
+  overhead.  You can use the -fno-rtti flag to disable RTTI support.
+
+* Synthesized destructors are no longer made virtual just because the class
+  already has virtual functions, only if they override a virtual destructor
+  in a base class.  The compiler will warn if this affects your code.
+
+* The g++ driver no longer links with libg++ by default; it is now
+  functionally identical to the c++ driver.
+
+* (void *)0 is no longer considered a null pointer constant; NULL in
+  <stddef.h> is now defined as __null, a magic constant of type (void *)
+  normally, or (size_t) with -ansi.
+
+* The new 'template <>' specialization syntax is now accepted and ignored.
+
+* The name of a class is now implicitly declared in its own scope; A::A
+  refers to A.
+
+* g++ now uses a new implementation of templates. The basic idea is that
+  now templates are minimally parsed when seen and then expanded later.
+  This allows conformant early name binding and instantiation controls,
+  since instantiations no longer have to go through the parser.
+
+  What you get:
+
+     + Inlining of template functions works without any extra effort or
+       modifications.
+     + Instantiations of class templates and methods defined in the class
+       body are deferred until they are actually needed (unless
+       -fexternal-templates is specified).
+     + Nested types in class templates work.
+     + Static data member templates work.
+
+  Possible problems:
+
+     + Types and class templates used in templates must be declared
+       first, or the compiler will assume they are not types, and fail.
+     + Similarly, nested types of template type parameters must be tagged
+       with the 'typename' keyword.  In many cases, the compiler will tell
+       you where you need to add 'typename'.
+     + Syntax errors in templates that are never instantiated will now be
+       diagnosed.
+
+* Synthesized methods are now emitted in any translation units that need
+  an out-of-line copy. They are no longer affected by #pragma interface
+  or #pragma implementation.
+
+* Local classes are now supported.
+
+* -Wall no longer implies -W.
+  The new warning flag, -Wsign-compare, included in -Wall, warns about
+  dangerous comparisons of signed and unsigned values. Only the flag is
+  new; it was previously part of -W.
+
+* The new flag, -fno-weak, disables the use of weak symbols.
+
+* __attribute__ can now be attached to types as well as declarations.
+
+* -Woverloaded-virtual now warns if a virtual function in a base class is
+  hidden in a derived class, rather than warning about virtual functions
+  being overloaded (even if all of the inherited signatures are
+  overridden) as it did before.
+
+* The compiler no longer emits a warning if an ellipsis is used as a
+  function's argument list.
+
+* Exception handling support has been significantly improved and is on by
+  default.  This can result in significant runtime overhead.  You can turn
+  it off with -fno-exceptions.
+
+* Definition of nested types outside of their containing class is now
+  supported. Use the following source code, as an example.
+
+       struct A {
+              struct B;
+              B* bp;
+       };
+
+       struct A::B {
+              int member;
+       };
+
+* Explicit instantiation of template constructors and destructors is now
+  supported. Use the following source code, as an example.
+
+       template A<int>::A(const A&);
+
+* On the HPPA, some classes that do not define a copy constructor
+  will be passed and returned in memory again so that functions
+  returning those types can be inlined.

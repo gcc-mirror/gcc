@@ -1,0 +1,1161 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Passes,  Next: RTL,  Prev: Interface,  Up: Top
+
+Passes and Files of the Compiler
+********************************
+
+   The overall control structure of the compiler is in `toplev.c'.  This
+file is responsible for initialization, decoding arguments, opening and
+closing files, and sequencing the passes.
+
+   The parsing pass is invoked only once, to parse the entire input.
+The RTL intermediate code for a function is generated as the function
+is parsed, a statement at a time.  Each statement is read in as a
+syntax tree and then converted to RTL; then the storage for the tree
+for the statement is reclaimed.  Storage for types (and the expressions
+for their sizes), declarations, and a representation of the binding
+contours and how they nest, remain until the function is finished being
+compiled; these are all needed to output the debugging information.
+
+   Each time the parsing pass reads a complete function definition or
+top-level declaration, it calls either the function
+`rest_of_compilation', or the function `rest_of_decl_compilation' in
+`toplev.c', which are responsible for all further processing necessary,
+ending with output of the assembler language.  All other compiler
+passes run, in sequence, within `rest_of_compilation'.  When that
+function returns from compiling a function definition, the storage used
+for that function definition's compilation is entirely freed, unless it
+is an inline function (*note An Inline Function is As Fast As a Macro:
+Inline.).
+
+   Here is a list of all the passes of the compiler and their source
+files.  Also included is a description of where debugging dumps can be
+requested with `-d' options.
+
+   * Parsing.  This pass reads the entire text of a function definition,
+     constructing partial syntax trees.  This and RTL generation are no
+     longer truly separate passes (formerly they were), but it is
+     easier to think of them as separate.
+
+     The tree representation does not entirely follow C syntax, because
+     it is intended to support other languages as well.
+
+     Language-specific data type analysis is also done in this pass,
+     and every tree node that represents an expression has a data type
+     attached.  Variables are represented as declaration nodes.
+
+     Constant folding and some arithmetic simplifications are also done
+     during this pass.
+
+     The language-independent source files for parsing are
+     `stor-layout.c', `fold-const.c', and `tree.c'.  There are also
+     header files `tree.h' and `tree.def' which define the format of
+     the tree representation.
+
+     The source files to parse C are `c-parse.in', `c-decl.c',
+     `c-typeck.c', `c-aux-info.c', `c-convert.c', and `c-lang.c' along
+     with header files `c-lex.h', and `c-tree.h'.
+
+     The source files for parsing C++ are `cp-parse.y', `cp-class.c',
+     `cp-cvt.c', `cp-decl.c', `cp-decl2.c', `cp-dem.c', `cp-except.c',
+     `cp-expr.c', `cp-init.c', `cp-lex.c', `cp-method.c', `cp-ptree.c',
+     `cp-search.c', `cp-tree.c', `cp-type2.c', and `cp-typeck.c', along
+     with header files `cp-tree.def', `cp-tree.h', and `cp-decl.h'.
+
+     The special source files for parsing Objective C are
+     `objc-parse.y', `objc-actions.c', `objc-tree.def', and
+     `objc-actions.h'.  Certain C-specific files are used for this as
+     well.
+
+     The file `c-common.c' is also used for all of the above languages.
+
+   * RTL generation.  This is the conversion of syntax tree into RTL
+     code.  It is actually done statement-by-statement during parsing,
+     but for most purposes it can be thought of as a separate pass.
+
+     This is where the bulk of target-parameter-dependent code is found,
+     since often it is necessary for strategies to apply only when
+     certain standard kinds of instructions are available.  The purpose
+     of named instruction patterns is to provide this information to
+     the RTL generation pass.
+
+     Optimization is done in this pass for `if'-conditions that are
+     comparisons, boolean operations or conditional expressions.  Tail
+     recursion is detected at this time also.  Decisions are made about
+     how best to arrange loops and how to output `switch' statements.
+
+     The source files for RTL generation include `stmt.c', `calls.c',
+     `expr.c', `explow.c', `expmed.c', `function.c', `optabs.c' and
+     `emit-rtl.c'.  Also, the file `insn-emit.c', generated from the
+     machine description by the program `genemit', is used in this
+     pass.  The header file `expr.h' is used for communication within
+     this pass.
+
+     The header files `insn-flags.h' and `insn-codes.h', generated from
+     the machine description by the programs `genflags' and `gencodes',
+     tell this pass which standard names are available for use and
+     which patterns correspond to them.
+
+     Aside from debugging information output, none of the following
+     passes refers to the tree structure representation of the function
+     (only part of which is saved).
+
+     The decision of whether the function can and should be expanded
+     inline in its subsequent callers is made at the end of rtl
+     generation.  The function must meet certain criteria, currently
+     related to the size of the function and the types and number of
+     parameters it has.  Note that this function may contain loops,
+     recursive calls to itself (tail-recursive functions can be
+     inlined!), gotos, in short, all constructs supported by GNU CC.
+     The file `integrate.c' contains the code to save a function's rtl
+     for later inlining and to inline that rtl when the function is
+     called.  The header file `integrate.h' is also used for this
+     purpose.
+
+     The option `-dr' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.rtl' to
+     the input file name.
+
+   * Jump optimization.  This pass simplifies jumps to the following
+     instruction, jumps across jumps, and jumps to jumps.  It deletes
+     unreferenced labels and unreachable code, except that unreachable
+     code that contains a loop is not recognized as unreachable in this
+     pass.  (Such loops are deleted later in the basic block analysis.)
+     It also converts some code originally written with jumps into
+     sequences of instructions that directly set values from the
+     results of comparisons, if the machine has such instructions.
+
+     Jump optimization is performed two or three times.  The first time
+     is immediately following RTL generation.  The second time is after
+     CSE, but only if CSE says repeated jump optimization is needed.
+     The last time is right before the final pass.  That time,
+     cross-jumping and deletion of no-op move instructions are done
+     together with the optimizations described above.
+
+     The source file of this pass is `jump.c'.
+
+     The option `-dj' causes a debugging dump of the RTL code after
+     this pass is run for the first time.  This dump file's name is
+     made by appending `.jump' to the input file name.
+
+   * Register scan.  This pass finds the first and last use of each
+     register, as a guide for common subexpression elimination.  Its
+     source is in `regclass.c'.
+
+   * Jump threading.  This pass detects a condition jump that branches
+     to an identical or inverse test.  Such jumps can be `threaded'
+     through the second conditional test.  The source code for this
+     pass is in `jump.c'.  This optimization is only performed if
+     `-fthread-jumps' is enabled.
+
+   * Common subexpression elimination.  This pass also does constant
+     propagation.  Its source file is `cse.c'.  If constant propagation
+     causes conditional jumps to become unconditional or to become
+     no-ops, jump optimization is run again when CSE is finished.
+
+     The option `-ds' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.cse' to
+     the input file name.
+
+   * Loop optimization.  This pass moves constant expressions out of
+     loops, and optionally does strength-reduction and loop unrolling
+     as well.  Its source files are `loop.c' and `unroll.c', plus the
+     header `loop.h' used for communication between them.  Loop
+     unrolling uses some functions in `integrate.c' and the header
+     `integrate.h'.
+
+     The option `-dL' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.loop' to
+     the input file name.
+
+   * If `-frerun-cse-after-loop' was enabled, a second common
+     subexpression elimination pass is performed after the loop
+     optimization pass.  Jump threading is also done again at this time
+     if it was specified.
+
+     The option `-dt' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.cse2' to
+     the input file name.
+
+   * Stupid register allocation is performed at this point in a
+     nonoptimizing compilation.  It does a little data flow analysis as
+     well.  When stupid register allocation is in use, the next pass
+     executed is the reloading pass; the others in between are skipped.
+     The source file is `stupid.c'.
+
+   * Data flow analysis (`flow.c').  This pass divides the program into
+     basic blocks (and in the process deletes unreachable loops); then
+     it computes which pseudo-registers are live at each point in the
+     program, and makes the first instruction that uses a value point at
+     the instruction that computed the value.
+
+     This pass also deletes computations whose results are never used,
+     and combines memory references with add or subtract instructions
+     to make autoincrement or autodecrement addressing.
+
+     The option `-df' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.flow' to
+     the input file name.  If stupid register allocation is in use, this
+     dump file reflects the full results of such allocation.
+
+   * Instruction combination (`combine.c').  This pass attempts to
+     combine groups of two or three instructions that are related by
+     data flow into single instructions.  It combines the RTL
+     expressions for the instructions by substitution, simplifies the
+     result using algebra, and then attempts to match the result
+     against the machine description.
+
+     The option `-dc' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.combine'
+     to the input file name.
+
+   * Instruction scheduling (`sched.c').  This pass looks for
+     instructions whose output will not be available by the time that
+     it is used in subsequent instructions.  (Memory loads and floating
+     point instructions often have this behavior on RISC machines).  It
+     re-orders instructions within a basic block to try to separate the
+     definition and use of items that otherwise would cause pipeline
+     stalls.
+
+     Instruction scheduling is performed twice.  The first time is
+     immediately after instruction combination and the second is
+     immediately after reload.
+
+     The option `-dS' causes a debugging dump of the RTL code after this
+     pass is run for the first time.  The dump file's name is made by
+     appending `.sched' to the input file name.
+
+   * Register class preferencing.  The RTL code is scanned to find out
+     which register class is best for each pseudo register.  The source
+     file is `regclass.c'.
+
+   * Local register allocation (`local-alloc.c').  This pass allocates
+     hard registers to pseudo registers that are used only within one
+     basic block.  Because the basic block is linear, it can use fast
+     and powerful techniques to do a very good job.
+
+     The option `-dl' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.lreg' to
+     the input file name.
+
+   * Global register allocation (`global.c').  This pass allocates hard
+     registers for the remaining pseudo registers (those whose life
+     spans are not contained in one basic block).
+
+   * Reloading.  This pass renumbers pseudo registers with the hardware
+     registers numbers they were allocated.  Pseudo registers that did
+     not get hard registers are replaced with stack slots.  Then it
+     finds instructions that are invalid because a value has failed to
+     end up in a register, or has ended up in a register of the wrong
+     kind.  It fixes up these instructions by reloading the
+     problematical values temporarily into registers.  Additional
+     instructions are generated to do the copying.
+
+     The reload pass also optionally eliminates the frame pointer and
+     inserts instructions to save and restore call-clobbered registers
+     around calls.
+
+     Source files are `reload.c' and `reload1.c', plus the header
+     `reload.h' used for communication between them.
+
+     The option `-dg' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.greg' to
+     the input file name.
+
+   * Instruction scheduling is repeated here to try to avoid pipeline
+     stalls due to memory loads generated for spilled pseudo registers.
+
+     The option `-dR' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.sched2'
+     to the input file name.
+
+   * Jump optimization is repeated, this time including cross-jumping
+     and deletion of no-op move instructions.
+
+     The option `-dJ' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.jump2' to
+     the input file name.
+
+   * Delayed branch scheduling.  This optional pass attempts to find
+     instructions that can go into the delay slots of other
+     instructions, usually jumps and calls.  The source file name is
+     `reorg.c'.
+
+     The option `-dd' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.dbr' to
+     the input file name.
+
+   * Conversion from usage of some hard registers to usage of a register
+     stack may be done at this point.  Currently, this is supported only
+     for the floating-point registers of the Intel 80387 coprocessor.
+     The source file name is `reg-stack.c'.
+
+     The options `-dk' causes a debugging dump of the RTL code after
+     this pass.  This dump file's name is made by appending `.stack' to
+     the input file name.
+
+   * Final.  This pass outputs the assembler code for the function.  It
+     is also responsible for identifying spurious test and compare
+     instructions.  Machine-specific peephole optimizations are
+     performed at the same time.  The function entry and exit sequences
+     are generated directly as assembler code in this pass; they never
+     exist as RTL.
+
+     The source files are `final.c' plus `insn-output.c'; the latter is
+     generated automatically from the machine description by the tool
+     `genoutput'.  The header file `conditions.h' is used for
+     communication between these files.
+
+   * Debugging information output.  This is run after final because it
+     must output the stack slot offsets for pseudo registers that did
+     not get hard registers.  Source files are `dbxout.c' for DBX
+     symbol table format, `sdbout.c' for SDB symbol table format, and
+     `dwarfout.c' for DWARF symbol table format.
+
+   Some additional files are used by all or many passes:
+
+   * Every pass uses `machmode.def' and `machmode.h' which define the
+     machine modes.
+
+   * Several passes use `real.h', which defines the default
+     representation of floating point constants and how to operate on
+     them.
+
+   * All the passes that work with RTL use the header files `rtl.h' and
+     `rtl.def', and subroutines in file `rtl.c'.  The tools `gen*' also
+     use these files to read and work with the machine description RTL.
+
+   * Several passes refer to the header file `insn-config.h' which
+     contains a few parameters (C macro definitions) generated
+     automatically from the machine description RTL by the tool
+     `genconfig'.
+
+   * Several passes use the instruction recognizer, which consists of
+     `recog.c' and `recog.h', plus the files `insn-recog.c' and
+     `insn-extract.c' that are generated automatically from the machine
+     description by the tools `genrecog' and `genextract'.
+
+   * Several passes use the header files `regs.h' which defines the
+     information recorded about pseudo register usage, and
+     `basic-block.h' which defines the information recorded about basic
+     blocks.
+
+   * `hard-reg-set.h' defines the type `HARD_REG_SET', a bit-vector
+     with a bit for each hard register, and some macros to manipulate
+     it.  This type is just `int' if the machine has few enough hard
+     registers; otherwise it is an array of `int' and some of the
+     macros expand into loops.
+
+   * Several passes use instruction attributes.  A definition of the
+     attributes defined for a particular machine is in file
+     `insn-attr.h', which is generated from the machine description by
+     the program `genattr'.  The file `insn-attrtab.c' contains
+     subroutines to obtain the attribute values for insns.  It is
+     generated from the machine description by the program `genattrtab'.
+
+
+File: gcc.info,  Node: RTL,  Next: Machine Desc,  Prev: Passes,  Up: Top
+
+RTL Representation
+******************
+
+   Most of the work of the compiler is done on an intermediate
+representation called register transfer language.  In this language,
+the instructions to be output are described, pretty much one by one, in
+an algebraic form that describes what the instruction does.
+
+   RTL is inspired by Lisp lists.  It has both an internal form, made
+up of structures that point at other structures, and a textual form
+that is used in the machine description and in printed debugging dumps.
+The textual form uses nested parentheses to indicate the pointers in
+the internal form.
+
+* Menu:
+
+* RTL Objects::       Expressions vs vectors vs strings vs integers.
+* Accessors::         Macros to access expression operands or vector elts.
+* Flags::             Other flags in an RTL expression.
+* Machine Modes::     Describing the size and format of a datum.
+* Constants::         Expressions with constant values.
+* Regs and Memory::   Expressions representing register contents or memory.
+* Arithmetic::        Expressions representing arithmetic on other expressions.
+* Comparisons::       Expressions representing comparison of expressions.
+* Bit Fields::        Expressions representing bitfields in memory or reg.
+* Conversions::       Extending, truncating, floating or fixing.
+* RTL Declarations::  Declaring volatility, constancy, etc.
+* Side Effects::      Expressions for storing in registers, etc.
+* Incdec::            Embedded side-effects for autoincrement addressing.
+* Assembler::         Representing `asm' with operands.
+* Insns::             Expression types for entire insns.
+* Calls::             RTL representation of function call insns.
+* Sharing::           Some expressions are unique; others *must* be copied.
+* Reading RTL::       Reading textual RTL from a file.
+
+
+File: gcc.info,  Node: RTL Objects,  Next: Accessors,  Prev: RTL,  Up: RTL
+
+RTL Object Types
+================
+
+   RTL uses five kinds of objects: expressions, integers, wide integers,
+strings and vectors.  Expressions are the most important ones.  An RTL
+expression ("RTX", for short) is a C structure, but it is usually
+referred to with a pointer; a type that is given the typedef name `rtx'.
+
+   An integer is simply an `int'; their written form uses decimal
+digits.  A wide integer is an integral object whose type is
+`HOST_WIDE_INT' (*note Config::.); their written form uses decimal
+digits.
+
+   A string is a sequence of characters.  In core it is represented as a
+`char *' in usual C fashion, and it is written in C syntax as well.
+However, strings in RTL may never be null.  If you write an empty
+string in a machine description, it is represented in core as a null
+pointer rather than as a pointer to a null character.  In certain
+contexts, these null pointers instead of strings are valid.  Within RTL
+code, strings are most commonly found inside `symbol_ref' expressions,
+but they appear in other contexts in the RTL expressions that make up
+machine descriptions.
+
+   A vector contains an arbitrary number of pointers to expressions.
+The number of elements in the vector is explicitly present in the
+vector.  The written form of a vector consists of square brackets
+(`[...]') surrounding the elements, in sequence and with whitespace
+separating them.  Vectors of length zero are not created; null pointers
+are used instead.
+
+   Expressions are classified by "expression codes" (also called RTX
+codes).  The expression code is a name defined in `rtl.def', which is
+also (in upper case) a C enumeration constant.  The possible expression
+codes and their meanings are machine-independent.  The code of an RTX
+can be extracted with the macro `GET_CODE (X)' and altered with
+`PUT_CODE (X, NEWCODE)'.
+
+   The expression code determines how many operands the expression
+contains, and what kinds of objects they are.  In RTL, unlike Lisp, you
+cannot tell by looking at an operand what kind of object it is.
+Instead, you must know from its context--from the expression code of
+the containing expression.  For example, in an expression of code
+`subreg', the first operand is to be regarded as an expression and the
+second operand as an integer.  In an expression of code `plus', there
+are two operands, both of which are to be regarded as expressions.  In
+a `symbol_ref' expression, there is one operand, which is to be
+regarded as a string.
+
+   Expressions are written as parentheses containing the name of the
+expression type, its flags and machine mode if any, and then the
+operands of the expression (separated by spaces).
+
+   Expression code names in the `md' file are written in lower case,
+but when they appear in C code they are written in upper case.  In this
+manual, they are shown as follows: `const_int'.
+
+   In a few contexts a null pointer is valid where an expression is
+normally wanted.  The written form of this is `(nil)'.
+
+
+File: gcc.info,  Node: Accessors,  Next: Flags,  Prev: RTL Objects,  Up: RTL
+
+Access to Operands
+==================
+
+   For each expression type `rtl.def' specifies the number of contained
+objects and their kinds, with four possibilities: `e' for expression
+(actually a pointer to an expression), `i' for integer, `w' for wide
+integer, `s' for string, and `E' for vector of expressions.  The
+sequence of letters for an expression code is called its "format".
+Thus, the format of `subreg' is `ei'.
+
+   A few other format characters are used occasionally:
+
+`u'
+     `u' is equivalent to `e' except that it is printed differently in
+     debugging dumps.  It is used for pointers to insns.
+
+`n'
+     `n' is equivalent to `i' except that it is printed differently in
+     debugging dumps.  It is used for the line number or code number of
+     a `note' insn.
+
+`S'
+     `S' indicates a string which is optional.  In the RTL objects in
+     core, `S' is equivalent to `s', but when the object is read, from
+     an `md' file, the string value of this operand may be omitted.  An
+     omitted string is taken to be the null string.
+
+`V'
+     `V' indicates a vector which is optional.  In the RTL objects in
+     core, `V' is equivalent to `E', but when the object is read from
+     an `md' file, the vector value of this operand may be omitted.  An
+     omitted vector is effectively the same as a vector of no elements.
+
+`0'
+     `0' means a slot whose contents do not fit any normal category.
+     `0' slots are not printed at all in dumps, and are often used in
+     special ways by small parts of the compiler.
+
+   There are macros to get the number of operands, the format, and the
+class of an expression code:
+
+`GET_RTX_LENGTH (CODE)'
+     Number of operands of an RTX of code CODE.
+
+`GET_RTX_FORMAT (CODE)'
+     The format of an RTX of code CODE, as a C string.
+
+`GET_RTX_CLASS (CODE)'
+     A single character representing the type of RTX operation that code
+     CODE performs.
+
+     The following classes are defined:
+
+    `o'
+          An RTX code that represents an actual object, such as `reg' or
+          `mem'.  `subreg' is not in this class.
+
+    `<'
+          An RTX code for a comparison.  The codes in this class are
+          `NE', `EQ', `LE', `LT', `GE', `GT', `LEU', `LTU', `GEU',
+          `GTU'.
+
+    `1'
+          An RTX code for a unary arithmetic operation, such as `neg'.
+
+    `c'
+          An RTX code for a commutative binary operation, other than
+          `NE' and `EQ' (which have class `<').
+
+    `2'
+          An RTX code for a noncommutative binary operation, such as
+          `MINUS'.
+
+    `b'
+          An RTX code for a bitfield operation, either `ZERO_EXTRACT' or
+          `SIGN_EXTRACT'.
+
+    `3'
+          An RTX code for other three input operations, such as
+          `IF_THEN_ELSE'.
+
+    `i'
+          An RTX code for a machine insn (`INSN', `JUMP_INSN', and
+          `CALL_INSN').
+
+    `m'
+          An RTX code for something that matches in insns, such as
+          `MATCH_DUP'.
+
+    `x'
+          All other RTX codes.
+
+   Operands of expressions are accessed using the macros `XEXP',
+`XINT', `XWINT' and `XSTR'.  Each of these macros takes two arguments:
+an expression-pointer (RTX) and an operand number (counting from zero).
+Thus,
+
+     XEXP (X, 2)
+
+accesses operand 2 of expression X, as an expression.
+
+     XINT (X, 2)
+
+accesses the same operand as an integer.  `XSTR', used in the same
+fashion, would access it as a string.
+
+   Any operand can be accessed as an integer, as an expression or as a
+string.  You must choose the correct method of access for the kind of
+value actually stored in the operand.  You would do this based on the
+expression code of the containing expression.  That is also how you
+would know how many operands there are.
+
+   For example, if X is a `subreg' expression, you know that it has two
+operands which can be correctly accessed as `XEXP (X, 0)' and `XINT (X,
+1)'.  If you did `XINT (X, 0)', you would get the address of the
+expression operand but cast as an integer; that might occasionally be
+useful, but it would be cleaner to write `(int) XEXP (X, 0)'.  `XEXP
+(X, 1)' would also compile without error, and would return the second,
+integer operand cast as an expression pointer, which would probably
+result in a crash when accessed.  Nothing stops you from writing `XEXP
+(X, 28)' either, but this will access memory past the end of the
+expression with unpredictable results.
+
+   Access to operands which are vectors is more complicated.  You can
+use the macro `XVEC' to get the vector-pointer itself, or the macros
+`XVECEXP' and `XVECLEN' to access the elements and length of a vector.
+
+`XVEC (EXP, IDX)'
+     Access the vector-pointer which is operand number IDX in EXP.
+
+`XVECLEN (EXP, IDX)'
+     Access the length (number of elements) in the vector which is in
+     operand number IDX in EXP.  This value is an `int'.
+
+`XVECEXP (EXP, IDX, ELTNUM)'
+     Access element number ELTNUM in the vector which is in operand
+     number IDX in EXP.  This value is an RTX.
+
+     It is up to you to make sure that ELTNUM is not negative and is
+     less than `XVECLEN (EXP, IDX)'.
+
+   All the macros defined in this section expand into lvalues and
+therefore can be used to assign the operands, lengths and vector
+elements as well as to access them.
+
+
+File: gcc.info,  Node: Flags,  Next: Machine Modes,  Prev: Accessors,  Up: RTL
+
+Flags in an RTL Expression
+==========================
+
+   RTL expressions contain several flags (one-bit bitfields) that are
+used in certain types of expression.  Most often they are accessed with
+the following macros:
+
+`MEM_VOLATILE_P (X)'
+     In `mem' expressions, nonzero for volatile memory references.
+     Stored in the `volatil' field and printed as `/v'.
+
+`MEM_IN_STRUCT_P (X)'
+     In `mem' expressions, nonzero for reference to an entire
+     structure, union or array, or to a component of one.  Zero for
+     references to a scalar variable or through a pointer to a scalar.
+     Stored in the `in_struct' field and printed as `/s'.
+
+`REG_LOOP_TEST_P'
+     In `reg' expressions, nonzero if this register's entire life is
+     contained in the exit test code for some loop.  Stored in the
+     `in_struct' field and printed as `/s'.
+
+`REG_USERVAR_P (X)'
+     In a `reg', nonzero if it corresponds to a variable present in the
+     user's source code.  Zero for temporaries generated internally by
+     the compiler.  Stored in the `volatil' field and printed as `/v'.
+
+`REG_FUNCTION_VALUE_P (X)'
+     Nonzero in a `reg' if it is the place in which this function's
+     value is going to be returned.  (This happens only in a hard
+     register.)  Stored in the `integrated' field and printed as `/i'.
+
+     The same hard register may be used also for collecting the values
+     of functions called by this one, but `REG_FUNCTION_VALUE_P' is zero
+     in this kind of use.
+
+`SUBREG_PROMOTED_VAR_P'
+     Nonzero in a `subreg' if it was made when accessing an object that
+     was promoted to a wider mode in accord with the `PROMOTED_MODE'
+     machine description macro (*note Storage Layout::.).  In this
+     case, the mode of the `subreg' is the declared mode of the object
+     and the mode of `SUBREG_REG' is the mode of the register that
+     holds the object.  Promoted variables are always either sign- or
+     zero-extended to the wider mode on every assignment.  Stored in
+     the `in_struct' field and printed as `/s'.
+
+`SUBREG_PROMOTED_UNSIGNED_P'
+     Nonzero in a `subreg' that has `SUBREG_PROMOTED_VAR_P' nonzero if
+     the object being referenced is kept zero-extended and zero if it
+     is kept sign-extended.  Stored in the `unchanging' field and
+     printed as `/u'.
+
+`RTX_UNCHANGING_P (X)'
+     Nonzero in a `reg' or `mem' if the value is not changed.  (This
+     flag is not set for memory references via pointers to constants.
+     Such pointers only guarantee that the object will not be changed
+     explicitly by the current function.  The object might be changed by
+     other functions or by aliasing.)  Stored in the `unchanging' field
+     and printed as `/u'.
+
+`RTX_INTEGRATED_P (INSN)'
+     Nonzero in an insn if it resulted from an in-line function call.
+     Stored in the `integrated' field and printed as `/i'.  This may be
+     deleted; nothing currently depends on it.
+
+`SYMBOL_REF_USED (X)'
+     In a `symbol_ref', indicates that X has been used.  This is
+     normally only used to ensure that X is only declared external
+     once.  Stored in the `used' field.
+
+`SYMBOL_REF_FLAG (X)'
+     In a `symbol_ref', this is used as a flag for machine-specific
+     purposes.  Stored in the `volatil' field and printed as `/v'.
+
+`LABEL_OUTSIDE_LOOP_P'
+     In `label_ref' expressions, nonzero if this is a reference to a
+     label that is outside the innermost loop containing the reference
+     to the label.  Stored in the `in_struct' field and printed as `/s'.
+
+`INSN_DELETED_P (INSN)'
+     In an insn, nonzero if the insn has been deleted.  Stored in the
+     `volatil' field and printed as `/v'.
+
+`INSN_ANNULLED_BRANCH_P (INSN)'
+     In an `insn' in the delay slot of a branch insn, indicates that an
+     annulling branch should be used.  See the discussion under
+     `sequence' below.  Stored in the `unchanging' field and printed as
+     `/u'.
+
+`INSN_FROM_TARGET_P (INSN)'
+     In an `insn' in a delay slot of a branch, indicates that the insn
+     is from the target of the branch.  If the branch insn has
+     `INSN_ANNULLED_BRANCH_P' set, this insn should only be executed if
+     the branch is taken.  For annulled branches with this bit clear,
+     the insn should be executed only if the branch is not taken.
+     Stored in the `in_struct' field and printed as `/s'.
+
+`CONSTANT_POOL_ADDRESS_P (X)'
+     Nonzero in a `symbol_ref' if it refers to part of the current
+     function's "constants pool".  These are addresses close to the
+     beginning of the function, and GNU CC assumes they can be addressed
+     directly (perhaps with the help of base registers).  Stored in the
+     `unchanging' field and printed as `/u'.
+
+`CONST_CALL_P (X)'
+     In a `call_insn', indicates that the insn represents a call to a
+     const function.  Stored in the `unchanging' field and printed as
+     `/u'.
+
+`LABEL_PRESERVE_P (X)'
+     In a `code_label', indicates that the label can never be deleted.
+     Labels referenced by a non-local goto will have this bit set.
+     Stored in the `in_struct' field and printed as `/s'.
+
+`SCHED_GROUP_P (INSN)'
+     During instruction scheduling, in an insn, indicates that the
+     previous insn must be scheduled together with this insn.  This is
+     used to ensure that certain groups of instructions will not be
+     split up by the instruction scheduling pass, for example, `use'
+     insns before a `call_insn' may not be separated from the
+     `call_insn'.  Stored in the `in_struct' field and printed as `/s'.
+
+   These are the fields which the above macros refer to:
+
+`used'
+     Normally, this flag is used only momentarily, at the end of RTL
+     generation for a function, to count the number of times an
+     expression appears in insns.  Expressions that appear more than
+     once are copied, according to the rules for shared structure
+     (*note Sharing::.).
+
+     In a `symbol_ref', it indicates that an external declaration for
+     the symbol has already been written.
+
+     In a `reg', it is used by the leaf register renumbering code to
+     ensure that each register is only renumbered once.
+
+`volatil'
+     This flag is used in `mem', `symbol_ref' and `reg' expressions and
+     in insns.  In RTL dump files, it is printed as `/v'.
+
+     In a `mem' expression, it is 1 if the memory reference is volatile.
+     Volatile memory references may not be deleted, reordered or
+     combined.
+
+     In a `symbol_ref' expression, it is used for machine-specific
+     purposes.
+
+     In a `reg' expression, it is 1 if the value is a user-level
+     variable.  0 indicates an internal compiler temporary.
+
+     In an insn, 1 means the insn has been deleted.
+
+`in_struct'
+     In `mem' expressions, it is 1 if the memory datum referred to is
+     all or part of a structure or array; 0 if it is (or might be) a
+     scalar variable.  A reference through a C pointer has 0 because
+     the pointer might point to a scalar variable.  This information
+     allows the compiler to determine something about possible cases of
+     aliasing.
+
+     In an insn in the delay slot of a branch, 1 means that this insn
+     is from the target of the branch.
+
+     During instruction scheduling, in an insn, 1 means that this insn
+     must be scheduled as part of a group together with the previous
+     insn.
+
+     In `reg' expressions, it is 1 if the register has its entire life
+     contained within the test expression of some loop.
+
+     In `subreg' expressions, 1 means that the `subreg' is accessing an
+     object that has had its mode promoted from a wider mode.
+
+     In `label_ref' expressions, 1 means that the referenced label is
+     outside the innermost loop containing the insn in which the
+     `label_ref' was found.
+
+     In `code_label' expressions, it is 1 if the label may never be
+     deleted.  This is used for labels which are the target of
+     non-local gotos.
+
+     In an RTL dump, this flag is represented as `/s'.
+
+`unchanging'
+     In `reg' and `mem' expressions, 1 means that the value of the
+     expression never changes.
+
+     In `subreg' expressions, it is 1 if the `subreg' references an
+     unsigned object whose mode has been promoted to a wider mode.
+
+     In an insn, 1 means that this is an annulling branch.
+
+     In a `symbol_ref' expression, 1 means that this symbol addresses
+     something in the per-function constants pool.
+
+     In a `call_insn', 1 means that this instruction is a call to a
+     const function.
+
+     In an RTL dump, this flag is represented as `/u'.
+
+`integrated'
+     In some kinds of expressions, including insns, this flag means the
+     rtl was produced by procedure integration.
+
+     In a `reg' expression, this flag indicates the register containing
+     the value to be returned by the current function.  On machines
+     that pass parameters in registers, the same register number may be
+     used for parameters as well, but this flag is not set on such uses.
+
+
+File: gcc.info,  Node: Machine Modes,  Next: Constants,  Prev: Flags,  Up: RTL
+
+Machine Modes
+=============
+
+   A machine mode describes a size of data object and the
+representation used for it.  In the C code, machine modes are
+represented by an enumeration type, `enum machine_mode', defined in
+`machmode.def'.  Each RTL expression has room for a machine mode and so
+do certain kinds of tree expressions (declarations and types, to be
+precise).
+
+   In debugging dumps and machine descriptions, the machine mode of an
+RTL expression is written after the expression code with a colon to
+separate them.  The letters `mode' which appear at the end of each
+machine mode name are omitted.  For example, `(reg:SI 38)' is a `reg'
+expression with machine mode `SImode'.  If the mode is `VOIDmode', it
+is not written at all.
+
+   Here is a table of machine modes.  The term "byte" below refers to an
+object of `BITS_PER_UNIT' bits (*note Storage Layout::.).
+
+`QImode'
+     "Quarter-Integer" mode represents a single byte treated as an
+     integer.
+
+`HImode'
+     "Half-Integer" mode represents a two-byte integer.
+
+`PSImode'
+     "Partial Single Integer" mode represents an integer which occupies
+     four bytes but which doesn't really use all four.  On some
+     machines, this is the right mode to use for pointers.
+
+`SImode'
+     "Single Integer" mode represents a four-byte integer.
+
+`PDImode'
+     "Partial Double Integer" mode represents an integer which occupies
+     eight bytes but which doesn't really use all eight.  On some
+     machines, this is the right mode to use for certain pointers.
+
+`DImode'
+     "Double Integer" mode represents an eight-byte integer.
+
+`TImode'
+     "Tetra Integer" (?) mode represents a sixteen-byte integer.
+
+`SFmode'
+     "Single Floating" mode represents a single-precision (four byte)
+     floating point number.
+
+`DFmode'
+     "Double Floating" mode represents a double-precision (eight byte)
+     floating point number.
+
+`XFmode'
+     "Extended Floating" mode represents a triple-precision (twelve
+     byte) floating point number.  This mode is used for IEEE extended
+     floating point.  On some systems not all bits within these bytes
+     will actually be used.
+
+`TFmode'
+     "Tetra Floating" mode represents a quadruple-precision (sixteen
+     byte) floating point number.
+
+`CCmode'
+     "Condition Code" mode represents the value of a condition code,
+     which is a machine-specific set of bits used to represent the
+     result of a comparison operation.  Other machine-specific modes
+     may also be used for the condition code.  These modes are not used
+     on machines that use `cc0' (see *note Condition Code::.).
+
+`BLKmode'
+     "Block" mode represents values that are aggregates to which none of
+     the other modes apply.  In RTL, only memory references can have
+     this mode, and only if they appear in string-move or vector
+     instructions.  On machines which have no such instructions,
+     `BLKmode' will not appear in RTL.
+
+`VOIDmode'
+     Void mode means the absence of a mode or an unspecified mode.  For
+     example, RTL expressions of code `const_int' have mode `VOIDmode'
+     because they can be taken to have whatever mode the context
+     requires.  In debugging dumps of RTL, `VOIDmode' is expressed by
+     the absence of any mode.
+
+`SCmode, DCmode, XCmode, TCmode'
+     These modes stand for a complex number represented as a pair of
+     floating point values.  The floating point values are in `SFmode',
+     `DFmode', `XFmode', and `TFmode', respectively.
+
+`CQImode, CHImode, CSImode, CDImode, CTImode, COImode'
+     These modes stand for a complex number represented as a pair of
+     integer values.  The integer values are in `QImode', `HImode',
+     `SImode', `DImode', `TImode', and `OImode', respectively.
+
+   The machine description defines `Pmode' as a C macro which expands
+into the machine mode used for addresses.  Normally this is the mode
+whose size is `BITS_PER_WORD', `SImode' on 32-bit machines.
+
+   The only modes which a machine description must support are
+`QImode', and the modes corresponding to `BITS_PER_WORD',
+`FLOAT_TYPE_SIZE' and `DOUBLE_TYPE_SIZE'.  The compiler will attempt to
+use `DImode' for 8-byte structures and unions, but this can be
+prevented by overriding the definition of `MAX_FIXED_MODE_SIZE'.
+Alternatively, you can have the compiler use `TImode' for 16-byte
+structures and unions.  Likewise, you can arrange for the C type `short
+int' to avoid using `HImode'.
+
+   Very few explicit references to machine modes remain in the compiler
+and these few references will soon be removed.  Instead, the machine
+modes are divided into mode classes.  These are represented by the
+enumeration type `enum mode_class' defined in `machmode.h'.  The
+possible mode classes are:
+
+`MODE_INT'
+     Integer modes.  By default these are `QImode', `HImode', `SImode',
+     `DImode', and `TImode'.
+
+`MODE_PARTIAL_INT'
+     The "partial integer" modes, `PSImode' and `PDImode'.
+
+`MODE_FLOAT'
+     floating point modes.  By default these are `SFmode', `DFmode',
+     `XFmode' and `TFmode'.
+
+`MODE_COMPLEX_INT'
+     Complex integer modes.  (These are not currently implemented).
+
+`MODE_COMPLEX_FLOAT'
+     Complex floating point modes.  By default these are `SCmode',
+     `DCmode', `XCmode', and `TCmode'.
+
+`MODE_FUNCTION'
+     Algol or Pascal function variables including a static chain.
+     (These are not currently implemented).
+
+`MODE_CC'
+     Modes representing condition code values.  These are `CCmode' plus
+     any modes listed in the `EXTRA_CC_MODES' macro.  *Note Jump
+     Patterns::, also see *Note Condition Code::.
+
+`MODE_RANDOM'
+     This is a catchall mode class for modes which don't fit into the
+     above classes.  Currently `VOIDmode' and `BLKmode' are in
+     `MODE_RANDOM'.
+
+   Here are some C macros that relate to machine modes:
+
+`GET_MODE (X)'
+     Returns the machine mode of the RTX X.
+
+`PUT_MODE (X, NEWMODE)'
+     Alters the machine mode of the RTX X to be NEWMODE.
+
+`NUM_MACHINE_MODES'
+     Stands for the number of machine modes available on the target
+     machine.  This is one greater than the largest numeric value of any
+     machine mode.
+
+`GET_MODE_NAME (M)'
+     Returns the name of mode M as a string.
+
+`GET_MODE_CLASS (M)'
+     Returns the mode class of mode M.
+
+`GET_MODE_WIDER_MODE (M)'
+     Returns the next wider natural mode.  For example, the expression
+     `GET_MODE_WIDER_MODE (QImode)' returns `HImode'.
+
+`GET_MODE_SIZE (M)'
+     Returns the size in bytes of a datum of mode M.
+
+`GET_MODE_BITSIZE (M)'
+     Returns the size in bits of a datum of mode M.
+
+`GET_MODE_MASK (M)'
+     Returns a bitmask containing 1 for all bits in a word that fit
+     within mode M.  This macro can only be used for modes whose
+     bitsize is less than or equal to `HOST_BITS_PER_INT'.
+
+`GET_MODE_ALIGNMENT (M))'
+     Return the required alignment, in bits, for an object of mode M.
+
+`GET_MODE_UNIT_SIZE (M)'
+     Returns the size in bytes of the subunits of a datum of mode M.
+     This is the same as `GET_MODE_SIZE' except in the case of complex
+     modes.  For them, the unit size is the size of the real or
+     imaginary part.
+
+`GET_MODE_NUNITS (M)'
+     Returns the number of units contained in a mode, i.e.,
+     `GET_MODE_SIZE' divided by `GET_MODE_UNIT_SIZE'.
+
+`GET_CLASS_NARROWEST_MODE (C)'
+     Returns the narrowest mode in mode class C.
+
+   The global variables `byte_mode' and `word_mode' contain modes whose
+classes are `MODE_INT' and whose bitsizes are either `BITS_PER_UNIT' or
+`BITS_PER_WORD', respectively.  On 32-bit machines, these are `QImode'
+and `SImode', respectively.
+
+
+File: gcc.info,  Node: Constants,  Next: Regs and Memory,  Prev: Machine Modes,  Up: RTL
+
+Constant Expression Types
+=========================
+
+   The simplest RTL expressions are those that represent constant
+values.
+
+`(const_int I)'
+     This type of expression represents the integer value I.  I is
+     customarily accessed with the macro `INTVAL' as in `INTVAL (EXP)',
+     which is equivalent to `XWINT (EXP, 0)'.
+
+     There is only one expression object for the integer value zero; it
+     is the value of the variable `const0_rtx'.  Likewise, the only
+     expression for integer value one is found in `const1_rtx', the only
+     expression for integer value two is found in `const2_rtx', and the
+     only expression for integer value negative one is found in
+     `constm1_rtx'.  Any attempt to create an expression of code
+     `const_int' and value zero, one, two or negative one will return
+     `const0_rtx', `const1_rtx', `const2_rtx' or `constm1_rtx' as
+     appropriate.
+
+     Similarly, there is only one object for the integer whose value is
+     `STORE_FLAG_VALUE'.  It is found in `const_true_rtx'.  If
+     `STORE_FLAG_VALUE' is one, `const_true_rtx' and `const1_rtx' will
+     point to the same object.  If `STORE_FLAG_VALUE' is -1,
+     `const_true_rtx' and `constm1_rtx' will point to the same object.
+
+`(const_double:M ADDR I0 I1 ...)'
+     Represents either a floating-point constant of mode M or an
+     integer constant too large to fit into `HOST_BITS_PER_WIDE_INT'
+     bits but small enough to fit within twice that number of bits (GNU
+     CC does not provide a mechanism to represent even larger
+     constants).  In the latter case, M will be `VOIDmode'.
+
+     ADDR is used to contain the `mem' expression that corresponds to
+     the location in memory that at which the constant can be found.  If
+     it has not been allocated a memory location, but is on the chain
+     of all `const_double' expressions in this compilation (maintained
+     using an undisplayed field), ADDR contains `const0_rtx'.  If it is
+     not on the chain, ADDR contains `cc0_rtx'.  ADDR is customarily
+     accessed with the macro `CONST_DOUBLE_MEM' and the chain field via
+     `CONST_DOUBLE_CHAIN'.
+
+     If M is `VOIDmode', the bits of the value are stored in I0 and I1.
+     I0 is customarily accessed with the macro `CONST_DOUBLE_LOW' and
+     I1 with `CONST_DOUBLE_HIGH'.
+
+     If the constant is floating point (regardless of its precision),
+     then the number of integers used to store the value depends on the
+     size of `REAL_VALUE_TYPE' (*note Cross-compilation::.).  The
+     integers represent a floating point number, but not precisely in
+     the target machine's or host machine's floating point format.  To
+     convert them to the precise bit pattern used by the target
+     machine, use the macro `REAL_VALUE_TO_TARGET_DOUBLE' and friends
+     (*note Data Output::.).
+
+     The macro `CONST0_RTX (MODE)' refers to an expression with value 0
+     in mode MODE.  If mode MODE is of mode class `MODE_INT', it
+     returns `const0_rtx'.  Otherwise, it returns a `CONST_DOUBLE'
+     expression in mode MODE.  Similarly, the macro `CONST1_RTX (MODE)'
+     refers to an expression with value 1 in mode MODE and similarly
+     for `CONST2_RTX'.
+
+`(const_string STR)'
+     Represents a constant string with value STR.  Currently this is
+     used only for insn attributes (*note Insn Attributes::.) since
+     constant strings in C are placed in memory.
+
+`(symbol_ref:MODE SYMBOL)'
+     Represents the value of an assembler label for data.  SYMBOL is a
+     string that describes the name of the assembler label.  If it
+     starts with a `*', the label is the rest of SYMBOL not including
+     the `*'.  Otherwise, the label is SYMBOL, usually prefixed with
+     `_'.
+
+     The `symbol_ref' contains a mode, which is usually `Pmode'.
+     Usually that is the only mode for which a symbol is directly valid.
+
+`(label_ref LABEL)'
+     Represents the value of an assembler label for code.  It contains
+     one operand, an expression, which must be a `code_label' that
+     appears in the instruction sequence to identify the place where
+     the label should go.
+
+     The reason for using a distinct expression type for code label
+     references is so that jump optimization can distinguish them.
+
+`(const:M EXP)'
+     Represents a constant that is the result of an assembly-time
+     arithmetic computation.  The operand, EXP, is an expression that
+     contains only constants (`const_int', `symbol_ref' and `label_ref'
+     expressions) combined with `plus' and `minus'.  However, not all
+     combinations are valid, since the assembler cannot do arbitrary
+     arithmetic on relocatable symbols.
+
+     M should be `Pmode'.
+
+`(high:M EXP)'
+     Represents the high-order bits of EXP, usually a `symbol_ref'.
+     The number of bits is machine-dependent and is normally the number
+     of bits specified in an instruction that initializes the high
+     order bits of a register.  It is used with `lo_sum' to represent
+     the typical two-instruction sequence used in RISC machines to
+     reference a global memory location.
+
+     M should be `Pmode'.
+

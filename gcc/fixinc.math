@@ -1,0 +1,111 @@
+#! /bin/sh
+# Fix struct exception in /usr/include/math.h.
+#
+# We expect several systems which did not need fixincludes in the past
+# to need to fix just math.h.  So we created a separate fixinc.mathh
+# script to fix just that problem.
+# See README-fixinc for more information.
+
+# Directory containing the original header files.
+# (This was named INCLUDES, but that conflicts with a name in Makefile.in.)
+INPUT=${2-${INPUT-/usr/include}}
+
+# Directory in which to store the results.
+LIB=${1?"fixincludes: output directory not specified"}
+
+# Define PWDCMD as a command to use to get the working dir
+# in the form that we want.
+PWDCMD=pwd
+case "`pwd`" in
+//*)
+	# On an Apollo, discard everything before `/usr'.
+	PWDCMD="eval pwd | sed -e 's,.*/usr/,/usr/,'"
+	;;
+esac
+
+# Original directory.
+ORIGDIR=`${PWDCMD}`
+
+# Make sure it exists.
+if [ ! -d $LIB ]; then
+  mkdir $LIB || exit 1
+fi
+
+# Make LIB absolute only if needed to avoid problems with the amd.
+case $LIB in
+/*)
+	;;
+*)
+	cd $LIB; LIB=`${PWDCMD}`
+	;;
+esac
+
+# Fail if no arg to specify a directory for the output.
+if [ x$1 = x ]
+then echo fixincludes: no output directory specified
+exit 1
+fi
+
+echo Building fixed headers in ${LIB}
+
+# Determine whether this system has symbolic links.
+if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
+  rm -f $LIB/ShouldNotExist
+  LINKS=true
+elif ln -s X /tmp/ShouldNotExist 2>/dev/null; then
+  rm -f /tmp/ShouldNotExist
+  LINKS=true
+else
+  LINKS=false
+fi
+
+cd ${INPUT}
+
+# Some math.h files define struct exception, which conflicts with
+# the class exception defined in the C++ file std/stdexcept.h.  We
+# redefine it to __math_exception.  This is not a great fix, but I
+# haven't been able to think of anything better.
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, exception
+  sed -e '/struct exception/i\
+#ifdef __cplusplus\
+#define exception __math_exception\
+#endif\
+'\
+      -e '/struct exception/a\
+#ifdef __cplusplus\
+#undef exception\
+#endif\
+' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if egrep 'matherr()' ${LIB}/$file >/dev/null 2>&1; then
+    sed -e '/matherr/i\
+#ifdef __cplusplus\
+#define exception __math_exception\
+#endif\
+'\
+        -e '/matherr/a\
+#ifdef __cplusplus\
+#undef exception\
+#endif\
+' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+exit 0

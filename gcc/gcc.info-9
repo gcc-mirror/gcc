@@ -1,0 +1,1225 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Variable Length,  Next: Macro Varargs,  Prev: Zero Length,  Up: C Extensions
+
+Arrays of Variable Length
+=========================
+
+   Variable-length automatic arrays are allowed in GNU C.  These arrays
+are declared like any other automatic arrays, but with a length that is
+not a constant expression.  The storage is allocated at the point of
+declaration and deallocated when the brace-level is exited.  For
+example:
+
+     FILE *
+     concat_fopen (char *s1, char *s2, char *mode)
+     {
+       char str[strlen (s1) + strlen (s2) + 1];
+       strcpy (str, s1);
+       strcat (str, s2);
+       return fopen (str, mode);
+     }
+
+   Jumping or breaking out of the scope of the array name deallocates
+the storage.  Jumping into the scope is not allowed; you get an error
+message for it.
+
+   You can use the function `alloca' to get an effect much like
+variable-length arrays.  The function `alloca' is available in many
+other C implementations (but not in all).  On the other hand,
+variable-length arrays are more elegant.
+
+   There are other differences between these two methods.  Space
+allocated with `alloca' exists until the containing *function* returns.
+The space for a variable-length array is deallocated as soon as the
+array name's scope ends.  (If you use both variable-length arrays and
+`alloca' in the same function, deallocation of a variable-length array
+will also deallocate anything more recently allocated with `alloca'.)
+
+   You can also use variable-length arrays as arguments to functions:
+
+     struct entry
+     tester (int len, char data[len][len])
+     {
+       ...
+     }
+
+   The length of an array is computed once when the storage is allocated
+and is remembered for the scope of the array in case you access it with
+`sizeof'.
+
+   If you want to pass the array first and the length afterward, you can
+use a forward declaration in the parameter list--another GNU extension.
+
+     struct entry
+     tester (int len; char data[len][len], int len)
+     {
+       ...
+     }
+
+   The `int len' before the semicolon is a "parameter forward
+declaration", and it serves the purpose of making the name `len' known
+when the declaration of `data' is parsed.
+
+   You can write any number of such parameter forward declarations in
+the parameter list.  They can be separated by commas or semicolons, but
+the last one must end with a semicolon, which is followed by the "real"
+parameter declarations.  Each forward declaration must match a "real"
+declaration in parameter name and data type.
+
+
+File: gcc.info,  Node: Macro Varargs,  Next: Subscripting,  Prev: Variable Length,  Up: C Extensions
+
+Macros with Variable Numbers of Arguments
+=========================================
+
+   In GNU C, a macro can accept a variable number of arguments, much as
+a function can.  The syntax for defining the macro looks much like that
+used for a function.  Here is an example:
+
+     #define eprintf(format, args...)  \
+      fprintf (stderr, format , ## args)
+
+   Here `args' is a "rest argument": it takes in zero or more
+arguments, as many as the call contains.  All of them plus the commas
+between them form the value of `args', which is substituted into the
+macro body where `args' is used.  Thus, we have this expansion:
+
+     eprintf ("%s:%d: ", input_file_name, line_number)
+     ==>
+     fprintf (stderr, "%s:%d: " , input_file_name, line_number)
+
+Note that the comma after the string constant comes from the definition
+of `eprintf', whereas the last comma comes from the value of `args'.
+
+   The reason for using `##' is to handle the case when `args' matches
+no arguments at all.  In this case, `args' has an empty value.  In this
+case, the second comma in the definition becomes an embarrassment: if
+it got through to the expansion of the macro, we would get something
+like this:
+
+     fprintf (stderr, "success!\n" , )
+
+which is invalid C syntax.  `##' gets rid of the comma, so we get the
+following instead:
+
+     fprintf (stderr, "success!\n")
+
+   This is a special feature of the GNU C preprocessor: `##' before a
+rest argument that is empty discards the preceding sequence of
+non-whitespace characters from the macro definition.  (If another macro
+argument precedes, none of it is discarded.)
+
+   It might be better to discard the last preprocessor token instead of
+the last preceding sequence of non-whitespace characters; in fact, we
+may someday change this feature to do so.  We advise you to write the
+macro definition so that the preceding sequence of non-whitespace
+characters is just a single token, so that the meaning will not change
+if we change the definition of this feature.
+
+
+File: gcc.info,  Node: Subscripting,  Next: Pointer Arith,  Prev: Macro Varargs,  Up: C Extensions
+
+Non-Lvalue Arrays May Have Subscripts
+=====================================
+
+   Subscripting is allowed on arrays that are not lvalues, even though
+the unary `&' operator is not.  For example, this is valid in GNU C
+though not valid in other C dialects:
+
+     struct foo {int a[4];};
+     
+     struct foo f();
+     
+     bar (int index)
+     {
+       return f().a[index];
+     }
+
+
+File: gcc.info,  Node: Pointer Arith,  Next: Initializers,  Prev: Subscripting,  Up: C Extensions
+
+Arithmetic on `void'- and Function-Pointers
+===========================================
+
+   In GNU C, addition and subtraction operations are supported on
+pointers to `void' and on pointers to functions.  This is done by
+treating the size of a `void' or of a function as 1.
+
+   A consequence of this is that `sizeof' is also allowed on `void' and
+on function types, and returns 1.
+
+   The option `-Wpointer-arith' requests a warning if these extensions
+are used.
+
+
+File: gcc.info,  Node: Initializers,  Next: Constructors,  Prev: Pointer Arith,  Up: C Extensions
+
+Non-Constant Initializers
+=========================
+
+   As in standard C++, the elements of an aggregate initializer for an
+automatic variable are not required to be constant expressions in GNU C.
+Here is an example of an initializer with run-time varying elements:
+
+     foo (float f, float g)
+     {
+       float beat_freqs[2] = { f-g, f+g };
+       ...
+     }
+
+
+File: gcc.info,  Node: Constructors,  Next: Labeled Elements,  Prev: Initializers,  Up: C Extensions
+
+Constructor Expressions
+=======================
+
+   GNU C supports constructor expressions.  A constructor looks like a
+cast containing an initializer.  Its value is an object of the type
+specified in the cast, containing the elements specified in the
+initializer.
+
+   Usually, the specified type is a structure.  Assume that `struct
+foo' and `structure' are declared as shown:
+
+     struct foo {int a; char b[2];} structure;
+
+Here is an example of constructing a `struct foo' with a constructor:
+
+     structure = ((struct foo) {x + y, 'a', 0});
+
+This is equivalent to writing the following:
+
+     {
+       struct foo temp = {x + y, 'a', 0};
+       structure = temp;
+     }
+
+   You can also construct an array.  If all the elements of the
+constructor are (made up of) simple constant expressions, suitable for
+use in initializers, then the constructor is an lvalue and can be
+coerced to a pointer to its first element, as shown here:
+
+     char **foo = (char *[]) { "x", "y", "z" };
+
+   Array constructors whose elements are not simple constants are not
+very useful, because the constructor is not an lvalue.  There are only
+two valid ways to use it: to subscript it, or initialize an array
+variable with it.  The former is probably slower than a `switch'
+statement, while the latter does the same thing an ordinary C
+initializer would do.  Here is an example of subscripting an array
+constructor:
+
+     output = ((int[]) { 2, x, 28 }) [input];
+
+   Constructor expressions for scalar types and union types are is also
+allowed, but then the constructor expression is equivalent to a cast.
+
+
+File: gcc.info,  Node: Labeled Elements,  Next: Cast to Union,  Prev: Constructors,  Up: C Extensions
+
+Labeled Elements in Initializers
+================================
+
+   Standard C requires the elements of an initializer to appear in a
+fixed order, the same as the order of the elements in the array or
+structure being initialized.
+
+   In GNU C you can give the elements in any order, specifying the array
+indices or structure field names they apply to.  This extension is not
+implemented in GNU C++.
+
+   To specify an array index, write `[INDEX]' or `[INDEX] =' before the
+element value.  For example,
+
+     int a[6] = { [4] 29, [2] = 15 };
+
+is equivalent to
+
+     int a[6] = { 0, 0, 15, 0, 29, 0 };
+
+The index values must be constant expressions, even if the array being
+initialized is automatic.
+
+   To initialize a range of elements to the same value, write `[FIRST
+... LAST] = VALUE'.  For example,
+
+     int widths[] = { [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 };
+
+Note that the length of the array is the highest value specified plus
+one.
+
+   In a structure initializer, specify the name of a field to initialize
+with `FIELDNAME:' before the element value.  For example, given the
+following structure,
+
+     struct point { int x, y; };
+
+the following initialization
+
+     struct point p = { y: yvalue, x: xvalue };
+
+is equivalent to
+
+     struct point p = { xvalue, yvalue };
+
+   Another syntax which has the same meaning is `.FIELDNAME ='., as
+shown here:
+
+     struct point p = { .y = yvalue, .x = xvalue };
+
+   You can also use an element label (with either the colon syntax or
+the period-equal syntax) when initializing a union, to specify which
+element of the union should be used.  For example,
+
+     union foo { int i; double d; };
+     
+     union foo f = { d: 4 };
+
+will convert 4 to a `double' to store it in the union using the second
+element.  By contrast, casting 4 to type `union foo' would store it
+into the union as the integer `i', since it is an integer.  (*Note Cast
+to Union::.)
+
+   You can combine this technique of naming elements with ordinary C
+initialization of successive elements.  Each initializer element that
+does not have a label applies to the next consecutive element of the
+array or structure.  For example,
+
+     int a[6] = { [1] = v1, v2, [4] = v4 };
+
+is equivalent to
+
+     int a[6] = { 0, v1, v2, 0, v4, 0 };
+
+   Labeling the elements of an array initializer is especially useful
+when the indices are characters or belong to an `enum' type.  For
+example:
+
+     int whitespace[256]
+       = { [' '] = 1, ['\t'] = 1, ['\h'] = 1,
+           ['\f'] = 1, ['\n'] = 1, ['\r'] = 1 };
+
+
+File: gcc.info,  Node: Case Ranges,  Next: Function Attributes,  Prev: Cast to Union,  Up: C Extensions
+
+Case Ranges
+===========
+
+   You can specify a range of consecutive values in a single `case'
+label, like this:
+
+     case LOW ... HIGH:
+
+This has the same effect as the proper number of individual `case'
+labels, one for each integer value from LOW to HIGH, inclusive.
+
+   This feature is especially useful for ranges of ASCII character
+codes:
+
+     case 'A' ... 'Z':
+
+   *Be careful:* Write spaces around the `...', for otherwise it may be
+parsed wrong when you use it with integer values.  For example, write
+this:
+
+     case 1 ... 5:
+
+rather than this:
+
+     case 1...5:
+
+
+File: gcc.info,  Node: Cast to Union,  Next: Case Ranges,  Prev: Labeled Elements,  Up: C Extensions
+
+Cast to a Union Type
+====================
+
+   A cast to union type is similar to other casts, except that the type
+specified is a union type.  You can specify the type either with `union
+TAG' or with a typedef name.  A cast to union is actually a constructor
+though, not a cast, and hence does not yield an lvalue like normal
+casts.  (*Note Constructors::.)
+
+   The types that may be cast to the union type are those of the members
+of the union.  Thus, given the following union and variables:
+
+     union foo { int i; double d; };
+     int x;
+     double y;
+
+both `x' and `y' can be cast to type `union' foo.
+
+   Using the cast as the right-hand side of an assignment to a variable
+of union type is equivalent to storing in a member of the union:
+
+     union foo u;
+     ...
+     u = (union foo) x  ==  u.i = x
+     u = (union foo) y  ==  u.d = y
+
+   You can also use the union cast as a function argument:
+
+     void hack (union foo);
+     ...
+     hack ((union foo) x);
+
+
+File: gcc.info,  Node: Function Attributes,  Next: Function Prototypes,  Prev: Case Ranges,  Up: C Extensions
+
+Declaring Attributes of Functions
+=================================
+
+   In GNU C, you declare certain things about functions called in your
+program which help the compiler optimize function calls and check your
+code more carefully.
+
+   The keyword `__attribute__' allows you to specify special attributes
+when making a declaration.  This keyword is followed by an attribute
+specification inside double parentheses.  Eight attributes, `noreturn',
+`const', `format', `section', `constructor', `destructor', `unused' and
+`weak' are currently defined for functions.  Other attributes, including
+`section' are supported for variables declarations (*note Variable
+Attributes::.) and for types (*note Type Attributes::.).
+
+   You may also specify attributes with `__' preceding and following
+each keyword.  This allows you to use them in header files without
+being concerned about a possible macro of the same name.  For example,
+you may use `__noreturn__' instead of `noreturn'.
+
+`noreturn'
+     A few standard library functions, such as `abort' and `exit',
+     cannot return.  GNU CC knows this automatically.  Some programs
+     define their own functions that never return.  You can declare them
+     `noreturn' to tell the compiler this fact.  For example,
+
+          void fatal () __attribute__ ((noreturn));
+          
+          void
+          fatal (...)
+          {
+            ... /* Print error message. */ ...
+            exit (1);
+          }
+
+     The `noreturn' keyword tells the compiler to assume that `fatal'
+     cannot return.  It can then optimize without regard to what would
+     happen if `fatal' ever did return.  This makes slightly better
+     code.  More importantly, it helps avoid spurious warnings of
+     uninitialized variables.
+
+     Do not assume that registers saved by the calling function are
+     restored before calling the `noreturn' function.
+
+     It does not make sense for a `noreturn' function to have a return
+     type other than `void'.
+
+     The attribute `noreturn' is not implemented in GNU C versions
+     earlier than 2.5.  An alternative way to declare that a function
+     does not return, which works in the current version and in some
+     older versions, is as follows:
+
+          typedef void voidfn ();
+          
+          volatile voidfn fatal;
+
+`const'
+     Many functions do not examine any values except their arguments,
+     and have no effects except the return value.  Such a function can
+     be subject to common subexpression elimination and loop
+     optimization just as an arithmetic operator would be.  These
+     functions should be declared with the attribute `const'.  For
+     example,
+
+          int square (int) __attribute__ ((const));
+
+     says that the hypothetical function `square' is safe to call fewer
+     times than the program says.
+
+     The attribute `const' is not implemented in GNU C versions earlier
+     than 2.5.  An alternative way to declare that a function has no
+     side effects, which works in the current version and in some older
+     versions, is as follows:
+
+          typedef int intfn ();
+          
+          extern const intfn square;
+
+     This approach does not work in GNU C++ from 2.6.0 on, since the
+     language specifies that the `const' must be attached to the return
+     value.
+
+     Note that a function that has pointer arguments and examines the
+     data pointed to must *not* be declared `const'.  Likewise, a
+     function that calls a non-`const' function usually must not be
+     `const'.  It does not make sense for a `const' function to return
+     `void'.
+
+`format (ARCHETYPE, STRING-INDEX, FIRST-TO-CHECK)'
+     The `format' attribute specifies that a function takes `printf' or
+     `scanf' style arguments which should be type-checked against a
+     format string.  For example, the declaration:
+
+          extern int
+          my_printf (void *my_object, const char *my_format, ...)
+                __attribute__ ((format (printf, 2, 3)));
+
+     causes the compiler to check the arguments in calls to `my_printf'
+     for consistency with the `printf' style format string argument
+     `my_format'.
+
+     The parameter ARCHETYPE determines how the format string is
+     interpreted, and should be either `printf' or `scanf'.  The
+     parameter STRING-INDEX specifies which argument is the format
+     string argument (starting from 1), while FIRST-TO-CHECK is the
+     number of the first argument to check against the format string.
+     For functions where the arguments are not available to be checked
+     (such as `vprintf'), specify the third parameter as zero.  In this
+     case the compiler only checks the format string for consistency.
+
+     In the example above, the format string (`my_format') is the second
+     argument of the function `my_print', and the arguments to check
+     start with the third argument, so the correct parameters for the
+     format attribute are 2 and 3.
+
+     The `format' attribute allows you to identify your own functions
+     which take format strings as arguments, so that GNU CC can check
+     the calls to these functions for errors.  The compiler always
+     checks formats for the ANSI library functions `printf', `fprintf',
+     `sprintf', `scanf', `fscanf', `sscanf', `vprintf', `vfprintf' and
+     `vsprintf' whenever such warnings are requested (using
+     `-Wformat'), so there is no need to modify the header file
+     `stdio.h'.
+
+`format_arg (STRING-INDEX)'
+     The `format_arg' attribute specifies that a function takes
+     `printf' or `scanf' style arguments, modifies it (for example, to
+     translate it into another language), and passes it to a `printf'
+     or `scanf' style function.  For example, the declaration:
+
+          extern char *
+          my_dgettext (char *my_domain, const char *my_format)
+                __attribute__ ((format_arg (2)));
+
+     causes the compiler to check the arguments in calls to
+     `my_dgettext' whose result is passed to a `printf' or `scanf' type
+     function for consistency with the `printf' style format string
+     argument `my_format'.
+
+     The parameter STRING-INDEX specifies which argument is the format
+     string argument (starting from 1).
+
+     The `format-arg' attribute allows you to identify your own
+     functions which modify format strings, so that GNU CC can check the
+     calls to `printf' and `scanf' function whose operands are a call
+     to one of your own function.  The compiler always treats
+     `gettext', `dgettext', and `dcgettext' in this manner.
+
+`section ("section-name")'
+     Normally, the compiler places the code it generates in the `text'
+     section.  Sometimes, however, you need additional sections, or you
+     need certain particular functions to appear in special sections.
+     The `section' attribute specifies that a function lives in a
+     particular section.  For example, the declaration:
+
+          extern void foobar (void) __attribute__ ((section ("bar")));
+
+     puts the function `foobar' in the `bar' section.
+
+     Some file formats do not support arbitrary sections so the
+     `section' attribute is not available on all platforms.  If you
+     need to map the entire contents of a module to a particular
+     section, consider using the facilities of the linker instead.
+
+`constructor'
+`destructor'
+     The `constructor' attribute causes the function to be called
+     automatically before execution enters `main ()'.  Similarly, the
+     `destructor' attribute causes the function to be called
+     automatically after `main ()' has completed or `exit ()' has been
+     called.  Functions with these attributes are useful for
+     initializing data that will be used implicitly during the
+     execution of the program.
+
+     These attributes are not currently implemented for Objective C.
+
+`unused'
+     This attribute, attached to a function, means that the function is
+     meant to be possibly unused.  GNU CC will not produce a warning
+     for this function.  GNU C++ does not currently support this
+     attribute as definitions without parameters are valid in C++.
+
+`weak'
+     The `weak' attribute causes the declaration to be emitted as a weak
+     symbol rather than a global.  This is primarily useful in defining
+     library functions which can be overridden in user code, though it
+     can also be used with non-function declarations.  Weak symbols are
+     supported for ELF targets, and also for a.out targets when using
+     the GNU assembler and linker.
+
+`alias ("target")'
+     The `alias' attribute causes the declaration to be emitted as an
+     alias for another symbol, which must be specified.  For instance,
+
+          void __f () { /* do something */; }
+          void f () __attribute__ ((weak, alias ("__f")));
+
+     declares `f' to be a weak alias for `__f'.  In C++, the mangled
+     name for the target must be used.
+
+     Not all target machines support this attribute.
+
+`regparm (NUMBER)'
+     On the Intel 386, the `regparm' attribute causes the compiler to
+     pass up to NUMBER integer arguments in registers EAX, EDX, and ECX
+     instead of on the stack.  Functions that take a variable number of
+     arguments will continue to be passed all of their arguments on the
+     stack.
+
+`stdcall'
+     On the Intel 386, the `stdcall' attribute causes the compiler to
+     assume that the called function will pop off the stack space used
+     to pass arguments, unless it takes a variable number of arguments.
+
+     The PowerPC compiler for Windows NT currently ignores the `stdcall'
+     attribute.
+
+`cdecl'
+     On the Intel 386, the `cdecl' attribute causes the compiler to
+     assume that the calling function will pop off the stack space used
+     to pass arguments.  This is useful to override the effects of the
+     `-mrtd' switch.
+
+     The PowerPC compiler for Windows NT currently ignores the `cdecl'
+     attribute.
+
+`longcall'
+     On the RS/6000 and PowerPC, the `longcall' attribute causes the
+     compiler to always call the function via a pointer, so that
+     functions which reside further than 64 megabytes (67,108,864
+     bytes) from the current location can be called.
+
+`dllimport'
+     On the PowerPC running Windows NT, the `dllimport' attribute causes
+     the compiler to call the function via a global pointer to the
+     function pointer that is set up by the Windows NT dll library.
+     The pointer name is formed by combining `__imp_' and the function
+     name.
+
+`dllexport'
+     On the PowerPC running Windows NT, the `dllexport' attribute causes
+     the compiler to provide a global pointer to the function pointer,
+     so that it can be called with the `dllimport' attribute.  The
+     pointer name is formed by combining `__imp_' and the function name.
+
+`exception (EXCEPT-FUNC [, EXCEPT-ARG])'
+     On the PowerPC running Windows NT, the `exception' attribute causes
+     the compiler to modify the structured exception table entry it
+     emits for the declared function.  The string or identifier
+     EXCEPT-FUNC is placed in the third entry of the structured
+     exception table.  It represents a function, which is called by the
+     exception handling mechanism if an exception occurs.  If it was
+     specified, the string or identifier EXCEPT-ARG is placed in the
+     fourth entry of the structured exception table.
+
+`function_vector'
+     Use this option on the H8/300 and H8/300H to indicate that the
+     specified function should be called through the function vector.
+     Calling a function through the function vector will reduce code
+     size, however; the function vector has a limited size (maximum 128
+     entries on the H8/300 and 64 entries on the H8/300H) and shares
+     space with the interrupt vector.
+
+     You must use GAS and GLD from GNU binutils version 2.7 or later for
+     this option to work correctly.
+
+`interrupt_handler'
+     Use this option on the H8/300 and H8/300H to indicate that the
+     specified function is an interrupt handler.  The compiler will
+     generate function entry and exit sequences suitable for use in an
+     interrupt handler when this attribute is present.
+
+`eightbit_data'
+     Use this option on the H8/300 and H8/300H to indicate that the
+     specified variable should be placed into the eight bit data
+     section.  The compiler will generate more efficient code for
+     certain operations on data in the eight bit data area.  Note the
+     eight bit data area is limited to 256 bytes of data.
+
+     You must use GAS and GLD from GNU binutils version 2.7 or later for
+     this option to work correctly.
+
+`tiny_data'
+     Use this option on the H8/300H to indicate that the specified
+     variable should be placed into the tiny data section.  The
+     compiler will generate more efficient code for loads and stores on
+     data in the tiny data section.  Note the tiny data area is limited
+     to slightly under 32kbytes of data.
+
+`interrupt'
+     Use this option on the M32R/D to indicate that the specified
+     function is an interrupt handler.  The compiler will generate
+     function entry and exit sequences suitable for use in an interrupt
+     handler when this attribute is present.
+
+`model (MODEL-NAME)'
+     Use this attribute on the M32R/D to set the addressability of an
+     object, and the code generated for a function.  The identifier
+     MODEL-NAME is one of `small', `medium', or `large', representing
+     each of the code models.
+
+     Small model objects live in the lower 16MB of memory (so that their
+     addresses can be loaded with the `ld24' instruction), and are
+     callable with the `bl' instruction.
+
+     Medium model objects may live anywhere in the 32 bit address space
+     (the compiler will generate `seth/add3' instructions to load their
+     addresses), and are callable with the `bl' instruction.
+
+     Large model objects may live anywhere in the 32 bit address space
+     (the compiler will generate `seth/add3' instructions to load their
+     addresses), and may not be reachable with the `bl' instruction
+     (the compiler will generate the much slower `seth/add3/jl'
+     instruction sequence).
+
+   You can specify multiple attributes in a declaration by separating
+them by commas within the double parentheses or by immediately
+following an attribute declaration with another attribute declaration.
+
+   Some people object to the `__attribute__' feature, suggesting that
+ANSI C's `#pragma' should be used instead.  There are two reasons for
+not doing this.
+
+  1. It is impossible to generate `#pragma' commands from a macro.
+
+  2. There is no telling what the same `#pragma' might mean in another
+     compiler.
+
+   These two reasons apply to almost any application that might be
+proposed for `#pragma'.  It is basically a mistake to use `#pragma' for
+*anything*.
+
+
+File: gcc.info,  Node: Function Prototypes,  Next: C++ Comments,  Prev: Function Attributes,  Up: C Extensions
+
+Prototypes and Old-Style Function Definitions
+=============================================
+
+   GNU C extends ANSI C to allow a function prototype to override a
+later old-style non-prototype definition.  Consider the following
+example:
+
+     /* Use prototypes unless the compiler is old-fashioned.  */
+     #ifdef __STDC__
+     #define P(x) x
+     #else
+     #define P(x) ()
+     #endif
+     
+     /* Prototype function declaration.  */
+     int isroot P((uid_t));
+     
+     /* Old-style function definition.  */
+     int
+     isroot (x)   /* ??? lossage here ??? */
+          uid_t x;
+     {
+       return x == 0;
+     }
+
+   Suppose the type `uid_t' happens to be `short'.  ANSI C does not
+allow this example, because subword arguments in old-style
+non-prototype definitions are promoted.  Therefore in this example the
+function definition's argument is really an `int', which does not match
+the prototype argument type of `short'.
+
+   This restriction of ANSI C makes it hard to write code that is
+portable to traditional C compilers, because the programmer does not
+know whether the `uid_t' type is `short', `int', or `long'.  Therefore,
+in cases like these GNU C allows a prototype to override a later
+old-style definition.  More precisely, in GNU C, a function prototype
+argument type overrides the argument type specified by a later
+old-style definition if the former type is the same as the latter type
+before promotion.  Thus in GNU C the above example is equivalent to the
+following:
+
+     int isroot (uid_t);
+     
+     int
+     isroot (uid_t x)
+     {
+       return x == 0;
+     }
+
+   GNU C++ does not support old-style function definitions, so this
+extension is irrelevant.
+
+
+File: gcc.info,  Node: C++ Comments,  Next: Dollar Signs,  Prev: Function Prototypes,  Up: C Extensions
+
+C++ Style Comments
+==================
+
+   In GNU C, you may use C++ style comments, which start with `//' and
+continue until the end of the line.  Many other C implementations allow
+such comments, and they are likely to be in a future C standard.
+However, C++ style comments are not recognized if you specify `-ansi'
+or `-traditional', since they are incompatible with traditional
+constructs like `dividend//*comment*/divisor'.
+
+
+File: gcc.info,  Node: Dollar Signs,  Next: Character Escapes,  Prev: C++ Comments,  Up: C Extensions
+
+Dollar Signs in Identifier Names
+================================
+
+   In GNU C, you may normally use dollar signs in identifier names.
+This is because many traditional C implementations allow such
+identifiers.  However, dollar signs in identifiers are not supported on
+a few target machines, typically because the target assembler does not
+allow them.
+
+
+File: gcc.info,  Node: Character Escapes,  Next: Variable Attributes,  Prev: Dollar Signs,  Up: C Extensions
+
+The Character <ESC> in Constants
+================================
+
+   You can use the sequence `\e' in a string or character constant to
+stand for the ASCII character <ESC>.
+
+
+File: gcc.info,  Node: Alignment,  Next: Inline,  Prev: Type Attributes,  Up: C Extensions
+
+Inquiring on Alignment of Types or Variables
+============================================
+
+   The keyword `__alignof__' allows you to inquire about how an object
+is aligned, or the minimum alignment usually required by a type.  Its
+syntax is just like `sizeof'.
+
+   For example, if the target machine requires a `double' value to be
+aligned on an 8-byte boundary, then `__alignof__ (double)' is 8.  This
+is true on many RISC machines.  On more traditional machine designs,
+`__alignof__ (double)' is 4 or even 2.
+
+   Some machines never actually require alignment; they allow reference
+to any data type even at an odd addresses.  For these machines,
+`__alignof__' reports the *recommended* alignment of a type.
+
+   When the operand of `__alignof__' is an lvalue rather than a type,
+the value is the largest alignment that the lvalue is known to have.
+It may have this alignment as a result of its data type, or because it
+is part of a structure and inherits alignment from that structure.  For
+example, after this declaration:
+
+     struct foo { int x; char y; } foo1;
+
+the value of `__alignof__ (foo1.y)' is probably 2 or 4, the same as
+`__alignof__ (int)', even though the data type of `foo1.y' does not
+itself demand any alignment.
+
+   A related feature which lets you specify the alignment of an object
+is `__attribute__ ((aligned (ALIGNMENT)))'; see the following section.
+
+
+File: gcc.info,  Node: Variable Attributes,  Next: Type Attributes,  Prev: Character Escapes,  Up: C Extensions
+
+Specifying Attributes of Variables
+==================================
+
+   The keyword `__attribute__' allows you to specify special attributes
+of variables or structure fields.  This keyword is followed by an
+attribute specification inside double parentheses.  Eight attributes
+are currently defined for variables: `aligned', `mode', `nocommon',
+`packed', `section', `transparent_union', `unused', and `weak'.  Other
+attributes are available for functions (*note Function Attributes::.)
+and for types (*note Type Attributes::.).
+
+   You may also specify attributes with `__' preceding and following
+each keyword.  This allows you to use them in header files without
+being concerned about a possible macro of the same name.  For example,
+you may use `__aligned__' instead of `aligned'.
+
+`aligned (ALIGNMENT)'
+     This attribute specifies a minimum alignment for the variable or
+     structure field, measured in bytes.  For example, the declaration:
+
+          int x __attribute__ ((aligned (16))) = 0;
+
+     causes the compiler to allocate the global variable `x' on a
+     16-byte boundary.  On a 68040, this could be used in conjunction
+     with an `asm' expression to access the `move16' instruction which
+     requires 16-byte aligned operands.
+
+     You can also specify the alignment of structure fields.  For
+     example, to create a double-word aligned `int' pair, you could
+     write:
+
+          struct foo { int x[2] __attribute__ ((aligned (8))); };
+
+     This is an alternative to creating a union with a `double' member
+     that forces the union to be double-word aligned.
+
+     It is not possible to specify the alignment of functions; the
+     alignment of functions is determined by the machine's requirements
+     and cannot be changed.  You cannot specify alignment for a typedef
+     name because such a name is just an alias, not a distinct type.
+
+     As in the preceding examples, you can explicitly specify the
+     alignment (in bytes) that you wish the compiler to use for a given
+     variable or structure field.  Alternatively, you can leave out the
+     alignment factor and just ask the compiler to align a variable or
+     field to the maximum useful alignment for the target machine you
+     are compiling for.  For example, you could write:
+
+          short array[3] __attribute__ ((aligned));
+
+     Whenever you leave out the alignment factor in an `aligned'
+     attribute specification, the compiler automatically sets the
+     alignment for the declared variable or field to the largest
+     alignment which is ever used for any data type on the target
+     machine you are compiling for.  Doing this can often make copy
+     operations more efficient, because the compiler can use whatever
+     instructions copy the biggest chunks of memory when performing
+     copies to or from the variables or fields that you have aligned
+     this way.
+
+     The `aligned' attribute can only increase the alignment; but you
+     can decrease it by specifying `packed' as well.  See below.
+
+     Note that the effectiveness of `aligned' attributes may be limited
+     by inherent limitations in your linker.  On many systems, the
+     linker is only able to arrange for variables to be aligned up to a
+     certain maximum alignment.  (For some linkers, the maximum
+     supported alignment may be very very small.)  If your linker is
+     only able to align variables up to a maximum of 8 byte alignment,
+     then specifying `aligned(16)' in an `__attribute__' will still
+     only provide you with 8 byte alignment.  See your linker
+     documentation for further information.
+
+`mode (MODE)'
+     This attribute specifies the data type for the
+     declaration--whichever type corresponds to the mode MODE.  This in
+     effect lets you request an integer or floating point type
+     according to its width.
+
+     You may also specify a mode of `byte' or `__byte__' to indicate
+     the mode corresponding to a one-byte integer, `word' or `__word__'
+     for the mode of a one-word integer, and `pointer' or `__pointer__'
+     for the mode used to represent pointers.
+
+`nocommon'
+     This attribute specifies requests GNU CC not to place a variable
+     "common" but instead to allocate space for it directly.  If you
+     specify the `-fno-common' flag, GNU CC will do this for all
+     variables.
+
+     Specifying the `nocommon' attribute for a variable provides an
+     initialization of zeros.  A variable may only be initialized in one
+     source file.
+
+`packed'
+     The `packed' attribute specifies that a variable or structure field
+     should have the smallest possible alignment--one byte for a
+     variable, and one bit for a field, unless you specify a larger
+     value with the `aligned' attribute.
+
+     Here is a structure in which the field `x' is packed, so that it
+     immediately follows `a':
+
+          struct foo
+          {
+            char a;
+            int x[2] __attribute__ ((packed));
+          };
+
+`section ("section-name")'
+     Normally, the compiler places the objects it generates in sections
+     like `data' and `bss'.  Sometimes, however, you need additional
+     sections, or you need certain particular variables to appear in
+     special sections, for example to map to special hardware.  The
+     `section' attribute specifies that a variable (or function) lives
+     in a particular section.  For example, this small program uses
+     several specific section names:
+
+          struct duart a __attribute__ ((section ("DUART_A"))) = { 0 };
+          struct duart b __attribute__ ((section ("DUART_B"))) = { 0 };
+          char stack[10000] __attribute__ ((section ("STACK"))) = { 0 };
+          int init_data __attribute__ ((section ("INITDATA"))) = 0;
+          
+          main()
+          {
+            /* Initialize stack pointer */
+            init_sp (stack + sizeof (stack));
+          
+            /* Initialize initialized data */
+            memcpy (&init_data, &data, &edata - &data);
+          
+            /* Turn on the serial ports */
+            init_duart (&a);
+            init_duart (&b);
+          }
+
+     Use the `section' attribute with an *initialized* definition of a
+     *global* variable, as shown in the example.  GNU CC issues a
+     warning and otherwise ignores the `section' attribute in
+     uninitialized variable declarations.
+
+     You may only use the `section' attribute with a fully initialized
+     global definition because of the way linkers work.  The linker
+     requires each object be defined once, with the exception that
+     uninitialized variables tentatively go in the `common' (or `bss')
+     section and can be multiply "defined".  You can force a variable
+     to be initialized with the `-fno-common' flag or the `nocommon'
+     attribute.
+
+     Some file formats do not support arbitrary sections so the
+     `section' attribute is not available on all platforms.  If you
+     need to map the entire contents of a module to a particular
+     section, consider using the facilities of the linker instead.
+
+`transparent_union'
+     This attribute, attached to a function parameter which is a union,
+     means that the corresponding argument may have the type of any
+     union member, but the argument is passed as if its type were that
+     of the first union member.  For more details see *Note Type
+     Attributes::.  You can also use this attribute on a `typedef' for
+     a union data type; then it applies to all function parameters with
+     that type.
+
+`unused'
+     This attribute, attached to a variable, means that the variable is
+     meant to be possibly unused.  GNU CC will not produce a warning
+     for this variable.
+
+`weak'
+     The `weak' attribute is described in *Note Function Attributes::.
+
+`model (MODEL-NAME)'
+     Use this attribute on the M32R/D to set the addressability of an
+     object.  The identifier MODEL-NAME is one of `small', `medium', or
+     `large', representing each of the code models.
+
+     Small model objects live in the lower 16MB of memory (so that their
+     addresses can be loaded with the `ld24' instruction).
+
+     Medium and large model objects may live anywhere in the 32 bit
+     address space (the compiler will generate `seth/add3' instructions
+     to load their addresses).
+
+   To specify multiple attributes, separate them by commas within the
+double parentheses: for example, `__attribute__ ((aligned (16),
+packed))'.
+
+
+File: gcc.info,  Node: Type Attributes,  Next: Alignment,  Prev: Variable Attributes,  Up: C Extensions
+
+Specifying Attributes of Types
+==============================
+
+   The keyword `__attribute__' allows you to specify special attributes
+of `struct' and `union' types when you define such types.  This keyword
+is followed by an attribute specification inside double parentheses.
+Three attributes are currently defined for types: `aligned', `packed',
+and `transparent_union'.  Other attributes are defined for functions
+(*note Function Attributes::.) and for variables (*note Variable
+Attributes::.).
+
+   You may also specify any one of these attributes with `__' preceding
+and following its keyword.  This allows you to use these attributes in
+header files without being concerned about a possible macro of the same
+name.  For example, you may use `__aligned__' instead of `aligned'.
+
+   You may specify the `aligned' and `transparent_union' attributes
+either in a `typedef' declaration or just past the closing curly brace
+of a complete enum, struct or union type *definition* and the `packed'
+attribute only past the closing brace of a definition.
+
+`aligned (ALIGNMENT)'
+     This attribute specifies a minimum alignment (in bytes) for
+     variables of the specified type.  For example, the declarations:
+
+          struct S { short f[3]; } __attribute__ ((aligned (8));
+          typedef int more_aligned_int __attribute__ ((aligned (8));
+
+     force the compiler to insure (as far as it can) that each variable
+     whose type is `struct S' or `more_aligned_int' will be allocated
+     and aligned *at least* on a 8-byte boundary.  On a Sparc, having
+     all variables of type `struct S' aligned to 8-byte boundaries
+     allows the compiler to use the `ldd' and `std' (doubleword load and
+     store) instructions when copying one variable of type `struct S' to
+     another, thus improving run-time efficiency.
+
+     Note that the alignment of any given `struct' or `union' type is
+     required by the ANSI C standard to be at least a perfect multiple
+     of the lowest common multiple of the alignments of all of the
+     members of the `struct' or `union' in question.  This means that
+     you *can* effectively adjust the alignment of a `struct' or `union'
+     type by attaching an `aligned' attribute to any one of the members
+     of such a type, but the notation illustrated in the example above
+     is a more obvious, intuitive, and readable way to request the
+     compiler to adjust the alignment of an entire `struct' or `union'
+     type.
+
+     As in the preceding example, you can explicitly specify the
+     alignment (in bytes) that you wish the compiler to use for a given
+     `struct' or `union' type.  Alternatively, you can leave out the
+     alignment factor and just ask the compiler to align a type to the
+     maximum useful alignment for the target machine you are compiling
+     for.  For example, you could write:
+
+          struct S { short f[3]; } __attribute__ ((aligned));
+
+     Whenever you leave out the alignment factor in an `aligned'
+     attribute specification, the compiler automatically sets the
+     alignment for the type to the largest alignment which is ever used
+     for any data type on the target machine you are compiling for.
+     Doing this can often make copy operations more efficient, because
+     the compiler can use whatever instructions copy the biggest chunks
+     of memory when performing copies to or from the variables which
+     have types that you have aligned this way.
+
+     In the example above, if the size of each `short' is 2 bytes, then
+     the size of the entire `struct S' type is 6 bytes.  The smallest
+     power of two which is greater than or equal to that is 8, so the
+     compiler sets the alignment for the entire `struct S' type to 8
+     bytes.
+
+     Note that although you can ask the compiler to select a
+     time-efficient alignment for a given type and then declare only
+     individual stand-alone objects of that type, the compiler's
+     ability to select a time-efficient alignment is primarily useful
+     only when you plan to create arrays of variables having the
+     relevant (efficiently aligned) type.  If you declare or use arrays
+     of variables of an efficiently-aligned type, then it is likely
+     that your program will also be doing pointer arithmetic (or
+     subscripting, which amounts to the same thing) on pointers to the
+     relevant type, and the code that the compiler generates for these
+     pointer arithmetic operations will often be more efficient for
+     efficiently-aligned types than for other types.
+
+     The `aligned' attribute can only increase the alignment; but you
+     can decrease it by specifying `packed' as well.  See below.
+
+     Note that the effectiveness of `aligned' attributes may be limited
+     by inherent limitations in your linker.  On many systems, the
+     linker is only able to arrange for variables to be aligned up to a
+     certain maximum alignment.  (For some linkers, the maximum
+     supported alignment may be very very small.)  If your linker is
+     only able to align variables up to a maximum of 8 byte alignment,
+     then specifying `aligned(16)' in an `__attribute__' will still
+     only provide you with 8 byte alignment.  See your linker
+     documentation for further information.
+
+`packed'
+     This attribute, attached to an `enum', `struct', or `union' type
+     definition, specified that the minimum required memory be used to
+     represent the type.
+
+     Specifying this attribute for `struct' and `union' types is
+     equivalent to specifying the `packed' attribute on each of the
+     structure or union members.  Specifying the `-fshort-enums' flag
+     on the line is equivalent to specifying the `packed' attribute on
+     all `enum' definitions.
+
+     You may only specify this attribute after a closing curly brace on
+     an `enum' definition, not in a `typedef' declaration, unless that
+     declaration also contains the definition of the `enum'.
+
+`transparent_union'
+     This attribute, attached to a `union' type definition, indicates
+     that any function parameter having that union type causes calls to
+     that function to be treated in a special way.
+
+     First, the argument corresponding to a transparent union type can
+     be of any type in the union; no cast is required.  Also, if the
+     union contains a pointer type, the corresponding argument can be a
+     null pointer constant or a void pointer expression; and if the
+     union contains a void pointer type, the corresponding argument can
+     be any pointer expression.  If the union member type is a pointer,
+     qualifiers like `const' on the referenced type must be respected,
+     just as with normal pointer conversions.
+
+     Second, the argument is passed to the function using the calling
+     conventions of first member of the transparent union, not the
+     calling conventions of the union itself.  All members of the union
+     must have the same machine representation; this is necessary for
+     this argument passing to work properly.
+
+     Transparent unions are designed for library functions that have
+     multiple interfaces for compatibility reasons.  For example,
+     suppose the `wait' function must accept either a value of type
+     `int *' to comply with Posix, or a value of type `union wait *' to
+     comply with the 4.1BSD interface.  If `wait''s parameter were
+     `void *', `wait' would accept both kinds of arguments, but it
+     would also accept any other pointer type and this would make
+     argument type checking less useful.  Instead, `<sys/wait.h>' might
+     define the interface as follows:
+
+          typedef union
+            {
+              int *__ip;
+              union wait *__up;
+            } wait_status_ptr_t __attribute__ ((__transparent_union__));
+          
+          pid_t wait (wait_status_ptr_t);
+
+     This interface allows either `int *' or `union wait *' arguments
+     to be passed, using the `int *' calling convention.  The program
+     can call `wait' with arguments of either type:
+
+          int w1 () { int w; return wait (&w); }
+          int w2 () { union wait w; return wait (&w); }
+
+     With this interface, `wait''s implementation might look like this:
+
+          pid_t wait (wait_status_ptr_t p)
+          {
+            return waitpid (-1, p.__ip, 0);
+          }
+
+`unused'
+     When attached to a type (including a `union' or a `struct'), this
+     attribute means that variables of that type are meant to appear
+     possibly unused.  GNU CC will not produce a warning for any
+     variables of that type, even if the variable appears to do
+     nothing.  This is often the case with lock or thread classes,
+     which are usually defined and then not referenced, but contain
+     constructors and destructors that have non-trivial bookeeping
+     functions.
+
+   To specify multiple attributes, separate them by commas within the
+double parentheses: for example, `__attribute__ ((aligned (16),
+packed))'.
+

@@ -1,0 +1,961 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Frame Registers,  Next: Elimination,  Prev: Stack Checking,  Up: Stack and Calling
+
+Registers That Address the Stack Frame
+--------------------------------------
+
+   This discusses registers that address the stack frame.
+
+`STACK_POINTER_REGNUM'
+     The register number of the stack pointer register, which must also
+     be a fixed register according to `FIXED_REGISTERS'.  On most
+     machines, the hardware determines which register this is.
+
+`FRAME_POINTER_REGNUM'
+     The register number of the frame pointer register, which is used to
+     access automatic variables in the stack frame.  On some machines,
+     the hardware determines which register this is.  On other
+     machines, you can choose any register you wish for this purpose.
+
+`HARD_FRAME_POINTER_REGNUM'
+     On some machines the offset between the frame pointer and starting
+     offset of the automatic variables is not known until after register
+     allocation has been done (for example, because the saved registers
+     are between these two locations).  On those machines, define
+     `FRAME_POINTER_REGNUM' the number of a special, fixed register to
+     be used internally until the offset is known, and define
+     `HARD_FRAME_POINTER_REGNUM' to be actual the hard register number
+     used for the frame pointer.
+
+     You should define this macro only in the very rare circumstances
+     when it is not possible to calculate the offset between the frame
+     pointer and the automatic variables until after register
+     allocation has been completed.  When this macro is defined, you
+     must also indicate in your definition of `ELIMINABLE_REGS' how to
+     eliminate `FRAME_POINTER_REGNUM' into either
+     `HARD_FRAME_POINTER_REGNUM' or `STACK_POINTER_REGNUM'.
+
+     Do not define this macro if it would be the same as
+     `FRAME_POINTER_REGNUM'.
+
+`ARG_POINTER_REGNUM'
+     The register number of the arg pointer register, which is used to
+     access the function's argument list.  On some machines, this is
+     the same as the frame pointer register.  On some machines, the
+     hardware determines which register this is.  On other machines,
+     you can choose any register you wish for this purpose.  If this is
+     not the same register as the frame pointer register, then you must
+     mark it as a fixed register according to `FIXED_REGISTERS', or
+     arrange to be able to eliminate it (*note Elimination::.).
+
+`RETURN_ADDRESS_POINTER_REGNUM'
+     The register number of the return address pointer register, which
+     is used to access the current function's return address from the
+     stack.  On some machines, the return address is not at a fixed
+     offset from the frame pointer or stack pointer or argument
+     pointer.  This register can be defined to point to the return
+     address on the stack, and then be converted by `ELIMINABLE_REGS'
+     into either the frame pointer or stack pointer.
+
+     Do not define this macro unless there is no other way to get the
+     return address from the stack.
+
+`STATIC_CHAIN_REGNUM'
+`STATIC_CHAIN_INCOMING_REGNUM'
+     Register numbers used for passing a function's static chain
+     pointer.  If register windows are used, the register number as
+     seen by the called function is `STATIC_CHAIN_INCOMING_REGNUM',
+     while the register number as seen by the calling function is
+     `STATIC_CHAIN_REGNUM'.  If these registers are the same,
+     `STATIC_CHAIN_INCOMING_REGNUM' need not be defined.
+
+     The static chain register need not be a fixed register.
+
+     If the static chain is passed in memory, these macros should not be
+     defined; instead, the next two macros should be defined.
+
+`STATIC_CHAIN'
+`STATIC_CHAIN_INCOMING'
+     If the static chain is passed in memory, these macros provide rtx
+     giving `mem' expressions that denote where they are stored.
+     `STATIC_CHAIN' and `STATIC_CHAIN_INCOMING' give the locations as
+     seen by the calling and called functions, respectively.  Often the
+     former will be at an offset from the stack pointer and the latter
+     at an offset from the frame pointer.
+
+     The variables `stack_pointer_rtx', `frame_pointer_rtx', and
+     `arg_pointer_rtx' will have been initialized prior to the use of
+     these macros and should be used to refer to those items.
+
+     If the static chain is passed in a register, the two previous
+     macros should be defined instead.
+
+
+File: gcc.info,  Node: Elimination,  Next: Stack Arguments,  Prev: Frame Registers,  Up: Stack and Calling
+
+Eliminating Frame Pointer and Arg Pointer
+-----------------------------------------
+
+   This is about eliminating the frame pointer and arg pointer.
+
+`FRAME_POINTER_REQUIRED'
+     A C expression which is nonzero if a function must have and use a
+     frame pointer.  This expression is evaluated  in the reload pass.
+     If its value is nonzero the function will have a frame pointer.
+
+     The expression can in principle examine the current function and
+     decide according to the facts, but on most machines the constant 0
+     or the constant 1 suffices.  Use 0 when the machine allows code to
+     be generated with no frame pointer, and doing so saves some time
+     or space.  Use 1 when there is no possible advantage to avoiding a
+     frame pointer.
+
+     In certain cases, the compiler does not know how to produce valid
+     code without a frame pointer.  The compiler recognizes those cases
+     and automatically gives the function a frame pointer regardless of
+     what `FRAME_POINTER_REQUIRED' says.  You don't need to worry about
+     them.
+
+     In a function that does not require a frame pointer, the frame
+     pointer register can be allocated for ordinary usage, unless you
+     mark it as a fixed register.  See `FIXED_REGISTERS' for more
+     information.
+
+`INITIAL_FRAME_POINTER_OFFSET (DEPTH-VAR)'
+     A C statement to store in the variable DEPTH-VAR the difference
+     between the frame pointer and the stack pointer values immediately
+     after the function prologue.  The value would be computed from
+     information such as the result of `get_frame_size ()' and the
+     tables of registers `regs_ever_live' and `call_used_regs'.
+
+     If `ELIMINABLE_REGS' is defined, this macro will be not be used and
+     need not be defined.  Otherwise, it must be defined even if
+     `FRAME_POINTER_REQUIRED' is defined to always be true; in that
+     case, you may set DEPTH-VAR to anything.
+
+`ELIMINABLE_REGS'
+     If defined, this macro specifies a table of register pairs used to
+     eliminate unneeded registers that point into the stack frame.  If
+     it is not defined, the only elimination attempted by the compiler
+     is to replace references to the frame pointer with references to
+     the stack pointer.
+
+     The definition of this macro is a list of structure
+     initializations, each of which specifies an original and
+     replacement register.
+
+     On some machines, the position of the argument pointer is not
+     known until the compilation is completed.  In such a case, a
+     separate hard register must be used for the argument pointer.
+     This register can be eliminated by replacing it with either the
+     frame pointer or the argument pointer, depending on whether or not
+     the frame pointer has been eliminated.
+
+     In this case, you might specify:
+          #define ELIMINABLE_REGS  \
+          {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
+           {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM}, \
+           {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+     Note that the elimination of the argument pointer with the stack
+     pointer is specified first since that is the preferred elimination.
+
+`CAN_ELIMINATE (FROM-REG, TO-REG)'
+     A C expression that returns non-zero if the compiler is allowed to
+     try to replace register number FROM-REG with register number
+     TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
+     defined, and will usually be the constant 1, since most of the
+     cases preventing register elimination are things that the compiler
+     already knows about.
+
+`INITIAL_ELIMINATION_OFFSET (FROM-REG, TO-REG, OFFSET-VAR)'
+     This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
+     specifies the initial difference between the specified pair of
+     registers.  This macro must be defined if `ELIMINABLE_REGS' is
+     defined.
+
+`LONGJMP_RESTORE_FROM_STACK'
+     Define this macro if the `longjmp' function restores registers from
+     the stack frames, rather than from those saved specifically by
+     `setjmp'.  Certain quantities must not be kept in registers across
+     a call to `setjmp' on such machines.
+
+
+File: gcc.info,  Node: Stack Arguments,  Next: Register Arguments,  Prev: Elimination,  Up: Stack and Calling
+
+Passing Function Arguments on the Stack
+---------------------------------------
+
+   The macros in this section control how arguments are passed on the
+stack.  See the following section for other macros that control passing
+certain arguments in registers.
+
+`PROMOTE_PROTOTYPES'
+     Define this macro if an argument declared in a prototype as an
+     integral type smaller than `int' should actually be passed as an
+     `int'.  In addition to avoiding errors in certain cases of
+     mismatch, it also makes for better code on certain machines.
+
+`PUSH_ROUNDING (NPUSHED)'
+     A C expression that is the number of bytes actually pushed onto the
+     stack when an instruction attempts to push NPUSHED bytes.
+
+     If the target machine does not have a push instruction, do not
+     define this macro.  That directs GNU CC to use an alternate
+     strategy: to allocate the entire argument block and then store the
+     arguments into it.
+
+     On some machines, the definition
+
+          #define PUSH_ROUNDING(BYTES) (BYTES)
+
+     will suffice.  But on other machines, instructions that appear to
+     push one byte actually push two bytes in an attempt to maintain
+     alignment.  Then the definition should be
+
+          #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+
+`ACCUMULATE_OUTGOING_ARGS'
+     If defined, the maximum amount of space required for outgoing
+     arguments will be computed and placed into the variable
+     `current_function_outgoing_args_size'.  No space will be pushed
+     onto the stack for each call; instead, the function prologue should
+     increase the stack frame size by this amount.
+
+     Defining both `PUSH_ROUNDING' and `ACCUMULATE_OUTGOING_ARGS' is
+     not proper.
+
+`REG_PARM_STACK_SPACE (FNDECL)'
+     Define this macro if functions should assume that stack space has
+     been allocated for arguments even when their values are passed in
+     registers.
+
+     The value of this macro is the size, in bytes, of the area
+     reserved for arguments passed in registers for the function
+     represented by FNDECL.
+
+     This space can be allocated by the caller, or be a part of the
+     machine-dependent stack frame: `OUTGOING_REG_PARM_STACK_SPACE' says
+     which.
+
+`MAYBE_REG_PARM_STACK_SPACE'
+`FINAL_REG_PARM_STACK_SPACE (CONST_SIZE, VAR_SIZE)'
+     Define these macros in addition to the one above if functions might
+     allocate stack space for arguments even when their values are
+     passed in registers.  These should be used when the stack space
+     allocated for arguments in registers is not a simple constant
+     independent of the function declaration.
+
+     The value of the first macro is the size, in bytes, of the area
+     that we should initially assume would be reserved for arguments
+     passed in registers.
+
+     The value of the second macro is the actual size, in bytes, of the
+     area that will be reserved for arguments passed in registers.
+     This takes two arguments: an integer representing the number of
+     bytes of fixed sized arguments on the stack, and a tree
+     representing the number of bytes of variable sized arguments on
+     the stack.
+
+     When these macros are defined, `REG_PARM_STACK_SPACE' will only be
+     called for libcall functions, the current function, or for a
+     function being called when it is known that such stack space must
+     be allocated.  In each case this value can be easily computed.
+
+     When deciding whether a called function needs such stack space,
+     and how much space to reserve, GNU CC uses these two macros
+     instead of `REG_PARM_STACK_SPACE'.
+
+`OUTGOING_REG_PARM_STACK_SPACE'
+     Define this if it is the responsibility of the caller to allocate
+     the area reserved for arguments passed in registers.
+
+     If `ACCUMULATE_OUTGOING_ARGS' is defined, this macro controls
+     whether the space for these arguments counts in the value of
+     `current_function_outgoing_args_size'.
+
+`STACK_PARMS_IN_REG_PARM_AREA'
+     Define this macro if `REG_PARM_STACK_SPACE' is defined, but the
+     stack parameters don't skip the area specified by it.
+
+     Normally, when a parameter is not passed in registers, it is
+     placed on the stack beyond the `REG_PARM_STACK_SPACE' area.
+     Defining this macro suppresses this behavior and causes the
+     parameter to be passed on the stack in its natural location.
+
+`RETURN_POPS_ARGS (FUNDECL, FUNTYPE, STACK-SIZE)'
+     A C expression that should indicate the number of bytes of its own
+     arguments that a function pops on returning, or 0 if the function
+     pops no arguments and the caller must therefore pop them all after
+     the function returns.
+
+     FUNDECL is a C variable whose value is a tree node that describes
+     the function in question.  Normally it is a node of type
+     `FUNCTION_DECL' that describes the declaration of the function.
+     From this you can obtain the DECL_MACHINE_ATTRIBUTES of the
+     function.
+
+     FUNTYPE is a C variable whose value is a tree node that describes
+     the function in question.  Normally it is a node of type
+     `FUNCTION_TYPE' that describes the data type of the function.
+     From this it is possible to obtain the data types of the value and
+     arguments (if known).
+
+     When a call to a library function is being considered, FUNDECL
+     will contain an identifier node for the library function.  Thus, if
+     you need to distinguish among various library functions, you can
+     do so by their names.  Note that "library function" in this
+     context means a function used to perform arithmetic, whose name is
+     known specially in the compiler and was not mentioned in the C
+     code being compiled.
+
+     STACK-SIZE is the number of bytes of arguments passed on the
+     stack.  If a variable number of bytes is passed, it is zero, and
+     argument popping will always be the responsibility of the calling
+     function.
+
+     On the Vax, all functions always pop their arguments, so the
+     definition of this macro is STACK-SIZE.  On the 68000, using the
+     standard calling convention, no functions pop their arguments, so
+     the value of the macro is always 0 in this case.  But an
+     alternative calling convention is available in which functions
+     that take a fixed number of arguments pop them but other functions
+     (such as `printf') pop nothing (the caller pops all).  When this
+     convention is in use, FUNTYPE is examined to determine whether a
+     function takes a fixed number of arguments.
+
+
+File: gcc.info,  Node: Register Arguments,  Next: Scalar Return,  Prev: Stack Arguments,  Up: Stack and Calling
+
+Passing Arguments in Registers
+------------------------------
+
+   This section describes the macros which let you control how various
+types of arguments are passed in registers or how they are arranged in
+the stack.
+
+`FUNCTION_ARG (CUM, MODE, TYPE, NAMED)'
+     A C expression that controls whether a function argument is passed
+     in a register, and which register.
+
+     The arguments are CUM, which summarizes all the previous
+     arguments; MODE, the machine mode of the argument; TYPE, the data
+     type of the argument as a tree node or 0 if that is not known
+     (which happens for C support library functions); and NAMED, which
+     is 1 for an ordinary argument and 0 for nameless arguments that
+     correspond to `...' in the called function's prototype.
+
+     The value of the expression is usually either a `reg' RTX for the
+     hard register in which to pass the argument, or zero to pass the
+     argument on the stack.
+
+     For machines like the Vax and 68000, where normally all arguments
+     are pushed, zero suffices as a definition.
+
+     The value of the expression can also be a `parallel' RTX.  This is
+     used when an argument is passed in multiple locations.  The mode
+     of the of the `parallel' should be the mode of the entire
+     argument.  The `parallel' holds any number of `expr_list' pairs;
+     each one describes where part of the argument is passed.  In each
+     `expr_list', the first operand can be either a `reg' RTX for the
+     hard register in which to pass this part of the argument, or zero
+     to pass the argument on the stack.  If this operand is a `reg',
+     then the mode indicates how large this part of the argument is.
+     The second operand of the `expr_list' is a `const_int' which gives
+     the offset in bytes into the entire argument where this part
+     starts.
+
+     The usual way to make the ANSI library `stdarg.h' work on a machine
+     where some arguments are usually passed in registers, is to cause
+     nameless arguments to be passed on the stack instead.  This is done
+     by making `FUNCTION_ARG' return 0 whenever NAMED is 0.
+
+     You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the
+     definition of this macro to determine if this argument is of a
+     type that must be passed in the stack.  If `REG_PARM_STACK_SPACE'
+     is not defined and `FUNCTION_ARG' returns non-zero for such an
+     argument, the compiler will abort.  If `REG_PARM_STACK_SPACE' is
+     defined, the argument will be computed in the stack and then
+     loaded into a register.
+
+`FUNCTION_INCOMING_ARG (CUM, MODE, TYPE, NAMED)'
+     Define this macro if the target machine has "register windows", so
+     that the register in which a function sees an arguments is not
+     necessarily the same as the one in which the caller passed the
+     argument.
+
+     For such machines, `FUNCTION_ARG' computes the register in which
+     the caller passes the value, and `FUNCTION_INCOMING_ARG' should be
+     defined in a similar fashion to tell the function being called
+     where the arguments will arrive.
+
+     If `FUNCTION_INCOMING_ARG' is not defined, `FUNCTION_ARG' serves
+     both purposes.
+
+`FUNCTION_ARG_PARTIAL_NREGS (CUM, MODE, TYPE, NAMED)'
+     A C expression for the number of words, at the beginning of an
+     argument, must be put in registers.  The value must be zero for
+     arguments that are passed entirely in registers or that are
+     entirely pushed on the stack.
+
+     On some machines, certain arguments must be passed partially in
+     registers and partially in memory.  On these machines, typically
+     the first N words of arguments are passed in registers, and the
+     rest on the stack.  If a multi-word argument (a `double' or a
+     structure) crosses that boundary, its first few words must be
+     passed in registers and the rest must be pushed.  This macro tells
+     the compiler when this occurs, and how many of the words should go
+     in registers.
+
+     `FUNCTION_ARG' for these arguments should return the first
+     register to be used by the caller for this argument; likewise
+     `FUNCTION_INCOMING_ARG', for the called function.
+
+`FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED)'
+     A C expression that indicates when an argument must be passed by
+     reference.  If nonzero for an argument, a copy of that argument is
+     made in memory and a pointer to the argument is passed instead of
+     the argument itself.  The pointer is passed in whatever way is
+     appropriate for passing a pointer to that type.
+
+     On machines where `REG_PARM_STACK_SPACE' is not defined, a suitable
+     definition of this macro might be
+          #define FUNCTION_ARG_PASS_BY_REFERENCE\
+          (CUM, MODE, TYPE, NAMED)  \
+            MUST_PASS_IN_STACK (MODE, TYPE)
+
+`FUNCTION_ARG_CALLEE_COPIES (CUM, MODE, TYPE, NAMED)'
+     If defined, a C expression that indicates when it is the called
+     function's responsibility to make a copy of arguments passed by
+     invisible reference.  Normally, the caller makes a copy and passes
+     the address of the copy to the routine being called.  When
+     FUNCTION_ARG_CALLEE_COPIES is defined and is nonzero, the caller
+     does not make a copy.  Instead, it passes a pointer to the "live"
+     value.  The called function must not modify this value.  If it can
+     be determined that the value won't be modified, it need not make a
+     copy; otherwise a copy must be made.
+
+`CUMULATIVE_ARGS'
+     A C type for declaring a variable that is used as the first
+     argument of `FUNCTION_ARG' and other related values.  For some
+     target machines, the type `int' suffices and can hold the number
+     of bytes of argument so far.
+
+     There is no need to record in `CUMULATIVE_ARGS' anything about the
+     arguments that have been passed on the stack.  The compiler has
+     other variables to keep track of that.  For target machines on
+     which all arguments are passed on the stack, there is no need to
+     store anything in `CUMULATIVE_ARGS'; however, the data structure
+     must exist and should not be empty, so use `int'.
+
+`INIT_CUMULATIVE_ARGS (CUM, FNTYPE, LIBNAME, INDIRECT)'
+     A C statement (sans semicolon) for initializing the variable CUM
+     for the state at the beginning of the argument list.  The variable
+     has type `CUMULATIVE_ARGS'.  The value of FNTYPE is the tree node
+     for the data type of the function which will receive the args, or 0
+     if the args are to a compiler support library function.  The value
+     of INDIRECT is nonzero when processing an indirect call, for
+     example a call through a function pointer.  The value of INDIRECT
+     is zero for a call to an explicitly named function, a library
+     function call, or when `INIT_CUMULATIVE_ARGS' is used to find
+     arguments for the function being compiled.
+
+     When processing a call to a compiler support library function,
+     LIBNAME identifies which one.  It is a `symbol_ref' rtx which
+     contains the name of the function, as a string.  LIBNAME is 0 when
+     an ordinary C function call is being processed.  Thus, each time
+     this macro is called, either LIBNAME or FNTYPE is nonzero, but
+     never both of them at once.
+
+`INIT_CUMULATIVE_INCOMING_ARGS (CUM, FNTYPE, LIBNAME)'
+     Like `INIT_CUMULATIVE_ARGS' but overrides it for the purposes of
+     finding the arguments for the function being compiled.  If this
+     macro is undefined, `INIT_CUMULATIVE_ARGS' is used instead.
+
+     The value passed for LIBNAME is always 0, since library routines
+     with special calling conventions are never compiled with GNU CC.
+     The argument LIBNAME exists for symmetry with
+     `INIT_CUMULATIVE_ARGS'.
+
+`FUNCTION_ARG_ADVANCE (CUM, MODE, TYPE, NAMED)'
+     A C statement (sans semicolon) to update the summarizer variable
+     CUM to advance past an argument in the argument list.  The values
+     MODE, TYPE and NAMED describe that argument.  Once this is done,
+     the variable CUM is suitable for analyzing the *following*
+     argument with `FUNCTION_ARG', etc.
+
+     This macro need not do anything if the argument in question was
+     passed on the stack.  The compiler knows how to track the amount
+     of stack space used for arguments without any special help.
+
+`FUNCTION_ARG_PADDING (MODE, TYPE)'
+     If defined, a C expression which determines whether, and in which
+     direction, to pad out an argument with extra space.  The value
+     should be of type `enum direction': either `upward' to pad above
+     the argument, `downward' to pad below, or `none' to inhibit
+     padding.
+
+     The *amount* of padding is always just enough to reach the next
+     multiple of `FUNCTION_ARG_BOUNDARY'; this macro does not control
+     it.
+
+     This macro has a default definition which is right for most
+     systems.  For little-endian machines, the default is to pad
+     upward.  For big-endian machines, the default is to pad downward
+     for an argument of constant size shorter than an `int', and upward
+     otherwise.
+
+`FUNCTION_ARG_BOUNDARY (MODE, TYPE)'
+     If defined, a C expression that gives the alignment boundary, in
+     bits, of an argument with the specified mode and type.  If it is
+     not defined, `PARM_BOUNDARY' is used for all arguments.
+
+`FUNCTION_ARG_REGNO_P (REGNO)'
+     A C expression that is nonzero if REGNO is the number of a hard
+     register in which function arguments are sometimes passed.  This
+     does *not* include implicit arguments such as the static chain and
+     the structure-value address.  On many machines, no registers can be
+     used for this purpose since all function arguments are pushed on
+     the stack.
+
+
+File: gcc.info,  Node: Scalar Return,  Next: Aggregate Return,  Prev: Register Arguments,  Up: Stack and Calling
+
+How Scalar Function Values Are Returned
+---------------------------------------
+
+   This section discusses the macros that control returning scalars as
+values--values that can fit in registers.
+
+`TRADITIONAL_RETURN_FLOAT'
+     Define this macro if `-traditional' should not cause functions
+     declared to return `float' to convert the value to `double'.
+
+`FUNCTION_VALUE (VALTYPE, FUNC)'
+     A C expression to create an RTX representing the place where a
+     function returns a value of data type VALTYPE.  VALTYPE is a tree
+     node representing a data type.  Write `TYPE_MODE (VALTYPE)' to get
+     the machine mode used to represent that type.  On many machines,
+     only the mode is relevant.  (Actually, on most machines, scalar
+     values are returned in the same place regardless of mode).
+
+     The value of the expression is usually a `reg' RTX for the hard
+     register where the return value is stored.  The value can also be a
+     `parallel' RTX, if the return value is in multiple places.  See
+     `FUNCTION_ARG' for an explanation of the `parallel' form.
+
+     If `PROMOTE_FUNCTION_RETURN' is defined, you must apply the same
+     promotion rules specified in `PROMOTE_MODE' if VALTYPE is a scalar
+     type.
+
+     If the precise function being called is known, FUNC is a tree node
+     (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This
+     makes it possible to use a different value-returning convention
+     for specific functions when all their calls are known.
+
+     `FUNCTION_VALUE' is not used for return vales with aggregate data
+     types, because these are returned in another way.  See
+     `STRUCT_VALUE_REGNUM' and related macros, below.
+
+`FUNCTION_OUTGOING_VALUE (VALTYPE, FUNC)'
+     Define this macro if the target machine has "register windows" so
+     that the register in which a function returns its value is not the
+     same as the one in which the caller sees the value.
+
+     For such machines, `FUNCTION_VALUE' computes the register in which
+     the caller will see the value.  `FUNCTION_OUTGOING_VALUE' should be
+     defined in a similar fashion to tell the function where to put the
+     value.
+
+     If `FUNCTION_OUTGOING_VALUE' is not defined, `FUNCTION_VALUE'
+     serves both purposes.
+
+     `FUNCTION_OUTGOING_VALUE' is not used for return vales with
+     aggregate data types, because these are returned in another way.
+     See `STRUCT_VALUE_REGNUM' and related macros, below.
+
+`LIBCALL_VALUE (MODE)'
+     A C expression to create an RTX representing the place where a
+     library function returns a value of mode MODE.  If the precise
+     function being called is known, FUNC is a tree node
+     (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This
+     makes it possible to use a different value-returning convention
+     for specific functions when all their calls are known.
+
+     Note that "library function" in this context means a compiler
+     support routine, used to perform arithmetic, whose name is known
+     specially by the compiler and was not mentioned in the C code being
+     compiled.
+
+     The definition of `LIBRARY_VALUE' need not be concerned aggregate
+     data types, because none of the library functions returns such
+     types.
+
+`FUNCTION_VALUE_REGNO_P (REGNO)'
+     A C expression that is nonzero if REGNO is the number of a hard
+     register in which the values of called function may come back.
+
+     A register whose use for returning values is limited to serving as
+     the second of a pair (for a value of type `double', say) need not
+     be recognized by this macro.  So for most machines, this definition
+     suffices:
+
+          #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
+
+     If the machine has register windows, so that the caller and the
+     called function use different registers for the return value, this
+     macro should recognize only the caller's register numbers.
+
+`APPLY_RESULT_SIZE'
+     Define this macro if `untyped_call' and `untyped_return' need more
+     space than is implied by `FUNCTION_VALUE_REGNO_P' for saving and
+     restoring an arbitrary return value.
+
+
+File: gcc.info,  Node: Aggregate Return,  Next: Caller Saves,  Prev: Scalar Return,  Up: Stack and Calling
+
+How Large Values Are Returned
+-----------------------------
+
+   When a function value's mode is `BLKmode' (and in some other cases),
+the value is not returned according to `FUNCTION_VALUE' (*note Scalar
+Return::.).  Instead, the caller passes the address of a block of
+memory in which the value should be stored.  This address is called the
+"structure value address".
+
+   This section describes how to control returning structure values in
+memory.
+
+`RETURN_IN_MEMORY (TYPE)'
+     A C expression which can inhibit the returning of certain function
+     values in registers, based on the type of value.  A nonzero value
+     says to return the function value in memory, just as large
+     structures are always returned.  Here TYPE will be a C expression
+     of type `tree', representing the data type of the value.
+
+     Note that values of mode `BLKmode' must be explicitly handled by
+     this macro.  Also, the option `-fpcc-struct-return' takes effect
+     regardless of this macro.  On most systems, it is possible to
+     leave the macro undefined; this causes a default definition to be
+     used, whose value is the constant 1 for `BLKmode' values, and 0
+     otherwise.
+
+     Do not use this macro to indicate that structures and unions
+     should always be returned in memory.  You should instead use
+     `DEFAULT_PCC_STRUCT_RETURN' to indicate this.
+
+`DEFAULT_PCC_STRUCT_RETURN'
+     Define this macro to be 1 if all structure and union return values
+     must be in memory.  Since this results in slower code, this should
+     be defined only if needed for compatibility with other compilers
+     or with an ABI.  If you define this macro to be 0, then the
+     conventions used for structure and union return values are decided
+     by the `RETURN_IN_MEMORY' macro.
+
+     If not defined, this defaults to the value 1.
+
+`STRUCT_VALUE_REGNUM'
+     If the structure value address is passed in a register, then
+     `STRUCT_VALUE_REGNUM' should be the number of that register.
+
+`STRUCT_VALUE'
+     If the structure value address is not passed in a register, define
+     `STRUCT_VALUE' as an expression returning an RTX for the place
+     where the address is passed.  If it returns 0, the address is
+     passed as an "invisible" first argument.
+
+`STRUCT_VALUE_INCOMING_REGNUM'
+     On some architectures the place where the structure value address
+     is found by the called function is not the same place that the
+     caller put it.  This can be due to register windows, or it could
+     be because the function prologue moves it to a different place.
+
+     If the incoming location of the structure value address is in a
+     register, define this macro as the register number.
+
+`STRUCT_VALUE_INCOMING'
+     If the incoming location is not a register, then you should define
+     `STRUCT_VALUE_INCOMING' as an expression for an RTX for where the
+     called function should find the value.  If it should find the
+     value on the stack, define this to create a `mem' which refers to
+     the frame pointer.  A definition of 0 means that the address is
+     passed as an "invisible" first argument.
+
+`PCC_STATIC_STRUCT_RETURN'
+     Define this macro if the usual system convention on the target
+     machine for returning structures and unions is for the called
+     function to return the address of a static variable containing the
+     value.
+
+     Do not define this if the usual system convention is for the
+     caller to pass an address to the subroutine.
+
+     This macro has effect in `-fpcc-struct-return' mode, but it does
+     nothing when you use `-freg-struct-return' mode.
+
+
+File: gcc.info,  Node: Caller Saves,  Next: Function Entry,  Prev: Aggregate Return,  Up: Stack and Calling
+
+Caller-Saves Register Allocation
+--------------------------------
+
+   If you enable it, GNU CC can save registers around function calls.
+This makes it possible to use call-clobbered registers to hold
+variables that must live across calls.
+
+`DEFAULT_CALLER_SAVES'
+     Define this macro if function calls on the target machine do not
+     preserve any registers; in other words, if `CALL_USED_REGISTERS'
+     has 1 for all registers.  This macro enables `-fcaller-saves' by
+     default.  Eventually that option will be enabled by default on all
+     machines and both the option and this macro will be eliminated.
+
+`CALLER_SAVE_PROFITABLE (REFS, CALLS)'
+     A C expression to determine whether it is worthwhile to consider
+     placing a pseudo-register in a call-clobbered hard register and
+     saving and restoring it around each function call.  The expression
+     should be 1 when this is worth doing, and 0 otherwise.
+
+     If you don't define this macro, a default is used which is good on
+     most machines: `4 * CALLS < REFS'.
+
+
+File: gcc.info,  Node: Function Entry,  Next: Profiling,  Prev: Caller Saves,  Up: Stack and Calling
+
+Function Entry and Exit
+-----------------------
+
+   This section describes the macros that output function entry
+("prologue") and exit ("epilogue") code.
+
+`FUNCTION_PROLOGUE (FILE, SIZE)'
+     A C compound statement that outputs the assembler code for entry
+     to a function.  The prologue is responsible for setting up the
+     stack frame, initializing the frame pointer register, saving
+     registers that must be saved, and allocating SIZE additional bytes
+     of storage for the local variables.  SIZE is an integer.  FILE is
+     a stdio stream to which the assembler code should be output.
+
+     The label for the beginning of the function need not be output by
+     this macro.  That has already been done when the macro is run.
+
+     To determine which registers to save, the macro can refer to the
+     array `regs_ever_live': element R is nonzero if hard register R is
+     used anywhere within the function.  This implies the function
+     prologue should save register R, provided it is not one of the
+     call-used registers.  (`FUNCTION_EPILOGUE' must likewise use
+     `regs_ever_live'.)
+
+     On machines that have "register windows", the function entry code
+     does not save on the stack the registers that are in the windows,
+     even if they are supposed to be preserved by function calls;
+     instead it takes appropriate steps to "push" the register stack,
+     if any non-call-used registers are used in the function.
+
+     On machines where functions may or may not have frame-pointers, the
+     function entry code must vary accordingly; it must set up the frame
+     pointer if one is wanted, and not otherwise.  To determine whether
+     a frame pointer is in wanted, the macro can refer to the variable
+     `frame_pointer_needed'.  The variable's value will be 1 at run
+     time in a function that needs a frame pointer.  *Note
+     Elimination::.
+
+     The function entry code is responsible for allocating any stack
+     space required for the function.  This stack space consists of the
+     regions listed below.  In most cases, these regions are allocated
+     in the order listed, with the last listed region closest to the
+     top of the stack (the lowest address if `STACK_GROWS_DOWNWARD' is
+     defined, and the highest address if it is not defined).  You can
+     use a different order for a machine if doing so is more convenient
+     or required for compatibility reasons.  Except in cases where
+     required by standard or by a debugger, there is no reason why the
+     stack layout used by GCC need agree with that used by other
+     compilers for a machine.
+
+        * A region of `current_function_pretend_args_size' bytes of
+          uninitialized space just underneath the first argument
+          arriving on the stack.  (This may not be at the very start of
+          the allocated stack region if the calling sequence has pushed
+          anything else since pushing the stack arguments.  But
+          usually, on such machines, nothing else has been pushed yet,
+          because the function prologue itself does all the pushing.)
+          This region is used on machines where an argument may be
+          passed partly in registers and partly in memory, and, in some
+          cases to support the features in `varargs.h' and `stdargs.h'.
+
+        * An area of memory used to save certain registers used by the
+          function.  The size of this area, which may also include
+          space for such things as the return address and pointers to
+          previous stack frames, is machine-specific and usually
+          depends on which registers have been used in the function.
+          Machines with register windows often do not require a save
+          area.
+
+        * A region of at least SIZE bytes, possibly rounded up to an
+          allocation boundary, to contain the local variables of the
+          function.  On some machines, this region and the save area
+          may occur in the opposite order, with the save area closer to
+          the top of the stack.
+
+        * Optionally, when `ACCUMULATE_OUTGOING_ARGS' is defined, a
+          region of `current_function_outgoing_args_size' bytes to be
+          used for outgoing argument lists of the function.  *Note
+          Stack Arguments::.
+
+     Normally, it is necessary for the macros `FUNCTION_PROLOGUE' and
+     `FUNCTION_EPILOGUE' to treat leaf functions specially.  The C
+     variable `leaf_function' is nonzero for such a function.
+
+`EXIT_IGNORE_STACK'
+     Define this macro as a C expression that is nonzero if the return
+     instruction or the function epilogue ignores the value of the stack
+     pointer; in other words, if it is safe to delete an instruction to
+     adjust the stack pointer before a return from the function.
+
+     Note that this macro's value is relevant only for functions for
+     which frame pointers are maintained.  It is never safe to delete a
+     final stack adjustment in a function that has no frame pointer,
+     and the compiler knows this regardless of `EXIT_IGNORE_STACK'.
+
+`EPILOGUE_USES (REGNO)'
+     Define this macro as a C expression that is nonzero for registers
+     are used by the epilogue or the `return' pattern.  The stack and
+     frame pointer registers are already be assumed to be used as
+     needed.
+
+`FUNCTION_EPILOGUE (FILE, SIZE)'
+     A C compound statement that outputs the assembler code for exit
+     from a function.  The epilogue is responsible for restoring the
+     saved registers and stack pointer to their values when the
+     function was called, and returning control to the caller.  This
+     macro takes the same arguments as the macro `FUNCTION_PROLOGUE',
+     and the registers to restore are determined from `regs_ever_live'
+     and `CALL_USED_REGISTERS' in the same way.
+
+     On some machines, there is a single instruction that does all the
+     work of returning from the function.  On these machines, give that
+     instruction the name `return' and do not define the macro
+     `FUNCTION_EPILOGUE' at all.
+
+     Do not define a pattern named `return' if you want the
+     `FUNCTION_EPILOGUE' to be used.  If you want the target switches
+     to control whether return instructions or epilogues are used,
+     define a `return' pattern with a validity condition that tests the
+     target switches appropriately.  If the `return' pattern's validity
+     condition is false, epilogues will be used.
+
+     On machines where functions may or may not have frame-pointers, the
+     function exit code must vary accordingly.  Sometimes the code for
+     these two cases is completely different.  To determine whether a
+     frame pointer is wanted, the macro can refer to the variable
+     `frame_pointer_needed'.  The variable's value will be 1 when
+     compiling a function that needs a frame pointer.
+
+     Normally, `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' must treat
+     leaf functions specially.  The C variable `leaf_function' is
+     nonzero for such a function.  *Note Leaf Functions::.
+
+     On some machines, some functions pop their arguments on exit while
+     others leave that for the caller to do.  For example, the 68020
+     when given `-mrtd' pops arguments in functions that take a fixed
+     number of arguments.
+
+     Your definition of the macro `RETURN_POPS_ARGS' decides which
+     functions pop their own arguments.  `FUNCTION_EPILOGUE' needs to
+     know what was decided.  The variable that is called
+     `current_function_pops_args' is the number of bytes of its
+     arguments that a function should pop.  *Note Scalar Return::.
+
+`DELAY_SLOTS_FOR_EPILOGUE'
+     Define this macro if the function epilogue contains delay slots to
+     which instructions from the rest of the function can be "moved".
+     The definition should be a C expression whose value is an integer
+     representing the number of delay slots there.
+
+`ELIGIBLE_FOR_EPILOGUE_DELAY (INSN, N)'
+     A C expression that returns 1 if INSN can be placed in delay slot
+     number N of the epilogue.
+
+     The argument N is an integer which identifies the delay slot now
+     being considered (since different slots may have different rules of
+     eligibility).  It is never negative and is always less than the
+     number of epilogue delay slots (what `DELAY_SLOTS_FOR_EPILOGUE'
+     returns).  If you reject a particular insn for a given delay slot,
+     in principle, it may be reconsidered for a subsequent delay slot.
+     Also, other insns may (at least in principle) be considered for
+     the so far unfilled delay slot.
+
+     The insns accepted to fill the epilogue delay slots are put in an
+     RTL list made with `insn_list' objects, stored in the variable
+     `current_function_epilogue_delay_list'.  The insn for the first
+     delay slot comes first in the list.  Your definition of the macro
+     `FUNCTION_EPILOGUE' should fill the delay slots by outputting the
+     insns in this list, usually by calling `final_scan_insn'.
+
+     You need not define this macro if you did not define
+     `DELAY_SLOTS_FOR_EPILOGUE'.
+
+`ASM_OUTPUT_MI_THUNK (FILE, THUNK_FNDECL, DELTA, FUNCTION)'
+     A C compound statement that outputs the assembler code for a thunk
+     function, used to implement C++ virtual function calls with
+     multiple inheritance.  The thunk acts as a wrapper around a
+     virtual function, adjusting the implicit object parameter before
+     handing control off to the real function.
+
+     First, emit code to add the integer DELTA to the location that
+     contains the incoming first argument.  Assume that this argument
+     contains a pointer, and is the one used to pass the `this' pointer
+     in C++.  This is the incoming argument *before* the function
+     prologue, e.g. `%o0' on a sparc.  The addition must preserve the
+     values of all other incoming arguments.
+
+     After the addition, emit code to jump to FUNCTION, which is a
+     `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does
+     not touch the return address.  Hence returning from FUNCTION will
+     return to whoever called the current `thunk'.
+
+     The effect must be as if FUNCTION had been called directly with
+     the adjusted first argument.  This macro is responsible for
+     emitting all of the code for a thunk function; `FUNCTION_PROLOGUE'
+     and `FUNCTION_EPILOGUE' are not invoked.
+
+     The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already
+     been extracted from it.)  It might possibly be useful on some
+     targets, but probably not.
+
+     If you do not define this macro, the target-independent code in
+     the C++ frontend will generate a less efficient heavyweight thunk
+     that calls FUNCTION instead of jumping to it.  The generic
+     approach does not support varargs.
+
