@@ -1,3 +1,8 @@
+2005-01-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19667
+	* g++.dg/template/crash32.C: New test.
+
 2005-01-28  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/16558

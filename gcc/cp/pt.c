@@ -3236,6 +3236,13 @@ redeclare_class_template (tree type, tree parms)
        type.  */
     return;
 
+  if (!parms)
+    {
+      error ("template specifiers not specified in declaration of %qD",
+	     tmpl);
+      return;
+    }
+
   parms = INNERMOST_TEMPLATE_PARMS (parms);
   tmpl_parms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
 
