@@ -1,3 +1,7 @@
+Thu Nov  6 11:28:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (emit_thunk): Don't let the backend defer generic thunks.
+
 Wed Nov  5 23:52:50 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (call_eh_info): Split out...
