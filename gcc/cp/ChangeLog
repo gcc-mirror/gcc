@@ -1,3 +1,9 @@
+2004-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13294
+	* pt.c (maybe_process_partial_specialization): Remember the
+	context of a specialization.
+
 2004-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14724
@@ -157,6 +163,7 @@
 	PR c++/14452
 	* tree.c (stabilize_init): Return whether or not it worked.
 	* init.c (build_new_1): If not, use a sentry.
+	* cp-tree.h: Adjust prototype.
 
 2004-03-09  Nathan Sidwell  <nathan@garibaldi.home>
 
