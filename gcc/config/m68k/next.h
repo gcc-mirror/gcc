@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running NeXTSTEP
-   Copyright (C) 1989, 90, 91, 92, 93, 94, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-94, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68k.h"
 #include "nextstep.h"
-#include "machmode.h"
-#include "real.h"
 
 /* See m68k.h.  0407 means 68040 (or 68030 or 68020, with 68881/2).  */
 
