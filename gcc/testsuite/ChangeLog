@@ -1,3 +1,8 @@
+2004-07-24  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 16684
+	* gcc.dg/Wredundant-decls-1.c: New test case.
+
 2004-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* README.compat: Add RUN_ALL_COMPAT_TESTS documentation.
@@ -58,7 +63,7 @@
 
 2004-07-22  David Billinghurst (David.Billinghurst@riotinto.com)
 
-	* gfortran.dg/g77/970625-2.f Copy from g77.f-torture/execute. 
+	* gfortran.dg/g77/970625-2.f Copy from g77.f-torture/execute.
 	Add dg-run directive.  Declare variables as required.
 	* gfortran.dg/g77/README: Update
 
@@ -112,7 +117,7 @@
 2004-07-21  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	Copy cases from g77.f-torture/execute and add dg-run
-	directive.  Other changes as noted.    
+	directive.  Other changes as noted.
 	* gfortran.dg/g77/13037.f
 	* gfortran.dg/g77/1832.f
 	* gfortran.dg/g77/19981119-0.f
@@ -184,7 +189,7 @@
 	g++.dg/parse/casting-operator2.C, g++.dg/parse/dtor3.C,
 	g++.dg/parse/typename6.C, g++.dg/template/dependent-expr4.C,
 	g++.dg/template/nontype3.C: Remove trailing CR from tests.
-	
+
 2004-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16623
@@ -298,7 +303,7 @@
 
 	PR c++/16518
 	* g++.dg/parse/mutable1.C: New test.
-	
+
 2004-07-13  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16443
@@ -312,7 +317,7 @@
 2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/README: New file
-	* gfortran.dg/g77/19981216-0.f:  Copy from 
+	* gfortran.dg/g77/19981216-0.f:  Copy from
 	g77.f-torture/noncompile.  Add "dg-do compile" and
 	dg-error as required.
 	* gfortran.dg/g77/19990218-1.f: Likewise
@@ -334,12 +339,12 @@
 	* gfortran.dg/g77/970125-0.f: Add dg-excess-errors.
 	* gfortran.dg/g77/980519-2.f: Declare hd_S,hd_Z,hd_T
 	* gfortran.dg/g77/990115-1.f: Declare RANK as INTEGER
-	* gfortran.dg/g77/alpha1.f: Separate declaration and DATA 
-	statement to conform to standard.  Append alpha1.x for reference. 
+	* gfortran.dg/g77/alpha1.f: Separate declaration and DATA
+	statement to conform to standard.  Append alpha1.x for reference.
 	* gfortran.dg/g77/xformat.f: Add dg-warning
 
 2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
- 
+
 	* gfortran.dg/g77/cpp.F: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
 	* gfortran.dg/g77/cpp2.F: Likewise
@@ -361,7 +366,7 @@
 	* g++.old-deja/g++.ns/new1.C: Remove (ill-formed).
 
 2004-07-12  David Billinghurst <David.Billinghurst@riotinto.com>
- 
+
 	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
 	* gfortran.dg/g77/13060.f: Likewise
@@ -428,14 +433,14 @@
 
 	PR fortran/17574
 	* gfortran.dg/pr15754.f90: New test.
-	
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR tree-optimization/16437
 	* gcc.c-torture/execute/bitfld-4.c: New test.
 
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-	
+
 	* gfortran.fortran-torture/execute/common_2.f90: Add check for
 	access to common var from module.
 
@@ -465,7 +470,7 @@
 	* gfortran.dg/g77/pr9258.f: Likewise.  Add dg-warning lines.
 
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-	
+
 	* gfortran.fortran-torture/execute/module_init_1.f90: Fix test.
 
 2004-07-10 Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
@@ -484,7 +489,7 @@
 	* gcc.c-torture/compile/20040709-1.c: New.
 
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-	
+
 	PR fortran/14077
 	* gfortran.fortran-torture/execute/module_init_1.f90: New test.
 
