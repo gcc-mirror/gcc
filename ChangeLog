@@ -1,3 +1,7 @@
+2002-11-05  Nick Clifton  <nickc@redhat.com>
+
+	* MAINTAINERS: Fix typo in my email address.
+
 2002-11-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	* MAINTAINERS (Write After Approval): Remove myself.
