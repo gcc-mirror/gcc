@@ -38,7 +38,7 @@
 	* config/sh/crt1.asm (start_l): `__SH4_SINGLE_ONLY__' was missing
 	the trailing `__'.
 
-2000-12-28    <lehotsky@tiac.net>
+2000-12-28  Alan Lehotsky  <lehotsky@tiac.net>
 
 	* expmed.c (store_bit_field): Correctly compute smallest mode that
 	is sufficient to contain all bits we are storing.
