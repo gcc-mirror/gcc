@@ -35,7 +35,7 @@ AC_CANONICAL_SYSTEM
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
-AM_INIT_AUTOMAKE(zlib, 1.1.3)
+AM_INIT_AUTOMAKE(zlib, 1.1.4)
 
 AM_MAINTAINER_MODE
 
