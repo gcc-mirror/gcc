@@ -1,3 +1,7 @@
+2001-09-05  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/method-2.m: New.
+	
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4203
