@@ -2980,6 +2980,7 @@ memory was a critical resource.  If you have some complex calculation,
 you may want it to be folded if it involves constants, but need to call
 a function if it does not.  For example:
 
+@smallexample
 #define Scale_Value(X)  \
   (__builtin_constant_p (X) ? ((X) * SCALE + OFFSET) : Scale (X))
 @end smallexample
