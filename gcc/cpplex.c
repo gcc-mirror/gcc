@@ -55,11 +55,8 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 
 #define TOKEN_SPELL(token) (token_spellings[(token)->type].category)
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
-#define BACKUP() do {buffer->cur = buffer->backup_to;} while (0)
 
 static void add_line_note PARAMS ((cpp_buffer *, const uchar *, unsigned int));
-static cppchar_t get_effective_char PARAMS ((cpp_reader *));
-
 static int skip_line_comment PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *));
@@ -246,24 +243,11 @@ _cpp_process_line_notes (pfile, in_comment)
     }
 }
 
-/* Obtain the next character, after trigraph conversion and skipping
-   an arbitrarily long string of escaped newlines.  The common case of
-   no trigraphs or escaped newlines falls through quickly.  On return,
-   buffer->backup_to points to where to return to if the character is
-   not to be processed.  */
-static cppchar_t
-get_effective_char (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *buffer = pfile->buffer;
-
-  buffer->backup_to = buffer->cur;
-  return *buffer->cur++;
-}
-
 /* Skip a C-style block comment.  We find the end of the comment by
    seeing if an asterisk is before every '/' we encounter.  Returns
-   nonzero if comment terminated by EOF, zero otherwise.  */
+   nonzero if comment terminated by EOF, zero otherwise.
+
+   Buffer->cur points to the initial asterisk of the comment.  */
 bool
 _cpp_skip_block_comment (pfile)
      cpp_reader *pfile;
@@ -271,6 +255,7 @@ _cpp_skip_block_comment (pfile)
   cpp_buffer *buffer = pfile->buffer;
   cppchar_t c;
 
+  buffer->cur++;
   if (*buffer->cur == '/')
     buffer->cur++;
 
@@ -381,7 +366,7 @@ static bool
 continues_identifier_p (pfile)
      cpp_reader *pfile;
 {
-  if (*pfile->buffer->cur != '$')
+  if (*pfile->buffer->cur != '$' || !CPP_OPTION (pfile, dollars_in_ident))
     return false;
 
   if (CPP_PEDANTIC (pfile) && !pfile->state.skipping && !pfile->warned_dollar)
@@ -492,8 +477,7 @@ lex_string (pfile, token)
     {
       cppchar_t c = *buffer->cur++;
 
-      /* In #include-style directives, terminators are not escapable.
-	 \n can follow the '\\' if the file's last byte is '\\'.  */
+      /* In #include-style directives, terminators are not escapable.  */
       if (c == '\\' && !pfile->state.angled_headers && *buffer->cur != '\n')
 	buffer->cur++;
       else if (c == terminator || c == '\n')
@@ -728,16 +712,14 @@ _cpp_get_fresh_line (pfile)
     }
 }
 
-#define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)	\
-  do {						\
-    if (get_effective_char (pfile) == CHAR)	\
-      result->type = THEN_TYPE;			\
-    else					\
-      {						\
-        BACKUP ();				\
-        result->type = ELSE_TYPE;		\
-      }						\
-  } while (0)
+#define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)		\
+  do							\
+    {							\
+      result->type = ELSE_TYPE;				\
+      if (*buffer->cur == CHAR)				\
+	buffer->cur++, result->type = THEN_TYPE;	\
+    }							\
+  while (0)
 
 /* Lex a token into pfile->cur_token, which is also incremented, to
    get diagnostics pointing to the correct location.
@@ -853,8 +835,8 @@ _cpp_lex_direct (pfile)
     case '/':
       /* A potential block or line comment.  */
       comment_start = buffer->cur;
-      c = get_effective_char (pfile);
-
+      c = *buffer->cur;
+      
       if (c == '*')
 	{
 	  if (_cpp_skip_block_comment (pfile))
@@ -880,12 +862,12 @@ _cpp_lex_direct (pfile)
 	}
       else if (c == '=')
 	{
+	  buffer->cur++;
 	  result->type = CPP_DIV_EQ;
 	  break;
 	}
       else
 	{
-	  BACKUP ();
 	  result->type = CPP_DIV;
 	  break;
 	}
@@ -908,178 +890,136 @@ _cpp_lex_direct (pfile)
 	  break;
 	}
 
-      c = get_effective_char (pfile);
-      if (c == '=')
-	result->type = CPP_LESS_EQ;
-      else if (c == '<')
-	IF_NEXT_IS ('=', CPP_LSHIFT_EQ, CPP_LSHIFT);
-      else if (c == '?' && CPP_OPTION (pfile, cplusplus))
-	IF_NEXT_IS ('=', CPP_MIN_EQ, CPP_MIN);
-      else if (c == ':' && CPP_OPTION (pfile, digraphs))
+      result->type = CPP_LESS;
+      if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_LESS_EQ;
+      else if (*buffer->cur == '<')
 	{
-	  result->type = CPP_OPEN_SQUARE;
-	  result->flags |= DIGRAPH;
+	  buffer->cur++;
+	  IF_NEXT_IS ('=', CPP_LSHIFT_EQ, CPP_LSHIFT);
 	}
-      else if (c == '%' && CPP_OPTION (pfile, digraphs))
+      else if (*buffer->cur == '?' && CPP_OPTION (pfile, cplusplus))
 	{
-	  result->type = CPP_OPEN_BRACE;
-	  result->flags |= DIGRAPH;
+	  buffer->cur++;
+	  IF_NEXT_IS ('=', CPP_MIN_EQ, CPP_MIN);
 	}
-      else
+      else if (CPP_OPTION (pfile, digraphs))
 	{
-	  BACKUP ();
-	  result->type = CPP_LESS;
+	  if (*buffer->cur == ':')
+	    {
+	      buffer->cur++;
+	      result->flags |= DIGRAPH;
+	      result->type = CPP_OPEN_SQUARE;
+	    }
+	  else if (*buffer->cur == '%')
+	    {
+	      buffer->cur++;
+	      result->flags |= DIGRAPH;
+	      result->type = CPP_OPEN_BRACE;
+	    }
 	}
       break;
 
     case '>':
-      c = get_effective_char (pfile);
-      if (c == '=')
-	result->type = CPP_GREATER_EQ;
-      else if (c == '>')
-	IF_NEXT_IS ('=', CPP_RSHIFT_EQ, CPP_RSHIFT);
-      else if (c == '?' && CPP_OPTION (pfile, cplusplus))
-	IF_NEXT_IS ('=', CPP_MAX_EQ, CPP_MAX);
-      else
+      result->type = CPP_GREATER;
+      if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_GREATER_EQ;
+      else if (*buffer->cur == '>')
 	{
-	  BACKUP ();
-	  result->type = CPP_GREATER;
+	  buffer->cur++;
+	  IF_NEXT_IS ('=', CPP_RSHIFT_EQ, CPP_RSHIFT);
+	}
+      else if (*buffer->cur == '?' && CPP_OPTION (pfile, cplusplus))
+	{
+	  buffer->cur++;
+	  IF_NEXT_IS ('=', CPP_MAX_EQ, CPP_MAX);
 	}
       break;
 
     case '%':
-      c = get_effective_char (pfile);
-      if (c == '=')
-	result->type = CPP_MOD_EQ;
-      else if (CPP_OPTION (pfile, digraphs) && c == ':')
+      result->type = CPP_MOD;
+      if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_MOD_EQ;
+      else if (CPP_OPTION (pfile, digraphs))
 	{
-	  result->flags |= DIGRAPH;
-	  result->type = CPP_HASH;
-	  if (get_effective_char (pfile) == '%')
+	  if (*buffer->cur == ':')
 	    {
-	      const unsigned char *pos = buffer->cur;
-
-	      if (get_effective_char (pfile) == ':')
-		result->type = CPP_PASTE;
-	      else
-		buffer->cur = pos - 1;
+	      buffer->cur++;
+	      result->flags |= DIGRAPH;
+	      result->type = CPP_HASH;
+	      if (*buffer->cur == '%' && buffer->cur[1] == ':')
+		buffer->cur += 2, result->type = CPP_PASTE;
 	    }
-	  else
-	    BACKUP ();
-	}
-      else if (CPP_OPTION (pfile, digraphs) && c == '>')
-	{
-	  result->flags |= DIGRAPH;
-	  result->type = CPP_CLOSE_BRACE;
-	}
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_MOD;
+	  else if (*buffer->cur == '>')
+	    {
+	      buffer->cur++;
+	      result->flags |= DIGRAPH;
+	      result->type = CPP_CLOSE_BRACE;
+	    }
 	}
       break;
 
     case '.':
       result->type = CPP_DOT;
-      c = get_effective_char (pfile);
-      if (c == '.')
+      if (ISDIGIT (*buffer->cur))
 	{
-	  const unsigned char *pos = buffer->cur;
-
-	  if (get_effective_char (pfile) == '.')
-	    result->type = CPP_ELLIPSIS;
-	  else
-	    buffer->cur = pos - 1;
-	}
-      /* All known character sets have 0...9 contiguous.  */
-      else if (ISDIGIT (c))
-	{
-	  buffer->cur--;
 	  result->type = CPP_NUMBER;
 	  lex_number (pfile, &result->val.str);
 	}
-      else if (c == '*' && CPP_OPTION (pfile, cplusplus))
-	result->type = CPP_DOT_STAR;
-      else
-	BACKUP ();
+      else if (*buffer->cur == '.' && buffer->cur[1] == '.')
+	buffer->cur += 2, result->type = CPP_ELLIPSIS;
+      else if (*buffer->cur == '*' && CPP_OPTION (pfile, cplusplus))
+	buffer->cur++, result->type = CPP_DOT_STAR;
       break;
 
     case '+':
-      c = get_effective_char (pfile);
-      if (c == '+')
-	result->type = CPP_PLUS_PLUS;
-      else if (c == '=')
-	result->type = CPP_PLUS_EQ;
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_PLUS;
-	}
+      result->type = CPP_PLUS;
+      if (*buffer->cur == '+')
+	buffer->cur++, result->type = CPP_PLUS_PLUS;
+      else if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_PLUS_EQ;
       break;
 
     case '-':
-      c = get_effective_char (pfile);
-      if (c == '>')
+      result->type = CPP_MINUS;
+      if (*buffer->cur == '>')
 	{
+	  buffer->cur++;
 	  result->type = CPP_DEREF;
-	  if (CPP_OPTION (pfile, cplusplus))
-	    {
-	      if (get_effective_char (pfile) == '*')
-		result->type = CPP_DEREF_STAR;
-	      else
-		BACKUP ();
-	    }
+	  if (*buffer->cur == '*' && CPP_OPTION (pfile, cplusplus))
+	    buffer->cur++, result->type = CPP_DEREF_STAR;
 	}
-      else if (c == '-')
-	result->type = CPP_MINUS_MINUS;
-      else if (c == '=')
-	result->type = CPP_MINUS_EQ;
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_MINUS;
-	}
+      else if (*buffer->cur == '-')
+	buffer->cur++, result->type = CPP_MINUS_MINUS;
+      else if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_MINUS_EQ;
       break;
 
     case '&':
-      c = get_effective_char (pfile);
-      if (c == '&')
-	result->type = CPP_AND_AND;
-      else if (c == '=')
-	result->type = CPP_AND_EQ;
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_AND;
-	}
+      result->type = CPP_AND;
+      if (*buffer->cur == '&')
+	buffer->cur++, result->type = CPP_AND_AND;
+      else if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_AND_EQ;
       break;
 
     case '|':
-      c = get_effective_char (pfile);
-      if (c == '|')
-	result->type = CPP_OR_OR;
-      else if (c == '=')
-	result->type = CPP_OR_EQ;
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_OR;
-	}
+      result->type = CPP_OR;
+      if (*buffer->cur == '|')
+	buffer->cur++, result->type = CPP_OR_OR;
+      else if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_OR_EQ;
       break;
 
     case ':':
-      c = get_effective_char (pfile);
-      if (c == ':' && CPP_OPTION (pfile, cplusplus))
-	result->type = CPP_SCOPE;
-      else if (c == '>' && CPP_OPTION (pfile, digraphs))
+      result->type = CPP_COLON;
+      if (*buffer->cur == ':' && CPP_OPTION (pfile, cplusplus))
+	buffer->cur++, result->type = CPP_SCOPE;
+      else if (*buffer->cur == '>' && CPP_OPTION (pfile, digraphs))
 	{
+	  buffer->cur++;
 	  result->flags |= DIGRAPH;
 	  result->type = CPP_CLOSE_SQUARE;
-	}
-      else
-	{
-	  BACKUP ();
-	  result->type = CPP_COLON;
 	}
       break;
 

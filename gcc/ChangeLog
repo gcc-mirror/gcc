@@ -1,3 +1,12 @@
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpphash.h (struct cpp_buffer): Remove backup_to.
+	* cpplex.c (BACKUP, get_effective_char): Die.
+	(_cpp_skip_block_comment): Assume '*' is location on entry.
+	(continues_identifier_p): Respect -fno-dollars-in-identifiers.
+	(IF_NEXT_IS): Update.
+	(_cpp_lex_direct): Don't use backup_to; look ahead directly.
+
 2003-04-19  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* README.Portability: Move to a new section and obsolete K+R
