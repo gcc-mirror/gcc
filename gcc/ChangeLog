@@ -1,3 +1,9 @@
+2004-01-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (DWARF2_FRAME_REG_OUT): Define.
+	* dwarf2out.c (output_cfi): Map regs using DWARF2_FRAME_REG_OUT.
+	* doc/tm.texi (DWARF_FRAME_REGNUM, DWARF2_FRAME_REG_OUT): Document.
+
 2004-01-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* alias.c (new_alias_set): Mark last_alias_set for PCH.
