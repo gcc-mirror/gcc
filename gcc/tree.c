@@ -1828,10 +1828,28 @@ staticp (arg)
   return 0;
 }
 
-/* This should be applied to any node which may be used in more than one place,
-   but must be evaluated only once.  Normally, the code generator would
-   reevaluate the node each time; this forces it to compute it once and save
-   the result.  This is done by encapsulating the node in a SAVE_EXPR.  */
+/* Wrap a SAVE_EXPR around EXPR, if appropriate.
+   Do this to any expression which may be used in more than one place,
+   but must be evaluated only once.
+
+   Normally, expand_expr would reevaluate the expression each time.
+   Calling save_expr produces something that is evaluated and recorded
+   the first time expand_expr is called on it.  Subsequent calls to
+   expand_expr just reuse the recorded value.
+
+   The call to expand_expr that generates code that actually computes
+   the value is the first call *at compile time*.  Subsequent calls
+   *at compile time* generate code to use the saved value.
+   This produces correct result provided that *at run time* control
+   always flows through the insns made by the first expand_expr
+   before reaching the other places where the save_expr was evaluated.
+   You, the caller of save_expr, must make sure this is so.
+
+   Constants, and certain read-only nodes, are returned with no
+   SAVE_EXPR because that is safe.  Expressions containing placeholders
+   are not touched.  (Kenner, please add a cross reference to where
+   placeholders are explained, so people can learn the basics for
+   understanding this.)  */
 
 tree
 save_expr (expr)
