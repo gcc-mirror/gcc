@@ -1313,60 +1313,60 @@ ret_cond_branch (x, len, reverse)
     {
     case GT:
       if (cc_prev_status.flags & CC_OVERFLOW_UNUSABLE)
-	return (len == 1 ? (AS1 (breq,_PC_+2) CR_TAB
+	return (len == 1 ? (AS1 (breq,.+2) CR_TAB
 			    AS1 (brpl,%0)) :
-		len == 2 ? (AS1 (breq,_PC_+4) CR_TAB
-			    AS1 (brmi,_PC_+2) CR_TAB
+		len == 2 ? (AS1 (breq,.+4) CR_TAB
+			    AS1 (brmi,.+2) CR_TAB
 			    AS1 (rjmp,%0)) :
-		(AS1 (breq,_PC_+6) CR_TAB
-		 AS1 (brmi,_PC_+4) CR_TAB
+		(AS1 (breq,.+6) CR_TAB
+		 AS1 (brmi,.+4) CR_TAB
 		 AS1 (jmp,%0)));
 	  
       else
-	return (len == 1 ? (AS1 (breq,_PC_+2) CR_TAB
+	return (len == 1 ? (AS1 (breq,.+2) CR_TAB
 			    AS1 (brge,%0)) :
-		len == 2 ? (AS1 (breq,_PC_+4) CR_TAB
-			    AS1 (brlt,_PC_+2) CR_TAB
+		len == 2 ? (AS1 (breq,.+4) CR_TAB
+			    AS1 (brlt,.+2) CR_TAB
 			    AS1 (rjmp,%0)) :
-		(AS1 (breq,_PC_+6) CR_TAB
-		 AS1 (brlt,_PC_+4) CR_TAB
+		(AS1 (breq,.+6) CR_TAB
+		 AS1 (brlt,.+4) CR_TAB
 		 AS1 (jmp,%0)));
     case GTU:
-      return (len == 1 ? (AS1 (breq,_PC_+2) CR_TAB
+      return (len == 1 ? (AS1 (breq,.+2) CR_TAB
                           AS1 (brsh,%0)) :
-              len == 2 ? (AS1 (breq,_PC_+4) CR_TAB
-                          AS1 (brlo,_PC_+2) CR_TAB
+              len == 2 ? (AS1 (breq,.+4) CR_TAB
+                          AS1 (brlo,.+2) CR_TAB
                           AS1 (rjmp,%0)) :
-              (AS1 (breq,_PC_+6) CR_TAB
-               AS1 (brlo,_PC_+4) CR_TAB
+              (AS1 (breq,.+6) CR_TAB
+               AS1 (brlo,.+4) CR_TAB
                AS1 (jmp,%0)));
     case LE:
       if (cc_prev_status.flags & CC_OVERFLOW_UNUSABLE)
 	return (len == 1 ? (AS1 (breq,%0) CR_TAB
 			    AS1 (brmi,%0)) :
-		len == 2 ? (AS1 (breq,_PC_+2) CR_TAB
-			    AS1 (brpl,_PC_+2) CR_TAB
+		len == 2 ? (AS1 (breq,.+2) CR_TAB
+			    AS1 (brpl,.+2) CR_TAB
 			    AS1 (rjmp,%0)) :
-		(AS1 (breq,_PC_+2) CR_TAB
-		 AS1 (brpl,_PC_+4) CR_TAB
+		(AS1 (breq,.+2) CR_TAB
+		 AS1 (brpl,.+4) CR_TAB
 		 AS1 (jmp,%0)));
       else
 	return (len == 1 ? (AS1 (breq,%0) CR_TAB
 			    AS1 (brlt,%0)) :
-		len == 2 ? (AS1 (breq,_PC_+2) CR_TAB
-			    AS1 (brge,_PC_+2) CR_TAB
+		len == 2 ? (AS1 (breq,.+2) CR_TAB
+			    AS1 (brge,.+2) CR_TAB
 			    AS1 (rjmp,%0)) :
-		(AS1 (breq,_PC_+2) CR_TAB
-		 AS1 (brge,_PC_+4) CR_TAB
+		(AS1 (breq,.+2) CR_TAB
+		 AS1 (brge,.+4) CR_TAB
 		 AS1 (jmp,%0)));
     case LEU:
       return (len == 1 ? (AS1 (breq,%0) CR_TAB
                           AS1 (brlo,%0)) :
-              len == 2 ? (AS1 (breq,_PC_+2) CR_TAB
-                          AS1 (brsh,_PC_+2) CR_TAB
+              len == 2 ? (AS1 (breq,.+2) CR_TAB
+                          AS1 (brsh,.+2) CR_TAB
 			  AS1 (rjmp,%0)) :
-              (AS1 (breq,_PC_+2) CR_TAB
-               AS1 (brsh,_PC_+4) CR_TAB
+              (AS1 (breq,.+2) CR_TAB
+               AS1 (brsh,.+4) CR_TAB
 	       AS1 (jmp,%0)));
     default:
       if (reverse)
@@ -1376,10 +1376,10 @@ ret_cond_branch (x, len, reverse)
 	    case 1:
 	      return AS1 (br%k1,%0);
 	    case 2:
-	      return (AS1 (br%j1,_PC_+2) CR_TAB
+	      return (AS1 (br%j1,.+2) CR_TAB
 		      AS1 (rjmp,%0));
 	    default:
-	      return (AS1 (br%j1,_PC_+4) CR_TAB
+	      return (AS1 (br%j1,.+4) CR_TAB
 		      AS1 (jmp,%0));
 	    }
 	}
@@ -1390,10 +1390,10 @@ ret_cond_branch (x, len, reverse)
 	      case 1:
 		return AS1 (br%j1,%0);
 	      case 2:
-		return (AS1 (br%k1,_PC_+2) CR_TAB
+		return (AS1 (br%k1,.+2) CR_TAB
 			AS1 (rjmp,%0));
 	      default:
-		return (AS1 (br%k1,_PC_+4) CR_TAB
+		return (AS1 (br%k1,.+4) CR_TAB
 			AS1 (jmp,%0));
 	      }
 	  }
@@ -4887,8 +4887,7 @@ asm_file_start (file)
 	 "__SP_L__ = 0x3d\n", file);
   
   fputs ("__tmp_reg__ = 0\n" 
-	 "__zero_reg__ = 1\n"
-	 "_PC_ = 2\n", file);
+         "__zero_reg__ = 1\n", file);
 
   /* FIXME: output these only if there is anything in the .data / .bss
      sections - some code size could be saved by not linking in the
@@ -5596,7 +5595,7 @@ avr_out_sbxx_branch (insn, operands)
     }
 
   if (long_jump)
-    return (AS1 (rjmp,_PC_+4) CR_TAB
+    return (AS1 (rjmp,.+4) CR_TAB
 	    AS1 (jmp,%3));
   if (!reverse)
     return AS1 (rjmp,%3);
