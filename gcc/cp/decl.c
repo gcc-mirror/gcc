@@ -414,7 +414,9 @@ objc_get_current_scope (void)
 
 /* The following routine is used by the NeXT-style SJLJ exceptions;
    variables get marked 'volatile' so as to not be clobbered by
-   _setjmp()/_longjmp() calls.  */
+   _setjmp()/_longjmp() calls.  All variables in the current scope,
+   as well as parent scopes up to (but not including) ENCLOSING_BLK
+   shall be thusly marked.  */
 
 void
 objc_mark_locals_volatile (void *enclosing_blk)
@@ -429,8 +431,11 @@ objc_mark_locals_volatile (void *enclosing_blk)
 
       for (decl = scope->names; decl; decl = TREE_CHAIN (decl))
         {
-          DECL_REGISTER (decl) = 0;
-          TREE_THIS_VOLATILE (decl) = 1;
+	  if (TREE_CODE (decl) == VAR_DECL)
+	    {
+              DECL_REGISTER (decl) = 0;
+              TREE_THIS_VOLATILE (decl) = 1;
+	    }
         }
     }
 }
