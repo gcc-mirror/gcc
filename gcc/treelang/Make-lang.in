@@ -139,28 +139,28 @@ treelang.all.cross:
 
 treelang.start.encap:
 treelang.rest.encap:
+treelang.man:
+treelang.srcman:
 
 treelang.tags: force
 	cd $(srcdir)/treelang; etags -o TAGS.sub *.y *.l *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-info:: $(docobjdir)/treelang.info
-dvi:: $(docobjdir)/treelang.dvi
+treelang.info: doc/treelang.info
 
-$(docobjdir)/treelang.info: treelang/treelang.texi \
-	 $(docdir)/include/gcc-common.texi \
-	 $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi \
-	 stmp-docobjdir
+treelang.srcinfo: doc/treelang.info
+	-cp -p $^ $(srcdir)/doc
+
+dvi:: doc/treelang.dvi
+
+doc/treelang.info: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/include/funding.texi
 	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include -o $@ $<
 
-$(docobjdir)/treelang.dvi: treelang/treelang.texi \
-	 $(docdir)/include/gcc-common.texi \
-	 $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi \
-	 stmp-docobjdir
+doc/treelang.dvi: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/include/funding.texi
 	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
 
 #

@@ -171,10 +171,8 @@ AC_MSG_RESULT($generated_files_in_srcdir)
 
 if test "$generated_files_in_srcdir" = "yes"; then
   GENINSRC=''
-  docobjdir='$(srcdir)/doc'
 else
   GENINSRC='#'
-  docobjdir='$(objdir)/doc'
 fi
 AC_SUBST(GENINSRC)
 
@@ -2897,7 +2895,7 @@ rm -f Make-hooks
 touch Make-hooks
 target_list="all.build all.cross start.encap rest.encap tags \
 	install-normal install-common install-man \
-	uninstall srcextra \
+	uninstall info man srcextra srcman srcinfo \
 	mostlyclean clean distclean maintainer-clean \
 	stage1 stage2 stage3 stage4 stageprofile stagefeedback"
 for t in $target_list
@@ -2990,7 +2988,6 @@ AC_SUBST(objdir)
 # Substitute configuration variables
 AC_SUBST(subdirs)
 AC_SUBST(srcdir)
-AC_SUBST(docobjdir)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
@@ -3056,6 +3053,14 @@ AC_SUBST(cxx_target_objs)
 AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
+
+# If it doesn't already exist, create document directory
+echo "checking for the document directory." 1>&2
+if test -d doc ; then
+  true
+else
+  mkdir doc 
+fi
 
 # Echo link setup.
 if test x${build} = x${host} ; then

@@ -96,6 +96,10 @@ objc.all.build:
 objc.all.cross:
 objc.start.encap:
 objc.rest.encap:
+objc.info:
+objc.man:
+objc.srcinfo:
+objc.srcman:
 
 objc.tags: force
 	cd $(srcdir)/objc; etags -o TAGS.sub *.y *.c *.h; \
