@@ -1,3 +1,11 @@
+2003-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcse.c (compute_ld_motion_mems): For MEM destinations, only
+	consider those to be movable where the source matches
+	want_to_gcse_p.
+	(update_ld_motion_stores): In comment, refer to
+	compute_ld_motion_mems for validity of replacement.
+
 Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcov-dump.c (tag_summary): Remove max_sum
