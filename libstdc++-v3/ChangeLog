@@ -1,3 +1,8 @@
+2001-01-25  Richard Henderson  <rth@redhat.com>
+
+	* config/cpu/alpha/bits/atomicity.h: Remove tricky .subsetion
+	bits. Fixes Tru64 build issues.
+	
 2001-01-25  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Bourne shell portability bug
