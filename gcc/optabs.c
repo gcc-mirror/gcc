@@ -413,15 +413,39 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	delete_insns_since (last);
     }
 
+  /* If this is a multiply, see if we can do a widening operation that
+     takes operands of this mode and makes a wider mode.  */
+
+  if (binoptab == smul_optab && GET_MODE_WIDER_MODE (mode) != VOIDmode
+      && (((unsignedp ? umul_widen_optab : smul_widen_optab)
+	   ->handlers[(int) GET_MODE_WIDER_MODE (mode)].insn_code)
+	  != CODE_FOR_nothing))
+    {
+      temp = expand_binop (GET_MODE_WIDER_MODE (mode),
+			   unsignedp ? umul_widen_optab : smul_widen_optab,
+			   op0, op1, 0, unsignedp, OPTAB_DIRECT);
+
+      if (GET_MODE_CLASS (mode) == MODE_INT)
+	return gen_lowpart (mode, temp);
+      else
+	return convert_to_mode (mode, temp, unsignedp);
+    }
+
   /* Look for a wider mode of the same class for which we think we
-     can open-code the operation.  */
+     can open-code the operation.  Check for a widening multiply at the
+     wider mode as well.  */
 
   if ((class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
       && mode != OPTAB_DIRECT && mode != OPTAB_LIB)
     for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	 wider_mode = GET_MODE_WIDER_MODE (wider_mode))
       {
-	if (binoptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+	if (binoptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+	    || (binoptab == smul_optab
+		&& GET_MODE_WIDER_MODE (wider_mode) != VOIDmode
+		&& (((unsignedp ? umul_widen_optab : smul_widen_optab)
+		     ->handlers[(int) GET_MODE_WIDER_MODE (wider_mode)].insn_code)
+		    != CODE_FOR_nothing)))
 	  {
 	    rtx xop0 = op0, xop1 = op1;
 	    int no_extend = 0;
