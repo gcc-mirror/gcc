@@ -64,50 +64,53 @@
    call libgcc for these functions.  But programs might be linked with
    code compiled by gcc 1, and then these will be used.  */
 
-#define perform_udivsi3(a,b)						\
+/* The arg names used to be a and b, but `a' appears inside strings
+   and that confuses non-ANSI cpp.  */
+
+#define perform_udivsi3(arg0,arg1)					\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
 									\
   dx = 0;								\
-  ax = a;								\
-  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (b), "d" (dx));	\
+  ax = arg0;								\
+  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1), "d" (dx)); \
   return ax;								\
 }
 
-#define perform_divsi3(a,b)						\
+#define perform_divsi3(arg0,arg1)					\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
 									\
-  ax = a;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (b));	\
+  ax = arg0;								\
+  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
   return ax;								\
 }
 
-#define perform_umodsi3(a,b)						\
+#define perform_umodsi3(arg0,arg1)					\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
 									\
   dx = 0;								\
-  ax = a;								\
-  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (b), "d" (dx));	\
+  ax = arg0;								\
+  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1), "d" (dx)); \
   return dx;								\
 }
 
-#define perform_modsi3(a,b)						\
+#define perform_modsi3(arg0,arg1)					\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
 									\
-  ax = a;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (b));	\
+  ax = arg0;								\
+  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
   return dx;								\
 }
 
 
-#define perform_fixdfsi(a)						\
+#define perform_fixdfsi(arg0)						\
 {									\
   auto unsigned short ostatus;						\
   auto unsigned short nstatus;						\
@@ -122,7 +125,7 @@
   asm volatile ("fnstcw %0" : "=m" (ostatus));				\
   nstatus = ostatus | 0x0c00;						\
   asm volatile ("fldcw %0" : /* no outputs */ : "m" (nstatus));		\
-  tmp = a;								\
+  tmp = arg0;								\
   asm volatile ("fldl %0" : /* no outputs */ : "m" (tmp));		\
   asm volatile ("fistpl %0" : "=m" (ret));				\
   asm volatile ("fldcw %0" : /* no outputs */ : "m" (ostatus));		\
