@@ -1,3 +1,9 @@
+Mon Oct 18 02:38:46 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* c-decl.c (pushdecl): Use TYPE_CONTEXT rather than TREE_PERMANENT.
+	(finish_decl): Duplicate test for TREE_ASM_WRITTEN in else branch of
+	if that tests TREE_PERMANENT.
+
 Mon Oct 18 01:41:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (get_last_value): If the last set of a register

@@ -2220,7 +2220,7 @@ pushdecl (x)
 	    {
 	      if (type == error_mark_node)
 		break;
-	      if (! TREE_PERMANENT (type))
+	      if (! TYPE_CONTEXT (type))
 		{
 		  warning_with_decl (x, "type of external `%s' is not global");
 		  /* By exiting the loop early, we leave TYPE nonzero,
@@ -3606,7 +3606,9 @@ finish_decl (decl, init, asmspec_tree)
 	{
 	  /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	  maybe_objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, asmspec, DECL_CONTEXT (decl) == 0,
+	  rest_of_decl_compilation (decl, asmspec,
+				    (DECL_CONTEXT (decl) == 0
+				     || TREE_ASM_WRITTEN (decl)),
 				    0);
 	}
       if (DECL_CONTEXT (decl) != 0)
