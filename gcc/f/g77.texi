@@ -840,55 +840,6 @@ Use the @samp{-v} option with @code{g77}
 to see what is going on---the first line of output is the invocation
 of the @code{gcc} command.
 
-@node Invoking G77
-@chapter GNU Fortran Command Options
-@cindex GNU Fortran command options
-@cindex command options
-@cindex options, GNU Fortran command
-
-The @code{g77} command supports all the options supported by the
-@code{gcc} command.
-@xref{Invoking GCC,,GNU CC Command Options,gcc,Using and Porting GNU CC},
-for information
-on the non-Fortran-specific aspects of the @code{gcc} command (and,
-therefore, the @code{g77} command).
-
-@cindex options, negative forms
-@cindex negative forms of options
-All @code{gcc} and @code{g77} options
-are accepted both by @code{g77} and by @code{gcc}
-(as well as any other drivers built at the same time,
-such as @code{g++}),
-since adding @code{g77} to the @code{gcc} distribution
-enables acceptance of @code{g77}-specific options
-by all of the relevant drivers.
-
-In some cases, options have positive and negative forms;
-the negative form of @samp{-ffoo} would be @samp{-fno-foo}.
-This manual documents only one of these two forms, whichever
-one is not the default.
-
-@menu
-* Option Summary::      Brief list of all @code{g77} options,
-                        without explanations.
-* Overall Options::     Controlling the kind of output:
-                        an executable, object files, assembler files,
-                        or preprocessed source.
-* Shorthand Options::   Options that are shorthand for other options.
-* Fortran Dialect Options::  Controlling the variant of Fortran language
-                             compiled.
-* Warning Options::     How picky should the compiler be?
-* Debugging Options::   Symbol tables, measurements, and debugging dumps.
-* Optimize Options::    How much optimization?
-* Preprocessor Options:: Controlling header files and macro definitions.
-                         Also, getting dependency information for Make.
-* Directory Options::   Where to find header files and libraries.
-                        Where to find the compiler executable files.
-* Code Gen Options::    Specifying conventions for function calls, data layout
-                        and register usage.
-* Environment Variables:: Env vars that affect GNU Fortran.
-@end menu
-
 @include invoke.texi
 
 @include news.texi

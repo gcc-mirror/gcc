@@ -1,4 +1,4 @@
-@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-news 2001-10-29
+@set last-update-news 2001-11-08
 
 @include root.texi
 
@@ -154,7 +154,10 @@ The following information was last updated on @value{last-update-news}:
 
 @heading In development, 0.5.27, @code{GCC} 3.1 versus @code{GCC} 3.0:
 @itemize @bullet
-@ifclear USERVISONLY
+@item
+g77 now has its man page generated from the texinfo documentation,
+to guarantee that it remains up to date.
+
 @item
 g77 used to reject the following program on 32-bit targets:
 @smallexample
@@ -174,7 +177,7 @@ because 140 000 000 reals is larger than the largest bit-extent that can be
 expressed in 32 bits.  However, bit-sizes never play a role after offsets
 have been converted to byte addresses.  Therefore this check has been removed.
 Note: On GNU/Linux systems one has to compile programs that occupy more
-than 1 Gbyte statically, i.e.@: g77 -static ...
+than 1 Gbyte statically, i.e.@: @code{g77 -static ...}.
 
 @item
 Based on work done by Juergen Pfeifer (@email{juergen.pfeifer@@gmx.net})
@@ -203,7 +206,6 @@ that permits the use of zero length substrings of the form
 Based on code developed by Pedro Vazquez (@email{vazquez@@penelope.iqm.unicamp.br}),
 the @code{libf2c} library is now able to read and write files larger than
 2 Gbyte on 32-bit target machines, if the operating system supports this.
-@end ifclear
 @end itemize
 
 @heading In 0.5.26, @code{GCC} 3.0 versus @code{GCC} 2.95:
