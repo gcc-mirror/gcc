@@ -5016,7 +5016,9 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  return cond;
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
-	return build (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
+	if (preeval)
+	  cond = build (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
+	return cond;
       }
       
     default:

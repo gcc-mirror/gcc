@@ -4552,16 +4552,11 @@ build_over_call (struct z_candidate *cand, int flags)
       else if (TREE_CODE (arg) == TARGET_EXPR
 	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	{
-	  tree address;
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
 
 	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
-	  address = build_unary_op (ADDR_EXPR, val, 0);
-	  /* Avoid a warning about this expression, if the address is
-	     never used.  */
-	  TREE_USED (address) = 1;
-	  return address;
+	  return val;
 	}
     }
   else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR

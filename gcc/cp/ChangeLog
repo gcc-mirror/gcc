@@ -1,3 +1,21 @@
+2004-03-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13944
+	* except.c (do_free_exception): Remove #if 0 wrapper.
+	(build_throw): Use it if we elide a copy into the
+	exception object.
+
+	* tree.c (stabilize_call): Fix thinko.
+
+	* init.c (build_new_1): Preevaluate initializer.  Simplify EH code.
+	(build_init): Call a constructor rather than call build_aggr_init
+	for classes.
+	* except.c (stabilize_throw_expr): Remove.
+	(build_throw): Use stabilize_init instead of stabilize_throw_expr.
+	* tree.c (stabilize_call, stabilize_init): New fns.
+	* call.c (build_over_call): A constructor no longer returns the
+	address of the object.
+
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14324

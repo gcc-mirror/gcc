@@ -2429,7 +2429,7 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     {
-      init_expr = void_zero_node;
+      init_expr = NULL_TREE;
     }
   else if (!real_lvalue_p (exp)
 	   || !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp)))
@@ -2448,6 +2448,73 @@ stabilize_expr (tree exp, tree* initp)
   *initp = init_expr;
   return exp;
 }
+
+/* Like stabilize_expr, but for a call whose args we want to
+   pre-evaluate.  */
+
+void
+stabilize_call (tree call, tree *initp)
+{
+  tree inits = NULL_TREE;
+  tree t;
+
+  if (call == error_mark_node)
+    return;
+
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR)
+    abort ();
+
+  for (t = TREE_OPERAND (call, 1); t; t = TREE_CHAIN (t))
+    if (TREE_SIDE_EFFECTS (TREE_VALUE (t)))
+      {
+	tree init;
+	TREE_VALUE (t) = stabilize_expr (TREE_VALUE (t), &init);
+	if (!init)
+	  /* Nothing.  */;
+	else if (inits)
+	  inits = build (COMPOUND_EXPR, void_type_node, inits, init);
+	else
+	  inits = init;
+      }
+
+  *initp = inits;
+}
+
+/* Like stabilize_expr, but for an initialization.  If we are initializing
+   an object of class type, we don't want to introduce an extra temporary,
+   so we look past the TARGET_EXPR and stabilize the arguments of the call
+   instead.  */
+
+void
+stabilize_init (tree init, tree *initp)
+{
+  tree t = init;
+
+  if (t == error_mark_node)
+    return;
+
+  if (TREE_CODE (t) == INIT_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 1)) != TARGET_EXPR)
+    TREE_OPERAND (t, 1) = stabilize_expr (TREE_OPERAND (t, 1), initp);
+  else
+    {
+      if (TREE_CODE (t) == INIT_EXPR)
+	t = TREE_OPERAND (t, 1);
+      if (TREE_CODE (t) == TARGET_EXPR)
+	t = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (t) == CONSTRUCTOR
+	  && CONSTRUCTOR_ELTS (t) == NULL_TREE)
+	{
+	  /* Default-initialization.  */
+	  *initp = NULL_TREE;
+	  return;
+	}
+
+      stabilize_call (t, initp);
+    }
+}
+
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree
