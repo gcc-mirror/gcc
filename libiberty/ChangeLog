@@ -1,3 +1,8 @@
+2002-12-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* make-relative-prefix.c (HAVE_HOST_EXECUTABLE_SUFFIX):
+	Define for hosts with HOST_EXECUTABLE_SUFFIX.
+
 2002-11-24  Nick Clifton  <nickc@redhat.com>
 
 	* make-relative-prefix.c (make_relative_prefix): Ensure return
