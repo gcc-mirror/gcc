@@ -47,6 +47,7 @@ using std::wcerr;
 using std::wclog;
 #endif
 
+using std::ws;
 using std::endl;
 using std::ends;
 using std::flush;
