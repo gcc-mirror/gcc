@@ -1,3 +1,10 @@
+Thu Jul 15 15:15:43 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (insv, extzv): Remove SImode dependence in named
+	patterns.  Explicitly generate DImode RTL if PowerPC64 and
+	operand is DImode.
+	(insvdi): Reverse start and size in instruction template.
+
 1999-07-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Typo fixes.
