@@ -1642,8 +1642,9 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       /* Now that we've updated the context, we need to remangle the
 	 name for this TYPE_DECL.  */
       DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
-      DECL_ASSEMBLER_NAME (value) =
-	get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
+      if (!uses_template_parms (value))
+	DECL_ASSEMBLER_NAME (value) =
+	  get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
 
       pushdecl_class_level (value);
       return value;
