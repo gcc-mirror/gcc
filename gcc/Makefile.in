@@ -405,7 +405,8 @@ USER_H = va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
     va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
-INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h
+INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h \
+    syslimits.h
 
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
