@@ -4695,16 +4695,16 @@ count_cond (expr, lim)
      tree expr;
      int lim;
 {
-  int true, false;
+  int ctrue, cfalse;
 
   if (TREE_CODE (expr) != COND_EXPR)
     return 0;
   else if (lim <= 0)
     return 0;
 
-  true = count_cond (TREE_OPERAND (expr, 1), lim - 1);
-  false = count_cond (TREE_OPERAND (expr, 2), lim - 1 - true);
-  return MIN (lim, 1 + true + false);
+  ctrue = count_cond (TREE_OPERAND (expr, 1), lim - 1);
+  cfalse = count_cond (TREE_OPERAND (expr, 2), lim - 1 - ctrue);
+  return MIN (lim, 1 + ctrue + cfalse);
 }
 
 /* Transform `a + (b ? x : y)' into `x ? (a + b) : (a + y)'.

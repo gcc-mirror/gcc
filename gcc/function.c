@@ -294,7 +294,7 @@ static int contains		PARAMS ((rtx, varray_type));
 static void emit_return_into_block PARAMS ((basic_block, rtx));
 #endif
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
-static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
+static bool purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
 					  struct hash_table *));
 static void purge_single_hard_subreg_set PARAMS ((rtx));
 #ifdef HAVE_epilogue
@@ -305,7 +305,7 @@ static struct hash_entry *insns_for_mem_newfunc PARAMS ((struct hash_entry *,
 							 struct hash_table *,
 							 hash_table_key));
 static unsigned long insns_for_mem_hash PARAMS ((hash_table_key));
-static boolean insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
+static bool insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
 static int insns_for_mem_walk   PARAMS ((rtx *, void *));
 static void compute_insns_for_mem PARAMS ((rtx, rtx, struct hash_table *));
 static void mark_temp_slot PARAMS ((struct temp_slot *));
@@ -2969,7 +2969,7 @@ static rtx purge_addressof_replacements;
    the stack.  If the function returns FALSE then the replacement could not
    be made.  */
 
-static boolean
+static bool
 purge_addressof_1 (loc, insn, force, store, ht)
      rtx *loc;
      rtx insn;
@@ -2980,7 +2980,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
   RTX_CODE code;
   int i, j;
   const char *fmt;
-  boolean result = true;
+  bool result = true;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:
@@ -3280,7 +3280,7 @@ insns_for_mem_hash (k)
 
 /* Return non-zero if K1 and K2 (two REGs) are the same.  */
 
-static boolean
+static bool
 insns_for_mem_comp (k1, k2)
      hash_table_key k1;
      hash_table_key k2;

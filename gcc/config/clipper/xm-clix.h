@@ -1,9 +1,5 @@
 /* Config file for Clipper running Clix, system V. 3.2 clone  */
 
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
-
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
 

@@ -627,7 +627,7 @@ java_hash_hash_tree_node (k)
   return (long) k;
 }
 
-boolean
+bool
 java_hash_compare_tree_node (k1, k2)
      hash_table_key k1;
      hash_table_key k2;

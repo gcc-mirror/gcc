@@ -3913,15 +3913,15 @@ fold_rtx (x, insn)
       if (const_arg0 == 0 || const_arg1 == 0)
 	{
 	  struct table_elt *p0, *p1;
-	  rtx true = const_true_rtx, false = const0_rtx;
+	  rtx true_rtx = const_true_rtx, false_rtx = const0_rtx;
 	  enum machine_mode mode_arg1;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      true = (CONST_DOUBLE_FROM_REAL_VALUE
+	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
 		      (FLOAT_STORE_FLAG_VALUE (mode), mode));
-	      false = CONST0_RTX (mode);
+	      false_rtx = CONST0_RTX (mode);
 	    }
 #endif
 
@@ -3955,9 +3955,9 @@ fold_rtx (x, insn)
 		      || GET_CODE (folded_arg0) == CONST))
 		{
 		  if (code == EQ)
-		    return false;
+		    return false_rtx;
 		  else if (code == NE)
-		    return true;
+		    return true_rtx;
 		}
 
 	      /* See if the two operands are the same.  */
@@ -3981,12 +3981,12 @@ fold_rtx (x, insn)
 		      return ((code == EQ || code == LE || code == GE
 			       || code == LEU || code == GEU || code == UNEQ
 			       || code == UNLE || code == UNGE || code == ORDERED)
-			      ? true : false);
+			      ? true_rtx : false_rtx);
 		   /* Take care for the FP compares we can resolve.  */
 		   if (code == UNEQ || code == UNLE || code == UNGE)
-		     return true;
+		     return true_rtx;
 		   if (code == LTGT || code == LT || code == GT)
-		     return false;
+		     return false_rtx;
 		}
 
 	      /* If FOLDED_ARG0 is a register, see if the comparison we are
@@ -4011,7 +4011,7 @@ fold_rtx (x, insn)
 			      || (GET_CODE (folded_arg1) == REG
 				  && (REG_QTY (REGNO (folded_arg1)) == ent->comparison_qty))))
 			return (comparison_dominates_p (ent->comparison_code, code)
-				? true : false);
+				? true_rtx : false_rtx);
 		    }
 		}
 	    }
@@ -4035,30 +4035,30 @@ fold_rtx (x, insn)
 	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
 			      && (INTVAL (inner_const)
 				  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
-	      rtx true = const_true_rtx, false = const0_rtx;
+	      rtx true_rtx = const_true_rtx, false_rtx = const0_rtx;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
 	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 		{
-		  true = (CONST_DOUBLE_FROM_REAL_VALUE
+		  true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
-		  false = CONST0_RTX (mode);
+		  false_rtx = CONST0_RTX (mode);
 		}
 #endif
 
 	      switch (code)
 		{
 		case EQ:
-		  return false;
+		  return false_rtx;
 		case NE:
-		  return true;
+		  return true_rtx;
 		case LT:  case LE:
 		  if (has_sign)
-		    return true;
+		    return true_rtx;
 		  break;
 		case GT:  case GE:
 		  if (has_sign)
-		    return false;
+		    return false_rtx;
 		  break;
 		default:
 		  break;

@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,10 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
@@ -42,4 +38,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* isinf isn't there, but finite is. */
 #define isinf(x) (!finite(x))
-
