@@ -1,3 +1,8 @@
+2004-06-12  Andreas Jaeger  <aj@suse.de>
+
+	* libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
+	* libgcc-darwin.ver: Likewise.
+
 2004-06-11  Bernardo Innocenti  <bernie@develer.com>
 
 	PR target/8309
@@ -23,7 +28,7 @@
 
 2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>
 
-	Backport from mainline:	
+	Backport from mainline:
 
         * config/rs6000/rs6000.c (output_vec_const_move):
         Find all cases of EASY_VECTOR_15_ADD_SELF.
@@ -106,7 +111,7 @@
 	* config/rs6000/rs6000.c (function_arg_boundary): Align for ABI_V4
 	when size is 8 bytes.
 	(function_arg_advance): Account for stack space used by AltiVec
-	args when -mabi=altivec.  Simplify alignment calculations.  For 
+	args when -mabi=altivec.  Simplify alignment calculations.  For
 	ABI_V4, pass AltiVec vectors by reference when -mabi=no-altivec.
 	(function_arg): Similarly.
 	(function_arg_pass_by_reference): True for ABI_V4 AltiVec when
@@ -299,7 +304,7 @@
 
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 
- 	PR objc/7993
+	PR objc/7993
 	* objc-act.c (is_private): Do not emit the 'instance variable %s
 	is declared private' error.
 	(is_public): Emit the error after calling is_private.
@@ -617,7 +622,7 @@
 2004-04-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/altivec/altivec.h [__cplusplus] (vec_subsubs): Rename
- 	to vec_sububs.
+	to vec_sububs.
 	[__cplusplus] (vec_subsuhs): Rename to vec_subuhs,
 	eliminating duplicates.
 
@@ -3513,7 +3518,7 @@
 
 	* fixinc/inclhack.def (alpha___extern_prefix,
 	alpha___extern_prefix_standards): New hacks to obey
- 	__PRAGMA_EXTERN_PREFIX.
+	__PRAGMA_EXTERN_PREFIX.
 	* fixinc/tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	test.
 	* fixinc/tests/base/standards.h: Likewise.
