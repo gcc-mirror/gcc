@@ -1,3 +1,8 @@
+2004-09-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_scalar_mode_supported_p): New.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): New.
+
 2004-09-13  Richard Henderson  <rth@redhat.com>
 
 	PR 17436
