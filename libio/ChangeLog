@@ -1,3 +1,7 @@
+1998-08-17  Ulrich Drepper  <drepper@cygnus.com>
+
+	* strfile.h: Define __PMT if not already defined.
+
 1998-08-03  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
 
 	* libioP.h: Use __PMT in typedefs.
