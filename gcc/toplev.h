@@ -102,4 +102,7 @@ extern void do_abort			PROTO ((void)) ATTRIBUTE_NORETURN;
 extern void botch			PROTO ((const char *))
   ATTRIBUTE_NORETURN;
 
+extern void fnotice			PROTO ((FILE *, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+
 #endif /* __GCC_TOPLEV_H */
