@@ -45,6 +45,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-rtti", "Do not generate run time type descriptor information" },
   { "-felide-constructors", "" },
   { "-fno-elide-constructors", "" },
+  { "-fenforce-eh-specs", "" },
+  { "-fno-enforce-eh-specs", "Do not generate code to check exception specifications" },
   { "-fenum-int-equiv", "" },
   { "-fno-enum-int-equiv", "" },
   { "-fexternal-templates", "" },

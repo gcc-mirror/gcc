@@ -1027,3 +1027,30 @@ complete_ptr_ref_or_void_ptr_p (type, from)
   return 1;
 }
 
+/* Returns nonzero if FN is a declaration of a standard C library
+   function which is known not to throw.
+
+   [lib.res.on.exception.handling]: None of the functions from the
+   Standard C library shall report an error by throwing an
+   exception, unless it calls a program-supplied function that
+   throws an exception.  */
+
+#include "cfns.h"
+
+int
+nothrow_libfn_p (fn)
+     tree fn;
+{
+  tree id;
+
+  if (TREE_PUBLIC (fn)
+      && DECL_EXTERNAL (fn)
+      && DECL_LANGUAGE (fn) == lang_c)
+    /* OK */;
+  else
+    /* Can't be a C library function.  */
+    return 0;
+
+  id = DECL_ASSEMBLER_NAME (fn);
+  return !!libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
+}

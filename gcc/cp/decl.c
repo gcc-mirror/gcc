@@ -8668,6 +8668,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
        tentative.  error_mark_node is replaced later with the BLOCK.  */
     DECL_INITIAL (decl) = error_mark_node;
 
+  if (nothrow_libfn_p (decl))
+    TREE_NOTHROW (decl) = 1;
+
   /* Caller will do the rest of this.  */
   if (check < 0)
     return decl;
@@ -13563,6 +13566,7 @@ store_parm_decls ()
 
   /* Do the starting of the exception specifications, if we have any.  */
   if (flag_exceptions && !processing_template_decl
+      && flag_enforce_eh_specs
       && building_stmt_tree ()
       && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     current_eh_spec_try_block = expand_start_eh_spec ();
@@ -13840,6 +13844,7 @@ finish_function (lineno, flags)
 
       /* Finish dealing with exception specifiers.  */
       if (flag_exceptions && !processing_template_decl
+	  && flag_enforce_eh_specs
 	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
 	expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS
 			    (TREE_TYPE (current_function_decl)),

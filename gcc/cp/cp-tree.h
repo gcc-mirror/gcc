@@ -1149,6 +1149,12 @@ extern int flag_vtable_gc;
    The value of this flag is ignored if -pedantic is specified.  */
 extern int flag_permissive;
 
+/* Nonzero means to implement standard semantics for exception
+   specifications, calling unexpected if an exception is thrown that
+   doesn't match the specification.  Zero means to treat them as
+   assertions and optimize accordingly, but not check them.  */
+extern int flag_enforce_eh_specs;
+
 /* Nonzero if we want to obey access control semantics.  */
 
 extern int flag_access_control;
@@ -3922,6 +3928,7 @@ extern void expand_end_eh_spec		        PARAMS ((tree, tree));
 extern void expand_exception_blocks		PARAMS ((void));
 extern tree build_throw				PARAMS ((tree));
 extern void mark_all_runtime_matches            PARAMS ((void));
+extern int nothrow_libfn_p			PARAMS ((tree));
 
 /* in expr.c */
 extern void init_cplus_expand			PARAMS ((void));

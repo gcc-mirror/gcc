@@ -242,6 +242,10 @@ $(srcdir)/hash.h: $(srcdir)/gxx.gperf
 	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
 	exit 1 )
 
+$(srcdir)/cfns.h: $(srcdir)/cfns.gperf
+	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' \
+		$(srcdir)/cfns.gperf > $(srcdir)/cfns.h
+
 spew.o : spew.c $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
   lex.h $(srcdir)/../toplev.h
 lex.o : lex.c $(CXX_TREE_H) \
@@ -283,7 +287,7 @@ ptree.o : ptree.c $(CXX_TREE_H) $(srcdir)/../system.h
 rtti.o : rtti.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../toplev.h
 except.o : except.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(srcdir)/../except.h $(srcdir)/../toplev.h
+  $(srcdir)/../except.h $(srcdir)/../toplev.h cfns.h
 expr.o : expr.c $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
   $(EXPR_H) $(srcdir)/../toplev.h $(srcdir)/../except.h
 xref.o : xref.c $(CXX_TREE_H) $(srcdir)/../input.h \

@@ -490,6 +490,13 @@ int flag_vtable_gc;
 
 int flag_permissive;
 
+/* Nonzero means to implement standard semantics for exception
+   specifications, calling unexpected if an exception is thrown that
+   doesn't match the specification.  Zero means to treat them as
+   assertions and optimize accordingly, but not check them.  */
+
+int flag_enforce_eh_specs = 1;
+
 /* If this variable is defined to a non-NULL value, it will be called
    after the file has been completely parsed.  */
 
@@ -524,6 +531,7 @@ lang_f_options[] =
   {"default-inline", &flag_default_inline, 1},
   {"dollars-in-identifiers", &dollars_in_ident, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
+  {"enforce-eh-specs", &flag_enforce_eh_specs, 1},
   {"external-templates", &flag_external_templates, 1},
   {"for-scope", &flag_new_for_scope, 2},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
