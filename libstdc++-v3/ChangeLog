@@ -1,3 +1,8 @@
+2004-02-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/c++locale_internal.h: Remove prototypes
+	of no longer used GLIBC thread locale functions.
+
 2004-02-02  Eric Christopher  <echristo@redhat.com>
             Zack Weinberg  <zack@codesourcery.com>
 

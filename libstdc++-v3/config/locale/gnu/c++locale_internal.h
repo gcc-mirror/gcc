@@ -1,6 +1,6 @@
 // Prototypes for GLIBC thread locale __-prefixed functions -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,10 +40,6 @@ extern "C" __typeof(strftime_l) __strftime_l;
 extern "C" __typeof(strtod_l) __strtod_l;
 extern "C" __typeof(strtof_l) __strtof_l;
 extern "C" __typeof(strtold_l) __strtold_l;
-extern "C" __typeof(strtol_l) __strtol_l;
-extern "C" __typeof(strtoll_l) __strtoll_l;
-extern "C" __typeof(strtoul_l) __strtoul_l;
-extern "C" __typeof(strtoull_l) __strtoull_l;
 extern "C" __typeof(strxfrm_l) __strxfrm_l;
 extern "C" __typeof(towlower_l) __towlower_l;
 extern "C" __typeof(towupper_l) __towupper_l;
