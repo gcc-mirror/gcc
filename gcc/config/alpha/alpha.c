@@ -2267,7 +2267,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
   /* Use a pseudo if highly optimizing and still generating RTL.  */
   rtx subtarget
     = (flag_expensive_optimizations && !no_new_pseudos ? 0 : target);
-  rtx temp;
+  rtx temp, insn;
 
 #if HOST_BITS_PER_WIDE_INT == 64
   /* We are only called for SImode and DImode.  If this is SImode, ensure that
@@ -2317,12 +2317,27 @@ alpha_emit_set_const_1 (target, mode, c, n)
 	{
 	  temp = copy_to_suggested_reg (GEN_INT (high << 16), subtarget, mode);
 
-	  if (extra != 0)
-	    temp = expand_binop (mode, add_optab, temp, GEN_INT (extra << 16),
-				 subtarget, 0, OPTAB_WIDEN);
+	  /* As of 2002-02-23, addsi3 is only available when not optimizing.
+	     This means that if we go through expand_binop, we'll try to
+	     generate extensions, etc, which will require new pseudos, which
+	     will fail during some split phases.  The SImode add patterns
+	     still exist, but are not named.  So build the insns by hand.  */
 
-	  return expand_binop (mode, add_optab, temp, GEN_INT (low),
-			       target, 0, OPTAB_WIDEN);
+	  if (extra != 0)
+	    {
+	      if (! subtarget)
+		subtarget = gen_reg_rtx (mode);
+	      insn = gen_rtx_PLUS (mode, temp, GEN_INT (extra << 16));
+	      insn = gen_rtx_SET (VOIDmode, subtarget, insn);
+	      emit_insn (insn);
+	    }
+
+	  if (target == NULL)
+	    target = gen_reg_rtx (mode);
+	  insn = gen_rtx_PLUS (mode, temp, GEN_INT (low));
+	  insn = gen_rtx_SET (VOIDmode, target, insn);
+	  emit_insn (insn);
+	  return target;
 	}
     }
 
