@@ -1759,6 +1759,11 @@ rewrite_ssa_into_ssa (void)
 
   EXECUTE_IF_SET_IN_BITMAP (to_rename, 0, i, bi)
     {
+      /* Free SSA_NAME_AUX.  We don't have to zero it because
+	 release_ssa_name will.  */
+      if (SSA_NAME_AUX (ssa_name (i)))
+	free (SSA_NAME_AUX (ssa_name (i)));
+
       release_ssa_name (ssa_name (i));
     }
 
