@@ -25,7 +25,7 @@ if (ishft (1_8, 0) /= 1) call abort
 if (ishft (1_8, 1) /= 2) call abort
 if (ishft (3_8, 1) /= 6) call abort
 if (ishft (-1_8, 1) /= -2) call abort
-if (ishft (-1_8, -60) /= z'F'_8) call abort ! { dg-warning "" "" }
+if (ishft (-1_8, -60) /= z'F') call abort
 
 if (ishftc (1_1, 0) /= 1) call abort
 if (ishftc (1_1, 1) /= 2) call abort
