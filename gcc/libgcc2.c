@@ -2834,7 +2834,7 @@ SYMBOL__MAIN ()
 
    Long term no port should use those extensions.  But many still do.  */
 #if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
-#if defined (ASM_OUTPUT_CONSTRUCTOR) || defined (USE_COLLECT2)
+#if defined (TARGET_ASM_CONSTRUCTOR) || defined (USE_COLLECT2)
 func_ptr __CTOR_LIST__[2] = {0, 0};
 func_ptr __DTOR_LIST__[2] = {0, 0};
 #else

@@ -83,7 +83,7 @@ do {							\
    and CTOR_LIST_END to contribute to the .init section an instruction to
    push a word containing 0 (or some equivalent of that).
 
-   ASM_OUTPUT_CONSTRUCTOR should be defined to push the address of the
+   TARGET_ASM_CONSTRUCTOR should be defined to push the address of the
    constructor.  */
 
 #define CTOR_LIST_BEGIN				\

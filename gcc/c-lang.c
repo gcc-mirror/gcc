@@ -203,7 +203,6 @@ lookup_objc_ivar (id)
   return 0;
 }
 
-#if !defined(ASM_OUTPUT_CONSTRUCTOR) || !defined(ASM_OUTPUT_DESTRUCTOR)
 extern tree static_ctors;
 extern tree static_dtors;
 
@@ -253,7 +252,6 @@ finish_cdtor (body)
 
   finish_function (0);
 }
-#endif
 
 /* Register a function tree, so that its optimization and conversion
    to RTL is only done at the end of the compilation.  */
@@ -307,7 +305,6 @@ finish_file ()
 
   VARRAY_FREE (deferred_fns);
 
-#ifndef ASM_OUTPUT_CONSTRUCTOR
   if (static_ctors)
     {
       tree body = start_cdtor ('I');
@@ -318,8 +315,6 @@ finish_file ()
 
       finish_cdtor (body);
     }
-#endif
-#ifndef ASM_OUTPUT_DESTRUCTOR
   if (static_dtors)
     {
       tree body = start_cdtor ('D');
@@ -330,7 +325,6 @@ finish_file ()
 
       finish_cdtor (body);
     }
-#endif
 
   if (back_end_hook)
     (*back_end_hook) (getdecls ());

@@ -117,29 +117,6 @@ void FN ()							\
     }								\
 }
 
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)			  \
-  do {								  \
-    ctors_section ();						  \
-    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word"); \
-    assemble_name (FILE, NAME);					  \
-    fprintf (FILE, "\n");					  \
-  } while (0)
-
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)			  \
-  do {								  \
-    dtors_section ();						  \
-    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word"); \
-    assemble_name (FILE, NAME);					  \
-    fprintf (FILE, "\n");					  \
-  } while (0)
-
 #undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == 0
 #define TARGET_VERSION fprintf (stderr, " (MIPSel GNU/Linux with ELF)");
