@@ -31,6 +31,18 @@
 # -t: prevents logs from being renamed
 # -m: specify the e-mail address to send notes to.  An appropriate default should be selected from the log files.
 # -f: force reports to be mailed; if omitted, only reports that differ from the sent.* version are sent
+
+# Find a good awk.
+if test -z "$AWK" ; then
+  for AWK in gawk nawk awk ; do
+    if type $AWK 2>&1 | grep 'not found' > /dev/null 2>&1 ; then
+      :
+    else
+      break
+    fi
+  done
+fi
+
 : ${filesuffix=}; export fileprefix
 : ${move=true}; export move
 : ${forcemail=false}; export forcemail
@@ -63,7 +75,7 @@ for file in $files; do
 done &&
 $anyfile &&
 if $forcemail || $anychange; then :; else mailto=nobody; fi &&
-gawk '
+$AWK '
 BEGIN {
   lang="";
   print "cat <<EOF |";

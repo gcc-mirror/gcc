@@ -1,0 +1,7 @@
+Sat May 23 23:38:49 1998  Matthias Klose  <doko@cs.tu-berlin.de>
+
+	* test_summary: find good awk (copied from warn_summary).
+
+Sat May 23 23:38:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* test_summary, warn_summary: New files
