@@ -1,3 +1,9 @@
+2003-03-10  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJ_WITH_FLAGS): Added -Wno-deprecated.
+	(JC1FLAGS): Removed -Wno-deprecated.
+
 2003-03-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteOrder.java
