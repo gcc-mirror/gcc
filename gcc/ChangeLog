@@ -1,3 +1,24 @@
+2002-01-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-common.h (genrtl_expr_stmt_value): Declare.
+	* c-semantics.c (genrtl_goto_stmt): Redirect to...
+	(genrtl_goto_stmt_value): ... this new function.  Pass new
+	argument down to expand_expr_stmt_value, taking
+	TREE_ADDRESSABLE into account.
+	* c-common.c (c_expand_expr): Mark the last EXPR_STMT of a
+	STMT_EXPR as addressable, i.e., one whose result we want.
+	* expr.c (expand_expr): Don't save expression statement value
+	of labeled_blocks or loop_exprs.
+	* stmt.c (expand_expr_stmt): Redirect to...
+	(expand_expr_stmt_value): ... this new function.  Use new
+	argument to tell whether to save expression value.
+	(expand_end_stmt_expr): Reset last_expr_type and
+	last_expr_value if we don't have either.
+	* tree-inline.c (declare_return_variable): Mark its use
+	statement as addressable.
+	* tree.h: Document new use of TREE_ADDRESSABLE.
+	(expand_expr_stmt_value): Declare.
+
 2002-01-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Prepend ${srcdir}/config/${cpu_type}/ instead of

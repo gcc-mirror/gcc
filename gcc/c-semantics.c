@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the common
    tree codes used in the GNU C and C++ compilers (see c-common.def
    for the standard codes).  
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
 This file is part of GCC.
@@ -305,11 +305,26 @@ genrtl_goto_stmt (destination)
     expand_computed_goto (destination);
 }
 
-/* Generate the RTL for EXPR, which is an EXPR_STMT.  */
+/* Generate the RTL for EXPR, which is an EXPR_STMT.  Provided just
+   for backward compatibility.  genrtl_expr_stmt_value() should be
+   used for new code.  */
 
-void 
+void
 genrtl_expr_stmt (expr)
      tree expr;
+{
+  genrtl_expr_stmt_value (expr, -1);
+}
+
+/* Generate the RTL for EXPR, which is an EXPR_STMT.  WANT_VALUE tells
+   whether to (1) save the value of the expression, (0) discard it or
+   (-1) use expr_stmts_for_value to tell.  The use of -1 is
+   deprecated, and retained only for backward compatibility.  */
+
+void 
+genrtl_expr_stmt_value (expr, want_value)
+     tree expr;
+     int want_value;
 {
   if (expr != NULL_TREE)
     {
@@ -319,7 +334,7 @@ genrtl_expr_stmt (expr)
 	expand_start_target_temps ();
       
       if (expr != error_mark_node)
-	expand_expr_stmt (expr);
+	expand_expr_stmt_value (expr, want_value);
       
       if (stmts_are_full_exprs_p ())
 	expand_end_target_temps ();
@@ -748,7 +763,7 @@ expand_stmt (t)
 	  break;
 
 	case EXPR_STMT:
-	  genrtl_expr_stmt (EXPR_STMT_EXPR (t));
+	  genrtl_expr_stmt_value (EXPR_STMT_EXPR (t), TREE_ADDRESSABLE (t));
 	  break;
 
 	case DECL_STMT:

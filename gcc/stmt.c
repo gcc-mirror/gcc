@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2182,16 +2182,37 @@ resolve_operand_name_1 (p, outputs, inputs)
 }
 
 /* Generate RTL to evaluate the expression EXP
-   and remember it in case this is the VALUE in a ({... VALUE; }) constr.  */
+   and remember it in case this is the VALUE in a ({... VALUE; }) constr.
+   Provided just for backward-compatibility.  expand_expr_stmt_value()
+   should be used for new code.  */
 
 void
 expand_expr_stmt (exp)
      tree exp;
 {
+  expand_expr_stmt_value (exp, -1);
+}
+
+/* Generate RTL to evaluate the expression EXP.  WANT_VALUE tells
+   whether to (1) save the value of the expression, (0) discard it or
+   (-1) use expr_stmts_for_value to tell.  The use of -1 is
+   deprecated, and retained only for backward compatibility.  */
+
+void
+expand_expr_stmt_value (exp, want_value)
+     tree exp;
+     int want_value;
+{
+  rtx value;
+  tree type;
+
+  if (want_value == -1)
+    want_value = expr_stmts_for_value != 0;
+
   /* If -W, warn about statements with no side effects,
      except for an explicit cast to void (e.g. for assert()), and
      except inside a ({...}) where they may be useful.  */
-  if (expr_stmts_for_value == 0 && exp != error_mark_node)
+  if (! want_value && exp != error_mark_node)
     {
       if (! TREE_SIDE_EFFECTS (exp))
 	{
@@ -2207,34 +2228,31 @@ expand_expr_stmt (exp)
 
   /* If EXP is of function type and we are expanding statements for
      value, convert it to pointer-to-function.  */
-  if (expr_stmts_for_value && TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE)
+  if (want_value && TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE)
     exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
 
   /* The call to `expand_expr' could cause last_expr_type and
      last_expr_value to get reset.  Therefore, we set last_expr_value
      and last_expr_type *after* calling expand_expr.  */
-  last_expr_value = expand_expr (exp,
-				 (expr_stmts_for_value
-				  ? NULL_RTX : const0_rtx),
-				 VOIDmode, 0);
-  last_expr_type = TREE_TYPE (exp);
+  value = expand_expr (exp, want_value ? NULL_RTX : const0_rtx,
+		       VOIDmode, 0);
+  type = TREE_TYPE (exp);
 
   /* If all we do is reference a volatile value in memory,
      copy it to a register to be sure it is actually touched.  */
-  if (last_expr_value != 0 && GET_CODE (last_expr_value) == MEM
-      && TREE_THIS_VOLATILE (exp))
+  if (value && GET_CODE (value) == MEM && TREE_THIS_VOLATILE (exp))
     {
-      if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode)
+      if (TYPE_MODE (type) == VOIDmode)
 	;
-      else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
-	copy_to_reg (last_expr_value);
+      else if (TYPE_MODE (type) != BLKmode)
+	value = copy_to_reg (value);
       else
 	{
 	  rtx lab = gen_label_rtx ();
 
 	  /* Compare the value with itself to reference it.  */
-	  emit_cmp_and_jump_insns (last_expr_value, last_expr_value, EQ,
-				   expand_expr (TYPE_SIZE (last_expr_type),
+	  emit_cmp_and_jump_insns (value, value, EQ,
+				   expand_expr (TYPE_SIZE (type),
 						NULL_RTX, VOIDmode, 0),
 				   BLKmode, 0, lab);
 	  emit_label (lab);
@@ -2243,12 +2261,18 @@ expand_expr_stmt (exp)
 
   /* If this expression is part of a ({...}) and is in memory, we may have
      to preserve temporaries.  */
-  preserve_temp_slots (last_expr_value);
+  preserve_temp_slots (value);
 
   /* Free any temporaries used to evaluate this expression.  Any temporary
      used as a result of this expression will already have been preserved
      above.  */
   free_temp_slots ();
+
+  if (want_value)
+    {
+      last_expr_value = value;
+      last_expr_type = type;
+    }
 
   emit_queue ();
 }
@@ -2386,6 +2410,7 @@ expand_start_stmt_expr ()
   start_sequence_for_rtl_expr (t);
   NO_DEFER_POP;
   expr_stmts_for_value++;
+  last_expr_value = NULL_RTX;
   return t;
 }
 
@@ -2407,15 +2432,11 @@ expand_end_stmt_expr (t)
 {
   OK_DEFER_POP;
 
-  if (last_expr_type == 0)
+  if (! last_expr_value || ! last_expr_type)
     {
-      last_expr_type = void_type_node;
       last_expr_value = const0_rtx;
+      last_expr_type = void_type_node;
     }
-  else if (last_expr_value == 0)
-    /* There are some cases where this can happen, such as when the
-       statement is void type.  */
-    last_expr_value = const0_rtx;
   else if (GET_CODE (last_expr_value) != REG && ! CONSTANT_P (last_expr_value))
     /* Remove any possible QUEUED.  */
     last_expr_value = protect_from_queue (last_expr_value, 0);

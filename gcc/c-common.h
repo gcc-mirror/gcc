@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -717,6 +717,7 @@ extern void add_c_tree_codes		        PARAMS ((void));
 extern void genrtl_do_pushlevel                 PARAMS ((void));
 extern void genrtl_goto_stmt                    PARAMS ((tree));
 extern void genrtl_expr_stmt                    PARAMS ((tree));
+extern void genrtl_expr_stmt_value              PARAMS ((tree, int));
 extern void genrtl_decl_stmt                    PARAMS ((tree));
 extern void genrtl_if_stmt                      PARAMS ((tree));
 extern void genrtl_while_stmt                   PARAMS ((tree));

@@ -1,6 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -161,7 +161,9 @@ struct tree_common
 
        TREE_ADDRESSABLE in
    	   VAR_DECL, FUNCTION_DECL, FIELD_DECL, CONSTRUCTOR, LABEL_DECL,
-	   ..._TYPE, IDENTIFIER_NODE
+	   ..._TYPE, IDENTIFIER_NODE.
+	   In a STMT_EXPR, it means we want the result of the enclosed
+	   expression.
 
    static_flag:
 
@@ -258,8 +260,7 @@ struct tree_common
 	   expressions, VAR_DECL, PARM_DECL, FIELD_DECL, FUNCTION_DECL,
 	   IDENTIFIER_NODE
        TYPE_BOUNDED in
-	   ..._TYPE
-*/
+	   ..._TYPE */
 
 /* Define accessors for the fields that all tree nodes have
    (though some fields are not used for all kinds of nodes).  */
@@ -2719,6 +2720,7 @@ extern void expand_fixups			PARAMS ((rtx));
 extern tree expand_start_stmt_expr		PARAMS ((void));
 extern tree expand_end_stmt_expr		PARAMS ((tree));
 extern void expand_expr_stmt			PARAMS ((tree));
+extern void expand_expr_stmt_value		PARAMS ((tree, int));
 extern int warn_if_unused_value			PARAMS ((tree));
 extern void expand_decl_init			PARAMS ((tree));
 extern void clear_last_expr			PARAMS ((void));
