@@ -5202,7 +5202,7 @@ static void
 print_multilib_info ()
 {
   char *p = multilib_select;
-  char *last_path, *this_path;
+  char *last_path = 0, *this_path;
   int skip, use_arg;
   int last_path_len = 0;
 
@@ -5225,7 +5225,7 @@ print_multilib_info ()
 	}
 
       /* If this is a duplicate, skip it.  */
-      skip = (p - this_path == last_path_len
+      skip = (last_path != 0 && p - this_path == last_path_len
 	      && ! strncmp (last_path, this_path, last_path_len));
 
       last_path = this_path;
