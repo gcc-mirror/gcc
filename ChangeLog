@@ -1,3 +1,7 @@
+2001-10-02  Geert Bosch  <bosch@gnat.com>
+
+	* MAINTAINERS (Various maintainers: Ada front end): Added myself.
+
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure: Handle temporary files securely using mkdir.
