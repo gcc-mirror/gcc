@@ -264,6 +264,8 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
+  enum machine_mode op_mode;
+  rtx op0, op1, op2;
 
   /* If X is OLD, return NEW.  Otherwise, if this is an expression, try
      to build a new expression substituting recursively.  If we can't do
@@ -275,75 +277,77 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
   switch (GET_RTX_CLASS (code))
     {
     case '1':
-      {
-	enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
-	rtx op = (XEXP (x, 0) == old
-		  ? new : simplify_replace_rtx (XEXP (x, 0), old, new));
-
-	return simplify_gen_unary (code, mode, op, op_mode);
-      }
+      op0 = XEXP (x, 0);
+      op_mode = GET_MODE (op0);
+      op0 = simplify_replace_rtx (op0, old, new);
+      if (op0 == XEXP (x, 0))
+	return x;
+      return simplify_gen_unary (code, mode, op0, op_mode);
 
     case '2':
     case 'c':
-      return
-	simplify_gen_binary (code, mode,
-			     simplify_replace_rtx (XEXP (x, 0), old, new),
-			     simplify_replace_rtx (XEXP (x, 1), old, new));
+      op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+      op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+      if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
+	return x;
+      return simplify_gen_binary (code, mode, op0, op1);
+
     case '<':
-      {
-	enum machine_mode op_mode = (GET_MODE (XEXP (x, 0)) != VOIDmode
-				     ? GET_MODE (XEXP (x, 0))
-				     : GET_MODE (XEXP (x, 1)));
-	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
-	rtx op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
-	return simplify_gen_relational (code, mode, op_mode, op0, op1);
-      }
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      op_mode = GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
+      op0 = simplify_replace_rtx (op0, old, new);
+      op1 = simplify_replace_rtx (op1, old, new);
+      if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
+	return x;
+      return simplify_gen_relational (code, mode, op_mode, op0, op1);
 
     case '3':
     case 'b':
-      {
-	enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
-	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
-
-	return
-	  simplify_gen_ternary (code, mode,
-				(op_mode != VOIDmode
-				 ? op_mode
-				 : GET_MODE (op0)),
-				op0,
-				simplify_replace_rtx (XEXP (x, 1), old, new),
-				simplify_replace_rtx (XEXP (x, 2), old, new));
-      }
+      op0 = XEXP (x, 0);
+      op_mode = GET_MODE (op0);
+      op0 = simplify_replace_rtx (op0, old, new);
+      op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+      op2 = simplify_replace_rtx (XEXP (x, 2), old, new);
+      if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1) && op2 == XEXP (x, 2))
+	return x;
+      if (op_mode == VOIDmode)
+	op_mode = GET_MODE (op0);
+      return simplify_gen_ternary (code, mode, op_mode, op0, op1, op2);
 
     case 'x':
       /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
 	{
-	  rtx exp;
-	  exp = simplify_gen_subreg (GET_MODE (x),
-				     simplify_replace_rtx (SUBREG_REG (x),
-							   old, new),
+	  op0 = simplify_replace_rtx (SUBREG_REG (x), old, new);
+	  if (op0 == SUBREG_REG (x))
+	    return x;
+	  op0 = simplify_gen_subreg (GET_MODE (x), op0,
 				     GET_MODE (SUBREG_REG (x)),
 				     SUBREG_BYTE (x));
-	  if (exp)
-	    x = exp;
+	  return op0 ? op0 : x;
 	}
-      return x;
+      break;
 
     case 'o':
       if (code == MEM)
-	return replace_equiv_address_nv (x,
-					 simplify_replace_rtx (XEXP (x, 0),
-							       old, new));
+	{
+	  op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+	  if (op0 == XEXP (x, 0))
+	    return x;
+	  return replace_equiv_address_nv (x, op0);
+	}
       else if (code == LO_SUM)
 	{
-	  rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
-	  rtx op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+	  op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+	  op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
 
 	  /* (lo_sum (high x) x) -> x  */
 	  if (GET_CODE (op0) == HIGH && rtx_equal_p (XEXP (op0, 0), op1))
 	    return op1;
 
+	  if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
+	    return x;
 	  return gen_rtx_LO_SUM (mode, op0, op1);
 	}
       else if (code == REG)
@@ -351,11 +355,10 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	  if (REG_P (old) && REGNO (x) == REGNO (old))
 	    return new;
 	}
-
-      return x;
+      break;
 
     default:
-      return x;
+      break;
     }
   return x;
 }

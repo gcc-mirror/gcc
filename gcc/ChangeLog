@@ -1,3 +1,9 @@
+2003-10-25  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_replace_rtx): Avoid allocating duplicate
+	RTL nodes.  If an operator's operands are unchanged, return the
+	original argument unchanged.
+
 2003-10-26  Graham Stott  <graham.stott@btinternet.com>
 
 	Fix bootstrap failure.
