@@ -1,7 +1,7 @@
 \input texinfo.tex    @c -*-texinfo-*-
 @c @ifnothtml
 @c %**start of header
-@setfilename install.info
+@setfilename gccinstall.info
 @settitle Installing GCC
 @setchapternewpage odd
 @c %**end of header
