@@ -2015,6 +2015,32 @@ attribute is not available on all platforms.
 If you need to map the entire contents of a module to a particular
 section, consider using the facilities of the linker instead.
 
+@item shared
+@cindex @code{shared} variable attribute
+On Windows NT, in addition to nputting variable definitions in a named 
+section, the section can also be shared among all running copies of an 
+executable or DLL. For example, this small program defines shared data 
+by putting it in a named section "shared" and marking the section 
+shareable:
+
+@smallexample
+int foo __attribute__((section ("shared"), shared)) = 0;
+
+int
+main()
+@{
+  /* Read and write foo. All running copies see the same value. */
+  return 0;
+@}
+@end smallexample
+
+@noindent
+You may only use the @code{shared} attribute along with @code{section}
+attribute with a fully initialized global definition because of the way 
+linkers work.  See @code{section} attribute for more information.
+
+The @code{shared} attribute is only available on Windows NT.
+
 @item transparent_union
 This attribute, attached to a function parameter which is a union, means
 that the corresponding argument may have the type of any union member,

@@ -1,3 +1,10 @@
+Tue Sep 14 04:03:44 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/winnt.c (i386_pe_valid_decl_attribute_p): Recognize
+	shared as a valid attribute.
+	* i386/cygwin.h (ASM_OUTPUT_SECTION): Handle shared attribute.
+	* extend.texi: Document `shared' variable attribute.
+
 Tue Sep 14 04:01:46 1999  Loren Rittle  <ljrittle@acm.org>
 
 	* configure.in: Handle --enable-threads on FreeBSD.

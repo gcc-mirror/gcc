@@ -405,7 +405,14 @@ do {									\
   else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))			\
     type = SECT_RO, mode = "";						\
   else									\
-    type = SECT_RW, mode = "w";						\
+    {									\
+      type = SECT_RW;							\
+      if (TREE_CODE (DECL) == VAR_DECL					\
+          && lookup_attribute ("shared", DECL_MACHINE_ATTRIBUTES (DECL))) \
+        mode = "ws";							\
+      else								\
+        mode = "w";							\
+    }									\
 									\
   if (s == 0)								\
     {									\
