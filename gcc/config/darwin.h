@@ -204,7 +204,7 @@ do { text_section ();							\
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
-    char *xname = NAME;                                                 \
+    const char *xname = NAME;                                           \
     if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)             \
       xname = IDENTIFIER_POINTER (DECL_NAME (DECL));                    \
     if ((TREE_STATIC (DECL)                                             \
@@ -220,7 +220,7 @@ do { text_section ();							\
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)                     \
   do {									\
-    char *xname = NAME;                                                 \
+    const char *xname = NAME;                                           \
     if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)             \
       xname = IDENTIFIER_POINTER (DECL_NAME (DECL));                    \
     if ((TREE_STATIC (DECL)                                             \
@@ -310,11 +310,10 @@ do { text_section ();							\
 
 #undef	SECTION_FUNCTION
 #define SECTION_FUNCTION(FUNCTION, SECTION, DIRECTIVE, OBJC)		\
+extern void FUNCTION PARAMS ((void));					\
 void									\
 FUNCTION ()								\
 {									\
-  extern void objc_section_init ();					\
-  									\
   if (in_section != SECTION)						\
     {									\
       if (OBJC)								\
@@ -357,6 +356,7 @@ do { if (!strcmp (alias_name, name))					\
 
 #undef	EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS			\
+static void objc_section_init PARAMS ((void));	\
 SECTION_FUNCTION (const_section,		\
                   in_const,			\
                   ".const", 0)			\
@@ -464,7 +464,7 @@ SECTION_FUNCTION (darwin_eh_frame_section,		\
 		in_darwin_eh_frame,			\
 		".section __TEXT,__eh_frame", 0)	\
 							\
-void						\
+static void					\
 objc_section_init ()				\
 {						\
   static int been_here = 0;			\
@@ -497,14 +497,18 @@ objc_section_init ()				\
     }						\
 } 						\
 static tree section_alias[(int) num_sections];	\
-void try_section_alias () 			\
+static void try_section_alias PARAMS ((void));	\
+static void try_section_alias () 		\
 {						\
     if (section_alias[in_section] && asm_out_file) \
       fprintf (asm_out_file, "%s\n",		\
 	       IDENTIFIER_POINTER (section_alias[in_section]));	\
 }      						\
-void alias_section (name, alias)			\
-     char *name, *alias;				\
+
+#if 0
+static void alias_section PARAMS ((const char *, const char *)); \
+static void alias_section (name, alias)			\
+     const char *name, *alias;				\
 {							\
     ALIAS_SECTION (in_data, "data");			\
     ALIAS_SECTION (in_text, "text");			\
@@ -514,6 +518,7 @@ void alias_section (name, alias)			\
     ALIAS_SECTION (in_literal4, "literal4");		\
     ALIAS_SECTION (in_literal8, "literal8");		\
 }
+#endif
 
 #undef	READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION const_section
@@ -685,7 +690,7 @@ void alias_section (name, alias)			\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
 
 /* This is how to output an internal numbered label where PREFIX is
    the class of label and NUM is the number within the class.  */

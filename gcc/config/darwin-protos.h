@@ -33,6 +33,11 @@ extern void machopic_symbol_stub_section PARAMS ((void));
 extern void machopic_lazy_symbol_ptr_section PARAMS ((void));
 extern void machopic_nl_symbol_ptr_section PARAMS ((void));
 
+extern void constructor_section PARAMS ((void));
+extern void destructor_section PARAMS ((void));
+extern void mod_init_section PARAMS ((void));
+extern void mod_term_section PARAMS ((void));
+
 #ifdef RTX_CODE
 
 extern int machopic_operand_p PARAMS ((rtx));

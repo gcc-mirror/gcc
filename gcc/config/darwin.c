@@ -885,8 +885,8 @@ machopic_finish (asm_out_file)
        temp != NULL_TREE;
        temp = TREE_CHAIN (temp))
     {
-      char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      char *stub_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
+      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+      const char *stub_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
       char *sym;
       char *stub;
 
@@ -1066,7 +1066,7 @@ static void
 update_non_lazy_ptrs (name)
      const char *name;
 {
-  char *name1, *name2;
+  const char *name1, *name2;
   tree temp;
 
   STRIP_NAME_ENCODING (name1, name);
@@ -1097,7 +1097,7 @@ static void
 update_stubs (name)
      const char *name;
 {
-  char *name1, *name2;
+  const char *name1, *name2;
   tree temp;
 
   STRIP_NAME_ENCODING (name1, name);
