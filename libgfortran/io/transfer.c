@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <string.h>
+#include <assert.h>
 #include "libgfortran.h"
 #include "io.h"
 
@@ -1507,17 +1508,28 @@ st_write_done (void)
 
 static void
 st_set_nml_var (void * var_addr, char * var_name, int var_name_len,
-                int kind, bt type)
+                int kind, bt type, int string_length)
 {
   namelist_info *t1 = NULL, *t2 = NULL;
   namelist_info *nml = (namelist_info *) get_mem (sizeof(
                                                     namelist_info ));
   nml->mem_pos = var_addr;
-  nml->var_name = (char*) get_mem (var_name_len+1);
-  strncpy (nml->var_name,var_name,var_name_len);
-  nml->var_name[var_name_len] = 0;
+  if (var_name)
+    {
+      assert (var_name_len > 0);
+      nml->var_name = (char*) get_mem (var_name_len+1);
+      strncpy (nml->var_name, var_name, var_name_len);
+      nml->var_name[var_name_len] = 0;
+    }
+  else
+    {
+      assert (var_name_len == 0);
+      nml->var_name = NULL;
+    }
+
   nml->len = kind;
   nml->type = type;
+  nml->string_length = string_length;
 
   nml->next = NULL;
 
@@ -1539,34 +1551,35 @@ void
 st_set_nml_var_int (void * var_addr, char * var_name, int var_name_len,
                 int kind)
 {
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_INTEGER);
+   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_INTEGER, 0);
 }
 
 void
 st_set_nml_var_float (void * var_addr, char * var_name, int var_name_len,
                 int kind)
 {
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_REAL);
+   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_REAL, 0);
 }
 
 void
 st_set_nml_var_char (void * var_addr, char * var_name, int var_name_len,
-                int kind)
+                int kind, gfc_strlen_type string_length)
 {
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_CHARACTER);
+   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_CHARACTER,
+                   string_length);
 }
 
 void
 st_set_nml_var_complex (void * var_addr, char * var_name, int var_name_len,
                 int kind)
 {
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_COMPLEX);
+   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_COMPLEX, 0);
 }
 
 void
 st_set_nml_var_log (void * var_addr, char * var_name, int var_name_len,
                 int kind)
 {
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_LOGICAL);
+   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_LOGICAL, 0);
 }
 

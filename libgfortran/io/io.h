@@ -90,6 +90,7 @@ typedef struct namelist_type
   void * mem_pos;
   int  value_acquired;
   int len;
+  int string_length;
   bt type;
   struct namelist_type * next;
 }
@@ -545,7 +546,7 @@ void st_set_nml_var_int (void * , char * , int , int );
 void st_set_nml_var_float (void * , char * , int , int );
 
 #define st_set_nml_var_char prefix(st_set_nml_var_char)
-void st_set_nml_var_char (void * , char * , int , int );
+void st_set_nml_var_char (void * , char * , int , int, gfc_strlen_type);
 
 #define st_set_nml_var_complex prefix(st_set_nml_var_complex)
 void st_set_nml_var_complex (void * , char * , int , int );

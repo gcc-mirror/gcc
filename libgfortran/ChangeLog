@@ -1,3 +1,12 @@
+2004-08-18  Victor Leikehman  <lei@il.ibm.com>
+
+	PR fortran/13278
+	* io/transfer.c (st_set_nml_var)
+	* io/write.c (namelist_write): Allow var_name and var_name_len to be
+	null. For strings, use string_length field instead of len.
+	* io/io.h (struct namelist_type): New field string_length.
+	(st_set_nml_var_char): New argument string_length.
+
 2004-08-13  Bud Davis  <bdavis9659@comcast.net>
 
 	PR gfortran/16935
