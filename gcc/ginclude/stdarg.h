@@ -94,6 +94,10 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 		       - ((sizeof (TYPE) < __va_rounded_size (char)	\
 			   ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
 #endif /* big-endian */
+
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) (dest) = (src)
+
 #endif /* _STDARG_H */
 
 #endif /* not sh */
