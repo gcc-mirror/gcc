@@ -1162,7 +1162,7 @@ decode_d_option (const char *arg)
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
-  "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff", "vms"
+  "none", "stabs", "coff", "dwarf-2", "xcoff", "vms"
 };
 
 /* Decode -m switches.  */
