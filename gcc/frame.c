@@ -36,8 +36,8 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef DWARF2_UNWIND_INFO
 #include "dwarf2.h"
-#include "frame.h"
 #include <stddef.h>
+#include "frame.h"
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
