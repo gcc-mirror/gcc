@@ -256,8 +256,8 @@ struct tree_common
    In a CONSTRUCTOR, nonzero means allocate static storage.  */
 #define TREE_STATIC(NODE) ((NODE)->common.static_flag)
 
-/* In a CONVERT_EXPR or NOP_EXPR, this means the node was made
-   implicitly and should not lead to an "unused value" warning.  */
+/* In a CONVERT_EXPR, NOP_EXPR or COMPOUND_EXPR, this means the node was
+   made implicitly and should not lead to an "unused value" warning.  */
 #define TREE_NO_UNUSED_WARNING(NODE) ((NODE)->common.static_flag)
 
 /* Nonzero for a TREE_LIST or TREE_VEC node means that the derivation
