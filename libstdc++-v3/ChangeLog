@@ -1,3 +1,15 @@
+2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/6124
+	* testsuite/23_containers/bitset_members.cc: New test.
+	* include/std/std_bitset.h (_Bit_count::_S_bit_count): Move..
+	(_S_bit_count): Here.
+	(_First_one::_S_first_one): Move...
+	(_S_first_one): Here.
+	Format.
+	* src/bitset.cc: Adjust.
+	* config/linker-map.gnu: Export.
+	
 2002-04-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/5180
