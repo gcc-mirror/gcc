@@ -72,11 +72,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Specify the list of include file directories.  */
 #define INCLUDE_DEFAULTS \
 {									\
-  { "GNU_GXX_INCLUDE:", 1},						\
-  { "GNU_CC_INCLUDE:", 0},	/* GNU includes */			\
-  { "SYS$SYSROOT:[SYSLIB.]", 0}, /* VAX-11 "C" includes */		\
-  { ".", 0},			/* Make normal VMS filespecs work.  */	\
-  { 0, 0}								\
+  { "GNU_GXX_INCLUDE:", 1, 1 },						\
+  { "GNU_CC_INCLUDE:", 0, 0 },	/* GNU includes */			\
+  { "SYS$SYSROOT:[SYSLIB.]", 0, 0 }, /* VAX-11 "C" includes */		\
+  { ".", 0, 1 },		/* Make normal VMS filespecs work.  */	\
+  { 0, 0, 0 }								\
 }
 
 /* Under VMS a directory specification can be enclosed either in square

@@ -26,26 +26,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS				\
   {							\
-    { GPLUSPLUS_INCLUDE_DIR, 1},			\
-    { LOCAL_INCLUDE_DIR, 0},				\
-    { TOOL_INCLUDE_DIR, 0 },				\
-    { GCC_INCLUDE_DIR, 0},				\
+    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },			\
+    { LOCAL_INCLUDE_DIR, 0, 1 },			\
+    { TOOL_INCLUDE_DIR, 0, 1 },				\
+    { GCC_INCLUDE_DIR, 0, 0 },				\
     /* These are for fixincludes-fixed ansi/bsd headers	\
        which wouldn't be found otherwise.		\
        (The use of string catenation here is OK since	\
 	NeXT's native compiler is derived from GCC.) */	\
-    { GCC_INCLUDE_DIR "/ansi", 0 },			\
-    { GCC_INCLUDE_DIR "/bsd", 0 },			\
-    { "/NextDeveloper/Headers", 0},			\
-    { "/NextDeveloper/Headers/ansi", 0},		\
-    { "/NextDeveloper/Headers/bsd", 0},			\
-    { "/LocalDeveloper/Headers", 0},			\
-    { "/LocalDeveloper/Headers/ansi", 0},		\
-    { "/LocalDeveloper/Headers/bsd", 0},		\
-    { "/NextDeveloper/2.0CompatibleHeaders", 0},	\
-    { STANDARD_INCLUDE_DIR, 0},				\
-    { "/usr/include/bsd", 0},				\
-    { 0, 0}						\
+    { GCC_INCLUDE_DIR "/ansi", 0, 0 },			\
+    { GCC_INCLUDE_DIR "/bsd", 0, 0 },			\
+    { "/NextDeveloper/Headers", 0, 0 },			\
+    { "/NextDeveloper/Headers/ansi", 0, 0 },		\
+    { "/NextDeveloper/Headers/bsd", 0, 0 },		\
+    { "/LocalDeveloper/Headers", 0, 0 },		\
+    { "/LocalDeveloper/Headers/ansi", 0, 0 },		\
+    { "/LocalDeveloper/Headers/bsd", 0, 0 },		\
+    { "/NextDeveloper/2.0CompatibleHeaders", 0, 0 },	\
+    { STANDARD_INCLUDE_DIR, 0, 0 },			\
+    { "/usr/include/bsd", 0, 0 },			\
+    { 0, 0, 0 }						\
   }
 #endif /* CROSS_COMPILE */
 
