@@ -1,3 +1,9 @@
+2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_if): Don't save and restore only_seen_white here.
+	* cppexp.c (_cpp_parse_expr): Save and restore only_seen_white
+	and skipping here.
+
 2000-05-29  Richard Earnshaw (rearnsha@arm.com)
 
 	* flow.c (mark_used_reg): If a register is unconditionally live, 
@@ -249,14 +255,14 @@ Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 
-        * cpplex.c (_cpp_init_toklist): No comment space to initialise.
+	* cpplex.c (_cpp_init_toklist): No comment space to initialise.
 	(_cpp_free_toklist): No comment space to free.
 	(expand_comment_space): Remove.
-        (save_comment_space): Place the comment in the current token and
-        not in a separate comment space.
-        (_cpp_lex_line): Save comments during plain code and #define
-        directives only.
-        * cpplib.h (struct _cpp_toklist): Remove comment space.
+	(save_comment_space): Place the comment in the current token and
+	not in a separate comment space.
+	(_cpp_lex_line): Save comments during plain code and #define
+	directives only.
+	* cpplib.h (struct _cpp_toklist): Remove comment space.
 
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 

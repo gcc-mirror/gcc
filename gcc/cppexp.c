@@ -843,6 +843,12 @@ _cpp_parse_expr (pfile)
   int result;
   char buff[5];
 
+  /* Save parser state and set it to something sane.  */
+  int save_only_seen_white = pfile->only_seen_white;
+  int save_skipping = pfile->skipping;
+  pfile->only_seen_white = 0;
+  pfile->skipping = 0;
+
   /* We've finished when we try to reduce this.  */
   top->op = FINISHED;
   /* Nifty way to catch missing '('.  */
@@ -1162,5 +1168,7 @@ _cpp_parse_expr (pfile)
   if (stack != init_stack)
     free (stack);
   CPP_SET_WRITTEN (pfile, old_written);
+  pfile->only_seen_white = save_only_seen_white;
+  pfile->skipping = save_skipping;
   return result;
 }
