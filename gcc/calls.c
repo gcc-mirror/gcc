@@ -1782,19 +1782,21 @@ expand_call (exp, target, ignore)
 	  else
 	    reg = list, list = 0;
 
-	  /* Set to non-zero if must move a word at a time, even if just one
-	     word (e.g, partial == 1 && mode == DFmode).  Set to zero if
-	     we just use a normal move insn.  */
+	  /* Set to non-negative if must move a word at a time, even if just
+	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
+	     we just use a normal move insn.  This value can be zero if the
+	     argument is a zero size structure with no fields.  */
 	  nregs = (partial ? partial
 		   : (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
-		      ? -1
-		      : 0));
+		      ? ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
+			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+		      : -1));
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
 	     load the register(s) from memory.  */
 
-	  if (nregs == 0)
+	  if (nregs == -1)
 	    emit_move_insn (reg, args[i].value);
 
 #ifdef STRICT_ALIGNMENT
@@ -1808,19 +1810,12 @@ expand_call (exp, target, ignore)
 #endif
 
 	  else if (args[i].partial == 0 || args[i].pass_on_stack)
-	    {
-	      /* This value might be zero, if the argument is a zero size
-		 structure with no fields, so we can't use it to set nregs
-		 above.  */
-	      nregs = ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
-			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD);
-	      move_block_to_reg (REGNO (reg),
-				 validize_mem (args[i].value), nregs,
-				 args[i].mode);
-	    }
+	    move_block_to_reg (REGNO (reg),
+			       validize_mem (args[i].value), nregs,
+			       args[i].mode);
 	
 	  push_to_sequence (use_insns);
-	  if (nregs == 0)
+	  if (nregs == -1)
 	    emit_insn (gen_rtx (USE, VOIDmode, reg));
 	  else
 	    use_regs (REGNO (reg), nregs);
