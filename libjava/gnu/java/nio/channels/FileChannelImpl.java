@@ -282,7 +282,30 @@ public final class FileChannelImpl extends FileChannel
       throw new ClosedChannelException ();
   }
 
-  public long transferTo (long position, long count, WritableByteChannel target)
+  // like transferTo, but with a count of less than 2Gbytes
+  private int smallTransferTo (long position, int count, 
+			       WritableByteChannel target)
+    throws IOException
+  {
+    ByteBuffer buffer;
+    try
+      {
+	// Try to use a mapped buffer if we can.  If this fails for
+	// any reason we'll fall back to using a ByteBuffer.
+	buffer = map (MapMode.READ_ONLY, position, count);
+      }
+    catch (IOException e)
+      {
+	buffer = ByteBuffer.allocate (count);
+	read (buffer, position);
+	buffer.flip();
+      }
+
+    return target.write (buffer);
+  }
+
+  public long transferTo (long position, long count, 
+			  WritableByteChannel target)
     throws IOException
   {
     if (position < 0
@@ -295,14 +318,57 @@ public final class FileChannelImpl extends FileChannel
     if ((mode & READ) == 0)
        throw new NonReadableChannelException ();
    
-    // XXX: count needs to be casted from long to int. Dataloss ?
-    ByteBuffer buffer = ByteBuffer.allocate ((int) count);
-    read (buffer, position);
-    buffer.flip();
-    return target.write (buffer);
+    final int pageSize = 65536;
+    long total = 0;
+
+    while (count > 0)
+      {
+	int transferred 
+	  = smallTransferTo (position, (int)Math.min (count, pageSize), 
+			     target);
+	if (transferred < 0)
+	  break;
+	total += transferred;
+	position += transferred;
+	count -= transferred;
+      }
+
+    return total;
   }
 
-  public long transferFrom (ReadableByteChannel src, long position, long count)
+  // like transferFrom, but with a count of less than 2Gbytes
+  private int smallTransferFrom (ReadableByteChannel src, long position, 
+				 int count)
+    throws IOException
+  {
+    ByteBuffer buffer = null;
+
+    if (src instanceof FileChannel)
+      {
+	try
+	  {
+	    // Try to use a mapped buffer if we can.  If this fails
+	    // for any reason we'll fall back to using a ByteBuffer.
+	    buffer = ((FileChannel)src).map (MapMode.READ_ONLY, position, 
+					     count);
+	  }
+	catch (IOException e)
+	  {
+	  }
+      }
+
+    if (buffer == null)
+      {
+	buffer = ByteBuffer.allocate ((int) count);
+	src.read (buffer);
+	buffer.flip();
+      }
+
+    return write (buffer, position);
+  }
+
+  public long transferFrom (ReadableByteChannel src, long position, 
+			    long count)
     throws IOException
   {
     if (position < 0
@@ -315,11 +381,21 @@ public final class FileChannelImpl extends FileChannel
     if ((mode & WRITE) == 0)
        throw new NonWritableChannelException ();
 
-    // XXX: count needs to be casted from long to int. Dataloss ?
-    ByteBuffer buffer = ByteBuffer.allocate ((int) count);
-    src.read (buffer);
-    buffer.flip();
-    return write (buffer, position);
+    final int pageSize = 65536;
+    long total = 0;
+
+    while (count > 0)
+      {
+	int transferred = smallTransferFrom (src, position, 
+					     (int)Math.min (count, pageSize));
+	if (transferred < 0)
+	  break;
+	total += transferred;
+	position += transferred;
+	count -= transferred;
+      }
+
+    return total;
   }
 
   public FileLock tryLock (long position, long size, boolean shared)
