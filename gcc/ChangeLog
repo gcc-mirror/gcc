@@ -1,3 +1,7 @@
+1999-12-02  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* invoke.texi: Document the mips option -mno-crt0
+
 1999-12-02  Mike Karr  <mkarr@mathworks.com>
 
 	* cccp.c (argdata): Added free_ptr member.
