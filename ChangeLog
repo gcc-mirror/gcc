@@ -1,3 +1,7 @@
+2003-09-09  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* libtool.m4 (LD): Correct powerpc64 host match.
