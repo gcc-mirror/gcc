@@ -64,8 +64,6 @@ void objc_declare_alias				PARAMS ((tree, tree));
 void objc_declare_class				PARAMS ((tree));
 void objc_declare_protocols			PARAMS ((tree));
 
-extern int objc_receiver_context;
-
 /* the following routines are used to implement statically typed objects */
 
 int objc_comptypes				PARAMS ((tree, tree, int));
