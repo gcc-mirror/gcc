@@ -1,3 +1,25 @@
+Mon Sep 10 06:47:35 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (clear_reg_alias_info): Use K&R format definition.
+	Avoid unsigned warning.
+	* builtins.c: Use "unsigned int", not "unsigned".
+	(target_char_cast): Use host_integerp and tree_low_cst.
+	(expand_builtin_args_info, expand_builtin_frame_address): Likewise.
+	(c_strlen): Likewise; OFFSET now HOST_WIDE_INT.
+	(c_getstr): Likewise.
+	(std_expand_builtin_va_arg): Use int_size_in_bytes.
+	(builtin_memcpy_read_str): Avoid unsigned warning.
+	(expand_builtin_memcpy): Alignments are unsigned.
+	(expand_builtin_strncpy, expand_builtin_memset): Likewise.
+	(expand_builtin_expect_jump): Use integer_zerop and integer_onep.
+	* predict.c (expensive_function_p): LIMIT now unsigned.
+	* resource.c (mark_target_live_regs): Make some vars unsigned.
+	* sdbout.c: Use "unsigned int", not "unsigned".
+	(MAKE_LINE_SAFE): Add cast to avoid unsigned warning.
+	(sdbout_source_line): Likewise.
+	(sdbout_record_type_name): Remove "const" for NAME declaration.
+	* config/alpha/alpha.c (alpha_expand_block_move): Whitespace fixes.
+
 2001-09-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* calls.c (store_one_arg): Expand comment.
