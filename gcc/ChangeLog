@@ -1,3 +1,12 @@
+2004-06-17  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR middle-end/16038
+	Backport from mainline:
+	Fri Apr  4 17:43:52 2003  Olivier Hainque <hainque@act-europe.fr>
+
+	* emit-rtl.c (get_mem_attrs): Adjust alignment tests determining
+	use of default attributes to agree MEM_ALIGN macro.
+
 2004-05-31  Release Manager
 
 	* GCC 3.3.4 Released.
