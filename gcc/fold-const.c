@@ -6389,23 +6389,24 @@ fold (tree expr)
 	      enum built_in_function fcode0 = builtin_mathfn_code (arg0);
 	      enum built_in_function fcode1 = builtin_mathfn_code (arg1);
 
-	      /* Optimizations of sqrt(...)*sqrt(...).  */
-	      if (fcode0 == fcode1 && BUILTIN_SQRT_P (fcode0))
+	      /* Optimizations of root(...)*root(...).  */
+	      if (fcode0 == fcode1 && BUILTIN_ROOT_P (fcode0))
 		{
-		  tree sqrtfn, arg, arglist;
+		  tree rootfn, arg, arglist;
 		  tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
 		  tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
 
 		  /* Optimize sqrt(x)*sqrt(x) as x.  */
-		  if (operand_equal_p (arg00, arg10, 0)
+		  if (BUILTIN_SQRT_P (fcode0)
+		      && operand_equal_p (arg00, arg10, 0)
 		      && ! HONOR_SNANS (TYPE_MODE (type)))
 		    return arg00;
 
-	          /* Optimize sqrt(x)*sqrt(y) as sqrt(x*y).  */
-		  sqrtfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	          /* Optimize root(x)*root(y) as root(x*y).  */
+		  rootfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
 		  arg = fold (build (MULT_EXPR, type, arg00, arg10));
 		  arglist = build_tree_list (NULL_TREE, arg);
-		  return build_function_call_expr (sqrtfn, arglist);
+		  return build_function_call_expr (rootfn, arglist);
 		}
 
 	      /* Optimize expN(x)*expN(y) as expN(x+y).  */

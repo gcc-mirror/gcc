@@ -6690,6 +6690,29 @@ fold_builtin (tree exp)
 	      return build_function_call_expr (expfn, arglist);
 	    }
 
+	  /* Optimize sqrt(Nroot(x)) -> pow(x,1/(2*N)).  */
+	  if (flag_unsafe_math_optimizations && BUILTIN_ROOT_P (fcode))
+	    {
+	      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
+	      
+	      if (powfn)
+	        {
+		  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
+		  tree tree_root;
+		  /* The inner root was either sqrt or cbrt.  */
+		  REAL_VALUE_TYPE dconstroot =
+		    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconstthird;
+		  
+		  /* Adjust for the outer root.  */
+		  dconstroot.exp--;
+		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
+		  tree_root = build_real (type, dconstroot);
+		  arglist = tree_cons (NULL_TREE, arg0,
+				       build_tree_list (NULL_TREE, tree_root));
+		  return build_function_call_expr (powfn, arglist);
+		}
+	    }
+
 	  /* Optimize sqrt(pow(x,y)) = pow(x,y*0.5).  */
 	  if (flag_unsafe_math_optimizations
 	      && (fcode == BUILT_IN_POW
@@ -6704,6 +6727,56 @@ fold_builtin (tree exp)
 	      arglist = tree_cons (NULL_TREE, arg0,
 				   build_tree_list (NULL_TREE, narg1));
 	      return build_function_call_expr (powfn, arglist);
+	    }
+	}
+      break;
+
+    case BUILT_IN_CBRT:
+    case BUILT_IN_CBRTF:
+    case BUILT_IN_CBRTL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  tree arg = TREE_VALUE (arglist);
+	  const enum built_in_function fcode = builtin_mathfn_code (arg);
+
+	  /* Optimize cbrt of constant value.  */
+	  if (real_zerop (arg) || real_onep (arg) || real_minus_onep (arg))
+	    return arg;
+
+	  /* Optimize cbrt(expN(x)) -> expN(x/3).  */
+	  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
+	    {
+	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	      const REAL_VALUE_TYPE third_trunc =
+		real_value_truncate (TYPE_MODE (type), dconstthird);
+	      arg = fold (build (MULT_EXPR, type,
+				 TREE_VALUE (TREE_OPERAND (arg, 1)),
+				 build_real (type, third_trunc)));
+	      arglist = build_tree_list (NULL_TREE, arg);
+	      return build_function_call_expr (expfn, arglist);
+	    }
+
+	  /* Optimize cbrt(sqrt(x)) -> pow(x,1/6).  */
+	  /* We don't optimize cbrt(cbrt(x)) -> pow(x,1/9) because if
+             x is negative pow will error but cbrt won't.  */
+	  if (flag_unsafe_math_optimizations && BUILTIN_SQRT_P (fcode))
+	    {
+	      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
+
+	      if (powfn)
+	        {
+		  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
+		  tree tree_root;
+		  REAL_VALUE_TYPE dconstroot = dconstthird;
+
+		  dconstroot.exp--;
+		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
+		  tree_root = build_real (type, dconstroot);
+		  arglist = tree_cons (NULL_TREE, arg0,
+				       build_tree_list (NULL_TREE, tree_root));
+		  return build_function_call_expr (powfn, arglist);
+		}
+	      
 	    }
 	}
       break;

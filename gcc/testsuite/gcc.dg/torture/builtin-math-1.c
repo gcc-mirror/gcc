@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003  Free Software Foundation.
+/* Copyright (C) 2002, 2003, 2004  Free Software Foundation.
 
    Verify that built-in math function constant folding of constant
    arguments is correctly performed by the compiler.
@@ -16,6 +16,15 @@ void test (float f, double d, long double ld)
     link_error ();
 
   if (sqrt (1.0) != 1.0)
+    link_error ();
+
+  if (cbrt (0.0) != 0.0)
+    link_error ();
+
+  if (cbrt (1.0) != 1.0)
+    link_error ();
+
+  if (cbrt (-1.0) != -1.0)
     link_error ();
 
   if (exp (0.0) != 1.0)
@@ -55,6 +64,15 @@ void test (float f, double d, long double ld)
   if (sqrtf (1.0F) != 1.0F)
     link_error ();
 
+  if (cbrtf (0.0F) != 0.0F)
+    link_error ();
+
+  if (cbrtf (1.0F) != 1.0F)
+    link_error ();
+
+  if (cbrtf (-1.0F) != -1.0F)
+    link_error ();
+
   if (expf (0.0F) != 1.0F)
     link_error ();
 
@@ -90,6 +108,15 @@ void test (float f, double d, long double ld)
     link_error ();
 
   if (sqrtl (1.0L) != 1.0L)
+    link_error ();
+
+  if (cbrtl (0.0L) != 0.0L)
+    link_error ();
+
+  if (cbrtl (1.0L) != 1.0L)
+    link_error ();
+
+  if (cbrtl (-1.0L) != -1.0L)
     link_error ();
 
   if (expl (0.0L) != 1.0L)
