@@ -7,6 +7,19 @@
 	* trans-types.c (gfc_get_character_type_len): : Use
 	gfc_charlen_type_node as basic type for the range field.
 
+	* trans-intrinsic.c (build_fixbound_expr,
+	gfc_conv_intrinsic_bound, gfc_conv_intrinsic_anyall,
+	gfc_conv_intrinsic_count, gfc_conv_intrinsic_btest,
+	gfc_conv_intrinsic_singlebitop): Use 'build_int_cst' instead
+	of converting 'integer_zero_node' or 'integer_one_node'
+	respectively.
+	(gfc_conv_intrinsic_ishftc): Same, but store in local variable to
+	evade re-building.
+	(gfc_conv_intrinsic_strcmp, gfc_conv_intrinsic_rrspacing,
+	gfc_conv_intrinsic_trim, gfc_conv_intrinsic_iargc): Use
+	'build_int_cst' instead of converting 'integer_zero_node' or
+	'integer_one_node' respectively.
+	
 2005-01-16  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 19168
