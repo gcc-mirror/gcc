@@ -1,3 +1,19 @@
+2003-03-11  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/ByteBufferImpl.java
+	(putInt): Use limit() instead of limit.
+	* gnu/java/nio/CharBufferImpl.java
+	(slice): Fixed implementation.
+	(subSequence): Better bounds checking.
+	* gnu/java/nio/MappedByteFileBuffer.java:
+	Import all needed classes directly.
+	* java/nio/ByteBuffer.java
+	(hashCode): New dummy method.
+	* java/nio/CharBuffer.java
+	(array_offset): New member variable.
+	(hasArray): Fixed documentation.
+	(arrayOffset): Return array_offset.
+
 2003-03-10  2003-02-27  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* include/jvm.h: removed declaration of _Jv_ThisExecutable()

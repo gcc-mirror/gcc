@@ -320,7 +320,7 @@ public final class ByteBufferImpl extends ByteBuffer
     if (readOnly)
       throw new ReadOnlyBufferException ();
     
-    nio_put_Short (this, position (), limit(), value);
+    nio_put_Short (this, position (), limit (), value);
     inc_pos (2);
     return this;
   }
@@ -352,7 +352,7 @@ public final class ByteBufferImpl extends ByteBuffer
     if (readOnly)
       throw new ReadOnlyBufferException ();
     
-    nio_put_Int (this, position (), limit , value);
+    nio_put_Int (this, position (), limit (), value);
     inc_pos (4);
     return this;
   }

@@ -45,6 +45,7 @@ import gnu.java.nio.CharBufferImpl;
 public abstract class CharBuffer extends Buffer
   implements Comparable, CharSequence
 {
+  protected int array_offset = 0;
   protected char [] backing_buffer;
   
   /**
@@ -201,7 +202,7 @@ public abstract class CharBuffer extends Buffer
   }
 
   /**
-   * Tells wether this is buffer is backed by an array or not.
+   * Tells wether this is buffer is backed by an accessible array or not.
    */
   public final boolean hasArray ()
   {
@@ -242,7 +243,7 @@ public abstract class CharBuffer extends Buffer
     if (isReadOnly ())
       throw new ReadOnlyBufferException ();
     
-    return 0;
+    return array_offset;
   }
   
   /**
