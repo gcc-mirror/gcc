@@ -1410,12 +1410,16 @@ emit_block_move (x, y, size, align)
       emit_library_call (memcpy_libfunc, 0,
 			 VOIDmode, 3, XEXP (x, 0), Pmode,
 			 XEXP (y, 0), Pmode,
-			 convert_to_mode (Pmode, size, 1), Pmode);
+			 convert_to_mode (TYPE_MODE (sizetype), size,
+					  TREE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 #else
       emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
 			 XEXP (x, 0), Pmode,
-			 convert_to_mode (Pmode, size, 1), Pmode);
+			 convert_to_mode (TYPE_MODE (sizetype), size,
+					  TREE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 #endif
     }
 }
@@ -1991,11 +1995,15 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 #ifdef TARGET_MEM_FUNCTIONS
 	  emit_library_call (memcpy_libfunc, 0,
 			     VOIDmode, 3, temp, Pmode, XEXP (xinner, 0), Pmode,
-			     size, Pmode);
+			     convert_to_mode (TYPE_MODE (sizetype),
+					      size, TREE_UNSIGNED (sizetype)),
+			     size, TYPE_MODE (sizetype));
 #else
 	  emit_library_call (bcopy_libfunc, 0,
 			     VOIDmode, 3, XEXP (xinner, 0), Pmode, temp, Pmode,
-			     size, Pmode);
+			     convert_to_mode (TYPE_MODE (sizetype),
+					      size, TREE_UNSIGNED (sizetype)),
+			     size, TYPE_MODE (sizetype));
 #endif
 	  OK_DEFER_POP;
 	}
@@ -2222,12 +2230,16 @@ expand_assignment (to, from, want_value, suggest_reg)
       emit_library_call (memcpy_libfunc, 0,
 			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			 XEXP (from_rtx, 0), Pmode,
-			 size, Pmode);
+			 convert_to_mode (TYPE_MODE (sizetype),
+					  size, TREE_UNSIGNED (sizetype)),
+			 size, TYPE_MODE (sizetype));
 #else
       emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
 			 XEXP (to_rtx, 0), Pmode,
-			 size, Pmode);
+			 convert_to_mode (TYPE_MODE (sizetype),
+					  size, TREE_UNSIGNED (sizetype)),
+			 size, TYPE_MODE (sizetype));
 #endif
 
       preserve_temp_slots (to_rtx);
