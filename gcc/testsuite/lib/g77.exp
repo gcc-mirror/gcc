@@ -84,7 +84,6 @@ proc g77_link_flags { paths } {
       if [file exists "${gccpath}/libf2c/.libs/libg2c.a"] {
           append flags "-L${gccpath}/libf2c/.libs "
 	  if [file exists "${gccpath}/libf2c/.libs/libg2c.so"] {
-	      append flags "-Wl,--rpath-link,${rootme} "
 	      append ld_library_path ":${gccpath}/libf2c/.libs"
 	  }
       }

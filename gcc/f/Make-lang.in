@@ -67,8 +67,10 @@ F77 f77: f771$(exeext)
 
 g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h $(SYSTEM_H) $(GCC_H) \
 	$(CONFIG_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/f/g77spec.c $(OUTPUT_OPTION)
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+		$(INCLUDES) $(srcdir)/f/g77spec.c)
 
 g77version.o: $(srcdir)/f/version.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o g77version.o \

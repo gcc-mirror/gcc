@@ -1,3 +1,9 @@
+2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g77spec.c (lang_specific_driver) [ENABLE_SHARED_LIBGCC]: Add
+	libgcc_s.so if libf2c is used.
+	* Make-lang.in (g77spec.o): Use DRIVER_DEFINES.
+
 2001-11-19  Toon Moene <toon@moene.indiv.nluug.nl>
 
 	* .cvsignore: Ignore g77.1
