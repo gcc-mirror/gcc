@@ -344,13 +344,13 @@ typedef struct rtvec_def{
    rtx is used instead of intuition.  */
 /*   REG_EH_REGION is used to indicate what exception region an INSN
    belongs in.  This can be used to indicate what region a call may throw
-   to.  A REGION of 0 indicates that a call cannot throw at all.
-   A REGION  of -1 indicates that it cannot throw, nor will it execute
+   to. a REGION of 0 indicates that a call cannot throw at all.
+   a REGION  of -1 indicates that it cannot throw, nor will it execute
    a non-local goto.
-     REG_EH_RETHROW is used to indicate what that a call is actually a
-   call to rethrow, and specifies which region the rethrow is targetting.
-   This provides a way to generate the non standard flow edges required 
-   for a rethrow.  */
+     REG_EH_RETHROW is used to indicate that a call is actually a
+   call to rethrow, and specifies the rethrow symbol for the region 
+   the rethrow is targetting.  This provides a way to generate the 
+   non standard flow edges required for a rethrow. */
    
 
 #define REG_NOTES(INSN)	((INSN)->fld[6].rtx)
