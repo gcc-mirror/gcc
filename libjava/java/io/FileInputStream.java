@@ -79,11 +79,7 @@ public class FileInputStream extends InputStream
    */
   public FileInputStream(String name) throws FileNotFoundException
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkRead(name);
-
-    fd = new FileDescriptor(name, FileDescriptor.READ);
+    this(new File(name));
   }
 
   /**
@@ -104,7 +100,14 @@ public class FileInputStream extends InputStream
    */
   public FileInputStream(File file) throws FileNotFoundException
   {
-    this(file.getPath());
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkRead(file.getPath());
+
+    if (file.isDirectory())
+      throw new FileNotFoundException(file.getPath() + " is a directory");
+
+    fd = new FileDescriptor(file.getPath(), FileDescriptor.READ);
   }
 
   /**
