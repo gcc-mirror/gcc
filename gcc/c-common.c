@@ -3432,6 +3432,15 @@ c_expand_expr (exp, target, tmode, modifier)
       }
       break;
 
+    case COMPOUND_LITERAL_EXPR:
+      {
+	/* Initialize the anonymous variable declared in the compound
+	   literal, then return the variable.  */
+	tree decl = COMPOUND_LITERAL_EXPR_DECL (exp);
+	emit_local_var (decl);
+	return expand_expr (decl, target, tmode, modifier);
+      }
+
     default:
       abort ();
     }
@@ -3480,6 +3489,18 @@ c_unsafe_for_reeval (exp)
 
   /* Walk all other expressions.  */
   return -1;
+}
+
+/* Hook used by staticp to handle language-specific tree codes.  */
+
+int
+c_staticp (exp)
+     tree exp;
+{
+  if (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
+      && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp)))
+    return 1;
+  return 0;
 }
 
 /* Tree code classes.  */

@@ -6,6 +6,6 @@ struct something {
 };
 
 struct something X = {
-	foo: (struct empty) { },
+	foo: { },
 	bar: 1,
 };

@@ -1,5 +1,24 @@
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.def (COMPOUND_LITERAL_EXPR): New.
+	* c-common.c (c_expand_expr): Handle COMPOUND_LITERAL_EXPR.
+	(c_staticp): New function.
+	* c-common.h (COMPOUND_LITERAL_EXPR_DECL): New.
+	(c_staticp): Declare.
+	* c-typeck.c (default_function_array_conversion, build_unary_op):
+	Don't handle CONSTRUCTOR specially.
+	(lvalue_p, mark_addressable): Handle COMPOUND_LITERAL_EXPR.
+	* c-decl.c (build_compound_literal): New function.
+	* c-tree.h (build_compound_literal): Declare.
+	* c-parse.in (primary): Use build_compound_literal.
+	* c-lang.c (LANG_HOOKS_STATICP): Define.
+	* objc/objc-lang.c (LANG_HOOKS_STATICP): Likewise.
+	* doc/c-tree.texi: Document COMPOUND_LITERAL_EXPR.
+	* doc/extend.texi: Update documentation of compound literals.
+	Fixes PR c/4787.
+
+2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* langhooks.h (struct lang_hooks): Add staticp.
 	* langhooks-def.h (lhd_staticp, LANG_HOOKS_STATICP): New.
 	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_STATICP.

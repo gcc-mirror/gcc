@@ -56,6 +56,8 @@ static void c_post_options PARAMS ((void));
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
+#undef LANG_HOOKS_STATICP
+#define LANG_HOOKS_STATICP c_staticp
 #undef LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_SET_YYDEBUG

@@ -261,6 +261,7 @@ extern tree pop_init_level			PARAMS ((int));
 extern void set_init_index			PARAMS ((tree, tree));
 extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
+extern tree build_compound_literal		PARAMS ((tree, tree));
 extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
 extern tree c_start_case                        PARAMS ((tree));
