@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
@@ -200,6 +200,8 @@ static void c4x_globalize_label (FILE *, const char *);
 static bool c4x_rtx_costs (rtx, int, int, int *);
 static int c4x_address_cost (rtx);
 static void c4x_init_libfuncs (void);
+static void c4x_external_libcall (rtx);
+static rtx c4x_struct_value_rtx (tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -214,6 +216,9 @@ static void c4x_init_libfuncs (void);
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END c4x_file_end
+
+#undef TARGET_ASM_EXTERNAL_LIBCALL
+#define TARGET_ASM_EXTERNAL_LIBCALL c4x_external_libcall
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE c4x_attribute_table
@@ -243,6 +248,9 @@ static void c4x_init_libfuncs (void);
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS c4x_init_libfuncs
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX c4x_struct_value_rtx
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5016,4 +5024,22 @@ c4x_rtx_costs (rtx x, int code, int outer_code, int *total)
     default:
       return false;
     }
+}
+
+/* Worker function for TARGET_ASM_EXTERNAL_LIBCALL.  */
+
+static void
+c4x_external_libcall (rtx fun)
+{
+  /* This is only needed to keep asm30 happy for ___divqf3 etc.  */
+  c4x_external_ref (XSTR (fun, 0));
+}
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
+static rtx
+c4x_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		      int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, AR0_REGNO);
 }
