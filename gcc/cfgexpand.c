@@ -41,8 +41,8 @@ Boston, MA 02111-1307, USA.  */
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
    ??? We really ought to pass the probability down to RTL expanders and let it
-   re-distribute it when the conditional expands into multiple coniditionals.
-   This is however dificult to do.  */
+   re-distribute it when the conditional expands into multiple conditionals.
+   This is however difficult to do.  */
 static void
 add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
 {
