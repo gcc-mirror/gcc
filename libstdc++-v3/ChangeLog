@@ -1,3 +1,8 @@
+2004-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/ext/enc_filebuf/char/13189.cc: Fix guards.
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Same.	
+
 2004-01-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* testsuite/testsuite_hooks.cc (try_mkfifo): Avoid calling
