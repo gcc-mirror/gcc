@@ -1,3 +1,8 @@
+1999-04-27 08:32 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* expr.c (emit_move_insn_1): Abort if MODE argument is invalid. 
+	(compare): Punt if TREE_OPERAND (exp, 0) is an ERROR_MARK.
+
 Tue Apr 27 01:33:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Renmaed from FLAGS_TO_PASS.

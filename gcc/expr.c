@@ -2565,6 +2565,9 @@ emit_move_insn_1 (x, y)
   enum mode_class class = GET_MODE_CLASS (mode);
   int i;
 
+  if (mode >= MAX_MACHINE_MODE)
+      abort ();
+
   if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     return
       emit_insn (GEN_FCN (mov_optab->handlers[(int) mode].insn_code) (x, y));
@@ -11205,14 +11208,22 @@ compare (exp, signed_code, unsigned_code)
      register tree exp;
      enum rtx_code signed_code, unsigned_code;
 {
-  register rtx op0
-    = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
-  register rtx op1
-    = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
-  register tree type = TREE_TYPE (TREE_OPERAND (exp, 0));
-  register enum machine_mode mode = TYPE_MODE (type);
-  int unsignedp = TREE_UNSIGNED (type);
-  enum rtx_code code = unsignedp ? unsigned_code : signed_code;
+  register rtx op0, op1;
+  register tree type;
+  register enum machine_mode mode;
+  int unsignedp;
+  enum rtx_code code;
+
+  /* Don't crash if the comparison was erroneous.  */
+  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
+    return op0;
+  
+  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+  type = TREE_TYPE (TREE_OPERAND (exp, 0));
+  mode = TYPE_MODE (type);
+  unsignedp = TREE_UNSIGNED (type);
+  code = unsignedp ? unsigned_code : signed_code;
 
 #ifdef HAVE_canonicalize_funcptr_for_compare
   /* If function pointers need to be "canonicalized" before they can
