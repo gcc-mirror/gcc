@@ -8,7 +8,7 @@
 	type names if we have already found a valid type.
 	(cp_parser_member_declaration): Likewise.
 	
-	PR c++/17852
+	PR c++/17916
 	* parser.c (cp_parser_member_specification_opt): Handle
 	CPP_PRAGMA.
 

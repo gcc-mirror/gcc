@@ -1,4 +1,4 @@
-// PR c++/17852
+// PR c++/17916
 
 class T {
 #pragma X

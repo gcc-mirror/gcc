@@ -3,11 +3,11 @@
 	PR c++/17042
 	* g++.dg/init/dso_handle1.C: New test.
 
-	PR c++/17852
-	* g++.dg/parse/pragma1.C: New test.
-
 	PR c++/14667
 	* g++.dg/parse/typedef6.C: New test.
+
+	PR c++/17916
+	* g++.dg/parse/pragma1.C: New test.
 
 2004-10-15  Aldy Hernandez  <aldyh@redhat.com>
 
