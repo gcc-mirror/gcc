@@ -1,3 +1,10 @@
+2000-02-04  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Added MPN.java and BigInteger.java.
+	* Makefile.in: Rebuilt.
+	* gnu/gcj/math/MPN.java: New file.
+	* java/math/BigInteger.java: New file.
+
 2000-02-04  Tom Tromey  <tromey@cygnus.com>
 
 	* defineclass.cc (handleMethodsBegin): Allocate _Jv_MethodBase

@@ -521,6 +521,7 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
+gnu/gcj/math/MPN.java \
 gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
@@ -661,6 +662,7 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/math/BigInteger.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \

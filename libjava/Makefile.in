@@ -335,6 +335,7 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
+gnu/gcj/math/MPN.java \
 gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
@@ -475,6 +476,7 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/math/BigInteger.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
@@ -750,7 +752,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/convert/Output_JavaSrc.P \
 .deps/gnu/gcj/convert/Output_SJIS.P .deps/gnu/gcj/convert/Output_UTF8.P \
 .deps/gnu/gcj/convert/Output_iconv.P \
-.deps/gnu/gcj/convert/UnicodeToBytes.P \
+.deps/gnu/gcj/convert/UnicodeToBytes.P .deps/gnu/gcj/math/MPN.P \
 .deps/gnu/gcj/protocol/file/Connection.P \
 .deps/gnu/gcj/protocol/file/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
@@ -869,12 +871,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
 .deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
 .deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
-.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
-.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
-.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
-.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
-.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
-.deps/java/net/JarURLConnection.P \
+.deps/java/math/BigInteger.P .deps/java/net/BindException.P \
+.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
+.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
+.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
+.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
+.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
