@@ -1,3 +1,7 @@
+2003-05-03  Carlo Wood  <carlo@alinoe.com>
+
+	* cp-demangle.c: Fix typo in "char_traints" string-literal.
+
 2003-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* vsnprintf.c (vsnprintf): Don't pad string with extra nulls.
