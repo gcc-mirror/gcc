@@ -42,7 +42,7 @@ static int missing_braces_mentioned;
 extern char *index ();
 extern char *rindex ();
 
-static tree quality_type		PROTO((tree, tree));
+static tree qualify_type		PROTO((tree, tree));
 static int comp_target_types		PROTO((tree, tree));
 static int function_types_compatible_p	PROTO((tree, tree));
 static int type_lists_compatible_p	PROTO((tree, tree));
@@ -2481,9 +2481,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
                  not use the most significant bit of result_type.  */
 	      else if ((resultcode == EQ_EXPR || resultcode == NE_EXPR)
 		       && ((op0_signed && TREE_CODE (xop1) == INTEGER_CST
-			    && int_fits_type_p (xop1, signed_type (result_type))
+			    && int_fits_type_p (xop1, signed_type (result_type)))
 			   || (op1_signed && TREE_CODE (xop0) == INTEGER_CST
-			       && int_fits_type_p (xop0, signed_type (result_type))))))
+			       && int_fits_type_p (xop0, signed_type (result_type)))))
 		/* OK */;
 	      else
 		warning ("comparison between signed and unsigned");
