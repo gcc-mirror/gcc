@@ -1,3 +1,10 @@
+2002-12-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Revert HJL's change.
+	* Makefile.in: Regenerated.
+	* configure.in: Put build_prefix before $(BUILD_SUBDIR) here, and
+	always.
+
 2002-12-19  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.tpl, configure.in: Substitute libstdcxx_incdir.

@@ -156,7 +156,8 @@ if test ! -d ${target_subdir} ; then
   fi
 fi
 
-build_subdir=${build_alias}
+build_prefix=build-
+build_subdir=${build_prefix}${build_alias}
 
 if test x"${build_alias}" != x"${host}" ; then
   if test ! -d ${build_subdir} ; then
@@ -166,10 +167,6 @@ if test x"${build_alias}" != x"${host}" ; then
       exit 1
     fi
   fi
-fi
-
-if test x"${target_subdir}" = x"${build_subdir}" ; then
-  build_prefix=build-
 fi
 
 # Skipdirs are removed silently.
@@ -1733,7 +1730,6 @@ s%@CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}%
 s%@RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%\$(STAGE_CC_WRAPPER) ${qqRAW_CXX_FOR_TARGET}%
 s%@target_subdir@%${target_subdir}%
 s%@build_subdir@%${build_subdir}%
-s%@build_prefix@%${build_prefix}%
 s%@build_configargs@%${buildargs}%
 s%@gxx_include_dir@%${gxx_include_dir}%
 s%@libstdcxx_incdir@%${libstdcxx_incdir}%
