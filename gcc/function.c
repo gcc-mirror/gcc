@@ -2648,6 +2648,20 @@ gen_mem_addressof (reg, decl)
   return reg;
 }
 
+/* If DECL has an RTL that is an ADDRESSOF rtx, put it into the stack.  */
+
+void
+flush_addressof (decl)
+     tree decl;
+{
+  if ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL)
+      && DECL_RTL (decl) != 0
+      && GET_CODE (DECL_RTL (decl)) == MEM
+      && GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF
+      && GET_CODE (XEXP (XEXP (DECL_RTL (decl), 0), 0)) == REG)
+    put_addressof_into_stack (XEXP (DECL_RTL (decl), 0));
+}
+
 /* Force the register pointed to by R, an ADDRESSOF rtx, into the stack.  */
 
 static void
