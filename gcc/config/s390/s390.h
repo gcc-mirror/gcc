@@ -544,7 +544,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
   ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T')
 #define EXTRA_ADDRESS_CONSTRAINT(C, STR)			\
-  ((C) == 'U' || (C) == 'W')
+  ((C) == 'U' || (C) == 'W' || (C) == 'Y')
 
 
 /* Stack layout and calling conventions.  */
@@ -1023,6 +1023,7 @@ do {									\
 #define PREDICATE_CODES							\
   {"s_operand",       { SUBREG, MEM }},					\
   {"s_imm_operand",   { CONST_INT, CONST_DOUBLE, SUBREG, MEM }},	\
+  {"shift_count_operand", { REG, SUBREG, PLUS, CONST_INT }},		\
   {"bras_sym_operand",{ SYMBOL_REF, CONST }},				\
   {"larl_operand",    { SYMBOL_REF, CONST, CONST_INT, CONST_DOUBLE }},	\
   {"load_multiple_operation", {PARALLEL}},			        \

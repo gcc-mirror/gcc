@@ -211,6 +211,7 @@ static int s390_short_displacement (rtx);
 static int s390_decompose_address (rtx, struct s390_address *);
 static rtx get_thread_pointer (void);
 static rtx legitimize_tls_address (rtx, rtx);
+static void print_shift_count_operand (FILE *, rtx);
 static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
 static int reg_used_in_mem_p (int, rtx);
@@ -1274,6 +1275,45 @@ s_imm_operand (register rtx op, enum machine_mode mode)
   return general_s_operand (op, mode, 1);
 }
 
+/* Return true if OP a valid shift count operand.
+   OP is the current operation.
+   MODE is the current operation mode.  */
+
+int
+shift_count_operand (rtx op, enum machine_mode mode)
+{
+  HOST_WIDE_INT offset = 0;
+
+  if (! check_mode (op, &mode))
+    return 0;
+
+  /* We can have an integer constant, an address register,
+     or a sum of the two.  Note that reload already checks
+     that any register present is an address register, so
+     we just check for any register here.  */
+  if (GET_CODE (op) == CONST_INT)
+    {
+      offset = INTVAL (op);
+      op = NULL_RTX;
+    }
+  if (op && GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
+    {
+      offset = INTVAL (XEXP (op, 1));
+      op = XEXP (op, 0);
+    }
+  while (op && GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (op && GET_CODE (op) != REG)
+    return 0;
+
+  /* Unfortunately we have to reject constants that are invalid
+     for an address, or else reload will get confused.  */
+  if (!DISP_IN_RANGE (offset))
+    return 0;
+
+  return 1;
+}
+
 /* Return true if DISP is a valid short displacement.  */
 
 static int
@@ -1382,6 +1422,9 @@ s390_extra_constraint (rtx op, int c)
 	  && s390_short_displacement (addr.disp))
 	return 0;
       break;
+
+    case 'Y':
+      return shift_count_operand (op, VOIDmode);
 
     default:
       return 0;
@@ -3281,6 +3324,40 @@ s390_delegitimize_address (rtx orig_x)
   return orig_x;
 }
 
+/* Output shift count operand OP to stdio stream FILE.  */
+
+static void
+print_shift_count_operand (FILE *file, rtx op)
+{
+  HOST_WIDE_INT offset = 0;
+
+  /* We can have an integer constant, an address register,
+     or a sum of the two.  */
+  if (GET_CODE (op) == CONST_INT)
+    {
+      offset = INTVAL (op);
+      op = NULL_RTX;
+    }
+  if (op && GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
+    {
+      offset = INTVAL (XEXP (op, 1));
+      op = XEXP (op, 0);
+    }
+  while (op && GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  /* Sanity check.  */
+  if (op && (GET_CODE (op) != REG
+	     || REGNO (op) >= FIRST_PSEUDO_REGISTER
+	     || REGNO_REG_CLASS (REGNO (op)) != ADDR_REGS))
+    abort ();
+
+  /* Shift counts are truncated to the low six bits anyway.  */
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset & 63);
+  if (op)
+    fprintf (file, "(%s)", reg_names[REGNO (op)]);
+}
+
 /* Locate some local-dynamic symbol still in use by this function
    so that we can print its name in local-dynamic base patterns.  */
 
@@ -3451,6 +3528,7 @@ print_operand_address (FILE *file, rtx addr)
     'R': print only the base register of a memory reference.
     'N': print the second word of a DImode operand.
     'M': print the second word of a TImode operand.
+    'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
     'x': print integer X as if it's an unsigned word.
@@ -3540,6 +3618,10 @@ print_operand (FILE *file, rtx x, int code)
       else
         abort ();
       break;
+
+    case 'Y':
+      print_shift_count_operand (file, x);
+      return;
     }
 
   switch (GET_CODE (x))

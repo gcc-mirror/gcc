@@ -36,6 +36,7 @@ extern int consttable_operand (rtx, enum machine_mode);
 extern int larl_operand (rtx, enum machine_mode);
 extern int s_operand (rtx, enum machine_mode);
 extern int s_imm_operand (rtx, enum machine_mode);
+extern int shift_count_operand (rtx, enum machine_mode);
 extern int bras_sym_operand (rtx, enum machine_mode);
 extern int load_multiple_operation (rtx, enum machine_mode);
 extern int store_multiple_operation (rtx, enum machine_mode);
