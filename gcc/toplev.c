@@ -2907,8 +2907,6 @@ compile_file (name)
 	poplevel (0, 0, 0);
     }
 
-  output_func_start_profiler ();
-
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
 
@@ -3013,6 +3011,15 @@ compile_file (name)
 	      }
 	  }
       }
+
+    /* This must occur after the loop to output deferred functions.  Else
+       the profiler initializer would not be emitted if all the functions
+       in this compilation unit were deferred.
+
+       output_func_start_profiler can not cause any additional functions or
+       data to need to be output, so it need not be in the deferred function
+       loop above.  */
+    output_func_start_profiler ();
 
     /* Now that all possible functions have been output, we can dump
        the exception table.  */
