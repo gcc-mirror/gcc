@@ -8737,7 +8737,7 @@ add_bound_info (subrange_die, bound_attr, bound)
          they have to deal with empty upper bounds location descriptions
          anyway in order to be able to deal with incomplete array types.
          Of course an intelligent debugger (GDB?)  should be able to
-         comprehend that a missing upper bound specification in a array
+         comprehend that a missing upper bound specification in an array
          type used for a storage class `auto' local array variable
          indicates that the upper bound is both unknown (at compile- time)
          and unknowable (at run-time) due to optimization.
@@ -9833,7 +9833,7 @@ gen_subprogram_die (decl, context_die)
 	     instance, if it has duplicate function definitions.  Ideally,
 	     we should detect this case and ignore it.  For now, if we have
 	     already reported an error, any error at all, then assume that
-	     we got here because of a input error, not a dwarf2 bug.  */
+	     we got here because of an input error, not a dwarf2 bug.  */
 	  if (errorcount)
 	    return;
 	  abort ();
@@ -10000,7 +10000,7 @@ gen_subprogram_die (decl, context_die)
 	      gen_decl_die (parm, subr_die);
 	  }
 
-      /* Decide whether we need a unspecified_parameters DIE at the end.
+      /* Decide whether we need an unspecified_parameters DIE at the end.
          There are 2 more cases to do this for: 1) the ansi ... declaration -
          this is detectable when the end of the arg list is not a
          void_type_node 2) an unprototyped function declaration (not a

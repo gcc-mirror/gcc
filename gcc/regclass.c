@@ -1304,7 +1304,7 @@ regclass (f, nregs, dump)
 	  for (class = (int) ALL_REGS - 1; class > 0; class--)
 	    {
 	      /* Ignore classes that are too small for this operand or
-		 invalid for a operand that was auto-incremented.  */
+		 invalid for an operand that was auto-incremented.  */
 	      if (!contains_reg_of_mode [class][PSEUDO_REGNO_MODE (i)]
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 		  || (in_inc_dec[i] && forbidden_inc_dec_class[class])

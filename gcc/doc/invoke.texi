@@ -1669,7 +1669,7 @@ behaviour.
 @item -fdiagnostics-show-location=every-line
 Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
-prefix) for physical lines that result from the process of breaking a
+prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
 
 @end table
@@ -3791,7 +3791,7 @@ that contain more that a certain number of instructions.  You can
 control some of these constants on the command-line using the
 @option{--param} option.
 
-In each case, the @var{value} is a integer.  The allowable choices for
+In each case, the @var{value} is an integer.  The allowable choices for
 @var{name} are given in the following table:
 
 @table @gcctabopt

@@ -615,7 +615,7 @@ extern const char * const reg_note_name[];
    NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.  (We avoid lots of casts
    between ints and pointers if we use a different macro for the block number.)
    The NOTE_INSN_RANGE_{START,END} and NOTE_INSN_LIVE notes record their
-   information as a rtx in the field.  */
+   information as an rtx in the field.  */
 
 #define NOTE_SOURCE_FILE(INSN) 	XCSTR(INSN, 3, NOTE)
 #define NOTE_BLOCK(INSN)	XCTREE(INSN, 3, NOTE)

@@ -2683,7 +2683,7 @@ clear_storage (object, size, align)
 	  /* We need to make an argument list for the function call.
 
 	     memset has three arguments, the first is a void * addresses, the
-	     second a integer with the initialization value, the last is a
+	     second an integer with the initialization value, the last is a
 	     size_t byte count for the copy.  */
 	  arg_list
 	    = build_tree_list (NULL_TREE,
@@ -3125,7 +3125,7 @@ push_block (size, extra, below)
 }
 
 
-/* Return an rtx for the address of the beginning of a as-if-it-was-pushed
+/* Return an rtx for the address of the beginning of an as-if-it-was-pushed
    block of SIZE bytes.  */
 
 static rtx
@@ -5836,7 +5836,7 @@ safe_from_p (x, exp, top_p)
 	  return safe_from_p (x, TREE_OPERAND (exp, 1), 0);
 
 	case METHOD_CALL_EXPR:
-	  /* This takes a rtx argument, but shouldn't appear here.  */
+	  /* This takes an rtx argument, but shouldn't appear here.  */
 	  abort ();
 
 	default:

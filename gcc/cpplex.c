@@ -575,7 +575,7 @@ parse_identifier_slow (pfile, cur)
   /* Remember the next character.  */
   buffer->read_ahead = c;
 
-  /* $ is not a identifier character in the standard, but is commonly
+  /* $ is not an identifier character in the standard, but is commonly
      accepted as an extension.  Don't warn about it in skipped
      conditional blocks.  */
   if (saw_dollar && CPP_PEDANTIC (pfile) && ! pfile->state.skipping)
@@ -2126,7 +2126,7 @@ _cpp_get_buff (pfile, min_size)
   return result;
 }
 
-/* Creates a new buffer with enough space to hold the the uncommitted
+/* Creates a new buffer with enough space to hold the uncommitted
    remaining bytes of BUFF, and at least MIN_EXTRA more bytes.  Copies
    the excess bytes to the new buffer.  Chains the new buffer after
    BUFF, and returns the new buffer.  */
@@ -2144,7 +2144,7 @@ _cpp_append_extend_buff (pfile, buff, min_extra)
   return new_buff;
 }
 
-/* Creates a new buffer with enough space to hold the the uncommitted
+/* Creates a new buffer with enough space to hold the uncommitted
    remaining bytes of the buffer pointed to by BUFF, and at least
    MIN_EXTRA more bytes.  Copies the excess bytes to the new buffer.
    Chains the new buffer before the buffer pointed to by BUFF, and

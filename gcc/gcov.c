@@ -477,7 +477,7 @@ init_arc (arcptr, source, target, bb_graph)
 }
 
 
-/* Reverse the arcs on a arc list.  */
+/* Reverse the arcs on an arc list.  */
 
 static struct adj_list *
 reverse_arcs (arcptr)

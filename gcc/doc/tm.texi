@@ -8776,7 +8776,7 @@ built-in function.
 @findex MD_CAN_REDIRECT_BRANCH
 @item MD_CAN_REDIRECT_BRANCH(@var{branch1}, @var{branch2})
 
-Take a branch insn in @var{branch1} and a another in @var{branch2}.
+Take a branch insn in @var{branch1} and another in @var{branch2}.
 Return true if redirecting @var{branch1} to the destination of
 @var{branch2} is possible.
 
@@ -8788,7 +8788,7 @@ may in turn cause a branch offset to overflow.
 @item ALLOCATE_INITIAL_VALUE(@var{hard_reg})
 
 When the initial value of a hard register has been copied in a pseudo
-register, it is often not necessary to actually allocate a another register
+register, it is often not necessary to actually allocate another register
 to this pseudo register, because the original hard register or a stack slot
 it has been saved into can be used.  @code{ALLOCATE_INITIAL_VALUE}, if
 defined, is called at the start of register allocation once for each

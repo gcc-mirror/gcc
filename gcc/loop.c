@@ -2725,7 +2725,7 @@ find_and_verify_loops (f, loops)
 			/* If no suitable BARRIER was found, create a suitable
 			   one before TARGET.  Since TARGET is a fall through
 			   path, we'll need to insert an jump around our block
-			   and a add a BARRIER before TARGET.
+			   and add a BARRIER before TARGET.
 
 			   This creates an extra unconditional jump outside
 			   the loop.  However, the benefits of removing rarely

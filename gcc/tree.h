@@ -1070,7 +1070,7 @@ struct tree_block
    If set in a SET_TYPE, indicates a bitstring type. */
 #define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type.string_flag)
 
-/* If non-NULL, this is a upper bound of the size (in bytes) of an
+/* If non-NULL, this is an upper bound of the size (in bytes) of an
    object of the given ARRAY_TYPE.  This allows temporaries to be allocated. */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) TYPE_MAX_VALUE (ARRAY_TYPE)
 

@@ -141,7 +141,7 @@ doloop_condition_get (pattern)
 /* Return an estimate of the maximum number of loop iterations for the
    loop specified by LOOP or zero if the loop is not normal.
    MODE is the mode of the iteration count and NONNEG is non-zero if
-   the the iteration count has been proved to be non-negative.  */
+   the iteration count has been proved to be non-negative.  */
 static unsigned HOST_WIDE_INT
 doloop_iterations_max (loop_info, mode, nonneg)
      const struct loop_info *loop_info;
@@ -336,7 +336,7 @@ doloop_valid_p (loop, jump_insn)
 
   /* There is no guarantee that a NE loop will terminate if the
      absolute increment is not unity.  ??? We could compute this
-     condition at run-time and have a additional jump around the loop
+     condition at run-time and have an additional jump around the loop
      to ensure an infinite loop.  */
   if (loop_info->comparison_code == NE
       && INTVAL (loop_info->increment) != -1

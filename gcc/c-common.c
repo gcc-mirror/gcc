@@ -1969,7 +1969,7 @@ truthvalue_conversion (expr)
       return real_zerop (expr) ? boolean_false_node : boolean_true_node;
 
     case ADDR_EXPR:
-      /* If we are taking the address of a external decl, it might be zero
+      /* If we are taking the address of an external decl, it might be zero
 	 if it is weak, so we cannot optimize.  */
       if (DECL_P (TREE_OPERAND (expr, 0))
 	  && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
