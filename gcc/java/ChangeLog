@@ -1,5 +1,8 @@
 1998-12-17  Tom Tromey  <tromey@cygnus.com>
 
+	* parse.y (DIR_SEPARATOR): New define.
+	(check_class_interface_creation): Use it.
+
 	* parse-scan.y (report_main_declaration): Recognize
 	`java.lang.String' in argument to main.
 

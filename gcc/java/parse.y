@@ -70,6 +70,10 @@ definitions and other extensions.  */
 #include "convert.h"
 #include "buffer.h"
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 /* Local function prototypes */
 static char *java_accstring_lookup PROTO ((int));
 static void  classitf_redefinition_error PROTO ((char *,tree, tree, tree));
@@ -2778,7 +2782,9 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
 
       /* Contains OS dependent assumption on path separator. FIXME */
       for (f = &input_filename [strlen (input_filename)]; 
-	   f != input_filename && f[0] != '/'; f--);
+	   f != input_filename && f[0] != '/' && f[0] != DIR_SEPARATOR;
+	   f--)
+	;
       if (f[0] == '/')
 	f++;
       if (strncmp (IDENTIFIER_POINTER (raw_name), 
