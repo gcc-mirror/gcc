@@ -1,3 +1,9 @@
+Thu Oct 28 10:02:00 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/i960/i960.c (i960_va_start): New locals base, num.
+	Use INDIRECT_REF instead of ARRAY_REF on valist.
+	(i960_va_arg): Use INDIRECT_REF instead of ARRAY_REF on valist.
+
 Thu Oct 28 09:45:48 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcse.c (delete_null_pointer_checks): Fix typo in previous change.

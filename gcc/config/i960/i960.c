@@ -2652,18 +2652,23 @@ i960_va_start (stdarg_p, valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {
-  tree d, s, t;
+  tree s, t, base, num;
+
+  /* The array type always decays to a pointer before we get here, so we
+     can't use ARRAY_REF.  */
+  base = build1 (INDIRECT_REF, unsigned_type_node, valist);
+  num = build1 (INDIRECT_REF, unsigned_type_node,
+		build (PLUS_EXPR, unsigned_type_node, valist,
+		       TYPE_SIZE_UNIT (TREE_TYPE (valist))));
 
   s = make_tree (unsigned_type_node, arg_pointer_rtx);
-  d = build (ARRAY_REF, unsigned_type_node, valist, size_zero_node);
-  t = build (MODIFY_EXPR, unsigned_type_node, d, s);
+  t = build (MODIFY_EXPR, unsigned_type_node, base, s);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   s = build_int_2 ((current_function_args_info.ca_nregparms
 		    + current_function_args_info.ca_nstackparms) * 4, 0);
-  d = build (ARRAY_REF, unsigned_type_node, valist, size_one_node);
-  t = build (MODIFY_EXPR, unsigned_type_node, d, s);
+  t = build (MODIFY_EXPR, unsigned_type_node, num, s);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -2678,8 +2683,12 @@ i960_va_arg (valist, type)
   tree base, num, pad, next, this, t1, t2, int48;
   rtx addr_rtx;
 
-  base = build (ARRAY_REF, unsigned_type_node, valist, size_zero_node);
-  num = build (ARRAY_REF, unsigned_type_node, valist, size_one_node);
+  /* The array type always decays to a pointer before we get here, so we
+     can't use ARRAY_REF.  */
+  base = build1 (INDIRECT_REF, unsigned_type_node, valist);
+  num = build1 (INDIRECT_REF, unsigned_type_node,
+		build (PLUS_EXPR, unsigned_type_node, valist,
+		       TYPE_SIZE_UNIT (TREE_TYPE (valist))));
 
   /* Round up sizeof(type) to a word.  */
   siz = (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
