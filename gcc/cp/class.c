@@ -3526,8 +3526,7 @@ finish_struct_1 (t, warn_anon)
 	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
 
-	  if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x)
-	      && ! TYPE_PTRMEMFUNC_P (type))
+	  if (CLASS_TYPE_P (type))
 	    {
 	      /* Never let anything with uninheritable virtuals
 		 make it through without complaint.  */

@@ -42,7 +42,6 @@ extern tree ctor_label, dtor_label;
 static tree build_new_method_call PROTO((tree, tree, tree, tree, int));
 
 static tree build_field_call PROTO((tree, tree, tree, tree));
-static tree find_scoped_type PROTO((tree, tree, tree));
 static struct z_candidate * tourney PROTO((struct z_candidate *));
 static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PROTO((tree, tree));
@@ -162,130 +161,6 @@ build_field_call (basetype_path, instance_ptr, name, parms)
     }
 
   return NULL_TREE;
-}
-
-static tree
-find_scoped_type (type, inner_name, inner_types)
-     tree type, inner_name, inner_types;
-{
-  tree tags = CLASSTYPE_TAGS (type);
-
-  while (tags)
-    {
-      /* The TREE_PURPOSE of an enum tag (which becomes a member of the
-	 enclosing class) is set to the name for the enum type.  So, if
-	 inner_name is `bar', and we strike `baz' for `enum bar { baz }',
-	 then this test will be true.  */
-      if (TREE_PURPOSE (tags) == inner_name)
-	{
-	  if (inner_types == NULL_TREE)
-	    return TYPE_MAIN_DECL (TREE_VALUE (tags));
-	  return resolve_scope_to_name (TREE_VALUE (tags), inner_types);
-	}
-      tags = TREE_CHAIN (tags);
-    }
-
-  /* Look for a TYPE_DECL.  */
-  for (tags = TYPE_FIELDS (type); tags; tags = TREE_CHAIN (tags))
-    if (TREE_CODE (tags) == TYPE_DECL && DECL_NAME (tags) == inner_name)
-      {
-	/* Code by raeburn.  */
-	if (inner_types == NULL_TREE)
-	  return tags;
-	return resolve_scope_to_name (TREE_TYPE (tags), inner_types);
-      }
-
-  return NULL_TREE;
-}
-
-/* Resolve an expression NAME1::NAME2::...::NAMEn to
-   the name that names the above nested type.  INNER_TYPES
-   is a chain of nested type names (held together by SCOPE_REFs);
-   OUTER_TYPE is the type we know to enclose INNER_TYPES.
-   Returns NULL_TREE if there is an error.  */
-
-tree
-resolve_scope_to_name (outer_type, inner_stuff)
-     tree outer_type, inner_stuff;
-{
-  register tree tmp;
-  tree inner_name, inner_type;
-
-  if (outer_type == NULL_TREE && current_class_type != NULL_TREE)
-    {
-      /* We first try to look for a nesting in our current class context,
-         then try any enclosing classes.  */
-      tree type = current_class_type;
-      
-      while (type && (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE))
-        {
-          tree rval = resolve_scope_to_name (type, inner_stuff);
-
-	  if (rval != NULL_TREE)
-	    return rval;
-	  type = DECL_CONTEXT (TYPE_MAIN_DECL (type));
-	}
-    }
-
-  if (TREE_CODE (inner_stuff) == SCOPE_REF)
-    {
-      inner_name = TREE_OPERAND (inner_stuff, 0);
-      inner_type = TREE_OPERAND (inner_stuff, 1);
-    }
-  else
-    {
-      inner_name = inner_stuff;
-      inner_type = NULL_TREE;
-    }
-
-  if (outer_type == NULL_TREE)
-    {
-      tree x;
-      /* If we have something that's already a type by itself,
-	 use that.  */
-      if (IDENTIFIER_HAS_TYPE_VALUE (inner_name))
-	{
-	  if (inner_type)
-	    return resolve_scope_to_name (IDENTIFIER_TYPE_VALUE (inner_name),
-					  inner_type);
-	  return inner_name;
-	}
-      
-      x = lookup_name (inner_name, 0);
-
-      if (x && TREE_CODE (x) == NAMESPACE_DECL)
-	{
-	  x = lookup_namespace_name (x, inner_type);
-	  return x;
-	}
-      return NULL_TREE;
-    }
-
-  if (! IS_AGGR_TYPE (outer_type))
-    return NULL_TREE;
-
-  /* Look for member classes or enums.  */
-  tmp = find_scoped_type (outer_type, inner_name, inner_type);
-
-  /* If it's not a type in this class, then go down into the
-     base classes and search there.  */
-  if (! tmp && TYPE_BINFO (outer_type))
-    {
-      tree binfos = TYPE_BINFO_BASETYPES (outer_type);
-      int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-      for (i = 0; i < n_baselinks; i++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-	  tmp = resolve_scope_to_name (BINFO_TYPE (base_binfo), inner_stuff);
-	  if (tmp)
-	    return tmp;
-	}
-      tmp = NULL_TREE;
-    }
-
-  return tmp;
 }
 
 /* Returns nonzero iff the destructor name specified in NAME

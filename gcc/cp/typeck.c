@@ -6116,8 +6116,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	  /* Functions are not modifiable, even though they are
 	     lvalues.  */
 	  || TREE_CODE (TREE_TYPE (lhs)) == FUNCTION_TYPE
-	  || ((TREE_CODE (lhstype) == RECORD_TYPE
-	       || TREE_CODE (lhstype) == UNION_TYPE)
+	  || (IS_AGGR_TYPE_CODE (TREE_CODE (lhstype))
 	      && C_TYPE_FIELDS_READONLY (lhstype))
 	  || (TREE_CODE (lhstype) == REFERENCE_TYPE
 	      && CP_TYPE_CONST_P (TREE_TYPE (lhstype)))))
@@ -7268,8 +7267,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	{
 	  tree type = TREE_TYPE (o[i]);
 	  if (CP_TYPE_CONST_P (type)
-	      || ((TREE_CODE (type) == RECORD_TYPE
-		   || TREE_CODE (type) == UNION_TYPE)
+	      || (IS_AGGR_TYPE_CODE (TREE_CODE (type))
 		  && C_TYPE_FIELDS_READONLY (type)))
 	    readonly_error (o[i], "modification by `asm'", 1);
 	}
