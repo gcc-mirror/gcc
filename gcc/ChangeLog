@@ -1,3 +1,14 @@
+Sat Dec 16 19:56:24 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (ashrsi3_cmpno, ashrhi3_cmpno, ashrqi3_cmpno, lshrsi3_cmpno,
+	lshrhi3_cmpno): Remove redundant '@' from the template.
+
+	* i386.md (cmpstrsi_1): Fix type of the compare.
+
+	* genattrtab.c (attr_rtx_cost): New function.
+	(simplify_test_exp): Avoid overactive inlining; use temporary
+	obstacks for tests.
+
 Sat Dec 16 10:41:11 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (place_field): Treat overflowing DECL_SIZE_UNIT

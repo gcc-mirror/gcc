@@ -460,6 +460,7 @@ static rtx attr_eq		PARAMS ((const char *, const char *));
 static const char *attr_numeral	PARAMS ((int));
 static int attr_equal_p		PARAMS ((rtx, rtx));
 static rtx attr_copy_rtx	PARAMS ((rtx));
+static int attr_rtx_cost 	PARAMS ((rtx));
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
 
@@ -3151,6 +3152,53 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
 
   return exp;
 }
+/* Compute approximate cost of the expression.  Used to decide whether
+   expression is cheap enought for inline.  */
+static int
+attr_rtx_cost (x)
+     rtx x;
+{
+  int cost = 0;
+  enum rtx_code code;
+  if (!x)
+    return 0;
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case MATCH_OPERAND:
+      if (XSTR (x, 1)[0])
+	return 10;
+      else
+	return 0;
+    case EQ_ATTR:
+      /* Alternatives don't result into function call.  */
+      if (!strcmp (XSTR (x, 0), "alternative"))
+	return 0;
+      else
+	return 5;
+    default:
+      {
+	int i, j;
+	const char *fmt = GET_RTX_FORMAT (code);
+	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+	  {
+	    switch (fmt[i])
+	      {
+	      case 'V':
+	      case 'E':
+		for (j = 0; j < XVECLEN (x, i); j++)
+		  cost += attr_rtx_cost (XVECEXP (x, i, j));
+		break;
+	      case 'e':
+		cost += attr_rtx_cost (XEXP (x, i));
+		break;
+	      }
+	  }
+      }
+      break;
+    }
+  return cost;
+}
 
 /* Given an expression, see if it can be simplified for a particular insn
    code based on the values of other attributes being tested.  This can
@@ -3407,7 +3455,16 @@ simplify_test_exp (exp, insn_code, insn_index)
 	for (av = attr->first_value; av; av = av->next)
 	  for (ie = av->first_insn; ie; ie = ie->next)
 	    if (ie->insn_code == insn_code)
-	      return evaluate_eq_attr (exp, av->value, insn_code, insn_index);
+	      {
+		rtx x;
+		struct obstack *old = rtl_obstack;
+		rtl_obstack = temp_obstack;
+		x = evaluate_eq_attr (exp, av->value, insn_code, insn_index);
+		x = SIMPLIFY_TEST_EXP (x, insn_code, insn_index);
+		rtl_obstack = old;
+		if (attr_rtx_cost(x) < 20)
+		  return attr_copy_rtx (x);
+	      }
       break;
 
     default:
