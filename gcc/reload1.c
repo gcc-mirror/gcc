@@ -170,6 +170,13 @@ static HARD_REG_SET bad_spill_regs;
    elements that are actually valid; new ones are added at the end.  */
 static short spill_regs[FIRST_PSEUDO_REGISTER];
 
+/* This reg set indicates those registers that have been used a spill
+   registers.  This information is used in reorg.c, to help figure out
+   what registers are live at any point.  It is assumed that all spill_regs
+   are dead at every CODE_LABEL.  */
+
+HARD_REG_SET used_spill_regs;
+
 /* Index of last register assigned as a spill register.  We allocate in
    a round-robin fashion.  */
 
@@ -2025,6 +2032,10 @@ reload (first, global, dumpfile)
   if (scratch_block)
     free (scratch_block);
   scratch_block = 0;
+
+  CLEAR_HARD_REG_SET (used_spill_regs);
+  for (i = 0; i < n_spills; i++)
+    SET_HARD_REG_BIT (used_spill_regs, spill_regs[i]);
 
   return failure;
 }
