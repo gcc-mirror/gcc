@@ -1,3 +1,18 @@
+2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* diagnostic.h (diagnostic_set_info): Replace file and lineno
+	parameters with a location_t.
+	* diagnostic.c (diagnostic_set_info): Replace file and lineno
+	parameters with a location_t.
+	(inform, warning, pedwarn, error, sorry, fatal_error,
+	internal_error, warning_with_decl, pedwarn_with_decl,
+	error_with_decl): Adjust.
+	* c-error.c (pedwarn_c99): Adjust.
+	* c-format.c (status_warning): Adjust.
+	* rtl-error.c (file_and_line_for_asm): Rename to ...
+	(location_for_asm): Return a location_t.
+	(diagnostic_for_asm): Adjust.
+
 2003-06-28  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpptrad.c (skip_macro_block_comment): New.

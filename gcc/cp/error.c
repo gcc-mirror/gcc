@@ -113,6 +113,7 @@ static bool cp_printer (output_buffer *, text_info *);
 static void print_non_consecutive_character (output_buffer *, int);
 static void print_integer (output_buffer *, HOST_WIDE_INT);
 static tree locate_error (const char *, va_list);
+static location_t location_of (tree);
 
 void
 init_error (void)
@@ -2121,40 +2122,17 @@ lang_decl_name (tree decl, int v)
   return output_finalize_message (scratch_buffer);
 }
 
-const char *
-cp_file_of (tree t)
+static location_t
+location_of (tree t)
 {
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
-    return DECL_SOURCE_FILE (DECL_CONTEXT (t));
+    t = DECL_CONTEXT (t);
   else if (TYPE_P (t))
-    return DECL_SOURCE_FILE (TYPE_MAIN_DECL (t));
+    t = TYPE_MAIN_DECL (t);
   else if (TREE_CODE (t) == OVERLOAD)
-    return DECL_SOURCE_FILE (OVL_FUNCTION (t));
-  else
-    return DECL_SOURCE_FILE (t);
-}
-
-int
-cp_line_of (tree t)
-{
-  int line = 0;
-  if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
-    line = DECL_SOURCE_LINE (DECL_CONTEXT (t));
-  if (TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t)
-      && TYPE_MAIN_DECL (TREE_TYPE (t)))
-    t = TREE_TYPE (t);
-
-  if (TYPE_P (t))
-    line = DECL_SOURCE_LINE (TYPE_MAIN_DECL (t));
-  else if (TREE_CODE (t) == OVERLOAD)
-    line = DECL_SOURCE_LINE (OVL_FUNCTION (t));
-  else
-    line = DECL_SOURCE_LINE (t);
-
-  if (line == 0)
-    return input_line;
-
-  return line;
+    t = OVL_FUNCTION (t);
+  
+  return DECL_SOURCE_LOCATION (t);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an
@@ -2612,7 +2590,7 @@ cp_error_at (const char *msgid, ...)
 
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       cp_file_of (here), cp_line_of (here), DK_ERROR);
+                       location_of (here), DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -2630,7 +2608,7 @@ cp_warning_at (const char *msgid, ...)
 
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       cp_file_of (here), cp_line_of (here), DK_WARNING);
+                       location_of (here), DK_WARNING);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -2648,8 +2626,7 @@ cp_pedwarn_at (const char *msgid, ...)
 
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       cp_file_of (here), cp_line_of (here),
-                       pedantic_error_kind());
+                       location_of (here), pedantic_error_kind());
   report_diagnostic (&diagnostic);
   va_end (ap);
 }

@@ -33,20 +33,19 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "diagnostic.h"
 
-static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
+static location_t location_for_asm PARAMS ((rtx));
 static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *,
                                         diagnostic_t));
 
-/* Figure file and line of the given INSN.  */
-static void
-file_and_line_for_asm (insn, pfile, pline)
+/* Figure the location of the given INSN.  */
+static location_t
+location_for_asm (insn)
      rtx insn;
-     const char **pfile;
-     int *pline;
 {
   rtx body = PATTERN (insn);
   rtx asmop;
-
+  location_t loc;
+  
   /* Find the (or one of the) ASM_OPERANDS in the insn.  */
   if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
     asmop = SET_SRC (body);
@@ -63,14 +62,12 @@ file_and_line_for_asm (insn, pfile, pline)
 
   if (asmop)
     {
-      *pfile = ASM_OPERANDS_SOURCE_FILE (asmop);
-      *pline = ASM_OPERANDS_SOURCE_LINE (asmop);
+      loc.file = ASM_OPERANDS_SOURCE_FILE (asmop);
+      loc.line = ASM_OPERANDS_SOURCE_LINE (asmop);
     }
   else
-    {
-      *pfile = input_filename;
-      *pline = input_line;
-    }
+    loc = input_location;
+  return loc;
 }
 
 /* Report a diagnostic MESSAGE (an errror or a WARNING) at the line number
@@ -84,10 +81,9 @@ diagnostic_for_asm (insn, msg, args_ptr, kind)
      diagnostic_t kind;
 {
   diagnostic_info diagnostic;
-
-  diagnostic_set_info (&diagnostic, msg, args_ptr, NULL, 0, kind);
-  file_and_line_for_asm (insn, &diagnostic.location.file,
-                         &diagnostic.location.line);
+  
+  diagnostic_set_info (&diagnostic, msg, args_ptr,
+		       location_for_asm (insn), kind);
   report_diagnostic (&diagnostic);
 }
 

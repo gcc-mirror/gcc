@@ -1004,7 +1004,7 @@ status_warning (int *status, const char *msgid, ...)
     {
       /* This duplicates the warning function behavior.  */
       diagnostic_set_info (&diagnostic, _(msgid), &ap,
-			   input_filename, input_line, DK_WARNING);
+			   input_location, DK_WARNING);
       report_diagnostic (&diagnostic);
     }
 

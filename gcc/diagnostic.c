@@ -761,19 +761,16 @@ text_specifies_location (text_info *text, location_t *locus)
 
 void
 diagnostic_set_info (diagnostic_info *diagnostic, const char *msgid,
-		     va_list *args, const char *file,  int line,
+		     va_list *args, location_t location,
 		     diagnostic_t kind)
 {
   diagnostic->message.err_no = errno;
   diagnostic->message.args_ptr = args;
   diagnostic->message.format_spec = _(msgid);
   /* If the diagnostic message doesn't specify a location,
-     use FILE and LINE.  */
+     use LOCATION.  */
   if (!text_specifies_location (&diagnostic->message, &diagnostic->location))
-    {
-      diagnostic->location.file = file;
-      diagnostic->location.line = line;
-    }
+    diagnostic->location = location;
   diagnostic->kind = kind;
 }
 
@@ -1134,8 +1131,7 @@ inform (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_NOTE);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_NOTE);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -1149,8 +1145,7 @@ warning (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_WARNING);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_WARNING);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -1170,8 +1165,8 @@ pedwarn (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       pedantic_error_kind ());
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location,
+		       pedantic_error_kind ());
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -1185,8 +1180,7 @@ error (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_ERROR);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -1201,8 +1195,7 @@ sorry (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-		       DK_SORRY);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_SORRY);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -1217,8 +1210,7 @@ fatal_error (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_FATAL);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_FATAL);
   report_diagnostic (&diagnostic);
   va_end (ap);
 
@@ -1237,8 +1229,7 @@ internal_error (const char *msgid, ...)
   va_list ap;
 
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_ICE);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_ICE);
   report_diagnostic (&diagnostic);
   va_end (ap);
 
@@ -1263,8 +1254,7 @@ warning_with_decl (tree decl, const char *msgid, ...)
     return;
 
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       DK_WARNING);
+                       DECL_SOURCE_LOCATION (decl), DK_WARNING);
   diagnostic_for_decl (global_dc, &diagnostic, decl);
   va_end (ap);
 }
@@ -1283,8 +1273,7 @@ pedwarn_with_decl (tree decl, const char *msgid, ...)
     return;
 
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       pedantic_error_kind ());
+                       DECL_SOURCE_LOCATION (decl), pedantic_error_kind ());
   diagnostic_for_decl (global_dc, &diagnostic, decl);
 
   va_end (ap);
@@ -1298,8 +1287,7 @@ error_with_decl (tree decl, const char *msgid, ...)
 
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       DK_ERROR);
+                       DECL_SOURCE_LOCATION (decl), DK_ERROR);
   diagnostic_for_decl (global_dc, &diagnostic, decl);
   va_end (ap);
 }

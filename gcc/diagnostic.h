@@ -298,7 +298,7 @@ extern void diagnostic_flush_buffer (diagnostic_context *);
 extern void diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
-				 const char *, int, diagnostic_t);
+				 location_t, diagnostic_t);
 extern char *diagnostic_build_prefix (diagnostic_info *);
 
 /* Pure text formatting support functions.  */

@@ -1,5 +1,12 @@
 2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (cp_line_of, cp_file_of): Remove.
+	* error.c (cp_line_of, cp_file_of): Merge into ...
+	(location_of): ... here. Make static, return a location_t.
+	(cp_error_at, cp_warning_at, cp_pedwarn_at): Adjust.
+
+2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/10784
 	* call.c (joust): Move warn_conversion check outwards.
 
