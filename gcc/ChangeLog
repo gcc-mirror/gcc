@@ -1,3 +1,21 @@
+2004-03-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (get_alias_set): Add support for TYPE_REF_CAN_ALIAS_ALL.
+	* c-common.c (handle_mode_attribute): Add extra arg to
+	build_pointer_type_for_mode and build_reference_type_for_mode.
+	* c-typeck.c (build_c_cast): Only look at TREE_CONSTANT_OVERFLOW
+	for INTEGER_CST.
+	* tree.c (build_pointer_type_for_mode): Add arg CAN_ALIAS_ALL.
+	Chain pointers via TYPE_NEXT_PTR_TO.
+	(build_reference_type_for_mode): Similarly.
+	(build_type_no_quals): Add extra arg to build_pointer_type_for_mode
+	and build_reference_type_for_mode.
+	(tree_check4_failed): New function.
+	* tree.h (TREE_CHECK4, PTR_OR_REF_CHECK): New macros.
+	(TYPE_REF_CAN_ALIAS_ALL, TYPE_NEXT_PTR_TO, TYPE_NEXT_REF_TO): Likewise.
+	(TREE_NO_UNSUED_WARNING, TREE_VIA_VIRTUAL, TREE_CONSTANT_OVERFLOW):
+	Add check.
+
 2004-03-23  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (tree_expr_nonnegative_p): A&B is nonnegative when

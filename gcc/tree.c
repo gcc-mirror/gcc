@@ -3878,29 +3878,42 @@ iterative_hash_expr (tree t, hashval_t val)
    (RECORD_TYPE, UNION_TYPE and ENUMERAL_TYPE nodes are
    constructed by language-dependent code, not here.)  */
 
-/* Construct, lay out and return the type of pointers to TO_TYPE
-   with mode MODE. If such a type has already been constructed,
-   reuse it.  */
+/* Construct, lay out and return the type of pointers to TO_TYPE with
+   mode MODE.  If CAN_ALIAS_ALL is TRUE, indicate this type can
+   reference all of memory. If such a type has already been
+   constructed, reuse it.  */
 
 tree
-build_pointer_type_for_mode (tree to_type, enum machine_mode mode)
+build_pointer_type_for_mode (tree to_type, enum machine_mode mode,
+			     bool can_alias_all)
 {
-  tree t = TYPE_POINTER_TO (to_type);
+  tree t;
+
+  /* In some cases, languages will have things that aren't a POINTER_TYPE
+     (such as a RECORD_TYPE for fat pointers in Ada) as TYPE_POINTER_TO.
+     In that case, return that type without regard to the rest of our
+     operands.
+
+     ??? This is a kludge, but consistent with the way this function has
+     always operated and there doesn't seem to be a good way to avoid this
+     at the moment.  */
+  if (TYPE_POINTER_TO (to_type) != 0
+      && TREE_CODE (TYPE_POINTER_TO (to_type)) != POINTER_TYPE)
+    return TYPE_POINTER_TO (to_type);
 
   /* First, if we already have a type for pointers to TO_TYPE and it's
      the proper mode, use it.  */
-  if (t != 0 && mode == ptr_mode)
-    return t;
+  for (t = TYPE_POINTER_TO (to_type); t; t = TYPE_NEXT_PTR_TO (t))
+    if (TYPE_MODE (t) == mode && TYPE_REF_CAN_ALIAS_ALL (t) == can_alias_all)
+      return t;
 
   t = make_node (POINTER_TYPE);
 
   TREE_TYPE (t) = to_type;
   TYPE_MODE (t) = mode;
-
-  /* We can only record one type as "the" pointer to TO_TYPE.  We choose to
-     record the pointer whose mode is ptr_mode.  */
-  if (mode == ptr_mode)
-    TYPE_POINTER_TO (to_type) = t;
+  TYPE_REF_CAN_ALIAS_ALL (t) = can_alias_all;
+  TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (to_type);
+  TYPE_POINTER_TO (to_type) = t;
 
   /* Lay out the type.  This function has many callers that are concerned
      with expression-construction, and this simplifies them all.  */
@@ -3914,29 +3927,41 @@ build_pointer_type_for_mode (tree to_type, enum machine_mode mode)
 tree
 build_pointer_type (tree to_type)
 {
-  return build_pointer_type_for_mode (to_type, ptr_mode);
+  return build_pointer_type_for_mode (to_type, ptr_mode, false);
 }
 
-/* Construct, lay out and return the type of references to TO_TYPE
-   with mode MODE. If such a type has already been constructed,
-   reuse it.  */
+/* Same as build_pointer_type_for_mode, but for REFERENCE_TYPE.  */
 
 tree
-build_reference_type_for_mode (tree to_type, enum machine_mode mode)
+build_reference_type_for_mode (tree to_type, enum machine_mode mode,
+			       bool can_alias_all)
 {
-  tree t = TYPE_REFERENCE_TO (to_type);
+  tree t;
 
-  /* First, if we already have a type for pointers to TO_TYPE, use it.  */
-  if (t != 0 && mode == ptr_mode)
-    return t;
+  /* In some cases, languages will have things that aren't a REFERENCE_TYPE
+     (such as a RECORD_TYPE for fat pointers in Ada) as TYPE_REFERENCE_TO.
+     In that case, return that type without regard to the rest of our
+     operands.
+
+     ??? This is a kludge, but consistent with the way this function has
+     always operated and there doesn't seem to be a good way to avoid this
+     at the moment.  */
+  if (TYPE_REFERENCE_TO (to_type) != 0
+      && TREE_CODE (TYPE_REFERENCE_TO (to_type)) != REFERENCE_TYPE)
+    return TYPE_REFERENCE_TO (to_type);
+
+  /* First, if we already have a type for pointers to TO_TYPE and it's
+     the proper mode, use it.  */
+  for (t = TYPE_REFERENCE_TO (to_type); t; t = TYPE_NEXT_REF_TO (t))
+    if (TYPE_MODE (t) == mode && TYPE_REF_CAN_ALIAS_ALL (t) == can_alias_all)
+      return t;
 
   t = make_node (REFERENCE_TYPE);
 
   TREE_TYPE (t) = to_type;
   TYPE_MODE (t) = mode;
-
-  /* Record this type as the pointer to TO_TYPE.  */
-  if (mode == ptr_mode)
+  TYPE_REF_CAN_ALIAS_ALL (t) = can_alias_all;
+  TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (to_type);
   TYPE_REFERENCE_TO (to_type) = t;
 
   layout_type (t);
@@ -3951,7 +3976,7 @@ build_reference_type_for_mode (tree to_type, enum machine_mode mode)
 tree
 build_reference_type (tree to_type)
 {
-  return build_reference_type_for_mode (to_type, ptr_mode);
+  return build_reference_type_for_mode (to_type, ptr_mode, false);
 }
 
 /* Build a type that is compatible with t but has no cv quals anywhere
@@ -3966,11 +3991,13 @@ build_type_no_quals (tree t)
     {
     case POINTER_TYPE:
       return build_pointer_type_for_mode (build_type_no_quals (TREE_TYPE (t)),
-					  TYPE_MODE (t));
+					  TYPE_MODE (t),
+					  TYPE_REF_CAN_ALIAS_ALL (t));
     case REFERENCE_TYPE:
       return
 	build_reference_type_for_mode (build_type_no_quals (TREE_TYPE (t)),
-				       TYPE_MODE (t));
+				       TYPE_MODE (t),
+				       TYPE_REF_CAN_ALIAS_ALL (t));
     default:
       return TYPE_MAIN_VARIANT (t);
     }
@@ -5020,6 +5047,21 @@ tree_check3_failed (const tree node, enum tree_code code1,
 		  tree_code_name[code1], tree_code_name[code2],
 		  tree_code_name[code3], tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
+}
+
+/* ... and for four different codes.  */
+
+void
+tree_check4_failed (const tree node, enum tree_code code1,
+		    enum tree_code code2, enum tree_code code3,
+		    enum tree_code code4, const char *file, int line,
+		    const char *function)
+{
+  internal_error
+    ("tree check: expected %s, %s, %s or %s; have %s in %s, at %s:%d",
+     tree_code_name[code1], tree_code_name[code2], tree_code_name[code3],
+     tree_code_name[code4], tree_code_name[TREE_CODE (node)], function,
+     trim_filename (file), line);
 }
 
 /* ... and for five different codes.  */

@@ -4629,13 +4629,13 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 	  if (TREE_CODE (type) == POINTER_TYPE)
 	    {
 	      ptr_type = build_pointer_type_for_mode (TREE_TYPE (type),
-						      mode);
+						      mode, false);
 	      *node = ptr_type;
 	    }
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
 	      ptr_type = build_reference_type_for_mode (TREE_TYPE (type),
-							mode);
+							mode, false);
 	      *node = ptr_type;
 	    }
 	  else

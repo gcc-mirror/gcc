@@ -2665,24 +2665,30 @@ update_pointer_to (tree old_type, tree new_type)
   /* Otherwise, first handle the simple case.  */
   if (TREE_CODE (new_type) != UNCONSTRAINED_ARRAY_TYPE)
     {
-      if (ptr != 0)
-	TREE_TYPE (ptr) = new_type;
       TYPE_POINTER_TO (new_type) = ptr;
-
-      if (ref != 0)
-	TREE_TYPE (ref) = new_type;
       TYPE_REFERENCE_TO (new_type) = ref;
 
-      if (ptr != 0 && TYPE_NAME (ptr) != 0
-	  && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL
-	  && TREE_CODE (new_type) != ENUMERAL_TYPE)
-	rest_of_decl_compilation (TYPE_NAME (ptr), NULL,
-				  global_bindings_p (), 0);
-      if (ref != 0 && TYPE_NAME (ref) != 0
-	  && TREE_CODE (TYPE_NAME (ref)) == TYPE_DECL
-	  && TREE_CODE (new_type) != ENUMERAL_TYPE)
-	rest_of_decl_compilation (TYPE_NAME (ref), NULL,
-				  global_bindings_p (), 0);
+      for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
+	{
+	  TREE_TYPE (ptr) = new_type;
+
+	  if (TYPE_NAME (ptr) != 0
+	      && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL
+	      && TREE_CODE (new_type) != ENUMERAL_TYPE)
+	    rest_of_decl_compilation (TYPE_NAME (ptr), NULL,
+				      global_bindings_p (), 0);
+	}
+
+      for (; ref; ref = TYPE_NEXT_PTR_TO (ref))
+	{
+	  TREE_TYPE (ref) = new_type;
+
+	  if (TYPE_NAME (ref) != 0
+	      && TREE_CODE (TYPE_NAME (ref)) == TYPE_DECL
+	      && TREE_CODE (new_type) != ENUMERAL_TYPE)
+	    rest_of_decl_compilation (TYPE_NAME (ref), NULL,
+				      global_bindings_p (), 0);
+	}
     }
 
   /* Now deal with the unconstrained array case. In this case the "pointer"
