@@ -145,9 +145,13 @@ simplify_gen_binary (code, mode, op0, op1)
      the operation.  */
 
   if (code == PLUS || code == MINUS)
-    return simplify_plus_minus (code, mode, op0, op1, 1);
-  else
-    return gen_rtx_fmt_ee (code, mode, op0, op1);
+    {
+      tem = simplify_plus_minus (code, mode, op0, op1, 1);
+      if (tem)
+	return tem;
+    }
+
+  return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
 /* If X is a MEM referencing the constant pool, return the real value.
@@ -1725,7 +1729,9 @@ simplify_binary_operation (code, mode, op0, op1)
    we rebuild the operation. 
 
    If FORCE is true, then always generate the rtx.  This is used to 
-   canonicalize stuff emitted from simplify_gen_binary.  */
+   canonicalize stuff emitted from simplify_gen_binary.  Note that this
+   can still fail if the rtx is too complex.  It won't fail just because
+   the result is not 'simpler' than the input, however.  */
 
 struct simplify_plus_minus_op_data
 {
@@ -1784,11 +1790,7 @@ simplify_plus_minus (code, mode, op0, op1, force)
 	    case PLUS:
 	    case MINUS:
 	      if (n_ops == 7)
-		{
-		  if (force)
-		    abort ();
-		  return NULL_RTX;
-		}
+		return NULL_RTX;
 
 	      ops[n_ops].op = XEXP (this_op, 1);
 	      ops[n_ops].neg = (this_code == MINUS) ^ this_neg;

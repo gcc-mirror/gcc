@@ -1,5 +1,11 @@
 2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* simplify-rtx.c (simplify_plus_minus): Do not abort, 
+	but simply fail if the expression is too complex to simplify.
+	(simplify_gen_binary): Handle simplify_plus_minus failures.
+
+2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* reload1.c (reload): Unshare all rtl after reload is done.
 
 2002-03-06  Jakub Jelinek  <jakub@redhat.com>
