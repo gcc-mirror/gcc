@@ -1,3 +1,13 @@
+1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (gcc_version_trigger): Add new macro.
+	(config.status): Add dependency upon $(gcc_version_trigger).
+
+	* configure.in (gcc_version_trigger): New variable; initialize
+	using value from toplevel configure; add AC_SUBST for it.
+	(gcc_version): Change initialization to use this new variable.
+	* configure: Regenerate.
+
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (version): Rename to gcc_version.
