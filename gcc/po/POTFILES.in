@@ -744,6 +744,7 @@ rtlanal.c
 #scan.c is used only by GCC maintainers and installers
 scan.h
 sdbout.c
+simplify-rtx.c
 stack.h
 stmt.c
 stor-layout.c
