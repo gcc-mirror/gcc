@@ -2789,7 +2789,7 @@ finish_file ()
 
   /* These must be done in backward order to destroy,
      in which they happen to be!  */
-  while (vars)
+  for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
     {
       tree decl = TREE_VALUE (vars);
       tree type = TREE_TYPE (decl);
@@ -2813,7 +2813,6 @@ finish_file ()
 	  if (TREE_STATIC (vars))
 	    expand_end_cond ();
 	}
-      vars = TREE_CHAIN (vars);
     }
 
   for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))

@@ -3,6 +3,18 @@ Wed Jan 25 15:02:09 1995  David S. Miller  (davem@nadzieja.rutgers.edu)
 	* class.c (instantiate_type): Change error message text.
 	* typeck2.c (store_init_value): Likewise.
 
+Wed Feb  1 10:12:14 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_file): Fix bug in Jan 31st change.
+
+Tue Jan 31 16:59:15 1995  Gerald Baumgartner  (gb@lorenzo.cs.purdue.edu)
+
+	* sig.c (build_signature_pointer_or_reference_type): Don't set
+	IS_AGGR_TYPE for signature pointers/reference so expand_default_init
+	doesn't expect to find a copy constructor.
+	* call.c (build_method_call): Treat signature pointers/reference
+	as if IS_AGGR_TYPE were set.
+
 Tue Jan 31 13:28:56 1995  Mike Stump  <mrs@cygnus.com>
 
 	* gc.c (get_typeid): Pawn off error messages to build_t_desc.
