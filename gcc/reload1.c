@@ -1651,7 +1651,8 @@ reload (first, global, dumpfile)
 		    {
 		      int j = potential_reload_regs[i];
 		      int k;
-		      if (j >= 0 && j + 1 < FIRST_PSEUDO_REGISTER
+		      if (j >= 0
+			  && j + group_size[class] <= FIRST_PSEUDO_REGISTER
 			  && HARD_REGNO_MODE_OK (j, group_mode[class]))
 			{
 			  /* Check each reg in the sequence.  */
@@ -1671,18 +1672,10 @@ reload (first, global, dumpfile)
 				  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
 				    if (potential_reload_regs[idx] == j + k)
 				      break;
-				    if (i >= FIRST_PSEUDO_REGISTER)
-				      {
-					/* There are no groups left.  */
-					spill_failure (max_groups_insn[class]);
-					failure = 1;
-					goto failed;
-				      }
-				    else
-				      something_changed
-					|= new_spill_reg (idx, class,
-							  max_needs, NULL_PTR,
-							  global, dumpfile);
+				  something_changed
+				    |= new_spill_reg (idx, class,
+						      max_needs, NULL_PTR,
+						      global, dumpfile);
 				}
 
 			      /* We have found one that will complete a group,
@@ -1697,9 +1690,14 @@ reload (first, global, dumpfile)
 			}
 		    }
 		  /* We couldn't find any registers for this reload.
-		     Abort to avoid going into an infinite loop.  */
-		  if (i == FIRST_PSEUDO_REGISTER)
- 		    abort ();
+		     Avoid going into an infinite loop.  */
+		  if (i >= FIRST_PSEUDO_REGISTER)
+		    {
+		      /* There are no groups left.  */
+		      spill_failure (max_groups_insn[class]);
+		      failure = 1;
+		      goto failed;
+		    }
 		}
 	    }
 
