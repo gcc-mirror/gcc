@@ -95,7 +95,10 @@ estimate_probability (loops_info)
 	}
     }
 
-  /* Try to predict condjumps using same algorithm as mostly_true_jump.  */
+  /* Attempt to predict conditional jumps using a number of heuristics.
+     For each conditional jump, we try each heuristic in a fixed order.
+     If more than one heuristic applies to a particular branch, the first
+     is used as the prediction for the branch.  */
   for (i = 0; i < n_basic_blocks - 1; i++)
     {
       rtx last_insn = BLOCK_END (i);
@@ -108,7 +111,39 @@ estimate_probability (loops_info)
       cond = get_condition (last_insn, &earliest);
       if (! cond)
 	continue;
-      /* EQ tests are usually false and NE tests are usually true.  Also,
+
+      /* Try "pointer heuristic."
+	 A comparison ptr == 0 is predicted as false.
+	 Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
+      prob = 0;
+      switch (GET_CODE (cond))
+	{
+	case EQ:
+	  if (GET_CODE (XEXP (cond, 0)) == REG
+	      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 0)))
+	      && (XEXP (cond, 1) == const0_rtx
+		  || (GET_CODE (XEXP (cond, 1)) == REG
+		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
+	    prob = REG_BR_PROB_BASE / 10;
+	  break;
+	case NE:
+	  if (GET_CODE (XEXP (cond, 0)) == REG
+	      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 0)))
+	      && (XEXP (cond, 1) == const0_rtx
+		  || (GET_CODE (XEXP (cond, 1)) == REG
+		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
+	    prob = REG_BR_PROB_BASE / 2;
+	  break;
+	default:
+	  prob = 0;
+	}
+	if (prob && ! find_reg_note (last_insn, REG_BR_PROB, 0))
+	  REG_NOTES (last_insn)
+	    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
+				 REG_NOTES (last_insn));
+
+      /* Try "opcode heuristic."
+	 EQ tests are usually false and NE tests are usually true. Also,
 	 most quantities are positive, so we can make the appropriate guesses
 	 about signed comparisons against zero.  */
       switch (GET_CODE (cond))
