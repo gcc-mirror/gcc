@@ -1,5 +1,9 @@
 2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
 
+	* configure.in: Eliminate redundant tests.  Reorganize.
+
+2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
+
 	* Makefile.in: Eliminate last reference to LIBGCC1_TEST.
 
 2002-07-01  Nathanael Nerode  <neroden@gcc.gnu.org>
