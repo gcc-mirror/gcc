@@ -1,5 +1,8 @@
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/vmx/varargs-4.c: Remove a Darwin-specific check.
+	* gcc.dg/darwin-abi-3.c: New test.
+
 	* gcc.dg/vmx/debug-1.c: Use int, not long, in union with vector.
 	* gcc.dg/vmx/varargs-1.c: Use int, not long, in union with vector.
 
