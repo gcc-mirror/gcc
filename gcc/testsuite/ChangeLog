@@ -1,3 +1,7 @@
+2001-11-24  Ian Lance Taylor  <ian@airs.com>
+
+	* gcc.c-torture/execute/20011121-1.c: New test.
+
 Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/20011123-1.c: New test.
