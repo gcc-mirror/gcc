@@ -160,7 +160,7 @@ namespace std
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
       // Sync with stdio.
-      bool __sync = this->_M_buf_size == 1;
+      bool __sync = this->_M_buf_size <= 1;
 
       if (__testin && this->is_open())
 	{
@@ -285,7 +285,7 @@ namespace std
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
       // Sync with stdio.
-      bool __sync = this->_M_buf_size == 1;
+      bool __sync = this->_M_buf_size <= 1;
 
       if (__cvt.always_noconv() && __ilen)
 	{
@@ -358,7 +358,7 @@ namespace std
       bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_lim;
       bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size_opt;
       // Sync with stdio.
-      bool __sync = this->_M_buf_size == 1;
+      bool __sync = this->_M_buf_size <= 1;
 
       if (__testput || __testunbuffered)
 	{
@@ -448,7 +448,7 @@ namespace std
       bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
       bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
       // Sync with stdio.
-      bool __sync = this->_M_buf_size == 1;
+      bool __sync = this->_M_buf_size <= 1;
       
       // Should probably do has_facet checks here.
       int __width = use_facet<__codecvt_type>(this->_M_buf_locale).encoding();

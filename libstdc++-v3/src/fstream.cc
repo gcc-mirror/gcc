@@ -44,7 +44,7 @@ namespace std
       bool __testin = _M_mode & ios_base::in;
       bool __testout = _M_mode & ios_base::out;
       // Sync with stdio.
-      bool __sync = _M_buf_size == 1;
+      bool __sync = _M_buf_size <= 1;
 
       if (__testin)
 	{
@@ -126,7 +126,7 @@ namespace std
       bool __testin = _M_mode & ios_base::in;
       bool __testout = _M_mode & ios_base::out;
       // Sync with stdio.
-      bool __sync = _M_buf_size == 1;
+      bool __sync = _M_buf_size <= 1;
 
       if (__testin)
 	{

@@ -315,7 +315,7 @@ namespace std
 	bool __testput = this->_M_out_cur
 	  && this->_M_out_beg < this->_M_out_lim;
 	// Sync with stdio.
-	bool __sync = this->_M_buf_size == 1;
+	bool __sync = this->_M_buf_size <= 1;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
