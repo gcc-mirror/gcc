@@ -1,3 +1,7 @@
+2002-07-03  Graham Stott  <graham.stott@btinternet.com>
+
+	* pt.c (instantiate_class_template): Fix typo.
+
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* typeck2.c (cxx_incomplete_type_diagnostic): Fix typo caused
