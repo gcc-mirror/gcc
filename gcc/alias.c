@@ -598,7 +598,10 @@ new_alias_set (void)
 
   if (flag_strict_aliasing)
     {
-      VARRAY_GROW (alias_sets, last_alias_set + 2);
+      if (!alias_sets)
+	VARRAY_GENERIC_PTR_INIT (alias_sets, 10, "alias sets");
+      else
+	VARRAY_GROW (alias_sets, last_alias_set + 2);
       return ++last_alias_set;
     }
   else
@@ -2672,8 +2675,6 @@ init_alias_once (void)
   static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
     = gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif
-
-  VARRAY_GENERIC_PTR_INIT (alias_sets, 10, "alias sets");
 }
 
 /* Set MEMORY_MODIFIED when X modifies DATA (that is assumed
