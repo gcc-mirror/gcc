@@ -1,4 +1,11 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	
+	* lib/gcc-dg.exp (dg-xfail-if): Do not process conditional xfail
+	data for non-matching targets.
+	* gcc.c-torture/compile/simd-5.c: Fix typo in conditional xfail.
+
+2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10845
 	* g++.dg/template/member3.C: New test.
