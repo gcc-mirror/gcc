@@ -73,15 +73,16 @@ template<typename Container>
 	while (test_iterations < iterations)
 	  {
 	    for (int j = 0; j < insert_values; ++j)
-	      obj.push_back(test_iterations);
+	      obj.insert(obj.begin(), test_iterations);
 	    ++test_iterations;
 	  }
-	obj.clear();
+	// NB: Don't use clear() here, instead force deallocation.
+        obj = Container();
 	test_iterations = 0;
 	while (test_iterations < iterations)
 	  {
 	    for (int j = 0; j < insert_values; ++j)
-	      obj.push_back(test_iterations);
+	      obj.insert(obj.begin(), test_iterations);
 	    ++test_iterations;
 	  }
       }
