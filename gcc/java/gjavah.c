@@ -259,6 +259,23 @@ utf8_cmp (str, length, name)
   return str != limit;
 }
 
+/* If NAME is the name of a C++ keyword, then return an override name.
+   This is a name that can be used in place of the keyword.
+   Otherwise, return NULL.  FIXME: for now, we only handle those
+   keywords we know to be a problem for libgcj.  */
+
+static char *
+cxx_keyword_subst (str, length)
+     unsigned char *str;
+     int length;
+{
+  if (! utf8_cmp (str, length, "delete"))
+    return "__dummy_delete";
+  else if (! utf8_cmp (str, length, "enum"))
+    return "__dummy_enum";
+  return NULL;
+}
+
 /* Generate an access control keyword based on FLAGS.  Returns 0 if
    FLAGS matches the saved access information, nonzero otherwise.  */
 
@@ -309,6 +326,66 @@ name_is_method_p (name, length)
   return 0;
 }
 
+/* Get name of a field.  This handles renamings due to C++ clash.  */
+static char *
+get_field_name (jcf, name_index, flags)
+     JCF *jcf;
+     int name_index;
+     JCF_u2 flags;
+{
+  unsigned char *name = JPOOL_UTF_DATA (jcf, name_index);
+  int length = JPOOL_UTF_LENGTH (jcf, name_index);
+  char *override;
+
+  if (name_is_method_p (name, length))
+    {
+      /* This field name matches a method.  So override the name with
+	 a dummy name.  This is yucky, but it isn't clear what else to
+	 do.  FIXME: if the field is static, then we'll be in real
+	 trouble.  */
+      if ((flags & ACC_STATIC))
+	{
+	  fprintf (stderr, "static field has same name as method\n");
+	  found_error = 1;
+	  return NULL;
+	}
+
+      override = (char *) malloc (length + 3);
+      memcpy (override, name, length);
+      strcpy (override + length, "__");
+    }
+  else if ((override = cxx_keyword_subst (name, length)) != NULL)
+    {
+      /* Must malloc OVERRIDE.  */
+      char *o2 = (char *) malloc (strlen (override) + 1);
+      strcpy (o2, override);
+      override = o2;
+    }
+
+  return override;
+}
+
+/* Print a field name.  Convenience function for use with
+   get_field_name.  */
+static void
+print_field_name (stream, jcf, name_index, flags)
+     FILE *stream;
+     JCF *jcf;
+     int name_index;
+     JCF_u2 flags;
+{
+  char *override = get_field_name (jcf, name_index, flags);
+
+  if (override)
+    {
+      fputs (override, stream);
+      free (override);
+    }
+  else
+    jcf_print_utf8 (stream, JPOOL_UTF_DATA (jcf, name_index),
+		    JPOOL_UTF_LENGTH (jcf, name_index));
+}
+
 static void
 DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
       FILE *stream AND JCF* jcf
@@ -316,13 +393,21 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 {
   char *override = NULL;
 
+  generate_access (stream, flags);
+  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
+    {
+      fprintf (stream, "<not a UTF8 constant>");
+      found_error = 1;
+      return;
+    }
+
   if (flags & ACC_FINAL)
     {
       if (current_field_value > 0)
 	{
 	  char buffer[25];
+	  int done = 1;
 
-	  generate_access (stream, flags);
 	  switch (JPOOL_TAG (jcf, current_field_value))
 	    {
 	    case CONSTANT_Integer:
@@ -330,7 +415,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jint num;
 		int most_negative = 0;
 		fputs ("  static const jint ", out);
-		print_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index);
 		fputs (" = ", out);
 		num = JPOOL_INT (jcf, current_field_value);
 		/* We single out the most negative number to print
@@ -349,7 +434,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jlong num;
 		int most_negative = 0;
 		fputs ("  static const jlong ", out);
-		print_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index);
 		fputs (" = ", out);
 		num = JPOOL_LONG (jcf, current_field_value);
 		/* We single out the most negative number to print
@@ -367,7 +452,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
 		fputs ("  static const jfloat ", out);
-		print_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index);
 		if (! java_float_finite (fnum))
 		  fputs (";\n", out);
 		else
@@ -378,7 +463,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
 		fputs ("  static const jdouble ", out);
-		print_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index);
 		if (! java_double_finite (dnum))
 		  fputs (";\n", out);
 		else
@@ -386,46 +471,22 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      }
 	      break;
 	    default:
-	      fprintf(out, " <<inappropriate constant type>>\n");
+ 	      /* We can't print this as a constant, but we can still
+ 		 print something sensible.  */
+ 	      done = 0;
+ 	      break;
 	    }
 
-	  return;
+	  if (done)
+	    return;
 	}
     }
 
-  generate_access (stream, flags);
   fputs ("  ", out);
   if ((flags & ACC_STATIC))
     fputs ("static ", out);
 
-  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
-    {
-      fprintf (stream, "<not a UTF8 constant>");
-      found_error = 1;
-    }
-  else
-    {
-      unsigned char *name = JPOOL_UTF_DATA (jcf, name_index);
-      int length = JPOOL_UTF_LENGTH (jcf, name_index);
-
-      if (name_is_method_p (name, length))
-	{
-	  /* This field name matches a method.  So override the name
-	     with a dummy name.  This is yucky, but it isn't clear
-	     what else to do.  FIXME: if the field is static, then
-	     we'll be in real trouble.  */
-	  if ((flags & ACC_STATIC))
-	    {
-	      fprintf (stderr, "static field has same name as method\n");
-	      found_error = 1;
-	    }
-
-	  override = (char *) malloc (length + 3);
-	  memcpy (override, name, length);
-	  strcpy (override + length, "__");
-	}
-    }
-
+  override = get_field_name (jcf, name_index, flags);
   print_c_decl (out, jcf, name_index, sig_index, 0, override);
   fputs (";\n", out);
 
@@ -480,13 +541,13 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       method_name_list = nn;
     }
 
-  /* We can't generate a method whose name is a C++ reserved word.
-     For now the only problem has been `delete'; add more here as
-     required.  We can't just ignore the function, because that will
-     cause incorrect code to be generated if the function is virtual
-     (not only for calls to this function for for other functions
-     after it in the vtbl).  So we give it a dummy name instead.  */
-  if (! utf8_cmp (str, length, "delete"))
+  /* We can't generate a method whose name is a C++ reserved word.  We
+     can't just ignore the function, because that will cause incorrect
+     code to be generated if the function is virtual (not only for
+     calls to this function for for other functions after it in the
+     vtbl).  So we give it a dummy name instead.  */
+  override = cxx_keyword_subst (str, length);
+  if (override)
     {
       /* If the method is static or final, we can safely skip it.  If
 	 we don't skip it then we'll have problems since the mangling
@@ -494,7 +555,6 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       if (METHOD_IS_FINAL (jcf->access_flags, flags)
 	  || (flags & ACC_STATIC))
 	return;
-      override = "__dummy_delete";
     }
 
   method_printed = 1;
@@ -861,7 +921,9 @@ print_include (out, utf8, len)
 
   for (incl = all_includes; incl; incl = incl->next)
     {
-      if (! strncmp (incl->name, utf8, len))
+      /* We check the length because we might have a proper prefix.  */
+      if (len == strlen (incl->name)
+	  && ! strncmp (incl->name, utf8, len))
 	return;
     }
 
@@ -935,7 +997,9 @@ add_namelet (name, name_limit, parent)
   /* Search for this name beneath the PARENT node.  */
   for (np = parent->subnamelets; np != NULL; np = np->next)
     {
-      if (! strncmp (name, np->name, p - name))
+      /* We check the length because we might have a proper prefix.  */
+      if (strlen (np->name) == p - name &&
+	  ! strncmp (name, np->name, p - name))
 	{
 	  n = np;
 	  break;
