@@ -1,3 +1,11 @@
+2004-01-02  Gerald Pfeifer  <gp@suse.de>
+
+	* update_version: Add some documentation.
+	
+2004-01-02  Pop Sébastian  <pop@gauvain.u-strasbg.fr>
+
+	* update_version (ADD_BRANCHES): Add lno-branch.
+
 2003-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* maintainer-addresses: New script.

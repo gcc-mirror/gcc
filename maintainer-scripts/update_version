@@ -1,8 +1,13 @@
-#!/bin/sh 
+#!/bin/sh
+#
+# Update the current version date in all files in the tree containing
+# it.  Consider all release branches except those matching the regular
+# expression in $IGNORE_BRANCHES, and also consider those branches listed
+# in $ADD_BRANCHES.
 
 CVSROOT=${CVSROOT:-/cvs/gcc}
 IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2)-branch'
-ADD_BRANCHES='HEAD tree-ssa-20020619-branch'
+ADD_BRANCHES='HEAD tree-ssa-20020619-branch lno-branch'
 
 # Run this from /tmp.
 export CVSROOT
