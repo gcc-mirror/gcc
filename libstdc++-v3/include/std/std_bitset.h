@@ -570,6 +570,7 @@ namespace std
     struct _Sanitize<0>
     { static void _S_do_sanitize(unsigned long) { } };
 
+
   /**
    *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
    *
@@ -578,19 +579,19 @@ namespace std
    *  (Note that %bitset does @e not meet the formal requirements of a
    *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)
    *
-   *  The template argument, @a _Nb, may be any non-negative number of type
-   *  size_t.
+   *  The template argument, @a Nb, may be any non-negative number,
+   *  specifying the number of bits (e.g., "0", "12", "1024*1024").
    *
-   *  A %bitset of size N uses U bits, where
-   *  U = (N % (sizeof(unsigned long) * CHAR_BIT)).
-   *  Thus, N - U bits are unused.  (They are the high-order bits in the
-   *  highest word.)  It is a class invariant that those unused bits are
-   *  always zero.
+   *  In the general unoptimized case, storage is allocated in word-sized
+   *  blocks.  Let B be the number of bits in a word, then (Nb+(B-1))/B
+   *  words will be used for storage.  B - Nb%B bits are unused.  (They are
+   *  the high-order bits in the highest word.)  It is a class invariant
+   *  that those unused bits are always zero.
    *
    *  If you think of %bitset as "a simple array of bits," be aware that
    *  your mental picture is reversed:  a %bitset behaves the same way as
    *  bits in integers do, with the bit at index 0 in the "least significant
-   *  / right-hand" position, and the bit at index N-1 in the "most
+   *  / right-hand" position, and the bit at index Nb-1 in the "most
    *  significant / left-hand" position.  Thus, unlike other containers, a
    *  %bitset's index "counts from right to left," to put it very loosely.
    *
@@ -621,6 +622,7 @@ namespace std
    *  @endcode
    *
    *  Also see http://gcc.gnu.org/onlinedocs/libstdc++/ext/sgiexts.html#ch23
+   *  for a description of extensions.
    *
    *  @if maint
    *  Most of the actual code isn't contained in %bitset<> itself, but in the
