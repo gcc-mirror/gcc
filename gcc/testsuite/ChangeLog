@@ -1,5 +1,12 @@
 1998-10-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/using5.C: New test; using decl from base
+ 	class should be usable as argument of member function
+	* g++.old-deja/g++.other/using6.C: New test; using decl from base
+ 	class should be usable as return type of member function
+	* g++.old-deja/g++.other/using7.C: New test; using decl from base
+ 	class should be usable as type of data member
+
 	* g++.old-deja/g++.ns/extern1.C: fix XFAIL mark
 
 Fri Oct  9 19:19:19 1998  Jeffrey A Law  (law@cygnus.com)
