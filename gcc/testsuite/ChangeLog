@@ -1,5 +1,11 @@
 2004-01-15  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR c++/13659
+	* g++.dg/lookup/strong-using-3.C: New.
+	* g++.dg/lookup/using-10.C: New.
+
+2004-01-15  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR c++/13594
 	* g++.dg/lookup/strong-using-2.C: New.
 
