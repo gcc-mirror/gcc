@@ -2098,6 +2098,10 @@ hppa_expand_epilogue()
      ??? What race condition?!?  */
   else if (frame_pointer_needed)
     {
+      /* Emit a blockage insn here to keep these insns from being moved
+	 to the beginning of the prologue or into the main instruction
+	 stream, doing so avoids some very obscure problems.  */
+      emit_insn (gen_blockage ());
       set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
       emit_insn (gen_pre_ldwm (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (-64), frame_pointer_rtx));
