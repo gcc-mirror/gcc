@@ -59,6 +59,9 @@
          <li><a href="#3_2">[removed]</a>
          <li><a href="#3_3">[removed]</a>
          <li><a href="#3_4">I can't use 'long long' on Solaris</a>
+         <li><a href="#3_5"><code>_XOPEN_SOURCE</code> /
+                            <code>_GNU_SOURCE</code> / etc is always defined</a>
+         <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a>
       </ol>
 
    <li><a href="#4_0">Known Bugs and Non-Bugs</a>
@@ -109,7 +112,7 @@
          library reaches stable plateaus, it is captured in a snapshot
          and released.  The current release is
          <a href="http://gcc.gnu.org/libstdc++/download.html">the
-         thirteenth snapshot</a>.  For those who want to see exactly how
+         fourteenth snapshot</a>.  For those who want to see exactly how
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see below). 
@@ -165,7 +168,7 @@
 
 <hr>
    <h2><a name="1_4">1.4 How do I get libstdc++?</a></h2>
-      <p>The thirteenth (and latest) snapshot of libstdc++-v3 is
+      <p>The fourteenth (and latest) snapshot of libstdc++-v3 is
          <a href="http://gcc.gnu.org/libstdc++/download.html">available via
          ftp</a>.
       </p>
@@ -429,6 +432,52 @@ which is no longer available, thanks deja...-->
       </p>
 
 <hr>
+   <h2><a name="3_5">3.5 <code>_XOPEN_SOURCE</code> / <code>_GNU_SOURCE</code>
+                         / etc is always defined</a></h2>
+      <p>On Solaris, g++ (but not gcc) always defines the preprocessor
+         macro <code>_XOPEN_SOURCE</code>.  On GNU/Linux, the same happens
+         with <code>_GNU_SOURCE</code>.  (This is not an exhaustive list;
+         other macros and other platforms are also affected.)
+      </p>
+      <p>These macros are typically used in C library headers, guarding new
+         versions of functions from their older versions.  The C++ standard
+         library includes the C standard library, but it requires the C90
+         version, which for backwards-compatability reasons is often not the
+         default for many vendors.
+      </p>
+      <p>More to the point, the C++ standard requires behavior which is only
+         available on certain platforms after certain symbols are defined.
+         Usually the issue involves I/O-related typedefs.  In order to
+         ensure correctness, the compiler simply predefines those symbols.
+      </p>
+      <p>Note that it's not enough to #define them only when the library is
+         being built (during installation).  Since we don't have an 'export'
+         keyword, much of the library exists as headers, which means that
+         the symbols must also be defined as your programs are parsed and
+         compiled.
+      </p>
+      <p>To see which symbols are defined, look for CPLUSPLUS_CPP_SPEC in
+         the gcc config headers for your target (and try changing them to
+         see what happens when building complicated code).  You can also run
+         <code>&quot;g++ -E -dM - &lt; /dev/null&quot;</code> to display
+         a list of predefined macros for any particular installation.
+      </p>
+      <p>This has been discussed on the mailing lists
+         <a href="http://gcc.gnu.org/cgi-bin/htsearch?method=and&format=builtin-long&sort=score&words=_XOPEN_SOURCE+Solaris">quite a bit</a>.
+      </p>
+      <p>This method is something of a wart.  We'd like to find a cleaner
+         solution, but nobody yet has contributed the time.
+      </p>
+
+<hr>
+   <h2><a name="3_6">3.6 OS X ctype.h is broken!  How can I hack it?</a></h2>
+      <p>This is a long-standing bug in the OS X support.  Fortunately,
+         the patch is quite simple, and well-known.
+         <a href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html"> Here's a
+         link to the solution.</a>
+      </p>
+
+<hr>
 <h1><a name="4_0">4.0 Known Bugs and Non-Bugs</a></h1>
    <em>Note that this section can get rapdily outdated -- such is the
    nature of an open-source project.  For the latest information, join
@@ -462,39 +511,13 @@ which is no longer available, thanks deja...-->
 <!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
 
 <pre>
-New in 3.0.96:
+New in 3.0.97:
 ---
 - more doxygen documentation.
-- extensions moved out of namespace std
-- HPUX long long support
-- more string optimizations
-- support for NetBSD cross compiles
-- concept_check merge from boost
-- header simplification
-- named locale bug shakeout
-- thread testsuite
-
-New in 3.0.95:
----
-- add S390, m68k, x86-64 support.
-- doxygen documentation has been extended, including man pages.
-- verbose terminate handling has been added.
-- some libsupc++ tweaks
-- warnings for deprecated headers now active.
-- dejagnu testsuite preliminary documentation.
-- dejagnu testsuite default.
-- dejagnu testsuite cross compiler, multilib safe.
-- long long iostreams on by default, rework of ISO C99 support.
-- iterator re-write and testsuites.
-- container testsuites.
-- allocator revamp and testsuites.
-- more concept-checking work.
-- basic_string optimization and MT fixes.
-- new limits implementation.
-- update -fno-exceptions code, verify it works.
-- full named locale support fpr all facets, choice of gnu,
-  ieee_1003.1-200x (POSIX 2), or generic models. Full support depends
-  on target OS and underlying "C" library support.
+- more named locale bug fixes
+- support for symbol versioning when using GNU ld &gt;= 2.12
+- wide-io
+- tuning for executable size
 </pre>
 
 

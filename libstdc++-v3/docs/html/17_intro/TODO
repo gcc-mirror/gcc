@@ -1,4 +1,8 @@
+- audit for places where __builtin_expect can be used.
+
 - coordinate with "C" library people the "C" compatibility headers.
+  Explain why an ISO-14882-conformant solution is hopeless, with the current
+  twisted morass of "C" headers.
 
 - do more doxygen manpages
 

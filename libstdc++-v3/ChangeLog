@@ -57,6 +57,11 @@
 	* aclocal.m4: Regenerate.
 	* configure: Likewise.
 
+2002-03-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html (#3.6):  Rewrap and close <a href> tags.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2002-03-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Define
@@ -68,6 +73,11 @@
 	* src/Makefile.am (libstdc___la_LDFLAGS): Add
 	LIBUNWIND_FLAG to libstdc link line.
 	* src/Makefile.in: Regenerate.
+
+2002-03-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/faq/index.html: Add OS X workaround.
+	* docs/html/17_intro/TODO: Update.
 
 2002-03-18  Paolo Carlini  <pcarlini@unitus.it>
 
