@@ -37,12 +37,12 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "diagnostic.h"
 
-static tree repo_get_id PARAMS ((tree));
-static char *extract_string PARAMS ((char **));
-static const char *get_base_filename PARAMS ((const char *));
-static void open_repo_file PARAMS ((const char *));
-static char *afgets PARAMS ((FILE *));
-static void reopen_repo_file_for_write PARAMS ((void));
+static tree repo_get_id (tree);
+static char *extract_string (char **);
+static const char *get_base_filename (const char *);
+static void open_repo_file (const char *);
+static char *afgets (FILE *);
+static void reopen_repo_file_for_write (void);
 
 static GTY(()) tree pending_repo;
 static GTY(()) tree original_repo;
@@ -60,9 +60,7 @@ static struct obstack temporary_obstack;
 /* Record the flags used to compile this translation unit.  */
 
 void
-repo_compile_flags (argc, argv)
-     int argc;
-     char **argv;
+repo_compile_flags (int argc, char **argv)
 {
 }
 
@@ -71,30 +69,26 @@ repo_compile_flags (argc, argv)
    definition at link time.  */
 
 void
-repo_template_declared (t)
-     tree t;
+repo_template_declared (tree t)
 {}
 
 /* Note where the definition of a template lives so that instantiations can
    be generated later.  */
 
 void
-repo_template_defined (t)
-     tree t;
+repo_template_defined (tree t)
 {}
 
 /* Note where the definition of a class lives to that template
    instantiations can use it.  */
 
 void
-repo_class_defined (t)
-     tree t;
+repo_class_defined (tree t)
 {}
 #endif
 
 static tree
-repo_get_id (t)
-     tree t;
+repo_get_id (tree t)
 {
   if (TYPE_P (t))
     {
@@ -119,8 +113,7 @@ repo_get_id (t)
    to emit it.  */
 
 void
-repo_template_used (t)
-     tree t;
+repo_template_used (tree t)
 {
   tree id;
 
@@ -161,8 +154,7 @@ repo_template_used (t)
 /* Note that the vtable for a class has been used, and offer to emit it.  */
 
 static void
-repo_vtable_used (t)
-     tree t;
+repo_vtable_used (tree t)
 {
   if (! flag_use_repository)
     return;
@@ -174,8 +166,7 @@ repo_vtable_used (t)
    emit it.  */
 
 void
-repo_inline_used (fn)
-     tree fn;
+repo_inline_used (tree fn)
 {
   if (! flag_use_repository)
     return;
@@ -195,16 +186,13 @@ repo_inline_used (fn)
    emit it.  */
 
 void
-repo_tinfo_used (ti)
-     tree ti;
+repo_tinfo_used (tree ti)
 {
 }
 #endif
 
 void
-repo_template_instantiated (t, extern_p)
-     tree t;
-     int extern_p;
+repo_template_instantiated (tree t, bool extern_p)
 {
   if (! extern_p)
     {
@@ -217,8 +205,7 @@ repo_template_instantiated (t, extern_p)
 /* Parse a reasonable subset of shell quoting syntax.  */
 
 static char *
-extract_string (pp)
-     char **pp;
+extract_string (char **pp)
 {
   char *p = *pp;
   int backquote = 0;
@@ -248,8 +235,7 @@ extract_string (pp)
 }
 
 const char *
-get_base_filename (filename)
-     const char *filename;
+get_base_filename (const char *filename)
 {
   char *p = getenv ("COLLECT_GCC_OPTIONS");
   char *output = NULL;
@@ -279,8 +265,7 @@ get_base_filename (filename)
 }        
 
 static void
-open_repo_file (filename)
-     const char *filename;
+open_repo_file (const char *filename)
 {
   register const char *p;
   const char *s = get_base_filename (filename);
@@ -301,8 +286,7 @@ open_repo_file (filename)
 }
 
 static char *
-afgets (stream)
-     FILE *stream;
+afgets (FILE *stream)
 {
   int c;
   while ((c = getc (stream)) != EOF && c != '\n')
@@ -314,8 +298,7 @@ afgets (stream)
 }
 
 void
-init_repo (filename)
-     const char *filename;
+init_repo (const char *filename)
 {
   char *buf;
 
@@ -367,7 +350,7 @@ init_repo (filename)
 }
 
 static void
-reopen_repo_file_for_write ()
+reopen_repo_file_for_write (void)
 {
   if (repo_file)
     fclose (repo_file);
@@ -383,13 +366,13 @@ reopen_repo_file_for_write ()
 /* Emit any pending repos.  */
 
 void
-finish_repo ()
+finish_repo (void)
 {
   tree t;
-  int repo_changed = 0;
+  bool repo_changed = false;
   char *dir, *args;
 
-  if (! flag_use_repository)
+  if (!flag_use_repository)
     return;
 
   /* Do we have to write out a new info file?  */
@@ -399,10 +382,10 @@ finish_repo ()
   
   for (t = original_repo; t; t = TREE_CHAIN (t))
     {
-      if (! IDENTIFIER_REPO_USED (TREE_VALUE (t))
-	  || (! TREE_PURPOSE (t) && IDENTIFIER_REPO_CHOSEN (TREE_VALUE (t))))
+      if (!IDENTIFIER_REPO_USED (TREE_VALUE (t))
+	  || (!TREE_PURPOSE (t) && IDENTIFIER_REPO_CHOSEN (TREE_VALUE (t))))
 	{
-	  repo_changed = 1;
+	  repo_changed = true;
 	  break;
 	}
       IDENTIFIER_REPO_USED (TREE_VALUE (t)) = 0;
@@ -410,12 +393,12 @@ finish_repo ()
 
   /* Are there any templates that are newly used?  */
   
-  if (! repo_changed)
+  if (!repo_changed)
     for (t = pending_repo; t; t = TREE_CHAIN (t))
       {
 	if (IDENTIFIER_REPO_USED (TREE_VALUE (t)))
 	  {
-	    repo_changed = 1;
+	    repo_changed = true;
 	    break;
 	  }
       }
@@ -423,14 +406,14 @@ finish_repo ()
   dir = getpwd ();
   args = getenv ("COLLECT_GCC_OPTIONS");
 
-  if (! repo_changed && pending_repo)
+  if (!repo_changed && pending_repo)
     if (strcmp (old_main, main_input_filename) != 0
 	|| strcmp (old_dir, dir) != 0
 	|| (args == NULL) != (old_args == NULL)
 	|| (args && strcmp (old_args, args) != 0))
-      repo_changed = 1;
+      repo_changed = true;
 
-  if (! repo_changed || errorcount || sorrycount)
+  if (!repo_changed || errorcount || sorrycount)
     goto out;
 
   reopen_repo_file_for_write ();

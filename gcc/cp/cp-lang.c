@@ -30,11 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
-static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
-static bool cxx_warn_unused_global_decl PARAMS ((tree));
-static tree cp_expr_size PARAMS ((tree));
-static bool cp_var_mod_type_p PARAMS ((tree));
+static HOST_WIDE_INT cxx_get_alias_set (tree);
+static bool ok_to_generate_alias_set_for_type (tree);
+static bool cxx_warn_unused_global_decl (tree);
+static tree cp_expr_size (tree);
+static bool cp_var_mod_type_p (tree);
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -204,8 +204,7 @@ const char *const tree_code_name[] = {
    Return TRUE if T safe for aliasing FALSE otherwise.  */
 
 static bool
-ok_to_generate_alias_set_for_type (t)
-     tree t;
+ok_to_generate_alias_set_for_type (tree t)
 {
   if (TYPE_PTRMEMFUNC_P (t))
     return true;
@@ -258,8 +257,7 @@ ok_to_generate_alias_set_for_type (t)
 /* Special routine to get the alias set for C++.  */
 
 static HOST_WIDE_INT
-cxx_get_alias_set (t)
-     tree t;
+cxx_get_alias_set (tree t)
 {
   /* It's not yet safe to use alias sets for classes in C++.  */
   if (!ok_to_generate_alias_set_for_type(t))
@@ -271,8 +269,7 @@ cxx_get_alias_set (t)
 /* Called from check_global_declarations.  */
 
 static bool
-cxx_warn_unused_global_decl (decl)
-     tree decl;
+cxx_warn_unused_global_decl (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
@@ -291,8 +288,7 @@ cxx_warn_unused_global_decl (decl)
    might have allocated something there.  */
 
 static tree
-cp_expr_size (exp)
-     tree exp;
+cp_expr_size (tree exp)
 {
   if (CLASS_TYPE_P (TREE_TYPE (exp)))
     {

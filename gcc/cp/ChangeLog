@@ -1,5 +1,69 @@
 2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Remove traditional C constructs 4/n.
+	* decl2.c (grok_method_quals, warn_if_unknown_interface,
+	grok_x_components, cp_build_parm_decl, build_artificial_parm,
+	maybe_retrofit_in_chrg, grokclassfn, grok_array_decl,
+	delete_sanity, check_member_template, check_java_method,
+	check_classfn, finish_static_data_member_decl, grokfield,
+	grokbitfield, grokoptypename, grok_function_init,
+	cplus_decl_attributes, constructor_name, defer_fn,
+	build_anon_union_vars, finish_anon_union, coerce_new_type,
+	coerce_delete_type, comdat_linkage, maybe_make_one_only,
+	key_method, import_export_vtable, import_export_class,
+	output_vtable_inherit, import_export_decl, import_export_tinfo,
+	build_cleanup, get_guard, get_guard_bits, get_guard_cond,
+	set_guard, start_objects, finish_objects,
+	start_static_storage_duration_function,
+	finish_static_storage_duration_function, get_priority_info,
+	start_static_initialization_or_destruction,
+	finish_static_initialization_or_destruction,
+	do_static_initialization, do_static_destruction,
+	prune_vars_needing_no_initialization, write_out_vars,
+	reparse_decl_as_expr, finish_decl_parsing, namespace_ancestor,
+	add_using_namespace, merge_functions, ambiguous_decl,
+	lookup_using_namespace, lookup_using_namespace,
+	qualified_lookup_using_namespace, set_decl_namespace,
+	decl_namespace, current_decl_namespace, push_decl_namespace,
+	pop_decl_namespace, push_scope, pop_scope, add_function,
+	arg_assoc_namespace, arg_assoc_template_arg, arg_assoc,
+	lookup_arg_dependent, do_namespace_alias,
+	validate_nonmember_using_decl, do_nonmember_using_decl,
+	do_toplevel_using_decl, do_local_using_decl,
+	do_class_using_decl, do_using_directive, check_default_args,
+	mark_used, handle_class_head): Use C90 prototypings.  Use booleans.
+	* parser.c (cp_parser_class_head): Use booleanss.
+	* decl.c (walk_globals, walk_vtables): Likewise.
+	* cp-tree.h (walk_globals_pred, walk_globals_fn, walk_vtables,
+	walk_globals): Change return type from 'int' to 'bool'.
+	* rtti.c (init_rtti_processing, build_headof, throw_bad_cast
+	throw_bad_typeid, get_tinfo_decl_dynamic, typeid_ok_p,
+	build_typeid, tinfo_name, get_tinfo_decl, get_tinfo_ptr,
+	get_typeid, ifnonnull, build_dynamic_cast_1, build_dynamic_cast,
+	qualifier_flags, tinfo_base_init, generic_initializer,
+	ptr_initializer, dfs_class_hint_mark, ptm_initializer,
+	dfs_class_hint_unmark, class_hint_flags, class_initializer,
+	typeinfo_in_lib_p, get_pseudo_ti_init, create_pseudo_type_info,
+	get_pseudo_ti_desc, create_tinfo_types, emit_support_tinfos,
+	unemitted_tinfo_decl_p, emit_tinfo_decl): Likewise.
+	* repo.c (repo_compile_flags, repo_template_declared,
+	repo_template_defined, repo_class_defined, repo_get_id,
+	repo_template_used, repo_vtable_used, repo_inline_used,
+	repo_tinfo_used, repo_template_instantiated, extract_string,
+	open_repo_file, afgets, init_repo, reopen_repo_file_for_write,
+	finish_repo): Likewise.
+	* ptree.c (cxx_print_decl, cxx_print_type, cxx_print_identifier,
+	cxx_print_xnode): Likewise..
+	* cp-lang.c (ok_to_generate_alias_set_for_type, cxx_get_alias_set,
+	cxx_warn_unused_global_decl, cp_expr_size): Likewise.
+	* cxxfilt.c (demangle_it, print_demangler_list, usage,
+	standard_symbol_characters, hp_symbol_characters, main, fatal):
+	Likewise. 
+	(strip_underscore):  Change type from 'int' to 'bool'.
+	(main): Use boolean constants.
+
+2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Remove traditional C constructs 3/n.
 	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
 	build_up_reference, warn_ref_binding, convert_to_reference,
