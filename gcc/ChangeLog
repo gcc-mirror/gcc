@@ -1,3 +1,8 @@
+Mon Oct 19 13:22:13 1998  Geoff Keating  <geoffk@ozemail.com.au>
+
+        * loop.c (scan_loop): Be more selective about what invariants are 
+        moved out of a loop.
+
 Wed Oct 14 23:27:08 1998  Didier FORT (didier.fort@fedex.com)
 
 	* fixincludes: Fix up rpc/{clnt,svr,xdr}.h for SunOS.

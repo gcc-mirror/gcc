@@ -786,18 +786,13 @@ scan_loop (loop_start, end, nregs, unroll_p)
 	     We don't know its life-span, so we can't compute the benefit.  */
 	  if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 	    ;
-	  /* In order to move a register, we need to have one of three cases:
+	  /* In order to move a register, we need to have either:
 	     (1) it is used only in the same basic block as the set
-	     (2) it is not a user variable and it is not used in the
-	         exit test (this can cause the variable to be used
-		 before it is set just like a user-variable).
-	     (3) the set is guaranteed to be executed once the loop starts,
+	     (2) the set is guaranteed to be executed once the loop starts,
 	         and the reg is not used until after that.  */
 	  else if (! ((! maybe_never
 		       && ! loop_reg_used_before_p (set, p, loop_start,
 						    scan_start, end))
-		      || (! REG_USERVAR_P (SET_DEST (set))
-			  && ! REG_LOOP_TEST_P (SET_DEST (set)))
 		      || reg_in_basic_block_p (p, SET_DEST (set))))
 	    ;
 	  else if ((tem = invariant_p (src))
