@@ -157,7 +157,12 @@ combine_strings (strings)
 	    {
 	      int i;
 	      for (i = 0; i < len; i++)
-		((int *) q)[i] = TREE_STRING_POINTER (t)[i];
+		{
+		  if (WCHAR_TYPE_SIZE == HOST_BITS_PER_SHORT)
+		    ((short *) q)[i] = TREE_STRING_POINTER (t)[i];
+		  else
+		    ((int *) q)[i] = TREE_STRING_POINTER (t)[i];
+		}
 	      q += len * wchar_bytes;
 	    }
 	}
