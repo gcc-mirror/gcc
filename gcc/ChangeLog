@@ -1,5 +1,19 @@
 2000-12-18  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-03-24  Geoff Keating  <geoffk@cygnus.com>
+	* flow.c (propagate_block): When we delete an ADDR_VEC,
+	also delete the BARRIER following it if there is one.
+
+	Wed Oct 27 14:10:27 1999  Geoffrey Keating  <geoffk@cygnus.com>
+	* flow.c (propagate_block): When the last reference to a label
+	before an ADDR_VEC is deleted because the reference is a dead
+	store, delete the ADDR_VEC.
+
+	2000-03-19  Richard Henderson  <rth@cygnus.com>
+	* flow.c (delete_block): Delete the addr_vec along with the block.
+	(flow_delete_insn): Decrement LABEL_NUSES when deleting insns that
+	reference labels.
+
 	2000-12-02  Bernd Schmidt  <bernds@redhat.co.uk>
 	* reload1.c (free_for_value_p): New function, frontend to
 	reload_reg_free_for_value_p.  All callers of the latter now call

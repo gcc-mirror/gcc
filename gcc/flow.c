@@ -1681,7 +1681,7 @@ delete_block (b)
      basic_block b;
 {
   int deleted_handler = 0;
-  rtx insn, end;
+  rtx insn, end, tmp;
 
   /* If the head of this block is a CODE_LABEL, then it might be the
      label for an exception handler which can't be reached.
@@ -1728,11 +1728,21 @@ delete_block (b)
 	}
     }
 
-  /* Selectively unlink the insn chain.  Include any BARRIER that may
-     follow the basic block.  */
-  end = next_nonnote_insn (b->end);
-  if (!end || GET_CODE (end) != BARRIER)
-    end = b->end;
+  /* Include any jump table following the basic block.  */
+  end = b->end;
+  if (GET_CODE (end) == JUMP_INSN
+      && (tmp = JUMP_LABEL (end)) != NULL_RTX
+      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+      && GET_CODE (tmp) == JUMP_INSN
+      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+    end = tmp;
+
+  /* Include any barrier that may follow the basic block.  */
+  tmp = next_nonnote_insn (b->end);
+  if (tmp && GET_CODE (tmp) == BARRIER)
+    end = tmp;
+
   delete_insn_chain (insn, end);
 
 no_delete_insns:
@@ -1796,6 +1806,7 @@ flow_delete_insn (insn)
 {
   rtx prev = PREV_INSN (insn);
   rtx next = NEXT_INSN (insn);
+  rtx note;
 
   PREV_INSN (insn) = NULL_RTX;
   NEXT_INSN (insn) = NULL_RTX;
@@ -1814,6 +1825,10 @@ flow_delete_insn (insn)
      the label itself should happen in the normal course of block merging.  */
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
     LABEL_NUSES (JUMP_LABEL (insn))--;
+
+  /* Also if deleting an insn that references a label.  */
+  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX)
+    LABEL_NUSES (XEXP (note, 0))--;
 
   return next;
 }
@@ -2721,6 +2736,48 @@ propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
 	     can cause trouble for first or last insn in a basic block.  */
 	  if (final && insn_is_dead)
 	    {
+	      rtx inote;
+	      /* If the insn referred to a label, note that the label is
+		 now less used.  */
+	      for (inote = REG_NOTES (insn); inote; inote = XEXP (inote, 1))
+		{
+		  if (REG_NOTE_KIND (inote) == REG_LABEL)
+		    {
+		      rtx label = XEXP (inote, 0);
+		      rtx next;
+		      LABEL_NUSES (label)--;
+
+		      /* If this label was attached to an ADDR_VEC, it's
+			 safe to delete the ADDR_VEC.  In fact, it's pretty much
+			 mandatory to delete it, because the ADDR_VEC may
+			 be referencing labels that no longer exist.  */
+		      if (LABEL_NUSES (label) == 0
+			  && (next = next_nonnote_insn (label)) != NULL
+			  && GET_CODE (next) == JUMP_INSN
+			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+			{
+			  rtx pat = PATTERN (next);
+			  int diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
+			  int len = XVECLEN (pat, diff_vec_p);
+			  int i;
+			  for (i = 0; i < len; i++)
+			    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
+			  PUT_CODE (next, NOTE);
+			  NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
+			  NOTE_SOURCE_FILE (next) = 0;
+
+			  if ((next = next_nonnote_insn (label)) != NULL
+			      && GET_CODE (next) == BARRIER)
+			    {
+			      PUT_CODE (next, NOTE);
+			      NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
+			      NOTE_SOURCE_FILE (next) = 0;
+			    }
+			}
+		    }
+		}
+
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
