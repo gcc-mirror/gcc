@@ -710,10 +710,9 @@ unqualified_fn_lookup_error (tree name)
 	 declaration of "f" is available.  Historically, G++ and most
 	 other compilers accepted that usage; explain to the user what
 	 is going wrong.  */
-      (flag_permissive ? warning : error)
-	("there are no arguments to `%D' that depend on a template "
-	 "parameter, so a declaration of `%D' must be available", name,
-	 name);
+      pedwarn ("there are no arguments to `%D' that depend on a template "
+	       "parameter, so a declaration of `%D' must be available", 
+	       name, name);
       
       if (!flag_permissive)
 	{
@@ -726,7 +725,7 @@ unqualified_fn_lookup_error (tree name)
 	      hint = true;
 	    }
 	}
-      return build_min_nt (LOOKUP_EXPR, name);
+      return name;
     }
 
   return unqualified_name_lookup_error (name);

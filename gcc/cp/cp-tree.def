@@ -208,8 +208,7 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 0)
    The second is the TREE_LIST or TREE_VEC of explicitly specified
    arguments.  The template will be a FUNCTION_DECL, TEMPLATE_DECL, or
    an OVERLOAD.  If the template-id refers to a member template, the
-   template may be an IDENTIFIER_NODE.  In an uninstantiated template,
-   the template may be a LOOKUP_EXPR.  */
+   template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 
@@ -219,12 +218,6 @@ DEFTREECODE (OVERLOAD, "overload", 'x', 0)
 /* A generic wrapper for something not tree that we want to include in
    tree structure.  */
 DEFTREECODE (WRAPPER, "wrapper", 'x', 0)
-
-/* Used to represent deferred name lookup for dependent names while
-   parsing a template declaration.  The first argument is an
-   IDENTIFIER_NODE for the name in question.  The TREE_TYPE is
-   unused.  */
-DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 1)
 
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */

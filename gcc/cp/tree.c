@@ -988,13 +988,6 @@ build_overload (tree decl, tree chain)
   return ovl_cons (decl, chain);
 }
 
-int
-is_aggr_type_2 (tree t1, tree t2)
-{
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return 0;
-  return IS_AGGR_TYPE (t1) && IS_AGGR_TYPE (t2);
-}
 
 #define PRINT_RING_SIZE 4
 

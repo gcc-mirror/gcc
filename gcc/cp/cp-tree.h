@@ -39,7 +39,6 @@ struct diagnostic_context;
       IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
-      LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
       TREE_INDIRECT_USING (in NAMESPACE_DECL).
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
@@ -359,6 +358,8 @@ typedef enum cp_id_kind
   CP_ID_KIND_NONE,
   /* An unqualified-id that is not a template-id.  */
   CP_ID_KIND_UNQUALIFIED,
+  /* An uqualified-id that is a dependent name.  */
+  CP_ID_KIND_UNQUALIFIED_DEPENDENT,
   /* An unqualified template-id.  */
   CP_ID_KIND_TEMPLATE_ID,
   /* A qualified-id.  */
@@ -2257,14 +2258,13 @@ struct lang_decl GTY(())
    DECL_TI_TEMPLATE, `template <class U> S<int>::f<U>'.
 
    As a special case, for a member friend template of a template
-   class, this value will not be a TEMPLATE_DECL, but rather a
-   LOOKUP_EXPR, IDENTIFIER_NODE or OVERLOAD indicating the name of
-   the template and any explicit template arguments provided.  For
-   example, in:
+   class, this value will not be a TEMPLATE_DECL, but rather an
+   IDENTIFIER_NODE or OVERLOAD indicating the name of the template and
+   any explicit template arguments provided.  For example, in:
 
      template <class T> struct S { friend void f<int>(int, double); }
 
-   the DECL_TI_TEMPLATE will be a LOOKUP_EXPR for `f' and the
+   the DECL_TI_TEMPLATE will be an IDENTIFIER_NODE for `f' and the
    DECL_TI_ARGS will be {int}.  */
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
 
@@ -2312,7 +2312,6 @@ struct lang_decl GTY(())
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
-#define LOOKUP_EXPR_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
@@ -3965,7 +3964,6 @@ extern void mark_class_instantiated		(tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern tree instantiate_decl			(tree, int);
-extern tree get_bindings			(tree, tree, tree);
 extern int push_tinst_level			(tree);
 extern void pop_tinst_level			(void);
 extern int more_specialized_class		(tree, tree, tree);
@@ -4211,7 +4209,6 @@ extern tree ovl_cons                            (tree, tree);
 extern tree build_overload                      (tree, tree);
 extern tree function_arg_chain			(tree);
 extern int promotes_to_aggr_type		(tree, enum tree_code);
-extern int is_aggr_type_2			(tree, tree);
 extern const char *cxx_printable_name		(tree, int);
 extern tree build_exception_variant		(tree, tree);
 extern tree bind_template_template_parm		(tree, tree);

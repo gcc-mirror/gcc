@@ -132,6 +132,7 @@ static int template_parm_this_level_p (tree, void *);
 static tree tsubst_friend_function (tree, tree);
 static tree tsubst_friend_class (tree, tree);
 static int can_complete_type_without_circularity (tree);
+static tree get_bindings (tree, tree, tree);
 static tree get_bindings_real (tree, tree, tree, int, int, int);
 static int template_decl_level (tree);
 static int check_cv_quals_for_unify (int, tree, tree);
@@ -1639,15 +1640,6 @@ check_explicit_specialization (tree declarator,
 
 	  return decl;
 	}
-      else if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR)
-	{
-	  /* A friend declaration.  We can't do much, because we don't
-	     know what this resolves to, yet.  */
-	  my_friendly_assert (is_friend != 0, 0);
-	  my_friendly_assert (!explicit_instantiation, 0);
-	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  return decl;
-	} 
       else if (ctype != NULL_TREE 
 	       && (TREE_CODE (TREE_OPERAND (declarator, 0)) ==
 		   IDENTIFIER_NODE))
@@ -3905,8 +3897,7 @@ lookup_template_function (tree fns, tree arglist)
   my_friendly_assert (TREE_CODE (fns) == TEMPLATE_DECL
 		      || TREE_CODE (fns) == OVERLOAD
 		      || BASELINK_P (fns)
-		      || TREE_CODE (fns) == IDENTIFIER_NODE
-		      || TREE_CODE (fns) == LOOKUP_EXPR,
+		      || TREE_CODE (fns) == IDENTIFIER_NODE,
 		      20020730);
 
   if (BASELINK_P (fns))
@@ -4579,7 +4570,6 @@ for_each_template_parm_r (tree* tp, int* walk_subtrees, void* d)
     case ARROW_EXPR:
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
-    case LOOKUP_EXPR:
     case PSEUDO_DTOR_EXPR:
       if (!fn)
 	return error_mark_node;
@@ -5965,10 +5955,10 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 		 };
 
 	       Here, the DECL_TI_TEMPLATE for the friend declaration
-	       will be a LOOKUP_EXPR or an IDENTIFIER_NODE.  We are
-	       being called from tsubst_friend_function, and we want
-	       only to create a new decl (R) with appropriate types so
-	       that we can call determine_specialization.  */
+	       will be an IDENTIFIER_NODE.  We are being called from
+	       tsubst_friend_function, and we want only to create a
+	       new decl (R) with appropriate types so that we can call
+	       determine_specialization.  */
 	    gen_tmpl = NULL_TREE;
 	  }
 
@@ -7143,6 +7133,18 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
   else
     expr = name;
+
+  /* This case can occur while determining which of two templates is
+     the more specialized.  After performing argument deduction, we
+     check that no invalid types are created.  During that phase, we
+     may seem uninstantiated template parameters.  */
+  if (TREE_CODE (scope) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    {
+      if (is_template)
+	expr = lookup_template_function (expr, template_args);
+      return build_nt (SCOPE_REF, scope, expr);
+    }
+
   if (!BASELINK_P (name) && !DECL_P (expr))
     expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0,
 				  (complain & tf_error) != 0);
@@ -7160,7 +7162,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
 
   if (is_template)
-    lookup_template_function (expr, template_args);
+    expr = lookup_template_function (expr, template_args);
 
   if (TYPE_P (scope))
     {
@@ -7285,25 +7287,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       else
 	/* Ordinary template template argument.  */
 	return t;
-
-    case LOOKUP_EXPR:
-      {
-	/* We must tsubst into a LOOKUP_EXPR in case the names to
-	   which it refers is a conversion operator; in that case the
-	   name will change.  We avoid making unnecessary copies,
-	   however.  */
-	
-	tree id = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-
-	if (id != TREE_OPERAND (t, 0))
-	  {
-	    r = build_nt (LOOKUP_EXPR, id);
-	    LOOKUP_EXPR_GLOBAL (r) = LOOKUP_EXPR_GLOBAL (t);
-	    t = r;
-	  }
-
-	return t;
-      }
 
     case CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
@@ -7907,25 +7890,13 @@ tsubst_copy_and_build (tree t,
 
   switch (TREE_CODE (t))
     {
-    case LOOKUP_EXPR:
     case IDENTIFIER_NODE:
       {
 	tree decl;
-	tree scope;
 	cp_id_kind idk;
 	tree qualifying_class;
 	bool non_constant_expression_p;
 	const char *error_msg;
-
-	/* Remember whether this identifier was explicitly qualified
-	   with "::".  */
-	if (TREE_CODE (t) == LOOKUP_EXPR && LOOKUP_EXPR_GLOBAL (t))
-	  scope = global_namespace;
-	else
-	  scope = NULL_TREE;
-	/* Get at the underlying identifier.  */
-	if (TREE_CODE (t) == LOOKUP_EXPR)
-	  t = TREE_OPERAND (t, 0);
 
 	if (IDENTIFIER_TYPENAME_P (t))
 	  {
@@ -7934,17 +7905,14 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	/* Look up the name.  */
-	if (scope == global_namespace)
-	  decl = IDENTIFIER_GLOBAL_VALUE (t);
-	else
-	  decl = lookup_name (t, 0);
+	decl = lookup_name (t, 0);
 
 	/* By convention, expressions use ERROR_MARK_NODE to indicate
 	   failure, not NULL_TREE.  */
 	if (decl == NULL_TREE)
 	  decl = error_mark_node;
 
-	decl = finish_id_expression (t, decl, scope,
+	decl = finish_id_expression (t, decl, NULL_TREE,
 				     &idk,
 				     &qualifying_class,
 				     /*constant_expression_p=*/false,
@@ -10203,8 +10171,8 @@ most_general_template (tree decl)
   /* Look for more and more general templates.  */
   while (DECL_TEMPLATE_INFO (decl))
     {
-      /* The DECL_TI_TEMPLATE can be a LOOKUP_EXPR or IDENTIFIER_NODE
-	 in some cases.  (See cp-tree.h for details.)  */
+      /* The DECL_TI_TEMPLATE can be an IDENTIFIER_NODE in some cases.
+	 (See cp-tree.h for details.)  */
       if (TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
 	break;
 
@@ -11493,7 +11461,7 @@ value_dependent_expression_p (tree expression)
     return false;
 
   /* A name declared with a dependent type.  */
-  if (TREE_CODE (expression) == LOOKUP_EXPR
+  if (TREE_CODE (expression) == IDENTIFIER_NODE
       || (DECL_P (expression) 
 	  && type_dependent_expression_p (expression)))
     return true;
@@ -11595,6 +11563,10 @@ type_dependent_expression_p (tree expression)
 
   if (expression == error_mark_node)
     return false;
+
+  /* An unresolved name is always dependent.  */
+  if (TREE_CODE (expression) == IDENTIFIER_NODE)
+    return true;
   
   /* Some expression forms are never type-dependent.  */
   if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR

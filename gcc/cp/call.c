@@ -2607,7 +2607,7 @@ build_user_type_conversion (tree totype, tree expr, int flags)
 
 /* Find the possibly overloaded set of functions corresponding to a
    call of the form SCOPE::NAME (...). NAME might be a
-   TEMPLATE_ID_EXPR, OVERLOAD, _DECL, IDENTIFIER_NODE or LOOKUP_EXPR.  */
+   TEMPLATE_ID_EXPR, OVERLOAD, _DECL, or IDENTIFIER_NODE.  */
 
 tree
 resolve_scoped_fn_name (tree scope, tree name)
@@ -2623,8 +2623,6 @@ resolve_scoped_fn_name (tree scope, tree name)
     }
   if (TREE_CODE (name) == OVERLOAD)
     name = DECL_NAME (get_first_fn (name));
-  else if (TREE_CODE (name) == LOOKUP_EXPR)
-    name = TREE_OPERAND (name, 0);
   
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     fn = lookup_namespace_name (scope, name);

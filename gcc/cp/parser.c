@@ -3438,7 +3438,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
   /* Keep looping until the postfix-expression is complete.  */
   while (true)
     {
-      if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE
+      if (idk == CP_ID_KIND_UNQUALIFIED
+	  && TREE_CODE (postfix_expression) == IDENTIFIER_NODE
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
 	/* It is not a Koenig lookup function call.  */
 	postfix_expression 
