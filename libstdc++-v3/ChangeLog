@@ -1,3 +1,8 @@
+2000-09-01  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* src/locale-inst.cc: Remove pre-instantiation of unicode
+	codecvt types. Now unnecessary, as locale header now correct.
+
 2000-08-31  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/locale_facets.tcc (_S_build_float_format): Move ...	

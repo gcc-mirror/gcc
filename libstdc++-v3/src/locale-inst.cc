@@ -131,28 +131,6 @@ namespace std {
   // codecvt
   template class __codecvt_abstract_base<char, char, mbstate_t>;
   template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
-#ifdef _GLIBCPP_USE_WCHAR_T
-  // XXX This should not be necessary. Unfortunately, the has_facet
-  // and use_facet defines are not in the headers, an instead in
-  // locale_facets.tcc for the time being, as they use std::vector and
-  // thus compile time double when they are pushed up to the top-level
-  // includes.
-  typedef unsigned short			unicode_t;
-
-  template
-    const codecvt<unicode_t, char, __enc_traits>& 
-    use_facet<codecvt<unicode_t, char, __enc_traits> >(const locale&);
-  template 
-    bool
-    has_facet<codecvt<unicode_t, char, __enc_traits> >(const locale &);
-
-  template
-    const codecvt<unicode_t, wchar_t, __enc_traits>& 
-    use_facet<codecvt<unicode_t, wchar_t, __enc_traits> >(const locale&);
-  template 
-    bool
-    has_facet<codecvt<unicode_t, wchar_t, __enc_traits> >(const locale &);
-#endif
 
   // collate
   template class _Collate<char>;
