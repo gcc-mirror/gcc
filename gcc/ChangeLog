@@ -1,3 +1,7 @@
+Wed Mar 18 16:43:11 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* calls.c (expand_call): Fix typos in n_named_args computation.
+
 Wed Mar 18 05:54:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (operand_equal_for_comparison_p): See if equal
