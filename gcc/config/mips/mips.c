@@ -3821,7 +3821,7 @@ expand_block_move (operands)
 
   else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES
 	   && align == (unsigned) UNITS_PER_WORD)
-    move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
+    move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD, 0);
 
   else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
     emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,

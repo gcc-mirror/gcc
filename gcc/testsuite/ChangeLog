@@ -1,3 +1,10 @@
+2003-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/string-4.c (main_test): Remove
+	mempcpy test with post-increments.
+	* gcc.c-torture/execute/string-opt-3.c: New test.
+	* gcc.dg/string-opt-1.c: New test.
+
 2003-06-03  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	PR fortran/10965

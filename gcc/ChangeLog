@@ -1,3 +1,28 @@
+2003-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_memcpy): Remove endp argument and endp
+	!= 0 handling.  Pass 0 to store_by_pieces.
+	(expand_builtin_mempcpy): Add endp argument.  Don't call
+	expand_builtin_memcpy, call store_by_pieces resp. move_by_pieces
+	directly.  If ignoring result, only do expand_call.
+	(expand_builtin_stpcpy): Likewise.  Call expand_builtin_mempcpy
+	otherwise.
+	(expand_builtin_strncpy, expand_builtin_memset): Adjust
+	store_by_pices callers.
+	(expand_builtin): Adjust expand_builtin_memcpy and
+	expand_builtin_mempcpy callers.
+	* expr.c (can_move_by_pieces): New function.
+	(move_by_pieces): Add endp argument, return to resp. memory at end
+	or one byte earlier depending on endp.
+	(store_by_pieces): Likewise.
+	(emit_block_move): Adjust call to move_by_pieces.
+	(emit_push_insn): Adjust move_by_pieces caller.
+	* expr.h (can_move_by_pieces): New prototype.
+	(store_by_pieces): Adjust prototypes.
+	* rtl.h (move_by_pieces): Adjust prototype.
+	* config/mips/mips.c (expand_block_move): Adjust move_by_pieces
+	caller.
+
 2003-06-03  Ben Elliston  <bje@wasabisystems.com>
 
 	* doc/md.texi (Processor pipeline description): Improve wording.

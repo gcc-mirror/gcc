@@ -2141,9 +2141,9 @@ extern void emit_jump			PARAMS ((rtx));
 extern int preserve_subexpressions_p	PARAMS ((void));
 
 /* In expr.c */
-extern void move_by_pieces		PARAMS ((rtx, rtx,
+extern rtx move_by_pieces		PARAMS ((rtx, rtx,
 						 unsigned HOST_WIDE_INT,
-						 unsigned int));
+						 unsigned int, int));
 
 /* In flow.c */
 extern void recompute_reg_usage			PARAMS ((rtx, int));
