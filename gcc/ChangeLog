@@ -1,3 +1,7 @@
+2000-03-22  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Don't promote the temporary.
+
 2000-03-22  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
         * builtin.c (get_pointer_alignment): Use DECL_P and TYPE_P macros.

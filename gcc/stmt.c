@@ -1540,7 +1540,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	}
       else
 	{
-	  output_rtx[i] = assign_temp (type, 0, 0, 0);
+	  output_rtx[i] = assign_temp (type, 0, 0, 1);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
 
