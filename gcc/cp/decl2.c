@@ -1941,7 +1941,10 @@ defer_fn (fn)
 /* Hunts through the global anonymous union ANON_DECL, building
    appropriate VAR_DECLs.  Stores cleanups on the list of ELEMS, and
    returns a VAR_DECL whose size is the same as the size of the
-   ANON_DECL, if one is available.  */
+   ANON_DECL, if one is available.
+
+   FIXME: we should really handle anonymous unions by binding the names
+   of the members to COMPONENT_REFs rather than this kludge.  */
 
 static tree 
 build_anon_union_vars (anon_decl, elems, static_p, external_p)
