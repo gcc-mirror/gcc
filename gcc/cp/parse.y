@@ -3369,6 +3369,7 @@ type_specifier_seq:
 handler_args:
 	  '(' ELLIPSIS ')'
 		{ expand_start_catch_block (NULL_TREE, NULL_TREE); }
+	/* This doesn't allow reference parameters, the below does.
 	| '(' type_specifier_seq absdcl ')'
 		{ expand_start_catch_block ($2, $3); }
 	| '(' type_specifier_seq ')'
@@ -3377,6 +3378,10 @@ handler_args:
 		{ expand_start_catch_block ($2, $3); }
 	| '(' typed_typespecs after_type_declarator ')'
 		{ expand_start_catch_block ($2, $3); }
+	*/
+	| '(' parm ')'
+		{ expand_start_catch_block (TREE_PURPOSE ($2),
+					    TREE_VALUE ($2)); }
 	;
 
 label_colon:

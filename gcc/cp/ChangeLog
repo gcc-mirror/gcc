@@ -1,3 +1,24 @@
+Wed Jul  6 20:25:48 1994  Mike Stump  (mrs@cygnus.com)
+
+	* except.c (init_exception_processing): Setup interim_eh_hook to
+	call lang_interim_eh. 
+	* except.c (do_unwind): Propagate throw object value across
+	stack unwinding.
+	* except.c (saved_throw_value): Used to hold the value of the object
+	being thrown.  It is always a reference to the real value.
+	* except.c (expand_start_catch_block): Add handling for the
+	value of the exception object.
+	* except.c (expand_start_catch_block): Add handler for the handler,
+	so that throws inside the handler go to the outer block.
+	* except.c (expand_end_catch_block): Ditto.
+	* parse.y (handler_args): Use parm instead, as the other doesn't yet
+	handle references correctly.
+
+Wed Jul  6 17:55:32 1994  Per Bothner  (bothner@kalessin.cygnus.com)
+
+	* decl2.c (mark_vtable_entries):  If -ftable-thunks, set the
+	vtable entry properly to abort.
+
 Fri Jul  1 09:35:51 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* parse.y (init): ANSI C++ does not forbid { }.
