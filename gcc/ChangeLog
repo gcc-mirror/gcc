@@ -1,5 +1,16 @@
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
+	* jump.c (redirect_exp_1): Rework from old redirect_exp.  Never
+	commit change group changes.
+	(invert_exp_1): Similarly.
+	(redirect_exp, invert_exp): Use them.
+	(redirect_jump_1): New.
+	(invert_jump_1): New.
+	(jump_optimize_1): Remove code subsumed by condexec.c.
+	* rtl.h (invert_jump_1, redirect_jump_1): Declare.
+
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
 	* rtlanal.c (dead_or_set_regno_p): Use find_regno_note.
 
 	* genconfig.c (main): Set all HAVE_foo to 1.
@@ -125,8 +136,8 @@
 
 2000-04-26  Andreas Jaeger  <aj@suse.de>
 
-        * extend.texi (Function Attributes): Fix description of pure
-        attribute.
+	* extend.texi (Function Attributes): Fix description of pure
+	attribute.
 
 2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
 
@@ -140,7 +151,7 @@
 
 2000-04-25  Richard Henderson  <rth@cygnus.com>
 
-        * cse.c (cse_insn): Emit barrier after unconditional jump.
+	* cse.c (cse_insn): Emit barrier after unconditional jump.
 
 	* calls.c (expand_call): Disable tail call generation once
 	rtx_equal_function_value_matters is false.
@@ -192,11 +203,11 @@
 
 2000-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * acconfig.h (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
+	* acconfig.h (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
 	ENABLE_TREE_CHECKING, ENABLE_RTL_CHECKING, ENABLE_GC_CHECKING,
 	ENABLE_GC_ALWAYS_COLLECT): Delete entries.
 	        
-        * configure.in (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
+	* configure.in (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
 	ENABLE_TREE_CHECKING, ENABLE_RTL_CHECKING, ENABLE_GC_CHECKING,
 	ENABLE_GC_ALWAYS_COLLECT): Use three argument form of AC_DEFINE
 	for these macros.  Clean up spacing and linewraps.
