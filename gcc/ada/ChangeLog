@@ -1,5 +1,15 @@
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
+	* sem_ch3.adb (Find_Type_Of_Subtype_Indic): If subtype indication 
+	is malformed, use instance of Any_Id to allow analysis to proceed.
+	
+	* par-ch12.adb (P_Formal_Type_Declaration): Propagate Error if 
+	type definition is illegal.
+	(P_Formal_Derived_Type_Definition): Better recovery when TAGGED is
+	misplaced.
+
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
 	* sem_warn.adb (Output_Unreferenced_Messages): Extend previous fix to 
 	constants.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.46 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -431,6 +431,7 @@ package body Ch12 is
 
    function P_Formal_Type_Declaration return Node_Id is
       Decl_Node  : Node_Id;
+      Def_Node   : Node_Id;
 
    begin
       Decl_Node := New_Node (N_Formal_Type_Declaration, Token_Ptr);
@@ -446,8 +447,15 @@ package body Ch12 is
 
       T_Is;
 
-      Set_Formal_Type_Definition (Decl_Node, P_Formal_Type_Definition);
-      TF_Semicolon;
+      Def_Node := P_Formal_Type_Definition;
+
+      if Def_Node /= Error then
+         Set_Formal_Type_Definition (Decl_Node, Def_Node);
+         TF_Semicolon;
+      else
+         Decl_Node := Error;
+      end if;
+
       return Decl_Node;
    end P_Formal_Type_Declaration;
 
@@ -621,6 +629,17 @@ package body Ch12 is
          Scan; -- past WITH
          Set_Private_Present (Def_Node, True);
          T_Private;
+
+      elsif Token = Tok_Tagged then
+         Scan;
+
+         if Token = Tok_Private then
+            Error_Msg_SC ("TAGGED should be WITH");
+            Set_Private_Present (Def_Node, True);
+            T_Private;
+         else
+            Ignore (Tok_Tagged);
+         end if;
       end if;
 
       return Def_Node;
