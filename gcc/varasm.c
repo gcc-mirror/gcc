@@ -895,26 +895,6 @@ assemble_constructor (symbol, priority)
     }
 #endif
 }
-
-/* Likewise for entries we want to record for garbage collection.
-   Garbage collection is still under development.  */
-
-void
-assemble_gc_entry (name)
-     const char *name;
-{
-#ifdef ASM_OUTPUT_GC_ENTRY
-  ASM_OUTPUT_GC_ENTRY (asm_out_file, name);
-#else
-  if (flag_gnu_linker)
-    {
-      /* Now tell GNU LD that this is part of the static constructor set.  */
-      fprintf (asm_out_file, "%s\"___PTR_LIST__\",22,0,0,", ASM_STABS_OP);
-      assemble_name (asm_out_file, name);
-      fputc ('\n', asm_out_file);
-    }
-#endif
-}
 
 /* CONSTANT_POOL_BEFORE_FUNCTION may be defined as an expression with
    a non-zero value if the constant pool should be output before the
