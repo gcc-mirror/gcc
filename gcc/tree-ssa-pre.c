@@ -305,6 +305,7 @@ static alloc_pool bitmap_set_pool;
 static alloc_pool value_set_node_pool;
 static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
+static alloc_pool reference_node_pool;
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
@@ -1294,7 +1295,8 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
     {
       genop = VALUE_HANDLE_EXPR_SET (expr)->head->expr;
       if (TREE_CODE_CLASS (TREE_CODE (genop)) != '1'
-	  && TREE_CODE_CLASS (TREE_CODE (genop)) != '2')
+	  && TREE_CODE_CLASS (TREE_CODE (genop)) != '2'
+	  && TREE_CODE_CLASS (TREE_CODE (genop)) != 'r')
 	abort ();
       genop = create_expression_by_pieces (block, genop, stmts);
     }
@@ -1640,7 +1642,7 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, bitmap_set_t s1,
      statements that make aliased stores).  In those cases, we are
      only interested in making VAR available as its own value.  */
   if (var != expr)
-    vn_add (var, val, vuses);
+    vn_add (var, val, NULL);
 
   bitmap_insert_into_set (s1, var);
   bitmap_value_insert_into_set (s2, var);
@@ -1664,12 +1666,15 @@ create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
 
 #if defined ENABLE_CHECKING
   if (TREE_CODE_CLASS (code) != '1'
-      && TREE_CODE_CLASS (code) != '2')
+      && TREE_CODE_CLASS (code) != '2'
+      && TREE_CODE_CLASS (code) != 'r')
     abort ();
 #endif
 
   if (TREE_CODE_CLASS (code) == '1')
     vexpr = pool_alloc (unary_node_pool);
+  else if (TREE_CODE_CLASS (code) == 'r')
+    vexpr = pool_alloc (reference_node_pool);
   else
     vexpr = pool_alloc (binary_node_pool);
 
@@ -1770,9 +1775,23 @@ compute_avail (basic_block block)
 	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
 	      STRIP_USELESS_TYPE_CONVERSION (rhs);
-
-	      if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '1'
-		  || TREE_CODE_CLASS (TREE_CODE (rhs)) == '2')
+	      if (TREE_CODE (rhs) == SSA_NAME
+		  || is_gimple_min_invariant (rhs))
+		{
+		  /* Compute a value number for the RHS of the statement
+		     and add its value to the AVAIL_OUT set for the block.
+		     Add the LHS to TMP_GEN.  */
+		  add_to_sets (lhs, rhs, vuses, TMP_GEN (block), 
+			       AVAIL_OUT (block));
+		  
+		  if (TREE_CODE (rhs) == SSA_NAME
+		      && !is_undefined_value (rhs))
+		    value_insert_into_set (EXP_GEN (block), rhs);
+		  continue;
+		}	   
+	      else if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '1'
+		       || TREE_CODE_CLASS (TREE_CODE (rhs)) == '2'
+		       || TREE_CODE (rhs) == INDIRECT_REF)
 		{
 		  /* For binary, unary, and reference expressions,
 		     create a duplicate expression with the operands
@@ -1782,20 +1801,6 @@ compute_avail (basic_block block)
 		  add_to_sets (lhs, newt, vuses, TMP_GEN (block),
 			       AVAIL_OUT (block));
 		  value_insert_into_set (EXP_GEN (block), newt);
-		  continue;
-		}
-	      else if (TREE_CODE (rhs) == SSA_NAME
-		       || is_gimple_min_invariant (rhs))
-		{
-		  /* Compute a value number for the RHS of the statement
-		    and add its value to the AVAIL_OUT set for the block.
-		    Add the LHS to TMP_GEN.  */
-		  add_to_sets (lhs, rhs, vuses, TMP_GEN (block), 
-			       AVAIL_OUT (block));
-
-		  if (TREE_CODE (rhs) == SSA_NAME
-		      && !is_undefined_value (rhs))
-		    value_insert_into_set (EXP_GEN (block), rhs);
 		  continue;
 		}
 	    }
@@ -1854,9 +1859,9 @@ eliminate (void)
 	      tree lhs = TREE_OPERAND (stmt, 0);
 	      tree *rhs_p = &TREE_OPERAND (stmt, 1);
 	      tree sprime;
-	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
-	      sprime = bitmap_find_leader (AVAIL_OUT (b), vn_lookup (lhs, vuses));
+	      sprime = bitmap_find_leader (AVAIL_OUT (b),
+					   vn_lookup (lhs, NULL));
 	      if (sprime 
 		  && sprime != lhs
 		  && (TREE_CODE (*rhs_p) != SSA_NAME
@@ -1911,7 +1916,8 @@ init_pre (void)
   binary_node_pool = create_alloc_pool ("Binary tree nodes", tsize, 30);
   tsize = tree_size (build1 (NEGATE_EXPR, void_type_node, NULL_TREE));
   unary_node_pool = create_alloc_pool ("Unary tree nodes", tsize, 30);
-
+  tsize = tree_size (build (COMPONENT_REF, void_type_node, NULL_TREE, NULL_TREE, NULL_TREE));
+  reference_node_pool = create_alloc_pool ("Reference tree nodes", tsize, 30);
   FOR_ALL_BB (bb)
     {
       EXP_GEN (bb) = set_new (true);
@@ -1933,6 +1939,7 @@ fini_pre (void)
   free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (value_set_node_pool);
   free_alloc_pool (binary_node_pool);
+  free_alloc_pool (reference_node_pool);
   free_alloc_pool (unary_node_pool);
   htab_delete (phi_translate_table);
   
