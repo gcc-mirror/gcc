@@ -1,3 +1,7 @@
+Thu Nov 20 00:38:46 1997  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in: Add AC_ARG_ENABLE for Haifa as documentation.
+
 Wed Nov 19 12:03:04 1997  Philippe De Muyter  <phdm@macqel.be>
 
 	* dwarf2out.c (CIE_LENGTH_LABEL, FDE_LENGTH_LABEL): New macros.
