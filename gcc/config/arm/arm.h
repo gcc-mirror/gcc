@@ -855,15 +855,15 @@ extern const char * structure_size_string;
 #define ROUND_UP(X) (((X) + 3) & ~3)
 
 /* Convert fron bytes to ints.  */
-#define NUM_INTS(X) (((X) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define ARM_NUM_INTS(X) (((X) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* The number of (integer) registers required to hold a quantity of type MODE.  */
-#define NUM_REGS(MODE)				\
-  NUM_INTS (GET_MODE_SIZE (MODE))
+#define ARM_NUM_REGS(MODE)				\
+  ARM_NUM_INTS (GET_MODE_SIZE (MODE))
 
 /* The number of (integer) registers required to hold a quantity of TYPE MODE.  */
-#define NUM_REGS2(MODE, TYPE)                   \
-  NUM_INTS ((MODE) == BLKmode ? 		\
+#define ARM_NUM_REGS2(MODE, TYPE)                   \
+  ARM_NUM_INTS ((MODE) == BLKmode ? 		\
   int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE))
 
 /* The number of (integer) argument register available.  */
@@ -967,7 +967,7 @@ extern const char * structure_size_string;
     && REGNO >= FIRST_ARM_FP_REGNUM	\
     && REGNO != FRAME_POINTER_REGNUM	\
     && REGNO != ARG_POINTER_REGNUM)	\
-   ? 1 : NUM_REGS (MODE))
+   ? 1 : ARM_NUM_REGS (MODE))
 
 /* Return true if REGNO is suitable for holding a quantity of type MODE.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
@@ -1288,7 +1288,7 @@ enum reg_class
    needed to represent mode MODE in a register of class CLASS.
    ARM regs are UNITS_PER_WORD bits while FPU regs can hold any FP mode */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
-  ((CLASS) == FPU_REGS ? 1 : NUM_REGS (MODE))
+  ((CLASS) == FPU_REGS ? 1 : ARM_NUM_REGS (MODE))
 
 /* Moves between FPU_REGS and GENERAL_REGS are two memory insns.  */
 #define REGISTER_MOVE_COST(MODE, FROM, TO)		\
@@ -1467,7 +1467,7 @@ typedef struct
    For args passed entirely in registers or entirely in memory, zero.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
   (    NUM_ARG_REGS > (CUM).nregs				\
-   && (NUM_ARG_REGS < ((CUM).nregs + NUM_REGS2 (MODE, TYPE)))	\
+   && (NUM_ARG_REGS < ((CUM).nregs + ARM_NUM_REGS2 (MODE, TYPE)))	\
    ?   NUM_ARG_REGS - (CUM).nregs : 0)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -1481,7 +1481,7 @@ typedef struct
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (CUM).nregs += NUM_REGS2 (MODE, TYPE)
+  (CUM).nregs += ARM_NUM_REGS2 (MODE, TYPE)
 
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */

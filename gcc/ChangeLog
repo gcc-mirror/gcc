@@ -1,3 +1,9 @@
+2002-07-17  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* arm.h (ARM_NUM_INTS, ARM_NUM_REGS, ARM_NUM_REGS2): Renamed from
+	NUM_INTS, NUM_REGS and ARM_NUM_REGS2 respectively.  All uses changed.
+	* arm.c: Similarly.
+
 2002-07-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_sign_extend): Declare.
