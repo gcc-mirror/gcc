@@ -247,7 +247,7 @@ do {									\
 
 %type <ttype> CLASSNAME OBJECTNAME OBJC_STRING
 
-%type <ttype> objc_try_stmt superclass
+%type <ttype> superclass
 %type <itype> objc_try_catch_stmt objc_finally_block
 @@end_ifobjc
 
