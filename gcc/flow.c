@@ -253,7 +253,8 @@ static int jmp_uses_reg_or_mem		PROTO((rtx));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static void life_analysis		PROTO((rtx, int));
 void allocate_for_life_analysis		PROTO((void));
-static void init_regset_vector		PROTO((regset *, int, int, struct obstack *));
+void init_regset_vector			PROTO((regset *, int, struct obstack *));
+void free_regset_vector			PROTO((regset *, int));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
 					       regset, int));
 static rtx flow_delete_insn		PROTO((rtx));
@@ -951,18 +952,16 @@ life_analysis (f, nregs)
      if there isn't enough space.
      Don't use oballoc since we may need to allocate other things during
      this function on the temporary obstack.  */
-  init_regset_vector (basic_block_live_at_end, n_basic_blocks, regset_bytes,
-		      &flow_obstack);
+  init_regset_vector (basic_block_live_at_end, n_basic_blocks, &flow_obstack);
 
   basic_block_new_live_at_end
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_new_live_at_end, n_basic_blocks, regset_bytes,
+  init_regset_vector (basic_block_new_live_at_end, n_basic_blocks,
 		      &flow_obstack);
 
   basic_block_significant
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_significant, n_basic_blocks, regset_bytes,
-		      &flow_obstack);
+  init_regset_vector (basic_block_significant, n_basic_blocks, &flow_obstack);
 
   /* Record which insns refer to any volatile memory
      or for any reason can't be deleted just because they are dead stores.
@@ -1286,6 +1285,14 @@ life_analysis (f, nregs)
 				 }
 			     });
 
+
+  free_regset_vector (basic_block_live_at_end, n_basic_blocks);
+  free_regset_vector (basic_block_new_live_at_end, n_basic_blocks);
+  free_regset_vector (basic_block_significant, n_basic_blocks);
+  basic_block_live_at_end = (regset *)0;
+  basic_block_new_live_at_end = (regset *)0;
+  basic_block_significant = (regset *)0;
+
   obstack_free (&flow_obstack, NULL_PTR);
 }
 
@@ -1299,37 +1306,34 @@ allocate_for_life_analysis ()
 {
   register int i;
 
-  regset_size = ((max_regno + REGSET_ELT_BITS - 1) / REGSET_ELT_BITS);
-  regset_bytes = regset_size * sizeof (*(regset) 0);
+  /* Recalculate the register space, in case it has grown.  Old style
+     vector oriented regsets would set regset_{size,bytes} here also.  */
+  allocate_reg_info (max_regno, FALSE, FALSE);
 
   /* Because both reg_scan and flow_analysis want to set up the REG_N_SETS
      information, explicitly reset it here.  The allocation should have
      already happened on the previous reg_scan pass.  Make sure in case
      some more registers were allocated.  */
-  allocate_reg_info (max_regno, FALSE, FALSE);
-
   for (i = 0; i < max_regno; i++)
     REG_N_SETS (i) = 0;
 
   basic_block_live_at_start
     = (regset *) oballoc (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_live_at_start, n_basic_blocks, regset_bytes,
+  init_regset_vector (basic_block_live_at_start, n_basic_blocks,
 		      function_obstack);
 
   regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (function_obstack);
   CLEAR_REG_SET (regs_live_at_setjmp);
 }
 
-/* Make each element of VECTOR point at a regset,
-   taking the space for all those regsets from SPACE.
-   SPACE is of type regset, but it is really as long as NELTS regsets.
-   BYTES_PER_ELT is the number of bytes in one regset.  */
+/* Make each element of VECTOR point at a regset.  The vector has
+   NELTS elements, and space is allocated from the ALLOC_OBSTACK
+   obstack.  */
 
-static void
-init_regset_vector (vector, nelts, bytes_per_elt, alloc_obstack)
+void
+init_regset_vector (vector, nelts, alloc_obstack)
      regset *vector;
      int nelts;
-     int bytes_per_elt;
      struct obstack *alloc_obstack;
 {
   register int i;
@@ -1339,6 +1343,20 @@ init_regset_vector (vector, nelts, bytes_per_elt, alloc_obstack)
       vector[i] = OBSTACK_ALLOC_REG_SET (alloc_obstack);
       CLEAR_REG_SET (vector[i]);
     }
+}
+
+/* Release any additional space allocated for each element of VECTOR point
+   other than the regset header itself.  The vector has NELTS elements.  */
+
+void
+free_regset_vector (vector, nelts)
+     regset *vector;
+     int nelts;
+{
+  register int i;
+
+  for (i = 0; i < nelts; i++)
+    FREE_REG_SET (vector[i]);
 }
 
 /* Compute the registers live at the beginning of a basic block
@@ -1662,6 +1680,11 @@ propagate_block (old, first, last, final, significant, bnum)
       if (insn == first)
 	break;
     }
+
+  FREE_REG_SET (dead);
+  FREE_REG_SET (live);
+  if (final)
+    FREE_REG_SET (maxlive);
 
   if (num_scratch > max_scratch)
     max_scratch = num_scratch;
@@ -2335,7 +2358,6 @@ mark_used_regs (needed, live, x, final, insn)
       return;
 
     case MEM:
-      /* CYGNUS LOCAL dje/8176 */
       /* Invalidate the data for the last MEM stored, but only if MEM is
 	 something that can be stored into.  */
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
@@ -2343,7 +2365,6 @@ mark_used_regs (needed, live, x, final, insn)
 	; /* needn't clear last_mem_set */
       else
 	last_mem_set = 0;
-      /* END CYGNUS LOCAL */
 
 #ifdef AUTO_INC_DEC
       if (final)
@@ -2376,8 +2397,8 @@ mark_used_regs (needed, live, x, final, insn)
 
       regno = REGNO (x);
       {
-	REGSET_ELT_TYPE some_needed = REGNO_REG_SET_P (needed, regno);
-	REGSET_ELT_TYPE some_not_needed = ! some_needed;
+	int some_needed = REGNO_REG_SET_P (needed, regno);
+	int some_not_needed = ! some_needed;
 
 	SET_REGNO_REG_SET (live, regno);
 
