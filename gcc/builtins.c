@@ -96,6 +96,7 @@ static rtx expand_builtin_strcmp	PARAMS ((tree, rtx));
 static rtx expand_builtin_memcpy	PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree));
 static rtx expand_builtin_memset	PARAMS ((tree));
+static rtx expand_builtin_bzero		PARAMS ((tree));
 static rtx expand_builtin_strlen	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
@@ -1574,6 +1575,42 @@ expand_builtin_memset (exp)
     }
 }
 
+/* Expand expression EXP, which is a call to the bzero builtin.  Return 0
+   if we failed the caller should emit a normal call.  */
+static rtx
+expand_builtin_bzero (exp)
+     tree exp;
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+
+  if (arglist == 0
+      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != INTEGER_TYPE))
+    return 0;
+  else
+    {
+      tree newarglist;
+      rtx result;
+
+      /* New argument list transforming bzero(x, y) -> memset(x, 0, y).  */
+      newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
+      chainon (newarglist, build_tree_list (NULL_TREE, integer_zero_node));
+      chainon (newarglist,
+	       build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist))));
+      TREE_OPERAND (exp, 1) = newarglist;
+
+      result = expand_builtin_memset(exp);
+      
+      /* Always restore the original arguments.  */
+      TREE_OPERAND (exp, 1) = arglist;
+
+      return result;
+    }
+}
+
 #ifdef HAVE_cmpstrsi
 /* Expand expression EXP, which is a call to the memcmp or the strcmp builtin.
    ARGLIST is the argument list for this call.  Return 0 if we failed and the
@@ -2313,7 +2350,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       && (fcode == BUILT_IN_SIN || fcode == BUILT_IN_COS
 	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_MEMSET
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
-	  || fcode == BUILT_IN_BCMP
+	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS))
     return expand_call (exp, target, ignore);
@@ -2447,6 +2484,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_MEMSET:
       target = expand_builtin_memset (exp);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_BZERO:
+      target = expand_builtin_bzero (exp);
       if (target)
 	return target;
       break;
