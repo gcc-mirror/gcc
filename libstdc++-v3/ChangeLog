@@ -1,3 +1,12 @@
+2003-12-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/11691 
+	* include/ext/stdio_filebuf.h (stdio_filebuf::stdio_filebuf):
+	Remove __del argument to file descriptor constructor.
+	* config/io/basic_file_stdio.h (__basic_file::sys_open): Remove
+	bool argument.
+	* config/io/basic_file_stdio.cc: Same.
+
 2003-12-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/13189

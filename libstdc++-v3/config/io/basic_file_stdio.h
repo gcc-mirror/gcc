@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,7 +74,7 @@ namespace std
       sys_open(__c_file* __file, ios_base::openmode);
 
       __basic_file*
-      sys_open(int __fd, ios_base::openmode __mode, bool __del);
+      sys_open(int __fd, ios_base::openmode __mode);
 
       __basic_file* 
       close(); 
