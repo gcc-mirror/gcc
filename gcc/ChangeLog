@@ -1,3 +1,22 @@
+Sat Apr 10 20:09:55 EDT 1999  John Wehle  (john@feith.com)
+
+	* i386.md (floatsisf2, floatdisf2, floatsidf2, floatdidf2,
+	floatsixf2, floatdixf2, movsicc, movhicc, movsfcc, movdfcc,
+	movxfcc, movdicc): Remove unused register constraints from
+	the splitters.
+
+	* i386.md (fixuns_truncsfsi2, fixuns_truncdfsi2,
+	fixuns_truncxfsi2): Delete.
+
+	* reg-stack.c (delete_insn_for_stacker): Ensure that
+	the only side effects of a PARALLEL are clobbers.
+	(subst_stack_regs): Handle subst_stack_regs_pat deleting
+	a PARALLEL.
+	* i386.md (extendsfdf2, extenddfxf2,
+	extendsfxf2): Rewrite using a splitter.
+	* i386.c (output_op_from_reg): Remove.
+	* i386.h: Likewise.
+
 Sat Apr 10 13:09:18 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (di_operand): Allow SUBREGs as well.
