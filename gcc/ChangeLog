@@ -1,3 +1,9 @@
+2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* toplev.c (rest_of_compilation): Call 
+	note_deferral_of_defined_inline_function even if the function
+	can't be inlined.
+
 2000-04-28  Scott Bambrough  <scottb@netwinder.org>
 
 	* cpplex.c (_cpp_scan_line): Fix buffer overwrite.
@@ -11426,7 +11432,7 @@ Tue Jan  4 22:30:16 2000  Jeffrey A Law  (law@cygnus.com)
 	(SLOW_UNALIGNED_ACCESS): Define.
 	(CASE_VECTOR_MODE): Always use 32-bit offsets.
 	(ASM_FILE_END): Generate 64-bit symbol in 64-bit mode.
-	(EXTRA_SECTOIN_FUNCTIONS): Indent .csect pseudo-op.
+	(EXTRA_SECTION_FUNCTIONS): Indent .csect pseudo-op.
 	(toc_section): Likewise and .toc pseudo-op.
 	(ASM_DECLARE_FUNCTION): Likewise.  Align text more strictly in
 	64-bit mode.

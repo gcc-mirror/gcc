@@ -2670,6 +2670,14 @@ rest_of_compilation (decl)
 		  || DECL_EXTERNAL (decl))))
 	DECL_DEFER_OUTPUT (decl) = 1;
 
+      if (DECL_INLINE (decl))
+	/* DWARF wants seperate debugging info for abstract and
+	   concrete instances of all inline functions, including those
+	   declared inline but not inlined, and those inlined even
+	   though they weren't declared inline.  Conveniently, that's
+	   what DECL_INLINE means at this point.  */
+	note_deferral_of_defined_inline_function (decl);
+
       if (DECL_DEFER_OUTPUT (decl))
 	{
 	  /* If -Wreturn-type, we have to do a bit of compilation.
@@ -2696,7 +2704,6 @@ rest_of_compilation (decl)
 	       of other functions later in this translation unit.  */
 	    TREE_NOTHROW (current_function_decl) = 1;
 
-	  note_deferral_of_defined_inline_function (decl);
 	  timevar_push (TV_INTEGRATION);
 	  save_for_inline_nocopy (decl);
 	  timevar_pop (TV_INTEGRATION);
