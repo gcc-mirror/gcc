@@ -1,3 +1,16 @@
+Wed Jul 29 23:49:23 1998  Todd Vierling <tv@netbsd.org>
+
+	* configure.in: Use xm-netbsd.h as the NetBSD xm file (not xm-siglist).
+	Accept arm32 as arm, m68k4k as m68k, mipsle as mips-dec, and any
+	manufacturer id for ns32k.
+	* configure: Regenerated.
+	* config/netbsd.h: When using ASM_WEAKEN_LABEL, make it global too.
+	* config/t-netbsd: Don't compile libgcc1-test as the fns are in libc.
+	* config/i386/netbsd.h: Undefine DWARF2_UNWIND_INFO, not define as 0.
+	* config/m68k/netbsd.h: Same.
+	* config/ns32k/netbsd.h: Same.
+	* config/sparc/netbsd.h: Same.
+
 Wed Jul 29 22:39:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* unroll.c (unroll_loop): Do not abort for an UNROLL_MODULO
