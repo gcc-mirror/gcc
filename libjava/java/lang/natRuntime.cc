@@ -26,7 +26,7 @@ details.  */
 
 /* FIXME: we don't always need this.  The next libtool will let us use
    AC_LTDL_PREOPEN to see if we do.  */
-const lt_dlsymlist lt_preloaded_symbols[1] = { { 0, 0 } };
+extern const lt_dlsymlist lt_preloaded_symbols[1] = { { 0, 0 } };
 
 // We keep track of all the libraries loaded by this application.  For
 // now we use them to look up symbols for JNI.  `libraries_size' holds
