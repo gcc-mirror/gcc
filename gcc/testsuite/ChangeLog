@@ -2,6 +2,10 @@
 
 	* g++.dg/template/sizeof8.C: Don't assume 32bit pointers.
 
+	* g++.dg/ext/stmtexpr2.C (alt1): Rename from expected.
+	(alt2, which): New.
+	(Check): Accept either alternative.
+
 2004-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/inline1.C: New test.

@@ -4,19 +4,31 @@
 extern "C" int printf (char const *, ...);
 extern "C" void abort ();
 
-static unsigned int expected[] = {
-  11, 10, 21, 110, 111, 121
-};
+// There are two alternate legal renderings.
+static unsigned int alt1[] = { 11, 10, 21, 110, 111, 121 };
+static unsigned int alt2[] = { 10, 11, 21, 111, 110, 121 };
+
 static unsigned int pointer = 0;
+static unsigned int *which;
 
 static void Check (unsigned t, unsigned i, void const *ptr, char const *name)
 {
   printf ("%d %d %p %s\n", t, i, ptr, name);
 
-  if (pointer > sizeof(expected)/sizeof(expected[0]))
+  if (pointer > sizeof(alt1)/sizeof(alt1[0]))
     abort ();
-  if (t + i != expected[pointer++])
+  if (pointer == 0)
+    {
+      if (t + i == alt1[0])
+	which = &alt1[0];
+      else if (t + i == alt2[0])
+	which = &alt2[0];
+      else
+	abort ();
+    }
+  else if (t + i != which[pointer])
     abort ();
+  pointer++;
 }
 
 struct A 
