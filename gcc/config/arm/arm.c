@@ -1641,23 +1641,23 @@ arm_comp_type_attributes (type1, type2)
      tree type1;
      tree type2;
 {
-  tree l1, l2, s1, s2;
+  int l1, l2, s1, s2;
   
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;
 
   /* Check for mismatched call attributes.  */
-  l1 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type1));
-  l2 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type2));
-  s1 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type1));
-  s2 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type2));
+  l1 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type1)) != NULL;
+  l2 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type2)) != NULL;
+  s1 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type1)) != NULL;
+  s2 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type2)) != NULL;
 
   /* Only bother to check if an attribute is defined.  */
   if (l1 | l2 | s1 | s2)
     {
       /* If one type has an attribute, the other must have the same attribute.  */
-      if ((!l1 != !l2) || (!s1 != !s2))
+      if ((l1 != l2) || (s1 != s2))
 	return 0;
 
       /* Disallow mixed attributes.  */
