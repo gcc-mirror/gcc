@@ -1819,12 +1819,10 @@ int barrier_align ();
 #define TARGET_MEM_FUNCTIONS
 
 /* Define this macro if you want to implement any pragmas.  If defined, it
-   is a C expression to be executed when #pragma is seen.  The
-   argument FILE is the stdio input stream from which the source
-   text can be read.  CH is the first character after the #pragma.  The
-   result of the expression is the terminating character found
-   (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, NODE) handle_pragma ((FILE), (NODE))
+   is a C expression whose value is 1 if the pragma was handled by the
+   macro, zero otherwise.  */
+#define HANDLE_PRAGMA(GETC, UNGETC, NODE) sh_handle_pragma (GETC, UNGETC, NODE)
+extern int sh_handle_pragma ();
 
 /* Set when processing a function with pragma interrupt turned on.  */
 
