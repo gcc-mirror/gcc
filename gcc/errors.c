@@ -23,7 +23,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    in the generator programs; the compiler has a more elaborate suite
    of diagnostic printers, found in diagnostic.c.  */
 
+#ifdef GENERATOR_FILE
 #include "bconfig.h"
+#else
+#include "config.h"
+#endif
 #include "system.h"
 #include "errors.h"
 
@@ -126,5 +130,5 @@ trim_filename (const char *name)
 void
 fancy_abort (const char *file, int line, const char *func)
 {
-  internal_error ("abort in %s, at %s:%d", func, file, line);
+  internal_error ("abort in %s, at %s:%d", func, trim_filename (file), line);
 }

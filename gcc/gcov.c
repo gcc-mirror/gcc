@@ -373,17 +373,6 @@ fnotice (FILE *file, const char *msgid, ...)
   vfprintf (file, _(msgid), ap);
   va_end (ap);
 }
-
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-extern void fancy_abort (void) ATTRIBUTE_NORETURN;
-
-void
-fancy_abort (void)
-{
-  fnotice (stderr, "Internal gcov abort.\n");
-  exit (FATAL_EXIT_CODE);
-}
 
 /* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
    otherwise the output of --help.  */

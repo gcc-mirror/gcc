@@ -1,5 +1,32 @@
 2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* Makefile.in (BUILD_ERRORS): Set to build-errors.
+	(errors.o): New target for host.
+	(build-errors.o): New target for build.
+	(genobjs): Replace errors.o with build-errors.
+	(gengenrtl$(buildexeext)): Add $(BUILD_ERRORS).
+	(GCOV_OBJS, GCOV_DUMP_OBJS): Add errors.o.
+	(fix-headers$(build_exeext)): Add $(BUILD_ERRORS).
+	(fix-header.o): Add errors.h
+	* collect2.c (fancy_abort): Add parameters.
+	* collect2.h (fancy_abort): Don't declare.
+	* errors.h (fancy_abort): Don't declare.
+	* errors.c: Include either bconfig.h or config.h.
+	(fancy_abort): Trim filename.
+	* fix-header.c (v_fatal, fatal): Remove.
+	(progname): Remove definition.
+	(main): Set progname here.
+	* gcc.c (fancy_abort): Add parameters.
+	* gcc.h (fancy_abort): Remove declaration.
+	* gcov.c (fancy_abort): Remove.
+	* rtl.h (fancy_abort): Don't declare.
+	(abort): Don't define.
+	* tree.h (fancy_abort): Don't declare.
+	(abort): Don't define.
+	* system.h (fancy_abort): Declare.
+	(abort): Define to fancy_abort.
+	* fixinc/Makefile.in (ALLOBJ): Add ../build-errors.o
+
 	* tree.h (enum size_type_kind): Remove USIZETYPE, UBITSIZETYPE.
 	(usize_type, ubitsizetype): Remove.
 	* stor-layout.c (set_sizetype): Don't initialize usizetype,
@@ -3223,7 +3250,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

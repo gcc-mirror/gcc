@@ -2151,16 +2151,6 @@ extern rtx read_rtx (FILE *);
 extern const char *read_rtx_filename;
 extern int read_rtx_lineno;
 
-/* Redefine abort to report an internal error w/o coredump, and
-   reporting the location of the error in the source file.  This logic
-   is duplicated in rtl.h and tree.h because every file that needs the
-   special abort includes one or both.  toplev.h gets too few files,
-   system.h gets too many.  */
-
-extern void fancy_abort (const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
-#define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
-
 /* In alias.c */
 extern void clear_reg_alias_info (rtx);
 extern rtx canon_rtx (rtx);

@@ -68,7 +68,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
 LIBERTY = ../../libiberty/libiberty.a
 
 ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
-      fixlib.o
+      fixlib.o ../build-errors.o
 
 TESTOBJ = fixincl.o fixlib.o fixtests.o
 FIXOBJ  = fixfixes.o fixlib.o

@@ -261,3 +261,9 @@ warning (const char *msgid, ...)
   fputc ('\n', stderr);
   va_end (ap);
 }
+
+void
+fancy_abort (const char *file, int line, const char *func)
+{
+  fatal_error ("abort in %s, at %s:%d", func, file, line);
+}
