@@ -1,3 +1,9 @@
+2003-12-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/12632
+	* fold-const.c (fold) <COND_EXPR>: Don't fold a constant condition,
+	if the type of the selected branch doesn't match its' parent.
+
 2003-12-29  Jan Hubicka  <jh@suse.cz>
 
 	* coverage.c (read_counts_file): Better error messages; cause corrupted
