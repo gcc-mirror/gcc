@@ -229,18 +229,18 @@ do {				\
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  
 
-   Reg 8 does not correspond to any hardware register, but instead
+   Reg 9 does not correspond to any hardware register, but instead
    appears in the RTL as an argument pointer prior to reload, and is
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 9
+#define FIRST_PSEUDO_REGISTER 10
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 1, 1}
+  { 0, 0, 0, 0, 0, 0, 0, 1, 0, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -253,19 +253,28 @@ do {				\
    h8 destroys r0,r1,r2,r3.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 1, 1, 0, 0, 0, 1, 1 }
+  { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 }
 
 #define REG_ALLOC_ORDER \
-  { 2, 3, 0, 1, 4, 5, 6, 7, 8}
+  { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9}
+
+#define CONDITIONAL_REGISTER_USAGE	\
+{					\
+  if (!TARGET_H8300S)			\
+    fixed_regs[8] = call_used_regs[8] = 1;\
+}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
 
    This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
+   but can be less for certain modes in special long registers. 
+
+   We pretend the MAC register is 32bits -- we don't have any data
+   types on the H8 series to handle more than 32bits.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.
@@ -276,7 +285,7 @@ do {				\
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
  (TARGET_H8300 ? (((REGNO)&1)==0) || (MODE==HImode) || (MODE==QImode) \
-  : 1)
+   : REGNO == 8 ? MODE == SImode : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -304,7 +313,7 @@ do {				\
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 8
+#define ARG_POINTER_REGNUM 9
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 3
@@ -330,7 +339,7 @@ do {				\
    class that represents their union.  */
    
 enum reg_class {
-  NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, GENERAL_REGS, MAC_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -338,7 +347,7 @@ enum reg_class {
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
+{ "NO_REGS", "GENERAL_REGS", "MAC_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -347,26 +356,27 @@ enum reg_class {
 #define REG_CLASS_CONTENTS  			\
 {      0,		/* No regs      */	\
    0x0ff,		/* GENERAL_REGS */    	\
-   0x1ff,		/* ALL_REGS 	*/	\
+   0x100,		/* MAC_REGS */    	\
+   0x3ff,		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
-   or could index an array.
+   or could index an array.  */
 
-   ??? What about the ARG_POINTER_REGISTER? */
-
-#define REGNO_REG_CLASS(REGNO)  GENERAL_REGS
+#define REGNO_REG_CLASS(REGNO) (REGNO != 8 ? GENERAL_REGS : MAC_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 
 #define INDEX_REG_CLASS NO_REGS
 #define BASE_REG_CLASS  GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine description.  */
+/* Get reg_class from a letter such as appears in the machine description. 
 
-#define REG_CLASS_FROM_LETTER(C) (NO_REGS)
+   'a' is the MAC register.  */
+
+#define REG_CLASS_FROM_LETTER(C) ((C) == 'a' ? MAC_REGS : NO_REGS)
 
 /* The letters I, J, K, L, M, N, O, P in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -422,7 +432,8 @@ enum reg_class {
    so define REGISTER_MOVE_COST to be > 2 so that reload never
    shortcuts.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2) 3
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)  \
+  (CLASS1 == MAC_REGS || CLASS2 == MAC_REGS ? 6 : 3)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -731,7 +742,7 @@ struct rtx_def *function_arg();
 #define REGNO_OK_FOR_INDEX_P(regno) 0
 
 #define REGNO_OK_FOR_BASE_P(regno) \
-  ((regno) < FIRST_PSEUDO_REGISTER || reg_renumber[regno] >= 0)
+  (((regno) < FIRST_PSEUDO_REGISTER && regno != 8) || reg_renumber[regno] >= 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -1140,7 +1151,7 @@ readonly_data() 						\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "ap"}
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap"}
 
 #define ADDITIONAL_REGISTER_NAMES { { "r7", 7 } }
 
