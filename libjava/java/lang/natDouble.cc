@@ -15,6 +15,7 @@ details.  */
 #include <gcj/cni.h>
 #include <java/lang/String.h>
 #include <java/lang/Double.h>
+#include <java/lang/Character.h>
 #include <java/lang/NumberFormatException.h>
 #include <jvm.h>
 
@@ -160,19 +161,28 @@ jdouble
 java::lang::Double::parseDouble(jstring str)
 {
   int length = str->length();
-  // Note that UTF can expand 3x.
+  while (length > 0
+	 && Character::isWhitespace(str->charAt(length - 1)))
+    length--;
+  jsize start = 0;
+  while (length > 0
+	 && Character::isWhitespace(str->charAt(start)))
+    start++, length--;
 
-  char *data = (char *) __builtin_alloca (3 * length + 1);
+  if (length > 0)
+    {
+      // Note that UTF can expand 3x.
+      char *data = (char *) __builtin_alloca (3 * length + 1);
+      jsize blength = _Jv_GetStringUTFRegion (str, start, length, data);
+      data[blength] = 0; 
 
-  data[_Jv_GetStringUTFRegion (str, 0, length, data)] = 0; 
+      struct _Jv_reent reent;  
+      memset (&reent, 0, sizeof reent);
 
-  struct _Jv_reent reent;  
-  memset (&reent, 0, sizeof reent);
-
-  double val = _strtod_r (&reent, data, NULL);
-
-  if (reent._errno)
-    _Jv_Throw (new NumberFormatException);
-
-  return val;
+      char *endptr;
+      double val = _strtod_r (&reent, data, &endptr);
+      if (endptr == data + blength)
+	return val;
+    }
+  _Jv_Throw (new NumberFormatException);
 }
