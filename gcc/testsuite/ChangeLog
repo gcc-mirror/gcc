@@ -1,3 +1,7 @@
+2002-04-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* g77.f-torture/execute/6177.f: New test.
+
 2002-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/6247
