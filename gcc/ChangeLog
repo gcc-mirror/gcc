@@ -1,3 +1,12 @@
+2005-04-03  Roger Sayle  <roger@eyesopen.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/19199
+	* fold-const.c (non_lvalue): Split tests into...
+	(maybe_lvalue_p): New function.
+	(fold_cond_expr_with_comparison): Preserve lvalue-ness for the
+	C++ front-end prior to lowering into gimple form.
+
 2005-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (BUILT_IN_STPNCPY, BUILT_IN_STRCASECMP,

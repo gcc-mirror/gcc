@@ -1,3 +1,8 @@
+2005-04-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/19199
+	* expr2.C: Fixed.
+
 2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* template1.C (bar): Remove xfail marker.

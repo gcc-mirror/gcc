@@ -1,4 +1,4 @@
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 
 // Copyright (C) 2000 Free Software Foundation
 
