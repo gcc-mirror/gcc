@@ -1,9 +1,10 @@
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
-	* cp-tree.def (AGGR_INIT_VIA_CTOR_P): New macro.
+	* cp-tree.h (AGGR_INIT_VIA_CTOR_P): New macro.
 	* tree.c (build_cplus_new): Set it.
 	* expr.c (cplus_expand_expr): Use it.
-
+	* dump.c (deque_and_dump): Handle AGGR_INIT_EXPR.
+	
 	* decl.c (store_parm_decls): Reset immediate_size_expand.
 	(finish_function): Likewise.
 	
