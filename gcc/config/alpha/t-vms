@@ -1,7 +1,19 @@
 LIB2FUNCS_EXTRA = $(srcdir)/config/alpha/vms_tramp.asm
-EXTRA_PARTS = vms-dwarf2.o
 
-# This object must be linked in in order to make the executable debuggable.
+# VMS_EXTRA_PARTS is defined in x-vms and represent object files that
+# are only needed for VMS targets, but can only be compiled on a VMS host
+# (because they need DEC C).
+EXTRA_PARTS = vms-dwarf2.o $(VMS_EXTRA_PARTS)
+
+# This object must be linked with in order to make the executable debuggable.
 # vms-ld handles it automatically when passed -g.
 vms-dwarf2.o : $(srcdir)/config/alpha/vms-dwarf2.asm
 	gcc -c -x assembler $<
+
+# Assemble startup files.
+vcrt0.o: $(CRT0_S) $(GCC_PASSES)
+	decc -c /names=as_is $(srcdir)/config/alpha/vms-crt0.c -o vcrt0.o
+
+pcrt0.o: $(CRT0_S) $(GCC_PASSES)
+	decc -c /names=as_is $(srcdir)/config/alpha/vms-psxcrt0.c -o pcrt0.o
+
