@@ -1,3 +1,9 @@
+1998-10-14  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (lookup_template_class): Add comment.
+	(instantiate_class_template): Don't mark the _TYPE node for
+	member class templates as an instantiation.
+
 1998-10-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Fix my thinko.
