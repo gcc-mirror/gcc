@@ -767,6 +767,25 @@ print_operand_address (file, addr)
 	if (base)
 	  fprintf (file, "(%s)", reg_names[REGNO (base)]);
 #ifdef BASE_REG_NEEDED
+	else if (TARGET_SB)
+	  fprintf (file, "(sb)");
+	else
+	  abort ();
+#endif
+	fprintf (file, ")");
+	break;
+
+      default:
+	abort ();
+      }
+#ifdef PC_RELATIVE
+  else if (GET_CODE (offset) == LABEL_REF
+	   || GET_CODE (offset) == SYMBOL_REF
+	   || GET_CODE (offset) == CONST
+	   || GET_CODE (offset) == PLUS)
+    fprintf (file, "(pc)");
+#endif
+#ifdef BASE_REG_NEEDED
   else 
     {
       /* Abs. addresses don't need a base (I think). */
@@ -785,26 +804,6 @@ print_operand_address (file, addr)
 	    abort ();
         }
     }
-#endif
-	fprintf (file, ")");
-	break;
-
-      default:
-	abort ();
-      }
-#ifdef PC_RELATIVE
-  else if (GET_CODE (offset) == LABEL_REF
-	   || GET_CODE (offset) == SYMBOL_REF
-	   || GET_CODE (offset) == CONST
-	   || GET_CODE (offset) == PLUS)
-    fprintf (file, "(pc)");
-#endif
-#ifdef BASE_REG_NEEDED		/* this is defined if the assembler always
-			   	   needs a base register */
-    else if (TARGET_SB)
-      fprintf (file, "(sb)");
-    else
-      abort ();
 #endif
   /* now print index if we have one */
   if (indexexp)
