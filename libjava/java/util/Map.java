@@ -1,6 +1,6 @@
 /* Map.java: interface Map -- An object that maps keys to values
              interface Map.Entry -- an Entry in a Map
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -264,7 +264,7 @@ public interface Map
    * @since 1.2
    * @status updated to 1.4
    */
-  static interface Entry
+  interface Entry
   {
     /**
      * Get the key corresponding to this entry.
