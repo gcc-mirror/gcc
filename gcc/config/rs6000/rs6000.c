@@ -228,7 +228,7 @@ rs6000_override_options (default_cpu)
 	 {"604", PROCESSOR_PPC604,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
-	 {"604e", PROCESSOR_PPC604e,
+	 {"604e", PROCESSOR_PPC604,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"620", PROCESSOR_PPC620,
@@ -353,10 +353,12 @@ optimization_options (level, size)
      int level;
      int size ATTRIBUTE_UNUSED;
 {
+#if 0
 #ifdef HAIFA
   /* When optimizing, enable use of BCT instruction.  */
   if (level >= 1)
       flag_branch_on_count_reg = 1;
+#endif
 #endif
 }
 
