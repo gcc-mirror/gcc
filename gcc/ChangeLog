@@ -1,3 +1,9 @@
+2002-01-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi, doc/gccint.texi, doc/cppinternals.texi,
+	doc/install.texi, doc/invoke.texi, doc/rtl.texi: Update copyright
+	and last update dates.
+
 2002-01-07  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/rtl.texi (Flags): Clean up documentation of RTL flags
