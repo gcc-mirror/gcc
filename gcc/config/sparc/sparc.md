@@ -290,10 +290,13 @@
 
 (define_expand "cmpsi"
   [(set (reg:CC 100)
-	(compare:CC (match_operand:SI 0 "register_operand" "")
+	(compare:CC (match_operand:SI 0 "compare_operand" "")
 		    (match_operand:SI 1 "arith_operand" "")))]
   ""
 {
+  if (GET_CODE (operands[0]) == ZERO_EXTRACT && operands[1] != const0_rtx)
+    operands[0] = force_reg (SImode, operands[0]);
+
   sparc_compare_op0 = operands[0];
   sparc_compare_op1 = operands[1];
   DONE;
@@ -301,10 +304,13 @@
 
 (define_expand "cmpdi"
   [(set (reg:CCX 100)
-	(compare:CCX (match_operand:DI 0 "register_operand" "")
+	(compare:CCX (match_operand:DI 0 "compare_operand" "")
 		     (match_operand:DI 1 "arith_double_operand" "")))]
   "TARGET_ARCH64"
 {
+  if (GET_CODE (operands[0]) == ZERO_EXTRACT && operands[1] != const0_rtx)
+    operands[0] = force_reg (DImode, operands[0]);
+
   sparc_compare_op0 = operands[0];
   sparc_compare_op1 = operands[1];
   DONE;

@@ -1357,6 +1357,34 @@ input_operand (op, mode)
   return 0;
 }
 
+/* Return 1 if OP is valid for the lhs of a compare insn.  */
+
+int
+compare_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == ZERO_EXTRACT)
+    return (register_operand (XEXP (op, 0), mode)
+	    && small_int_or_double (XEXP (op, 1), mode)
+	    && small_int_or_double (XEXP (op, 2), mode)
+	    /* This matches cmp_zero_extract.  */
+	    && ((mode == SImode
+		 && ((GET_CODE (XEXP (op, 2)) == CONST_INT
+		      && INTVAL (XEXP (op, 2)) > 19)
+		     || (GET_CODE (XEXP (op, 2)) == CONST_DOUBLE
+			 && CONST_DOUBLE_LOW (XEXP (op, 2)) > 19)))
+		/* This matches cmp_zero_extract_sp64.  */
+		|| (mode == DImode
+		    && TARGET_ARCH64
+		    && ((GET_CODE (XEXP (op, 2)) == CONST_INT
+			 && INTVAL (XEXP (op, 2)) > 51)
+			|| (GET_CODE (XEXP (op, 2)) == CONST_DOUBLE
+			    && CONST_DOUBLE_LOW (XEXP (op, 2)) > 51)))));
+  else
+    return register_operand (op, mode);
+}
+
 
 /* We know it can't be done in one insn when we get here,
    the movsi expander guarentees this.  */
