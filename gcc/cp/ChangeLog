@@ -1,3 +1,8 @@
+2000-01-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (bot_manip): Set DECL_CONTEXT for newly created
+	VAR_DECLs.
+
 2000-01-18  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	* cp-tree.h (get_tinfo_fn_dynamic): Remove prototype.
