@@ -1564,6 +1564,13 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
   i960_print_operand_addr (FILE, ADDR)
+
+/* Determine which codes are valid without a following integer.  These must
+   not be alphabetic (the characters are chosen so that
+   PRINT_OPERAND_PUNCT_VALID_P translates into a simple range change when
+   using ASCII).  */
+
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)   ((CODE) == '+')
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
