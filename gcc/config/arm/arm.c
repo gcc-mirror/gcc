@@ -8422,7 +8422,7 @@ arm_output_function_prologue (f, frame_size)
   if (IS_NESTED (func_type))
     asm_fprintf (f, "\t%@ Nested: function declared inside another function.\n");
     
-  asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %d\n",
+  asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %wd\n",
 	       current_function_args_size,
 	       current_function_pretend_args_size, frame_size);
 

@@ -240,7 +240,7 @@
 /* Output a gap.  In fact we fill it with nulls.  */
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\
-  fprintf (STREAM, "\t.space\t%d\n", (int)NBYTES)
+  fprintf (STREAM, "\t.space\t%d\n", (int)(NBYTES))
 
 /* Align output to a power of two.  Horrible /bin/as.  */
 #ifndef ASM_OUTPUT_ALIGN  

@@ -121,9 +121,9 @@ vax_output_function_prologue (file, size)
 
   size -= STARTING_FRAME_OFFSET;
   if (size >= 64)
-    asm_fprintf (file, "\tmovab %d(%Rsp),%Rsp\n", -size);
+    asm_fprintf (file, "\tmovab %wd(%Rsp),%Rsp\n", -size);
   else if (size)
-    asm_fprintf (file, "\tsubl2 $%d,%Rsp\n", size);
+    asm_fprintf (file, "\tsubl2 $%wd,%Rsp\n", size);
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
