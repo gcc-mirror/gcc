@@ -1517,232 +1517,49 @@
 ;; Conversion between fixed point and floating point.
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "general_operand" "=f")
-	(float:SF (match_operand:SI 1 "nonimmediate_operand" "rfm")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(float:SF (match_operand:SI 1 "register_operand" "f")))]
   ""
-  "* return output_floatsisf2 (operands);"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fitos %1,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "general_operand" "=f")
-	(float:DF (match_operand:SI 1 "nonimmediate_operand" "rfm")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   ""
-  "* return output_floatsidf2 (operands);"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fitod %1,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "floatsitf2"
-  [(set (match_operand:TF 0 "general_operand" "=f")
-	(float:TF (match_operand:SI 1 "nonimmediate_operand" "rfm")))]
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(float:TF (match_operand:SI 1 "register_operand" "f")))]
   ""
-  "* return output_floatsitf2 (operands);"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fitox %1,%0"
+  [(set_attr "type" "fp")])
 
 ;; Convert a float to an actual integer.
 ;; Truncation is performed as part of the conversion.
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=rm")
-	(fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm"))))
-   (clobber (match_scratch:SF 2 "=&f"))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fstoi %1,%2\", operands);
-  else
-    output_asm_insn (\"ld %1,%2\;fstoi %2,%2\", operands);
-  if (GET_CODE (operands[0]) == MEM)
-    return \"st %2,%0\";
-  else
-    return \"st %2,[%%fp-4]\;ld [%%fp-4],%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fstoi %1,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=rm")
-	(fix:SI (fix:DF (match_operand:DF 1 "general_operand" "fm"))))
-   (clobber (match_scratch:DF 2 "=&f"))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fdtoi %1,%2\", operands);
-  else
-    {
-      rtx xoperands[3];
-      xoperands[0] = operands[2];
-      xoperands[1] = operands[1];
-      output_asm_insn (output_fp_move_double (xoperands), xoperands);
-      output_asm_insn (\"fdtoi %2,%2\", operands);
-    }
-  if (GET_CODE (operands[0]) == MEM)
-    return \"st %2,%0\";
-  else
-    return \"st %2,[%%fp-4]\;ld [%%fp-4],%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fdtoi %1,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "fix_trunctfsi2"
-  [(set (match_operand:SI 0 "general_operand" "=rm")
-	(fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm"))))
-   (clobber (match_scratch:DF 2 "=&f"))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "f"))))]
   ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fqtoi %1,%2\", operands);
-  else
-    {
-      rtx xoperands[3];
-      xoperands[0] = operands[2];
-      xoperands[1] = operands[1];
-      output_asm_insn (output_fp_move_quad (xoperands), xoperands);
-      output_asm_insn (\"fqtoi %2,%2\", operands);
-    }
-  if (GET_CODE (operands[0]) == MEM)
-    return \"st %2,%0\";
-  else
-    return \"st %2,[%%fp-4]\;ld [%%fp-4],%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
-
-;; Allow combiner to combine a fix_trunctfsi2 with a floatsitf2
-;; This eliminates 2 useless instructions.
-;; The first one matches if the fixed result is needed.  The second one
-;; matches if the fixed result is not needed.
-
-(define_insn ""
-  [(set (match_operand:TF 0 "general_operand" "=f")
-	(float:TF (fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm")))))
-   (set (match_operand:SI 2 "general_operand" "=rm")
-	(fix:SI (fix:TF (match_dup 1))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fqtoi %1,%0\", operands);
-  else
-    {
-      output_asm_insn (output_fp_move_quad (operands), operands);
-      output_asm_insn (\"fqtoi %0,%0\", operands);
-    }
-  if (GET_CODE (operands[2]) == MEM)
-    return \"st %0,%2\;fitoq %0,%0\";
-  else
-    return \"st %0,[%%fp-4]\;fitoq %0,%0\;ld [%%fp-4],%2\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "5")])
-
-(define_insn ""
-  [(set (match_operand:TF 0 "general_operand" "=f")
-	(float:TF (fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm")))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fqtoi %1,%0\", operands);
-  else
-    {
-      output_asm_insn (output_fp_move_quad (operands), operands);
-      output_asm_insn (\"fqtoi %0,%0\", operands);
-    }
-  return \"fitoq %0,%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
-
-;; Allow combiner to combine a fix_truncdfsi2 with a floatsidf2
-;; This eliminates 2 useless instructions.
-;; The first one matches if the fixed result is needed.  The second one
-;; matches if the fixed result is not needed.
-
-(define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=f")
-	(float:DF (fix:SI (fix:DF (match_operand:DF 1 "general_operand" "fm")))))
-   (set (match_operand:SI 2 "general_operand" "=rm")
-	(fix:SI (fix:DF (match_dup 1))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fdtoi %1,%0\", operands);
-  else
-    {
-      output_asm_insn (output_fp_move_double (operands), operands);
-      output_asm_insn (\"fdtoi %0,%0\", operands);
-    }
-  if (GET_CODE (operands[2]) == MEM)
-    return \"st %0,%2\;fitod %0,%0\";
-  else
-    return \"st %0,[%%fp-4]\;fitod %0,%0\;ld [%%fp-4],%2\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "5")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=f")
-	(float:DF (fix:SI (fix:DF (match_operand:DF 1 "general_operand" "fm")))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fdtoi %1,%0\", operands);
-  else
-    {
-      output_asm_insn (output_fp_move_double (operands), operands);
-      output_asm_insn (\"fdtoi %0,%0\", operands);
-    }
-  return \"fitod %0,%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
-
-;; Allow combiner to combine a fix_truncsfsi2 with a floatsisf2
-;; This eliminates 2 useless instructions.
-;; The first one matches if the fixed result is needed.  The second one
-;; matches if the fixed result is not needed.
-
-(define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=f")
-	(float:SF (fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm")))))
-   (set (match_operand:SI 2 "general_operand" "=rm")
-	(fix:SI (fix:SF (match_dup 1))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fstoi %1,%0\", operands);
-  else
-    output_asm_insn (\"ld %1,%0\;fstoi %0,%0\", operands);
-  if (GET_CODE (operands[2]) == MEM)
-    return \"st %0,%2\;fitos %0,%0\";
-  else
-    return \"st %0,[%%fp-4]\;fitos %0,%0\;ld [%%fp-4],%2\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "5")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=f")
-	(float:SF (fix:SI (fix:SF (match_operand:SF 1 "general_operand" "fm")))))]
-  ""
-  "*
-{
-  if (FP_REG_P (operands[1]))
-    output_asm_insn (\"fstoi %1,%0\", operands);
-  else
-    output_asm_insn (\"ld %1,%0\;fstoi %0,%0\", operands);
-  return \"fitos %0,%0\";
-}"
-  [(set_attr "type" "fp")
-   (set_attr "length" "3")])
+  "fqtoi %1,%0"
+  [(set_attr "type" "fp")])
 
 ;;- arithmetic instructions
 
