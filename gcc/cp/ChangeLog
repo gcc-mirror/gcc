@@ -1,3 +1,8 @@
+Wed Oct  8 22:44:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* method.c (build_underscore_int): Don't use ANSI specific
+	features.
+
 Wed Oct  8 00:18:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_prevtable_vardecl): Check DECL_REALLY_EXTERN
