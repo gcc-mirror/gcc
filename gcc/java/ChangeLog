@@ -1,3 +1,8 @@
+2001-01-19  Per Bothner  <per@bothner.com>
+
+	* expr.c (pop_type_0):  Only return object_ptr_type_node on mismatch
+	if expeting an interface type.  Refines Tom's change of 2000-09-12.
+
 2001-01-18  Per Bothner  <per@bothner.com>
 
 	* gcj.texi (Input Options): Mention .java files.
