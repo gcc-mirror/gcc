@@ -3889,7 +3889,7 @@ sh_builtin_saveregs ()
   int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
   int ptrsize = GET_MODE_SIZE (Pmode);
   rtx valist, regbuf, fpregs;
-  int bufsize, regno;
+  int bufsize, regno, alias_set;
 
   /* Allocate block of memory for the regs. */
   /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
@@ -3897,17 +3897,18 @@ sh_builtin_saveregs ()
   bufsize = (n_intregs * UNITS_PER_WORD) + (n_floatregs * UNITS_PER_WORD);
 
   regbuf = assign_stack_local (BLKmode, bufsize, 0);
-  MEM_SET_IN_STRUCT_P (regbuf, 1);
+  alias_set = get_varargs_alias_set ();
+  MEM_ALIAS_SET (regbuf) = alias_set;
 
   /* Save int args.
      This is optimized to only save the regs that are necessary.  Explicitly
      named args need not be saved.  */
   if (n_intregs > 0)
     move_block_from_reg (BASE_ARG_REG (SImode) + first_intreg,
-			 gen_rtx_MEM (BLKmode, 
-				      plus_constant (XEXP (regbuf, 0),
-						     (n_floatregs
-						      * UNITS_PER_WORD))),
+			 change_address (regbuf, BLKmode,
+					 plus_constant (XEXP (regbuf, 0),
+							(n_floatregs
+							 * UNITS_PER_WORD))), 
 			 n_intregs, n_intregs * UNITS_PER_WORD);
 
   /* Save float args.
@@ -3924,18 +3925,23 @@ sh_builtin_saveregs ()
 			 GEN_INT (n_floatregs * UNITS_PER_WORD)));
   if (TARGET_SH4)
     {
+      rtx mem;
       for (regno = NPARM_REGS (DFmode) - 2; regno >= first_floatreg; regno -= 2)
 	{
 	  emit_insn (gen_addsi3 (fpregs, fpregs,
 				 GEN_INT (-2 * UNITS_PER_WORD)));
-	  emit_move_insn (gen_rtx (MEM, DFmode, fpregs),
+	  mem = gen_rtx_MEM (DFmode, fpregs);
+	  MEM_ALIAS_SET (mem) = alias_set;
+	  emit_move_insn (mem, 
 			  gen_rtx (REG, DFmode, BASE_ARG_REG (DFmode) + regno));
 	}
       regno = first_floatreg;
       if (regno & 1)
 	{
 	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
-	  emit_move_insn (gen_rtx (MEM, SFmode, fpregs),
+	  mem = gen_rtx_MEM (SFmode, fpregs);
+	  MEM_ALIAS_SET (mem) = alias_set;
+	  emit_move_insn (mem,
 			  gen_rtx (REG, SFmode, BASE_ARG_REG (SFmode) + regno
 						- (TARGET_LITTLE_ENDIAN != 0)));
 	}
@@ -3943,13 +3949,266 @@ sh_builtin_saveregs ()
   else
     for (regno = NPARM_REGS (SFmode) - 1; regno >= first_floatreg; regno--)
       {
+        rtx mem;
 	emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
-	emit_move_insn (gen_rtx_MEM (SFmode, fpregs),
+	mem = gen_rtx_MEM (SFmode, fpregs);
+	MEM_ALIAS_SET (mem) = alias_set;
+	emit_move_insn (mem,
 			gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno));
       }
 
   /* Return the address of the regbuf.  */
   return XEXP (regbuf, 0);
+}
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+
+tree
+sh_build_va_list ()
+{
+  tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
+  tree record;
+
+  if ((! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
+    return ptr_type_node;
+
+  record = make_node (RECORD_TYPE);
+
+  f_next_o = build_decl (FIELD_DECL, get_identifier ("__va_next_o"),
+			 ptr_type_node);
+  f_next_o_limit = build_decl (FIELD_DECL,
+			       get_identifier ("__va_next_o_limit"),
+			       ptr_type_node);
+  f_next_fp = build_decl (FIELD_DECL, get_identifier ("__va_next_fp"),
+			  ptr_type_node);
+  f_next_fp_limit = build_decl (FIELD_DECL,
+				get_identifier ("__va_next_fp_limit"),
+				ptr_type_node);
+  f_next_stack = build_decl (FIELD_DECL, get_identifier ("__va_next_stack"),
+			     ptr_type_node);
+
+  DECL_FIELD_CONTEXT (f_next_o) = record;
+  DECL_FIELD_CONTEXT (f_next_o_limit) = record;
+  DECL_FIELD_CONTEXT (f_next_fp) = record;
+  DECL_FIELD_CONTEXT (f_next_fp_limit) = record;
+  DECL_FIELD_CONTEXT (f_next_stack) = record;
+
+  TYPE_FIELDS (record) = f_next_o;
+  TREE_CHAIN (f_next_o) = f_next_o_limit;
+  TREE_CHAIN (f_next_o_limit) = f_next_fp;
+  TREE_CHAIN (f_next_fp) = f_next_fp_limit;
+  TREE_CHAIN (f_next_fp_limit) = f_next_stack;
+
+  layout_type (record);
+
+  return record;
+}
+
+/* Implement `va_start' for varargs and stdarg.  */
+
+void
+sh_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
+  tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
+  tree t, u;
+  int nfp, nint;
+
+  if ((! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
+    {
+      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      return;
+    }
+
+  f_next_o = TYPE_FIELDS (va_list_type_node);
+  f_next_o_limit = TREE_CHAIN (f_next_o);
+  f_next_fp = TREE_CHAIN (f_next_o_limit);
+  f_next_fp_limit = TREE_CHAIN (f_next_fp);
+  f_next_stack = TREE_CHAIN (f_next_fp_limit);
+
+  next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o);
+  next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			valist, f_next_o_limit);
+  next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp), valist, f_next_fp);
+  next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			 valist, f_next_fp_limit);
+  next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
+		      valist, f_next_stack);
+
+  /* Call __builtin_saveregs.  */
+  u = make_tree (ptr_type_node, expand_builtin_saveregs ());
+  t = build (MODIFY_EXPR, ptr_type_node, next_fp, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  nfp = current_function_args_info.arg_count[SH_ARG_FLOAT];
+  if (nfp < 8)
+    nfp = 8 - nfp;
+  else
+    nfp = 0;
+  u = fold (build (PLUS_EXPR, ptr_type_node, u,
+		   build_int_2 (UNITS_PER_WORD * nfp, 0)));
+  t = build (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = build (MODIFY_EXPR, ptr_type_node, next_o, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  nint = current_function_args_info.arg_count[SH_ARG_INT];
+  if (nint < 4)
+    nint = 4 - nint;
+  else
+    nint = 0;
+  u = fold (build (PLUS_EXPR, ptr_type_node, u,
+		   build_int_2 (UNITS_PER_WORD * nint, 0)));
+  t = build (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  u = make_tree (ptr_type_node, nextarg);
+  if (! stdarg_p && (nint == 0 || nfp == 0))
+    {
+      u = fold (build (PLUS_EXPR, ptr_type_node, u,
+		       build_int_2 (-UNITS_PER_WORD, -1)));
+    }
+  t = build (MODIFY_EXPR, ptr_type_node, next_stack, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Implement `va_arg'.  */
+
+rtx
+sh_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT size, rsize;
+  tree base, tmp, pptr_type_node;
+  rtx addr_rtx, r;
+
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+  pptr_type_node = build_pointer_type (ptr_type_node);
+
+  if ((TARGET_SH3E || TARGET_SH4) && ! TARGET_HITACHI)
+    {
+      tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
+      tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
+      int pass_as_float;
+      rtx lab_false, lab_over;
+
+      f_next_o = TYPE_FIELDS (va_list_type_node);
+      f_next_o_limit = TREE_CHAIN (f_next_o);
+      f_next_fp = TREE_CHAIN (f_next_o_limit);
+      f_next_fp_limit = TREE_CHAIN (f_next_fp);
+      f_next_stack = TREE_CHAIN (f_next_fp_limit);
+
+      next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o);
+      next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			    valist, f_next_o_limit);
+      next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp),
+		       valist, f_next_fp);
+      next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			     valist, f_next_fp_limit);
+      next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
+			  valist, f_next_stack);
+
+      if (TARGET_SH4)
+	{
+	  pass_as_float = ((TREE_CODE (type) == REAL_TYPE && size <= 8)
+			   || (TREE_CODE (type) == COMPLEX_TYPE
+			       && TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
+			       && size <= 16));
+	}
+      else
+	{
+	  pass_as_float = (TREE_CODE (type) == REAL_TYPE && size == 4);
+	}
+
+      addr_rtx = gen_reg_rtx (Pmode);
+      lab_false = gen_label_rtx ();
+      lab_over = gen_label_rtx ();
+
+      if (pass_as_float)
+	{
+	  emit_cmp_and_jump_insns (expand_expr (next_fp, NULL_RTX, Pmode,
+						EXPAND_NORMAL),
+				   expand_expr (next_fp_limit, NULL_RTX,
+						Pmode, EXPAND_NORMAL),
+				   GE, const1_rtx, Pmode, 1, 1, lab_false);
+
+	  if (TYPE_ALIGN (type) > BITS_PER_WORD)
+	    {
+	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp,
+			   build_int_2 (UNITS_PER_WORD, 0));
+	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp, tmp);
+	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp, tmp);
+	      TREE_SIDE_EFFECTS (tmp) = 1;
+	      expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_fp);
+	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
+
+	  emit_jump_insn (gen_jump (lab_over));
+	  emit_barrier ();
+	  emit_label (lab_false);
+
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
+	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
+	}
+      else
+	{
+	  tmp = build (PLUS_EXPR, ptr_type_node, next_o,
+		       build_int_2 (rsize, 0));
+	  
+	  emit_cmp_and_jump_insns (expand_expr (tmp, NULL_RTX, Pmode,
+						EXPAND_NORMAL),
+				   expand_expr (next_o_limit, NULL_RTX,
+						Pmode, EXPAND_NORMAL),
+				   GT, const1_rtx, Pmode, 1, 1, lab_false);
+
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
+	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
+
+	  emit_jump_insn (gen_jump (lab_over));
+	  emit_barrier ();
+	  emit_label (lab_false);
+
+	  if (size > 4 && ! TARGET_SH4)
+	    {
+	      tmp = build (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
+	      TREE_SIDE_EFFECTS (tmp) = 1;
+	      expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
+	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
+	}
+
+      emit_label (lab_over);
+
+      tmp = make_tree (pptr_type_node, addr_rtx);
+      valist = build1 (INDIRECT_REF, ptr_type_node, tmp);
+    }
+
+  /* ??? In va-sh.h, there had been code to make values larger than
+     size 8 indirect.  This does not match the FUNCTION_ARG macros.  */
+
+  return std_expand_builtin_va_arg (valist, type);
 }
 
 /* Define the offset between two registers, one to be eliminated, and
