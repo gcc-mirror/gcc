@@ -38,13 +38,11 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.io.Serializable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.peer.ListPeer;
-import java.awt.peer.ComponentPeer;
 import java.util.EventListener;
 import java.util.Vector;
 import javax.accessibility.Accessible;

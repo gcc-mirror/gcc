@@ -40,9 +40,6 @@ package java.awt;
 
 import java.awt.peer.FileDialogPeer;
 import java.awt.peer.DialogPeer;
-import java.awt.peer.WindowPeer;
-import java.awt.peer.ContainerPeer;
-import java.awt.peer.ComponentPeer;
 import java.io.FilenameFilter;
 
 /**

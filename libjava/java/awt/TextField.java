@@ -41,7 +41,6 @@ package java.awt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.peer.TextFieldPeer;
-import java.awt.peer.TextComponentPeer;
 import java.awt.peer.ComponentPeer;
 import java.util.EventListener;
 

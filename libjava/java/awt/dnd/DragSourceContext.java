@@ -44,9 +44,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.peer.DragSourceContextPeer;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.TooManyListenersException;
 

@@ -38,13 +38,12 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.peer.ChoicePeer;
-import java.awt.peer.ComponentPeer;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.peer.ChoicePeer;
 import java.io.Serializable;
-import java.util.Vector;
 import java.util.EventListener;
+import java.util.Vector;
 
 /**
   * This class implements a drop down choice list.

@@ -39,7 +39,6 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.LabelPeer;
-import java.awt.peer.ComponentPeer;
 import javax.accessibility.Accessible;
 
 /**

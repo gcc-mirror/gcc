@@ -38,11 +38,10 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.peer.CheckboxMenuItemPeer;
-import java.awt.peer.MenuItemPeer;
-import java.awt.peer.MenuComponentPeer;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.peer.CheckboxMenuItemPeer;
+import java.awt.peer.MenuItemPeer;
 import java.util.EventListener;
 
 /**

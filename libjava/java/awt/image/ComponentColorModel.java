@@ -34,10 +34,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.image;
 
-import java.awt.color.*;
 import java.awt.Point;
+import java.awt.color.ColorSpace;
 import gnu.java.awt.Buffers;
 
 public class ComponentColorModel extends ColorModel

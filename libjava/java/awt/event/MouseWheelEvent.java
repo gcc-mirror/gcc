@@ -39,7 +39,6 @@ exception statement from your version. */
 package java.awt.event;
 
 import java.awt.Component;
-import java.awt.Point;
 
 /**
  * This event is generated for a mouse wheel rotation. The wheel (the middle
