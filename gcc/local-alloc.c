@@ -1347,8 +1347,8 @@ block_alloc (b)
 		  if (hard_reg != NULL_RTX)
 		    {
 		      if (GET_CODE (hard_reg) == REG
-			  && REGNO (hard_reg) >= 0
-			  && REGNO (hard_reg) < FIRST_PSEUDO_REGISTER
+			  && IN_RANGE (REGNO (hard_reg),
+				       0, FIRST_PSEUDO_REGISTER - 1)
 			  && ! call_used_regs[REGNO (hard_reg)])
 			continue;
 		    }

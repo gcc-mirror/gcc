@@ -631,7 +631,7 @@ defer_fn (fn)
 void
 finish_file ()
 {
-  int i;
+  size_t i;
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
     /* Don't output the same function twice.  We may run into such

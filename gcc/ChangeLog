@@ -1,3 +1,11 @@
+2001-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cfgrtl.c (purge_all_dead_edges): Initialize variable.
+	* dwarf2out.c (is_cxx): Prototype.
+	* local-alloc.c (block_alloc): Avoid 'unsigned>=0 is always true'
+	warning.
+	* objc/objc-act.c (defer_fn): Avoid signed/unsigned warning.
+
 Sun Dec  2 07:12:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* libgcc2.c (__bb_exit_func): Fix line wrap problems.
