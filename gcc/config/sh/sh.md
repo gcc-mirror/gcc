@@ -262,45 +262,17 @@
 ;; Addition instructions
 ;; -------------------------------------------------------------------------
 
-
-
 ;; this should be a define split.
 
-
-
-(define_insn "addc"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(plus:SI (match_dup 0)
-		 (plus:SI (match_operand:SI 1 "arith_reg_operand" "r")
-			  (reg:SI 18))))
+(define_insn "adddi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (match_operand:DI 1 "register_operand" "%0")
+		 (match_operand:DI 2 "register_operand" "r")))
    (clobber (reg:SI 18))]
   ""
-  "addc	%1,%0")
+  "clrt\;addc	%R2,%R0\;addc	%2,%0"
+  [(set_attr "length" "6")])
 
-(define_expand "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
-  ""
-  "
-{
-  rtx low_a = operand_subword (operands[1], 1, 1, DImode);
-  rtx low_b = operand_subword (operands[2], 1, 1, DImode);
-  rtx low_s = operand_subword (operands[0], 1, 1, DImode);
-
-  rtx high_a = operand_subword (operands[1], 0, 1, DImode);
-  rtx high_b = operand_subword (operands[2], 0, 1, DImode);
-  rtx high_s = operand_subword (operands[0], 0, 1, DImode);
-
-  emit_insn (gen_clrt ());
-
-  emit_move_insn (low_s, low_a);
-  emit_insn (gen_addc (low_s, low_b));
-  emit_move_insn (high_s, high_a);
-  emit_insn (gen_addc (high_s, high_b));
-
-  DONE;
-}")
 
 (define_insn "addsi3_real"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -324,36 +296,14 @@
 ;; -------------------------------------------------------------------------
 
 
-(define_insn "subc"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(minus:SI (match_operand:SI 1 "arith_reg_operand" "%0")
-		  (plus:SI  (match_operand:SI 2 "arith_reg_operand" "r")
-			    (reg:SI 18))))
+(define_insn "subdi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(minus:DI (match_operand:DI 1 "register_operand" "%0")
+		 (match_operand:DI 2 "register_operand" "r")))
    (clobber (reg:SI 18))]
   ""
-  "subc	%2,%0")
-
-(define_expand "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
-  ""
-  "
-{
-  rtx low_a = operand_subword (operands[1], 1, 1, DImode);
-  rtx low_b = operand_subword (operands[2], 1, 1, DImode);
-  rtx low_s = operand_subword (operands[0], 1, 1, DImode);
-
-  rtx high_a = operand_subword (operands[1], 0, 1, DImode);
-  rtx high_b = operand_subword (operands[2], 0, 1, DImode);
-  rtx high_s = operand_subword (operands[0], 0, 1, DImode);
-
-  emit_insn (gen_clrt ());
-  emit_insn (gen_subc (low_s, low_a, low_b));
-  emit_insn (gen_subc (high_s, high_a, high_b));
-
-  DONE;
-}")
+  "clrt\;subc	%R2,%R0\;subc	%2,%0"
+  [(set_attr "length" "6")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -410,7 +360,8 @@
 	(div:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 17))
-   (clobber (reg:SI 4))
+   (clobber (reg:SI 1))
+   (clobber (reg:SI 2))
    (clobber (reg:SI 3))
    (use (match_operand:SI 0 "register_operand" "r"))]
   ""
@@ -428,7 +379,8 @@
 			   (reg:SI 5)))
 	     (clobber (reg:SI 18))
 	     (clobber (reg:SI 17))
-	     (clobber (reg:SI 4))
+	     (clobber (reg:SI 1))
+	     (clobber (reg:SI 2))
 	     (clobber (reg:SI 3))
 	     (use (match_dup 3))])
    (set (match_operand:SI 0 "general_operand" "=g") 
@@ -1538,7 +1490,9 @@
 			  (const_int 1))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 5)))
+   (set (match_dup 6) (match_dup 5))
+   (parallel[(set (match_dup 6) (ashift:SI (match_dup 6) (match_dup 7)))
+		(clobber (reg:SI 18))])
    (set (reg:SI 0) (label_ref (match_operand 3 "" "")))
    (parallel[(set (reg:SI 0) (plus:SI (reg:SI 0)
 				      (mem:HI (plus:SI (reg:SI 0)
@@ -1552,6 +1506,7 @@
   operands[2] = copy_to_mode_reg (SImode, operands[2]);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
+  operands[7] = GEN_INT (TARGET_BIGTABLE  ? 2 : 1);
 }")
 
 (define_insn "casesi_worker"
@@ -1562,7 +1517,11 @@
    (set (match_dup 0) (mem:HI (plus:SI (reg:SI 0)
 				       (match_dup 0))))]
   ""
-  "mov.w	@(r0,%0),%0\;add	%0,r0"
+  "*
+	if (TARGET_BIGTABLE) 
+		return \"mov.l	@(r0,%0),%0\;add	%0,r0\";
+	else
+	   	return \"mov.w	@(r0,%0),%0\;add	%0,r0\";"
   [(set_attr "needs_delay_slot" "no")
    (set_attr "in_delay_slot" "no")
    (set_attr "length" "4")])

@@ -127,19 +127,26 @@ void
 push (rn)
      int rn;
 {
-  emit_insn (gen_push (gen_rtx (REG, SImode, rn)));
+  rtx x ;
+  x=  emit_insn (gen_push (gen_rtx (REG, SImode, rn)));
+  REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC, 
+			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
 }
 
 void
 pop (rn)
      int rn;
 {
-  emit_insn (gen_pop (gen_rtx (REG, SImode, rn)));
+  rtx x;
+  x =  emit_insn (gen_pop (gen_rtx (REG, SImode, rn)));
+  REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC, 
+			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
 }
 
 
 /* Adjust the stack and return the number of bytes taken to do it */
-
+static rtx lastreg;
+int lastval;
 static void
 output_stack_adjust (size)
      int size;
@@ -151,9 +158,11 @@ output_stack_adjust (size)
 
       if (!CONST_OK_FOR_I (size))
 	{
-	  rtx nval = gen_rtx (REG, SImode, 3);
-	  emit_insn (gen_movsi (nval, val));
-	  val = nval;
+	  lastreg = gen_rtx (REG, SImode, 3);
+	  lastval = size;
+	  emit_insn (gen_movsi (lastreg, val));
+	  val = lastreg;
+
 	}
 
       insn = gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, val);
@@ -471,6 +480,7 @@ synth_constant (operands, mode)
       dst = operands[0];
     }
 
+
   /*  00000000 00000000 11111111 1NNNNNNNN load and zero extend word      */
   if ((i & 0xffffff80) == 0x0000ff80)
     {
@@ -510,8 +520,8 @@ synth_constant (operands, mode)
     }
   /*     00000000 0NNNNNNN 00000000 000000000 load and shift by 16
 	 11111111 1NNNNNNN 00000000 000000000 load and shift by 16 */
-  else if ((i & 0xff80ffff) == 0
-	   || (i & 0xff80ffff) == 0xff80ffff)
+  else if ((i & 0xff80ffff) == 0x00000000
+	   || (i & 0xff80ffff) == 0xff800000)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 16)));
       emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (16)));
@@ -1046,9 +1056,11 @@ output_far_jump (insn, op)
 	    break;
 	}
 
+
+      print_slot (final_sequence);
       output_asm_insn ("mov.l	%1,@-r15", vec);
       output_asm_insn ("mov.l	%O0,%1", vec);
-      print_slot (final_sequence);
+
       output_asm_insn ("jmp	@%1 ! 32 xcond", vec);
       output_asm_insn ("mov.l	@r15+,%1", vec);
     }
@@ -1365,7 +1377,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   data_section ();
 
 
-  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) (release H-1) arguments:", version_string);
+  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) (release I-1) arguments:", version_string);
   output_options (file, f_options, f_len, W_options, W_len,
 		  pos, 75, " ", "\n! ", "\n\n");
 }
@@ -2044,6 +2056,7 @@ sh_expand_epilogue ()
 
   live_regs_mask = calc_live_regs (&d);
 
+  
   if (frame_pointer_needed)
     {
       emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
