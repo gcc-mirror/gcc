@@ -3722,7 +3722,7 @@
    bsr $26,$%0..ng
    jsr $26,%0\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")
-   (set_attr "length" "12,*,12")])
+   (set_attr "length" "12,*,16")])
       
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
@@ -3762,7 +3762,7 @@
    bsr $26,$%1..ng
    jsr $26,%1\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")
-   (set_attr "length" "12,*,12")])
+   (set_attr "length" "12,*,16")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
