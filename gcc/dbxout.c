@@ -185,19 +185,25 @@ enum binclstatus {BINCL_NOT_REQUIRED, BINCL_PENDING, BINCL_PROCESSED};
    pair of the file number and the type number within the file.
    This is a stack of input files.  */
 
-struct dbx_file GTY(())
+struct dbx_file
 {
   struct dbx_file *next;
   int file_number;
   int next_type_number;
-  enum binclstatus bincl_status;      /* Keep track of lazy bincl.  */
-  const char *pending_bincl_name;     /* Name of bincl.  */
-  struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
+  enum binclstatus bincl_status;  /* Keep track of lazy bincl.  */
+  const char *pending_bincl_name; /* Name of bincl.  */
+  struct dbx_file *prev;          /* Chain to traverse all pending bincls.  */
 };
 
-/* This is the top of the stack.  */
+/* This is the top of the stack.  
+   
+   This is not saved for PCH, because restoring a PCH should not change it.
+   next_file_number does have to be saved, because the PCH may use some
+   file numbers; however, just before restoring a PCH, next_file_number
+   should always be 0 because we should not have needed any file numbers
+   yet.  */
 
-static GTY(()) struct dbx_file *current_file;
+static struct dbx_file *current_file;
 
 /* This is the next file number to use.  */
 
@@ -513,7 +519,7 @@ dbxout_init (const char *input_file_name)
   next_type_number = 1;
 
 #ifdef DBX_USE_BINCL
-  current_file = ggc_alloc (sizeof *current_file);
+  current_file = xmalloc (sizeof *current_file);
   current_file->next = NULL;
   current_file->file_number = 0;
   current_file->next_type_number = 1;
@@ -625,7 +631,7 @@ dbxout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
 			  const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_USE_BINCL
-  struct dbx_file *n = ggc_alloc (sizeof *n);
+  struct dbx_file *n = xmalloc (sizeof *n);
 
   n->next = current_file;
   n->next_type_number = 1;

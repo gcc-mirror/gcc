@@ -1,3 +1,11 @@
+2003-11-07  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 11654
+	* dbxout.c (struct dbx_file): Do not save for PCH.
+	(current_file): Likewise.
+	(dbxout_init): Don't allocate struct dbx_file using GC.
+	(dbxout_start_source_file): Likewise.
+
 2003-11-07  Falk Hueffner  <falk@debian.org>
 
 	* config/alpha/elf.h, config/alpha/unicosmk.h,
