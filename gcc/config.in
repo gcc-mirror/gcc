@@ -287,6 +287,11 @@
    at runtime.  This is quite expensive. */
 #undef ENABLE_RTL_CHECKING
 
+/* Define if you want RTL flag accesses to be checked against the RTL
+   codes that are supported for each access macro.  This is relatively
+   cheap.  */
+#undef ENABLE_RTL_FLAG_CHECKING
+
 /* Define if you want the garbage collector to do object poisoning and
    other memory allocation checks.  This is quite expensive. */
 #undef ENABLE_GC_CHECKING
