@@ -1,3 +1,8 @@
+2001-02-19  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (dead_or_predicable): Don't move code if eh regions
+	would be disrupted.
+
 Mon Feb 19 10:11:53 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config.gcc (hppa*64*-*-hpux11*): Add MASK_GAS to
