@@ -34,6 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "function.h"
 #include "except.h"
+#include "expr.h"
 
 static tree push_jvm_slot PROTO ((int, tree));
 static tree builtin_function PROTO ((const char *, tree,
@@ -1637,11 +1638,10 @@ start_java_method (fndecl)
 
       parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;
-#ifdef PROMOTE_PROTOTYPES
-      if (TYPE_PRECISION (parm_type) < TYPE_PRECISION (integer_type_node)
+      if (PROMOTE_PROTOTYPES
+	  && TYPE_PRECISION (parm_type) < TYPE_PRECISION (integer_type_node)
 	  && INTEGRAL_TYPE_P (parm_type))
 	parm_type = integer_type_node;
-#endif
       DECL_ARG_TYPE (parm_decl) = parm_type;
 
       *ptr = parm_decl;
