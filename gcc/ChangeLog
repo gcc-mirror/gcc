@@ -1,5 +1,10 @@
 2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (print_operand_address): Do not negate
+	a negative number when printing one.
+
+2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Add prototypes for
 	output_plussi, compute_plussi_length, and compute_plussi_cc.
 	* config/h8300/h8300.c (output_plussi): New.
