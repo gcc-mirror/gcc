@@ -1160,7 +1160,7 @@
 	switch statement to pick the correct REAL_VALUE_TO_TARGET_*
 	macro.
 
-Mon Sep 29 22:59:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-29  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12175
 	* varasm.c (notice_global_symbol): Discard external symbols.
@@ -1183,7 +1183,7 @@ Mon Sep 29 22:59:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* fold-const.c (fold): Fold (A & ~B) - (A & B) into
 	(A ^ B) - B, where B is any power of 2 minus 1.
 
-Mon Sep 29 19:05:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-29  Jan Hubicka  <jh@suse.cz>
 
 	* libgcov.c (gcov_exit): Fix two pastos.
 
