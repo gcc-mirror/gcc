@@ -1,3 +1,7 @@
+2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030702-1.c: New test.
+
 2003-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8795
