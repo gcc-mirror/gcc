@@ -207,11 +207,9 @@ test_float_to_integer()
   if (f2u((float) ~((~0U) >> 1)) != ~((~0U) >> 1))	/* 0x80000000 */
     abort();
 
- /* CYGNUS LOCAL -- amylaar/32bit doubles */
  /* These tests require double precision, so for hosts that don't offer
     that much precision, just ignore these test.  */
  if (sizeof (double) >= 8) {
- /* END CYGNUS LOCAL -- amylaar/32bit doubles */
   if (d2u(0.0) != 0)
     abort();
   if (d2u(0.999) != 0)
@@ -226,10 +224,7 @@ test_float_to_integer()
     abort();
   if (d2u((double) ~((~0U) >> 1)) != ~((~0U) >> 1))	/* 0x80000000 */
     abort();
- /* CYGNUS LOCAL -- amylaar/32bit doubles */
  }
- /* END CYGNUS LOCAL -- amylaar/32bit doubles */
-
 
   if (f2s(0.0) != 0)
     abort();
@@ -248,11 +243,9 @@ test_float_to_integer()
   if (f2s((float)(int)~((~0U) >> 1)) != (int)~((~0U) >> 1)) /* 0x80000000 */
     abort();
 
- /* CYGNUS LOCAL -- amylaar/32bit doubles */
  /* These tests require double precision, so for hosts that don't offer
     that much precision, just ignore these test.  */
  if (sizeof (double) >= 8) {
- /* END CYGNUS LOCAL -- amylaar/32bit doubles */
   if (d2s(0.0) != 0)
     abort();
   if (d2s(0.999) != 0)
@@ -271,9 +264,7 @@ test_float_to_integer()
     abort();
   if (d2s((double)(int)~((~0U) >> 1)) != (int)~((~0U) >> 1)) /* 0x80000000 */
     abort();
- /* CYGNUS LOCAL -- amylaar/32bit doubles */
  }
- /* END CYGNUS LOCAL -- amylaar/32bit doubles */
 }
 
 #if __GNUC__

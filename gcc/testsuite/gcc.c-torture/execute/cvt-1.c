@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL -- meissner/16 bit ints */
 static inline long
 g1 (double x)
 {
@@ -27,4 +26,3 @@ main ()
     abort ();
   exit (0);
 }
-/* END CYGNUS LOCAL -- meissner/16 bit ints */

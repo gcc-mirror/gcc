@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL -- meissner/no label values */
 #ifdef STACK_SIZE
 #define DEPTH ((STACK_SIZE) / 512 + 1)
 #else
@@ -29,4 +28,3 @@ main ()
 #endif
   exit (0);
 }
-/* END CYGNUS LOCAL -- meissner/no label values */
