@@ -2558,3 +2558,11 @@ sockaddr * type_info node
 --format=gnu
 __tiPQ25libcwt16option_event_tct1Z12burst_app_ct
 libcw::option_event_tct<burst_app_ct> * type_info node
+#
+--format=gnu
+_27_GLOBAL_.N.__12burst_app_ct.app_instance
+{anonymous}::app_instance
+#
+--format=gnu
+_26_GLOBAL_\$N\$_tmp_n.iilg4Gya\$app_instance
+{anonymous}::app_instance
