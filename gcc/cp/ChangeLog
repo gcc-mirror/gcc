@@ -1,3 +1,9 @@
+2003-11-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12924
+	* typeck.c (finish_class_member_access_expr): Handle TEMPLATE_ID_EXPR
+	with OVERLOAD and DECL nodes as the first operand.
+
 2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (tsubst) <ARRAY_REF>: Remove erroneous argument to build_nt.
