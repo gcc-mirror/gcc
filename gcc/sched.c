@@ -3103,6 +3103,33 @@ finish_sometimes_live (regs_sometimes_live, sometimes_max)
     }
 }
 
+/* Search INSN for fake REG_DEAD notes for NOTE_INSN_SETJMP,
+   NOTE_INSN_LOOP_BEG, and NOTE_INSN_LOOP_END; and convert them back
+   into NOTEs.  LAST is the last instruction output by the instruction
+   scheduler.  Return the new value of LAST.  */
+
+static rtx
+reemit_notes (insn, last)
+     rtx insn;
+     rtx last;
+{
+  rtx note;
+
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    {
+      if (REG_NOTE_KIND (note) == REG_DEAD
+	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
+	{
+	  if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
+	    emit_note_after (INTVAL (XEXP (note, 0)), insn);
+	  else
+	    last = emit_note_before (INTVAL (XEXP (note, 0)), last);
+	  remove_note (insn, note);
+	}
+    }
+  return last;
+}
+
 /* Use modified list scheduling to rearrange insns in basic block
    B.  FILE, if nonzero, is where we dump interesting output about
    this pass.  */
@@ -3858,22 +3885,7 @@ schedule_block (b, file)
       last = insn;
 
       /* Check to see if we need to re-emit any notes here.  */
-      {
-	rtx note;
-
-	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	  {
-	    if (REG_NOTE_KIND (note) == REG_DEAD
-		&& GET_CODE (XEXP (note, 0)) == CONST_INT)
-	      {
-		if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
-		  emit_note_after (INTVAL (XEXP (note, 0)), insn);
-		else
-		  last = emit_note_before (INTVAL (XEXP (note, 0)), last);
-		remove_note (insn, note);
-	      }
-	  }
-      }
+      last = reemit_notes (insn, last);
 
       /* Everything that precedes INSN now either becomes "ready", if
 	 it can execute immediately before INSN, or "pending", if
@@ -3888,7 +3900,8 @@ schedule_block (b, file)
       /* Schedule all prior insns that must not be moved.  */
       if (SCHED_GROUP_P (insn))
 	{
-	  /* Disable these insns from being launched.  */
+	  /* Disable these insns from being launched, in case one of the
+	     insns in the group has a dependency on an earlier one.  */
 	  link = insn;
 	  while (SCHED_GROUP_P (link))
 	    {
@@ -3897,17 +3910,22 @@ schedule_block (b, file)
 	      INSN_REF_COUNT (link) = 0;
 	    }
 
-	  /* None of these insns can move forward into delay slots.  */
+	  /* Now handle each group insn like the main insn was handled
+	     above.  */
 	  while (SCHED_GROUP_P (insn))
 	    {
 	      insn = PREV_INSN (insn);
-	      new_ready = schedule_insn (insn, ready, new_ready, clock);
-	      INSN_PRIORITY (insn) = DONE_PRIORITY;
 
 	      sched_n_insns += 1;
 	      NEXT_INSN (insn) = last;
 	      PREV_INSN (last) = insn;
 	      last = insn;
+
+	      last = reemit_notes (insn, last);
+
+	      /* ??? Why don't we set LAUNCH_PRIORITY here?  */
+	      new_ready = schedule_insn (insn, ready, new_ready, clock);
+	      INSN_PRIORITY (insn) = DONE_PRIORITY;
 	    }
 	}
     }
