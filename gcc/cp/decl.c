@@ -295,7 +295,8 @@ tree base_init_expr;
 tree this_identifier, in_charge_identifier;
 /* Used in pointer to member functions, in vtables, and in sigtables. */
 tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
-tree pfn_or_delta2_identifier, tag_identifier, offset_identifier;
+tree pfn_or_delta2_identifier, tag_identifier;
+tree vb_off_identifier, vt_off_identifier;
 
 /* A list (chain of TREE_LIST nodes) of named label uses.
    The TREE_PURPOSE field is the list of variables defined
@@ -4742,7 +4743,8 @@ init_decl_processing ()
   if (flag_handle_signatures)
     {
       tag_identifier = get_identifier (SIGTABLE_TAG_NAME);
-      offset_identifier = get_identifier (SIGTABLE_OFFSET_NAME);
+      vb_off_identifier = get_identifier (SIGTABLE_VB_OFF_NAME);
+      vt_off_identifier = get_identifier (SIGTABLE_VT_OFF_NAME);
     }
 
   /* Define `int' and `char' first so that dbx will output them first.  */
@@ -5292,24 +5294,30 @@ init_decl_processing ()
       sigtable_entry_type = make_lang_type (RECORD_TYPE);
       fields[0] = build_lang_field_decl (FIELD_DECL, tag_identifier,
 					 delta_type_node);
-      fields[1] = build_lang_field_decl (FIELD_DECL, delta_identifier,
+      fields[1] = build_lang_field_decl (FIELD_DECL, vb_off_identifier,
 					 delta_type_node);
-      fields[2] = build_lang_field_decl (FIELD_DECL, offset_identifier,
+      fields[2] = build_lang_field_decl (FIELD_DECL, delta_identifier,
 					 delta_type_node);
       fields[3] = build_lang_field_decl (FIELD_DECL, index_identifier,
 					 delta_type_node);
-      finish_builtin_type (sigtable_entry_type, SIGTABLE_PTR_TYPE, fields, 3,
-			   double_type_node);
+      fields[4] = build_lang_field_decl (FIELD_DECL, pfn_identifier,
+					 ptr_type_node);
+
+      /* Set the alignment to the max of the alignment of ptr_type_node and
+	 delta_type_node.  Double alignment wastes a word on the Sparc.  */
+      finish_builtin_type (sigtable_entry_type, SIGTABLE_PTR_TYPE, fields, 4,
+			   (TYPE_ALIGN (ptr_type_node) > TYPE_ALIGN (delta_type_node))
+			   ? ptr_type_node
+			   : delta_type_node);
 
       /* Make this part of an invisible union.  */
-      fields[4] = copy_node (fields[2]);
-      TREE_TYPE (fields[4]) = ptr_type_node;
-      DECL_NAME (fields[4]) = pfn_identifier;
-      DECL_MODE (fields[4]) = TYPE_MODE (ptr_type_node);
-      DECL_SIZE (fields[4]) = TYPE_SIZE (ptr_type_node);
-      TREE_UNSIGNED (fields[4]) = 0;
-      TREE_CHAIN (fields[1]) = fields[4];
-      TREE_CHAIN (fields[4]) = fields[2];
+      fields[5] = copy_node (fields[4]);
+      TREE_TYPE (fields[5]) = delta_type_node;
+      DECL_NAME (fields[5]) = vt_off_identifier;
+      DECL_MODE (fields[5]) = TYPE_MODE (delta_type_node);
+      DECL_SIZE (fields[5]) = TYPE_SIZE (delta_type_node);
+      TREE_UNSIGNED (fields[5]) = 0;
+      TREE_CHAIN (fields[4]) = fields[5];
 
       sigtable_entry_type = build_type_variant (sigtable_entry_type, 1, 0);
       record_builtin_type (RID_MAX, SIGTABLE_PTR_TYPE, sigtable_entry_type);
