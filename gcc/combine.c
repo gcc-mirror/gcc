@@ -184,6 +184,11 @@ static rtx subst_prev_insn;
 
 static int subst_low_cuid;
 
+/* This contains any hard registers that are used in newpat; reg_dead_at_p
+   must consider all these registers to be always live.  */
+
+static HARD_REG_SET newpat_used_regs;
+
 /* This is an insn to which a LOG_LINKS entry has been added.  If this
    insn is the earlier than I2 or I3, combine should rescan starting at
    that location.  */
@@ -433,6 +438,7 @@ static void move_deaths		PROTO((rtx, int, rtx, rtx *));
 static int reg_bitfield_target_p  PROTO((rtx, rtx));
 static void distribute_notes	PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
 static void distribute_links	PROTO((rtx));
+static void mark_used_regs_combine PROTO((rtx));
 
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.  */
@@ -1219,6 +1225,9 @@ try_combine (i3, i2, i1)
      accept this combination.  */
   undobuf.storage = (char *) oballoc (0);
 
+  /* Reset the hard register usage information.  */
+  CLEAR_HARD_REG_SET (newpat_used_regs);
+
   /* If I1 and I2 both feed I3, they can be in any order.  To simplify the
      code below, set I1 to be the earlier of the two insns.  */
   if (i1 && INSN_CUID (i1) > INSN_CUID (i2))
@@ -1640,6 +1649,9 @@ try_combine (i3, i2, i1)
      destination of I3.  */
  validate_replacement:
 
+  /* Note which hard regs this insn has as inputs.  */
+  mark_used_regs_combine (newpat);
+
   /* Is the result of combination a valid instruction?  */
   insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
@@ -1998,6 +2010,8 @@ try_combine (i3, i2, i1)
       rtx other_pat = PATTERN (undobuf.other_insn);
       rtx new_other_notes;
       rtx note, next;
+
+      CLEAR_HARD_REG_SET (newpat_used_regs);
 
       other_code_number = recog_for_combine (&other_pat, undobuf.other_insn,
 					     &new_other_notes);
@@ -9875,7 +9889,8 @@ reg_dead_at_p_1 (dest, x)
    We scan backwards from INSN.  If we hit a REG_DEAD note or a CLOBBER
    referencing REG, it is dead.  If we hit a SET referencing REG, it is
    live.  Otherwise, see if it is live or dead at the start of the basic
-   block we are in.  */
+   block we are in.  Hard regs marked as being live in NEWPAT_USED_REGS
+   must be assumed to be always live.  */
 
 static int
 reg_dead_at_p (reg, insn)
@@ -9892,6 +9907,14 @@ reg_dead_at_p (reg, insn)
 					: 1);
 
   reg_dead_flag = 0;
+
+  /* Check that reg isn't mentioned in NEWPAT_USED_REGS.  */
+  if (reg_dead_regno < FIRST_PSEUDO_REGISTER)
+    {
+      for (i = reg_dead_regno; i < reg_dead_endregno; i++)
+	if (TEST_HARD_REG_BIT (newpat_used_regs, i))
+	  return 0;
+    }
 
   /* Scan backwards until we find a REG_DEAD note, SET, CLOBBER, label, or
      beginning of function.  */
@@ -9926,6 +9949,106 @@ reg_dead_at_p (reg, insn)
 
   return 1;
 }
+
+/* Note hard registers in X that are used.  This code is similar to
+   that in flow.c, but much simpler since we don't care about pseudos.  */
+
+static void
+mark_used_regs_combine (x)
+     rtx x;
+{
+  register RTX_CODE code = GET_CODE (x);
+  register int regno;
+  int i;
+
+  switch (code)
+    {
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_INT:
+    case CONST:
+    case CONST_DOUBLE:
+    case PC:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+    case ASM_INPUT:
+#ifdef HAVE_cc0
+    /* CC0 must die in the insn after it is set, so we don't need to take
+       special note of it here.  */
+    case CC0:
+#endif
+      return;
+
+    case CLOBBER:
+      /* If we are clobbering a MEM, mark any hard registers inside the
+	 address as used.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	mark_used_regs_combine (XEXP (XEXP (x, 0), 0));
+      return;
+
+    case REG:
+      regno = REGNO (x);
+      /* A hard reg in a wide mode may really be multiple registers.
+	 If so, mark all of them just like the first.  */
+      if (regno < FIRST_PSEUDO_REGISTER)
+	{
+	  /* None of this applies to the stack, frame or arg pointers */
+	  if (regno == STACK_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	      || regno == HARD_FRAME_POINTER_REGNUM
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
+	      || regno == FRAME_POINTER_REGNUM)
+	    return;
+
+	  i = HARD_REGNO_NREGS (regno, GET_MODE (x));
+	  while (i-- > 0)
+	    SET_HARD_REG_BIT (newpat_used_regs, regno + i);
+	}
+      return;
+
+    case SET:
+      {
+	/* If setting a MEM, or a SUBREG of a MEM, then note any hard regs in
+	   the address.  */
+	register rtx testreg = SET_DEST (x);
+
+	while (GET_CODE (x) == SUBREG
+	       || GET_CODE (x) == ZERO_EXTRACT
+	       || GET_CODE (x) == SIGN_EXTRACT
+	       || GET_CODE (x) == STRICT_LOW_PART)
+	  testreg = XEXP (testreg, 0);
+
+	if (GET_CODE (testreg) == MEM)
+	  mark_used_regs_combine (XEXP (testreg, 0));
+
+	mark_used_regs_combine (SET_SRC (x));
+	return;
+      }
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  {
+    register char *fmt = GET_RTX_FORMAT (code);
+
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+        if (fmt[i] == 'e')
+	  mark_used_regs_combine (XEXP (x, i));
+        else if (fmt[i] == 'E')
+          {
+            register int j;
+
+            for (j = 0; j < XVECLEN (x, i); j++)
+              mark_used_regs_combine (XVECEXP (x, i, j));
+          }
+      }
+  }
+}
+
 
 /* Remove register number REGNO from the dead registers list of INSN.
 
