@@ -1,3 +1,7 @@
+2003-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (start_decl): Only check DECL_THREAD_LOCAL for VAR_DECLs.
+
 2003-01-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (push_access_scope_real): Call push_to_top_level for
