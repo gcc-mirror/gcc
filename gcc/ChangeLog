@@ -1,3 +1,10 @@
+2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arm/arm-protos.h: Use struct cpp_reader instead of
+	cpp_reader.
+	* config/h8300/h8300-protos.h: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/arm/arm.c (arm_pr_long_calls, arm_pr_no_long_calls,
