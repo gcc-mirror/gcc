@@ -279,7 +279,7 @@ feeding the gcc.gnu.org box and saving its users tons of spam.
 Fred Fish for BeOS support and Ada fixes.
 
 @item
-Ivan Fontes Garcia for the Portugese translation of the GCJ FAQ@.
+Ivan Fontes Garcia for the Portuguese translation of the GCJ FAQ@.
 
 @item
 Peter Gerwinski for various bug fixes and the Pascal front end.
