@@ -13,6 +13,7 @@ details.  */
 #include <stdlib.h>
 
 #include <jvm.h>
+#include <java-stack.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
@@ -78,18 +79,7 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj,
   // Check accessibility, if required.
   if (! (Modifier::isPublic (flags) || field->isAccessible()))
     {
-      gnu::gcj::runtime::StackTrace *t 
-	= new gnu::gcj::runtime::StackTrace(7);
-      try
-	{
-	  // We want to skip all the frames on the stack from this class.
-	  for (int i = 1; !caller || caller == &Field::class$; i++)
-	    caller = t->classAt (i);
-	}
-      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-	{
-	}
-
+      caller = _Jv_StackTrace::GetCallingClass (&Field::class$);
       if (! _Jv_CheckAccess (caller, field->getDeclaringClass(), flags))
 	throw new java::lang::IllegalAccessException;
     }

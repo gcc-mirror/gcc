@@ -16,6 +16,7 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-props.h>
+#include <java-stack.h>
 #include <java/lang/Long.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/UnknownError.h>
@@ -29,8 +30,6 @@ details.  */
 #include <java/lang/Process.h>
 #include <java/lang/ConcreteProcess.h>
 #include <java/lang/ClassLoader.h>
-#include <gnu/gcj/runtime/StackTrace.h>
-#include <java/lang/ArrayIndexOutOfBoundsException.h>
 
 #include <jni.h>
 
@@ -164,27 +163,7 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   if (do_search)
     {
       ClassLoader *sys = ClassLoader::systemClassLoader;
-      ClassLoader *look = NULL;
-      gnu::gcj::runtime::StackTrace *t = new gnu::gcj::runtime::StackTrace(10);
-      try
-      	{
-	  for (int i = 0; i < 10; ++i)
-	    {
-	      jclass klass = t->classAt(i);
-	      if (klass != NULL)
-		{
-		  ClassLoader *loader = klass->getClassLoaderInternal();
-		  if (loader != NULL && loader != sys)
-		    {
-		      look = loader;
-		      break;
-		    }
-		}
-	    }
-	}
-      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-	{
-	}
+      ClassLoader *look = _Jv_StackTrace::GetFirstNonSystemClassLoader ();
 
       if (look != NULL)
 	{

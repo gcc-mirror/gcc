@@ -13,11 +13,6 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
-// Define this to get the direct-threaded interpreter.  If undefined,
-// we revert to a basic bytecode interpreter.  The former is faster
-// but uses more memory.
-#define DIRECT_THREADED
-
 #pragma implementation "java-interp.h"
 
 #include <jvm.h>
@@ -83,26 +78,6 @@ void _Jv_InitInterpreter() {}
 
 extern "C" double __ieee754_fmod (double,double);
 
-// This represents a single slot in the "compiled" form of the
-// bytecode.
-union insn_slot
-{
-  // Address of code.
-  void *insn;
-  // An integer value used by an instruction.
-  jint int_val;
-  // A pointer value used by an instruction.
-  void *datum;
-};
-
-// The type of the PC depends on whether we're doing direct threading
-// or a more ordinary bytecode interpreter.
-#ifdef DIRECT_THREADED
-typedef insn_slot *pc_t;
-#else
-typedef unsigned char *pc_t;
-#endif
-
 static inline void dupx (_Jv_word *sp, int n, int x)
 {
   // first "slide" n+x elements n to the right
@@ -117,7 +92,6 @@ static inline void dupx (_Jv_word *sp, int n, int x)
     {
       sp[top-(n+x)-i] = sp[top-i];
     }
-  
 }
 
 // Used to convert from floating types to integral types.
@@ -248,15 +222,16 @@ static jint get4(unsigned char* loc) {
        | (((jint)(loc[3])) << 0);
 }
 
+#define SAVE_PC() frame_desc.pc = pc
 
 #ifdef HANDLE_SEGV
-#define NULLCHECK(X) 
-#define NULLARRAYCHECK(X)
+#define NULLCHECK(X) SAVE_PC()
+#define NULLARRAYCHECK(X) SAVE_PC()
 #else
 #define NULLCHECK(X) \
-  do { if ((X)==NULL) throw_null_pointer_exception (); } while (0)
+  do { SAVE_PC(); if ((X)==NULL) throw_null_pointer_exception (); } while (0)
 #define NULLARRAYCHECK(X) \
-  do { if ((X)==NULL) { throw_null_pointer_exception (); } } while (0)
+  do { SAVE_PC(); if ((X)==NULL) { throw_null_pointer_exception (); } } while (0)
 #endif
 
 #define ARRAYBOUNDSCHECK(array, index)					      \
@@ -274,7 +249,7 @@ _Jv_InterpMethod::run_normal (ffi_cif *,
 			      void* __this)
 {
   _Jv_InterpMethod *_this = (_Jv_InterpMethod *) __this;
-  _this->run (ret, args);
+  run (ret, args, _this);
 }
 
 void
@@ -288,7 +263,7 @@ _Jv_InterpMethod::run_synch_object (ffi_cif *,
   jobject rcv = (jobject) args[0].ptr;
   JvSynchronize mutex (rcv);
 
-  _this->run (ret, args);
+  run (ret, args, _this);
 }
 
 void
@@ -299,7 +274,7 @@ _Jv_InterpMethod::run_class (ffi_cif *,
 {
   _Jv_InterpMethod *_this = (_Jv_InterpMethod *) __this;
   _Jv_InitClass (_this->defining_class);
-  _this->run (ret, args);
+  run (ret, args, _this);
 }
 
 void
@@ -314,7 +289,7 @@ _Jv_InterpMethod::run_synch_class (ffi_cif *,
   _Jv_InitClass (sync);
   JvSynchronize mutex (sync);
 
-  _this->run (ret, args);
+  run (ret, args, _this);
 }
 
 #ifdef DIRECT_THREADED
@@ -783,28 +758,22 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
       exc[i].handler_type.p = handler;
     }
 
+  // Translate entries in the LineNumberTable from bytecode PC's to direct
+  // threaded interpreter instruction values.
+  for (int i = 0; i < line_table_len; i++)
+    {
+      int byte_pc = line_table[i].bytecode_pc;
+      line_table[i].pc = &insns[pc_mapping[byte_pc]];
+    }  
+
   prepared = insns;
 }
 #endif /* DIRECT_THREADED */
 
-// These exist so that the stack-tracing code can find the boundaries
-// of the interpreter.
-void *_Jv_StartOfInterpreter;
-void *_Jv_EndOfInterpreter;
-extern "C" void *_Unwind_FindEnclosingFunction (void *pc);
-
 void
-_Jv_InterpMethod::run (void *retp, ffi_raw *args)
+_Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 {
   using namespace java::lang::reflect;
-
-  // Record the address of the start of this member function in
-  // _Jv_StartOfInterpreter.  Such a write to a global variable
-  // without acquiring a lock is correct iff reads and writes of words
-  // in memory are atomic, but Java requires that anyway.
- foo:
-  if (_Jv_StartOfInterpreter == NULL)
-    _Jv_StartOfInterpreter = _Unwind_FindEnclosingFunction (&&foo);
 
   // FRAME_DESC registers this particular invocation as the top-most
   // interpreter frame.  This lets the stack tracing code (for
@@ -813,20 +782,20 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
   // destructor so it cleans up automatically when the interpreter
   // returns.
   java::lang::Thread *thread = java::lang::Thread::currentThread();
-  _Jv_MethodChain frame_desc (this,
-			      (_Jv_MethodChain **) &thread->interp_frame);
+  _Jv_InterpFrame frame_desc (meth,
+			      (_Jv_InterpFrame **) &thread->interp_frame);
 
-  _Jv_word stack[max_stack];
+  _Jv_word stack[meth->max_stack];
   _Jv_word *sp = stack;
 
-  _Jv_word locals[max_locals];
+  _Jv_word locals[meth->max_locals];
 
   /* Go straight at it!  the ffi raw format matches the internal
      stack representation exactly.  At least, that's the idea.
   */
-  memcpy ((void*) locals, (void*) args, args_raw_size);
+  memcpy ((void*) locals, (void*) args, meth->args_raw_size);
 
-  _Jv_word *pool_data = defining_class->constants.data;
+  _Jv_word *pool_data = meth->defining_class->constants.data;
 
   /* These three are temporaries for common code used by several
      instructions.  */
@@ -1068,14 +1037,14 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 #define AMPAMP(label) &&label
 
   // Compile if we must. NOTE: Double-check locking.
-  if (prepared == NULL)
+  if (meth->prepared == NULL)
     {
       _Jv_MutexLock (&compile_mutex);
-      if (prepared == NULL)
-	compile (insn_target);
+      if (meth->prepared == NULL)
+	meth->compile (insn_target);
       _Jv_MutexUnlock (&compile_mutex);
     }
-  pc = (insn_slot *) prepared;
+  pc = (insn_slot *) meth->prepared;
 
 #else
 
@@ -1132,7 +1101,8 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	 * the corresponding bit JV_CONSTANT_ResolvedFlag in the tag
 	 * directly.  For now, I don't think it is worth it.  */
 
-	rmeth = (_Jv_Linker::resolve_pool_entry (defining_class,
+	SAVE_PC();
+	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						   index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
@@ -1140,7 +1110,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	// working if the method is final.  So instead we do an
 	// explicit test.
 	if (! sp[0].o)
-	  throw new java::lang::NullPointerException;
+	  {
+	    //printf("invokevirtual pc = %p/%i\n", pc, meth->get_pc_val(pc));
+	    throw new java::lang::NullPointerException;
+	  }
 
 	if (rmeth->vtable_index == -1)
 	  {
@@ -1173,7 +1146,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	// working if the method is final.  So instead we do an
 	// explicit test.
 	if (! sp[0].o)
-	  throw new java::lang::NullPointerException;
+	  {
+	    SAVE_PC();
+	    throw new java::lang::NullPointerException;
+	  }
 
 	if (rmeth->vtable_index == -1)
 	  {
@@ -1193,6 +1169,8 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 
     perform_invoke:
       {
+        SAVE_PC();
+	
 	/* here goes the magic again... */
 	ffi_cif *cif = &rmeth->cif;
 	ffi_raw *raw = (ffi_raw*) sp;
@@ -2423,7 +2401,8 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_getstatic:
       {
 	jint fieldref_index = GET2U ();
-	_Jv_Linker::resolve_pool_entry (defining_class, fieldref_index);
+        SAVE_PC(); // Constant pool resolution could throw.
+	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	if ((field->flags & Modifier::STATIC) == 0)
@@ -2510,7 +2489,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_getfield:
       {
 	jint fieldref_index = GET2U ();
-	_Jv_Linker::resolve_pool_entry (defining_class, fieldref_index);
+	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	if ((field->flags & Modifier::STATIC) != 0)
@@ -2626,7 +2605,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_putstatic:
       {
 	jint fieldref_index = GET2U ();
-	_Jv_Linker::resolve_pool_entry (defining_class, fieldref_index);
+	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	jclass type = field->type;
@@ -2713,7 +2692,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_putfield:
       {
 	jint fieldref_index = GET2U ();
-	_Jv_Linker::resolve_pool_entry (defining_class, fieldref_index);
+	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
 	jclass type = field->type;
@@ -2839,7 +2818,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       {
 	int index = GET2U ();
 
-	rmeth = (_Jv_Linker::resolve_pool_entry (defining_class,
+	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						   index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
@@ -2847,7 +2826,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	// We don't use NULLCHECK here because we can't rely on that
 	// working for <init>.  So instead we do an explicit test.
 	if (! sp[0].o)
-	  throw new java::lang::NullPointerException;
+	  {
+	    SAVE_PC();
+	    throw new java::lang::NullPointerException;
+	  }
 
 	fun = (void (*)()) rmeth->method->ncode;
 
@@ -2868,7 +2850,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	// We don't use NULLCHECK here because we can't rely on that
 	// working for <init>.  So instead we do an explicit test.
 	if (! sp[0].o)
-	  throw new java::lang::NullPointerException;
+	  {
+	    SAVE_PC();
+	    throw new java::lang::NullPointerException;
+	  }
 	fun = (void (*)()) rmeth->method->ncode;
       }
       goto perform_invoke;
@@ -2878,7 +2863,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       {
 	int index = GET2U ();
 
-	rmeth = (_Jv_Linker::resolve_pool_entry (defining_class,
+	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						   index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
@@ -2908,7 +2893,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       {
 	int index = GET2U ();
 
-	rmeth = (_Jv_Linker::resolve_pool_entry (defining_class,
+	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						   index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
@@ -2952,7 +2937,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_new:
       {
 	int index = GET2U ();
-	jclass klass = (_Jv_Linker::resolve_pool_entry (defining_class,
+	jclass klass = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 							  index)).clazz;
 	jobject res = _Jv_AllocObject (klass);
 	PUSHA (res);
@@ -2986,7 +2971,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_anewarray:
       {
 	int index = GET2U ();
-	jclass klass = (_Jv_Linker::resolve_pool_entry (defining_class,
+	jclass klass = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 							  index)).clazz;
 	int size  = POPI();
 	jobject result = _Jv_NewObjectArray (size, klass, 0);
@@ -3027,9 +3012,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 
     insn_checkcast:
       {
+        SAVE_PC();
 	jobject value = POPA();
 	jint index = GET2U ();
-	jclass to = (_Jv_Linker::resolve_pool_entry (defining_class,
+	jclass to = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						       index)).clazz;
 
 	if (value != NULL && ! to->isInstance (value))
@@ -3047,6 +3033,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 #ifdef DIRECT_THREADED
     checkcast_resolved:
       {
+        SAVE_PC();
 	jobject value = POPA ();
 	jclass to = (jclass) AVAL ();
 	if (value != NULL && ! to->isInstance (value))
@@ -3058,9 +3045,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 
     insn_instanceof:
       {
+        SAVE_PC();
 	jobject value = POPA();
 	jint index = GET2U ();
-	jclass to = (_Jv_Linker::resolve_pool_entry (defining_class,
+	jclass to = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						       index)).clazz;
 	PUSHI (to->isInstance (value));
 
@@ -3123,7 +3111,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	int dim        = GET1U ();
 
 	jclass type    
-	  = (_Jv_Linker::resolve_pool_entry (defining_class,
+	  = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 					       kind_index)).clazz;
 	jint *sizes    = (jint*) __builtin_alloca (sizeof (jint)*dim);
 
@@ -3212,10 +3200,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 #else
       int logical_pc = pc - 1 - bytecode ();
 #endif
-      _Jv_InterpException *exc = exceptions ();
+      _Jv_InterpException *exc = meth->exceptions ();
       jclass exc_class = ex->getClass ();
 
-      for (int i = 0; i < exc_count; i++)
+      for (int i = 0; i < meth->exc_count; i++)
 	{
 	  if (PCVAL (exc[i].start_pc) <= logical_pc
 	      && logical_pc < PCVAL (exc[i].end_pc))
@@ -3271,6 +3259,21 @@ throw_null_pointer_exception ()
   throw null_pointer_exc;
 }
 #endif
+
+/* Look up source code line number for given bytecode (or direct threaded
+   interpreter) PC. */
+int
+_Jv_InterpMethod::get_source_line(pc_t mpc)
+{
+  int line = line_table_len > 0 ? line_table[0].line : -1;
+  for (int i = 1; i < line_table_len; i++)
+    if (line_table[i].pc > mpc)
+      break;
+    else
+      line = line_table[i].line;
+
+  return line;
+}
 
 /** Do static initialization for fields with a constant initializer */
 void

@@ -217,7 +217,7 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 # convenience library suddenly invokes the --whole-archive path instead.
 # This allows the build to succeed for targets that allocate multiple got
 # subsections in the linker, such as Alpha and MIPS.
-libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
+libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
 	$(gnu_xml_source_files) $(built_java_source_files) \
@@ -588,19 +588,11 @@ clean-nat:
 
 SUFFIXES = .class .java .h .properties
 
-## Note: we omit StackTrace here, since it has an explicit rule a bit
-## later, and GNU make will warn in this case.
-$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files): %.lo: %.java
+$(javao_files) $(xlib_javao_files): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
 $(gtk_awt_peer_sources:.java=.lo) $(gnu_xml_source_files:.java=.lo): %.lo: %.java
 	$(LTGCJCOMPILE) -fjni -o $@ -c $<
-
-## A special case.  The sibcall optimization can change the number of
-## frames on the stack, and StackTrace makes assumptions about this
-## number.
-gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
-	$(LTGCJCOMPILE) -fno-optimize-sibling-calls -o $@ -c $<
 
 ## Pass the list of object files to libtool in a temporary file to
 ## avoid tripping platform command line length limits.
@@ -2911,12 +2903,10 @@ gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
-gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \
 gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
-gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/SystemClassLoader.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -3676,9 +3666,7 @@ gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
-gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
-gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/gcj/util/natDebug.cc \
@@ -3708,6 +3696,7 @@ java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \
 java/lang/natVMSecurityManager.cc \
+java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \

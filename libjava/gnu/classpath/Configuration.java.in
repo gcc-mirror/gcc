@@ -52,7 +52,7 @@ public interface Configuration
   // For libgcj we never load the JNI libraries.
   boolean INIT_LOAD_LIBRARY = false;
 	
-  // For libgcj we have native methods for proxy support....
+  // For libgcj we have native methods for dynamic proxy support....
   boolean HAVE_NATIVE_GET_PROXY_DATA = false;
   boolean HAVE_NATIVE_GET_PROXY_CLASS = false;
   boolean HAVE_NATIVE_GENERATE_PROXY_CLASS = false;

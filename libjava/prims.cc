@@ -147,10 +147,10 @@ unblock_signal (int signum __attribute__ ((__unused__)))
 #ifdef HANDLE_SEGV
 SIGNAL_HANDLER (catch_segv)
 {
-  java::lang::NullPointerException *nullp 
-    = new java::lang::NullPointerException;
   unblock_signal (SIGSEGV);
   MAKE_THROW_FRAME (nullp);
+  java::lang::NullPointerException *nullp 
+    = new java::lang::NullPointerException;
   throw nullp;
 }
 #endif
@@ -158,14 +158,14 @@ SIGNAL_HANDLER (catch_segv)
 #ifdef HANDLE_FPE
 SIGNAL_HANDLER (catch_fpe)
 {
-  java::lang::ArithmeticException *arithexception 
-    = new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));
   unblock_signal (SIGFPE);
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else
   MAKE_THROW_FRAME (arithexception);
 #endif
+  java::lang::ArithmeticException *arithexception 
+    = new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));
   throw arithexception;
 }
 #endif

@@ -1,5 +1,5 @@
 /* java.lang.VMThrowable -- VM support methods for Throwable.
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,7 @@ exception statement from your version. */
 
 package java.lang;
 
-import gnu.gcj.runtime.NameFinder;
-import gnu.gcj.runtime.StackTrace;
+import gnu.gcj.RawDataManaged;
 
 /**
  * VM dependent state and support methods Throwable.
@@ -51,10 +50,8 @@ import gnu.gcj.runtime.StackTrace;
  */
 final class VMThrowable
 {
-  private gnu.gcj.runtime.StackTrace trace;
-
   /**
-   * Private contructor, create VMThrowables with fillInStackTrace();
+   * Private contructor, create VMThrowables with StackTrace();
    */
   private VMThrowable() { }
 
@@ -67,20 +64,7 @@ final class VMThrowable
    * @return a new VMThrowable containing the current execution stack trace.
    * @see Throwable#fillInStackTrace()
    */
-  static VMThrowable fillInStackTrace(Throwable t)
-  {
-    VMThrowable state = null;
-    
-    /* FIXME: size of the stack trace is limited to 128 elements.
-       It's undoubtedly sensible to limit the stack trace, but 128 is
-       rather arbitrary.  It may be better to configure this.  */
-    if (trace_enabled)
-      {
-	state = new VMThrowable ();
-	state.trace = new gnu.gcj.runtime.StackTrace(128);
-      }
-    return state;
-  }
+  static native VMThrowable fillInStackTrace(Throwable t);
 
   /**
    * Returns an <code>StackTraceElement</code> array based on the execution
@@ -90,21 +74,11 @@ final class VMThrowable
    * @return a non-null but possible zero length array of StackTraceElement.
    * @see Throwable#getStackTrace()
    */
-  StackTraceElement[] getStackTrace(Throwable t)
-  {
-    StackTraceElement[] result;
-    if (trace != null)
-      {
-	NameFinder nameFinder = new NameFinder();
-	result = nameFinder.lookup(t, trace);
-	nameFinder.close();
-      }
-    else
-      result = new StackTraceElement[0];
-
-    return result;
-  }
-
+  native StackTraceElement[] getStackTrace(Throwable t);
+  
   // Setting this flag to false prevents fillInStackTrace() from running.
   static boolean trace_enabled = true;
+  
+  // Native stack data.
+  private RawDataManaged data;
 }

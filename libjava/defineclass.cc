@@ -229,6 +229,7 @@ struct _Jv_ClassReader {
     len    = length;
     pos    = 0;
     def    = klass;
+
     def->size_in_bytes = -1;
     def->vtable_method_count = -1;
     def->engine = &_Jv_soleInterpreterEngine;
@@ -613,26 +614,54 @@ void _Jv_ClassReader::read_one_method_attribute (int method_index)
     }
 }
 
-void _Jv_ClassReader::read_one_code_attribute (int /*method*/) 
+void _Jv_ClassReader::read_one_code_attribute (int method_index) 
 {
-  /* ignore for now, ... later we may want to pick up
-     line number information, for debugging purposes;
-     in fact, the whole debugger issue is open!  */
-
-  /* int name = */ read2u ();
+  int name = read2u ();
   int length = read4 ();
-  skip (length);
+  if (is_attribute_name (name, "LineNumberTable"))
+    {
+      _Jv_InterpMethod *method = reinterpret_cast<_Jv_InterpMethod *>
+	(def_interp->interpreted_methods[method_index]);
+      if (method->line_table != NULL)
+	throw_class_format_error ("Method already has LineNumberTable");
 
+      int table_len = read2u ();
+      _Jv_LineTableEntry* table
+	= (_Jv_LineTableEntry *) JvAllocBytes (table_len
+					    * sizeof (_Jv_LineTableEntry));
+      for (int i = 0; i < table_len; i++)
+       {
+	 table[i].bytecode_pc = read2u ();
+	 table[i].line = read2u ();
+       }
+      method->line_table_len = table_len;
+      method->line_table = table;
+    }
+  else
+    {
+      /* ignore unknown code attributes */
+      skip (length);
+    }
 }
 
 void _Jv_ClassReader::read_one_class_attribute () 
 {
-  /* we also ignore the class attributes, ...
-     some day we'll add inner-classes support. */
-
-  /* int name = */ read2u ();
+  int name = read2u ();
   int length = read4 ();
-  skip (length);
+  if (is_attribute_name (name, "SourceFile"))
+    {
+      int source_index = read2u ();
+      check_tag (source_index, JV_CONSTANT_Utf8);
+      prepare_pool_entry (source_index, JV_CONSTANT_Utf8);
+      def_interp->source_file_name = _Jv_NewStringUtf8Const
+	(def->constants.data[source_index].utf8);
+    }
+  else
+    {
+      /* Currently, we ignore most class attributes.
+         FIXME: Add inner-classes attributes support. */
+     skip (length);
+    }
 }
 
 
@@ -1279,6 +1308,9 @@ void _Jv_ClassReader::handleCodeAttribute
   method->defining_class = def;
   method->self           = &def->methods[method_index];
   method->prepared       = NULL;
+  method->line_table_len = 0;
+  method->line_table     = NULL;
+
 
   // grab the byte code!
   memcpy ((void*) method->bytecode (),

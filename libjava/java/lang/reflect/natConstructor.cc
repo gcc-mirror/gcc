@@ -12,6 +12,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <java-stack.h>
 
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/IllegalAccessException.h>
@@ -55,20 +56,7 @@ java::lang::reflect::Constructor::newInstance (jobjectArray args)
   // Check accessibility, if required.
   if (! (Modifier::isPublic (meth->accflags) || this->isAccessible()))
     {
-      gnu::gcj::runtime::StackTrace *t 
-	= new gnu::gcj::runtime::StackTrace(4);
-      Class *caller = NULL;
-      try
-	{
-	  for (int i = 1; !caller; i++)
-	    {
-	      caller = t->classAt (i);
-	    }
-	}
-      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-	{
-	}
-
+      Class *caller = _Jv_StackTrace::GetCallingClass (&Constructor::class$);
       if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
 	throw new IllegalAccessException;
     }
