@@ -156,6 +156,9 @@ public abstract class ResourceBundle
       ResourceBundle rb;
       Class rbc;
 
+      if (baseName == null)
+	throw new NullPointerException ();
+
       rb = partialGetBundle(baseName, locale, false);
       if (rb != null)
 	return rb;
@@ -167,7 +170,7 @@ public abstract class ResourceBundle
 	  if (rb != null)
 	    return rb;
 	}
-			   
+
       throw new MissingResourceException("can't load bundle", 
 					 baseName,
 					 "bundle");
