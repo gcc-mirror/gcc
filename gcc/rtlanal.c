@@ -698,7 +698,7 @@ int
 multiple_sets (insn)
      rtx insn;
 {
-  rtx found;
+  int found;
   int i;
   
   /* INSN must be an insn.  */

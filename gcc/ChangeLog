@@ -1,3 +1,8 @@
+Tue Dec 22 15:15:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* rtlanal.c (multiple_sets): Change type of 'found' from 'rtx' to
+	'int'. 
+
 Tue Dec 22 13:55:44 1998  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* halfpic.c (half_pic_encode): Delete redundant code.
