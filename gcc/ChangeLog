@@ -1,3 +1,8 @@
+1999-12-13  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/arm/arm.md  (*mulsidi3adddi, *umulsidi3adddi) Backed out 
+	12/10/99 change, reapplied to merged-arm-thumb-backend-branch.
+
 1999-12-10  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* hard-reg-set.h (inv_reg_alloc_order): Declare if REG_ALLOC_ORDER is
