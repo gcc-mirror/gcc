@@ -751,7 +751,8 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) ((NODE)->decl.bit_field_flag)
 
-/* In a METHOD_DECL, indicates a function for which each instance has a pointer.  */
+/* In a FUNCTION_DECL, indicates a method
+   for which each instance has a pointer.  */
 #define DECL_VIRTUAL_P(NODE) ((NODE)->decl.virtual_flag)
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) ((NODE)->decl.virtual_flag)
