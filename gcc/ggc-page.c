@@ -264,6 +264,10 @@ static struct globals
    test from triggering too often when the heap is small.  */
 #define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
+/* Allocate pages in chunks of this size, to throttle calls to mmap.
+   The first page is used, the rest go onto the free list.  */
+#define GGC_QUIRE_SIZE 16
+
 
 static int ggc_allocated_p PARAMS ((const void *));
 static page_entry *lookup_page_table_entry PARAMS ((const void *));
@@ -481,11 +485,31 @@ alloc_page (order)
       else
 	free (p);
     }
-  else
+#ifdef HAVE_MMAP_ANYWHERE
+  else if (entry_size == G.pagesize)
     {
-      /* Actually allocate the memory.  */
-      page = alloc_anon (NULL, entry_size);
+      /* We want just one page.  Allocate a bunch of them and put the
+	 extras on the freelist.  (Can only do this optimization with
+	 mmap for backing store.)  */
+      struct page_entry *e, *f = G.free_pages;
+      int i;
+
+      page = alloc_anon (NULL, entry_size * GGC_QUIRE_SIZE);
+      /* This loop counts down so that the chain will be in ascending
+	 memory order.  */
+      for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
+	{
+	  e = (struct page_entry *) xcalloc (1, sizeof (struct page_entry));
+	  e->bytes = entry_size;
+	  e->page = page + i*entry_size;
+	  e->next = f;
+	  f = e;
+	}
+      G.free_pages = f;
     }
+#endif
+  else
+    page = alloc_anon (NULL, entry_size);
 
   if (entry == NULL)
     entry = (struct page_entry *) xcalloc (1, page_entry_size);
@@ -534,45 +558,38 @@ free_page (entry)
 static void
 release_pages ()
 {
-#ifdef HAVE_MMAP_ANYWHERE
   page_entry *p, *next;
+
+#ifdef HAVE_MMAP_ANYWHERE
   char *start;
   size_t len;
 
+  /* Gather up adjacent pages so they are unmapped together.  */
   p = G.free_pages;
-  if (p == NULL)
-    return;
-
-  next = p->next;
-  start = p->page;
-  len = p->bytes;
-  free (p);
-  p = next;
 
   while (p)
     {
+      start = p->page;
       next = p->next;
-      /* Gather up adjacent pages so they are unmapped together.  */
-      if (p->page == start + len)
-	len += p->bytes;
-      else
-	{
-	  munmap (start, len);
-	  G.bytes_mapped -= len;
-	  start = p->page;
-	  len = p->bytes;
-	}
+      len = p->bytes;
       free (p);
       p = next;
-    }
 
-  munmap (start, len);
-  G.bytes_mapped -= len;
+      while (p && p->page == start + len)
+	{
+	  next = p->next;
+	  len += p->bytes;
+	  free (p);
+	  p = next;
+	}
+
+      munmap (start, len);
+      G.bytes_mapped -= len;
+    }
 #else
 #ifdef HAVE_VALLOC
-  page_entry *p, *next;
 
-  for (p = G.free_pages; p ; p = next)
+  for (p = G.free_pages; p; p = next)
     {
       next = p->next;
       free (p->page);
@@ -754,8 +771,6 @@ ggc_set_mark (p)
   /* Otherwise set it, and decrement the free object count.  */
   entry->in_use_p[word] |= mask;
   entry->num_free_objects -= 1;
-
-  G.allocated += (size_t) 1 << entry->order;
 
   if (GGC_DEBUG_LEVEL >= 4)
     fprintf (G.debug_file, "Marking %p\n", p);
@@ -972,6 +987,7 @@ sweep_pages ()
       page_entry * const last = G.page_tails[order];
 
       size_t num_objects = OBJECTS_PER_PAGE (order);
+      size_t live_objects;
       page_entry *p, *previous;
       int done;
 	
@@ -987,13 +1003,19 @@ sweep_pages ()
 	  /* Loop until all entries have been examined.  */
 	  done = (p == last);
 
+	  /* Add all live objects on this page to the count of
+             allocated memory.  */
+	  live_objects = num_objects - p->num_free_objects;
+
+	  G.allocated += ((size_t) 1 << order) * live_objects;
+
 	  /* Only objects on pages in the topmost context should get
 	     collected.  */
 	  if (p->context_depth < G.context_depth)
 	    ;
 
 	  /* Remove the page if it's empty.  */
-	  else if (p->num_free_objects == num_objects)
+	  else if (live_objects == 0)
 	    {
 	      if (! previous)
 		G.pages[order] = next;
@@ -1112,8 +1134,8 @@ ggc_collect ()
   if (!quiet_flag)
     fprintf (stderr, " {GC %luk -> ", (unsigned long) G.allocated / 1024);
 
-  /* Zero the total allocated bytes.  We'll reaccumulate this while
-     marking.  */
+  /* Zero the total allocated bytes.  This will be recalculated in the
+     sweep phase.  */
   G.allocated = 0;
 
   /* Release the pages we freed the last time we collected, but didn't 
