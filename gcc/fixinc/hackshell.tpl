@@ -174,7 +174,7 @@ _FOR fix "\n\n" =]
       # Find any include directives that use "file".
       #
       dir=`echo ${file} | sed -e s';/[^/]*$;;'`
-      ddir=`ec${DESTDIR}/$dir
+      ddir=${DESTDIR}/$dir
 
       for include in `
          egrep '^[      ]*#[    ]*include[      ]*"[^/]' ${DESTFILE} |
