@@ -133,3 +133,9 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #define SUPPORTS_WEAK 0
 #endif
 #endif
+
+/* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
+   the rest of the DWARF 2 frame unwind support is also provided.  */
+#ifdef INCOMING_RETURN_ADDR_RTX
+#define DWARF2_UNWIND_INFO
+#endif
