@@ -10138,7 +10138,7 @@ simplify_comparison (code, pop0, pop1)
       equality_comparison_p = (code == EQ || code == NE);
       sign_bit_comparison_p = ((code == LT || code == GE) && const_op == 0);
       unsigned_comparison_p = (code == LTU || code == LEU || code == GTU
-			       || code == LEU);
+			       || code == GEU);
 
       /* If this is a sign bit comparison and we can do arithmetic in
 	 MODE, say that we will only be needing the sign bit of OP0.  */
