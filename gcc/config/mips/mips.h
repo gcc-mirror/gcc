@@ -3821,11 +3821,11 @@ while (0)
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
-/* How to start an assembler comment.  */
+/* How to start an assembler comment.
+   The leading space is important (the mips native assembler requires it).  */
 #ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START "\t\t# "
+#define ASM_COMMENT_START " #"
 #endif
-
 
 
 /* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
