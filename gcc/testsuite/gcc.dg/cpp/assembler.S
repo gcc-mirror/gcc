@@ -3,6 +3,7 @@
    in the output, and should not be warned about.  */
 
 /* { dg-do preprocess } */
+/* { dg-options "" } */
 
 #define foo() mov r0, #5  /* { dg-bogus "not followed" "spurious warning" } */
 

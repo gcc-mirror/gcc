@@ -1,3 +1,7 @@
+2002-10-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/assembler.S: Don't use -ansi.
+
 Fri Oct 11 10:56:49 2002  Richard Shann  <richard.shann@superh.com>
 
 	* gcc.c-torture/compile/simd-5.c: New test.
