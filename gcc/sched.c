@@ -990,17 +990,19 @@ remove_dependence (insn, elem)
   rtx prev, link;
   int found = 0;
 
-  for (prev = 0, link = LOG_LINKS (insn); link;
-       prev = link, link = XEXP (link, 1))
+  for (prev = 0, link = LOG_LINKS (insn); link; link = XEXP (link, 1))
     {
       if (XEXP (link, 0) == elem)
 	{
+	  RTX_INTEGRATED_P (link) = 1;
 	  if (prev)
 	    XEXP (prev, 1) = XEXP (link, 1);
 	  else
 	    LOG_LINKS (insn) = XEXP (link, 1);
 	  found = 1;
 	}
+      else
+	prev = link;
     }
 
   if (! found)
@@ -1477,6 +1479,11 @@ priority (insn)
       for (prev = LOG_LINKS (insn); prev; prev = XEXP (prev, 1))
 	{
 	  rtx x = XEXP (prev, 0);
+
+	  /* If this was a duplicate of a dependence we already deleted,
+	     ignore it.  */
+	  if (RTX_INTEGRATED_P (prev))
+	    continue;
 
 	  /* A dependence pointing to a note or deleted insn is always
 	     obsolete, because sched_analyze_insn will have created any
