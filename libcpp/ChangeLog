@@ -1,3 +1,9 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in: Regenerate with automake 1.8.5.
+	* aclocal.m4: Likewise.
+	* configure: Regenerate.
+
 2004-06-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.ac: Don't invoke ACX_HEADER_STDBOOL.
