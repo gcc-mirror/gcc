@@ -2630,12 +2630,14 @@ linenum:
 
 	  pop_srcloc ();
 	  input_file_stack->name = new_file;
-	  lineno = l;
 	  debug_end_source_file (input_file_stack->line);
 	}
       else
 	error ("#-lines for entering and leaving files don't match");
     }
+
+  input_filename = new_file;
+  lineno = l;
 
   extract_interface_info ();
 

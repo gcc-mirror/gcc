@@ -2870,7 +2870,7 @@ extern int flag_new_for_scope;
 
 /* An integer indicating how many bytes should be subtracted from the
    vtable for the `this' pointer to find the vcall offset.  (The vptr
-   is always located at offset zero from the `this' pointer.)  If
+   is always located at offset zero from the f `this' pointer.)  If
    zero, then there is no vcall offset.  */
 #define THUNK_VCALL_OFFSET(DECL) (DECL_FIELD_SIZE (DECL))
 
@@ -2878,9 +2878,11 @@ extern int flag_new_for_scope;
    definition.  This is true when the back-end tells us that
    the symbol has been referenced in the generated code.  If, however,
    we are not generating code, then it is also true when a symbol has
-   just been used somewhere, even if it's not really needed.  */
+   just been used somewhere, even if it's not really needed.  We need
+   anything that isn't comdat, but we don't know for sure whether or
+   not something is comdat until end-of-file.  */
 #define DECL_NEEDED_P(DECL)					\
-  (! DECL_COMDAT (DECL)						\
+  ((at_eof && !DECL_COMDAT (DECL))				\
    || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
    || (flag_syntax_only && TREE_USED ((DECL))))
 
@@ -3831,7 +3833,6 @@ extern void finish_builtin_type			PARAMS ((tree, const char *,
 extern tree coerce_new_type			PARAMS ((tree));
 extern tree coerce_delete_type			PARAMS ((tree));
 extern void comdat_linkage			PARAMS ((tree));
-extern void import_export_class			PARAMS ((tree));
 extern void import_export_vtable		PARAMS ((tree, tree, int));
 extern void import_export_decl			PARAMS ((tree));
 extern tree build_cleanup			PARAMS ((tree));

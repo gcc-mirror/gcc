@@ -804,6 +804,10 @@ dequeue_and_dump (di)
     case COMPONENT_REF:
     case COMPOUND_EXPR:
     case ARRAY_REF:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
       /* These nodes are binary, but do not have code class `2'.  */
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
@@ -857,6 +861,10 @@ dequeue_and_dump (di)
       dump_child ("fn", TREE_OPERAND (t, 0));
       dump_child ("args", TREE_OPERAND (t, 1));
       dump_child ("decl", TREE_OPERAND (t, 2));
+      break;
+      
+    case EXPR_WITH_FILE_LOCATION:
+      dump_child ("expr", EXPR_WFL_NODE (t));
       break;
 
     default:
