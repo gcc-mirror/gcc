@@ -1,4 +1,8 @@
-2004-11-16  Devang Patel  <dpatel@apple.com>
+2004-11-22  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (clean_predicate_lists): Clean all basic blocks.
+	
+2004-11-22  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (if_convertable_phi_p): Rename to ...
 	(if_convertible_phi_p): ... new name.
