@@ -2138,7 +2138,7 @@ pop_srcloc ()
   input_file_stack = fs->next;
   free (fs);
   input_file_stack_tick++;
-  /* The initial souce file is never popped.  */
+  /* The initial source file is never popped.  */
   if (!input_file_stack)
     abort ();
   input_filename = input_file_stack->name;
