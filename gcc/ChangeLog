@@ -1,3 +1,7 @@
+Sat 19-Aug-2000 21:11:45 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpp.texi: Add @section for assertions.
+
 Sat Aug 19 12:37:08 EDT 2000  John Wehle  (john@feith.com)
 
 	* loop.c (scan_loop): Use CONST_CALL_P instead of
