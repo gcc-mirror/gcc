@@ -1,5 +1,7 @@
 Fri Nov  6 00:16:04 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* reorg.c (fill_simple_delay_slots): Fix typo.
+
 	* romp.h (LEGITIMIZE_ADDRESS): Fix typo.
 
 Fri Nov  6 00:10:00 1998  Jan Hubicka (hubicka@freesoft.cz)
