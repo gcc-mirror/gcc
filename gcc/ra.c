@@ -75,7 +75,7 @@
    * Lattice based rematerialization
    * create definitions of ever-life regs at the beginning of
      the insn chain
-   * insert loads as soon, stores as late as possile
+   * insert loads as soon, stores as late as possible
    * insert spill insns as outward as possible (either looptree, or LCM)
    * reuse stack-slots
    * delete coalesced insns.  Partly done.  The rest can only go, when we get
@@ -657,7 +657,7 @@ reg_alloc ()
   /* If this is an empty function we shouldn't do all the following,
      but instead just setup what's necessary, and return.  */
 
-  /* We currently rely on the existance of the return value USE as
+  /* We currently rely on the existence of the return value USE as
      one of the last insns.  Add it if it's not there anymore.  */
   if (last)
     {
@@ -698,7 +698,7 @@ reg_alloc ()
 
   /* Run regclass first, so we know the preferred and alternate classes
      for each pseudo.  Deactivate emitting of debug info, if it's not
-     explicitely requested.  */
+     explicitly requested.  */
   if ((debug_new_regalloc & DUMP_REGCLASS) == 0)
     rtl_dump_file = NULL;
   regclass (get_insns (), max_reg_num (), rtl_dump_file);

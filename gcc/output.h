@@ -461,7 +461,7 @@ extern void default_eh_frame_section	PARAMS ((void));
 /* Default target hook that outputs nothing to a stream.  */
 extern void no_asm_to_stream PARAMS ((FILE *));
 
-/* Flags controling properties of a section.  */
+/* Flags controlling properties of a section.  */
 #define SECTION_ENTSIZE	 0x000ff	/* entity size in section */
 #define SECTION_CODE	 0x00100	/* contains code */
 #define SECTION_WRITE	 0x00200	/* data is writable */

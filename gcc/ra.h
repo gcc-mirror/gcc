@@ -62,7 +62,7 @@ struct tagged_conflict
    In the process of building the interference graph web parts are
    connected together, if they have common instructions and reference the
    same register.  That way live ranges are build (by connecting defs and
-   uses) and implicitely complete webs (by connecting web parts in common
+   uses) and implicitly complete webs (by connecting web parts in common
    uses).  */
 struct web_part
 {
@@ -378,7 +378,7 @@ extern sbitmap igraph;
 /* This is the bitmap of all (even partly) conflicting super webs.
    If bit I*num_webs+J or J*num_webs+I is set, then I and J (both being
    super web indices) conflict, maybe only partially.  Note the
-   assymetry.  */
+   asymmetry.  */
 extern sbitmap sup_igraph;
 
 /* After the first pass, and when interference region spilling is
@@ -430,7 +430,7 @@ extern struct df *df;
    which backward reach the end of B.  */
 extern bitmap *live_at_end;
 
-/* One pass is: collecting registers refs, buiding I-graph, spilling.
+/* One pass is: collecting registers refs, building I-graph, spilling.
    And this is how often we already ran that for the current function.  */
 extern int ra_pass;
 
@@ -491,7 +491,7 @@ extern HARD_REG_SET usable_regs[N_REG_CLASSES];
 /* For each class C the count of hardregs in usable_regs[C].  */
 extern unsigned int num_free_regs[N_REG_CLASSES];
 /* For each mode M the hardregs, which are MODE_OK for M, and have
-   enough space behind them to hold an M value.  Additinally
+   enough space behind them to hold an M value.  Additionally
    if reg R is OK for mode M, but it needs two hardregs, then R+1 will
    also be set here, even if R+1 itself is not OK for M.  I.e. this
    represent the possible resources which could be taken away be a value

@@ -694,7 +694,7 @@ validate_replace_src_group (from, to, insn)
   note_uses (&PATTERN (insn), validate_replace_src_1, &d);
 }
 
-/* Same as validate_repalace_src_group, but validate by seeing if
+/* Same as validate_replace_src_group, but validate by seeing if
    INSN is still valid.  */
 int
 validate_replace_src (from, to, insn)
@@ -2861,7 +2861,7 @@ split_all_insns (upd_life)
 }
 
 /* Same as split_all_insns, but do not expect CFG to be available.
-   Used by machine depedent reorg passes.  */
+   Used by machine dependent reorg passes.  */
 
 void
 split_all_insns_noflow ()

@@ -478,7 +478,7 @@ reg_to_stack (first, file)
   /* A QNaN for initializing uninitialized variables.
 
      ??? We can't load from constant memory in PIC mode, because
-     we're insertting these instructions before the prologue and
+     we're inserting these instructions before the prologue and
      the PIC register hasn't been set up.  In that case, fall back
      on zero, which we can get from `ldz'.  */
 
@@ -1689,7 +1689,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 		replace_reg (dest, get_hard_regnum (regstack, *dest));
 	      }
 
-	    /* Keep operand 1 maching with destination.  */
+	    /* Keep operand 1 matching with destination.  */
 	    if (GET_RTX_CLASS (GET_CODE (pat_src)) == 'c'
 		&& REG_P (*src1) && REG_P (*src2)
 		&& REGNO (*src1) != REGNO (*dest))
@@ -2406,7 +2406,7 @@ convert_regs_entry ()
      the push/pop code happy, and to not scrog the register stack, we
      must put something in these registers.  Use a QNaN.
 
-     Note that we are insertting converted code here.  This code is
+     Note that we are inserting converted code here.  This code is
      never seen by the convert_regs pass.  */
 
   for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)

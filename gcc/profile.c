@@ -948,7 +948,7 @@ branch_prob ()
       /* Add fake edges from entry block to the call insns that may return
 	 twice.  The CFG is not quite correct then, as call insn plays more
 	 role of CODE_LABEL, but for our purposes, everything should be OK,
-	 as we never insert code to the beggining of basic block.  */
+	 as we never insert code to the beginning of basic block.  */
       for (insn = bb->head; insn != NEXT_INSN (bb->end);
 	   insn = NEXT_INSN (insn))
 	{

@@ -195,7 +195,7 @@ print_node (file, prefix, node, indent)
       return;
     }
 
-  /* It is unsafe to look at any other filds of an ERROR_MARK node.  */
+  /* It is unsafe to look at any other fields of an ERROR_MARK node.  */
   if (TREE_CODE (node) == ERROR_MARK)
     {
       print_node_brief (file, prefix, node, indent);
