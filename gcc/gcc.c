@@ -781,7 +781,7 @@ static struct compiler default_compilers[] =
   {".cc", "#C++", 0}, {".cxx", "#C++", 0}, {".cpp", "#C++", 0},
   {".cp", "#C++", 0}, {".c++", "#C++", 0}, {".C", "#C++", 0},
   {".ii", "#C++", 0},
-  {".ads", "#Ada", 0}, {".adb", "#Ada", 0}, {".ada", "#Ada", 0},
+  {".ads", "#Ada", 0}, {".adb", "#Ada", 0},
   {".f", "#Fortran", 0}, {".for", "#Fortran", 0}, {".fpp", "#Fortran", 0},
   {".F", "#Fortran", 0}, {".FOR", "#Fortran", 0}, {".FPP", "#Fortran", 0},
   {".r", "#Ratfor", 0},
