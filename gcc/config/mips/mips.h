@@ -828,6 +828,7 @@ while (0)
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
 %{membedded-pic} \
+%{mfix7000} \
 %{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"

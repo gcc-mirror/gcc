@@ -349,7 +349,7 @@ in the following sections.
 -m4650  -msingle-float  -mmad
 -mstats  -EL  -EB  -G @var{num}  -nocpp
 -mabi=32 -mabi=n32 -mabi=64 -mabi=eabi
--mno-crt0
+-mfix7000 -mno-crt0
 
 @emph{i386 Options}
 -mcpu=@var{cpu type}
@@ -5780,6 +5780,11 @@ value.
 @item -nocpp
 Tell the MIPS assembler to not run its preprocessor over user
 assembler files (with a @samp{.s} suffix) when assembling them.
+
+@item -mfix7000
+Pass an option to gas which will cause nops to be inserted if
+the read of the destination register of an mfhi or mflo instruction
+occurs in the following two instructions.
 
 @item -no-crt0
 Do not include the default crt0.
