@@ -1,3 +1,16 @@
+2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (NORMAL_MODE): If interrupt handler and TARGET_FMOVD,
+	this is FP_MODE_DOUBLE .
+	* sh.c (ra.h): #include.
+	(push_regs): Add second parameter.  Changed all callers.
+	If necessary, set fpscr before saving floating point registers.
+	(calc_live_regs): If interrupt handler and TARGET_FMOVD, always
+	do saves / restores with SZ == 1.
+	(sh_expand_prologue): If interrupt handler, don't use gen_toggle_sz.
+	(sh_expand_epilogue): Likewise.  For TARGET_FMOVD, if floating point
+	registers are being restored, restore FPSCR only after restoring them.
+
 2003-04-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_init_builtins): Set opaque types

@@ -3292,7 +3292,8 @@ extern int rtx_equal_function_value_matters;
   (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
 
 #define NORMAL_MODE(ENTITY) \
-  (sh_cfun_interrupt_handler_p () ? FP_MODE_NONE \
+  (sh_cfun_interrupt_handler_p () \
+   ? (TARGET_FMOVD ? FP_MODE_DOUBLE : FP_MODE_NONE) \
    : ACTUAL_NORMAL_MODE (ENTITY))
 
 #define EPILOGUE_USES(REGNO)       ((TARGET_SH2E || TARGET_SH4)		\
