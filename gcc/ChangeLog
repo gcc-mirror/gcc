@@ -1,5 +1,10 @@
 2001-12-14  Richard Henderson  <rth@redhat.com>
 
+	* regrename.c (mode_change_ok): New.
+	(find_oldest_value_reg): Use it.
+
+2001-12-14  Richard Henderson  <rth@redhat.com>
+
 	* regrename.c (struct value_data): Add max_value_regs.
 	(init_value_data): Initialize it.
 	(kill_value): Kill values that overlap the dying register.
