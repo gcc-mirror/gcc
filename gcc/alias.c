@@ -987,7 +987,7 @@ init_alias_analysis ()
   do
     {
       changed = 0;
-      for (i = FIRST_PSEUDO_REGISTER; i < reg_base_value_size; i++)
+      for (i = 0; i < reg_base_value_size; i++)
 	{
 	  rtx base = reg_base_value[i];
 	  if (base && GET_CODE (base) == REG)
