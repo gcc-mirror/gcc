@@ -1,5 +1,7 @@
 Fri Apr  3 00:17:01 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (insn*.o): Depend on system.h.
+
 	* pa.c (output_global_address): Initialize base.
 	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Initialize index.
 
