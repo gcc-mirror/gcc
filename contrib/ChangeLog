@@ -1,3 +1,8 @@
+Tue Oct 13 23:28:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* egcs_update: Remove gcc/java/parse.c from list of files to
+	touch.
+
 Wed Oct  7 13:00:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gperf-2.7-19981006.pat: New file, patch for egcs-local gperf.
