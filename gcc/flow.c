@@ -476,6 +476,7 @@ static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void allocate_bb_life_data	PARAMS ((void));
 static void find_sub_basic_blocks	PARAMS ((basic_block));
 static bool redirect_edge_and_branch 	PARAMS ((edge, basic_block));
+static basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
 static rtx block_label			PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
@@ -1619,18 +1620,19 @@ static bool
 forwarder_block_p (bb)
      basic_block bb;
 {
-  rtx insn;
+  rtx insn = bb->head;
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
       || !bb->succ || bb->succ->succ_next)
     return false;
 
-  insn = next_active_insn (bb->head);
-  if (!insn)
-    return false;
-  if (GET_CODE (insn) == CODE_LABEL
-      || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)))
-    return true;
-  return false;
+  while (insn != bb->end)
+    {
+      if (active_insn_p (insn))
+	return false;
+      insn = NEXT_INSN (insn);
+    }
+  return (!active_insn_p (insn)
+	  || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)));
 }
 
 /* Return nonzero if we can reach target from src by falling trought.  */
@@ -1641,7 +1643,7 @@ can_fallthru (src, target)
   rtx insn = src->end;
   rtx insn2 = target->head;
 
-  if (!active_insn_p (insn2))
+  if (src->index + 1 == target->index && !active_insn_p (insn2))
     insn2 = next_active_insn (insn2);
   /* ??? Later we may add code to move jump tables offline.  */
   return next_active_insn (insn) == insn2;
@@ -1663,13 +1665,12 @@ try_redirect_by_replacing_jump (e, target)
   edge tmp;
   rtx set;
   int fallthru = 0;
-  rtx barrier;
 
   /* Verify that all targets will be TARGET.  */
   for (tmp = src->succ; tmp; tmp = tmp->succ_next)
     if (tmp->dest != target && tmp != e)
       break;
-  if (tmp || GET_CODE (insn) != JUMP_INSN)
+  if (tmp || !onlyjump_p (insn))
     return false;
 
   /* Avoid removing branch with side effects.  */
@@ -1685,7 +1686,11 @@ try_redirect_by_replacing_jump (e, target)
 	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
       flow_delete_insn (insn);
       fallthru = 1;
-      insn = src->end;
+
+      /* Selectivly unlink whole insn chain.  */
+      if (src->end != PREV_INSN (target->head))
+	flow_delete_insn_chain (NEXT_INSN (src->end),
+				PREV_INSN (target->head));
     }
   /* If this already is simplejump, redirect it.  */
   else if (simplejump_p (insn))
@@ -1701,16 +1706,21 @@ try_redirect_by_replacing_jump (e, target)
   else
     {
       rtx target_label = block_label (target);
+      rtx barrier;
 
       src->end = PREV_INSN (insn);
       src->end = emit_jump_insn_after (gen_jump (target_label), src->end);
       JUMP_LABEL (src->end) = target_label;
       LABEL_NUSES (target_label)++;
+      if (basic_block_for_insn)
+	set_block_for_new_insns (src->end, src);
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (src->end));
       flow_delete_insn (insn);
-      insn = src->end;
+      barrier = next_nonnote_insn (src->end);
+      if (!barrier || GET_CODE (barrier) != BARRIER)
+	emit_barrier_after (src->end);
     }
 
   /* Keep only one edge out and set proper flags.  */
@@ -1721,13 +1731,32 @@ try_redirect_by_replacing_jump (e, target)
     e->flags = EDGE_FALLTHRU;
   else
     e->flags = 0;
+  e->probability = REG_BR_PROB_BASE;
+  e->count = src->count;
 
-  /* Fixup barriers.  */
-  barrier = next_nonnote_insn (insn);
-  if (fallthru && GET_CODE (barrier) == BARRIER)
-    flow_delete_insn (barrier);
-  else if (!fallthru && GET_CODE (barrier) != BARRIER)
-    emit_barrier_after (insn);
+  /* In case we've zapped an conditional jump, we need to kill the cc0
+     setter too if available.  */
+#ifdef HAVE_cc0
+  insn = src->end;
+  if (GET_CODE (insn) == JUMP_INSN)
+    insn = prev_nonnote_insn (insn);
+  if (sets_cc0_p (insn))
+    {
+      if (insn == src->end)
+	src->end = PREV_INSN (insn);
+      flow_delete_insn (insn);
+    }
+#endif
+
+  /* We don't want a block to end on a line-number note since that has
+     the potential of changing the code between -g and not -g.  */
+  while (GET_CODE (e->src->end) == NOTE
+	 && NOTE_LINE_NUMBER (e->src->end) >= 0)
+    {
+      rtx prev = PREV_INSN (e->src->end);
+      flow_delete_insn (e->src->end);
+      e->src->end = prev;
+    }
 
   if (e->dest != target)
     redirect_edge_succ (e, target);
@@ -1788,7 +1817,7 @@ redirect_edge_and_branch (e, target)
       for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 	if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
 	  {
-	    RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (VOIDmode, new_label);
+	    RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (Pmode, new_label);
 	    --LABEL_NUSES (old_label);
 	    ++LABEL_NUSES (new_label);
 	  }
@@ -1837,12 +1866,125 @@ redirect_edge_and_branch (e, target)
       if (s)
 	{
 	  s->flags |= e->flags;
+	  s->probability += e->probability;
+	  s->count += e->count;
 	  remove_edge (e);
 	}
       else
 	redirect_edge_succ (e, target);
     }
   return true;
+}
+
+/* Redirect edge even at the expense of creating new jump insn or
+   basic block.  Return new basic block if created, NULL otherwise.
+   Abort if converison is impossible.  */
+static basic_block
+redirect_edge_and_branch_force (e, target)
+     edge e;
+     basic_block target;
+{
+  basic_block new_bb;
+  edge new_edge;
+  rtx label;
+  rtx bb_note;
+  int i, j;
+
+  if (redirect_edge_and_branch (e, target))
+    return NULL;
+  if (e->dest == target)
+    return NULL;
+  if (e->flags & EDGE_ABNORMAL)
+    abort ();
+  if (!(e->flags & EDGE_FALLTHRU))
+    abort ();
+
+  e->flags &= ~EDGE_FALLTHRU;
+  label = block_label (target);
+  /* Case of the fallthru block.  */
+  if (!e->src->succ->succ_next)
+    {
+      e->src->end = emit_jump_insn_after (gen_jump (label), e->src->end);
+      JUMP_LABEL (e->src->end) = label;
+      LABEL_NUSES (label)++;
+      if (basic_block_for_insn)
+	set_block_for_insn (e->src->end, e->src);
+      emit_barrier_after (e->src->end);
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file,
+		 "Emitting jump insn %i to redirect edge %i->%i to %i\n",
+		 INSN_UID (e->src->end), e->src->index, e->dest->index,
+		 target->index);
+      redirect_edge_succ (e, target);
+      return NULL;
+    }
+  /* Redirecting fallthru edge of the conditional needs extra work.  */
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file,
+	     "Emitting jump insn %i in new BB to redirect edge %i->%i to %i\n",
+	     INSN_UID (e->src->end), e->src->index, e->dest->index,
+	     target->index);
+
+  /* Create the new structures.  */
+  new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
+  new_edge = (edge) xcalloc (1, sizeof (*new_edge));
+  n_edges++;
+
+  memset (new_bb, 0, sizeof (*new_bb));
+
+  new_bb->end = new_bb->head = e->src->end;
+  new_bb->succ = NULL;
+  new_bb->pred = new_edge;
+  new_bb->count = e->count;
+  new_bb->frequency = e->probability * e->src->frequency / REG_BR_PROB_BASE;
+  new_bb->loop_depth = e->dest->loop_depth;
+
+  new_edge->flags = EDGE_FALLTHRU;
+  new_edge->probability = e->probability;
+  new_edge->count = e->count;
+
+  /* Wire edge in.  */
+  new_edge->src = e->src;
+  new_edge->dest = new_bb;
+  new_edge->succ_next = e->src->succ;
+  e->src->succ = new_edge;
+  new_edge->pred_next = NULL;
+
+  /* Redirect old edge.  */
+  redirect_edge_succ (e, target);
+  redirect_edge_pred (e, new_bb);
+  e->probability = REG_BR_PROB_BASE;
+
+  /* Place the new block just after the block being split.  */
+  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+
+  /* Some parts of the compiler expect blocks to be number in
+     sequential order so insert the new block immediately after the
+     block being split..  */
+  j = new_edge->src->index;
+  for (i = n_basic_blocks - 1; i > j + 1; --i)
+    {
+      basic_block tmp = BASIC_BLOCK (i - 1);
+      BASIC_BLOCK (i) = tmp;
+      tmp->index = i;
+    }
+
+  BASIC_BLOCK (i) = new_bb;
+  new_bb->index = i;
+
+  /* Create the basic block note.  */
+  bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, new_bb->head);
+  NOTE_BASIC_BLOCK (bb_note) = new_bb;
+  new_bb->head = bb_note;
+
+  new_bb->end = emit_jump_insn_after (gen_jump (label), new_bb->head);
+  JUMP_LABEL (new_bb->end) = label;
+  LABEL_NUSES (label)++;
+  if (basic_block_for_insn)
+    set_block_for_insn (new_bb->end, new_bb);
+  emit_barrier_after (new_bb->end);
+  return new_bb;
 }
 
 /* Split a (typically critical) edge.  Return the new block.
@@ -2874,7 +3016,9 @@ try_simplify_condjump (src)
   rtx insn = src->end;
   edge branch, fallthru;
 
-  if (!any_condjump_p (insn))
+  /* Verify that there are exactly two successors.  */
+  if (!src->succ || !src->succ->succ_next || src->succ->succ_next->succ_next
+      || !any_condjump_p (insn))
     return false;
 
   fallthru = FALLTHRU_EDGE (src);
@@ -3007,6 +3151,7 @@ try_optimize_cfg ()
 	  /* The fallthru forwarder block can be deleted.  */
 	  if (b->pred->pred_next == NULL
 	      && forwarder_block_p (b)
+	      && n_basic_blocks > 1
 	      && (b->pred->flags & EDGE_FALLTHRU)
 	      && (b->succ->flags & EDGE_FALLTHRU))
 	    {

@@ -1,3 +1,24 @@
+Mon Jul  9 17:23:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (redirect_edge_and_branch_force): New.
+	(can_fallthru): Ensure that basic blocks are succeeding.
+	(try_optimize_cfg): Do not delete basic block if it is the last one.
+
+	* flow.c (try_redirect_by_replacing_jump): Do not remove
+	jumps with side effects, unlink chain on fallthru edge;
+	set block for new jump instruction; avoid basic block to
+	over by line number note.
+
+	* flow.c (try_simplify_condjump): Verify that the condjump
+	is not always falling trought.
+
+	Re-install patch:
+	* flow.c (try_redirect_by_replacing_jump): Remove cc0 setter.
+
+	* flow.c (forwarder_block_p): Fix for fallthru blocks.
+	(try_redirect_by_replacing_jump): Update properly the count
+	and frequency information.
+
 Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (adjust_address, adjust_address_nv): Handle an
