@@ -4164,7 +4164,7 @@ relax_delay_slots (first)
 	  && (other = prev_active_insn (insn)) != 0
 	  && (condjump_p (other) || condjump_in_parallel_p (other))
 	  && no_labels_between_p (other, insn)
-	  && 0 < mostly_true_jump (other,
+	  && 0 > mostly_true_jump (other,
 				   get_branch_condition (other,
 							 JUMP_LABEL (other))))
 	{
