@@ -2,10 +2,9 @@
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Aug 1999 <nathan@acm.org>
 
+// Bug 3
 // typenames are not injected early enough, [basic.scope.pdecl]3.3.1/4
 // indicates this should compile.
-
-// excess errors test - XFAIL
 
 struct A {
 };
