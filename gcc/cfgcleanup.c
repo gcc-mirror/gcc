@@ -74,7 +74,7 @@ static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 						 rtx *, rtx *));
 static bool insns_match_p		PARAMS ((int, rtx, rtx));
 
-static bool delete_unreachable_blocks	PARAMS ((void));
+bool delete_unreachable_blocks		PARAMS ((void));
 static bool label_is_jump_target_p	PARAMS ((rtx, rtx));
 static bool tail_recursion_label_p	PARAMS ((rtx));
 static void merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
@@ -1748,7 +1748,7 @@ try_optimize_cfg (mode)
 
 /* Delete all unreachable basic blocks.  */
 
-static bool
+bool
 delete_unreachable_blocks ()
 {
   int i, j;
@@ -1829,7 +1829,6 @@ cleanup_cfg (mode)
 
   /* Kill the data we won't maintain.  */
   free_EXPR_LIST_list (&label_value_list);
-  free_EXPR_LIST_list (&tail_recursion_label_list);
   timevar_pop (TV_CLEANUP_CFG);
 
   return changed;

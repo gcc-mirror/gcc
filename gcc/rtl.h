@@ -740,6 +740,7 @@ extern const char * const reg_note_name[];
 #define NOTE_LIVE_INFO(INSN)   	XCEXP (INSN, 3, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 3, NOTE)
 #define NOTE_EXPECTED_VALUE(INSN) XCEXP (INSN, 3, NOTE)
+#define NOTE_PREDICTION(INSN)   XCINT (INSN, 3, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
@@ -749,6 +750,11 @@ extern const char * const reg_note_name[];
 #define NOTE_INSN_BASIC_BLOCK_P(INSN) 			\
   (GET_CODE (INSN) == NOTE				\
    && NOTE_LINE_NUMBER (INSN) == NOTE_INSN_BASIC_BLOCK)
+
+/* Algorithm and flags for prediction.  */
+#define NOTE_PREDICTION_ALG(INSN)   (XCINT(INSN, 3, NOTE)>>8)
+#define NOTE_PREDICTION_FLAGS(INSN) (XCINT(INSN, 3, NOTE)&0xff)
+#define NOTE_PREDICT(ALG,FLAGS)     ((ALG<<8)+(FLAGS))
 
 /* Codes that appear in the NOTE_LINE_NUMBER field
    for kinds of notes that are not line numbers.
@@ -837,6 +843,9 @@ enum insn_note
   /* Record the expected value of a register at a location.  Uses
      NOTE_EXPECTED_VALUE; stored as (eq (reg) (const_int)).  */
   NOTE_INSN_EXPECTED_VALUE,
+
+  /* Record a prediction.  Uses NOTE_PREDICTION. */
+  NOTE_INSN_PREDICTION,
 
   NOTE_INSN_MAX
 };
@@ -1349,6 +1358,7 @@ extern rtx copy_insn_1			PARAMS ((rtx));
 extern rtx copy_insn			PARAMS ((rtx));
 extern rtx gen_int_mode			PARAMS ((HOST_WIDE_INT,
 						 enum machine_mode));
+extern rtx emit_copy_of_insn_after	PARAMS ((rtx, rtx));
 
 /* In rtl.c */
 extern rtx rtx_alloc			PARAMS ((RTX_CODE));
@@ -1437,6 +1447,7 @@ extern rtx emit_label_before		PARAMS ((rtx, rtx));
 extern rtx emit_note_before		PARAMS ((int, rtx));
 extern rtx emit_insn_after		PARAMS ((rtx, rtx));
 extern rtx emit_jump_insn_after		PARAMS ((rtx, rtx));
+extern rtx emit_call_insn_after		PARAMS ((rtx, rtx));
 extern rtx emit_barrier_after		PARAMS ((rtx));
 extern rtx emit_label_after		PARAMS ((rtx, rtx));
 extern rtx emit_note_after		PARAMS ((int, rtx));

@@ -3731,6 +3731,27 @@ emit_call_insn_before (pattern, before)
   return insn;
 }
 
+/* Make an instruction with body PATTERN and code CALL_INSN
+   and output it before the instruction BEFORE.  */
+
+rtx
+emit_call_insn_after (pattern, before)
+     rtx pattern, before;
+{
+  rtx insn;
+
+  if (GET_CODE (pattern) == SEQUENCE)
+    insn = emit_insn_after (pattern, before);
+  else
+    {
+      insn = make_call_insn_raw (pattern);
+      add_insn_after (insn, before);
+      PUT_CODE (insn, CALL_INSN);
+    }
+
+  return insn;
+}
+
 /* Make an insn of code BARRIER
    and output it before the insn BEFORE.  */
 
@@ -5051,4 +5072,69 @@ restore_line_number_status (old_value)
      int old_value;
 {
   no_line_numbers = old_value;
+}
+
+/* Produce exact duplicate of insn INSN after AFTER.
+   Care updating of libcall regions if present.  */
+
+rtx
+emit_copy_of_insn_after (insn, after)
+     rtx insn, after;
+{
+  rtx new;
+  rtx note1, note2, link;
+
+  switch (GET_CODE (insn))
+    {
+    case INSN:
+      new = emit_insn_after (copy_insn (PATTERN (insn)), after);
+      break;
+
+    case JUMP_INSN:
+      new = emit_jump_insn_after (copy_insn (PATTERN (insn)), after);
+      break;
+
+    case CALL_INSN:
+      new = emit_call_insn_after (copy_insn (PATTERN (insn)), after);
+      if (CALL_INSN_FUNCTION_USAGE (insn))
+	CALL_INSN_FUNCTION_USAGE (new)
+	  = copy_insn (CALL_INSN_FUNCTION_USAGE (insn));
+      SIBLING_CALL_P (new) = SIBLING_CALL_P (insn);
+      CONST_OR_PURE_CALL_P (new) = CONST_OR_PURE_CALL_P (insn);
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* Update LABEL_NUSES.  */
+  mark_jump_label (PATTERN (new), new, 0);
+
+  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
+     make them.  */
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) != REG_LABEL)
+      {
+	if (GET_CODE (link) == EXPR_LIST)
+	  REG_NOTES (new)
+	    = copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
+					      XEXP (link, 0),
+					      REG_NOTES (new)));
+	else
+	  REG_NOTES (new)
+	    = copy_insn_1 (gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
+					      XEXP (link, 0),
+					      REG_NOTES (new)));
+      }
+
+  /* Fix the libcall sequences.  */
+  if ((note1 = find_reg_note (new, REG_RETVAL, NULL_RTX)) != NULL)
+    {
+      rtx p = new;
+      while ((note2 = find_reg_note (p, REG_LIBCALL, NULL_RTX)) == NULL)
+	p = PREV_INSN (p);
+      XEXP (note1, 0) = p;
+      XEXP (note2, 0) = new;
+    }
+  return new;
 }

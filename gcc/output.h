@@ -145,6 +145,7 @@ extern int regno_uninitialized		PARAMS ((unsigned int));
 extern int regno_clobbered_at_setjmp	PARAMS ((int));
 extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
 extern bool cleanup_cfg			PARAMS ((int));
+extern bool delete_unreachable_blocks	PARAMS ((void));
 extern void check_function_return_warnings PARAMS ((void));
 #endif
 

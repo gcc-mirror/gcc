@@ -34,6 +34,9 @@ enum prediction
    TAKEN
 };
 
+/* Flags for NOTE_PREDICTION */
+#define IS_TAKEN 1		/* Predict edges to the block as taken.  */
+
 extern void predict_insn_def	PARAMS ((rtx, enum br_predictor,
 					 enum prediction));
 extern void predict_insn	PARAMS ((rtx, enum br_predictor, int));

@@ -284,6 +284,15 @@ print_rtx (in_rtx)
 		  fprintf (outfile, " \"\"");
 		break;
 
+              case NOTE_INSN_PREDICTION:
+                if (NOTE_PREDICTION (in_rtx))
+                  fprintf (outfile, " [ %d %d ] ",
+                    (int)NOTE_PREDICTION_ALG (in_rtx),
+                    (int) NOTE_PREDICTION_FLAGS (in_rtx));
+                else
+                  fprintf (outfile, " [ ERROR ]");
+                break;
+                            
 	      default:
 		{
 		  const char * const str = X0STR (in_rtx, i);

@@ -580,16 +580,6 @@ optimize_sibling_and_tail_recursive_calls ()
 
   insns = get_insns ();
 
-  /* We do not perform these calls when flag_exceptions is true, so this
-     is probably a NOP at the current time.  However, we may want to support
-     sibling and tail recursion optimizations in the future, so let's plan
-     ahead and find all the EH labels.  */
-  find_exception_handler_labels ();
-
-  rebuild_jump_labels (insns);
-  /* We need cfg information to determine which blocks are succeeded
-     only by the epilogue.  */
-  find_basic_blocks (insns, max_reg_num (), 0);
   cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
 
   /* If there are no basic blocks, then there is nothing to do.  */
@@ -776,4 +766,5 @@ optimize_sibling_and_tail_recursive_calls ()
 
   /* This information will be invalid after inline expansion.  Kill it now.  */
   free_basic_block_vars (0);
+  free_EXPR_LIST_list (&tail_recursion_label_list);
 }

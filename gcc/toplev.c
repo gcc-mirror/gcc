@@ -2492,18 +2492,38 @@ rest_of_compilation (decl)
       || errorcount || sorrycount)
     goto exit_rest_of_compilation;
 
+  timevar_push (TV_JUMP);
+  open_dump_file (DFI_sibling, decl);
+  insns = get_insns ();
+  rebuild_jump_labels (insns);
+  find_exception_handler_labels ();
+  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  
+  delete_unreachable_blocks ();
+
+  /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
+  note_prediction_to_br_prob ();
+
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
   if (flag_optimize_sibling_calls)
     {
-      timevar_push (TV_JUMP);
-      open_dump_file (DFI_sibling, decl);
-
+      rtx insn;
       optimize_sibling_and_tail_recursive_calls ();
 
-      close_dump_file (DFI_sibling, print_rtl, get_insns ());
-      timevar_pop (TV_JUMP);
+      /* There is pass ordering problem - we must lower NOTE_INSN_PREDICTION
+         notes before simplifying cfg and we must do lowering after sibcall
+         that unhides parts of RTL chain and cleans up the CFG.
+        
+         Until sibcall is replaced by tree-level optimizer, lets just
+         sweep away the NOTE_INSN_PREDICTION notes that leaked out.  */
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == NOTE
+	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
+	  delete_insn (insn);
     }
+   close_dump_file (DFI_sibling, print_rtl, get_insns ());
+   timevar_pop (TV_JUMP);
 
   /* Complete generation of exception handling code.  */
   find_exception_handler_labels ();
