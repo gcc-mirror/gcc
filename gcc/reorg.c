@@ -879,9 +879,24 @@ add_to_delay_list (insn, delay_list)
      rtx insn;
      rtx delay_list;
 {
-  /* If we have an empty list, just make a new list element.  */
+  /* If we have an empty list, just make a new list element.  If
+     INSN has it's block number recorded, clear it since we may
+     be moving the insn to a new block.  */
+
   if (delay_list == 0)
-    return gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+    {
+      struct target_info *tinfo;
+      
+      for (tinfo = target_hash_table[INSN_UID (insn) % TARGET_HASH_PRIME];
+	   tinfo; tinfo = tinfo->next)
+	if (tinfo->uid == INSN_UID (insn))
+	  break;
+
+      if (tinfo)
+	tinfo->block = -1;
+
+      return gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+    }
 
   /* Otherwise this must be an INSN_LIST.  Add INSN to the end of the
      list.  */
