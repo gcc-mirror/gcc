@@ -1,3 +1,25 @@
+2002-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h (__ev_create_sfix32_fs): Change macro into
+        new function.
+        (__ev_create_ufix32_fs): Same.
+        (__ev_get_sfix32_fs_internal): New.
+        (__ev_get_sfix32_fs): Define to use function.
+        (__ev_get_ufix32_fs_internal): New.
+        (__ev_get_ufix32_fs): Define to use function.
+        (__ev_get_upper_ufix32_fs): Call __ev_get_ufix32_fs.
+        (__ev_get_lower_ufix32_fs): Same.
+        (__ev_get_upper_sfix32_fs): Call __ev_get_sfix32_fs.
+        (__ev_get_lower_sfix32_fs): Same.
+        (__ev_set_sfix32_fs_internal): New.
+        (__ev_set_ufix32_fs_internal): New.
+        (__ev_set_sfix32_fs): Call __ev_set_sfix32_fs_internal.
+        (__ev_set_ufix32_fs): Call __ev_set_ufix32_fs_internal.
+        (__ev_set_upper_sfix32_fs): Call function.
+        (__ev_set_lower_sfix32_fs): Same.
+        (__ev_set_upper_ufix32_fs): Same.
+        (__ev_set_lower_ufix32_fs): Same.
+
 2002-11-25  Douglas B Rupp  <rupp@gnat.com>
 
 	* gcc.c (do_spec_1): Reset delete_this_arg to zero.
