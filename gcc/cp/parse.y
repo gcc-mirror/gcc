@@ -278,7 +278,7 @@ cp_parse_init ()
 %token NAMESPACE TYPENAME_KEYWORD USING
 %token LEFT_RIGHT TEMPLATE
 %token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
-%token SCOPE
+%token SCOPE EXPORT
 
 /* Define the operator tokens and their precedences.
    The value is an integer because, if used, it is the tree code
@@ -484,6 +484,11 @@ extdef:
 	  fndef eat_saved_input
 		{ do_pending_inlines (); }
 	| datadef
+		{ do_pending_inlines (); }
+
+	| EXPORT
+		{ cp_warning ("keyword `export' not implemented, and will be ignored"); }
+	  template_def
 		{ do_pending_inlines (); }
 	| template_def
 		{ do_pending_inlines (); }

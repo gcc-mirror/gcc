@@ -1,3 +1,9 @@
+2000-11-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lex.c (rid_to_yy, RID_EXPORT): Make unique keyword.
+	* parse.y (extdef): Add EXPORT reduction.
+	* spew.c (yylex): Don't skip export here.
+
 2000-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Correct name of pure virtual

@@ -803,17 +803,6 @@ yylex ()
 	      consume_token ();
 	    }
 	}
-      /* If export, warn that it's unimplemented and go on. */
-      else if (nth_token (0)->yylval.ttype == ridpointers[RID_EXPORT])
-	{
-	  warning ("keyword 'export' not implemented and will be ignored");
-#ifdef SPEW_DEBUG    
-	  if (spew_debug)
-	    debug_yychar (yychr);
-#endif
-	  consume_token ();
-	  goto retry;
-	}
       /* do_aggr needs to know if the previous token was `friend'.  */
       else if (nth_token (0)->yylval.ttype == ridpointers[RID_FRIEND])
 	after_friend = 1;
