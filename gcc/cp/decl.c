@@ -7106,7 +7106,8 @@ check_tag_decl (declspecs)
 	       || value == ridpointers[(int) RID_VIRTUAL]
 	       || value == ridpointers[(int) RID_CONST]
 	       || value == ridpointers[(int) RID_VOLATILE]
-	       || value == ridpointers[(int) RID_EXPLICIT])
+	       || value == ridpointers[(int) RID_EXPLICIT]
+	       || value == ridpointers[(int) RID_THREAD])
 	ob_modifier = value;
     }
 
@@ -7580,6 +7581,12 @@ static tree
 obscure_complex_init (decl, init)
      tree decl, init;
 {
+  if (DECL_THREAD_LOCAL (decl))
+    {
+      error ("run-time initialization of thread-local storage");
+      return NULL_TREE;
+    }
+
   if (! flag_no_inline && TREE_STATIC (decl))
     {
       if (extract_init (decl, init))
@@ -9274,6 +9281,16 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
 
+  if (RIDBIT_SETP (RID_THREAD, specbits))
+    {
+      if (targetm.have_tls)
+	DECL_THREAD_LOCAL (decl) = 1;
+      else
+	/* A mere warning is sure to result in improper semantics
+	   at runtime.  Don't bother to allow this to compile.  */
+	error ("thread-local storage not supported for this target");
+    }
+
   if (TREE_PUBLIC (decl))
     {
       /* [basic.link]: A name with no linkage (notably, the name of a class
@@ -10176,10 +10193,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    }
 		  else if (RIDBIT_SETP (i, specbits))
 		    pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+
+		  /* Diagnose "__thread extern".  Recall that this list
+		     is in the reverse order seen in the text.  */
+		  if (i == (int)RID_THREAD)
+		    {
+		      if (RIDBIT_SETP (RID_EXTERN, specbits))
+			error ("`__thread' before `extern'");
+		      if (RIDBIT_SETP (RID_STATIC, specbits))
+			error ("`__thread' before `static'");
+		    }
+
 		  if (i == (int)RID_EXTERN
 		      && TREE_PURPOSE (spec) == error_mark_node)
 		    /* This extern was part of a language linkage.  */
 		    extern_langp = 1;
+
 		  RIDBIT_SET (i, specbits);
 		  goto found;
 		}
@@ -10476,6 +10505,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       if (RIDBIT_SETP (RID_STATIC, specbits)) nclasses++;
       if (RIDBIT_SETP (RID_EXTERN, specbits) && !extern_langp) nclasses++;
+      if (RIDBIT_SETP (RID_THREAD, specbits)) nclasses++;
       if (decl_context == PARM && nclasses > 0)
 	error ("storage class specifiers invalid in parameter declarations");
       if (RIDBIT_SETP (RID_TYPEDEF, specbits))
@@ -10507,6 +10537,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
 
+  /* "static __thread" and "extern __thread" are allowed.  */
+  if (nclasses == 2
+      && RIDBIT_SETP (RID_THREAD, specbits)
+      && (RIDBIT_SETP (RID_EXTERN, specbits)
+	  || RIDBIT_SETP (RID_STATIC, specbits)))
+    nclasses = 1;
+    
   if (nclasses > 1)
     error ("multiple storage classes in declaration of `%s'", name);
   else if (decl_context != NORMAL && nclasses > 0)
@@ -10562,6 +10599,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  RIDBIT_RESET (RID_REGISTER, specbits);
 	  RIDBIT_RESET (RID_AUTO, specbits);
 	  RIDBIT_RESET (RID_EXTERN, specbits);
+	  RIDBIT_RESET (RID_THREAD, specbits);
 	}
     }
   else if (RIDBIT_SETP (RID_EXTERN, specbits) && initialized && !funcdef_flag)
@@ -10583,6 +10621,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       if (RIDBIT_SETP (RID_AUTO, specbits))
 	error ("top-level declaration of `%s' specifies `auto'", name);
+    }
+  else if (RIDBIT_SETP (RID_THREAD, specbits)
+	   && !RIDBIT_SETP (RID_EXTERN, specbits)
+	   && !RIDBIT_SETP (RID_STATIC, specbits))
+    {
+      error ("function-scope `%s' implicitly auto and declared `__thread'",
+	     name);
+      RIDBIT_RESET (RID_THREAD, specbits);
     }
 
   if (nclasses > 0 && friendp)
@@ -11784,6 +11830,8 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	  error ("storage class `auto' invalid for function `%s'", name);
 	else if (RIDBIT_SETP (RID_REGISTER, specbits))
 	  error ("storage class `register' invalid for function `%s'", name);
+	else if (RIDBIT_SETP (RID_THREAD, specbits))
+	  error ("storage class `__thread' invalid for function `%s'", name);
 
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed

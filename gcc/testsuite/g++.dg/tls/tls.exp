@@ -1,4 +1,4 @@
-#   Copyright (C) 2000 Free Software Foundation, Inc.
+#   Copyright (C) 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# G++ testsuite that uses the `dg.exp' driver.
+# GCC testsuite that uses the `dg.exp' driver.
 
 # Load support procs.
 load_lib g++-dg.exp
+
+# Test for thread-local data supported by the platform.  If it
+# isn't, everything will fail with the "not supported" message.
+
+set comp_output [g++_target_compile \
+		"$srcdir/$subdir/trivial.C" "trivial.S" assembly ""]
+if { [string match "*not supported*" $comp_output] } {
+  return 0
+}
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
@@ -28,17 +37,8 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-# Gather a list of all tests, with the exception of those in directories
-# that are handled specially.
-set all [lsort [find $srcdir/$subdir *.C]]
-set tests [prune $tests $srcdir/$subdir/bprob/*]
-set tests [prune $tests $srcdir/$subdir/debug/*]
-set tests [prune $tests $srcdir/$subdir/gcov/*]
-set tests [prune $tests $srcdir/$subdir/special/*]
-set tests [prune $tests $srcdir/$subdir/tls/*]
-
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish

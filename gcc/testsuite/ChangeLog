@@ -1,3 +1,10 @@
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/dg.exp: Prune the tls subdirectory.
+	* g++.dg/tls/tls.exp, g++.dg/tls/trivial.C: New.
+	* g++.dg/tls/diag-1.C, g++.dg/tls/diag-2.C: New.
+	* g++.dg/tls/init-1.C: New.
+
 2002-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020517-1.c: New test.
@@ -168,11 +175,11 @@ Mon May 20 10:51:35 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-05-02  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-8.c: New.
+	* gcc.dg/altivec-8.c: New.
 
 2002-05-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-7.c: New.
+	* gcc.dg/altivec-7.c: New.
 
 2002-04-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -319,8 +326,8 @@ Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * gcc.dg/20000906-1.c: Enable for all targets.
-        * gcc.c-torture/compile/iftrap-2.c: New.
+	* gcc.dg/20000906-1.c: Enable for all targets.
+	* gcc.c-torture/compile/iftrap-2.c: New.
 
 2002-04-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -329,9 +336,9 @@ Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * gcc.c-torture/compile/iftrap-1.c: New.
-        * gcc.dg/iftrap-1.c: Adjust for ia64.
-        * gcc.dg/iftrap-2.c: New.
+	* gcc.c-torture/compile/iftrap-1.c: New.
+	* gcc.dg/iftrap-1.c: Adjust for ia64.
+	* gcc.dg/iftrap-2.c: New.
 
 2002-04-18  Jakub Jelinek  <jakub@redhat.com>
 
