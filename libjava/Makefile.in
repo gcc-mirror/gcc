@@ -1686,6 +1686,7 @@ java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
 java/nio/channels/DatagramChannel.java \
+java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
 java/security/AccessControlContext.java \
@@ -2902,6 +2903,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/natPlainDatagramSocketImpl.P \
 .deps/java/net/natPlainSocketImpl.P \
 .deps/java/nio/channels/DatagramChannel.P \
+.deps/java/nio/channels/IllegalBlockingModeException.P \
 .deps/java/nio/channels/ServerSocketChannel.P \
 .deps/java/nio/channels/SocketChannel.P \
 .deps/java/rmi/AccessException.P .deps/java/rmi/AlreadyBoundException.P \
