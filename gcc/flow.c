@@ -574,7 +574,11 @@ find_basic_blocks (f, nonlocal_label_list)
 			   associated insns aren't marked dead, so we make
 			   the block in question live and create an edge from
 			   this insn to the label.  This is not strictly
-			   correct, but it is close enough for now.  */
+			   correct, but it is close enough for now.
+
+			   We also need to mark the CODE_LABEL as reaching
+			   its exception handler for nested exceptions to
+			   to work.  */
 			for (note = REG_NOTES (insn);
 			     note;
 			     note = XEXP (note, 1))
@@ -586,6 +590,14 @@ find_basic_blocks (f, nonlocal_label_list)
 				mark_label_ref (gen_rtx (LABEL_REF,
 							 VOIDmode, x),
 						insn, 0);
+
+				/* If the CODE_LABEL has an active exception
+				   handler, then make an edge to the exception
+				   handler from this insn.  */
+				if (active_eh_handler[INSN_UID (x)])
+				  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
+							   active_eh_handler[INSN_UID (x)]),
+						  insn, 0);
 			      }
 			  }
 
