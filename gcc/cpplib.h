@@ -721,7 +721,6 @@ extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
 extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
-extern HOST_WIDEST_INT cpp_parse_escape PARAMS ((cpp_reader *, char **, HOST_WIDEST_INT));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));

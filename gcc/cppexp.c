@@ -84,6 +84,7 @@ static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *))
 static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
 static struct operation cpp_lex PARAMS ((cpp_reader *, int));
 extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
+static HOST_WIDEST_INT cpp_parse_escape PARAMS ((cpp_reader *, U_CHAR **, HOST_WIDEST_INT));
 
 #define ERROR 299
 #define OROR 300
@@ -291,7 +292,7 @@ parse_charconst (pfile, start, end)
 	     an unshifted multibyte char, so cpp_parse_escape doesn't
 	     need to know about multibyte chars.  */
 
-	  c = cpp_parse_escape (pfile, (char **) &ptr, mask);
+	  c = cpp_parse_escape (pfile, &ptr, mask);
 	  if (width < HOST_BITS_PER_INT
 	      && (unsigned int) c >= (unsigned int)(1 << width))
 	    cpp_pedwarn (pfile, "escape sequence out of range for character");
@@ -522,10 +523,10 @@ cpp_lex (pfile, skip_evaluation)
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
 
-HOST_WIDEST_INT
+static HOST_WIDEST_INT
 cpp_parse_escape (pfile, string_ptr, result_mask)
      cpp_reader *pfile;
-     char **string_ptr;
+     U_CHAR **string_ptr;
      HOST_WIDEST_INT result_mask;
 {
   register int c = *(*string_ptr)++;
