@@ -1,3 +1,9 @@
+1999-11-05  Andreas Jaeger  <aj@suse.de>
+
+	* genoutput.c (null_operand =): Initialize all fields.
+
+	* errors.h: Add extern to prototypes.
+
 Fri Nov  5 01:44:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (m68k-next-nextstep4): Handle Openstep 4.2.

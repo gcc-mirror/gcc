@@ -140,7 +140,7 @@ struct operand_data
 
 static struct operand_data null_operand =
 {
-  0, 0, "", "", VOIDmode, 0, 0, 0, 0
+  0, 0, "", "", VOIDmode, 0, 0, 0, 0, 0
 };
 
 static struct operand_data *odata = &null_operand;
