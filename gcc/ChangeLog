@@ -1,3 +1,8 @@
+2003-12-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Test
+	target_flags directly rather than using TARGET_* defines.
+
 2003-11-30  Ben Elliston  <bje@wasabisystems.com>
 
 	* doschk.c: Remove.

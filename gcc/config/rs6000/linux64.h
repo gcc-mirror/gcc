@@ -74,17 +74,17 @@
 	      rs6000_current_abi = ABI_AIX;			\
 	      error (INVALID_64BIT, "call");			\
 	    }							\
-	  if (TARGET_RELOCATABLE)				\
+	  if (target_flags & MASK_RELOCATABLE)			\
 	    {							\
 	      target_flags &= ~MASK_RELOCATABLE;		\
 	      error (INVALID_64BIT, "relocatable");		\
 	    }							\
-	  if (TARGET_EABI)					\
+	  if (target_flags & MASK_EABI)				\
 	    {							\
 	      target_flags &= ~MASK_EABI;			\
 	      error (INVALID_64BIT, "eabi");			\
 	    }							\
-	  if (TARGET_PROTOTYPE)					\
+	  if (target_flags & MASK_PROTOTYPE)			\
 	    {							\
 	      target_flags &= ~MASK_PROTOTYPE;			\
 	      error (INVALID_64BIT, "prototype");		\
