@@ -4814,7 +4814,7 @@ build_static_cast (tree type, tree expr)
      t.  */
   result = perform_direct_initialization_if_possible (type, expr);
   if (result)
-    return result;
+    return convert_from_reference (result);
   
   /* [expr.static.cast]
 
@@ -4848,8 +4848,9 @@ build_static_cast (tree type, tree expr)
       /* Convert from B* to D*.  */
       expr = build_base_path (MINUS_EXPR, build_address (expr), 
 			      base, /*nonnull=*/false);
-      /* Convert the pointer to a reference.  */
-      return build_nop (type, expr);
+      /* Convert the pointer to a reference -- but then remember that
+	 there are no expressions with reference type in C++.  */
+      return convert_from_reference (build_nop (type, expr));
     }
 
   /* [expr.static.cast]
