@@ -1,5 +1,48 @@
 2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (mips_subword, mips_output_move): Declare.
+	(mips_move_1word, mips_move_2words): Remove declaration.
+	(mips_split_64bit_move_p, mips_split_64bit_move): Declare.
+	(mips_restore_gp): Remove insn argument.
+	* config/mips/mips.h (FP_REG_RTX_P): New macro.
+	* config/mips/mips.c (volatile_buffer): Remove.
+	(mips_subword, mips_split_64bit_move_p, mips_split_64bit_move): New.
+	(mips_move_1word, mips_move_2words): Remove, replacing with...
+	(mips_output_move): ...this new function.
+	(mips_restore_gp): Remove insn argument.  Adjust for above changes.
+	(print_operand): Make '%h' print %hi(op) for HIGH operands.  Remove
+	handling of floating-point constants.  Handle zero CONST_DOUBLE
+	arguments.
+	(mips_annotate_frame_insn): Replace with...
+	(mips_set_frame_expr): ...this, which just takes one argument.
+	(mips_frame_set): Change the register argument to an rtx.
+	(mips_emit_frame_related_store): Use mips_split_64bit_move_p to
+	check whether moves should be split.  Use mips_split_64bit_move
+	to split them.  Use mips_subword to generate the high and low
+	parts of a paired FPR.  Adjust calls to frame_set and
+	mips_set_frame_expr.
+	(mips_expand_prologue): Simplify due to above changes.
+	* config/mips/mips.md:	Add splitters for 64-bit moves on 32-bit
+	targets, replacing xisting register-only versions.
+	(UNSPEC_STORE_DF_HIGH): New unspec.
+	(UNSPEC_LOAD_DF_LOW, UNSPEC_LOAD_DF_HIGH): New unspecs.
+	(mulsi3_r4000, muldi3_internal2): Avoid use of mips_move_1word.
+	(*paradoxical_extendhidi2): Remove.
+	(movdi_internal, movdi_internal2): Use mips_output_move.
+	(*movdi_internal2_mips16, movsi_internal, movcc): Likewise.
+	(movsf_internal1, movsf_internal2): Likewise.
+	(movdf_internal1a): Likewise.  Fix length and type of f <- G case.
+	(movdf_internal1b): Use mips_output_move.  Fix type of f <- G case.
+	(movdf_internal2): Use mips_output_move.  Fix lengths of FPR moves.
+	Add m <- G alternative.
+	(load_df_low, load_df_high, store_df_low): New patterns.
+	(movhi_internal): Use @ template instead of calling a function.
+	Remove unnecessary 'z' alternatives.
+	(movqi_internal): Likewise.
+	(exception_receiver): Update call to mips_restore_gp.
+
+2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_simplify_dwarf_addr): Remove.
 	(mips_delegitimize_address): Declare.
 	* config/mips/mips.h (ASM_SIMPLIFY_DWARF_ADDR): Undefine.
