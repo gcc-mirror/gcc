@@ -12,7 +12,7 @@
 
 typedef struct {
   char *__base;			/* Pointer to first integer register. */
-  long __offset;		/* Byte offset of args so far. */
+  int __offset;			/* Byte offset of args so far. */
 } __gnuc_va_list;
 #endif /* not __GNUC_VA_LIST */
 
