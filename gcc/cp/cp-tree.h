@@ -1,6 +1,6 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1130,10 +1130,6 @@ extern int flag_default_inline;
 /* The name-mangling scheme to use.  Versions of gcc before 2.8 use
    version 0.  */
 extern int name_mangling_version;
-
-/* Nonzero if wchar_t should be `unsigned short' instead of whatever it
-   would normally be, for use with WINE.  */
-extern int flag_short_wchar;
 
 /* Nonzero if squashed mangling is to be performed.
    This uses the B and K codes to reference previously seen class types

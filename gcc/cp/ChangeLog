@@ -1,3 +1,14 @@
+2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE): Don't define.
+	(record_builtin_type): Make non-static.
+	(flag_short_double): Don't declare.
+	(init_decl_processing): Remove the creation of many tree nodes now
+	in c_common_nodes_and_builtins.
+	(build_void_list_node): New function.
+	* decl2.c (flag_short_double, flag_short_wchar): Don't define.
+	* cp-tree.h (flag_short_wchar): Don't declare.
+
 2001-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_conv): Don't use build1 for USER_CONV.

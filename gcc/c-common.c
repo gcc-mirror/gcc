@@ -41,6 +41,20 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 
+/* We let tm.h override the types used here, to handle trivial differences
+   such as the choice of unsigned int or long unsigned int for size_t.
+   When machines start needing nontrivial differences in the size type,
+   it would be best to do something here to figure out automatically
+   from other information what type to use.  */
+
+#ifndef SIZE_TYPE
+#define SIZE_TYPE "long unsigned int"
+#endif
+
+#ifndef WCHAR_TYPE
+#define WCHAR_TYPE "int"
+#endif
+
 #ifndef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 #endif
@@ -171,6 +185,14 @@ int flag_no_builtin;
    -ansi sets this.  */
 
 int flag_no_nonansi_builtin;
+
+/* Nonzero means give `double' the same size as `float'.  */
+
+int flag_short_double;
+
+/* Nonzero means give `wchar_t' the same size as `short'.  */
+
+int flag_short_wchar;
 
 /* If non-NULL, dump the tree structure for the entire translation
    unit to this file.  */
@@ -5096,6 +5118,8 @@ lang_get_alias_set (t)
 void
 c_common_nodes_and_builtins ()
 {
+  int wchar_type_size;
+  tree array_domain_type;
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
   tree bzero_ftype, bcmp_ftype, puts_ftype, printf_ftype;
@@ -5121,6 +5145,140 @@ c_common_nodes_and_builtins ()
   tree traditional_len_endlink;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
+
+  /* Define `int' and `char' first so that dbx will output them first.  */
+  record_builtin_type (RID_INT, NULL_PTR, integer_type_node);
+  record_builtin_type (RID_CHAR, "char", char_type_node);
+
+  /* `signed' is the same as `int'.  FIXME: the declarations of "signed",
+     "unsigned long", "long long unsigned" and "unsigned short" were in C++
+     but not C.  Are the conditionals here needed?  */
+  if (c_language == clk_cplusplus)
+    record_builtin_type (RID_SIGNED, NULL_PTR, integer_type_node);
+  record_builtin_type (RID_LONG, "long int", long_integer_type_node);
+  record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
+  record_builtin_type (RID_MAX, "long unsigned int",
+		       long_unsigned_type_node);
+  if (c_language == clk_cplusplus)
+    record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
+  record_builtin_type (RID_MAX, "long long int",
+		       long_long_integer_type_node);
+  record_builtin_type (RID_MAX, "long long unsigned int",
+		       long_long_unsigned_type_node);
+  if (c_language == clk_cplusplus)
+    record_builtin_type (RID_MAX, "long long unsigned",
+			 long_long_unsigned_type_node);
+  record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
+  record_builtin_type (RID_MAX, "short unsigned int",
+		       short_unsigned_type_node);
+  if (c_language == clk_cplusplus)
+    record_builtin_type (RID_MAX, "unsigned short",
+			 short_unsigned_type_node);
+
+  /* Define both `signed char' and `unsigned char'.  */
+  record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
+  record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
+
+  /* These are types that type_for_size and type_for_mode use.  */
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intQI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intHI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
+#if HOST_BITS_PER_WIDE_INT >= 64
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__int128_t"), intTI_type_node));
+#endif
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intHI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
+#if HOST_BITS_PER_WIDE_INT >= 64
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__uint128_t"), unsigned_intTI_type_node));
+#endif
+
+  /* Create the widest literal types.  */
+  widest_integer_literal_type_node
+    = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
+			widest_integer_literal_type_node));
+
+  widest_unsigned_literal_type_node
+    = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
+			widest_unsigned_literal_type_node));
+
+  /* `unsigned long' is the standard type for sizeof.
+     Note that stddef.h uses `unsigned long',
+     and this must agree, even if long and int are the same size.  */
+  c_size_type_node =
+    TREE_TYPE (identifier_global_value (get_identifier (SIZE_TYPE)));
+  signed_size_type_node = signed_type (c_size_type_node);
+  if (flag_traditional)
+    c_size_type_node = signed_size_type_node;
+  set_sizetype (c_size_type_node);
+
+  build_common_tree_nodes_2 (flag_short_double);
+
+  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
+  record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
+  record_builtin_type (RID_MAX, "long double", long_double_type_node);
+
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
+			complex_integer_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
+			complex_float_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
+			complex_double_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
+			complex_long_double_type_node));
+
+  record_builtin_type (RID_VOID, NULL_PTR, void_type_node);
+
+  void_list_node = build_void_list_node ();
+
+  /* Make a type to be the domain of a few array types
+     whose domains don't really matter.
+     200 is small enough that it always fits in size_t
+     and large enough that it can hold most function names for the
+     initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  array_domain_type = build_index_type (size_int (200));
+
+  /* Make a type for arrays of characters.
+     With luck nothing will ever really depend on the length of this
+     array type.  */
+  char_array_type_node
+    = build_array_type (char_type_node, array_domain_type);
+
+  /* Likewise for arrays of ints.  */
+  int_array_type_node
+    = build_array_type (integer_type_node, array_domain_type);
+
+#ifdef MD_INIT_BUILTINS
+  MD_INIT_BUILTINS;
+#endif
+
+  /* This is special for C++ so functions can be overloaded.  */
+  wchar_type_node = get_identifier (flag_short_wchar
+				    ? "short unsigned int"
+				    : WCHAR_TYPE);
+  wchar_type_node = TREE_TYPE (identifier_global_value (wchar_type_node));
+  wchar_type_size = TYPE_PRECISION (wchar_type_node);
+  if (c_language == clk_cplusplus)
+    {
+      if (TREE_UNSIGNED (wchar_type_node))
+	wchar_type_node = make_unsigned_type (wchar_type_size);
+      else
+	wchar_type_node = make_signed_type (wchar_type_size);
+      record_builtin_type (RID_WCHAR, "wchar_t", wchar_type_node);
+    }
+  else
+    {
+      signed_wchar_type_node = signed_type (wchar_type_node);
+      unsigned_wchar_type_node = unsigned_type (wchar_type_node);
+    }
+
+  /* This is for wide string constants.  */
+  wchar_array_type_node
+    = build_array_type (wchar_type_node, array_domain_type);
 
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node

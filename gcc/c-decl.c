@@ -52,20 +52,6 @@ enum decl_context
   BITFIELD,			/* Likewise but with specified width */
   TYPENAME};			/* Typename (inside cast or sizeof)  */
 
-/* We let tm.h override the types used here, to handle trivial differences
-   such as the choice of unsigned int or long unsigned int for size_t.
-   When machines start needing nontrivial differences in the size type,
-   it would be best to do something here to figure out automatically
-   from other information what type to use.  */
-
-#ifndef SIZE_TYPE
-#define SIZE_TYPE "long unsigned int"
-#endif
-
-#ifndef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-#endif
-
 
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */
@@ -303,14 +289,6 @@ static void c_expand_body               PARAMS ((tree, int));
    just make their values `void'.   */
 
 int flag_cond_mismatch;
-
-/* Nonzero means give `double' the same size as `float'.  */
-
-int flag_short_double;
-
-/* Nonzero means give `wchar_t' the same size as `short'.  */
-
-int flag_short_wchar;
 
 /* Nonzero means don't recognize the keyword `asm'.  */
 
@@ -2962,9 +2940,6 @@ init_decl_processing ()
 {
   register tree endlink;
   tree ptr_ftype_void, ptr_ftype_ptr;
-  int wchar_type_size;
-  tree array_domain_type;
-  tree t;
 
   current_function_decl = NULL;
   named_labels = NULL;
@@ -2977,96 +2952,7 @@ init_decl_processing ()
 
   build_common_tree_nodes (flag_signed_char);
 
-  /* Define `int' and `char' first so that dbx will output them first.  */
-  pushdecl (build_decl (TYPE_DECL, ridpointers[(int) RID_INT],
-			integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("char"),
-			char_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long int"),
-			long_integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned int"),
-			unsigned_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long unsigned int"),
-			long_unsigned_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long int"),
-			long_long_integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
-			long_long_unsigned_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("short int"),
-			short_integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("short unsigned int"),
-			short_unsigned_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("signed char"),
-			signed_char_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned char"),
-			unsigned_char_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intQI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intHI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
-#if HOST_BITS_PER_WIDE_INT >= 64
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intTI_type_node));
-#endif
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intHI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
-#if HOST_BITS_PER_WIDE_INT >= 64
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intTI_type_node));
-#endif
-
-  /* `unsigned long' is the standard type for sizeof.
-     Traditionally, use a signed type.
-     Note that stddef.h uses `unsigned long',
-     and this must agree, even if long and int are the same size.  */
-  t = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
-  signed_size_type_node = signed_type (t);
-  if (flag_traditional && TREE_UNSIGNED (t))
-    t = signed_type (t);
-
-  c_size_type_node = t;
-  set_sizetype (t);
-
-  /* Create the widest literal types.  */
-  widest_integer_literal_type_node
-    = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
-  widest_unsigned_literal_type_node
-    = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
-			widest_integer_literal_type_node));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE,
-			widest_unsigned_literal_type_node));
-
-  build_common_tree_nodes_2 (flag_short_double);
-
-  pushdecl (build_decl (TYPE_DECL, ridpointers[(int) RID_FLOAT],
-			float_type_node));
-  pushdecl (build_decl (TYPE_DECL, ridpointers[(int) RID_DOUBLE],
-			double_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long double"),
-			long_double_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
-			complex_integer_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
-			complex_float_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
-			complex_double_type_node));
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
-			complex_long_double_type_node));
-  pushdecl (build_decl (TYPE_DECL,
-			ridpointers[(int) RID_VOID], void_type_node));
-
-#ifdef MD_INIT_BUILTINS
-  MD_INIT_BUILTINS;
-#endif
-
-  wchar_type_node = get_identifier (flag_short_wchar
-				    ? "short unsigned int"
-				    : WCHAR_TYPE);
-  wchar_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (wchar_type_node));
-  wchar_type_size = TYPE_PRECISION (wchar_type_node);
-  signed_wchar_type_node = signed_type (wchar_type_node);
-  unsigned_wchar_type_node = unsigned_type (wchar_type_node);
+  c_common_nodes_and_builtins ();
 
   boolean_type_node = integer_type_node;
   boolean_true_node = integer_one_node;
@@ -3084,30 +2970,6 @@ init_decl_processing ()
   TREE_TYPE (c_bool_false_node) = c_bool_type_node;
   c_bool_true_node = build_int_2 (1, 0);
   TREE_TYPE (c_bool_true_node) = c_bool_type_node;
-
-  /* Make a type to be the domain of a few array types
-     whose domains don't really matter.
-     200 is small enough that it always fits in size_t
-     and large enough that it can hold most function names for the
-     initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
-  array_domain_type = build_index_type (build_int_2 (200, 0));
-
-  /* make a type for arrays of characters.
-     With luck nothing will ever really depend on the length of this
-     array type.  */
-  char_array_type_node = build_array_type (char_type_node, array_domain_type);
-
-  /* Likewise for arrays of ints.  */
-  int_array_type_node
-    = build_array_type (integer_type_node, array_domain_type);
-
-  /* This is for wide string constants.  */
-  wchar_array_type_node
-    = build_array_type (wchar_type_node, array_domain_type);
-
-  void_list_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-
-  c_common_nodes_and_builtins ();
 
   endlink = void_list_node;
   ptr_ftype_void = build_function_type (ptr_type_node, endlink);
@@ -7189,4 +7051,29 @@ identifier_global_value	(t)
      tree t;
 {
   return IDENTIFIER_GLOBAL_VALUE (t);
+}
+
+/* Record a builtin type for C.  If NAME is non-NULL, it is the name used;
+   otherwise the name is found in ridpointers from RID_INDEX.  */
+
+void
+record_builtin_type (rid_index, name, type)
+     enum rid rid_index;
+     const char *name;
+     tree type;
+{
+  tree id;
+  if (name == 0)
+    id = ridpointers[(int) rid_index];
+  else
+    id = get_identifier (name);
+  pushdecl (build_decl (TYPE_DECL, id, type));
+}
+
+/* Build the void_list_node (void_type_node having been created).  */
+tree
+build_void_list_node ()
+{
+  tree t = build_tree_list (NULL_TREE, void_type_node);
+  return t;
 }
