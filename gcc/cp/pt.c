@@ -1,6 +1,7 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
+   Rewritten by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
 
@@ -233,6 +234,9 @@ push_template_decl (decl)
     {
       if (TREE_CODE (decl) == TYPE_DECL)
 	tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
+      else if (! DECL_TEMPLATE_INFO (decl))
+	/* A member definition that doesn't match anything in the class.  */
+	return;
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
     }
@@ -475,12 +479,10 @@ mangle_class_name_for_template (name, parms, arglist)
   int i, nparms;
 
   if (!scratch_firstobj)
-    {
-      gcc_obstack_init (&scratch_obstack);
-      scratch_firstobj = obstack_alloc (&scratch_obstack, 1);
-    }
+    gcc_obstack_init (&scratch_obstack);
   else
     obstack_free (&scratch_obstack, scratch_firstobj);
+  scratch_firstobj = obstack_alloc (&scratch_obstack, 1);
 
 #if 0
 #define buflen	sizeof(buf)
@@ -629,12 +631,6 @@ lookup_template_class (d1, arglist, in_decl)
       return error_mark_node;
     }
 
-  if (TREE_CODE (TREE_TYPE (template)) == RECORD_TYPE)
-    code_type_node = (CLASSTYPE_DECLARED_CLASS (TREE_TYPE (template))
-		      ? class_type_node : record_type_node);
-  else
-    code_type_node = union_type_node;
-
   if (PRIMARY_TEMPLATE_P (template))
     {
       parmlist = DECL_TEMPLATE_PARMS (template);
@@ -675,7 +671,7 @@ lookup_template_class (d1, arglist, in_decl)
       IDENTIFIER_TEMPLATE (id) = d1;
 
       maybe_push_to_top_level (uses_template_parms (arglist));
-      t = xref_tag (code_type_node, id, NULL_TREE, 1);
+      t = xref_tag_from_type (TREE_TYPE (template), id, 1);
       pop_from_top_level ();
     }
   else
@@ -689,7 +685,7 @@ lookup_template_class (d1, arglist, in_decl)
 	{
 	  tree save_parms = current_template_parms;
 	  current_template_parms = NULL_TREE;
-	  t = xref_tag (code_type_node, id, NULL_TREE, 0);
+	  t = xref_tag_from_type (TREE_TYPE (template), id, 0);
 	  current_template_parms = save_parms;
 	}
       else
@@ -978,7 +974,7 @@ tree
 instantiate_class_template (type)
      tree type;
 {
-  tree template, template_info, args, pattern, t, *field_chain, *tag_chain;
+  tree template, template_info, args, pattern, t, *field_chain;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -1060,7 +1056,6 @@ instantiate_class_template (type)
   CLASSTYPE_LOCAL_TYPEDECLS (type) = CLASSTYPE_LOCAL_TYPEDECLS (pattern);
 
   field_chain = &TYPE_FIELDS (type);
-  tag_chain = &CLASSTYPE_TAGS (type);
 
   for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
     {
@@ -1068,14 +1063,12 @@ instantiate_class_template (type)
       tree tag = TREE_VALUE (t);
       tree newtag;
 
+      /* These will add themselves to CLASSTYPE_TAGS for the new type.  */
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	newtag = start_enum (name);
       else
 	newtag = tsubst (tag, &TREE_VEC_ELT (args, 0),
 			 TREE_VEC_LENGTH (args), NULL_TREE);
-
-      *tag_chain = build_tree_list (name, newtag);
-      tag_chain = &TREE_CHAIN (*tag_chain);
 
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
@@ -1124,16 +1117,30 @@ instantiate_class_template (type)
   TYPE_METHODS (type) = tsubst_chain (TYPE_METHODS (pattern), args);
 
   DECL_FRIENDLIST (TYPE_MAIN_DECL (type))
-    = tsubst_chain (DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern)), args);
-  CLASSTYPE_FRIEND_CLASSES (type)
-    = tsubst_chain (CLASSTYPE_FRIEND_CLASSES (pattern), args);
+    = tsubst (DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern)),
+	      &TREE_VEC_ELT (args, 0), TREE_VEC_LENGTH (args), NULL_TREE);
 
   {
-    tree d = tsubst (DECL_TEMPLATE_INJECT (template), &TREE_VEC_ELT (args, 0),
+    tree d = CLASSTYPE_FRIEND_CLASSES (type) =
+      tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), &TREE_VEC_ELT (args, 0),
+	      TREE_VEC_LENGTH (args), NULL_TREE);
+
+    /* This does injection for friend classes.  */
+    for (; d; d = TREE_CHAIN (d))
+      TREE_VALUE (d) = xref_tag_from_type (TREE_VALUE (d), NULL_TREE, 1);
+
+    d = tsubst (DECL_TEMPLATE_INJECT (template), &TREE_VEC_ELT (args, 0),
 		     TREE_VEC_LENGTH (args), NULL_TREE);
 
     for (; d; d = TREE_CHAIN (d))
-      pushdecl (TREE_VALUE (d));
+      {
+	tree t = TREE_VALUE (d);
+
+	if (TREE_CODE (t) == TYPE_DECL)
+	  /* Already injected.  */;
+	else
+	  pushdecl (t);
+      }
   }
 
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
@@ -1781,6 +1788,11 @@ tsubst (t, args, nargs, in_decl)
 	(CALL_EXPR, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
 	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl), 0);
 
+    case SCOPE_REF:
+      return build_parse_node
+	(TREE_CODE (t), tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
+	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl));
+
     default:
       sorry ("use of `%s' in template",
 	     tree_code_name [(int) TREE_CODE (t)]);
@@ -1866,6 +1878,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case CONVERT_EXPR:      /* Unary + */
     case SIZEOF_EXPR:
     case ARROW_EXPR:
+    case THROW_EXPR:
       return build1
 	(code, NULL_TREE,
 	 tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl));
@@ -1928,7 +1941,7 @@ tsubst_copy (t, args, nargs, in_decl)
 	if (TREE_CODE (name) == BIT_NOT_EXPR)
 	  {
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
-	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
+	    name = build1 (BIT_NOT_EXPR, NULL_TREE, TYPE_MAIN_VARIANT (name));
 	  }
 	else if (TREE_CODE (name) == SCOPE_REF
 		 && TREE_CODE (TREE_OPERAND (name, 1)) == BIT_NOT_EXPR)
@@ -1936,7 +1949,7 @@ tsubst_copy (t, args, nargs, in_decl)
 	    tree base = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
 	    name = TREE_OPERAND (name, 1);
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
-	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
+	    name = build1 (BIT_NOT_EXPR, NULL_TREE, TYPE_MAIN_VARIANT (name));
 	    name = build_nt (SCOPE_REF, base, name);
 	  }
 	else
@@ -2915,7 +2928,7 @@ instantiate_decl (d)
 	    warn_if_unknown_interface (pattern);
 	}
 
-      if (at_eof)
+      if (at_eof && ! DECL_INLINE (d))
 	import_export_decl (d);
     }
 

@@ -427,9 +427,9 @@ struct lang_type
       unsigned marked4 : 1;
       unsigned marked5 : 1;
       unsigned marked6 : 1;
+      unsigned debug_requested : 1;
 
       unsigned use_template : 2;
-      unsigned debug_requested : 1;
       unsigned has_method_call_overloaded : 1;
       unsigned private_attr : 1;
       unsigned got_semicolon : 1;
@@ -439,14 +439,13 @@ struct lang_type
 
       unsigned is_signature_reference : 1;
       unsigned has_default_implementation : 1;
-      unsigned grokking_typedef : 1;
       unsigned has_opaque_typedecls : 1;
       unsigned sigtable_has_been_generated : 1;
       unsigned was_anonymous : 1;
       unsigned has_real_assignment : 1;
       unsigned has_real_assign_ref : 1;
-
       unsigned has_const_init_ref : 1;
+
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
@@ -455,7 +454,7 @@ struct lang_type
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 19;
+      unsigned dummy : 20;
 
       unsigned n_vancestors : 16;
     } type_flags;
@@ -475,7 +474,7 @@ struct lang_type
   union tree_node *tags;
   char *memoized_table_entry;
 
-  char *search_slot;
+  union tree_node *search_slot;
 
 #ifdef ONLY_INT_FIELDS
   unsigned int mode : 8;
@@ -604,9 +603,6 @@ struct lang_type
 /* Nonzero means that this signature type has a default implementation.  */
 # define HAS_DEFAULT_IMPLEMENTATION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_default_implementation)
 
-/* Nonzero means that grokdeclarator works on a signature-local typedef.  */
-#define SIGNATURE_GROKKING_TYPEDEF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.grokking_typedef)
-
 /* Nonzero means that this signature contains opaque type declarations.  */
 #define SIGNATURE_HAS_OPAQUE_TYPEDECLS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_opaque_typedecls)
 
@@ -664,8 +660,8 @@ struct lang_type
    searched with TREE_CHAIN), or the first non-constructor function if
    there are no type conversion operators.  */
 #define CLASSTYPE_FIRST_CONVERSION(NODE) \
-  TREE_VEC_LENGTH (CLASSTYPE_METHOD_VEC (NODE)) > 1 \
-    ? TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 1) \
+  TREE_VEC_LENGTH (CLASSTYPE_METHOD_VEC (NODE)) > 2 \
+    ? TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 2) \
     : NULL_TREE;
 
 /* Pointer from any member function to the head of the list of
@@ -1491,6 +1487,7 @@ extern tree __ptmf_desc_type_node, __ptmd_desc_type_node;
 extern tree type_info_type_node;
 extern tree class_star_type_node;
 extern tree this_identifier;
+extern tree ctor_identifier, dtor_identifier;
 extern tree pfn_identifier;
 extern tree index_identifier;
 extern tree delta_identifier;
@@ -1675,6 +1672,8 @@ extern int current_function_parms_stored;
 #define THIS_NAME "this"
 #define DESTRUCTOR_NAME_FORMAT "~%s"
 #define FILE_FUNCTION_PREFIX_LEN 9
+#define CTOR_NAME "__ct"
+#define DTOR_NAME "__dt"
 
 #define IN_CHARGE_NAME "__in_chrg"
 
@@ -2047,6 +2046,7 @@ extern tree build_ptrmemfunc_type		PROTO((tree));
 /* the grokdeclarator prototype is in decl.h */
 extern int parmlist_is_exprlist			PROTO((tree));
 extern tree xref_tag				PROTO((tree, tree, tree, int));
+extern tree xref_tag_from_type			PROTO((tree, tree, int));
 extern void xref_basetypes			PROTO((tree, tree, tree, tree));
 extern tree start_enum				PROTO((tree));
 extern tree finish_enum				PROTO((tree, tree));
@@ -2099,7 +2099,7 @@ extern void finish_builtin_type			PROTO((tree, char *, tree *, int, tree));
 extern tree coerce_new_type			PROTO((tree));
 extern tree coerce_delete_type			PROTO((tree));
 extern void import_export_vtable		PROTO((tree, tree, int));
-extern void walk_vtables			PROTO((void (*)(), void (*)()));
+extern int walk_vtables				PROTO((void (*)(), int (*)()));
 extern void walk_sigtables			PROTO((void (*)(), void (*)()));
 extern void finish_file				PROTO((void));
 extern void warn_if_unknown_interface		PROTO((tree));
@@ -2203,7 +2203,7 @@ extern void reinit_parse_for_function		PROTO((void));
 extern int *init_parse				PROTO((void));
 extern void print_parse_statistics		PROTO((void));
 extern void extract_interface_info		PROTO((void));
-extern void set_vardecl_interface_info		PROTO((tree, tree));
+extern int set_vardecl_interface_info		PROTO((tree, tree));
 extern void do_pending_inlines			PROTO((void));
 extern void process_next_inline			PROTO((tree));
 /* skip restore_pending_input */
@@ -2231,7 +2231,6 @@ extern tree make_lang_type			PROTO((enum tree_code));
 extern void copy_decl_lang_specific		PROTO((tree));
 extern void dump_time_statistics		PROTO((void));
 /* extern void compiler_error			PROTO((char *, HOST_WIDE_INT, HOST_WIDE_INT)); */
-extern void compiler_error_with_decl		PROTO((tree, char *));
 extern void yyerror				PROTO((char *));
 
 /* in errfn.c */
@@ -2472,7 +2471,6 @@ extern tree build_ptrmemfunc			PROTO((tree, tree, int));
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));
 extern tree binfo_or_else			PROTO((tree, tree));
-extern void error_with_aggr_type		(); /* PROTO((tree, char *, HOST_WIDE_INT)); */
 extern void readonly_error			PROTO((tree, char *, int));
 extern void abstract_virtuals_error		PROTO((tree, tree));
 extern void signature_error			PROTO((tree, tree));

@@ -366,6 +366,9 @@ do_case (start, end)
 {
   tree value1 = NULL_TREE, value2 = NULL_TREE, label;
 
+  if (start && POINTER_TYPE_P (TREE_TYPE (start)))
+    error ("pointers are not permitted as case values");
+
   if (end && pedantic)
     pedwarn ("ANSI C++ forbids range expressions in switch statement");
 

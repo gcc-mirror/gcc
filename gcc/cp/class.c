@@ -932,8 +932,16 @@ add_method (type, fields, method)
       tree method_vec = make_node (TREE_VEC);
       if (TYPE_IDENTIFIER (type) == DECL_NAME (decl))
 	{
-	  TREE_VEC_ELT (method_vec, 0) = decl;
-	  TREE_VEC_LENGTH (method_vec) = 1;
+	  /* ??? Is it possible for there to have been enough room in the
+	     current chunk for the tree_vec structure but not a tree_vec
+	     plus a tree*?  Will this work in that case?  */
+	  obstack_free (current_obstack, method_vec);
+	  obstack_blank (current_obstack, sizeof (struct tree_vec) + sizeof (tree *));
+	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
+	    TREE_VEC_ELT (method_vec, 1) = decl;
+	  else
+	    TREE_VEC_ELT (method_vec, 0) = decl;
+	  TREE_VEC_LENGTH (method_vec) = 2;
 	}
       else
 	{
@@ -941,9 +949,9 @@ add_method (type, fields, method)
 	     current chunk for the tree_vec structure but not a tree_vec
 	     plus a tree*?  Will this work in that case?  */
 	  obstack_free (current_obstack, method_vec);
-	  obstack_blank (current_obstack, sizeof (struct tree_vec) + sizeof (tree *));
-	  TREE_VEC_ELT (method_vec, 1) = decl;
-	  TREE_VEC_LENGTH (method_vec) = 2;
+	  obstack_blank (current_obstack, sizeof (struct tree_vec) + 2*sizeof (tree *));
+	  TREE_VEC_ELT (method_vec, 2) = decl;
+	  TREE_VEC_LENGTH (method_vec) = 3;
 	  obstack_finish (current_obstack);
 	}
       CLASSTYPE_METHOD_VEC (type) = method_vec;
@@ -957,11 +965,12 @@ add_method (type, fields, method)
          METHOD_VEC always has a slot for such entries.  */
       if (TYPE_IDENTIFIER (type) == DECL_NAME (decl))
 	{
-	  /* TREE_VEC_ELT (method_vec, 0) = decl; */
-	  if (decl != TREE_VEC_ELT (method_vec, 0))
+	  int index = !!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl));
+	  /* TREE_VEC_ELT (method_vec, index) = decl; */
+	  if (decl != TREE_VEC_ELT (method_vec, index))
 	    {
-	      DECL_CHAIN (decl) = TREE_VEC_ELT (method_vec, 0);
-	      TREE_VEC_ELT (method_vec, 0) = decl;
+	      DECL_CHAIN (decl) = TREE_VEC_ELT (method_vec, index);
+	      TREE_VEC_ELT (method_vec, index) = decl;
 	    }
 	}
       else
@@ -1085,7 +1094,11 @@ delete_duplicate_fields_1 (field, fields)
 				x);
 		  else if (TREE_CODE (field) == TYPE_DECL
 			   && TREE_CODE (x) == TYPE_DECL)
-		    cp_error_at ("duplicate nested type `%D'", x);
+		    {
+		      if (TREE_TYPE (field) == TREE_TYPE (x))
+			continue;
+		      cp_error_at ("duplicate nested type `%D'", x);
+		    }
 		  else if (TREE_CODE (field) == TYPE_DECL
 			   || TREE_CODE (x) == TYPE_DECL)
 		    {
@@ -1756,42 +1769,41 @@ finish_struct_bits (t, max_has_virtual)
     }
 }
 
-/* Add FN to the method_vec growing on the class_obstack.  Used by
-   finish_struct_methods.  */
+/* Add FNDECL to the method_vec growing on the class_obstack.  Used by
+   finish_struct_methods.  Note, FNDECL cannot be a constructor or
+   destructor, those cases are handled by the caller.  */
 static void
-grow_method (fn, method_vec_ptr)
-     tree fn;
+grow_method (fndecl, method_vec_ptr)
+     tree fndecl;
      tree *method_vec_ptr;
 {
   tree method_vec = (tree)obstack_base (&class_obstack);
-  tree *testp = &TREE_VEC_ELT (method_vec, 0);
-  if (*testp == NULL_TREE)
+
+  /* Start off past the constructors and destructor.  */
+  tree *testp = &TREE_VEC_ELT (method_vec, 2);
+
+  while (testp < (tree *) obstack_next_free (&class_obstack)
+	 && (*testp == NULL_TREE || DECL_NAME (*testp) != DECL_NAME (fndecl)))
     testp++;
-  while (((HOST_WIDE_INT) testp
-	  < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
-	 && DECL_NAME (*testp) != DECL_NAME (fn))
-    testp++;
-  if ((HOST_WIDE_INT) testp
-      < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
+
+  if (testp < (tree *) obstack_next_free (&class_obstack))
     {
       tree x, prev_x;
 
       for (x = *testp; x; x = DECL_CHAIN (x))
 	{
-	  if (DECL_NAME (fn) == ansi_opname[(int) DELETE_EXPR]
-	      || DECL_NAME (fn) == ansi_opname[(int) VEC_DELETE_EXPR])
+	  if (DECL_NAME (fndecl) == ansi_opname[(int) DELETE_EXPR]
+	      || DECL_NAME (fndecl) == ansi_opname[(int) VEC_DELETE_EXPR])
 	    {
 	      /* ANSI C++ June 5 1992 WP 12.5.5.1 */
-	      cp_error_at ("`%D' overloaded", fn);
+	      cp_error_at ("`%D' overloaded", fndecl);
 	      cp_error_at ("previous declaration as `%D' here", x);
 	    }
-	  if (DECL_ASSEMBLER_NAME (fn)==DECL_ASSEMBLER_NAME (x))
+	  if (DECL_ASSEMBLER_NAME (fndecl) == DECL_ASSEMBLER_NAME (x))
 	    {
-	      /* We complain about multiple destructors on sight,
-		 so we do not repeat the warning here.  Friend-friend
-		 ambiguities are warned about outside this loop.  */
-	      if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn)))
-		cp_error_at ("ambiguous method `%#D' in structure", fn);
+	      /* Friend-friend ambiguities are warned about outside
+		 this loop.  */
+	      cp_error_at ("ambiguous method `%#D' in structure", fndecl);
 	      break;
 	    }
 	  prev_x = x;
@@ -1799,14 +1811,14 @@ grow_method (fn, method_vec_ptr)
       if (x == 0)
 	{
 	  if (*testp)
-	    DECL_CHAIN (prev_x) = fn;
+	    DECL_CHAIN (prev_x) = fndecl;
 	  else
-	    *testp = fn;
+	    *testp = fndecl;
 	}
     }
   else
     {
-      obstack_ptr_grow (&class_obstack, fn);
+      obstack_ptr_grow (&class_obstack, fndecl);
       *method_vec_ptr = (tree)obstack_base (&class_obstack);
     }
 }
@@ -1842,27 +1854,27 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 {
   tree method_vec;
   tree save_fn_fields = fn_fields;
-  tree name = constructor_name (t);
+  tree ctor_name = constructor_name (t);
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
   /* Now prepare to gather fn_fields into vector.  */
   struct obstack *ambient_obstack = current_obstack;
   current_obstack = &class_obstack;
-  method_vec = make_node (TREE_VEC);
-  /* Room has been saved for constructors and destructors.  */
+  method_vec = make_tree_vec (2);
   current_obstack = ambient_obstack;
+
   /* Now make this a live vector.  */
   obstack_free (&class_obstack, method_vec);
-  obstack_blank (&class_obstack, sizeof (struct tree_vec));
 
-  /* First fill in entry 0 with the constructors, and the next few with
-     type conversion operators (if any).  */
+  /* Save room for constructors and destructors.  */
+  obstack_blank (&class_obstack, sizeof (struct tree_vec) + sizeof (struct tree *));
+
+  /* First fill in entry 0 with the constructors, entry 1 with destructors,
+     and the next few with type conversion operators (if any).  */
 
   for (; fn_fields; fn_fields = TREE_CHAIN (fn_fields))
     {
       tree fn_name = DECL_NAME (fn_fields);
-      if (fn_name == NULL_TREE)
-	fn_name = name;
 
       /* Clear out this flag.
 
@@ -1873,7 +1885,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
       /* Note here that a copy ctor is private, so we don't dare generate
  	 a default copy constructor for a class that has a member
  	 of this type without making sure they have access to it.  */
-      if (fn_name == name)
+      if (fn_name == ctor_name)
  	{
  	  tree parmtypes = FUNCTION_ARG_CHAIN (fn_fields);
  	  tree parmtype = parmtypes ? TREE_VALUE (parmtypes) : void_type_node;
@@ -1891,9 +1903,18 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
  		    TYPE_HAS_NONPUBLIC_CTOR (t) = 2;
  		}
  	    }
-	  /* Constructors are handled easily in search routines.  */
-	  DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
-	  TREE_VEC_ELT (method_vec, 0) = fn_fields;
+	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn_fields)))
+	    {	    
+	      /* Destructors go in slot 1.  */
+	      DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 1);
+	      TREE_VEC_ELT (method_vec, 1) = fn_fields;
+	    }
+	  else
+	    {
+	      /* Constructors go in slot 0.  */
+	      DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
+	      TREE_VEC_ELT (method_vec, 0) = fn_fields;
+	    }
  	}
       else if (IDENTIFIER_TYPENAME_P (fn_name))
 	{
@@ -1914,10 +1935,8 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
   for (; fn_fields; fn_fields = TREE_CHAIN (fn_fields))
     {
       tree fn_name = DECL_NAME (fn_fields);
-      if (fn_name == NULL_TREE)
-	fn_name = name;
 
-      if (fn_name == name || IDENTIFIER_TYPENAME_P (fn_name))
+      if (fn_name == ctor_name || IDENTIFIER_TYPENAME_P (fn_name))
 	continue;
 
       if (fn_name == ansi_opname[(int) MODIFY_EXPR])
@@ -1957,53 +1976,35 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	cp_warning ("all member functions in class `%T' are private", t);
     }
 
-  /* If there are constructors (and destructors), they are at the
-     front.  Place destructors at very front.  Also warn if all
-     constructors and/or destructors are private (in which case this
-     class is effectively unusable.  */
+  /* Warn if all destructors are private (in which case this class is
+     effectively unusable.  */
   if (TYPE_HAS_DESTRUCTOR (t))
     {
-      tree dtor, prev;
-
-      for (dtor = TREE_VEC_ELT (method_vec, 0);
-	   dtor;
-	   prev = dtor, dtor = DECL_CHAIN (dtor))
-	{
-	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (dtor)))
-	    {
-	      if (TREE_PRIVATE (dtor)
-		  && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-		  && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE
-		  && warn_ctor_dtor_privacy)
-		cp_warning ("`%#T' only defines a private destructor and has no friends",
-			    t);
-	      break;
-	    }
-	}
+      tree dtor = TREE_VEC_ELT (method_vec, 1);
 
       /* Wild parse errors can cause this to happen.  */
       if (dtor == NULL_TREE)
 	TYPE_HAS_DESTRUCTOR (t) = 0;
-      else if (dtor != TREE_VEC_ELT (method_vec, 0))
-	{
-	  DECL_CHAIN (prev) = DECL_CHAIN (dtor);
-	  DECL_CHAIN (dtor) = TREE_VEC_ELT (method_vec, 0);
-	  TREE_VEC_ELT (method_vec, 0) = dtor;
-	}
+      else if (TREE_PRIVATE (dtor)
+	       && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
+	       && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE
+	       && warn_ctor_dtor_privacy)
+	cp_warning ("`%#T' only defines a private destructor and has no friends",
+		    t);
     }
 
   /* Now for each member function (except for constructors and
      destructors), compute where member functions of the same
      name reside in base classes.  */
   if (n_baseclasses != 0
-      && TREE_VEC_LENGTH (method_vec) > 1)
+      && TREE_VEC_LENGTH (method_vec) > 2)
     {
       int len = TREE_VEC_LENGTH (method_vec);
       tree baselink_vec = make_tree_vec (len);
       int any_links = 0;
       tree baselink_binfo = build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
-      for (i = 1; i < len; i++)
+      for (i = 2; i < len; i++)
 	{
 	  TREE_VEC_ELT (baselink_vec, i)
 	    = get_baselinks (baselink_binfo, t, DECL_NAME (TREE_VEC_ELT (method_vec, i)));
@@ -2015,44 +2016,6 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
       else
 	obstack_free (current_obstack, baselink_vec);
     }
-
-#if 0
-  /* Now add the methods to the TYPE_METHODS of T, arranged in a chain.  */
-  {
-    tree x, last_x = NULL_TREE;
-    int limit = TREE_VEC_LENGTH (method_vec);
-
-    for (i = 1; i < limit; i++)
-      {
-	for (x = TREE_VEC_ELT (method_vec, i); x; x = DECL_CHAIN (x))
-	  {
-	    if (last_x != NULL_TREE)
-	      TREE_CHAIN (last_x) = x;
-	    last_x = x;
-	  }
-      }
-
-    /* Put ctors and dtors at the front of the list.  */
-    x = TREE_VEC_ELT (method_vec, 0);
-    if (x)
-      {
-	while (DECL_CHAIN (x))
-	  {
-	    /* Let's avoid being circular about this.  */
-	    if (x == DECL_CHAIN (x))
-	      break;
-	    TREE_CHAIN (x) = DECL_CHAIN (x);
-	    x = DECL_CHAIN (x);
-	  }
-	if (TREE_VEC_LENGTH (method_vec) > 1)
-	  TREE_CHAIN (x) = TREE_VEC_ELT (method_vec, 1);
-	else
-	  TREE_CHAIN (x) = NULL_TREE;
-      }
-  }
-
-  TYPE_METHODS (t) = method_vec;
-#endif
 
   return method_vec;
 }
@@ -2077,17 +2040,17 @@ duplicate_tag_error (t)
    * This used to be in finish_struct, but it turns out that the
    * TREE_CHAIN is used by dbxout_type_methods and perhaps some other things...
    */
-  if (CLASSTYPE_METHOD_VEC(t)) 
+  if (CLASSTYPE_METHOD_VEC (t)) 
     {
-      tree tv = CLASSTYPE_METHOD_VEC(t);
-      int i, len  = TREE_VEC_LENGTH (tv);
+      tree method_vec = CLASSTYPE_METHOD_VEC (t);
+      int i, len  = TREE_VEC_LENGTH (method_vec);
       for (i = 0; i < len; i++)
 	{
-	  tree unchain = TREE_VEC_ELT (tv, i);
+	  tree unchain = TREE_VEC_ELT (method_vec, i);
 	  while (unchain != NULL_TREE) 
 	    {
 	      TREE_CHAIN (unchain) = NULL_TREE;
-	      unchain = DECL_CHAIN(unchain);
+	      unchain = DECL_CHAIN (unchain);
 	    }
 	}
     }
@@ -2829,7 +2792,8 @@ check_for_override (decl, ctype)
     }
 }
 
-/* Warn about hidden virtual functions that are not overridden in t.  */
+/* Warn about hidden virtual functions that are not overridden in t.
+   We know that constructors and destructors don't apply.  */
 void
 warn_hidden (t)
      tree t;
@@ -2839,7 +2803,7 @@ warn_hidden (t)
   int i;
 
   /* We go through each separately named virtual function.  */
-  for (i = 1; i < n_methods; ++i)
+  for (i = 2; i < n_methods; ++i)
     {
       tree fndecl = TREE_VEC_ELT (method_vec, i);
 
@@ -2927,6 +2891,9 @@ finish_struct_anon (t)
 	      else if (TREE_PROTECTED (*uelt))
 		cp_pedwarn_at ("protected member `%#D' in anonymous union",
 			       *uelt);
+
+	      TREE_PRIVATE (*uelt) = TREE_PRIVATE (field);
+	      TREE_PROTECTED (*uelt) = TREE_PROTECTED (field);
 	    }
 	}
     }
@@ -3692,8 +3659,8 @@ finish_struct_1 (t, attributes, warn_anon)
 	tree fdecl = TREE_VALUE (access_decls);
 	tree flist = NULL_TREE;
 	tree name;
-	tree access = TREE_PURPOSE(access_decls);
-	int i = TREE_VEC_ELT (method_vec, 0) ? 0 : 1;
+	tree access = TREE_PURPOSE (access_decls);
+	int i = 2;
 	tree tmp;
 
 	if (TREE_CODE (fdecl) == TREE_LIST)
@@ -3811,9 +3778,11 @@ finish_struct_1 (t, attributes, warn_anon)
       for (x = fields; x; x = TREE_CHAIN (x))
 	{
 	  tree name = DECL_NAME (x);
-	  int i = /*TREE_VEC_ELT (method_vec, 0) ? 0 : */ 1;
+	  int i = 2;
+
 	  if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
 	    continue;
+
 	  for (; i < n_methods; ++i)
 	    if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
 	      {
@@ -4367,14 +4336,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       while (x)
 	{
 	  tree tag = TYPE_NAME (TREE_VALUE (x));
-
-	  /* Check to see if it is already there.  This will be the case if
-	     was do enum { red; } color; */
-	  if (chain_member (tag, fields))
-	      {
-		x = TREE_CHAIN (x);
-		continue;
-	      }
 
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)

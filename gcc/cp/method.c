@@ -91,10 +91,12 @@ do_inline_function_hair (type, friend_list)
 
   if (method && TREE_CODE (method) == TREE_VEC)
     {
-      if (TREE_VEC_ELT (method, 0))
+      if (TREE_VEC_ELT (method, 1))
+	method = TREE_VEC_ELT (method, 1);
+      else if (TREE_VEC_ELT (method, 0))
 	method = TREE_VEC_ELT (method, 0);
       else
-	method = TREE_VEC_ELT (method, 1);
+	method = TREE_VEC_ELT (method, 2);
     }
 
   while (method)
@@ -1277,9 +1279,26 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 				      build_tree_list (NULL_TREE, xarg1),
 				      flags & LOOKUP_COMPLAIN,
 				      (struct candidate *)0);
+	arg1 = TREE_TYPE (xarg1);
+
+	/* This handles the case where we're trying to delete
+	   X (*a)[10];
+	   a=new X[5][10];
+	   delete[] a; */
+	   
+	if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
+	  {
+	    /* Strip off the pointer and the array. */
+	    arg1 = TREE_TYPE (TREE_TYPE (arg1));
+
+	    while (TREE_CODE (arg1) == ARRAY_TYPE)
+		arg1 = (TREE_TYPE (arg1));
+
+	    arg1 = build_pointer_type (arg1);
+	  }
 
 	rval = build_method_call
-	  (build_indirect_ref (build1 (NOP_EXPR, TREE_TYPE (xarg1),
+	  (build_indirect_ref (build1 (NOP_EXPR, arg1,
 				       error_mark_node),
 			       NULL_PTR),
 	   fnname, tree_cons (NULL_TREE, xarg1,
@@ -1826,7 +1845,7 @@ make_thunk (function, delta)
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && TREE_CODE (thunk) != THUNK_DECL)
     {
-      error_with_decl ("implementation-reserved name `%s' used");
+      cp_error ("implementation-reserved name `%D' used", thunk_id);
       IDENTIFIER_GLOBAL_VALUE (thunk_id) = thunk = NULL_TREE;
     }
   if (thunk == NULL_TREE)

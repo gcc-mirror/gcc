@@ -543,7 +543,7 @@ ident_fndecl (t)
 #endif
 
 #define GLOBAL_IORD_P(NODE) \
-  !strncmp(IDENTIFIER_POINTER(NODE),GLOBAL_THING,sizeof(GLOBAL_THING)-1)
+  ! strncmp (IDENTIFIER_POINTER(NODE), GLOBAL_THING, sizeof (GLOBAL_THING) - 1)
 
 void
 dump_global_iord (t)
@@ -581,12 +581,9 @@ dump_decl (t, v)
     case TYPE_DECL:
       {
 	/* Don't say 'typedef class A' */
-	tree type = TREE_TYPE (t);
-        if (((IS_AGGR_TYPE (type) && ! TYPE_PTRMEMFUNC_P (type))
-	     || TREE_CODE (type) == ENUMERAL_TYPE)
-	    && type == TYPE_MAIN_VARIANT (type))
+        if (DECL_ARTIFICIAL (t))
 	  {
-	    dump_type (type, v);
+	    dump_type (TREE_TYPE (t), v);
 	    break;
 	  }
       }
@@ -1087,7 +1084,7 @@ dump_expr (t, nop)
 	    args = TREE_CHAIN (args);
 	  }
 	dump_expr (fn, 0);
-	OB_PUTC('(');
+	OB_PUTC ('(');
 	dump_expr_list (args);
 	OB_PUTC (')');
       }

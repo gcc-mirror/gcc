@@ -596,7 +596,7 @@ emit_base_init (t, immediately)
 	  target_temp_slot_level = temp_slot_level;
 
 	  member = convert_pointer_to_real (base_binfo, current_class_decl);
-	  expand_aggr_init_1 (base_binfo, 0,
+	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
 	  expand_cleanups_to (old_cleanups);
@@ -935,7 +935,6 @@ expand_member_init (exp, name, init)
   tree basetype = NULL_TREE, field;
   tree parm;
   tree rval, type;
-  tree actual_name;
 
   if (exp == NULL_TREE)
     return;			/* complain about this later */
@@ -1071,14 +1070,10 @@ expand_member_init (exp, name, init)
 	  TREE_USED (exp) = 1;
 	}
       type = TYPE_MAIN_VARIANT (TREE_TYPE (field));
-      actual_name = TYPE_IDENTIFIER (type);
       parm = build_component_ref (exp, name, 0, 0);
 
-      /* Now get to the constructor.  */
+      /* Now get to the constructors.  */
       fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0);
-      /* Get past destructor, if any.  */
-      if (TYPE_HAS_DESTRUCTOR (type))
-	fndecl = DECL_CHAIN (fndecl);
 
       if (fndecl)
 	my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 209);
@@ -1102,7 +1097,8 @@ expand_member_init (exp, name, init)
 
       init = convert_arguments (parm, parmtypes, NULL_TREE, fndecl, LOOKUP_NORMAL);
       if (init == NULL_TREE || TREE_TYPE (init) != error_mark_node)
-	rval = build_method_call (NULL_TREE, actual_name, init, NULL_TREE, LOOKUP_NORMAL);
+	rval = build_method_call (NULL_TREE, ctor_identifier, init,
+				  TYPE_BINFO (type), LOOKUP_NORMAL);
       else
 	return;
 
@@ -1245,14 +1241,15 @@ expand_aggr_init (exp, init, alias_this, flags)
 }
 
 static void
-expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
+expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
      tree binfo;
      tree true_exp, exp;
-     tree type;
      tree init;
      int alias_this;
      int flags;
 {
+  tree type = TREE_TYPE (exp);
+
   /* It fails because there may not be a constructor which takes
      its own type as the first (or only parameter), but which does
      take other types via a conversion.  So, if the thing initializing
@@ -1301,7 +1298,7 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
     {
       if (flags & LOOKUP_ONLYCONVERTING)
 	flags |= LOOKUP_NO_CONVERSION;
-      rval = build_method_call (exp, constructor_name_full (type),
+      rval = build_method_call (exp, ctor_identifier,
 				parms, binfo, flags);
 
       /* Private, protected, or otherwise unavailable.  */
@@ -1534,7 +1531,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		  tree parms = build_tree_list (NULL_TREE, init);
 		  tree as_cons = NULL_TREE;
 		  if (TYPE_HAS_CONSTRUCTOR (type))
-		    as_cons = build_method_call (exp, constructor_name_full (type),
+		    as_cons = build_method_call (exp, ctor_identifier,
 						 parms, binfo,
 						 LOOKUP_SPECULATIVELY|LOOKUP_NO_CONVERSION);
 		  if (as_cons != NULL_TREE && as_cons != error_mark_node)
@@ -1551,7 +1548,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
   /* We know that expand_default_init can handle everything we want
      at this point.  */
-  expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags);
+  expand_default_init (binfo, true_exp, exp, init, alias_this, flags);
 }
 
 /* Report an error if NAME is not the name of a user-defined,
@@ -1781,7 +1778,7 @@ build_offset_ref (type, name)
      tree type, name;
 {
   tree decl, fnfields, fields, t = error_mark_node;
-  tree basetypes = NULL_TREE;
+  tree basebinfo = NULL_TREE;
   int dtor = 0;
 
   if (current_template_parms)
@@ -1843,9 +1840,9 @@ build_offset_ref (type, name)
     }
 
   if (current_class_type == 0
-      || get_base_distance (type, current_class_type, 0, &basetypes) == -1)
+      || get_base_distance (type, current_class_type, 0, &basebinfo) == -1)
     {
-      basetypes = TYPE_BINFO (type);
+      basebinfo = TYPE_BINFO (type);
       decl = build1 (NOP_EXPR, type, error_mark_node);
     }
   else if (current_class_decl == 0)
@@ -1853,8 +1850,18 @@ build_offset_ref (type, name)
   else
     decl = C_C_D;
 
-  fnfields = lookup_fnfields (basetypes, name, 1);
-  fields = lookup_field (basetypes, name, 0, 0);
+  if (constructor_name (BINFO_TYPE (basebinfo)) == name)
+    if (dtor)
+      name = dtor_identifier;
+    else
+      name = ctor_identifier;
+  else
+    if (dtor)
+      my_friendly_abort (999);
+
+    
+  fnfields = lookup_fnfields (basebinfo, name, 1);
+  fields = lookup_field (basebinfo, name, 0, 0);
 
   if (fields == error_mark_node || fnfields == error_mark_node)
     return error_mark_node;
@@ -1863,91 +1870,58 @@ build_offset_ref (type, name)
      lookup_fnfield. */
   if (fnfields)
     {
-      basetypes = TREE_PURPOSE (fnfields);
+      extern int flag_save_memoized_contexts;
+      basebinfo = TREE_PURPOSE (fnfields);
 
       /* Go from the TREE_BASELINK to the member function info.  */
       t = TREE_VALUE (fnfields);
 
-      if (fields)
+      if (DECL_CHAIN (t) == NULL_TREE)
 	{
-	  if (DECL_FIELD_CONTEXT (fields) == DECL_FIELD_CONTEXT (t))
+	  tree access;
+
+	  /* unique functions are handled easily.  */
+	unique:
+	  access = compute_access (basebinfo, t);
+	  if (access == access_protected_node)
 	    {
-	      error ("ambiguous member reference: member `%s' defined as both field and function",
-		     IDENTIFIER_POINTER (name));
+	      cp_error_at ("member function `%#D' is protected", t);
+	      error ("in this context");
 	      return error_mark_node;
 	    }
-	  if (UNIQUELY_DERIVED_FROM_P (DECL_FIELD_CONTEXT (fields), DECL_FIELD_CONTEXT (t)))
-	    ;
-	  else if (UNIQUELY_DERIVED_FROM_P (DECL_FIELD_CONTEXT (t), DECL_FIELD_CONTEXT (fields)))
-	    t = fields;
-	  else
+	  if (access == access_private_node)
 	    {
-	      error ("ambiguous member reference: member `%s' derives from distinct classes in multiple inheritance lattice");
+	      cp_error_at ("member function `%#D' is private", t);
+	      error ("in this context");
 	      return error_mark_node;
 	    }
+	  mark_used (t);
+	  return build (OFFSET_REF, TREE_TYPE (t), decl, t);
 	}
 
-      if (t == TREE_VALUE (fnfields))
-	{
-	  extern int flag_save_memoized_contexts;
+      /* FNFIELDS is most likely allocated on the search_obstack,
+	 which will go away after this class scope.  If we need
+	 to save this value for later (either for memoization
+	 or for use as an initializer for a static variable), then
+	 do so here.
 
-	  if (DECL_CHAIN (t) == NULL_TREE || dtor)
-	    {
-	      tree access;
+	 ??? The smart thing to do for the case of saving initializers
+	 is to resolve them before we're done with this scope.  */
+      if (!TREE_PERMANENT (fnfields)
+	  && ((flag_save_memoized_contexts && global_bindings_p ())
+	      || ! allocation_temporary_p ()))
+	fnfields = copy_list (fnfields);
 
-	      /* unique functions are handled easily.  */
-	    unique:
-	      access = compute_access (basetypes, t);
-	      if (access == access_protected_node)
-		{
-		  cp_error_at ("member function `%#D' is protected", t);
-		  error ("in this context");
-		  return error_mark_node;
-		}
-	      if (access == access_private_node)
-		{
-		  cp_error_at ("member function `%#D' is private", t);
-		  error ("in this context");
-		  return error_mark_node;
-		}
-	      mark_used (t);
-	      return build (OFFSET_REF, TREE_TYPE (t), decl, t);
-	    }
-
-	  /* overloaded functions may need more work.  */
-	  if (name == constructor_name (type))
-	    {
-	      if (TYPE_HAS_DESTRUCTOR (type)
-		  && DECL_CHAIN (DECL_CHAIN (t)) == NULL_TREE)
-		{
-		  t = DECL_CHAIN (t);
-		  goto unique;
-		}
-	    }
-	  /* FNFIELDS is most likely allocated on the search_obstack,
-	     which will go away after this class scope.  If we need
-	     to save this value for later (either for memoization
-	     or for use as an initializer for a static variable), then
-	     do so here.
-
-	     ??? The smart thing to do for the case of saving initializers
-	     is to resolve them before we're done with this scope.  */
-	  if (!TREE_PERMANENT (fnfields)
-	      && ((flag_save_memoized_contexts && global_bindings_p ())
-		  || ! allocation_temporary_p ()))
-	    fnfields = copy_list (fnfields);
-
-	  t = build_tree_list (error_mark_node, fnfields);
-	  TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
-	  return t;
-	}
+      t = build_tree_list (error_mark_node, fnfields);
+      TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
+      return t;
     }
 
   /* Now that we know we are looking for a field, see if we
      have access to that field.  Lookup_field will give us the
      error message.  */
 
-  t = lookup_field (basetypes, name, 1, 0);
+  t = lookup_field (basebinfo, name, 1, 0);
 
   if (t == error_mark_node)
     return error_mark_node;
@@ -2802,7 +2776,12 @@ build_new (placement, decl, init, use_global_new)
     }
 
   if (has_array)
-    code = VEC_NEW_EXPR;
+    {
+      code = VEC_NEW_EXPR;
+
+      if (init && pedantic)
+	cp_pedwarn ("initialization in array new");
+    }
 
   /* Allocate the object. */
   if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
@@ -2930,8 +2909,8 @@ build_new (placement, decl, init, use_global_new)
 	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
 	    newrval = build_indirect_ref (newrval, NULL_PTR);
 
-	  newrval = build_method_call (newrval, constructor_name_full (true_type),
-				       init, NULL_TREE, flags);
+	  newrval = build_method_call (newrval, ctor_identifier,
+				       init, TYPE_BINFO (true_type), flags);
 
 	  if (newrval)
 	    {
@@ -3272,6 +3251,9 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   expand_assignment (rval, base, 0, 0);
   base = get_temp_regvar (build_pointer_type (type), base);
 
+  if (init != NULL_TREE && TREE_CODE (init) == TREE_LIST)
+    init = build_compound_expr (init);
+
   if (init != NULL_TREE
       && TREE_CODE (init) == CONSTRUCTOR
       && TREE_TYPE (init) == TREE_TYPE (decl))
@@ -3387,7 +3369,18 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 			   array_type_nelts (type), 0, 0);
 	}
       else
-	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0, 0);
+	{
+	  tree targ = build1 (INDIRECT_REF, type, base);
+	  tree rhs;
+
+	  if (init)
+	    rhs = convert_for_initialization (targ, type, init, LOOKUP_NORMAL,
+					      "initialization", NULL_TREE, 0);
+	  else
+	    rhs = NULL_TREE;
+
+	  expand_aggr_init (targ, rhs, 0, 0);
+	}
 
       expand_assignment (base,
 			 build (PLUS_EXPR, build_pointer_type (type), base, size),
@@ -3578,7 +3571,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      of the base classes; otherwise, we must do that here.  */
   if (TYPE_HAS_DESTRUCTOR (type))
     {
-      tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0));
+      tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1));
       tree basetypes = TYPE_BINFO (type);
       tree passed_auto_delete;
       tree do_delete = NULL_TREE;
@@ -3631,7 +3624,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	     complete right way to do this. this offsets may not be right
 	     in the below.  (mrs) */
 	  /* This destructor must be called via virtual function table.  */
-	  dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (DECL_CONTEXT (dtor)), 0);
+	  dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (DECL_CONTEXT (dtor)), 1);
 	  basetype = DECL_CLASS_CONTEXT (dtor);
 	  binfo = get_binfo (basetype,
 			     TREE_TYPE (TREE_TYPE (TREE_VALUE (parms))),

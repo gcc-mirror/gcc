@@ -146,7 +146,7 @@ static int n_calls_lookup_fnfields, n_calls_lookup_fnfields_1;
 static int n_calls_get_base_type;
 static int n_outer_fields_searched;
 static int n_contexts_saved;
-#endif
+#endif /* GATHER_STATISTICS */
 
 /* Local variables to help save memoization contexts.  */
 static tree prev_type_memoized;
@@ -323,7 +323,7 @@ push_memoized_context (type, use_old)
 	{
 #ifdef GATHER_STATISTICS
 	  n_contexts_saved++;
-#endif
+#endif /* GATHER_STATISTICS */
 	  type_stack = prev_type_stack;
 	  prev_type_stack = 0;
 
@@ -694,12 +694,12 @@ lookup_field_1 (type, name)
 
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field_1++;
-#endif
+#endif /* GATHER_STATISTICS */
   while (field)
     {
 #ifdef GATHER_STATISTICS
       n_fields_searched++;
-#endif
+#endif /* GATHER_STATISTICS */
       if (DECL_NAME (field) == NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	{
@@ -724,8 +724,6 @@ lookup_field_1 (type, name)
       if (TYPE_VIRTUAL_P (type))
 	return CLASSTYPE_VFIELD (type);
     }
-  if (name == constructor_name (type))
-    return TYPE_STUB_DECL (type);
   return NULL_TREE;
 }
 
@@ -845,10 +843,10 @@ compute_access (basetype_path, field)
 
   /* Fields coming from nested anonymous unions have their DECL_CLASS_CONTEXT
      slot set to the union type rather than the record type containing
-     the anonymous union.  In this case, DECL_FIELD_CONTEXT is correct.  */
+     the anonymous union.  */
   if (context && TREE_CODE (context) == UNION_TYPE
       && ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
-    context = DECL_FIELD_CONTEXT (field);
+    context = TYPE_CONTEXT (context);
 
   /* Virtual function tables are never private.  But we should know that
      we are looking for this, and not even try to hide it.  */
@@ -1020,7 +1018,8 @@ lookup_fnfields_here (type, name)
   int index = lookup_fnfields_1 (type, name);
   tree fndecls;
 
-  if (index <= 0)
+  /* ctors and dtors are always only in the right class.  */
+  if (index <= 1)
     return index;
   fndecls = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), index);
   while (fndecls)
@@ -1074,10 +1073,14 @@ lookup_field (xbasetype, name, protect, want_type)
      accurate error messages for access control.  */
   int index = MEMOIZED_HASH_FN (name);
 
+#if 0
+  /* We cannot search for constructor/destructor names like this.  */
+  /* This can't go here, but where should it go?  */
   /* If we are looking for a constructor in a templated type, use the
      unspecialized name, as that is how we store it.  */
   if (IDENTIFIER_TEMPLATE (name))
     name = constructor_name (name);
+#endif
 
   if (TREE_CODE (xbasetype) == TREE_VEC)
     {
@@ -1121,7 +1124,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field++;
-#endif
+#endif /* GATHER_STATISTICS */
   if (protect && flag_memoize_lookups && ! global_bindings_p ())
     entry = make_memoized_table_entry (type, name, 0);
   else
@@ -1137,10 +1140,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	    {
 	      if (TREE_CODE (rval) != TYPE_DECL)
 		{
-		  if (name == constructor_name (type))
-		    rval = type;
-		  else
-		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		  rval = purpose_member (name, CLASSTYPE_TAGS (type));
 		  if (rval)
 		    rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
 		}
@@ -1322,10 +1322,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	      {
 		if (TREE_CODE (rval) != TYPE_DECL)
 		  {
-		    if (name == constructor_name (type))
-		      rval = type;
-		    else
-		      rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
 		    if (rval)
 		      rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
 		  }
@@ -1468,10 +1465,8 @@ lookup_nested_field (name, complain)
 			 enums in nested classes) when we do need to call
 			 this fn at parse time.  So, in those cases, we pass
 			 complain as a 0 and just return a NULL_TREE.  */
-		      error ("assignment to non-static member `%s' of enclosing class `%s'",
-			     lang_printable_name (id),
-			     IDENTIFIER_POINTER (TYPE_IDENTIFIER
-						 (DECL_CONTEXT (t))));
+		      cp_error ("assignment to non-static member `%D' of enclosing class `%T'",
+				id, DECL_CONTEXT (t));
 		      /* Mark this for do_identifier().  It would otherwise
 			 claim that the variable was undeclared.  */
 		      TREE_TYPE (id) = error_mark_node;
@@ -1505,15 +1500,21 @@ lookup_fnfields_1 (type, name)
 
 #ifdef GATHER_STATISTICS
       n_calls_lookup_fnfields_1++;
-#endif
-      if (*methods && name == constructor_name (type))
+#endif /* GATHER_STATISTICS */
+
+      /* Constructors are first...  */
+      if (*methods && name == ctor_identifier)
 	return 0;
+
+      /* and destructors are second.  */
+      if (*++methods && name == dtor_identifier)
+	return 1;
 
       while (++methods != end)
 	{
 #ifdef GATHER_STATISTICS
 	  n_outer_fields_searched++;
-#endif
+#endif /* GATHER_STATISTICS */
 	  if (DECL_NAME (*methods) == name)
 	    break;
 	}
@@ -1581,10 +1582,14 @@ lookup_fnfields (basetype_path, name, complain)
       protect = complain = 0;
     }
 
+#if 0
+  /* We cannot search for constructor/destructor names like this.  */
+  /* This can't go here, but where should it go?  */
   /* If we are looking for a constructor in a templated type, use the
      unspecialized name, as that is how we store it.  */
   if (IDENTIFIER_TEMPLATE (name))
     name = constructor_name (name);
+#endif
 
   binfo = basetype_path;
   binfo_h = binfo;
@@ -1644,7 +1649,7 @@ lookup_fnfields (basetype_path, name, complain)
 
 #ifdef GATHER_STATISTICS
   n_calls_lookup_fnfields++;
-#endif
+#endif /* GATHER_STATISTICS */
   if (protect && flag_memoize_lookups && ! global_bindings_p ())
     entry = make_memoized_table_entry (type, name, 1);
   else
@@ -1673,6 +1678,16 @@ lookup_fnfields (basetype_path, name, complain)
       return rvals;
     }
   rval = NULL_TREE;
+
+  if (name == ctor_identifier || name == dtor_identifier)
+    {
+      /* Don't allow lookups of constructors and destructors to go
+ 	 deeper than the first place we look.  */
+      if (entry)
+ 	TREE_TYPE (entry) = TREE_VALUE (entry) = NULL_TREE;
+
+      return NULL_TREE;
+    }
 
   if (basetype_path == TYPE_BINFO (type))
     {
@@ -1930,7 +1945,8 @@ get_virtuals_named_this (binfo)
   return NULL_TREE;
 }
 
-static tree get_virtual_destructor (binfo, i)
+static tree
+get_virtual_destructor (binfo, i)
      tree binfo;
      int i;
 {
@@ -1938,8 +1954,8 @@ static tree get_virtual_destructor (binfo, i)
   if (i >= 0)
     type = BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo), i));
   if (TYPE_HAS_DESTRUCTOR (type)
-      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0)))
-    return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0);
+      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1)))
+    return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1);
   return 0;
 }
 
@@ -2336,7 +2352,7 @@ dfs_walk (binfo, fn, qfn)
 		  /* No need for the conversion here, as we know it is the
 		     right type.  */
 		  vbase_decl_ptr_intermediate
-		    = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (base_binfo));
+		    = CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (base_binfo));
 		}
 	      else
 		{
@@ -2477,10 +2493,12 @@ dfs_debug_mark (binfo)
   if (current_function_decl == NULL_TREE
       || DECL_CLASS_CONTEXT (current_function_decl) != t)
     {
-      if (TREE_VEC_ELT (methods, 0))
+      if (TREE_VEC_ELT (methods, 1))
+	methods = TREE_VEC_ELT (methods, 1);
+      else if (TREE_VEC_ELT (methods, 0))
 	methods = TREE_VEC_ELT (methods, 0);
       else
-	methods = TREE_VEC_ELT (methods, 1);
+	methods = TREE_VEC_ELT (methods, 2);
       while (methods)
 	{
 	  if (DECL_VINDEX (methods)
@@ -2523,8 +2541,8 @@ dfs_find_vbases (binfo)
 	  tree binfo = binfo_member (vbase, vbase_types);
 
 	  CLASSTYPE_SEARCH_SLOT (vbase)
-	    = (char *) build (PLUS_EXPR, build_pointer_type (vbase),
-			      vbase_decl_ptr, BINFO_OFFSET (binfo));
+	    = build (PLUS_EXPR, build_pointer_type (vbase),
+		     vbase_decl_ptr, BINFO_OFFSET (binfo));
 	}
     }
   SET_BINFO_VTABLE_PATH_MARKED (binfo);
@@ -2563,7 +2581,7 @@ dfs_init_vbase_pointers (binfo)
     {
       tree ref = build (COMPONENT_REF, TREE_TYPE (fields),
 			build_indirect_ref (this_vbase_ptr, NULL_PTR), fields);
-      tree init = (tree)CLASSTYPE_SEARCH_SLOT (TREE_TYPE (TREE_TYPE (fields)));
+      tree init = CLASSTYPE_SEARCH_SLOT (TREE_TYPE (TREE_TYPE (fields)));
       vbase_init_result = tree_cons (binfo_member (TREE_TYPE (TREE_TYPE (fields)),
 						   vbase_types),
 				     build_modify_expr (ref, NOP_EXPR, init),
@@ -2682,7 +2700,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
   delta = purpose_member (vbase, *vbase_offsets);
   if (! delta)
     {
-      delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbase));
+      delta = CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbase));
       delta = build (MINUS_EXPR, ptrdiff_type_node, delta, vbase_addr);
       delta = save_expr (delta);
       delta = tree_cons (vbase, delta, *vbase_offsets);
@@ -2751,7 +2769,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      if (! vc_delta)
 		{
 		  tree vc_addr = convert_pointer_to_real (vc, orig_addr);
-		  vc_delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vc));
+		  vc_delta = CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vc));
 		  vc_delta = build (MINUS_EXPR, ptrdiff_type_node,
 				    vc_delta, vc_addr);
 		  vc_delta = save_expr (vc_delta);
@@ -3207,10 +3225,10 @@ dfs_pushdecls (binfo)
     }
 
   method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (method_vec != 0)
+  if (method_vec)
     {
       /* Farm out constructors and destructors.  */
-      methods = &TREE_VEC_ELT (method_vec, 1);
+      methods = &TREE_VEC_ELT (method_vec, 2);
       end = TREE_VEC_END (method_vec);
 
       while (methods != end)
@@ -3257,7 +3275,7 @@ dfs_compress_decls (binfo)
   if (method_vec != 0)
     {
       /* Farm out constructors and destructors.  */
-      tree *methods = &TREE_VEC_ELT (method_vec, 1);
+      tree *methods = &TREE_VEC_ELT (method_vec, 2);
       tree *end = TREE_VEC_END (method_vec);
 
       for (; methods != end; methods++)
@@ -3404,9 +3422,9 @@ print_search_statistics ()
   fprintf (stderr, "%d fnfields searched in %d calls to lookup_fnfields\n",
 	   n_outer_fields_searched, n_calls_lookup_fnfields);
   fprintf (stderr, "%d calls to get_base_type\n", n_calls_get_base_type);
-#else
+#else /* GATHER_STATISTICS */
   fprintf (stderr, "no search statistics\n");
-#endif
+#endif /* GATHER_STATISTICS */
 }
 
 void
@@ -3441,7 +3459,7 @@ reinit_search_statistics ()
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
-#endif
+#endif /* GATHER_STATISTICS */
 }
 
 static tree conversions;
@@ -3450,11 +3468,11 @@ add_conversions (binfo)
      tree binfo;
 {
   int i;
-  tree vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
 
-  for (i = 1; i < TREE_VEC_LENGTH (vec); ++i)
+  for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
-      tree tmp = TREE_VEC_ELT (vec, i);
+      tree tmp = TREE_VEC_ELT (method_vec, i);
       if (! IDENTIFIER_TYPENAME_P (DECL_NAME (tmp)))
 	break;
       conversions = tree_cons (DECL_NAME (tmp), TREE_TYPE (TREE_TYPE (tmp)),

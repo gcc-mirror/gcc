@@ -1745,11 +1745,15 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	;
       /* call to a constructor... */
       else if (basetype_path)
-	basetype = BINFO_TYPE (basetype_path);
+	{
+	  basetype = BINFO_TYPE (basetype_path);
+	  if (name == DECL_NAME (TYPE_NAME (basetype)))
+	    name = ctor_identifier;
+	}
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
 	{
 	  basetype = IDENTIFIER_TYPE_VALUE (name);
-	  name = constructor_name (basetype);
+	  name = ctor_identifier;
 	}
       else
 	{
@@ -1758,7 +1762,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    {
 	      /* Canonicalize the typedef name.  */
 	      basetype = TREE_TYPE (typedef_name);
-	      name = TYPE_IDENTIFIER (basetype);
+	      name = ctor_identifier;
 	    }
 	  else
 	    {
@@ -2046,14 +2050,17 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   /* Look up function name in the structure type definition.  */
 
+  /* FIXME Axe most of this now?  */
   if ((IDENTIFIER_HAS_TYPE_VALUE (name)
        && ! IDENTIFIER_OPNAME_P (name)
        && IS_AGGR_TYPE (IDENTIFIER_TYPE_VALUE (name)))
-      || name == constructor_name (basetype))
+      || name == constructor_name (basetype)
+      || name == ctor_identifier)
     {
       tree tmp = NULL_TREE;
       if (IDENTIFIER_TYPE_VALUE (name) == basetype
-	  || name == constructor_name (basetype))
+	  || name == constructor_name (basetype)
+	  || name == ctor_identifier)
 	tmp = TYPE_BINFO (basetype);
       else
 	tmp = get_binfo (IDENTIFIER_TYPE_VALUE (name), basetype, 0);
@@ -2092,29 +2099,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (result == error_mark_node)
     return error_mark_node;
 
-
-#if 0
-  /* Now, go look for this method name.  We do not find destructors here.
-
-     Putting `void_list_node' on the end of the parmtypes
-     fakes out `build_decl_overload' into doing the right thing.  */
-  TREE_CHAIN (last) = void_list_node;
-  method_name = build_decl_overload (name, parmtypes,
-				     1 + (name == constructor_name (save_basetype)
-					  || name == constructor_name_full (save_basetype)));
-  TREE_CHAIN (last) = NULL_TREE;
-#endif
-
   for (pass = 0; pass < 2; pass++)
     {
       struct candidate *candidates;
       struct candidate *cp;
       int len;
       unsigned best = 1;
-
-      /* This increments every time we go up the type hierarchy.
-	 The idea is to prefer a function of the derived class if possible. */
-      int b_or_d = 0;
 
       baselink = result;
 
@@ -2167,7 +2157,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    }
 	}
 
-      while (baselink)
+      if (baselink)
 	{
 	  /* We have a hit (of sorts). If the parameter list is
 	     "error_mark_node", or some variant thereof, it won't
@@ -2182,30 +2172,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if (TREE_CODE (basetype_path) == TREE_LIST)
 	    basetype_path = TREE_VALUE (basetype_path);
 	  basetype = BINFO_TYPE (basetype_path);
-
-#if 0
-	  /* Cast the instance variable if necessary.  */
-	  if (basetype != TYPE_MAIN_VARIANT
-	      (TREE_TYPE (TREE_TYPE (TREE_VALUE (parms)))))
-	    {
-	      if (basetype == save_basetype)
-		TREE_VALUE (parms) = instance_ptr;
-	      else
-		{
-		  tree type = build_pointer_type
-		    (build_type_variant (basetype, constp, volatilep));
-		  TREE_VALUE (parms) = convert_force (type, instance_ptr, 0);
-		}
-	    }
-
-	  /* FIXME: this is the wrong place to get an error.  Hopefully
-	     the access-control rewrite will make this change more cleanly.  */
-	  if (TREE_VALUE (parms) == error_mark_node)
-	    return error_mark_node;
-#endif
-
-	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function)))
-	    function = DECL_CHAIN (function);
 
 	  for (; function; function = DECL_CHAIN (function))
 	    {
@@ -2263,14 +2229,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		    }
 		}
 	    }
-	  /* Now we have run through one link's member functions.
-	     arrange to head-insert this link's links.  */
-	  baselink = next_baselink (baselink);
-	  b_or_d += 1;
-	  /* Don't grab functions from base classes.  lookup_fnfield will
-	     do the work to get us down into the right place.  */
-	  baselink = NULL_TREE;
 	}
+
       if (pass == 0)
 	{
 	  tree igv = lookup_name_nonclass (name);
