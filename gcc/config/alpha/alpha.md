@@ -142,6 +142,18 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 (define_attr "length" ""
   (const_int 4))
+
+;; The USEGP attribute marks instructions that have relocations that use
+;; the GP.
+
+(define_attr "usegp" "no,yes"
+  (cond [(eq_attr "type" "ldsym,jsr")
+	   (const_string "yes")
+	 (eq_attr "type" "ild,fld,ist,fst")
+	   (symbol_ref "alpha_find_lo_sum_using_gp(insn)")
+	]
+	(const_string "no")))
+
 
 ;; Include scheduling descriptions.
   
@@ -402,7 +414,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	(plus:DI (match_operand:DI 1 "register_operand" "r")
 		 (high:DI (match_operand:DI 2 "local_symbolic_operand" ""))))]
   "TARGET_EXPLICIT_RELOCS"
-  "ldah %0,%2(%1)\t\t!gprelhigh")
+  "ldah %0,%2(%1)\t\t!gprelhigh"
+  [(set_attr "usegp" "yes")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5304,7 +5317,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
     return "lda %0,%2(%1)\t\t!gprel";
   else
     return "lda %0,%2(%1)\t\t!gprellow";
-})
+}
+  [(set_attr "usegp" "yes")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5426,7 +5440,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 		   UNSPEC_DTPREL))]
   "HAVE_AS_TLS"
   "ldq %0,%2(%1)\t\t!gotdtprel"
-  [(set_attr "type" "ild")])
+  [(set_attr "type" "ild")
+   (set_attr "usegp" "yes")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5447,7 +5462,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 		   UNSPEC_TPREL))]
   "HAVE_AS_TLS"
   "ldq %0,%2(%1)\t\t!gottprel"
-  [(set_attr "type" "ild")])
+  [(set_attr "type" "ild")
+   (set_attr "usegp" "yes")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5478,7 +5494,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    fmov %R1,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")
+   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*")])
 
 ;; The 'U' constraint matches symbolic operands on Unicos/Mk. Those should
 ;; have been split up by the rules above but we shouldn't reject the
@@ -5525,7 +5542,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")
+   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_fix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q,r,*f")

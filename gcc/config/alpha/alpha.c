@@ -155,7 +155,7 @@ static rtx alpha_expand_builtin
   PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static void alpha_sa_mask
   PARAMS ((unsigned long *imaskP, unsigned long *fmaskP));
-static int find_lo_sum
+static int find_lo_sum_using_gp
   PARAMS ((rtx *, void *));
 static int alpha_does_function_need_gp
   PARAMS ((void));
@@ -6970,11 +6970,18 @@ const struct attribute_spec vms_attribute_table[] =
 #endif
 
 static int
-find_lo_sum (px, data)
+find_lo_sum_using_gp (px, data)
      rtx *px;
      void *data ATTRIBUTE_UNUSED;
 {
-  return GET_CODE (*px) == LO_SUM;
+  return GET_CODE (*px) == LO_SUM && XEXP (*px, 0) == pic_offset_table_rtx;
+}
+
+int
+alpha_find_lo_sum_using_gp (insn)
+     rtx insn;
+{
+  return for_each_rtx (&PATTERN (insn), find_lo_sum_using_gp, NULL) > 0;
 }
 
 static int
@@ -7003,15 +7010,9 @@ alpha_does_function_need_gp ()
   for (; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
-	&& GET_CODE (PATTERN (insn)) != CLOBBER)
-      {
-	enum attr_type type = get_attr_type (insn);
-	if (type == TYPE_LDSYM || type == TYPE_JSR)
-	  return 1;
-	if (TARGET_EXPLICIT_RELOCS
-	    && for_each_rtx (&PATTERN (insn), find_lo_sum, NULL) > 0)
-	  return 1;
-      }
+	&& GET_CODE (PATTERN (insn)) != CLOBBER
+	&& get_attr_usegp (insn))
+      return 1;
 
   return 0;
 }
