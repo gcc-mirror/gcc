@@ -1,3 +1,7 @@
+2000-03-08  Warren Levy  <warrenl@cygnus.com>
+
+	* java/math/BigInteger.java(signum): Handle zero properly.
+
 2000-03-07  Tom Tromey  <tromey@cygnus.com>
 
 	* All files: Updated copyright information.
