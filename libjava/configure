@@ -13289,8 +13289,8 @@ if test ! -f gnu/classpath/Configuration.java; then
   # but we add /dev/null to the input list so that grep will print the
   # filename of Configuration.java in case it finds any matches.
   if grep @ gnu/classpath/Configuration.java /dev/null; then
-    { { echo "$as_me:$LINENO: error: configure.in is missing the substitutions above" >&5
-echo "$as_me: error: configure.in is missing the substitutions above" >&2;}
+    { { echo "$as_me:$LINENO: error: configure.ac is missing the substitutions above" >&5
+echo "$as_me: error: configure.ac is missing the substitutions above" >&2;}
    { (exit 1); exit 1; }; }
   fi
 fi
