@@ -1,3 +1,14 @@
+2001-08-15  Andreas Schwab  <schwab@suse.de>
+
+	* include/bits/std_limits.h [__glibcpp_long_double_bits == 96]:
+	Define appropriate long double limits for m68k extended floating
+	point.
+	(__glibcpp_f32_digits10): Corrected, off by one.
+	(__glibcpp_f80_digits10): Likewise.
+	(__glibcpp_f128_digits10): Likewise.
+	* config/os/gnu-linux/bits/os_defines.h
+	(__glibcpp_long_double_bits) [__mc68000__]: Define to 96.
+
 2001-08-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* testsuite/18_support/numeric_limits.cc: Add more tests.
