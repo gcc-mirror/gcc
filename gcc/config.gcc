@@ -944,13 +944,13 @@ i[34567]86-pc-msdosdjgpp*)
 	gas=yes
 	;;
 i[34567]86-*-lynxos*)
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h svr3.h lynx.h i386/lynx.h"
-	else
-		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h lynx-ng.h i386/lynx-ng.h"
-	fi
-	use_fixproto=yes
+	xm_defines=POSIX
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/lynx.h lynx.h"
+	tmake_file="i386/t-crtstuff t-lynx"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	thread_file=lynx
+	gnu_ld=yes
+	gas=yes
 	;;
 i[34567]86-*-nto-qnx*)
 	tm_file="${tm_file} i386/att.h dbxelf.h tm-dwarf2.h elfos.h svr4.h i386/unix.h i386/nto.h"
@@ -1597,6 +1597,15 @@ powerpc-wrs-windiss*)	# Instruction-level simulator for VxWorks.
         thread_file=""
 	use_fixproto=yes
         ;;
+powerpc-*-lynxos*)
+	xm_defines=POSIX
+	tm_file="${tm_file} dbxelf.h elfos.h rs6000/sysv4.h rs6000/lynx.h lynx.h"
+	tmake_file="t-lynx rs6000/t-lynx"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	thread_file=lynx
+	gnu_ld=yes
+	gas=yes
+	;;
 powerpcle-*-sysv*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos rs6000/t-ppccomm"
@@ -1650,12 +1659,6 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	use_collect2=yes
 	thread_file='aix'
 	extra_headers=
-	;;
-rs6000-*-lynxos*)
-	tm_file="svr3.h lynx.h rs6000/lynxbase.h rs6000/rs6000.h rs6000/lynx.h"
-	tmake_file=rs6000/t-fprules
-	use_collect2=yes
-	use_fixproto=yes
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"

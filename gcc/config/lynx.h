@@ -1,5 +1,5 @@
-/* Target independent definitions for LynxOS using gas and gnu ld.
-   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000, 2002, 2003
+/* Target independent definitions for LynxOS.
+   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,125 +19,174 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* LynxOS is a multi-platform Unix, similar to SVR3, but not identical.  */
+/* In this file we set up defaults that can be chosen by
+   <target>/lynx.h files.  A target-specific lynx.h file can decide
+   either to define and override these definitions or to use them by
+   ensuring they are undefined at this point.  If we were to #undef
+   them here we might accidentally disable some target-specific
+   defines.  */
 
-/* Define various macros, depending on the combination of flags.  */
+#ifndef EXTRA_OS_LYNX_TARGET_SPECS
+# define EXTRA_OS_LYNX_TARGET_SPECS
+#endif
 
-#undef CPP_SPEC
-#define CPP_SPEC "%{mthreads:-D_MULTITHREADED}  \
-  %{mposix:-D_POSIX_SOURCE}  \
-  %{msystem-v:-I/usr/include_v}"
+#ifndef EXTRA_OS_LYNX_SPECS
+# define EXTRA_OS_LYNX_SPECS \
+  { "cpp_os_lynx", CPP_OS_LYNX_SPEC }, \
+  { "lib_os_lynx", LIB_OS_LYNX_SPEC }, \
+  { "link_os_lynx", LINK_OS_LYNX_SPEC }, \
+  { "startfile_os_lynx", STARTFILE_OS_LYNX_SPEC }, \
+  { "endfile_os_lynx", ENDFILE_OS_LYNX_SPEC }, \
+  EXTRA_OS_LYNX_TARGET_SPECS
+#endif
 
-/* No asm spec needed, since using GNU assembler always.  */
+#ifndef SUBTARGET_EXTRA_SPECS
+# define SUBTARGET_EXTRA_SPECS EXTRA_OS_LYNX_SPECS
+#endif
 
-/* No linker spec needed, since using GNU linker always.  */
+#ifndef CPP_SPEC
+# define CPP_SPEC "%(cpp_cpu) %(cpp_os_lynx)"
+#endif
 
-#undef LIB_SPEC
-#define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
-  %{msystem-v:-lc_v}  \
-  %{!msystem-v:%{mposix:-lc_p} -lc -lm}"
+#ifndef LIB_SPEC
+# define LIB_SPEC "%(lib_os_lynx)"
+#endif
 
-/* Set the appropriate names for the Lynx startfiles.  */
+#ifndef LINK_SPEC
+# define LINK_SPEC "%(link_os_lynx)"
+#endif
 
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{p:%{mthreads:thread/pinit1.o%s}%{!mthreads:pinit1.o%s}}%{!p:%{msystem-v:vinit1.o%s -e_start}%{!msystem-v:%{mthreads:thread/init1.o%s}%{!mthreads:init1.o%s}}}"
+#ifndef STARTFILE_SPEC
+# define STARTFILE_SPEC "%(startfile_os_lynx)"
+#endif
 
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{p:_etext.o%s}%{!p:initn.o%s}"
+#ifndef ENDFILE_SPEC
+# define ENDFILE_SPEC "%(endfile_os_lynx)"
+#endif
 
-/* Override the svr3 versions.  */
+#ifndef CPP_OS_LYNX_SPEC
+# define CPP_OS_LYNX_SPEC \
+"%{mthreads: \
+   %{mlegacy-threads: \
+     %eCannot use mthreads and mlegacy-threads together.}} \
+ %{mthreads: -D_MULTITHREADED} \
+ %{mlegacy-threads: -D_THREADS_POSIX4ad4} \
+ -Asystem=lynx -Asystem=unix -D__Lynx__ -D__unix__"
+#endif
 
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
+#ifndef LIB_OS_LYNX_SPEC
+# define LIB_OS_LYNX_SPEC \
+"%{mlegacy-threads:-lposix-pre1c} -lm -lc"
+#endif
 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long int"
+/* We link static executables for LynxOS by default unless -mshared is
+   used when linking an executable.  Along the same line, we link to
+   shared libraries when linking a shared object by default unless
+   -static is used.
 
-/* We want to output DBX (stabs) debugging information normally.  */
+   We have to pass in our -L options here otherwise the translated
+   startfile directories (%D) will take priority over this.
+   Furthermore since we have to pass in -L options here we have to
+   make sure that -L options provided by the user take priority over
+   everything we specify.  */
 
-#define DBX_DEBUGGING_INFO 1
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#ifndef LINK_OS_LYNX_SPEC
+# define LINK_OS_LYNX_SPEC \
+"%{shared} %{static} \
+ %{mshared: %{static: %eCannot use mshared and static together.}} \
+ %{!mshared: %{!shared: %{!static: -static}}} \
+ %{L*} \
+ %{mthreads: \
+   %{mshared: -L/lib/thread/shlib -rpath /lib/thread/shlib} \
+   %{shared: \
+     %{!static: -L/lib/thread/shlib -rpath /lib/thread/shlib} \
+   %{!mshared: -L/lib/thread}} \
+   %{shared: %{static: -L/lib/thread}}} \
+ %{!mthreads: \
+   %{mshared: -L/lib/shlib -rpath /lib/shlib} \
+   %{shared: -L/lib/shlib -rpath /lib/shlib}} \
+ %{mlegacy-threads:-lposix-pre1c} -lm -lc"
+#endif
 
-/* It is convenient to be able to generate standard coff debugging
-   if requested via -gcoff.  */
+#ifndef STARTFILE_OS_LYNX_SPEC
+# define STARTFILE_OS_LYNX_SPEC \
+"%{!shared: \
+   %{!mthreads: \
+     %{p:gcrt1.o%s} %{pg:gcrt1.o%s} \
+     %{!p:%{!pg:crt1.o%s}}} \
+   %{mthreads: \
+     %{p:thread/gcrt1.o%s} %{pg:thread/gcrt1.o%s} \
+     %{!p:%{!pg:thread/crt1.o%s }}}}\
+ %{mthreads: thread/crti.o%s} %{!mthreads: crti.o%s} \
+ %{!shared: crtbegin.o%s} \
+ %{shared: crtbeginS.o%s}"
+#endif
 
-#define SDB_DEBUGGING_INFO 1
+#ifndef ENDFILE_OS_LYNX_SPEC
+# define ENDFILE_OS_LYNX_SPEC \
+"%{!shared: crtend.o%s} \
+ %{shared: crtendS.o%s} \
+ %{mthreads: thread/crtn.o%s} %{!mthreads: crtn.o%s}"
+#endif
 
-/* Be function-relative for block and source line stab directives.  */
+/* Because of the %{m*} in cc1_options these options get substituted
+   for cc1.  We ignore them here.  */
 
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+#ifndef SUBTARGET_OS_LYNX_SWITCHES
+# define SUBTARGET_OS_LYNX_SWITCHES				\
+  { "shared",		0, N_("Use shared libraries") },	\
+  { "threads", 		0, N_("Support multi-threading") },	\
+  { "legacy-threads",	0, N_("Support legacy multi-threading") },
+#endif
 
-/* but, to make this work, functions must appear prior to line info */
+#ifndef SUBTARGET_SWITCHES
+# define SUBTARGET_SWITCHES SUBTARGET_OS_LYNX_SWITCHES
+#endif
 
-#define DBX_FUNCTION_FIRST
+/* Define the actual types of some ANSI-mandated types.  */
 
-/* Generate a blank trailing N_SO to mark the end of the .o file, since
-   we can't depend upon the linker to mark .o file boundaries with
-   embedded stabs.  */
+#ifndef SIZE_TYPE
+# define SIZE_TYPE "unsigned int"
+#endif
 
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
+#ifndef  PTRDIFF_TYPE
+# define PTRDIFF_TYPE "int"
+#endif
 
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)	\
-  { fprintf (file, ".stabn 68,0,%d,.LM%d-",		\
-	     line, counter);				\
-    assemble_name (file,				\
-		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
-    fprintf (file, "\n.LM%d:\n", counter); }
+#ifndef  WCHAR_TYPE
+# define WCHAR_TYPE "long int"
+#endif
 
-/* Handle #pragma pack and sometimes #pragma weak.  */
+#ifndef  WCHAR_TYPE_SIZE
+# define WCHAR_TYPE_SIZE BITS_PER_WORD
+#endif
 
-#define HANDLE_SYSV_PRAGMA 1
+/* Define ASM_OUTPUT_ALIGN to use the .balign directive rather that
+   the .align directive with GAS.  */
 
-/* Some additional command-line options.  */
+#ifndef ASM_OUTPUT_ALIGN
+# define ASM_OUTPUT_ALIGN(FILE, LOG) 			\
+  do							\
+    {							\
+      if ((LOG) != 0)					\
+	fprintf ((FILE), "\t.balign %d\n", 1 << (LOG));	\
+    }							\
+  while (0)
+#endif
 
-#define TARGET_THREADS	(target_flags & MASK_THREADS)
-#define MASK_THREADS	0x40000000
+/* Keep the *_DEBUGGING_INFO defines from elfos.h except that stabs is
+   the default on LynxOS.  */
 
-#define TARGET_POSIX	(target_flags & MASK_POSIX)
-#define MASK_POSIX	0x20000000
+#ifndef PREFERRED_DEBUGGING_TYPE
+# define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#endif
 
-#define TARGET_SYSTEM_V	(target_flags & MASK_SYSTEM_V)
-#define MASK_SYSTEM_V	0x10000000
+/* We have C++ support in our system headers.  */
 
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-    {"threads",		MASK_THREADS},		\
-    {"posix",		MASK_POSIX},		\
-    {"system-v",	MASK_SYSTEM_V},
+#ifndef NO_IMPLICIT_EXTERN_C
+# define NO_IMPLICIT_EXTERN_C
+#endif
 
-#undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS \
-do {								\
-  if (TARGET_SYSTEM_V && profile_flag)				\
-    warning ("-msystem-v and -p are incompatible");		\
-  if (TARGET_SYSTEM_V && TARGET_THREADS)			\
-    warning ("-msystem-v and -mthreads are incompatible");	\
-} while (0)
-
-/* Since init.o et al put all sorts of stuff into the init section,
-   we can't use the standard init section support in crtbegin.o.  */
-
-#undef INIT_SECTION_ASM_OP
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_fini
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-  FINI_SECTION_FUNCTION
-
-#undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors"
-#undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors"
-
-#undef DO_GLOBAL_CTORS_BODY
-#undef DO_GLOBAL_DTORS_BODY
-
-/* LynxOS doesn't have mcount.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(file, profile_label_no)
+#ifndef TARGET_HAS_F_SETLKW
+# define TARGET_HAS_F_SETLKW
+#endif

@@ -790,7 +790,6 @@ whether you use the GNU assembler.  On any other system,
 @item @samp{m68k-hp-hpux}
 @item @samp{m68000-hp-hpux}
 @item @samp{m68000-att-sysv}
-@item @samp{@var{any}-lynx-lynxos}
 @item @samp{mips-@var{any}}
 @item @samp{sparc-sun-solaris2.@var{any}}
 @item @samp{sparc64-@var{any}-solaris2.@var{any}}
