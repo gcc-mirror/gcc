@@ -1,8 +1,6 @@
 This directory has been obsoleted for GCC snapshots and CVS access.
 
-Instead check out the toplevel "wwwdocs" module as a sibling of
-your "gcc" tree or read these files via the GCC web site
-<http://www.gnu.org/software/gcc/>.
+For releases the installation documentation is generated from
+gcc/doc/install.texi and copied into this directory.
 
-Copies of the relevant files will be copied into this directory
-for releases.
+To read this documentation, please point your HTML browser to "index.html".
