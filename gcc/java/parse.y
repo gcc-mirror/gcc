@@ -5842,7 +5842,9 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	      other_name = EXPR_WFL_NODE (other_name);
 	    if (!DECL_CLINIT_P (other_method)
 		&& !DECL_CONSTRUCTOR_P (other_method)
-		&& method_name == other_name && method_sig == s)
+		&& method_name == other_name
+		&& method_sig == s
+		&& !METHOD_ABSTRACT (other_method))
              {
                found = 1;
                break;
