@@ -47,7 +47,7 @@ integer f_back(alist *a)
 
 	if(b->ufmt==0)
 	{	(void) fseek(b->ufd,-(long)sizeof(uiolen),SEEK_CUR);
-		(void) fread((char *)&n,sizeof(int),1,b->ufd);
+		(void) fread((char *)&n,sizeof(uiolen),1,b->ufd);
 		(void) fseek(b->ufd,-(long)n-2*sizeof(uiolen),SEEK_CUR);
 		return(0);
 	}
