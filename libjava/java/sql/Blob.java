@@ -55,7 +55,7 @@ public interface Blob
    * @return The number of bytes in the BLOB.
    * @exception SQLException If an error occurs.
    */
-  public long length() throws SQLException;
+  long length() throws SQLException;
 
   /**
    * This method returns up to the requested bytes of this BLOB as a 
@@ -66,7 +66,7 @@ public interface Blob
    * @return The requested bytes from the BLOB.
    * @exception SQLException If an error occurs.
    */
-  public byte[] getBytes(long pos, int length) throws SQLException;
+  byte[] getBytes(long pos, int length) throws SQLException;
 
   /**
    * This method returns a stream that will read the bytes of the BLOB.
@@ -74,7 +74,7 @@ public interface Blob
    * @return A stream that will read the bytes of the BLOB.
    * @exception SQLException If an error occurs.
    */
-  public InputStream getBinaryStream() throws SQLException;
+  InputStream getBinaryStream() throws SQLException;
 
   /**
    * This method returns the index into the BLOB at which the first instance
@@ -87,7 +87,7 @@ public interface Blob
    *         pattern is not found.
    * @exception SQLException If an error occurs.
    */
-  public long position(byte[] pattern, long start) throws SQLException;
+  long position(byte[] pattern, long start) throws SQLException;
 
   /**
    * This method returns the index into the BLOB at which the first instance
@@ -102,30 +102,30 @@ public interface Blob
    *         pattern is not found.
    * @exception SQLException If an error occurs.
    */
-  public long position(Blob pattern, long start) throws SQLException;
+  long position(Blob pattern, long start) throws SQLException;
 
   /**
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public int setBytes(long pos, byte[] bytes) throws SQLException;
+  int setBytes(long pos, byte[] bytes) throws SQLException;
 
   /**
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public int setBytes(long pos, byte[] bytes, int offset, int len)
+  int setBytes(long pos, byte[] bytes, int offset, int len)
     throws SQLException;
 
   /**
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public OutputStream setBinaryStream(long pos) throws SQLException;
+  OutputStream setBinaryStream(long pos) throws SQLException;
 
   /**
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public void truncate(long len) throws SQLException;
+  void truncate(long len) throws SQLException;
 }

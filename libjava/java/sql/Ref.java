@@ -46,7 +46,7 @@ import java.util.Map;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.2
  */
-public interface Ref 
+interface Ref 
 {
   /**
    * This method returns the fully qualified name of the SQL structured
@@ -56,20 +56,20 @@ public interface Ref
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public String getBaseTypeName() throws SQLException;
+  String getBaseTypeName() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Object getObject(Map map) throws SQLException;
+  Object getObject(Map map) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Object getObject() throws SQLException;
+  Object getObject() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setObject(Object value) throws SQLException;
+  void setObject(Object value) throws SQLException;
 }

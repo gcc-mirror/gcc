@@ -51,7 +51,7 @@ public interface SQLData
    * @return The user defined data type name for this object.
    * @exception SQLException If an error occurs.
    */
-  public String getSQLTypeName() throws SQLException;
+  String getSQLTypeName() throws SQLException;
 
   /**
    * This method populates the data in the object from the specified stream.
@@ -60,7 +60,7 @@ public interface SQLData
    * @param name The data type name of the data on the stream.
    * @exception SQLException If an error occurs.
    */
-  public void readSQL(SQLInput stream, String typeName) throws SQLException;
+  void readSQL(SQLInput stream, String typeName) throws SQLException;
 
   /**
    * This method writes the data in this object to the specified stream.
@@ -68,5 +68,5 @@ public interface SQLData
    * @param stream The stream to write the data to.
    * @exception SQLException If an error occurs.
    */
-  public void writeSQL(SQLOutput stream) throws SQLException;
+  void writeSQL(SQLOutput stream) throws SQLException;
 }

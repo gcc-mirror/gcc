@@ -59,7 +59,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeString(String x) throws SQLException;
+  void writeString(String x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>boolean</code>
@@ -68,7 +68,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeBoolean(boolean x) throws SQLException;
+  void writeBoolean(boolean x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>byte</code>
@@ -77,7 +77,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeByte(byte x) throws SQLException;
+  void writeByte(byte x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>short</code>
@@ -86,7 +86,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeShort(short x) throws SQLException;
+  void writeShort(short x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>int</code>
@@ -95,7 +95,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeInt(int x) throws SQLException;
+  void writeInt(int x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>long</code>
@@ -104,7 +104,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeLong(long x) throws SQLException;
+  void writeLong(long x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>float</code>
@@ -113,7 +113,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeFloat(float x) throws SQLException;
+  void writeFloat(float x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>double</code>
@@ -122,7 +122,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeDouble(double x) throws SQLException;
+  void writeDouble(double x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>BigDecimal</code>
@@ -131,7 +131,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeBigDecimal(BigDecimal x) throws SQLException;
+  void writeBigDecimal(BigDecimal x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>byte</code> array
@@ -140,7 +140,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeBytes(byte[] x) throws SQLException;
+  void writeBytes(byte[] x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>java.sql.Date</code> 
@@ -149,7 +149,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeDate(Date x) throws SQLException;
+  void writeDate(Date x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>java.sql.Time</code> 
@@ -158,7 +158,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeTime(Time x) throws SQLException;
+  void writeTime(Time x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>java.sql.Timestamp</code> 
@@ -167,7 +167,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeTimestamp(Timestamp x) throws SQLException;
+  void writeTimestamp(Timestamp x) throws SQLException;
 
   /**
    * This method writes the specified Java character stream
@@ -176,7 +176,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeCharacterStream(Reader x) throws SQLException;
+  void writeCharacterStream(Reader x) throws SQLException;
 
   /**
    * This method writes the specified ASCII text stream
@@ -185,7 +185,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeAsciiStream(InputStream x) throws SQLException;
+  void writeAsciiStream(InputStream x) throws SQLException;
 
   /**
    * This method writes the specified uninterpreted binary byte stream
@@ -194,7 +194,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeBinaryStream(InputStream x) throws SQLException;
+  void writeBinaryStream(InputStream x) throws SQLException;
 
   /**
    * This method writes the specified Java <code>SQLData</code> object
@@ -203,7 +203,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeObject(SQLData x) throws SQLException;
+  void writeObject(SQLData x) throws SQLException;
 
   /**
    * This method writes the specified Java SQL <code>Ref</code> object
@@ -212,7 +212,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeRef(Ref x) throws SQLException;
+  void writeRef(Ref x) throws SQLException;
 
   /**
    * This method writes the specified Java SQL <code>Blob</code> object
@@ -221,7 +221,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeBlob(Blob x) throws SQLException;
+  void writeBlob(Blob x) throws SQLException;
 
   /**
    * This method writes the specified Java SQL <code>Clob</code> object
@@ -230,7 +230,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeClob(Clob x) throws SQLException;
+  void writeClob(Clob x) throws SQLException;
 
   /**
    * This method writes the specified Java SQL <code>Struct</code> object
@@ -239,7 +239,7 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeStruct(Struct x) throws SQLException;
+  void writeStruct(Struct x) throws SQLException;
 
   /**
    * This method writes the specified Java SQL <code>Array</code> object
@@ -248,10 +248,10 @@ public interface SQLOutput
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    */
-  public void writeArray(Array x) throws SQLException;
+  void writeArray(Array x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void writeURL(URL x) throws SQLException;
+  void writeURL(URL x) throws SQLException;
 }

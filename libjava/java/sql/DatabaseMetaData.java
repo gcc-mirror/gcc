@@ -37,234 +37,234 @@ exception statement from your version. */
 
 package java.sql;
 
-public interface DatabaseMetaData 
+interface DatabaseMetaData 
 {
   /**
    * It is unknown whether or not the procedure returns a result.
    */
-  public static final int procedureResultUnknown = 0;
+  int procedureResultUnknown = 0;
 
   /**
    * The procedure does not return a result.
    */
-  public static final int procedureNoResult = 1;
+  int procedureNoResult = 1;
 
   /**
    * The procedure returns a result.
    */
-  public static final int procedureReturnsResult = 2;
+  int procedureReturnsResult = 2;
 
   /**
    * The column type is unknown.
    */
-  public static final int procedureColumnUnknown = 0;
+  int procedureColumnUnknown = 0;
 
   /**
    * The column type is input.
    */
-  public static final int procedureColumnIn = 1;
+  int procedureColumnIn = 1;
 
   /**
    * The column type is input/output.
    */
-  public static final int procedureColumnInOut = 2;
+  int procedureColumnInOut = 2;
 
   /**
    * The column type is output
    */
-  public static final int procedureColumnOut = 4;
+  int procedureColumnOut = 4;
 
   /**
    * The column is used for return values.
    */
-  public static final int procedureColumnReturn = 5;
+  int procedureColumnReturn = 5;
 
   /**
    * The column is used for storing results
    */
-  public static final int procedureColumnResult = 3;
+  int procedureColumnResult = 3;
 
   /**
    * NULL values are not allowed.
    */
-  public static final int procedureNoNulls = 0;
+  int procedureNoNulls = 0;
 
   /**
    * NULL values are allowed.
    */
-  public static final int procedureNullable = 1;
+  int procedureNullable = 1;
 
   /**
    * It is unknown whether or not NULL values are allowed.
    */
-  public static final int procedureNullableUnknown = 2;
+  int procedureNullableUnknown = 2;
 
   /**
    * The column does not allow NULL
    */
-  public static final int columnNoNulls = 0;
+  int columnNoNulls = 0;
 
   /**
    * The column does allow NULL
    */
-  public static final int columnNullable = 1;
+  int columnNullable = 1;
 
   /**
    * It is unknown whether or not the column allows NULL
    */
-  public static final int columnNullableUnknown = 2;
+  int columnNullableUnknown = 2;
 
   /**
    * The best row's scope is only guaranteed to be valid so long as the
    * row is actually being used.
    */
-  public static final int bestRowTemporary = 0;
+  int bestRowTemporary = 0;
 
   /**
    * The best row identifier is valid to the end of the transaction.
    */
-  public static final int bestRowTransaction = 1;
+  int bestRowTransaction = 1;
 
   /**
    * The best row identifier is valid to the end of the session.
    */
-  public static final int bestRowSession = 2;
+  int bestRowSession = 2;
 
   /**
    * The best row may or may not be a pseudo-column.
    */
-  public static final int bestRowUnknown = 0;
+  int bestRowUnknown = 0;
 
   /**
    * The best row identifier is not a pseudo-column.
    */
-  public static final int bestRowNotPseudo = 1;
+  int bestRowNotPseudo = 1;
 
   /**
    * The best row identifier is a pseudo-column.
    */
-  public static final int bestRowPseudo = 2;
+  int bestRowPseudo = 2;
 
   /**
    * It is unknown whether or not the version column is a pseudo-column.
    */
-  public static final int versionColumnUnknown = 0;
+  int versionColumnUnknown = 0;
 
   /**
    * The version column is not a pseudo-column
    */
-  public static final int versionColumnNotPseudo = 1;
+  int versionColumnNotPseudo = 1;
 
   /**
    * The version column is a pseudo-column
    */
-  public static final int versionColumnPseudo = 2;
+  int versionColumnPseudo = 2;
 
   /**
    * Foreign key changes are cascaded in updates or deletes.
    */
-  public static final int importedKeyCascade = 0;
+  int importedKeyCascade = 0;
 
   /**
    * Column may not be updated or deleted in use as a foreign key.
    */
-  public static final int importedKeyRestrict = 1;
+  int importedKeyRestrict = 1;
 
   /**
    * When primary key is updated or deleted, the foreign key is set to NULL.
    */
-  public static final int importedKeySetNull = 2;
+  int importedKeySetNull = 2;
 
   /**
    * If the primary key is a foreign key, it cannot be udpated or deleted.
    */
-  public static final int importedKeyNoAction = 3;
+  int importedKeyNoAction = 3;
 
   /**
    * If the primary key is updated or deleted, the foreign key is set to
    * a default value.
    */
-  public static final int importedKeySetDefault = 4;
+  int importedKeySetDefault = 4;
 
   /**
    * Wish I knew what this meant.
    */
-  public static final int importedKeyInitiallyDeferred = 5;
+  int importedKeyInitiallyDeferred = 5;
 
   /**
    * Wish I knew what this meant.
    */
-  public static final int importedKeyInitiallyImmediate = 6;
+  int importedKeyInitiallyImmediate = 6;
 
   /**
    * Wish I knew what this meant.
    */
-  public static final int importedKeyNotDeferrable = 7;
+  int importedKeyNotDeferrable = 7;
 
   /**
    * A NULL value is not allowed for this data type.
    */
-  public static final int typeNoNulls = 0;
+  int typeNoNulls = 0;
 
   /**
    * A NULL value is allowed for this data type.
    */
-  public static final int typeNullable = 1;
+  int typeNullable = 1;
 
   /**
    * It is unknown whether or not NULL values are allowed for this data type.
    */
-  public static final int typeNullableUnknown = 2;
+  int typeNullableUnknown = 2;
 
   /**
    * Where clauses are not supported for this type.
    */
-  public static final int typePredNone = 0;
+  int typePredNone = 0;
 
   /**
    * Only "WHERE..LIKE" style WHERE clauses are allowed on this data type.
    */
-  public static final int typePredChar = 1;
+  int typePredChar = 1;
 
   /**
    * All WHERE clauses except "WHERE..LIKE" style are allowed on this data type.
    */
-  public static final int typePredBasic = 2;
+  int typePredBasic = 2;
 
   /**
    * Any type of WHERE clause is allowed for this data type.
    */
-  public static final int typeSearchable = 3;
+  int typeSearchable = 3;
 
   /**
    * This column contains table statistics.
    */
-  public static final short tableIndexStatistic = 0;
+  short tableIndexStatistic = 0;
 
   /**
    * This table index is clustered.
    */
-  public static final short tableIndexClustered = 1;
+  short tableIndexClustered = 1;
 
   /**
    * This table index is hashed.
    */
-  public static final short tableIndexHashed = 2;
+  short tableIndexHashed = 2;
 
   /**
    * This table index is of another type.
    */
-  public static final short tableIndexOther = 3;
+  short tableIndexOther = 3;
 
-  public static final short attributeNoNulls = 0;
+  short attributeNoNulls = 0;
 
-  public static final short attributeNullable = 1;
+  short attributeNullable = 1;
 
-  public static final short attributeNullableUnknown = 2;
+  short attributeNullableUnknown = 2;
 
-  public static final int sqlStateXOpen = 1;
+  int sqlStateXOpen = 1;
 
-  public static final int sqlStateSQL99 = 2;
+  int sqlStateSQL99 = 2;
 
   /**
    * This method tests whether or not all the procedures returned by
@@ -274,7 +274,7 @@ public interface DatabaseMetaData
    * <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean allProceduresAreCallable() throws SQLException;
+  boolean allProceduresAreCallable() throws SQLException;
 
   /**
    * This method tests whether or not all the table returned by the
@@ -285,7 +285,7 @@ public interface DatabaseMetaData
    *
    * @exception SQLException If an error occurs.
    */
-  public boolean allTablesAreSelectable() throws SQLException;
+  boolean allTablesAreSelectable() throws SQLException;
 
   /**
    * This method returns the URL for this database.
@@ -294,7 +294,7 @@ public interface DatabaseMetaData
    *         is not known.
    * @exception SQLException If an error occurs.
    */
-  public String getURL() throws SQLException;
+  String getURL() throws SQLException;
 
   /**
    * This method returns the database username for this connection.
@@ -302,7 +302,7 @@ public interface DatabaseMetaData
    * @return The database username.
    * @exception SQLException If an error occurs.
    */
-  public String getUserName() throws SQLException;
+  String getUserName() throws SQLException;
 
   /**
    * This method tests whether or not the database is in read only mode.
@@ -311,7 +311,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isReadOnly() throws SQLException;
+  boolean isReadOnly() throws SQLException;
 
   /**
    * This method tests whether or not NULL's sort as high values.
@@ -320,7 +320,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean nullsAreSortedHigh() throws SQLException;
+  boolean nullsAreSortedHigh() throws SQLException;
 
   /**
    * This method tests whether or not NULL's sort as low values.
@@ -329,7 +329,7 @@ public interface DatabaseMetaData
    * otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean nullsAreSortedLow() throws SQLException;
+  boolean nullsAreSortedLow() throws SQLException;
 
   /**
    * This method tests whether or not NULL's sort as high values.
@@ -338,7 +338,7 @@ public interface DatabaseMetaData
    * otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean nullsAreSortedAtStart() throws SQLException;
+  boolean nullsAreSortedAtStart() throws SQLException;
 
   /**
    * This method test whether or not NULL's are sorted to the end
@@ -348,7 +348,7 @@ public interface DatabaseMetaData
    * <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean nullsAreSortedAtEnd() throws SQLException;
+  boolean nullsAreSortedAtEnd() throws SQLException;
 
   /**
    * This method returns the name of the database product.
@@ -356,7 +356,7 @@ public interface DatabaseMetaData
    * @return The database product.
    * @exception SQLException If an error occurs.
    */
-  public String getDatabaseProductName() throws SQLException;
+  String getDatabaseProductName() throws SQLException;
 
   /**
    * This method returns the version of the database product.
@@ -364,7 +364,7 @@ public interface DatabaseMetaData
    * @return The version of the database product.
    * @exception SQLException If an error occurs.
    */
-  public String getDatabaseProductVersion() throws SQLException;
+  String getDatabaseProductVersion() throws SQLException;
 
   /**
    * This method returns the name of the JDBC driver.
@@ -372,7 +372,7 @@ public interface DatabaseMetaData
    * @return The name of the JDBC driver.
    * @exception SQLException If an error occurs.
    */
-  public String getDriverName() throws SQLException;
+  String getDriverName() throws SQLException;
 
   /**
    * This method returns the version of the JDBC driver.
@@ -380,21 +380,21 @@ public interface DatabaseMetaData
    * @return The version of the JDBC driver.
    * @exception SQLException If an error occurs.
    */
-  public String getDriverVersion() throws SQLException;
+  String getDriverVersion() throws SQLException;
 
   /**
    * This method returns the major version number of the JDBC driver.
    *
    * @return The major version number of the JDBC driver.
    */
-  public int getDriverMajorVersion();
+  int getDriverMajorVersion();
 
   /**
    * This method returns the minor version number of the JDBC driver.
    *
    * @return The minor version number of the JDBC driver.
    */
-  public int getDriverMinorVersion();
+  int getDriverMinorVersion();
 
   /**
    * This method tests whether or not the database uses local files to
@@ -405,7 +405,7 @@ public interface DatabaseMetaData
    *
    * @exception SQLException If an error occurs.
    */
-  public boolean usesLocalFiles() throws SQLException;
+  boolean usesLocalFiles() throws SQLException;
 
   /**
    * This method tests whether or not the database uses a separate file for
@@ -416,7 +416,7 @@ public interface DatabaseMetaData
    *
    * @exception SQLException If an error occurs.
    */
-  public boolean usesLocalFilePerTable() throws SQLException;
+  boolean usesLocalFilePerTable() throws SQLException;
 
   /**
    * This method tests whether or not the database supports identifiers
@@ -427,7 +427,7 @@ public interface DatabaseMetaData
    *
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsMixedCaseIdentifiers() throws SQLException;
+  boolean supportsMixedCaseIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database treats mixed case
@@ -437,7 +437,7 @@ public interface DatabaseMetaData
    *            upper case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesUpperCaseIdentifiers() throws SQLException;
+  boolean storesUpperCaseIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database treats mixed case
@@ -447,7 +447,7 @@ public interface DatabaseMetaData
    *            lower case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesLowerCaseIdentifiers() throws SQLException;
+  boolean storesLowerCaseIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database stores mixed case 
@@ -457,7 +457,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesMixedCaseIdentifiers() throws SQLException;
+  boolean storesMixedCaseIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database supports quoted identifiers
@@ -467,7 +467,7 @@ public interface DatabaseMetaData
    *         identifiers, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException;
+  boolean supportsMixedCaseQuotedIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database treats mixed case
@@ -477,7 +477,7 @@ public interface DatabaseMetaData
    *            as upper case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesUpperCaseQuotedIdentifiers() throws SQLException;
+  boolean storesUpperCaseQuotedIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database treats mixed case
@@ -487,7 +487,7 @@ public interface DatabaseMetaData
    *            as lower case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesLowerCaseQuotedIdentifiers() throws SQLException;
+  boolean storesLowerCaseQuotedIdentifiers() throws SQLException;
 
   /**
    * This method tests whether or not the database stores mixed case 
@@ -497,7 +497,7 @@ public interface DatabaseMetaData
    *         identifiers, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean storesMixedCaseQuotedIdentifiers() throws SQLException;
+  boolean storesMixedCaseQuotedIdentifiers() throws SQLException;
 
   /**
    * This metohd returns the quote string for SQL identifiers.
@@ -506,7 +506,7 @@ public interface DatabaseMetaData
    *         is not supported.
    * @exception SQLException If an error occurs.
    */
-  public String getIdentifierQuoteString() throws SQLException;
+  String getIdentifierQuoteString() throws SQLException;
 
   /**
    * This method returns a comma separated list of all the SQL keywords in
@@ -515,7 +515,7 @@ public interface DatabaseMetaData
    * @return The list of SQL keywords not in SQL92.
    * @exception SQLException If an error occurs.
    */
-  public String getSQLKeywords() throws SQLException;
+  String getSQLKeywords() throws SQLException;
 
   /**
    * This method returns a comma separated list of math functions.
@@ -523,7 +523,7 @@ public interface DatabaseMetaData
    * @return The list of math functions.
    * @exception SQLException If an error occurs.
    */
-  public String getNumericFunctions() throws SQLException;
+  String getNumericFunctions() throws SQLException;
 
   /**
    * This method returns a comma separated list of string functions.
@@ -531,7 +531,7 @@ public interface DatabaseMetaData
    * @return The list of string functions.
    * @exception SQLException If an error occurs.
    */
-  public String getStringFunctions() throws SQLException;
+  String getStringFunctions() throws SQLException;
 
   /**
    * This method returns a comma separated list of of system functions.
@@ -539,7 +539,7 @@ public interface DatabaseMetaData
    * @return A comma separated list of system functions.
    * @exception SQLException If an error occurs.
    */
-  public String getSystemFunctions() throws SQLException;
+  String getSystemFunctions() throws SQLException;
 
   /**
    * This method returns comma separated list of time/date functions.
@@ -547,7 +547,7 @@ public interface DatabaseMetaData
    * @return The list of time/date functions.
    * @exception SQLException If an error occurs.
    */
-  public String getTimeDateFunctions() throws SQLException;
+  String getTimeDateFunctions() throws SQLException;
 
   /**
    * This method returns the string used to escape wildcards in search strings.
@@ -555,7 +555,7 @@ public interface DatabaseMetaData
    * @return The string used to escape wildcards in search strings.
    * @exception SQLException If an error occurs.
    */
-  public String getSearchStringEscape() throws SQLException;
+  String getSearchStringEscape() throws SQLException;
 
   /**
    * This methods returns non-standard characters that can appear in 
@@ -564,7 +564,7 @@ public interface DatabaseMetaData
    * @return Non-standard characters that can appear in unquoted identifiers.
    * @exception SQLException If an error occurs.
    */
-  public String getExtraNameCharacters() throws SQLException;
+  String getExtraNameCharacters() throws SQLException;
 
   /**
    * This method tests whether or not the database supports
@@ -574,7 +574,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsAlterTableWithAddColumn() throws SQLException;
+  boolean supportsAlterTableWithAddColumn() throws SQLException;
 
   /**
    * This method tests whether or not the database supports
@@ -584,7 +584,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsAlterTableWithDropColumn() throws SQLException;
+  boolean supportsAlterTableWithDropColumn() throws SQLException;
 
   /**
    * This method tests whether or not column aliasing is supported.
@@ -593,7 +593,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsColumnAliasing() throws SQLException;
+  boolean supportsColumnAliasing() throws SQLException;
 
   /**
    * This method tests whether the concatenation of a NULL and non-NULL
@@ -604,7 +604,7 @@ public interface DatabaseMetaData
    *         returns a NULL, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean nullPlusNonNullIsNull() throws SQLException;
+  boolean nullPlusNonNullIsNull() throws SQLException;
 
   /**
    * Tests whether or not CONVERT is supported.
@@ -613,7 +613,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsConvert() throws SQLException;
+  boolean supportsConvert() throws SQLException;
 
   /**
    * This method tests whether or not CONVERT can be performed between the
@@ -625,7 +625,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @see Types
    */
-  public boolean supportsConvert(int fromType, int toType) throws
+  boolean supportsConvert(int fromType, int toType) throws
       SQLException;
 
   /**
@@ -637,7 +637,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsTableCorrelationNames() throws SQLException;
+  boolean supportsTableCorrelationNames() throws SQLException;
 
   /**
    * This method tests whether correlation names must be different from the
@@ -647,7 +647,7 @@ public interface DatabaseMetaData
    *         the table name, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsDifferentTableCorrelationNames() throws SQLException;
+  boolean supportsDifferentTableCorrelationNames() throws SQLException;
 
   /**
    * This method tests whether or not expressions are allowed in an
@@ -657,7 +657,7 @@ public interface DatabaseMetaData
    *         lists, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsExpressionsInOrderBy() throws SQLException;
+  boolean supportsExpressionsInOrderBy() throws SQLException;
 
   /**
    * This method tests whether or ORDER BY on a non-selected column is
@@ -667,7 +667,7 @@ public interface DatabaseMetaData
    *         ORDER BY, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOrderByUnrelated() throws SQLException;
+  boolean supportsOrderByUnrelated() throws SQLException;
 
   /**
    * This method tests whether or not GROUP BY is supported.
@@ -676,7 +676,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsGroupBy() throws SQLException;
+  boolean supportsGroupBy() throws SQLException;
 
   /**
    * This method tests whether GROUP BY on a non-selected column is
@@ -686,7 +686,7 @@ public interface DatabaseMetaData
    *         GROUP BY, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsGroupByUnrelated() throws SQLException;
+  boolean supportsGroupByUnrelated() throws SQLException;
 
   /**
    * This method tests whether or not a GROUP BY can add columns not in the
@@ -696,7 +696,7 @@ public interface DatabaseMetaData
    *         all columns in the select, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsGroupByBeyondSelect() throws SQLException;
+  boolean supportsGroupByBeyondSelect() throws SQLException;
 
   /**
    * This method tests whether or not the escape character is supported in
@@ -707,7 +707,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsLikeEscapeClause() throws SQLException;
+  boolean supportsLikeEscapeClause() throws SQLException;
 
   /**
    * This method tests whether multiple result sets for a single statement are
@@ -717,7 +717,7 @@ public interface DatabaseMetaData
    *         single statement, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsMultipleResultSets() throws SQLException;
+  boolean supportsMultipleResultSets() throws SQLException;
 
   /**
    * This method test whether or not multiple transactions may be open
@@ -727,7 +727,7 @@ public interface DatabaseMetaData
    *         connections are supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsMultipleTransactions() throws SQLException;
+  boolean supportsMultipleTransactions() throws SQLException;
 
   /**
    * This method tests whether or not columns can be defined as NOT NULL.  A
@@ -737,7 +737,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsNonNullableColumns() throws SQLException;
+  boolean supportsNonNullableColumns() throws SQLException;
 
   /**
    * This method tests whether or not the minimum grammer for ODBC is supported.
@@ -747,7 +747,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsMinimumSQLGrammar() throws SQLException;
+  boolean supportsMinimumSQLGrammar() throws SQLException;
 
   /**
    * This method tests whether or not the core grammer for ODBC is supported.
@@ -756,7 +756,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCoreSQLGrammar() throws SQLException;
+  boolean supportsCoreSQLGrammar() throws SQLException;
 
   /**
    * This method tests whether or not the extended grammer for ODBC is supported.
@@ -765,7 +765,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsExtendedSQLGrammar() throws SQLException;
+  boolean supportsExtendedSQLGrammar() throws SQLException;
 
   /**
    * This method tests whether or not the ANSI92 entry level SQL
@@ -776,7 +776,7 @@ public interface DatabaseMetaData
    *         supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsANSI92EntryLevelSQL() throws SQLException;
+  boolean supportsANSI92EntryLevelSQL() throws SQLException;
 
   /**
    * This method tests whether or not the ANSI92 intermediate SQL
@@ -786,7 +786,7 @@ public interface DatabaseMetaData
    *         supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsANSI92IntermediateSQL() throws SQLException;
+  boolean supportsANSI92IntermediateSQL() throws SQLException;
 
   /**
    * This method tests whether or not the ANSI92 full SQL
@@ -796,7 +796,7 @@ public interface DatabaseMetaData
    *         supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsANSI92FullSQL() throws SQLException;
+  boolean supportsANSI92FullSQL() throws SQLException;
 
   /**
    * This method tests whether or not the SQL integrity enhancement
@@ -806,7 +806,7 @@ public interface DatabaseMetaData
    *         supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsIntegrityEnhancementFacility() throws SQLException;
+  boolean supportsIntegrityEnhancementFacility() throws SQLException;
 
   /**
    * This method tests whether or not the database supports outer joins.
@@ -815,7 +815,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOuterJoins() throws SQLException;
+  boolean supportsOuterJoins() throws SQLException;
 
   /**
    * This method tests whether or not the database supports full outer joins.
@@ -824,7 +824,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsFullOuterJoins() throws SQLException;
+  boolean supportsFullOuterJoins() throws SQLException;
 
   /**
    * This method tests whether or not the database supports limited outer joins.
@@ -833,7 +833,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsLimitedOuterJoins() throws SQLException;
+  boolean supportsLimitedOuterJoins() throws SQLException;
 
   /**
    * This method returns the vendor's term for "schema".
@@ -841,7 +841,7 @@ public interface DatabaseMetaData
    * @return The vendor's term for schema.
    * @exception SQLException if an error occurs.
    */
-  public String getSchemaTerm() throws SQLException;
+  String getSchemaTerm() throws SQLException;
 
   /**
    * This method returns the vendor's term for "procedure".
@@ -849,7 +849,7 @@ public interface DatabaseMetaData
    * @return The vendor's term for procedure.
    * @exception SQLException if an error occurs.
    */
-  public String getProcedureTerm() throws SQLException;
+  String getProcedureTerm() throws SQLException;
 
   /**
    * This method returns the vendor's term for "catalog".
@@ -857,7 +857,7 @@ public interface DatabaseMetaData
    * @return The vendor's term for catalog.
    * @exception SQLException if an error occurs.
    */
-  public String getCatalogTerm() throws SQLException;
+  String getCatalogTerm() throws SQLException;
 
   /**
    * This method tests whether a catalog name appears at the beginning of
@@ -867,7 +867,7 @@ public interface DatabaseMetaData
    *         <code>false</code> if it appears at the end.
    * @exception SQLException If an error occurs.
    */
-  public boolean isCatalogAtStart() throws SQLException;
+  boolean isCatalogAtStart() throws SQLException;
 
   /**
    * This method returns the separator between the catalog name and the
@@ -876,7 +876,7 @@ public interface DatabaseMetaData
    * @return The separator between the catalog name and the table name.
    * @exception SQLException If an error occurs.
    */
-  public String getCatalogSeparator() throws SQLException;
+  String getCatalogSeparator() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a data
@@ -886,7 +886,7 @@ public interface DatabaseMetaData
    *         manipulation statement, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSchemasInDataManipulation() throws SQLException;
+  boolean supportsSchemasInDataManipulation() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a procedure
@@ -896,7 +896,7 @@ public interface DatabaseMetaData
    *         call, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSchemasInProcedureCalls() throws SQLException;
+  boolean supportsSchemasInProcedureCalls() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a table definition.
@@ -905,7 +905,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSchemasInTableDefinitions() throws SQLException;
+  boolean supportsSchemasInTableDefinitions() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in an index definition.
@@ -914,7 +914,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSchemasInIndexDefinitions() throws SQLException;
+  boolean supportsSchemasInIndexDefinitions() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in privilege definitions.
@@ -923,7 +923,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSchemasInPrivilegeDefinitions() throws SQLException;
+  boolean supportsSchemasInPrivilegeDefinitions() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a data
@@ -933,7 +933,7 @@ public interface DatabaseMetaData
    *         manipulation statement, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCatalogsInDataManipulation() throws SQLException;
+  boolean supportsCatalogsInDataManipulation() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a procedure
@@ -943,7 +943,7 @@ public interface DatabaseMetaData
    *         call, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCatalogsInProcedureCalls() throws SQLException;
+  boolean supportsCatalogsInProcedureCalls() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in a table definition.
@@ -952,7 +952,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCatalogsInTableDefinitions() throws SQLException;
+  boolean supportsCatalogsInTableDefinitions() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in an index definition.
@@ -961,7 +961,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCatalogsInIndexDefinitions() throws SQLException;
+  boolean supportsCatalogsInIndexDefinitions() throws SQLException;
 
   /**
    * This method tests whether a catalog name can appear in privilege definitions.
@@ -970,7 +970,7 @@ public interface DatabaseMetaData
    *         definition, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException;
+  boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException;
 
   /**
    * This method tests whether or not that database supports positioned
@@ -980,7 +980,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsPositionedDelete() throws SQLException;
+  boolean supportsPositionedDelete() throws SQLException;
 
   /**
    * This method tests whether or not that database supports positioned
@@ -990,7 +990,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsPositionedUpdate() throws SQLException;
+  boolean supportsPositionedUpdate() throws SQLException;
 
   /**
    * This method tests whether or not SELECT FOR UPDATE is supported by the
@@ -1000,7 +1000,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSelectForUpdate() throws SQLException;
+  boolean supportsSelectForUpdate() throws SQLException;
 
   /**
    * This method tests whether or not stored procedures are supported on
@@ -1010,7 +1010,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsStoredProcedures() throws SQLException;
+  boolean supportsStoredProcedures() throws SQLException;
 
   /**
    * This method tests whether or not subqueries are allowed in comparisons.
@@ -1020,7 +1020,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSubqueriesInComparisons() throws SQLException;
+  boolean supportsSubqueriesInComparisons() throws SQLException;
 
   /**
    * This method tests whether or not subqueries are allowed in exists
@@ -1031,7 +1031,7 @@ public interface DatabaseMetaData
    *         expressions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSubqueriesInExists() throws SQLException;
+  boolean supportsSubqueriesInExists() throws SQLException;
 
   /**
    * This method tests whether subqueries are allowed in IN statements.
@@ -1041,7 +1041,7 @@ public interface DatabaseMetaData
    *         statements, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSubqueriesInIns() throws SQLException;
+  boolean supportsSubqueriesInIns() throws SQLException;
 
   /**
    * This method tests whether or not subqueries are allowed in quantified
@@ -1052,7 +1052,7 @@ public interface DatabaseMetaData
    *         expressions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsSubqueriesInQuantifieds() throws SQLException;
+  boolean supportsSubqueriesInQuantifieds() throws SQLException;
 
   /**
    * This method test whether or not correlated subqueries are allowed. A
@@ -1062,7 +1062,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsCorrelatedSubqueries() throws SQLException;
+  boolean supportsCorrelatedSubqueries() throws SQLException;
 
   /**
    * This method tests whether or not the UNION statement is supported.
@@ -1071,7 +1071,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsUnion() throws SQLException;
+  boolean supportsUnion() throws SQLException;
 
   /**
    * This method tests whether or not the UNION ALL statement is supported.
@@ -1080,7 +1080,7 @@ public interface DatabaseMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsUnionAll() throws SQLException;
+  boolean supportsUnionAll() throws SQLException;
 
   /**
    * This method tests whether or not the database supports cursors
@@ -1090,7 +1090,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOpenCursorsAcrossCommit() throws SQLException;
+  boolean supportsOpenCursorsAcrossCommit() throws SQLException;
 
   /**
    * This method tests whether or not the database supports cursors
@@ -1100,7 +1100,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOpenCursorsAcrossRollback() throws SQLException;
+  boolean supportsOpenCursorsAcrossRollback() throws SQLException;
 
   /**
    * This method tests whether or not the database supports statements
@@ -1110,7 +1110,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOpenStatementsAcrossCommit() throws SQLException;
+  boolean supportsOpenStatementsAcrossCommit() throws SQLException;
 
   /**
    * This method tests whether or not the database supports statements
@@ -1120,7 +1120,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsOpenStatementsAcrossRollback() throws SQLException;
+  boolean supportsOpenStatementsAcrossRollback() throws SQLException;
 
   /**
    * This method returns the number of hex characters allowed in an inline
@@ -1130,7 +1130,7 @@ public interface DatabaseMetaData
    *         either an unknown or unlimited number.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxBinaryLiteralLength() throws SQLException;
+  int getMaxBinaryLiteralLength() throws SQLException;
 
   /**
    * This method returns the maximum length of a character literal.
@@ -1138,7 +1138,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a character literal.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxCharLiteralLength() throws SQLException;
+  int getMaxCharLiteralLength() throws SQLException;
 
   /**
    * This method returns the maximum length of a column name.
@@ -1146,7 +1146,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a column name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnNameLength() throws SQLException;
+  int getMaxColumnNameLength() throws SQLException;
 
   /**
    * This method returns the maximum number of columns in a GROUP BY statement.
@@ -1154,7 +1154,7 @@ public interface DatabaseMetaData
    * @return The maximum number of columns in a GROUP BY statement.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnsInGroupBy() throws SQLException;
+  int getMaxColumnsInGroupBy() throws SQLException;
 
   /**
    * This method returns the maximum number of columns in an index.
@@ -1162,7 +1162,7 @@ public interface DatabaseMetaData
    * @return The maximum number of columns in an index.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnsInIndex() throws SQLException;
+  int getMaxColumnsInIndex() throws SQLException;
 
   /**
    * This method returns the maximum number of columns in an ORDER BY statement.
@@ -1170,7 +1170,7 @@ public interface DatabaseMetaData
    * @return The maximum number of columns in an ORDER BY statement.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnsInOrderBy() throws SQLException;
+  int getMaxColumnsInOrderBy() throws SQLException;
 
   /**
    * This method returns the maximum number of columns in a SELECT statement.
@@ -1178,7 +1178,7 @@ public interface DatabaseMetaData
    * @return The maximum number of columns in a SELECT statement.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnsInSelect() throws SQLException;
+  int getMaxColumnsInSelect() throws SQLException;
 
   /**
    * This method returns the maximum number of columns in a table.
@@ -1186,7 +1186,7 @@ public interface DatabaseMetaData
    * @return The maximum number of columns in a table.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxColumnsInTable() throws SQLException;
+  int getMaxColumnsInTable() throws SQLException;
 
   /**
    * This method returns the maximum number of connections this client
@@ -1195,7 +1195,7 @@ public interface DatabaseMetaData
    * @return The maximum number of database connections.
    * @SQLException If an error occurs.
    */
-  public int getMaxConnections() throws SQLException;
+  int getMaxConnections() throws SQLException;
 
   /**
    * This method returns the maximum length of a cursor name.
@@ -1203,7 +1203,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a cursor name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxCursorNameLength() throws SQLException;
+  int getMaxCursorNameLength() throws SQLException;
 
   /**
    * This method returns the maximum length of an index.
@@ -1211,7 +1211,7 @@ public interface DatabaseMetaData
    * @return The maximum length of an index.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxIndexLength() throws SQLException;
+  int getMaxIndexLength() throws SQLException;
 
   /**
    * This method returns the maximum length of a schema name.
@@ -1219,7 +1219,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a schema name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxSchemaNameLength() throws SQLException;
+  int getMaxSchemaNameLength() throws SQLException;
 
   /**
    * This method returns the maximum length of a procedure name.
@@ -1227,7 +1227,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a procedure name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxProcedureNameLength() throws SQLException;
+  int getMaxProcedureNameLength() throws SQLException;
 
   /**
    * This method returns the maximum length of a catalog name.
@@ -1235,7 +1235,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a catalog name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxCatalogNameLength() throws SQLException;
+  int getMaxCatalogNameLength() throws SQLException;
 
   /**
    * This method returns the maximum size of a row in bytes.
@@ -1243,7 +1243,7 @@ public interface DatabaseMetaData
    * @return The maximum size of a row.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxRowSize() throws SQLException;
+  int getMaxRowSize() throws SQLException;
 
   /**
    * This method tests whether or not the maximum row size includes BLOB's
@@ -1252,7 +1252,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean doesMaxRowSizeIncludeBlobs() throws SQLException;
+  boolean doesMaxRowSizeIncludeBlobs() throws SQLException;
 
   /**
    * This method includes the maximum length of a SQL statement.
@@ -1260,7 +1260,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxStatementLength() throws SQLException;
+  int getMaxStatementLength() throws SQLException;
 
   /**
    * This method returns the maximum number of statements that can be
@@ -1269,7 +1269,7 @@ public interface DatabaseMetaData
    * @return The maximum number of statements that can be active at any time.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxStatements() throws SQLException;
+  int getMaxStatements() throws SQLException;
 
   /**
    * This method returns the maximum length of a table name.
@@ -1277,7 +1277,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a table name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxTableNameLength() throws SQLException;
+  int getMaxTableNameLength() throws SQLException;
 
   /**
    * This method returns the maximum number of tables that may be referenced
@@ -1286,7 +1286,7 @@ public interface DatabaseMetaData
    * @return The maximum number of tables allowed in a SELECT statement.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxTablesInSelect() throws SQLException;
+  int getMaxTablesInSelect() throws SQLException;
 
   /**
    * This method returns the maximum length of a user name.
@@ -1294,7 +1294,7 @@ public interface DatabaseMetaData
    * @return The maximum length of a user name.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxUserNameLength() throws SQLException;
+  int getMaxUserNameLength() throws SQLException;
 
   /**
    * This method returns the default transaction isolation level of the
@@ -1304,7 +1304,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see Connection
    */
-  public int getDefaultTransactionIsolation() throws SQLException;
+  int getDefaultTransactionIsolation() throws SQLException;
 
   /**
    * This method tests whether or not the database supports transactions.
@@ -1313,7 +1313,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsTransactions() throws SQLException;
+  boolean supportsTransactions() throws SQLException;
 
   /**
    * This method tests whether or not the database supports the specified
@@ -1325,7 +1325,7 @@ public interface DatabaseMetaData
    *         is supported, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsTransactionIsolationLevel(int level) throws
+  boolean supportsTransactionIsolationLevel(int level) throws
       SQLException;
 
   /**
@@ -1336,7 +1336,7 @@ public interface DatabaseMetaData
    *         same transaction, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsDataDefinitionAndDataManipulationTransactions()
+  boolean supportsDataDefinitionAndDataManipulationTransactions()
       throws SQLException;
 
   /**
@@ -1347,7 +1347,7 @@ public interface DatabaseMetaData
    *         transactions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsDataManipulationTransactionsOnly() throws
+  boolean supportsDataManipulationTransactionsOnly() throws
       SQLException;
 
   /**
@@ -1358,7 +1358,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean dataDefinitionCausesTransactionCommit() throws SQLException;
+  boolean dataDefinitionCausesTransactionCommit() throws SQLException;
 
   /**
    * This method tests whether or not DDL statements are ignored in
@@ -1368,7 +1368,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean dataDefinitionIgnoredInTransactions() throws SQLException;
+  boolean dataDefinitionIgnoredInTransactions() throws SQLException;
 
   /**
    * This method returns a list of all the stored procedures matching the
@@ -1399,7 +1399,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getProcedures(String catalog, String schemaPattern, String
+  ResultSet getProcedures(String catalog, String schemaPattern, String
       procedureNamePattern) throws SQLException;
 
   /**
@@ -1441,7 +1441,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested procedures.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getProcedureColumns(String catalog, String schemaPattern,
+  ResultSet getProcedureColumns(String catalog, String schemaPattern,
       String procedureNamePattern, String columnNamePattern) throws
       SQLException;
 
@@ -1467,7 +1467,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getTables(String catalog, String schemaPattern, String
+  ResultSet getTables(String catalog, String schemaPattern, String
       tableNamePattern, String[] types) throws SQLException;
 
   /**
@@ -1478,7 +1478,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested schemas.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getSchemas() throws SQLException;
+  ResultSet getSchemas() throws SQLException;
 
   /**
    * This method returns the list of database catalogs as a
@@ -1488,7 +1488,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested catalogs.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getCatalogs() throws SQLException;
+  ResultSet getCatalogs() throws SQLException;
 
   /**
    * This method returns the list of database table types as a
@@ -1498,7 +1498,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested table types.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getTableTypes() throws SQLException;
+  ResultSet getTableTypes() throws SQLException;
 
   /**
    * This method returns a list of the tables columns for
@@ -1541,7 +1541,7 @@ public interface DatabaseMetaData
    * @returns A <code>ResultSet</code> with all the requested tables.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getColumns(String catalog, String schemaPattern, String
+  ResultSet getColumns(String catalog, String schemaPattern, String
       tableNamePattern, String columnNamePattern) throws SQLException;
 
   /**
@@ -1573,7 +1573,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getColumnPrivileges(String catalog, String schema, String
+  ResultSet getColumnPrivileges(String catalog, String schema, String
       table, String columnNamePattern) throws SQLException;
 
   /**
@@ -1604,7 +1604,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getTablePrivileges(String catalog, String schemaPattern,
+  ResultSet getTablePrivileges(String catalog, String schemaPattern,
       String tableNamePattern) throws SQLException;
 
   /**
@@ -1642,7 +1642,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the best row identifier.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getBestRowIdentifier(String catalog, String schema,
+  ResultSet getBestRowIdentifier(String catalog, String schema,
     String table, int scope, boolean nullable) throws SQLException;
 
   /**
@@ -1675,7 +1675,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the version columns.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getVersionColumns(String catalog, String schema,
+  ResultSet getVersionColumns(String catalog, String schema,
     String table) throws SQLException;
 
   /**
@@ -1701,7 +1701,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the primary key columns.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getPrimaryKeys(String catalog, String schema, String table)
+  ResultSet getPrimaryKeys(String catalog, String schema, String table)
       throws SQLException;
 
   /**
@@ -1746,7 +1746,7 @@ public interface DatabaseMetaData
    *
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getImportedKeys(String catalog, String schema,
+  ResultSet getImportedKeys(String catalog, String schema,
     String table) throws SQLException;
 
   /**
@@ -1790,7 +1790,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getExportedKeys(String catalog, String schema,
+  ResultSet getExportedKeys(String catalog, String schema,
     String table) throws SQLException;
 
   /**
@@ -1842,7 +1842,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested information
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getCrossReference(String primaryCatalog, String
+  ResultSet getCrossReference(String primaryCatalog, String
     primarySchema, String primaryTable, String foreignCatalog, String
     foreignSchema, String foreignTable) throws SQLException;
 
@@ -1885,7 +1885,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the list of available data types.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getTypeInfo() throws SQLException;
+  ResultSet getTypeInfo() throws SQLException;
 
   /**
    * This method returns information about a tables indices and statistics.
@@ -1929,7 +1929,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested index information
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getIndexInfo(String catalog, String schema, String table,
+  ResultSet getIndexInfo(String catalog, String schema, String table,
     boolean unique, boolean approximate) throws SQLException;
 
   /**
@@ -1946,7 +1946,7 @@ public interface DatabaseMetaData
    *
    * @see ResultSet
    */
-  public boolean supportsResultSetType(int type) throws SQLException;
+  boolean supportsResultSetType(int type) throws SQLException;
 
   /**
    * This method tests whether the specified result set type and result set
@@ -1961,7 +1961,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean supportsResultSetConcurrency(int type, int concurrency)
+  boolean supportsResultSetConcurrency(int type, int concurrency)
       throws SQLException;
 
   /**
@@ -1975,7 +1975,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean ownUpdatesAreVisible(int type) throws SQLException;
+  boolean ownUpdatesAreVisible(int type) throws SQLException;
 
  /**
    * This method tests whether or not the specified result set type sees its
@@ -1988,7 +1988,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean ownDeletesAreVisible(int type) throws SQLException;
+  boolean ownDeletesAreVisible(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type sees its
@@ -2001,7 +2001,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean ownInsertsAreVisible(int type) throws SQLException;
+  boolean ownInsertsAreVisible(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type sees 
@@ -2014,7 +2014,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean othersUpdatesAreVisible(int type) throws SQLException;
+  boolean othersUpdatesAreVisible(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type sees 
@@ -2027,7 +2027,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean othersDeletesAreVisible(int type) throws SQLException;
+  boolean othersDeletesAreVisible(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type sees 
@@ -2040,7 +2040,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean othersInsertsAreVisible(int type) throws SQLException;
+  boolean othersInsertsAreVisible(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type can detect
@@ -2053,7 +2053,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean updatesAreDetected(int type) throws SQLException;
+  boolean updatesAreDetected(int type) throws SQLException;
 
   /**
    * This method tests whether or not the specified result set type can detect
@@ -2066,7 +2066,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean deletesAreDetected(int type) throws SQLException;
+  boolean deletesAreDetected(int type) throws SQLException;
   
   /**
    * This method tests whether or not the specified result set type can detect
@@ -2079,7 +2079,7 @@ public interface DatabaseMetaData
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public boolean insertsAreDetected(int type) throws SQLException;
+  boolean insertsAreDetected(int type) throws SQLException;
 
   /**
    * This method tests whether or not the database supports batch updates.
@@ -2088,7 +2088,7 @@ public interface DatabaseMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean supportsBatchUpdates() throws SQLException;
+  boolean supportsBatchUpdates() throws SQLException;
 
   /**
    * This method returns the list of user defined data types in use.  These
@@ -2116,7 +2116,7 @@ public interface DatabaseMetaData
    * @return A <code>ResultSet</code> with the requested type information
    * @exception SQLException If an error occurs.
    */
-  public ResultSet getUDTs(String catalog, String schemaPattern, String
+  ResultSet getUDTs(String catalog, String schemaPattern, String
       typeNamePattern, int[] types) throws SQLException;
 
   /**
@@ -2126,89 +2126,89 @@ public interface DatabaseMetaData
    * @return The connection for this object.
    * @exception SQLException If an error occurs.
    */
-  public Connection getConnection() throws SQLException;
+  Connection getConnection() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsSavepoints() throws SQLException;
+  boolean supportsSavepoints() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsNamedParameters() throws SQLException;
+  boolean supportsNamedParameters() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsMultipleOpenResults() throws SQLException;
+  boolean supportsMultipleOpenResults() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsGetGeneratedKeys() throws SQLException;
+  boolean supportsGetGeneratedKeys() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getSuperTypes(String catalog, String schemaPattern,
+  ResultSet getSuperTypes(String catalog, String schemaPattern,
     String typeNamePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getSuperTables(String catalog, String schemaPattern,
+  ResultSet getSuperTables(String catalog, String schemaPattern,
     String tableNamePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getAttributes(String catalog, String schemaPattern, String
+  ResultSet getAttributes(String catalog, String schemaPattern, String
     typeNamePattern, String attributeNamePattern) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsResultSetHoldability(int holdability)
+  boolean supportsResultSetHoldability(int holdability)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getResultSetHoldability() throws SQLException;
+  int getResultSetHoldability() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getDatabaseMajorVersion() throws SQLException;
+  int getDatabaseMajorVersion() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getDatabaseMinorVersion() throws SQLException;
+  int getDatabaseMinorVersion() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getJDBCMajorVersion() throws SQLException;
+  int getJDBCMajorVersion() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getJDBCMinorVersion() throws SQLException;
+  int getJDBCMinorVersion() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getSQLStateType() throws SQLException;
+  int getSQLStateType() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean locatorsUpdateCopy() throws SQLException;
+  boolean locatorsUpdateCopy() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean supportsStatementPooling() throws SQLException;
+  boolean supportsStatementPooling() throws SQLException;
 }

@@ -68,7 +68,7 @@ public interface Driver
    *         connection, or <code>null</code> if the URL is not understood.
    * @exception SQLException If an error occurs.
    */
-  public Connection connect(String url, Properties info) throws SQLException;
+  Connection connect(String url, Properties info) throws SQLException;
 
   /**
    * This method tests whether or not the driver believes it can connect to
@@ -81,9 +81,9 @@ public interface Driver
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean acceptsURL(String url) throws SQLException;
+  boolean acceptsURL(String url) throws SQLException;
 
-   /**
+  /**
    * This method returns an array of possible properties that could be
    * used to connect to the specified database.
    *
@@ -94,7 +94,7 @@ public interface Driver
    *         database.  This list may be empty.
    * @exception SQLException If an error occurs.
    */
-  public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
+  DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
     throws SQLException;
 
   /**
@@ -102,14 +102,14 @@ public interface Driver
    *
    * @return The major version number of the driver.
    */      
-  public int getMajorVersion();
+  int getMajorVersion();
 
   /**
    * This method returns the minor version number of the driver.
    *
    * @return The minor version number of the driver.
    */
-  public int getMinorVersion();
+  int getMinorVersion();
 
   /**
    * This method tests whether or not the driver is JDBC compliant.  This
@@ -119,5 +119,5 @@ public interface Driver
    * @return <code>true</code> if the driver has been certified JDBC compliant,
    *         <code>false</code> otherwise.
    */
-  public boolean jdbcCompliant();
+  boolean jdbcCompliant();
 }

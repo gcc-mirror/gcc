@@ -46,10 +46,10 @@ public interface Savepoint
   /**
    * @since 1.4
    */
-  public int getSavepointId() throws SQLException;
+  int getSavepointId() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public String getSavepointName() throws SQLException;
+  String getSavepointName() throws SQLException;
 }

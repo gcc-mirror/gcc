@@ -45,13 +45,13 @@ package java.sql;
  */
 public interface Statement 
 {
-  public static final int CLOSE_CURRENT_RESULT = 1;
-  public static final int KEEP_CURRENT_RESULT = 2;
-  public static final int CLOSE_ALL_RESULTS = 3;
-  public static final int SUCCESS_NO_INFO = -2;
-  public static final int EXECUTE_FAILED = -3;
-  public static final int RETURN_GENERATED_KEYS = 1;
-  public static final int NO_GENERATED_KEYS = 2;
+  int CLOSE_CURRENT_RESULT = 1;
+  int KEEP_CURRENT_RESULT = 2;
+  int CLOSE_ALL_RESULTS = 3;
+  int SUCCESS_NO_INFO = -2;
+  int EXECUTE_FAILED = -3;
+  int RETURN_GENERATED_KEYS = 1;
+  int NO_GENERATED_KEYS = 2;
 
   /**
    * This method executes the specified SQL SELECT statement and returns a
@@ -61,7 +61,7 @@ public interface Statement
    * @return The result set of the SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet executeQuery(String sql) throws SQLException;
+  ResultSet executeQuery(String sql) throws SQLException;
 
   /**
    * This method executes the specified SQL INSERT, UPDATE, or DELETE statement
@@ -71,14 +71,14 @@ public interface Statement
    * @return The number of rows affected by the SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public int executeUpdate(String sql) throws SQLException;
+  int executeUpdate(String sql) throws SQLException;
 
   /**
    * This method closes the statement and frees any associated resources.
    *
    * @exception SQLException If an error occurs.
    */
-  public void close() throws SQLException;
+  void close() throws SQLException;
 
   /**
    * This method returns the maximum length of any column value in bytes.
@@ -86,7 +86,7 @@ public interface Statement
    * @return The maximum length of any column value in bytes.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxFieldSize() throws SQLException;
+  int getMaxFieldSize() throws SQLException;
 
   /**
    * This method sets the limit for the maximum length of any column in bytes.
@@ -94,7 +94,7 @@ public interface Statement
    * @param maxsize The new maximum length of any column in bytes.
    * @exception SQLException If an error occurs.
    */
-  public void setMaxFieldSize(int max) throws SQLException;
+  void setMaxFieldSize(int max) throws SQLException;
 
   /**
    * This method returns the maximum possible number of rows in a result set.
@@ -102,7 +102,7 @@ public interface Statement
    * @return The maximum possible number of rows in a result set.
    * @exception SQLException If an error occurs.
    */
-  public int getMaxRows() throws SQLException;
+  int getMaxRows() throws SQLException;
 
   /**
    * This method sets the maximum number of rows that can be present in a
@@ -111,7 +111,7 @@ public interface Statement
    * @param maxrows The maximum possible number of rows in a result set.
    * @exception SQLException If an error occurs.
    */
-  public void setMaxRows(int max) throws SQLException;
+  void setMaxRows(int max) throws SQLException;
 
   /**
    * This method sets the local escape processing mode on or off.  The
@@ -121,7 +121,7 @@ public interface Statement
    *        <code>false</code> to disable it.
    * @exception SQLException If an error occurs.
    */
-  public void setEscapeProcessing(boolean enable) throws SQLException;
+  void setEscapeProcessing(boolean enable) throws SQLException;
 
   /**
    * The method returns the number of seconds a statement may be in process
@@ -130,7 +130,7 @@ public interface Statement
    * @return The SQL statement timeout in seconds.
    * @exception SQLException If an error occurs.
    */
-  public int getQueryTimeout() throws SQLException;
+  int getQueryTimeout() throws SQLException;
 
   /**
    * This method sets the number of seconds a statement may be in process
@@ -139,7 +139,7 @@ public interface Statement
    * @param timeout The new SQL statement timeout value.
    * @exception SQLException If an error occurs.
    */
-  public void setQueryTimeout(int seconds) throws SQLException;
+  void setQueryTimeout(int seconds) throws SQLException;
 
   /**
    * This method cancels an outstanding statement, if the database supports
@@ -147,7 +147,7 @@ public interface Statement
    *
    * @exception SQLException If an error occurs.
    */
-  public void cancel() throws SQLException;
+  void cancel() throws SQLException;
 
   /**
    * This method returns the first SQL warning attached to this statement.
@@ -156,7 +156,7 @@ public interface Statement
    * @return The first SQL warning for this statement.
    * @exception SQLException If an error occurs.
    */
-  public SQLWarning getWarnings() throws SQLException;
+  SQLWarning getWarnings() throws SQLException;
 
   /**
    * This method clears any SQL warnings that have been attached to this
@@ -164,7 +164,7 @@ public interface Statement
    *
    * @exception SQLException If an error occurs.
    */
-  public void clearWarnings() throws SQLException;
+  void clearWarnings() throws SQLException;
 
   /**
    * This method sets the cursor name that will be used by the result set.
@@ -172,7 +172,7 @@ public interface Statement
    * @param name The cursor name to use for this statement.
    * @exception SQLException If an error occurs.
    */
-  public void setCursorName(String name) throws SQLException;
+  void setCursorName(String name) throws SQLException;
 
   /**
    * This method executes an arbitrary SQL statement of any time.  The
@@ -183,7 +183,7 @@ public interface Statement
    *         if an update count was returned.
    * @exception SQLException If an error occurs.
    */
-  public boolean execute(String sql) throws SQLException;
+  boolean execute(String sql) throws SQLException;
 
   /**
    * This method returns the result set of the SQL statement that was
@@ -194,7 +194,7 @@ public interface Statement
    * @exception SQLException If an error occurs.
    * @see execute
    */
-  public ResultSet getResultSet() throws SQLException;
+  ResultSet getResultSet() throws SQLException;
 
   /**
    * This method returns the update count of the SQL statement that was
@@ -205,7 +205,7 @@ public interface Statement
    * @exception SQLException If an error occurs.
    * @see execute
    */
-  public int getUpdateCount() throws SQLException;
+  int getUpdateCount() throws SQLException;
 
   /**
    * This method advances the result set pointer to the next result set, 
@@ -217,7 +217,7 @@ public interface Statement
    * @exception SQLException If an error occurs.
    * @see execute
    */
-  public boolean getMoreResults() throws SQLException;
+  boolean getMoreResults() throws SQLException;
 
   /**
    * This method informs the driver which direction the result set will
@@ -226,7 +226,7 @@ public interface Statement
    * @param direction The direction the result set will be accessed in (?????)
    * @exception SQLException If an error occurs.
    */
-  public void setFetchDirection(int direction) throws SQLException;
+  void setFetchDirection(int direction) throws SQLException;
 
   /**
    * This method returns the current direction that the driver thinks the
@@ -235,7 +235,7 @@ public interface Statement
    * @return The direction the result set will be accessed in (????)
    * @exception SQLException If an error occurs.
    */
-  public int getFetchDirection() throws SQLException;
+  int getFetchDirection() throws SQLException;
 
   /**
    * This method informs the driver how many rows it should fetch from the
@@ -245,7 +245,7 @@ public interface Statement
    *        to populate the result set.
    * @exception SQLException If an error occurs.
    */
-  public void setFetchSize(int rows) throws SQLException;
+  void setFetchSize(int rows) throws SQLException;
 
   /**
    * This method returns the number of rows the driver believes should be
@@ -254,7 +254,7 @@ public interface Statement
    * @return The number of rows that will be fetched from the database at a time.
    * @exception SQLException If an error occurs.
    */
-  public int getFetchSize() throws SQLException;
+  int getFetchSize() throws SQLException;
 
   /**
    * This method returns the concurrency type of the result set for this
@@ -265,7 +265,7 @@ public interface Statement
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public int getResultSetConcurrency() throws SQLException;
+  int getResultSetConcurrency() throws SQLException;
 
   /**
    * This method returns the result set type for this statement.  This will
@@ -275,7 +275,7 @@ public interface Statement
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  public int getResultSetType() throws SQLException;
+  int getResultSetType() throws SQLException;
 
   /**
    * This method adds a SQL statement to a SQL batch.  A driver is not
@@ -284,7 +284,7 @@ public interface Statement
    * @param sql The sql statement to add to the batch.
    * @exception SQLException If an error occurs.
    */
-  public void addBatch(String sql) throws SQLException;
+  void addBatch(String sql) throws SQLException;
 
   /**
    * This method clears out any SQL statements that have been populated in
@@ -292,7 +292,7 @@ public interface Statement
    *
    * @exception SQLException If an error occurs.
    */
-  public void clearBatch() throws SQLException;
+  void clearBatch() throws SQLException;
 
   /**
    * This method executes the SQL batch and returns an array of update
@@ -303,7 +303,7 @@ public interface Statement
    * @return An array of update counts for this batch.
    * @exception SQLException If an error occurs.
    */
-  public int[] executeBatch() throws SQLException;
+  int[] executeBatch() throws SQLException;
 
   /**
    * This method returns the <code>Connection</code> instance that was
@@ -312,55 +312,55 @@ public interface Statement
    * @return The connection used to create this object.
    * @exception SQLException If an error occurs.
    */
-  public Connection getConnection() throws SQLException;
+  Connection getConnection() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean getMoreResults(int current) throws SQLException;
+  boolean getMoreResults(int current) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getGeneratedKeys() throws SQLException;
+  ResultSet getGeneratedKeys() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int executeUpdate(String sql, int autoGeneratedKeys)
+  int executeUpdate(String sql, int autoGeneratedKeys)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int executeUpdate(String sql, int[] columnIndexes)
+  int executeUpdate(String sql, int[] columnIndexes)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int executeUpdate(String sql, String[] columnNames)
+  int executeUpdate(String sql, String[] columnNames)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean execute(String sql, int autoGeneratedKeys)
+  boolean execute(String sql, int autoGeneratedKeys)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean execute(String sql, int[] columnIndexes) throws SQLException;
+  boolean execute(String sql, int[] columnIndexes) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean execute(String sql, String[] columnNames)
+  boolean execute(String sql, String[] columnNames)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getResultSetHoldability() throws SQLException;
+  int getResultSetHoldability() throws SQLException;
 }

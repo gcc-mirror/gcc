@@ -1,5 +1,27 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/sql/Array.java,
+	java/sql/Blob.java,
+	java/sql/CallableStatement.java,
+	java/sql/Clob.java,
+	java/sql/Connection.java,
+	java/sql/DatabaseMetaData.java,
+	java/sql/Driver.java,
+	java/sql/ParameterMetaData.java,
+	java/sql/PreparedStatement.java,
+	java/sql/Ref.java,
+	java/sql/ResultSet.java,
+	java/sql/ResultSetMetaData.java,
+	java/sql/SQLData.java,
+	java/sql/SQLInput.java,
+	java/sql/SQLOutput.java,
+	java/sql/Savepoint.java,
+	java/sql/Statement.java,
+	java/sql/Struct.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/Channel.java,
 	java/nio/channels/GatheringByteChannel.java,
 	java/nio/channels/ReadableByteChannel.java,
