@@ -649,11 +649,11 @@ lang_decode_option (argc, argv)
 	set_message_length
 	  (read_integral_parameter (p + 15, p - 2,
 				    /* default line-wrap length */ 72));
-      else if (!strncmp (p, "diagnostics-show-location=", 24))
+      else if (!strncmp (p, "diagnostics-show-location=", 26))
         {
-          if (!strncmp (p + 24, "once", 4))
+          if (!strncmp (p + 26, "once", 4))
             set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
-          else if (!strncmp (p + 24, "every-line", 10))
+          else if (!strncmp (p + 26, "every-line", 10))
             set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE);
           else
             error ("Unrecognized option `%s'", p - 2);

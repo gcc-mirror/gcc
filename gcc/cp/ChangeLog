@@ -1,3 +1,7 @@
+2000-05-15  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* decl2.c (lang_decode_option): Fix thinko.
+
 2000-05-14  Jason Merrill  <jason@casey.cygnus.com>
 
 	* except.c (check_handlers): New fn.
