@@ -20,7 +20,6 @@ details.  */
 
 #include <string.h>
 
-extern "C" jstring _Jv_NewStringUTF (const char *bytes);
 extern "C" void _Jv_InitClass (jclass);
 extern "C" void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
 

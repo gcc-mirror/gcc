@@ -255,8 +255,8 @@ _Jv_strLengthUtf8(char* str, int len)
 /* Calculate a hash value for a string encoded in Utf8 format.
  * This returns the same hash value as specified or java.lang.String.hashCode.
  */
-static jint
-hashUtf8String (char* str, int len)
+jint
+_Jv_hashUtf8String (char* str, int len)
 {
   unsigned char* ptr = (unsigned char*) str;
   unsigned char* limit = ptr + len;
@@ -272,17 +272,24 @@ hashUtf8String (char* str, int len)
   return hash;
 }
 
+void
+_Jv_Utf8Const::init(char *s, int len)
+{
+  ::memcpy (data, s, len);
+  data[len] = 0;
+  length = len;
+  hash = _Jv_hashUtf8String (s, len) & 0xFFFF;
+}
+
 _Jv_Utf8Const *
 _Jv_makeUtf8Const (char* s, int len)
 {
   if (len < 0)
     len = strlen (s);
-  Utf8Const* m = (Utf8Const*) _Jv_AllocBytes (sizeof(Utf8Const) + len + 1);
-  memcpy (m->data, s, len);
-  m->data[len] = 0;
-  m->length = len;
-  m->hash = hashUtf8String (s, len) & 0xFFFF;
-  return (m);
+  Utf8Const* m
+    = (Utf8Const*) _Jv_AllocBytes (_Jv_Utf8Const::space_needed(s, len));
+  m->init(s, len);
+  return m;
 }
 
 _Jv_Utf8Const *

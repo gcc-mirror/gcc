@@ -246,7 +246,7 @@ _Jv_GetTypesFromSignature (jmethodID method,
 
   _Jv_Utf8Const* sig = method->signature;
   java::lang::ClassLoader *loader = declaringClass->getClassLoaderInternal();
-  char *ptr = sig->data;
+  char *ptr = sig->chars();
   int numArgs = 0;
   /* First just count the number of parameters. */
   for (; ; ptr++)
@@ -283,7 +283,7 @@ _Jv_GetTypesFromSignature (jmethodID method,
   JArray<jclass> *args = (JArray<jclass> *)
     JvNewObjectArray (numArgs, &java::lang::Class::class$, NULL);
   jclass* argPtr = elements (args);
-  for (ptr = sig->data; *ptr != '\0'; ptr++)
+  for (ptr = sig->chars(); *ptr != '\0'; ptr++)
     {
       int num_arrays = 0;
       jclass type;

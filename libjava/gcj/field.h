@@ -68,7 +68,7 @@ struct _Jv_Field
     { 
       if (!isResolved ()) 
 	{
-	  char first = ((_Jv_Utf8Const*)type)->data[0]; 
+	  char first = ((_Jv_Utf8Const*)type)->first(); 
 	  return first == '[' || first == 'L';
 	}
       else

@@ -337,7 +337,7 @@ _Jv_ClassReader::parse ()
   // tell everyone we're done.
   def->state = JV_STATE_LOADED;
   if (gcj::verbose_class_flag)
-    fprintf (stderr, "[Loaded (bytecode) %s]\n", (const char*)(def->name->data));
+    fprintf (stderr, "[Loaded (bytecode) %s]\n", def->name->chars());
   def->notifyAll ();
 
 }
@@ -890,7 +890,7 @@ _Jv_ClassReader::handleClassBegin
       jstring msg = JvNewStringUTF ("loaded class ");
       msg = msg->concat (def->getName ());
       msg = msg->concat (_Jv_NewStringUTF (" was in fact named "));
-      jstring klass_name = _Jv_NewStringUTF (loadedName->data);
+      jstring klass_name = loadedName->toString();
       msg = msg->concat (klass_name);
 
       throw_no_class_def_found_error (msg);
@@ -1367,8 +1367,8 @@ void _Jv_ClassReader::throw_class_format_error (char *msg)
   if (def->name != NULL)
     {
       jsize mlen = strlen (msg);
-      unsigned char* data = (unsigned char*) def->name->data;
-      int ulen = def->name->length;
+      unsigned char* data = (unsigned char*) def->name->chars();
+      int ulen = def->name->len();
       unsigned char* limit = data + ulen;
       jsize nlen = _Jv_strLengthUtf8 ((char *) data, ulen);
       jsize len = nlen + mlen + 3;
@@ -1500,8 +1500,8 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
 bool
 _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig)
 {
-  unsigned char* ptr = (unsigned char*) sig->data;
-  unsigned char* limit = ptr + sig->length;
+  unsigned char* ptr = (unsigned char*) sig->chars();
+  unsigned char* limit = ptr + sig->len();
 
   ptr = _Jv_VerifyOne (ptr, limit, false);
 
@@ -1511,8 +1511,8 @@ _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig)
 bool
 _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig)
 {
-  unsigned char* ptr = (unsigned char*) sig->data;
-  unsigned char* limit = ptr + sig->length;
+  unsigned char* ptr = (unsigned char*) sig->chars();
+  unsigned char* limit = ptr + sig->len();
 
   if (ptr == limit || UTF8_GET(ptr,limit) != '(')
     return false;
@@ -1566,8 +1566,8 @@ is_identifier_part (int c)
 bool
 _Jv_VerifyIdentifier (_Jv_Utf8Const* name)
 {
-  unsigned char *ptr   = (unsigned char*) name->data;
-  unsigned char *limit = ptr + name->length;
+  unsigned char *ptr   = (unsigned char*) name->chars();
+  unsigned char *limit = (unsigned char*) name->limit();
   int ch;
 
   if ((ch = UTF8_GET (ptr, limit))==-1
@@ -1622,8 +1622,7 @@ _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length)
 bool
 _Jv_VerifyClassName (_Jv_Utf8Const *name)
 {
-  return _Jv_VerifyClassName ((unsigned char*)&name->data[0],
-			      (_Jv_ushort) name->length);
+  return _Jv_VerifyClassName ((unsigned char*)name->chars(), name->len());
 }
 
 /* Returns true, if NAME1 and NAME2 represent classes in the same
@@ -1631,8 +1630,8 @@ _Jv_VerifyClassName (_Jv_Utf8Const *name)
 bool
 _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
 {
-  unsigned char* ptr1 = (unsigned char*) name1->data;
-  unsigned char* limit1 = ptr1 + name1->length;
+  unsigned char* ptr1 = (unsigned char*) name1->chars();
+  unsigned char* limit1 = (unsigned char*) name1->limit();
 
   unsigned char* last1 = ptr1;
 
@@ -1648,20 +1647,19 @@ _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
   }
 
   // Now the length of NAME1's package name is LEN.
-  int len = last1 - (unsigned char*) name1->data;
+  int len = last1 - (unsigned char*) name1->chars();
 
   // If this is longer than NAME2, then we're off.
-  if (len > name2->length)
+  if (len > name2->len())
     return false;
 
   // Then compare the first len bytes for equality.
-  if (memcmp ((void*) name1->data, (void*) name2->data, len) == 0)
+  if (memcmp ((void*) name1->chars(), (void*) name2->chars(), len) == 0)
     {
       // Check that there are no .'s after position LEN in NAME2.
 
-      unsigned char* ptr2 = (unsigned char*) name2->data + len;
-      unsigned char* limit2 =
-	(unsigned char*) name2->data + name2->length;
+      unsigned char* ptr2 = (unsigned char*) name2->chars() + len;
+      unsigned char* limit2 = (unsigned char*) name2->limit();
 
       while (ptr2 < limit2)
 	{

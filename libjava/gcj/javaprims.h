@@ -472,10 +472,13 @@ extern jint _Jv_FormatInt (jchar* bufend, jint num);
 extern "C" jchar* _Jv_GetStringChars (jstring str);
 extern "C" void _Jv_MonitorEnter (jobject);
 extern "C" void _Jv_MonitorExit (jobject);
+extern "C" jstring _Jv_NewStringUTF (const char *bytes)
+  __attribute__((__malloc__));
 extern "C" jstring _Jv_NewStringLatin1(const char*, jsize)
   __attribute__((__malloc__));
 extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
+extern "C" jint _Jv_hashUtf8String (char*, int);
 
 extern jint _Jv_CreateJavaVM (void* /*vm_args*/);
 
@@ -500,11 +503,40 @@ typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));
 typedef unsigned int _Jv_uint __attribute__((__mode__(__SI__)));
 typedef unsigned int _Jv_ulong __attribute__((__mode__(__DI__)));
 
-struct _Jv_Utf8Const
+class _Jv_Utf8Const
 {
   _Jv_ushort hash;
   _Jv_ushort length;	/* In bytes, of data portion, without final '\0'. */
   char data[1];		/* In Utf8 format, with final '\0'. */
+ public:
+  /** Return same value of java.lang.String's hashCode. */
+  jint hash32() { return _Jv_hashUtf8String(data, length); }
+  /** Return a hash code that has at least 16 bits of information. */
+  _Jv_ushort hash16 () { return hash; }
+  /** Return a hash code that has at least 8 bits of information. */
+  _Jv_ushort hash8 () { return hash; }
+  /** Length in bytes of the UTF8-encoding. */
+  _Jv_ushort len () const { return length; }
+  /** Pointer to the first byte in the NUL-terminated UTF8-encoding. */
+  char* chars() { return data; }
+  /** Pointer to the NUL byte that terminated the UTF8-encoding. */
+  char* limit() { return data+length; }
+  /** Return the first byte in the UTF8-encoding. */
+  char first() const { return data[0]; }
+  /** Create a (non-interned) java.lang.String from this UTF8Const. */
+  jstring toString() { return _Jv_NewStringUTF(data); }
+  /** Given an UTF8 string, how many bytes needed for a UTF8Const,
+      including struct header, and final NUL.  I.e. what to pas to malloc. */
+  static int space_needed (char *, int len)
+  { return sizeof (_Jv_Utf8Const) + len + 1; }
+  /** Given an allocated _Jv_Utf8Const, copy / fill it in. */
+  void init (char *s, int len);
+  friend jboolean _Jv_equalUtf8Consts (const _Jv_Utf8Const*, const _Jv_Utf8Const *);
+  friend jboolean _Jv_equal (_Jv_Utf8Const*, jstring, jint);
+  friend jboolean _Jv_equaln (_Jv_Utf8Const*, jstring, jint);
+  friend _Jv_Utf8Const *_Jv_makeUtf8Const (char*, int);
+  friend _Jv_Utf8Const *_Jv_makeUtf8Const (jstring);
+  friend jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const*);
 };
 
 
