@@ -45,7 +45,7 @@ public abstract class Rectangle2D extends RectangularShape
    * @param x1 X coordinate of first end of line segment
    * @param y1 Y coordinate of first end of line segment
    * @param x2 X coordinate of second end of line segment
-   * @param y1 Y coordinate of segment end of line segment
+   * @param y2 Y coordinate of segment end of line segment
    */
   public boolean intersectsLine (double x1, double y1, double x2, double y2)
   {
