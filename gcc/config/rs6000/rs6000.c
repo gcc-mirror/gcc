@@ -1268,7 +1268,7 @@ rs6000_override_options (const char *default_cpu)
       else if (! strncmp (rs6000_traceback_name, "no", 2))
 	rs6000_traceback = traceback_none;
       else
-	error ("unknown -mtraceback arg `%s'; expecting `full', `partial' or `none'",
+	error ("unknown -mtraceback arg %qs; expecting %<full%>, %<partial%> or %<none%>",
 	       rs6000_traceback_name);
     }
 
@@ -1369,7 +1369,7 @@ rs6000_override_options (const char *default_cpu)
       while (base[-1] != 'm') base--;
 
       if (*rs6000_longcall_switch != '\0')
-	error ("invalid option `%s'", base);
+	error ("invalid option %qs", base);
       rs6000_default_long_calls = (base[0] != 'n');
     }
 
@@ -1380,7 +1380,7 @@ rs6000_override_options (const char *default_cpu)
       while (base[-1] != 'm') base--;
 
       if (*rs6000_warn_altivec_long_switch != '\0')
-	error ("invalid option `%s'", base);
+	error ("invalid option %qs", base);
       rs6000_warn_altivec_long = (base[0] != 'n');
     }
 
@@ -1677,7 +1677,7 @@ rs6000_parse_tls_size_option (void)
   else if (strcmp (rs6000_tls_size_string, "64") == 0)
     rs6000_tls_size = 64;
   else
-    error ("bad value `%s' for -mtls-size switch", rs6000_tls_size_string);
+    error ("bad value %qs for -mtls-size switch", rs6000_tls_size_string);
 }
 
 void
@@ -6798,7 +6798,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	if (TREE_CODE (arg2) != INTEGER_CST
 	    || TREE_INT_CST_LOW (arg2) & ~0x3)
 	  {
-	    error ("argument to `%s' must be a 2-bit unsigned literal", d->name);
+	    error ("argument to %qs must be a 2-bit unsigned literal", d->name);
 	    return const0_rtx;
 	  }
 
@@ -6926,7 +6926,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       while (TREE_CODE (arg0) == NOP_EXPR || TREE_CODE (arg0) == ADDR_EXPR
 	     || TREE_CODE (arg0) == ARRAY_REF)
 	arg0 = TREE_OPERAND (arg0, 0);
-      error ("invalid parameter combination for `%s' AltiVec intrinsic",
+      error ("invalid parameter combination for %qs AltiVec intrinsic",
 	     TREE_STRING_POINTER (arg0));
 
       return const0_rtx;
@@ -16746,7 +16746,7 @@ rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;  /* No need to hang on to the attribute.  */
 
   if (!result)
-    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+    warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
   else
     *node = reconstruct_complex_type (*node, result);
 
@@ -16781,7 +16781,7 @@ rs6000_handle_longcall_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("`%s' attribute only applies to functions",
+      warning ("%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

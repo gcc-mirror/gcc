@@ -733,7 +733,7 @@ primary:
                   c = fold ($3.value);
                   STRIP_NOPS (c);
                   if (TREE_CODE (c) != INTEGER_CST)
-                    error ("first argument to __builtin_choose_expr not"
+                    error ("first argument to %<__builtin_choose_expr%> not"
 			   " a constant");
                   $$ = integer_zerop (c) ? $7 : $5;
 		}

@@ -469,7 +469,7 @@ rtl_check_failed_bounds (rtx r, int n, const char *file, int line,
 			 const char *func)
 {
   internal_error
-    ("RTL check: access of elt %d of `%s' with last elt %d in %s, at %s:%d",
+    ("RTL check: access of elt %d of '%s' with last elt %d in %s, at %s:%d",
      n, GET_RTX_NAME (GET_CODE (r)), GET_RTX_LENGTH (GET_CODE (r)) - 1,
      func, trim_filename (file), line);
 }
@@ -498,7 +498,7 @@ void
 rtl_check_failed_code1 (rtx r, enum rtx_code code, const char *file,
 			int line, const char *func)
 {
-  internal_error ("RTL check: expected code `%s', have `%s' in %s, at %s:%d",
+  internal_error ("RTL check: expected code '%s', have '%s' in %s, at %s:%d",
 		  GET_RTX_NAME (code), GET_RTX_NAME (GET_CODE (r)), func,
 		  trim_filename (file), line);
 }
@@ -508,7 +508,7 @@ rtl_check_failed_code2 (rtx r, enum rtx_code code1, enum rtx_code code2,
 			const char *file, int line, const char *func)
 {
   internal_error
-    ("RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d",
+    ("RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d",
      GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (GET_CODE (r)),
      func, trim_filename (file), line);
 }
@@ -530,7 +530,7 @@ rtl_check_failed_flag (const char *name, rtx r, const char *file,
 		       int line, const char *func)
 {
   internal_error
-    ("RTL flag check: %s used with unexpected rtx code `%s' in %s, at %s:%d",
+    ("RTL flag check: %s used with unexpected rtx code '%s' in %s, at %s:%d",
      name, GET_RTX_NAME (GET_CODE (r)), func, trim_filename (file), line);
 }
 #endif /* ENABLE_RTL_FLAG_CHECKING */

@@ -2169,7 +2169,7 @@ write_expression (tree expr)
 		 expression without extending the C++ ABI.  */
 	      if (code == COND_EXPR && i == 1 && !operand)
 		{
-		  error ("omitted middle operand to `?:' operand "
+		  error ("omitted middle operand to %<?:%> operand "
 			 "cannot be mangled");
 		  continue;
 		}
@@ -2479,7 +2479,7 @@ static inline const char *
 finish_mangling (const bool warn)
 {
   if (warn_abi && warn && G.need_abi_warning)
-    warning ("the mangled name of `%D' will change in a future "
+    warning ("the mangled name of %qD will change in a future "
 	     "version of GCC",
 	     G.entity);
 

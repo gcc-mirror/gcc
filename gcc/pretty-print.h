@@ -231,7 +231,7 @@ struct pretty_print_info
                  IDENTIFIER_POINTER (T) + IDENTIFIER_LENGTH (T))
 
 #define pp_unsupported_tree(PP, T)                         \
-  pp_verbatim (pp_base (PP), "#`%s' not supported by %s#", \
+  pp_verbatim (pp_base (PP), "#%qs not supported by %s#", \
                tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
 
 

@@ -537,16 +537,16 @@ process_file (const char *file_name)
 
 	  if (gcov_file)
 	    {
-	      fnotice (stdout, "%s:creating `%s'\n",
+	      fnotice (stdout, "%s:creating '%s'\n",
 		       src->name, gcov_file_name);
 	      output_lines (gcov_file, src);
 	      if (ferror (gcov_file))
-		    fnotice (stderr, "%s:error writing output file `%s'\n",
+		    fnotice (stderr, "%s:error writing output file '%s'\n",
 			     src->name, gcov_file_name);
 	      fclose (gcov_file);
 	    }
 	  else
-	    fnotice (stderr, "%s:could not open output file `%s'\n",
+	    fnotice (stderr, "%s:could not open output file '%s'\n",
 		     src->name, gcov_file_name);
 	  free (gcov_file_name);
 	}
@@ -716,7 +716,7 @@ read_graph_file (void)
       GCOV_UNSIGNED2STRING (v, version);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 
-      fnotice (stderr, "%s:version `%.4s', prefer `%.4s'\n",
+      fnotice (stderr, "%s:version '%.4s', prefer '%.4s'\n",
 	       bbg_file_name, v, e);
     }
   bbg_stamp = gcov_read_unsigned ();
@@ -768,7 +768,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_BLOCKS)
 	{
 	  if (fn->blocks)
-	    fnotice (stderr, "%s:already seen blocks for `%s'\n",
+	    fnotice (stderr, "%s:already seen blocks for '%s'\n",
 		     bbg_file_name, fn->name);
 	  else
 	    {
@@ -978,7 +978,7 @@ read_count_file (void)
       GCOV_UNSIGNED2STRING (v, version);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
       
-      fnotice (stderr, "%s:version `%.4s', prefer version `%.4s'\n",
+      fnotice (stderr, "%s:version '%.4s', prefer version '%.4s'\n",
 	       da_file_name, v, e);
     }
   tag = gcov_read_unsigned ();
@@ -1010,7 +1010,7 @@ read_count_file (void)
 		fn_n = NULL;
 	      else
 		{
-		  fnotice (stderr, "%s:unknown function `%u'\n",
+		  fnotice (stderr, "%s:unknown function '%u'\n",
 			   da_file_name, ident);
 		  break;
 		}
@@ -1023,7 +1023,7 @@ read_count_file (void)
 	  else if (gcov_read_unsigned () != fn->checksum)
 	    {
 	    mismatch:;
-	      fnotice (stderr, "%s:profile mismatch for `%s'\n",
+	      fnotice (stderr, "%s:profile mismatch for '%s'\n",
 		       da_file_name, fn->name);
 	      goto cleanup;
 	    }
@@ -1066,12 +1066,12 @@ solve_flow_graph (function_t *fn)
   block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
 
   if (fn->num_blocks < 2)
-    fnotice (stderr, "%s:`%s' lacks entry and/or exit blocks\n",
+    fnotice (stderr, "%s:'%s' lacks entry and/or exit blocks\n",
 	     bbg_file_name, fn->name);
   else
     {
       if (fn->blocks[0].num_pred)
-	fnotice (stderr, "%s:`%s' has arcs to entry block\n",
+	fnotice (stderr, "%s:'%s' has arcs to entry block\n",
 		 bbg_file_name, fn->name);
       else
 	/* We can't deduce the entry block counts from the lack of
@@ -1079,7 +1079,7 @@ solve_flow_graph (function_t *fn)
 	fn->blocks[0].num_pred = ~(unsigned)0;
 
       if (fn->blocks[fn->num_blocks - 1].num_succ)
-	fnotice (stderr, "%s:`%s' has arcs from exit block\n",
+	fnotice (stderr, "%s:'%s' has arcs from exit block\n",
 		 bbg_file_name, fn->name);
       else
 	/* Likewise, we can't deduce exit block counts from the lack
@@ -1287,7 +1287,7 @@ solve_flow_graph (function_t *fn)
   for (ix = 0; ix < fn->num_blocks; ix++)
     if (!fn->blocks[ix].count_valid)
       {
-	fnotice (stderr, "%s:graph is unsolvable for `%s'\n",
+	fnotice (stderr, "%s:graph is unsolvable for '%s'\n",
 		 bbg_file_name, fn->name);
 	break;
       }
@@ -1367,7 +1367,7 @@ format_gcov (gcov_type top, gcov_type bottom, int dp)
 static void
 function_summary (const coverage_t *coverage, const char *title)
 {
-  fnotice (stdout, "%s `%s'\n", title, coverage->name);
+  fnotice (stdout, "%s '%s'\n", title, coverage->name);
 
   if (coverage->lines)
     fnotice (stdout, "Lines executed:%s of %d\n",
@@ -1537,7 +1537,7 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 	}
     }
   if (!line)
-    fnotice (stderr, "%s:no lines for `%s'\n", bbg_file_name, fn->name);
+    fnotice (stderr, "%s:no lines for '%s'\n", bbg_file_name, fn->name);
 }
 
 /* Accumulate the line counts of a file.  */
@@ -1796,7 +1796,7 @@ output_lines (FILE *gcov_file, const source_t *src)
       if (!fstat (fileno (source_file), &status)
 	  && status.st_mtime > bbg_file_time)
 	{
-	  fnotice (stderr, "%s:source file is newer than graph file `%s'\n",
+	  fnotice (stderr, "%s:source file is newer than graph file '%s'\n",
 		   src->name, bbg_file_name);
 	  fprintf (gcov_file, "%9s:%5d:Source is newer than graph\n",
 		   "-", 0);

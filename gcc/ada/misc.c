@@ -296,7 +296,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       break;
 
     case OPT_gant:
-      warning ("`-gnat' misspelled as `-gant'");
+      warning ("%<-gnat%> misspelled as %<-gant%>");
 
       /* ... fall through ... */
 

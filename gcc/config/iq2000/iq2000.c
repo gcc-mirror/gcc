@@ -2842,7 +2842,7 @@ expand_one_builtin (enum insn_code icode, rtx target, tree arglist,
       op[i] = expand_expr (arg[i], NULL_RTX, VOIDmode, 0);
       mode[i] = insn_data[icode].operand[i].mode;
       if (code[i] == CONST_INT && GET_CODE (op[i]) != CONST_INT)
-	error ("argument `%d' is not a constant", i + 1);
+	error ("argument %qd is not a constant", i + 1);
       if (code[i] == REG
 	  && ! (*insn_data[icode].operand[i].predicate) (op[i], mode[i]))
 	op[i] = copy_to_mode_reg (mode[i], op[i]);

@@ -477,7 +477,7 @@ ia64_handle_model_attribute (tree *node, tree name, tree args, int flags ATTRIBU
     }
   else
     {
-      warning ("invalid argument of `%s' attribute",
+      warning ("invalid argument of %qs attribute",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -509,7 +509,7 @@ ia64_handle_model_attribute (tree *node, tree name, tree args, int flags ATTRIBU
       break;
 
     default:
-      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
       break;
     }

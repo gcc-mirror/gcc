@@ -2850,7 +2850,7 @@ output_operand_lossage (const char *msgid, ...)
 
   va_start (ap, msgid);
 
-  pfx_str = this_is_asm_operands ? _("invalid `asm': ") : "output_operand: ";
+  pfx_str = this_is_asm_operands ? _("invalid 'asm': ") : "output_operand: ";
   asprintf (&fmt_string, "%s%s", pfx_str, _(msgid));
   vasprintf (&new_message, fmt_string, ap);
 
@@ -3202,7 +3202,7 @@ output_asm_label (rtx x)
 	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_DELETED_LABEL))
     ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
   else
-    output_operand_lossage ("`%%l' operand isn't a label");
+    output_operand_lossage ("'%%l' operand isn't a label");
 
   assemble_name (asm_out_file, buf);
 }

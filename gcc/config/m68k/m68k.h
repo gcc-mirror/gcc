@@ -253,9 +253,9 @@ extern int target_flags;
     { "nobitfield", - MASK_BITFIELD,					\
       N_("Do not use the bit-field instructions") },			\
     { "short", MASK_SHORT,						\
-      N_("Consider type `int' to be 16 bits wide") },			\
+      N_("Consider type 'int' to be 16 bits wide") },			\
     { "noshort", - MASK_SHORT,						\
-      N_("Consider type `int' to be 32 bits wide") },			\
+      N_("Consider type 'int' to be 32 bits wide") },			\
     { "68881", MASK_68881, "" },					\
     { "soft-float", - MASK_68881,					\
       N_("Generate code with library calls for floating point") },	\

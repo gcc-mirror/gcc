@@ -1848,7 +1848,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	       that specialization that would cause an implicit
 	       instantiation to take place, in every translation unit in
 	       which such a use occurs.  */
-	    error ("explicit specialization of %D after first use",
+	    error ("explicit specialization of %qD after first use",
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
@@ -3781,7 +3781,7 @@ start_decl (const cp_declarator *declarator,
 		 initialization.  Thus, duplicate_decls won't warn
 		 about this situation, and so we check here.  */
 	      if (DECL_INITIAL (decl) && DECL_INITIAL (field))
-		error ("duplicate initialization of %D", decl);
+		error ("duplicate initialization of %qD", decl);
 	      if (duplicate_decls (decl, field))
 		decl = field;
 	    }
@@ -7052,7 +7052,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
   if (declspecs->multiple_storage_classes_p)
-    error ("multiple storage classes in declaration of `%s'", name);
+    error ("multiple storage classes in declaration of %qs", name);
   else if (thread_p
 	   && ((storage_class
 		&& storage_class != sc_extern

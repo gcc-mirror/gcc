@@ -276,7 +276,7 @@ sh_symbian_mark_dllimport (tree decl)
 
   if (sh_symbian_dllexport_name_p (oldname))
     {
-      error ("`%s' declared as both exported to and imported from a DLL",
+      error ("%qs declared as both exported to and imported from a DLL",
              IDENTIFIER_POINTER (DECL_NAME (decl)));
     }
   else if (sh_symbian_dllimport_name_p (oldname))
@@ -411,14 +411,14 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 		   | (int) ATTR_FLAG_FUNCTION_NEXT
 		   | (int) ATTR_FLAG_ARRAY_NEXT))
 	{
-	  warning ("`%s' attribute ignored", attr);
+	  warning ("%qs attribute ignored", attr);
 	  *no_add_attrs = true;
 	  return tree_cons (name, args, NULL_TREE);
 	}
 
       if (TREE_CODE (node) != RECORD_TYPE && TREE_CODE (node) != UNION_TYPE)
 	{
-	  warning ("`%s' attribute ignored", attr);
+	  warning ("%qs attribute ignored", attr);
 	  *no_add_attrs = true;
 	}
 
@@ -433,7 +433,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 	{
 	  if (DECL_INITIAL (node))
 	    {
-	      error ("%Hvariable `%D' definition is marked dllimport.",
+	      error ("%Hvariable %qD definition is marked dllimport.",
 		     & DECL_SOURCE_LOCATION (node), node);
 	      *no_add_attrs = true;
 	    }

@@ -1858,15 +1858,15 @@ finish_this_expr (void)
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
     {
-      error ("`this' is unavailable for static member functions");
+      error ("%<this%> is unavailable for static member functions");
       result = error_mark_node;
     }
   else
     {
       if (current_function_decl)
-	error ("invalid use of `this' in non-member function");
+	error ("invalid use of %<this%> in non-member function");
       else
-	error ("invalid use of `this' at top level");
+	error ("invalid use of %<this%> at top level");
       result = error_mark_node;
     }
 
@@ -2004,7 +2004,7 @@ finish_template_type_parm (tree aggr, tree identifier)
 {
   if (aggr != class_type_node)
     {
-      pedwarn ("template type parameters must use the keyword `class' or `typename'");
+      pedwarn ("template type parameters must use the keyword %<class%> or %<typename%>");
       aggr = class_type_node;
     }
 

@@ -472,7 +472,7 @@ recompile_files (void)
 
       if (!f->args)
 	{
-	  error ("repository file `%s' does not contain command-line "
+	  error ("repository file '%s' does not contain command-line "
 		 "arguments", f->key);
 	  return 0;
 	}
@@ -693,7 +693,7 @@ scan_linker_output (const char *fname)
 
       if (sym && sym->tweaked)
 	{
-	  error ("`%s' was assigned to `%s', but was not defined "
+	  error ("'%s' was assigned to '%s', but was not defined "
 		 "during recompilation, or vice versa", 
 		 sym->key, sym->file->key);
 	  fclose (stream);

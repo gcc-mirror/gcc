@@ -2230,7 +2230,7 @@ print_instantiation_partial_context (diagnostic_context *context,
       xloc = expand_location (loc);
       if (t == NULL_TREE)
 	break;
-      pp_verbatim (context->printer, "%s:%d:   instantiated from `%s'\n",
+      pp_verbatim (context->printer, "%s:%d:   instantiated from %qs\n",
                    xloc.file, xloc.line,
                    decl_as_string (TINST_DECL (t),
                                    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
@@ -2370,7 +2370,7 @@ locate_error (const char *msgid, va_list ap)
 
 	    default:
 	      errorcount = 0;  /* damn ICE suppression */
-	      internal_error ("unexpected letter `%c' in locate_error\n", *f);
+	      internal_error ("unexpected letter %qc in locate_error\n", *f);
 	    }
 	}
     }

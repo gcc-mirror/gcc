@@ -750,7 +750,7 @@ objc_finish_implementation (void)
       objc_implementation_context = NULL_TREE;
     }
   else
-    warning ("`@end' must appear in an @implementation context");
+    warning ("%<@end%> must appear in an @implementation context");
 }
 
 void
@@ -898,7 +898,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 
 		      if (!rproto)
 			warning
-			  ("object does not conform to the `%s' protocol",
+			  ("object does not conform to the %qs protocol",
 			   IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
 		    }
 		  return 1;
@@ -988,7 +988,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 		    }
 
 		  if (!rproto)
-		    warning ("class `%s' does not implement the `%s' protocol",
+		    warning ("class %qs does not implement the %qs protocol",
 			     IDENTIFIER_POINTER (OBJC_TYPE_NAME (TREE_TYPE (rhs))),
 			     IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
 		}
@@ -1065,7 +1065,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 			}
 		
 		      if (!lproto)
-			warning ("class `%s' does not implement the `%s' protocol",
+			warning ("class %qs does not implement the %qs protocol",
 				 IDENTIFIER_POINTER (OBJC_TYPE_NAME
 						     (TREE_TYPE (lhs))),
 				 IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
@@ -1171,7 +1171,7 @@ objc_check_decl (tree decl)
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
   if (OBJC_TYPE_NAME (type) && (type = objc_is_class_name (OBJC_TYPE_NAME (type))))
-    error ("statically allocated instance of Objective-C class `%s'",
+    error ("statically allocated instance of Objective-C class %qs",
 	   IDENTIFIER_POINTER (type));
 }
 
@@ -1228,7 +1228,7 @@ check_protocol_recursively (tree proto, tree list)
 	pp = lookup_protocol (pp);
 
       if (pp == proto)
-	fatal_error ("protocol `%s' has circular dependency",
+	fatal_error ("protocol %qs has circular dependency",
 		     IDENTIFIER_POINTER (PROTOCOL_NAME (pp)));
       if (pp)
 	check_protocol_recursively (proto, PROTOCOL_LIST (pp));
@@ -1250,7 +1250,7 @@ lookup_and_install_protocols (tree protocols)
       tree p = lookup_protocol (ident);
 
       if (!p)
-	error ("cannot find protocol declaration for `%s'",
+	error ("cannot find protocol declaration for %qs",
 	       IDENTIFIER_POINTER (ident));
       else
 	return_value = chainon (return_value,
@@ -1646,16 +1646,16 @@ objc_build_string_object (tree string)
       if (!constant_string_class
 	  || !(constant_string_type
 	       = CLASS_STATIC_TEMPLATE (constant_string_class)))
-	error ("cannot find interface declaration for `%s'",
+	error ("cannot find interface declaration for %qs",
 	       IDENTIFIER_POINTER (constant_string_id));
       /* The NSConstantString/NXConstantString ivar layout is now known.  */
       else if (!check_string_class_template ())
-	error ("interface `%s' does not have valid constant string layout",
+	error ("interface %qs does not have valid constant string layout",
 	       IDENTIFIER_POINTER (constant_string_id));
       /* For the NeXT runtime, we can generate a literal reference
 	 to the string class, don't need to run a constructor.  */
       else if (flag_next_runtime && !setup_string_decl ())
-	error ("cannot find reference tag for class `%s'",
+	error ("cannot find reference tag for class %qs",
 	       IDENTIFIER_POINTER (constant_string_id));
       else
 	{
@@ -2515,7 +2515,7 @@ objc_get_class_reference (tree ident)
 
   if (!(ident = objc_is_class_name (ident)))
     {
-      error ("`%s' is not an Objective-C class name or alias",
+      error ("%qs is not an Objective-C class name or alias",
 	     IDENTIFIER_POINTER (orig_ident));
       return error_mark_node;
     }
@@ -2635,9 +2635,9 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 #endif /* OBJCPLUS */
 
   if (!(underlying_class = objc_is_class_name (class_ident)))
-    warning ("cannot find class `%s'", IDENTIFIER_POINTER (class_ident));
+    warning ("cannot find class %qs", IDENTIFIER_POINTER (class_ident));
   else if (objc_is_class_name (alias_ident))
-    warning ("class `%s' already exists", IDENTIFIER_POINTER (alias_ident));
+    warning ("class %qs already exists", IDENTIFIER_POINTER (alias_ident));
   else
     alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
 }
@@ -2662,7 +2662,7 @@ objc_declare_class (tree ident_list)
 	
 	  if (record && ! TREE_STATIC_TEMPLATE (record))
 	    {
-	      error ("`%s' redeclared as different kind of symbol",
+	      error ("%qs redeclared as different kind of symbol",
 		     IDENTIFIER_POINTER (ident));
 	      error ("%Jprevious declaration of '%D'",
 		     record, record);
@@ -2780,7 +2780,7 @@ objc_get_class_ivars (tree class_name)
   if (interface)
     return get_class_ivars (interface);
 
-  error ("cannot find interface declaration for `%s'",
+  error ("cannot find interface declaration for %qs",
 	 IDENTIFIER_POINTER (class_name));
 
   return error_mark_node;
@@ -3290,7 +3290,7 @@ objc_finish_try_stmt (void)
   tree stmt;
 
   if (c->catch_list == NULL && c->finally_body == NULL)
-    error ("`@try' without `@catch' or `@finally'");
+    error ("%<@try%> without %<@catch%> or %<@finally%>");
 
   /* If we're doing Darwin setjmp exceptions, build the big nasty.  */
   if (flag_objc_sjlj_exceptions)
@@ -4226,7 +4226,7 @@ synth_forward_declarations (void)
 static void
 error_with_ivar (const char *message, tree decl)
 {
-  error ("%J%s `%s'", decl,
+  error ("%J%s %qs", decl,
          message, gen_declaration (decl));
 
 }
@@ -5326,7 +5326,7 @@ check_duplicates (hash hsh, int methods, int is_class)
 	     different types.  */
 	  attr loop;
 
-	  warning ("multiple %s named `%c%s' found",
+	  warning ("multiple %s named %<%c%s%> found",
 		   methods ? "methods" : "selectors",
 		   (is_class ? '+' : '-'),
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (meth)));
@@ -5551,7 +5551,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	{
 	  if (!CLASS_SUPER_NAME (implementation_template))
 	    {
-	      error ("no super class declared in @interface for `%s'",
+	      error ("no super class declared in @interface for %qs",
 		     IDENTIFIER_POINTER (CLASS_NAME (implementation_template)));
 	      return error_mark_node;
 	    }
@@ -5592,7 +5592,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 		= lookup_method_in_protocol_list (rprotos, sel_name, 0);
 
 	      if (method_prototype)
-		warning ("found `-%s' instead of `+%s' in protocol(s)",
+		warning ("found %<-%s%> instead of %<+%s%> in protocol(s)",
 			 IDENTIFIER_POINTER (sel_name),
 			 IDENTIFIER_POINTER (sel_name));
 	    }
@@ -5651,7 +5651,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	}
       else
 	{
-	  warning ("invalid receiver type `%s'",
+	  warning ("invalid receiver type %qs",
 		   gen_type_name (orig_rtype));
 	  /* After issuing the "invalid receiver" warning, perform method
 	     lookup as if we were messaging 'id'.  */
@@ -5666,7 +5666,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
   if (!method_prototype)
     {
       if (rprotos)
-	warning ("`%c%s' not found in protocol(s)",
+	warning ("%<%c%s%> not found in protocol(s)",
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
 
@@ -5680,7 +5680,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
       static bool warn_missing_methods = false;
 
       if (rtype)
-	warning ("`%s' may not respond to `%c%s'",
+	warning ("%qs may not respond to %<%c%s%>",
 		 IDENTIFIER_POINTER (OBJC_TYPE_NAME (rtype)),
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
@@ -5688,15 +5688,15 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	 then we have failed to find _any_ instance or class method,
 	 respectively.  */
       else
-	warning ("no `%c%s' method found",
+	warning ("no %<%c%s%> method found",
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
 
       if (!warn_missing_methods)
 	{
 	  warning ("(Messages without a matching method signature");
-	  warning ("will be assumed to return `id' and accept");
-	  warning ("`...' as arguments.)");
+	  warning ("will be assumed to return %<id%> and accept");
+	  warning ("%<...%> as arguments.)");
 	  warn_missing_methods = true;
 	}
     }
@@ -5828,7 +5828,7 @@ objc_build_protocol_expr (tree protoname)
 
   if (!p)
     {
-      error ("cannot find protocol declaration for `%s'",
+      error ("cannot find protocol declaration for %qs",
 	     IDENTIFIER_POINTER (protoname));
       return error_mark_node;
     }
@@ -5927,7 +5927,7 @@ objc_build_selector_expr (tree selnamelist)
       /* If still not found, print out a warning.  */
       if (!hsh)
 	{
-	  warning ("undeclared selector `%s'", IDENTIFIER_POINTER (selname));
+	  warning ("undeclared selector %qs", IDENTIFIER_POINTER (selname));
 	}
     }
 
@@ -5969,7 +5969,7 @@ build_ivar_reference (tree id)
 	 to an instance variable.  It's better to catch the cases
 	 where this is done unknowingly than to support the above
 	 paradigm.  */
-      warning ("instance variable `%s' accessed in class method",
+      warning ("instance variable %qs accessed in class method",
 	       IDENTIFIER_POINTER (id));
       self_decl = convert (objc_instance_type, self_decl); /* cast */
     }
@@ -6181,7 +6181,7 @@ objc_add_method (tree class, tree method, int is_class)
       if ((TREE_CODE (class) == CLASS_INTERFACE_TYPE
 	   || TREE_CODE (class) == CATEGORY_INTERFACE_TYPE)
 	  && !comp_proto_with_proto (method, mth))
-	error ("duplicate declaration of method `%c%s'",
+	error ("duplicate declaration of method %<%c%s%>",
 		is_class ? '+' : '-', 
 		IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
     }
@@ -6226,7 +6226,7 @@ add_category (tree class, tree category)
 
   if (cat)
     {
-      warning ("duplicate interface declaration for category `%s(%s)'",
+      warning ("duplicate interface declaration for category %<%s(%s)%>",
 	       IDENTIFIER_POINTER (CLASS_NAME (class)),
 	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (category)));
     }
@@ -6253,7 +6253,7 @@ add_instance_variable (tree class, int public, tree field_decl)
 #ifdef OBJCPLUS
   if (TREE_CODE (field_type) == REFERENCE_TYPE)
     {
-      error ("illegal reference type specified for instance variable `%s'",
+      error ("illegal reference type specified for instance variable %qs",
 	     ivar_name);
       /* Return class as is without adding this ivar.  */
       return class;
@@ -6264,7 +6264,7 @@ add_instance_variable (tree class, int public, tree field_decl)
       || TYPE_SIZE (field_type) == error_mark_node)
       /* 'type[0]' is allowed, but 'type[]' is not! */
     {
-      error ("instance variable `%s' has unknown size", ivar_name);
+      error ("instance variable %qs has unknown size", ivar_name);
       /* Return class as is without adding this ivar.  */
       return class;
     }
@@ -6278,8 +6278,8 @@ add_instance_variable (tree class, int public, tree field_decl)
       const char *type_name = IDENTIFIER_POINTER (OBJC_TYPE_NAME (field_type));
       if(TYPE_POLYMORPHIC_P (field_type)) {
         /* vtable pointers are Real Bad(tm), since Obj-C cannot initialize them */
-        error ("type `%s' has virtual member functions", type_name);
-        error ("illegal aggregate type `%s' specified for instance variable `%s'",
+        error ("type %qs has virtual member functions", type_name);
+        error ("illegal aggregate type %qs specified for instance variable %qs",
   	       type_name, ivar_name);
         /* Return class as is without adding this ivar.  */
         return class;
@@ -6287,9 +6287,9 @@ add_instance_variable (tree class, int public, tree field_decl)
       /* user-defined constructors and destructors are not known to Obj-C and
          hence will not be called.  This may or may not be a problem. */
       if (TYPE_NEEDS_CONSTRUCTING (field_type))
-        warning ("type `%s' has a user-defined constructor", type_name);
+        warning ("type %qs has a user-defined constructor", type_name);
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (field_type))
-        warning ("type `%s' has a user-defined destructor", type_name);
+        warning ("type %qs has a user-defined destructor", type_name);
       warning ("C++ constructors and destructors will not be invoked for Objective-C fields");
     }
 #endif
@@ -6356,7 +6356,7 @@ objc_is_public (tree expr, tree identifier)
 	{
 	  if (!lookup_interface (OBJC_TYPE_NAME (basetype)))
 	    {
-	      error ("cannot find interface declaration for `%s'",
+	      error ("cannot find interface declaration for %qs",
 		     IDENTIFIER_POINTER (OBJC_TYPE_NAME (basetype)));
 	      return 0;
 	    }
@@ -6380,7 +6380,7 @@ objc_is_public (tree expr, tree identifier)
 		  int private = is_private (decl);
 
 		  if (private)
-		    error ("instance variable `%s' is declared private",
+		    error ("instance variable %qs is declared private",
 			   IDENTIFIER_POINTER (DECL_NAME (decl)));
 		  return !private;
 		}
@@ -6389,14 +6389,14 @@ objc_is_public (tree expr, tree identifier)
 		 non-@public ivars.  We will let this slide for now...  */
 	      if (!objc_method_context)
 	      {
-		warning ("instance variable `%s' is %s; "
+		warning ("instance variable %qs is %s; "
 			 "this will be a hard error in the future",
 			 IDENTIFIER_POINTER (identifier),
 			 TREE_PRIVATE (decl) ? "@private" : "@protected");
 		return 1;
 	      }
 		
-	      error ("instance variable `%s' is declared %s",
+	      error ("instance variable %qs is declared %s",
 		     IDENTIFIER_POINTER (identifier),
 		     TREE_PRIVATE (decl) ? "private" : "protected");
 	      return 0;
@@ -6406,7 +6406,7 @@ objc_is_public (tree expr, tree identifier)
       else if (objc_implementation_context && (basetype == objc_object_reference))
 	{
 	  expr = convert (uprivate_record, expr);
-	  warning ("static access to object of type `id'");
+	  warning ("static access to object of type %<id%>");
 	}
     }
 
@@ -6428,16 +6428,16 @@ check_methods (tree chain, tree list, int mtype)
 	    {
 	      if (TREE_CODE (objc_implementation_context)
 		  == CLASS_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of class `%s'",
+		warning ("incomplete implementation of class %qs",
 			 IDENTIFIER_POINTER (CLASS_NAME (objc_implementation_context)));
 	      else if (TREE_CODE (objc_implementation_context)
 		       == CATEGORY_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of category `%s'",
+		warning ("incomplete implementation of category %qs",
 			 IDENTIFIER_POINTER (CLASS_SUPER_NAME (objc_implementation_context)));
 	      first = 0;
 	    }
 
-	  warning ("method definition for `%c%s' not found",
+	  warning ("method definition for %<%c%s%> not found",
 		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
 	}
 
@@ -6516,17 +6516,17 @@ check_methods_accessible (tree chain, tree context, int mtype)
 	    {
 	      if (TREE_CODE (objc_implementation_context)
 		  == CLASS_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of class `%s'",
+		warning ("incomplete implementation of class %qs",
 			 IDENTIFIER_POINTER
 			   (CLASS_NAME (objc_implementation_context)));
 	      else if (TREE_CODE (objc_implementation_context)
 		       == CATEGORY_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of category `%s'",
+		warning ("incomplete implementation of category %qs",
 			 IDENTIFIER_POINTER
 			   (CLASS_SUPER_NAME (objc_implementation_context)));
 	      first = 0;
 	    }
-	  warning ("method definition for `%c%s' not found",
+	  warning ("method definition for %<%c%s%> not found",
 		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
 	}
 
@@ -6567,7 +6567,7 @@ check_protocol (tree p, const char *type, const char *name)
 	}
 
       if (!f1 || !f2)
-	warning ("%s `%s' does not fully implement the `%s' protocol",
+	warning ("%s %qs does not fully implement the %qs protocol",
 		 type, name, IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
     }
 
@@ -6625,7 +6625,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
   if (objc_implementation_context)
     {
-      warning ("`@end' missing in implementation context");
+      warning ("%<@end%> missing in implementation context");
       finish_class (objc_implementation_context);
       objc_ivar_chain = NULL_TREE;
       objc_implementation_context = NULL_TREE;
@@ -6638,7 +6638,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
   if ((code == CLASS_INTERFACE_TYPE || code == CLASS_IMPLEMENTATION_TYPE)
       && super_name && !objc_is_class_name (super_name))
     {
-      error ("cannot find interface declaration for `%s', superclass of `%s'",
+      error ("cannot find interface declaration for %qs, superclass of %qs",
 	     IDENTIFIER_POINTER (super_name),
 	     IDENTIFIER_POINTER (class_name));
       super_name = NULL_TREE;
@@ -6651,7 +6651,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
   if (! objc_is_class_name (class_name)
       && (decl = lookup_name (class_name)))
     {
-      error ("`%s' redeclared as different kind of symbol",
+      error ("%qs redeclared as different kind of symbol",
 	     IDENTIFIER_POINTER (class_name));
       error ("%Jprevious declaration of '%D'",
 	     decl, decl);
@@ -6665,7 +6665,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
         for (chain = implemented_classes; chain; chain = TREE_CHAIN (chain))
            if (TREE_VALUE (chain) == class_name)
 	     {
-	       error ("reimplementation of class `%s'",
+	       error ("reimplementation of class %qs",
 		      IDENTIFIER_POINTER (class_name));
 	       return error_mark_node;
 	     }
@@ -6682,7 +6682,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
-	  warning ("cannot find interface declaration for `%s'",
+	  warning ("cannot find interface declaration for %qs",
 		   IDENTIFIER_POINTER (class_name));
 	  add_class (implementation_template = objc_implementation_context);
         }
@@ -6696,9 +6696,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  tree previous_name = CLASS_SUPER_NAME (implementation_template);
           const char *const name =
 	    previous_name ? IDENTIFIER_POINTER (previous_name) : "";
-	  error ("conflicting super class name `%s'",
+	  error ("conflicting super class name %qs",
 		 IDENTIFIER_POINTER (super_name));
-	  error ("previous declaration of `%s'", name);
+	  error ("previous declaration of %qs", name);
         }
 
       else if (! super_name)
@@ -6712,9 +6712,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
     {
       if (lookup_interface (class_name))
 #ifdef OBJCPLUS
-	error ("duplicate interface declaration for class `%s'",
+	error ("duplicate interface declaration for class %qs",
 #else
-	warning ("duplicate interface declaration for class `%s'",
+	warning ("duplicate interface declaration for class %qs",
 #endif	
         IDENTIFIER_POINTER (class_name));
       else
@@ -6735,7 +6735,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
       if (!(class_category_is_assoc_with = lookup_interface (class_name)))
 	{
-	  error ("cannot find interface declaration for `%s'",
+	  error ("cannot find interface declaration for %qs",
 		 IDENTIFIER_POINTER (class_name));
 	  exit (FATAL_EXIT_CODE);
 	}
@@ -6760,7 +6760,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
-	  error ("cannot find interface declaration for `%s'",
+	  error ("cannot find interface declaration for %qs",
 		 IDENTIFIER_POINTER (class_name));
 	  exit (FATAL_EXIT_CODE);
         }
@@ -6974,7 +6974,7 @@ start_protocol (enum tree_code code, tree name, tree list)
     }
   else
     {
-      warning ("duplicate declaration for protocol `%s'",
+      warning ("duplicate declaration for protocol %qs",
 	       IDENTIFIER_POINTER (name));
     }
   return protocol;
@@ -7490,7 +7490,7 @@ static void
 warn_with_method (const char *message, int mtype, tree method)
 {
   /* Add a readable method name to the warning.  */
-  warning ("%J%s `%c%s'", method,
+  warning ("%J%s %<%c%s%>", method,
            message, mtype, gen_method_decl (method));
 }
 
@@ -7780,7 +7780,7 @@ get_super_receiver (void)
 	  /* Barf if super used in a category of Object.  */
 	  if (!super_name)
 	    {
-	      error ("no super class declared in interface for `%s'",
+	      error ("no super class declared in interface for %qs",
 		    IDENTIFIER_POINTER (CLASS_NAME (implementation_template)));
 	      return error_mark_node;
 	    }
@@ -7874,7 +7874,7 @@ lang_report_error_function (tree decl)
 {
   if (objc_method_context)
     {
-      fprintf (stderr, "In method `%s'\n",
+      fprintf (stderr, "In method %qs\n",
 	       IDENTIFIER_POINTER (METHOD_SEL_NAME (objc_method_context)));
       return 1;
     }
@@ -8173,7 +8173,7 @@ finish_objc (void)
   /* A missing @end may not be detected by the parser.  */
   if (objc_implementation_context)
     {
-      warning ("`@end' missing in implementation context");
+      warning ("%<@end%> missing in implementation context");
       finish_class (objc_implementation_context);
       objc_ivar_chain = NULL_TREE;
       objc_implementation_context = NULL_TREE;

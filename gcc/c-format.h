@@ -161,7 +161,7 @@ typedef struct
      nonzero character that may be found in flags2 if it describes the
      flag when used with certain formats only.  If the latter, only
      the first such entry found that applies to the current conversion
-     specifier is used; the values of `name' and `long_name' it supplies
+     specifier is used; the values of 'name' and 'long_name' it supplies
      will be used, if non-NULL and the standard version is higher than
      the unpredicated one, for any pedantic warning.  For example, 'o'
      for strftime formats (meaning 'O' is an extension over C99).  */
@@ -170,10 +170,10 @@ typedef struct
      be skipped ('=' in strfmon), zero otherwise.  */
   int skip_next_char;
   /* The name to use for this flag in diagnostic messages.  For example,
-     N_("`0' flag"), N_("field width").  */
+     N_("'0' flag"), N_("field width").  */
   const char *name;
   /* Long name for this flag in diagnostic messages; currently only used for
-     "ISO C does not support ...".  For example, N_("the `I' printf flag").  */
+     "ISO C does not support ...".  For example, N_("the 'I' printf flag").  */
   const char *long_name;
   /* The standard version in which it appeared.  */
   enum format_std_version std;

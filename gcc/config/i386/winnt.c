@@ -71,7 +71,7 @@ ix86_handle_shared_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != VAR_DECL)
     {
-      warning ("`%s' attribute only applies to variables",
+      warning ("%qs attribute only applies to variables",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -296,7 +296,7 @@ i386_pe_mark_dllimport (tree decl)
     abort ();
   if (i386_pe_dllexport_name_p (oldname))
     {
-      error ("`%s' declared as both exported to and imported from a DLL",
+      error ("%qs declared as both exported to and imported from a DLL",
              IDENTIFIER_POINTER (DECL_NAME (decl)));
       return;
     }

@@ -127,7 +127,7 @@ pch_init (void)
   
   f = fopen (pch_file, "w+b");
   if (f == NULL)
-    fatal_error ("can't create precompiled header %s: %m", pch_file);
+    fatal_error ("can%'t create precompiled header %s: %m", pch_file);
   pch_outfile = f;
 
   gcc_assert (strlen (host_machine) < 256
@@ -155,7 +155,7 @@ pch_init (void)
       || fwrite (target_machine, v.target_machine_length, 1, f) != 1
       || fwrite (version_string, v.version_length, 1, f) != 1
       || fwrite (target_validity, v.target_data_length, 1, f) != 1)
-    fatal_error ("can't write to %s: %m", pch_file);
+    fatal_error ("can%'t write to %s: %m", pch_file);
 
   /* We need to be able to re-read the output.  */
   /* The driver always provides a valid -o option.  */
@@ -190,12 +190,12 @@ c_common_write_pch (void)
   h.asm_size = asm_file_end - asm_file_startpos;
   
   if (fwrite (&h, sizeof (h), 1, pch_outfile) != 1)
-    fatal_error ("can't write %s: %m", pch_file);
+    fatal_error ("can%'t write %s: %m", pch_file);
   
   buf = xmalloc (16384);
 
   if (fseek (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
-    fatal_error ("can't seek in %s: %m", asm_file_name);
+    fatal_error ("can%'t seek in %s: %m", asm_file_name);
 
   for (written = asm_file_startpos; written < asm_file_end; )
     {
@@ -203,23 +203,23 @@ c_common_write_pch (void)
       if (size > 16384)
 	size = 16384;
       if (fread (buf, size, 1, asm_out_file) != 1)
-	fatal_error ("can't read %s: %m", asm_file_name);
+	fatal_error ("can%'t read %s: %m", asm_file_name);
       if (fwrite (buf, size, 1, pch_outfile) != 1)
-	fatal_error ("can't write %s: %m", pch_file);
+	fatal_error ("can%'t write %s: %m", pch_file);
       written += size;
     }
   free (buf);
   /* asm_out_file can be written afterwards, so fseek to clear
      _IOREAD flag.  */
   if (fseek (asm_out_file, 0, SEEK_END) != 0)
-    fatal_error ("can't seek in %s: %m", asm_file_name);
+    fatal_error ("can%'t seek in %s: %m", asm_file_name);
 
   gt_pch_save (pch_outfile);
   cpp_write_pch_state (parse_in, pch_outfile);
 
   if (fseek (pch_outfile, 0, SEEK_SET) != 0
       || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
-    fatal_error ("can't write %s: %m", pch_file);
+    fatal_error ("can%'t write %s: %m", pch_file);
 
   fclose (pch_outfile);
 }
@@ -245,7 +245,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   sizeread = read (fd, ident, IDENT_LENGTH);
   if (sizeread == -1)
-    fatal_error ("can't read %s: %m", name);
+    fatal_error ("can%'t read %s: %m", name);
   else if (sizeread != IDENT_LENGTH)
     return 2;
   
@@ -273,12 +273,12 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   /* At this point, we know it's a PCH file, so it ought to be long enough
      that we can read a c_pch_validity structure.  */
   if (read (fd, &v, sizeof (v)) != sizeof (v))
-    fatal_error ("can't read %s: %m", name);
+    fatal_error ("can%'t read %s: %m", name);
 
   strings_length = (v.host_machine_length + v.target_machine_length 
 		    + v.version_length);
   if (read (fd, short_strings, strings_length) != strings_length)
-    fatal_error ("can't read %s: %m", name);
+    fatal_error ("can%'t read %s: %m", name);
   if (v.host_machine_length != strlen (host_machine)
       || memcmp (host_machine, short_strings, strlen (host_machine)) != 0)
     {
@@ -362,7 +362,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
     
     if ((size_t) read (fd, this_file_data, v.target_data_length)
 	!= v.target_data_length)
-      fatal_error ("can't read %s: %m", name);
+      fatal_error ("can%'t read %s: %m", name);
     msg = targetm.pch_valid_p (this_file_data, v.target_data_length);
     free (this_file_data);
     if (msg != NULL)
@@ -495,7 +495,7 @@ c_common_pch_pragma (cpp_reader *pfile)
   
   fd = open (name, O_RDONLY | O_BINARY, 0666);
   if (fd == -1)
-    fatal_error ("%s: couldn't open PCH file: %m\n", name);
+    fatal_error ("%s: couldn%'t open PCH file: %m\n", name);
   
   if (c_common_valid_pch (pfile, name, fd) != 1)
     {

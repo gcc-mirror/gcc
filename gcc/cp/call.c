@@ -3400,7 +3400,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
       
       if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
           && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
-         warning ("enumeral mismatch in conditional expression: `%T' vs `%T'",
+         warning ("enumeral mismatch in conditional expression: %qT vs %qT",
                    arg2_type, arg3_type);
       else if (extra_warnings
                && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE

@@ -1585,7 +1585,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
 
     default:
       /* Presumably there's a missing case above if we get here.  */
-      internal_error ("MMIX Internal: Missing `%c' case in mmix_print_operand", code);
+      internal_error ("MMIX Internal: Missing %qc case in mmix_print_operand", code);
     }
 
   switch (GET_CODE (modified_x))

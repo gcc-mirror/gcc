@@ -1,3 +1,13 @@
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* call.c, class.c, decl.c, decl2.c, error.c, mangle.c, parser.c,
+	pt.c, search.c, semantics.c, typeck.c: Use %q, %< and %> for
+	quoting in diagnostics.
+	* parser.c (cp_parser_sizeof_operand): Use '' instead of `' for
+	quoting in printf format.
+	* decl.c (duplicate_decls, start_decl): Use %qD instead of
+	unquoted %D.
+
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c, decl.c, lex.c, name-lookup.c, parser.c, pt.c,
