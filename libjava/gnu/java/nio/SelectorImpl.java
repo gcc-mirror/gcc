@@ -1,5 +1,5 @@
 /* SelectorImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import java.io.IOException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -44,14 +45,15 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 public class SelectorImpl extends AbstractSelector
 {
-  boolean closed = false;
-  Set keys, selected, canceled;
+  private Set keys;
+  private Set selected;
 
   public SelectorImpl (SelectorProvider provider)
   {
@@ -59,12 +61,23 @@ public class SelectorImpl extends AbstractSelector
     
     keys = new HashSet ();
     selected = new HashSet ();
-    canceled = new HashSet ();
   }
 
-  public Set keys ()
+  protected void finalize() throws Throwable
   {
-    return keys;
+    close();
+  }
+
+  protected final void implCloseSelector()
+    throws IOException
+  {
+    // FIXME: We surely need to do more here.
+    wakeup();
+  }
+
+  public final Set keys()
+  {
+    return Collections.unmodifiableSet (keys);
   }
     
   public int selectNow ()
@@ -120,10 +133,8 @@ public class SelectorImpl extends AbstractSelector
 
   public int select (long timeout)
   {
-    if (closed)
-      {
-        throw new ClosedSelectorException ();
-      }
+    if (!isOpen())
+      throw new ClosedSelectorException ();
 
     if (keys == null)
 	    {
@@ -132,7 +143,7 @@ public class SelectorImpl extends AbstractSelector
 
     int ret = 0;
 
-    deregisterCanceledKeys ();
+    deregisterCancelledKeys();
 
     // Set only keys with the needed interest ops into the arrays.
     int[] read = getFDsAsArray (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT);
@@ -202,7 +213,7 @@ public class SelectorImpl extends AbstractSelector
         key.readyOps (key.interestOps () & ops);
       }
 
-    deregisterCanceledKeys ();
+    deregisterCancelledKeys();
     return ret;
   }
     
@@ -226,14 +237,9 @@ public class SelectorImpl extends AbstractSelector
     selected.add (k);
   }
 
-  protected void implCloseSelector ()
+  private void deregisterCancelledKeys ()
   {
-    closed = true;
-  }
-
-  private void deregisterCanceledKeys ()
-  {
-    Iterator it = canceled.iterator ();
+    Iterator it = cancelledKeys().iterator();
 
     while (it.hasNext ())
       {

@@ -1,5 +1,5 @@
 /* DatagramChannelImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,23 +39,30 @@ exception statement from your version. */
 package gnu.java.nio;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import gnu.java.net.PlainDatagramSocketImpl;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.spi.SelectorProvider;
 
-public class DatagramChannelImpl extends DatagramChannel
+/**
+ * @author Michael Koch
+ */
+public final class DatagramChannelImpl extends DatagramChannel
 {
-  boolean blocking = false;
-  DatagramSocket socket;
+  private NIODatagramSocket socket;
+  private boolean blocking = false;
   
   protected DatagramChannelImpl (SelectorProvider provider)
     throws IOException
   {
     super (provider);
-    socket = new DatagramSocket ();
+    socket = new NIODatagramSocket (new PlainDatagramSocketImpl(), this);
   }
     
   public DatagramSocket socket ()
@@ -72,12 +79,16 @@ public class DatagramChannelImpl extends DatagramChannel
   protected void implConfigureBlocking (boolean blocking)
     throws IOException
   {
-    this.blocking = blocking; // FIXME
+    socket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
+    this.blocking = blocking;
   }
 
   public DatagramChannel connect (SocketAddress remote)
     throws IOException
   {
+    if (!isOpen())
+      throw new ClosedChannelException();
+    
     socket.connect (remote);
     return this;
   }
@@ -100,19 +111,25 @@ public class DatagramChannelImpl extends DatagramChannel
     if (!isConnected ())
       throw new NotYetConnectedException ();
     
-    throw new Error ("Not implemented");
+    return send (src, socket.getRemoteSocketAddress());
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)
     throws IOException
   {
-    // FIXME: Should we throw an exception if offset and/or length
-    // have wrong values ?
+    if (!isConnected())
+      throw new NotYetConnectedException();
 
+    if ((offset < 0)
+        || (offset > srcs.length)
+        || (length < 0)
+        || (length > (srcs.length - offset)))
+      throw new IndexOutOfBoundsException();
+      
     long result = 0;
 
-    for (int i = offset; i < offset + length; i++)
-      result += write (srcs [i]);
+    for (int index = offset; index < offset + length; index++)
+      result += write (srcs [index]);
 
     return result;
   }
@@ -123,19 +140,27 @@ public class DatagramChannelImpl extends DatagramChannel
     if (!isConnected ())
       throw new NotYetConnectedException ();
     
-    throw new Error ("Not implemented");
+    int remaining = dst.remaining();
+    receive (dst);
+    return remaining - dst.remaining();
   }
     
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
-    // FIXME: Should we throw an exception if offset and/or length
-    // have wrong values ?
-
+    if (!isConnected())
+      throw new NotYetConnectedException();
+    
+    if ((offset < 0)
+        || (offset > dsts.length)
+        || (length < 0)
+        || (length > (dsts.length - offset)))
+      throw new IndexOutOfBoundsException();
+      
     long result = 0;
 
-    for (int i = offset; i < offset + length; i++)
-      result += read (dsts [i]);
+    for (int index = offset; index < offset + length; index++)
+      result += read (dsts [index]);
 
     return result;
   }
@@ -143,12 +168,87 @@ public class DatagramChannelImpl extends DatagramChannel
   public SocketAddress receive (ByteBuffer dst)
     throws IOException
   {
-    throw new Error ("Not implemented");
+    if (!isOpen())
+      throw new ClosedChannelException();
+    
+    try
+      {
+        DatagramPacket packet;
+        int len = dst.remaining();
+        
+        if (dst.hasArray())
+          {
+            packet = new DatagramPacket (dst.array(),
+                                         dst.arrayOffset() + dst.position(),
+                                         len);
+          }
+        else
+          {
+            packet = new DatagramPacket (new byte [len], len);
+          }
+
+        boolean completed = false;
+
+        try
+          {
+            begin();
+            socket.receive (packet);
+            completed = true;
+          }
+        finally
+          {
+            end (completed);
+          }
+
+        if (!dst.hasArray())
+          {
+            dst.put (packet.getData(), packet.getOffset(), packet.getLength());
+          }
+
+        // FIMXE: remove this testing code.
+        for (int i = 0; i < packet.getLength(); i++)
+          {
+            System.out.println ("Byte " + i + " has value " + packet.getData() [packet.getOffset() + i]);
+          }
+
+        return packet.getSocketAddress();
+      }
+    catch (SocketTimeoutException e)
+      {
+        return null;
+      }
   }
     
   public int send (ByteBuffer src, SocketAddress target)
     throws IOException
   {
-    throw new Error ("Not implemented");
+    if (!isOpen())
+      throw new ClosedChannelException();
+    
+    byte[] buffer;
+    int offset = 0;
+    int len = src.remaining();
+    
+    if (src.hasArray())
+      {
+        buffer = src.array();
+        offset = src.arrayOffset() + src.position();
+      }
+    else
+      {
+        buffer = new byte [len];
+        src.get (buffer);
+      }
+
+    DatagramPacket packet = new DatagramPacket (buffer, offset, len, target);
+
+    // FIMXE: remove this testing code.
+    for (int i = 0; i < packet.getLength(); i++)
+      {
+        System.out.println ("Byte " + i + " has value " + packet.getData() [packet.getOffset() + i]);
+      }
+
+    socket.send (packet);
+    return len;
   }
 }
