@@ -107,3 +107,7 @@ Boston, MA 02111-1307, USA.  */
       fprintf (FILE, "\n");					\
     }								\
   while (0)
+
+/* We do not need NT_VERSION notes.  */
+#undef X86_FILE_START_VERSION_DIRECTIVE
+#define X86_FILE_START_VERSION_DIRECTIVE false
