@@ -3078,9 +3078,7 @@ build_dtor_call (exp, dtor_kind, flags)
    sfk_deleting_destructor.
 
    FLAGS is the logical disjunction of zero or more LOOKUP_
-   flags.  See cp-tree.h for more info.
-
-   This function does not delete an object's virtual base classes.  */
+   flags.  See cp-tree.h for more info.  */
 
 tree
 build_delete (type, addr, auto_delete, flags, use_global_delete)
@@ -3089,7 +3087,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      int flags;
      int use_global_delete;
 {
-  tree member;
   tree expr;
 
   if (addr == error_mark_node)
@@ -3157,14 +3154,12 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL),
 	 NULL_TREE);
     }
-
-  /* Below, we will reverse the order in which these calls are made.
-     If we have a destructor, then that destructor will take care
-     of the base classes; otherwise, we must do that here.  */
-  if (TYPE_HAS_DESTRUCTOR (type))
+  else
     {
       tree do_delete = NULL_TREE;
       tree ifexp;
+
+      my_friendly_assert (TYPE_HAS_DESTRUCTOR (type), 20011213);
 
       /* For `::delete x', we must not use the deleting destructor
 	 since then we would not be sure to get the global `operator
@@ -3215,56 +3210,98 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       return expr;
     }
-  else
+}
+
+/* At the beginning of a destructor, push cleanups that will call the
+   destructors for our base classes and members.
+
+   Called from setup_vtbl_ptr.  */
+
+void
+push_base_cleanups ()
+{
+  tree binfos;
+  int i, n_baseclasses;
+  tree member;
+  tree expr;
+
+  /* Run destructors for all virtual baseclasses.  */
+  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
     {
-      /* We only get here from finish_function for a destructor.  */
-      tree binfos = BINFO_BASETYPES (TYPE_BINFO (type));
-      int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (type);
-      tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
-      tree exprstmt = NULL_TREE;
-      tree ref = build_indirect_ref (addr, NULL);
+      tree vbases;
+      tree cond = (condition_conversion
+		   (build (BIT_AND_EXPR, integer_type_node,
+			   current_in_charge_parm,
+			   integer_two_node)));
 
-      /* Set this again before we call anything, as we might get called
-	 recursively.  */
-      TYPE_HAS_DESTRUCTOR (type) = 1;
-
-      /* If we have member delete or vbases, we call delete in
-	 finish_function.  */
-      my_friendly_assert (auto_delete == sfk_base_destructor, 20000411);
-
-      /* Take care of the remaining baseclasses.  */
-      for (i = 0; i < n_baseclasses; i++)
+      vbases = CLASSTYPE_VBASECLASSES (current_class_type);
+      /* The CLASSTYPE_VBASECLASSES list is in initialization
+	 order, which is also the right order for pushing cleanups.  */
+      for (; vbases;
+	   vbases = TREE_CHAIN (vbases))
 	{
-	  base_binfo = TREE_VEC_ELT (binfos, i);
-	  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
-	      || TREE_VIA_VIRTUAL (base_binfo))
-	    continue;
+	  tree vbase = TREE_VALUE (vbases);
+	  tree base_type = BINFO_TYPE (vbase);
 
-	  expr = build_scoped_method_call (ref, base_binfo,
-					   base_dtor_identifier,
-					   NULL_TREE);
-
-	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
-	}
-
-      for (member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
-	{
-	  if (TREE_CODE (member) != FIELD_DECL)
-	    continue;
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (base_type))
 	    {
-	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
-	      tree this_type = TREE_TYPE (member);
-	      expr = build_delete (this_type, this_member,
-				   sfk_complete_destructor, flags, 0);
-	      exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
+	      tree base_ptr_type = build_pointer_type (base_type);
+	      expr = current_class_ptr;
+	          
+	      /* Convert to the basetype here, as we know the layout is
+		 fixed. What is more, if we let build_method_call do it,
+		 it will use the vtable, which may have been clobbered
+		 by the deletion of our primary base.  */
+                  
+	      expr = build1 (NOP_EXPR, base_ptr_type, expr);
+	      expr = build (PLUS_EXPR, base_ptr_type, expr,
+			    BINFO_OFFSET (vbase));
+	      expr = build_indirect_ref (expr, NULL);
+	      expr = build_method_call (expr, base_dtor_identifier,
+					NULL_TREE, vbase,
+					LOOKUP_NORMAL);
+	      expr = build (COND_EXPR, void_type_node, cond,
+			    expr, void_zero_node);
+	      finish_decl_cleanup (NULL_TREE, expr);
 	    }
 	}
+    }
 
-      if (exprstmt)
-	return build_compound_expr (exprstmt);
-      /* Virtual base classes make this function do nothing.  */
-      return void_zero_node;
+  binfos = BINFO_BASETYPES (TYPE_BINFO (current_class_type));
+  n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
+
+  /* Take care of the remaining baseclasses.  */
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
+	  || TREE_VIA_VIRTUAL (base_binfo))
+	continue;
+
+      expr = build_scoped_method_call (current_class_ref, base_binfo,
+				       base_dtor_identifier,
+				       NULL_TREE);
+
+      finish_decl_cleanup (NULL_TREE, expr);
+    }
+
+  for (member = TYPE_FIELDS (current_class_type); member;
+       member = TREE_CHAIN (member))
+    {
+      if (TREE_CODE (member) != FIELD_DECL)
+	continue;
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
+	{
+	  tree this_member = (build_component_ref
+			      (current_class_ref, DECL_NAME (member),
+			       NULL_TREE, 0));
+	  tree this_type = TREE_TYPE (member);
+	  expr = build_delete (this_type, this_member,
+			       sfk_complete_destructor,
+			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
+			       0);
+	  finish_decl_cleanup (NULL_TREE, expr);
+	}
     }
 }
 

@@ -727,6 +727,7 @@ synthesize_method (fndecl)
   int nested = (current_function_decl != NULL_TREE);
   tree context = decl_function_context (fndecl);
   int need_body = 1;
+  tree stmt;
 
   if (at_eof)
     import_export_decl (fndecl);
@@ -757,6 +758,7 @@ synthesize_method (fndecl)
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   clear_last_expr ();
+  stmt = begin_function_body ();
 
   if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
     {
@@ -783,6 +785,7 @@ synthesize_method (fndecl)
       finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
     }
 
+  finish_function_body (stmt);
   expand_body (finish_function (0));
 
   extract_interface_info ();

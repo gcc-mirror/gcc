@@ -7389,9 +7389,17 @@ tsubst_expr (t, args, complain, in_decl)
     case COMPOUND_STMT:
       {
 	prep_stmt (t);
-	stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
+	if (COMPOUND_STMT_BODY_BLOCK (t))
+	  stmt = begin_function_body ();
+	else
+	  stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
+
 	tsubst_expr (COMPOUND_BODY (t), args, complain, in_decl);
-	finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
+
+	if (COMPOUND_STMT_BODY_BLOCK (t))
+	  finish_function_body (stmt);
+	else
+	  finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
       }
       break;
 
@@ -7517,7 +7525,7 @@ tsubst_expr (t, args, complain, in_decl)
     case CTOR_STMT:
       add_stmt (copy_node (t));
       break;
-      
+
     default:
       abort ();
     }
