@@ -1,3 +1,8 @@
+2004-09-11  Andrew Pinski  <apinski@apple.com>
+
+	* Make-lang.in (java/ggc-none.c): Change dependency
+	for ggc.h into $(GGC_H).
+
 2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Make-lang.in (java/win32-host.o): Add dependency on

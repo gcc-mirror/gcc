@@ -343,7 +343,7 @@ java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h target.h
 
 # ggc-none.c is in the parent directory
-java/ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h ggc.h
+java/ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/ggc-none.c $(OUTPUT_OPTION)
 
