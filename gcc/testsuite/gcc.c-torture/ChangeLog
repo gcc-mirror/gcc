@@ -1,3 +1,9 @@
+1998-10-06  Ken Raeburn  <raeburn@cygnus.com>
+
+	* special/981006-1.c: New test.  Make sure gcc doesn't lose track
+	of the possible targets of tablejump insns.
+	* special/special.exp: Run it.
+
 Thu Oct  1 17:15:26 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* compile/981001-1.c: New test.
