@@ -1,3 +1,12 @@
+2004-12-01  Richard Henderson  <rth@redhat.com>
+
+        * expr.c (optimize_bitfield_assignment_op): Split out from ...
+        (expand_assignment): ... here.  Use handled_component_p to gate
+        get_inner_reference code.  Simplify MEM handling.  Special case
+        CONCAT destinations.
+        (get_inner_reference): Handle REAL/IMAGPART_EXPR.
+        (handled_component_p): Likewise.
+
 2004-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12817

@@ -3776,8 +3776,7 @@ expand_assignment (tree to, tree from, int want_value)
      an array element in an unaligned packed structure field, has the same
      problem.  */
 
-  if (TREE_CODE (to) == COMPONENT_REF || TREE_CODE (to) == BIT_FIELD_REF
-      || TREE_CODE (to) == ARRAY_REF || TREE_CODE (to) == ARRAY_RANGE_REF
+  if (handled_component_p (to)
       || TREE_CODE (TREE_TYPE (to)) == ARRAY_TYPE)
     {
       enum machine_mode mode1;
@@ -3834,50 +3833,64 @@ expand_assignment (tree to, tree from, int want_value)
 				   				   offset));
 	}
 
-      if (GET_CODE (to_rtx) == MEM)
+      if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  /* If the field is at offset zero, we could have been given the
-	     DECL_RTX of the parent struct.  Don't munge it.  */
-	  to_rtx = shallow_copy_rtx (to_rtx);
-
-	  set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
+	  if (TREE_CODE (TREE_TYPE (from)) == COMPLEX_TYPE)
+	    result = store_expr (from, to_rtx, false);
+	  else
+	    {
+	      if (bitpos != 0 && bitpos != GET_MODE_BITSIZE (mode1))
+		abort ();
+	      result = store_expr (from, XEXP (to_rtx, bitpos != 0), false);
+	    }
 	}
-
-      /* Deal with volatile and readonly fields.  The former is only done
-	 for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
-      if (volatilep && GET_CODE (to_rtx) == MEM)
+      else
 	{
-	  if (to_rtx == orig_to_rtx)
-	    to_rtx = copy_rtx (to_rtx);
-	  MEM_VOLATILE_P (to_rtx) = 1;
-	}
+	  if (GET_CODE (to_rtx) == MEM)
+	    {
+	      /* If the field is at offset zero, we could have been given
+		 the DECL_RTX of the parent struct.  Don't munge it.  */
+	      to_rtx = shallow_copy_rtx (to_rtx);
 
-      if (TREE_CODE (to) == COMPONENT_REF
-	  && TREE_READONLY (TREE_OPERAND (to, 1))
-	  /* We can't assert that a MEM won't be set more than once
-	     if the component is not addressable because another
-	     non-addressable component may be referenced by the same MEM.  */
-	  && ! (GET_CODE (to_rtx) == MEM && ! can_address_p (to)))
-	{
-	  if (to_rtx == orig_to_rtx)
-	    to_rtx = copy_rtx (to_rtx);
-	  RTX_UNCHANGING_P (to_rtx) = 1;
-	}
+	      set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
 
-      if (GET_CODE (to_rtx) == MEM && ! can_address_p (to))
-	{
-	  if (to_rtx == orig_to_rtx)
-	    to_rtx = copy_rtx (to_rtx);
-	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
-	}
+	      /* Deal with volatile and readonly fields.  The former is only
+		 done for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
+	      if (volatilep)
+		{
+		  if (to_rtx == orig_to_rtx)
+		    to_rtx = copy_rtx (to_rtx);
+		  MEM_VOLATILE_P (to_rtx) = 1;
+		}
+	    }
 
-      result = store_field (to_rtx, bitsize, bitpos, mode1, from,
-			    (want_value
-			     /* Spurious cast for HPUX compiler.  */
-			     ? ((enum machine_mode)
-				TYPE_MODE (TREE_TYPE (to)))
-			     : VOIDmode),
-			    unsignedp, TREE_TYPE (tem), get_alias_set (to));
+	  if (GET_CODE (to_rtx) == MEM && !can_address_p (to))
+	    {
+	      if (to_rtx == orig_to_rtx)
+		to_rtx = copy_rtx (to_rtx);
+	      MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
+	    }
+
+	  /* We can't assert that a MEM won't be set more than once if the
+	     component is not addressable because another non-addressable
+	     component may be referenced by the same MEM.  */
+	  else if (TREE_CODE (to) == COMPONENT_REF
+		   && TREE_READONLY (TREE_OPERAND (to, 1)))
+	    {
+	      if (to_rtx == orig_to_rtx)
+		to_rtx = copy_rtx (to_rtx);
+	      RTX_UNCHANGING_P (to_rtx) = 1;
+	    }
+
+	  result = store_field (to_rtx, bitsize, bitpos, mode1, from,
+			        (want_value
+			         /* Spurious cast for HPUX compiler.  */
+			         ? ((enum machine_mode)
+				    TYPE_MODE (TREE_TYPE (to)))
+			         : VOIDmode),
+			        unsignedp, TREE_TYPE (tem),
+				get_alias_set (to));
+	}
 
       preserve_temp_slots (result);
       free_temp_slots ();
@@ -5506,92 +5519,117 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      and find the ultimate containing object.  */
   while (1)
     {
-      if (TREE_CODE (exp) == BIT_FIELD_REF)
-	bit_offset = size_binop (PLUS_EXPR, bit_offset, TREE_OPERAND (exp, 2));
-      else if (TREE_CODE (exp) == COMPONENT_REF)
+      switch (TREE_CODE (exp))
 	{
-	  tree field = TREE_OPERAND (exp, 1);
-	  tree this_offset = DECL_FIELD_OFFSET (field);
-
-	  /* If this field hasn't been filled in yet, don't go
-	     past it.  This should only happen when folding expressions
-	     made during type construction.  */
-	  if (this_offset == 0)
-	    break;
-	  else if (CONTAINS_PLACEHOLDER_P (this_offset))
-	    this_offset = build (WITH_RECORD_EXPR, sizetype, this_offset, exp);
-
-	  offset = size_binop (PLUS_EXPR, offset, this_offset);
+	case BIT_FIELD_REF:
 	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
-				   DECL_FIELD_BIT_OFFSET (field));
+				   TREE_OPERAND (exp, 2));
+	  break;
 
-	  /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
-	}
+	case COMPONENT_REF:
+	  {
+	    tree field = TREE_OPERAND (exp, 1);
+	    tree this_offset = DECL_FIELD_OFFSET (field);
 
-      else if (TREE_CODE (exp) == ARRAY_REF
-	       || TREE_CODE (exp) == ARRAY_RANGE_REF)
-	{
-	  tree index = TREE_OPERAND (exp, 1);
-	  tree array = TREE_OPERAND (exp, 0);
-	  tree domain = TYPE_DOMAIN (TREE_TYPE (array));
-	  tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
-	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
+	    /* If this field hasn't been filled in yet, don't go
+	       past it.  This should only happen when folding expressions
+	       made during type construction.  */
+	    if (this_offset == 0)
+	      goto done;
+	    if (CONTAINS_PLACEHOLDER_P (this_offset))
+	      this_offset = build (WITH_RECORD_EXPR, sizetype,
+				   this_offset, exp);
 
-	  /* We assume all arrays have sizes that are a multiple of a byte.
-	     First subtract the lower bound, if any, in the type of the
-	     index, then convert to sizetype and multiply by the size of the
-	     array element.  */
-	  if (low_bound != 0 && ! integer_zerop (low_bound))
-	    index = fold (build (MINUS_EXPR, TREE_TYPE (index),
-				 index, low_bound));
+	    offset = size_binop (PLUS_EXPR, offset, this_offset);
+	    bit_offset = size_binop (PLUS_EXPR, bit_offset,
+				     DECL_FIELD_BIT_OFFSET (field));
 
-	  /* If the index has a self-referential type, pass it to a
-	     WITH_RECORD_EXPR; if the component size is, pass our
-	     component to one.  */
-	  if (CONTAINS_PLACEHOLDER_P (index))
-	    index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
-	  if (CONTAINS_PLACEHOLDER_P (unit_size))
-	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size, array);
+	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
+	  }
+	  break;
 
-	  offset = size_binop (PLUS_EXPR, offset,
-			       size_binop (MULT_EXPR,
-					   convert (sizetype, index),
-					   unit_size));
-	}
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  {
+	    tree index = TREE_OPERAND (exp, 1);
+	    tree array = TREE_OPERAND (exp, 0);
+	    tree domain = TYPE_DOMAIN (TREE_TYPE (array));
+	    tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
+	    tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
 
-      else if (TREE_CODE (exp) == PLACEHOLDER_EXPR)
-	{
-	  tree new = find_placeholder (exp, &placeholder_ptr);
+	    /* We assume all arrays have sizes that are a multiple of a byte.
+	       First subtract the lower bound, if any, in the type of the
+	       index, then convert to sizetype and multiply by the size of the
+	       array element.  */
+	    if (low_bound != 0 && ! integer_zerop (low_bound))
+	      index = fold (build (MINUS_EXPR, TREE_TYPE (index),
+				   index, low_bound));
 
-	  /* If we couldn't find the replacement, return the PLACEHOLDER_EXPR.
-	     We might have been called from tree optimization where we
-	     haven't set up an object yet.  */
-	  if (new == 0)
-	    break;
-	  else
+	    /* If the index has a self-referential type, pass it to a
+	       WITH_RECORD_EXPR; if the component size is, pass our
+	       component to one.  */
+	    if (CONTAINS_PLACEHOLDER_P (index))
+	      index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
+	    if (CONTAINS_PLACEHOLDER_P (unit_size))
+	      unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size, array);
+
+	    offset = size_binop (PLUS_EXPR, offset,
+			         size_binop (MULT_EXPR,
+					     convert (sizetype, index),
+					     unit_size));
+	  }
+	  break;
+
+	case PLACEHOLDER_EXPR:
+	  {
+	    tree new = find_placeholder (exp, &placeholder_ptr);
+
+	    /* If we couldn't find the replacement, return the PLACEHOLDER_EXPR.
+	       We might have been called from tree optimization where we
+	       haven't set up an object yet.  */
+	    if (new == 0)
+	      goto done;
+
 	    exp = new;
-
+	  }
 	  continue;
-	}
 
-      /* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
-	 conversions that don't change the mode, and all view conversions
-	 except those that need to "step up" the alignment.  */
-      else if (TREE_CODE (exp) != NON_LVALUE_EXPR
-	       && ! (TREE_CODE (exp) == VIEW_CONVERT_EXPR
-		     && ! ((TYPE_ALIGN (TREE_TYPE (exp))
-			    > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
-			   && STRICT_ALIGNMENT
-			   && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-			       < BIGGEST_ALIGNMENT)
-			   && (TYPE_ALIGN_OK (TREE_TYPE (exp))
-			       || TYPE_ALIGN_OK (TREE_TYPE
-						 (TREE_OPERAND (exp, 0))))))
-	       && ! ((TREE_CODE (exp) == NOP_EXPR
-		      || TREE_CODE (exp) == CONVERT_EXPR)
-		     && (TYPE_MODE (TREE_TYPE (exp))
-			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
-	break;
+ 	case REALPART_EXPR:
+ 	  break;
+ 
+ 	case IMAGPART_EXPR:
+	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
+				   bitsize_int (*pbitsize));
+ 	  break;
+
+        /* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
+	   conversions that don't change the mode, and all view conversions
+	   except those that need to "step up" the alignment.  */
+
+	case NON_LVALUE_EXPR:
+	  break;
+
+	case NOP_EXPR:
+	case CONVERT_EXPR:
+ 	  if (TYPE_MODE (TREE_TYPE (exp))
+ 	      != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+ 	    goto done;
+ 	  break;
+	  
+ 	case VIEW_CONVERT_EXPR:
+ 	  if ((TYPE_ALIGN (TREE_TYPE (exp))
+ 	       > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
+ 	      && STRICT_ALIGNMENT
+ 	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+ 		  < BIGGEST_ALIGNMENT)
+ 	      && (TYPE_ALIGN_OK (TREE_TYPE (exp))
+ 		  || TYPE_ALIGN_OK (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+ 	    goto done;
+ 	  break;
+ 
+ 	default:
+ 	  goto done;
+	}
 
       /* If any reference in the chain is volatile, the effect is volatile.  */
       if (TREE_THIS_VOLATILE (exp))
@@ -5599,6 +5637,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
       exp = TREE_OPERAND (exp, 0);
     }
+ done:
 
   /* If OFFSET is constant, see if we can return the whole thing as a
      constant bit position.  Otherwise, split it up.  */
@@ -5628,6 +5667,8 @@ handled_component_p (tree t)
     case ARRAY_RANGE_REF:
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       return 1;
 
     /* ??? Sure they are handled, but get_inner_reference may return
