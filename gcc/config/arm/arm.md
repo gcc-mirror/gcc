@@ -2907,7 +2907,7 @@
 (define_insn "*ldmsi"
   [(match_parallel 0 "load_multiple_operation"
                    [(set (match_operand:SI 1 "s_register_operand" "=r")
-                         (match_operand:SI 2 "indirect_operand" "Q"))])]
+                         (mem:SI (match_operand:SI 2 "s_register_operand" "r")))])]
   ""
   "*
 {
@@ -2980,7 +2980,7 @@
 
 (define_insn "*stmsi"
   [(match_parallel 0 "store_multiple_operation"
-                   [(set (match_operand:SI 2 "indirect_operand" "=Q")
+                   [(set (mem:SI (match_operand:SI 2 "s_register_operand" "r"))
                          (match_operand:SI 1 "s_register_operand" "r"))])]
   ""
   "*
