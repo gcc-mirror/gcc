@@ -2364,6 +2364,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
   register int c;
   int i;
   char *string;
+  int value;
 
   while (c = *p++)
     /* If substituting a switch, treat all chars like letters.
@@ -2407,7 +2408,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	if (argbuf_index > 0)
 	  {
-	    int value = execute ();
+	    value = execute ();
 	    if (value)
 	      return value;
 	  }
@@ -2730,39 +2731,57 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       a certain constant string as a spec.  */
 
 	  case '1':
-	    do_spec_1 (cc1_spec, 0, NULL_PTR);
+	    value = do_spec_1 (cc1_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case '2':
-	    do_spec_1 (cc1plus_spec, 0, NULL_PTR);
+	    value = do_spec_1 (cc1plus_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'a':
-	    do_spec_1 (asm_spec, 0, NULL_PTR);
+	    value = do_spec_1 (asm_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'A':
-	    do_spec_1 (asm_final_spec, 0, NULL_PTR);
+	    value = do_spec_1 (asm_final_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'c':
-	    do_spec_1 (signed_char_spec, 0, NULL_PTR);
+	    value = do_spec_1 (signed_char_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'C':
-	    do_spec_1 (cpp_spec, 0, NULL_PTR);
+	    value = do_spec_1 (cpp_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'E':
-	    do_spec_1 (endfile_spec, 0, NULL_PTR);
+	    value = do_spec_1 (endfile_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'l':
-	    do_spec_1 (link_spec, 0, NULL_PTR);
+	    value = do_spec_1 (link_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'L':
-	    do_spec_1 (lib_spec, 0, NULL_PTR);
+	    value = do_spec_1 (lib_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	  case 'p':
@@ -2789,7 +2808,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      do_spec_1 (buf, 0, NULL_PTR);
+	      value = do_spec_1 (buf, 0, NULL_PTR);
+	      if (value != 0)
+		return value;
 	    }
 	    break;
 
@@ -2895,12 +2916,16 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      do_spec_1 (buf, 0, NULL_PTR);
+	      value = do_spec_1 (buf, 0, NULL_PTR);
+	      if (value != 0)
+		return value;
 	    }
 	    break;
 
 	  case 'S':
-	    do_spec_1 (startfile_spec, 0, NULL_PTR);
+	    value = do_spec_1 (startfile_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
 	    break;
 
 	    /* Here we define characters other than letters and digits.  */
@@ -2948,7 +2973,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      if (sl)
 		{
 		  if (c == '(')
-		    do_spec_1 (name, 0, NULL_PTR);
+		    {
+		      value = do_spec_1 (name, 0, NULL_PTR);
+		      if (value != 0)
+			return value;
+		    }
 		  else
 		    {
 		      char *x = (char *) alloca (strlen (name) * 2 + 1);
@@ -2981,7 +3010,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			}
 		      *x = 0;
 
-		      do_spec_1 (buf, 0, NULL_PTR);
+		      value = do_spec_1 (buf, 0, NULL_PTR);
+		      if (value != 0)
+			return value;
 		    }
 		}
 
