@@ -1166,7 +1166,7 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# And also with the HP-UX 10 sys/pci.h file
+# And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
 file=sys/pci.h
 if [ -r ${LIB}/$file ]; then
   if egrep 'System Private Structures' ${LIB}/$file > /dev/null; then
@@ -1175,6 +1175,48 @@ if [ -r ${LIB}/$file ]; then
     sed -e 's|//.*$||g' $file > ${LIB}/$file
     chmod +w ${LIB}/$file 2>/dev/null
     chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+fi
+
+# And also with a few more HP-UX 11 headers which are only broken
+# after they are "fixed".
+file=sys/ki_iface.h
+if [ -r ${LIB}/$file ]; then
+  if egrep 'These definitions are for HP Internal developers' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+  fi
+fi
+
+file=sys/ki.h
+if [ -r ${LIB}/$file ]; then
+  if egrep '11.00 HP-UX LP64' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+  fi
+fi
+
+file=sys/ki_calls.h
+if [ -r ${LIB}/$file ]; then
+  if egrep 'KI_MAX_PROCS is an arbitrary number' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+  fi
+fi
+
+file=sys/ki_defs.h
+if [ -r ${LIB}/$file ] ; then
+  if egrep 'Kernel Instrumentation Definitions' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+  fi
+fi
+
+file=sys/time.h
+if [ -r ${LIB}/$file ] ; then
+  if egrep 'For CASPEC, look in' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
   fi
 fi
 
