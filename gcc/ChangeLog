@@ -8,6 +8,9 @@ Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* builtins.c (expand_builtin_return_addr): Don't use MEM_ALIAS_SET on
 	a REG rtx.
 
+	* cse.c (cse_rtx_varies_p): Accept additional FROM_ALIAS arg.  All
+	callers changed.
+
 2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (simplify_shift_const): Even if we're sign-extracting,

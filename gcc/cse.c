@@ -656,7 +656,7 @@ static struct table_elt *insert PARAMS ((rtx, struct table_elt *, unsigned,
 static void merge_equiv_classes PARAMS ((struct table_elt *,
 					 struct table_elt *));
 static void invalidate		PARAMS ((rtx, enum machine_mode));
-static int cse_rtx_varies_p	PARAMS ((rtx));
+static int cse_rtx_varies_p	PARAMS ((rtx, int));
 static void remove_invalid_refs	PARAMS ((unsigned int));
 static void remove_invalid_subreg_refs	PARAMS ((unsigned int, unsigned int,
 						 enum machine_mode));
@@ -2691,8 +2691,9 @@ exp_equiv_p (x, y, validate, equal_values)
    against certain constants or near-constants.  */
 
 static int
-cse_rtx_varies_p (x)
+cse_rtx_varies_p (x, from_alias)
      register rtx x;
+     int from_alias ATTRIBUTE_UNUSED;
 {
   /* We need not check for X and the equivalence class being of the same
      mode because if X is equivalent to a constant in some mode, it
@@ -2745,7 +2746,7 @@ cse_rtx_varies_p (x)
 	return 0;
     }
 
-  return rtx_varies_p (x, 0);
+  return rtx_varies_p (x, from_alias);
 }
 
 /* Canonicalize an expression:
@@ -6595,7 +6596,7 @@ invalidate_skipped_set (dest, set, data)
 	 a BLKmode or nonscalar memory reference or a reference to a
 	 variable address.  */
       && (MEM_IN_STRUCT_P (dest) || GET_MODE (dest) == BLKmode
-	  || cse_rtx_varies_p (XEXP (dest, 0))))
+	  || cse_rtx_varies_p (XEXP (dest, 0), 0)))
     {
       invalidate_memory ();
       return;
