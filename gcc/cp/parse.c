@@ -3637,7 +3637,7 @@ static const short yycheck[] = {     4,
     82,    83,    84
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/gnu/share/bison.simple"
+#line 3 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -3830,7 +3830,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/gnu/share/bison.simple"
+#line 196 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -6471,7 +6471,7 @@ case 542:
 		     Therefore, the rules for components take care of
 		     this processing.  To avoid registering the
 		     components more than once, we send NULL_TREE up
-		     here; that lets finish_member_declaration now
+		     here; that lets finish_member_declaration know
 		     that there is nothing to do.  */
 		  if (!yyvsp[0].itype)
 		    grok_x_components (yyvsp[-1].ftype.t);
@@ -7887,7 +7887,7 @@ case 877:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/gnu/share/bison.simple"
+#line 498 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
