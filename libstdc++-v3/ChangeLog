@@ -1,3 +1,8 @@
+2002-03-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * config/os/newlib/bits/ctype_noninline.h (ctype::classic): Set to
+        _ctype_.
+
 2002-03-25  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/collate_byname.cc
