@@ -2754,8 +2754,9 @@ alter_subreg (xp)
       /* Simplify_subreg can't handle some REG cases, but we have to.  */
       else if (GET_CODE (y) == REG)
 	{
-	  REGNO (x) = subreg_hard_regno (x, 1);
+	  unsigned int regno = subreg_hard_regno (x, 1);
 	  PUT_CODE (x, REG);
+	  REGNO (x) = regno;
 	  ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
 	  /* This field has a different meaning for REGs and SUBREGs.  Make
 	     sure to clear it!  */
