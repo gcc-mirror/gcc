@@ -1,3 +1,7 @@
+2005-04-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/pr15754.f90: Change annotations to dg-error.
+
 2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/weak/weak-12.c, g++.dg/ext/weak2.C: New tests.
