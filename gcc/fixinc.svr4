@@ -903,6 +903,90 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
+# Conditionalize some of <netinet/in.h> on _KERNEL being defined.
+
+file=netinet/in.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  if grep _KERNEL $file_to_fix > /dev/null; then
+    echo No change needed in $file_to_fix
+  else
+    sed -e '/#ifdef INKERNEL/i\
+#ifdef _KERNEL' \
+    -e '/* INKERNEL */a\
+#endif /* _KERNEL */' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    echo Fixed $file_to_fix
+  fi
+fi
+
+# Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
+
+file=sys/endian.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  if grep __GNUC__ $file_to_fix > /dev/null; then
+    echo No change needed in $file_to_fix
+  else
+    sed -e '/#	ifdef	__STDC__/i\
+#   if !defined (__GNUC__) && !defined (__GNUG__)' \
+    -e '		unsigned long	ntohl(), htonl();\
+#	endif/a\
+#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\
+#   include	<sys/byteorder.h>' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    echo Fixed $file_to_fix
+  fi
+fi
+
+# Commented out because tmcconne@sedona.intel.com says we don't clearly need it
+# and the text in types.h is not erroneous.
+## In sys/types.h, don't name the enum for booleans.
+#
+#file=sys/types.h
+#base=`basename $file`
+#if [ -r ${LIB}/$file ]; then
+#  file_to_fix=${LIB}/$file
+#else
+#  if [ -r ${INPUT}/$file ]; then
+#    file_to_fix=${INPUT}/$file
+#  else
+#    file_to_fix=""
+#  fi
+#fi
+#if [ \! -z "$file_to_fix" ]; then
+#  echo Checking $file_to_fix
+#  if grep "enum boolean" $file_to_fix > /dev/null; then
+#    sed -e 's/enum boolean/enum/' ${LIB}/$file > ${LIB}/${file}.sed
+#    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+#    echo Fixed $file_to_fix
+#  else
+#    echo No change needed in $file_to_fix
+#  fi
+#fi
+
 # Remove useless extern keyword from struct forward declarations in
 # <sys/stream.h> and <sys/strsubr.h>
 
