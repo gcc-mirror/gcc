@@ -1,3 +1,8 @@
+2005-02-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* t-aix43 (SHLIB_INSTALL): Create directory for shared library.
+	* t-aix52 (SHLIB_INSTALL): Same.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genpreds.c: Update copyright.
