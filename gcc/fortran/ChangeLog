@@ -13,6 +13,21 @@
 	(gfc_assign_data_value): Track the typespec for the current
 	subobject.  Use create_character_intializer.
 
+2004-08-19  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	PR fortran/16946
+	* check.c (gfc_check_reduction): New function.
+	(gfc_check_minval_maxval): Removed.
+	(gfc_check_product): Removed.
+	(gfc_check_sum): Removed.
+	* intrinsic.h: Add/remove declarations for these.
+	* gfortran.h: Add field f3red to union gfc_check_f.
+	* intrinsic.c (add_sym_3red): New function.
+	(add_functions): Register maxval, minval, product, and sum intrinsics
+	through add_sym_3red.
+	(check_specific): Handle f3red union field.
+	* iresolve.c: Whitespace change.
+
 2004-08-18  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.c (gfc_sym_type): Use pointer types for optional args.
