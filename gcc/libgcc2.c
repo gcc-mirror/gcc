@@ -1224,6 +1224,16 @@ __builtin_new (sz)
 #endif
 
 #ifdef L_caps_New
+
+/* This gets us __GNU_LIBRARY__.  */
+#include <stdio.h>
+
+#ifdef __GNU_LIBRARY__
+  /* Avoid forcing the library's meaning of `write' on the user program
+     by using the "internal" name (for use within the library)
+#define write(fd, buf, n)	__write((fd), (buf), (n))
+#endif
+
 typedef void (*vfp)(void);
 
 extern void *__builtin_new (size_t);
