@@ -1,3 +1,7 @@
+2002-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/HttpURLConnection.java: Merge with GNU Classpath.
+
 2002-11-16  Mark Wielaard  <mark@klomp.org>
 
 	Integrate work by Raif S. Naffah (raif@fl.net.au)

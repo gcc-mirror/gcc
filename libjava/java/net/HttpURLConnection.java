@@ -1,98 +1,350 @@
 // HttpURLConnection.java - Subclass of communications links using
 //			Hypertext Transfer Protocol.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA. 
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
 
 package java.net;
 
 import java.io.*;
 import java.security.Permission;
 
-/**
- * @author Warren Levy <warrenl@cygnus.com>
- * @since 1.1
- * @date March 29, 1999.
- */
-
-/**
+/*
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  Believed complete and correct.
  */
 
+/**
+ * This class provides a common abstract implementation for those 
+ * URL connection classes that will connect using the HTTP protocol.
+ * In addition to the functionality provided by the URLConnection
+ * class, it defines constants for HTTP return code values and
+ * methods for setting the HTTP request method and determining whether
+ * or not to follow redirects. 
+ *
+ * @since 1.1
+ *
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public abstract class HttpURLConnection extends URLConnection
 {
   /* HTTP Success Response Codes */
+
+  /**
+   * Indicates that the client may continue with its request.  This value
+   * is specified as part of RFC 2068 but was not included in Sun's JDK, so
+   * beware of using this value
+   */
+  static final int HTTP_CONTINUE = 100;
+  
+  /**
+   * Indicates the request succeeded.
+   */
   public static final int HTTP_OK		= 200;
+
+  /**
+   * The requested resource has been created.
+   */
   public static final int HTTP_CREATED		= 201;
+
+  /**
+   * The request has been accepted for processing but has not completed.
+   * There is no guarantee that the requested action will actually ever
+   * be completed succesfully, but everything is ok so far.
+   */
   public static final int HTTP_ACCEPTED 	= 202;
+
+  /**
+   * The meta-information returned in the header is not the actual data
+   * from the original server, but may be from a local or other copy. 
+   * Normally this still indicates a successful completion.
+   */
   public static final int HTTP_NOT_AUTHORITATIVE = 203;
+
+  /**
+   * The server performed the request, but there is no data to send
+   * back.  This indicates that the user's display should not be changed.
+   */
   public static final int HTTP_NO_CONTENT	= 204;
+
+  /**
+   * The server performed the request, but there is no data to sent back,
+   * however, the user's display should be "reset" to clear out any form
+   * fields entered.
+   */
   public static final int HTTP_RESET		= 205;
+
+  /**
+   * The server completed the partial GET request for the resource.
+   */
   public static final int HTTP_PARTIAL		= 206;
 
-  /* HTTP Redirection Response Codes */
-  public static final int HTTP_MULT_CHOICE	= 300;
-  public static final int HTTP_MOVED_PERM	= 301;
-  public static final int HTTP_MOVED_TEMP	= 302;
-  public static final int HTTP_SEE_OTHER	= 303;
-  public static final int HTTP_NOT_MODIFIED	= 304;
-  public static final int HTTP_USE_PROXY	= 305;
 
+  /* HTTP Redirection Response Codes */
+
+  /**
+   * There is a list of choices available for the requested resource.
+   */
+  public static final int HTTP_MULT_CHOICE = 300;
+  
+  /**
+   * The resource has been permanently moved to a new location.
+   */
+  public static final int HTTP_MOVED_PERM = 301;
+  
+  /**
+   * The resource requested has been temporarily moved to a new location.
+   */
+  public static final int HTTP_MOVED_TEMP = 302;
+  
+  /**
+   * The response to the request issued is available at another location.
+   */
+  public static final int HTTP_SEE_OTHER = 303;
+  
+  /**
+   * The document has not been modified since the criteria specified in
+   * a conditional GET.
+   */
+  public static final int HTTP_NOT_MODIFIED = 304;
+  
+  
   /* HTTP Client Error Response Codes */
-  public static final int HTTP_BAD_REQUEST	= 400;
-  public static final int HTTP_UNAUTHORIZED	= 401;
-  public static final int HTTP_PAYMENT_REQUIRED	= 402;
-  public static final int HTTP_FORBIDDEN	= 403;
-  public static final int HTTP_NOT_FOUND	= 404;
-  public static final int HTTP_BAD_METHOD	= 405;
-  public static final int HTTP_NOT_ACCEPTABLE	= 406;
-  public static final int HTTP_PROXY_AUTH	= 407;
-  public static final int HTTP_CLIENT_TIMEOUT	= 408;
-  public static final int HTTP_CONFLICT		= 409;
-  public static final int HTTP_GONE		= 410;
-  public static final int HTTP_LENGTH_REQUIRED	= 411;
-  public static final int HTTP_PRECON_FAILED	= 412;
-  public static final int HTTP_ENTITY_TOO_LARGE	= 413;
-  public static final int HTTP_REQ_TOO_LONG	= 414;
-  public static final int HTTP_UNSUPPORTED_TYPE	= 415;
+
+  /**
+   * The request was misformed or could not be understood.
+   */
+  public static final int HTTP_BAD_REQUEST = 400;
+  
+  /**
+   * The request made requires user authorization.  Try again with
+   * a correct authentication header.
+   */
+  public static final int HTTP_UNAUTHORIZED = 401;
+  
+  /**
+   * Code reserved for future use - I hope way in the future.
+   */
+  public static final int HTTP_PAYMENT_REQUIRED = 402;
+  
+  /**
+   * There is no permission to access the requested resource.
+   */
+  public static final int HTTP_FORBIDDEN = 403;
+  
+  /**
+   * The requested resource was not found.
+   */
+  public static final int HTTP_NOT_FOUND = 404;
+  
+  /**
+   * The specified request method is not allowed for this resource.
+   */
+  public static final int HTTP_BAD_METHOD = 405;
+  
+  /**
+   * Based on the input headers sent, the resource returned in response
+   * to the request would not be acceptable to the client.
+   */
+  public static final int HTTP_NOT_ACCEPTABLE = 406;
+  
+  /**
+   * The client must authenticate with a proxy prior to attempting this
+   * request.
+   */
+  public static final int HTTP_PROXY_AUTH = 407;
+  
+  /**
+   * The request timed out.
+   */
+  public static final int HTTP_CLIENT_TIMEOUT = 408;
+  
+  /**
+   * There is a conflict between the current state of the resource and the
+   * requested action.
+   */
+  public static final int HTTP_CONFLICT = 409;
+  
+  /**
+   * The requested resource is no longer available.  This ususally indicates
+   * a permanent condition.
+   */
+  public static final int HTTP_GONE = 410;
+
+  /**
+   * A Content-Length header is required for this request, but was not
+   * supplied.
+   */
+  public static final int HTTP_LENGTH_REQUIRED = 411;
+  
+  /**
+   * A client specified pre-condition was not met on the server.
+   */
+  public static final int HTTP_PRECON_FAILED = 412;
+  
+  /**
+   * The request sent was too large for the server to handle.
+   */
+  public static final int HTTP_ENTITY_TOO_LARGE = 413;
+  
+  /**
+   * The name of the resource specified was too long.
+   */
+  public static final int HTTP_REQ_TOO_LONG = 414;
+  
+  /**
+   * The request is in a format not supported by the requested resource.
+   */
+  public static final int HTTP_UNSUPPORTED_TYPE = 415;
+
 
   /* HTTP Server Error Response Codes */
-  public static final int HTTP_SERVER_ERROR	= 500;
-  public static final int HTTP_INTERNAL_ERROR	= 500;
-  public static final int HTTP_NOT_IMPLEMENTED	= 501;
-  public static final int HTTP_BAD_GATEWAY	= 502;
-  public static final int HTTP_UNAVAILABLE	= 503;
-  public static final int HTTP_GATEWAY_TIMEOUT	= 504;
-  public static final int HTTP_VERSION		= 505;
 
-  static boolean followRedirects = true;
+  /**
+   * This error code indicates that some sort of server error occurred.
+   */
+  public static final int HTTP_SERVER_ERROR    = 500;
 
+  /**
+   * The server encountered an unexpected error (such as a CGI script crash)
+   * that prevents the request from being fulfilled.
+   */
+  public static final int HTTP_INTERNAL_ERROR   = 500;
+
+  /**
+   * The server does not support the requested functionality.  
+   * @since 1.3
+   */
+  static final int HTTP_NOT_IMPLEMENTED = 501;
+
+  /**
+   * The proxy encountered a bad response from the server it was proxy-ing for
+   */
+  public static final int HTTP_BAD_GATEWAY = 502;
+
+  /**
+   * The HTTP service is not availalble, such as because it is overloaded
+   * and does not want additional requests.
+   */
+  public static final int HTTP_UNAVAILABLE = 503;
+
+  /**
+   * The proxy timed out getting a reply from the remote server it was
+   * proxy-ing for.
+   */
+  public static final int HTTP_GATEWAY_TIMEOUT = 504;
+
+  /**
+   * This server does not support the protocol version requested.
+   */
+  public static final int HTTP_VERSION = 505;
+
+  // Non-HTTP response static variables
+
+  /**
+   * Flag to indicate whether or not redirects should be automatically
+   * followed by default.
+   */
+  private static boolean followRedirects = true;
+
+  /**
+   * This is a list of valid request methods, separated by "|" characters.
+   */
+  private static String valid_methods
+      = "|GET|POST|HEAD|OPTIONS|PUT|DELETE|TRACE|";
+
+  // Instance Variables
+
+  /**
+   * The requested method in use for this connection. Default is GET.
+   */
   protected String method = "GET";
+
+  /**
+   * The response code received from the server
+   */
   protected int responseCode = -1;
-  protected String responseMessage;
+
+  /**
+   * The response message string received from the server.
+   */
+  protected String responseMessage = null;
+
+  /**
+   * If this instance should follow redirect requests.
+   */
   protected boolean instanceFollowRedirects = followRedirects;
 
+  /**
+   * Whether we alreadt got a valid response code for this connection.
+   * Used by <code>getResponceCode()</code> and
+   * <code>getResponseMessage()</code>.
+   */
   private boolean gotResponseVals = false;
 
+  /**
+   * Create an HttpURLConnection for the specified URL
+   *
+   * @param url The URL to create this connection for.
+   */
   protected HttpURLConnection(URL url)
   {
     super(url);
   }
-
+  
+  /**   
+   * Closes the connection to the server.
+   */
   public abstract void disconnect();
 
+  /** 
+   * Returns a boolean indicating whether or not this connection is going
+   * through a proxy
+   * 
+   * @return true if through a proxy, false otherwise
+   */
   public abstract boolean usingProxy();
 
   /**
    * Sets whether HTTP redirects (requests with response code 3xx) should be
    * automatically followed by this class. True by default
+   *
+   * @param set true if redirects should be followed, false otherwis.
    *
    * @exception SecurityException If a security manager exists and its
    * checkSetFactory method doesn't allow the operation
@@ -108,6 +360,12 @@ public abstract class HttpURLConnection extends URLConnection
     followRedirects = set;
   }
 
+  /**
+   * Returns a boolean indicating whether or not HTTP redirects will 
+   * automatically be followed or not.
+   *
+   * @return true if redirects will be followed, false otherwise
+   */
   public static boolean getFollowRedirects()
   {
     return followRedirects;
@@ -142,22 +400,31 @@ public abstract class HttpURLConnection extends URLConnection
     if (connected)
       throw new ProtocolException("Already connected");
 
-    if (method.equals("GET") || method.equals("POST") ||
-	method.equals("HEAD") || method.equals("OPTIONS") ||
-	method.equals("PUT") || method.equals("DELETE") ||
-	method.equals("TRACE"))
+    method = method.toUpperCase();
+    if (valid_methods.indexOf("|" + method + "|") != -1)
       this.method = method;
     else
-      throw new ProtocolException("Invalid HTTP request method");
+      throw new ProtocolException("Invalid HTTP request method: " + method);
+
   }
 
+  /**
+   * The request method currently in use for this connection.
+   *
+   * @return The request method
+   */
   public String getRequestMethod()
   {
     return method;
   }
 
   /**
-   * Gets the status code from an HTTP response message
+   * Gets the status code from an HTTP response message, or -1 if
+   * the response code could not be determined.
+   * Note that all valid response codes have class variables
+   * defined for them in this class.
+   *
+   * @return The response code
    *
    * @exception IOException If an error occurs
    */
@@ -170,7 +437,10 @@ public abstract class HttpURLConnection extends URLConnection
 
   /**
    * Gets the HTTP response message, if any, returned along with the
-   * response code from a server
+   * response code from a server. Null if no response message was set
+   * or an error occured while connecting.
+   *
+   * @return The response message
    *
    * @exception IOException If an error occurs
    */
