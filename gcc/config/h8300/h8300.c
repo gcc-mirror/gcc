@@ -1567,9 +1567,8 @@ output_logical_op (mode, code, operands)
 	     1) the special insn (in case of AND or XOR),
 	     2) the word-wise insn, and
 	     3) The byte-wise insn.  */
-	  if ((TARGET_H8300H || TARGET_H8300S)
-	      && ((det & 0x0000ffff) == 0x0000ffff)
-	      && code != IOR)
+	  if ((det & 0x0000ffff) == 0x0000ffff
+	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%f0,%f0" : "not.w\t%f0",
 			     operands);
@@ -1594,9 +1593,8 @@ output_logical_op (mode, code, operands)
 		}
 	    }
 
-	  if ((TARGET_H8300H || TARGET_H8300S)
-	      && ((det & 0xffff0000) == 0xffff0000)
-	      && code != IOR)
+	  if ((det & 0xffff0000) == 0xffff0000
+	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%e0,%e0" : "not.w\t%e0",
 			     operands);
