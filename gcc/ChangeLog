@@ -1,3 +1,7 @@
+2001-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2asm.c (dw2_asm_output_nstring): Fix typo in previous change.
+
 2001-08-28  Dale Johannesen  <dalej@apple.com>
 
 	* config/darwin.c (machopic_function_base_name): Add const
