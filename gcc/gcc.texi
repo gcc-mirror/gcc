@@ -247,13 +247,14 @@ bugs.  It corresponds to GCC version 2.96.
 
 @ifset USING
 @node G++ and GCC
-@chapter Compile C, C++, Objective C, or Fortran
+@chapter Compile C, C++, Objective C, Fortran, Java or CHILL
 
 @cindex Objective C
-The C, C++, and Objective C, and Fortran versions of the compiler are
-integrated; this is why we use the name ``GNU Compiler Collection''.
-GCC can compile programs written in C, C++, Objective C, or Fortran.
-The Fortran compiler is described in a separate manual.
+Several versions of the compiler (C, C++, Objective C, Fortran, Java
+and CHILL) are integrated; this is why we use the name 
+``GNU Compiler Collection''. GCC can compile programs written in any of these
+languages. The Fortran and CHILL compilers are described in 
+separate manuals. The Java compiler currently has no manual documenting it.
 
 @cindex GCC
 ``GCC'' is a common shorthand term for the GNU Compiler Collection.  This is both
@@ -273,9 +274,9 @@ whole, and more specifically to the language-independent part of the
 compiler.  For example, we refer to the optimization options as
 affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
 
-Front ends for other languages, such as Ada 9X, Fortran, Modula-3, and
-Pascal, are under development.  These front-ends, like that for C++, are
-built in subdirectories of GCC and link to it.  The result is an
+Front ends for other languages, such as Ada 95 and Pascal exist but
+have not yet been integrated into GCC. These front-ends, like that for C++, 
+are built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
 Objective C, or any of the languages for which you have installed front
 ends.
@@ -1207,10 +1208,10 @@ MALLOC=gmalloc.o
 @section Incompatibilities of GCC
 @cindex incompatibilities of GCC
 
-There are several noteworthy incompatibilities between GNU C and most
-existing (non-ANSI) versions of C.  The @samp{-traditional} option
+There are several noteworthy incompatibilities between GNU C and K&R 
+(non-ANSI) versions of C.  The @samp{-traditional} option
 eliminates many of these incompatibilities, @emph{but not all}, by
-telling GNU C to behave like the other C compilers.
+telling GNU C to behave like a K&R C compiler.
 
 @itemize @bullet
 @cindex string constants
@@ -2223,9 +2224,8 @@ that is a compiler bug.  However, you should note that your idea of
 for traditional practice''.
 
 @item
-If you are an experienced user of C or C++ (or Fortran or Objective-C)
-compilers, your suggestions
-for improvement of GCC are welcome in any case.
+If you are an experienced user of one of the languages GCC supports, your 
+suggestions for improvement of GCC are welcome in any case.
 @end itemize
 
 @node Bug Lists

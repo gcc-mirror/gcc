@@ -1,3 +1,13 @@
+Tue Jan 11 06:14:39 2000  David Starner <dstarner98@aasaa.ofe.org>
+
+	* gcc.texi (G++ and GCC): Add Java and Chill.
+	(Bug Critera): Don't list languages.
+
+	* gcc.texi (Incompatibilities): No longer claim most C compilers
+	are K&R.
+
+	* gcc.texi (G++ and GCC): Update other front-ends list.
+
 Tue Jan 11 05:49:01 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* Band-aid until haifa's bitset implementation is nuked.
