@@ -1,32 +1,37 @@
+2004-06-05  Graham Stott  <graham.stott@btinternet.com>
+
+	* combine.c(simplify_shift_const): Check shift amount is a
+	CONST_INT.
+
 2004-06-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
-        * toplev.c (init_asm_output): Add explicit 'b' to mode when
-        opening asm_out_file. 
-        * c-pch.c (c_common_write_pch): Remove unnecessary fflush before
-        reading asm_out_file. Replace fflush after reading asm_out_file
-        with fseek.
-        * hosthooks-def.h (HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY): Define
-        default and add to HOST_HOOKS_INITIALIZER. 
-        * hosthooks.h (gt_pch_alloc_granularity): Declare hook function.
-        * ggc-common.c (default_gt_pch_alloc_granularity): New function.
-        (gt_pch_save): Use host_hooks.gt_pch_alloc_granularity 
-        to set mmi.offset padding.
-         * config.gcc (i[34567]86-*-mingw32*): Set target_gtfiles to
-        $(srcdir)/config/i386/winnt.c.
-        (i[34567]86-*-pe | i[34567]86-*-cygwin*): Likewise.
-        (i[34567]86-*-uwin*): Likewise.
-        *i[34567]86-*-interix3*): Likewise.
-        * config.host (i[34567]86-*-mingw32*): Set out_host_hook_obj.
-        * config/i386/host-mingw32.c: New file.
-        * config/i386/x-mingw32: Add rule for host-mingw32.o.
-        * config/i386/winnt.c: (struct extern_list) Tag as GTY.
-        (extern_head): Likewise.
-        (struct export_list) Likewise.
-        (export_head): Likewise.
-        (i386_pe_record_external_function): Use ggc_alloc.
-        (i386_pe_record_exported_symbol): Likewise.
-        Include "gt-winnt.h" at end.
-        * doc/hostconfig.texi: Document
+	* toplev.c (init_asm_output): Add explicit 'b' to mode when
+	opening asm_out_file. 
+	* c-pch.c (c_common_write_pch): Remove unnecessary fflush before
+	reading asm_out_file. Replace fflush after reading asm_out_file
+	with fseek.
+	* hosthooks-def.h (HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY): Define
+	default and add to HOST_HOOKS_INITIALIZER. 
+	* hosthooks.h (gt_pch_alloc_granularity): Declare hook function.
+	* ggc-common.c (default_gt_pch_alloc_granularity): New function.
+	(gt_pch_save): Use host_hooks.gt_pch_alloc_granularity 
+	to set mmi.offset padding.
+	 * config.gcc (i[34567]86-*-mingw32*): Set target_gtfiles to
+	$(srcdir)/config/i386/winnt.c.
+	(i[34567]86-*-pe | i[34567]86-*-cygwin*): Likewise.
+	(i[34567]86-*-uwin*): Likewise.
+	*i[34567]86-*-interix3*): Likewise.
+	* config.host (i[34567]86-*-mingw32*): Set out_host_hook_obj.
+	* config/i386/host-mingw32.c: New file.
+	* config/i386/x-mingw32: Add rule for host-mingw32.o.
+	* config/i386/winnt.c: (struct extern_list) Tag as GTY.
+	(extern_head): Likewise.
+	(struct export_list) Likewise.
+	(export_head): Likewise.
+	(i386_pe_record_external_function): Use ggc_alloc.
+	(i386_pe_record_exported_symbol): Likewise.
+	Include "gt-winnt.h" at end.
+	* doc/hostconfig.texi: Document
 	HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY.
 
 2004-06-04  Bernardo Innocenti  <bernie@develer.com>

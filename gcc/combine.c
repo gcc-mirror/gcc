@@ -8763,9 +8763,10 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     logical expression, make a new logical expression, and apply
 	     the inverse distributive law.  This also can't be done
 	     for some (ashiftrt (xor)).  */
-	  if (code != ASHIFTRT || GET_CODE (varop)!= XOR
-	      || 0 <= trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
-					  shift_mode))
+	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT
+	     && !(code == ASHIFTRT && GET_CODE (varop) == XOR
+	          && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
+					     shift_mode)))
 	    {
 	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
 					      XEXP (varop, 0), count);
@@ -8776,6 +8777,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	      varop = apply_distributive_law (varop);
 
 	      count = 0;
+	      continue; 
 	    }
 	  break;
 
