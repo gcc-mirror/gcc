@@ -3682,6 +3682,11 @@ package body Sem_Attr is
       --  any, of the attribute, are in a non-static context. This procedure
       --  performs the required additional checks.
 
+      procedure Compile_Time_Known_Attribute (N : Node_Id; Val : Uint);
+      --  This procedure is called when the attribute N has a non-static
+      --  but compile time known value given by Val. It includes the
+      --  necessary checks for out of range values.
+
       procedure Float_Attribute_Universal_Integer
         (IEEES_Val : Int;
          IEEEL_Val : Int;
@@ -3754,6 +3759,34 @@ package body Sem_Attr is
             Next (E);
          end loop;
       end Check_Expressions;
+
+      ----------------------------------
+      -- Compile_Time_Known_Attribute --
+      ----------------------------------
+
+      procedure Compile_Time_Known_Attribute (N : Node_Id; Val : Uint) is
+         T : constant Entity_Id := Etype (N);
+
+      begin
+         Fold_Uint (N, Val);
+         Set_Is_Static_Expression (N, False);
+
+         --  Check that result is in bounds of the type if it is static
+
+         if Is_In_Range (N, T) then
+            null;
+
+         elsif Is_Out_Of_Range (N, T) then
+            Apply_Compile_Time_Constraint_Error
+              (N, "value not in range of}?");
+
+         elsif not Range_Checks_Suppressed (T) then
+            Enable_Range_Check (N);
+
+         else
+            Set_Do_Range_Check (N, False);
+         end if;
+      end Compile_Time_Known_Attribute;
 
       ---------------------------------------
       -- Float_Attribute_Universal_Integer --
@@ -4065,8 +4098,7 @@ package body Sem_Attr is
             if Is_Entity_Name (P)
               and then Known_Esize (Entity (P))
             then
-               Fold_Uint (N, Esize (Entity (P)));
-               Set_Is_Static_Expression (N, False);
+               Compile_Time_Known_Attribute (N, Esize (Entity (P)));
                return;
 
             else
@@ -4178,8 +4210,7 @@ package body Sem_Attr is
         and then (not Is_Generic_Type (P_Entity))
         and then Known_Static_RM_Size (P_Entity)
       then
-         Fold_Uint (N, RM_Size (P_Entity));
-         Set_Is_Static_Expression (N, False);
+         Compile_Time_Known_Attribute (N, RM_Size (P_Entity));
          return;
 
       --  No other cases are foldable (they certainly aren't static, and at
@@ -6270,6 +6301,7 @@ package body Sem_Attr is
                end if;
 
                if Is_Tagged_Type (Designated_Type (Typ)) then
+
                   --  If the attribute is in the context of an access
                   --  parameter, then the prefix is allowed to be of
                   --  the class-wide type (by AI-127).
@@ -6278,7 +6310,6 @@ package body Sem_Attr is
                      if not Covers (Designated_Type (Typ), Nom_Subt)
                        and then not Covers (Nom_Subt, Designated_Type (Typ))
                      then
-
                         declare
                            Desig : Entity_Id;
 
