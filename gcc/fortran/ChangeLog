@@ -1,3 +1,12 @@
+2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* intrinsic.c (add_subroutines): Add getenv and
+	get_environment_variable. (add_sym_5s): New function.
+	* intrinsic.h (gfc_resolve_get_environment_variable): Add
+	prototype.
+	* iresolve.c (gfc_resolve_get_environment_variable): New
+	function.
+
 2004-08-06  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* f95-lang.c (gfc_init_builtin_functions): Fix the number of

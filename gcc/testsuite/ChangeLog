@@ -1,3 +1,7 @@
+2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* gfortran.dg/getenv_1.f90: New test.
+
 2004-08-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/symbian4.c: Expect a 2-byte wchar_t, not a 4-byte

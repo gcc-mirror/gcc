@@ -1,3 +1,9 @@
+2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* intrinsics/env.c: New file.
+	* Makefile.am: Add env.c to build.
+	* Makefile.in: Regenerate.
+
 2004-08-05  Victor Leikehman  <lei@il.ibm.com>
 
 	PR libgfortran/16704

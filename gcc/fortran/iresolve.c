@@ -1449,6 +1449,19 @@ gfc_resolve_get_command_argument (gfc_code * c)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
+/* Resolve the get_environment_variable intrinsic subroutine. */
+
+void
+gfc_resolve_get_environment_variable (gfc_code * code)
+{
+  const char *name;
+  int kind;
+
+  kind = gfc_default_integer_kind();
+  name = gfc_get_string (PREFIX("get_environment_variable_i%d"), kind);
+  code->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
 
 /* Determine if the arguments to SYSTEM_CLOCK are INTEGER(4) or INTEGER(8) */
 
