@@ -1,3 +1,21 @@
+2000-06-04  Alex Samuel  <samuel@codesourcery.com>
+
+	* Makefile.in (CFILES): Add cp-demangle.c and dyn-string.c.
+	(REQUIRED_OFILES): Add cp-demangle.o and dyn-string.o.
+	(cp-demangle.o): New dependency.
+	(dyn-string.o): Likewise.
+
+	* dyn-string.c: Move here from gcc/dyn-string.c.  Add new functions.
+
+	* cplus-dem.c (libiberty_demanglers): Add initializer for new-ABI
+	demangler.
+	(cplus_demangle): Call cplus_demangle_new_abi if in new-ABI
+	demangling mode.
+	(gnu_new_abi_symbol_characters): New function.
+	(main): Use gnu_new_abi_symbol_characters.  * cp-demangle.c: New
+	file.
+	* cp-demangle.c: New file.
+	
 Tue May 30 16:45:25 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* floatformat.c: Add name to each floatformat field.

@@ -291,6 +291,12 @@ struct demangler_engine libiberty_demanglers[] =
   }
   ,
   {
+    GNU_NEW_ABI_DEMANGLING_STYLE_STRING,
+    gnu_new_abi_demangling,
+    "GNU (g++) new-ABI-style demangling"
+  }
+  ,
+  {
     NULL, unknown_demangling, NULL
   }
 };
@@ -875,6 +881,10 @@ cplus_demangle (mangled, options)
   work -> options = options;
   if ((work -> options & DMGL_STYLE_MASK) == 0)
     work -> options |= (int) current_demangling_style & DMGL_STYLE_MASK;
+
+  /* The new-ABI demangling is implemented elsewhere.  */
+  if (GNU_NEW_ABI_DEMANGLING)
+    return cplus_demangle_new_abi (mangled);
 
   ret = internal_cplus_demangle (work, mangled);
   squangle_mop_up (work);
@@ -4574,6 +4584,9 @@ standard_symbol_characters PARAMS ((void));
 static const char *
 hp_symbol_characters PARAMS ((void));
 
+static const char *
+gnu_new_abi_symbol_characters PARAMS ((void));
+
 /* Return the string of non-alnum characters that may occur 
    as a valid symbol component, in the standard assembler symbol
    syntax.  */
@@ -4619,6 +4632,17 @@ static const char *
 hp_symbol_characters ()
 {
   return "_$.<>#,*&[]:(){}";
+}
+
+
+/* Return the string of non-alnum characters that may occur 
+   as a valid symbol component in the GNU standard C++ ABI mangling
+   scheme.  */
+
+static const char *
+gnu_new_abi_symbol_characters ()
+{
+  return "_";
 }
 
 
@@ -4695,6 +4719,9 @@ main (argc, argv)
 	  break;
 	case hp_demangling:
 	  valid_symbols = hp_symbol_characters ();
+	  break;
+	case gnu_new_abi_demangling:
+	  valid_symbols = gnu_new_abi_symbol_characters ();
 	  break;
 	default:
 	  /* Folks should explicitly indicate the appropriate alphabet for

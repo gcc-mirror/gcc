@@ -1,3 +1,14 @@
+2000-06-04  Alex Samuel  <samuel@codesourcery.com>
+
+	* dyn-string.h: Move here from gcc/dyn-string.h.  Add new functions.
+
+	* demangle.h (DMGL_GNU_NEW_ABI): New macro.
+	(DMGL_STYLE_MASK): Or in DMGL_GNU_NEW_ABI. 
+	(current_demangling_style): Add gnu_new_abi_demangling.
+	(GNU_NEW_ABI_DEMANGLING_STYLE_STRING): New macro.
+	(GNU_NEW_ABI_DEMANGLING): Likewise.
+	(cplus_demangle_new_abi): New declaration.
+	
 Tue May 30 16:53:34 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* floatformat.h (struct floatformat): Add field name.

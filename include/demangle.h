@@ -24,21 +24,23 @@
 
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
-#define DMGL_NO_OPTS	0		/* For readability... */
-#define DMGL_PARAMS	(1 << 0)	/* Include function args */
-#define DMGL_ANSI	(1 << 1)	/* Include const, volatile, etc */
-#define DMGL_JAVA	(1 << 2)	/* Demangle as Java rather than C++. */
+#define DMGL_NO_OPTS	 0		/* For readability... */
+#define DMGL_PARAMS	 (1 << 0)	/* Include function args */
+#define DMGL_ANSI	 (1 << 1)	/* Include const, volatile, etc */
+#define DMGL_JAVA	 (1 << 2)	/* Demangle as Java rather than C++. */
 
-#define DMGL_AUTO	(1 << 8)
-#define DMGL_GNU	(1 << 9)
-#define DMGL_LUCID	(1 << 10)
-#define DMGL_ARM	(1 << 11)
-#define DMGL_HP 	(1 << 12)       /* For the HP aCC compiler; same as ARM
-                                           except for template arguments, etc. */
-#define DMGL_EDG	(1 << 13)
+#define DMGL_AUTO	 (1 << 8)
+#define DMGL_GNU	 (1 << 9)
+#define DMGL_LUCID	 (1 << 10)
+#define DMGL_ARM	 (1 << 11)
+#define DMGL_HP 	 (1 << 12)       /* For the HP aCC compiler;
+                                            same as ARM except for
+                                            template arguments, etc. */
+#define DMGL_EDG	 (1 << 13)
+#define DMGL_GNU_NEW_ABI (1 << 14)
 
 /* If none of these are set, use 'current_demangling_style' as the default. */
-#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG)
+#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_NEW_ABI)
 
 /* Enumeration of possible demangling styles.
 
@@ -56,17 +58,19 @@ extern enum demangling_styles
   lucid_demangling = DMGL_LUCID,
   arm_demangling = DMGL_ARM,
   hp_demangling = DMGL_HP,
-  edg_demangling = DMGL_EDG
+  edg_demangling = DMGL_EDG,
+  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI,
 } current_demangling_style;
 
 /* Define string names for the various demangling styles. */
 
-#define AUTO_DEMANGLING_STYLE_STRING	"auto"
-#define GNU_DEMANGLING_STYLE_STRING	"gnu"
-#define LUCID_DEMANGLING_STYLE_STRING	"lucid"
-#define ARM_DEMANGLING_STYLE_STRING	"arm"
-#define HP_DEMANGLING_STYLE_STRING	"hp"
-#define EDG_DEMANGLING_STYLE_STRING	"edg"
+#define AUTO_DEMANGLING_STYLE_STRING	      "auto"
+#define GNU_DEMANGLING_STYLE_STRING    	      "gnu"
+#define LUCID_DEMANGLING_STYLE_STRING	      "lucid"
+#define ARM_DEMANGLING_STYLE_STRING	      "arm"
+#define HP_DEMANGLING_STYLE_STRING	      "hp"
+#define EDG_DEMANGLING_STYLE_STRING	      "edg"
+#define GNU_NEW_ABI_DEMANGLING_STYLE_STRING   "gnu-new-abi"
 
 /* Some macros to test what demangling style is active. */
 
@@ -77,6 +81,7 @@ extern enum demangling_styles
 #define ARM_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_ARM)
 #define HP_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_HP)
 #define EDG_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_EDG)
+#define GNU_NEW_ABI_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNU_NEW_ABI)
 
 /* Provide information about the available demangle styles. This code is
    pulled from gdb into libiberty because it is useful to binutils also.  */
@@ -107,4 +112,9 @@ cplus_demangle_set_style PARAMS ((enum demangling_styles style));
 
 extern enum demangling_styles 
 cplus_demangle_name_to_style PARAMS ((const char *name));
+
+/* New-ABI demangling entry point, defined in cp-demangle.c.  */
+extern char*
+cplus_demangle_new_abi PARAMS ((const char* mangled));
+
 #endif	/* DEMANGLE_H */
