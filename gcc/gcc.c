@@ -2204,7 +2204,7 @@ process_command (argc, argv)
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
 	  /* Compensate for the +e options to the C++ front-end;
-	     they're there simply for cfront call-compatability.  We do
+	     they're there simply for cfront call-compatibility.  We do
 	     some magic in default_compilers to pass them down properly.
 	     Note we deliberately start at the `+' here, to avoid passing
 	     -e0 or -e1 down into the linker.  */
