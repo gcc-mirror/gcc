@@ -9,6 +9,9 @@ Thu Oct 14 22:14:23 1999  Richard Henderson  <rth@cygnus.com>
 
 Thu Oct 14 19:44:08 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* fold-const.c (fold): Convert (or (not arg0) (not arg1))
+	to (not (and (arg0) (arg1))). Similary for and.
+
 	* fold-const.c (fold): Move bit_rotate code to the EXPR_PLUS case,
 	falltrought to assocate code.
 	Convert XOR to OR in code like (a&c1)^(a&c2) where c1 and c2 don't have
