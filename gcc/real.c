@@ -352,7 +352,7 @@ static void eshup6	PROTO((unsigned EMUSHORT *));
 static void eshdn6	PROTO((unsigned EMUSHORT *));
 static void eaddm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void esubm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
-static void m16m	PROTO((unsigned short, unsigned short *,
+static void m16m	PROTO((unsigned int, unsigned short *,
 			       unsigned short *));
 static int edivm	PROTO((unsigned short *, unsigned short *));
 static int emulm	PROTO((unsigned short *, unsigned short *));
@@ -2066,7 +2066,7 @@ emulm (a, b)
 
 static void
 m16m (a, b, c)
-     unsigned short a;
+     unsigned int a;
      unsigned short b[], c[];
 {
   register unsigned short *pp;
@@ -2139,7 +2139,7 @@ edivm (den, num)
       else
 	tquot = tnum / tdenm;
       /* Multiply denominator by trial quotient digit. */
-      m16m (tquot, den, tprod);
+      m16m ((unsigned int)tquot, den, tprod);
       /* The quotient digit may have been overestimated. */
       if (ecmpm (tprod, num) > 0)
 	{
@@ -2199,7 +2199,7 @@ emulm (a, b)
 	}
       else
 	{
-	  m16m (*p--, b, pprod);
+	  m16m ((unsigned int) *p--, b, pprod);
 	  eaddm(pprod, equot);
 	}
       j |= *q;
