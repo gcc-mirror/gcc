@@ -1102,7 +1102,6 @@ extern void write_classfile PARAMS ((tree));
 extern char *print_int_node PARAMS ((tree));
 extern void parse_error_context PARAMS ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern tree build_primtype_type_ref PARAMS ((const char *));
 extern void finish_class PARAMS ((void));
 extern void java_layout_seen_class_methods PARAMS ((void));
 extern unsigned int check_for_initialization PARAMS ((tree));

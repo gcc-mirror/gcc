@@ -258,7 +258,6 @@ static int check_method_redefinition PARAMS ((tree, tree));
 static int check_method_types_complete PARAMS ((tree));
 static void java_check_regular_methods PARAMS ((tree));
 static void java_check_abstract_methods PARAMS ((tree));
-static tree maybe_build_primttype_type_ref PARAMS ((tree, tree));
 static void unreachable_stmt_error PARAMS ((tree));
 static tree find_expr_with_wfl PARAMS ((tree));
 static void missing_return_error PARAMS ((tree));
@@ -3650,7 +3649,7 @@ find_as_inner_class (enclosing, name, cl)
   /* Otherwise, create a qual for the other part of the resolution. */
   else
     qual = build_tree_list (build_expr_wfl (name, NULL, 0, 0), NULL_TREE);
-
+  
   return find_as_inner_class_do (qual, enclosing);
 }
 
@@ -12247,8 +12246,6 @@ complete_function_arguments (node)
 	 `+' operator. Build `parm.toString()' and expand it. */
       if ((temp = patch_string (parm)))
 	parm = temp;
-      /* Inline PRIMTYPE.TYPE read access */
-      parm = maybe_build_primttype_type_ref (parm, wfl);
 
       TREE_VALUE (cn) = parm;
     }
@@ -12790,33 +12787,6 @@ check_final_assignment (lvalue, wfl)
   return 1;
 }
 
-/* Inline references to java.lang.PRIMTYPE.TYPE when accessed in
-   read. This is needed to avoid circularities in the implementation
-   of these fields in libjava. */
-
-static tree
-maybe_build_primttype_type_ref (rhs, wfl)
-    tree rhs, wfl;
-{
-  tree to_return = NULL_TREE;
-  tree rhs_type = TREE_TYPE (rhs);
-  if (TREE_CODE (rhs) == COMPOUND_EXPR)
-    {
-      tree n = TREE_OPERAND (rhs, 1);
-      if (TREE_CODE (n) == VAR_DECL 
-	  && DECL_NAME (n) == TYPE_identifier_node
-	  && rhs_type == class_ptr_type
-	  && TREE_CODE (wfl) == EXPR_WITH_FILE_LOCATION
-	  && TREE_CODE (EXPR_WFL_NODE (wfl)) == IDENTIFIER_NODE)
-	{
-	  const char *self_name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl));
-	  if (!strncmp (self_name, "java.lang.", 10))
-	    to_return = build_primtype_type_ref (self_name);
-	}
-    }
-  return (to_return ? to_return : rhs );
-}
-
 /* 15.25 Assignment operators. */
 
 static tree
@@ -12926,10 +12896,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
       free (t1); free (t2);
       error_found = 1;
     }
-
-  /* Inline read access to java.lang.PRIMTYPE.TYPE */
-  if (new_rhs)
-    new_rhs = maybe_build_primttype_type_ref (new_rhs, wfl_op2);
 
   if (error_found)
     return error_mark_node;
@@ -14875,10 +14841,7 @@ array_constructor_check_entry (type, entry)
     }
   
   if (new_value)
-    {
-      new_value = maybe_build_primttype_type_ref (new_value, wfl_value);
-      TREE_VALUE (entry) = new_value;
-    }
+    TREE_VALUE (entry) = new_value;
 
   if (array_type_string)
     free (array_type_string);

@@ -1,3 +1,15 @@
+2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* expr.c (expand_java_field_op): Don't special-case references to
+	java.lang.PRIMTYPE.TYPE.
+	(build_primtype_type_ref): Removed.
+	* java-tree.h (build_primtype_type_ref): Remove prototype.
+	* parse.y (maybe_build_primttype_type_ref): Removed.
+	(complete_function_arguments): Don't special-case references to
+	java.lang.PRIMTYPE.TYPE.
+	(patch_assignment): Likewise.
+	(array_constructor_check_entry): Likewise.
+
 2001-10-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* mangle.c (static tree compression_table): Fixed leading comment.
