@@ -1,3 +1,8 @@
+2003-05-04  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/DataInputStream.java:
+	Reordered methods to match libgcj.
+
 2003-05-03  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gnu/awt/gtk/GtkButtonPeer.java: Fix misspelling of
