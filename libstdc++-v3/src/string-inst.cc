@@ -46,6 +46,7 @@ namespace std
   typedef basic_string<C> S;
 
   template class basic_string<C>;
+  template S::size_type S::_Rep::_S_max_size;
 
   template S operator+(const C*, const S&);
   template S operator+(C, const S&);

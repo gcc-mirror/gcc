@@ -1,3 +1,7 @@
+2001-06-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/string-inst.cc (_Rep::_S_max_size): Add instantiation.
+
 2001-06-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/3045
