@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-10-07'
+timestamp='2004-02-16'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -197,11 +197,17 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM is used.
 	echo "${machine}-${os}${release}"
 	exit 0 ;;
+    amd64:OpenBSD:*:*)
+	echo x86_64-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     amiga:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     arc:OpenBSD:*:*)
 	echo mipsel-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    cats:OpenBSD:*:*)
+	echo arm-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     hp300:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
@@ -221,6 +227,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     mvmeppc:OpenBSD:*:*)
 	echo powerpc-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
+    pegasos:OpenBSD:*:*)
+	echo powerpc-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     pmax:OpenBSD:*:*)
 	echo mipsel-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
@@ -235,6 +244,15 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     *:OpenBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    *:ekkoBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-ekkobsd${UNAME_RELEASE}
+	exit 0 ;;
+    macppc:MirBSD:*:*)
+	echo powerppc-unknown-mirbsd${UNAME_RELEASE}
+	exit 0 ;;
+    *:MirBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-mirbsd${UNAME_RELEASE}
 	exit 0 ;;
     alpha:OSF1:*:*)
 	if test $UNAME_RELEASE = "V4.0"; then
@@ -306,6 +324,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     *:OS/390:*:*)
 	echo i370-ibm-openedition
+	exit 0 ;;
+    *:OS400:*:*)
+        echo powerpc-ibm-os400
 	exit 0 ;;
     arm:RISC*:1.[012]*:*|arm:riscix:1.[012]*:*)
 	echo arm-acorn-riscix${UNAME_RELEASE}
@@ -399,6 +420,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     *:*MiNT:*:* | *:*mint:*:* | *:*TOS:*:*)
         echo m68k-unknown-mint${UNAME_RELEASE}
         exit 0 ;;
+    m68k:machten:*:*)
+	echo m68k-apple-machten${UNAME_RELEASE}
+	exit 0 ;;
     powerpc:machten:*:*)
 	echo powerpc-apple-machten${UNAME_RELEASE}
 	exit 0 ;;
@@ -742,6 +766,11 @@ EOF
         FUJITSU_REL=`echo ${UNAME_RELEASE} | sed -e 's/ /_/'`
         echo "${FUJITSU_PROC}-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
         exit 0 ;;
+    5000:UNIX_System_V:4.*:*)
+        FUJITSU_SYS=`uname -p | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz' | sed -e 's/\///'`
+        FUJITSU_REL=`echo ${UNAME_RELEASE} | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz' | sed -e 's/ /_/'`
+        echo "sparc-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
+	exit 0 ;;
     i*86:BSD/386:*:* | i*86:BSD/OS:*:* | *:Ascend\ Embedded/OS:*:*)
 	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
 	exit 0 ;;
@@ -986,6 +1015,9 @@ EOF
     i*86:atheos:*:*)
 	echo ${UNAME_MACHINE}-unknown-atheos
 	exit 0 ;;
+	i*86:syllable:*:*)
+	echo ${UNAME_MACHINE}-pc-syllable
+	exit 0 ;;
     i*86:LynxOS:2.*:* | i*86:LynxOS:3.[01]*:* | i*86:LynxOS:4.0*:*)
 	echo i386-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
@@ -1172,7 +1204,7 @@ EOF
     *:QNX:*:4*)
 	echo i386-pc-qnx
 	exit 0 ;;
-    NSR-[DGKLNPTVWY]:NONSTOP_KERNEL:*:*)
+    NSR-?:NONSTOP_KERNEL:*:*)
 	echo nsr-tandem-nsk${UNAME_RELEASE}
 	exit 0 ;;
     *:NonStop-UX:*:*)
@@ -1215,6 +1247,9 @@ EOF
 	exit 0 ;;
     SEI:*:*:SEIUX)
         echo mips-sei-seiux${UNAME_RELEASE}
+	exit 0 ;;
+    *:DragonFly:*:*)
+	echo ${UNAME_MACHINE}-unknown-dragonfly`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
 	exit 0 ;;
 esac
 

@@ -1,3 +1,8 @@
+2004-02-20  Andrew Cagney  <cagney@redhat.com>
+
+	* config.guess: Update from version 2002-01-10 to 2004-02-16.
+	* config.sub: Update from version 2002-01-02 to 2004-02-16.
+
 2004-02-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acinclude.m4: Remove bogus duplicate call to AC_CANONICAL_BUILD.
