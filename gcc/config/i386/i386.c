@@ -12125,13 +12125,21 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
       if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
 	  && !ix86_agi_dependant (insn, dep_insn, insn_type))
  	{
-	  /* Claim moves to take one cycle, as core can issue one load
-	     at time and the next load can start cycle later.  */
-	  if (dep_insn_type == TYPE_IMOV
-	      || dep_insn_type == TYPE_FMOV)
-	    cost = 0;
-	  else if (cost >= 3)
-	    cost -= 3;
+	  enum attr_unit unit = get_attr_unit (insn);
+	  int loadcost = 3;
+
+	  /* Because of the difference between the length of integer and
+	     floating unit pipeline preparation stages, the memory operands
+	     for floating point are cheaper. 
+
+	     ??? For Athlon it the difference is most propbably 2.  */
+	  if (unit == UNIT_INTEGER || unit == UNIT_UNKNOWN)
+	    loadcost = 3;
+	  else
+	    loadcost = TARGET_ATHLON ? 2 : 0;
+
+	  if (cost >= loadcost)
+	    cost -= loadcost;
 	  else
 	    cost = 0;
 	}

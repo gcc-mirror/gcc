@@ -439,15 +439,17 @@ make_edges (label_value_list, min, max, update_p)
 	}
 
       /* Find out if we can drop through to the next block.  */
-      insn = next_nonnote_insn (insn);
+      insn = NEXT_INSN (insn);
+      while (insn
+	     && GET_CODE (insn) == NOTE
+	     && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
+	insn = NEXT_INSN (insn);
+
       if (!insn || (bb->next_bb == EXIT_BLOCK_PTR && force_fallthru))
 	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
       else if (bb->next_bb != EXIT_BLOCK_PTR)
 	{
-	  rtx tmp = bb->next_bb->head;
-	  if (GET_CODE (tmp) == NOTE)
-	    tmp = next_nonnote_insn (tmp);
-	  if (force_fallthru || insn == tmp)
+	  if (force_fallthru || insn == bb->next_bb->head)
 	    cached_make_edge (edge_cache, bb, bb->next_bb, EDGE_FALLTHRU);
 	}
     }
