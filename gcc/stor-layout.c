@@ -753,6 +753,9 @@ place_field (rli, field)
 	  rli->offset = round_up (rli->offset, desired_align / BITS_PER_UNIT);
 	}
 
+      if (! TREE_CONSTANT (rli->offset))
+	rli->offset_align = desired_align;
+
     }
 
   /* Handle compatibility with PCC.  Note that if the record has any
@@ -821,9 +824,6 @@ place_field (rli, field)
     }
 #endif
 
-  if (! TREE_CONSTANT (rli->offset))
-    rli->offset_align = DECL_ALIGN (field);
-
   /* Offset so far becomes the position of this field after normalizing.  */
   normalize_rli (rli);
   DECL_FIELD_OFFSET (field) = rli->offset;
@@ -866,6 +866,7 @@ place_field (rli, field)
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset, DECL_SIZE_UNIT (field));
       rli->bitpos = bitsize_zero_node;
+      rli->offset_align = MIN (rli->offset_align, DECL_ALIGN (field));
     }
   else
     {
