@@ -2861,7 +2861,7 @@ scan_prog_file (prog_name, which_pass)
   (void) ldclose(ldptr);
 #endif
 }
-
+#endif /* OBJECT_FORMAT_COFF */
 
 #ifdef COLLECT_EXPORT_LIST
 /* Given a library name without "lib" prefix, this function
@@ -2941,9 +2941,7 @@ ignore_library (name)
     if (! strcmp (name, *p)) return 1;
   return 0;
 }
-#endif
-
-#endif /* OBJECT_FORMAT_COFF */
+#endif /* COLLECT_EXPORT_LIST */
 
 
 /*

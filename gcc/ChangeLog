@@ -1,3 +1,9 @@
+2002-03-12  Tom Rix  <trix@redhat.com>
+
+	* collect2.c (resolve_lib_name): Move outside of
+	OBJECT_FORMAT_COFF ifdef. 
+	(ignore_library): Same.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa (CRTSTUFF_T_CFLAGS_S): Define.
