@@ -3,6 +3,11 @@
 	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Add
 	dummy default argument to the non-limit implementation.
 
+	bootstrap/3963
+	* include/Makefile.am: Use relative file path in rule to allow
+	colon in $(objdir).
+	* include/Makefile.in: Rebuilt.
+
 2001-08-10   Gunter Winkler gunter.winkler@mathematik.tu-chemnitz.de
 
 	* include/bits/std_complex.h (complex<long double>::operator*=,
