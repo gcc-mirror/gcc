@@ -1,3 +1,8 @@
+2005-02-12  Richard Henderson  <rth@redhat.com>
+
+	* utils.c (gnat_type_for_mode): Return NULL for COMPLEX modes;
+	validate SCALAR_INT_MODE_P before calling gnat_type_for_size.
+
 2005-02-10  Andreas Jaeger  <aj@suse.de>
 
 	* init.c (__gnat_initialize): Mark parameter as unused.
