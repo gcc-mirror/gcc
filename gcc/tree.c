@@ -3003,6 +3003,33 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 	TREE_TYPE (decl) = type;
       valid = 1;
     }
+
+  /* Handle putting a type attribute on pointer-to-function-type by putting
+     the attribute on the function type.  */
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
+	   && VALID_MACHINE_TYPE_ATTRIBUTE (TREE_TYPE (type), type_attr_list,
+					    attr_name, attr_args))
+    {
+      tree inner_type = TREE_TYPE (type);
+      tree inner_attr_list = TYPE_ATTRIBUTES (inner_type);
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
+				    type_attr_list);
+
+      if (attr != NULL_TREE)
+	TREE_VALUE (attr) = attr_args;
+      else
+	{
+	  inner_attr_list = tree_cons (attr_name, attr_args, inner_attr_list);
+	  inner_type = build_type_attribute_variant (inner_type,
+						     inner_attr_list);
+	}
+
+      if (decl != 0)
+	TREE_TYPE (decl) = build_pointer_type (inner_type);
+
+      valid = 1;
+    }
 #endif
 
   return valid;
