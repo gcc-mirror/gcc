@@ -1,4 +1,8 @@
 2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi: Fix typo in patches e-mail address.
+
+2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
 	    Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* root.texi: Define `help' and `patches' mailing list
