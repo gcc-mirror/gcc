@@ -145,7 +145,6 @@ sub undoc {
 	    next unless /^\# *define/;
 	    s/\# *define *//;
 	}
-	next if $filename =~ /mpw\.c/;
 
 	s/ VPARAMS//;
 	s/ *\177.*//;

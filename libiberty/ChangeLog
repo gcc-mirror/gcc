@@ -1,3 +1,13 @@
+2005-03-07  Ian Lance Taylor  <ian@airs.com>
+
+	* mpw-config.in: Remove.
+	* mpw-make.sed: Remove.
+	* mpw.c: Remove.
+	* Makefile.in (CFILES): Remove pex-mpw.c.
+	(CONFIGURED_OFILES): Remove pex-mpw.o.
+	(mpw.o, pex-mpw.o): Remove targets.
+	* maint-tool (undoc): Remove reference to mpw.c.
+
 2005-03-06  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac (target_header_dir): vfork is a stub under djgpp.

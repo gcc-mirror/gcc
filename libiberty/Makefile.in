@@ -142,7 +142,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 mempcpy.c memset.c mkstemps.c					\
 	objalloc.c obstack.c						\
 	partition.c							\
-	 pex-djgpp.c pex-mpw.c pex-msdos.c pex-os2.c			\
+	 pex-djgpp.c pex-msdos.c pex-os2.c				\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
@@ -188,7 +188,7 @@ CONFIGURED_OFILES = ./asprintf.o ./atexit.o				\
 	./index.o ./insque.o						\
 	./memchr.o ./memcmp.o ./memcpy.o ./memmove.o ./mempcpy.o	\
 	 ./memset.o ./mkstemps.o					\
-	./pex-djgpp.o ./pex-mpw.o ./pex-msdos.o ./pex-os2.o		\
+	./pex-djgpp.o ./pex-msdos.o ./pex-os2.o			\
 	 ./pex-unix.o ./pex-win32.o					\
 	 ./putenv.o							\
 	./random.o ./rename.o ./rindex.o				\
@@ -717,12 +717,6 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/mkstemps.c $(OUTPUT_OPTION)
 
-./mpw.o: $(srcdir)/mpw.c
-	if [ x"$(PICFLAG)" != x ]; then \
-	  $(COMPILE.c) $(PICFLAG) $(srcdir)/mpw.c -o pic/$@; \
-	else true; fi
-	$(COMPILE.c) $(srcdir)/mpw.c $(OUTPUT_OPTION)
-
 ./msdos.o: $(srcdir)/msdos.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/msdos.c -o pic/$@; \
@@ -755,13 +749,6 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-djgpp.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-djgpp.c $(OUTPUT_OPTION)
-
-./pex-mpw.o: $(srcdir)/pex-mpw.c config.h $(INCDIR)/ansidecl.h \
-	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
-	if [ x"$(PICFLAG)" != x ]; then \
-	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-mpw.c -o pic/$@; \
-	else true; fi
-	$(COMPILE.c) $(srcdir)/pex-mpw.c $(OUTPUT_OPTION)
 
 ./pex-msdos.o: $(srcdir)/pex-msdos.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h \
