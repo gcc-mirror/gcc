@@ -1,5 +1,17 @@
 2004-02-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_construct.h: Wrap overlong lines, reformat
+	according to the coding standards.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_raw_storage_iter.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/stream_iterator.h: Likewise.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/bits/type_traits.h: Likewise.
+
+2004-02-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_filebuf/open/char/9507.cc:
 	Adjust timings.
 

@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -109,7 +109,8 @@ namespace std
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
-      return std::__uninitialized_copy_aux(__first, __last, __result, _Is_POD());
+      return std::__uninitialized_copy_aux(__first, __last, __result,
+					   _Is_POD());
     }
 
   inline char*
@@ -138,15 +139,15 @@ namespace std
 
   template<typename _ForwardIterator, typename _Tp>
     void
-    __uninitialized_fill_aux(_ForwardIterator __first, 
-			     _ForwardIterator __last, 
+    __uninitialized_fill_aux(_ForwardIterator __first, _ForwardIterator __last, 
 			     const _Tp& __x, __false_type)
     {
       _ForwardIterator __cur = __first;
-      try {
-	for ( ; __cur != __last; ++__cur)
-	  std::_Construct(&*__cur, __x);
-      }
+      try
+	{
+	  for ( ; __cur != __last; ++__cur)
+	    std::_Construct(&*__cur, __x);
+	}
       catch(...)
 	{
 	  std::_Destroy(__first, __cur);
@@ -235,10 +236,12 @@ namespace std
 			      _InputIterator2 __last2,
 			      _ForwardIterator __result)
     {
-      _ForwardIterator __mid = std::uninitialized_copy(__first1, __last1, __result);
-      try {
-	return std::uninitialized_copy(__first2, __last2, __mid);
-      }
+      _ForwardIterator __mid = std::uninitialized_copy(__first1, __last1,
+						       __result);
+      try
+	{
+	  return std::uninitialized_copy(__first2, __last2, __mid);
+	}
       catch(...)
 	{ 
 	  std::_Destroy(__result, __mid);
@@ -252,13 +255,14 @@ namespace std
   template<typename _ForwardIterator, typename _Tp, typename _InputIterator>
     inline _ForwardIterator 
     __uninitialized_fill_copy(_ForwardIterator __result, _ForwardIterator __mid,
-			      const _Tp& __x,
-			      _InputIterator __first, _InputIterator __last)
+			      const _Tp& __x, _InputIterator __first,
+			      _InputIterator __last)
     {
       std::uninitialized_fill(__result, __mid, __x);
-      try {
-	return std::uninitialized_copy(__first, __last, __mid);
-      }
+      try
+	{
+	  return std::uninitialized_copy(__first, __last, __mid);
+	}
       catch(...)
 	{
 	  std::_Destroy(__result, __mid);
@@ -272,8 +276,8 @@ namespace std
   template<typename _InputIterator, typename _ForwardIterator, typename _Tp>
     inline void
     __uninitialized_copy_fill(_InputIterator __first1, _InputIterator __last1,
-			      _ForwardIterator __first2, _ForwardIterator __last2,
-			      const _Tp& __x)
+			      _ForwardIterator __first2,
+			      _ForwardIterator __last2, const _Tp& __x)
     {
       _ForwardIterator __mid2 = std::uninitialized_copy(__first1, __last1, 
 							__first2);

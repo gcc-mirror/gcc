@@ -45,7 +45,7 @@ namespace std
   template<typename _Tp, typename _CharT = char, 
            typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t> 
     class istream_iterator 
-      : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
+    : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
     {
     public:
       typedef _CharT                         char_type;
@@ -59,10 +59,13 @@ namespace std
 
     public:
       ///  Construct end of input stream iterator.
-      istream_iterator() : _M_stream(0), _M_ok(false) {}
+      istream_iterator()
+      : _M_stream(0), _M_ok(false) {}
 
       ///  Construct start of input stream iterator.
-      istream_iterator(istream_type& __s) : _M_stream(&__s) { _M_read(); }
+      istream_iterator(istream_type& __s)
+      : _M_stream(&__s)
+      { _M_read(); }
 
       istream_iterator(const istream_iterator& __obj) 
       : _M_stream(__obj._M_stream), _M_value(__obj._M_value), 
@@ -104,14 +107,14 @@ namespace std
 
       bool 
       _M_equal(const istream_iterator& __x) const
-      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream);}
+      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream); }
 
     private:      
       void 
       _M_read() 
       {
 	_M_ok = (_M_stream && *_M_stream) ? true : false;
-	if (_M_ok) 
+	if (_M_ok)
 	  {
 	    *_M_stream >> _M_value;
 	    _M_ok = *_M_stream ? true : false;
@@ -133,7 +136,6 @@ namespace std
 	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
     { return !__x._M_equal(__y); }
 
-
   /**
    *  @brief  Provides output iterator semantics for streams.
    *
@@ -148,7 +150,7 @@ namespace std
   template<typename _Tp, typename _CharT = char, 
            typename _Traits = char_traits<_CharT> >
     class ostream_iterator 
-      : public iterator<output_iterator_tag, void, void, void, void>
+    : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
       //@{
@@ -197,13 +199,16 @@ namespace std
       }
       
       ostream_iterator& 
-      operator*() { return *this; }
+      operator*()
+      { return *this; }
       
       ostream_iterator& 
-      operator++() { return *this; } 
+      operator++()
+      { return *this; } 
       
       ostream_iterator& 
-      operator++(int) { return *this; } 
+      operator++(int)
+      { return *this; } 
     };
 } // namespace std
 #endif
