@@ -1,27 +1,21 @@
+/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+
 /* Test various combinations of missing parentheses give the correct
    missing parenthesis message.  */
 
 /* { dg-do preprocess } */
 
-#if (1
+#if (1          /* { dg-error "missing '\\)'" "missing ')' no. 1" } */
 #endif
 
-#if 2 * (3 + 4
+#if 2 * (3 + 4	/* { dg-error "missing '\\)'" "missing ')' no. 2" } */
 #endif
 
-#if (2))
+#if (2))	/* { dg-error "missing '\\('" "missing '(' no. 1" } */
 #endif
 
-#if )
+#if )		/* { dg-error "missing '\\('" "missing '(' no. 2" } */
 #endif
 
-#if 4)
+#if 4)		/* { dg-error "missing '\\('" "missing '(' no. 3" } */
 #endif
-
-/* { dg-error "missing '\\)'" "missing ')' no. 1"  { target *-*-* } 6 } */
-/* { dg-error "missing '\\)'" "missing ')' no. 2"  { target *-*-* } 9 } */
-/* { dg-error "missing '\\('" "missing '(' no. 1"  { target *-*-* } 12 } */
-/* { dg-error "missing '\\('" "missing '(' no. 2"  { target *-*-* } 15 } */
-/* { dg-error "missing '\\('" "missing '(' no. 3"  { target *-*-* } 18 } */
-
-
