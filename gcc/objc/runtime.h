@@ -27,6 +27,8 @@ You should have received a copy of the GNU General Public License along with
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
+#include <stdio.h>		/* argh! I hate this */
+
 #include "gstdarg.h"		/* for varargs and va_list's */
 #include "gstddef.h"		/* so noone else will get system versions */
 #include "assert.h"
@@ -36,8 +38,6 @@ You should have received a copy of the GNU General Public License along with
 
 #include "objc/hash.h"		/* hash structures */
 #include "objc/list.h"		/* linear lists */
-
-#include <stdio.h>		/* argh! I hate this */
 
 extern void __objc_add_class_to_hash(Class_t); /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
