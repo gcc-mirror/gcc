@@ -1982,8 +1982,7 @@ do {									\
 	}								\
     }									\
   fputs ("\tb\t", FILE);						\
-  assemble_name (FILE,							\
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
   fputc ('\n', FILE);							\
 } while (0)
 

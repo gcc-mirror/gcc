@@ -1,3 +1,13 @@
+1998-05-13  Jim Wilson  <wilson@cygnus.com>
+
+	* varasm.c (make_decl_rtl): Revert April 1 change.
+	* alpha/alpha.h, alpha/win-nt.h, arm/arm.h, i386/unix.h, i960/i960.h,
+	m68k/linux.h, pa/pa.h, sparc/sparc.h, vax/vax.h (ASM_OUTPUT_MI_THUNK):
+	Get function name from the SYMBOL_REF in the DECL_RTL, not from
+	DECL_ASSEMBLER_NAME.
+	* i386/winnt.c (gen_stdcall_suffix): Comment for questionable use of
+	DECL_ASSEMBLER_NAME.
+
 Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.c (notice_update_cc, output_float_compare): Disable

@@ -179,15 +179,13 @@ do {									      \
       output_asm_insn (AS1 (pop%L0,%0), xops);				      \
       output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);	      \
       fprintf (FILE, "\tmovl ");					      \
-      assemble_name							      \
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	      \
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	      \
       fprintf (FILE, "@GOT(%%ebx),%%ecx\n\tpopl %%ebx\n\tjmp *%%ecx\n");      \
     }									      \
   else									      \
     {									      \
       fprintf (FILE, "\tjmp ");						      \
-      assemble_name							      \
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	      \
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	      \
       fprintf (FILE, "\n");						      \
     }									      \
 } while (0)

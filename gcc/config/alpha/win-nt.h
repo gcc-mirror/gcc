@@ -139,7 +139,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_MI_THUNK
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
-  char *fn_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION));	\
+  char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
 									\
   fprintf (FILE, "\t.ent ");						\
   assemble_name (FILE, alpha_function_name);				\

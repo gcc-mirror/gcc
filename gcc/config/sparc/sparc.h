@@ -3075,25 +3075,21 @@ do {									\
 	fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
       fprintf (FILE, "\tmov %%o7,%%g1\n");				\
       fprintf (FILE, "\tcall ");					\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, ",0\n");						\
     }									\
   else if (TARGET_CM_EMBMEDANY)						\
     {									\
       fprintf (FILE, "\tsetx ");					\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, ",%%g5,%%g1\n\tjmp %%g1\n");			\
     }									\
   else									\
     {									\
       fprintf (FILE, "\tsethi %%hi(");					\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, "),%%g1\n\tjmp %%g1+%%lo(");			\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, ")\n");						\
     }									\
   if (!TARGET_CM_EMBMEDANY || flag_pic)					\
