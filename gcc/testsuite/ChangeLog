@@ -1,3 +1,15 @@
+2000-10-28  Neil Booth  <neilb@earthling.net>
+
+	New tests and test updates for new macro expander.
+	
+	* gcc.dg/cpp/19960224-2.c, 20000625-2.c, cxxcom2.c, directiv.c,
+	endif.c, if-4.c, if-5.c, if-mop.c, macsyntx.c, paste2.c, paste6.c,
+	paste8.c, redef2.c, strify2.c, strp1.c, tr-warn1.c, tr-warn3.c,
+	tr-warn6.c, undef1.c, undef2.c, widestr1.c: Update tests for
+	new diagnostic messages.
+
+	* gcc.dg/cpp/macro3.c: New tests.
+
 2000-10-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/noncompile/init-2.c: Tweak to deal with multiple errors
