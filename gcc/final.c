@@ -2324,9 +2324,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
     case BARRIER:
 #if defined (DWARF2_UNWIND_INFO)
-      /* If we push arguments, we need to check all insns for stack
-	 adjustments.  */
-      if (!ACCUMULATE_OUTGOING_ARGS && dwarf2out_do_frame ())
+      if (dwarf2out_do_frame ())
 	dwarf2out_frame_debug (insn);
 #endif
       break;
@@ -2936,9 +2934,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	current_output_insn = debug_insn = insn;
 
 #if defined (DWARF2_UNWIND_INFO)
-	/* If we push arguments, we want to know where the calls are.  */
-	if (!ACCUMULATE_OUTGOING_ARGS && GET_CODE (insn) == CALL_INSN
-	    && dwarf2out_do_frame ())
+	if (GET_CODE (insn) == CALL_INSN && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
 #endif
 
@@ -3006,22 +3002,15 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	output_asm_insn (template, recog_data.operand);
 
 #if defined (DWARF2_UNWIND_INFO)
-	/* If we push arguments, we need to check all insns for stack
-	   adjustments.  */
-	if (!ACCUMULATE_OUTGOING_ARGS)
-	  {
-	    if (GET_CODE (insn) == INSN && dwarf2out_do_frame ())
-	      dwarf2out_frame_debug (insn);
-	  }
-	else
-	  {
 #if defined (HAVE_prologue)
-	    /* If this insn is part of the prologue, emit DWARF v2
-	       call frame info.  */
-	    if (RTX_FRAME_RELATED_P (insn) && dwarf2out_do_frame ())
-	      dwarf2out_frame_debug (insn);
+	if (GET_CODE (insn) == INSN && dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
+#else
+	if (!ACCUMULATE_OUTGOING_ARGS
+	    && GET_CODE (insn) == INSN
+	    && dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
 #endif
-	  }
 #endif
 
 #if 0

@@ -241,6 +241,9 @@ static long stack_adjust_offset		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PARAMS ((int));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
+static void queue_reg_save		PARAMS ((const char *, rtx, long));
+static void flush_queued_reg_saves	PARAMS ((void));
+static bool clobbers_queued_reg_save	PARAMS ((rtx));
 static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
 
 /* Support for complex CFA locations.  */
@@ -594,11 +597,11 @@ lookup_cfa (loc)
 }
 
 /* The current rule for calculating the DWARF2 canonical frame address.  */
-dw_cfa_location cfa;
+static dw_cfa_location cfa;
 
 /* The register used for saving registers to the stack, and its offset
    from the CFA.  */
-dw_cfa_location cfa_store;
+static dw_cfa_location cfa_store;
 
 /* The running total of the size of arguments pushed onto the stack.  */
 static long args_size;
@@ -1020,10 +1023,70 @@ dwarf2out_stack_adjust (insn)
   dwarf2out_args_size (label, args_size);
 }
 
+/* We delay emitting a register save until either (a) we reach the end
+   of the prologue or (b) the register is clobbered.  This clusters
+   register saves so that there are fewer pc advances.  */
+
+struct queued_reg_save
+{
+  struct queued_reg_save *next;
+  rtx reg;
+  long cfa_offset;
+};
+
+static struct queued_reg_save *queued_reg_saves;
+static const char *last_reg_save_label;
+
+static void
+queue_reg_save (label, reg, offset)
+     const char *label;
+     rtx reg;
+     long offset;
+{
+  struct queued_reg_save *q = (struct queued_reg_save *) xmalloc (sizeof (*q));
+
+  q->next = queued_reg_saves;
+  q->reg = reg;
+  q->cfa_offset = offset;
+  queued_reg_saves = q;
+
+  last_reg_save_label = label;
+}
+
+static void
+flush_queued_reg_saves ()
+{
+  struct queued_reg_save *q, *next;
+
+  for (q = queued_reg_saves; q ; q = next)
+    {
+      dwarf2out_reg_save (last_reg_save_label, REGNO (q->reg), q->cfa_offset);
+      next = q->next;
+      free (q);
+    }
+
+  queued_reg_saves = NULL;
+  last_reg_save_label = NULL;
+}
+
+static bool
+clobbers_queued_reg_save (insn)
+     rtx insn;
+{
+  struct queued_reg_save *q;
+
+  for (q = queued_reg_saves; q ; q = q->next)
+    if (modified_in_p (q->reg, insn))
+      return true;
+
+  return false;
+}
+  
+
 /* A temporary register holding an integral value used in adjusting SP
    or setting up the store_reg.  The "offset" field holds the integer
    value, not an offset.  */
-dw_cfa_location cfa_temp;
+static dw_cfa_location cfa_temp;
 
 /* Record call frame debugging information for an expression EXPR,
    which either sets SP or FP (adjusting how we calculate the frame
@@ -1440,7 +1503,7 @@ dwarf2out_frame_debug_expr (expr, label)
 		 on the ARM.  */
 
 	      def_cfa_1 (label, &cfa);
-	      dwarf2out_reg_save (label, STACK_POINTER_REGNUM, offset);
+	      queue_reg_save (label, stack_pointer_rtx, offset);
 	      break;
 	    }
 	  else
@@ -1462,7 +1525,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	}
 
       def_cfa_1 (label, &cfa);
-      dwarf2out_reg_save (label, REGNO (src), offset);
+      queue_reg_save (label, src, offset);
       break;
 
     default:
@@ -1483,6 +1546,9 @@ dwarf2out_frame_debug (insn)
 
   if (insn == NULL_RTX)
     {
+      /* Flush any queued register saves.  */
+      flush_queued_reg_saves ();
+
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa);
       if (cfa.reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
@@ -1494,9 +1560,13 @@ dwarf2out_frame_debug (insn)
       return;
     }
 
+  if (GET_CODE (insn) != INSN || clobbers_queued_reg_save (insn))
+    flush_queued_reg_saves ();
+
   if (! RTX_FRAME_RELATED_P (insn))
     {
-      dwarf2out_stack_adjust (insn);
+      if (!ACCUMULATE_OUTGOING_ARGS)
+        dwarf2out_stack_adjust (insn);
       return;
     }
 

@@ -1,5 +1,15 @@
 2001-03-17  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (queue_reg_save): New.
+	(flush_queued_reg_saves, clobbers_queued_reg_save): New.
+	(dwarf2out_frame_debug_expr): Call queue_reg_save instead of
+	dwarf2out_reg_save.
+	(dwarf2out_frame_debug): Call flush_queued_reg_saves when needed.
+	(cfa, cfa_store, cfa_temp): Make static.
+	* final.c (final_scan_insn): Always call dwarf2out_frame_debug.
+
+2001-03-17  Richard Henderson  <rth@redhat.com>
+
 	* integrate.h (struct inline_remap): Add local_return_label.
 	* integrate.c (expand_inline_function): Initialize it and emit
 	it after copy_insn_notes.
