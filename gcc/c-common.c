@@ -843,8 +843,8 @@ fix_string_type (tree value)
   const int nchars_max = flag_isoc99 ? 4095 : 509;
   int length = TREE_STRING_LENGTH (value);
   int nchars;
-  tree e_type, i_type;
-  
+  tree e_type, i_type, a_type;
+
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
 
@@ -853,15 +853,28 @@ fix_string_type (tree value)
 	     nchars - 1, nchars_max, flag_isoc99 ? 99 : 89);
 
   e_type = wide_flag ? wchar_type_node : char_type_node;
-  /* Create the array type for the string constant.
-     -Wwrite-strings says make the string constant an array of const char
-     so that copying it to a non-const pointer will get a warning.
-     For C++, this is the standard behavior.  */
-  if (flag_const_strings)
-    e_type = build_type_variant (e_type, 1, 0);
-  i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
-  TREE_TYPE (value) = build_array_type (e_type, i_type);
+  /* Create the array type for the string constant.  flag_const_strings
+     says make the string constant an array of const char so that
+     copying it to a non-const pointer will get a warning.  For C++,
+     this is the standard behavior.
 
+     The C++ front end relies on TYPE_MAIN_VARIANT of a cv-qualified
+     array type being the unqualified version of that type.
+     Therefore, if we are constructing an array of const char, we must
+     construct the matching unqualified array type first.  The C front
+     end does not require this, but it does no harm, so we do it
+     unconditionally.  */
+  i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
+  a_type = build_array_type (e_type, i_type);
+  if (flag_const_strings)
+    {
+      /* bleah, c_build_qualified_type should set TYPE_MAIN_VARIANT.  */
+      tree qa_type = c_build_qualified_type (a_type, TYPE_QUAL_CONST);
+      TYPE_MAIN_VARIANT (qa_type) = a_type;
+      a_type = qa_type;
+    }
+
+  TREE_TYPE (value) = a_type;
   TREE_CONSTANT (value) = 1;
   TREE_INVARIANT (value) = 1;
   TREE_READONLY (value) = 1;

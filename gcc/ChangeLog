@@ -1,3 +1,14 @@
+2004-09-20  Matt Austern <austern@apple.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (fix_string_type): Build the unqualified array
+	type unconditionally, then use c_build_qualified_type to get
+	the proper const-qualified variant, and set its
+	TYPE_MAIN_VARIANT to refer to the unqualified type.
+	* c-lex.c (c_lex_return_raw_string): New global.
+	(c_lex_with_flags): Honor it.
+	* c-pragma.h: Declare it.
+
 2004-09-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in: Fix flags.h dependencies to be $(FLAGS_H).
@@ -79,7 +90,7 @@
 
 2004-09-20  Daniel Berlin  <dberlin@dberlin.org>
 
-	* tree-ssa-pre.c (compute_antic_aux): Use malloc'd worklist, to avoid 
+	* tree-ssa-pre.c (compute_antic_aux): Use malloc'd worklist, to avoid
 	generating useless garbage.
 
 2004-09-20  Paolo Bonzini  <bonzini@gnu.org>

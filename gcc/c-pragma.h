@@ -70,4 +70,8 @@ extern enum cpp_ttype c_lex_with_flags (tree *, unsigned char *);
    is the TREE_CHAIN of the latter.  */
 extern int c_lex_string_translate;
 
+/* If true, strings should be passed to the caller of c_lex completely
+   unmolested (no concatenation, no translation).  */
+extern bool c_lex_return_raw_strings;
+
 #endif /* GCC_C_PRAGMA_H */

@@ -2106,7 +2106,7 @@ begin_class_definition (tree t)
      before.  */
   if (! TYPE_ANONYMOUS_P (t))
     {
-      struct c_fileinfo *finfo = get_fileinfo (input_filename);
+      struct c_fileinfo *finfo = get_fileinfo (lbasename (input_filename));
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	(t, finfo->interface_unknown);
