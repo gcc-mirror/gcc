@@ -1,5 +1,7 @@
 2000-12-15  Jason Merrill  <jason@redhat.com>
 
+	* init.c (build_new_1): Don't strip quals from type.
+
 	* decl.c (pushdecl): Don't check for linkage on a non-decl.
 
 	* call.c (build_op_delete_call): See through ARRAY_TYPEs.

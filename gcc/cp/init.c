@@ -2268,9 +2268,6 @@ build_new_1 (exp)
 
   code = has_array ? VEC_NEW_EXPR : NEW_EXPR;
 
-  if (CP_TYPE_QUALS (type))
-    type = TYPE_MAIN_VARIANT (type);
-
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
   while (TREE_CODE (true_type) == ARRAY_TYPE)
