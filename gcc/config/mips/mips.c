@@ -5894,7 +5894,15 @@ mips_function_value (valtype, func)
 
   /* ??? How should we return complex float?  */
   if (mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
-    reg = FP_RETURN;
+    {
+      if (TARGET_SINGLE_FLOAT
+	  && (mclass == MODE_FLOAT
+	      ? GET_MODE_SIZE (mode) > 4
+	      : GET_MODE_SIZE (mode) / 2 > 4))
+	reg = GP_RETURN;
+      else
+	reg = FP_RETURN;
+    }
   else if (TREE_CODE (valtype) == RECORD_TYPE
 	   && mips_abi != ABI_32 && mips_abi != ABI_EABI)
     {
