@@ -1,6 +1,7 @@
 Wed Mar  5 23:18:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-local2.c: New.
+	* gcc.dg/i386-local.c: Fix typo.
 
 2003-03-05  Mark Mitchell  <mark@codesourcery.com>
 

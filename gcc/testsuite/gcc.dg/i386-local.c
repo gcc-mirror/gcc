@@ -10,5 +10,5 @@ m()
 }
 static t(int a)
 {
-	asm("magic %1"::"g"(a));
+	asm("magic %0"::"g"(a));
 }
