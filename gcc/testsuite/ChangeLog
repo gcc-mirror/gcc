@@ -1,3 +1,7 @@
+2003-06-10  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/asm-7.c: Adjust expected warning text.
+
 2003-06-10  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-20.c: New test case.
