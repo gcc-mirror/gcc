@@ -982,8 +982,9 @@ single_reachable_address (struct loop *loop, tree stmt,
 
 	case PHI_NODE:
 	  for (i = 0; i < (unsigned) PHI_NUM_ARGS (stmt); i++)
-	    maybe_queue_var (PHI_ARG_DEF (stmt, i), loop,
-			     seen, queue, &in_queue);
+	    if (TREE_CODE (PHI_ARG_DEF (stmt, i)) == SSA_NAME)
+	      maybe_queue_var (PHI_ARG_DEF (stmt, i), loop,
+		               seen, queue, &in_queue);
 	  break;
 
 	default:
