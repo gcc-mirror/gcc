@@ -1,3 +1,7 @@
+2005-03-27  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: Document AIMAG, AINT, ALL
+
 2005-03-25  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: Fix "make dvi"
