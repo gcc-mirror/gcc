@@ -1194,8 +1194,6 @@ throwable_p (signature)
       JCF_FINISH (&jcf);
     }
 
-  if (current)
-    free (current);
   return result;
 }
 

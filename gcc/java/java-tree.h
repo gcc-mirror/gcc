@@ -1440,11 +1440,6 @@ extern tree *type_map;
    layout of a class.  */
 #define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
 
-/* True if class TYPE is currently being laid out. Helps in detection
-   of inheritance cycle occurring as a side effect of performing the
-   layout of a class.  */
-#define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
-
 /* True if class TYPE has a field initializer finit$ function */
 #define CLASS_HAS_FINIT_P(TYPE) TYPE_FINIT_STMT_LIST (TYPE)
 

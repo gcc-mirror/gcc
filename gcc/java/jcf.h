@@ -63,6 +63,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JCF_word JCF_u4
 #endif
 
+/* If we have both "scandir" and "alphasort", we can cache directory
+   listings to reduce the time taken to search the classpath.  */
+#if defined(HAVE_SCANDIR) && defined(HAVE_ALPHASORT)
+#define JCF_USE_SCANDIR 1
+#else
+#define JCF_USE_SCANDIR 0
+#endif 
+
 struct JCF;
 typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
 

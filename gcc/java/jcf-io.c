@@ -1,5 +1,5 @@
 /* Utility routines for finding and reading Java(TM) .class files.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "toplev.h"
 #include "java-tree.h"
+#include "hashtab.h"
+#if JCF_USE_SCANDIR
+#include <dirent.h>
+#include <fnmatch.h>
+#endif
 
 #include "zlib.h"
 
@@ -304,10 +309,152 @@ DEFUN(find_classfile, (filename, jcf, dep_name),
 #endif
 }
 
+#if JCF_USE_SCANDIR
+
+/* A comparison function (as for qsort) that compares KEY (a char *
+   giving the basename of a file) with the name stored in ENTRY (a
+   dirent **).  */
+
+static int
+DEFUN(compare_path, (key, entry),
+      const void *key AND const void *entry)
+{
+  return strcmp ((const char *) key, 
+		 (*((const struct dirent **) entry))->d_name);
+}
+
+/* Returns nonzero if ENTRY names a .java or .class file.  */
+
+static int
+DEFUN(java_or_class_file, (entry),
+      const struct dirent *entry)
+{
+  const char *base = basename (entry->d_name);
+  return (fnmatch ("*.java", base, 0) == 0 || 
+	  fnmatch ("*.class", base, 0) == 0);
+}
+
+/* Information about the files present in a particular directory.  */
+typedef struct memoized_dirlist_entry 
+{
+  /* The name of the directory.  */
+  const char *dir;
+  /* The number of .java and .class files present, or -1 if we could
+     not, for some reason, obtain the list.  */
+  int num_files;
+  /* The .java and .class files in the directory, in alphabetical
+     order.  */
+  struct dirent **files;
+} memoized_dirlist_entry;
+
+/* Returns true if ENTRY (a memoized_dirlist_entry *) correponds to
+   the directory given by KEY (a char *) giving the directory 
+   name.  */
+
+static int
+DEFUN(memoized_dirlist_lookup_eq, (entry, key),
+      const void *entry AND const void *key)
+{
+  return strcmp ((const char *) key,
+		 ((const memoized_dirlist_entry *) entry)->dir) == 0;
+}
+
+/* A hash table mapping directory names to the lists of .java and
+   .class files in that directory.  */
+
+static htab_t memoized_dirlists;
+
+#endif
+
+/* Like stat, but avoids actually making the stat system call if we
+   know that it cannot succeed.  FILENAME and BUF are as for stat.  */
+
+static int
+DEFUN(caching_stat, (filename, buf),
+      char *filename AND struct stat *buf)
+{
+#if JCF_USE_SCANDIR
+  char *sep;
+  char *base;
+  memoized_dirlist_entry *dent;
+  void **slot;
+  
+  /* If the hashtable has not already been created, create it now.  */
+  if (!memoized_dirlists)
+    memoized_dirlists = htab_create (37,
+				     htab_hash_string,
+				     memoized_dirlist_lookup_eq,
+				     NULL);
+
+  /* Get the name of the directory.  */
+  sep = strrchr (filename, DIR_SEPARATOR);
+  if (sep)
+    {
+      *sep = '\0';
+      base = sep + 1;
+    }
+  else
+    base = filename;
+
+  /* Obtain the entry for this directory form the hash table.  */
+  slot = htab_find_slot (memoized_dirlists, filename, INSERT);
+  if (!*slot)
+    {
+      /* We have not already scanned this directory; scan it now.  */
+      dent = ((memoized_dirlist_entry *) 
+	      ALLOC (sizeof (memoized_dirlist_entry)));
+      dent->dir = xstrdup (filename);
+      /* Unfortunately, scandir is not fully standardized.  In
+	 particular, the type of the function pointer passed as the
+	 third argument sometimes takes a "const struct dirent *"
+	 parameter, and sometimes just a "struct dirent *".  We rely
+	 on the ability to interchange these two types of function
+	 pointers.  */
+      dent->num_files = scandir (filename, &dent->files, 
+				 java_or_class_file, 
+				 alphasort);
+      *slot = dent;
+    }
+  else
+    dent = *((memoized_dirlist_entry **) slot);
+
+  /* Put the spearator back.  */
+  if (sep)
+    *sep = DIR_SEPARATOR;
+
+  /* If the file is not in the list, there is no need to stat it; it
+     does not exist.  */
+  if (dent->num_files != -1
+      && !bsearch (base, dent->files, dent->num_files,
+		   sizeof (struct dirent *), compare_path))
+    return -1;
+#endif
+  
+  return stat (filename, buf);
+}
+
+/* Returns 1 if the CLASSNAME (really a char *) matches the name
+   stored in TABLE_ENTRY (also a char *).  */
+
+static int
+DEFUN(memoized_class_lookup_eq, (table_entry, classname),
+      const void *table_entry AND const void *classname)
+{
+  return strcmp ((const char *)classname, (const char *)table_entry) == 0;
+}
+
+/* A hash table keeping track of class names that were not found
+   during class lookup.  (There is no need to cache the values
+   associated with names that were found; they are saved in
+   IDENTIFIER_CLASS_VALUE.)  */
+static htab_t memoized_class_lookups;
+
 /* Returns a freshly malloc'd string with the fully qualified pathname
-   of the .class file for the class CLASSNAME.  Returns NULL on
-   failure.  If JCF != NULL, it is suitably initialized.
-   SOURCE_OK is true if we should also look for .java file. */
+   of the .class file for the class CLASSNAME.  CLASSNAME must be
+   allocated in permanent storage; this function may retain a pointer
+   to it.  Returns NULL on failure.  If JCF != NULL, it is suitably
+   initialized.  SOURCE_OK is true if we should also look for .java
+   file. */
 
 const char *
 DEFUN(find_class, (classname, classname_length, jcf, source_ok),
@@ -324,11 +471,27 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
   char *dep_file;
   void *entry;
   char *java_buffer;
+  int buflen;
+  char *buffer;
+  hashval_t hash;
+
+  /* Create the hash table, if it does not already exist.  */
+  if (!memoized_class_lookups)
+    memoized_class_lookups = htab_create (37, 
+					  htab_hash_string, 
+					  memoized_class_lookup_eq,
+					  NULL);
+
+  /* Loop for this class in the hashtable.  If it is present, we've
+     already looked for this class and failed to find it.  */
+  hash = htab_hash_string (classname);
+  if (htab_find_with_hash (memoized_class_lookups, classname, hash))
+    return NULL;
 
   /* Allocate and zero out the buffer, since we don't explicitly put a
      null pointer when we're copying it below.  */
-  int buflen = jcf_path_max_len () + classname_length + 10;
-  char *buffer = (char *) ALLOC (buflen);
+  buflen = jcf_path_max_len () + classname_length + 10;
+  buffer = (char *) ALLOC (buflen);
   memset (buffer, 0, buflen);
 
   java_buffer = (char *) alloca (buflen);
@@ -381,7 +544,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 	      else
 		continue;
 	    }
-	  class = stat (buffer, &class_buf);
+	  class = caching_stat(buffer, &class_buf);
 	}
 
       if (source_ok)
@@ -393,7 +556,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 	  for (m = 0; m < classname_length; ++m)
 	    java_buffer[m + l] = (classname[m] == '.' ? '/' : classname[m]);
 	  strcpy (java_buffer + m + l, ".java");
-	  java = stat (java_buffer, &java_buf);
+	  java = caching_stat (java_buffer, &java_buf);
 	  if (java == 0)
 	    break;
 	}
@@ -464,6 +627,12 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 #endif
 
   free (buffer);
+
+  /* Remember that this class could not be found so that we do not
+     have to look again.  */
+  *htab_find_slot_with_hash (memoized_class_lookups, classname, hash, INSERT) 
+    = (void *) classname;
+
   return NULL;
  found:
 #if JCF_USE_STDIO
