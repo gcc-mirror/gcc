@@ -1,3 +1,6 @@
+20010617 Release Manager
+
+        * GCC  Released.
 2001-06-14  Albert Chin-A-Young  <china@thewrittenword.com>
 
         * contrib/gcc_update: Fix timestamp on gcc/f/intdoc.texi.

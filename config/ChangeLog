@@ -1,3 +1,6 @@
+20010617 Release Manager
+
+        * GCC  Released.
 2001-05-22  Jason Merrill  <jason_merrill@redhat.com>
 
 	* mt-linux (CXXFLAGS_FOR_TARGET): Lose -fvtable-thunks.
