@@ -420,10 +420,10 @@ print_operand (file, x, code)
     }
   else
     {
-#ifndef NO_IMMEDIATE_PREFIX_IF_SYMBOLIC
+#ifdef NO_IMMEDIATE_PREFIX_IF_SYMBOLIC
       if (GET_CODE (x) == CONST_INT)
 #endif
-	PUT_IMMEDIATE_PREFIX(file);
+	PUT_IMMEDIATE_PREFIX (file);
       output_addr_const (file, x);
     }
 }
