@@ -1,5 +1,10 @@
 2000-11-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (grokparms): Don't even function types of `void' type,
+	either.
+	* mangle.c (write_type): Don't crash when confronted with the
+	error_mark_node.
+
 	* decl.c (grokparms): Don't create parameters of `void' type.
 
 2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>

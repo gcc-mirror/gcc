@@ -12025,51 +12025,55 @@ grokparms (first_parm)
 	  /* It's not a good idea to actually create parameters of
 	     type `void'; other parts of the compiler assume that a
 	     void type terminates the parameter list.  */
+	  type = error_mark_node;
 	  TREE_TYPE (decl) = error_mark_node;
         }
-      
-      /* Top-level qualifiers on the parameters are
-         ignored for function types.  */
-      type = TYPE_MAIN_VARIANT (type);
-      if (TREE_CODE (type) == METHOD_TYPE)
-        {
-          cp_error ("parameter `%D' invalidly declared method type", decl);
-          type = build_pointer_type (type);
-          TREE_TYPE (decl) = type;
-        }
-      else if (TREE_CODE (type) == OFFSET_TYPE)
-        {
-          cp_error ("parameter `%D' invalidly declared offset type", decl);
-          type = build_pointer_type (type);
-          TREE_TYPE (decl) = type;
-        }
-      else if (abstract_virtuals_error (decl, type))
-        any_error = 1;  /* Seems like a good idea. */
-      else if (POINTER_TYPE_P (type))
-        {
-          /* [dcl.fct]/6, parameter types cannot contain pointers (references)
-             to arrays of unknown bound.  */
-          tree t = type;
-          
-          while (POINTER_TYPE_P (t)
-                 || (TREE_CODE (t) == ARRAY_TYPE
-                     && TYPE_DOMAIN (t) != NULL_TREE))
-    	    t = TREE_TYPE (t);
-          if (TREE_CODE (t) == ARRAY_TYPE)
-    	    cp_error ("parameter `%D' includes %s to array of unknown bound `%T'",
-    		      decl, TYPE_PTR_P (type) ? "pointer" : "reference", t);
-        }
 
-      DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
-      if (PROMOTE_PROTOTYPES
-	  && (TREE_CODE (type) == INTEGER_TYPE
-	      || TREE_CODE (type) == ENUMERAL_TYPE)
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	DECL_ARG_TYPE (decl) = integer_type_node;
-      if (!any_error && init)
-        init = check_default_argument (decl, init);
-      else
-	init = NULL_TREE;
+      if (type != error_mark_node) 
+	{
+	  /* Top-level qualifiers on the parameters are
+	     ignored for function types.  */
+	  type = TYPE_MAIN_VARIANT (type);
+	  if (TREE_CODE (type) == METHOD_TYPE)
+	    {
+	      cp_error ("parameter `%D' invalidly declared method type", decl);
+	      type = build_pointer_type (type);
+	      TREE_TYPE (decl) = type;
+	    }
+	  else if (TREE_CODE (type) == OFFSET_TYPE)
+	    {
+	      cp_error ("parameter `%D' invalidly declared offset type", decl);
+	      type = build_pointer_type (type);
+	      TREE_TYPE (decl) = type;
+	    }
+	  else if (abstract_virtuals_error (decl, type))
+	    any_error = 1;  /* Seems like a good idea. */
+	  else if (POINTER_TYPE_P (type))
+	    {
+	      /* [dcl.fct]/6, parameter types cannot contain pointers
+		 (references) to arrays of unknown bound.  */
+	      tree t = type;
+
+	      while (POINTER_TYPE_P (t)
+		     || (TREE_CODE (t) == ARRAY_TYPE
+			 && TYPE_DOMAIN (t) != NULL_TREE))
+		t = TREE_TYPE (t);
+	      if (TREE_CODE (t) == ARRAY_TYPE)
+		cp_error ("parameter `%D' includes %s to array of unknown bound `%T'",
+			  decl, TYPE_PTR_P (type) ? "pointer" : "reference", t);
+	    }
+
+	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
+	  if (PROMOTE_PROTOTYPES
+	      && (TREE_CODE (type) == INTEGER_TYPE
+		  || TREE_CODE (type) == ENUMERAL_TYPE)
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	    DECL_ARG_TYPE (decl) = integer_type_node;
+	  if (!any_error && init)
+	    init = check_default_argument (decl, init);
+	  else
+	    init = NULL_TREE;
+	}
 
       TREE_CHAIN (decl) = decls;
       decls = decl;
