@@ -728,12 +728,12 @@ namespace std {
   _Expr<_Clos, _Tp>::cshift(int __n) const
   { return valarray<_Tp>(_M_closure).cshift(__n); }
 
-  ttemplate<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
   inline valarray<_Tp>
   _Expr<_Clos, _Tp>::apply(_Tp __f(const _Tp&)) const
   { return valarray<_Tp>(_M_closure).apply(__f); }
     
-  ttemplate<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
   inline valarray<_Tp>
   _Expr<_Clos, _Tp>::apply(_Tp __f(_Tp)) const
   { return valarray<_Tp>(_M_closure).apply(__f); }
@@ -757,7 +757,7 @@ namespace std {
   _Expr<_Clos, _Tp>::min() const
   { return __valarray_min(_M_closure); }
 
-  template<class _Close, typename _Tp>
+  template<class _Clos, typename _Tp>
   inline _Tp
   _Expr<_Clos, _Tp>::max() const
   { return __valarray_max(_M_closure); }

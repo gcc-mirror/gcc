@@ -1,3 +1,7 @@
+2000-08-18  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* bits/valarray_meta.h: Fix typos...
+
 2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* bits/valarray_meta.h (_Expr<>::shift, _Expr::cshift,
