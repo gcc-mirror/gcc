@@ -1,3 +1,16 @@
+2000-10-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (check_format_info_recurse): Extract string constant
+	initializers from non-volatile constant arrays and check them as
+	formats.
+	* c-typeck.c (decl_constant_value): Don't check pedantic or check
+	for DECL_MODE (decl) != BLKmode.
+	(decl_constant_value_for_broken_optimization): New function which
+	includes these checks.
+	(default_conversion, convert_for_assignment, digest_init): Use
+	decl_constant_value_for_broken_optimization instead of
+	decl_constant_value.
+
 2000-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (DECL_ALIGN_UNIT): New macro.
