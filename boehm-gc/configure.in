@@ -41,15 +41,12 @@ if false; then
   AC_EXEEXT
 fi
 
-AC_MSG_CHECKING([for threads package to use])
-AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
-  THREADS=$enableval,
-  [ AC_MSG_CHECKING([for thread model used by GCC])
-    THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-    if test -z "$THREADS"; then
-      THREADS=no
-    fi
-    AC_MSG_RESULT([$THREADS])])
+AC_MSG_CHECKING([for thread model used by GCC])
+THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+if test -z "$THREADS"; then
+   THREADS=no
+fi
+AC_MSG_RESULT([$THREADS])
 
 AC_ARG_ENABLE(parallel-mark,
 [  --enable-parallel-mark	parallelize marking and free list construction],
