@@ -305,8 +305,6 @@ const struct demangler_engine libiberty_demanglers[] =
 };
 
 #define STRING_EMPTY(str)	((str) -> b == (str) -> p)
-#define PREPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
-    string_prepend(str, " ");}
 #define APPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
     string_append(str, " ");}
 #define LEN_STRING(str)         ( (STRING_EMPTY(str))?0:((str)->p - (str)->b))
