@@ -1,3 +1,12 @@
+2002-11-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8466
+	* include/std/std_sstream.h
+	(basic_stringbuf::str(const __string_type&)):
+	Cannot use simple assignment since the COW-nature of v3
+	basic_string is not taken into account in basic_stringbuf.
+	* testsuite/27_io/stringstream_members.cc: Add test04 from PR.
+
 2002-11-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* configure.target (hppa*): Define cpu_include_dir.
