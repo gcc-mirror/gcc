@@ -98,13 +98,13 @@ case $os in
 		os=
 		basic_machine=$1
 		;;
-	-sim | -cisco | -oki | -wec | -winbond )	# CYGNUS LOCAL
+	-sim | -cisco | -oki | -wec | -winbond )	# EGCS LOCAL
 		os=
 		basic_machine=$1
 		;;
-	-scout)						# CYGNUS LOCAL
+	-scout)						# EGCS LOCAL
 		;;
-	-wrs)						# CYGNUS LOCAL
+	-wrs)						# EGCS LOCAL
 		os=vxworks
 		basic_machine=$1
 		;;
@@ -175,18 +175,18 @@ case $basic_machine in
 		basic_machine=$basic_machine-unknown
 		;;
 	m88110 | m680[012346]0 | m683?2 | m68360 | m5200 | z8k | v70 \
-		 | h8500 | w65) # CYGNUS LOCAL
+	        | h8500 | w65) # EGCS LOCAL
 		;;
 	thumb)
 		basic_machine=$basic_machine-unknown
 		;;
-	mips64vr4300 | mips64vr4300el) # CYGNUS LOCAL jsmith/vr4300
+	mips64vr4300 | mips64vr4300el) # EGCS LOCAL jsmith/vr4300
 		basic_machine=$basic_machine-unknown
 		;;
-	mips64vr4100 | mips64vr4100el) # CYGNUS LOCAL jsmith/vr4100
+	mips64vr4100 | mips64vr4100el) # EGCS LOCAL jsmith/vr4100
 		basic_machine=$basic_machine-unknown
 		;;
-	mips64vr5000 | mips64vr5000el) # CYGNUS LOCAL ian/vr5000
+	mips64vr5000 | mips64vr5000el) # EGCS LOCAL ian/vr5000
 		basic_machine=$basic_machine-unknown
 		;;
 	mips16)
@@ -223,28 +223,28 @@ case $basic_machine in
 	      | mipstx39-* | mipstx39el-* \
 	      | f301-* | arm*-*)
 		;;
-	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # CYGNUS LOCAL
+	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # EGCS LOCAL
 		;;
-	thumb-*) # CYGNUS LOCAL angela/thumb
+	thumb-*) # EGCS LOCAL angela/thumb
 		;;
-	v850-*) # CYGNUS LOCAL
+	v850-*) # EGCS LOCAL
 	        ;;
-	d30v-*) # CYGNUS LOCAL
+	d30v-*) # EGCS LOCAL
 	        ;;
-	mips64vr4300-* | mips64vr4300el-*) # CYGNUS LOCAL jsmith/vr4300
+	mips64vr4300-* | mips64vr4300el-*) # EGCS LOCAL jsmith/vr4300
 		;;
-	mips64vr4100-* | mips64vr4100el-*) # CYGNUS LOCAL jsmith/vr4100
+	mips64vr4100-* | mips64vr4100el-*) # EGCS LOCAL jsmith/vr4100
 		;;
-	mips16-*) # CYGNUS LOCAL krk/mips16
+	mips16-*) # EGCS LOCAL krk/mips16
 		;;
-	tic30-*) # CYGNUS LOCAL ian/tic30
+	tic30-*) # EGCS LOCAL ian/tic30
 		;;
-	c30-*) # CYGNUS LOCAL ian/tic30
+	c30-*) # EGCS LOCAL ian/tic30
 		basic_machine=tic30-unknown
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
-	386bsd)						# CYGNUS LOCAL
+	386bsd)						# EGCS LOCAL
 		basic_machine=i386-unknown
 		os=-bsd
 		;;
@@ -254,11 +254,11 @@ case $basic_machine in
 	3b*)
 		basic_machine=we32k-att
 		;;
-	a29khif)					# CYGNUS LOCAL
+	a29khif)					# EGCS LOCAL
 		basic_machine=a29k-amd
 		os=-udi
 		;;
-	adobe68k)					# CYGNUS LOCAL
+	adobe68k)					# EGCS LOCAL
 		basic_machine=m68010-adobe
 		os=-scout
 		;;
@@ -291,7 +291,7 @@ case $basic_machine in
 		basic_machine=m68k-apollo
 		os=-sysv
 		;;
-	apollo68bsd)					# CYGNUS LOCAL
+	apollo68bsd)					# EGCS LOCAL
 		basic_machine=m68k-apollo
 		os=-bsd
 		;;
@@ -371,7 +371,7 @@ case $basic_machine in
 	encore | umax | mmax)
 		basic_machine=ns32k-encore
 		;;
-	es1800 | OSE68k | ose68k | ose | OSE)		# CYGNUS LOCAL
+	es1800 | OSE68k | ose68k | ose | OSE)		# EGCS LOCAL
 		basic_machine=m68k-ericsson
 		os=-ose
 		;;
@@ -393,11 +393,11 @@ case $basic_machine in
 		basic_machine=h8300-hitachi
 		os=-hms
 		;;
-	h8300xray)					# CYGNUS LOCAL
+	h8300xray)					# EGCS LOCAL
 		basic_machine=h8300-hitachi
 		os=-xray
 		;;
-	h8500hms)					# CYGNUS LOCAL
+	h8500hms)					# EGCS LOCAL
 		basic_machine=h8500-hitachi
 		os=-hms
 		;;
@@ -416,19 +416,19 @@ case $basic_machine in
 		basic_machine=m68k-hp
 		os=-hpux
 		;;
-        w89k-*)						# CYGNUS LOCAL
+        w89k-*)						# EGCS LOCAL
                 basic_machine=hppa1.1-winbond
                 os=-proelf
                 ;;
-        op50n-*)					# CYGNUS LOCAL
+        op50n-*)					# EGCS LOCAL
                 basic_machine=hppa1.1-oki
                 os=-proelf
                 ;;
-        op60c-*)					# CYGNUS LOCAL
+        op60c-*)					# EGCS LOCAL
                 basic_machine=hppa1.1-oki
                 os=-proelf
                 ;;
-        hppro)						# CYGNUS LOCAL
+        hppro)						# EGCS LOCAL
                 basic_machine=hppa1.1-hp
                 os=-proelf
                 ;;
@@ -465,7 +465,7 @@ case $basic_machine in
 	hppa-next)
 		os=-nextstep3
 		;;
-	hppaosf)					# CYGNUS LOCAL
+	hppaosf)					# EGCS LOCAL
 		basic_machine=hppa1.1-hp
 		os=-osf
 		;;
@@ -490,15 +490,15 @@ case $basic_machine in
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-solaris2
 		;;
-	i386mach)					# CYGNUS LOCAL
+	i386mach)					# EGCS LOCAL
 		basic_machine=i386-mach
 		os=-mach
 		;;
-	i386-vsta | vsta)				# CYGNUS LOCAL
+	i386-vsta | vsta)				# EGCS LOCAL
 		basic_machine=i386-unknown
 		os=-vsta
 		;;
-	i386-go32 | go32)				# CYGNUS LOCAL
+	i386-go32 | go32)				# EGCS LOCAL
 		basic_machine=i386-unknown
 		os=-go32
 		;;
@@ -548,11 +548,11 @@ case $basic_machine in
 	mips3*)
 		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`-unknown
 		;;
-	monitor)					# CYGNUS LOCAL
+	monitor)					# EGCS LOCAL
 		basic_machine=m68k-rom68k
 		os=-coff
 		;;
-	msdos)						# CYGNUS LOCAL
+	msdos)						# EGCS LOCAL
 		basic_machine=i386-unknown	
 		os=-msdos
 		;;
@@ -561,7 +561,7 @@ case $basic_machine in
 		os=-sysv4
 		;;
 	netbsd386)
-		basic_machine=i386-unknown		# CYGNUS LOCAL
+		basic_machine=i386-unknown		# EGCS LOCAL
 		os=-netbsd
 		;;
 	netwinder)
@@ -580,7 +580,7 @@ case $basic_machine in
 		basic_machine=mips-sony
 		os=-newsos
 		;;
-	necv70)						# CYGNUS LOCAL
+	necv70)						# EGCS LOCAL
 		basic_machine=v70-nec
 		os=-sysv
 		;;
@@ -609,18 +609,18 @@ case $basic_machine in
 		basic_machine=i960-intel
 		os=-nindy
 		;;
-	mon960)						# CYGNUS LOCAL
+	mon960)						# EGCS LOCAL
 		basic_machine=i960-intel
 		os=-mon960
 		;;
 	np1)
 		basic_machine=np1-gould
 		;;
-	OSE68000 | ose68000)				# CYGNUS LOCAL
+	OSE68000 | ose68000)				# EGCS LOCAL
 		basic_machine=m68000-ericsson
 		os=-ose
 		;;
-	os68k)						# CYGNUS LOCAL
+	os68k)						# EGCS LOCAL
 		basic_machine=m68k-none
 		os=-os68k
 		;;
@@ -677,7 +677,7 @@ case $basic_machine in
 	ps2)
 		basic_machine=i386-ibm
 		;;
-	rom68k)						# CYGNUS LOCAL
+	rom68k)						# EGCS LOCAL
 		basic_machine=m68k-rom68k
 		os=-coff
 		;;
@@ -687,7 +687,7 @@ case $basic_machine in
 	rtpc | rtpc-*)
 		basic_machine=romp-ibm
 		;;
-	sa29200)					# CYGNUS LOCAL
+	sa29200)					# EGCS LOCAL
 		basic_machine=a29k-amd
 		os=-udi
 		;;
@@ -698,7 +698,7 @@ case $basic_machine in
 		basic_machine=sh-hitachi
 		os=-hms
 		;;
-	sparclite-wrs)					# CYGNUS LOCAL
+	sparclite-wrs)					# EGCS LOCAL
 		basic_machine=sparclite-wrs
 		os=-vxworks
 		;;
@@ -709,10 +709,10 @@ case $basic_machine in
 	spur)
 		basic_machine=spur-unknown
 		;;
-	st2000)						# CYGNUS LOCAL
+	st2000)						# EGCS LOCAL
 		basic_machine=m68k-tandem
 		;;
-	stratus)					# CYGNUS LOCAL
+	stratus)					# EGCS LOCAL
 		basic_machine=i860-stratus
 		os=-sysv4
 		;;
@@ -777,7 +777,7 @@ case $basic_machine in
 		basic_machine=a29k-nyu
 		os=-sym1
 		;;
-	v810 | necv810)					# CYGNUS LOCAL
+	v810 | necv810)					# EGCS LOCAL
 		basic_machine=v810-nec
 		os=-none
 		;;
@@ -804,7 +804,7 @@ case $basic_machine in
 		basic_machine=a29k-wrs
 		os=-vxworks
 		;;
-	w65*)						# CYGNUS LOCAL
+	w65*)						# EGCS LOCAL
  		basic_machine=w65-wdc
  		os=-none
 		;;
@@ -815,7 +815,7 @@ case $basic_machine in
         xps | xps100)
 		basic_machine=xps100-honeywell
 		;;
-	z8k-*-coff)					# CYGNUS LOCAL
+	z8k-*-coff)					# EGCS LOCAL
 		basic_machine=z8k-unknown
 		os=-sim
 		;;
@@ -826,13 +826,13 @@ case $basic_machine in
 
 # Here we handle the default manufacturer of certain CPU types.  It is in
 # some cases the only manufacturer, in others, it is the most popular.
-	w89k)						# CYGNUS LOCAL
+	w89k)						# EGCS LOCAL
 		basic_machine=hppa1.1-winbond
 		;;
-	op50n)						# CYGNUS LOCAL
+	op50n)						# EGCS LOCAL
 		basic_machine=hppa1.1-oki
 		;;
-	op60c)						# CYGNUS LOCAL
+	op60c)						# EGCS LOCAL
 		basic_machine=hppa1.1-oki
 		;;
 	mips)
@@ -869,10 +869,10 @@ case $basic_machine in
 	orion105)
 		basic_machine=clipper-highlevel
 		;;
-	mac | mpw | mac-mpw)				# CYGNUS LOCAL
+	mac | mpw | mac-mpw)				# EGCS LOCAL
 		basic_machine=m68k-apple
 		;;
-	pmac | pmac-mpw)				# CYGNUS LOCAL
+	pmac | pmac-mpw)				# EGCS LOCAL
 		basic_machine=powerpc-apple
 		;;
  	c4x*)
@@ -940,7 +940,7 @@ case $os in
 	      | -interix* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
-	# CYGNUS LOCAL
+	# EGCS LOCAL
 	-sim | -es1800* | -hms* | -xray | -os68k* | -none* | -v88r* \
 	      | -windows* | -osx | -abug |  -netware* | -os9* | -beos* \
 	      | -macos* | -mpw* | -magic* | -mon960* | -lnews* )
@@ -948,7 +948,7 @@ case $os in
 	-mac*)
 		os=`echo $os | sed -e 's|mac|macos|'`
 		;;
-	# END CYGNUS LOCAL
+	# END EGCS LOCAL
 	-linux*)
 		os=`echo $os | sed -e 's|linux|linux-gnu|'`
 		;;
@@ -973,7 +973,7 @@ case $os in
 	-acis*)
 		os=-aos
 		;;
-	-386bsd)					# CYGNUS LOCAL
+	-386bsd)					# EGCS LOCAL
 		os=-bsd
 		;;
 	-ctix* | -uts*)
@@ -1007,10 +1007,10 @@ case $os in
 	# This must come after -sysvr4.
 	-sysv*)
 		;;
-	-ose*)						# CYGNUS LOCAL
+	-ose*)						# EGCS LOCAL
 		os=-ose
 		;;
-	-es1800*)					# CYGNUS LOCAL
+	-es1800*)					# EGCS LOCAL
 		os=-ose
 		;;
 	-xenix)
@@ -1065,13 +1065,13 @@ case $basic_machine in
 		# default.
 		# os=-sunos4
 		;;
-	m68*-cisco)					# CYGNUS LOCAL
+	m68*-cisco)					# EGCS LOCAL
 		os=-aout
 		;;
-	mips*-cisco)					# CYGNUS LOCAL
+	mips*-cisco)					# EGCS LOCAL
 		os=-elf
 		;;
-        mips*-*)                                        # CYGNUS LOCAL
+        mips*-*)                                        # EGCS LOCAL
                 os=-elf
                 ;;
 	*-tti)	# must be before sparc entry or we get the wrong os.
@@ -1086,13 +1086,13 @@ case $basic_machine in
 	*-ibm)
 		os=-aix
 		;;
-	*-wec)						# CYGNUS LOCAL
+	*-wec)						# EGCS LOCAL
 		os=-proelf
 		;;
-	*-winbond)					# CYGNUS LOCAL
+	*-winbond)					# EGCS LOCAL
 		os=-proelf
 		;;
-	*-oki)						# CYGNUS LOCAL
+	*-oki)						# EGCS LOCAL
 		os=-proelf
 		;;
 	*-hp)
@@ -1158,13 +1158,13 @@ case $basic_machine in
 	f301-fujitsu)
 		os=-uxpv
 		;;
-	*-rom68k)					# CYGNUS LOCAL
+	*-rom68k)					# EGCS LOCAL
 		os=-coff
 		;;
-	*-*bug)						# CYGNUS LOCAL
+	*-*bug)						# EGCS LOCAL
 		os=-coff
 		;;
-	*-apple)					# CYGNUS LOCAL
+	*-apple)					# EGCS LOCAL
 		os=-macos
 		;;
 	*)
@@ -1224,10 +1224,10 @@ case $basic_machine in
 			-aux*)
 				vendor=apple
 				;;
-			-hms*)				# CYGNUS LOCAL
+			-hms*)				# EGCS LOCAL
 				vendor=hitachi
 				;;
-			-mpw* | -macos*)		# CYGNUS LOCAL
+			-mpw* | -macos*)		# EGCS LOCAL
 				vendor=apple
 				;;
 		esac
