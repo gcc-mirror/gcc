@@ -1181,7 +1181,7 @@ function_arg_padding (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  if (type && TREE_CODE (type) == RECORD_TYPE)
+  if (type != 0 && AGGREGATE_TYPE_P (type))
     return upward;
 
   /* This is the default definition.  */
