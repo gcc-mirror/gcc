@@ -1686,13 +1686,16 @@ public abstract class DomNode
           {
             continue;
           }
-        if (count < notificationSet.length)
+        if (count >= notificationSet.length)
           {
-            notificationSet[count++] = rec;
+            // very simple growth algorithm
+            int len = Math.max(notificationSet.length, 1);
+            ListenerRecord[] tmp = new ListenerRecord[len * 2];
+            System.arraycopy(notificationSet, 0, tmp, 0,
+                             notificationSet.length);
+            notificationSet = tmp;
           }
-        else
-          // XXX fire up some cheap growth algorithm
-          throw new RuntimeException("Event notification set size exceeded");
+        notificationSet[count++] = rec;
       }
 
     // Notify just those listeners
