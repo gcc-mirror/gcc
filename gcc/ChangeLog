@@ -1,3 +1,8 @@
+2004-09-21  Devang Patel  <dpatel@apple.com>
+
+	* tree.def (VEC_COND_EXPR): New tree node.
+	* tree-ssa-operands.c (get_expr_operands): Handle VEC_COND_EXPR.
+	
 2004-09-21  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/darwin-tramp.asm: Add __ppc64__ case.
