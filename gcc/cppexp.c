@@ -699,7 +699,7 @@ _cpp_parse_expr (pfile)
       U_CHAR flags = 0;
 
       /* Read a token */
-      op =  lex (pfile, skip_evaluation);
+      op = lex (pfile, skip_evaluation);
 
       /* See if the token is an operand, in which case go to set_value.
 	 If the token is an operator, figure out its left and right
@@ -710,16 +710,29 @@ _cpp_parse_expr (pfile)
 	case NAME:
 	  cpp_ice (pfile, "lex returns a NAME");
 	  goto syntax_error;
+	case ERROR:
+	  goto syntax_error;
+	default:
+	  cpp_error (pfile, "invalid character in #if");
+	  goto syntax_error;
+
 	case INT:  case CHAR:
-	  goto set_value;
-	case 0:
-	  lprio = 0;  goto maybe_reduce;
-	case '+':  case '-':
+	push_immediate:
+	  /* Push a value onto the stack.  */
 	  if (top->flags & HAVE_VALUE)
 	    {
-	      lprio = PLUS_PRIO;
-	      goto binop;
+	      cpp_error (pfile, "suspected missing binary operator in #if");
+	      goto syntax_error;
 	    }
+	  top->value = op.value;
+	  top->unsignedp = op.unsignedp;
+	  top->flags |= HAVE_VALUE;
+	  continue;
+
+	case '+':  case '-':
+	  lprio = PLUS_PRIO;
+	  if (top->flags & HAVE_VALUE)
+	      break;
 	  if (top->flags & SIGN_QUALIFIED)
 	    {
 	      cpp_error (pfile, "more than one sign operator given");
@@ -730,24 +743,25 @@ _cpp_parse_expr (pfile)
 	case '!':  case '~':
 	  flags |= RIGHT_OPERAND_REQUIRED;
 	  rprio = UNARY_PRIO;  lprio = rprio + 1;  goto maybe_reduce;
+
 	case '*':  case '/':  case '%':
-	  lprio = MUL_PRIO;  goto binop;
+	  lprio = MUL_PRIO;  break;
 	case '<':  case '>':  case LEQ:  case GEQ:
-	  lprio = LESS_PRIO;  goto binop;
+	  lprio = LESS_PRIO;  break;
 	case EQUAL:  case NOTEQUAL:
-	  lprio = EQUAL_PRIO;  goto binop;
+	  lprio = EQUAL_PRIO;  break;
 	case LSH:  case RSH:
-	  lprio = SHIFT_PRIO;  goto binop;
-	case '&':  lprio = AND_PRIO;  goto binop;
-	case '^':  lprio = XOR_PRIO;  goto binop;
-	case '|':  lprio = OR_PRIO;  goto binop;
-	case ANDAND:  lprio = ANDAND_PRIO;  goto binop;
-	case OROR:  lprio = OROR_PRIO;  goto binop;
+	  lprio = SHIFT_PRIO;  break;
+	case '&':  lprio = AND_PRIO;  break;
+	case '^':  lprio = XOR_PRIO;  break;
+	case '|':  lprio = OR_PRIO;  break;
+	case ANDAND:  lprio = ANDAND_PRIO;  break;
+	case OROR:  lprio = OROR_PRIO;  break;
 	case ',':
-	  lprio = COMMA_PRIO;  goto binop;
+	  lprio = COMMA_PRIO;  break;
 	case '(':
-	  lprio = PAREN_OUTER_PRIO;  rprio = PAREN_INNER_PRIO;
-	  goto maybe_reduce;
+	  lprio = PAREN_OUTER_PRIO;  rprio = PAREN_INNER_PRIO + 1;
+	  goto skip_reduction;
 	case ')':
 	  lprio = PAREN_INNER_PRIO;  rprio = PAREN_OUTER_PRIO;
 	  flags = HAVE_VALUE;	/* At least, we will have after reduction.  */
@@ -758,26 +772,11 @@ _cpp_parse_expr (pfile)
         case '?':
 	  lprio = COND_PRIO;  rprio = COND_PRIO;
 	  goto maybe_reduce;
-	case ERROR:
-	  goto syntax_error;
-	default:
-	  cpp_error (pfile, "invalid character in #if");
-	  goto syntax_error;
+	case 0:
+	  lprio = 0;  goto maybe_reduce;
 	}
 
-    set_value:
-      /* Push a value onto the stack.  */
-      if (top->flags & HAVE_VALUE)
-	{
-	  cpp_error (pfile, "syntax error in #if");
-	  goto syntax_error;
-	}
-      top->value = op.value;
-      top->unsignedp = op.unsignedp;
-      top->flags |= HAVE_VALUE;
-      continue;
-
-    binop:
+      /* Binary operation.  */
       flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
       rprio = lprio + 1;
 
@@ -953,7 +952,7 @@ _cpp_parse_expr (pfile)
 	      top->value = v2;
 	      top->unsignedp = unsigned2;
 	      break;
-	    case '(':  case '?':
+	    case '?':
 	      cpp_error (pfile, "syntax error in #if");
 	      goto syntax_error;
 	    case ':':
@@ -979,21 +978,22 @@ _cpp_parse_expr (pfile)
 		}
 	      break;
 	    case ')':
-	      if (! (top[0].flags & HAVE_VALUE)
-		  || top[0].op != '('
-		  || (top[-1].flags & HAVE_VALUE))
+	      cpp_error (pfile, "missing '(' in expression");
+	      goto syntax_error;
+	    case '(':
+	      if (op.op != ')')
 		{
-		  cpp_error (pfile, "mismatched parentheses in #if");
+		  cpp_error (pfile, "missing ')' in expression");
 		  goto syntax_error;
 		}
-	      else
+	      if (!(top[1].flags & HAVE_VALUE))
 		{
-		  top--;
-		  top->value = v1;
-		  top->unsignedp = unsigned1;
-		  top->flags |= HAVE_VALUE;
+		  cpp_error (pfile, "void expression between '(' and ')'");
+		  goto syntax_error;
 		}
-	      break;
+	      op.value = v2;
+	      op.unsignedp = unsigned2;
+	      goto push_immediate;
 	    default:
 	      if (ISGRAPH (top[1].op))
 		cpp_error (pfile, "unimplemented operator '%c'\n", top[1].op);
@@ -1002,18 +1002,13 @@ _cpp_parse_expr (pfile)
 			   top[1].op);
 	    }
 	}
+
       if (op.op == 0)
-	{
-	  if (top != stack)
-	    cpp_ice (pfile, "unbalanced stack in #if expression");
-	  if (!(top->flags & HAVE_VALUE))
-	    cpp_error (pfile, "#if with no expression");
-	  result = (top->value != 0);
-	  goto done;
-	}
-      top++;
-      
+	break;
+
+    skip_reduction:
       /* Check for and handle stack overflow.  */
+      top++;
       if (top == limit)
 	{
 	  struct operation *new_stack;
@@ -1034,6 +1029,8 @@ _cpp_parse_expr (pfile)
       top->flags = flags;
       top->rprio = rprio;
       top->op = op.op;
+
+      /* Handle short circuiting.  */
       if ((op.op == OROR && top[-1].value)
 	  || (op.op == ANDAND && !top[-1].value)
 	  || (op.op == '?' && !top[-1].value))
@@ -1048,13 +1045,22 @@ _cpp_parse_expr (pfile)
 	    skip_evaluation--;
 	}
     }
- syntax_error:
-  _cpp_skip_rest_of_line (pfile);
-  result = 0;
- done:
+
+  if (top != stack)
+    cpp_ice (pfile, "unbalanced stack in #if expression");
+  if (!(top->flags & HAVE_VALUE))
+    cpp_error (pfile, "#if with no expression");
+  result = (top->value != 0);
+
+ tidy_up:
   pfile->parsing_if_directive--;
   CPP_SET_WRITTEN (pfile, old_written);
   if (stack != init_stack)
     free (stack);
   return result;
+
+ syntax_error:
+  _cpp_skip_rest_of_line (pfile);
+  result = 0;
+  goto tidy_up;
 }
