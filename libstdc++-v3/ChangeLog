@@ -1,5 +1,11 @@
 2004-03-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude.m4: Quote correctly.
+	* aclocal.m4: Regenerate.
+	* linkage.m4: Same.
+
+2004-03-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* docs/html/test.html: Add multilib RUNTESTFLAGS example.
 
 	* docs/html/18_support/howto.html: Add bit about writing to
