@@ -322,6 +322,23 @@ easy_fp_constant (op, mode)
 	  || (low != 0 && input_operand (low, word_mode)));
 }
       
+/* Return 1 if the operand is a constant whose low-order 32 bits are
+   zero.  */
+
+int
+low_32_bit_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  rtx low;
+
+  if (GET_CODE (op) != CONST_DOUBLE && GET_CODE (op) != CONST_INT)
+    return 0;
+
+  low = operand_subword (op, 1, 0, mode);
+  return low != 0 && GET_CODE (low) == CONST_INT && INTVAL (low) == 0;
+}
+
 /* Return 1 if the operand is either a floating-point register, a pseudo
    register, or memory.  */
 
