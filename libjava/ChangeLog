@@ -1,3 +1,23 @@
+2003-12-28  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
+	(inputStream): Made it a DataInputStream.
+	(requestProperties): Removed.
+	(hdrHash): Removed.
+	(hdrVec): Removed.
+	(headers): New field to store headers.
+	(connect): Initialize inputStream.
+	(receiveReply): Merged from classpath. The new algorithm is line based
+	instead of character based.
+	(getHeaderField): Use headers.
+	(getHeaderFields): Use headers.
+	(getKey): Removed.
+	(getField): Removed.
+	* gnu/java/net/HeaderFieldHelper.java: New file.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/net/HeaderFieldHelper.java.
+	* Makefile.in: Regenerated.
+
 2003-12-28  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/io/LineNumberReader.java

@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.net.protocol.http;
 
 import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,8 +51,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
-import java.util.Hashtable;
+import gnu.java.net.HeaderFieldHelper;
 
 /**
  * This subclass of java.net.URLConnection models a URLConnection via
@@ -102,14 +102,12 @@ public final class Connection extends HttpURLConnection
   /**
    * The InputStream for this connection.
    */
-  private BufferedInputStream inputStream;
+  private DataInputStream inputStream;
 
   /**
    * This is the object that holds the header field information
    */
-  private Hashtable requestProperties = new Hashtable();
-  private Hashtable hdrHash = new Hashtable();
-  private Vector hdrVec = new Vector();
+  private HeaderFieldHelper headers = new HeaderFieldHelper();
 
   /**
    * Calls superclass constructor to initialize
@@ -147,13 +145,8 @@ public final class Connection extends HttpURLConnection
 	socket = new Socket(url.getHost(), port);
       }
 
-    // Originally tried using a BufferedReader here to take advantage of
-    // the readLine method and avoid the following, but the buffer read
-    // past the end of the headers so the first part of the content was lost.
-    // It is probably more robust than it needs to be, e.g. the byte[]
-    // is unlikely to overflow and a '\r' should always be followed by a '\n',
-    // but it is better to be safe just in case.
-    inputStream = new BufferedInputStream(socket.getInputStream());
+    inputStream =
+      new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
     sendRequest();
     receiveReply();
@@ -215,54 +208,94 @@ public final class Connection extends HttpURLConnection
    */
   private void receiveReply() throws IOException
   {
-    int buflen = 100;
-    byte[] buf = new byte[buflen];
-    String line = "";
-    boolean gotnl = false;
-    byte[] ch = new byte[1];
-    ch[0] = (byte) '\n';
+    // Parse the reply
+    String line = inputStream.readLine();
+    String saveline = line;
+    int idx = line.indexOf (" ");
 
+    if ((idx == -1)
+        || (line.length() < (idx + 6)))
+      throw new IOException ("Server reply was unparseable: " + saveline);
+
+    headers.addHeaderField (null, line);
+
+    line = line.substring (idx + 1);
+    String code = line.substring (0, 3);
+    
+    try
+      {
+        responseCode = Integer.parseInt (code);
+      }
+    catch (NumberFormatException e)
+      {
+        throw new IOException ("Server reply was unparseable: " + saveline);
+      }
+    
+    responseMessage = line.substring (4);
+
+    // Now read the header lines
+    String key = null, value = null;
+    
     while (true)
       {
-	// Check for leftover byte from non-'\n' after a '\r'.
-	if (ch[0] != '\n')
-	  line = line + '\r' + new String(ch, 0, 1);
+        line = inputStream.readLine();
+        
+        if (line.equals(""))
+          break;
 
-	int i;
-	// FIXME: This is rather inefficient.
-	for (i = 0; i < buflen; i++)
-	  {
-	    buf[i] = (byte) inputStream.read();
-	    if (buf[i] == -1)
-	      throw new IOException("Malformed HTTP header");
-	    if (buf[i] == '\r')
-	      {
-	        inputStream.read(ch, 0, 1);
-		if (ch[0] == '\n')
-		  gotnl = true;
-		break;
-	      }
-	  }
-	line = line + new String(buf, 0, i);
+        // Check for folded lines
+        if (line.startsWith (" ")
+            || line.startsWith("\t"))
+          {
+            // Trim off leading space
+            do
+              {
+                if (line.length() == 1)
+                  throw new IOException("Server header lines were unparseable: "
+                                        + line);
 
-	// A '\r' '\n' combo indicates the end of the header entry.
-	// If it wasn't found, cycle back through the loop and append
-	// to 'line' until one is found.
-	if (gotnl)
-	  {
-	    // A zero length entry signals the end of the headers.
-	    if (line.length() == 0)
-	      break;
+                line = line.substring (1);
+              }
+            while (line.startsWith(" ")
+                   || line.startsWith("\t"));
 
-	    // Store the header and reinitialize for next cycle.
-	    hdrVec.addElement(line);
-	    String key = getKey(line);
-	    if (key != null)
-	      hdrHash.put(key.toLowerCase(), getField(line));
-	    line = "";
-	    ch[0] = (byte) '\n';
-	    gotnl = false;
-	  }
+            value = value + " " + line;
+          }
+        else 
+          {
+            if (key != null)
+              {
+                headers.addHeaderField (key.toLowerCase(), value);
+                key = null;
+                value = null;
+              }
+
+            // Parse out key and value
+            idx = line.indexOf (":");
+            if ((idx == -1)
+                || (line.length() < (idx + 2)))
+              throw new IOException ("Server header lines were unparseable: "
+                                     + line);
+
+            key = line.substring (0, idx);
+            value = line.substring (idx + 1);
+
+            // Trim off leading space
+            while (value.startsWith (" ")
+                   || value.startsWith ("\t"))
+              {
+                if (value.length() == 1)
+                  throw new IOException ("Server header lines were unparseable: "
+                                         + line);
+
+                value = value.substring (1);
+              }
+          }
+      }
+    
+    if (key != null)
+      {
+        headers.addHeaderField (key.toLowerCase(), value.toLowerCase());
       }
   }
 
@@ -347,7 +380,7 @@ public final class Connection extends HttpURLConnection
 	  return null;
 	}
 
-    return (String) hdrHash.get(name.toLowerCase());
+    return (String) headers.getHeaderFieldValueByKey(name.toLowerCase());
   }
 
   public Map getHeaderFields()
@@ -362,7 +395,7 @@ public final class Connection extends HttpURLConnection
 	  return null;
 	}
 
-    return hdrHash;
+    return headers.getHeaderFields();
   }
 
   /**
@@ -386,9 +419,7 @@ public final class Connection extends HttpURLConnection
 	  return null;
 	}
 
-    if (n < hdrVec.size())
-      return getField ((String) hdrVec.elementAt(n));
-    return null;
+    return headers.getHeaderFieldValueByIndex (n);
   }
 
   /**
@@ -412,30 +443,6 @@ public final class Connection extends HttpURLConnection
 	  return null;
 	}
 
-    if (n < hdrVec.size())
-      return getKey ((String) hdrVec.elementAt(n));
-    return null;
-  }
-
-  private String getKey(String str)
-  {
-    if (str == null)
-      return null;
-    int index = str.indexOf(':');
-    if (index >= 0)
-      return str.substring(0, index);
-    else
-      return null;
-  }
-
-  private String getField(String str)
-  {
-    if (str == null)
-      return null;
-    int index = str.indexOf(':');
-    if (index >= 0)
-      return str.substring(index + 1).trim();
-    else
-      return str;
+    return headers.getHeaderFieldKeyByIndex (n);
   }
 }
