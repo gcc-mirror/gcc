@@ -1,3 +1,8 @@
+2004-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c/16180
+	* gcc.dg/loop-5.c: New test.
+
 2004-08-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcc.c-torture/execute/20040823-1.c: New test.
