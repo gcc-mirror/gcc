@@ -55,7 +55,6 @@
 	(machopic_legitimize_pic_address): Improve codegen in dynamic-no-pic
 	case.
 
->>>>>>> 2.1435
 2003-10-15  Gábor Lóki  <alga@rgai.hu>
 
 	* fold-const.c (tree_swap_operands_p): Disable some features
