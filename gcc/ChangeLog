@@ -1,3 +1,8 @@
+Tue Aug 25 23:57:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* sparc.md (float abs/neg splits): Check reload_completed before
+	calling alter_subreg.
+
 Tue Aug 25 19:17:59 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (sparc_absnegfloat_split_legitimate): New
