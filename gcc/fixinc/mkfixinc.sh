@@ -117,24 +117,11 @@ fi
 
 #  OK.  We gotta make the thing.
 #
-echo $MAKE SHELL=\"$SHELL\" install
+echo $MAKE SHELL=\"$SHELL\" install-bin
 
 #  make and install either the binary or the default script
 #
-$MAKE SHELL="$SHELL" install && chmod 755 ${target} && exit 0
+$MAKE SHELL="$SHELL" install-bin && exit 0
 
-#  Where is our inclhack script?  That is the backup
-#  in case we are unable to make a working binary.
-#
-if test -f ./inclhack.sh
-then
-    INCLHACK=./inclhack.sh
-else
-    INCLHACK=${srcdir}/inclhack.sh
-fi
-
-echo Could not install binary fixincludes.
-echo Installing shell script instead.
-
-cp ${INCLHACK} ${target}
-chmod 755 ${target}
+echo $MAKE SHELL=\"$SHELL\" install-sh
+$MAKE SHELL="$SHELL" install-sh
