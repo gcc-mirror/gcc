@@ -4844,6 +4844,21 @@ choose_reload_regs (insn, avoid_return_reg)
 				reload_when_needed[j], reload_mode[j]);
     }
 
+  /* Ban all registers used for argument passing to the current
+     function call.  */
+  if (GET_CODE (insn) == CALL_INSN)
+    {
+      rtx link;
+
+      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+	if (GET_CODE (XEXP (link, 0)) == USE)
+          {
+	    register rtx reg = SET_DEST (XEXP (link, 0));
+	    mark_reload_reg_in_use (REGNO (reg), 0, RELOAD_FOR_INPUT,
+				    GET_MODE (reg));
+          }
+    }
+
   if (n_reloads > 1)
     qsort (reload_order, n_reloads, sizeof (short), reload_reg_class_lower);
 
@@ -5446,25 +5461,6 @@ emit_reload_insns (insn)
   for (j = 0; j < reload_n_operands; j++)
     input_reload_insns[j] = input_address_reload_insns[j]
       = output_reload_insns[j] = output_address_reload_insns[j] = 0;
-
-  /* If this is a CALL_INSN preceded by USE insns, any reload insns
-     must go in front of the first USE insn, not in front of INSN.  */
-
-  if (GET_CODE (insn) == CALL_INSN && GET_CODE (PREV_INSN (insn)) == INSN
-      && GET_CODE (PATTERN (PREV_INSN (insn))) == USE)
-    while (GET_CODE (PREV_INSN (before_insn)) == INSN
-	   && GET_CODE (PATTERN (PREV_INSN (before_insn))) == USE)
-      before_insn = PREV_INSN (before_insn);
-
-  /* If INSN is followed by any CLOBBER insns made by find_reloads,
-     put our reloads after them since they may otherwise be 
-     misinterpreted.  */
-
-  while (GET_CODE (following_insn) == INSN
-	 && GET_MODE (following_insn) == DImode
-	 && GET_CODE (PATTERN (following_insn)) == CLOBBER
-	 && NEXT_INSN (following_insn) != 0)
-    following_insn = NEXT_INSN (following_insn);
 
   /* Now output the instructions to copy the data into and out of the
      reload registers.  Do these in the order that the reloads were reported,
