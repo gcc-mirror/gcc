@@ -1,3 +1,10 @@
+Feb 11 12:30:53 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize_1): The first operand in a relational
+	can be a CONST_INT.
+	* optabs.c (emit_conditional_move): Handle relationals which
+	have a known true/false result.
+
 2000-02-11  Geoff Keating  <geoffk@cygnus.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Don't insert

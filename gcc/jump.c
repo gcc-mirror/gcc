@@ -1305,10 +1305,16 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		   insn?  After all, we're going to delete it.  We'd have
 		   to modify emit_conditional_move to take a comparison rtx
 		   instead or write a new function.  */
-		cond0 = gen_reg_rtx (GET_MODE (XEXP (temp4, 0)));
+
 		/* We want the target to be able to simplify comparisons with
 		   zero (and maybe other constants as well), so don't create
 		   pseudos for them.  There's no need to either.  */
+		if (GET_CODE (XEXP (temp4, 0)) == CONST_INT
+		    || GET_CODE (XEXP (temp4, 0)) == CONST_DOUBLE)
+		  cond0 = XEXP (temp4, 0);
+		else
+		  cond0 = gen_reg_rtx (GET_MODE (XEXP (temp4, 0)));
+
 		if (GET_CODE (XEXP (temp4, 1)) == CONST_INT
 		    || GET_CODE (XEXP (temp4, 1)) == CONST_DOUBLE)
 		  cond1 = XEXP (temp4, 1);
