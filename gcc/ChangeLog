@@ -1,3 +1,8 @@
+2001-01-02  Philip Blundell  <pb@futuretv.com>
+
+	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Avoid illegal clobber 
+	of input operand.
+
 2001-01-02  Richard Henderson  <rth@redhat.com>
 
 	* alpha.md (*ze_and_ne): Duplicate insn condition to split.
