@@ -1,3 +1,7 @@
+2003-02-10  Phil Edwards  <pme@gcc.gnu.org>
+
+	* tree.c (build_tree_list):  Fix parameter names in comment.
+
 2003-02-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/ppc64-fp.c: New file.

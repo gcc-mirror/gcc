@@ -1070,7 +1070,7 @@ build_tree_list (parm, value)
 }
 
 /* Return a newly created TREE_LIST node whose
-   purpose and value fields are PARM and VALUE
+   purpose and value fields are PURPOSE and VALUE
    and whose TREE_CHAIN is CHAIN.  */
 
 tree
