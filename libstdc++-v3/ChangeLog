@@ -1,3 +1,8 @@
+2003-07-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_complex.h: Partially revert last
+	changes: cmath functions must not be qualified.
+
 2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS):  Do not test for binutils
