@@ -4142,11 +4142,13 @@ build_modify_expr (lhs, modifycode, rhs)
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
       pedantic_lvalue_warning (COMPOUND_EXPR);
+      newrhs = build_modify_expr (TREE_OPERAND (lhs, 1),
+				  modifycode, rhs);
+      if (TREE_CODE (newrhs) == ERROR_MARK)
+	return error_mark_node;
       return build (COMPOUND_EXPR, lhstype,
-		    TREE_OPERAND (lhs, 0),
-		    build_modify_expr (TREE_OPERAND (lhs, 1),
-				       modifycode, rhs));
-
+		    TREE_OPERAND (lhs, 0), newrhs);
+ 
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
       pedantic_lvalue_warning (COND_EXPR);
@@ -4161,6 +4163,8 @@ build_modify_expr (lhs, modifycode, rhs)
 						       modifycode, rhs),
 				    build_modify_expr (TREE_OPERAND (lhs, 2),
 						       modifycode, rhs));
+	if (TREE_CODE (cond) == ERROR_MARK)
+	  return cond;
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
 	return build (COMPOUND_EXPR, TREE_TYPE (lhs),
@@ -4203,6 +4207,8 @@ build_modify_expr (lhs, modifycode, rhs)
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    convert (TREE_TYPE (inner_lhs),
 					     convert (lhstype, newrhs)));
+	if (TREE_CODE (result) == ERROR_MARK)
+	  return result;
 	pedantic_lvalue_warning (CONVERT_EXPR);
 	return convert (TREE_TYPE (lhs), result);
       }
