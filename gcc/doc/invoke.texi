@@ -705,8 +705,7 @@ in the following sections.
 -fno-common  -fno-ident  -fno-gnu-linker @gol
 -fpcc-struct-return  -fpic  -fPIC @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
--fshort-double  -fshort-wchar -fvolatile @gol
--fvolatile-global  -fvolatile-static @gol
+-fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
@@ -10751,20 +10750,6 @@ debugging the compiler itself).
 @option{-fno-verbose-asm}, the default, causes the
 extra information to be omitted and is useful when comparing two assembler
 files.
-
-@item -fvolatile
-@opindex fvolatile
-Consider all memory references through pointers to be volatile.
-
-@item -fvolatile-global
-@opindex fvolatile-global
-Consider all memory references to extern and global data items to
-be volatile.  GCC does not consider static data items to be volatile
-because of this switch.
-
-@item -fvolatile-static
-@opindex fvolatile-static
-Consider all memory references to static data to be volatile.
 
 @item -fpic
 @opindex fpic

@@ -1,3 +1,7 @@
+2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* typeck.c (build_indirect_ref): Don't check flag_volatile.
+
 2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8849

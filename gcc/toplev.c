@@ -606,18 +606,6 @@ int flag_signaling_nans = 0;
 
 int flag_complex_divide_method = 0;
 
-/* Nonzero means all references through pointers are volatile.  */
-
-int flag_volatile;
-
-/* Nonzero means treat all global and extern variables as volatile.  */
-
-int flag_volatile_global;
-
-/* Nonzero means treat all static variables as volatile.  */
-
-int flag_volatile_static;
-
 /* Nonzero means just do syntax checking; don't output anything.  */
 
 int flag_syntax_only = 0;
@@ -986,12 +974,6 @@ static const lang_independent_options f_options[] =
    N_("Perform DWARF2 duplicate elimination") },
   {"float-store", &flag_float_store, 1,
    N_("Do not store floats in registers") },
-  {"volatile", &flag_volatile, 1,
-   N_("Consider all mem refs through pointers as volatile") },
-  {"volatile-global", &flag_volatile_global, 1,
-   N_("Consider all mem refs to global data to be volatile") },
-  {"volatile-static", &flag_volatile_static, 1,
-   N_("Consider all mem refs to static data to be volatile") },
   {"defer-pop", &flag_defer_pop, 1,
    N_("Defer popping functions args from stack until later") },
   {"omit-frame-pointer", &flag_omit_frame_pointer, 1,

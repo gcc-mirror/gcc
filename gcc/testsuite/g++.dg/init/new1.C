@@ -1,7 +1,6 @@
 // Origin: asharji@uwaterloo.ca
 
 // { dg-do compile }
-// { dg-options "-fvolatile" }
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -1189,7 +1189,6 @@ build_indirect_ref (ptr, errorstring)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       if (TREE_CODE (pointer) == ADDR_EXPR
-	  && !flag_volatile
 	  && (TREE_TYPE (TREE_OPERAND (pointer, 0))
 	      == TREE_TYPE (type)))
 	return TREE_OPERAND (pointer, 0);
@@ -1215,7 +1214,7 @@ build_indirect_ref (ptr, errorstring)
 	     to change it via some other pointer.  */
 	  TREE_READONLY (ref) = TYPE_READONLY (t);
 	  TREE_SIDE_EFFECTS (ref)
-	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
+	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer);
 	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
 	  return ref;
 	}
