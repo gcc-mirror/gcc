@@ -762,9 +762,9 @@ static tree rs6000_build_builtin_va_list (void);
 static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool rs6000_must_pass_in_stack (enum machine_mode, tree);
 static bool rs6000_vector_mode_supported_p (enum machine_mode);
-static int get_vec_cmp_insn (enum rtx_code, enum machine_mode, 
+static int get_vec_cmp_insn (enum rtx_code, enum machine_mode,
 			     enum machine_mode);
-static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx, 
+static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx,
 				       enum machine_mode);
 static int get_vsel_insn (enum machine_mode);
 static void rs6000_emit_vector_select (rtx, rtx, rtx, rtx);
@@ -5476,6 +5476,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	{
 	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
 	  set_mem_alias_set (mem, set);
+	  set_mem_align (mem, GET_MODE_ALIGNMENT (DFmode));
 	  emit_move_insn (mem, gen_rtx_REG (DFmode, fregno));
 	  fregno++;
 	  off += 8;
@@ -11294,7 +11295,7 @@ output_e500_flip_eq_bit (rtx dst, rtx src)
    not available.  */
 
 static int
-get_vec_cmp_insn (enum rtx_code code, 
+get_vec_cmp_insn (enum rtx_code code,
 		  enum machine_mode dest_mode,
 		  enum machine_mode op_mode)
 {
@@ -11393,7 +11394,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	    enum insn_code nor_code;
 	    rtx eq_rtx = rs6000_emit_vector_compare (EQ, op0, op1,
 						     dest_mode);
-	    
+
 	    nor_code = one_cmpl_optab->handlers[(int)dest_mode].insn_code;
 	    if (nor_code == CODE_FOR_nothing)
 	      abort ();
@@ -11521,7 +11522,7 @@ rs6000_emit_vector_select (rtx dest, rtx op1, rtx op2, rtx mask)
   int vsel_insn_index  = get_vsel_insn (GET_MODE (dest));
 
   temp = gen_reg_rtx (dest_mode);
-  
+
   t = gen_rtx_fmt_ee (SET, VOIDmode, temp,
 		      gen_rtx_fmt_Ei (UNSPEC, dest_mode,
 				      gen_rtvec (3, op1, op2, mask),
@@ -11531,7 +11532,7 @@ rs6000_emit_vector_select (rtx dest, rtx op1, rtx op2, rtx mask)
   return;
 }
 
-/* Emit vector conditional expression.  
+/* Emit vector conditional expression.
    DEST is destination. OP1 and OP2 are two VEC_COND_EXPR operands.
    CC_OP0 and CC_OP1 are the two operands for the relation operation COND.  */
 
@@ -11594,7 +11595,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     return 0;
 
   is_against_zero = op1 == CONST0_RTX (compare_mode);
-  
+
   /* A floating-point subtract might overflow, underflow, or produce
      an inexact result, thus changing the floating-point flags, so it
      can't be generated if we care about that.  It's safe if one side
@@ -17251,7 +17252,7 @@ toc_section (void)
 static void
 rs6000_darwin_file_start (void)
 {
-  static const struct 
+  static const struct
   {
     const char *arg;
     const char *name;
@@ -17274,7 +17275,7 @@ rs6000_darwin_file_start (void)
     { NULL, "ppc", 0 } };
   const char *cpu_id = "";
   size_t i;
-  
+
   rs6000_file_start();
 
   /* Determine the argument to -mcpu=.  Default to G3 if not specified.  */

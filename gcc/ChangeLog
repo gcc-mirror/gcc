@@ -1,3 +1,8 @@
+2004-10-22  Eric Christopher  <echristo@redhat.com>
+
+        * config/rs6000/rs6000.c (setup_incoming_varargs): Align DFmode
+	saves.
+
 2004-10-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md (spe_extendsfdf2): New.
