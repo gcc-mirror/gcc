@@ -10520,7 +10520,9 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			break;
 		      }
 		  }
-		else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem)))
+		else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
+			 || (GET_CODE (tem) == CALL_INSN
+			     && find_reg_fusage (tem, USE, XEXP (note, 0))))
 		  {
 		    place = tem;
 		    break;
