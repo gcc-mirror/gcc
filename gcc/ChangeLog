@@ -1,3 +1,9 @@
+2003-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/10336
+	* jump.c (never_reached_warning): Really stop looking if we reach 
+	the beginning of the function.
+
 2003-04-22  Release Manager
 
 	* GCC 3.2.3 Released.
