@@ -1267,8 +1267,8 @@ package body Sem is
    --  Start of processing for Semantics
 
    begin
-      Compiler_State        := Analyzing;
-      Current_Sem_Unit      := Get_Cunit_Unit_Number (Comp_Unit);
+      Compiler_State   := Analyzing;
+      Current_Sem_Unit := Get_Cunit_Unit_Number (Comp_Unit);
 
       if Generic_Main then
          Expander_Mode_Save_And_Set (False);

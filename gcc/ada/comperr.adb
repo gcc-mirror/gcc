@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,7 @@ package body Comperr is
 
       Is_Public_Version : constant Boolean := Get_Gnat_Build_Type = Public;
       Is_FSF_Version    : constant Boolean := Get_Gnat_Build_Type = FSF;
+      Is_GAP_Version    : constant Boolean := Get_Gnat_Build_Type = GAP;
 
    --  Start of processing for Compiler_Abort
 
@@ -312,6 +313,16 @@ package body Comperr is
                   Write_Str
                     ("| See gnatinfo.txt for full info on procedure " &
                      "for submitting bugs.");
+                  End_Line;
+
+               elsif Is_GAP_Version then
+                  Write_Str
+                    ("| (use plain ASCII or MIME attachment, or FTP "
+                     & "to your GAP account.).");
+                  End_Line;
+
+                  Write_Str
+                    ("| Please use your GAP account to report this.");
                   End_Line;
 
                elsif not Is_FSF_Version then

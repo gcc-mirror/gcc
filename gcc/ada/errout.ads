@@ -24,10 +24,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output error messages. They
---  are basically system independent, however in some environments, e.g.
---  when the parser is embedded into an editor, it may be appropriate
---  to replace the implementation of this package.
+--  This package contains the routines to output error messages. They are
+--  basically system independent, however in some environments, e.g. when the
+--  parser is embedded into an editor, it may be appropriate to replace the
+--  implementation of this package.
 
 with Err_Vars;
 with Erroutc;
@@ -41,13 +41,13 @@ package Errout is
 
    Serious_Errors_Detected : Nat renames Err_Vars.Serious_Errors_Detected;
    --  This is a count of errors that are serious enough to stop expansion,
-   --  and hence to prevent generation of an object file even if the
-   --  switch -gnatQ is set.
+   --  and hence to prevent generation of an object file even if the switch
+   --  -gnatQ is set.
 
    Total_Errors_Detected : Nat renames Err_Vars.Total_Errors_Detected;
-   --  Number of errors detected so far. Includes count of serious errors
-   --  and non-serious errors, so this value is always greater than or
-   --  equal to the Serious_Errors_Detected value.
+   --  Number of errors detected so far. Includes count of serious errors and
+   --  non-serious errors, so this value is always greater than or equal to
+   --  the Serious_Errors_Detected value.
 
    Warnings_Detected : Nat renames Err_Vars.Warnings_Detected;
    --  Number of warnings detected
@@ -56,32 +56,32 @@ package Errout is
    --  Count of configurable run time violations so far. This is used to
    --  suppress certain cascaded error messages when we know that we may not
    --  have fully expanded some items, due to high integrity violations (i.e.
-   --  the use of constructs not permitted by the library in use, or
-   --  improper constructs in No_Run_Time mode).
+   --  the use of constructs not permitted by the library in use, or improper
+   --  constructs in No_Run_Time mode).
 
    type Compiler_State_Type is (Parsing, Analyzing);
    Compiler_State : Compiler_State_Type;
-   --  Indicates current state of compilation. This is put in the Errout
-   --  spec because it affects the action of the error message handling.
-   --  In particular, an attempt is made by Errout to suppress cascaded
-   --  error messages in Parsing mode, but not in the other modes.
+   --  Indicates current state of compilation. This is put in the Errout spec
+   --  because it affects the action of the error message handling. In
+   --  particular, an attempt is made by Errout to suppress cascaded error
+   --  messages in Parsing mode, but not in the other modes.
 
    Current_Error_Source_File : Source_File_Index
      renames Err_Vars.Current_Error_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
    --  is initialized to Main_Source_File at the start of a compilation, which
-   --  means that no file names will be output unless there are errors in units
-   --  other than the main unit. However, if the main unit has a pragma
-   --  Source_Reference line, then this is initialized to No_Source_File,
-   --  to force an initial reference to the real source file name.
+   --  means that no file names will be output unless there are errors in
+   --  units other than the main unit. However, if the main unit has a pragma
+   --  Source_Reference line, then this is initialized to No_Source_File, to
+   --  force an initial reference to the real source file name.
 
    Raise_Exception_On_Error : Nat renames Err_Vars.Raise_Exception_On_Error;
    --  If this value is non-zero, then any attempt to generate an error
-   --  message raises the exception Error_Msg_Exception, and the error
-   --  message is not output. This is used for defending against junk
-   --  resulting from illegalities, and also for substitution of more
-   --  appropriate error messages from higher semantic levels. It is
-   --  a counter so that the increment/decrement protocol nests neatly.
+   --  message raises the exception Error_Msg_Exception, and the error message
+   --  is not output. This is used for defending against junk resulting from
+   --  illegalities, and also for substitution of more appropriate error
+   --  messages from higher semantic levels. It is a counter so that the
+   --  increment/decrement protocol nests neatly.
 
    Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
    --  Exception raised if Raise_Exception_On_Error is true
@@ -135,50 +135,50 @@ package Errout is
 
    --    Insertion character % (Percent: insert name from Names table)
    --      The character % is replaced by the text for the name specified by
-   --      the Name_Id value stored in Error_Msg_Name_1. A blank precedes
-   --      the name if it is preceded by a non-blank character other than a
-   --      left parenthesis. The name is enclosed in quotes unless manual
-   --      quotation mode is set. If the Name_Id is set to No_Name, then
-   --      no insertion occurs; if the Name_Id is set to Error_Name, then
-   --      the string <error> is inserted. A second and third % may appear
-   --      in a single message, similarly replaced by the names which are
-   --      specified by the Name_Id values stored in Error_Msg_Name_2 and
-   --      Error_Msg_Name_3. The names are decoded and cased according to
-   --      the current identifier casing mode.
+   --      the Name_Id value stored in Error_Msg_Name_1. A blank precedes the
+   --      name if it is preceded by a non-blank character other than left
+   --      parenthesis. The name is enclosed in quotes unless manual quotation
+   --      mode is set. If the Name_Id is set to No_Name, then no insertion
+   --      occurs; if the Name_Id is set to Error_Name, then the string
+   --      <error> is inserted. A second and third % may appear in a single
+   --      message, similarly replaced by the names which are specified by the
+   --      Name_Id values stored in Error_Msg_Name_2 and Error_Msg_Name_3. The
+   --      names are decoded and cased according to the current identifier
+   --      casing mode.
 
    --    Insertion character $ (Dollar: insert unit name from Names table)
-   --      The character $ is treated similarly to %, except that the name
-   --      is obtained from the Unit_Name_Type value in Error_Msg_Unit_1
-   --      and Error_Msg_Unit_2, as provided by Get_Unit_Name_String in
-   --      package Uname. Note that this name includes the postfix (spec)
-   --      or (body) strings. If this postfix is not required, use the
-   --      normal % insertion for the unit name.
+   --      The character $ is treated similarly to %, except that the name is
+   --      obtained from the Unit_Name_Type value in Error_Msg_Unit_1 and
+   --      Error_Msg_Unit_2, as provided by Get_Unit_Name_String in package
+   --      Uname. Note that this name includes the postfix (spec) or (body)
+   --      strings. If this postfix is not required, use the normal %
+   --      insertion for the unit name.
 
    --    Insertion character { (Left brace: insert literally from names table)
-   --      The character { is treated similarly to %, except that the
-   --      name is output literally as stored in the names table without
-   --      adjusting the casing. This can be used for file names and in
-   --      other situations where the name string is to be output unchanged.
+   --      The character { is treated similarly to %, except that the name is
+   --      output literally as stored in the names table without adjusting the
+   --      casing. This can be used for file names and in other situations
+   --      where the name string is to be output unchanged.
 
    --    Insertion character * (Asterisk, insert reserved word name)
-   --      The insertion character * is treated exactly like % except that
-   --      the resulting name is cased according to the default conventions
-   --      for reserved words (see package Scans).
+   --      The insertion character * is treated exactly like % except that the
+   --      resulting name is cased according to the default conventions for
+   --      reserved words (see package Scans).
 
    --    Insertion character & (Ampersand: insert name from node)
    --      The insertion character & is treated similarly to %, except that
    --      the name is taken from the Chars field of the given node, and may
-   --      refer to a child unit name, or a selected component. The casing
-   --      is, if possible, taken from the original source reference, which
-   --      is obtained from the Sloc field of the given node or nodes. If no
-   --      Sloc is available (happens e.g. for nodes in package Standard),
-   --      then the default case (see Scans spec) is used. The nodes to be
-   --      used are stored in Error_Msg_Node_1, Error_Msg_Node_2. No insertion
-   --      occurs for the Empty node, and the Error node results in the
-   --      insertion of the characters <error>. In addition, if the special
-   --      global variable Error_Msg_Qual_Level is non-zero, then the
-   --      reference will include up to the given number of levels of
-   --      qualification, using the scope chain.
+   --      refer to a child unit name, or a selected component. The casing is,
+   --      if possible, taken from the original source reference, which is
+   --      obtained from the Sloc field of the given node or nodes. If no Sloc
+   --      is available (happens e.g. for nodes in package Standard), then the
+   --      default case (see Scans spec) is used. The nodes to be used are
+   --      stored in Error_Msg_Node_1, Error_Msg_Node_2. No insertion occurs
+   --      for the Empty node, and the Error node results in the insertion of
+   --      the characters <error>. In addition, if the special global variable
+   --      Error_Msg_Qual_Level is non-zero, then the reference will include
+   --      up to the given number of levels of qualification, using the scope
+   --      chain.
 
    --    Insertion character # (Pound: insert line number reference)
    --      The character # is replaced by the string indicating the source
@@ -188,28 +188,29 @@ package Errout is
    --        for locations in current file:  at line nnn:ccc
    --        for locations in other files:   at filename:nnn:ccc
    --
-   --      By convention, the # insertion character is only used at the end
-   --      of an error message, so the above strings only appear as the last
+   --      By convention, the # insertion character is only used at the end of
+   --      an error message, so the above strings only appear as the last
    --      characters of an error message.
 
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
    --      referenced by the entity whose Id is stored in Error_Msg_Node_1.
    --      the string gives the name or description of the type, and also
-   --      where appropriate the location of its declaration. Special
-   --      cases like "some integer type" are handled appropriately. Only
-   --      one } is allowed in a message, since there is not enough room
-   --      for two (the insertion can be quite long, including a file name)
-   --      In addition, if the special global variable Error_Msg_Qual_Level
-   --      is non-zero, then the reference will include up to the given
-   --      number of levels of qualification, using the scope chain.
+   --      where appropriate the location of its declaration. Special cases
+   --      like "some integer type" are handled appropriately. Only one } is
+   --      allowed in a message, since there is not enough room for two (the
+   --      insertion can be quite long, including a file name) In addition, if
+   --      the special global variable Error_Msg_Qual_Level is non-zero, then
+   --      the reference will include up to the given number of levels of
+   --      qualification, using the scope chain.
 
    --    Insertion character @ (At: insert column number reference)
    --      The character @ is replaced by null if the RM_Column_Check mode is
    --      off (False). If the switch is on (True), then @ is replaced by the
-   --      text string " in column nnn" where nnn is the decimal representation
-   --      of the column number stored in Error_Msg_Col plus one (the plus one
-   --      is because the number is stored 0-origin and displayed 1-origin).
+   --      text string " in column nnn" where nnn is the decimal
+   --      representation of the column number stored in Error_Msg_Col plus
+   --      one (the plus one is because the number is stored 0-origin and
+   --      displayed 1-origin).
 
    --    Insertion character ^ (Carret: insert integer value)
    --      The character ^ is replaced by the decimal conversion of the Uint
@@ -235,12 +236,12 @@ package Errout is
    --      a warning instead of a normal error message, and the text of the
    --      message will be preceded by "Warning:" instead of "Error:" The
    --      handling of warnings if further controlled by the Warning_Mode
-   --      option (-w switch), see package Opt for further details, and
-   --      also by the current setting from pragma Warnings. This pragma
-   --      applies only to warnings issued from the semantic phase (not
-   --      the parser), but currently all relevant warnings are posted
-   --      by the semantic phase anyway. Messages starting with (style)
-   --      are also treated as warning messages.
+   --      option (-w switch), see package Opt for further details, and also
+   --      by the current setting from pragma Warnings. This pragma applies
+   --      only to warnings issued from the semantic phase (not the parser),
+   --      but currently all relevant warnings are posted by the semantic
+   --      phase anyway. Messages starting with (style) are also treated as
+   --      warning messages.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
    --      If two or more upper case letters appear in the message, they are
@@ -249,10 +250,10 @@ package Errout is
    --      quotes are added unless manual quotation mode is currently set.
 
    --    Insertion character ` (Backquote: set manual quotation mode)
-   --      The backquote character always appears in pairs. Each backquote
-   --      of the pair is replaced by a double quote character. In addition,
-   --      Any reserved keywords, or name insertions between these backquotes
-   --      are not surrounded by the usual automatic double quotes. See the
+   --      The backquote character always appears in pairs. Each backquote of
+   --      the pair is replaced by a double quote character. In addition, Any
+   --      reserved keywords, or name insertions between these backquotes are
+   --      not surrounded by the usual automatic double quotes. See the
    --      section below on manual quotation mode for further details.
 
    --    Insertion character ' (Quote: literal character)
@@ -264,17 +265,17 @@ package Errout is
 
    --    Insertion character \ (Backslash: continuation message)
    --      Indicates that the message is a continuation of a message
-   --      previously posted. This is used to ensure that such groups
-   --      of messages are treated as a unit. The \ character must be
-   --      the first character of the message text.
+   --      previously posted. This is used to ensure that such groups of
+   --      messages are treated as a unit. The \ character must be the first
+   --      character of the message text.
 
    --    Insertion character | (vertical bar, non-serious error)
    --      By default, error messages (other than warning messages) are
-   --      considered to be fatal error messages which prevent expansion
-   --      or generation of code in the presence of the -gnatQ switch.
-   --      If the insertion character | appears, the message is considered
-   --      to be non-serious, and does not cause Serious_Errors_Detected
-   --      to be incremented (so expansion is not prevented by such a msg).
+   --      considered to be fatal error messages which prevent expansion or
+   --      generation of code in the presence of the -gnatQ switch. If the
+   --      insertion character | appears, the message is considered to be
+   --      non-serious, and does not cause Serious_Errors_Detected to be
+   --      incremented (so expansion is not prevented by such a msg).
 
    ----------------------------------------
    -- Specialization of Messages for VMS --
@@ -458,11 +459,11 @@ package Errout is
       Ploc : Source_Ptr;
    end record;
 
-   --  Note: Ploc points to the terminating semicolon in the List_Off and
-   --  Page cases, and to the pragma keyword for List_On. In the case of
-   --  a pragma List_Off, a List_On entry is also made in the table,
-   --  pointing to the pragma keyword. This ensures that, as required,
-   --  a List (Off) pragma is listed even in list off mode.
+   --  Note: Ploc points to the terminating semicolon in the List_Off and Page
+   --  cases, and to the pragma keyword for List_On. In the case of a pragma
+   --  List_Off, a List_On entry is also made in the table, pointing to the
+   --  pragma keyword. This ensures that, as required, a List (Off) pragma is
+   --  listed even in list off mode.
 
    package List_Pragmas is new Table.Table (
      Table_Component_Type => List_Pragma_Record,
@@ -529,13 +530,13 @@ package Errout is
 
    procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id);
    --  Output a message at the Sloc of the given node. This routine can be
-   --  called from the parser or the semantic analyzer, although the call
-   --  from the latter is much more common (and is the most usual way of
-   --  generating error messages from the analyzer). The message text may
-   --  contain a single & insertion, which will reference the given node.
-   --  The message is suppressed if the node N already has a message posted,
-   --  or if it is a warning and warnings and N is an entity node for which
-   --  warnings are suppressed.
+   --  called from the parser or the semantic analyzer, although the call from
+   --  the latter is much more common (and is the most usual way of generating
+   --  error messages from the analyzer). The message text may contain a
+   --  single & insertion, which will reference the given node. The message is
+   --  suppressed if the node N already has a message posted, or if it is a
+   --  warning and warnings and N is an entity node for which warnings are
+   --  suppressed.
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
    --  Similar to Error_Msg_N except that the message is placed on the
@@ -547,9 +548,9 @@ package Errout is
       E   : Node_Or_Entity_Id);
    --  Output a message at the Sloc of the given node N, with an insertion of
    --  the name from the given entity node E. This is used by the semantic
-   --  routines, where this is a common error message situation. The Msg
-   --  text will contain a & or } as usual to mark the insertion point.
-   --  This routine can be called from the parser or the analyzer.
+   --  routines, where this is a common error message situation. The Msg text
+   --  will contain a & or } as usual to mark the insertion point. This
+   --  routine can be called from the parser or the analyzer.
 
    procedure Error_Msg_FE
      (Msg : String;
@@ -623,10 +624,10 @@ package Errout is
    --  (treat warnings as errors) mode.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
-   --  Posts a non-fatal message on node N saying that the feature
-   --  identified by the Feature argument is not supported in either
-   --  configurable run-time mode or no run-time mode (as appropriate).
-   --  In the former case, the name of the library is output if available.
+   --  Posts a non-fatal message on node N saying that the feature identified
+   --  by the Feature argument is not supported in either configurable
+   --  run-time mode or no run-time mode (as appropriate). In the former case,
+   --  the name of the library is output if available.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message
@@ -642,13 +643,13 @@ package Errout is
    procedure Set_Identifier_Casing
      (Identifier_Name : System.Address;
       File_Name       : System.Address);
-   --  The identifier is a null terminated string that represents the name
-   --  of an identifier appearing in the source program. File_Name is a null
+   --  The identifier is a null terminated string that represents the name of
+   --  an identifier appearing in the source program. File_Name is a null
    --  terminated string giving the corresponding file name for the identifier
    --  as obtained from the front end by the use of Full_Debug_Name to the
-   --  source file referenced by the corresponding source location value.
-   --  On return, the name is in Name_Buffer, null terminated with Name_Len
-   --  set. This name is the identifier name as passed, cased according to
-   --  the default identifier casing for the given file.
+   --  source file referenced by the corresponding source location value. On
+   --  return, the name is in Name_Buffer, null terminated with Name_Len set.
+   --  This name is the identifier name as passed, cased according to the
+   --  default identifier casing for the given file.
 
 end Errout;

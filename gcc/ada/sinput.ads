@@ -564,11 +564,13 @@ package Sinput is
    procedure Write_Time_Stamp (S : Source_File_Index);
    --  Writes time stamp of specified file in YY-MM-DD HH:MM.SS format
 
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using Tree_Write
-
    procedure Tree_Read;
-   --  Initializes internal tables from current tree file using Tree_Read
+   --  Initializes internal tables from current tree file using the relevant
+   --  Table.Tree_Read routines.
+
+   procedure Tree_Write;
+   --  Writes out internal tables to current tree file using the relevant
+   --  Table.Tree_Write routines.
 
 private
    pragma Inline (File_Name);

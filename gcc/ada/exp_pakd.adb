@@ -851,12 +851,15 @@ package body Exp_Pakd is
 
       --  If our immediate ancestor subtype is constrained, and it already
       --  has a packed array type, then just share the same type, since the
-      --  bounds must be the same.
+      --  bounds must be the same. If the ancestor is not an array type but
+      --  a private type, as can happen with multiple instantiations, create
+      --  a new packed type, to avoid privacy issues.
 
       if Ekind (Typ) = E_Array_Subtype then
          Ancest := Ancestor_Subtype (Typ);
 
          if Present (Ancest)
+           and then Is_Array_Type (Ancest)
            and then Is_Constrained (Ancest)
            and then Present (Packed_Array_Type (Ancest))
          then

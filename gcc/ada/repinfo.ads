@@ -277,7 +277,8 @@ package Repinfo is
    --  also returned unmodified.
 
    procedure Tree_Read;
-   --  Read in the value of the Rep_Table
+   --  Initializes internal tables from current tree file using the relevant
+   --  Table.Tree_Read routines.
 
    ------------------------
    -- Compiler Interface --
@@ -287,7 +288,8 @@ package Repinfo is
    --  Procedure to list representation information
 
    procedure Tree_Write;
-   --  Write out the value of the Rep_Table
+   --  Writes out internal tables to current tree file using the relevant
+   --  Table.Tree_Write routines.
 
    --------------------------
    -- Debugging Procedures --
