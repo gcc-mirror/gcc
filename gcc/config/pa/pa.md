@@ -833,7 +833,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(abs:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "or,>= %%r0,%1,%0\;subi %%r0,%0,%0"
+  "or,>= %%r0,%1,%0\;subi 0,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
