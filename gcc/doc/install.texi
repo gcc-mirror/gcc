@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.25 2001/06/15 01:07:46 m.hayes Exp $
+@comment $Id: install.texi,v 1.26 2001/06/15 07:18:55 ljrittle Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1868,6 +1868,23 @@ If you use glibc 2.2 (or 2.1.9x), GCC 2.95.2 won't install
 out-of-the-box.  You'll get compile errors while building libstdc++.
 The patch @uref{glibc-2.2.patch,,glibc-2.2.patch}, that is to be
 applied in the GCC source tree, fixes the compatibility problems.
+
+@html
+</p>
+@end html
+
+@html
+<p>
+@end html
+
+Currently Glibc 2.2.3 (and older releases) and GCC 3.0 are out of sync
+since the latest exception handling changes for GCC.  Compiling glibc
+with GCC 3.0 will give a binary incompatible glibc and therefore cause
+lots of problems and might make your system completly unusable.  This
+will definitly need fixes in glibc but might also need fixes in GCC.  We
+strongly advise to wait for glibc 2.2.4 and to read the release notes of
+glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
+2.2.3 with GCC 3.0, just do not try to recompile it.
 
 @html
 </p>
