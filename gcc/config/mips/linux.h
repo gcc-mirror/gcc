@@ -181,6 +181,22 @@ Boston, MA 02111-1307, USA.  */
 #undef SET_ASM_OP
 #define SET_ASM_OP "\t.dummy\t"
 
+#undef  ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
+do									\
+  {									\
+    static int sym_lineno = 1;						\
+    fprintf (FILE, "%sLM%d:\n\t%s 68,0,%d,%sLM%d",			\
+	     LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP,		\
+	     LINE, LOCAL_LABEL_PREFIX, sym_lineno);			\
+    putc ('-', FILE);							\
+    assemble_name (FILE,						\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
+    putc ('\n', FILE);							\
+    sym_lineno++;							\
+  }									\
+while (0)
+
 /* This is how we tell the assembler that two symbols have the
    same value.  */
 #undef ASM_OUTPUT_DEF
