@@ -590,6 +590,7 @@ arc-*-elf*)
 arm-*-coff* | armel-*-coff*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h"
 	tmake_file=arm/t-arm-coff
+	use_fixproto=no
 	;;
 arm-semi-aof | armel-semi-aof)
 	tm_file="arm/semiaof.h arm/aof.h arm/arm.h"
@@ -632,6 +633,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file=arm/t-arm-elf
+	use_fixproto=no
 	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
@@ -644,16 +646,19 @@ arm*-*-rtems*)
 arm*-*-elf | ep9312-*-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-elf
+	use_fixproto=no
 	;;
 arm*-wince-pe*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
 	tmake_file=arm/t-wince-pe
 	extra_objs="pe.o"
+	use_fixproto=no
 	;;
 arm-*-pe*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h"
 	tmake_file=arm/t-pe
 	extra_objs="pe.o"
+	use_fixproto=no
 	;;
 arm*-*-kaos*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-arm.h"
@@ -983,6 +988,7 @@ i[34567]86-pc-msdosdjgpp*)
 	tmake_file=i386/t-djgpp
 	gnu_ld=yes
 	gas=yes
+	use_fixproto=no
 	;;
 i[34567]86-moss-msdos* | i[34567]86-*-moss*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h i386/moss.h"
@@ -1752,6 +1758,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	use_collect2=yes
 	thread_file='aix'
 	extra_headers=
+	use_fixproto=no
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h"
@@ -1759,6 +1766,7 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	use_collect2=yes
 	thread_file='aix'
 	extra_headers=
+	use_fixproto=no
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix52.h rs6000/xcoff.h"
@@ -1766,6 +1774,7 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	use_collect2=yes
 	thread_file='aix'
 	extra_headers=
+	use_fixproto=no
 	;;
 rs6000-*-lynxos*)
 	tm_file="svr3.h lynx.h rs6000/lynxbase.h rs6000/rs6000.h rs6000/lynx.h"
