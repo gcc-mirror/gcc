@@ -1044,12 +1044,11 @@ find_basic_blocks_1 (f)
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
 
 void
-cleanup_cfg (f)
-     rtx f;
+cleanup_cfg ()
 {
   delete_unreachable_blocks ();
   move_stray_eh_region_notes ();
-  record_active_eh_regions (f);
+  record_active_eh_regions (get_insns ());
   try_merge_blocks ();
   mark_critical_edges ();
 
