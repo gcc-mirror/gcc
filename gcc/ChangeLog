@@ -1,3 +1,7 @@
+1998-10-02  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* Makefile.in (cccp.o): Fix typo in last patch.
+
 Fri Oct  2 16:13:12 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* t-sh (LIB1ASMFUNCS): Add _set_fpscr .
