@@ -1,3 +1,8 @@
+1998-07-19  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (all): Depend on s-libe77, not e77.
+	(.PHONY): Remove e77.
+
 Mon Jul 13 13:31:03 1998  Craig Burley  <burley@gnu.org>
 
 	* libU77/u77-test.f: Double-check ETIME results, just
