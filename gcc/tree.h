@@ -2568,6 +2568,8 @@ enum tree_index
   TI_PID_TYPE,
   TI_PTRDIFF_TYPE,
   TI_VA_LIST_TYPE,
+  TI_VA_LIST_GPR_COUNTER_FIELD,
+  TI_VA_LIST_FPR_COUNTER_FIELD,
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
 
@@ -2634,6 +2636,8 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define pid_type_node                   global_trees[TI_PID_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+#define va_list_gpr_counter_field	global_trees[TI_VA_LIST_GPR_COUNTER_FIELD]
+#define va_list_fpr_counter_field	global_trees[TI_VA_LIST_FPR_COUNTER_FIELD]
 /* The C type `FILE *'.  */
 #define fileptr_type_node		global_trees[TI_FILEPTR_TYPE]
 

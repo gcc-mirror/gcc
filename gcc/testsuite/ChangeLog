@@ -1,5 +1,16 @@
 2004-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/stdarg-1.c: New test.
+	* gcc.c-torture/execute/stdarg-2.c: New test.
+	* gcc.c-torture/execute/stdarg-3.c: New test.
+	* gcc.dg/tree-ssa/stdarg-1.c: New test.
+	* gcc.dg/tree-ssa/stdarg-2.c: New test.
+	* gcc.dg/tree-ssa/stdarg-3.c: New test.
+	* gcc.dg/tree-ssa/stdarg-4.c: New test.
+	* gcc.dg/tree-ssa/stdarg-5.c: New test.
+
+2004-09-29  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/17697
 	* g++.dg/opt/pr17697-1.C: New test.
 	* g++.dg/opt/pr17697-2.C: New test.
