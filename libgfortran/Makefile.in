@@ -124,7 +124,7 @@ am__objects_33 = associated.lo abort.lo args.lo c99_functions.lo \
 	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
 	reshape_generic.lo reshape_packed.lo selected_kind.lo \
 	system_clock.lo transpose_generic.lo unpack_generic.lo \
-	in_pack_generic.lo in_unpack_generic.lo
+	in_pack_generic.lo in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -331,7 +331,8 @@ intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c
+runtime/in_unpack_generic.c \
+runtime/normalize.c
 
 gfor_src = \
 runtime/environ.c \
@@ -2176,6 +2177,15 @@ in_unpack_generic.obj: runtime/in_unpack_generic.c
 
 in_unpack_generic.lo: runtime/in_unpack_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
+
+normalize.o: runtime/normalize.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalize.o `test -f 'runtime/normalize.c' || echo '$(srcdir)/'`runtime/normalize.c
+
+normalize.obj: runtime/normalize.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalize.obj `if test -f 'runtime/normalize.c'; then $(CYGPATH_W) 'runtime/normalize.c'; else $(CYGPATH_W) '$(srcdir)/runtime/normalize.c'; fi`
+
+normalize.lo: runtime/normalize.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalize.lo `test -f 'runtime/normalize.c' || echo '$(srcdir)/'`runtime/normalize.c
 
 trig_c4.o: generated/trig_c4.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o trig_c4.o `test -f 'generated/trig_c4.c' || echo '$(srcdir)/'`generated/trig_c4.c

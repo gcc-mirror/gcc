@@ -458,16 +458,11 @@ prefix(random_r4) (GFC_REAL_4 *x)
 
   GFC_UINTEGER_4 kiss;
 
-  do
-    {
-      kiss = kiss_random_kernel ();
-      *x = (GFC_REAL_4)kiss / (GFC_REAL_4)(~(GFC_UINTEGER_4) 0);
-      /* Burn a random number, so the REAL*4 and REAL*8 functions
-         produce similar sequences of random numbers.  */
-      kiss = kiss_random_kernel ();
-    }
-  while (*x == 1.0);
-
+  kiss = kiss_random_kernel ();
+  /* Burn a random number, so the REAL*4 and REAL*8 functions
+     produce similar sequences of random numbers.  */
+  kiss_random_kernel ();
+  *x = normalize_r4_i4 (kiss, ~(GFC_UINTEGER_4) 0);
 }
 
 /*  This function produces a REAL(8) value from the uniform distribution
@@ -479,14 +474,9 @@ prefix(random_r8) (GFC_REAL_8 *x)
 
   GFC_UINTEGER_8 kiss;
 
-  do
-    {
-      kiss = (((GFC_UINTEGER_8)kiss_random_kernel ()) << 32)
-	     + kiss_random_kernel ();
-      *x = (GFC_REAL_8)kiss / (GFC_REAL_8)(~(GFC_UINTEGER_8) 0);
-    }
-  while (*x == 1.0);
-
+  kiss = ((GFC_UINTEGER_8)kiss_random_kernel ()) << 32;
+  kiss += kiss_random_kernel ();
+  *x = normalize_r8_i8 (kiss, ~(GFC_UINTEGER_8) 0);
 }
 
 /*  This function fills a REAL(4) array with values from the uniform

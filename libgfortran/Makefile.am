@@ -58,7 +58,8 @@ intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c
+runtime/in_unpack_generic.c \
+runtime/normalize.c
 
 gfor_src= \
 runtime/environ.c \

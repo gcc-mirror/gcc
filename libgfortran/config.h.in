@@ -27,6 +27,12 @@
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP
 
+/* libm includes nextafter */
+#undef HAVE_NEXTAFTER
+
+/* libm includes nextafterf */
+#undef HAVE_NEXTAFTERF
+
 /* "c99 function" */
 #undef HAVE_ROUND
 
