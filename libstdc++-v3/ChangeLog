@@ -1,3 +1,11 @@
+2003-03-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/abi_check.cc (report_symbol_info): Add version info.
+
+	* config/linker-map.gnu: Hide more stuff.
+	* include/Makefile.am: Cleanups.
+	* include/Makefile.in: Regenerate.
+	
 2003-02-27  Jerry Quinn  <jlquinn@optonline.net>
 
         * config/locale/generic/messages_members.h (messages::messages):

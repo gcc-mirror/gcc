@@ -1,4 +1,4 @@
-## Linker script for GNU ld 2.11.94+ only.
+2## Linker script for GNU ld 2.11.94+ only.
 ##
 ## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ##
@@ -42,7 +42,6 @@ GLIBCPP_3.4 {
       std::logic_error*;
       std::locale::[A-Za-e]*;
       std::locale::facet::[A-Za-z]*;
-      std::locale::facet::_M*;
       std::locale::facet::_S_c_locale;	
       std::locale::facet::_S_clone_c_locale*;
       std::locale::facet::_S_create_c_locale*;
@@ -60,9 +59,12 @@ GLIBCPP_3.4 {
       std::[A-Zm-z]*;
       std::__throw_*;
       std::__basic_file*;
-      std::__num_base*;
       std::__timepunct*;
       std::__numeric_limits_base*;
+      std::__num_base::_S_format_float*;
+      std::__num_base::_S_format_int*;
+      std::__num_base::_S_atoms_in;
+      std::__num_base::_S_atoms_out;
       
       # Needed only when generic cpu's atomicity.h is in use.
       __gnu_cxx::_Atomic_add_mutex;

@@ -343,7 +343,7 @@ thread_target_headers = \
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target
+	stamp-backward stamp-ext stamp-target stamp-std-precompile
 
 # Here are the rules for building the headers
 all-local: ${target_builddir}/c++config.h ${thread_target_headers} ${allstamps}
@@ -362,8 +362,9 @@ stamp-std: ${std_headers}
 	  echo `date` > stamp-std ;\
 	fi
 
-stamp-std-precompile: stamp-std
+stamp-std-precompile: stamp-std ${target_builddir}/c++config.h
 	for h in ${std_headers_rename}; do \
+	  echo "generating $$h.pch..."; \
 	  $(CXX) -Winvalid-pch -x c++-header $(INCLUDES) $${h}; \
 	done; \
 	echo `date` > stamp-std-precompile
