@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.13 $
+ *                             $Revision: 1.14 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -47,6 +47,7 @@
 #include "flags.h"
 #include "insn-flags.h"
 #include "insn-config.h"
+#include "optabs.h"
 #include "recog.h"
 #include "toplev.h"
 #include "output.h"
@@ -81,7 +82,7 @@ extern char **save_argv;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char gnat_tree_code_type[] = {
+static char const gnat_tree_code_type[] = {
   'x',
 #include "ada-tree.def"
 };
@@ -93,7 +94,7 @@ char gnat_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-int gnat_tree_code_length[] = {
+static int const gnat_tree_code_length[] = {
   0,
 #include "ada-tree.def"
 };
@@ -103,7 +104,7 @@ int gnat_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-const char *gnat_tree_code_name[] = {
+static const char *gnat_tree_code_name[] = {
   "@@dummy",
 #include "ada-tree.def"
 };
@@ -743,8 +744,9 @@ update_setjmp_buf (buf)
 
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
+    sa_mode = insn_data [(int) CODE_FOR_save_stack_nonlocal].operand[0].mode;
 #endif
+
 #ifdef STACK_SAVEAREA_MODE
   sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 #endif

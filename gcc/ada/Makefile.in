@@ -2585,9 +2585,9 @@ decl.o : decl.c $(CONFIG_H) $(TREE_H) $(srcdir)/../flags.h \
 misc.o : misc.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/../expr.h \
    ../insn-codes.h ../insn-flags.h ../insn-config.h $(srcdir)/../recog.h \
    $(srcdir)/../flags.h $(srcdir)/../diagnostic.h $(srcdir)/../output.h \
-   $(srcdir)/../except.h ../tm_p.h ../langhooks.h ada.h types.h atree.h \
-   nlists.h elists.h sinfo.h einfo.h namet.h stringt.h uintp.h fe.h \
-   $(ADA_TREE_H) gigi.h ../langhooks-def.h
+   $(srcdir)/../except.h ../tm_p.h  $(srcdir)/../langhooks.h ada.h types.h \
+   atree.h nlists.h elists.h sinfo.h einfo.h namet.h stringt.h uintp.h fe.h \
+   $(ADA_TREE_H) gigi.h $(srcdir)/../langhooks-def.h $(srcdir)/../optabs.h
 
 targtyps.o : targtyps.c $(CONFIG_H) ada.h types.h atree.h nlists.h elists.h \
    uintp.h sinfo.h einfo.h namet.h snames.h stringt.h urealp.h fe.h \
