@@ -2952,8 +2952,10 @@ attach_deaths (x, insn, set_p)
 
     case SUBREG:
       attach_deaths (SUBREG_REG (x), insn,
-		     set_p && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-			       <= UNITS_PER_WORD));
+		     set_p && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+			       <= UNITS_PER_WORD)
+			       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+				   == GET_MODE_SIZE (GET_MODE ((x))))));
       return;
 
     case STRICT_LOW_PART:
