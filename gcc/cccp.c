@@ -3324,8 +3324,10 @@ startagain:
 		 before the macro call.  */
 	      if (!traditional && obp != op->buf) {
 		switch (obp[-1]) {
-		case '%':  case '&':  case '+':  case '-':
-		case ':':  case '<':  case '>':  case '|':
+		case '!':  case '%':  case '&':  case '*':
+		case '+':  case '-':  case '/':  case ':':
+		case '<':  case '=':  case '>':  case '^':
+		case '|':
 		  /* If we are expanding a macro arg, make a newline marker
 		     to separate the tokens.  If we are making real output,
 		     a plain space will do.  */
