@@ -2688,16 +2688,7 @@ extern int avr_case_values_threshold;
 
    This should be defined if `PTRDIFF_TYPE' depends on target
    dependent flags which are not accessible to the preprocessor.
-   Otherwise, it should not be defined.
-
-   `SIGNED_CHAR_SPEC'
-   A C string constant that tells the GNU CC driver program options to
-   pass to CPP.  By default, this macro is defined to pass the option
-   `-D__CHAR_UNSIGNED__' to CPP if `char' will be treated as
-   `unsigned char' by `cc1'.
-
-   Do not define this macro unless you need to override the default
-   definition.  */
+   Otherwise, it should not be defined.  */
 
 #define CC1_SPEC "%{profile:-p}"
 /* A C string constant that tells the GNU CC driver program options to

@@ -35,6 +35,7 @@ extern void fancy_abort PARAMS ((int, const char *)) ATTRIBUTE_NORETURN;
 extern struct hashnode *lookup PARAMS ((const unsigned char *, int, int));
 extern int parse_c_expression PARAMS ((const char *));  /* in tradcif.y */
 extern int test_assertion PARAMS ((unsigned char **));
+extern int flag_signed_char;
 
 #define is_idchar(x)	ISIDNUM(x)
 #define is_idstart(x)	ISIDST(x)

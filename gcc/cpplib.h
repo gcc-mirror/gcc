@@ -240,6 +240,9 @@ struct cpp_options
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
 
+  /* Nonzero means chars are signed.  */
+  unsigned char signed_char;
+
   /* Nonzero means use extra default include directories for C++.  */
   unsigned char cplusplus;
 

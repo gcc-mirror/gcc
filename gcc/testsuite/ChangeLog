@@ -1,3 +1,7 @@
+2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/uchar-1.c, uchar-2.c, uchar-3.c: New tests.
+
 2002-02-02  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/991118-1.c: Revert 2002-01-29 change.

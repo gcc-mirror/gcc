@@ -344,8 +344,7 @@ yylex ()
 
     /* Sign-extend the constant if chars are signed on target machine.  */
     {
-      if (lookup ((const unsigned char *)"__CHAR_UNSIGNED__",
-		   sizeof ("__CHAR_UNSIGNED__")-1, -1)
+      if (flag_signed_char == 0
 	  || ((c >> (CHAR_TYPE_SIZE - 1)) & 1) == 0)
 	yylval.integer.value = c & ((1 << CHAR_TYPE_SIZE) - 1);
       else
