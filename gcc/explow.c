@@ -78,7 +78,7 @@ plus_constant_wide (x, c)
      register HOST_WIDE_INT c;
 {
   register RTX_CODE code;
-  rtx y = x;
+  rtx y;
   register enum machine_mode mode;
   register rtx tem;
   int all_constant = 0;
@@ -90,6 +90,8 @@ plus_constant_wide (x, c)
 
   code = GET_CODE (x);
   mode = GET_MODE (x);
+  y = x;
+
   switch (code)
     {
     case CONST_INT:
@@ -608,10 +610,12 @@ validize_mem (ref)
 {
   if (GET_CODE (ref) != MEM)
     return ref;
-  if (memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
+  if (! (flag_force_addr && CONSTANT_ADDRESS_P (XEXP (ref, 0)))
+      || memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     return ref;
+
   /* Don't alter REF itself, since that is probably a stack slot.  */
-  return change_address (ref, GET_MODE (ref), XEXP (ref, 0));
+  return replace_equiv_address (ref, XEXP (ref, 0));
 }
 
 /* Given REF, either a MEM or a REG, and T, either the type of X or
