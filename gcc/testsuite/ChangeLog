@@ -1,3 +1,8 @@
+2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/directiv.c, gcc.dg/cpp/macsyntx.c,
+	gcc.dg/cpp/undef1.c: Tweak error regexps.
+
 2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (_cpp_push_token): If the token being pushed back
@@ -431,12 +436,12 @@ Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
 	* lib/g++.exp (g++_include_flags): Tweak.
 
 2000-06-27  H.J. Lu  <hjl@gnu.org>
-            Loren J. Rittle  <ljrittle@acm.org>
+	    Loren J. Rittle  <ljrittle@acm.org>
 
-        * lib/g++.exp (g++_include_flags): Override libgloss.exp
-        version with one that knows about the new gcc tree structure.
-        (g++_link_flags): Same.
-	
+	* lib/g++.exp (g++_include_flags): Override libgloss.exp
+	version with one that knows about the new gcc tree structure.
+	(g++_link_flags): Same.
+
 2000-06-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/20000419-1.c, gcc.dg/cpp-mi.c, gcc.dg/cpp-tradwarn1.c,
@@ -444,7 +449,7 @@ Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
 	case we are cross-compiling.
 
 	* g++.old-deja/Makefile.in, g++.old-deja/configure.in,
-	g++.old-deja/g++.niklas/Makefile.in,           
+	g++.old-deja/g++.niklas/Makefile.in,
 	g++.old-deja/g++.niklas/configure.in,
 	g++.old-deja/g++.other/Makefile.in,
 	g++.old-deja/g++.other/configure.in,
@@ -479,7 +484,7 @@ Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
 2000-06-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/20000625-1.c, gcc.dg/20000625-2.c, gcc.dg/cpp-mi3.c:
-        New tests.
+	New tests.
 	* gcc.dg/cpp-mi3.def: New file.
 
 	* gcc.dg/cpp-as1.c: Also test that macro expansion does not occur
@@ -580,7 +585,7 @@ Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 2000-06-03  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
-        * g77.f-torture/compile/20000601-1.f:  New test.
+	* g77.f-torture/compile/20000601-1.f:  New test.
 
 2000-06-03  Richard Henderson  <rth@cygnus.com>
 
@@ -623,7 +628,7 @@ Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* g++.old-deja/g++.law/refs4.C: Likewise.
 	* g++.old-deja/g++.law/temps4.C: Likewise.
 	* g++.old-deja/g++.brendan/complex1.C: Don't assume argc is 1.
-	* gcc.c-torture/execute/20000112-1.c: Include string.h.	
+	* gcc.c-torture/execute/20000112-1.c: Include string.h.
 
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -635,7 +640,7 @@ Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	g++.mike/p9732b.C, g++.other/addrof1.C, g++.other/dyncast5.C,
 	g++.other/init5.C, g++.other/init7.C, g++.other/union2.C,
 	g++.pt/vbase1.C, g++.robertl/eb14.C, g++.robertl/eh990323-1.C,
-	g++.robertl/eh990323-2.C, g++.robertl/eh990323-3.C, 
+	g++.robertl/eh990323-2.C, g++.robertl/eh990323-3.C,
 	g++.robertl/eh990323-4.C, g++.robertl/eh990323-5.C,
 	g++.robertl/ice990323-2.C: Prototype exit and/or abort.
 
@@ -883,7 +888,7 @@ Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.abi/cxa_vec.C: New test.
 
 2000-04-08  Neil Booth  <NeilB@earthling.net>
-	
+
 	* gcc.dg/cpp-nullchar.c: Remove test as
 	embedded nulls cause problems.
 
@@ -892,7 +897,7 @@ Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.dg/compare2.c: New test.
 
 2000-04-08  Neil Booth  <NeilB@earthling.net>
-	
+
 	* gcc.dg/cpp-nullchar.c: New test.
 
 2000-04-07  Zack Weinberg  <zack@wolery.cumb.org>
@@ -913,7 +918,7 @@ Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* cpp-ifparen.c, cpp-missingop.c, cpp-missingparen.c,
 	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c:  Add FSF
-	copyright.	  
+	copyright.
 
 Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -1060,7 +1065,7 @@ Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 2000-03-06  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* g++.old-deja/g++.warn/impint2.C: New test.	
+	* g++.old-deja/g++.warn/impint2.C: New test.
 
 Sun Mar  5 23:25:12 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -1202,7 +1207,7 @@ Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
 	* lib/g++.exp (g++init): Use g++, not xgcc, to invoke the C++
 	compiler.
 	(tool_option_proc): Fix typo.
-	
+
 2000-01-24  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.dg/special/ecos.exp (gcsec-1.c): Check the version
@@ -1391,7 +1396,7 @@ Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* gcc.dg/991214-1.c: New test.
-	
+
 Mon Dec 13 23:03:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/991213-3.c: New test.
@@ -1489,18 +1494,18 @@ Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 1999-11-05  Nick Clifton  <nickc@cygnus.com>
 
-	* lib/target-supports.exp: New file: Provide procs to test for 
+	* lib/target-supports.exp: New file: Provide procs to test for
 	features supported by the target.
 	(check_weak_available): Moved here from ecos.exp.
 	(check_alias_available): New proc: Determine of the target
 	toolchain supports the alias attribute.
-	
+
 	* gcc.dg/special/ecos.exp: Move check_weak_available to
-	target-supports.exp. 
+	target-supports.exp.
 	(alias-1.c): Only perform the test if the target supports
-	aliases. 
+	aliases.
 	(wkali-1.c): Only perform the test if the target supports
-	aliases. 
+	aliases.
 
 	* gcc.dg/990506-0.c: Expect error messages from cross
 	targets as well as native targets.
@@ -1847,7 +1852,7 @@ Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
 
 1999-06-29  Nick Clifton  <nickc@cygnus.com>
 
-	* lib/file-format.exp: New file: Move definition of proc 
+	* lib/file-format.exp: New file: Move definition of proc
 	gcc_target_object_format to here from
 	gcc.dg/special/ecos.exp.
 
@@ -1856,7 +1861,7 @@ Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/special/ecos.exp: Remove definition of proc
 	gcc_target_object_format.
-	
+
 Mon Jun 28 08:20:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990628-1.c: New test.
@@ -1921,7 +1926,7 @@ Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
 1999-05-25  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/execute/bf-sign-2.c: Explicitly declare signed
-	bitfields as signed. 
+	bitfields as signed.
 
 1999-05-25  Craig Burley  <craig@jcb-sc.com>
 
@@ -2135,7 +2140,7 @@ Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
 	* gcc.c-torture/execute/bf-sign-2.c (struct X): Add u15 field.
 	(main): Add check for u15.  Conditionalize u31 check depending on
 	whether ints are <32 bits or >=32 bits.
-	
+
 1999-03-08  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/19981119-0.f: Improve testiness.
@@ -2265,14 +2270,14 @@ Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
 
 	* g++.dg/special/ecos.exp: New driver for new tests with special
 	requirements
-	
+
 	* g++.dg/special/conpr-1.C: New test
 	* g++.dg/special/conpr-2.C: New test
 	* g++.dg/special/conpr-2a.C: New test
 	* g++.dg/special/conpr-3.C: New test
 	* g++.dg/special/conpr-3a.C: New test
 	* g++.dg/special/conpr-3b.C: New test
-	
+
 	* lib/g++-dg.exp: New driver file, based on lib/gcc-dg.exp to
 	allow g++ to use the dg driver
 
@@ -2291,7 +2296,7 @@ Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
 	structure S.
 
 	* gcc.c-torture/execute/memcheck/blkarg.x: New file: Expected
-	failure for all targets. 
+	failure for all targets.
 
 	* gcc.c-torture/execute/memcheck/driver.c (main): Use exit or
 	abort to terminate program execution.
@@ -2482,7 +2487,7 @@ Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 1998-11-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-	* README: New file, general information about the testsuite and 
+	* README: New file, general information about the testsuite and
 	new description of the various C++ test subdirectories.
 	* README.g++: Eliminate obsolete information, update and move most
 	relevant stuff to README.
@@ -2688,7 +2693,7 @@ Thu Oct  1 17:15:26 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/compile/981001-1.c: New test.
 	* gcc.c-torture/execute/981001-1.c: New test.
-	
+
 Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/981001-2.c: New test.
@@ -2733,7 +2738,7 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.other/static2.C: Invocation of static data
  	member of type pointer-to-function denoted as non-static member.
 
-	* g++.old-deja/g++.other/typedef5.C: Add some more tests involving 
+	* g++.old-deja/g++.other/typedef5.C: Add some more tests involving
 	checks involving function types and aliases.
 
 1998-09-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
@@ -2839,7 +2844,7 @@ Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
 1998-08-19  Mark Mitchell  <mark@markmitchell.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Remove sig6/sig11 handling
-	code. 
+	code.
 
 1998-08-09  Mark Mitchell  <mark@markmitchell.com>
 
@@ -2937,19 +2942,19 @@ Mon Jul 13 22:26:37 1998  Jeffrey A Law  (law@cygnus.com)
 	* g77.f-torture/execute/970816-3.f:  New test from Craig.
 
 Fri Jul 10 23:43:33 1998 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
-	
+
 	*  g++.other/singleton.C: Return error value instead of taking
 	SIGSEGV.
 
-Fri Jul 10 10:02:03 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
+Fri Jul 10 10:02:03 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
 	*  g++.other/singleton.C: New test.   Warning is under dispute.
 	Runtime crash is not.
 
 Thu Jul  9 23:07:45 1998  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 
-	* g++.ns/{alias2.C, alias5.C, koenig4.C, lookup3.C ns13.C, 
-	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C, 
+	* g++.ns/{alias2.C, alias5.C, koenig4.C, lookup3.C ns13.C,
+	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C,
 	using6.C, using7.C}:  New namespace tests.
 
 Thu Jul  9 22:44:49 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
@@ -3031,10 +3036,10 @@ Fri Jun 19 23:26:12 1998  Bruno Haible <haible@ilog.fr>
 	* g++.old-deja/g++.other/warn01.c: Likewise.
 
 Fri Jun 19 14:06:36 1998  Robert Lipe  <robertl@dgii.com>
-	
+
 	* gcc.dg/980414-1.c: Move comments outside of ASM to improve
 	compatibility with assmblers with a different comment character.
-	Eliminate use of GAS-specific extensions. 
+	Eliminate use of GAS-specific extensions.
 
 Fri Jun 19 02:05:14 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -3492,7 +3497,7 @@ Sun Feb 23 18:12:04 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp(gcc_init): Add args parameter (which will contain
  	the name of the expect testcase file).
-	
+
 	* lib/g++.exp(g++_init): Ditto.
 
 Thu Feb 20 13:53:05 1997  Bob Manson  <manson@charmed.cygnus.com>
@@ -3536,14 +3541,14 @@ Tue Feb 11 12:57:11 1997  Bob Manson  <manson@charmed.cygnus.com>
 Sat Feb  8 14:45:55 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* g++.law/virtual1.exp: Don't use CXX_FLAGS.
-	
+
 	* lib/mike-g++.exp: Don't set the compiler to be tested here.
 	* lib/g++.exp: Set it here instead. Also, allow use of the
 	--tool_exec and --tool_opt options. Change CXX to
 	GXX_UNDER_TEST.
-	
+
 	* g++.old-deja/old-deja.exp: Change CXX to GXX_UNDER_TEST.
-	
+
 	* lib/gcc.exp: Allow use of --tool_exec and --tool_opt.
 
 Fri Feb  7 12:55:45 1997  Bob Manson  <manson@charmed.cygnus.com>
@@ -3566,7 +3571,7 @@ Tue Feb  4 12:51:09 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp: Add gcc,stack_size target feature.
 
-	* lib/g++.exp(g++_target_compile): Add the include and link 
+	* lib/g++.exp(g++_target_compile): Add the include and link
 	paths here, not in two other places. And, it's $options, not
 	options.
 
@@ -3617,7 +3622,7 @@ Wed Jan 29 00:36:25 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	g++.*/*: Pass any additional flags used to compile to postbase;
 	delete CXXFLAGS.
-	
+
 	gcc.c-torture/*: Remove calls to gcc_init and gcc_finish; this
 	is now done by runtest.exp. Use gcc_target_compile instead of
 	compile.
@@ -3634,7 +3639,7 @@ Wed Jan 29 00:36:25 1997  Bob Manson  <manson@charmed.cygnus.com>
 	lib/mike-{gcc,g++}.exp: Ditto.
 	lib/old-dejagnu.exp: Ditto.
 	lib/plumhall.exp: Ditto.
-	
+
 Wed Jan  8 14:43:07 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* lib/plumhall.exp (ph_make): Use CFLAGS and ANSICFLAGS when linking.
@@ -3983,7 +3988,7 @@ Tue Sep 19 17:26:07 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* lib/mike-g++.exp (postbase): If we've built a libg++.so, then
 	pass the runtime shared library options for Solaris, OSF/1, and
 	Irix5, and link with -lcurses to avoid unresolved references.
-	
+
 Wed Sep 13 15:28:10 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/gcc.exp (gcc_init): Return if gcc_initialized is 1, so we
@@ -4338,7 +4343,7 @@ Mon Jan  2 11:50:10 1995  Jeff Law  (law@snake.cs.utah.edu)
 	* g++.law/{enum8.C, enum9.C, friend5.C}: Likewise.
 	* g++.law/{nest2.C, nest3.C, nest4.C, nest5.C}: Likewise.
 	* g++.law/{nest6.C, next7.C, operators30.C}: Likewise.
-	* g++.law/{operators31.C, operators32.C, 
+	* g++.law/{operators31.C, operators32.C,
 	* g++.law/{operators33.C, operators34.C}: Likewise.
 	* g++.law/{pic1.C, refs2.C}: Likewise.
 	* g++.law/{refs3.C, refs4.C, static-mem3.C}: Likewise.
@@ -4355,7 +4360,7 @@ Mon Jan  2 11:50:10 1995  Jeff Law  (law@snake.cs.utah.edu)
 	* g++.law/{nest3.exp, nest4.exp}: Likewise.
 	* g++.law/{nest5.exp, nest6.exp, nest7.exp}: Likewise.
 	* g++.law/{operators30.exp, operators31.exp}: Likewise.
-	* g++.law/{operators32.exp, operators33.exp}: Likewise. 
+	* g++.law/{operators32.exp, operators33.exp}: Likewise.
 	* g++.law/{operators34.exp}: Likewise.
 	* g++.law/{pic1.exp, refs2.exp, refs3.exp refs4.exp}: Likewise.
 	* g++.law/{static-mem3.exp, static-mem4.exp}: Likewise.
@@ -4720,7 +4725,7 @@ Sun Aug 14 09:23:53 1994  Jeff Law  (law@snake.cs.utah.edu)
 	* gcc.c-torture/noncompile/noncompile.exp (940712-1 test): No
 	longer expected to fail.
 
-	* gcc.c-torture/execute/strct-pack-3.c: Add missing argument to 
+	* gcc.c-torture/execute/strct-pack-3.c: Add missing argument to
 	"f" function call.
 
 	* gcc.misc-tests/mg.exp: Call gcc_stat when finished.
@@ -4779,29 +4784,29 @@ Sat May 21 10:39:38 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 Thu May 19 18:00:03 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-	* config/sim.exp, config/udi.exp, config/unix.exp, config/vx.exp, 
+	* config/sim.exp, config/udi.exp, config/unix.exp, config/vx.exp,
 	    g++.brendan/alignof.exp, g++.brendan/arm3.exp, g++.brendan/code-gen5.exp,
 	    g++.brendan/crash29.exp, g++.brendan/crash5.exp, g++.brendan/cvt3.exp,
 	    g++.brendan/delete1.exp, g++.brendan/nest12.exp, g++.brendan/nest13.exp,
 	    g++.brendan/overload3.exp, g++.brendan/redecl1.exp, g++.brendan/visibility2.exp,
 	    g++.jason/cond.exp, g++.jason/hmc1.exp, g++.jason/report.exp,
-	    g++.law/access1.exp, g++.law/access2.exp, g++.law/arg6.exp, 
-	    g++.law/arg7.exp, g++.law/arg8.exp, g++.law/arm1.exp, 
+	    g++.law/access1.exp, g++.law/access2.exp, g++.law/arg6.exp,
+	    g++.law/arg7.exp, g++.law/arg8.exp, g++.law/arm1.exp,
 	    g++.law/arm10.exp, g++.law/arm4.exp, g++.law/arm5.exp,
 	    g++.law/ctors15.exp, g++.law/ctors19.exp, g++.law/cvt1.exp,
-	    g++.law/cvt12.exp, g++.law/cvt13.exp, g++.law/cvt18.exp, 
-	    g++.law/cvt22.exp, g++.law/cvt3.exp, g++.law/cvt5.exp, 
-	    g++.law/cvt6.exp, g++.law/cvt8.exp, g++.law/dtors3.exp, 
+	    g++.law/cvt12.exp, g++.law/cvt13.exp, g++.law/cvt18.exp,
+	    g++.law/cvt22.exp, g++.law/cvt3.exp, g++.law/cvt5.exp,
+	    g++.law/cvt6.exp, g++.law/cvt8.exp, g++.law/dtors3.exp,
 	    g++.law/except1.exp, g++.law/except3.exp, g++.law/except4.exp,
-	    g++.law/except5.exp, g++.law/except6.exp, g++.law/init5.exp, 
+	    g++.law/except5.exp, g++.law/except6.exp, g++.law/init5.exp,
 	    g++.law/init8.exp, g++.law/inline4.exp, g++.law/memoized1.exp,
 	    g++.law/missing1.exp, g++.law/operators14.exp, g++.law/operators18.exp,
 	    g++.law/operators9.exp, g++.law/scope2.exp, g++.law/temps2.exp,
-	    g++.law/temps3.exp, g++.law/temps5.exp, g++.law/typeck2.exp, 
+	    g++.law/temps3.exp, g++.law/temps5.exp, g++.law/typeck2.exp,
 	    g++.mike/misc4.exp, g++.mike/misc6.exp, g++.niklas/t118.exp,
 	    g++.niklas/t128.exp, g++.niklas/t138.exp, g++.niklas/t139.exp,
 	    g++.niklas/t140.exp, g++.niklas/t141.exp, gcc.code_quality/code_quality.exp,
-	    gcc.compile/compile.exp, gcc.dje/dje.exp, gcc.execute/execute.exp, 
+	    gcc.compile/compile.exp, gcc.dje/dje.exp, gcc.execute/execute.exp,
 	    gcc.failure/failure.exp, gcc.ieee/ieee.exp, gcc.noncompile/noncompile.exp,
 	    gcc.special/special.exp, gcc.unsorted/unsorted.exp, lib/c-torture.exp,
 	    lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
@@ -4919,7 +4924,7 @@ Sun Dec 19 21:45:34 1993  Jeffrey A. Law  (law@snake.cs.utah.edu
 
 	* g++.law: Add more tests derived from g++-bugs snapshots.
 
-	* g++.law/init11.{c,exp}: Delete test.  Brendan sez it's 
+	* g++.law/init11.{c,exp}: Delete test.  Brendan sez it's
 	equivalent to g++.law/init9.
 
 	* lib/mike-gcc.exp (postbase): Delete the .o file after we've
@@ -4937,7 +4942,7 @@ Fri Dec 17 10:18:16 1993  Jeffrey A. Law  (law@snake.cs.utah.edu)
 Wed Dec 15 20:36:40 1993  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* lib/gcc.exp, lib/g++.exp: Use catch rather than exec to get the
-	version number. 
+	version number.
 
 Sun Dec 12 21:10:04 1993  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
@@ -5056,10 +5061,10 @@ Tue Sep 14 19:23:58 1993  Jeffrey Wheat  (cassidy at deneb.cygnus.com)
 	* chill.noncompile/noncompile.exp: rewrite, based on execute.exp
 	* lib/chill.exp: major changes to diff proc and compile and link
 	  procs. added chill_fail and chill_pass wrappers to pass and
-	  fail. added more comments, and handle error codes better. 
+	  fail. added more comments, and handle error codes better.
 	  Added a hack to capture stderr from exec, so noncompile tests
 	  can work.
-	  
+
 Sat Sep 11 15:30:10 1993  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* chill.execute/execute.exp: rewrite of testsuite driver
@@ -5116,8 +5121,8 @@ Tue Jul 27 10:08:08 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
 	* Upgraded c-torture tests from 1.19 to 1.20
 
 	* new files:
-	* gcc.compile: 930609-1.c 930611-1.c 930618-1.c 930621-1.c 
-	* gcc.compile: 930623-1.c 930623-2.c 
+	* gcc.compile: 930609-1.c 930611-1.c 930618-1.c 930621-1.c
+	* gcc.compile: 930623-1.c 930623-2.c
 	* gcc.noncompile: 930622-1.c 930622-2.c
 	* gcc.failure: 920411-1.c 920627-2.c
 	* gcc.ieee: 920518-1.c 920810-1.c 930529-1.c
@@ -5142,7 +5147,7 @@ Tue Jul 13 18:38:56 PDT 1993 Jeff Wheat  (cassidy@cygnus.com)
 Sat Jun 19 07:13:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
     This should complete moving the CHILL test files.
-	* chill.noncompile(.cvsignore printf.grt 
+	* chill.noncompile(.cvsignore printf.grt
 	    in-printf.grt chprintf.grt chprintf.ch):
 	    Added test-support files.
 	  (Makefile): Modified further.
@@ -5250,7 +5255,7 @@ Mon Apr 12 15:15:37 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  Changed several of the test result messages to be more descriptive.
 	* config/unix-g++.exp: Proc g++_load now actually works and
 	  executes the tests passed to it and returns a usable return
-	  value. 
+	  value.
 
 Sun Apr 11 17:22:37 1993  Rob Savoye  (rob at darkstar.cygnus.com)
 

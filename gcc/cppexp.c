@@ -419,10 +419,10 @@ lex (pfile, skip_evaluation)
       else
 	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", tok->val.aux);
 
-    case CPP_NAME:
-      if (tok->val.node == pfile->spec_nodes->n_defined)
-	return parse_defined (pfile);
+    case CPP_DEFINED:
+      return parse_defined (pfile);
 
+    case CPP_NAME:
       op.op = CPP_INT;
       op.unsignedp = 0;
       op.value = 0;
@@ -648,12 +648,13 @@ be handled with operator-specific code.  */
 #define OR_PRIO             (8 << PRIO_SHIFT)
 #define XOR_PRIO            (9 << PRIO_SHIFT)
 #define AND_PRIO           (10 << PRIO_SHIFT)
-#define EQUAL_PRIO         (11 << PRIO_SHIFT)
-#define LESS_PRIO          (12 << PRIO_SHIFT)
-#define SHIFT_PRIO         (13 << PRIO_SHIFT)
-#define PLUS_PRIO          (14 << PRIO_SHIFT)
-#define MUL_PRIO           (15 << PRIO_SHIFT)
-#define UNARY_PRIO        ((16 << PRIO_SHIFT) | RIGHT_ASSOC | NO_L_OPERAND)
+#define MINMAX_PRIO	   (11 << PRIO_SHIFT)
+#define EQUAL_PRIO         (12 << PRIO_SHIFT)
+#define LESS_PRIO          (13 << PRIO_SHIFT)
+#define SHIFT_PRIO         (14 << PRIO_SHIFT)
+#define PLUS_PRIO          (15 << PRIO_SHIFT)
+#define MUL_PRIO           (16 << PRIO_SHIFT)
+#define UNARY_PRIO        ((17 << PRIO_SHIFT) | RIGHT_ASSOC | NO_L_OPERAND)
 
 /* Operator to priority map.  Must be in the same order as the first
    N entries of enum cpp_ttype.  */
@@ -674,6 +675,8 @@ op_to_prio[] =
   /* XOR */		XOR_PRIO,
   /* RSHIFT */		SHIFT_PRIO,
   /* LSHIFT */		SHIFT_PRIO,
+  /* MIN */		MINMAX_PRIO,	/* C++ specific */
+  /* MAX */		MINMAX_PRIO,	/* extensions */
 
   /* COMPL */		UNARY_PRIO,
   /* AND_AND */		ANDAND_PRIO,
@@ -699,6 +702,9 @@ op_to_prio[] =
   top->unsignedp = 0;
 #define BITWISE(OP) \
   top->value = v1 OP v2; \
+  top->unsignedp = unsigned1 | unsigned2;
+#define MINMAX(OP) \
+  top->value = (v1 OP v2) ? v1 : v2; \
   top->unsignedp = unsigned1 | unsigned2;
 #define UNARY(OP) \
   top->value = OP v2; \
@@ -831,6 +837,8 @@ _cpp_parse_expr (pfile)
 	    case CPP_OR:	 BITWISE(|);	break;
 	    case CPP_LSHIFT:	 SHIFT(left_shift, right_shift); break;
 	    case CPP_RSHIFT:	 SHIFT(right_shift, left_shift); break;
+	    case CPP_MIN:	 MINMAX(<);	break;
+	    case CPP_MAX:	 MINMAX(>);	break;
 
 	    case CPP_PLUS:
 	      if (!(top->flags & HAVE_VALUE))

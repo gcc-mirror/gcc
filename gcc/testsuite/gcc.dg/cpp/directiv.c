@@ -28,7 +28,7 @@ EMPTY #define bar
 /* Check that directives always start a line, even if in middle of
    macro expansion.  */
 #define func(x) x
-func (2				/* { dg-error "unterminated invocation" }  */
+func (2				/* { dg-error "unterminated argument" }  */
 #define foobar			/* { dg-error "may not be used inside" } */
 
 /* For tidiness, I think the directive should still be processed
@@ -43,5 +43,5 @@ func (2				/* { dg-error "unterminated invocation" }  */
 
    Note that the #if is still treated as a conditional, so there
    should be no errors about #endif without #if.  */
-#if func (			/* { dg-error "unterminated invocation" } */
+#if func (			/* { dg-error "unterminated argument" } */
 #endif

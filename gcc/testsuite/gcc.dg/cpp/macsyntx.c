@@ -48,11 +48,11 @@ one()				/* OK.  */
 one(ichi)			/* OK.  */
 one(ichi\
 , ni)				/* { dg-error "too many" } */
-two(ichi)			/* { dg-error "insufficient" } */
+two(ichi)			/* { dg-error "not enough" } */
 var0()				/* OK.  */
 var0(ichi)			/* OK.  */
-var1()				/* { dg-error "insufficient" } */
-var1(ichi)			/* { dg-error "insufficient" } */
+var1()				/* { dg-error "not enough" } */
+var1(ichi)			/* { dg-error "not enough" } */
 var1(ichi, ni)			/* OK.  */
 
 /* This tests two deprecated oddities of GNU rest args - omitting a
@@ -70,4 +70,4 @@ rest(ichi)			/* { dg-warning "deprecated" } */
 #define half_invocation do_nowt(2
 #define do_nowt(x) x
 half_invocation )		/* OK.  */
-do_nowt (half_invocation))	/* { dg-error "unterminated invocation" } */
+do_nowt (half_invocation))	/* { dg-error "unterminated argument" } */

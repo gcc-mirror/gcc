@@ -64,6 +64,8 @@ typedef struct cpp_hashnode cpp_hashnode;
   OP(CPP_XOR,		"^")			\
   OP(CPP_RSHIFT,	">>")			\
   OP(CPP_LSHIFT,	"<<")			\
+  OP(CPP_MIN,		"<?")	/* extension */	\
+  OP(CPP_MAX,		">?")			\
 \
   OP(CPP_COMPL,		"~")			\
   OP(CPP_AND_AND,	"&&")	/* logical */	\
@@ -88,6 +90,8 @@ typedef struct cpp_hashnode cpp_hashnode;
   OP(CPP_XOR_EQ,	"^=")			\
   OP(CPP_RSHIFT_EQ,	">>=")			\
   OP(CPP_LSHIFT_EQ,	"<<=")			\
+  OP(CPP_MIN_EQ,	"<?=")	/* extension */	\
+  OP(CPP_MAX_EQ,	">?=")			\
   /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */	\
   OP(CPP_HASH,		"#")	/* digraphs */	\
   OP(CPP_PASTE,		"##")			\
@@ -106,8 +110,7 @@ typedef struct cpp_hashnode cpp_hashnode;
   OP(CPP_SCOPE,		"::")			\
   OP(CPP_DEREF_STAR,	"->*")			\
   OP(CPP_DOT_STAR,	".*")			\
-  OP(CPP_MIN,		"<?")	/* extension */	\
-  OP(CPP_MAX,		">?")			\
+  OP(CPP_DEFINED,	"defined") /* #if */	\
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
   TK(CPP_INT,		SPELL_STRING)	/* 23 */			\
@@ -147,10 +150,11 @@ struct cpp_string
 /* Flags for the cpp_token structure.  */
 #define PREV_WHITE	(1 << 0) /* If whitespace before this token.  */
 #define BOL		(1 << 1) /* Beginning of logical line.  */
-#define DIGRAPH         (1 << 2) /* If it was a digraph.  */
+#define DIGRAPH		(1 << 2) /* If it was a digraph.  */
 #define STRINGIFY_ARG	(1 << 3) /* If macro argument to be stringified.  */
 #define PASTE_LEFT	(1 << 4) /* If on LHS of a ## operator.  */
 #define PASTED		(1 << 5) /* The result of a ## operator.  */
+#define NAMED_OP	(1 << 6) /* C++ named operators, also defined */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
@@ -603,6 +607,7 @@ enum node_type
   T_INCLUDE_LEVEL, /* `__INCLUDE_LEVEL__' */
   T_TIME,	   /* `__TIME__' */
   T_STDC,	   /* `__STDC__' */
+  T_OPERATOR,	   /* operator with a name; val.code is token type */
   T_POISON,	   /* poisoned identifier */
   T_MACRO,	   /* a macro, either object-like or function-like */
   T_ASSERTION	   /* predicate for #assert */
@@ -624,6 +629,7 @@ struct cpp_hashnode
   {
     const cpp_toklist *expansion;	/* a macro's replacement list.  */
     struct answer *answers;		/* answers to an assertion.  */
+    enum cpp_ttype code;		/* code for a named operator.  */
   } value;
 
   union tree_node *fe_value;		/* front end value */

@@ -491,26 +491,33 @@ cpp_cleanup (pfile)
 
 /* This structure defines one built-in macro.  A node of type TYPE will
    be entered in the macro hash table under the name NAME, with value
-   VALUE (if any).  Two values are not compile time constants, so we tag
+   VALUE (if any).  If TYPE is T_OPERATOR, the CODE field is used instead.
+
+   Two values are not compile time constants, so we tag
    them in the FLAGS field instead:
    VERS		value is the global version_string, quoted
    ULP		value is the global user_label_prefix
+
+   Also, macros with CPLUS set in the flags field are entered only for C++.
  */
 
 struct builtin
 {
   const U_CHAR *name;
   const char *value;
-  unsigned short type;
+  unsigned char code;
+  unsigned char type;
   unsigned short flags;
   unsigned int len;
 };
-#define VERS 0x01
-#define ULP  0x02
+#define VERS  0x01
+#define ULP   0x02
+#define CPLUS 0x04
 
-#define B(n, t)       { U n, 0, t,       0, sizeof n - 1 }
-#define C(n, v)       { U n, v, T_MACRO, 0, sizeof n - 1 }
-#define X(n, f)       { U n, 0, T_MACRO, f, sizeof n - 1 }
+#define B(n, t)       { U n, 0, 0, t,          0, sizeof n - 1 }
+#define C(n, v)       { U n, v, 0, T_MACRO,    0, sizeof n - 1 }
+#define X(n, f)       { U n, 0, 0, T_MACRO,    f, sizeof n - 1 }
+#define O(n, c, f)    { U n, 0, c, T_OPERATOR, f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
   B("__TIME__",		 T_TIME),
@@ -534,6 +541,23 @@ static const struct builtin builtin_array[] =
 #ifndef NO_BUILTIN_WCHAR_TYPE
   C("__WCHAR_TYPE__",		WCHAR_TYPE),
 #endif
+
+  /* Named operators known to the preprocessor.  These cannot be #defined
+     and always have their stated meaning.  They are treated like normal
+     string tokens except for the type code and the meaning.  Most of them
+     are only for C++ (but see iso646.h).  */
+  O("defined",	CPP_DEFINED, 0),
+  O("and",	CPP_AND_AND, CPLUS),
+  O("and_eq",	CPP_AND_EQ,  CPLUS),
+  O("bitand",	CPP_AND,     CPLUS),
+  O("bitor",	CPP_OR,      CPLUS),
+  O("compl",	CPP_COMPL,   CPLUS),
+  O("not",	CPP_NOT,     CPLUS),
+  O("not_eq",	CPP_NOT_EQ,  CPLUS),
+  O("or",	CPP_OR_OR,   CPLUS),
+  O("or_eq",	CPP_OR_EQ,   CPLUS),
+  O("xor",	CPP_XOR,     CPLUS),
+  O("xor_eq",	CPP_XOR_EQ,  CPLUS),
 };
 #undef B
 #undef C
@@ -550,6 +574,9 @@ initialize_builtins (pfile)
   const struct builtin *b;
   for(b = builtin_array; b < builtin_array_end; b++)
     {
+      if (b->flags & CPLUS && ! CPP_OPTION (pfile, cplusplus))
+	continue;
+
       if (b->type == T_MACRO)
 	{
 	  const char *val;
@@ -578,6 +605,8 @@ initialize_builtins (pfile)
 	{
 	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
 	  hp->type = b->type;
+	  if (b->type == T_OPERATOR)
+	    hp->value.code = b->code;
 	}
     }
 }

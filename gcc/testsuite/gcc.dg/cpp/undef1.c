@@ -9,6 +9,6 @@
 
 #define foo(bar) bar
 
-foo( blah			/* { dg-error "unterminated invocation" }  */
+foo( blah			/* { dg-error "unterminated argument" }  */
 #undef foo	/* { dg-error "may not be used inside" "foo(#undef foo)" } */
      blah )
