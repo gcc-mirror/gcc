@@ -4465,9 +4465,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
 		char *p = ffelex_token_text (next->t);
 		ffeTokenLength i = ffelex_token_length (next->t);
 
-		ffests_printf_1U (s,
-				  "%" ffeTokenLength_f "uH",
-				  i);
+		ffests_printf (s, "%" ffeTokenLength_f "uH", i);
 		while (i-- != 0)
 		  {
 		    ffests_putc (s, *p);
@@ -4487,8 +4485,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
 	      if (next->u.R1003D.R1004.rtexpr)
 		ffestd_R1001rtexpr_ (s, next, next->u.R1003D.R1004.u.expr);
 	      else
-		ffests_printf_1U (s, "%lu",
-				  next->u.R1003D.R1004.u.unsigned_val);
+		ffests_printf (s, "%lu", next->u.R1003D.R1004.u.unsigned_val);
 	    }
 
 	  ffests_putc (s, '(');
@@ -4520,7 +4517,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1004.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4530,7 +4527,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1006.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
     }
 }
 
@@ -4553,7 +4550,7 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1004.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4561,7 +4558,7 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1005.R1006.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 }
 
 /* ffestd_R1001dump_1005_3_ -- Dump a particular format
@@ -4582,7 +4579,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1004.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4590,7 +4587,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1005.R1006.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   if (f->u.R1005.R1007_or_R1008.present)
     {
@@ -4598,8 +4595,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1007_or_R1008.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
       else
-	ffests_printf_1U (s, "%lu",
-			  f->u.R1005.R1007_or_R1008.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
     }
 }
 
@@ -4622,7 +4618,7 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1004.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4630,13 +4626,13 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1005.R1006.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 }
 
 /* ffestd_R1001dump_1005_5_ -- Dump a particular format
@@ -4657,7 +4653,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1004.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4665,13 +4661,13 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1005.R1006.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 
   if (f->u.R1005.R1009.present)
     {
@@ -4679,7 +4675,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1005.R1009.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1009.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1005.R1009.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1005.R1009.u.unsigned_val);
     }
 }
 
@@ -4713,7 +4709,7 @@ ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, const char *string)
       if (f->u.R1010.val.rtexpr)
 	ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
       else
-	ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
+	ffests_printf (s, "%lu", f->u.R1010.val.u.unsigned_val);
     }
 
   ffests_puts (s, string);
@@ -4734,7 +4730,7 @@ ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1010.val.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1010.val.u.unsigned_val);
 
   ffests_puts (s, string);
 }
@@ -4754,7 +4750,7 @@ ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1010.val.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
-    ffests_printf_1D (s, "%ld", f->u.R1010.val.u.signed_val);
+    ffests_printf (s, "%ld", f->u.R1010.val.u.signed_val);
 
   ffests_puts (s, string);
 }
@@ -4776,7 +4772,7 @@ ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f, const char *string)
   if (f->u.R1010.val.rtexpr)
     ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
-    ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
+    ffests_printf (s, "%lu", f->u.R1010.val.u.unsigned_val);
 }
 
 /* ffestd_R1001error_ -- Complain about FORMAT specification not supported
@@ -4836,7 +4832,7 @@ ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr)
 	case FFEINFO_kindtypeANY:
 	  return;
 	}
-      ffests_printf_1D (s, "%ld", val);
+      ffests_printf (s, "%ld", (long) val);
     }
 }
 

@@ -2402,10 +2402,9 @@ ffecom_char_enhance_arg_ (tree *xtype, ffesymbol s)
     {
       if (ffesymbol_where (s) == FFEINFO_whereDUMMY)
 	tlen = ffecom_get_invented_identifier ("__g77_length_%s",
-					       ffesymbol_text (s), -1);
+					       ffesymbol_text (s));
       else
-	tlen = ffecom_get_invented_identifier ("__g77_%s",
-					       "length", -1);
+	tlen = ffecom_get_invented_identifier ("__g77_%s", "length");
       tlen = build_decl (PARM_DECL, tlen, ffecom_f2c_ftnlen_type_node);
 #if BUILT_FOR_270
       DECL_ARTIFICIAL (tlen) = 1;
@@ -2841,8 +2840,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
       else
 	type = ffecom_tree_type[FFEINFO_basictypeCOMPLEX][kt];
 
-      result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", -1);
+      result = ffecom_get_invented_identifier ("__g77_%s", "result");
 
       /* Make length arg _and_ enhance type info for CHAR arg itself.  */
 
@@ -2883,7 +2881,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
       yes = suspend_momentary ();
 
       multi_retval = ffecom_get_invented_identifier ("__g77_%s",
-						     "multi_retval", -1);
+						     "multi_retval");
       multi_retval = build_decl (VAR_DECL, multi_retval,
 				 ffecom_multi_type_node_);
       multi_retval = start_decl (multi_retval, FALSE);
@@ -6042,8 +6040,7 @@ ffecom_f2c_make_type_ (tree *type, int tcode, const char *name)
     }
 
   pushdecl (build_decl (TYPE_DECL,
-			ffecom_get_invented_identifier ("__g77_f2c_%s",
-							name, -1),
+			ffecom_get_invented_identifier ("__g77_f2c_%s", name),
 			*type));
 }
 
@@ -6340,8 +6337,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 
       type = ffecom_tree_type[FFEINFO_basictypeCHARACTER][kt];
 
-      result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", -1);
+      result = ffecom_get_invented_identifier ("__g77_%s", "result");
 
       ffecom_char_enhance_arg_ (&type, s);	/* Ignore returned length. */
 
@@ -7384,8 +7380,7 @@ ffecom_start_progunit_ ()
   if (altentries)
     {
       id = ffecom_get_invented_identifier ("__g77_masterfun_%s",
-					   ffesymbol_text (fn),
-					   -1);
+					   ffesymbol_text (fn));
     }
 #if FFETARGET_isENFORCED_MAIN
   else if (main_program)
@@ -7420,8 +7415,7 @@ ffecom_start_progunit_ ()
       ffecom_which_entrypoint_decl_
 	= build_decl (PARM_DECL,
 		      ffecom_get_invented_identifier ("__g77_%s",
-						      "which_entrypoint",
-						      -1),
+						      "which_entrypoint"),
 		      integer_type_node);
       push_parm_decl (ffecom_which_entrypoint_decl_);
     }
@@ -7440,8 +7434,7 @@ ffecom_start_progunit_ ()
       else
 	type = ffecom_multi_type_node_;
 
-      result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", -1);
+      result = ffecom_get_invented_identifier ("__g77_%s", "result");
 
       /* Make length arg _and_ enhance type info for CHAR arg itself.  */
 
@@ -8605,8 +8598,7 @@ ffecom_sym_transform_assign_ (ffesymbol s)
 
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_ASSIGN_%s",
-						   ffesymbol_text (s),
-						   -1),
+						   ffesymbol_text (s)),
 		  TREE_TYPE (null_pointer_node));
 
   switch (ffesymbol_where (s))
@@ -8924,9 +8916,7 @@ ffecom_transform_equiv_ (ffestorag eqst)
   eqt = build_decl (VAR_DECL,
 		    ffecom_get_invented_identifier ("__g77_equiv_%s",
 						    ffesymbol_text
-						    (ffestorag_symbol
-						     (eqst)),
-						    -1),
+						    (ffestorag_symbol (eqst))),
 		    eqtype);
   DECL_EXTERNAL (eqt) = 0;
   if (is_init
@@ -9010,7 +9000,7 @@ ffecom_transform_namelist_ (ffesymbol s)
 
   nmlt = build_decl (VAR_DECL,
 		     ffecom_get_invented_identifier ("__g77_namelist_%d",
-						     NULL, mynumber++),
+						     mynumber++),
 		     nmltype);
   TREE_STATIC (nmlt) = 1;
   DECL_INITIAL (nmlt) = error_mark_node;
@@ -9616,7 +9606,7 @@ ffecom_vardesc_ (ffebld expr)
 
       var = build_decl (VAR_DECL,
 			ffecom_get_invented_identifier ("__g77_vardesc_%d",
-							NULL, mynumber++),
+							mynumber++),
 			vardesctype);
       TREE_STATIC (var) = 1;
       DECL_INITIAL (var) = error_mark_node;
@@ -9723,8 +9713,7 @@ ffecom_vardesc_array_ (ffesymbol s)
   TREE_CONSTANT (list) = 1;
   TREE_STATIC (list) = 1;
 
-  var = ffecom_get_invented_identifier ("__g77_vardesc_array_%d", NULL,
-					mynumber++);
+  var = ffecom_get_invented_identifier ("__g77_vardesc_array_%d", mynumber++);
   var = build_decl (VAR_DECL, var, item);
   TREE_STATIC (var) = 1;
   DECL_INITIAL (var) = error_mark_node;
@@ -9837,8 +9826,7 @@ ffecom_vardesc_dims_ (ffesymbol s)
     TREE_CONSTANT (list) = 1;
     TREE_STATIC (list) = 1;
 
-    var = ffecom_get_invented_identifier ("__g77_dims_%d", NULL,
-					  mynumber++);
+    var = ffecom_get_invented_identifier ("__g77_dims_%d", mynumber++);
     var = build_decl (VAR_DECL, var, item);
     TREE_STATIC (var) = 1;
     DECL_INITIAL (var) = error_mark_node;
@@ -11164,7 +11152,7 @@ ffecom_end_transition ()
 
       var = build_decl (VAR_DECL,
 			ffecom_get_invented_identifier ("__g77_forceload_%d",
-							NULL, number++),
+							number++),
 			dt);
       DECL_EXTERNAL (var) = 0;
       TREE_STATIC (var) = 1;
@@ -11453,59 +11441,24 @@ ffecom_finish_progunit ()
 }
 
 #endif
-/* Wrapper for get_identifier.  pattern is sprintf-like, assumed to contain
-   one %s if text is not NULL, assumed to contain one %d if number is
-   not -1.  If both are assumed, the %s is assumed to precede the %d.  */
+
+/* Wrapper for get_identifier.  pattern is sprintf-like.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_get_invented_identifier (const char *pattern, const char *text,
-				int number)
+ffecom_get_invented_identifier (const char *pattern, ...)
 {
   tree decl;
   char *nam;
-  mallocSize lenlen;
-  char space[66];
+  va_list ap;
 
-  lenlen = 0;
-  if (text)
-    lenlen += strlen (text);
-  if (number != -1)
-    lenlen += 20;
-  if (text || number != -1)
-    {
-      lenlen += strlen (pattern);
-      if (lenlen > ARRAY_SIZE (space))
-	nam = malloc_new_ks (malloc_pool_image (), pattern, lenlen);
-      else
-	nam = &space[0];
-    }
-  else
-    {
-      lenlen = 0;
-      nam = (char *) pattern;
-    }
-
-  if (text == NULL)
-    {
-      if (number != -1)
-	sprintf (&nam[0], pattern, number);
-    }
-  else
-    {
-      if (number == -1)
-	sprintf (&nam[0], pattern, text);
-      else
-	sprintf (&nam[0], pattern, text, number);
-    }
-
+  va_start (ap, pattern);
+  if (vasprintf (&nam, pattern, ap) == 0)
+    abort ();
+  va_end (ap);
   decl = get_identifier (nam);
-
-  if (lenlen > ARRAY_SIZE (space))
-    malloc_kill_ks (malloc_pool_image (), nam, lenlen);
-
+  free (nam);
   IDENTIFIER_INVENTED (decl) = 1;
-
   return decl;
 }
 
@@ -12444,8 +12397,7 @@ ffecom_lookup_label (ffelab label)
 
 	  glabel = build_decl (VAR_DECL,
 			       ffecom_get_invented_identifier
-			       ("__g77_format_%d", NULL,
-				(int) ffelab_value (label)),
+			       ("__g77_format_%d", (int) ffelab_value (label)),
 			       build_type_variant (build_array_type
 						   (char_type_node,
 						    NULL_TREE),
@@ -13578,7 +13530,6 @@ ffecom_temp_label ()
 
   glabel = build_decl (LABEL_DECL,
 		       ffecom_get_invented_identifier ("__g77_label_%d",
-						       NULL,
 						       mynumber++),
 		       void_type_node);
   DECL_CONTEXT (glabel) = current_function_decl;

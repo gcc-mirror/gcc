@@ -96,119 +96,25 @@ ffests_new (ffests s, mallocPool pool, ffestsLength size)
     s->text_ = malloc_new_ksr (pool, "ffests", size);
 }
 
-/* ffests_printf_1D -- printf("...%ld...",(long)) to a string
+/* ffests_printf -- printf ("...%ld...",(long)) to a string
 
    ffests s;
-   ffests_printf_1D(s,"...%ld...",1);
+   ffests_printf (s,"...%ld...",1);
 
    Like printf, but into a string.  */
 
 void
-ffests_printf_1D (ffests s, const char *ctl, long arg1)
+ffests_printf (ffests s, const char *ctl, ...)
 {
-  char quickbuf[40];
-  char *buff;
-  ffestsLength len;
-
-  if ((len = strlen (ctl) + 21) < ARRAY_SIZE (quickbuf))
-    /* No # bigger than 20 digits. */
-    {
-      sprintf (&quickbuf[0], ctl, arg1);
-      ffests_puttext (s, &quickbuf[0], strlen (quickbuf));
-    }
-  else
-    {
-      buff = malloc_new_ks (malloc_pool_image (), "ffests_printf_1D", len);
-      sprintf (buff, ctl, arg1);
-      ffests_puttext (s, buff, strlen (buff));
-      malloc_kill_ks (malloc_pool_image (), buff, len);
-    }
-}
-
-/* ffests_printf_1U -- printf("...%lu...",(unsigned long)) to a string
-
-   ffests s;
-   ffests_printf_1U(s,"...%lu...",1);
-
-   Like printf, but into a string.  */
-
-void
-ffests_printf_1U (ffests s, const char *ctl, unsigned long arg1)
-{
-  char quickbuf[40];
-  char *buff;
-  ffestsLength len;
-
-  if ((len = strlen (ctl) + 21) < ARRAY_SIZE (quickbuf))
-    /* No # bigger than 20 digits. */
-    {
-      sprintf (&quickbuf[0], ctl, arg1);
-      ffests_puttext (s, &quickbuf[0], strlen (quickbuf));
-    }
-  else
-    {
-      buff = malloc_new_ks (malloc_pool_image (), "ffests_printf_1U", len);
-      sprintf (buff, ctl, arg1);
-      ffests_puttext (s, buff, strlen (buff));
-      malloc_kill_ks (malloc_pool_image (), buff, len);
-    }
-}
-
-/* ffests_printf_1s -- printf("...%s...",(char *)) to a string
-
-   ffests s;
-   ffests_printf_1s(s,"...%s...","hi there!");
-
-   Like printf, but into a string.  */
-
-void
-ffests_printf_1s (ffests s, const char *ctl, const char *arg1)
-{
-  char quickbuf[40];
-  char *buff;
-  ffestsLength len;
-
-  if ((len = strlen (ctl) + strlen (arg1) - 1) < ARRAY_SIZE (quickbuf))
-    {
-      sprintf (&quickbuf[0], ctl, arg1);
-      ffests_puttext (s, &quickbuf[0], strlen (quickbuf));
-    }
-  else
-    {
-      buff = malloc_new_ks (malloc_pool_image (), "ffests_printf_1s", len);
-      sprintf (buff, ctl, arg1);
-      ffests_puttext (s, buff, strlen (buff));
-      malloc_kill_ks (malloc_pool_image (), buff, len);
-    }
-}
-
-/* ffests_printf_2Us -- printf("...%lu...%s...",...) to a string
-
-   ffests s;
-   ffests_printf_2Us(s,"...%lu...%s...",1,"hi there!");
-
-   Like printf, but into a string.  */
-
-void
-ffests_printf_2Us (ffests s, const char *ctl, unsigned long arg1, const char *arg2)
-{
-  char quickbuf[60];
-  char *buff;
-  ffestsLength len;
-
-  if ((len = strlen (ctl) + 21 + strlen (arg2) - 1) < ARRAY_SIZE (quickbuf))
-    /* No # bigger than 20 digits. */
-    {
-      sprintf (&quickbuf[0], ctl, arg1, arg2);
-      ffests_puttext (s, &quickbuf[0], strlen (quickbuf));
-    }
-  else
-    {
-      buff = malloc_new_ks (malloc_pool_image (), "ffests_printf_2Us", len);
-      sprintf (buff, ctl, arg1, arg2);
-      ffests_puttext (s, buff, strlen (buff));
-      malloc_kill_ks (malloc_pool_image (), buff, len);
-    }
+  char *string;
+  va_list ap;
+  
+  va_start (ap, ctl);
+  if (vasprintf (&string, ctl, ap) == 0)
+    abort ();
+  va_end (ap);
+  ffests_puts (s, string);
+  free (string);
 }
 
 /* ffests_putc -- Put a single character into string
