@@ -3791,36 +3791,91 @@
 			(const_int 2))))))]
   "" "")
 
-(define_expand "symGOT2reg"
-  [(set (match_operand:SI 0 "" "")
-        (const:SI (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_GOT)))
-  (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))
-  (set (match_dup 0) (mem:SI (match_dup 0)))]
+(define_expand "symGOT_load"
+  [(set (match_dup 2) (match_operand 1 "" ""))
+   (set (match_dup 3) (plus (match_dup 2) (reg PIC_REG)))
+   (set (match_operand 0 "" "") (mem (match_dup 3)))]
   ""
   "
 {
-  operands[2] = pic_offset_table_rtx;
+  rtx insn;
+
+  operands[2] = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+  operands[3] = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+
+  emit_move_insn (operands[2], operands[1]);
+
+  emit_move_insn (operands[3], gen_rtx_PLUS (Pmode,
+					     operands[2],
+					     gen_rtx_REG (Pmode, PIC_REG)));
+
+  insn = emit_move_insn (operands[0], gen_rtx_MEM (Pmode, operands[3]));
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, XVECEXP (XEXP (operands[1],
+								  0), 0, 0),
+					REG_NOTES (insn));
+  
+  DONE;
 }")
 
-(define_expand "symGOTOFF2reg"
-  [(set (match_operand:SI 0 "" "")
-	(const:SI (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_GOTOFF)))
-  (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))]
+(define_expand "sym2GOT"
+  [(const (unspec [(match_operand 0 "" "")] UNSPEC_GOT))]
+  ""
+  "")
+
+(define_expand "symGOT2reg"
+  [(match_operand 0 "" "") (match_operand 1 "" "")]
   ""
   "
 {
-  operands[2] = pic_offset_table_rtx;
+  rtx gotsym, insn;
+
+  gotsym = gen_sym2GOT (operands[1]);
+  PUT_MODE (gotsym, Pmode);
+  insn = emit_insn (gen_symGOT_load (operands[0], gotsym));
+
+  RTX_UNCHANGING_P (SET_SRC (PATTERN (insn))) = 1;
+
+  DONE;
+}")
+
+(define_expand "sym2GOTOFF"
+  [(const (unspec [(match_operand 0 "" "")] UNSPEC_GOTOFF))]
+  ""
+  "")
+
+(define_expand "symGOTOFF2reg"
+  [(match_operand 0 "" "") (match_operand 1 "" "")]
+  ""
+  "
+{
+  rtx gotoffsym, insn;
+  rtx t = no_new_pseudos ? operands[0] : gen_reg_rtx (GET_MODE (operands[0]));
+
+  gotoffsym = gen_sym2GOTOFF (operands[1]);
+  PUT_MODE (gotoffsym, Pmode);
+  emit_move_insn (t, gotoffsym);
+  insn = emit_move_insn (operands[0],
+			 gen_rtx_PLUS (Pmode, t,
+				       gen_rtx_REG (Pmode, PIC_REG)));
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					REG_NOTES (insn));
+
+  DONE;
 }")
 
 (define_expand "symPLT_label2reg"
   [(set (match_operand:SI 0 "" "")
-	(const (minus:SI
-		(const (plus:SI
-			(unspec [(match_operand:SI 1 "" "")] UNSPEC_PLT)
-			(pc)))
-		(const (plus:SI
-			(match_operand:SI 2 "" "")
-			(const_int 2))))))
+	(const:SI (minus:SI
+		   (const:SI
+		    (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PLT))
+		   (const:SI
+		    (minus:SI
+		     (const:SI (plus:SI
+				(match_operand:SI 2 "" "")
+				(const_int 2)))
+		     (const:SI (unspec:SI [(pc)] UNSPEC_PIC)))))))
    ;; Even though the PIC register is not really used by the call
    ;; sequence in which this is expanded, the PLT code assumes the PIC
    ;; register is set, so we must not skip its initialization.  Since
