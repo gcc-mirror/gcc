@@ -851,7 +851,8 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
 /* This structure contains the information for each insn which requires
    either single or double mode to be set.  
    MODE is the mode this insn must be executed in.
-   INSN_PTR is the insn to be executed.
+   INSN_PTR is the insn to be executed (may be the note that marks the
+   beginning of a basic block).
    BBNUM is the flow graph basic block this insn occurs in.
    NEXT is the next insn in the same basic block.  */
 struct seginfo 
