@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4727,8 +4727,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    && !(specbits
 			 & ((1 << (int) RID_STATIC) | (1 << (int) RID_REGISTER)))))))
     {
-      error ("variable or field `%s' declared void",
-	     IDENTIFIER_POINTER (declarator));
+      error ("variable or field `%s' declared void", name);
       type = integer_type_node;
     }
 
@@ -4802,14 +4801,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
-	    error ("field `%s' declared as a function",
-		   IDENTIFIER_POINTER (declarator));
+	    error ("field `%s' declared as a function", name);
 	    type = build_pointer_type (type);
 	  }
 	else if (TREE_CODE (type) != ERROR_MARK && TYPE_SIZE (type) == 0)
 	  {
-	    error ("field `%s' has incomplete type",
-		   IDENTIFIER_POINTER (declarator));
+	    error ("field `%s' has incomplete type", name);
 	    type = error_mark_node;
 	  }
 	/* Move type qualifiers down to element of an array.  */
@@ -4838,19 +4835,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (specbits & (1 << (int) RID_AUTO)
 	    && (pedantic || current_binding_level == global_binding_level))
-	  pedwarn ("invalid storage class for function `%s'",
-		 IDENTIFIER_POINTER (declarator));
+	  pedwarn ("invalid storage class for function `%s'", name);
 	if (specbits & (1 << (int) RID_REGISTER))
-	  error ("invalid storage class for function `%s'",
-		 IDENTIFIER_POINTER (declarator));
+	  error ("invalid storage class for function `%s'", name);
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
 	if (current_binding_level != global_binding_level
 	    && (specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_INLINE)))
 	    && pedantic)
-	  pedwarn ("invalid storage class for function `%s'",
-		   IDENTIFIER_POINTER (declarator));
+	  pedwarn ("invalid storage class for function `%s'", name);
 
 	/* If this is a block level extern, it must live past the end
 	   of the function so that we can check it against other
@@ -4870,9 +4864,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (extern_ref)
 	  DECL_EXTERNAL (decl) = 1;
+
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
+
 	/* Record presence of `inline', if it is reasonable.  */
 	if (inlinep)
 	  {
