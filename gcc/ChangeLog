@@ -1,3 +1,8 @@
+2000-09-28  Philipp Thomas  <pthomas@suse.de>
+
+	* invoke.texi (i386 Options): Add athlon to table of possible
+	choices for -mcpu=.
+
 2000-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (output_clear_message_text): New function.

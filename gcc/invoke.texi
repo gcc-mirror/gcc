@@ -6032,7 +6032,7 @@ instructions.  The choices for @var{cpu type} are:
 
 @multitable @columnfractions .20 .20 .20 .20
 @item @samp{i386} @tab @samp{i486} @tab @samp{i586} @tab @samp{i686}
-@item @samp{pentium} @tab @samp{pentiumpro} @tab @samp{k6}
+@item @samp{pentium} @tab @samp{pentiumpro} @tab @samp{k6} @tab @samp{athlon}
 @end multitable
 
 While picking a specific @var{cpu type} will schedule things appropriately
