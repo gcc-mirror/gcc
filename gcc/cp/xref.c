@@ -1,5 +1,5 @@
 /* Code for handling XREF output from GNU C++.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
