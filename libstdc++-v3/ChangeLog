@@ -1,3 +1,8 @@
+2001-02-05  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* testsuite/config/default.exp: New file.
+	* testsuite/config: New directory.
+
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/typeinfo (__GXX_MERGED_TYPEINFO_NAMES): New macro.
