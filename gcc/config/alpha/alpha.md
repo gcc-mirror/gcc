@@ -1103,6 +1103,18 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 
 ;; Lengths of 8 for ldq $t12,__divq($gp); jsr $t9,($t12),__divq as
 ;; expanded by the assembler.
+
+(define_insn "*divmodsi_internal_er"
+  [(set (reg:DI 27)
+	(sign_extend:DI (match_operator:SI 0 "divmod_operator"
+			[(reg:DI 24) (reg:DI 25)])))
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "ldq $27,__%E0($29)\t\t!literal!%#\;jsr $23,($27),__%E0\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "8")])
+
 (define_insn "*divmodsi_internal"
   [(set (reg:DI 27)
 	(sign_extend:DI (match_operator:SI 0 "divmod_operator"
@@ -1111,6 +1123,17 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (clobber (reg:DI 28))]
   "! TARGET_ABI_OPEN_VMS"
   "%E0 $24,$25,$27"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "8")])
+
+(define_insn "*divmoddi_internal_er"
+  [(set (reg:DI 27)
+	(match_operator:DI 0 "divmod_operator"
+			[(reg:DI 24) (reg:DI 25)]))
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "ldq $27,__%E0($29)\t\t!literal!%#\;jsr $23,($27),__%E0\t\t!lituse_jsr!%#"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
@@ -4346,6 +4369,33 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     }
 })
 
+(define_insn "*call_osf_1_er_noreturn"
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
+   && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
+  "@
+   jsr $26,($27),0
+   bsr $26,$%0..ng
+   ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),%0\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,8")])
+
+(define_insn "*call_osf_1_er"
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "@
+   jsr $26,($27),0\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*
+   bsr $26,$%0..ng
+   ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),%0\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,*,16")])
+
 (define_insn "*call_osf_1_noreturn"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
 	 (match_operand 1 "" ""))
@@ -4373,14 +4423,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (set_attr "length" "12,*,16")])
 
 (define_insn "*sibcall_osf_1"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "R,i"))
+  [(call (mem:DI (match_operand:DI 0 "current_file_function_operand" "R"))
 	 (match_operand 1 "" ""))]
   "TARGET_ABI_OSF"
-  "@
-   br $31,$%0..ng
-   jmp $31,%0"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,8")])
+  "br $31,$%0..ng"
+  [(set_attr "type" "jsr")])
 
 (define_insn "*call_nt_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
@@ -4707,8 +4754,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || reg_or_0_operand (operands[1], SImode))"
   "@
    mov %r1,%0
-   lda %0,%1
-   ldah %0,%h1
+   lda %0,%1($31)
+   ldah %0,%h1($31)
    ldl %0,%1
    stl %r1,%0
    fmov %R1,%0
@@ -4724,8 +4771,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || reg_or_0_operand (operands[1], SImode))"
   "@
    mov %r1,%0
-   lda %0,%1
-   ldah %0,%h1
+   lda %0,%1($31)
+   ldah %0,%h1($31)
    ldl %0,%1
    stl %r1,%0
    fmov %R1,%0
@@ -4761,7 +4808,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || register_operand (operands[1], HImode))"
   "@
    mov %r1,%0
-   lda %0,%L1"
+   lda %0,%L1($31)"
   [(set_attr "type" "ilog,iadd")])
 
 (define_insn "*movhi_bwx"
@@ -4772,7 +4819,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || reg_or_0_operand (operands[1], HImode))"
   "@
    mov %r1,%0
-   lda %0,%L1
+   lda %0,%L1($31)
    ldwu %0,%1
    stw %r1,%0"
   [(set_attr "type" "ilog,iadd,ild,ist")])
@@ -4785,7 +4832,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || register_operand (operands[1], QImode))"
   "@
    mov %r1,%0
-   lda %0,%L1"
+   lda %0,%L1($31)"
   [(set_attr "type" "ilog,iadd")])
 
 (define_insn "*movqi_bwx"
@@ -4796,7 +4843,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
        || reg_or_0_operand (operands[1], QImode))"
   "@
    mov %r1,%0
-   lda %0,%L1
+   lda %0,%L1($31)
    ldbu %0,%1
    stb %r1,%0"
   [(set_attr "type" "ilog,iadd,ild,ist")])
@@ -4832,16 +4879,43 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     FAIL;
 })
 
+(define_insn "*movdi_er_low"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lo_sum:DI (match_operand:DI 1 "register_operand" "r")
+		   (match_operand:DI 2 "local_symbolic_operand" "")))]
+  "TARGET_EXPLICIT_RELOCS"
+  "lda %0,%2(%1)\t\t!gprellow")
+
+(define_insn "*movdi_er_nofix"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,T,s,m,rJ,*fJ,Q,*f"))]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_FIX
+   && (register_operand (operands[0], DImode)
+       || reg_or_0_operand (operands[1], DImode))
+   && ! local_symbolic_operand (operands[1], DImode)"
+  "@
+   mov %r1,%0
+   lda %0,%1($31)
+   ldah %0,%h1($31)
+   ldah %0,%H1
+   ldq %0,%1($29)\t\t!literal
+   ldq%A1 %0,%1
+   stq%A0 %r1,%0
+   fmov %R1,%0
+   ldt %0,%1
+   stt %R1,%0"
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
+
 (define_insn "*movdi_nofix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,Q,*f"))]
-  "! TARGET_FIX
+  "! TARGET_EXPLICIT_RELOCS && ! TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
    mov %r1,%0
-   lda %0,%1
-   ldah %0,%h1
+   lda %0,%1($31)
+   ldah %0,%h1($31)
    lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
@@ -4850,16 +4924,38 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    stt %R1,%0"
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
+(define_insn "*movdi_er_fix"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q,r,*f")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,T,s,m,rJ,*fJ,Q,*f,*f,r"))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_FIX
+   && (register_operand (operands[0], DImode)
+       || reg_or_0_operand (operands[1], DImode))
+   && ! local_symbolic_operand (operands[1], DImode)"
+  "@
+   mov %r1,%0
+   lda %0,%1($31)
+   ldah %0,%h1($31)
+   ldah %0,%H1
+   ldq %0,%1($29)\t\t!literal
+   ldq%A1 %0,%1
+   stq%A0 %r1,%0
+   fmov %R1,%0
+   ldt %0,%1
+   stt %R1,%0
+   ftoit %1,%0
+   itoft %1,%0"
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
+
 (define_insn "*movdi_fix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q,r,*f")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,Q,*f,*f,r"))]
-  "TARGET_FIX
+  "! TARGET_EXPLICIT_RELOCS && TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
    mov %r1,%0
-   lda %0,%1
-   ldah %0,%h1
+   lda %0,%1($31)
+   ldah %0,%h1($31)
    lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
@@ -5548,6 +5644,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   ""
   "")
 
+(define_insn "*prologue_ldgp_1_er"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LDGP1)]
+  "TARGET_EXPLICIT_RELOCS"
+  "ldah $29,0($27)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*\n$%~..ng:")
+
 (define_insn "*prologue_ldgp_1"
   [(unspec_volatile [(const_int 0)] UNSPECV_LDGP1)]
   ""
@@ -5637,11 +5738,25 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "jmp $31,(%0),0"
   [(set_attr "type" "ibr")])
 
+(define_insn "*builtin_setjmp_receiver_sub_label_er"
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && TARGET_AS_CAN_SUBTRACT_LABELS"
+  "\n$LSJ%=:\;ldah $29,0($27)\t\t!gpdisp!%*\;lda $29,$LSJ%=-%l0($29)\t\t!gpdisp!%*"
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
+
 (define_insn "*builtin_setjmp_receiver_sub_label"
   [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]
   "TARGET_ABI_OSF && TARGET_AS_CAN_SUBTRACT_LABELS"
   "\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)"
   [(set_attr "length" "8")
+   (set_attr "type" "multi")])
+
+(define_insn "*builtin_setjmp_receiver_er"
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "br $29,$LSJ%=\n$LSJ%=:\;ldah $29,0($29)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+  [(set_attr "length" "12")
    (set_attr "type" "multi")])
 
 (define_insn "builtin_setjmp_receiver"
@@ -5660,6 +5775,13 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   else
     operands[0] = const0_rtx;
 })
+
+(define_insn "*exception_receiver_1_er"
+  [(unspec_volatile [(const_int 0)] UNSPECV_EHR)]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_LD_BUGGY_LDGP"
+  "ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
 
 (define_insn "*exception_receiver_1"
   [(unspec_volatile [(const_int 0)] UNSPECV_EHR)]
@@ -5752,6 +5874,20 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; The call patterns are at the end of the file because their
 ;; wildcard operand0 interferes with nice recognition.
 
+(define_insn "*call_value_osf_1_er"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "c,R,i"))
+	      (match_operand 2 "" "")))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "@
+   jsr $26,($27),0\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*
+   bsr $26,$%1..ng
+   ldq $27,%1($29)\t\t!literal!%#\;jsr $26,($27),%1\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,*,16")])
+
 (define_insn "*call_value_osf_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "c,R,i"))
@@ -5768,14 +5904,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 
 (define_insn "*sibcall_value_osf_1"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "R,i"))
+	(call (mem:DI (match_operand:DI 1 "current_file_function_operand" "R"))
 	      (match_operand 2 "" "")))]
   "TARGET_ABI_OSF"
-  "@
-   br $31,$%1..ng
-   jmp $31,%1"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,8")])
+  "br $31,$%1..ng"
+  [(set_attr "type" "jsr")])
 
 (define_insn "*call_value_nt_1"
   [(set (match_operand 0 "" "")

@@ -105,6 +105,14 @@ static int alpha_sr_alias_set;
 
 static const char *alpha_fnname;
 
+/* The next explicit relocation sequence number.  */
+int alpha_next_sequence_number = 1;
+
+/* The literal and gpdisp sequence numbers for this insn, as printed
+   by %# and %* respectively.  */
+int alpha_this_literal_sequence_number;
+int alpha_this_gpdisp_sequence_number;
+
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1
   PARAMS ((rtx, int, int, int));
@@ -116,6 +124,8 @@ static void alpha_expand_unaligned_store_words
   PARAMS ((rtx *out_regs, rtx smem, HOST_WIDE_INT words, HOST_WIDE_INT ofs));
 static void alpha_sa_mask
   PARAMS ((unsigned long *imaskP, unsigned long *fmaskP));
+static int find_lo_sum
+  PARAMS ((rtx *, void *));
 static int alpha_does_function_need_gp
   PARAMS ((void));
 static int alpha_ra_ever_killed
@@ -662,7 +672,7 @@ some_operand (op, mode)
   switch (GET_CODE (op))
     {
     case REG:  case MEM:  case CONST_DOUBLE:  case CONST_INT:  case LABEL_REF:
-    case SYMBOL_REF:  case CONST:
+    case SYMBOL_REF:  case CONST:  case HIGH:
       return 1;
 
     case SUBREG:
@@ -733,6 +743,10 @@ input_operand (op, mode)
     case CONSTANT_P_RTX:
       return 1;
 
+    case HIGH:
+      return (TARGET_EXPLICIT_RELOCS
+	      && local_symbolic_operand (XEXP (op, 0), mode));
+
     default:
       break;
     }
@@ -752,6 +766,41 @@ current_file_function_operand (op, mode)
 	  && ! profile_flag && ! profile_block_flag
 	  && (SYMBOL_REF_FLAG (op)
 	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
+}
+
+/* Return true if OP is a SYMBOL_REF or CONST referencing a variable
+   known to be defined in this file.  */
+
+int
+local_symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  const char *str;
+
+  if (GET_CODE (op) == LABEL_REF)
+    return 1;
+
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+
+  str = XSTR (op, 0);
+
+  /* ??? SYMBOL_REF_FLAG is set for local function symbols, but we
+     run into problems with the rtl inliner in that the symbol was
+     once external, but is local after inlining, which results in
+     unrecognizable insns.  */
+
+  return (CONSTANT_POOL_ADDRESS_P (op)
+	  /* If @, then ENCODE_SECTION_INFO sez it's local.  */
+	  || str[0] == '@'
+	  /* If *$, then ASM_GENERATE_INTERNAL_LABEL sez it's local.  */
+	  || (str[0] == '*' && str[1] == '$'));
 }
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
@@ -1154,6 +1203,120 @@ alpha_tablejump_best_label (insn)
   return best_label ? best_label : const0_rtx;
 }
 
+/* If we are referencing a function that is static, make the SYMBOL_REF
+   special.  We use this to see indicate we can branch to this function
+   without setting PV or restoring GP. 
+
+   If this is a variable that is known to be defined locally, add "@v"
+   to the name.  If in addition the variable is to go in .sdata/.sbss,
+   then add "@s" instead.  */
+
+void
+alpha_encode_section_info (decl)
+     tree decl;
+{
+  const char *symbol_str;
+  bool is_local, is_small;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (! TREE_PUBLIC (decl))
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      return;
+    }
+
+  /* Early out if we're not going to do anything with this data.  */
+  if (! TARGET_EXPLICIT_RELOCS)
+    return;
+
+  /* Careful not to prod global register variables.  */
+  if (TREE_CODE (decl) != VAR_DECL
+      || GET_CODE (DECL_RTL (decl)) != MEM
+      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
+    return;
+    
+  symbol_str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+  /* A variable is considered "local" if it is defined in this module.  */
+
+  if (DECL_EXTERNAL (decl))
+    is_local = false;
+  /* Linkonce and weak data is never local.  */
+  else if (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
+    is_local = false;
+  else if (! TREE_PUBLIC (decl))
+    is_local = true;
+  /* If PIC, then assume that any global name can be overridden by
+     symbols resolved from other modules.  */
+  else if (flag_pic)
+    is_local = false;
+  /* Uninitialized COMMON variable may be unified with symbols
+     resolved from other modules.  */
+  else if (DECL_COMMON (decl)
+	   && (DECL_INITIAL (decl) == NULL
+	       || DECL_INITIAL (decl) == error_mark_node))
+    is_local = false;
+  /* Otherwise we're left with initialized (or non-common) global data
+     which is of necessity defined locally.  */
+  else
+    is_local = true;
+
+  /* Determine if DECL will wind up in .sdata/.sbss.  */
+
+  is_small = false;
+  if (DECL_SECTION_NAME (decl))
+    {
+      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      if (strcmp (section, ".sdata") == 0
+	  || strcmp (section, ".sbss") == 0)
+	is_small = true;
+    }
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
+      /* If the variable has already been defined in the output file, then it
+	 is too late to put it in sdata if it wasn't put there in the first
+	 place.  The test is here rather than above, because if it is already
+	 in sdata, then it can stay there.  */
+
+      if (TREE_ASM_WRITTEN (decl))
+	;
+
+      /* If this is an incomplete type with size 0, then we can't put it in
+	 sdata because it might be too big when completed.  */
+      else if (size > 0 && size <= g_switch_value)
+	is_small = true;
+    }
+
+  /* Finally, encode this into the symbol string.  */
+  if (is_local)
+    {
+      const char *string;
+      char *newstr;
+      size_t len;
+
+      if (symbol_str[0] == '@')
+	{
+	  if (symbol_str[1] == (is_small ? 's' : 'v'))
+	    return;
+	  symbol_str += 2;
+	}
+
+      len = strlen (symbol_str) + 1;
+      newstr = alloca (len + 2);
+
+      newstr[0] = '@';
+      newstr[1] = (is_small ? 's' : 'v');
+      memcpy (newstr + 2, symbol_str, len);
+	  
+      string = ggc_alloc_string (newstr, len + 2 - 1);
+      XSTR (XEXP (DECL_RTL (decl), 0), 0) = string;
+    }
+  else if (symbol_str[0] == '@')
+    abort ();
+}
+
 /* legitimate_address_p recognizes an RTL expression that is a valid
    memory address for an instruction.  The MODE argument is the
    machine mode for the MEM expression that wants to use this address.
@@ -1222,6 +1385,30 @@ alpha_legitimate_address_p (mode, x, strict)
 	return true;
     }
 
+  /* If we're managing explicit relocations, LO_SUM is valid.  */
+  else if (TARGET_EXPLICIT_RELOCS && GET_CODE (x) == LO_SUM)
+    {
+      rtx ofs = XEXP (x, 1);
+      x = XEXP (x, 0);
+
+      /* Discard non-paradoxical subregs.  */
+      if (GET_CODE (x) == SUBREG
+          && (GET_MODE_SIZE (GET_MODE (x))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	x = SUBREG_REG (x);
+
+      /* Must have a valid base register.  */
+      if (! (REG_P (x)
+	     && (strict
+		 ? STRICT_REG_OK_FOR_BASE_P (x)
+		 : NONSTRICT_REG_OK_FOR_BASE_P (x))))
+	return false;
+
+      /* The symbol must be local.  */
+      if (local_symbolic_operand (ofs, Pmode))
+	return true;
+    }
+
   return false;
 }
 
@@ -1276,6 +1463,14 @@ alpha_legitimize_address (x, oldx, mode)
 			       XEXP (XEXP (XEXP (x, 1), 0), 0),
 			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
       goto split_addend;
+    }
+
+  /* If this is a local symbol, split the address into HIGH/LO_SUM parts.  */
+  if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (x, Pmode))
+    {
+      rtx temp = gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_HIGH (Pmode, x)));
+      return gen_rtx_LO_SUM (Pmode, temp, x);
     }
 
   return NULL;
@@ -1465,7 +1660,8 @@ secondary_reload_class (class, mode, x, in)
 	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	return GENERAL_REGS;
 
-      if (in && INTEGRAL_MODE_P (mode) && ! general_operand (x, mode))
+      if (in && INTEGRAL_MODE_P (mode)
+	  && ! (memory_operand (x, mode) || x == const0_rtx))
 	return GENERAL_REGS;
     }
 
@@ -1829,6 +2025,15 @@ alpha_expand_mov (mode, operands)
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
+
+  if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (operands[1], mode))
+    {
+      rtx scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx_SET (VOIDmode, scratch,
+			      gen_rtx_HIGH (Pmode, operands[1])));
+      operands[1] = gen_rtx_LO_SUM (Pmode, scratch, operands[1]);
+      return false;
+    }
 
   /* Early out for non-constants and valid constants.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], mode))
@@ -2961,7 +3166,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
      HOST_WIDE_INT size, ofs;
      int sign;
 {
-  rtx meml, memh, addr, extl, exth, tmp;
+  rtx meml, memh, addr, extl, exth, tmp, mema;
   enum machine_mode mode;
 
   meml = gen_reg_rtx (DImode);
@@ -2970,28 +3175,31 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
   extl = gen_reg_rtx (DImode);
   exth = gen_reg_rtx (DImode);
 
+  mema = XEXP (mem, 0);
+  if (GET_CODE (mema) == LO_SUM)
+    mema = force_reg (Pmode, mema);
+
   /* AND addresses cannot be in any alias set, since they may implicitly
      alias surrounding code.  Ideally we'd have some alias set that 
      covered all types except those with alignment 8 or higher.  */
 
   tmp = change_address (mem, DImode,
 			gen_rtx_AND (DImode, 
-				     plus_constant (XEXP (mem, 0), ofs),
+				     plus_constant (mema, ofs),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (meml, tmp);
 
   tmp = change_address (mem, DImode,
 			gen_rtx_AND (DImode, 
-				     plus_constant (XEXP (mem, 0),
-						    ofs + size - 1),
+				     plus_constant (mema, ofs + size - 1),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (memh, tmp);
 
   if (sign && size == 2)
     {
-      emit_move_insn (addr, plus_constant (XEXP (mem, 0), ofs+2));
+      emit_move_insn (addr, plus_constant (mema, ofs+2));
 
       emit_insn (gen_extxl (extl, meml, GEN_INT (64), addr));
       emit_insn (gen_extqh (exth, memh, addr));
@@ -3005,7 +3213,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
     }
   else
     {
-      emit_move_insn (addr, plus_constant (XEXP (mem, 0), ofs));
+      emit_move_insn (addr, plus_constant (mema, ofs));
       emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
       switch ((int) size)
 	{
@@ -3044,12 +3252,16 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
      rtx dst, src;
      HOST_WIDE_INT size, ofs;
 {
-  rtx dstl, dsth, addr, insl, insh, meml, memh;
+  rtx dstl, dsth, addr, insl, insh, meml, memh, dsta;
   
   dstl = gen_reg_rtx (DImode);
   dsth = gen_reg_rtx (DImode);
   insl = gen_reg_rtx (DImode);
   insh = gen_reg_rtx (DImode);
+
+  dsta = XEXP (dst, 0);
+  if (GET_CODE (dsta) == LO_SUM)
+    dsta = force_reg (Pmode, dsta);
 
   /* AND addresses cannot be in any alias set, since they may implicitly
      alias surrounding code.  Ideally we'd have some alias set that 
@@ -3057,20 +3269,19 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 
   meml = change_address (dst, DImode,
 			 gen_rtx_AND (DImode, 
-				      plus_constant (XEXP (dst, 0), ofs),
+				      plus_constant (dsta, ofs),
 				      GEN_INT (-8)));
   set_mem_alias_set (meml, 0);
 
   memh = change_address (dst, DImode,
 			 gen_rtx_AND (DImode, 
-				      plus_constant (XEXP (dst, 0),
-						     ofs+size-1),
+				      plus_constant (dsta, ofs + size - 1),
 				      GEN_INT (-8)));
   set_mem_alias_set (memh, 0);
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
-  addr = copy_addr_to_reg (plus_constant (XEXP (dst, 0), ofs));
+  addr = copy_addr_to_reg (plus_constant (dsta, ofs));
 
   if (src != const0_rtx)
     {
@@ -3143,8 +3354,12 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
   rtx const im8 = GEN_INT (-8);
   rtx const i64 = GEN_INT (64);
   rtx ext_tmps[MAX_MOVE_WORDS], data_regs[MAX_MOVE_WORDS+1];
-  rtx sreg, areg, tmp;
+  rtx sreg, areg, tmp, smema;
   HOST_WIDE_INT i;
+
+  smema = XEXP (smem, 0);
+  if (GET_CODE (smema) == LO_SUM)
+    smema = force_reg (Pmode, smema);
 
   /* Generate all the tmp registers we need.  */
   for (i = 0; i < words; ++i)
@@ -3162,7 +3377,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
     {
       tmp = change_address (smem, DImode,
 			    gen_rtx_AND (DImode,
-					 plus_constant (XEXP(smem,0), 8*i),
+					 plus_constant (smema, 8*i),
 					 im8));
       set_mem_alias_set (tmp, 0);
       emit_move_insn (data_regs[i], tmp);
@@ -3170,7 +3385,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
 
   tmp = change_address (smem, DImode,
 			gen_rtx_AND (DImode,
-				     plus_constant (XEXP(smem,0), 8*words - 1),
+				     plus_constant (smema, 8*words - 1),
 				     im8));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (data_regs[words], tmp);
@@ -3179,7 +3394,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
      extxh with offset zero a noop instead of zeroing the register, so 
      we must take care of that edge condition ourselves with cmov.  */
 
-  sreg = copy_addr_to_reg (XEXP (smem, 0));
+  sreg = copy_addr_to_reg (smema);
   areg = expand_binop (DImode, and_optab, sreg, GEN_INT (7), NULL, 
 		       1, OPTAB_WIDEN);
   for (i = 0; i < words; ++i)
@@ -3220,8 +3435,12 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 #endif
   rtx ins_tmps[MAX_MOVE_WORDS];
   rtx st_tmp_1, st_tmp_2, dreg;
-  rtx st_addr_1, st_addr_2;
+  rtx st_addr_1, st_addr_2, dmema;
   HOST_WIDE_INT i;
+
+  dmema = XEXP (dmem, 0);
+  if (GET_CODE (dmema) == LO_SUM)
+    dmema = force_reg (Pmode, dmema);
 
   /* Generate all the tmp registers we need.  */
   if (data_regs != NULL)
@@ -3235,15 +3454,12 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 
   st_addr_2 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode,
-					   plus_constant (XEXP(dmem,0),
-							  words*8 - 1),
+					   plus_constant (dmema, words*8 - 1),
 				       im8));
   set_mem_alias_set (st_addr_2, 0);
 
   st_addr_1 = change_address (dmem, DImode,
-			      gen_rtx_AND (DImode, 
-					   XEXP (dmem, 0),
-					   im8));
+			      gen_rtx_AND (DImode, dmema, im8));
   set_mem_alias_set (st_addr_1, 0);
 
   /* Load up the destination end bits.  */
@@ -3251,7 +3467,7 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
   emit_move_insn (st_tmp_1, st_addr_1);
 
   /* Shift the input data into place.  */
-  dreg = copy_addr_to_reg (XEXP (dmem, 0));
+  dreg = copy_addr_to_reg (dmema);
   if (data_regs != NULL)
     {
       for (i = words-1; i >= 0; --i)
@@ -3285,7 +3501,7 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
     {
       rtx tmp = change_address (dmem, DImode,
 				gen_rtx_AND (DImode,
-					     plus_constant(XEXP (dmem,0), i*8),
+					     plus_constant(dmema, i*8),
 					     im8));
       set_mem_alias_set (tmp, 0);
       emit_move_insn (tmp, data_regs ? ins_tmps[i-1] : const0_rtx);
@@ -3315,7 +3531,7 @@ alpha_expand_block_move (operands)
   rtx orig_dst = operands[0];
   rtx data_regs[2 * MAX_MOVE_WORDS + 16];
   rtx tmp;
-  int i, words, ofs, nregs = 0;
+  unsigned int i, words, ofs, nregs = 0;
   
   if (orig_bytes <= 0)
     return 1;
@@ -3773,7 +3989,7 @@ alpha_expand_block_clear (operands)
       words = bytes / 8;
 
       for (i = 0; i < words; ++i)
-	emit_move_insn (adjust_address(orig_dst, DImode, ofs + i * 8),
+	emit_move_insn (adjust_address (orig_dst, DImode, ofs + i * 8),
 			const0_rtx);
 
       bytes -= words * 8;
@@ -3785,9 +4001,15 @@ alpha_expand_block_clear (operands)
 
   if (align >= 32 && bytes > 16)
     {
+      rtx orig_dsta;
+
       emit_move_insn (adjust_address (orig_dst, SImode, ofs), const0_rtx);
       bytes -= 4;
       ofs += 4;
+
+      orig_dsta = XEXP (orig_dst, 0);
+      if (GET_CODE (orig_dsta) == LO_SUM)
+	orig_dsta = force_reg (Pmode, orig_dsta);
 
       words = bytes / 8;
       for (i = 0; i < words; ++i)
@@ -3795,8 +4017,7 @@ alpha_expand_block_clear (operands)
 	  rtx mem
 	    = change_address (orig_dst, DImode,
 			      gen_rtx_AND (DImode,
-					   plus_constant (XEXP (orig_dst, 0),
-							  ofs + i*8),
+					   plus_constant (orig_dsta, ofs + i*8),
 					   GEN_INT (-8)));
 	  set_mem_alias_set (mem, 0);
 	  emit_move_insn (mem, const0_rtx);
@@ -4272,6 +4493,28 @@ print_operand (file, x, code)
       fputc ((TARGET_FLOAT_VAX ? 'g' : 't'), file);
       break;
 
+    case '#':
+      if (alpha_this_literal_sequence_number == 0)
+	alpha_this_literal_sequence_number = alpha_next_sequence_number++;
+      fprintf (file, "%d", alpha_this_literal_sequence_number);
+      break;
+
+    case '*':
+      if (alpha_this_gpdisp_sequence_number == 0)
+	alpha_this_gpdisp_sequence_number = alpha_next_sequence_number++;
+      fprintf (file, "%d", alpha_this_gpdisp_sequence_number);
+      break;
+
+    case 'H':
+      if (GET_CODE (x) == HIGH)
+	{
+	  output_addr_const (file, XEXP (x, 0));
+	  fputs ("($29)\t\t!gprelhigh", file);
+	}
+      else
+	output_operand_lossage ("invalid %%H value");
+      break;
+
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
       if (GET_CODE (x) == REG)
@@ -4280,7 +4523,6 @@ print_operand (file, x, code)
 	fprintf (file, "$31");
       else
 	output_operand_lossage ("invalid %%r value");
-
       break;
 
     case 'R':
@@ -4291,7 +4533,6 @@ print_operand (file, x, code)
 	fprintf (file, "$f31");
       else
 	output_operand_lossage ("invalid %%R value");
-
       break;
 
     case 'N':
@@ -4512,12 +4753,33 @@ print_operand_address (file, addr)
       offset = INTVAL (XEXP (addr, 1));
       addr = XEXP (addr, 0);
     }
+
+  if (GET_CODE (addr) == LO_SUM)
+    {
+      output_addr_const (file, XEXP (addr, 1));
+      if (offset)
+	{
+	  fputc ('+', file);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
+	}
+      
+      addr = XEXP (addr, 0);
+      if (GET_CODE (addr) == REG)
+	basereg = REGNO (addr);
+      else if (GET_CODE (addr) == SUBREG
+	       && GET_CODE (SUBREG_REG (addr)) == REG)
+	basereg = subreg_regno (addr);
+      else
+	abort ();
+      fprintf (file, "($%d)\t\t!gprellow", basereg);
+      return;
+    }
+
   if (GET_CODE (addr) == REG)
     basereg = REGNO (addr);
   else if (GET_CODE (addr) == SUBREG
 	   && GET_CODE (SUBREG_REG (addr)) == REG)
-    basereg = REGNO (SUBREG_REG (addr))
-	      + SUBREG_BYTE (addr) / GET_MODE_SIZE (GET_MODE (addr));
+    basereg = subreg_regno (addr);
   else if (GET_CODE (addr) == CONST_INT)
     offset = INTVAL (addr);
   else
@@ -4827,7 +5089,7 @@ alpha_sa_mask (imaskP, fmaskP)
 {
   unsigned long imask = 0;
   unsigned long fmask = 0;
-  int i;
+  unsigned int i;
 
 #ifdef ASM_OUTPUT_MI_THUNK
   if (!current_function_is_thunk)
@@ -4969,6 +5231,14 @@ vms_valid_decl_attribute_p (decl, attributes, identifier, args)
 #endif
 
 static int
+find_lo_sum (px, data)
+     rtx *px;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return GET_CODE (*px) == LO_SUM;
+}
+
+static int
 alpha_does_function_need_gp ()
 {
   rtx insn;
@@ -5000,6 +5270,9 @@ alpha_does_function_need_gp ()
       {
 	enum attr_type type = get_attr_type (insn);
 	if (type == TYPE_LDSYM || type == TYPE_JSR)
+	  return 1;
+	if (TARGET_EXPLICIT_RELOCS
+	    && for_each_rtx (&PATTERN (insn), find_lo_sum, NULL) > 0)
 	  return 1;
       }
 
@@ -6606,7 +6879,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 
       /* If the known alignment is smaller than the recognized insn group,
 	 realign the output.  */
-      else if (align < len)
+      else if ((int) align < len)
 	{
 	  unsigned int new_log_align = len > 8 ? 4 : 3;
 	  rtx where;
@@ -6626,7 +6899,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 	 can make use of the knowledge of what sorts of instructions
 	 were issued in the previous group to make sure that all of
 	 the added nops are really free.  */
-      else if (ofs + len > align)
+      else if (ofs + len > (int) align)
 	{
 	  int nop_count = (align - ofs) / 4;
 	  rtx where;

@@ -1,3 +1,50 @@
+2001-09-09  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_next_sequence_number): New.
+	(alpha_this_literal_sequence_number): New.
+	(alpha_this_gpdisp_sequence_number): New.
+	(some_operand, input_operand): Add HIGH.
+	(local_symbolic_operand): New.
+	(alpha_encode_section_info): New.
+	(alpha_legitimate_address_p): Allow LO_SUM.
+	(alpha_legitimize_address): Generate HIGH+LO_SUM.
+	(alpha_expand_mov): Likewise.
+	(secondary_reload_class): Check memory_operand not general_operand
+	for FP_REGS test.
+	(alpha_expand_unaligned_load): Force LO_SUM addresses into a register.
+	(alpha_expand_unaligned_store): Likewise.
+	(alpha_expand_unaligned_load_words): Likewise.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(alpha_expand_block_clear): Likewise.
+	(print_operand): Handle %#, %*, %H.
+	(print_operand_address): Handle LO_SUM.
+	(find_lo_sum): New.
+	(alpha_does_function_need_gp): Use it.
+	(alpha_expand_block_move): Fix signed compare warnings.
+	(alpha_sa_mask, alpha_align_insns): Likewise.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (TARGET_EXPLICIT_RELOCS): New.
+	(MASK_EXPLICIT_RELOCS): New.
+	(TARGET_SWITCHES): Add -mexplicit-relocs.
+	(EXTRA_CONSTRAINT): Add 'T'.
+	(PREFERRED_RELOAD_CLASS): HIGH goes in GENERAL_REGS.
+	(ASM_APP_ON, ASM_APP_OFF): Turn on and off asm macro expansion.
+	(ENCODE_SECTION_INFO): Out line.
+	(REDO_SECTION_INFO_P): New.
+	(STRIP_NAME_ENCODING): New.
+	(ASM_OUTPUT_LABELREF): New.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add #, *.
+	(PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (divmodsi_internal_er, divmoddi_internal_er,
+	call_osf_1_er_noreturn, call_osf_1_er, movdi_er_low, movdi_er_nofix,
+	movdi_er_fix, prologue_ldgp_1_er, builtin_setjmp_receiver_sub_label_er,
+	builtin_setjmp_receiver_er, exception_receiver_1_er,
+	call_value_osf_1_er): New patterns.
+	(sibcall_osf_1, sibcall_value_osf_1): Remove register alternative.
+	(movqi, movhi, movsi): Add explicit $31 base register to lda.
+	* config/alpha/elf.h (ASM_FILE_START): Set nomacro if explicit relocs.
+	(FINAL_PRESCAN_INSN): New.
+
 Sat Sep  8 22:00:55 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (subst_stack_regs_pat): Fix fcmov reversal code.

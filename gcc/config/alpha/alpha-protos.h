@@ -54,6 +54,7 @@ extern int some_operand PARAMS ((rtx, enum machine_mode));
 extern int some_ni_operand PARAMS ((rtx, enum machine_mode));
 extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
+extern int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int alpha_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_zero_comparison_operator PARAMS ((rtx, enum machine_mode));
@@ -146,4 +147,5 @@ extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
 #endif
 extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
+extern void alpha_encode_section_info PARAMS ((tree));
 #endif /* TREE CODE */

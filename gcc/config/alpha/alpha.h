@@ -158,6 +158,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_CIX	(1 << 11)
 #define TARGET_CIX	(target_flags & MASK_CIX)
 
+/* This means use !literal style explicit relocations.  */
+#define MASK_EXPLICIT_RELOCS (1 << 12)
+#define TARGET_EXPLICIT_RELOCS (target_flags & MASK_EXPLICIT_RELOCS)
+
 /* This means that the processor is an EV5, EV56, or PCA56.
    Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
@@ -227,6 +231,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"no-fix", -MASK_FIX, ""},						\
     {"cix", MASK_CIX, N_("Emit code for the counting ISA extension")},	\
     {"no-cix", -MASK_CIX, ""},						\
+    {"explicit-relocs", MASK_EXPLICIT_RELOCS,				\
+     N_("Emit code using explicit relocation directives")},		\
+    {"no-explicit-relocs", -MASK_EXPLICIT_RELOCS, ""},			\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT, ""} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -792,6 +799,7 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    : (C) == 'R' ? current_file_function_operand (OP, Pmode)		\
    : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
 		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
+   : (C) == 'T' ? GET_CODE (OP) == HIGH					\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -803,8 +811,9 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    register via memory.  */
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)		\
-  (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
-   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS : GENERAL_REGS)\
+  (GET_CODE (X) == HIGH ? GENERAL_REGS			\
+   : CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
+   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS : GENERAL_REGS) \
    : (CLASS))
 
 /* Loading and storing HImode or QImode values to and from memory
@@ -1737,13 +1746,11 @@ do {									     \
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
-
-#define ASM_APP_ON ""
+#define ASM_APP_ON (TARGET_EXPLICIT_RELOCS ? "\t.set\tmacro\n" : "")
 
 /* Output to assembler file text saying following lines
    no longer contain unusual constructs.  */
-
-#define ASM_APP_OFF ""
+#define ASM_APP_OFF (TARGET_EXPLICIT_RELOCS ? "\t.set\tnomacro\n" : "")
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 
@@ -1785,13 +1792,29 @@ literal_section ()						\
 
 #define READONLY_DATA_SECTION	literal_section
 
-/* If we are referencing a function that is static, make the SYMBOL_REF
-   special.  We use this to see indicate we can branch to this function
-   without setting PV or restoring GP.  */
+/* Define this macro if references to a symbol must be treated differently
+   depending on something about the variable or function named by the symbol
+   (such as what section it is in).  */
 
-#define ENCODE_SECTION_INFO(DECL)  \
-  if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+#define ENCODE_SECTION_INFO(DECL)  alpha_encode_section_info (DECL)
+
+/* If a variable is weakened, made one only or moved into a different
+   section, it may be necessary to redo the section info to move the
+   variable out of sdata. */
+
+#define REDO_SECTION_INFO_P(DECL)                                       \
+   ((TREE_CODE (DECL) == VAR_DECL)                                      \
+    && (DECL_ONE_ONLY (DECL) || DECL_WEAK (DECL) || DECL_COMMON (DECL)  \
+        || DECL_SECTION_NAME (DECL) != 0))
+
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
+do {						\
+  (VAR) = (SYMBOL_NAME);			\
+  if ((VAR)[0] == '@')				\
+    (VAR) += 2;					\
+  if ((VAR)[0] == '*')				\
+    (VAR)++;					\
+} while (0)
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -1809,6 +1832,20 @@ literal_section ()						\
 /* How to renumber registers for dbx and gdb.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+
+/* Strip name encoding when emitting labels.  */
+
+#define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
+do {						\
+  const char *name_ = NAME;			\
+  if (*name_ == '@')				\
+    name_ += 2;					\
+  if (*name_ == '*')				\
+    name_++;					\
+  else						\
+    fputs (user_label_prefix, STREAM);		\
+  fputs (name_, STREAM);			\
+} while (0)
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -2089,7 +2126,8 @@ do {									\
    */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~')
+  ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~' \
+   || (CODE) == '#' || (CODE) == '*')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -2121,11 +2159,12 @@ do {									\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
   {"fp0_operand", {CONST_DOUBLE}},					\
   {"current_file_function_operand", {SYMBOL_REF}},			\
+  {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     SYMBOL_REF, CONST, LABEL_REF}},			\
+		     SYMBOL_REF, CONST, LABEL_REF, HIGH, LO_SUM}},	\
   {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		    SYMBOL_REF, CONST, LABEL_REF}},			\
+		    SYMBOL_REF, CONST, LABEL_REF, HIGH, LO_SUM}},	\
   {"some_ni_operand", {SUBREG, REG, MEM}},				\
   {"aligned_memory_operand", {MEM}},					\
   {"unaligned_memory_operand", {MEM}},					\
