@@ -2008,7 +2008,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
 	error ("%qE in namespace %qE does not name a type",
 	       id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error ("q%E in class %qT does not name a type", id, parser->scope);
+	error ("%qE in class %qT does not name a type", id, parser->scope);
       else
 	gcc_unreachable ();
     }

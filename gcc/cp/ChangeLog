@@ -1,3 +1,8 @@
+2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Move the q after
+	the %.
+
 2004-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* name-lookup.c (do_namespace_alias): Use FROB_CONTEXT.
