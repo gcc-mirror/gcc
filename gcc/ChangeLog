@@ -1,3 +1,9 @@
+2004-11-24  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.ac: Tweak test for HAVE_DECL_LDGETNAME to avoid a
+	system header conflict on AIX 5.2.
+	* configure: Regenerate.
+
 2004-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Use e->dest_idx
