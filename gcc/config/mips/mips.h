@@ -3450,8 +3450,7 @@ rdata_section ()							\
 {									\
   int size = int_size_in_bytes (TREE_TYPE (DECL));			\
 									\
-  if (size <= mips_section_threshold && size > 0			\
-      && mips_section_threshold > 0)					\
+  if (size > 0 && size <= mips_section_threshold)			\
     sdata_section ();							\
 									\
   else if (RELOC)							\
