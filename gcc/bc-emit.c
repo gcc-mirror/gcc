@@ -39,12 +39,6 @@ extern void free ();
 
 extern struct obstack *rtl_obstack;
 
-REAL_VALUE_TYPE dconst0;
-REAL_VALUE_TYPE dconst1;
-REAL_VALUE_TYPE dconst2;
-REAL_VALUE_TYPE dconstm1;
-
-
 /* Indexed by mode class, gives the narrowest mode for each class.  */
 
 enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
