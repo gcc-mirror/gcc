@@ -636,12 +636,6 @@ init_decl_processing ()
     FIELD_PRIVATE (t) = 1;
   FINISH_RECORD (object_type_node);
 
-  class_dtable_decl = build_dtable_decl (class_type_node);
-  TREE_STATIC (class_dtable_decl) = 1;
-  DECL_ARTIFICIAL (class_dtable_decl) = 1;
-  DECL_IGNORED_P (class_dtable_decl) = 1;
-  rest_of_decl_compilation (class_dtable_decl, (char*) 0, 1, 0);
-
   field_type_node = make_node (RECORD_TYPE);
   field_ptr_type_node = build_pointer_type (field_type_node);
   method_type_node = make_node (RECORD_TYPE);

@@ -1,3 +1,13 @@
+2001-03-05  Per Bothner  <per@bothner.com>
+
+	Fix a problem where rest_of_decl_compilation applied to
+	class_dtable_decl causes problems because it was done too early,
+	before output file was opened.
+	* decl.c (init_decl_processing):  Remove init of class_dtable_decl.
+	* class.c (class_dtable_decl):  Add macro - element of class_roots.
+	(make_class_data):  Define class_dtable_decl.
+	* java-tree.h (JTI_CLASS_DTABLE_DECL, class_dtable_decl):  Removed.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* java/class.c, java/decl.c, java/java-tree.h: Replace all

@@ -335,8 +335,6 @@ enum java_tree_index
 
   JTI_ACCESS_FLAGS_TYPE_NODE,
 
-  JTI_CLASS_DTABLE_DECL,
-
   JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE,
 
   JTI_WFL_OPERATOR,
@@ -583,9 +581,6 @@ extern tree throw_node[];
 
 #define access_flags_type_node \
   java_global_trees[JTI_ACCESS_FLAGS_TYPE_NODE]
-
-#define class_dtable_decl \
-  java_global_trees[JTI_CLASS_DTABLE_DECL]
 
 #define nativecode_ptr_array_type_node \
   java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
