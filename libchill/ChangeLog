@@ -1,3 +1,7 @@
+Mon Aug 30 16:42:45 1999  Hans-Peter Nilsson  <hp@axis.se>
+
+	* Makefile.in (chillrt0.o): Depend on chillrt0.c explicitly.
+
 Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
