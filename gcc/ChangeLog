@@ -1,3 +1,7 @@
+Thu Jun 28 11:32:24 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_use_loop): Disable for K6 temporarily.
+
 2001-06-27  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(hpux11_cpp_pow_inline): new, but real similar to
