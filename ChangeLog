@@ -1,3 +1,10 @@
+2005-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/20250
+	* Makefile.tpl (HOST target installs): Fix copy and pasto, use install
+	instead of check.
+	* Makefile.in: Regenerate.
+
 2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate to fix conflict between the previous two
