@@ -306,13 +306,12 @@ init_exception_processing ()
   protect_cleanup_actions_with_terminate = 1;
 }
 
-/* Retrieve a pointer to the cp_eh_info node for the current exception
-   and save it in the current binding level.  */
+/* Retrieve a pointer to the cp_eh_info node for the current exception.  */
 
-static void
-push_eh_info ()
+static tree
+call_eh_info ()
 {
-  tree decl, fn;
+  tree fn;
 
   fn = get_identifier ("__cp_exception_info");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
@@ -358,7 +357,16 @@ push_eh_info ()
       assemble_external (fn);
       pop_obstacks ();
     }
-  fn = build_function_call (fn, NULL_TREE);
+  return build_function_call (fn, NULL_TREE);
+}
+
+/* Retrieve a pointer to the cp_eh_info node for the current exception
+   and save it in the current binding level.  */
+
+static void
+push_eh_info ()
+{
+  tree decl, fn = call_eh_info ();
 
   /* Remember the pointer to the current exception info; it won't change
      during this catch block.  */
@@ -533,21 +541,6 @@ expand_start_catch_block (declspecs, declarator)
 
   push_eh_info ();
 
-  /* If we are not doing setjmp/longjmp EH, because we are reordered
-     out of line, we arrange to rethrow in the outer context so as to
-     skip through the terminate region we are nested in, should we
-     encounter an exception in the catch handler.
-
-     If we are doing setjmp/longjmp EH, we need to skip through the EH
-     object cleanup region.  This isn't quite right, as we really need
-     to clean the object up, but we cannot do that until we track
-     multiple EH objects.
-
-     Matches the end in expand_end_catch_block.  */
-  expand_eh_region_start ();
-
-  push_eh_cleanup ();
-
   if (declspecs)
     {
       tree exp;
@@ -559,6 +552,12 @@ expand_start_catch_block (declspecs, declarator)
       if (decl == NULL_TREE)
 	{
 	  error ("invalid catch parameter");
+
+	  /* This is cheap, but we want to maintain the data
+             structures.  */
+
+	  expand_eh_region_start ();
+
 	  return;
 	}
 
@@ -591,6 +590,8 @@ expand_start_catch_block (declspecs, declarator)
       /* if it returned FALSE, jump over the catch block, else fall into it */
       emit_jump_insn (gen_beq (false_label_rtx));
 
+      push_eh_cleanup ();
+
       init = convert_from_reference (save_expr (make_tree (init_type, call_rtx)));
 
       /* Do we need the below two lines? */
@@ -599,9 +600,28 @@ expand_start_catch_block (declspecs, declarator)
       decl = pushdecl (decl);
       cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
+  else
+    {
+      push_eh_cleanup ();
+
+      /* Fall into the catch all section.  */
+    }
 
   init = build_modify_expr (get_eh_caught (), NOP_EXPR, integer_one_node);
   expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* If we are not doing setjmp/longjmp EH, because we are reordered
+     out of line, we arrange to rethrow in the outer context so as to
+     skip through the terminate region we are nested in, should we
+     encounter an exception in the catch handler.
+
+     If we are doing setjmp/longjmp EH, we need to skip through the EH
+     object cleanup region.  This isn't quite right, as we really need
+     to clean the object up, but we cannot do that until we track
+     multiple EH objects.
+
+     Matches the end in expand_end_catch_block.  */
+  expand_eh_region_start ();
 
   emit_line_note (input_filename, lineno);
 }
@@ -814,8 +834,9 @@ expand_builtin_throw ()
   /* These two can be frontend specific.  If wanted, they can go in
      expand_throw.  */
   /* Do we have a valid object we are throwing? */
-  t = get_eh_type ();
-  emit_cmp_insn (DECL_RTL (t), const0_rtx, EQ, NULL_RTX,
+  t = call_eh_info ();
+  emit_cmp_insn (expand_expr (t, NULL_RTX, Pmode, 0),
+		 const0_rtx, EQ, NULL_RTX,
 		 GET_MODE (DECL_RTL (t)), 0, 0);
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
