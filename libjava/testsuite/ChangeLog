@@ -1,3 +1,7 @@
+2003-01-28  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jacks/jacks.xfail: More lexer tests now pass.
+
 2003-01-27  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/consthrow.java: New file.
