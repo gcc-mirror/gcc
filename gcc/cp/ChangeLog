@@ -1,3 +1,8 @@
+2001-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (add_vcall_offset_vtbl_entries_1): Only add one entry
+	for a destructor.
+
 2001-02-18  Jason Merrill  <jason@redhat.com>
 
 	Do put the VTT parameter in DECL_ARGUMENTS.
@@ -1060,7 +1065,8 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (check_field_decls): Don't special case anonymous
 	fields in error messages.
-	(note_name_declared_in_class): Use %D on diagnostic.
+	(note_name_declared_inpwdpwd
+	_class): Use %D on diagnostic.
 
 	* tree.c (pod_type_p): Use strip_array_types.
 	(cp_valid_lang_attribute): Likewise.
