@@ -1,3 +1,11 @@
+2003-10-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (alpha_pthread_gcc): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/pthread.h [ALPHA_PTHREAD_GCC_CHECK]: New
+	testcase. 
+	Fixes PR bootstrap/9330.
+
 2003-10-13  Eric Christopher  <echristo@redhat.com>
 
 	* config/frv/frv.c (frv_adjust_field_align): Redo check for

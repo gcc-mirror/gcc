@@ -599,6 +599,27 @@ fix = {
 
 
 /*
+ *  Recognize GCC in Tru64 UNIX V5.1B <pthread.h>.
+ */
+fix = {
+    hackname  = alpha_pthread_gcc;
+    files     = pthread.h;
+    select    = "#else\n# error <pthread.h>: unrecognized compiler.";
+
+    mach      = "alpha*-dec-osf*";
+    c_fix     = format;
+    c_fix_arg = "#elif defined (__GNUC__)\n"
+		"# define _PTHREAD_ENV_GCC\n"
+    		"%0";
+
+    test_text = "# define _PTHREAD_ENV_INTELC\n"
+		"#else\n"
+		"# error <pthread.h>: unrecognized compiler.\n"
+		"#endif";
+};
+
+
+/*
  *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
  *  And OpenBSD.
  */
