@@ -704,7 +704,9 @@ dbxout_type_methods (type)
 
   type_identifier_length = IDENTIFIER_LENGTH (type_encoding);
 
-  if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
+  if (TREE_CODE (methods) == FUNCTION_DECL)
+    fndecl = methods;
+  else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
     fndecl = TREE_VEC_ELT (methods, 0);
   else
     fndecl = TREE_VEC_ELT (methods, 1);
