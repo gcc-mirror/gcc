@@ -22,7 +22,7 @@
 	* init.c (build_offset_ref): Call mark_used and
 	convert_from_reference for namespace members.
 
-Mon Jul 13 23:25:28 1998  Martin von Lvwis  <loewis@informatik.hu-berlin.de>
+Mon Jul 13 23:25:28 1998  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* search.c (my_tree_cons): The bitfield is at index 2.
 
