@@ -1,3 +1,7 @@
+2000-07-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (_cpp_parse_assertion): Fix buffer overrun.
+
 2000-07-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c: Don't include sys/mman.h.
