@@ -1,3 +1,7 @@
+2001-08-27  Richard Henderson  <rth@redhat.com>
+
+	* genautomata.c (expand_automata): Always create a description.
+
 2001-08-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* optabs.c (expand_binop): Correctly handle the carry in multiword

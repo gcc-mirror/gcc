@@ -8625,48 +8625,44 @@ expand_automata ()
 {
   int i;
 
-  if (VLA_PTR_LENGTH (decls) != 0)
+  description = create_node (sizeof (struct description)
+			     /* One entry for cycle advancing insn.  */
+			     + sizeof (decl_t) * VLA_PTR_LENGTH (decls));
+  description->decls_num = VLA_PTR_LENGTH (decls);
+  description->query_units_num = 0;
+  for (i = 0; i < description->decls_num; i++)
     {
-      description = create_node (sizeof (struct description)
-				 + sizeof (decl_t)
-				 /* One entry for cycle advancing insn.  */
-				 * VLA_PTR_LENGTH (decls));
-      description->decls_num = VLA_PTR_LENGTH (decls);
-      description->query_units_num = 0;
-      for (i = 0; i < description->decls_num; i++)
-	{
-	  description->decls [i] = VLA_PTR (decls, i);
-	  if (description->decls [i]->mode == dm_unit
-	      && description->decls [i]->decl.unit.query_p)
-	    description->decls [i]->decl.unit.query_num
-	      = description->query_units_num++;
-	}
-      all_time = create_ticker ();
-      check_time = create_ticker ();
-      fprintf (stderr, "Check description...");
-      fflush (stderr);
-      check_all_description ();
-      fprintf (stderr, "done\n");
-      ticker_off (&check_time);
-      generation_time = create_ticker ();
+      description->decls [i] = VLA_PTR (decls, i);
+      if (description->decls [i]->mode == dm_unit
+	  && description->decls [i]->decl.unit.query_p)
+        description->decls [i]->decl.unit.query_num
+	  = description->query_units_num++;
+    }
+  all_time = create_ticker ();
+  check_time = create_ticker ();
+  fprintf (stderr, "Check description...");
+  fflush (stderr);
+  check_all_description ();
+  fprintf (stderr, "done\n");
+  ticker_off (&check_time);
+  generation_time = create_ticker ();
+  if (!have_error)
+    {
+      generate ();
+      check_automata ();
       if (!have_error)
 	{
-	  generate ();
-	  check_automata ();
-	  if (!have_error)
-	    {
-	      fprintf (stderr, "Generation of attributes...");
-	      fflush (stderr);
-	      make_internal_dfa_insn_code_attr ();
-	      make_insn_alts_attr ();
-	      make_default_insn_latency_attr ();
-	      make_bypass_attr ();
-	      fprintf (stderr, "done\n");
-	    }
+	  fprintf (stderr, "Generation of attributes...");
+	  fflush (stderr);
+	  make_internal_dfa_insn_code_attr ();
+	  make_insn_alts_attr ();
+	  make_default_insn_latency_attr ();
+	  make_bypass_attr ();
+	  fprintf (stderr, "done\n");
 	}
-      ticker_off (&generation_time);
-      ticker_off (&all_time);
     }
+  ticker_off (&generation_time);
+  ticker_off (&all_time);
   fprintf (stderr, "All other genattrtab stuff...");
   fflush (stderr);
 }
