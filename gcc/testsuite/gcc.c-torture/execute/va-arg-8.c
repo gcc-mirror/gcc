@@ -1,6 +1,6 @@
 /* Origin: Franz Sirl <Franz.Sirl-kernel@lauterbach.com> */
 
-#include <varargs.h>
+#include <stdarg.h>
 #include <limits.h>
 
 #if __LONG_LONG_MAX__ == 9223372036854775807LL
@@ -8,13 +8,12 @@
 typedef long long int INT64;
 
 inline void
-debug(i1, i2, i3, i4, i5, i6, i7, i8, i9, va_alist)
-     int i1, i2, i3, i4, i5, i6, i7, i8, i9;
-     va_dcl
+debug(int i1, int i2, int i3, int i4, int i5,
+      int i6, int i7, int i8, int i9, ...)
 {
   va_list ap;
 
-  va_start (ap);
+  va_start (ap, i9);
 
   if (va_arg (ap,int) != 10)
     abort ();

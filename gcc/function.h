@@ -451,12 +451,7 @@ struct function GTY(())
      function.  */
   unsigned int limit_stack : 1;
 
-  /* Nonzero if current function uses varargs.h or equivalent.
-     Zero for functions that use stdarg.h.  */
-  unsigned int varargs : 1;
-
-  /* Nonzero if current function uses stdarg.h or equivalent.
-     Zero for functions that use varargs.h.  */
+  /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
 
   /* Nonzero if this function is being processed in function-at-a-time
@@ -525,7 +520,6 @@ extern int virtuals_instantiated;
 #define current_function_pretend_args_size (cfun->pretend_args_size)
 #define current_function_outgoing_args_size (cfun->outgoing_args_size)
 #define current_function_arg_offset_rtx (cfun->arg_offset_rtx)
-#define current_function_varargs (cfun->varargs)
 #define current_function_stdarg (cfun->stdarg)
 #define current_function_internal_arg_pointer (cfun->internal_arg_pointer)
 #define current_function_return_rtx (cfun->return_rtx)

@@ -1,14 +1,12 @@
-#include <varargs.h>
+#include <stdarg.h>
 
 typedef double TYPE;
 
-void vafunction (dummy1, dummy2, va_alist)
-  TYPE dummy1, dummy2;
-  va_dcl
+void vafunction (TYPE dummy1, TYPE dummy2, ...)
 {
   va_list ap;
 
-  va_start(ap);
+  va_start(ap, dummy2);
   if (dummy1 != 888.)
     abort();
   if (dummy2 != 999.)

@@ -676,8 +676,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	     sibling call optimizations, but not tail recursion.
 	     Similarly if we use varargs or stdarg since they implicitly
 	     may take the address of an argument.  */
-	  if (current_function_calls_alloca
-	      || current_function_varargs || current_function_stdarg)
+	  if (current_function_calls_alloca || current_function_stdarg)
 	    sibcall = 0;
 
 	  /* See if there are any reasons we can't perform either sibling or

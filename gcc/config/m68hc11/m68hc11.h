@@ -1074,9 +1074,6 @@ typedef struct m68hc11_args
 #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
 
 /* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
-  m68hc11_expand_builtin_va_start (stdarg, valist, nextarg)
-
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   m68hc11_va_arg (valist, type)
 

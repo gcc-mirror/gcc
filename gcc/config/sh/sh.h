@@ -1846,8 +1846,7 @@ struct sh_args {
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((! TARGET_SH5 \
     && PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
-    && ((NAMED)								\
-	|| (! TARGET_HITACHI && (TARGET_SH3E || ! current_function_varargs)))) \
+    && ((NAMED) || !TARGET_HITACHI))					\
    ? gen_rtx_REG ((MODE),						\
 		  ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) 	\
 		   ^ ((MODE) == SFmode && TARGET_SH4			\
@@ -2010,7 +2009,7 @@ struct sh_args {
    later.  Fortunately, we already have two flags that are part of struct
    function that tell if a function uses varargs or stdarg.  */
 #define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST)  do \
-  if (! current_function_varargs && ! current_function_stdarg) \
+  if (! current_function_stdarg) \
     abort (); \
 while (0)
 

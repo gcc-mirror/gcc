@@ -246,8 +246,8 @@ libraries are also installed by GCC; these are not documented here.
 
 Several of the headers GCC installs are in the @file{ginclude}
 directory.  These headers, @file{iso646.h},
-@file{stdarg.h}, @file{stdbool.h}, @file{stddef.h} and
-@file{varargs.h}, are installed in @file{@var{libsubdir}/include},
+@file{stdarg.h}, @file{stdbool.h}, and @file{stddef.h},
+are installed in @file{@var{libsubdir}/include},
 unless the target Makefile fragment (@pxref{Target Fragment})
 overrides this by setting @code{USER_H}.
 

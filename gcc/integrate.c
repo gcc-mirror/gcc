@@ -178,8 +178,7 @@ function_cannot_inline_p (fndecl)
     return N_("function cannot be inline");
 
   /* No inlines with varargs.  */
-  if ((last && TREE_VALUE (last) != void_type_node)
-      || current_function_varargs)
+  if (last && TREE_VALUE (last) != void_type_node)
     return N_("varargs function cannot be inline");
 
   if (current_function_calls_alloca)

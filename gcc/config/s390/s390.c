@@ -3201,8 +3201,7 @@ s390_frame_info (frame)
   if (! current_function_is_leaf
       || frame->frame_size > 0
       || current_function_calls_alloca 
-      || current_function_stdarg
-      || current_function_varargs)
+      || current_function_stdarg)
     frame->frame_size += STARTING_FRAME_OFFSET;
 
   /* If we need to allocate a frame, the stack pointer is changed.  */ 
@@ -3260,7 +3259,7 @@ s390_frame_info (frame)
       frame->return_reg_saved_p = (j >= RETURN_REGNUM && i <= RETURN_REGNUM);
     }
 
-  if (current_function_stdarg || current_function_varargs)
+  if (current_function_stdarg)
     {
       /* Varargs function need to save from gpr 2 to gpr 15.  */
       frame->first_save_gpr = 2;
@@ -3435,7 +3434,7 @@ s390_emit_prologue ()
   
   /* Save fprs for variable args.  */
 
-  if (current_function_stdarg || current_function_varargs)
+  if (current_function_stdarg)
     {
       /* Save fpr 0 and 2.  */ 
 
@@ -3950,9 +3949,8 @@ s390_build_va_list ()
 }
 
 /* Implement va_start by filling the va_list structure VALIST.
-   STDARG_P is true if implementing __builtin_stdarg_va_start,
-   false if implementing __builtin_varargs_va_start.  NEXTARG
-   points to the first anonymous stack argument.
+   STDARG_P is always true, and ignored.
+   NEXTARG points to the first anonymous stack argument.
 
    The following global variables are used to initialize
    the va_list structure:
@@ -3965,7 +3963,7 @@ s390_build_va_list ()
 
 void
 s390_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {
@@ -4003,8 +4001,6 @@ s390_va_start (stdarg_p, valist, nextarg)
 
   off = INTVAL (current_function_arg_offset_rtx);
   off = off < 0 ? 0 : off;
-  if (! stdarg_p)
-    off = off > 0 ? off - UNITS_PER_WORD : off;
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
 	     (int)n_gpr, (int)n_fpr, off);

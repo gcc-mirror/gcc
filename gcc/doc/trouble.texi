@@ -892,24 +892,6 @@ You can partially avoid this problem by using the @option{-ffloat-store}
 option (@pxref{Optimize Options}).
 
 @item
-On the MIPS, variable argument functions using @file{varargs.h}
-cannot have a floating point value for the first argument.  The
-reason for this is that in the absence of a prototype in scope,
-if the first argument is a floating point, it is passed in a
-floating point register, rather than an integer register.
-
-If the code is rewritten to use the ISO standard @file{stdarg.h}
-method of variable arguments, and the prototype is in scope at
-the time of the call, everything will work fine.
-
-@item
-On the H8/300 and H8/300H, variable argument functions must be
-implemented using the ISO standard @file{stdarg.h} method of
-variable arguments.  Furthermore, calls to functions using @file{stdarg.h}
-variable arguments must have a prototype for the called function
-in scope at the time of the call.
-
-@item
 On AIX and other platforms without weak symbol support, templates
 need to be instantiated explicitly and symbols for static members
 of templates will not be generated.

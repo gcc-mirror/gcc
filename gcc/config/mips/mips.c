@@ -4485,15 +4485,10 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
 
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
-     argument, to find out how many registers are left over.
+     argument, to find out how many registers are left over.  */
 
-     For K&R varargs, the last named argument is a dummy word-sized one,
-     so CUM already contains the information we need.  For stdarg, it is
-     a real argument (such as the format in printf()) and we need to
-     step over it.  */
   local_cum = *cum;
-  if (!current_function_varargs)
-    FUNCTION_ARG_ADVANCE (local_cum, mode, type, 1);
+  FUNCTION_ARG_ADVANCE (local_cum, mode, type, 1);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -4611,14 +4606,11 @@ mips_build_va_list ()
     return ptr_type_node;
 }
 
-/* Implement va_start.   stdarg_p is 0 if implementing
-   __builtin_varargs_va_start, 1 if implementing __builtin_stdarg_va_start.
-   Note that this routine isn't called when compiling e.g. "_vfprintf_r".
-     (It doesn't have "...", so it inherits the pointers of its caller.) */
+/* Implement va_start.   stdarg_p is always 1.  */
 
 void
 mips_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg;
 {
@@ -4696,39 +4688,12 @@ mips_va_start (stdarg_p, valist, nextarg)
 	{
 	  /* Everything is in the GPR save area, or in the overflow
 	     area which is contiguous with it.  */
-
-	  int offset = -gpr_save_area_size;
-	  if (gpr_save_area_size == 0)
-	    offset = (stdarg_p ? 0 : -UNITS_PER_WORD);
-	  nextarg = plus_constant (nextarg, offset);
+	  nextarg = plus_constant (nextarg, -gpr_save_area_size);
 	  std_expand_builtin_va_start (1, valist, nextarg);
 	}
     }
   else
-    {
-      /* not EABI */
-      int ofs;
-
-      if (stdarg_p)
-	ofs = 0;
-      else
-	{
-	  /* ??? This had been conditional on
-	       _MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32
-	     and both iris5.h and iris6.h define _MIPS_SIM.  */
-	  if (mips_abi == ABI_N32
-	      || mips_abi == ABI_64
-	      || mips_abi == ABI_MEABI)
- 	    ofs = (cum->num_gprs < MAX_ARGS_IN_REGISTERS
-		   ? 0
-		   : -UNITS_PER_WORD);
-	  else
-	    ofs = -UNITS_PER_WORD;
-	}
-
-      nextarg = plus_constant (nextarg, ofs);
-      std_expand_builtin_va_start (1, valist, nextarg);
-    }
+    std_expand_builtin_va_start (1, valist, nextarg);
 }
 
 /* Implement va_arg.  */
@@ -7241,7 +7206,7 @@ mips_output_function_prologue (file, size)
 
       /* If this is a varargs function, we need to save all the
          registers onto the stack anyhow.  */
-      if (current_function_stdarg || current_function_varargs)
+      if (current_function_stdarg)
 	savearg = GP_REG_FIRST + 7;
 
       fprintf (file, "\tentry\t");

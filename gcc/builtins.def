@@ -523,10 +523,11 @@ DEF_GCC_BUILTIN(BUILT_IN_EH_RETURN_DATA_REGNO,
 		"__builtin_eh_return_data_regno",
 		BT_FN_INT_INT)
 
-DEF_GCC_BUILTIN(BUILT_IN_VARARGS_START,
-		"__builtin_varargs_start",
-		BT_FN_VOID_VALIST_REF)
-DEF_GCC_BUILTIN(BUILT_IN_STDARG_START,
+/* Variable argument list (stdarg.h) support */
+DEF_GCC_BUILTIN(BUILT_IN_VA_START,
+		"__builtin_va_start",
+		BT_FN_VOID_VALIST_REF_VAR)
+DEF_GCC_BUILTIN(BUILT_IN_STDARG_START,		/* backward compat */
 		"__builtin_stdarg_start",
 		BT_FN_VOID_VALIST_REF_VAR)
 DEF_GCC_BUILTIN(BUILT_IN_VA_END,
@@ -535,6 +536,7 @@ DEF_GCC_BUILTIN(BUILT_IN_VA_END,
 DEF_GCC_BUILTIN(BUILT_IN_VA_COPY,
 		"__builtin_va_copy",
 		BT_FN_VOID_VALIST_REF_VALIST_ARG)
+
 DEF_GCC_BUILTIN(BUILT_IN_EXPECT,
 		"__builtin_expect",
 		BT_FN_LONG_LONG_LONG)

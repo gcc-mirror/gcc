@@ -1947,7 +1947,6 @@ uses_arg_area_p ()
   register tree parm;
 
   if (current_function_decl == 0
-      || current_function_varargs
       || variable_args_p)
     return 1;
 

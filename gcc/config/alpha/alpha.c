@@ -6163,7 +6163,7 @@ alpha_build_va_list ()
 
 void
 alpha_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {
@@ -6174,7 +6174,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
     return;
 
   if (TARGET_ABI_UNICOSMK)
-    std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+    std_expand_builtin_va_start (1, valist, nextarg);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
      up by 48, storing fp arg registers in the first 48 bytes, and the
@@ -6185,7 +6185,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
      in order to account for the integer arg registers which are counted
      in argsize above, but which are not actually stored on the stack.  */
 
-  if (NUM_ARGS <= 5 + stdarg_p)
+  if (NUM_ARGS <= 6)
     offset = TARGET_ABI_OPEN_VMS ? UNITS_PER_WORD : 6 * UNITS_PER_WORD;
   else
     offset = -6 * UNITS_PER_WORD;
@@ -6732,7 +6732,7 @@ alpha_sa_size ()
 
       alpha_procedure_type
 	= (sa_size || get_frame_size() != 0
-	   || current_function_outgoing_args_size || current_function_varargs
+	   || current_function_outgoing_args_size
 	   || current_function_stdarg || current_function_calls_alloca
 	   || frame_pointer_needed)
 	  ? PT_STACK : PT_REGISTER;

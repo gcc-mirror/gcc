@@ -119,11 +119,6 @@ static GTY(()) tree named_labels;
 
 static GTY(()) tree shadowed_labels;
 
-/* Nonzero when store_parm_decls is called indicates a varargs function.
-   Value not meaningful after store_parm_decls.  */
-
-static int c_function_varargs;
-
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 
@@ -6027,7 +6022,6 @@ start_function (declspecs, declarator, attributes)
   current_function_returns_abnormally = 0;
   warn_about_return_type = 0;
   current_extern_inline = 0;
-  c_function_varargs = 0;
   named_labels = 0;
   shadowed_labels = 0;
 
@@ -6245,16 +6239,6 @@ start_function (declspecs, declarator, attributes)
   start_fname_decls ();
   
   return 1;
-}
-
-/* Record that this function is going to be a varargs function.
-   This is called before store_parm_decls, which is too early
-   to call mark_varargs directly.  */
-
-void
-c_mark_varargs ()
-{
-  c_function_varargs = 1;
 }
 
 /* Store the parameter declarations into the current function declaration.
@@ -6857,10 +6841,6 @@ c_expand_body (fndecl, nested_p, can_defer_p)
      not safe to try to expand expressions involving them.  */
   immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
-
-  /* If this is a varargs function, inform function.c.  */
-  if (c_function_varargs)
-    mark_varargs ();
 
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (fndecl, 0);

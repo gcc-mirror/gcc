@@ -6923,14 +6923,13 @@ Do not include extra scratch space in floating point data blocks.  This
 results in smaller code, but slower execution, since scratch space must
 be allocated dynamically.
 
-@cindex @file{varargs.h} and RT PC
 @cindex @file{stdarg.h} and RT PC
 @item -mfp-arg-in-fpregs
 @opindex mfp-arg-in-fpregs
 Use a calling sequence incompatible with the IBM calling convention in
 which floating point arguments are passed in floating point registers.
-Note that @code{varargs.h} and @code{stdarg.h} will not work with
-floating point operands if this option is specified.
+Note that @code{stdarg.h} will not work with floating point operands
+if this option is specified.
 
 @item -mfp-arg-in-gregs
 @opindex mfp-arg-in-gregs

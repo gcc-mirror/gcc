@@ -3099,7 +3099,7 @@ rs6000_build_va_list ()
 
 void
 rs6000_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg;
 {
@@ -3110,7 +3110,7 @@ rs6000_va_start (stdarg_p, valist, nextarg)
   /* Only SVR4 needs something special.  */
   if (DEFAULT_ABI != ABI_V4)
     {
-      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      std_expand_builtin_va_start (1, valist, nextarg);
       return;
     }
 

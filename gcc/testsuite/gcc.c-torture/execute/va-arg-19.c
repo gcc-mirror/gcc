@@ -1,14 +1,12 @@
-#include <varargs.h>
+#include <stdarg.h>
 
 typedef int TYPE;
 
-void vafunction (dummy, va_alist)
-  char *dummy;
-  va_dcl
+void vafunction (char *dummy, ...)
 {
   va_list ap;
 
-  va_start(ap);
+  va_start(ap, dummy);
   if (va_arg (ap, TYPE) != 1)
     abort();
   if (va_arg (ap, TYPE) != 2)

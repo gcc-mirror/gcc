@@ -4567,7 +4567,7 @@ sh_expand_prologue ()
     }
 
   /* Emit the code for SETUP_VARARGS.  */
-  if (current_function_varargs || current_function_stdarg)
+  if (current_function_stdarg)
     {
       /* This is not used by the SH3E calling convention  */
       if (TARGET_SH1 && ! TARGET_SH3E && ! TARGET_SH5 && ! TARGET_HITACHI)
@@ -5261,7 +5261,7 @@ sh_build_va_list ()
 
 void
 sh_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg;
 {
@@ -5273,20 +5273,13 @@ sh_va_start (stdarg_p, valist, nextarg)
   if (TARGET_SH5)
     {
       expand_builtin_saveregs ();
-      /* When the varargs dummy argument is ``passed'' on a register,
-	 we don't want std_expand_builtin_va_start() to apply any
-	 correction for it, so set stdarg_p so as to pretend there's
-	 no such dummy argument.  */
-      if (current_function_args_info.arg_count[(int) SH_ARG_INT]
-	  < NPARM_REGS (SImode))
-	stdarg_p = 1;
-      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      std_expand_builtin_va_start (1, valist, nextarg);
       return;
     }
 
   if ((! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
     {
-      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      std_expand_builtin_va_start (1, valist, nextarg);
       return;
     }
 
@@ -5338,11 +5331,6 @@ sh_va_start (stdarg_p, valist, nextarg)
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   u = make_tree (ptr_type_node, nextarg);
-  if (! stdarg_p && (nint == 0 || nfp == 0))
-    {
-      u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		       build_int_2 (-UNITS_PER_WORD, -1)));
-    }
   t = build (MODIFY_EXPR, ptr_type_node, next_stack, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
