@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.2 2000/03/21 03:54:40 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -28,7 +28,7 @@ options</A></H1>
 <HR>
 <P>Here are some of the non-obvious options to libstdc++'s configure.
    Keep in mind that
-   <!-- This should be the "Choosing Package Options" section. -->
+   <!-- This SECnn should be the "Choosing Package Options" section. -->
    <A HREF="http://sourceware.cygnus.com/autoconf/autoconf.html#SEC74">they
    all have opposite forms as well</A>
    (enable/disable and with/without).  The defaults are for the latest
@@ -63,7 +63,7 @@ options</A></H1>
         I/O package (from
         <A HREF="http://sourceware.cygnus.com/glibc/">glibc</A>, the
         GNU C library), or 'wince' to specify the Microsoft Windows CE
-        library. Eventually a generic cstdio interface will be added
+        library.  Eventually a generic cstdio interface will be added
         so that people who want to use libstdc++-v3 with say, the Palm
         Pilot, will be able to use libstdc++-v3 without libio.
      </P>
@@ -118,18 +118,17 @@ options</A></H1>
         transparently.
      </P>
 
-<!--
- <DT><TT>--enable-func-flags=FLAGS</TT>
+ <DT><TT>--enable-cxx-flags=FLAGS</TT>
  <DD><P>With this option, you can pass a string of -f (functionality)
         flags to the compiler to use when building libstdc++.  FLAGS
         is a quoted string of options, like
         <PRE>
-  --enable-func-flags='-fsquangle -fvtable-gc -ansi'</PRE>
+  --enable-cxx-flags='-fsquangle -fvtable-gc -ansi'</PRE>
         Note that the flags don't necessarily have to all be -f flags,
         as shown, but usually those are the ones that will make sense
         for experimentation and configure-time overriding.
      </P>
-     <P>The advantage of --enable-func-flags over setting CXXFLAGS in
+     <P>The advantage of --enable-cxx-flags over setting CXXFLAGS in
         the 'make' environment is that, if libgcc is automatically
         rebuilt, the same flags will be used when compiling those files
         as well, so that everything matches.
@@ -144,7 +143,6 @@ options</A></H1>
         and -fno- forms of the same.  Tell us (the mailing list) if
         you discover more!
      </P>
--->
 </DL>
 </P>
 <P>Return <A HREF="#top">to the top of the README</A> or
@@ -156,7 +154,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.2 2000/03/21 03:54:40 bkoz Exp $
+$Id: configopts.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $
 </EM></P>
 
 

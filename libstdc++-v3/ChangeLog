@@ -1,3 +1,15 @@
+2000-05-09  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4:  New macro, GLIBCPP_ENABLE_CXX_FLAGS.
+	* configure.in:  Call.
+	* src/Makefile.am:  Append results of macro to AC_CXXFLAGS.
+	* aclocal.m4:  Regenerate.
+	* configure:  Ditto.
+	* src/Makefile.in:  Ditto.
+	* docs/configopts.html:  Document.
+	* docs/download.html:  Fix typo (close quote).
+	* docs/footer.html:  Update.
+
 2000-05-09  Loren J. Rittle  <ljrittle@acm.org>
 
         * backward/iostream.h: Expose endl.  Guard wide types.

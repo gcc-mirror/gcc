@@ -621,6 +621,48 @@ AC_SUBST(DEBUGFLAGS)
 
 
 dnl
+dnl Check for "unusual" flags to pass to the compiler while building.
+dnl
+dnl GLIBCPP_ENABLE_CXX_FLAGS
+dnl --enable-cxx-flags='-foo -bar -baz' is a general method for passing
+dnl     experimental flags such as -fhonor-std, -fsquangle, -Dfloat=char, etc.
+dnl     Somehow this same set of flags must be passed when [re]building
+dnl     libgcc.
+dnl --disable-cxx-flags passes nothing.
+dnl  +  See <URL:>
+dnl  +  Usage:  GLIBCPP_ENABLE_CXX_FLAGS(default flags)
+dnl       If "default flags" is an empty string, the effect is the same
+dnl       as --disable or --enable=no.
+AC_DEFUN(GLIBCPP_ENABLE_CXX_FLAGS, [dnl
+define([GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
+AC_ARG_ENABLE(cxx-flags,
+changequote(<<, >>)dnl
+<<  --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
+                                [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
+changequote([, ])dnl
+[case "x$enableval" in
+ xyes)   AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
+ xno|x)  enable_cxx_flags= ;;
+ *)      enable_cxx_flags="$enableval" ;;
+ esac],
+enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')dnl
+dnl Run through flags (either default or command-line) and set things.
+if test -n "$enable_cxx_flags"; then
+    for f in $enable_cxx_flags; do
+        case "$f" in
+            -fhonor-std)  AC_DEFINE(_GLIBCPP_USE_NAMESPACES) ;;
+            -*)  ;;
+            *)   # and we're trying to pass /what/ exactly?
+                 AC_MSG_ERROR([compiler flags start with a -]) ;;
+        esac
+    done
+fi
+EXTRA_CXX_FLAGS="$enable_cxx_flags"
+AC_SUBST(EXTRA_CXX_FLAGS)
+])
+
+
+dnl
 dnl Check for certain special build configurations.
 dnl
 dnl GLIBCPP_ENABLE_NAMESPACES
