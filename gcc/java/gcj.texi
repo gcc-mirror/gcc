@@ -775,7 +775,7 @@ gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
   [@option{-cp} @var{path}] [@option{-classpath} @var{path}]
   [@option{-D}@var{name}[=@var{value}]@dots{}]
   [@option{-ms=}@var{number}] [@option{-mx=}@var{number}]
-  [@option{--version}] [@option{--help}]
+  [@option{--showversion}] [@option{--version}] [@option{--help}]
 @c man end
 @c man begin SEEALSO gij
 gcc(1), gcj(1), gcjh(1), jv-scan(1), jcf-dump(1), gfdl(7),
@@ -841,6 +841,9 @@ as the name of a jar file, not a class.
 
 @item --help
 Print help, then exit.
+
+@item --showversion
+Print version number and continue.
 
 @item --version
 Print version number, then exit.
@@ -2065,7 +2068,7 @@ The name of the Runtime Environment specification
 The paths (jar files, zip files and directories) used for finding class files.
 
 @item java.library.path
-Directory path used for finding native libraries.  Currently not set.
+Directory path used for finding native libraries.
 
 @item java.io.tmpdir
 The directory used to put temporary files in.
