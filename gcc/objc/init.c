@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -314,15 +314,17 @@ static void init_check_module_version(Module_t module)
 {
   if ((module->version != OBJC_VERSION) || (module->size != sizeof (Module)))
     {
-      fprintf (stderr, "Module %s version %d doesn't match runtime %d\n",
-	       module->name, (int)module->version, OBJC_VERSION);
+      int code;
+
       if(module->version > OBJC_VERSION)
-	fprintf (stderr, "Runtime (libobjc.a) is out of date\n");
+	code = OBJC_ERR_OBJC_VERSION;
       else if (module->version < OBJC_VERSION)
-	fprintf (stderr, "Compiler (gcc) is out of date\n");
+	code = OBJC_ERR_GCC_VERSION;
       else
-	fprintf (stderr, "Objective C internal error -- bad Module size\n");
-      abort ();
+	code = OBJC_ERR_MODULE_SIZE;
+
+      objc_error(nil, code, "Module %s version %d doesn't match runtime %d\n",
+	       module->name, (int)module->version, OBJC_VERSION);
     }
 }
 
@@ -364,11 +366,10 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 	}
       else if (protos->list[i]->class_pointer != proto_class)
 	{
-	  fprintf (stderr,
-		   "Version %d doesn't match runtime protocol version %d\n",
-		   (int)((char*)protos->list[i]->class_pointer-(char*)0),
-		   PROTOCOL_VERSION);
-	  abort ();
+	  objc_error(nil, OBJC_ERR_PROTOCOL_VERSION,
+		     "Version %d doesn't match runtime protocol version %d\n",
+		     (int)((char*)protos->list[i]->class_pointer-(char*)0),
+		     PROTOCOL_VERSION);
 	}
     }
 
