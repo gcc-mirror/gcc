@@ -1,3 +1,12 @@
+2002-07-08  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (combine_simplify_rtx): Add an explicit cast
+	to avoid signed/unsigned comparison warning.
+	(simplify_if_then_else): Likewise.
+	(extended_count): Likewise.
+	(simplify_shift_const): Likewise.
+	(simplify_comparison): Likewise.
+
 2002-07-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Add imadd type.  Update scheduler description
