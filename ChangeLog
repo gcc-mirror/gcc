@@ -1,3 +1,7 @@
+2004-09-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* MAINTAINERS: Add self as c++ and type-safe vector maintainer.
+
 2004-09-09  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* Makefile.def: Remove libbanshee.
@@ -576,7 +580,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
