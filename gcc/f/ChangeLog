@@ -1,3 +1,7 @@
+1999-02-17  Dave Love  <fx@gnu.org>
+
+	* intdoc.in: Say `common' logarithm for log10.
+
 1999-02-16  Ulrich Drepper  <drepper@cygnus.com>
 
 	* g77.texi: Add missing @ in email addresses.
