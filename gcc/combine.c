@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3992,7 +3992,7 @@ simplify_if_then_else (x)
 
   /* Look for MIN or MAX.  */
 
-  if ((! FLOAT_MODE_P (mode) | flag_fast_math)
+  if ((! FLOAT_MODE_P (mode) || flag_fast_math)
       && comparison_p
       && rtx_equal_p (XEXP (cond, 0), true)
       && rtx_equal_p (XEXP (cond, 1), false)
