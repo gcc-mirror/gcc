@@ -6350,6 +6350,8 @@ init_decl_processing ()
   std_node = current_namespace;
   pop_namespace ();
 
+  lang_attribute_table = cp_attribute_table;
+
   c_common_nodes_and_builtins ();
 
   java_byte_type_node = record_builtin_java_type ("__java_byte", 8);
@@ -6487,13 +6489,8 @@ init_decl_processing ()
   make_fname_decl = cp_make_fname_decl;
   start_fname_decls ();
 
-  /* Prepare to check format strings against argument lists.  */
-  init_function_format_info ();
-
   /* Show we use EH for cleanups.  */
   using_eh_for_cleanups ();
-
-  lang_attribute_table = cp_attribute_table;
 
   /* Maintain consistency.  Perhaps we should just complain if they
      say -fwritable-strings?  */
@@ -6643,6 +6640,9 @@ builtin_function (name, type, code, class, libname)
   if (name[0] != '_' || name[1] != '_')
     DECL_ANTICIPATED (decl) = 1;
 
+  /* Possibly apply some default attributes to this built-in function.  */
+  decl_attributes (&decl, NULL_TREE, 0);
+
   return decl;
 }
 
@@ -6764,6 +6764,20 @@ push_throw_library_fn (name, type)
   TREE_THIS_VOLATILE (fn) = 1;
   TREE_NOTHROW (fn) = 0;
   return fn;
+}
+
+/* Apply default attributes to a function, if a system function with default
+   attributes.  */
+
+void
+insert_default_attributes (decl)
+     tree decl;
+{
+  if (!DECL_EXTERN_C_FUNCTION_P (decl))
+    return;
+  if (!TREE_PUBLIC (decl))
+    return;
+  c_common_insert_default_attributes (decl);
 }
 
 /* When we call finish_struct for an anonymous union, we create

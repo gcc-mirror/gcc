@@ -1,5 +1,9 @@
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/format/attr-5.c, gcc.dg/format/attr-6.c: New tests.
+
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* g++.dg/warn/format1.C: New test.
 
 2001-10-01  Neil Booth  <neil@daikokuya.demon.co.uk>

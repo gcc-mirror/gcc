@@ -1,3 +1,11 @@
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c (init_decl_processing): Don't call
+	init_function_format_info.  Initialize lang_attribute_table
+	earlier.
+	(builtin_function): Call decl_attributes.
+	(insert_default_attributes): New.
+
 2001-10-01  Jason Merrill  <jason_merrill@redhat.com>
 
 	* decl.c (grokdeclarator): Copy array typedef handling from C

@@ -503,13 +503,13 @@ extern const char *fname_as_string		PARAMS ((int));
 extern tree fname_decl				PARAMS ((unsigned, tree));
 extern const char *fname_string			PARAMS ((unsigned));
 
-extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 extern void set_Wformat				PARAMS ((int));
 extern tree handle_format_attribute		PARAMS ((tree *, tree, tree,
 							 int, bool *));
 extern tree handle_format_arg_attribute		PARAMS ((tree *, tree, tree,
 							 int, bool *));
+extern void c_common_insert_default_attributes	PARAMS ((tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 extern tree c_sizeof				PARAMS ((tree));
 extern tree c_alignof				PARAMS ((tree));

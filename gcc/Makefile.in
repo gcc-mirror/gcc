@@ -1249,7 +1249,7 @@ s-under: $(GCC_PASSES)
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
-	$(EXPR_H) $(TM_P_H) builtin-types.def $(TARGET_H)
+	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H)
 
 # A file used by all variants of C and some other languages.
 
