@@ -717,3 +717,6 @@ enum { SIGNAL_FRAMESIZE = 64 };
   } while (0)
 
 #endif
+
+
+#define OS_MISSING_POWERPC64 !TARGET_64BIT
