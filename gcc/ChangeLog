@@ -1,3 +1,11 @@
+2004-12-01  Jeff Law  <law@redhat.com>
+
+        * tree.h (save_eptr, save_filt): Now file scoped statics.
+        (honor_protect_cleanup_actions): Only create save_eptr and
+        save_filt if they do not already exist.
+        (lower_eh_constructs): Wipe all knowledge of save_eptr and
+        save_filt before returning.
+
 2004-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (remove_phi_arg_num): Fix a comment.
