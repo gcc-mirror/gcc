@@ -34,7 +34,7 @@
 
 ;; Attribute for cpu type.
 ;; These must match the values for enum processor_type in sparc.h.
-(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,sparclet,90c701,v8plus,v9,ultrasparc"
+(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,sparclet,tsc701,v8plus,v9,ultrasparc"
   (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.
@@ -255,22 +255,22 @@
 (define_function_unit "fp_mds" 1 0
   (and (eq_attr "type" "imul")     (eq_attr "cpu" "supersparc")) 12 12)
 
-;; ----- sparclet 90c701 scheduling
-;; The 90c701 issues 1 insn per cycle.
+;; ----- sparclet tsc701 scheduling
+;; The tsc701 issues 1 insn per cycle.
 ;; Results may be written back out of order.
 
 ;; Loads take 2 extra cycles to complete and 4 can be buffered at a time.
-(define_function_unit "s90c701_load" 4 1
-  (and (eq_attr "type" "load")          (eq_attr "cpu" "90c701")) 3 1)
+(define_function_unit "tsc701_load" 4 1
+  (and (eq_attr "type" "load")          (eq_attr "cpu" "tsc701")) 3 1)
 ;; Stores take 2(?) extra cycles to complete.
 ;; It is desirable to not have any memory operation in the following 2 cycles.
 ;; (??? or 2 memory ops in the case of std).
-(define_function_unit "s90c701_store" 1 0
-  (and (eq_attr "type" "store")		(eq_attr "cpu" "90c701")) 3 3
+(define_function_unit "tsc701_store" 1 0
+  (and (eq_attr "type" "store")		(eq_attr "cpu" "tsc701")) 3 3
   [(eq_attr "type" "load,store")])
 ;; The multiply unit has a latency of 5.
-(define_function_unit "s90c701_mul" 1 0
-  (and (eq_attr "type" "imul")		(eq_attr "cpu" "90c701")) 5 5)
+(define_function_unit "tsc701_mul" 1 0
+  (and (eq_attr "type" "imul")		(eq_attr "cpu" "tsc701")) 5 5)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
