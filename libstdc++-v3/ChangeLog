@@ -1,4 +1,12 @@
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* bits/std_fstream.h: Formatting tweaks.
+	* testsuite/27_io/ofstream_members.cc: New file.
+	* testsuite/27_io/ofstream_members-1.tst: New file.
+	* testsuite/27_io/ifstream_members.cc: New file.
+	* testsuite/27_io/ifstream_members-1.tst: New file.
+
+2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
             Ulrich Drepper  <drepper@cygnus.com>
 	
 	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Add -D_GNU_SOURCE, so

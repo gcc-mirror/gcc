@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -291,14 +291,14 @@ namespace std {
 	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
       { 
 	if (!rdbuf()->open(__s, __mode | ios_base::out))
-	  this->setstate (ios_base::failbit); 
+	  this->setstate(ios_base::failbit); 
       }
 
       void 
       close(void)
       { 
 	if (!rdbuf()->close())
-	  setstate (ios_base::failbit); 
+	  setstate(ios_base::failbit); 
       }
     };
 
