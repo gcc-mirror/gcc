@@ -2163,6 +2163,7 @@ extern char *parm_as_string			PROTO((int, int));
 extern char *op_as_string			PROTO((enum tree_code, int));
 extern char *assop_as_string			PROTO((enum tree_code, int));
 extern char *cv_as_string			PROTO((tree, int));
+extern char *lang_decl_name			PROTO((tree, int));
 
 /* in except.c */
 extern void init_exception_processing		PROTO((void));
@@ -2410,7 +2411,7 @@ extern tree function_arg_chain			PROTO((tree));
 extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
 extern int is_aggr_type_2			PROTO((tree, tree));
 extern void message_2_types			PROTO((void (*)(), char *, tree, tree));
-extern char *lang_printable_name		PROTO((tree));
+extern char *lang_printable_name		PROTO((tree, int));
 extern tree build_exception_variant		PROTO((tree, tree));
 extern tree copy_to_permanent			PROTO((tree));
 extern void print_lang_statistics		PROTO((void));

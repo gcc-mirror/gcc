@@ -1486,6 +1486,41 @@ decl_as_string (decl, v)
   return (char *)obstack_base (&scratch_obstack);
 }
 
+/* Generate the three forms of printable names for lang_printable_name.  */
+
+char *
+lang_decl_name (decl, v)
+     tree decl;
+     int v;
+{
+  if (v >= 2)
+    return decl_as_string (decl, 1);
+
+  OB_INIT ();
+
+  if (v == 1 && DECL_CONTEXT (decl)
+      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+    {
+      tree cname;
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	cname = DECL_CLASS_CONTEXT (decl);
+      else
+	cname = DECL_CONTEXT (decl);
+      dump_type (cname, 0);
+      OB_PUTC2 (':', ':');
+    }
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    dump_function_name (decl);
+  else
+    dump_decl (DECL_NAME (decl), 0);
+
+  OB_FINISH ();
+
+  return (char *)obstack_base (&scratch_obstack);
+}
+  
+
 char *
 cp_file_of (t)
      tree t;

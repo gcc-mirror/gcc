@@ -5787,8 +5787,11 @@ build_modify_expr (lhs, modifycode, rhs)
       {
 	tree inner_lhs = TREE_OPERAND (lhs, 0);
 	tree result;
-	if (! lvalue_p (lhs) && pedantic)
-	  pedwarn ("cast to non-reference type used as lvalue");
+
+	/* WP 5.4.1:  The result is an lvalue if T is a reference type,
+	   otherwise the result is an rvalue.   */
+	if (! lvalue_p (lhs))
+	  pedwarn ("ANSI C++ forbids cast to non-reference type used as lvalue");
 
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    convert (TREE_TYPE (inner_lhs),

@@ -5092,6 +5092,10 @@ build_over_call (fn, convs, args, flags)
 
   converted_args = nreverse (converted_args);
 
+  /* [class.copy]: the copy constructor is implicitly defined even if the
+     implementation  elided  its  use.  */
+  mark_used (fn);
+
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
   if (DECL_CONSTRUCTOR_P (fn)
@@ -5154,8 +5158,6 @@ build_over_call (fn, convs, args, flags)
       TREE_SIDE_EFFECTS (val) = 1;
       return val;
     }
-
-  mark_used (fn);
 
   if (DECL_CONTEXT (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
     return build_signature_method_call (fn, converted_args);

@@ -1,3 +1,33 @@
+Thu Feb 20 15:12:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): Call mark_used before trying to elide
+	the call.
+
+	* decl.c (implicitly_declare): Don't set DECL_ARTIFICIAL.
+
+Wed Feb 19 11:18:53 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (build_modify_expr): Always pedwarn for a cast to
+	non-reference used as an lvalue.
+
+Wed Feb 19 10:35:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Convert from 0 to a pmf properly.
+
+Tue Feb 18 15:40:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (handler): Fix template typo.
+
+Sun Feb 16 02:12:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (lang_decl_name): New fn.
+	* tree.c (lang_printable_name): Use it.
+
+Fri Feb 14 16:57:05 1997  Mike Stump  <mrs@cygnus.com>
+
+	* g++spec.c: Include config.h so that we can catch bzero #defines
+	from the config file.
+
 Tue Feb 11 13:50:48 1997  Mike Stump  <mrs@cygnus.com>
 
 	* new1.cc: Include a declaration for malloc, to avoid warning, and

@@ -1385,8 +1385,9 @@ message_2_types (pfn, s, type1, type2)
 #define PRINT_RING_SIZE 4
 
 char *
-lang_printable_name (decl)
+lang_printable_name (decl, v)
      tree decl;
+     int v;
 {
   static tree decl_ring[PRINT_RING_SIZE];
   static char *print_ring[PRINT_RING_SIZE];
@@ -1394,9 +1395,10 @@ lang_printable_name (decl)
   int i;
 
   /* Only cache functions.  */
-  if (TREE_CODE (decl) != FUNCTION_DECL
+  if (v < 2
+      || TREE_CODE (decl) != FUNCTION_DECL
       || DECL_LANG_SPECIFIC (decl) == 0)
-    return decl_as_string (decl, 1);
+    return lang_decl_name (decl, v);
 
   /* See if this print name is lying around.  */
   for (i = 0; i < PRINT_RING_SIZE; i++)
@@ -1420,16 +1422,8 @@ lang_printable_name (decl)
   if (print_ring[ring_counter])
     free (print_ring[ring_counter]);
 
-  {
-    int print_ret_type_p
-      = (!DECL_CONSTRUCTOR_P (decl)
-	 && !DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)));
-
-    char *name = (char *)decl_as_string (decl, print_ret_type_p);
-    print_ring[ring_counter] = (char *)malloc (strlen (name) + 1);
-    strcpy (print_ring[ring_counter], name);
-    decl_ring[ring_counter] = decl;
-  }
+  print_ring[ring_counter] = xstrdup (lang_decl_name (decl, v));
+  decl_ring[ring_counter] = decl;
   return print_ring[ring_counter];
 }
 

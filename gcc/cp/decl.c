@@ -3583,7 +3583,6 @@ implicitly_declare (functionid)
 
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
 
   /* ANSI standard says implicit declarations are in the innermost block.
      So we record the decl in the standard fashion.  */
