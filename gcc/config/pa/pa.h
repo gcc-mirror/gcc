@@ -575,6 +575,8 @@ int lhs_lshift_cint_operand ();
    /* On 1.0 machines, don't allow wide non-fp modes in fp regs. */	\
    : !TARGET_PA_11 && FP_REGNO_P (REGNO)				\
      ? GET_MODE_SIZE (MODE) <= 4 || GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+   : FP_REGNO_P (REGNO)							\
+     ? GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0			\
    /* Make wide modes be in aligned registers. */			\
    : GET_MODE_SIZE (MODE) <= UNITS_PER_WORD || ((REGNO) & 1) == 0)
 
