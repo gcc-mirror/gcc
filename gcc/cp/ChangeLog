@@ -1,5 +1,8 @@
 Thu Mar 19 02:27:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (tsubst_copy, CONST_DECL): Don't bother tsubsting
+	a function context.
+
 	* decl.c (store_bindings): Use free_binding_vecs.
 	(pop_from_top_level): Likewise.
 
