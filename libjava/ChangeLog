@@ -1,3 +1,8 @@
+2002-01-28  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (class _Jv_BytecodeVerifier) [op_invokeinterface]:
+	`nargs' byte is number of words, not number of arguments.
+
 2002-01-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/event/MouseEvent.java (modifiers): Removed field.

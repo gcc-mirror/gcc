@@ -2653,16 +2653,15 @@ private:
 					 opcode == op_invokeinterface,
 					 &method_name,
 					 &method_signature);
-	      int arg_count = _Jv_count_arguments (method_signature);
+	      // NARGS is only used when we're processing
+	      // invokeinterface.  It is simplest for us to compute it
+	      // here and then verify it later.
+	      int nargs = 0;
 	      if (opcode == op_invokeinterface)
 		{
-		  int nargs = get_byte ();
-		  if (nargs == 0)
-		    verify_fail ("too few arguments to invokeinterface");
+		  nargs = get_byte ();
 		  if (get_byte () != 0)
 		    verify_fail ("invokeinterface dummy byte is wrong");
-		  if (nargs - 1 != arg_count)
-		    verify_fail ("wrong argument count for invokeinterface");
 		}
 
 	      bool is_init = false;
@@ -2676,10 +2675,20 @@ private:
 		verify_fail ("can't invoke method starting with `<'");
 
 	      // Pop arguments and check types.
+	      int arg_count = _Jv_count_arguments (method_signature);
 	      type arg_types[arg_count];
 	      compute_argument_types (method_signature, arg_types);
 	      for (int i = arg_count - 1; i >= 0; --i)
-		pop_type (arg_types[i]);
+		{
+		  // This is only used for verifying the byte for
+		  // invokeinterface.
+		  nargs -= arg_types[i].depth ();
+		  pop_type (arg_types[i]);
+		}
+
+	      if (opcode == op_invokeinterface
+		  && nargs != 1)
+		verify_fail ("wrong argument count for invokeinterface");
 
 	      if (opcode != op_invokestatic)
 		{
