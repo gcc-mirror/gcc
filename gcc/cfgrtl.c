@@ -1542,7 +1542,7 @@ verify_flow_info ()
 	  break;
       if (!x)
 	{
-	  error ("End insn %d for block %d not found in the insn stream.",
+	  error ("end insn %d for block %d not found in the insn stream",
 		 INSN_UID (end), bb->index);
 	  err = 1;
 	}
@@ -1556,7 +1556,7 @@ verify_flow_info ()
 	     used by other passes.  */
 	  if (bb_info[INSN_UID (x)] != NULL)
 	    {
-	      error ("Insn %d is in multiple basic blocks (%d and %d)",
+	      error ("insn %d is in multiple basic blocks (%d and %d)",
 		     INSN_UID (x), bb->index, bb_info[INSN_UID (x)]->index);
 	      err = 1;
 	    }
@@ -1567,7 +1567,7 @@ verify_flow_info ()
 	}
       if (!x)
 	{
-	  error ("Head insn %d for block %d not found in the insn stream.",
+	  error ("head insn %d for block %d not found in the insn stream",
 		 INSN_UID (head), bb->index);
 	  err = 1;
 	}
@@ -1614,7 +1614,7 @@ verify_flow_info ()
 		    {
 		      error ("verify_flow_info: Incorrect fallthru %i->%i",
 			     e->src->index, e->dest->index);
-		      fatal_insn ("Wrong insn in the fallthru edge", insn);
+		      fatal_insn ("wrong insn in the fallthru edge", insn);
 		      err = 1;
 		    }
 	    }
@@ -1643,7 +1643,7 @@ verify_flow_info ()
 		|| (GET_CODE (insn) == NOTE
 		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
 		{
-		  error ("Missing barrier after block %i", bb->index);
+		  error ("missing barrier after block %i", bb->index);
 		  err = 1;
 		  break;
 		}
@@ -1654,7 +1654,7 @@ verify_flow_info ()
 	{
 	  if (e->dest != bb)
 	    {
-	      error ("Basic block %d pred edge is corrupted", bb->index);
+	      error ("basic block %d pred edge is corrupted", bb->index);
 	      fputs ("Predecessor: ", stderr);
 	      dump_edge_info (stderr, e, 0);
 	      fputs ("\nSuccessor: ", stderr);
@@ -1670,10 +1670,10 @@ verify_flow_info ()
 	   {
 	     debug_rtx (x);
 	     if (! BLOCK_FOR_INSN (x))
-	       error ("Insn %d is inside basic block %d but block_for_insn is NULL",
+	       error ("insn %d is inside basic block %d but block_for_insn is NULL",
 		      INSN_UID (x), bb->index);
 	     else
-	       error ("Insn %d is inside basic block %d but block_for_insn is %i",
+	       error ("insn %d is inside basic block %d but block_for_insn is %i",
 		      INSN_UID (x), bb->index, BLOCK_FOR_INSN (x)->index);
 	     err = 1;
 	   }
@@ -1722,8 +1722,8 @@ verify_flow_info ()
 		  || GET_CODE (x) == CODE_LABEL
 		  || GET_CODE (x) == BARRIER)
 		{
-		  error ("In basic block %d:", bb->index);
-		  fatal_insn ("Flow control insn inside a basic block", x);
+		  error ("in basic block %d:", bb->index);
+		  fatal_insn ("flow control insn inside a basic block", x);
 		}
 
 	      x = NEXT_INSN (x);
@@ -1743,7 +1743,7 @@ verify_flow_info ()
   for (i = -2; i < n_basic_blocks; ++i)
     if (edge_checksum[i + 2])
       {
-	error ("Basic block %i edge lists are corrupted", i);
+	error ("basic block %i edge lists are corrupted", i);
 	err = 1;
       }
 
@@ -1757,7 +1757,7 @@ verify_flow_info ()
 	  basic_block bb = NOTE_BASIC_BLOCK (x);
 	  num_bb_notes++;
 	  if (bb->index != last_bb_num_seen + 1)
-	    internal_error ("Basic blocks not numbered consecutively.");
+	    internal_error ("basic blocks not numbered consecutively.");
 
 	  last_bb_num_seen = bb->index;
 	}
@@ -1784,7 +1784,7 @@ verify_flow_info ()
 	      break;
 
 	    default:
-	      fatal_insn ("Insn outside basic block", x);
+	      fatal_insn ("insn outside basic block", x);
 	    }
 	}
 
@@ -1792,7 +1792,7 @@ verify_flow_info ()
 	  && GET_CODE (x) == JUMP_INSN
 	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (NEXT_INSN (x) && GET_CODE (NEXT_INSN (x)) == BARRIER))
-	    fatal_insn ("Return not followed by barrier", x);
+	    fatal_insn ("return not followed by barrier", x);
 
       x = NEXT_INSN (x);
     }

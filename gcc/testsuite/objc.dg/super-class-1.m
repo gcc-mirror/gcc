@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 
 @interface class0 : supclass0
-@end  /* { dg-error "Cannot find interface declaration for .*, superclass" } */
+@end  /* { dg-error "annot find interface declaration for .*, superclass" } */

@@ -4686,7 +4686,7 @@ tree_check_failed (node, code, file, line, function)
      int line;
      const char *function;
 {
-  internal_error ("Tree check: expected %s, have %s in %s, at %s:%d",
+  internal_error ("tree check: expected %s, have %s in %s, at %s:%d",
 		  tree_code_name[code], tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
 }
@@ -4703,7 +4703,7 @@ tree_class_check_failed (node, cl, file, line, function)
      const char *function;
 {
   internal_error
-    ("Tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d",
+    ("tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d",
      cl, TREE_CODE_CLASS (TREE_CODE (node)),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }

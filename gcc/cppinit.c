@@ -1521,7 +1521,7 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, out_fname) = arg;
 	  else
 	    {
-	      cpp_fatal (pfile, "Output filename specified twice");
+	      cpp_fatal (pfile, "output filename specified twice");
 	      return argc;
 	    }
 	  break;

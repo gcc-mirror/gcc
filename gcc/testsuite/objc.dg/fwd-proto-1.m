@@ -10,12 +10,12 @@ typedef struct objc_object { struct objc_class *class_pointer; } *id;
 
 @protocol Foo 
 - (id <Bar>)someMethod;
-- (id <Baz>)anotherMethod; /* { dg-error "Cannot find protocol declaration" } */
+- (id <Baz>)anotherMethod; /* { dg-error "annot find protocol declaration" } */
 @end
 
 @protocol Bar <Boo>
 - (id <Foo>)someOtherMethod;
-- (id <Baz>)anotherMethod; /* { dg-error "Cannot find protocol declaration" } */
+- (id <Baz>)anotherMethod; /* { dg-error "annot find protocol declaration" } */
 - (id <Boo>)yetAnotherMethod;
 @end
 

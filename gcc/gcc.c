@@ -1088,7 +1088,7 @@ translate_options (argcp, argvp)
 			if (strlen (option_map[k].name) >= arglen
 			    && !strncmp (argv[i], option_map[k].name, arglen))
 			  {
-			    error ("Ambiguous abbreviation %s", argv[i]);
+			    error ("ambiguous abbreviation %s", argv[i]);
 			    break;
 			  }
 
@@ -1115,7 +1115,7 @@ translate_options (argcp, argvp)
 
 		  else if (strchr (arginfo, '*') != 0)
 		    {
-		      error ("Incomplete `%s' option", option_map[j].name);
+		      error ("incomplete `%s' option", option_map[j].name);
 		      break;
 		    }
 
@@ -1126,7 +1126,7 @@ translate_options (argcp, argvp)
 			{
 			  if (i + 1 == argc)
 			    {
-			      error ("Missing argument to `%s' option",
+			      error ("missing argument to `%s' option",
 				     option_map[j].name);
 			      break;
 			    }
@@ -1139,7 +1139,7 @@ translate_options (argcp, argvp)
 		  else if (strchr (arginfo, 'o') == 0)
 		    {
 		      if (arg != 0)
-			error ("Extraneous argument to `%s' option",
+			error ("extraneous argument to `%s' option",
 			       option_map[j].name);
 		      arg = 0;
 		    }
@@ -3886,11 +3886,11 @@ process_command (argc, argv)
 	{
 	  /* -save-temps overrides -pipe, so that temp files are produced */
 	  if (save_temps_flag)
-	    error ("Warning: -pipe ignored because -save-temps specified");
+	    error ("warning: -pipe ignored because -save-temps specified");
           /* -time overrides -pipe because we can't get correct stats when
 	     multiple children are running at once.  */
 	  else if (report_times)
-	    error ("Warning: -pipe ignored because -time specified");
+	    error ("warning: -pipe ignored because -time specified");
 	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
@@ -4921,7 +4921,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      /* Catch the case where a spec string contains something like
 		 '%{foo:%*}'.  ie there is no * in the pattern on the left
 		 hand side of the :.  */
-	      error ("Spec failure: '%%*' has not been initialised by pattern match");
+	      error ("spec failure: '%%*' has not been initialised by pattern match");
 	    break;
 
 	    /* Process a string found as the value of a spec given by name.
@@ -4930,7 +4930,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       %[...] modifies -D options the way %P does;
 	       %(...) uses the spec unmodified.  */
 	  case '[':
-	    error ("Warning: use of obsolete %%[ operator in specs");
+	    error ("warning: use of obsolete %%[ operator in specs");
 	  case '(':
 	    {
 	      const char *name = p;
@@ -5073,7 +5073,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  default:
-	    error ("Spec failure: Unrecognised spec option '%c'", c);
+	    error ("spec failure: unrecognised spec option '%c'", c);
 	    break;
 	  }
 	break;
@@ -5183,7 +5183,7 @@ next_member:
 	      else if (*q == '}')
 		count--;
 	      else if (*q == 0)
-		fatal ("Mismatched braces in specs");
+		fatal ("mismatched braces in specs");
 	      q++;
 	    }
 	  endbody = q;
@@ -5963,7 +5963,7 @@ main (argc, argv)
     }
 
   if (n_infiles == added_libraries)
-    fatal ("No input files");
+    fatal ("no input files");
 
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
@@ -6222,7 +6222,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
 void
 fancy_abort ()
 {
-  fatal ("Internal gcc abort.");
+  fatal ("internal gcc abort.");
 }
 
 /* Output an error message and exit */

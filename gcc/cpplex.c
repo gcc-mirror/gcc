@@ -1376,7 +1376,7 @@ cpp_spell_token (pfile, token, buffer)
       break;
 
     case SPELL_NONE:
-      cpp_ice (pfile, "Unspellable token %s", TOKEN_NAME (token));
+      cpp_ice (pfile, "unspellable token %s", TOKEN_NAME (token));
       break;
     }
 

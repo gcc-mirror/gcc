@@ -58,7 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "debug.h"
 #include "target.h"
-#include "varray.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -482,8 +481,6 @@ static int print_struct_values = 0;
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-static varray_type deferred_fns;
-
 /* Post-switch processing.  */
 static void
 objc_post_options ()
@@ -610,36 +607,13 @@ objc_init (filename)
 
   objc_act_parse_init ();
 
-  VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-  ggc_add_tree_varray_root (&deferred_fns, 1);
-
   return filename;
-}
-
-/* Register a function tree, so that its optimization and conversion
-   to RTL is only done at the end of the compilation.  */
-
-int
-defer_fn (fn)
-     tree fn;
-{
-  VARRAY_PUSH_TREE (deferred_fns, fn);
-
-  return 1;
 }
 
 void
 finish_file ()
 {
-  int i;
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-    /* Don't output the same function twice.  We may run into such
-       situations when an extern inline function is later given a
-       non-extern-inline definition.  */
-    if (! TREE_ASM_WRITTEN (VARRAY_TREE (deferred_fns, i)))
-      c_expand_deferred_function (VARRAY_TREE (deferred_fns, i));
-  VARRAY_FREE (deferred_fns);
+  c_objc_common_finish_file ();
 
   finish_objc ();		/* Objective-C finalization */
 
@@ -1010,12 +984,12 @@ get_object_reference (protocols)
     {
       type = TREE_TYPE (type_decl);
       if (TYPE_MAIN_VARIANT (type) != id_type)
-	warning ("Unexpected type for `id' (%s)",
+	warning ("unexpected type for `id' (%s)",
 		 gen_declaration (type, errbuf));
     }
   else
     {
-      error ("Undefined type `id', please import <objc/objc.h>");
+      error ("undefined type `id', please import <objc/objc.h>");
       return error_mark_node;
     }
 
@@ -1089,7 +1063,7 @@ lookup_and_install_protocols (protocols)
 
       if (!p)
 	{
-	  error ("Cannot find protocol declaration for `%s'",
+	  error ("cannot find protocol declaration for `%s'",
 		 IDENTIFIER_POINTER (ident));
 	  if (prev)
 	    TREE_CHAIN (prev) = TREE_CHAIN (proto);
@@ -1322,7 +1296,7 @@ build_objc_string_object (strings)
 
   if (lookup_interface (constant_string_id) == NULL_TREE)
     {
-      error ("Cannot find interface declaration for `%s'",
+      error ("cannot find interface declaration for `%s'",
 	     IDENTIFIER_POINTER (constant_string_id));
       return error_mark_node;
     }
@@ -1342,7 +1316,7 @@ build_objc_string_object (strings)
       setup_string_decl ();
       if (string_class_decl == NULL_TREE)
 	{
-	  error ("Cannot find reference tag for class `%s'",
+	  error ("cannot find reference tag for class `%s'",
 		 IDENTIFIER_POINTER (constant_string_id));
 	  return error_mark_node;
 	}
@@ -2330,9 +2304,9 @@ objc_declare_alias (alias_ident, class_ident)
      tree class_ident;
 {
   if (is_class_name (class_ident) != class_ident)
-    warning ("Cannot find class `%s'", IDENTIFIER_POINTER (class_ident));
+    warning ("cannot find class `%s'", IDENTIFIER_POINTER (class_ident));
   else if (is_class_name (alias_ident))
-    warning ("Class `%s' already exists", IDENTIFIER_POINTER (alias_ident));
+    warning ("class `%s' already exists", IDENTIFIER_POINTER (alias_ident));
   else
     alias_chain = tree_cons (class_ident, alias_ident, alias_chain);
 }
@@ -2456,14 +2430,14 @@ build_ivar_chain (interface, copy)
       if (!super_interface)
         {
 	  /* fatal did not work with 2 args...should fix */
-	  error ("Cannot find interface declaration for `%s', superclass of `%s'",
+	  error ("cannot find interface declaration for `%s', superclass of `%s'",
 		 IDENTIFIER_POINTER (super_name),
 		 IDENTIFIER_POINTER (my_name));
 	  exit (FATAL_EXIT_CODE);
         }
 
       if (super_interface == interface)
-	fatal_error ("Circular inheritance in interface declaration for `%s'",
+	fatal_error ("circular inheritance in interface declaration for `%s'",
 		     IDENTIFIER_POINTER (super_name));
 
       interface = super_interface;
@@ -5020,7 +4994,7 @@ finish_message_expr (receiver, sel_name, method_params)
 
       if (!method_prototype)
 	{
-	  warning ("cannot find class (factory) method.");
+	  warning ("cannot find class (factory) method");
 	  warning ("return type for `%s' defaults to id",
 		   IDENTIFIER_POINTER (sel_name));
 	}
@@ -5038,7 +5012,7 @@ finish_message_expr (receiver, sel_name, method_params)
 	{
           hash hsh;
 
-	  warning ("method `%s' not implemented by protocol.",
+	  warning ("method `%s' not implemented by protocol",
 		   IDENTIFIER_POINTER (sel_name));
 
           /* Try and find the method signature in the global pools.  */
@@ -5064,7 +5038,7 @@ finish_message_expr (receiver, sel_name, method_params)
       method_prototype = check_duplicates (hsh);
       if (!method_prototype)
 	{
-	  warning ("cannot find method.");
+	  warning ("cannot find method");
 	  warning ("return type for `%s' defaults to id",
 		   IDENTIFIER_POINTER (sel_name));
 	}
@@ -5238,7 +5212,7 @@ build_protocol_expr (protoname)
 
   if (!p)
     {
-      error ("Cannot find protocol declaration for `%s'",
+      error ("cannot find protocol declaration for `%s'",
 	     IDENTIFIER_POINTER (protoname));
       return error_mark_node;
     }
@@ -5544,13 +5518,13 @@ add_class_method (class, method)
   else
     {
       if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
-	error ("duplicate definition of class method `%s'.",
+	error ("duplicate definition of class method `%s'",
 	       IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
       else
         {
 	  /* Check types; if different, complain.  */
 	  if (!comp_proto_with_proto (method, mth))
-	    error ("duplicate declaration of class method `%s'.",
+	    error ("duplicate declaration of class method `%s'",
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
         }
     }
@@ -5586,13 +5560,13 @@ add_instance_method (class, method)
   else
     {
       if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
-	error ("duplicate definition of instance method `%s'.",
+	error ("duplicate definition of instance method `%s'",
 	       IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
       else
         {
 	  /* Check types; if different, complain.  */
 	  if (!comp_proto_with_proto (method, mth))
-	    error ("duplicate declaration of instance method `%s'.",
+	    error ("duplicate declaration of instance method `%s'",
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (mth)));
         }
     }
@@ -5743,7 +5717,7 @@ is_public (expr, identifier)
 	{
 	  if (!lookup_interface (TYPE_NAME (basetype)))
 	    {
-	      error ("Cannot find interface declaration for `%s'",
+	      error ("cannot find interface declaration for `%s'",
 		     IDENTIFIER_POINTER (TYPE_NAME (basetype)));
 	      return 0;
 	    }
@@ -6072,7 +6046,7 @@ start_class (code, class_name, super_name, protocol_list)
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
-	  warning ("Cannot find interface declaration for `%s'",
+	  warning ("cannot find interface declaration for `%s'",
 		   IDENTIFIER_POINTER (class_name));
 	  add_class (implementation_template = objc_implementation_context);
         }
@@ -6121,7 +6095,7 @@ start_class (code, class_name, super_name, protocol_list)
 
       if (!(class_category_is_assoc_with = lookup_interface (class_name)))
 	{
-	  error ("Cannot find interface declaration for `%s'",
+	  error ("cannot find interface declaration for `%s'",
 		 IDENTIFIER_POINTER (class_name));
 	  exit (FATAL_EXIT_CODE);
 	}
@@ -6157,7 +6131,7 @@ start_class (code, class_name, super_name, protocol_list)
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
-	  error ("Cannot find interface declaration for `%s'",
+	  error ("cannot find interface declaration for `%s'",
 		 IDENTIFIER_POINTER (class_name));
 	  exit (FATAL_EXIT_CODE);
         }

@@ -1820,7 +1820,7 @@ add_string (vp, hash_tbl, start, end_p1, ret_hash)
   symint_t hi;
 
   if (len >= (Ptrdiff_t) PAGE_USIZE)
-    fatal ("String too big (%ld bytes)", (long) len);
+    fatal ("string too big (%ld bytes)", (long) len);
 
   hash_ptr = hash_string (start, len, hash_tbl, &hi);
   if (hash_ptr == (shash_t *) 0)
@@ -2457,7 +2457,7 @@ add_procedure (func_start, func_end_p1)
     }
 
   if (cur_oproc_ptr == (PDR *) 0)
-    error ("Did not find a PDR block for %.*s",
+    error ("did not find a PDR block for %.*s",
 	   (int) (func_end_p1 - func_start), func_start);
 
   /* Determine the start of symbols.  */
@@ -2526,7 +2526,7 @@ add_file (file_start, file_end_p1)
 		  (shash_t **) 0);
 
       if (file_end_p1 - file_start > (long) PAGE_USIZE-2)
-	fatal ("Filename goes over one page boundary");
+	fatal ("filename goes over one page boundary");
 
       /* Push the start of the filename. We assume that the filename
          will be stored at string offset 1.  */
@@ -2713,7 +2713,7 @@ read_line ()
 	}
 
       else if (ch == '\0')
-	error ("Null character found in input");
+	error ("null character found in input");
 
       else if (!comment_p)
 	{
@@ -2775,14 +2775,14 @@ parse_begin (start)
 
   if (hash_ptr == (shash_t *) 0)
     {
-      error ("Label %.*s not found for #.begin",
+      error ("label %.*s not found for #.begin",
 	     (int) (end_p1 - start), start);
       return;
     }
 
   if (cur_oproc_begin == (SYMR *) 0)
     {
-      error ("Procedure table %.*s not found for #.begin",
+      error ("procedure table %.*s not found for #.begin",
 	     (int) (end_p1 - start), start);
       return;
     }
@@ -2827,13 +2827,13 @@ parse_bend (start)
 
   if (hash_ptr == (shash_t *) 0)
     {
-      error ("Label %.*s not found for #.bend", (int) (end_p1 - start), start);
+      error ("label %.*s not found for #.bend", (int) (end_p1 - start), start);
       return;
     }
 
   if (cur_oproc_begin == (SYMR *) 0)
     {
-      error ("Procedure table %.*s not found for #.bend",
+      error ("procedure table %.*s not found for #.bend",
 	     (int) (end_p1 - start), start);
       return;
     }
@@ -3289,7 +3289,7 @@ parse_def (name_start)
 	{
 	  if (tag_start == (char *) 0)
 	    {
-	      error ("No tag specified for %.*s",
+	      error ("no tag specified for %.*s",
 		     (int) (name_end_p1 - name_start),
 		     name_start);
 	      return;
@@ -3480,7 +3480,7 @@ parse_end (start)
     value = cur_oproc_end->value;
 
   else
-    error ("Cannot find .end block for %.*s",
+    error ("cannot find .end block for %.*s",
 	   (int) (end_func_p1 - start_func), start_func);
 
   (void) add_local_symbol (start_func, end_func_p1,
@@ -3544,13 +3544,13 @@ parse_file (start)
       || (start_name = strchr (p, '"')) == (char *) 0
       || (end_name_p1 = strrchr (++start_name, '"')) == (char *) 0)
     {
-      error ("Invalid .file directive");
+      error ("invalid .file directive");
       return;
     }
 
   if (cur_proc_ptr != (PDR *) 0)
     {
-      error ("No way to handle .file within .ent/.end section");
+      error ("no way to handle .file within .ent/.end section");
       return;
     }
 
@@ -3625,7 +3625,7 @@ parse_stabs_common (string_start, string_end, rest)
   /* Read code from stabs.  */
   if (!ISDIGIT (*rest))
     {
-      error ("Invalid .stabs/.stabn directive, code is non-numeric");
+      error ("invalid .stabs/.stabn directive, code is non-numeric");
       return;
     }
 
@@ -3645,7 +3645,7 @@ parse_stabs_common (string_start, string_end, rest)
       /* Skip ,0, */
       if (p[0] != ',' || p[1] != '0' || p[2] != ',' || !ISDIGIT (p[3]))
 	{
-	  error ("Invalid line number .stabs/.stabn directive");
+	  error ("invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
@@ -3653,14 +3653,14 @@ parse_stabs_common (string_start, string_end, rest)
       ch = *++p;
       if (p[-1] != ',' || ISDIGIT (ch) || !IS_ASM_IDENT (ch))
 	{
-	  error ("Invalid line number .stabs/.stabn directive");
+	  error ("invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
       dummy_symr.index = code;
       if (dummy_symr.index != code)
 	{
-	  error ("Line number (%lu) for .stabs/.stabn directive cannot fit in index field (20 bits)",
+	  error ("line number (%lu) for .stabs/.stabn directive cannot fit in index field (20 bits)",
 		 code);
 
 	  return;
@@ -3674,13 +3674,13 @@ parse_stabs_common (string_start, string_end, rest)
       if (shash_ptr == (shash_t *) 0
 	  || (sym_ptr = shash_ptr->sym_ptr) == (SYMR *) 0)
 	{
-	  error ("Invalid .stabs/.stabn directive, value not found");
+	  error ("invalid .stabs/.stabn directive, value not found");
 	  return;
 	}
 
       if ((st_t) sym_ptr->st != st_Label)
 	{
-	  error ("Invalid line number .stabs/.stabn directive");
+	  error ("invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
@@ -3705,7 +3705,7 @@ parse_stabs_common (string_start, string_end, rest)
       if (!IS_ASM_IDENT (ch) && ch != '-')
 	{
 	failure:
-	  error ("Invalid .stabs/.stabn directive, bad character");
+	  error ("invalid .stabs/.stabn directive, bad character");
 	  return;
 	}
 
@@ -3716,13 +3716,13 @@ parse_stabs_common (string_start, string_end, rest)
 	  value = strtol (p, &p, 0);
 	  if (*p != '\n')
 	    {
-	      error ("Invalid .stabs/.stabn directive, stuff after numeric value");
+	      error ("invalid .stabs/.stabn directive, stuff after numeric value");
 	      return;
 	    }
 	}
       else if (!IS_ASM_IDENT (ch))
 	{
-	  error ("Invalid .stabs/.stabn directive, bad character");
+	  error ("invalid .stabs/.stabn directive, bad character");
 	  return;
 	}
       else
@@ -3754,7 +3754,7 @@ parse_stabs_common (string_start, string_end, rest)
 	      if (shash_ptr == (shash_t *) 0
 		  || shash_ptr->esym_ptr == (EXTR *) 0)
 		{
-		  error ("Invalid .stabs/.stabn directive, value not found");
+		  error ("invalid .stabs/.stabn directive, value not found");
 		  return;
 		}
 	      else
@@ -3780,7 +3780,7 @@ parse_stabs_common (string_start, string_end, rest)
 	      if (((!ISDIGIT (*end_p1)) && (*end_p1 != '-'))
 		  || ((ch != '+') && (ch != '-')))
 		{
-		  error ("Invalid .stabs/.stabn directive, badly formed value");
+		  error ("invalid .stabs/.stabn directive, badly formed value");
 		  return;
 		}
 	      if (ch == '+')
@@ -3790,7 +3790,7 @@ parse_stabs_common (string_start, string_end, rest)
 
 	      if (*p != '\n')
 		{
-		  error ("Invalid .stabs/.stabn directive, stuff after numeric value");
+		  error ("invalid .stabs/.stabn directive, stuff after numeric value");
 		  return;
 		}
 	    }
@@ -3812,7 +3812,7 @@ parse_stabs (start)
 
   if (*start != '"' || end == (const char *) 0 || end[1] != ',')
     {
-      error ("Invalid .stabs directive, no string");
+      error ("invalid .stabs directive, no string");
       return;
     }
 
@@ -4115,7 +4115,7 @@ write_varray (vp, offset, str)
 	pfatal_with_name (object_name);
 
       else if (sys_write != num_write)
-	fatal ("Wrote %d bytes to %s, system returned %d",
+	fatal ("wrote %d bytes to %s, system returned %d",
 	       num_write,
 	       object_name,
 	       sys_write);
@@ -4151,7 +4151,7 @@ write_object ()
     pfatal_with_name (object_name);
 
   else if (sys_write != sizeof (symbolic_header))
-    fatal ("Wrote %d bytes to %s, system returned %d",
+    fatal ("wrote %d bytes to %s, system returned %d",
 	   (int) sizeof (symbolic_header),
 	   object_name,
 	   sys_write);
@@ -4185,7 +4185,7 @@ write_object ()
 	pfatal_with_name (object_name);
 
       else if (sys_write != symbolic_header.cbLine)
-	fatal ("Wrote %ld bytes to %s, system returned %ld",
+	fatal ("wrote %ld bytes to %s, system returned %ld",
 	       (long) symbolic_header.cbLine,
 	       object_name,
 	       sys_write);
@@ -4220,7 +4220,7 @@ write_object ()
 	pfatal_with_name (object_name);
 
       else if (sys_write != num_write)
-	fatal ("Wrote %ld bytes to %s, system returned %ld",
+	fatal ("wrote %ld bytes to %s, system returned %ld",
 	       num_write,
 	       object_name,
 	       sys_write);
@@ -4312,7 +4312,7 @@ write_object ()
 	    pfatal_with_name (object_name);
 
 	  else if (sys_write != sizeof (FDR))
-	    fatal ("Wrote %d bytes to %s, system returned %d",
+	    fatal ("wrote %d bytes to %s, system returned %d",
 		   (int) sizeof (FDR),
 		   object_name,
 		   sys_write);
@@ -4348,7 +4348,7 @@ write_object ()
 	pfatal_with_name (object_name);
 
       else if (sys_write != (long)num_write)
-	fatal ("Wrote %lu bytes to %s, system returned %ld",
+	fatal ("wrote %lu bytes to %s, system returned %ld",
 	       num_write,
 	       object_name,
 	       sys_write);
@@ -4404,7 +4404,7 @@ read_seek (size, offset, str)
 	    pfatal_with_name (obj_in_name);
 
 	  if ((symint_t)sys_read != difference)
-	    fatal ("Wanted to read %lu bytes from %s, system returned %ld",
+	    fatal ("wanted to read %lu bytes from %s, system returned %ld",
 		   (unsigned long) size,
 		   obj_in_name,
 		   sys_read);
@@ -4418,7 +4418,7 @@ read_seek (size, offset, str)
     pfatal_with_name (obj_in_name);
 
   if (sys_read != (long) size)
-    fatal ("Wanted to read %lu bytes from %s, system returned %ld",
+    fatal ("wanted to read %lu bytes from %s, system returned %ld",
 	   (unsigned long) size,
 	   obj_in_name,
 	   sys_read);
@@ -4468,7 +4468,7 @@ copy_object ()
     return;			/* create a .T file sans file header */
 
   else if (sys_read < (int) sizeof (struct filehdr))
-    fatal ("Wanted to read %d bytes from %s, system returned %d",
+    fatal ("wanted to read %d bytes from %s, system returned %d",
 	   (int) sizeof (struct filehdr),
 	   obj_in_name,
 	   sys_read);
@@ -4492,7 +4492,7 @@ copy_object ()
     pfatal_with_name (object_name);
 
   else if (sys_read < (int) sizeof (struct filehdr))
-    fatal ("Wanted to read %d bytes from %s, system returned %d",
+    fatal ("wanted to read %d bytes from %s, system returned %d",
 	   (int) sizeof (struct filehdr),
 	   obj_in_name,
 	   sys_read);
@@ -4570,7 +4570,7 @@ copy_object ()
 
   /* Abort if the symbol table is not last.  */
   if (max_file_offset != stat_buf.st_size)
-    fatal ("Symbol table is not last (symbol table ends at %ld, .o ends at %ld",
+    fatal ("symbol table is not last (symbol table ends at %ld, .o ends at %ld",
 	   max_file_offset,
 	   (long) stat_buf.st_size);
 
@@ -4786,7 +4786,7 @@ copy_object ()
 	pfatal_with_name (obj_in_name);
 
       else if (sys_read != num_write)
-	fatal ("Wanted to read %d bytes from %s, system returned %d",
+	fatal ("wanted to read %d bytes from %s, system returned %d",
 	       num_write,
 	       obj_in_name,
 	       sys_read);
@@ -4796,7 +4796,7 @@ copy_object ()
 	pfatal_with_name (object_name);
 
       else if (sys_write != num_write)
-	fatal ("Wrote %d bytes to %s, system returned %d",
+	fatal ("wrote %d bytes to %s, system returned %d",
 	       num_write,
 	       object_name,
 	       sys_write);
@@ -4827,12 +4827,12 @@ main (argc, argv)
 
 #if !defined(__SABER__) && !defined(lint)
   if (sizeof (efdr_t) > PAGE_USIZE)
-    fatal ("Efdr_t has a sizeof %d bytes, when it should be less than %d",
+    fatal ("efdr_t has a sizeof %d bytes, when it should be less than %d",
 	   (int) sizeof (efdr_t),
 	   (int) PAGE_USIZE);
 
   if (sizeof (page_t) != PAGE_USIZE)
-    fatal ("Page_t has a sizeof %d bytes, when it should be %d",
+    fatal ("page_t has a sizeof %d bytes, when it should be %d",
 	   (int) sizeof (page_t),
 	   (int) PAGE_USIZE);
 
@@ -5608,7 +5608,7 @@ error VPARAMS ((const char *format, ...))
 void
 fancy_abort ()
 {
-  fatal ("Internal abort");
+  fatal ("internal abort");
 }
 
 

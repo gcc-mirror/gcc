@@ -2138,7 +2138,7 @@ build_java_class_ref (type)
 	  break;
 	}
     if (!field)
-      internal_error ("Can't find class$");
+      internal_error ("can't find class$");
     }
 
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);

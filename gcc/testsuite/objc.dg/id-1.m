@@ -3,4 +3,4 @@
 
 typedef int id;
 
-id b; /* { dg-warning "Unexpected type for `id'" } */
+id b; /* { dg-warning "nexpected type for `id'" } */

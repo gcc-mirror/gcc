@@ -948,11 +948,11 @@ check_attr_test (exp, is_const, lineno)
 		  return exp;
 		}
 	      else
-		fatal ("Unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
+		fatal ("unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
 	    }
 
 	  if (is_const && ! attr->is_const)
-	    fatal ("Constant expression uses insn attribute `%s' in EQ_ATTR",
+	    fatal ("constant expression uses insn attribute `%s' in EQ_ATTR",
 		   XSTR (exp, 0));
 
 	  /* Copy this just to make it permanent,
@@ -969,7 +969,7 @@ check_attr_test (exp, is_const, lineno)
 	    {
 	      for (p = XSTR (exp, 1); *p; p++)
 		if (! ISDIGIT (*p))
-		  fatal ("Attribute `%s' takes only numeric values",
+		  fatal ("attribute `%s' takes only numeric values",
 			 XSTR (exp, 0));
 	    }
 	  else
@@ -980,7 +980,7 @@ check_attr_test (exp, is_const, lineno)
 		  break;
 
 	      if (av == NULL)
-		fatal ("Unknown value `%s' for `%s' attribute",
+		fatal ("unknown value `%s' for `%s' attribute",
 		       XSTR (exp, 1), XSTR (exp, 0));
 	    }
 	}
@@ -1775,7 +1775,7 @@ operate_exp (op, left, right)
 	  return newexp;
 	}
       else
-	fatal ("Badly formed attribute value");
+	fatal ("badly formed attribute value");
     }
 
   /* A hack to prevent expand_units from completely blowing up: ORX_OP does
@@ -1827,7 +1827,7 @@ operate_exp (op, left, right)
     }
 
   else
-    fatal ("Badly formed attribute value");
+    fatal ("badly formed attribute value");
   /* NOTREACHED */
   return NULL;
 }
@@ -3305,7 +3305,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	{
 	  i = compute_alternative_mask (exp, AND);
 	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Invalid alternative specified for pattern number %d",
+	    fatal ("invalid alternative specified for pattern number %d",
 		   insn_index);
 
 	  /* If all alternatives are excluded, this is false.  */
@@ -3389,7 +3389,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	{
 	  i = compute_alternative_mask (exp, IOR);
 	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Invalid alternative specified for pattern number %d",
+	    fatal ("invalid alternative specified for pattern number %d",
 		   insn_index);
 
 	  /* If all alternatives are included, this is true.  */
@@ -4745,7 +4745,7 @@ write_test_expr (exp, flags)
       if (XSTR (exp, 1) == NULL || *XSTR (exp, 1) == '\0')
 	{
 	  if (GET_MODE (exp) == VOIDmode)
-	    fatal ("Null MATCH_OPERAND specified as test");
+	    fatal ("null MATCH_OPERAND specified as test");
 	  else
 	    printf ("GET_MODE (operands[%d]) == %smode",
 		    XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
@@ -6065,7 +6065,7 @@ main (argc, argv)
   progname = "genattrtab";
 
   if (argc <= 1)
-    fatal ("No input file name");
+    fatal ("no input file name");
 
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);

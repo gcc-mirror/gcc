@@ -485,7 +485,7 @@ is_predicable (elem)
     return 0;
 
   message_with_line (elem->lineno,
-		     "Unknown value `%s' for `predicable' attribute",
+		     "unknown value `%s' for `predicable' attribute",
 		     value);
   errors = 1;
   return 0;
@@ -508,7 +508,7 @@ identify_predicable_attribute ()
       goto found;
 
   message_with_line (define_cond_exec_queue->lineno,
-		     "Attribute `predicable' not defined");
+		     "attribute `predicable' not defined");
   errors = 1;
   return;
 
@@ -522,7 +522,7 @@ identify_predicable_attribute ()
   if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
       message_with_line (elem->lineno,
-			 "Attribute `predicable' is not a boolean");
+			 "attribute `predicable' is not a boolean");
       errors = 1;
       return;
     }
@@ -539,13 +539,13 @@ identify_predicable_attribute ()
 
     case CONST:
       message_with_line (elem->lineno,
-			 "Attribute `predicable' cannot be const");
+			 "attribute `predicable' cannot be const");
       errors = 1;
       return;
 
     default:
       message_with_line (elem->lineno,
-			 "Attribute `predicable' must have a constant default");
+			 "attribute `predicable' must have a constant default");
       errors = 1;
       return;
     }
@@ -557,7 +557,7 @@ identify_predicable_attribute ()
   else
     {
       message_with_line (elem->lineno,
-			 "Unknown value `%s' for `predicable' attribute",
+			 "unknown value `%s' for `predicable' attribute",
 			 value);
       errors = 1;
     }
@@ -658,7 +658,7 @@ alter_predicate_for_insn (pattern, alt, max_op, lineno)
 	if (n_alternatives (c) != 1)
 	  {
 	    message_with_line (lineno,
-			       "Too many alternatives for operand %d",
+			       "too many alternatives for operand %d",
 			       XINT (pattern, 0));
 	    errors = 1;
 	    return NULL;
@@ -989,7 +989,7 @@ init_md_reader_args (argc, argv)
 		if (argv[i][1] == 'I' && argv[i][2] != 0)
 		  dirtmp->fname = argv[i] + 2;
 		else if (i + 1 == argc)
-		  fatal ("Directory name missing after -I option");
+		  fatal ("directory name missing after -I option");
 		else
 		  dirtmp->fname = argv[++i];
 		if (strlen (dirtmp->fname) > max_include_len)
@@ -997,7 +997,7 @@ init_md_reader_args (argc, argv)
 	      }
 	      break;
 	    default:
-	      fatal ("Invalid option `%s'", argv[i]);
+	      fatal ("invalid option `%s'", argv[i]);
 
 	    }
 	}

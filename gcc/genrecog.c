@@ -2687,7 +2687,7 @@ main (argc, argv)
   memset (&peephole2_tree, 0, sizeof peephole2_tree);
 
   if (argc <= 1)
-    fatal ("No input file name");
+    fatal ("no input file name");
 
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);

@@ -823,7 +823,7 @@ open_xref_file(file)
 
   if (xref_file == NULL)
     {
-      error("Can't create cross-reference file `%s'", xref_name);
+      error("can't create cross-reference file `%s'", xref_name);
       doing_xref = 0;
     }
 }

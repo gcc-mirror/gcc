@@ -85,7 +85,7 @@ varray_check_failed (va, n, file, line, function)
      int line;
      const char *function;
 {
-  internal_error ("Virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d",
+  internal_error ("virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d",
 		  va->name, (unsigned long) va->num_elements, (unsigned long) n,
 		  function, trim_filename (file), line);
 }

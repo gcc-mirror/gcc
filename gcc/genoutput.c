@@ -713,7 +713,7 @@ process_template (d, template)
       if (i != d->n_alternatives)
 	{
 	  message_with_line (d->lineno,
-			     "Wrong number of alternatives in the output template");
+			     "wrong number of alternatives in the output template");
 	  have_error = 1;
 	}
 
@@ -951,7 +951,7 @@ main (argc, argv)
   progname = "genoutput";
 
   if (argc <= 1)
-    fatal ("No input file name");
+    fatal ("no input file name");
 
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);

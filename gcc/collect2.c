@@ -2897,7 +2897,7 @@ if (debug) fprintf (stderr, "found: %s\n", lib_buf);
   if (debug)
     fprintf (stderr, "not found\n");
   else
-    fatal ("Library lib%s not found", name);
+    fatal ("library lib%s not found", name);
   return (NULL);
 }
 

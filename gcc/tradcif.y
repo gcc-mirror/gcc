@@ -274,7 +274,7 @@ parse_number (olen)
   }
 
   if (len != 0) {
-    yyerror ("Invalid number in #if expression");
+    yyerror ("invalid number in #if expression");
     return ERROR;
   }
 
@@ -355,7 +355,7 @@ yylex ()
     yylval.integer.unsignedp = 0;
     c = *lexptr++;
     if (c != '\'') {
-      yyerror ("Invalid character constant in #if");
+      yyerror ("invalid character constant in #if");
       return ERROR;
     }
     
@@ -405,7 +405,7 @@ yylex ()
   }
   
   if (!is_idstart (c)) {
-    yyerror ("Invalid token in expression");
+    yyerror ("invalid token in expression");
     return ERROR;
   }
   
