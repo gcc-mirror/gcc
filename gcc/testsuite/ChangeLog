@@ -1,3 +1,7 @@
+2000-05-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.c-torture/execute/20000519-2.c: New test.
+
 2000-05-19  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/20000519-1.c: Testcase from Ulrich Drepper
