@@ -188,10 +188,9 @@ reconcat VPARAMS ((char *optr, const char *first, ...))
   VA_FIXEDARG (args, char *, optr);
   VA_FIXEDARG (args, const char *, first);
   vconcat_copy (newstr, first, args);
-  VA_CLOSE (args);
-
-  if (optr)
+  if (optr) /* Done before VA_CLOSE so optr stays in scope for K&R C.  */
     free (optr);
+  VA_CLOSE (args);
 
   return newstr;
 }

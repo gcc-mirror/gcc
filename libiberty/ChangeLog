@@ -1,3 +1,7 @@
+2001-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* concat.c (reconcat): Fix for traditional C.
+
 2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* concat.c (reconcat): New function.
