@@ -1,4 +1,4 @@
-/* ShortBufferImpl.java -- 
+/* LongBufferImpl.java -- 
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,26 +36,21 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
-import java.nio.ReadOnlyBufferException;
+package java.nio;
 
 /**
  * This is a Heap memory implementation
  */
-public final class ShortBufferImpl extends ShortBuffer
+public final class LongBufferImpl extends LongBuffer
 {
   private boolean readOnly;
 
-  ShortBufferImpl (int capacity)
+  LongBufferImpl (int capacity)
   {
-    this (new short [capacity], 0, capacity, capacity, 0, -1, false);
+    this (new long [capacity], 0, capacity, capacity, 0, -1, false);
   }
   
-  ShortBufferImpl (short[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  LongBufferImpl (long[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
     super (buffer, offset, capacity, limit, position, mark);
     this.readOnly = readOnly;
@@ -66,22 +61,22 @@ public final class ShortBufferImpl extends ShortBuffer
     return readOnly;
   }
   
-  public ShortBuffer slice ()
+  public LongBuffer slice ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
+    return new LongBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  public ShortBuffer duplicate ()
+  public LongBuffer duplicate ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
+    return new LongBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
   
-  public ShortBuffer asReadOnlyBuffer ()
+  public LongBuffer asReadOnlyBuffer ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
+    return new LongBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
-  public ShortBuffer compact ()
+  public LongBuffer compact ()
   {
     int copied = 0;
     
@@ -101,11 +96,11 @@ public final class ShortBufferImpl extends ShortBuffer
   }
 
   /**
-   * Relative get method. Reads the next <code>short</code> from the buffer.
+   * Relative get method. Reads the next <code>long</code> from the buffer.
    */
-  final public short get ()
+  final public long get ()
   {
-    short result = backing_buffer [position ()];
+    long result = backing_buffer [position ()];
     position (position () + 1);
     return result;
   }
@@ -116,7 +111,7 @@ public final class ShortBufferImpl extends ShortBuffer
    * 
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public ShortBuffer put (short value)
+  final public LongBuffer put (long value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -127,13 +122,13 @@ public final class ShortBufferImpl extends ShortBuffer
   }
   
   /**
-   * Absolute get method. Reads the <code>short</code> at position
+   * Absolute get method. Reads the <code>long</code> at position
    * <code>index</code>.
    *
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
-  final public short get (int index)
+  final public long get (int index)
   {
     return backing_buffer [index];
   }
@@ -146,7 +141,7 @@ public final class ShortBufferImpl extends ShortBuffer
    * than the buffer's limit.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public ShortBuffer put (int index, short value)
+  final public LongBuffer put (int index, long value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();

@@ -1,4 +1,4 @@
-/* FloatViewBufferImpl.java -- 
+/* ShortViewBufferImpl.java -- 
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,66 +36,62 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
+package java.nio;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
-class FloatViewBufferImpl extends FloatBuffer
+class ShortViewBufferImpl extends ShortBuffer
 {
   private boolean readOnly;
   private int offset;
   private ByteBuffer bb;
   private ByteOrder endian;
   
-  public FloatViewBufferImpl (ByteBuffer bb, boolean readOnly)
+  public ShortViewBufferImpl (ByteBuffer bb, boolean readOnly)
   {
-    super (bb.remaining () >> 2, bb.remaining () >> 2, bb.position (), 0);
+    super (bb.remaining () >> 1, bb.remaining () >> 1, bb.position (), 0);
     this.bb = bb;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from FloatByteBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from ShortByteBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public FloatViewBufferImpl (ByteBuffer bb, int offset, int capacity,
+  public ShortViewBufferImpl (ByteBuffer bb, int offset, int capacity,
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
+    super (limit >> 1, limit >> 1, position >> 1, mark >> 1);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from FloatViewBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from ShortViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public float get ()
+  public short get ()
   {
-    float result = bb.getFloat ((position () << 2) + offset);
+    short result = bb.getShort ((position () << 1) + offset);
     position (position () + 1);
     return result;
   }
 
-  public float get (int index)
+  public short get (int index)
   {
-    return bb.getFloat ((index << 2) + offset);
+    return bb.getShort ((index << 1) + offset);
   }
 
-  public FloatBuffer put (float value)
+  public ShortBuffer put (short value)
   {
-    bb.putFloat ((position () << 2) + offset, value);
+    bb.putShort ((position () << 1) + offset, value);
     position (position () + 1);
     return this;
   }
   
-  public FloatBuffer put (int index, float value)
+  public ShortBuffer put (int index, short value)
   {
-    bb.putFloat ((index << 2) + offset, value);
+    bb.putShort ((index << 1) + offset, value);
     return this;
   }
 
-  public FloatBuffer compact ()
+  public ShortBuffer compact ()
   {
     if (position () > 0)
       {
@@ -107,8 +103,8 @@ class FloatViewBufferImpl extends FloatBuffer
               
         for (int i = 0; i < count; i++)
           {
-            bb.putFloat ((i >> 2) + offset,
-                          bb.getFloat (((i + position ()) >> 2) + offset));
+            bb.putShort ((i >> 1) + offset,
+                          bb.getShort (((i + position ()) >> 1) + offset));
           }
 
         position (count);
@@ -118,26 +114,26 @@ class FloatViewBufferImpl extends FloatBuffer
     return this;
   }
   
-  public FloatBuffer duplicate ()
+  public ShortBuffer duplicate ()
   {
     // Create a copy of this object that shares its content
     // FIXME: mark is not correct
-    return new FloatViewBufferImpl (bb, offset, capacity (), limit (),
+    return new ShortViewBufferImpl (bb, offset, capacity (), limit (),
                                      position (), -1, isReadOnly ());
   }
   
-  public FloatBuffer slice ()
+  public ShortBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
+    return new ShortViewBufferImpl (bb, (position () >> 1) + offset,
                                       remaining (), remaining (), 0, -1,
                                      isReadOnly ());
   }
   
-  public FloatBuffer asReadOnlyBuffer ()
+  public ShortBuffer asReadOnlyBuffer ()
   {
     // Create a copy of this object that shares its content and is read-only
-    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
+    return new ShortViewBufferImpl (bb, (position () >> 1) + offset,
                                      remaining (), remaining (), 0, -1, true);
   }
   

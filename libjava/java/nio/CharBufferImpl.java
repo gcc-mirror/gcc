@@ -1,4 +1,4 @@
-/* IntBufferImpl.java -- 
+/* CharBufferImpl.java -- 
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,29 +36,31 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.nio.ReadOnlyBufferException;
+package java.nio;
 
 /**
  * This is a Heap memory implementation
  */
-public final class IntBufferImpl extends IntBuffer
+public final class CharBufferImpl extends CharBuffer
 {
   private boolean readOnly;
 
-  IntBufferImpl (int capacity)
+  CharBufferImpl (int capacity)
   {
-    this (new int [capacity], 0, capacity, capacity, 0, -1, false);
+    this (new char [capacity], 0, capacity, capacity, 0, -1, false);
   }
   
-  IntBufferImpl (int[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  CharBufferImpl (char[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
     super (buffer, offset, capacity, limit, position, mark);
     this.readOnly = readOnly;
+  }
+  
+  public CharBufferImpl (CharBufferImpl copy)
+  {
+    super (copy.capacity (), copy.limit (), copy.position (), 0);
+    backing_buffer = copy.backing_buffer;
+    readOnly = copy.isReadOnly ();
   }
   
   public boolean isReadOnly ()
@@ -66,22 +68,22 @@ public final class IntBufferImpl extends IntBuffer
     return readOnly;
   }
   
-  public IntBuffer slice ()
+  public CharBuffer slice ()
   {
-    return new IntBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
+    return new CharBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  public IntBuffer duplicate ()
+  public CharBuffer duplicate ()
   {
-    return new IntBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
   
-  public IntBuffer asReadOnlyBuffer ()
+  public CharBuffer asReadOnlyBuffer ()
   {
-    return new IntBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
-  public IntBuffer compact ()
+  public CharBuffer compact ()
   {
     int copied = 0;
     
@@ -100,12 +102,23 @@ public final class IntBufferImpl extends IntBuffer
     return false;
   }
 
-  /**
-   * Relative get method. Reads the next <code>int</code> from the buffer.
-   */
-  final public int get ()
+  final public CharSequence subSequence (int start, int end)
   {
-    int result = backing_buffer [position ()];
+    if (start < 0
+        || start > length ()
+        || end < start
+        || end > length ())
+      throw new IndexOutOfBoundsException ();
+
+    return new CharBufferImpl (backing_buffer, array_offset, capacity (), position () + end, position () + start, -1, isReadOnly ());
+  }
+  
+  /**
+   * Relative get method. Reads the next <code>char</code> from the buffer.
+   */
+  final public char get ()
+  {
+    char result = backing_buffer [position ()];
     position (position () + 1);
     return result;
   }
@@ -116,7 +129,7 @@ public final class IntBufferImpl extends IntBuffer
    * 
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public IntBuffer put (int value)
+  final public CharBuffer put (char value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -127,14 +140,18 @@ public final class IntBufferImpl extends IntBuffer
   }
   
   /**
-   * Absolute get method. Reads the <code>int</code> at position
+   * Absolute get method. Reads the <code>char</code> at position
    * <code>index</code>.
    *
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
-  final public int get (int index)
+  final public char get (int index)
   {
+    if (index < 0
+        || index >= limit ())
+      throw new IndexOutOfBoundsException ();
+    
     return backing_buffer [index];
   }
   
@@ -146,8 +163,12 @@ public final class IntBufferImpl extends IntBuffer
    * than the buffer's limit.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public IntBuffer put (int index, int value)
+  final public CharBuffer put (int index, char value)
   {
+    if (index < 0
+        || index >= limit ())
+      throw new IndexOutOfBoundsException ();
+    
     if (readOnly)
       throw new ReadOnlyBufferException ();
     	    
