@@ -2628,9 +2628,7 @@ store_expr (exp, target, want_value)
 	      /* Compute the size of the data to copy from the string.  */
 	      tree copy_size
 		= size_binop (MIN_EXPR,
-			      size_binop (CEIL_DIV_EXPR,
-					  TYPE_SIZE (TREE_TYPE (exp)),
-					  size_int (BITS_PER_UNIT)),
+			      make_tree (sizetype, size),
 			      convert (sizetype,
 				       build_int_2 (TREE_STRING_LENGTH (exp), 0)));
 	      rtx copy_size_rtx = expand_expr (copy_size, NULL_RTX,
@@ -2756,8 +2754,10 @@ store_constructor (exp, target)
 	  register tree field = TREE_PURPOSE (elt);
 	  register enum machine_mode mode;
 	  int bitsize;
-	  int bitpos;
+	  int bitpos = 0;
 	  int unsignedp;
+	  tree pos, constant = 0, offset = 0;
+	  rtx to_rtx = target;
 
 	  /* Just ignore missing fields.
 	     We cleared the whole structure, above,
@@ -2771,13 +2771,40 @@ store_constructor (exp, target)
 	  if (DECL_BIT_FIELD (field))
 	    mode = VOIDmode;
 
-	  if (TREE_CODE (DECL_FIELD_BITPOS (field)) != INTEGER_CST)
-	    /* ??? This case remains to be written.  */
-	    abort ();
+	  pos = DECL_FIELD_BITPOS (field);
+	  if (TREE_CODE (pos) == INTEGER_CST)
+	    constant = pos;
+	  else if (TREE_CODE (pos) == PLUS_EXPR
+		   && TREE_CODE (TREE_OPERAND (pos, 1)) == INTEGER_CST)
+	    constant = TREE_OPERAND (pos, 1), offset = TREE_OPERAND (pos, 0);
+	  else
+	    offset = pos;
 
-	  bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  if (constant)
+	    bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
 
-	  store_field (target, bitsize, bitpos, mode, TREE_VALUE (elt),
+	  if (offset)
+	    {
+	      rtx offset_rtx;
+
+	      if (contains_placeholder_p (offset))
+		offset = build (WITH_RECORD_EXPR, sizetype,
+				offset, exp);
+
+	      offset = size_binop (FLOOR_DIV_EXPR, offset,
+				   size_int (BITS_PER_UNIT));
+
+	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
+	      if (GET_CODE (to_rtx) != MEM)
+		abort ();
+
+	      to_rtx
+		= change_address (to_rtx, VOIDmode,
+				  gen_rtx (PLUS, Pmode, XEXP (to_rtx, 0),
+					   force_reg (Pmode, offset_rtx)));
+	    }
+
+	  store_field (to_rtx, bitsize, bitpos, mode, TREE_VALUE (elt),
 		       /* The alignment of TARGET is
 			  at least what its type requires.  */
 		       VOIDmode, 0,
@@ -3023,6 +3050,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
      int *punsignedp;
      int *pvolatilep;
 {
+  tree orig_exp = exp;
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
   tree offset = integer_zero_node;
@@ -3163,14 +3191,11 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
   if (integer_zerop (offset))
     offset = 0;
 
+  if (offset != 0 && contains_placeholder_p (offset))
+    offset = build (WITH_RECORD_EXPR, sizetype, offset, orig_exp);
+
   *pmode = mode;
   *poffset = offset;
-#if 0
-  /* We aren't finished fixing the callers to really handle nonzero offset.  */
-  if (offset != 0)
-    abort ();
-#endif
-
   return exp;
 }
 
@@ -3512,6 +3537,9 @@ expand_expr (exp, target, tmode, modifier)
      enum machine_mode tmode;
      enum expand_modifier modifier;
 {
+  /* Chain of pending expressions for PLACEHOLDER_EXPR to replace.
+     This is static so it will be accessible to our recursive callees.  */
+  static tree placeholder_list = 0;
   register rtx op0, op1, temp;
   tree type = TREE_TYPE (exp);
   int unsignedp = TREE_UNSIGNED (type);
@@ -3547,7 +3575,9 @@ expand_expr (exp, target, tmode, modifier)
 
   /* If we are going to ignore this result, we need only do something
      if there is a side-effect somewhere in the expression.  If there
-     is, short-circuit the most common cases here.  */
+     is, short-circuit the most common cases here.  Note that we must
+     not call expand_expr with anything but const0_rtx in case this
+     is an initial expansion of a size that contains a PLACEHOLDER_EXPR.  */
 
   if (ignore)
     {
@@ -3846,6 +3876,40 @@ expand_expr (exp, target, tmode, modifier)
 
       return SAVE_EXPR_RTL (exp);
 
+    case PLACEHOLDER_EXPR:
+      /* If there is an object on the head of the placeholder list,
+	 see if some object in it's references is of type TYPE.  For
+	 further information, see tree.def.  */
+      if (placeholder_list)
+	{
+	  tree object;
+
+	  for (object = TREE_PURPOSE (placeholder_list);
+	       TREE_TYPE (object) != type
+	       && (TREE_CODE_CLASS (TREE_CODE (object)) == 'r'
+		   || TREE_CODE_CLASS (TREE_CODE (object) == '1'
+		   || TREE_CODE_CLASS (TREE_CODE (object) == '2'
+		   || TREE_CODE_CLASS (TREE_CODE (object) == 'e'))));
+	       object = TREE_OPERAND (object, 0))
+	    ;
+
+	  if (object && TREE_TYPE (object))
+	    return expand_expr (object, original_target, tmode, modifier);
+	}
+
+      /* We can't find the object or there was a missing WITH_RECORD_EXPR.  */
+      abort ();
+
+    case WITH_RECORD_EXPR:
+      /* Put the object on the placeholder list, expand our first operand,
+	 and pop the list.  */
+      placeholder_list = tree_cons (TREE_OPERAND (exp, 1), NULL_TREE,
+				    placeholder_list);
+      target = expand_expr (TREE_OPERAND (exp, 0), original_target,
+			    tmode, modifier);
+      placeholder_list = TREE_CHAIN (placeholder_list);
+      return target;
+
     case EXIT_EXPR:
       expand_exit_loop_if_false (NULL_PTR,
 				 invert_truthvalue (TREE_OPERAND (exp, 0)));
@@ -4017,6 +4081,10 @@ expand_expr (exp, target, tmode, modifier)
 	tree index_type = TREE_TYPE (index);
 	int i;
 
+	if (TREE_CODE (low_bound) != INTEGER_CST
+	    && contains_placeholder_p (low_bound))
+	  low_bound = build (WITH_RECORD_EXPR, sizetype, low_bound, exp);
+
 	/* Optimize the special-case of a zero lower bound.
 
 	   We convert the low_bound to sizetype to avoid some problems
@@ -4050,11 +4118,16 @@ expand_expr (exp, target, tmode, modifier)
 	    tree array_adr = build1 (ADDR_EXPR,
 				     build_pointer_type (variant_type), array);
 	    tree elt;
+	    tree size = size_in_bytes (type);
 
 	    /* Convert the integer argument to a type the same size as a
 	       pointer so the multiply won't overflow spuriously.  */
 	    if (TYPE_PRECISION (index_type) != POINTER_SIZE)
 	      index = convert (type_for_size (POINTER_SIZE, 0), index);
+
+	    if (TREE_CODE (size) != INTEGER_CST
+		&& contains_placeholder_p (size))
+	      size = build (WITH_RECORD_EXPR, sizetype, size, exp);
 
 	    /* Don't think the address has side effects
 	       just because the array does.
@@ -4069,8 +4142,7 @@ expand_expr (exp, target, tmode, modifier)
 				       array_adr,
 				       fold (build (MULT_EXPR,
 						    TYPE_POINTER_TO (variant_type),
-						    index,
-						    size_in_bytes (type))))));
+						    index, size)))));
 
 	    /* Volatility, etc., of new expression is same as old
 	       expression.  */
