@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
@@ -193,8 +193,7 @@ do {								\
 #define TARGET_ASM_UNIQUE_SECTION  ia64_rwreloc_unique_section
 #undef  TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
-#undef  TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS  ia64_rwreloc_section_type_flags
+#define TARGET_RWRELOC  true
 
 /* ia64 HPUX has the float and long double forms of math functions.  */
 #undef TARGET_C99_FUNCTIONS

@@ -1,6 +1,7 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4606,20 +4607,11 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
 
   if (strcmp (name, ".bss") == 0
       || strncmp (name, ".bss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.b.", 16) == 0)
-    flags |= SECTION_BSS;
-
-  if (strcmp (name, ".sdata") == 0
-      || strncmp (name, ".sdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.s.", 16) == 0
-      || strncmp (name, ".sdata2.", 8) == 0
-      || strncmp (name, ".gnu.linkonce.s2.", 17) == 0)
-    flags |= SECTION_SMALL;
-
-  if (strcmp (name, ".sbss") == 0
+      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || strcmp (name, ".sbss") == 0
       || strncmp (name, ".sbss.", 6) == 0
       || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
-    flags |= SECTION_SMALL | SECTION_BSS;
+    flags |= SECTION_BSS;
 
   if (strcmp (name, ".tdata") == 0
       || strncmp (name, ".tdata.", 7) == 0
