@@ -178,8 +178,7 @@ Fri Jan 28 10:57:58 2000  Jason Eckhardt  <jle@cygnus.com>
 	known at compile time.
 	* ns32k/ns32k.md: Alternate constraints for multiply-add instructions.
 	(udivmodsi4, udivmodhi4, udivmodqi4): Use nonimmediate_operand
-	instead of reg_or_mem_operand.  Use VOIDmode for load or push
-	effective address.
+	instead of reg_or_mem_operand.
 
 	* ns32k/ns32k.md: Use nonimmediate_operand or stricter for outputs,
 	not general_operand.  Similarly use "=rm" or stricter, not "=g".
