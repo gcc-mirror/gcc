@@ -1300,7 +1300,8 @@ void
 binary_op_error (code)
      enum tree_code code;
 {
-  register char *opname;
+  register char *opname = "unknown";
+
   switch (code)
     {
     case NOP_EXPR:
