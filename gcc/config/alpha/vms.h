@@ -450,6 +450,8 @@ do {									\
 %{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
 
 #undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{!shared:%{mvms-return-codes:vcrt0.o%s} \
+%{!mvms-return-codes:pcrt0.o%s}}"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "OTS$DIV_I"

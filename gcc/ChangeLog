@@ -1,3 +1,12 @@
+Sun Dec  9 21:57:24 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/t-vms (EXTRA_PARTS): Append $(VMS_EXTRA_PARTS)
+	Add rules for building [vp]crt0.o
+	* config/alpha/vms.h (START_FILE_SPEC): Define.
+	* config/alpha/x-vms (VMS_EXTRA_PARTS): Define
+	* config/alpha/vms-crt0.c, config/alpha/vms-psxcrt0.c: New files.
+	* doc/invoke.texi: Document special Alpha/VMS options.
+
 Sun Dec  9 20:25:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* hwint.h (HOST_BITS_PER_LONGLONG): Deal with __int64 type.

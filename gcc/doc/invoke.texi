@@ -520,6 +520,10 @@ in the following sections.
 -mbwx  -mno-bwx  -mcix  -mno-cix  -mmax  -mno-max @gol
 -mmemory-latency=@var{time}}
 
+@emph{DEC Alpha/VMS Options}
+@gccoptlist{
+-mvms-return-codes}
+
 @emph{Clipper Options}
 @gccoptlist{
 -mc300  -mc400}
@@ -5070,6 +5074,7 @@ that macro, which enables you to change the defaults.
 * HPPA Options::
 * Intel 960 Options::
 * DEC Alpha Options::
+* DEC Alpha/VMS Options::
 * Clipper Options::
 * H8/300 Options::
 * SH Options::
@@ -8560,6 +8565,18 @@ The compiler contains estimates of the number of clock cycles for
 Note that L3 is only valid for EV5.
 
 @end table
+@end table
+
+@node DEC Alpha/VMS Options
+@subsection DEC Alpha/VMS Options
+
+These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
+
+@table @gcctabopt
+@item -mvms-return-codes
+@opindex mvms-return-codes
+Return VMS condition codes from main. The default is to return POSIX
+style condition (e.g. error) codes.
 @end table
 
 @node Clipper Options
