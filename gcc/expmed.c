@@ -66,26 +66,26 @@ init_expmed ()
   rtx lea;
   int i, dummy;
 
-  add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg));
+  add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
   shift_cost = rtx_cost (gen_rtx (LSHIFT, word_mode, reg,
 				  /* Using a constant gives better
 				     estimate of typical costs.
 				     1 or 2 might have quirks.  */
-				  gen_rtx (CONST_INT, VOIDmode, 3)));
-  mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg));
-  negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg));
+				  gen_rtx (CONST_INT, VOIDmode, 3)), SET);
+  mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
+  negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg), SET);
 
   /* 999999 is chosen to avoid any plausible faster special case.  */
   mult_is_very_cheap
     = (rtx_cost (gen_rtx (MULT, word_mode, reg,
-			  gen_rtx (CONST_INT, VOIDmode, 999999)))
+			  gen_rtx (CONST_INT, VOIDmode, 999999)), SET)
        < rtx_cost (gen_rtx (LSHIFT, word_mode, reg,
-			    gen_rtx (CONST_INT, VOIDmode, 7))));
+			    gen_rtx (CONST_INT, VOIDmode, 7)), SET));
 
   sdiv_pow2_cheap
-    = rtx_cost (gen_rtx (DIV, word_mode, reg, pow2)) <= 2 * add_cost;
+    = rtx_cost (gen_rtx (DIV, word_mode, reg, pow2), SET) <= 2 * add_cost;
   smod_pow2_cheap
-    = rtx_cost (gen_rtx (MOD, word_mode, reg, pow2)) <= 2 * add_cost;
+    = rtx_cost (gen_rtx (MOD, word_mode, reg, pow2), SET) <= 2 * add_cost;
 
   init_recog ();
   for (i = 2;; i <<= 1)
@@ -100,7 +100,7 @@ init_expmed ()
       if (recog (lea, 0, &dummy) < 0)
 	break;
       lea_max_mul = i;
-      lea_cost = rtx_cost (SET_SRC (lea));
+      lea_cost = rtx_cost (SET_SRC (lea), SET);
     }
 
   /* Free the objects we just allocated.  */
