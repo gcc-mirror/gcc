@@ -1,5 +1,5 @@
 /* Machine description patterns for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -82,35 +82,13 @@ Boston, MA 02111-1307, USA.  */
       case 0:
 	return \"lfd %0,lo16(%2)(%1)\";
       case 1:
-	{
-	  rtx operands2[4];
-	  operands2[0] = operands[0];
-	  operands2[1] = operands[1];
-	  operands2[2] = operands[2];
-	  if (TARGET_POWERPC64 && TARGET_32BIT)
-	    /* Note, old assemblers didn't support relocation here. */
-	    return \"ld %0,lo16(%2)(%1)\";
-	  else
-	  {
-	    operands2[3] = gen_rtx_REG (SImode, RS6000_PIC_OFFSET_TABLE_REGNUM);
-	    output_asm_insn (\"{l|ld} %0,lo16(%2)(%1)\", operands);
-#if TARGET_MACHO
-	    if (MACHO_DYNAMIC_NO_PIC_P)
-	      output_asm_insn (\"{liu|lis} %L0,ha16(%2+4)\", operands);
-	    else
-	    /* We cannot rely on ha16(low half)==ha16(high half), alas,
-	       although in practice it almost always is.  */
-	    output_asm_insn (\"{cau|addis} %L0,%3,ha16(%2+4)\", operands2);
-#endif
-	    return (\"{l|lwz} %L0,lo16(%2+4)(%L0)\");
-	  }
-	}
+	return \"ld %0,lo16(%2)(%1)\";
       default:
 	abort();
     }
 }"
   [(set_attr "type" "load")
-   (set_attr "length" "4,12")])
+   (set_attr "length" "4,4")])
 
 (define_insn "movdf_low_st_si"
   [(set (mem:DF (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
@@ -148,7 +126,7 @@ Boston, MA 02111-1307, USA.  */
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
   "@
    lfs %0,lo16(%2)(%1)
-   {l|ld} %0,lo16(%2)(%1)"
+   {l|lwz} %0,lo16(%2)(%1)"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
