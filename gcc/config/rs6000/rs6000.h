@@ -2819,6 +2819,17 @@ extern int toc_initialized;
   putc ('\n', FILE);				\
 }
 
+/* This is how we tell the assembler that two symbols have the same value.  */
+
+#define ASM_OUTPUT_DEF(FILE,NAME1,NAME2)	\
+do {						\
+  fputs("\t.set ", FILE);			\
+  assemble_name(FILE, NAME1);			\
+  fputc(',', FILE);				\
+  assemble_name(FILE, NAME2);			\
+  fputc('\n', FILE);				\
+} while (0)
+
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
