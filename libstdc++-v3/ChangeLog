@@ -1,3 +1,8 @@
+2004-06-21  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/linker-map.gnu: Use wildcards for
+	__basic_file::sys_open(FILE*, _Ios_Openmode).
+
 2004-06-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator (__mt_alloc<>::_Tune): Add _M_align,

@@ -142,7 +142,7 @@ GLIBCXX_3.4 {
     _ZNSt12__basic_fileIcE6xsgetn*;
     _ZNSt12__basic_fileIcE6xsputn*;
     _ZNSt12__basic_fileIcE7seekoff*;
-    _ZNSt12__basic_fileIcE8sys_openEP8_IO_FILESt13_Ios_Openmode;
+    _ZNSt12__basic_fileIcE8sys_openE*St13_Ios_Openmode;
     _ZNSt12__basic_fileIcE8sys_openEiSt13_Ios_Openmode;
     _ZNSt12__basic_fileIcE8xsputn_2*;
     _ZNSt12__basic_fileIcE9showmanycEv;
