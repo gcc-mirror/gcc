@@ -1,3 +1,11 @@
+2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (expand_function_end): Remove all parameters.
+	* function.c (expand_function_end): Remove all parameters.
+	Use input_location. Never expand_end_bindings.
+	* c-decl.c (c_expand_body_1): Adjust expand_function_end call.
+	* coverage.c (create_coverage): Likewise.
+
 2003-06-20  Nick Clifton  <nickc@redhat.com>
 
 	* doc/extend.texi (ARM Built-in Functions): New node.  Document

@@ -866,7 +866,7 @@ create_coverage ()
   emit_library_call (gcov_init_libfunc, LCT_NORMAL, VOIDmode, 1,
 		     gcov_info_address, Pmode);
 
-  expand_function_end (input_filename, input_line, 0);
+  expand_function_end ();
   (*lang_hooks.decls.poplevel) (1, 0, 1);
 
   rest_of_compilation (ctor);

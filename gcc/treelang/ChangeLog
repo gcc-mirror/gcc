@@ -1,3 +1,8 @@
+2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* treetree.c (tree_code_create_function_wrapup): Adjust
+	expand_function_end call.
+
 2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treetree.c (build_stmt): Remove VPARAMS.

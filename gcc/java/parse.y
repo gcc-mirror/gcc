@@ -7386,7 +7386,7 @@ source_end_java_method (void)
   if (! flag_emit_class_files && ! flag_emit_xref)
     {
       input_line = DECL_FUNCTION_LAST_LINE (fndecl);
-      expand_function_end (input_filename, input_line, 0);
+      expand_function_end ();
 
       /* Run the optimizers and output assembler code for this function. */
       rest_of_compilation (fndecl);

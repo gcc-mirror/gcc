@@ -2806,7 +2806,7 @@ extern void type_hash_add		PARAMS ((unsigned int, tree));
 extern unsigned int type_hash_list	PARAMS ((tree));
 extern int simple_cst_list_equal	PARAMS ((tree, tree));
 extern void dump_tree_statistics	PARAMS ((void));
-extern void expand_function_end		PARAMS ((const char *, int, int));
+extern void expand_function_end		PARAMS ((void));
 extern void expand_function_start	PARAMS ((tree, int));
 extern void expand_pending_sizes        PARAMS ((tree));
 

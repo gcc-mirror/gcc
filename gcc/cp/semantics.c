@@ -2542,7 +2542,7 @@ genrtl_finish_function (tree fn)
   immediate_size_expand = 1;
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, input_line, 0);
+  expand_function_end ();
 
   /* If this is a nested function (like a template instantiation that
      we're compiling in the midst of compiling something else), push a

@@ -1801,7 +1801,7 @@ end_subprog_body ()
   /* Mark the RESULT_DECL as being in this subprogram. */
   DECL_CONTEXT (DECL_RESULT (current_function_decl)) = current_function_decl;
 
-  expand_function_end (input_filename, input_line, 0);
+  expand_function_end ();
 
   /* If this is a nested function, push a new GC context.  That will keep
      local variables on the stack from being collected while we're doing

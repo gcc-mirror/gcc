@@ -1,3 +1,7 @@
+Fri Jun 20 10:00:31 2003  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* com.c (finish_function): Adjust expand_function_end call.
+
 2003-06-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Replace BUILD_CC references with CC_FOR_BUILD.

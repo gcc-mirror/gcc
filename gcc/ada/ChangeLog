@@ -1,3 +1,7 @@
+2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* utils.c (end_subprog_body): Adjust expand_function_end call.
+
 2003-06-16  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* bindgen.adb (Gen_Main_Ada, Gen_Main_C): Do not test

@@ -308,8 +308,7 @@ tree
 push_class (tree class_type, tree class_name)
 {
   tree decl, signature;
-  const char *save_input_filename = input_filename;
-  int save_lineno = input_line;
+  location_t saved_loc = input_location;
   tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
   CLASS_P (class_type) = 1;
   input_filename = IDENTIFIER_POINTER (source_name);
@@ -319,8 +318,7 @@ push_class (tree class_type, tree class_name)
   /* dbxout needs a DECL_SIZE if in gstabs mode */
   DECL_SIZE (decl) = integer_zero_node;
 
-  input_filename = save_input_filename;
-  input_line = save_lineno;
+  input_location = saved_loc;
   signature = identifier_subst (class_name, "L", '.', '/', ";");
   IDENTIFIER_SIGNATURE_TYPE (signature) = build_pointer_type (class_type);
 
@@ -2000,6 +1998,7 @@ emit_register_classes (void)
       tree init_type = build_function_type (void_type_node, end_params_node);
       tree init_decl;
       tree t;
+      location_t saved_loc = input_location;
       
       init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
       SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
@@ -2028,8 +2027,8 @@ emit_register_classes (void)
       for ( t = registered_class; t; t = TREE_CHAIN (t))
 	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
 			   XEXP (DECL_RTL (t), 0), Pmode);
-      
-      expand_function_end (input_filename, 0, 0);
+      input_location = DECL_SOURCE_LOCATION (init_decl);
+      expand_function_end ();
       poplevel (1, 0, 1);
       rest_of_compilation (init_decl);
       current_function_decl = NULL_TREE;
@@ -2037,6 +2036,7 @@ emit_register_classes (void)
       if (targetm.have_ctors_dtors)
 	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
 					 DEFAULT_INIT_PRIORITY);
+      input_location = saved_loc;
     }
 }
 
