@@ -1,3 +1,20 @@
+Fri Jan 15 20:16:20 1999  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (process_jvm_instruction):  Coerce to correct Throwable
+	sub-type the result of the call that gets the exception value.
+
+	* parse.y (java_complete_expand_methods):  If flags_syntax_only,
+	don't call finish_class.
+
+	* parse.y (java_check_regular_methods):  If METHOD_PRIVATE,
+	clear found before continuing.
+
+	* verify.c (verify_jvm_instructions):  On an array load, allow
+	and handle top of stack to be TYPE_NULL.
+
+	* gjavah.c (generate_access):  Translate Java package private or
+	protected access to C++ public, but with a comment.
+
 1999-01-13  Andrew Haley  <aph@cygnus.com>
 
 	* expr.c (generate_name): Name prefix changed to avoid clashes
