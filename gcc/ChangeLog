@@ -1,3 +1,10 @@
+Tue Dec 15 01:45:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (gen_struct_or_union_type_die): Check AGGREGATE_TYPE_P
+	instead of TREE_CODE_CLASS == 't'.
+	(gen_type_die): Likewise.
+	(scope_die_for): Ignore FUNCTION_TYPE "scopes".
+
 Mon Dec 14 16:23:27 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* real.c (endian): Disable last change unless
