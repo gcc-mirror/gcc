@@ -3484,10 +3484,12 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
      need to be compared for equivalence, which we'll do below.  */
 
   i1 = bb1->end;
-  if (onlyjump_p (i1))
+  if (onlyjump_p (i1)
+      || (returnjump_p (i1) && !side_effects_p (PATTERN (i1))))
     i1 = PREV_INSN (i1);
   i2 = bb2->end;
-  if (onlyjump_p (i2))
+  if (onlyjump_p (i2)
+      || (returnjump_p (i2) && !side_effects_p (PATTERN (i2))))
     i2 = PREV_INSN (i2);
 
   last1 = afterlast1 = last2 = afterlast2 = NULL_RTX;
