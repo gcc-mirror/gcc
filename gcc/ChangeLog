@@ -1,3 +1,9 @@
+2004-12-03  Eric Christopher  <echristo@redhat.com>
+
+	* config/stormy16/stormy16.md (pushqi, popqi, pushhi,
+	pophi): Add number of arguments to name so that the
+	pattern is recognized as a named pattern.
+
 2004-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (AltiVec Builtins): Fix info about signedness.
@@ -81,7 +87,7 @@
 	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Add -gfull and -gused.
 	* config/rs6000/darwin.h (CC1_SPEC): Do not handle -gfull and -gused.
 	* config/i386/darwin.h (CC1_SPEC): Same.
-	
+
 2004-12-02  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (lowpart_subreg_maybe_copy): New.
