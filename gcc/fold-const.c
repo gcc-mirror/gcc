@@ -187,7 +187,7 @@ force_fit_type (t, overflow)
 
   /* Unsigned types do not suffer sign extension or overflow.  */
   if (TREE_UNSIGNED (TREE_TYPE (t)))
-    return 0;
+    return overflow;
 
   /* If the value's sign bit is set, extend the sign.  */
   if (prec != 2 * HOST_BITS_PER_WIDE_INT
