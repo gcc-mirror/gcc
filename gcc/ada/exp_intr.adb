@@ -281,12 +281,21 @@ package body Exp_Intr is
       then
          Expand_Source_Info (N, Nam);
 
-      else
-         --  Only other possibility is a renaming, in which case we expand
-         --  the call to the original operation (which must be intrinsic).
+         --  If we have a renaming, expand the call to the original operation,
+         --  which must itself be intrinsic, since renaming requires matching
+         --  conventions and this has already been checked.
 
-         pragma Assert (Present (Alias (E)));
+      elsif Present (Alias (E)) then
          Expand_Intrinsic_Call (N,  Alias (E));
+
+         --  The only other case is where an external name was specified,
+         --  since this is the only way that an otherwise unrecognized
+         --  name could escape the checking in Sem_Prag. Nothing needs
+         --  to be done in such a case, since we pass such a call to the
+         --  back end unchanged.
+
+      else
+         null;
       end if;
    end Expand_Intrinsic_Call;
 
