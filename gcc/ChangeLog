@@ -1,5 +1,8 @@
 Thu Sep  4 15:02:27 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* profile.c (output_arc_profiler): Check next_insert_after for non
+	NULL before deferencing it.
+
 	* i386/t-sol2 (TARGET_LIBGCC2_CFLAGS): Define to -fPIC.
 
 Thu Sep  4 14:51:57 1997  Jeffrey A Law  (law@cygnus.com)
