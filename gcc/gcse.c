@@ -4037,28 +4037,20 @@ cprop_jump (bb, insn, from, src)
   if (rtx_equal_p (new, SET_SRC (set)))
     return 0;
  
-  /* If this is now a no-op leave it that way, but update LABEL_NUSED if
-     necessary.  */
+  /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
   if (new == pc_rtx)
+    delete_insn (insn);
+  else
     {
-      SET_SRC (set) = new;
+      if (! validate_change (insn, &SET_SRC (set), new, 0))
+	return 0;
 
-      if (JUMP_LABEL (insn) != 0)
-	{
-	  --LABEL_NUSES (JUMP_LABEL (insn));
-	  JUMP_LABEL (insn) = NULL_RTX;
-	}
-    }
-
-  /* Otherwise, this must be a valid instruction.  */
-  else if (! validate_change (insn, &SET_SRC (set), new, 0))
-    return 0;
-
-  /* If this has turned into an unconditional jump,
-     then put a barrier after it so that the unreachable
-     code will be deleted.  */
-  if (GET_CODE (SET_SRC (set)) == LABEL_REF)
-    emit_barrier_after (insn);
+      /* If this has turned into an unconditional jump,
+	 then put a barrier after it so that the unreachable
+	 code will be deleted.  */
+      if (GET_CODE (SET_SRC (set)) == LABEL_REF)
+	emit_barrier_after (insn);
+     }
 
   run_jump_opt_after_gcse = 1;
 
