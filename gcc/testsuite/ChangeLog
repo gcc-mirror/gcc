@@ -1,3 +1,7 @@
+Fri Jul  6 09:31:43 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20010706-1.c: New test.
+
 2000-09-10  Michael Chamberlain <michael@chamberlain.net.au>
 
 	* gcc.misc-tests/mg.exp (compiler_output): Support tcl 8.3.1.
