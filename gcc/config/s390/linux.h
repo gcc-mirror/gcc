@@ -92,40 +92,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 
-/* Target specific library settings.  */
-
-#ifndef LIBPATH_ARCH31_SPEC
-#define LIBPATH_ARCH31_SPEC  "/usr/lib"
-#endif
-#ifndef LIBPATH_ARCH64_SPEC
-#define LIBPATH_ARCH64_SPEC  "/usr/lib64"
-#endif
-
-#ifdef DEFAULT_TARGET_64BIT
-#define LIBPATH_SPEC "%{m31:%(libpath_arch31)}%{!m31:%(libpath_arch64)}"
-#else
-#define LIBPATH_SPEC "%{m64:%(libpath_arch64)}%{!m64:%(libpath_arch31)}"
-#endif
-
-
 /* Target specific linker settings.  */
 
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:%(libpath)/gcrt1.o%s} \
-     %{!pg:%{p:%(libpath)/gcrt1.o%s} \
-           %{!p:%{profile:%(libpath)/gcrt1.o%s} \
-                %{!profile:%(libpath)/crt1.o%s}}}} \
-   %(libpath)/crti.o%s %{static:crtbeginT.o%s}\
-   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
-
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} %(libpath)/crtn.o%s"
-
 #define LINK_ARCH31_SPEC \
-  "-m elf_s390 -L %(libpath_arch31) \
+  "-m elf_s390 \
    %{shared:-shared} \
    %{!shared: \
       %{static:-static} \
@@ -134,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
 	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
 #define LINK_ARCH64_SPEC \
-  "-m elf64_s390 -L %(libpath_arch64) \
+  "-m elf64_s390 \
    %{shared:-shared} \
    %{!shared: \
       %{static:-static} \
@@ -160,9 +130,6 @@ Boston, MA 02111-1307, USA.  */
   { "cpp_arch64",	CPP_ARCH64_SPEC },	\
   { "link_arch31",	LINK_ARCH31_SPEC },	\
   { "link_arch64",	LINK_ARCH64_SPEC },	\
-  { "libpath_arch31",	LIBPATH_ARCH31_SPEC },	\
-  { "libpath_arch64",	LIBPATH_ARCH64_SPEC },	\
-  { "libpath",		LIBPATH_SPEC },		\
 
 
 /* Character to start a comment.  */
