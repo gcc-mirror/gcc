@@ -1,3 +1,11 @@
+2002-08-28  Sylvain Pion <pion@cs.nyu.edu>
+
+	* doc/invoke.texi (-Wreorder): Remove remaining pieces from the generic
+	section.  Mention that it is enabled by -Wall.
+	(-Wall): Mention that there can be language-specific warnings as well.
+	(-Wctor-dtor-privacy): Mention that it is enabled by default.
+	(-Wnon-virtual-dtor): Mention that it is enabled by -Wall.
+
 Wed Aug 28 15:35:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (calc_live_regs): Save FPSCR_REG in an interrupt handler

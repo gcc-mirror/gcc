@@ -1531,12 +1531,13 @@ compilers to layout @code{C} identically.
 @opindex Wctor-dtor-privacy
 Warn when a class seems unusable, because all the constructors or
 destructors in a class are private and the class has no friends or
-public static member functions.
+public static member functions.  This warning is enabled by default.
 
 @item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
 Warn when a class declares a non-virtual destructor that should probably
 be virtual, because it looks like the class will be used polymorphically.
+This warning is enabled by @option{-Wall}.
 
 @item -Wreorder @r{(C++ only)}
 @opindex Wreorder
@@ -1555,7 +1556,7 @@ struct A @{
 
 Here the compiler will warn that the member initializers for @samp{i}
 and @samp{j} will be rearranged to match the declaration order of the
-members.
+members.  This warning is enabled by @option{-Wall}.
 @end table
 
 The following @option{-W@dots{}} options are not affected by @option{-Wall}.
@@ -2245,13 +2246,6 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
-@item -Wreorder @r{(C++ only)}
-@opindex Wreorder
-@cindex reordering, warning
-@cindex warning for reordering of member initializers
-Warn when the order of member initializers given in the code does not
-match the order in which they must be executed.  For instance:
-
 @item -Wunknown-pragmas
 @opindex Wunknown-pragmas
 @cindex warning for unknown pragmas
@@ -2267,7 +2261,9 @@ the warnings were only enabled by the @option{-Wall} command line option.
 All of the above @samp{-W} options combined.  This enables all the
 warnings about constructions that some users consider questionable, and
 that are easy to avoid (or modify to prevent the warning), even in
-conjunction with macros.
+conjunction with macros.  This also enables some language-specific
+warnings described in @ref{C++ Dialect Options} and
+@ref{Objective-C Dialect Options}.
 @end table
 
 The following @option{-W@dots{}} options are not implied by @option{-Wall}.
