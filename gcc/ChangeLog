@@ -1,5 +1,8 @@
 Wed Dec 30 23:44:11 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* m68k.md (adddi_dilshr32): Allow all operands to be registers too.
+	(adddi_dishl32): Similarly.
+
 	* cse.c (invalidate_skipped_block): Call invalidate_from_clobbers
 	for each insn in the skipped block.
 
