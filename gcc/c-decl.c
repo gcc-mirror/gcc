@@ -3278,6 +3278,60 @@ shadow_tag_warned (declspecs, warned)
     }
 }
 
+/* Construct an array declarator.  EXPR is the expression inside [], or
+   NULL_TREE.  QUALS are the type qualifiers inside the [] (to be applied
+   to the pointer to which a parameter array is converted).  STATIC_P is
+   non-zero if "static" is inside the [], zero otherwise.  VLA_UNSPEC_P
+   is non-zero is the array is [*], a VLA of unspecified length which is
+   nevertheless a complete type (not currently implemented by GCC),
+   zero otherwise.  The declarator is constructed as an ARRAY_REF
+   (to be decoded by grokdeclarator), whose operand 0 is what's on the
+   left of the [] (filled by in set_array_declarator_type) and operand 1
+   is the expression inside; whose TREE_TYPE is the type qualifiers and
+   which has TREE_STATIC set if "static" is used.  */
+
+tree
+build_array_declarator (expr, quals, static_p, vla_unspec_p)
+     tree expr;
+     tree quals;
+     int static_p;
+     int vla_unspec_p;
+{
+  tree decl;
+  decl = build_nt (ARRAY_REF, NULL_TREE, expr);
+  TREE_TYPE (decl) = quals;
+  TREE_STATIC (decl) = (static_p ? 1 : 0);
+  if (pedantic && !flag_isoc99)
+    {
+      if (static_p || quals != NULL_TREE)
+	pedwarn ("ISO C89 does not support `static' or type qualifiers in parameter array declarators");
+      if (vla_unspec_p)
+	pedwarn ("ISO C89 does not support `[*]' array declarators");
+    }
+  if (vla_unspec_p)
+    warning ("GCC does not yet properly implement `[*]' array declarators");
+  return decl;
+}
+
+/* Set the type of an array declarator.  DECL is the declarator, as
+   constructed by build_array_declarator; TYPE is what appears on the left
+   of the [] and goes in operand 0.  ABSTRACT_P is non-zero if it is an
+   abstract declarator, zero otherwise; this is used to reject static and
+   type qualifiers in abstract declarators, where they are not in the
+   C99 grammar.  */
+
+tree
+set_array_declarator_type (decl, type, abstract_p)
+     tree decl;
+     tree type;
+     int abstract_p;
+{
+  TREE_OPERAND (decl, 0) = type;
+  if (abstract_p && (TREE_TYPE (decl) != NULL_TREE || TREE_STATIC (decl)))
+    error ("static or type qualifiers in abstract declarator");
+  return decl;
+}
+
 /* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
 
 tree
@@ -3861,6 +3915,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   int bitfield = 0;
   int size_varies = 0;
   tree decl_machine_attr = NULL_TREE;
+  tree array_ptr_quals = NULL_TREE;
+  int array_parm_static = 0;
 
   if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
@@ -4289,12 +4345,25 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	 array or function or pointer, and DECLARATOR has had its
 	 outermost layer removed.  */
 
+      if (array_ptr_quals != NULL_TREE || array_parm_static)
+	{
+	  /* Only the innermost declarator (making a parameter be of
+	     array type which is converted to pointer type)
+	     may have static or type qualifiers.  */
+	  error ("static or type qualifiers in non-parameter array declarator");
+	  array_ptr_quals = NULL_TREE;
+	  array_parm_static = 0;
+	}
+
       if (TREE_CODE (declarator) == ARRAY_REF)
 	{
 	  register tree itype = NULL_TREE;
 	  register tree size = TREE_OPERAND (declarator, 1);
 	  /* The index is a signed object `sizetype' bits wide.  */
 	  tree index_type = signed_type (sizetype);
+
+	  array_ptr_quals = TREE_TYPE (declarator);
+	  array_parm_static = TREE_STATIC (declarator);
 
 	  declarator = TREE_OPERAND (declarator, 0);
 
@@ -4444,6 +4513,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      layout_type (type);
 	      TYPE_SIZE (type) = bitsize_zero_node;
 	      TYPE_SIZE_UNIT (type) = size_zero_node;
+	    }
+	  if (decl_context != PARM
+	      && (array_ptr_quals != NULL_TREE || array_parm_static))
+	    {
+	      error ("static or type qualifiers in non-parameter array declarator");
+	      array_ptr_quals = NULL_TREE;
+	      array_parm_static = 0;
 	    }
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
@@ -4696,6 +4772,44 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
 	    type_quals = TYPE_UNQUALIFIED;
+	    if (array_ptr_quals)
+	      {
+		tree new_ptr_quals, new_ptr_attrs;
+		int erred = 0;
+		split_specs_attrs (array_ptr_quals, &new_ptr_quals, &new_ptr_attrs);
+		/* We don't yet implement attributes in this context.  */
+		if (new_ptr_attrs != NULL_TREE)
+		  warning ("attributes in parameter array declarator ignored");
+
+		constp = 0;
+		volatilep = 0;
+		restrictp = 0;
+		for (; new_ptr_quals; new_ptr_quals = TREE_CHAIN (new_ptr_quals))
+		  {
+		    tree qualifier = TREE_VALUE (new_ptr_quals);
+
+		    if (C_IS_RESERVED_WORD (qualifier))
+		      {
+			if (C_RID_CODE (qualifier) == RID_CONST)
+			  constp++;
+			else if (C_RID_CODE (qualifier) == RID_VOLATILE)
+			  volatilep++;
+			else if (C_RID_CODE (qualifier) == RID_RESTRICT)
+			  restrictp++;
+			else
+			  erred++;
+		      }
+		    else
+		      erred++;
+		  }
+
+		if (erred)
+		  error ("invalid type modifier within array declarator");
+
+		type_quals = ((constp ? TYPE_QUAL_CONST : 0)
+			      | (restrictp ? TYPE_QUAL_RESTRICT : 0)
+			      | (volatilep ? TYPE_QUAL_VOLATILE : 0));
+	      }
 	    size_varies = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)

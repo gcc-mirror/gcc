@@ -153,6 +153,7 @@ extern int yyparse_1				PARAMS ((void));
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
 
 /* in c-decl.c */
+extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
@@ -197,6 +198,7 @@ extern void push_label_level                    PARAMS ((void));
 extern void push_parm_decl                      PARAMS ((tree));
 extern tree pushdecl_top_level                  PARAMS ((tree));
 extern void pushtag                             PARAMS ((tree, tree));
+extern tree set_array_declarator_type           PARAMS ((tree, tree, int));
 extern tree shadow_label                        PARAMS ((tree));
 extern void shadow_record_fields                PARAMS ((tree));
 extern void shadow_tag                          PARAMS ((tree));
