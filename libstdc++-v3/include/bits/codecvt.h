@@ -46,13 +46,20 @@
 
 namespace std
 {
-  // XXX __enc_traits may need to move up the locale header hierarchy,
+  // XXX 
+  // __enc_traits may need to move up the locale header hierarchy,
   // depending on if ctype ends up using it.
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   // Extensions to use icov for dealing with character encodings,
   // including conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
   // char_traits, codecvt and ctype.
+
+#if _GLIBCPP_USE_SHADOW_HEADERS
+  using _C_legacy::CODESET;
+#endif
+
   class __enc_traits
   {
   public:
