@@ -205,7 +205,7 @@ in the following sections.
 @smallexample
 @emph{M680x0 Options}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
--m68060  -m5200  -m68881  -mbitfield  -mc68000  -mc68020  -mfpa
+-m68060  -mcpu32 -m5200  -m68881  -mbitfield  -mc68000  -mc68020  -mfpa
 -mnobitfield  -mrtd  -mshort  -msoft-float  -malign-int
 
 @emph{VAX Options}
@@ -2917,6 +2917,9 @@ given below.
 Generate output for a 68000.  This is the default
 when the compiler is configured for 68000-based systems.
 
+Use this option for microcontrollers with a 68000 or EC000 core,
+including the 68008, 68302, 68306, 68307, 68322, 68328 and 68356.
+
 @item -m68020
 @itemx -mc68020
 Generate output for a 68020.  This is the default
@@ -2936,20 +2939,31 @@ Generate output for a 68040.  This is the default when the compiler is
 configured for 68040-based systems.
 
 This option inhibits the use of 68881/68882 instructions that have to be
-emulated by software on the 68040.  If your 68040 does not have code to
-emulate those instructions, use @samp{-m68040}.
+emulated by software on the 68040.  Use this option if your 68040 does not
+have code to emulate those instructions.
 
 @item -m68060
 Generate output for a 68060.  This is the default when the compiler is
 configured for 68060-based systems.
 
 This option inhibits the use of 68020 and 68881/68882 instructions that
-have to be emulated by software on the 68060.  If your 68060 does not
-have code to emulate those instructions, use @samp{-m68060}.
+have to be emulated by software on the 68060.  Use this option if your 68060
+does not have code to emulate those instructions.
+
+@item -mcpu32
+Generate output for a CPU32. This is the default
+when the compiler is configured for CPU32-based systems.
+
+Use this option for microcontrollers with a
+CPU32 or CPU32+ core, including the 68330, 68331, 68332, 68333, 68334,
+68336, 68340, 68341, 68349 and 68360.
 
 @item -m5200
 Generate output for a 520X "coldfire" family cpu.  This is the default
 when the compiler is configured for 520X-based systems.
+
+Use this option for microcontroller with a 5200 core, including 
+the MCF5202, MCF5203, MCF5204 and MCF5202.
 
 
 @item -m68020-40
@@ -2980,8 +2994,8 @@ cross-compilation.  The embedded targets @samp{m68k-*-aout} and
 Consider type @code{int} to be 16 bits wide, like @code{short int}.
 
 @item -mnobitfield
-Do not use the bit-field instructions.  The @samp{-m68000} option
-implies @w{@samp{-mnobitfield}}.
+Do not use the bit-field instructions.  The @samp{-m68000}, @samp{-mcpu32}
+and @samp{-m5200} options imply @w{@samp{-mnobitfield}}.
 
 @item -mbitfield
 Do use the bit-field instructions.  The @samp{-m68020} option implies
@@ -3009,7 +3023,7 @@ function with too many arguments.  (Normally, extra arguments are
 harmlessly ignored.)
 
 The @code{rtd} instruction is supported by the 68010, 68020, 68030,
-68040, and 68060 processors, but not by the 68000 or 5200.
+68040, 68060 and CPU32 processors, but not by the 68000 or 5200.
 
 @item -malign-int
 @itemx -mno-align-int
