@@ -2948,10 +2948,14 @@ delete_insn (insn)
       while (next != 0
 	     && ((code = GET_CODE (next)) == INSN
 		 || code == JUMP_INSN || code == CALL_INSN
-		 || code == NOTE))
+		 || code == NOTE
+		 || (code == CODE_LABEL && INSN_DELETED_P (next))))
 	{
 	  if (code == NOTE
 	      && NOTE_LINE_NUMBER (next) != NOTE_INSN_FUNCTION_END)
+	    next = NEXT_INSN (next);
+	  /* Keep going past other deleted labels to delete what follows.  */
+	  else if (code == CODE_LABEL && INSN_DELETED_P (next))
 	    next = NEXT_INSN (next);
 	  else
 	    /* Note: if this deletes a jump, it can cause more
