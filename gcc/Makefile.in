@@ -652,6 +652,8 @@ C_TREE_H = c-tree.h $(C_COMMON_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
 CPPLIB_H = cpplib.h line-map.h
+PRETTY_PRINT_H = pretty-print.h input.h $(OBSTACK_H)
+DIAGNOSTIC_H = diagnostic.h diagnostic.def $(PRETTY_PRINT_H)
 
 # sed inserts variable overrides after the following line.
 ####target overrides
@@ -821,7 +823,7 @@ OBJS-common = \
  sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o		   \
- alloc-pool.o et-forest.o cfghooks.o bt-load.o $(GGC)
+ alloc-pool.o et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) 
 
 OBJS-md = $(out_object_file)
 OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) hashtable.o tree-inline.o	   \
@@ -1238,7 +1240,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 # C language specific files.
 
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-    $(C_TREE_H) flags.h diagnostic.h $(TM_P_H)
+    $(C_TREE_H) flags.h $(DIAGNOSTIC_H) $(TM_P_H)
 c-parse.o : $(parsedir)/c-parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) intl.h $(C_TREE_H) input.h flags.h toplev.h output.h $(CPPLIB_H) \
     varray.h gt-c-parse.h
@@ -1282,7 +1284,7 @@ c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H) c-pragma.h
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) $(EXPR_H) $(C_TREE_H) \
-    flags.h toplev.h tree-inline.h diagnostic.h $(VARRAY_H) \
+    flags.h toplev.h tree-inline.h $(DIAGNOSTIC_H) $(VARRAY_H) \
     langhooks.h $(GGC_H) gt-c-objc-common.h $(TARGET_H) cgraph.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) flags.h toplev.h
@@ -1317,13 +1319,13 @@ tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h intl.h \
 	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def \
-	diagnostic.h gt-c-common.h langhooks.h varray.h $(RTL_H) $(TARGET_H) \
-	$(C_TREE_H)
+	$(DIAGNOSTIC_H) gt-c-common.h langhooks.h varray.h $(RTL_H) \
+	$(TARGET_H) $(C_TREE_H)
 c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) real.h
 
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-        c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h \
+        c-pragma.h flags.h toplev.h langhooks.h tree-inline.h $(DIAGNOSTIC_H) \
 	intl.h debug.h $(C_COMMON_H) opts.h options.h $(PARAMS_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
@@ -1339,7 +1341,7 @@ attribs.o : attribs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) flag
 	builtin-types.def $(TARGET_H) langhooks.h
 
 c-format.o : c-format.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
-	$(C_COMMON_H) flags.h toplev.h intl.h diagnostic.h
+	$(C_COMMON_H) flags.h toplev.h intl.h $(DIAGNOSTIC_H)
 
 c-semantics.o : c-semantics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
@@ -1473,14 +1475,14 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE
    langhooks.h
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    flags.h real.h toplev.h $(HASHTAB_H) $(EXPR_H) $(RTL_H) $(GGC_H) $(TM_P_H) langhooks.h
-diagnostic.o : diagnostic.c diagnostic.h real.h diagnostic.def \
+diagnostic.o : diagnostic.c $(DIAGNOSTIC_H) real.h \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(TM_P_H) flags.h $(GGC_H) \
    input.h toplev.h intl.h langhooks.h $(LANGHOOKS_DEF_H)
 opts.o : opts.c opts.h options.h toplev.h $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TREE_H) $(TM_H) $(LANGHOOKS_H) $(GGC_H) $(RTL_H) \
-	output.h diagnostic.h $(TM_P_H) $(INSN_ATTR_H) intl.h
+	output.h $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
-   function.h flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h diagnostic.h \
+   function.h flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h $(DIAGNOSTIC_H) \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) \
@@ -1496,7 +1498,7 @@ host-default.o : host-default.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	hosthooks.h hosthooks-def.h
 
 rtl-error.o: rtl-error.c $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(INSN_ATTR_H) \
-   insn-config.h input.h toplev.h intl.h diagnostic.h $(CONFIG_H)
+   insn-config.h input.h toplev.h intl.h $(DIAGNOSTIC_H) $(CONFIG_H)
 
 rtl.o : rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) $(RTL_H) real.h \
   $(GGC_H) errors.h
@@ -1563,7 +1565,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) dwarf.h flags.h insn-config.h reload.h output.h toplev.h $(TM_P_H) \
    debug.h langhooks.h $(TARGET_H)
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(RTL_H) dwarf2.h debug.h flags.h insn-config.h reload.h output.h diagnostic.h real.h \
+   $(RTL_H) dwarf2.h debug.h flags.h insn-config.h reload.h output.h $(DIAGNOSTIC_H) real.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) libfuncs.h toplev.h dwarf2out.h varray.h \
    $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) \
    gt-dwarf2out.h $(TARGET_H)
@@ -1585,7 +1587,7 @@ integrate.o : integrate.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $
 jump.o : jump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    hard-reg-set.h $(REGS_H) insn-config.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h $(INSN_ATTR_H) $(TM_P_H) reload.h $(PREDICT_H) $(TIMEVAR_H) \
-   diagnostic.h
+   $(DIAGNOSTIC_H)
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
@@ -1794,6 +1796,7 @@ ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    cfgloop.h
 params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) toplev.h
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
+pretty-print.o: pretty-print.c $(PRETTY_PRINT_H)
 
 $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \

@@ -62,6 +62,9 @@ struct c_pretty_print_info
   c_pretty_print_fn assignment_expression;
 };
 
+#undef pp_base
+#define pp_base(PP)  (&pp_c_base (PP)->base)
+
 #define pp_c_left_paren(PPI)                       \
    do {                                            \
      pp_left_paren (PPI);                          \
@@ -84,7 +87,7 @@ struct c_pretty_print_info
    } while (0)
 #define pp_c_whitespace(PPI)                       \
    do {                                            \
-     pp_whitespace (PPI);                          \
+     pp_space (PPI);                               \
      pp_c_base (PPI)->base.padding = pp_none;      \
    } while (0)
 #define pp_c_maybe_whitespace(PPI)                 \
@@ -101,10 +104,6 @@ struct c_pretty_print_info
      
 #define pp_c_tree_identifier(PPI, ID)              \
    pp_c_identifier (PPI, IDENTIFIER_POINTER (ID))
-
-/* Returns the 'output_buffer *' associated with a PRETTY-PRINTER, the latter
-   being something digestible by pp_c_base.  */
-#define pp_buffer(PPI) pp_c_base (PPI)->base.buffer
 
 #define pp_declaration(PPI, T)                    \
    (*pp_c_base (PPI)->declaration) (pp_c_base (PPI), T)

@@ -1659,11 +1659,11 @@ check_global_declarations (tree *vec, int len)
 	  && ! TREE_PUBLIC (decl))
 	{
 	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    pedwarn_with_decl (decl,
-			       "`%s' used but never defined");
+	    pedwarn ("%H'%F' used but never defined",
+                     &DECL_SOURCE_LOCATION (decl), decl);
 	  else
-	    warning_with_decl (decl,
-			       "`%s' declared `static' but never defined");
+	    warning ("%H'%F' declared `static' but never defined",
+                     &DECL_SOURCE_LOCATION (decl), decl);
 	  /* This symbol is effectively an "extern" declaration now.  */
 	  TREE_PUBLIC (decl) = 1;
 	  assemble_external (decl);
@@ -1684,7 +1684,8 @@ check_global_declarations (tree *vec, int len)
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
 	  && (*lang_hooks.decls.warn_unused_global) (decl))
-	warning_with_decl (decl, "`%s' defined but not used");
+	warning ("%H'%D' defined but not used",
+                 &DECL_SOURCE_LOCATION (decl), decl);
 
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
@@ -2512,8 +2513,15 @@ rest_of_handle_inlining (tree decl)
       timevar_pop (TV_INTEGRATION);
       if (lose || ! optimize)
 	{
-	  if (warn_inline && DECL_INLINE (decl))
-	    warning_with_decl (decl, lose);
+	  if (warn_inline && lose && DECL_INLINE (decl))
+            {
+              char *msg = xmalloc (2 + strlen (lose) + 1);
+              msg[0] = '%';
+              msg[1] = 'H';
+              strcpy(msg + 2, lose);
+              warning (msg, &DECL_SOURCE_LOCATION (decl));
+              free (msg);
+            }
 	  DECL_ABSTRACT_ORIGIN (decl) = 0;
 	  /* Don't really compile an extern inline function.
 	     If we can't make it inline, pretend
@@ -4091,6 +4099,29 @@ init_asm_output (const char *name)
     }
 }
 
+/* Default tree printer.   Handles declarations only.  */
+static bool
+default_tree_printer (pretty_printer * pp, text_info *text)
+{
+  switch (*text->format_spec)
+    {
+    case 'D':
+    case 'F':
+    case 'T':
+      {
+        tree t = va_arg (*text->args_ptr, tree);
+        const char *n = DECL_NAME (t)
+          ? (*lang_hooks.decl_printable_name) (t, 2)
+          : "<anonymous>";
+        pp_string (pp, n);
+      }
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -4109,6 +4140,13 @@ general_init (const char *argv0)
   hex_init ();
 
   gcc_init_libintl ();
+
+  /* Initialize the diagnostics reporting machinery, so option parsing
+     can give warnings and errors.  */
+  diagnostic_initialize (global_dc);
+  /* Set a default printer.  Language specific initializations will
+     override it later.  */
+  pp_format_decoder (global_dc->printer) = &default_tree_printer;
 
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV
@@ -4132,10 +4170,6 @@ general_init (const char *argv0)
 
   /* Other host-specific signal setup.  */
   (*host_hooks.extra_signals)();
-
-  /* Initialize the diagnostics reporting machinery, so option parsing
-     can give warnings and errors.  */
-  diagnostic_initialize (global_dc);
 
   /* Initialize the garbage-collector, string pools and tree type hash
      table.  */

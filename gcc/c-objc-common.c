@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "cgraph.h"
 
-static bool c_tree_printer (output_buffer *, text_info *);
+static bool c_tree_printer (pretty_printer *, text_info *);
 static tree inline_forbidden_p (tree *, int *, void *);
 static void expand_deferred_fns (void);
 static tree start_cdtor (int);
@@ -416,7 +416,7 @@ c_objc_common_finish_file (void)
    Please notice when called, the `%' part was already skipped by the
    diagnostic machinery.  */
 static bool
-c_tree_printer (output_buffer *buffer, text_info *text)
+c_tree_printer (pretty_printer *pp, text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree);
 
@@ -429,14 +429,14 @@ c_tree_printer (output_buffer *buffer, text_info *text)
         const char *n = DECL_NAME (t)
           ? (*lang_hooks.decl_printable_name) (t, 2)
           : "({anonymous})";
-        output_add_string (buffer, n);
+        pp_string (pp, n);
       }
       return true;
 
     case 'E':
        if (TREE_CODE (t) == IDENTIFIER_NODE)
          {
-           output_add_string (buffer, IDENTIFIER_POINTER (t));
+           pp_string (pp, IDENTIFIER_POINTER (t));
            return true;
          }
        return false;

@@ -56,20 +56,16 @@ extern void _fatal_insn (const char *, rtx, const char *, int, const char *)
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
 extern void warning (const char *, ...);
-extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void error (const char *, ...);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void pedwarn (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void pedwarn (const char *, ...);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, const char *, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void rest_of_compilation (tree);
-
-extern void pedwarn_with_decl (tree, const char *, ...);
-extern void warning_with_decl (tree, const char *, ...);
-extern void error_with_decl (tree, const char *, ...);
 
 extern void announce_function (tree);
 

@@ -1171,7 +1171,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
       if (warn_inline && DECL_INLINE (fn) && !DID_INLINE_FUNC (fn)
 	  && !DECL_IN_SYSTEM_HEADER (fn))
 	{
-	  warning_with_decl (fn, "inlining failed in call to `%s'");
+	  warning ("%Hinlining failed in call to '%F'",
+                   &DECL_SOURCE_LOCATION (fn), fn);
 	  warning ("called from here");
 	}
       return NULL_TREE;

@@ -6734,7 +6734,8 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
     case PARM_DECL:
       if (!DECL_RTL_SET_P (exp))
 	{
-	  error_with_decl (exp, "prior parameter's size depends on `%s'");
+	  error ("%Hprior parameter's size depends on '%D'",
+                 &DECL_SOURCE_LOCATION (exp), exp);
 	  return CONST0_RTX (mode);
 	}
 

@@ -2036,9 +2036,9 @@ output_reg_number (rtx rtl)
 
   if (regno >= DWARF_FRAME_REGISTERS)
     {
-      warning_with_decl (dwarf_last_decl,
-			 "internal regno botch: `%s' has regno = %d\n",
-			 regno);
+      warning ("%Hinternal regno botch: '%D' has regno = %d\n",
+               &DECL_SOURCE_LOCATION (dwarf_last_decl), dwarf_last_decl,
+               regno);
       regno = 0;
     }
   dw2_assemble_integer (4, GEN_INT (DBX_REGISTER_NUMBER (regno)));

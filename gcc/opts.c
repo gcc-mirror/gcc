@@ -1071,7 +1071,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_fmessage_length_:
-      output_set_maximum_length (&global_dc->buffer, value);
+      pp_set_line_maximum_length (global_dc->printer, value);
       break;
 
     case OPT_fmove_all_movables:
