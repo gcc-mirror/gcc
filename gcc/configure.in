@@ -417,6 +417,15 @@ valgrind_command=
 if test x$ac_checking_valgrind != x ; then
   # It is certainly possible that there's valgrind but no valgrind.h.
   # GCC relies on making annotations so we must have both.
+  AC_MSG_CHECKING(for VALGRIND_DISCARD in <valgrind/memcheck.h>)
+  AC_TRY_CPP(
+    [#include <valgrind/memcheck.h>
+#ifndef VALGRIND_DISCARD
+#error VALGRIND_DISCARD not defined
+#endif],
+  [gcc_cv_header_valgrind_memcheck_h=yes],
+  [gcc_cv_header_valgrind_memcheck_h=no])
+  AC_MSG_RESULT($gcc_cv_header_valgrind_memcheck_h)
   AC_MSG_CHECKING(for VALGRIND_DISCARD in <memcheck.h>)
   AC_TRY_CPP(
     [#include <memcheck.h>
@@ -429,14 +438,21 @@ if test x$ac_checking_valgrind != x ; then
   AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
   AM_PATH_PROG_WITH_TEST(valgrind_path, valgrind,
 	[$ac_dir/$ac_word --version | grep valgrind- >/dev/null 2>&1])
-  if test "x$valgrind_path" = "x" || (test $have_valgrind_h = no && test $gcc_cv_header_memcheck_h = no); then
-	AC_MSG_ERROR([*** Can't find both valgrind and valgrind.h/memcheck.h])
+  if test "x$valgrind_path" = "x" \
+    || (test $have_valgrind_h = no \
+	&& test $gcc_cv_header_memcheck_h = no \
+	&& test $gcc_cv_header_valgrind_memcheck_h = no); then
+	AC_MSG_ERROR([*** Can't find both valgrind and valgrind/memcheck.h, memcheck.h or valgrind.h])
   fi
   valgrind_path_defines=-DVALGRIND_PATH='\"'$valgrind_path'\"'
   valgrind_command="$valgrind_path -q"
   AC_DEFINE(ENABLE_VALGRIND_CHECKING, 1,
 [Define if you want to run subprograms and generated programs
    through valgrind (a memory checker).  This is extremely expensive.])
+  if test $gcc_cv_header_valgrind_memcheck_h = yes; then
+    AC_DEFINE(HAVE_VALGRIND_MEMCHECK_H, 1,
+	[Define if valgrind's valgrind/memcheck.h header is installed.])
+  fi
   if test $gcc_cv_header_memcheck_h = yes; then
     AC_DEFINE(HAVE_MEMCHECK_H, 1,
 	[Define if valgrind's memcheck.h header is installed.])

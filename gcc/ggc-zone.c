@@ -36,7 +36,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "bitmap.h"
 
 #ifdef ENABLE_VALGRIND_CHECKING
-#include <valgrind/memcheck.h>
+# ifdef HAVE_VALGRIND_MEMCHECK_H
+#  include <valgrind/memcheck.h>
+# elif defined HAVE_MEMCHECK_H
+#  include <memcheck.h>
+# else
+#  include <valgrind.h>
+# endif
 #else
 /* Avoid #ifdef:s when we can help it.  */
 #define VALGRIND_DISCARD(x)

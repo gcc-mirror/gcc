@@ -241,6 +241,9 @@
    through valgrind (a memory checker).  This is extremely expensive. */
 #undef ENABLE_VALGRIND_CHECKING
 
+/* Define if valgrind's valgrind/memcheck.h header is installed. */
+#undef HAVE_VALGRIND_MEMCHECK_H
+
 /* Define if valgrind's memcheck.h header is installed. */
 #undef HAVE_MEMCHECK_H
 
