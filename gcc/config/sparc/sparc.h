@@ -369,6 +369,13 @@ extern int target_flags;
 #define MASK_STACK_BIAS 0x80000
 #define TARGET_STACK_BIAS (target_flags & MASK_STACK_BIAS)
 
+/* Non-zero means %g0 is a normal register.
+   We still clobber it as necessary, but we can't rely on it always having
+   a zero value.
+   We don't bother to support this in true 64 bit mode.  */
+#define MASK_LIVE_G0 0x100000
+#define TARGET_LIVE_G0 (target_flags & MASK_LIVE_G0)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -392,6 +399,7 @@ extern int target_flags;
     {"no-app-regs", -MASK_APP_REGS},	\
     {"hard-quad-float", MASK_HARD_QUAD}, \
     {"soft-quad-float", -MASK_HARD_QUAD}, \
+    {"live-g0", MASK_LIVE_G0},		\
     /* ??? These are coerced to -mcpu=.  Delete in 2.9.  */ \
     {"cypress", 0},			\
     {"sparclite", 0},			\
@@ -673,18 +681,23 @@ extern struct sparc_cpu_select sparc_select[];
    accessible.  We still account for them to simplify register computations
    (eg: in CLASS_MAX_NREGS).  There are also 4 fp condition code registers, so
    32+32+32+4 == 100.
-   Register 0 is used as the integer condition code register.  */
+   Register 100 is used as the integer condition code register.  */
 
-#define FIRST_PSEUDO_REGISTER 100
+#define FIRST_PSEUDO_REGISTER 101
 
 /* Additional V9 fp regs.  */
 #define SPARC_FIRST_V9_FP_REG 64
-#define SPARC_LAST_V9_FP_REG  99
+#define SPARC_LAST_V9_FP_REG  95
+/* V9 %fcc[0123].  V8 uses (figuratively) %fcc0.  */
+#define SPARC_FIRST_V9_FCC_REG 96
+#define SPARC_LAST_V9_FCC_REG  99
+/* V8 fcc reg.  */
+#define SPARC_FCC_REG 96
+/* Integer CC reg.  We don't distinguish %icc from %xcc.  */
+#define SPARC_ICC_REG 100
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
-   g0 is used for the condition code and not to represent %g0, which is
-   hardwired to 0, so reg 0 is *not* fixed.
    On non-v9 systems:
    g1 is free to use as temporary.
    g2-g4 are reserved for applications.  Gcc normally uses them as
@@ -705,7 +718,7 @@ extern struct sparc_cpu_select sparc_select[];
 */
 
 #define FIXED_REGISTERS  \
- {0, 0, 0, 0, 0, 0, 1, 1,	\
+ {1, 0, 0, 0, 0, 0, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
@@ -720,7 +733,7 @@ extern struct sparc_cpu_select sparc_select[];
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
 				\
-  0, 0, 0, 0}
+  0, 0, 0, 0, 0}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -745,10 +758,10 @@ extern struct sparc_cpu_select sparc_select[];
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
 				\
-  1, 1, 1, 1}
+  1, 1, 1, 1, 1}
 
-/* If !TARGET_FPU, then make the fp registers fixed so that they won't
-   be allocated.  On v9, also make the fp cc regs fixed.  */
+/* If !TARGET_FPU, then make the fp registers and fp cc regs fixed so that
+   they won't be allocated.  */
 
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
@@ -772,11 +785,16 @@ do								\
 	     regno <= SPARC_LAST_V9_FP_REG;			\
 	     regno++)						\
 	  fixed_regs[regno] = 1;				\
+	/* %fcc0 is used by v8 and v9.  */			\
+	for (regno = SPARC_FIRST_V9_FCC_REG + 1;		\
+	     regno <= SPARC_LAST_V9_FCC_REG;			\
+	     regno++)						\
+	  fixed_regs[regno] = 1;				\
       }								\
     if (! TARGET_FPU)						\
       {								\
 	int regno;						\
-	for (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno++) \
+	for (regno = 32; regno < SPARC_LAST_V9_FCC_REG; regno++) \
 	  fixed_regs[regno] = 1;				\
       }								\
     /* Don't unfix g2-g4 if they were fixed with -ffixed-.  */	\
@@ -982,7 +1000,12 @@ extern int sparc_mode_class[];
    have a class that is the union of FPCC_REGS with either of the others,
    it is important that it appear first.  Otherwise the compiler will die
    trying to compile _fixunsdfsi because fix_truncdfsi2 won't match its
-   constraints.  */
+   constraints.
+
+   It is important that SPARC_ICC_REG have class NO_REGS.  Otherwise combine
+   may try to use it to hold an SImode value.  See register_operand.
+   ??? Should %fcc[0123] be handled similarily?
+*/
 
 enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
 		 GENERAL_OR_FP_REGS, GENERAL_OR_EXTRA_FP_REGS,
@@ -1001,21 +1024,18 @@ enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS \
-  {{0, 0, 0, 0}, {0, 0, 0, 0xf}, {-2, 0, 0, 0}, \
-   {0, -1, 0, 0}, {0, -1, -1, 0}, {-2, -1, 0, 0}, {-2, -1, -1, 0}, \
-   {-2, -1, -1, 0xf}}
+  {{0, 0, 0, 0}, {0, 0, 0, 0xf}, \
+   {-1, 0, 0, 0}, {0, -1, 0, 0}, {0, -1, -1, 0}, \
+   {-1, -1, 0, 0}, {-1, -1, -1, 0}, {-1, -1, -1, 0x1f}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) \
-  ((REGNO) == 0 ? NO_REGS		\
-   : (REGNO) < 32 ? GENERAL_REGS	\
-   : (REGNO) < 64 ? FP_REGS		\
-   : (REGNO) < 96 ? EXTRA_FP_REGS	\
-   : FPCC_REGS)
+extern enum reg_class sparc_regno_reg_class[];
+
+#define REGNO_REG_CLASS(REGNO) sparc_regno_reg_class[(REGNO)]
 
 /* This is the order in which to allocate registers normally.  
    
@@ -1040,7 +1060,7 @@ enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
   64, 65, 66, 67, 68, 69, 70, 71,	/* %f32-%f39 */ \
   72, 73, 74, 75, 76, 77, 78, 79,	/* %f40-%f47 */ \
   32, 33,				/* %f0,%f1 */   \
-  96, 97, 98, 99,			/* %fcc0-3 */   \
+  96, 97, 98, 99, 100,			/* %fcc0-3, %icc */ \
   1, 4, 5, 6, 7, 0, 14, 30}
 
 /* This is the order in which to allocate registers for
@@ -1062,7 +1082,7 @@ enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
   64, 65, 66, 67, 68, 69, 70, 71,	\
   72, 73, 74, 75, 76, 77, 78, 79,	\
   32, 33,				\
-  96, 97, 98, 99,			\
+  96, 97, 98, 99, 100,			\
   1, 4, 5, 6, 7, 0, 14, 30, 31}
 
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
@@ -1086,7 +1106,7 @@ enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1}
+  1, 1, 1, 1, 1}
 
 extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
@@ -1110,6 +1130,7 @@ extern char leaf_reg_remap[];
     : NO_REGS)			\
  : ((C) == 'f' ? FP_REGS	\
     : (C) == 'e' ? FP_REGS	\
+    : (C) == 'c' ? FPCC_REGS	\
     : NO_REGS))
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -1624,7 +1645,7 @@ extern int leaf_function;
 #define FUNCTION_PROLOGUE(FILE, SIZE) \
   (TARGET_FLAT ? sparc_flat_output_function_prologue (FILE, SIZE) \
    : output_function_prologue (FILE, SIZE, leaf_function))
-
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -1981,7 +2002,7 @@ while(0)
   asm ("LSFLGNZVC" ID ":");\
   asm ("	unimp");\
   asm ("LFLGRET" ID ":");
-
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
@@ -2136,15 +2157,16 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-(((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32) && (REGNO) != 0)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-(((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32) && (REGNO) != 0)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
 #define REGNO_OK_FOR_FP_P(REGNO) \
   (((unsigned) (REGNO) - 32 < (TARGET_V9 ? 64 : 32)) \
    || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? 64 : 32)))
 #define REGNO_OK_FOR_CCFP_P(REGNO) \
  (TARGET_V9 \
-  && ((unsigned) (REGNO) - 96 < 4) || ((unsigned) reg_renumber[REGNO] - 96 < 4))
+  && (((unsigned) (REGNO) - 96 < 4) \
+      || ((unsigned) reg_renumber[REGNO] - 96 < 4)))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -2210,11 +2232,11 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (((unsigned) REGNO (X)) - 32 >= (FIRST_PSEUDO_REGISTER - 32) && REGNO (X) != 0)
+  (((unsigned) REGNO (X)) - 32 >= (FIRST_PSEUDO_REGISTER - 32))
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (((unsigned) REGNO (X)) - 32 >= (FIRST_PSEUDO_REGISTER - 32) && REGNO (X) != 0)
+  (((unsigned) REGNO (X)) - 32 >= (FIRST_PSEUDO_REGISTER - 32))
 
 /* 'T', 'U' are for aligned memory loads which aren't needed for v9.  */
 
@@ -2249,8 +2271,9 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    : (! TARGET_ARCH64 && (C) == 'U')			\
    ? (GET_CODE (OP) == REG				\
       && (REGNO (OP) < FIRST_PSEUDO_REGISTER		\
-	  || reg_renumber[REGNO (OP)] > 0)		\
-      && register_ok_for_ldd (OP)) : 0)
+	  || reg_renumber[REGNO (OP)] >= 0)		\
+      && register_ok_for_ldd (OP))			\
+   : 0)
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -2468,8 +2491,7 @@ extern struct rtx_def *legitimize_pic_address ();
    We also have two modes to indicate that the relevant condition code is
    in the floating-point condition code register.  One for comparisons which
    will generate an exception if the result is unordered (CCFPEmode) and
-   one for comparisons which will never trap (CCFPmode).  This really should
-   be a separate register, but we don't want to go to 65 registers.
+   one for comparisons which will never trap (CCFPmode).
 
    CCXmode and CCX_NOOVmode are only used by v9.  */
 
@@ -2703,16 +2725,12 @@ extern struct rtx_def *legitimize_pic_address ();
  "%f40", "%f41", "%f42", "%f43", "%f44", "%f45", "%f46", "%f47",	\
  "%f48", "%f49", "%f50", "%f51", "%f52", "%f53", "%f54", "%f55",	\
  "%f56", "%f57", "%f58", "%f59", "%f60", "%f61", "%f62", "%f63",	\
- "%fcc0", "%fcc1", "%fcc2", "%fcc3"}
+ "%fcc0", "%fcc1", "%fcc2", "%fcc3", "%icc"}
 
-/* Define additional names for use in asm clobbers and asm declarations.
+/* Define additional names for use in asm clobbers and asm declarations.  */
 
-   We define the fake Condition Code register as an alias for reg 0 (which
-   is our `condition code' register), so that condition codes can easily
-   be clobbered by an asm.  No such register actually exists.  Condition
-   codes are partly stored in the PSR and partly in the FSR.  */
-
-#define ADDITIONAL_REGISTER_NAMES	{"ccr", 0, "cc", 0}
+#define ADDITIONAL_REGISTER_NAMES \
+{{"ccr", SPARC_ICC_REG}, {"cc", SPARC_ICC_REG}}
 
 /* How to renumber registers for dbx and gdb.  */
 
