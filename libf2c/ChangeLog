@@ -1,3 +1,8 @@
+Sun May  2 00:06:45 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/u77-test.f (main): Just warn about FSTAT gid
+	disagreement, as it's expected on some systems.
+
 Sat May  1 23:57:18 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/u77-test.f: Generalize sum-checking to
