@@ -1514,11 +1514,11 @@ __bb_exit_func (void)
 	
 	if (fseek (da_file, 4 * 3, SEEK_SET)
 	    /* number of instrumented arcs.  */
-	    || __write_long (program_arcs, da_file, 4)
+	    || __write_long (merged_arcs, da_file, 4)
 	    /* sum of counters.  */
-	    || __write_gcov_type (program_sum, da_file, 8)
+	    || __write_gcov_type (merged_sum, da_file, 8)
 	    /* maximal counter.  */
-	    || __write_gcov_type (program_max, da_file, 8))
+	    || __write_gcov_type (merged_max, da_file, 8))
 	  fprintf (stderr, "arc profiling: Error updating program header %s.\n",
 		   ptr->filename);
 	if (fclose (da_file))
