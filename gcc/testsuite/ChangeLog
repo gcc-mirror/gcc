@@ -1,3 +1,9 @@
+2004-08-19  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/14976
+	PR fortran/16228 
+	* gfortran.dg/data_char_1.f90: New test.
+
 2004-08-19  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	PR fortran/16946

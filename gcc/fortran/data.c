@@ -104,81 +104,68 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
   return NULL;
 }
 
-/* Assign RVALUE to LVALUE where we assume that LVALUE is a substring
-   reference. We do a little more than that: if LVALUE already has an
-   initialization, we put RVALUE into the existing initialization as
-   per the rules of assignment to a substring. If LVALUE has no
-   initialization yet, we initialize it to all blanks, then filling in
-   the RVALUE.  */
 
-static void
-assign_substring_data_value (gfc_expr * lvalue, gfc_expr * rvalue)
+/* Create a character type intialization expression from RVALUE.
+   TS [and REF] describe [the substring of] the variable being initialized.
+   INIT is thh existing initializer, not NULL.  Initialization is performed
+   according to normal assignment rules.  */
+
+static gfc_expr *
+create_character_intializer (gfc_expr * init, gfc_typespec * ts,
+			     gfc_ref * ref, gfc_expr * rvalue)
 {
-  gfc_symbol *symbol;
-  gfc_expr *expr, *init;
-  gfc_ref *ref;
-  int len, i;
-  int start, end;
-  char *c, *d;
+  int len;
+  int start;
+  int end;
+  char *dest;
 	    
-  symbol = lvalue->symtree->n.sym;
-  ref = lvalue->ref;
-  init = symbol->value;
+  gfc_extract_int (ts->cl->length, &len);
 
-  assert (symbol->ts.type == BT_CHARACTER);
-  assert (symbol->ts.cl->length->expr_type == EXPR_CONSTANT);
-  assert (symbol->ts.cl->length->ts.type == BT_INTEGER);
-  assert (symbol->ts.kind == 1);
-
-  gfc_extract_int (symbol->ts.cl->length, &len);
-	    
   if (init == NULL)
     {
-      /* Setup the expression to hold the constructor.  */
-      expr = gfc_get_expr ();
-      expr->expr_type = EXPR_CONSTANT;
-      expr->ts.type = BT_CHARACTER;
-      expr->ts.kind = 1;
-	      
-      expr->value.character.length = len;
-      expr->value.character.string = gfc_getmem (len);
-      memset (expr->value.character.string, ' ', len);
-
-      symbol->value = expr;
+      /* Create a new initializer.  */
+      init = gfc_get_expr ();
+      init->expr_type = EXPR_CONSTANT;
+      init->ts = *ts;
+      
+      dest = gfc_getmem (len);
+      init->value.character.length = len;
+      init->value.character.string = dest;
+      /* Blank the string if we're only setting a substring.  */
+      if (ref != NULL)
+	memset (dest, ' ', len);
     }
   else
-    expr = init;
-	  
-  /* Now that we have allocated the memory for the string,
-     fill in the initialized places, truncating the
-     intialization string if necessary, i.e.
-     DATA a(1:2) /'123'/
-     doesn't initialize a(3:3).  */
+    dest = init->value.character.string;
 
-  gfc_extract_int (ref->u.ss.start, &start);
-  gfc_extract_int (ref->u.ss.end, &end);
-	    
-  assert (start >= 1);
-  assert (end <= len);
+  if (ref)
+    {
+      assert (ref->type == REF_SUBSTRING);
 
+      /* Only set a substring of the destination.  Fortran substring bounds
+         are one-based [start, end], we want zero based [start, end).  */
+      gfc_extract_int (ref->u.ss.start, &start);
+      start--;
+      gfc_extract_int (ref->u.ss.end, &end);
+    }
+  else
+    {
+      /* Set the whole string.  */
+      start = 0;
+      end = len;
+    }
+
+  /* Copy the initial value.  */
   len = rvalue->value.character.length;
-  c = rvalue->value.character.string;
-  d = &expr->value.character.string[start - 1];
+  if (len > end - start)
+    len = end - start;
+  memcpy (&dest[start], rvalue->value.character.string, len);
 
-  for (i = 0; i <= end - start && i < len; i++)
-    d[i] = c[i];
+  /* Pad with spaces.  Substrings will already be blanked.  */
+  if (len < end - start && ref == NULL)
+    memset (&dest[start + len], ' ', end - (start + len));
 
-  /* Pad with spaces. I.e. 
-     DATA a(1:2) /'a'/
-     intializes a(1:2) to 'a ' per the rules for assignment.  
-     If init == NULL we don't need to do this, as we have
-     intialized the whole string to blanks above.  */
-
-  if (init != NULL)
-    for (; i <= end - start; i++)
-      d[i] = ' ';
-
-  return;
+  return init;
 }
 
 /* Assign the initial value RVALUE to  LVALUE's symbol->value. If the
@@ -194,26 +181,26 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
   gfc_constructor *con;
   gfc_constructor *last_con;
   gfc_symbol *symbol;
+  gfc_typespec *last_ts;
   mpz_t offset;
-
-  ref = lvalue->ref;
-  if (ref != NULL && ref->type == REF_SUBSTRING)
-    {
-      /* No need to go through the for (; ref; ref->next) loop, since
-	 a single substring lvalue will only refer to a single
-	 substring, and therefore ref->next == NULL.  */
-      assert (ref->next == NULL);      
-      assign_substring_data_value (lvalue, rvalue);
-      return;
-    }
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
+  last_ts = &symbol->ts;
   last_con = NULL;
   mpz_init_set_si (offset, 0);
 
-  for (; ref; ref = ref->next)
+  /* Find/create the parent expressions for subobject references.  */
+  for (ref = lvalue->ref; ref; ref = ref->next)
     {
+      /* Break out of the loop if we find a substring.  */
+      if (ref->type == REF_SUBSTRING)
+	{
+	  /* A substring should always br the last subobject reference.  */
+	  assert (ref->next == NULL);
+	  break;
+	}
+
       /* Use the existing initializer expression if it exists.  Otherwise
          create a new one.  */
       if (init == NULL)
@@ -227,15 +214,11 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	case REF_ARRAY:
 	  if (init == NULL)
 	    {
+	      /* The element typespec will be the same as the array
+		 typespec.  */
+	      expr->ts = *last_ts;
 	      /* Setup the expression to hold the constructor.  */
 	      expr->expr_type = EXPR_ARRAY;
-	      if (ref->next)
-		{
-		  assert (ref->next->type == REF_COMPONENT);
-		  expr->ts.type = BT_DERIVED;
-		}
-	      else
-		expr->ts = rvalue->ts;
 	      expr->rank = ref->u.ar.as->rank;
 	    }
 	  else
@@ -269,6 +252,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	    }
 	  else
 	    assert (expr->expr_type == EXPR_STRUCTURE);
+	  last_ts = &ref->u.c.component->ts;
 
 	  /* Find the same element in the existing constructor.  */
 	  con = expr->value.constructor;
@@ -284,12 +268,11 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	    }
 	  break;
 
-       /* case REF_SUBSTRING: dealt with separately above. */
-	
 	default:
 	  abort ();
 	}
 
+      
       if (init == NULL)
 	{
 	  /* Point the container at the new expression.  */
@@ -302,17 +285,23 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
       last_con = con;
     }
 
-  expr = gfc_copy_expr (rvalue);
-  if (!gfc_compare_types (&lvalue->ts, &expr->ts))
-    gfc_convert_type (expr, &lvalue->ts, 0);
+  if (ref || last_ts->type == BT_CHARACTER)
+    expr = create_character_intializer (init, last_ts, ref, rvalue);
+  else
+    {
+      /* We should never be overwriting an existing initializer.  */
+      assert (!init);
+
+      expr = gfc_copy_expr (rvalue);
+      if (!gfc_compare_types (&lvalue->ts, &expr->ts))
+	gfc_convert_type (expr, &lvalue->ts, 0);
+
+    }
 
   if (last_con == NULL)
     symbol->value = expr;
   else
-    {
-      assert (!last_con->expr);
-      last_con->expr = expr;
-    }
+    last_con->expr = expr;
 }
 
 

@@ -1,3 +1,12 @@
+2004-08-19  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/14976
+	PR fortran/16228 
+	* data.c (assign_substring_data_value): Remove.
+	(create_character_intializer): New function.
+	(gfc_assign_data_value): Track the typespec for the current
+	subobject.  Use create_character_intializer.
+
 2004-08-18  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.c (gfc_sym_type): Use pointer types for optional args.
