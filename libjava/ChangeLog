@@ -1,3 +1,14 @@
+2003-02-13  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (state::seen_subrs): New field.
+	(state::state): Initialize it.
+	(state::clean_subrs): New method.
+	(state::~state): Call it.
+	(state::copy): Copy subroutine list.
+	(state::add_subr): New method.
+	(state::merge): Only register a change if the current subroutine
+	hasn't yet been noted.
+
 2003-02-13  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/InputStreamReader.java (getEncoding): Return null when
