@@ -8054,12 +8054,21 @@ insert_bct (loop_start, loop_end)
      at compile time.  In this case we generate run_time calculation
      of the number of iterations.  */
 
+  if (loop_iteration_var == 0)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT Runtime Instrumentation failed: no loop iteration variable found\n",
+		 loop_num);
+      return;
+    }
+
   if (GET_MODE_CLASS (GET_MODE (loop_iteration_var)) != MODE_INT
       || GET_MODE_SIZE (GET_MODE (loop_iteration_var)) != UNITS_PER_WORD)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "insert_bct %d: BCT Instrumentation failed: loop variable not integer\n",
+		 "insert_bct %d: BCT Runtime Instrumentation failed: loop variable not integer\n",
 		 loop_num);
       return;
     }
@@ -8069,7 +8078,7 @@ insert_bct (loop_start, loop_end)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "insert_bct %d: runtime bounds with != comparison\n",
+		 "insert_bct %d: BCT Runtime Instrumentation failed: runtime bounds with != comparison\n",
 		 loop_num);
       return;
     }
