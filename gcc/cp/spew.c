@@ -1023,7 +1023,7 @@ space_for_token (t)
   if (t->last_pos != TOKEN_CHUNK_SIZE)
     return t->last_chunk->toks + (t->last_pos++);
 
-  t->last_chunk->next = ggc_alloc (sizeof (*t->last_chunk->next));
+  t->last_chunk->next = ggc_alloc_cleared (sizeof (*t->last_chunk->next));
   t->last_chunk = t->last_chunk->next;
   t->last_chunk->next = NULL;
 
