@@ -2355,6 +2355,10 @@ expand_case (tree exp)
     {
       tree elt;
 
+      /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
+	 expressions being INTEGER_CST.  */
+      gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
+
       /* The default case is at the end of TREE_VEC.  */
       elt = TREE_VEC_ELT (vec, TREE_VEC_LENGTH (vec) - 1);
       gcc_assert (!CASE_HIGH (elt));
@@ -2494,58 +2498,27 @@ expand_case (tree exp)
 
 	  if (MEM_P (index))
 	    index = copy_to_reg (index);
-	  if (GET_CODE (index) == CONST_INT
-	      || TREE_CODE (index_expr) == INTEGER_CST)
-	    {
-	      /* Make a tree node with the proper constant value
-		 if we don't already have one.  */
-	      if (TREE_CODE (index_expr) != INTEGER_CST)
-		{
-		  index_expr
-		    = build_int_cst_wide (NULL_TREE, INTVAL (index),
-					  unsignedp || INTVAL (index) >= 0
-					  ? 0 : -1);
-		  index_expr = convert (index_type, index_expr);
-		}
 
-	      /* For constant index expressions we need only
-		 issue an unconditional branch to the appropriate
-		 target code.  The job of removing any unreachable
-		 code is left to the optimization phase if the
-		 "-O" option is specified.  */
-	      for (n = case_list; n; n = n->right)
-		if (! tree_int_cst_lt (index_expr, n->low)
-		    && ! tree_int_cst_lt (n->high, index_expr))
-		  break;
+	  /* If the index expression is not constant we generate
+	     a binary decision tree to select the appropriate
+	     target code.  This is done as follows:
 
-	      if (n)
-		emit_jump (label_rtx (n->code_label));
-	      else
-		emit_jump (default_label);
-	    }
-	  else
-	    {
-	      /* If the index expression is not constant we generate
-		 a binary decision tree to select the appropriate
-		 target code.  This is done as follows:
+	     The list of cases is rearranged into a binary tree,
+	     nearly optimal assuming equal probability for each case.
 
-		 The list of cases is rearranged into a binary tree,
-		 nearly optimal assuming equal probability for each case.
+	     The tree is transformed into RTL, eliminating
+	     redundant test conditions at the same time.
 
-		 The tree is transformed into RTL, eliminating
-		 redundant test conditions at the same time.
+	     If program flow could reach the end of the
+	     decision tree an unconditional jump to the
+	     default code is emitted.  */
 
-		 If program flow could reach the end of the
-		 decision tree an unconditional jump to the
-		 default code is emitted.  */
-
-	      use_cost_table
-		= (TREE_CODE (orig_type) != ENUMERAL_TYPE
-		   && estimate_case_costs (case_list));
-	      balance_case_nodes (&case_list, NULL);
-	      emit_case_nodes (index, case_list, default_label, index_type);
-	      emit_jump (default_label);
-	    }
+	  use_cost_table
+	    = (TREE_CODE (orig_type) != ENUMERAL_TYPE
+	       && estimate_case_costs (case_list));
+	  balance_case_nodes (&case_list, NULL);
+	  emit_case_nodes (index, case_list, default_label, index_type);
+	  emit_jump (default_label);
 	}
       else
 	{
