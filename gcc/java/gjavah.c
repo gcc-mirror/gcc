@@ -313,8 +313,7 @@ jni_print_char (stream, ch)
    string, an error results.  */
 
 static void
-DEFUN(print_name, (stream, jcf, name_index),
-      FILE* stream AND JCF* jcf AND int name_index)
+print_name (FILE* stream, JCF* jcf, int name_index)
 {
   if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     {
@@ -688,9 +687,8 @@ print_field_name (stream, jcf, name_index, flags)
 }
 
 static void
-DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
-      FILE *stream AND JCF* jcf
-      AND int name_index AND int sig_index AND JCF_u2 flags)
+print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
+		  JCF_u2 flags)
 {
   char *override = NULL;
 
@@ -797,9 +795,8 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 
 
 static void
-DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
-      FILE *stream AND JCF* jcf
-      AND int name_index AND int sig_index AND JCF_u2 flags)
+print_method_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
+		   JCF_u2 flags)
 {
   const unsigned char *str;
   int length, is_init = 0;
@@ -1378,11 +1375,8 @@ decode_signature_piece (stream, signature, limit, need_space)
 }
 
 static void
-DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
-		     name_override, flags),
-      FILE* stream AND JCF* jcf
-      AND int name_index AND int signature_index
-      AND int is_init AND const char *name_override AND int flags)
+print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
+	      int is_init, const char *name_override, int flags)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
     {
@@ -1436,11 +1430,9 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
 
 /* Print the unqualified method name followed by the signature. */
 static void
-DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index,
-			    is_init, name_override, flags),
-      FILE* stream AND JCF* jcf
-      AND int name_index AND int signature_index AND int is_init 
-      AND const char *name_override AND int flags)
+print_full_cxx_name (FILE* stream, JCF* jcf, int name_index,
+		     int signature_index, int is_init,
+		     const char *name_override, int flags)
 {
   int length = JPOOL_UTF_LENGTH (jcf, signature_index);
   const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
@@ -1529,11 +1521,9 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index,
 
 /* This is a helper for print_stub_or_jni.  */
 static void
-DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
-				    is_init, name_override, flags),
-       FILE *stream AND JCF *jcf
-       AND int name_index AND int signature_index
-       AND int is_init AND const char *name_override AND int flags)
+print_name_for_stub_or_jni (FILE *stream, JCF *jcf, int name_index,
+			    int signature_index, int is_init,
+			    const char *name_override, int flags)
 {
   const char *const prefix = flag_jni ? "Java_" : "";
   print_cxx_classname (stream, prefix, jcf, jcf->this_class, 1);
@@ -1544,11 +1534,9 @@ DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
 }
 
 static void
-DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
-			  name_override, flags),
-      FILE* stream AND JCF* jcf
-      AND int name_index AND int signature_index
-      AND int is_init AND const char *name_override AND int flags)
+print_stub_or_jni (FILE* stream, JCF* jcf, int name_index,
+		   int signature_index, int is_init,
+		   const char *name_override, int flags)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
     {
@@ -1629,8 +1617,7 @@ DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
 }
 
 static void
-DEFUN(print_mangled_classname, (stream, jcf, prefix, index),
-      FILE *stream AND JCF *jcf AND const char *prefix AND int index)
+print_mangled_classname (FILE *stream, JCF *jcf, const char *prefix, int index)
 {
   int name_index = JPOOL_USHORT1 (jcf, index);
   fputs (prefix, stream);
@@ -1965,8 +1952,7 @@ print_class_decls (out, jcf, self)
 
 
 static void
-DEFUN(process_file, (jcf, out),
-      JCF *jcf AND FILE *out)
+process_file (JCF *jcf, FILE *out)
 {
   int code, i;
   uint32 field_start, method_end, method_start;
@@ -2314,8 +2300,7 @@ version ()
 }
 
 int
-DEFUN(main, (argc, argv),
-      int argc AND char** argv)
+main (int argc, char** argv)
 {
   JCF jcf;
   int argi;

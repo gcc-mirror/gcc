@@ -49,11 +49,7 @@ typedef unsigned int32	uint32;
 #endif
 
 typedef uint16			jchar;
-#ifdef __STDC__
 typedef	signed char		jbyte;
-#else
-typedef	char			jbyte;
-#endif
 typedef int16                   jshort;
 typedef int32                   jint;
 typedef int64                   jlong;
