@@ -8318,6 +8318,9 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       tree type;
 
       type = check_tag_decl (decl_specifiers);
+      /* Turn access control back on for names used during
+	 template instantiation.  */
+      pop_deferring_access_checks ();
       if (type)
 	do_type_instantiation (type, extension_specifier, /*complain=*/1);
     }
@@ -8332,13 +8335,14 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*ctor_dtor_or_conv_p=*/NULL);
       decl = grokdeclarator (declarator, decl_specifiers, 
 			     NORMAL, 0, NULL);
+      /* Turn access control back on for names used during
+	 template instantiation.  */
+      pop_deferring_access_checks ();
       /* Do the explicit instantiation.  */
       do_decl_instantiation (decl, extension_specifier);
     }
   /* We're done with the instantiation.  */
   end_explicit_instantiation ();
-  /* Turn access control back on.  */
-  pop_deferring_access_checks ();
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 }

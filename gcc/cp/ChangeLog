@@ -1,3 +1,8 @@
+2003-05-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* parser.c (cp_parser_explicit_instantiation): Restore old
+	access before template instantiation.
+
 2003-05-23  Geoffrey Keating  <geoffk@apple.com>
 
 	* lang-specs.h: Use -o to specify preprocessor's output file.
