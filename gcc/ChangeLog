@@ -1,5 +1,7 @@
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* c-lex.c (skip_white_space_on_line): Add prototype.
+
 	* alias.c (record_set): Add prototype.
 	(find_base_term, base_alias_check): Likewise.
 	
