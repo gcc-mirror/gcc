@@ -194,12 +194,14 @@ public class RandomAccessFile implements DataOutput, DataInput
   }
 
   /**
-   * This method sets the length of the file to the specified length.  If
-   * the currently length of the file is longer than the specified length,
-   * then the file is truncated to the specified length.  If the current
-   * length of the file is shorter than the specified length, the file
-   * is extended with bytes of an undefined value.
-   *  <p>
+   * This method sets the length of the file to the specified length.
+   * If the currently length of the file is longer than the specified
+   * length, then the file is truncated to the specified length (the
+   * file position is set to the end of file in this case).  If the
+   * current length of the file is shorter than the specified length,
+   * the file is extended with bytes of an undefined value (the file
+   * position is unchanged in this case).
+   * <p>
    * The file must be open for write access for this operation to succeed.
    *
    * @param newlen The new length of the file
@@ -208,7 +210,19 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void setLength (long newLen) throws IOException
   {
-    ch.truncate (newLen);
+    // FIXME: Extending a file should probably be done by one method call.
+
+    // FileChannel.truncate() can only shrink a file.
+    // To expand it we need to seek forward and write at least one byte.
+    if (newLen < length())
+      ch.truncate (newLen);
+    else if (newLen > length())
+      {
+	long pos = getFilePointer();
+	seek(newLen - 1);
+	write(0);
+	seek(pos);
+      }
   }
 
   /**
