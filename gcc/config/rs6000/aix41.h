@@ -21,6 +21,14 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
+/* Enable AIX XL compiler calling convention breakage compatibility.  */
+#define MASK_XL_CALL		0x40000000
+#define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
+#undef  SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES		\
+  {"xl-call", 		MASK_XL_CALL},	\
+  {"no-xl-call",	- MASK_XL_CALL},
+
 #include "rs6000/rs6000.h"
 
 #undef ASM_SPEC

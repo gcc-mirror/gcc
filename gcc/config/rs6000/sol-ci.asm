@@ -68,12 +68,12 @@ __DTOR_LIST__:
 	.type __init,@function
 __init:	stwu	%r1,-16(%r1)
 	mflr	%r0
-#	stw	%r31,12(%r1)
+	stw	%r31,12(%r1)
 	stw	%r0,16(%r1)
 
-#	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
-#	mflr	%r31
-#
+	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
+	mflr	%r31
+
 #	lwz	%r3,_ex_shared0@got(%r31)
 #	lwz	%r4,-8(%r3)		# _ex_register or 0
 #	cmpi	%cr0,%r4,0
@@ -92,8 +92,8 @@ __fini:	stwu	%r1,-16(%r1)
 	stw	%r31,12(%r1)
 	stw	%r0,16(%r1)
 
-#	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
-#	mflr	%r31
+	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
+	mflr	%r31
 
 # _environ and its evil twin environ, pointing to the environment
 	.comm	_environ,4,4

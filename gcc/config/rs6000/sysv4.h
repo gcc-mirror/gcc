@@ -187,7 +187,7 @@ do {									\
     }									\
   else if (TARGET_SDATA)						\
     rs6000_sdata = (TARGET_EABI) ? SDATA_EABI : SDATA_SYSV;		\
-  else if (!TARGET_RELOCATABLE && !flag_pic && DEFAULT_ABI == ABI_V4)	\
+  else if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
     {									\
       rs6000_sdata = SDATA_DATA;					\
       target_flags |= MASK_SDATA;					\
@@ -198,22 +198,15 @@ do {									\
   if (TARGET_RELOCATABLE &&						\
       (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
-      target_flags &= ~MASK_SDATA;					\
-      rs6000_sdata = SDATA_NONE;					\
+      rs6000_sdata = SDATA_DATA;					\
       error ("-mrelocatable and -msdata are incompatible.");		\
-    }									\
-									\
-  if (TARGET_RELOCATABLE && !TARGET_EABI)				\
-    {									\
-      target_flags |= ~MASK_EABI;					\
-      error ("-mrelocatable and -mno-eabi are incompatible.");		\
     }									\
 									\
   if (TARGET_SDATA && DEFAULT_ABI != ABI_V4				\
       && DEFAULT_ABI != ABI_SOLARIS)					\
     {									\
       target_flags &= ~MASK_SDATA;					\
-      error ("-msdata and -mcall-aix are incompatible.");		\
+      error ("-msdata and -mcall-%s are incompatible.", rs6000_abi_name); \
     }									\
 									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
@@ -1039,6 +1032,8 @@ do {									\
 #undef	CPP_SYSV_SPEC
 #define CPP_SYSV_SPEC \
 "%{mrelocatable*: -D_RELOCATABLE} \
+%{fpic: -D__PIC__=1 -D__pic__=1} \
+%{fPIC: -D__PIC__=2 -D__pic__=2} \
 %{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
 %{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
 %{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: %(cpp_sysv_default) }}}} \
@@ -1047,22 +1042,34 @@ do {									\
 #undef	CPP_SYSV_DEFAULT_SPEC
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
 
+#ifndef CPP_ENDIAN_BIG_SPEC
+#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine(bigendian)"
+#endif
+
+#ifndef CPP_ENDIAN_LITTLE_SPEC
+#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine(littleendian)"
+#endif
+
+#ifndef CPP_ENDIAN_SOLARIS_SPEC
+#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Amachine(littleendian)"
+#endif
+
 /* For solaris, don't define _LITTLE_ENDIAN, it conflicts with a header file.  */
 #undef	CPP_ENDIAN_SPEC
 #define	CPP_ENDIAN_SPEC \
-"%{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
-%{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
-%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
+"%{mlittle: %(cpp_endian_little) } \
+%{mlittle-endian: %(cpp_endian_little) } \
+%{mbig: %(cpp_endian_big) } \
+%{mbig-endian: %(cpp_endian_big) } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -Amachine(littleendian)} \
-    %{mcall-nt: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
-    %{mcall-linux: -D_BIG_ENDIAN -Amachine(bigendian)} \
-    %{mcall-aixdesc:  -D_BIG_ENDIAN -Amachine(bigendian)} \
+    %{mcall-solaris: %(cpp_endian_solaris) } \
+    %{mcall-nt: %(cpp_endian_little) } \
+    %{mcall-linux: %(cpp_endian_big) } \
+    %{mcall-aixdesc:  %(cpp_endian_big) } \
     %{!mcall-solaris: %{!mcall-linux: %{!mcall-nt: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}"
 
 #undef	CPP_ENDIAN_DEFAULT_SPEC
-#define	CPP_ENDIAN_DEFAULT_SPEC "-D_BIG_ENDIAN -Amachine(bigendian)"
+#define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_big)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
@@ -1287,6 +1294,9 @@ do {									\
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
   { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
+  { "cpp_endian_big",		CPP_ENDIAN_BIG_SPEC },			\
+  { "cpp_endian_little",	CPP_ENDIAN_LITTLE_SPEC },		\
+  { "cpp_endian_solaris",	CPP_ENDIAN_SOLARIS_SPEC },		\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
   { "cpp_os_sim",		CPP_OS_SIM_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\

@@ -52,6 +52,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	LINK_OS_DEFAULT_SPEC
 #define	LINK_OS_DEFAULT_SPEC "%(link_os_solaris)"
 
+#undef	CPP_ENDIAN_LITTLE_SPEC
+#define	CPP_ENDIAN_LITTLE_SPEC CPP_ENDIAN_SOLARIS_SPEC
+
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #undef	RELATIVE_PREFIX_NOT_LINKDIR
 

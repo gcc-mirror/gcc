@@ -54,6 +54,8 @@ extern char _ex_text0[], _ex_text1[];
 extern char _ex_range0[], _ex_range1[];
 extern void _ex_register (struct ex_shared1 *);
 extern void _ex_deregister (struct ex_shared1 *);
+extern char _SDA_BASE_[];
+extern char _SDA2_BASE_[];
 
 struct ex_shared shared __attribute__((section(".ex_shared"))) = {
   _ex_register,
@@ -80,11 +82,14 @@ void
 _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
 {
   int ret;
+  int dummy = 0;
 
+  /* Load up r13 before we do anything else.  */
+  __asm__ volatile ("mr %%r13,%0;mr %%r2,%1" : "=r" (dummy) : "r" (&_SDA_BASE_[0]), "r" (&_SDA2_BASE_[0]));
   _environ = envp;
 
   /* Register loader termination function */
-  if (termfunc)
+  if (termfunc || dummy)
     atexit (termfunc);
 
   /* Register exception handler if needed */

@@ -66,6 +66,19 @@
 .Lsda2e = .-.LCTOC1
 	.long	__SBSS2_END__			/* end of .sdata2/.sbss2 section */
 
+#ifdef _RELOCATABLE
+.Lgots = .-.LCTOC1
+	.long	__GOT_START__			/* Global offset table start */
+
+.Lgotm1 = .-.LCTOC1
+	.long	_GLOBAL_OFFSET_TABLE_-4		/* end of GOT ptrs before BLCL + 3 reserved words */
+
+.Lgotm2 = .-.LCTOC1
+	.long	_GLOBAL_OFFSET_TABLE_+12	/* start of GOT ptrs after BLCL + 3 reserved words */
+
+.Lgote = .-.LCTOC1
+	.long	__GOT_END__			/* Global offset table end */
+
 .Lgot2s = .-.LCTOC1
 	.long	__GOT2_START__			/* -mrelocatable GOT pointers start */
 
@@ -99,16 +112,18 @@
 .Linit = .-.LCTOC1
 	.long	.Linit_p			/* address of variable to say we've been called */
 
+	.text
+	.align	2
+.Lptr:
+	.long	.LCTOC1-.Laddr			/* PC relative pointer to .got2 */
+#endif
+
 	.data
 	.align	2
 .Linit_p:
 	.long	0
 
 	.text
-#ifdef _RELOCATABLE
-.Lptr:
-	.long	.LCTOC1-.Laddr			/* PC relative pointer to .got2 */
-#endif
 
 FUNC_START(__eabi)
 
@@ -116,7 +131,16 @@ FUNC_START(__eabi)
    be assembled with other assemblers than GAS, such as the Solaris PowerPC
    assembler.  */
 
-#ifdef _RELOCATABLE
+#ifndef _RELOCATABLE
+	addis	10,0,.Linit_p@ha		/* init flag */
+	addis	11,0,.LCTOC1@ha			/* load address of .LCTOC1 */
+	lwz	9,.Linit_p@l(10)		/* init flag */
+	addi	11,11,.LCTOC1@l
+	cmplwi	2,9,0				/* init flag != 0? */
+	bnelr	2				/* return now, if we've been called already */
+	stw	1,.Linit_p@l(10)		/* store a non-zero value in the done flag */
+
+#else /* -mrelocatable */
 	mflr	0
 	bl	.Laddr				/* get current address */
 .Laddr:
@@ -127,31 +151,68 @@ FUNC_START(__eabi)
 	lwz	10,.Linit(11)			/* address of init flag */
 	subf.	12,12,11			/* calculate difference */
 	lwzx	9,10,12				/* done flag */
-	mtlr	0				/* restore link register */
 	cmplwi	2,9,0				/* init flag != 0? */
 	bnelr	2				/* return now, if we've been called already */
 	stwx	1,10,12				/* store a non-zero value in the done flag */
-	bne-	0,.Lreloc			/* skip if we need to relocate */
+	beq+	0,.Lsdata			/* skip if we don't need to relocate */
 
-#else /* !-mrelocatable */
-	addis	10,0,.Linit_p@ha		/* init flag */
-	addis	11,0,.LCTOC1@ha			/* load address of .LCTOC1 */
-	lwz	9,.Linit_p@l(10)		/* init flag */
-	addi	11,11,.LCTOC1@l
-	cmplwi	2,9,0				/* init flag != 0? */
-	bnelr	2				/* return now, if we've been called already */
-	stw	1,.Linit_p@l(10)		/* store a non-zero value in the done flag */
+/* We need to relocate the .got2 pointers. */
 
-#endif /* !-mrelocatable */
+	lwz	3,.Lgot2s(11)			/* GOT2 pointers start */
+	lwz	4,.Lgot2e(11)			/* GOT2 pointers end */
+	add	3,12,3				/* adjust pointers */
+	add	4,12,4
+	bl	FUNC_NAME(__eabi_convert)	/* convert pointers in .got2 section */
+
+/* Fixup the .ctor section for static constructors */
+
+	lwz	3,.Lctors(11)			/* constructors pointers start */
+	lwz	4,.Lctore(11)			/* constructors pointers end */
+	bl	FUNC_NAME(__eabi_convert)	/* convert constructors */
+
+/* Fixup the .dtor section for static destructors */
+
+	lwz	3,.Ldtors(11)			/* destructors pointers start */
+	lwz	4,.Ldtore(11)			/* destructors pointers end */
+	bl	FUNC_NAME(__eabi_convert)	/* convert destructors */
+
+/* Fixup the .gcc_except_table section for G++ exceptions */
+
+	lwz	3,.Lexcepts(11)			/* exception table pointers start */
+	lwz	4,.Lexcepte(11)			/* exception table pointers end */
+	bl	FUNC_NAME(__eabi_convert)	/* convert exceptions */
+
+/* Fixup the the addresses in the GOT below _GLOBAL_OFFSET_TABLE_-4 */
+
+	lwz	3,.Lgots(11)			/* GOT table pointers start */
+	lwz	4,.Lgotm1(11)			/* GOT table pointers below _GLOBAL_OFFSET_TABLE-4 */
+	bl	FUNC_NAME(__eabi_convert)	/* convert lower GOT */
+
+/* Fixup the the addresses in the GOT above _GLOBAL_OFFSET_TABLE_+12 */
+
+	lwz	3,.Lgotm2(11)			/* GOT table pointers above _GLOBAL_OFFSET_TABLE+12 */
+	lwz	4,.Lgote(11)			/* GOT table pointers end */
+	bl	FUNC_NAME(__eabi_convert)	/* convert lower GOT */
+
+/* Fixup any user initialized pointers now (the compiler drops pointers to */
+/* each of the relocs that it does in the .fixup section).  */
+
+.Lfix:
+	lwz	3,.Lfixups(11)			/* fixup pointers start */
+	lwz	4,.Lfixupe(11)			/* fixup pointers end */
+	bl	FUNC_NAME(__eabi_uconvert)	/* convert user initialized pointers */
+
+.Lsdata:
+	mtlr	0				/* restore link register */
+#endif /* _RELOCATABLE */
 
 /* Only load up register 13 if there is a .sdata and/or .sbss section */
-
 	lwz	3,.Lsdas(11)			/* start of .sdata/.sbss section */
 	lwz	4,.Lsdae(11)			/* end of .sdata/.sbss section */
 	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
 	beq-	1,.Lsda2l			/* skip loading r13 */
 
-	lwz	13,.Lsda(11)			/* load r13 with _SDA_BASE address */
+	lwz	13,.Lsda(11)			/* load r13 with _SDA_BASE_ address */
 
 /* Only load up register 2 if there is a .sdata2 and/or .sbss2 section */
 
@@ -161,110 +222,77 @@ FUNC_START(__eabi)
 	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
 	beq+	1,.Ldone			/* skip loading r2 */
 
-	lwz	2,.Lsda2(11)			/* load r2 with _SDA2_BASE address */
-	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
+	lwz	2,.Lsda2(11)			/* load r2 with _SDA2_BASE_ address */
 
-
-#ifdef _RELOCATABLE
-.Lreloc:
-/* We need to relocate the .got2 pointers.  Don't load registers 2 or 13 */
-
-	lwz	3,.Lgot2s(11)			/* GOT pointers start */
-	lwz	4,.Lgot2e(11)			/* GOT pointers end */
-	add	3,12,3				/* adjust pointers */
-	add	4,12,4
-
-	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Lctor
-
-.Lloop:
-	lwz	5,0(3)				/* next pointer */
-	add	5,5,12				/* adjust */
-	stw	5,0(3)
-	addi	3,3,4				/* bump to next word */
-	cmpw	1,3,4				/* more pointers to adjust? */
-	bc	4,6,.Lloop
-
-/* Fixup the .ctor section for static constructors */
-
-.Lctor:
-	lwz	3,.Lctors(11)			/* constructors pointers start */
-	lwz	4,.Lctore(11)			/* constructors pointers end */
-
-	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Ldtor
-
-.Lcloop:
-	lwz	5,0(3)				/* next pointer */
-	add	5,5,12				/* adjust */
-	stw	5,0(3)
-	addi	3,3,4				/* bump to next word */
-	cmpw	1,3,4				/* more pointers to adjust? */
-	bc	4,6,.Lcloop
-
-/* Fixup the .dtor section for static destructors */
-
-.Ldtor:
-	lwz	3,.Ldtors(11)			/* destructors pointers start */
-	lwz	4,.Ldtore(11)			/* destructors pointers end */
-
-	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Lexcept
-
-.Ldloop:
-	lwz	5,0(3)				/* next pointer */
-	add	5,5,12				/* adjust */
-	stw	5,0(3)
-	addi	3,3,4				/* bump to next word */
-	cmpw	1,3,4				/* more pointers to adjust? */
-	bc	4,6,.Ldloop
-
-/* Fixup the .gcc_except_table section for G++ exceptions */
-
-.Lexcept:
-	lwz	3,.Lexcepts(11)			/* exception table pointers start */
-	lwz	4,.Lexcepte(11)			/* exception table pointers end */
-
-	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Lfix
-
-.Leloop:
-	lwz	5,0(3)				/* next pointer */
-	addi	3,3,4				/* bump to next word */
-	cmpi	1,5,0
-	beq	1,.Leloop			/* if NULL pointer, don't adjust */
-	add	5,5,12				/* adjust */
-	stw	5,-4(3)
-	cmpw	1,3,4				/* more pointers to adjust? */
-	bc	4,6,.Leloop
-
-/* Fixup any user initialized pointers now (the compiler drops pointers to */
-/* each of the relocs that it does in the .fixup section).  */
-
-.Lfix:
-	lwz	3,.Lfixups(11)			/* fixup pointers start */
-	lwz	4,.Lfixupe(11)			/* fixup pointers end */
-
-	cmpw	1,3,4				/* any user pointers to adjust */
-	bc	12,6,.Ldone
-
-.Lfloop:
-	lwz	5,0(3)				/* next pointer */
-	add	5,5,12				/* adjust pointer */
-	lwz	6,0(5)				/* get the pointer it points to */
-	stw	5,0(3)				/* store adjusted pointer */
-	add	6,6,12				/* adjust */
-	stw	6,0(5)
-	addi	3,3,4				/* bump to next word */
-	cmpw	1,3,4				/* more pointers to adjust? */
-	bc	4,6,.Lfloop
-#endif /* _RELOCATABLE */
-
-/* Done adjusting pointers, return */
+/* Done adjusting pointers, return by way of doing the C++ global constructors.  */
 
 .Ldone:
 	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
 FUNC_END(__eabi)
+
+/* Special subroutine to convert a bunch of pointers directly.
+   r0		has original link register
+   r3		has low pointer to convert
+   r4		has high pointer to convert
+   r5 .. r10	are scratch registers
+   r11		has the address of .LCTOC1 in it.
+   r12		has the value to add to each pointer
+   r13 .. r31	are unchanged */
+	
+FUNC_START(__eabi_convert)
+        cmplw	1,3,4				/* any pointers to convert? */
+        subf	5,3,4				/* calculate number of words to convert */
+        bclr	4,4				/* return if no pointers */
+
+        srawi	5,5,2
+	addi	3,3,-4				/* start-4 for use with lwzu */
+        mtctr	5
+
+.Lcvt:
+	lwzu	6,4(3)				/* pointer to convert */
+	cmpi	0,6,0
+	beq-	.Lcvt2				/* if pointer is null, don't convert */
+
+        add	6,6,12				/* convert pointer */
+        stw	6,0(3)
+.Lcvt2:
+        bdnz+	.Lcvt
+        blr
+
+FUNC_END(__eabi_convert)
+
+/* Special subroutine to convert the pointers the user has initialized.  The
+   compiler has placed the address of the initialized pointer into the .fixup
+   section.
+
+   r0		has original link register
+   r3		has low pointer to convert
+   r4		has high pointer to convert
+   r5 .. r10	are scratch registers
+   r11		has the address of .LCTOC1 in it.
+   r12		has the value to add to each pointer
+   r13 .. r31	are unchanged */
+	
+FUNC_START(__eabi_uconvert)
+        cmplw	1,3,4				/* any pointers to convert? */
+        subf	5,3,4				/* calculate number of words to convert */
+        bclr	4,4				/* return if no pointers */
+
+        srawi	5,5,2
+	addi	3,3,-4				/* start-4 for use with lwzu */
+        mtctr	5
+
+.Lucvt:
+	lwzu	6,4(3)				/* next pointer to pointer to convert */
+	add	6,6,12				/* adjust pointer */
+	lwz	7,0(6)				/* get the pointer it points to */
+	stw	6,0(3)				/* store adjusted pointer */
+	add	7,7,12				/* adjust */
+	stw	7,0(6)
+        bdnz+	.Lucvt
+        blr
+
+FUNC_END(__eabi_uconvert)
 
 /* Routines for saving floating point registers, called by the compiler. */
 /* Called with r11 pointing to the stack header word of the caller of the */

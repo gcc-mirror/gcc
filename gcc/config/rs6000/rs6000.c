@@ -1013,7 +1013,7 @@ small_data_operand (op, mode)
   if (rs6000_sdata == SDATA_NONE || rs6000_sdata == SDATA_DATA)
     return 0;
 
-  if (DEFAULT_ABI != ABI_V4 /* && DEFAULT_ABI != ABI_SOLARIS */)
+  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
     return 0;
 
   if (GET_CODE (op) == SYMBOL_REF)
@@ -1262,10 +1262,15 @@ function_arg (cum, mode, type, named)
 
   if (USE_FP_FOR_ARG_P (*cum, mode, type))
     {
-      if ((cum->nargs_prototype > 0)
-	  || DEFAULT_ABI == ABI_V4	/* V.4 never passes FP values in GP registers */
+      if (DEFAULT_ABI == ABI_V4 /* V.4 never passes FP values in GP registers */
 	  || DEFAULT_ABI == ABI_SOLARIS
-	  || !type)
+	  || ! type
+	  || ((cum->nargs_prototype > 0)
+	      /* IBM AIX extended its linkage convention definition always to
+		 require FP args after register save area hole on the stack.  */
+	      && (DEFAULT_ABI != ABI_AIX
+		  || ! TARGET_XL_CALL
+		  || (align_words < GP_ARG_NUM_REG))))
 	return gen_rtx (REG, mode, cum->fregno);
 
       return gen_rtx (PARALLEL, mode,
