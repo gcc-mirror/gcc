@@ -464,6 +464,7 @@ enum reg_class
   FPUL_REGS,
   FP0_REGS,
   FP_REGS,
+  GENERAL_FP_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -482,6 +483,7 @@ enum reg_class
   "FPUL_REGS",		\
   "FP0_REGS",		\
   "FP_REGS",		\
+  "GENERAL_FP_REGS",	\
   "ALL_REGS",		\
 }
 
@@ -500,6 +502,7 @@ enum reg_class
   { 0x00400000, 0x00000000 }, /* FPUL_REGS	*/	\
   { 0x01000000, 0x00000000 }, /* FP0_REGS	*/	\
   { 0xFF000000, 0x000000FF }, /* FP_REGS	*/	\
+  { 0xFF01FFFF, 0x000000FF }, /* GENERAL_FP_REGS */	\
   { 0xFF7FFFFF, 0x000000FF }, /* ALL_REGS	*/	\
 }
 
