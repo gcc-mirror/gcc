@@ -33,6 +33,8 @@
  *  executable file might be covered by the GNU General Public License.
  */ 
 
+/* APPLE LOCAL mainline throughout this file */
+
 #include "darwin-asm.h"
 
 /* Set up trampolines.  */
@@ -68,11 +70,11 @@ LCF0:
         mflr	r11
         addis	r7,r11,ha16(LTRAMP-LCF0)
 	lg	r7,lo16(LTRAMP-LCF0)(r7)
-	subi	r7,r7,GPR_BYTES
+	subi	r7,r7,4
 	li	r8,trampoline_size	/* verify trampoline big enough */
 	cmpg	cr1,r8,r4
 	srwi	r4,r4,2			/* # words to move (insns always 4-byte) */
-	addi	r9,r3,-GPR_BYTES	/* adjust pointer for lgu */
+	addi	r9,r3,-4	/* adjust pointer for lgu */
 	mtctr	r4
 	blt	cr1,Labort
 
@@ -80,8 +82,8 @@ LCF0:
 
 	/* Copy the instructions to the stack */
 Lmove:
-	lgu	r10,GPR_BYTES(r7)
-	stgu	r10,GPR_BYTES(r9)
+	lwzu	r10,4(r7)
+	stwu	r10,4(r9)
 	bdnz	Lmove
 
 	/* Store correct function and static chain */
