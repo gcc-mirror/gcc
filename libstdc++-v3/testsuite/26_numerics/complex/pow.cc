@@ -1,5 +1,6 @@
-// PR libbstdc++/10689
+// PR libstdc++/10689
 // Origin: Daniel.Levine@jhuaph.edu
+// { dg-options "-mieee" { target alpha*-*-* } }
 
 #include <complex>
 #include <testsuite_hooks.h>
