@@ -164,7 +164,12 @@ proc libffi_target_compile { source dest type options } {
     # search for ffi_mips.h in srcdir, too
     lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include"
     lappend options "additional_flags=${libffi_link_flags}"
-    lappend options "libs= -lffi -lgcc_s"
+
+    if { [string match "powerpc-*-darwin*" $target_triplet] } {
+	lappend options "libs= -lgcc_s"
+    }
+
+    lappend options "libs= -lffi"
 
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
