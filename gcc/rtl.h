@@ -151,6 +151,14 @@ typedef struct rtx_def
 #endif
 #endif
 
+#ifdef __STDC__
+#define VPROTO(ARGS)		ARGS
+#define VA_START(va_list,var)	va_start(va_list,var)
+#else
+#define VPROTO(ARGS)		(va_alist) va_dcl
+#define VA_START(va_list,var)	va_start(va_list)
+#endif
+
 #define NULL_RTX (rtx) 0
 
 /* Define a generic NULL if one hasn't already been defined.  */
@@ -643,19 +651,10 @@ extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
 #define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (HOST_WIDE_INT) (N))
 
-#if 0
-/* We cannot define prototypes for the variable argument functions,
-   since they have not been ANSI-fied, and an ANSI compiler would
-   complain when compiling the definition of these functions.  */
+extern rtx bc_gen_rtx ();
 
 extern rtx gen_rtx			PROTO((enum rtx_code, enum machine_mode, ...));
 extern rtvec gen_rtvec			PROTO((int, ...));
-
-#else
-extern rtx bc_gen_rtx ();
-extern rtx gen_rtx ();
-extern rtvec gen_rtvec ();
-#endif
 
 #ifdef BUFSIZ			/* stdio.h has been included */
 extern rtx read_rtx			PROTO((FILE *));

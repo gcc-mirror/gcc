@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -987,6 +987,13 @@ union tree_node
 #endif
 #endif
 
+#ifdef __STDC__
+#define VPROTO(ARGS)            ARGS
+#define VA_START(va_list,var)  va_start(va_list,var)
+#else
+#define VPROTO(ARGS)            (va_alist) va_dcl
+#define VA_START(va_list,var)  va_start(va_list)
+#endif
 
 #define NULL_TREE (tree) NULL
 
@@ -1063,19 +1070,9 @@ extern tree get_identifier		PROTO((char *));
 #define build_int_2(LO,HI)  \
   build_int_2_wide ((HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
 
-#if 0
-/* We cannot define prototypes for the variable argument functions,
-   since they have not been ANSI-fied, and an ANSI compiler would
-   complain when compiling the definition of these functions.  */
-
 extern tree build			PROTO((enum tree_code, tree, ...));
 extern tree build_nt			PROTO((enum tree_code, ...));
 extern tree build_parse_node		PROTO((enum tree_code, ...));
-#else
-extern tree build ();
-extern tree build_nt ();
-extern tree build_parse_node ();
-#endif
 
 extern tree build_int_2_wide		PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PROTO((tree, REAL_VALUE_TYPE));
