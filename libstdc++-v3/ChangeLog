@@ -1,3 +1,10 @@
+2001-07-06  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+        * libmath/Makefile.am (EXTRA_DIST): Remove atan2f.c and expf.c
+        * libmath/Makefile.in: Regenerate.
+        * libmath/expf.c: Remove.
+        * libmath/atan2f.c: Likewise.
+
 2001-07-06  Daniel Jacobowitz  <drow@mvista.com>
 
         * configure.in: Remove NATIVE, NULL_TARGET.
