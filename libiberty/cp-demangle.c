@@ -1,4 +1,4 @@
-/* Demangler for IA64 / g++ standard C++ ABI.
+/* Demangler for IA64 / g++ V3 ABI.
    Copyright (C) 2000 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>. 
 
@@ -20,7 +20,7 @@
 */
 
 /* This file implements demangling of C++ names mangled according to
-   the IA64 / g++ standard C++ ABI.  Use the cp_demangle function to
+   the IA64 / g++ V3 ABI.  Use the cp_demangle function to
    demangle a mangled name, or compile with the preprocessor macro
    STANDALONE_DEMANGLER defined to create a demangling filter
    executable (functionally similar to c++filt, but includes this
@@ -3483,7 +3483,7 @@ cp_demangle_type (type_name, result)
 
 extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
 
-/* ABI-mandated entry point in the C++ runtime library for performing
+/* ia64 ABI-mandated entry point in the C++ runtime library for performing
    demangling.  MANGLED_NAME is a NUL-terminated character string
    containing the name to be demangled.  
 
@@ -3597,7 +3597,7 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
    If the demangling failes, returns NULL.  */
 
 char *
-cplus_demangle_new_abi (mangled)
+cplus_demangle_v3 (mangled)
      const char* mangled;
 {
   /* Create a dyn_string to hold the demangled name.  */
