@@ -1321,7 +1321,7 @@ next_record (int done)
    {
     fp = file_position (current_unit->s);
     /* Calculate next record, rounding up partial records.  */
-    current_unit->last_record = (fp + curren_unit->recl - 1)
+    current_unit->last_record = (fp + current_unit->recl - 1)
 				/ current_unit->recl;
    }
   else
