@@ -1,4 +1,5 @@
 dnl Process this with autoconf to create configure
+AC_PREREQ(2.13)
 AC_INIT(fficonfig.h.in)
 AM_CONFIG_HEADER(fficonfig.h)
 

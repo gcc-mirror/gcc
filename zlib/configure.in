@@ -1,5 +1,6 @@
 dnl Process this with autoconf to create configure
 
+AC_PREREQ(2.13)
 AC_INIT(zlib.h)
 
 # This works around the fact that libtool configuration may change LD

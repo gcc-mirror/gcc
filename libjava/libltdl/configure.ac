@@ -17,13 +17,10 @@
 # 02111-1307  USA
 
 
-## FIXME: Is this really new enough? ##
-AC_PREREQ(2.50)
-
-
 ## ------------------------ ##
 ## Autoconf initialisation. ##
 ## ------------------------ ##
+AC_PREREQ(2.57)
 AC_INIT([libltdl], [1.2], [bug-libtool@gnu.org])
 AC_CONFIG_SRCDIR([ltdl.c])
 

@@ -1,3 +1,7 @@
+2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in: Add in AC_PREREQ(2.13)
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.
