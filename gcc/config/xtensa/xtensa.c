@@ -600,7 +600,7 @@ move_operand (rtx op, enum machine_mode mode)
     case SImode:
       if (TARGET_CONST16)
 	return CONSTANT_P (op);
-      /* fall through */
+      /* Fall through.  */
 
     case HImode:
     case QImode:
@@ -652,12 +652,12 @@ constantpool_address_p (rtx addr)
     {
       rtx offset;
 
-      /* only handle (PLUS (SYM, OFFSET)) form */
+      /* Only handle (PLUS (SYM, OFFSET)) form.  */
       addr = XEXP (addr, 0);
       if (GET_CODE (addr) != PLUS)
 	return FALSE;
 
-      /* make sure the address is word aligned */
+      /* Make sure the address is word aligned.  */
       offset = XEXP (addr, 1);
       if ((GET_CODE (offset) != CONST_INT)
 	  || ((INTVAL (offset) & 3) != 0))
@@ -728,7 +728,7 @@ xtensa_extend_reg (rtx dst, rtx src)
   rtx temp = gen_reg_rtx (SImode);
   rtx shift = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (GET_MODE (src)));
 
-  /* generate paradoxical subregs as needed so that the modes match */
+  /* Generate paradoxical subregs as needed so that the modes match.  */
   src = simplify_gen_subreg (SImode, src, GET_MODE (src), 0);
   dst = simplify_gen_subreg (SImode, dst, GET_MODE (dst), 0);
 
@@ -1080,14 +1080,14 @@ gen_conditional_move (rtx cmp)
 
       if (boolean_operator (cmp, VOIDmode))
 	{
-	  /* swap the operands to make const0 second */
+	  /* Swap the operands to make const0 second.  */
 	  if (op0 == const0_rtx)
 	    {
 	      op0 = op1;
 	      op1 = const0_rtx;
 	    }
 
-	  /* if not comparing against zero, emit a comparison (subtract) */
+	  /* If not comparing against zero, emit a comparison (subtract).  */
 	  if (op1 != const0_rtx)
 	    {
 	      op0 = expand_binop (SImode, sub_optab, op0, op1,
@@ -1097,7 +1097,7 @@ gen_conditional_move (rtx cmp)
 	}
       else if (branch_operator (cmp, VOIDmode))
 	{
-	  /* swap the operands to make const0 second */
+	  /* Swap the operands to make const0 second.  */
 	  if (op0 == const0_rtx)
 	    {
 	      op0 = op1;
@@ -1379,26 +1379,26 @@ xtensa_expand_block_move (rtx *operands)
   int align = XINT (operands[3], 0);
   int num_pieces, move_ratio;
 
-  /* If this is not a fixed size move, just call memcpy */
+  /* If this is not a fixed size move, just call memcpy.  */
   if (!optimize || (GET_CODE (operands[2]) != CONST_INT))
     return 0;
 
-  /* Anything to move? */
+  /* Anything to move?  */
   if (bytes <= 0)
     return 1;
 
   if (align > MOVE_MAX)
     align = MOVE_MAX;
 
-  /* decide whether to expand inline based on the optimization level */
+  /* Decide whether to expand inline based on the optimization level.  */
   move_ratio = 4;
   if (optimize > 2)
     move_ratio = LARGEST_MOVE_RATIO;
-  num_pieces = (bytes / align) + (bytes % align); /* close enough anyway */
+  num_pieces = (bytes / align) + (bytes % align); /* Close enough anyway.  */
   if (num_pieces >= move_ratio)
     return 0;
 
-  /* make sure the memory addresses are valid */
+  /* Make sure the memory addresses are valid.  */
   operands[0] = validize_mem (dest);
   operands[1] = validize_mem (src);
 
@@ -1408,10 +1408,10 @@ xtensa_expand_block_move (rtx *operands)
 }
 
 
-/*  Emit a sequence of instructions to implement a block move, trying
-    to hide load delay slots as much as possible.  Load N values into
-    temporary registers, store those N values, and repeat until the
-    complete block has been moved.  N=delay_slots+1 */
+/* Emit a sequence of instructions to implement a block move, trying
+   to hide load delay slots as much as possible.  Load N values into
+   temporary registers, store those N values, and repeat until the
+   complete block has been moved.  N=delay_slots+1.  */
 
 struct meminsnbuf
 {
@@ -1467,7 +1467,7 @@ xtensa_emit_block_move (rtx *operands, rtx *tmpregs, int delay_slots)
 
 	  if (bytes < item_size)
 	    {
-	      /* find a smaller item_size which we can load & store */
+	      /* Find a smaller item_size which we can load & store.  */
 	      item_size = bytes;
 	      mode = xtensa_find_mode_for_size (item_size);
 	      item_size = GET_MODE_SIZE (mode);
@@ -1475,7 +1475,7 @@ xtensa_emit_block_move (rtx *operands, rtx *tmpregs, int delay_slots)
 	      stname = xtensa_st_opcodes[(int) mode];
 	    }
 
-	  /* record the load instruction opcode and operands */
+	  /* Record the load instruction opcode and operands.  */
 	  addr = plus_constant (from_addr, offset);
 	  mem = gen_rtx_MEM (mode, addr);
 	  if (! memory_address_p (mode, addr))
@@ -1485,7 +1485,7 @@ xtensa_emit_block_move (rtx *operands, rtx *tmpregs, int delay_slots)
 	  ldinsns[n].operands[1] = mem;
 	  sprintf (ldinsns[n].template, "%s\t%%0, %%1", ldname);
 
-	  /* record the store instruction opcode and operands */
+	  /* Record the store instruction opcode and operands.  */
 	  addr = plus_constant (to_addr, offset);
 	  mem = gen_rtx_MEM (mode, addr);
 	  if (! memory_address_p (mode, addr))
@@ -1499,7 +1499,7 @@ xtensa_emit_block_move (rtx *operands, rtx *tmpregs, int delay_slots)
 	  bytes -= item_size;
 	}
 
-      /* now output the loads followed by the stores */
+      /* Now output the loads followed by the stores.  */
       for (n = 0; n < chunk_size; n++)
 	output_asm_insn (ldinsns[n].template, ldinsns[n].operands);
       for (n = 0; n < chunk_size; n++)
@@ -1517,7 +1517,7 @@ xtensa_find_mode_for_size (unsigned item_size)
     {
       mode = VOIDmode;
 
-      /* find mode closest to but not bigger than item_size */
+      /* Find mode closest to but not bigger than item_size.  */
       for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
 	if (GET_MODE_SIZE (tmode) <= item_size)
@@ -1531,7 +1531,7 @@ xtensa_find_mode_for_size (unsigned item_size)
 	  && xtensa_st_opcodes[(int) mode])
 	break;
 
-      /* cannot load & store this mode; try something smaller */
+      /* Cannot load & store this mode; try something smaller.  */
       item_size -= 1;
     }
 
@@ -1545,8 +1545,8 @@ xtensa_expand_nonlocal_goto (rtx *operands)
   rtx goto_handler = operands[1];
   rtx containing_fp = operands[3];
 
-  /* generate a call to "__xtensa_nonlocal_goto" (in libgcc); the code
-     is too big to generate in-line */
+  /* Generate a call to "__xtensa_nonlocal_goto" (in libgcc); the code
+     is too big to generate in-line.  */
 
   if (GET_CODE (containing_fp) != REG)
     containing_fp = force_reg (Pmode, containing_fp);
@@ -1789,7 +1789,7 @@ override_options (void)
   if (!TARGET_BOOLEANS && TARGET_HARD_FLOAT)
     error ("boolean registers required for the floating-point option");
 
-  /* set up the tables of ld/st opcode names for block moves */
+  /* Set up the tables of ld/st opcode names for block moves.  */
   xtensa_ld_opcodes[(int) SImode] = "l32i";
   xtensa_ld_opcodes[(int) HImode] = "l16ui";
   xtensa_ld_opcodes[(int) QImode] = "l8ui";
@@ -2366,7 +2366,7 @@ xtensa_builtin_saveregs (void)
   if (gp_left == 0)
     return const0_rtx;
 
-  /* allocate the general-purpose register space */
+  /* Allocate the general-purpose register space.  */
   gp_regs = assign_stack_local
     (BLKmode, MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, -1);
   set_mem_alias_set (gp_regs, get_varargs_alias_set ());
@@ -2662,8 +2662,8 @@ order_regs_for_local_alloc (void)
       int i, num_arg_regs;
       int nxt = 0;
 
-      /* use the AR registers in increasing order (skipping a0 and a1)
-	 but save the incoming argument registers for a last resort */
+      /* Use the AR registers in increasing order (skipping a0 and a1)
+	 but save the incoming argument registers for a last resort.  */
       num_arg_regs = current_function_args_info.arg_words;
       if (num_arg_regs > MAX_ARGS_IN_REGISTERS)
 	num_arg_regs = MAX_ARGS_IN_REGISTERS;
@@ -2672,11 +2672,11 @@ order_regs_for_local_alloc (void)
       for (i = 0; i < num_arg_regs; i++)
 	reg_alloc_order[nxt++] = GP_ARG_FIRST + i;
 
-      /* list the coprocessor registers in order */
+      /* List the coprocessor registers in order.  */
       for (i = 0; i < BR_REG_NUM; i++)
 	reg_alloc_order[nxt++] = BR_REG_FIRST + i;
 
-      /* list the FP registers in order for now */
+      /* List the FP registers in order for now.  */
       for (i = 0; i < 16; i++)
 	reg_alloc_order[nxt++] = FP_REG_FIRST + i;
 
@@ -2821,7 +2821,7 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
 	case LSHIFTRT:
 	case ROTATE:
 	case ROTATERT:
-	  /* no way to tell if X is the 2nd operand so be conservative */
+	  /* No way to tell if X is the 2nd operand so be conservative.  */
 	default: break;
 	}
       if (xtensa_simm12b (INTVAL (x)))
@@ -2948,7 +2948,7 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
 	    return true;
 	  }
       }
-      /* fall through */
+      /* Fall through.  */
 
     case UDIV:
     case UMOD:

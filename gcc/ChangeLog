@@ -1,5 +1,12 @@
 2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/xtensa/elf.h: Fix comment formatting.
+	* config/xtensa/xtensa-protos.h: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+
+2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/avr/avr.c: Fix comment formatting.
 	* config/avr/avr.md: Likewise.
 
