@@ -4225,7 +4225,10 @@ output_addressed_constants (exp)
 	    || TREE_CODE (tem) == CONSTRUCTOR)
 	  output_constant_def (tem, 0);
 
-      reloc = 1;
+      if (TREE_PUBLIC (tem))
+	reloc |= 2;
+      else
+	reloc |= 1;
       break;
 
     case PLUS_EXPR:
