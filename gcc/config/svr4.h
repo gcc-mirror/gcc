@@ -1,7 +1,7 @@
-/* svr4.h  --  operating system specific defines to be used when
-   targeting GCC for some generic System V Release 4 system.
+/* Operating system specific defines to be used when targeting GCC for some
+   generic System V Release 4 system.
    Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@netcom.com).
+   Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
 
@@ -313,6 +313,14 @@ while (0)
    stabs entry for the function name first.  */
 
 #define DBX_FUNCTION_FIRST
+
+/* Generate a blank trailing N_SO to mark the end of the .o file, since
+   we can't depend upon the linker to mark .o file boundaries with
+   embedded stabs.  */
+
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "\t.text\n\t.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
 
 /* Define the actual types of some ANSI-mandated types.  (These
    definitions should work for most SVR4 systems).  */
