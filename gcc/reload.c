@@ -6198,12 +6198,17 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 
       if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
 	{
+	  pat = PATTERN (p);
+
+          /* Watch out for unspec_volatile, and volatile asms.  */
+          if (volatile_insn_p (pat))
+	    return 0;
+
 	  /* If this insn P stores in either GOAL or VALUE, return 0.
 	     If GOAL is a memory ref and this insn writes memory, return 0.
 	     If GOAL is a memory ref and its address is not constant,
 	     and this insn P changes a register used in GOAL, return 0.  */
 
-	  pat = PATTERN (p);
 	  if (GET_CODE (pat) == SET || GET_CODE (pat) == CLOBBER)
 	    {
 	      register rtx dest = SET_DEST (pat);
