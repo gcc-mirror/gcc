@@ -474,9 +474,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (eq:DI (match_dup 3) (const_int 0)))
-	      (clobber (reg:CCX 100))])]
+   (set (match_operand:DI 0 "register_operand" "")
+	(eq:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64"
   "{ operands[3] = gen_reg_rtx (DImode); }")
 
@@ -494,9 +493,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (ne:DI (match_dup 3) (const_int 0)))
-	      (clobber (reg:CCX 100))])]
+   (set (match_operand:DI 0 "register_operand" "")
+	(ne:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64"
   "{ operands[3] = gen_reg_rtx (DImode); }")
 
@@ -504,9 +502,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (eq:DI (match_dup 3) (const_int 0)))
-	      (clobber (reg:CCX 100))])]
+   (set (match_operand:SI 0 "register_operand" "")
+	(eq:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64"
   "{ operands[3] = gen_reg_rtx (DImode); }")
 
@@ -514,9 +511,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ne:DI (match_dup 3) (const_int 0)))
-	      (clobber (reg:CCX 100))])]
+   (set (match_operand:SI 0 "register_operand" "")
+	(ne:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64"
   "{ operands[3] = gen_reg_rtx (DImode); }")
 
@@ -860,8 +856,7 @@
 (define_insn "*snedi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(ne:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
+	       (const_int 0)))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrnz %1,1,%0"
   [(set_attr "type" "unary")
@@ -870,28 +865,16 @@
 (define_insn "*neg_snedi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(neg:DI (ne:DI (match_operand:DI 1 "register_operand" "r")
-		       (const_int 0))))
-   (clobber (reg:CCX 100))]
+		       (const_int 0))))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrnz %1,-1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "2")])
 
-(define_insn "*snedi_zero_trunc_sp32"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ne:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
-  "! TARGET_ARCH64 && ! TARGET_LIVE_G0"
-  "xor %1,%R1,%0\;subcc %%g0,%0,%%g0\;addx %%g0,0,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "3")])
-
-(define_insn "*snedi_zero_trunc_sp64"
+(define_insn "*snedi_zero_trunc"
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(ne:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
+	       (const_int 0)))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrnz %1,1,%0"
   [(set_attr "type" "unary")
@@ -930,8 +913,7 @@
 (define_insn "*seqdi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(eq:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
+	       (const_int 0)))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrz %1,1,%0"
   [(set_attr "type" "unary")
@@ -940,28 +922,16 @@
 (define_insn "*neg_seqdi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(neg:DI (eq:DI (match_operand:DI 1 "register_operand" "r")
-		       (const_int 0))))
-   (clobber (reg:CCX 100))]
+		       (const_int 0))))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrz %1,-1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "2")]) 
 
-(define_insn "*seqdi_zero_trunc_sp32"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(eq:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
-  "! TARGET_ARCH64 && ! TARGET_LIVE_G0"
-  "xor %1,%R1,%0\;subcc %%g0,%0,%%g0\;subx %%g0,-1,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "3")])
-
-(define_insn "*seqdi_zero_trunc_sp64"
+(define_insn "*seqdi_zero_trunc"
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(eq:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CCX 100))]
+	       (const_int 0)))]
   "TARGET_ARCH64"
   "mov 0,%0\;movrz %1,1,%0"
   [(set_attr "type" "unary")
