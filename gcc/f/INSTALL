@@ -3,6 +3,9 @@ compiler.  Copyright (C) 1995, 1996 Free Software Foundation, Inc.  You
 may copy, distribute, and modify it freely as long as you preserve this
 copyright notice and permission notice.
 
+Note most of this information is out of date and superceded by the EGCS
+install procedures.  It is provided for historical reference only.
+
 Installing GNU Fortran
 **********************
 
@@ -1594,7 +1597,7 @@ general) are broken, at least for their system.
 until you're sure your distribution is widely used and has been well
 tested.  This especially goes for those of you making any changes to
 the `g77' sources to port `g77', e.g. to OS/2.
-<fortran@gnu.ai.mit.edu> has received a fair number of bug reports that
+<fortran@gnu.org> has received a fair number of bug reports that
 turned out to be problems with other peoples' ports and distributions,
 about which nothing could be done for the user.  Once you are quite
 certain a bug report does not involve your efforts, you can forward it

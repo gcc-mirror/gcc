@@ -1,3 +1,10 @@
+971202
+It is not necessary to apply the "backend" patch to an egcs based gcc
+release.  The files in this directory are included in the egcs distribution
+for historical purposes only.
+
+
+
 970909
 
 This directory contains .diff files for various GNU CC distributions

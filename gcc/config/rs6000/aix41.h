@@ -36,6 +36,37 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
 
+/* Common ASM definitions used by ASM_SPEC amonst the various targets
+   for handling -mcpu=xxx switches.  */
+
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC \
+"%{!mcpu*: \
+  %{mpower: %{!mpower2: -mpwr}} \
+  %{mpower2: -mpwr2} \
+  %{mpowerpc*: -mppc} \
+  %{mno-power: %{!mpowerpc*: -mcom}} \
+  %{!mno-power: %{!mpower2: %(asm_default)}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwr2} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwr2} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
+%{mcpu=603: -m603} \
+%{mcpu=603e: -m603} \
+%{mcpu=604: -m604} \
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 \
 -Asystem(unix) -Asystem(aix)"
