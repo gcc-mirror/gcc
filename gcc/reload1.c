@@ -3158,8 +3158,7 @@ eliminate_regs_in_insn (insn, replace)
   old_asm_operands_vec = 0;
 
   /* Replace the body of this insn with a substituted form.  If we changed
-     something, return non-zero.  If this is the final call for this
-     insn (REPLACE is non-zero), do the elimination in REG_NOTES as well.
+     something, return non-zero.  
 
      If we are replacing a body that was a (set X (plus Y Z)), try to
      re-recognize the insn.  We do this in case we had a simple addition
@@ -3197,8 +3196,6 @@ eliminate_regs_in_insn (insn, replace)
       else
 	PATTERN (insn) = new_body;
 
-      if (replace && REG_NOTES (insn))
-	REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, NULL_RTX);
       val = 1;
     }
 
@@ -3240,6 +3237,14 @@ eliminate_regs_in_insn (insn, replace)
     }
 
  done:
+  /* If we changed something, perform elmination in REG_NOTES.  This is
+     needed even when REPLACE is zero because a REG_DEAD note might refer
+     to a register that we eliminate and could cause a different number
+     of spill registers to be needed in the final reload pass than in
+     the pre-passes.  */
+  if (val)
+    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, NULL_RTX);
+
   if (! replace)
     pop_obstacks ();
 
