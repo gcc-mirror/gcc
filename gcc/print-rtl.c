@@ -94,8 +94,7 @@ print_rtx (in_rtx)
       if (flag_simple)
 	fputc (' ', outfile);
       else
-	fprintf (outfile, "\n%s%*s",
-		 print_rtx_head, indent * 2, "");
+	fprintf (outfile, "\n%s%*s", print_rtx_head, indent * 2, "");
       sawclose = 0;
     }
 
@@ -105,21 +104,27 @@ print_rtx (in_rtx)
       sawclose = 1;
       return;
     }
+  else if (GET_CODE (in_rtx) > NUM_RTX_CODE)
+    {
+       fprintf (outfile, "(??? bad code %d\n)", GET_CODE (in_rtx));
+       sawclose = 1;
+       return;
+    }
 
-  is_insn = (INSN_P (in_rtx));
+  is_insn = INSN_P (in_rtx);
 
   /* When printing in VCG format we write INSNs, NOTE, LABEL, and BARRIER
      in separate nodes and therefore have to handle them special here.  */
-  if (dump_for_graph &&
-      (is_insn || GET_CODE (in_rtx) == NOTE || GET_CODE (in_rtx) == CODE_LABEL
-       || GET_CODE (in_rtx) == BARRIER))
+  if (dump_for_graph
+      && (is_insn || GET_CODE (in_rtx) == NOTE
+	  || GET_CODE (in_rtx) == CODE_LABEL || GET_CODE (in_rtx) == BARRIER))
     {
       i = 3;
       indent = 0;
     }
   else
     {
-      /* print name of expression code */
+      /* Print name of expression code.  */
       if (flag_simple && GET_CODE (in_rtx) == CONST_INT)
 	fputc ('(', outfile);
       else
@@ -164,7 +169,6 @@ print_rtx (in_rtx)
   /* Get the format string and skip the first elements if we have handled
      them already.  */
   format_ptr = GET_RTX_FORMAT (GET_CODE (in_rtx)) + i;
-
   for (; i < GET_RTX_LENGTH (GET_CODE (in_rtx)); i++)
     switch (*format_ptr++)
       {
@@ -310,8 +314,7 @@ print_rtx (in_rtx)
 	    indent -= 2;
 	  }
 	if (sawclose)
-	  fprintf (outfile, "\n%s%*s",
-                   print_rtx_head, indent * 2, "");
+	  fprintf (outfile, "\n%s%*s", print_rtx_head, indent * 2, "");
 
 	fputs ("] ", outfile);
 	sawclose = 1;
@@ -510,7 +513,8 @@ print_rtx (in_rtx)
 
 	  tem = XEXP (in_rtx, 1);
 	  if (tem)
-	    fputs ("\n    ])\n  (const_string \"tail_call\") (sequence [", outfile);
+	    fputs ("\n    ])\n  (const_string \"tail_call\") (sequence [",
+		   outfile);
 	  for (; tem != 0; tem = NEXT_INSN (tem))
 	    {
 	      fputs ("\n    ", outfile);
@@ -519,7 +523,8 @@ print_rtx (in_rtx)
 
 	  tem = XEXP (in_rtx, 2);
 	  if (tem)
-	    fputs ("\n    ])\n  (const_string \"tail_recursion\") (sequence [", outfile);
+	    fputs ("\n    ])\n  (const_string \"tail_recursion\") (sequence [",
+		   outfile);
 	  for (; tem != 0; tem = NEXT_INSN (tem))
 	    {
 	      fputs ("\n    ", outfile);

@@ -1,3 +1,8 @@
+Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* print-rtl.c (print_rtx): If RTX code is bad, just say so.
+	Also minor cleanups.
+
 Wed Nov 28 10:42:19 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (true_dependence_in_rtx): New function.
