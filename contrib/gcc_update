@@ -29,7 +29,7 @@
 # contrib/gcc_update --list
 #
 #
-# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -209,7 +209,7 @@ else
 fi
 
 echo "Updating CVS tree"
-$GCC_CVS -q update ${1+"$@"}
+$GCC_CVS -q update -r gcc-3_4-branch ${1+"$@"}
 if [ $? -ne 0 ]; then
     (touch_files_reexec)
     echo "CVS update of full tree failed." >&2

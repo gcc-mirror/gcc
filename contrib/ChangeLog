@@ -1,3 +1,7 @@
+2005-01-17  David O'Brien  <obrien@FreeBSD.org>
+
+	* contrib/gcc_update: Explicitly update the branch.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.
