@@ -1363,7 +1363,7 @@ default_conversion (exp)
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);
   /* Replace a nonvolatile const static variable with its value.  */
-  else if (TREE_READONLY_DECL_P (exp) && DECL_MODE (exp) != BLKmode)
+  else if (TREE_READONLY_DECL_P (exp))
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);
@@ -2373,6 +2373,13 @@ build_function_call_real (function, params, require_complete, flags)
 
       if (DECL_INLINE (function))
 	{
+	  /* Is it a synthesized method that needs to be synthesized?  */
+	  if (DECL_ARTIFICIAL (function) && ! flag_no_inline
+	      && ! DECL_INITIAL (function)
+	      /* Kludge: don't synthesize for default args.  */
+	      && current_function_decl)
+	    synthesize_method (function);
+
 	  fntype = build_type_variant (TREE_TYPE (function),
 				       TREE_READONLY (function),
 				       TREE_THIS_VOLATILE (function));

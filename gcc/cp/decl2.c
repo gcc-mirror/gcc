@@ -3112,7 +3112,13 @@ finish_file ()
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
 
   for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
-    import_export_inline (TREE_VALUE (fnname));
+    {
+      tree decl = TREE_VALUE (fnname);
+      import_export_inline (decl);
+      if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
+	  && TREE_PUBLIC (decl) && DECL_NOT_REALLY_EXTERN (decl))
+	synthesize_method (decl);
+    }
 
   /* Now write out inline functions which had their addresses taken and
      which were not declared virtual and which were not declared `extern
@@ -3144,8 +3150,7 @@ finish_file ()
 
 	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
 	      {
-		if (TREE_USED (decl)
-		    || (TREE_PUBLIC (decl) && DECL_NOT_REALLY_EXTERN (decl)))
+		if (TREE_USED (decl))
 		  {
 		    synthesize_method (decl);
 		    if (TREE_ASM_WRITTEN (decl))

@@ -1,3 +1,19 @@
+Thu May 11 00:31:48 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (default_conversion): Don't check for BLKmode before
+	pulling out the decl_constant_value.
+
+	* decl.c (start_function): Clear named_labels and shadowed_labels.
+
+	* typeck.c (build_function_call_real): Also synthesize methods here.
+
+Wed May 10 00:55:59 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (finish_file): Synthesize exported methods before the
+	reconsider loop.
+
+	* parse.y: Move declaration of flag_new_for_scope to file scope.
+
 Tue May  9 19:10:33 1995  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c: Add flag_new_for_scope for new -ffor-scope flag.
