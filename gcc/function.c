@@ -135,13 +135,6 @@ int current_function_has_nonlocal_label;
 
 int current_function_has_nonlocal_goto;
 
-/* Nonzero if this function has a computed goto.
-
-   It is computed during find_basic_blocks or during stupid life
-   analysis.  */
-
-int current_function_has_computed_jump;
-
 /* Nonzero if function being compiled contains nested functions.  */
 
 int current_function_contains_functions;

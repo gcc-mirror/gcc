@@ -1,3 +1,8 @@
+Thu Mar  4 00:05:44 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* function.c (current_function_has_computed_jump): Remove duplicate
+	definition.
+
 Wed Mar  3 19:09:11 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k/m68020-elf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP): Undef.
