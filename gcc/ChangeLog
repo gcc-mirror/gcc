@@ -1,3 +1,8 @@
+Wed Aug 25 01:36:11 1999  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* calls.c (emit_call_1): Use call_pop/call_value_pop for all values
+	of n_popped when call/call_value are not defined.
+
 Wed Aug 25 01:25:14 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* tm.texi: GNU CC -> GCC conversion.
