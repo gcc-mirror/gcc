@@ -1,3 +1,8 @@
+2002-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (PREFERRED_DEBUGGING_TYPE, DWARF2_ASM_LINE_DEBUG_INFO,
+	ASM_OUTPUT_DEF): Delete.
+
 2002-11-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (COMMAND_LINE_OPTIONS): Fix -Wimplicit.

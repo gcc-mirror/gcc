@@ -18,10 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Use DWARF2 debugging info and unwind.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#define DWARF2_ASM_LINE_DEBUG_INFO 1
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
@@ -134,18 +130,6 @@ Boston, MA 02111-1307, USA.  */
 	fputs ("\t.IMPORT _mcount, CODE\n", FILE);		\
     }								\
    while (0)
-
-/* Output a definition */
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) \
-  do								\
-    {								\
-      fprintf ((FILE), "\t%s\t", SET_ASM_OP);			\
-      assemble_name (FILE, LABEL1);				\
-      fprintf (FILE, ",");					\
-      assemble_name (FILE, LABEL2);				\
-      fprintf (FILE, "\n");					\
-    }								\
-  while (0)
 
 /* We want local labels to start with period if made with asm_fprintf.  */
 #undef LOCAL_LABEL_PREFIX
