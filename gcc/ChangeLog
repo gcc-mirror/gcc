@@ -1,5 +1,10 @@
 1999-12-18  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.h (ASM_OUTPUT_XXX): Wrap in do-while(0).
+	Tweak formatting.
+
+1999-12-18  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	
 	* config/c4x/c4x.md (rpts_top, rptb_top): Add clobbers for rs and re.
 
 1999-12-17 13:21 -0800  Zack Weinberg  <zack@rabi.columbia.edu>
