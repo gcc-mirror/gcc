@@ -387,17 +387,17 @@ namespace __gnu_test
   public:
     // Creates a binary semaphore.  The semaphore is initially in the
     // unsignaled state. 
-    semaphore ();
+    semaphore();
 
     // Destroy the semaphore.
     ~semaphore();
 
     // Signal the semaphore.  If there are processes blocked in
     // "wait", exactly one will be permitted to proceed.
-    void signal ();
+    void signal();
 
     // Wait until the semaphore is signaled.
-    void wait ();
+    void wait();
 
   private:
     int sem_set_;
