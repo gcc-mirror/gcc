@@ -1,12 +1,28 @@
-// CheckedInputStream.java - Compute checksum of data being read.
+/* CheckedInputStream.java - Compute checksum of data being read
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
-/* Copyright (C) 1999  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package java.util.zip;
 
@@ -14,29 +30,45 @@ import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
-/**
- * @author Tom Tromey
- * @date May 17, 1999
- */
-
 /* Written using on-line Java Platform 1.2 API Specification
  * and JCL book.
  * Believed complete and correct.
  */
 
+/**
+ * InputStream that computes a checksum of the data being read using a
+ * supplied Checksum object.
+ *
+ * @see Checksum
+ *
+ * @author Tom Tromey
+ * @date May 17, 1999
+ */
 public class CheckedInputStream extends FilterInputStream
 {
+  /**
+   * Creates a new CheckInputStream on top of the supplied OutputStream
+   * using the supplied Checksum.
+   */
   public CheckedInputStream (InputStream in, Checksum sum)
   {
     super (in);
     this.sum = sum;
   }
 
+  /**
+   * Returns the Checksum object used. To get the data checksum computed so
+   * far call <code>getChecksum.getValue()</code>.
+   */
   public Checksum getChecksum ()
   {
     return sum;
   }
 
+  /**
+   * Reads one byte, updates the checksum and returns the read byte
+   * (or -1 when the end of file was reached).
+   */
   public int read () throws IOException
   {
     int x = in.read();
@@ -45,6 +77,11 @@ public class CheckedInputStream extends FilterInputStream
     return x;
   }
 
+  /**
+   * Reads at most len bytes in the supplied buffer and updates the checksum
+   * with it. Returns the number of bytes actually read or -1 when the end
+   * of file was reached.
+   */
   public int read (byte[] buf, int off, int len) throws IOException
   {
     int r = in.read(buf, off, len);
@@ -53,6 +90,11 @@ public class CheckedInputStream extends FilterInputStream
     return r;
   }
 
+  /**
+   * Skips n bytes by reading them in a temporary buffer and updating the
+   * the checksum with that buffer. Returns the actual number of bytes skiped
+   * which can be less then requested when the end of file is reached.
+   */
   public long skip (long n) throws IOException
   {
     if (n == 0)
@@ -76,6 +118,6 @@ public class CheckedInputStream extends FilterInputStream
     return s;
   }
 
-  // The checksum object.
+  /** The checksum object. */
   private Checksum sum;
 }

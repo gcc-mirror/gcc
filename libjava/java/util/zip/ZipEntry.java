@@ -1,10 +1,28 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* ZipEntry.java - Represents entries in a zip file archive
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package java.util.zip;
 
@@ -19,6 +37,12 @@ package java.util.zip;
  * Status:  Believed complete and correct.
  */
 
+/**
+ * Represents entries in a zip file archive.
+ * An Entry cn be created by giving a name or by giving an already existing
+ * ZipEntries whose values should be copied. The name normally represents a
+ * file path name or directory name.
+ */
 public class ZipEntry implements ZipConstants, Cloneable
 {
   // These values were determined using a simple test program.
@@ -44,6 +68,16 @@ public class ZipEntry implements ZipConstants, Cloneable
     this.name = name;
   }
 
+  /**
+   * Creates a new ZipEntry using the fields of a given ZipEntry.
+   * The comment, compressedSize, crc, extra, method, name, size, time and
+   * relativeOffset fields are copied from the given entry.
+   * Note that the contents of the extra byte array field is not cloned,
+   * only the reference is copied.
+   * The clone() method does clone the contents of the extra byte array if
+   * needed.
+   * @since 1.2
+   */
   public ZipEntry (ZipEntry ent)
   {
     comment = ent.comment;
@@ -56,7 +90,13 @@ public class ZipEntry implements ZipConstants, Cloneable
     time = ent.time;
     relativeOffset = ent.relativeOffset;
   }
-  
+ 
+  /**
+   * Creates a clone of this ZipEntry. Calls <code>new ZipEntry (this)</code>
+   * and creates a clone of the contents of the extra byte array field.
+   *
+   * @since 1.2
+   */
   public Object clone ()
   {
     // JCL defines this as being the same as the copy constructor above,
@@ -99,7 +139,12 @@ public class ZipEntry implements ZipConstants, Cloneable
       throw new IllegalArgumentException ();
     this.comment = comment;
   }
-  
+ 
+  /**
+   * Sets the compressedSize of this ZipEntry.
+   * The new size must be between 0 and 0xffffffffL.
+   * @since 1.2
+   */
   public void setCompressedSize (long compressedSize)
   {
     if (compressedSize < 0 || compressedSize > 0xffffffffL)
@@ -172,6 +217,9 @@ public class ZipEntry implements ZipConstants, Cloneable
   }
 
   public String toString () { return name; }
-  
+ 
+  /**
+   * Returns the hashcode of the name of this ZipEntry.
+   */
   public int hashCode () { return name.hashCode (); }
 }
