@@ -5670,6 +5670,7 @@ fold (tree expr)
 	  TREE_OPERAND (t, 0) = TREE_OPERAND (prev, 1);
 	  /* First do the assignment, then return converted constant.  */
 	  t = build (COMPOUND_EXPR, TREE_TYPE (t), prev, fold (t));
+	  TREE_NO_UNUSED_WARNING (t) = 1;
 	  TREE_USED (t) = 1;
 	  return t;
 	}

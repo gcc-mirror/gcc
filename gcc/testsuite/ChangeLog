@@ -1,5 +1,8 @@
 2004-03-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14481
+	* g++.dg/warn/Wunused-7.C: New test.
+
 	PR c++/14586
 	* g++.dg/parse/non-dependent3.C: New test.
 

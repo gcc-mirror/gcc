@@ -1,3 +1,9 @@
+2004-03-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14481
+	* fold-const.c (fold): Set TREE_NO_UNUSED_WARNING on implicitly
+	generated COMPOUND_EXPRs.
+
 2004-03-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/12974
