@@ -1,3 +1,7 @@
+1998-12-09  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/instantiate6.C: linker error, not	crash
+
 Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.special/930510-1.c: Make C9X safe.
