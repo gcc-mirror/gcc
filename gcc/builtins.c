@@ -2418,7 +2418,7 @@ expand_builtin_memcmp (exp, arglist, target, mode)
       return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
-#ifdef HAVE_cmpstrsi
+#if defined HAVE_cmpmemsi || defined HAVE_cmpstrsi
   {
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
@@ -2428,8 +2428,19 @@ expand_builtin_memcmp (exp, arglist, target, mode)
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
     int arg2_align
       = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    enum machine_mode insn_mode
-      = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
+    enum machine_mode insn_mode;
+
+#ifdef HAVE_cmpmemsi
+    if (HAVE_cmpmemsi)
+      insn_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
+    else
+#endif
+#ifdef HAVE_cmpstrsi
+    if (HAVE_cmpstrsi)
+      insn_mode = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
+    else
+#endif
+      return 0;     
 
     /* If we don't have POINTER_TYPE, call the function.  */
     if (arg1_align == 0 || arg2_align == 0)
@@ -2445,11 +2456,19 @@ expand_builtin_memcmp (exp, arglist, target, mode)
     arg1_rtx = get_memory_rtx (arg1);
     arg2_rtx = get_memory_rtx (arg2);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-    if (!HAVE_cmpstrsi)
-      insn = NULL_RTX;
+#ifdef HAVE_cmpmemsi
+    if (HAVE_cmpmemsi)
+      insn = gen_cmpmemsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
+			   GEN_INT (MIN (arg1_align, arg2_align)));
     else
+#endif
+#ifdef HAVE_cmpstrsi
+    if (HAVE_cmpstrsi)
       insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			   GEN_INT (MIN (arg1_align, arg2_align)));
+    else
+#endif
+      abort ();
 
     if (insn)
       emit_insn (insn);

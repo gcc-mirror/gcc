@@ -2830,16 +2830,16 @@ s390_expand_clrstr (dst, len)
    and return the result in TARGET.  */
 
 void
-s390_expand_cmpstr (target, op0, op1, len)
+s390_expand_cmpmem (target, op0, op1, len)
      rtx target;
      rtx op0;
      rtx op1;
      rtx len;
 {
   rtx (*gen_short) PARAMS ((rtx, rtx, rtx)) = 
-    TARGET_64BIT ? gen_cmpstr_short_64 : gen_cmpstr_short_31;
+    TARGET_64BIT ? gen_cmpmem_short_64 : gen_cmpmem_short_31;
   rtx (*gen_long) PARAMS ((rtx, rtx, rtx, rtx)) = 
-    TARGET_64BIT ? gen_cmpstr_long_64 : gen_cmpstr_long_31;
+    TARGET_64BIT ? gen_cmpmem_long_64 : gen_cmpmem_long_31;
   rtx (*gen_result) PARAMS ((rtx)) =
     GET_MODE (target) == DImode ? gen_cmpint_di : gen_cmpint_si;
 

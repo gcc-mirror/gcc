@@ -2709,10 +2709,20 @@ The use for multiple @code{clrstr@var{m}} is as for @code{movstr@var{m}}.
 
 @cindex @code{cmpstr@var{m}} instruction pattern
 @item @samp{cmpstr@var{m}}
-Block compare instruction, with five operands.  Operand 0 is the output;
+String compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
 of @samp{movstr@var{m}}.  The two memory blocks specified are compared
 byte by byte in lexicographic order.  The effect of the instruction is
+to store a value in operand 0 whose sign indicates the result of the
+comparison.
+
+@cindex @code{cmpmem@var{m}} instruction pattern
+@item @samp{cmpmem@var{m}}
+Block compare instruction, with five operands like the operands
+of @samp{cmpstr@var{m}}.  The two memory blocks specified are compared
+byte by byte in lexicographic order starting at the beginning of each
+block.  Unlike @samp{cmpstr@var{m}} the instruction can prefetch
+any bytes in the two memory blocks.  The effect of the instruction is
 to store a value in operand 0 whose sign indicates the result of the
 comparison.
 
