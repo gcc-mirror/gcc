@@ -1,4 +1,4 @@
-2001-10-27  David O'Brien  <obrien@FreeBSD.org>
+2001-11-03  David O'Brien  <obrien@FreeBSD.org>
 
 	* POTFILES.in: Add config/ia64/freebsd.h.
 
