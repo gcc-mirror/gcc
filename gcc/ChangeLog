@@ -5,6 +5,9 @@
 	(unchecked_make_edge, remove_edge, redirect_edge_succ,
 	redirect_edge_pred): Use the new functions.
 
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Call
+	free_dominance_info only when needed.
+
 2005-03-02  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/20276

@@ -444,7 +444,8 @@ tree_ssa_dominator_optimize (void)
 	  bitmap_zero (need_eh_cleanup);
 	}
 
-      free_dominance_info (CDI_DOMINATORS);
+      if (cfg_altered)
+	free_dominance_info (CDI_DOMINATORS);
       cfg_altered |= cleanup_tree_cfg ();
       calculate_dominance_info (CDI_DOMINATORS);
 
