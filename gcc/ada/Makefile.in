@@ -2623,7 +2623,7 @@ utils2.o : utils2.c $(CONFIG_H) $(TREE_H) $(srcdir)/../flags.h ada.h types.h \
 stamp-tool_src_dir:
 	-$(RMDIR) tools
 	-$(MKDIR) tools
-	-$(LN) $(fsrcdir)/$(MLIB_TGT).adb tools/mlib-tgt.adb
+	-$(LN_S) $(fsrcdir)/$(MLIB_TGT).adb tools/mlib-tgt.adb
 	touch stamp-tool_src_dir
 
 mlib-tgt.o : stamp-tool_src_dir
