@@ -1,3 +1,9 @@
+2004-10-14  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c (vect_analyze_data_refs): Call
+	vect_get_base_and_bit_offset to get memory tag for array ref.
+	(vect_create_addr_base_for_vector_ref): Remove redundant checks.
+
 2004-10-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.ac: Use $LN_S for creating symlinks (not $LN).
