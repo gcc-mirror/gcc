@@ -606,8 +606,6 @@ else
 fi
 AC_SUBST(TARGET_GETGROUPS_T)
 
-gcc_AC_FUNC_VFPRINTF_DOPRNT
-gcc_AC_FUNC_STRSTR
 gcc_AC_FUNC_PRINTF_PTR
 
 case "${host}" in
@@ -838,6 +836,7 @@ fi
 if test x$host = x$build
 then
 	build_auto=auto-host.h
+	FORBUILD=..
 else
 	# We create a subdir, then run autoconf in the subdir.
 	# To prevent recursion we set host and build for the new
@@ -863,7 +862,9 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
+	FORBUILD=../$build
 fi
+AC_SUBST(FORBUILD)
 
 tm_file="${tm_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file} ${tm_file}"

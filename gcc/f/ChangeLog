@@ -1,3 +1,8 @@
+2001-11-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (f/fini, f/intdoc): Depend on $(HOST_LIBDEPS)
+	and link with $(HOST_LIBS), not safe-ctype.o.
+
 2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (f77.generated-manpages): New target.
@@ -103,7 +108,7 @@ Fri Nov  9 07:14:47 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 
-	* Make-lang.in (G77_INSTALL_NAME, G77_CROSS_NAME): Handle 
+	* Make-lang.in (G77_INSTALL_NAME, G77_CROSS_NAME): Handle
 	program_transform_name the way suggested by autoconf.
 
 2001-11-08  Toon Moene  <toon@moene.indiv.nluug.nl>
@@ -170,7 +175,7 @@ Sun Oct 21 17:28:17 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 2001-10-21  Craig Prescott  <prescott@phys.ufl.edu>
 
-	* target.h (FFETARGET_32bit_longs): Don't define 
+	* target.h (FFETARGET_32bit_longs): Don't define
 	for 64-bit hppa.
 
 2001-10-17  Richard Henderson  <rth@redhat.com>
@@ -236,7 +241,7 @@ Thu Sep 20 15:05:20 JST 2001  George Helffrich  <george@geo.titech.ac.jp>
 	for character strings, to permit substring expressions like
 	string(1:0).
 	* news.texi: Document this as a new feature.
- 
+
 Thu Sep 13 10:33:27 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (ffebad_finish): Const-ification and/or static-ization.
@@ -373,7 +378,7 @@ Wed Jun 13 11:22:39 2001  Mark Mitchell  <mark@codesourcery.com>
 	implic.h info.h intrin.h lab.h lex.h malloc.h name.h
 	proj.h src.h st.h sta.h stb.h stc.h std.h ste.h
 	storag.h stp.h str.h sts.h stt.h stu.h stv.h stw.h
-	symbol.h target.h top.h type.h version.h 
+	symbol.h target.h top.h type.h version.h
 	where.h: Likewise.
 
 2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
@@ -458,7 +463,7 @@ Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
 	DECL_RTL_SET_P, etc.
 	(duplicate_decls): Likewise.
 	(start_decl): Likewise.
-	
+
 Fri Mar  9 22:52:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fini.c (main): Use really_call_malloc, not malloc.
@@ -505,7 +510,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(ffecom_decode_include_option_): Make errors non-fatal.
 	* lex.c (ffelex_cfelex_, ffelex_get_directive_line_): Likewise.
 	(ffelex_hash_): Likewise.
-	
+
 Sat Jan 27 20:52:18 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Remove all dependencies on defaults.h.

@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -23,9 +23,6 @@
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 #undef HAVE_ALLOCA_H
 
-/* Define if you don't have vprintf but do have _doprnt.  */
-#undef HAVE_DOPRNT
-
 /* Define if you have the ANSI # stringizing operator in cpp. */
 #undef HAVE_STRINGIZE
 
@@ -34,9 +31,6 @@
 
 /* Define if you have <vfork.h>.  */
 #undef HAVE_VFORK_H
-
-/* Define if you have the vprintf function.  */
-#undef HAVE_VPRINTF
 
 /* Define as __inline if that's what the C compiler calls it.  */
 #undef inline
@@ -215,9 +209,6 @@
 
 /* Define if you have the strsignal function.  */
 #undef HAVE_STRSIGNAL
-
-/* Define if you have the strstr function.  */
-#undef HAVE_STRSTR
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
