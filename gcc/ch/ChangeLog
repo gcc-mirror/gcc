@@ -1,3 +1,11 @@
+2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ch-tree.h (integer_minus_one_node): Moved to top level gcc
+	directory.
+
+	* decl.c (integer_minus_one_node): Likewise.
+	(init_decl_processing): Don't set integer_minus_one_node.
+
 2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in: Remove all dependencies on defaults.h.

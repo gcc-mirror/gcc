@@ -299,9 +299,6 @@ tree default_function_type;
 
 const char **boolean_code_name;
 
-/* A node for the integer constant -1.  */
-tree integer_minus_one_node;
-
 /* Nodes for boolean constants TRUE and FALSE. */
 tree boolean_true_node, boolean_false_node;
 
@@ -3387,9 +3384,6 @@ init_decl_processing ()
 			float_type_node));
   pushdecl (build_decl (TYPE_DECL, ridpointers[(int) RID_DOUBLE],
 			double_type_node));
-
-  integer_minus_one_node = build_int_2 (-1, -1);
-  TREE_TYPE (integer_minus_one_node) = integer_type_node;
 
   build_common_tree_nodes_2 (flag_short_double);
 

@@ -4786,6 +4786,7 @@ build_common_tree_nodes_2 (short_double)
   /* Define these next since types below may used them.  */
   integer_zero_node = build_int_2 (0, 0);
   integer_one_node = build_int_2 (1, 0);
+  integer_minus_one_node = build_int_2 (-1, -1);
 
   size_zero_node = size_int (0);
   size_one_node = size_int (1);
