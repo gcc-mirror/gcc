@@ -1,3 +1,15 @@
+2004-09-15  Steven G. Kargl  <kargls@comcast.net>
+
+	* check.c (gfc_check_getcwd_sub): New function.
+	* gfortran.h (GFC_ISYM_GETCWD): New symbol.
+	* intrinsic.c (add_functions): Add function definition;
+	Use symbol.
+	* intrinsic.c (add_subroutines): Add subroutine definitions.
+	* intrinsic.h: Add prototypes.
+	* iresolve.c (gfc_resolve_getcwd, gfc_resolve_getcwd_sub):
+	New functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Use symbol.
+
 2004-09-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16485

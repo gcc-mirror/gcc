@@ -1,4 +1,10 @@
 2004-09-15  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrincics/getcwd.c: New file.
+	* Makefile.am: Add getcwd.c.
+	* Makefile.in: Regenerated.
+
+2004-09-15  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
 	* intrinsics/env.c (getenv, get_environmental_variable): Remove
