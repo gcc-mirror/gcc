@@ -1,3 +1,13 @@
+2005-01-09  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c (vect_analyze_offset_expr): Use 
+	expr_invariant_in_loop_p.
+	Initialize outputs first thing in the function.
+	(vect_update_ivs_after_vectorizer): Call initial_condition_in_loop_num.
+	(vect_is_simple_iv_evolution): Call initial_condition_in_loop_num.
+	(vect_analyze_pointer_ref_access): Check that the initial condition of 
+	the access function is loop invariant.
+
 2005-01-09  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (bdesc_2arg): Update names for mmx_ prefixes.
