@@ -607,7 +607,7 @@
 ;		   61);
 ;
 ;  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
-}")
+;}")
 (define_expand "movsfcc"
 
   [(set (match_operand:SF 0 "register_operand" "")
@@ -639,7 +639,7 @@
 ;		   61);
 ;
 ;  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
-}")
+;}")
 
 (define_insn "*movsicc_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
