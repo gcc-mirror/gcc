@@ -1948,7 +1948,7 @@ dbxout_symbol (decl, local)
     case RESULT_DECL:
       /* Named return value, treat like a VAR_DECL.  */
     case VAR_DECL:
-      if (DECL_RTL (decl) == 0)
+      if (! DECL_RTL_SET_P (decl))
 	return 0;
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
