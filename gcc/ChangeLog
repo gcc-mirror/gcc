@@ -1,3 +1,7 @@
+2003-02-18  Matt Austern <austern@apple.com>
+	* toplev.c, langhooks.c, langhooks-def.h: Move
+	write_global_declarations from toplev.c to langhooks.c. 
+	
 2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (general_operand_src): Always check
