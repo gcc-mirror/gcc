@@ -10834,4 +10834,3 @@ cp_missing_noreturn_ok_p (tree decl)
 }
 
 #include "gt-cp-decl.h"
-#include "gtype-cp.h"
