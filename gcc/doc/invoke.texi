@@ -1305,14 +1305,14 @@ around bugs in the access control code.
 @item -fcheck-new
 @opindex fcheck-new
 Check that the pointer returned by @code{operator new} is non-null
-before attempting to modify the storage allocated.  The current Working
-Paper requires that @code{operator new} never return a null pointer, so
-this check is normally unnecessary.
-
-An alternative to using this option is to specify that your
-@code{operator new} does not throw any exceptions; if you declare it
-@samp{throw()}, G++ will check the return value.  See also @samp{new
-(nothrow)}.
+before attempting to modify the storage allocated.  This check is
+normally unnecessary because the C++ standard specifies that
+@code{operator new} will only return @code{0} if it is declared
+@samp{throw()}, in which case the compiler will always check the
+return value even without this option.  In all other cases, when
+@code{operator new} has a non-empty exception specification, memory
+exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
+@samp{new (nothrow)}.
 
 @item -fconserve-space
 @opindex fconserve-space

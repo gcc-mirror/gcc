@@ -1,3 +1,9 @@
+2003-04-08  Jonathan Wakely  <redi@gcc.gnu.org>
+ 
+ 	* doc/extend.texi (Template Instantiation): Refer to ISO standard,
+ 	not Working Paper.
+ 	* doc/invoke.texi (C++ Dialect Options): Same.
+ 
 Fri Apr 11 00:12:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR inline-asm/8803
