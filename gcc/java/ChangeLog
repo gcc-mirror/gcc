@@ -1,3 +1,11 @@
+1999-12-10  Andrew Haley  <aph@cygnus.com>
+
+	* parse.h (BUILD_THROW): Add support for sjlj-exceptions.
+	decl.c (init_decl_processing): Add _Jv_Sjlj_Throw.
+	expr.c (build_java_athrow): Add support for sjlj-exceptions.
+	java-tree.h: Ditto.
+	jcf-write.c: Ditto.	
+
 1999-12-5  Anthony Green  <green@cygnus.com>
 
 	* decl.c (init_decl_processing): Mark throw_node as a noreturn
