@@ -510,14 +510,19 @@ validate_replace_rtx_1 (loc, from, to, object)
       break;
     }
       
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  /* For commutative or comparison operations we've already performed
+     replacements.  Don't try to perform them again.  */
+  if (GET_RTX_CLASS (code) != '<' && GET_RTX_CLASS (code) != 'c')
     {
-      if (fmt[i] == 'e')
-	validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
+      fmt = GET_RTX_FORMAT (code);
+      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+        {
+          if (fmt[i] == 'e')
+            validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
+          else if (fmt[i] == 'E')
+            for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+              validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
+        }
     }
 }
 
