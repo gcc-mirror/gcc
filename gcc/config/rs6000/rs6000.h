@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    -bnodelcsect undoes a poor choice of default relating to multiply-defined
    csects.  See AIX documentation for more information about this.  */
 
-#define LINK_SPEC "-T512 -H512 -btextro -bhalt:4 -bnodelcsect\
+#define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
    %{static:-bnso -bI:/lib/syscalls.exp} %{g*:-bexport:/usr/lib/libg.exp}"
 
 /* Profiled library versions are used by linking with special directories.  */
