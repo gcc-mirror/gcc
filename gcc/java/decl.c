@@ -692,7 +692,11 @@ java_init_decl_processing (void)
   void_type_node = make_node (VOID_TYPE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("void"), void_type_node));
   layout_type (void_type_node);	/* Uses size_zero_node */
+
   ptr_type_node = build_pointer_type (void_type_node);
+  const_ptr_type_node
+    = build_pointer_type (build_type_variant (void_type_node, 1, 0));
+
   t = make_node (VOID_TYPE);
   layout_type (t); /* Uses size_zero_node */
   return_address_type_node = build_pointer_type (t);

@@ -216,6 +216,8 @@ initialize_builtins (void)
 		  double_ftype_double, "_ZN4java4lang4Math4sqrtEd");
   define_builtin (BUILT_IN_TAN, "__builtin_tan",
 		  double_ftype_double, "_ZN4java4lang4Math3tanEd");
+
+  build_common_builtin_nodes ();
 }
 
 /* If the call matches a builtin, return the

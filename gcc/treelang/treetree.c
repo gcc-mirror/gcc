@@ -1209,7 +1209,7 @@ treelang_init_decl_processing (void)
   tree_push_type_decl (get_identifier ("long double"), long_double_type_node);
   tree_push_type_decl (get_identifier ("void"), void_type_node);
 
-  /* Add any target-specific builtin functions.  */
+  build_common_builtin_nodes ();
   (*targetm.init_builtins) ();
 
   pedantic_lvalues = pedantic;

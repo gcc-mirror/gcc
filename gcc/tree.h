@@ -182,7 +182,7 @@ extern const char *const built_in_class_names[4];
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM) ENUM,
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM,
 enum built_in_function
 {
 #include "builtins.def"
@@ -3591,6 +3591,7 @@ extern int real_minus_onep (tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (bool, bool);
 extern void build_common_tree_nodes_2 (int);
+extern void build_common_builtin_nodes (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
 extern HOST_WIDE_INT int_cst_value (tree);

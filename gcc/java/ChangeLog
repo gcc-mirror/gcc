@@ -1,3 +1,8 @@
+2005-02-09  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (initialize_builtins): Call build_common_builtin_nodes.
+	* decl.c (java_init_decl_processing): Initialize const_ptr_type_node.
+
 2005-02-08  Marcin Dalecki  <martin@dalecki.de>
 
 	* expr.c (add_type_assertion): Use the proper enumeration type,

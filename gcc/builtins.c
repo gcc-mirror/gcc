@@ -59,7 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 const char *const built_in_class_names[4]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
-#define DEF_BUILTIN(X, N, C, T, LT, B, F, NA, AT, IM) #X,
+#define DEF_BUILTIN(X, N, C, T, LT, B, F, NA, AT, IM, COND) #X,
 const char *const built_in_names[(int) END_BUILTINS] =
 {
 #include "builtins.def"
