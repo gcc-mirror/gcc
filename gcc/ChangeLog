@@ -1,3 +1,10 @@
+Thu Mar 16 16:50:44 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (emit_library_call_value_1): Break out from ...; handle
+	VOIDmode function calls too.
+	(emit_library_call_value): ... here.
+	(emit_library_call): Implement by calling emit_library_call_value_1.
+
 Thu Mar 16 16:01:30 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Do sanity checking on arg_space_so_far.
