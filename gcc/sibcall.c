@@ -174,10 +174,6 @@ skip_copy_to_return_value (rtx orig_insn)
      called function's return value was copied.  Otherwise we're returning
      some other value.  */
 
-#ifndef OUTGOING_REGNO
-#define OUTGOING_REGNO(N) (N)
-#endif
-
   if (SET_DEST (set) == current_function_return_rtx
       && REG_P (SET_DEST (set))
       && OUTGOING_REGNO (REGNO (SET_DEST (set))) == REGNO (hardret)

@@ -48,14 +48,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define CALLED_AS_BUILT_IN(NODE) \
    (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
 
-/* Register mappings for target machines without register windows.  */
-#ifndef INCOMING_REGNO
-#define INCOMING_REGNO(OUT) (OUT)
-#endif
-#ifndef OUTGOING_REGNO
-#define OUTGOING_REGNO(IN) (IN)
-#endif
-
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif
@@ -902,10 +894,7 @@ apply_args_register_offset (int regno)
 
   /* Arguments are always put in outgoing registers (in the argument
      block) if such make sense.  */
-#ifdef OUTGOING_REGNO
-  regno = OUTGOING_REGNO (regno);
-#endif
-  return apply_args_reg_offset[regno];
+  return apply_args_reg_offset[OUTGOING_REGNO (regno)];
 }
 
 /* Return the size required for the block returned by __builtin_apply_args,

@@ -1,3 +1,14 @@
+2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c (OUTGOING_REGNO): Don't define the default.
+	* builtins.c (OUTGOING_REGNO): Likewise.
+	(INCOMING_REGNO): Likewise.
+	(apply_args_register_offset): Always use OUTGOING_REGNO.
+	* combine.c (OUTGOING_REGNO): Likewise.
+	* sibcall.c (OUTGOING_REGNO): Likewise.
+	* defaults.h (INCOMING_REGNO): Provide the default.
+	(OUTGOING_REGNO): Likewise.
+
 2004-02-21  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (max-peeled-insns, max-completely-peeled-insns,
