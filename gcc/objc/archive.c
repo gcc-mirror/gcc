@@ -26,8 +26,9 @@ You should have received a copy of the GNU General Public License along with
 
 /*
 ** Note: This version assumes that int and longs are both 32bit.
-**       Most API function are in the bottom of this file.
 */
+
+#ifndef __alpha__
 
 #include "runtime.h"
 
@@ -1484,3 +1485,5 @@ objc_get_stream_class_version (TypedStream* stream, Class* class)
   else
     return class_get_version (class);
 }
+
+#endif /* __alpha__ */
