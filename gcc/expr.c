@@ -4980,7 +4980,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   rtx op0;
-  rtx lab1, lab2, insns;
+  rtx lab1, insns;
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -5015,39 +5015,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Make a suitable register to place result in.  */
       target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 
-      /* Test the argument to make sure it is in the proper domain for
-	 the sqrt function.  If it is not in the domain, branch to a 
-	 library call.  */
       emit_queue ();
       start_sequence ();
-      lab1 = gen_label_rtx ();
-      lab2 = gen_label_rtx ();
 
-      /* By default check the arguments.  If flag_fast_math is turned on,
-	 then assume sqrt will always be called with valid arguments. 
-	 Note changing the test below from "> 0" to ">= 0" would cause
-	 incorrect results when computing sqrt(-0.0).  */
-
-      if (! flag_fast_math) 
-	{
-	  /* By checking op > 0 we are able to catch all of the
-             IEEE special cases with a single if conditional.  */
-          emit_cmp_insn (op0, CONST0_RTX (GET_MODE (op0)), GT, NULL_RTX,
-			 GET_MODE (op0), 0, 0);
-          emit_jump_insn (gen_bgt (lab1));
-
-          /* The argument was not in the domain; do this via library call.
-	     Pop the arguments right away in case the call gets deleted. */
-	  NO_DEFER_POP;
-          expand_call (exp, target, 0);
-	  OK_DEFER_POP;
-
-          /* Branch around open coded version */
-          emit_jump_insn (gen_jump (lab2));
-	}
-
-      emit_label (lab1);
-      /* Arg is in the domain, compute sqrt, into TARGET. 
+      /* Compute sqrt into TARGET. 
 	 Set TARGET to wherever the result comes back.  */
       target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
 			    sqrt_optab, op0, target, 0);
@@ -5060,8 +5031,45 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  end_sequence ();
 	  break;
         }
-      emit_label (lab2);
 
+      /* Check the results by default.  But if flag_fast_math is turned on,
+	 then assume sqrt will always be called with valid arguments.  */
+
+      if (! flag_fast_math)
+	{
+	  /* Don't define the sqrt instructions
+	     if your machine is not IEEE.  */
+	  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+	    abort ();
+
+	  lab1 = gen_label_rtx ();
+
+	  /* Test the result; if it is NaN, set errno=EDOM because
+	     the argument was not in the domain.  */
+	  emit_cmp_insn (target, target, EQ, 0, GET_MODE (target), 0, 0);
+	  emit_jump_insn (gen_beq (lab1));
+
+#if TARGET_EDOM
+	  {
+#ifdef GEN_ERRNO_RTX
+	    rtx errno_rtx = GEN_ERRNO_RTX;
+#else
+	    rtx errno_rtx
+	      = gen_rtx (MEM, word_mode, gen_rtx (SYMBOL_REF, Pmode, "*errno"));
+#endif
+
+	    emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
+	  }
+#else
+	  /* We can't set errno=EDOM directly; let the library call do it.
+	     Pop the arguments right away in case the call gets deleted. */
+	  NO_DEFER_POP;
+	  expand_call (exp, target, 0);
+	  OK_DEFER_POP;
+#endif
+
+	  emit_label (lab1);
+	}
 
       /* Output the entire sequence. */
       insns = get_insns ();
