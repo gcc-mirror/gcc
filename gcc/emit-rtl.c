@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 
-
 /* Opcode names */
 #ifdef BCDEBUG_PRINT_CODE
 char *opcode_name[] =
@@ -259,14 +258,6 @@ extern int rtx_equal_function_value_matters;
    whether we actually emitted it or not.  */
 extern char *emit_filename;
 extern int emit_lineno;
-
-rtx change_address ();
-void init_emit ();
-
-extern struct obstack *rtl_obstack;
-
-extern int stack_depth;
-extern int max_stack_depth;
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
