@@ -6781,9 +6781,9 @@ that includes @samp{%}-sequences to substitute operands, you must take
 care of the substitution yourself.  Just be sure to increment
 @var{ptr} over whatever text should not be output normally.
 
-@findex recog_operand
+@findex recog_data.operand
 If you need to look at the operand values, they can be found as the
-elements of @code{recog_operand}.
+elements of @code{recog_data.operand}.
 
 If the macro definition does nothing, the instruction is output
 in the usual way.
