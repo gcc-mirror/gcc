@@ -1,3 +1,11 @@
+Thu Apr 12 17:57:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (inhibit_warnings): Delete redundant declaration.
+
+	* com.c (skip_redundant_dir_prefix): Likewise.
+
+	* com.h (mark_addressable): Likewise.
+
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex.c (ffelex_hash_): Avoid eating one whole line after

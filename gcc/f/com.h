@@ -314,11 +314,6 @@ tree ffecom_truth_value (tree expr);
 tree ffecom_truth_value_invert (tree expr);
 tree ffecom_type_expr (ffebld expr);
 tree ffecom_which_entrypoint_decl (void);
-
-/* These need to be in the front end with exactly these interfaces,
-   as they're called by the back end.  */
-
-int mark_addressable (tree expr);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* Define macros. */
