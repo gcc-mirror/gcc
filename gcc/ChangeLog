@@ -1,3 +1,8 @@
+2002-03-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): Revert 2002-03-03
+	internal visibility change.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_expand_block_move): Use
