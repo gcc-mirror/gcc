@@ -1,5 +1,7 @@
 2001-12-17  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.lang/PR3731.xfail: Removed.
+
 	Inspired by PR java/5057:
 	* libjava.lang/PR5057_2.java: New file.
 	* libjava.lang/PR5057_2.out: New file.
