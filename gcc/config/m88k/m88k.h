@@ -215,9 +215,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"10/19/92"
+#define VERSION_INFO2	"10/21/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.4 10/19/92 10:34:58"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.14.1 10/21/92 23:03:03"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
