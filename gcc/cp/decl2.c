@@ -3632,10 +3632,11 @@ lookup_using_namespace (tree name, cxx_binding *val, tree usings, tree scope,
   for (iter = usings; iter; iter = TREE_CHAIN (iter))
     if (TREE_VALUE (iter) == scope)
       {
+        tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
         cxx_binding *val1 =
-          cxx_scope_find_binding_for_name (TREE_PURPOSE (iter), name);
+          cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (used), name);
         if (spacesp)
-          *spacesp = tree_cons (TREE_PURPOSE (iter), NULL_TREE, *spacesp);
+          *spacesp = tree_cons (used, NULL_TREE, *spacesp);
         /* Resolve ambiguities.  */
         if (val1)
           val = ambiguous_decl (name, val, val1, flags);
@@ -3663,7 +3664,8 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
   scope = ORIGINAL_NAMESPACE (scope);
   while (scope && result->value != error_mark_node)
     {
-      cxx_binding *binding = cxx_scope_find_binding_for_name (scope, name);
+      cxx_binding *binding =
+        cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
       seen = tree_cons (scope, NULL_TREE, seen);
       if (binding)
         result = ambiguous_decl (name, result, binding, flags);
@@ -4355,7 +4357,7 @@ do_toplevel_using_decl (tree decl)
   if (decl == NULL_TREE)
     return;
   
-  binding = binding_for_name (name, current_namespace);
+  binding = binding_for_name (NAMESPACE_LEVEL (current_namespace), name);
 
   oldval = BINDING_VALUE (binding);
   oldtype = BINDING_TYPE (binding);

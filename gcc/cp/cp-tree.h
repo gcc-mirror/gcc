@@ -380,8 +380,8 @@ struct tree_srcloc GTY(())
     BINDING_VALUE is a DECL for the associated declaration.  Thus,
     name lookup consists simply of pulling off the node at the front
     of the list (modulo oddities for looking up the names of types,
-    and such.)  You can use BINDING_SCOPE or BINDING_LEVEL to
-    determine the scope that bound the name.  */
+    and such.)  You can use BINDING_SCOPE to determine the scope
+    that bound the name.  */
 #define IDENTIFIER_BINDING(NODE) \
   (LANG_IDENTIFIER_CAST (NODE)->bindings)
 
@@ -3663,7 +3663,6 @@ extern tree declare_local_label                 (tree);
 extern tree define_label			(const char *, int, tree);
 extern void check_goto				(tree);
 extern void define_case_label			(void);
-extern cxx_binding *binding_for_name (tree, tree);
 extern tree namespace_binding                   (tree, tree);
 extern void set_namespace_binding               (tree, tree, tree);
 extern tree lookup_namespace_name		(tree, tree);
@@ -3753,7 +3752,6 @@ extern int nonstatic_local_decl_p               (tree);
 extern tree declare_global_var                  (tree, tree);
 extern void register_dtor_fn                    (tree);
 extern tmpl_spec_kind current_tmpl_spec_kind    (int);
-extern cxx_binding *cxx_scope_find_binding_for_name (tree, tree);
 extern tree cp_fname_init			(const char *);
 extern bool have_extern_spec;
 

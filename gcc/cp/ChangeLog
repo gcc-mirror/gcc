@@ -1,3 +1,35 @@
+2003-03-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* cp-tree.h (binding_for_name: Move to name-lookup.h  Adjust
+	prototype. 
+	(cxx_scope_find_binding_for_name): Likewise.
+	* decl.c (find_binding: Move to name-lookup.c.
+	(binding_for_name): Likewise.
+	(cxx_scope_find_binding_for_name): Likewise.
+	(BINDING_LEVEL):  Remove.
+	(push_binding): Tidy.
+	(push_class_binding): Likewise.
+	(pop_binding): Likewise.
+	(poplevel): Likewise.
+	(poplevel_class): Likewise.
+	(set_identifier_type_value_with_scope): Likewise.
+	(push_overloaded_decl): Likewise.
+	(lookup_tag): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_name_current_level): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(namespace_binding): Move to name-lookup.c.
+	(set_namespace_binding): Likewise.
+	* decl2.c (lookup_using_namespace): Tidy.
+	(qualified_lookup_using_namespace): Likewise.
+	(do_toplevel_using_decl): Likewise.
+	* name-lookup.c: Include "timevar.h"
+	* name-lookup.h (cxx_scope):  Declare.
+	(struct cxx_binding): Lose member "has_level".  Adjust "scope"
+	member declaration.
+	(BINDING_SCOPE): Adjust definition.
+	(BINDING_HAS_LEVEL_P): Remove.
+
 2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* name-lookup.c: New file.
