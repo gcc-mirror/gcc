@@ -1452,6 +1452,7 @@ extern void record_excess_regs		PROTO ((rtx, rtx, rtx *));
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes	PROTO ((rtx));
 extern void thread_prologue_and_epilogue_insns		PROTO ((rtx));
+extern int prologue_epilogue_contains			PROTO ((rtx));
 extern void use_variable				PROTO ((rtx));
 extern HOST_WIDE_INT get_frame_size			PROTO ((void));
 extern void preserve_rtl_expr_result			PROTO ((rtx));
