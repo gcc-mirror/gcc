@@ -17,8 +17,15 @@ extern "Java" {
 
 class __JArray : public java::lang::Object
 {
+protected:
+  // This is just a hack to work around a warning emitted by the C++
+  // compiler.  We initialize `length' evilly, but it doesn't know
+  // that.
+  __JArray () : length (0)
+  {
+  }
 public:
-  jsize length;
+  const jsize length;
   friend jsize JvGetArrayLength (__JArray*);
 };
 

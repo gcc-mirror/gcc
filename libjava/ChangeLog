@@ -1,3 +1,11 @@
+2000-11-26  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_NewObjectArray): Use const_cast to initialize
+	length field of array.
+	(_Jv_NewPrimArray): Likewise.
+	* gcj/array.h (__JArray): `length' field now const.  Added
+	constructor.
+
 2000-11-26  Anthony Green  <green@redhat.com>
 
 	* javax/naming/spi/NamingManager.java,
