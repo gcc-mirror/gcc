@@ -1,3 +1,11 @@
+Wed Jun 10 14:52:27 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (expand_builtin_setjmp): Store const1_rtx in target.
+	(expand_builtin_longjmp): Abort if value isn't const1_rtx.
+	Delete code storing value in static_chain_rtx.
+	(expand_builtin, case BUILT_IN_LONGJMP): Pass NULL_RTX for target
+	to second expand_expr call.
+
 Wed Jun 10 13:08:41 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* mips/mips.c: Remove -mabi=o32 and -mabi=n64.
