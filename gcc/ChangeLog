@@ -1,3 +1,8 @@
+2003-10-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/extend.texi (Function Attributes): Mention the exceptional
+	path for noreturn-marked functions.
+
 2003-10-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_decide_inlining): Fix uninitialized variable
