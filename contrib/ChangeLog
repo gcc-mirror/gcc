@@ -1,4 +1,9 @@
+Wed Sep 16 16:06:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* egcs_update: Additionally touch gcc/java/parse.[ch].
+
 Thu Sep  9 16:48 Bruce Korb <korb@datadesign.com>
+	
 	* fixinc/inclhack.def:  Added two files required by
 	SCO's Open Server 5's avoid_bool fix.
 	Regenerated fixinc.x and inclhack.sh to incorporate
