@@ -41,9 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_AIX 0
 #endif
 
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION ;
-
 /* Default string to use for cpu if not specified.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT ((char *)0)
