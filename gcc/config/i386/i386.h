@@ -603,7 +603,7 @@ extern int ix86_arch;
 %{mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
 -D__tune_athlon_sse__ }\
 %{mcpu=pentium4:-D__tune_pentium4__ }\
-%{march=march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
+%{march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
 -D__SSE__ }\
 %{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
 march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
