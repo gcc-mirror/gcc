@@ -4733,17 +4733,13 @@ add_label_notes (x, insn)
 
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
-      rtx next = next_real_insn (XEXP (x, 0));
+      /* This code used to ignore labels that referred to dispatch tables to
+         avoid flow generating (slighly) worse code.
 
-      /* Don't record labels that refer to dispatch tables.
-	 This is not necessary, since the tablejump references the same label.
-	 And if we did record them, flow.c would make worse code.  */
-      if (next == 0
-	  || ! (GET_CODE (next) == JUMP_INSN
-		&& (GET_CODE (PATTERN (next)) == ADDR_VEC
-		    || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
-	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
-					      REG_NOTES (insn));
+         We no longer ignore such label references (see LABEL_REF handling in
+         mark_jump_label for additional information).  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+					    REG_NOTES (insn));
       return;
     }
 

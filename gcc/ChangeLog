@@ -1,5 +1,9 @@
 Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (add_label_notes): Do not ignore references to labels
+	before dispatch tables.  Mirrors Apr 8 change to mark_jump_label.
+	* gcse.c (add_label_notes): Similarly.
+
 	* pa.h (ASM_OUTPUT_MI_THUNK): Strip name encoding.
 
 	* m68k.md (adddi_dilshr32): One of the operands must be a register.
