@@ -1639,7 +1639,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
   decl = sym->backend_decl;
 
   /* Emit a DECL_EXPR for this variable, which will cause the
-     gimplifier to allocate stoage, and all that good stuff.  */
+     gimplifier to allocate storage, and all that good stuff.  */
   tmp = build (DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&body, tmp);
 
