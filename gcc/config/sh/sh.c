@@ -7192,7 +7192,7 @@ sh_media_init_builtins ()
   tree shared[SH_BLTIN_NUM_SHARED_SIGNATURES];
   const struct builtin_description *d;
 
-  bzero (shared, sizeof shared);
+  memset (shared, 0, sizeof shared);
   for (d = bdesc; d - bdesc < sizeof bdesc / sizeof bdesc[0]; d++)
     {
       tree type, arg_type;
@@ -7235,7 +7235,8 @@ sh_media_init_builtins ()
 	  if (signature < SH_BLTIN_NUM_SHARED_SIGNATURES)
 	    shared[signature] = type;
 	}
-      builtin_function (d->name, type, d - bdesc, BUILT_IN_MD, NULL);
+      builtin_function (d->name, type, d - bdesc, BUILT_IN_MD,
+			NULL, NULL_TREE);
     }
 }
 
