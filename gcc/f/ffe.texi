@@ -19,7 +19,7 @@ as of late May, 1999.
 To find about things that are ``To Be Determined'' or ``To Be Done'',
 search for the string TBD.
 If you want to help by working on one or more of these items,
-email me at @email{@value{email-burley}}.
+email @email{gcc@@gcc.gnu.org}.
 If you're planning to do more than just research issues and offer comments,
 see @uref{http://www.gnu.org/software/contribute.html} for steps you might
 need to take first.
@@ -268,6 +268,12 @@ Lexing (@file{lex.c})
 Stand-alone statement identification (@file{sta.c})
 
 @item
+INCLUDE handling (@file{sti.c})
+
+@item
+Order-dependent statement identification (@file{stq.c})
+
+@item
 Parsing (@file{stb.c} and @file{expr.c})
 
 @item
@@ -329,7 +335,18 @@ Since the second lexeme is @samp{(},
 the first must represent an array for this to be an assignment statement,
 else it's a statement function.
 
-Either way, @file{sta.c} hands off the statement to @file{stb.c}
+Either way, @file{sta.c} hands off the statement to @file{stq.c}
+(via @file{sti.c}, which expands INCLUDE files).
+@file{stq.c} figures out what a statement that is,
+on its own, ambiguous, must actually be based on the context
+established by previous statements.
+
+So, @file{stq.c} watches the statement stream for executable statements,
+END statements, and so on, so it knows whether @samp{A(B)=C} is
+(intended as) a statement-function definition or an assignment statement.
+
+After establishing the context-aware statement info, @file{stq.c}
+passes the original sample statement on to @file{stb.c}
 (either its statement-function parser or its assignment-statement parser).
 
 @file{stb.c} forms a
@@ -379,6 +396,8 @@ decimal numbering is used, and so on.
 * g77stripcard::
 * lex.c::
 * sta.c::
+* sti.c::
+* stq.c::
 * stb.c::
 * expr.c::
 * stc.c::
@@ -527,6 +546,8 @@ as necessary to reach column @var{n},
 where dividing @samp{(@var{n} - 1)} by eight
 results in a remainder of zero.
 
+That saves having to pass most source files through @code{expand}.
+
 @item
 Linefeeds (ASCII code 10)
 mark the ends of lines.
@@ -631,6 +652,14 @@ to the appropriate @code{CHARACTER} constants.
 Then @code{g77} wouldn't have to define a prefix syntax for Hollerith
 constants specifying whether they want C-style or straight-through
 backslashes.
+
+@item
+To allow for form-neutral INCLUDE files without requiring them
+to be preprocessed,
+the fixed-form lexer should offer an extension (if possible)
+allowing a trailing @samp{&} to be ignored, especially if after
+column 72, as it would be using the traditional Unix Fortran source
+model (which ignores @emph{everything} after column 72).
 @end itemize
 
 The above implements nearly exactly what is specified by
@@ -638,9 +667,10 @@ The above implements nearly exactly what is specified by
 and
 @ref{Lines},
 except it also provides automatic conversion of tabs
-and ignoring of newline-related carriage returns.
+and ignoring of newline-related carriage returns,
+as well as accommodating form-neutral INCLUDE files.
 
-It also affects the ``pure visual'' model,
+It also implements the ``pure visual'' model,
 by which is meant that a user viewing his code
 in a typical text editor
 (assuming it's not preprocessed via @code{g77stripcard} or similar)
@@ -672,10 +702,10 @@ the GNU Fortran ``pure visual'' model meets these requirements.
 Any language or user-visible source form
 requiring special tagging of tabs,
 the ends of lines after spaces/tabs,
-and so on, is broken by this definition.
-Fortunately, Fortran @emph{itself} is not broken,
-even if most vendor-supplied defaults for their Fortran compilers @emph{are}
-in this regard.)
+and so on, fails to meet this fairly straightforward specification.
+Fortunately, Fortran @emph{itself} does not mandate such a failure,
+though most vendor-supplied defaults for their Fortran compilers @emph{do}
+fail to meet this specification for readability.)
 
 Further, this model provides a clean interface
 to whatever preprocessors or code-generators are used
@@ -684,6 +714,12 @@ Mainly, they need not worry about long lines.
 
 @node sta.c
 @subsection sta.c
+
+@node sti.c
+@subsection sti.c
+
+@node stq.c
+@subsection stq.c
 
 @node stb.c
 @subsection stb.c
@@ -988,14 +1024,6 @@ Specific issues to resolve:
 
 @itemize @bullet
 @item
-Just where should @code{INCLUDE} processing take place?
-
-Clearly before (or part of) statement identification (@file{sta.c}),
-since determining whether @samp{I(J)=K} is a statement-function
-definition or an assignment statement requires knowing the context,
-which in turn requires having processed @code{INCLUDE} files.
-
-@item
 Just where should (if it was implemented) @code{USE} processing take place?
 
 This gets into the whole issue of how @code{g77} should handle the concept
@@ -1050,6 +1078,9 @@ and @samp{-fcase-initcap} options?
 I've asked @email{info-gnu-fortran@@gnu.org} for input on this.
 Not having to support these makes it easier to write the new front end,
 and might also avoid complicated its design.
+
+The consensus to date (1999-11-17) has been to drop this support.
+Can't recall anybody saying they're using it, in fact.
 @end itemize
 
 @node Philosophy of Code Generation
@@ -1202,6 +1233,21 @@ in the GBE's support of its native complex-arithmetic facility
 were worked out.
 The FFE was changed back to default to using that native facility,
 leaving emulation as an option.
+
+Later during the release cycle
+(which was called EGCS 1.2, but soon became GCC 2.95),
+bugs in the native facility were found.
+Reactions among various people included
+``the last thing we should do is change the default back'',
+``we must change the default back'',
+and ``let's figure out whether we can narrow down the bugs to
+few enough cases to allow the now-months-long-tested default
+to remain the same''.
+The latter viewpoint won that particular time.
+The bugs exposed other concerns regarding ABI compliance
+when the ABI specified treatment of complex data as different
+from treatment of what Fortran and GNU C consider the equivalent
+aggregation (structure) of real (or float) pairs.
 
 Other Fortran constructs---arrays, character strings,
 complex division, @code{COMMON} and @code{EQUIVALENCE} aggregates,
@@ -1460,7 +1506,10 @@ be supported.
 Both this mythical, and today's real, GBE caters to its GBEL
 by, sometimes, scrambling around, cleaning up after itself---after
 discovering that assumptions it made earlier during code generation
-are incorrect.)
+are incorrect.
+That's not a great design, since it indicates significant code
+paths that might be rarely tested but used in some key production
+environments.)
 
 So, the FFE handles these discrepancies---between the order in which
 it discovers facts about the code it is compiling,
