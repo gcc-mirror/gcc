@@ -839,42 +839,59 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
 static bool
 validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 {
-  tree type, parm;
-  int nargs;
-  /* Prototype decl follows defn w/o prototype.  */
+  tree newargs, oldargs;
+  int i;
 
-  for (parm = TYPE_ACTUAL_ARG_TYPES (oldtype),
-	 type = TYPE_ARG_TYPES (newtype),
-	 nargs = 1;
-       ;
-       parm = TREE_CHAIN (parm), type = TREE_CHAIN (type), nargs++)
+  /* ??? Elsewhere TYPE_MAIN_VARIANT is not used in this context.  */
+#define END_OF_ARGLIST(t) (TYPE_MAIN_VARIANT (t) == void_type_node)
+
+  oldargs = TYPE_ACTUAL_ARG_TYPES (oldtype);
+  newargs = TYPE_ARG_TYPES (newtype);
+  i = 1;
+
+  for (;;)
     {
-      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
-	  && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
+      tree oldargtype = TREE_VALUE (oldargs);
+      tree newargtype = TREE_VALUE (newargs);
+
+      if (END_OF_ARGLIST (oldargtype) && END_OF_ARGLIST (newargtype))
+	break;
+
+      /* Reaching the end of just one list means the two decls don't
+	 agree on the number of arguments.  */
+      if (END_OF_ARGLIST (oldargtype))
 	{
-	  /* End of list.  */
-	  warning ("%Jprototype for '%D' follows non-prototype definition",
-		   newdecl, newdecl);
-	  return true;
+	  error ("%Jprototype for '%D' declares more arguments "
+		 "than previous old-style definition", newdecl, newdecl);
+	  return false;
+	}
+      else if (END_OF_ARGLIST (newargtype))
+	{
+	  error ("%Jprototype for '%D' declares fewer arguments "
+		 "than previous old-style definition", newdecl, newdecl);
+	  return false;
 	}
 
-      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
-	  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
+      /* Type for passing arg must be consistent with that declared
+	 for the arg.  */
+      else if (! comptypes (oldargtype, newargtype, COMPARE_STRICT))
 	{
-	  error ("%Jprototype for '%D' with different number of arguments "
-		 "follows non-prototype definition", newdecl, newdecl);
+	  error ("%Jprototype for '%D' declares arg %d with incompatible type",
+		 newdecl, newdecl, i);
 	  return false;
 	}
-      /* Type for passing arg must be consistent
-	 with that declared for the arg.  */
-      if (! comptypes (TREE_VALUE (parm), TREE_VALUE (type),
-		       COMPARE_STRICT))
-	{
-	  error ("%Jprototype for '%D' with incompatible argument %d "
-		 "follows non-prototype definition", newdecl, newdecl, nargs);
-	  return false;
-	}
+
+      oldargs = TREE_CHAIN (oldargs);
+      newargs = TREE_CHAIN (newargs);
+      i++;
     }
+
+  /* If we get here, no errors were found, but do issue a warning
+     for this poor-style construct.  */
+  warning ("%Jprototype for '%D' follows non-prototype definition",
+	   newdecl, newdecl);
+  return true;
+#undef END_OF_ARGLIST
 }
 
 /* Subroutine of diagnose_mismatched_decls.  Report the location of DECL,
@@ -913,8 +930,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      the previous decl - we're in an error cascade already.  */
   if (olddecl == error_mark_node || newdecl == error_mark_node)
     return false;
-  oldtype = TREE_TYPE (olddecl);
-  newtype = TREE_TYPE (newdecl);
+  *oldtypep = oldtype = TREE_TYPE (olddecl);
+  *newtypep = newtype = TREE_TYPE (newdecl);
   if (oldtype == error_mark_node || newtype == error_mark_node)
     return false;
 
@@ -946,7 +963,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  tree trytype = match_builtin_function_types (newtype, oldtype);
 
 	  if (trytype && comptypes (newtype, trytype, COMPARE_STRICT))
-	    oldtype = trytype;
+	    *oldtypep = oldtype = trytype;
 	  else
 	    {
 	      /* If types don't match for a built-in, throw away the
@@ -978,7 +995,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  pedwarn ("%Jconflicting types for '%D'", newdecl, newdecl);
 	  /* Make sure we keep void as the return type.  */
-	  TREE_TYPE (newdecl) = newtype = oldtype;
+	  TREE_TYPE (newdecl) = *newtypep = newtype = oldtype;
 	  C_FUNCTION_IMPLICIT_INT (newdecl) = 0;
 	  pedwarned = true;
 	}
@@ -1230,8 +1247,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (warned || pedwarned)
     locate_old_decl (olddecl, pedwarned ? pedwarn : warning);
 
-  *newtypep = newtype;
-  *oldtypep = oldtype;
   return true;
 }
 

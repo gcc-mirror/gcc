@@ -1,3 +1,9 @@
+2004-01-12  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 13656
+	* gcc.dg/typedef-redecl.c: New test case.
+	* gcc.dg/typedef-redecl.h: New support file.
+
 2004-01-13  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/always_inline.c: New test.
