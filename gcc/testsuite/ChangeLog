@@ -1,3 +1,8 @@
+Mon Oct  9 23:32:06 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20001009-1.c: Move from here ....
+	* gcc.c-torture/execute/20001009-2.c: ... to here.
+
 2000-10-09  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.c-torture/compile/20001009-1.c: New testcase.
