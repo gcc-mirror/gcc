@@ -1,3 +1,10 @@
+2000-05-22  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4:  If the new pragma isn't supported, don't kill -Werror;
+	  keep -Werror and add -Wno-unknown-pragma.  -Werror Is Good.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2000-05-19   Nathan C. Myers  <ncm@cantrip.org>
 
       	* bits/generic_shadow.h: s/swamp/legacy/

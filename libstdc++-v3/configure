@@ -2098,8 +2098,9 @@ rm -f conftest*
 
   echo "$ac_t""$gpp_satisfactory" 1>&6
 
+  WERROR='-Werror'
   echo $ac_n "checking for g++ that supports new system_header pragma""... $ac_c" 1>&6
-echo "configure:2103: checking for g++ that supports new system_header pragma" >&5
+echo "configure:2104: checking for g++ that supports new system_header pragma" >&5
   
   ac_ext=C
 # CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -2114,7 +2115,7 @@ cross_compiling=$ac_cv_prog_cxx_cross
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-Wunknown-pragmas -Werror'
   cat > conftest.$ac_ext <<EOF
-#line 2118 "configure"
+#line 2119 "configure"
 #include "confdefs.h"
 #pragma system_header
 int main() {
@@ -2122,14 +2123,14 @@ int foo;
   
 ; return 0; }
 EOF
-if { (eval echo configure:2126: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2127: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  WERROR='-Werror'
+  ac_newpragma=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  WERROR=''
+  ac_newpragma=no
 fi
 rm -f conftest*
   if test "$ac_test_CXXFLAGS" = set; then
@@ -2145,11 +2146,10 @@ ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
 ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
 cross_compiling=$ac_cv_prog_cc_cross
 
-  if test "$WERROR" = ""; then
-    echo "$ac_t""no" 1>&6
-  else
-    echo "$ac_t""yes" 1>&6
+  if test "$ac_newpragma" = "no"; then
+    WERROR="$WERROR -Wno-unknown-pragmas"
   fi
+  echo "$ac_t""$ac_newpragma" 1>&6
 
   echo $ac_n "checking for g++ that supports new inlining mechanism""... $ac_c" 1>&6
 echo "configure:2156: checking for g++ that supports new inlining mechanism" >&5

@@ -171,6 +171,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
   AC_MSG_RESULT($gpp_satisfactory)
 
+  WERROR='-Werror'
   AC_MSG_CHECKING([for g++ that supports new system_header pragma])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -180,7 +181,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-Wunknown-pragmas -Werror'
   AC_TRY_COMPILE([#pragma system_header], [int foo;
-  ], [WERROR='-Werror'], [WERROR=''])
+  ], [ac_newpragma=yes], [ac_newpragma=no])
   if test "$ac_test_CXXFLAGS" = set; then
     CXXFLAGS="$ac_save_CXXFLAGS"
   else
@@ -188,11 +189,10 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
     CXXFLAGS=''
   fi
   AC_LANG_RESTORE
-  if test "$WERROR" = ""; then
-    AC_MSG_RESULT(no)
-  else
-    AC_MSG_RESULT(yes)
+  if test "$ac_newpragma" = "no"; then
+    WERROR="$WERROR -Wno-unknown-pragmas"
   fi
+  AC_MSG_RESULT($ac_newpragma)
 
   AC_MSG_CHECKING([for g++ that supports new inlining mechanism])
   AC_EGREP_CPP([ok], [
