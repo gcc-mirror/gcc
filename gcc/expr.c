@@ -3905,6 +3905,7 @@ store_expr (exp, target, want_value)
 {
   register rtx temp;
   int dont_return_target = 0;
+  int dont_store_target = 0;
 
   if (TREE_CODE (exp) == COMPOUND_EXPR)
     {
@@ -3975,7 +3976,15 @@ store_expr (exp, target, want_value)
     {
       temp = expand_expr (exp, target, GET_MODE (target), 0);
       if (GET_MODE (temp) != BLKmode && GET_MODE (temp) != VOIDmode)
-	temp = copy_to_reg (temp);
+	{
+	  /* If TEMP is already in the desired TARGET, only copy it from
+	     memory and don't store it there again.  */
+	  if (temp == target
+	      || (rtx_equal_p (temp, target)
+		  && ! side_effects_p (temp) && ! side_effects_p (target)))
+	    dont_store_target = 1;
+	  temp = copy_to_reg (temp);
+	}
       dont_return_target = 1;
     }
   else if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
@@ -4105,7 +4114,8 @@ store_expr (exp, target, want_value)
   if ((! rtx_equal_p (temp, target)
        || (temp != target && (side_effects_p (temp)
 			      || side_effects_p (target))))
-      && TREE_CODE (exp) != ERROR_MARK)
+      && TREE_CODE (exp) != ERROR_MARK
+      && ! dont_store_target)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
