@@ -1432,6 +1432,7 @@ fix = {
     hackname = hpux8_bogus_inlines;
     files    = math.h;
     select   = inline;
+    bypass   = "__GNUG__";
     sed = "s@inline int abs(int [a-z][a-z]*) {.*}"
            "@extern \"C\" int abs(int);@";
     sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
@@ -1521,6 +1522,7 @@ fix = {
     hackname  = int_abort_free_and_exit;
     files     = stdlib.h;
     select    = "int[ \t]+(abort|free|exit)[ \t]*\\(";
+    bypass    = "_CLASSIC_ANSI_TYPES";
 
     c_fix     = format;
     c_fix_arg = "void\t%1(";
@@ -2912,6 +2914,7 @@ fix = {
     files    = rpc/clnt.h;
     files    = rpc/svc.h;
     files    = rpc/xdr.h;
+    bypass   = "__cplusplus";
     /*
      *  Select those files containing '(*name)()'.
      */
@@ -2970,6 +2973,7 @@ fix = {
 fix = {
     hackname = sun_malloc;
     files    = malloc.h;
+    bypass   = "_CLASSIC_ANSI_TYPES";
 
     sed   = "s/typedef[ \t]char \\*\tmalloc_t/typedef void \\*\tmalloc_t/g";
     sed   = "s/int[ \t][ \t]*free/void\tfree/g";
@@ -3473,6 +3477,7 @@ fix = {
     hackname = sysv68_string;
     files    = testing.h;
     files    = string.h;
+    bypass   = "_CLASSIC_ANSI_TYPES";
 
     sed = "s/extern[ \t]*int[ \t]*strlen();/extern unsigned int strlen();/";
     sed = "s/extern[ \t]*int[ \t]*ffs[ \t]*(long);/extern int ffs(int);/";
