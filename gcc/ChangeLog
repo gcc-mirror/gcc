@@ -7,7 +7,7 @@
 2004-02-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Correct leakage of mainline code
-	in last commit.
+	in last commit.  Also leakage from INIT_CUMULATIVE_ARGS patch.
 
 2004-02-19  Zack Weinberg  <zack@codesourcery.com>
 
