@@ -36,7 +36,8 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 					       HOST_WIDE_INT));
 static void record_set			PROTO((rtx, rtx));
 static rtx find_base_term		PROTO((rtx));
-static int base_alias_check		PROTO((rtx, rtx));
+static int base_alias_check		PROTO((rtx, rtx, enum machine_mode,
+					       enum machine_mode));
 static rtx find_base_value		PROTO((rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
@@ -596,8 +597,9 @@ find_base_term (x)
    objects, 1 if they might be pointers to the same object.  */
 
 static int
-base_alias_check (x, y)
+base_alias_check (x, y, x_mode, y_mode)
      rtx x, y;
+     enum machine_mode x_mode, y_mode;
 {
   rtx x_base = find_base_term (x);
   rtx y_base = find_base_term (y);
@@ -629,17 +631,23 @@ base_alias_check (x, y)
   if (rtx_equal_p (x_base, y_base))
     return 1;
 
-  /* The base addresses of the read and write are different
-     expressions.  If they are both symbols and they are not accessed
-     via AND, there is no conflict.  */
-  /* XXX: We can bring knowledge of object alignment and offset into 
-     play here.  For example, on alpha, "char a, b;" can alias one
-     another, though "char a; long b;" cannot.  Similarly, offsets
-     into strutures may be brought into play.  Given "char a, b[40];",
-     a and b[1] may overlap, but a and b[20] do not.  */
+  /* The base addresses of the read and write are different expressions. 
+     If they are both symbols and they are not accessed via AND, there is
+     no conflict.  We can bring knowledge of object alignment into play
+     here.  For example, on alpha, "char a, b;" can alias one another,
+     though "char a; long b;" cannot.  */
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
     {
-      return GET_CODE (x) == AND || GET_CODE (y) == AND;
+      if (GET_CODE (x) == AND && GET_CODE (y) == AND)
+	return 1;
+      if (GET_CODE (x) == AND
+	  && (GET_CODE (XEXP (x, 1)) != CONST_INT
+	      || GET_MODE_UNIT_SIZE (y_mode) < -INTVAL (XEXP (x, 1))))
+	return 1;
+      if (GET_CODE (y) == AND
+	  && (GET_CODE (XEXP (y, 1)) != CONST_INT
+	      || GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
+	return 1;
     }
 
   /* If one address is a stack reference there can be no alias:
@@ -811,18 +819,24 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
       }
 
   /* Treat an access through an AND (e.g. a subword access on an Alpha)
-     as an access with indeterminate size.
-     ??? Could instead convert an n byte reference at (and x y) to an
-     n-y byte reference at (plus x y). */
+     as an access with indeterminate size.  Assume that references 
+     besides AND are aligned, so if the size of the other reference is
+     at least as large as the alignment, assume no other overlap.  */
   if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    return memrefs_conflict_p (-1, XEXP (x, 0), ysize, y, c);
+    {
+      if (ysize < -INTVAL (XEXP (x, 1)))
+	xsize = -1;
+      return memrefs_conflict_p (xsize, XEXP (x, 0), ysize, y, c);
+    }
   if (GET_CODE (y) == AND && GET_CODE (XEXP (y, 1)) == CONST_INT)
     {
-      /* XXX: If we are indexing far enough into the array/structure, we
+      /* ??? If we are indexing far enough into the array/structure, we
 	 may yet be able to determine that we can not overlap.  But we 
 	 also need to that we are far enough from the end not to overlap
-	 a following reference, so we do nothing for now.  */
-      return memrefs_conflict_p (xsize, x, -1, XEXP (y, 0), c);
+	 a following reference, so we do nothing with that for now.  */
+      if (xsize < -INTVAL (XEXP (y, 1)))
+	ysize = -1;
+      return memrefs_conflict_p (xsize, x, ysize, XEXP (y, 0), c);
     }
 
   if (CONSTANT_P (x))
@@ -917,14 +931,14 @@ true_dependence (mem, mem_mode, x, varies)
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+  if (mem_mode == VOIDmode)
+    mem_mode = GET_MODE (mem);
+
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x), mem_mode))
     return 0;
 
   x_addr = canon_rtx (XEXP (x, 0));
   mem_addr = canon_rtx (XEXP (mem, 0));
-
-  if (mem_mode == VOIDmode)
-    mem_mode = GET_MODE (mem);
 
   if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 			    SIZE_FOR_MODE (x), x_addr, 0))
@@ -974,7 +988,8 @@ anti_dependence (mem, x)
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x),
+			  GET_MODE (mem)))
     return 0;
 
   x = canon_rtx (x);
@@ -1008,7 +1023,8 @@ output_dependence (mem, x)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x),
+			  GET_MODE (mem)))
     return 0;
 
   x = canon_rtx (x);

@@ -1,3 +1,11 @@
+Tue Oct 13 22:05:49 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c (base_alias_check): Accept new args for the modes of the
+	two references.  Use them to determine if an AND can overlap.  Update
+	all callers.
+	(memrefs_conflict_p): Assume sizes are aligned, and uses them
+	to determine if an AND can overlap.
+
 Tue Oct 13 17:51:04 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* config/m68k/m68k.h (HARD_REGNO_MODE_OK): For FP regs, add REGNO >= 16
