@@ -2,6 +2,10 @@
 
 	* GCC 3.0.1 Released.
 
+2001-08-19  Release Manager
+
+	* GCC 3.0.1 Released.
+
 2001-07-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/libjava.exp (${tool}_set_ld_library_path): New, copied from

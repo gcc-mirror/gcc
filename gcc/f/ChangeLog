@@ -2,6 +2,10 @@
 
 	* GCC 3.0.1 Released.
 
+2001-08-19  Release Manager
+
+	* GCC 3.0.1 Released.
+
 2000-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
  
 	* target.h (FFETARGET_32bit_longs): Don't define
