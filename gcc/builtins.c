@@ -2068,7 +2068,7 @@ powi_cost (HOST_WIDE_INT n)
 	}
     }
   
-  return result + powi_lookup_cost (n, cache);
+  return result + powi_lookup_cost (val, cache);
 }
 
 /* Recursive subroutine of expand_powi.  This function takes the array,
