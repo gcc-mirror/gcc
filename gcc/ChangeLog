@@ -1,3 +1,11 @@
+2000-08-07  Michael Hayes  <mhayes@cygnus.com>
+
+ 	* loop.c (try_swap_copy_prop): New function.
+	(load_mems): Rename copies to load_copies and add new regset
+	store_copies.  Check for sets of shadow registers and mark
+	in store_copies.   Call try_swap_copy_prop for registers
+	marked in store_copies.
+
 Sun Aug  6 00:54:42 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/objc-act.c: New command line option -fconstant-string-class

@@ -307,6 +307,8 @@ static int replace_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_reg PARAMS ((rtx *, void *));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
 static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
+static void try_swap_copy_prop PARAMS ((const struct loop *, rtx,
+					 unsigned int));
 static int replace_label PARAMS ((rtx *, void *));
 static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
@@ -9462,7 +9464,8 @@ load_mems (loop)
   /* Actually move the MEMs.  */
   for (i = 0; i < loop_mems_idx; ++i) 
     {
-      regset_head copies;
+      regset_head load_copies;
+      regset_head store_copies;
       int written = 0;
       rtx reg;
       rtx mem = loop_mems[i].mem;
@@ -9528,7 +9531,8 @@ load_mems (loop)
 	   loop, but later discovered that we could not.  */
 	continue;
 
-      INIT_REG_SET (&copies);
+      INIT_REG_SET (&load_copies);
+      INIT_REG_SET (&store_copies);
 
       /* Allocate a pseudo for this MEM.  We set REG_USERVAR_P in
 	 order to keep scan_loop from moving stores to this MEM
@@ -9546,23 +9550,41 @@ load_mems (loop)
 	   p = next_insn_in_loop (loop, p))
 	{
 	  rtx_and_int ri;
-	  rtx set;
 
 	  if (INSN_P (p))
 	    {
+	      rtx set;
+
+	      set = single_set (p);
+
 	      /* See if this copies the mem into a register that isn't
 		 modified afterwards.  We'll try to do copy propagation
 		 a little further on.  */
-	      set = single_set (p);
 	      if (set
 		  /* @@@ This test is _way_ too conservative.  */
 		  && ! maybe_never
 		  && GET_CODE (SET_DEST (set)) == REG
 		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 		  && REGNO (SET_DEST (set)) < last_max_reg
-		  && VARRAY_INT (n_times_set, REGNO (SET_DEST (set))) == 1
-		  && rtx_equal_p (SET_SRC (set), loop_mems[i].mem))
-		SET_REGNO_REG_SET (&copies, REGNO (SET_DEST (set)));
+		  && VARRAY_INT (n_times_set, REGNO (SET_DEST (set))) == 1U
+		  && rtx_equal_p (SET_SRC (set), mem))
+		SET_REGNO_REG_SET (&load_copies, REGNO (SET_DEST (set)));
+
+ 	      /* See if this copies the mem from a register that isn't
+		 modified afterwards.  We'll try to remove the
+		 redundant copy later on by doing a little register
+		 renaming and copy propagation.   This will help
+		 to untangle things for the BIV detection code.  */
+ 	      if (set
+ 		  && ! maybe_never
+ 		  && GET_CODE (SET_SRC (set)) == REG
+ 		  && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
+ 		  && REGNO (SET_SRC (set)) < last_max_reg
+ 		  && VARRAY_INT (n_times_set, REGNO (SET_SRC (set))) == 1U
+ 		  && rtx_equal_p (SET_DEST (set), mem))
+ 		SET_REGNO_REG_SET (&store_copies, REGNO (SET_SRC (set)));
+ 	      
+ 	      /* Replace the memory reference with the shadow register.  */
 	      ri.r = p;
 	      ri.i = i;
 	      for_each_rtx (&p, replace_loop_mem, &ri);
@@ -9658,11 +9680,18 @@ load_mems (loop)
 	     data flow, and enables {basic,general}_induction_var to find
 	     more bivs/givs.  */
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (&copies, FIRST_PSEUDO_REGISTER, j,
+	    (&load_copies, FIRST_PSEUDO_REGISTER, j,
 	     {
-	       try_copy_prop (loop, loop_mems[i].reg, j);
+	       try_copy_prop (loop, reg, j);
 	     });
-	  CLEAR_REG_SET (&copies);
+	  CLEAR_REG_SET (&load_copies);
+
+	  EXECUTE_IF_SET_IN_REG_SET
+	    (&store_copies, FIRST_PSEUDO_REGISTER, j,
+	     {
+	       try_swap_copy_prop (loop, reg, j);
+	     });
+	  CLEAR_REG_SET (&store_copies);
 	}
     }
 
@@ -9797,6 +9826,95 @@ try_copy_prop (loop, replacement, regno)
 	fprintf (loop_dump_stream, ".\n");
     }
 }
+
+
+/* Try to replace occurrences of pseudo REGNO with REPLACEMENT within
+   loop LOOP if the order of the sets of these registers can be
+   swapped.  There must be exactly one insn within the loop that sets
+   this pseudo followed immediately by a move insn that sets
+   REPLACEMENT with REGNO.  */
+static void
+try_swap_copy_prop (loop, replacement, regno)
+     const struct loop *loop;
+     rtx replacement;
+     unsigned int regno;
+{
+  rtx insn;
+  rtx set;
+  unsigned int new_regno;
+
+  new_regno = REGNO (replacement);
+
+  for (insn = next_insn_in_loop (loop, loop->scan_start);
+       insn != NULL_RTX;
+       insn = next_insn_in_loop (loop, insn))
+    {
+      /* Search for the insn that copies REGNO to NEW_REGNO?  */
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && (set = single_set (insn))
+	  && GET_CODE (SET_DEST (set)) == REG
+	  && REGNO (SET_DEST (set)) == new_regno
+	  && GET_CODE (SET_SRC (set)) == REG
+	  && REGNO (SET_SRC (set)) == regno)
+	break;
+    }
+
+  if (insn != NULL_RTX)
+    {
+      rtx prev_insn;
+      rtx prev_set;
+      
+      /* Some DEF-USE info would come in handy here to make this
+	 function more general.  For now, just check the previous insn
+	 which is the most likely candidate for setting REGNO.  */
+      
+      prev_insn = PREV_INSN (insn);
+      
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && (prev_set = single_set (prev_insn))
+	  && GET_CODE (SET_DEST (prev_set)) == REG
+	  && REGNO (SET_DEST (prev_set)) == regno)
+	{
+	  /* We have:
+	     (set (reg regno) (expr))
+	     (set (reg new_regno) (reg regno))
+	     
+	     so try converting this to:
+	     (set (reg new_regno) (expr))
+	     (set (reg regno) (reg new_regno))
+
+	     The former construct is often generated when a global
+	     variable used for an induction variable is shadowed by a
+	     register (NEW_REGNO).  The latter construct improves the
+	     chances of GIV replacement and BIV elimination.  */
+
+	  validate_change (prev_insn, &SET_DEST (prev_set),
+			   replacement, 1);
+	  validate_change (insn, &SET_DEST (set),
+			   SET_SRC (set), 1);
+	  validate_change (insn, &SET_SRC (set),
+			   replacement, 1);
+
+	  if (apply_change_group ())
+	    {
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream, 
+			 "  Swapped set of reg %d at %d with reg %d at %d.\n", 
+			 regno, INSN_UID (insn), 
+			 new_regno, INSN_UID (prev_insn));
+
+	      /* Update first use of REGNO.  */
+	      if (REGNO_FIRST_UID (regno) == INSN_UID (prev_insn))
+		REGNO_FIRST_UID (regno) = INSN_UID (insn);
+
+	      /* Now perform copy propagation to hopefully
+		 remove all uses of REGNO within the loop.  */
+	      try_copy_prop (loop, replacement, regno);
+	    }
+	}
+    }
+}
+
 
 /* Replace MEM with its associated pseudo register.  This function is
    called from load_mems via for_each_rtx.  DATA is actually an
