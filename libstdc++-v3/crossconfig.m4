@@ -125,7 +125,7 @@ case "${host}" in
 	;;
     esac
     ;;
-  *-linux*)
+  *-linux* | *-uclinux*)
     #os_include_dir="os/gnu-linux"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \

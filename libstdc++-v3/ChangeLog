@@ -1,3 +1,8 @@
+2003-10-11  Bernardo Innocenti  <bernie@develer.com>
+
+	* crossconfig.m4 (*-uclinux*): New target.
+	* configure: Regenerate.
+
 2003-10-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/ostream.tcc (operator<<(basic_ostream&, _CharT))
