@@ -335,10 +335,11 @@ The conditional text X in a %{S:X} or %{!S:X} construct may contain
 other nested % constructs or spaces, or even newlines.  They are
 processed as usual, as described above.
 
-The -O, -f, -m, and -w switches are handled specifically in these
+The -O, -f, -m, and -W switches are handled specifically in these
 constructs.  If another value of -O or the negated form of a -f, -m, or
 -W switch is found later in the command line, the earlier switch
-value is ignored.
+value is ignored, except with {S*} where S is just one letter; this
+passes all matching options.
 
 The character | is used to indicate that a command should be piped to
 the following command, but only if -pipe is specified.
@@ -3634,7 +3635,7 @@ handle_braces (p)
 
 	      for (i = 0; i < n_switches; i++)
 		if (!strncmp (switches[i].part1, filter, hard_match_len)
-		    && check_live_switch (i, hard_match_len))
+		    && check_live_switch (i, -1))
 		  {
 		    do_spec_1 (string, 0, &switches[i].part1[hard_match_len]);
 		    /* Pass any arguments this switch has.  */
@@ -3667,7 +3668,7 @@ handle_braces (p)
 	    {
 	      if (!strncmp (switches[i].part1, filter, p - filter)
 		  && switches[i].part1[p - filter] == 0
-		  && check_live_switch (i, p - filter))
+		  && check_live_switch (i, -1))
 		{
 		  present = 1;
 		  break;
@@ -3701,26 +3702,26 @@ handle_braces (p)
   return q;
 }
 
-/* Return 0 if switch number SWITCHNUM is obsoleted by a later switch
-   on the command line.  LENGTH is the length of the switch name we
-   are to compare for.  Otherwise return zero.
+/* Return 0 iff switch number SWITCHNUM is obsoleted by a later switch
+   on the command line.  PREFIX_LENGTH is the length of XXX in an {XXX*}
+   spec, or -1 if either exact match or %* is used.
 
    A -O switch is obsoleted by a later -O switch.  A -f, -m, or -W switch
    whose value does not begin with "no-" is obsoleted by the same value
    with the "no-", similarly for a switch with the "no-" prefix.  */
 
 static int
-check_live_switch (switchnum, length)
+check_live_switch (switchnum, prefix_length)
      int switchnum;
-     int length;
+     int prefix_length;
 {
   char *name = switches[switchnum].part1;
   int i;
 
-  /* If we just have a single letter and it isn't "O", a negating
+  /* In the common case of {<at-most-one-letter>*}, a negating
      switch would always match, so ignore that case.  We will just
      send the conflicting switches to the compiler phase.  */
-  if (length == 1 && name[0] != 'O')
+  if (prefix_length >= 0 && prefix_length <= 1)
     return 1;
 
   /* If we already processed this switch and determined if it was
@@ -3732,7 +3733,6 @@ check_live_switch (switchnum, length)
   switch (*name)
     {
     case 'O':
-      if (length == 1)
 	for (i = switchnum + 1; i < n_switches; i++)
 	  if (switches[i].part1[0] == 'O')
 	    {
@@ -3743,7 +3743,7 @@ check_live_switch (switchnum, length)
       break;
 
     case 'W':  case 'f':  case 'm':
-      if (length > 4 && ! strncmp (name + 1, "no-", 3))
+      if (! strncmp (name + 1, "no-", 3))
 	{
 	  /* We have Xno-YYY, search for XYYY. */
 	  for (i = switchnum + 1; i < n_switches; i++)
