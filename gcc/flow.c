@@ -1153,7 +1153,7 @@ split_edge (edge_in)
   basic_block old_pred, bb, old_succ;
   edge edge_out;
   rtx bb_note;
-  int i;
+  int i, j;
  
   /* Abnormal edges cannot be split.  */
   if ((edge_in->flags & EDGE_ABNORMAL) != 0)
@@ -1263,7 +1263,11 @@ split_edge (edge_in)
 
   /* Place the new block just in front of the successor.  */
   VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-  for (i = n_basic_blocks - 1; i > old_succ->index; --i)
+  if (old_succ == EXIT_BLOCK_PTR)
+    j = n_basic_blocks - 1;
+  else
+    j = old_succ->index;
+  for (i = n_basic_blocks - 1; i > j; --i)
     {
       basic_block tmp = BASIC_BLOCK (i - 1);
       BASIC_BLOCK (i) = tmp;
@@ -1273,7 +1277,10 @@ split_edge (edge_in)
   bb->index = i;
 
   /* Create the basic block note.  */
-  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, old_succ->head);
+  if (old_succ != EXIT_BLOCK_PTR)
+    bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, old_succ->head);
+  else
+    bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, get_last_insn ());
   NOTE_BASIC_BLOCK (bb_note) = bb;
   bb->head = bb->end = bb_note;
 
