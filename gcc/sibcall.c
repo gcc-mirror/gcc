@@ -37,7 +37,7 @@ static rtx skip_copy_to_return_value	PARAMS ((rtx, rtx, rtx));
 static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
 static rtx skip_stack_adjustment	PARAMS ((rtx));
 static rtx skip_jump_insn		PARAMS ((rtx));
-static int uses_addressof		PARAMS ((rtx, int));
+static int uses_addressof		PARAMS ((rtx));
 static int sequence_uses_addressof	PARAMS ((rtx));
 static void purge_reg_equiv_notes	PARAMS ((void));
 
@@ -237,16 +237,12 @@ skip_jump_insn (orig_insn)
 
 /* Scan the rtx X for ADDRESSOF expressions or
    current_function_internal_arg_pointer registers.
-   INMEM argument should be 1 if we're looking at inner part of some
-   MEM expression, otherwise 0.
-   Return nonzero if an ADDRESSOF expresion is found or if
-   current_function_internal_arg_pointer is found outside of some MEM
-   expression, else return zero.  */
+   Return nonzero if an ADDRESSOF or current_function_internal_arg_pointer
+   is found outside of some MEM expression, else return zero.  */
 
 static int
-uses_addressof (x, inmem)
+uses_addressof (x)
      rtx x;
-     int inmem;
 {
   RTX_CODE code;
   int i, j;
@@ -257,14 +253,11 @@ uses_addressof (x, inmem)
 
   code = GET_CODE (x);
 
-  if (code == ADDRESSOF)
-    return 1;
-
-  if (x == current_function_internal_arg_pointer && ! inmem)
+  if (code == ADDRESSOF || x == current_function_internal_arg_pointer)
     return 1;
 
   if (code == MEM)
-    return uses_addressof (XEXP (x, 0), 1);
+    return 0;
 
   /* Scan all subexpressions. */
   fmt = GET_RTX_FORMAT (code);
@@ -272,13 +265,13 @@ uses_addressof (x, inmem)
     {
       if (*fmt == 'e')
 	{
-	  if (uses_addressof (XEXP (x, i), inmem))
+	  if (uses_addressof (XEXP (x, i)))
 	    return 1;
 	}
       else if (*fmt == 'E')
 	{
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (uses_addressof (XVECEXP (x, i, j), inmem))
+	    if (uses_addressof (XVECEXP (x, i, j)))
 	      return 1;
 	}
     }
@@ -318,8 +311,8 @@ sequence_uses_addressof (seq)
 		&& sequence_uses_addressof (XEXP (PATTERN (insn), 2)))
 	      return 1;
 	  }
-	else if (uses_addressof (PATTERN (insn), 0)
-		 || (REG_NOTES (insn) && uses_addressof (REG_NOTES (insn), 0)))
+	else if (uses_addressof (PATTERN (insn))
+		 || (REG_NOTES (insn) && uses_addressof (REG_NOTES (insn))))
 	  return 1;
       }
   return 0;
@@ -490,14 +483,16 @@ optimize_sibling_and_tail_recursive_calls ()
 	  if (frame_offset)
 	    goto failure;
 
+	  /* Taking the address of a local variable is fatal to tail
+	     recursion if the address is used by the recursive call.  */
+	  if (current_function_uses_addressof)
+	    goto failure;
+
 	  /* alloca (until we have stack slot life analysis) inhibits
 	     sibling call optimizations, but not tail recursion.
-
-	     Similarly if we have ADDRESSOF expressions.
-
 	     Similarly if we use varargs or stdarg since they implicitly
 	     may take the address of an argument.  */
- 	  if (current_function_calls_alloca || current_function_uses_addressof
+ 	  if (current_function_calls_alloca
 	      || current_function_varargs || current_function_stdarg)
 	    sibcall = 0;
 

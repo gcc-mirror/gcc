@@ -1,3 +1,12 @@
+2000-08-12  Richard Henderson  <rth@cygnus.com>
+
+	* sibcall.c (uses_addressof): Accept both addressof and
+	current_function_internal_arg_pointer inside a mem.
+	(optimize_sibling_and_tail_recursive_call): Fail tail recursion
+	if current_function_uses_addressof.
+	* stmt.c (expand_return): Kill tail recursion and HAVE_return
+	optimizations.
+
 2000-08-11  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (addsi3): Remove expander.
