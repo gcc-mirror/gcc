@@ -103,6 +103,7 @@ while (0)
 
 /* Local common symbols are declared to the assembler with ".lcomm" rather
    than ".bss", so override the definition in svr4.h */
+/* ??? svr4.h no longer defines this, and this is only used by m68k/amix.h.  */
 
 #undef BSS_ASM_OP
 #define BSS_ASM_OP	".lcomm"
