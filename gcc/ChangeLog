@@ -1,3 +1,15 @@
+2005-02-24  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/18902
+	* c-opts.c (c_common_post_options): Set flag_complex_method to 2
+	for c99.
+	* common.opt (fcx-limited-range): New.
+	* opts.c (set_fast_math_flags): Set flag_cx_limited_range.
+	* toplev.c (flag_complex_method): Initialize to 1.
+	(process_options): Set flag_complex_method to 0 if
+	flag_cx_limited_range.
+	* doc/invoke.texi (-fcx-limited-range): New.
+
 2005-02-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (delete_trivially_dead_insns): Speed up by using

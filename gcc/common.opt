@@ -310,6 +310,10 @@ fcse-skip-blocks
 Common Report Var(flag_cse_skip_blocks)
 When running CSE, follow conditional jumps
 
+fcx-limited-range
+Common Report Var(flag_cx_limited_range)
+Omit range reduction step when performing complex division
+
 fdata-sections
 Common Report Var(flag_data_sections)
 Place data items into their own section

@@ -269,7 +269,7 @@ int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
    1 means wide ranges of inputs must work for complex divide.
    2 means C99-like requirements for complex multiply and divide.  */
 
-int flag_complex_method = 0;
+int flag_complex_method = 1;
 
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */
@@ -1948,6 +1948,10 @@ process_options (void)
   /* The presence of IEEE signaling NaNs, implies all math can trap.  */
   if (flag_signaling_nans)
     flag_trapping_math = 1;
+
+  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
+  if (flag_cx_limited_range)
+    flag_complex_method = 0;
 }
 
 /* Initialize the compiler back end.  */
