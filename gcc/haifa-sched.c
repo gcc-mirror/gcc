@@ -2950,9 +2950,9 @@ actual_hazard (unit, insn, clock, cost)
       int instance = unit;
       int best_cost = actual_hazard_this_instance (unit, instance, insn,
 						   clock, cost);
+#if MAX_MULTIPLICITY > 1
       int this_cost;
 
-#if MAX_MULTIPLICITY > 1
       if (best_cost > cost)
 	{
 	  for (i = function_units[unit].multiplicity - 1; i > 0; i--)
