@@ -5,7 +5,7 @@ contributions are not listed.  Please keep this list in alphabetical
 order.
 
 Geoff Berry for his object serialization work and various patches.
-Hans-J. Boehm for his garbage collector and other work.
+Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other work.
 Godmar Back for his improvements and encouragement.
 Scott Bambrough for help porting the compiler.
 Per Bothner for dreaming up, designing and implementing much of gcj.
@@ -14,7 +14,9 @@ Glenn Chambers for help with the FAQ.
 Steve Chamberlain for config fixes and the picoJava port.
 John-Marc Chandonia for various library patches.
 Eric Christopher for his porting help and clean-ups.
+Mo DeJong for bug fixes
 The GCC project contributors for all of their great compiler work.
+Ivan Fontes Garcia for the Portugese translation of the FAQ.
 Anthony Green for various contributions.
 Stu Grossman for gdb hacking, allowing us to debug our code.
 Andrew Haley for his amazing compiler and library efforts.
