@@ -1,5 +1,18 @@
 /* GNU C varargs support for the Intel 80960.  */
 
+/* Define __gnuc_va_list.  */
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+/* The first element is the address of the first argument.
+   The second element is the number of bytes skipped past so far.  */
+typedef unsigned __gnuc_va_list[2];	
+#endif /* not __GNUC_VA_LIST */
+
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
+
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */
 
@@ -8,10 +21,6 @@
 #else
 #define __va_ellipsis
 #endif
-
-/* The first element is the address of the first argument.
-   The second element is the number of bytes skipped past so far.  */
-typedef unsigned va_list[2];	
 
 /* The stack size of the type t.  */
 #define __vsiz(T)   (((sizeof (T) + 3) / 4) * 4)
@@ -42,4 +51,8 @@ typedef unsigned va_list[2];
   *((T *) ((char *) *(AP) + (AP)[1] - __vsiz (T)))			\
 )
 
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define	va_end(AP)
+
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
+

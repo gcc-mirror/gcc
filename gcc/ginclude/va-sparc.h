@@ -1,17 +1,25 @@
 /* This is just like the default gvarargs.h
    except for differences described below.  */
 
-/* Make this a macro rather than a typedef, so we can undef any other defn.  */
-#define va_list __va___list
+/* Define __gnuc_va_list.  */
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+
 #ifndef __svr4__
 /* This has to be a char * to be compatible with Sun.
    i.e., we have to pass a `va_list' to vsprintf.  */
-typedef char * __va___list;
+typedef char * __gnuc_va_list;
 #else
 /* This has to be a void * to be compatible with Sun svr4.
    i.e., we have to pass a `va_list' to vsprintf.  */
-typedef void * __va___list;
+typedef void * __gnuc_va_list;
 #endif
+#endif /* not __GNUC_VA_LIST */
+
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
 
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */
@@ -34,6 +42,7 @@ typedef void * __va___list;
  (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
 #endif
 
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(pvar)
 
 #define __va_rounded_size(TYPE)  \
@@ -64,3 +73,6 @@ __extension__							\
 	 *(TYPE *)__u.__d; })					\
     : ((pvar) += __va_rounded_size (TYPE),			\
        *((TYPE *) ((pvar) - __va_rounded_size (TYPE)))));})
+
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
+
