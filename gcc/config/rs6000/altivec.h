@@ -226,10 +226,14 @@ inline vector unsigned char vec_splat_u8 (const int) __attribute__ ((always_inli
 inline vector unsigned short vec_splat_u16 (const int) __attribute__ ((always_inline));
 inline vector unsigned int vec_splat_u32 (const int) __attribute__ ((always_inline));
 inline vector float vec_vspltw (vector float a1, const int a2) __attribute__ ((always_inline));
+inline vector bool int vec_vspltw (vector bool int a1, const int a2) __attribute__ ((always_inline));
 inline vector signed int vec_vspltw (vector signed int a1, const int a2) __attribute__ ((always_inline));
 inline vector unsigned int vec_vspltw (vector unsigned int a1, const int a2) __attribute__ ((always_inline));
+inline vector bool short vec_vsplth (vector bool short a1, const int a2) __attribute__ ((always_inline));
 inline vector signed short vec_vsplth (vector signed short a1, const int a2) __attribute__ ((always_inline));
 inline vector unsigned short vec_vsplth (vector unsigned short a1, const int a2) __attribute__ ((always_inline));
+inline vector pixel vec_vsplth (vector pixel a1, const int a2) __attribute__ ((always_inline));
+inline vector bool char vec_vspltb (vector bool char a1, const int a2) __attribute__ ((always_inline));
 inline vector signed char vec_vspltb (vector signed char a1, const int a2) __attribute__ ((always_inline));
 inline vector unsigned char vec_vspltb (vector unsigned char a1, const int a2) __attribute__ ((always_inline));
 
@@ -482,19 +486,31 @@ vec_vaddfp (vector float a1, vector float a2)
 /* vec_vadduwm */
 
 inline vector signed int
+vec_vadduwm (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vadduwm (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vadduwm (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vadduwm (vector signed int a1, vector unsigned int a2)
+vec_vadduwm (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vadduwm (vector unsigned int a1, vector signed int a2)
+vec_vadduwm (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
@@ -508,19 +524,31 @@ vec_vadduwm (vector unsigned int a1, vector unsigned int a2)
 /* vec_vadduhm */
 
 inline vector signed short
+vec_vadduhm (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vadduhm (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
 vec_vadduhm (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vadduhm (vector signed short a1, vector unsigned short a2)
+vec_vadduhm (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vadduhm (vector unsigned short a1, vector signed short a2)
+vec_vadduhm (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
@@ -534,19 +562,31 @@ vec_vadduhm (vector unsigned short a1, vector unsigned short a2)
 /* vec_vaddubm */
 
 inline vector signed char
+vec_vaddubm (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vaddubm (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vaddubm (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vaddubm (vector signed char a1, vector unsigned char a2)
+vec_vaddubm (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vaddubm (vector unsigned char a1, vector signed char a2)
+vec_vaddubm (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
@@ -678,6 +718,18 @@ vec_adds (vector signed int a1, vector signed int a2)
 /* vec_vaddsws */
 
 inline vector signed int
+vec_vaddsws (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vaddsws ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vaddsws (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vaddsws ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vaddsws (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vaddsws ((vector signed int) a1, (vector signed int) a2);
@@ -686,13 +738,13 @@ vec_vaddsws (vector signed int a1, vector signed int a2)
 /* vec_vadduws */
 
 inline vector unsigned int
-vec_vadduws (vector signed int a1, vector unsigned int a2)
+vec_vadduws (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vadduws (vector unsigned int a1, vector signed int a2)
+vec_vadduws (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
 }
@@ -704,6 +756,19 @@ vec_vadduws (vector unsigned int a1, vector unsigned int a2)
 }
 
 /* vec_vaddshs */
+
+inline vector signed short
+vec_vaddshs (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vaddshs ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vaddshs (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vaddshs ((vector signed short) a1, (vector signed short) a2);
+}
+
 inline vector signed short
 vec_vaddshs (vector signed short a1, vector signed short a2)
 {
@@ -713,13 +778,13 @@ vec_vaddshs (vector signed short a1, vector signed short a2)
 /* vec_vadduhs */
 
 inline vector unsigned short
-vec_vadduhs (vector signed short a1, vector unsigned short a2)
+vec_vadduhs (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vadduhs (vector unsigned short a1, vector signed short a2)
+vec_vadduhs (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
 }
@@ -733,6 +798,18 @@ vec_vadduhs (vector unsigned short a1, vector unsigned short a2)
 /* vec_vaddsbs */
 
 inline vector signed char
+vec_vaddsbs (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vaddsbs ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vaddsbs (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vaddsbs ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vaddsbs (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vaddsbs ((vector signed char) a1, (vector signed char) a2);
@@ -741,13 +818,13 @@ vec_vaddsbs (vector signed char a1, vector signed char a2)
 /* vec_vaddubs */
 
 inline vector unsigned char
-vec_vaddubs (vector signed char a1, vector unsigned char a2)
+vec_vaddubs (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vaddubs (vector unsigned char a1, vector signed char a2)
+vec_vaddubs (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
 }
@@ -1198,52 +1275,52 @@ vec_cmpeq (vector float a1, vector float a2)
 
 /* vec_vcmpeqfp */
 
-inline vector signed int
+inline vector bool int
 vec_vcmpeqfp (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpeqfp ((vector float) a1, (vector float) a2);
+  return (vector bool int) __builtin_altivec_vcmpeqfp ((vector float) a1, (vector float) a2);
 }
 
 /* vec_vcmpequw */
 
-inline vector signed int
+inline vector bool int
 vec_vcmpequw (vector signed int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpequw ((vector signed int) a1, (vector signed int) a2);
+  return (vector bool int) __builtin_altivec_vcmpequw ((vector signed int) a1, (vector signed int) a2);
 }
 
-inline vector signed int
+inline vector bool int
 vec_vcmpequw (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpequw ((vector signed int) a1, (vector signed int) a2);
+  return (vector bool int) __builtin_altivec_vcmpequw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_vcmpequh */
 
-inline vector signed short
+inline vector bool short
 vec_vcmpequh (vector signed short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vcmpequh ((vector signed short) a1, (vector signed short) a2);
+  return (vector bool short) __builtin_altivec_vcmpequh ((vector signed short) a1, (vector signed short) a2);
 }
 
-inline vector signed short
+inline vector bool short
 vec_vcmpequh (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vcmpequh ((vector signed short) a1, (vector signed short) a2);
+  return (vector bool short) __builtin_altivec_vcmpequh ((vector signed short) a1, (vector signed short) a2);
 }
 
 /* vec_vcmpequb */
 
-inline vector signed char
+inline vector bool char
 vec_vcmpequb (vector signed char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vcmpequb ((vector signed char) a1, (vector signed char) a2);
+  return (vector bool char) __builtin_altivec_vcmpequb ((vector signed char) a1, (vector signed char) a2);
 }
 
-inline vector signed char
+inline vector bool char
 vec_vcmpequb (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vcmpequb ((vector signed char) a1, (vector signed char) a2);
+  return (vector bool char) __builtin_altivec_vcmpequb ((vector signed char) a1, (vector signed char) a2);
 }
 
 /* vec_cmpge */
@@ -1300,58 +1377,58 @@ vec_cmpgt (vector float a1, vector float a2)
 
 /* vec_vcmpgtfp */
 
-inline vector signed int
+inline vector bool int
 vec_vcmpgtfp (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpgtfp ((vector float) a1, (vector float) a2);
+  return (vector bool int) __builtin_altivec_vcmpgtfp ((vector float) a1, (vector float) a2);
 }
 
 /* vec_vcmpgtsw */
 
-inline vector signed int
+inline vector bool int
 vec_vcmpgtsw (vector signed int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpgtsw ((vector signed int) a1, (vector signed int) a2);
+  return (vector bool int) __builtin_altivec_vcmpgtsw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_vcmpgtuw */
 
-inline vector signed int
+inline vector bool int
 vec_vcmpgtuw (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vcmpgtuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector bool int) __builtin_altivec_vcmpgtuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_vcmpgtsh */
 
-inline vector signed short
+inline vector bool short
 vec_vcmpgtsh (vector signed short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vcmpgtsh ((vector signed short) a1, (vector signed short) a2);
+  return (vector bool short) __builtin_altivec_vcmpgtsh ((vector signed short) a1, (vector signed short) a2);
 }
 
 /* vec_vcmpgtuh */
 
-inline vector signed short
+inline vector bool short
 vec_vcmpgtuh (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vcmpgtuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector bool short) __builtin_altivec_vcmpgtuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 /* vec_vcmpgtsb */
 
-inline vector signed char
+inline vector bool char
 vec_vcmpgtsb (vector signed char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vcmpgtsb ((vector signed char) a1, (vector signed char) a2);
+  return (vector bool char) __builtin_altivec_vcmpgtsb ((vector signed char) a1, (vector signed char) a2);
 }
 
 /* vec_vcmpgtub */
 
-inline vector signed char
+inline vector bool char
 vec_vcmpgtub (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vcmpgtub ((vector signed char) a1, (vector signed char) a2);
+  return (vector bool char) __builtin_altivec_vcmpgtub ((vector signed char) a1, (vector signed char) a2);
 }
 
 /* vec_cmple */
@@ -2595,6 +2672,18 @@ vec_vmaxfp (vector float a1, vector float a2)
 /* vec_vmaxsw */
 
 inline vector signed int
+vec_vmaxsw (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vmaxsw ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vmaxsw (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vmaxsw ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vmaxsw (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vmaxsw ((vector signed int) a1, (vector signed int) a2);
@@ -2603,13 +2692,13 @@ vec_vmaxsw (vector signed int a1, vector signed int a2)
 /* vec_vmaxuw */
 
 inline vector unsigned int
-vec_vmaxuw (vector signed int a1, vector unsigned int a2)
+vec_vmaxuw (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vmaxuw (vector unsigned int a1, vector signed int a2)
+vec_vmaxuw (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
 }
@@ -2623,6 +2712,18 @@ vec_vmaxuw (vector unsigned int a1, vector unsigned int a2)
 /* vec_vmaxsh */
 
 inline vector signed short
+vec_vmaxsh (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vmaxsh ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vmaxsh (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vmaxsh ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
 vec_vmaxsh (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vmaxsh ((vector signed short) a1, (vector signed short) a2);
@@ -2631,13 +2732,13 @@ vec_vmaxsh (vector signed short a1, vector signed short a2)
 /* vec_vmaxuh */
 
 inline vector unsigned short
-vec_vmaxuh (vector signed short a1, vector unsigned short a2)
+vec_vmaxuh (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vmaxuh (vector unsigned short a1, vector signed short a2)
+vec_vmaxuh (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
 }
@@ -2651,6 +2752,18 @@ vec_vmaxuh (vector unsigned short a1, vector unsigned short a2)
 /* vec_vmaxsb */
 
 inline vector signed char
+vec_vmaxsb (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vmaxsb ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vmaxsb (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vmaxsb ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vmaxsb (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vmaxsb ((vector signed char) a1, (vector signed char) a2);
@@ -2659,13 +2772,13 @@ vec_vmaxsb (vector signed char a1, vector signed char a2)
 /* vec_vmaxub */
 
 inline vector unsigned char
-vec_vmaxub (vector signed char a1, vector unsigned char a2)
+vec_vmaxub (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vmaxub (vector unsigned char a1, vector signed char a2)
+vec_vmaxub (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
 }
@@ -2752,6 +2865,12 @@ vec_vmrghw (vector float a1, vector float a2)
   return (vector float) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
 }
 
+inline vector bool int
+vec_vmrghw (vector bool int a1, vector bool int a2)
+{
+  return (vector bool int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
+}
+
 inline vector signed int
 vec_vmrghw (vector signed int a1, vector signed int a2)
 {
@@ -2766,6 +2885,12 @@ vec_vmrghw (vector unsigned int a1, vector unsigned int a2)
 
 /* vec_vmrghh */
 
+inline vector bool short
+vec_vmrghh (vector bool short a1, vector bool short a2)
+{
+  return (vector bool short) __builtin_altivec_vmrghh ((vector signed short) a1, (vector signed short) a2);
+}
+
 inline vector signed short
 vec_vmrghh (vector signed short a1, vector signed short a2)
 {
@@ -2778,7 +2903,19 @@ vec_vmrghh (vector unsigned short a1, vector unsigned short a2)
   return (vector unsigned short) __builtin_altivec_vmrghh ((vector signed short) a1, (vector signed short) a2);
 }
 
+inline vector pixel
+vec_vmrghh (vector pixel a1, vector pixel a2)
+{
+  return (vector pixel) __builtin_altivec_vmrghh ((vector signed short) a1, (vector signed short) a2);
+}
+
 /* vec_vmrghb */
+
+inline vector bool char
+vec_vmrghb (vector bool char a1, vector bool char a2)
+{
+  return (vector bool char) __builtin_altivec_vmrghb ((vector signed char) a1, (vector signed char) a2);
+}
 
 inline vector signed char
 vec_vmrghb (vector signed char a1, vector signed char a2)
@@ -2880,7 +3017,19 @@ vec_vmrglw (vector unsigned int a1, vector unsigned int a2)
   return (vector unsigned int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
 }
 
+inline vector bool int
+vec_vmrglw (vector bool int a1, vector bool int a2)
+{
+  return (vector bool int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
+}
+
 /* vec_vmrglh */
+
+inline vector bool short
+vec_vmrglh (vector bool short a1, vector bool short a2)
+{
+  return (vector bool short) __builtin_altivec_vmrglh ((vector signed short) a1, (vector signed short) a2);
+}
 
 inline vector signed short
 vec_vmrglh (vector signed short a1, vector signed short a2)
@@ -2894,7 +3043,19 @@ vec_vmrglh (vector unsigned short a1, vector unsigned short a2)
   return (vector unsigned short) __builtin_altivec_vmrglh ((vector signed short) a1, (vector signed short) a2);
 }
 
+inline vector pixel
+vec_vmrglh (vector pixel a1, vector pixel a2)
+{
+  return (vector pixel) __builtin_altivec_vmrglh ((vector signed short) a1, (vector signed short) a2);
+}
+
 /* vec_vmrglb */
+
+inline vector bool char
+vec_vmrglb (vector bool char a1, vector bool char a2)
+{
+  return (vector bool char) __builtin_altivec_vmrglb ((vector signed char) a1, (vector signed char) a2);
+}
 
 inline vector signed char
 vec_vmrglb (vector signed char a1, vector signed char a2)
@@ -3043,6 +3204,18 @@ vec_vminfp (vector float a1, vector float a2)
 /* vec_vminsw */
 
 inline vector signed int
+vec_vminsw (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vminsw ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vminsw (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vminsw ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vminsw (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vminsw ((vector signed int) a1, (vector signed int) a2);
@@ -3051,13 +3224,13 @@ vec_vminsw (vector signed int a1, vector signed int a2)
 /* vec_vminuw */
 
 inline vector unsigned int
-vec_vminuw (vector signed int a1, vector unsigned int a2)
+vec_vminuw (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vminuw (vector unsigned int a1, vector signed int a2)
+vec_vminuw (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
 }
@@ -3071,6 +3244,18 @@ vec_vminuw (vector unsigned int a1, vector unsigned int a2)
 /* vec_vminsh */
 
 inline vector signed short
+vec_vminsh (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vminsh ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vminsh (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vminsh ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
 vec_vminsh (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vminsh ((vector signed short) a1, (vector signed short) a2);
@@ -3079,13 +3264,13 @@ vec_vminsh (vector signed short a1, vector signed short a2)
 /* vec_vminuh */
 
 inline vector unsigned short
-vec_vminuh (vector signed short a1, vector unsigned short a2)
+vec_vminuh (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vminuh (vector unsigned short a1, vector signed short a2)
+vec_vminuh (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
 }
@@ -3099,6 +3284,18 @@ vec_vminuh (vector unsigned short a1, vector unsigned short a2)
 /* vec_vminsb */
 
 inline vector signed char
+vec_vminsb (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vminsb ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vminsb (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vminsb ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vminsb (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vminsb ((vector signed char) a1, (vector signed char) a2);
@@ -3107,13 +3304,13 @@ vec_vminsb (vector signed char a1, vector signed char a2)
 /* vec_vminub */
 
 inline vector unsigned char
-vec_vminub (vector signed char a1, vector unsigned char a2)
+vec_vminub (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vminub (vector unsigned char a1, vector signed char a2)
+vec_vminub (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
 }
@@ -3359,6 +3556,7 @@ vec_vmulesb (vector signed char a1, vector signed char a2)
 }
 
 /* vec_vmuleub */
+
 inline vector unsigned short
 vec_vmuleub (vector unsigned char a1, vector unsigned char a2)
 {
@@ -3679,6 +3877,12 @@ vec_pack (vector bool int a1, vector bool int a2)
 
 /* vec_vpkuwum */
 
+inline vector bool short
+vec_vpkuwum (vector bool int a1, vector bool int a2)
+{
+  return (vector bool short) __builtin_altivec_vpkuwum ((vector signed int) a1, (vector signed int) a2);
+}
+
 inline vector signed short
 vec_vpkuwum (vector signed int a1, vector signed int a2)
 {
@@ -3692,6 +3896,12 @@ vec_vpkuwum (vector unsigned int a1, vector unsigned int a2)
 }
 
 /* vec_vpkuhum */
+
+inline vector bool char
+vec_vpkuhum (vector bool short a1, vector bool short a2)
+{
+  return (vector bool char) __builtin_altivec_vpkuhum ((vector signed short) a1, (vector signed short) a2);
+}
 
 inline vector signed char
 vec_vpkuhum (vector signed short a1, vector signed short a2)
@@ -4623,7 +4833,19 @@ vec_vspltw (vector unsigned int a1, const int a2)
   return (vector unsigned int) __builtin_altivec_vspltw ((vector signed int) a1,  a2);
 }
 
+inline vector bool int
+vec_vspltw (vector bool int a1, const int a2)
+{
+  return (vector bool int) __builtin_altivec_vspltw ((vector signed int) a1,  a2);
+}
+
 /* vec_vsplth */
+
+inline vector bool short
+vec_vsplth (vector bool short a1, const int a2)
+{
+  return (vector bool short) __builtin_altivec_vsplth ((vector signed short) a1,  a2);
+}
 
 inline vector signed short
 vec_vsplth (vector signed short a1, const int a2)
@@ -4635,6 +4857,12 @@ inline vector unsigned short
 vec_vsplth (vector unsigned short a1, const int a2)
 {
   return (vector unsigned short) __builtin_altivec_vsplth ((vector signed short) a1,  a2);
+}
+
+inline vector pixel
+vec_vsplth (vector pixel a1, const int a2)
+{
+  return (vector pixel) __builtin_altivec_vsplth ((vector signed short) a1,  a2);
 }
 
 /* vec_vspltb */
@@ -4649,6 +4877,12 @@ inline vector unsigned char
 vec_vspltb (vector unsigned char a1, const int a2)
 {
   return (vector unsigned char) __builtin_altivec_vspltb ((vector signed char) a1,  a2);
+}
+
+inline vector bool char
+vec_vspltb (vector bool char a1, const int a2)
+{
+  return (vector bool char) __builtin_altivec_vspltb ((vector signed char) a1,  a2);
 }
 
 /* vec_splat_s8 */
@@ -5232,6 +5466,24 @@ vec_st (vector bool short a1, int a2, unsigned short *a3)
 }
 
 inline void
+vec_st (vector pixel a1, int a2, vector pixel *a3)
+{
+  __builtin_altivec_stvx ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_st (vector pixel a1, int a2, unsigned short *a3)
+{
+  __builtin_altivec_stvx ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_st (vector pixel a1, int a2, short *a3)
+{
+  __builtin_altivec_stvx ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
 vec_st (vector bool short a1, int a2, short *a3)
 {
   __builtin_altivec_stvx ((vector signed int) a1, a2, (void *) a3);
@@ -5518,6 +5770,24 @@ vec_stl (vector bool short a1, int a2, short *a3)
 }
 
 inline void
+vec_stl (vector pixel a1, int a2, vector pixel *a3)
+{
+  __builtin_altivec_stvxl ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stl (vector pixel a1, int a2, unsigned short *a3)
+{
+  __builtin_altivec_stvxl ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stl (vector pixel a1, int a2, short *a3)
+{
+  __builtin_altivec_stvxl ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
 vec_stl (vector signed char a1, int a2, vector signed char *a3)
 {
   __builtin_altivec_stvxl ((vector signed int) a1, a2, (void *) a3);
@@ -5686,19 +5956,31 @@ vec_vsubfp (vector float a1, vector float a2)
 /* vec_vsubuwm */
 
 inline vector signed int
+vec_vsubuwm (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vsubuwm (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vsubuwm (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vsubuwm (vector signed int a1, vector unsigned int a2)
+vec_vsubuwm (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vsubuwm (vector unsigned int a1, vector signed int a2)
+vec_vsubuwm (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
@@ -5712,19 +5994,31 @@ vec_vsubuwm (vector unsigned int a1, vector unsigned int a2)
 /* vec_vsubuhm */
 
 inline vector signed short
+vec_vsubuhm (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vsubuhm (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
 vec_vsubuhm (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vsubuhm (vector signed short a1, vector unsigned short a2)
+vec_vsubuhm (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vsubuhm (vector unsigned short a1, vector signed short a2)
+vec_vsubuhm (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
@@ -5738,19 +6032,31 @@ vec_vsubuhm (vector unsigned short a1, vector unsigned short a2)
 /* vec_vsububm */
 
 inline vector signed char
+vec_vsububm (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vsububm (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vsububm (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vsububm (vector signed char a1, vector unsigned char a2)
+vec_vsububm (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vsububm (vector unsigned char a1, vector signed char a2)
+vec_vsububm (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
@@ -5882,6 +6188,18 @@ vec_subs (vector signed int a1, vector signed int a2)
 /* vec_vsubsws */
 
 inline vector signed int
+vec_vsubsws (vector bool int a1, vector signed int a2)
+{
+  return (vector signed int) __builtin_altivec_vsubsws ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
+vec_vsubsws (vector signed int a1, vector bool int a2)
+{
+  return (vector signed int) __builtin_altivec_vsubsws ((vector signed int) a1, (vector signed int) a2);
+}
+
+inline vector signed int
 vec_vsubsws (vector signed int a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vsubsws ((vector signed int) a1, (vector signed int) a2);
@@ -5890,13 +6208,13 @@ vec_vsubsws (vector signed int a1, vector signed int a2)
 /* vec_vsubuws */
 
 inline vector unsigned int
-vec_vsubuws (vector signed int a1, vector unsigned int a2)
+vec_vsubuws (vector bool int a1, vector unsigned int a2)
 {
   return (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
-vec_vsubuws (vector unsigned int a1, vector signed int a2)
+vec_vsubuws (vector unsigned int a1, vector bool int a2)
 {
   return (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
 }
@@ -5910,6 +6228,18 @@ vec_vsubuws (vector unsigned int a1, vector unsigned int a2)
 /* vec_vsubshs */
 
 inline vector signed short
+vec_vsubshs (vector bool short a1, vector signed short a2)
+{
+  return (vector signed short) __builtin_altivec_vsubshs ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
+vec_vsubshs (vector signed short a1, vector bool short a2)
+{
+  return (vector signed short) __builtin_altivec_vsubshs ((vector signed short) a1, (vector signed short) a2);
+}
+
+inline vector signed short
 vec_vsubshs (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vsubshs ((vector signed short) a1, (vector signed short) a2);
@@ -5918,13 +6248,13 @@ vec_vsubshs (vector signed short a1, vector signed short a2)
 /* vec_vsubuhs */
 
 inline vector unsigned short
-vec_vsubuhs (vector signed short a1, vector unsigned short a2)
+vec_vsubuhs (vector bool short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
-vec_vsubuhs (vector unsigned short a1, vector signed short a2)
+vec_vsubuhs (vector unsigned short a1, vector bool short a2)
 {
   return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
@@ -5938,6 +6268,18 @@ vec_vsubuhs (vector unsigned short a1, vector unsigned short a2)
 /* vec_vsubsbs */
 
 inline vector signed char
+vec_vsubsbs (vector bool char a1, vector signed char a2)
+{
+  return (vector signed char) __builtin_altivec_vsubsbs ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
+vec_vsubsbs (vector signed char a1, vector bool char a2)
+{
+  return (vector signed char) __builtin_altivec_vsubsbs ((vector signed char) a1, (vector signed char) a2);
+}
+
+inline vector signed char
 vec_vsubsbs (vector signed char a1, vector signed char a2)
 {
   return (vector signed char) __builtin_altivec_vsubsbs ((vector signed char) a1, (vector signed char) a2);
@@ -5946,13 +6288,13 @@ vec_vsubsbs (vector signed char a1, vector signed char a2)
 /* vec_vsububs */
 
 inline vector unsigned char
-vec_vsububs (vector signed char a1, vector unsigned char a2)
+vec_vsububs (vector bool char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vsububs (vector unsigned char a1, vector signed char a2)
+vec_vsububs (vector unsigned char a1, vector bool char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
@@ -6039,10 +6381,10 @@ vec_unpackh (vector signed char a1)
   return (vector signed short) __builtin_altivec_vupkhsb ((vector signed char) a1);
 }
 
-inline vector signed short
+inline vector bool short
 vec_unpackh (vector bool char a1)
 {
-  return (vector signed short) __builtin_altivec_vupkhsb ((vector signed char) a1);
+  return (vector bool short) __builtin_altivec_vupkhsb ((vector signed char) a1);
 }
 
 inline vector signed int
@@ -6051,10 +6393,10 @@ vec_unpackh (vector signed short a1)
   return (vector signed int) __builtin_altivec_vupkhsh ((vector signed short) a1);
 }
 
-inline vector signed int
+inline vector bool int
 vec_unpackh (vector bool short a1)
 {
-  return (vector signed int) __builtin_altivec_vupkhsh ((vector signed short) a1);
+  return (vector bool int) __builtin_altivec_vupkhsh ((vector signed short) a1);
 }
 
 inline vector unsigned int
@@ -6065,6 +6407,12 @@ vec_unpackh (vector pixel a1)
 
 /* vec_vupkhsh */
 
+inline vector bool int
+vec_vupkhsh (vector bool short a1)
+{
+  return (vector bool int) __builtin_altivec_vupkhsh ((vector signed short) a1);
+}
+
 inline vector signed int
 vec_vupkhsh (vector signed short a1)
 {
@@ -6074,12 +6422,18 @@ vec_vupkhsh (vector signed short a1)
 /* vec_vupkhpx */
 
 inline vector unsigned int
-vec_vupkhpx (vector unsigned short a1)
+vec_vupkhpx (vector pixel a1)
 {
   return (vector unsigned int) __builtin_altivec_vupkhpx ((vector signed short) a1);
 }
 
 /* vec_vupkhsb */
+
+inline vector bool short
+vec_vupkhsb (vector bool char a1)
+{
+  return (vector bool short) __builtin_altivec_vupkhsb ((vector signed char) a1);
+}
 
 inline vector signed short
 vec_vupkhsb (vector signed char a1)
@@ -6095,10 +6449,10 @@ vec_unpackl (vector signed char a1)
   return (vector signed short) __builtin_altivec_vupklsb ((vector signed char) a1);
 }
 
-inline vector signed short
+inline vector bool short
 vec_unpackl (vector bool char a1)
 {
-  return (vector signed short) __builtin_altivec_vupklsb ((vector signed char) a1);
+  return (vector bool short) __builtin_altivec_vupklsb ((vector signed char) a1);
 }
 
 inline vector unsigned int
@@ -6113,21 +6467,27 @@ vec_unpackl (vector signed short a1)
   return (vector signed int) __builtin_altivec_vupklsh ((vector signed short) a1);
 }
 
-inline vector signed int
+inline vector bool int
 vec_unpackl (vector bool short a1)
 {
-  return (vector signed int) __builtin_altivec_vupklsh ((vector signed short) a1);
+  return (vector bool int) __builtin_altivec_vupklsh ((vector signed short) a1);
 }
 
 /* vec_vupklpx */
 
 inline vector unsigned int
-vec_vupklpx (vector unsigned short a1)
+vec_vupklpx (vector pixel a1)
 {
   return (vector unsigned int) __builtin_altivec_vupklpx ((vector signed short) a1);
 }
 
 /* vec_upklsh */
+
+inline vector bool int
+vec_vupklsh (vector bool short a1)
+{
+  return (vector bool int) __builtin_altivec_vupklsh ((vector signed short) a1);
+}
 
 inline vector signed int
 vec_vupklsh (vector signed short a1)
@@ -6136,6 +6496,12 @@ vec_vupklsh (vector signed short a1)
 }
 
 /* vec_vupklsb */
+
+inline vector bool short
+vec_vupklsb (vector bool char a1)
+{
+  return (vector bool short) __builtin_altivec_vupklsb ((vector signed char) a1);
+}
 
 inline vector signed short
 vec_vupklsb (vector signed char a1)
@@ -6996,6 +7362,12 @@ vec_all_ne (vector bool short a1, vector signed short a2)
 }
 
 inline int
+vec_all_ne (vector pixel a1, vector pixel a2)
+{
+  return __builtin_altivec_vcmpequh_p (__CR6_EQ, (vector signed short) a1, (vector signed short) a2);
+}
+
+inline int
 vec_all_ne (vector signed int a1, vector bool int a2)
 {
   return __builtin_altivec_vcmpequw_p (__CR6_EQ, (vector signed int) a1, (vector signed int) a2);
@@ -7262,12 +7634,6 @@ vec_any_ge (vector bool char a1, vector signed char a2)
 }
 
 inline int
-vec_any_ge (vector signed short a1, vector bool short a2)
-{
-  return __builtin_altivec_vcmpgtuh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
-}
-
-inline int
 vec_any_ge (vector unsigned short a1, vector bool short a2)
 {
   return __builtin_altivec_vcmpgtuh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
@@ -7281,6 +7647,12 @@ vec_any_ge (vector unsigned short a1, vector unsigned short a2)
 
 inline int
 vec_any_ge (vector signed short a1, vector signed short a2)
+{
+  return __builtin_altivec_vcmpgtsh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
+}
+
+inline int
+vec_any_ge (vector signed short a1, vector bool short a2)
 {
   return __builtin_altivec_vcmpgtsh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
 }
@@ -7941,37 +8313,49 @@ vec_any_out (vector float a1, vector float a2)
   __builtin_altivec_compiletime_error ("vec_abss"))))
 
 #define vec_vaddubm(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) (a1), (vector signed char) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vaddubm")))))
+  __builtin_altivec_compiletime_error ("vec_vaddubm")))))))
 
 #define vec_vadduhm(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) (a1), (vector signed short) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vadduhm")))))
+  __builtin_altivec_compiletime_error ("vec_vadduhm")))))))
 
 #define vec_vadduwm(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) (a1), (vector signed int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vadduwm")))))
+  __builtin_altivec_compiletime_error ("vec_vadduwm")))))))
 
 #define vec_vaddfp(a1, a2) \
 __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
@@ -8064,42 +8448,54 @@ __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
     __builtin_altivec_compiletime_error ("vec_adds")))))))))))))))))))
 
 #define vec_vaddsws(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vaddsws ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vaddsws ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vaddsws ((vector signed int) (a1), (vector signed int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vaddsws"))
+  __builtin_altivec_compiletime_error ("vec_vaddsws"))))
 
 #define vec_vadduws(a1, a2) \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduws ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduws ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vadduws ((vector signed int) (a1), (vector signed int) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vadduws"))))
 
 #define vec_vaddshs(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vaddshs ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vaddshs ((vector signed short) (a1), (vector signed short) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vaddshs"))
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vaddshs ((vector signed short) (a1), (vector signed short) (a2))), \
+  __builtin_altivec_compiletime_error ("vec_vaddshs"))))
 
 #define vec_vadduhs(a1, a2) \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) (a1), (vector signed short) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vadduhs"))))
 
 #define vec_vaddsbs(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vaddsbs ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vaddsbs ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vaddsbs ((vector signed char) (a1), (vector signed char) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vaddsbs"))
+  __builtin_altivec_compiletime_error ("vec_vaddsbs"))))
 
 #define vec_vaddubs(a1, a2) \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) (a1), (vector signed char) (a2))), \
@@ -8281,28 +8677,28 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 
 #define vec_vcmpeqfp(a1, a2) \
 __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpeqfp ((vector float) (a1), (vector float) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpeqfp ((vector float) (a1), (vector float) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpeqfp"))
 
 #define vec_vcmpequw(a1, a2) \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpequw ((vector signed int) (a1), (vector signed int) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpequw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpequw ((vector signed int) (a1), (vector signed int) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpequw ((vector signed int) (a1), (vector signed int) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpequw")))
 
 #define vec_vcmpequh(a1, a2) \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
-      ((vector signed short) __builtin_altivec_vcmpequh ((vector signed short) (a1), (vector signed short) (a2))), \
+      ((vector bool short) __builtin_altivec_vcmpequh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
-      ((vector signed short) __builtin_altivec_vcmpequh ((vector signed short) (a1), (vector signed short) (a2))), \
+      ((vector bool short) __builtin_altivec_vcmpequh ((vector signed short) (a1), (vector signed short) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpequh")))
 
 #define vec_vcmpequb(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
-      ((vector signed char) __builtin_altivec_vcmpequb ((vector signed char) (a1), (vector signed char) (a2))), \
+      ((vector bool char) __builtin_altivec_vcmpequb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
-      ((vector signed char) __builtin_altivec_vcmpequb ((vector signed char) (a1), (vector signed char) (a2))), \
+      ((vector bool char) __builtin_altivec_vcmpequb ((vector signed char) (a1), (vector signed char) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpequb")))
 
 #define vec_cmpge(a1, a2) \
@@ -8329,37 +8725,37 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 
 #define vec_vcmpgtfp(a1, a2) \
 __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpgtfp ((vector float) (a1), (vector float) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpgtfp ((vector float) (a1), (vector float) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtfp"))
 
 #define vec_vcmpgtsw(a1, a2) \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpgtsw ((vector signed int) (a1), (vector signed int) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpgtsw ((vector signed int) (a1), (vector signed int) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtsw"))
 
 #define vec_vcmpgtuw(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
-      ((vector signed int) __builtin_altivec_vcmpgtuw ((vector signed int) (a1), (vector signed int) (a2))), \
+      ((vector bool int) __builtin_altivec_vcmpgtuw ((vector signed int) (a1), (vector signed int) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtuw"))
 
 #define vec_vcmpgtsh(a1, a2) \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
-      ((vector signed short) __builtin_altivec_vcmpgtsh ((vector signed short) (a1), (vector signed short) (a2))), \
+      ((vector bool short) __builtin_altivec_vcmpgtsh ((vector signed short) (a1), (vector signed short) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtsh"))
 
 #define vec_vcmpgtuh(a1, a2) \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
-      ((vector signed short) __builtin_altivec_vcmpgtuh ((vector signed short) (a1), (vector signed short) (a2))), \
+      ((vector bool short) __builtin_altivec_vcmpgtuh ((vector signed short) (a1), (vector signed short) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtuh"))
 
 #define vec_vcmpgtsb(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
-      ((vector signed char) __builtin_altivec_vcmpgtsb ((vector signed char) (a1), (vector signed char) (a2))), \
+      ((vector bool char) __builtin_altivec_vcmpgtsb ((vector signed char) (a1), (vector signed char) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtsb"))
 
 #define vec_vcmpgtub(a1, a2) \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
-      ((vector signed char) __builtin_altivec_vcmpgtub ((vector signed char) (a1), (vector signed char) (a2))), \
+      ((vector bool char) __builtin_altivec_vcmpgtub ((vector signed char) (a1), (vector signed char) (a2))), \
   __builtin_altivec_compiletime_error ("vec_vcmpgtub"))
 
 #define vec_cmple(a1, a2) \
@@ -8835,42 +9231,54 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 __builtin_altivec_compiletime_error ("vec_vmaxfp"))
 
 #define vec_vmaxsw(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vmaxsw ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vmaxsw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vmaxsw ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmaxsw"))
+__builtin_altivec_compiletime_error ("vec_vmaxsw"))))
 
 #define vec_vmaxuw(a1, a2) \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) (a1), (vector signed int) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vmaxuw"))))
 
 #define vec_vmaxsh(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vmaxsh ((vector signed short) (a1), (vector signed short) (a2))), \
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vmaxsh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vmaxsh ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmaxsh"))
+__builtin_altivec_compiletime_error ("vec_vmaxsh"))))
 
 #define vec_vmaxuh(a1, a2) \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) (a1), (vector signed short) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vmaxuh"))))
 
 #define vec_vmaxsb(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vmaxsb ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vmaxsb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vmaxsb ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmaxsb"))
+__builtin_altivec_compiletime_error ("vec_vmaxsb"))))
 
 #define vec_vmaxub(a1, a2) \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) (a1), (vector signed char) (a2))), \
@@ -8904,25 +9312,33 @@ __ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
 #define vec_vmrghw(a1, a2) \
 __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
       ((vector float) __builtin_altivec_vmrghw ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
+      ((vector bool int) __builtin_altivec_vmrghw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vmrghw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vmrghw ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrghw"))))
+__builtin_altivec_compiletime_error ("vec_vmrghw")))))
 
 #define vec_vmrghh(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, (a2)), \
+      ((vector bool short) __builtin_altivec_vmrghh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vmrghh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vmrghh ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrghh")))
+__ch (__bin_args_eq (vector pixel, (a1), vector pixel, (a2)), \
+      ((vector pixel) __builtin_altivec_vmrghh ((vector signed short) (a1), (vector signed short) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vmrghh")))))
 
 #define vec_vmrghb(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector bool char, (a2)), \
+      ((vector bool char) __builtin_altivec_vmrghb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vmrghb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vmrghb ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrghb")))
+__builtin_altivec_compiletime_error ("vec_vmrghb"))))
 
 #define vec_mergel(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
@@ -8956,21 +9372,29 @@ __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vmrglw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vmrglw ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrglw"))))
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
+      ((vector bool int) __builtin_altivec_vmrglw ((vector signed int) (a1), (vector signed int) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vmrglw")))))
 
 #define vec_vmrglh(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, (a2)), \
+      ((vector bool short) __builtin_altivec_vmrglh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vmrglh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vmrglh ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrglh")))
+__ch (__bin_args_eq (vector pixel, (a1), vector pixel, (a2)), \
+      ((vector pixel) __builtin_altivec_vmrglh ((vector signed short) (a1), (vector signed short) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vmrglh")))))
 
 #define vec_vmrglb(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector bool char, (a2)), \
+      ((vector bool char) __builtin_altivec_vmrglb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vmrglb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vmrglb ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vmrglb")))
+__builtin_altivec_compiletime_error ("vec_vmrglb"))))
 
 #define vec_mfvscr()  (((vector unsigned short) __builtin_altivec_mfvscr ()))
 
@@ -9021,42 +9445,54 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 __builtin_altivec_compiletime_error ("vec_vminfp"))
 
 #define vec_vminsw(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vminsw ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vminsw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vminsw ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vminsw"))
+__builtin_altivec_compiletime_error ("vec_vminsw"))))
 
 #define vec_vminuw(a1, a2) \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vminuw ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vminuw ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vminuw ((vector signed int) (a1), (vector signed int) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vminuw"))))
 
 #define vec_vminsh(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vminsh ((vector signed short) (a1), (vector signed short) (a2))), \
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vminsh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vminsh ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vminsh"))
+__builtin_altivec_compiletime_error ("vec_vminsh"))))
 
 #define vec_vminuh(a1, a2) \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vminuh ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vminuh ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vminuh ((vector signed short) (a1), (vector signed short) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vminuh"))))
 
 #define vec_vminsb(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vminsb ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vminsb ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vminsb ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vminsb"))
+__builtin_altivec_compiletime_error ("vec_minsb"))))
 
 #define vec_vminub(a1, a2) \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vminub ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vminub ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vminub ((vector signed char) (a1), (vector signed char) (a2))), \
@@ -9306,18 +9742,22 @@ __ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
     __builtin_altivec_compiletime_error ("vec_pack")))))))
 
 #define vec_vpkuwum(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
+      ((vector bool short) __builtin_altivec_vpkuwum ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed short) __builtin_altivec_vpkuwum ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned short) __builtin_altivec_vpkuwum ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vpkuwum")))
+__builtin_altivec_compiletime_error ("vec_vpkuwum"))))
 
 #define vec_vpkuhum(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, (a2)), \
+      ((vector bool char) __builtin_altivec_vpkuhum ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed char) __builtin_altivec_vpkuhum ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned char) __builtin_altivec_vpkuhum ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vpkuhum")))
+__builtin_altivec_compiletime_error ("vec_vpkuhum"))))
 
 #define vec_packpx(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
@@ -9682,25 +10122,33 @@ __ch (__un_args_eq (vector bool int, (a1)), \
 #define vec_vspltw(a1, a2) \
 __ch (__un_args_eq (vector float, (a1)), \
       ((vector float) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector bool int, (a1)), \
+      ((vector bool int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector signed int, (a1)), \
       ((vector signed int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector unsigned int, (a1)), \
       ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vspltw"))))
+__builtin_altivec_compiletime_error ("vec_vspltw")))))
 
 #define vec_vsplth(a1, a2) \
+__ch (__un_args_eq (vector bool short, (a1)), \
+      ((vector bool short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector signed short, (a1)), \
       ((vector signed short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector unsigned short, (a1)), \
       ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsplth")))
+__ch (__un_args_eq (vector pixel, (a1)), \
+      ((vector pixel) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vsplth")))))
 
 #define vec_vspltb(a1, a2) \
+__ch (__un_args_eq (vector bool char, (a1)), \
+      ((vector bool char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector signed char, (a1)), \
       ((vector signed char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
 __ch (__un_args_eq (vector unsigned char, (a1)), \
       ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vspltb")))
+__builtin_altivec_compiletime_error ("vec_vspltb"))))
 
 #define vec_splat_s8(a1) ((vector signed char) __builtin_altivec_vspltisb (a1))
 
@@ -10097,37 +10545,49 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 __builtin_altivec_compiletime_error ("vec_vsubfp"))
 
 #define vec_vsubuwm(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsubuwm")))))
+__builtin_altivec_compiletime_error ("vec_vsubuwm")))))))
 
 #define vec_vsubuhm(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsubuhm")))))
+__builtin_altivec_compiletime_error ("vec_vsubuhm")))))))
 
 #define vec_vsububm(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububm ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsububm")))))
+__builtin_altivec_compiletime_error ("vec_vsububm")))))))
 
 #define vec_subc(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
@@ -10174,42 +10634,54 @@ __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
     __builtin_altivec_compiletime_error ("vec_subs")))))))))))))))))))
 
 #define vec_vsubsws(a1, a2) \
+__ch (__bin_args_eq (vector bool int, (a1), vector signed int, (a2)), \
+      ((vector signed int) __builtin_altivec_vsubsws ((vector signed int) (a1), (vector signed int) (a2))), \
+__ch (__bin_args_eq (vector signed int, (a1), vector bool int, (a2)), \
+      ((vector signed int) __builtin_altivec_vsubsws ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vsubsws ((vector signed int) (a1), (vector signed int) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsubsws"))
+__builtin_altivec_compiletime_error ("vec_vsubsws"))))
 
 #define vec_vsubuws(a1, a2) \
-__ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) (a1), (vector signed int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), vector signed int, (a2)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector bool int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) (a1), (vector signed int) (a2))), \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) (a1), (vector signed int) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vsubuws"))))
 
 #define vec_vsubshs(a1, a2) \
+__ch (__bin_args_eq (vector bool short, (a1), vector signed short, (a2)), \
+      ((vector signed short) __builtin_altivec_vsubshs ((vector signed short) (a1), (vector signed short) (a2))), \
+__ch (__bin_args_eq (vector signed short, (a1), vector bool short, (a2)), \
+      ((vector signed short) __builtin_altivec_vsubshs ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vsubshs ((vector signed short) (a1), (vector signed short) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsubshs"))
+__builtin_altivec_compiletime_error ("vec_vsubshs"))))
 
 #define vec_vsubuhs(a1, a2) \
-__ch (__bin_args_eq (vector signed short, (a1), vector unsigned short, (a2)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) (a1), (vector signed short) (a2))), \
-__ch (__bin_args_eq (vector unsigned short, (a1), vector signed short, (a2)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector bool short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) (a1), (vector signed short) (a2))), \
 __ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) (a1), (vector signed short) (a2))), \
 __builtin_altivec_compiletime_error ("vec_vsubuhs"))))
 
 #define vec_vsubsbs(a1, a2) \
+__ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
+      ((vector signed char) __builtin_altivec_vsubsbs ((vector signed char) (a1), (vector signed char) (a2))), \
+__ch (__bin_args_eq (vector signed char, (a1), vector bool char, (a2)), \
+      ((vector signed char) __builtin_altivec_vsubsbs ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vsubsbs ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_vsubsbs"))
+__builtin_altivec_compiletime_error ("vec_vsubsbs"))))
 
 #define vec_vsububs(a1, a2) \
-__ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububs ((vector signed char) (a1), (vector signed char) (a2))), \
-__ch (__bin_args_eq (vector unsigned char, (a1), vector signed char, (a2)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector bool char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububs ((vector signed char) (a1), (vector signed char) (a2))), \
 __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsububs ((vector signed char) (a1), (vector signed char) (a2))), \
@@ -10268,19 +10740,23 @@ __ch (__un_args_eq (vector bool short, (a1)), \
     __builtin_altivec_compiletime_error ("vec_unpackh"))))))
 
 #define vec_vupkhsh(a1) \
+__ch (__un_args_eq (vector bool short, (a1)), \
+      ((vector bool int) __builtin_altivec_vupkhsh ((vector signed short) (a1))), \
 __ch (__un_args_eq (vector signed short, (a1)), \
       ((vector signed int) __builtin_altivec_vupkhsh ((vector signed short) (a1))), \
-__builtin_altivec_compiletime_error ("vec_vupkhsh"))
+__builtin_altivec_compiletime_error ("vec_vupkhsh")))
 
 #define vec_vupkhpx(a1) \
-__ch (__un_args_eq (vector unsigned short, (a1)), \
+__ch (__un_args_eq (vector pixel, (a1)), \
       ((vector unsigned int) __builtin_altivec_vupkhpx ((vector signed short) (a1))), \
 __builtin_altivec_compiletime_error ("vec_vupkhpx"))
 
 #define vec_vupkhsb(a1) \
+__ch (__un_args_eq (vector bool char, (a1)), \
+      ((vector bool short) __builtin_altivec_vupkhsb ((vector signed char) (a1))), \
 __ch (__un_args_eq (vector signed char, (a1)), \
       ((vector signed short) __builtin_altivec_vupkhsb ((vector signed char) (a1))), \
-__builtin_altivec_compiletime_error ("vec_vupkhsb"))
+__builtin_altivec_compiletime_error ("vec_vupkhsb")))
 
 #define vec_unpackl(a1) \
 __ch (__un_args_eq (vector signed char, (a1)), \
@@ -10296,19 +10772,23 @@ __ch (__un_args_eq (vector bool short, (a1)), \
     __builtin_altivec_compiletime_error ("vec_unpackl"))))))
 
 #define vec_vupklsh(a1) \
+__ch (__un_args_eq (vector bool short, (a1)), \
+      ((vector bool int) __builtin_altivec_vupklsh ((vector signed short) (a1))), \
 __ch (__un_args_eq (vector signed short, (a1)), \
       ((vector signed int) __builtin_altivec_vupklsh ((vector signed short) (a1))), \
-__builtin_altivec_compiletime_error ("vec_vupklsh"))
+__builtin_altivec_compiletime_error ("vec_vupklsh")))
 
 #define vec_vupklpx(a1) \
-__ch (__un_args_eq (vector unsigned short, (a1)), \
+__ch (__un_args_eq (vector pixel, (a1)), \
       ((vector unsigned int) __builtin_altivec_vupklpx ((vector signed short) (a1))), \
 __builtin_altivec_compiletime_error ("vec_vupklpx"))
 
 #define vec_vupklsb(a1) \
+__ch (__un_args_eq (vector bool char, (a1)), \
+      ((vector bool short) __builtin_altivec_vupklsb ((vector signed char) (a1))), \
 __ch (__un_args_eq (vector signed char, (a1)), \
       ((vector signed short) __builtin_altivec_vupklsb ((vector signed char) (a1))), \
-__builtin_altivec_compiletime_error ("vec_vupklsb"))
+__builtin_altivec_compiletime_error ("vec_vupklsb")))
 
 #define vec_xor(a1, a2) \
 __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \

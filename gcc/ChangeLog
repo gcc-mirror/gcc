@@ -1,5 +1,24 @@
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/rs6000/altivec.h (vec_vadduwm): (vec_vadduwm, vec_vadduhm,
+	vec_vaddubm, vec_vsubuwm, vec_vsubuhm, vec_vsububm): Fix types used
+	for vector bool and/or vector pixel, add C++ and C missing support.
+	(vec_vaddsws, vec_vaddshs, vec_vaddsbs, vec_vmaxsw, vec_vmaxsh,
+	vec_vmaxsb, vec_vmrghw, vec_vmrghh, vec_vmrghb, vec_vmrglw, vec_vmrglh,
+	vec_vmrglb, vec_vminsw, vec_vminsh, vec_vminsb, vec_vpkuwum,
+	vec_vpkuhum, vec_vspltw, vec_vsplth, vec_vspltb, vec_vsubsws,
+	vec_vsubshs, vec_vsubsbs, vec_vupklsh, vec_vupkhsh, vec_vupklsb): Add
+	missing C++ and C support for vector bool and/or vector pixel.
+	(vec_vadduws, vec_vadduhs, vec_vaddubs, vec_vcmpeqfp, vec_vcmpequw,
+	vec_vcmpequh, vec_vcmpequb, vec_vcmpgtfp, vec_vcmpgtsw, vec_vcmpgtuw,
+	vec_vcmpgtsh, vec_vcmpgtuh, vec_vcmpgtsb, vec_vcmpgtub, vec_vmaxuw,
+	vec_vmaxuh, vec_vmaxub, vec_vminuw, vec_vminuh, vec_vminub,
+	vec_vsubuws, vec_vsubuhs, vec_vsububs, vec_vupkhpx, vec_vupklpx): Fix
+	C++ and C types used for vector bool and/or vector pixel.
+	(vec_st, vec_stl): Add C++ support for vector pixel.
+	(vec_unpackh, vec_unpackl, vec_any_ge): Fix C++ support for vector bool.
+	(vec_all_ne): Add C++ support for vector pixel.
+
 	* config/rs6000/altivec.h (vec_vcmpgtsh): Fix C++ function name.
 	(vec_vmulesb): Add missing C++ function.
 	(vec_perm): Fix type of third argument in C++ function.
