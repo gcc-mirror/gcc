@@ -1,3 +1,8 @@
+1999-09-14  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-insns.h: Turned constants into an enum.  Added
+	multiple-inclusion protection.
+
 1999-09-10  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
