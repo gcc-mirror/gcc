@@ -1,3 +1,10 @@
+Fri Nov 24 22:37:41 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (out_tsthi,out_tstsi): Test simplification bug
+	fixed.
+	(machine_dependent_reorg): Wrong optimization based on
+	NOTICE_UPDATE_CC removed. 
+
 Fri Nov 24 19:48:09 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* jump.c (delete_computation): Re-instate deletion of feeding insn.

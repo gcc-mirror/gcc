@@ -2650,7 +2650,7 @@ out_tsthi (insn, l)
      rtx insn;
      int *l;
 {
-  if (!compare_eq_p (insn))
+  if (!compare_eq_p (insn) && !compare_diff_p (insn))
     {
       if (l) *l = 1;
       return AS1 (tst,%B0);
@@ -2679,7 +2679,7 @@ out_tstsi (insn, l)
      rtx insn;
      int *l;
 {
-  if (!compare_eq_p (insn))
+  if (!compare_eq_p (insn) && !compare_diff_p(insn))
     {
       if (l) *l = 1;
       return AS1 (tst,%D0);
@@ -4932,20 +4932,17 @@ machine_dependent_reorg (first_insn)
      rtx first_insn;
 {
   rtx insn, pattern;
-  CC_STATUS_INIT;
   
   for (insn = first_insn; insn; insn = NEXT_INSN (insn))
     {
-      if (! (insn == 0 || GET_CODE (insn) == INSN
-	     || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
+      if (! (GET_CODE (insn) == INSN
+	     || GET_CODE (insn) == CALL_INSN
+	     || GET_CODE (insn) == JUMP_INSN)
 	  || !single_set (insn))
 	continue;
 
       pattern = PATTERN (insn);
 
-      cc_prev_status = cc_status;
-      NOTICE_UPDATE_CC (pattern, insn);
-      
       if (GET_CODE (pattern) == PARALLEL)
 	pattern = XVECEXP (pattern, 0, 0);
       if (GET_CODE (pattern) == SET
@@ -4997,16 +4994,12 @@ machine_dependent_reorg (first_insn)
 	      rtx src = SET_SRC (pat);
 	      rtx t = XEXP (src,0);
 
-	      if (!(cc_prev_status.value1 != 0 && cc_status.value1 != 0
-		     && rtx_equal_p (cc_status.value1, cc_prev_status.value1)))
-		  {
-		    PUT_CODE (t, swap_condition (GET_CODE (t)));
-		    SET_SRC (pattern) = gen_rtx (NEG,
-						 GET_MODE (SET_SRC (pattern)),
-						 SET_SRC (pattern));
-		    INSN_CODE (next) = -1;
-		    INSN_CODE (insn) = -1;
-		  }
+	      PUT_CODE (t, swap_condition (GET_CODE (t)));
+	      SET_SRC (pattern) = gen_rtx (NEG,
+					   GET_MODE (SET_SRC (pattern)),
+					   SET_SRC (pattern));
+	      INSN_CODE (next) = -1;
+	      INSN_CODE (insn) = -1;
 	    }
 	}
     }
