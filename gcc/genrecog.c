@@ -176,7 +176,7 @@ static struct pred_table
 
 static struct decision_head make_insn_sequence PROTO((rtx, enum routine_type));
 static struct decision *add_to_sequence PROTO((rtx, struct decision_head *,
-					       const char *, 
+					       const char *,
 					       enum routine_type, int));
 static int not_both_true	PROTO((struct decision *, struct decision *,
 				       int));
@@ -243,9 +243,9 @@ make_insn_sequence (insn, type)
 	last_real_name = name;
 	last_real_code = next_insn_code;
       }
-  
+
     insn_name_ptr[next_insn_code] = name;
-  }  
+  }
 
   if (type == PEEPHOLE2)
     {
@@ -554,7 +554,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	  fatal ("mode mismatch in SET");
 	}
       newpos[depth] = '0';
-      new = add_to_sequence (SET_DEST (pattern), &new->success, newpos, 
+      new = add_to_sequence (SET_DEST (pattern), &new->success, newpos,
 			     insn_type, 0);
       this->success.first->enforce_mode = 1;
       newpos[depth] = '1';
@@ -572,7 +572,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
     case ZERO_EXTEND:
     case STRICT_LOW_PART:
       newpos[depth] = '0';
-      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos, 
+      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos,
 			     insn_type, 0);
       this->success.first->enforce_mode = 1;
       return new;
@@ -608,7 +608,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	break;
 
       /* ... fall through ...  */
-      
+
     case COMPARE:
       /* Enforce the mode on the first operand to avoid ambiguous insns.  */
       newpos[depth] = '0';
@@ -619,7 +619,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
       new = add_to_sequence (XEXP (pattern, 1), &new->success, newpos,
 			     insn_type, 0);
       return new;
-      
+
     default:
       break;
     }
@@ -870,7 +870,7 @@ merge_trees (oldh, addh)
       /* The semantics of pattern matching state that the tests are done in
 	 the order given in the MD file so that if an insn matches two
 	 patterns, the first one will be used.  However, in practice, most,
-	 if not all, patterns are unambiguous so that their order is 
+	 if not all, patterns are unambiguous so that their order is
 	 independent.  In that case, we can merge identical tests and
 	 group all similar modes and codes together.
 
@@ -881,7 +881,7 @@ merge_trees (oldh, addh)
 	 the same code and mode and the last one that tests just the same mode.
 
 	 If we have no match, place NEW after the closest match we found.  */
-	 
+
       for (old = oldh.last; old; old = old->prev)
 	{
 	  int our_merit;
@@ -1183,7 +1183,7 @@ static const char *indents[]
 
    We generate two nested switch statements, the outer statement for
    testing modes, and the inner switch for testing RTX codes.  It is
-   not worth optimizing cases when only a small number of modes or 
+   not worth optimizing cases when only a small number of modes or
    codes is tested, since the compiler can do that when compiling the
    resulting function.   We do check for when every test is the same mode
    or code.  */
@@ -1225,7 +1225,7 @@ write_tree_1 (tree, prevpos, afterward, type)
      done.  The exception is a branch from a node that does not test a
      mode or code to one that does.  In such cases, we set the `retest_mode'
      or `retest_code' flags.  That will ensure that we start a new switch
-     at that position and put the label before the switch. 
+     at that position and put the label before the switch.
 
      The branches in the latter case must set the position to that of the
      target node.  */
@@ -1566,7 +1566,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 	      inner_indent -= 2;
 	      printf ("%s}\n", indents[inner_indent]);
 	    }
-	  else	    
+	  else
 	    {
 	      if (p->num_clobbers_to_add)
 		{
@@ -1756,7 +1756,7 @@ write_tree (tree, prevpos, afterward, initial, type)
    actions are necessary to move to NEWPOS. If we fail to move to the
    new state, branch to node AFTERWARD if non-zero, otherwise return.
 
-   INDENT says how many blanks to place at the front of lines.  
+   INDENT says how many blanks to place at the front of lines.
 
    Failure to move to the new state can only occur if we are trying to
    match multiple insns and we try to step past the end of the
@@ -1802,12 +1802,12 @@ change_state (oldpos, newpos, indent, afterward)
 	  /* We can only fail if we're moving down the tree.  */
 	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
 	    {
-	      printf ("%s_last_insn = recog_next_insn (insn, %d);\n", 
+	      printf ("%s_last_insn = recog_next_insn (insn, %d);\n",
 		      indents[indent], newpos[depth] - 'A');
 	    }
 	  else
 	    {
-	      printf ("%stem = recog_next_insn (insn, %d);\n", 
+	      printf ("%stem = recog_next_insn (insn, %d);\n",
 		      indents[indent], newpos[depth] - 'A');
 
 	      printf ("%sif (tem == NULL_RTX)\n", indents[indent]);
@@ -1931,7 +1931,7 @@ from the machine description file `md'.  */\n\n");
       else if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
 	peephole2_tree = merge_trees (peephole2_tree,
 				      make_insn_sequence (desc, PEEPHOLE2));
-	
+
       if (GET_CODE (desc) == DEFINE_PEEPHOLE
 	  || GET_CODE (desc) == DEFINE_EXPAND)
 	next_insn_code++;
