@@ -21,7 +21,7 @@ public abstract class Toolkit
 {
   static Toolkit defaultToolkit;
   static EventQueue systemEventQueue = new EventQueue();
-  PropertyChangeSupport pcsupport = new PropertyChangeSupport(this);
+  PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
   Hashtable desktopProperties = new Hashtable();
 
   public static Toolkit getDefaultToolkit()
@@ -216,7 +216,7 @@ public abstract class Toolkit
   {
     Object oldValue = getDesktopProperty(name);
     desktopProperties.put(name, newValue);
-    pcsupport.firePropertyChange(name, oldValue, newValue);
+    changeSupport.firePropertyChange(name, oldValue, newValue);
   }
 
   protected Object lazilyLoadDesktopProperty(String name)
@@ -233,13 +233,13 @@ public abstract class Toolkit
   public void addPropertyChangeListener(String name,
                                 	PropertyChangeListener pcl)
   {
-    pcsupport.addPropertyChangeListener(name, pcl);
+    changeSupport.addPropertyChangeListener(name, pcl);
   }
   
   public void removePropertyChangeListener(String name,
                                            PropertyChangeListener pcl)
   {
-    pcsupport.removePropertyChangeListener(name, pcl);
+    changeSupport.removePropertyChangeListener(name, pcl);
   }
 
   public void addAWTEventListener(AWTEventListener listener, long eventMask)

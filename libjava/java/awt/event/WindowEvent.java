@@ -35,7 +35,7 @@ public class WindowEvent extends ComponentEvent
 
   public String paramString ()
   {
-    String r;
+    String r = "";
     switch (id)
       {
         case WINDOW_ACTIVATED:

@@ -170,7 +170,11 @@ public abstract class RectangularShape implements Shape, Cloneable
 
   public Object clone ()
   {
-    return super.clone ();
+    try
+    {
+      return super.clone ();
+    } 
+    catch (CloneNotSupportedException _) {return null;}
   }
 
   // This implements the PathIterator for all RectangularShape objects

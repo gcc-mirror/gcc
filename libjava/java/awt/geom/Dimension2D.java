@@ -31,6 +31,10 @@ public abstract class Dimension2D implements Cloneable
 
   public Object clone ()
   {
-    return super.clone();
+    try
+    {
+      return super.clone ();
+    } 
+    catch (CloneNotSupportedException _) {return null;}
   }
 }

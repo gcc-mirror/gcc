@@ -15,6 +15,10 @@ import java.util.ResourceBundle;
 
 public class ComponentOrientation implements java.io.Serializable
 {
+  // Here is a wild guess.
+  private static int HORIZONTAL_ID    = 1 << 0,
+                     LEFT_TO_RIGHT_ID = 1 << 1;
+
   public static final ComponentOrientation LEFT_TO_RIGHT
     = new ComponentOrientation(HORIZONTAL_ID & LEFT_TO_RIGHT_ID);
   public static final ComponentOrientation RIGHT_TO_LEFT
@@ -26,10 +30,6 @@ public class ComponentOrientation implements java.io.Serializable
   // correct values?
   int orientation;
   
-  // Here is a wild guess.
-  private static int HORIZONTAL_ID    = 1 << 0,
-                     LEFT_TO_RIGHT_ID = 1 << 1;
-
   ComponentOrientation(int orientation)
   {
     this.orientation = orientation;

@@ -1,9 +1,9 @@
 /* Copyright (C) 1999, 2000  Free Software Foundation
 
-   This file is part of libjava.
+   This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
+Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.awt;
@@ -11,38 +11,167 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.peer.WindowPeer;
 import java.awt.peer.ComponentPeer;
+import java.util.EventListener;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
-/* A very incomplete placeholder. */
+/* Status: partially implemented. */
 
 public class Window extends Container
 {
-  public Window (Frame parent)
+  // Serialized fields, from Sun's serialization spec.
+  // private FocusManager focusMgr;  // FIXME: what is this?  
+  private String warningString = null;
+  private int state = 0;
+  private int windowSerializedDataVersion = 0; // FIXME
+
+  private transient WindowListener windowListener;
+  private transient GraphicsConfiguration graphicsConfiguration;
+
+  public Window(Frame owner)
   {
-    this.parent = parent;
+    this (owner, null);
+  }
+
+  /** @since 1.2 */
+  public Window(Window owner)
+  {
+    this (owner, null);
+  }
+  
+  /** @since 1.3 */
+  public Window(Window owner, GraphicsConfiguration gc)
+  {
+    /*  FIXME: Security check
+    SecurityManager.checkTopLevelWindow(...)
+
+    if (gc != null
+        && gc.getDevice().getType() != GraphicsDevice.TYPE_RASTER_SCREEN)
+      throw new IllegalArgumentException ("gc must be from a screen device");
+
+    if (gc == null)
+      graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
+			     .getDefaultScreenDevice()
+			     .getDefaultConfiguration();
+    else
+    */    
+      graphicsConfiguration = gc;
+
     // FIXME: compiler bug
     // this.layoutMgr = new BorderLayout ();
+    
+    if (owner == null)
+      throw new IllegalArgumentException ("Owner can not be null");
+          
+    this.parent = owner;
+    
+    // FIXME: add to owner's "owned window" list
   }
 
-  public void addNotify ()
+  protected void finalize() throws Throwable
+  {
+    // FIXME: remove from owner's "owned window" list (Weak References)
+  }
+
+  public void addNotify()
   {
     if (peer == null)
+      // FIXME: This cast should NOT be required. ??? Compiler bug ???
       peer = (ComponentPeer) getToolkit ().createWindow (this);
-    super.addNotify ();
   }
 
-  public synchronized void addWindowListener (WindowListener listener)
+  /** @specnote pack() doesn't appear to be called internally by show(), so
+                we duplicate some of the functionality. */
+  public void pack()
   {
-    windowListener = AWTEventMulticaster.add (windowListener, listener);
+    if (parent != null
+        && !parent.isDisplayable())
+      parent.addNotify();
+        if (peer == null)
+      addNotify();
+    
+    // FIXME: do layout stuff here
+    
+    validate();
   }
 
-  public void dispose ()
+  public void show ()
   {
+    if (isVisible())
+      {
+	this.toFront();
+	return;
+      }
+  
+    if (parent != null
+        && !parent.isDisplayable())
+      parent.addNotify();
+    if (peer == null)
+      addNotify ();    
+
+    validate ();
+    
+    super.show ();
+
+    // FIXME: Is this call neccessary or do we assume the peer takes care of 
+    // it?
+    // this.toFront();
   }
 
-  public Component getFocusOwner ()
+  public void hide()
   {
-    return null;		// FIXME
+    // FIXME: call hide() on amy "owned" children here.
+    super.hide();
+  }
+
+  public void dispose()
+  {
+    // FIXME: first call removeNotify() on owned children
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].removeNotify();
+    this.removeNotify();
+  }
+
+  public void toBack ()
+  {
+    if (peer != null)
+      {
+	WindowPeer wp = (WindowPeer) peer;
+	wp.toBack ();
+      }
+  }
+
+  public void toFront ()
+  {
+    if (peer != null)
+      {
+	WindowPeer wp = (WindowPeer) peer;
+	wp.toFront ();
+      }
+  }
+
+  public Toolkit getToolkit()
+  {
+    // FIXME: why different from Component.getToolkit() ?
+    return super.getToolkit();
+  }
+
+  public final String getWarningString()
+  {
+    boolean secure = true;
+    /* boolean secure = SecurityManager.checkTopLevelWindow(...) */
+
+    if (!secure)
+      {
+        if (warningString != null)
+	  return warningString;
+	else
+	  {
+	    String warning = System.getProperty("awt.appletWarning");
+	    return warning;
+	  }
+      }
+    return null;
   }
 
   public Locale getLocale ()
@@ -50,20 +179,64 @@ public class Window extends Container
     return locale == null ? Locale.getDefault () : locale;
   }
 
-  public String getWarningString ()
+  /*
+  /** @since 1.2
+  public InputContext getInputContext()
   {
-    return warningString;
-  }
-
-  public void pack ()
-  {
-    addNotify ();
     // FIXME
   }
+  */
 
-  public boolean postEvent (Event evt)
+  public void setCursor(Cursor cursor)
   {
-    return false;		// FIXME
+    // FIXME: why different from Component.setCursor() ?
+    super.setCursor(cursor);
+  }
+
+  public Window getOwner()
+  {
+    if (parent != null)
+      return (Window) parent;
+    else 
+      return null;
+  }
+
+  /** @since 1.2 */
+  public Window[] getOwnedWindows()
+  {
+    // FIXME: return array containing all the windows this window currently 
+    // owns.
+    return null;
+  }
+
+  public synchronized void addWindowListener (WindowListener listener)
+  {
+    windowListener = AWTEventMulticaster.add (windowListener, listener);
+  }
+
+  public synchronized void removeWindowListener (WindowListener listener)
+  {
+    windowListener = AWTEventMulticaster.remove (windowListener, listener);
+  }
+
+  /** @since 1.3 */
+  public EventListener[] getListeners(Class listenerType)
+  {
+    if (listenerType == WindowListener.class)
+      return getListenersImpl(listenerType, windowListener);
+    else return super.getListeners(listenerType);
+  }
+
+  void dispatchEventImpl(AWTEvent e)
+  {
+    // Make use of event id's in order to avoid multiple instanceof tests.
+    if (e.id <= WindowEvent.WINDOW_LAST 
+        && e.id >= WindowEvent.WINDOW_FIRST
+        && (windowListener != null 
+	    || (eventMask & AWTEvent.WINDOW_EVENT_MASK) != 0))
+      processEvent(e);
+    else
+      super.dispatchEventImpl(e);
   }
 
   protected void processEvent (AWTEvent evt)
@@ -105,41 +278,47 @@ public class Window extends Container
       }
   }
 
-  public synchronized void removeWindowListener (WindowListener listener)
+  public Component getFocusOwner()
   {
-    windowListener = AWTEventMulticaster.remove (windowListener, listener);
+    // FIXME
+    return null;
   }
 
-  public void show ()
+  public boolean postEvent(Event e)
   {
-    addNotify ();
-    validate ();
-    setVisible (true);
-    // FIXME: is there more to it?
+    // FIXME
+    return false;
   }
 
-  public void toBack ()
+  public boolean isShowing()
   {
-    if (peer != null)
-      {
-	WindowPeer wp = (WindowPeer) peer;
-	wp.toBack ();
-      }
+    // FIXME: Also check if window is within the boundary of the screen?
+    return isVisible();
   }
 
-  public void toFront ()
+  /** @since 1.2 */
+  public void applyResourceBundle(ResourceBundle rb)
   {
-    if (peer != null)
-      {
-	WindowPeer wp = (WindowPeer) peer;
-	wp.toFront ();
-      }
+    // FIXME
   }
 
-  // Serialized fields, from Sun's serialization spec.
-  // private FocusManager focusMgr;  // FIXME: what is this?
-  private int state;
-  private String warningString;
+  /** @since 1.2 */
+  public void applyResourceBundle(String rbName)
+  {
+    ResourceBundle rb = ResourceBundle.getBundle(rbName);
+    if (rb != null)
+      applyResourceBundle(rb);    
+  }
 
-  private transient WindowListener windowListener;
+  /*
+  public AccessibleContext getAccessibleContext()
+  {
+    // FIXME
+  }
+  */
+
+  public GraphicsConfiguration getGraphicsConfiguration()
+  {
+    return graphicsConfiguration;
+  }
 }

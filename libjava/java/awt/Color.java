@@ -87,4 +87,12 @@ public class Color extends Object implements Paint, java.io.Serializable
   {
     return rgba;
   }
+  
+  public int getTransparency()
+  {
+    if (getAlpha() == 0xFF)
+      return Transparency.OPAQUE;
+    else
+      return Transparency.TRANSLUCENT;
+  }
 }

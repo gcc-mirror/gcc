@@ -24,7 +24,7 @@ public class ICC_Profile
 
   public int getNumComponents()
   {
-    switch (profileID)
+    switch ((int) profileID)
       {
       case ColorSpace.CS_sRGB:
       case ColorSpace.CS_LINEAR_RGB:

@@ -433,7 +433,7 @@ public abstract class Container extends Component
   {
     for (int i = 0; i < ncomponents; ++i)
       component[i].removeNotify ();
-    // FIXME: remove our peer.
+    super.removeNotify();
   }
 
   public boolean isAncestorOf (Component comp)
