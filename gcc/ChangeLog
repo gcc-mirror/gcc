@@ -1,3 +1,8 @@
+2004-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi (Strong Using): Warn users against using this
+	feature.
+
 2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac (gcc_cv_ld_as_needed): Use AC_CACHE_CHECK.
