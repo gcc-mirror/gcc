@@ -1596,11 +1596,10 @@ remove_note (insn, note)
   abort ();
 }
 
-/* Search LISTP (an EXPR_LIST) for NODE and remove NODE from the list
-   if it is found.
+/* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
+   remove that entry from the list if it is found.
 
-   A simple equality test is used to determine if NODE is on the
-   EXPR_LIST.  */
+   A simple equality test is used to determine if NODE matches.  */
 
 void
 remove_node_from_expr_list (node, listp)
@@ -1622,6 +1621,8 @@ remove_node_from_expr_list (node, listp)
 
 	  return;
 	}
+
+      prev = temp;
       temp = XEXP (temp, 1);
     }
 }

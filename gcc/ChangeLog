@@ -1,3 +1,7 @@
+Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtlanal.c (remove_node_from_expr_list): Correctly update PREV.
+
 2001-02-08  Bernd Schmidt  <bernds@redhat.com>
 
 	* final.c (cleanup_subreg_operands): The address of a MEM can
