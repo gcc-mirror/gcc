@@ -19,27 +19,24 @@ MULTILIB_OPTIONS	= pthread \
 MULTILIB_DIRNAMES	= pthread \
 			  common power powerpc ppc64
 
-MULTILIB_MATCHES	= mcpu?power=mpower \
-			  mcpu?power=mrios1 \
+MULTILIB_MATCHES	= mcpu?power=mcpu?power \
+			  mcpu?power=mcpu?power2 \
+			  mcpu?powerpc=mcpu?power3 \
+			  mcpu?powerpc=mcpu?power4 \
+			  mcpu?powerpc=mcpu?powerpc \
 			  mcpu?power=mcpu?rios1 \
+			  mcpu?power=mcpu?rios2 \
 			  mcpu?power=mcpu?rsc \
 			  mcpu?power=mcpu?rsc1 \
-			  mcpu?power=mpower2 \
-			  mcpu?power=mrios2 \
-			  mcpu?power=mcpu?rios2 \
 			  mcpu?powerpc=mcpu?rs64a \
 			  mcpu?powerpc=mcpu?601 \
 			  mcpu?powerpc=mcpu?602 \
 			  mcpu?powerpc=mcpu?603 \
 			  mcpu?powerpc=mcpu?603e \
 			  mcpu?powerpc=mcpu?604 \
+			  mcpu?powerpc=mcpu?604e \
 			  mcpu?powerpc=mcpu?620 \
-			  mcpu?powerpc=mcpu?630 \
-			  mcpu?powerpc=mcpu?750 \
-			  mcpu?powerpc=mcpu?403 \
-			  mcpu?powerpc=mpowerpc \
-			  mcpu?powerpc=mpowerpc-gpopt \
-			  mcpu?powerpc=mpowerpc-gfxopt
+			  mcpu?powerpc=mcpu?630
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
