@@ -8526,6 +8526,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
 	enum machine_mode sa_mode = Pmode;
 	rtx stack_save;
+	int old_inhibit_defer_pop = inhibit_defer_pop;
+	int return_pops = RETURN_POPS_ARGS (get_identifier ("__dummy"),
+					    get_identifier ("__dummy"), 0);
+	rtx next_arg_reg;
+	CUMULATIVE_ARGS args_so_far;
 	int i;
 
 	if (target == 0 || GET_CODE (target) != REG
@@ -8557,6 +8562,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 			      plus_constant (buf_addr,
 					     2 * GET_MODE_SIZE (Pmode)));
 	emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+
+#ifdef HAVE_setjmp
+	if (HAVE_setjmp)
+	  emit_insn (gen_setjmp ());
+#endif
 
 	/* Set TARGET to zero and branch around the other case.  */
 	emit_move_insn (target, const0_rtx);
@@ -8605,18 +8615,44 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  }
 #endif
 
-	/* The result to return is in the static chain pointer.  */
-	if (GET_MODE (static_chain_rtx) == GET_MODE (target))
-	  emit_move_insn (target, static_chain_rtx);
-	else
-	  convert_move (target, static_chain_rtx, 0);
+	/* The static chain pointer contains the address of dummy function.
+	   We need to call it here to handle some PIC cases of restoring
+	   a global pointer.  Then return 1.  */
+	op0 = copy_to_mode_reg (Pmode, static_chain_rtx);
 
+	/* We can't actually call emit_library_call here, so do everything
+	   it does, which isn't much for a libfunc with no args.  */
+	op0 = memory_address (FUNCTION_MODE, op0);
+
+	INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE,
+			      gen_rtx (SYMBOL_REF, Pmode, "__dummy"));
+	next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
+
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#ifdef HAVE_call_pop
+	if (HAVE_call_pop)
+	  emit_call_insn (gen_call_pop (gen_rtx (MEM, FUNCTION_MODE, op0),
+					const0_rtx, next_arg_reg,
+					GEN_INT (return_pops)));
+	else
+#endif
+#endif
+
+#ifdef HAVE_call
+	if (HAVE_call)
+	  emit_call_insn (gen_call (gen_rtx (MEM, FUNCTION_MODE, op0),
+				    const0_rtx, next_arg_reg, const0_rtx));
+	else
+#endif
+	    abort ();
+
+	emit_move_insn (target, const1_rtx);
 	emit_label (lab2);
 	return target;
       }
 
       /* __builtin_longjmp is passed a pointer to an array of five words
-	 and a value to return.  It's similar to the C library longjmp
+	 and a value, which is a dummy.  It's similar to the C library longjmp
 	 function but works with __builtin_setjmp above.  */
     case BUILT_IN_LONGJMP:
       if (arglist == 0 || TREE_CHAIN (arglist) == 0
@@ -8641,8 +8677,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx stack = gen_rtx (MEM, sa_mode,
 			     plus_constant (buf_addr,
 					    2 * GET_MODE_SIZE (Pmode)));
-	rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)), NULL_RTX,
-				 VOIDmode, 0);
+	rtx value = gen_rtx (SYMBOL_REF, Pmode, "__dummy");
+
+	/* Expand the second expression just for side-effects.  */
+	expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
+		     const0_rtx, VOIDmode, 0);
+
+	assemble_external_libcall (value);
 
 	/* Pick up FP, label, and SP from the block and jump.  This code is
 	   from expand_goto in stmt.c; see there for detailed comments.  */
@@ -8652,15 +8693,17 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       else
 #endif
 	{
+	  lab = copy_to_reg (lab);
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
-	  /* Put in the static chain register the return value.  */
+	  /* Put in the static chain register the address of the dummy
+	     function.  */
 	  emit_move_insn (static_chain_rtx, value);
 	  emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
-	  emit_indirect_jump (copy_to_reg (lab));
+	  emit_indirect_jump (lab);
 	}
 
 	return const0_rtx;
