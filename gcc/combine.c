@@ -1669,7 +1669,7 @@ try_combine (i3, i2, i1)
 	  rtvec old = XVEC (newpat, 0);
 	  total_sets = XVECLEN (newpat, 0) + added_sets_1 + added_sets_2;
 	  newpat = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (total_sets));
-	  bcopy ((char *) &old->elem[0], (char *) &XVECEXP (newpat, 0, 0),
+	  bcopy ((char *) &old->elem[0], (char *) XVEC (newpat, 0)->elem,
 		 sizeof (old->elem[0]) * old->num_elem);
 	}
       else
