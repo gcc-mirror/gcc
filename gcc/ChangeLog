@@ -1,5 +1,17 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_expand_prologue): Use a single insn to
+	allocate 32768 bytes of stack.  Use addition rather than subtraction
+	when a single insn is enough.
+	* config/mips/mips.md: Remove insns and splitters for subtracting
+	constants.
+	(subsi3): Only accept register operands.
+	(subsi3_internal): Likewise.  Use for TARGET_MIPS16 as well.
+	(subdi3_internal_3, subsi3_internal_2): Likewise.
+	(casesi): Use expand_binop to subtract the lower bound.
+
+2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_in_small_data_p): Don't handle
 	TARGET_MIPS16 specially.
 
