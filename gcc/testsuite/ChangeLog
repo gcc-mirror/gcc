@@ -1,3 +1,7 @@
+2002-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/i386-memset-1.c: New test case for PR target/6456.
+
 2002-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/20020227-1.x: New file, xfail on 64-bit
