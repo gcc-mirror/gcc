@@ -1773,6 +1773,13 @@ Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 Support for versions before @code{alpha*-dec-osf4} is obsoleted in GCC
 3.1.  (These are the versions which identify themselves as DEC OSF/1.)
 
+In Digital Unix V4.0, virtual memory exhausted bootstrap failures
+may be fixed by configuring with @option{--with-gc=simple},
+reconfiguring Kernel Virtual Memory and Swap parameters
+per the @command{/usr/sbin/sys_check} Tuning Suggestions,
+or applying the patch in
+@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.
+
 In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
 currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
 we need to use the old assembler, invoked via the barely documented

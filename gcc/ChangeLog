@@ -1,3 +1,8 @@
+2002-08-29  Rodney Brown  <rbrown64@csc.com.au>
+
+        * doc/install.texi (Specific, alpha*-dec-osf*): Add "virtual
+        memory exhausted" workarounds.
+
 2002-08-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* install.texi (hppa64-hp-hpux11*): Document installation procedure.
