@@ -221,8 +221,9 @@ fix = {
 
 
 /*
- *  Completely replace <sys/byteorder.h>; with a file that implements gcc's
- *  optimized byteswapping.
+ *  Completely replace <sys/byteorder.h> with a file that implements gcc's
+ *  optimized byteswapping.  (The original probably implemented some
+ *  incompatible optimized byteswapping.)
  */
 fix = {
     hackname = AAB_svr4_replace_byteorder;
@@ -233,6 +234,8 @@ fix = {
     mach     = "i[34567]86-*-solaris2.[0-4]";
     mach     = "powerpcle-*-solaris2.[0-4]";
     mach     = "sparc-*-solaris2.[0-4]";
+    mach     = "i[34567]86-sequent-ptx*";
+    mach     = "i[34567]86-sequent-sysv3*";
     files    = sys/byteorder.h;
     replace  = <<-  _EndOfHeader_
 	#ifndef _SYS_BYTEORDER_H
