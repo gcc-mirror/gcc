@@ -8447,17 +8447,17 @@ schedule_insns (dump_file)
 
   max_uid = (get_max_uid () + 1);
 
-  cant_move = (char *) alloca (max_uid * sizeof (char));
+  cant_move = (char *) xmalloc (max_uid * sizeof (char));
   bzero ((char *) cant_move, max_uid * sizeof (char));
 
-  fed_by_spec_load = (char *) alloca (max_uid * sizeof (char));
+  fed_by_spec_load = (char *) xmalloc (max_uid * sizeof (char));
   bzero ((char *) fed_by_spec_load, max_uid * sizeof (char));
 
-  is_load_insn = (char *) alloca (max_uid * sizeof (char));
+  is_load_insn = (char *) xmalloc (max_uid * sizeof (char));
   bzero ((char *) is_load_insn, max_uid * sizeof (char));
 
-  insn_orig_block = (int *) alloca (max_uid * sizeof (int));
-  insn_luid = (int *) alloca (max_uid * sizeof (int));
+  insn_orig_block = (int *) xmalloc (max_uid * sizeof (int));
+  insn_luid = (int *) xmalloc (max_uid * sizeof (int));
 
   luid = 0;
   for (b = 0; b < n_basic_blocks; b++)
@@ -8577,18 +8577,22 @@ schedule_insns (dump_file)
     }
 
   /* Allocate data for this pass.  See comments, above,
-     for what these vectors do.  */
-  insn_priority = (int *) alloca (max_uid * sizeof (int));
-  insn_reg_weight = (int *) alloca (max_uid * sizeof (int));
-  insn_tick = (int *) alloca (max_uid * sizeof (int));
-  insn_costs = (short *) alloca (max_uid * sizeof (short));
-  insn_units = (short *) alloca (max_uid * sizeof (short));
-  insn_blockage = (unsigned int *) alloca (max_uid * sizeof (unsigned int));
-  insn_ref_count = (int *) alloca (max_uid * sizeof (int));
+     for what these vectors do.
+
+     We use xmalloc instead of alloca, because max_uid can be very large
+     when there is a lot of function inlining.  If we used alloca, we could
+     exceed stack limits on some hosts for some inputs.  */
+  insn_priority = (int *) xmalloc (max_uid * sizeof (int));
+  insn_reg_weight = (int *) xmalloc (max_uid * sizeof (int));
+  insn_tick = (int *) xmalloc (max_uid * sizeof (int));
+  insn_costs = (short *) xmalloc (max_uid * sizeof (short));
+  insn_units = (short *) xmalloc (max_uid * sizeof (short));
+  insn_blockage = (unsigned int *) xmalloc (max_uid * sizeof (unsigned int));
+  insn_ref_count = (int *) xmalloc (max_uid * sizeof (int));
 
   /* Allocate for forward dependencies */
-  insn_dep_count = (int *) alloca (max_uid * sizeof (int));
-  insn_depend = (rtx *) alloca (max_uid * sizeof (rtx));
+  insn_dep_count = (int *) xmalloc (max_uid * sizeof (int));
+  insn_depend = (rtx *) xmalloc (max_uid * sizeof (rtx));
 
   if (reload_completed == 0)
     {
@@ -8616,7 +8620,7 @@ schedule_insns (dump_file)
     {
       rtx line;
 
-      line_note = (rtx *) alloca (max_uid * sizeof (rtx));
+      line_note = (rtx *) xmalloc (max_uid * sizeof (rtx));
       bzero ((char *) line_note, max_uid * sizeof (rtx));
       line_note_head = (rtx *) alloca (n_basic_blocks * sizeof (rtx));
       bzero ((char *) line_note_head, n_basic_blocks * sizeof (rtx));
@@ -8702,6 +8706,26 @@ schedule_insns (dump_file)
 	}
       fprintf (dump, "\n\n");
     }
+
+  free (cant_move);
+  free (fed_by_spec_load);
+  free (is_load_insn);
+  free (insn_orig_block);
+  free (insn_luid);
+
+  free (insn_priority);
+  free (insn_reg_weight);
+  free (insn_tick);
+  free (insn_costs);
+  free (insn_units);
+  free (insn_blockage);
+  free (insn_ref_count);
+
+  free (insn_dep_count);
+  free (insn_depend);
+
+  if (write_symbols != NO_DEBUG)
+    free (line_note);
 
   if (bb_live_regs)
     FREE_REG_SET (bb_live_regs);

@@ -1,3 +1,9 @@
+Thu Jun 18 20:11:00 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sched.c (schedule_insns): Use xmalloc not alloca for max_uid
+	indexed arrays.  Call free at the end of the function for them.
+	* haifa-sched.c (schedule_insns): Likewise.
+
 Thu Jun 18 18:16:01 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (size_of_string): Do count backslashes.
