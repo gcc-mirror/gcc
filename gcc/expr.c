@@ -3070,6 +3070,12 @@ store_constructor (exp, target)
 					   force_reg (ptr_mode, offset_rtx)));
 	    }
 
+	  if (TREE_READONLY (field))
+	    {
+	      to_rtx = copy_rtx (to_rtx);
+	      RTX_UNCHANGING_P (to_rtx) = 1;
+	    }
+
 	  store_field (to_rtx, bitsize, bitpos, mode, TREE_VALUE (elt),
 		       /* The alignment of TARGET is
 			  at least what its type requires.  */
