@@ -11,6 +11,9 @@
 
 	* fold-const.c (fold): Remove handling of unary expressions.
 
+	* fold-const.c (fold_unary): Avoid directly using the original
+	expression t as much as possible.
+
 2005-03-03  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 

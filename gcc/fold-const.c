@@ -6606,7 +6606,7 @@ fold_unary (tree expr)
   const tree t = expr;
   const tree type = TREE_TYPE (expr);
   tree tem;
-  tree arg0;
+  tree op0, arg0;
   enum tree_code code = TREE_CODE (t);
   enum tree_code_class kind = TREE_CODE_CLASS (code);
 
@@ -6614,7 +6614,7 @@ fold_unary (tree expr)
 	      && TREE_CODE_LENGTH (code) == 1);
 
 
-  arg0 = TREE_OPERAND (t, 0);
+  arg0 = op0 = TREE_OPERAND (t, 0);
   if (arg0)
     {
       if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
@@ -6713,15 +6713,15 @@ fold_unary (tree expr)
     case FIX_CEIL_EXPR:
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
-      if (TREE_TYPE (TREE_OPERAND (t, 0)) == type)
-	return TREE_OPERAND (t, 0);
+      if (TREE_TYPE (op0) == type)
+	return op0;
 
       /* Handle cases of two conversions in a row.  */
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
-	  || TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR)
+      if (TREE_CODE (op0) == NOP_EXPR
+	  || TREE_CODE (op0) == CONVERT_EXPR)
 	{
-	  tree inside_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
-	  tree inter_type = TREE_TYPE (TREE_OPERAND (t, 0));
+	  tree inside_type = TREE_TYPE (TREE_OPERAND (op0, 0));
+	  tree inter_type = TREE_TYPE (op0);
 	  int inside_int = INTEGRAL_TYPE_P (inside_type);
 	  int inside_ptr = POINTER_TYPE_P (inside_type);
 	  int inside_float = FLOAT_TYPE_P (inside_type);
@@ -6745,8 +6745,7 @@ fold_unary (tree expr)
 	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
-	    return fold (build1 (code, type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
 
 	  /* Likewise, if the intermediate and final types are either both
 	     float or both integer, we don't need the middle conversion if
@@ -6761,16 +6760,14 @@ fold_unary (tree expr)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
 	     replace that by a single zero-extension.  */
 	  if (inside_int && inter_int && final_int
 	      && inside_prec < inter_prec && inter_prec < final_prec
 	      && inside_unsignedp && !inter_unsignedp)
-	    return fold (build1 (code, type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
 
 	  /* Two conversions in a row are not needed unless:
 	     - some conversion is floating-point (overstrict for now), or
@@ -6794,23 +6791,21 @@ fold_unary (tree expr)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
 	}
 
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR
-	  && TREE_CONSTANT (TREE_OPERAND (TREE_OPERAND (t, 0), 1))
+      if (TREE_CODE (op0) == MODIFY_EXPR
+	  && TREE_CONSTANT (TREE_OPERAND (op0, 1))
 	  /* Detect assigning a bitfield.  */
-	  && !(TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == COMPONENT_REF
-	       && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 1))))
+	  && !(TREE_CODE (TREE_OPERAND (op0, 0)) == COMPONENT_REF
+	       && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (op0, 0), 1))))
 	{
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
-	  tree prev = TREE_OPERAND (t, 0);
 	  tem = copy_node (t);
-	  TREE_OPERAND (tem, 0) = TREE_OPERAND (prev, 1);
+	  TREE_OPERAND (tem, 0) = TREE_OPERAND (op0, 1);
 	  /* First do the assignment, then return converted constant.  */
-	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), prev, fold (tem));
+	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, fold (tem));
 	  TREE_NO_WARNING (tem) = 1;
 	  TREE_USED (tem) = 1;
 	  return tem;
@@ -6821,10 +6816,10 @@ fold_unary (tree expr)
 	 in c).  This folds extension into the BIT_AND_EXPR.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (type) != BOOLEAN_TYPE
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == BIT_AND_EXPR
-	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST)
+	  && TREE_CODE (op0) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (op0, 1)) == INTEGER_CST)
 	{
-	  tree and = TREE_OPERAND (t, 0);
+	  tree and = op0;
 	  tree and0 = TREE_OPERAND (and, 0), and1 = TREE_OPERAND (and, 1);
 	  int change = 0;
 
@@ -6867,13 +6862,13 @@ fold_unary (tree expr)
 
       /* Convert (T1)((T2)X op Y) into (T1)X op Y, for pointer types T1 and
 	 T2 being pointers to types of the same size.  */
-      if (POINTER_TYPE_P (TREE_TYPE (t))
+      if (POINTER_TYPE_P (type)
 	  && BINARY_CLASS_P (arg0)
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0))))
 	{
 	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  tree t0 = TREE_TYPE (t);
+	  tree t0 = type;
 	  tree t1 = TREE_TYPE (arg00);
 	  tree tt0 = TREE_TYPE (t0);
 	  tree tt1 = TREE_TYPE (t1);
@@ -6889,9 +6884,8 @@ fold_unary (tree expr)
       return tem ? tem : t;
 
     case VIEW_CONVERT_EXPR:
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == VIEW_CONVERT_EXPR)
-	return build1 (VIEW_CONVERT_EXPR, type,
-		       TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+      if (TREE_CODE (op0) == VIEW_CONVERT_EXPR)
+	return build1 (VIEW_CONVERT_EXPR, type, TREE_OPERAND (op0, 0));
       return t;
 
     case NEGATE_EXPR:
