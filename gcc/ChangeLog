@@ -1,3 +1,14 @@
+2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (mask): New mode attribute.
+	(zero_extendsidi2): Add memory alternative.
+	(*zero_extendsidi2_mem): Delete.
+	(zero_extend[qh]i[sd]i2): Redefine using :GPR and :SHORT.  Use
+	memory_operand in the TARGET_MIPS16 check.
+	(*zero_extend[qh]i[sd]i2{,_mips16}): Name previously unnamed patterns.
+	Redefine using :GPR and :SHORT.
+	(zero_extendqihi2): Use memory_operand in the TARGET_MIPS16 check.
+
 2004-09-04  Uros Bizjak  <uros@kss-loka.si>
 
 	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_RINT{,F,L}
