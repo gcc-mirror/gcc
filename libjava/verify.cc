@@ -373,7 +373,9 @@ private:
       // We must resolve both types and check assignability.
       resolve ();
       k.resolve ();
-      return data.klass->isAssignableFrom (k.data.klass);
+      // Use _Jv_IsAssignableFrom to avoid premature class
+      // initialization.
+      return _Jv_IsAssignableFrom (data.klass, k.data.klass);
     }
 
     bool isvoid () const
@@ -537,7 +539,9 @@ private:
 		  // This loop will end when we hit Object.
 		  while (true)
 		    {
-		      if (k->isAssignableFrom (oldk))
+		      // Use _Jv_IsAssignableFrom to avoid premature
+		      // class initialization.
+		      if (_Jv_IsAssignableFrom (k, oldk))
 			break;
 		      k = k->getSuperclass ();
 		      changed = true;

@@ -1,3 +1,8 @@
+2001-11-15  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (type::compatible): Use _Jv_IsAssignableFrom.
+	(type::merge): Likewise.
+
 2001-11-14  Hans Boehm <Hans_Boehm@hp.com>
 
 	* java/lang/natString.cc: correct argument order for
