@@ -1,3 +1,56 @@
+Tue May  9 20:52:43 2000  Denis Chertykov  <denisc@overta.ru>
+
+ 	* config/avr/avr-protos.h (extra_constraint): change a type of
+	second argument from char to int to avoid warnings.
+	(asm_output_byte): Likewise.
+	
+	* config/avr/avr.c (MAX_LD_OFFSET) New macro.
+	(initial_elimination_offset): Handle elimination from
+	FRAME_POINTER_REGNUM to STACK_POINTER_REGNUM.
+	(legitimate_address_p): Use MAX_LD_OFFSET.
+	(legitimize_address): Likewise.
+	(out_movqi_r_mr): Likewise.
+	(out_movhi_r_mr): Likewise, use `fatal_insn' instead of `fatal'.
+	(out_movsi_r_mr): Use MAX_LD_OFFSET.
+	(out_movsi_mr_r): Likewise.
+	(out_movqi_mr_r): Likewise.
+	(out_movhi_mr_r): Likewise.
+	(notice_update_cc): Correct CC for the ashrqi3 with the shift
+	count as CONST_INT != 6.
+	(ashlqi3_out): Coding style modifications. Run `fatal_insn' if
+	shift count is a CONSTANT_P, but not a CONST_INT.
+	(ashlhi3_out): Coding style modifications.
+	(ashlsi3_out): Likewise.
+	(ashrhi3_out): Likewise.
+	(ashrsi3_out): Likewise.
+	(lshrhi3_out): Likewise.
+	(lshrsi3_out): Likewise.
+	(ashrqi3_out): Generate shift for any known constant count without
+	scratch register. Run `fatal_insn' if shift count is a CONSTANT_P,
+	but not a CONST_INT.
+	(lshrqi3_out): Coding style modifications. Run `fatal_insn' if
+	shift count is a CONSTANT_P, but not a CONST_INT. 
+	(extra_constraint): change a type of
+	second argument from char to int to avoid warnings.
+	(asm_output_byte): Likewise.
+	(asm_file_end): Output size generated commands count as a hex
+	number too.
+
+	* config/avr/avr.h (RETURN_ADDR_RTX): New macro.
+
+	* config/avr/avr.md (addhi3): Fragment commented by &&0 is
+	removed.
+	(ashlqi3): Values of "length" attribute changed. Shift count
+	uses constraints 'n' instead of 'i'.
+	(ashrqi3): Likewise. Values of "cc" attribute changed. Generate
+	shifts without clobber register.
+	(lshrqi3): Shift count uses constraints 'n' instead of 'i'.
+	(call_insn): Correct test for which_alternative == 1 (was 0).
+	(call_value_insn): Likewise.
+	
+	* config/avr/t-avr: Remove definition of FLOAT while generates
+	fp-bit.c
+
 2000-05-09  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/check.tpl:  Template for checking fixes

@@ -254,7 +254,7 @@
     case 1:  /* mov r,L */
       return (AS1 (clr,%A0) CR_TAB
 	      AS1 (clr,%B0));
-    case 2: /* mov r,d */
+    case 2: /* ld d,i */
       if (operands[1] == const1_rtx
           && (link = find_reg_note (insn, REG_WAS_0, 0))
 	  /* Make sure the insn that stored the 0 is still present.  */
@@ -272,7 +272,7 @@
       return out_movhi_r_mr (insn, operands, NULL);
     case 4: /* mov m,r*/
         {
-          rtx save1=NULL;
+          rtx save1 = NULL;
           if (operands[1] == const0_rtx)
             {
               save1 = operands[1];
@@ -543,15 +543,6 @@
       short tmp = INTVAL (operands[2]);
       operands[2] = GEN_INT(tmp);
     }
- if (! (reload_completed | reload_in_progress))
-   {
-     if (REGNO (operands[0]) != REGNO (operands[1])
-	 && REGNO (operands[0]) != REGNO (operands[2])&&0)
-       {
-	 emit_move_insn (operands[0], operands[1]);
-	 operands[1] = operands[0];
-       }
-   }
 }")
 
 
@@ -871,10 +862,10 @@
 (define_insn "ashlqi3"
   [(set (match_operand:QI 0 "register_operand" "=r,!d,r,r")
 	(ashift:QI (match_operand:QI 1 "register_operand" "0,0,0,0")
-		   (match_operand:QI 2 "general_operand" "r,i,i,Qm")))]
+		   (match_operand:QI 2 "general_operand" "r,n,n,Qm")))]
   ""
   "* return ashlqi3_out (insn, operands, NULL);"
-  [(set_attr "length" "6,4,6,7")
+  [(set_attr "length" "5,4,6,7")
    (set_attr "cc" "clobber,set_czn,set_czn,clobber")])
 
 (define_insn "ashlhi3"
@@ -903,12 +894,11 @@
 (define_insn "ashrqi3"
   [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r")
 	(ashiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0")
-		     (match_operand:QI 2 "general_operand" "r,P,K,i,Qm")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d,X"))]
+		     (match_operand:QI 2 "general_operand" "r,P,K,n,Qm")))]
   ""
-  "* return ashrqi3_out (insn,operands, NULL);"
-  [(set_attr "length" "6,1,2,4,7")
-   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber")])
+  "* return ashrqi3_out (insn, operands, NULL);"
+  [(set_attr "length" "5,1,2,5,7")
+   (set_attr "cc" "clobber,set_zn,set_zn,clobber,clobber")])
 
 (define_insn "ashrhi3"
   [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r")
@@ -936,7 +926,7 @@
 (define_insn "lshrqi3"
   [(set (match_operand:QI 0 "register_operand" "=r,d,r,r")
 	(lshiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0")
-		     (match_operand:QI 2 "general_operand" "r,i,i,Qm")))]
+		     (match_operand:QI 2 "general_operand" "r,n,n,Qm")))]
   ""
   "* return lshrqi3_out (insn,operands, NULL);"
   [(set_attr "length" "6,4,6,7")
@@ -1621,7 +1611,7 @@
    (set (attr "length")
 	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
 	       (const_int 1)
-	       (eq (symbol_ref "which_alternative") (const_int 0))
+	       (eq (symbol_ref "which_alternative") (const_int 1))
 	       (const_int 3)
 	       (eq (symbol_ref "!AVR_MEGA")
 		   (const_int 0))
@@ -1651,7 +1641,7 @@
    (set (attr "length")
 	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
 	       (const_int 1)
-	       (eq (symbol_ref "which_alternative") (const_int 0))
+	       (eq (symbol_ref "which_alternative") (const_int 1))
 	       (const_int 3)
 	       (eq (symbol_ref "!AVR_MEGA")
 		   (const_int 0))
