@@ -5341,32 +5341,6 @@
   DONE;
 ")
 
-(define_expand "save_stack_nonlocal"
-  [(match_operand:DI 0 "memory_operand" "")
-   (match_operand:SI 1 "s_register_operand" "")]
-  ""
-  "
-{
-  /* We also need to save the frame pointer for non-local gotos */
-  emit_move_insn (operand_subword (operands[0], 0, 0, DImode),
-		  hard_frame_pointer_rtx);
-  emit_move_insn (operand_subword (operands[0], 1, 0, DImode), operands[1]);
-  DONE;
-}")
-
-(define_expand "restore_stack_nonlocal"
-  [(match_operand:SI 0 "s_register_operand" "")
-   (match_operand:DI 1 "memory_operand" "")]
-  ""
-  "
-{
-  /* Restore the frame pointer first, the stack pointer second. */
-  emit_move_insn (operands[0], operand_subword (operands[1], 1, 0, DImode));
-  emit_move_insn (hard_frame_pointer_rtx, operand_subword (operands[1], 0, 0,
-							   DImode));
-  DONE;
-}")
-
 ;; This split is only used during output to reduce the number of patterns
 ;; that need assembler instructions adding to them.  We allowed the setting
 ;; of the conditions to be implicit during rtl generation so that
