@@ -1,3 +1,8 @@
+2004-01-03  Per Bothner  <per@bothner.com>
+
+	* java/util/Date.java (parse):  Fix a number of problems.
+	(skipParens):  Remove no-longer-needed method.
+
 2003-12-31  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java

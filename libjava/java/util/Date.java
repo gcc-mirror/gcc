@@ -304,34 +304,6 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return format.format(this);
   }
 
-  private static int skipParens(String string, int offset)
-  {
-    int len = string.length();
-    int p = 0;
-    int i;
-
-    for (i = offset; i < len; ++i)
-      {
-	if (string.charAt(i) == '(')
-	  ++p;
-	else if (string.charAt(i) == ')')
-	  {
-	    --p;
-	    if (p == 0)
-	      return i + 1;
-	    // If we've encounted unbalanced parens, just return the
-	    // leftover one as an ordinary character.  It will be
-	    // caught later in parsing and cause an
-	    // IllegalArgumentException.
-      	    if (p < 0)
-	      return i;
-	  }
-      }
-
-    // Not sure what to do if `p != 0' here.
-    return i;
-  }
-
   private static int parseTz(String tok, char sign)
     throws IllegalArgumentException
   {
@@ -408,20 +380,25 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
     // Trim out any nested stuff in parentheses now to make parsing easier.
     StringBuffer buf = new StringBuffer();
-    int off = 0;
-    int openParenOffset, tmpMonth;
-    while ((openParenOffset = string.indexOf('(', off)) >= 0)
+    int parenNesting = 0;
+    int len = string.length();
+    for (int i = 0;  i < len;  i++)
       {
-	// Copy part of string leading up to open paren.
-	buf.append(string.substring(off, openParenOffset));
-	off = skipParens(string, openParenOffset);
+	char ch = string.charAt(i);
+	if (ch >= 'a' && ch <= 'z')
+	  ch -= 'a' - 'A';
+	if (ch == '(')
+	  parenNesting++;
+	else if (parenNesting == 0)
+	  buf.append(ch);
+	else if (ch == ')')
+	  parenNesting--;
       }
-    buf.append(string.substring(off));
+    int tmpMonth;
 
     // Make all chars upper case to simplify comparisons later.
     // Also ignore commas; treat them as delimiters.
-    StringTokenizer strtok =
-      new StringTokenizer(buf.toString().toUpperCase(), " \t\n\r,");
+    StringTokenizer strtok = new StringTokenizer(buf.toString(), " \t\n\r,");
 
     while (strtok.hasMoreTokens())
       {
@@ -436,56 +413,59 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 	  {
 	    while (tok != null && tok.length() > 0)
 	      {
-	        // A colon or slash may be valid in the number.
-	        // Find the first of these before calling parseInt.
-	        int colon = tok.indexOf(':');
-	        int slash = tok.indexOf('/');
-	        int hyphen = tok.indexOf('-');
-		// We choose tok.length initially because it makes
-		// processing simpler.
-	        int punctOffset = tok.length();
-		if (colon >= 0)
-		  punctOffset = Math.min(punctOffset, colon);
-	        if (slash >= 0)
-	          punctOffset = Math.min(punctOffset, slash);
-	        if (hyphen >= 0)
-	          punctOffset = Math.min(punctOffset, hyphen);
-		// Following code relies on -1 being the exceptional
-		// case.
-		if (punctOffset == tok.length())
-		  punctOffset = -1;
+		int punctOffset = tok.length();
+		int num = 0;
+		int punct;
+		for (int i = 0;  ;  i++)
+		  {
+		    if (i >= punctOffset)
+		      {
+			punct = -1;
+			break;
+		      }
+		    else
+		      {
+			punct = tok.charAt(i);
+			if (punct >= '0' && punct <= '9')
+			  {
+			    if (num > 999999999) // in case of overflow
+			      throw new IllegalArgumentException(tok);
+			    num = 10 * num + (punct - '0');
+			  }
+			else
+			  {
+			    punctOffset = i;
+			    break;
+			  }
+		      }
+		      
+		  }
 
-	        int num;
-	        try
-	          {
-		    num = Integer.parseInt(punctOffset < 0 ? tok :
-					   tok.substring(0, punctOffset));
-	          }
-	        catch (NumberFormatException ex)
-	          {
-		    throw new IllegalArgumentException(tok);
-	          }
-
-		// TBD: Spec says year can be followed by a slash.  That might
-		// make sense if using YY/MM/DD formats, but it would fail in
-		// that format for years <= 70.  Also, what about 1900?  That
-		// is interpreted as the year 3800; seems that the comparison
-		// should be num >= 1900 rather than just > 1900.
-		// What about a year of 62 - 70?  (61 or less could be a (leap)
-		// second).  70/MM/DD cause an exception but 71/MM/DD is ok
-		// even though there's no ambiguity in either case.
-		// For the parse method, the spec as written seems too loose.
-		// Until shown otherwise, we'll follow the spec as written.
-	        if (num > 70 && (punctOffset < 0 || punctOffset == slash))
-		  year = num > 1900 ? num - 1900 : num;
-		else if (punctOffset > 0 && punctOffset == colon)
+		if (punct == ':')
 		  {
 		    if (hour < 0)
 		      hour = num;
 		    else
 		      minute = num;
 		  }
-		else if (punctOffset > 0 && punctOffset == slash)
+	        else if ((num >= 70
+			  && (punct == ' ' || punct == ','
+			      || punct == '/' || punct < 0))
+			 || (num < 70 && day >= 0 && month >= 0 && year < 0))
+		  {
+		    if (num >= 100)
+		      year = num;
+		    else
+		      {
+			int curYear = 1900 + new Date().getYear();
+			int firstYear = curYear - 80;
+			year = firstYear / 100 * 100 + num;
+			int yx = year;
+			if (year < firstYear)
+			  year += 100;
+		      }
+		  }
+		else if (punct == '/')
 		  {
 		    if (month < 0)
 		      month = num - 1;
@@ -502,7 +482,7 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 		  throw new IllegalArgumentException(tok);
 
 		// Advance string if there's more to process in this token.
-		if (punctOffset < 0 || punctOffset + 1 >= tok.length())
+		if (punct < 0 || punctOffset + 1 >= tok.length())
 		  tok = null;
 		else
 		  tok = tok.substring(punctOffset + 1);
@@ -573,22 +553,29 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 	  throw new IllegalArgumentException(tok);
       }
 
-    // Unspecified minutes and seconds should default to 0.
+    // Unspecified hours, minutes, or seconds should default to 0.
+    if (hour < 0)
+      hour = 0;
     if (minute < 0)
       minute = 0;
     if (second < 0)
       second = 0;
 
     // Throw exception if any other fields have not been recognized and set.
-    if (year < 0 || month < 0 || day < 0 || hour < 0)
+    if (year < 0 || month < 0 || day < 0)
       throw new IllegalArgumentException("Missing field");
 
     // Return the time in either local time or relative to GMT as parsed.
     // If no time-zone was specified, get the local one (in minutes) and
     // convert to milliseconds before adding to the UTC.
-    return UTC(year, month, day, hour, minute, second) + (localTimezone ?
-		new Date(year, month, day).getTimezoneOffset() * 60 * 1000:
-		-timezone * 60 * 1000);
+    GregorianCalendar cal
+      = new GregorianCalendar(year, month, day, hour, minute, second);
+    if (!localTimezone)
+      {
+	cal.set(Calendar.ZONE_OFFSET, timezone * 60 * 1000);
+	cal.set(Calendar.DST_OFFSET, 0);
+      }
+    return cal.getTimeInMillis();
   }
 
   /**
