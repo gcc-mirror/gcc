@@ -1780,8 +1780,11 @@ extern int flag_new_for_scope;
 
 /* Nonzero for _TYPE node means that this type is a pointer to member
    function type.  */
-#define TYPE_PTRMEMFUNC_P(NODE) \
-  (TREE_CODE(NODE) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (NODE))
+#define TYPE_PTRMEMFUNC_P(NODE)		\
+  (TREE_CODE(NODE) == RECORD_TYPE	\
+   && TYPE_LANG_SPECIFIC(NODE)		\
+   && TYPE_PTRMEMFUNC_FLAG (NODE))
+
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
   (TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
 
