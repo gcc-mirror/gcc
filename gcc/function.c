@@ -2210,9 +2210,17 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
 	     Note that we cannot pass X as the object in the recursive call
 	     since the insn being processed may not allow all valid
-	     addresses.  */
+	     addresses.  However, if we were not passed on object, we can
+	     only modify X without copying it if X will have a valid
+	     address.
 
-	  if (instantiate_virtual_regs_1 (&XEXP (x, 0), object, 0))
+	     ??? Also note that this can still lose if OBJECT is an insn that
+	     has less restrictions on an address that some other insn.
+	     In that case, we will modify the shared address.  This case
+	     doesn't seem very likely, though.  */
+
+	  if (instantiate_virtual_regs_1 (&XEXP (x, 0),
+					  object ? object : x, 0))
 	    return 1;
 
 	  /* Otherwise make a copy and process that copy.  We copy the entire
