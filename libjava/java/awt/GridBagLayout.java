@@ -89,4 +89,8 @@ public class GridBagLayout
   public void invalidateLayout(Container target)
   {
   }
+
+  public void setConstraints(Component comp, GridBagConstraints constraints)
+  {
+  }
 }

@@ -1,3 +1,8 @@
+2002-10-31  Mark Anderson  <mark@panonet.net>
+
+	* java/awt/GridBagLayout.java (setConstraints): New stubbed method
+	added
+
 2002-10-25  Krister Walfridsson  <cato@df.lth.se>
 
 	* configure.in: Disable hash sync when not using threads.
