@@ -35,9 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#ifdef NO_WAIT_H
-#include <sys/wait.h>
-#endif
 
 #define COLLECT
 
