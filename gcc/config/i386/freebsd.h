@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This goes away when the math-emulator is fixed */
-#define TARGET_CPU_DEFAULT 0400		/* TARGET_NO_FANCY_MATH_387 */
-
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
@@ -33,6 +30,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Get perform_* macros to build libgcc.a.  */
 #include "i386/perform.h"
+
+/* This goes away when the math-emulator is fixed */
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0701		/* TARGET_NO_FANCY_MATH_387 | ... */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"

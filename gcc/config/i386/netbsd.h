@@ -1,6 +1,3 @@
-/* This goes away when the math-emulator is fixed */
-#define TARGET_CPU_DEFAULT 0400		/* TARGET_NO_FANCY_MATH_387 */
-
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
@@ -11,6 +8,10 @@
 
 /* Get generic NetBSD definitions.  */
 #include <netbsd.h>
+
+/* This goes away when the math-emulator is fixed */
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0701		/* TARGET_NO_FANCY_MATH_387 | ... */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D__NetBSD__ -Asystem(unix) -Asystem(NetBSD) -Acpu(i386) -Amachine(i386)"

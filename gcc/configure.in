@@ -1107,7 +1107,6 @@ changequote(,)dnl
 	i[34567]86-*-openbsd*)
 changequote([,])dnl
 		# Remove when the math emulator is fixed
-		target_cpu_default="MASK_NO_FANCY_MATH_387"
 		# we need collect2 until our bug is fixed...
 		use_collect2=yes
 		;;
