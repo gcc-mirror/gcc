@@ -1,3 +1,8 @@
+Tue Jan 27 00:26:50 1998  John Carr  <jfc@mit.edu>
+
+	* dwarf2out.c (dwarf2out_frame_init): Test value of DWARF2_UNWIND_INFO.
+	* mips/sni-svr4.h: Define DWARF2_UNWIND_INFO as 0.
+
 Tue Jan 27 00:07:02 1998  Jeffrey A Law  (law@cygnus.com)
 
         * emit-rtl.c (gen_lowpart_common): Handle more case where converting
