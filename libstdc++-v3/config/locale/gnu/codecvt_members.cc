@@ -1,6 +1,6 @@
 // std::codecvt implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,17 +57,16 @@ namespace std
     // wcsnrtombs is *very* fast but stops if encounters NUL characters:
     // in case we fall back to wcrtomb and then continue, in a loop.
     // NB: wcsnrtombs is a GNU extension
-    __from_next = __from;
-    __to_next = __to;
-    while (__from_next < __from_end && __to_next < __to_end
-	   && __ret == ok)
+    for (__from_next = __from, __to_next = __to;
+	 __from_next < __from_end && __to_next < __to_end
+	 && __ret == ok;)
       {
 	const intern_type* __from_chunk_end = wmemchr(__from_next, L'\0',
 						      __from_end - __from_next);
 	if (!__from_chunk_end)
 	  __from_chunk_end = __from_end;
 
-	const intern_type* __tmp_from = __from_next;
+	__from = __from_next;
 	const size_t __conv = wcsnrtombs(__to_next, &__from_next,
 					 __from_chunk_end - __from_next,
 					 __to_end - __to_next, &__state);
@@ -76,9 +75,9 @@ namespace std
 	    // In case of error, in order to stop at the exact place we
 	    // have to start again from the beginning with a series of
 	    // wcrtomb.
-	    while (__tmp_from < __from_next)
-	      __to_next += wcrtomb(__to_next, *__tmp_from++, &__tmp_state);
-	    __state = __tmp_state;	    
+	    for (; __from < __from_next; ++__from)
+	      __to_next += wcrtomb(__to_next, *__from, &__tmp_state);
+	    __state = __tmp_state;
 	    __ret = error;
 	  }
 	else if (__from_next && __from_next < __from_chunk_end)
@@ -133,10 +132,9 @@ namespace std
     // mbsnrtowcs is *very* fast but stops if encounters NUL characters:
     // in case we store a L'\0' and then continue, in a loop.
     // NB: mbsnrtowcs is a GNU extension
-    __from_next = __from;
-    __to_next = __to;
-    while (__from_next < __from_end && __to_next < __to_end
-	   && __ret == ok)
+    for (__from_next = __from, __to_next = __to;
+	 __from_next < __from_end && __to_next < __to_end
+	 && __ret == ok;)
       {
 	const extern_type* __from_chunk_end;
 	__from_chunk_end = static_cast<const extern_type*>(memchr(__from_next, '\0',
@@ -145,7 +143,7 @@ namespace std
 	if (!__from_chunk_end)
 	  __from_chunk_end = __from_end;
 
-	const extern_type* __tmp_from = __from_next;
+	__from = __from_next;
 	const size_t __conv = mbsnrtowcs(__to_next, &__from_next,
 					 __from_chunk_end - __from_next,
 					 __to_end - __to_next, &__state);
@@ -154,9 +152,18 @@ namespace std
 	    // In case of error, in order to stop at the exact place we
 	    // have to start again from the beginning with a series of
 	    // mbrtowc.
-	    while (__tmp_from < __from_next)
-	      __tmp_from += mbrtowc(__to_next++, __tmp_from,
-				    __from_next - __tmp_from, &__tmp_state);
+	    for (;;)
+	      {
+		const size_t __conv_err = mbrtowc(__to_next, __from,
+						  __from_end - __from,
+						  &__tmp_state);
+		if (__conv_err == static_cast<size_t>(-1)
+		    || __conv_err == static_cast<size_t>(-2))
+		  break;
+		__from += __conv_err;
+		++__to_next;
+	      }
+	    __from_next = __from;
 	    __state = __tmp_state;	    
 	    __ret = error;
 	  }
@@ -177,6 +184,7 @@ namespace std
 	    if (__to_next < __to_end)
 	      {
 		// XXX Probably wrong for stateful encodings
+		__tmp_state = __state;		
 		++__from_next;
 		*__to_next++ = L'\0';
 	      }
@@ -232,39 +240,70 @@ namespace std
   {
     int __ret = 0;
     state_type __tmp_state(__state);
+
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif
 
+    // mbsnrtowcs is *very* fast but stops if encounters NUL characters:
+    // in case we advance past it and then continue, in a loop.
+    // NB: mbsnrtowcs is a GNU extension
+  
+    // A dummy internal buffer is needed in order for mbsnrtocws to consider
+    // its fourth parameter (it wouldn't with NULL as first parameter).
+    wchar_t* __to = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t) 
+							   * __max));
     while (__from < __end && __max)
       {
-	size_t __conv = mbrtowc(NULL, __from, __end - __from, &__tmp_state);
+	const extern_type* __from_chunk_end;
+	__from_chunk_end = static_cast<const extern_type*>(memchr(__from, '\0',
+								  __end
+								  - __from));
+	if (!__from_chunk_end)
+	  __from_chunk_end = __end;
+
+	const extern_type* __tmp_from = __from;
+	const size_t __conv = mbsnrtowcs(__to, &__from,
+					 __from_chunk_end - __from,
+					 __max, &__state);
 	if (__conv == static_cast<size_t>(-1))
 	  {
-	    // Invalid source character
+	    // In case of error, in order to stop at the exact place we
+	    // have to start again from the beginning with a series of
+	    // mbrtowc.
+	    for (__from = __tmp_from;;)
+	      {
+		const size_t __conv_err = mbrtowc(NULL, __from, __end - __from,
+						  &__tmp_state);
+		if (__conv_err == static_cast<size_t>(-1)
+		    || __conv_err == static_cast<size_t>(-2))
+		  break;
+		__from += __conv_err;
+	      }
+	    __state = __tmp_state;
+	    __ret += __from - __tmp_from;
 	    break;
 	  }
-	else if (__conv == static_cast<size_t>(-2))
-	  {
-	    // Remainder of input does not form a complete destination
-	    // character.
-	    break;
-	  }
-	else if (__conv == 0)
+	if (!__from)
+	  __from = __from_chunk_end;
+	
+	__ret += __from - __tmp_from;
+	__max -= __conv;
+
+	if (__from < __end && __max)
 	  {
 	    // XXX Probably wrong for stateful encodings
-	    __conv = 1;
+	    __tmp_state = __state;
+	    ++__from;
+	    ++__ret;
+	    --__max;
 	  }
-
-	__state = __tmp_state;
-	__from += __conv;
-	__ret += __conv;
-	__max--;
       }
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
+
     return __ret; 
   }
 #endif

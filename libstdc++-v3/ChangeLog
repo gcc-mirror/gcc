@@ -1,3 +1,12 @@
+2003-11-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/codecvt_members.cc (codecvt::do_length):
+	Rewrite, using both mbsnrtowcs and mbrtowc in a loop: the
+	former is very fast, but stops if encounters a NUL.
+	(codecvt::do_out): Tweaks.
+	(codecvt::do_in): Tweaks, improve the code dealing with errors.
+	* testsuite/performance/wchar_t_length.cc: New.
+
 2003-11-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/codecvt_members.cc (codecvt::do_in):
