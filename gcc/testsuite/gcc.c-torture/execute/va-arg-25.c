@@ -1,6 +1,7 @@
 /* Varargs and vectors!  */
 
 #include <stdarg.h>
+#include <limits.h>
 
 #define vector __attribute__((vector_size(16)))
 
@@ -27,8 +28,10 @@ void foo(int a, ...)
 
 int main(void)
 {
+#if INT_MAX == 2147483647
   foo (1, (vector unsigned int){10,11,12,13}, 2,
        (vector unsigned int){20,21,22,23});
+#endif
   return 0;
 }
 
