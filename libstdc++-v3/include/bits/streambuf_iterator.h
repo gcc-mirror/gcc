@@ -159,9 +159,9 @@ namespace std
 	  { 
 	    if (!traits_type::eq_int_type(_M_c, __eof))
 	      __ret = _M_c;
-	    else 
-	      if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()), __eof))
-		_M_sbuf = 0;
+	    else if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()),
+					      __eof))
+	      _M_sbuf = 0;
 	  }
 	return __ret;
       }
@@ -248,7 +248,8 @@ namespace std
       _M_put(const _CharT* __ws, streamsize __len)
       {
 	if (__builtin_expect(!_M_failed, true)
-	    && __builtin_expect(this->_M_sbuf->sputn(__ws, __len) != __len, false))
+	    && __builtin_expect(this->_M_sbuf->sputn(__ws, __len) != __len,
+				false))
 	  _M_failed = true;
 	return *this;
       }

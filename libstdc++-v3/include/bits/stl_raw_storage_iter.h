@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,7 +68,7 @@ namespace std
    *  uninitialized memory.
   */
   template <class _ForwardIterator, class _Tp>
-  class raw_storage_iterator 
+    class raw_storage_iterator 
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
@@ -76,7 +76,8 @@ namespace std
 
     public:
       explicit 
-      raw_storage_iterator(_ForwardIterator __x) : _M_iter(__x) {}
+      raw_storage_iterator(_ForwardIterator __x)
+      : _M_iter(__x) {}
 
       raw_storage_iterator& 
       operator*() { return *this; }
