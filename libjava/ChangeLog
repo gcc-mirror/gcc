@@ -1,3 +1,9 @@
+2003-12-09  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SelectorImpl.java
+	(implSelect): Throws IOException.
+	(select): Likewise.
+
 2003-12-08  Kim Ho  <kho@redhat.com>
 
 	Fix for Checkbox states.
