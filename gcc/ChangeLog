@@ -1,3 +1,9 @@
+2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR target/9164
+        * tree.c (get_narrower): For extensions with unchanged bit number,
+        return the unsignedness of the outer mode.
+
 2003-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	* c-typeck.c (build_component_ref):  Turn "for" into "do .. while"
