@@ -1,3 +1,7 @@
+2003-07-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 Tue Jul 29 19:24:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/11131
