@@ -2,6 +2,6 @@
 # This spec file is read by gcj when linking.
 # It is only used by the testing harnesses (in libjava and gdb).
 #
-%rename libgcc libgccorig2
-*libgcc: @LIBGCJTESTSPEC@ @GCTESTSPEC@ @ZLIBTESTSPEC@ %(libgccorig2)
+%rename lib liborig2
+*lib: @LIBGCJTESTSPEC@ @GCTESTSPEC@ @ZLIBTESTSPEC@ %(liborig2)
 
