@@ -1,3 +1,14 @@
+2003-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Backport from mainline.
+
+	2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/9738
+	* decl.c (duplicate_decls): Re-invoke make_decl_rtl
+	if the old decl had instantiated DECL_RTL.
+	(Based on Richard Henderson 2003-05-13 patch to c-decl.c).
+
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8164
