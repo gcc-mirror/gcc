@@ -1651,6 +1651,8 @@ static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
+static tree cp_parser_fold_non_dependent_expr
+  (tree);
 static bool cp_parser_friend_p
   (tree);
 static cp_token *cp_parser_require
@@ -1660,6 +1662,8 @@ static cp_token *cp_parser_require_keyword
 static bool cp_parser_token_starts_function_definition_p 
   (cp_token *);
 static bool cp_parser_next_token_starts_class_definition_p
+  (cp_parser *);
+static bool cp_parser_next_token_ends_template_argument_p
   (cp_parser *);
 static enum tag_types cp_parser_token_is_class_key
   (cp_token *);
@@ -2381,7 +2385,6 @@ cp_parser_primary_expression (cp_parser *parser,
 	  cp_parser_error (parser, "expected primary-expression");
 	  return error_mark_node;
 	}
-      /* Fall through.  */
 
       /* An id-expression can start with either an identifier, a
 	 `::' as the beginning of a qualified-id, or the "operator"
@@ -2600,30 +2603,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
 		  {
 		    tree args = TREE_OPERAND (fns, 1);
-
-		    if (args && TREE_CODE (args) == TREE_LIST)
-		      {
-			while (args)
-			  {
-			    if (dependent_template_arg_p (TREE_VALUE (args)))
-			      {
-				dependent_p = true;
-				break;
-			      }
-			    args = TREE_CHAIN (args);
-			  }
-		      }
-		    else if (args && TREE_CODE (args) == TREE_VEC)
-		      {
-			int i; 
-			for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-			  if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-			    {
-			      dependent_p = true;
-			      break;
-			    }
-		      }
-
+		    dependent_p = any_dependent_template_arguments_p (args);
 		    /* The functions are those referred to by the
 		       template-id.  */
 		    fns = TREE_OPERAND (fns, 0);
@@ -2687,27 +2667,34 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Only certain kinds of names are allowed in constant
 	       expression.  Enumerators have already been handled
 	       above.  */
-	    if (parser->constant_expression_p
+	    if (parser->constant_expression_p)
+	      {
 		/* Non-type template parameters of integral or
-		   enumeration type.  */
-		&& !(TREE_CODE (decl) == TEMPLATE_PARM_INDEX
-		     && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
+		   enumeration type are OK.  */
+		if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX
+		    && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
+		  ;
 		/* Const variables or static data members of integral
 		   or enumeration types initialized with constant
-                   expressions (or dependent expressions - in this case
-                   the check will be done at instantiation time).  */
-		&& !(TREE_CODE (decl) == VAR_DECL
-		     && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
-		     && DECL_INITIAL (decl)
-                     && (TREE_CONSTANT (DECL_INITIAL (decl))
-                         || type_dependent_expression_p 
-                         (DECL_INITIAL (decl))
-                         || value_dependent_expression_p 
-                         (DECL_INITIAL (decl)))))
-	      {
-		if (!parser->allow_non_constant_expression_p)
-		  return cp_parser_non_constant_id_expression (decl);
-		parser->non_constant_expression_p = true;
+                   expressions are OK.  We also accept dependent
+		   initializers; they may turn out to be constant at
+		   instantiation-time.  */
+		else if (TREE_CODE (decl) == VAR_DECL
+			 && CP_TYPE_CONST_P (TREE_TYPE (decl))
+			 && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
+			 && DECL_INITIAL (decl)
+			 && (TREE_CONSTANT (DECL_INITIAL (decl))
+			     || type_dependent_expression_p (DECL_INITIAL 
+							     (decl))
+			     || value_dependent_expression_p (DECL_INITIAL 
+							      (decl))))
+		  ;
+		else
+		  {
+		    if (!parser->allow_non_constant_expression_p)
+		      return cp_parser_non_constant_id_expression (decl);
+		    parser->non_constant_expression_p = true;
+		  }
 	      }
 
 	    if (parser->scope)
@@ -3792,7 +3779,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		    || TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		&& args)
 	      {
-		tree arg;
 		tree identifier = NULL_TREE;
 		tree functions = NULL_TREE;
 
@@ -3815,10 +3801,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 
 		   Do Koenig lookup -- unless any of the arguments are
 		   type-dependent.  */
-		for (arg = args; arg; arg = TREE_CHAIN (arg))
-		  if (type_dependent_expression_p (TREE_VALUE (arg)))
-		      break;
-		if (!arg)
+		if (!any_type_dependent_arguments_p (args))
 		  {
 		    postfix_expression 
 		      = lookup_arg_dependent (identifier, functions, args);
@@ -3827,14 +3810,12 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 			/* The unqualified name could not be resolved.  */
 			unqualified_name_lookup_error (identifier);
 			postfix_expression = error_mark_node;
+			break;
 		      }
-		    postfix_expression
-		      = build_call_from_tree (postfix_expression, args, 
-					      /*diallow_virtual=*/false);
-		    break;
 		  }
-		postfix_expression = build_min_nt (LOOKUP_EXPR,
-						   identifier);
+		else
+		  postfix_expression = build_min_nt (LOOKUP_EXPR,
+						     identifier);
 	      }
 	    else if (idk == CP_PARSER_ID_KIND_UNQUALIFIED 
 		     && TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
@@ -3845,25 +3826,31 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		break;
 	      }
 
-	    /* In the body of a template, no further processing is
-	       required.  */
-	    if (processing_template_decl)
-	      {
-		postfix_expression = build_nt (CALL_EXPR,
-					       postfix_expression, 
-					       args);
-		break;
-	      }
-
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
-	      postfix_expression
-		= (build_new_method_call 
-		   (TREE_OPERAND (postfix_expression, 0),
-		    TREE_OPERAND (postfix_expression, 1),
-		    args, NULL_TREE, 
-		    (idk == CP_PARSER_ID_KIND_QUALIFIED 
-		     ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL)));
-	    else if (TREE_CODE (postfix_expression) == OFFSET_REF)
+	      {
+		tree instance = TREE_OPERAND (postfix_expression, 0);
+		tree fn = TREE_OPERAND (postfix_expression, 1);
+
+		if (processing_template_decl
+		    && (type_dependent_expression_p (instance)
+			|| (!BASELINK_P (fn)
+			    && TREE_CODE (fn) != FIELD_DECL)
+			|| any_type_dependent_arguments_p (args)))
+		  {
+		    postfix_expression
+		      = build_min_nt (CALL_EXPR, postfix_expression, args);
+		    break;
+		  }
+		  
+		postfix_expression
+		  = (build_new_method_call 
+		     (instance, fn, args, NULL_TREE, 
+		      (idk == CP_PARSER_ID_KIND_QUALIFIED 
+		       ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL)));
+	      }
+	    else if (TREE_CODE (postfix_expression) == OFFSET_REF
+		     || TREE_CODE (postfix_expression) == MEMBER_REF
+		     || TREE_CODE (postfix_expression) == DOTSTAR_EXPR)
 	      postfix_expression = (build_offset_ref_call_from_tree
 				    (postfix_expression, args));
 	    else if (idk == CP_PARSER_ID_KIND_QUALIFIED)
@@ -3967,8 +3954,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
                      struct X { void f(); };
                      template <typename T> void f(T* t) { t->X::f(); }
  
-                   Even though "t" is dependent, "X::f" is not and has 
-		   except that for a BASELINK there is no need to
+                   Even though "t" is dependent, "X::f" is not and has
+		   been resolved to a BASELINK; there is no need to
 		   include scope information.  */
 
 		/* But we do need to remember that there was an explicit
@@ -4336,7 +4323,8 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  return build_x_indirect_ref (cast_expression, "unary *");
 	  
 	case ADDR_EXPR:
-	  return build_x_unary_op (ADDR_EXPR, cast_expression);
+	case BIT_NOT_EXPR:
+	  return build_x_unary_op (unary_operator, cast_expression);
 	  
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
@@ -4353,9 +4341,6 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	case NEGATE_EXPR:
 	case TRUTH_NOT_EXPR:
 	  return finish_unary_op_expr (unary_operator, cast_expression);
-
-	case BIT_NOT_EXPR:
-	  return build_x_unary_op (BIT_NOT_EXPR, cast_expression);
 
 	default:
 	  abort ();
@@ -5293,7 +5278,6 @@ static tree
 cp_parser_expression (cp_parser* parser)
 {
   tree expression = NULL_TREE;
-  bool saw_comma_p = false;
 
   while (true)
     {
@@ -5306,45 +5290,23 @@ cp_parser_expression (cp_parser* parser)
 	 save it away.  */
       if (!expression)
 	expression = assignment_expression;
-      /* Otherwise, chain the expressions together.  It is unclear why
-	 we do not simply build COMPOUND_EXPRs as we go.  */
       else
-	expression = tree_cons (NULL_TREE, 
-				assignment_expression,
-				expression);
+	expression = build_x_compound_expr (expression,
+					    assignment_expression);
       /* If the next token is not a comma, then we are done with the
 	 expression.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
 	break;
       /* Consume the `,'.  */
       cp_lexer_consume_token (parser->lexer);
-      /* The first time we see a `,', we must take special action
-	 because the representation used for a single expression is
-	 different from that used for a list containing the single
-	 expression.  */
-      if (!saw_comma_p)
-	{
-	  /* Remember that this expression has a `,' in it.  */
-	  saw_comma_p = true;
-	  /* Turn the EXPRESSION into a TREE_LIST so that we can link
-	     additional expressions to it.  */
-	  expression = build_tree_list (NULL_TREE, expression);
-	}
-    }
-
-  /* Build a COMPOUND_EXPR to represent the entire expression, if
-     necessary.  We built up the list in reverse order, so we must
-     straighten it out here.  */
-  if (saw_comma_p)
-    {
       /* A comma operator cannot appear in a constant-expression.  */
       if (parser->constant_expression_p)
 	{
 	  if (!parser->allow_non_constant_expression_p)
-	    return cp_parser_non_constant_expression ("a comma operator");
+	    expression 
+	      = cp_parser_non_constant_expression ("a comma operator");
 	  parser->non_constant_expression_p = true;
 	}
-      expression = build_x_compound_expr (nreverse (expression));
     }
 
   return expression;
@@ -5356,8 +5318,9 @@ cp_parser_expression (cp_parser* parser)
      conditional-expression  
 
   If ALLOW_NON_CONSTANT_P a non-constant expression is silently
-  accepted.  In that case *NON_CONSTANT_P is set to TRUE.  If
-  ALLOW_NON_CONSTANT_P is false, NON_CONSTANT_P should be NULL.  */
+  accepted.  If ALLOW_NON_CONSTANT_P is true and the expression is not
+  constant, *NON_CONSTANT_P is set to TRUE.  If ALLOW_NON_CONSTANT_P
+  is false, NON_CONSTANT_P should be NULL.  */
 
 static tree
 cp_parser_constant_expression (cp_parser* parser, 
@@ -5547,7 +5510,7 @@ cp_parser_labeled_statement (cp_parser* parser)
 	cp_lexer_consume_token (parser->lexer);
 	/* Parse the constant-expression.  */
 	expr = cp_parser_constant_expression (parser, 
-					      /*allow_non_constant=*/false,
+					      /*allow_non_constant_p=*/false,
 					      NULL);
 	/* Create the label.  */
 	statement = finish_case_label (expr, NULL_TREE);
@@ -8051,13 +8014,21 @@ cp_parser_template_argument_list (cp_parser* parser)
    The representation is that of an assignment-expression, type-id, or
    id-expression -- except that the qualified id-expression is
    evaluated, so that the value returned is either a DECL or an
-   OVERLOAD.  */
+   OVERLOAD.  
+
+   Although the standard says "assignment-expression", it forbids
+   throw-expressions or assignments in the template argument.
+   Therefore, we use "conditional-expression" instead.  */
 
 static tree
 cp_parser_template_argument (cp_parser* parser)
 {
   tree argument;
   bool template_p;
+  bool address_p;
+  cp_token *token;
+  cp_parser_id_kind idk;
+  tree qualifying_class;
 
   /* There's really no way to know what we're looking at, so we just
      try each alternative in order.  
@@ -8073,8 +8044,7 @@ cp_parser_template_argument (cp_parser* parser)
   argument = cp_parser_type_id (parser);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
-      && cp_lexer_next_token_is_not (parser->lexer, CPP_GREATER))
+  if (!cp_parser_next_token_ends_template_argument_p (parser))
     cp_parser_error (parser, "expected template-argument");
   /* If that worked, we're done.  */
   if (cp_parser_parse_definitely (parser))
@@ -8088,8 +8058,7 @@ cp_parser_template_argument (cp_parser* parser)
 				      &template_p);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
-      && cp_lexer_next_token_is_not (parser->lexer, CPP_GREATER))
+  if (!cp_parser_next_token_ends_template_argument_p (parser))
     cp_parser_error (parser, "expected template-argument");
   if (!cp_parser_error_occurred (parser))
     {
@@ -8104,8 +8073,101 @@ cp_parser_template_argument (cp_parser* parser)
     }
   if (cp_parser_parse_definitely (parser))
     return argument;
-  /* It must be an assignment-expression.  */
-  return cp_parser_assignment_expression (parser);
+  /* It must be a non-type argument.  There permitted cases are given
+     in [temp.arg.nontype]:
+
+     -- an integral constant-expression of integral or enumeration
+        type; or
+
+     -- the name of a non-type template-parameter; or
+
+     -- the name of an object or function with external linkage...
+
+     -- the address of an object or function with external linkage...
+
+     -- a pointer to member... */
+  /* Look for a non-type template parameter.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      cp_parser_parse_tentatively (parser);
+      argument = cp_parser_primary_expression (parser,
+					       &idk,
+					       &qualifying_class);
+      if (TREE_CODE (argument) != TEMPLATE_PARM_INDEX
+	  || !cp_parser_next_token_ends_template_argument_p (parser))
+	cp_parser_simulate_error (parser);
+      if (cp_parser_parse_definitely (parser))
+	return argument;
+    }
+  /* If the next token is "&", the argument must be the address of an
+     object or function with external linkage.  */
+  address_p = cp_lexer_next_token_is (parser->lexer, CPP_AND);
+  if (address_p)
+    cp_lexer_consume_token (parser->lexer);
+  /* See if we might have an id-expression.  */
+  token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_NAME
+      || token->keyword == RID_OPERATOR
+      || token->type == CPP_SCOPE
+      || token->type == CPP_TEMPLATE_ID
+      || token->type == CPP_NESTED_NAME_SPECIFIER)
+    {
+      cp_parser_parse_tentatively (parser);
+      argument = cp_parser_primary_expression (parser,
+					       &idk,
+					       &qualifying_class);
+      if (cp_parser_error_occurred (parser)
+	  || !cp_parser_next_token_ends_template_argument_p (parser))
+	cp_parser_abort_tentative_parse (parser);
+      else
+	{
+	  if (qualifying_class)
+	    argument = finish_qualified_id_expr (qualifying_class,
+						 argument,
+						 /*done=*/true,
+						 address_p);
+	  if (TREE_CODE (argument) == VAR_DECL)
+	    {
+	      /* A variable without external linkage might still be a
+		 valid constant-expression, so no error is issued here
+		 if the external-linkage check fails.  */
+	      if (!DECL_EXTERNAL_LINKAGE_P (argument))
+		cp_parser_simulate_error (parser);
+	    }
+	  else if (is_overloaded_fn (argument))
+	    /* All overloaded functions are allowed; if the external
+	       linkage test does not pass, an error will be issued
+	       later.  */
+	    ;
+	  else if (address_p
+		   && (TREE_CODE (argument) == OFFSET_REF 
+		       || TREE_CODE (argument) == SCOPE_REF))
+	    /* A pointer-to-member.  */
+	    ;
+	  else
+	    cp_parser_simulate_error (parser);
+
+	  if (cp_parser_parse_definitely (parser))
+	    {
+	      if (address_p)
+		argument = build_x_unary_op (ADDR_EXPR, argument);
+	      return argument;
+	    }
+	}
+    }
+  /* If the argument started with "&", there are no other valid
+     alternatives at this point.  */
+  if (address_p)
+    {
+      cp_parser_error (parser, "invalid non-type template argument");
+      return error_mark_node;
+    }
+  /* The argument must be a constant-expression. */
+  argument = cp_parser_constant_expression (parser, 
+					    /*allow_non_constant_p=*/false,
+					    /*non_constant_p=*/NULL);
+  /* If it's non-dependent, simplify it.  */
+  return cp_parser_fold_non_dependent_expr (argument);
 }
 
 /* Parse an explicit-instantiation.
@@ -8914,7 +8976,7 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
       cp_lexer_consume_token (parser->lexer);
       /* Parse the value.  */
       value = cp_parser_constant_expression (parser, 
-					     /*allow_non_constant=*/false,
+					     /*allow_non_constant_p=*/false,
 					     NULL);
     }
   else
@@ -9919,29 +9981,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		= cp_parser_constant_expression (parser,
 						 /*allow_non_constant=*/true,
 						 &non_constant_p);
-	      /* If we're in a template, but the constant-expression
-		 isn't value dependent, simplify it.  We're supposed
-		 to treat:
-
-		   template <typename T> void f(T[1 + 1]);
-		   template <typename T> void f(T[2]);
-		   
-		 as two declarations of the same function, for
-		 example.  */
-	      if (processing_template_decl
-		  && !non_constant_p
-		  && !value_dependent_expression_p (bounds))
-		{
-		  HOST_WIDE_INT saved_processing_template_decl;
-
-		  saved_processing_template_decl = processing_template_decl;
-		  processing_template_decl = 0;
-		  bounds = tsubst_copy_and_build (bounds, 
-						  /*args=*/NULL_TREE,
-						  tf_error,
-						  /*in_decl=*/NULL_TREE);
-		  processing_template_decl = saved_processing_template_decl;
-		}
+	      if (!non_constant_p)
+		bounds = cp_parser_fold_non_dependent_expr (bounds);
 	    }
 	  else
 	    bounds = NULL_TREE;
@@ -14129,6 +14170,36 @@ cp_parser_declares_only_class_p (cp_parser *parser)
 	  || cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 }
 
+/* Simplify EXPR if it is a non-dependent expression.  Returns the
+   (possibly simplified) expression.  */
+
+static tree
+cp_parser_fold_non_dependent_expr (tree expr)
+{
+  /* If we're in a template, but EXPR isn't value dependent, simplify
+     it.  We're supposed to treat:
+     
+       template <typename T> void f(T[1 + 1]);
+       template <typename T> void f(T[2]);
+		   
+     as two declarations of the same function, for example.  */
+  if (processing_template_decl
+      && !type_dependent_expression_p (expr)
+      && !value_dependent_expression_p (expr))
+    {
+      HOST_WIDE_INT saved_processing_template_decl;
+
+      saved_processing_template_decl = processing_template_decl;
+      processing_template_decl = 0;
+      expr = tsubst_copy_and_build (expr,
+				    /*args=*/NULL_TREE,
+				    tf_error,
+				    /*in_decl=*/NULL_TREE);
+      processing_template_decl = saved_processing_template_decl;
+    }
+  return expr;
+}
+
 /* DECL_SPECIFIERS is the representation of a decl-specifier-seq.
    Returns TRUE iff `friend' appears among the DECL_SPECIFIERS.  */
 
@@ -14274,6 +14345,18 @@ cp_parser_next_token_starts_class_definition_p (cp_parser *parser)
   return (token->type == CPP_OPEN_BRACE || token->type == CPP_COLON);
 }
 
+/* Returns TRUE iff the next token is the "," or ">" ending a
+   template-argument.  */
+
+static bool
+cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
+{
+  cp_token *token;
+
+  token = cp_lexer_peek_token (parser->lexer);
+  return (token->type == CPP_COMMA || token->type == CPP_GREATER);
+}
+ 
 /* Returns the kind of tag indicated by TOKEN, if it is a class-key,
    or none_type otherwise.  */
 

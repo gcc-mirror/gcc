@@ -1,3 +1,7 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcj/array.h (JvPrimClass): Don't parenthesize the output.
+
 2003-07-09  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,

@@ -174,6 +174,14 @@ lvalue_p_1 (tree ref,
       return (DECL_NONSTATIC_MEMBER_FUNCTION_P (ref) 
 	      ? clk_none : clk_ordinary);
 
+    case NON_DEPENDENT_EXPR:
+      /* We must consider NON_DEPENDENT_EXPRs to be lvalues so that
+	 things like "&E" where "E" is an expression with a
+	 non-dependent type work. It is safe to be lenient because an
+	 error will be issued when the template is instantiated if "E"
+	 is not an lvalue.  */
+      return clk_ordinary;
+
     default:
       break;
     }

@@ -988,6 +988,10 @@ dump_decl (tree t, int flags)
       dump_decl (BASELINK_FUNCTIONS (t), flags);
       break;
 
+    case NON_DEPENDENT_EXPR:
+      dump_expr (t, flags);
+      break;
+
     default:
       sorry_for_unsupported_tree (t);
       /* Fallthrough to error.  */
@@ -2028,7 +2032,11 @@ dump_expr (tree t, int flags)
       dump_expr (get_first_fn (t), flags & ~TFF_EXPR_IN_PARENS);
       break;
 
-      /* else fall through */
+    case NON_DEPENDENT_EXPR:
+      output_add_string (scratch_buffer, "<expression of type ");
+      dump_type (TREE_TYPE (t), flags);
+      output_add_character (scratch_buffer, '>');
+      break;
 
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call

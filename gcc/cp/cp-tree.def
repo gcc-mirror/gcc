@@ -238,6 +238,16 @@ DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", 'e', 2)
 DEFTREECODE (TYPEID_EXPR, "typeid_expr", 'e', 1)
 DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
 
+/* A placeholder for an expression that is not type-dependent, but
+   does occur in a template.  When an expression that is not
+   type-dependent appears in a larger expression, we must compute the
+   type of that larger expression.  That computation would normally
+   modify the original expression, which would change the mangling of
+   that expression if it appeared in a template argument list.  In
+   that situation, we create a NON_DEPENDENT_EXPR to take the place of
+   the original expression.  */
+DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", 'e', 0)
+
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 1)

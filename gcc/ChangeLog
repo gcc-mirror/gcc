@@ -1,3 +1,8 @@
+2003-07-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* fold-const.c (make_range): Do not access operand 1 for a
+	zero-operand operator.
+
 2003-07-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* toplev.c (warn_dummy, W_options): Die.

@@ -71,7 +71,9 @@ typedef JArray<jstring> *jstringArray;
 extern java::lang::Class _Jv_byteClass, _Jv_shortClass, _Jv_intClass,
   _Jv_longClass, _Jv_booleanClass, _Jv_charClass, _Jv_floatClass,
   _Jv_doubleClass, _Jv_voidClass;
-#define JvPrimClass(TYPE) (& _Jv_##TYPE##Class)
+/* The definition of this macro cannot be enclosed in parentheses
+   because "JvPrimClass(x)" is used as a template argument.  */
+#define JvPrimClass(TYPE) & _Jv_##TYPE##Class
 
 extern "C" jobjectArray _Jv_NewObjectArray(jsize length, jclass, jobject init);
 extern "C" jobject _Jv_NewPrimArray (jclass eltype, jint count);

@@ -325,8 +325,7 @@ build_call (tree function, tree parms)
 
    BASETYPE_PATH, if non-NULL, contains a chain from the type of INSTANCE
    down to the real instance type to use for access checking.  We need this
-   information to get protected accesses correct.  This parameter is used
-   by build_member_call.
+   information to get protected accesses correct.
 
    FLAGS is the logical disjunction of zero or more LOOKUP_
    flags.  See cp-tree.h for more info.
@@ -4883,6 +4882,9 @@ build_new_method_call (tree instance, tree fns, tree args,
   tree class_type;
   int template_only = 0;
   bool any_viable_p;
+  tree orig_instance;
+  tree orig_fns;
+  tree orig_args;
 
   my_friendly_assert (instance != NULL_TREE, 20020729);
 
@@ -4890,6 +4892,20 @@ build_new_method_call (tree instance, tree fns, tree args,
       || error_operand_p (fns)
       || args == error_mark_node)
     return error_mark_node;
+
+  orig_instance = instance;
+  orig_fns = fns;
+  orig_args = args;
+
+  if (processing_template_decl)
+    {
+      instance = build_non_dependent_expr (instance);
+      if (!BASELINK_P (fns)
+	  && TREE_CODE (fns) != PSEUDO_DTOR_EXPR
+	  && TREE_TYPE (fns) != unknown_type_node)
+	fns = build_non_dependent_expr (fns);
+      args = build_non_dependent_args (orig_args);
+    }
 
   /* Process the argument list.  */
   user_args = args;
@@ -5068,6 +5084,13 @@ build_new_method_call (tree instance, tree fns, tree args,
 	call = build (COMPOUND_EXPR, TREE_TYPE (call), instance, call);
     }
 
+  if (processing_template_decl && call != error_mark_node)
+    return build_min (CALL_EXPR,
+		      TREE_TYPE (call),
+		      build_min_nt (COMPONENT_REF,
+				    orig_instance, 
+				    orig_fns),
+		      orig_args);
   return call;
 }
 

@@ -68,7 +68,7 @@ template<typename=void>
 struct adaptor {
     adaptor (matrix<> &m) : m(&m), upper_ (1) {}
 
-    int size1 () const     { return m->size1 (); }
+    int size1 () const;
     int size2 () const     { return 3; }
     int lower () const     { return 1; }
     int upper () const     { return upper_; }

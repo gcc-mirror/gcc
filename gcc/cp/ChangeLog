@@ -1,3 +1,70 @@
+2003-07-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (NON_DEPENDENT_EXPR): New node.
+	* cp-tree.h (build_call_from_tree): Remove.
+	(build_member_call): Likewise.
+	(dependent_template_arg_p): Remove.
+	(any_dependent_template_arguments_p): New function.
+	(dependent_template_id_p): Likewise.
+	(any_type_dependent_arguments_p): Likewise.
+	(build_non_dependent_expr): Likewise.
+	(build_non_dependent_args): Likewise.
+	(build_x_compound_expr): Adjust prototype.
+	* call.c (build_new_method_call): Handle non-dependent expressions
+	correctly.
+	* decl2.c (grok_array_decl): Likewise.
+	(build_offset_ref_call_from_tree): Likewise.
+	(build_call_from_tree): Remove.
+	* error.c (dump_decl): Handle NON_DEPENDENT_EXPR.
+	(dump_expr): Likewise.
+	* init.c (build_member_call): Remove.
+	* mangle.c (write_expression): Update handling for template-ids.
+	* parser.c (cp_parser_primary_expression): Use
+	any_dependent_template_arguments_p.  Update constant-expression
+	handling.
+	(cp_parser_postfix_expression): Use
+	any_type_dependent_arguments_p.  Simplify call processing.
+	(cp_parser_unary_expression): Simplify.
+	(cp_parser_expression): Adjust for changes to
+	build_x_compound_expr.
+	(cp_parser_template_argument): Implement standard-conforming
+	parsing of non-type template arguments.
+	(cp_parser_direct_declarator): Use
+	cp_parser_fold_non_dependent_expr.
+	(cp_parser_fold_non_dependent_expr): New function.
+	(cp_parser_next_token_ends_template_argument_p): Likewise.
+	* pt.c (convert_template_argument): Do not call
+	maybe_fold_nontype_arg.
+	(tsubst_baselink): Likewise.
+	(tsubst_copy_and_build): Share common code.  Make sizeof/alignof
+	processing work correctly for non-dependent expressions.  Adjust
+	handling of COMPOUND_EXPR.  Simplify call processing.
+	(value_dependent_expression_p): Deal with functional casts and
+	sizeof/alignof correctly.
+	(type_dependent_expression_p): Handle overloaded functions.
+	(any_type_dependent_arguments_p): New function.
+	(any_dependent_template_arguments_p): Likewise.
+	(dependent_template_p): Treat SCOPE_REFs as dependent.
+	(dependent_template_id_p): Simplify.
+	(build_non_dependent_expr): New function.
+	(build_non_dependent_args): Likewise.
+	* semantics.c (finish_stmt_expr): Don't make dependent
+	statement-expresions have void type.
+	(finish_call_expr): Handle non-dependent expressions
+	correctly.
+	* tree.c (lvalue_p_1): Treat NON_DEPENDENT_EXPRs as lvalues.
+	* typeck.c (cxx_sizeof_or_alignof_type): Give the expression
+	type size_t, even in templates.
+	(expr_sizeof): Likewise.
+	(finish_class_member_access_expr): Handle non-dependent expressions
+	correctly.
+	(build_x_indirect_ref): Likewise.
+	(build_x_binary_op): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_x_conditional_expr): Likewise.
+	(build_x_compound_expr): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+
 Wed Jul  9 02:28:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cp-lang.c (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): New.
@@ -210,13 +277,13 @@ Wed Jul  9 02:28:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(build_conditional_expr): Likewise.
 	(build_new_method_call): Likewise.
 	* cp-tree.def (OFFSET_REF): Update documentation.
-	(cp_convert_to_pointer): Update handling of conversions from
+	* cvt.c (cp_convert_to_pointer): Update handling of conversions from
 	pointers to members to pointers.
 	(ocp_convert): Do not call resolve_offset_ref.
 	(convert_to_void): Likewise.
 	(build_expr_type_conversion): Likewise.
-	(delete_sanity): Likewise.
-	(resolve_offset_ref): Simplify greatly.
+	* decl2.c (delete_sanity): Likewise.
+	* init.c (resolve_offset_ref): Simplify greatly.
 	(build_vec_delete): Do not call resolve_offset_ref.
 	* parser.c (cp_parser_postfix_expression): Call resolve_offset_ref
 	if appropriate.

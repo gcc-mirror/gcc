@@ -1449,8 +1449,12 @@ finish_stmt_expr (tree rtl_expr)
   tree result;
 
   /* If the last thing in the statement-expression was not an
-     expression-statement, then it has type `void'.  */
-  if (!last_expr_type)
+     expression-statement, then it has type `void'.  In a template, we
+     cannot distinguish the case where the last expression-statement
+     had a dependent type from the case where the last statement was
+     not an expression-statement.  Therefore, we (incorrectly) treat
+     the STMT_EXPR as dependent in that case.  */
+  if (!last_expr_type && !processing_template_decl)
     last_expr_type = void_type_node;
   result = build_min (STMT_EXPR, last_expr_type, last_tree);
   TREE_SIDE_EFFECTS (result) = 1;
@@ -1482,15 +1486,31 @@ finish_stmt_expr (tree rtl_expr)
 tree 
 finish_call_expr (tree fn, tree args, bool disallow_virtual)
 {
+  tree result;
+  tree orig_fn;
+  tree orig_args;
+
   if (fn == error_mark_node || args == error_mark_node)
     return error_mark_node;
-
-  if (processing_template_decl)
-    return build_nt (CALL_EXPR, fn, args, NULL_TREE);
 
   /* ARGS should be a list of arguments.  */
   my_friendly_assert (!args || TREE_CODE (args) == TREE_LIST,
 		      20020712);
+
+  orig_fn = fn;
+  orig_args = args;
+
+  if (processing_template_decl)
+    {
+      if (type_dependent_expression_p (fn)
+	  || any_type_dependent_arguments_p (args))
+	return build_nt (CALL_EXPR, fn, args);
+      if (!BASELINK_P (fn)
+	  && TREE_CODE (fn) != PSEUDO_DTOR_EXPR
+	  && TREE_TYPE (fn) != unknown_type_node)
+	fn = build_non_dependent_expr (fn);
+      args = build_non_dependent_args (orig_args);
+    }
 
   /* A reference to a member function will appear as an overloaded
      function (rather than a BASELINK) if an unqualified name was used
@@ -1512,6 +1532,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
 	}
     }
 
+  result = NULL_TREE;
   if (BASELINK_P (fn))
     {
       tree object;
@@ -1551,17 +1572,22 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
 	  object = build_dummy_object (DECL_CONTEXT (representative_fn));
 	}
 
-      return build_new_method_call (object, fn, args, NULL_TREE,
-				    (disallow_virtual 
-				     ? LOOKUP_NONVIRTUAL : 0));
+      if (processing_template_decl)
+	{
+	  if (type_dependent_expression_p (object))
+	    return build_nt (CALL_EXPR, orig_fn, orig_args);
+	  object = build_non_dependent_expr (object);
+	}
+
+      result = build_new_method_call (object, fn, args, NULL_TREE,
+				      (disallow_virtual 
+				       ? LOOKUP_NONVIRTUAL : 0));
     }
   else if (is_overloaded_fn (fn))
     /* A call to a namespace-scope function.  */
-    return build_new_function_call (fn, args);
+    result = build_new_function_call (fn, args);
   else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
     {
-      tree result;
-
       if (args)
 	error ("arguments to destructor are not allowed");
       /* Mark the pseudo-destructor call as having side-effects so
@@ -1570,20 +1596,18 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
 		       void_type_node,
 		       TREE_OPERAND (fn, 0));
       TREE_SIDE_EFFECTS (result) = 1;
-      return result;
     }
   else if (CLASS_TYPE_P (TREE_TYPE (fn)))
-    {
-      /* If the "function" is really an object of class type, it might
-	 have an overloaded `operator ()'.  */
-      tree result;
-      result = build_new_op (CALL_EXPR, LOOKUP_NORMAL, fn, args, NULL_TREE);
-      if (result)
-	return result;
-    }
+    /* If the "function" is really an object of class type, it might
+       have an overloaded `operator ()'.  */
+    result = build_new_op (CALL_EXPR, LOOKUP_NORMAL, fn, args, NULL_TREE);
+  if (!result)
+    /* A call where the function is unknown.  */
+    result = build_function_call (fn, args);
 
-  /* A call where the function is unknown.  */
-  return build_function_call (fn, args);
+  if (processing_template_decl)
+    return build (CALL_EXPR, TREE_TYPE (result), orig_fn, orig_args);
+  return result;
 }
 
 /* Finish a call to a postfix increment or decrement or EXPR.  (Which
