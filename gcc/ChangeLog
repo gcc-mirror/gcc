@@ -1,3 +1,20 @@
+Wed Nov  3 15:39:19 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fix-header.c (recognized_extern, recognized_function): Constify
+	a char*.
+
+	* lcm.c (compute_laterin): Remove unused variable `temp_bitmap'.
+	(pre_edge_lcm): Mark parameter `file' with ATTRIBUTE_UNUSED.
+	(compute_available): Remove unused variable `last'.
+	(compute_nearerout): Remove unused variable `temp_bitmap'.
+	(pre_edge_rev_lcm): Mark parameter `file' with ATTRIBUTE_UNUSED.
+	Remove unused variable `x'.
+
+	* scan.h (recognized_function, recognized_extern): Constify a
+	char*.
+
+	* simplify-rtx.c (simplify_rtx): Remove unused variable `new'.
+
 Wed Nov  3 10:40:53 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	 * varasm.c (decode_rtx_const): Use XSTR to access the string

@@ -214,7 +214,7 @@ compute_laterin (edge_list, n_exprs,
      int n_exprs;
      sbitmap *earliest, *antloc, *later, *laterin;
 {
-  sbitmap difference, temp_bitmap;
+  sbitmap difference;
   int x, num_edges; 
   basic_block pred, succ;
   int done = 0;
@@ -307,7 +307,7 @@ compute_insert_delete (edge_list, antloc, later, laterin,
 
 struct edge_list *
 pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      int n_exprs;
      sbitmap *transp;
      sbitmap *avloc;
@@ -411,7 +411,6 @@ compute_available (avloc, kill, avout, avin)
      sbitmap *avloc, *kill, *avout, *avin;  
 {
   int bb, changed, passes;
-  int last = n_basic_blocks - 1;
 
   sbitmap_zero (avin[0]);
   sbitmap_copy (avout[0] /*dst*/, avloc[0] /*src*/);
@@ -486,7 +485,7 @@ compute_nearerout (edge_list, n_exprs,
      int n_exprs;
      sbitmap *farthest, *st_avloc, *nearer, *nearerout;
 {
-  sbitmap difference, temp_bitmap;
+  sbitmap difference;
   int x, num_edges; 
   basic_block pred, succ;
   int done = 0;
@@ -582,7 +581,7 @@ compute_rev_insert_delete (edge_list, st_avloc, nearer, nearerout,
 struct edge_list *
 pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill, 
 		  insert, delete)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      int n_exprs;
      sbitmap *transp;
      sbitmap *st_avloc;
@@ -595,7 +594,7 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
   sbitmap *st_avout, *st_avin, *farthest;
   sbitmap *nearer, *nearerout;
   struct edge_list *edge_list;
-  int x,num_edges;
+  int num_edges;
 
   edge_list = create_edge_list ();
   num_edges = NUM_EDGES (edge_list);

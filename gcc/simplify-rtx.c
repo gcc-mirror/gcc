@@ -1923,7 +1923,6 @@ simplify_rtx (x)
 {
   enum rtx_code code;
   enum machine_mode mode;
-  rtx new;
 
   mode = GET_MODE (x);
   code = GET_CODE (x);
