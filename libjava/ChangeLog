@@ -1,3 +1,44 @@
+2002-09-30  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(receive): Check with SecurityManager AFTER the packet is received,
+	check if connected to multicast address, documentation added.
+	(send): Only check SecurityManager if connected, check address of
+	packet to send.
+	(connect): Implemented, documentation added.
+	* java/net/Inet6Address.java: New file (not added yet to Makefile.am).
+	* java/net/InetSocketAddress.java
+	(whole file): Reindented.
+	(hostname): New attribute.
+	(InetSocketAddress): Initialize new attribute.
+	(getAddress): Documentation added.
+	(getHostName): Documentation added.
+	(getPort): Documentation added.
+	(hashCode): Documentation added.
+	(isUnresolved): Documentation added.
+	(toString): Conform to output of JDK 1.4.1, documentation added.
+	* java/net/MulticastSocket.java
+	(joinGroup): Removed FIXME, documentation added.
+	(leaveGroup): Removed FIXME, documentation added.
+	(send): Documentation added.
+	* java/net/Socket.java
+	(inputShutdown): New variable.
+	(outputShutdown): New variable.
+	(Socket): Initialize new variables.
+	(getRemoteSocketAddress): Check if connected.
+	(shutdownInput): Set new variable.
+	(shutdownOutput): Set new variable.
+	(isConnected): New method.
+	(isClosed): New method.
+	(isInputShutdown): New method.
+	(isOutputShutdown): New method.
+	* java/net/URLStreamHandler.java
+	(URLStreamHandler): New method.
+	(openConnection): Added documentation.
+	(parseURL): Added documentation.
+	(getHostAddress): New method.
+	(getDefaultPort): New method.
+
 2002-10-02  Tom Tromey  <tromey@redhat.com>
 
 	* java/rmi/activation/ActivationDesc.java,

@@ -25,6 +25,19 @@ import java.io.IOException;
 
 public abstract class URLStreamHandler
 {
+  /**
+   * Creates a URLStreamHander
+   */
+  public URLStreamHandler ()
+  {
+  }
+
+  /**
+   * Opens a connection to the object referenced by the URL argument.
+   * This method should be overridden by a subclass.
+   *
+   * @exception IOException If an error occurs
+   */
   protected abstract URLConnection openConnection(URL u)
     throws IOException;
 
@@ -33,8 +46,12 @@ public abstract class URLStreamHandler
    *
    * @param u The URL to parse
    * @param spec The specification to use
-   * @param start FIXME
-   * @param limit FIXME
+   * @param start The character index at which to begin parsing. This is just
+   * past the ':' (if there is one) that specifies the determination of the
+   * protocol name
+   * @param limit The character position to stop parsing at. This is the end
+   * of the string or the position of the "#" character, if present. All
+   * information after the sharp sign indicates an anchor
    */
   protected void parseURL(URL u, String spec, int start, int limit)
   {
@@ -204,6 +221,36 @@ public abstract class URLStreamHandler
 			String query, String ref)
   {
     u.set(protocol, host, port, authority, userInfo, path, query, ref);
+  }
+
+  /**
+   * Get the IP address of our host. An empty host field or a DNS failure will
+   * result in a null return.
+   */
+  protected InetAddress getHostAddress (URL url)
+  {
+    String hostname = url.getHost ();
+
+    if (hostname == "")
+      return null;
+    
+    try
+      {
+        return InetAddress.getByName (hostname);
+      }
+    catch (UnknownHostException e)
+      {
+	return null;
+      }
+  }
+
+  /**
+   * Returns the default port for a URL parsed by this handler. This method is
+   * meant to be overidden by handlers with default port numbers.
+   */
+  protected int getDefaultPort ()
+  {
+    return -1;
   }
 
   /**
