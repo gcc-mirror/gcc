@@ -1,5 +1,10 @@
 2000-12-08  Warren Levy  <warrenl@redhat.com>
 
+	* java/lang/StringBuffer.java (insert(int,char[])): Avoid
+	NullPointerException so proper check of offset can be done.
+
+2000-12-08  Warren Levy  <warrenl@redhat.com>
+
 	* java/io/FileInputStream.java (close): Check if the fd is valid.
 	* java/io/RandomAccessFile.java (close): Ditto.
 	* java/net/PlainDatagramSocketImpl.java (close): Ditto.
