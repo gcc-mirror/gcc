@@ -2751,10 +2751,10 @@ reorder_insns_with_line_notes (from, to, after)
 			  to);
 }
 
-/* Remove unncessary notes from the instruction stream.  */
+/* Remove unnecessary notes from the instruction stream.  */
 
 void
-remove_unncessary_notes ()
+remove_unnecessary_notes ()
 {
   rtx insn;
   rtx next;
@@ -2810,13 +2810,8 @@ remove_unncessary_notes ()
 		  if (NOTE_BLOCK (prev) != NOTE_BLOCK (insn))
 		    abort ();
 
-		  /* Never delete the BLOCK for the outermost scope
-		     of the function; we can refer to names from
-		     that scope even if the block notes are messed up.  */
-		  if (! is_body_block (NOTE_BLOCK (insn)))
+		  if (debug_ignore_block (NOTE_BLOCK (insn)))
 		    {
-		      debug_ignore_block (NOTE_BLOCK (insn));
-
 		      remove_insn (prev);
 		      remove_insn (insn);
 		    }
