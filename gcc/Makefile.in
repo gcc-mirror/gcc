@@ -2693,7 +2693,7 @@ install-multilib: stmp-multilib installdirs
 	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
-install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
+install-headers: $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
 # Don't need to use LN_S here since we really do need ln -s and no substitutes.
