@@ -1,3 +1,7 @@
+2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g77.texi, invoke.texi: Update to GFDL 1.2.
+
 2003-01-31  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Document fixing PR fortran/7681
