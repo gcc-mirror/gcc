@@ -1109,12 +1109,10 @@ free_method_vec (vec)
   free_method_vecs = vec;
 }
 
-/* Add method METHOD to class TYPE.  This is used when a method
-   has been defined which did not initially appear in the class definition,
-   and helps cut down on spurious error messages.
+/* Add method METHOD to class TYPE.
 
-   FIELDS is the entry in the METHOD_VEC vector entry of the class type where
-   the method should be added.  */
+   If non-NULL, FIELDS is the entry in the METHOD_VEC vector entry of
+   the class type where the method should be added.  */
 
 void
 add_method (type, fields, method)
@@ -1184,6 +1182,52 @@ add_method (type, fields, method)
 	      len = 2 * len;
 	      method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
 	    }
+	  else if (template_class_depth (type))
+	    /* TYPE is a template class.  Don't issue any errors now;
+	       wait until instantiation time to complain.  */
+	      ;
+	  else
+	    {
+	      tree fns;
+
+	      /* Check to see if we've already got this method.  */
+	      for (fns = TREE_VEC_ELT (method_vec, i);
+		   fns;
+		   fns = OVL_NEXT (fns))
+		{
+		  tree fn = OVL_CURRENT (fns);
+		 
+		  if (TREE_CODE (fn) != TREE_CODE (method))
+		    continue;
+
+		  if (TREE_CODE (method) != TEMPLATE_DECL)
+		    {
+		      /* Since this is an ordinary function in a
+			 non-template class, it's mangled name can be
+			 used as a unique identifier.  This technique
+			 is only an optimization; we would get the
+			 same results if we just used decls_match
+			 here.  */
+		      if (DECL_ASSEMBLER_NAME (fn) 
+			  != DECL_ASSEMBLER_NAME (method))
+			continue;
+		    }
+		  else if (!decls_match (fn, method))
+		    continue;
+
+		  /* There has already been a declaration of this
+		     method or member template.  */
+		  cp_error_at ("`%D' has already been declared in `%T'", 
+			       method, type);
+
+		  /* We don't call duplicate_decls here to merege the
+		     declarations because that will confuse things if
+		     the methods have inline definitions In
+		     particular, we will crash while processing the
+		     definitions.  */
+		  return;
+		}
+	    }
 
 	  if (IDENTIFIER_TYPENAME_P (DECL_NAME (method)))
 	    {
@@ -1225,6 +1269,9 @@ add_method (type, fields, method)
 		  TREE_VEC_ELT (method_vec, i) = NULL_TREE;
 		}
 	    }
+
+	  /* Create RTL for the METHOD.  */
+	  make_decl_rtl (method, NULL_PTR, 1);
 
 	  /* Actually insert the new method.  */
 	  TREE_VEC_ELT (method_vec, i) 

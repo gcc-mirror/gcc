@@ -1662,7 +1662,13 @@ void
 set_mangled_name_for_decl (decl)
      tree decl;
 {
-  tree parm_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree parm_types;
+
+  if (processing_template_decl)
+    /* There's no need to mangle the name of a template function.  */
+    return;
+
+  parm_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
   if (DECL_STATIC_FUNCTION_P (decl))
     parm_types = 

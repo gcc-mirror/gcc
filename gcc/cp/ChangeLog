@@ -1,3 +1,17 @@
+1998-10-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (add_method): Fix documentation to reflect previous
+	changes.  Check for duplicate method declarations here.
+	* decl.c (decls_match): Handle FUNCTION_DECL vs TEMPLATE_DECL
+	correctly; such things never match.
+	(grokfndecl): Don't look for duplicate methods here.
+	* decl2.c (check_classfn): Don't assume names are mangled.
+	Don't add bogus member function declarations to a class before the
+	class type is complete.
+	(grokfield): Reformat error message.
+	* method.c (set_mangled_name_for_decl): Don't mangle names while
+	procesing_template_decl.
+	
 1998-10-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_indirect_ref): Complain about a pointer to data

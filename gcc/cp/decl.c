@@ -2511,8 +2511,12 @@ decls_match (newdecl, olddecl)
 {
   int types_match;
 
-  if (TREE_CODE (newdecl) == FUNCTION_DECL
-      && TREE_CODE (olddecl) == FUNCTION_DECL)
+  if (TREE_CODE (newdecl) != TREE_CODE (olddecl))
+    /* If the two DECLs are not even the same kind of thing, we're not
+       interested in their types.  */
+    return 0;
+
+  if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       tree f1 = TREE_TYPE (newdecl);
       tree f2 = TREE_TYPE (olddecl);
@@ -2568,8 +2572,7 @@ decls_match (newdecl, olddecl)
       else
 	types_match = 0;
     }
-  else if (TREE_CODE (newdecl) == TEMPLATE_DECL
-	   && TREE_CODE (olddecl) == TEMPLATE_DECL)
+  else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
       if (!comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
 				DECL_TEMPLATE_PARMS (olddecl)))
@@ -8184,22 +8187,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	}
       if (! grok_ctor_properties (ctype, decl))
 	return error_mark_node;
-
-      if (check == 0 && ! current_function_decl)
-	{
-	  /* Assembler names live in the global namespace. */
-	  tmp = IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl));
-	  if (tmp == NULL_TREE)
-	    SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl), decl);
-	  else if (TREE_CODE (tmp) != TREE_CODE (decl))
-	    cp_error ("inconsistent declarations for `%D'", decl);
-	  else
-	    {
-	      duplicate_decls (decl, tmp);
-	      decl = tmp;
-	    }
-	  make_decl_rtl (decl, NULL_PTR, 1);
-	}
     }
   else
     {
@@ -8248,37 +8235,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (ctype == NULL_TREE || check)
 	return decl;
 
-      /* Now install the declaration of this function so that others may
-	 find it (esp. its DECL_FRIENDLIST).  Don't do this for local class
-	 methods, though.  */
-      if (! current_function_decl)
-	{
-	  if (!DECL_TEMPLATE_SPECIALIZATION (decl))
-	    {
-	      /* We don't do this for specializations since the
-		 equivalent checks will be done later.  Also, at this
-		 point the DECL_ASSEMBLER_NAME is not yet fully
-		 accurate.  */
-
-	      /* FIXME: this should only need to look at
-		 IDENTIFIER_GLOBAL_VALUE.  */
-	      tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
-	      if (tmp == NULL_TREE)
-		SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl), decl);
-	      else if (TREE_CODE (tmp) != TREE_CODE (decl))
-		cp_error ("inconsistent declarations for `%D'", decl);
-	      else
-		{
-		  duplicate_decls (decl, tmp);
-		  decl = tmp;
-		}
-	    }
-
-	  if (attrlist)
-	    cplus_decl_attributes (decl, TREE_PURPOSE (attrlist),
-				   TREE_VALUE (attrlist));
-	  make_decl_rtl (decl, NULL_PTR, 1);
-	}
       if (virtualp)
 	{
 	  DECL_VIRTUAL_P (decl) = 1;

@@ -1383,14 +1383,19 @@ check_classfn (ctype, function)
 		   fndecls = OVL_NEXT (fndecls))
 		{
 		  fndecl = OVL_CURRENT (fndecls);
-		  /* The DECL_ASSEMBLER_NAME for a TEMPLATE_DECL is
+		  /* The DECL_ASSEMBLER_NAME for a TEMPLATE_DECL, or
+		     for a for member function of a template class, is
 		     not mangled, so the check below does not work
-		     correctly in that case.  Since mangled destructor names
-		     do not include the type of the arguments, we
-		     can't use this short-cut for them, either.  */
-		  if (TREE_CODE (function) != TEMPLATE_DECL
-		      && TREE_CODE (fndecl) != TEMPLATE_DECL
-		      && !DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function))
+		     correctly in that case.  Since mangled destructor
+		     names do not include the type of the arguments,
+		     we can't use this short-cut for them, either.
+		     (It's not legal to declare arguments for a
+		     destructor, but some people try.)  */
+		  if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function))
+		      && (DECL_ASSEMBLER_NAME (function)
+			  != DECL_NAME (function))
+		      && (DECL_ASSEMBLER_NAME (fndecl)
+			  != DECL_NAME (fndecl))
 		      && (DECL_ASSEMBLER_NAME (function) 
 			  == DECL_ASSEMBLER_NAME (fndecl)))
 		    return fndecl;
@@ -1467,8 +1472,11 @@ check_classfn (ctype, function)
     }
 
   /* If we did not find the method in the class, add it to avoid
-     spurious errors.  */
-  add_method (ctype, methods, function);
+     spurious errors (unless the CTYPE is not yet defined, in which
+     case we'll only confuse ourselves when the function is declared
+     properly within the class.  */
+  if (TYPE_SIZE (ctype))
+    add_method (ctype, methods, function);
   return NULL_TREE;
 }
 
@@ -1573,8 +1581,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (DECL_IN_AGGR_P (value))
     {
-      cp_error ("`%D' is already defined in the class %T", value,
-		  DECL_CONTEXT (value));
+      cp_error ("`%D' is already defined in `%T'", value,
+		DECL_CONTEXT (value));
       return void_type_node;
     }
 
