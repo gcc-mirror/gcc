@@ -1,3 +1,12 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* jcf-parse.c (set_source_filename): Constify a char *.
+	* jcf-write.c (append_innerclasses_attribute,
+	make_class_file_name): Constify a char *.  Don't recycle a
+	variable for an unrelated purpose.
+	* parse.y: (build_alias_initializer_parameter_list): Constify a char *.
+	(breakdown_qualified): Do not modify IDENTIFIER_POINTER strings.
+
 2000-08-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (can_widen_reference_to): Fixed indentation.

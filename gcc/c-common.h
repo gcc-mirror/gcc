@@ -118,6 +118,11 @@ enum c_tree_index
     CTI_G77_LONGINT_TYPE,
     CTI_G77_ULONGINT_TYPE,
 
+    /* These are not types, but we have to look them up all the time.  */
+    CTI_FUNCTION_ID,
+    CTI_PRETTY_FUNCTION_ID,
+    CTI_FUNC_ID,
+
     CTI_MAX
 };
 
@@ -152,6 +157,10 @@ enum c_tree_index
 #define g77_uinteger_type_node		c_global_trees[CTI_G77_UINTEGER_TYPE]
 #define g77_longint_type_node		c_global_trees[CTI_G77_LONGINT_TYPE]
 #define g77_ulongint_type_node		c_global_trees[CTI_G77_ULONGINT_TYPE]
+
+#define function_id_node		c_global_trees[CTI_FUNCTION_ID]
+#define pretty_function_id_node		c_global_trees[CTI_PRETTY_FUNCTION_ID]
+#define func_id_node			c_global_trees[CTI_FUNC_ID]
 
 extern tree c_global_trees[CTI_MAX];
 

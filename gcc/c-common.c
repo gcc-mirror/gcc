@@ -130,6 +130,12 @@ enum cpp_token cpp_token;
 
 	tree void_list_node;
 
+  The identifiers __FUNCTION__, __PRETTY_FUNCTION__, and __func__.
+
+	tree function_id_node;
+	tree pretty_function_id_node;
+	tree func_id_node;
+
 */
 
 tree c_global_trees[CTI_MAX];
@@ -271,13 +277,14 @@ declare_function_name ()
       else
 	name = "";
       printable_name = (*decl_printable_name) (current_function_decl, 2);
+
+      /* ISO C99 defines __func__, which is a variable, not a string
+	 constant, and which is not a defined symbol at file scope.  */
+      (*make_fname_decl) (func_id_node, name, 0);
     }
   
-  (*make_fname_decl) (get_identifier ("__FUNCTION__"), name, 0);
-  (*make_fname_decl) (get_identifier ("__PRETTY_FUNCTION__"), printable_name, 1);
-  /* The ISO C people "of course" couldn't use __FUNCTION__ in the
-     ISO C 99 standard; instead a new variable is invented.  */
-  (*make_fname_decl) (get_identifier ("__func__"), name, 0);
+  (*make_fname_decl) (function_id_node, name, 0);
+  (*make_fname_decl) (pretty_function_id_node, printable_name, 1);
 }
 
 /* Given a chain of STRING_CST nodes,

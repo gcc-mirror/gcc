@@ -3786,7 +3786,7 @@ is_attribute_p (attr, ident)
      tree ident;
 {
   int ident_len, attr_len;
-  char *p;
+  const char *p;
 
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     return 0;

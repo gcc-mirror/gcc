@@ -991,7 +991,7 @@ finalize_record_size (rli)
 
 	  if (TYPE_NAME (rli->t))
 	    {
-	      char *name;
+	      const char *name;
 
 	      if (TREE_CODE (TYPE_NAME (rli->t)) == IDENTIFIER_NODE)
 		name = IDENTIFIER_POINTER (TYPE_NAME (rli->t));

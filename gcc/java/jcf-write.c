@@ -3161,7 +3161,7 @@ append_innerclasses_attribute (state, class)
      process: itself, up and down. */
   while (class && INNER_CLASS_TYPE_P (class))
     {
-      char *n;
+      const char *n;
 
       decl = TYPE_NAME (class);
       n = IDENTIFIER_POINTER (DECL_NAME (decl)) + 
@@ -3218,8 +3218,8 @@ static char *
 make_class_file_name (clas)
      tree clas;
 {
-  const char *dname, *slash;
-  char *cname, *r;
+  const char *dname, *cname, *slash;
+  char *r;
   struct stat sb;
 
   cname = IDENTIFIER_POINTER (identifier_subst (DECL_NAME (TYPE_NAME (clas)),
@@ -3261,10 +3261,10 @@ make_class_file_name (clas)
   dname = r + (slash - dname) + 1;
   while (1)
     {
-      cname = strchr (dname, DIR_SEPARATOR);
-      if (cname == NULL)
+      char *s = strchr (dname, DIR_SEPARATOR);
+      if (s == NULL)
 	break;
-      *cname = '\0';
+      *s = '\0';
       if (stat (r, &sb) == -1)
 	{
 	  /* Try to make it.  */
@@ -3275,9 +3275,9 @@ make_class_file_name (clas)
 	      return NULL;
 	    }
 	}
-      *cname = DIR_SEPARATOR;
+      *s = DIR_SEPARATOR;
       /* Skip consecutive separators.  */
-      for (dname = cname + 1; *dname && *dname == DIR_SEPARATOR; ++dname)
+      for (dname = s + 1; *dname && *dname == DIR_SEPARATOR; ++dname)
 	;
     }
 

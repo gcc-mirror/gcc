@@ -1069,7 +1069,8 @@ void
 output_func_start_profiler ()
 {
   tree fnname, fndecl;
-  char *name, *cfnname;
+  char *name;
+  const char *cfnname;
   rtx table_address;
   enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
   int save_flag_inline_functions = flag_inline_functions;

@@ -103,7 +103,7 @@ static void add_pending_template PARAMS ((tree));
 static int push_tinst_level PARAMS ((tree));
 static void reopen_tinst_level PARAMS ((tree));
 static tree classtype_mangled_name PARAMS ((tree));
-static char *mangle_class_name_for_template PARAMS ((char *, tree, tree));
+static char *mangle_class_name_for_template PARAMS ((const char *, tree, tree));
 static tree tsubst_initializer_list PARAMS ((tree, tree));
 static int list_eq PARAMS ((tree, tree));
 static tree get_class_bindings PARAMS ((tree, tree, tree));
@@ -3504,7 +3504,7 @@ comp_template_args (oldargs, newargs)
 
 static char *
 mangle_class_name_for_template (name, parms, arglist)
-     char *name;
+     const char *name;
      tree parms, arglist;
 {
   static struct obstack scratch_obstack;

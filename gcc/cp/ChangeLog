@@ -1,3 +1,13 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* class.c (build_secondary_vtable): Constify a char *.
+	* decl.c (init_decl_processing): Initialize function_id_node,
+	pretty_function_id_node, and func_id_node.
+	* input.c (struct input_source): Constify 'str'.
+	(feed_input): Constify first argument.
+	* mangle.c (write_identifier): Constify argument.
+	* pt.c (mangle_class_name_for_template): Constify argument.
+
 2000-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (mark_addressable): Remove code that pokes around in

@@ -99,7 +99,7 @@ set_source_filename (jcf, index)
      int index;
 {
   tree sfname_id = get_name_constant (jcf, index);
-  char *sfname = IDENTIFIER_POINTER (sfname_id);
+  const char *sfname = IDENTIFIER_POINTER (sfname_id);
   if (input_filename != NULL)
     {
       int old_len = strlen (input_filename);

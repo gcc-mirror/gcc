@@ -737,7 +737,7 @@ struct tree_identifier
 {
   struct tree_common common;
   int length;
-  char *pointer;
+  const char *pointer;
 };
 
 /* In a TREE_LIST node.  */

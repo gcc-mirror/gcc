@@ -683,8 +683,8 @@ special_function_p (fndecl, flags)
 	 think they are.  */
       && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
     {
-      char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
-      char *tname = name;
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+      const char *tname = name;
 
       /* We assume that alloca will always be called by name.  It
 	 makes no sense to pass it as a pointer-to-function to
@@ -2070,7 +2070,6 @@ expand_call (exp, target, ignore)
   /* Declaration of the function being called,
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
-  char *name = 0;
   rtx insn;
   int try_tail_call = 1;
   int try_tail_recursion = 1;
@@ -2288,9 +2287,6 @@ expand_call (exp, target, ignore)
       if (temp != (rtx) (HOST_WIDE_INT) - 1)
 	return temp;
     }
-
-  if (fndecl && DECL_NAME (fndecl))
-    name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
   /* Figure out the amount to which the stack should be aligned.  */
 #ifdef PREFERRED_STACK_BOUNDARY

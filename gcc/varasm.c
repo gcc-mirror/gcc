@@ -175,7 +175,7 @@ static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
 static void output_constructor		PARAMS ((tree, int));
 #ifdef ASM_WEAKEN_LABEL
-static void remove_from_pending_weak_list	PARAMS ((char *));
+static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PARAMS ((FILE *, tree, const char *, int, int));
@@ -519,56 +519,10 @@ void
 make_function_rtl (decl)
      tree decl;
 {
-  char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *new_name = name;
+  const char *name;
+  const char *new_name;
 
-  /* Rename a nested function to avoid conflicts, unless it's a member of
-     a local class, in which case the class name is already unique.  */
-  if (decl_function_context (decl) != 0
-      && ! TYPE_P (DECL_CONTEXT (decl))
-      && DECL_INITIAL (decl) != 0
-      && DECL_RTL (decl) == 0)
-    {
-      char *label;
-
-      name = IDENTIFIER_POINTER (DECL_NAME (decl));
-      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-      name = ggc_alloc_string (label, -1);
-      var_labelno++;
-    }
-  else
-    {
-      /* When -fprefix-function-name is used, every function name is
-         prefixed.  Even static functions are prefixed because they
-         could be declared latter.  Note that a nested function name
-         is not prefixed.  */
-      if (flag_prefix_function_name)
-        {
-	  size_t name_len = strlen (name);
-
-          new_name = ggc_alloc_string (NULL, name_len + CHKR_PREFIX_SIZE);
-	  memcpy (new_name, CHKR_PREFIX, CHKR_PREFIX_SIZE);
-	  memcpy (new_name + CHKR_PREFIX_SIZE, name, name_len + 1);
-          name = new_name;
-        }
-    }
-
-  if (DECL_RTL (decl) == 0)
-    {
-      DECL_ASSEMBLER_NAME (decl) = get_identifier (name);
-      DECL_RTL (decl)
-	= gen_rtx_MEM (DECL_MODE (decl),
-		       gen_rtx_SYMBOL_REF (Pmode, name));
-
-      /* Optionally set flags or add text to the name to record
-	 information such as that it is a function name.  If the name
-	 is changed, the macro ASM_OUTPUT_LABELREF will have to know
-	 how to strip this information.  */
-#ifdef ENCODE_SECTION_INFO
-      ENCODE_SECTION_INFO (decl);
-#endif
-    }
-  else
+  if (DECL_RTL (decl) != 0)
     {
       /* ??? Another way to do this would be to do what halfpic.c does
 	 and maintain a hashed table of such critters.  */
@@ -581,8 +535,58 @@ make_function_rtl (decl)
       if (REDO_SECTION_INFO_P (decl))
 	ENCODE_SECTION_INFO (decl);
 #endif
+      return;
     }
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  new_name = name;
+
+  /* Rename a nested function to avoid conflicts, unless it's a member of
+     a local class, in which case the class name is already unique.  */
+  if (decl_function_context (decl) != 0
+      && ! TYPE_P (DECL_CONTEXT (decl))
+      && DECL_INITIAL (decl) != 0
+      && DECL_RTL (decl) == 0)
+    {
+      char *label;
+      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
+      var_labelno++;
+      new_name = label;
+    }
+  /* When -fprefix-function-name is used, every function name is
+     prefixed.  Even static functions are prefixed because they
+     could be declared latter.  Note that a nested function name
+     is not prefixed.  */
+  else if (flag_prefix_function_name)
+    {
+      size_t name_len = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
+      char *pname;
+
+      pname = alloca (name_len + CHKR_PREFIX_SIZE + 1);
+      memcpy (pname, CHKR_PREFIX, CHKR_PREFIX_SIZE);
+      memcpy (pname + CHKR_PREFIX_SIZE, name, name_len + 1);
+      new_name = pname;
+    }
+
+  if (name != new_name)
+    {
+      DECL_ASSEMBLER_NAME (decl) = get_identifier (new_name);
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+    }
+
+  DECL_RTL (decl)
+    = gen_rtx_MEM (DECL_MODE (decl),
+		   gen_rtx_SYMBOL_REF (Pmode, name));
+
+  /* Optionally set flags or add text to the name to record
+     information such as that it is a function name.  If the name
+     is changed, the macro ASM_OUTPUT_LABELREF will have to know
+     how to strip this information.  */
+#ifdef ENCODE_SECTION_INFO
+  ENCODE_SECTION_INFO (decl);
+#endif
 }
+
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
 
@@ -673,54 +677,57 @@ make_decl_rtl (decl, asmspec, top_level)
      const char *asmspec;
      int top_level;
 {
-  register char *name = 0;
+  const char *name = 0;
+  const char *new_name = 0;
   int reg_number;
-
-  reg_number = decode_reg_name (asmspec);
-
-  if (DECL_ASSEMBLER_NAME (decl) != NULL_TREE)
-    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  if (reg_number == -2)
-    {
-      /* ASMSPEC is given, and not the name of a register.  */
-      size_t len = strlen (asmspec);
-
-      name = ggc_alloc_string (NULL, len + 1);
-      name[0] = '*';
-      memcpy (&name[1], asmspec, len + 1);
-    }
 
   /* For a duplicate declaration, we can be called twice on the
      same DECL node.  Don't discard the RTL already made.  */
-  if (DECL_RTL (decl) == 0)
+  if (DECL_RTL (decl) != 0)
+    {
+      /* If the old RTL had the wrong mode, fix the mode.  */
+      if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
+	{
+	  rtx rtl = DECL_RTL (decl);
+	  PUT_MODE (rtl, DECL_MODE (decl));
+	}
+
+      /* ??? Another way to do this would be to do what halfpic.c does
+	 and maintain a hashed table of such critters.  */
+      /* ??? Another way to do this would be to pass a flag bit to
+	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
+      /* Let the target reassign the RTL if it wants.
+	 This is necessary, for example, when one machine specific
+	 decl attribute overrides another.  */
+#ifdef REDO_SECTION_INFO_P
+      if (REDO_SECTION_INFO_P (decl))
+	ENCODE_SECTION_INFO (decl);
+#endif
+      return;
+    }
+
+  new_name = name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  reg_number = decode_reg_name (asmspec);
+  if (reg_number == -2)
+    /* ASMSPEC is given, and not the name of a register.  */
+    new_name = asmspec;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
       /* First detect errors in declaring global registers.  */
-      if (TREE_CODE (decl) != FUNCTION_DECL
-	  && DECL_REGISTER (decl) && reg_number == -1)
-	error_with_decl (decl,
-			 "register name not specified for `%s'");
-      else if (TREE_CODE (decl) != FUNCTION_DECL
-	       && DECL_REGISTER (decl) && reg_number < 0)
-	error_with_decl (decl,
-			 "invalid register name for `%s'");
-      else if ((reg_number >= 0 || reg_number == -3)
-	       && (TREE_CODE (decl) == FUNCTION_DECL
-		   && ! DECL_REGISTER (decl)))
-	error_with_decl (decl,
-			 "register name given for non-register variable `%s'");
-      else if (TREE_CODE (decl) != FUNCTION_DECL
-	       && DECL_REGISTER (decl)
-	       && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
+      if (reg_number == -1)
+	error_with_decl (decl, "register name not specified for `%s'");
+      else if (reg_number < 0)
+	error_with_decl (decl, "invalid register name for `%s'");
+      else if (TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
 	error_with_decl (decl,
 			 "data type of `%s' isn't suitable for a register");
-      else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl)
-	       && ! HARD_REGNO_MODE_OK (reg_number,
-					TYPE_MODE (TREE_TYPE (decl))))
+      else if (! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
 	error_with_decl (decl,
-			 "register number for `%s' isn't suitable for data type");
+			 "register specified for `%s' isn't suitable for data type");
       /* Now handle properly declared static register variables.  */
-      else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
+      else
 	{
 	  int nregs;
 
@@ -754,96 +761,81 @@ make_decl_rtl (decl, asmspec, top_level)
 	      while (nregs > 0)
 		globalize_reg (reg_number + --nregs);
 	    }
-	}
-      /* Specifying a section attribute on a variable forces it into a
-         non-.bss section, and thus it cannot be common. */
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && DECL_SECTION_NAME (decl) != NULL_TREE
-	       && DECL_INITIAL (decl) == NULL_TREE
-	       && DECL_COMMON (decl))
-          DECL_COMMON (decl) = 0;
 
-      /* Now handle ordinary static variables and functions (in memory).
-	 Also handle vars declared register invalidly.  */
-      if (DECL_RTL (decl) == 0)
-	{
-	  /* Can't use just the variable's own name for a variable
-	     whose scope is less than the whole file, unless it's a member
-	     of a local class (which will already be unambiguous).
-	     Concatenate a distinguishing number.  */
-	  if (!top_level && !TREE_PUBLIC (decl)
-	      && ! (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
-	      && asmspec == 0)
-	    {
-	      char *label;
-
-	      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-	      name = ggc_alloc_string (label, -1);
-	      var_labelno++;
-	    }
-
-	  if (name == 0)
-	    abort ();
-
-	  /* When -fprefix-function-name is used, the functions
-	     names are prefixed.  Only nested function names are not
-	     prefixed.  */
-	  if (flag_prefix_function_name && TREE_CODE (decl) == FUNCTION_DECL)
-	    {
-	      size_t name_len = strlen (name);
-	      char *new_name;
-
-	      new_name = ggc_alloc_string (NULL, name_len + CHKR_PREFIX_SIZE);
-	      memcpy (new_name, CHKR_PREFIX, CHKR_PREFIX_SIZE);
-	      memcpy (new_name + CHKR_PREFIX_SIZE, name, name_len + 1);
-	      name = new_name;
-	    }
-
-	  /* If this variable is to be treated as volatile, show its
-	     tree node has side effects.   */
-	  if ((flag_volatile_global && TREE_CODE (decl) == VAR_DECL
-	       && TREE_PUBLIC (decl))
-	      || ((flag_volatile_static && TREE_CODE (decl) == VAR_DECL
-		   && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))))
-	    TREE_SIDE_EFFECTS (decl) = 1;
-
-	  DECL_ASSEMBLER_NAME (decl)
-	    = get_identifier (name[0] == '*' ? name + 1 : name);
-	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
-					 gen_rtx_SYMBOL_REF (Pmode, name));
-	  if (TREE_CODE (decl) != FUNCTION_DECL)
-	    set_mem_attributes (DECL_RTL (decl), decl, 1);
-
-	  /* Optionally set flags or add text to the name to record information
-	     such as that it is a function name.
-	     If the name is changed, the macro ASM_OUTPUT_LABELREF
-	     will have to know how to strip this information.  */
-#ifdef ENCODE_SECTION_INFO
-	  ENCODE_SECTION_INFO (decl);
-#endif
+	  /* As a register variable, it has no section.  */
+	  return;
 	}
     }
-  else
+
+  /* Now handle ordinary static variables and functions (in memory).
+     Also handle vars declared register invalidly.  */
+
+  if (reg_number >= 0 || reg_number == -3)
+    error_with_decl (decl,
+		     "register name given for non-register variable `%s'");
+
+  /* Specifying a section attribute on a variable forces it into a
+     non-.bss section, and thus it cannot be common. */
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_INITIAL (decl) == NULL_TREE
+      && DECL_COMMON (decl))
+    DECL_COMMON (decl) = 0;
+
+  /* Can't use just the variable's own name for a variable
+     whose scope is less than the whole file, unless it's a member
+     of a local class (which will already be unambiguous).
+     Concatenate a distinguishing number.  */
+  if (!top_level && !TREE_PUBLIC (decl)
+      && ! (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
+      && asmspec == 0)
     {
-      /* If the old RTL had the wrong mode, fix the mode.  */
-      if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
-	{
-	  rtx rtl = DECL_RTL (decl);
-	  PUT_MODE (rtl, DECL_MODE (decl));
-	}
-
-      /* ??? Another way to do this would be to do what halfpic.c does
-	 and maintain a hashed table of such critters.  */
-      /* ??? Another way to do this would be to pass a flag bit to
-	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
-      /* Let the target reassign the RTL if it wants.
-	 This is necessary, for example, when one machine specific
-	 decl attribute overrides another.  */
-#ifdef REDO_SECTION_INFO_P
-      if (REDO_SECTION_INFO_P (decl))
-	ENCODE_SECTION_INFO (decl);
-#endif
+      char *label;
+      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
+      var_labelno++;
+      new_name = label;
     }
+
+  /* When -fprefix-function-name is used, the functions
+     names are prefixed.  Only nested function names are not
+     prefixed.  */
+  else if (flag_prefix_function_name && TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      size_t name_len = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
+      char *pname;
+
+      pname = alloca (name_len + CHKR_PREFIX_SIZE + 1);
+      memcpy (pname, CHKR_PREFIX, CHKR_PREFIX_SIZE);
+      memcpy (pname + CHKR_PREFIX_SIZE, name, name_len + 1);
+      new_name = pname;
+    }
+
+  if (name != new_name)
+    {
+      DECL_ASSEMBLER_NAME (decl) = get_identifier (new_name);
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+    }
+
+  /* If this variable is to be treated as volatile, show its
+     tree node has side effects.   */
+  if ((flag_volatile_global && TREE_CODE (decl) == VAR_DECL
+       && TREE_PUBLIC (decl))
+      || ((flag_volatile_static && TREE_CODE (decl) == VAR_DECL
+	   && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))))
+    TREE_SIDE_EFFECTS (decl) = 1;
+
+  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
+				 gen_rtx_SYMBOL_REF (Pmode, name));
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    set_mem_attributes (DECL_RTL (decl), decl, 1);
+
+  /* Optionally set flags or add text to the name to record information
+     such as that it is a function name.
+     If the name is changed, the macro ASM_OUTPUT_LABELREF
+     will have to know how to strip this information.  */
+#ifdef ENCODE_SECTION_INFO
+  ENCODE_SECTION_INFO (decl);
+#endif
 }
 
 /* Make the rtl for variable VAR be volatile.
@@ -4656,8 +4648,8 @@ output_constructor (exp, size)
    
 int
 add_weak (name, value)
-     char *name;
-     char *value;
+     const char *name;
+     const char *value;
 {
   struct weak_syms *weak;
 
@@ -4724,7 +4716,7 @@ weak_finish ()
 #ifdef ASM_WEAKEN_LABEL
 static void
 remove_from_pending_weak_list (name)
-     char *name ATTRIBUTE_UNUSED;
+     const char *name ATTRIBUTE_UNUSED;
 {
 #ifdef HANDLE_PRAGMA_WEAK
   if (HANDLE_PRAGMA_WEAK)

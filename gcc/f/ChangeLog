@@ -1,3 +1,7 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* ansify.c: Use #line, not # <number>.
+
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
 	* intdoc.c (ARRAY_SIZE): Remove macro.

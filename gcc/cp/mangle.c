@@ -156,7 +156,7 @@ static void write_source_name PARAMS ((tree));
 static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
 				  unsigned int));
 static void write_integer_cst PARAMS ((tree));
-static void write_identifier PARAMS ((char *));
+static void write_identifier PARAMS ((const char *));
 static void write_special_name_constructor PARAMS ((tree));
 static void write_special_name_destructor PARAMS ((tree));
 static void write_type PARAMS ((tree));
@@ -1053,7 +1053,7 @@ write_integer_cst (cst)
 
 static void
 write_identifier (identifier)
-     char *identifier;
+     const char *identifier;
 {
   MANGLE_TRACE ("identifier", identifier);
   write_string (identifier);

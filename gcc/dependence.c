@@ -89,7 +89,7 @@ typedef struct def_use
   /* this expression */
   tree expression;
   /* our name */
-  char *variable;
+  const char *variable;
   /* def or use */
   enum def_use_type type;
   /* status flags */
@@ -126,7 +126,7 @@ typedef struct loop
 typedef struct induction
 {
   /* our name */
-  char *variable;
+  const char *variable;
   /* increment.  Currently only +1 or -1 */
   int  increment;
   /* lower bound */
@@ -161,7 +161,7 @@ typedef struct subscript
   /* Y in X * i + Y */
   int offset;
   /* our name */
-  char *variable;
+  const char *variable;
   /* next subscript term.  Currently null. */
   struct subscript *next;
 } subscript;
@@ -186,8 +186,8 @@ void init_dependence_analysis PARAMS ((tree));
 static void build_def_use PARAMS ((tree, enum def_use_type));
 static loop* add_loop PARAMS ((tree, tree, int));
 static int find_induction_variable PARAMS ((tree, tree, tree, loop*));
-static int get_low_bound PARAMS ((tree, char*));
-static int have_induction_variable PARAMS ((tree, char*));
+static int get_low_bound PARAMS ((tree, const char*));
+static int have_induction_variable PARAMS ((tree, const char*));
 static void link_loops PARAMS ((void));
 static void get_node_dependence PARAMS ((void));
 static void check_node_dependence PARAMS ((def_use*));
@@ -518,17 +518,23 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
       if (TREE_CODE (TREE_OPERAND (cond_node, 0)) == VAR_DECL
 	  && IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (cond_node, 0))) 
 	     == ind_ptr->variable)
-	if (TREE_CODE (TREE_OPERAND (cond_node, 1)) == INTEGER_CST)
-	  ind_ptr->high_bound = TREE_INT_CST_LOW (TREE_OPERAND (cond_node, 1));
-	else
-	  ind_ptr->high_bound = ind_ptr->increment < 0 ? INT_MIN : INT_MAX;
+	{
+	  if (TREE_CODE (TREE_OPERAND (cond_node, 1)) == INTEGER_CST)
+	    ind_ptr->high_bound =
+	      TREE_INT_CST_LOW (TREE_OPERAND (cond_node, 1));
+	  else
+	    ind_ptr->high_bound = ind_ptr->increment < 0 ? INT_MIN : INT_MAX;
+	}
       else if (TREE_CODE (TREE_OPERAND (cond_node, 1)) == VAR_DECL
 	  && IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (cond_node, 1)))
 	       == ind_ptr->variable)
-	if (TREE_CODE (TREE_OPERAND (cond_node, 0)) == INTEGER_CST)
-	  ind_ptr->high_bound = TREE_INT_CST_LOW (TREE_OPERAND (cond_node, 0));
-	else
-	  ind_ptr->high_bound = ind_ptr->increment < 0 ? INT_MIN : INT_MAX;
+	{
+	  if (TREE_CODE (TREE_OPERAND (cond_node, 0)) == INTEGER_CST)
+	    ind_ptr->high_bound =
+	      TREE_INT_CST_LOW (TREE_OPERAND (cond_node, 0));
+	  else
+	    ind_ptr->high_bound = ind_ptr->increment < 0 ? INT_MIN : INT_MAX;
+	}
       ind_ptr->next = 0;
       return 1;
     }
@@ -540,7 +546,7 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
 static int
 get_low_bound (node, variable)
      tree node;
-     char *variable;
+     const char *variable;
 {
 
   if (TREE_CODE (node) == SCOPE_STMT)
@@ -577,7 +583,7 @@ get_low_bound (node, variable)
 static int
 have_induction_variable (outer_loop, ind_var)
      tree outer_loop;
-     char *ind_var;
+     const char *ind_var;
 {
   induction *ind_ptr;
   loop *loop_ptr;
@@ -981,8 +987,8 @@ classify_dependence (icoefficients, ocoefficients, complexity, separability,
      int *separability;
      int count;
 {
-  char *iiv_used [MAX_SUBSCRIPTS];
-  char *oiv_used [MAX_SUBSCRIPTS];
+  const char *iiv_used [MAX_SUBSCRIPTS];
+  const char *oiv_used [MAX_SUBSCRIPTS];
   int ocoeff [MAX_SUBSCRIPTS];
   int icoeff [MAX_SUBSCRIPTS];
   int idx, cidx;
