@@ -1,3 +1,23 @@
+Mon Jun 22 08:50:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (build_scoped_method_call): Remove unused variable `tmp'.
+
+	* cp-tree.h (check_dtor_name): Add prototype.
+
+	* init.c (expand_member_init): Remove unused variables
+	`ptr_type_node', `parm' and `rval'.
+
+	* ptree.c (print_lang_type): Use HOST_WIDE_INT_PRINT_DEC specifier
+	in call to fprintf.
+	(lang_print_xnode): Likewise.
+
+	* typeck2.c (enum_name_string): Cast argument to sprintf to long
+	and use %ld specifier.
+
+	* xref.c (GNU_xref_end_scope): Use HOST_WIDE_INT_PRINT_DEC
+	specifier in call to fprintf.
+	(GNU_xref_member): Cast argument to sprintf to int.
+
 Fri Jun 19 23:22:42 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
         * typeck2.c (pop_init_level): Warn about implicit zero initialization

@@ -384,7 +384,6 @@ build_scoped_method_call (exp, basetype, name, parms)
      @@ But we do have to check access privileges later.  */
   tree binfo, decl;
   tree type = TREE_TYPE (exp);
-  tree tmp;
 
   if (type == error_mark_node
       || basetype == error_mark_node)

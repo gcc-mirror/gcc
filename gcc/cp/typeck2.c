@@ -1530,8 +1530,8 @@ enum_name_string (value, type)
       char *buf = (char *)oballoc (16 + TYPE_NAME_LENGTH (type));
 
       /* Value must have been cast.  */
-      sprintf (buf, "(enum %s)%d",
-	       TYPE_NAME_STRING (type), intval);
+      sprintf (buf, "(enum %s)%ld",
+	       TYPE_NAME_STRING (type), (long) intval);
       return buf;
     }
   return IDENTIFIER_POINTER (TREE_PURPOSE (values));
