@@ -1,3 +1,16 @@
+Mon Jan  8 16:14:56 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (jump_optimize_1): Use reversed_comparison_code
+	instead of can_reverse_comparison_p.
+	(jump_back_p): Likewise.
+	(invert_exp_1): Likewise.
+	(thread_jumps): Likewise.
+	* simplify-rtx.c (simplify_unary_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+	* cse.c (find_comparison_args): Convert to use
+	can_reverse_comparison_p.
+	(record_jump_equiv): Likewise.
+
 2001-01-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (HARD_REGNO_RENAME_OK): Delete.
