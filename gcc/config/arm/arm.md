@@ -2403,7 +2403,7 @@
   "arm_arch4"
   "*
   /* If the address is invalid, this will split the instruction into two. */
-  if (bad_signed_byte_operand(operands[1], QImode))
+  if (bad_signed_byte_operand (operands[1], QImode))
     return \"#\";
   return \"ldr%?sb\\t%0, %1\";
 "
@@ -2476,7 +2476,7 @@
   "arm_arch4"
   "*
   /* If the address is invalid, this will split the instruction into two. */
-  if (bad_signed_byte_operand(operands[1], QImode))
+  if (bad_signed_byte_operand (operands[1], QImode))
     return \"#\";
   return \"ldr%?sb\\t%0, %1\";
 "
@@ -2638,7 +2638,7 @@
 
 (define_insn "*movsi_insn"
   [(set (match_operand:SI 0 "general_operand" "=r,r,r,m")
-	(match_operand:SI 1 "general_operand"  "rI,K,mi,r"))]
+	(match_operand:SI 1 "general_operand" "rI,K,mi,r"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)"
   "@
@@ -2852,8 +2852,6 @@
   ""
   "
 {
-  rtx insn;
-
   if (! (reload_in_progress || reload_completed))
     {
       if (GET_CODE (operands[0]) == MEM)
@@ -3068,7 +3066,6 @@
 ")
 
 ;; Pattern to recognise insn generated default case above
-
 (define_insn "*movhi_insn_arch4"
   [(set (match_operand:HI 0 "general_operand" "=r,r,r,m")
 	(match_operand:HI 1 "general_operand"  "rI,K,m,r"))]
@@ -3289,10 +3286,9 @@
        || register_operand (operands[1], DFmode))"
   "*
 {
-  rtx ops[3];
-
   switch (which_alternative)
     {
+    default:
     case 0: return \"ldm%?ia\\t%m1, %M0\\t%@ double\";
     case 1: return \"stm%?ia\\t%m0, %M1\\t%@ double\";
     case 2: case 3: case 4: return output_move_double (operands);
@@ -3337,6 +3333,7 @@
   "*
   switch (which_alternative)
     {
+    default:
     case 0: return \"mvf%?e\\t%0, %1\";
     case 1: return \"mnf%?e\\t%0, #%N1\";
     case 2: return \"ldf%?e\\t%0, %1\";
@@ -6223,7 +6220,6 @@
   "*
 {
   char pattern[100];
-  int i;
 
   sprintf (pattern, \"sfmfd\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
   output_asm_insn (pattern, operands);

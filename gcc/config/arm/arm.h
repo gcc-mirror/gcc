@@ -823,12 +823,12 @@ enum reg_class
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
-#define REG_CLASS_CONTENTS  \
-{				\
-  0x0000000, /* NO_REGS  */	\
-  0x0FF0000, /* FPU_REGS */	\
-  0x200FFFF, /* GENERAL_REGS */	\
-  0x2FFFFFF  /* ALL_REGS */	\
+#define REG_CLASS_CONTENTS  		\
+{					\
+  { 0x0000000 }, /* NO_REGS  */		\
+  { 0x0FF0000 }, /* FPU_REGS */		\
+  { 0x200FFFF }, /* GENERAL_REGS */	\
+  { 0x2FFFFFF }  /* ALL_REGS */		\
 }
 
 /* The same information, inverted:
@@ -1037,7 +1037,7 @@ do {									\
 /* 1 if N is a possible register number for a function value.
    On the ARM, only r0 and f0 can return results.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
-  ((REGNO) == 0 || ((REGNO) == 16) && TARGET_HARD_FLOAT)
+  ((REGNO) == 0 || (((REGNO) == 16) && TARGET_HARD_FLOAT))
 
 /* How large values are returned */
 /* A C expression which can inhibit the returning of certain function values
@@ -1200,7 +1200,7 @@ do {									\
   else if ((FROM) == FRAME_POINTER_REGNUM				\
 	   && (TO) == STACK_POINTER_REGNUM)				\
     (OFFSET) = (current_function_outgoing_args_size			\
-		+ (get_frame_size () + 3 & ~3));			\
+		+ ((get_frame_size () + 3) & ~3));			\
   else									\
     {									\
       int regno;							\
@@ -1226,7 +1226,7 @@ do {									\
 	       && (regs_ever_live[14] || saved_hard_reg)) 		\
 	     offset += 4;						\
 	   offset += current_function_outgoing_args_size;		\
-	   (OFFSET) = (get_frame_size () + 3 & ~3) + offset;		\
+	   (OFFSET) = ((get_frame_size () + 3) & ~3) + offset;		\
          }								\
     }									\
 }
@@ -1784,12 +1784,10 @@ extern int arm_pic_register;
   "CC_DNE", "CC_DEQ", "CC_DLE", "CC_DLT", "CC_DGE", "CC_DGT", "CC_DLEU", \
   "CC_DLTU", "CC_DGEU", "CC_DGTU", "CC_C"
 
-enum machine_mode arm_select_cc_mode ();
 #define SELECT_CC_MODE(OP,X,Y)  arm_select_cc_mode ((OP), (X), (Y))
 
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
 
-enum rtx_code arm_canonicalize_comparison ();
 #define CANONICALIZE_COMPARISON(CODE,OP0,OP1)			\
 do								\
 {								\
@@ -2047,113 +2045,136 @@ do {									\
      when running in 32 bit mode.  */					\
   ((!TARGET_APCS_32) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
 
-/* Prototypes for arm.c -- actually, they aren't since the types aren't 
-   fully defined yet.  */
+/* Prototypes for arm.c  */
 
-void arm_override_options PROTO ((void));
-int use_return_insn PROTO ((int));
-int const_ok_for_arm (/* HOST_WIDE_INT */);
-int const_ok_for_op (/* HOST_WIDE_INT, enum rtx_code, 
-			enum machine_mode */);
-int arm_split_constant (/* enum rtx_code, enum machine_mode, 
-			   HOST_WIDE_INT, struct rtx_def *,
-			   struct rtx_def *, int */);
-enum rtx_code arm_canonicalize_comparison (/* enum rtx_code, 
-					      struct rtx_def ** */);
-int arm_return_in_memory (/* union tree_node * */);
-int legitimate_pic_operand_p (/* struct rtx_def * */);
-struct rtx_def *legitimize_pic_address (/* struct rtx_def *, 
-					   enum machine_mode,
-					   struct rtx_def * */);
-int is_pic (/* struct rtx_def * */);
-void arm_finalize_pic (/* void */);
-int arm_rtx_costs (/* struct rtx_def *, enum rtx_code, enum rtx_code */);
-int arm_adjust_cost (/* struct rtx_def *, struct rtx_def *, 
-			struct rtx_def *, int */);
-int const_double_rtx_ok_for_fpu (/* struct rtx_def * */);
-int neg_const_double_rtx_ok_for_fpu (/* struct rtx_def * */);
-int s_register_operand (/* struct rtx_def *, enum machine_mode */);
-int f_register_operand (/* struct rtx_def *, enum machine_mode */);
-int reg_or_int_operand (/* struct rtx_def *, enum machine_mode */);
-int reload_memory_operand (/* struct rtx_def *, enum machine_mode */);
-int arm_rhs_operand (/* struct rtx_def *, enum machine_mode */);
-int arm_rhsm_operand (/* struct rtx_def *, enum machine_mode */);
-int arm_add_operand (/* struct rtx_def *, enum machine_mode */);
-int arm_not_operand (/* struct rtx_def *, enum machine_mode */);
-int offsettable_memory_operand (/* struct rtx_def *, enum machine_mode */);
-int alignable_memory_operand (/* struct rtx_def *, enum machine_mode */);
-int bad_signed_byte_operand (/* struct rtx_def *, enum machine_mode */);
-int fpu_rhs_operand (/* struct rtx_def *, enum machine_mode */);
-int fpu_add_operand (/* struct rtx_def *, enum machine_mode */);
-int power_of_two_operand (/* struct rtx_def *, enum machine_mode */);
-int di_operand (/* struct rtx_def *, enum machine_mode */);
-int soft_df_operand (/* struct rtx_def *, enum machine_mode */);
-int index_operand (/* struct rtx_def *, enum machine_mode */);
-int const_shift_operand (/* struct rtx_def *, enum machine_mode */);
-int shiftable_operator (/* struct rtx_def *, enum machine_mode */);
-int shift_operator (/* struct rtx_def *, enum machine_mode */);
-int equality_operator (/* struct rtx_def *, enum machine_mode */);
-int minmax_operator (/* struct rtx_def *, enum machine_mode */);
-int cc_register (/* struct rtx_def *, enum machine_mode */);
-int dominant_cc_register (/* struct rtx_def *, enum machine_mode */);
-int symbol_mentioned_p (/* struct rtx_def * */);
-int label_mentioned_p (/* struct rtx_def * */);
-enum rtx_code minmax_code (/* struct rtx_def * */);
-int adjacent_mem_locations (/* struct rtx_def *, struct rtx_def * */);
-int load_multiple_operation (/* struct rtx_def *, enum machine_mode */);
-int store_multiple_operation (/* struct rtx_def *, enum machine_mode */);
-int load_multiple_sequence (/* struct rtx_def **, int, int *, int *,
-			       HOST_WIDE_INT * */);
-char *emit_ldm_seq (/* struct rtx_def **, int */);
-int store_multiple_sequence (/* struct rtx_def **, int, int *, int *,
-				HOST_WIDE_INT * */);
-char *emit_stm_seq (/* struct rtx_def **, int */);
-int multi_register_push (/* struct rtx_def *, enum machine_mode */);
-int arm_valid_machine_decl_attribute (/* union tree_node *, union tree_node *,
-					 union tree_node *,
-					 union tree_node * */);
-struct rtx_def *arm_gen_load_multiple (/* int, int, struct rtx_def *, 
-					  int, int, int, int, int */);
-struct rtx_def *arm_gen_store_multiple (/* int, int, struct rtx_def *,
-					   int, int, int, int, int */);
-int arm_gen_movstrqi (/* struct rtx_def ** */);
-struct rtx_def *gen_rotated_half_load (/* struct rtx_def * */);
-enum machine_mode arm_select_cc_mode (/* enum rtx_code, struct rtx_def *,
-					 struct rtx_def * */);
-struct rtx_def *gen_compare_reg (/* enum rtx_code, struct rtx_def *,
-				    struct rtx_def * */);
-void arm_reload_in_hi (/* struct rtx_def ** */);
-void arm_reload_out_hi (/* struct rtx_def ** */);
-void arm_reorg (/* struct rtx_def * */);
-char *fp_immediate_constant (/* struct rtx_def * */);
-void print_multi_reg (/* FILE *, char *, int, int */);
-char *output_call (/* struct rtx_def ** */);
-char *output_call_mem (/* struct rtx_def ** */);
-char *output_mov_long_double_fpu_from_arm (/* struct rtx_def ** */);
-char *output_mov_long_double_arm_from_fpu (/* struct rtx_def ** */);
-char *output_mov_long_double_arm_from_arm (/* struct rtx_def ** */);
-char *output_mov_double_fpu_from_arm (/* struct rtx_def ** */);
-char *output_mov_double_arm_from_fpu (/* struct rtx_def ** */);
-char *output_move_double (/* struct rtx_def ** */);
-char *output_mov_immediate (/* struct rtx_def ** */);
-char *output_add_immediate (/* struct rtx_def ** */);
-char *arithmetic_instr (/* struct rtx_def *, int */);
-void output_ascii_pseudo_op (/* FILE *, unsigned char *, int */);
-char *output_return_instruction (/* struct rtx_def *, int, int */);
-int arm_volatile_func (/* void */);
-void output_func_prologue (/* FILE *, int */);
-void output_func_epilogue (/* FILE *, int */);
-void arm_expand_prologue (/* void */);
-void arm_print_operand (/* FILE *, struct rtx_def *, int */);
-void final_prescan_insn (/* struct rtx_def *, struct rtx_def **, int */);
+#ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
+#define STDIO_PROTO(ARGS) PROTO (ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+
+#ifndef TREE_CODE
+union tree_node;
+#define Tree union tree_node *
+#else
+#define Tree tree
+#endif
+
+#ifndef RTX_CODE
+struct rtx_def;
+#define Rtx struct rtx_def *
+#else
+#define Rtx rtx
+#endif
+
+#ifndef HOST_WIDE_INT
+#include "hwint.h"
+#endif
+#define Hint HOST_WIDE_INT
+
+#ifndef HAVE_MACHINE_MODES
+#include "machmode.h"
+#endif
+#define Mmode enum machine_mode
+
+#ifdef RTX_CODE
+#define RTX_CODE_PROTO(ARGS) PROTO (ARGS)
+#else
+#define RTX_CODE_PROTO(ARGS) ()
+#endif
+#define Rcode enum rtx_code
+
+void   arm_override_options PROTO ((void));
+int    use_return_insn PROTO ((int));
+int    const_ok_for_arm PROTO ((Hint));
+int    const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode, Mmode));
+int    arm_split_constant RTX_CODE_PROTO ((Rcode, Mmode, Hint, Rtx, Rtx, int));
+Rcode  arm_canonicalize_comparison RTX_CODE_PROTO ((Rcode,  Rtx *));
+int    arm_return_in_memory PROTO ((Tree));
+int    legitimate_pic_operand_p PROTO ((Rtx));
+Rtx    legitimize_pic_address PROTO ((Rtx, Mmode, Rtx));
+int    is_pic PROTO ((Rtx));
+void   arm_finalize_pic PROTO ((void));
+int    arm_rtx_costs RTX_CODE_PROTO ((Rtx, Rcode, Rcode));
+int    arm_adjust_cost PROTO ((Rtx, Rtx, Rtx, int));
+int    const_double_rtx_ok_for_fpu PROTO ((Rtx));
+int    neg_const_double_rtx_ok_for_fpu PROTO ((Rtx));
+int    s_register_operand PROTO ((Rtx, Mmode));
+int    f_register_operand PROTO ((Rtx, Mmode));
+int    reg_or_int_operand PROTO ((Rtx, Mmode));
+int    reload_memory_operand PROTO ((Rtx, Mmode));
+int    arm_rhs_operand PROTO ((Rtx, Mmode));
+int    arm_rhsm_operand PROTO ((Rtx, Mmode));
+int    arm_add_operand PROTO ((Rtx, Mmode));
+int    arm_not_operand PROTO ((Rtx, Mmode));
+int    offsettable_memory_operand PROTO ((Rtx, Mmode));
+int    alignable_memory_operand PROTO ((Rtx, Mmode));
+int    bad_signed_byte_operand PROTO ((Rtx, Mmode));
+int    fpu_rhs_operand PROTO ((Rtx, Mmode));
+int    fpu_add_operand PROTO ((Rtx, Mmode));
+int    power_of_two_operand PROTO ((Rtx, Mmode));
+int    di_operand PROTO ((Rtx, Mmode));
+int    soft_df_operand PROTO ((Rtx, Mmode));
+int    index_operand PROTO ((Rtx, Mmode));
+int    const_shift_operand PROTO ((Rtx, Mmode));
+int    shiftable_operator PROTO ((Rtx, Mmode));
+int    shift_operator PROTO ((Rtx, Mmode));
+int    equality_operator PROTO ((Rtx, Mmode));
+int    minmax_operator PROTO ((Rtx, Mmode));
+int    cc_register PROTO ((Rtx, Mmode));
+int    dominant_cc_register PROTO ((Rtx, Mmode));
+int    symbol_mentioned_p PROTO ((Rtx));
+int    label_mentioned_p PROTO ((Rtx));
+Rcode  minmax_code PROTO ((Rtx));
+int    adjacent_mem_locations PROTO ((Rtx, Rtx));
+int    load_multiple_operation PROTO ((Rtx, Mmode));
+int    store_multiple_operation PROTO ((Rtx, Mmode));
+int    load_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
+char * emit_ldm_seq PROTO ((Rtx *, int));
+int    store_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
+char * emit_stm_seq PROTO ((Rtx *, int));
+int    arm_valid_machine_decl_attribute PROTO ((Tree, Tree, Tree, Tree));
+Rtx    arm_gen_load_multiple PROTO ((int, int, Rtx, int, int, int, int, int));
+Rtx    arm_gen_store_multiple PROTO ((int, int, Rtx, int, int, int, int, int));
+int    arm_gen_movstrqi PROTO ((Rtx *));
+Rtx    gen_rotated_half_load PROTO ((Rtx));
+Mmode  arm_select_cc_mode RTX_CODE_PROTO ((Rcode, Rtx, Rtx));
+Rtx    gen_compare_reg RTX_CODE_PROTO ((Rcode, Rtx, Rtx, int));
+void   arm_reload_in_hi PROTO ((Rtx *));
+void   arm_reload_out_hi PROTO ((Rtx *));
+void   arm_reorg PROTO ((Rtx));
+char * fp_immediate_constant PROTO ((Rtx));
+void   print_multi_reg STDIO_PROTO ((FILE *, char *, int, int));
+char * output_call PROTO ((Rtx *));
+char * output_call_mem PROTO ((Rtx *));
+char * output_mov_long_double_fpu_from_arm PROTO ((Rtx *));
+char * output_mov_long_double_arm_from_fpu PROTO ((Rtx *));
+char * output_mov_long_double_arm_from_arm PROTO ((Rtx *));
+char * output_mov_double_fpu_from_arm PROTO ((Rtx *));
+char * output_mov_double_arm_from_fpu PROTO ((Rtx *));
+char * output_move_double PROTO ((Rtx *));
+char * output_mov_immediate PROTO ((Rtx *));
+char * output_add_immediate PROTO ((Rtx *));
+char * arithmetic_instr PROTO ((Rtx, int));
+void   output_ascii_pseudo_op STDIO_PROTO ((FILE *, unsigned char *, int));
+char * output_return_instruction PROTO ((Rtx, int, int));
+int    arm_volatile_func PROTO ((void));
+void   output_func_prologue STDIO_PROTO ((FILE *, int));
+void   output_func_epilogue STDIO_PROTO ((FILE *, int));
+void   arm_expand_prologue PROTO ((void));
+void   arm_print_operand STDIO_PROTO ((FILE *, Rtx, int));
+void   final_prescan_insn PROTO ((Rtx, Rtx *, int));
+int    short_branch PROTO ((int, int));
+void   assemble_align PROTO((int)); /* Used in arm.md, but defined in output.c */
+int    multi_register_push PROTO ((Rtx, Mmode));
 #ifdef AOF_ASSEMBLER
-struct rtx_def *aof_pic_entry (/* struct rtx_def * */);
-void aof_dump_pic_table (/* FILE * */);
-char *aof_text_section (/* void */);
-char *aof_data_section (/* void */);
-void aof_add_import (/* char * */);
-void aof_delete_import (/* char * */);
-void aof_dump_imports (/* FILE * */);
+Rtx    aof_pic_entry PROTO ((Rtx));
+void   aof_dump_pic_table STDIO_PROTO ((FILE *));
+char * aof_text_section PROTO ((void));
+char * aof_data_section PROTO ((void));
+void   aof_add_import PROTO ((char *));
+void   aof_delete_import PROTO ((char *));
+void   aof_dump_imports STDIO_PROTO ((FILE *));
 #endif
 
 #endif /* __ARM_H__ */

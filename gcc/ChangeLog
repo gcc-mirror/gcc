@@ -1,3 +1,16 @@
+Wed Mar 17 14:41:41 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/aout.h (ASM_GENERATE_INTERNAL_LABEL): Fix compile
+	time warning. 	
+	* config/arm/arm.md: Fix various compile time warnings.
+	* config/arm/arm.h: Fix various compile time warnings.  Add
+	function prototypes.
+	* config/arm/arm.c: Fix various compile time warnings.
+	(arm_override_options): Reorganise to seperate tuning from
+	targetting.
+	(bit_count): New function: Return a count of the number of bits
+	set in a word.
+
 Wed Mar 17 21:29:12 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (eliminate_regs): Don't keep REG_DEAD notes around for

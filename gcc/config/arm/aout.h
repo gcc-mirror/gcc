@@ -148,7 +148,7 @@ do {					\
 /* Make an internal label into a string.  */
 #ifndef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
-  sprintf (STRING, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+  sprintf (STRING, "*%s%s%u", LOCAL_LABEL_PREFIX, PREFIX, (unsigned int)(NUM))
 #endif
      
 /* Nothing special is done about jump tables */

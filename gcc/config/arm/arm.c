@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "expr.h"
 #include "toplev.h"
+#include "recog.h"
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -70,7 +71,6 @@ static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
 
 /*  Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
-
 rtx arm_compare_op0, arm_compare_op1;
 int arm_compare_fp;
 
@@ -90,13 +90,34 @@ char * target_fp_name = NULL;
 char * structure_size_string = NULL;
 int    arm_structure_size_boundary = 32; /* Used to be 8 */
 
+/* Bit values used to identify processor capabilities.  */
+#define FL_CO_PROC    0x01            /* Has external co-processor bus */
+#define FL_FAST_MULT  0x02            /* Fast multiply */
+#define FL_MODE26     0x04            /* 26-bit mode support */
+#define FL_MODE32     0x08            /* 32-bit mode support */
+#define FL_ARCH4      0x10            /* Architecture rel 4 */
+#define FL_THUMB      0x20            /* Thumb aware */
+#define FL_LDSCHED    0x40	      /* Load scheduling necessary */
+#define FL_STRONG     0x80	      /* StrongARM */
+
+/* The bits in this mask specify which instructions we are allowed to generate.  */
+static int insn_flags = 0;
+/* The bits in this mask specify which instruction scheduling options should
+   be used.  Note - there is an overlap with the FL_FAST_MULT.  For some
+   hardware we want to be able to generate the multiply instructions, but to
+   tune as if they were not present in the architecture.  */
+static int tune_flags = 0;
+
+/* The following are used in the arm.md file as equivalents to bits
+   in the above two flag variables.  */
+
 /* Nonzero if this is an "M" variant of the processor.  */
 int arm_fast_multiply = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions */
 int arm_arch4 = 0;
 
-/* Nonzero if this chip can benefit from laod scheduling.  */
+/* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
 
 /* Nonzero if this chip is a StrongARM.  */
@@ -125,11 +146,13 @@ int lr_save_eliminated;
 
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed. */
-
 static int return_used_this_function;
 
+/* Set to 1 after arm_reorg has started.  Reset to start at the start of
+   the next function.  */
 static int after_arm_reorg = 0;
 
+/* The maximum number of insns to be used when loading a constant.  */
 static int arm_constant_limit = 3;
 
 /* For an explanation of these variables, see final_prescan_insn below.  */
@@ -150,15 +173,6 @@ static enum arm_cond_code get_arm_condition_code ();
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
 /* Initialization code */
-
-#define FL_CO_PROC    0x01            /* Has external co-processor bus */
-#define FL_FAST_MULT  0x02            /* Fast multiply */
-#define FL_MODE26     0x04            /* 26-bit mode support */
-#define FL_MODE32     0x08            /* 32-bit mode support */
-#define FL_ARCH4      0x10            /* Architecture rel 4 */
-#define FL_THUMB      0x20            /* Thumb aware */
-#define FL_LDSCHED    0x40	      /* Load scheduling necessary */
-#define FL_STRONG     0x80	      /* StrongARM */
 
 struct processors
 {
@@ -233,14 +247,28 @@ struct arm_cpu_select arm_select[] =
   { NULL,	"-mtune=",	all_cores }
 };
 
+/* Return the number of bits set in value' */
+static unsigned int
+bit_count (value)
+     signed int value;
+{
+  unsigned int count = 0;
+  
+  while (value)
+    {
+      value &= ~(value & - value);
+      ++ count;
+    }
+
+  return count;
+}
+
 /* Fix up any incompatible options that the user has specified.
    This has now turned into a maze.  */
 void
 arm_override_options ()
 {
-  unsigned int flags = 0;
   unsigned i;
-  struct arm_cpu_select * ptr;
   
   /* Set up the flags based on the cpu/architecture selected by the user.  */
   for (i = sizeof (arm_select) / sizeof (arm_select[0]); i--;)
@@ -254,23 +282,20 @@ arm_override_options ()
           for (sel = ptr->processors; sel->name != NULL; sel ++)
             if (streq (ptr->string, sel->name))
               {
-		if (flags != 0)
+		if (i == 2)
+		  tune_flags = sel->flags;
+		else
 		  {
-		    /* We scan the arm_select array in the order:
-		         tune -> arch -> cpu
-		       So if we have been asked to tune for, say, an ARM8,
-		       but we are told that the cpu is only an ARM6, then
-		       we have problems.  We detect this by seeing if the
-		       flags bits accumulated so far can be supported by the
-		       cpu/architecture type now being parsed.  If they can,
-		       then OR in any new bits.  If they cannot then report
-		       an error.  */
-		    if ((flags & sel->flags) != flags)
-		      error ("switch %s%s overridden by another switch",
-			     ptr->string, sel->name );
+		    /* If we have been given an architecture and a processor
+		       make sure that they are compatible.  We only generate
+		       a warning though, and we prefer the CPU over the
+		       architecture. */
+		    if (insn_flags != 0 && (insn_flags ^ sel->flags))
+		      warning ("switch -mcpu=%s conflicts with -mtune= switch",
+			       ptr->string);
+		    
+		    insn_flags = sel->flags;
 		  }
-
-		flags = sel->flags;
 		
                 break;
               }
@@ -279,97 +304,148 @@ arm_override_options ()
             error ("bad value (%s) for %s switch", ptr->string, ptr->name);
         }
     }
-
+  
   /* If the user did not specify a processor, choose one for them.  */
-  if (flags == 0)
+  if (insn_flags == 0)
     {
       struct processors * sel;
-      int                 sought = 0;
+      unsigned int        sought;
+      static struct cpu_default
+      {
+	int    cpu;
+	char * name;
+      }
+      cpu_defaults[] =
+      {
+	{ TARGET_CPU_arm2,      "arm2" },
+	{ TARGET_CPU_arm6,      "arm6" },
+	{ TARGET_CPU_arm610,    "arm610" },
+	{ TARGET_CPU_arm7m,     "arm7m" },
+	{ TARGET_CPU_arm7500fe, "arm7500fe" },
+	{ TARGET_CPU_arm7tdmi,  "arm7tdmi" },
+	{ TARGET_CPU_arm8,      "arm8" },
+	{ TARGET_CPU_arm810,    "arm810" },
+	{ TARGET_CPU_arm9,      "arm9" },
+	{ TARGET_CPU_strongarm, "strongarm" },
+	{ TARGET_CPU_generic,   "arm" },
+	{ 0, 0 }
+      };
+      struct cpu_default * def;
+	  
+      /* Find the default.  */
+      for (def = cpu_defaults; def->name; def ++)
+	if (def->cpu == TARGET_CPU_DEFAULT)
+	  break;
+
+      /* Make sure we found the default CPU.  */
+      if (def->name == NULL)
+	abort ();
+      
+      /* Find the default CPU's flags.  */
+      for (sel = all_cores; sel->name != NULL; sel ++)
+	if (streq (def->name, sel->name))
+	  break;
+      
+      if (sel->name == NULL)
+	abort ();
+
+      insn_flags = sel->flags;
+      
+      /* Now check to see if the user has specified some command line
+	 switch that require certain abilities from the cpu.  */
+      sought = 0;
       
       if (TARGET_THUMB_INTERWORK)
 	{
-	  sought |= FL_THUMB;
-
-	  /* Force apcs-32 to be used for Thumb targets.  */
+	  sought |= (FL_THUMB | FL_MODE32);
+	  
+	  /* Force apcs-32 to be used for interworking.  */
 	  target_flags |= ARM_FLAG_APCS_32;
+
+	  /* There are no ARM processor that supports both APCS-26 and
+	     interworking.  Therefore we force FL_MODE26 to be removed
+	     from insn_flags here (if it was set), so that the search
+	     below will always be able to find a compatible processor.  */
+	  insn_flags &= ~ FL_MODE26;
 	}
       
       if (! TARGET_APCS_32)
 	sought |= FL_MODE26;
 
-      if (sought != 0)
+      if (sought != 0 && ((sought & insn_flags) != sought))
 	{
-	  for (sel = all_cores; sel->name != NULL; sel++)
-	    if ((sel->flags & sought) == sought)
-	      {
-		flags = sel->flags;
-		break;
-	      }
-	  
-	  if (sel->name == NULL)
-	    fatal ("Unable to select a cpu that matches command line specification");
-	}
-      else
-	{
-	  /* The user did not specify any command line switches that require
-	     a certain kind of CPU.  Use TARGET_CPU_DEFAULT instead.  */
-
-	  static struct cpu_default
-	  {
-	    int    cpu;
-	    char * name;
-	  }
-	  cpu_defaults[] =
-	  {
-	    { TARGET_CPU_arm2,      "arm2" },
-	    { TARGET_CPU_arm6,      "arm6" },
-	    { TARGET_CPU_arm610,    "arm610" },
-	    { TARGET_CPU_arm7m,     "arm7m" },
-	    { TARGET_CPU_arm7500fe, "arm7500fe" },
-	    { TARGET_CPU_arm7tdmi,  "arm7tdmi" },
-	    { TARGET_CPU_arm8,      "arm8" },
-	    { TARGET_CPU_arm810,    "arm810" },
-	    { TARGET_CPU_arm9,      "arm9" },
-	    { TARGET_CPU_strongarm, "strongarm" },
-	    { TARGET_CPU_generic,   "arm" },
-	    { 0, 0 }
-	  };
-	  struct cpu_default * def;
-	  
-	  /* Find the default.  */
-	  for (def = cpu_defaults; def->name; def ++)
-	    if (def->cpu == TARGET_CPU_DEFAULT)
-	      break;
-	  
-	  if (def->name == NULL)
-	    abort ();
-
-	  /* Find the default CPU's flags.  */
+	  /* Try to locate a CPU type that supports all of the abilities
+	     of the default CPU, plus the extra abilities requested by
+	     the user.  */
 	  for (sel = all_cores; sel->name != NULL; sel ++)
-	    if (streq (def->name, sel->name))
+	    if ((sel->flags & sought) == (sought | insn_flags))
 	      break;
 
 	  if (sel->name == NULL)
-	    abort ();
+	    {
+	      unsigned int        current_bit_count = 0;
+	      struct processors * best_fit = NULL;
+	      
+	      /* Ideally we would like to issue an error message here
+		 saying that it was not possible to find a CPU compatible
+		 with the default CPU, but which also supports the command
+		 line options specified by the programmer, and so they
+		 ought to use the -mcpu=<name> command line option to
+		 override the default CPU type.
 
-	  flags = sel->flags;
+		 Unfortunately this does not work with multilibing.  We
+		 need to be able to support multilibs for -mapcs-26 and for
+		 -mthumb-interwork and there is no CPU that can support both
+		 options.  Instead if we cannot find a cpu that has both the
+		 characteristics of the default cpu and the given command line
+		 options we scan the array again looking for a best match.  */
+	      for (sel = all_cores; sel->name != NULL; sel ++)
+		if ((sel->flags & sought) == sought)
+		  {
+		    unsigned int count;
+
+		    count = bit_count (sel->flags & insn_flags);
+
+		    if (count >= current_bit_count)
+		      {
+			best_fit = sel;
+			current_bit_count = count;
+		      }
+		  }
+
+	      if (best_fit == NULL)
+		abort ();
+	      else
+		sel = best_fit;
+	    }
+
+	  insn_flags = sel->flags;
 	}
     }
-
+  
+  /* If tuning has not been specified, tune for whichever processor or
+     architecture has been selected.  */
+  if (tune_flags == 0)
+    tune_flags = insn_flags;
+  
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
-  if (TARGET_APCS_32 && !(flags & FL_MODE32))
+  if (TARGET_APCS_32 && !(insn_flags & FL_MODE32))
     {
-      warning ("target CPU does not support APCS-32" );
+      /* If APCS-32 was not the default then it must have been set by the
+	 user, so issue a warning message.  If the user has specified
+	 "-mapcs-32 -mcpu=arm2" then we loose here.  */
+      if ((TARGET_DEFAULT & ARM_FLAG_APCS_32) == 0)
+	warning ("target CPU does not support APCS-32" );
       target_flags &= ~ ARM_FLAG_APCS_32;
     }
-  else if (! TARGET_APCS_32 && !(flags & FL_MODE26))
+  else if (! TARGET_APCS_32 && !(insn_flags & FL_MODE26))
     {
       warning ("target CPU does not support APCS-26" );
       target_flags |= ARM_FLAG_APCS_32;
     }
   
-  if (TARGET_THUMB_INTERWORK && !(flags & FL_THUMB))
+  if (TARGET_THUMB_INTERWORK && !(insn_flags & FL_THUMB))
     {
       warning ("target CPU does not support interworking" );
       target_flags &= ~ARM_FLAG_THUMB;
@@ -388,52 +464,49 @@ arm_override_options ()
       warning ("-mapcs-stack-check incompatible with -mno-apcs-frame");
       target_flags |= ARM_FLAG_APCS_FRAME;
     }
-
+  
   if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)
     warning ("-g with -fomit-frame-pointer may not give sensible debugging");
-
+  
   if (TARGET_POKE_FUNCTION_NAME)
     target_flags |= ARM_FLAG_APCS_FRAME;
-
+  
   if (TARGET_APCS_REENT && flag_pic)
     fatal ("-fpic and -mapcs-reent are incompatible");
-
+  
   if (TARGET_APCS_REENT)
     warning ("APCS reentrant code not supported.  Ignored");
-
+  
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  */
   if (flag_pic && ! TARGET_APCS_STACK)
     arm_pic_register = 10;
-
+  
   /* Well, I'm about to have a go, but pic is NOT going to be compatible
      with APCS reentrancy, since that requires too much support in the
      assembler and linker, and the ARMASM assembler seems to lack some
      required directives.  */
   if (flag_pic)
     warning ("Position independent code not supported");
-
+  
   if (TARGET_APCS_FLOAT)
     warning ("Passing floating point arguments in fp regs not yet supported");
-
-  /* Initialise booleans used elsewhere in this file, and in arm.md  */
-  arm_fast_multiply = (flags & FL_FAST_MULT) != 0;
-  arm_arch4         = (flags & FL_ARCH4) != 0;
-  arm_ld_sched      = (flags & FL_LDSCHED) != 0;
-  arm_is_strong     = (flags & FL_STRONG);
   
-  /* The arm.md file needs to know if theprocessor is an ARM6 or an ARM7  */
-  arm_is_6_or_7 = ((flags & (FL_MODE26 | FL_MODE32)) && !(flags & FL_ARCH4));
+  /* Initialise boolean versions of the flags, for use in the arm.md file.  */
+  arm_fast_multiply = insn_flags & FL_FAST_MULT;
+  arm_arch4         = insn_flags & FL_ARCH4;
+  
+  arm_ld_sched      = tune_flags & FL_LDSCHED;
+  arm_is_strong     = tune_flags & FL_STRONG;
+  arm_is_6_or_7     = ((tune_flags & (FL_MODE26 | FL_MODE32))
+		       && !(tune_flags & FL_ARCH4));
   
   /* Default value for floating point code... if no co-processor
      bus, then schedule for emulated floating point.  Otherwise,
      assume the user has an FPA.
      Note: this does not prevent use of floating point instructions,
      -msoft-float does that.  */
-  if ((flags & FL_CO_PROC) == 0)
-    arm_fpu = FP_SOFT3;
-  else
-    arm_fpu = FP_HARD;
+  arm_fpu = (tune_flags & FL_CO_PROC) ? FP_HARD : FP_SOFT3;
   
   if (target_fp_name)
     {
@@ -450,12 +523,12 @@ arm_override_options ()
   
   if (TARGET_FPE && arm_fpu != FP_HARD)
     arm_fpu = FP_SOFT2;
-
+  
   /* For arm2/3 there is no need to do any scheduling if there is only
      a floating point emulator, or we are doing software floating-point.  */
-  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD) && (flags & FL_MODE32) == 0)
+  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD) && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
-
+  
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
   
   if (structure_size_string != NULL)
@@ -471,9 +544,9 @@ arm_override_options ()
   /* If optimizing for space, don't synthesize constants.
      For processors with load scheduling, it never costs more than 2 cycles
      to load a constant, and the load scheduler may well reduce that to 1.  */
-  if (optimize_size || (flags & FL_LDSCHED))
+  if (optimize_size || (tune_flags & FL_LDSCHED))
     arm_constant_limit = 1;
-
+  
   /* If optimizing for size, bump the number of instructions that we
      are prepared to conditionally execute (even on a StrongARM). 
      Otherwise for the StrongARM, which has early execution of branches,
@@ -611,7 +684,11 @@ arm_split_constant (code, mode, val, target, source, subtargets)
 	 them in-line, regardless of the cost.  This is only likely to
 	 be more costly on chips that have load delay slots and we are
 	 compiling without running the scheduler (so no splitting
-	 occurred before the final instruction emission.  */
+	 occurred before the final instruction emission).
+
+	 Ref: gcc -O1 -mcpu=strongarm gcc.c-torture/compile/980506-2.c
+	      gcc -O0 -mcpu=strongarm plumhall/c/conform/exprtest/assign.c
+      */
       if (! after_arm_reorg
 	  && (arm_gen_constant (code, mode, val, target, source, 1, 0)
 	      > arm_constant_limit + (code != SET)))
@@ -1671,7 +1748,7 @@ arm_rtx_costs (x, code, outer_code)
 	  int add_cost = const_ok_for_arm (i) ? 4 : 8;
 	  int j;
 	  /* Tune as appropriate */ 
-	  int booth_unit_size = (arm_fast_multiply ? 8 : 2);
+	  int booth_unit_size = ((tune_flags & FL_FAST_MULT) ? 8 : 2);
 	  
 	  for (j = 0; i && j < 32; j += booth_unit_size)
 	    {
@@ -1682,7 +1759,7 @@ arm_rtx_costs (x, code, outer_code)
 	  return add_cost;
 	}
 
-      return ((arm_fast_multiply ? 8 : 30)
+      return (((tune_flags & FL_FAST_MULT) ? 8 : 30)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 4)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 1)) ? 0 : 4));
 
@@ -2227,7 +2304,7 @@ shift_operator (x, mode)
       enum rtx_code code = GET_CODE (x);
 
       if (code == MULT)
-	return power_of_two_operand (XEXP (x, 1));
+	return power_of_two_operand (XEXP (x, 1), mode);
 
       return (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT
 	      || code == ROTATERT);
@@ -4317,7 +4394,7 @@ output_mov_double_arm_from_fpu (operands)
 
 char *
 output_move_double (operands)
-     rtx *operands;
+     rtx * operands;
 {
   enum rtx_code code0 = GET_CODE (operands[0]);
   enum rtx_code code1 = GET_CODE (operands[1]);
@@ -4328,6 +4405,7 @@ output_move_double (operands)
       int reg0 = REGNO (operands[0]);
 
       otherops[0] = gen_rtx_REG (SImode, 1 + reg0);
+      
       if (code1 == REG)
 	{
 	  int reg1 = REGNO (operands[1]);
@@ -4430,7 +4508,8 @@ output_move_double (operands)
 	      break;
 
 	    default:
-	      if (arm_add_operand (XEXP (XEXP (operands[1], 0), 1)))
+	      if (arm_add_operand (XEXP (XEXP (operands[1], 0), 1),
+				   GET_MODE (XEXP (XEXP (operands[1], 0), 1))))
 		{
 		  otherops[0] = operands[0];
 		  otherops[1] = XEXP (XEXP (operands[1], 0), 0);
