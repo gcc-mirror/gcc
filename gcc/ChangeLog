@@ -1,3 +1,8 @@
+2004-01-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips16_optimize_gp): Delete.
+	(mips_reorg): Don't call it.
+
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (addqi3_noclobber): Move up pecking order.
