@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
+# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
 # 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -3378,13 +3378,13 @@ QMTEST_PATH=qmtest
 QMTESTFLAGS=
 
 # The flags to pass to "qmtest run".
-QMTESTRUNFLAGS=
+QMTESTRUNFLAGS=-f none --result-stream dejagnu_stream.DejaGNUStream
 
 # The command to use to invoke qmtest.
 QMTEST=${QMTEST_PATH} ${QMTESTFLAGS}
 
 # The tests (or suites) to run.
-QMTEST_GPP_TESTS=gpp
+QMTEST_GPP_TESTS=g++
 
 # The subdirectory of the OBJDIR that will be used to store the QMTest
 # test database configuration and that will be used for temporary
@@ -3393,47 +3393,31 @@ QMTEST_DIR=qmtestsuite
 
 # Create the QMTest database configuration.
 ${QMTEST_DIR} stamp-qmtest:
-	debug_options=""; \
-	    ${STAMP} empty.C; \
-	    for option in \
-	        -gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+ -gcoff; do \
-		(./cc1plus -q $${option} empty.C 2>&1 | \
-		     grep "unknown or unsupported -g option" > /dev/null) || \
-		debug_options="$${debug_options}$${option} "; done; \
-	    ${QMTEST} -D ${QMTEST_DIR} create-tdb \
-	        -c gcc_database.GCCDatabase \
-	        -a GCCDatabase.testsuite_root=`cd ${srcdir}/testsuite && pwd` \
-	        -a GCCDatabase.debug_options="$${debug_options}"
-	rm -f empty.C empty.s
-	$(STAMP) stamp-qmtest
+	${QMTEST} -D ${QMTEST_DIR} create-tdb \
+	    -c gcc_database.GCCDatabase \
+            -a srcdir=`cd ${srcdir}/testsuite && pwd` && \
+	    $(STAMP) stamp-qmtest
 
 # Create the QMTest context file.
 ${QMTEST_DIR}/context: stamp-qmtest
-	echo "GCCTest.flags=-B${objdir}" >> $@
-	echo "GCCTest.objdir=${objdir}/.." >> $@
-	echo "GCCTest.host=${host_canonical}" >> $@
-	echo "GCCTest.target=${target}" >> $@
-	echo "GCCTest.gcov=${objdir}/gcov" >> $@
-	echo "GPPTest.gpp=${objdir}/g++" >> $@
-	echo "DGTest.demangler=${objdir}/c++filt" >> $@
+	rm -f $@
+	echo "CompilerTable.languages=c cplusplus" >> $@
+	echo "CompilerTable.c_kind=GCC" >> $@
+	echo "CompilerTable.c_path=${objdir}/xgcc" >> $@
+	echo "CompilerTable.c_options=-B${objdir}/" >> $@
+	echo "CompilerTable.cplusplus_kind=GCC" >> $@
+	echo "CompilerTable.cplusplus_path=${objdir}/g++" >> $@
+	echo "CompilerTable.cplusplus_options=-B${objdir}/" >> $@
+	echo "DejaGNUTest.target=$(target)" >> $@
 
 # Run the G++ testsuite using QMTest.
-qmtest-g++: ${QMTEST_DIR}/context ${QMTEST_DIR}/gpp-expected.qmr
+qmtest-g++: ${QMTEST_DIR}/context
 	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
-	   -o gpp.qmr -O gpp-expected.qmr \
-	   ${QMTEST_GPP_TESTS}
+	   -o g++.qmr ${QMTEST_GPP_TESTS}
 
 # Use the QMTest GUI.
 qmtest-gui: ${QMTEST_DIR}/context
 	cd ${QMTEST_DIR} && ${QMTEST} gui -C context
-
-# Build the set of expected G++ failures.
-${QMTEST_DIR}/gpp-expected.qmr: ${QMTEST_DIR}/context
-	echo "Determining expected results..."
-	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
-           -c "GCCTest.generate_xfails=1" -o gpp-expected.qmr \
-	   ${QMTEST_GPP_TESTS} \
-	   > /dev/null
 
 .PHONY: qmtest-g++
 
