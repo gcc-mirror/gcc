@@ -1,3 +1,9 @@
+2003-12-03  Jan Hubicka  <jh@suse.cz>
+
+	* hashtab.c (htab_expand): Compute the size of hashtable based
+	on the number of elements actually used.
+	(htab_traverse):  Call htab_expand when table is too empty.
+
 2003-03-11  Carlo Wood  <carlo@gnu.org>
 
 	* cplus-dem.c (demangle_integral_value): Correction to reflect
