@@ -3775,7 +3775,7 @@ loop_givs_find (loop)
 
 /* For each giv for which we still don't know whether or not it is
    replaceable, check to see if it is replaceable because its final value
-   can be calculated.   */
+   can be calculated.  */
 
 static void
 loop_givs_check (loop)
@@ -4757,7 +4757,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 	/* This code used to disable creating GIVs with mult_val == 1 and
 	   add_val == 0.  However, this leads to lost optimizations when
 	   it comes time to combine a set of related DEST_ADDR GIVs, since
-	   this one would not be seen.   */
+	   this one would not be seen.  */
 
 	if (general_induction_var (loop, XEXP (x, 0), &src_reg, &add_val,
 				   &mult_val, &ext_val, 1, &benefit,

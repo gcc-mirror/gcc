@@ -920,7 +920,7 @@ attr_copy_rtx (orig)
    in the attribute (or `alternative_name') to speed up subsequent
    `find_attr' calls and eliminate most `strcmp' calls.
 
-   Return the new expression, if any.   */
+   Return the new expression, if any.  */
 
 static rtx
 check_attr_test (exp, is_const, lineno)
@@ -3474,7 +3474,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 
       /* Look at the value for this insn code in the specified attribute.
 	 We normally can replace this comparison with the condition that
-	 would give this insn the values being tested for.   */
+	 would give this insn the values being tested for.  */
       if (XSTR (exp, 0) != alternative_name
 	  && (attr = find_attr (XSTR (exp, 0), 0)) != NULL)
 	for (av = attr->first_value; av; av = av->next)

@@ -50,7 +50,7 @@ test programs available.  A special version of the PARANOIA floating
 point arithmetic tester, modified for this purpose, can be found on
 usc.edu: /pub/C-numanal/ieeetest.zoo.  Other tests, and libraries of
 XFmode and TFmode transcendental functions, can be obtained by ftp from
-netlib.att.com: netlib/cephes.   */
+netlib.att.com: netlib/cephes.  */
 
 /* Type of computer arithmetic.
    Only one of DEC, IBM, IEEE, C4X, or UNK should get defined.
@@ -108,7 +108,7 @@ netlib.att.com: netlib/cephes.   */
    These optional macros may be defined in tm.h.  In real.h, they
    default to WORDS_BIG_ENDIAN, etc., so there is no need to define
    them for any normal host or target machine on which the floats
-   and the integers have the same endian-ness.   */
+   and the integers have the same endian-ness.  */
 
 
 /* The following converts gcc macros into the ones used by this file.  */
@@ -503,7 +503,7 @@ static void esqrt	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 
 /* Copy 32-bit numbers obtained from array containing 16-bit numbers,
    swapping ends if required, into output array of longs.  The
-   result is normally passed to fprintf by the ASM_OUTPUT_ macros.   */
+   result is normally passed to fprintf by the ASM_OUTPUT_ macros.  */
 
 static void
 endian (e, x, mode)
@@ -917,7 +917,7 @@ ereal_from_int (d, i, j, mode)
 }
 
 
-/* REAL_VALUE_FROM_UNSIGNED_INT macro.   */
+/* REAL_VALUE_FROM_UNSIGNED_INT macro.  */
 
 void
 ereal_from_uint (d, i, j, mode)
@@ -1324,7 +1324,7 @@ ereal_to_decimal (x, s)
 }
 
 /* Compare X and Y.  Return 1 if X > Y, 0 if X == Y, -1 if X < Y,
-   or -2 if either is a NaN.   */
+   or -2 if either is a NaN.  */
 
 int
 ereal_cmp (x, y)
@@ -2514,7 +2514,7 @@ emulm (a, b)
    Data types having standard 15-bit exponents are not affected by
    this, but SFmode and DFmode are affected. For example, ediv with
    rndprc = 24 will not round correctly to 24-bit precision if the
-   result is denormal.   */
+   result is denormal.  */
 
 static int rlast = -1;
 static int rw = 0;
@@ -3018,7 +3018,7 @@ ediv (a, b, c)
      *(c+(NE-1)) &= ~0x8000;
 }
 
-/* Multiply e-types A and B, return e-type product C.   */
+/* Multiply e-types A and B, return e-type product C.  */
 
 static void
 emul (a, b, c)

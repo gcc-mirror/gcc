@@ -597,7 +597,7 @@ report_missing_guard (n, b)
   return 0;
 }
 
-/* Create a dependency, or issue an error message as appropriate.   */
+/* Create a dependency, or issue an error message as appropriate.  */
 static void
 handle_missing_header (pfile, fname, angle_brackets)
      cpp_reader *pfile;

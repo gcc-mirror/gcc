@@ -7605,7 +7605,7 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 
      The first jump optimization pass may leave a real insn as the last
      insn in the function.   We must not skip that insn or we may end
-     up deleting code that is not really dead.   */
+     up deleting code that is not really dead.  */
   insn = get_last_insn ();
   if (! INSN_P (insn))
     insn = prev_real_insn (insn);

@@ -2686,7 +2686,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     When we find a pseudo always equivalent to a constant,
 	     we replace it by the constant.  We must be sure, however,
 	     that we don't try to replace it in the insn in which it
-	     is being set.   */
+	     is being set.  */
 	  register int regno = REGNO (recog_data.operand[i]);
 	  if (reg_equiv_constant[regno] != 0
 	      && (set == 0 || &SET_DEST (set) != recog_data.operand_loc[i]))

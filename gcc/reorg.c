@@ -118,7 +118,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    based on the condition code of the previous insn.
 
    The HP-PA can conditionally nullify insns, providing a similar
-   effect to the ARM, differing mostly in which insn is "in charge".   */
+   effect to the ARM, differing mostly in which insn is "in charge".  */
 
 #include "config.h"
 #include "system.h"
@@ -2123,7 +2123,7 @@ fill_simple_delay_slots (non_jumps_p)
 	    tmp++;
 
 	  /* Remove the unconditional jump from consideration for delay slot
-	     filling and unthread it.   */
+	     filling and unthread it.  */
 	  if (*tmp == trial)
 	    *tmp = 0;
 	  {
@@ -2309,7 +2309,7 @@ fill_simple_delay_slots (non_jumps_p)
 		  break;
 
 		/* See if we have a resource problem before we try to
-		   split.   */
+		   split.  */
 		if (GET_CODE (pat) != SEQUENCE
 		    && ! insn_references_resource_p (trial, &set, 1)
 		    && ! insn_sets_resource_p (trial, &set, 1)

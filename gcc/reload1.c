@@ -225,7 +225,7 @@ static char spill_indirect_levels;
 
 /* Nonzero if indirect addressing is supported when the innermost MEM is
    of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
-   which these are valid is the same as spill_indirect_levels, above.   */
+   which these are valid is the same as spill_indirect_levels, above.  */
 char indirect_symref_ok;
 
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
@@ -916,7 +916,7 @@ reload (first, global)
       /* Round size of stack frame to stack_alignment_needed.  This must be done
 	 here because the stack size may be a part of the offset computation
 	 for register elimination, and there might have been new stack slots
-	 created in the last iteration of this loop.   */
+	 created in the last iteration of this loop.  */
       if (cfun->stack_alignment_needed)
         assign_stack_local (BLKmode, 0, cfun->stack_alignment_needed);
 
@@ -2041,7 +2041,7 @@ alter_reg (i, from_reg)
       if (adjust != 0 || GET_MODE (x) != GET_MODE (regno_reg_rtx[i]))
 	x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
 
-      /* Save the stack slot for later.   */
+      /* Save the stack slot for later.  */
       reg_equiv_memory_loc[i] = x;
     }
 }
@@ -2316,7 +2316,7 @@ eliminate_regs (x, mem_mode, insn)
        whole instead of this little section as well as the backend issues.  */
     case PLUS:
       /* If this is the sum of an eliminable register and a constant, rework
-	 the sum.   */
+	 the sum.  */
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
 	  && CONSTANT_P (XEXP (x, 1)))
@@ -6192,7 +6192,7 @@ emit_input_reload_insns (chain, rl, old, j)
       /* If it is no cheaper to copy from OLDEQUIV into the
 	 reload register than it would be to move from memory,
 	 don't use it. Likewise, if we need a secondary register
-	 or memory.   */
+	 or memory.  */
 
       if (oldequiv != 0
 	  && ((REGNO_REG_CLASS (regno) != rl->class

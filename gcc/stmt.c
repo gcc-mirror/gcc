@@ -1229,7 +1229,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	/* Label has still not appeared.  If we are exiting a block with
 	   a stack level to restore, that started before the fixup,
 	   mark this stack level as needing restoration
-	   when the fixup is later finalized.   */
+	   when the fixup is later finalized.  */
 	&& thisblock != 0
 	/* Note: if THISBLOCK == 0 and we have a label that hasn't appeared, it
 	   means the label is undefined.  That's erroneous, but possible.  */
@@ -3089,7 +3089,7 @@ expand_return (retval)
 
       /* Find the smallest integer mode large enough to hold the
 	 entire structure and use that mode instead of BLKmode
-	 on the USE insn for the return register.   */
+	 on the USE insn for the return register.  */
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmpmode != VOIDmode;
 	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
@@ -3983,7 +3983,7 @@ expand_decl_init (decl)
    leave the current scope.
 
    If CLEANUP is nonzero and DECL is zero, we record a cleanup
-   that is not associated with any particular variable.   */
+   that is not associated with any particular variable.  */
 
 int
 expand_decl_cleanup (decl, cleanup)

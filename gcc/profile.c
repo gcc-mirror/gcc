@@ -68,7 +68,7 @@ struct bb_info
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
 
 /* Keep all basic block indexes nonnegative in the gcov output.  Index 0
-   is used for entry block, last block exit block.   */
+   is used for entry block, last block exit block.  */
 #define GCOV_INDEX_TO_BB(i)  ((i) == 0 ? ENTRY_BLOCK_PTR		\
 			      : (((i) == n_basic_blocks + 1)		\
 			         ? EXIT_BLOCK_PTR : BASIC_BLOCK ((i)-1)))

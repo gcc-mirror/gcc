@@ -619,7 +619,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
    SETs CC0 even though this is not totally correct.  The reason for this is
    that we require a SET of CC0 to immediately precede the reference to CC0.
    So if some other insn sets CC0 as a side-effect, we know it cannot affect
-   our computation and thus may be placed in a delay slot.   */
+   our computation and thus may be placed in a delay slot.  */
 
 void
 mark_set_resources (x, res, in_dest, mark_type)

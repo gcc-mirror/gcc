@@ -916,7 +916,7 @@ try_crossjump_to_edge (mode, e1, e2)
     newpos1 = NEXT_INSN (newpos1);
   last = src1->end;
 
-  /* Emit the jump insn.   */
+  /* Emit the jump insn.  */
   label = block_label (redirect_to);
   emit_jump_insn_after (gen_jump (label), src1->end);
   JUMP_LABEL (src1->end) = label;
@@ -1189,7 +1189,7 @@ try_optimize_cfg (mode)
   return changed_overall;
 }
 
-/* Delete all unreachable basic blocks.   */
+/* Delete all unreachable basic blocks.  */
 
 static bool
 delete_unreachable_blocks ()

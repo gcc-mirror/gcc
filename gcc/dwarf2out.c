@@ -171,7 +171,7 @@ typedef struct dw_fde_struct
 }
 dw_fde_node;
 
-/* Maximum size (in bytes) of an artificially generated label.   */
+/* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
 
 /* The size of the target's pointer type.  */
@@ -6268,7 +6268,7 @@ output_comp_unit (die)
 
   build_abbrev_table (die);
 
-  /* Initialize the beginning DIE offset - and calculate sizes/offsets.   */
+  /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
   next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
   calc_die_sizes (die);
 
@@ -7410,7 +7410,7 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return true if it is
-   an enumerated type.   */
+   an enumerated type.  */
 
 static inline int
 type_is_enum (type)

@@ -2948,7 +2948,7 @@ compute_kill_rd ()
 	 Look at the linked list starting at reg_set_table[regx]
 	 For each setting of regx in the linked list, which is not in
 	     this block
-	   Set the bit in `kill' corresponding to that insn.   */
+	   Set the bit in `kill' corresponding to that insn.  */
   for (bb = 0; bb < n_basic_blocks; bb++)
     for (cuid = 0; cuid < max_cuid; cuid++)
       if (TEST_BIT (rd_gen[bb], cuid))
@@ -4931,7 +4931,7 @@ pre_delete ()
 		   However, on the x86 some of the movXX patterns actually
 		   contain clobbers of scratch regs.  This may cause the
 		   insn created by validate_change to not match any pattern
-		   and thus cause validate_change to fail.   */
+		   and thus cause validate_change to fail.  */
 		if (validate_change (insn, &SET_SRC (set),
 				     expr->reaching_reg, 0))
 		  {

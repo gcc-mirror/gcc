@@ -660,7 +660,7 @@ div_and_round_double (code, uns,
 	  else
 	    quo_est = BASE - 1;
 
-	  /* Refine quo_est so it's usually correct, and at most one high.   */
+	  /* Refine quo_est so it's usually correct, and at most one high.  */
 	  tmp = work - quo_est * den[den_hi_sig];
 	  if (tmp < BASE
 	      && (den[den_hi_sig - 1] * quo_est
@@ -3004,7 +3004,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
  if (!const_p)
    {
      /* If this is not a constant, we can only do something if bit positions,
-	sizes, and signedness are the same.   */
+	sizes, and signedness are the same.  */
      rinner = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset, &rmode,
 				   &runsignedp, &rvolatilep, &alignment);
 
