@@ -266,6 +266,15 @@ static unsigned reg_number		PROTO((rtx));
   fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, VALUE)
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_DELTA1
+#define ASM_OUTPUT_DWARF_DELTA1(FILE,LABEL1,LABEL2)			\
+ do {	fprintf ((FILE), "\t%s\t", ASM_BYTE_OP);			\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, "-");						\
+	assemble_name (FILE, LABEL2);					\
+  } while (0)
+#endif
+
 #ifdef UNALIGNED_INT_ASM_OP
 
 #ifndef UNALIGNED_OFFSET_ASM_OP
@@ -1451,8 +1460,11 @@ output_cfi (cfi, fde)
           fputc ('\n', asm_out_file);
 	  break;
 	case DW_CFA_advance_loc1:
-	  /* TODO: not currently implemented.  */
-	  abort ();
+	  ASM_OUTPUT_DWARF_DELTA1 (asm_out_file,
+				   cfi->dw_cfi_oprnd1.dw_cfi_addr,
+				   fde->dw_fde_current_label);
+	  fputc ('\n', asm_out_file);
+	  fde->dw_fde_current_label = cfi->dw_cfi_oprnd1.dw_cfi_addr;
 	  break;
 	case DW_CFA_advance_loc2:
           ASM_OUTPUT_DWARF_DELTA2 (asm_out_file,

@@ -743,24 +743,44 @@ get_dynamic_handler_chain ()
       rtx dhc, insns;
       start_sequence ();
 
-      dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
-				     NULL_RTX, 1,
-				     Pmode, 0);
-      current_function_dhc = copy_to_reg (dhc);
+      /* ... */
       insns = get_insns ();
       end_sequence ();
       emit_insns_before (insns, get_first_nonparm_insn ());
     }
-#else
-  rtx dhc;
-  dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
-				 NULL_RTX, 1,
-				 Pmode, 0);
-  current_function_dhc = copy_to_reg (dhc);
-#endif
-
   /* We don't want a copy of the dhc, but rather, the single dhc.  */
   return gen_rtx (MEM, Pmode, current_function_dhc);
+#endif
+
+  static tree fn;
+  tree expr;
+
+  if (fn == NULL_TREE)
+    {
+      tree fntype;
+      fn = get_identifier ("__get_dynamic_handler_chain");
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      fntype = build_pointer_type (build_pointer_type
+				   (build_pointer_type (void_type_node)));
+      fntype = build_function_type (fntype, NULL_TREE);
+      fn = build_decl (FUNCTION_DECL, fn, fntype);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      TREE_READONLY (fn) = 1;
+      make_decl_rtl (fn, NULL_PTR, 1);
+      assemble_external (fn);
+      pop_obstacks ();
+    }
+
+  expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+  expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		expr, NULL_TREE, NULL_TREE);
+  TREE_SIDE_EFFECTS (expr) = 1;
+  expr = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+
+  return expand_expr (expr, NULL_RTX, VOIDmode, 0);
 }
 
 /* Get a reference to the dynamic cleanup chain.  It points to the
