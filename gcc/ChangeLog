@@ -1,3 +1,6 @@
+2002-06-08  Marc Espie  <espie@openbsd.org>                                   
+	* lists.c (free_list):  Fix typo in comment.                            
+
 2002-06-08  Andreas Jaeger  <aj@suse.de>
 
 	* lcm.c (optimize_mode_switching): Add unused attribute for
