@@ -68,6 +68,7 @@ static struct cgraph_node *queue = NULL;
 
 /* Notify finalize_compilation_unit that given node is reachable
    or needed.  */
+
 void
 cgraph_mark_needed_node (node, needed)
      struct cgraph_node *node;
@@ -107,6 +108,11 @@ record_call_1 (tp, walk_subtrees, data)
     }
   else if (TREE_CODE (*tp) == CALL_EXPR)
     {
+      /* We cannot use get_callee_fndecl here because it actually tries
+	 too hard to get the function declaration, looking for indirect
+	 references and stripping NOPS.  As a result, get_callee_fndecl
+	 finds calls that shouldn't be in the call graph.  */
+
       tree decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == ADDR_EXPR)
 	decl = TREE_OPERAND (decl, 0);
@@ -115,6 +121,14 @@ record_call_1 (tp, walk_subtrees, data)
 	  if (DECL_BUILT_IN (decl))
 	    return NULL;
 	  cgraph_record_call (data, decl);
+	     
+	  /* When we see a function call, we don't want to look at the
+	     function reference in the ADDR_EXPR that is hanging from
+	     the CALL_EXPR we're examining here, because we would
+	     conclude incorrectly that the function's address could be
+	     taken by something that is not a function call.  So only
+	     walk the function parameter list, skip the other subtrees.  */
+
 	  walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data, NULL);
 	  *walk_subtrees = 0;
 	}
@@ -122,14 +136,16 @@ record_call_1 (tp, walk_subtrees, data)
   return NULL;
 }
 
-/* Create cgraph edges for function calles via BODY.  */
+/* Create cgraph edges for function calls inside BODY from DECL.  */
 
 void
 cgraph_create_edges (decl, body)
      tree decl;
      tree body;
 {
-  walk_tree (&body, record_call_1, decl, NULL);
+  /* The nodes we're interested in are never shared, so walk
+     the tree ignoring duplicates.  */
+  walk_tree_without_duplicates (&body, record_call_1, decl);
 }
 
 /* Analyze the whole compilation unit once it is parsed completely.  */
@@ -155,14 +171,16 @@ cgraph_finalize_compilation_unit ()
 	  || (DECL_ASSEMBLER_NAME_SET_P (decl)
 	      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	{
-          cgraph_mark_needed_node (node, 1);
+	  /* This function can be called from outside this compliation
+	     unit, so it most definitely is needed.  */
+	  cgraph_mark_needed_node (node, 1);
 	}
     }
 
-  /*  Propagate reachability flag and lower representation of all reachable
-      functions.  In the future, lowering will introduce new functions and
-      new entry points on the way (by template instantiation and virtual
-      method table generation for instance).  */
+  /* Propagate reachability flag and lower representation of all reachable
+     functions.  In the future, lowering will introduce new functions and
+     new entry points on the way (by template instantiation and virtual
+     method table generation for instance).  */
   while (queue)
     {
       tree decl = queue->decl;
@@ -184,6 +202,7 @@ cgraph_finalize_compilation_unit ()
 
       if (lang_hooks.callgraph.lower_function)
 	(*lang_hooks.callgraph.lower_function) (decl);
+
       /* First kill forward declaration so reverse inling works properly.  */
       cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
 
@@ -194,6 +213,7 @@ cgraph_finalize_compilation_unit ()
 	}
       node->lowered = true;
     }
+
   if (!quiet_flag)
     fprintf (stderr, "\n\nReclaiming functions:");
 
@@ -217,11 +237,13 @@ cgraph_mark_functions_to_output ()
 {
   struct cgraph_node *node;
 
-  /* Figure out functions we want to assemble.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
       tree decl = node->decl;
 
+      /* We need to output all local functions that are used and not
+	 always inlined, as well as those that are reachable from
+	 outside the current compilation unit.  */
       if (DECL_SAVED_TREE (decl)
 	  && (node->needed
 	      || (!node->local.inline_many && !node->global.inline_once
@@ -234,6 +256,7 @@ cgraph_mark_functions_to_output ()
 }
 
 /* Optimize the function before expansion.  */
+
 static void
 cgraph_optimize_function (node)
      struct cgraph_node *node;
@@ -250,6 +273,7 @@ cgraph_optimize_function (node)
 }
 
 /* Expand function specified by NODE.  */
+
 static void
 cgraph_expand_function (node)
      struct cgraph_node *node;
@@ -260,11 +284,12 @@ cgraph_expand_function (node)
 
   cgraph_optimize_function (node);
 
-  /* Avoid RTL inlining from taking place.  */
+  /* Generate RTL for the body of DECL.  Nested functions are expanded
+     via lang_expand_decl_stmt.  */
   (*lang_hooks.callgraph.expand_function) (decl);
 
-  /* When we decided to inline the function once, we never ever should need to
-     output it separately.  */
+  /* When we decided to inline the function once, we never ever should
+     need to output it separately.  */
   if (node->global.inline_once)
     abort ();
   if (!node->local.inline_many
@@ -277,11 +302,12 @@ cgraph_expand_function (node)
 /* Expand all functions that must be output. 
   
    Attempt to topologically sort the nodes so function is output when
-   all called functions are already assembled to allow data to be propagated
-   accross the callgraph.  Use stack to get smaller distance between function
-   and it's callees (later we may use more sophisticated algorithm for
-   function reordering, we will likely want to use subsections to make output
-   functions to appear in top-down order, not bottom-up they are assembled).  */
+   all called functions are already assembled to allow data to be
+   propagated accross the callgraph.  Use a stack to get smaller distance
+   between a function and it's callees (later we may choose to use a more
+   sophisticated algorithm for function reordering; we will likely want
+   to use subsections to make the output functions appear in top-down
+   order.  */
 
 static void
 cgraph_expand_functions ()
@@ -298,10 +324,10 @@ cgraph_expand_functions ()
 
   cgraph_mark_functions_to_output ();
 
-  /*  We have to deal with cycles nicely, so use depth first traversal
-      algorithm.  Ignore the fact that some functions won't need to be output
-      and put them into order as well, so we get dependencies right trought inlined
-      functions.  */
+  /* We have to deal with cycles nicely, so use a depth first traversal
+     output algorithm.  Ignore the fact that some functions won't need
+     to be output and put them into order as well, so we get dependencies
+     right through intline functions.  */
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
   for (node = cgraph_nodes; node; node = node->next)
@@ -380,8 +406,8 @@ cgraph_mark_local_functions ()
     }
 }
 
-/*  Decide what function should be inlined because they are invoked once
-    (so inlining won't result in duplication of the code).  */
+/* Decide what function should be inlined because they are invoked once
+   (so inlining won't result in duplication of the code).  */
 
 static void
 cgraph_mark_functions_to_inline_once ()
@@ -391,8 +417,8 @@ cgraph_mark_functions_to_inline_once ()
   if (!quiet_flag)
     fprintf (stderr, "\n\nMarking functions to inline once:");
 
-  /* Now look for function called only once and mark them to inline.  From this
-     point number of calls to given function won't grow.  */
+  /* Now look for function called only once and mark them to inline.
+     From this point number of calls to given function won't grow.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (node->callers && !node->callers->next_caller && !node->needed
