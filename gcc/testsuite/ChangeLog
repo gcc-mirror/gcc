@@ -1,3 +1,10 @@
+2004-03-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/14289
+	* gcc.dg/pr14289-1.c: New test case.
+	* gcc.dg/pr14289-2.c: Likewise.
+	* gcc.dg/pr14289-3.c: Likewise.
+
 2004-03-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14409
