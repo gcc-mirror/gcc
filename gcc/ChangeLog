@@ -1,5 +1,16 @@
 Fri Nov 26 10:59:12 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.md (addsi3_cc): Add "binary_operator_ok" to the condition.
+	(addsi3_carry): Likewise.
+	(sbbsi3_cc): Add "binary_operator_ok" to the condition.
+	(sbbsi3_carry): Likewise.
+	(mulsi3): Rewrite to expander, ensure that only one operand is memory.
+	(mulhi3): Likewise.
+	(test?i_1): Ensure that only one operand is memory.
+	(conditional move patterns): likewise.
+	(shift and rotate patterns): Rewrite to expander, add
+	"binary_operator_ok" to the condition.
+
 	* i386.md (QImode patterns): Remove '*' before the 'r' constraints.
 	* i386.h (procesor_costs): Add movzbl_load field.
 	(HARD_REGNO_MODE_OK): Accept QImode on non PARTIAL_REGISTER_STALL in
