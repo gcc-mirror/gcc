@@ -32,10 +32,23 @@
 @end macro
 @end ifnottex
 
-@c For FSF printing, define FSFPRINT.  Also update the ISBNs and last
-@c printing dates in gcc.texi and gccint.texi.
+@c For FSF printing, define FSFPRINT.  Also update the ISBN and last
+@c printing date for the manual being printed.
 @c @set FSFPRINT
 @ifset FSFPRINT
 @smallbook
 @finalout
+@c Cause even numbered pages to be printed on the left hand side of
+@c the page and odd numbered pages to be printed on the right hand
+@c side of the page.  Using this, you can print on both sides of a
+@c sheet of paper and have the text on the same part of the sheet.
+
+@c The text on right hand pages is pushed towards the right hand
+@c margin and the text on left hand pages is pushed toward the left
+@c hand margin.
+@c (To provide the reverse effect, set bindingoffset to -0.75in.)
+@tex
+\global\bindingoffset=0.75in
+\global\normaloffset =0.75in
+@end tex
 @end ifset
