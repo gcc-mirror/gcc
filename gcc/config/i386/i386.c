@@ -916,17 +916,29 @@ function_arg_advance (cum, mode, type, named)
     fprintf (stderr,
 	     "function_adv (sz=%d, wds=%2d, nregs=%d, mode=%s, named=%d)\n\n",
 	     words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
-
-  cum->words += words;
-  cum->nregs -= words;
-  cum->regno += words;
-
-  if (cum->nregs <= 0)
+  if (TARGET_SSE && mode == TImode)
     {
-      cum->nregs = 0;
-      cum->regno = 0;
+      cum->sse_words += words;
+      cum->sse_nregs -= 1;
+      cum->sse_regno += 1;
+      if (cum->sse_nregs <= 0)
+	{
+	  cum->sse_nregs = 0;
+	  cum->sse_regno = 0;
+	}
     }
+  else         
+    {
+      cum->words += words;
+      cum->nregs -= words;
+      cum->regno += words;
 
+      if (cum->nregs <= 0)
+	{
+	  cum->nregs = 0;
+	  cum->regno = 0;
+	}
+    }
   return;
 }
 
@@ -969,6 +981,10 @@ function_arg (cum, mode, type, named)
       if (words <= cum->nregs)
 	ret = gen_rtx_REG (mode, cum->regno);
       break;
+    case TImode:
+      if (cum->sse_nregs)
+        ret = gen_rtx_REG (mode, cum->sse_regno);
+      break;    
     }
 
   if (TARGET_DEBUG_ARG)
