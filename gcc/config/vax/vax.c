@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+static int follows_p PARAMS ((rtx, rtx));
 static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 #if VMS_TARGET
 static void vms_asm_out_constructor PARAMS ((rtx, int));
@@ -946,3 +947,38 @@ not_qsort (array, count, size, compare)
   return;
 }
 #endif /* QSORT_WORKAROUND */
+
+/* Return 1 if insn A follows B.  */
+
+static int
+follows_p (a, b)
+     rtx a, b;
+{
+  register rtx p;
+
+  for (p = a; p != b; p = NEXT_INSN (p))
+    if (! p)
+      return 1;
+
+  return 0;
+}
+
+/* Returns 1 if we know operand OP was 0 before INSN.  */
+
+int
+reg_was_0_p (insn, op)
+     rtx insn, op;
+{
+  rtx link;
+
+  return ((link = find_reg_note (insn, REG_WAS_0, 0))
+	  /* Make sure the insn that stored the 0 is still present
+	     and doesn't follow INSN in the insn sequence.  */
+	  && ! INSN_DELETED_P (XEXP (link, 0))
+	  && GET_CODE (XEXP (link, 0)) != NOTE
+	  && ! follows_p (XEXP (link, 0), insn)
+	  /* Make sure cross jumping didn't happen here.  */
+	  && no_labels_between_p (XEXP (link, 0), insn)
+	  /* Make sure the reg hasn't been clobbered.  */
+	  && ! reg_set_between_p (op, XEXP (link, 0), insn));
+}
