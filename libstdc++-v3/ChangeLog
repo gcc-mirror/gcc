@@ -1,3 +1,8 @@
+2002-08-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* libsupc++/Makefile.am (LTCOMPILE): Add LIBSUPCXX_PICFLAGS.
+	* libsupc++/Makefile.in: Regenerate.
+
 2002-08-05  Gabriel Dos Reis  <gdr@nerim.net>
 
 	PR/7491
