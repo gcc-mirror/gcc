@@ -119,6 +119,7 @@ static int rs6000_sr_alias_set;
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
+static int ccr_bit_negated_p PARAMS((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
 static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));
@@ -3172,10 +3173,12 @@ ccr_bit (op, scc_p)
       return scc_p ? base_bit + 3 : base_bit + 2;
     case EQ:
       return base_bit + 2;
-    case GT:  case GTU:
+    case GT:  case GTU:  case UNLE:
       return base_bit + 1;
-    case LT:  case LTU:
+    case LT:  case LTU:  case UNGE:
       return base_bit;
+    case ORDERED:  case UNORDERED:
+      return base_bit + 3;
 
     case GE:  case GEU:
       /* If floating-point, we will have done a cror to put the bit in the
@@ -3186,9 +3189,35 @@ ccr_bit (op, scc_p)
     case LE:  case LEU:
       return cc_mode == CCFPmode || scc_p ? base_bit + 3 : base_bit + 1;
 
+    case UNEQ: case UNGT: case UNLT: case LTGT:
+      return base_bit + 3;
+
     default:
       abort ();
     }
+}
+
+/* Given a comparison operation, say whether the bit tested (as returned
+   by ccr_bit) should be negated.  */
+
+static int
+ccr_bit_negated_p (op)
+     rtx op;
+{
+  enum rtx_code code = GET_CODE (op);
+  enum machine_mode mode = GET_MODE (XEXP (op, 0));
+  
+  if (code == EQ
+      || code == LT || code == GT
+      || code == LTU || code == GTU)
+    return 0;
+  else if (mode != CCFPmode
+      || code == NE
+      || code == ORDERED
+      || code == UNGE || code == UNLE)
+    return 1;
+  else
+    return 0;
 }
 
 /* Return the GOT register.  */
@@ -3322,16 +3351,36 @@ print_operand (file, x, code)
       return;
 
     case 'C':
-      /* This is an optional cror needed for LE or GE floating-point
-	 comparisons.  Otherwise write nothing.  */
-      if ((GET_CODE (x) == LE || GET_CODE (x) == GE)
-	  && GET_MODE (XEXP (x, 0)) == CCFPmode)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
-
-	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2, base_bit + (GET_CODE (x) == GE));
-	}
+      {
+	enum rtx_code code = GET_CODE (x);
+	
+	/* This is an optional cror needed for certain floating-point
+	   comparisons.  Otherwise write nothing.  */
+	if ((code == LE || code == GE
+	     || code == UNEQ || code == LTGT
+	     || code == UNGT || code == UNLT)
+	    && GET_MODE (XEXP (x, 0)) == CCFPmode)
+	  {
+	    int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
+	    int bit0, bit1;
+	    
+	    if (code == UNEQ)
+	      bit0 = 2;
+	    else if (code == UNGT || code == GE)
+	      bit0 = 1;
+	    else
+	      bit0 = 0;
+	    if (code == LTGT)
+	      bit1 = 1;
+	    else if (code == LE || code == GE)
+	      bit1 = 2;
+	    else
+	      bit1 = 3;
+	    
+	    fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
+		     base_bit + bit1, base_bit + bit0);
+	  }
+      }
       return;
 
     case 'D':
@@ -3675,17 +3724,11 @@ print_operand (file, x, code)
 	}
 
     case 't':
-      /* Write 12 if this jump operation will branch if true, 4 otherwise. 
-	 All floating-point operations except NE branch true and integer
-	 EQ, LT, GT, LTU and GTU also branch true.  */
+      /* Write 12 if this jump operation will branch if true, 4 otherwise. */
       if (GET_RTX_CLASS (GET_CODE (x)) != '<')
 	output_operand_lossage ("invalid %%t value");
 
-      else if ((GET_MODE (XEXP (x, 0)) == CCFPmode
-		&& GET_CODE (x) != NE)
-	       || GET_CODE (x) == EQ
-	       || GET_CODE (x) == LT || GET_CODE (x) == GT
-	       || GET_CODE (x) == LTU || GET_CODE (x) == GTU)
+      else if (! ccr_bit_negated_p (x))
 	fputs ("12", file);
       else
 	putc ('4', file);
@@ -3697,11 +3740,7 @@ print_operand (file, x, code)
       if (GET_RTX_CLASS (GET_CODE (x)) != '<')
 	output_operand_lossage ("invalid %%T value");
 
-      else if ((GET_MODE (XEXP (x, 0)) == CCFPmode
-		&& GET_CODE (x) != NE)
-	       || GET_CODE (x) == EQ
-	       || GET_CODE (x) == LT || GET_CODE (x) == GT
-	       || GET_CODE (x) == LTU || GET_CODE (x) == GTU)
+      else if (! ccr_bit_negated_p (x))
 	putc ('4', file);
       else
 	fputs ("12", file);

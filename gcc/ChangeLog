@@ -1,3 +1,19 @@
+2000-03-20  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (bunordered): New expander.
+	(bordered): New expander.
+	(buneq): New expander.
+	(bunge): New expander.
+	(bungt): New expander.
+	(bunle): New expander.
+	(bunlt): New expander.
+	(bltgt): New expander.
+ 
+	* config/rs6000/rs6000.c (ccr_bit): Handle unordered comparisons.
+	(ccr_bit_negated_p): New function.
+	(print_operand): For %C, generate appropriate cror for UNEQ,
+	UNLT, UNGT, and LTGT.  For %T and %t, use ccr_bit_negated_p.
+
 2000-03-20  Andreas Jaeger  <aj@suse.de>
 
 	* sdbout.c (sdbout_one_type): Add braces to avoid "ambigous else"
@@ -17126,7 +17142,7 @@ Fri Aug 20 18:53:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	copy_rtx_and_substitute, subst_constants, restore_constants):
 	Likewise.
 
-	* jump.c  (mark_jump_label, invert_exp, redirect_exp,
+	* jump.c  (mark_jump_label, invert_exp, redirect_e   xp,
 	rtx_renumbered_equal_p, rtx_equal_for_thread_p): Likewise.
 
 	* local-alloc.c (contains_replace_regs, memref_referenced_p):
@@ -17256,7 +17272,7 @@ Fri Aug 20 15:02:10 1999  Mark Mitchell  <mark@codesourcery.com>
 
 Fri Aug 20 22:32:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
-	* config/c4x/c4x.h (STARTFILE_SPEC): Don't define.
+	* config/c4x/c4x.h (STARTFILE_SPEC): Don't def.
 
 1999-08-19 18:43 -0700  Zack Weinberg  <zack@bitmover.com>
 
@@ -17966,7 +17982,7 @@ Mon Aug  9 10:08:50 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(unroll_loop): Access regno_pointer_* variables through
 	current_function.
 
-	* tree.h (struct tree_decl): Add elt f to saved_insns member.
+	* tree.h (struct tree_decl): Add elt f to saved_ins   ns member.
 	(DECL_SAVED_INSNS): use it.
 	(expand_dummy_function_end): Declare.
 	(init_function_for_compilation): Declare.
@@ -18072,7 +18088,7 @@ Sat Aug  7 00:21:20 1999  Richard Henderson  <rth@cygnus.com>
 
 Sat Aug  7 00:06:54 1999  Jeffrey A Law  (law@cygnus.com)
 
-	* Makefile.in (TAROUTOPTS): Kill.
+	* Makefiin (TAROUTOPTS): Kill.
 	(install-headers-tar): Use "xpf" for tar headerfile extraction
 	* i370/x-oe (TAROUTOPTS): Delete.
 	* m68k/x-apollo68 (TAROUTOPTS): Delete.
@@ -18869,7 +18885,7 @@ Wed Jul 28 11:22:21 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed Jul 28 11:20:19 1999  Richard Henderson  <rth@cygnus.com>
 
-	* mn10200.c (mn10200_va_arg): New.
+	* mn102   00.c (mn10200_va_arg): New.
 	* mn10200.h (EXPAND_BUILTIN_VA_ARG): New.
 
 Wed Jul 28 11:19:06 1999  Richard Henderson  <rth@cygnus.com>
@@ -18979,7 +18995,7 @@ Mon Jul 26 22:43:12 1999  Richard Henderson  <rth@cygnus.com>
 
 Mon Jul 26 18:51:34 1999  Richard Henderson  <rth@cygnus.com>
 
-	* except.c (start_dynamic_cleanup): Use force_operand on the
+	* except.c (st_dynamic_cleanup): Use force_operand on the
 	buffer's address.
 
 Mon Jul 26 16:43:26 1999  Richard Henderson  <rth@cygnus.com>
