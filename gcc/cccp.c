@@ -5897,7 +5897,7 @@ do_pragma (buf, limit)
       *p = '\0';
     
     for (ptr = all_include_files; ptr; ptr = ptr->next) {
-      inc_fname = (U_CHAR *) strrchr (ptr->fname, '/');
+      inc_fname = (U_CHAR *) rindex (ptr->fname, '/');
       inc_fname = inc_fname ? inc_fname + 1 : ptr->fname;
       if (inc_fname && !strcmp (inc_fname, fname))
 	warning ("`#pragma implementation' for `%s' appears after file is included",
