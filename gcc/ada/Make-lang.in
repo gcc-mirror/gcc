@@ -35,16 +35,12 @@
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
 # tool definitions
-CHMOD = chmod
-CHMOD_AX_FLAGS = a+x
 CP = cp -p
 ECHO = echo
 MV = mv
 MKDIR = mkdir -p
 RM = rm -f
 RMDIR = rm -rf
-# default extensions
-shext  =
 
 
 # Extra flags to pass to recursive makes.
@@ -56,12 +52,8 @@ FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
 ALL_ADA_CFLAGS = $(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
 ADA_INCLUDES = -I- -I. -Iada -I$(srcdir)/ada
-GNATLIBFLAGS= -W -Wall -gnatpg
-GNATLIBCFLAGS= -g -O2
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
-THREAD_KIND=native
-TRACE=no
 GNATBIND = $(STAGE_PREFIX)gnatbind
 ADA_FLAGS_TO_PASS = \
 	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)"	\
@@ -285,80 +277,11 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) \
 	     $(LIBS) $(SYSLIBS)
 
-# use target-gcc target-gnatmake target-gnatbind target-gnatlink 
-gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	  ADA_INCLUDES="-I- -I../rts"\
-	  CC="../../xgcc -B../../" STAGE_PREFIX=../../  gnattools1
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
-
-regnattools: 
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
-
-# use host-gcc host-gnatmake host-gnatbind host-gnatlink
-# put the host RTS dir first in the PATH to hide the default runtime
-# files that are among the sources
-RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
-cross-gnattools: force
-	$(MAKE)  -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)\
-	   ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
-	   GNATMAKE="gnatmake" \
-	   GNATBIND="gnatbind" \
-	   GNATLINK="gnatlink" \
-	   LIBGNAT="" \
-	   gnattools1-re gnattools2 gnattools4
-  
-rts-zfp: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) GNATMAKE=../gnatmake-cross rts-zfp
-
 install-rts-zfp: force
 	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=zfp
 
-rts-none: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) GNATMAKE=../gnatmake-cross rts-none
-
-install-rts-none: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=none
-
-rts-ravenscar: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) GNATMAKE=../gnatmake-cross rts-ravenscar
-
 install-rts-ravenscar: force
 	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=ravenscar
-
-gnatlib: force
-	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
-	   gnatlib
-
-gnatlib-sjlj: force
-	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
-	   gnatlib-sjlj
-
-gnatlib-shared: force
-	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	   GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \
-	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
-	   gnatlib-shared
-
-# use only for native compiler
-gnatlib_and_tools: gnatlib gnattools
 
 # use cross-gcc
 gnat-cross: force
@@ -785,16 +708,6 @@ install-gnatlib:
 
 install-gnatlib-obj:
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib-obj
-
-
-rts-cert: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) \
-	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-           GNATMAKE=../gnatmake-cross rts-cert RTS_NAME=cert
-
-install-rts-cert: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=none
 
 ada.install-man:
 
