@@ -1847,7 +1847,7 @@ cpp_parse_escape (pfile, pstr, limit, wide)
 
   if (c > mask)
     {
-      cpp_error (pfile, DL_PEDWARN, "escape sequence out of range for type");
+      cpp_error (pfile, DL_PEDWARN, "escape sequence out of range for its type");
       c &= mask;
     }
 
@@ -1871,7 +1871,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen, unsignedp)
   const unsigned char *str = token->val.str.text;
   const unsigned char *limit = str + token->val.str.len;
   unsigned int chars_seen = 0;
-  unsigned int width, max_chars;
+  size_t width, max_chars;
   cppchar_t c, mask, result = 0;
   bool unsigned_p;
 
@@ -1928,36 +1928,31 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen, unsignedp)
 	c = MAP_CHARACTER (c);
 #endif
       
-      /* Merge character into result; ignore excess chars.  */
-      if (++chars_seen <= max_chars)
-	{
-	  if (width < BITS_PER_CPPCHAR_T)
-	    result = (result << width) | (c & mask);
-	  else
-	    result = c;
-	}
+      chars_seen++;
+
+      /* Sign-extend the character, scale result, and add the two.  */
+      if (!unsigned_p && (c & (1 << (width - 1))))
+	c |= ~mask;
+      if (width < BITS_PER_CPPCHAR_T)
+	result = (result << width) + c;
+      else
+	result = c;
     }
 
   if (chars_seen == 0)
     cpp_error (pfile, DL_ERROR, "empty character constant");
-  else if (chars_seen > max_chars)
+  else if (chars_seen > 1)
     {
-      chars_seen = max_chars;
-      cpp_error (pfile, DL_WARNING, "character constant too long");
-    }
-  else if (chars_seen > 1 && warn_multi)
-    cpp_error (pfile, DL_WARNING, "multi-character character constant");
-
-  /* If relevant type is signed, sign-extend the constant.  */
-  if (chars_seen)
-    {
-      unsigned int nbits = chars_seen * width;
-
-      mask = (cppchar_t) ~0 >> (BITS_PER_CPPCHAR_T - nbits);
-      if (unsigned_p || ((result >> (nbits - 1)) & 1) == 0)
-	result &= mask;
-      else
-	result |= ~mask;
+      /* Multichar charconsts are of type int and therefore signed.  */
+      unsigned_p = 0;
+      if (chars_seen > max_chars)
+	{
+	  chars_seen = max_chars;
+	  cpp_error (pfile, DL_WARNING,
+		     "character constant too long for its type");
+	}
+      else if (warn_multi)
+	cpp_error (pfile, DL_WARNING, "multi-character character constant");
     }
 
   *pchars_seen = chars_seen;

@@ -1,3 +1,10 @@
+2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (cpp_interpret_charconst): Sign-extend each
+	character.  Don't ignore excess characters.  Treat
+	multicharacter character constants as signed.
+	(cpp_parse_escape): Clarify diagnostic.
+
 2002-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (ashlsi3): If shift count is const1_rtx,
