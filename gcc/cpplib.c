@@ -248,7 +248,7 @@ struct cpp_pending {
 
 char *xmalloc ();
 void cpp_fatal ();
-void cpp_file_line_for_message PARAMS ((cpp_reader *, char *, int, int));
+void cpp_file_line_for_message PARAMS ((char *, int, int));
 void cpp_hash_cleanup PARAMS ((cpp_reader *));
 void cpp_message ();
 void cpp_print_containing_files PARAMS ((cpp_reader *));
@@ -321,7 +321,9 @@ static int do_xifdef ();
 static int do_else ();
 static int do_elif ();
 static int do_endif ();
+#ifdef SCCS_DIRECTIVE
 static int do_sccs ();
+#endif
 static int do_once ();
 static int do_assert ();
 static int do_unassert ();
@@ -4052,6 +4054,7 @@ nope:
 }
 #endif
 
+#ifdef SCCS_DIRECTIVE
 /* Just ignore #sccs, on systems where we define it at all.  */
 
 static int
@@ -4064,6 +4067,7 @@ do_sccs (pfile, keyword, buf, limit)
     cpp_pedwarn (pfile, "ANSI C does not allow `#sccs'");
   return 0;
 }
+#endif
 
 /*
  * handle #if command by
@@ -7357,7 +7361,7 @@ cpp_print_file_and_line (pfile)
     {
       long line, col;
       cpp_buf_line_and_col (ip, &line, &col);
-      cpp_file_line_for_message (pfile, ip->nominal_fname,
+      cpp_file_line_for_message (ip->nominal_fname,
 				 line, pfile->show_column ? col : -1);
     }
 }
@@ -7418,7 +7422,7 @@ cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
   cpp_print_containing_files (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
+    cpp_file_line_for_message (ip->nominal_fname, line, column);
 
   cpp_message (pfile, 1, msg, arg1, arg2, arg3);
 }
@@ -7443,7 +7447,7 @@ cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
   ip = cpp_file_buffer (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
+    cpp_file_line_for_message (ip->nominal_fname, line, column);
 
   cpp_message (pfile, 0, msg, arg1, arg2, arg3);
 }
@@ -7476,7 +7480,7 @@ cpp_pedwarn_with_file_and_line (pfile, file, line, msg, arg1, arg2, arg3)
       && CPP_OPTIONS (pfile)->inhibit_warnings)
     return;
   if (file != NULL)
-    cpp_file_line_for_message (pfile, file, line, -1);
+    cpp_file_line_for_message (file, line, -1);
   cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
 	       msg, arg1, arg2, arg3);
 }
@@ -7542,7 +7546,7 @@ cpp_error_from_errno (pfile, name)
   cpp_print_containing_files (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
+    cpp_file_line_for_message (ip->nominal_fname, ip->lineno, -1);
 
   cpp_message (pfile, 1, "%s: %s", name, my_strerror (errno));
 }

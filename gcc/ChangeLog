@@ -1,5 +1,11 @@
 Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* cpplib.c (cpp_file_line_for_message): Delete unused parameter.
+	All callers changed.
+	(do_sccs): Wrap in an SCCS_DIRECTIVE ifdef.
+	* fix-header.c (cpp_file_line_for_message): Delete unused paramter.
+	All callers changed.
+
 	* collect2.c (is_in_list): Wrap inside COLLECT_EXPORT_LIST ifdef.
 
 	* local-alloc.c (reg_classes_overlap_p): Delete dead function.

@@ -1319,8 +1319,7 @@ main (argc, argv)
    because we want to suppress error messages.  */
 
 void
-cpp_file_line_for_message (pfile, filename, line, column)
-     cpp_reader *pfile;
+cpp_file_line_for_message (filename, line, column)
      char *filename;
      int line, column;
 {
