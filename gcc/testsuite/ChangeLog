@@ -1,3 +1,8 @@
+2005-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.pt/asm1.C, g++.old-deja/g++.pt/asm2.C,
+	gcc.dg/20011119-1.c: Bypass tests on x86 when using -fpic/-fPIC.
+
 2005-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20050105-1.c: New test.
