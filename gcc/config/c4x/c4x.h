@@ -643,7 +643,7 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)		              \
      ((IS_FLOAT_CALL_SAVED_REGNO (REGNO) && ! ((MODE) == QFmode))  	      \
-      || (IS_INT_CALL_SAVED_REGNO (REGNO))				      \
+      || (IS_INT_CALL_SAVED_REGNO (REGNO)				      \
 	  && ! ((MODE) == QImode || (MODE) == HImode || (MODE) == Pmode)))
 
 /* Specify the modes required to caller save a given hard regno.  */
