@@ -1,3 +1,8 @@
+2002-04-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Final install): Add to the list of info to include
+	in a report of a successful bootstrap, and add link to 3.1 list.
+
 2002-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/6396
