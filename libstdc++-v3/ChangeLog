@@ -1,5 +1,12 @@
 2001-06-09  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/c_std/bits/std_cwchar.h: Remove size_t injection,
+	include std_cstddef.
+	* include/c_std/bits/std_ctime.h: Same.
+	* include/c_std/bits/std_cstring.h: Same.
+	* include/c_std/bits/std_cstdlib.h: Same.
+	
+	* include/c_std/bits/std_cstdio.h: Remove vsnprintf, snprintf.
 	* include/c_std/bits/std_cctype.h: Remove isblank.
 
 2001-06-09  Benjamin Kosnik  <bkoz@redhat.com>

@@ -34,6 +34,8 @@
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
 
+#include <bits/std_cstddef.h>
+
 #pragma GCC system_header
 #include_next <time.h>
 
@@ -50,8 +52,6 @@
 
 namespace std
 {
-  using ::size_t;	// cstddef
-
   using ::clock_t;
   using ::time_t;
   using ::tm;

@@ -34,6 +34,8 @@
 #ifndef _CPP_CSTRING
 #define _CPP_CSTRING 1
 
+#include <bits/std_cstddef.h>
+
 #pragma GCC system_header
 #include_next <string.h>
 
@@ -63,8 +65,6 @@
 
 namespace std 
 {
-  using ::size_t;	// cstddef
-
   using ::memcpy;
   using ::memmove;
   using ::strcpy;

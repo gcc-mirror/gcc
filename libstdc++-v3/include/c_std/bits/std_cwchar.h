@@ -35,6 +35,7 @@
 #define _CPP_CWCHAR 1
 
 #include <bits/c++config.h>
+#include <bits/std_cstddef.h>
 
 #if _GLIBCPP_HAVE_WCHAR_H
 #pragma GCC system_header
@@ -121,8 +122,6 @@ namespace std
 #if _GLIBCPP_USE_WCHAR_T
 namespace std
 {
-  using ::size_t;	// cstddef
-
   using ::wint_t;
 
   using ::btowc;
