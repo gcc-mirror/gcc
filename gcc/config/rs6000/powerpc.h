@@ -25,6 +25,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u -mppc"
 
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+-Asystem(unix) -Asystem(aix) -Acpu(powerpc) -Amachine(powerpc)"
+
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
