@@ -1,3 +1,10 @@
+Wed Oct 15 09:49:57 1997  Richard Henderson  <rth@cygnus.com>
+
+	* info/man.c (find_man_formatter): Don't cast getenv(), but provide
+	a minimal declaration at top level.
+
+	* makeinfo/makeinfo.c: Don't redefine alloca if it is already defined.
+
 Tue Oct  7 16:27:34 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* aclocal.m4: Substitute INSTALL.
