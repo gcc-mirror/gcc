@@ -1,5 +1,5 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -125,17 +125,20 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
 
 /* Compiler hook to pop an exception that has been finalized.  Used by
    push_eh_cleanup().  P is the info for the exception caught by the
-   current catch block, and HANDLER determines if we've been called from
-   an exception handler; if so, we avoid destroying the object on rethrow.  */
+   current catch block.  */
 
 extern "C" void
-__cp_pop_exception (cp_eh_info *p, bool handler)
+__cp_pop_exception (cp_eh_info *p)
 {
   cp_eh_info **q = &__eh_info;
 
   --p->handlers;
 
-  if (p->handlers > 0 || (handler && p == *q))
+  /* Don't really pop if there are still active handlers for our exception,
+     or if our exception is being rethrown (i.e. if the active exception is
+     our exception and it is uncaught).  */
+  if (p->handlers != 0
+      || (p == *q && !p->caught))
     return;
 
   for (; *q; q = &((*q)->next))
