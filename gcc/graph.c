@@ -51,7 +51,6 @@ static void
 start_fct (fp)
      FILE *fp;
 {
-
   switch (graph_dump_format)
     {
     case vcg:
@@ -110,7 +109,6 @@ node_data (fp, tmp_rtx)
      FILE *fp;
      rtx tmp_rtx;
 {
-
   if (PREV_INSN (tmp_rtx) == 0)
     {
       /* This is the first instruction.  Add an edge from the starting

@@ -1186,7 +1186,6 @@ tree
 bit_position (field)
      tree field;
 {
-
   return bit_from_pos (DECL_FIELD_OFFSET (field),
 		       DECL_FIELD_BIT_OFFSET (field));
 }

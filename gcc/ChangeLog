@@ -1,3 +1,16 @@
+2003-05-19  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* alias.c (nonlocal_mentioned_p, nonlocal_referenced_p)
+	(nonlocal_set_p): Remove initial blank line.
+	* dwarf2out.c (simple_type_size_in_bits): Likewise.
+	* et-forest.c (et_forest_create): Likewise.
+	* explow.c (stabilize): Likewise.
+	* fix-header.c (write_lbrac): Likewise.
+	* graph.c (start_fct, node_data): Likewise.
+	* jump.c (only_sets_cc0_p, sets_cc0_p): Likewise.
+	* rtlanal.c (global_reg_mentioned_p): Likewise.
+	* tree.c (bit_position): Likewise.
+
 2003-05-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/linux64.h (LIB_SPEC): Add missing -lc and correct

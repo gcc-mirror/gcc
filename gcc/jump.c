@@ -1278,7 +1278,6 @@ int
 only_sets_cc0_p (x)
      rtx x;
 {
-
   if (! x)
     return 0;
 
@@ -1297,7 +1296,6 @@ int
 sets_cc0_p (x)
      rtx x;
 {
-
   if (! x)
     return 0;
 
