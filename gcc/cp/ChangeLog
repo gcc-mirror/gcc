@@ -1,5 +1,11 @@
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13950
+	* parser.c (cp_parser_class_name): Robustify.
+
+	PR c++/13970
+	* parser.c (cp_parser_cache_group): Do not consume the EOF token.
+
 	PR c++/14002
 	* semantics.c (finish_id_expression): Do not return an
 	IDENTIFIER_NODE when lookup finds a PARM_DECL.
