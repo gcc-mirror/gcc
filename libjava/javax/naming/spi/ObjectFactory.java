@@ -39,13 +39,12 @@ exception statement from your version. */
 package javax.naming.spi;
 
 import java.util.Hashtable;
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.Name;
 
 public interface ObjectFactory
 {
-  public Object getObjectInstance (Object obj,
-				   Name name,
-				   Context nameCtx,
-				   Hashtable environment)
-       throws Exception;
+  Object getObjectInstance (Object obj, Name name, Context nameCtx,
+                            Hashtable environment)
+    throws Exception;
 }

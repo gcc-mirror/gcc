@@ -47,15 +47,17 @@ import javax.naming.directory.*;
 
 public interface EventDirContext extends EventContext, DirContext
 {
-  public void addNamingListener(Name target, String filter, SearchControls ctls,
-  				NamingListener l) throws NamingException;
-  public void addNamingListener(String target, String filter,
-  				SearchControls ctls, NamingListener l)
+  void addNamingListener (Name target, String filter, SearchControls ctls,
+                          NamingListener l) throws NamingException;
+  
+  void addNamingListeneri (String target, String filter, SearchControls ctls,
+		           NamingListener l) throws NamingException;
+  
+  void addNamingListener (Name target, String filter, Object[] filterArgs,
+                          SearchControls ctls, NamingListener l)
 				throws NamingException;
-  public void addNamingListener(Name target, String filter, Object[] filterArgs,
-  				SearchControls ctls, NamingListener l)
-				throws NamingException;
-  public void addNamingListener(String target, String filter,
+  
+  void addNamingListener(String target, String filter,
   				Object[] filterArgs, SearchControls ctls,
 				NamingListener l) throws NamingException;
 }

@@ -46,8 +46,8 @@ import javax.naming.*;
 
 public interface Resolver
 {
-  public ResolveResult resolveToClass(Name name, Class contextType)
+  ResolveResult resolveToClass(Name name, Class contextType)
     throws NamingException;
-  public ResolveResult resolveToClass(String name, Class contextType)
+  ResolveResult resolveToClass(String name, Class contextType)
     throws NamingException;
 }

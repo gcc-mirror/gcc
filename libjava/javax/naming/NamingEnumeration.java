@@ -42,7 +42,7 @@ import java.util.Enumeration;
 
 public interface NamingEnumeration extends Enumeration
 {
-  public void close() throws NamingException;
-  public boolean hasMore() throws NamingException;
-  public Object next() throws NamingException;
+  void close() throws NamingException;
+  boolean hasMore() throws NamingException;
+  Object next() throws NamingException;
 }

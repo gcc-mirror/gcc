@@ -47,7 +47,7 @@ import java.util.Hashtable;
 
 public interface ObjectFactoryBuilder
 {
-  public ObjectFactory createObjectFactory(Object obj,
+  ObjectFactory createObjectFactory(Object obj,
   					   Hashtable environment)
 					   throws NamingException;
 }

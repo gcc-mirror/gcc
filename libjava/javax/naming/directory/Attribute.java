@@ -47,22 +47,22 @@ import java.io.Serializable;
  */
 public interface Attribute extends Cloneable, Serializable
 {
-  public static final long serialVersionUID = 8707690322213556804L;
+  long serialVersionUID = 8707690322213556804L;
 
-  public NamingEnumeration getAll() throws NamingException;
-  public Object get() throws NamingException;
-  public int size();
-  public String getID();
-  public boolean contains(Object attrVal);
-  public boolean add(Object attrVal);
-  public boolean remove(Object attrval);
-  public void clear();
-  public DirContext getAttributeSyntaxDefinition() throws NamingException;
-  public DirContext getAttributeDefinition() throws NamingException;
-  public Object clone();
-  public boolean isOrdered();
-  public Object get(int ix) throws NamingException;
-  public Object remove(int ix);
-  public void add(int ix, Object attrVal);
-  public Object set(int ix, Object attrVal);
+  NamingEnumeration getAll() throws NamingException;
+  Object get() throws NamingException;
+  int size();
+  String getID();
+  boolean contains(Object attrVal);
+  boolean add(Object attrVal);
+  boolean remove(Object attrval);
+  void clear();
+  DirContext getAttributeSyntaxDefinition() throws NamingException;
+  DirContext getAttributeDefinition() throws NamingException;
+  Object clone();
+  boolean isOrdered();
+  Object get(int ix) throws NamingException;
+  Object remove(int ix);
+  void add(int ix, Object attrVal);
+  Object set(int ix, Object attrVal);
 }

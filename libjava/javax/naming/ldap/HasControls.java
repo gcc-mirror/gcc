@@ -46,5 +46,5 @@ import javax.naming.*;
 
 public interface HasControls
 {
-  public Control[] getControls() throws NamingException;
+  Control[] getControls() throws NamingException;
 }

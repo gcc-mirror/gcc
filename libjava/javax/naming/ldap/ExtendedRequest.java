@@ -47,9 +47,9 @@ import javax.naming.*;
 
 public interface ExtendedRequest extends Serializable
 {
-  public String getID();
-  public byte[] getEncodedValue();
-  public ExtendedResponse createExtendedResponse(String id,
+  String getID();
+  byte[] getEncodedValue();
+  ExtendedResponse createExtendedResponse(String id,
   						 byte[] berValue, int offset,
 						 int length)
 						 throws NamingException;
