@@ -5229,69 +5229,6 @@ simplify_set (x)
       src = SET_SRC (x);
     }
 
-#ifdef HAVE_conditional_arithmetic
-  /* If we have conditional arithmetic and the operand of a SET is
-     a conditional expression, replace this with an IF_THEN_ELSE.
-     We can either have a conditional expression or a MULT of that expression
-     with a constant.  */
-  if ((GET_RTX_CLASS (GET_CODE (src)) == '1'
-       || GET_RTX_CLASS (GET_CODE (src)) == '2'
-       || GET_RTX_CLASS (GET_CODE (src)) == 'c')
-      && (GET_RTX_CLASS (GET_CODE (XEXP (src, 0))) == '<'
-	  || (GET_CODE (XEXP (src, 0)) == MULT
-	      && GET_RTX_CLASS (GET_CODE (XEXP (XEXP (src, 0), 0))) == '<'
-	      && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT)))
-    {
-      rtx cond = XEXP (src, 0);
-      rtx true_val = const1_rtx;
-      rtx false_arm, true_arm;
-      rtx reversed;
-
-      if (GET_CODE (cond) == MULT)
-	{
-	  true_val = XEXP (cond, 1);
-	  cond = XEXP (cond, 0);
-	}
-
-      if (GET_RTX_CLASS (GET_CODE (src)) == '1')
-	{
-	  true_arm = gen_unary (GET_CODE (src), GET_MODE (src),
-				GET_MODE (XEXP (src, 0)), true_val);
-	  false_arm = gen_unary (GET_CODE (src), GET_MODE (src),
-				 GET_MODE (XEXP (src, 0)), const0_rtx);
-	}
-      else
-	{
-	  true_arm = gen_binary (GET_CODE (src), GET_MODE (src),
-				 true_val, XEXP (src, 1));
-	  false_arm = gen_binary (GET_CODE (src), GET_MODE (src),
-				  const0_rtx, XEXP (src, 1));
-	}
-
-      /* Canonicalize if true_arm is the simpler one.  */
-      if (GET_RTX_CLASS (GET_CODE (true_arm)) == 'o'
-	  && GET_RTX_CLASS (GET_CODE (false_arm)) != 'o'
-	  && (reversed = reversed_comparison_code (cond, GET_MODE (cond),
-						   XEXP (cond, 0),
-						   XEXP (cond, 1))))
-	{
-	  rtx temp = true_arm;
-
-	  true_arm = false_arm;
-	  false_arm = temp;
-
-	  cond = reversed;
-	}
-
-      src = gen_rtx_combine (IF_THEN_ELSE, GET_MODE (src),
-			     gen_rtx_combine (GET_CODE (cond), VOIDmode,
-					      XEXP (cond, 0),
-					      XEXP (cond, 1)),
-			     true_arm, false_arm);
-      SUBST (SET_SRC (x), src);
-    }
-#endif
-
   /* If either SRC or DEST is a CLOBBER of (const_int 0), make this
      whole thing fail.  */
   if (GET_CODE (src) == CLOBBER && XEXP (src, 0) == const0_rtx)

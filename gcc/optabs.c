@@ -2320,11 +2320,8 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
 
   /* If this machine has expensive jumps, we can do integer absolute
      value of X as (((signed) x >> (W-1)) ^ x) - ((signed) x >> (W-1)),
-     where W is the width of MODE.  But don't do this if the machine has
-     conditional arithmetic since the branches will be converted into
-     a conditional negation insn.  */
+     where W is the width of MODE.  */
 
-#ifndef HAVE_conditional_arithmetic
   if (GET_MODE_CLASS (mode) == MODE_INT && BRANCH_COST >= 2)
     {
       rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
@@ -2340,7 +2337,6 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
       if (temp != 0)
 	return temp;
     }
-#endif
 
   /* If that does not win, use conditional jump and negate.  */
 
