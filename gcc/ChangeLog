@@ -1,3 +1,8 @@
+Thu Jan 28 09:41:11 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa1.0-hp-hpux10*): Use t-pa.
+	* configure: Rebuilt.
+
 Wed Jan 27 23:39:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* rtl.h (insn_first_p): Declare.
