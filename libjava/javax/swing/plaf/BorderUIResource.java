@@ -55,6 +55,8 @@ public class BorderUIResource
     extends Object 
     implements Border, UIResource, Serializable
 {
+  static final long serialVersionUID = -3440553684010079691L;
+
     private Border delegate;
 
     /**
