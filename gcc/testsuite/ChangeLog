@@ -1,3 +1,8 @@
+2004-06-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/15503
+	* g++.dg/template/meminit2.C: New test.
+
 2004-06-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/15822
