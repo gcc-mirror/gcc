@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"
+#include "c-convert.h"
 #include "toplev.h"
 
 /* Change of width--truncation and extension of integers or reals--

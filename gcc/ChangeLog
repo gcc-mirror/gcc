@@ -1,3 +1,8 @@
+2002-04-05  Andreas Schwab  <schwab@suse.de>
+
+	* c-convert.c: Include c-convert.h.
+	* Makefile.in (c-convert.o): Updated.
+
 2002-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* mklibgcc.in: Use separate libgcc.map for each multilib.
