@@ -1,3 +1,42 @@
+Tue Mar 24 10:23:47 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* error.c (dump_expr): Remove unused variable `l'.
+
+	* pt.c (for_each_template_parm): New function, created by
+	converting uses_template_parms.
+	(tree_fn_t): New typedef.
+	(uses_template_parms): Use it.
+	(mark_template_parm): New function.
+	(push_template_decl): Check that the argument list of a partial
+	specialization uses all the template parameters.
+
+	* Make-lang.in (c++filt): Don't delete cxxmain.c after we're done
+	with it; we might want it for debugging.
+	* cp-tree.h (type_unification): Change interface.
+	* class.c (finish_struct_1): Skip nested template types, just like
+	ordinary nested types.
+	(instantiate_type): Use new interface to type_unification.
+	* lex.c (init_lex): Add __sz as opname for sizeof.
+	* method.c (build_overload_scope_ref): New function.
+	(build_overload_int): Handle complex expressions.  Set
+	numeric_output_need_bar if necessary.
+	(build_overload_value): Handle non-PARM_DECL nodes; this
+	routine is now used by build_overload_int.  Remove some
+	assignments to numeric_output_need_bar.  Use
+	build_overload_scope_ref.
+	(build_qualified_name): Note that some template mangled names end
+	with digits, and set numeric_output_need_bar appropriately.  Use
+	build_underscore_int.
+	* pt.c (unify): Change interface.
+	(type_unification_real): Likewise.
+	(determine_specialization): Use new interfaces.
+	(tsubst): Deal gracefully with situations in which the argument
+	vector is not fully filled.
+	(fn_type_unification): Use new interfaces.
+	(type_unification): Likewise.  Remove NOP_EXPR hack.
+	(type_unification_real): Likewise.
+	(unify): Likewise.  Deal with unification of complex expresions.
+
 Mon Mar 23 12:24:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (complete_template_args): Initialize skip properly.

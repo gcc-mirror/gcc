@@ -1533,12 +1533,7 @@ dump_expr (t, nop)
       }
 
     case TEMPLATE_PARM_INDEX:
-      {
-	int l = current_template_parms ? 
-	  list_length (current_template_parms) : 0;
-
-	dump_decl (TEMPLATE_PARM_DECL (t), -1);
-      }
+      dump_decl (TEMPLATE_PARM_DECL (t), -1);
       break;
 
     case IDENTIFIER_NODE:
