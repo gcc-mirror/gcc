@@ -6621,8 +6621,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 			     gen_rtx (PLUS, Pmode, base_reg_rtx,
 				      GEN_INT (gp_offset - base_offset)));
 
-		if (regno != GP_REG_FIRST + 31
-		    || ! current_function_calls_eh_return)
+		if (! current_function_calls_eh_return)
 		  RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		/* The mips16 does not have an instruction to load
@@ -6779,7 +6778,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 				       gen_rtx (PLUS, Pmode, base_reg_rtx,
 						GEN_INT (fp_offset
 							 - base_offset)));
-		RTX_UNCHANGING_P (mem_rtx) = 1;
+		if (! current_function_calls_eh_return)
+		  RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		if (store_p)
 		  mips_emit_frame_related_store (mem_rtx, reg_rtx, fp_offset);
