@@ -38,11 +38,11 @@ include(iparm.m4)dnl
          C(I,J) = C(I,J)+A(I,K)*B(K,J)
 */
 
-extern void `__matmul_'rtype_code (rtype * retarray, rtype * a, rtype * b);
-export_proto_np(`__matmul_'rtype_code);
+extern void matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b);
+export_proto(matmul_`'rtype_code);
 
 void
-`__matmul_'rtype_code (rtype * retarray, rtype * a, rtype * b)
+matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b)
 {
   rtype_name *abase;
   rtype_name *bbase;

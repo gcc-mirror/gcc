@@ -31,12 +31,12 @@ typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
    return array.  */
 dnl Only the kind (ie size) is used to name the function.
 
-extern void `__reshape_'rtype_kind (rtype *, rtype *, shape_type *,
+extern void reshape_`'rtype_kind (rtype *, rtype *, shape_type *,
 				    rtype *, shape_type *);
-extern_proto_np(`__reshape_'rtype_kind);
+export_proto(reshape_`'rtype_kind);
 
 void
-`__reshape_'rtype_kind (rtype * ret, rtype * source, shape_type * shape,
+reshape_`'rtype_kind (rtype * ret, rtype * source, shape_type * shape,
                       rtype * pad, shape_type * order)
 {
   /* r.* indicates the return array.  */

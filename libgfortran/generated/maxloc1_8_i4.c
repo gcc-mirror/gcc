@@ -27,11 +27,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
-extern void __maxloc1_8_i4 (gfc_array_i8 *, gfc_array_i4 *, index_type *);
-export_proto_np(__maxloc1_8_i4);
+extern void maxloc1_8_i4 (gfc_array_i8 *, gfc_array_i4 *, index_type *);
+export_proto(maxloc1_8_i4);
 
 void
-__maxloc1_8_i4 (gfc_array_i8 *retarray, gfc_array_i4 *array, index_type *pdim)
+maxloc1_8_i4 (gfc_array_i8 *retarray, gfc_array_i4 *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -157,12 +157,13 @@ __maxloc1_8_i4 (gfc_array_i8 *retarray, gfc_array_i4 *array, index_type *pdim)
 }
 
 
-extern void __mmaxloc1_8_i4 (gfc_array_i8 *, gfc_array_i4 *, index_type *,
-						gfc_array_l4 *);
-export_proto_np(__mmaxloc1_8_i4);
+extern void mmaxloc1_8_i4 (gfc_array_i8 *, gfc_array_i4 *, index_type *,
+					       gfc_array_l4 *);
+export_proto(mmaxloc1_8_i4);
 
 void
-__mmaxloc1_8_i4 (gfc_array_i8 * retarray, gfc_array_i4 * array, index_type *pdim, gfc_array_l4 * mask)
+mmaxloc1_8_i4 (gfc_array_i8 * retarray, gfc_array_i4 * array,
+				  index_type *pdim, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

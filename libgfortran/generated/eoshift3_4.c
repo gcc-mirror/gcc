@@ -28,15 +28,15 @@ Boston, MA 02111-1307, USA.  */
 static const char zeros[16] =
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-extern void __eoshift3_4 (gfc_array_char *, gfc_array_char *,
+extern void eoshift3_4 (gfc_array_char *, gfc_array_char *,
 				     gfc_array_i4 *, const gfc_array_char *,
 				     GFC_INTEGER_4 *);
-export_proto_np(__eoshift3_4);
+export_proto(eoshift3_4);
 
 void
-__eoshift3_4 (gfc_array_char *ret, gfc_array_char *array,
-			 gfc_array_i4 *h, const gfc_array_char *bound,
-			 GFC_INTEGER_4 *pwhich)
+eoshift3_4 (gfc_array_char *ret, gfc_array_char *array,
+		       gfc_array_i4 *h, const gfc_array_char *bound,
+		       GFC_INTEGER_4 *pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];

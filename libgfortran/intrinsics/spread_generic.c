@@ -1,4 +1,4 @@
-/* Generic implementation of the RESHAPE intrinsic
+/* Generic implementation of the SPREAD intrinsic
    Copyright 2002 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
@@ -25,13 +25,13 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-extern void __spread (const gfc_array_char *, const gfc_array_char *,
-		      const index_type *, const index_type *);
-export_proto_np(__spread);
+extern void spread (const gfc_array_char *, const gfc_array_char *,
+		    const index_type *, const index_type *);
+export_proto(spread);
 
 void
-__spread (const gfc_array_char * ret, const gfc_array_char * source,
-    const index_type * along, const index_type * pncopies)
+spread (const gfc_array_char *ret, const gfc_array_char *source,
+	const index_type *along, const index_type *pncopies)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];

@@ -32,8 +32,8 @@ static const char zeros[16] =
    sizeof(int) < sizeof (index_type).  */
 
 static void
-__eoshift2 (gfc_array_char * ret, const gfc_array_char * array,
-    int shift, const gfc_array_char * bound, int which)
+eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
+	  int shift, const gfc_array_char *bound, int which)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];
@@ -203,28 +203,28 @@ __eoshift2 (gfc_array_char * ret, const gfc_array_char * array,
     }
 }
 
-extern void __eoshift2_4 (gfc_array_char *, const gfc_array_char *,
-			  const GFC_INTEGER_4 *, const gfc_array_char *,
-			  const GFC_INTEGER_4 *);
-export_proto_np(__eoshift2_4);
+extern void eoshift2_4 (gfc_array_char *, const gfc_array_char *,
+			const GFC_INTEGER_4 *, const gfc_array_char *,
+			const GFC_INTEGER_4 *);
+export_proto(eoshift2_4);
 
 void
-__eoshift2_4 (gfc_array_char * ret, const gfc_array_char * array,
-    const GFC_INTEGER_4 * pshift, const gfc_array_char * bound,
-    const GFC_INTEGER_4 * pdim)
+eoshift2_4 (gfc_array_char *ret, const gfc_array_char *array,
+	    const GFC_INTEGER_4 *pshift, const gfc_array_char *bound,
+	    const GFC_INTEGER_4 *pdim)
 {
-  __eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
+  eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }
 
-extern void __eoshift2_8 (gfc_array_char *, const gfc_array_char *,
-			  const GFC_INTEGER_8 *, const gfc_array_char *,
-			  const GFC_INTEGER_8 *);
-export_proto_np(__eoshift2_8);
+extern void eoshift2_8 (gfc_array_char *, const gfc_array_char *,
+			const GFC_INTEGER_8 *, const gfc_array_char *,
+			const GFC_INTEGER_8 *);
+export_proto(eoshift2_8);
 
 void
-__eoshift2_8 (gfc_array_char * ret, const gfc_array_char * array,
-    const GFC_INTEGER_8 * pshift, const gfc_array_char * bound,
-    const GFC_INTEGER_8 * pdim)
+eoshift2_8 (gfc_array_char *ret, const gfc_array_char *array,
+	    const GFC_INTEGER_8 *pshift, const gfc_array_char *bound,
+	    const GFC_INTEGER_8 *pdim)
 {
-  __eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
+  eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }

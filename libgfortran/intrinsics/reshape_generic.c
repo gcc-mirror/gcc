@@ -28,16 +28,15 @@ Boston, MA 02111-1307, USA.  */
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
 
-extern void __reshape (parray *, parray *, shape_type *,
-		       parray *, shape_type *);
-export_proto_np(__reshape);
+extern void reshape (parray *, parray *, shape_type *, parray *, shape_type *);
+export_proto(reshape);
 
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
 
 void
-__reshape (parray * ret, parray * source, shape_type * shape,
-           parray * pad, shape_type * order)
+reshape (parray *ret, parray *source, shape_type *shape,
+	 parray *pad, shape_type *order)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS - 1];

@@ -25,15 +25,15 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-void __cshift1_4 (const gfc_array_char * ret,
-			     const gfc_array_char * array,
-			     const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich);
-export_proto_np(__cshift1_4);
+void cshift1_4 (const gfc_array_char * ret,
+			   const gfc_array_char * array,
+			   const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich);
+export_proto(cshift1_4);
 
 void
-__cshift1_4 (const gfc_array_char * ret,
-			const gfc_array_char * array,
-			const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich)
+cshift1_4 (const gfc_array_char * ret,
+		      const gfc_array_char * array,
+		      const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];

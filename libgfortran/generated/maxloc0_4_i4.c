@@ -28,11 +28,11 @@ Boston, MA 02111-1307, USA.  */
 
 
 
-extern void __maxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array);
-export_proto_np(__maxloc0_4_i4);
+extern void maxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array);
+export_proto(maxloc0_4_i4);
 
 void
-__maxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array)
+maxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -122,11 +122,12 @@ __maxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array)
 }
 
 
-extern void __mmaxloc0_4_i4 (gfc_array_i4 *, gfc_array_i4 *, gfc_array_l4 *);
-export_proto_np(__mmaxloc0_4_i4);
+extern void mmaxloc0_4_i4 (gfc_array_i4 *, gfc_array_i4 *, gfc_array_l4 *);
+export_proto(mmaxloc0_4_i4);
 
 void
-__mmaxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array, gfc_array_l4 * mask)
+mmaxloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array,
+				  gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];

@@ -19,11 +19,11 @@ dnl You should not return or break from the inner loop of the implementation.
 dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
 `
-extern void `__'name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *);
-export_proto_np(`__'name`'rtype_qual`_'atype_code);
+extern void name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *);
+export_proto(name`'rtype_qual`_'atype_code);
 
 void
-`__'name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
+name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -143,12 +143,13 @@ define(FINISH_ARRAY_FUNCTION,
 }')dnl
 define(START_MASKED_ARRAY_FUNCTION,
 `
-extern void `__m'name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *,
-						gfc_array_l4 *);
-export_proto_np(`__m'name`'rtype_qual`_'atype_code);
+extern void `m'name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *,
+					       gfc_array_l4 *);
+export_proto(`m'name`'rtype_qual`_'atype_code);
 
 void
-`__m'name`'rtype_qual`_'atype_code (rtype * retarray, atype * array, index_type *pdim, gfc_array_l4 * mask)
+`m'name`'rtype_qual`_'atype_code (rtype * retarray, atype * array,
+				  index_type *pdim, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

@@ -26,12 +26,12 @@ Boston, MA 02111-1307, USA.  */
 
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) char_array;
 
-extern GFC_INTEGER_4 __dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b);
-export_proto_np(__dot_product_i4);
+extern GFC_INTEGER_4 dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b);
+export_proto(dot_product_i4);
 
 /* Both parameters will already have been converted to the result type.  */
 GFC_INTEGER_4
-__dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b)
+dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b)
 {
   GFC_INTEGER_4 *pa;
   GFC_INTEGER_4 *pb;
