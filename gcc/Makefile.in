@@ -32,8 +32,8 @@
 LANGUAGES = c c++ objective-c proto
 
 ALLOCA =
-ALLOCA_FLAGS = -S -Demacs
-ALLOCA_FINISH = as -o alloca.o alloca.s
+ALLOCA_FLAGS =
+ALLOCA_FINISH =
 
 # Various ways of specifying flags for compilations:  
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
@@ -851,13 +851,10 @@ aux-output.o : aux-output.c $(CONFIG_H) \
 # Normally this target is not used; but it is used if you
 # define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
 # from the GNU Emacs distribution.
-# Note some machines won't allow $(CC) without -S on this source file.
 alloca.o:	alloca.c
-# sed is used to strip the comments from the assembler output.
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ALLOCA_FLAGS) \
-	  `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
+	  -Demacs `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
 	$(ALLOCA_FINISH)
-	-rm alloca.s
 
 # Generate header and source files from the machine description, 
 # and compile them.
@@ -1433,7 +1430,7 @@ install-float-h: float.h install-dir
 install-limits-h: limits.h limitx.h install-dir
 	-rm -f $(libsubdir)/include/limits.h tmp-limits.h
 	if [ -f /usr/include/limits.h ] ; then \
-	  cat $(srcdir)/limitx.h $(srcdir)/limits.h > tmp-limits.h; \
+	  cat $(srcdir)/limitx.h $(srcdir)/limits.h $(srcdir)/limity.h > tmp-limits.h; \
 	else \
 	  cat $(srcdir)/limits.h > tmp-limits.h; \
 	fi
