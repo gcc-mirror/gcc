@@ -2077,6 +2077,62 @@ load_pic_register (do_rtl)
     emit_insn (gen_blockage ());
 }
 
+/* Compute the size of local storage taking into consideration the
+   desired stack alignment which is to be maintained.  Also determine
+   the number of registers saved below the local storage.  */
+
+HOST_WIDE_INT
+ix86_compute_frame_size (size, nregs_on_stack)
+     HOST_WIDE_INT size;
+     int *nregs_on_stack;
+{
+  int limit;
+  int nregs;
+  int regno;
+  int padding;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  HOST_WIDE_INT total_size;
+
+  limit = frame_pointer_needed
+	  ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM;
+
+  nregs = 0;
+
+  for (regno = limit - 1; regno >= 0; regno--)
+    if ((regs_ever_live[regno] && ! call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      nregs++;
+
+  padding = 0;
+  total_size = size + (nregs * UNITS_PER_WORD);
+
+#ifdef PREFERRED_STACK_BOUNDARY
+  {
+    int offset;
+    int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+
+    offset = 4;
+    if (frame_pointer_needed)
+      offset += UNITS_PER_WORD;
+
+    total_size += offset;
+    
+    padding = ((total_size + preferred_alignment - 1)
+	       & -preferred_alignment) - total_size;
+
+    if (padding < (((offset + preferred_alignment - 1)
+		    & -preferred_alignment) - offset))
+      padding += preferred_alignment;
+  }
+#endif
+
+  if (nregs_on_stack)
+    *nregs_on_stack = nregs;
+
+  return size + padding;
+}
+
 static void
 ix86_prologue (do_rtl)
      int do_rtl;
@@ -2086,7 +2142,7 @@ ix86_prologue (do_rtl)
   rtx xops[4];
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
-  long tsize = get_frame_size ();
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *)0);
   rtx insn;
   int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
 
@@ -2299,28 +2355,18 @@ ix86_epilogue (do_rtl)
      int do_rtl;
 {
   register int regno;
-  register int nregs, limit;
-  int offset;
+  register int limit;
+  int nregs;
   rtx xops[3];
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
-  long tsize = get_frame_size ();
-
-  /* Compute the number of registers to pop */
-
-  limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-
-  nregs = 0;
-
-  for (regno = limit - 1; regno >= 0; regno--)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      nregs++;
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), &nregs);
 
   /* sp is often unreliable so we may have to go off the frame pointer. */
 
-  offset = - tsize - (nregs * UNITS_PER_WORD);
+  offset = -(tsize + nregs * UNITS_PER_WORD);
 
   xops[2] = stack_pointer_rtx;
 
@@ -2339,6 +2385,9 @@ ix86_epilogue (do_rtl)
      using a move instruction to restore the register since it's
      less work than reloading sp and popping the register.  Otherwise,
      restore sp (if necessary) and pop the registers. */
+
+  limit = frame_pointer_needed
+	  ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM;
 
   if (nregs > 1 || sp_valid)
     {
