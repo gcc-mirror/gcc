@@ -1017,7 +1017,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
    are put in this structure to save space.  */
-__extension__ struct lang_type_header GTY(())
+struct lang_type_header GTY(())
 {
   CHAR_BITFIELD is_lang_type_class : 1;
 

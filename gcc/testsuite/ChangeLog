@@ -1,3 +1,7 @@
+2003-12-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/bitfld-1.c: Expect warnings for enum bitfields.
+
 2003-12-18  Steven Bosscher  <steven@gcc.gnu.org>
 	    Dan Kegel <dank@kegel.com>
 
