@@ -4,7 +4,9 @@ public class initexc
   {
     static
     {
-      throw new NullPointerException("nope");
+      // Static initializers must be able to complete normally.
+      if (true)
+	throw new NullPointerException("nope");
     }
 
     public static int val ()
