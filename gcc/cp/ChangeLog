@@ -1,3 +1,8 @@
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8849
+	* pt.c (resolve_overloaded_unification): Handle FUNCTION_DECL.
+
 2003-01-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX,
