@@ -1,5 +1,10 @@
 2003-11-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/istream.tcc (getline(basic_string<>&)):
+        Fix error in comment of the previous commit.
+
+2003-11-22  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/12593
 	* include/bits/istream.tcc (operator>>(basic_string<>&),
 	getline(basic_string<>&)): Implement resolution of DR 91 [WP];
