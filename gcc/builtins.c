@@ -147,6 +147,7 @@ static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 static tree fold_builtin_constant_p	PARAMS ((tree));
 static tree build_function_call_expr	PARAMS ((tree, tree));
+static int validate_arglist		PARAMS ((tree, ...));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -599,8 +600,7 @@ expand_builtin_setjmp (arglist, target)
 {
   rtx buf_addr, next_lab, cont_lab;
 
-  if (arglist == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+  if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
   if (target == 0 || GET_CODE (target) != REG
@@ -1370,9 +1370,7 @@ expand_builtin_mathfn (exp, target, subtarget)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
 
-  if (arglist == 0
-      /* Arg could be wrong type if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
 
   /* Stabilize and compute the argument.  */
@@ -1486,9 +1484,7 @@ expand_builtin_strlen (exp, target)
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+  if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1590,10 +1586,7 @@ expand_builtin_strstr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (arglist == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;
   else
@@ -1650,10 +1643,7 @@ expand_builtin_strchr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (arglist == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != INTEGER_TYPE
+  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;
   else
@@ -1700,10 +1690,7 @@ expand_builtin_strrchr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (arglist == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != INTEGER_TYPE
+  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;
   else
@@ -1758,10 +1745,7 @@ expand_builtin_strpbrk (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (arglist == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;
   else
@@ -1837,16 +1821,8 @@ static rtx
 expand_builtin_memcpy (arglist)
      tree arglist;
 {
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE)
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE
-				(TREE_CHAIN (TREE_CHAIN (arglist)))))
-	  != INTEGER_TYPE))
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1915,12 +1891,7 @@ expand_builtin_strcpy (exp)
   tree arglist = TREE_OPERAND (exp, 1);
   rtx result;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1967,16 +1938,8 @@ expand_builtin_strncpy (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE)
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE
-				(TREE_CHAIN (TREE_CHAIN (arglist)))))
-	  != INTEGER_TYPE))
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -2060,17 +2023,8 @@ expand_builtin_memset (exp)
 {
   tree arglist = TREE_OPERAND (exp, 1);
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != INTEGER_TYPE)
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || (INTEGER_TYPE
-	  != (TREE_CODE (TREE_TYPE
-			 (TREE_VALUE
-			  (TREE_CHAIN (TREE_CHAIN (arglist))))))))
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -2142,14 +2096,12 @@ expand_builtin_bzero (exp)
   tree dest, size, newarglist;
   rtx result;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (dest = TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (size = TREE_VALUE (TREE_CHAIN (arglist))))
-	  != INTEGER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
+  dest = TREE_VALUE (arglist);
+  size = TREE_VALUE (TREE_CHAIN (arglist));
+  
   /* New argument list transforming bzero(ptr x, int y) to
      memset(ptr x, int 0, size_t y).  */
   
@@ -2181,13 +2133,8 @@ expand_builtin_memcmp (exp, arglist, target)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
+  if (!validate_arglist (arglist,
+		      POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
 
   {
@@ -2270,12 +2217,7 @@ expand_builtin_strcmp (exp, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
 
   arg1 = TREE_VALUE (arglist);
@@ -2379,13 +2321,8 @@ expand_builtin_strncmp (exp, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
 
   arg1 = TREE_VALUE (arglist);
@@ -2478,12 +2415,7 @@ expand_builtin_strcat (arglist, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -2512,16 +2444,8 @@ expand_builtin_strncat (arglist, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE)
-      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE
-				(TREE_CHAIN (TREE_CHAIN (arglist)))))
-	  != INTEGER_TYPE))
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -2576,12 +2500,7 @@ expand_builtin_strspn (arglist, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -2621,12 +2540,7 @@ expand_builtin_strcspn (arglist, target, mode)
   if (current_function_check_memory_usage)
     return 0;
 
-  if (arglist == 0
-      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -3174,9 +3088,7 @@ expand_builtin_alloca (arglist, target)
 {
   rtx op0;
 
-  if (arglist == 0
-      /* Arg could be non-integer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE)
+  if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
     return 0;
 
   /* Compute the argument.  */
@@ -3196,9 +3108,7 @@ expand_builtin_ffs (arglist, target, subtarget)
      rtx target, subtarget;
 {
   rtx op0;
-  if (arglist == 0
-      /* Arg could be non-integer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE)
+  if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
     return 0;
 
   /* Compute the argument.  */
@@ -3228,11 +3138,7 @@ expand_builtin_fputs (arglist, ignore)
     return 0;
 
   /* Verify the arguments in the original call. */
-  if (arglist == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
-      || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE)
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;
 
@@ -3411,13 +3317,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	 computed?  We'll also need a safe worst case value for varargs
 	 functions.  */
     case BUILT_IN_APPLY:
-      if (arglist == 0
-	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
-	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
-	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
+      if (!validate_arglist (arglist, POINTER_TYPE,
+			     POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
+	  && !validate_arglist (arglist, REFERENCE_TYPE,
+				POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
 	return const0_rtx;
       else
 	{
@@ -3435,9 +3338,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	 value described by RESULT.  RESULT is address of the block of
 	 memory returned by __builtin_apply.  */
     case BUILT_IN_RETURN:
-      if (arglist
-	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE)
+      if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
 	expand_builtin_return (expand_expr (TREE_VALUE (arglist),
 					    NULL_RTX, VOIDmode, 0));
       return const0_rtx;
@@ -3608,8 +3509,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	 It's similar to the C library longjmp function but works with
 	 __builtin_setjmp above.  */
     case BUILT_IN_LONGJMP:
-      if (arglist == 0 || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+      if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
 	break;
       else
 	{
@@ -3750,9 +3650,7 @@ fold_builtin (exp)
       return fold_builtin_constant_p (arglist);
 
     case BUILT_IN_STRLEN:
-      if (arglist != 0
-	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE)
+      if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
 	{
 	  tree len = c_strlen (TREE_VALUE (arglist));
 	  if (len != 0)
@@ -3778,4 +3676,51 @@ build_function_call_expr (fn, arglist)
 		     call_expr, arglist);
   TREE_SIDE_EFFECTS (call_expr) = 1;
   return fold (call_expr);
+}
+
+/* This function validates the types of a function call argument list
+   represented as a tree chain of parameters against a specified list
+   of tree_codes.  If the last specifier is a 0, that represents an
+   ellipses, otherwise the last specifier must be a VOID_TYPE.  */
+static int
+validate_arglist VPARAMS ((tree arglist, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  tree arglist;
+#endif
+  enum tree_code code;
+  va_list ap;
+
+  VA_START (ap, arglist);
+
+#ifndef ANSI_PROTOTYPES
+  arglist = va_arg (ap, tree);
+#endif
+
+  do {
+    code = va_arg (ap, enum tree_code);
+    switch (code)
+    {
+    case 0:
+      /* This signifies an ellipses, any further arguments are all ok.  */
+      va_end (ap);
+      return 1;
+    case VOID_TYPE:
+      /* This signifies an endlink, if no arguments remain, return
+         true, otherwise return false.  */
+      va_end (ap);
+      return (arglist == 0);
+    default:
+      /* If no parameters remain or the parameter's code does not
+         match the specified code, return false.  Otherwise continue
+         checking any remaining arguments.  */
+      if (arglist == 0 || code != TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))))
+        {
+	  va_end (ap);
+	  return 0;
+	}
+      break;
+    }
+    arglist = TREE_CHAIN (arglist);
+  } while (1);
 }
