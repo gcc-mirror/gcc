@@ -1,3 +1,23 @@
+2002-11-26  Mark Wielaard  <mark@klomp.org>
+
+	* javax/transaction/HeuristicCommitException.java: Classpath merge.
+	* javax/transaction/HeuristicMixedException.java: Likewise.
+	* javax/transaction/HeuristicRollbackException.java: Likewise.
+	* javax/transaction/InvalidTransactionException.java: Likewise.
+	* javax/transaction/NotSupportedException.java: Likewise.
+	* javax/transaction/RollbackException.java: Likewise.
+	* javax/transaction/Status.java: Likewise.
+	* javax/transaction/Synchronization.java: Likewise.
+	* javax/transaction/SystemException.java: Likewise.
+	* javax/transaction/Transaction.java: Likewise.
+	* javax/transaction/TransactionManager.java: Likewise.
+	* javax/transaction/TransactionRequiredException.java: Likewise.
+	* javax/transaction/TransactionRolledbackException.java: Likewise.
+	* javax/transaction/UserTransaction.java: Likewise.
+	* javax/transaction/xa/XAException.java: Likewise.
+	* javax/transaction/xa/XAResource.java: Likewise.
+	* javax/transaction/xa/Xid.java: Likewise.
+
 2002-11-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/net/natPlainDatagramSocketImpl.cc (socklen_t): Don't
