@@ -1635,6 +1635,46 @@ unsafe_associative_fp_binop (tree exp)
            && FLOAT_TYPE_P (TREE_TYPE (exp)));
 }
 
+/* Returns true when STMT is a simple iv increment.  It detects the
+   following situation:
+   
+   i_1 = phi (..., i_2)
+   i_2 = i_1 +/- ...  */
+
+static bool
+simple_iv_increment_p (tree stmt)
+{
+  tree lhs, rhs, preinc, phi;
+  unsigned i;
+
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return false;
+
+  lhs = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return false;
+
+  rhs = TREE_OPERAND (stmt, 1);
+
+  if (TREE_CODE (rhs) != PLUS_EXPR
+      && TREE_CODE (rhs) != MINUS_EXPR)
+    return false;
+
+  preinc = TREE_OPERAND (rhs, 0);
+  if (TREE_CODE (preinc) != SSA_NAME)
+    return false;
+
+  phi = SSA_NAME_DEF_STMT (preinc);
+  if (TREE_CODE (phi) != PHI_NODE)
+    return false;
+
+  for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
+    if (PHI_ARG_DEF (phi, i) == lhs)
+      return true;
+
+  return false;
+}
+
 /* STMT is a MODIFY_EXPR for which we were unable to find RHS in the
    hash tables.  Try to simplify the RHS using whatever equivalences
    we may have recorded.
@@ -1687,6 +1727,11 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
       && is_gimple_min_invariant (TREE_OPERAND (rhs, 1)))
     {
       tree rhs_def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
+
+      /* If the statement defines an induction variable, do not propagate
+	 its value, so that we do not create overlapping life ranges.  */
+      if (simple_iv_increment_p (rhs_def_stmt))
+	goto dont_fold_assoc;
 
       /* See if the RHS_DEF_STMT has the same form as our statement.  */
       if (TREE_CODE (rhs_def_stmt) == MODIFY_EXPR)
@@ -2551,7 +2596,10 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
       || ! def
       || TREE_CODE (def) != SSA_NAME
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def)
-      || NUM_V_MAY_DEFS (v_may_defs) != 0)
+      || NUM_V_MAY_DEFS (v_may_defs) != 0
+      /* Do not record equivalences for increments of ivs.  This would create
+	 overlapping live ranges for a very questionable gain.  */
+      || simple_iv_increment_p (stmt))
     insert = false;
 
   /* Check if the expression has been computed before.  */
