@@ -1,3 +1,7 @@
+Sun Jan  7 14:31:57 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (fold_rtx): Handle unordered comparisons.
+
 Sun Jan  7 13:49:19 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (set_of_1): New static function.

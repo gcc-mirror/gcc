@@ -3812,7 +3812,9 @@ fold_rtx (x, insn)
 	    if (validate_change (insn, &XEXP (x, i), replacements[j], 0))
 	      break;
 
-	    if (code == NE || code == EQ || GET_RTX_CLASS (code) == 'c')
+	    if (code == NE || code == EQ || GET_RTX_CLASS (code) == 'c'
+		|| code == LTGT || code == UNEQ || code == ORDERED
+		|| code == UNORDERED)
 	      {
 		validate_change (insn, &XEXP (x, i), XEXP (x, 1 - i), 1);
 		validate_change (insn, &XEXP (x, 1 - i), replacements[j], 1);
@@ -3844,7 +3846,9 @@ fold_rtx (x, insn)
      operand unless the first operand is also a constant integer.  Otherwise,
      place any constant second unless the first operand is also a constant.  */
 
-  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
+  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c'
+      || code == LTGT || code == UNEQ || code == ORDERED
+      || code == UNORDERED)
     {
       if (must_swap || (const_arg0
 	  		&& (const_arg1 == 0
@@ -3952,27 +3956,34 @@ fold_rtx (x, insn)
 		    return true;
 		}
 
-	      /* See if the two operands are the same.  We don't do this
-		 for IEEE floating-point since we can't assume x == x
-		 since x might be a NaN.  */
+	      /* See if the two operands are the same.  */
 
-	      if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		   || ! FLOAT_MODE_P (mode_arg0) || flag_fast_math)
-		  && (folded_arg0 == folded_arg1
-		      || (GET_CODE (folded_arg0) == REG
-			  && GET_CODE (folded_arg1) == REG
-			  && (REG_QTY (REGNO (folded_arg0))
-			      == REG_QTY (REGNO (folded_arg1))))
-		      || ((p0 = lookup (folded_arg0,
-					(safe_hash (folded_arg0, mode_arg0)
-					 & HASH_MASK), mode_arg0))
-			  && (p1 = lookup (folded_arg1,
-					   (safe_hash (folded_arg1, mode_arg0)
-					    & HASH_MASK), mode_arg0))
-			  && p0->first_same_value == p1->first_same_value)))
-		return ((code == EQ || code == LE || code == GE
-			 || code == LEU || code == GEU)
-			? true : false);
+	      if (folded_arg0 == folded_arg1
+		  || (GET_CODE (folded_arg0) == REG
+		      && GET_CODE (folded_arg1) == REG
+		      && (REG_QTY (REGNO (folded_arg0))
+			  == REG_QTY (REGNO (folded_arg1))))
+		  || ((p0 = lookup (folded_arg0,
+				    (safe_hash (folded_arg0, mode_arg0)
+				     & HASH_MASK), mode_arg0))
+		      && (p1 = lookup (folded_arg1,
+				       (safe_hash (folded_arg1, mode_arg0)
+					& HASH_MASK), mode_arg0))
+		      && p0->first_same_value == p1->first_same_value))
+		{
+		   /* Sadly two equal NaNs are not equivalent.  */
+		   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		       || ! FLOAT_MODE_P (mode_arg0) || flag_fast_math)
+		      return ((code == EQ || code == LE || code == GE
+			       || code == LEU || code == GEU || code == UNEQ
+			       || code == UNLE || code == UNGE || code == ORDERED)
+			      ? true : false);
+		   /* Take care for the FP compares we can resolve.  */
+		   if (code == UNEQ || code == UNLE || code == UNGE)
+		     return true;
+		   if (code == LTGT || code == LT || code == GT)
+		     return false;
+		}
 
 	      /* If FOLDED_ARG0 is a register, see if the comparison we are
 		 doing now is either the same as we did before or the reverse
