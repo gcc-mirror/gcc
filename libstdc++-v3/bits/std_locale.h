@@ -36,6 +36,7 @@
 
 #include <bits/localefwd.h>
 #include <bits/locale_facets.h>
+#include <bits/codecvt.h>
 
 #endif
 
