@@ -1,3 +1,8 @@
+Sun Dec  8 14:57:39 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_int_movcc):  Use force_operand instead of constructing
+	insn directly.
+
 2002-12-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorhi_shift_8): New.
