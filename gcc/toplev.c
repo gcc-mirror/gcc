@@ -2723,7 +2723,7 @@ rest_of_compilation (decl)
 
   timevar_push (TV_JUMP);
 
-  if (flag_delete_null_pointer_checks)
+  if (flag_delete_null_pointer_checks || flag_if_conversion)
     {
       open_dump_file (DFI_null, decl);
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
