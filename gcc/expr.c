@@ -114,6 +114,12 @@ static void do_jump_by_parts_greater ();
 #define MOVE_RATIO 15
 #endif
 #endif
+
+/* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow. */
+
+#ifndef SLOW_UNALIGNED_ACCESS
+#define SLOW_UNALIGNED_ACCESS 0
+#endif
 
 /* This is run at the start of compiling a function.  */
 
@@ -126,6 +132,7 @@ init_expr ()
   inhibit_defer_pop = 0;
   cleanups_this_call = 0;
   saveregs_value = 0;
+  forced_labels = 0;
 }
 
 /* Save all variables describing the current status into the structure *P.
@@ -142,11 +149,13 @@ save_expr_status (p)
   p->inhibit_defer_pop = inhibit_defer_pop;
   p->cleanups_this_call = cleanups_this_call;
   p->saveregs_value = saveregs_value;
+  p->forced_labels = forced_labels;
 
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
   cleanups_this_call = 0;
   saveregs_value = 0;
+  forced_labels = 0;
 }
 
 /* Restore all variables describing the current status from the structure *P.
@@ -160,6 +169,7 @@ restore_expr_status (p)
   inhibit_defer_pop = p->inhibit_defer_pop;
   cleanups_this_call = p->cleanups_this_call;
   saveregs_value = p->saveregs_value;
+  forced_labels = p->forced_labels;
 }
 
 /* Manage the queue of increment instructions to be output
@@ -390,7 +400,7 @@ convert_move (to, from, unsignedp)
 	   library calls.  */
 	abort ();
 
-      emit_library_call (libcall, 0, to_mode, 1, from, from_mode);
+      emit_library_call (libcall, 1, to_mode, 1, from, from_mode);
       emit_move_insn (to, hard_libcall_value (to_mode));
       return;
     }
@@ -753,7 +763,7 @@ move_by_pieces (to, from, len, align)
 {
   struct move_by_pieces data;
   rtx to_addr = XEXP (to, 0), from_addr = XEXP (from, 0);
-  int max_size = 10000;
+  int max_size = MOVE_MAX + 1;
 
   data.offset = 0;
   data.to_addr = to_addr;
@@ -819,12 +829,9 @@ move_by_pieces (to, from, len, align)
 	data.to_addr = copy_addr_to_reg (to_addr);
     }
 
-#if defined (STRICT_ALIGNMENT) || defined (SLOW_UNALIGNED_ACCESS)
-  if (align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+  if (! (STRICT_ALIGNMENT || SLOW_UNALIGNED_ACCESS)
+      || align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = MOVE_MAX;
-#else
-  align = MOVE_MAX;
-#endif
 
   /* First move what we can in the largest integer mode, then go to
      successively smaller modes.  */
@@ -866,14 +873,11 @@ move_by_pieces_ninsns (l, align)
      int align;
 {
   register int n_insns = 0;
-  int max_size = 10000;
+  int max_size = MOVE_MAX + 1;
 
-#if defined (STRICT_ALIGNMENT) || defined (SLOW_UNALIGNED_ACCESS)
-  if (align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+  if (! (STRICT_ALIGNMENT || SLOW_UNALIGNED_ACCESS)
+      || align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = MOVE_MAX;
-#else
-  align = MOVE_MAX;
-#endif
 
   while (max_size > 1)
     {
@@ -930,11 +934,11 @@ move_by_pieces_1 (genfun, mode, data)
 
 #ifdef HAVE_PRE_DECREMENT
       if (data->explicit_inc_to < 0)
-	emit_insn (gen_sub2_insn (data->to_addr,
-				  gen_rtx (CONST_INT, VOIDmode, size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  gen_rtx (CONST_INT, VOIDmode, -size)));
       if (data->explicit_inc_from < 0)
-	emit_insn (gen_sub2_insn (data->from_addr,
-				  gen_rtx (CONST_INT, VOIDmode, size)));
+	emit_insn (gen_add2_insn (data->from_addr,
+				  gen_rtx (CONST_INT, VOIDmode, -size)));
 #endif
 
       emit_insn ((*genfun) (to1, from1));
@@ -1050,12 +1054,12 @@ emit_block_move (x, y, size, align)
 #endif
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 0,
+      emit_library_call (memcpy_libfunc, 1,
 			 VOIDmode, 3, XEXP (x, 0), Pmode,
 			 XEXP (y, 0), Pmode,
 			 size, Pmode);
 #else
-      emit_library_call (bcopy_libfunc, 0,
+      emit_library_call (bcopy_libfunc, 1,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
 			 XEXP (x, 0), Pmode,
 			 size, Pmode);
@@ -1159,12 +1163,12 @@ clear_storage (object, size)
   if (GET_MODE (object) == BLKmode)
     {
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memset_libfunc, 0,
+      emit_library_call (memset_libfunc, 1,
 			 VOIDmode, 3,
 			 XEXP (object, 0), Pmode, const0_rtx, Pmode,
 			 gen_rtx (CONST_INT, VOIDmode, size), Pmode);
 #else
-      emit_library_call (bzero_libfunc, 0,
+      emit_library_call (bzero_libfunc, 1,
 			 VOIDmode, 2,
 			 XEXP (object, 0), Pmode,
 			 gen_rtx (CONST_INT, VOIDmode, size), Pmode);
@@ -1411,13 +1415,12 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  && skip == 0
 	  && (move_by_pieces_ninsns ((unsigned) INTVAL (size) - used, align)
 	      < MOVE_RATIO)
-#if defined (STRICT_ALIGNMENT) || defined (SLOW_UNALIGNED_ACCESS)
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,
 	     and such small pushes do rounding that causes trouble.  */
-	  && (align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT
+	  && ((! STRICT_ALIGNMENT && ! SLOW_UNALIGNED_ACCESS)
+	      || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT
 	      || PUSH_ROUNDING (align) == align)
-#endif
 	  && PUSH_ROUNDING (INTVAL (size)) == INTVAL (size))
 	{
 	  /* Push padding now if padding above and stack grows down,
@@ -1534,11 +1537,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	     to force it to pop the bcopy-arguments right away.  */
 	  NO_DEFER_POP;
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcpy_libfunc, 0,
+	  emit_library_call (memcpy_libfunc, 1,
 			     VOIDmode, 3, temp, Pmode, XEXP (xinner, 0), Pmode,
 			     size, Pmode);
 #else
-	  emit_library_call (bcopy_libfunc, 0,
+	  emit_library_call (bcopy_libfunc, 1,
 			     VOIDmode, 3, XEXP (xinner, 0), Pmode, temp, Pmode,
 			     size, Pmode);
 #endif
@@ -1974,12 +1977,12 @@ expand_assignment (to, from, want_value, suggest_reg)
       rtx size = expr_size (from);
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 0,
+      emit_library_call (memcpy_libfunc, 1,
 			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			 XEXP (from_rtx, 0), Pmode,
 			 size, Pmode);
 #else
-      emit_library_call (bcopy_libfunc, 0,
+      emit_library_call (bcopy_libfunc, 1,
 			 VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
 			 XEXP (to_rtx, 0), Pmode,
 			 size, Pmode);
@@ -2120,22 +2123,68 @@ store_expr (exp, target, suggest_reg)
 	     So copy just the string's actual length, and clear the rest.  */
 	  rtx size;
 
-	  emit_block_move (target, temp,
-			   gen_rtx (CONST_INT, VOIDmode,
-				    TREE_STRING_LENGTH (exp)),
-			   TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
-
-	  temp = plus_constant (XEXP (target, 0), TREE_STRING_LENGTH (exp));
-	  size = plus_constant (expr_size (exp), - TREE_STRING_LENGTH (exp));
-	  if (size != const0_rtx)
+	  /* Get the size of the data type of the string,
+	     which is actually the size of the target.  */
+	  size = expr_size (exp);
+	  if (GET_CODE (size) == CONST_INT
+	      && INTVAL (size) < TREE_STRING_LENGTH (exp))
+	    emit_block_move (target, temp, size,
+			     TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
+	  else
 	    {
+	      /* Compute the size of the data to copy from the string.  */
+	      tree copy_size
+		= fold (build (MIN_EXPR, sizetype,
+			       size_binop (CEIL_DIV_EXPR,
+					   TYPE_SIZE (TREE_TYPE (exp)),
+					   size_int (BITS_PER_UNIT)),
+			       convert (sizetype,
+					build_int_2 (TREE_STRING_LENGTH (exp), 0))));
+	      rtx copy_size_rtx = expand_expr (copy_size, 0, VOIDmode, 0);
+	      rtx label = 0;
+
+	      /* Copy that much.  */
+	      emit_block_move (target, temp, copy_size_rtx,
+			       TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
+
+	      /* Figure out how much is left in TARGET
+		 that we have to clear.  */
+	      if (GET_CODE (copy_size_rtx) == CONST_INT)
+		{
+		  temp = plus_constant (XEXP (target, 0),
+					TREE_STRING_LENGTH (exp));
+		  size = plus_constant (size,
+					- TREE_STRING_LENGTH (exp));
+		}
+	      else
+		{
+		  enum machine_mode size_mode = Pmode;
+
+		  temp = force_reg (Pmode, XEXP (target, 0));
+		  temp = expand_binop (size_mode, add_optab, temp,
+				       copy_size_rtx, 0, 0, OPTAB_LIB_WIDEN);
+
+		  size = expand_binop (size_mode, sub_optab, size,
+				       copy_size_rtx, 0, 0, OPTAB_LIB_WIDEN);
+
+		  emit_cmp_insn (size, const0_rtx, LT, 0,
+				 GET_MODE (size), 0, 0);
+		  label = gen_label_rtx ();
+		  emit_jump_insn (gen_blt (label));
+		}
+
+	      if (size != const0_rtx)
+		{
 #ifdef TARGET_MEM_FUNCTIONS
-	      emit_library_call (memset_libfunc, 0, VOIDmode, 3,
-				 temp, Pmode, const0_rtx, Pmode, size, Pmode);
+		  emit_library_call (memset_libfunc, 1, VOIDmode, 3,
+				     temp, Pmode, const0_rtx, Pmode, size, Pmode);
 #else
-	      emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
-				 temp, Pmode, size, Pmode);
+		  emit_library_call (bzero_libfunc, 1, VOIDmode, 2,
+				     temp, Pmode, size, Pmode);
 #endif
+		}
+	      if (label)
+		emit_label (label);
 	    }
 	}
       else if (GET_MODE (temp) == BLKmode)
@@ -4424,8 +4473,8 @@ expand_expr (exp, target, tmode, modifier)
   return temp;
 }
 
-/* Return the alignment of EXP, a pointer valued expression for the mem*
-   builtin functions.  Alignments greater than MAX_ALIGN are not significant.
+/* Return the alignment in bits of EXP, a pointer valued expression.
+   But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to (if it is not a POINTER_TYPE, 0 is returned).
 
@@ -4467,8 +4516,9 @@ get_pointer_alignment (exp, max_align)
 	  if (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST)
 	    return align;
 
-	  while ((TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
-		  & (max_align - 1)) != 0)
+	  while (((TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)) * BITS_PER_UNIT)
+		  & (max_align - 1))
+		 != 0)
 	    max_align >>= 1;
 
 	  exp = TREE_OPERAND (exp, 0);
@@ -4624,6 +4674,27 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_FABS:
       /* build_function_call changes these into ABS_EXPR.  */
       abort ();
+
+    case BUILT_IN_FSQRT:
+      /* If not optimizing, call the library function.  */
+      if (!optimize)
+	break;
+
+      if (arglist == 0
+	  /* Arg could be non-integer if user redeclared this fcn wrong.  */
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
+	return const0_rtx;
+
+      /* Compute the argument.  */
+      op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
+      /* Compute sqrt, into TARGET if possible.
+	 Set TARGET to wherever the result comes back.  */
+      target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
+			    sqrt_optab, op0, target, 1);
+      if (target == 0)
+	break;
+      return target;
+
 
     case BUILT_IN_SAVEREGS:
       /* Don't do __builtin_saveregs more than once in a function.
@@ -6161,6 +6232,7 @@ do_store_flag (exp, target, mode, only_cheap)
 
 /* INDEX is the value being switched on, with the lowest value
    in the table already subtracted.
+   MODE is its expected mode (needed if INDEX is ever constant).
    RANGE is the length of the jump table.
    TABLE_LABEL is a CODE_LABEL rtx for the table itself.
 
@@ -6168,12 +6240,18 @@ do_store_flag (exp, target, mode, only_cheap)
    index value is out of range.  */
 
 void
-do_tablejump (index, range, table_label, default_label)
+do_tablejump (index, mode, range, table_label, default_label)
      rtx index, range, table_label, default_label;
+     enum machine_mode mode;
 {
   register rtx temp, vector;
 
-  emit_cmp_insn (range, index, LTU, 0, GET_MODE (index), 0, 0);
+  /* Code below assumes that MODE is Pmode,
+     but I think that is a mistake.  Let's see if that is true.  */
+  if (mode != Pmode)
+    abort ();
+
+  emit_cmp_insn (range, index, LTU, 0, mode, 0, 0);
   emit_jump_insn (gen_bltu (default_label));
   /* If flag_force_addr were to affect this address
      it could interfere with the tricky assumptions made
