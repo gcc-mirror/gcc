@@ -1,3 +1,10 @@
+2003-03-17  Matt Austern  <austern@apple.com>
+
+	Backport:
+	PR debug/14079
+	* decl.c (add_decl_to_level): Add extern variables, as well
+	as static, to static_decls array.
+	
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
