@@ -5020,8 +5020,7 @@ output_func_epilogue (f, frame_size)
 	    {
 	      /* Unwind the pre-pushed regs */
 	      operands[0] = operands[1] = stack_pointer_rtx;
-	      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-				     current_function_pretend_args_size);
+	      operands[2] = GEN_INT (current_function_pretend_args_size);
 	      output_add_immediate (operands);
 	    }
 	  /* And finally, go home */

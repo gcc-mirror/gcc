@@ -618,11 +618,11 @@ struct cumulative_args { int ints, floats; };
      or #BOTTOM_OF_STATIC,r29,r29  */
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xec1f0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xe7ff0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xec1d0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4000f800));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xe7bd0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1f0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7ff0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1d0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x4000f800));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7bd0000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */

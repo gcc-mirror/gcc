@@ -1973,8 +1973,7 @@ output_move_double (operands)
 	{
 	  if (arith_double_operand (op1, DImode))
 	    {
-	      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_LOW (op1));
+	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
 	      return "mov %1,%0";
 	    }
 	  else
@@ -2647,7 +2646,7 @@ output_size_for_block_move (size, reg, align)
   else
     {
       xoperands[1]
-	= gen_rtx (CONST_INT, VOIDmode, INTVAL (size) - INTVAL (align));
+	= GEN_INT (INTVAL (size) - INTVAL (align));
       output_asm_insn ("set %1,%0", xoperands);
     }
 }
@@ -2685,7 +2684,7 @@ output_block_move (operands)
   if (align > UNITS_PER_WORD)
     {
       align = UNITS_PER_WORD;
-      alignrtx = gen_rtx (CONST_INT, VOIDmode, UNITS_PER_WORD);
+      alignrtx = GEN_INT (UNITS_PER_WORD);
     }
 
   /* We consider 8 ld/st pairs, for a total of 16 inline insns to be
@@ -2781,11 +2780,11 @@ output_block_move (operands)
     }
 
   if (align != INTVAL (alignrtx))
-    alignrtx = gen_rtx (CONST_INT, VOIDmode, align);
+    alignrtx = GEN_INT (align);
 
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
-  xoperands[4] = gen_rtx (CONST_INT, VOIDmode, align);
-  xoperands[5] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
+  xoperands[3] = GEN_INT (movstrsi_label++);
+  xoperands[4] = GEN_INT (align);
+  xoperands[5] = GEN_INT (movstrsi_label++);
 
   ASM_GENERATE_INTERNAL_LABEL (label3, "Lm", INTVAL (xoperands[3]));
   ASM_GENERATE_INTERNAL_LABEL (label5, "Lm", INTVAL (xoperands[5]));
@@ -4583,7 +4582,7 @@ output_return (operands)
 	 the stack pointer might have been adjusted.  Output code to
 	 restore it now.  */
 
-      operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize);
+      operands[0] = GEN_INT (actual_fsize);
 
       /* Use sub of negated value in first two cases instead of add to
 	 allow actual_fsize == 4096.  */
@@ -4597,7 +4596,7 @@ output_return (operands)
 	}
       else if (actual_fsize <= 8192)
 	{
-	  operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize - 4096);
+	  operands[0] = GEN_INT (actual_fsize - 4096);
 	  if (SKIP_CALLERS_UNIMP_P)
 	    return "sub %%sp,-4096,%%sp\n\tjmp %%o7+12\n\tsub %%sp,-%0,%%sp";
 	  else
@@ -5045,8 +5044,8 @@ output_double_int (file, value)
 
       high = (xword >> 32) & 0xffffffff;
       low  = xword & 0xffffffff;
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode, high));
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode, low));
+      ASM_OUTPUT_INT (file, GEN_INT (high));
+      ASM_OUTPUT_INT (file, GEN_INT (low));
 #else
       if (INTVAL (value) < 0)
 	ASM_OUTPUT_INT (file, constm1_rtx);
@@ -5057,10 +5056,8 @@ output_double_int (file, value)
     }
   else if (GET_CODE (value) == CONST_DOUBLE)
     {
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_HIGH (value)));
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_LOW (value)));
+      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_HIGH (value)));
+      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_LOW (value)));
     }
   else if (GET_CODE (value) == SYMBOL_REF
 	   || GET_CODE (value) == CONST
@@ -5260,16 +5257,12 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
 			      size_int (10), 0, 1);
   rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddr,
 			     size_int (10), 0, 1);
-  rtx low_cxt = expand_and (cxt, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
-  rtx low_fn = expand_and (fnaddr, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
-  rtx g1_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x03000000));
-  rtx g2_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x05000000));
-  rtx g1_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x82106000));
-  rtx g2_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));
+  rtx low_cxt = expand_and (cxt, GEN_INT (0x3ff), 0);
+  rtx low_fn = expand_and (fnaddr, GEN_INT (0x3ff), 0);
+  rtx g1_sethi = gen_rtx (HIGH, SImode, GEN_INT (0x03000000));
+  rtx g2_sethi = gen_rtx (HIGH, SImode, GEN_INT (0x05000000));
+  rtx g1_ori = gen_rtx (HIGH, SImode, GEN_INT (0x82106000));
+  rtx g2_ori = gen_rtx (HIGH, SImode, GEN_INT (0x8410A000));
   rtx tem = gen_reg_rtx (SImode);
   emit_move_insn (tem, g1_sethi);
   emit_insn (gen_iorsi3 (high_fn, high_fn, tem));

@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -387,10 +387,10 @@ clipper_builtin_saveregs (arglist)
 
   addr = copy_to_reg (XEXP (block, 0));
 
-  f0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 24));
-  f1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 32));
-  r0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 40));
-  r1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 44));
+  f0_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (24));
+  f1_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (32));
+  r0_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (40));
+  r1_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (44));
 
 
   /* Store float regs  */
@@ -416,47 +416,61 @@ clipper_builtin_saveregs (arglist)
   emit_move_insn (scratch, r0_addr);
   emit_move_insn (gen_rtx (MEM, SImode,
 			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 4))),
+				    GEN_INT (4))),
 		  scratch);
 		  
   emit_move_insn (scratch, f0_addr);
   emit_move_insn (gen_rtx (MEM, SImode,
 			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 8))),
+				    GEN_INT (8))),
 		  scratch);
 		  
   emit_move_insn (scratch, r1_addr);
   emit_move_insn (gen_rtx (MEM, SImode,
 			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 12))),
+				    GEN_INT (12))),
 		  scratch);
 		  
   emit_move_insn (scratch, f1_addr);
   emit_move_insn (gen_rtx (MEM, SImode,
 			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 16))),
+				    GEN_INT (16))),
 		  scratch);
 
 
   if (flag_check_memory_usage)
     {
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, addr,
-			 ptr_mode, GEN_INT (5 * GET_MODE_SIZE (SImode)),
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 addr, ptr_mode,
+			 GEN_INT (5 * GET_MODE_SIZE (SImode)),
 			 TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW), QImode);
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
 
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, f0_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (DFmode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, f1_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (DFmode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, r0_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (SImode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, r1_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (SImode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 f0_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (DFmode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW), 
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 f1_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (DFmode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW), 
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 r0_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (SImode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 r1_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (SImode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
     }
 
   /* Return the address of the va_list constructor, but don't put it in a

@@ -596,8 +596,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 	   GET_MODE_NAME (mode), MOVSTR_LOOP, units * align);
   entry_name = get_identifier (entry);
 
-  offset_rtx = gen_rtx (CONST_INT, VOIDmode,
-			MOVSTR_LOOP + (1 - units) * align);
+  offset_rtx = GEN_INT (MOVSTR_LOOP + (1 - units) * align);
 
   value_rtx = gen_rtx (MEM, MEM_IN_STRUCT_P (src_mem) ? mode : BLKmode,
 		       gen_rtx (PLUS, Pmode,
@@ -611,7 +610,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
 	      dest, src, offset_rtx, value_rtx,
 	      gen_rtx (REG, mode, ((units & 1) ? 4 : 5)),
-	      gen_rtx (CONST_INT, VOIDmode, count)));
+	      GEN_INT (count)));
 
   if (remainder)
     block_move_sequence (gen_rtx (REG, Pmode, 2), dest_mem,
@@ -654,7 +653,7 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
 	   GET_MODE_NAME (mode), most, size - remainder);
   entry_name = get_identifier (entry);
 
-  offset_rtx = gen_rtx (CONST_INT, VOIDmode, most - (size - remainder));
+  offset_rtx = GEN_INT (most - (size - remainder));
 
   value_rtx = gen_rtx (MEM, MEM_IN_STRUCT_P (src_mem) ? mode : BLKmode,
 		       gen_rtx (PLUS, Pmode,
@@ -732,7 +731,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	  srcp = gen_rtx (MEM,
 			  MEM_IN_STRUCT_P (src_mem) ? mode[next] : BLKmode,
 			  gen_rtx (PLUS, Pmode, src,
-				   gen_rtx (CONST_INT, SImode, offset_ld)));
+				   GEN_INT (offset_ld)));
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
 	  MEM_IN_STRUCT_P (srcp) = MEM_IN_STRUCT_P (src_mem);
@@ -747,7 +746,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	  dstp = gen_rtx (MEM,
 			  MEM_IN_STRUCT_P (dest_mem) ? mode[phase] : BLKmode,
 			  gen_rtx (PLUS, Pmode, dest,
-				   gen_rtx (CONST_INT, SImode, offset_st)));
+				   GEN_INT (offset_st)));
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dest_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dest_mem);
 	  MEM_IN_STRUCT_P (dstp) = MEM_IN_STRUCT_P (dest_mem);
@@ -2102,7 +2101,7 @@ emit_add (dstreg, srcreg, amount)
      rtx srcreg;
      int amount;
 {
-  rtx incr = gen_rtx (CONST_INT, VOIDmode, abs (amount));
+  rtx incr = GEN_INT (abs (amount));
   if (! ADD_INTVAL (amount))
     {
       rtx temp = gen_rtx (REG, SImode, TEMP_REGNUM);
@@ -2229,7 +2228,7 @@ emit_ldst (store_p, regno, mode, offset)
     {
       /* offset is too large for immediate index must use register */
 
-      rtx disp = gen_rtx (CONST_INT, VOIDmode, offset);
+      rtx disp = GEN_INT (offset);
       rtx temp = gen_rtx (REG, SImode, TEMP_REGNUM);
       rtx regi = gen_rtx (PLUS, SImode, stack_pointer_rtx, temp);
       emit_move_insn (temp, disp);
@@ -2599,7 +2598,7 @@ m88k_builtin_saveregs (arglist)
     {
       fixed = (XINT (current_function_arg_offset_rtx, 0)
 	       + argadj) / UNITS_PER_WORD;
-      argsize = gen_rtx (CONST_INT, VOIDmode, fixed);
+      argsize = GEN_INT (fixed);
     }
   else
     {
@@ -2728,7 +2727,7 @@ emit_bcnd (op, label)
 	{
 	  if (SMALL_INTVAL (-value))
 	    emit_insn (gen_addsi3 (zero, reg,
-				   gen_rtx (CONST_INT, VOIDmode, -value)));
+				   GEN_INT (-value)));
 	  else
 	    emit_insn (gen_xorsi3 (zero, reg, constant));
 

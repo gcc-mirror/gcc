@@ -811,7 +811,7 @@ enum reg_class {
     as the "next arg register" to be passed to gen_call.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  ((MODE) == VOIDmode ? gen_rtx (CONST_INT, VOIDmode, (CUM)) : 0)
+  ((MODE) == VOIDmode ? GEN_INT ((CUM)) : 0)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.

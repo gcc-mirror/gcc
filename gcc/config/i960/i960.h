@@ -1473,11 +1473,11 @@ extern struct rtx_def *gen_compare_reg ();
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8C203000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8C183000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x84212000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C203000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C183000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x84212000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */

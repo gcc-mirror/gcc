@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1222,7 +1222,7 @@ output_epilog (file, size)
   if (write_code)
     output_loadsave_fpregs (file, CLOBBER,
 			    gen_rtx (PLUS, Pmode, gen_rtx (REG, Pmode, 1),
-				     gen_rtx (CONST_INT, VOIDmode, fp_save)));
+				     GEN_INT (fp_save)));
 
   /* If we push the stack and do not have size > 32K, adjust the register
      save location to the current position of sp.  Otherwise, if long frame,
@@ -1317,7 +1317,7 @@ struct symref_hashent {
 
 static struct symref_hashent *symref_hash_table[SYMHASHSIZE];
 
-/* Given a name (allocatable in temporary storage), return a SYMBOL_REF
+/* Given a name (allocable in temporary storage), return a SYMBOL_REF
    for the name.  The rtx is allocated from the current rtl_obstack, while
    the name string is allocated from the permanent obstack.  */
 rtx
@@ -1739,7 +1739,7 @@ output_loadsave_fpregs (file, code, addr)
 
   if (mask)
     fprintf (file, "\t%s\n",
-	     output_fpop (code, gen_rtx (CONST_INT, VOIDmode, mask),
+	     output_fpop (code, GEN_INT (mask),
 				gen_rtx (MEM, Pmode, addr),
 				0, const0_rtx));
 

@@ -297,7 +297,7 @@
 
       emit_insn (gen_rtx (SET, VOIDmode, subreg,
 			  gen_rtx (ZERO_EXTRACT, SImode, tem,
-				   gen_rtx (CONST_INT, VOIDmode, 8),
+				   GEN_INT (8),
 				   addr)));
     }
   else if (GET_CODE (operands[0]) == MEM)
@@ -318,7 +318,7 @@
 
       emit_insn (gen_rtx (SET, VOIDmode,
 			  gen_rtx (ZERO_EXTRACT, SImode, tem,
-				   gen_rtx (CONST_INT, VOIDmode, 8),
+				   GEN_INT (8),
 				   addr),
 			  subreg));
       emit_move_insn (gen_rtx (MEM, SImode, addr), tem);
@@ -376,7 +376,7 @@
 ;   && (unsigned) INTVAL (operands[1]) < 32"
 ;  "*
 ;{
-;  operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) / 8);
+;  operands[1] = GEN_INT (INTVAL (operands[1]) / 8);
 ;  return \"wr_insert 0,0,%1\;insert %0,%0,%2\";
 ;}")
 
@@ -467,9 +467,8 @@
    (set (mem:SI (match_dup 0))
 	(match_dup 2))]
   ""
-  " operands[5] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 255);
-    operands[6] = gen_rtx (CONST_INT, VOIDmode,
-			   (INTVAL (operands[1]) >> 8) & 255);
+  " operands[5] = GEN_INT (INTVAL (operands[1]) & 255);
+    operands[6] = GEN_INT ((INTVAL (operands[1]) >> 8) & 255);
 ")
 
 ;; Main entry for generating insns to move halfwords.
@@ -563,7 +562,7 @@
 ;   && (unsigned) INTVAL (operands[1]) < 32"
 ;  "*
 ;{
-;  operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) / 8);
+;  operands[1] = GEN_INT (INTVAL (operands[1]) / 8);
 ;  return \"wr_insert 0,0,%1\;insert %0,%0,%2\";
 ;}")
 
@@ -631,7 +630,7 @@
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
 	  xoperands[1] = operands[1];
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  output_asm_insn (\"st_32 %1,r25,%0\", xoperands);
 	  xoperands[1] = operands[0];
 	  output_asm_insn (\"ld_sgl %1,r25,%0\;nop\", xoperands);
@@ -645,7 +644,7 @@
 	{
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  xoperands[1] = operands[1];
 	  output_asm_insn (\"st_sgl %1,r25,%0\", xoperands);
 	  xoperands[1] = operands[0];
@@ -705,7 +704,7 @@
   else
     operands[1] = gen_rtx (SUBREG, SImode, operands[1], 0);
 
-  operands[2] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, 65535));
+  operands[2] = force_reg (SImode, GEN_INT (65535));
 }")
 
 (define_insn "zero_extendqihi2"
@@ -744,8 +743,8 @@
 
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);
-  operands[4] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, 65535));
-  operands[5] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, -32768));
+  operands[4] = force_reg (SImode, GEN_INT (65535));
+  operands[5] = force_reg (SImode, GEN_INT (-32768));
 }")
 
 (define_expand "extendqihi2"

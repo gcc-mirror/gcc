@@ -272,12 +272,12 @@ extern int target_flags;
 /* Place to put static chain when calling a function that requires it.  */
 #define STATIC_CHAIN							\
   gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, stack_pointer_rtx,		\
-				gen_rtx (CONST_INT, VOIDmode, -36)))
+				GEN_INT (-36)))
 
 /* Place where static chain is found upon entry to routine.  */
 #define STATIC_CHAIN_INCOMING						\
   gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, arg_pointer_rtx,		\
-				gen_rtx (CONST_INT, VOIDmode, -20)))
+				GEN_INT (-20)))
 
 /* Place that structure value return address is placed.
 
@@ -812,7 +812,7 @@ struct rt_cargs {int gregs, fregs; };
   rtx _val;							\
 								\
   _temp = expand_binop (SImode, add_optab, ADDR,		\
-			gen_rtx (CONST_INT, VOIDmode, 4),	\
+			GEN_INT (4),				\
 			0, 1, OPTAB_LIB_WIDEN);			\
   emit_move_insn (gen_rtx (MEM, SImode,				\
 			   memory_address (SImode, ADDR)), _temp); \
@@ -1077,9 +1077,8 @@ struct rt_cargs {int gregs, fregs; };
       (X) = gen_rtx (PLUS, SImode,				\
 		     force_operand				\
 		     	(gen_rtx (PLUS, SImode, XEXP (X, 0), \
-				  gen_rtx (CONST_INT, VOIDmode, \
-						      high_int << 16)), 0),\
-		     gen_rtx (CONST_INT, VOIDmode, low_int));	\
+				  GEN_INT (high_int << 16)), 0),\
+		     GEN_INT (, low_int));			\
     }								\
 }
 
@@ -1585,7 +1584,7 @@ extern int romp_debugger_arg_correction();
   else if (GET_CODE (addr) == SYMBOL_REF			\
 	   && CONSTANT_POOL_ADDRESS_P (addr))			\
     {								\
-      offset = gen_rtx (CONST_INT, VOIDmode, get_pool_offset (addr) + 12);  \
+      offset = GEN_INT (get_pool_offset (addr) + 12);  \
       base = gen_rtx (REG, SImode, 14);				\
     }								\
   else if (GET_CODE (addr) == CONST				\
