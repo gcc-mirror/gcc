@@ -1,3 +1,7 @@
+2004-07-27  Nitin Yewale <nitiny@kpitcummins.com>
+
+	* gcc.dg/pragma-isr.c: New test.
+
 2004-07-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14429
