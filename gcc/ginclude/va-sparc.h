@@ -59,6 +59,8 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
    not word-aligned, we advance the pointer to the first non-reg slot.  */
 /* We don't declare the union member `d' to have type TYPE
    because that would lose in C++ if TYPE has a constructor.  */
+/* We cast to void * and then to TYPE * because this avoids
+   a warning about increasing the alignment requirement.  */
 #define va_arg(pvar,TYPE)					\
 __extension__							\
 ({ TYPE __va_temp;						\
@@ -70,9 +72,9 @@ __extension__							\
 	 __u.__i[0] = ((int *) (pvar))[0];			\
 	 __u.__i[1] = ((int *) (pvar))[1];			\
 	 (pvar) += 8;						\
-	 *(TYPE *)__u.__d; })					\
+	 *(TYPE *) (void *) __u.__d; })				\
     : ((pvar) += __va_rounded_size (TYPE),			\
-       *((TYPE *) ((pvar) - __va_rounded_size (TYPE)))));})
+       *((TYPE *) (void *) ((pvar) - __va_rounded_size (TYPE)))));})
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 

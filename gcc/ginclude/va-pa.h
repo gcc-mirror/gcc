@@ -22,11 +22,11 @@ typedef double *__gnuc_va_list;
 #define va_arg(AP,TYPE)						\
   (sizeof(TYPE) > 8 ?						\
    ((AP = (__gnuc_va_list) ((char *)AP - sizeof (int))),	\
-    (*((TYPE *) (*((int *) (AP))))))				\
+    (*((TYPE *) (void *) (*((int *) (AP))))))			\
    :((AP =							\
       (__gnuc_va_list) ((long)((char *)AP - sizeof (TYPE))	\
 			& (sizeof(TYPE) > 4 ? ~0x7 : ~0x3))),	\
-     (*((TYPE *) ((char *)AP + ((8 - sizeof(TYPE)) % 4))))))
+     (*((TYPE *) (void *) ((char *)AP + ((8 - sizeof(TYPE)) % 4))))))
 
 #define va_end(AP)
 
