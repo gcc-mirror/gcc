@@ -64,7 +64,6 @@ static void restore_rt (void) asm ("__restore_rt");
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();		\
     struct kernel_sigaction act;				\
     act.k_sa_sigaction = _Jv_catch_segv;			\
     sigemptyset (&act.k_sa_mask);				\
