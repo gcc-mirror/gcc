@@ -1,3 +1,8 @@
+2000-01-13  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClassLoader.cc (_Jv_FindClass): Register `loader',
+	not system loader, as initiating loader.
+
 2000-01-11  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natSystem.cc (getpwuid_adaptor): New adaptor for
