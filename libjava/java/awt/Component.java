@@ -1870,12 +1870,12 @@ public abstract class Component
   {
     Image returnValue = null;
     if (!GraphicsEnvironment.isHeadless ())
-    {
-      if (isLightweight () && parent != null)
-        returnValue = parent.createImage (width, height);
-      else if (peer != null)
-        returnValue = peer.createImage (width, height);
-    }
+      {
+	if (isLightweight () && parent != null)
+	  returnValue = parent.createImage (width, height);
+	else if (peer != null)
+	  returnValue = peer.createImage (width, height);
+      }
     return returnValue;
   }
 

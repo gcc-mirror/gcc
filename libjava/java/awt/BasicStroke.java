@@ -67,7 +67,8 @@ public class BasicStroke implements Stroke
    * @param join May be either JOIN_ROUND, JOIN_BEVEL, or JOIN_MITER.
    * @param miterlimit the limit to trim the miter join. The miterlimit must be
    * greater than or equal to 1.0f.
-   * @param dash The array representing the dashing pattern.
+   * @param dash The array representing the dashing pattern. There must be at
+   * least one non-zero entry.
    * @param dash_phase is negative and dash is not null.
    *
    * @exception IllegalArgumentException If one input parameter doesn't meet
@@ -76,13 +77,40 @@ public class BasicStroke implements Stroke
   public BasicStroke(float width, int cap, int join, float miterlimit,
                      float[] dash, float dashPhase)
   {
-    if (width < 0 ||
-        miterlimit < 1.0f ||
-        cap < CAP_BUTT ||
-        cap > CAP_SQUARE ||
-        join < JOIN_MITER ||
-        join > JOIN_BEVEL)
-      throw new IllegalArgumentException();
+    if (width < 0.0f )
+      throw new IllegalArgumentException("width " + width + " < 0");
+    else if (cap < CAP_BUTT || cap > CAP_SQUARE)
+      throw new IllegalArgumentException("cap " + cap + " out of range ["
+					 + CAP_BUTT + ".." + CAP_SQUARE + "]");
+    else if (miterlimit < 1.0f && join == JOIN_MITER)
+      throw new IllegalArgumentException("miterlimit " + miterlimit
+					 + " < 1.0f while join == JOIN_MITER");
+    else if (join < JOIN_MITER || join > JOIN_BEVEL)
+      throw new IllegalArgumentException("join " + join + " out of range ["
+					 + JOIN_MITER + ".." + JOIN_BEVEL
+					 + "]");
+    else if (dashPhase < 0.0f && dash != null)
+      throw new IllegalArgumentException("dashPhase " + dashPhase
+					 + " < 0.0f while dash != null");
+    else if (dash != null)
+      if (dash.length == 0)
+	throw new IllegalArgumentException("dash.length is 0");
+      else
+	{
+	  boolean allZero = true;
+	  
+	  for ( int i = 0; i < dash.length; ++i)
+	    {
+	      if (dash[i] != 0.0f)
+		{
+		  allZero = false;
+		  break;
+		}
+	    }
+	  
+	  if (allZero)
+	    throw new IllegalArgumentException("all dashes are 0.0f");
+	}
 
     this.width = width;
     this.cap = cap;
