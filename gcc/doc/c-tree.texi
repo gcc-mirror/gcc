@@ -758,8 +758,6 @@ indicated kind of inheritance was used.  If @code{TREE_VIA_VIRTUAL}
 holds of a binfo, then its @code{BINFO_TYPE} was inherited from
 virtually.
 
-FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
-
 The following macros can be used on a tree node representing a class-type.
 
 @ftable @code

@@ -135,7 +135,7 @@ struct lang_type
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
-#define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_NONCOPIED_PARTS (NODE)
+#define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_BINFO (NODE)
 
 
 /* in c-lang.c and objc-act.c */

@@ -1,3 +1,16 @@
+2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Remove TYPE_NONCOPIED_PARTS.
+	* tree.h (TYPE_NONCOPIED_PARTS): Remove.
+	(struct tree_type): Remove noncopied_parts.
+	* c-tree.h (TYPE_ACTUAL_ARG_TYPES): Map onto TYPE_BINFO.
+	* expr.c (save_noncopied_parts, init_noncopied_parts): Remove.
+	(fixed_type_p): Remove.
+	(expand_expr, INIT_EXPR): Don't deal with noncopied parts.
+	(expand_expr, MODIFY_EXPR): Likewise.
+	* ggc-common.c (ggc_mark_trees): Remove TYPE_NONCOPIED_PARTS.
+	* doc/c-tree.texi: Remove TYPE_NONCOPIED_PARTS FIXME.
+
 2001-09-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (mask_operand): Use signed vars to avoid
