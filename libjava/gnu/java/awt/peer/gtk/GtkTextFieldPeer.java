@@ -52,7 +52,6 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 //    native void create (ComponentPeer parent, String text);
 
   native void create ();
-  native void createHooks ();
 
   native void gtkEntryGetSize (int cols, int dims[]);
 

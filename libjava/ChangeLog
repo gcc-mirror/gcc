@@ -1,3 +1,20 @@
+2003-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
+	(connectHooks): New method.
+	(handleEvent): Remove.
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java
+	(createHooks): Remove declaration.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(generates_key_typed_event): Change to handle only certain
+	keyvals.
+	(awt_event_handler): Add special handling for GtkTextView.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c
+	(textcomponent_commit_cb): New function.
+	(textcomponent_changed_cb): Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c
+	(connectHooks): Remove.
+
 2003-07-23  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (arraycopy): Check for overflow.
