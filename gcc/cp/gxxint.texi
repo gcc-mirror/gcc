@@ -9,7 +9,8 @@
 @chapter Internal Architecture of the Compiler
 
 This is meant to describe the C++ front-end for gcc in detail.
-Questions and comments to Benjamin Kosnik @email{bkoz@@cygnus.com}.
+Questions and comments to Jason Merrill @email{jason@@redhat.com} and
+Mark Mitchell @email{mark@codesourcery.com}.
 
 @menu
 * Limitations of g++::          
@@ -44,14 +45,6 @@ number of nesting levels worth of stackspace.
 I suspect there are other uses of pushdecl_class_level that do not call
 set_identifier_type_value in tandem with the call to
 pushdecl_class_level.  It would seem to be an omission.
-
-@cindex access checking
-@item
-Access checking is unimplemented for nested types.
-
-@cindex @code{volatile}
-@item
-@code{volatile} is not implemented in general.
 
 @end itemize
 
