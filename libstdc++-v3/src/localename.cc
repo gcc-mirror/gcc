@@ -36,7 +36,8 @@ namespace __gnu_cxx
 
   // Defined in globals.cc.
   extern locale::facet* facet_vec[_GLIBCPP_NUM_FACETS];
-  extern char* facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
+  extern char* name_vec[6 + _GLIBCPP_NUM_CATEGORIES];
+  extern char name_c[6 + _GLIBCPP_NUM_CATEGORIES][2];
 
   extern std::ctype<char>			ctype_c;
   extern std::collate<char> 			collate_c;
@@ -82,8 +83,9 @@ namespace std
 	_M_facets[__i]->_M_remove_reference();
     delete [] _M_facets;
 
-    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+    for (size_t __i = 0; __i < _S_categories_size; ++__i)
       delete [] _M_names[__i];  
+    delete [] _M_names;
   }
 
   // Clone existing _Impl object.
@@ -108,7 +110,17 @@ namespace std
 	if (_M_facets[__i])
 	  _M_facets[__i]->_M_add_reference();
       }
-    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+
+    try 
+      {
+      	_M_names = new char*[_S_categories_size];
+      }
+    catch(...)
+      {
+	delete [] _M_names;
+	__throw_exception_again;
+      }
+    for (size_t __i = 0; __i < _S_categories_size; ++__i)
       {
 	char* __new = new char[strlen(__imp._M_names[__i]) + 1];
 	strcpy(__new, __imp._M_names[__i]);
@@ -139,10 +151,19 @@ namespace std
       }
 
     // Name all the categories.
+    try 
+      {
+      	_M_names = new char*[_S_categories_size];
+      }
+    catch(...)
+      {
+	delete [] _M_names;
+	__throw_exception_again;
+      }
     size_t __len = strlen(__s);
     if (!strchr(__s, ';'))
       {
-	for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+	for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	  {
 	    _M_names[__i] = new char[__len + 1];
 	    strcpy(_M_names[__i], __s);
@@ -151,7 +172,7 @@ namespace std
     else
       {
 	const char* __beg = __s;
-	for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+	for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	  {
 	    __beg = strchr(__beg, '=') + 1;
 	    const char* __end = strchr(__beg, ';');
@@ -210,14 +231,15 @@ namespace std
     locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, 
 				      locale::facet::_S_c_name);
 
-    _M_facets = new(&facet_vec) const facet*[_M_facets_size];
+    _M_facets = new (&facet_vec) const facet*[_M_facets_size];
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       _M_facets[__i] = 0;
 
     // Name all the categories.
-    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+    _M_names = new (&name_vec) char*[_S_categories_size];
+    for (size_t __i = 0; __i < _S_categories_size; ++__i)
       {
-	_M_names[__i] = new (&facet_name[__i]) char[2];
+	_M_names[__i] = new (&name_c[__i]) char[2];
 	strcpy(_M_names[__i], locale::facet::_S_c_name);
       }
 

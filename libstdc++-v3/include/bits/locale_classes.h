@@ -157,7 +157,7 @@ namespace std
     // NB: locale::global() has to know how to modify all the
     // underlying categories, not just the ones required by the C++
     // standard.
-    static const char* 	_S_categories[_S_categories_size]; 
+    static const char** _S_categories;
 
     explicit 
     locale(_Impl*) throw();
@@ -198,7 +198,7 @@ namespace std
     _Atomic_word			_M_references;
     const facet**			_M_facets;
     size_t 				_M_facets_size;
-    char* 				_M_names[_S_categories_size];
+    char** 				_M_names;
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
     static const locale::id* const 	_S_id_collate[];
@@ -266,7 +266,7 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (size_t __i = 0; __i < _S_categories_size ; ++__i)
+      for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	{
 	  delete [] _M_impl->_M_names[__i];
 	  char* __new = new char[2];

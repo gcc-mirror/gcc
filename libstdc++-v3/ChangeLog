@@ -1,3 +1,18 @@
+2003-04-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_classes.h (locale::_Impl): Change _M_names
+	from fixed size array.
+	(locale): Change _S_categories as well.
+	Formatting tweaks.
+	* include/bits/locale_facets.tcc: Tweak.
+	* config/locale/gnu/c_locale.cc: Assign _S_categories.
+	* config/locale/generic/c_locale.cc: Same.
+	* src/locale.cc: Tweak.
+	* src/globals.cc: Change facet_name to name_vec, add names_c.
+	* src/localename.cc: Use them.
+	(locale::_Impl::~_Impl): Destroy _M_names.
+	(locale::_Impl::_Impl): Create _M_names.
+	
 2003-04-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h

@@ -95,10 +95,6 @@ namespace __gnu_cxx
   fake_wfilebuf buf_wcerr;
 #endif
 
-  typedef char fake_facet_name[sizeof(char*)]
-  __attribute__ ((aligned(__alignof__(char*))));
-  fake_facet_name facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
-
   typedef char fake_locale_Impl[sizeof(locale::_Impl)]
   __attribute__ ((aligned(__alignof__(locale::_Impl))));
   fake_locale_Impl c_locale_impl;
@@ -106,6 +102,14 @@ namespace __gnu_cxx
   typedef char fake_locale[sizeof(locale)]
   __attribute__ ((aligned(__alignof__(locale))));
   fake_locale c_locale;
+
+  typedef char fake_name_vec[sizeof(char*)]
+  __attribute__ ((aligned(__alignof__(char*))));
+  fake_name_vec name_vec[6 + _GLIBCPP_NUM_CATEGORIES];
+
+  typedef char fake_names[sizeof(char[2])]
+  __attribute__ ((aligned(__alignof__(char[2]))));
+  fake_names name_c[6 + _GLIBCPP_NUM_CATEGORIES];
 
   typedef char fake_facet_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));

@@ -207,7 +207,7 @@ namespace std
 		// different from LANG.
 		size_t __i = 0;
 		if (strcmp(__res, "C") == 0)
-		  for (; __i < _S_categories_size ; ++__i)
+		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -216,7 +216,7 @@ namespace std
 			break;
 		    }
 		else
-		  for (; __i < _S_categories_size ; ++__i)
+		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -241,7 +241,7 @@ namespace std
 		    __str += __env;
 		    __str += ';';
 		    __i++;
-		    for (; __i < _S_categories_size ; ++__i)
+		    for (; __i < _S_categories_size; ++__i)
 		      {
 			__env = getenv(_S_categories[__i]);
 			if (!__env || strcmp(__env, "") == 0)
@@ -345,7 +345,7 @@ namespace std
 	__ret += _S_categories[0];
 	__ret += '=';
 	__ret += _M_impl->_M_names[0]; 
-	for (size_t __i = 1; __i < _S_categories_size ; ++__i)
+	for (size_t __i = 1; __i < _S_categories_size; ++__i)
 	  {
 	    __ret += ';';
 	    __ret += _S_categories[__i];
