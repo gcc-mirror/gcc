@@ -1,5 +1,10 @@
 1999-04-08  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/Long.java (parseLong): Corrected overflow detection
+	code.
+	* java/lang/Integer.java (parseInt): Corrected overflow detection
+	code.
+
 	* java/io/PrintStream.java (print): Handle null string argument.
 	(println): Likewise.
 
