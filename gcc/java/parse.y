@@ -98,7 +98,16 @@ static enum tree_code binop_lookup[19] =
 static tree wfl_operator = NULL_TREE;
 
 /* The "$L" identifier we use to create labels.  */
-static tree label_id;
+static tree label_id = NULL_TREE;
+
+/* The "StringBuffer" identifier used for the String `+' operator. */
+static tree wfl_string_buffer = NULL_TREE; 
+
+/* The "append" identifier used for String `+' operator.  */
+static tree wfl_append = NULL_TREE;
+
+/* The "toString" identifier used for String `+' operator. */
+static tree wfl_to_string = NULL_TREE;
 %}
 
 %union {
@@ -219,6 +228,12 @@ static tree label_id;
 			conditional_expression assignment_expression
 			left_hand_side assignment for_header for_begin
 			constant_expression do_statement_begin empty_statement
+			switch_statement synchronized_statement throw_statement
+			try_statement switch_expression switch_block
+			switch_block_statement_groups switch_labels
+			switch_block_statement_group switch_label
+			group_of_labels catches catch_clause 
+			catch_clause_parameter finally
 %type    <node>         return_statement break_statement continue_statement
 
 %type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK  
@@ -231,7 +246,7 @@ static tree label_id;
 %token   <operator>     DECR_TK MINUS_TK MULT_TK DIV_TK XOR_TK REM_TK NEQ_TK
 %token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK
 %token   <operator>     OP_TK OSB_TK DOT_TK
-%type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK
+%type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK CASE_TK%type	<operator>     DEFAULT_TK TRY_TK CATCH_TK
 
 %type	 <node>		method_body 
 	
@@ -539,13 +554,16 @@ class_body_declaration:
 |	static_initializer
 |	constructor_declaration
 |	block			/* Added, JDK1.1, instance initializer */
+		{ $$ = parse_jdk1_1_error ("instance initializer"); }
 ;
 
 class_member_declaration:
 	field_declaration
 |	method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
+		{ $$ = parse_jdk1_1_error ("inner classe declaration"); }
 |	interface_declaration	/* Added, JDK1.1 inner classes */
+		{ $$ = parse_jdk1_1_error ("inner interface declaration"); }
 ;
 
 /* 19.8.2 Productions from 8.3: Field Declarations  */
@@ -701,10 +719,7 @@ formal_parameter:
 		  $$ = build_tree_list ($2, $1);
 		}
 |	modifiers type variable_declarator_id /* Added, JDK1.1 final locals */
-		{
-		  SOURCE_FRONTEND_DEBUG (("Modifiers: %d", $1));
-		  $$ = NULL;	/* FIXME */
-		}
+		{ $$ = parse_jdk1_1_error ("final local"); }
 |	type error
 		{yyerror ("Missing identifier"); RECOVER;}
 |	modifiers type error
@@ -802,20 +817,23 @@ explicit_constructor_invocation:
         /* Added, JDK1.1 inner classes. Modified because the rule
 	   'primary' couldn't work.  */
 |	name DOT_TK SUPER_TK OP_TK argument_list CP_TK SC_TK
+		{$$ = parse_jdk1_1_error ("explicit constructor invocation"); }
 |	name DOT_TK SUPER_TK OP_TK CP_TK SC_TK
-		{RULE ("explicit_constructor_invocation (X.super)");}
+		{$$ = parse_jdk1_1_error ("explicit constructor invocation"); }
 ;
 
 this_or_super:			/* Added, simplifies error diagnostics */
 	THIS_TK
 		{
-		  tree wfl = build_wfl_node (this_identifier_node, input_filename, 0, 0);
+		  tree wfl = build_wfl_node (this_identifier_node, 
+					     input_filename, 0, 0);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  $$ = wfl;
 		}
 |	SUPER_TK
 		{
-		  tree wfl = build_wfl_node (super_identifier_node, input_filename, 0, 0);
+		  tree wfl = build_wfl_node (super_identifier_node,
+					     input_filename, 0, 0);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  $$ = wfl;
 		}
@@ -887,7 +905,9 @@ interface_member_declaration:
 	constant_declaration
 |	abstract_method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
+		{ $$ = parse_jdk1_1_error ("inner class declaration"); }
 |	interface_declaration	/* Added, JDK1.1 inner classes */
+		{ $$ = parse_jdk1_1_error ("inner interface declaration"); }
 ;
 
 constant_declaration:
@@ -955,6 +975,7 @@ block_statement:
 |	statement
 		{ $$ = java_method_add_stmt (current_function_decl, $1); }
 |	class_declaration	/* Added, JDK1.1 inner classes */
+		{ $$ = parse_jdk1_1_error ("inner class declaration"); }
 ;
 
 local_variable_declaration_statement:
@@ -971,13 +992,9 @@ local_variable_declaration:
 statement:
 	statement_without_trailing_substatement
 |	labeled_statement
-		{ RULE ("STATEMENT (labeled)"); }
 |	if_then_statement
-		{ RULE ("STATEMENT (if-then)"); }
 |	if_then_else_statement
-		{ RULE ("STATEMENT (if-then-else)"); }
 |	while_statement
-		{ RULE ("STATEMENT (while)"); }
 |	for_statement
 		{ 
 		  /* If the for loop is unlabeled, we must return the
@@ -991,37 +1008,23 @@ statement:
 statement_nsi:
 	statement_without_trailing_substatement
 |	labeled_statement_nsi
-		{ RULE ("NSI STATEMENT (labeled)"); }
 |	if_then_else_statement_nsi
-		{ RULE ("NSI STATEMENT (if-then-else)"); }
 |	while_statement_nsi
-		{ RULE ("NSI STATEMENT (while)"); }
 |	for_statement_nsi
-		{ RULE ("NSI STATEMENT (for)"); }
 ;
 
 statement_without_trailing_substatement:
 	block
-		{ RULE ("STATEMENT (block)"); }
 |	empty_statement
-		{ RULE ("STATEMENT (empty)"); }
 |	expression_statement
-		{ RULE ("STATEMENT (expression)"); }
 |	switch_statement
-		{ RULE ("STATEMENT (switch)"); }
 |	do_statement
-		{ RULE ("STATEMENT (do)"); }
 |	break_statement
-		{ RULE ("STATEMENT (break)"); }
 |	continue_statement
-		{ RULE ("STATEMENT (continue)"); }
 |	return_statement
 |	synchronized_statement
-		{ RULE ("STATEMENT (synchronized)"); }
 |	throw_statement
-		{ RULE ("STATEMENT (throw)"); }
 |	try_statement
-		{ RULE ("STATEMENT (try)"); }
 ;
 
 empty_statement:
@@ -1113,26 +1116,11 @@ expression_statement:
 statement_expression: 
 	assignment
 |	pre_increment_expression
-		{
-		  RULE ("++INCREMENT");
-		}
 |	pre_decrement_expression
-		{
-		  RULE ("--DECREMENT");
-		}
 |	post_increment_expression
-		{
-		  RULE ("INCREMENT++");
-		}
 |	post_decrement_expression
-		{
-		  RULE ("DECREMENT--");
-		}
 |	method_invocation
 |	class_instance_creation_expression
-		{
-		  RULE ("INSTANCE CREATION");
-		}
 ;
 
 if_then_statement:
@@ -1157,7 +1145,19 @@ if_then_else_statement_nsi:
 ;
 
 switch_statement:
-	SWITCH_TK OP_TK expression CP_TK switch_block
+	switch_expression switch_block
+		{ 
+		  TREE_OPERAND ($1, 1) = $2;
+		  $$ = build_debugable_stmt (EXPR_WFL_LINECOL ($1), $1);
+		}
+;
+
+switch_expression:
+	SWITCH_TK OP_TK expression CP_TK
+		{ 
+		  $$ = build (SWITCH_EXPR, NULL_TREE, $3, NULL_TREE);
+		  EXPR_WFL_LINECOL ($$) = $2.location;
+		}
 |	SWITCH_TK error
 		{yyerror ("'(' expected"); RECOVER;}
 |	SWITCH_TK OP_TK error
@@ -1168,29 +1168,63 @@ switch_statement:
 
 switch_block:
 	OCB_TK CCB_TK
+		{ $$ = NULL_TREE; }
 |	OCB_TK switch_labels CCB_TK
+		{ $$ = build_tree_list ($2, NULL_TREE); }
 |	OCB_TK switch_block_statement_groups CCB_TK
+		{ $$ = $2; }
 |	OCB_TK switch_block_statement_groups switch_labels CCB_TK
+		{ 
+		  /* Switch labels alone are empty switch statements */
+		  tree sl = build_tree_list ($3, NULL_TREE);
+		  TREE_CHAIN (sl) = $2;
+		  $$ = sl;
+		}
 ;
 
 switch_block_statement_groups: 
 	switch_block_statement_group
 |	switch_block_statement_groups switch_block_statement_group
+		{ 
+		  TREE_CHAIN ($2) = $1;
+		  $$ = $2;
+		}
 ;
 
 switch_block_statement_group:
-	switch_labels block_statements
+	group_of_labels block_statements
+		{ $$ = build_tree_list ($1, exit_block ()); }
 ;
 
+group_of_labels:
+	switch_labels
+		{ 
+		  /* All statements attached to this group of cases
+		     will be stored in a block */
+		  enter_block ();
+		  $$ = $1;
+		}
 
 switch_labels:
 	switch_label
 |	switch_labels switch_label
+		{
+		  TREE_CHAIN ($2) = $1;
+		  $$ = $2;
+		}
 ;
 
 switch_label:
 	CASE_TK constant_expression REL_CL_TK
+		{ 
+		  $$ = build1 (CASE_EXPR, NULL_TREE, $2);
+		  EXPR_WFL_LINECOL ($$) = $1.location;
+		}
 |	DEFAULT_TK REL_CL_TK
+		{ 
+		  $$ = build1 (DEFAULT_EXPR, NULL_TREE, NULL_TREE);
+		  EXPR_WFL_LINECOL ($$) = $1.location;
+		}
 |	CASE_TK error
 		{yyerror ("Missing or invalid constant expression"); RECOVER;}
 |	CASE_TK constant_expression error
@@ -1361,6 +1395,7 @@ return_statement:
 
 throw_statement:
 	THROW_TK expression SC_TK
+		{ $$ = NULL_TREE;		/* FIXME */ }
 |	THROW_TK error
 		{yyerror ("Missing term"); RECOVER;}
 |	THROW_TK expression error
@@ -1369,6 +1404,7 @@ throw_statement:
 
 synchronized_statement:
 	synchronized OP_TK expression CP_TK block
+		{ $$ = NULL_TREE;		/* FIXME */ }
 |	synchronized OP_TK expression CP_TK error
 		{yyerror ("'{' expected"); RECOVER;}
 |	synchronized error
@@ -1388,8 +1424,11 @@ synchronized:			/* Test lval.sub_token here */
 
 try_statement:
 	TRY_TK block catches
+		{ $$ = build_try_statement ($1.location, $2, $3, NULL_TREE); }
 |	TRY_TK block finally
+		{ $$ = build_try_statement ($1.location, $2, NULL_TREE, $3); }
 |	TRY_TK block catches finally
+		{ $$ = build_try_statement ($1.location, $2, $3, $4); }
 |	TRY_TK error
 		{yyerror ("'{' expected"); DRECOVER (try_statement);}
 ;
@@ -1397,20 +1436,51 @@ try_statement:
 catches:
 	catch_clause
 |	catches catch_clause
+		{ 
+		  TREE_CHAIN ($2) = $1;
+		  $$ = $2;
+		}
 ;
 
 catch_clause:
-	CATCH_TK OP_TK formal_parameter CP_TK block
+	catch_clause_parameter block
+		{ 
+		  java_method_add_stmt (current_function_decl, $2);
+		  exit_block ();
+		  $$ = $1;
+		}
+
+catch_clause_parameter:
+	CATCH_TK OP_TK formal_parameter CP_TK
+		{ 
+		  /* We add a block to define a scope for
+		     formal_parameter (CCBP). The formal parameter is
+		     declared initialized by the appropriate function
+		     call */
+		  tree ccpb = enter_block ();
+		  tree init = build_assignment (ASSIGN_TK, $2.location, 
+						TREE_PURPOSE ($3), 
+						soft_exceptioninfo_call_node);
+		  declare_local_variables (0, TREE_VALUE ($3),
+					   build_tree_list (TREE_PURPOSE ($3),
+							    init));
+		  $$ = build1 (CATCH_EXPR, NULL_TREE, ccpb);
+		  EXPR_WFL_LINECOL ($$) = $1.location;
+		}
 |	CATCH_TK error
 		{yyerror ("'(' expected"); RECOVER;}
-|	CATCH_TK OP_TK error CP_TK /* That's for () */
-		{yyerror ("Missing term"); DRECOVER (1);}
 |	CATCH_TK OP_TK error 
-		{yyerror ("Missing term"); DRECOVER (2);}
+		{yyerror ("Missing term or ')' expected"); DRECOVER (2);}
+|	CATCH_TK OP_TK error CP_TK /* That's for () */
+		{yyerror ("')' expected"); DRECOVER (1);}
 ;
 
 finally:
 	FINALLY_TK block
+		{ 
+		  $$ = build (FINALLY_EXPR, NULL_TREE,
+			      create_label_decl (generate_name ()), $2);
+		}
 |	FINALLY_TK error
 		{yyerror ("'{' expected"); RECOVER; }
 ;
@@ -1435,12 +1505,16 @@ primary_no_new_array:
 	   'type' into its components. Missing is something for array,
 	   which will complete the reference_type part. FIXME */
 |	name DOT_TK CLASS_TK	       /* Added, JDK1.1 class literals */
+		{ $$ = parse_jdk1_1_error ("class literals"); }
 |	primitive_type DOT_TK CLASS_TK /* Added, JDK1.1 class literals */
+		{ $$ = parse_jdk1_1_error ("class literals"); }
 |	VOID_TK DOT_TK CLASS_TK	       /* Added, JDK1.1 class literals */
+		{ $$ = parse_jdk1_1_error ("class literals"); }
         /* Added, JDK1.1 inner classes. Documentation is wrong
            refering to a 'ClassName' (class_name) rule that doesn't
            exist. Used name instead.  */
 |	name DOT_TK THIS_TK
+		{ $$ = parse_jdk1_1_error ("class literals"); }
 |	OP_TK expression error 
 		{yyerror ("')' expected"); RECOVER;}
 |	name DOT_TK error
@@ -1453,22 +1527,16 @@ primary_no_new_array:
 
 class_instance_creation_expression:
 	NEW_TK class_type OP_TK argument_list CP_TK
-		{
-		  $$ = build_method_invocation ($2, $4);
-		  TREE_SET_CODE ($$, JAVA_NEW_CLASS_EXPR);
-		}
+		{ $$ = build_new_invocation ($2, $4); }
 |	NEW_TK class_type OP_TK CP_TK
-		{
-		  $$ = build_method_invocation ($2, NULL_TREE);
-		  TREE_SET_CODE ($$, JAVA_NEW_CLASS_EXPR);
-		}
+		{ $$ = build_new_invocation ($2, NULL_TREE); }
         /* Added, JDK1.1 inner classes but modified to use
            'class_type' instead of 'TypeName' (type_name) mentionned
            in the documentation but doesn't exist. */
 |	NEW_TK class_type OP_TK argument_list CP_TK class_body
-{$$ = $2;}
+		{ $$ = parse_jdk1_1_error ("inner class instance creation"); }
 |	NEW_TK class_type OP_TK CP_TK class_body         
-{$$ = $2;}
+		{ $$ = parse_jdk1_1_error ("inner class instance creation"); }
         /* Added, JDK1.1 inner classes, modified to use name or
 	   primary instead of primary solely which couldn't work in
 	   all situations.  */
@@ -1522,9 +1590,9 @@ array_creation_expression:
         /* Added, JDK1.1 anonymous array. Initial documentation rule
            modified */
 |	NEW_TK class_or_interface_type dims array_initializer
-{$$ = $2;}
+		{ $$ = parse_jdk1_1_error ("anonymous array"); }
 |	NEW_TK primitive_type dims array_initializer
-{$$ = $2;}
+		{ $$ = parse_jdk1_1_error ("anonymous array"); }
 |	NEW_TK error CSB_TK
 		{yyerror ("'[' expected"); DRECOVER ("]");}
 |	NEW_TK error OSB_TK
@@ -1569,7 +1637,8 @@ field_access:
 |	SUPER_TK DOT_TK identifier
 		{
 		  tree super_wfl = 
-		    build_wfl_node (super_identifier_node, input_filename, 0, 0);
+		    build_wfl_node (super_identifier_node, 
+				    input_filename, 0, 0);
 		  EXPR_WFL_LINECOL (super_wfl) = $1.location;
 		  $$ = make_qualified_name (super_wfl, $3, $2.location);
 		}
@@ -1595,7 +1664,8 @@ method_invocation:
 |	SUPER_TK DOT_TK identifier OP_TK CP_TK
 		{
 		  tree invok;
-		  tree wfl = build_wfl_node (super_identifier_node, input_filename, 0, 0);
+		  tree wfl = build_wfl_node (super_identifier_node, 
+					     input_filename, 0, 0);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  invok = build_method_invocation ($3, NULL_TREE);
 		  $$ = make_qualified_primary (wfl, invok, $2.location);
@@ -1603,7 +1673,8 @@ method_invocation:
 |	SUPER_TK DOT_TK identifier OP_TK argument_list CP_TK
 		{
 		  tree invok;
-		  tree wfl = build_wfl_node (super_identifier_node, input_filename, 0, 0);
+		  tree wfl = build_wfl_node (super_identifier_node, 
+					     input_filename, 0, 0);
 		  EXPR_WFL_LINECOL (wfl) = $1.location;
 		  invok = build_method_invocation ($3, $5);
 		  $$ = make_qualified_primary (wfl, invok, $2.location);
@@ -2043,6 +2114,17 @@ java_pop_parser_context ()
   free (toFree);
 }
 
+/* Reporting JDK1.1 features not implemented */
+
+static tree
+parse_jdk1_1_error (msg)
+    char *msg;
+{
+  sorry (": `%s' JDK1.1(TM) feature", msg);
+  java_error_count++;
+  return size_zero_node;
+}
+
 static int do_warning = 0;
 
 void
@@ -2212,8 +2294,11 @@ java_accstring_lookup (flags)
 #undef COPY_RETURN
 }
 
+/* Issuing error messages upon redefinition of classes, interfaces or
+   variables. */
+
 static void
-redefinition_error (context, id, decl, cl)
+classitf_redefinition_error (context, id, decl, cl)
      char *context;
      tree id, decl, cl;
 {
@@ -2221,6 +2306,26 @@ redefinition_error (context, id, decl, cl)
 		       context, IDENTIFIER_POINTER (id), 
 		       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
   /* Here we should point out where its redefined. It's a unicode. FIXME */
+}
+
+static void
+variable_redefinition_error (context, name, type, line)
+     tree context, name, type;
+     int line;
+{
+  char *type_name;
+
+  /* Figure a proper name for type. We might haven't resolved it */
+  if (TREE_CODE (type) == TREE_LIST)
+    type_name = IDENTIFIER_POINTER (TYPE_NAME (TREE_PURPOSE (type)));
+  else
+    type_name = (char *)lang_printable_name (type);
+
+  parse_error_context (context,
+		       "Variable `%s' is already defined in this method and "
+		       "was declared `%s %s' at line %d", 
+		       IDENTIFIER_POINTER (name),
+		       type_name, IDENTIFIER_POINTER (name), line);
 }
 
 /* Build something that the type identifier resolver will identify as
@@ -2311,8 +2416,8 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
     }
   if (decl && CLASS_COMPLETE_P (decl))
     {
-      redefinition_error ((is_interface ? "Interface" : "Class"), 
-			  qualified_name, decl, cl);
+      classitf_redefinition_error ((is_interface ? "Interface" : "Class"), 
+				   qualified_name, decl, cl);
       return 1;
     }
 
@@ -2617,6 +2722,8 @@ register_fields (flags, type, variable_list)
 	  must_chain = 1;
 	}
     }
+  if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
+    type = promote_type (type);
 
   for (current = variable_list; current; current = TREE_CHAIN (current))
     {
@@ -3235,6 +3342,7 @@ java_complete_class ()
   tree cclass;
   jdeplist *cclassd;
   int error_found;
+  tree type;
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
@@ -3276,9 +3384,7 @@ java_complete_class ()
 		tree field_decl = JDEP_DECL (dep);
 		tree field_type = TREE_TYPE (decl);
 		push_obstacks (&permanent_obstack, &permanent_obstack);
-#if ! JAVA_PROMOTE_TO_INT
 		if (TREE_CODE (field_type) == RECORD_TYPE)
-#endif
 		  field_type = promote_type (field_type);
 		pop_obstacks ();
 		TREE_TYPE (field_decl) = field_type;
@@ -3295,7 +3401,9 @@ java_complete_class ()
 		{
 		  if (decl)
 		    {
-		      tree type = promote_type (TREE_TYPE(decl));
+		      type = TREE_TYPE(decl);
+		      if (TREE_CODE (type) == RECORD_TYPE)
+			type = promote_type (type);
 		      JDEP_APPLY_PATCH (dep, type);
 		      SOURCE_FRONTEND_DEBUG 
 			(((JDEP_KIND (dep) == JDEP_METHOD_RETURN ?
@@ -3333,14 +3441,12 @@ java_complete_class ()
 	      parser_add_interface (JDEP_DECL (dep), decl, JDEP_WFL (dep));
 	      break;
 
+	    case JDEP_PARM:
 	    case JDEP_VARIABLE:
-	      JDEP_APPLY_PATCH (dep, promote_type (TREE_TYPE (decl)));
-	      SOURCE_FRONTEND_DEBUG 
-		(("Completing variable `%s' with type `%s'",
-		  (TREE_CODE (JDEP_DECL_WFL (dep)) == EXPR_WITH_FILE_LOCATION ?
-		   IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_DECL_WFL (dep))) :
-		   IDENTIFIER_POINTER (DECL_NAME (JDEP_DECL_WFL (dep)))),
-		  IDENTIFIER_POINTER (DECL_NAME (decl))));
+	      type = TREE_TYPE(decl);
+	      if (TREE_CODE (type) == RECORD_TYPE)
+		type = promote_type (type);
+	      JDEP_APPLY_PATCH (dep, type);
 	      break;
 
 	    case JDEP_TYPE:
@@ -3348,14 +3454,6 @@ java_complete_class ()
 	      SOURCE_FRONTEND_DEBUG 
 		(("Completing a random type dependency on a '%s' node",
 		  tree_code_name [TREE_CODE (JDEP_DECL (dep))]));
-	      break;
-
-	    case JDEP_PARM:
-	      JDEP_APPLY_PATCH (dep, promote_type (TREE_TYPE (decl)));
-	      SOURCE_FRONTEND_DEBUG 
-		(("Completing parameter `%s' with type `%s'",
-		  IDENTIFIER_POINTER (JDEP_MISC (dep)),
-		  IDENTIFIER_POINTER (DECL_NAME (decl))));
 	      break;
 
 	    default:
@@ -3562,7 +3660,8 @@ complete_class_report_errors (dep)
       parse_error_context
 	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the "
 	 "local variable `%s'", 
-	 purify_type_name (IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep)))),
+	 purify_type_name (IDENTIFIER_POINTER 
+			   (EXPR_WFL_NODE (JDEP_WFL (dep)))),
 	 IDENTIFIER_POINTER (DECL_NAME (JDEP_DECL (dep))));
       break;
     }
@@ -4268,6 +4367,8 @@ declare_local_variables (modifier, type, vlist)
 	  must_chain = 1;
 	}
     }
+  if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
+    type = promote_type (type);
   
   for (current = vlist; current; current = TREE_CHAIN (current))
     {
@@ -4281,15 +4382,10 @@ declare_local_variables (modifier, type, vlist)
 	init = NULL_TREE;
 
       if (other)
-	parse_error_context 
-	  (wfl, "Variable `%s' is already defined in this method and was "
-	   "declared `%s %s' in line %d", 
-	   IDENTIFIER_POINTER (name), lang_printable_name (TREE_TYPE (other)),
-	   IDENTIFIER_POINTER (name), DECL_SOURCE_LINE (other));
+	variable_redefinition_error (wfl, name, TREE_TYPE (other),
+				     DECL_SOURCE_LINE (other));
       else
 	{
-	  if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
-	    type = promote_type (type);
 	  /* Never layout this decl. This will be done when its scope
              will be entered */
 	  decl = build_decl_no_layout (VAR_DECL, name, type);
@@ -4382,7 +4478,13 @@ expand_start_java_method (fndecl)
   while (tem)
     {
       tree next = TREE_CHAIN (tem);
-      DECL_ARG_TYPE (tem) = TREE_TYPE (tem);
+      tree type = TREE_TYPE (tem);
+#ifdef PROMOTE_PROTOTYPES
+      if (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	  && INTEGRAL_TYPE_P (type))
+	type = integer_type_node;
+#endif
+      DECL_ARG_TYPE (tem) = type;
       layout_decl (tem, 0);
       pushdecl (tem);
       INITIALIZED_P (tem) = 1;	/* Parms are initialized */
@@ -4406,6 +4508,9 @@ source_end_java_method ()
   java_parser_context_save_global ();
   lineno = ctxp->last_ccb_indent1;
 
+  /* Set EH language codes */
+  java_set_exception_lang_code ();
+
   /* Generate function's code */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
       && ! flag_emit_class_files)
@@ -4420,6 +4525,8 @@ source_end_java_method ()
   if (! flag_emit_class_files)
     {
       lineno = DECL_SOURCE_LINE_LAST (fndecl);
+      /* Emit catch-finally clauses */
+      emit_handlers ();
       expand_function_end (input_filename, lineno, 0);
 
       /* Run the optimizers and output assembler code for this function. */
@@ -4438,17 +4545,24 @@ tree
 java_method_add_stmt (fndecl, expr)
      tree fndecl, expr;
 {
-  tree body = BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl));
-  tree node;
+  return add_stmt_to_block (DECL_FUNCTION_BODY (fndecl), NULL_TREE, expr);
+}
 
+static tree
+add_stmt_to_block (b, type, stmt)
+     tree b, type, stmt;
+{
+  tree body = BLOCK_EXPR_BODY (b), c;
+  
   if (java_error_count)
     return body;
-  if ((node = add_stmt_to_compound (body, NULL_TREE, expr)) == body)
+    
+  if ((c = add_stmt_to_compound (body, type, stmt)) == body)
     return body;
 
-  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) = node;
-  TREE_SIDE_EFFECTS (node) = 1;
-  return node;
+  BLOCK_EXPR_BODY (b) = c;
+  TREE_SIDE_EFFECTS (c) = 1;
+  return c;
 }
 
 /* Add STMT to EXISTING if possible, otherwise create a new
@@ -4637,7 +4751,7 @@ make_qualified_primary (primary, right, location)
   /* We want to process THIS . xxx symbolicaly, to keep it consistent
      with the way we're processing SUPER. A THIS from a primary as a
      different form than a SUPER. Turn THIS into something symbolic */
-  if (TREE_CODE (primary) == JAVA_THIS_EXPR)
+  if (TREE_CODE (primary) == THIS_EXPR)
     {
       wfl = build_wfl_node (this_identifier_node, input_filename, 0, 0);
       EXPR_WFL_LINECOL (wfl) = EXPR_WFL_LINECOL (primary);
@@ -4880,7 +4994,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
       switch (TREE_CODE (qual_wfl))
 	{
 	case CALL_EXPR:
-	case JAVA_NEW_CLASS_EXPR:
+	case NEW_CLASS_EXPR:
 	  /* If the access to the function call is a non static field,
 	     build the code to access it. */
 	  if (DECL_P (decl) && !FIELD_STATIC (decl))
@@ -5027,7 +5141,10 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	     come. Don't do that when processing something after SUPER
 	     (we need more thing to be put in place below */
 	  if (!from_super && QUAL_RESOLUTION (q))
-	    decl = QUAL_RESOLUTION (q);
+	    {
+	      decl = QUAL_RESOLUTION (q);
+	      *type_found = type;
+	    }
 
 	  /* We have to search for a field, knowing the type of its
              container. The flag FROM_TYPE indicates that we resolved
@@ -5108,7 +5225,6 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		 search from */
 	      decl = field_decl;
 	    }
-
 	  from_type = 0;
 	  type = QUAL_DECL_TYPE (decl);
 	}
@@ -5403,11 +5519,11 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 
       class_type = class_to_search;
     }
-  
+
   /* Merge point of all resolution schemes. If we have nothing, this
      is an error, already signaled */
   if (!list) return error_mark_node;
-  
+
   /* Check accessibility, position the is_static flag, build and
      return the call */
   if (not_accessible_p (class_type, list, 0))
@@ -5540,7 +5656,8 @@ invocation_mode (method, super)
   return INVOKE_VIRTUAL;
 }
 
-/* Retrieve a refined list of matching methods. */
+/* Retrieve a refined list of matching methods. It covers the step
+   15.11.2 (Compile-Time Step 2) */
 
 static tree
 lookup_method_invoke (lc, cl, class, name, arg_list)
@@ -5551,22 +5668,22 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   tree method = make_node (FUNCTION_TYPE);
   tree arg_type_list = NULL_TREE;
   tree signature, list, node, scratch;
+  char *candidates;		/* Used for error report */
 
   for (node = arg_list; node; node = TREE_CHAIN (node))
     {
-      tree current_arg;
-      current_arg = 
-	build_tree_list (NULL_TREE,
-			 promote_type (TREE_TYPE (TREE_VALUE (node))));
-      arg_type_list = chainon (current_arg, arg_type_list);
+      tree current_arg = TREE_TYPE (TREE_VALUE (node));
+      if (TREE_CODE (current_arg) == RECORD_TYPE)
+	current_arg = promote_type (current_arg);
+      arg_type_list = tree_cons (NULL_TREE, current_arg, arg_type_list);
     }
   TYPE_ARG_TYPES (method) = arg_type_list;
 
   if (!lc)
     {
-      signature = build_java_argument_signature (method);
-      list = match_java_method (class, name, signature);
-      list = refine_accessible_methods_list (lc, list);
+      list = find_applicable_accessible_methods_list (class, name, 
+						      arg_type_list);
+      list = find_most_specific_methods_list (list);
     }
   else
     {
@@ -5575,132 +5692,181 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
       list = lookup_java_constructor (class, signature);
     }
 
-  if (!list)
-    {
-      parse_error_context (cl, "Can't find method `%s(%s)' in class `%s'",
-			   IDENTIFIER_POINTER (name),
-			   IDENTIFIER_POINTER (signature),
-			   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))));
-      return NULL_TREE;
-    }
-
-  if (lc)
+  if (lc && list)
     return list;
+  if (list && !TREE_CHAIN (list))
+    return TREE_VALUE (list);
 
-  if (TREE_CHAIN (list))
+  /* Issue an error. List candidates if any. Candidates are listed
+     only if accessible (non accessible methods may end-up here for
+     the sake of a better error report). */
+  candidates = NULL;
+  if (list)
     {
-      tree most_specific_list = NULL_TREE;
       tree current;
-      /* 15.11.2.2 Choose the Most Specific Method */
+      obstack_grow (&temporary_obstack, ". Candidates are:\n", 18);
       for (current = list; current; current = TREE_CHAIN (current))
 	{
-	  tree rest;
-	  tree method = TREE_VALUE (list);
-	  tree class_from = DECL_CONTEXT (method);
-	  for (rest = TREE_CHAIN (current); rest; rest = TREE_CHAIN (rest))
-	    {
-	      tree other = TREE_VALUE (rest);
-
-	      /* METHOD can be declared more specific with regard to OTHER iif:
-		
-		 - The class METHOD belongs can be converted to the
-		   class OTHER belongs by method invocation conversion
-		   (5.3).  Since we're dealing with classes here, it is
-		   covered by the identity conversion or the windening
-		   primitive conversion.
-		
-		 - The types of the arguments of METHOD can be
-		   converted to the types of the arguments of OTHER by
-		   method invocation conversion (5.3). */
-
-	      if (valid_ref_assignconv_cast_p (class_from, 
-					       DECL_CONTEXT (other), 0)
-		  && 1)		/* Test on args non implemented */
-		most_specific_list = tree_cons (NULL_TREE, method, 
-						most_specific_list);
-	    }
+	  tree cm = TREE_VALUE (current);
+	  char string [4096];
+	  if (!cm || not_accessible_p (class, cm, 0))
+	    continue;
+	  signature = build_java_argument_signature (TREE_TYPE (cm));
+	  sprintf 
+	    (string, "  `%s(%s)' in `%s'%s",
+	     IDENTIFIER_POINTER (name), 
+	     IDENTIFIER_POINTER (signature),
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (cm)))),
+	     (TREE_CHAIN (current) ? "\n" : ""));
+	  obstack_grow (&temporary_obstack, string, strlen (string));
 	}
-      list = most_specific_list;
+      obstack_1grow (&temporary_obstack, '\0');
+      candidates = obstack_finish (&temporary_obstack);
     }
-
-  if (!list || TREE_CHAIN (list))
-    {
-      parse_error_context (cl, "Can't find method `%s(%s)' in class `%s'",
-			   IDENTIFIER_POINTER (name),
-			   IDENTIFIER_POINTER (signature),
-			   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))));
-      return NULL_TREE;
-    }
-
-  /* 15.11.3 Is the Chosen Method Appropriate ? */
-  else
-    return TREE_VALUE (list);
+  /* Issue the error message */
+  signature = build_java_argument_signature (method);
+  parse_error_context (cl, "Can't find method `%s(%s)' in class `%s'%s",
+		       IDENTIFIER_POINTER (name),
+		       IDENTIFIER_POINTER (signature),
+		       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))),
+		       (candidates ? candidates : ""));
+  return NULL_TREE;
 }
 
-/* Refine accessible methods from the raw matching method list, as
-   specified in 15.11.4.3. Return a (possibly empty) new method
-   list.  */
+/* 15.11.2.1: Find Methods that are Applicable and Accessible */
 
 static tree
-refine_accessible_methods_list (lc, list)
-     int lc;			/* Looking for Constructor */
+find_applicable_accessible_methods_list (class, name, arglist)
+     tree class, name, arglist;
+{
+  tree method;
+  tree list = NULL_TREE, all_list = NULL_TREE;
+
+  while (class != NULL_TREE)
+    {
+      for (method = TYPE_METHODS (class);
+	   method != NULL_TREE;  method = TREE_CHAIN (method))
+	{
+	  /* Names have to match and we're not looking for constructor */
+	  if (DECL_NAME (method) != name
+	      || DECL_CONSTRUCTOR_P (method))
+	    continue;
+
+	  if (argument_types_convertible (method, arglist))
+	    {
+	      /* Retain accessible methods only */
+	      if (!not_accessible_p (class, method, 0))
+		list = tree_cons (NULL_TREE, method, list);
+	      else
+	      /* Also retain all selected method here */
+		all_list = tree_cons (NULL_TREE, method, list);
+	    }
+	}
+      class = CLASSTYPE_SUPER (class);
+    }
+  /* Either return the list obtained or all selected (but
+     inaccessible) methods for better error report. */
+  return (!list ? all_list : list);
+}
+
+/* 15.11.2.2 Choose the Most Specific Method */
+
+static tree
+find_most_specific_methods_list (list)
      tree list;
 {
-#define ADD_TO_LIST_AND_CONTINUE				\
-  {								\
-    refined_list = tree_cons (NULL_TREE, method, refined_list);	\
-    continue;							\
-  }
-  tree node, refined_list = NULL_TREE;
-  tree current_class_name = DECL_NAME (TYPE_NAME (current_class));
-
-  for (node = list; node; node = TREE_CHAIN (node))
+  int max = 0;
+  tree current, new_list = NULL_TREE;
+  for (current = list; current; current = TREE_CHAIN (current))
     {
-      int access, identical;
-      tree class_from, method, class_from_name;
-      
-      method = TREE_VALUE (node);
+      tree method;
+      DECL_SPECIFIC_COUNT (TREE_VALUE (current)) = 0;
 
-      /* Constructor not retained here, unless were specifically
-       looking for them. */
-      if (lc && DECL_CONSTRUCTOR_P (method))
-	ADD_TO_LIST_AND_CONTINUE;
+      for (method = list; method; method = TREE_CHAIN (method))
+	{
+	  /* Don't test a method against itself */
+	  if (method == current)
+	    continue;
 
-      access = get_access_flags_from_decl (method);
-      class_from = DECL_CONTEXT (method);
-      class_from_name = DECL_NAME (TYPE_NAME (class_from));
-      
-      identical = identical_subpath_p (current_class_name, class_from_name);
-
-      /* Check accessibility of class_from from the current one: This
-	 test has been already carried out when qualify_ambiguous_name
-	 tried to resolve a type found in an other package. It is not
-	 necessary to retest things here, the error has been already
-	 reported. */
-		  
-      /* Public method are always OK */
-      if (access & ACC_PUBLIC)
-	ADD_TO_LIST_AND_CONTINUE;
-      
-      /* Protected method access is OK if classes are from the
-	 same package or part of the same inheritance lineage */
-      if ((access & ACC_PROTECTED)
-	  && (inherits_from_p (current_class, class_from) || identical))
-	ADD_TO_LIST_AND_CONTINUE;
-
-      /* Methods with default (package) access are OK if classes are
-	 from the same default package. */
-      if (identical || 
-	  (!QUALIFIED_P (class_from_name) && !QUALIFIED_P (current_class_name)))
-	ADD_TO_LIST_AND_CONTINUE;
-
-      /* Private method accessible iff current class is the node where
-	 the method is defined */
-      if ((access & ACC_PRIVATE) && (class_from == current_class))
-	ADD_TO_LIST_AND_CONTINUE;
+	  /* Compare arguments and location where method where declared */
+	  if (argument_types_convertible (TREE_VALUE (method), 
+					  TREE_VALUE (current))
+	      && valid_method_invocation_conversion_p 
+	           (DECL_CONTEXT (TREE_VALUE (method)), 
+		    DECL_CONTEXT (TREE_VALUE (current))))
+	    {
+	      int v = ++DECL_SPECIFIC_COUNT (TREE_VALUE (current));
+	      max = (v > max ? v : max);
+	    }
+	}
     }
-#undef ADD_TO_LIST_AND_CONTINUE
-  return refined_list;
+
+  /* Review the list and select the maximally specific methods */
+  for (current = list; current; current = TREE_CHAIN (current))
+    if (DECL_SPECIFIC_COUNT (TREE_VALUE (current)) == max)
+      new_list = tree_cons (NULL_TREE, TREE_VALUE (current), new_list);
+
+  /* If we can't find one, lower expectations and try to gather multiple
+     maximally specific methods */
+  while (!new_list)
+    {
+      while (--max > 0)
+	{
+	  if (DECL_SPECIFIC_COUNT (TREE_VALUE (current)) == max)
+	    new_list = tree_cons (NULL_TREE, TREE_VALUE (current), new_list);
+	}
+      return new_list;
+    }
+
+  return new_list;
+}
+
+/* Make sure that the type of each M2_OR_ARGLIST arguments can be
+   converted by method invocation conversion (5.3) to the type of the
+   corresponding parameter of M1. Implementation expects M2_OR_ARGLIST
+   to change less often than M1. */
+
+static int
+argument_types_convertible (m1, m2_or_arglist)
+    tree m1, m2_or_arglist;
+{
+  static tree m2_arg_value = NULL_TREE;
+  static tree m2_arg_cache = NULL_TREE;
+
+  register tree m1_arg, m2_arg;
+
+  m1_arg = TYPE_ARG_TYPES (TREE_TYPE (m1));
+  if (!METHOD_STATIC (m1))
+    m1_arg = TREE_CHAIN (m1_arg);
+
+  if (m2_arg_value == m2_or_arglist)
+    m2_arg = m2_arg_cache;
+  else
+    {
+      /* M2_OR_ARGLIST can be a function DECL or a raw list of
+         argument types */
+      if (m2_or_arglist && TREE_CODE (m2_or_arglist) == FUNCTION_DECL)
+	{
+	  m2_arg = TYPE_ARG_TYPES (TREE_TYPE (m2_or_arglist));
+	  if (!METHOD_STATIC (m2_or_arglist))
+	    m2_arg = TREE_CHAIN (m2_arg);
+	}
+      else
+	m2_arg = m2_or_arglist;
+
+      m2_arg_value = m2_or_arglist;
+      m2_arg_cache = m2_arg;
+    }
+
+  while (m1_arg && m2_arg)
+    {
+      if (!valid_method_invocation_conversion_p (TREE_VALUE (m1_arg),
+						 TREE_VALUE (m2_arg)))
+	break;
+      m1_arg = TREE_CHAIN (m1_arg);
+      m2_arg = TREE_CHAIN (m2_arg);
+    }
+  return (!m1_arg && !m2_arg ? 1 : 0);
 }
 
 /* Qualification routines */
@@ -5738,7 +5904,7 @@ qualify_ambiguous_name (id)
 	    qual_wfl = QUAL_WFL (qual);
 	  }
 	break;
-      case JAVA_NEW_CLASS_EXPR:
+      case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
       case ARRAY_REF:
 	qual_wfl = TREE_OPERAND (qual_wfl, 0);
@@ -5908,10 +6074,10 @@ java_complete_tree (node)
      tree node;
 {
   tree nn, cn, wfl_op1, wfl_op2;
-  int flag, location;
+  int flag;
 
   /* CONVERT_EXPR always has its type set, even though it needs to be
-     worked out */
+     worked out. */
   if (TREE_TYPE (node) && TREE_CODE (node) != CONVERT_EXPR)
     return node;
 
@@ -5946,6 +6112,10 @@ java_complete_tree (node)
       break;
 
       /* 2- They are expressions but ultimately deal with statements */
+
+    case TRY_EXPR:
+      return patch_try_statement (node);
+
     case LABELED_BLOCK_EXPR:
       PUSH_LABELED_BLOCK (node);
       if (LABELED_BLOCK_BODY (node))
@@ -5959,14 +6129,21 @@ java_complete_tree (node)
          the EXIT_BLOCK_EXPR which doesn't exist it Java */
       return patch_bc_statement (node);
 
+    case SWITCH_EXPR:
     case LOOP_EXPR:
       PUSH_LOOP (node);
       /* Check whether the loop was enclosed in a labeled
          statement. If not, create one, insert the loop in it and
          return the node */
       nn = patch_loop_statement (node);
+
       /* Anyways, walk the body of the loop */
-      TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
+      if (TREE_CODE (node) == LOOP_EXPR)
+	TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
+      /* Switch statement: walk the switch expression and the cases */
+      else
+	node = patch_switch_statement (node);
+
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
       TREE_TYPE (nn) = TREE_TYPE (node) = void_type_node;
@@ -6028,7 +6205,7 @@ java_complete_tree (node)
 	}
       break;
 
-    case JAVA_NEW_ARRAY_EXPR:
+    case NEW_ARRAY_EXPR:
       /* Patch all the dimensions */
       flag = 0;
       for (cn = TREE_OPERAND (node, 1); cn; cn = TREE_CHAIN (cn))
@@ -6054,9 +6231,9 @@ java_complete_tree (node)
          were found. */
       return (flag ? error_mark_node : patch_newarray (node));
 
-    case JAVA_NEW_CLASS_EXPR:
+    case NEW_CLASS_EXPR:
     case CALL_EXPR:
-      /* Complete function's argument first */
+      /* Complete function's argument(s) first */
       if (complete_function_arguments (node))
 	return error_mark_node;
       else
@@ -6102,6 +6279,12 @@ java_complete_tree (node)
 	  return error_mark_node;
 	}
       TREE_OPERAND (node, 1) = nn;
+
+      /* In case we're handling = with a String as a RHS, we need to
+	 produce a String out of the RHS (it might still be a
+	 STRING_CST or a StringBuffer at this stage */
+      if ((nn = patch_string (TREE_OPERAND (node, 1))))
+	TREE_OPERAND (node, 1) = nn;
       return patch_assignment (node, wfl_op1, wfl_op2);
 
     case MULT_EXPR:
@@ -6127,15 +6310,23 @@ java_complete_tree (node)
 	 knows how to handle those cases. */
       wfl_op1 = TREE_OPERAND (node, 0);
       wfl_op2 = TREE_OPERAND (node, 1);
-      TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
-      if (TREE_OPERAND (node, 0) == error_mark_node)
-        return error_mark_node;
-      TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
-      if (TREE_OPERAND (node, 1) == error_mark_node)
-	return error_mark_node;
+
+      /* Don't complete string nodes if dealing with the PLUS operand. */
+      if (TREE_CODE (node) != PLUS_EXPR || !JSTRING_P (wfl_op1))
+	{
+	  TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
+	  if (TREE_OPERAND (node, 0) == error_mark_node)
+	    return error_mark_node;
+	}
+      if (TREE_CODE (node) != PLUS_EXPR || !JSTRING_P (wfl_op2))
+	{
+	  TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
+	  if (TREE_OPERAND (node, 1) == error_mark_node)
+	    return error_mark_node;
+	}
       return patch_binop (node, wfl_op1, wfl_op2);
 
-    case JAVA_UNARY_PLUS_EXPR:
+    case UNARY_PLUS_EXPR:
     case NEGATE_EXPR:
     case TRUTH_NOT_EXPR:
     case BIT_NOT_EXPR:
@@ -6159,14 +6350,17 @@ java_complete_tree (node)
       TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
+      if (!flag_emit_class_files)
+	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
       /* The same applies to wfl_op2 */
       wfl_op2 = TREE_OPERAND (node, 1);
       TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
       if (TREE_OPERAND (node, 1) == error_mark_node)
 	return error_mark_node;
+      TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node, wfl_op1, wfl_op2);
 
-    case JAVA_THIS_EXPR:
+    case THIS_EXPR:
       /* Can't use THIS in a static environment */
       if (!current_this)
 	{
@@ -6178,16 +6372,12 @@ java_complete_tree (node)
 	}
       return current_this;
 
-    case STRING_CST:
-      /* Build the internal string representation */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      node = get_identifier (TREE_STRING_POINTER (node));
-      location = alloc_name_constant (CONSTANT_String, node);
-      node = build_ref_from_constant_pool (location);
-      TREE_TYPE (node) = promote_type (string_type_node);
-      return node;
-
     default:
+      /* Ok: may be we have a STRING_CST or a crafted `StringBuffer'
+	 and it's time to turn it into the appropriate String object
+	 */
+      if ((node = patch_string (node)))
+	return node;
       fatal ("No case for tree code `%s' - java_complete_tree\n",
 	     tree_code_name [TREE_CODE (node)]);
     }
@@ -6206,13 +6396,19 @@ complete_function_arguments (node)
 
   for (cn = TREE_OPERAND (node, 1); cn; cn = TREE_CHAIN (cn))
     {
-      tree wfl = TREE_VALUE (cn), parm;
+      tree wfl = TREE_VALUE (cn), parm, temp;
       parm = java_complete_tree (wfl);
       if (parm == error_mark_node)
 	{
 	  flag = 1;
 	  continue;
 	}
+      /* If have a string literal that we haven't transformed yet or a
+	 crafted string buffer, as a result of use of the the String
+	 `+' operator. Build `parm.toString()' and expand it. */
+      if ((temp = patch_string (parm)))
+	parm = TREE_VALUE (cn) = temp;
+      
       if (TREE_CODE (TREE_TYPE (parm)) == RECORD_TYPE)
 	TREE_VALUE (cn) = convert (promote_type (TREE_TYPE (parm)), parm);
       else
@@ -6250,25 +6446,31 @@ build_expr_block (body, decls)
 {
   tree node = make_node (BLOCK);
   BLOCK_EXPR_DECLS (node) = decls;
-  BLOCK_EXPR_BODY (body);
+  BLOCK_EXPR_BODY (node) = body;
   if (body)
     TREE_TYPE (node) = TREE_TYPE (body);
   TREE_SIDE_EFFECTS (node) = 1;
   return node;
 }
 
-/* Create a new function block and link its supercontext to the
-   previous block. The current function DECL is used as supercontext
-   when enter_block is called for the first time for a given
-   function. The current function body (DECL_FUNCTION_BODY) is set to
-   the newly created block.  */
-
-static block_level = 0;
+/* Create a new function block and link it approriately to current
+   function block chain */
 
 static tree
 enter_block ()
 {
-  tree b = build_expr_block (NULL_TREE, NULL_TREE);
+  return (enter_a_block (build_expr_block (NULL_TREE, NULL_TREE)));
+}
+
+/* Link block B supercontext to the previous block. The current
+   function DECL is used as supercontext when enter_a_block is called
+   for the first time for a given function. The current function body
+   (DECL_FUNCTION_BODY) is set to be block B.  */
+
+static tree
+enter_a_block (b)
+     tree b;
+{
   tree fndecl = current_function_decl; 
 
   if (!DECL_FUNCTION_BODY (fndecl))
@@ -6342,7 +6544,7 @@ maybe_absorb_scoping_blocks ()
    are building incomplete tree nodes and the patch_* functions that
    are completing them.  */
 
-/* Build an incomplete CALL_EXPR node. Encapsulate it within a WFL */
+/* Build an incomplete CALL_EXPR node. */
 
 static tree
 build_method_invocation (name, args)
@@ -6351,7 +6553,18 @@ build_method_invocation (name, args)
 {
   tree call = build (CALL_EXPR, NULL_TREE, name, args, NULL_TREE);
   TREE_SIDE_EFFECTS (call) = 1;
-  /* Check on cases where NAME isn't a WFL. FIXME */
+  EXPR_WFL_LINECOL (call) = EXPR_WFL_LINECOL (name);
+  return call;
+}
+
+/* Build an incomplete new xxx(...) node. */
+
+static tree
+build_new_invocation (name, args)
+    tree name, args;
+{
+  tree call = build (NEW_CLASS_EXPR, NULL_TREE, name, args, NULL_TREE);
+  TREE_SIDE_EFFECTS (call) = 1;
   EXPR_WFL_LINECOL (call) = EXPR_WFL_LINECOL (name);
   return call;
 }
@@ -6413,7 +6626,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
      tree wfl_op1;
      tree wfl_op2;
 {
-  tree rhs = TREE_OPERAND (node, 1);
+  tree rhs = TREE_OPERAND (node, 1), temp;
   tree lvalue = TREE_OPERAND (node, 0);
   tree lhs_type, rhs_type, new_rhs = NULL_TREE;
   int all_primitive;
@@ -6458,56 +6671,14 @@ patch_assignment (node, wfl_op1, wfl_op2)
     }
 
   rhs_type = TREE_TYPE (rhs);
+  /* 5.1 Try the assignment conversion for builtin type. */
+  if ((new_rhs = try_builtin_assignconv (wfl_op1, lhs_type, rhs)))
+    ;
 
-  /* 5.2 Begin Assignment conversion */
-
-  /* 5.1.1 Try Identity Conversion */
-  if (lhs_type == rhs_type) 
-    new_rhs = rhs;
-  
-  /* 5.1.2 Try Widening Primitive Conversion */
-  all_primitive = JPRIMITIVE_TYPE_P (lhs_type) && JPRIMITIVE_TYPE_P (rhs_type);
-  if (all_primitive && JINTEGRAL_TYPE_P (rhs_type)
-      && ((TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type))
-	  || (JFLOAT_TYPE_P (lhs_type) &&
-	      TYPE_PRECISION (rhs_type) == TYPE_PRECISION (lhs_type))))
-    new_rhs = convert (lhs_type, rhs);
-  else if (all_primitive && JFLOAT_TYPE_P (rhs_type)
-	   && (TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type)))
-    new_rhs = convert (lhs_type, rhs);
-
-  /* Try a narrowing primitive conversion: 
-       - expression is a constant expression of type int AND
-       - variable is byte, short or char AND
-       - The value of the expression is representable in the type of the 
-         variable */
-  else if (rhs_type == int_type_node && TREE_CONSTANT (rhs)
-	   && (lhs_type == byte_type_node || lhs_type == char_type_node
-	       || lhs_type == short_type_node))
-    {
-      if (int_fits_type_p (rhs, lhs_type))
-        new_rhs = convert (lhs_type, rhs);
-      else
-	parse_warning_context 
-	  (wfl_op1, "Constant expression `%s' to wide for narrowing "
-	   "primitive conversion to `%s'", 
-	   print_int_node (rhs), lang_printable_name (lhs_type));
-      /* Reported a warning that will turn into an error further
-	 down, so we don't return */
-    }
-
-  /* 5.2 Try a reference conversion */
-  else if (!JPRIMITIVE_TYPE_P (rhs_type) && JREFERENCE_TYPE_P (lhs_type))
-    {
-      /* `null' may be assigned to any reference type */
-      if (rhs == null_pointer_node)
-        new_rhs = null_pointer_node;
-      /* Try the reference assignment conversion */
-      else if (valid_ref_assignconv_cast_p (rhs_type, lhs_type, 0))
-	new_rhs = rhs;
-      if (new_rhs)
-	lhs_type = promote_type (rhs_type);
-    }
+  /* 5.2 If it failed, try a reference conversion */
+  if (!new_rhs &&
+      (new_rhs = try_reference_assignconv (lhs_type, rhs)))
+    lhs_type = promote_type (rhs_type);
 
   /* 15.25.2 If we have a compound assignment, convert RHS into the
      type of the LHS */
@@ -6546,7 +6717,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	}
 
       parse_error_context 
-	(wfl, (!can_cast_to_p (rhs_type, lhs_type) ?
+	(wfl, (!valid_cast_to_p (rhs_type, lhs_type) ?
 	       "Incompatible type for %s. Can't convert `%s' to `%s'" :
 	       "Incompatible type for %s. Explicit cast "
 	       "needed to convert `%s' to `%s'"), operation, t1, t2);
@@ -6576,25 +6747,103 @@ patch_assignment (node, wfl_op1, wfl_op2)
   return node;
 }
 
-/* Check that SOURCE can be converted into DEST, at least with a
-   cast. If the convertion can't occur at all, return 0 otherwise
-   1. This function is used to produce accurate error messages on the
-   reasons why an assignment failed. */
+/* Check that type SOURCE can be cast into type DEST. If the cast
+   can't occur at all, return 0 otherwise 1. This function is used to
+   produce accurate error messages on the reasons why an assignment
+   failed. */
+
+static tree
+try_reference_assignconv (lhs_type, rhs)
+     tree lhs_type, rhs;
+{
+  tree new_rhs = NULL_TREE;
+  tree rhs_type = TREE_TYPE (rhs);
+
+  if (!JPRIMITIVE_TYPE_P (rhs_type) && JREFERENCE_TYPE_P (lhs_type))
+    {
+      /* `null' may be assigned to any reference type */
+      if (rhs == null_pointer_node)
+        new_rhs = null_pointer_node;
+      /* Try the reference assignment conversion */
+      else if (valid_ref_assignconv_cast_p (rhs_type, lhs_type, 0))
+	new_rhs = rhs;
+      /* This is a magic assignment that we process differently */
+      else if (rhs == soft_exceptioninfo_call_node)
+	new_rhs = rhs;
+    }
+  return new_rhs;
+}
+
+/* Check that RHS can be converted into LHS_TYPE by the assignment
+   conversion (5.2), for the cases of RHS being a builtin type. Return
+   NULL_TREE if the conversion fails or if because RHS isn't of a
+   builtin type. Return a converted RHS if the conversion is possible.  */
+
+static tree
+try_builtin_assignconv (wfl_op1, lhs_type, rhs)
+     tree wfl_op1, lhs_type, rhs;
+{
+  tree new_rhs = NULL_TREE;
+  tree rhs_type = TREE_TYPE (rhs);
+
+  /* 5.1.1 Try Identity Conversion,
+     5.1.2 Try Widening Primitive Conversion */
+  if (valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type))
+    new_rhs = convert (lhs_type, rhs);
+
+  /* Try a narrowing primitive conversion (5.1.3): 
+       - expression is a constant expression of type int AND
+       - variable is byte, short or char AND
+       - The value of the expression is representable in the type of the 
+         variable */
+  else if (rhs_type == int_type_node && TREE_CONSTANT (rhs)
+	   && (lhs_type == byte_type_node || lhs_type == char_type_node
+	       || lhs_type == short_type_node))
+    {
+      if (int_fits_type_p (rhs, lhs_type))
+        new_rhs = convert (lhs_type, rhs);
+      else if (wfl_op1)		/* Might be called with a NULL */
+	parse_warning_context 
+	  (wfl_op1, "Constant expression `%s' to wide for narrowing "
+	   "primitive conversion to `%s'", 
+	   print_int_node (rhs), lang_printable_name (lhs_type));
+      /* Reported a warning that will turn into an error further
+	 down, so we don't return */
+    }
+
+  return new_rhs;
+}
+
+/* Return 1 if RHS_TYPE can be converted to LHS_TYPE by identity
+   conversion (5.1.1) or widening primitve conversion (5.1.2).  Return
+   0 is the conversion test fails.  This implements parts the method
+   invocation convertion (5.3).  */
 
 static int
-can_cast_to_p (source, dest)
-     tree source;
-     tree dest;
+valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
+     tree lhs_type, rhs_type;
 {
-  if (TREE_CODE (source) == POINTER_TYPE)
-    source = TREE_TYPE (source);
-  if (TREE_CODE (dest) == POINTER_TYPE)
-    dest = TREE_TYPE (dest);
+  int all_primitive = 
+    JPRIMITIVE_TYPE_P (lhs_type) && JPRIMITIVE_TYPE_P (rhs_type);
 
-  if (TREE_CODE (source) == RECORD_TYPE && TREE_CODE (dest) == RECORD_TYPE)
-    return valid_ref_assignconv_cast_p (source, dest, 1);
+  if (!all_primitive)
+    return 0;
 
-  else if (JNUMERIC_TYPE_P (source) && JNUMERIC_TYPE_P (dest))
+  if (lhs_type == rhs_type)
+    return 1;
+
+  /* byte, even if it's smaller than a char can't be converted into a
+     char. Short can't too, but the < test below takes care of that */
+  if (lhs_type == char_type_node && rhs_type == byte_type_node)
+    return 0;
+
+  if (JINTEGRAL_TYPE_P (rhs_type)
+      && ((TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type))
+	  || (JFLOAT_TYPE_P (lhs_type) &&
+	      TYPE_PRECISION (rhs_type) == TYPE_PRECISION (lhs_type))))
+    return 1;
+  else if (JFLOAT_TYPE_P (rhs_type)
+	   && (TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type)))
     return 1;
 
   return 0;
@@ -6644,7 +6893,7 @@ valid_ref_assignconv_cast_p (source, dest, cast)
 	    return dest == object_type_node;
 	  /* We're doing a cast. The cast is always valid is class
 	     DEST is not final, otherwise, DEST must implement SOURCE */
-	  else if (!CLASS_FINAL (TYPE_NAME (source)))
+	  else if (!CLASS_FINAL (TYPE_NAME (dest)))
 	    return 1;
 	  else
 	    return interface_of_p (source, dest);
@@ -6704,6 +6953,41 @@ valid_ref_assignconv_cast_p (source, dest, cast)
   return 0;
 }
 
+static int
+valid_cast_to_p (source, dest)
+     tree source;
+     tree dest;
+{
+  if (TREE_CODE (source) == POINTER_TYPE)
+    source = TREE_TYPE (source);
+  if (TREE_CODE (dest) == POINTER_TYPE)
+    dest = TREE_TYPE (dest);
+
+  if (TREE_CODE (source) == RECORD_TYPE && TREE_CODE (dest) == RECORD_TYPE)
+    return valid_ref_assignconv_cast_p (source, dest, 1);
+
+  else if (JNUMERIC_TYPE_P (source) && JNUMERIC_TYPE_P (dest))
+    return 1;
+
+  return 0;
+}
+
+/* Method invocation conversion test. Return 1 if type SOURCE can be
+   converted to type DEST through the methond invocation conversion
+   process (5.3) */
+
+static int
+valid_method_invocation_conversion_p (dest, source)
+     tree dest, source;
+{
+  return ((JPRIMITIVE_TYPE_P (source) 
+	    && JPRIMITIVE_TYPE_P (dest)
+	    && valid_builtin_assignconv_identity_widening_p (dest, source))
+	   || (JREFERENCE_TYPE_P (source) 
+	       && JREFERENCE_TYPE_P (dest)
+	       && valid_ref_assignconv_cast_p (source, dest, 0)));
+}
+
 /* Build an incomplete binop expression. */
 
 static tree
@@ -6712,15 +6996,9 @@ build_binop (op, op_location, op1, op2)
      int op_location;
      tree op1, op2;
 {
-  tree wfl;
+  tree wfl, binop, merge;
 
-  /* URSHIFT_EXPR is not part of what GCC understands, we can't directly build
-     a node with it */
-  tree binop = 
-    build ((op == URSHIFT_EXPR ? RSHIFT_EXPR : op), NULL_TREE, op1, op2);
-  if (op == URSHIFT_EXPR)
-    TREE_SET_CODE (binop, op);
-
+  binop = build (op, NULL_TREE, op1, op2);
   TREE_SIDE_EFFECTS (binop) = 1;
   /* Store the location of the operator, for better error report. The
      string of the operator will be rebuild based on the OP value. */
@@ -6766,7 +7044,7 @@ operator_string (node)
     case GE_EXPR: BUILD_OPERATOR_STRING (">=");
     case LT_EXPR: BUILD_OPERATOR_STRING ("<");
     case LE_EXPR: BUILD_OPERATOR_STRING ("<=");
-    case JAVA_UNARY_PLUS_EXPR: BUILD_OPERATOR_STRING ("+");
+    case UNARY_PLUS_EXPR: BUILD_OPERATOR_STRING ("+");
     case NEGATE_EXPR: BUILD_OPERATOR_STRING ("-");
     case TRUTH_NOT_EXPR: BUILD_OPERATOR_STRING ("!");
     case BIT_NOT_EXPR: BUILD_OPERATOR_STRING ("~");
@@ -6800,6 +7078,7 @@ patch_binop (node, wfl_op1, wfl_op2)
   tree op2_type = TREE_TYPE (op2);
   tree prom_type;
   int code = TREE_CODE (node);
+
   /* If 1, tell the routine that we have to return error_mark_node
      after checking for the initialization of the RHS */
   int error_found = 0;
@@ -6850,8 +7129,20 @@ patch_binop (node, wfl_op1, wfl_op2)
 
     /* 15.17 Additive Operators */
     case PLUS_EXPR:		/* 15.17.1 String Concatenation Operator + */
-      if (JSTRING_TYPE_P (op1_type) || JSTRING_TYPE_P (op2_type))
-	fatal ("operator `+' non implemented on String - patch_binop");
+
+      /* Operation is valid if either one argument is a string
+	 constant, a String object or a StringBuffer crafted for the
+	 purpose of the a previous usage of the String concatenation
+	 operator */
+
+      if (TREE_CODE (op1) == STRING_CST 
+	  || TREE_CODE (op2) == STRING_CST
+	  || JSTRING_TYPE_P (op1_type)
+	  || JSTRING_TYPE_P (op2_type)
+	  || IS_CRAFTED_STRING_BUFFER_P (op1)
+	  || IS_CRAFTED_STRING_BUFFER_P (op2))
+	return build_string_concatenation (op1, op2);
+
     case MINUS_EXPR:		/* 15.17.2 Additive Operators (+ and -) for
 				   Numeric Types */
       if (!JPRIMITIVE_TYPE_P (op1_type) || !JPRIMITIVE_TYPE_P (op2_type))
@@ -7002,7 +7293,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 		|| JREFERENCE_TYPE_P (op1_type) 
 		|| JREFERENCE_TYPE_P (op2_type))
 	       && ((op1_type == op2_type)
-		   /* The should use a can_cast_to_p() */
+		   /* There should use a valid_cast_to_p() */
 		   ))
 	;			/* Nothing to do here */
 	  
@@ -7044,10 +7335,195 @@ patch_binop (node, wfl_op1, wfl_op2)
   return fold (node);
 }
 
-/* Build an incomplete unary operator expression. Unary `+' node is
-   build as a CONV_EXPR, even though its tree code is overridden by a
-   JAVA_UNARY_PLUS_EXPR that isn't a tree code, to differentiate it during
-   the walk. */
+/* Concatenate the STRING_CST CSTE and STRING. When AFTER is a non
+   zero value, the value of CSTE comes after the valude of STRING */
+
+static tree
+do_merge_string_cste (cste, string, string_len, after)
+     tree cste;
+     char *string;
+     int string_len, after;
+{
+  int len = TREE_STRING_LENGTH (cste) + string_len;
+  char *old = TREE_STRING_POINTER (cste);
+  TREE_STRING_LENGTH (cste) = len;
+  TREE_STRING_POINTER (cste) = obstack_alloc (expression_obstack, len+1);
+  if (after)
+    {
+      strcpy (TREE_STRING_POINTER (cste), string);
+      strcat (TREE_STRING_POINTER (cste), old);
+    }
+  else
+    {
+      strcpy (TREE_STRING_POINTER (cste), old);
+      strcat (TREE_STRING_POINTER (cste), string);
+    }
+  return cste;
+}
+
+/* Tries to merge OP1 (a STRING_CST) and OP2 (if suitable). Return a
+   new STRING_CST on success, NULL_TREE on failure */
+
+static tree
+merge_string_cste (op1, op2, after)
+     tree op1, op2;
+     int after;
+{
+  /* Handle two string constants right away */
+  if (TREE_CODE (op2) == STRING_CST)
+    return do_merge_string_cste (op1, TREE_STRING_POINTER (op2), 
+				 TREE_STRING_LENGTH (op2), after);
+  
+  /* Reasonable integer constant can be treated right away */
+  if (TREE_CODE (op2) == INTEGER_CST && !TREE_CONSTANT_OVERFLOW (op2))
+    {
+      static char *boolean_true = "true";
+      static char *boolean_false = "false";
+      static char *null_pointer = "null";
+      char ch[3];
+      char *string;
+      
+      if (op2 == boolean_true_node)
+	string = boolean_true;
+      else if (op2 == boolean_false_node)
+	string = boolean_false;
+      else if (op2 == null_pointer_node)
+	string = null_pointer;
+      else if (TREE_TYPE (op2) == char_type_node)
+	{
+	  ch[0] = (char )TREE_INT_CST_LOW (op2);
+	  ch[1] = '\0';
+	  string = ch;
+	}
+      else
+	  string = print_int_node (op2);
+      
+      return do_merge_string_cste (op1, string, strlen (string), after);
+    }
+  return NULL_TREE;
+}
+
+/* Tries to statically concatenate OP1 and OP2 if possible. Either one
+   has to be a STRING_CST and the other part must be a STRING_CST or a
+   INTEGRAL constant. Return a new STRING_CST if the operation
+   succeed, NULL_TREE otherwise.
+
+   If the case we want to optimize for space, we might want to return
+   NULL_TREE for each invocation of this routine. FIXME */
+
+static tree
+string_constant_concatenation (op1, op2)
+     tree op1, op2;
+{
+  if (TREE_CODE (op1) == STRING_CST || (TREE_CODE (op2) == STRING_CST))
+    {
+      tree string, rest, result;
+      int invert;
+      
+      string = (TREE_CODE (op1) == STRING_CST ? op1 : op2);
+      rest   = (string == op1 ? op2 : op1);
+      invert = (string == op1 ? 0 : 1 );
+      
+      /* Walk REST, only if it looks reasonable */
+      if (TREE_CODE (rest) != STRING_CST
+	  && !IS_CRAFTED_STRING_BUFFER_P (rest)
+	  && !JSTRING_TYPE_P (TREE_TYPE (rest))
+	  && TREE_CODE (rest) == EXPR_WITH_FILE_LOCATION)
+	{
+	  rest = java_complete_tree (rest);
+	  if (rest == error_mark_node)
+	    return error_mark_node;
+	  rest = fold (rest);
+	}
+      return merge_string_cste (string, rest, invert);
+    }
+  return NULL_TREE;
+}
+
+/* Implement the `+' operator. Does static optimization if possible,
+   otherwise create (if necessary) and append elements to a
+   StringBuffer. The StringBuffer will be carried around until it is
+   used for a function call or an assignment. Then toString() will be
+   called on it to turn it into a String object. */
+
+static tree
+build_string_concatenation (op1, op2)
+     tree op1, op2;
+{
+  tree result;
+  
+  /* Try to do some static optimization */
+  if ((result = string_constant_concatenation (op1, op2)))
+    return result;
+
+  /* If operands are string constant, turn then into object references */
+
+  if (TREE_CODE (op1) == STRING_CST)
+    op1 = patch_string_cst (op1);
+  if (TREE_CODE (op2) == STRING_CST)
+    op2 = patch_string_cst (op2);
+
+  /* If OP1 isn't already a StringBuffer, create and
+     initialize a new one */
+  if (!IS_CRAFTED_STRING_BUFFER_P (op1))
+    {
+      /* Two solutions here: 
+	 1) OP1 is a string reference, we call new StringBuffer(OP1)
+	 2) Op2 is something else, we call new StringBuffer().append(OP1). */
+      if (JSTRING_TYPE_P (TREE_TYPE (op1)))
+	op1 = BUILD_STRING_BUFFER (op1);
+      else
+	{
+	  tree aNew = BUILD_STRING_BUFFER (NULL_TREE);
+	  op1 = make_qualified_primary (aNew, BUILD_APPEND (op1), 0);
+	}
+    }
+
+  /* No longer the last node holding a crafted StringBuffer */
+  IS_CRAFTED_STRING_BUFFER_P (op1) = 0;
+  /* Create a node for `{new...,xxx}.append (op2)' */
+  op1 = make_qualified_primary (op1, BUILD_APPEND (op2), 0);
+  /* Mark the last node holding a crafted StringBuffer */
+  IS_CRAFTED_STRING_BUFFER_P (op1) = 1;
+  
+  return op1;
+}
+
+/* Patch the string node NODE. NODE can be a STRING_CST of a crafted
+   StringBuffer. If no string were found to be patched, return
+   NULL. */
+
+static tree
+patch_string (node)
+    tree node;
+{
+  if (TREE_CODE (node) == STRING_CST)
+    return patch_string_cst (node);
+  else if (IS_CRAFTED_STRING_BUFFER_P (node))
+    {
+      tree invoke = build_method_invocation (wfl_to_string, NULL_TREE);
+      return java_complete_tree (make_qualified_primary (node, invoke, 0));
+    }
+  return NULL_TREE;
+}
+
+/* Build the internal representation of a string constant.  */
+
+static tree
+patch_string_cst (node)
+     tree node;
+{
+  int location;
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+  node = get_identifier (TREE_STRING_POINTER (node));
+  location = alloc_name_constant (CONSTANT_String, node);
+  node = build_ref_from_constant_pool (location);
+  TREE_TYPE (node) = promote_type (string_type_node);
+  TREE_CONSTANT (node) = 1;
+  return node;
+}
+
+/* Build an incomplete unary operator expression. */
 
 static tree
 build_unaryop (op_token, op_location, op1)
@@ -7058,7 +7534,7 @@ build_unaryop (op_token, op_location, op1)
   tree unaryop;
   switch (op_token)
     {
-    case PLUS_TK: op = CONVERT_EXPR; break;
+    case PLUS_TK: op = UNARY_PLUS_EXPR; break;
     case MINUS_TK: op = NEGATE_EXPR; break;
     case NEG_TK: op = TRUTH_NOT_EXPR; break;
     case NOT_TK: op = BIT_NOT_EXPR; break;
@@ -7067,9 +7543,6 @@ build_unaryop (op_token, op_location, op1)
     }
 
   unaryop = build1 (op, NULL_TREE, op1);
-  if (op_token == PLUS_TK)
-    TREE_SET_CODE (unaryop, JAVA_UNARY_PLUS_EXPR);
-
   TREE_SIDE_EFFECTS (unaryop) = 1;
   /* Store the location of the operator, for better error report. The
      string of the operator will be rebuild based on the OP value. */
@@ -7142,7 +7615,8 @@ patch_unaryop (node, wfl_op)
     case PREINCREMENT_EXPR:
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
-      if (!DECL_P (op))
+      if (!DECL_P (op) && !(TREE_CODE (op) == INDIRECT_REF 
+			    && JPRIMITIVE_TYPE_P (TREE_TYPE (op))))
 	{
 	  parse_error_context (wfl_operator, "Invalid argument to `%s'",
 			       operator_string (node));
@@ -7181,7 +7655,7 @@ patch_unaryop (node, wfl_op)
       break;
 
       /* 15.14.3 Unary Plus Operator + */
-    case JAVA_UNARY_PLUS_EXPR:
+    case UNARY_PLUS_EXPR:
       /* 15.14.4 Unary Minus Operator - */
     case NEGATE_EXPR:
       if (!JNUMERIC_TYPE_P (op_type))
@@ -7195,7 +7669,7 @@ patch_unaryop (node, wfl_op)
 	{
 	  prom_type = promote_type (op_type);
 	  op = convert (prom_type, op);
-	  if (code == JAVA_UNARY_PLUS_EXPR)
+	  if (code == UNARY_PLUS_EXPR)
 	    node = op;
 	}
       break;
@@ -7249,8 +7723,8 @@ patch_unaryop (node, wfl_op)
   
   if (error_found)
     return error_mark_node;
-  /* In the case of JAVA_UNARY_PLUS_EXPR, we replaced NODE by a new one */
-  else if (code != JAVA_UNARY_PLUS_EXPR && code != CONVERT_EXPR)
+  /* In the case of UNARY_PLUS_EXPR, we replaced NODE by a new one */
+  else if (code != UNARY_PLUS_EXPR && code != CONVERT_EXPR)
     {
       TREE_OPERAND (node, 0) = op;
       TREE_TYPE (node) = prom_type;
@@ -7316,7 +7790,7 @@ patch_cast (node, wfl_op, wfl_operator)
   /* The remaining legal casts involve conversion between reference
      types. Check for their compile time correctness. */
   if (JREFERENCE_TYPE_P (op_type) && JREFERENCE_TYPE_P (cast_type) 
-      && valid_ref_assignconv_cast_p (op_type, cast_type, 1))
+      && valid_ref_assignconv_cast_p (cast_type, op_type, 1))
     {
       TREE_TYPE (node) = promote_type (cast_type);
       /* Now, the case can be determined correct at compile time if
@@ -7374,8 +7848,6 @@ patch_array_ref (node, wfl_array, wfl_index)
       ERROR_VARIABLE_NOT_INITIALIZED (wfl_array, DECL_NAME (array));
       INITIALIZED_P (array) = 1;
     }
-  if (! flag_emit_class_files)
-    array = save_expr (array);
 
   if (TREE_CODE (array_type) == POINTER_TYPE)
     array_type = TREE_TYPE (array_type);
@@ -7395,7 +7867,7 @@ patch_array_ref (node, wfl_array, wfl_index)
   promoted_index_type = promote_type (index_type);
   if (promoted_index_type != int_type_node)
     {
-      int could_cast = can_cast_to_p (index_type, int_type_node);
+      int could_cast = valid_cast_to_p (index_type, int_type_node);
       parse_error_context 
 	(wfl_operator, 
 	 (could_cast ? "Incompatible type for `[]'. Explicit cast needed to "
@@ -7439,9 +7911,8 @@ build_newarray_node (type, dims, extra_dims)
      int extra_dims;
 {
   tree node =
-    build (CALL_EXPR, NULL_TREE, type, nreverse (dims), 
+    build (NEW_ARRAY_EXPR, NULL_TREE, type, nreverse (dims), 
 	   build_int_2 (extra_dims, 0));
-  TREE_SET_CODE (node, JAVA_NEW_ARRAY_EXPR);
   return node;
 }
 
@@ -7487,7 +7958,7 @@ patch_newarray (node)
 	    (TREE_PURPOSE (cdim), 
 	     "Incompatible type for dimension in array creation expression. "
 	     "%s convert `%s' to `int'", 
-	     (can_cast_to_p (TREE_TYPE (dim), int_type_node) ?
+	     (valid_cast_to_p (TREE_TYPE (dim), int_type_node) ?
 	      "Explicit cast needed to" : "Can't"),
 	     lang_printable_name (TREE_TYPE (dim)));
 	  error_found = 1;
@@ -7578,7 +8049,7 @@ build_this (location)
      int location;
 {
   tree node = build_wfl_node (this_identifier_node, input_filename, 0, 0);
-  TREE_SET_CODE (node, JAVA_THIS_EXPR);
+  TREE_SET_CODE (node, THIS_EXPR);
   EXPR_WFL_LINECOL (node) = location;
   return node;
 }
@@ -7594,6 +8065,7 @@ build_return (location, op)
 {
   tree node = build1 (RETURN_EXPR, NULL_TREE, op);
   EXPR_WFL_LINECOL (node) = location;
+  node = build_debugable_stmt (location, node);
   return node;
 }
 
@@ -7663,6 +8135,7 @@ build_if_else_statement (location, expression, if_body, else_body)
     else_body = build (COMPOUND_EXPR, void_type_node, NULL_TREE, NULL_TREE);
   node = build (COND_EXPR, NULL_TREE, expression, if_body, else_body);
   EXPR_WFL_LINECOL (node) = location;
+  node = build_debugable_stmt (location, node);
   return node;
 }
 
@@ -7676,7 +8149,8 @@ patch_if_else_statement (node)
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 
   /* The type of expression must be boolean */
-  if (TREE_TYPE (expression) != boolean_type_node)
+  if (TREE_TYPE (expression) != boolean_type_node
+      && TREE_TYPE (expression) != promoted_boolean_type_node)
     {
       parse_error_context 
 	(wfl_operator, 
@@ -7734,17 +8208,10 @@ build_labeled_block (location, label, wfl)
 static tree
 generate_labeled_block ()
 {
-  static int l_number = 0;
-  char buf [20];
-  tree label_name;
-  
-  sprintf (buf, "$a%d", l_number++);
-  return build_labeled_block (0, get_identifier (buf), NULL_TREE);
+  return build_labeled_block (0, generate_name (), NULL_TREE);
 }
 
-/* A labeled statement LBE is attached a statement. If the statement
-   happens to be a loop, a link from the loop back to the label is
-   installed.  */
+/* A labeled statement LBE is attached a statement.  */
 
 static tree
 complete_labeled_statement (lbe, statement)
@@ -7791,7 +8258,15 @@ build_new_loop (loop_body)
        INCREMENT		(if any)
 
   REVERSED, if non zero, tells that the loop condition expr comes
-  after the body, like in the do-while loop.  */
+  after the body, like in the do-while loop.
+
+  To obtain a loop, the loop body structure described above is
+  encapsulated within a LOOP_EXPR surrounded by a LABELED_BLOCK_EXPR:
+
+   LABELED_BLOCK_EXPR
+     LABEL_DECL                   (use this label to exit the loop)
+     LOOP_EXPR
+       <structure described above> */
 
 static tree
 build_loop_body (location, condition, reversed)
@@ -7912,6 +8387,7 @@ build_bc_statement (location, is_break, name)
   IS_BREAK_STMT_P (break_continue) = is_break;
   TREE_SIDE_EFFECTS (break_continue) = 1;
   EXPR_WFL_LINECOL (break_continue) = location;
+  break_continue = build_debugable_stmt (location, break_continue);
   return break_continue;
 }
 
@@ -7923,24 +8399,30 @@ patch_bc_statement (node)
 {
   tree bc_label = EXIT_BLOCK_LABELED_BLOCK (node), target_stmt;
   int is_unlabeled = 0;
- EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
+  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
  
   /* Not having a target means that the break/continue statement is
-     unlabeled. We try to find a descent label for it */
+     unlabeled. We try to find a decent label for it */
   if (!bc_label)
     {
       is_unlabeled = 1;
-      /* There should be a loop to branch to */
+      /* There should be a loop/switch to branch to */
       if (ctxp->current_loop)
 	{
-	  /* At that stage, we're in the loop body, which is
-	     encapsulated around a LABELED_BLOCK_EXPR. So searching
-	     the current loop label requires us to consider the
-	     labeled block before the current one. */
-	  if (!LOOP_HAS_LABEL_SKIP_P (ctxp->current_loop))
-	    fatal ("unlabeled loop has not installed label -- "
-		   "patch_bc_statement");
-	  bc_label = TREE_CHAIN (ctxp->current_labeled_block);
+	  if (TREE_CODE (ctxp->current_loop) == LOOP_EXPR)
+	    {
+	      /* At that stage, we're in the loop body, which is
+		 encapsulated around a LABELED_BLOCK_EXPR. So searching
+		 the current loop label requires us to consider the
+		 labeled block before the current one. */
+	      if (!LOOP_HAS_LABEL_SKIP_P (ctxp->current_loop))
+		fatal ("unlabeled loop has no installed label -- "
+		       "patch_bc_statement");
+	      bc_label = TREE_CHAIN (ctxp->current_labeled_block);
+	    }
+	  /* For a SWITCH statement, this is the current one */
+	  else
+	    bc_label = ctxp->current_labeled_block;
 	}
       /* Not having a loop to break/continue to is an error */
       else
@@ -7969,8 +8451,8 @@ patch_bc_statement (node)
          (already verified). Anonymous break need to target
          while/do/for/switch */
       if (is_unlabeled &&
-	  !(TREE_CODE (target_stmt) == LOOP_EXPR   /* do/while/for */
-	    || 0))		                   /* switch FIXME */
+	  !(TREE_CODE (target_stmt) == LOOP_EXPR        /* do/while/for */
+	    || TREE_CODE (target_stmt) == SWITCH_EXPR)) /* switch FIXME */
 	{
 	  parse_error_context (wfl_operator, 
 			       "`break' must be in loop or switch");
@@ -8030,6 +8512,428 @@ patch_exit_expr (node)
      return */
   TREE_OPERAND (node, 0) = 
     fold (build1 (TRUTH_NOT_EXPR, boolean_type_node, expression));
+  TREE_TYPE (node) = void_type_node;
+  return node;
+}
+
+/* 14.9 Switch statement */
+
+static tree
+patch_switch_statement (node)
+     tree node;
+{
+  int error_found = 0;
+  tree se = TREE_OPERAND (node, 0), se_type, sb;
+  tree default_found = NULL_TREE;
+
+  /* Complete the switch expression */
+  se = TREE_OPERAND (node, 0) = java_complete_tree (se);
+  se_type = TREE_TYPE (se);
+  /* The type of the switch expression must be char, byte, short or
+     int */
+  if (!JINTEGRAL_TYPE_P (se_type))
+    {
+      EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
+      parse_error_context (wfl_operator, "Incompatible type for `switch'. "
+			   "Can't convert `%s' to `int'",
+			   lang_printable_name (se_type));
+      /* This is what java_complete_tree will check */
+      TREE_OPERAND (node, 0) = error_mark_node;
+      return error_mark_node;
+    }
+
+  /* Process the switch body. We should have a list of TREE_LIST. The
+     PURPOSE of each node should be a list of case values, VALUE
+     should be the associated block. We try to process all cases and
+     defaults before returning, possibly finding errors.  */
+  TREE_OPERAND (node, 1) = nreverse (TREE_OPERAND (node, 1));
+  for (sb = TREE_OPERAND (node, 1); sb; sb = TREE_CHAIN (sb))
+    {
+      tree label;
+
+      /* If we don't have a TREE_LIST here, we have a statement inside
+	 the switch that isn't tied to a label. This error is caught
+	 by the parser and we don't have to report it here. */
+
+      TREE_PURPOSE (sb) = nreverse (TREE_PURPOSE (sb));
+      for (label = TREE_PURPOSE (sb); label; label = TREE_CHAIN (label))
+	{
+	  tree case_expr;
+	  
+	  /* Verification of the default label */
+	  if (TREE_CODE (label) == DEFAULT_EXPR)
+	    {
+	      /* Only one default label is allowed per switch
+                 statement */
+	      if (default_found)
+		{
+		  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (label);
+		  parse_error_context (wfl_operator, 
+				       "Duplicate case label: `default'");
+		  error_found = 1;
+		}
+	      else
+		default_found = label;
+	      continue;
+	    }
+	  /* Verification of case labels */
+	  else
+	    {
+	      case_expr = java_complete_tree (TREE_OPERAND (label, 0));
+	      if (case_expr == error_mark_node)
+		continue;
+
+	      /* First, the case expression must be constant */
+	      case_expr = fold (case_expr);
+	      if (!TREE_CONSTANT (case_expr))
+		{
+		  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (label);
+		  parse_error_context (label, "Constant expression required");
+		  error_found = 1;
+		  break;
+		}
+	      
+	      /* It must be assignable to the type of the switch
+		 expression. */
+	      if (!try_builtin_assignconv (NULL_TREE, se_type, case_expr))
+		{
+		  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (label);
+		  parse_error_context 
+		    (wfl_operator,
+		     "Incompatible type for case. Can't convert `%s' to `int'",
+		     lang_printable_name (TREE_TYPE (case_expr)));
+		  error_found = 1;
+		  break;
+		}
+
+	      /* Multiple instance of a case label bearing the same
+                 value is checked during code generation. The case
+                 expression is allright so far. */
+	      TREE_OPERAND (label, 0) = case_expr;
+	    }
+	}
+
+      /* First TREE_VALUE should be the block tied to this list of
+         cases. Check that this block exists and the walk it */
+      if (TREE_VALUE (sb))
+	{
+	  TREE_VALUE (sb) = java_complete_tree (TREE_VALUE (sb));
+	  if (TREE_VALUE (sb) == error_mark_node)
+	    error_found = 1;
+	}
+    }
+
+  /* Ready to return */
+  if (error_found)
+    {
+      TREE_TYPE (node) = error_mark_node;
+      return error_mark_node;
+    }
+  TREE_TYPE (node) = void_type_node;
+  TREE_SIDE_EFFECTS (node) = 1;
+  return node;
+}
+
+/* Do the expansion of a Java switch. With Gcc, switches are front-end
+   dependant things, but they rely on gcc routines. This function is
+   placed here because it uses things defined locally in parse.y. */
+
+static tree
+case_identity (t, v)
+     tree t, v;
+{
+  return v;
+}
+
+void
+java_expand_switch (exp)
+     tree exp;
+{
+  tree sb;
+  expand_start_case (0, TREE_OPERAND (exp, 0), int_type_node, "switch");
+
+  for (sb = TREE_OPERAND (exp, 1); sb; sb = TREE_CHAIN (sb))
+    {
+      /* We have a list of TREE_LIST. PURPOSE is the case value, and
+	 when it exists, VALUE is the associated block */
+      
+      /* The first CASE element should contain the associated block,
+	 if any. All other should be case statements related to the
+	 same block */
+      tree label;
+      for (label = TREE_PURPOSE (sb); label; label = TREE_CHAIN (label))
+	{
+	  tree label_decl = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+	  if (TREE_CODE (label) == CASE_EXPR)
+	    {
+	      tree duplicate;
+	      if (pushcase (TREE_OPERAND (label, 0), case_identity,
+			    label_decl, &duplicate) == 2)
+		{
+		  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (label);
+		  parse_error_context
+		    (wfl_operator, "Duplicate case label: `%s'",
+		     print_int_node (TREE_OPERAND (label, 0)));
+		}
+	    }
+	  else
+	    pushcase (NULL_TREE, 0, label_decl, NULL);
+	}
+      /* Expand the associated block, if any */
+      if (TREE_VALUE (sb))
+	expand_expr_stmt (TREE_VALUE (sb));
+    } 
+  expand_end_case (TREE_OPERAND (exp, 0));
+}
+
+/* 14.18 The try statement */
+
+/* Wrap BLOCK around a LABELED_BLOCK, set DECL to the newly generated
+   exit labeld and issue a jump to FINALLY_LABEL:
+     
+   LABELED_BLOCK
+     BLOCK
+       <orignal_statments>
+       DECL = &LABEL_DECL
+       GOTO_EXPR
+         FINALLY_LABEL
+     LABEL_DECL */
+
+static tree
+build_jump_to_finally (block, decl, finally_label, type)
+     tree block, decl, finally_label, type;
+{
+  tree stmt;
+  tree new_block = build (LABELED_BLOCK_EXPR, type,
+			  create_label_decl (generate_name ()), block);
+
+  stmt = build (MODIFY_EXPR, void_type_node, decl,
+		build_address_of (LABELED_BLOCK_LABEL (new_block)));
+  TREE_SIDE_EFFECTS (stmt) = 1;
+  add_stmt_to_block (block, type, stmt);
+  stmt = build (GOTO_EXPR, void_type_node, finally_label);
+  TREE_SIDE_EFFECTS (stmt) = 1;
+  add_stmt_to_block (block, type, stmt);
+  return new_block;
+}
+
+static tree
+build_try_statement (location, try_block, catches, finally)
+     int location;
+     tree try_block, catches, finally;
+{
+  tree node, rff;
+
+  if (finally)
+    {
+      /* This block defines a scope for the entire try[-catch]-finally
+	 sequence. It hold a local variable used to return from the
+	 finally using a computed goto. We call it
+	 return_from_finally (RFF). */
+      rff = build_decl_no_layout (VAR_DECL, generate_name (),
+				   return_address_type_node);
+
+      /* Modification of the try block. */
+      try_block = build_jump_to_finally (try_block, rff, 
+					 FINALLY_EXPR_LABEL (finally), 
+					 NULL_TREE);
+
+      /* To the finally block: add the computed goto */
+      add_stmt_to_block (FINALLY_EXPR_BLOCK (finally), NULL_TREE,
+			 build (GOTO_EXPR, void_type_node, rff));
+
+      /* Modification of each catch blocks, if any */
+      if (catches)
+	{
+	  tree catch, catch_decl, catch_block, stmt;
+
+	  for (catch = catches; catch; catch = TREE_CHAIN (catch))
+	    TREE_OPERAND (catch, 0) = 
+	      build_jump_to_finally (TREE_OPERAND (catch, 0), rff,
+				     FINALLY_EXPR_LABEL (finally),
+				     NULL_TREE);
+
+	  /* Plus, at the end of the list, we add the catch clause that
+	     will catch an uncaught exception, call finally and rethrow it:
+	       BLOCK
+	         void *exception_parameter; (catch_decl)
+		 LABELED_BLOCK
+		   BLOCK
+		     exception_parameter = _Jv_exception_info ();
+		     RFF = &LABEL_DECL;
+		     goto finally;
+		 LABEL_DECL;
+		 CALL_EXPR
+		   Jv_ReThrow
+		   exception_parameter */
+	  catch_decl = build_decl_no_layout (VAR_DECL, generate_name (),
+					     ptr_type_node);
+	  stmt = build (MODIFY_EXPR, void_type_node, catch_decl,
+			soft_exceptioninfo_call_node);
+	  TREE_SIDE_EFFECTS (stmt) = 1;
+	  catch_block = build_expr_block (stmt, NULL_TREE);
+	  catch_block = build_jump_to_finally (catch_block, rff, 
+					       FINALLY_EXPR_LABEL (finally), 
+					       void_type_node);
+	  stmt = build (CALL_EXPR, void_type_node,
+			build_address_of (throw_node),
+			build_tree_list (NULL_TREE, catch_decl), NULL_TREE);
+	  catch_block = build_expr_block (catch_block, catch_decl);
+	  TREE_SIDE_EFFECTS (stmt) = 1;
+	  add_stmt_to_block (catch_block, void_type_node, stmt);
+
+	  /* Link the new handler to the existing list as the first
+	     entry. It will be the last one to be generated. */
+	  catch = build1 (CATCH_EXPR, void_type_node, catch_block);
+	  TREE_CHAIN (catch) = catches;
+	  catches = catch;
+	}
+    }
+
+  node = build (TRY_EXPR, NULL_TREE, try_block, catches, finally);
+  EXPR_WFL_LINECOL (node) = location;
+  
+  /* If we have a finally, surround this whole thing by a block where
+     the RFF local variable is defined. */
+
+  return (finally ? build_expr_block (node, rff) : node);
+}
+
+/* Get the catch clause block from an element of the catch clause
+   list. If depends on whether a finally clause exists or node (in
+   which case the original catch clause was surrounded by a
+   LABELED_BLOCK_EXPR. */
+
+tree
+java_get_catch_block (node, finally_present_p)
+     tree node;
+     int finally_present_p;
+{
+  return (CATCH_EXPR_GET_EXPR (TREE_OPERAND (node, 0), finally_present_p));
+}
+
+static tree
+patch_try_statement (node)
+     tree node;
+{
+  int error_found = 0;
+  tree try = TREE_OPERAND (node, 0);
+  /* Exception handlers are considered in left to right order */
+  tree catch = nreverse (TREE_OPERAND (node, 1));
+  tree finally = TREE_OPERAND (node, 2);
+  int finally_p = (finally ? 1 : 0);
+  tree current;
+
+  /* Walk the try block */
+  if ((try = java_complete_tree (try)) == error_mark_node)
+    error_found = 1;
+
+  /* Check catch clauses, if any. Every time we find an error, we try
+     to process the next catch clause. */
+  for (current = catch; current; current = TREE_CHAIN (current))
+    {
+      tree carg_decl, carg_type;
+      tree sub_current, catch_block, catch_clause;
+      int unreachable;
+
+      /* Always detect the last catch clause if a finally is
+         present. This is the catch-all handler and it just needs to
+         be walked. */
+      if (!TREE_CHAIN (current) && finally)
+	{
+	  TREE_OPERAND (current, 0) = 
+	    java_complete_tree (TREE_OPERAND (current, 0));
+	  continue;
+	}
+
+      /* At this point, the structure of the catch clause is
+         LABELED_BLOCK_EXPR 	(if we have a finally)
+	   CATCH_EXPR		(catch node)
+	     BLOCK	        (with the decl of the parameter)
+               COMPOUND_EXPR
+                 MODIFIY_EXPR   (assignemnt of the catch parameter)
+		 BLOCK	        (catch clause block)
+           LABEL_DECL		(where to return after finally (if any))
+
+	 Since the structure of the catch clause depends on the
+	 presence of a finally, we use a function call to get to the
+	 cath clause */
+      catch_clause = java_get_catch_block (current, finally_p);
+      carg_decl = BLOCK_EXPR_DECLS (catch_clause);
+      carg_type = TREE_TYPE (TREE_TYPE (carg_decl));
+
+      /* Catch clauses can't have more than one parameter declared,
+	 but it's already enforced by the grammar. Make sure that the
+	 only parameter of the clause statement in of class Throwable
+	 or a subclass of Throwable, but that was done earlier. The
+	 catch clause parameter type has also been resolved. */
+      
+      /* Just make sure that the catch clause parameter type inherits
+	 from java.lang.Throwable */
+      if (!inherits_from_p (carg_type, throwable_type_node))
+	{
+	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (current);
+	  parse_error_context (wfl_operator,
+			       "Can't catch class `%s'. Catch clause "
+			       "parameter type must be a subclass of "
+			       "class `java.lang.Throwable'",
+			       lang_printable_name (carg_type));
+	  error_found = 1;
+	  continue;
+	}
+      
+      /* Partial check for unreachable catch statement: The catch
+	 clause is reachable iff is no earlier catch block A in
+	 the try statement such that the type of the catch
+	 clause's parameter is the same as or a subclass of the
+	 type of A's parameter */
+      unreachable = 0;
+      for (sub_current = catch;
+	   sub_current != current; sub_current = TREE_CHAIN (sub_current))
+	{
+	  tree sub_catch_clause, decl;
+	  sub_catch_clause = java_get_catch_block (sub_current, finally_p);
+	  decl = BLOCK_EXPR_DECLS (sub_catch_clause);
+
+	  if (inherits_from_p (carg_type, TREE_TYPE (TREE_TYPE (decl))))
+	    {
+	      EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (current);
+	      parse_error_context 
+		(wfl_operator, "`catch' not reached because of the catch "
+		 "clause at line %d", EXPR_WFL_LINENO (sub_current));
+	      unreachable = error_found = 1;
+	      break;
+	    }
+	}
+      if (unreachable)
+	continue;
+
+      /* Complete the catch clause block */
+      catch_block = java_complete_tree (TREE_OPERAND (current, 0));
+      if (catch_block == error_mark_node)
+	{
+	  error_found = 1;
+	  continue;
+	}
+      TREE_OPERAND (current, 0) = catch_block;
+    }
+
+  /* Process finally */
+  if (finally)
+    {
+      FINALLY_EXPR_BLOCK (finally) = 
+	java_complete_tree (FINALLY_EXPR_BLOCK (finally));
+      if (FINALLY_EXPR_BLOCK (finally) == error_mark_node)
+	error_found = 1;
+    }
+
+  /* Verification ends here */
+  if (error_found) 
+    return error_mark_node;
+
+  TREE_OPERAND (node, 0) = try;
+  TREE_OPERAND (node, 1) = catch;
+  TREE_OPERAND (node, 2) = finally;
   TREE_TYPE (node) = void_type_node;
   return node;
 }
