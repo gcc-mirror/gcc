@@ -272,7 +272,6 @@ struct save_schedule_s;
 static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 						struct save_schedule_s *, int);
 
-static bool sh_promote_prototypes (tree);
 static rtx sh_struct_value_rtx (tree, int);
 static bool sh_return_in_memory (tree, tree);
 static rtx sh_builtin_saveregs (void);
@@ -6352,7 +6351,7 @@ sh_va_arg (tree valist, tree type)
   return result;
 }
 
-static bool
+bool
 sh_promote_prototypes (tree type)
 {
   if (TARGET_HITACHI)

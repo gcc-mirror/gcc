@@ -1,3 +1,11 @@
+2004-04-29  Nick Clifton  <nickc@redhat.com>
+
+	Bug 14093
+	* config/sh/sh-protos.h (sh_promote_prototypes): Declare.
+	* config/sh/sh.c (sh_promote_prototypes): Remove declaration.
+	Delete static from definition.
+	* config/sh/sh.h (FUNCTION_VALUE): Add sh_promote_prototypes call.
+
 2004-04-30  Uros Bizjak  <uros@kss-loka.si>
 
         * reg-stack.c (subst_stack_regs_pat): <UNSPEC_SIN, UNSPEC_COS,
