@@ -1368,6 +1368,7 @@ static int last_pipe_input;
    NOT_LAST is nonzero if this is not the last subcommand
    (i.e. its output should be piped to the next one.)  */
 
+#ifndef OS2
 #ifdef __MSDOS__
 
 /* Declare these to avoid compilation error.  They won't be called.  */
@@ -1375,9 +1376,9 @@ int execv(const char *a, const char **b){}
 int execvp(const char *a, const char **b){}
 
 static int
-pexecute (func, program, argv, not_last)
+pexecute (search_flag, program, argv, not_last)
+     int search_flag;
      char *program;
-     int (*func)();
      char *argv[];
      int not_last;
 {
@@ -1413,12 +1414,13 @@ pexecute (func, program, argv, not_last)
 #else /* not __MSDOS__ */
 
 static int
-pexecute (func, program, argv, not_last)
+pexecute (search_flag, program, argv, not_last)
+     int search_flag;
      char *program;
-     int (*func)();
      char *argv[];
      int not_last;
 {
+  int (*func)() = (search_flag ? execv : execvp);
   int pid;
   int pdes[2];
   int input_desc = last_pipe_input;
@@ -1500,6 +1502,18 @@ pexecute (func, program, argv, not_last)
 }
 
 #endif /* not __MSDOS__ */
+#else /* not OS2 */
+
+static int
+pexecute (search_flag, program, argv, not_last)
+     int search_flag;
+     char *program;
+     char *argv[];
+     int not_last;
+{
+  return (search_flag ? spawnv : spawnvp) (1, program, argv);
+}
+#endif /* not OS2 */
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -1594,7 +1608,7 @@ execute ()
     {
       char *string = commands[i].argv[0];
 
-      commands[i].pid = pexecute ((string != commands[i].prog ? execv : execvp),
+      commands[i].pid = pexecute (string != commands[i].prog,
 				  string, commands[i].argv,
 				  i + 1 < n_commands);
 
