@@ -931,6 +931,9 @@ debug_args[] =
 #ifdef SDB_DEBUGGING_INFO
   { "coff", SDB_DEBUG, 0, N_("Generate COFF format debug info") },
 #endif
+#ifdef VMS_DEBUGGING_INFO
+  { "vms", VMS_DEBUG, 0, N_("Generate VMS format debug info") },
+#endif
   { 0, 0, 0, 0 }
 };
 
