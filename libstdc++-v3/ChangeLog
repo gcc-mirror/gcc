@@ -1,5 +1,22 @@
 2004-06-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/26_numerics/complex_inserters_extractors.cc,
+	complex_value.cc, buggy_complex.cc: Move to...
+	* testsuite/26_numerics/complex/: ... here.
+	* testsuite/26_numerics/c99_classification_macros_c++.cc,
+	c99_classification_macros_c.cc, c_math.cc, c_math_dynamic.cc,
+	fabs_inline.cc: Move to...
+	* testsuite/26_numerics/cmath/: ... here.
+	* testsuite/26_numerics/binary_closure.cc, slice.cc,
+	slice_array_assignment.cc, valarray.cc, valarray_const_bracket.cc,
+	valarray_name_lookup.cc, valarray_operators.cc,
+	valarray_subset_assignment.cc: Move to...
+	* testsuite/26_numerics/valarray/: ... here (new dir).
+	* testsuite/26_numerics/sum_diff.cc: Move to...
+	* testsuite/26_numerics/numeric/: ... here (new dir).
+
+2004-06-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/std/std_istream.h (ignore(streamsize __n = 1,
 	int_type __delim = traits_type::eof())): Split into...
 	(ignore(), ignore(streamsize __n), ignore(streamsize __n,
