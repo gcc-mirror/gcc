@@ -70,18 +70,24 @@ extern int target_flags;
 /* Use POWER architecture instructions and MQ register.  */
 #define MASK_POWER		0x01
 
+/* Use POWER2 extensions to POWER architecture.  */
+#define MASK_POWER2		0x02
+
 /* Use PowerPC architecture instructions.  */
-#define MASK_POWERPC		0x02
+#define MASK_POWERPC		0x04
+
+/* Use PowerPC square root instructions.  */
+#define MASK_POWERPCSQR		0x08
 
 /* Use PowerPC-64 architecture instructions.  */
-#define MASK_POWERPC64		0x04
+#define MASK_POWERPC64		0x10
 
 /* Use revised mnemonic names defined for PowerPC architecture.  */
-#define MASK_NEW_MNEMONICS	0x08
+#define MASK_NEW_MNEMONICS	0x20
 
 /* Disable placing fp constants in the TOC; can be turned on when the
    TOC overflows.  */
-#define MASK_NO_FP_IN_TOC	0x10
+#define MASK_NO_FP_IN_TOC	0x40
 
 /* Output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
@@ -90,10 +96,12 @@ extern int target_flags;
 
    This is at the cost of having 2 extra loads and one extra store per
    function, and one less allocatable register.  */
-#define MASK_MINIMAL_TOC	0x20
+#define MASK_MINIMAL_TOC	0x80
 
 #define TARGET_POWER			(target_flags & MASK_POWER)
+#define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
+#define TARGET_POWERPCSQR		(target_flags & MASK_POWERPCSQR)
 #define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
 #define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
 #define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
@@ -109,9 +117,13 @@ extern int target_flags;
 
 #define TARGET_SWITCHES						\
  {{"power",		MASK_POWER},				\
-  {"no-power",		- MASK_POWER},				\
+  {"power2",		MASK_POWER | MASK_POWER2},		\
+  {"no-power2",		- MASK_POWER2},				\
+  {"no-power",		- (MASK_POWER | MASK_POWER2)},		\
   {"powerpc",		MASK_POWERPC},				\
-  {"no-powerpc",	- (MASK_POWERPC | MASK_POWERPC64)},	\
+  {"no-powerpc",	- (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64)}, \
+  {"powerpc-sqr",	MASK_POWERPC | MASK_POWERPCSQR},	\
+  {"no-powerpc-sqr",	- MASK_POWERPCSQR},			\
   {"powerpc64",		MASK_POWERPC | MASK_POWERPC64},		\
   {"no-powerpc64",	-MASK_POWERPC64},			\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
@@ -141,6 +153,10 @@ extern enum processor_type rs6000_cpu;
 
 /* Define the default processor.  This is overridden by other tm.h files.  */
 #define PROCESSOR_DEFAULT PROCESSOR_RIOS1
+
+/* Specify the dialect of assembler to use.  New mnemonics is dialect one
+   and the old mnemonics are dialect zero.  */
+#define ASSEMBLER_DIALECT TARGET_NEW_MNEMONICS ? 1 : 0
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -443,6 +459,15 @@ extern char *rs6000_cpu_string;
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
   if (REG_NOTE_KIND (LINK) != 0)					\
     (COST) = 0; /* Anti or output dependence.  */
+
+/* Define this macro to change register usage conditional on target flags.
+   Set MQ register fixed (already call_used) if not POWER architecture
+   (RIOS1, RIOS2, and PPC601) so that it will not be allocated.
+   Provide alternate register names for ppcas assembler */
+
+#define CONDITIONAL_REGISTER_USAGE					\
+    if (!TARGET_POWER)							\
+	fixed_regs[64] = 1;
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -1342,8 +1367,12 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 #define NO_FUNCTION_CSE
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
-#define SHIFT_COUNT_TRUNCATED 1
+   few bits.
+
+   The sle and sre instructions which allow SHIFT_COUNT_TRUNCATED
+   have been dropped from the PowerPC architecture.  */
+
+#define SHIFT_COUNT_TRUNCATED TARGET_POWER ? 1 : 0
 
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */
@@ -1901,13 +1930,14 @@ toc_section ()						\
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  fprintf (FILE, "\tstu %s,-4(r1)\n", reg_names[REGNO]);
+  asm_fprintf (FILE, "\{tstu|stwu} %s,-4(r1)\n", reg_names[REGNO]);
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  fprintf (FILE, "\tl %s,0(r1)\n\tai r1,r1,4\n", reg_names[REGNO])
+  asm_fprintf (FILE, "\t{l|lwz} %s,0(r1)\n\t{ai|addic} r1,r1,4\n",  \
+    reg_names[REGNO])
 
 /* This is how to output an element of a case-vector that is absolute. 
    (RS/6000 does not use such vectors, but we must define this macro
