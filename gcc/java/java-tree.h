@@ -139,7 +139,7 @@ extern int flag_not_overriding;
 extern int flag_static_local_jdk1_1;
 
 /* The Java .class file that provides main_class;  the main input file. */
-extern struct JCF main_jcf[1], *current_jcf;
+extern struct JCF *current_jcf;
 
 typedef struct CPool constant_pool;
 

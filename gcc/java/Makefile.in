@@ -276,7 +276,7 @@ force:
 parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def
-gjavah.o : $(CONFIG_H) $(srcdir)/../system.h gjavah.c \
+gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
   jcf-reader.c jcf.h javaop.h
 buffer.o : buffer.c $(CONFIG_H) buffer.h $(srcdir)/../gansidecl.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
