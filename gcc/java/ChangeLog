@@ -1,3 +1,8 @@
+2003-09-28  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (java_check_reference): Use the semantics of COND_EXPRs
+	with void-type branches instead of using a COMPOUND_EXPR.
+
 2003-09-28  Jeff Sturm  <jsturm@one-point.com>
 
 	* decl.c (java_optimize_inline, dump_function): Remove.
