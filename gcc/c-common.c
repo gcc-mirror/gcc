@@ -3837,13 +3837,13 @@ c_common_unsafe_for_reeval (tree exp)
 
 /* Hook used by staticp to handle language-specific tree codes.  */
 
-int
+bool
 c_staticp (tree exp)
 {
   if (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
       && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp)))
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 

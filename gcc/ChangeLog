@@ -1,5 +1,9 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* c-common.c (c_staticp): Last episode of the staticp saga.
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* c-common.h (c_staticp): Change return type from int to bool.
 	* tree.c (staticp): Likewise.
 	* langhooks.h (staticp): Likewise.
