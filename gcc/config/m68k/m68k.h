@@ -1128,8 +1128,15 @@ __transfer_from_trampoline ()					\
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
 { if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR; }
 
-#define GO_IF_INDEXABLE_BASE(X, ADDR)	\
-{ if (GET_CODE (X) == LABEL_REF) goto ADDR;				\
+/* Only labels on dispatch tables are valid for indexing from.  */
+#define GO_IF_INDEXABLE_BASE(X, ADDR)				\
+{ rtx temp;							\
+  if (GET_CODE (X) == LABEL_REF					\
+      && (temp = next_nonnote_insn (XEXP (X, 0))) != 0		\
+      && GET_CODE (temp) == JUMP_INSN				\
+      && (GET_CODE (PATTERN (temp)) == ADDR_VEC			\
+	  || GET_CODE (PATTERN (temp)) == ADDR_DIFF_VEC))	\
+    goto ADDR;							\
   if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR; }
 
 #define GO_IF_INDEXING(X, ADDR)	\
