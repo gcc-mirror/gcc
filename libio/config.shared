@@ -181,12 +181,13 @@ if [ -z "${ALL}" ] ; then
   fi
 fi
 
-ALL='$(PICDIR)'" ${ALL}"
-
 echo >&2 "all: ${ALL} multi-all"
 if [ "${SUBDIRS}" != "" ] ; then
   echo >&2 '	@rootme=`pwd`/; export rootme; \'
   echo >&2 '	$(MAKE) "DODIRS=$(SUBDIRS)" DO=all $(FLAGS_TO_PASS) subdir_do'
+fi
+if [ "${LIBDIR}" = "yes" ]; then
+  echo >&2 "${ALL} "'multi-all: $(PICDIR)'
 fi
 echo >&2 '.PHONY: all'
 echo >&2 ''

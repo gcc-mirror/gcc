@@ -1,3 +1,13 @@
+Wed Feb  3 22:05:41 1999  H.J. Lu  (hjl@gnu.org)
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (iostream.list): Remove dependency on
+	stamp-picdir.
+	($(LIBIOSTREAM_DEP)): Depend on stamp-picdir.
+	($(LIBIO_FILES)): Similarly.
+
+	* config.shared (all): Make $(PICDIR) concurrent.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this
