@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT MASK_FLOAT64|MASK_64BIT
 #define MIPS_ISA_DEFAULT 3
 
+/* This should change to n32 when it is supported in gas.  */
+#define MIPS_ABI_DEFAULT ABI_O64
+
 /* Until we figure out what MIPS ELF targets normally use, just do
    stabs in ELF.  */
 #ifndef PREFERRED_DEBUGGING_TYPE

@@ -1,3 +1,9 @@
+2001-11-06  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md(movdf_internal2): Add constraints for float
+	to general register move.
+	* config/mips/elf64.h: Add default ABI.
+
 2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* alias.c:: Include langhooks.h.
@@ -61,6 +67,7 @@ Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	arrays.
 	Fixes PR c/461.
 
+>>>>>>> 1.11778
 2001-11-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4: (AM_WITH_NLS): Don't look at ALL_LINGUAS.
@@ -68,13 +75,13 @@ Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	corresponding to the complete set of .po and .gmo files in
 	the source directory's po subdir, modified by LINGUAS.  Don't
 	look at ALL_LINGUAS.
-	* configure.in: Don't set ALL_LINGUAS.  
+	* configure.in: Don't set ALL_LINGUAS.
 	* configure: Regenerate.
 
 	* Makefile.in (.po.gmo): Don't move into source directory.
 	(.po.pox): Clarify comments.
 	(install-po): Look for .gmo files in both srcdir and objdir;
-	don't fail if a file is totally missing.		    
+	don't fail if a file is totally missing.
 	(distclean): rmdir ada subdirectory too.
 
 2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
@@ -110,7 +117,7 @@ Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 	remove unneded depdendencies;
 	(cfglayout.o): New.
 	* cfglayout.c, cfglayout.h: New files; break out from ...
-	* bb-reorder.c: ... here; Remove unneeded includes; 
+	* bb-reorder.c: ... here; Remove unneeded includes;
 
 2001-11-04  Alan Modra  <amodra@bigpond.net.au>
 
