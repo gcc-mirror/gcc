@@ -1463,7 +1463,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
          where previous inlining turned indirect call into direct call by
          constant propagating arguments.  In all other cases we hit a bug
          (incorrect node sharing is most common reason for missing edges.  */
-      gcc_assert (dest->needed);
+      gcc_assert (dest->needed || flag_unit_at_a_time);
       cgraph_create_edge (id->node, dest, t)->inline_failed
 	= N_("originally indirect function call not considered for inlining");
       goto egress;

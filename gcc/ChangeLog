@@ -1,5 +1,10 @@
 2004-09-09  Jan Hubicka  <jh@suse.cz>
 
+	middle-end/17128
+	* tree-inline.c (expand_call_inline): Make overactive sanity check happy.
+
+2004-09-09  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-loop-ivopts.c (peel_address): Fix abort on
 	VIEW_CONVERT_EXPR.
 
