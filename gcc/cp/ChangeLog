@@ -1,5 +1,8 @@
 2004-10-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* name-lookup.c (do_namespace_alias): Use FROB_CONTEXT.
+	* search.c (current_scope): Fix prototype.
+
 	PR c++/18093
 	* search.c (current_scope): Return the innermost non-block scope,
 	not the innermost non-block, non-namespace scope.
