@@ -1,4 +1,10 @@
+2000-11-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.c: Fix comment formating, and adjust sequence
+	of #include headers.
+
 2000-11-12  Marc Espie <espie@openbsd.org>
+	
 	* configure.in: Fix filds test.
 	* configure: Regen.
 
