@@ -92,7 +92,7 @@ _cpp_valid_ucn (pfile, pstr, identifier_pos)
   if (length)
     /* We'll error when we try it out as the start of an identifier.  */
     cpp_error (pfile, DL_ERROR, "incomplete universal character name %.*s",
-	       str - base, base);
+	       (int) (str - base), base);
   /* The standard permits $, @ and ` to be specified as UCNs.  We use
      hex escapes so that this also works with EBCDIC hosts.  */
   else if ((result < 0xa0
@@ -101,7 +101,7 @@ _cpp_valid_ucn (pfile, pstr, identifier_pos)
 	   || (result >= 0xD800 && result <= 0xDFFF))
     {
       cpp_error (pfile, DL_ERROR, "%.*s is not a valid universal character",
-		 str - base, base);
+		 (int) (str - base), base);
     }
   else if (identifier_pos)
     {
@@ -110,11 +110,11 @@ _cpp_valid_ucn (pfile, pstr, identifier_pos)
       if (validity == 0)
 	cpp_error (pfile, DL_ERROR,
 		   "universal character %.*s is not valid in an identifier",
-		   str - base, base);
+		   (int) (str - base), base);
       else if (validity == 2 && identifier_pos == 1)
 	cpp_error (pfile, DL_ERROR,
    "universal character %.*s is not valid at the start of an identifier",
-		   str - base, base);
+		   (int) (str - base), base);
     }
 
   if (result == 0)
