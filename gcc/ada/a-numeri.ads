@@ -22,7 +22,12 @@ pragma Pure (Numerics);
    Pi : constant :=
           3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37511;
 
+   ["03C0"] : constant := Pi;
+   --  This is the greek letter Pi. Note that it is conforming to have this
+   --  present even in Ada 95 mode, because there is no way for a normal mode
+   --  Ada 95 program to reference this identifier in any case.
+
    e : constant :=
-          2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69996;
+         2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69996;
 
 end Ada.Numerics;

@@ -53,6 +53,14 @@ with System.WCh_Con; use System.WCh_Con;
 
 package body Lib.Writ is
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Write_Unit_Name (N : Node_Id);
+   --  Used to write out the unit name for R (pragma Restriction) lines
+   --  for uses of Restriction (No_Dependence => unit-name).
+
    ----------------------------------
    -- Add_Preprocessing_Dependency --
    ----------------------------------
@@ -940,7 +948,7 @@ package body Lib.Writ is
          end if;
       end loop;
 
-      --  Output restrictions line
+      --  Output first restrictions line
 
       Write_Info_Initiate ('R');
       Write_Info_Char (' ');
@@ -986,6 +994,19 @@ package body Lib.Writ is
       end loop;
 
       Write_Info_EOL;
+
+      --  Output R lines for No_Dependence entries
+
+      for J in No_Dependence.First .. No_Dependence.Last loop
+         if In_Extended_Main_Source_Unit (No_Dependence.Table (J).Unit)
+           and then not No_Dependence.Table (J).Warn
+         then
+            Write_Info_Initiate ('R');
+            Write_Info_Char (' ');
+            Write_Unit_Name (No_Dependence.Table (J).Unit);
+            Write_Info_EOL;
+         end if;
+      end loop;
 
       --  Output interrupt state lines
 
@@ -1099,7 +1120,23 @@ package body Lib.Writ is
       Output_References;
       Write_Info_Terminate;
       Close_Output_Library_Info;
-
    end Write_ALI;
+
+   ---------------------
+   -- Write_Unit_Name --
+   ---------------------
+
+   procedure Write_Unit_Name (N : Node_Id) is
+   begin
+      if Nkind (N) = N_Identifier then
+         Write_Info_Name (Chars (N));
+
+      else
+         pragma Assert (Nkind (N) = N_Selected_Component);
+         Write_Unit_Name (Prefix (N));
+         Write_Info_Char ('.');
+         Write_Unit_Name (Selector_Name (N));
+      end if;
+   end Write_Unit_Name;
 
 end Lib.Writ;

@@ -3506,6 +3506,10 @@ package body Sem_Prag is
       -- Process_Restrictions_Or_Restriction_Warnings --
       --------------------------------------------------
 
+      --  Note: some of the simple identifier cases were handled in par-prag,
+      --  but it is harmless (and more straightforward) to simply handle all
+      --  cases here, even if it means we repeat a bit of work in some cases.
+
       procedure Process_Restrictions_Or_Restriction_Warnings is
          Arg   : Node_Id;
          R_Id  : Restriction_Id;
@@ -3513,9 +3517,32 @@ package body Sem_Prag is
          Expr  : Node_Id;
          Val   : Uint;
 
+         procedure Check_Unit_Name (N : Node_Id);
+         --  Checks unit name parameter for No_Dependence. Returns if it has
+         --  an appropriate form, otherwise raises pragma argument error.
+
          procedure Set_Warning (R : All_Restrictions);
          --  If this is a Restriction_Warnings pragma, set warning flag,
          --  otherwise reset the flag.
+
+         ---------------------
+         -- Check_Unit_Name --
+         ---------------------
+
+         procedure Check_Unit_Name (N : Node_Id) is
+         begin
+            if Nkind (N) = N_Selected_Component then
+               Check_Unit_Name (Prefix (N));
+               Check_Unit_Name (Selector_Name (N));
+
+            elsif Nkind (N) = N_Identifier then
+               return;
+
+            else
+               Error_Pragma_Arg
+                 ("wrong form for unit name for No_Dependence", N);
+            end if;
+         end Check_Unit_Name;
 
          -----------------
          -- Set_Warning --
@@ -3577,7 +3604,13 @@ package body Sem_Prag is
                   Scope_Suppress := (others => True);
                end if;
 
-            --  Case of restriction identifier present
+            --  Case of No_Dependence => unit-name. Note that the parser
+            --  already made the necessary entry in the No_Dependence table.
+
+            elsif Id = Name_No_Dependence then
+               Check_Unit_Name (Expr);
+
+            --  All other cases of restriction identifier present
 
             else
                R_Id := Get_Restriction_Id (Process_Restriction_Synonyms (Arg));
@@ -8543,6 +8576,7 @@ package body Sem_Prag is
             end if;
 
             if Present (External) then
+               Check_Arg_Is_External_Name (External);
                Check_Too_Long (External);
             end if;
 

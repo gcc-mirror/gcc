@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -46,7 +46,12 @@ pragma Preelaborate (Address_To_Access_Conversions);
       "Object is unconstrained array type" & ASCII.LF &
       "To_Pointer results may not have bounds");
 
-   xyz : Boolean := Object'Constrained;
+   --  Capture constrained status, suppressing warnings, since this is
+   --  an obsolescent feature to use Constrained in this way (RM J.4).
+
+   pragma Warnings (Off);
+   Xyz : Boolean := Object'Constrained;
+   pragma Warnings (On);
 
    type Object_Pointer is access all Object;
    for Object_Pointer'Size use Standard'Address_Size;

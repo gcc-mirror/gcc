@@ -581,6 +581,29 @@ package ALI is
      Hash       => SHash,
      Equal      => SEq);
 
+   -------------------------
+   -- No_Dependency Table --
+   -------------------------
+
+   --  Each R line for a No_Dependency Restriction generates an entry in
+   --  this No_Dependency table.
+
+   type No_Dep_Record is record
+      ALI_File : ALI_Id;
+      --  ALI File containing tne entry
+
+      No_Dep_Unit : Name_Id;
+      --  Id for names table entry including entire name, including periods.
+   end record;
+
+   package No_Deps is new Table.Table (
+     Table_Component_Type => No_Dep_Record,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 200,
+     Table_Increment      => 400,
+     Table_Name           => "No_Deps");
+
    ------------------------------------
    -- Sdep (Source Dependency) Table --
    ------------------------------------
@@ -807,7 +830,7 @@ package ALI is
    --------------------------------------
 
    procedure Initialize_ALI;
-   --  Initialize the ALI tables. Also resets all switch values to defaults.
+   --  Initialize the ALI tables. Also resets all switch values to defaults
 
    function Scan_ALI
      (F             : File_Name_Type;

@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                                                          --
+--                   c                                                       --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             S E M _ C H 1 3                              --
@@ -34,6 +34,8 @@ with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
@@ -203,6 +205,8 @@ package body Sem_Ch13 is
 
    procedure Analyze_At_Clause (N : Node_Id) is
    begin
+      Check_Restriction (No_Obsolescent_Features, N);
+
       if Warn_On_Obsolescent_Feature then
          Error_Msg_N
            ("at clause is an obsolescent feature ('R'M 'J.7(2))?", N);
@@ -354,6 +358,8 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("\?only one task can be declared of this type", N);
                end if;
+
+               Check_Restriction (No_Obsolescent_Features, N);
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
@@ -1187,6 +1193,8 @@ package body Sem_Ch13 is
 
          begin
             if Is_Task_Type (U_Ent) then
+               Check_Restriction (No_Obsolescent_Features, N);
+
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
                     ("storage size clause for task is an " &
@@ -1955,6 +1963,8 @@ package body Sem_Ch13 is
             pragma Warnings (Off, Mod_Val);
 
          begin
+            Check_Restriction (No_Obsolescent_Features, Mod_Clause (N));
+
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
                  ("mod clause is an obsolescent feature ('R'M 'J.8)?", N);

@@ -259,6 +259,9 @@ package body Sem_Attr is
       procedure Check_Library_Unit;
       --  Verify that prefix of attribute N is a library unit
 
+      procedure Check_Modular_Integer_Type;
+      --  Verify that prefix of attribute N is a modular integer type
+
       procedure Check_Not_Incomplete_Type;
       --  Check that P (the prefix of the attribute) is not an incomplete
       --  type or a private type for which no full view has been given.
@@ -1073,6 +1076,20 @@ package body Sem_Attr is
             Error_Attr ("prefix of % attribute must be library unit", P);
          end if;
       end Check_Library_Unit;
+
+      --------------------------------
+      -- Check_Modular_Integer_Type --
+      --------------------------------
+
+      procedure Check_Modular_Integer_Type is
+      begin
+         Check_Type;
+
+         if not Is_Modular_Integer_Type (P_Type) then
+            Error_Attr
+              ("prefix of % attribute must be modular integer type", P);
+         end if;
+      end Check_Modular_Integer_Type;
 
       -------------------------------
       -- Check_Not_Incomplete_Type --
@@ -2197,6 +2214,13 @@ package body Sem_Attr is
          --  Case from RM J.4(2) of constrained applied to private type
 
          if Is_Entity_Name (P) and then Is_Type (Entity (P)) then
+            Check_Restriction (No_Obsolescent_Features, N);
+
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("constrained for private type is an " &
+                  "obsolescent feature ('R'M 'J.4)?", N);
+            end if;
 
             --  If we are within an instance, the attribute must be legal
             --  because it was valid in the generic unit. Ditto if this is
@@ -2897,6 +2921,21 @@ package body Sem_Attr is
          Resolve (E2, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
+      ---------
+      -- Mod --
+      ---------
+
+      when Attribute_Mod =>
+
+         --  Note: this attribute is only allowed in Ada 2005 mode, but
+         --  we do not need to test that here, since Mod is only recognized
+         --  as an attribute name in Ada 2005 mode during the parse.
+
+         Check_E1;
+         Check_Modular_Integer_Type;
+         Resolve (E1, Any_Integer);
+         Set_Etype (N, P_Base_Type);
+
       -----------
       -- Model --
       -----------
@@ -2944,12 +2983,7 @@ package body Sem_Attr is
 
       when Attribute_Modulus =>
          Check_E0;
-         Check_Type;
-
-         if not Is_Modular_Integer_Type (P_Type) then
-            Error_Attr ("prefix of % attribute must be modular type", P);
-         end if;
-
+         Check_Modular_Integer_Type;
          Set_Etype (N, Universal_Integer);
 
       --------------------
@@ -5412,9 +5446,18 @@ package body Sem_Attr is
             Fold_Ureal
               (N, UR_Min (Expr_Value_R (E1), Expr_Value_R (E2)), Static);
          else
-            Fold_Uint (N, UI_Min (Expr_Value (E1), Expr_Value (E2)), Static);
+            Fold_Uint
+              (N, UI_Min (Expr_Value (E1), Expr_Value (E2)), Static);
          end if;
       end Min;
+
+      ---------
+      -- Mod --
+      ---------
+
+      when Attribute_Mod =>
+         Fold_Uint
+           (N, UI_Mod (Expr_Value (E1), Modulus (P_Base_Type)), Static);
 
       -----------
       -- Model --
@@ -6678,14 +6721,18 @@ package body Sem_Attr is
 
             elsif Is_Overloaded (P) then
 
-               --  Use the designated type of the context  to disambiguate
+               --  Use the designated type of the context to disambiguate
+               --  Note that this was not strictly conformant to Ada 95,
+               --  but was the implementation adopted by most Ada 95 compilers.
+               --  The use of the context type to resolve an Access attribute
+               --  reference is now mandated in AI-235 for Ada 2005.
 
                declare
                   Index : Interp_Index;
                   It    : Interp;
+
                begin
                   Get_First_Interp (P, Index, It);
-
                   while Present (It.Typ) loop
                      if Covers (Designated_Type (Typ), It.Typ) then
                         Resolve (P, It.Typ);

@@ -84,6 +84,7 @@ package body ALI is
       --  Initialize all tables
 
       ALIs.Init;
+      No_Deps.Init;
       Units.Init;
       Withs.Init;
       Sdep.Init;
@@ -199,7 +200,7 @@ package body ALI is
       --  quote.
 
       function Get_Nat return Nat;
-      --  Skip blanks, then scan out an unsigned integer value in Nat range.
+      --  Skip blanks, then scan out an unsigned integer value in Nat range
 
       function Get_Stamp return Time_Stamp_Type;
       --  Skip blanks, then scan out a time stamp
@@ -212,7 +213,7 @@ package body ALI is
       --  at end of line). Also skips past any following blank lines.
 
       procedure Skip_Line;
-      --  Skip rest of current line and any following blank lines.
+      --  Skip rest of current line and any following blank lines
 
       procedure Skip_Space;
       --  Skip past white space (blanks or horizontal tab)
@@ -948,7 +949,7 @@ package body ALI is
       C := Getc;
       Check_Unknown_Line;
 
-      --  Acquire restrictions line
+      --  Acquire first restrictions line
 
       while C /= 'R' loop
          if Ignore_Errors then
@@ -974,7 +975,7 @@ package body ALI is
             --  Save cumulative restrictions in case we have a fatal error
 
             Bad_R_Line : exception;
-            --  Signal bad restrictions line
+            --  Signal bad restrictions line (raised on unexpected character)
 
          begin
             Checkc (' ');
@@ -998,7 +999,7 @@ package body ALI is
                      null;
 
                   when others =>
-                     Fatal_Error;
+                     raise Bad_R_Line;
                end case;
             end loop;
 
@@ -1031,7 +1032,7 @@ package body ALI is
                      end;
 
                   when others =>
-                     Fatal_Error;
+                     raise Bad_R_Line;
                end case;
 
                --  Acquire restrictions violations information
@@ -1078,7 +1079,7 @@ package body ALI is
                      end if;
 
                   when others =>
-                     Fatal_Error;
+                     raise Bad_R_Line;
                end case;
             end loop;
 
@@ -1095,6 +1096,7 @@ package body ALI is
                if Ignore_Errors then
                   Cumulative_Restrictions := Save_R;
                   ALIs.Table (Id).Restrictions := Restrictions_Initial;
+                  Skip_Eol;
 
                --  In normal mode, this is a fatal error
 
@@ -1105,9 +1107,23 @@ package body ALI is
          end Scan_Restrictions;
       end if;
 
-      --  Acquire 'I' lines if present
+      --  Acquire additional restrictions (No_Dependence) lines if present
 
       C := Getc;
+      while C = 'R' loop
+         if Ignore ('R') then
+            Skip_Line;
+         else
+            Skip_Space;
+            No_Deps.Append ((Id, Get_Name));
+         end if;
+
+         Skip_Eol;
+         C := Getc;
+      end loop;
+
+      --  Acquire 'I' lines if present
+
       Check_Unknown_Line;
 
       while C = 'I' loop

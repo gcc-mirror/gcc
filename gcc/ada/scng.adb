@@ -226,7 +226,7 @@ package body Scng is
 
       Initialize_Checksum;
 
-      --  Do not call Scan, otherwise the License stuff does not work in Scn.
+      --  Do not call Scan, otherwise the License stuff does not work in Scn
 
    end Initialize_Scanner;
 
@@ -550,12 +550,17 @@ package body Scng is
                          or else
                        Source (Scan_Ptr + 1) in 'a' .. 'z'))
          then
-            if C = ':' and then Warn_On_Obsolescent_Feature then
-               Error_Msg_S
-                 ("use of "":"" is an obsolescent feature ('R'M 'J.2(3))?");
-               Error_Msg_S
-                 ("\use ""'#"" instead?");
+            if C = ':' then
+               Obsolescent_Check (Scan_Ptr);
+
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_S
+                    ("use of "":"" is an obsolescent feature ('R'M 'J.2(3))?");
+                  Error_Msg_S
+                    ("\use ""'#"" instead?");
+               end if;
             end if;
+
 
             Accumulate_Checksum (C);
             Base_Char := C;
@@ -1498,6 +1503,8 @@ package body Scng is
          --  Percent starting a string literal
 
          when '%' =>
+            Obsolescent_Check (Token_Ptr);
+
             if Warn_On_Obsolescent_Feature then
                Error_Msg_S
                  ("use of ""'%"" is an obsolescent feature ('R'M 'J.2(4))?");
@@ -1695,6 +1702,7 @@ package body Scng is
 
          when '!' => Exclamation_Case : begin
             Accumulate_Checksum ('!');
+            Obsolescent_Check (Token_Ptr);
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_S
@@ -2043,7 +2051,11 @@ package body Scng is
                      --  in particular allows bracket or other notation
                      --  to be used for upper half letters.
 
-                     if Identifier_Character_Set /= 'w' then
+                     --  Wide characters are always allowed in Ada 2005
+
+                     if Identifier_Character_Set /= 'w'
+                       and then Ada_Version < Ada_05
+                     then
                         Error_Msg
                           ("wide character not allowed in identifier", Sptr);
                      end if;

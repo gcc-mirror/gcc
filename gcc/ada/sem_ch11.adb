@@ -240,14 +240,16 @@ package body Sem_Ch11 is
 
                   else
                      if Present (Renamed_Entity (Entity (Id))) then
-                        if Entity (Id) = Standard_Numeric_Error
-                          and then Warn_On_Obsolescent_Feature
-                        then
-                           Error_Msg_N
-                             ("Numeric_Error is an " &
-                              "obsolescent feature ('R'M 'J.6(1))?", Id);
-                           Error_Msg_N
-                             ("\use Constraint_Error instead?", Id);
+                        if Entity (Id) = Standard_Numeric_Error then
+                           Check_Restriction (No_Obsolescent_Features, Id);
+
+                           if Warn_On_Obsolescent_Feature then
+                              Error_Msg_N
+                                ("Numeric_Error is an " &
+                                 "obsolescent feature ('R'M 'J.6(1))?", Id);
+                              Error_Msg_N
+                                ("\use Constraint_Error instead?", Id);
+                           end if;
                         end if;
                      end if;
 

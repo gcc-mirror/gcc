@@ -40,6 +40,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Output;   use Output;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Util; use Sem_Util;
@@ -1007,6 +1008,7 @@ package body Rtsfind is
 
             Mark_Rewrite_Insertion (Withn);
             Append (Withn, Context_Items (Cunit (Current_Sem_Unit)));
+            Check_Restriction_No_Dependence (Name (Withn), Current_Error_Node);
          end;
       end if;
 
