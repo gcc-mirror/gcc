@@ -528,7 +528,8 @@ fi
 # Delete any #defines of `__i386' which may be present in <ieeefp.h>.  They
 # tend to conflict with the compiler's own definition of this symbol.  (We
 # will use the compiler's definition.)
-# Likewise __sparc, for Solaris, and __i860, and (this is a guess) __m88k.
+# Likewise __sparc, for Solaris, and __i860, and a few others
+# (guessing it is necessary for all of them).
 
 file=ieeefp.h
 base=`basename $file`
@@ -547,6 +548,7 @@ if [ \! -z "$file_to_fix" ]; then
   chmod +w /tmp/$base
   sed -e '/#define[ 	]*__i386 /d' -e '/#define[ 	]*__sparc /d' \
       -e '/#define[ 	]*__i860 /d' -e '/#define[ 	]*__m88k /d' \
+      -e '/#define[ 	]*__mips /d' -e '/#define[ 	]*__m68k /d' \
      /tmp/$base > /tmp/$base.sed
   if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
