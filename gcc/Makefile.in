@@ -1705,7 +1705,7 @@ insn-conditions.o : insn-conditions.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   hard-reg-set.h resource.h toplev.h reload.h gensupport.h insn-constants.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) insn-conditions.c
 
-dummy-conditions.o : dummy-conditions.c $(GCONFIG_H) $(SYSTEM_H) gensupport.h
+dummy-conditions.o : dummy-conditions.c $(HCONFIG_H) $(SYSTEM_H) gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	    $(srcdir)/dummy-conditions.c $(OUTPUT_OPTION)
 
