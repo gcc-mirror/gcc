@@ -1882,7 +1882,7 @@ simplify_plus_minus (code, mode, op0, op1)
       && CONSTANT_P (ops[n_ops - 2].op))
     {
       HOST_WIDE_INT value = INTVAL (ops[n_ops - 1].op);
-      if (ops[n_ops - 1].neg)
+      if (ops[n_ops - 1].neg ^ ops[n_ops - 2].neg)
 	value = -value;
       ops[n_ops - 2].op = plus_constant (ops[n_ops - 2].op, value);
       n_ops--;

@@ -1,3 +1,8 @@
+2001-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* simplify-rtx.c (simplify_plus_minus): Negate constant iff its neg
+	field is different to previous argument's neg field.
+
 Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (get_decl_from_op): New function.
