@@ -7,6 +7,7 @@
 /* The line number below must be just a few lines greater than the
    actual line number. */
 #line 10 "baz"
+wibble
 
 /*
   { dg-final { if \{ [grep cpp-li1.i baz] != "" \} \{ } }
