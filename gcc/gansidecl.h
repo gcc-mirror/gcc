@@ -77,4 +77,24 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* ! __STDC__ */
 
+#ifndef HAVE_BCOPY
+#define bcopy(src,dst,len) memcpy ((dst),(src),(len))
+#endif
+
+#ifndef HAVE_BZERO
+#define bzero(dst,len) memset ((dst),0,(len))
+#endif
+
+#ifndef HAVE_BCMP
+#define bcmp(left,right,len) memcmp ((left),(right),(len))
+#endif
+
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
 #endif /* ANSIDECL_H */
