@@ -62,14 +62,6 @@ static int out_of_line_prologue_epilogue;
 
 static rtx find_addr_reg ();
 
-/* Kludgery.  We hold the operands to a fmpy insn here so we can
-   compare them with the operands for an fadd/fsub to determine if
-   they can be combined into a fmpyadd/fmpysub insn.
-
-   This _WILL_ disappear as the code to combine independent insns
-   matures.  */
-static rtx fmpy_operands[3];
-
 /* Keep track of the number of bytes we have output in the CODE subspaces
    during this compilation so we'll know when to emit inline long-calls.  */
 
@@ -1347,7 +1339,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 }
 
 /* Examine EXP and return nonzero if it contains an ADDR_EXPR (meaning
-   it will need a link/runtime reloc.  */
+   it will need a link/runtime reloc).  */
 
 int
 reloc_needed (exp)
@@ -5484,70 +5476,6 @@ output_parallel_addb (operands, length)
     }
 }
 
-/* Return nonzero if INSN represents an integer add which might be
-   combinable with an unconditional branch.  */ 
-
-combinable_add (insn)
-     rtx insn;
-{
-  rtx src, dest, prev, pattern = PATTERN (insn);
-
-  /* Must be a (set (reg) (plus (reg) (reg/5_bit_int)))  */
-  if (GET_CODE (pattern) != SET
-      || GET_CODE (SET_SRC (pattern)) != PLUS
-      || GET_CODE (SET_DEST (pattern)) != REG)
-    return 0;
-
-  src = SET_SRC (pattern);
-  dest = SET_DEST (pattern);
-
-  /* Must be an integer add.  */
-  if (GET_MODE (src) != SImode
-      || GET_MODE (dest) != SImode)
-    return 0;
-
-  /* Each operand must be an integer register and/or 5 bit immediate.  */
-  if (!ireg_or_int5_operand (dest, VOIDmode)
-       || !ireg_or_int5_operand (XEXP (src, 0), VOIDmode)
-       || !ireg_or_int5_operand (XEXP (src, 1), VOIDmode))
-    return 0;
-
-  /* The destination must also be one of the sources.  */
-  return (dest == XEXP (src, 0) || dest == XEXP (src, 1));
-}
-
-/* Return nonzero if INSN represents an integer load/copy which might be
-   combinable with an unconditional branch.  */ 
-
-combinable_copy (insn)
-     rtx insn;
-{
-  rtx src, dest, pattern = PATTERN (insn);
-  enum machine_mode mode;
-
-  /* Must be a (set (reg) (reg/5_bit_int)).  */
-  if (GET_CODE (pattern) != SET)
-    return 0;
-
-  src = SET_SRC (pattern);
-  dest = SET_DEST (pattern);
-
-  /* Must be a mode that corresponds to a single integer register.  */
-  mode = GET_MODE (dest);
-  if (mode != SImode
-      && mode != SFmode
-      && mode != HImode
-      && mode != QImode)
-    return 0;
-
-  /* Each operand must be a register or 5 bit integer.  */
-  if (!ireg_or_int5_operand (dest, VOIDmode)
-      || !ireg_or_int5_operand (src, VOIDmode))
-    return 0;
-
-  return 1;
-}
-
 /* Return nonzero if INSN (a jump insn) immediately follows a call.  This
    is used to discourage creating parallel movb/addb insns since a jump
    which immediately follows a call can execute in the delay slot of the
@@ -5572,170 +5500,6 @@ following_call (insn)
     return 1;
 
   return 0;
-}
-
-/* Return nonzero if this is a floating point multiply (fmpy) which
-   could be combined with a suitable floating point add or sub insn.  */
-
-combinable_fmpy (insn)
-     rtx insn;
-{
-  rtx src, dest, pattern = PATTERN (insn);
-  enum machine_mode mode;
-
-  /* Only on 1.1 and later cpus.  */
-  if (!TARGET_SNAKE)
-    return 0;
-
-  /* Must be a (set (reg) (mult (reg) (reg))).  */
-  if (GET_CODE (pattern) != SET
-      || GET_CODE (SET_SRC (pattern)) != MULT
-      || GET_CODE (SET_DEST (pattern)) != REG)
-    return 0;
-
-  src = SET_SRC (pattern);
-  dest = SET_DEST (pattern);
-
-  /* Must be registers.  */
-  if (GET_CODE (XEXP (src, 0)) != REG
-      || GET_CODE (XEXP (src, 1)) != REG)
-    return 0;
-
-  /* Must be a floating point mode.  Must match the mode of the fmul.  */
-  mode = GET_MODE (dest);
-  if (mode != DFmode && mode != SFmode)
-    return 0;
- 
-  /* SFmode limits the registers which can be used to the upper
-     32 32bit FP registers.  */
-  if (mode == SFmode
-      && (REGNO (dest) < 57
-	  || REGNO (XEXP (src, 0)) < 57
-	  || REGNO (XEXP (src, 1)) < 57))
-    return 0;
-     
-  /* Save our operands, we'll need to verify they don't conflict with
-     those in the fadd or fsub.  XXX This needs to disasppear soon.  */
-  fmpy_operands[0] = dest;
-  fmpy_operands[1] = XEXP (src, 0);
-  fmpy_operands[2] = XEXP (src, 1);
-
-  return 1;
-}
-
-/* Return nonzero if INSN is a floating point add suitable for combining
-   with the most recently examined floating point multiply.  */
-
-combinable_fadd (insn)
-     rtx insn;
-{
-  rtx src, dest, pattern = PATTERN (insn);
-  enum machine_mode mode;
-
-  /* Must be a (set (reg) (plus (reg) (reg))).  */
-  if (GET_CODE (pattern) != SET
-      || GET_CODE (SET_SRC (pattern)) != PLUS
-      || GET_CODE (SET_DEST (pattern)) != REG)
-    return 0;
-
-  src = SET_SRC (pattern);
-  dest = SET_DEST (pattern);
-
-  /* Must be registers.  */
-  if (GET_CODE (XEXP (src, 0)) != REG
-      || GET_CODE (XEXP (src, 1)) != REG)
-    return 0;
-
-  /* Must be a floating point mode.  Must match the mode of the fmul.  */
-  mode = GET_MODE (dest);
-  if (mode != DFmode && mode != SFmode)
-    return 0;
- 
-  if (mode != GET_MODE (fmpy_operands[0]))
-    return 0;
-
-  /* SFmode limits the registers which can be used to the upper
-     32 32bit FP registers.  */
-  if (mode == SFmode
-      && (REGNO (dest) < 57
-	  || REGNO (XEXP (src, 0)) < 57
-	  || REGNO (XEXP (src, 1)) < 57))
-    return 0;
-     
-  /* Only 2 real operands to the addition.  One of the input operands
-     must be the same as the output operand.  */
-  if (! rtx_equal_p (dest, XEXP (src, 0))
-      && ! rtx_equal_p (dest, XEXP (src, 1)))
-    return 0;
-
-  /* Inout operand of the add can not conflict with any operands from the
-     multiply.  */
-  if (rtx_equal_p (dest, fmpy_operands[0])
-      || rtx_equal_p (dest, fmpy_operands[1])
-      || rtx_equal_p (dest, fmpy_operands[2]))
-    return 0;
-
-  /* The multiply can not feed into the addition.  */
-  if (rtx_equal_p (fmpy_operands[0], XEXP (src, 0))
-      || rtx_equal_p (fmpy_operands[0], XEXP (src, 1)))
-    return 0;
-
-  return 1;
-}
-
-/* Return nonzero if INSN is a floating point sub suitable for combining
-   with the most recently examined floating point multiply.  */
-
-combinable_fsub (insn)
-     rtx insn;
-{
-  rtx src, dest, pattern = PATTERN (insn);
-  enum machine_mode mode;
-
-  /* Must be (set (reg) (minus (reg) (reg))).  */
-  if (GET_CODE (pattern) != SET
-      || GET_CODE (SET_SRC (pattern)) != MINUS
-      || GET_CODE (SET_DEST (pattern)) != REG)
-    return 0;
-
-  src = SET_SRC (pattern);
-  dest = SET_DEST (pattern);
-
-  if (GET_CODE (XEXP (src, 0)) != REG
-      || GET_CODE (XEXP (src, 1)) != REG)
-    return 0;
-
-  /* Must be a floating point mode.  Must match the mode of the fmul.  */
-  mode = GET_MODE (dest);
-  if (mode != DFmode && mode != SFmode)
-    return 0;
- 
-  if (mode != GET_MODE (fmpy_operands[0]))
-    return 0;
-
-  /* SFmode limits the registers which can be used to the upper
-     32 32bit FP registers.  */
-  if (mode == SFmode && (REGNO (dest) < 57 || REGNO (XEXP (src, 1)) < 57))
-    return 0;
-     
-  /* Only 2 real operands to the subtraction.  Output must be the
-     same as the first operand of the MINUS.  */
-  if (! rtx_equal_p (dest, XEXP (src, 0)))
-    return 0;
-
-  /* Inout operand of the sub can not conflict with any operands from the
-     multiply.  */
-  if (rtx_equal_p (dest, fmpy_operands[0])
-      || rtx_equal_p (dest, fmpy_operands[1])
-      || rtx_equal_p (dest, fmpy_operands[2]))
-    return 0;
-
-  /* The multiply can not feed into the subtraction.  */
-  if (rtx_equal_p (fmpy_operands[0], XEXP (src, 0))
-      || rtx_equal_p (fmpy_operands[0], XEXP (src, 1)))
-    return 0;
-
-  return 1;
 }
 
 /* We use this hook to perform a PA specific optimization which is difficult
@@ -5770,6 +5534,8 @@ pa_reorg (insns)
   rtx insn;
 
   remove_useless_addtr_insns (insns, 1);
+
+  pa_combine_instructions (get_insns ());
 
   /* This is fairly cheap, so always run it if optimizing.  */
   if (optimize > 0)
@@ -5839,4 +5605,291 @@ pa_reorg (insns)
 	  emit_insn_after (gen_end_brtab (), insn);
 	}
     }
+}
+
+/* The PA has a number of odd instructions which can perform multiple
+   tasks at once.  On first generation PA machines (PA1.0 and PA1.1)
+   it may be profitable to combine two instructions into one instruction
+   with two outputs.  It's not profitable PA2.0 machines because the
+   two outputs would take two slots in the reorder buffers.
+
+   This routine finds instructions which can be combined and combines
+   them.  We only support some of the potential combinations, and we
+   only try common ways to find suitable instructions.
+
+      * addb can add two registers or a register and a small integer
+      and jump to a nearby (+-8k) location.  Normally the jump to the
+      nearby location is conditional on the result of the add, but by
+      using the "true" condition we can make the jump unconditional.
+      Thus addb can perform two independent operations in one insn.
+
+      * movb is similar to addb in that it can perform a reg->reg
+      or small immediate->reg copy and jump to a nearby (+-8k location).
+
+      * fmpyadd and fmpysub can perform a FP multiply and either an
+      FP add or FP sub if the operands of the multiply and add/sub are
+      independent (there are other minor restrictions).  Note both
+      the fmpy and fadd/fsub can in theory move to better spots according
+      to data dependencies, but for now we require the fmpy stay at a
+      fixed location.
+
+      * Many of the memory operations can perform pre & post updates
+      of index registers.  GCC's pre/post increment/decrement addressing
+      is far too simple to take advantage of all the possibilities.  This
+      pass may not be suitable since those insns may not be independent.
+
+      * comclr can compare two ints or an int and a register, nullify
+      the following instruction and zero some other register.  This
+      is more difficult to use as it's harder to find an insn which
+      will generate a comclr than finding something like an unconditional
+      branch.  (conditional moves & long branches create comclr insns).
+
+      * Most arithmetic operations can conditionally skip the next
+      instruction.  They can be viewed as "perform this operation
+      and conditionally jump to this nearby location" (where nearby
+      is an insns away).  These are difficult to use due to the
+      branch length restrictions.  */
+
+pa_combine_instructions (insns)
+     rtx insns;
+{
+  rtx anchor, new;
+
+  /* This can get expensive since the basic algorithm is on the
+     order of O(n^2) (or worse).  Only do it for -O2 or higher
+     levels of optimizaton.  */
+  if (optimize < 2)
+    return;
+
+  /* Walk down the list of insns looking for "anchor" insns which
+     may be combined with "floating" insns.  As the name implies,
+     "anchor" instructions don't move, while "floating" insns may
+     move around.  */
+  new = gen_rtx (PARALLEL, VOIDmode, gen_rtvec (2, NULL_RTX, NULL_RTX));
+  new = make_insn_raw (new);
+
+  for (anchor = get_insns (); anchor; anchor = NEXT_INSN (anchor))
+    {
+      enum attr_pa_combine_type anchor_attr;
+      enum attr_pa_combine_type floater_attr;
+
+      /* We only care about INSNs, JUMP_INSNs, and CALL_INSNs.
+	 Also ignore any special USE insns.  */
+      if (GET_CODE (anchor) != INSN
+	  && GET_CODE (anchor) != JUMP_INSN
+	  && GET_CODE (anchor) != CALL_INSN
+	  || GET_CODE (PATTERN (anchor)) == USE
+	  || GET_CODE (PATTERN (anchor)) == CLOBBER
+	  || GET_CODE (PATTERN (anchor)) == ADDR_VEC
+	  || GET_CODE (PATTERN (anchor)) == ADDR_DIFF_VEC)
+	continue;
+
+      anchor_attr = get_attr_pa_combine_type (anchor);
+      /* See if anchor is an insn suitable for combination.  */
+      if (anchor_attr == PA_COMBINE_TYPE_FMPY
+	  || anchor_attr == PA_COMBINE_TYPE_FADDSUB
+	  || (anchor_attr == PA_COMBINE_TYPE_UNCOND_BRANCH
+	      && ! forward_branch_p (anchor)))
+	{
+	  rtx floater;
+
+	  for (floater = PREV_INSN (anchor);
+	       floater;
+	       floater = PREV_INSN (floater))
+	    {
+	      if (GET_CODE (floater) == NOTE
+		  || (GET_CODE (floater) == INSN
+		      && (GET_CODE (PATTERN (floater)) == USE
+			  || GET_CODE (PATTERN (floater)) == CLOBBER)))
+		continue;
+
+	      /* Anything except a regular INSN will stop our search.  */
+	      if (GET_CODE (floater) != INSN
+		  || GET_CODE (PATTERN (floater)) == ADDR_VEC
+		  || GET_CODE (PATTERN (floater)) == ADDR_DIFF_VEC)
+		{
+		  floater = NULL_RTX;
+		  break;
+		}
+
+	      /* See if FLOATER is suitable for combination with the
+		 anchor.  */
+	      floater_attr = get_attr_pa_combine_type (floater);
+	      if ((anchor_attr == PA_COMBINE_TYPE_FMPY
+		   && floater_attr == PA_COMBINE_TYPE_FADDSUB)
+		  || (anchor_attr == PA_COMBINE_TYPE_FADDSUB
+		      && floater_attr == PA_COMBINE_TYPE_FMPY))
+		{
+		  /* If ANCHOR and FLOATER can be combined, then we're
+		     done with this pass.  */
+		  if (pa_can_combine_p (new, anchor, floater, 0,
+					SET_DEST (PATTERN (floater)),
+					XEXP (SET_SRC (PATTERN (floater)), 0),
+					XEXP (SET_SRC (PATTERN (floater)), 1)))
+		    break;
+		}
+
+	      else if (anchor_attr == PA_COMBINE_TYPE_UNCOND_BRANCH
+		       && floater_attr == PA_COMBINE_TYPE_ADDMOVE)
+		{
+		  if (GET_CODE (SET_SRC (PATTERN (floater))) == PLUS)
+		    {
+		      if (pa_can_combine_p (new, anchor, floater, 0,
+					    SET_DEST (PATTERN (floater)),
+					XEXP (SET_SRC (PATTERN (floater)), 0),
+					XEXP (SET_SRC (PATTERN (floater)), 1)))
+			break;
+		    }
+		  else
+		    {
+		      if (pa_can_combine_p (new, anchor, floater, 0,
+					    SET_DEST (PATTERN (floater)),
+					    SET_SRC (PATTERN (floater)),
+					    SET_SRC (PATTERN (floater))))
+			break;
+		    }
+		}
+	    }
+
+	  /* If we didn't find anything on the backwards scan try forwards.  */
+	  if (!floater
+	      && (anchor_attr == PA_COMBINE_TYPE_FMPY
+		  || anchor_attr == PA_COMBINE_TYPE_FADDSUB))
+	    {
+	      for (floater = anchor; floater; floater = NEXT_INSN (floater))
+		{
+		  if (GET_CODE (floater) == NOTE
+		      || (GET_CODE (floater) == INSN
+			  && (GET_CODE (PATTERN (floater)) == USE
+			      || GET_CODE (PATTERN (floater)) == CLOBBER)))
+			
+		    continue;
+
+		  /* Anything except a regular INSN will stop our search.  */
+		  if (GET_CODE (floater) != INSN
+		      || GET_CODE (PATTERN (floater)) == ADDR_VEC
+		      || GET_CODE (PATTERN (floater)) == ADDR_DIFF_VEC)
+		    {
+		      floater = NULL_RTX;
+		      break;
+		    }
+
+		  /* See if FLOATER is suitable for combination with the
+		     anchor.  */
+		  floater_attr = get_attr_pa_combine_type (floater);
+		  if ((anchor_attr == PA_COMBINE_TYPE_FMPY
+		       && floater_attr == PA_COMBINE_TYPE_FADDSUB)
+		      || (anchor_attr == PA_COMBINE_TYPE_FADDSUB
+			  && floater_attr == PA_COMBINE_TYPE_FMPY))
+		    {
+		      /* If ANCHOR and FLOATER can be combined, then we're
+			 done with this pass.  */
+		      if (pa_can_combine_p (new, anchor, floater, 1,
+					    SET_DEST (PATTERN (floater)),
+					    XEXP (SET_SRC (PATTERN(floater)),0),
+					    XEXP(SET_SRC(PATTERN(floater)),1)))
+			break;
+		    }
+		}
+	    }
+
+	  /* FLOATER will be nonzero if we found a suitable floating
+	     insn for combination with ANCHOR.  */
+	  if (floater
+	      && (anchor_attr == PA_COMBINE_TYPE_FADDSUB
+		  || anchor_attr == PA_COMBINE_TYPE_FMPY))
+	    {
+	      /* Emit the new instruction and delete the old anchor.  */
+	      emit_insn_before (gen_rtx (PARALLEL, VOIDmode,
+					 gen_rtvec (2, PATTERN (anchor),
+						    PATTERN (floater))),
+				anchor);
+	      PUT_CODE (anchor, NOTE);
+	      NOTE_LINE_NUMBER (anchor) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (anchor) = 0;
+
+	      /* Emit a special USE insn for FLOATER, then delete
+		 the floating insn.  */
+	      emit_insn_before (gen_rtx (USE, VOIDmode, floater), floater);
+	      delete_insn (floater);
+
+	      continue;
+	    }
+	  else if (floater
+		   && anchor_attr == PA_COMBINE_TYPE_UNCOND_BRANCH)
+	    {
+	      rtx temp;
+	      /* Emit the new_jump instruction and delete the old anchor.  */
+	      temp = emit_jump_insn_before (gen_rtx (PARALLEL, VOIDmode,
+					      gen_rtvec (2, PATTERN (anchor),
+							 PATTERN (floater))),
+				anchor);
+	      JUMP_LABEL (temp) = JUMP_LABEL (anchor);
+	      PUT_CODE (anchor, NOTE);
+	      NOTE_LINE_NUMBER (anchor) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (anchor) = 0;
+
+	      /* Emit a special USE insn for FLOATER, then delete
+		 the floating insn.  */
+	      emit_insn_before (gen_rtx (USE, VOIDmode, floater), floater);
+	      delete_insn (floater);
+	      continue;
+	    }
+	}
+    }
+}
+
+int
+pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
+     rtx new, anchor, floater;
+     int reversed;
+     rtx dest, src1, src2;
+{
+  int insn_code_number;
+  rtx start, end;
+
+  /* Create a PARALLEL with the patterns of ANCHOR and
+     FLOATER, try to recognize it, then test constraints
+     for the resulting pattern.
+
+     If the pattern doesn't match or the constraints
+     aren't met keep searching for a suitable floater
+     insn.  */
+  XVECEXP (PATTERN (new), 0, 0) = PATTERN (anchor);
+  XVECEXP (PATTERN (new), 0, 1) = PATTERN (floater);
+  INSN_CODE (new) = -1;
+  insn_code_number = recog_memoized (new);
+  if (insn_code_number < 0
+      || !constrain_operands (insn_code_number, 1))
+    return 0;
+
+  if (reversed)
+    {
+      start = anchor;
+      end = floater;
+    }
+  else
+    {
+      start = floater;
+      end = anchor;
+    }
+
+  /* There's up to three operands to consider.  One
+     output and two inputs.
+
+     The output must not be used between FLOATER & ANCHOR
+     exclusive.  The inputs must not be set between
+     FLOATER and ANCHOR exclusive.  */
+
+  if (reg_used_between_p (dest, start, end))
+    return 0;
+
+  if (reg_set_between_p (src1, start, end))
+    return 0;
+
+  if (reg_set_between_p (src2, start, end))
+    return 0;
+
+  /* If we get here, then everything is good.  */
+  return 1;
 }

@@ -34,6 +34,10 @@
   "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch"
   (const_string "binary"))
 
+(define_attr "pa_combine_type"
+  "fmpy,faddsub,uncond_branch,addmove,none"
+  (const_string "none"))
+
 ;; Processor type (for scheduling, not code generation) -- this attribute
 ;; must exactly match the processor_type enumeration in pa.h.
 ;;
@@ -97,7 +101,7 @@
 
 
 ;; Call delay slot description.
-(define_delay (eq_attr "type" "uncond_branch,call")
+(define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 ;; millicode call delay slot description.  Note it disallows delay slot
@@ -128,6 +132,11 @@
 	(attr_flag "forward"))
    (and (eq_attr "in_nullified_branch_delay" "true")
 	(attr_flag "backward"))])
+
+(define_delay (and (eq_attr "type" "uncond_branch")
+		   (eq (symbol_ref "following_call (insn)")
+		       (const_int 0)))
+  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Function units of the HPPA. The following data is for the 700 CPUs
 ;; (Mustang CPU + Timex FPU aka PA-89) because that's what I have the docs for.
@@ -1337,6 +1346,7 @@
    fldw%F1 %1,%0
    fstw%F0 %1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu,fpload,fpstore")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -1356,6 +1366,7 @@
    stw%M0 %r1,%0
    mtsar %r1"
   [(set_attr "type" "move,move,move,move,load,store,move")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -1735,6 +1746,7 @@
    mtsar %r1
    fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -1896,6 +1908,7 @@
    mtsar %r1
    fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -2535,6 +2548,7 @@
    fstw%F0 %r1,%0
    stw%M0 %r1,%0"
   [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4")])
 
 (define_insn ""
@@ -2550,6 +2564,7 @@
    ldw%M1 %1,%0
    stw%M0 %r1,%0"
   [(set_attr "type" "move,load,store")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4")])
 
 (define_insn ""
@@ -2932,6 +2947,7 @@
    addl %1,%2,%0
    ldo %2(%1),%0"
   [(set_attr "type" "binary,binary")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4")])
 
 ;; Disgusting kludge to work around reload bugs with frame pointer
@@ -3452,6 +3468,7 @@
   "! TARGET_SOFT_FLOAT"
   "fadd,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")
+   (set_attr "pa_combine_type" "faddsub")
    (set_attr "length" "4")])
 
 (define_insn "addsf3"
@@ -3461,6 +3478,7 @@
   "! TARGET_SOFT_FLOAT"
   "fadd,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")
+   (set_attr "pa_combine_type" "faddsub")
    (set_attr "length" "4")])
 
 (define_insn "subdf3"
@@ -3470,6 +3488,7 @@
   "! TARGET_SOFT_FLOAT"
   "fsub,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")
+   (set_attr "pa_combine_type" "faddsub")
    (set_attr "length" "4")])
 
 (define_insn "subsf3"
@@ -3479,6 +3498,7 @@
   "! TARGET_SOFT_FLOAT"
   "fsub,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")
+   (set_attr "pa_combine_type" "faddsub")
    (set_attr "length" "4")])
 
 (define_insn "muldf3"
@@ -3488,6 +3508,7 @@
   "! TARGET_SOFT_FLOAT"
   "fmpy,dbl %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
+   (set_attr "pa_combine_type" "fmpy")
    (set_attr "length" "4")])
 
 (define_insn "mulsf3"
@@ -3497,6 +3518,7 @@
   "! TARGET_SOFT_FLOAT"
   "fmpy,sgl %1,%2,%0"
   [(set_attr "type" "fpmulsgl")
+   (set_attr "pa_combine_type" "fmpy")
    (set_attr "length" "4")])
 
 (define_insn "divdf3"
@@ -3892,6 +3914,7 @@
   ""
   "bl%* %l0,0"
   [(set_attr "type" "uncond_branch")
+   (set_attr "pa_combine_type" "uncond_branch")
    (set (attr "length")
     (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 0))
 	   (const_int 4)
@@ -4738,6 +4761,35 @@
    (set_attr "length" "4")])
 
 (define_insn ""
+  [(set (match_operand 3 "register_operand" "+f")
+	(plus (match_operand 4 "register_operand" "f")
+	      (match_operand 5 "register_operand" "f")))
+   (set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))]
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+   && reload_completed && fmpyaddoperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
+    }
+  else
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
+    }
+}"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))
@@ -4756,97 +4808,24 @@
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
-;; The next four peepholes take advantage of the new 5 operand
-;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
-;; fmpyadd performs a multiply and add/sub of independent operands
-;; at the same time.  Because the operands must be independent
-;; combine will not try to combine such insns...  Thus we have
-;; to use a peephole.
-(define_peephole
-  [(set (match_operand 0 "register_operand" "=f")
-	(mult (match_operand 1 "register_operand" "f")
-	      (match_operand 2 "register_operand" "f")))
-   (set (match_operand 3 "register_operand" "+f")
-	(plus (match_operand 4 "register_operand" "f")
-	      (match_operand 5 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpyaddoperands (operands)"
-  "*
-{
-  if (GET_MODE (operands[0]) == DFmode)
-    {
-      if (rtx_equal_p (operands[5], operands[3]))
-	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
-      else
-	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
-    }
-  else
-    {
-      if (rtx_equal_p (operands[5], operands[3]))
-	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
-      else
-	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
-    }
-}")
-
-(define_peephole
-  [(set (match_operand 3 "register_operand" "+f")
-	(plus (match_operand 4 "register_operand" "f")
-	      (match_operand 5 "register_operand" "f")))
-   (set (match_operand 0 "register_operand" "=f")
-	(mult (match_operand 1 "register_operand" "f")
-	      (match_operand 2 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpyaddoperands (operands)"
-  "*
-{
-  if (GET_MODE (operands[0]) == DFmode)
-    {
-      if (rtx_equal_p (operands[3], operands[5]))
-	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
-      else
-	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
-    }
-  else
-    {
-      if (rtx_equal_p (operands[3], operands[5]))
-	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
-      else
-	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
-    }
-}")
-
-;; Note fsub subtracts the second operand from the first while fmpysub
-;; does the opposite for the subtraction operands!
-(define_peephole
-  [(set (match_operand 0 "register_operand" "=f")
-	(mult (match_operand 1 "register_operand" "f")
-	      (match_operand 2 "register_operand" "f")))
-   (set (match_operand 3 "register_operand" "+f")
-	(minus (match_operand 4 "register_operand" "f")
-	       (match_operand 5 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpysuboperands (operands)"
-  "*
-{
-  if (GET_MODE (operands[0]) == DFmode)
-    return \"fmpysub,dbl %1,%2,%0,%5,%3\";
-  else
-    return \"fmpysub,sgl %1,%2,%0,%5,%3\";
-}")
-
-(define_peephole
+(define_insn ""
   [(set (match_operand 3 "register_operand" "+f")
 	(minus (match_operand 4 "register_operand" "f")
 	       (match_operand 5 "register_operand" "f")))
    (set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpysuboperands (operands)"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+   && reload_completed && fmpysuboperands (operands)"
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
     return \"fmpysub,dbl %1,%2,%0,%5,%3\";
   else
     return \"fmpysub,sgl %1,%2,%0,%5,%3\";
-}")
+}"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 ;; Clean up turds left by reload.
 (define_peephole
