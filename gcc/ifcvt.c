@@ -2629,35 +2629,41 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
      change group management.  */
 
   old_dest = JUMP_LABEL (jump);
-  new_label = block_label (new_dest);
-  if (reversep
-      ? ! invert_jump_1 (jump, new_label)
-      : ! redirect_jump_1 (jump, new_label))
-    goto cancel;
+  if (other_bb != new_dest)
+    {
+      new_label = block_label (new_dest);
+      if (reversep
+	  ? ! invert_jump_1 (jump, new_label)
+	  : ! redirect_jump_1 (jump, new_label))
+	goto cancel;
+    }
 
   if (! apply_change_group ())
     return FALSE;
 
-  if (old_dest)
-    LABEL_NUSES (old_dest) -= 1;
-  if (new_label)
-    LABEL_NUSES (new_label) += 1;
-  JUMP_LABEL (jump) = new_label;
-
-  if (reversep)
-    invert_br_probabilities (jump);
-
-  redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
-  if (reversep)
+  if (other_bb != new_dest)
     {
-      gcov_type count, probability;
-      count = BRANCH_EDGE (test_bb)->count;
-      BRANCH_EDGE (test_bb)->count = FALLTHRU_EDGE (test_bb)->count;
-      FALLTHRU_EDGE (test_bb)->count = count;
-      probability = BRANCH_EDGE (test_bb)->probability;
-      BRANCH_EDGE (test_bb)->probability = FALLTHRU_EDGE (test_bb)->probability;
-      FALLTHRU_EDGE (test_bb)->probability = probability;
-      update_br_prob_note (test_bb);
+      if (old_dest)
+	LABEL_NUSES (old_dest) -= 1;
+      if (new_label)
+	LABEL_NUSES (new_label) += 1;
+      JUMP_LABEL (jump) = new_label;
+      if (reversep)
+	invert_br_probabilities (jump);
+
+      redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
+      if (reversep)
+	{
+	  gcov_type count, probability;
+	  count = BRANCH_EDGE (test_bb)->count;
+	  BRANCH_EDGE (test_bb)->count = FALLTHRU_EDGE (test_bb)->count;
+	  FALLTHRU_EDGE (test_bb)->count = count;
+	  probability = BRANCH_EDGE (test_bb)->probability;
+	  BRANCH_EDGE (test_bb)->probability
+	    = FALLTHRU_EDGE (test_bb)->probability;
+	  FALLTHRU_EDGE (test_bb)->probability = probability;
+	  update_br_prob_note (test_bb);
+	}
     }
 
   /* Move the insns out of MERGE_BB to before the branch.  */
@@ -2671,6 +2677,16 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }
+
+  /* Remove the jump and edge if we can.  */
+  if (other_bb == new_dest)
+    {
+      delete_insn (jump);
+      remove_edge (BRANCH_EDGE (test_bb));
+      /* ??? Can't merge blocks here, as then_bb is still in use.
+	 At minimum, the merge will get done just before bb-reorder.  */
+    }
+
   return TRUE;
 
  cancel:
