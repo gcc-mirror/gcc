@@ -589,6 +589,13 @@ extern void abort PARAMS ((void));
 #define ONLY_INT_FIELDS 0
 #endif 
 
+/* Provide a default for the HOST_BIT_BUCKET.
+   This suffices for POSIX-like hosts.  */
+
+#ifndef HOST_BIT_BUCKET
+#define HOST_BIT_BUCKET "/dev/null"
+#endif
+
 /* Enumerated bitfields are safe to use unless we've been explictly told
    otherwise or if they are signed. */
  

@@ -2127,38 +2127,35 @@ compile_file (name)
 	pfatal_with_name (aux_info_file_name);
     }
 
-  /* Open assembler code output file.  */
+  /* Open assembler code output file.  Do this even if -fsyntax-only is on,
+     because then the driver will have provided the name of a temporary
+     file or bit bucket for us.  */
 
-  if (flag_syntax_only)
-    asm_out_file = NULL;
+  if (! name_specified && asm_file_name == 0)
+    asm_out_file = stdout;
   else
     {
-      if (! name_specified && asm_file_name == 0)
-	asm_out_file = stdout;
+      if (asm_file_name == 0)
+        {
+          int len = strlen (dump_base_name);
+          char *dumpname = (char *) xmalloc (len + 6);
+          memcpy (dumpname, dump_base_name, len + 1);
+          strip_off_ending (dumpname, len);
+          strcat (dumpname, ".s");
+          asm_file_name = dumpname;
+        }
+      if (!strcmp (asm_file_name, "-"))
+        asm_out_file = stdout;
       else
-	{
-	  if (asm_file_name == 0)
-	    {
-	      int len = strlen (dump_base_name);
-	      char *dumpname = (char *) xmalloc (len + 6);
-	      memcpy (dumpname, dump_base_name, len + 1);
-	      strip_off_ending (dumpname, len);
-	      strcat (dumpname, ".s");
-	      asm_file_name = dumpname;
-	    }
-	  if (!strcmp (asm_file_name, "-"))
-	    asm_out_file = stdout;
-	  else
-	    asm_out_file = fopen (asm_file_name, "w");
-	  if (asm_out_file == 0)
-	    pfatal_with_name (asm_file_name);
-	}
+        asm_out_file = fopen (asm_file_name, "w");
+      if (asm_out_file == 0)
+        pfatal_with_name (asm_file_name);
+    }
 
 #ifdef IO_BUFFER_SIZE
-      setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
-	       _IOFBF, IO_BUFFER_SIZE);
+  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
+           _IOFBF, IO_BUFFER_SIZE);
 #endif
-    }
 
   if (ggc_p && name != 0)
     name = ggc_alloc_string (name, strlen (name));
@@ -2427,8 +2424,7 @@ compile_file (name)
 
   finish_parse ();
 
-  if (! flag_syntax_only
-      && (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0))
+  if (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0)
     fatal_io_error (asm_file_name);
 
   /* Do whatever is necessary to finish printing the graphs.  */

@@ -1,4 +1,25 @@
-2000-08-05  Eli Zaretskii  <eliz@is.elta.co.il>
+2000-08-21  Nix  <nix@esperi.demon.co.uk>
+
+	* gcc.c (do_spec_1): Implement %j spec flag.
+	Remove dead comment.
+
+	* gcc.texi (The Configuration File): Document HOST_BIT_BUCKET.
+        * system.h (HOST_BIT_BUCKET): Default to "/dev/null".
+        * config/i386/xm-dos.h (HOST_BIT_BUCKET): Define as "NUL".
+        * config/i386/xm-os2.h, config/winnt/winnt.h: Likewise.
+
+        * protoize.c (munge_compile_params): Use HOST_BIT_BUCKET (if
+	writable) instead of hardcoded value.
+
+	* toplev.c (compile_file): Output to a file even if -fsyntax-only.
+
+        * gcc.c, config/i386/xm-dos.h, config/i386/xm-os2.h: Kill
+        MKTEMP_EACH_FILE.
+
+        * gcc.c (cc1_options): Do not process -o or run the assembler if
+	-fsyntax-only.
+
+2000-08-21  Eli Zaretskii  <eliz@is.elta.co.il>
 
 	* fixinc/fixincl.c (fix_with_system): Pipe the output of
 	"external" fixes through `cat', to avoid truncating the input
