@@ -1,3 +1,8 @@
+2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (ENUM_BITFIELDS_ARE_UNSIGNED): Delete redundant
+	call to AC_MSG_RESULT.
+
 2000-04-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* invoke.texi: Correct grammatical errors, document
