@@ -219,7 +219,7 @@ main (argc, argv)
 	  for (j = 0; j < new_len; j++)
 	    if (nbuff[j] == '/') nbuff[j] = DIR_SEPARATOR;
 
-	  sdbuff = malloc (search_dirs_len + new_len + 1);
+	  sdbuff = malloc (search_dirs_len + new_len + 2);
 	  strcpy (sdbuff, search_dirs);
 	  sdbuff[search_dirs_len] = PATH_SEPARATOR;
 	  sdbuff[search_dirs_len+1] = 0;
