@@ -549,7 +549,7 @@ read_class (name)
      tree name;
 {
   JCF this_jcf, *jcf;
-  tree icv, class;
+  tree icv, class = NULL_TREE;
   tree save_current_class = current_class;
   const char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
