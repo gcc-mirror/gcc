@@ -1373,6 +1373,14 @@ override_options ()
   if (x86_arch_always_fancy_math_387 & (1 << ix86_arch))
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
+  /* Turn on SSE2 builtins for -mpni.  */
+  if (TARGET_PNI)
+    target_flags |= MASK_SSE2;
+
+  /* Turn on SSE builtins for -msse2.  */
+  if (TARGET_SSE2)
+    target_flags |= MASK_SSE;
+
   if (TARGET_64BIT)
     {
       if (TARGET_ALIGN_DOUBLE)
@@ -13058,7 +13066,15 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE2, CODE_FOR_cvtsi2sd, 0, IX86_BUILTIN_CVTSI2SD, 0, 0 },
   { MASK_SSE2 | MASK_64BIT, CODE_FOR_cvtsi2sdq, 0, IX86_BUILTIN_CVTSI642SD, 0, 0 },
   { MASK_SSE2, CODE_FOR_cvtsd2ss, 0, IX86_BUILTIN_CVTSD2SS, 0, 0 },
-  { MASK_SSE2, CODE_FOR_cvtss2sd, 0, IX86_BUILTIN_CVTSS2SD, 0, 0 }
+  { MASK_SSE2, CODE_FOR_cvtss2sd, 0, IX86_BUILTIN_CVTSS2SD, 0, 0 },
+
+  /* PNI MMX */
+  { MASK_PNI, CODE_FOR_addsubv4sf3, "__builtin_ia32_addsubps", IX86_BUILTIN_ADDSUBPS, 0, 0 },
+  { MASK_PNI, CODE_FOR_addsubv2df3, "__builtin_ia32_addsubpd", IX86_BUILTIN_ADDSUBPD, 0, 0 },
+  { MASK_PNI, CODE_FOR_haddv4sf3, "__builtin_ia32_haddps", IX86_BUILTIN_HADDPS, 0, 0 },
+  { MASK_PNI, CODE_FOR_haddv2df3, "__builtin_ia32_haddpd", IX86_BUILTIN_HADDPD, 0, 0 },
+  { MASK_PNI, CODE_FOR_hsubv4sf3, "__builtin_ia32_hsubps", IX86_BUILTIN_HSUBPS, 0, 0 },
+  { MASK_PNI, CODE_FOR_hsubv2df3, "__builtin_ia32_hsubpd", IX86_BUILTIN_HSUBPD, 0, 0 }
 };
 
 static const struct builtin_description bdesc_1arg[] =
@@ -13104,7 +13120,12 @@ static const struct builtin_description bdesc_1arg[] =
   { MASK_SSE2, CODE_FOR_cvtps2pd, 0, IX86_BUILTIN_CVTPS2PD, 0, 0 },
   { MASK_SSE2, CODE_FOR_cvttps2dq, 0, IX86_BUILTIN_CVTTPS2DQ, 0, 0 },
 
-  { MASK_SSE2, CODE_FOR_sse2_movq, 0, IX86_BUILTIN_MOVQ, 0, 0 }
+  { MASK_SSE2, CODE_FOR_sse2_movq, 0, IX86_BUILTIN_MOVQ, 0, 0 },
+
+  /* PNI */
+  { MASK_PNI, CODE_FOR_movshdup, 0, IX86_BUILTIN_MOVSHDUP, 0, 0 },
+  { MASK_PNI, CODE_FOR_movsldup, 0, IX86_BUILTIN_MOVSLDUP, 0, 0 },
+  { MASK_PNI, CODE_FOR_movddup,  0, IX86_BUILTIN_MOVDDUP, 0, 0 }
 };
 
 void
@@ -13195,6 +13216,13 @@ ix86_init_mmx_sse_builtins ()
     = build_function_type (void_type_node, void_list_node);
   tree void_ftype_unsigned
     = build_function_type_list (void_type_node, unsigned_type_node, NULL_TREE);
+  tree void_ftype_unsigned_unsigned
+    = build_function_type_list (void_type_node, unsigned_type_node,
+				unsigned_type_node, NULL_TREE);
+  tree void_ftype_pcvoid_unsigned_unsigned
+    = build_function_type_list (void_type_node, const_ptr_type_node,
+				unsigned_type_node, unsigned_type_node,
+				NULL_TREE);
   tree unsigned_ftype_void
     = build_function_type (unsigned_type_node, void_list_node);
   tree di_ftype_void
@@ -13700,6 +13728,26 @@ ix86_init_mmx_sse_builtins ()
   def_builtin (MASK_SSE2, "__builtin_ia32_psradi128", v4si_ftype_v4si_int, IX86_BUILTIN_PSRADI128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pmaddwd128", v4si_ftype_v8hi_v8hi, IX86_BUILTIN_PMADDWD128);
+
+  /* Prescott New Instructions.  */
+  def_builtin (MASK_PNI, "__builtin_ia32_monitor",
+	       void_ftype_pcvoid_unsigned_unsigned,
+	       IX86_BUILTIN_MONITOR);
+  def_builtin (MASK_PNI, "__builtin_ia32_mwait",
+	       void_ftype_unsigned_unsigned,
+	       IX86_BUILTIN_MWAIT);
+  def_builtin (MASK_PNI, "__builtin_ia32_movshdup",
+	       v4sf_ftype_v4sf,
+	       IX86_BUILTIN_MOVSHDUP);
+  def_builtin (MASK_PNI, "__builtin_ia32_movsldup",
+	       v4sf_ftype_v4sf,
+	       IX86_BUILTIN_MOVSLDUP);
+  def_builtin (MASK_PNI, "__builtin_ia32_lddqu",
+	       v16qi_ftype_pcchar, IX86_BUILTIN_LDDQU);
+  def_builtin (MASK_PNI, "__builtin_ia32_loadddup",
+	       v2df_ftype_pcdouble, IX86_BUILTIN_LOADDDUP);
+  def_builtin (MASK_PNI, "__builtin_ia32_movddup",
+	       v2df_ftype_v2df, IX86_BUILTIN_MOVDDUP);
 }
 
 /* Errors in the source file can cause expand_expr to return const0_rtx
@@ -14508,6 +14556,41 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, arglist);
     case IX86_BUILTIN_STORED:
       return ix86_expand_store_builtin (CODE_FOR_sse2_stored, arglist);
+
+    case IX86_BUILTIN_MONITOR:
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      if (!REG_P (op0))
+	op0 = copy_to_mode_reg (SImode, op0);
+      if (!REG_P (op1))
+	op1 = copy_to_mode_reg (SImode, op1);
+      if (!REG_P (op2))
+	op2 = copy_to_mode_reg (SImode, op2);
+      emit_insn (gen_monitor (op0, op1, op2));
+      return 0;
+
+    case IX86_BUILTIN_MWAIT:
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      if (!REG_P (op0))
+	op0 = copy_to_mode_reg (SImode, op0);
+      if (!REG_P (op1))
+	op1 = copy_to_mode_reg (SImode, op1);
+      emit_insn (gen_mwait (op0, op1));
+      return 0;
+
+    case IX86_BUILTIN_LOADDDUP:
+      return ix86_expand_unop_builtin (CODE_FOR_loadddup, arglist, target, 1);
+
+    case IX86_BUILTIN_LDDQU:
+      return ix86_expand_unop_builtin (CODE_FOR_lddqu, arglist, target,
+				       1);
 
     default:
       break;
