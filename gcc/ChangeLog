@@ -1,3 +1,10 @@
+2005-03-08  Dorit Naishlos  <dorit@il.ibm.com>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/20474
+	* tree-vect-analyze.c (vect_analyze_pointer_ref_access): Check the
+	size_type of the relevant pointer. Check for COMPLETE_TYPE_P.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (check_bitfield_type_and_width): Require bit-field

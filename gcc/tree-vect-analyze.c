@@ -1310,8 +1310,7 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read,
       return NULL;
     }
 
-  reftype = TREE_TYPE (init);
-  if (!POINTER_TYPE_P (reftype)) 
+  if (!POINTER_TYPE_P (TREE_TYPE (init))) 
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 				LOOP_LOC (loop_vinfo))) 
@@ -1321,6 +1320,14 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read,
 
   *ptr_step = fold_convert (ssizetype, step);
   innertype = TREE_TYPE (reftype);
+
+  if (!COMPLETE_TYPE_P (innertype))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                LOOP_LOC (loop_vinfo)))
+         fprintf (vect_dump, "not vectorized: pointer to incomplete type.");
+      return NULL;
+    }
   /* Check that STEP is a multiple of type size.  */
   if (!integer_zerop (size_binop (TRUNC_MOD_EXPR, *ptr_step, 
  		        fold_convert (ssizetype, TYPE_SIZE_UNIT (innertype)))))
