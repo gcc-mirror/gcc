@@ -5,3 +5,7 @@ BOOT_CFLAGS = -O2 -save-temps
 
 # omit -g1
 LIBGCC2_DEBUG_CFLAGS =
+
+# omit -g
+FORCE_DEBUG_ADAFLAGS =
+GNATLIBCFLAGS = -O2
