@@ -203,7 +203,7 @@ extern const char *mips_output_conditional_branch (rtx, rtx *, int, int,
 extern const char *mips_output_division (const char *, rtx *);
 extern unsigned int mips_hard_regno_nregs (int, enum machine_mode);
 extern bool mips_linked_madd_p (rtx, rtx);
-extern const char *mips_emit_prefetch (rtx *);
+extern rtx mips_prefetch_cookie (rtx, rtx);
 
 extern void irix_asm_output_align (FILE *, unsigned);
 extern const char *current_section_name (void);

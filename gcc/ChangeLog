@@ -1,3 +1,7 @@
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/compile/20040824-1.c: New test.
+
 2004-08-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md: Include predicates.md.
