@@ -8,7 +8,7 @@ extern "C" void abort (void);
 
 struct C
 {
-  int foo (char ch, int offset = 0x7fffffff) const;
+  int foo (char ch, int offset = __INT_MAX__) const;
   int bar (int offset, char c) const;
   char *a;
 };
@@ -27,14 +27,14 @@ int C::foo (char ch, int offset) const
 {
   int len = __builtin_strlen (a);
   if (len == 0)
-    return 0x7fffffff;
+    return __INT_MAX__;
   if (offset >= len)
     offset = len - 1;
 
   while (bar (offset, ch) != 0)
     {
       if (offset == 0)
-        return 0x7fffffff;
+        return __INT_MAX__;
       offset--;
     }
 

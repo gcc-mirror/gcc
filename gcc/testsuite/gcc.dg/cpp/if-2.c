@@ -17,7 +17,8 @@
 #error 0x1234	/* { dg-bogus "error" "wide charconst recognition 3" } */
 #endif
 
-#if 'abcd' /* { dg-warning "multi-character character constant" "multi-character charconst" } */
+/* The 'character constant (is )?too long' message is produced by 16-bit targets.  */
+#if 'abcd' /* { dg-warning "(multi-character character constant)|(character constant (is )?too long)" "multi-character charconst" } */
 #endif
 
 #if 'abcdefghi' /* { dg-error "character constant (is )?too long" "charconst too long" } */
