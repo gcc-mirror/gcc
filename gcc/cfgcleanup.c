@@ -319,8 +319,9 @@ static void
 merge_blocks_move_successor_nojumps (a, b)
      basic_block a, b;
 {
-  rtx barrier;
+  rtx barrier, real_b_end;
 
+  real_b_end = b->end;
   barrier = NEXT_INSN (b->end);
 
   /* Recognize a jump table following block B.  */
@@ -331,6 +332,8 @@ merge_blocks_move_successor_nojumps (a, b)
       && (GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_VEC
 	  || GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_DIFF_VEC))
     {
+      /* Temporarily add the table jump insn to b, so that it will also
+	 be moved to the correct location.  */
       b->end = NEXT_INSN (barrier);
       barrier = NEXT_INSN (b->end);
     }
@@ -350,6 +353,9 @@ merge_blocks_move_successor_nojumps (a, b)
 
   /* Scramble the insn chain.  */
   reorder_insns_nobb (b->head, b->end, a->end);
+
+  /* Restore the real end of b.  */
+  b->end = real_b_end;
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
