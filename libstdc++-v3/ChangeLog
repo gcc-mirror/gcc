@@ -1,3 +1,7 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* porting.texi: Use the GFDL.
+
 2001-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* docs/html/17_intro/BADNAMES: Remove EGCS reference.

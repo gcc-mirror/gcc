@@ -5,6 +5,9 @@
 @setchapternewpage odd
 @c %**end of header
      
+Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+1999, 2000, 2001 Free Software Foundation, Inc.
+
 @node Top, Executing code before main, (dir), (dir)
 @comment  node-name,  next,  previous,  up
 
@@ -21,6 +24,7 @@ comments about this document to Ovidiu Predescu
 * Type encoding::               
 * Garbage Collection::          
 * Constant string objects::     
+* GNU Free Documentation License::
 @end menu
 
 @node Executing code before main, Type encoding, Top, Top
@@ -429,6 +433,8 @@ all the constant string objects will be instances of the class specified
 as argument to this option. It is possible to have multiple compilation
 units referring to different constant string classes, neither the
 compiler nor the linker impose any restrictions in doing this.
+
+@include fdl.texi
 
 @bye
 

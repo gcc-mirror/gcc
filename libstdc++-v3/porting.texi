@@ -1,15 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% File:   porting.texi
-% Author: Mark Mitchell
-% Date:   11/21/2000
-%
-% Contents:
-%
-% Copyright (c) 2000 by Free Software Foundation, Inc.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \input texinfo
 
 @c ---------------------------------------------------------------------
@@ -24,7 +12,7 @@
 This file explains how to port libstdc++-v3 (the GNU C++ library) to 
 a new target.
 
-Copyright (c) 2000 Free Software Foundation, Inc.
+Copyright (c) 2000, 2001 Free Software Foundation, Inc.
 @end ifinfo
 
 @c ---------------------------------------------------------------------
@@ -36,7 +24,25 @@ Copyright (c) 2000 Free Software Foundation, Inc.
 @author Mark Mitchell
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2000 Free Software Foundation, Inc.
+Copyright @copyright{} 2000, 2001 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
 @end titlepage
 
 @c ---------------------------------------------------------------------
@@ -69,6 +75,7 @@ Here are the primary steps required to port the library:
 * Character types::     Implementing character classification.
 * Thread safety::       Implementing atomic operations.
 * Libtool::             Using libtool.
+* GNU Free Documentation License:: How you can copy and share this manual.
 @end menu
 
 @c ---------------------------------------------------------------------
@@ -446,6 +453,12 @@ If you need to change how the library is linked, look at
 @file{ltcf-c.sh} in the top-level directory.  Find the switch statement
 that sets @code{archive_cmds}.  Here, adjust the setting for your
 operating system.
+
+@c ---------------------------------------------------------------------
+@c GFDL
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
 
 @c ---------------------------------------------------------------------
 @c Epilogue
