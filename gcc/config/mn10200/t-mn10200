@@ -35,7 +35,7 @@ LIB1ASMFUNCS    = _divhi3 \
 # built correctly, so...
 
 # We do not have DF or DI types, so fake out the libgcc2 compilation.
-LIBGCC2_CFLAGS = -g -O2 -DDF=SF -DDI=SI $(GCC_CFLAGS) $(LIBGCC2_INCLUDES)
+TARGET_LIBGCC2_CFLAGS=-DDF=SF -DDI=SI
 LIB2FUNCS_EXTRA = fp-bit.c $(srcdir)/config/mn10200/udivmodsi4.c \
 	$(srcdir)/config/mn10200/divmod.c $(srcdir)/config/mn10200/udivmod.c
 
