@@ -1,3 +1,9 @@
+2001-03-09  Nicola Pero <n.pero@mi.flashnet.it>
+
+	* configure: Rebuilt.
+	* configure.in: Only use `lang_requires' for languages athat are
+	actually enabled.
+
 2001-03-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Fix typo.
