@@ -2015,7 +2015,7 @@ uninitialized variables.
 
 The @code{noreturn} keyword does not affect the exceptional path when that
 applies: a @code{noreturn}-marked function may still return to the caller
-by throwing an exception.
+by throwing an exception or calling @code{longjmp}.
 
 Do not assume that registers saved by the calling function are
 restored before calling the @code{noreturn} function.

@@ -1,3 +1,9 @@
+2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/12713
+	* doc/extend.texi: Document interaction of attribute noreturn and
+	longjmp.
+
 2004-09-24  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/17503
