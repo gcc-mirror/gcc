@@ -1,3 +1,8 @@
+2000-11-15  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* cplus-dem.c (ada_demangle): Add back ATTRIBUTE_UNUSED for
+	parameter `option'.
+
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
 	* cplus-dem.c: Eliminate use of DEFUN, it is obsolete and cannot
@@ -5,7 +10,7 @@
 
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
-	* cplus_dem.c: Add gnat demangler.  Add java to demangle style
+	* cplus-dem.c: Add gnat demangler.  Add java to demangle style
 	list.
 
 2000-11-04  Hans-Peter Nilsson  <hp@bitrange.com>
@@ -3640,7 +3645,7 @@ Thu Feb 11 22:20:47 1993  Fred Fish  (fnf@cygnus.com)
 	* cplus-dem.c (string_prepends):  Used now, remove #if 0.
 	* cplus-dem.c (demangle_signature):  Call demangle_qualified
 	with prepending.
-	* cplus_dem.c (gnu_special):  Recognize static data members that
+	* cplus-dem.c (gnu_special):  Recognize static data members that
 	use qualified names.
 	* cplus-dem.c (demangle_qualified):  Accumulate qualifiers in a
 	temporary buffer and the prepend or append them to the result,

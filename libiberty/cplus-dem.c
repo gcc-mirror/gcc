@@ -953,7 +953,7 @@ grow_vect (old_vect, size, min_size, element_size)
 static char *
 ada_demangle (mangled, option)
      const char* mangled;
-     int option;
+     int option ATTRIBUTE_UNUSED;
 {
   int i, j;
   int len0;
