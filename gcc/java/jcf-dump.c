@@ -820,7 +820,7 @@ DEFUN(main, (argc, argv),
 		    break;  /* got to central directory */
 		  if (magic != 0x04034b50) /* ZIPMAGIC (little-endian) */
 		    {
-		      fprintf (stderr, "bad format of .zip archine\n");
+		      fprintf (stderr, "bad format of .zip/.jar archive\n");
 		      exit (FATAL_EXIT_CODE);
 		    }
 		  JCF_FILL (jcf, 26);
