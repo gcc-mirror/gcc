@@ -1,3 +1,8 @@
+2004-01-21  Andreas Jaeger  <aj@suse.de>
+	    Michael Matz  <matz@suse.de>
+
+	* doc/extend.texi (Extended Asm): Clarify memory clobber.
+
 2004-01-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (merge_decls): Kill different_binding_level and
