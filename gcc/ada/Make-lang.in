@@ -334,9 +334,122 @@ ada.all.cross:
 	fi
 
 ada.start.encap: 
-ada.rest.encap: 
-ada.info:
-ada.dvi:
+ada.rest.encap:
+
+# Generate documentation.
+#
+# The generated Texinfo files for the User Guideare stored in
+# $(srcdir), like the Info files.
+
+ada/doctools/xgnatug : ada/xgnatug.adb
+	-$(MKDIR) ada/doctools
+	cp $^ ada/doctools
+	cd ada/doctools && gnatmake -q xgnatug
+
+$(srcdir)/ada/gnat_ug_unx.texi : ada/doctools/xgnatug \
+	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
+	ada/doctools/xgnatug unx $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_unx.texi
+
+$(srcdir)/ada/gnat_ug_vms.texi : ada/doctools/xgnatug \
+	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
+	ada/doctools/xgnatug vms $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vms.texi
+
+$(srcdir)/ada/gnat_ug_vxw.texi : ada/doctools/xgnatug \
+	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
+	ada/doctools/xgnatug vxworks $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vxw.texi
+
+$(srcdir)/ada/gnat_ug_wnt.texi : ada/doctools/xgnatug \
+	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
+	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_wnt.texi
+
+$(srcdir)/ada/gnat_ug_unx.info : $(srcdir)/ada/gnat_ug_unx.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat_ug_unx.info ada/gnat_ug_unx.texi
+
+$(srcdir)/ada/gnat_ug_vms.info : $(srcdir)/ada/gnat_ug_vms.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat_ug_vms.info ada/gnat_ug_vms.texi
+
+$(srcdir)/ada/gnat_ug_vxw.info : $(srcdir)/ada/gnat_ug_vxw.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat_ug_vxw.info ada/gnat_ug_vxw.texi
+
+$(srcdir)/ada/gnat_ug_wnt.info : $(srcdir)/ada/gnat_ug_wnt.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat_ug_wnt.info ada/gnat_ug_wnt.texi
+
+$(srcdir)/ada/gnat_rm.info : $(srcdir)/ada/gnat_rm.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat_rm.info ada/gnat_rm.texi
+
+$(srcdir)/ada/gnat-style.info : $(srcdir)/ada/gnat-style.texi \
+	$(srcdir)/doc/include/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat-style.info ada/gnat-style.texi
+
+ada.info: $(srcdir)/ada/gnat_ug_vms.info $(srcdir)/ada/gnat_ug_wnt.info \
+	$(srcdir)/ada/gnat_ug_unx.info $(srcdir)/ada/gnat_ug_vxw.info \
+	$(srcdir)/ada/gnat_rm.info $(srcdir)/ada/gnat-style.info
+
+ada.install-info:
+	-rm -f $(infodir)/gnat_ug_*.info*
+	-rm -f $(infodir)/gnat_rm.info* 
+	-rm -f $(infodir)/gnat-style.info* 
+	if [ -f $(srcdir)/ada/gnat_ug_unx.info ]; then \
+	  for f in $(srcdir)/ada/gnat_ug_*.info* \
+		$(srcdir)/ada/gnat_rm.info* \
+		$(srcdir)/ada/gnat-style.info*; do \
+	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	  done; \
+	else true; fi
+	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+	  if [ -f $(infodir)/dir ] ; then \
+	    for f in gnat_ug_vms.info gnat_ug_wnt.info gnat_ug_unx.info \
+		gnat_ug_vxw.info gnat_rm.info gnat-style.info; do \
+		if [ -f $(infodir)/$$f ]; then \
+		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
+		else true; fi; \
+	    done; \
+	  else true; fi; \
+	else true; fi;
+	-chmod a-x $(infodir)/gnat_ug_vms.info* $(infodir)/gnat_ug_wnt.info*
+	-chmod a-x $(infodir)/gnat_ug_unx.info* $(infodir)/gnat_ug_vxw.info*
+	-chmod a-x $(infodir)/gnat_rm.info* $(infodir)/gnat-style.info*
+
+ada/gnat_ug_unx.dvi : $(srcdir)/ada/gnat_ug_unx.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_unx.dvi $$s/ada/gnat_ug_unx.texi
+
+ada/gnat_ug_vms.dvi : $(srcdir)/ada/gnat_ug_vms.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vms.dvi $$s/ada/gnat_ug_vms.texi
+
+ada/gnat_ug_vxw.dvi : $(srcdir)/ada/gnat_ug_vxw.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vxw.dvi $$s/ada/gnat_ug_vxw.texi
+
+ada/gnat_ug_wnt.dvi : $(srcdir)/ada/gnat_ug_wnt.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_wnt.dvi $$s/ada/gnat_ug_wnt.texi
+
+ada/gnat_rm.dvi : $(srcdir)/ada/gnat_rm.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_rm.dvi $$s/ada/gnat_rm.texi
+
+ada/gnat-style.dvi : $(srcdir)/ada/gnat-style.texi \
+	$(srcdir)/doc/include/fdl.texi
+	s=`cd $(srcdir); ${PWD}`; \
+	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat-style.dvi $$s/ada/gnat-style.texi
+
+ada.dvi: ada/gnat_ug_vms.dvi ada/gnat_ug_wnt.dvi \
+	ada/gnat_ug_unx.dvi ada/gnat_ug_vxw.dvi \
+	ada/gnat_rm.dvi ada/gnat-style.dvi
+
 ada.generated-manpages:
 
 # Install hooks:
