@@ -1,3 +1,8 @@
+Tue 19-Sep-2000 22:38:57 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (lex_line): Drop the EOF token for unknown
+	directives in assembler.
+
 2000-09-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in: Allow enable_threads_flag value of "aix".  Define
