@@ -1,4 +1,4 @@
-Mon Mar 16 15:50:20 EST 1998 Andrew MacLeod <amacleod@torpedo.to.cygnus.com>
+Mon Mar 16 15:50:20 EST 1998 Andrew MacLeod <amacleod@cygnus.com>
 
 	* except.h (in_same_eh_region): New prototype.
 	(free_insn_eh_region, init_insn_eh_region): New prototypes.
