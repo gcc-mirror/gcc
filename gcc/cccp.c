@@ -4140,6 +4140,13 @@ get_filename:
 	    search_start = dsp;
 #ifndef VMS
 	    ep = rindex (nam, '/');
+#ifdef DIR_SEPARATOR
+	    if (ep == NULL) ep = rindex (nam, DIR_SEPARATOR);
+	    else {
+	      char *tmp = rindex (nam, DIR_SEPARATOR);
+	      if (tmp != NULL && tmp > ep) ep = tmp;
+	    }
+#endif
 #else				/* VMS */
 	    ep = rindex (nam, ']');
 	    if (ep == NULL) ep = rindex (nam, '>');
@@ -4266,7 +4273,11 @@ get_filename:
 
   /* If specified file name is absolute, just open it.  */
 
-  if (*fbeg == '/') {
+  if (*fbeg == '/'
+#ifdef DIR_SEPARATOR
+      || *fbeg == DIR_SEPARATOR
+#endif
+      ) {
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
     if (redundant_include_p (fname))
@@ -4520,13 +4531,17 @@ is_system_include (filename)
       register char *sys_dir = searchptr->fname;
       register unsigned length = strlen (sys_dir);
 
-      if (! strncmp (sys_dir, filename, length) && filename[length] == '/')
-	{
-	  if (searchptr->c_system_include_path)
-	    return 2;
-	  else
-	    return 1;
-	}
+      if (! strncmp (sys_dir, filename, length)
+	  && (filename[length] == '/'
+#ifdef DIR_SEPARATOR
+	      || filename[length] == DIR_SEPARATOR
+#endif
+	      )) {
+	if (searchptr->c_system_include_path)
+	  return 2;
+	else
+	  return 1;
+      }
     }
   return 0;
 }
@@ -4708,6 +4723,13 @@ open_include_file (filename, searchptr)
      in /usr/include/header.gcc and look up types.h in
      /usr/include/sys/header.gcc.  */
   p = rindex (filename, '/');
+#ifdef DIR_SEPARATOR
+  if (! p) p = rindex (filename, DIR_SEPARATOR);
+  else {
+    char *tmp = rindex (filename, DIR_SEPARATOR);
+    if (tmp != NULL && tmp > p) p = tmp;
+  }
+#endif
   if (! p)
     p = filename;
   if (searchptr
