@@ -408,6 +408,7 @@ cpp_options_init (opts)
   opts->dollars_in_ident = 1;
   opts->cplusplus_comments = 1;
   opts->warn_import = 1;
+  opts->discard_comments = 1;
 
   opts->pending =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
@@ -1600,7 +1601,7 @@ cpp_handle_option (pfile, argc, argv)
 	break;
       
       case 'C':
-	opts->put_out_comments = 1;
+	opts->discard_comments = 0;
 	break;
       
       case 'E':			/* -E comes from cc -E; ignore it.  */

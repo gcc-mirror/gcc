@@ -35,6 +35,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    (Note that it is false while we're expanding macro *arguments*.) */
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 
+/* ACTIVE_MARK_P is true if there's a live mark in the buffer, in which
+   case CPP_BUMP_LINE must not be called.  */
+#define ACTIVE_MARK_P() (CPP_BUFFER (pfile)->mark != -1)
+
 /* External declarations.  */
 
 extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
@@ -100,6 +104,8 @@ static int consider_directive_while_skipping PARAMS ((cpp_reader *,
 						      IF_STACK_FRAME *));
 static void skip_block_comment		PARAMS ((cpp_reader *));
 static void skip_line_comment		PARAMS ((cpp_reader *));
+static void parse_set_mark		PARAMS ((cpp_reader *));
+static void parse_goto_mark		PARAMS ((cpp_reader *));
 
 /* Here is the actual list of #-directives.
    This table is ordered by frequency of occurrence; the numbers
@@ -282,8 +288,11 @@ skip_block_comment (pfile)
 	  return;
 	}
       else if (c == '\n' || c == '\r')
-	/* \r cannot be a macro escape marker here. */
-	CPP_BUMP_LINE (pfile);
+	{
+	  /* \r cannot be a macro escape marker here. */
+	  if (!ACTIVE_MARK_P())
+	    CPP_BUMP_LINE (pfile);
+	}
       else if (c == '/' && prev_c == '*')
 	return;
       else if (c == '*' && prev_c == '/'
@@ -315,7 +324,8 @@ skip_line_comment (pfile)
       else if (c == '\r')
 	{
 	  /* \r cannot be a macro escape marker here. */
-	  CPP_BUMP_LINE (pfile);
+	  if (!ACTIVE_MARK_P())
+	    CPP_BUMP_LINE (pfile);
 	  if (CPP_OPTIONS (pfile)->warn_comments)
 	    cpp_warning (pfile, "backslash-newline within line comment");
 	}
@@ -376,7 +386,7 @@ skip_comment (pfile, m)
 }
 
 /* Identical to skip_comment except that it copies the comment into the
-   token_buffer.  This is used if put_out_comments.  */
+   token_buffer.  This is used if !discard_comments.  */
 static int
 copy_comment (pfile, m)
      cpp_reader *pfile;
@@ -764,6 +774,8 @@ cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buf = CPP_BUFFER (pfile);
+  if (ACTIVE_MARK_P())
+    cpp_ice (pfile, "mark active in cpp_pop_buffer");
   (*buf->cleanup) (buf, pfile);
   CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
   free (buf);
@@ -2337,16 +2349,16 @@ cpp_get_token (pfile)
 	    goto op2;
 
 	comment:
-	  if (opts->put_out_comments)
-	    c = copy_comment (pfile, c);
-	  else
+	  if (opts->discard_comments)
 	    c = skip_comment (pfile, c);
+	  else
+	    c = copy_comment (pfile, c);
 	  if (c != ' ')
 	    goto randomchar;
 	  
 	  /* Comments are equivalent to spaces.
 	     For -traditional, a comment is equivalent to nothing.  */
-	  if (opts->traditional || opts->put_out_comments)
+	  if (opts->traditional || !opts->discard_comments)
 	    return CPP_COMMENT;
 	  else
 	    {
@@ -2629,50 +2641,50 @@ cpp_get_token (pfile)
 	       decide this is not a macro call and leave things that way.  */
 	    if (hp->type == T_MACRO && hp->value.defn->nargs >= 0)
 	    {
-	      int is_macro_call, macbuf_whitespace = 0;
+	      int macbuf_whitespace = 0;
+
+	      while (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+		{
+		  U_CHAR *point = CPP_BUFFER (pfile)->cur;
+		  for (;;)
+		    {
+		      cpp_skip_hspace (pfile);
+		      c = PEEKC ();
+		      if (c == '\n')
+			FORWARD(1);
+		      else
+			break;
+		    }
+		  if (point != CPP_BUFFER (pfile)->cur)
+		    macbuf_whitespace = 1;
+		  if (c == '(')
+		    goto is_macro_call;
+		  else if (c != EOF)
+		    goto not_macro_call;
+		  cpp_pop_buffer (pfile);
+		}
 
 	      parse_set_mark (pfile);
 	      for (;;)
 		{
 		  cpp_skip_hspace (pfile);
 		  c = PEEKC ();
-		  is_macro_call = c == '(';
-		  if (c != EOF)
-		    {
-		      if (c != '\n')
-		        break;
-		      CPP_BUMP_LINE (pfile);
-		      FORWARD (1);
-		    }
-                  else
-                    {
-                      if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-                        {
-                          if (CPP_BUFFER (pfile)->mark !=
-                              (CPP_BUFFER (pfile)->cur
-                               - CPP_BUFFER (pfile)->buf))
-                             macbuf_whitespace = 1;
-
-			  /* The mark goes away automatically when
-			     the buffer is popped. */
-                          cpp_pop_buffer (pfile);
-                          parse_set_mark (pfile);
-                        }
-                      else
-                        break;
-                    }
+		  if (c == '\n')
+		    FORWARD(1);
+		  else
+		    break;
 		}
-	      if (!is_macro_call)
-                {
-                  parse_goto_mark (pfile);
-                  if (macbuf_whitespace)
-                    CPP_PUTC (pfile, ' ');
-                }
-	      else
-		parse_clear_mark (pfile);
-	      if (!is_macro_call)
-		return CPP_NAME;
+	      parse_goto_mark (pfile);
+
+	      if (c == '(')
+		goto is_macro_call;
+
+	    not_macro_call:
+	      if (macbuf_whitespace)
+		CPP_PUTC (pfile, ' ');
+	      return CPP_NAME;
 	    }
+	  is_macro_call:
 	    /* This is now known to be a macro call.
 	       Expand the macro, reading arguments as needed,
 	       and push the expansion on the input stack.  */
@@ -3142,40 +3154,27 @@ cpp_read_check_assertion (pfile)
 
 /* Remember the current position of PFILE.  */
 
-void
+static void
 parse_set_mark (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
-  if (ip->mark != -1)
-      cpp_ice (pfile, "ip->mark != -1 in parse_set_mark");
+  if (ACTIVE_MARK_P())
+      cpp_ice (pfile, "mark active in parse_set_mark");
 
   ip->mark = ip->cur - ip->buf;
-}
-
-/* Clear the current mark - we no longer need it.  */
-
-void
-parse_clear_mark (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-  if (ip->mark == -1)
-      cpp_ice (pfile, "ip->mark == -1 in parse_clear_mark");
-
-  ip->mark = -1;
 }
 
 /* Backup the current position of PFILE to that saved in its mark,
    and clear the mark.  */
 
-void
+static void
 parse_goto_mark (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
-  if (ip->mark == -1)
-      cpp_ice (pfile, "ip->mark == -1 in parse_goto_mark");
+  if (!ACTIVE_MARK_P())
+      cpp_ice (pfile, "mark not active in parse_goto_mark");
 
   ip->cur = ip->buf + ip->mark;
   ip->mark = -1;

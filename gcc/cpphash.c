@@ -773,27 +773,22 @@ macarg (pfile, rest_args)
 {
   int paren = 0;
   enum cpp_token token;
-  char save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
-  CPP_OPTIONS (pfile)->put_out_comments = 0;
 
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
-  pfile->no_macro_expand++;
-  pfile->no_directives++;
-  CPP_OPTIONS (pfile)->no_line_commands++;
   for (;;)
     {
       token = cpp_get_token (pfile);
       switch (token)
 	{
 	case CPP_EOF:
-	  goto done;
+	  return token;
 	case CPP_POP:
 	  /* If we've hit end of file, it's an error (reported by caller).
 	     Ditto if it's the end of cpp_expand_to_buffer text.
 	     If we've hit end of macro, just continue.  */
 	  if (!CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	    goto done;
+	    return token;
 	  break;
 	case CPP_LPAREN:
 	  paren++;
@@ -811,18 +806,10 @@ macarg (pfile, rest_args)
 	found:
 	  /* Remove ',' or ')' from argument buffer.  */
 	  CPP_ADJUST_WRITTEN (pfile, -1);
-	  goto done;
+	  return token;
 	default:;
 	}
     }
-
-done:
-  CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
-  CPP_OPTIONS (pfile)->no_line_commands--;
-  pfile->no_macro_expand--;
-  pfile->no_directives--;
-
-  return token;
 }
 
 
@@ -1023,7 +1010,7 @@ macroexpand (pfile, hp)
 
   if (nargs >= 0)
     {
-      enum cpp_token token = CPP_EOF;
+      enum cpp_token token;
 
       args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
 
@@ -1040,8 +1027,20 @@ macroexpand (pfile, hp)
          macarg absorbed the rest of the args.  */
       i = 0;
       rest_args = 0;
-      rest_args = 0;
-      FORWARD (1);	/* Discard open-parenthesis before first arg.  */
+
+      /* Skip over the opening parenthesis.  */
+      CPP_OPTIONS (pfile)->discard_comments++;
+      CPP_OPTIONS (pfile)->no_line_commands++;
+      pfile->no_macro_expand++;
+      pfile->no_directives++;
+
+      token = cpp_get_non_space_token (pfile);
+      if (token != CPP_LPAREN)
+	cpp_ice (pfile, "macroexpand: unexpected token %d (wanted LPAREN)",
+		 token);
+      CPP_ADJUST_WRITTEN (pfile, -1);
+
+      token = CPP_EOF;
       do
 	{
 	  if (rest_args)
@@ -1058,14 +1057,17 @@ macroexpand (pfile, hp)
 	  else
 	    token = macarg (pfile, 0);
 	  if (token == CPP_EOF || token == CPP_POP)
-	    {
-	      cpp_error_with_line (pfile, start_line, start_column,
-				   "unterminated macro call");
-	      return;
-	    }
+	    cpp_error_with_line (pfile, start_line, start_column,
+				 "unterminated macro call");
 	  i++;
 	}
       while (token == CPP_COMMA);
+      CPP_OPTIONS (pfile)->discard_comments--;
+      CPP_OPTIONS (pfile)->no_line_commands--;
+      pfile->no_macro_expand--;
+      pfile->no_directives--;
+      if (token != CPP_RPAREN)
+	return;
 
       /* If we got one arg but it was just whitespace, call that 0 args.  */
       if (i == 1)
