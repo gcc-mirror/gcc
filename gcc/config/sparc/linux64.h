@@ -246,6 +246,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC "\
 %(link_arch) \
 %{mlittle-endian:-EL} \
+%{!mno-relax:%{!r:-relax}} \
 "
 
 #undef	CC1_SPEC
@@ -283,7 +284,7 @@ Boston, MA 02111-1307, USA.  */
 #else /* !SPARC_BI_ARCH */
 
 #undef LINK_SPEC
-#define LINK_ARCH_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
+#define LINK_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
@@ -291,6 +292,7 @@ Boston, MA 02111-1307, USA.  */
         %{!dynamic-linker:-dynamic-linker /lib64/ld-linux.so.2}} \
         %{static:-static}}} \
 %{mlittle-endian:-EL} \
+%{!mno-relax:%{!r:-relax}} \
 "
 
 #endif /* !SPARC_BI_ARCH */
@@ -308,8 +310,7 @@ Boston, MA 02111-1307, USA.  */
 %{Wa,*:%*} \
 -s %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{mlittle-endian:-EL} \
-%(asm_cpu) %(asm_arch) \
-"
+%(asm_cpu) %(asm_arch) %(asm_relax)"
 
 /* Same as sparc.h */
 #undef DBX_REGISTER_NUMBER

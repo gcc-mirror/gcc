@@ -179,6 +179,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #else
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
+  %{!mno-relax:%{!r:-relax}} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
@@ -191,7 +192,8 @@ Boston, MA 02111-1307, USA.  */
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} %{fPIC:-K PIC}"
+  "%{V} %{v:%{!V:-V}} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} \
+   %{fPIC:-K PIC} %(asm_relax)"
 
 /* Same as sparc.h */
 #undef DBX_REGISTER_NUMBER

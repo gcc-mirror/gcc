@@ -8916,10 +8916,38 @@ EOF
 
     fi
 
+    echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
+echo "configure:8921: checking assembler supports -relax" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	gcc_cv_as_relax_opt=unknown
+	if test x$gcc_cv_as != x; then
+	    # Check if gas supports -relax
+	    echo ".text" > conftest.s
+	    if $gcc_cv_as -relax -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_relax_opt=yes
+	    else
+		gcc_cv_as_relax_opt=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    
+fi
+
+echo "$ac_t""$gcc_cv_as_relax_opt" 1>&6
+    if test "x$gcc_cv_as_relax_opt" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_AS_RELAX_OPTION 1
+EOF
+
+    fi
+
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:8923: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:8951: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8964,7 +8992,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:8968: checking for assembler offsetable %lo() support" >&5
+echo "configure:8996: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -9003,7 +9031,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:9007: checking assembler instructions" >&5
+echo "configure:9035: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
@@ -9133,7 +9161,7 @@ fi
 
 # Build a new-libstdc++ system (ie libstdc++-v3)
 echo $ac_n "checking for libstdc++ to install""... $ac_c" 1>&6
-echo "configure:9137: checking for libstdc++ to install" >&5
+echo "configure:9165: checking for libstdc++ to install" >&5
 # Check whether --enable-libstdcxx-v3 or --disable-libstdcxx-v3 was given.
 if test "${enable_libstdcxx_v3+set}" = set; then
   enableval="$enable_libstdcxx_v3"
@@ -9157,7 +9185,7 @@ EOF
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:9161: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:9189: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

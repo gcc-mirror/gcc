@@ -1,3 +1,19 @@
+2000-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Check whether gas supports -relax.
+	* configure, config.in: Rebuilt.
+	* config/sparc/sparc.h (ASM_RELAX_SPEC): Define.
+	(EXTRA_SPECS): Add asm_relax.
+	(ASM_SPEC): Add %(asm_relax).
+	(TARGET_SWITCHES): Add -mrelax and -mno-relax.
+	* config/sparc/linux64.h (LINK_ARCH_SPEC): Rename to LINK_SPEC.
+	(LINK_SPEC): Pass -relax to linker unless -mno-relax or -r.
+	(ASM_SPEC): Add %(asm_relax).
+	* config/sparc/linux.h (LINK_SPEC, ASM_SPEC): Likewise.
+	* config/sparc/sparc.c (output_sibcall): If HAVE_AS_RELAX_OPTION,
+	never use sethi/jmpl for leaf tail calls.  Use or with rs2 %g0
+	instead of mov, so that gas can further optimize it.
+
 2000-06-08  James E. Wilson  <wilson@bletchleypark.cygnus.com>
 
 	* dwarf2out.c (size_of_die, case dw_val_class_const): Use

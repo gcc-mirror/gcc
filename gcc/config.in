@@ -426,6 +426,9 @@
 /* Define if your assembler supports .register. */
 #undef HAVE_AS_REGISTER_PSEUDO_OP
 
+/* Define if your assembler supports -relax option. */
+#undef HAVE_AS_RELAX_OPTION
+
 /* Define if the assembler supports 64bit sparc. */
 #undef AS_SPARC64_FLAG
 
