@@ -1,5 +1,9 @@
 2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* et-forest.c: Replace et_occurences with et_occurrences.
+
+2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cfgloop.h, loop-iv.c, loop-unswitch.c: Replace iv_analyse
 	with iv_analyze.
 
