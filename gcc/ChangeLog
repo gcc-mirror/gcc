@@ -1,3 +1,8 @@
+2000-02-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_define): Only free the old definition if it
+	actually had one.
+
 2000-02-13   Neil Booth  <NeilB@earthling.net>
 
 	* cppfiles.c (read_and_prescan): When emitting deferred

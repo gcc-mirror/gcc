@@ -715,8 +715,9 @@ do_define (pfile, keyword)
       if (hp->type != T_POISON)
 	{
 	  /* Replace the old definition.  */
+	  if (hp->type == T_MACRO)
+	    free_definition (hp->value.defn);
 	  hp->type = T_MACRO;
-	  free_definition (hp->value.defn);
 	  hp->value.defn = mdef.defn;
 	}
     }
