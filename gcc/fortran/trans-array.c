@@ -2947,7 +2947,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
   gfc_start_block (&block);
 
   if (sym->ts.type == BT_CHARACTER
-      && !INTEGER_CST_P (sym->ts.cl->backend_decl))
+      && TREE_CODE (sym->ts.cl->backend_decl) == VAR_DECL)
     gfc_trans_init_string_length (sym->ts.cl, &block);
 
   /* Evaluate the bounds of the array.  */
@@ -3026,7 +3026,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   gfc_start_block (&block);
 
   if (sym->ts.type == BT_CHARACTER
-      && !INTEGER_CST_P (sym->ts.cl->backend_decl))
+      && TREE_CODE (sym->ts.cl->backend_decl) == VAR_DECL)
     gfc_trans_init_string_length (sym->ts.cl, &block);
 
   checkparm = (sym->as->type == AS_EXPLICIT && flag_bounds_check);
@@ -3359,6 +3359,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    {
 	      se->expr = desc;
 	    }
+	  if (expr->ts.type == BT_CHARACTER)
+	    se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
 	  return;
 	}
     }
@@ -3390,7 +3392,12 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss->type = GFC_SS_TEMP;
       loop.temp_ss->next = gfc_ss_terminator;
       loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
-      loop.temp_ss->data.temp.string_length = NULL;
+      /* Which can hold our string, if present.  */
+      if (expr->ts.type == BT_CHARACTER)
+	se->string_length = loop.temp_ss->data.temp.string_length
+	  = TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
+      else
+	loop.temp_ss->data.temp.string_length = NULL;
       loop.temp_ss->data.temp.dimen = loop.dimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
@@ -3450,6 +3457,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tree from;
       tree to;
       tree base;
+
+      /* set the string_length for a character array.  */
+      if (expr->ts.type == BT_CHARACTER)
+	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
 
       /* Otherwise make a new descriptor and point it at the section we
          want.  The loop variable limits will be the limits of the section.
@@ -3625,6 +3636,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
     {
       sym = expr->symtree->n.sym;
       tmp = gfc_get_symbol_decl (sym);
+      if (sym->ts.type == BT_CHARACTER)
+	se->string_length = sym->ts.cl->backend_decl;
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
           && !sym->attr.allocatable)
         {

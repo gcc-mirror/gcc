@@ -1,3 +1,14 @@
+2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+ 	PR fortran/15234
+	* trans-array.c gfc_trans_g77_array,
+	gfc_trans_dummy_array_bias): Don't call gfc_trans_string_init
+	for assumed length characters.
+	(gfc_conv_expr_descriptor): Set se->string_length if dealing
+	with a character expression.
+	(gfc_cvonv_array_parameter): Pass string length when passing
+	character array according to g77 conventions.
+
 2004-07-12  Paul Brook  <paul@codesourcery.com>
 
 	* expr.c (gfc_check_assign_symbol): Handle pointer assignments.
