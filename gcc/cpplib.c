@@ -468,15 +468,18 @@ copy_rest_of_line (pfile)
 	  parse_string (pfile, c);
 	  continue;
 	case '/':
-	  if (PEEKC() == '*' && CPP_TRADITIONAL (pfile))
+	  if (PEEKC() == '*')
 	    {
-	      CPP_PUTS (pfile, "/**/", 4);
-	      skip_comment (pfile, c);
+	      if (CPP_TRADITIONAL (pfile))
+		CPP_PUTS (pfile, "/**/", 4);
+	      skip_block_comment (pfile);
 	      continue;
 	    }
 	  /* else fall through */
 	case '-':
 	  c = skip_comment (pfile, c);
+	  if (c == ' ')
+	    return;
 	  break;
 
 	case '\f':
@@ -527,10 +530,7 @@ handle_directive (pfile)
   if (c >= '0' && c <= '9')
     {
       if (CPP_OPTIONS (pfile)->lang_asm)
-	{
-	  skip_rest_of_line (pfile);
-	  return 1;
-	}
+	return 0;
 
       if (CPP_PEDANTIC (pfile)
 	  && ! CPP_PREPROCESSED (pfile)
@@ -552,21 +552,20 @@ handle_directive (pfile)
   ident_length = CPP_PWRITTEN (pfile) - ident;
   if (ident_length == 0)
     {
-      /* A line of just `#' becomes blank.  */
-      if (PEEKC() == '\n')
-	return 1;
-      else
-	return 0;
+      /* A line of just `#' becomes blank.  A line with something
+         other than an identifier after the # is reparsed as a non-
+         directive line.  */
+      CPP_SET_WRITTEN (pfile, old_written);
+      return (PEEKC() == '\n');
     }
 
-  /*
-   * Decode the keyword and call the appropriate expansion
-   * routine, after moving the input pointer up to the next line.
-   */
+  /* Decode the keyword and call the appropriate expansion routine.  */
   for (kt = directive_table; ; kt++)
     {
       if (kt->length <= 0)
-	return 0;
+	/* # identifier, but not a legit directive.  Pass onward as a
+	   CPP_DIRECTIVE token anyway - let the consumer worry about it.  */
+	return 1;
       if (kt->length == ident_length
 	  && !strncmp (kt->name, ident, ident_length)) 
 	break;
@@ -983,26 +982,43 @@ static enum cpp_token
 get_directive_token (pfile)
      cpp_reader *pfile;
 {
+  long old_written = CPP_WRITTEN (pfile);
+  enum cpp_token token;
+
   for (;;)
     {
-      long old_written = CPP_WRITTEN (pfile);
-      enum cpp_token token;
       cpp_skip_hspace (pfile);
       if (PEEKC () == '\n')
-	  return CPP_VSPACE;
+	return CPP_VSPACE;
+
       token = cpp_get_token (pfile);
-      switch (token)
-      {
-      case CPP_POP:
-	  if (! CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	      return token;
-	  /* ... else fall though ...  */
-      case CPP_HSPACE:  case CPP_COMMENT:
+      /* token could be hspace at the beginning of a macro.  */
+      if (token == CPP_HSPACE || token == CPP_COMMENT)
+	{
 	  CPP_SET_WRITTEN (pfile, old_written);
-	  break;
-      default:
+	  continue;
+	}
+
+      /* token cannot be vspace, it would have been caught above.  */
+      if (token == CPP_VSPACE)
+	{
+	  cpp_fatal (pfile, "VSPACE in get_directive_token");
 	  return token;
-      }
+	}
+
+      /* token cannot be POP unless the buffer is a macro buffer.  */
+      if (token != CPP_POP)
+	return token;
+
+      if (! CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+	{
+	  cpp_fatal (pfile, "POP of file buffer in get_directive_token");
+	  return token;
+	}
+
+      /* We must pop the buffer by hand, else cpp_get_token might hand
+	 us whitespace or newline on the next invocation.  */
+      cpp_pop_buffer (pfile);
     }
 }
 
@@ -2246,7 +2262,7 @@ if_directive_name (pfile, ifs)
 
 /* Get the next token, and add it to the text in pfile->token_buffer.
    Return the kind of token we got.  */
-  
+
 enum cpp_token
 cpp_get_token (pfile)
      cpp_reader *pfile;
@@ -2345,7 +2361,7 @@ cpp_get_token (pfile)
 	  if (handle_directive (pfile))
 	    return CPP_DIRECTIVE;
 	  pfile->only_seen_white = 0;
-	  return CPP_OTHER;
+	  goto randomchar;
 
 	case '\"':
 	case '\'':

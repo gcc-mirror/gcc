@@ -1,5 +1,20 @@
 2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppfiles.c (read_and_prescan) [case SPECCASE_QUESTION]: Bump
+	input pointer before possibly branching off to the backslash
+	code.
+	* cpphash.c (macroexpand): Correctly delete \r escapes when
+	stringifying parameters.
+	* cpplib.c (copy_rest_of_line): Go directly to skip_block_comment
+	if we can; bail out early if we hit a line comment.
+	(handle_directive): Treat '# 123' in an .S file just like
+	'# <punctuation>'.  Discard the shifted '#' if we hit '#\n'.
+	Return 1 for '# not_a_directive'.
+	(get_directive_token): Pop macro buffers here, so that
+	cpp_get_token can't sneakily move past a newline.
+	Add sanity checks. 
+	(cpp_get_token): goto randomchar if handle_directive returns 0.
+
 	* cppalloc.c: Update copyright.
 	* cpplib.c: Merge all the static function prototypes into one
 	block.

@@ -1017,6 +1017,7 @@ read_and_prescan (pfile, fp, desc, len)
 		    *op++ = '?';
 		    break;
 		  }
+		ip += 2;
 		if (CPP_OPTIONS (pfile)->warn_trigraphs)
 		  {
 		    unsigned long col;
@@ -1042,7 +1043,6 @@ read_and_prescan (pfile, fp, desc, len)
 		    *op++ = '?';
 		    *op++ = d;
 		  }
-		ip += 2;
 	      }
 	    }
 	}
