@@ -80,6 +80,11 @@
 
 	* i386.h (DEBUG_PRINT_REG): Constify a char*.
 
+Fri Dec 10 16:12:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* tree.def (EXPR_WITH_FILE_LOCATION): Temporarily add a third
+ 	operand, for use in the Java front-end.
+
 1999-12-10  Ben Collins  <bcollins@debian.org>
 
         * configure.in: Fix typo for "-64" in 64bit as check.

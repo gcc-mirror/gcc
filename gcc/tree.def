@@ -794,8 +794,10 @@ DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", 'e', 2)
    information: a file name (EXPR_WFL_FILENAME);  a line number
    (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
    expanded as the contained node (EXPR_WFL_NODE);  a line note should
-   be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  */
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 2)
+   be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  
+   The third operand is only used in the Java front-end, and will
+   eventually be removed.  */
+DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
 
 /* Switch expression.
    Operand 0 is the expression used to perform the branch,
