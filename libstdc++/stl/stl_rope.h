@@ -386,8 +386,8 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc> {
     typedef _Rope_rep_base<_CharT,_Alloc>::allocator_type allocator_type;
     _Rope_RopeRep(_Tag __t, int __d, bool __b, size_t __size,
                   allocator_type __a)
-        : _M_tag(__t), _M_depth(__d), _M_is_balanced(__b), _M_c_string(0),
-          _Rope_rep_base<_CharT,_Alloc>(__size, __a)
+        : _Rope_rep_base<_CharT,_Alloc>(__size, __a),
+          _M_tag(__t), _M_depth(__d), _M_is_balanced(__b), _M_c_string(0)
     {
 #       ifndef __GC
             _M_refcount = 1;
@@ -562,8 +562,8 @@ struct _Rope_RopeLeaf : public _Rope_RopeRep<_CharT,_Alloc> {
                                 /* doesn't matter.               */
     typedef _Rope_rep_base<_CharT,_Alloc>::allocator_type allocator_type;
     _Rope_RopeLeaf(__GC_CONST _CharT* __d, size_t __size, allocator_type __a)
-        : _M_data(__d)
-        , _Rope_RopeRep<_CharT,_Alloc>(_S_leaf, 0, true, __size, __a)
+        : _Rope_RopeRep<_CharT,_Alloc>(_S_leaf, 0, true, __size, __a),
+	  _M_data(__d)
         {
         __stl_assert(__size > 0);
         if (_S_is_basic_char_type((_CharT *)0)) {
@@ -593,10 +593,10 @@ struct _Rope_RopeConcatenation : public _Rope_RopeRep<_CharT,_Alloc> {
     _Rope_RopeConcatenation(_Rope_RopeRep<_CharT,_Alloc>* __l,
                              _Rope_RopeRep<_CharT,_Alloc>* __r,
                              allocator_type __a)
-      : _M_left(__l), _M_right(__r)
-      , _Rope_RopeRep<_CharT,_Alloc>(
+      : _Rope_RopeRep<_CharT,_Alloc>(
           _S_concat, max(__l->_M_depth, __r->_M_depth) + 1, false,
-          __l->_M_size + __r->_M_size, __a)
+          __l->_M_size + __r->_M_size, __a),
+      _M_left(__l), _M_right(__r)
       {}
 # ifndef __GC
     ~_Rope_RopeConcatenation() {
@@ -629,11 +629,12 @@ struct _Rope_RopeFunction : public _Rope_RopeRep<_CharT,_Alloc> {
     typedef _Rope_rep_base<_CharT,_Alloc>::allocator_type allocator_type;
     _Rope_RopeFunction(char_producer<_CharT>* __f, size_t __size,
                         bool __d, allocator_type __a)
-      : _M_fn(__f)
+      :_Rope_RopeRep<_CharT,_Alloc>(_S_function, 0, true, __size, __a), 
+       _M_fn(__f)
 #       ifndef __GC
       , _M_delete_when_done(__d)
 #       endif
-      , _Rope_RopeRep<_CharT,_Alloc>(_S_function, 0, true, __size, __a) {
+          {
         __stl_assert(__size > 0);
 #       ifdef __GC
             if (__d) {
@@ -693,9 +694,8 @@ struct _Rope_RopeSubstring : public _Rope_RopeFunction<_CharT,_Alloc>,
     typedef _Rope_rep_base<_CharT,_Alloc>::allocator_type allocator_type;
     _Rope_RopeSubstring(_Rope_RopeRep<_CharT,_Alloc>* __b, size_t __s,
                           size_t __l, allocator_type __a)
-      : _M_base(__b)
+      : _Rope_RopeFunction<_CharT,_Alloc>(this, __l, false, __a), _M_base(__b)
       , _M_start(__s)
-      , _Rope_RopeFunction<_CharT,_Alloc>(this, __l, false, __a) 
     {
         __stl_assert(__l > 0);
         __stl_assert(__s + __l <= __b->_M_size);
@@ -766,16 +766,16 @@ class _Rope_char_ref_proxy {
     _My_rope* _M_root;     // The whole rope.
   public:
     _Rope_char_ref_proxy(_My_rope* __r, size_t __p) :
-        _M_pos(__p), _M_root(__r), _M_current_valid(false) {}
+        _M_pos(__p), _M_current_valid(false), _M_root(__r) {}
     _Rope_char_ref_proxy(const _Rope_char_ref_proxy& __x) :
-        _M_pos(__x._M_pos), _M_root(__x._M_root), _M_current_valid(false) {}
+        _M_pos(__x._M_pos), _M_current_valid(false), _M_root(__x._M_root) {}
         // Don't preserve cache if the reference can outlive the
         // expression.  We claim that's not possible without calling
         // a copy constructor or generating reference to a proxy
         // reference.  We declare the latter to have undefined semantics.
     _Rope_char_ref_proxy(_My_rope* __r, size_t __p,
                     _CharT __c) :
-        _M_pos(__p), _M_root(__r), _M_current(__c), _M_current_valid(true) {}
+        _M_pos(__p), _M_current(__c), _M_current_valid(true), _M_root(__r) {}
     inline operator _CharT () const;
     _Rope_char_ref_proxy& operator= (_CharT __c);
     _Rope_char_ptr_proxy<_CharT,_Alloc> operator& () const;

@@ -1,3 +1,15 @@
+2001-01-01  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+	* stl_deque.h (_Deque_base::const_iterator): Change third
+	template argument to pointer type.
+	Reported by Carlo Wood <carlo@node1500a.a2000.nl>
+
+	1999-11-10  Benjamin Kosnik  <bkoz@haight.constant.com>
+		    Matthias Klose  <doko@cs.tu-berlin.de>
+	* stl_rope.h: Fix initialization order.
+	* stl_deque.h: Use static_casts<size_type>(signed_type).
+
 2000-11-24  Magnus Fromreide <magfr@lysator.liu.se>
 
 	* sstream: Backport libstdc++-V3 sstream to V2.

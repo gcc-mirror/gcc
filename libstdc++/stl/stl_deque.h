@@ -342,7 +342,7 @@ public:
           _Base;
   typedef typename _Base::allocator_type allocator_type;
   typedef _Deque_iterator<_Tp,_Tp&,_Tp*,__bufsiz>              iterator;
-  typedef _Deque_iterator<_Tp,const _Tp&,const _Tp&, __bufsiz> const_iterator;
+  typedef _Deque_iterator<_Tp,const _Tp&,const _Tp*, __bufsiz> const_iterator;
 
   _Deque_base(const allocator_type& __a, size_t __num_elements)
     : _Base(__a), _M_start(), _M_finish()
@@ -815,7 +815,7 @@ public:                         // Erase
     iterator __next = __pos;
     ++__next;
     difference_type __index = __pos - _M_start;
-    if (__index < (size() >> 1)) {
+    if (static_cast<size_type>(__index) < (size() >> 1)) {
       copy_backward(_M_start, __pos, __next);
       pop_front();
     }
@@ -1048,7 +1048,7 @@ deque<_Tp,_Alloc,__bufsize>::erase(iterator __first, iterator __last)
   else {
     difference_type __n = __last - __first;
     difference_type __elems_before = __first - _M_start;
-    if (__elems_before < (size() - __n) / 2) {
+    if (static_cast<size_type>(__elems_before) < (size() - __n) / 2) {
       copy_backward(_M_start, __first, __last);
       iterator __new_start = _M_start + __n;
       destroy(_M_start, __new_start);
@@ -1282,7 +1282,7 @@ deque<_Tp,_Alloc,__bufsize>::_M_insert_aux(iterator __pos,
 {
   difference_type __index = __pos - _M_start;
   value_type __x_copy = __x;
-  if (__index < size() / 2) {
+  if (static_cast<size_type>(__index) < size() / 2) {
     push_front(front());
     iterator __front1 = _M_start;
     ++__front1;
@@ -1311,7 +1311,7 @@ typename deque<_Tp,_Alloc,__bufsize>::iterator
 deque<_Tp,_Alloc,__bufsize>::_M_insert_aux(iterator __pos)
 {
   difference_type __index = __pos - _M_start;
-  if (__index < size() / 2) {
+  if (static_cast<size_type>(__index) < size() / 2) {
     push_front(front());
     iterator __front1 = _M_start;
     ++__front1;
@@ -1344,7 +1344,7 @@ deque<_Tp,_Alloc,__bufsize>::_M_insert_aux(iterator __pos,
   const difference_type __elems_before = __pos - _M_start;
   size_type __length = size();
   value_type __x_copy = __x;
-  if (__elems_before < __length / 2) {
+  if (static_cast<size_type>(__elems_before) < __length / 2) {
     iterator __new_start = _M_reserve_elements_at_front(__n);
     iterator __old_start = _M_start;
     __pos = _M_start + __elems_before;
@@ -1403,7 +1403,7 @@ deque<_Tp,_Alloc,__bufsize>::_M_insert_aux(iterator __pos,
 {
   const difference_type __elemsbefore = __pos - _M_start;
   size_type __length = size();
-  if (__elemsbefore < __length / 2) {
+  if (static_cast<size_type>(__elemsbefore) < __length / 2) {
     iterator __new_start = _M_reserve_elements_at_front(__n);
     iterator __old_start = _M_start;
     __pos = _M_start + __elemsbefore;
