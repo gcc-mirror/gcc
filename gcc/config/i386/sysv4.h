@@ -151,3 +151,77 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
         fprintf ((FILE), "\n");						\
     }									\
   while (0)
+
+/* This is how to output an element of a case-vector that is relative.
+   This is only used for PIC code.  See comments by the `casesi' insn in
+   i386.md for an explanation of the expression this outputs. */
+
+#undef ASM_OUTPUT_ADDR_DIFF_ELT
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+
+/* Indicate that jump tables go in the text section.  This is
+   necessary when compiling PIC code.  */
+
+#define JUMP_TABLES_IN_TEXT_SECTION
+
+#define WEAK_ASM_OP ".weak"
+#define DEF_ASM_OP  ".set"
+
+/* Biggest alignment that any structure field can require on this
+   machine, in bits.  If packing is in effect, this can be smaller than
+   normal.  */
+
+#define BIGGEST_FIELD_ALIGNMENT \
+  (maximum_field_alignment ? maximum_field_alignment : 32)
+
+extern int maximum_field_alignment;
+
+/* If bit field type is int, don't let it cross an int,
+   and give entire struct the alignment of an int.  */
+/* Required on the 386 since it doesn't have bitfield insns.  */
+/* If packing is in effect, then the type doesn't matter.  */
+
+#undef PCC_BITFIELD_TYPE_MATTERS
+#define PCC_BITFIELD_TYPE_MATTERS (maximum_field_alignment == 0)
+
+/* Code to handle #pragma directives.  The interface is a bit messy,
+   but there's no simpler way to do this while still using yylex.  */
+#define HANDLE_PRAGMA(FILE)					\
+  do {								\
+    while (c == ' ' || c == '\t')				\
+      c = getc (FILE);						\
+    if (c == '\n' || c == EOF)					\
+      {								\
+	handle_pragma_token (0, 0);				\
+	return c;						\
+      }								\
+    ungetc (c, FILE);						\
+    switch (yylex ())						\
+      {								\
+      case IDENTIFIER:						\
+      case TYPENAME:						\
+      case STRING:						\
+      case CONSTANT:						\
+	handle_pragma_token (token_buffer, yylval.ttype);	\
+	break;							\
+      default:							\
+	handle_pragma_token (token_buffer, 0);			\
+      }								\
+    if (nextchar >= 0)						\
+      c = nextchar, nextchar = -1;				\
+    else							\
+      c = getc (FILE);						\
+  } while (1)
+
+/* This says how to output assembler code to declare an
+   uninitialized internal linkage data object.  Under SVR4,
+   the linker seems to want the alignment of data objects
+   to depend on their types.  We do exactly that here.  */
+
+#undef ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  fprintf (FILE, "\t.local\t%s\n", NAME);				\
+  ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN);			\
+} while (0)
