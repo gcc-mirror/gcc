@@ -1035,7 +1035,12 @@ find_temp_slot_from_address (x)
       if (! p->in_use)
 	continue;
       else if (XEXP (p->slot, 0) == x
-	       || p->address == x)
+	       || p->address == x
+	       || (GET_CODE (x) == PLUS
+		   && XEXP (x, 0) == virtual_stack_vars_rtx
+		   && GET_CODE (XEXP (x, 1)) == CONST_INT
+		   && INTVAL (XEXP (x, 1)) >= p->base_offset
+		   && INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size))
 	return p;
 
       else if (p->address != 0 && GET_CODE (p->address) == EXPR_LIST)
