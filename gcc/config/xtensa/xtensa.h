@@ -806,7 +806,6 @@ typedef struct xtensa_args {
       ? PARM_BOUNDARY							\
       : GET_MODE_ALIGNMENT (MODE)))
 
-
 /* Nonzero if we do not know how to pass TYPE solely in registers.
    We cannot do so in the following cases:
 
@@ -822,6 +821,9 @@ typedef struct xtensa_args {
   ((TYPE) != 0								\
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST			\
        || TREE_ADDRESSABLE (TYPE)))
+
+/* Pass complex arguments independently.  */
+#define SPLIT_COMPLEX_ARGS 1
 
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
