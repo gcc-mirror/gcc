@@ -116,7 +116,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	{
 	case LPT_PEEL_COMPLETELY:
 	  /* Already done.  */
-	  abort ();
+	  gcc_unreachable ();
 	case LPT_PEEL_SIMPLE:
 	  peel_loop_simple (loops, loop);
 	  break;
@@ -133,7 +133,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	  check = false;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       if (check)
 	{
@@ -433,6 +433,8 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 
   if (npeel)
     {
+      int ok;
+
       wont_exit = sbitmap_alloc (npeel + 1);
       sbitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
@@ -442,11 +444,12 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       remove_edges = xcalloc (npeel, sizeof (edge));
       n_remove_edges = 0;
 
-      if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, npeel,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	abort ();
+      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					  loops, npeel,
+					  wont_exit, desc->out_edge,
+					  remove_edges, &n_remove_edges,
+					  DLTHE_FLAG_UPDATE_FREQ);
+      gcc_assert (ok);
 
       free (wont_exit);
 
@@ -597,11 +600,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   unsigned max_unroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   bool exit_at_end = loop_exit_at_end_p (loop);
+  int ok;
 
   niter = desc->niter;
 
-  if (niter <= max_unroll + 1)
-    abort ();  /* Should not get here (such loop should be peeled instead).  */
+  /* Should not assert out here (such loop should be peeled instead).  */
+  gcc_assert (niter > max_unroll + 1);
 
   exit_mod = niter % (max_unroll + 1);
 
@@ -627,12 +631,14 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 
       if (exit_mod)
 	{
-	  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+	  int ok;
+
+	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					      loops, exit_mod,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ))
-	    abort ();
+					      DLTHE_FLAG_UPDATE_FREQ);
+	  gcc_assert (ok);
 
 	  desc->noloop_assumptions = NULL_RTX;
 	  desc->niter -= exit_mod;
@@ -655,15 +661,18 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
       if (exit_mod != max_unroll
 	  || desc->noloop_assumptions)
 	{
+	  int ok;
+
 	  RESET_BIT (wont_exit, 0);
 	  if (desc->noloop_assumptions)
 	    RESET_BIT (wont_exit, 1);
 
-	  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, exit_mod + 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	    abort ();
+	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					      loops, exit_mod + 1,
+					      wont_exit, desc->out_edge,
+					      remove_edges, &n_remove_edges,
+					      DLTHE_FLAG_UPDATE_FREQ);
+	  gcc_assert (ok);
 
 	  desc->niter -= exit_mod + 1;
 	  desc->niter_max -= exit_mod + 1;
@@ -677,11 +686,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
     }
 
   /* Now unroll the loop.  */
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, max_unroll,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, max_unroll,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   free (wont_exit);
 
@@ -842,6 +852,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   unsigned max_unroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   bool exit_at_end = loop_exit_at_end_p (loop);
+  int ok;
 
   /* Remember blocks whose dominators will have to be updated.  */
   dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
@@ -916,11 +927,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       && !desc->noloop_assumptions)
     SET_BIT (wont_exit, 1);
   ezc_swtch = loop_preheader_edge (loop)->src;
-  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+				      loops, 1,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   /* Record the place where switch will be built for preconditioning.  */
   swtch = loop_split_edge_with (loop_preheader_edge (loop),
@@ -932,11 +944,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       sbitmap_zero (wont_exit);
       if (i != n_peel - 1 || !last_may_exit)
 	SET_BIT (wont_exit, 1);
-      if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	abort ();
+      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					  loops, 1,
+					  wont_exit, desc->out_edge,
+					  remove_edges, &n_remove_edges,
+					  DLTHE_FLAG_UPDATE_FREQ);
+      gcc_assert (ok);
 
       /* Create item for switch.  */
       j = n_peel - i - (extra_zero_check ? 0 : 1);
@@ -979,11 +992,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   sbitmap_ones (wont_exit);
   RESET_BIT (wont_exit, may_exit_copy);
 
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, max_unroll,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, max_unroll,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   free (wont_exit);
 
@@ -1013,8 +1027,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
      preconditioning and the fact that the value must be valid at entry
      of the loop.  After passing through the above code, we see that
      the correct new number of iterations is this:  */
-  if (desc->const_iter)
-    abort ();
+  gcc_assert (!desc->const_iter);
   desc->niter_expr =
     simplify_gen_binary (UDIV, desc->mode, old_niter, GEN_INT (max_unroll + 1));
   desc->niter_max /= max_unroll + 1;
@@ -1138,14 +1151,16 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
   sbitmap wont_exit;
   unsigned npeel = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
+  int ok;
 
   wont_exit = sbitmap_alloc (npeel + 1);
   sbitmap_zero (wont_exit);
 
-  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, npeel, wont_exit, NULL, NULL, NULL,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+				      loops, npeel, wont_exit,
+				      NULL, NULL, NULL,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   free (wont_exit);
 
@@ -1271,14 +1286,16 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
   sbitmap wont_exit;
   unsigned nunroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
+  int ok;
 
   wont_exit = sbitmap_alloc (nunroll + 1);
   sbitmap_zero (wont_exit);
 
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, nunroll, wont_exit, NULL, NULL, NULL,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, nunroll, wont_exit,
+				      NULL, NULL, NULL,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   free (wont_exit);
 

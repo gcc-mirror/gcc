@@ -1029,8 +1029,7 @@ optimize_mode_switching (FILE *file)
 	{
 	  regset live_at_end = eg->src->global_live_at_end;
 
-	  if (pre_exit)
-	    abort ();
+	  gcc_assert (!pre_exit);
 	  pre_exit = split_edge (eg);
 	  COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
 	  COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
@@ -1208,21 +1207,22 @@ optimize_mode_switching (FILE *file)
 		  emited = true;
 		  if (JUMP_P (BB_END (src_bb)))
 		    emit_insn_before (mode_set, BB_END (src_bb));
-		  /* It doesn't make sense to switch to normal mode
-		     after a CALL_INSN, so we're going to abort if we
-		     find one.  The cases in which a CALL_INSN may
-		     have an abnormal edge are sibcalls and EH edges.
-		     In the case of sibcalls, the dest basic-block is
-		     the EXIT_BLOCK, that runs in normal mode; it is
-		     assumed that a sibcall insn requires normal mode
-		     itself, so no mode switch would be required after
-		     the call (it wouldn't make sense, anyway).  In
-		     the case of EH edges, EH entry points also start
-		     in normal mode, so a similar reasoning applies.  */
-		  else if (NONJUMP_INSN_P (BB_END (src_bb)))
-		    emit_insn_after (mode_set, BB_END (src_bb));
 		  else
-		    abort ();
+		    { 
+		     /* It doesn't make sense to switch to normal mode
+			after a CALL_INSN, so we're going to abort if we
+			find one.  The cases in which a CALL_INSN may
+			have an abnormal edge are sibcalls and EH edges.
+			In the case of sibcalls, the dest basic-block is
+			the EXIT_BLOCK, that runs in normal mode; it is
+			assumed that a sibcall insn requires normal mode
+			itself, so no mode switch would be required after
+			the call (it wouldn't make sense, anyway).  In
+			the case of EH edges, EH entry points also start
+			in normal mode, so a similar reasoning applies.  */
+		      gcc_assert (NONJUMP_INSN_P (BB_END (src_bb)));
+		      emit_insn_after (mode_set, BB_END (src_bb));
+		    }
 		  bb_info[j][src_bb->index].computing = mode;
 		  RESET_BIT (transp[src_bb->index], j);
 		}

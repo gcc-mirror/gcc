@@ -77,7 +77,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef HAVE_prefetch
 #define HAVE_prefetch 0
 #define CODE_FOR_prefetch 0
-#define gen_prefetch(a,b,c) (abort(), NULL_RTX)
+#define gen_prefetch(a,b,c) (gcc_unreachable(), NULL_RTX)
 #endif
 
 /* Give up the prefetch optimizations once we exceed a given threshold.
@@ -501,8 +501,8 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
 
   /* See if we went too far.  Note that get_max_uid already returns
      one more that the maximum uid of all insn.  */
-  if (get_max_uid () > max_uid_for_loop)
-    abort ();
+  gcc_assert (get_max_uid () <= max_uid_for_loop);
+
   /* Now reset it to the actual size we need.  See above.  */
   max_uid_for_loop = get_max_uid ();
 
@@ -1746,7 +1746,7 @@ rtx_equal_for_loop_p (rtx x, rtx y, struct loop_movables *movables,
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -1940,21 +1940,24 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 
 		  for (count = m->consec; count >= 0; count--)
 		    {
-		      /* If this is the first insn of a library call sequence,
-			 something is very wrong.  */
-		      if (!NOTE_P (p)
-			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
-			abort ();
-
-		      /* If this is the last insn of a libcall sequence, then
-			 delete every insn in the sequence except the last.
-			 The last insn is handled in the normal manner.  */
-		      if (!NOTE_P (p)
-			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
+		      if (!NOTE_P (p))
 			{
-			  temp = XEXP (temp, 0);
-			  while (temp != p)
-			    temp = delete_insn (temp);
+			  /* If this is the first insn of a library call
+			     sequence, something is very wrong.  */
+			  gcc_assert (!find_reg_note (p, REG_LIBCALL,
+						      NULL_RTX));
+
+			  /* If this is the last insn of a libcall sequence,
+			     then delete every insn in the sequence except
+			     the last. The last insn is handled in the
+			     normal manner.  */
+			  temp = find_reg_note (p, REG_RETVAL, NULL_RTX);
+			  if (temp)
+			    {
+			      temp = XEXP (temp, 0);
+			      while (temp != p)
+				temp = delete_insn (temp);
+			    }
 			}
 
 		      temp = p;
@@ -2118,8 +2121,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 					<< GET_MODE_BITSIZE (m->savemode)))
 				      - 1),
 			     reg, 1, OPTAB_LIB_WIDEN);
-			  if (tem == 0)
-			    abort ();
+			  gcc_assert (tem != 0);
 			  if (tem != reg)
 			    emit_move_insn (reg, tem);
 			  sequence = get_insns ();
@@ -2407,8 +2409,7 @@ replace_call_address (rtx x, rtx reg, rtx addr)
     case MEM:
       /* If this MEM uses a reg other than the one we expected,
 	 something is wrong.  */
-      if (XEXP (x, 0) != reg)
-	abort ();
+      gcc_assert (XEXP (x, 0) == reg);
       XEXP (x, 0) = addr;
       return;
 
@@ -2723,8 +2724,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	    break;
 
 	  case NOTE_INSN_LOOP_END:
-	    if (! current_loop)
-	      abort ();
+	    gcc_assert (current_loop);
 
 	    current_loop->end = insn;
 	    current_loop = current_loop->outer;
@@ -2912,6 +2912,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 		    if (invert_jump (p, new_label, 1))
 		      {
 			rtx q, r;
+			bool fail;
 
 			/* If no suitable BARRIER was found, create a suitable
 			   one before TARGET.  Since TARGET is a fall through
@@ -2936,8 +2937,8 @@ find_and_verify_loops (rtx f, struct loops *loops)
 
 			/* Include the BARRIER after INSN and copy the
 			   block after LOC.  */
-			if (squeeze_notes (&new_label, &last_insn_to_move))
-			  abort ();
+			fail = squeeze_notes (&new_label, &last_insn_to_move);
+			gcc_assert (!fail);
 			reorder_insns (new_label, last_insn_to_move, loc);
 
 			/* All those insns are now in TARGET_LOOP.  */
@@ -2972,8 +2973,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 
 			    /* If we didn't find it, then something is
 			       wrong.  */
-			    if (! r)
-			      abort ();
+			    gcc_assert (r);
 			  }
 
 			/* P is now a jump outside the loop, so it must be put
@@ -3683,7 +3683,7 @@ rtx_equal_for_prefetch_p (rtx x, rtx y)
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -5721,19 +5721,14 @@ record_giv (const struct loop *loop, struct induction *v, rtx insn,
   /* Add the giv to the class of givs computed from one biv.  */
 
   bl = REG_IV_CLASS (ivs, REGNO (src_reg));
-  if (bl)
-    {
-      v->next_iv = bl->giv;
-      bl->giv = v;
-      /* Don't count DEST_ADDR.  This is supposed to count the number of
-	 insns that calculate givs.  */
-      if (type == DEST_REG)
-	bl->giv_count++;
-      bl->total_benefit += benefit;
-    }
-  else
-    /* Fatal error, biv missing for this giv?  */
-    abort ();
+  gcc_assert (bl);  /* Fatal error, biv missing for this giv?  */
+  v->next_iv = bl->giv;
+  bl->giv = v;
+  /* Don't count DEST_ADDR.  This is supposed to count the number of
+      insns that calculate givs.  */
+  if (type == DEST_REG)
+    bl->giv_count++;
+  bl->total_benefit += benefit;
 
   if (type == DEST_ADDR)
     {
@@ -6388,7 +6383,7 @@ general_induction_var (const struct loop *loop, rtx x, rtx *src_reg,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Remove any enclosing USE from ADD_VAL and MULT_VAL (there will be
@@ -6507,7 +6502,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 				 ext_val, benefit);
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 
       /* Each argument must be either REG, PLUS, or MULT.  Convert REG to
@@ -6648,7 +6643,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 				    ext_val, benefit);
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
     case ASHIFT:
@@ -7400,7 +7395,7 @@ check_ext_dependent_givs (const struct loop *loop, struct iv_class *bl)
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 
 	if (ok)
@@ -10040,8 +10035,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) == regno)
 	{
-	  if (init_insn)
-	    abort ();
+	  gcc_assert (!init_insn);
 
 	  init_insn = insn;
 	  if (REGNO_FIRST_UID (regno) == INSN_UID (insn))
@@ -10074,8 +10068,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 	    }
 	}
     }
-  if (! init_insn)
-    abort ();
+  gcc_assert (init_insn);
   if (apply_change_group ())
     {
       if (loop_dump_stream)
@@ -10576,7 +10569,7 @@ loop_giv_dump (const struct induction *v, FILE *file, int verbose)
 	  fprintf (file, " ext tr");
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
