@@ -37,15 +37,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define MULTILIB_DEFAULTS { "mlittle-endian", "msoft-float", "mapcs-32", "mno-thumb-interwork" }
 
-/* Setting this to 32 produces more efficient code, but the value set in previous
-   versions of this toolchain was 8, which produces more compact structures. The
-   command line option -mstructure_size_boundary=<n> can be used to change this
-   value.  */
-#undef  STRUCTURE_SIZE_BOUNDARY
-#define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
-
-extern int arm_structure_size_boundary;
-
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */

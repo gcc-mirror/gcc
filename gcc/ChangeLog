@@ -1,3 +1,14 @@
+Wed Oct 27 19:26:12 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/coff.h (STRUCTURE_SIZE_BOUNDARY): Delete
+	definition. 
+
+	* config/arm/elf.h (STRUCTURE_SIZE_BOUNDARY): Delete
+	definition.
+
+	* config/arm/arm.h (STRUCTURE_SIZE_BOUNDARY): Define in terms
+	of the variable arm_structure_size_boundary.
+
 Wed Oct 27 02:05:58 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* alias.c (init_alias_analysis): Allocate reg_known_value and
