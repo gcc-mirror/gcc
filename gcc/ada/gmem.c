@@ -71,8 +71,6 @@ static FILE *gmemfile;
 static char *tracebk[TB_LEN];
 static int cur_tb_len, cur_tb_pos;
 
-extern void convert_addresses		PARAMS ((char *[], int, void *,
-						 int *));
 static void gmem_read_backtrace 	PARAMS ((void));
 static char *spc2nul			PARAMS ((char *));
 

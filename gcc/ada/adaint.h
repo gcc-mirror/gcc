@@ -134,6 +134,9 @@ extern void    __gnat_set_binary_mode		   PARAMS ((int));
 extern void    __gnat_set_text_mode		   PARAMS ((int));
 extern char   *__gnat_ttyname			   PARAMS ((int));
 
+extern void   convert_addresses			   PARAMS ((char *[], int,
+							    void *, int *));
+
 #ifdef IN_RTS
 /* Portable definition of strdup, which is not available on all systems.  */
 #define xstrdup(S)  strcpy ((char *) malloc (strlen (S) + 1), S)
