@@ -5653,7 +5653,7 @@
   "0"
   "")
 
-(define_expand "movstrqi_small2"
+(define_expand "movstrqi_small"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "src_operand" ""))
                    (mem:BLK (match_operand:BLK 1 "src_operand" "")))
               (use (match_operand:QI 2 "immediate_operand" ""))
@@ -5713,71 +5713,51 @@
 ; operand 3 is the shared alignment
 ; operand 4 is a scratch register
 
-(define_insn "movstrqi_small"
-  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "+a"))
-        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a")))
-   (use (match_operand:QI 2 "immediate_operand" "i"))
-   (use (match_operand:QI 3 "immediate_operand" ""))
-   (clobber (match_operand:QI 4 "ext_low_reg_operand" "=&q"))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))]
-  ""
-  "*
- {
-   int i;
-   int len = INTVAL (operands[2]);
-   int first = 1;
-
-   for (i = 0; i < len; i++)
-    {
-      if (first)
-        output_asm_insn (\"ldiu\\t*%1++,%4\", operands);
-      else
-        output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
-      output_asm_insn (\"sti\\t%4,*%0++\", operands);
-      first = 0;
-    } 
-  return \"\";
-  }
-  "
-  [(set_attr "type" "multi")])
-
 (define_insn "movstrqi_large"
-  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "+a"))
-        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a")))
+  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "a"))
+        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "a")))
    (use (match_operand:QI 2 "immediate_operand" "i"))
    (use (match_operand:QI 3 "immediate_operand" ""))
    (clobber (match_operand:QI 4 "ext_low_reg_operand" "=&q"))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))
+   (clobber (match_scratch:QI 5 "=0"))
+   (clobber (match_scratch:QI 6 "=1"))
    (clobber (reg:QI 25))
    (clobber (reg:QI 26))
    (clobber (reg:QI 27))]
   ""
   "*
  {
+   int i;
    int len = INTVAL (operands[2]);
 
    output_asm_insn (\"ldiu\\t*%1++,%4\", operands);
-   if (TARGET_RPTS_CYCLES (len))
+   if (len < 8)
      {
-        output_asm_insn (\"rpts\\t%2-2\", operands);  
-        output_asm_insn (\"sti\\t%4,*%0++\", operands);
-        output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
-        return \"sti\\t%4,*%0++\";
+       for (i = 1; i < len; i++)
+	 {
+           output_asm_insn (\"sti\\t%4,*%0++\", operands);
+           output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
+         } 
      }
    else
      {
-        output_asm_insn (\"ldiu\\t%2-2,rc\", operands);
-        output_asm_insn (\"rptb\\t$+1\", operands);  
-        output_asm_insn (\"sti\\t%4,*%0++\", operands);
-        output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
-
-        return \"sti\\t%4,*%0++\";
+       if (TARGET_RPTS_CYCLES (len))
+         {
+           output_asm_insn (\"rpts\\t%2-2\", operands);  
+           output_asm_insn (\"sti\\t%4,*%0++\", operands);
+           output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
+         }
+       else
+         {
+           output_asm_insn (\"ldiu\\t%2-2,rc\", operands);
+           output_asm_insn (\"rptb\\t$+1\", operands);  
+           output_asm_insn (\"sti\\t%4,*%0++\", operands);
+           output_asm_insn (\"|| ldi\\t*%1++,%4\", operands);
+	 }
      }
-  }
-  "
-  [(set_attr "type" "multi")])
+   return \"sti\\t%4,*%0++\";
+ }"
+ [(set_attr "type" "multi")])
 
 ; Operand 2 is the count, operand 3 is the alignment.
 (define_expand "movstrqi"
@@ -5799,14 +5779,8 @@
    operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
    operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
    tmp = gen_reg_rtx (QImode);
-   if (INTVAL (operands[2]) < 8)
-     emit_insn (gen_movstrqi_small2 (operands[0], operands[1], operands[2],
-                                    operands[3], tmp));
-   else
-     {
-      emit_insn (gen_movstrqi_large (operands[0], operands[1], operands[2],
-                                     operands[3], tmp));
-     }
+   emit_insn (gen_movstrqi_large (operands[0], operands[1], operands[2],
+                                  operands[3], tmp));
    DONE;
  }")
 
