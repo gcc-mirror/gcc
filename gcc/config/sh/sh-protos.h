@@ -106,7 +106,6 @@ extern rtx sh_va_arg PARAMS ((tree, tree));
 
 #ifdef TREE_CODE
 extern void sh_pragma_insert_attributes PARAMS ((tree, tree *, tree *));
-extern int sh_valid_machine_decl_attribute PARAMS ((tree, tree, tree, tree));
 extern tree sh_build_va_list PARAMS ((void));
 #endif /* TREE_CODE */
 

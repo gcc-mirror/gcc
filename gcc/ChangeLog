@@ -1,3 +1,122 @@
+2001-06-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (TARGET_H, TARGET_DEF_H): New.
+	(c-decl.o, tree.o, c-typeck.o, $(out_object_file)): Update.
+	* c-decl.c (duplicate_decls): Use function pointer.
+	* c-typeck.c (common_type): Similarly.
+	* tree.c (valid_machine_attribute): Similarly.
+	(merge_machine_type_attributes): Rename merge_type_attributes.
+	(merge_machine_decl_attributes): Rename merge_decl_attributes.
+	(merge_dllimport_decl_attributes): New function.
+	* tree.h (merge_machine_type_attributes): Rename merge_type_attributes.
+	(merge_machine_decl_attributes): Rename merge_decl_attributes.
+	(merge_dllimport_decl_attributes): New prototype.
+	* target.h: New.
+	* target-def.h: New.
+
+doc:	(Joseph Myers)
+	* doc/gcc.texi, doc/tm.texi: Update documentation.
+
+cp:	Make-lang.in: Update dependencies.
+	* spew.c: Include target.h.
+	(duplicate_decls): Call target function.
+	* decl2.c: include target.h
+	(import_export_class): Use existence of target function pointer.
+	* typeck.c: Include target.h.
+	(qualify_type_recursive): Rename variable.  Call target function.
+	(type_after_usual_arithmetic_conversions): Similarly.
+	(common_type): Similarly.
+
+config:	* 1750a/1750a.c, a29k/29k.c, alpha/alpha.c, arc/arc.c, arm/arm.c,
+	avr/avr.c, c4x/c4x.c, clipper/clipper.c, convex/convex.c,
+	d30v/d30v.c, dsp16xx/dsp16xx.c, elxsi/elxsi.c, fr30/fr30.c,
+	i370/i370.c, i386/i386.c, i860/i860.c, i960/i960.c, ia64/ia64.c,
+	m32r/m32r.c, m68hc11/m68hc11.c, m68k/m68k.c, m88k/m88k.c,
+	mips/mips.c, mn10200/mn10200.c, mn10300/mn10300.c, ns32k/ns32k.c,
+	pa/pa.c, pdp11/pdp11.c, pj/pj.c, romp/romp.c, rs6000/rs6000.c,
+	sh/sh.c, sparc/sparc.c,	v850/v850.c, vax/vax.c, we32k/we32k.c)
+	: Include target.h and target-def.h.  Define target.
+
+	* arc/arc-protos.h (arc_valid_machine_decl_attribute): Remove.
+	* arc/arc.c (arc_valid_machine_decl_attribute): Rename
+	arc_valid_decl_attribute, make static.
+	* arc/arc.h (VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* arm/arm-protos.h (arm_valid_machine_decl_attribute,
+	arm_valid_type_attribute_p, arm_pe_valid_machine_decl_attribute,
+	arm_pe_merge_machine_decl_attributes): Remove.
+	* arm/arm.c (arm_valid_machine_decl_attribute_p): Rename
+	arm_valid_decl_attribute_p, make static.
+	(arm_pe_valid_decl_attribute_p): Move from pe.c.
+	* arm/pe.c (arm_pe_valid_machine_decl_attribute_p): Move to arm.c.
+	(arm_pe_merge_machine_decl_attributes): Move to tree.c.
+	* arm/arm.h (VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* arm/coff.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* arm/elf.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* arm/pe.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): New.
+	(VALID_MACHINE_TYPE_ATTRIBUTE, VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* avr/avr-protos.h (valid_machine_type_attribute,
+	valid_machine_decl_attribute): Remove.
+	* avr/avr.c (valid_machine_type_attribute,
+	valid_machine_decl_attribute): Rename and make static.
+	* avr/avr.h (VALID_MACHINE_TYPE_ATTRIBUTE,
+	VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* c4x/c4x-protos.h (c4x_valid_type_attribute_p): Remove.
+	* c4x/c4x.c (c4x_valid_type_attribute_p): Make static.
+	* c4x/c4x.h (VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* d30v/d30v.h: Remove obsolete comments.
+	* h8300/h8300-protos.h (h8300_valid_machine_decl_attribute): Remove.
+	* h8300/h8300.c (h8300_valid_machine_decl_attribute): Rename, make
+	static.
+	* h8300/h8300.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* i386/cygwin.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define.
+	(i386_pe_merge_decl_attributes, MERGE_MACHINE_DECL_ATTRIBUTES,
+	i386_pe_valid_type_attributes_p): Remove.
+	* i386/i386-protos.h (ix86_valid_decl_attribute_p,
+	ix86_valid_type_attribute_p): Remove.
+	* i386/i386.c (ix86_valid_decl_attribute_p): Remove.
+	(ix86_valid_type_attribute_p): Make static.
+	* i386/i386.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* i386/winnt.c (i386_pe_merge_decl_attributes): Move to tree.c.
+	* ia64/ia64-protos.h (ia64_valid_type_attribute): Remove.
+	* ia64/ia64.c (ia64_valid_type_attribute): Make static.
+	* ia64/ia64.h (VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* m32r/m32r-protos.h (m32r_valid_machine_decl_attribute): Remove.
+	* m32r/m32r.c (m32r_valid_decl_attribute): Make static.
+	* m32r/m32r.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* m68hc11/m68hc11-protos.h (m68hc11_valid_decl_attribute_p,
+	m68hc11_valid_type_attribute_p): Remove.
+	* m68hc11/m68hc11.c (m68hc11_valid_decl_attribute_p): Remove.
+	(m68hc11_valid_type_attribute_p): Make static.
+	* m68hc11/m68hc11.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* mcore/mcore-protos.h (mcore_valid_machine_decl_attribute,
+	mcore_merge_machine_decl_attribute): Remove.
+	* mcore/mcore.c (mcore_valid_machine_decl_attribute): Rename,
+	make static.
+	(mcore_merge_machine_decl_attributes): Move to tree.c.
+	* mcore/mcore.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	(TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define.
+	* ns32k/ns32k-protos.h (ns32k_valid_decl_attribute_p,
+	ns32k_valid_type_attribute_p): Remove.
+	* ns32k/ns32k.c (ns32k_valid_decl_attribute_p): Remove.
+	(ns32k_valid_type_attribute_p): Make static.
+	* ns32k/ns32k.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* rs6000/rs6000-protos.h (rs6000_valid_decl_attribute_p,
+	rs6000_valid_type_attribute_p): Remove.
+	* rs6000/rs6000.c (rs6000_valid_decl_attribute_p): Remove.
+	(rs6000_valid_type_attribute_p): Make static.
+	* rs6000/rs6000.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* sh/sh-protos.h (sh_valid_machine_decl_attribute): Remove.
+	* sh/sh.c (sh_valid_machine_decl_attribute): Rename, make static.
+	* sh/sh.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	* v850/v850-protos.h (v850_valid_machine_decl_attribute): Remove.
+	* v850/v850.c (v850_valid_machine_decl_attribute): Rename, make static.
+	* v850/v850.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+
 2001-06-26  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
 
 	* glimits.h (USHRT_MAX): Use unsigned suffix if int can not hold

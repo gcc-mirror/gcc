@@ -40,6 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "tm_p.h"
 #include "ggc.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Forward declarations.  */
 static int h8300_interrupt_function_p PARAMS ((tree));
@@ -51,6 +53,7 @@ static unsigned int compute_saved_regs PARAMS ((void));
 static void push PARAMS ((FILE *, int));
 static void pop PARAMS ((FILE *, int));
 static const char *cond_string PARAMS ((enum rtx_code));
+static int h8300_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -90,7 +93,13 @@ static const char *const h8_pop_ops[2] = { "pop", "pop.l" };
 static const char *const h8_mov_ops[2] = { "mov.w", "mov.l" };
 
 const char *h8_push_op, *h8_pop_op, *h8_mov_op;
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE h8300_valid_decl_attribute
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Initialize various cpu specific globals at start up.  */
 
 void
@@ -3022,8 +3031,8 @@ h8300_tiny_data_p (decl)
    tiny_data: This variable lives in the tiny data area and can be
    referenced with 16-bit absolute memory references.  */
 
-int
-h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
+static int
+h8300_valid_decl_attribute (decl, attributes, attr, args)
      tree decl;
      tree attributes ATTRIBUTE_UNUSED;
      tree attr;

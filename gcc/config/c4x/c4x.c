@@ -47,6 +47,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "c-pragma.h"
 #include "c4x-protos.h"
+#include "target.h"
+#include "target-def.h"
 
 rtx smulhi3_libfunc;
 rtx umulhi3_libfunc;
@@ -187,7 +189,14 @@ static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
 static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
 static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
+static int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE c4x_valid_type_attribute_p
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Called to register all of our global variables with the garbage
    collector.  */
 
@@ -4741,7 +4750,7 @@ c4x_set_default_attributes(decl, attributes)
    specific attribute for TYPE.  The attributes in ATTRIBUTES have
    previously been assigned to TYPE.  */
 
-int
+static int
 c4x_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

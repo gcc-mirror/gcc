@@ -40,8 +40,6 @@ extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 #ifdef TREE_CODE
 extern int ns32k_comp_type_attributes PARAMS ((tree, tree));
 extern int ns32k_return_pops_args PARAMS ((tree, tree, int));
-extern int ns32k_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-extern int ns32k_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 #endif /* TREE_CODE */
 
 extern int hard_regno_mode_ok PARAMS ((int, enum machine_mode));

@@ -233,7 +233,7 @@ c++.stage4: stage4-start
 #
 # .o: .h dependencies.
 CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
-	function.h varray.h $(SYSTEM_H) $(CONFIG_H) \
+	function.h varray.h $(SYSTEM_H) $(CONFIG_H) $(TARGET_H) \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
 
 cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h

@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
@@ -48,6 +50,10 @@ static void output_fpops PARAMS ((FILE *));
 static void init_fpops PARAMS ((void));
 static int memory_offset_in_range_p PARAMS ((rtx, enum machine_mode, int, int));
 static unsigned int hash_rtx PARAMS ((rtx));
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Return 1 if the insn using CC0 set by INSN does not contain
    any unsigned tests applied to the condition codes.

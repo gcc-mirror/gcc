@@ -2446,9 +2446,6 @@ do {						\
 #define SET_DEFAULT_DECL_ATTRIBUTES(DECL, ATTRIBUTES) \
   c4x_set_default_attributes (DECL, &ATTRIBUTES)
 
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
-  (c4x_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
-
 /* Assembler Commands for Alignment.  */
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \

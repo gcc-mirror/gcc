@@ -34,6 +34,8 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
@@ -75,7 +77,11 @@ int m68k_align_funcs;
    sCC expanders peek at this to determine what to do for the
    68060, which has no fsCC instructions.  */
 int m68k_last_compare_had_fp_operands;
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if

@@ -124,7 +124,6 @@ extern void ia64_function_arg_advance PARAMS((CUMULATIVE_ARGS *,
 extern int ia64_return_in_memory PARAMS((tree));
 extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
 
-extern int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
 extern void ia64_encode_section_info PARAMS((tree));
 #endif /* TREE_CODE */
 

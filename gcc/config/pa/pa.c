@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifndef DO_FRAME_NOTES
 #ifdef INCOMING_RETURN_ADDR_RTX
@@ -105,7 +107,11 @@ struct deferred_plabel
   char *name;
 } *deferred_plabels = 0;
 int n_deferred_plabels = 0;
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 void
 override_options ()
 {

@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "integrate.h"
+#include "target.h"
+#include "target-def.h"
 
 /* External data.  */
 extern int rtx_equal_function_value_matters;
@@ -143,6 +145,10 @@ static rtx alpha_emit_xfloating_compare
 
 #define REG_PV 27
 #define REG_RA 26
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Parse target option strings. */
 

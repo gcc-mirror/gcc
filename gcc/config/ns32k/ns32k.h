@@ -1294,20 +1294,6 @@ while (0)
  { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
      goto LABEL;}
 
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
-  (ns32k_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
-
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
-  (ns32k_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
-
 /* If defined, a C expression whose value is zero if the attributes on
    TYPE1 and TYPE2 are incompatible, one if they are compatible, and
    two if they are nearly compatible (which causes a warning to be

@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "hashtab.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -123,6 +125,7 @@ static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static void rs6000_free_machine_status PARAMS ((struct function *));
 static void rs6000_init_machine_status PARAMS ((struct function *));
 static int rs6000_ra_ever_killed PARAMS ((void));
+static int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -160,7 +163,13 @@ static char alt_reg_names[][8] =
 #ifndef MASK_STRICT_ALIGN
 #define MASK_STRICT_ALIGN 0
 #endif
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE rs6000_valid_type_attribute_p
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
 
@@ -7821,24 +7830,10 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
 
 /* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
-int
-rs6000_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier ATTRIBUTE_UNUSED;
-     tree args ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
    with arguments ARGS is a valid machine specific attribute for TYPE.
    The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
 
-int
+static int
 rs6000_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
@@ -48,7 +50,11 @@ Boston, MA 02111-1307, USA.  */
 			+ 4 * regs_ever_live[7] \
 			+ 16 * (regs_ever_live[14] || regs_ever_live[15] \
 				|| regs_ever_live[16] || regs_ever_live[17]))
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 void
 asm_file_start (file)
      FILE *file;

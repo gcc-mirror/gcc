@@ -37,13 +37,19 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 extern char regs_ever_live[];
 
 extern int frame_pointer_needed;
 
 static int frame_size;
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Compute size of a clipper stack frame where 'lsize' is the required
    space for local variables.  */
 

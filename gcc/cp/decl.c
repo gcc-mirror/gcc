@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "../hash.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "target.h"
 
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
@@ -3483,7 +3484,7 @@ duplicate_decls (newdecl, olddecl)
   /* Copy all the DECL_... slots specified in the new decl
      except for any that we copy here from the old type.  */
   DECL_MACHINE_ATTRIBUTES (newdecl)
-    = merge_machine_decl_attributes (olddecl, newdecl);
+    = (*target.merge_decl_attributes) (olddecl, newdecl);
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {

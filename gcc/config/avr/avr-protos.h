@@ -50,12 +50,6 @@ extern void   encode_section_info          PARAMS ((tree decl));
 extern void   asm_output_section_name      PARAMS ((FILE *file, tree decl,
 						   const char *name,
 						   int reloc));
-extern int    valid_machine_type_attribute PARAMS ((tree type, tree attributes,
-						   tree identifier,
-						   tree args));
-extern int    valid_machine_decl_attribute PARAMS ((tree decl, tree attributes,
-						   tree attr, tree args));
-
 extern int    avr_progmem_p                PARAMS ((tree decl));
 
 

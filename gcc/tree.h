@@ -2039,8 +2039,8 @@ extern tree make_tree			PARAMS ((tree, struct rtx_def *));
 extern tree build_type_attribute_variant PARAMS ((tree, tree));
 extern tree build_decl_attribute_variant PARAMS ((tree, tree));
 
-extern tree merge_machine_decl_attributes PARAMS ((tree, tree));
-extern tree merge_machine_type_attributes PARAMS ((tree, tree));
+extern tree merge_decl_attributes PARAMS ((tree, tree));
+extern tree merge_type_attributes PARAMS ((tree, tree));
 
 /* Split a list of declspecs and attributes into two.  */
 
@@ -2067,6 +2067,12 @@ extern tree lookup_attribute		PARAMS ((const char *, tree));
 /* Given two attributes lists, return a list of their union.  */
 
 extern tree merge_attributes		PARAMS ((tree, tree));
+
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+/* Given two Windows decl attributes lists, possibly including
+   dllimport, return a list of their union .  */
+extern tree merge_dllimport_decl_attributes PARAMS ((tree, tree));
+#endif
 
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS, if one exists.  If no qualified version exists yet,

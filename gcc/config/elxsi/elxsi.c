@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 extern const char *reg_names[];
 rtx cmp_op0=0, cmp_op1=0;
@@ -35,7 +37,11 @@ rtx cmp_op0=0, cmp_op1=0;
 static const char *const cmp_tab[] = {
     "gt", "gt", "eq", "eq", "ge", "ge", "lt", "lt", "ne", "ne",
     "le", "le" };
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* type is the index into the above table */
 /* s is "" for signed, or "u" for unsigned */
 const char *

@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "cpplib.h"
+#include "target.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -1403,7 +1404,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
   if (DECL_P (olddecl))
     DECL_MACHINE_ATTRIBUTES (newdecl)
-      = merge_machine_decl_attributes (olddecl, newdecl);
+      = (*target.merge_decl_attributes) (olddecl, newdecl);
 
   if (TREE_CODE (newtype) == ERROR_MARK
       || TREE_CODE (oldtype) == ERROR_MARK)

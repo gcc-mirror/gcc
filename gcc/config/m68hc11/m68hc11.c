@@ -52,6 +52,8 @@ Note:
 #include "basic-block.h"
 #include "function.h"
 #include "ggc.h"
+#include "target.h"
+#include "target-def.h"
 
 static void print_options PARAMS ((FILE *));
 static void emit_move_after_reload PARAMS ((rtx, rtx, rtx));
@@ -64,6 +66,8 @@ static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
+static int m68hc11_valid_type_attribute_p PARAMS((tree, tree,
+						  tree, tree));
 
 void create_regs_rtx PARAMS ((void));
 
@@ -201,7 +205,13 @@ const char *m68hc11_soft_reg_count;
 static void m68hc11_add_gc_roots PARAMS ((void));
 
 static int nb_soft_regs;
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE m68hc11_valid_type_attribute_p
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 int
 m68hc11_override_options ()
 {
@@ -1116,24 +1126,10 @@ m68hc11_initialize_trampoline (tramp, fnaddr, cxt)
 /* Declaration of types.  */
 
 /* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
-int
-m68hc11_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier ATTRIBUTE_UNUSED;
-     tree args ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
    with arguments ARGS is a valid machine specific attribute for TYPE.
    The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
 
-int
+static int
 m68hc11_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

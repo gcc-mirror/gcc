@@ -45,6 +45,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "integrate.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -100,12 +102,34 @@ static int       current_file_function_operand	PARAMS ((rtx));
 static Ulong     arm_compute_save_reg_mask	PARAMS ((void));
 static Ulong     arm_isr_value 			PARAMS ((tree));
 static Ulong     arm_compute_func_type		PARAMS ((void));
-
+static int	 arm_valid_type_attribute_p	PARAMS ((tree, tree,
+							 tree, tree));
+static int	 arm_valid_decl_attribute_p	PARAMS ((tree, tree,
+							 tree, tree));
 #undef Hint
 #undef Mmode
 #undef Ulong
 #undef Ccstar
+
+/* Initialize the GCC target structure.  */
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#undef TARGET_MERGE_DECL_ATTRIBUTES
+#define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
+#endif
 
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE arm_valid_type_attribute_p
+
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#ifdef ARM_PE
+   static int arm_pe_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
+#  define TARGET_VALID_DECL_ATTRIBUTE arm_pe_valid_decl_attribute_p
+#else
+#  define TARGET_VALID_DECL_ATTRIBUTE arm_valid_decl_attribute_p
+#endif
+
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
 static char *minipool_startobj;
@@ -1851,10 +1875,10 @@ arm_pr_long_calls_off (pfile)
 }
 
 
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for TYPE.  The attributes in ATTRIBUTES have previously been
-   assigned to TYPE.  */
-int
+/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
+   specific attribute for TYPE.  The attributes in ATTRIBUTES have
+   previously been assigned to TYPE.  */
+static int
 arm_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;
@@ -4093,9 +4117,10 @@ multi_register_push (op, mode)
      Always assume that this function will be entered in ARM mode,
      not Thumb mode, and that the caller wishes to be returned to in
      ARM mode.  */
-int
-arm_valid_machine_decl_attribute (decl, attr, args)
+static int
+arm_valid_decl_attribute_p (decl, attributes, attr, args)
      tree decl;
+     tree attributes ATTRIBUTE_UNUSED;
      tree attr;
      tree args;
 {
@@ -4118,6 +4143,39 @@ arm_valid_machine_decl_attribute (decl, attr, args)
   
   return 0;
 }
+
+#ifdef ARM_PE
+
+/* ARM/PE has three new attributes:
+   naked - for interrupt functions
+   dllexport - for exporting a function/variable that will live in a dll
+   dllimport - for importing a function/variable from a dll
+
+   Microsoft allows multiple declspecs in one __declspec, separating
+   them with spaces.  We do NOT support this.  Instead, use __declspec
+   multiple times.
+*/
+
+static int
+arm_pe_valid_decl_attribute_p (decl, attributes, attr, args)
+     tree decl;
+     tree attributes;
+     tree attr;
+     tree args;
+{
+  if (args != NULL_TREE)
+    return 0;
+
+  if (is_attribute_p ("dllexport", attr))
+    return 1;
+  
+  if (is_attribute_p ("dllimport", attr))
+    return 1;
+
+  return arm_valid_decl_attribute_p (decl, attributes, attr, args);
+}
+
+#endif /* ARM_PE  */
 
 /* Routines for use in generating RTL.  */
 rtx

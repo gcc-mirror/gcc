@@ -36,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "m32r-protos.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -59,7 +61,15 @@ int m32r_sched_odd_word_p;
 static void  init_reg_tables			PARAMS ((void));
 static void  block_move_call			PARAMS ((rtx, rtx, rtx));
 static int   m32r_is_insn			PARAMS ((rtx));
+static int   m32r_valid_decl_attribute		PARAMS ((tree, tree,
+							 tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE m32r_valid_decl_attribute
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
@@ -242,8 +252,8 @@ init_idents PARAMS ((void))
 
 /* Return nonzero if IDENTIFIER is a valid decl attribute.  */
 
-int
-m32r_valid_machine_decl_attribute (type, attributes, identifier, args)
+static int
+m32r_valid_decl_attribute (type, attributes, identifier, args)
      tree type ATTRIBUTE_UNUSED;
      tree attributes ATTRIBUTE_UNUSED;
      tree identifier;

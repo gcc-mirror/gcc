@@ -4,7 +4,7 @@
 @c For copying conditions, see the file gcc.texi.
 
 @node Target Macros
-@chapter Target Description Macros
+@chapter Target Description Macros and Functions
 @cindex machine description macros
 @cindex target description macros
 @cindex macros, target description
@@ -12,14 +12,20 @@
 
 In addition to the file @file{@var{machine}.md}, a machine description
 includes a C header file conventionally given the name
-@file{@var{machine}.h}.  This header file defines numerous macros
-that convey the information about the target machine that does not fit
-into the scheme of the @file{.md} file.  The file @file{tm.h} should be
-a link to @file{@var{machine}.h}.  The header file @file{config.h}
-includes @file{tm.h} and most compiler source files include
-@file{config.h}.
+@file{@var{machine}.h} and a C source file named @file{@var{machine}.c}.
+The header file defines numerous macros that convey the information
+about the target machine that does not fit into the scheme of the
+@file{.md} file.  The file @file{tm.h} should be a link to
+@file{@var{machine}.h}.  The header file @file{config.h} includes
+@file{tm.h} and most compiler source files include @file{config.h}.  The
+source file defines a variable @code{target}, which is a structure
+containing pointers to functions and data relating to the target
+machine.  @file{@var{machine}.c} should also contain their definitions,
+if they are not defined elsewhere in GCC, and other functions called
+through the macros defined in the @file{.h} file.
 
 @menu
+* Target Structure::    The @code{target} variable.
 * Driver::              Controlling how the driver runs the compilation passes.
 * Run-time Target::     Defining @samp{-m} options like @option{-m68000} and @option{-m68020}.
 * Per-Function Data::   Defining data structures for per-function information.
@@ -43,6 +49,38 @@ includes @file{tm.h} and most compiler source files include
 * Mode Switching::      Insertion of mode-switching instructions.
 * Misc::                Everything else.
 @end menu
+
+@node Target Structure
+@section The Global @code{target} Variable
+@cindex target hooks
+@cindex target functions
+
+@deftypevar {struct gcc_target} target
+The target @file{.c} file must define the global @code{target} variable
+which contains pointers to functions and data relating to the target
+machine.  The variable is declared in @file{target.h};
+@file{target-def.h} defines the macro @code{TARGET_INITIALIZER} which is
+used to initialize the variable, and macros for the default initializers
+for elements of the structure.  The @file{.c} file should override those
+macros for which the default definition is inappropriate.  For example:
+@smallexample
+#include "target.h"
+#include "target-def.h"
+
+/* @r{Initialize the GCC target structure.}  */
+
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE @var{machine}_valid_type_attribute_p
+
+struct gcc_target target = TARGET_INITIALIZER;
+@end smallexample
+@end deftypevar
+
+Where a macro should be defined in the @file{.c} file in this manner to
+form part of the @code{target} structure, it is documented below as a
+``Target Hook'' with a prototype.  Many macros will change in future
+from being defined in the @file{.h} file to being part of the
+@code{target} structure.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -8223,19 +8261,21 @@ pack value of zero resets the behaviour to the default.  Successive
 invocations of this pragma cause the previous values to be stacked, so
 that invocations of @samp{#pragma pack(pop)} will return to the previous
 value.
+@end table
 
-@findex VALID_MACHINE_DECL_ATTRIBUTE
-@item VALID_MACHINE_DECL_ATTRIBUTE (@var{decl}, @var{attributes}, @var{identifier}, @var{args})
-If defined, a C expression whose value is nonzero if @var{identifier} with
+@deftypefn {Target Hook} int TARGET_VALID_DECL_ATTRIBUTE (tree @var{decl}, tree @var{attributes}, tree @var{identifier}, tree @var{args})
+If defined, this target hook is a function which returns nonzero if @var{identifier} with
 arguments @var{args} is a valid machine specific attribute for @var{decl}.
 The attributes in @var{attributes} have previously been assigned to @var{decl}.
+@end deftypefn
 
-@findex VALID_MACHINE_TYPE_ATTRIBUTE
-@item VALID_MACHINE_TYPE_ATTRIBUTE (@var{type}, @var{attributes}, @var{identifier}, @var{args})
-If defined, a C expression whose value is nonzero if @var{identifier} with
+@deftypefn {Target Hook} int TARGET_VALID_TYPE_ATTRIBUTE (tree @var{type}, tree @var{attributes}, tree @var{identifier}, tree @var{args})
+If defined, this target hook is a function which returns nonzero if @var{identifier} with
 arguments @var{args} is a valid machine specific attribute for @var{type}.
 The attributes in @var{attributes} have previously been assigned to @var{type}.
+@end deftypefn
 
+@table @code
 @findex COMP_TYPE_ATTRIBUTES
 @item COMP_TYPE_ATTRIBUTES (@var{type1}, @var{type2})
 If defined, a C expression whose value is zero if the attributes on
@@ -8247,23 +8287,36 @@ generated).
 @item SET_DEFAULT_TYPE_ATTRIBUTES (@var{type})
 If defined, a C statement that assigns default attributes to
 newly defined @var{type}.
+@end table
 
-@findex MERGE_MACHINE_TYPE_ATTRIBUTES
-@item MERGE_MACHINE_TYPE_ATTRIBUTES (@var{type1}, @var{type2})
-Define this macro if the merging of type attributes needs special handling.
-If defined, the result is a list of the combined TYPE_ATTRIBUTES of
-@var{type1} and @var{type2}.  It is assumed that comptypes has already been
-called and returned 1.
+@deftypefn {Target Hook} tree TARGET_MERGE_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
+Define this target hook if the merging of type attributes needs special
+handling.  If defined, the result is a list of the combined
+@code{TYPE_ATTRIBUTES} of @var{type1} and @var{type2}.  It is assumed
+that @code{comptypes} has already been called and returned 1.  This
+function may call @code{merge_attributes} to handle machine-independent
+merging.
+@end deftypefn
 
-@findex MERGE_MACHINE_DECL_ATTRIBUTES
-@item MERGE_MACHINE_DECL_ATTRIBUTES (@var{olddecl}, @var{newdecl})
-Define this macro if the merging of decl attributes needs special handling.
-If defined, the result is a list of the combined DECL_MACHINE_ATTRIBUTES of
-@var{olddecl} and @var{newdecl}.  @var{newdecl} is a duplicate declaration
-of @var{olddecl}.  Examples of when this is needed are when one attribute
-overrides another, or when an attribute is nullified by a subsequent
-definition.
+@deftypefn {Target Hook} tree TARGET_MERGE_DECL_ATTRIBUTES (tree @var{olddecl}, tree @var{newdecl})
+Define this target hook if the merging of decl attributes needs special
+handling.  If defined, the result is a list of the combined
+@code{DECL_MACHINE_ATTRIBUTES} of @var{olddecl} and @var{newdecl}.
+@var{newdecl} is a duplicate declaration of @var{olddecl}.  Examples of
+when this is needed are when one attribute overrides another, or when an
+attribute is nullified by a subsequent definition.  This function may
+call @code{merge_attributes} to handle machine-independent merging.
 
+@findex TARGET_DLLIMPORT_DECL_ATTRIBUTES
+If the only target-specific handling you require is @samp{dllimport} for
+Windows targets, you should define the macro
+@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  This links in a function
+called @code{merge_dllimport_decl_attributes} which can then be defined
+as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
+in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
+@end deftypefn
+
+@table @code
 @findex INSERT_ATTRIBUTES
 @item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr}, @var{prefix_ptr})
 Define this macro if you want to be able to add attributes to a decl

@@ -38,9 +38,7 @@ extern unsigned long arm_current_func_type	PARAMS ((void));
 
 #ifdef TREE_CODE
 extern int    arm_return_in_memory	PARAMS ((tree));
-extern int    arm_valid_machine_decl_attribute	PARAMS ((tree, tree, tree));
 extern int    arm_comp_type_attributes	PARAMS ((tree, tree));
-extern int    arm_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void   arm_set_default_type_attributes	PARAMS ((tree));
 extern void   arm_encode_call_attribute	PARAMS ((tree, int));
 extern int    arm_function_ok_for_sibcall PARAMS ((tree));
@@ -187,10 +185,6 @@ extern int  arm_dllexport_name_p 	PARAMS ((const char *));
 extern int  arm_dllimport_name_p 	PARAMS ((const char *));
 
 #ifdef TREE_CODE
-extern int  arm_pe_valid_machine_decl_attribute
-					PARAMS ((tree, tree, tree, tree));
-extern tree arm_pe_merge_machine_decl_attributes
-					PARAMS ((tree, tree));
 extern void arm_pe_unique_section 	PARAMS ((tree, int));
 extern void arm_pe_encode_section_info 	PARAMS ((tree));
 extern int  arm_dllexport_p 		PARAMS ((tree));

@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "reload.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 static int shift_constant_operand PARAMS ((rtx, enum machine_mode, int));
 static void a29k_set_memflags_1 PARAMS ((rtx, int, int, int, int));
@@ -89,6 +91,10 @@ int a29k_debug_reg_map[FIRST_PSEUDO_REGISTER];
 
 rtx a29k_compare_op0, a29k_compare_op1;
 int a29k_compare_fp_p;
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Returns 1 if OP is a 8-bit constant. */
 

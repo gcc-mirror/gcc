@@ -169,8 +169,6 @@ extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int))
 #endif
 
 #ifdef TREE_CODE
-extern int ix86_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-extern int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern int ix86_comp_type_attributes PARAMS ((tree, tree));
 extern int ix86_return_pops_args PARAMS ((tree, tree, int));
 

@@ -40,6 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
@@ -51,6 +53,7 @@ static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
 static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
+static int v850_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -78,7 +81,12 @@ static int v850_interrupt_cache_p = FALSE;
 
 /* Whether current function is an interrupt handler.  */
 static int v850_interrupt_p = FALSE;
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE v850_valid_decl_attribute
 
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -2003,9 +2011,10 @@ v850_set_data_area (decl, data_area)
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ARGS are the arguments supplied with ATTR.  */
 
-int
-v850_valid_machine_decl_attribute (decl, attr, args)
+static int
+v850_valid_decl_attribute (decl, unused, attr, args)
      tree decl;
+     tree unused ATTRIBUTE_UNUSED;
      tree attr;
      tree args;
 {

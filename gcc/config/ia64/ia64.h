@@ -2756,13 +2756,6 @@ do {									\
 
 #define HANDLE_SYSV_PRAGMA
 
-/* If defined, a C expression whose value is nonzero if IDENTIFIER with
-   arguments ARGS is a valid machine specific attribute for TYPE.  The
-   attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
-  ia64_valid_type_attribute (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
-
 /* In rare cases, correct code generation requires extra machine dependent
    processing between the second jump optimization pass and delayed branch
    scheduling.  On those machines, define this macro as a C statement to act on

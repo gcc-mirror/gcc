@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Which cpu we're compiling for (NULL(=base), ???).  */
 const char *arc_cpu_string;
@@ -85,7 +87,14 @@ static int current_insn_set_cc_p;
 static void record_cc_ref PARAMS ((rtx));
 static void arc_init_reg_tables PARAMS ((void));
 static int get_arc_condition_code PARAMS ((rtx));
+static int arc_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE arc_valid_decl_attribute
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
@@ -313,8 +322,8 @@ arc_init_reg_tables ()
 
 /* Return nonzero if IDENTIFIER is a valid decl attribute.  */
 
-int
-arc_valid_machine_decl_attribute (type, attributes, identifier, args)
+static int
+arc_valid_decl_attribute (type, attributes, identifier, args)
      tree type ATTRIBUTE_UNUSED;
      tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
