@@ -155,7 +155,7 @@ void test04(int size)
 {
   bool test = true;
   std::string str(size, 's');
-  int expected_size = (2 * (size + sizeof(char)));
+  int expected_size = 2 * (size + 1);
   std::ostringstream oss(str);
   
   // sanity checks
