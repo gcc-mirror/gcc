@@ -1,7 +1,7 @@
 /* .init/.fini section handling + C++ global constructor/destructor handling.
    This file is based on crtstuff.c, sol2-crti.asm, sol2-crtn.asm.
 
-Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -77,30 +77,30 @@ __do_global_dtors ()
 /* .init section start.
    This must appear at the start of the .init section.  */
 
-asm ("
-	.section .init\n
-	.global init\n
-	.word 0\n
-init:\n
-	st blink,[sp,4]\n
-	st fp,[sp]\n
-	mov fp,sp\n
-	sub sp,sp,16\n
+asm ("\n\
+	.section .init\n\
+	.global init\n\
+	.word 0\n\
+init:\n\
+	st blink,[sp,4]\n\
+	st fp,[sp]\n\
+	mov fp,sp\n\
+	sub sp,sp,16\n\
 ");
 
 /* .fini section start.
    This must appear at the start of the .init section.  */
 
-asm ("
-	.section .fini\n
-	.global fini\n
-	.word 0\n
-fini:\n
-	st blink,[sp,4]\n
-	st fp,[sp]\n
-	mov fp,sp\n
-	sub sp,sp,16\n
-	bl.nd __do_global_dtors
+asm ("\n\
+	.section .fini\n\
+	.global fini\n\
+	.word 0\n\
+fini:\n\
+	st blink,[sp,4]\n\
+	st fp,[sp]\n\
+	mov fp,sp\n\
+	sub sp,sp,16\n\
+	bl.nd __do_global_dtors\n\
 ");
 
 #endif /* CRT_INIT */
@@ -136,22 +136,22 @@ __do_global_ctors ()
 /* .init section end.
    This must live at the end of the .init section.  */
 
-asm ("
-	.section .init\n
-	bl.nd __do_global_ctors
-	ld blink,[fp,4]\n
-	j.d blink\n
-	ld.a fp,[sp,16]\n
+asm ("\n\
+	.section .init\n\
+	bl.nd __do_global_ctors\
+	ld blink,[fp,4]\n\
+	j.d blink\n\
+	ld.a fp,[sp,16]\n\
 ");
 
 /* .fini section end.
    This must live at the end of the .fini section.  */
 
-asm ("
-	.section .fini\n
-	ld blink,[fp,4]\n
-	j.d blink\n
-	ld.a fp,[sp,16]\n
+asm ("\n\
+	.section .fini\n\
+	ld blink,[fp,4]\n\
+	j.d blink\n\
+	ld.a fp,[sp,16]\n\
 ");
 
 #endif /* CRT_FINI */
