@@ -1791,6 +1791,9 @@ reduce_template_parm_level (index, type, levels)
 				     decl, type);
       TEMPLATE_PARM_DESCENDANTS (index) = t;
 
+      DECL_ARTIFICIAL (decl) = 1;
+      SET_DECL_TEMPLATE_PARM_P (decl);
+
       /* Template template parameters need this.  */
       DECL_TEMPLATE_PARMS (decl)
 	= DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index));
