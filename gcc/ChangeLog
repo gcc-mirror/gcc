@@ -1,3 +1,13 @@
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/coff.h: Replace Hitachi with Renesas.
+	* config/h8300/elf.h: Likewise.
+	* config/h8300/h8300-protos.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+	* config/h8300/lib1funcs.asm: Likewise.
+
 2004-01-15  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/rs6000.c (uses_TOC): Wrap #if TARGET_ELF
