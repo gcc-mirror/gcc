@@ -5688,21 +5688,27 @@ set_init_index (first, last)
     {
       constructor_index = convert (bitsizetype, first);
 
-      if (last != 0 && tree_int_cst_lt (last, first))
+      if (last)
 	{
-	  error_init ("empty index range in initializer");
-	  last = 0;
-	}
-      else if (last)
-	{
-	  last = convert (bitsizetype, last);
-	  if (constructor_max_index != 0
-	      && tree_int_cst_lt (constructor_max_index, last))
+	  if (tree_int_cst_equal (first, last))
+	    last = 0;
+	  else if (tree_int_cst_lt (last, first))
 	    {
-	      error_init ("array index range in initializer exceeds array bounds");
+	      error_init ("empty index range in initializer");
 	      last = 0;
 	    }
+	  else
+	    {
+	      last = convert (bitsizetype, last);
+	      if (constructor_max_index != 0
+		  && tree_int_cst_lt (constructor_max_index, last))
+		{
+		  error_init ("array index range in initializer exceeds array bounds");
+		  last = 0;
+		}
+	    }
 	}
+
       designator_depth++;
       designator_errorneous = 0;
       if (constructor_range_stack || last)
