@@ -1,5 +1,8 @@
 Thu May 13 01:49:55 1999  Graham Stott <GrahamS@RCP.co.uk>
 
+        * loop.c (maybe_eliminate_biv): Check regno against
+        max_reg_before_loop.
+
 	* i386.c (memory_address_info): Correct the scale
 	factor test.
 
