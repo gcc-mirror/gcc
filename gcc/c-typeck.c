@@ -2122,6 +2122,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
       tree val = TREE_VALUE (valtail);
       tree rname = function;
       int argnum = parmnum + 1;
+      const char *invalid_func_diag;
 
       if (type == void_type_node)
 	{
@@ -2273,6 +2274,12 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 	           < TYPE_PRECISION (double_type_node)))
 	/* Convert `float' to `double'.  */
 	result = tree_cons (NULL_TREE, convert (double_type_node, val), result);
+      else if ((invalid_func_diag = 
+	        targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
+	{
+	  error (invalid_func_diag);
+	  return error_mark_node; 
+	}
       else
 	/* Convert `short' and `char' to full-size `int'.  */
 	result = tree_cons (NULL_TREE, default_conversion (val), result);
