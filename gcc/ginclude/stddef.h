@@ -415,9 +415,9 @@ typedef __WINT_TYPE__ wint_t;
 #else
 /* The cast to "char &" below avoids problems with user-defined
    "operator &", which can appear in a POD type.  */
-#define offsetof(TYPE, MEMBER)				\
-  (__offsetof__ (reinterpret_cast <size_t>		\
-                 (&reinterpret_cast <char &>		\
+#define offsetof(TYPE, MEMBER)					\
+  (__offsetof__ (reinterpret_cast <size_t>			\
+                 (&reinterpret_cast <const volatile char &>	\
                   (static_cast<TYPE *> (0)->MEMBER))))
 #endif /* C++ */
 #endif /* _STDDEF_H was defined this time */

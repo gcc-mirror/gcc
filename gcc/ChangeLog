@@ -1,3 +1,8 @@
+2004-08-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16618
+	* ginclude/stddef.h (offsetof): Refine C++ definition.
+
 2004-08-12  Alan Modra  <amodra@bigpond.net.au>
 
 	Merge from mainline.

@@ -1,5 +1,14 @@
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16853
+	* g++.dg/init/ptrmem1.C: New test.
+
+	PR c++/16618
+	* g++.dg/parse/offsetof5.C: New test.
+
+	PR c++/16870
+	* g++.dg/template/overload3.C: New test.
+
 	PR c++/16964
 	* g++.dg/parse/error16.C: New test.
 
