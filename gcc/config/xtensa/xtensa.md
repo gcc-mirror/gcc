@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001 Free Software Foundation, Inc.
+;; Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -803,12 +803,15 @@
   if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
     operands[1] = force_const_mem (DImode, operands[1]);
 
-  if (!register_operand (operands[0], DImode)
-      && !register_operand (operands[1], DImode))
-    operands[1] = force_reg (DImode, operands[1]);
+  if (!(reload_in_progress | reload_completed))
+    {
+      if (!register_operand (operands[0], DImode)
+	  && !register_operand (operands[1], DImode))
+	operands[1] = force_reg (DImode, operands[1]);
 
-  if (xtensa_copy_incoming_a7 (operands, DImode))
-    DONE;
+      if (xtensa_copy_incoming_a7 (operands, DImode))
+	DONE;
+    }
 })
 
 (define_insn_and_split "movdi_internal"
@@ -1012,12 +1015,15 @@
   if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
     operands[1] = force_const_mem (DFmode, operands[1]);
 
-  if (!register_operand (operands[0], DFmode)
-      && !register_operand (operands[1], DFmode))
-    operands[1] = force_reg (DFmode, operands[1]);
+  if (!(reload_in_progress | reload_completed))
+    {
+      if (!register_operand (operands[0], DFmode)
+	  && !register_operand (operands[1], DFmode))
+	operands[1] = force_reg (DFmode, operands[1]);
 
-  if (xtensa_copy_incoming_a7 (operands, DFmode))
-    DONE;
+      if (xtensa_copy_incoming_a7 (operands, DFmode))
+	DONE;
+    }
 })
 
 (define_insn_and_split "movdf_internal"
