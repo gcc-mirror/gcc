@@ -1,3 +1,8 @@
+2001-12-08  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_unique_section): Add missing
+	parentheses.
+
 2001-12-07  Craig Rodrigues  <rodrigc@gcc.gnu.org
 
 	PR c++/5041
