@@ -1,3 +1,11 @@
+2004-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (merge_decls): Kill different_binding_level and
+	different_tu arguments; simplify throughout.
+	(duplicate_decls): Likewise.
+	(pushdecl, merge_translation_unit_decls): Update calls to
+	duplicate_decls.
+
 2004-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (pretty-print.o): Depend on $(CONFIG_H) and
@@ -133,7 +141,7 @@
 
 2004-01-20  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (function_arg) Handle 
+	* gcc/config/rs6000/rs6000.c (function_arg) Handle
 	vector register special in function without prototype.
 	(function_arg_advance): Vector parameters get always
 	GPRs allocated for the linux64 target.
@@ -189,9 +197,9 @@
 
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Makefile.in (target_noncanonical, program_transform_name): Use 
+	* Makefile.in (target_noncanonical, program_transform_name): Use
 	immediate define instead of deferred.
-	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME, 
+	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME,
 	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, GCOV_INSTALL_NAME,
 	GCCBUG_INSTALL_NAME): Define via a immediate $(shell) instead of
 	deferred backquote.
@@ -227,23 +235,23 @@
 
 2004-01-19  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.c (aligned_memory_operand): Check MEM_ALIGN,
-        don't check memory mode.
-        (unaligned_memory_operand): Likewise.
-        (reload_inqi, reload_inhi, reload_outqi, reload_outhi): Don't
-        abort for op0 not MEM.
+	* config/alpha/alpha.c (aligned_memory_operand): Check MEM_ALIGN,
+	don't check memory mode.
+	(unaligned_memory_operand): Likewise.
+	(reload_inqi, reload_inhi, reload_outqi, reload_outhi): Don't
+	abort for op0 not MEM.
 
-        * config/alpha/alpha.c (alpha_expand_mov_nobwx): If the destination
-        is not a reg, copy to a scratch first.
-        (aligned_loadqi, aligned_loadhi, unaligned_loadqi, unaligned_loadhi,
-        unaligned_loadqi_le, unaligned_loadqi_be, unaligned_loadhi_le,
-        unaligned_loadhi_be): Expect op0 in DImode; don't SUBREG.
-        (reload_inqi, reload_inhi): Fix mode of op0.
-        (reload_inqi_help, reload_inhi_help, reload_outqi_help,
-        reload_outhi_help): Likewise.  Use define_insn_and_split.
+	* config/alpha/alpha.c (alpha_expand_mov_nobwx): If the destination
+	is not a reg, copy to a scratch first.
+	(aligned_loadqi, aligned_loadhi, unaligned_loadqi, unaligned_loadhi,
+	unaligned_loadqi_le, unaligned_loadqi_be, unaligned_loadhi_le,
+	unaligned_loadhi_be): Expect op0 in DImode; don't SUBREG.
+	(reload_inqi, reload_inhi): Fix mode of op0.
+	(reload_inqi_help, reload_inhi_help, reload_outqi_help,
+	reload_outhi_help): Likewise.  Use define_insn_and_split.
 
-        * config/alpha/alpha.md (call peepholes): Check for REG_NORETURN
-        as well as $29 dead.
+	* config/alpha/alpha.md (call peepholes): Check for REG_NORETURN
+	as well as $29 dead.
 
 2004-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -260,7 +268,7 @@
 
 	* contrib.texi: Update Paolo Carlini's entry.  New entries for
 	Jerry Quinn and Petur Runolfsson.
- 
+
 2004-01-19  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (*movhi_1, *movqi_1): When optimizing for
@@ -425,7 +433,7 @@
 2004-01-17  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (build_objc_method_call): Use target
-	hooks instead of macros to determine if ..._stret 
+	hooks instead of macros to determine if ..._stret
 	dispatchers should be used (NeXT runtime only).
 
 2004-01-17  Roger Sayle  <roger@eyesopen.com>
