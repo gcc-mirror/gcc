@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "GCC 1"
-.TH GCC 1 "2002-01-26" "gcc-3.0.4" "GNU"
+.TH GCC 1 "2002-01-31" "gcc-3.0.4" "GNU"
 .SH "NAME"
 gcc \- GNU project C and C++ compiler
 .SH "SYNOPSIS"
@@ -590,6 +590,24 @@ in the following sections.
 \&\fB\-mhard\-float  \-msoft\-float  \-mbackchain  \-mno\-backchain 
 \&\-msmall\-exec  \-mno\-small\-exec  \-mmvcle \-mno\-mvcle 
 \&\-m64 \-m31 \-mdebug \-mno\-debug\fR
+.Sp
+\&\fIXtensa Options\fR
+.Sp
+\&\fB\-mbig\-endian \-mlittle\-endian 
+\&\-mdensity \-mno\-density 
+\&\-mmac16 \-mno\-mac16 
+\&\-mmul16 \-mno\-mul16 
+\&\-mmul32 \-mno\-mul32 
+\&\-mnsa \-mno\-nsa 
+\&\-mminmax \-mno\-minmax 
+\&\-msext \-mno\-sext 
+\&\-mbooleans \-mno\-booleans 
+\&\-mhard\-float \-msoft\-float 
+\&\-mfused\-madd \-mno\-fused\-madd 
+\&\-mserialize\-volatile \-mno\-serialize\-volatile 
+\&\-mtext\-section\-literals \-mno\-text\-section\-literals 
+\&\-mtarget\-align \-mno\-target\-align 
+\&\-mlongcalls \-mno\-longcalls\fR
 .IP "\fICode Generation Options\fR" 4
 .IX Item "Code Generation Options"
 \&\fB\-fcall\-saved\-\fR\fIreg\fR  \fB\-fcall\-used\-\fR\fIreg\fR 
@@ -7581,6 +7599,191 @@ use a \f(CW\*(C`mvc\*(C'\fR loop instead.  This is the default.
 .PD
 Print (or do not print) additional debug information when compiling.
 The default is to not print debug information.
+.PP
+\fIXtensa Options\fR
+.IX Subsection "Xtensa Options"
+.PP
+The Xtensa architecture is designed to support many different
+configurations.  The compiler's default options can be set to match a
+particular Xtensa configuration by copying a configuration file into the
+\&\s-1GCC\s0 sources when building \s-1GCC\s0.  The options below may be used to
+override the default options.
+.IP "\fB\-mbig\-endian\fR" 4
+.IX Item "-mbig-endian"
+.PD 0
+.IP "\fB\-mlittle\-endian\fR" 4
+.IX Item "-mlittle-endian"
+.PD
+Specify big-endian or little-endian byte ordering for the target Xtensa
+processor.
+.IP "\fB\-mdensity\fR" 4
+.IX Item "-mdensity"
+.PD 0
+.IP "\fB\-mno\-density\fR" 4
+.IX Item "-mno-density"
+.PD
+Enable or disable use of the optional Xtensa code density instructions.
+.IP "\fB\-mmac16\fR" 4
+.IX Item "-mmac16"
+.PD 0
+.IP "\fB\-mno\-mac16\fR" 4
+.IX Item "-mno-mac16"
+.PD
+Enable or disable use of the Xtensa \s-1MAC16\s0 option.  When enabled, \s-1GCC\s0
+will generate \s-1MAC16\s0 instructions from standard C code, with the
+limitation that it will use neither the \s-1MR\s0 register file nor any
+instruction that operates on the \s-1MR\s0 registers.  When this option is
+disabled, \s-1GCC\s0 will translate 16\-bit multiply/accumulate operations to a
+combination of core instructions and library calls, depending on whether
+any other multiplier options are enabled.
+.IP "\fB\-mmul16\fR" 4
+.IX Item "-mmul16"
+.PD 0
+.IP "\fB\-mno\-mul16\fR" 4
+.IX Item "-mno-mul16"
+.PD
+Enable or disable use of the 16\-bit integer multiplier option.  When
+enabled, the compiler will generate 16\-bit multiply instructions for
+multiplications of 16 bits or smaller in standard C code.  When this
+option is disabled, the compiler will either use 32\-bit multiply or
+\&\s-1MAC16\s0 instructions if they are available or generate library calls to
+perform the multiply operations using shifts and adds.
+.IP "\fB\-mmul32\fR" 4
+.IX Item "-mmul32"
+.PD 0
+.IP "\fB\-mno\-mul32\fR" 4
+.IX Item "-mno-mul32"
+.PD
+Enable or disable use of the 32\-bit integer multiplier option.  When
+enabled, the compiler will generate 32\-bit multiply instructions for
+multiplications of 32 bits or smaller in standard C code.  When this
+option is disabled, the compiler will generate library calls to perform
+the multiply operations using either shifts and adds or 16\-bit multiply
+instructions if they are available.
+.IP "\fB\-mnsa\fR" 4
+.IX Item "-mnsa"
+.PD 0
+.IP "\fB\-mno\-nsa\fR" 4
+.IX Item "-mno-nsa"
+.PD
+Enable or disable use of the optional normalization shift amount
+(\f(CW\*(C`NSA\*(C'\fR) instructions to implement the built-in \f(CW\*(C`ffs\*(C'\fR function.
+.IP "\fB\-mminmax\fR" 4
+.IX Item "-mminmax"
+.PD 0
+.IP "\fB\-mno\-minmax\fR" 4
+.IX Item "-mno-minmax"
+.PD
+Enable or disable use of the optional minimum and maximum value
+instructions.
+.IP "\fB\-msext\fR" 4
+.IX Item "-msext"
+.PD 0
+.IP "\fB\-mno\-sext\fR" 4
+.IX Item "-mno-sext"
+.PD
+Enable or disable use of the optional sign extend (\f(CW\*(C`SEXT\*(C'\fR)
+instruction.
+.IP "\fB\-mbooleans\fR" 4
+.IX Item "-mbooleans"
+.PD 0
+.IP "\fB\-mno\-booleans\fR" 4
+.IX Item "-mno-booleans"
+.PD
+Enable or disable support for the boolean register file used by Xtensa
+coprocessors.  This is not typically useful by itself but may be
+required for other options that make use of the boolean registers (e.g.,
+the floating-point option).
+.IP "\fB\-mhard\-float\fR" 4
+.IX Item "-mhard-float"
+.PD 0
+.IP "\fB\-msoft\-float\fR" 4
+.IX Item "-msoft-float"
+.PD
+Enable or disable use of the floating-point option.  When enabled, \s-1GCC\s0
+generates floating-point instructions for 32\-bit \f(CW\*(C`float\*(C'\fR
+operations.  When this option is disabled, \s-1GCC\s0 generates library calls
+to emulate 32\-bit floating-point operations using integer instructions.
+Regardless of this option, 64\-bit \f(CW\*(C`double\*(C'\fR operations are always
+emulated with calls to library functions.
+.IP "\fB\-mfused\-madd\fR" 4
+.IX Item "-mfused-madd"
+.PD 0
+.IP "\fB\-mno\-fused\-madd\fR" 4
+.IX Item "-mno-fused-madd"
+.PD
+Enable or disable use of fused multiply/add and multiply/subtract
+instructions in the floating-point option.  This has no effect if the
+floating-point option is not also enabled.  Disabling fused multiply/add
+and multiply/subtract instructions forces the compiler to use separate
+instructions for the multiply and add/subtract operations.  This may be
+desirable in some cases where strict \s-1IEEE\s0 754\-compliant results are
+required: the fused multiply add/subtract instructions do not round the
+intermediate result, thereby producing results with \fImore\fR bits of
+precision than specified by the \s-1IEEE\s0 standard.  Disabling fused multiply
+add/subtract instructions also ensures that the program output is not
+sensitive to the compiler's ability to combine multiply and add/subtract
+operations.
+.IP "\fB\-mserialize\-volatile\fR" 4
+.IX Item "-mserialize-volatile"
+.PD 0
+.IP "\fB\-mno\-serialize\-volatile\fR" 4
+.IX Item "-mno-serialize-volatile"
+.PD
+When this option is enabled, \s-1GCC\s0 inserts \f(CW\*(C`MEMW\*(C'\fR instructions before
+\&\f(CW\*(C`volatile\*(C'\fR memory references to guarantee sequential consistency.
+The default is \fB\-mserialize\-volatile\fR.  Use
+\&\fB\-mno\-serialize\-volatile\fR to omit the \f(CW\*(C`MEMW\*(C'\fR instructions.
+.IP "\fB\-mtext\-section\-literals\fR" 4
+.IX Item "-mtext-section-literals"
+.PD 0
+.IP "\fB\-mno\-text\-section\-literals\fR" 4
+.IX Item "-mno-text-section-literals"
+.PD
+Control the treatment of literal pools.  The default is
+\&\fB\-mno\-text\-section\-literals\fR, which places literals in a separate
+section in the output file.  This allows the literal pool to be placed
+in a data \s-1RAM/ROM\s0, and it also allows the linker to combine literal
+pools from separate object files to remove redundant literals and
+improve code size.  With \fB\-mtext\-section\-literals\fR, the literals
+are interspersed in the text section in order to keep them as close as
+possible to their references.  This may be necessary for large assembly
+files.
+.IP "\fB\-mtarget\-align\fR" 4
+.IX Item "-mtarget-align"
+.PD 0
+.IP "\fB\-mno\-target\-align\fR" 4
+.IX Item "-mno-target-align"
+.PD
+When this option is enabled, \s-1GCC\s0 instructs the assembler to
+automatically align instructions to reduce branch penalties at the
+expense of some code density.  The assembler attempts to widen density
+instructions to align branch targets and the instructions following call
+instructions.  If there are not enough preceding safe density
+instructions to align a target, no widening will be performed.  The
+default is \fB\-mtarget\-align\fR.  These options do not affect the
+treatment of auto-aligned instructions like \f(CW\*(C`LOOP\*(C'\fR, which the
+assembler will always align, either by widening density instructions or
+by inserting no-op instructions.
+.IP "\fB\-mlongcalls\fR" 4
+.IX Item "-mlongcalls"
+.PD 0
+.IP "\fB\-mno\-longcalls\fR" 4
+.IX Item "-mno-longcalls"
+.PD
+When this option is enabled, \s-1GCC\s0 instructs the assembler to translate
+direct calls to indirect calls unless it can determine that the target
+of a direct call is in the range allowed by the call instruction.  This
+translation typically occurs for calls to functions in other source
+files.  Specifically, the assembler translates a direct \f(CW\*(C`CALL\*(C'\fR
+instruction into an \f(CW\*(C`L32R\*(C'\fR followed by a \f(CW\*(C`CALLX\*(C'\fR instruction.
+The default is \fB\-mno\-longcalls\fR.  This option should be used in
+programs where the call target can potentially be out of range.  This
+option is implemented in the assembler, not the compiler, so the
+assembly code generated by \s-1GCC\s0 will still show direct call
+instructions\-\-\-look at the disassembled object code to see the actual
+instructions.  Note that the assembler will use an indirect call for
+every cross-file call, not just those that really will be out of range.
 .Sh "Options for Code Generation Conventions"
 .IX Subsection "Options for Code Generation Conventions"
 These machine-independent options control the interface conventions
