@@ -7665,7 +7665,7 @@ fold_builtin_classify (tree exp, int builtin_index)
 
       return NULL_TREE;
 
-    case BUILT_IN_ISFINITE:
+    case BUILT_IN_FINITE:
       if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg)))
           && !MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
         return omit_one_operand (type, integer_zero_node, arg);
