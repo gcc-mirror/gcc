@@ -1,7 +1,7 @@
 // Test that we warn about unqualified references to implicit typenames.
-
+// Bug: g++ is confused by the binding for ::AN and crashes.
 // Special g++ Options:
-// Build don't link:
+// excess errors test - XFAIL *-*-*
 
 template <class T> struct A {
   struct AA { };
