@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Hitachi Super-H using ELF.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <ian@cygnus.com>.
 
 This file is part of GNU CC.
