@@ -14,6 +14,21 @@
 
 2004-08-07  Jason Merrill  <jason@redhat.com>
 
+	Make return in memory explicit.
+	* function.c (aggregate_value_p): Check DECL_BY_REFERENCE.
+	(assign_parm_find_data_types): Remove code for old front end
+	invisible reference handling.
+	(assign_parms): Handle DECL_BY_REFERENCE on the RESULT_DECL.
+	(expand_function_end): Likewise.
+	* gimplify.c (gimplify_return_expr): Handle a dereferenced
+	RESULT_DECL.
+	* tree-inline.c (copy_body_r): Don't bother looking for &* anymore.
+	(declare_return_variable): Handle DECL_BY_REFERENCE.
+	* cp/cp-gimplify.c (is_invisiref_parm): Also handle RESULT_DECL.
+	(cp_genericize_r): Use convert_from_reference.
+	Don't dereference a RESULT_DECL directly inside a RETURN_EXPR.
+	(cp_genericize): Handle the RESULT_DECL.  Unset TREE_ADDRESSABLE.
+
 	* gimplify.c (gimplify_call_expr): Make return in memory explicit.
 	(gimplify_modify_expr_rhs): Likewise.
 	* c-common.c (c_warn_unused_result): Check TREE_USED before

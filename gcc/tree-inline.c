@@ -573,33 +573,6 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 		}
 	    }
 	}
-      else if (TREE_CODE (*tp) == ADDR_EXPR
-	       && (lang_hooks.tree_inlining.auto_var_in_fn_p
-		   (TREE_OPERAND (*tp, 0), fn)))
-	{
-	  /* Get rid of &* from inline substitutions.  It can occur when
-	     someone takes the address of a parm or return slot passed by
-	     invisible reference.  */
-	  tree decl = TREE_OPERAND (*tp, 0), value;
-	  splay_tree_node n;
-
-	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
-	  if (n)
-	    {
-	      value = (tree) n->value;
-	      if (TREE_CODE (value) == INDIRECT_REF)
-		{
-		  if  (!lang_hooks.types_compatible_p
-		       (TREE_TYPE (*tp), TREE_TYPE (TREE_OPERAND (value, 0))))
-		    *tp = fold_convert (TREE_TYPE (*tp),
-					TREE_OPERAND (value, 0));
-		  else
-		    *tp = TREE_OPERAND (value, 0);
-
-		  return copy_body_r (tp, walk_subtrees, data);
-		}
-	    }
-	}
       else if (TREE_CODE (*tp) == INDIRECT_REF)
 	{
 	  /* Get rid of *& from inline substitutions that can happen when a
@@ -861,7 +834,7 @@ declare_return_variable (inline_data *id, tree return_slot_addr,
       return NULL_TREE;
     }
 
-  /* If there was a return slot, then the return value the the
+  /* If there was a return slot, then the return value is the
      dereferenced address of that object.  */
   if (return_slot_addr)
     {
@@ -869,7 +842,10 @@ declare_return_variable (inline_data *id, tree return_slot_addr,
 	 a modify expression.  */
       if (modify_dest)
 	abort ();
-      var = build_fold_indirect_ref (return_slot_addr);
+      if (DECL_BY_REFERENCE (result))
+	var = return_slot_addr;
+      else
+	var = build_fold_indirect_ref (return_slot_addr);
       use = NULL;
       goto done;
     }
