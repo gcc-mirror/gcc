@@ -78,6 +78,10 @@ static tree prefix_attributes;
 /* When defining an enumeration, this is the type of the enumeration.  */
 static tree current_enum_type;
 
+/* When parsing a conversion operator name, this is the scope of the
+   operator itself.  */
+static tree saved_scopes;
+
 static tree empty_parms PARAMS ((void));
 static tree parse_decl0 PARAMS ((tree, tree, tree, tree, int));
 static tree parse_decl PARAMS ((tree, tree, int));
@@ -208,6 +212,7 @@ cp_parse_init ()
   ggc_add_tree_root (&current_declspecs, 1);
   ggc_add_tree_root (&prefix_attributes, 1);
   ggc_add_tree_root (&current_enum_type, 1);
+  ggc_add_tree_root (&saved_scopes, 1);
 }
 %}
 
@@ -1437,7 +1442,7 @@ do_id:
 		     means that we're in an expression like S::f<int>, so
 		     don't do_identifier; we only do that for unqualified
 		     identifiers.  */
-		  if (lastiddecl && TREE_CODE (lastiddecl) != TREE_LIST)
+	          if (!lastiddecl || TREE_CODE (lastiddecl) != TREE_LIST)
 		    $$ = do_identifier ($<ttype>-1, 1, NULL_TREE);
 		  else
 		    $$ = $<ttype>-1;
@@ -3746,82 +3751,88 @@ conversion_declarator:
 	;
 
 operator:
-	  OPERATOR
-		{ got_scope = NULL_TREE; }
-	;
+        OPERATOR
+        { saved_scopes = tree_cons (got_scope, got_object, saved_scopes); 
+          got_scope = NULL_TREE; got_object = NULL_TREE; }
+        ;
+unoperator:
+        { got_scope = TREE_PURPOSE (saved_scopes);
+          got_object = TREE_VALUE (saved_scopes);
+          saved_scopes = TREE_CHAIN (saved_scopes); }
+        ;
 
 operator_name:
-	  operator '*'
-		{ $$ = ansi_opname (MULT_EXPR); }
-	| operator '/'
-		{ $$ = ansi_opname (TRUNC_DIV_EXPR); }
-	| operator '%'
-		{ $$ = ansi_opname (TRUNC_MOD_EXPR); }
-	| operator '+'
-		{ $$ = ansi_opname (PLUS_EXPR); }
-	| operator '-'
-		{ $$ = ansi_opname (MINUS_EXPR); }
-	| operator '&'
-		{ $$ = ansi_opname (BIT_AND_EXPR); }
-	| operator '|'
-		{ $$ = ansi_opname (BIT_IOR_EXPR); }
-	| operator '^'
-		{ $$ = ansi_opname (BIT_XOR_EXPR); }
-	| operator '~'
-		{ $$ = ansi_opname (BIT_NOT_EXPR); }
-	| operator ','
-		{ $$ = ansi_opname (COMPOUND_EXPR); }
-	| operator ARITHCOMPARE
-		{ $$ = ansi_opname ($2); }
-	| operator '<'
-		{ $$ = ansi_opname (LT_EXPR); }
-	| operator '>'
-		{ $$ = ansi_opname (GT_EXPR); }
-	| operator EQCOMPARE
-		{ $$ = ansi_opname ($2); }
-	| operator ASSIGN
-		{ $$ = ansi_assopname ($2); }
-	| operator '='
-		{ $$ = ansi_assopname (NOP_EXPR); }
-	| operator LSHIFT
-		{ $$ = ansi_opname ($2); }
-	| operator RSHIFT
-		{ $$ = ansi_opname ($2); }
-	| operator PLUSPLUS
-		{ $$ = ansi_opname (POSTINCREMENT_EXPR); }
-	| operator MINUSMINUS
-		{ $$ = ansi_opname (PREDECREMENT_EXPR); }
-	| operator ANDAND
-		{ $$ = ansi_opname (TRUTH_ANDIF_EXPR); }
-	| operator OROR
-		{ $$ = ansi_opname (TRUTH_ORIF_EXPR); }
-	| operator '!'
-		{ $$ = ansi_opname (TRUTH_NOT_EXPR); }
-	| operator '?' ':'
-		{ $$ = ansi_opname (COND_EXPR); }
-	| operator MIN_MAX
-		{ $$ = ansi_opname ($2); }
-	| operator POINTSAT  %prec EMPTY
-		{ $$ = ansi_opname (COMPONENT_REF); }
-	| operator POINTSAT_STAR  %prec EMPTY
-		{ $$ = ansi_opname (MEMBER_REF); }
-	| operator LEFT_RIGHT
-		{ $$ = ansi_opname (CALL_EXPR); }
-	| operator '[' ']'
-		{ $$ = ansi_opname (ARRAY_REF); }
-	| operator NEW  %prec EMPTY
-		{ $$ = ansi_opname (NEW_EXPR); }
-	| operator DELETE  %prec EMPTY
-		{ $$ = ansi_opname (DELETE_EXPR); }
-	| operator NEW '[' ']'
-		{ $$ = ansi_opname (VEC_NEW_EXPR); }
-	| operator DELETE '[' ']'
-		{ $$ = ansi_opname (VEC_DELETE_EXPR); }
+	  operator '*' unoperator
+		{ $$ = frob_opname (ansi_opname (MULT_EXPR)); }
+	| operator '/' unoperator
+		{ $$ = frob_opname (ansi_opname (TRUNC_DIV_EXPR)); }
+	| operator '%' unoperator
+		{ $$ = frob_opname (ansi_opname (TRUNC_MOD_EXPR)); }
+	| operator '+' unoperator
+		{ $$ = frob_opname (ansi_opname (PLUS_EXPR)); }
+	| operator '-' unoperator
+		{ $$ = frob_opname (ansi_opname (MINUS_EXPR)); }
+	| operator '&' unoperator
+		{ $$ = frob_opname (ansi_opname (BIT_AND_EXPR)); }
+	| operator '|' unoperator
+		{ $$ = frob_opname (ansi_opname (BIT_IOR_EXPR)); }
+	| operator '^' unoperator
+		{ $$ = frob_opname (ansi_opname (BIT_XOR_EXPR)); }
+	| operator '~' unoperator
+		{ $$ = frob_opname (ansi_opname (BIT_NOT_EXPR)); }
+	| operator ',' unoperator
+		{ $$ = frob_opname (ansi_opname (COMPOUND_EXPR)); }
+	| operator ARITHCOMPARE unoperator
+		{ $$ = frob_opname (ansi_opname ($2)); }
+	| operator '<' unoperator
+		{ $$ = frob_opname (ansi_opname (LT_EXPR)); }
+	| operator '>' unoperator
+		{ $$ = frob_opname (ansi_opname (GT_EXPR)); }
+	| operator EQCOMPARE unoperator
+		{ $$ = frob_opname (ansi_opname ($2)); }
+	| operator ASSIGN unoperator
+		{ $$ = frob_opname (ansi_assopname ($2)); }
+	| operator '=' unoperator
+		{ $$ = frob_opname (ansi_assopname (NOP_EXPR)); }
+	| operator LSHIFT unoperator
+		{ $$ = frob_opname (ansi_opname ($2)); }
+	| operator RSHIFT unoperator
+		{ $$ = frob_opname (ansi_opname ($2)); }
+	| operator PLUSPLUS unoperator
+		{ $$ = frob_opname (ansi_opname (POSTINCREMENT_EXPR)); }
+	| operator MINUSMINUS unoperator
+		{ $$ = frob_opname (ansi_opname (PREDECREMENT_EXPR)); }
+	| operator ANDAND unoperator
+		{ $$ = frob_opname (ansi_opname (TRUTH_ANDIF_EXPR)); }
+	| operator OROR unoperator
+		{ $$ = frob_opname (ansi_opname (TRUTH_ORIF_EXPR)); }
+	| operator '!' unoperator
+		{ $$ = frob_opname (ansi_opname (TRUTH_NOT_EXPR)); }
+	| operator '?' ':' unoperator
+		{ $$ = frob_opname (ansi_opname (COND_EXPR)); }
+	| operator MIN_MAX unoperator
+		{ $$ = frob_opname (ansi_opname ($2)); }
+	| operator POINTSAT  unoperator %prec EMPTY
+		{ $$ = frob_opname (ansi_opname (COMPONENT_REF)); }
+	| operator POINTSAT_STAR  unoperator %prec EMPTY
+		{ $$ = frob_opname (ansi_opname (MEMBER_REF)); }
+	| operator LEFT_RIGHT unoperator
+		{ $$ = frob_opname (ansi_opname (CALL_EXPR)); }
+	| operator '[' ']' unoperator
+		{ $$ = frob_opname (ansi_opname (ARRAY_REF)); }
+	| operator NEW  unoperator %prec EMPTY
+		{ $$ = frob_opname (ansi_opname (NEW_EXPR)); }
+	| operator DELETE  unoperator %prec EMPTY
+		{ $$ = frob_opname (ansi_opname (DELETE_EXPR)); }
+	| operator NEW '[' ']' unoperator
+		{ $$ = frob_opname (ansi_opname (VEC_NEW_EXPR)); }
+	| operator DELETE '[' ']' unoperator
+		{ $$ = frob_opname (ansi_opname (VEC_DELETE_EXPR)); }
 	/* Names here should be looked up in class scope ALSO.  */
-	| operator type_specifier_seq conversion_declarator
-		{ $$ = grokoptypename ($2.t, $3); }
-	| operator error
-		{ $$ = ansi_opname (ERROR_MARK); }
+	| operator type_specifier_seq conversion_declarator unoperator
+		{ $$ = frob_opname (grokoptypename ($2.t, $3)); }
+	| operator error unoperator
+		{ $$ = frob_opname (ansi_opname (ERROR_MARK)); }
 	;
 
 %%

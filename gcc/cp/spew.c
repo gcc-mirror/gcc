@@ -938,6 +938,42 @@ yyungetc (ch, rescan)
     }
 }
 
+/* ID is an operator name. Duplicate the hackery in yylex to determine what
+   it really is.  */
+
+tree frob_opname (id)
+     tree id;
+{
+  tree trrr;
+  
+  if (yychar == '<')
+    looking_for_template = 1;
+  trrr = lookup_name (id, -2);
+  if (trrr)
+    {
+      switch (identifier_type (trrr))
+        {
+          case TYPENAME:
+          case SELFNAME:
+          case NSNAME:
+          case PTYPENAME:
+            if (got_scope || got_object)
+              id = trrr;
+          case PFUNCNAME:
+          case IDENTIFIER:
+            lastiddecl = trrr;
+            break;
+          default:
+            my_friendly_abort (20000907);
+        }
+    }
+  else
+    lastiddecl = NULL_TREE;
+  got_scope = NULL_TREE;
+  got_object = NULL_TREE;
+  looking_for_template = 0;
+  return id;
+}
 
 /* Set up the state required to correctly handle the definition of the
    inline function whose preparsed state has been saved in PI.  */

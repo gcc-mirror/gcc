@@ -1,3 +1,14 @@
+2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (frob_opname): Declare.
+	* parse.y (saved_scopes): New static variable.
+	(cp_parse_init): Adjust.
+	(do_id): If lastiddecl is NULL, do do_identifier.
+	(operator): Save scope information.
+	(unoperator): new reduction. Restore scope information.
+	(operator_name): Append unoperator. Call frob_opname.
+	* spew.c (frob_opname): Define.
+
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl.c, rtti.c: Include defaults.h if not already included.

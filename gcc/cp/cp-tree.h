@@ -4384,6 +4384,7 @@ extern void init_spew				PARAMS ((void));
 extern int peekyylex				PARAMS ((void));
 extern int yylex				PARAMS ((void));
 extern tree arbitrate_lookup			PARAMS ((tree, tree, tree));
+extern tree frob_opname                         PARAMS ((tree));
 
 /* in tree.c */
 extern void init_tree			        PARAMS ((void));
