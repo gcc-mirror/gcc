@@ -1,6 +1,6 @@
 // win32.cc - Helper functions for Microsoft-flavored OSs.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
