@@ -342,7 +342,7 @@ HANDLE WINAPI GC_CreateThread(
                         lpParameter, dwCreationFlags, lpThreadId);
 }
 
-#else /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) 
+#else /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) */
 
 typedef struct {
     HANDLE child_ready_h, parent_ready_h;
@@ -460,7 +460,7 @@ static DWORD WINAPI thread_start(LPVOID arg)
 
     return ret;
 }
-#endif /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) 
+#endif /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) */
 
 #ifdef MSWINCE
 
