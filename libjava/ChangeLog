@@ -1,3 +1,9 @@
+2001-03-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ObjectStreamClass.java (setUID): Don't write interface
+	info for array classes.
+	Fixes PR libgcj/1971.
+
 2001-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeSet.java (writeObject): Use a for-loop instead of
