@@ -153,7 +153,6 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Bugs::            How, why and where to report bugs.
 * Service::         How to find suppliers of support for GCC.
 * Contributing::    How to contribute to testing and developing GCC.
-* VMS::             Using GCC on VMS.
 
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
@@ -178,7 +177,6 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 @include bugreport.texi
 @include service.texi
 @include contribute.texi
-@include vms.texi
 
 @include funding.texi
 @include gnu.texi
