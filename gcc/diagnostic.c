@@ -67,6 +67,7 @@ static void output_do_verbatim PARAMS ((output_buffer *,
                                         const char *, va_list *));
 static void output_to_stream PARAMS ((output_buffer *, FILE *));
 static void output_format PARAMS ((output_buffer *));
+static void output_indent PARAMS ((output_buffer *));
 
 static char *vbuild_message_string PARAMS ((const char *, va_list));
 static char *build_message_string PARAMS ((const char *, ...))
@@ -267,6 +268,7 @@ output_set_prefix (buffer, prefix)
   output_prefix (buffer) = prefix;
   set_real_maximum_length (buffer);
   prefix_was_emitted_for (buffer) = 0;
+  output_indentation (buffer) = 0;
 }
 
 /* Free BUFFER's prefix, a previously malloc'd string.  */
@@ -301,6 +303,7 @@ clear_diagnostic_info (buffer)
   output_buffer_text_cursor (buffer) = NULL;
   output_buffer_ptr_to_format_args (buffer) = NULL;
   prefix_was_emitted_for (buffer) = 0;
+  output_indentation (buffer) = 0;
 }
 
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
@@ -395,8 +398,12 @@ output_emit_prefix (buffer)
 
         case DIAGNOSTICS_SHOW_PREFIX_ONCE:
           if (prefix_was_emitted_for (buffer))
-            break;
-          /* Else fall through.  */
+            {
+              output_indent (buffer);
+              break;
+            }
+          output_indentation (buffer) += 3;          
+          /* Fall through.  */
 
         case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
           {
@@ -547,6 +554,17 @@ output_append (buffer, start, end)
           ++start;
     }
   output_append_r (buffer, start, end - start);
+}
+
+static void
+output_indent (buffer)
+     output_buffer *buffer;
+{
+  int n = output_indentation (buffer);
+  int i;
+
+  for (i = 0; i < n; ++i)
+    output_add_character (buffer, ' ');
 }
 
 /* Wrap a text delimited by START and END into BUFFER.  */

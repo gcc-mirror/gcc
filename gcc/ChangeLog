@@ -1,3 +1,14 @@
+2000-09-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* toplev.c (display_help): Fix thinko in documentation.
+
+	* diagnostic.h (output_buffer::indent_skip): New fields.
+	(output_indentation): New macro.
+
+	* diagnostic.c (output_indent): New function.
+	(output_set_prefix, clear_diagnostic_info): Use.
+	(output_emit_prefix): Predict future indentation.
+
 2000-09-06  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (stage_*): add more dependencies to ensure parallel
