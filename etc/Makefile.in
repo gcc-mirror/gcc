@@ -60,7 +60,7 @@ install-info: info
 dvi: $(DVIFILES)
 
 standards.info: $(srcdir)/standards.texi
-	$(MAKEINFO) -I$(srcdir) -o standards.info $(srcdir)/standards.texi
+	$(MAKEINFO) --no-split -I$(srcdir) -o standards.info $(srcdir)/standards.texi
 
 standards.dvi: $(srcdir)/standards.texi
 	TEXINPUTS=$(TEXIDIR):$$TEXINPUTS $(TEXI2DVI) $(srcdir)/standards.texi
