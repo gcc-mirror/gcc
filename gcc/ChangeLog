@@ -1,3 +1,8 @@
+1998-02-23  Mike Stump  <mrs@wrs.com>
+
+	* configure.in: Add support for i386-wrs-vxworks configuration.
+	* i386/vxi386.h: New file.
+
 Sun Feb 22 21:16:51 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* tree.c (contains_placeholder_p): Ensure function always returns
