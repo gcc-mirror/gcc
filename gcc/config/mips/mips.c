@@ -467,12 +467,8 @@ int set_volatile;
 /* The next branch instruction is a branch likely, not branch normal.  */
 int mips_branch_likely;
 
-/* Cached operands, and operator to compare for use in set/branch/trap
-   on condition codes.  */
-rtx branch_cmp[2];
-
-/* what type of branch to use */
-enum cmp_type branch_type;
+/* The operands passed to the last cmpMM expander.  */
+rtx cmp_operands[2];
 
 /* The target cpu for code generation.  */
 enum processor_type mips_arch;
@@ -2974,20 +2970,19 @@ get_float_compare_codes (enum rtx_code in_code, enum rtx_code *cmp_code,
 void
 gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 {
-  enum cmp_type type = branch_type;
-  rtx cmp0 = branch_cmp[0];
-  rtx cmp1 = branch_cmp[1];
+  rtx cmp0 = cmp_operands[0];
+  rtx cmp1 = cmp_operands[1];
   enum machine_mode mode;
   enum rtx_code cmp_code;
   rtx reg;
   int invert;
   rtx label1, label2;
 
-  switch (type)
+  switch (GET_MODE (cmp0))
     {
-    case CMP_SI:
-    case CMP_DI:
-      mode = type == CMP_SI ? SImode : DImode;
+    case SImode:
+    case DImode:
+      mode = GET_MODE (cmp0);
       invert = 0;
       reg = gen_int_relational (test_code, NULL_RTX, cmp0, cmp1, &invert);
 
@@ -3004,8 +2999,8 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 
       break;
 
-    case CMP_SF:
-    case CMP_DF:
+    case SFmode:
+    case DFmode:
       if (! ISA_HAS_8CC)
 	reg = gen_rtx_REG (CCmode, FPSW_REGNUM);
       else
@@ -3051,9 +3046,9 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 void
 gen_conditional_move (rtx *operands)
 {
-  rtx op0 = branch_cmp[0];
-  rtx op1 = branch_cmp[1];
-  enum machine_mode mode = GET_MODE (branch_cmp[0]);
+  rtx op0 = cmp_operands[0];
+  rtx op1 = cmp_operands[1];
+  enum machine_mode mode = GET_MODE (cmp_operands[0]);
   enum rtx_code cmp_code = GET_CODE (operands[1]);
   enum rtx_code move_code = NE;
   enum machine_mode op_mode = GET_MODE (operands[0]);
@@ -3079,13 +3074,13 @@ gen_conditional_move (rtx *operands)
 	  break;
 	case GT:
 	  cmp_code = LT;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
+	  op0 = force_reg (mode, cmp_operands[1]);
+	  op1 = cmp_operands[0];
 	  break;
 	case LE:
 	  cmp_code = LT;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
+	  op0 = force_reg (mode, cmp_operands[1]);
+	  op1 = cmp_operands[0];
 	  move_code = EQ;
 	  break;
 	case LTU:
@@ -3096,13 +3091,13 @@ gen_conditional_move (rtx *operands)
 	  break;
 	case GTU:
 	  cmp_code = LTU;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
+	  op0 = force_reg (mode, cmp_operands[1]);
+	  op1 = cmp_operands[0];
 	  break;
 	case LEU:
 	  cmp_code = LTU;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
+	  op0 = force_reg (mode, cmp_operands[1]);
+	  op1 = cmp_operands[0];
 	  move_code = EQ;
 	  break;
 	default:
@@ -3140,7 +3135,7 @@ mips_gen_conditional_trap (rtx *operands)
 {
   rtx op0, op1;
   enum rtx_code cmp_code = GET_CODE (operands[0]);
-  enum machine_mode mode = GET_MODE (branch_cmp[0]);
+  enum machine_mode mode = GET_MODE (cmp_operands[0]);
 
   /* MIPS conditional trap machine instructions don't have GT or LE
      flavors, so we must invert the comparison and convert to LT and
@@ -3155,13 +3150,13 @@ mips_gen_conditional_trap (rtx *operands)
     }
   if (cmp_code == GET_CODE (operands[0]))
     {
-      op0 = force_reg (mode, branch_cmp[0]);
-      op1 = branch_cmp[1];
+      op0 = force_reg (mode, cmp_operands[0]);
+      op1 = cmp_operands[1];
     }
   else
     {
-      op0 = force_reg (mode, branch_cmp[1]);
-      op1 = branch_cmp[0];
+      op0 = force_reg (mode, cmp_operands[1]);
+      op1 = cmp_operands[0];
     }
   if (GET_CODE (op1) == CONST_INT && ! SMALL_INT (op1))
     op1 = force_reg (mode, op1);
