@@ -1,5 +1,12 @@
 2001-10-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_clear): New.
+	* config/i386/i386-protos.h: Declare it.
+	* config/i386/i386.md (setcc peep2s): Use it.
+	(movsi_xor): Unexport.
+
+2001-10-22  Richard Henderson  <rth@redhat.com>
+
 	* flow.c (clear_log_links): Use free_INSN_LIST_list, not
 	free_EXPR_LIST_list for LOG_LINKS.
 
