@@ -969,7 +969,11 @@ union tree_node
 #ifndef NO_DOLLAR_IN_LABEL
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_$I$%s"
 #else
+#ifdef NO_DOT_IN_LABEL
+#define CONSTRUCTOR_NAME_FORMAT "____GLOBAL__I_%s"
+#else
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_.I.%s"
+#endif
 #endif
 #endif
 
