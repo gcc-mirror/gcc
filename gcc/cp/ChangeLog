@@ -1,3 +1,9 @@
+1998-06-10  John Carr  <jfc@mit.edu>
+
+	* tree.c (debug_binfo): Make printf format match arguments.
+
+	* error.c (OB_PUTI): Make printf format match arguments.
+
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (resolve_offset_ref): Handle default-initialization.
