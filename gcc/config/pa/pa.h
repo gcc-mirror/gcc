@@ -1576,7 +1576,20 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 /* Supposedly the assembler rejects the command if there is no tab!  */
 #define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
+
+#if 0
+/* This has apparently triggered a latent GAS bug which manifests itself
+   as numerous warnings from the debugger of the form:
+
+   During symbol reading, inner block not inside outer block in ...
+   inner block not inside outer block in ...
+
+   Or as local variables not being accessable from the debugger.
+
+   Disable $LIT$ for now.  Try it with GAS-2 when it is functional (I
+   am not even going to try to fix this in GAS-1).  */
 #define READONLY_DATA_SECTION readonly_data
+#endif
 
 /* Output before writable data.  */
 
