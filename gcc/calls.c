@@ -242,10 +242,11 @@ calls_function_1 (exp, which)
    register should be added, if required.  */
 
 rtx
-prepare_call_address (funexp, fndecl, use_insns)
+prepare_call_address (funexp, fndecl, use_insns, reg_parm_seen)
      rtx funexp;
      tree fndecl;
      rtx *use_insns;
+     int reg_parm_seen;
 {
   rtx static_chain_value = 0;
 
@@ -258,7 +259,14 @@ prepare_call_address (funexp, fndecl, use_insns)
   /* Make a valid memory address and copy constants thru pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
-    funexp = memory_address (FUNCTION_MODE, funexp);
+    funexp =
+#ifdef SMALL_REGISTER_CLASSES
+    /* If we are using registers for parameters, force the
+	 function address into a register now.  */
+      reg_parm_seen ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
+		    :
+#endif
+		      memory_address (FUNCTION_MODE, funexp);
   else
     {
 #ifndef NO_FUNCTION_CSE
@@ -1577,14 +1585,22 @@ expand_call (exp, target, ignore)
 
 	/* If the value is expensive, and we are inside an appropriately 
 	   short loop, put the value into a pseudo and then put the pseudo
-	   into the hard reg.  */
+	   into the hard reg.
+
+	   For small register classes, also do this if this call uses
+	   register parameters.  This is to avoid reload conflicts while
+	   loading the parameters registers.  */
 
 	if ((! (GET_CODE (args[i].value) == REG
 		|| (GET_CODE (args[i].value) == SUBREG
 		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > 2
+#ifdef SMALL_REGISTER_CLASSES
+	    && (reg_parm_seen || preserve_subexpressions_p ()))
+#else
 	    && preserve_subexpressions_p ())
+#endif
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 
@@ -1766,7 +1782,7 @@ expand_call (exp, target, ignore)
 	}
     }
 
-  funexp = prepare_call_address (funexp, fndecl, &use_insns);
+  funexp = prepare_call_address (funexp, fndecl, &use_insns, reg_parm_seen);
 
   /* Now do the register loads required for any wholly-register parms or any
      parms which are passed both on the stack and in a register.  Their
@@ -2310,7 +2326,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   argnum = 0;
 #endif
 
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
+  fun = prepare_call_address (fun, NULL_TREE, &use_insns, 0);
 
   /* Now load any reg parms into their regs.  */
 
@@ -2661,7 +2677,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   argnum = 0;
 #endif
 
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
+  fun = prepare_call_address (fun, NULL_TREE, &use_insns, 0);
 
   /* Now load any reg parms into their regs.  */
 
