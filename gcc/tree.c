@@ -5052,11 +5052,12 @@ get_narrower (op, unsignedp_ptr)
 
   if (TREE_CODE (op) == COMPONENT_REF
       /* Since type_for_size always gives an integer type.  */
-      && TREE_CODE (TREE_TYPE (op)) != REAL_TYPE)
+      && TREE_CODE (TREE_TYPE (op)) != REAL_TYPE
+      /* Ensure field is laid out already.  */
+      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
     {
-      unsigned int innerprec
-	= TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
-
+      unsigned HOST_WIDE_INT innerprec
+	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
       tree type = type_for_size (innerprec, TREE_UNSIGNED (op));
 
       /* We can get this structure field in a narrower type that fits it,
