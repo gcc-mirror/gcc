@@ -1,5 +1,7 @@
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (locate_and_pad_parm): Use host_integerp and tree_low_cst.
+
 	* fold-const.c (force_fit_type): Unsigned values can overflow
 	if they are sizetype.
 	(int_const_binop): Don't use cache if overflows.
