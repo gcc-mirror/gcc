@@ -1,3 +1,10 @@
+2003-08-28  Per Bothner  <per@bothner.com>
+
+	Fix (hopefully temporary) for breakage caused by my 08-21 patch.
+	* cpplex.c (_cpp_get_fresh_line):  Check for null buffer.
+	(_cpp_lex_buffer):  Likewise.
+	* cpptrad.c (_cpp_read_logical_line_trad):  Likewise.
+
 2003-08-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*mulsi3_sign"): New insn.
