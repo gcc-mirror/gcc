@@ -1781,7 +1781,8 @@ yylex ()
 		      {
 			if (spec_long_long)
 			  error ("three `l's in integer constant");
-			else if (pedantic && ! in_system_header && warn_long_long)
+			else if (pedantic && ! flag_isoc99
+				 && ! in_system_header && warn_long_long)
 			  pedwarn ("ANSI C forbids long long integer constants");
 			spec_long_long = 1;
 		      }

@@ -70,10 +70,13 @@ extern void _fatal_insn			PARAMS ((const char *,
 #endif
 extern void warning			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
+extern void vwarning			PARAMS ((const char *, va_list));
 extern void error			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
+extern void verror			PARAMS ((const char *, va_list));
 extern void pedwarn			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
+extern void vpedwarn			PARAMS ((const char *, va_list));
 extern void pedwarn_with_file_and_line	PARAMS ((const char *, int,
 						  const char *, ...))
   ATTRIBUTE_PRINTF_3;

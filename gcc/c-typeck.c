@@ -6623,8 +6623,9 @@ c_expand_return (retval)
   if (!retval)
     {
       current_function_returns_null = 1;
-      if (warn_return_type && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
-	warning ("`return' with no value, in function returning non-void");
+      if ((warn_return_type || flag_isoc99)
+	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
+	pedwarn_c99 ("`return' with no value, in function returning non-void");
       expand_null_return ();
     }
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
@@ -6751,4 +6752,28 @@ c_expand_start_case (exp)
   expand_start_case (1, exp, type, "switch statement");
 
   return exp;
+}
+
+/* Issue an ISO C99 pedantic warning MSGID.  */
+
+void
+pedwarn_c99 VPARAMS ((const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+
+  if (flag_isoc99)
+    vpedwarn (msgid, ap);
+  else
+    vwarning (msgid, ap);
+
+  va_end (ap);
 }
