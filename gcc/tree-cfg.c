@@ -3720,11 +3720,6 @@ tree_forwarder_block_p (basic_block bb)
   edge e;
   edge_iterator ei;
 
-  /* If we have already determined that this block is not forwardable,
-     then no further checks are necessary.  */
-  if (! bb_ann (bb)->forwardable)
-    return false;
-
   /* BB must have a single outgoing edge.  */
   if (EDGE_COUNT (bb->succs) != 1
       /* BB can not have any PHI nodes.  This could potentially be
@@ -3735,10 +3730,7 @@ tree_forwarder_block_p (basic_block bb)
       || EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
       /* BB may not have an abnormal outgoing edge.  */
       || (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL))
-    {
-      bb_ann (bb)->forwardable = 0;
-      return false; 
-    }
+    return false; 
 
 #if ENABLE_CHECKING
   gcc_assert (bb != ENTRY_BLOCK_PTR);
@@ -3747,10 +3739,7 @@ tree_forwarder_block_p (basic_block bb)
   /* Successors of the entry block are not forwarders.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     if (e->dest == bb)
-      {
-	bb_ann (bb)->forwardable = 0;
-	return false;
-      }
+      return false;
 
   /* Now walk through the statements.  We can ignore labels, anything else
      means this is not a forwarder block.  */
@@ -3766,7 +3755,6 @@ tree_forwarder_block_p (basic_block bb)
 	  break;
 
 	default:
-	  bb_ann (bb)->forwardable = 0;
 	  return false;
 	}
     }
@@ -3794,20 +3782,16 @@ thread_jumps (void)
   bool retval = false;
 
   FOR_EACH_BB (bb)
-    bb_ann (bb)->forwardable = 1;
+    bb_ann (bb)->forwardable = tree_forwarder_block_p (bb);
 
   FOR_EACH_BB (bb)
     {
       edge_iterator ei;
+      bool this_jump_threaded = false;
 
       /* Don't waste time on forwarders.  */
-      if (tree_forwarder_block_p (bb))
+      if (bb_ann (bb)->forwardable)
 	continue;
-
-      /* This block is now part of a forwarding path, mark it as not
-	 forwardable so that we can detect loops.  This bit will be
-	 reset below.  */
-      bb_ann (bb)->forwardable = 0;
 
       /* Examine each of our block's successors to see if it is
 	 forwardable.  */
@@ -3819,7 +3803,7 @@ thread_jumps (void)
 	  /* If the edge is abnormal or its destination is not
 	     forwardable, then there's nothing to do.  */
 	  if ((e->flags & EDGE_ABNORMAL)
-	      || !tree_forwarder_block_p (e->dest))
+	      || !bb_ann (e->dest)->forwardable)
 	    {
 	      ei_next (&ei);
 	      continue;
@@ -3834,7 +3818,7 @@ thread_jumps (void)
 	  last = EDGE_SUCC (e->dest, 0);
 	  bb_ann (e->dest)->forwardable = 0;
 	  for (dest = EDGE_SUCC (e->dest, 0)->dest;
-	       tree_forwarder_block_p (dest);
+	       bb_ann (dest)->forwardable;
 	       last = EDGE_SUCC (dest, 0),
 	       dest = EDGE_SUCC (dest, 0)->dest)
 	    bb_ann (dest)->forwardable = 0;
@@ -3875,7 +3859,7 @@ thread_jumps (void)
 	    }
 
 	  /* Perform the redirection.  */
-	  retval = true;
+	  retval = this_jump_threaded = true;
 	  old_dest = e->dest;
 	  e = redirect_edge_and_branch (e, dest);
 
@@ -3955,9 +3939,13 @@ thread_jumps (void)
 	    }
 	}
 
-      /* Reset the forwardable bit on our block since it's no longer in
-	 a forwarding chain path.  */
-      bb_ann (bb)->forwardable = 1;
+      /* If we succeeded in threading a jump at BB, update the
+	 forwardable mark as BB may have become a new forwarder block.
+	 This could happen if we have a useless "if" statement whose
+	 two arms eventually merge without any intervening
+	 statements.  */
+      if (this_jump_threaded && tree_forwarder_block_p (bb))
+	bb_ann (bb)->forwardable = true;
     }
 
   return retval;
