@@ -1,5 +1,10 @@
 2004-01-24  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.am: Added library version to gtk peer lib.
+	* Makefile.in: Regenerated.
+
+2004-01-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/InflaterInputStream.java: Merged class documentation
 	with classpath.
 
