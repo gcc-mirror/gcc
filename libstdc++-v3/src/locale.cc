@@ -61,32 +61,10 @@ namespace std
   // Definitions for locale::id of standard facets. 
   locale::id ctype<char>::id;
   locale::id codecvt<char, char, mbstate_t>::id;
-  locale::id num_get<char>::id;
-  locale::id num_put<char>::id;
-  locale::id numpunct<char>::id;
-  locale::id collate<char>::id;
-  locale::id time_get<char>::id;
-  locale::id time_put<char>::id;
-  locale::id money_get<char>::id;
-  locale::id money_put<char>::id;
-  locale::id moneypunct<char, false>::id;
-  locale::id moneypunct<char, true>::id;
-  locale::id messages<char>::id;
 
 #ifdef _GLIBCPP_USE_WCHAR_T  
   locale::id ctype<wchar_t>::id;
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
-  locale::id num_get<wchar_t>::id;
-  locale::id num_put<wchar_t>::id;
-  locale::id numpunct<wchar_t>::id;
-  locale::id collate<wchar_t>::id;
-  locale::id time_get<wchar_t>::id;
-  locale::id time_put<wchar_t>::id;
-  locale::id money_get<wchar_t>::id;
-  locale::id money_put<wchar_t>::id;
-  locale::id moneypunct<wchar_t, false>::id;
-  locale::id moneypunct<wchar_t, true>::id;
-  locale::id messages<wchar_t>::id;
 #endif
 
   // Definitions for static const data members of locale::id
