@@ -87,6 +87,17 @@ static void feed_defarg PROTO((tree, tree));
 static int set_vardecl_interface_info PROTO((tree, tree));
 static void store_pending_inline PROTO((tree, struct pending_inline *));
 static void reinit_parse_for_expr PROTO((struct obstack *));
+static int *init_cpp_parse PROTO((void));
+static int handle_cp_pragma PROTO((char *));
+#ifdef HANDLE_SYSV_PRAGMA
+static int handle_sysv_pragma PROTO((FILE *, int));
+#endif
+#ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
+static int reduce_cmp PROTO((int *, int *));
+static int token_cmp PROTO((int *, int *));
+#endif
+#endif
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */

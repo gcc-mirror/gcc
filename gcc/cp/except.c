@@ -47,6 +47,14 @@ static rtx do_function_call PROTO((tree, tree, tree));
 static tree build_eh_type_type PROTO((tree));
 static tree build_eh_type PROTO((tree));
 static void expand_end_eh_spec PROTO((tree));
+static tree call_eh_info PROTO((void));
+static void push_eh_info PROTO((void));
+static tree get_eh_info PROTO((void));
+static tree get_eh_value PROTO((void));
+static tree get_eh_type PROTO((void));
+static tree get_eh_caught PROTO((void));
+static tree get_eh_handlers PROTO((void));
+static tree do_pop_exception PROTO((void));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */

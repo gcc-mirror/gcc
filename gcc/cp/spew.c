@@ -49,6 +49,14 @@ static int do_aggr PROTO((void));
 static int probe_obstack PROTO((struct obstack *, tree, unsigned int));
 static void scan_tokens PROTO((int));
 
+#ifdef SPEW_DEBUG
+static int num_tokens PROTO((void));
+static struct token *nth_token PROTO((int));
+static void add_token PROTO((struct token *));
+static void consume_token PROTO((void));
+static int debug_yychar PROTO((int));
+#endif
+
 /* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,

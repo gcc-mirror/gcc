@@ -44,6 +44,7 @@ static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 				    tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static void unshare_base_binfos PROTO((tree));
+static int avoid_overlap PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
