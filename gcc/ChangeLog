@@ -1,3 +1,20 @@
+Wed Jun 12 01:50:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (addqi_1_slp, subqi_1_slp
+	(andqi_ext0, testqi_ext0): Remove unnecesary check.
+	(addhi*, addqi*): Simplify "dec" condition.
+	(testsi to testqi splitters): Remove TARGET_PROMOTE_QImode check.
+	(and, or, xor to QImode splitters): New.
+	(iorqi_ext*): New.
+	(xorqi_ext_0): New.
+	(xorqi_ext_1): Rename to xorqi_ext_2; bring to sync with and versions.
+	(andqi_ext_1_rex64): New.
+	(ashrqi*_slp): New.
+	(ashlqi*_slp): New.
+	(lshlqi*_slp): New.
+	(rotrqi3*_slp): New.
+	(rotlqi3*_slp): New.
+
 2002-06-11  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.gcc (powerpc*-*-*, rs6000-*-*-*): Don't bother including
