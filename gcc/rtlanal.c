@@ -59,6 +59,7 @@ rtx_unstable_p (x)
     case QUEUED:
       return 1;
 
+    case ADDRESSOF:
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
@@ -476,6 +477,8 @@ no_labels_between_p (beg, end)
      rtx beg, end;
 {
   register rtx p;
+  if (beg == end)
+    return 0;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
     if (GET_CODE (p) == CODE_LABEL)
       return 0;
