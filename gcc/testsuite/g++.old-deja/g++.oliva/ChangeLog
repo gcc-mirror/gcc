@@ -1,5 +1,7 @@
 1999-07-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* ctor1.C: New test.
+
 	* template3.C: New test.
 
 1999-07-02  Alexandre Oliva  <oliva@dcc.unicamp.br>
