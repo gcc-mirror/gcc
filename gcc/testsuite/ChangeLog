@@ -1,3 +1,8 @@
+2001-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu89-init-1.c: Adjust for the new behaviour, add some
+	additional tests.
+
 2001-12-27  Roger Sayle <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/string-opt-16.c: New testcase.

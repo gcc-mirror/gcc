@@ -1598,8 +1598,7 @@ It is handled as if the object was initialized only with the bracket
 enclosed list if compound literal's and object types match.
 The initializer list of the compound literal must be constant.
 If the object being initialized has array type of unknown size, the size is
-determined by compound literal's initializer list, not by the size of the
-compound literal.
+determined by compound literal size.
 
 @example
 static struct foo x = (struct foo) @{1, 'a', 'b'@};
@@ -1612,7 +1611,7 @@ The above lines are equivalent to the following:
 @example
 static struct foo x = @{1, 'a', 'b'@};
 static int y[] = @{1, 2, 3@};
-static int z[] = @{1@};
+static int z[] = @{1, 0, 0@};
 @end example
 
 @node Designated Inits
