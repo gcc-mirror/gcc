@@ -1,3 +1,10 @@
+2002-08-08  Danny Smith  <dannysmith@users.sourceforge.net>
+            Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/istream.tcc (basic_istream::ignore): Use sbumpc,
+	not snextc.
+	* testsuite/27_io/narrow_stream_objects.cc (test10): Add.
+	
 2002-08-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* libsupc++/Makefile.am (LTCOMPILE): Add LIBSUPCXX_PICFLAGS.
