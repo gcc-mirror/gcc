@@ -762,7 +762,7 @@ maybe_process_partial_specialization (tree type)
     error ("explicit specialization of non-template %qT", type);
 }
 
-/* Returns onzero if we can optimize the retrieval of specializations
+/* Returns nonzero if we can optimize the retrieval of specializations
    for TMPL, a TEMPLATE_DECL.  In particular, for such a template, we
    do not use DECL_TEMPLATE_SPECIALIZATIONS at all.  */
 
@@ -2417,7 +2417,7 @@ current_template_args (void)
 
 /* Return a TEMPLATE_DECL corresponding to DECL, using the indicated
    template PARMS.  If MEMBER_TEMPLATE_P is true, the new template is
-   a mebmer template.  Used by push_template_decl below.  */
+   a member template.  Used by push_template_decl below.  */
 
 static tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
