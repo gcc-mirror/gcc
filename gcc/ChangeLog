@@ -1,3 +1,12 @@
+2004-01-08  Richard Henderson  <rth@redhat.com>
+
+	PR opt/12441
+	Revert: Sat Mar 30 14:08:55 CET 2002  Jan Hubicka  <jh@suse.cz>
+        * i386.c (aligned_operand): Be prepared for SUBREGed registers.
+        (ix86_decompose_address): Use REG_P instead of GET_CODE (...) == REG.
+        (ix86_address_cost): Be prepared for SUBREGed registers.
+        (legitimate_address_p): Accept SUBREGed registers.
+
 2004-01-08  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Rename configure.in to configure.ac
