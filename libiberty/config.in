@@ -67,6 +67,9 @@
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
+/* Define if you have the calloc function.  */
+#undef HAVE_CALLOC
+
 /* Define if you have the clock function.  */
 #undef HAVE_CLOCK
 
