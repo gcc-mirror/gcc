@@ -1037,9 +1037,9 @@ i[34567]86-*-mingw32*)
 	tmake_file="i386/t-cygming i386/t-mingw32"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_objs=winnt.o
-	if test x$enable_threads = xyes; then
-		thread_file='win32'
-	fi
+	case ${enable_threads} in
+	  "" | yes | win32) thread_file='win32' ;;
+	esac
 	case ${target} in
 		*mingw32crt*)
 			tm_file="${tm_file} i386/crtdll.h"
