@@ -2949,10 +2949,15 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
+;; ?? This and split disabled on sparc64... When I change the destination
+;; ?? reg to be DImode to emit the constant formation code, the instruction
+;; ?? scheduler does not want to believe that it is the same as the DFmode
+;; ?? subreg we started with...  See the SFmode version of this above to
+;; ?? see how it can be handled.
 (define_insn "*movdf_const_intreg_sp64"
   [(set (match_operand:DF 0 "general_operand" "=e,e,r")
         (match_operand:DF 1 ""                 "m,o,F"))]
-  "TARGET_FPU && TARGET_ARCH64
+  "0 && TARGET_FPU && TARGET_ARCH64
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && GET_CODE (operands[0]) == REG"
   "*
@@ -2968,7 +2973,8 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
-  "TARGET_FPU
+  "! TARGET_ARCH64
+   && TARGET_FPU
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)
@@ -2985,22 +2991,39 @@
     operands[0] = alter_subreg (operands[0]);
   operands[0] = gen_rtx_raw_REG (DImode, REGNO (operands[0]));
 
-  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
-			GEN_INT (l[0])));
-
-  /* Slick... but this trick loses if this subreg constant part
-     can be done in one insn.  */
-  if (l[1] == l[0]
-      && !(SPARC_SETHI_P (l[0])
-	   || SPARC_SIMM13_P (l[0])))
+  if (TARGET_ARCH64)
     {
-      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			    gen_highpart (SImode, operands[0])));
+#if HOST_BITS_PER_WIDE_INT == 64
+      HOST_WIDE_INT val;
+
+      val = ((HOST_WIDE_INT)l[1] |
+             ((HOST_WIDE_INT)l[0] << 32));
+      emit_insn (gen_movdi (operands[0], GEN_INT (val)));
+#else
+      emit_insn (gen_movdi (operands[0],
+                            gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx,
+                                                  l[1], l[0])));
+#endif
     }
   else
     {
-      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			    GEN_INT (l[1])));
+      emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
+			    GEN_INT (l[0])));
+
+      /* Slick... but this trick loses if this subreg constant part
+         can be done in one insn.  */
+      if (l[1] == l[0]
+          && !(SPARC_SETHI_P (l[0])
+	       || SPARC_SIMM13_P (l[0])))
+        {
+          emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
+			        gen_highpart (SImode, operands[0])));
+        }
+      else
+        {
+          emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
+			        GEN_INT (l[1])));
+        }
     }
   DONE;
 }")
