@@ -1,5 +1,7 @@
 2001-01-26  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.jni/martin.c (Java_martin_myNative): Flush stdout.
+
 	* libjava.jni/martin.out: New file.
 	* libjava.jni/martin.c: New file.
 	* libjava.jni/martin.java: New file.
