@@ -371,7 +371,7 @@ struct cp_binding_level GTY(())
     tree dead_vars_from_for;
 
     /* Binding depth at which this level began.  */
-    unsigned binding_depth;
+    int binding_depth;
 
     /* The kind of scope that this object represents.  However, a
        SK_TEMPLATE_SPEC scope is represented with KIND set to
@@ -455,6 +455,9 @@ cxx_scope_descriptor (cxx_scope *scope)
     "try-scope",
     "catch-scope",
     "for-scope",
+    "function-parameter-scope",
+    "class-scope",
+    "namespace-scope",
     "template-parameter-scope",
     "template-explicit-spec-scope"
   };
