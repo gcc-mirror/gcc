@@ -1,3 +1,9 @@
+2003-11-14  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (LIBGNAT_TARGET_PAIRS): Add rules for x86_64-linux.
+
+	* 5nsystem.ads: New file for x86_64-linux-gnu.
+
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* nmake.ads, nmake.adb, sinfo.h, treeprs.ads: Regenerated.
@@ -15,28 +21,28 @@
 	Sdefault.Include_Dir_Default_Name and Osint.Object_Dir_Default_Prefix
 	instead of Sdefault.Object_Dir_Default_Name
 
-	* gnatlink.adb: 
+	* gnatlink.adb:
 	(Process_Binder_File): Never suppress the option following -Xlinker
 
-	* mdll-utl.adb: 
+	* mdll-utl.adb:
 	(Gcc): Use Osint.Object_Dir_Default_Prefix instead of
 	Sdefault.Object_Dir_Default_Name.
 
-	* osint.ads, osint.adb: 
+	* osint.ads, osint.adb:
 	(Include_Dir_Default_Prefix, Object_Dir_Default_Prefix): New functions
 	Minor reformatting.
 
 	* vms_conv.ads: Minor reformating
 	Remove GNAT STANDARD and GNAT PSTA
 
-	* vms_conv.adb: 
+	* vms_conv.adb:
 	Allow GNAT MAKE to have several files on the command line.
 	(Init_Object_Dirs): Use Osint.Object_Dir_Default_Prefix instead of
 	Sdefault.Object_Dir_Default_Name.
 	Minor Reformating
 	Remove data for GNAT STANDARD
 
-	* vms_data.ads: 
+	* vms_data.ads:
 	Add new compiler qualifier /PRINT_STANDARD (-gnatS)
 	Remove data for GNAT STANDARD
 	Remove options and documentation for -gnatwb/-gnatwB: these warning
@@ -46,21 +52,21 @@
 
 	* 5zthrini.adb: (Init_RTS): Made visible
 
-	* 5zthrini.adb: 
+	* 5zthrini.adb:
 	(Register): Removed unnecessary call to taskVarGet that checked whether
 	 an ATSD was already set as a task var for the argument thread.
 
-	* s-thread.adb: 
+	* s-thread.adb:
 	Updated comment to reflect that this is a VxWorks version
 	Added context clause for System.Threads.Initialization
 	Added call to System.Threads.Initialization.Init_RTS
 
 2003-11-13  Jerome Guitton  <guitton@act-europe.fr>
 
-	* 5zthrini.adb: 
+	* 5zthrini.adb:
 	(Init_RTS): New procedure, for the initialization of the run-time lib.
 
-	* s-thread.adb: 
+	* s-thread.adb:
 	Remove dependancy on System.Init, so that this file can be used in the
 	AE653 sequential run-time lib.
 
@@ -70,25 +76,25 @@
 
 2003-11-13  Ed Schonberg  <schonberg@gnat.com>
 
-	* checks.adb: 
+	* checks.adb:
 	(Apply_Discriminant_Check): Do no apply check if target type is derived
 	from source type with no applicable constraint.
 
-	* lib-writ.adb: 
+	* lib-writ.adb:
 	(Ensure_System_Dependency): Do not apply the style checks that may have
 	been specified for the main unit.
 
-	* sem_ch8.adb: 
+	* sem_ch8.adb:
 	(Find_Selected_Component): Further improvement in error message, with
 	RM reference.
 
-	* sem_res.adb: 
+	* sem_res.adb:
 	(Resolve): Handle properly the case of an illegal overloaded protected
 	procedure.
 
 2003-11-13  Javier Miranda  <miranda@gnat.com>
 
-	* exp_aggr.adb: 
+	* exp_aggr.adb:
 	(Has_Default_Init_Comps): New function to check the presence of
 	default initialization in an aggregate.
 	(Build_Record_Aggr_Code): Recursively expand the ancestor in case of
@@ -106,7 +112,7 @@
 	(P_Record_Or_Array_Component_Association): Give support to the new
 	syntax for default initialization of components.
 
-	* sem_aggr.adb: 
+	* sem_aggr.adb:
 	(Resolve_Aggregate): Relax the strictness of the frontend in case of
 	limited aggregates.
 	(Resolve_Record_Aggregate): Give support to default initialized
@@ -118,7 +124,7 @@
 	(Resolve_Extension_Aggregate): Give support to limited extension
 	aggregates.
 
-	* sem_ch3.adb: 
+	* sem_ch3.adb:
 	(Check_Initialization): Relax the strictness of the front-end in case
 	of aggregate and extension aggregates. This test is now done in
 	Get_Value in a per-component manner.
@@ -168,7 +174,7 @@
 
 	* s-thread.adb: Implement bodies for thread body processing
 
-	* s-thread.ads: 
+	* s-thread.ads:
 	Added comment identifying supported targets for pragma Thread_Body.
 
 2003-11-10  Pascal Obry  <obry@gnat.com>
@@ -176,7 +182,7 @@
 	* adaint.c (_gnat_stat) [WIN32]: Check if name is not bigger than
 	GNAT_MAX_PATH_LEN.
 
-	* s-fileio.adb: 
+	* s-fileio.adb:
 	(Open): Properly check for string length before copying into the buffer.
 	Raises Name_Error if buffer is too small. Note that this was a potential
 	buffer overflow.
@@ -192,7 +198,7 @@
 
 2003-11-10  Vincent Celier  <celier@gnat.com>
 
-	* gprcmd.adb: 
+	* gprcmd.adb:
 	(Gprcmd): Add new command "prefix" to get the prefix of the GNAT
 	installation.
 
@@ -206,13 +212,13 @@
 	* prj-nmsc.adb (Language_Independent_Check): Adjust error message when
 	a library project is extended by a virtual extending project.
 
-	* prj-part.adb: 
+	* prj-part.adb:
 	Modifications throughout to implement extending-all project, including:
 	(Virtual_Hash, Processed_Hash): New hash tables
 	(Create_Virtual_Extending_Project): New procedure
 	(Look_For_Virtual_Projects_For): New procedure
 
-	* prj-proc.adb: 
+	* prj-proc.adb:
 	(Process): After checking the projects, if main project is an
 	extending-all project, set the object directory of all virtual extending
 	project to the object directory of the main project.
@@ -221,7 +227,7 @@
 	(Recursive_Process): If name starts with the virtual prefix, set Virtual
 	to True in the project data.
 
-	* prj-tree.adb: 
+	* prj-tree.adb:
 	(Default_Project_Node): Add new boolean component Extending_All
 	(Is_Extending_All): New function
 	(Set_Is_Extending_All): New procedure
@@ -232,7 +238,7 @@
 
 	* switch-c.adb: (Scan_Front_End_Switches): Process -nostdlib
 
-	* vms_data.ads: 
+	* vms_data.ads:
 	Add qualifier /NOSTD_LIBRARIES (-nostdlib) for the compiler
 
 	* bld.adb (Recursive_Process): If MAKE_ROOT is not defined, call
@@ -242,13 +248,13 @@
 
 	* einfo.ads: Fix a typo and remove an extraneous word in comments.
 
-	* lib-load.adb: 
+	* lib-load.adb:
 	(Create_Dummy_Package_Unit): Set the scope of the entity for the
 	created dummy package to Standard_Standard, not to itself, to
 	defend other parts of the front-end against encoutering a cycle in
 	the scope chain.
 
-	* sem_ch10.adb: 
+	* sem_ch10.adb:
 	(Analyze_With_Clause): When setting the entities for the successive
 	N_Expanded_Names that constitute the name of a child unit, do not
 	attempt to go further than Standard_Standard in the chain of scopes.
@@ -258,11 +264,11 @@
 
 2003-11-10  Ed Schonberg  <schonberg@gnat.com>
 
-	* exp_ch6.adb: 
+	* exp_ch6.adb:
 	(Expand_Thread_Body): Place subprogram on scope stack, so that new
 	declarations are given the proper scope.
 
-	* sem_ch13.adb: 
+	* sem_ch13.adb:
 	(Check_Expr_Constants): Reject an expression that contains a constant
 	created during expansion, and that appears after the object to which
 	the address clause applies.
@@ -272,7 +278,7 @@
 	that uses 'Range of a function call with controlled components, so
 	that the function result can be finalized before starting the loop.
 
-	* sem_ch8.adb: 
+	* sem_ch8.adb:
 	(Find_Selected_Component): Improve error message when prefix is
 	an implicit dereference of an incomplete type.
 
@@ -294,14 +300,14 @@
 	Update documentation for Associated_Node and Entity fields to clarify
 	relationship and usage.
 
-	* sprint.adb: 
+	* sprint.adb:
 	(Write_Id): Properly process Associated_Node field in generic template
 
-	* switch-c.adb: 
+	* switch-c.adb:
 	Recognize new -gnatS switch for printing package Standard
 	This replaces gnatpsta
 
-	* usage.adb: 
+	* usage.adb:
 	Add line for  new -gnatS switch for printing package Standard
 	This replaces gnatpsta
 

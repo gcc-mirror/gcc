@@ -1348,6 +1348,27 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
 endif
 
+ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<4lintnam.ads \
+  s-inmaop.adb<7sinmaop.adb \
+  s-intman.adb<5lintman.adb \
+  s-osinte.ads<5iosinte.ads \
+  s-osinte.adb<5iosinte.adb \
+  s-osprim.adb<7sosprim.adb \
+  s-taprop.adb<5itaprop.adb \
+  s-tpopsp.adb<5atpopsp.adb \
+  s-taspri.ads<5itaspri.ads \
+  system.ads<5nsystem.ads
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<5lml-tgt.adb
+  MISCLIB=
+  THREADSLIB=-lpthread
+  GNATLIB_SHARED=gnatlib-shared-dual
+  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
+  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+endif
+
 # The runtime library for gnat comprises two directories.  One contains the
 # Ada source files that the compiler (gnat1) needs -- these files are listed
 # by ADA_INCLUDE_SRCS -- and the other contains the object files and their
