@@ -1,3 +1,12 @@
+Mon Sep 27 19:40:17 CEST 1999	Marc Espie <espie@cvs.openbsd.org>
+
+	* configure.in (mips*el-*-openbsd*):  Don't duplicate default settings.
+	(mips*-*-openbsd*):  Let big endian configuration be a fragment.
+	* configure:  Regen.
+	* config/mips/openbsd.h:  New, OpenBSD little endian target.
+	* config/mips/openbsd-be.h:  New, OpenBSD big endian target fragment.
+	* config/mips/xm-openbsd.h:  New, OpenBSD host.
+
 Mon Sep 27 10:28:48 1999  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (output_function_prologue,
