@@ -1,3 +1,12 @@
+2004-11-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (tree_execute_on_growing_pred): New.
+	(tree_cfg_hooks): Add tree_execute_on_growing_pred.
+	* tree-flow.h: Add a prototype for
+	reserve_phi_args_for_new_edge.
+	* tree-phinodes.c (reserve_phi_args_for_new_edge): New.
+	(add_phi_arg): Don't resize a PHI array.
+
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config.gcc: Add avr-*-rtems*.

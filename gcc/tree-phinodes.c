@@ -269,6 +269,33 @@ resize_phi_node (tree *phi, int len)
   *phi = new_phi;
 }
 
+/* Reserve PHI arguments for a new edge to basic block BB.  */
+
+void
+reserve_phi_args_for_new_edge (basic_block bb)
+{
+  tree *loc;
+  int len = EDGE_COUNT (bb->preds);
+  int cap = ideal_phi_node_len (len + 4);
+
+  for (loc = &(bb_ann (bb)->phi_nodes);
+       *loc;
+       loc = &PHI_CHAIN (*loc))
+    {
+      if (len > PHI_ARG_CAPACITY (*loc))
+	{
+	  tree old_phi = *loc;
+
+	  resize_phi_node (loc, cap);
+
+	  /* The result of the phi is defined by this phi node.  */
+	  SSA_NAME_DEF_STMT (PHI_RESULT (*loc)) = *loc;
+
+	  release_phi_node (old_phi);
+	}
+    }
+}
+
 /* Create a new PHI node for variable VAR at basic block BB.  */
 
 tree
@@ -302,38 +329,9 @@ add_phi_arg (tree *phi, tree def, edge e)
 
   gcc_assert (bb == bb_for_stmt (*phi));
 
-  if (i >= PHI_ARG_CAPACITY (*phi))
-    {
-      tree old_phi = *phi;
-
-      /* Resize the phi.  Unfortunately, this will relocate it.  */
-      resize_phi_node (phi, ideal_phi_node_len (i + 4));
-
-      /* resize_phi_node will necessarily relocate the phi.  */
-      gcc_assert (*phi != old_phi);
-
-      /* The result of the phi is defined by this phi node.  */
-      SSA_NAME_DEF_STMT (PHI_RESULT (*phi)) = *phi;
-
-      release_phi_node (old_phi);
-
-      /* Update the list head if replacing the first listed phi.  */
-      if (phi_nodes (bb) == old_phi)
-	bb_ann (bb)->phi_nodes = *phi;
-      else
-	{
-	  /* Traverse the list looking for the phi node to chain to.  */
-	  tree p;
-
-	  for (p = phi_nodes (bb);
-	       p && PHI_CHAIN (p) != old_phi;
-	       p = PHI_CHAIN (p))
-	    ;
-
-	  gcc_assert (p);
-	  PHI_CHAIN (p) = *phi;
-	}
-    }
+  /* We resize PHI nodes upon edge creation.  We should always have
+     enough room at this point.  */
+  gcc_assert (PHI_NUM_ARGS (*phi) < PHI_ARG_CAPACITY (*phi));
 
   /* Copy propagation needs to know what object occur in abnormal
      PHI nodes.  This is a convenient place to record such information.  */
