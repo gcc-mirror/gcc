@@ -1,9 +1,3 @@
-1999-06-24  Andrew Haley  <aph@cygnus.com>
-
-	* class.c (finish_class): Whenever a deferred method is
-	output, rescan the list of methods to see if a new candidate for
-	output can be found.
-
 1999-06-22  Andrew Haley  <aph@cygnus.com>
 
 	* verify.c (verify_jvm_instructions): Check for pending blocks
