@@ -359,13 +359,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   default_pretend_outgoing_varargs_named
 #define TARGET_SPLIT_COMPLEX_ARG NULL
 
-#ifdef EXPAND_BUILTIN_VA_ARG
-/* If there's a target-specific va_arg expander, there needs to be a
-   target-specific gimplifier.  */
-#define TARGET_GIMPLIFY_VA_ARG_EXPR NULL
-#else
 #define TARGET_GIMPLIFY_VA_ARG_EXPR std_gimplify_va_arg_expr
-#endif
 
 #define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_false
 

@@ -704,10 +704,6 @@ CUMULATIVE_ARGS;
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   s390_va_start (valist, nextarg)
 
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  (abort (), NULL_RTX)
-
-
 /* Trampolines for nested functions.  */
 
 #define TRAMPOLINE_SIZE (TARGET_64BIT ? 36 : 20)

@@ -8541,11 +8541,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
     case TARGET_EXPR:
+    case VA_ARG_EXPR:
       /* Lowered by gimplify.c.  */
       abort ();
-
-    case VA_ARG_EXPR:
-      return expand_builtin_va_arg (TREE_OPERAND (exp, 0), type);
 
     case EXC_PTR_EXPR:
       return get_exception_pointer (cfun);

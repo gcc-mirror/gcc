@@ -1,3 +1,23 @@
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (std_expand_builtin_va_arg): Remove.
+	(expand_builtin_va_arg): Remove.
+	* expr.h: Don't declare them.
+	* gimplify.c (mark_decls_volatile_r): Remove.
+	(copy_if_shared_r): Don't call it.
+	* target-def.h: Don't test EXPAND_BUILTIN_VA_ARG.
+	* expr.c (expand_expr_real_1): Don't handle VA_ARG_EXPR.
+	* gimple-low.c (lower_stmt): Likewise.
+	* tree-cfg.c (cfg_remove_useless_stmts_bb): Likewise.
+	* tree-gimple.c (is_gimple_tmp_rhs, is_gimple_stmt): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* doc/tm.texi (TARGET_GIMPLIFY_VA_ARG_EXPR): Don't mention
+	EXPAND_BUILTIN_VA_ARG.
+	* system.h (EXPAND_BUILTIN_VA_ARG): Poison.
+	* config/alpha/alpha.h, config/alpha/unicosmk.h, config/i386/i386.h,
+	config/ia64/ia64.h, config/rs6000/rs6000.h, config/s390/s390.h,
+	config/sparc/sparc.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
 2004-07-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (insert_aux): Break out if we hit
