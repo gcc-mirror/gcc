@@ -99,6 +99,7 @@ static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
 static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
+static void mark_named_operators	PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
@@ -612,28 +613,22 @@ cpp_destroy (pfile)
    Two values are not compile time constants, so we tag
    them in the FLAGS field instead:
    VERS		value is the global version_string, quoted
-   ULP		value is the global user_label_prefix
-
-   Also, macros with CPLUS set in the flags field are entered only for C++.  */
+   ULP		value is the global user_label_prefix  */
 struct builtin
 {
   const U_CHAR *name;
   const char *value;
   unsigned char builtin;
-  unsigned char operator;
   unsigned short flags;
   unsigned short len;
 };
 #define VERS		0x01
 #define ULP		0x02
-#define CPLUS		0x04
 #define BUILTIN		0x08
-#define OPERATOR  	0x10
 
-#define B(n, t)       { U n, 0, t, 0, BUILTIN, sizeof n - 1 }
-#define C(n, v)       { U n, v, 0, 0, 0, sizeof n - 1 }
-#define X(n, f)       { U n, 0, 0, 0, f, sizeof n - 1 }
-#define O(n, c, f)    { U n, 0, 0, c, OPERATOR | f, sizeof n - 1 }
+#define B(n, t)       { U n, 0, t, BUILTIN, sizeof n - 1 }
+#define C(n, v)       { U n, v, 0, 0, sizeof n - 1 }
+#define X(n, f)       { U n, 0, 0, f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
   B("__TIME__",		 BT_TIME),
@@ -669,29 +664,54 @@ static const struct builtin builtin_array[] =
 #else
   C("__STDC__",		 "1"),
 #endif
-
-  /* Named operators known to the preprocessor.  These cannot be #defined
-     and always have their stated meaning.  They are treated like normal
-     identifiers except for the type code and the meaning.  Most of them
-     are only for C++ (but see iso646.h).  */
-  O("and",	CPP_AND_AND, CPLUS),
-  O("and_eq",	CPP_AND_EQ,  CPLUS),
-  O("bitand",	CPP_AND,     CPLUS),
-  O("bitor",	CPP_OR,      CPLUS),
-  O("compl",	CPP_COMPL,   CPLUS),
-  O("not",	CPP_NOT,     CPLUS),
-  O("not_eq",	CPP_NOT_EQ,  CPLUS),
-  O("or",	CPP_OR_OR,   CPLUS),
-  O("or_eq",	CPP_OR_EQ,   CPLUS),
-  O("xor",	CPP_XOR,     CPLUS),
-  O("xor_eq",	CPP_XOR_EQ,  CPLUS)
 };
 #undef B
 #undef C
 #undef X
-#undef O
 #define builtin_array_end \
  builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
+
+/* Named operators known to the preprocessor.  These cannot be
+   #defined and always have their stated meaning.  They are treated
+   like normal identifiers except for the type code and the meaning.
+   Most of them are only for C++ (but see iso646.h).  */
+#define B(n, t)    { DSC(n), t }
+static const struct named_op
+{
+  const U_CHAR *name;
+  unsigned int len;
+  enum cpp_ttype value;
+} operator_array[] = {
+  B("and",	CPP_AND_AND),
+  B("and_eq",	CPP_AND_EQ),
+  B("bitand",	CPP_AND),
+  B("bitor",	CPP_OR),
+  B("compl",	CPP_COMPL),
+  B("not",	CPP_NOT),
+  B("not_eq",	CPP_NOT_EQ),
+  B("or",	CPP_OR_OR),
+  B("or_eq",	CPP_OR_EQ),
+  B("xor",	CPP_XOR),
+  B("xor_eq",	CPP_XOR_EQ)
+};
+#undef B
+
+/* Mark the C++ named operators in the hash table.  */
+static void
+mark_named_operators (pfile)
+     cpp_reader *pfile;
+{
+  const struct named_op *b;
+
+  for (b = operator_array;
+       b < (operator_array + ARRAY_SIZE (operator_array));
+       b++)
+    {
+      cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+      hp->flags |= NODE_OPERATOR;
+      hp->value.operator = b->value;
+    }
+}
 
 /* Subroutine of cpp_read_main_file; reads the builtins table above and
    enters them, and language-specific macros, into the hash table.  */
@@ -703,26 +723,12 @@ init_builtins (pfile)
 
   for(b = builtin_array; b < builtin_array_end; b++)
     {
-      if ((b->flags & CPLUS) && ! CPP_OPTION (pfile, cplusplus))
-	continue;
-
-      if ((b->flags & OPERATOR) && ! CPP_OPTION (pfile, operator_names))
-	continue;
-
-      if (b->flags & (OPERATOR | BUILTIN))
+      if (b->flags & BUILTIN)
 	{
 	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
-	  if (b->flags & OPERATOR)
-	    {
-	      hp->flags |= NODE_OPERATOR;
-	      hp->value.operator = b->operator;
-	    }
-	  else
-	    {
-	      hp->type = NT_MACRO;
-	      hp->flags |= NODE_BUILTIN | NODE_WARN;
-	      hp->value.builtin = b->builtin;
-	    }
+	  hp->type = NT_MACRO;
+	  hp->flags |= NODE_BUILTIN | NODE_WARN;
+	  hp->value.builtin = b->builtin;
 	}
       else			/* A standard macro of some kind.  */
 	{
@@ -781,7 +787,6 @@ init_builtins (pfile)
 #undef OPERATOR
 #undef VERS
 #undef ULP
-#undef CPLUS
 #undef builtin_array_end
 
 /* And another subroutine.  This one sets up the standard include path.  */
@@ -1001,6 +1006,10 @@ void
 cpp_finish_options (pfile)
      cpp_reader *pfile;
 {
+  /* Mark named operators before handling command line macros.  */
+  if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
+    mark_named_operators (pfile);
+
   /* Install builtins and process command line macros etc. in the order
      they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))

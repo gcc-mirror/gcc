@@ -1,3 +1,12 @@
+2002-05-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (mark_named_operators): Split out from init_builtins.
+	(struct builtin): Remove operator.
+	(CPLUS, OPERATOR, O): Kill
+	(struct named_op): New.
+	(cpp_finish_options): Call it from here instead.
+	(init_builtins): Don't do named operators.
+
 2002-05-20  David S. Miller  <davem@redhat.com>
 
 	* cselib.c (max_value_regs): New.
