@@ -5422,25 +5422,14 @@
 
 (define_expand "anddi3"
   [(set (match_operand:DI 0 "register_operand" "")
-	(and:DI (match_operand:DI 1 "and_operand" "")
+	(and:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "and_operand" "")))]
   ""
   "
 {
-  if (TARGET_64BIT)
-    {
-      /* One operand must be a register operand.  */
-      if (!register_operand (operands[1], DImode)
-	  && !register_operand (operands[2], DImode))
-	FAIL;
-    }
-  else
-    {
-      /* Both operands must be register operands.  */
-      if (!register_operand (operands[1], DImode)
-	  || !register_operand (operands[2], DImode))
-	FAIL;
-    }
+  /* Both operands must be register operands.  */
+  if (!TARGET_64BIT && !register_operand (operands[2], DImode))
+    FAIL;
 }")
 
 (define_insn ""
@@ -5501,25 +5490,14 @@
 
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
-	(ior:DI (match_operand:DI 1 "ior_operand" "")
+	(ior:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "ior_operand" "")))]
   ""
   "
 {
-  if (TARGET_64BIT)
-    {
-      /* One operand must be a register operand.  */
-      if (!register_operand (operands[1], DImode)
-	  && !register_operand (operands[2], DImode))
-	FAIL;
-    }
-  else
-    {
-      /* Both operands must be register operands.  */
-      if (!register_operand (operands[1], DImode)
-	  || !register_operand (operands[2], DImode))
-	FAIL;
-    }
+  /* Both operands must be register operands.  */
+  if (!TARGET_64BIT && !register_operand (operands[2], DImode))
+    FAIL;
 }")
 
 (define_insn ""

@@ -1,3 +1,10 @@
+2005-02-11  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+        PR middle-end/19697
+	2005-01-30  Roger Sayle  <roger@eyesopen.com>
+        * config/pa/pa.md (anddi3, iordi3): On HPPA64, disallow an integer
+        constant as the second operand and a register as the third.
+
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19666
