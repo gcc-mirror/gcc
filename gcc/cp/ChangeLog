@@ -1,3 +1,7 @@
+1999-09-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* ir.texi: Improve documentation for TARGET_EXPR.
+
 1999-09-27  Nathan Sidwell  <nathan@acm.org>
 
 	Augment stringification of trees.
