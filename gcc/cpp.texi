@@ -2484,7 +2484,7 @@ You might use @samp{#warning} in obsolete header files, with a message
 directing the user to the header file which should be used instead.
 
 @node Assertions, Line Control, Conditionals, Top
-
+@section Assertions
 @cindex assertions
 @dfn{Assertions} are a more systematic alternative to macros in writing
 conditionals to test what sort of computer or system the compiled
