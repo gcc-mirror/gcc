@@ -246,20 +246,8 @@ process_include (rtx desc, int lineno)
   read_rtx_lineno = 1;
 
   /* Read the entire file.  */
-  while (1)
-    {
-      rtx desc;
-      int c;
-
-      c = read_skip_spaces (input_file);
-      if (c == EOF)
-	break;
-
-      ungetc (c, input_file);
-      lineno = read_rtx_lineno;
-      desc = read_rtx (input_file);
-      process_rtx (desc, lineno);
-    }
+  while (read_rtx (input_file, &desc, &lineno))
+    process_rtx (desc, lineno);
 
   /* Do not free pathname.  It is attached to the various rtx queue
      elements.  */
@@ -911,9 +899,10 @@ int
 init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 {
   FILE *input_file;
-  int i;
+  int i, lineno;
   size_t ix;
   char *lastsl;
+  rtx desc;
 
   for (i = 1; i < argc; i++)
     {
@@ -991,19 +980,8 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   sequence_num = 0;
 
   /* Read the entire file.  */
-  while (1)
-    {
-      rtx desc;
-      int lineno;
-      int c = read_skip_spaces (input_file);
-      if (c == EOF)
-        break;
-
-      ungetc (c, input_file);
-      lineno = read_rtx_lineno;
-      desc = read_rtx (input_file);
-      process_rtx (desc, lineno);
-    }
+  while (read_rtx (input_file, &desc, &lineno))
+    process_rtx (desc, lineno);
   fclose (input_file);
 
   /* Process define_cond_exec patterns.  */

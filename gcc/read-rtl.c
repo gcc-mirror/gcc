@@ -1066,16 +1066,20 @@ check_code_macro (struct mapping *macro, FILE *infile)
   bellwether_codes[macro->index] = bellwether;
 }
 
-/* Read an rtx in printed representation from INFILE
-   and return an actual rtx in core constructed accordingly.
+/* Read an rtx in printed representation from INFILE and store its
+   core representation in *X.  Also store the line number of the
+   opening '(' in *LINENO.  Return true on success or false if the
+   end of file has been reached.
+
    read_rtx is not used in the compiler proper, but rather in
    the utilities gen*.c that construct C code from machine descriptions.  */
 
-rtx
-read_rtx (FILE *infile)
+bool
+read_rtx (FILE *infile, rtx *x, int *lineno)
 {
   static rtx queue_head, queue_next;
-  rtx return_rtx;
+  static int queue_lineno;
+  int c;
 
   /* Do one-time initialization.  */
   if (queue_head == 0)
@@ -1087,8 +1091,13 @@ read_rtx (FILE *infile)
 
   if (queue_next == 0)
     {
-      queue_next = queue_head;
+      c = read_skip_spaces (infile);
+      if (c == EOF)
+	return false;
+      ungetc (c, infile);
 
+      queue_next = queue_head;
+      queue_lineno = read_rtx_lineno;
       XEXP (queue_next, 0) = read_rtx_1 (infile);
       XEXP (queue_next, 1) = 0;
 
@@ -1096,10 +1105,11 @@ read_rtx (FILE *infile)
       htab_traverse (codes.macros, apply_macro_traverse, queue_next);
     }
 
-  return_rtx = XEXP (queue_next, 0);
+  *x = XEXP (queue_next, 0);
+  *lineno = queue_lineno;
   queue_next = XEXP (queue_next, 1);
 
-  return return_rtx;
+  return true;
 }
 
 /* Subroutine of read_rtx that reads one construct from INFILE but
