@@ -2630,6 +2630,8 @@ convert_regs_1 (file, block)
 	beste = e;
       else if (EDGE_FREQUENCY (beste) < EDGE_FREQUENCY (e))
 	beste = e;
+      else if (EDGE_FREQUENCY (beste) > EDGE_FREQUENCY (e))
+	;
       else if (beste->count < e->count)
 	beste = e;
       else if (beste->count > e->count)
