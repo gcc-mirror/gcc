@@ -1,3 +1,7 @@
+2004-11-21  Dale Johannesen  <dalej@apple.com>
+
+	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION):  Define.
+
 2004-11-21  Jeff Law  <law@redhat.com>
 
 	* tree-ssa.c (verify_use): Fix comment.

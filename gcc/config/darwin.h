@@ -999,6 +999,7 @@ enum machopic_addr_class {
 	goto DONE;									\
       }
 
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 #define TARGET_TERMINATE_DW2_EH_FRAME_INFO false
 
