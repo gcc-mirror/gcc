@@ -457,9 +457,9 @@ fold_cond_expr_cond (void)
 	{
 	  tree cond = fold (COND_EXPR_COND (stmt));
 	  if (integer_zerop (cond))
-	    COND_EXPR_COND (stmt) = integer_zero_node;
+	    COND_EXPR_COND (stmt) = boolean_false_node;
 	  else if (integer_onep (cond))
-	    COND_EXPR_COND (stmt) = integer_one_node;
+	    COND_EXPR_COND (stmt) = boolean_true_node;
 	}
     }
 }
