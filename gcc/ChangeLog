@@ -1,5 +1,10 @@
 2003-08-26  Andreas Krebbel <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md ("*llgt_sisi", "*llgt_sisi_split", "*llgt_didi",
+	"*llgt_didi_split", "*llgt_sidi", "*llgt_sidi_split"): New insns.
+
+2003-08-26  Andreas Krebbel <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md ("*fmadddf", "*fmsubdf", 
 	"*fmaddsf", "*fmsubsf"): New insns.
 
