@@ -22,7 +22,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_PREFIX_H
 #define GCC_PREFIX_H
 
-extern const char *update_path PARAMS ((const char *, const char *));
+/* Update PATH using KEY if PATH starts with PREFIX.  The returned
+   string is always malloc-ed, and the caller is responsible for
+   freeing it.  */
+extern char *update_path PARAMS ((const char *path, const char *key));
 extern void set_std_prefix PARAMS ((const char *, int));
 
 #endif /* ! GCC_PREFIX_H */

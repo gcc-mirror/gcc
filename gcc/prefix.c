@@ -74,8 +74,9 @@ Boston, MA 02111-1307, USA.  */
 static const char *std_prefix = PREFIX;
 
 static const char *get_key_value	PARAMS ((char *));
-static const char *translate_name	PARAMS ((const char *));
+static char *translate_name		PARAMS ((char *));
 static char *save_string		PARAMS ((const char *, int));
+static void tr				PARAMS ((char *, int, int));
 
 #if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 static char *lookup_key		PARAMS ((char *));
@@ -230,101 +231,119 @@ lookup_key (key)
 }
 #endif
 
-/* If NAME starts with a '@' or '$', apply the translation rules above
-   and return a new name.  Otherwise, return the given name.  */
+/* If NAME, a malloc-ed string, starts with a '@' or '$', apply the
+   translation rules above and return a newly malloc-ed name.
+   Otherwise, return the given name.  */
 
-static const char *
+static char *
 translate_name (name)
-  const char *name;
+     char *name;
 {
-  char code = name[0];
-  char *key;
-  const char *prefix = 0;
+  char code;
+  char *key, *old_name;
+  const char *prefix;
   int keylen;
 
-  if (code != '@' && code != '$')
-    return name;
-
-  for (keylen = 0;
-       (name[keylen + 1] != 0 && !IS_DIR_SEPARATOR (name[keylen + 1]));
-       keylen++)
-    ;
-
-  key = (char *) alloca (keylen + 1);
-  strncpy (key, &name[1], keylen);
-  key[keylen] = 0;
-
-  name = &name[keylen + 1];
-
-  if (code == '@')
+  for (;;)
     {
-      prefix = get_key_value (key);
+      code = name[0];
+      if (code != '@' && code != '$')
+	break;
+
+      for (keylen = 0;
+	   (name[keylen + 1] != 0 && !IS_DIR_SEPARATOR (name[keylen + 1]));
+	   keylen++)
+	;
+
+      key = (char *) alloca (keylen + 1);
+      strncpy (key, &name[1], keylen);
+      key[keylen] = 0;
+
+      if (code == '@')
+	{
+	  prefix = get_key_value (key);
+	  if (prefix == 0)
+	    prefix = std_prefix;
+	}
+      else
+	prefix = getenv (key);
+
       if (prefix == 0)
-	prefix = std_prefix;
+	prefix = PREFIX;
+
+      /* We used to strip trailing DIR_SEPARATORs here, but that can
+	 sometimes yield a result with no separator when one was coded
+	 and intended by the user, causing two path components to run
+	 together.  */
+
+      old_name = name;
+      name = concat (prefix, &name[keylen + 1], NULL);
+      free (old_name);
     }
-  else
-    prefix = getenv (key);
 
-  if (prefix == 0)
-    prefix = PREFIX;
-
-  /* We used to strip trailing DIR_SEPARATORs here, but that can
-     sometimes yield a result with no separator when one was coded
-     and intended by the user, causing two path components to run
-     together.  */
-
-  return concat (prefix, name, NULL);
+  return name;
 }
 
-/* Update PATH using KEY if PATH starts with PREFIX.  */
+/* In a NUL-terminated STRING, replace character C1 with C2 in-place.  */
+static void
+tr (string, c1, c2)
+     char *string;
+     int c1, c2;
+{
+  do
+    {
+      if (*string == c1)
+	*string = c2;
+    }
+  while (*string++);
+}
 
-const char *
+/* Update PATH using KEY if PATH starts with PREFIX.  The returned
+   string is always malloc-ed, and the caller is responsible for
+   freeing it.  */
+
+char *
 update_path (path, key)
   const char *path;
   const char *key;
 {
+  char *result;
+
   if (! strncmp (path, std_prefix, strlen (std_prefix)) && key != 0)
     {
+      bool free_key = false;
+
       if (key[0] != '$')
-	key = concat ("@", key, NULL);
+	{
+	  key = concat ("@", key, NULL);
+	  free_key = true;
+	}
 
-      path = concat (key, &path[strlen (std_prefix)], NULL);
-
-      while (path[0] == '@' || path[0] == '$')
-	path = translate_name (path);
+      result = concat (key, &path[strlen (std_prefix)], NULL);
+      if (free_key)
+	free ((char *) key);
+      result = translate_name (result);
     }
+  else
+    result = xstrdup (path);
 
 #ifdef UPDATE_PATH_HOST_CANONICALIZE
-/* Perform host dependant canonicalization when needed.  */
-UPDATE_PATH_HOST_CANONICALIZE (path, key);
+  /* Perform host dependent canonicalization when needed.  */
+  UPDATE_PATH_HOST_CANONICALIZE (path);
 #endif
 
 #ifdef DIR_SEPARATOR_2
   /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR.  */
-  if (DIR_SEPARATOR != DIR_SEPARATOR_2)
-    {
-      char *new_path = xstrdup (path);
-      path = new_path;
-      do {
-	if (*new_path == DIR_SEPARATOR_2)
-	  *new_path = DIR_SEPARATOR;
-      } while (*new_path++);
-    }
-#endif
-      
-#if defined (DIR_SEPARATOR) && !defined (DIR_SEPARATOR_2)
-  if (DIR_SEPARATOR != '/')
-    {
-      char *new_path = xstrdup (path);
-      path = new_path;
-      do {
-	if (*new_path == '/')
-	  *new_path = DIR_SEPARATOR;
-      } while (*new_path++);
-    }
+  if (DIR_SEPARATOR_2 != DIR_SEPARATOR)
+    tr (result, DIR_SEPARATOR_2, DIR_SEPARATOR);
 #endif
 
-  return path;
+#if defined (DIR_SEPARATOR) && !defined (DIR_SEPARATOR_2)
+  if (DIR_SEPARATOR != '/')
+    tr (result, '/', DIR_SEPARATOR);
+#endif
+
+  return result;
 }
 
 /* Reset the standard prefix */

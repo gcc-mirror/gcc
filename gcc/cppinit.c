@@ -861,7 +861,7 @@ init_standard_includes (pfile)
 	  || (CPP_OPTION (pfile, cplusplus)
 	      && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
 	{
-	  char *str = xstrdup (update_path (p->fname, p->component));
+	  char *str = update_path (p->fname, p->component);
 	  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
 	}
     }

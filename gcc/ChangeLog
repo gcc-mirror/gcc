@@ -1,3 +1,18 @@
+2001-08-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (init_standard_includes): The returned buffer
+	is already malloc-ed.
+	* gcc.c (add_prefix): Similarly.
+	* prefix.c (translate_name): Update to support clear buffer
+	ownership rules.
+	(update_path): Similarly.  Be sure to free any newly allocated
+	key.  UPDATE_PATH_HOST_CANONICALIZE takes only one argument.
+	(tr): New function.
+	* prefix.h (update_path): Update prototype and document.
+	* config/i386/xm-djgpp.h (UPDATE_PATH_HOST_CANONICALIZE): Clean
+	up and update to new buffer ownership rules.
+	* doc/gcc.texi (UPDATE_PATH_HOST_CANONICALIZE): Update.
+
 Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (compute_alignments): New function.

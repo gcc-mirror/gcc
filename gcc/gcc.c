@@ -2607,7 +2607,7 @@ add_prefix (pprefix, prefix, component, priority, require_machine_suffix, warn)
     pprefix->max_len = len;
 
   pl = (struct prefix_list *) xmalloc (sizeof (struct prefix_list));
-  pl->prefix = save_string (prefix, len);
+  pl->prefix = prefix;
   pl->require_machine_suffix = require_machine_suffix;
   pl->used_flag_ptr = warn;
   pl->priority = priority;
