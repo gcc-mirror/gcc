@@ -20,10 +20,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "svr4.h"
+#include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mv*:-mv%*}"
+
+#ifndef CPP_SPEC
+#define CPP_SPEC "-D__v850__"
+#endif
 
 #undef ASM_FINAL_SPEC
 #undef LIB_SPEC
@@ -32,10 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 
 /* Names to predefine in the preprocessor for this target machine.  */
-
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__v850__ -D__v851__ -D__v850"
-#endif
+#define CPP_PREDEFINES "-D__v851__ -D__v850"
 
 /* Print subsidiary information on the compiler version in use.  */
 
