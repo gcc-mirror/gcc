@@ -1,3 +1,11 @@
+2000-09-07 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* reorg.c (find_end_label): If the basic block reorder pass moves the
+	return insn to some other place try to locate it again and put our
+	end_of_function_label there.
+	* reorg.c (relax_delay_slots): Check if find_end_label created a
+	new label that invalidates the current optimazation.
+
 2000-09-07  Catherine Moore  <clm@redhat.com>
 
         * unroll.c (unroll_loop): Check for unconditional jumps

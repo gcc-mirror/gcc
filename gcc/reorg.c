@@ -375,22 +375,42 @@ find_end_label ()
     end_of_function_label = insn;
   else
     {
-      /* Otherwise, make a new label and emit a RETURN and BARRIER,
-	 if needed.  */
       end_of_function_label = gen_label_rtx ();
       LABEL_NUSES (end_of_function_label) = 0;
-      emit_label (end_of_function_label);
-#ifdef HAVE_return
-      if (HAVE_return)
+      /* If the basic block reorder pass moves the return insn to
+	 some other place try to locate it again and put our
+	 end_of_function_label there.  */
+      while (insn && ! (GET_CODE (insn) == JUMP_INSN
+		        && (GET_CODE (PATTERN (insn)) == RETURN)))
+	insn = PREV_INSN (insn);
+      if (insn)
 	{
-	  /* The return we make may have delay slots too.  */
-	  rtx insn = gen_return ();
-	  insn = emit_jump_insn (insn);
-	  emit_barrier ();
-          if (num_delay_slots (insn) > 0)
-	    obstack_ptr_grow (&unfilled_slots_obstack, insn);
+	  insn = PREV_INSN (insn);
+
+      	  /* Put the label before an USE insns that may proceed the
+	     RETURN insn.  */
+      	  while (GET_CODE (insn) == USE)
+	    insn = PREV_INSN (insn);
+
+      	  emit_label_after (end_of_function_label, insn);
 	}
+      else
+	{
+          /* Otherwise, make a new label and emit a RETURN and BARRIER,
+	     if needed.  */
+          emit_label (end_of_function_label);
+#ifdef HAVE_return
+          if (HAVE_return)
+	    {
+	      /* The return we make may have delay slots too.  */
+	      rtx insn = gen_return ();
+	      insn = emit_jump_insn (insn);
+	      emit_barrier ();
+              if (num_delay_slots (insn) > 0)
+	        obstack_ptr_grow (&unfilled_slots_obstack, insn);
+	    }
 #endif
+	}
     }
 
   /* Show one additional use for this label so it won't go away until
@@ -3322,7 +3342,9 @@ relax_delay_slots (first)
 	  if (label == 0)
 	    label = find_end_label ();
 
-	  if (redirect_with_delay_slots_safe_p (delay_insn, label, insn))
+	  /* find_end_label can generate a new label. Check this first.  */
+	  if (no_labels_between_p (insn, next)
+	      && redirect_with_delay_slots_safe_p (delay_insn, label, insn))
 	    {
 	      /* Be careful how we do this to avoid deleting code or labels
 		 that are momentarily dead.  See similar optimization in
