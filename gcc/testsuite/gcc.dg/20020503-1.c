@@ -4,8 +4,8 @@
    for leaf functions, the function was still leaf, but LEAF_REG_REMAP
    returned -1 for some registers (like %o0).  */
 /* { dg-do compile } */
-/* { do-options "-O2 -g" } */
-/* { do-options "-O2 -g -mflat" { target sparc*-*-* } } */
+/* { dg-options "-O2 -g" } */
+/* { dg-options "-O2 -g -mflat" { target sparc*-*-* } } */
 
 void foo (char *a, char *b, char *c, char *d)
 {

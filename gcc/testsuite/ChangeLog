@@ -1,3 +1,8 @@
+2003-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/20020430-1.c: Fix dg command typos.
+	* gcc.dg/20020503-1.c: Likewise.
+
 2003-02-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/8785

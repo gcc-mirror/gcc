@@ -4,8 +4,8 @@
    until the last moment.  After which we did not delete dead code, 
    which left a reference to the deleted ADDR_VEC.  */
 
-/* { dg-do compile }
-/* { do-options "-O2 -frename-registers -fpic" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -frename-registers -fpic" } */
 
 typedef unsigned long XID;
 typedef XID Window;
