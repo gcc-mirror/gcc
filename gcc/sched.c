@@ -844,7 +844,12 @@ add_dependence (insn, elem, dep_type)
     {
       /* Notes will never intervene here though, so don't bother checking
 	 for them.  */
-      while (NEXT_INSN (next) && SCHED_GROUP_P (NEXT_INSN (next)))
+      /* We must reject CODE_LABELs, so that we don't get confused by one
+	 that has LABEL_PRESERVE_P set, which is represented by the same
+	 bit in the rtl as SCHED_GROUP_P.  A CODE_LABEL can never be
+	 SCHED_GROUP_P.  */
+      while (NEXT_INSN (next) && SCHED_GROUP_P (NEXT_INSN (next))
+	     && GET_CODE (NEXT_INSN (next)) != CODE_LABEL)
 	next = NEXT_INSN (next);
 
       /* Again, don't depend an insn on itself.  */
