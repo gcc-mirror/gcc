@@ -1,5 +1,35 @@
 2002-11-29  Michael Koch <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl:
+	(fd): New member variable to store file descriptor of socket.
+	* gnu/java/nio/SelectionKeyImpl.java:
+	(ops): Removed.
+	(readyOps): New member variable.
+	(interestOps): New member variable.
+	(readyOps): Implemented.
+	(readyOps): New method to set member variable readyOps.
+	(interestOps): Replaced ops by interestOps.
+	* gnu/java/nio/SelectorImpl.java:
+	(SelectorImpl): Initialize key sets.
+	(select): Call select with -1 instead of Long.MAX_VALUE).
+	(java_do_select): Make it a native method.
+	(getFDsAsArray): New helper method.
+	(select): Remove canceled keys, give only interested file discriptors
+	to java_do_select, set ready ops.
+	(add): No need to initialize keys set here.
+	(add_selected): No need to initialize selected set here.
+	(deregisterCanceledKeys): New helper method.
+	(register): Set interest ops, set attachments, added handling of datagram
+	channels.
+	* gnu/java/nio/ServerSocketChannelImpl:
+	(SocketAccept): Renamed from NioSocketAccept.
+	(implConfigureBlocking): Implemented.
+	(accept): Use SocketAccept instead of NioSocketAccept.	
+	* gnu/java/nio/SocketChannelImpl:
+	Reactivate native methods.
+	
+2002-11-29  Michael Koch <konqueror@gmx.de>
+
 	* gnu/java/nio/natByteBufferImpl.cc,
 	gnu/java/nio/natCharBufferImpl.cc,
 	gnu/java/nio/natDoubleBufferImpl.cc,

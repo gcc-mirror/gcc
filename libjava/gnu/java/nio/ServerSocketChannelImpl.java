@@ -54,14 +54,8 @@ class ServerSocketChannelImpl extends ServerSocketChannel
   boolean connected = false;
 //   InetSocketAddress sa;
 
-//   private static native int NioSocketAccept (ServerSocketChannelImpl server, 
-//                                              SocketChannelImpl s);
-
-  private static int NioSocketAccept (ServerSocketChannelImpl server, 
-                                      SocketChannelImpl s)
-  {
-    return 0;
-  }
+  private static native int SocketAccept (ServerSocketChannelImpl server,
+                                          SocketChannelImpl s);
 
   protected ServerSocketChannelImpl (SelectorProvider provider)
   {
@@ -101,13 +95,14 @@ class ServerSocketChannelImpl extends ServerSocketChannel
 
   protected void implConfigureBlocking (boolean block)
   {
+    blocking = block;
   }
 
   public SocketChannel accept ()
   {
     SocketChannelImpl result = new SocketChannelImpl (provider ());
     result.sa = new InetSocketAddress (0);
-    int res = NioSocketAccept (this, result);
+    int res = SocketAccept (this,result);
     return result;
   }
 

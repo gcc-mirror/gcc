@@ -45,6 +45,8 @@ import java.nio.channels.spi.SelectorProvider;
 
 public class DatagramChannelImpl extends DatagramChannel
 {
+  int fd;
+
   protected DatagramChannelImpl (SelectorProvider provider)
   {
     super (provider);
