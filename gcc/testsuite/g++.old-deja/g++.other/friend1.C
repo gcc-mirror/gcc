@@ -12,8 +12,8 @@
 
 class B {
 protected:
-    int i;
-    static int j;
+  int i; // ERROR - in this context
+  static int j; // gets bogus error - XFAIL *-*-*
 };
 
 class D : public B {

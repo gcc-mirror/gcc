@@ -5,7 +5,7 @@
 class foo
 {
 public:
-  static int y;
+  static int y; // ERROR - private
 };
 class foo1 : private foo
 { };

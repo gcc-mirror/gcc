@@ -23,8 +23,8 @@ public:
     virtual Type& operator[](int ix) { return ia[ix]; }
 private:
     void init(const Type*, int);
-    int size;
-    int *ia;
+    int size; // ERROR - private
+    int *ia; // ERROR - private
 };
 
 template <class Type>

@@ -10,9 +10,9 @@ class A {
 public:
   int x;
 private:
-  int y;
+  int y;    // ERROR - private
   union {
-    int z;
+    int z;  // ERROR - private
   };
 };
 

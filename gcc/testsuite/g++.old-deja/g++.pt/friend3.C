@@ -7,7 +7,7 @@ class C
 {
   friend void f<>(double);
 
-  int i;
+  int i; // ERROR - private
 };
 
 

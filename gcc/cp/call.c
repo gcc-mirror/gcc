@@ -3029,28 +3029,30 @@ build_op_delete_call (code, addr, size, flags, placement)
 }
 
 /* If the current scope isn't allowed to access DECL along
-   BASETYPE_PATH, give an error.  */
+   BASETYPE_PATH, give an error.  The most derived class in
+   BASETYPE_PATH is the one used to qualify DECL.  */
 
-void
+int
 enforce_access (basetype_path, decl)
-     tree basetype_path, decl;
+     tree basetype_path;
+     tree decl;
 {
-  tree access = compute_access (basetype_path, decl);
+  int accessible;
 
-  if (access == access_private_node)
+  accessible = accessible_p (basetype_path, decl);
+  if (!accessible)
     {
-      cp_error_at ("`%+#D' is %s", decl, 
-		   TREE_PRIVATE (decl) ? "private"
-		   : "from private base class");
-      error ("within this context");
+      if (TREE_PRIVATE (decl))
+	cp_error_at ("`%+#D' is private", decl);
+      else if (TREE_PROTECTED (decl))
+	cp_error_at ("`%+#D' is protected", decl);
+      else
+	cp_error_at ("`%+#D' is inaccessible", decl);
+      cp_error ("within this context");
+      return 0;
     }
-  else if (access == access_protected_node)
-    {
-      cp_error_at ("`%+#D' %s", decl,
-		   TREE_PROTECTED (decl) ? "is protected"
-		   : "has protected accessibility");
-      error ("within this context");
-    }
+
+  return 1;
 }
 
 /* Perform the conversions in CONVS on the expression EXPR.  */

@@ -1994,29 +1994,15 @@ hack_identifier (value, name)
       if (DECL_LANG_SPECIFIC (value)
 	  && DECL_CLASS_CONTEXT (value) != current_class_type)
 	{
-	  tree path, access;
+	  tree path;
 	  register tree context
 	    = (TREE_CODE (value) == FUNCTION_DECL && DECL_VIRTUAL_P (value))
 	      ? DECL_CLASS_CONTEXT (value)
 	      : DECL_CONTEXT (value);
 
 	  get_base_distance (context, current_class_type, 0, &path);
-	  if (path)
-	    {
-	      access = compute_access (path, value);
-	      if (access != access_public_node)
-		{
-		  if (TREE_CODE (value) == VAR_DECL)
-		    error ("static member `%s' is %s",
-			   IDENTIFIER_POINTER (name),
-			   TREE_PRIVATE (value) ? "private"
-						: "from a private base class");
-		  else
-		    error ("enum `%s' is from private base class",
-			   IDENTIFIER_POINTER (name));
-		  return error_mark_node;
-		}
-	    }
+	  if (path && !enforce_access (current_class_type, value))
+	    return error_mark_node;
 	}
     }
   else if (TREE_CODE (value) == TREE_LIST && TREE_NONLOCAL_FLAG (value))

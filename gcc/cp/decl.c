@@ -12383,6 +12383,8 @@ xref_basetypes (code_type_node, name, ref, binfo)
   /* In the declaration `A : X, Y, ... Z' we mark all the types
      (A, X, Y, ..., Z) so we can check for duplicates.  */
   tree binfos;
+  tree base;
+
   int i, len;
   enum tag_types tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
 
@@ -12394,6 +12396,13 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
   len = list_length (binfo);
   push_obstacks (TYPE_OBSTACK (ref), TYPE_OBSTACK (ref));
+
+  /* First, make sure that any templates in base-classes are
+     instantiated.  This ensures that if we call ourselves recursively
+     we do not get confused about which classes are marked and which
+     are not.  */
+  for (base = binfo; base; base = TREE_CHAIN (base))
+    complete_type (TREE_VALUE (base));
 
   SET_CLASSTYPE_MARKED (ref);
   BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
@@ -12433,16 +12442,14 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
       GNU_xref_hier (name, basetype, via_public, via_virtual, 0);
 
-#if 1
       /* This code replaces similar code in layout_basetypes.
          We put the complete_type first for implicit `typename'.  */
-      if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
+      if (TYPE_SIZE (basetype) == NULL_TREE
 	  && ! (current_template_parms && uses_template_parms (basetype)))
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);
 	  continue;
 	}
-#endif
       else
 	{
 	  if (CLASSTYPE_MARKED (basetype))

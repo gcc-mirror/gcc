@@ -549,6 +549,11 @@ extern int flag_vtable_gc;
 /* Nonzero means make the default pedwarns warnings instead of errors.
    The value of this flag is ignored if -pedantic is specified.  */
 extern int flag_permissive;
+
+/* Nonzero if we want to obey access control semantics.  */
+
+extern int flag_access_control;
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -1086,11 +1091,16 @@ struct lang_type
    gcc/tree.h.  In particular if D is derived from B then the BINFO
    for B (in D) will have a BINFO_INHERITANCE_CHAIN pointing to
    D.  In tree.h, this pointer is described as pointing in other
-   direction.  
+   direction.  There is a different BINFO for each path to a virtual
+   base; BINFOs for virtual bases are not shared.  In addition, shared
+   versions of each of the virtual class BINFOs are stored in
+   CLASSTYPE_VBASECLASSES.
 
-   After a call to get_vbase_types, the vbases are chained together in
-   depth-first order via TREE_CHAIN.  Other than that, TREE_CHAIN is
-   unused.  */
+   We use TREE_VIA_PROTECTED and TREE_VIA_PUBLIC, but private
+   inheritance is indicated by the absence of the other two flags, not
+   by TREE_VIAR_PRIVATE, which is unused.
+
+   The TREE_CHAIN is for scratch space in search.c.  */
 
 /* Nonzero means marked by DFS or BFS search, including searches
    by `get_binfo' and `get_base_distance'.  */
@@ -1298,6 +1308,12 @@ struct lang_decl
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as volatile X *const.  */
 #define DECL_VOLATILE_MEMFUNC_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.volatile_memfunc)
+
+/* Nonzero for a DECL means that this member is a non-static member.  */
+#define DECL_NONSTATIC_MEMBER_P(NODE) 		\
+  ((TREE_CODE (NODE) == FUNCTION_DECL 		\
+    && DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE))	\
+   || TREE_CODE (NODE) == FIELD_DECL)
 
 /* Nonzero for _DECL means that this member object type
    is mutable.  */
@@ -2653,7 +2669,7 @@ extern tree build_op_new_call			PROTO((enum tree_code, tree, tree, int));
 extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int, tree));
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
-extern void enforce_access                      PROTO((tree, tree));
+extern int enforce_access                       PROTO((tree, tree));
 extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
 
@@ -2680,7 +2696,7 @@ extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
 extern void maybe_push_cache_obstack		PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
-extern tree build_self_reference		PROTO((void));
+extern void build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
 extern tree get_enclosing_class			PROTO((tree));
 int is_base_of_enclosing_class			PROTO((tree, tree));
@@ -3128,7 +3144,7 @@ extern int types_overlap_p			PROTO((tree, tree));
 extern tree get_vbase				PROTO((tree, tree));
 extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
-extern tree compute_access			PROTO((tree, tree));
+extern int accessible_p                         PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
 extern int lookup_fnfields_1                    PROTO((tree, tree));
@@ -3153,9 +3169,12 @@ extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
 extern tree binfo_for_vtable			PROTO((tree));
-extern void dfs_walk                            PROTO((tree, void (*) (tree), int (*) (tree)));
-extern void dfs_unmark                          PROTO((tree));
-extern int  markedp                             PROTO((tree));
+extern tree dfs_walk                            PROTO((tree, 
+						       tree (*)(tree, void *),
+						       tree (*) (tree, void *),
+						       void *));
+extern tree dfs_unmark                          PROTO((tree, void *));
+extern tree markedp                             PROTO((tree, void *));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));

@@ -8,7 +8,7 @@
 
 class A {
 public:
-        int b;
+     int b; // ERROR - private
 };
 
 class C : private A {                   // NOTE WELL. private, not public

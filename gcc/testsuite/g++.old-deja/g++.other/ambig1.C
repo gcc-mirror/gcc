@@ -1,15 +1,15 @@
 // Build don't link:
 
 struct A {
-  int operator ++();
-  void operator ()();
-  void operator delete(void*);
+  int operator ++(); // ERROR - candidates
+  void operator ()(); // ERROR - candidates
+  void operator delete(void*); // ERROR - candidates
 };
 
 struct B {
-  int operator ++(int);
-  void operator ()();
-  void operator delete(void*);
+  int operator ++(int); // ERROR - candidates
+  void operator ()(); // ERROR - candidates
+  void operator delete(void*); // ERROR - candidates
   void f();
 };
 

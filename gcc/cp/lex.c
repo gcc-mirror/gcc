@@ -3043,14 +3043,9 @@ do_identifier (token, parsing, args)
   /* TREE_USED is set in `hack_identifier'.  */
   if (TREE_CODE (id) == CONST_DECL)
     {
+      /* Check access.  */
       if (IDENTIFIER_CLASS_VALUE (token) == id)
-	{
-	  /* Check access.  */
-	  tree access = compute_access (TYPE_BINFO (current_class_type), id);
-	  if (access == access_private_node)
-	    cp_error ("enum `%D' is private", id);
-	  /* protected is OK, since it's an enum of `this'.  */
-	}
+	enforce_access (current_class_type, id);
       if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
 	id = DECL_INITIAL (id);
     }

@@ -16,24 +16,24 @@ public:
   int PUB_A;
 protected:
   union {
-    long B;
-    void *pY;
+    long B; // ERROR - protected
+    void *pY; // ERROR - protected
   } ;
   union Y {
     long B;
     void *pY;
-  } PRT;
-  int PRT_A;
+  } PRT; // ERROR - protected
+  int PRT_A; // ERROR - protected
 private:
   union {
-    long C;
-    void *pZ;
+    long C; // ERROR - private
+    void *pZ; // ERROR - private
   };
   union Z {
-    long C;
+    long C;  
     void *pZ;
-  } PRV;
-  int PRV_A;
+  } PRV; // ERROR - private
+  int PRV_A; // ERROR - private
 };
 
 struct Bar : public Foo {
