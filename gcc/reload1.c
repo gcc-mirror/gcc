@@ -6372,7 +6372,8 @@ emit_reload_insns (insn)
 	      if (nregno < FIRST_PSEUDO_REGISTER)
 		for (k = 1; k < nnr; k++)
 		  reg_last_reload_reg[nregno + k]
-		    = (nr == nnr ? gen_rtx (REG, word_mode,
+		    = (nr == nnr ? gen_rtx (REG,
+					    reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
 					    REGNO (reload_reg_rtx[r]) + k)
 		       : 0);
 
@@ -6413,7 +6414,8 @@ emit_reload_insns (insn)
 	      if (nregno < FIRST_PSEUDO_REGISTER)
 		for (k = 1; k < nnr; k++)
 		  reg_last_reload_reg[nregno + k]
-		    = (nr == nnr ? gen_rtx (REG, word_mode,
+		    = (nr == nnr ? gen_rtx (REG,
+					    reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
 					    REGNO (reload_reg_rtx[r]) + k)
 		       : 0);
 
