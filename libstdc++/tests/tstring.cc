@@ -177,7 +177,7 @@ void identitytest(string a, string b)
   
   assert((a + b + a) == (a + (b + a)));
 
-  x.remove (x.rfind (b));
+  x.erase (x.rfind (b));
   assert(x == a);
 
   y.replace (0, y.rfind (b), b);
