@@ -902,6 +902,22 @@ pushlevel (tag_transparent)
   keep_next_if_subblocks = 0;
 }
 
+/* Clear the limbo values of all identifiers defined in BLOCK or a subblock. */
+
+static void
+clear_limbo_values (block)
+     tree block;
+{
+  tree tem;
+
+  for (tem = BLOCK_VARS (block); tem; tem = TREE_CHAIN (tem))
+    if (DECL_NAME (tem) != 0)
+      IDENTIFIER_LIMBO_VALUE (DECL_NAME (tem)) = 0;
+
+  for (tem = BLOCK_SUBBLOCKS (block); tem; tem = TREE_CHAIN (tem))
+    clear_limbo_values (tem);
+}
+    
 /* Exit a binding level.
    Pop the level off, and restore the state of the identifier-decl mappings
    that were in effect when this level was entered.
@@ -1055,6 +1071,8 @@ poplevel (keep, reverse, functionbody)
 
   if (functionbody)
     {
+      clear_limbo_values (block);
+
       /* If this is the top level block of a function,
 	 the vars are the function's parameters.
 	 Don't leave them in the BLOCK because they are
