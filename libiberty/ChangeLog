@@ -1,3 +1,9 @@
+2002-04-09  Richard Henderson  <rth@redhat.com>
+
+	* hashtab.c (higher_prime_number): Use 7 as minimum.
+	(find_empty_slot_for_expand): Don't compute hash2 unless needed.
+	(htab_find_slot_with_hash): Likewise.
+
 2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* cp-demangle.c (__cxa_demangle):  Also protect with IN_GLIBCPP_V3.
