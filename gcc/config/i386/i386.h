@@ -2505,7 +2505,7 @@ while (0)
    unspecified garbage in the Carry flag.  This mode is used
    by inc/dec instructions.
 
-   Add CCGCO to indicate comparisons agains zero that allows
+   Add CCGOC to indicate comparisons agains zero that allows
    unspecified garbage in the Carry and Overflow flag. This
    mode is used to simulate comparisons of (a-b) and (a+b)
    against zero using sub/cmp/add operations.
