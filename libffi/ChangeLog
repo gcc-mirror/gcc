@@ -1,3 +1,7 @@
+2002-10-01  Bo Thorsen  <bo@smetana.suse.de>
+
+	* include/ffi.h.in: Fix i386 win32 compilation.
+
 2002-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in: Add s390x-*-linux-* target.
