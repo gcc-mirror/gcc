@@ -7405,6 +7405,7 @@ cse_insn (insn, in_libcall_block)
     if (sets[i].rtl)
       {
 	register rtx dest = SET_DEST (sets[i].rtl);
+	rtx inner_dest = sets[i].inner_dest;
 	register struct table_elt *elt;
 
 	/* Don't record value if we are not supposed to risk allocating
@@ -7453,8 +7454,18 @@ cse_insn (insn, in_libcall_block)
 	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 	    }
 
-	elt = insert (dest, sets[i].src_elt,
-		      sets[i].dest_hash, GET_MODE (dest));
+	if (GET_CODE (inner_dest) == MEM
+	    && GET_CODE (XEXP (inner_dest, 0)) == ADDRESSOF)
+	  /* Given (SET (MEM (ADDRESSOF (X))) Y) we don't want to say
+	     that (MEM (ADDRESSOF (X))) is equivalent to Y. 
+	     Consider the case in which the address of the MEM is
+	     passed to a function, which alters the MEM.  Then, if we
+	     later use Y instead of the MEM we'll miss the update.  */
+	  elt = insert (dest, 0, sets[i].dest_hash, GET_MODE (dest));
+	else
+	  elt = insert (dest, sets[i].src_elt,
+			sets[i].dest_hash, GET_MODE (dest));
+
 	elt->in_memory = (GET_CODE (sets[i].inner_dest) == MEM
 			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
 			      || FIXED_BASE_PLUS_P (XEXP (sets[i].inner_dest,

@@ -1,3 +1,8 @@
+Mon Jul  6 00:28:43 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cse.c (cse_insn): When SETting (MEM (ADDRESSOF (X))) to Y,
+	don't claim that the former is equivalent to the latter.
+
 Sun Jul  5 23:58:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (simplify_comparison): Do not commute a AND into
