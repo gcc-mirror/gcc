@@ -46,7 +46,6 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
-static tree expand_cond PARAMS ((tree));
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
@@ -88,6 +87,50 @@ static void emit_associated_thunks PARAMS ((tree));
       substmt = cond;					\
   } while (0)
 
+/* Wrapper since C and C++ expand_expr_stmt are different. */
+
+expand_expr_stmt_fn lang_expand_expr_stmt = cplus_expand_expr_stmt;
+
+/* Wrapper function instead of #define for use with c-common code. */
+
+void
+set_current_function_name_declared (i)
+     int i;
+{
+  cp_function_chain->name_declared = i;
+}
+
+/* Returns non-zero if the current statement is a full expression,
+   i.e. temporaries created during that statement should be destroyed
+   at the end of the statement.  */
+
+int
+stmts_are_full_exprs_p ()
+{
+  return current_stmt_tree->stmts_are_full_exprs_p;
+}
+
+/* One if we have already declared __FUNCTION__ (and related
+   variables) in the current function.  Two if we are in the process
+   of doing so.  */
+
+int
+current_function_name_declared ()
+{
+  return cp_function_chain->name_declared;
+}
+
+/* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
+   flag for this because "A union for which objects or pointers are
+   declared is not an anonymous union" [class.union].  */
+
+int
+anon_aggr_type_p (node)
+     tree node;
+{
+  return (CLASS_TYPE_P (node) && TYPE_LANG_SPECIFIC(node)->anon_aggr);
+}
+
 /* Finish a scope.  */
 
 tree
@@ -95,7 +138,7 @@ do_poplevel ()
 {
   tree block = NULL_TREE;
 
-  if (stmts_are_full_exprs_p)
+  if (stmts_are_full_exprs_p ())
     {
       tree scope_stmts;
 
@@ -118,65 +161,11 @@ do_poplevel ()
 void
 do_pushlevel ()
 {
-  if (stmts_are_full_exprs_p)
+  if (stmts_are_full_exprs_p ())
     {
       pushlevel (0);
       if (!processing_template_decl)
 	add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-    }
-}
-
-/* Helper for generating the RTL at the end of a scope. */
-
-tree
-genrtl_do_poplevel ()
-{
-  tree block = NULL_TREE;
-
-  if (stmts_are_full_exprs_p)
-    {
-      tree scope_stmts;
-      scope_stmts = NULL_TREE;
-
-      block = poplevel (kept_level_p (), 1, 0);
-      if (block && !processing_template_decl)
-	{
-	  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmts)) = block;
-	  SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmts)) = block;
-	}
-    }
-
-  return block;
-}
-
-/* Helper for generating the RTL at the beginning of a scope. */
-
-void
-genrtl_do_pushlevel ()
-{
-  emit_line_note (input_filename, lineno);
-  clear_last_expr ();
-
-  if (stmts_are_full_exprs_p)
-    {
-      pushlevel (0); // Try to get rid of me.
-      if (!cfun->x_whole_function_mode_p)
-	my_friendly_abort (19991129);
-    }
-}
-
-/* Helper for generating the RTL. */
-
-void
-genrtl_clear_out_block ()
-{
-  /* If COND wasn't a declaration, clear out the
-     block we made for it and start a new one here so the
-     optimization in expand_end_loop will work.  */
-  if (getdecls () == NULL_TREE)
-    {
-      genrtl_do_poplevel ();
-      genrtl_do_pushlevel ();
     }
 }
 
@@ -191,7 +180,7 @@ add_tree (t)
   SET_LAST_STMT (t);
   /* When we expand a statement-tree, we must know whether or not the
      statements are full-expresions.  We record that fact here.  */
-  STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p;
+  STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
 }
 
 /* Finish a goto-statement.  */
@@ -220,35 +209,10 @@ finish_goto_stmt (destination)
   add_tree (build_min_nt (GOTO_STMT, destination));
 }
 
-/* Generate the RTL for DESTINATION, which is a GOTO_STMT. */
-
-void
-genrtl_goto_stmt (destination)
-     tree destination;
-{
-  if (TREE_CODE (destination) == IDENTIFIER_NODE)
-    destination = lookup_label (destination);
-
-  /* We warn about unused labels with -Wunused.  That means we have to
-     mark the used labels as used.  */
-  if (TREE_CODE (destination) == LABEL_DECL)
-    TREE_USED (destination) = 1;
-    
-  emit_line_note (input_filename, lineno);
-  
-  if (TREE_CODE (destination) == LABEL_DECL)
-    {
-      label_rtx (destination);
-      expand_goto (destination); 
-    }
-  else
-    expand_computed_goto (destination);
-}
-
 /* COND is the condition-expression for an if, while, etc.,
    statement.  Convert it to a boolean value, if appropriate.  */
 
-static tree
+tree
 maybe_convert_cond (cond)
      tree cond;
 {
@@ -274,13 +238,13 @@ finish_expr_stmt (expr)
   if (expr != NULL_TREE)
     {
       if (!processing_template_decl
-	  && !stmts_are_full_exprs_p
+	  && !(stmts_are_full_exprs_p ())
 	  && ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
 	       && lvalue_p (expr))
 	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
 	expr = default_conversion (expr);
       
-      if (stmts_are_full_exprs_p)
+      if (stmts_are_full_exprs_p ())
 	expr = convert_to_void (expr, "statement");
       
       if (!processing_template_decl)
@@ -296,92 +260,6 @@ finish_expr_stmt (expr)
   last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
 }
 
-/* Generate the RTL for EXPR, which is an EXPR_STMT. */
-
-void 
-genrtl_expr_stmt (expr)
-     tree expr;
-{
-  if (expr != NULL_TREE)
-    {
-      emit_line_note (input_filename, lineno);
-      
-      if (stmts_are_full_exprs_p)
-	expand_start_target_temps ();
-      
-      cplus_expand_expr_stmt (expr);
-      
-      if (stmts_are_full_exprs_p)
-	expand_end_target_temps ();
-    }
-
-  finish_stmt ();
-
-  /* This was an expression-statement, so we save the type of the
-     expression.  */
-  last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
-}
-
-/* Generate the RTL for T, which is a DECL_STMT. */
-
-void
-genrtl_decl_stmt (t)
-     tree t;
-{
-  tree decl;
-  emit_line_note (input_filename, lineno);
-  decl = DECL_STMT_DECL (t);
-  /* If this is a declaration for an automatic local
-     variable, initialize it.  Note that we might also see a
-     declaration for a namespace-scope object (declared with
-     `extern').  We don't have to handle the initialization
-     of those objects here; they can only be declarations,
-     rather than definitions.  */
-  if (TREE_CODE (decl) == VAR_DECL 
-      && !TREE_STATIC (decl)
-      && !DECL_EXTERNAL (decl))
-    {
-      /* Let the back-end know about this variable.  */
-      if (!ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
-	emit_local_var (decl);
-      else
-	expand_anon_union_decl (decl, NULL_TREE, 
-				DECL_ANON_UNION_ELEMS (decl));
-    }
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-    {
-      if (DECL_ARTIFICIAL (decl) && ! TREE_USED (decl))
-	/* Do not emit unused decls. This is not just an
-	   optimization. We really do not want to emit
-	   __PRETTY_FUNCTION__ etc, if they're never used.  */
-	DECL_IGNORED_P (decl) = 1;
-      else
-	make_rtl_for_local_static (decl);
-    }
-}
-
-/* Generate the RTL for T, which is an IF_STMT. */
-
-void
-genrtl_if_stmt (t)
-     tree t;
-{
-  tree cond;
-  genrtl_do_pushlevel ();
-  cond = maybe_convert_cond (expand_cond (IF_COND (t)));
-  emit_line_note (input_filename, lineno);
-  expand_start_cond (cond, 0);
-  if (THEN_CLAUSE (t))
-    expand_stmt (THEN_CLAUSE (t));
-  if (ELSE_CLAUSE (t))
-    {
-      expand_start_else ();
-      expand_stmt (ELSE_CLAUSE (t));
-    }
-  expand_end_cond ();
-  genrtl_do_poplevel ();
-  finish_stmt ();
-}
 
 /* Begin an if-statement.  Returns a newly created IF_STMT if
    appropriate.  */
@@ -459,30 +337,6 @@ clear_out_block ()
     }
 }
 
-/* Generate the RTL for T, which is a WHILE_STMT. */
-
-void
-genrtl_while_stmt (t)
-     tree t;
-{
-  tree cond;
-  emit_nop ();
-  emit_line_note (input_filename, lineno);
-  expand_start_loop (1); 
-  genrtl_do_pushlevel ();
-
-  cond = maybe_convert_cond (expand_cond (WHILE_COND (t)));
-  emit_line_note (input_filename, lineno);
-  expand_exit_loop_if_false (0, cond);
-  genrtl_clear_out_block ();
-  
-  expand_stmt (WHILE_BODY (t));
-
-  genrtl_do_poplevel ();
-  expand_end_loop ();
-  finish_stmt ();
-}
-
 /* Begin a while-statement.  Returns a newly created WHILE_STMT if
    appropriate.  */
 
@@ -520,28 +374,6 @@ finish_while_stmt (while_stmt)
   finish_stmt ();
 }
 
-/* Generate the RTL for T, which is a DO_STMT. */
-
-void
-genrtl_do_stmt (t)
-    tree t;
-{
-  tree cond;
-  emit_nop ();
-  emit_line_note (input_filename, lineno);
-  expand_start_loop_continue_elsewhere (1);
-
-  expand_stmt (DO_BODY (t));
-
-  expand_loop_continue_here ();
-
-  cond = maybe_convert_cond (DO_COND (t));
-  emit_line_note (input_filename, lineno);
-  expand_exit_loop_if_false (0, cond);
-  expand_end_loop ();
-  finish_stmt ();  
-}
-
 /* Begin a do-statement.  Returns a newly created DO_STMT if
    appropriate.  */
 
@@ -572,17 +404,6 @@ finish_do_stmt (cond, do_stmt)
 {
   cond = maybe_convert_cond (cond);
   DO_COND (do_stmt) = cond;
-  finish_stmt ();
-}
-
-/* Generate the RTL for EXPR, which is a RETURN_STMT. */
-
-void
-genrtl_return_stmt (expr)
-     tree expr;
-{
-  emit_line_note (input_filename, lineno);
-  c_expand_return (expr);
   finish_stmt ();
 }
 
@@ -622,47 +443,6 @@ finish_return_stmt (expr)
   finish_stmt ();
 }
 
-/* Generate the RTL for T, which is a FOR_STMT. */
-
-void
-genrtl_for_stmt (t)
-     tree t;
-{
-  tree tmp;
-  tree cond;
-  if (flag_new_for_scope > 0)
-    {
-      genrtl_do_pushlevel ();
-      note_level_for_for ();
-    }  
-
-  expand_stmt (FOR_INIT_STMT (t));
-
-  emit_nop ();
-  emit_line_note (input_filename, lineno);
-  expand_start_loop_continue_elsewhere (1); 
-  genrtl_do_pushlevel ();
-  cond = maybe_convert_cond (expand_cond (FOR_COND (t)));
-  emit_line_note (input_filename, lineno);
-  if (cond)
-    expand_exit_loop_if_false (0, cond);
-  genrtl_clear_out_block ();
-  tmp = FOR_EXPR (t);
-
-  expand_stmt (FOR_BODY (t));
-
-  /* Pop the scope for the body of the loop.  */
-  genrtl_do_poplevel ();
-  emit_line_note (input_filename, lineno);
-  expand_loop_continue_here ();
-  if (tmp) 
-    genrtl_expr_stmt (tmp);
-  expand_end_loop ();
-  if (flag_new_for_scope > 0)
-    genrtl_do_poplevel ();
-  finish_stmt (); 
-}
-
 /* Begin a for-statement.  Returns a new FOR_STMT if appropriate.  */
 
 tree
@@ -672,9 +452,9 @@ begin_for_stmt ()
 
   r = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
 		    NULL_TREE, NULL_TREE);
+  NEW_FOR_SCOPE_P (r) = flag_new_for_scope > 0;
   add_tree (r);
-  
-  if (flag_new_for_scope > 0)
+  if (NEW_FOR_SCOPE_P (r))
     {
       do_pushlevel ();
       note_level_for_for ();
@@ -730,19 +510,9 @@ finish_for_stmt (for_stmt)
   /* Pop the scope for the body of the loop.  */
   do_poplevel ();
   RECHAIN_STMTS (for_stmt, FOR_BODY (for_stmt));
-  if (flag_new_for_scope > 0)
+  if (NEW_FOR_SCOPE_P (for_stmt))
     do_poplevel ();
   finish_stmt (); 
-}
-
-/* Generate the RTL for a BREAK_STMT. */
-
-void
-genrtl_break_stmt ()
-{
-  emit_line_note (input_filename, lineno);
-  if ( ! expand_exit_something ())
-    cp_error ("break statement not within loop or switch");
 }
 
 /* Finish a break-statement.  */
@@ -754,16 +524,6 @@ finish_break_stmt ()
   add_tree (build_min_nt (BREAK_STMT));
 }
 
-/* Generate the RTL for a CONTINUE_STMT. */
-
-void
-genrtl_continue_stmt ()
-{
-  emit_line_note (input_filename, lineno);
-  if (! expand_continue_loop (0))
-    cp_error ("continue statement not within a loop");   
-}
-
 /* Finish a continue-statement.  */
 
 void
@@ -771,60 +531,6 @@ finish_continue_stmt ()
 {
   emit_line_note (input_filename, lineno);
   add_tree (build_min_nt (CONTINUE_STMT));
-}
-
-/* Generate the RTL for T, which is a SCOPE_STMT. */
-
-void
-genrtl_scope_stmt (t)
-     tree t;
-{
-  if (!SCOPE_NO_CLEANUPS_P (t))
-    {
-      if (SCOPE_BEGIN_P (t))
-	expand_start_bindings_and_block (2 * SCOPE_NULLIFIED_P (t),
-					 SCOPE_STMT_BLOCK (t));
-      else if (SCOPE_END_P (t))
-	expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 0);
-    }
-  else if (!SCOPE_NULLIFIED_P (t))
-    {
-      rtx note = emit_note (NULL,
-			    (SCOPE_BEGIN_P (t) 
-			     ? NOTE_INSN_BLOCK_BEG
-			     : NOTE_INSN_BLOCK_END));
-      NOTE_BLOCK (note) = SCOPE_STMT_BLOCK (t);
-    }
-}
-
-/* Generate the RTL for T, which is a SWITCH_STMT. */
-
-void
-genrtl_switch_stmt (t)
-     tree t;
-{
-  tree cond;
-  genrtl_do_pushlevel ();
- 
-  cond = expand_cond (SWITCH_COND (t));
-  if (cond != error_mark_node)
-    {
-      emit_line_note (input_filename, lineno);
-      c_expand_start_case (cond);
-    }
-  else
-    /* The code is in error, but we don't want expand_end_case to
-       crash. */
-    c_expand_start_case (boolean_false_node);
-
-  push_switch ();
-
-  expand_stmt (SWITCH_BODY (t));
-
-  expand_end_case (cond);
-  pop_switch (); 
-  genrtl_do_poplevel ();
-  finish_stmt ();  
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -890,16 +596,6 @@ finish_switch_stmt (switch_stmt)
   pop_switch (); 
   do_poplevel ();
   finish_stmt ();
-}
-
-/* Generate the RTL for a CASE_LABEL. */
-
-void 
-genrtl_case_label (low_value, high_value)
-     tree low_value;
-     tree high_value;
-{
-  do_case (low_value, high_value);
 }
 
 /* Finish a case-label.  */
@@ -1070,8 +766,6 @@ genrtl_handler (t)
       expand_goto (top_label_entry (&caught_return_label_stack));
       end_catch_handler ();
     }
-
-  genrtl_do_poplevel ();  
 }
 
 /* Begin a handler.  Returns a HANDLER if appropriate.  */
@@ -1165,79 +859,6 @@ genrtl_ctor_stmt (t)
     end_protect_partials ();
 }
 
-/* Generate the RTL for the start of a COMPOUND_STMT. */
-
-tree genrtl_begin_compound_stmt (has_no_scope)
-     int has_no_scope;
-{
-  tree r; 
-  int is_try = 0;
-
-  r = NULL_TREE;
-
-  last_expr_type = NULL_TREE;
-
-  if (!has_no_scope)
-    {
-      genrtl_do_pushlevel ();
-      if (is_try)
-	note_level_for_eh ();
-    }
-  else
-    /* Normally, we try hard to keep the BLOCK for a
-       statement-expression.  But, if it's a statement-expression with
-       a scopeless block, there's nothing to keep, and we don't want
-       to accidentally keep a block *inside* the scopeless block.  */ 
-    keep_next_level (0);
-
-  /* If this is the outermost block of the function, declare the
-     variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (cfun
-      && !current_function_name_declared 
-      && !has_no_scope)
-    {
-      current_function_name_declared = 1;
-      declare_function_name ();
-    }
-
-  return r;
-}
-
-/* Generate the RTL for the end of a COMPOUND_STMT. */
-
-tree genrtl_finish_compound_stmt (has_no_scope)
-     int has_no_scope;
-{
-  tree r;
-  tree t;
-
-  if (!has_no_scope)
-    r = genrtl_do_poplevel ();
-  else
-    r = NULL_TREE;
-
-  /* When we call finish_stmt we will lose LAST_EXPR_TYPE.  But, since
-     the precise purpose of that variable is store the type of the
-     last expression statement within the last compound statement, we
-     preserve the value.  */
-  t = last_expr_type;
-  finish_stmt ();
-  last_expr_type = t;
-
-  return r;
-}
-
-/* Generate the RTL for T, which is a COMPOUND_STMT. */
-
-tree 
-genrtl_compound_stmt (t)
-    tree t;
-{
-  genrtl_begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
-  expand_stmt (COMPOUND_BODY (t));
-  return (genrtl_finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t)));
-}
-
 /* Begin a compound-statement.  If HAS_NO_SCOPE is non-zero, the
    compound-statement does not define a scope.  Returns a new
    COMPOUND_STMT if appropriate.  */
@@ -1276,10 +897,10 @@ begin_compound_stmt (has_no_scope)
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
   if (cfun
-      && !current_function_name_declared 
+      && !(current_function_name_declared () )
       && !has_no_scope)
     {
-      current_function_name_declared = 1;
+      cp_function_chain->name_declared = 1;
       declare_function_name ();
     }
 
@@ -1314,42 +935,6 @@ finish_compound_stmt (has_no_scope, compound_stmt)
   last_expr_type = t;
 
   return r;
-}
-
-/* Generate the RTL for an ASM_STMT. */
-
-void
-genrtl_asm_stmt (cv_qualifier, string, output_operands,
-		 input_operands, clobbers)
-     tree cv_qualifier;
-     tree string;
-     tree output_operands;
-     tree input_operands;
-     tree clobbers;
-{
-  if (TREE_CHAIN (string))
-    string = combine_strings (string);
-
-  if (cv_qualifier != NULL_TREE
-      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-    {
-      cp_warning ("%s qualifier ignored on asm",
-		  IDENTIFIER_POINTER (cv_qualifier));
-      cv_qualifier = NULL_TREE;
-    }
-
-  emit_line_note (input_filename, lineno);
-  if (output_operands != NULL_TREE || input_operands != NULL_TREE
-      || clobbers != NULL_TREE)
-    c_expand_asm_operands (string, output_operands,
-			   input_operands, 
-			   clobbers,
-			   cv_qualifier != NULL_TREE,
-			   input_filename, lineno);
-  else
-    expand_asm (string);
-  
-  finish_stmt ();
 }
 
 /* Finish an asm-statement, whose components are a CV_QUALIFIER, a
@@ -1444,17 +1029,6 @@ finish_subobject (cleanup)
 {
   tree r = build_min_nt (SUBOBJECT, cleanup);
   add_tree (r);
-}
-
-/* Generate the RTL for a DECL_CLEANUP. */
-
-void 
-genrtl_decl_cleanup (decl, cleanup)
-     tree decl;
-     tree cleanup;
-{
-  if (!decl || (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node))
-    expand_decl_cleanup (decl, cleanup);
 }
 
 /* When DECL goes out of scope, make sure that CLEANUP is executed.  */
@@ -1694,10 +1268,10 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 
       /* Don't declare __PRETTY_FUNCTION__ and friends here when we
 	 open the block for the if-body.  */
-      saved_cfnd = current_function_name_declared;
-      current_function_name_declared = 1;
+      saved_cfnd = current_function_name_declared ();
+      cp_function_chain->name_declared = 1;
       compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-      current_function_name_declared = saved_cfnd;
+      cp_function_chain->name_declared = saved_cfnd;
 
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
@@ -2722,32 +2296,14 @@ prep_stmt (t)
 {
   if (!STMT_LINENO_FOR_FN_P (t))
     lineno = STMT_LINENO (t);
-  stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
-}
-
-/* Some statements, like for-statements or if-statements, require a
-   condition.  This condition can be a declaration.  If T is such a
-   declaration it is processed, and an expression appropriate to use
-   as the condition is returned.  Otherwise, T itself is returned.  */
-
-static tree
-expand_cond (t)
-     tree t;
-{
-  if (t && TREE_CODE (t) == TREE_LIST)
-    {
-      expand_stmt (TREE_PURPOSE (t));
-      return TREE_VALUE (t);
-    }
-  else 
-    return t;
+  current_stmt_tree->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
 }
 
 /* Generate RTL for the statement T, and its substatements, and any
    other statements at its nesting level.  */
 
 tree
-expand_stmt (t)
+lang_expand_stmt (t)
      tree t;
 {
   tree rval = NULL_TREE;
@@ -2760,7 +2316,7 @@ expand_stmt (t)
       rval = NULL_TREE;
 
       /* Set up context appropriately for handling this statement.  */
-      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
       prep_stmt (t);
 
       switch (TREE_CODE (t))
@@ -2865,7 +2421,7 @@ expand_stmt (t)
 	}
 
       /* Restore saved state.  */
-      stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
+      current_stmt_tree->stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 
       /* Go on to the next statement in this scope.  */
       t = TREE_CHAIN (t);
@@ -3107,14 +2663,14 @@ expand_body (fn)
   /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
      any of the other magic variables we set up when starting a
      function body.  */
-  current_function_name_declared = 1;
+  cp_function_chain->name_declared = 1;
 
   /* Expand the body.  */
   expand_stmt (DECL_SAVED_TREE (fn));
 
   /* Statements should always be full-expressions at the outermost set
      of curly braces for a function.  */
-  my_friendly_assert (stmts_are_full_exprs_p, 19990831);
+  my_friendly_assert (stmts_are_full_exprs_p (), 19990831);
 
   /* The outermost statement for a function contains the line number
      recorded when we finished processing the function.  */

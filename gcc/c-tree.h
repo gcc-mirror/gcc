@@ -263,11 +263,6 @@ extern tree pop_init_level			PARAMS ((int));
 extern void set_init_index			PARAMS ((tree, tree));
 extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
-extern void c_expand_asm_operands		PARAMS ((tree, tree, tree,
-							 tree, int,
-							 const char *, int));
-extern void c_expand_return			PARAMS ((tree));
-extern tree c_expand_start_case                 PARAMS ((tree));
 extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
 

@@ -31,20 +31,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Usage of TREE_LANG_FLAG_?:
    0: BINFO_MARKED (BINFO nodes).
-      COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
-      TREE_NEGATED_INT (in INTEGER_CST).
       TREE_INDIRECT_USING (in NAMESPACE_DECL).
-      IDENTIFIER_MARKED (used by search routines).
       LOCAL_BINDING_P (in CPLUS_BINDING)
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
-      SCOPE_BEGIN_P (in SCOPE_STMT)
       CTOR_BEGIN_P (in CTOR_STMT)
-      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
@@ -52,17 +47,14 @@ Boston, MA 02111-1307, USA.  */
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (in _TYPE).
-      C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
-      STMT_IS_FULL_EXPR_P (in _STMT)
       BINFO_ACCESS (in BINFO)
       BV_GENERATE_THUNK_WITH_VTABLE_P (in TREE_LIST)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
-      STMT_LINENO_FOR_FN_P (in _STMT)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
       BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (in BINFO)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
@@ -71,13 +63,11 @@ Boston, MA 02111-1307, USA.  */
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
-      SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
       IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
-      SCOPE_PARTIAL_P (in SCOPE_STMT)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: BINFO_PRIMARY_MARKED_P (in BINFO)
    6: BINFO_VBASE_PRIMARY_P (in BINFO)
@@ -791,6 +781,17 @@ extern tree cp_global_trees[CPTI_MAX];
 struct stmt_tree {
   tree x_last_stmt;
   tree x_last_expr_type;
+/* Non-zero if we should treat statements as full expressions.  In
+   particular, this variable is no-zero if at the end of a statement
+   we should destroy any temporaries created during that statement.
+   Similarly, if, at the end of a block, we should destroy any local
+   variables in this block.  Normally, this variable is non-zero,
+   since those are the normal semantics of C++.
+
+   However, in order to represent aggregate initialization code as
+   tree structure, we use statement-expressions.  The statements
+   within the statement expression should not result in cleanups being
+   run until the entire enclosing statement is complete.  */
   int stmts_are_full_exprs_p; 
 };
 
@@ -991,13 +992,6 @@ struct language_function
 #define current_function_parms_stored \
   cp_function_chain->parms_stored
 
-/* One if we have already declared __FUNCTION__ (and related
-   variables) in the current function.  Two if we are in the process
-   of doing so.  */
-
-#define current_function_name_declared \
-  cp_function_chain->name_declared
-
 /* Nonzero if we have already generated code to initialize virtual
    function tables in this function.  */
 
@@ -1013,21 +1007,6 @@ struct language_function
    function.  */
 
 #define doing_semantic_analysis_p() (!expanding_p)
-
-/* Non-zero if we should treat statements as full expressions.  In
-   particular, this variable is no-zero if at the end of a statement
-   we should destroy any temporaries created during that statement.
-   Similarly, if, at the end of a block, we should destroy any local
-   variables in this block.  Normally, this variable is non-zero,
-   since those are the normal semantics of C++.
-
-   However, in order to represent aggregate initialization code as
-   tree structure, we use statement-expressions.  The statements
-   within the statement expression should not result in cleanups being
-   run until the entire enclosing statement is complete.  */
-
-#define stmts_are_full_exprs_p \
-  current_stmt_tree->stmts_are_full_exprs_p
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
@@ -2472,7 +2451,6 @@ struct lang_decl
 #define DECL_SAVED_FUNCTION_DATA(NODE) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.saved_language_function)
 
-#define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
@@ -2824,10 +2802,6 @@ extern int flag_new_for_scope;
 /* Nonzero if TYPE is an anonymous union type.  */
 #define ANON_UNION_TYPE_P(NODE) \
   (TREE_CODE (NODE) == UNION_TYPE && ANON_AGGR_TYPE_P (NODE))
-
-/* For a VAR_DECL that is an anonymous union, these are the various
-   sub-variables that make up the anonymous union.  */
-#define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))
 
 #define UNKNOWN_TYPE LANG_TYPE
 
@@ -3919,6 +3893,8 @@ extern void pop_nested_namespace		PARAMS ((tree));
 extern void maybe_push_to_top_level		PARAMS ((int));
 extern void push_to_top_level			PARAMS ((void));
 extern void pop_from_top_level			PARAMS ((void));
+extern void push_switch				PARAMS ((void));
+extern void pop_switch				PARAMS ((void));
 extern tree identifier_type_value		PARAMS ((tree));
 extern void set_identifier_type_value		PARAMS ((tree, tree));
 extern void pop_everything			PARAMS ((void));
@@ -3942,8 +3918,6 @@ extern tree lookup_label			PARAMS ((tree));
 extern tree declare_local_label                 PARAMS ((tree));
 extern tree define_label			PARAMS ((const char *, int, tree));
 extern void check_goto				PARAMS ((tree));
-extern void push_switch				PARAMS ((void));
-extern void pop_switch				PARAMS ((void));
 extern void define_case_label			PARAMS ((void));
 extern tree getdecls				PARAMS ((void));
 extern tree gettags				PARAMS ((void));
@@ -4038,9 +4012,7 @@ extern int wrapup_globals_for_namespace         PARAMS ((tree, void *));
 extern tree cp_namespace_decls                  PARAMS ((tree));
 extern tree create_implicit_typedef             PARAMS ((tree, tree));
 extern tree maybe_push_decl                     PARAMS ((tree));
-extern void emit_local_var                      PARAMS ((tree));
 extern tree build_target_expr_with_type         PARAMS ((tree, tree));
-extern void make_rtl_for_local_static           PARAMS ((tree));
 extern int local_variable_p                     PARAMS ((tree));
 extern int nonstatic_local_decl_p               PARAMS ((tree));
 extern tree declare_global_var                  PARAMS ((tree, tree));
@@ -4154,7 +4126,6 @@ extern void check_handlers			PARAMS ((tree));
 extern void init_cplus_expand			PARAMS ((void));
 extern void fixup_result_decl			PARAMS ((tree, struct rtx_def *));
 extern int extract_init				PARAMS ((tree, tree));
-extern void do_case				PARAMS ((tree, tree));
 extern tree cplus_expand_constant               PARAMS ((tree));
 
 /* friend.c */
@@ -4477,7 +4448,6 @@ extern tree finish_typeof			PARAMS ((tree));
 extern void add_decl_stmt                       PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
-extern tree expand_stmt                         PARAMS ((tree));
 extern void expand_body                         PARAMS ((tree));
 extern void begin_stmt_tree                     PARAMS ((tree *));
 extern void finish_stmt_tree                    PARAMS ((tree *));
@@ -4492,10 +4462,8 @@ extern void genrtl_handler                      PARAMS ((tree));
 extern void genrtl_catch_block                  PARAMS ((tree));
 extern void genrtl_ctor_stmt                    PARAMS ((tree));
 extern void genrtl_subobject                    PARAMS ((tree));
-extern void genrtl_decl_cleanup                 PARAMS ((tree, tree));
 extern tree genrtl_do_poplevel                  PARAMS ((void));
-extern void genrtl_do_pushlevel                 PARAMS ((void));
-extern void genrtl_clear_out_block              PARAMS ((void));
+extern void clear_out_block                     PARAMS ((void));
 extern void genrtl_goto_stmt                    PARAMS ((tree));
 extern void genrtl_expr_stmt                    PARAMS ((tree));
 extern void genrtl_decl_stmt                    PARAMS ((tree));
@@ -4654,9 +4622,6 @@ extern tree build_x_modify_expr			PARAMS ((tree, enum tree_code, tree));
 extern tree build_modify_expr			PARAMS ((tree, enum tree_code, tree));
 extern tree dubious_conversion_warnings         PARAMS ((tree, tree, const char *, tree, int));
 extern tree convert_for_initialization		PARAMS ((tree, tree, tree, int, const char *, tree, int));
-extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, const char *, int));
-extern void c_expand_return			PARAMS ((tree));
-extern tree c_expand_start_case			PARAMS ((tree));
 extern int comp_ptr_ttypes			PARAMS ((tree, tree));
 extern int ptr_reasonably_similar		PARAMS ((tree, tree));
 extern tree build_ptrmemfunc			PARAMS ((tree, tree, int));

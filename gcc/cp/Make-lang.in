@@ -126,7 +126,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
  $(srcdir)/cp/typeck.c $(srcdir)/cp/typeck2.c $(srcdir)/cp/xref.c
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
-        c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
+	c-pragma.o c-semantics.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
 	$(srcdir)/c-common.def $(srcdir)/cp/gxx.gperf $(srcdir)/cp/cfns.gperf hash.o \
 	$(srcdir)/cp/operators.def
 	cd cp; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)

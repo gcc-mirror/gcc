@@ -1,3 +1,89 @@
+2000-07-01  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* Makefile.in (C_AND_OBJC_OBJS): Added c-semantics.o.
+	(c-semantics.o): New target.
+	
+	* c-common.h (TREE_LANG_FLAG_?): Added documentation.
+	(genrtl_do_pushlevel): Moved from cp/cp-tree.h.
+	(genrtl_clear_out_block): Likewise.
+	(genrtl_goto_stmt): Likewise.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(genrtl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(gerntl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(DECL_ANON_UNION_ELEMS): Likewise.
+	(emit_local_var): Likewise.
+	(make_rtl_for_local_static): Likewise.
+	(expand_cond): Likewise.
+	(expand_stmt): Likewise.
+	(c_expand_return): Likewise.
+	(c_expand_start_case): Likewise.
+	(do_case): Likewise.
+	(COMPOUND_STMT_NO_SCOPE): Likewise.
+	(c_expand_asm_operands): Likewise.
+	(NEW_FOR_SCOPE_P): New macro.
+	(expand_expr_stmt_fn): New type.
+
+	(set_current_function_name_declared): Likewise.
+	(current_function_name_declared): Likewise.
+	(lang_expand_stmt): Likewise.
+	(stmts_are_full_exprs_p): Likewise.
+	(anon_aggr_type_p): Likewise.
+	(lang_expand_expr_stmt): Likewise.
+	(build_case_label): Likewise.
+	
+	* c-decl.c (lang_expand_expr_stmt): Initialize.
+	(stmts_are_full_exprs_p): Define.
+	(current_function_name_declared): Likewise.
+	(do_case): Likewise.
+	(lang_expand_stmt): Likewise.
+	(set_current_function_name_declared): Likewise.
+	(anon_aggr_type_p): Likewise.
+	(build_case_label): Likewise.
+	
+	* c-semantics.c: New file.
+	(expand_cond): Moved from cp/semantics.c.
+	(genrtl_do_pushlevel): Likewise.
+	(genrtl_clear_out_block): Likewise.
+	(genrtl_goto_stmt): Likewise.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(genrtl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(make_rtl_for_local_static): Moved from cp/decl.c.
+	(emit_local_var): Likewise.
+	(expand_stmt): Define.
+
+	* c-tree.h: (c_expand_asm_operands): Moved to c-common.h.
+	(c_expand_return): Likewise.
+	(c_expand_start_case): Likewise.
+		
 2000-07-01  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (symbolic_operand): Reject CONST expressions

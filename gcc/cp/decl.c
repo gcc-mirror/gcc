@@ -7887,30 +7887,6 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
 }
 
-/* Create RTL for the local static variable DECL.  */
-
-void
-make_rtl_for_local_static (decl)
-     tree decl;
-{
-  const char *asmspec = NULL;
-
-  /* If we inlined this variable, we could see it's declaration
-     again.  */
-  if (DECL_RTL (decl))
-    return;
-
-  if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-    {
-      /* The only way this situaton can occur is if the
-	 user specified a name for this DECL using the
-	 `attribute' syntax.  */
-      asmspec = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
-    }
-
-  rest_of_decl_compilation (decl, asmspec, /*top_level=*/0, /*at_end=*/0);
-}
 
 /* The old ARM scoping rules injected variables declared in the
    initialization statement of a for-statement into the surrounding
@@ -7997,13 +7973,13 @@ initialize_local_var (decl, init, flags)
 
 	  emit_line_note (DECL_SOURCE_FILE (decl),
 			  DECL_SOURCE_LINE (decl));
-	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
-	  stmts_are_full_exprs_p = 1;
+	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+	  current_stmt_tree->stmts_are_full_exprs_p = 1;
 	  if (building_stmt_tree ())
 	    finish_expr_stmt (build_aggr_init (decl, init, flags));
 	  else
 	    genrtl_expr_stmt (build_aggr_init (decl, init, flags));
-	  stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
+	  current_stmt_tree->stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 	}
 
       /* Set this to 0 so we can tell whether an aggregate which was
@@ -8056,39 +8032,7 @@ destroy_local_var (decl)
     finish_decl_cleanup (decl, cleanup);
 }
 
-/* Let the back-end know about DECL.  */
 
-void
-emit_local_var (decl)
-     tree decl;
-{
-  /* Create RTL for this variable.  */
-  if (DECL_RTL (decl))
-    /* Only a RESULT_DECL should have non-NULL RTL when arriving here.
-       All other local variables are assigned RTL in this function.  */
-    my_friendly_assert (TREE_CODE (decl) == RESULT_DECL,
-			19990828);
-  else
-    {
-      if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-	/* The user must have specified an assembler name for this
-	   variable.  Set that up now.  */
-	rest_of_decl_compilation
-	  (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-	   /*top_level=*/0, /*at_end=*/0);
-      else
-	expand_decl (decl);
-    }
-
-  /* Actually do the initialization.  */
-  if (stmts_are_full_exprs_p)
-    expand_start_target_temps ();
-
-  expand_decl_init (decl);
-
-  if (stmts_are_full_exprs_p)
-    expand_end_target_temps ();
-}
 
 /* Finish processing of a declaration;
    install its line number and initial value.
@@ -14966,7 +14910,7 @@ push_cp_function_context (f)
 
   /* Whenever we start a new function, we destroy temporaries in the
      usual way.  */
-  stmts_are_full_exprs_p = 1;
+  current_stmt_tree->stmts_are_full_exprs_p = 1;
 }
 
 /* Free the language-specific parts of F, now that we've finished

@@ -1,3 +1,95 @@
+2000-07-01  Benjamin Chelf  <chelf@codesourcery.com>
+
+        * Make-lang.in (cc1plus$(exeext)): Added c-semantics.o.
+	
+	* Makefile.in (OBJS): Added ../c-semantics.o.
+	(OBJDEPS): Likewise.
+	
+	* cp-tree.h (TREE_LANG_FLAG_?): Moved common documentation to
+	../c-common.h.
+	(struct stmt_tree): Added comment. 
+	(current_function_name_declared): Removed.
+	(stmts_are_full_exprs_p): Likewise.
+	(genrtl_do_pushlevel): Likewise.
+	(genrtl_clear_out_block): Likewise.
+	(COMPOUND_STMT_NO_SCOPE): Moved to ../c-common.h.
+	(DECL_ANON_UNION_ELEMS): Likewise.
+	(emit_local_var): Likewise.
+	(make_rtl_for_local_static): Likewise.
+	(do_case): Likewise.
+	(expand_stmt): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(c_expand_asm_operands): Likewise.
+	(c_expand_return): Likewise.
+	(c_expand_start_case): Likewise.
+
+	* decl.c (make_rtl_for_local_static): Moved to c-semantics.c.
+	(emit_local_var): Likewise.
+	(initialize_local_var): Change reference to
+	stmts_are_full_exprs_p to call to stmts_are_full_exprs_p().
+	Change reference to stmts_are_full_exprs_p to
+	current_stmt_tree->stmts_are_full_exprs_p.
+	(push_cp_function_context): Likewise.
+
+	* expect.c (expand_throw): Change reference to
+	stmts_are_full_exprs_p. 
+
+	* init.c (build_aggr_init): Change reference to
+	stmts_are_full_exprs_p. 
+	(build_vec_init): Likewise.
+
+	* optimize.c (maybe_clone_body): Change reference to
+	current_function_name_declared to
+	cp_function_chain->name_declared.
+
+	* pt.c (instantiate_decl): Change reference to
+	current_function_name_declared to
+	cp_function_chain->name_declared.
+
+	* semantics.c (expand_cond): Moved declaration to c-common.h.
+	(genrtl_do_pushlevel): Moved to c-semantics.c.
+	(genrtl_clear_out_block): Likewise.
+	(genrtl_goto_stmt): Likewise.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(gerntl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(expand_cond): Likewise.
+	(expand_stmt): Renamed to ...
+	(lang_expand_stmt): ... this. 
+	(lang_expand_expr_stmt): Initialize.
+	(set_current_function_name_declared): Likewise.
+	(stmts_are_full_exprs_p): Likewise.
+	(current_function_name_declared): Likewise.
+	(anon_aggr_type_p): Likewise.
+	(do_poplevel): Change reference to
+	stmts_are_full_exprs_p to call to stmts_are_full_exprs_p().
+	Change reference to stmts_are_full_exprs_p to
+	current_stmt_tree->stmts_are_full_exprs_p.
+	(add_tree): Likewise.
+	(finish_expr_stmt): Likewise.
+	(prep_stmt): Likewise.
+	(lang_expand_stmt): Likewise.
+	(begin_compound_stmt): Change reference to
+	current_function_name_declared to
+	cp_function_chain->name_declared and call to
+	current_function_name_declared().
+	(setup_vtbl_ptr): Likewise.
+	(genrtl_do_poplevel): Removed.
+	
 2000-06-30  Jason Merrill  <jason@redhat.com>
 
 	* init.c (init_init_processing): Go back to aligning like
@@ -17,6 +109,20 @@
 	NULL from operator new if -fcheck-new.
 	* cp-tree.h: Declare flag_check_new here.
 	* init.c: Not here.
+
+2000-06-28  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (find_substitution): Use same_type_p.
+	(write_encoding): Don't check for substitutions.
+
+2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parse.y (expr_no_comma_rangle): New non-terminal.
+	(template_parm): Use it for default parameter case.
+	(template_arg): Use it.
+	(expr_no_commas): Remove commented out undefined extensions.
+	* Makefile.in (CONFLICTS): Adjust to 33 s/r & 48 r/r.
+	* parse.h, parse.c: Rebuilt.
 
 2000-06-30  Mark Mitchell  <mark@codesourcery.com>
 
@@ -121,7 +227,6 @@
 	(overloaded_template_name): Adjust.
 	* semantics.c (finish_template_template_parm): Adjust.
 
->>>>>>> 1.1867
 2000-06-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLEAR_BINFO_NEW_VTABLE_MARKED): Remove.
@@ -346,7 +451,7 @@
 	* mangle.c (write_method_parms): Use direct comparison for end
 	of parmlist.
 
-2000-06-19  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
+2000-06-19  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* cp-tree.h (genrtl_try_block): Declare function.
 	(genrtl_handler): Likewise.
