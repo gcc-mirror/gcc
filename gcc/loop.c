@@ -308,6 +308,8 @@ static int replace_loop_reg PARAMS ((rtx *, void *));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
 static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
 static int replace_label PARAMS ((rtx *, void *));
+static void check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
+static void check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 
 typedef struct rtx_and_int {
   rtx r;
@@ -3694,127 +3696,47 @@ static rtx addr_placeholder;
    was rerun in loop_optimize whenever a register was added or moved.
    Also, some of the optimizations could be a little less conservative.  */
 
-/* Perform strength reduction and induction variable elimination.  
+/* Scan the loop body and call FNCALL for each insn.  In the addition to the
+   LOOP and INSN parameters pass MAYBE_MULTIPLE and NOT_EVERY_ITERATION to the
+   callback.
+ 
+   NOT_EVERY_ITERATION if current insn is not executed at least once for every
+   loop iteration except for the last one.
 
-   Pseudo registers created during this function will be beyond the last
-   valid index in several tables including n_times_set and regno_last_uid.
-   This does not cause a problem here, because the added registers cannot be
-   givs outside of their loop, and hence will never be reconsidered.
-   But scan_loop must check regnos to make sure they are in bounds.   */
-
-static void
-strength_reduce (loop, insn_count, unroll_p, bct_p)
+   MAYBE_MULTIPLE is 1 if current insn may be executed more than once for every
+   loop iteration.
+ */
+void
+for_each_insn_in_loop (loop, fncall)
      struct loop *loop;
-     int insn_count;
-     int unroll_p, bct_p ATTRIBUTE_UNUSED;
+     loop_insn_callback fncall;
 {
-  rtx p;
-  rtx set;
-  rtx inc_val;
-  rtx mult_val;
-  rtx dest_reg;
-  rtx *location;
   /* This is 1 if current insn is not executed at least once for every loop
      iteration.  */
   int not_every_iteration = 0;
-  /* This is 1 if current insn may be executed more than once for every
-     loop iteration.  */
   int maybe_multiple = 0;
-  /* This is 1 if we have past a branch back to the top of the loop
-     (aka a loop latch).  */
   int past_loop_latch = 0;
-  /* Temporary list pointers for traversing loop_iv_list.  */
-  struct iv_class *bl, **backbl;
-  struct loop_info *loop_info = LOOP_INFO (loop);
-  /* Ratio of extra register life span we can justify
-     for saving an instruction.  More if loop doesn't call subroutines
-     since in that case saving an insn makes more difference
-     and more registers are available.  */
-  /* ??? could set this to last value of threshold in move_movables */
-  int threshold = (loop_info->has_call ? 1 : 2) * (3 + n_non_fixed_regs);
-  /* Map of pseudo-register replacements.  */
-  rtx *reg_map = NULL;
-  int reg_map_size;
-  int call_seen;
-  rtx test;
-  rtx end_insert_before;
   int loop_depth = 0;
-  int n_extra_increment;
-  int unrolled_insn_copies = 0;
-  rtx loop_start = loop->start;
-  rtx loop_end = loop->end;
-  rtx loop_scan_start = loop->scan_start;
-  rtx loop_top = loop->top;
-  rtx loop_cont = loop->cont;
+  rtx p;
 
   /* If loop_scan_start points to the loop exit test, we have to be wary of
      subversive use of gotos inside expression statements.  */
-  if (prev_nonnote_insn (loop_scan_start) != prev_nonnote_insn (loop_start))
-    maybe_multiple = back_branch_in_range_p (loop, loop_scan_start);
-
-  VARRAY_INT_INIT (reg_iv_type, max_reg_before_loop, "reg_iv_type");
-  VARRAY_GENERIC_PTR_INIT (reg_iv_info, max_reg_before_loop, "reg_iv_info");
-  reg_biv_class = (struct iv_class **)
-    xcalloc (max_reg_before_loop, sizeof (struct iv_class *));
-
-  loop_iv_list = 0;
-  addr_placeholder = gen_reg_rtx (Pmode);
-
-  /* Save insn immediately after the loop_end.  Insns inserted after loop_end
-     must be put before this insn, so that they will appear in the right
-     order (i.e. loop order). 
-
-     If loop_end is the end of the current function, then emit a 
-     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
-     dummy note insn.  */
-  if (NEXT_INSN (loop_end) != 0)
-    end_insert_before = NEXT_INSN (loop_end);
-  else
-    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop_end);
+  if (prev_nonnote_insn (loop->scan_start) != prev_nonnote_insn (loop->start))
+    maybe_multiple = back_branch_in_range_p (loop, loop->scan_start);
 
   /* Scan through loop to find all possible bivs.  */
 
-  for (p = next_insn_in_loop (loop, loop_scan_start);
+  for (p = next_insn_in_loop (loop, loop->scan_start);
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
-      if (GET_CODE (p) == INSN
-	  && (set = single_set (p))
-	  && GET_CODE (SET_DEST (set)) == REG)
-	{
-	  dest_reg = SET_DEST (set);
-	  if (REGNO (dest_reg) < max_reg_before_loop
-	      && REGNO (dest_reg) >= FIRST_PSEUDO_REGISTER
-	      && REG_IV_TYPE (REGNO (dest_reg)) != NOT_BASIC_INDUCT)
-	    {
-	      int multi_insn_incr = 0;
-
-	      if (basic_induction_var (loop, SET_SRC (set),
-				       GET_MODE (SET_SRC (set)),
-				       dest_reg, p, &inc_val, &mult_val,
-				       &location, &multi_insn_incr))
-		{
-		  /* It is a possible basic induction variable.
-		     Create and initialize an induction structure for it.  */
-
-		  struct induction *v
-		    = (struct induction *) alloca (sizeof (struct induction));
-
-		  record_biv (v, p, dest_reg, inc_val, mult_val, location,
-			      not_every_iteration, maybe_multiple, 
-			      multi_insn_incr);
-		  REG_IV_TYPE (REGNO (dest_reg)) = BASIC_INDUCT;
-		}
-	      else if (REGNO (dest_reg) < max_reg_before_loop)
-		REG_IV_TYPE (REGNO (dest_reg)) = NOT_BASIC_INDUCT;
-	    }
-	}
+      fncall (loop, p, maybe_multiple, not_every_iteration);
 
       /* Past CODE_LABEL, we get to insns that may be executed multiple
-	 times.  The only way we can be sure that they can't is if every
-	 jump insn between here and the end of the loop either
-	 returns, exits the loop, is a jump to a location that is still
-	 behind the label, or is a jump to the loop start.  */
+         times.  The only way we can be sure that they can't is if every
+         jump insn between here and the end of the loop either
+         returns, exits the loop, is a jump to a location that is still
+         behind the label, or is a jump to the loop start.  */
 
       if (GET_CODE (p) == CODE_LABEL)
 	{
@@ -3825,24 +3747,24 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 	  while (1)
 	    {
 	      insn = NEXT_INSN (insn);
-	      if (insn == loop_scan_start)
+	      if (insn == loop->scan_start)
 		break;
-	      if (insn == loop_end)
+	      if (insn == loop->end)
 		{
-		  if (loop_top != 0)
-		    insn = loop_top;
+		  if (loop->top != 0)
+		    insn = loop->top;
 		  else
 		    break;
-		  if (insn == loop_scan_start)
+		  if (insn == loop->scan_start)
 		    break;
 		}
 
 	      if (GET_CODE (insn) == JUMP_INSN
 		  && GET_CODE (PATTERN (insn)) != RETURN
-		  && (! condjump_p (insn)
+		  && (!condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
-			  && JUMP_LABEL (insn) != loop_scan_start
-			  && ! loop_insn_first_p (p, JUMP_LABEL (insn)))))
+			  && JUMP_LABEL (insn) != loop->scan_start
+			  && !loop_insn_first_p (p, JUMP_LABEL (insn)))))
 		{
 		  maybe_multiple = 1;
 		  break;
@@ -3851,29 +3773,29 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 	}
 
       /* Past a jump, we get to insns for which we can't count
-	 on whether they will be executed during each iteration.  */
+         on whether they will be executed during each iteration.  */
       /* This code appears twice in strength_reduce.  There is also similar
-	 code in scan_loop.  */
+         code in scan_loop.  */
       if (GET_CODE (p) == JUMP_INSN
-	  /* If we enter the loop in the middle, and scan around to the
-	     beginning, don't set not_every_iteration for that.
-	     This can be any kind of jump, since we want to know if insns
-	     will be executed if the loop is executed.  */
-	  && ! (JUMP_LABEL (p) == loop_top
-		&& ((NEXT_INSN (NEXT_INSN (p)) == loop_end && simplejump_p (p))
-		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
+      /* If we enter the loop in the middle, and scan around to the
+         beginning, don't set not_every_iteration for that.
+         This can be any kind of jump, since we want to know if insns
+         will be executed if the loop is executed.  */
+	  && !(JUMP_LABEL (p) == loop->top
+	     && ((NEXT_INSN (NEXT_INSN (p)) == loop->end && simplejump_p (p))
+		 || (NEXT_INSN (p) == loop->end && condjump_p (p)))))
 	{
 	  rtx label = 0;
 
 	  /* If this is a jump outside the loop, then it also doesn't
 	     matter.  Check to see if the target of this branch is on the
 	     loop->exits_labels list.  */
-	     
+
 	  for (label = loop->exit_labels; label; label = LABEL_NEXTREF (label))
 	    if (XEXP (label, 0) == JUMP_LABEL (p))
 	      break;
 
-	  if (! label)
+	  if (!label)
 	    not_every_iteration = 1;
 	}
 
@@ -3896,34 +3818,93 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 	}
 
       /* Note if we pass a loop latch.  If we do, then we can not clear
-	 NOT_EVERY_ITERATION below when we pass the last CODE_LABEL in
-	 a loop since a jump before the last CODE_LABEL may have started
-	 a new loop iteration.
+         NOT_EVERY_ITERATION below when we pass the last CODE_LABEL in
+         a loop since a jump before the last CODE_LABEL may have started
+         a new loop iteration.
 
-	 Note that LOOP_TOP is only set for rotated loops and we need
-	 this check for all loops, so compare against the CODE_LABEL
-	 which immediately follows LOOP_START.  */
-      if (GET_CODE (p) == JUMP_INSN 
-	  && JUMP_LABEL (p) == NEXT_INSN (loop_start))
+         Note that LOOP_TOP is only set for rotated loops and we need
+         this check for all loops, so compare against the CODE_LABEL
+         which immediately follows LOOP_START.  */
+      if (GET_CODE (p) == JUMP_INSN
+	  && JUMP_LABEL (p) == NEXT_INSN (loop->start))
 	past_loop_latch = 1;
 
       /* Unlike in the code motion pass where MAYBE_NEVER indicates that
-	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
-	 or not an insn is known to be executed each iteration of the
-	 loop, whether or not any iterations are known to occur.
+         an insn may never be executed, NOT_EVERY_ITERATION indicates whether
+         or not an insn is known to be executed each iteration of the
+         loop, whether or not any iterations are known to occur.
 
-	 Therefore, if we have just passed a label and have no more labels
-	 between here and the test insn of the loop, and we have not passed
-	 a jump to the top of the loop, then we know these insns will be
-	 executed each iteration.  */
+         Therefore, if we have just passed a label and have no more labels
+         between here and the test insn of the loop, and we have not passed
+         a jump to the top of the loop, then we know these insns will be
+         executed each iteration.  */
 
-      if (not_every_iteration 
-	  && ! past_loop_latch
+      if (not_every_iteration
+	  && !past_loop_latch
 	  && GET_CODE (p) == CODE_LABEL
-	  && no_labels_between_p (p, loop_end)
-	  && loop_insn_first_p (p, loop_cont))
+	  && no_labels_between_p (p, loop->end)
+	  && loop_insn_first_p (p, loop->cont))
 	not_every_iteration = 0;
     }
+}
+
+/* Perform strength reduction and induction variable elimination.  
+
+   Pseudo registers created during this function will be beyond the last
+   valid index in several tables including n_times_set and regno_last_uid.
+   This does not cause a problem here, because the added registers cannot be
+   givs outside of their loop, and hence will never be reconsidered.
+   But scan_loop must check regnos to make sure they are in bounds.   */
+
+static void
+strength_reduce (loop, insn_count, unroll_p, bct_p)
+     struct loop *loop;
+     int insn_count;
+     int unroll_p, bct_p ATTRIBUTE_UNUSED;
+{
+  rtx p;
+  /* Temporary list pointers for traversing loop_iv_list.  */
+  struct iv_class *bl, **backbl;
+  struct loop_info *loop_info = LOOP_INFO (loop);
+  /* Ratio of extra register life span we can justify
+     for saving an instruction.  More if loop doesn't call subroutines
+     since in that case saving an insn makes more difference
+     and more registers are available.  */
+  /* ??? could set this to last value of threshold in move_movables */
+  int threshold = (loop_info->has_call ? 1 : 2) * (3 + n_non_fixed_regs);
+  /* Map of pseudo-register replacements.  */
+  rtx *reg_map = NULL;
+  int reg_map_size;
+  int call_seen;
+  rtx test;
+  rtx end_insert_before;
+  int n_extra_increment;
+  int unrolled_insn_copies = 0;
+  rtx loop_start = loop->start;
+  rtx loop_end = loop->end;
+  rtx loop_scan_start = loop->scan_start;
+
+  VARRAY_INT_INIT (reg_iv_type, max_reg_before_loop, "reg_iv_type");
+  VARRAY_GENERIC_PTR_INIT (reg_iv_info, max_reg_before_loop, "reg_iv_info");
+  reg_biv_class = (struct iv_class **)
+    xcalloc (max_reg_before_loop, sizeof (struct iv_class *));
+
+  loop_iv_list = 0;
+  addr_placeholder = gen_reg_rtx (Pmode);
+
+  /* Save insn immediately after the loop_end.  Insns inserted after loop_end
+     must be put before this insn, so that they will appear in the right
+     order (i.e. loop order). 
+
+     If loop_end is the end of the current function, then emit a 
+     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
+     dummy note insn.  */
+  if (NEXT_INSN (loop_end) != 0)
+    end_insert_before = NEXT_INSN (loop_end);
+  else
+    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop_end);
+
+  for_each_insn_in_loop (loop, check_insn_for_bivs);
 
   /* Scan loop_iv_list to remove all regs that proved not to be bivs.
      Make a sanity check against n_times_set.  */
@@ -4430,203 +4411,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 
   /* Search the loop for general induction variables.  */
 
-  /* A register is a giv if: it is only set once, it is a function of a
-     biv and a constant (or invariant), and it is not a biv.  */
-
-  not_every_iteration = 0;
-  loop_depth = 0;
-  maybe_multiple = 0;
-  p = loop_scan_start;
-  while (1)
-    {
-      p = NEXT_INSN (p);
-      /* At end of a straight-in loop, we are done.
-	 At end of a loop entered at the bottom, scan the top.  */
-      if (p == loop_scan_start)
-	break;
-      if (p == loop_end)
-	{
-	  if (loop_top != 0)
-	    p = loop_top;
-	  else
-	    break;
-	  if (p == loop_scan_start)
-	    break;
-	}
-
-      /* Look for a general induction variable in a register.  */
-      if (GET_CODE (p) == INSN
-	  && (set = single_set (p))
-	  && GET_CODE (SET_DEST (set)) == REG
-	  && ! VARRAY_CHAR (may_not_optimize, REGNO (SET_DEST (set))))
-	{
-	  rtx src_reg;
-	  rtx add_val;
-	  rtx mult_val;
-	  int benefit;
-	  rtx regnote = 0;
-	  rtx last_consec_insn;
-
-	  dest_reg = SET_DEST (set);
-	  if (REGNO (dest_reg) < FIRST_PSEUDO_REGISTER)
-	    continue;
-
-	  if (/* SET_SRC is a giv.  */
-	      (general_induction_var (loop, SET_SRC (set), &src_reg, &add_val,
-				      &mult_val, 0, &benefit)
-	       /* Equivalent expression is a giv.  */
-	       || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
-		   && general_induction_var (loop, XEXP (regnote, 0), &src_reg,
-					     &add_val, &mult_val, 0,
-					     &benefit)))
-	      /* Don't try to handle any regs made by loop optimization.
-		 We have nothing on them in regno_first_uid, etc.  */
-	      && REGNO (dest_reg) < max_reg_before_loop
-	      /* Don't recognize a BASIC_INDUCT_VAR here.  */
-	      && dest_reg != src_reg
-	      /* This must be the only place where the register is set.  */
-	      && (VARRAY_INT (n_times_set, REGNO (dest_reg)) == 1
-		  /* or all sets must be consecutive and make a giv.  */
-		  || (benefit = consec_sets_giv (loop, benefit, p,
-						 src_reg, dest_reg,
-						 &add_val, &mult_val,
-						 &last_consec_insn))))
-	    {
-	      struct induction *v
-		= (struct induction *) alloca (sizeof (struct induction));
-
-	      /* If this is a library call, increase benefit.  */
-	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
-		benefit += libcall_benefit (p);
-
-	      /* Skip the consecutive insns, if there are any.  */
-	      if (VARRAY_INT (n_times_set, REGNO (dest_reg)) != 1)
-		p = last_consec_insn;
-
-	      record_giv (loop, v, p, src_reg, dest_reg, mult_val, add_val,
-			  benefit, DEST_REG, not_every_iteration,
-			  maybe_multiple, NULL_PTR);
-
-	    }
-	}
-
-#ifndef DONT_REDUCE_ADDR
-      /* Look for givs which are memory addresses.  */
-      /* This resulted in worse code on a VAX 8600.  I wonder if it
-	 still does.  */
-      if (GET_CODE (p) == INSN)
-	find_mem_givs (loop, PATTERN (p), p, not_every_iteration,
-		       maybe_multiple);
-#endif
-
-      /* Update the status of whether giv can derive other givs.  This can
-	 change when we pass a label or an insn that updates a biv.  */
-      if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	|| GET_CODE (p) == CODE_LABEL)
-	update_giv_derive (loop, p);
-
-      /* Past CODE_LABEL, we get to insns that may be executed multiple
-	 times.  The only way we can be sure that they can't is if every
-	 every jump insn between here and the end of the loop either
-	 returns, exits the loop, is a forward jump, or is a jump
-	 to the loop start.  */
-
-      if (GET_CODE (p) == CODE_LABEL)
-	{
-	  rtx insn = p;
-
-	  maybe_multiple = 0;
-
-	  while (1)
-	    {
-	      insn = NEXT_INSN (insn);
-	      if (insn == loop_scan_start)
-		break;
-	      if (insn == loop_end)
-		{
-		  if (loop_top != 0)
-		    insn = loop_top;
-		  else
-		    break;
-		  if (insn == loop_scan_start)
-		    break;
-		}
-
-	      if (GET_CODE (insn) == JUMP_INSN
-		  && GET_CODE (PATTERN (insn)) != RETURN
-		  && (! condjump_p (insn)
-		      || (JUMP_LABEL (insn) != 0
-			  && JUMP_LABEL (insn) != loop_scan_start
-			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
-			      || INSN_UID (insn) >= max_uid_for_loop
-			      || (INSN_LUID (JUMP_LABEL (insn))
-				  < INSN_LUID (insn))))))
-		{
-		  maybe_multiple = 1;
-		  break;
-		}
-	    }
-	}
-
-      /* Past a jump, we get to insns for which we can't count
-	 on whether they will be executed during each iteration.  */
-      /* This code appears twice in strength_reduce.  There is also similar
-	 code in scan_loop.  */
-      if (GET_CODE (p) == JUMP_INSN
-	  /* If we enter the loop in the middle, and scan around to the
-	     beginning, don't set not_every_iteration for that.
-	     This can be any kind of jump, since we want to know if insns
-	     will be executed if the loop is executed.  */
-	  && ! (JUMP_LABEL (p) == loop_top
-		&& ((NEXT_INSN (NEXT_INSN (p)) == loop_end && simplejump_p (p))
-		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
-	{
-	  rtx label = 0;
-
-	  /* If this is a jump outside the loop, then it also doesn't
-	     matter.  Check to see if the target of this branch is on the
-	     loop->exits_labels list.  */
-	     
-	  for (label = loop->exit_labels; label; label = LABEL_NEXTREF (label))
-	    if (XEXP (label, 0) == JUMP_LABEL (p))
-	      break;
-
-	  if (! label)
-	    not_every_iteration = 1;
-	}
-
-      else if (GET_CODE (p) == NOTE)
-	{
-	  /* At the virtual top of a converted loop, insns are again known to
-	     be executed each iteration: logically, the loop begins here
-	     even though the exit code has been duplicated.
-
-	     Insns are also again known to be executed each iteration at
-	     the LOOP_CONT note.  */
-	  if ((NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP
-	       || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_CONT)
-	      && loop_depth == 0)
-	    not_every_iteration = 0;
-	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
-	    loop_depth++;
-	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
-	    loop_depth--;
-	}
-
-      /* Unlike in the code motion pass where MAYBE_NEVER indicates that
-	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
-	 or not an insn is known to be executed each iteration of the
-	 loop, whether or not any iterations are known to occur.
-
-	 Therefore, if we have just passed a label and have no more labels
-	 between here and the test insn of the loop, we know these insns
-	 will be executed each iteration.  */
-
-      if (not_every_iteration && GET_CODE (p) == CODE_LABEL
-	  && no_labels_between_p (p, loop_end)
-	  && loop_insn_first_p (p, loop_cont))
-	not_every_iteration = 0;
-    }
+  for_each_insn_in_loop (loop, check_insn_for_givs);
 
   /* Try to calculate and save the number of loop iterations.  This is
      set to zero if the actual number can not be calculated.  This must
@@ -5280,6 +5065,138 @@ egress:
   free (reg_biv_class);
   if (reg_map)
     free (reg_map);
+}
+
+/*Record all basic induction variables calculated in the insn.  */
+static void
+check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
+     struct loop *loop;
+     rtx p;
+     int not_every_iteration;
+     int maybe_multiple;
+{
+  rtx set;
+  rtx dest_reg;
+  rtx inc_val;
+  rtx mult_val;
+  rtx *location;
+
+  if (GET_CODE (p) == INSN
+      && (set = single_set (p))
+      && GET_CODE (SET_DEST (set)) == REG)
+    {
+      dest_reg = SET_DEST (set);
+      if (REGNO (dest_reg) < max_reg_before_loop
+	  && REGNO (dest_reg) >= FIRST_PSEUDO_REGISTER
+	  && REG_IV_TYPE (REGNO (dest_reg)) != NOT_BASIC_INDUCT)
+	{
+	  int multi_insn_incr = 0;
+
+	  if (basic_induction_var (loop, SET_SRC (set),
+				   GET_MODE (SET_SRC (set)),
+				   dest_reg, p, &inc_val, &mult_val,
+				   &location, &multi_insn_incr))
+	    {
+	      /* It is a possible basic induction variable.
+	         Create and initialize an induction structure for it.  */
+
+	      struct induction *v
+	      = (struct induction *) oballoc (sizeof (struct induction));
+
+	      record_biv (v, p, dest_reg, inc_val, mult_val, location,
+			  not_every_iteration, maybe_multiple,
+			  multi_insn_incr);
+	      REG_IV_TYPE (REGNO (dest_reg)) = BASIC_INDUCT;
+	    }
+	  else if (REGNO (dest_reg) < max_reg_before_loop)
+	    REG_IV_TYPE (REGNO (dest_reg)) = NOT_BASIC_INDUCT;
+	}
+    }
+}
+
+/* Record all givs calculated in the insn.  
+   A register is a giv if: it is only set once, it is a function of a
+   biv and a constant (or invariant), and it is not a biv.  */
+static void
+check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
+     struct loop *loop;
+     rtx p;
+     int not_every_iteration;
+     int maybe_multiple;
+{
+  rtx set;
+  /* Look for a general induction variable in a register.  */
+  if (GET_CODE (p) == INSN
+      && (set = single_set (p))
+      && GET_CODE (SET_DEST (set)) == REG
+      && ! VARRAY_CHAR (may_not_optimize, REGNO (SET_DEST (set))))
+    {
+      rtx src_reg;
+      rtx dest_reg;
+      rtx add_val;
+      rtx mult_val;
+      int benefit;
+      rtx regnote = 0;
+      rtx last_consec_insn;
+
+      dest_reg = SET_DEST (set);
+      if (REGNO (dest_reg) < FIRST_PSEUDO_REGISTER)
+	return;
+
+      if (/* SET_SRC is a giv.  */
+	  (general_induction_var (loop, SET_SRC (set), &src_reg, &add_val,
+				  &mult_val, 0, &benefit)
+	   /* Equivalent expression is a giv.  */
+	   || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
+	       && general_induction_var (loop, XEXP (regnote, 0), &src_reg,
+					 &add_val, &mult_val, 0,
+					 &benefit)))
+	  /* Don't try to handle any regs made by loop optimization.
+	     We have nothing on them in regno_first_uid, etc.  */
+	  && REGNO (dest_reg) < max_reg_before_loop
+	  /* Don't recognize a BASIC_INDUCT_VAR here.  */
+	  && dest_reg != src_reg
+	  /* This must be the only place where the register is set.  */
+	  && (VARRAY_INT (n_times_set, REGNO (dest_reg)) == 1
+	      /* or all sets must be consecutive and make a giv.  */
+	      || (benefit = consec_sets_giv (loop, benefit, p,
+					     src_reg, dest_reg,
+					     &add_val, &mult_val,
+					     &last_consec_insn))))
+	{
+	  struct induction *v
+	    = (struct induction *) oballoc (sizeof (struct induction));
+
+	  /* If this is a library call, increase benefit.  */
+	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
+	    benefit += libcall_benefit (p);
+
+	  /* Skip the consecutive insns, if there are any.  */
+	  if (VARRAY_INT (n_times_set, REGNO (dest_reg)) != 1)
+	    p = last_consec_insn;
+
+	  record_giv (loop, v, p, src_reg, dest_reg, mult_val, add_val,
+		      benefit, DEST_REG, not_every_iteration,
+		      maybe_multiple, NULL_PTR);
+
+	}
+    }
+
+#ifndef DONT_REDUCE_ADDR
+  /* Look for givs which are memory addresses.  */
+  /* This resulted in worse code on a VAX 8600.  I wonder if it
+     still does.  */
+  if (GET_CODE (p) == INSN)
+    find_mem_givs (loop, PATTERN (p), p, not_every_iteration,
+		   maybe_multiple);
+#endif
+
+  /* Update the status of whether giv can derive other givs.  This can
+     change when we pass a label or an insn that updates a biv.  */
+  if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
+    || GET_CODE (p) == CODE_LABEL)
+    update_giv_derive (loop, p);
+
 }
 
 /* Return 1 if X is a valid source for an initial value (or as value being
