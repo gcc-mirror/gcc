@@ -240,6 +240,10 @@ proc gcj_jni_invocation_test_one {file} {
   set cfile [file rootname $file].c
   set cxxflags "-L../.libs -lgcj"
 
+  if { [istarget "*-*-solaris*"] } {
+    lappend cxxflags "-lsocket"
+  }
+
   if {! [gcj_jni_invocation_compile_c_to_binary $cfile $cxxflags]} {
     # FIXME
     return 0

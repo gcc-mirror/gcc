@@ -1,3 +1,8 @@
+2005-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add
+	libsocket to the libraries to link for Solaris.
+
 2005-03-24  Anthony Green  <green@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java: Accept libdir argument with
