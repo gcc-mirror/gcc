@@ -1,5 +1,20 @@
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
+	* basic-block.h (remove_fake_exit_edges): Declare.
+	* cfganal.c (remove_fake_predecessors): Rename from
+	remove_fake_successors; iterate over predecessors.
+	(remove_fake_exit_edges): New.
+	* cfgcleanup.c (try_optimize_cfg): Use it.
+	* gcse.c (one_pre_gcse_pass, store_motion): Likewise.
+	* predict.c (estimate_probability): Likewise.
+	(tree_estimate_probability, note_prediction_to_br_prob): Likewise.
+	* tree-cfg.c (make_edges): Likewise.
+	* tree-ssa-pre.c (fini_pre): Likewise.
+	* profile.c (instrument_edges): Don't remove_fake_edges.
+	(branch_prob): Do it earlier here.
+
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
 	* tree-ssa-operands.c (get_expr_operands): Fix 2004-07-15
 	switchification wrt CONSTRUCTOR.  Document the reason.
 

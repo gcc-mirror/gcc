@@ -417,6 +417,7 @@ extern void commit_edge_insertions (void);
 extern void commit_edge_insertions_watch_calls (void);
 
 extern void remove_fake_edges (void);
+extern void remove_fake_exit_edges (void);
 extern void add_noreturn_fake_exit_edges (void);
 extern void connect_infinite_loops_to_exit (void);
 extern edge unchecked_make_edge (basic_block, basic_block, int);

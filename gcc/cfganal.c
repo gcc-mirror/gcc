@@ -51,7 +51,6 @@ static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds,
 					     basic_block);
 static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds);
 static void flow_dfs_compute_reverse_finish (depth_first_search_ds);
-static void remove_fake_successors (basic_block);
 static bool flow_active_insn_p (rtx);
 
 /* Like active_insn_p, except keep the return value clobber around
@@ -529,20 +528,20 @@ flow_edge_list_print (const char *str, const edge *edge_list, int num_edges, FIL
 }
 
 
-/* This routine will remove any fake successor edges for a basic block.
-   When the edge is removed, it is also removed from whatever predecessor
+/* This routine will remove any fake predecessor edges for a basic block.
+   When the edge is removed, it is also removed from whatever successor
    list it is in.  */
 
 static void
-remove_fake_successors (basic_block bb)
+remove_fake_predecessors (basic_block bb)
 {
   edge e;
 
-  for (e = bb->succ; e;)
+  for (e = bb->pred; e;)
     {
       edge tmp = e;
 
-      e = e->succ_next;
+      e = e->pred_next;
       if ((tmp->flags & EDGE_FAKE) == EDGE_FAKE)
 	remove_edge (tmp);
     }
@@ -557,9 +556,18 @@ remove_fake_edges (void)
 {
   basic_block bb;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
-    remove_fake_successors (bb);
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+    remove_fake_predecessors (bb);
 }
+
+/* This routine will remove all fake edges to the EXIT_BLOCK.  */
+
+void
+remove_fake_exit_edges (void)
+{
+  remove_fake_predecessors (EXIT_BLOCK_PTR);
+}
+
 
 /* This function will add a fake edge between any block which has no
    successors, and the exit block. Some data flow equations require these

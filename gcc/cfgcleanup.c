@@ -1978,7 +1978,7 @@ try_optimize_cfg (int mode)
     }
 
   if (mode & CLEANUP_CROSSJUMP)
-    remove_fake_edges ();
+    remove_fake_exit_edges ();
 
   clear_aux_for_blocks ();
 

@@ -4964,7 +4964,7 @@ one_pre_gcse_pass (int pass)
     }
 
   free_ldst_mems ();
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
   free_hash_table (&expr_hash_table);
 
   if (gcse_file)
@@ -6858,7 +6858,7 @@ store_motion (void)
 
   free_store_memory ();
   free_edge_list (edge_list);
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
   end_alias_analysis ();
 }
 
