@@ -3780,7 +3780,7 @@ override_options ()
    pointer (which may be eliminated) points to the stack pointer after
    the initial adjustments.  */
 
-int
+HOST_WIDE_INT
 mips_debugger_offset (addr, offset)
      rtx addr;
      HOST_WIDE_INT offset;
@@ -3793,9 +3793,9 @@ mips_debugger_offset (addr, offset)
 
   if (reg == stack_pointer_rtx || reg == frame_pointer_rtx)
     {
-      int frame_size = (!current_frame_info.initialized
-			? compute_frame_size (get_frame_size ())
-			: current_frame_info.total_size);
+      HOST_WIDE_INT frame_size = (!current_frame_info.initialized
+				  ? compute_frame_size (get_frame_size ())
+				  : current_frame_info.total_size);
 
       offset = offset - frame_size;
     }
