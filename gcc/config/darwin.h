@@ -663,12 +663,12 @@ void alias_section (name, alias)			\
 	 }                                                              \
        } while (0)
 
-#define DECLARE_CLASS_REFERENCE(NAME) \
-    do { extern FILE* asm_out_file;					\
-	 if (asm_out_file) {						\
-	   fprintf (asm_out_file, "\t");				\
-	   assemble_name (asm_out_file, NAME); 				\
-	   fprintf (asm_out_file, "=0\n");				\
+#define ASM_DECLARE_CLASS_REFERENCE(FILE,NAME)				\
+    do {								\
+	 if (FILE) {							\
+	   fprintf (FILE, "\t");					\
+	   assemble_name (FILE, NAME); 					\
+	   fprintf (FILE, "=0\n");					\
 	   assemble_global (NAME);					\
 	 }								\
        } while (0)

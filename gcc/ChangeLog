@@ -1,3 +1,11 @@
+2001-06-27  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (handle_impent): Rewrite to be more portable
+	and to use ASM_DECLARE_CLASS_REFERENCE.
+	* config/darwin.h (ASM_DECLARE_CLASS_REFERENCE): Rename from
+	undocumented DECLARE_CLASS_REFERENCE, add file argument.
+	* doc/tm.texi (ASM_DECLARE_CLASS_REFERENCE): Document.
+
 Wed Jun 27 18:01:09 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* simplify-rtx.c (simplify_rtx): Canonicalize commutative expressions
@@ -1122,7 +1130,7 @@ Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-11  Stan Shebs  <shebs@apple.com>
 
-	* darwin.h (ASM_FILE_END): Remove decl of language_string.
+	* config/darwin.h (ASM_FILE_END): Remove decl of language_string.
 
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
@@ -1178,7 +1186,7 @@ Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-11  Stan Shebs  <shebs@apple.com>
 
-	* darwin.c (darwin_encode_section_info):  Rewrite to simplify
+	* config/darwin.c (darwin_encode_section_info):  Rewrite to simplify
 	and fix coding mistakes.
 
 2001-06-11  Nick Clifton  <nickc@cambridge.redhat.com>
