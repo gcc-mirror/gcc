@@ -3164,18 +3164,18 @@ do_identifier (token, parsing, args)
 	}
       else if (!DECL_ERROR_REPORTED (id))
 	{
-	  static char msg[]
-	    = "name lookup of `%s' changed for new ANSI `for' scoping";
 	  DECL_ERROR_REPORTED (id) = 1;
 	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (id)))
 	    {
-	      error (msg, IDENTIFIER_POINTER (token));
+	      error ("name lookup of `%s' changed for new ANSI `for' scoping",
+		     IDENTIFIER_POINTER (token));
 	      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", id);
 	      id = error_mark_node;
 	    }
 	  else
 	    {
-	      pedwarn (msg, IDENTIFIER_POINTER (token));
+	      pedwarn ("name lookup of `%s' changed for new ANSI `for' scoping",
+		       IDENTIFIER_POINTER (token));
 	      cp_pedwarn_at ("  using obsolete binding at `%D'", id);
 	    }
 	}
