@@ -1,3 +1,14 @@
+2003-10-29  Julian Dolby  <dolby@us.ibm.com>
+
+	* javax/naming/spi/NamingManager.java (getContinuationContext): Call
+	getObjectInstance() with Object, Name, Context and environment
+	Hashtable from exception. Call fillInStackTrace() on exception when
+	rethrown.
+	* javax/naming/InitialContext.java (lookup(Name)): When a
+	CannotProceedException is thrown use the ContinuationContext.
+	(lookup(String)): Likewise.
+	(close): Clear myProps and defaultInitCtx.
+
 2003-10-29  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java

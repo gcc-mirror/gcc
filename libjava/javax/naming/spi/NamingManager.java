@@ -324,14 +324,19 @@ public class NamingManager
     // It is really unclear to me if this is right.
     try
       {
-	Object obj = getObjectInstance (null, cpe.getAltName (),
-					cpe.getAltNameCtx (), env);
+	Object obj = getObjectInstance (cpe.getResolvedObj(),
+					cpe.getAltName (),
+					cpe.getAltNameCtx (), 
+					env);
 	if (obj != null)
 	  return (Context) obj;
       }
     catch (Exception _)
       {
       }
+
+    // fix stack trace for re-thrown exception (message confusing otherwise)
+    cpe.fillInStackTrace();
 
     throw cpe;
   }

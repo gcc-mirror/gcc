@@ -240,12 +240,28 @@ public class InitialContext implements Context
 
   public Object lookup (Name name) throws NamingException
   {
-    return getURLOrDefaultInitCtx (name).lookup (name);
+    try
+      {
+	return getURLOrDefaultInitCtx (name).lookup (name);
+      }
+    catch (CannotProceedException cpe)
+      {
+	Context ctx = NamingManager.getContinuationContext (cpe);
+	return ctx.lookup (cpe.getRemainingName());
+      }
   }
 
   public Object lookup (String name) throws NamingException
   {
-    return getURLOrDefaultInitCtx (name).lookup (name);
+      try
+	{
+	  return getURLOrDefaultInitCtx (name).lookup (name);
+	}
+      catch (CannotProceedException cpe)
+	{
+	  Context ctx = NamingManager.getContinuationContext (cpe);
+	  return ctx.lookup (cpe.getRemainingName());
+	}
   }
 
   public void rebind (Name name, Object obj) throws NamingException
@@ -367,7 +383,8 @@ public class InitialContext implements Context
 
   public void close () throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    myProps = null;
+    defaultInitCtx = null;
   }
 
   public String getNameInNamespace () throws NamingException
