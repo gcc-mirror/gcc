@@ -1,3 +1,7 @@
+2000-07-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.c: Remove (again.)
+
 2000-07-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (simple_name:): Fixed typo in error message.
