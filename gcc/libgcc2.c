@@ -1093,6 +1093,8 @@ __floatdisf (u)
 #undef unsigned
 #undef float
 #undef double
+#undef MIN
+#undef MAX
 #include <limits.h>
 
 USItype
@@ -1114,6 +1116,8 @@ __fixunsxfsi (a)
 #undef unsigned
 #undef float
 #undef double
+#undef MIN
+#undef MAX
 #include <limits.h>
 
 USItype
@@ -1135,6 +1139,8 @@ __fixunsdfsi (a)
 #undef unsigned
 #undef float
 #undef double
+#undef MIN
+#undef MAX
 #include <limits.h>
 
 USItype
