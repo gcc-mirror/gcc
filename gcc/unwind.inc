@@ -1,4 +1,4 @@
-/* Exception handling and frame unwind runtime interface routines.
+/* Exception handling and frame unwind runtime interface routines. -*- C -*-
    Copyright (C) 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
