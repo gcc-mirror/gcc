@@ -5347,7 +5347,8 @@ sparc_va_arg (valist, type)
       PUT_MODE (tmp, BLKmode);
       set_mem_alias_set (tmp, 0);
       
-      dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize));
+      dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize),
+				   BLOCK_OP_NORMAL);
       if (dest_addr != NULL_RTX)
 	addr_rtx = dest_addr;
       else

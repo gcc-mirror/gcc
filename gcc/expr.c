@@ -132,9 +132,11 @@ static unsigned HOST_WIDE_INT move_by_pieces_ninsns
 					 unsigned int));
 static void move_by_pieces_1	PARAMS ((rtx (*) (rtx, ...), enum machine_mode,
 					 struct move_by_pieces *));
+static bool block_move_libcall_safe_for_call_parm PARAMS ((void));
 static bool emit_block_move_via_movstr PARAMS ((rtx, rtx, rtx, unsigned));
 static rtx emit_block_move_via_libcall PARAMS ((rtx, rtx, rtx));
 static tree emit_block_move_libcall_fn PARAMS ((int));
+static void emit_block_move_via_loop PARAMS ((rtx, rtx, rtx, unsigned));
 static rtx clear_by_pieces_1	PARAMS ((PTR, HOST_WIDE_INT,
 					 enum machine_mode));
 static void clear_by_pieces	PARAMS ((rtx, unsigned HOST_WIDE_INT,
@@ -1677,16 +1679,43 @@ move_by_pieces_1 (genfun, mode, data)
    Both X and Y must be MEM rtx's (perhaps inside VOLATILE) with mode BLKmode.
    SIZE is an rtx that says how long they are.
    ALIGN is the maximum alignment we can assume they have.
+   METHOD describes what kind of copy this is, and what mechanisms may be used.
 
    Return the address of the new block, if memcpy is called and returns it,
    0 otherwise.  */
 
 rtx
-emit_block_move (x, y, size)
+emit_block_move (x, y, size, method)
      rtx x, y, size;
+     enum block_op_methods method;
 {
+  bool may_use_call;
   rtx retval = 0;
-  unsigned int align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
+  unsigned int align;
+
+  switch (method)
+    {
+    case BLOCK_OP_NORMAL:
+      may_use_call = true;
+      break;
+
+    case BLOCK_OP_CALL_PARM:
+      may_use_call = block_move_libcall_safe_for_call_parm ();
+
+      /* Make inhibit_defer_pop nonzero around the library call
+	 to force it to pop the arguments right away.  */
+      NO_DEFER_POP;
+      break;
+
+    case BLOCK_OP_NO_LIBCALL:
+      may_use_call = false;
+      break;
+
+    default:
+      abort ();
+    }
+
+  align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
 
   if (GET_MODE (x) != BLKmode)
     abort ();
@@ -1708,10 +1737,75 @@ emit_block_move (x, y, size)
     move_by_pieces (x, y, INTVAL (size), align);
   else if (emit_block_move_via_movstr (x, y, size, align))
     ;
-  else
+  else if (may_use_call)
     retval = emit_block_move_via_libcall (x, y, size);
+  else
+    emit_block_move_via_loop (x, y, size, align);
+
+  if (method == BLOCK_OP_CALL_PARM)
+    OK_DEFER_POP;
 
   return retval;
+}
+
+/* A subroutine of emit_block_move.  Returns true if calling the 
+   block move libcall will not clobber any parameters which may have
+   already been placed on the stack.  */
+
+static bool
+block_move_libcall_safe_for_call_parm ()
+{
+  if (PUSH_ARGS)
+    return true;
+  else
+    {
+      /* Check to see whether memcpy takes all register arguments.  */
+      static enum {
+	takes_regs_uninit, takes_regs_no, takes_regs_yes
+      } takes_regs = takes_regs_uninit;
+
+      switch (takes_regs)
+	{
+	case takes_regs_uninit:
+	  {
+	    CUMULATIVE_ARGS args_so_far;
+	    tree fn, arg;
+
+	    fn = emit_block_move_libcall_fn (false);
+	    INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (fn), NULL_RTX, 0);
+
+	    arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	    for ( ; arg != void_list_node ; arg = TREE_CHAIN (arg))
+	      {
+		enum machine_mode mode
+		  = TYPE_MODE (TREE_TYPE (TREE_VALUE (arg)));
+		rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
+		if (!tmp || !REG_P (tmp))
+		  goto fail_takes_regs;
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+		if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode,
+						NULL_TREE, 1))
+		  goto fail_takes_regs;
+#endif
+		FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
+	      }
+	  }
+	  takes_regs = takes_regs_yes;
+	  /* FALLTHRU */
+
+	case takes_regs_yes:
+	  return true;
+
+	fail_takes_regs:
+	  takes_regs = takes_regs_no;
+	  /* FALLTHRU */
+	case takes_regs_no:
+	  return false;
+
+	default:
+	  abort ();
+	}
+    }
 }
 
 /* A subroutine of emit_block_move.  Expand a movstr pattern; 
@@ -1918,6 +2012,59 @@ emit_block_move_libcall_fn (for_call)
     }
 
   return fn;
+}
+
+/* A subroutine of emit_block_move.  Copy the data via an explicit
+   loop.  This is used only when libcalls are forbidden.  */
+/* ??? It'd be nice to copy in hunks larger than QImode.  */
+
+static void
+emit_block_move_via_loop (x, y, size, align)
+     rtx x, y, size;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  rtx cmp_label, top_label, iter, x_addr, y_addr, tmp;
+  enum machine_mode iter_mode;
+
+  iter_mode = GET_MODE (size);
+  if (iter_mode == VOIDmode)
+    iter_mode = word_mode;
+
+  top_label = gen_label_rtx ();
+  cmp_label = gen_label_rtx ();
+  iter = gen_reg_rtx (iter_mode);
+
+  emit_move_insn (iter, const0_rtx);
+
+  x_addr = force_operand (XEXP (x, 0), NULL_RTX);
+  y_addr = force_operand (XEXP (y, 0), NULL_RTX);
+  do_pending_stack_adjust ();
+
+  emit_note (NULL, NOTE_INSN_LOOP_BEG);
+
+  emit_jump (cmp_label);
+  emit_label (top_label);
+
+  tmp = convert_modes (Pmode, iter_mode, iter, true);
+  x_addr = gen_rtx_PLUS (Pmode, x_addr, tmp);
+  y_addr = gen_rtx_PLUS (Pmode, y_addr, tmp);
+  x = change_address (x, QImode, x_addr);
+  y = change_address (y, QImode, y_addr);
+
+  emit_move_insn (x, y);
+
+  tmp = expand_simple_binop (iter_mode, PLUS, iter, const1_rtx, iter,
+			     true, OPTAB_LIB_WIDEN);
+  if (tmp != iter)
+    emit_move_insn (iter, tmp);
+
+  emit_note (NULL, NOTE_INSN_LOOP_CONT);
+  emit_label (cmp_label);
+
+  emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
+			   true, top_label);
+
+  emit_note (NULL, NOTE_INSN_LOOP_END);
 }
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -3623,16 +3770,12 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		 of sibling calls.  */
 	      set_mem_alias_set (target, 0);
 	    }
-	  else
-	    set_mem_align (target, align);
 
-	  /* Make inhibit_defer_pop nonzero around the library call
-	     to force it to pop the bcopy-arguments right away.  */
-	  NO_DEFER_POP;
+	  /* ALIGN may well be better aligned than TYPE, e.g. due to
+	     PARM_BOUNDARY.  Assume the caller isn't lying.  */
+	  set_mem_align (target, align);
 
-	  emit_block_move (target, xinner, size);
-
-	  OK_DEFER_POP;
+	  emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
 	}
     }
   else if (partial > 0)
@@ -3951,7 +4094,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (GET_CODE (to_rtx) == PARALLEL)
 	emit_group_load (to_rtx, value, int_size_in_bytes (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
-	emit_block_move (to_rtx, value, expr_size (from));
+	emit_block_move (to_rtx, value, expr_size (from), BLOCK_OP_NORMAL);
       else
 	{
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -4312,7 +4455,7 @@ store_expr (exp, target, want_value)
 
 	  if (GET_CODE (size) == CONST_INT
 	      && INTVAL (size) < TREE_STRING_LENGTH (exp))
-	    emit_block_move (target, temp, size);
+	    emit_block_move (target, temp, size, BLOCK_OP_NORMAL);
 	  else
 	    {
 	      /* Compute the size of the data to copy from the string.  */
@@ -4326,7 +4469,7 @@ store_expr (exp, target, want_value)
 
 	      /* Copy that much.  */
 	      copy_size_rtx = convert_to_mode (ptr_mode, copy_size_rtx, 0);
-	      emit_block_move (target, temp, copy_size_rtx);
+	      emit_block_move (target, temp, copy_size_rtx, BLOCK_OP_NORMAL);
 
 	      /* Figure out how much is left in TARGET that we have to clear.
 		 Do all calculations in ptr_mode.  */
@@ -4367,7 +4510,7 @@ store_expr (exp, target, want_value)
       else if (GET_CODE (target) == PARALLEL)
 	emit_group_load (target, temp, int_size_in_bytes (TREE_TYPE (exp)));
       else if (GET_MODE (temp) == BLKmode)
-	emit_block_move (target, temp, expr_size (exp));
+	emit_block_move (target, temp, expr_size (exp), BLOCK_OP_NORMAL);
       else
 	emit_move_insn (target, temp);
     }
@@ -5295,7 +5438,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 	  target = adjust_address (target, VOIDmode, bitpos / BITS_PER_UNIT);
 	  emit_block_move (target, temp,
 			   GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-				    / BITS_PER_UNIT));
+				    / BITS_PER_UNIT),
+			   BLOCK_OP_NORMAL);
 
 	  return value_mode == VOIDmode ? const0_rtx : target;
 	}
@@ -7218,7 +7362,8 @@ expand_expr (exp, target, tmode, modifier)
 
 		emit_block_move (target, op0,
 				 GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-					  / BITS_PER_UNIT));
+					  / BITS_PER_UNIT),
+				 BLOCK_OP_NORMAL);
 
 		return target;
 	      }
@@ -7634,7 +7779,8 @@ expand_expr (exp, target, tmode, modifier)
 
 	      if (GET_MODE (op0) == BLKmode)
 		emit_block_move (new_with_op0_mode, op0,
-				 GEN_INT (GET_MODE_SIZE (TYPE_MODE (type))));
+				 GEN_INT (GET_MODE_SIZE (TYPE_MODE (type))),
+				 BLOCK_OP_NORMAL);
 	      else
 		emit_move_insn (new_with_op0_mode, op0);
 
@@ -8856,7 +9002,8 @@ expand_expr (exp, target, tmode, modifier)
 	      if (TYPE_ALIGN_OK (inner_type))
 		abort ();
 
-	      emit_block_move (new, op0, expr_size (TREE_OPERAND (exp, 0)));
+	      emit_block_move (new, op0, expr_size (TREE_OPERAND (exp, 0)),
+			       BLOCK_OP_NORMAL);
 	      op0 = new;
 	    }
 

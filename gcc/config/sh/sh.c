@@ -7301,7 +7301,7 @@ sh_initialize_trampoline (tramp, fnaddr, cxt)
       src = gen_rtx_MEM (BLKmode, tramp_templ);
       set_mem_align (dst, 256);
       set_mem_align (src, 64);
-      emit_block_move (dst, src, GEN_INT (fixed_len));
+      emit_block_move (dst, src, GEN_INT (fixed_len), BLOCK_OP_NORMAL);
 
       emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (tramp,	fixed_len)),
 		      fnaddr);
