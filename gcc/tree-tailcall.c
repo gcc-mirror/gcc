@@ -159,6 +159,8 @@ suitable_for_tail_opt_p (void)
 static bool
 suitable_for_tail_call_opt_p (void)
 {
+  tree param;
+
   /* alloca (until we have stack slot life analysis) inhibits
      sibling call optimizations, but not tail recursion.  */
   if (current_function_calls_alloca)
@@ -175,6 +177,14 @@ suitable_for_tail_call_opt_p (void)
      properly in the CFG so that this needn't be special cased.  */
   if (current_function_calls_setjmp)
     return false;
+
+  /* ??? It is OK if the argument of a function is taken in some cases,
+     but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
+  for (param = DECL_ARGUMENTS (current_function_decl);
+       param;
+       param = TREE_CHAIN (param))
+    if (TREE_ADDRESSABLE (param))
+      return false;
 
   return true;
 }

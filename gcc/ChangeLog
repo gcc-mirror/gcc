@@ -1,3 +1,13 @@
+2005-01-26  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/19616	
+	* tree.h (CALL_EXPR_TAILCALL): Add comment.
+	* calls.c (check_sibcall_argument_overlap_1): Revert the change
+	to this function from 2004-07-10.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Do not consider the
+	the current function for tail call optimizations if the address
+	of one of it its arguments is taken.
+
 2005-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (fold_rtx): Call equiv_constant only when necessary.
@@ -24,7 +34,7 @@
 	-lsyssim.  Wrap -lc -lsyssim in --start-group --end-group instead
 	of doubling.
 	(STARTFILE_SPEC): Add crti.o, before crtbegin.o.
- 	<sim*>: Always use crt1.o, regardless of N in simN.
+	<sim*>: Always use crt1.o, regardless of N in simN.
 	<!sim>: Drop support for -pg and -p variants; always use crt0.o.
 	(ENDFILE_SPEC): Add crtn.o, after crtend.o.
 	(CRT_CALL_STATIC_FUNCTION): Remove.
@@ -103,10 +113,10 @@
 
 	2005-01-25  Alexandre Oliva  <aoliva@redhat.com>
 
-        * config/frv/frv.h (ASM_OUTPUT_DWARF_DTPREL): Define.
-        * config/frv/frv-protos.h (frv_output_dwarf_dtprel): Declare.
-        * config/frv/frv.c (TLS_BIAS): Define.
-        (frv_output_dwarf_dtprel): New.
+	* config/frv/frv.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+	* config/frv/frv-protos.h (frv_output_dwarf_dtprel): Declare.
+	* config/frv/frv.c (TLS_BIAS): Define.
+	(frv_output_dwarf_dtprel): New.
 
 2005-01-26  Jakub Jelinek  <jakub@redhat.com>
 
@@ -436,7 +446,7 @@
 	first label to see if it is a nonlocal label.
 
 2005-01-22  David Edelsohn  <edelsohn@gnu.org>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/19491
 	* config/rs6000/rs6000.c (rs6000_va_start): Saturate n_gpr at
@@ -2185,7 +2195,7 @@
 2004-01-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* doc/invoke.texi (Intel 386 and AMD x86-64 Options):
-        Replace i387 with 'i386 compiler' in -mfpmath=sse option.
+	Replace i387 with 'i386 compiler' in -mfpmath=sse option.
 
 2005-01-04  Roger Sayle  <roger@eyesopen.com>
 

@@ -824,6 +824,9 @@ extern void tree_operand_check_failed (int, enum tree_code,
    had its address taken.  That matters for inline functions.  */
 #define TREE_ADDRESSABLE(NODE) ((NODE)->common.addressable_flag)
 
+/* Set on a CALL_EXPR if the call is in a tail position, ie. just before the
+   exit of a function.  Calls for which this is true are candidates for tail
+   call optimizations.  */
 #define CALL_EXPR_TAILCALL(NODE) (CALL_EXPR_CHECK(NODE)->common.addressable_flag)
 
 /* In a VAR_DECL, nonzero means allocate static storage.
