@@ -687,7 +687,11 @@ convert_move (rtx to, rtx from, int unsignedp)
 		   != CODE_FOR_nothing))
 	{
 	  if (GET_CODE (to) == REG)
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, to));
+	    {
+	      if (reg_overlap_mentioned_p (to, from))
+		from = force_reg (from_mode, from);
+	      emit_insn (gen_rtx_CLOBBER (VOIDmode, to));
+	    }
 	  convert_move (gen_lowpart (word_mode, to), from, unsignedp);
 	  emit_unop_insn (code, to,
 			  gen_lowpart (word_mode, to), equiv_code);

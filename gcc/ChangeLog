@@ -1,3 +1,10 @@
+2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/14235
+	* expr.c (convert_move): Copy the source to a new pseudo
+	when converting from a sub-word source to a larger-than-word
+	register which conflicts with the source.
+
 2004-03-03  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 13728
