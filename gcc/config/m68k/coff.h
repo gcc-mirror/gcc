@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%a6", "%sp",	\
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7" }
 
-#define ASM_FILE_START_FILE_DIRECTIVE true
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as uninitialized global
