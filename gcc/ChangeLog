@@ -1,3 +1,8 @@
+2002-01-03  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (output_logical_op): Use 'not.w' instead
+	of 'neg.w' when xoring with 0x0000ffff or 0xffff0000.
+
 2002-01-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c: Update comments and copyright.

@@ -1681,7 +1681,7 @@ output_logical_op (mode, code, operands)
       /* First, see if we can finish with one insn.
 
 	 If code is either AND or XOR, we exclude two special cases,
-	 0xffffff00 and 0xffff00ff, because insns like sub.w or neg.w
+	 0xffffff00 and 0xffff00ff, because insns like sub.w or not.w
 	 can do a better job.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && ((det & 0x0000ffff) != 0)
@@ -1704,7 +1704,7 @@ output_logical_op (mode, code, operands)
 	      && ((det & 0x0000ffff) == 0x0000ffff)
 	      && code != IOR)
 	    output_asm_insn ((code == AND)
-			     ? "sub.w\t%f0,%f0" : "neg.w\t%f0",
+			     ? "sub.w\t%f0,%f0" : "not.w\t%f0",
 			     operands);
 	  else if ((TARGET_H8300H || TARGET_H8300S)
 		   && ((det & 0x000000ff) != 0)
@@ -1731,7 +1731,7 @@ output_logical_op (mode, code, operands)
 	      && ((det & 0xffff0000) == 0xffff0000)
 	      && code != IOR)
 	    output_asm_insn ((code == AND)
-			     ? "sub.w\t%e0,%e0" : "neg.w\t%e0",
+			     ? "sub.w\t%e0,%e0" : "not.w\t%e0",
 			     operands);
 	  else if (TARGET_H8300H || TARGET_H8300S)
 	    {
