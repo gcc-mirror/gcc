@@ -1,3 +1,8 @@
+2004-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/simd-5.x: New file.
+	XFAIL on SPARC 64-bit at -O0.
+
 2004-07-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8211
