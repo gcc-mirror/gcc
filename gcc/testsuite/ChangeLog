@@ -1,3 +1,8 @@
+2004-09-20  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15750
+	* gfortran.fortran-torture/execute/iolength_2.f90: New test.	
+
 2004-09-20  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-13.c: Added xfail for non ppc platforms.
