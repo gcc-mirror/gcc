@@ -3594,10 +3594,11 @@ the performance and/or code size at the expense of compilation time
 and possibly the ability to debug the program.
 
 The compiler performs optimization based on the knowledge it has of
-the program.  Using the @option{-funit-at-a-time} flag will allow the
-compiler to consider information gained from later functions in the
-file when compiling a function.  Compiling multiple files at once to a
-single output file (and using @option{-funit-at-a-time}) will allow
+the program.  Optimization levels @option{-O2} and above, in
+particular, enable @emph{unit-at-a-time} mode, which allows the
+compiler to consider information gained from later functions in
+the file when compiling a function.  Compiling multiple files at
+once to a single output file in @emph{unit-at-a-time} mode allows
 the compiler to use information gained from all of the files when
 compiling each of them.
 
@@ -4343,6 +4344,40 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@item -funit-at-a-time
+@opindex funit-at-a-time
+Parse the whole compilation unit before starting to produce code.
+This allows some extra optimizations to take place but consumes
+more memory (in general).  There are some compatibility issues
+with @emph{unit-at-at-time} mode:
+@itemize @bullet
+@item
+enabling @emph{unit-at-a-time} mode may change the order
+in which functions, variables, and top-level @code{asm} statements
+are emitted, and will likely break code relying on some particular
+ordering.  The majority of such top-level @code{asm} statements,
+though, can be replaced by @code{section} attributes.
+
+@item
+@emph{unit-at-a-time} mode removes unreferenced static variables
+and functions are removed.  This may result in undefined references
+when an @code{asm} statement refers directly to variables or functions
+that are otherwise unused.  In that case either the variable/function
+shall be listed as an operand of the @code{asm} statement operand or,
+in the case of top-level @code{asm} statements the attribute @code{used}
+shall be used on the declaration.
+
+@item
+Static functions now can use non-standard passing conventions that
+may break @code{asm} statements calling functions directly. Again,
+attribute @code{used} will prevent this behavior.
+@end itemize
+
+As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
+but this scheme may not be supported by future releases of GCC. 
+
+Enabled at levels @option{-O2}, @option{-O3}.
+
 @item -fweb
 @opindex fweb
 Constructs webs as commonly used for register allocation purposes and assign
@@ -4549,7 +4584,7 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions and adds @samp{REG_VALUE_PROFILE}
 notes to instructions for their later usage in optimizations.
 
-Enabled with @option{-profile-generate} and @option{-profile-use}.
+Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 
 @item -fvpt
 @opindex fvpt
@@ -4561,7 +4596,7 @@ and actually performs the optimizations based on them.
 Currently the optimizations include specialization of division operation
 using the knowledge about the value of the denominator.
 
-Enabled with @option{-profile-generate} and @option{-profile-use}.
+Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 
 @item -frename-registers
 @opindex frename-registers
@@ -4586,15 +4621,7 @@ Perform tail duplication to enlarge superblock size. This transformation
 simplifies the control flow of the function allowing other optimizations to do
 better job.
 
-Enabled with @option{-profile-use}.
-
-@item -funit-at-a-time
-@opindex funit-at-a-time
-Parse the whole compilation unit before starting to produce code.
-This allows some extra optimizations to take place but consumes more
-memory.
-
-Enabled at levels @option{-O2}, @option{-O3}.
+Enabled with @option{-fprofile-use}.
 
 @item -funroll-loops
 @opindex funroll-loops
@@ -4604,7 +4631,7 @@ upon entry to the loop.  @option{-funroll-loops} implies
 (i.e. complete removal of loops with small constant number of iterations).
 This option makes code larger, and may or may not make it run faster.
 
-Enabled with @option{-profile-use}.
+Enabled with @option{-fprofile-use}.
 
 @item -funroll-all-loops
 @opindex funroll-all-loops
@@ -4619,7 +4646,7 @@ Peels the loops for that there is enough information that they do not
 roll much (from profile feedback).  It also turns on complete loop peeling
 (i.e. complete removal of loops with small constant number of iterations).
 
-Enabled with @option{-profile-use}.
+Enabled with @option{-fprofile-use}.
 
 @item -funswitch-loops
 @opindex funswitch-loops
