@@ -1,5 +1,14 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/text/ComponentView.java
+	(getComponent): Must be final.
+	* javax/swing/tree/DefaultTreeCellRenderer.java:
+	Reformatted.
+	* javax/swing/undo/StateEditable.java:
+	Reformatted.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/activation/ActivationInstantiator.java:
 	Reformatted.
 	* java/rmi/activation/Activator.java:

@@ -46,7 +46,6 @@ public class ComponentView extends View
 	super(elem);
     }
  
-
     protected  Component createComponent()
     {
 	return null;
@@ -57,7 +56,7 @@ public class ComponentView extends View
 	return 0;
     }
 
-    public Component getComponent()
+    public final Component getComponent()
     {
 	return null;
     }
