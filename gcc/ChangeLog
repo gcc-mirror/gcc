@@ -1,3 +1,10 @@
+2002-09-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in (TEXI_GCC_FILES): Add compat.texi.
+	* doc/gcc.texi (Top): Add new chapter, Binary Compatibility, and
+	include its file, compat.texi.
+	* doc/compat.texi: New file with new chapter, Binary Compatibility.
+
 2002-09-03  Neil Booth  <neil@daikokuya.co.uk>
 
 	Debian BTS Bug #157416

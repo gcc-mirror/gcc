@@ -1,0 +1,115 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Compatibility
+@chapter Binary Compatibility
+@cindex binary compatibility
+@cindex ABI
+@cindex application binary interface
+
+Binary compatibility encompasses several related concepts:
+
+@table @dfn
+@item application binary interface (ABI)
+The set of runtime conventions followed by all of the tools that deal
+with binary representations of a program, including compilers, assemblers,
+linkers, and language runtime support.
+Some ABIs are formal with a written specification, possibly designed
+by multiple interested parties.  Others are simply the way things are
+actually done by a particular set of tools.
+
+@item ABI conformance
+A compiler conforms to an ABI if it generates code that follows all of
+the specifications enumerated by that ABI@.
+A library conforms to an ABI if it is implemented according to that ABI@.
+An application conforms to an ABI if it is built using tools that conform
+to that ABI and does not contain source code that specifically changes
+behavior specified by the ABI@.
+
+@item calling conventions
+Calling conventions are a subset of an ABI that specify of how arguments
+are passed and function results are returned.
+
+@item interoperability
+Different sets of tools are interoperable if they generate files that
+can be used in the same program.  The set of tools includes compilers,
+assemblers, linkers, libraries, header files, startup files, and debuggers.
+Binaries produced by different sets of tools are not interoperable unless
+they implement the same ABI@.  This applies to different versions of the
+same tools as well as tools from different vendors.
+
+@item intercallability
+Whether a function in a binary built by one set of tools can call a
+function in a binary built by a different set of tools is a subset
+of interoperability.
+
+@item implementation-defined features
+Language standards include lists of implementation-defined features whose
+behavior can vary from one implementation to another.  Some of these
+features are normally covered by a platform's ABI and others are not.
+The features that are not covered by an ABI generally affect how a
+program behaves, but not intercallability.
+
+@item compatibility
+Conformance to the same ABI and the same behavior of implementation-defined
+features are both relevant for compatibility.
+@end table
+
+The application binary interface implemented by a C or C++ compiler
+affects code generation and runtime support for:
+
+@itemize @bullet
+@item
+size and alignment of data types
+@item
+layout of structured types
+@item
+calling conventions
+@item
+register usage conventions
+@item
+interfaces for runtime arithmetic support
+@item
+object file formats
+@end itemize
+
+In addition, the application binary interface implemented by a C++ compiler
+affects code generation and runtime support for:
+@itemize @bullet
+@item
+name mangling
+@item
+exception handling
+@item
+invoking constructors and destructors
+@item
+layout, alignment, and padding of classes
+@item
+layout and alignment of virtual tables
+@end itemize
+
+Some GCC compilation options cause the compiler to generate code that
+does not conform to the platform's default ABI@.  Other options cause
+different program behavior for implementation-defined features that are
+not covered by an ABI@.  These options are provided for consistency with
+other compilers that do not follow the platform's default ABI or the
+usual behavior of implementation-defined features for the platform.
+Be very careful about using such options.
+
+Most platforms have a well-defined ABI that covers C code, but ABIs
+that cover C++ functionality are not yet common.
+
+Starting with GCC 3.2, GCC binary conventions for C++ are based on a
+written, vendor-neutral C++ ABI that was designed to be specific to
+64-bit Itanium but also includes generic specifications that apply to
+any platform.
+This C++ ABI is also implemented by other compiler vendors on some
+platforms, notably GNU/Linux and BSD systems.
+We have tried hard to provide a stable ABI that will be compatible with
+future GCC releases, but it is possible that we will encounter problems
+that make this difficult.  Such problems could include different
+interpretations of the C++ ABI by different vendors, bugs in the ABI, or
+bugs in the implementation of the ABI in different compilers.
+GCC's @code{-Wabi} switch warns when G++ generates code that is
+probably not compatible with the C++ ABI@.
