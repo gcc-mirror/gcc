@@ -72,7 +72,7 @@ LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
-	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include \
+	-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include \
 	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include \
 	 $(LIBSUPCXX_INCLUDES)
 

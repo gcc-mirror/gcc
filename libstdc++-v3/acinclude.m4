@@ -14,17 +14,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
    esac], [multilib=yes])dnl
 
-  dnl We may get other options which we dont document:
-  dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
-  if test "[$]{srcdir}" = "."; then
-    if test "[$]{with_target_subdir}" != "."; then
-      glibcpp_basedir="[$]{srcdir}/[$]{with_multisrctop}../$1"
-    else
-      glibcpp_basedir="[$]{srcdir}/[$]{with_multisrctop}$1"
-    fi
-  else
-    glibcpp_basedir="[$]{srcdir}/$1"
-  fi
+  glibcpp_basedir=$auxdir/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
   AM_INIT_AUTOMAKE(libstdc++, 2.90.8)

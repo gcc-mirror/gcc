@@ -3,7 +3,34 @@
 
 AC_PREREQ(2.13)
 AC_INIT(src/ios.cc)
-AC_CONFIG_AUX_DIR(..)
+
+# When building with srcdir == objdir, links to the source files will
+# be created in directories within the target_subdir.  We have to
+# adjust toplevel_srcdir accordingly, so that configure finds
+# install-sh and other auxiliary files that live in the top-level
+# source directory.
+if test "${srcdir}" = "."; then
+  if test -z "${with_target_subdir}"; then
+    toplevel_srcdir="\${top_srcdir}/.."
+    auxdir="${srcdir}/.."
+  else
+    if test "${with_target_subdir}" != "."; then
+      toplevel_srcdir="\${top_srcdir}/${with_multisrctop}../.."
+      auxdir="${srcdir}/${with_multisrctop}../.."
+    else
+      toplevel_srcdir="\${top_srcdir}/${with_multisrctop}.."
+      auxdir="${srcdir}/${with_multisrctop}.."
+    fi
+  fi
+else
+  toplevel_srcdir="\${top_srcdir}/.."
+  auxdir="${srcdir}/.."
+fi
+AC_CONFIG_AUX_DIR($auxdir)
+AC_SUBST(toplevel_srcdir)
+
+dnl This is here just to satisfy automake.
+ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
 
 # Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.
 AC_CANONICAL_SYSTEM

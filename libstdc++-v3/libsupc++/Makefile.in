@@ -106,18 +106,19 @@ ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
 libstdcxx_interface = @libstdcxx_interface@
+toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
 # Cross compiler and multilib support.
 # Install a library built with a cross compiler in tooldir, not libdir.
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@gcc_version = @gcc_version@
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexecdir = $(libdir)/gcc-lib/$(target_alias)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexeclibdir = $(toolexecdir)/$(gcc_version)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_FALSE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@gcc_version = @USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@@gcc_version@
+@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexecdir = @USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@$(libdir)/gcc-lib/$(target_alias)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@$(toolexecdir)/$(gcc_version)
+@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_FALSE@toolexeclibdir = @USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_FALSE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.
@@ -133,11 +134,13 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+CONFIG_CXXFLAGS = \
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Warning flags to use.
-WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+WARN_CXXFLAGS = \
+	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
@@ -149,20 +152,38 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include 	 $(LIBSUPCXX_INCLUDES)
+INCLUDES = \
+	-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include \
+	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include \
+	 $(LIBSUPCXX_INCLUDES)
 
 
-headers =  	cxxabi.h exception new typeinfo
+headers = \
+	cxxabi.h exception new typeinfo
 
 
-sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception_support.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
+sources = \
+	del_op.cc \
+	del_opnt.cc \
+	del_opv.cc \
+	del_opvnt.cc \
+	exception_support.cc \
+	new_handler.cc \
+	new_op.cc \
+	new_opnt.cc \
+	new_opv.cc \
+	new_opvnt.cc \
+	pure.cc \
+	tinfo.cc \
+	tinfo2.cc \
+	vec.cc
 
 
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
-@GXX_INCLUDE_DIR_TRUE@glibcppinstalldir = @gxx_include_dir@
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@glibcppinstalldir = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@glibcppinstalldir = $(prefix)/include/g++-@libstdcxx_interface@
+@GXX_INCLUDE_DIR_TRUE@glibcppinstalldir = @GXX_INCLUDE_DIR_TRUE@@gxx_include_dir@
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@glibcppinstalldir = @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@$(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@glibcppinstalldir = @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@$(prefix)/include/g++-@libstdcxx_interface@
 
 glibcppinstall_HEADERS = $(headers)
 
@@ -175,7 +196,12 @@ LIBSUPCXX_CXXFLAGS = -prefer-pic
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
-AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS = \
+	-fno-implicit-templates \
+	$(LIBSUPCXX_CXXFLAGS) \
+	$(WARN_CXXFLAGS) \
+	$(OPTIMIZE_CXXFLAGS) \
+	$(CONFIG_CXXFLAGS) 
 
 
 # libstdc++ libtool notes
@@ -199,14 +225,17 @@ AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS)
 #
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared                --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
+               --mode=compile $(CXX) $(INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We have a problem when building the shared libstdc++ object if
 # the rules automake generates would be used.  We cannot allow CXX to
 # be used in libtool since this would add -lstdc++ to the link line
 # which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
+	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
