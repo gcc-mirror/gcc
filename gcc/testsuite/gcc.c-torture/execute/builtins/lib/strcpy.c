@@ -4,7 +4,7 @@ char *
 strcpy (char *d, const char *s)
 {
   char *r = d;
-#ifdef __OPTIMIZE__
+#if defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__
   if (inside_main)
     abort ();
 #endif
