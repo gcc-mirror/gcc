@@ -1,3 +1,8 @@
+2003-06-12  H.J. Lu <hongjiu.lu@intel.com>
+
+	* config.guess: Update to 2003-06-06 version.
+	* config.sub: Update to 2003-06-06 version.
+
 2003-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't pass --with-stabs for mips*-sgi-irix6*o32.
