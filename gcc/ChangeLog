@@ -1,3 +1,8 @@
+2004-07-25  Andreas Jaeger  <aj@suse.de>
+
+	Backport from mainline:
+        * libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
+
 2004-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/13250

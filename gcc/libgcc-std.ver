@@ -194,3 +194,9 @@ GCC_3.3.1 {
 %inherit GCC_3.3.2 GCC_3.3.1
 GCC_3.3.2 {
 }
+
+%inherit GCC_3.3.4 GCC_3.3.2
+GCC_3.3.4 {
+  __unorddf2
+  __unordsf2
+}
