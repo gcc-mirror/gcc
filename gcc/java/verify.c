@@ -423,7 +423,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
   char *pmessage;
   int i;
   int index;
-  register unsigned char *p;
+  unsigned char *p;
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
   struct eh_range *eh_ranges;
   tree return_type = TREE_TYPE (TREE_TYPE (current_function_decl));

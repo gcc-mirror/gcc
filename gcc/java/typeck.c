@@ -112,7 +112,7 @@ convert_ieee_real_to_integer (tree type, tree expr)
 tree
 convert (tree type, tree expr)
 {
-  register enum tree_code code = TREE_CODE (type);
+  enum tree_code code = TREE_CODE (type);
 
   if (!expr)
    return error_mark_node;
@@ -244,7 +244,7 @@ java_unsigned_type (tree type)
 bool
 java_mark_addressable (tree exp)
 {
-  register tree x = exp;
+  tree x = exp;
   while (1)
     switch (TREE_CODE (x))
       {
@@ -480,7 +480,7 @@ parse_signature_type (const unsigned char **ptr, const unsigned char *limit)
     case 'L':
       {
 	const unsigned char *start = ++(*ptr);
-	register const unsigned char *str = start;
+	const unsigned char *str = start;
 	for ( ; ; str++)
 	  {
 	    if (str >= limit)
