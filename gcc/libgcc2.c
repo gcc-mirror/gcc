@@ -866,13 +866,10 @@ asm ("__builtin_saveregs:");
 #endif /* not SVR4 */
 #else /* not __i860__ */
 #ifdef __sparc__
-#ifdef NO_UNDERSCORES
 	asm (".global __builtin_saveregs");
 	asm ("__builtin_saveregs:");
-#else
 	asm (".global ___builtin_saveregs");
 	asm ("___builtin_saveregs:");
-#endif
 #ifdef NEED_PROC_COMMAND
 	asm (".proc 020");
 #endif
