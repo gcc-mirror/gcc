@@ -109,7 +109,9 @@ in the following sections.
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
 -foperator-names  -fno-optional-diags  -frepo  -fstrict-prototype
 -fsquangle  -ftemplate-depth-@var{n}  -fthis-is-variable  -fvtable-thunks
--nostdinc++
+-nostdinc++  -Wctor-dtor-privacy  -Weffc++  -Wno-non-template-friend 
+-Wnon-virtual-dtor  -Wold-style-cast  -Woverloaded-virtual  
+-Wno-pmf-conversions  -Wreorder  -Wsign-promo  -Wsynth
 @end smallexample
 
 @item Warning Options
@@ -125,10 +127,9 @@ in the following sections.
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations  -Wmissing-noreturn
 -Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
--Wno-non-template-friend -Wold-style-cast  -Woverloaded-virtual  
--Wparentheses -Wpointer-arith  -Wredundant-decls  -Wreorder  
+-Wparentheses -Wpointer-arith  -Wredundant-decls
 -Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
--Wswitch -Wsynth  -Wtraditional  
+-Wswitch  -Wtraditional  
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
 -Wunknown-pragmas
 @end smallexample
@@ -583,10 +584,11 @@ be displayed.
 @cindex suffixes for C++ source
 @cindex C++ source file suffixes
 C++ source files conventionally use one of the suffixes @samp{.C},
-@samp{.cc}, @samp{cpp}, or @samp{.cxx}; preprocessed C++ files use the
-suffix @samp{.ii}.  GNU CC recognizes files with these names and
-compiles them as C++ programs even if you call the compiler the same way
-as for compiling C programs (usually with the name @code{gcc}).
+@samp{.cc}, @samp{.cpp}, @samp{.c++}, @samp{.cp}, or @samp{.cxx};
+preprocessed C++ files use the suffix @samp{.ii}.  GNU CC recognizes
+files with these names and compiles them as C++ programs even if you
+call the compiler the same way as for compiling C programs (usually with
+the name @code{gcc}).
 
 @findex g++
 @findex c++
@@ -596,17 +598,7 @@ circumstances, you might want to compile programs from standard input,
 or otherwise without a suffix that flags them as C++ programs.
 @code{g++} is a program that calls GNU CC with the default language
 set to C++, and automatically specifies linking against the C++
-library.
-@cindex @code{g++ 1.@var{xx}}
-@cindex @code{g++}, separate compiler
-@cindex @code{g++} older version
-@footnote{Prior to release 2 of the compiler,
-there was a separate @code{g++} compiler.  That version was based on GNU
-CC, but not integrated with it.  Versions of @code{g++} with a
-@samp{1.@var{xx}} version number---for example, @code{g++} version 1.37
-or 1.42---are much less reliable than the versions integrated with GCC
-2.  Moreover, combining G++ @samp{1.@var{xx}} with a version 2 GCC will
-simply not work.} On many systems, the script @code{g++} is also
+library.  On many systems, the script @code{g++} is also
 installed with the name @code{c++}.
 
 @cindex invoking @code{g++}
@@ -1055,9 +1047,14 @@ Like all options that change the ABI, all C++ code, @emph{including
 libgcc} must be built with the same setting of this option.
 
 @item -fno-implicit-templates
-Never emit code for templates which are instantiated implicitly (i.e. by
-use); only emit code for explicit instantiations.  @xref{Template
-Instantiation}, for more information.
+Never emit code for non-inline templates which are instantiated
+implicitly (i.e. by use); only emit code for explicit instantiations.
+@xref{Template Instantiation}, for more information.
+
+@item -fno-implicit-inline-templates
+Don't emit code for implicit instantiations of inline templates, either.
+The default is to handle inlines differently so that compiles with and
+without optimization will need the same set of explicit instantiations.
 
 @item -finit-priority
 Support @samp{__attribute__ ((init_priority (n)))} for controlling the
@@ -1080,6 +1077,9 @@ given this declaration:
 template <class T, class U> void foo(T t);
 @end example
 
+Like all options that change the ABI, all C++ code, @emph{including
+libgcc} must be built with the same setting of this option.
+
 @item -foperator-names
 Recognize the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
@@ -1088,8 +1088,8 @@ synonyms for the symbols they refer to.  @samp{-ansi} implies
 
 @item -fno-optional-diags
 Disable diagnostics that the standard says a compiler does not need to
-issue.  Currently, this means the diagnostic for a name having multiple 
-meanings within a class.
+issue.  Currently, the only such diagnostic issued by g++ is the one for
+a name having multiple meanings within a class.
 
 @item -fpermissive
 Downgrade messages about nonconformant code from errors to warnings.  By
@@ -1181,15 +1181,106 @@ Do not assume @samp{inline} for functions defined inside a class scope.
 functions will have linkage like inline functions; they just won't be
 inlined by default.
 
-@item -Wno-non-template-friend
-@xref{Warning Options,,Options to Request or Suppress Warnings}.
-@item -Wold-style-cast
-@itemx -Woverloaded-virtual
-Warnings that apply only to C++ programs.  @xref{Warning
-Options,,Options to Request or Suppress Warnings}.
+@item -Wctor-dtor-privacy (C++ only)
+Warn when a class seems unusable, because all the constructors or
+destructors in a class are private and the class has no friends or
+public static member functions.
 
-@item -Weffc++
-Warn about violation of some style rules from Effective C++ by Scott Myers.
+@item -Wnon-virtual-dtor (C++ only)
+Warn when a class declares a non-virtual destructor that should probably
+be virtual, because it looks like the class will be used polymorphically.
+
+@item -Wreorder (C++ only)
+@cindex reordering, warning
+@cindex warning for reordering of member initializers
+Warn when the order of member initializers given in the code does not
+match the order in which they must be executed.  For instance:
+
+@smallexample
+struct A @{
+  int i;
+  int j;
+  A(): j (0), i (1) @{ @}
+@};
+@end smallexample
+
+Here the compiler will warn that the member initializers for @samp{i}
+and @samp{j} will be rearranged to match the declaration order of the
+members.
+@end table
+
+The following @samp{-W@dots{}} options are not affected by @samp{-Wall}.
+
+@table @code
+@item -Weffc++ (C++ only)
+Warn about violations of various style guidelines from Scott Meyers'
+@cite{Effective C++} books.  If you use this option, you should be aware
+that the standard library headers do not obey all of these guidelines;
+you can use @samp{grep -v} to filter out those warnings.
+
+@item -Wno-non-template-friend (C++ only)
+Disable warnings when non-templatized friend functions are declared
+within a template. With the advent of explicit template specification
+support in g++, if the name of the friend is an unqualified-id (ie,
+@samp{friend foo(int)}), the C++ language specification demands that the
+friend declare or define an ordinary, nontemplate function. (Section
+14.5.3). Before g++ implemented explicit specification, unqualified-ids
+could be interpreted as a particular specialization of a templatized
+function. Because this non-conforming behavior is no longer the default
+behavior for g++, @samp{-Wnon-template-friend} allows the compiler to
+check existing code for potential trouble spots, and is on by default.
+This new compiler behavior can also be turned off with the flag
+@samp{-fguiding-decls}, which activates the older, non-specification
+compiler code, or with @samp{-Wno-non-template-friend} which keeps the
+conformant compiler code but disables the helpful warning.
+
+@item -Wold-style-cast (C++ only)
+Warn if an old-style (C-style) cast is used within a C++ program.  The
+new-style casts (@samp{static_cast}, @samp{reinterpret_cast}, and
+@samp{const_cast}) are less vulnerable to unintended effects.
+
+@item -Woverloaded-virtual (C++ only)
+@cindex overloaded virtual fn, warning
+@cindex warning for overloaded virtual fn
+Warn when a derived class function declaration may be an error in
+defining a virtual function.  In a derived class, the
+definitions of virtual functions must match the type signature of a
+virtual function declared in the base class.  With this option, the
+compiler warns when you define a function with the same name as a
+virtual function, but with a type signature that does not match any
+declarations from the base class.
+
+@item -Wno-pmf-conversions (C++ only)
+Disable the diagnostic for converting a bound pointer to member function
+to a plain pointer.
+
+@item -Wsign-promo (C++ only)
+Warn when overload resolution chooses a promotion from unsigned or
+enumeral type to a signed type over a conversion to an unsigned type of
+the same size.  Previous versions of g++ would try to preserve
+unsignedness, but the standard mandates the current behavior.
+
+@item -Wsynth (C++ only)
+@cindex warning for synthesized methods
+@cindex synthesized methods, warning
+Warn when g++'s synthesis behavior does not match that of cfront.  For
+instance:
+
+@smallexample
+struct A @{
+  operator int ();
+  A& operator = (int);
+@};
+
+main ()
+@{
+  A a,b;
+  a = b;
+@}
+@end smallexample
+
+In this example, g++ will synthesize a default @samp{A& operator =
+(const A&);}, while cfront will use the user-defined @samp{operator =}.
 @end table
 
 @node Warning Options
@@ -1423,29 +1514,6 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
-@item -Wreorder (C++ only)
-@cindex reordering, warning
-@cindex warning for reordering of member initializers
-Warn when the order of member initializers given in the code does not
-match the order in which they must be executed.  For instance:
-
-@smallexample
-struct A @{
-  int i;
-  int j;
-  A(): j (0), i (1) @{ @}
-@};
-@end smallexample
-
-Here the compiler will warn that the member initializers for @samp{i}
-and @samp{j} will be rearranged to match the declaration order of the
-members.
-
-@item -Wtemplate-debugging
-@cindex template debugging
-When using templates in a C++ program, warn if debugging is not yet
-fully available (C++ only).
-
 @item -Wunknown-pragmas
 @cindex warning for unknown pragmas
 @cindex unknown pragmas, warning
@@ -1676,61 +1744,9 @@ cases where multiple declaration is valid and changes nothing.
 @item -Wnested-externs
 Warn if an @code{extern} declaration is encountered within an function.
 
-@item -Wno-non-template-friend
-Disable warnings when non-templatized friend functions are declared
-within a template. With the advent of explicit template specification
-support in g++, if the name of the friend is an unqualified-id (ie,
-@samp{friend foo(int)}), the C++ language specification demands that the
-friend declare or define an ordinary, nontemplate function. (Section
-14.5.3). Before g++ implemented explicit specification, unqualified-ids
-could be interpreted as a particular specialization of a templatized
-function. Because this non-conforming behavior is no longer the default
-behavior for g++, @samp{-Wnon-template-friend} allows the compiler to
-check existing code for potential trouble spots, and is on by default.
-This new compiler behavior can also be turned off with the flag
-@samp{-fguiding-decls}, which activates the older, non-specification
-compiler code, or with @samp{-Wno-non-template-friend} which keeps the
-conformant compiler code but disables the helpful warning.
-
 @item -Winline
 Warn if a function can not be inlined, and either it was declared as inline,
 or else the @samp{-finline-functions} option was given.
-
-@item -Wold-style-cast
-Warn if an old-style (C-style) cast is used within a program.
-
-@item -Woverloaded-virtual
-@cindex overloaded virtual fn, warning
-@cindex warning for overloaded virtual fn
-Warn when a derived class function declaration may be an error in
-defining a virtual function (C++ only).  In a derived class, the
-definitions of virtual functions must match the type signature of a
-virtual function declared in the base class.  With this option, the
-compiler warns when you define a function with the same name as a
-virtual function, but with a type signature that does not match any
-declarations from the base class.
-
-@item -Wsynth (C++ only)
-@cindex warning for synthesized methods
-@cindex synthesized methods, warning
-Warn when g++'s synthesis behavior does not match that of cfront.  For
-instance:
-
-@smallexample
-struct A @{
-  operator int ();
-  A& operator = (int);
-@};
-
-main ()
-@{
-  A a,b;
-  a = b;
-@}
-@end smallexample
-
-In this example, g++ will synthesize a default @samp{A& operator =
-(const A&);}, while cfront will use the user-defined @samp{operator =}.
 
 @item -Wlong-long
 Warn if @samp{long long} type is used.  This is default.  To inhibit

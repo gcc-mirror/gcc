@@ -1,3 +1,7 @@
+Mon Mar 29 15:48:39 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* invoke.texi (Invoking G++, C++ Dialect Options): Update.
+
 Mon Mar 29 15:05:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* except.c (start_dynamic_handler): Force jmp_buf address to 
