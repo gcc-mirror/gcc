@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,15 +79,15 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() 
-    : __streambuf_type(), _M_file(NULL), _M_state_cur(), _M_state_beg(), 
-    _M_last_overflowed(false)
+    : __streambuf_type(), _M_file(NULL), _M_state_cur(__state_type()), 
+    _M_state_beg(__state_type()), _M_last_overflowed(false)
     { _M_fcvt = &use_facet<__codecvt_type>(this->getloc()); }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf(int __fd, const char* /*__name*/, ios_base::openmode __mode)
-    : __streambuf_type(), _M_state_cur(), _M_state_beg(),
-    _M_last_overflowed(false)
+    : __streambuf_type(), _M_state_cur(__state_type()), 
+    _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
       _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
       _M_filebuf_init();

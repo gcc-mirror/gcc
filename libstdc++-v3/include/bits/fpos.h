@@ -1,6 +1,6 @@
 // File position object and stream types
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,10 +48,14 @@ namespace std {
     class fpos
     {
     public:
-
       // Types:
       typedef _StateT __state_type;
 
+    private:
+      __state_type 	_M_st;
+      streamoff 	_M_off;
+
+    public:
       __state_type
       state() const  { return _M_st; }
 
@@ -60,37 +64,30 @@ namespace std {
 
       // NB: The standard defines only the implicit copy ctor and the
       // previous two members.  The rest is a "conforming extension".
-      fpos(): _M_st(__state_type()), _M_pos(streamoff()) { }
+      fpos(): _M_st(__state_type()), _M_off(streamoff()) { }
 
-      fpos(streamoff __pos, __state_type __st)
-      : _M_st(__st), _M_pos(__pos) { }
+      fpos(streamoff __off, __state_type __st = __state_type())
+      : _M_st(__st), _M_off(__off) { }
 
-      fpos(streamoff __pos)
-      : _M_st(), _M_pos(__pos) { }
-
-      operator streamoff() const { return _M_pos; }
+      operator streamoff() const { return _M_off; }
 
       fpos& 
-      operator+=(streamoff __off) { _M_pos += __off; return *this; }
+      operator+=(streamoff __off) { _M_off += __off; return *this; }
 
       fpos& 
-      operator-=(streamoff __off) { _M_pos -= __off; return *this; }
+      operator-=(streamoff __off) { _M_off -= __off; return *this; }
 
       bool  
-      operator==(const fpos& __pos2) const { return _M_pos == __pos2._M_pos; }
+      operator==(const fpos& __pos) const { return _M_off == __pos._M_off; }
 
       bool  
-      operator!=(const fpos& __pos2) const { return _M_pos != __pos2._M_pos; }
+      operator!=(const fpos& __pos) const { return _M_off != __pos._M_off; }
       
       streamoff 
-      _M_position() const { return _M_pos; }
+      _M_position() const { return _M_off; }
 
       void
-      _M_position(streamoff __pos)  { _M_pos = __pos; }
-
-    private:
-      __state_type _M_st;
-      streamoff _M_pos;
+      _M_position(streamoff __off)  { _M_off = __off; }
     };
 
   template<typename _State>
