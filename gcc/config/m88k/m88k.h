@@ -115,6 +115,7 @@ extern int null_prologue ();
 extern int integer_ok_for_set ();
 extern int m88k_debugger_offset ();
 
+
 extern void emit_bcnd ();
 extern void expand_block_move ();
 extern void m88k_layout_frame ();
@@ -197,15 +198,15 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.61 $"
+#define VERSION_INFO2   "$Revision: 1.1.1.2.2.2 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.61 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.1.1.2.2.2 $ " __DATE__
 #else
-#define TM_RCS_ID      "$What$"
+#define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
 #else
 #define TM_RCS_ID      "@(#)" __FILE__ " " VERSION_INFO2 " " __DATE__
@@ -221,6 +222,8 @@ extern char * reg_names[];
 
 #define MASK_88100		0x00000001 /* Target m88100 */
 #define MASK_88110		0x00000002 /* Target m88110 */
+#define MASK_88000 		(MASK_88100 | MASK_88110)
+
 #define MASK_OCS_DEBUG_INFO	0x00000004 /* Emit .tdesc info */
 #define MASK_OCS_FRAME_POSITION	0x00000008 /* Debug frame = CFA, not r30 */
 #define MASK_SVR4		0x00000010 /* Target is AT&T System V.4 */
@@ -235,10 +238,10 @@ extern char * reg_names[];
 #define MASK_WARN_PASS_STRUCT	0x00002000 /* Warn about passed structs */
 #define MASK_OPTIMIZE_ARG_AREA	0x00004000 /* Save stack space */
 #define MASK_NO_SERIALIZE_VOLATILE 0x00008000 /* Serialize volatile refs */
-
-#define MASK_88000 (MASK_88100 | MASK_88110)
 #define MASK_EITHER_LARGE_SHIFT	(MASK_TRAP_LARGE_SHIFT | \
 				 MASK_HANDLE_LARGE_SHIFT)
+#define MASK_OMIT_LEAF_FRAME_POINTER 0x00020000 /* omit leaf frame pointers */
+
 
 #define TARGET_88100   		 ((target_flags & MASK_88000) == MASK_88100)
 #define TARGET_88110		 ((target_flags & MASK_88000) == MASK_88110)
@@ -260,6 +263,7 @@ extern char * reg_names[];
 #define TARGET_SERIALIZE_VOLATILE (!(target_flags & MASK_NO_SERIALIZE_VOLATILE))
 
 #define TARGET_EITHER_LARGE_SHIFT (target_flags & MASK_EITHER_LARGE_SHIFT)
+#define TARGET_OMIT_LEAF_FRAME_POINTER (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
 
 /*  Redefined in sysv3.h, sysv4.h, and dgux.h.  */
 #define TARGET_DEFAULT	(MASK_CHECK_ZERO_DIV)
@@ -289,6 +293,7 @@ extern char * reg_names[];
     { "no-optimize-arg-area",		-MASK_OPTIMIZE_ARG_AREA }, \
     { "no-serialize-volatile",		 MASK_NO_SERIALIZE_VOLATILE }, \
     { "serialize-volatile",		-MASK_NO_SERIALIZE_VOLATILE }, \
+    { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, \
     SUBTARGET_SWITCHES \
     /* Default switches */ \
     { "",				 TARGET_DEFAULT }, \
@@ -973,11 +978,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNTYPE,SIZE) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -1136,8 +1140,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED \
-  (frame_pointer_needed \
-   || (write_symbols != NO_DEBUG && !TARGET_OCS_FRAME_POSITION))
+(current_function_varargs 					\
+ || (TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	\
+ || (write_symbols != NO_DEBUG && !TARGET_OCS_FRAME_POSITION))
 
 /* Definitions for register eliminations.
 
