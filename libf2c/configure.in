@@ -35,11 +35,6 @@ dnl This is needed for a multilibbed build in the source tree so
 dnl that install-sh and config.sub get found.
 AC_CONFIG_AUX_DIR($topsrcdir)
 
-# We have to handle 3 cases -- native, cross and canadian cross -- and
-# the extension returned from this macro needs to be treated as a possible
-# scenario and not the only one.
-AC_EXEEXT
-
 # If the language specific compiler does not exist, but the "gcc" directory 
 # does, we do not build anything. Note, $r is set by the top-level Makefile.
 # Note that when we look for the compiler, we search both with and without
@@ -52,7 +47,7 @@ AC_CACHE_VAL(g77_cv_compiler_exists,
 if test -n "$r"; then
   if test -d "$r"/gcc; then
     if test -f "$r"/gcc/$compiler_name \
-       || test -f "$r"/gcc/$compiler_name$EXEEXT; then
+       || test -f "$r"/gcc/$compiler_name.exe; then
       true
     else
       g77_cv_compiler_exists=no
