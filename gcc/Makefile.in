@@ -590,7 +590,7 @@ LANG_EXTRA_HEADERS = @all_headers@
 # subdirectories.
 # ??? The choices here will need some experimenting with.
 FLAGS_TO_PASS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
+	"AR_FLAGS=$(AR_FOR_TARGET_FLAGS)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \

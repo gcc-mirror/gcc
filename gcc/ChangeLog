@@ -1,3 +1,11 @@
+Tue Jun 30 13:11:42 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000/sysv4.h (asm output): add tabs for asm directives.
+
+Tue Jun 30 13:11:42 1998  David Edelsohn <edelsohn@mhpcc.edu>
+
+	* Makefile.in (FLAGS_TO_PASS): Set AR_FLAGS to AR_FOR_TARGET_FLAGS.
+
 Tue Jun 30 08:59:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h (ATTRIBUTE_UNUSED): Use __unused__ not `unused'.
