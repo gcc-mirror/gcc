@@ -87,6 +87,10 @@ extern int target_flags;
 
 #define MASK_INLINE_INT_DIV_THR   0x00001000 /* inline div, max throughput.  */
 
+#define MASK_INLINE_SQRT_LAT      0x00002000 /* inline sqrt, min latency.  */
+
+#define MASK_INLINE_SQRT_THR      0x00004000 /* inline sqrt, max throughput. */
+
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
 #define MASK_EARLY_STOP_BITS 0x00002000 /* tune stop bits for the model.  */
@@ -126,6 +130,13 @@ extern int target_flags;
 
 #define TARGET_INLINE_INT_DIV \
   (target_flags & (MASK_INLINE_INT_DIV_LAT | MASK_INLINE_INT_DIV_THR))
+
+#define TARGET_INLINE_SQRT_LAT (target_flags & MASK_INLINE_SQRT_LAT)
+
+#define TARGET_INLINE_SQRT_THR (target_flags & MASK_INLINE_SQRT_THR)
+
+#define TARGET_INLINE_SQRT \
+  (target_flags & (MASK_INLINE_SQRT_LAT | MASK_INLINE_SQRT_THR))
 
 #define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
 
@@ -186,6 +197,10 @@ extern int ia64_tls_size;
       N_("Generate inline integer division, optimize for latency") },	\
   { "inline-int-divide-max-throughput", MASK_INLINE_INT_DIV_THR,	\
       N_("Generate inline integer division, optimize for throughput") },\
+  { "inline-sqrt-min-latency", MASK_INLINE_SQRT_LAT,			\
+      N_("Generate inline square root, optimize for latency") },	\
+  { "inline-sqrt-max-throughput", MASK_INLINE_SQRT_THR,			\
+      N_("Generate inline square root, optimize for throughput") },     \
   { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
       N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\

@@ -4487,6 +4487,18 @@ ia64_override_options (void)
       target_flags &= ~MASK_INLINE_INT_DIV_THR;
     }
 
+  if (TARGET_INLINE_SQRT_LAT && TARGET_INLINE_SQRT_THR)
+    {
+      warning ("cannot optimize square root for both latency and throughput");
+      target_flags &= ~MASK_INLINE_SQRT_THR;
+    }
+
+  if (TARGET_INLINE_SQRT_LAT)
+    {
+      warning ("not yet implemented: latency-optimized inline square root");
+      target_flags &= ~MASK_INLINE_SQRT_LAT;
+    }
+
   if (ia64_fixed_range_string)
     fix_range (ia64_fixed_range_string);
 
@@ -4896,9 +4908,9 @@ set_src_needs_barrier (rtx x, struct reg_flags flags, int pred, rtx cond)
   return need_barrier;
 }
 
-/* Handle an access to rtx X of type FLAGS using predicate register PRED.
-   Return 1 is this access creates a dependency with an earlier instruction
-   in the same group.  */
+/* Handle an access to rtx X of type FLAGS using predicate register
+   PRED.  Return 1 if this access creates a dependency with an earlier
+   instruction in the same group.  */
 
 static int
 rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
@@ -5124,7 +5136,9 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	case UNSPEC_FR_SPILL:
 	case UNSPEC_FR_RESTORE:
 	case UNSPEC_GETF_EXP:
+	case UNSPEC_SETF_EXP:
         case UNSPEC_ADDP4:
+	case UNSPEC_FR_SQRT_RECIP_APPROX:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
