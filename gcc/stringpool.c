@@ -146,7 +146,7 @@ stringpool_statistics (void)
 {
   ht_dump_statistics (ident_hash);
 }
-
+
 /* Mark an identifier for GC.  */
 
 static int
@@ -193,8 +193,11 @@ gt_pch_n_S (const void *x)
 {
   gt_pch_note_object ((void *)x, (void *)x, &gt_pch_p_S);
 }
-
+
 /* Handle saving and restoring the string pool for PCH.  */
+
+/* SPD is saved in the PCH file and holds the information needed
+   to restore the string pool.  */
 
 struct string_pool_data GTY(())
 {
@@ -204,6 +207,9 @@ struct string_pool_data GTY(())
 };
 
 static GTY(()) struct string_pool_data * spd;
+
+/* Copy HP into the corresponding entry in HT2, and then clear
+   the cpplib parts of HP.  */
 
 static int
 ht_copy_and_clear (cpp_reader *r ATTRIBUTE_UNUSED, hashnode hp, const void *ht2_p)
@@ -227,7 +233,14 @@ ht_copy_and_clear (cpp_reader *r ATTRIBUTE_UNUSED, hashnode hp, const void *ht2_
   return 1;
 }
 
+/* The hash table as it was before gt_pch_save_stringpool was called.  */
+
 static struct ht *saved_ident_hash;
+
+/* The hash table contains pointers to the cpp_hashnode inside the
+   lang_identifier.  The PCH machinery can't handle pointers that refer
+   to the inside of an object, so to save the hash table for PCH the
+   pointers are adjusted and stored in the variable SPD.  */
 
 void
 gt_pch_save_stringpool (void)
@@ -249,6 +262,9 @@ gt_pch_save_stringpool (void)
   ht_forall (ident_hash, ht_copy_and_clear, saved_ident_hash);
 }
 
+/* Return the stringpool to its state before gt_pch_save_stringpool
+   was called.  */
+
 void
 gt_pch_fixup_stringpool (void)
 {
@@ -256,6 +272,9 @@ gt_pch_fixup_stringpool (void)
   ht_destroy (saved_ident_hash);
   saved_ident_hash = 0;
 }
+
+/* A PCH file has been restored, which loaded SPD; fill the real hash table
+   with adjusted pointers from SPD.  */
 
 void
 gt_pch_restore_stringpool (void)
