@@ -404,7 +404,12 @@ build_java_array_type (element_type, length)
     TYPE_ALIGN (t) = TYPE_ALIGN (element_type);
   pop_obstacks ();
 
-  layout_class (t);
+  /* We could layout_class, but that loads java.lang.Object prematurely.
+   * This is called by the parser, and it is a bad idea to do load_class
+   * in the middle of parsing, because of possible circularity problems. */
+  push_super_field (t, object_type_node);
+  layout_type (t);
+
   return t;
 }
 
