@@ -1,3 +1,10 @@
+2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
+        for little endian.
+        ("ashrdi3_no_power"): Disable for little endian.
+	(ashrdi3): Same.
+
 2004-03-07  Richard Henderson  <rth@redhat.com>
 
         * config/alpha/alpha.h (MASK_LONG_DOUBLE_128): New.
