@@ -876,7 +876,8 @@ _cpp_lex_token (pfile, result)
       pfile->state.next_bol = 1;
       pfile->skipping = 0;	/* In case missing #endif.  */
       result->type = CPP_EOF;
-      break;
+      /* Don't do MI optimisation.  */
+      return;
 
     case ' ': case '\t': case '\f': case '\v': case '\0':
       skip_whitespace (pfile, c);
@@ -1032,7 +1033,8 @@ _cpp_lex_token (pfile, result)
 
       /* Save the comment as a token in its own right.  */
       save_comment (pfile, result, comment_start);
-      break;
+      /* Don't do MI optimisation.  */
+      return;
 
     case '<':
       if (pfile->state.angled_headers)
@@ -1272,10 +1274,8 @@ _cpp_lex_token (pfile, result)
       break;
     }
 
-  /* Non-comment tokens invalidate any controlling macros.  */
-  if (result->type != CPP_COMMENT
-      && result->type != CPP_EOF
-      && !pfile->state.in_directive)
+  /* If not in a directive, this token invalidates controlling macros.  */
+  if (!pfile->state.in_directive)
     pfile->mi_state = MI_FAILED;
 }
 
