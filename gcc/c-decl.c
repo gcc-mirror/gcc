@@ -446,6 +446,10 @@ int warn_unknown_pragmas = 0; /* Tri state variable.  */
 
 int warn_sign_compare = -1;
 
+/* Warn about testing equality of floating point numbers. */
+
+int warn_float_equal = 0;
+
 /* Nonzero means warn about use of multicharacter literals.  */
 
 int warn_multichar = 1;
@@ -724,6 +728,10 @@ c_decode_option (argc, argv)
     warn_sign_compare = 1;
   else if (!strcmp (p, "-Wno-sign-compare"))
     warn_sign_compare = 0;
+  else if (!strcmp (p, "-Wfloat-equal"))
+    warn_float_equal = 1;
+  else if (!strcmp (p, "-Wno-float-equal"))
+    warn_float_equal = 0;
   else if (!strcmp (p, "-Wmultichar"))
     warn_multichar = 1;
   else if (!strcmp (p, "-Wno-multichar"))
