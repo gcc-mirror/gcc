@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.7 2001/08/14 08:42:19 bkoz Exp $
+## $Id: Makefile.am,v 1.8 2001/08/28 06:19:33 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -364,18 +364,18 @@ stamp-thread: ${thread_headers} ${thread_builddir}
 ${thread_builddir}/gthr.h:
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
 ${thread_builddir}/gthr-single.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr-single.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
 ${thread_builddir}/gthr-default.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/${glibcpp_thread_h} > $@
+	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
 # One big happy istallation:  just copy everything from the build to the
 # install tree (except for the build stamps).
