@@ -2909,9 +2909,22 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       idx = cp_build_binary_op (TRUNC_DIV_EXPR, 
 				build1 (NOP_EXPR, vtable_index_type, e3),
 				TYPE_SIZE_UNIT (vtable_entry_type));
-      e1 = cp_build_binary_op (BIT_AND_EXPR,
-			       build1 (NOP_EXPR, vtable_index_type, e3),
-			       integer_one_node);
+      if (FUNCTION_BOUNDARY < 16)
+	{
+	  tree delta;
+	  tree pfn;
+	  if (TREE_CODE (function) == PTRMEM_CST)
+	    expand_ptrmemfunc_cst (function, &delta, &pfn, &e1);
+	  else
+	    e1 = build_component_ref (function, pfn_vflag_identifier, 
+					 NULL_TREE, 0);
+	}
+      else
+	{
+	  e1 = cp_build_binary_op (BIT_AND_EXPR,
+				   build1 (NOP_EXPR, vtable_index_type, e3),
+				   integer_one_node);
+	}
 
       vtbl = convert_pointer_to (ptr_type_node, instance);
       delta = cp_convert (ptrdiff_type_node,
@@ -5995,23 +6008,34 @@ get_delta_difference (from, to, force)
    the other components as specified.  */
 
 tree
-build_ptrmemfunc1 (type, delta, pfn)
-     tree type, delta, pfn;
+build_ptrmemfunc1 (type, delta, pfn, flag)
+     tree type, delta, pfn, flag;
 {
   tree u = NULL_TREE;
   tree delta_field;
   tree pfn_field;
+  tree vflag_field;
 
   /* Pull the FIELD_DECLs out of the type.  */
   pfn_field = TYPE_FIELDS (type);
   delta_field = TREE_CHAIN (pfn_field);
+  vflag_field = TREE_CHAIN (delta_field);  /* NULL if no such field.  */
 
   /* Make sure DELTA has the type we want.  */
   delta = convert_and_check (delta_type_node, delta);
 
   /* Finish creating the initializer.  */
-  u = tree_cons (pfn_field, pfn,
-		 build_tree_list (delta_field, delta));
+  if (FUNCTION_BOUNDARY < 16)
+    {
+      u = tree_cons (pfn_field, pfn,
+		     tree_cons (delta_field, delta,
+				build_tree_list (vflag_field, flag)));
+    }
+  else
+    {
+      u = tree_cons (pfn_field, pfn,
+		     build_tree_list (delta_field, delta));
+    }
   u = build (CONSTRUCTOR, type, NULL_TREE, u);
   TREE_CONSTANT (u) = TREE_CONSTANT (pfn) && TREE_CONSTANT (delta);
   TREE_STATIC (u) = (TREE_CONSTANT (u)
@@ -6047,6 +6071,7 @@ build_ptrmemfunc (type, pfn, force)
     {
       tree delta = NULL_TREE;
       tree npfn = NULL_TREE;
+      tree flag = NULL_TREE;
       tree n;
 
       if (!force 
@@ -6075,18 +6100,21 @@ build_ptrmemfunc (type, pfn, force)
 
       /* Obtain the function pointer and the current DELTA.  */
       if (TREE_CODE (pfn) == PTRMEM_CST)
-	expand_ptrmemfunc_cst (pfn, &delta, &npfn);
+	expand_ptrmemfunc_cst (pfn, &delta, &npfn, &flag);
       else
 	{
 	  npfn = build_component_ref (pfn, pfn_identifier, NULL_TREE, 0);
 	  delta = build_component_ref (pfn, delta_identifier, NULL_TREE, 0);
+	  if (FUNCTION_BOUNDARY < 16)
+	    flag = build_component_ref (pfn, pfn_vflag_identifier, 
+					NULL_TREE, 0);
 	}
 
       /* Under the new ABI, the conversion is easy.  Just adjust
 	 the DELTA field.  */
       delta = cp_convert (ptrdiff_type_node, delta);
       delta = cp_build_binary_op (PLUS_EXPR, delta, n);
-      return build_ptrmemfunc1 (to_type, delta, npfn);
+      return build_ptrmemfunc1 (to_type, delta, npfn, flag);
     }
 
   /* Handle null pointer to member function conversions.  */
@@ -6095,7 +6123,8 @@ build_ptrmemfunc (type, pfn, force)
       pfn = build_c_cast (type, integer_zero_node);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node, 
-				pfn);
+				pfn,
+				integer_zero_node);
     }
 
   if (type_unknown_p (pfn))
@@ -6106,7 +6135,7 @@ build_ptrmemfunc (type, pfn, force)
   return make_ptrmem_cst (to_type, fn);
 }
 
-/* Return the DELTA, IDX, PFN, and DELTA2 values for the PTRMEM_CST
+/* Return the DELTA, PFN, and FLAG values for the PTRMEM_CST
    given by CST.
 
    ??? There is no consistency as to the types returned for the above
@@ -6114,10 +6143,11 @@ build_ptrmemfunc (type, pfn, force)
    integer_type_node.  */
 
 void
-expand_ptrmemfunc_cst (cst, delta, pfn)
+expand_ptrmemfunc_cst (cst, delta, pfn, flag)
      tree cst;
      tree *delta;
      tree *pfn;
+     tree *flag;
 {
   tree type = TREE_TYPE (cst);
   tree fn = PTRMEM_CST_MEMBER (cst);
@@ -6135,7 +6165,10 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
   *delta = get_delta_difference (fn_class, ptr_class, /*force=*/0);
 
   if (!DECL_VIRTUAL_P (fn))
-    *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
+    {
+      *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
+      *flag = integer_zero_node;
+    }
   else
     {
       /* If we're dealing with a virtual function, we have to adjust 'this'
@@ -6155,6 +6188,7 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
 			  integer_one_node));
       *pfn = fold (build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type),
 			   *pfn));
+      *flag = integer_one_node;
     }
 }
 
@@ -6169,8 +6203,9 @@ pfn_from_ptrmemfunc (t)
     {
       tree delta;
       tree pfn;
+      tree flag;
       
-      expand_ptrmemfunc_cst (t, &delta, &pfn);
+      expand_ptrmemfunc_cst (t, &delta, &pfn, &flag);
       if (pfn)
 	return pfn;
     }

@@ -1,3 +1,24 @@
+2001-05-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Add CPTI_PFN_VFLAG_IDENTIFIER.
+	(pfn_vflag_identifier): Define.
+	Update comment about layout of pointer functions.
+	(build_ptrmemfunc1): Update prototype.
+	(expand_ptrmemfunc_cst): Update prototype.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	pfn_vflag_identifier.
+	(build_ptrmemfunc_type): When FUNCTION_BOUNDARY < 16, add
+	an extra field to the type.
+	* expr.c (cplus_expand_constant): Pass 'flag' between 
+	expand_ptrmemfunc_cst and build_ptrmemfunc1.
+	* typeck.c (get_member_function_from_ptrfunc): When
+	FUNCTION_BOUNDARY < 16, look at additional field to determine
+	if a pointer-to-member is a real pointer or a vtable offset.
+	(build_ptrmemfunc1): Add new parameter to contain extra field.
+	(build_ptrmemfunc): Pass the extra field around.
+	(expand_ptrmemfunc_cst): Add new parameter to return extra field.
+	(pfn_from_ptrmemfunc): Ignore the extra field.
+
 2001-05-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (flag_inline_trees): Update documentation.

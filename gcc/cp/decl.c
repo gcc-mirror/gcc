@@ -6303,6 +6303,7 @@ initialize_predefined_identifiers ()
     { "nelts", &nelts_identifier, 0 },
     { THIS_NAME, &this_identifier, 0 },
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },
+    { "__vflag", &pfn_vflag_identifier, 0 },
     { "__pfn_or_delta2", &pfn_or_delta2_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
@@ -9156,7 +9157,14 @@ build_ptrmemfunc_type (type)
   fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
   fields[1] = build_decl (FIELD_DECL, delta_identifier,
 			  delta_type_node);
-  finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
+  if (FUNCTION_BOUNDARY < 16)
+    {
+      fields[2] = build_decl (FIELD_DECL, pfn_vflag_identifier,
+			      char_type_node);
+      finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
+    } else {
+      finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
+    }
 
   /* Zap out the name so that the back-end will give us the debugging
      information for this anonymous RECORD_TYPE.  */

@@ -611,6 +611,7 @@ enum cp_tree_index
     CPTI_NELTS_IDENTIFIER,
     CPTI_THIS_IDENTIFIER,
     CPTI_PFN_IDENTIFIER,
+    CPTI_PFN_VFLAG_IDENTIFIER,
     CPTI_PFN_OR_DELTA2_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
     CPTI_STD_IDENTIFIER,
@@ -735,6 +736,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define nelts_identifier                cp_global_trees[CPTI_NELTS_IDENTIFIER]
 #define this_identifier                 cp_global_trees[CPTI_THIS_IDENTIFIER]
 #define pfn_identifier                  cp_global_trees[CPTI_PFN_IDENTIFIER]
+#define pfn_vflag_identifier            cp_global_trees[CPTI_PFN_VFLAG_IDENTIFIER]
 #define pfn_or_delta2_identifier        cp_global_trees[CPTI_PFN_OR_DELTA2_IDENTIFIER]
 #define vptr_identifier                 cp_global_trees[CPTI_VPTR_IDENTIFIER]
 /* The name of the std namespace.  */
@@ -2618,29 +2620,27 @@ extern int flag_new_for_scope;
 /* A pointer-to-function member type looks like:
 
    struct {
-     short __delta;
-     short __index;
-     union {
-       P __pfn;
-       short __delta2;
-     } __pfn_or_delta2;
+     __P __pfn;
+     ptrdiff_t __delta;
    };
 
-   where P is a POINTER_TYPE to a METHOD_TYPE appropriate for the
-   pointer to member.  The fields are used as follows:
+   where P is either a POINTER_TYPE to a METHOD_TYPE appropriate for
+   the pointer to member, or one plus twice the index into the vtable;
+   the two cases are distinguished by looking at the least significant
+   bit of P.  When FUNCTION_BOUNDARY is less than 16 (and so it might
+   happen that the function pointer might naturally have the low bit
+   set), the type is instead
 
-     If __INDEX is -1, then the function to call is non-virtual, and
-     is located at the address given by __PFN.
+   struct {
+     __P __pfn;
+     ptrdiff_t __delta;
+     char __vflag;
+   };
 
-     If __INDEX is zero, then this a NULL pointer-to-member.
+   and __pfn is a pointer to a method when __vflag is zero.
 
-     Otherwise, the function to call is virtual.  Then, __DELTA2 gives
-     the offset from an instance of the object to the virtual function
-     table, and __INDEX - 1 is the index into the vtable to use to
-     find the function.
-
-     The value to use for the THIS parameter is the address of the
-     object plus __DELTA.
+   In all cases, the value to use for the THIS parameter is the
+   address of the object plus __DELTA / 2 .
 
    For example, given:
 
@@ -2657,27 +2657,9 @@ extern int flag_new_for_scope;
 
    the pointer-to-member for `&S::f' looks like:
 
-     { 4, -1, { &f__2B2 } };
+     { &f__2B2, 4, 0 };
 
-   The `4' means that given an `S*' you have to add 4 bytes to get to
-   the address of the `B2*'.  Then, the -1 indicates that this is a
-   non-virtual function.  Of course, `&f__2B2' is the name of that
-   function.
-
-   (Of course, the exact values may differ depending on the mangling
-   scheme, sizes of types, and such.).
-
-   Under the new ABI, we do:
-
-     struct {
-       __P __pfn;
-       ptrdiff_t __delta;
-     };
-
-   (We don't need DELTA2, because the vtable is always the first thing
-   in the object.)  If the function is virtual, then PFN is one plus
-   twice the index into the vtable; otherwise, it is just a pointer to
-   the function.  */
+*/
 
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
@@ -4469,8 +4451,10 @@ extern int cp_type_quals                        PARAMS ((tree));
 extern int cp_has_mutable_p                     PARAMS ((tree));
 extern int at_least_as_qualified_p              PARAMS ((tree, tree));
 extern int more_qualified_p                     PARAMS ((tree, tree));
-extern tree build_ptrmemfunc1                   PARAMS ((tree, tree, tree));
-extern void expand_ptrmemfunc_cst               PARAMS ((tree, tree *, tree *));
+extern tree build_ptrmemfunc1                   PARAMS ((tree, tree, tree, 
+							 tree));
+extern void expand_ptrmemfunc_cst               PARAMS ((tree, tree *, 
+							 tree *, tree *));
 extern tree pfn_from_ptrmemfunc                 PARAMS ((tree));
 extern tree type_after_usual_arithmetic_conversions PARAMS ((tree, tree));
 extern tree composite_pointer_type              PARAMS ((tree, tree, tree, tree,
