@@ -135,7 +135,7 @@ struct sarray {
   short version;
   short ref_count;
   struct sarray* is_copy_of;
-  int capacity;
+  size_t capacity;
 };
 
 struct sarray* sarray_new(int, void* default_element);
