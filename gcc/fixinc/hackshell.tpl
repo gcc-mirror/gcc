@@ -43,70 +43,54 @@ _FOR fix "\n\n" =]
 
     _ENDIF=][=
 
-    #  There are three conditional tests:  select, bypass and test.
+    #  There are four conditional tests:  select, bypass and test c_test.
        They may appear as often as desired.  They must all pass for
        the fix to be applied.  "select" and "bypass" are egrep expressions
        that must each appear (or not appear) in the target file.
        "test" is an arbitrary test program expression that must yield
-       true or false.  It is enclosed in parenthesis to avoid
-       precedence problems.  The output looks like this:
-
-       if ( test -n "`egrep 'find-expr' ${file}`" -a
-                 -z "`egrep 'not-find'  ${file}`" -a
-                 '(' <some-test-expression> ')'
-          ) > /dev/null 2>&1 ; then
-
-    #  =][=
+       true or false.  =][=
 
     _IF select _exist =]
     if ( test [=
         _FOR select " -a \\\n              "
               =]-n [=select _shrstr "#`egrep %s ${file}`"
                             _printf _shstr =][=
-        /select=][=
+        /select=]
+       ) > /dev/null 2>&1 ; then[=
+    _ENDIF =][=
 
-        _IF bypass _exist =][=
+    _IF bypass _exist =]
+    if ( test [=
             _FOR bypass=] -a \
               -z [=bypass _shrstr "#`egrep %s ${file}`"
                             _printf _shstr =][=
-            /bypass=][=
-        _ENDIF=][=
-
-        _IF test _exist=][=
-            _FOR test=] -a \
-              '(' [=test=] ')'[=
-            /test=][=
-        _ENDIF=]
+            /bypass=]
        ) > /dev/null 2>&1 ; then[=
+    _ENDIF =][=
 
-
-    _ELIF test _exist =]
+    _IF test _exist =]
     if ( test [=
         _FOR test " -a \\\n              "
               =]'(' [=test=] ')'[=
-        /test=][=
-
-        _IF bypass _exist=][=
-            _FOR bypass=] -a \
-              -z [=bypass _shrstr "#`egrep %s ${file}`"
-                            _printf _shstr=][=
-            /bypass=][=
-        _ENDIF=]
+        /test=]
        ) > /dev/null 2>&1 ; then[=
+    _ENDIF=][=
 
+    _IF c_test _exist =]
+    if [=
+        _FOR c_test " && \\\n              "
+              =]${FIXTESTS} ${file} [=c_test=][=
+        /c_test=]
+    then[=
 
-    _ELIF bypass _exist =]
-    if ( test [=_FOR bypass " -a \\\n              "
-              =]-z [=bypass _shrstr "#`egrep %s ${file}`"
-                            _printf _shstr=][=/bypass=]
-       ) > /dev/null 2>&1 ; then[=
-
-      _ENDIF=]
+    _ENDIF=][=
+    _IF replace _exist ! =]
     fixlist="${fixlist}
       [=hackname=]"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi [=
+    _ENDIF =][=
 
     _IF sed _exist=][=
         _IF shell _exist =][=
@@ -129,20 +113,50 @@ _FOR fix "\n\n" =]
     if test ! -f ${DESTDIR}/fixinc.tmp
     then continue ; fi [=
 
+    _ELIF c_fix _exist =]
+    ${FIXFIXES} ${file} [=c_fix=] < $infile > ${DESTDIR}/fixinc.tmp[=
+
+    _ELIF replace _exist =][=
+
+      _IF replace _len 0 > =]
+    echo "[=hackname _down=] replacing file ${file}" >&2
+    cat > ${DESTFILE} << '_EOF_'
+[=replace=]
+_EOF_[=
+      _ELSE =]
+    echo "[=hackname _down=] bypassing file ${file}"[=
+      _ENDIF =]
+    continue
+[=
 
     _ELSE=][=
         _ERROR hackname _get "ERROR:  %s has no fixup" _printf=][=
 
-    _ENDIF=]
+    _ENDIF=][=
+
+    _IF replace _exist ! =]
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}[=
+    _ENDIF =][=
 
     #  Close off any opened "if" or "case" statements in reverse order
 
     # =][=
 
-    _IF select _exist test _exist | bypass _exist | =]
-    fi # end of selection 'if'[=
+    _IF c_test _exist =]
+    fi # end of c_test 'if'[=
+    _ENDIF =][=
+
+    _IF test _exist =]
+    fi # end of test expression 'if'[=
+    _ENDIF =][=
+
+    _IF bypass _exist =]
+    fi # end of bypass 'if'[=
+    _ENDIF =][=
+
+    _IF select _exist =]
+    fi # end of select 'if'[=
     _ENDIF =][=
 
     _IF mach _exist=]

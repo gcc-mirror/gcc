@@ -44,7 +44,10 @@ else
     exit 1
   }
 fi
-
+[=_IF PROGRAM _env ! =]
+FIXTESTS=$PWD/fixinc/fixtests
+FIXFIXES=$PWD/fixinc/fixfixes
+[=_ENDIF=]
 # Define what target system we're fixing.
 #
 if test -r ./Makefile; then

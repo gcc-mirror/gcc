@@ -15,12 +15,13 @@ x =]
                                 =] The Free Software Foundation, Inc.
  *
 [=_eval inclhack "# *  " _gpl=]
- *[=_EVAL "re_ct=0" _shell=][=
+ *[=_EVAL "re_ct=0\nmax_mach=0" _shell=][=
 
 _FOR fix =]
  *
- *  Description [=_eval _index 1 + "#%3d -" _printf=] [=hackname _Cap=] fix
+ *  Description of [=hackname _Cap=] fix
  */
+#define [=hackname _up #_FIXIDX + #%-32s _printf=] [=_eval _index=]
 tSCC z[=hackname _cap=]Name[] =
      [=hackname _cap _krstr=];
 /*
@@ -40,10 +41,17 @@ tSCC z[=hackname _cap=]List[] =
 
   _IF mach _exist=]
 tSCC* apz[=hackname _cap=]Machs[] = {[=
+    _EVAL "this_mach=0" _shell =][=
+
     _FOR mach =]
         [=mach _krstr=],[=
+      _EVAL mach _len "this_mach=`expr $this_mach + %d + 5`"
+            _printf _shell =][=
     /mach=]
         (const char*)NULL };[=
+
+    _EVAL "if [ $this_mach -gt $max_mach ] ; then max_mach=$this_mach ; fi"
+          _shell =][=
 
   _ELSE =]
 #define apz[=hackname _cap=]Machs (const char**)NULL[=
@@ -94,24 +102,37 @@ tSCC z[=hackname _cap=]Test[=_eval _index=][] =
     /test =][=
   _ENDIF =][=
 
+  _IF c_test _exist=]
+
+/*
+ *  perform the C function call test
+ */[=
+    _FOR c_test =]
+tSCC z[=hackname _cap=]FTst[=_eval _index=][] = "[=c_test=]";[=
+    /c_test =][=
+  _ENDIF =][=
+
 
 #  Build the array of test descriptions for this fix: =][=
 
-  _IF exesel       _exist
-      select       _exist |
-      bypass       _exist |
-      test         _exist |
+  _IF exesel  _exist
+      select  _exist |
+      bypass  _exist |
+      test    _exist |
+      c_test  _exist |
 =]
 
 #define    [=hackname _up =]_TEST_CT  [=
     _IF exesel _exist =][=
        _eval exesel       _count
       	     bypass       _count +
-      	     test         _count + =][=
+      	     test         _count + 
+      	     c_test       _count + =][=
     _ELSE =][=
        _eval select       _count
       	     bypass       _count +
-      	     test         _count + =][=
+      	     test         _count + 
+      	     c_test       _count + =][=
     _ENDIF =]
 #define    [=hackname _up =]_RE_CT    [=
     _IF exesel _exist =][=
@@ -126,11 +147,15 @@ tSCC z[=hackname _cap=]Test[=_eval _index=][] =
 tTestDesc a[=hackname _cap=]Tests[] = {[=
 
     _FOR test =]
-  { TT_TEST,   z[=hackname _cap=]Test[=_eval _index=],     0 /* unused */ },[=
+  { TT_TEST,     z[=hackname _cap=]Test[=_eval _index=],   0 /* unused */ },[=
     /test =][=
 
+    _FOR c_test =]
+  { TT_FUNCTION, z[=hackname _cap=]FTst[=_eval _index=],   0 /* unused */ },[=
+    /c_test =][=
+
     _FOR bypass =]
-  { TT_NEGREP, z[=hackname _cap=]Bypass[=_eval _index=],   (regex_t*)NULL },[=
+  { TT_NEGREP,   z[=hackname _cap=]Bypass[=_eval _index=], (regex_t*)NULL },[=
     /bypass =][=
 
     #  IF there is an exesel, then use that (those) selection
@@ -138,12 +163,12 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
     =][=
     _IF exesel _exist =][=
       _FOR exesel =]
-  { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=],   (regex_t*)NULL },[=
+  { TT_EGREP,    z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL },[=
       /exesel =][=
 
     _ELSE =][=
       _FOR select =]
-  { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=],   (regex_t*)NULL },[=
+  { TT_EGREP,    z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL },[=
       /select =][=
     _ENDIF =] };[=
   _ELSE =]
@@ -156,11 +181,20 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
  *  Fix Command Arguments for [=hackname _cap=]
  */
 const char* apz[=hackname _cap=]Patch[] = {[=
-    _IF   sed         _exist =] "sed"[=_FOR sed=],
-    "-e", [=sed _krstr=][=/sed=][=
+    _IF   sed         _exist =] "sed"[=
+      _FOR sed=],
+    "-e", [=sed _krstr=][=
+      /sed=],[=
+
     _ELIF shell       _exist =] "sh", "-c",
-    [=shell _krstr=][=
-    _ENDIF=],
+    [=shell _krstr=],[=
+
+    _ELIF c_fix _exist =]"[=c_fix=]",[=
+
+    _ELIF replace _len =]
+[=replace _krstr=],[=
+
+    _ENDIF=]
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *[=
@@ -168,8 +202,16 @@ const char* apz[=hackname _cap=]Patch[] = {[=
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  [=_eval "echo $re_ct" _shell =]
-#define  FIX_COUNT    [=_eval fix _count =]
+[=_EVAL '
+echo "#define REGEX_COUNT          $re_ct"
+echo "#define MACH_LIST_SIZE_LIMIT `expr $max_mach + 128`" ' _shell =][=
+
+#  as of this writing, 49 bytes are needed by the case statement format.
+   We also must allow for the size of the target machine machine name.
+   This allows for a 79 byte machine name.  Better be enough.
+=]
+#define FIX_COUNT            [=_eval fix _count =]
+
 tFixDesc fixDescList[ FIX_COUNT ] = {[=
 
 
@@ -180,7 +222,9 @@ _FOR fix ",\n" =]
        _IF not_machine _exist =]FD_MACH_IFNOT[=
        _ELSE                  =]FD_MACH_ONLY[=
        _ENDIF =][=
-       _IF shell       _exist =] | FD_SHELL_SCRIPT[=
+       _IF    shell    _exist =] | FD_SHELL_SCRIPT[=
+       _ELIF  c_fix    _exist =] | FD_SUBROUTINE[=
+       _ELIF  replace  _exist =] | FD_REPLACEMENT[=
        _ENDIF =],
      a[=hackname _cap=]Tests,   apz[=hackname _cap=]Patch }[=
 
