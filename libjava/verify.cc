@@ -895,9 +895,9 @@ private:
     type *stack;
     // The local variables.
     type *locals;
-    // This is used in subroutines to keep track of which local
-    // variables have been accessed.
-    bool *local_changed;
+    // Flags are used in subroutines to keep track of which local
+    // variables have been accessed.  They are also used after 
+    char *flags;
     // If not 0, then we are in a subroutine.  The value is the PC of
     // the subroutine's entry point.  We can use 0 as an exceptional
     // value because PC=0 can never be a subroutine.
@@ -930,12 +930,21 @@ private:
     // `ret'.  See handle_jsr_insn for more information.
     static const int NO_STACK = -1;
 
+    // This flag indicates that the local was changed in this
+    // subroutine.
+    static const int FLAG_CHANGED = 1;
+    // This is set only on the flags of the state of an instruction
+    // directly following a "jsr".  It indicates that the local
+    // variable was changed by the subroutine corresponding to the
+    // "jsr".
+    static const int FLAG_USED = 2;
+
     state ()
       : this_type ()
     {
       stack = NULL;
       locals = NULL;
-      local_changed = NULL;
+      flags = NULL;
       seen_subrs = NULL;
     }
 
@@ -948,12 +957,12 @@ private:
       for (int i = 0; i < max_stack; ++i)
 	stack[i] = unsuitable_type;
       locals = new type[max_locals];
-      local_changed = (bool *) _Jv_Malloc (sizeof (bool) * max_locals);
+      flags = (char *) _Jv_Malloc (sizeof (char) * max_locals);
       seen_subrs = NULL;
       for (int i = 0; i < max_locals; ++i)
 	{
 	  locals[i] = unsuitable_type;
-	  local_changed[i] = false;
+	  flags[i] = 0;
 	}
       next = INVALID;
       subroutine = 0;
@@ -964,7 +973,7 @@ private:
     {
       stack = new type[max_stack];
       locals = new type[max_locals];
-      local_changed = (bool *) _Jv_Malloc (sizeof (bool) * max_locals);
+      flags = (char *) _Jv_Malloc (sizeof (char) * max_locals);
       seen_subrs = NULL;
       copy (orig, max_stack, max_locals, ret_semantics);
       next = INVALID;
@@ -976,8 +985,8 @@ private:
 	delete[] stack;
       if (locals)
 	delete[] locals;
-      if (local_changed)
-	_Jv_Free (local_changed);
+      if (flags)
+	_Jv_Free (flags);
       clean_subrs ();
     }
 
@@ -1025,12 +1034,29 @@ private:
 	{
 	  // See push_jump_merge to understand this case.
 	  if (ret_semantics)
-	    locals[i] = type (copy->local_changed[i]
-			      ? copy->locals[i]
-			      : unused_by_subroutine_type);
+	    {
+	      if ((copy->flags[i] & FLAG_CHANGED))
+		{
+		  // Changed in the subroutine, so we copy it here.
+		  locals[i] = copy->locals[i];
+		  flags[i] |= FLAG_USED;
+		}
+	      else
+		{
+		  // Not changed in the subroutine.  Use a special
+		  // type so the coming merge will overwrite.
+		  locals[i] = type (unused_by_subroutine_type);
+		}
+	    }
 	  else
 	    locals[i] = copy->locals[i];
-	  local_changed[i] = subroutine ? copy->local_changed[i] : false;
+
+	  // Clear the flag unconditionally just so printouts look ok,
+	  // then only set it if we're still in a subroutine and it
+	  // did in fact change.
+	  flags[i] &= ~FLAG_CHANGED;
+	  if (subroutine && (copy->flags[i] & FLAG_CHANGED) != 0)
+	    flags[i] |= FLAG_CHANGED;
 	}
 
       clean_subrs ();
@@ -1064,7 +1090,7 @@ private:
       // nested subroutines, this information will be merged back into
       // parent by the `ret'.
       for (int i = 0; i < max_locals; ++i)
-	local_changed[i] = false;
+	flags[i] &= ~FLAG_CHANGED;
     }
 
     // Indicate that we've been in this this subroutine.
@@ -1080,7 +1106,8 @@ private:
     // state.  Returns true if the new state was in fact changed.
     // Will throw an exception if the states are not mergeable.
     bool merge (state *state_old, bool ret_semantics,
-		int max_locals, _Jv_BytecodeVerifier *verifier)
+		int max_locals, _Jv_BytecodeVerifier *verifier,
+		bool jsr_semantics = false)
     {
       bool changed = false;
 
@@ -1122,11 +1149,21 @@ private:
 	    }
 	}
 
-      // Merge stacks.  Special handling for NO_STACK case.
+      // Merge stacks, including special handling for NO_STACK case.
+      // If the destination is NO_STACK, this means it is the
+      // instruction following a "jsr" and has not yet been processed
+      // in any way.  In this situation, if we are currently
+      // processing a "ret", then we must *copy* any locals changed in
+      // the subroutine into the current state.  Merging in this
+      // situation is incorrect because the locals we've noted didn't
+      // come real program flow, they are just an artifact of how
+      // we've chosen to handle the post-jsr state.
+      bool copy_in_locals = ret_semantics && stacktop == NO_STACK;
+
       if (state_old->stacktop == NO_STACK)
 	{
-	  // Nothing to do in this case; we don't care about modifying
-	  // the old state.
+	  // This can happen if we're doing a pass-through jsr merge.
+	  // Here we can just ignore the stack.
 	}
       else if (stacktop == NO_STACK)
 	{
@@ -1155,8 +1192,36 @@ private:
 	  // only merge locals which changed in the subroutine.  When
 	  // processing a `ret', STATE_OLD is the state at the point
 	  // of the `ret', and THIS is the state just after the `jsr'.
-	  if (! ret_semantics || state_old->local_changed[i])
+	  // See comment above for explanation of COPY_IN_LOCALS.
+	  if (copy_in_locals)
 	    {
+	      if ((state_old->flags[i] & FLAG_CHANGED) != 0)
+		{
+		  locals[i] = state_old->locals[i];
+		  changed = true;
+		  // There's no point in calling note_variable here,
+		  // since we call it under the same condition before
+		  // the loop ends.
+		}
+	    }
+	  else if (jsr_semantics && (flags[i] & FLAG_USED) != 0)
+	    {
+	      // We are processing the "pass-through" part of a jsr
+	      // statement.  In this particular case, the local was
+	      // changed by the subroutine.  So, we have no work to
+	      // do, as the pre-jsr value does not survive the
+	      // subroutine call.
+	    }
+	  else if (! ret_semantics
+		   || (state_old->flags[i] & FLAG_CHANGED) != 0)
+	    {
+	      // If we have ordinary (not ret) semantics, then we have
+	      // merging flow control, so we merge types.  Or, we have
+	      // jsr pass-through semantics and the type survives the
+	      // subroutine (see above), so again we merge.  Or,
+	      // finally, we have ret semantics and this value did
+	      // change, in which case we merge the change from the
+	      // subroutine into the post-jsr instruction.
 	      if (locals[i].merge (state_old->locals[i], true, verifier))
 		{
 		  // Note that we don't call `note_variable' here.
@@ -1172,8 +1237,14 @@ private:
 
 	  // If we're in a subroutine, we must compute the union of
 	  // all the changed local variables.
-	  if (state_old->local_changed[i])
+	  if ((state_old->flags[i] & FLAG_CHANGED) != 0)
 	    note_variable (i);
+
+	  // If we're returning from a subroutine, we must mark the
+	  // post-jsr instruction with information about what changed,
+	  // so that future "pass-through" jsr merges work correctly.
+	  if (ret_semantics && (state_old->flags[i] & FLAG_CHANGED) != 0)
+	    flags[i] |= FLAG_USED;
 	}
 
       return changed;
@@ -1218,7 +1289,7 @@ private:
     void note_variable (int index)
     {
       if (subroutine > 0)
-	local_changed[index] = true;
+	flags[index] |= FLAG_CHANGED;
     }
 
     // Mark each `new'd object we know of that was allocated at PC as
@@ -1259,7 +1330,10 @@ private:
       for (i = 0; i < max_locals; ++i)
 	{
 	  locals[i].print ();
-	  debug_print (local_changed[i] ? "+" : " ");
+	  if ((flags[i] & FLAG_USED) != 0)
+	    debug_print ((flags[i] & FLAG_CHANGED) ? ">" : "<");
+	  else
+	    debug_print ((flags[i] & FLAG_CHANGED) ? "+" : " ");
 	}
       if (subroutine == 0)
 	debug_print ("   | None");
@@ -1450,8 +1524,14 @@ private:
   // schedule a new PC if there is a change.  If RET_SEMANTICS is
   // true, then we are merging from a `ret' instruction into the
   // instruction after a `jsr'.  This is a special case with its own
-  // modified semantics.
-  void push_jump_merge (int npc, state *nstate, bool ret_semantics = false)
+  // modified semantics.  If JSR_SEMANTICS is true, then we're merging
+  // some type information from a "jsr" instruction to the immediately
+  // following instruction.  In this situation we have to be careful
+  // not to merge local variables whose values are modified by the
+  // subroutine we're about to call.
+  void push_jump_merge (int npc, state *nstate,
+			bool ret_semantics = false,
+			bool jsr_semantics = false)
   {
     bool changed = true;
     if (states[npc] == NULL)
@@ -1478,7 +1558,8 @@ private:
 	states[npc]->print (" To", npc, current_method->max_stack,
 			    current_method->max_locals);
 	changed = states[npc]->merge (nstate, ret_semantics,
-				      current_method->max_locals, this);
+				      current_method->max_locals, this,
+				      jsr_semantics);
 	states[npc]->print ("New", npc, current_method->max_stack,
 			    current_method->max_locals);
       }
@@ -1672,7 +1753,7 @@ private:
     if (PC < current_method->code_length)
       {
 	current_state->stacktop = state::NO_STACK;
-	push_jump_merge (PC, current_state);
+	push_jump_merge (PC, current_state, false, true);
       }
     invalidate_pc ();
   }

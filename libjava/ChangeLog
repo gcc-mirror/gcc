@@ -1,5 +1,19 @@
 2004-01-07  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/13439:
+	* verify.cc (state::merge): Copy changed locals out of subroutine
+	in NO_STACK case.
+	(state::FLAG_CHANGED): New const.
+	(state::FLAG_UNUSED): Likewise.
+	(state::local_changed): Removed.  Updated all users.
+	(state::flags): New field.
+	(state::merge): Added jsr_semantics argument, more logic.
+	(push_jump_merge): Added jsr_semantics argument.
+	(handle_jsr_insn): Set jsr_semantics on push_jump_merge when
+	merging through the jsr instruction.
+
+2004-01-07  Tom Tromey  <tromey@redhat.com>
+
 	* scripts/MakeDefaultMimeTypes.java: Use \n, not
 	backslash-newline.
 
