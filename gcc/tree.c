@@ -4881,6 +4881,7 @@ build_common_tree_nodes_2 (int short_double)
   V2DF_type_node = make_vector (V2DFmode, double_type_node, 0);
   V16QI_type_node = make_vector (V16QImode, intQI_type_node, 0);
   V1DI_type_node = make_vector (V1DImode, intDI_type_node, 0);
+  V4DF_type_node = make_vector (V4DFmode, double_type_node, 0);
 }
 
 /* Returns a vector tree node given a vector mode, the inner type, and

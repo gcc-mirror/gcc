@@ -1,5 +1,10 @@
 2003-07-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* c-common.c (c_common_type_for_mode): Handle V4DFmode.
+	* tree.c: (build_common_tree_nodes_2): Likewise.
+	* tree.h (enum tree_index): Add TI_V4DF_TYPE.
+	(V4DF_type_node): New.
+
 	* c-opts.c (push_command_line_include): Don't free deferred_opts,
 	we'll need it.
 	(finish_options): Reset init_cursor.

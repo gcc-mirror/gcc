@@ -1895,6 +1895,8 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
       return V2SF_type_node;
     case V2DFmode:
       return V2DF_type_node;
+    case V4DFmode:
+      return V4DF_type_node;
     default:
       break;
     }
