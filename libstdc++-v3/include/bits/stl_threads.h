@@ -296,21 +296,62 @@ unsigned _STL_mutex_spin<__inst>::__max = _STL_mutex_spin<__inst>::__low_max;
 template <int __inst>
 unsigned _STL_mutex_spin<__inst>::__last = 0;
 
+// GCC extension begin
+#if defined(__STL_GTHREADS)
+#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+extern __gthread_mutex_t _GLIBCPP_mutex;
+extern __gthread_mutex_t *_GLIBCPP_mutex_address;
+extern __gthread_once_t _GLIBCPP_once;
+extern void _GLIBCPP_mutex_init (void);
+extern void _GLIBCPP_mutex_address_init (void);
+#endif
+#endif
+// GCC extension end
+
 struct _STL_mutex_lock
 {
 // GCC extension begin
 #if defined(__STL_GTHREADS)
+  // The class must be statically initialized with __STL_MUTEX_INITIALIZER.
+#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+  volatile int _M_init_flag;
+  __gthread_once_t _M_once;
+#endif
   __gthread_mutex_t _M_lock;
-  void _M_initialize()
-  {
+  void _M_initialize() {
 #ifdef __GTHREAD_MUTEX_INIT
-  // There should be no code in this path given the usage rules above.
+    // There should be no code in this path given the usage rules above.
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-    __GTHREAD_MUTEX_INIT_FUNCTION (&_M_lock);
+    if (_M_init_flag) return;
+    if (__gthread_once (&_GLIBCPP_once, _GLIBCPP_mutex_init) != 0
+        && __gthread_active_p ())
+      abort ();
+    __gthread_mutex_lock (&_GLIBCPP_mutex);
+    if (!_M_init_flag) {
+	// Even though we have a global lock, we use __gthread_once to be
+	// absolutely certain the _M_lock mutex is only initialized once on
+	// multiprocessor systems.
+	_GLIBCPP_mutex_address = &_M_lock;
+	if (__gthread_once (&_M_once, _GLIBCPP_mutex_address_init) != 0
+	    && __gthread_active_p ())
+	  abort ();
+	_M_init_flag = 1;
+    }
+    __gthread_mutex_unlock (&_GLIBCPP_mutex);
 #endif
   }
-  void _M_acquire_lock() { __gthread_mutex_lock(&_M_lock); }
-  void _M_release_lock() { __gthread_mutex_unlock(&_M_lock); }
+  void _M_acquire_lock() {
+#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+    if (!_M_init_flag) _M_initialize();
+#endif
+    __gthread_mutex_lock(&_M_lock);
+  }
+  void _M_release_lock() {
+#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+    if (!_M_init_flag) _M_initialize();
+#endif
+    __gthread_mutex_unlock(&_M_lock);
+  }
 #else
 // GCC extension end
 #if defined(__STL_SGI_THREADS) || defined(__STL_WIN32THREADS)
@@ -415,8 +456,13 @@ struct _STL_mutex_lock
 #if defined(__STL_GTHREADS)
 #ifdef __GTHREAD_MUTEX_INIT
 #define __STL_MUTEX_INITIALIZER = { __GTHREAD_MUTEX_INIT }
+#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+#ifdef __GTHREAD_MUTEX_INIT_DEFAULT
+#define __STL_MUTEX_INITIALIZER \
+  = { 0, __GTHREAD_ONCE_INIT, __GTHREAD_MUTEX_INIT_DEFAULT }
 #else
-#define __STL_MUTEX_INITIALIZER
+#define __STL_MUTEX_INITIALIZER = { 0, __GTHREAD_ONCE_INIT }
+#endif
 #endif
 #else
 // GCC extension end

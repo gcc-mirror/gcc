@@ -1,3 +1,16 @@
+2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	(Approved by Mark and Benjamin.  Applied by Loren.)
+
+	* src/globals.cc: Define globals _GLIBCPP_mutex_init (),
+	_GLIBCPP_mutex_address_init (), _GLIBCPP_once, _GLIBCPP_mutex
+	and _GLIBCPP_mutex_address.
+	* include/bits/stl_threads.h (_STL_mutex_lock): Use above to provide
+	once-only runtime initialization of _M_lock mutex when
+	__GTHREAD_MUTEX_INIT_FUNCTION is defined.
+	(__STL_MUTEX_INITIALIZER): Provide initializer for _STL_mutex_lock
+	for __GTHREAD_MUTEX_INIT_FUNCTION case.
+
 2001-06-13  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* testsuite/26_numerics/slice_array_assignment.cc (main): New test.
