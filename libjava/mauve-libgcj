@@ -6,17 +6,13 @@ JDK1.1
 !java.beans
 java.lang.Character.classify12
 java.lang.String.hash
+# We don't have the URL function in Class yet.
+!java.lang.Class.ClassTest
 !java.math
 !java.rmi
 !java.security
 !java.sql
 java.text.StringCharacterIterator.iter
-# FIXME: can't enable these until we eliminate compiler bug.
-# (The bug is in javac, not gcj, so this really has to wait until
-# we can compile mauve with gcj -C.)
-# java.text.FieldPosition.Test
-# java.text.ParsePosition.Test
-# java.text.SimpleDateFormat.getAndSet2DigitYearStart
 !java.text.ACIAttribute
 !java.text.AttributedCharacterIterator
 !java.text.resources

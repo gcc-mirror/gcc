@@ -1,3 +1,8 @@
+1999-07-07  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Turn off ClassTest test.  Enable java.text tests
+	again.
+
 1999-07-01  Andrew Haley  <aph@cygnus.com>
 
         * include/i386-signal.h: Replace sigaction () with __sigaction ().
