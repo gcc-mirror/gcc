@@ -4988,6 +4988,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex scalbn
 @findex scalbnf
 @findex scanfnl
+@findex signbit
+@findex signbitf
+@findex signbitl
 @findex significand
 @findex significandf
 @findex significandl
@@ -5082,6 +5085,7 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{j1}, @code{jnf}, @code{jnl}, @code{jn}, @code{mempcpy},
 @code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
 @code{rindex}, @code{scalbf}, @code{scalbl}, @code{scalb},
+@code{signbit}, @code{signbitf}, @code{signbitl},
 @code{significandf}, @code{significandl}, @code{significand},
 @code{sincosf}, @code{sincosl}, @code{sincos}, @code{stpcpy},
 @code{strdup}, @code{strfmon}, @code{y0f}, @code{y0l}, @code{y0},
