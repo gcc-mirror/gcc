@@ -1,3 +1,11 @@
+2004-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 434. bitset::to_string() hard to use [Ready]
+	* include/std/std_bitset.h (to_string): Add three overloads, taking
+	fewer template arguments.
+	* docs/html/ext/howto.html: Add an entry for DR 434.
+	* testsuite/23_containers/bitset/to_string/1.cc: New.
+
 2004-11-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/istream.tcc (getline(basic_istream<>&, basic_string<>&,
