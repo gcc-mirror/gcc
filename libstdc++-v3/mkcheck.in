@@ -124,8 +124,10 @@ if [ ! -x "$TEST_DIR/printnow" ]; then
 fi
 
 # Remove old executables.
-rm -rf "$TEST_DIR/*exe"
-rm -rf "$TEST_DIR/core" "$TEST_DIR/*core"
+rm -rf "$TEST_DIR"/*exe
+
+# Remove old core files (which now get left in cwd, not $TEST_DIR).
+rm -rf ./*core
 
 # Copy over the data files for filebufs in read-only mode
 cp $SRC_DIR/testsuite/27_io/*.txt $TEST_DIR
@@ -202,16 +204,21 @@ do
         # Actually run the executable and time it . . .
         TIMEFORMAT='timemark %R'
         E_TIME_TEXT="$(exec 2>&1; time $ST_NAME)"
+	E_ABNORMAL_TERMINATION=$?
         E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
         # joining those two commands does not work due to quoting problems:
         #E_TIME="$(exec 2>&1; time $ST_NAME | awk '{print $2}')"
         # this will work as a fallback on certain systems...?
         #E_TIME=$(exec 2>&1; time $ST_NAME | cut -d ' ' -f 2)
  
-	if [ -f core ]; then
-	    ST_EXEC='-'
-	    echo "st_fail" | awk '{printf("\t%s\n", $1)}'
-	    rm core
+       if [ "$E_ABNORMAL_TERMINATION" -ne 0 ]; then
+            ST_EXEC='-'
+            echo "st_fail" | awk '{printf("\t%s\n", $1)}'
+	    rm -f ./*core
+	    # sometimes you want to save all core files for review:
+	    #mv ./core $ST_NAME.core
+	    # sometimes the OS names core files as programname.core:
+	    #mv ./*core $ST_NAME.core
 	else
 	    # XXX this should probably be a function? 
 
@@ -258,13 +265,17 @@ do
 			rm $DIFF_FILE
 		    done
 		else
-		    # the file does no output, and didn't core, so
-		    # assume passed.
+		    # the file does no output, and didn't abnormally
+		    # terminate, so assume passed.
 		    ST_EXEC="+"
 		    echo "st_pass" | awk '{printf("\t%s\t", $1)}'
 		fi
 	    fi
 	rm "$ST_NAME"
+	# sometimes you want to save all failing exe files for review:
+	#if [ "$ST_EXEC" = "+" ]; then
+	#    rm "$ST_NAME"
+	#fi
     else
         # the file did not compile. Write out compilation info to the log file.
 	echo "$CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME -o $ST_NAME" \
