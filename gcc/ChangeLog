@@ -1,5 +1,10 @@
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cpplib.c (T_ELIF): Move to STDC89, not that it matters.
+        (_cpp_handle_directive): Suggest not using #elif with -Wtraditional.
+
+2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * cpphash.h (struct cpp_reader): New saved_flags.
         * cppmacro.c (cpp_get_token): Use saved_flags to remember
         to avoid a paste after a pasted token.

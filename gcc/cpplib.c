@@ -128,7 +128,7 @@ D(else,		T_ELSE,		KANDR,     COND)	   /*   9863 */ \
 D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND) /*   9675 */ \
 D(undef,	T_UNDEF,	KANDR,     IN_I)	   /*   4837 */ \
 D(line,		T_LINE,		KANDR,     IN_I)	   /*   2465 */ \
-D(elif,		T_ELIF,		KANDR,     COND)	   /*    610 */ \
+D(elif,		T_ELIF,		STDC89,    COND)	   /*    610 */ \
 D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
 D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
 D(warning,	T_WARNING,	EXTENSION, 0)		   /*     22 */ \
@@ -321,7 +321,10 @@ _cpp_handle_directive (pfile, indented)
 	     conditional blocks.  */
 	  if (CPP_WTRADITIONAL (pfile))
 	    {
-	      if (indented && dir->origin == KANDR)
+	      if (dir == &dtable[T_ELIF])
+		cpp_warning (pfile,
+			     "suggest not using #elif in traditional C");
+	      else if (indented && dir->origin == KANDR)
 		cpp_warning (pfile,
 			     "traditional C ignores #%s with the # indented",
 			     dir->name);
