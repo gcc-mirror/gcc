@@ -1,3 +1,8 @@
+Sun Sep 28 01:55:04 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
+
+	* flow.c (print_rtl_with_bb): Cast alloca return values for variables
+	start and end.
+
 Sun Sep 28 01:05:16 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* frame.c: Remove last change.
