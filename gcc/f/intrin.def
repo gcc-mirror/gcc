@@ -1377,7 +1377,7 @@ DEFSPEC (DATE_AND_TIME,
     "DATE_AND_TIME",
     FALSE,
     FFEINTRIN_familyF90,
-    FFEINTRIN_impNONE
+    FFEINTRIN_impDATE_AND_TIME
   )
 DEFSPEC (DBESJ0,
     "DBESJ0",
@@ -3233,6 +3233,7 @@ DEFIMP	(CPU_TIME,	"CPU_TIME",	SECOND,,,	"--:-:Seconds=R*w")
 DEFIMP	(CTIME_func,	"CTIME_func",	CTIME,,,	"A1*:-:STime=I*")
 DEFIMP	(CTIME_subr,	"CTIME_subr",	CTIME,,,	"--:-:Result=A1w,STime=I*")
 DEFIMP	(DATE,		"DATE",		DATE,,,		"--:-:Date=A1w")
+DEFIMP	(DATE_AND_TIME,	"DATE_AND_TIME", DATE_AND_TIME,,, "--:-:Date=A1w,Time=?A1w,Zone=?A1w,Values=?I1(8)w")
 DEFIMP	(DBESJ0,	"DBESJ0",	L_BESJ0,,,	"R2:-:X=R2")
 DEFIMP	(DBESJ1,	"DBESJ1",	L_BESJ1,,,	"R2:-:X=R2")
 DEFIMP	(DBESJN,	"DBESJN",	L_BESJN,,,	"R2:-:N=I*,X=R2")
@@ -3336,7 +3337,7 @@ DEFIMP	(SYMLNK_func,	"SYMLNK_func",	SYMLNK,,,	"I1:-:Path1=A1,Path2=A1")
 DEFIMP	(SYMLNK_subr,	"SYMLNK_subr",	SYMLNK,,,	"--:-:Path1=A1,Path2=A1,Status=?I1w")
 DEFIMP	(SYSTEM_func,	"SYSTEM_func",	SYSTEM,SYSTEM,SYSTEM,"I1:-:Command=A1")
 DEFIMP	(SYSTEM_subr,	"SYSTEM_subr",	SYSTEM,,,	"--:-:Command=A1,Status=?I1w")
-DEFIMP	(SYSTEM_CLOCK,	"SYSTEM_CLOCK",	SYSTEM_CLOCK,,,	"--:-:Count=I1w,Rate=I1w,Max=I1w")
+DEFIMP	(SYSTEM_CLOCK,	"SYSTEM_CLOCK",	SYSTEM_CLOCK,,,	"--:-:Count=I1w,Rate=?I1w,Max=?I1w")
 DEFIMP	(TIME8,		"TIME8",	TIME,,,		"I2:-:")
 DEFIMP	(TIME_unix,	"TIME_unix",	TIME,,,		"I1:-:")
 DEFIMP	(TIME_vxt,	"TIME_vxt",	VXTTIME,,,	"--:-:Time=A1[8]w")

@@ -1,3 +1,16 @@
+1998-07-05  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in: Add entry for DATE_AND_TIME.
+
+	* intrin.def: Add implementation for DATE_AND_TIME.  Make second
+	and third args of SYSTEM_CLOCK optional.
+
+	* com.c (ffecom_expr_intrinsic_): New case for DATE_AND_TIME.
+
+	* com-rt.def (FFECOM_gfrtSYSTEM_CLOCK): Call G77_system_clock_0,
+	not system_clock_.
+	(FFECOM_gfrtDATE_AND_TIME): New DEFGFRT.
+
 Wed Jul  1 11:19:13 1998  Craig Burley  <burley@gnu.org>
 
 	Fix 980701-1.f (which was producing "unaligned trap"
