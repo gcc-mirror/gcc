@@ -1569,10 +1569,11 @@ build_module_descriptor ()
 
     TREE_PUBLIC (current_function_decl) = 1;
 
+    function_decl = current_function_decl;
     finish_function (0);
 
     /* Return the name of the constructor function.  */
-    return IDENTIFIER_POINTER (init_function_name);
+    return XSTR (XEXP (DECL_RTL (function_decl), 0), 0);
   }
 }
 
@@ -1787,6 +1788,7 @@ build_selector_translation_table ()
       initlist = build_constructor (TREE_TYPE (UOBJC_SELECTOR_TABLE_decl),
 				    nreverse (initlist));
       finish_decl (UOBJC_SELECTOR_TABLE_decl, initlist, NULLT);
+      current_function_decl = NULLT;
     }
 }
 
