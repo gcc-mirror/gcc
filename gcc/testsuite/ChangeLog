@@ -1,3 +1,8 @@
+2000-09-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-ext-3.c: Test %#b and %#h as formats that should
+	be accepted.
+
 2000-09-07  Catherine Moore  <clm@redhat.com>
 
         * gcc.c-torture/execute/unroll-1.c: New test.

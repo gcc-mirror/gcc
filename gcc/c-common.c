@@ -1420,8 +1420,7 @@ static const format_char_info scan_char_table[] =
 static format_char_info time_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "ABZa",		0, STD_C89, NOLENGTHS, "^#" },
-  { "b",		0, STD_C89, NOLENGTHS, "^" },
+  { "ABZab",		0, STD_C89, NOLENGTHS, "^#" },
   { "cx", 		0, STD_C89, NOLENGTHS, "3E" },
   { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow" },
   { "j",		0, STD_C89, NOLENGTHS, "-_0Oow" },
@@ -1437,7 +1436,7 @@ static format_char_info time_char_table[] =
   { "FRTnrt",		0, STD_C99, NOLENGTHS, "" },
   { "g", 		0, STD_C99, NOLENGTHS, "2Oo-_0w" },
   { "G",		0, STD_C99, NOLENGTHS, "-_0Oow" },
-  { "h",		0, STD_C99, NOLENGTHS, "^" },
+  { "h",		0, STD_C99, NOLENGTHS, "^#" },
   { "z",		0, STD_C99, NOLENGTHS, "Oo" },
   /* GNU conversion specifiers.  */
   { "kls",		0, STD_EXT, NOLENGTHS, "-_0Ow" },

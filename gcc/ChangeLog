@@ -1,3 +1,7 @@
+2000-09-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (time_char_table): Allow %#b and %#h.
+
 2000-09-07 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reorg.c (find_end_label): If the basic block reorder pass moves the
