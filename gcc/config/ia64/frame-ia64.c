@@ -1376,27 +1376,38 @@ __build_ia64_frame_state (pc, frame, bsp, sp, pc_base_ptr)
   return unw_info_ptr;
 }
 
-/* Given an unwind info pointer, return the personailty routine.  */
+/* Given an unwind info pointer, return the personality routine.  */
 void *
 __get_personality (ptr)
      unwind_info_ptr *ptr;
 {
   void **p;
+
+  /* There is a personality routine only if one of the EHANDLER or UHANDLER
+     bits is set.  */
+  if (! (IA64_UNW_HDR_FLAGS (ptr->header)
+	 & (IA64_UNW_EHANDLER|IA64_UNW_UHANDLER)))
+    return 0;
+
   p = (void **) (ptr->unwind_descriptors
 		 + IA64_UNW_HDR_LENGTH (ptr->header) * 8);
   return *p;
 }
 
+/* Given an unwind info pointer, return the exception table.  */
 void *
 __get_except_table (ptr)
      unwind_info_ptr *ptr;
 {
-  void **p, *table;
-  p = (void **) (ptr->unwind_descriptors
-		 + IA64_UNW_HDR_LENGTH (ptr->header) * 8);
-  /* If there is no personality, there is no handler data.  */
-  if (*p == 0)
+  void *table;
+
+  /* If there is no personality, there is no handler data.
+     There is a personality routine only if one of the EHANDLER or UHANDLER
+     bits is set.  */
+  if (! (IA64_UNW_HDR_FLAGS (ptr->header)
+	 & (IA64_UNW_EHANDLER|IA64_UNW_UHANDLER)))
     return 0;
+
   table = (void *) (ptr->unwind_descriptors
 		    + IA64_UNW_HDR_LENGTH (ptr->header) * 8 + 8);
   return table;

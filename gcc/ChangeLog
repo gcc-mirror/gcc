@@ -1,3 +1,10 @@
+2000-08-23  Jim Wilson  <wilson@cygnus.com>
+
+	* frame.h (IA64_UNW_EHANDLER, IA64_UNW_UHANDLER): New.
+	* config/ia64/frame-ia64.c (__get_personality): Return zero if neither
+	EHANDLER nor UHANDLER bit is set.
+	(__get_except_table): Likewise.
+
 2000-08-23  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/lib1funcs.asm: Replace upper case condition codes

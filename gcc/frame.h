@@ -267,6 +267,10 @@ typedef struct unwind_info_ptr
 #define IA64_UNW_HDR_FLAGS(x)	(((x) >> 32) & 0xffffUL)
 #define IA64_UNW_HDR_VERSION(x)	(((x) >> 48) & 0xffffUL)
 
+/* Header flag bits, after extraction by IA64_UNW_HDR_FLAGS.  */
+#define IA64_UNW_EHANDLER	0x1
+#define IA64_UNW_UHANDLER	0x2
+
 extern unwind_info_ptr *__build_ia64_frame_state (unsigned char *, 
 						  ia64_frame_state *,
 						  void *, void *,
