@@ -2326,6 +2326,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (GET_CODE (nextbody) == ADDR_VEC
 	      || GET_CODE (nextbody) == ADDR_DIFF_VEC)
 	    {
+#if defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC)
+	      /* In this case, the case vector is being moved by the
+		 target, so don't output the label at all.  Leave that
+		 to the back end macros.  */
+#else
 	      if (! JUMP_TABLES_IN_TEXT_SECTION)
 		{
 		  readonly_data_section ();
@@ -2343,6 +2348,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 				     NEXT_INSN (insn));
 #else
 	      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
+#endif
 #endif
 	      break;
 	    }
@@ -2397,6 +2403,24 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		app_on = 0;
 	      }
 
+#if defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC)
+	    if (GET_CODE (body) == ADDR_VEC)
+	      {
+#ifdef ASM_OUTPUT_ADDR_VEC
+		ASM_OUTPUT_ADDR_VEC (PREV_INSN (insn), body);
+#else
+		abort();
+#endif
+	      }
+	    else
+	      {
+#ifdef ASM_OUTPUT_ADDR_DIFF_VEC
+		ASM_OUTPUT_ADDR_DIFF_VEC (PREV_INSN (insn), body);
+#else
+		abort();
+#endif
+	      }
+#else
 	    vlen = XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC);
 	    for (idx = 0; idx < vlen; idx++)
 	      {
@@ -2426,6 +2450,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    ASM_OUTPUT_CASE_END (file,
 				 CODE_LABEL_NUMBER (PREV_INSN (insn)),
 				 insn);
+#endif
 #endif
 
 	    function_section (current_function_decl);

@@ -111,6 +111,9 @@ static void build_big_number	PROTO((FILE *, int, char *));
 static int function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int, int,
 				       int *, int *));
+static void sparc_output_addr_vec PROTO((rtx));
+static void sparc_output_addr_diff_vec PROTO((rtx));
+static void sparc_output_deferred_case_vectors PROTO((void));
 
 #ifdef DWARF2_DEBUGGING_INFO
 extern char *dwarf2out_cfi_label ();
@@ -347,14 +350,6 @@ v9_regcmp_p (code)
 	  || code == LE || code == GT);
 }
 
-/* 32 bit registers are zero extended so only zero/non-zero comparisons
-   work.  */
-int
-v8plus_regcmp_p (code)
-     enum rtx_code code;
-{
-  return (code == EQ || code == NE);
-}
 
 /* Operand constraints.  */
 
@@ -637,56 +632,6 @@ reg_or_nonsymb_mem_operand (op, mode)
 }
 
 int
-sparc_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (register_operand (op, mode)
-      || GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
-  if (GET_CODE (op) == CONST_INT)
-    return SMALL_INT (op);
-  if (GET_MODE (op) != mode)
-    return 0;
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  op = XEXP (op, 0);
-  if (GET_CODE (op) == LO_SUM)
-    return (GET_CODE (XEXP (op, 0)) == REG
-	    && symbolic_operand (XEXP (op, 1), Pmode));
-  return memory_address_p (mode, op);
-}
-
-int
-move_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (mode == DImode && arith_double_operand (op, mode))
-    return 1;
-  if (register_operand (op, mode)
-      || GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
-  if (GET_CODE (op) == CONST_INT)
-    return SMALL_INT (op) || SPARC_SETHI_P (INTVAL (op));
-
-  if (GET_MODE (op) != mode)
-    return 0;
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (GET_CODE (op) != MEM)
-    return 0;
-  op = XEXP (op, 0);
-  if (GET_CODE (op) == LO_SUM)
-    return (register_operand (XEXP (op, 0), Pmode)
-	    && CONSTANT_P (XEXP (op, 1)));
-  return memory_address_p (mode, op);
-}
-
-int
 splittable_symbolic_memory_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
@@ -773,17 +718,6 @@ v9_regcmp_op (op, mode)
     return 0;
 
   return v9_regcmp_p (code);
-}
-
-/* ??? Same as eq_or_neq.  */
-int
-v8plus_regcmp_op (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  enum rtx_code code = GET_CODE (op);
-
-  return (code == EQ || code == NE);
 }
 
 /* Return 1 if this is a SIGN_EXTEND or ZERO_EXTEND operation.  */
@@ -963,6 +897,18 @@ small_int (op, mode)
 	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
+int
+small_int_or_double (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return ((GET_CODE (op) == CONST_INT && SMALL_INT (op))
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
+}
+
 /* Recognize operand values for the umul instruction.  That instruction sign
    extends immediate values just like all other sparc instructions, but
    interprets the extended result as an unsigned number.  */
@@ -976,7 +922,8 @@ uns_small_int (op, mode)
   /* All allowed constants will fit a CONST_INT.  */
   return ((GET_CODE (op) == CONST_INT
 	   && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
-	       || (INTVAL (op) >= 0xFFFFF000 && INTVAL (op) < 0x100000000L)))
+	       || (INTVAL (op) >= 0xFFFFF000
+                   && INTVAL (op) < 0x100000000)))
 	  || GET_CODE (op) == CONSTANT_P_RTX);
 #else
   return (((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
@@ -1003,7 +950,792 @@ clobbered_register (op, mode)
 {
   return (GET_CODE (op) == REG && call_used_regs[REGNO (op)]);
 }
+
+/* Return 1 if OP is const0_rtx, used for TARGET_LIVE_G0 insns.  */
+
+int
+zero_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (op == const0_rtx || GET_CODE (op) == CONSTANT_P_RTX);
+}
+
+/* Return 1 if OP is a valid operand for the source of a move insn.  */
+
+int
+input_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* If both modes are non-void they must be the same.  */
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  /* Allow any one instruction integer constant, and all CONST_INT
+     variants when we are working in DImode and !arch64.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_CODE (op) == CONST_INT
+      && ((SPARC_SETHI_P (INTVAL (op))
+	   && (! TARGET_ARCH64
+	       || (INTVAL (op) >= 0)
+	       || mode == SImode))
+	  || SPARC_SIMM13_P (INTVAL (op))
+	  || (mode == DImode
+	      && ! TARGET_ARCH64)))
+    return 1;
+
+  /* Always match this.  */
+  if (GET_CODE (op) == CONSTANT_P_RTX)
+    return 1;
+
+  /* If !arch64 and this is a DImode const, allow it so that
+     the splits can be generated.  */
+  if (! TARGET_ARCH64
+      && mode == DImode
+      && GET_CODE (op) == CONST_DOUBLE)
+    return 1;
+
+  if (register_operand (op, mode))
+    return 1;
+
+  /* If this is a SUBREG, look inside so that we handle
+     paradoxical ones.  */
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  /* Check for valid MEM forms.  */
+  if (GET_CODE (op) == MEM)
+    {
+      rtx inside = XEXP (op, 0);
+
+      if (GET_CODE (inside) == LO_SUM)
+	return (register_operand (XEXP (inside, 0), Pmode)
+		&& CONSTANT_P (XEXP (inside, 1)));
+      return memory_address_p (mode, inside);
+    }
+
+  return 0;
+}
+
 
+/* We know it can't be done in one insn when we get here,
+   the movsi expander guarentees this.  */
+void
+sparc_emit_set_const32 (op0, op1)
+     rtx op0;
+     rtx op1;
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx temp;
+
+  if (GET_CODE (op1) == CONST_INT)
+    {
+      int value = INTVAL (op1);
+
+      if (SPARC_SETHI_P (value)
+	  || SPARC_SIMM13_P (value))
+	abort ();
+    }
+
+  /* Full 2-insn decomposition is needed.  */
+  if (reload_in_progress || reload_completed)
+    temp = op0;
+  else
+    temp = gen_reg_rtx (mode);
+
+  emit_insn (gen_rtx_SET (mode,
+			  temp,
+			  gen_rtx_HIGH (mode,
+					op1)));
+  emit_insn (gen_rtx_SET (mode,
+			  op0,
+			  gen_rtx_LO_SUM (mode,
+					  temp,
+					  op1)));
+}
+
+
+/* Sparc-v9 code-model support. */
+void
+sparc_emit_set_symbolic_const64 (op0, op1, temp1)
+     rtx op0;
+     rtx op1;
+     rtx temp1;
+{
+  switch (sparc_cmodel)
+    {
+    case CM_MEDLOW:
+      /* The range spanned by all instructions in the object is less
+	 than 2^31 bytes (2GB) and the distance from any instruction
+	 to the location of the label _GLOBAL_OFFSET_TABLE_ is less
+	 than 2^31 bytes (2GB).
+
+	 The executable must be in the low 4TB of the virtual address
+	 space.
+
+	 sethi	%hi(symbol), %temp
+	 or	%temp, %lo(symbol), %reg  */
+      emit_insn (gen_rtx_SET (DImode, temp1, gen_rtx_HIGH (DImode, op1)));
+      emit_insn (gen_rtx_SET (DImode, op0, gen_rtx_LO_SUM (DImode, temp1, op1)));
+      break;
+
+    case CM_MEDMID:
+      /* The range spanned by all instructions in the object is less
+	 than 2^31 bytes (2GB) and the distance from any instruction
+	 to the location of the label _GLOBAL_OFFSET_TABLE_ is less
+	 than 2^31 bytes (2GB).
+
+	 The executable must be in the low 16TB of the virtual address
+	 space.
+
+	 sethi	%h44(symbol), %temp1
+	 or	%temp1, %m44(symbol), %temp2
+	 sllx	%temp2, 12, %temp3
+	 or	%temp3, %l44(symbol), %reg  */
+      emit_insn (gen_seth44 (op0, op1));
+      emit_insn (gen_setm44 (op0, op0, op1));
+      emit_insn (gen_rtx_SET (DImode, temp1,
+			      gen_rtx_ASHIFT (DImode, op0, GEN_INT (12))));
+      emit_insn (gen_setl44 (op0, temp1, op1));
+      break;
+
+    case CM_MEDANY:
+      /* The range spanned by all instructions in the object is less
+	 than 2^31 bytes (2GB) and the distance from any instruction
+	 to the location of the label _GLOBAL_OFFSET_TABLE_ is less
+	 than 2^31 bytes (2GB).
+
+	 The executable can be placed anywhere in the virtual address
+	 space.
+
+	 sethi	%hh(symbol), %temp1
+	 sethi	%lm(symbol), %temp2
+	 or	%temp1, %hm(symbol), %temp3
+	 or	%temp2, %lo(symbol), %temp4
+	 sllx	%temp3, 32, %temp5
+	 or	%temp4, %temp5, %reg  */
+
+      /* Getting this right wrt. reloading is really tricky.
+	 We _MUST_ have a seperate temporary at this point,
+	 if we don't barf immediately instead of generating
+	 incorrect code.  */
+      if (temp1 == op0)
+	abort ();
+
+      emit_insn (gen_sethh (op0, op1));
+      emit_insn (gen_setlm (temp1, op1));
+      emit_insn (gen_sethm (op0, op0, op1));
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_ASHIFT (DImode, op0, GEN_INT (32))));
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_PLUS (DImode, op0, temp1)));
+      emit_insn (gen_setlo (op0, op0, op1));
+      break;
+
+    case CM_EMBMEDANY:
+      /* Old old old backwards compatibility kruft here.
+	 Essentially it is MEDLOW with a fixed 64-bit
+	 virtual base added to all data segment addresses.
+	 Text-segment stuff is computed like MEDANY, we can't
+	 reuse the code above because the relocation knobs
+	 look different.
+
+	 Data segment:	sethi	%hi(symbol), %temp1
+			or	%temp1, %lo(symbol), %temp2
+			add	%temp2, EMBMEDANY_BASE_REG, %reg
+
+	 Text segment:	sethi	%uhi(symbol), %temp1
+			sethi	%hi(symbol), %temp2
+			or	%temp1, %ulo(symbol), %temp3
+			or	%temp2, %lo(symbol), %temp4
+			sllx	%temp3, 32, %temp5
+			or	%temp4, %temp5, %reg  */
+      if (data_segment_operand (op1, GET_MODE (op1)))
+	{
+	  emit_insn (gen_embmedany_sethi (temp1, op1));
+	  emit_insn (gen_embmedany_brsum (op0, temp1));
+	  emit_insn (gen_embmedany_losum (op0, op0, op1));
+	}
+      else
+	{
+	  /* Getting this right wrt. reloading is really tricky.
+	     We _MUST_ have a seperate temporary at this point,
+	     if we don't barf immediately instead of generating
+	     incorrect code.  */
+	  if (temp1 == op0)
+	    abort ();
+
+	  emit_insn (gen_embmedany_textuhi (op0, op1));
+	  emit_insn (gen_embmedany_texthi  (temp1, op1));
+	  emit_insn (gen_embmedany_textulo (op0, op0, op1));
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_ASHIFT (DImode, op0, GEN_INT (32))));
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_PLUS (DImode, op0, temp1)));
+	  emit_insn (gen_embmedany_textlo  (op0, op0, op1));
+	}
+      break;
+
+    default:
+      abort();
+    }
+}
+
+/* This avoids problems when cross compiling. */
+static rtx
+safe_constDI(val)
+     HOST_WIDE_INT val;
+{
+#if HOST_BITS_PER_WIDE_INT != 64
+  if (val & 0x80000000)
+    return immed_double_const (val, 0, DImode);
+  else
+#endif
+    return GEN_INT (val);
+}
+
+/* Worker routines for 64-bit constant formation on arch64.
+   One of the key things to be doing in these emissions is
+   to create as many temp REGs as possible.  This makes it
+   possible for half-built constants to be used later when
+   such values are similar to something required later on.
+   Without doing this, the optimizer cannot see such
+   opportunities.  */
+static void
+sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
+  rtx op0;
+  rtx temp;
+  unsigned int low_bits;
+  int is_neg;
+{
+  unsigned int high_bits;
+
+  if (is_neg)
+    high_bits = ~low_bits;
+  else
+    high_bits = low_bits;
+
+  emit_insn (gen_rtx_SET (DImode, temp,
+			  gen_rtx_HIGH (DImode,
+					safe_constDI (high_bits))));
+  if (!is_neg)
+    {
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_LO_SUM (DImode, temp,
+					      safe_constDI (high_bits))));
+    }
+  else
+    { /* as opposed to, say, tricky dick... */
+      rtx tricky_bits = safe_constDI (-0x400 | (low_bits & 0x3ff));
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_XOR (DImode, temp, tricky_bits)));
+    }
+}
+
+static void
+sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
+  rtx op0;
+  rtx temp;
+  unsigned int high_bits;
+  unsigned int low_immediate;
+  int shift_count;
+{
+  rtx temp2 = op0;
+
+  if ((high_bits & 0xfffffc00) != 0)
+    {
+      emit_insn (gen_rtx_SET (DImode, temp,
+			      gen_rtx_HIGH (DImode,
+					    safe_constDI (high_bits))));
+      if ((high_bits & ~0xfffffc00) != 0)
+	emit_insn (gen_rtx_SET (DImode, op0,
+				gen_rtx_LO_SUM (DImode, temp,
+						safe_constDI (high_bits))));
+      else
+	temp2 = temp;
+    }
+  else
+    {
+      emit_insn (gen_rtx_SET (DImode, temp, safe_constDI (high_bits)));
+      temp2 = temp;
+    }
+
+  /* Now shift it up into place. */
+  emit_insn (gen_rtx_SET (DImode, op0,
+			  gen_rtx_ASHIFT (DImode, temp2,
+					  GEN_INT (shift_count))));
+
+  /* If there is a low immediate part piece, finish up by
+     putting that in as well.  */
+  if (low_immediate != 0)
+    emit_insn (gen_rtx_SET (DImode, op0,
+			    gen_rtx_IOR (DImode, op0,
+					 safe_constDI (low_immediate & 0x3ff))));
+}
+
+/* Full 64-bit constant decomposition.  Even though this is the
+   'worst' case, we still optimize a few things away.  */
+static void
+sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
+     rtx op0;
+     rtx temp;
+     unsigned int high_bits;
+     unsigned int low_bits;
+{
+  rtx sub_temp;
+
+  if (reload_in_progress || reload_completed)
+    sub_temp = op0;
+  else
+    sub_temp = gen_reg_rtx (DImode);
+
+  if ((high_bits & 0xfffffc00) != 0)
+    {
+      emit_insn (gen_rtx_SET (DImode,
+			      temp,
+			      gen_rtx_HIGH (DImode,
+					    safe_constDI (high_bits))));
+      if ((high_bits & ~0xfffffc00) != 0)
+	emit_insn (gen_rtx_SET (DImode,
+				sub_temp,
+				gen_rtx_LO_SUM (DImode, temp,
+						safe_constDI (high_bits))));
+      else
+	sub_temp = temp;
+    }
+  else
+    {
+      emit_insn (gen_rtx_SET (DImode, temp, safe_constDI (high_bits)));
+      sub_temp = temp;
+    }
+
+  if (!reload_in_progress && !reload_completed)
+    {
+      rtx temp2 = gen_reg_rtx (DImode);
+      rtx temp3 = gen_reg_rtx (DImode);
+      rtx temp4 = gen_reg_rtx (DImode);
+
+      emit_insn (gen_rtx_SET (DImode, temp4,
+			      gen_rtx_ASHIFT (DImode, sub_temp,
+					      GEN_INT (32))));
+
+      /* Be careful, we must mask the bits here because otherwise
+	 on a 32-bit host the optimizer will think we're putting
+	 something like "-1" here and optimize it away.  */
+      emit_insn (gen_rtx_SET (DImode, temp2,
+			      gen_rtx_HIGH (DImode,
+					    safe_constDI (low_bits))));
+      if ((low_bits & ~0xfffffc00) != 0)
+	emit_insn (gen_rtx_SET (DImode, temp3,
+				gen_rtx_LO_SUM (DImode, temp2,
+						safe_constDI (low_bits))));
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_PLUS (DImode, temp4, temp3)));
+    }
+  else
+    {
+      rtx low1 = safe_constDI ((low_bits >> (32 - 12))          & 0xfff);
+      rtx low2 = safe_constDI ((low_bits >> (32 - 12 - 12))     & 0xfff);
+      rtx low3 = safe_constDI ((low_bits >> (32 - 12 - 12 - 8)) & 0x0ff);
+      int to_shift = 12;
+
+      /* We are in the middle of reload, so this is really
+	 painful.  However we do still make an attempt to
+	 avoid emmitting truly stupid code.  */
+      if (low1 != const0_rtx)
+	{
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_ASHIFT (DImode, sub_temp,
+						  GEN_INT(to_shift))));
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_IOR (DImode, op0, low1)));
+	  sub_temp = op0;
+	  to_shift = 12;
+	}
+      else
+	{
+	  to_shift += 12;
+	}
+      if (low2 != const0_rtx)
+	{
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_ASHIFT (DImode, sub_temp,
+						  GEN_INT (to_shift))));
+	  emit_insn (gen_rtx_SET (DImode, op0,
+				  gen_rtx_IOR (DImode, op0, low2)));
+	  sub_temp = op0;
+	  to_shift = 8;
+	}
+      else
+	{
+	  to_shift += 8;
+	}
+      emit_insn (gen_rtx_SET (DImode, op0,
+			      gen_rtx_ASHIFT (DImode, sub_temp,
+					      GEN_INT (to_shift))));
+      if (low3 != const0_rtx)
+	emit_insn (gen_rtx_SET (DImode, op0,
+				gen_rtx_IOR (DImode, op0, low3)));
+      /* phew... */
+    }
+}
+
+/* Analyze a 64-bit constant for certain properties. */
+static void
+analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
+     unsigned int high_bits, low_bits;
+     int *hbsp, *lbsp, *abbasp;
+{
+  int lowest_bit_set, highest_bit_set, all_bits_between_are_set;
+  int i;
+
+  lowest_bit_set = highest_bit_set = -1;
+  i = 0;
+  do
+    {
+      if ((lowest_bit_set == -1)
+	  && ((low_bits >> i) & 1))
+	lowest_bit_set = i;
+      if ((highest_bit_set == -1)
+	  && ((high_bits >> (32 - i - 1)) & 1))
+	highest_bit_set = (64 - i - 1);
+    }
+  while (++i < 32
+	 && ((highest_bit_set == -1)
+	     || (lowest_bit_set == -1)));
+  if (i == 32)
+    {
+      i = 0;
+      do
+	{
+	  if ((lowest_bit_set == -1)
+	      && ((high_bits >> i) & 1))
+	    lowest_bit_set = i + 32;
+	  if ((highest_bit_set == -1)
+	      && ((low_bits >> (32 - i - 1)) & 1))
+	    highest_bit_set = 32 - i - 1;
+	}
+      while (++i < 32
+	     && ((highest_bit_set == -1)
+		 || (lowest_bit_set == -1)));
+    }
+  /* If there are no bits set this should have gone out
+     as one instruction!  */
+  if (lowest_bit_set == -1
+      || highest_bit_set == -1)
+    abort();
+  all_bits_between_are_set = 1;
+  for (i = lowest_bit_set; i <= highest_bit_set; i++)
+    {
+      if (i < 32)
+	{
+	  if ((low_bits & (1 << i)) != 0)
+	    continue;
+	}
+      else
+	{
+	  if ((high_bits & (1 << (i - 32))) != 0)
+	    continue;
+	}
+      all_bits_between_are_set = 0;
+      break;
+    }
+  *hbsp = highest_bit_set;
+  *lbsp = lowest_bit_set;
+  *abbasp = all_bits_between_are_set;
+}
+
+static int
+const64_is_2insns (high_bits, low_bits)
+     unsigned int high_bits, low_bits;
+{
+  int highest_bit_set, lowest_bit_set, all_bits_between_are_set;
+
+  if (high_bits == 0
+      || high_bits == -1)
+    return 1;
+
+  analyze_64bit_constant (high_bits, low_bits,
+			  &highest_bit_set, &lowest_bit_set,
+			  &all_bits_between_are_set);
+
+  if (highest_bit_set == 63
+      && all_bits_between_are_set != 0)
+    return 1;
+
+  if ((highest_bit_set - lowest_bit_set) < 22)
+    return 1;
+
+  return 0;
+}
+
+static unsigned int
+create_simple_focus_bits (high_bits, low_bits, highest_bit_set, lowest_bit_set, shift)
+     unsigned int high_bits, low_bits;
+     int highest_bit_set, lowest_bit_set, shift;
+{
+  unsigned int hi, lo;
+
+  if (lowest_bit_set < 32)
+    {
+      lo = (low_bits >> lowest_bit_set) << shift;
+      hi = ((high_bits << (32 - lowest_bit_set)) << shift);
+    }
+  else
+    {
+      lo = 0;
+      hi = ((high_bits >> (lowest_bit_set - 32)) << shift);
+    }
+  if (hi & lo)
+    abort();
+  return (hi | lo);
+}
+
+/* Here we are sure to be arch64 and this is an integer constant
+   being loaded into a register.  Emit the most efficient
+   insn sequence possible.  Detection of all the 1-insn cases
+   has been done already.  */
+void
+sparc_emit_set_const64 (op0, op1)
+     rtx op0;
+     rtx op1;
+{
+  unsigned int high_bits, low_bits;
+  int lowest_bit_set, highest_bit_set;
+  int all_bits_between_are_set;
+  int i;
+  rtx temp;
+
+  /* Sanity check that we know what we are working with.  */
+  if (! TARGET_ARCH64
+      || GET_CODE (op0) != REG
+      || (REGNO (op0) >= SPARC_FIRST_FP_REG
+	  && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
+    abort();
+
+  if (GET_CODE (op1) != CONST_DOUBLE
+      && GET_CODE (op1) != CONST_INT)
+    {
+      if (reload_in_progress || reload_completed)
+	temp = op0;
+      else
+	temp = gen_reg_rtx (DImode);
+      return sparc_emit_set_symbolic_const64 (op0, op1, temp);
+    }
+
+  if (GET_CODE (op1) == CONST_DOUBLE)
+    {
+#if HOST_BITS_PER_WIDE_INT == 64
+      high_bits = CONST_DOUBLE_LOW (op1) >> 32;
+      low_bits  = CONST_DOUBLE_LOW (op1) & 0xffffffff;
+#else
+      high_bits = CONST_DOUBLE_HIGH (op1);
+      low_bits = CONST_DOUBLE_LOW (op1);
+#endif
+    }
+  else
+    {
+#if HOST_BITS_PER_WIDE_INT == 64
+      high_bits = (INTVAL (op1) >> 32);
+      low_bits = (INTVAL (op1) & 0xffffffff);
+#else
+      high_bits = ((INTVAL (op1) < 0) ?
+		   0xffffffff :
+		   0x00000000);
+      low_bits = INTVAL (op1);
+#endif
+    }
+
+  /* low_bits	bits 0  --> 31
+     high_bits	bits 32 --> 63  */
+
+  if (reload_in_progress || reload_completed)
+    temp = op0;
+  else
+    temp = gen_reg_rtx (DImode);
+
+  analyze_64bit_constant (high_bits, low_bits,
+			  &highest_bit_set, &lowest_bit_set,
+			  &all_bits_between_are_set);
+
+  /* First try for a 2-insn sequence.  */
+
+  /* These situations are preferred because the optimizer can
+   * do more things with them:
+   * 1) mov	-1, %reg
+   *    sllx	%reg, shift, %reg
+   * 2) mov	-1, %reg
+   *    srlx	%reg, shift, %reg
+   * 3) mov	some_small_const, %reg
+   *    sllx	%reg, shift, %reg
+   */
+  if (((highest_bit_set == 63
+	|| lowest_bit_set == 0)
+       && all_bits_between_are_set != 0)
+      || ((highest_bit_set - lowest_bit_set) < 13))
+    {
+      rtx the_const = constm1_rtx;
+      int shift = lowest_bit_set;
+
+      if (highest_bit_set == lowest_bit_set)
+	{
+	  /* There is no way to get here like this, because this case
+	     can be done in one instruction.  */
+	  if (lowest_bit_set < 32)
+	    abort ();
+	  the_const = const1_rtx;
+	}
+      else if (all_bits_between_are_set == 0)
+	{
+	  the_const =
+	    safe_constDI (create_simple_focus_bits (high_bits, low_bits,
+						    highest_bit_set,
+						    lowest_bit_set, 0));
+	}
+      else if (lowest_bit_set == 0)
+	shift = -(64 - highest_bit_set);
+      emit_insn (gen_rtx_SET (DImode, temp, the_const));
+
+      if (shift > 0)
+	emit_insn (gen_rtx_SET (DImode,
+				op0,
+				gen_rtx_ASHIFT (DImode,
+						temp,
+						GEN_INT (shift))));
+      else if (shift < 0)
+	emit_insn (gen_rtx_SET (DImode,
+				op0,
+				gen_rtx_ASHIFTRT (DImode,
+						  temp,
+						  GEN_INT (-shift))));
+      else
+	abort ();
+      return;
+    }
+
+  /* Now a range of 22 or less bits set somewhere.
+   * 1) sethi	%hi(focus_bits), %reg
+   *    sllx	%reg, shift, %reg
+   * 2) sethi	%hi(focus_bits), %reg
+   *    srlx	%reg, shift, %reg
+   */
+  if ((highest_bit_set - lowest_bit_set) < 22)
+    {
+      unsigned int focus_bits =
+	create_simple_focus_bits (high_bits, low_bits,
+				  highest_bit_set, lowest_bit_set, 10);
+      emit_insn (gen_rtx_SET (DImode,
+			      temp,
+			      gen_rtx_HIGH (DImode, safe_constDI (focus_bits))));
+
+      if (lowest_bit_set < 10)
+	emit_insn (gen_rtx_SET (DImode,
+				op0,
+				gen_rtx_ASHIFTRT (DImode, temp,
+						  GEN_INT (10 - lowest_bit_set))));
+      else if (lowest_bit_set >= 10)
+	emit_insn (gen_rtx_SET (DImode,
+				op0,
+				gen_rtx_ASHIFT (DImode, temp,
+						GEN_INT (lowest_bit_set - 10))));
+      else
+	abort();
+      return;
+    }
+
+  /* 1) sethi	%hi(low_bits), %reg
+   *    or	%reg, %lo(low_bits), %reg
+   * 2) sethi	%hi(~low_bits), %reg
+   *	xor	%reg, %lo(-0x400 | (low_bits & 0x3ff)), %reg
+   */
+  if (high_bits == 0
+      || high_bits == -1)
+    return sparc_emit_set_const64_quick1 (op0, temp, low_bits,
+					  (high_bits == -1));
+
+  /* 1) sethi	%hi(high_bits), %reg
+   *    or	%reg, %lo(high_bits), %reg
+   *    sllx	%reg, 32, %reg
+   */
+  if (low_bits == 0
+      || (SPARC_SIMM13_P(low_bits)
+	  && ((int)low_bits > 0)))
+    return sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
+
+  /* Now, try 3-insn sequences.  But first we may be able to do something
+     quick when the constant is negated, so try that.  */
+  if (const64_is_2insns ((~high_bits) & 0xffffffff,
+			 (~low_bits) & 0xfffffc00))
+    {
+      unsigned int trailing_bits = (~low_bits) & 0x3ff;
+
+      if ((((~high_bits) & 0xffffffff) == 0
+	   && ((~low_bits) & 0x80000000) == 0)
+	  || (((~high_bits) & 0xffffffff) == 0xffffffff
+	      && ((~low_bits) & 0x80000000) != 0))
+	{
+	  rtx fast_int = GEN_INT (~low_bits & 0xffffffff);
+
+	  if (input_operand (fast_int, DImode))
+	    emit_insn (gen_rtx_SET (DImode, temp,
+				    safe_constDI (~low_bits & 0xffffffff)));
+	  else
+	    sparc_emit_set_const64 (temp, fast_int);
+	}
+      else
+	{
+	  rtx negated_const;
+#if HOST_BITS_PER_WIDE_INT == 64
+	  negated_const = GEN_INT (((~low_bits) & 0xfffffc00) |
+				   (((HOST_WIDE_INT)((~high_bits) & 0xffffffff))<<32));
+#else
+	  negated_const = gen_rtx_CONST_DOUBLE (DImode, NULL_RTX,
+						(~low_bits) & 0xfffffc00,
+						(~high_bits) & 0xffffffff);
+#endif
+	  sparc_emit_set_const64 (temp, negated_const);
+	}
+      emit_insn (gen_rtx_SET (DImode,
+			      op0,
+			      gen_rtx_XOR (DImode, temp,
+					   safe_constDI (-0x400 | trailing_bits))));
+      return;
+    }
+
+  /* 1) sethi	%hi(xxx), %reg
+   *    or	%reg, %lo(xxx), %reg
+   *	sllx	%reg, yyy, %reg
+   */
+  if ((highest_bit_set - lowest_bit_set) < 32)
+    {
+      unsigned int hi, lo, focus_bits;
+
+      /* We can't get here in this state.  */
+      if (highest_bit_set < 32
+	  || lowest_bit_set >= 32)
+	abort();
+
+      /* So what we know is that the set bits straddle the
+	 middle of the 64-bit word.  */
+      hi = (low_bits >> lowest_bit_set);
+      lo = (high_bits << (32 - lowest_bit_set));
+      if (hi & lo)
+	abort();
+      focus_bits = (hi | lo);
+      return sparc_emit_set_const64_quick2 (op0, temp,
+					    focus_bits, 0,
+					    lowest_bit_set);
+    }
+
+  /* The easiest way when all else fails, is full decomposition. */
+#if 0
+  printf ("sparc_emit_set_const64: Hard constant [%08lx%08lx] neg[%08lx%08lx]\n",
+	  high_bits, low_bits, ~high_bits, ~low_bits);
+#endif
+  sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
+}
+
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
    return the rtx for the cc reg in the proper mode.  */
 
@@ -1061,15 +1793,8 @@ gen_compare_reg (code, x, y)
   else
     cc_reg = gen_rtx_REG (mode, SPARC_ICC_REG);
 
-  if (TARGET_V8PLUS && mode == CCXmode)
-    {
-      emit_insn (gen_cmpdi_v8plus (x, y));
-    }
-  else
-    {
-      emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
 			  gen_rtx_COMPARE (mode, x, y)));
-    }
 
   return cc_reg;
 }
@@ -1474,9 +2199,8 @@ legitimize_pic_address (orig, mode, reg)
 	     won't get confused into thinking that these two instructions
 	     are loading in the true address of the symbol.  If in the
 	     future a PIC rtx exists, that should be used instead.  */
-	  emit_insn (gen_pic_sethi_si (temp_reg, orig));
-	  emit_insn (gen_pic_lo_sum_si (temp_reg, temp_reg, orig));
-
+	  emit_insn (gen_movsi_high_pic (temp_reg, orig));
+	  emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
 	  address = temp_reg;
 	}
       else
@@ -1533,6 +2257,8 @@ legitimize_pic_address (orig, mode, reg)
     }
   else if (GET_CODE (orig) == LABEL_REF)
     /* ??? Why do we do this?  */
+    /* Now movsi_pic_label_ref uses it, but we ought to be checking that
+       the register is live instead, in case it is eliminated.  */
     current_function_uses_pic_offset_table = 1;
 
   return orig;
@@ -1611,293 +2337,36 @@ finalize_pic ()
   emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 }
 
-/* Emit insns to move operands[1] into operands[0].
-
-   Return 1 if we have written out everything that needs to be done to
-   do the move.  Otherwise, return 0 and the caller will emit the move
-   normally.  */
+/* Return 1 if RTX is a MEM which is known to be aligned to at
+   least an 8 byte boundary.  */
 
 int
-emit_move_sequence (operands, mode)
-     rtx *operands;
-     enum machine_mode mode;
+mem_min_alignment (mem, desired)
+     rtx mem;
+     int desired;
 {
-  register rtx operand0 = operands[0];
-  register rtx operand1 = operands[1];
+  rtx addr, base, offset;
 
-  if (CONSTANT_P (operand1) && flag_pic
-      && pic_address_needs_scratch (operand1))
-    operands[1] = operand1 = legitimize_pic_address (operand1, mode, 0);
-
-  /* Handle most common case first: storing into a register.  */
-  if (register_operand (operand0, mode))
-    {
-      /* Integer constant to FP register. */
-      if (GET_CODE (operand0) == REG
-	  && REGNO (operand0) >= 32
-	  && REGNO (operand0) < FIRST_PSEUDO_REGISTER
-	  && CONSTANT_P (operand1))
-	{
-	  operand1 = validize_mem (force_const_mem (GET_MODE (operand0), operand1));
-	}
-
-      if (register_operand (operand1, mode)
-	  || (GET_CODE (operand1) == CONST_INT && SMALL_INT (operand1))
-	  || (GET_CODE (operand1) == CONST_DOUBLE
-	      && arith_double_operand (operand1, DImode))
-	  || (GET_CODE (operand1) == HIGH && GET_MODE (operand1) != DImode)
-	  /* Only `general_operands' can come here, so MEM is ok.  */
-	  || GET_CODE (operand1) == MEM)
-	{
-	  /* Run this case quickly.  */
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
-	  return 1;
-	}
-    }
-  else if (GET_CODE (operand0) == MEM)
-    {
-      if (register_operand (operand1, mode)
-	  || (operand1 == const0_rtx && ! TARGET_LIVE_G0))
-	{
-	  /* Run this case quickly.  */
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
-	  return 1;
-	}
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operand0);
-	  operands[1] = operand1 = force_reg (mode, operand1);
-	}
-    }
-
-  if (GET_CODE (operand1) == LABEL_REF
-      && mode == SImode && flag_pic)
-    {
-      if (TARGET_ARCH64)
-	abort ();
-      emit_insn (gen_move_pic_label_si (operand0, operand1));
-      return 1;
-    }
-  /* Non-pic LABEL_REF's in sparc64 are expensive to do the normal way,
-     so always use special code.  */
-  else if (GET_CODE (operand1) == LABEL_REF
-	   && mode == DImode)
-    {
-      if (! TARGET_ARCH64)
-	abort ();
-      emit_insn (gen_move_label_di (operand0, operand1));
-      return 1;
-    }
-  /* DImode HIGH values in sparc64 need a clobber added.  */
-  else if (TARGET_ARCH64
-      && GET_CODE (operand1) == HIGH && GET_MODE (operand1) == DImode)
-    {
-      emit_insn (gen_sethi_di_sp64 (operand0, XEXP (operand1, 0)));
-      return 1;
-    }
-  /* Simplify the source if we need to.  */
-  else if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
-    {
-      if (flag_pic && symbolic_operand (operand1, mode))
-	{
-	  rtx temp_reg = reload_in_progress ? operand0 : 0;
-
-	  operands[1] = legitimize_pic_address (operand1, mode, temp_reg);
-	}
-      else if (GET_CODE (operand1) == CONST_INT
-	       ? (! SMALL_INT (operand1)
-		  && INTVAL (operand1) != -4096
-		  && ! SPARC_SETHI_P (INTVAL (operand1)))
-	       : GET_CODE (operand1) == CONST_DOUBLE
-	       ? ! arith_double_operand (operand1, DImode)
-	       : 1)
-	{
-	  /* For DImode values, temp must be operand0 because of the way
-	     HI and LO_SUM work.  The LO_SUM operator only copies half of
-	     the LSW from the dest of the HI operator.  If the LO_SUM dest is
-	     not the same as the HI dest, then the MSW of the LO_SUM dest will
-	     never be set.
-
-	     ??? The real problem here is that the ...(HI:DImode pattern emits
-	     multiple instructions, and the ...(LO_SUM:DImode pattern emits
-	     one instruction.  This fails, because the compiler assumes that
-	     LO_SUM copies all bits of the first operand to its dest.  Better
-	     would be to have the HI pattern emit one instruction and the
-	     LO_SUM pattern multiple instructions.  Even better would be
-	     to use four rtl insns.  */
-	  rtx temp = ((reload_in_progress || mode == DImode)
-		      ? operand0 : gen_reg_rtx (mode));
-
-	  if (mode == SImode)
-	    {
-	      if (GET_CODE (operand1) == CONST_INT)
-		operand1 = GEN_INT (INTVAL (operand1) & 0xffffffff);
-	      else if (GET_CODE (operand1) == CONST_DOUBLE)
-		operand1 = GEN_INT (CONST_DOUBLE_LOW (operand1) & 0xffffffff);
-	    }
-
-	  if (TARGET_ARCH64 && mode == DImode)
-	    emit_insn (gen_sethi_di_sp64 (temp, operand1));
-	  else
-	    emit_insn (gen_rtx_SET (VOIDmode, temp,
-				gen_rtx_HIGH (mode, operand1)));
-
-	  operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
-	}
-    }
-
-  /* Now have insn-emit do whatever it normally does.  */
-  return 0;
-}
-
-/* Return the best assembler insn template
-   for moving operands[1] into operands[0] as a 4 byte quantity.
-
-   This isn't intended to be very smart.  It is up to the caller to
-   choose the best way to do things.
-
-   Note that OPERANDS may be modified to suit the returned string.  */
-
-char *
-singlemove_string (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (GET_CODE (operands[1]) != MEM)
-	return "st %r1,%0";
-      else
-	abort ();
-    }
-  else if (GET_CODE (operands[1]) == MEM)
-    return "ld %1,%0";
-  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    {
-      REAL_VALUE_TYPE r;
-      long i;
-
-      /* Must be SFmode, otherwise this doesn't make sense.  */
-      if (GET_MODE (operands[1]) != SFmode)
-	abort ();
-
-      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
-      REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      operands[1] = GEN_INT (i);
-
-      if (CONST_OK_FOR_LETTER_P (i, 'I'))
-	return "mov %1,%0";
-      else if ((i & 0x000003FF) != 0)
-	return "sethi %%hi(%a1),%0\n\tor %0,%%lo(%a1),%0";
-      else
-	return "sethi %%hi(%a1),%0";
-    }
-  else if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      /* Only consider the low 32 bits of the constant. */
-      int i = INTVAL (operands[1]) & 0xffffffff;
-
-      if (SPARC_SIMM13_P (i))
-	return "mov %1,%0";
-
-      if (i == 4096)
-	return "sub %%g0,-4096,%0";
-
-      /* If all low order 10 bits are clear, then we only need a single
-	 sethi insn to load the constant.  */
-      /* FIXME: Use SETHI_P.  */
-      if ((i & 0x000003FF) != 0)
-	return "sethi %%hi(%a1),%0\n\tor %0,%%lo(%a1),%0";
-      else
-	return "sethi %%hi(%a1),%0";
-    }
-  /* Operand 1 must be a register, or a 'I' type CONST_INT.  */
-  return "mov %1,%0";
-}
-
-/* Return the best assembler insn template
-   for moving operands[1] into operands[0] as an 8 byte quantity.
-
-   This isn't intended to be very smart.  It is up to the caller to
-   choose the best way to do things.
-
-   Note that OPERANDS may be modified to suit the returned string.  */
-
-char *
-doublemove_string (operands)
-     rtx *operands;
-{
-  rtx op0 = operands[0], op1 = operands[1];
-
-  if (GET_CODE (op0) == MEM)
-    {
-      if (GET_CODE (op1) == REG)
-	{
-	  if (FP_REG_P (op1))
-	    return "std %1,%0";
-	  return TARGET_ARCH64 ? "stx %1,%0" : "std %1,%0";
-	}
-      if (TARGET_ARCH64
-	  && (op1 == const0_rtx
-	      || (GET_MODE (op1) != VOIDmode
-		  && op1 == CONST0_RTX (GET_MODE (op1)))))
-	return "stx %r1,%0";
-      abort ();
-    }
-  else if (GET_CODE (op1) == MEM)
-    {
-      if (GET_CODE (op0) != REG)
-	abort ();
-      if (FP_REG_P (op0))
-	return "ldd %1,%0";
-      return TARGET_ARCH64 ? "ldx %1,%0" : "ldd %1,%0";
-    }
-  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    {
-      /* ??? Unfinished, and maybe not needed.  */
-      abort ();
-    }
-  else if (GET_CODE (operands[1]) == CONST_INT
-	   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
-    {
-      /* ??? Unfinished, and maybe not needed.  */
-      abort ();
-    }
-  /* Operand 1 must be a register, or a 'I' type CONST_INT.  */
-  return "mov %1,%0";
-}
-
-/* Return non-zero if it is OK to assume that the given memory operand is
-   aligned at least to a 8-byte boundary.  This should only be called
-   for memory accesses whose size is 8 bytes or larger.  */
-
-int
-mem_aligned_8 (mem)
-     register rtx mem;
-{
-  register rtx addr;
-  register rtx base;
-  register rtx offset;
-
+  /* If it's not a MEM we can't accept it.  */
   if (GET_CODE (mem) != MEM)
-    return 0;	/* It's gotta be a MEM! */
+    return 0;
 
   addr = XEXP (mem, 0);
-
-  /* Now that all misaligned double parms are copied on function entry,
-     we can assume any 64-bit object is 64-bit aligned except those which
-     are at unaligned offsets from the stack or frame pointer.  If the
-     TARGET_UNALIGNED_DOUBLES switch is given, we do not make this
-     assumption.  */
-
-  /* See what register we use in the address.  */
-  base = offset = 0;
+  base = offset = NULL_RTX;
   if (GET_CODE (addr) == PLUS)
     {
-      if (GET_CODE (XEXP (addr, 0)) == REG
-	  && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+      if (GET_CODE (XEXP (addr, 0)) == REG)
 	{
 	  base = XEXP (addr, 0);
-	  offset = XEXP (addr, 1);
+
+	  /* What we are saying here is that if the base
+	     REG is aligned properly, the compiler will make
+	     sure any REG based index upon it will be so
+	     as well.  */
+	  if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	    offset = XEXP (addr, 1);
+	  else
+	    offset = const0_rtx;
 	}
     }
   else if (GET_CODE (addr) == REG)
@@ -1906,767 +2375,42 @@ mem_aligned_8 (mem)
       offset = const0_rtx;
     }
 
-  /* If it's the stack or frame pointer, check offset alignment.
-     We can have improper alignment in the function entry code.  */
-  if (base
-      && (REGNO (base) == FRAME_POINTER_REGNUM
-	  || REGNO (base) == STACK_POINTER_REGNUM))
+  if (base != NULL_RTX)
     {
-      if (((INTVAL (offset) - SPARC_STACK_BIAS) & 0x7) == 0)
-	return 1;
+      int regno = REGNO (base);
+
+      if (regno != FRAME_POINTER_REGNUM
+	  && regno != STACK_POINTER_REGNUM)
+	{
+	  /* Check if the compiler has recorded some information
+	     about the alignment of the base REG.  If reload has
+	     completed, we already matched with proper alignments.  */
+	  if (((regno_pointer_align != NULL
+		&& REGNO_POINTER_ALIGN (regno) >= desired)
+	       || reload_completed)
+	      && ((INTVAL (offset) & (desired - 1)) == 0))
+	    return 1;
+	}
+      else
+	{
+	  if (((INTVAL (offset) - SPARC_STACK_BIAS) & (desired - 1)) == 0)
+	    return 1;
+	}
     }
-  /* Anything else we know is properly aligned unless TARGET_UNALIGNED_DOUBLES
-     is true, in which case we can only assume that an access is aligned if
-     it is to a constant address, or the address involves a LO_SUM.
-
-     We used to assume an address was aligned if MEM_IN_STRUCT_P was true.
-     That assumption was deleted so that gcc generated code can be used with
-     memory allocators that only guarantee 4 byte alignment.  */
-  else if (! TARGET_UNALIGNED_DOUBLES || CONSTANT_P (addr)
+  else if (! TARGET_UNALIGNED_DOUBLES
+	   || CONSTANT_P (addr)
 	   || GET_CODE (addr) == LO_SUM)
-    return 1;
-
+    {
+      /* Anything else we know is properly aligned unless TARGET_UNALIGNED_DOUBLES
+	 is true, in which case we can only assume that an access is aligned if
+	 it is to a constant address, or the address involves a LO_SUM.  */
+      return 1;
+    }
+  
   /* An obviously unaligned address.  */
   return 0;
 }
 
-enum optype { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP };
-
-/* Output assembler code to perform a doubleword move insn
-   with operands OPERANDS.  This is very similar to the following
-   output_move_quad function.  */
-
-char *
-output_move_double (operands)
-     rtx *operands;
-{
-  register rtx op0 = operands[0];
-  register rtx op1 = operands[1];
-  register enum optype optype0;
-  register enum optype optype1;
-  rtx latehalf[2];
-  rtx addreg0 = 0;
-  rtx addreg1 = 0;
-  int highest_first = 0;
-  int no_addreg1_decrement = 0;
-
-  /* First classify both operands.  */
-
-  if (REG_P (op0))
-    optype0 = REGOP;
-  else if (offsettable_memref_p (op0))
-    optype0 = OFFSOP;
-  else if (GET_CODE (op0) == MEM)
-    optype0 = MEMOP;
-  else
-    optype0 = RNDOP;
-
-  if (REG_P (op1))
-    optype1 = REGOP;
-  else if (CONSTANT_P (op1))
-    optype1 = CNSTOP;
-  else if (offsettable_memref_p (op1))
-    optype1 = OFFSOP;
-  else if (GET_CODE (op1) == MEM)
-    optype1 = MEMOP;
-  else
-    optype1 = RNDOP;
-
-  /* Check for the cases that the operand constraints are not
-     supposed to allow to happen.  Abort if we get one,
-     because generating code for these cases is painful.  */
-
-  if (optype0 == RNDOP || optype1 == RNDOP
-      || (optype0 == MEM && optype1 == MEM))
-    abort ();
-
-  /* If an operand is an unoffsettable memory ref, find a register
-     we can increment temporarily to make it refer to the second word.  */
-
-  if (optype0 == MEMOP)
-    addreg0 = find_addr_reg (XEXP (op0, 0));
-
-  if (optype1 == MEMOP)
-    addreg1 = find_addr_reg (XEXP (op1, 0));
-
-  /* Ok, we can do one word at a time.
-     Set up in LATEHALF the operands to use for the
-     high-numbered (least significant) word and in some cases alter the
-     operands in OPERANDS to be suitable for the low-numbered word.  */
-
-  if (optype0 == REGOP)
-    latehalf[0] = gen_rtx_REG (SImode, REGNO (op0) + 1);
-  else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (op0, 4);
-  else
-    latehalf[0] = op0;
-
-  if (optype1 == REGOP)
-    latehalf[1] = gen_rtx_REG (SImode, REGNO (op1) + 1);
-  else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (op1, 4);
-  else if (optype1 == CNSTOP)
-    {
-      if (TARGET_ARCH64)
-	{
-	  if (arith_double_operand (op1, DImode))
-	    {
-	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
-	      return "mov %1,%0";
-	    }
-	  else
-	    {
-	      /* The only way to handle CONST_DOUBLEs or other 64 bit
-		 constants here is to use a temporary, such as is done
-		 for the V9 DImode sethi insn pattern.  This is not
-		 a practical solution, so abort if we reach here.
-		 The md file should always force such constants to
-		 memory.  */
-	      abort ();
-	    }
-	}
-      else
-	split_double (op1, &operands[1], &latehalf[1]);
-    }
-  else
-    latehalf[1] = op1;
-
-  /* Easy case: try moving both words at once.  Check for moving between
-     an even/odd register pair and a memory location.  */
-  if ((optype0 == REGOP && optype1 != REGOP && optype1 != CNSTOP
-       && (TARGET_ARCH64 || (REGNO (op0) & 1) == 0))
-      || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
-	  && (TARGET_ARCH64 || (REGNO (op1) & 1) == 0)))
-    {
-      register rtx mem,reg;
-
-      if (optype0 == REGOP)
-	mem = op1, reg = op0;
-      else
-	mem = op0, reg = op1;
-
-      /* In v9, ldd can be used for word aligned addresses, so technically
-	 some of this logic is unneeded.  We still avoid ldd if the address
-	 is obviously unaligned though.
-
-	 Integer ldd/std are deprecated in V9 and are slow on UltraSPARC.
-	 Use them only if the access is volatile or not offsettable.  */
-
-      if ((mem_aligned_8 (mem)
-	   && (REGNO (reg) >= 32
-	       || MEM_VOLATILE_P (mem)
-	       || ! ((optype0 == OFFSOP || optype1 == OFFSOP)
-		     && (sparc_cpu == PROCESSOR_ULTRASPARC
-			 || sparc_cpu == PROCESSOR_V9))))
-	  /* If this is a floating point register higher than %f31,
-	     then we *must* use an aligned load, since `ld' will not accept
-	     the register number.  */
-	  || (TARGET_V9 && REGNO (reg) >= 64)
-	  /* Even if two instructions would otherwise be better than ldd/std,
-	     if this insn was put in a delay slot because reorg thought it
-	     was only one machine instruction, make sure it is only one
-	     instruction.  */
-	  || dbr_sequence_length () != 0)
-	{
-	  if (FP_REG_P (reg) || ! TARGET_ARCH64)
-	    return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
-	  else
-	    return (mem == op1 ? "ldx %1,%0" : "stx %1,%0");
-	}
-    }
-
-  if (TARGET_ARCH64)
-    {
-      if (optype0 == REGOP && optype1 == REGOP)
-	{
-	  if (FP_REG_P (op0))
-	    return "fmovd %1,%0";
-	  else
-	    return "mov %1,%0";
-	}
-    }
-
-  /* If the first move would clobber the source of the second one,
-     do them in the other order.  */
-
-  /* Overlapping registers.  */
-  if (optype0 == REGOP && optype1 == REGOP
-      && REGNO (op0) == REGNO (latehalf[1]))
-    {
-      /* Do that word.  */
-      output_asm_insn (singlemove_string (latehalf), latehalf);
-      /* Do low-numbered word.  */
-      return singlemove_string (operands);
-    }
-  /* Loading into a register which overlaps a register used in the address.  */
-  else if (optype0 == REGOP && optype1 != REGOP
-	   && reg_overlap_mentioned_p (op0, op1))
-    {
-      /* If both halves of dest are used in the src memory address,
-	 add the two regs and put them in the low reg (op0).
-	 Then it works to load latehalf first.  */
-      if (reg_mentioned_p (op0, XEXP (op1, 0))
-	  && reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
-	{
-	  rtx xops[2];
-	  xops[0] = latehalf[0];
-	  xops[1] = op0;
-	  output_asm_insn ("add %1,%0,%1", xops);
-	  operands[1] = gen_rtx_MEM (DImode, op0);
-	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
-	  addreg1 = 0;
-	  highest_first = 1;
-	}
-      /* Only one register in the dest is used in the src memory address,
-	 and this is the first register of the dest, so we want to do
-	 the late half first here also.  */
-      else if (! reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
-	highest_first = 1;
-      /* Only one register in the dest is used in the src memory address,
-	 and this is the second register of the dest, so we want to do
-	 the late half last.  If addreg1 is set, and addreg1 is the same
-	 register as latehalf, then we must suppress the trailing decrement,
-	 because it would clobber the value just loaded.  */
-      else if (addreg1 && reg_mentioned_p (addreg1, latehalf[0]))
-	no_addreg1_decrement = 1;
-    }
-
-  /* Normal case: do the two words, low-numbered first.
-     Overlap case (highest_first set): do high-numbered word first.  */
-
-  if (! highest_first)
-    output_asm_insn (singlemove_string (operands), operands);
-
-  /* Make any unoffsettable addresses point at high-numbered word.  */
-  if (addreg0)
-    output_asm_insn ("add %0,0x4,%0", &addreg0);
-  if (addreg1)
-    output_asm_insn ("add %0,0x4,%0", &addreg1);
-
-  /* Do that word.  */
-  output_asm_insn (singlemove_string (latehalf), latehalf);
-
-  /* Undo the adds we just did.  */
-  if (addreg0)
-    output_asm_insn ("add %0,-0x4,%0", &addreg0);
-  if (addreg1 && ! no_addreg1_decrement)
-    output_asm_insn ("add %0,-0x4,%0", &addreg1);
-
-  if (highest_first)
-    output_asm_insn (singlemove_string (operands), operands);
-
-  return "";
-}
-
-/* Output assembler code to perform a quadword move insn
-   with operands OPERANDS.  This is very similar to the preceding
-   output_move_double function.  */
-
-char *
-output_move_quad (operands)
-     rtx *operands;
-{
-  register rtx op0 = operands[0];
-  register rtx op1 = operands[1];
-  register enum optype optype0;
-  register enum optype optype1;
-  rtx wordpart[4][2];
-  rtx load_late[4];
-  int load_late_half[2];
-  rtx addreg0 = 0;
-  rtx addreg1 = 0;
-
-  load_late_half[0] = 0; load_late_half[1] = 0;
-  load_late[0] = 0; load_late[1] = 0; load_late[2] = 0; 
-  load_late[3] = 0;
-
-  wordpart[0][0] = NULL;  wordpart[1][0] = NULL;  wordpart[2][0] = NULL;
-  wordpart[3][0] = NULL;
-
-  /* First classify both operands.  */
-
-  if (REG_P (op0))
-    optype0 = REGOP;
-  else if (offsettable_memref_p (op0))
-    optype0 = OFFSOP;
-  else if (GET_CODE (op0) == MEM)
-    optype0 = MEMOP;
-  else
-    optype0 = RNDOP;
-
-  if (REG_P (op1))
-    optype1 = REGOP;
-  else if (CONSTANT_P (op1))
-    optype1 = CNSTOP;
-  else if (offsettable_memref_p (op1))
-    optype1 = OFFSOP;
-  else if (GET_CODE (op1) == MEM)
-    optype1 = MEMOP;
-  else
-    optype1 = RNDOP;
-
-  /* Check for the cases that the operand constraints are not
-     supposed to allow to happen.  Abort if we get one,
-     because generating code for these cases is painful.  */
-
-  if (optype0 == RNDOP || optype1 == RNDOP
-      || (optype0 == MEM && optype1 == MEM))
-    abort ();
-
-  if (optype0 == REGOP)
-    {
-      wordpart[0][0] = gen_rtx_REG (word_mode, REGNO (op0) + 0);
-      if (TARGET_ARCH64 && FP_REG_P (op0) 
-	  && REGNO (op0) < SPARC_FIRST_V9_FP_REG)
-	wordpart[1][0] = gen_rtx_REG (word_mode, REGNO (op0) + 2);
-      else
-	wordpart[1][0] = gen_rtx_REG (word_mode, REGNO (op0) + 1);
-
-      if (TARGET_ARCH32)
-	{
-	  wordpart[2][0] = gen_rtx_REG (word_mode, REGNO (op0) + 2);
-	  wordpart[3][0] = gen_rtx_REG (word_mode, REGNO (op0) + 3);
-	}
-  
-      /* Loading into a register which overlaps a register used in the
-	 address.  */
-      if (optype1 != REGOP && reg_overlap_mentioned_p (op0, op1))
-	{
-	  int i;
-	  int count;
-
-	  count = 0;
-
-	  for (i = 0; i < 4 && wordpart[i][0] != NULL; i++)
-	    {
-	      if (reg_mentioned_p (wordpart[i][0], op1))
-		{
-		  load_late[i] = wordpart[i][0];
-		  load_late_half[TARGET_ARCH64 ? i : i/2] = 1;
-		  count++;
-		}
-	    }
-	  if (count > 2)
-	    {
-	      /* Not sure what to do here. Multiple adds? Can't happen. */
-	      abort ();
-	    }
-	  else if (count == 2)
-	    {
-	      /* We have a two-address source operand, and both registers
-		 overlap with the dest quad. Add them together and
-		 store the result into the last register of the quad being
-		 loaded, then generate an appropriate MEM insn. */
-	      rtx temp[3];
-	      int place = 0;
-
-	      for (i = 0; i < 4; i++)
-		{
-		  if (load_late[i])
-		    {
-		      temp[place++] = load_late[i];
-		      load_late[i] = 0;
-		    }
-		}
-	      temp[2] = wordpart[3][0];
-	      output_asm_insn ("add %0, %1, %2", temp);
-	      load_late_half[0] = 0;
-	      load_late_half[1] = 1;
-	      op1 = gen_rtx_MEM (TFmode, wordpart[3][0]);
-	      operands[1] = op1;
-	      optype1 = OFFSOP;
-	    }
-	}
-    }
-
-  /* If an operand is an unoffsettable memory ref, find a register
-     we can increment temporarily to make it refer to the later words.  */
-
-  if (optype0 == MEMOP)
-    addreg0 = find_addr_reg (XEXP (op0, 0));
-
-  if (optype1 == MEMOP)
-    addreg1 = find_addr_reg (XEXP (op1, 0));
-
-  /* Ok, we can do one word at a time.
-     Set up in wordpart the operands to use for each word of the arguments.  */
-
-  if (optype0 == OFFSOP)
-    {
-      wordpart[0][0] = adj_offsettable_operand (op0, 0);
-      if (TARGET_ARCH32)
-	{
-	  wordpart[1][0] = adj_offsettable_operand (op0, 4);
-	  wordpart[2][0] = adj_offsettable_operand (op0, 8);
-	  wordpart[3][0] = adj_offsettable_operand (op0, 12);
-	}
-      else
-	wordpart[1][0] = adj_offsettable_operand (op0, 8);
-    }
-  else if (optype0 != REGOP)
-    {
-      wordpart[0][0] = op0;
-      wordpart[1][0] = op0;
-      wordpart[2][0] = op0;
-      wordpart[3][0] = op0;
-    }
-
-  if (optype1 == REGOP)
-    {
-      wordpart[0][1] = gen_rtx_REG (word_mode, REGNO (op1) + 0);
-      if (TARGET_ARCH64 && FP_REG_P (op1)
-	  && REGNO (op1) < SPARC_FIRST_V9_FP_REG)
-	wordpart[1][1] = gen_rtx_REG (word_mode, REGNO (op1) + 2);
-      else
-	wordpart[1][1] = gen_rtx_REG (word_mode, REGNO (op1) + 1);
-
-      if (TARGET_ARCH32)
-	{
-	  wordpart[2][1] = gen_rtx_REG (word_mode, REGNO (op1) + 2);
-	  wordpart[3][1] = gen_rtx_REG (word_mode, REGNO (op1) + 3);
-	}
-    }
-  else if (optype1 == OFFSOP)
-    {
-      wordpart[0][1] = adj_offsettable_operand (op1, 0);
-      if (TARGET_ARCH32)
-	{
-	  wordpart[1][1] = adj_offsettable_operand (op1, 4);
-	  wordpart[2][1] = adj_offsettable_operand (op1, 8);
-	  wordpart[3][1] = adj_offsettable_operand (op1, 12);
-	}
-      else
-	wordpart[1][1] = adj_offsettable_operand (op1, 8);
-    }
-  else if (optype1 == CNSTOP)
-    {
-      REAL_VALUE_TYPE r;
-      long l[4];
-
-      /* This only works for TFmode floating point constants.  */
-      if (GET_CODE (op1) != CONST_DOUBLE || GET_MODE (op1) != TFmode)
-	abort ();
-
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op1);
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
-      
-      wordpart[0][1] = GEN_INT (l[0]);
-      wordpart[1][1] = GEN_INT (l[1]);
-      wordpart[2][1] = GEN_INT (l[2]);
-      wordpart[3][1] = GEN_INT (l[3]);
-    }
-  else
-    {
-      wordpart[0][1] = op1;
-      wordpart[1][1] = op1;
-      wordpart[2][1] = op1;
-      wordpart[3][1] = op1;
-    }
-
-  /* Easy case: try moving the quad as two pairs.  Check for moving between
-     an even/odd register pair and a memory location.
-     Also handle new v9 fp regs here.  */
-  /* ??? Should also handle the case of non-offsettable addresses here.
-     We can at least do the first pair as a ldd/std, and then do the third
-     and fourth words individually.  */
-  if ((optype0 == REGOP && optype1 == OFFSOP && (REGNO (op0) & 1) == 0)
-      || (optype0 == OFFSOP && optype1 == REGOP && (REGNO (op1) & 1) == 0))
-    {
-      rtx mem, reg;
-      int use_ldx;
-
-      if (optype0 == REGOP)
-	mem = op1, reg = op0;
-      else
-	mem = op0, reg = op1;
-
-      if (mem_aligned_8 (mem)
-	  /* If this is a floating point register higher than %f31,
-	     then we *must* use an aligned load, since `ld' will not accept
-	     the register number.  */
-	  || (TARGET_V9 && REGNO (reg) >= SPARC_FIRST_V9_FP_REG))
-	{
-	  static char * const mov_by_64[2][2][2] = {
-	    { { "std %S1,%2;std %1,%0", "stx %R1,%2;stx %1,%0" },
-	      { "ldd %2,%S0;ldd %1,%0", "ldx %2,%R0;ldx %1,%0" } },
-	    { { "std %1,%0;std %S1,%2", "stx %1,%0;stx %R1,%2" },
-	      { "ldd %1,%0;ldd %2,%S0", "ldx %1,%0;ldx %2,%R0" } }
-	  };
-
-	  if (TARGET_V9 && FP_REG_P (reg) && TARGET_HARD_QUAD)
-	    {
-	      /* Only abort if the register # requires that we use ldq. */
-	      if ((REGNO (reg) & 3) == 0)
-		{
-		  /* ??? Can `mem' have an inappropriate alignment here?  */
-		  return (mem == op1 ? "ldq %1,%0" : "stq %1,%0");
-		}
-	      else 
-		{
-		  if (REGNO (reg) >= SPARC_FIRST_V9_FP_REG)
-		    abort();
-		}
-	    }
-	  operands[2] = adj_offsettable_operand (mem, 8);
-
-	  /* Do the loads in the right order; can't overwrite our address
-	     register. */
-	  use_ldx = TARGET_ARCH64 && !FP_REG_P (reg);
-	  return mov_by_64[!load_late_half[0]][mem == op1][use_ldx];
-	}
-    }
-
-  /* If the first move would clobber the source of the second one,
-     do them in the other order.  */
-
-  /* Overlapping registers?  */
-  if (TARGET_ARCH32)
-    {
-      if (optype0 == REGOP && optype1 == REGOP
-	  && (REGNO (op0) == REGNO (wordpart[1][3])
-	      || REGNO (op0) == REGNO (wordpart[1][2])
-	      || REGNO (op0) == REGNO (wordpart[1][1])))
-	{
-	  /* Do fourth word.  */
-	  output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
-	  /* Do the third word.  */
-	  output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
-	  /* Do the second word.  */
-	  output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
-	  /* Do lowest-numbered word.  */
-	  output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
-	  return "";
-	}
-    }
-  else /* TARGET_ARCH64 */
-    {
-      if (optype0 == REGOP && optype1 == REGOP
-	  && REGNO (op0) == REGNO (wordpart[1][1]))
-	{
-	  output_asm_insn ("mov %1,%0", wordpart[1]);
-	  output_asm_insn ("mov %1,%0", wordpart[0]);
-	  return "";
-	}
-    }
-
-  /* Normal case: move the words in lowest to highest address order.
-     There may have an overlapping register; in that case, skip and go
-     back. */
-
-  if (TARGET_ARCH32)
-    {
-      int i;
-      int offset = 0xc;
-      rtx temp[2];
-
-      for (i = 0; i < 4; i++)
-	{
-	  if (! load_late[i])
-	    output_asm_insn (singlemove_string (wordpart[i]), wordpart[i]);
-
-	  if (i != 3)
-	    {
-	      /* Make any unoffsettable addresses point at the next word.  */
-	      if (addreg0)
-		output_asm_insn ("add %0,0x4,%0", &addreg0);
-	      if (addreg1)
-		output_asm_insn ("add %0,0x4,%0", &addreg1);
-	    }
-	}
-      for (i = 0; i < 4; i++)
-	{
-	  if (load_late[i])
-	    {
-	      int fix = offset - i * 4;
-
-	      /* Back up to the appropriate place. */
-	      temp[1] = GEN_INT (-fix);
-	      if (addreg0)
-		{
-		  temp[0] = addreg0;
-		  output_asm_insn ("add %0,%1,%0", temp);
-		}
-	      if (addreg1)
-		{
-		  temp[0] = addreg1;
-		  output_asm_insn ("add %0,%1,%0", temp);
-		}
-	      output_asm_insn (singlemove_string (wordpart[i]),
-			       wordpart[i]);
-	      /* Don't modify the register that's the destination of the
-		 move. */
-	      temp[0] = GEN_INT (-(offset - fix));
-	      if (addreg0 && REGNO (addreg0) != REGNO (wordpart[i][0]))
-		{
-		  temp[1] = addreg0;
-		  output_asm_insn("add %0,%1,%0", temp);
-		}
-	      if (addreg1 && REGNO (addreg1) != REGNO (wordpart[i][0]))
-		{
-		  temp[1] = addreg1;
-		  output_asm_insn("add %0,%1,%0",temp);
-		}
-	      offset = 0;
-	      break;
-	    }
-	}
-      if (offset)
-	{
-	  temp[1] = GEN_INT (-offset);
-	  /* Undo the adds we just did.  */
-	  if (addreg0)
-	    {
-	      temp[0] = addreg0;
-	      output_asm_insn ("add %0,%1,%0", temp);
-	    }
-	  if (addreg1)
-	    {
-	      temp[0] = addreg1;
-	      output_asm_insn ("add %0,%1,%0", temp);
-	    }
-	}
-    }
-  else /* TARGET_ARCH64 */
-    {
-      if (load_late_half[0]) 
-	{
-	  /* Load the second half first. */
-	  if (addreg0)
-	    output_asm_insn ("add %0,0x8,%0", &addreg0);
-	  if (addreg1)
-	    output_asm_insn ("add %0,0x8,%0", &addreg1);
-
-	  output_asm_insn (doublemove_string (wordpart[1]), wordpart[1]);
-
-	  /* Undo the adds we just did.  */
-	  if (addreg0)
-	    output_asm_insn ("add %0,-0x8,%0", &addreg0);
-	  if (addreg1)
-	    output_asm_insn ("add %0,-0x8,%0", &addreg1);
-
-	  output_asm_insn (doublemove_string (wordpart[0]), wordpart[0]);
-	}
-      else
-	{
-	  output_asm_insn (doublemove_string (wordpart[0]), wordpart[0]);
-
-	  if (addreg0)
-	    output_asm_insn ("add %0,0x8,%0", &addreg0);
-	  if (addreg1)
-	    output_asm_insn ("add %0,0x8,%0", &addreg1);
-
-	  /* Do the second word.  */
-	  output_asm_insn (doublemove_string (wordpart[1]), wordpart[1]);
-
-	  /* Undo the adds we just did.  But don't modify the dest of
-	     the move. */
-	  if (addreg0 && REGNO (addreg0) != REGNO (wordpart[1][0]))
-	    output_asm_insn ("add %0,-0x8,%0", &addreg0);
-	  if (addreg1 && REGNO (addreg1) != REGNO (wordpart[1][0]))
-	    output_asm_insn ("add %0,-0x8,%0", &addreg1);
-	}
-    }
-  
-  return "";
-}
-
-/* Output assembler code to perform a doubleword move insn with operands
-   OPERANDS, one of which must be a floating point register.  */
-
-char *
-output_fp_move_double (operands)
-     rtx *operands;
-{
-  if (FP_REG_P (operands[0]))
-    {
-      if (FP_REG_P (operands[1]))
-	{
-	  if (TARGET_V9)
-	    return "fmovd %1,%0";
-	  else
-	    return "fmovs %1,%0\n\tfmovs %R1,%R0";
-	}
-      else if (GET_CODE (operands[1]) == REG)
-	abort ();
-      else
-	return output_move_double (operands);
-    }
-  else if (FP_REG_P (operands[1]))
-    {
-      if (GET_CODE (operands[0]) == REG)
-	abort ();
-      else
-	return output_move_double (operands);
-    }
-  else abort ();
-}
-
-/* When doing a quad-register move, determine the drection in which
-   the move needs to be performed. SRC and DST are the source and
-   destination registers.
-
-   A value of -1 indicates that the move needs to be done from the
-   highest register to the lowest. */
-
-static int
-move_quad_direction (src, dst)
-     rtx src, dst;
-{
-  if ((REGNO (dst) > REGNO (src))
-      && (REGNO (dst) < (REGNO (src) + 4)))
-    return -1;
-  else
-    return 1;
-}
-
-/* Output assembler code to perform a quadword move insn with operands
-   OPERANDS, one of which must be a floating point register.  */
-
-char *
-output_fp_move_quad (operands)
-     rtx *operands;
-{
-  register rtx op0 = operands[0];
-  register rtx op1 = operands[1];
-
-  if (FP_REG_P (op0))
-    {
-      if (FP_REG_P (op1))
-	{
-	  if (TARGET_V9 && TARGET_HARD_QUAD)
-	    return "fmovq %1,%0";
-	  else if (TARGET_V9)
-	    {
-	      int dir = move_quad_direction (op1, op0);
-	      if (dir > 0)
-		return "fmovd %1,%0\n\tfmovd %S1,%S0";
-	      else 
-		return "fmovd %S1,%S0\n\tfmovd %1,%0";
-	    }
-	  else
-	    {
-	      int dir = move_quad_direction (op0, op1);
-	      if (dir > 0)
-		return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
-	      else
-		return "fmovs %T1,%T0\n\tfmovs %S1,%S0\n\tfmovs %R1,%R0\n\tfmovs %1,%0";
-	    }
-	}
-      else if (GET_CODE (op1) == REG)
-	abort ();
-      else
-	return output_move_quad (operands);
-    }
-  else if (FP_REG_P (op1))
-    {
-      if (GET_CODE (op0) == REG)
-	abort ();
-      else
-	return output_move_quad (operands);
-    }
-  else
-    abort ();
-}
 
 /* Return a REG that occurs in ADDR with coefficient 1.
    ADDR can be effectively incremented by incrementing REG.  */
@@ -2696,71 +2440,6 @@ find_addr_reg (addr)
   if (GET_CODE (addr) == REG)
     return addr;
   abort ();
-}
-
-/* Output reasonable peephole for set-on-condition-code insns.
-   Note that these insns assume a particular way of defining
-   labels.  Therefore, *both* sparc.h and this function must
-   be changed if a new syntax is needed.    */
-
-char *
-output_scc_insn (operands, insn)
-     rtx operands[];
-     rtx insn;
-{
-  static char string[100];
-  rtx label = 0, next = insn;
-  int need_label = 0;
-
-  /* This code used to be called with final_sequence nonzero (for fpcc
-     delay slots), but that is no longer allowed.  */
-  if (final_sequence)
-    abort ();
-
-  /* On UltraSPARC a conditional moves blocks until 3 cycles after prior loads
-     complete.  It might be beneficial here to use branches if any recent
-     instructions were loads.  */
-  if (TARGET_V9 && REGNO (operands[1]) == SPARC_ICC_REG)
-    return "mov 0,%0\n\tmov%C2 %x1,1,%0";
-
-  /* Try doing a jump optimization which jump.c can't do for us
-     because we did not expose that setcc works by using branches.
-
-     If this scc insn is followed by an unconditional branch, then have
-     the jump insn emitted here jump to that location, instead of to
-     the end of the scc sequence as usual.  */
-
-  do
-    {
-      if (GET_CODE (next) == CODE_LABEL)
-	label = next;
-      next = NEXT_INSN (next);
-    }
-  while (next && (GET_CODE (next) == NOTE || GET_CODE (next) == CODE_LABEL));
-
-  if (next && GET_CODE (next) == JUMP_INSN && simplejump_p (next))
-    label = JUMP_LABEL (next);
-
-  /* If not optimizing, jump label fields are not set.  To be safe, always
-     check here to whether label is still zero.  */
-  if (label == 0)
-    {
-      label = gen_label_rtx ();
-      need_label = 1;
-    }
-
-  LABEL_NUSES (label) += 1;
-
-  /* operands[3] is an unused slot.  */
-  operands[3] = label;
-
-  strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0));
-  strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
-
-  if (need_label)
-    strcat (string, "\n%l3:");
-
-  return string;
 }
 
 /* Vectors to keep interesting information about registers where it can easily
@@ -2973,7 +2652,7 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
 	    {
-	      fprintf (file, "\tstx %s,[%s+%d]\n",
+	      fprintf (file, "\tstx\t%s, [%s+%d]\n",
 		       reg_names[i], base, offset + 4 * n_regs);
 	      if (dwarf2out_do_frame ())
 		dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
@@ -2989,7 +2668,7 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 	    {
 	      if (regs_ever_live[i+1] && ! call_used_regs[i+1])
 		{
-		  fprintf (file, "\tstd %s,[%s+%d]\n",
+		  fprintf (file, "\tstd\t%s, [%s+%d]\n",
 			   reg_names[i], base, offset + 4 * n_regs);
 		  if (dwarf2out_do_frame ())
 		    {
@@ -3001,7 +2680,7 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 		}
 	      else
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   reg_names[i], base, offset + 4 * n_regs);
 		  if (dwarf2out_do_frame ())
 		    dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
@@ -3012,7 +2691,7 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 	    {
 	      if (regs_ever_live[i+1] && ! call_used_regs[i+1])
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   reg_names[i+1], base, offset + 4 * n_regs + 4);
 		  if (dwarf2out_do_frame ())
 		    dwarf2out_reg_save ("", i + 1, real_offset + 4 * n_regs + 4);
@@ -3044,7 +2723,7 @@ restore_regs (file, low, high, base, offset, n_regs)
       for (i = low; i < high; i++)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
-	    fprintf (file, "\tldx [%s+%d], %s\n",
+	    fprintf (file, "\tldx\t[%s+%d], %s\n",
 	      base, offset + 4 * n_regs, reg_names[i]),
 	    n_regs += 2;
 	}
@@ -3055,15 +2734,15 @@ restore_regs (file, low, high, base, offset, n_regs)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
 	    if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	      fprintf (file, "\tldd [%s+%d], %s\n",
+	      fprintf (file, "\tldd\t[%s+%d], %s\n",
 		       base, offset + 4 * n_regs, reg_names[i]),
 	      n_regs += 2;
 	    else
-	      fprintf (file, "\tld [%s+%d],%s\n",
+	      fprintf (file, "\tld\t[%s+%d],%s\n",
 		       base, offset + 4 * n_regs, reg_names[i]),
 	      n_regs += 2;
 	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	    fprintf (file, "\tld [%s+%d],%s\n",
+	    fprintf (file, "\tld\t[%s+%d],%s\n",
 		     base, offset + 4 * n_regs + 4, reg_names[i+1]),
 	    n_regs += 2;
 	}
@@ -3152,9 +2831,9 @@ build_big_number (file, num, reg)
 {
   if (num >= 0 || ! TARGET_ARCH64)
     {
-      fprintf (file, "\tsethi %%hi(%d),%s\n", num, reg);
+      fprintf (file, "\tsethi\t%%hi(%d), %s\n", num, reg);
       if ((num & 0x3ff) != 0)
-	fprintf (file, "\tor %s,%%lo(%d),%s\n", reg, num, reg);
+	fprintf (file, "\tor\t%s, %%lo(%d), %s\n", reg, num, reg);
     }
   else /* num < 0 && TARGET_ARCH64 */
     {
@@ -3167,7 +2846,7 @@ build_big_number (file, num, reg)
       int inv = ~asize;
       int low = -0x400 + (asize & 0x3FF);
 	  
-      fprintf (file, "\tsethi %%hi(%d),%s\n\txor %s,%d,%s\n",
+      fprintf (file, "\tsethi\t%%hi(%d), %s\n\txor\t%s, %d, %s\n",
 	       inv, reg, reg, low, reg);
     }
 }
@@ -3203,16 +2882,16 @@ output_function_prologue (file, size, leaf_function)
   else if (! leaf_function && ! TARGET_BROKEN_SAVERESTORE)
     {
       if (actual_fsize <= 4096)
-	fprintf (file, "\tsave %%sp,-%d,%%sp\n", actual_fsize);
+	fprintf (file, "\tsave\t%%sp, -%d, %%sp\n", actual_fsize);
       else if (actual_fsize <= 8192)
 	{
-	  fprintf (file, "\tsave %%sp,-4096,%%sp\n");
-	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	  fprintf (file, "\tsave\t%%sp, -4096, %%sp\n");
+	  fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize - 4096);
 	}
       else
 	{
 	  build_big_number (file, -actual_fsize, "%g1");
-	  fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
+	  fprintf (file, "\tsave\t%%sp, %%g1, %%sp\n");
 	}
     }
   else if (! leaf_function && TARGET_BROKEN_SAVERESTORE)
@@ -3223,31 +2902,31 @@ output_function_prologue (file, size, leaf_function)
       fprintf (file, "\tsave\n");
 
       if (actual_fsize <= 4096)
-	fprintf (file, "\tadd %%fp,-%d,%%sp\n", actual_fsize);
+	fprintf (file, "\tadd\t%%fp, -%d, %%sp\n", actual_fsize);
       else if (actual_fsize <= 8192)
 	{
-	  fprintf (file, "\tadd %%fp,-4096,%%sp\n");
-	  fprintf (file, "\tadd %%fp,-%d,%%sp\n", actual_fsize - 4096);
+	  fprintf (file, "\tadd\t%%fp, -4096, %%sp\n");
+	  fprintf (file, "\tadd\t%%fp, -%d, %%sp\n", actual_fsize - 4096);
 	}
       else
 	{
 	  build_big_number (file, -actual_fsize, "%g1");
-	  fprintf (file, "\tadd %%fp,%%g1,%%sp\n");
+	  fprintf (file, "\tadd\t%%fp, %%g1, %%sp\n");
 	}
     }
   else /* leaf function */
     {
       if (actual_fsize <= 4096)
-	fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize);
+	fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize);
       else if (actual_fsize <= 8192)
 	{
-	  fprintf (file, "\tadd %%sp,-4096,%%sp\n");
-	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	  fprintf (file, "\tadd\t%%sp, -4096, %%sp\n");
+	  fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize - 4096);
 	}
       else
 	{
 	  build_big_number (file, -actual_fsize, "%g1");
-	  fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
+	  fprintf (file, "\tadd\t%%sp, %%g1, %%sp\n");
 	}
     }
 
@@ -3293,7 +2972,7 @@ output_function_prologue (file, size, leaf_function)
 	     output_function_epilogue will lose (the result will get
 	     clobbered).  */
 	  build_big_number (file, offset, "%g1");
-	  fprintf (file, "\tadd %s,%%g1,%%g1\n", frame_base_name);
+	  fprintf (file, "\tadd\t%s, %%g1, %%g1\n", frame_base_name);
 	  base = "%g1";
 	  offset = 0;
 	}
@@ -3348,12 +3027,13 @@ output_function_epilogue (file, size, leaf_function)
 
   else if (current_function_epilogue_delay_list == 0)
     {                                                
-      /* If code does not drop into the epilogue, do nothing.  */
+      /* If code does not drop into the epilogue, we need
+	 do nothing except output pending case vectors.  */
       rtx insn = get_last_insn ();                               
       if (GET_CODE (insn) == NOTE)                               
       insn = prev_nonnote_insn (insn);                           
       if (insn && GET_CODE (insn) == BARRIER)                    
-      return;                                                    
+      goto output_vectors;                                                    
     }
 
   /* Restore any call saved registers.  */
@@ -3366,7 +3046,7 @@ output_function_epilogue (file, size, leaf_function)
       if (offset < -4096 || offset + num_gfregs * 4 > 4096 - 8 /*double*/)
 	{
 	  build_big_number (file, offset, "%g1");
-	  fprintf (file, "\tadd %s,%%g1,%%g1\n", frame_base_name);
+	  fprintf (file, "\tadd\t%s, %%g1, %%g1\n", frame_base_name);
 	  base = "%g1";
 	  offset = 0;
 	}
@@ -3388,9 +3068,9 @@ output_function_epilogue (file, size, leaf_function)
 
   /* Work out how to skip the caller's unimp instruction if required.  */
   if (leaf_function)
-    ret = (SKIP_CALLERS_UNIMP_P ? "jmp %o7+12" : "retl");
+    ret = (SKIP_CALLERS_UNIMP_P ? "jmp\t%o7+12" : "retl");
   else
-    ret = (SKIP_CALLERS_UNIMP_P ? "jmp %i7+12" : "ret");
+    ret = (SKIP_CALLERS_UNIMP_P ? "jmp\t%i7+12" : "ret");
 
   if (TARGET_EPILOGUE || leaf_label)
     {
@@ -3411,7 +3091,7 @@ output_function_epilogue (file, size, leaf_function)
 	      final_scan_insn (insn, file, 1, 0, 1);
 	    }
 	  else if (TARGET_V9 && ! SKIP_CALLERS_UNIMP_P)
-	    fputs ("\treturn %i7+8\n\tnop\n", file);
+	    fputs ("\treturn\t%i7+8\n\tnop\n", file);
 	  else
 	    fprintf (file, "\t%s\n\trestore\n", ret);
 	}
@@ -3433,18 +3113,21 @@ output_function_epilogue (file, size, leaf_function)
       else if (actual_fsize == 0)
 	fprintf (file, "\t%s\n\tnop\n", ret);
       else if (actual_fsize <= 4096)
-	fprintf (file, "\t%s\n\tsub %%sp,-%d,%%sp\n", ret, actual_fsize);
+	fprintf (file, "\t%s\n\tsub\t%%sp, -%d, %%sp\n", ret, actual_fsize);
       else if (actual_fsize <= 8192)
-	fprintf (file, "\tsub %%sp,-4096,%%sp\n\t%s\n\tsub %%sp,-%d,%%sp\n",
+	fprintf (file, "\tsub\t%%sp, -4096, %%sp\n\t%s\n\tsub\t%%sp, -%d, %%sp\n",
 		 ret, actual_fsize - 4096);
       else if ((actual_fsize & 0x3ff) == 0)
-	fprintf (file, "\tsethi %%hi(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
+	fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
 		 actual_fsize, ret);
       else		 
-	fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
+	fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
 		 actual_fsize, actual_fsize, ret);
       target_flags |= old_target_epilogue;
     }
+
+ output_vectors:
+  sparc_output_deferred_case_vectors ();
 }
 
 /* Functions for handling argument passing.
@@ -4366,16 +4049,16 @@ output_cbranch (op, label, reversed, annul, noop, insn)
      int reversed, annul, noop;
      rtx insn;
 {
-  static char string[20];
+  static char string[32];
   enum rtx_code code = GET_CODE (op);
   rtx cc_reg = XEXP (op, 0);
   enum machine_mode mode = GET_MODE (cc_reg);
-  static char v8_labelno[] = " %lX";
-  static char v9_icc_labelno[] = " %%icc,%lX";
-  static char v9_xcc_labelno[] = " %%xcc,%lX";
-  static char v9_fcc_labelno[] = " %%fccX,%lY";
+  static char v8_labelno[] = "%lX";
+  static char v9_icc_labelno[] = "%%icc, %lX";
+  static char v9_xcc_labelno[] = "%%xcc, %lX";
+  static char v9_fcc_labelno[] = "%%fccX, %lY";
   char *labelno;
-  int labeloff;
+  int labeloff, spaces = 8;
 
   /* ??? !v9: FP branches cannot be preceded by another floating point insn.
      Because there is currently no concept of pre-delay slots, we can fix
@@ -4396,16 +4079,28 @@ output_cbranch (op, label, reversed, annul, noop, insn)
     {
     case NE:
       if (mode == CCFPmode || mode == CCFPEmode)
-	strcat (string, "fbne");
+	{
+	  strcat (string, "fbne");
+	  spaces -= 4;
+	}
       else
-	strcpy (string, "bne");
+	{
+	  strcpy (string, "bne");
+	  spaces -= 3;
+	}
       break;
 
     case EQ:
       if (mode == CCFPmode || mode == CCFPEmode)
-	strcat (string, "fbe");
+	{
+	  strcat (string, "fbe");
+	  spaces -= 3;
+	}
       else
-	strcpy (string, "be");
+	{
+	  strcpy (string, "be");
+	  spaces -= 2;
+	}
       break;
 
     case GE:
@@ -4415,23 +4110,39 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 	    strcat (string, "fbul");
 	  else
 	    strcat (string, "fbge");
+	  spaces -= 4;
 	}
       else if (mode == CC_NOOVmode)
-	strcpy (string, "bpos");
+	{
+	  strcpy (string, "bpos");
+	  spaces -= 4;
+	}
       else
-	strcpy (string, "bge");
+	{
+	  strcpy (string, "bge");
+	  spaces -= 3;
+	}
       break;
 
     case GT:
       if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
-	    strcat (string, "fbule");
+	    {
+	      strcat (string, "fbule");
+	      spaces -= 5;
+	    }
 	  else
-	    strcat (string, "fbg");
+	    {
+	      strcat (string, "fbg");
+	      spaces -= 3;
+	    }
 	}
       else
-	strcpy (string, "bg");
+	{
+	  strcpy (string, "bg");
+	  spaces -= 2;
+	}
       break;
 
     case LE:
@@ -4441,52 +4152,75 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 	    strcat (string, "fbug");
 	  else
 	    strcat (string, "fble");
+	  spaces -= 4;
 	}
       else
-	strcpy (string, "ble");
+	{
+	  strcpy (string, "ble");
+	  spaces -= 3;
+	}
       break;
 
     case LT:
       if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
-	    strcat (string, "fbuge");
+	    {
+	      strcat (string, "fbuge");
+	      spaces -= 5;
+	    }
 	  else
-	    strcat (string, "fbl");
+	    {
+	      strcat (string, "fbl");
+	      spaces -= 3;
+	    }
 	}
       else if (mode == CC_NOOVmode)
-	strcpy (string, "bneg");
+	{
+	  strcpy (string, "bneg");
+	  spaces -= 4;
+	}
       else
-	strcpy (string, "bl");
+	{
+	  strcpy (string, "bl");
+	  spaces -= 2;
+	}
       break;
 
     case GEU:
       strcpy (string, "bgeu");
+      spaces -= 4;
       break;
 
     case GTU:
       strcpy (string, "bgu");
+      spaces -= 3;
       break;
 
     case LEU:
       strcpy (string, "bleu");
+      spaces -= 4;
       break;
 
     case LTU:
       strcpy (string, "blu");
+      spaces -= 3;
       break;
 
     default:
-      break;
+      abort ();
     }
 
   /* Now add the annulling, the label, and a possible noop.  */
   if (annul)
-    strcat (string, ",a");
+    {
+      strcat (string, ",a");
+      spaces -= 2;
+    }
 
   if (! TARGET_V9)
     {
-      labeloff = 3;
+      labeloff = 2;
       labelno = v8_labelno;
     }
   else
@@ -4494,7 +4228,11 @@ output_cbranch (op, label, reversed, annul, noop, insn)
       rtx note;
 
       if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
-	strcat (string, INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
+	{
+	  strcat (string,
+		  INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
+	  spaces -= 3;
+	}
 
       labeloff = 9;
       if (mode == CCFPmode || mode == CCFPEmode)
@@ -4502,7 +4240,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 	  labeloff = 10;
 	  labelno = v9_fcc_labelno;
 	  /* Set the char indicating the number of the fcc reg to use.  */
-	  labelno[6] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
+	  labelno[5] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
 	}
       else if (mode == CCXmode || mode == CCX_NOOVmode)
 	labelno = v9_xcc_labelno;
@@ -4512,6 +4250,10 @@ output_cbranch (op, label, reversed, annul, noop, insn)
   /* Set the char indicating the number of the operand containing the
      label_ref.  */
   labelno[labeloff] = label + '0';
+  if (spaces > 0)
+    strcat (string, "\t");
+  else
+    strcat (string, " ");
   strcat (string, labelno);
 
   if (noop)
@@ -4532,15 +4274,18 @@ output_cbranch (op, label, reversed, annul, noop, insn)
    NOOP is non-zero if we have to follow this branch by a noop.  */
 
 char *
-output_v9branch (op, reg, label, reversed, annul, noop)
+output_v9branch (op, reg, label, reversed, annul, noop, insn)
      rtx op;
      int reg, label;
      int reversed, annul, noop;
+     rtx insn;
 {
   static char string[20];
   enum rtx_code code = GET_CODE (op);
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
-  static char labelno[] = " %X,%lX";
+  static char labelno[] = "%X, %lX";
+  rtx note;
+  int spaces = 8;
 
   /* If not floating-point or if EQ or NE, we can just reverse the code.  */
   if (reversed)
@@ -4556,26 +4301,32 @@ output_v9branch (op, reg, label, reversed, annul, noop)
     {
     case NE:
       strcpy (string, "brnz");
+      spaces -= 4;
       break;
 
     case EQ:
       strcpy (string, "brz");
+      spaces -= 3;
       break;
 
     case GE:
       strcpy (string, "brgez");
+      spaces -= 5;
       break;
 
     case LT:
       strcpy (string, "brlz");
+      spaces -= 4;
       break;
 
     case LE:
       strcpy (string, "brlez");
+      spaces -= 5;
       break;
 
     case GT:
       strcpy (string, "brgz");
+      spaces -= 4;
       break;
 
     default:
@@ -4584,12 +4335,24 @@ output_v9branch (op, reg, label, reversed, annul, noop)
 
   /* Now add the annulling, reg, label, and nop.  */
   if (annul)
-    strcat (string, ",a");
+    {
+      strcat (string, ",a");
+      spaces -= 2;
+    }
 
-  /* ??? Optional prediction bit ",pt" or ",pf" goes here.  */
+  if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+    {
+      strcat (string,
+	      INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
+      spaces -= 3;
+    }
 
-  labelno[2] = reg + '0';
+  labelno[1] = reg + '0';
   labelno[6] = label + '0';
+  if (spaces > 0)
+    strcat (string, "\t");
+  else
+    strcat (string, " ");
   strcat (string, labelno);
 
   if (noop)
@@ -4681,24 +4444,24 @@ output_return (operands)
       if (actual_fsize <= 4096)
 	{
 	  if (SKIP_CALLERS_UNIMP_P)
-	    return "jmp %%o7+12\n\tsub %%sp,-%0,%%sp";
+	    return "jmp\t%%o7+12\n\tsub\t%%sp, -%0, %%sp";
 	  else
-	    return "retl\n\tsub %%sp,-%0,%%sp";
+	    return "retl\n\tsub\t%%sp, -%0, %%sp";
 	}
       else if (actual_fsize <= 8192)
 	{
 	  operands[0] = GEN_INT (actual_fsize - 4096);
 	  if (SKIP_CALLERS_UNIMP_P)
-	    return "sub %%sp,-4096,%%sp\n\tjmp %%o7+12\n\tsub %%sp,-%0,%%sp";
+	    return "sub\t%%sp, -4096, %%sp\n\tjmp\t%%o7+12\n\tsub\t%%sp, -%0, %%sp";
 	  else
-	    return "sub %%sp,-4096,%%sp\n\tretl\n\tsub %%sp,-%0,%%sp";
+	    return "sub\t%%sp, -4096, %%sp\n\tretl\n\tsub\t%%sp, -%0, %%sp";
 	}
       else if (SKIP_CALLERS_UNIMP_P)
 	{
 	  if ((actual_fsize & 0x3ff) != 0)
-	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
+	    return "sethi\t%%hi(%a0), %%g1\n\tor\t%%g1, %%lo(%a0), %%g1\n\tjmp\t%%o7+12\n\tadd\t%%sp, %%g1, %%sp";
 	  else
-	    return "sethi %%hi(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
+	    return "sethi\t%%hi(%a0), %%g1\n\tjmp\t%%o7+12\n\tadd\t%%sp, %%g1, %%sp";
 	}
       else
 	{
@@ -4716,16 +4479,16 @@ output_return (operands)
 	  epilogue_renumber (&SET_SRC (PATTERN (delay)));
 	}
       if (SKIP_CALLERS_UNIMP_P)
-	return "return %%i7+12%#";
+	return "return\t%%i7+12%#";
       else
-	return "return %%i7+8%#";
+	return "return\t%%i7+8%#";
     }
   else
     {
       if (delay)
 	abort ();
       if (SKIP_CALLERS_UNIMP_P)
-	return "jmp %%i7+12\n\trestore";
+	return "jmp\t%%i7+12\n\trestore";
       else
 	return "ret\n\trestore";
     }
@@ -4756,6 +4519,34 @@ order_regs_for_local_alloc ()
     }
 }
 
+/* Return 1 if REG and MEM are legitimate enough to allow the various
+   mem<-->reg splits to be run.  */
+
+int
+sparc_splitdi_legitimate(reg, mem)
+     rtx reg;
+     rtx mem;
+{
+  rtx addr_part = XEXP (mem, 0);
+
+  /* Punt if we are here by mistake.  */
+  if (! reload_completed)
+    abort();
+
+  /* We must have an offsettable memory reference.  */
+  if (! offsettable_memref_p (mem))
+    return 0;
+
+  /* If we have legitimate args for ldd/std, we do not want
+     the split to happen.  */
+  if ((REGNO (reg) % 2) == 0
+      && mem_min_alignment (mem, 8))
+    return 0;
+
+  /* Success.  */
+  return 1;
+}
+
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
    This makes them candidates for using ldd and std insns. 
 
@@ -4886,7 +4677,7 @@ print_operand (file, x, code)
     case '#':
       /* Output a 'nop' if there's nothing for the delay slot.  */
       if (dbr_sequence_length () == 0)
-	fputs ("\n\tnop", file);
+	fputs ("\n\t nop", file);
       return;
     case '*':
       /* Output an annul flag if there's nothing for the delay slot and we
@@ -4904,7 +4695,7 @@ print_operand (file, x, code)
 	 not optimizing.  This is always used with '*' above.  */
       if (dbr_sequence_length () == 0
 	  && ! (optimize && (int)sparc_cpu < PROCESSOR_V9))
-	fputs ("\n\tnop", file);
+	fputs ("\n\t nop", file);
       return;
     case '_':
       /* Output the Embedded Medium/Anywhere code model base register.  */
@@ -5106,7 +4897,10 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == LO_SUM)
     {
       print_operand (file, XEXP (x, 0), 0);
-      fputs ("+%lo(", file);
+      if (TARGET_CM_MEDMID)
+	fputs ("+%l44(", file);
+      else
+	fputs ("+%lo(", file);
       output_addr_const (file, XEXP (x, 1));
       fputc (')', file);
     }
@@ -5355,10 +5149,10 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
 {
   /* SPARC 32 bit trampoline:
 
- 	sethi %hi(fn),%g1
- 	sethi %hi(static),%g2
- 	jmp %g1+%lo(fn)
- 	or %g2,%lo(static),%g2
+ 	sethi	%hi(fn), %g1
+ 	sethi	%hi(static), %g2
+ 	jmp	%g1+%lo(fn)
+ 	or	%g2, %lo(static), %g2
 
     SETHI i,r  = 00rr rrr1 00ii iiii iiii iiii iiii iiii
     JMPL r+i,d = 10dd ddd1 1100 0rrr rr1i iiii iiii iiii
@@ -5407,10 +5201,10 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
   /*
-	rd %pc,%g1
-	ldx [%g1+24],%g5
-	jmp %g5
-	ldx [%g1+16],%g5
+	rd	%pc, %g1
+	ldx	[%g1+24], %g5
+	jmp	%g5
+	ldx	[%g1+16], %g5
 	+16 bytes data
    */
 
@@ -5676,7 +5470,7 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 
 		  if (word_op[0] == 's')
 		    {
-		      fprintf (file, "\t%s %s,[%s+%d]\n",
+		      fprintf (file, "\t%s\t%s, [%s+%d]\n",
 			       doubleword_op, reg_names[regno],
 			       base_reg, offset);
 		      if (dwarf2out_do_frame ())
@@ -5688,7 +5482,7 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 			}
 		    }
 		  else
-		    fprintf (file, "\t%s [%s+%d],%s\n",
+		    fprintf (file, "\t%s\t[%s+%d], %s\n",
 			     doubleword_op, base_reg, offset,
 			     reg_names[regno]);
 
@@ -5699,14 +5493,14 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 		{
 		  if (word_op[0] == 's')
 		    {
-		      fprintf (file, "\t%s %s,[%s+%d]\n",
+		      fprintf (file, "\t%s\t%s, [%s+%d]\n",
 			       word_op, reg_names[regno],
 			       base_reg, offset);
 		      if (dwarf2out_do_frame ())
 			dwarf2out_reg_save ("", regno, offset + base_offset);
 		    }
 		  else
-		    fprintf (file, "\t%s [%s+%d],%s\n",
+		    fprintf (file, "\t%s\t[%s+%d], %s\n",
 			     word_op, base_reg, offset, reg_names[regno]);
 
 		  offset += UNITS_PER_WORD;
@@ -5723,14 +5517,14 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 	    {
 	      if (word_op[0] == 's')
 		{
-		  fprintf (file, "\t%s %s,[%s+%d]\n",
+		  fprintf (file, "\t%s\t%s, [%s+%d]\n",
 			   word_op, reg_names[regno],
 			   base_reg, offset);
 		  if (dwarf2out_do_frame ())
 		    dwarf2out_reg_save ("", regno, offset + base_offset);
 		}
 	      else
-		fprintf (file, "\t%s [%s+%d],%s\n",
+		fprintf (file, "\t%s\t[%s+%d], %s\n",
 			 word_op, base_reg, offset, reg_names[regno]);
 
 	      offset += UNITS_PER_WORD;
@@ -5802,26 +5596,26 @@ sparc_flat_output_function_prologue (file, size)
 	{
 	  if (size <= 4096)
 	    {
-	      fprintf (file, "\tadd %s,%d,%s\n",
+	      fprintf (file, "\tadd\t%s, %d, %s\n",
 		       sp_str, -size, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
-		  fprintf (file, "\tsub %s,%d,%s\t%s# set up frame pointer\n",
+		  fprintf (file, "\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
 			   sp_str, -size, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+	      fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
 		       size, t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
-		  fprintf (file, "\tadd %s,%s,%s\t%s# set up frame pointer\n",
+		  fprintf (file, "\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
 			   sp_str, t1_str, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
@@ -5840,7 +5634,7 @@ sparc_flat_output_function_prologue (file, size)
 	    }
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
-	      fprintf (file, "\tst %s,[%s+%d]\n",
+	      fprintf (file, "\tst\t%s, [%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, reg_offset);
 	      if (dwarf2out_do_frame ())
 		dwarf2out_return_save ("", reg_offset - size);
@@ -5862,11 +5656,11 @@ sparc_flat_output_function_prologue (file, size)
 	  
 	  if (size1 <= 4096)
 	    {
-	      fprintf (file, "\tadd %s,%d,%s\n",
+	      fprintf (file, "\tadd\t%s, %d, %s\n",
 		       sp_str, -size1, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n\tsub %s,%d,%s\t%s# set up frame pointer\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
 			   fp_str, sp_str, offset, sp_str, -size1, fp_str,
 			   ASM_COMMENT_START);
 		  offset += 4;
@@ -5874,11 +5668,11 @@ sparc_flat_output_function_prologue (file, size)
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+	      fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
 		       size1, t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n\tadd %s,%s,%s\t%s# set up frame pointer\n",
+		  fprintf (file, "\tst\t%s, [%s+%d]\n\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
 			   fp_str, sp_str, offset, sp_str, t1_str, fp_str,
 			   ASM_COMMENT_START);
 		  offset += 4;
@@ -5898,7 +5692,7 @@ sparc_flat_output_function_prologue (file, size)
 	    }
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
-	      fprintf (file, "\tst %s,[%s+%d]\n",
+	      fprintf (file, "\tst\t%s, [%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
 	      if (dwarf2out_do_frame ())
 		/* offset - size1 == reg_offset - size
@@ -5910,7 +5704,7 @@ sparc_flat_output_function_prologue (file, size)
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size1);
-	  fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+	  fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
 		   size - size1, t1_str, sp_str, t1_str, sp_str);
 	  if (dwarf2out_do_frame ())
 	    if (! (gmask & FRAME_POINTER_MASK))
@@ -5970,15 +5764,15 @@ sparc_flat_output_function_epilogue (file, size)
 	 delay slot if not otherwise filled by the reload sequence.  */
 
       if (size > 4095)
-	fprintf (file, "\tset %d,%s\n", size, t1_str);
+	fprintf (file, "\tset\t%d, %s\n", size, t1_str);
 
       if (frame_pointer_needed)
 	{
 	  if (size > 4095)
-	    fprintf (file,"\tsub %s,%s,%s\t\t%s# sp not trusted here\n",
+	    fprintf (file,"\tsub\t%s, %s, %s\t\t%s# sp not trusted here\n",
 		     fp_str, t1_str, sp_str, ASM_COMMENT_START);
 	  else
-	    fprintf (file,"\tsub %s,%d,%s\t\t%s# sp not trusted here\n",
+	    fprintf (file,"\tsub\t%s, %d, %s\t\t%s# sp not trusted here\n",
 		     fp_str, size, sp_str, ASM_COMMENT_START);
 	}
 
@@ -5996,7 +5790,7 @@ sparc_flat_output_function_epilogue (file, size)
 	  /* Offset to register save area from %sp.  */
 	  reg_offset = size1 - reg_offset;
 
-	  fprintf (file, "\tset %d,%s\n\tadd %s,%s,%s\n",
+	  fprintf (file, "\tset\t%d, %s\n\tadd\t%s, %s, %s\n",
 		   size1, t1_str, sp_str, t1_str, sp_str);
 	}
 
@@ -6004,13 +5798,13 @@ sparc_flat_output_function_epilogue (file, size)
 	 because they are treated specially by the prologue output code.  */
       if (current_frame_info.gmask & FRAME_POINTER_MASK)
 	{
-	  fprintf (file, "\tld [%s+%d],%s\n",
+	  fprintf (file, "\tld\t[%s+%d], %s\n",
 		   sp_str, reg_offset, fp_str);
 	  reg_offset += 4;
 	}
       if (current_frame_info.gmask & RETURN_ADDR_MASK)
 	{
-	  fprintf (file, "\tld [%s+%d],%s\n",
+	  fprintf (file, "\tld\t[%s+%d], %s\n",
 		   sp_str, reg_offset, reg_names[RETURN_ADDR_REGNUM]);
 	  reg_offset += 4;
 	}
@@ -6027,12 +5821,12 @@ sparc_flat_output_function_epilogue (file, size)
 	{
 	  size -= size1;
 	  if (size > 4095)
-	    fprintf (file, "\tset %d,%s\n",
+	    fprintf (file, "\tset\t%d, %s\n",
 		     size, t1_str);
 	}
 
       if (current_function_returns_struct)
-	fprintf (file, "\tjmp %%o7+12\n");
+	fprintf (file, "\tjmp\t%%o7+12\n");
       else
 	fprintf (file, "\tretl\n");
 
@@ -6049,10 +5843,10 @@ sparc_flat_output_function_epilogue (file, size)
 	}
 
       else if (size > 4095)
-	fprintf (file, "\tadd %s,%s,%s\n", sp_str, t1_str, sp_str);
+	fprintf (file, "\tadd\t%s, %s, %s\n", sp_str, t1_str, sp_str);
 
       else if (size > 0)
-	fprintf (file, "\tadd %s,%d,%s\n", sp_str, size, sp_str);
+	fprintf (file, "\tadd\t%s, %d, %s\n", sp_str, size, sp_str);
 
       else
 	fprintf (file, "\tnop\n");
@@ -6060,6 +5854,8 @@ sparc_flat_output_function_epilogue (file, size)
 
   /* Reset state info for each function.  */
   current_frame_info = zero_frame_info;
+
+  sparc_output_deferred_case_vectors ();
 }
 
 /* Define the number of delay slots needed for the function epilogue.
@@ -6342,8 +6138,6 @@ set_extends(x, insn)
       /* LO_SUM is used with sethi.  sethi cleared the high
 	 bits and the values used with lo_sum are positive */
     case LO_SUM:
-      /* UNSPEC is v8plus_clear_high */
-    case UNSPEC:
       /* Store flag stores 0 or 1 */
     case LT: case LTU:
     case GT: case GTU:
@@ -6378,6 +6172,86 @@ set_extends(x, insn)
     default:
       return 0;
     }
+}
+
+/* We _ought_ to have only one kind per function, but... */
+static rtx sparc_addr_diff_list;
+static rtx sparc_addr_list;
+
+void
+sparc_defer_case_vector (lab, vec, diff)
+     rtx lab, vec;
+     int diff;
+{
+  vec = gen_rtx_EXPR_LIST (VOIDmode, lab, vec);
+  if (diff)
+    sparc_addr_diff_list
+      = gen_rtx_EXPR_LIST (VOIDmode, vec, sparc_addr_diff_list);
+  else
+    sparc_addr_list = gen_rtx_EXPR_LIST (VOIDmode, vec, sparc_addr_list);
+}
+
+static void 
+sparc_output_addr_vec (vec)
+     rtx vec;
+{
+  rtx lab = XEXP (vec, 0), body = XEXP (vec, 1);
+  int idx, vlen = XVECLEN (body, 0);
+
+#ifdef ASM_OUTPUT_CASE_LABEL
+  ASM_OUTPUT_CASE_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab),
+			 NEXT_INSN (lab));
+#else
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
+#endif
+
+  for (idx = 0; idx < vlen; idx++)
+    {
+      ASM_OUTPUT_ADDR_VEC_ELT
+	(asm_out_file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+    }
+}
+
+static void 
+sparc_output_addr_diff_vec (vec)
+     rtx vec;
+{
+  rtx lab = XEXP (vec, 0), body = XEXP (vec, 1);
+  rtx base = XEXP (XEXP (body, 0), 0);
+  int idx, vlen = XVECLEN (body, 1);
+
+#ifdef ASM_OUTPUT_CASE_LABEL
+  ASM_OUTPUT_CASE_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab),
+			 NEXT_INSN (lab));
+#else
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
+#endif
+
+  for (idx = 0; idx < vlen; idx++)
+    {
+      ASM_OUTPUT_ADDR_DIFF_ELT
+        (asm_out_file,
+         body,
+         CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
+         CODE_LABEL_NUMBER (base));
+    }
+}
+
+static void
+sparc_output_deferred_case_vectors ()
+{
+  rtx t;
+
+  /* Align to cache line in the function's code section.  */
+  function_section (current_function_decl);
+  ASM_OUTPUT_ALIGN (asm_out_file, 5);
+  
+  for (t = sparc_addr_list; t ; t = XEXP (t, 1))
+    sparc_output_addr_vec (XEXP (t, 0));
+  for (t = sparc_addr_diff_list; t ; t = XEXP (t, 1))
+    sparc_output_addr_diff_vec (XEXP (t, 0));
+
+  sparc_addr_list = sparc_addr_diff_list = NULL_RTX;
 }
 
 /* Return 0 if the high 32 bits of X (the low word of X, if DImode) are

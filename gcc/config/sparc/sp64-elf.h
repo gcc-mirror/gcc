@@ -102,9 +102,10 @@ crtbegin.o%s \
 /* The medium/anywhere code model practically requires us to put jump tables
    in the text section as gcc is unable to distinguish LABEL_REF's of jump
    tables from other label refs (when we need to).  */
-/* ??? Revisit this.  */
+/* But we now defer the tables to the end of the function, so we make
+   this 0 to not confuse the branch shortening code.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#define JUMP_TABLES_IN_TEXT_SECTION 0
 
 /* System V Release 4 uses DWARF debugging info.
    GDB doesn't support 64 bit stabs yet and the desired debug format is DWARF
