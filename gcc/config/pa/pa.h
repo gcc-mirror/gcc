@@ -1393,10 +1393,12 @@ while (0)
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
  ((((CLASS1 == FP_REGS || CLASS1 == SNAKE_FP_REGS	\
      || CLASS1 == HI_SNAKE_FP_REGS)			\
-    && (CLASS2 == R1_REGS || CLASS2 == GENERAL_REGS))	\
-   || ((CLASS1 == R1_REGS || CLASS1 == GENERAL_REGS)	\
+    && (CLASS2 == R1_REGS || CLASS2 == GENERAL_REGS	\
+	|| CLASS2 == SHIFT_REGS))			\
+   || ((CLASS1 == R1_REGS || CLASS1 == GENERAL_REGS	\
+	|| CLASS1 == SHIFT_REGS)			\
        && (CLASS2 == FP_REGS || CLASS2 == SNAKE_FP_REGS	\
-	   || CLASS2 == HI_SNAKE_FP_REGS))) ? 6 : 2)	
+	   || CLASS2 == HI_SNAKE_FP_REGS))) ? 16 : 2)	
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
