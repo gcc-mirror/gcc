@@ -1,5 +1,11 @@
 Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Thu Sep  2 20:08:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* regmove.c (fixup_match_1): Don't change an unchanging register.
+	(stable_but_for_p): Renamed to:
+	(stable_and_no_regs_but_for_p).  Reject unchanging registers too.
+	Changed all callers.
+
 	Tue Aug 17 22:06:11 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	* haifa-sched.c (insn_unit): Fix typo on out of range test.
 	* sched.c (insn_unit): Likewise.

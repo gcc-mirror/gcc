@@ -62,7 +62,7 @@ static int find_matches PROTO((rtx, struct match *));
 static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
 static int reg_is_remote_constant_p PROTO((rtx, rtx, rtx));
-static int stable_but_for_p PROTO((rtx, rtx, rtx));
+static int stable_and_no_regs_but_for_p PROTO((rtx, rtx, rtx));
 static int regclass_compatible_p PROTO((int, int));
 static int loop_depth;
 
@@ -1663,6 +1663,12 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note;
   int length, s_length, true_loop_depth;
 
+  /* If SRC is marked as unchanging, we may not change it.
+     ??? Maybe we could get better code by removing the unchanging bit
+     instead, and changing it back if we don't succeed?  */
+  if (RTX_UNCHANGING_P (src))
+    return 0;
+
   if (! src_note)
     {
       /* Look for (set (regX) (op regA constX))
@@ -1679,7 +1685,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  && XEXP (SET_SRC (set), 0) == src
 	  && GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
 	insn_const = INTVAL (XEXP (SET_SRC (set), 1));
-      else if (! stable_but_for_p (SET_SRC (set), src, dst))
+      else if (! stable_and_no_regs_but_for_p (SET_SRC (set), src, dst))
 	return 0;
       else
 	/* We might find a src_note while scanning.  */
@@ -2089,10 +2095,16 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 }
 
 
-/* return nonzero if X is stable but for mentioning SRC or mentioning /
-   changing DST .  If in doubt, presume it is unstable.  */
+/* return nonzero if X is stable and mentions no regsiters but for
+   mentioning SRC or mentioning / changing DST .  If in doubt, presume
+   it is unstable.
+   The rationale is that we want to check if we can move an insn easily
+   while just paying attention to SRC and DST.  A register is considered
+   stable if it has the RTX_UNCHANGING_P bit set, but that would still
+   leave the burden to update REG_DEAD / REG_UNUSED notes, so we don't
+   want any registers but SRC and DST.  */
 static int
-stable_but_for_p (x, src, dst)
+stable_and_no_regs_but_for_p (x, src, dst)
      rtx x, src, dst;
 {
   RTX_CODE code = GET_CODE (x);
@@ -2103,13 +2115,19 @@ stable_but_for_p (x, src, dst)
 	int i;
 	char *fmt = GET_RTX_FORMAT (code);
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	  if (fmt[i] == 'e' && ! stable_but_for_p (XEXP (x, i), src, dst))
+	  if (fmt[i] == 'e'
+	      && ! stable_and_no_regs_but_for_p (XEXP (x, i), src, dst))
 	      return 0;
 	return 1;
       }
     case 'o':
-      if (x == src || x == dst)
-	return 1;
+      if (code == REG)
+	return x == src || x == dst;
+      /* If this is a MEM, look inside - there might be a register hidden in
+	 the address of an unchanging MEM.  */
+      if (code == MEM
+	  && ! stable_and_no_regs_but_for_p (XEXP (x, 0), src, dst))
+	return 0;
       /* fall through */
     default:
       return ! rtx_unstable_p (x);
