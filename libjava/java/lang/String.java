@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
 import java.lang.Comparable;
 import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
@@ -31,13 +32,13 @@ public final class String implements Serializable, Comparable
   // but it will avoid showing up as a discrepancy when comparing SUIDs.
   private static final long serialVersionUID = -6849794470754667710L;
 
-  static Comparator CASE_INSENSITIVE_ORDER = new Comparator()
+  public static final Comparator CASE_INSENSITIVE_ORDER = new Comparator()
+  {
+    public int compare (Object o1, Object o2)
     {
-      public int compare (Object o1, Object o2)
-      {
-        return ((String) o1).compareToIgnoreCase ((String) o2);
-      }
-    };
+      return ((String) o1).compareToIgnoreCase ((String) o2);
+    }
+  };
 
   public String ()
   {
@@ -276,9 +277,26 @@ public final class String implements Serializable, Comparable
 
   public native String replace (char oldChar, char newChar);
 
-  public native String toLowerCase ();
+  public native String toLowerCase (Locale locale);
+  public native String toUpperCase (Locale locale);
 
-  public native String toUpperCase ();
+  public String toLowerCase ()
+  {
+    // The JDK is a bit confused about what to do here.  If we pass in
+    // the default Locale then special Locale handling might be
+    // invoked.  However, the docs also say that Character.toLowerCase
+    // rules here.  We go with the latter.
+    return toLowerCase (null);
+  }
+
+  public String toUpperCase ()
+  {
+    // The JDK is a bit confused about what to do here.  If we pass in
+    // the default Locale then special Locale handling might be
+    // invoked.  However, the docs also say that Character.toLowerCase
+    // rules here.  We go with the latter.
+    return toUpperCase (null);
+  }
 
   public native String trim ();
 

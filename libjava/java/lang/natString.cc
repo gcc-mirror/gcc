@@ -24,6 +24,7 @@ details.  */
 #include <java/io/OutputStreamWriter.h>
 #include <java/io/ByteArrayInputStream.h>
 #include <java/io/InputStreamReader.h>
+#include <java/util/Locale.h>
 #include <gnu/gcj/convert/UnicodeToBytes.h>
 #include <gnu/gcj/convert/BytesToUnicode.h>
 #include <jvm.h>
@@ -32,6 +33,14 @@ static jstring* strhash = NULL;
 static int strhash_count = 0;  /* Number of slots used in strhash. */
 static int strhash_size = 0;  /* Number of slots available in strhash.
                                * Assumed be power of 2! */
+
+// Some defines used by toUpperCase / toLowerCase.
+#define ESSET     0x00df
+#define CAPITAL_S 0x0053
+#define SMALL_I   0x0069
+#define CAPITAL_I_WITH_DOT 0x0130
+#define SMALL_DOTLESS_I    0x0131
+#define CAPITAL_I 0x0049
 
 #define DELETED_STRING ((jstring)(~0))
 #define SET_STRING_IS_INTERNED(STR) /* nothing */
@@ -755,16 +764,32 @@ java::lang::String::replace (jchar oldChar, jchar newChar)
 }
 
 jstring
-java::lang::String::toLowerCase ()
+java::lang::String::toLowerCase (java::util::Locale *locale)
 {
   jint i;
   jchar* chrs = JvGetStringChars(this);
   jchar ch;
+
+  bool handle_tr = false;
+  if (locale != NULL)
+    {
+      String *lang = locale->getLanguage ();
+      if (lang->length () == 2
+	  && lang->charAt (0) == 't'
+	  && lang->charAt (1) == 'r')
+	handle_tr = true;
+    }
+
   for (i = 0;  ;  i++)
     {
       if (i == count)
 	return this;
       jchar origChar = chrs[i];
+
+      if (handle_tr && (origChar == CAPITAL_I
+			|| origChar == CAPITAL_I_WITH_DOT))
+	break;
+
       ch = java::lang::Character::toLowerCase(origChar);
       if (ch != origChar)
 	break;
@@ -776,34 +801,80 @@ java::lang::String::toLowerCase ()
   *dPtr++ = ch;  i++;
   for (; i < count;  i++)
     {
-      *dPtr++ = java::lang::Character::toLowerCase(chrs[i]);
+      if (handle_tr && chrs[i] == CAPITAL_I)
+	*dPtr++ = SMALL_DOTLESS_I;
+      else if (handle_tr && chrs[i] == CAPITAL_I_WITH_DOT)
+	*dPtr++ = SMALL_I;
+      else
+	*dPtr++ = java::lang::Character::toLowerCase(chrs[i]);
     }
   return result;
 }
 
 jstring
-java::lang::String::toUpperCase ()
+java::lang::String::toUpperCase (java::util::Locale *locale)
 {
   jint i;
   jchar* chrs = JvGetStringChars(this);
   jchar ch;
+
+  // When handling a specific locale there might be special rules.
+  // Currently all existing rules are simply handled inline, as there
+  // are only two and they are documented in the online 1.2 docs.
+  bool handle_esset = locale != NULL;
+  bool handle_tr = false;
+  if (locale != NULL)
+    {
+      String *lang = locale->getLanguage ();
+      if (lang->length () == 2
+	  && lang->charAt (0) == 't'
+	  && lang->charAt (1) == 'r')
+	handle_tr = true;
+    }
+
+  int new_count = count;
+  bool new_string = false;
   for (i = 0;  ;  i++)
     {
       if (i == count)
-	return this;
+	break;
       jchar origChar = chrs[i];
-      ch = java::lang::Character::toUpperCase(origChar);
-      if (ch != origChar)
+
+      if (handle_esset && origChar == ESSET)
+	{
+	  ++new_count;
+	  new_string = true;
+	}
+      else if (handle_tr && (origChar == SMALL_I
+			     || origChar == SMALL_DOTLESS_I))
+	new_string = true;
+      else
+	{
+	  ch = java::lang::Character::toUpperCase(origChar);
+	  if (ch != origChar)
+	    new_string = true;
+	}
+
+      if (new_string && ! handle_esset)
 	break;
     }
-  jstring result = JvAllocString(count);
+  if (! new_string)
+    return this;
+  jstring result = JvAllocString(new_count);
   jchar *dPtr = JvGetStringChars (result);
-  for (int j = 0;  j < i;  j++)
-    *dPtr++ = chrs[j];
-  *dPtr++ = ch;  i++;
-  for (; i < count;  i++)
+  for (i = 0; i < count;  i++)
     {
-      *dPtr++ = java::lang::Character::toUpperCase(chrs[i]);
+      if (handle_esset && chrs[i] == ESSET)
+	{
+	  *dPtr++ = CAPITAL_S;
+	  *dPtr++ = CAPITAL_S;
+	}
+      else if (handle_tr && chrs[i] == SMALL_I)
+	*dPtr++ = CAPITAL_I_WITH_DOT;
+      else if (handle_tr && chrs[i] == SMALL_DOTLESS_I)
+	*dPtr++ = CAPITAL_I;
+      else
+	*dPtr++ = java::lang::Character::toUpperCase(chrs[i]);
     }
   return result;
 }

@@ -176,6 +176,17 @@ public class RuleBasedCollator extends Collator
     return new CollationElementIterator (expand.toString(), this);
   }
 
+  public CollationElementIterator getCollationElementIterator (CharacterIterator source)
+  {
+    StringBuffer expand = new StringBuffer ();
+    for (char c = source.first ();
+	 c != CharacterIterator.DONE;
+	 c = source.next ())
+      decomposeCharacter (c, expand);
+
+    return new CollationElementIterator (expand.toString(), this);
+  }
+
   public CollationKey getCollationKey (String source)
   {
     return new CollationKey (getCollationElementIterator (source), source,
