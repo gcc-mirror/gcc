@@ -1,4 +1,33 @@
 2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Check for MIPS TLS.
+	* configure: Regenerated.
+	* config/mips/mips-protos.h (enum mips_symbol_type): Add
+	SYMBOL_TLS, SYMBOL_TLSGD, SYMBOL_TLSLDM, SYMBOL_DTPREL,
+	SYMBOL_GOTTPREL, and SYMBOL_TPREL.
+	* config/mips/mips.c (mips_regno_to_class): Handle V1_REG.
+	(TARGET_HAVE_TLS, TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(mips_classify_symbol, mips_symbolic_constant_p)
+	(mips_symbolic_address_p, mips_symbol_insns): Handle TLS symbols.
+	(mips_tls_operand_p, mips_call_tls_get_addr)
+	(mips_legitimize_tls_address, mips_cannot_force_const_mem)
+	(mips_tls_symbol_ref_1): New functions.
+	(mips_legitimize_address, mips_legitimize_const_move): Call
+	mips_legitimize_tls_address.
+	(override_options): Handle V1_REG and TLS symbols.  Disable TLS
+	for MIPS16.
+	* config/mips/mips.h (enum reg_class, REG_CLASS_NAMES)
+	(REG_CLASS_CONTENTS, GR_REG_CLASS_P): Include V1_REG.
+	(mips_char_to_class): Document V1_REG.
+	(HAVE_AS_TLS): Provide default.
+	* config/mips/mips.md (UNSPEC_TLS_LDM, UNSPEC_TLS_GET_TP): New
+	constants.
+	(load_got<mode>): Renamed from *load_got<mode>.  Allow when
+	!TARGET_ABICALLS.
+	(tls_get_tp_<mode>): New instruction.
+
+2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* configure.ac: Update checks for target tools.
 	* configure: Regenerated.
