@@ -10515,49 +10515,50 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	    reg_n_refs[REGNO (XEXP (note, 0))] = 3;
 
 	  if (place == 0)
-	    for (tem = prev_nonnote_insn (i3);
-		 tem && (GET_CODE (tem) == INSN
-			 || GET_CODE (tem) == CALL_INSN);
-		 tem = prev_nonnote_insn (tem))
-	      {
-		/* If the register is being set at TEM, see if that is all
-		   TEM is doing.  If so, delete TEM.  Otherwise, make this
-		   into a REG_UNUSED note instead.  */
-		if (reg_set_p (XEXP (note, 0), PATTERN (tem)))
-		  {
-		    rtx set = single_set (tem);
+	    {
+	      for (tem = prev_nonnote_insn (i3);
+		   place == 0 && tem
+		   && (GET_CODE (tem) == INSN || GET_CODE (tem) == CALL_INSN);
+		   tem = prev_nonnote_insn (tem))
+		{
+		  /* If the register is being set at TEM, see if that is all
+		     TEM is doing.  If so, delete TEM.  Otherwise, make this
+		     into a REG_UNUSED note instead.  */
+		  if (reg_set_p (XEXP (note, 0), PATTERN (tem)))
+		    {
+		      rtx set = single_set (tem);
 
-		    /* Verify that it was the set, and not a clobber that
-		       modified the register.  */
+		      /* Verify that it was the set, and not a clobber that
+			 modified the register.  */
 
-		    if (set != 0 && ! side_effects_p (SET_SRC (set))
-			&& rtx_equal_p (XEXP (note, 0), SET_DEST (set)))
-		      {
-			/* Move the notes and links of TEM elsewhere.
-			   This might delete other dead insns recursively. 
-			   First set the pattern to something that won't use
-			   any register.  */
+		      if (set != 0 && ! side_effects_p (SET_SRC (set))
+			  && rtx_equal_p (XEXP (note, 0), SET_DEST (set)))
+			{
+			  /* Move the notes and links of TEM elsewhere.
+			     This might delete other dead insns recursively. 
+			     First set the pattern to something that won't use
+			     any register.  */
 
-			PATTERN (tem) = pc_rtx;
+			  PATTERN (tem) = pc_rtx;
 
-			distribute_notes (REG_NOTES (tem), tem, tem,
-					  NULL_RTX, NULL_RTX, NULL_RTX);
-			distribute_links (LOG_LINKS (tem));
+			  distribute_notes (REG_NOTES (tem), tem, tem,
+					    NULL_RTX, NULL_RTX, NULL_RTX);
+			  distribute_links (LOG_LINKS (tem));
 
-			PUT_CODE (tem, NOTE);
-			NOTE_LINE_NUMBER (tem) = NOTE_INSN_DELETED;
-			NOTE_SOURCE_FILE (tem) = 0;
-		      }
-		    else
-		      {
-			PUT_REG_NOTE_KIND (note, REG_UNUSED);
-
-			/*  If there isn't already a REG_UNUSED note, put one
-			    here.  */
-			if (! find_regno_note (tem, REG_UNUSED,
-					       REGNO (XEXP (note, 0))))
-			  place = tem;
-			break;
+			  PUT_CODE (tem, NOTE);
+			  NOTE_LINE_NUMBER (tem) = NOTE_INSN_DELETED;
+			  NOTE_SOURCE_FILE (tem) = 0;
+			}
+		      else
+			{
+			  PUT_REG_NOTE_KIND (note, REG_UNUSED);
+			  
+			  /*  If there isn't already a REG_UNUSED note, put one
+			      here.  */
+			  if (! find_regno_note (tem, REG_UNUSED,
+						 REGNO (XEXP (note, 0))))
+			    place = tem;
+			  break;
 		      }
 		  }
 		else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
@@ -10567,7 +10568,18 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		    place = tem;
 		    break;
 		  }
-	      }
+		}
+	      
+	      /* If we haven't found an insn for the death note and it
+		 is still a REG_DEAD note, but we have hit a CODE_LABEL,
+		 insert a USE insn for the register at that label and
+		 put the death node there.  This prevents problems with
+		 call-state tracking in caller-save.c.  */
+	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0)
+		place
+		  = emit_insn_after (gen_rtx (USE, VOIDmode, XEXP (note, 0)),
+				     tem);
+	    }
 
 	  /* If the register is set or already dead at PLACE, we needn't do
 	     anything with this note if it is still a REG_DEAD note.  
