@@ -201,6 +201,8 @@ ggc_pop_context PROTO ((void))
       gs->next->strings = gs->strings;
     }
 
+  gs->next->bytes_alloced_since_gc += gs->bytes_alloced_since_gc;
+
   ggc_chain = gs->next;
   free (gs);
 }
@@ -489,9 +491,9 @@ ggc_collect ()
   struct ggc_any *a, **ap;
   int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
 
-#ifndef ENABLE_CHECKING
+#if !defined(ENABLE_CHECKING)
   /* See if it's even worth our while.  */
-  if (ggc_chain->bytes_alloced_since_gc < 64*1024)
+  if (ggc_chain->bytes_alloced_since_gc < 4*1024*1024)
     return;
 #endif
 
