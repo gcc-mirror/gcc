@@ -1,3 +1,10 @@
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
+	PR target/18932
+	* config/i386/i386.md (all splits and peepholes): Use flags_reg_operand
+	and compare_operator to propagate the input CC mode to the output.
+	* config/i386/predicates.md (compare_operator): New.
+
 2004-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18040
