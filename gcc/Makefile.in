@@ -1005,7 +1005,7 @@ stmp-multilib-sub:
 objc-runtime: libobjc.a
 
 # Build the Objective C runtime library.
-libobjc.a: cc1obj stmp-int-hdrs libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
+libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
@@ -1019,7 +1019,7 @@ libobjc.a: cc1obj stmp-int-hdrs libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
 
 # This is used by objc/Makefile if the user runs that directly.
-sublibobjc.a: cc1obj stmp-int-hdrs libgcc2.ready
+sublibobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
