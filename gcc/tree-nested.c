@@ -158,11 +158,9 @@ build_addr (tree exp)
 {
   tree base = exp;
 
-  if (TREE_CODE (base) == REALPART_EXPR || TREE_CODE (base) == IMAGPART_EXPR)
+  while (TREE_CODE (base) == REALPART_EXPR || TREE_CODE (base) == IMAGPART_EXPR
+	 || handled_component_p (base))
     base = TREE_OPERAND (base, 0);
-  else
-    while (handled_component_p (base))
-      base = TREE_OPERAND (base, 0);
 
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
@@ -797,12 +795,18 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       }
       break;
 
-    case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       wi->val_only = false;
       walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
       wi->val_only = true;
+      break;
+
+    case COMPONENT_REF:
+      wi->val_only = false;
+      walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
+      wi->val_only = true;
+      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi, NULL);
       break;
 
     case ARRAY_REF:
@@ -932,12 +936,18 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       tsi_link_after (&wi->tsi, x, TSI_SAME_STMT);
       break;
 
-    case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       wi->val_only = false;
       walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
       wi->val_only = true;
+      break;
+
+    case COMPONENT_REF:
+      wi->val_only = false;
+      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
+      wi->val_only = true;
+      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi, NULL);
       break;
 
     case ARRAY_REF:
