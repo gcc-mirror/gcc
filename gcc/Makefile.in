@@ -1868,7 +1868,7 @@ intl.all intl.install intl.uninstall \
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
   -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include/$(libstdcxx_incdir)\" \
+  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(build_tooldir)/include/$(libstdcxx_incdir)\" \
   -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
