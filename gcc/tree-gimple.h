@@ -81,9 +81,6 @@ extern bool is_gimple_condexpr (tree);
 
 /* Returns true iff T is a type conversion.  */
 extern bool is_gimple_cast (tree);
-/* Returns true iff T is a valid CONSTRUCTOR element (either an rvalue or
-   another CONSTRUCTOR).  */
-extern bool is_gimple_constructor_elt (tree);
 /* Returns true iff T is a variable that does not need to live in memory.  */
 extern bool is_gimple_non_addressable (tree t);
 
