@@ -1,3 +1,8 @@
+2002-07-30  Bernd Schmidt  <bernds@redhat.com>
+
+	* ifcvt.c (cond_exec_process_if_block): Fix a merging error.
+	Bail out early if false_expr is NULL and we'd crash due to this.
+
 2002-07-30  David Edelsohn  <edelsohn@gnu.org>
 	    Zack Weinberg  <zack@codesourcery.com>
 
