@@ -1096,10 +1096,14 @@ yylex ()
       p = token_buffer;
       while (isalnum (c) || c == '_' || c == '$' || c == '@')
 	{
-	  if (p >= token_buffer + maxtoken)
-	    p = extend_token_buffer (p);
+	  /* Make sure this char really belongs in an identifier.  */
+	  if (c == '@' && ! doing_objc_thang)
+	    break;
 	  if (c == '$' && ! dollars_in_ident)
 	    break;
+
+	  if (p >= token_buffer + maxtoken)
+	    p = extend_token_buffer (p);
 
 	  *p++ = c;
 	  c = getc (finput);
