@@ -688,6 +688,7 @@ extern rtx trampoline_address PROTO((tree));
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value PROTO((tree, tree));
 
+extern rtx prepare_call_address	PROTO((rtx, tree, rtx *));
 
 extern rtx expand_call PROTO((tree, rtx, int));
 
