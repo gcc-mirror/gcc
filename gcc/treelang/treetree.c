@@ -73,7 +73,6 @@
 
 #include "treelang.h"
 #include "treetree.h"
-#include "parse.h"
 
 extern int option_main;
 extern char **file_names;

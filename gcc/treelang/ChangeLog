@@ -1,3 +1,8 @@
+2003-04-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Make-lang.in (parse.c): Reorder bison arguments for POSIXLY_CORRECT.
+	* treetree.c: Do not #include parse.h.
+
 2003-03-21  Andreas Jaeger  <aj@suse.de>
 
 	* treetree.c (cpp_create_reader): Follow prototype change in
