@@ -602,14 +602,17 @@ get_secondary_mem (x, mode, opnum, type)
   rtx loc;
   int mem_valid;
 
-  /* If MODE is narrower than a word, widen it.  This is required because
-     most machines that require these memory locations do not support
-     short load and stores from all registers (e.g., FP registers).  We could
-     possibly conditionalize this, but we lose nothing by doing the wider
-     mode.  */
+  /* By default, if MODE is narrower than a word, widen it to a word.
+     This is required because most machines that require these memory
+     locations do not support short load and stores from all registers
+     (e.g., FP registers).  */
 
+#ifdef SECONDARY_MEMORY_NEEDED_MODE
+  mode = SECONDARY_MEMORY_NEEDED_MODE (mode);
+#else
   if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
     mode = mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0);
+#endif
 
   /* If we already have made a MEM for this operand in MODE, return it.  */
   if (secondary_memlocs_elim[(int) mode][opnum] != 0)
