@@ -453,6 +453,7 @@ alpha*-dec-osf*)
 	  *-*-osf5*)
 	    tm_file="${tm_file} alpha/osf.h alpha/osf5.h"
 	    tmake_file="$tmake_file alpha/t-osf4"
+	    float_format=i128
 	    ;;
 	esac
 	case $machine in
