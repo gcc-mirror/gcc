@@ -1,3 +1,8 @@
+Thu Jul  9 22:44:49 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
+
+        * g++.old-deja/g++.other/partspec1.C: test matching of partial
+        specialization with typedef'ed names used as array indexes.
+
 Thu Jul  9 00:38:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980709-1.c: New test.
