@@ -795,6 +795,14 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
       state->s.args_size = offset;
       break;
 
+    case DW_CFA_GNU_negative_offset_extended:
+      p = decode_uleb128 (p, &reg);
+      p = decode_uleb128 (p, &offset);
+      offset *= info->data_align;
+      state->s.saved[reg] = REG_SAVED_OFFSET;
+      state->s.reg_or_offset[reg] = -offset;
+      break;
+
     default:
       abort ();
     }

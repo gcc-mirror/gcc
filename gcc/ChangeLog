@@ -1,3 +1,12 @@
+2000-02-08  Geoff Keating  <geoffk@cygnus.com>
+
+	* dwarf2.h (DW_CFA_GNU_negative_offset_extended): New constant.
+	* dwarf2out.c (dwarf_cfi_name): Print name of new constant.
+	(reg_save): Use DW_CFA_GNU_negative_offset_extended when needed.
+	(output_cfi): Handle output of DW_CFA_GNU_negative_offset_extended.
+	* frame.c (execute_cfa_insn): Handle 
+	DW_CFA_GNU_negative_offset_extended.
+
 2000-02-08  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (tidy_fallthru_edges): Split out from ...
