@@ -4728,7 +4728,7 @@ pre_delete ()
 
 		     However, on the x86 some of the movXX patterns actually
 		     contain clobbers of scratch regs.  This may cause the
-		     insn created by validate_change to not patch any pattern
+		     insn created by validate_change to not match any pattern
 		     and thus cause validate_change to fail.   */
 		  if (validate_change (insn, &SET_SRC (set),
 				       expr->reaching_reg, 0))
