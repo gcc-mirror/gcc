@@ -19,6 +19,13 @@
 #endif  /* ALPHA___EXTERN_PREFIX_CHECK */
 
 
+#if defined( ALPHA_BAD_LVAL_CHECK )
+#pragma extern_prefix "_FOO"
+#define something _FOOsomething
+#define mumble _FOOmumble
+#endif  /* ALPHA_BAD_LVAL_CHECK */
+
+
 #if defined( AVOID_WCHAR_T_TYPE_CHECK )
 #ifndef __cplusplus
 typedef unsigned short	wchar_t 	;
