@@ -1,3 +1,13 @@
+1999-06-18  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/net/natInetAddress.cc (lookup): Preserve caller-supplied
+	hostname in returned InetAddress objects.
+	(getLocalHostname): Fix typo.
+	* java/net/InetAddress.java (getByName): Set hostname on return
+	object.
+	(getLocalHost): Call lookup directly to ensure that a fully-qualified
+	name is returned.
+
 1999-06-17  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/net/natPlainSocketImpl.cc (bind): Bind to any/all network

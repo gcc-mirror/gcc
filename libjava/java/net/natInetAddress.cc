@@ -199,8 +199,8 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 #endif /* HAVE_GETHOSTBYADDR_R */
     }
   if (hptr != NULL)
-    { 
-      if (host == NULL)
+    {
+      if (!all)
         host = JvNewStringUTF (hptr->h_name);
       java::lang::SecurityException *ex = checkConnect (host);
       if (ex != NULL)
@@ -246,7 +246,8 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
     {
       if (iaddrs[i] == NULL)
 	iaddrs[i] = new java::net::InetAddress (NULL, NULL);
-      iaddrs[i]->hostname = host;
+      if (iaddrs[i]->hostname == NULL)
+        iaddrs[i]->hostname = host;
       if (iaddrs[i]->address == NULL)
 	{
 	  char *bytes = hptr->h_addr_list[i];
@@ -269,7 +270,7 @@ java::net::InetAddress::getLocalHostname ()
 #elif HAVE_UNAME
   struct utsname stuff;
   if (uname (&stuff) != 0)
-    return NULL:
+    return NULL;
   chars = stuff.nodename;
 #else
   return NULL;
