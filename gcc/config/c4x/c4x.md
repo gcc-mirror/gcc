@@ -1,7 +1,7 @@
 ;; Machine description for the TMS320C[34]x for GNU C compiler
-;; Copyright (C) 1994, 95-98, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
 
-;; Contributed by Michael Hayes (m.hayes@elec.canterbury.cri.nz)
+;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
 ;;            and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl)
 
 ;; This file is part of GNU CC.
@@ -369,7 +369,7 @@
 
 (define_attr "in_annul_slot_3" "false,true"
   (if_then_else (and (eq_attr "cpu" "c4x")
-		     (eq_attr "type" "!jump,call,rets,jmpc,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
+		     (eq_attr "type" "!jump,call,rets,jmpc,unarycc,binarycc,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
 		(const_string "true")
 		(const_string "false")))
 
@@ -1458,19 +1458,26 @@
                               (match_operand:QI 2 "const_int_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (INTVAL (operands[2]) >= 4)
+  "if (INTVAL (operands[2]) > 4)
      FAIL; /* Open code as two shifts and an or */
    if (INTVAL (operands[2]) > 1)
      {
         int i;
+	rtx tmp;
 
         /* If we have 4 or fewer shifts, then it is probably faster
            to emit separate ROL instructions.  A C3x requires
            at least 4 instructions (a C4x requires at least 3), to
            perform a rotation by shifts.  */
 
-        for (i = 0; i < INTVAL (operands[2]); i++)
-          emit_insn (gen_rotl_1_clobber (operands[0], operands[1]));
+	tmp = operands[1];
+        for (i = 0; i < INTVAL (operands[2]) - 1; i++)
+	  {
+   	    tmp = gen_reg_rtx (QImode);
+            emit_insn (gen_rotl_1_clobber (tmp, operands[1]));
+	    operands[1] = tmp;
+	  }
+        emit_insn (gen_rotl_1_clobber (operands[0], tmp));
         DONE;
      }")
 
@@ -1493,19 +1500,26 @@
                                 (match_operand:QI 2 "const_int_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (INTVAL (operands[2]) >= 4)
+  "if (INTVAL (operands[2]) > 4)
      FAIL; /* Open code as two shifts and an or */
    if (INTVAL (operands[2]) > 1)
      {
         int i;
+	rtx tmp;
  
         /* If we have 4 or fewer shifts, then it is probably faster
            to emit separate ROL instructions.  A C3x requires
            at least 4 instructions (a C4x requires at least 3), to
            perform a rotation by shifts.  */
  
-        for (i = 0; i < INTVAL (operands[2]); i++)
-          emit_insn (gen_rotr_1_clobber (operands[0], operands[1]));
+	tmp = operands[1];
+        for (i = 0; i < INTVAL (operands[2]) - 1; i++)
+	  {
+   	    tmp = gen_reg_rtx (QImode);
+            emit_insn (gen_rotr_1_clobber (tmp, operands[1]));
+	    operands[1] = tmp;
+	  }
+        emit_insn (gen_rotr_1_clobber (operands[0], tmp));
         DONE;
      }")
 
@@ -4484,11 +4498,11 @@
 ; have an option to disable this instruction.
 (define_insn "*db"
   [(set (pc)
-        (if_then_else (ne (match_operand:QI 2 "addr_reg_operand" "0,0,0,0")
+        (if_then_else (ne (match_operand:QI 0 "addr_reg_operand" "+a,?*d,??*r,!m")
                           (const_int 0))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:QI 0 "addr_reg_operand" "+a,?*d,??*r,!m")
+   (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (clobber (reg:CC_NOOV 21))]
@@ -4505,14 +4519,26 @@
   "
   [(set_attr "type" "db,jmpc,jmpc,jmpc")])
 
+
+; This insn is used for some loop tests, typically loops reversed when
+; strength reduction is used.  It is actually created when the instruction
+; combination phase combines the special loop test.  Since this insn
+; is both a jump insn and has an output, it must deal with its own
+; reloads, hence the `m' constraints. 
+
+; The C4x does the decrement and then compares the result against zero.
+; It branches if the result was greater than or equal to zero.
+; In the RTL the comparison and decrement are assumed to happen
+; at the same time so we bias the iteration counter with by -1
+; when we make the test.
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
-        (if_then_else (ge (plus:QI (match_operand:QI 2 "addr_reg_operand" "0,0,0,0")
+        (if_then_else (ge (plus:QI (match_operand:QI 0 "addr_reg_operand" "+a,?*d,??*r,!m")
 			           (const_int -1))
 			  (const_int 0))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:QI 0 "addr_reg_operand" "+a,?*d,??*r,!m")
+   (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (clobber (reg:CC_NOOV 21))]

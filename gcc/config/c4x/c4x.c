@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -22,10 +22,8 @@
    Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in c4x.md need these.  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include "config.h"
+#include "system.h"
 #include "toplev.h"
 #include "rtl.h"
 #include "regs.h"
@@ -121,7 +119,7 @@ enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER] =
   VOIDmode,			/* IIF/IOF                      No  */
   QImode,			/* RS           QI              No  */
   QImode,			/* RE           QI              No  */
-  QImode,			/* RC           QI              No  */
+  VOIDmode,			/* RC           QI              No  */
   QFmode,			/* R8           QI, QF, HF      QI  */
   HFmode,			/* R9           QI, QF, HF      No  */
   HFmode,			/* R10          QI, QF, HF      No  */
@@ -203,11 +201,6 @@ c4x_override_options ()
   flag_fast_math = 1;
 
   /* We should phase out the following at some stage.
-     This provides compatibility with the old -mno-rptb option.  */
-  if (! TARGET_RPTB && flag_branch_on_count_reg)
-    flag_branch_on_count_reg = 0;
-
-  /* We should phase out the following at some stage.
      This provides compatibility with the old -mno-aliases option.  */
   if (! TARGET_ALIASES && ! flag_argument_noalias)
     flag_argument_noalias = 1;
@@ -219,6 +212,12 @@ c4x_optimization_options (level, size)
      int level;
      int size ATTRIBUTE_UNUSED;
 {
+  /* Scheduling before register allocation can screw up global
+     register allocation, especially for functions that use MPY||ADD
+     instructions.  The benefit we gain we get by scheduling before
+     register allocation is probably marginal anyhow.  */
+  flag_schedule_insns = 0;
+
   /* When optimizing, enable use of RPTB instruction.  */
   if (level >= 1)
     flag_branch_on_count_reg = 1;
@@ -3194,6 +3193,7 @@ c4x_label_conflict (insn, jump, db)
 
 /* Validate combination of operands for parallel load/store instructions.  */
 
+int
 valid_parallel_load_store (operands, mode)
      rtx *operands;
      enum machine_mode mode ATTRIBUTE_UNUSED;
@@ -3254,7 +3254,6 @@ valid_parallel_operands_4 (operands, mode)
      rtx *operands;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  int regs = 0;
   rtx op0 = operands[0];
   rtx op2 = operands[2];
 
