@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-into-ssa.c (def_blocks_free): XFREE bitmaps allocated
+	with BITMAP_XMALLOC.
+
 	* tree-ssa-alias.c (delete_alias_info): XFREE bitmaps allocated
 	with BITMAP_XMALLOC.
 

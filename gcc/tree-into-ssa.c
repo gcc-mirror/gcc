@@ -883,8 +883,8 @@ static void
 def_blocks_free (void *p)
 {
   struct def_blocks_d *entry = p;
-  BITMAP_FREE (entry->def_blocks);
-  BITMAP_FREE (entry->livein_blocks);
+  BITMAP_XFREE (entry->def_blocks);
+  BITMAP_XFREE (entry->livein_blocks);
   free (entry);
 }
 
