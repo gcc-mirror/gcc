@@ -2159,7 +2159,6 @@ mark_used_regs (needed, live, x, final, insn)
     case CONST:
     case CONST_DOUBLE:
     case PC:
-    case CLOBBER:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case ASM_INPUT:
