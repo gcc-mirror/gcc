@@ -1184,7 +1184,12 @@ struct lang_decl
 #define DECL_CLASS_CONTEXT(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.context)
 #define DECL_REAL_CONTEXT(NODE) \
   ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
-   ? DECL_CLASS_CONTEXT (NODE) : DECL_CONTEXT (NODE))
+   ? DECL_CLASS_CONTEXT (NODE) : CP_DECL_CONTEXT (NODE))
+
+/* NULL_TREE in DECL_CONTEXT represents the global namespace. */
+#define CP_DECL_CONTEXT(NODE) \
+  (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
+#define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE) \
@@ -2027,8 +2032,7 @@ extern int current_function_parms_stored;
    `main'.  */
 #define DECL_MAIN_P(NODE)				\
    (TREE_CODE (NODE) == FUNCTION_DECL			\
-    && (DECL_CONTEXT (NODE) == global_namespace 	\
-	|| DECL_CONTEXT (NODE) == NULL_TREE)		\
+    && DECL_CONTEXT (NODE) == NULL_TREE 		\
     && DECL_NAME (NODE) != NULL_TREE			\
     && MAIN_NAME_P (DECL_NAME (NODE)))
 

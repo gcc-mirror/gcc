@@ -416,34 +416,31 @@ build_overload_nested_name (decl)
      tree decl;
 {
 
+  tree context;
+
   if (ktypelist && issue_ktype (decl))
       return;
 
   if (decl == global_namespace)
     return;
 
-   if (DECL_CONTEXT (decl))
-    {
-      tree context = DECL_CONTEXT (decl);
+  context = CP_DECL_CONTEXT (decl);
 
-      /* try to issue a K type, and if we can't continue the normal path */
-      if (!(ktypelist && issue_ktype (context)))
-        {
-          /* For a template type parameter, we want to output an 'Xn'
-             rather than 'T' or some such. */
-          if (TREE_CODE (context) == TEMPLATE_TYPE_PARM
-              || TREE_CODE (context) == TEMPLATE_TEMPLATE_PARM)
-            build_mangled_name (context, 0, 0);
-          else
-            {
-              if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-                context = TYPE_NAME (context);
-              build_overload_nested_name (context);
-            }
-        }
+  /* try to issue a K type, and if we can't continue the normal path */
+  if (!(ktypelist && issue_ktype (context)))
+  {
+    /* For a template type parameter, we want to output an 'Xn'
+       rather than 'T' or some such. */
+    if (TREE_CODE (context) == TEMPLATE_TYPE_PARM
+        || TREE_CODE (context) == TEMPLATE_TEMPLATE_PARM)
+      build_mangled_name (context, 0, 0);
+    else
+    {
+      if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+        context = TYPE_NAME (context);
+      build_overload_nested_name (context);
     }
-  else 
-    my_friendly_abort (392);
+  }
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {

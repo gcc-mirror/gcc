@@ -96,8 +96,6 @@ build_signature_pointer_or_reference_decl (type, name)
   decl = build_decl (TYPE_DECL, name, type);
   TYPE_NAME (type) = decl;
   TREE_CHAIN (type) = decl;
-  /* But we mangle it, so it needs a scope. */
-  DECL_CONTEXT (decl) = global_namespace;
 }
 
 /* Construct, lay out and return the type of pointers or references
