@@ -6008,20 +6008,8 @@ expand_var (tree var)
       ? !TREE_ASM_WRITTEN (var)
       : !DECL_RTL_SET_P (var))
     {
-      if (TREE_CODE (var) == VAR_DECL && DECL_DEFER_OUTPUT (var))
-	{
-	  /* Prepare a mem & address for the decl.  */
-	  rtx x;
-
-	  if (TREE_STATIC (var))
-	    abort ();
-
-	  x = gen_rtx_MEM (DECL_MODE (var),
-			   gen_reg_rtx (Pmode));
-
-	  set_mem_attributes (x, var, 1);
-	  SET_DECL_RTL (var, x);
-	}
+      if (TREE_CODE (var) == VAR_DECL && DECL_VALUE_EXPR (var))
+	/* Should be ignored.  */;
       else if (lang_hooks.expand_decl (var))
 	/* OK.  */;
       else if (TREE_CODE (var) == VAR_DECL && !TREE_STATIC (var))

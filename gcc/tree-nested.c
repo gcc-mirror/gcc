@@ -855,7 +855,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = data;
   struct nesting_info *info = wi->info;
-  tree t = *tp, field, x, y;
+  tree t = *tp, field, x;
 
   switch (TREE_CODE (t))
     {
@@ -907,40 +907,6 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	      *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
 	  }
       }
-      break;
-
-    case CALL_EXPR:
-      *walk_subtrees = 1;
-
-      /* Ready for some fun?  We need to recognize
-	    __builtin_stack_alloc (&x, n)
-	 and insert
-	    FRAME.x = &x
-	 after that.  X should have use_pointer_in_frame set.  We can't
-	 do this any earlier, since we can't meaningfully evaluate &x.  */
-
-      x = get_callee_fndecl (t);
-      if (!x || DECL_BUILT_IN_CLASS (x) != BUILT_IN_NORMAL)
-	break;
-      if (DECL_FUNCTION_CODE (x) != BUILT_IN_STACK_ALLOC)
-	break;
-      t = TREE_VALUE (TREE_OPERAND (t, 1));
-      if (TREE_CODE (t) != ADDR_EXPR)
-	abort ();
-      t = TREE_OPERAND (t, 0);
-      if (TREE_CODE (t) != VAR_DECL)
-	abort ();
-      field = lookup_field_for_decl (info, t, NO_INSERT);
-      if (!field)
-	break;
-      if (!use_pointer_in_frame (t))
-	abort ();
-
-      x = build_addr (t);
-      y = get_frame_field (info, info->context, field, &wi->tsi);
-      x = build (MODIFY_EXPR, void_type_node, y, x);
-      SET_EXPR_LOCUS (x, EXPR_LOCUS (tsi_stmt (wi->tsi)));
-      tsi_link_after (&wi->tsi, x, TSI_SAME_STMT);
       break;
 
     case REALPART_EXPR:

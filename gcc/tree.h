@@ -2027,6 +2027,13 @@ struct tree_binfo GTY (())
    entire function.  */
 #define DECL_SAVED_TREE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.saved_tree)
 
+/* In a VAR_DECL or PARM_DECL, the location at which the value may be found,
+   if transformations have made this more complicated than evaluating the
+   decl itself.  This should only be used for debugging; once this field has
+   been set, the decl itself may not legitimately appear in the function.  */
+#define DECL_VALUE_EXPR(NODE) \
+  (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl.saved_tree)
+
 /* List of FUNCTION_DECLs inlined into this function's body.  */
 #define DECL_INLINED_FNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inlined_fns)
 
@@ -2278,7 +2285,8 @@ struct tree_decl GTY(())
     int GTY ((tag ("VAR_DECL"))) i;
   } GTY ((desc ("TREE_CODE((tree) &(%0))"))) u2;
 
-  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
+  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.
+     In a VAR_DECL or PARM_DECL, this is DECL_VALUE_EXPR.  */
   tree saved_tree;
 
   /* In a FUNCTION_DECL, these are function data which is to be kept
@@ -3353,7 +3361,6 @@ extern void expand_label (tree);
 extern void expand_goto (tree);
 extern void expand_asm (tree, int);
 
-extern void expand_stack_alloc (tree, tree);
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);

@@ -1,5 +1,28 @@
 2004-08-10  Richard Henderson  <rth@redhat.com>
 
+	* builtins.def (BUILT_IN_STACK_ALLOC): Remove.
+	* builtins.c (expand_builtin) <BUILT_IN_STACK_ALLOC>: Remove.
+	* dwarf2out.c (loc_descriptor): Handle PARALLEL here ...
+	(add_location_or_const_value_attribute): ... not here.  Use
+	loc_descriptor_from_tree if possible.
+	(loc_descriptor_from_tree_1): Rename from loc_descriptor_from_tree.
+	Simplify address handling.  Handle DECL_VALUE_EXPR.  Handle register
+	values specially.
+	(loc_descriptor_from_tree): New.  Update callers.
+	* expr.c (expand_var): Ignore DECL_VALUE_EXPR variables.
+	* gimplify.c (gimplify_decl_expr): Lower variable sized types to
+	pointer plus dereference.  Set DECL_VALUE_EXPR.  Set save_stack.
+	(gimplify_call_expr): Do not recognize BUILT_IN_STACK_ALLOC
+	and BUILT_IN_STACK_RESTORE.
+	(gimplify_expr): Lower DECL_VALUE_EXPR decls.
+	* stmt.c (expand_stack_alloc): Remove.
+	* tree-mudflap.c (mx_register_decls): Don't look for
+	BUILT_IN_STACK_ALLOC.
+	* tree-nested.c (convert_local_reference): Likewise.
+	* tree.h (DECL_VALUE_EXPR): New.
+
+2004-08-10  Richard Henderson  <rth@redhat.com>
+
 	* stor-layout.c (round_up): Check for 0/1 before dividing.
 	(round_down): Likewise.
 

@@ -2042,40 +2042,6 @@ expand_decl (tree decl)
     }
 }
 
-/* Emit code to allocate T_SIZE bytes of dynamic stack space for ALLOC.  */
-void
-expand_stack_alloc (tree alloc, tree t_size)
-{
-  rtx address, dest, size;
-  tree var, type;
-
-  if (TREE_CODE (alloc) != ADDR_EXPR)
-    abort ();
-  var = TREE_OPERAND (alloc, 0);
-  if (TREE_CODE (var) != VAR_DECL)
-    abort ();
-
-  type = TREE_TYPE (var);
-
-  /* Compute the variable's size, in bytes.  */
-  size = expand_expr (t_size, NULL_RTX, VOIDmode, 0);
-  free_temp_slots ();
-
-  /* Allocate space on the stack for the variable.  */
-  address = XEXP (DECL_RTL (var), 0);
-  dest = allocate_dynamic_stack_space (size, address, TYPE_ALIGN (type));
-  if (dest != address)
-    emit_move_insn (address, dest);
-
-  /* Indicate the alignment we actually gave this variable.  */
-#ifdef STACK_BOUNDARY
-  DECL_ALIGN (var) = STACK_BOUNDARY;
-#else
-  DECL_ALIGN (var) = BIGGEST_ALIGNMENT;
-#endif
-  DECL_USER_ALIGN (var) = 0;
-}
-
 /* Emit code to save the current value of stack.  */
 rtx
 expand_stack_save (void)

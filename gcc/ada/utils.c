@@ -481,6 +481,9 @@ gnat_install_builtins ()
   gnat_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL, "clzll",
 		       true);
 
+  /* The init_trampoline and adjust_trampoline builtins aren't used directly.
+     They are inserted during lowering of nested functions.  */
+
   tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
   tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
@@ -493,21 +496,24 @@ gnat_install_builtins ()
   gnat_define_builtin ("__builtin_adjust_trampoline", ftype,
 		       BUILT_IN_ADJUST_TRAMPOLINE, "adjust_trampoline", true);
 
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-  ftype = build_function_type (ptr_void_type_node, tmp);
-  gnat_define_builtin ("__builtin_stack_alloc", ftype, BUILT_IN_STACK_ALLOC,
-		       "stack_alloc", false);
+  /* The stack_save, stack_restore, and alloca builtins aren't used directly.
+     They are inserted during gimplification to implement variable sized stack
+     allocation.  */
 
-  /* The stack_save and stack_restore builtins aren't used directly.  They
-     are inserted during gimplification to implement stack_alloc calls.  */
   ftype = build_function_type (ptr_void_type_node, void_list_node);
   gnat_define_builtin ("__builtin_stack_save", ftype, BUILT_IN_STACK_SAVE,
 		       "stack_save", false);
+
   tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
   ftype = build_function_type (void_type_node, tmp);
   gnat_define_builtin ("__builtin_stack_restore", ftype,
 		       BUILT_IN_STACK_RESTORE, "stack_restore", false);
+
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  ftype = build_function_type (ptr_void_type_node, tmp);
+  gnat_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
+		       "alloca", false);
+
 }
 
 /* Create the predefined scalar types such as `integer_type_node' needed
