@@ -1,5 +1,10 @@
 2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
 
+	* config/mips/mips.c (override_options): Don't turn on extra
+	alignment for mips16.
+
+2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
+
 	* config/mips/mips.c (mips_va_arg): Fix fprv for the 32 bit 
 	eabi, and make sure queued POSTINCREMENT rtl is emitted at 
 	the right point.

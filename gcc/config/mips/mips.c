@@ -4777,7 +4777,7 @@ override_options ()
   gpr_mode = TARGET_64BIT ? DImode : SImode;
 
   /* Provide default values for align_* for 64-bit targets.  */
-  if (TARGET_64BIT)
+  if (TARGET_64BIT && !TARGET_MIPS16)
     {
       if (align_loops == 0) 
 	align_loops = 8;
