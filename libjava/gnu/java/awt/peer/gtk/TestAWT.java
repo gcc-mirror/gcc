@@ -272,6 +272,7 @@ class DialogWindow extends Dialog implements SubWindow
         public void windowClosing (WindowEvent e)
         {
           System.out.println ("Window Closing");
+	  text.setVisible (false);
           hide ();
         }
       });
@@ -305,7 +306,8 @@ class DialogWindow extends Dialog implements SubWindow
     cb.addActionListener(new ActionListener () {
       public void actionPerformed (ActionEvent e) 
 	{
-	  dispose();
+	  text.setVisible (false);
+	  hide();
 	}
     });
     

@@ -1,5 +1,10 @@
 2004-01-19  Fernando Nasser  <fnasser@redhat.com>
 
+	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Make text not
+	visible so that dialog can be reused.
+
+2004-01-19  Fernando Nasser  <fnasser@redhat.com>
+
 	* java/awt/EventQueue.java (getCurrentEvent): Consider that system
 	events may be handled by any queue in the stack.
 
