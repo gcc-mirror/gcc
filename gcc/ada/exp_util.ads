@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -243,6 +243,32 @@ package Exp_Util is
    --  copy after it is attached to the tree. The Name_Req flag is set to
    --  ensure that the result is suitable for use in a context requiring a
    --  name (e.g. the prefix of an attribute reference).
+   --
+   --  Note that if there are any run time checks in Exp, these same checks
+   --  will be duplicated in the returned duplicated expression. The two
+   --  following functions allow this behavior to be modified.
+
+   function Duplicate_Subexpr_No_Checks
+     (Exp      : Node_Id;
+      Name_Req : Boolean := False)
+      return     Node_Id;
+   --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks
+   --  is called on the result, so that the duplicated expression does not
+   --  include checks. This is appropriate for use when Exp, the original
+   --  expression is unconditionally elaborated before the duplicated
+   --  expression, so that there is no need to repeat any checks.
+
+   function Duplicate_Subexpr_Move_Checks
+     (Exp      : Node_Id;
+      Name_Req : Boolean := False)
+      return     Node_Id;
+   --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks
+   --  is called on Exp after the duplication is complete, so that the
+   --  original expression does not include checks. In this case the result
+   --  returned (the duplicated expression) will retain the original checks.
+   --  This is appropriate for use when the duplicated expression is sure
+   --  to be elaborated before the original expression Exp, so that there
+   --  is no need to repeat the checks.
 
    procedure Ensure_Defined (Typ : Entity_Id; N : Node_Id);
    --  This procedure ensures that type referenced by Typ is defined. For the

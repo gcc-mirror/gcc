@@ -496,6 +496,11 @@ package Checks is
    --  the sense of the 'Valid attribute returning True. Constraint_Error
    --  will be raised if the value is not valid.
 
+   procedure Remove_Checks (Expr : Node_Id);
+   --  Remove all checks from Expr except those that are only executed
+   --  conditionally (on the right side of And Then/Or Else. This call
+   --  removes only embedded checks (Do_Range_Check, Do_Overflow_Check).
+
 private
 
    type Check_Result is array (Positive range 1 .. 2) of Node_Id;
