@@ -3008,9 +3008,15 @@ finish_file ()
       if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars)
 	  && ! DECL_EXTERNAL (decl))
 	{
+	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
+#ifdef DECL_ONE_ONLY
+						|| DECL_ONE_ONLY (decl)
+#endif
+						|| DECL_WEAK (decl)));
+
 	  temp = build_cleanup (decl);
 
-	  if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
+	  if (protect)
 	    {
 	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
@@ -3020,7 +3026,7 @@ finish_file ()
 
 	  expand_expr_stmt (temp);
 
-	  if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
+	  if (protect)
 	    expand_end_cond ();
 	}
     }
@@ -3083,6 +3089,12 @@ finish_file ()
 
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    {
+	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
+#ifdef DECL_ONE_ONLY
+						|| DECL_ONE_ONLY (decl)
+#endif
+						|| DECL_WEAK (decl)));
+
 	      /* Set these global variables so that GDB at least puts
 		 us near the declaration which required the initialization.  */
 	      input_filename = DECL_SOURCE_FILE (decl);
@@ -3094,7 +3106,7 @@ finish_file ()
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
 	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
 
-	      if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
+	      if (protect)
 		{
 		  tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 		  sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
@@ -3116,7 +3128,7 @@ finish_file ()
 	      else
 		expand_assignment (decl, init, 0, 0);
 
-	      if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
+	      if (protect)
 		expand_end_cond ();
 
 	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;

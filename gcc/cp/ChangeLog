@@ -1,3 +1,20 @@
+Wed May  1 11:26:52 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Also use sentries for vars with
+ 	DECL_ONE_ONLY or DECL_WEAK set (should any such happen to be
+ 	created).
+
+	* lex.c (handle_cp_pragma): Disable #pragma
+ 	interface/implementation if SUPPORTS_ONE_ONLY > 1.
+
+Tue Apr 30 11:25:46 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (emit_thunk): Wrap default case in
+ 	temporary/permanent_allocation.
+
+	* method.c (make_thunk): Use DECL_ONE_ONLY.
+	(emit_thunk): Call assemble_end_function.
+
 Mon Apr 29 15:38:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (import_export_vtable): Use DECL_ONE_ONLY.
