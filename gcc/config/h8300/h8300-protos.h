@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Hitachi H8/300 version generating coff
-   Copyright (C) 2000 Free SoftwareFoundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
