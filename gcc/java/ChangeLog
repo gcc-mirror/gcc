@@ -1,4 +1,4 @@
-Thu Mar 30 15:26:56 2000  Alexandre Petit-Bianco  <apbianco@dcygnus.com>
+Thu Mar 30 15:26:56 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Added Anthony's Thu Jan 6 2000
 	patch missing hunk. Fixed indentation.
