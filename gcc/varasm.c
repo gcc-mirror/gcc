@@ -663,7 +663,7 @@ make_decl_rtl (decl, asmspec)
 	{
 	  int nregs;
 
-	  if (DECL_INITIAL (decl) != 0 && !TREE_STATIC (decl))
+	  if (DECL_INITIAL (decl) != 0 && TREE_STATIC (decl))
 	    {
 	      DECL_INITIAL (decl) = 0;
 	      error ("global register variable has initial value");
