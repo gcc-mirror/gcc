@@ -1622,12 +1622,11 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
      to refer to it.  */
   if (!BASELINK_P (fn) && is_overloaded_fn (fn))
     {
-      tree f;
+      tree f = fn;
 
-      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-	f = get_first_fn (TREE_OPERAND (fn, 0));
-      else
-	f = get_first_fn (fn);
+      if (TREE_CODE (f) == TEMPLATE_ID_EXPR)
+	f = TREE_OPERAND (f, 0);
+      f = get_first_fn (f);
       if (DECL_FUNCTION_MEMBER_P (f))
 	{
 	  tree type = currently_open_derived_class (DECL_CONTEXT (f));

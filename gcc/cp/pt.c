@@ -7091,7 +7091,17 @@ tsubst_qualified_id (tree qualified_id, tree args,
   my_friendly_assert (!dependent_type_p (scope), 20030729);
   
   if (!BASELINK_P (name) && !DECL_P (expr))
-    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
+    {
+      expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
+      if (TREE_CODE (TREE_CODE (expr) == TEMPLATE_DECL
+		     ? DECL_TEMPLATE_RESULT (expr) : expr) == TYPE_DECL)
+	{
+	  if (complain & tf_error)
+	    error ("`%E' names a type, but a non-type is expected",
+		   qualified_id);
+	  return error_mark_node;
+	}
+    }
   
   if (DECL_P (expr))
     check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
@@ -7549,7 +7559,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    
 	    scope = tsubst_expr (scope, args, complain, in_decl);
 	    decl = lookup_qualified_name (scope, name,
-					  /*is_type_p=*/0, /*complain=*/false);
+					  /*is_type_p=*/false,
+					  /*complain=*/false);
 	    if (decl == error_mark_node)
 	      qualified_name_lookup_error (scope, name);
 	    else
@@ -8225,7 +8236,8 @@ tsubst_copy_and_build (tree t,
 	    tmpl = TREE_OPERAND (TREE_OPERAND (member, 1), 0);
 	    args = TREE_OPERAND (TREE_OPERAND (member, 1), 1);
 	    member = lookup_qualified_name (TREE_OPERAND (member, 0), tmpl, 
-					    /*is_type=*/0, /*complain=*/false);
+					    /*is_type_p=*/false,
+					    /*complain=*/false);
 	    if (BASELINK_P (member))
 	      BASELINK_FUNCTIONS (member) 
 		= build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),
