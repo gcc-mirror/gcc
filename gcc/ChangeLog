@@ -1,3 +1,9 @@
+2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c/8083
+	* c-typeck.c (build_c_cast): Warn about type punning which breaks
+	type based aliasing.
+
 2002-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (update_alignment_for_field): New function.
@@ -6,6 +12,7 @@
 	
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR other/8077
 	* gcc.c (cc1_options): Add space on -auxbase-strip.
 
 2002-10-01  Jim Wilson  <wilson@redhat.com>

@@ -3759,6 +3759,23 @@ build_c_cast (type, expr)
 	  && !TREE_CONSTANT (value))
 	warning ("cast to pointer from integer of different size");
 
+      if (TREE_CODE (type) == POINTER_TYPE
+	  && TREE_CODE (otype) == POINTER_TYPE
+	  && TREE_CODE (expr) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (expr, 0))
+	  && flag_strict_aliasing && extra_warnings
+	  && !VOID_TYPE_P (TREE_TYPE (type)))
+	{
+ 	  /* Casting the address of a decl to non void pointer. Warn
+	     if the cast breaks type based aliasing.  */
+	  if (!COMPLETE_TYPE_P (TREE_TYPE (type)))
+	    warning ("type punning to incomplete type might not be type based aliasing safe");
+	  else if (!alias_sets_conflict_p
+		   (get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0))),
+		    get_alias_set (TREE_TYPE (type))))
+	    warning ("type punning cast is not type based aliasing safe");
+	}
+      
       ovalue = value;
       value = convert (type, value);
 
