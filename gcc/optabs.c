@@ -921,12 +921,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    {
 	      /* Store carry from main add/subtract.  */
 	      carry_out = gen_reg_rtx (word_mode);
-	      carry_out = emit_store_flag (carry_out,
-					   binoptab == add_optab ? LTU : GTU,
-					   x, op0_piece,
-					   word_mode, 1, normalizep);
-	      if (carry_out == 0)
-		break;
+	      carry_out = emit_store_flag_force (carry_out,
+						 (binoptab == add_optab
+						  ? LTU : GTU),
+						 x, op0_piece,
+						 word_mode, 1, normalizep);
 	    }
 
 	  if (i > 0)
@@ -945,11 +944,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		{
 		  /* THIS CODE HAS NOT BEEN TESTED.  */
 		  /* Get out carry from adding/subtracting carry in.  */
-		  carry_tmp = emit_store_flag (carry_tmp,
-					       binoptab == add_optab
-					         ? LTU : GTU,
-					       x, carry_in,
-					       word_mode, 1, normalizep);
+		  carry_tmp = emit_store_flag_force (carry_tmp,
+						     binoptab == add_optab
+						     ? LTU : GTU,
+						     x, carry_in,
+						     word_mode, 1, normalizep);
 
 		  /* Logical-ior the two poss. carry together.  */
 		  carry_out = expand_binop (word_mode, ior_optab,
