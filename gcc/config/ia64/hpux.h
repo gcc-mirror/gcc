@@ -172,3 +172,8 @@ do {								\
 #define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS  ia64_rwreloc_section_type_flags
+
+/* ia64 HPUX has the float and long double forms of math functions.  */
+#undef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS  1
+

@@ -1,3 +1,7 @@
+2003-07-10  Roger Sayle  <roger@eyesopen.com>
+
+	* config/ia64/hpux.h (TARGET_C99_FUNCTIONS): Define.
+
 2003-07-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppcharset.c (one_utf8_to_cppchar, one_cppchar_to_utf8,
