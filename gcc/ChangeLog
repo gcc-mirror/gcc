@@ -1,3 +1,7 @@
+Tue Jun 16 13:15:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* libgcc1-test.c (memcpy): Define.
+
 Tue Jun 16 13:44:02 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* genattrtab.c (struct attr_desc): Change int flags to bit
