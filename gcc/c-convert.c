@@ -177,20 +177,20 @@ convert_to_integer (type, expr)
 	{
 	case RSHIFT_EXPR:
 	  /* We can pass truncation down through right shifting
-	     when the shift count is a negative constant.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 1)) != INTEGER_CST
-	      || TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)) > 0)
-	    break;
-	  goto trunc1;
+	     when the shift count is a nonpositive constant.  */
+	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+	      && tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_one_node))
+	    goto trunc1;
+	  break;
 
 	case LSHIFT_EXPR:
 	  /* We can pass truncation down through left shifting
-	     when the shift count is a positive constant.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 1)) != INTEGER_CST
-	      || TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)) < 0)
-	    break;
-	  /* In this case, shifting is like multiplication.  */
-	  goto trunc1;
+	     when the shift count is a nonnegative constant.  */
+	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+	      && ! tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_zero_node))
+	    /* In this case, shifting is like multiplication.  */
+	    goto trunc1;
+	  break;
 
 	case MAX_EXPR:
 	case MIN_EXPR:
