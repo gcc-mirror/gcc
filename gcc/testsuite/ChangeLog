@@ -1,3 +1,7 @@
+2002-10-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/compat.exp (compat-execute): Don't clean out a gluefile.
+
 2002-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8287

@@ -120,6 +120,7 @@ proc compat-execute { src1 use_alt } {
     global tool
     global verbose
     global testcase
+    global gluefile
 
     # Use the dg-options mechanism to specify extra flags for this test.
     # FIXME: This does not handle other uses of dg-options, and it only
@@ -229,7 +230,11 @@ proc compat-execute { src1 use_alt } {
 	# Clean up object files.
 	set files [glob -nocomplain *.o]
 	if { $files != "" } {
-	    eval "remote_file build delete $files"
+	    foreach objfile $files {
+		if { [info exists gluefile] && $objfile != $gluefile } {
+		    eval "remote_file build delete $objfile"
+		}
+	    }
 	}
     }
 }
