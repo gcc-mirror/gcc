@@ -2226,8 +2226,7 @@ struct lang_decl
 
 /* 1 iff NODE is function-local, but for types.  */
 #define LOCAL_CLASS_P(NODE)				\
-  (TYPE_CONTEXT (NODE)					\
-   && TREE_CODE (TYPE_CONTEXT (NODE)) == FUNCTION_DECL)
+  (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
 
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace

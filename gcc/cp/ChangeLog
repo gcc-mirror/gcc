@@ -1,6 +1,16 @@
+2000-08-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LOCAL_CLASS_P): Use decl_function_context.
+
+	* tree.c (bot_manip): Check TREE_CONSTANT rather than
+	!TREE_SIDE_EFFECTS.  Call break_out_target_exprs and
+	build_target_expr_with_type for the non-AGGR_INIT_EXPR case.
+
+	* decl.c (start_function): Always call make_function_rtl.
+
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
 
-	* cp/semantics.c (prune_unused_decls): New function.
+	* semantics.c (prune_unused_decls): New function.
 	(finish_stmt_tree): Call it via walk_tree.
 
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>

@@ -1649,13 +1649,15 @@ bot_manip (tp, walk_subtrees, data)
   splay_tree target_remap = ((splay_tree) data);
   tree t = *tp;
 
-  if (TREE_CODE (t) != TREE_LIST && ! TREE_SIDE_EFFECTS (t))
+  if (TREE_CONSTANT (t))
     {
-      /* There can't be any TARGET_EXPRs below this point.  */
+      /* There can't be any TARGET_EXPRs or their slot variables below
+         this point.  We used to check !TREE_SIDE_EFFECTS, but then we
+         failed to copy an ADDR_EXPR of the slot VAR_DECL.  */
       *walk_subtrees = 0;
       return NULL_TREE;
     }
-  else if (TREE_CODE (t) == TARGET_EXPR)
+  if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree u;
 
@@ -1667,13 +1669,8 @@ bot_manip (tp, walk_subtrees, data)
 	}
       else 
 	{
-	  tree var;
-
-	  u = copy_node (t);
-	  var = build (VAR_DECL, TREE_TYPE (t));
-	  DECL_CONTEXT (var) = current_function_decl;
-	  layout_decl (var, 0);
-	  TREE_OPERAND (u, 0) = var;
+	  u = build_target_expr_with_type
+	    (break_out_target_exprs (TREE_OPERAND (t, 1)), TREE_TYPE (t));
 	}
 
       /* Map the old variable to the new one.  */
