@@ -1,5 +1,6 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
    This file is part of GCC.
@@ -1999,8 +2000,9 @@ struct machine_function GTY(())
    (Actually, on most machines, scalar values are returned in the same place
    regardless of mode).
 
-   If `PROMOTE_FUNCTION_RETURN' is defined, you must apply the same promotion
-   rules specified in `PROMOTE_MODE' if VALTYPE is a scalar type.
+   If `TARGET_PROMOTE_FUNCTION_RETURN' is defined to return true, you
+   must apply the same promotion rules specified in `PROMOTE_MODE' if
+   VALTYPE is a scalar type.
 
    If the precise function being called is known, FUNC is a tree node
    (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This makes it
@@ -2008,8 +2010,8 @@ struct machine_function GTY(())
    functions when all their calls are known.
 
    `FUNCTION_VALUE' is not used for return vales with aggregate data types,
-   because these are returned in another way.  See `STRUCT_VALUE_REGNUM' and
-   related macros, below.  */
+   because these are returned in another way.  See
+   `TARGET_STRUCT_VALUE_RTX' and related macros, below.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   gen_rtx (REG, TYPE_MODE (VALTYPE), RETURN_VALUE_REGNUM)
 
@@ -2041,9 +2043,9 @@ struct machine_function GTY(())
 
 /* How Large Values are Returned.  */
 
-/* If the structure value address is passed in a register, then
-   `STRUCT_VALUE_REGNUM' should be the number of that register.  */
-#define STRUCT_VALUE_REGNUM (GPR_FIRST + 3)
+/* The number of the register that is used to to pass the structure
+   value address.  */
+#define FRV_STRUCT_VALUE_REGNUM (GPR_FIRST + 3)
 
 
 /* Function Entry and Exit.  */
@@ -2081,23 +2083,13 @@ struct machine_function GTY(())
 
 /* Implementing the Varargs Macros.  */
 
-/* If defined, is a C expression that produces the machine-specific code for a
-   call to `__builtin_saveregs'.  This code will be moved to the very beginning
-   of the function, before any parameter access are made.  The return value of
-   this function should be an RTX that contains the value to use as the return
-   of `__builtin_saveregs'.
-
-   If this macro is not defined, the compiler will output an ordinary call to
-   the library function `__builtin_saveregs'.  */
-
-#define EXPAND_BUILTIN_SAVEREGS() frv_expand_builtin_saveregs ()
-
 /* This macro offers an alternative to using `__builtin_saveregs' and defining
-   the macro `EXPAND_BUILTIN_SAVEREGS'.  Use it to store the anonymous register
-   arguments into the stack so that all the arguments appear to have been
-   passed consecutively on the stack.  Once this is done, you can use the
-   standard implementation of varargs that works for machines that pass all
-   their arguments on the stack.
+   the target hook `TARGET_EXPAND_BUILTIN_SAVEREGS'.  Use it to store
+   the anonymous register arguments into the stack so that all the
+   arguments appear to have been passed consecutively on the stack.
+   Once this is done, you can use the standard implementation of
+   varargs that works for machines that pass all their arguments on
+   the stack.
 
    The argument ARGS_SO_FAR is the `CUMULATIVE_ARGS' data structure, containing
    the values that obtain after processing of the named arguments.  The

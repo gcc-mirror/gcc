@@ -1,3 +1,15 @@
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/frv/frv-protos.h: Remove the prototype for
+	frv_expand_builtin_saveregs.
+	* config/frv/frv.c (TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_EXPAND_BUILTIN_SAVEREGS): Likewise.
+	(frv_stack_info): Use FRV_STRUCT_VALUE_REGNUM instead of
+	STRUCT_VALUE_REGNUM.
+	(frv_expand_builtin_saveregs): Make it static.
+	(frv_struct_value_rtx): New.
+	* config/frv/frv.h (EXPAND_BUILTIN_SAVEREGS): Remove.
+
 2004-01-29  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12850
