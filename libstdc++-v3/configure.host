@@ -238,14 +238,11 @@ esac
 # Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
-  mips*-*-linux*)
-    atomicity_dir="cpu/mips"
-    ;;
-  x86_64-*-linux*)
-    abi_baseline_pair="x86_64-linux-gnu"
-    ;;
   alpha*-*-freebsd5*)
     abi_baseline_pair="alpha-freebsd5"
+    ;;
+  arm*-*-linux*)
+    abi_baseline_pair="arm-linux-gnu"
     ;;
   i*86-*-freebsd4*)
     abi_baseline_pair="i386-freebsd4"
@@ -253,7 +250,14 @@ case "${host}" in
   i*86-*-freebsd5*)
     abi_baseline_pair="i386-freebsd5"
     ;;
+  mips*-*-linux*)
+    atomicity_dir="cpu/mips"
+    abi_baseline_pair="mips-linux-gnu"
+    ;;
   sparc*-*-freebsd5*)
     abi_baseline_pair="sparc-freebsd5"
+    ;;
+  x86_64-*-linux*)
+    abi_baseline_pair="x86_64-linux-gnu"
     ;;
 esac

@@ -722,13 +722,6 @@ FUNC:_ZNSbIwSt11char_traitsIwESaIwEEixEj@@GLIBCXX_3.4
 FUNC:_ZNSbIwSt11char_traitsIwESaIwEEpLEPKw@@GLIBCXX_3.4
 FUNC:_ZNSbIwSt11char_traitsIwESaIwEEpLERKS2_@@GLIBCXX_3.4
 FUNC:_ZNSbIwSt11char_traitsIwESaIwEEpLEw@@GLIBCXX_3.4
-FUNC:_ZNSdC1EPSt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
-FUNC:_ZNSdC1Ev@@GLIBCXX_3.4
-FUNC:_ZNSdC2EPSt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
-FUNC:_ZNSdC2Ev@@GLIBCXX_3.4
-FUNC:_ZNSdD0Ev@@GLIBCXX_3.4
-FUNC:_ZNSdD1Ev@@GLIBCXX_3.4
-FUNC:_ZNSdD2Ev@@GLIBCXX_3.4
 FUNC:_ZNSi3getEPci@@GLIBCXX_3.4
 FUNC:_ZNSi3getEPcic@@GLIBCXX_3.4
 FUNC:_ZNSi3getERSt15basic_streambufIcSt11char_traitsIcEE@@GLIBCXX_3.4
@@ -2090,7 +2083,7 @@ FUNC:__cxa_vec_new2@@CXXABI_1.3
 FUNC:__cxa_vec_new3@@CXXABI_1.3
 FUNC:__cxa_vec_new@@CXXABI_1.3
 FUNC:__dynamic_cast@@CXXABI_1.3
-FUNC:__gxx_personality_v0@@CXXABI_1.3
+FUNC:__gxx_personality_sj0@@CXXABI_1.3
 FUNC:atan2l@@GLIBCXX_3.4
 FUNC:coshl@@GLIBCXX_3.4
 FUNC:cosl@@GLIBCXX_3.4
@@ -2517,7 +2510,6 @@ OBJECT:1:_ZNSt21__numeric_limits_base8is_exactE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_iec559E@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_moduloE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_signedE@@GLIBCXX_3.4
-OBJECT:1:_ZSt7nothrow@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIwE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt15underflow_error@@GLIBCXX_3.4
@@ -2954,6 +2946,7 @@ OBJECT:4:_ZNSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE@@GLI
 OBJECT:4:_ZNSt9money_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE@@GLIBCXX_3.4
 OBJECT:4:_ZNSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE2idE@@GLIBCXX_3.4
 OBJECT:4:_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2idE@@GLIBCXX_3.4
+OBJECT:4:_ZSt7nothrow@@GLIBCXX_3.4
 OBJECT:4:_ZTSPKa@@CXXABI_1.3
 OBJECT:4:_ZTSPKb@@CXXABI_1.3
 OBJECT:4:_ZTSPKc@@CXXABI_1.3
