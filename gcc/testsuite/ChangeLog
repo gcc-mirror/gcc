@@ -1,3 +1,9 @@
+2003-05-01  Chris Demetriou  <cgd@broadcom.com>
+
+	* gcc.dg/special/mips-abi.exp (is_meabi_config): Remove,
+	since MEABI is no longer supported.  Remove all vestiges
+	of MEABI from the test.
+
 2003-05-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10554
