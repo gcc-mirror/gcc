@@ -309,7 +309,7 @@ struct tree_common GTY(())
 
 /* Special checks for TREE_OPERANDs.  */
 #define TREE_OPERAND_CHECK(T, I) __extension__				\
-(*({const tree __t = EXPR_CHECK(T);					\
+(*({const tree __t = EXPR_CHECK (T);					\
     const int __i = (I);						\
     if (__i < 0 || __i >= TREE_CODE_LENGTH (TREE_CODE (__t)))		\
       tree_operand_check_failed (__i, TREE_CODE (__t),			\
