@@ -217,13 +217,7 @@ SUFFIXES = .class .java .h
 ## subdirs.  FIXME.
 $(nat_files) $(x_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
-	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*F).pp > .deps/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*F).P; \
-	rm -f .deps/$(*F).pp
+	$(LTCXXCOMPILE) -MD -MT $@ -MF $*.d -c -o $@ $<
 
 ## FIXME: GNU make.
 $(c_files): %.lo: %.c
@@ -259,29 +253,25 @@ libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
 	$(GCJH) -classpath $(top_builddir) $(basename $<)
 
 ## Header files used when compiling some of the nat* files.
-nat_headers = $(ordinary_java_source_files:.java=.h) \
-	$(built_java_source_files:.java=.h) \
-	java/io/ObjectOutputStream$$PutField.h \
+ordinary_nat_headers = $(ordinary_java_source_files:.java=.h) \
+	$(built_java_source_files:.java=.h)
+
+inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h
+
+nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
 
 x_nat_headers = $(x_java_source_files:.java=.h)
 
-$(nat_headers) $(x_nat_headers): libgcj.jar
+$(ordinary_nat_headers) $(x_nat_headers): %.h: %.class
 
-java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.jar
+java/lang/ClassLoader.h: java/lang/ClassLoader.class
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
-## Our internal main program needs to be able to create a FirstThread.
-gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.jar
-	$(GCJH) -classpath $(top_builddir) \
-		-friend 'void JvRunMain (jclass, int, const char **);' \
-		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
-		$(basename $<)
-
-java/lang/Thread.h: java/lang/Thread.class libgcj.jar
+java/lang/Thread.h: java/lang/Thread.class
 	$(GCJH) -classpath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
@@ -294,7 +284,7 @@ java/lang/Thread.h: java/lang/Thread.class libgcj.jar
 		-friend 'jint _Jv_DetachCurrentThread ();' \
 		$(basename $<)
 
-java/lang/String.h: java/lang/String.class libgcj.jar
+java/lang/String.h: java/lang/String.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -friend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
@@ -304,37 +294,37 @@ java/lang/String.h: java/lang/String.class libgcj.jar
 	    -friend 'jstring _Jv_AllocString (jsize);' \
 	    $(basename $<)
 
-java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.jar
+java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.jar
+java/lang/reflect/Field.h: java/lang/reflect/Field.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
 	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
-java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.jar
+java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.jar
+gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'class java::lang::ClassLoader;' \
 	    $(basename $<)
 
-java/io/ObjectInputStream$$GetField.h: libgcj.jar
+java/io/ObjectInputStream$$GetField.h: java/io/ObjectInputStream.class
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectInputStream$$GetField'
 
-java/io/ObjectOutputStream$$PutField.h: libgcj.jar
+java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream.class
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
@@ -1759,9 +1749,9 @@ texinfo: TexinfoDoclet.class
 -include deps.mk
 
 ## This is an evil hack to work around an automake limitation.  We
-## need to ensure that the built headers are built before we try to
-## compile the C++ sources, but we can't make the .o files depend on
-## the headers, because in that case we'll force a complete rebuild of
+## need to ensure that all CNI headers are built, not just the ones used
+## internally by libgcj. We can't make the .o files depend on nat_headers, 
+## because in that case we'll force a complete rebuild of
 ## the C++ code whenever any .java file is touched.
 all-recursive: $(nat_headers) $(x_nat_headers)
 

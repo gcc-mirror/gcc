@@ -1636,7 +1636,7 @@ else
   if { (eval echo configure:1637: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.c | *.C | *.o | *.obj) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -7564,17 +7564,19 @@ esac
 # builddir for the .java files.
 h=`pwd`
 : > deps.mk
-( (cd $srcdir && find . -name '*.java' -print) ;
-  find . -name '*.java' -print) | \
+( (cd $srcdir && find . \( -name '*.java' -o -name '*.cc' \) -print) ;
+  find . \( -name '*.java' -o -name '*.cc' \) -print) | \
    fgrep -v testsuite | \
-   sed -e 's/\.java/.d/' | \
+   sed -e 's/\.java/.d/'\;'s/\.cc/.d/' | \
    while read f; do
       echo "include $f" >> deps.mk
       test -f $f || {
 
 	 d=`echo $f | sed -e 's,/[^/]*$,,'`
 
-	 $libgcj_basedir/../mkinstalldirs $d
+	 if test ! -d $d; then
+	   $libgcj_basedir/../mkinstalldirs $d
+	 fi;
 	 echo > $f
       }
    done

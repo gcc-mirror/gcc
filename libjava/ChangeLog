@@ -1,3 +1,15 @@
+2001-11-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am (nat_headers, x_nat_headers): Depend on .class files, not
+	libgcj.jar.
+	(nat_files, x_nat_files): Build native files in subdirectories using 
+	the same dependency options as the java files.
+	(gnu/gcj/runtime/FirstThread.h): Remove explicit rule and friend
+	declarations.
+	* configure.in: Put dependencies for .cc files in deps.mak.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+
 2001-11-25  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/2024, plus other class name cleanups:
@@ -37,6 +49,7 @@
 	* java/math/BigDecimal.java (BigDecimal(double)): Rewrote.
 	(BigDecimal(String)): Likewise.
 
+>>>>>>> 1.1022
 2001-11-19  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_iinc]:
