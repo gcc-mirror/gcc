@@ -19,8 +19,9 @@
 
 #if defined( AVOID_BOOL_TYPE_CHECK )
 #ifndef __cplusplus
-typedef unsigned int	bool 	; /* bool type */
-#endif
+typedef unsigned int	bool 	;
+#endif /* bool
+ type */
 #endif  /* AVOID_BOOL_TYPE_CHECK */
 
 
