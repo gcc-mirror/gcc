@@ -1542,6 +1542,130 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back)
   return result;
 }
 
+int
+arm_gen_movstrqi (operands)
+     rtx *operands;
+{
+  HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
+  int i, r;
+  rtx const_sxteen = gen_rtx (CONST_INT, SImode, 16);
+  rtx src, dst;
+  rtx st_src, st_dst, end_src, end_dst, fin_src, fin_dst;
+  rtx part_bytes_reg = NULL;
+  extern int optimize;
+
+  if (GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[3]) != CONST_INT
+      || INTVAL (operands[2]) > 64
+      || INTVAL (operands[3]) & 3)
+    return 0;
+
+  st_dst = XEXP (operands[0], 0);
+  st_src = XEXP (operands[1], 0);
+  fin_dst = dst = copy_to_mode_reg (SImode, st_dst);
+  fin_src = src = copy_to_mode_reg (SImode, st_src);
+
+  in_words_to_go = (INTVAL (operands[2]) + 3) / 4;
+  out_words_to_go = INTVAL (operands[2]) / 4;
+  last_bytes = INTVAL (operands[2]) & 3;
+
+  if (out_words_to_go != in_words_to_go && ((in_words_to_go - 1) & 3) != 0)
+    part_bytes_reg = gen_rtx (REG, SImode, (in_words_to_go - 1) & 3);
+
+  for (i = 0; in_words_to_go >= 2; i+=4)
+    {
+      emit_insn (arm_gen_load_multiple (0, (in_words_to_go > 4 
+					    ? 4 : in_words_to_go),
+                                        src, TRUE, TRUE));
+      if (out_words_to_go)
+	{
+	  if (out_words_to_go != 1)
+	    emit_insn (arm_gen_store_multiple (0, (out_words_to_go > 4
+						   ? 4 : out_words_to_go),
+					       dst, TRUE, TRUE));
+	  else
+	    {
+	      emit_move_insn (gen_rtx (MEM, SImode, dst),
+			      gen_rtx (REG, SImode, 0));
+	      emit_insn (gen_addsi3 (dst, dst, GEN_INT (4)));
+	    }
+	}
+
+      in_words_to_go -= in_words_to_go < 4 ? in_words_to_go : 4;
+      out_words_to_go -= out_words_to_go < 4 ? out_words_to_go : 4;
+    }
+
+  /* OUT_WORDS_TO_GO will be zero here if there are byte stores to do.  */
+  if (out_words_to_go)
+  {
+    rtx sreg;
+
+    emit_move_insn (sreg = gen_reg_rtx (SImode), gen_rtx (MEM, SImode, src));
+    emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
+    emit_move_insn (gen_rtx (MEM, SImode, dst), sreg);
+    emit_move_insn (fin_dst = gen_reg_rtx (SImode), plus_constant (dst, 4));
+    in_words_to_go--;
+
+    if (in_words_to_go)	/* Sanity check */
+      abort ();
+  }
+
+  if (in_words_to_go)
+    {
+      if (in_words_to_go < 0)
+	abort ();
+
+      part_bytes_reg = copy_to_mode_reg (SImode, gen_rtx (MEM, SImode, src));
+      emit_insn (gen_addsi3 (src, src, GEN_INT (4)));
+    }
+
+  if (BYTES_BIG_ENDIAN && last_bytes)
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+
+      if (part_bytes_reg == NULL)
+	abort ();
+
+      /* The bytes we want are in the top end of the word */
+      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, 8 * (4 - last_bytes)));
+      part_bytes_reg = tmp;
+      
+      while (last_bytes)
+	{
+	  emit_move_insn (gen_rtx (MEM, QImode, 
+				   plus_constant (dst, last_bytes - 1)),
+			  gen_rtx (SUBREG, QImode, part_bytes_reg, 0));
+	  if (--last_bytes)
+	    {
+	      tmp = gen_reg_rtx (SImode);
+	      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, GEN_INT (8)));
+	      part_bytes_reg = tmp;
+	    }
+	}
+	  
+    }
+  else
+    {
+      while (last_bytes)
+	{
+	  if (part_bytes_reg == NULL)
+	    abort ();
+
+	  emit_move_insn (gen_rtx (MEM, QImode, dst),
+			  gen_rtx (SUBREG, QImode, part_bytes_reg, 0));
+	  emit_insn (gen_addsi3 (dst, dst, const1_rtx));
+	  if (--last_bytes)
+	    {
+	      rtx tmp = gen_reg_rtx (SImode);
+	      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, GEN_INT (8)));
+	      part_bytes_reg = tmp;
+	    }
+	}
+    }
+
+  return 1;
+}
+
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
    return the rtx for register 0 in the proper mode.  FP means this is a
    floating point compare: I don't think that it is needed on the arm.  */
