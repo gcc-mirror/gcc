@@ -164,6 +164,55 @@ case "${host}" in
   x86_64*-linux* | \
   sh-linux* | sh[34]*-linux*)
   	can_unwind_signal=yes
+	if test x$slow_pthread_self = xyes \
+	   && test x$cross_compiling != xyes; then
+	  cat > conftest.c <<EOF
+#define _GNU_SOURCE 1
+#include <pthread.h>
+#include <stdlib.h>
+#include <sys/resource.h>
+#include <limits.h>
+
+void *
+tf (void *arg __attribute__ ((unused)))
+{
+  pthread_attr_t a;
+  size_t s;
+
+  if (pthread_getattr_np (pthread_self (), &a)
+      || pthread_attr_getstacksize (&a, &s)
+      || s > 2 * PTHREAD_STACK_MIN)
+    exit (1);
+  exit (0);
+}
+
+int
+main (int argc, char **argv)
+{
+  pthread_t p;
+  void *ret;
+  struct rlimit r;
+
+  if (argc == 2)
+    {
+      r.rlim_cur = 2 * PTHREAD_STACK_MIN;
+      r.rlim_max = 2 * PTHREAD_STACK_MIN;
+      if (setrlimit (RLIMIT_STACK, &r))
+	exit (1);
+      execl (argv[1], argv[0], NULL);
+      exit (1);
+    }
+
+  if (pthread_create (&p, NULL, tf, NULL)
+      || pthread_join (p, &ret))
+    exit (1);
+  exit (1);
+}
+EOF
+	  $CC -o conftest conftest.c -lpthread > /dev/null 2>&1 && \
+	  ./conftest ./conftest && slow_pthread_self=
+	  rm -f conftest conftest.c
+	fi
 	;;
   *-*-darwin*)
 	enable_hash_synchronization_default=no
