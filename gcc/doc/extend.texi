@@ -2110,7 +2110,7 @@ requested by @option{-ansi} or an appropriate @option{-std} option, or
 @option{-ffreestanding} is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
-@item nonnull (@var{arg-index,...})
+@item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
 The @code{nonnull} attribute specifies that some function parameters should
 be non-null pointers.  For instance, the declaration:
