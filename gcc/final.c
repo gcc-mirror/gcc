@@ -68,20 +68,8 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "debug.h"
 
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-#include "dbxout.h"
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
-
-#ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"
-#endif
-
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
-#endif
-
-#ifdef SDB_DEBUGGING_INFO
-#include "sdbout.h"
 #endif
 
 /* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
@@ -2218,10 +2206,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       FINAL_PRESCAN_INSN (insn, NULL, 0);
 #endif
 
-#ifdef SDB_DEBUGGING_INFO
-      if (write_symbols == SDB_DEBUG && LABEL_NAME (insn))
-	sdbout_label (insn);
-#endif
+      if (LABEL_NAME (insn))
+	(*debug_hooks->label) (insn);
+
       if (app_on)
 	{
 	  fputs (ASM_APP_OFF, file);

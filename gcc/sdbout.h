@@ -18,7 +18,5 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void sdbout_label		PARAMS ((rtx));
 extern void sdbout_symbol		PARAMS ((tree, int));
-extern void sdbout_toplevel_data	PARAMS ((tree));
 extern void sdbout_types		PARAMS ((tree));

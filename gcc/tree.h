@@ -2885,11 +2885,6 @@ extern tree get_file_function_name PARAMS ((int));
 
 /* Interface of the DWARF2 unwind info support.  */
 
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
-
-extern int dwarf2out_do_frame		PARAMS ((void));
-
 /* Generate a new label for the CFI info to refer to.  */
 
 extern char *dwarf2out_cfi_label	PARAMS ((void));

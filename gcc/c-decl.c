@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "cpplib.h"
 #include "target.h"
+#include "debug.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -1960,7 +1961,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	 been written out yet.  */
       if (new_is_definition && DECL_INITIAL (olddecl) && TREE_USED (olddecl))
 	{
-	  note_outlining_of_inline_function (olddecl);
+	  (*debug_hooks->outlining_inline_function) (olddecl);
 
 	  /* The new defn must not be inline.  */
 	  DECL_INLINE (newdecl) = 0;

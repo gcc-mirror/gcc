@@ -18,17 +18,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern int dwarf2out_ignore_block	PARAMS ((tree));
 extern void dwarf2out_decl		PARAMS ((tree));	
-extern void dwarf2out_frame_init	PARAMS ((void));
 extern void dwarf2out_frame_debug	PARAMS ((rtx));
-extern void dwarf2out_frame_finish	PARAMS ((void));
 
 extern void debug_dwarf			PARAMS ((void));
 struct die_struct;
 extern void debug_dwarf_die		PARAMS ((struct die_struct *));
 extern void dwarf2out_set_demangle_name_func PARAMS ((const char *(*) (const char *)));
-extern void dwarf2out_abstract_function PARAMS ((tree));
 extern void dwarf2out_add_library_unit_info PARAMS ((const char *, const char *));
 
 extern unsigned current_funcdef_number;

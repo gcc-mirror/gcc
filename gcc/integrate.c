@@ -2889,7 +2889,7 @@ output_inline_function (fndecl)
 
   /* Do any preparation, such as emitting abstract debug info for the inline
      before it gets mangled by optimization.  */
-  note_outlining_of_inline_function (fndecl);
+  (*debug_hooks->outlining_inline_function) (fndecl);
 
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);

@@ -79,10 +79,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
 #endif
-
-#ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"
-#endif
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
@@ -2590,24 +2586,6 @@ rest_of_type_compilation (type, toplev)
   timevar_pop (TV_SYMOUT);
 }
 
-/* FNDECL is an inline function which is about to be emitted out of line.
-   Do any preparation, such as emitting abstract debug info for the inline
-   before it gets mangled by optimization.  */
-
-void
-note_outlining_of_inline_function (fndecl)
-     tree fndecl ATTRIBUTE_UNUSED;
-{
-#ifdef DWARF2_DEBUGGING_INFO
-  /* The DWARF 2 backend tries to reduce debugging bloat by not emitting
-     the abstract description of inline functions until something tries to
-     reference them.  Force it out now, before optimizations mangle the
-     block tree.  */
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_abstract_function (fndecl);
-#endif
-}
-
 /* This is called from finish_function (within yyparse)
    after each top-level definition is parsed.
    It is supposed to compile that function or variable
@@ -5088,28 +5066,4 @@ print_switch_values (file, pos, max, indent, sep, term)
 #endif
 
   fprintf (file, "%s", term);
-}
-
-/* Returns nonzero if it is appropriate not to emit any debugging
-   information for BLOCK, because it doesn't contain any instructions.
-   This may not be the case for blocks containing nested functions, since
-   we may actually call such a function even though the BLOCK information
-   is messed up.  */
-
-int
-debug_ignore_block (block)
-     tree block ATTRIBUTE_UNUSED;
-{
-  /* Never delete the BLOCK for the outermost scope
-     of the function; we can refer to names from
-     that scope even if the block notes are messed up.  */
-  if (is_body_block (block))
-    return 0;
-
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    return dwarf2out_ignore_block (block);
-#endif
-
-  return 1;
 }

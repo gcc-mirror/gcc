@@ -19,6 +19,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define GCC_DEBUG_H
 
 union tree_node;
+struct rtx_def;
 
 /* This structure contains hooks for the debug information output
    functions, accessed through the global instance debug_hooks set in
@@ -52,6 +53,13 @@ struct gcc_debug_hooks
 
   /* Record the end of a block.  Arguments as for begin_block.  */
   void (* end_block) PARAMS ((unsigned int line, unsigned int n));
+
+  /* Returns nonzero if it is appropriate not to emit any debugging
+     information for BLOCK, because it doesn't contain any
+     instructions.  This may not be the case for blocks containing
+     nested functions, since we may actually call such a function even
+     though the BLOCK information is messed up.  Defaults to true.  */
+  bool (* ignore_block) PARAMS ((union tree_node *));
 
   /* Record a source file location at (FILE, LINE).  */
   void (* source_line) PARAMS ((unsigned int line, const char *file));
@@ -87,6 +95,15 @@ struct gcc_debug_hooks
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
   void (* deferred_inline_function) PARAMS ((union tree_node *decl));
+
+  /* DECL is an inline function which is about to be emitted out of
+     line.  The hook is useful to, e.g., emit abstract debug info for
+     the inline before it gets mangled by optimization.  */
+  void (* outlining_inline_function) PARAMS ((union tree_node *decl));
+
+  /* Called from final_scan_insn for any CODE_LABEL insn whose
+     LABEL_NAME is non-null.  */
+  void (* label) PARAMS ((struct rtx_def *insn));
 };
 
 extern struct gcc_debug_hooks *debug_hooks;
@@ -104,6 +121,10 @@ extern void debug_nothing_int_int
   PARAMS ((unsigned int, unsigned int));
 extern void debug_nothing_tree
   PARAMS ((union tree_node *));
+extern bool debug_true_tree
+  PARAMS ((union tree_node *));
+extern void debug_nothing_rtx
+  PARAMS ((struct rtx_def *));
 
 /* Hooks for various debug formats.  */
 extern struct gcc_debug_hooks do_nothing_debug_hooks;
@@ -120,6 +141,14 @@ extern struct gcc_debug_hooks dwarf2_debug_hooks;
 extern void dwarf2out_begin_prologue
   PARAMS ((unsigned int, const char * file));
 extern void dwarf2out_end_epilogue
+  PARAMS ((void));
+extern void dwarf2out_frame_init
+  PARAMS ((void));
+extern void dwarf2out_frame_finish
+  PARAMS ((void));
+/* Decide whether we want to emit frame unwind information for the current
+   translation unit.  */
+extern int dwarf2out_do_frame
   PARAMS ((void));
 
 #endif /* !GCC_DEBUG_H  */

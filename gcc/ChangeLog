@@ -1,3 +1,41 @@
+2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (emit-rtl.o, c-decl.o): Depend on debug.h.
+	(final.o): Don't depend on xcoffout.h, dbxout.h or sdbout.h.
+	(toplev.o): Don't depend on xcoffout.h.
+	* c-decl.c: Include debug.h
+	(duplicate_decls): Use debug hook.
+	* dbxout.c (dbxout_source_file, dbxout_args): Make static.
+	(dbx_debug_hooks, xcoff_debug_hooks): Update.
+	(dbxout_types): Remove.
+	* dbxout.h (dbxout_source_file, dbxout_types, dbxout_args): Remove.
+	* debug.c (do_nothing_debug_hooks): Update.
+	(debug_true_tree, debug_nothing_rtx): New.
+	* debug.h (struct rtx_def): New.
+	(struct gcc_debug_hooks): New hooks ignore_block,
+	outlining_inline_function and label.
+	(debug_true_tree, debug_nothing_rtx, dwarf2out_frame_init,
+	dwarf2out_frame_finish): New.
+	* dwarf2out.c (dwarf2out_ignore_block, dwarf2out_abstract_function):
+	Make static, update prototype.
+	(dwarf2_debug_hooks): Update.
+	* dwarf2out.h (dwarf2out_ignore_block, dwarf2out_abstract_function,
+	dwarf2out_frame_init, dwarf2out_frame_finish): Remove.
+	* dwarfout.c (dwarf_debug_hooks): Update.
+	* emit-rtl.c: Include debug.h.
+	(remove_unnecessary_notes): Use debug hook.
+	* final.c: Don't include dbxout.h, xcoffout.h or sdbout.h.
+	(final_scan_insn): Use debug hook.
+	* integrate.c (output_inline_function): Use debug hook.
+	* sdbout.c (sdbout_toplevel_data, sdbout_label): Make static.
+	(sdb_debug_hooks): Update.
+	* sdbout.h (sdbout_label, sdbout_toplevel_data): Remove.
+	* toplev.c: Don't include xcoffout.h.
+	(note_outlining_of_inline_function, debug_ignore_block): Remove.
+	* toplev.h (note_outlining_of_inline_function, debug_ignore_block):
+	Remove.
+	* tree.h (dwarf2out_do_frame): Remove.
+
 2001-07-19  Catherine Moore  <clm@cygnus.com>
 
         * config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore. 

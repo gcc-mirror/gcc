@@ -3022,7 +3022,9 @@ static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarf2out_end_source_file	PARAMS ((unsigned));
 static void dwarf2out_begin_block	PARAMS ((unsigned, unsigned));
 static void dwarf2out_end_block		PARAMS ((unsigned, unsigned));
+static bool dwarf2out_ignore_block	PARAMS ((tree));
 static void dwarf2out_global_decl	PARAMS ((tree));
+static void dwarf2out_abstract_function PARAMS ((tree));
 
 /* The debug hooks structure.  */
 
@@ -3036,6 +3038,7 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_end_source_file,
   dwarf2out_begin_block,
   dwarf2out_end_block,
+  dwarf2out_ignore_block,
   dwarf2out_source_line,
   dwarf2out_begin_prologue,
   debug_nothing_int,		/* end_prologue */
@@ -3044,7 +3047,12 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_int,		/* end_function */
   dwarf2out_decl,		/* function_decl */
   dwarf2out_global_decl,
-  debug_nothing_tree		/* deferred_inline_function */
+  debug_nothing_tree,		/* deferred_inline_function */
+  /* The DWARF 2 backend tries to reduce debugging bloat by not
+     emitting the abstract description of inline functions until
+     something tries to reference them.  */
+  dwarf2out_abstract_function,	/* outlining_inline_function */
+  debug_nothing_rtx		/* label */
 };
 
 /* NOTE: In the comments in this file, many references are made to
@@ -9619,7 +9627,7 @@ gen_type_die_for_member (type, member, context_die)
    of a function which we may later generate inlined and/or
    out-of-line instances of.  */
 
-void
+static void
 dwarf2out_abstract_function (decl)
      tree decl;
 {
@@ -11176,7 +11184,7 @@ dwarf2out_end_block (line, blocknum)
    as we would end up with orphans, and in the presence of scheduling
    we may end up calling them anyway.  */
 
-int
+static bool
 dwarf2out_ignore_block (block)
      tree block;
 {

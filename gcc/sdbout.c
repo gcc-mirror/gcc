@@ -106,6 +106,8 @@ static void sdbout_begin_prologue	PARAMS ((unsigned int, const char *));
 static void sdbout_end_prologue		PARAMS ((unsigned int));
 static void sdbout_begin_function	PARAMS ((tree));
 static void sdbout_end_function		PARAMS ((unsigned int));
+static void sdbout_toplevel_data	PARAMS ((tree));
+static void sdbout_label		PARAMS ((rtx));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
 static int template_name_p		PARAMS ((tree));
@@ -304,6 +306,7 @@ struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_end_source_file,
   sdbout_begin_block,
   sdbout_end_block,
+  debug_true_tree,		/* ignore_block */
   sdbout_source_line,
 #ifdef MIPS_DEBUGGING_INFO
   /* Defer on MIPS systems so that parameter descriptions follow
@@ -319,7 +322,9 @@ struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_end_function,
   debug_nothing_tree,		/* function_decl */
   sdbout_global_decl,
-  debug_nothing_tree		/* deferred_inline_function */
+  debug_nothing_tree,		/* deferred_inline_function */
+  debug_nothing_tree,		/* outlining_inline_function */
+  sdbout_label
 };
 
 #if 0
@@ -947,7 +952,7 @@ sdbout_symbol (decl, local)
 /* Output SDB information for a top-level initialized variable
    that has been delayed.  */
 
-void
+static void
 sdbout_toplevel_data (decl)
      tree decl;
 {
@@ -1657,7 +1662,7 @@ sdbout_end_epilogue ()
 /* Output sdb info for the given label.  Called only if LABEL_NAME (insn)
    is present.  */
 
-void
+static void
 sdbout_label (insn)
      register rtx insn;
 {

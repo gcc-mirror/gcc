@@ -18,9 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void dbxout_source_file		PARAMS ((FILE *, const char *));
-extern void dbxout_types		PARAMS ((tree));
-extern void dbxout_args			PARAMS ((tree));
 extern int dbxout_symbol		PARAMS ((tree, int));
 extern void dbxout_parms		PARAMS ((tree));
 extern void dbxout_reg_parms		PARAMS ((tree));
