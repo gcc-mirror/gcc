@@ -1,3 +1,8 @@
+2003-06-10  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/alpha/alpha.c (unicosmk_file_end): Add conditional
+	compilation guard.
+
 2003-06-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh-protos.h (function_symbol): Declare.

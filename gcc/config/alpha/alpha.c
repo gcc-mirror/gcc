@@ -269,7 +269,9 @@ static void unicosmk_output_deferred_case_vectors PARAMS ((FILE *));
 static void unicosmk_gen_dsib PARAMS ((unsigned long *imaskP));
 static void unicosmk_output_ssib PARAMS ((FILE *, const char *));
 static int unicosmk_need_dex PARAMS ((rtx));
+#if TARGET_ABI_UNICOSMK
 static void unicosmk_file_end PARAMS ((void));
+#endif
 
 /* Get the number of args of a function in one of two ways.  */
 #if TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK
