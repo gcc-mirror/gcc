@@ -558,6 +558,14 @@ static int n_compilers;
 
 static struct compiler default_compilers[] =
 {
+  /* Add lists of suffixes of known languages here.  If those languages
+     were no present when we built the driver, we will hit these copies
+     and given a more meaningful error than "file not used since
+     linking is not done".  */
+  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".c++", "#C++"},
+  {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
+  {".f", "#Fortran"},
+  /* Next come the entries for C.  */
   {".c", "@c"},
   {"@c",
    "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
@@ -4258,6 +4266,10 @@ main (argc, argv)
 	  /* First say how much of input_filename to substitute for %b  */
 	  register char *p;
 	  int len;
+
+	  if (cp->spec[0][0] == '#')
+	    error ("%s: %s compiler not installed on this system",
+		   input_filename, &cp->spec[0][1]);
 
 	  input_basename = input_filename;
 	  for (p = input_filename; *p; p++)
