@@ -484,7 +484,7 @@ while (0)
     {									\
       flag_omit_frame_pointer	       = TRUE;				\
       flag_schedule_insns_after_reload = TRUE;				\
-      target_flags &= MASK_GPOPT;					\
+      target_flags |= MASK_GPOPT;					\
     }									\
 }
 
