@@ -123,6 +123,9 @@
 /* Define if you have /proc/self/exe */
 #undef HAVE_PROC_SELF_EXE
  
+/* Define if you have dladdr() */
+#undef HAVE_DLADDR
+ 
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
 
