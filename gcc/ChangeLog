@@ -1,3 +1,8 @@
+Tue Sep 15 19:31:58 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* i960.h (CONST_COSTS): Fix thinko.  Test flag, not the constant
+	flag bit mask.
+
 Tue Sep 15 14:10:54 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (struct eh_entry): Add false_label field.
