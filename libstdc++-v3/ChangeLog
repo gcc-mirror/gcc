@@ -1,3 +1,10 @@
+2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* bits/valarray_meta.h (_Expr<>::min, _Expr<>::max): Implement.
+
+	* bits/valarray_array.h (__valarray_min, __valarray_max): New
+	function. 
+
 2000-08-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* bits/localefwd.h (std::locale): Use explicit `class' specified

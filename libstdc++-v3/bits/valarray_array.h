@@ -293,7 +293,39 @@ namespace std
     while (__f != __l) __r = __r * *__f++;
     return __r;
   }
+
+  // Compute the min/max of an array-expression
+  template<typename _Ta>
+  inline typename _Ta::value_array
+  __valarray_min(const _Ta& __a)
+  {
+    size_t __s = __a.size();
+    typedef typename _Ta::value_type _Value_type;
+    _Value_type __r = __s == 0 ? _Value_type() : __a[0];
+    for (size_t __i = 1; __i < __s; ++__i)
+      {
+        _Value_type __t = __a[__i];
+        if (__t < __r)
+          __r = __t;
+      }
+    return __r;
+  }
   
+  template<typename _Ta>
+  inline typename _Ta::value_array
+  __valarray_max(const _Ta& __a)
+  {
+    size_t __s = __a.size();
+    typedef typename _Ta::value_type _Value_type;
+    _Value_type __r = __s == 0 ? _Value_type() : __a[0];
+    for (size_t __i = 1; __i < __s; ++__i)
+      {
+        _Value_type __t = __a[__i];
+        if (__t > __r)
+          __r = __t;
+      }
+    return __r;
+  }
   
   //
   // Helper class _Array, first layer of valarray abstraction.
