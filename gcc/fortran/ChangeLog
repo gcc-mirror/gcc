@@ -1,6 +1,11 @@
+2004-05-21  Roger Sayle  <roger@eyesopen.com>
+
+	* io.c (check_format): Use gfc_notify_std to determine whether to
+	issue an error/warning for omitting the digits from the X format.
+
 2004-05-20  Roger Sayle  <roger@eyesopen.com>
 
-	* io.c (format_item): Allow the number before the X format to
+	* io.c (check_format): Allow the number before the X format to
 	be optional when not -pedantic.
 
 2004-05-18  Feng Wang  <fengwang@nudt.edu.cn>
