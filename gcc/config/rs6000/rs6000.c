@@ -353,7 +353,7 @@ optimization_options (level, size)
      int level;
      int size ATTRIBUTE_UNUSED;
 {
-#ifdef HAIFA
+#ifdef HAVE_decrement_and_branch_on_count
   /* When optimizing, enable use of BCT instruction.  */
   if (level >= 1)
       flag_branch_on_count_reg = 1;
@@ -1159,13 +1159,8 @@ input_operand (op, mode)
 
 int
 small_data_operand (op, mode)
-#if TARGET_ELF
-     rtx op;
-     enum machine_mode mode;
-#else
      rtx op ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
-#endif
 {
 #if TARGET_ELF
   rtx sym_ref, const_part;
