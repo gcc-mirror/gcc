@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 {							\
   unsigned char *s;					\
   int i;						\
-  for (i = 0, s = (PTR); i < (LEN); s++, i++)		\
+  for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
     {							\
       if ((i % 8) == 0)					\
 	fputs ("\n\t.byte\t", (FILE));			\

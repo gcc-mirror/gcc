@@ -861,7 +861,7 @@ do { union { float f; long l;} tem;				\
 {							\
   unsigned char *s;					\
   int i;						\
-  for (i = 0, s = (PTR); i < (LEN); s++, i++)		\
+  for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
     {							\
       if ((i % 8) == 0)					\
 	fprintf ((FILE),"%s\t.byte\t",(i?"\n":""));	\
