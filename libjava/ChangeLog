@@ -1,3 +1,8 @@
+2000-01-20  Tom Tromey  <tromey@cygnus.com>
+
+	* resolve.cc (StringClass): Removed.
+	* defineclass.cc (StringClass): Removed.
+
 2000-01-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* NEWS: updated.

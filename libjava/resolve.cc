@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -40,8 +40,6 @@ static void throw_class_format_error (jstring msg)
 static void throw_class_format_error (char *msg)
 	__attribute__ ((__noreturn__));
 
-#define StringClass _CL_Q34java4lang6String
-extern java::lang::Class StringClass;
 #define ClassObject _CL_Q34java4lang6Object
 extern java::lang::Class ClassObject;
 #define ObjectClass _CL_Q34java4lang6Object
