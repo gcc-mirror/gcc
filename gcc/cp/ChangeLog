@@ -1,3 +1,9 @@
+2004-08-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/16706
+	* search.c (friend_accessible_p): Increment processing_template_decl
+	when deal with TEMPLATE_DECL of SCOPE.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17149
