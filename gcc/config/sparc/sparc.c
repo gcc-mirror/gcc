@@ -113,7 +113,8 @@ restore_operand (op, mode)
 	  && (REGNO (op) < 8 || (REGNO (op) >= 24 && REGNO (op) < 32)));
 }
 
-/* PC-relative call insn on SPARC is independent of `memory_operand'.  */
+/* Call insn on SPARC can take a PC-relative constant address, or any regular
+   memory address.  */
 
 int
 call_operand (op, mode)
@@ -123,7 +124,7 @@ call_operand (op, mode)
   if (GET_CODE (op) != MEM)
     abort ();
   op = XEXP (op, 0);
-  return (REG_P (op) || CONSTANT_P (op));
+  return (CONSTANT_P (op) || memory_address_p (Pmode, op));
 }
 
 int
@@ -131,7 +132,7 @@ call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (REG_P (op) || CONSTANT_P (op));
+  return (CONSTANT_P (op) || memory_address_p (Pmode, op));
 }
 
 /* Returns 1 if OP is either a symbol reference or a sum of a symbol
