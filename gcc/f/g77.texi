@@ -380,7 +380,7 @@ So far, this has resulted in the three, somewhat
 experimental, options added by @command{g77} to the @command{gcc}
 compiler and its back end.
 
-(These, in turn, had made their way into the @code{egcs}
+(These, in turn, had made their way into the @command{egcs}
 version of the compiler, and do not exist in @command{gcc}
 version 2.8 or versions of @command{g77} based on that version
 of @command{gcc}.)
@@ -511,9 +511,9 @@ see @ref{Open Questions}.
 @cindex basic concepts
 
 GNU Fortran, or @command{g77}, is designed initially as a free replacement
-for, or alternative to, the UNIX @code{f77} command.
+for, or alternative to, the UNIX @command{f77} command.
 (Similarly, @command{gcc} is designed as a replacement
-for the UNIX @code{cc} command.)
+for the UNIX @command{cc} command.)
 
 @command{g77} also is designed to fit in well with the other
 fine GNU compilers and tools.
@@ -524,7 +524,7 @@ These cases are usually identified in the appropriate
 sections of this manual.
 
 @cindex compilers
-As compilers, @command{g77}, @command{gcc}, and @code{f77}
+As compilers, @command{g77}, @command{gcc}, and @command{f77}
 share the following characteristics:
 
 @itemize @bullet
@@ -557,18 +557,18 @@ to make big mistakes.
 
 @cindex debugger
 @cindex bugs, finding
-@cindex @code{gdb}, command
-@cindex commands, @code{gdb}
+@cindex @command{gdb}, command
+@cindex commands, @command{gdb}
 @item
 They provide information in the generated machine code
 that can make it easier to find bugs in the program
 (using a debugging tool, called a @dfn{debugger},
-such as @code{gdb}).
+such as @command{gdb}).
 
 @cindex libraries
 @cindex linking
-@cindex @code{ld} command
-@cindex commands, @code{ld}
+@cindex @command{ld} command
+@cindex commands, @command{ld}
 @item
 They locate and gather machine code already generated
 to perform actions requested by statements in
@@ -579,10 +579,10 @@ during the @dfn{link} phase of the compilation
 process.
 (Linking often is thought of as a separate
 step, because it can be directly invoked via the
-@code{ld} command.
+@command{ld} command.
 However, the @command{g77} and @command{gcc}
 commands, as with most compiler commands, automatically
-perform the linking step by calling on @code{ld}
+perform the linking step by calling on @command{ld}
 directly, unless asked to not do so by the user.)
 
 @cindex language, incorrect use of
@@ -635,8 +635,8 @@ the generated machine code run faster, and so on.
 @itemize @bullet
 @item
 A modified version of the @command{gcc} command, which also might be
-installed as the system's @code{cc} command.
-(In many cases, @code{cc} refers to the
+installed as the system's @command{cc} command.
+(In many cases, @command{cc} refers to the
 system's ``native'' C compiler, which
 might be a non-GNU compiler, or an older version
 of @command{gcc} considered more stable or that is
@@ -646,7 +646,7 @@ used to build the operating system kernel.)
 @cindex commands, @command{g77}
 @item
 The @command{g77} command itself, which also might be installed as the
-system's @code{f77} command.
+system's @command{f77} command.
 
 @cindex libg2c library
 @cindex libf2c library
@@ -673,8 +673,8 @@ The maintainer of @code{libf2c} currently is
 @cindex @code{f771}, program
 @cindex programs, @code{f771}
 @cindex assembler
-@cindex @code{as} command
-@cindex commands, @code{as}
+@cindex @command{as} command
+@cindex commands, @command{as}
 @cindex assembly code
 @cindex code, assembly
 @item
@@ -683,7 +683,7 @@ The compiler itself, internally named @code{f771}.
 Note that @code{f771} does not generate machine code directly---it
 generates @dfn{assembly code} that is a more readable form
 of machine code, leaving the conversion to actual machine code
-to an @dfn{assembler}, usually named @code{as}.
+to an @dfn{assembler}, usually named @command{as}.
 @end itemize
 
 @command{gcc} is often thought of as ``the C compiler'' only,
@@ -703,10 +703,10 @@ and linking.
 @cindex cpp program
 @cindex programs, cpp
 For example, the command @samp{gcc foo.c} @dfn{drives} the file
-@file{foo.c} through the preprocessor @code{cpp}, then
+@file{foo.c} through the preprocessor @command{cpp}, then
 the C compiler (internally named
-@code{cc1}), then the assembler (usually @code{as}), then the linker
-(@code{ld}), producing an executable program named @file{a.out} (on
+@code{cc1}), then the assembler (usually @command{as}), then the linker
+(@command{ld}), producing an executable program named @file{a.out} (on
 UNIX systems).
 
 @cindex cc1plus program
@@ -750,7 +750,7 @@ way to display lots of version information for the various programs
 used to compile a typical preprocessed Fortran source file---this
 produces much more output than @samp{gcc -v} currently does.
 (If it produces an error message near the end of the output---diagnostics
-from the linker, usually @code{ld}---you might
+from the linker, usually @command{ld}---you might
 have an out-of-date @code{libf2c} that improperly handles
 complex arithmetic.)
 In the output of this command, the line beginning @samp{GNU Fortran Front
@@ -891,7 +891,7 @@ the network at
 or as monolithic text at
 @uref{http://www.fortran.com/fortran/F77_std/f77_std.html}.
 It offers some extensions that are popular among users
-of UNIX @code{f77} and @command{f2c} compilers, some that
+of UNIX @command{f77} and @command{f2c} compilers, some that
 are popular among users of other compilers (such as Digital
 products), some that are popular among users of the
 newer Fortran 90 standard, and some that are introduced
@@ -995,7 +995,7 @@ a balance between:
 @itemize @bullet
 @item
 Serving as a mostly-upwards-compatible language from the
-de facto UNIX Fortran dialect as supported by @code{f77}.
+de facto UNIX Fortran dialect as supported by @command{f77}.
 
 @item
 Offering new, well-designed language features.
@@ -1862,7 +1862,7 @@ This permits long names to be used for @var{filename}.
 (@pxref{C Preprocessor Output,,, cpp, The C Preprocessor})
 are recognized by the compiler even
 when the preprocessor isn't run on the input (as it is when compiling
-@samp{.F} files).  (Note the distinction between these @code{cpp}
+@samp{.F} files).  (Note the distinction between these @command{cpp}
 @code{#} @emph{output} directives and @code{#line} @emph{input}
 directives.)
 
@@ -3130,14 +3130,14 @@ above will confirm that:
 @itemize @bullet
 @item
 Digital Semiconductor (``DEC'') Alpha OSF/1, HP-UX 10.0.1, AIX 3.2.5
-@code{f77} compilers all implement @samp{Interp 1}.
+@command{f77} compilers all implement @samp{Interp 1}.
 
 @item
-IRIX 5.3 @code{f77} compiler implements @samp{Interp 2}.
+IRIX 5.3 @command{f77} compiler implements @samp{Interp 2}.
 
 @item
 Solaris 2.5, SunOS 4.1.3, DECstation ULTRIX 4.3,
-and IRIX 6.1 @code{f77} compilers all implement @samp{Interp 3}.
+and IRIX 6.1 @command{f77} compilers all implement @samp{Interp 3}.
 @end itemize
 
 If you get different results than the above for the stated
@@ -3263,10 +3263,10 @@ The GNU Fortran language includes the MIL-STD 1753 intrinsics
 @code{ISHFTC}, @code{MVBITS}, and @code{NOT}.
 
 @node f77/f2c Intrinsics
-@subsection @code{f77}/@command{f2c} Intrinsics
+@subsection @command{f77}/@command{f2c} Intrinsics
 
 The bit-manipulation intrinsics supported by traditional
-@code{f77} and by @command{f2c} are available in the GNU Fortran language.
+@command{f77} and by @command{f2c} are available in the GNU Fortran language.
 These include @code{AND}, @code{LSHIFT}, @code{OR}, @code{RSHIFT},
 and @code{XOR}.
 
@@ -3346,7 +3346,7 @@ the requirements of @code{INTENT(IN)} and @code{INTENT(OUT)}.
 @ifinfo
 (Note that the empty lines appearing in the menu below
 are not intentional---they result from a bug in the
-GNU @code{makeinfo} program@dots{}a program that, if it
+GNU @command{makeinfo} program@dots{}a program that, if it
 did not exist, would leave this document in far worse shape!)
 @end ifinfo
 
@@ -3602,7 +3602,7 @@ position as if it had been affected by the canonical tab positioning.
 
 @command{g77} effectively
 translates tabs to the appropriate number of spaces (a la the default
-for the UNIX @code{expand} command) before doing any other processing, other
+for the UNIX @command{expand} command) before doing any other processing, other
 than (currently) noting whether a tab was found on a line and using this
 information to decide how to interpret the length of the line and continued
 constants.
@@ -4694,7 +4694,7 @@ Also, some Fortran compilation systems have an option
 (such as @option{-Nx@var{x}}) to increase the limit on the
 number of external symbols.
 
-@command{g77}, @command{gcc}, and GNU @code{ld} (the GNU linker) have
+@command{g77}, @command{gcc}, and GNU @command{ld} (the GNU linker) have
 no equivalent options, since they do not impose arbitrary
 limits in these areas.
 
@@ -5510,7 +5510,7 @@ Reasons for such incompatibilities include:
 There might be differences in the way names of Fortran procedures
 are translated for use in the system's object-file format.
 For example, the statement @samp{CALL FOO} might be compiled
-by @command{g77} to call a procedure the linker @code{ld} sees
+by @command{g77} to call a procedure the linker @command{ld} sees
 given the name @samp{_foo_}, while the apparently corresponding
 statement @samp{SUBROUTINE FOO} might be compiled by the
 native compiler to define the linker-visible name @samp{_foo},
@@ -5570,7 +5570,7 @@ maths one).
 If you're linking with C++ you will want to add
 @option{-lstdc++}, @option{-lg++} or whatever.
 If you need to use another
-driver program (or @code{ld} directly),
+driver program (or @command{ld} directly),
 you can find out what linkage
 options @command{g77} passes by running @samp{g77 -v}.
 
@@ -5643,7 +5643,7 @@ as the return type of a @code{REAL} @code{FUNCTION}.)
 @option{-P} option to generate C prototypes appropriate for calling the
 Fortran.@footnote{The files generated like this can also be used for
 inter-unit consistency checking of dummy and actual arguments, although
-the @code{ftnchek} tool from @uref{ftp://ftp.netlib.org/fortran}
+the @command{ftnchek} tool from @uref{ftp://ftp.netlib.org/fortran}
 or @uref{ftp://ftp.dsm.fordham.edu} is
 probably better for this purpose.}
 If the Fortran code containing any
@@ -5686,13 +5686,13 @@ runtime---specifically the I/O system---is initialized.
 However, to use the @command{g77} intrinsics @code{GETARG} and @code{IARGC},
 either the @code{main} routine from the @file{libg2c} library must be used,
 or the @code{f_setarg} routine
-(new as of @code{egcs} version 1.1 and @command{g77} version 0.5.23)
+(new as of @command{egcs} version 1.1 and @command{g77} version 0.5.23)
 must be called with the appropriate @code{argc} and @code{argv} arguments
 prior to the program calling @code{GETARG} or @code{IARGC}.
 
 To provide more flexibility for mixed-language programming
 involving @command{g77} while allowing for shared libraries,
-as of @code{egcs} version 1.1 and @command{g77} version 0.5.23,
+as of @command{egcs} version 1.1 and @command{g77} version 0.5.23,
 @command{g77}'s @code{main} routine in @code{libg2c}
 does the following, in order:
 
@@ -5934,7 +5934,7 @@ Fortran code.
 The standard way to get around this problem is to set a break
 point (a one-time, or temporary, break point will do) at
 the entrance to @code{MAIN__}, and then run the program.
-A convenient way to do so is to add the @code{gdb} command
+A convenient way to do so is to add the @command{gdb} command
 
 @example
 tbreak MAIN__
@@ -5942,7 +5942,7 @@ tbreak MAIN__
 
 @noindent
 to the file @file{.gdbinit} in the directory in which you're debugging
-(using @code{gdb}).
+(using @command{gdb}).
 
 After doing this, the debugger will see the current execution
 point of the program as at the beginning of the main program
@@ -6236,13 +6236,13 @@ the compiled code for the assembler to digest, does not detect
 these @code{struct} types as being substitutes for Fortran
 complex.
 As a result, the Fortran language modes of debuggers such as
-@code{gdb} see these types as C @code{struct} types, which
+@command{gdb} see these types as C @code{struct} types, which
 they might or might not support.
 
 Until this is fixed, switch to C language mode to work with
 entities of @code{COMPLEX} type and then switch back to Fortran language
 mode afterward.
-(In @code{gdb}, this is accomplished via @samp{set lang c} and
+(In @command{gdb}, this is accomplished via @samp{set lang c} and
 either @samp{set lang fortran} or @samp{set lang auto}.)
 
 @node Arrays
@@ -6989,7 +6989,7 @@ In fairness, @command{g77} could do many of the things @command{f2c} does
 to get things working at least as well as @command{f2c}---for now,
 the developers prefer making @command{g77} work the
 way they think it is supposed to, and finding help improving the
-other products (the back end of @command{gcc}; @code{gdb}; and so on)
+other products (the back end of @command{gcc}; @command{gdb}; and so on)
 to get things working properly.
 
 @node Character and Hollerith Constants
@@ -7831,7 +7831,7 @@ conformance.
 @cindex x86 FPU stack
 Code containing inconsistent calling sequences in the same file is
 normally rejected---see @ref{GLOBALS}.
-(Use, say, @code{ftnchek} to ensure
+(Use, say, @command{ftnchek} to ensure
 consistency across source files.
 @xref{f2c Skeletons and Prototypes,,
 Generating Skeletons and Prototypes with @command{f2c}}.)
@@ -8277,8 +8277,8 @@ a reference to it in future versions of this manual.
 @cindex unresolved reference (various)
 @cindex linking error for user code
 @cindex code, user
-@cindex @code{ld}, error linking user code
-@cindex @code{ld}, can't find strange names
+@cindex @command{ld}, error linking user code
+@cindex @command{ld}, can't find strange names
 On some systems, perhaps just those with out-of-date (shared?)
 libraries, unresolved-reference errors happen when linking @command{g77}-compiled
 programs (which should be done using @command{g77}).
@@ -8295,9 +8295,9 @@ by @command{g77}.
 
 @cindex undefined reference (_main)
 @cindex linking error, user code
-@cindex @code{ld}, error linking user code
+@cindex @command{ld}, error linking user code
 @cindex code, user
-@cindex @code{ld}, can't find @samp{_main}
+@cindex @command{ld}, can't find @samp{_main}
 If your program doesn't link due to unresolved references to names
 like @samp{_main}, make sure you're using the @command{g77} command to do the
 link, since this command ensures that the necessary libraries are
@@ -8315,20 +8315,20 @@ command line, in case that helps.
 @cindex common blocks, large
 @cindex large common blocks
 @cindex linking, errors
-@cindex @code{ld}, errors
+@cindex @command{ld}, errors
 @cindex errors, linker
 On some older GNU/Linux systems, programs with common blocks larger
 than 16MB cannot be linked without some kind of error
 message being produced.
 
-This is a bug in older versions of @code{ld}, fixed in
+This is a bug in older versions of @command{ld}, fixed in
 more recent versions of @code{binutils}, such as version 2.6.
 
 @node Debugger Problems
 @subsection Debugger Problems
-@cindex @code{gdb}, support
-@cindex support, @code{gdb}
-There are some known problems when using @code{gdb} on code
+@cindex @command{gdb}, support
+@cindex support, @command{gdb}
+There are some known problems when using @command{gdb} on code
 compiled by @command{g77}.
 Inadequate investigation as of the release of 0.5.16 results in not
 knowing which products are the culprit, but @file{gdb-4.14} definitely
@@ -8336,8 +8336,8 @@ crashes when, for example, an attempt is made to print the contents
 of a @code{COMPLEX(KIND=2)} dummy array, on at least some GNU/Linux
 machines, plus some others.
 Attempts to access assumed-size arrays are
-also known to crash recent versions of @code{gdb}.
-(@code{gdb}'s Fortran support was done for a different compiler
+also known to crash recent versions of @command{gdb}.
+(@command{gdb}'s Fortran support was done for a different compiler
 and isn't properly compatible with @command{g77}.)
 
 @node NeXTStep Problems
@@ -8357,7 +8357,7 @@ common) with the @samp{UNIX STACK} segment.
 
 This leads to all sorts of trouble, from the executable simply not
 executing, to bus errors.
-The NeXTStep command line tool @code{ebadexec} points to
+The NeXTStep command line tool @command{ebadexec} points to
 the problem as follows:
 
 @smallexample
@@ -8407,8 +8407,8 @@ space.
 
 Often this can be cured by
 increasing or removing your shell's limit on stack usage, typically
-using @kbd{limit stacksize} (in @code{csh} and derivatives) or
-@kbd{ulimit -s} (in @code{sh} and derivatives).
+using @kbd{limit stacksize} (in @command{csh} and derivatives) or
+@kbd{ulimit -s} (in @command{sh} and derivatives).
 
 Increasing the allowed stack size might, however, require
 changing some operating system or system configuration parameters.
@@ -8466,8 +8466,8 @@ simply too large for the system, or buggy.)
 @subsection Nothing Happens
 @cindex nothing happens
 @cindex naming programs
-@cindex @code{test} programs
-@cindex programs, @code{test}
+@cindex @command{test} programs
+@cindex programs, @command{test}
 It is occasionally reported that a ``simple'' program,
 such as a ``Hello, World!'' program, does nothing when
 it is run, even though the compiler reported no errors,
@@ -8475,7 +8475,7 @@ despite the program containing nothing other than a
 simple @code{PRINT} statement.
 
 This most often happens because the program has been
-compiled and linked on a UNIX system and named @code{test},
+compiled and linked on a UNIX system and named @command{test},
 though other names can lead to similarly unexpected
 run-time behavior on various systems.
 
@@ -8493,7 +8493,7 @@ sh#
 Under UNIX and many other system, a simple command name
 invokes a searching mechanism that might well not choose
 the program located in the current working directory if
-there is another alternative (such as the @code{test}
+there is another alternative (such as the @command{test}
 command commonly installed on UNIX systems).
 
 The reliable way to invoke a program you just linked in
@@ -8510,8 +8510,8 @@ Users who encounter this problem should take the time to
 read up on how their shell searches for commands, how to
 set their search path, and so on.
 The relevant UNIX commands to learn about include
-@code{man}, @code{info} (on GNU systems), @code{setenv} (or
-@code{set} and @code{env}), @code{which}, and @code{find}.
+@command{man}, @command{info} (on GNU systems), @command{setenv} (or
+@command{set} and @command{env}), @command{which}, and @command{find}.
 
 @node Strange Behavior at Run Time
 @subsection Strange Behavior at Run Time
@@ -9281,11 +9281,11 @@ require much more work on @code{libg2c}.
 translate the traditional `carriage control' characters in column 1 of
 output to use backspaces, carriage returns and the like.  However
 programs exist to translate them in output files (or standard output).
-These are typically called either @code{fpr} or @code{asa}.  You can get
-a version of @code{asa} from
+These are typically called either @command{fpr} or @command{asa}.  You can get
+a version of @command{asa} from
 @uref{ftp://sunsite.unc.edu/pub/Linux/devel/lang/fortran} for GNU
 systems which will probably build easily on other systems.
-Alternatively, @code{fpr} is in BSD distributions in various archive
+Alternatively, @command{fpr} is in BSD distributions in various archive
 sites.
 
 @c (Can both programs can be used in a pipeline,
@@ -10012,8 +10012,8 @@ we do not make because we think GNU Fortran is better without them.
 @node Backslash in Constants
 @subsection Backslash in Constants
 @cindex backslash
-@cindex @code{f77} support
-@cindex support, @code{f77}
+@cindex @command{f77} support
+@cindex support, @command{f77}
 
 In the opinion of many experienced Fortran users,
 @option{-fno-backslash} should be the default, not @option{-fbackslash},
@@ -10024,7 +10024,7 @@ First of all, you can always specify
 
 Despite not being within the spirit (though apparently within the
 letter) of the ANSI FORTRAN 77 standard, @command{g77} defaults to
-@option{-fbackslash} because that is what most UNIX @code{f77} commands
+@option{-fbackslash} because that is what most UNIX @command{f77} commands
 default to, and apparently lots of code depends on this feature.
 
 This is a particularly troubling issue.
@@ -10037,22 +10037,22 @@ as the default---sometimes with no option to turn it off).
 
 The author of GNU Fortran wished, for reasons of linguistic
 purity, to make @option{-fno-backslash} the default for GNU
-Fortran and thus require users of UNIX @code{f77} and @command{f2c}
+Fortran and thus require users of UNIX @command{f77} and @command{f2c}
 to specify @option{-fbackslash} to get the UNIX behavior.
 
 However, the realization that @command{g77} is intended as
-a replacement for @emph{UNIX} @code{f77}, caused the author
+a replacement for @emph{UNIX} @command{f77}, caused the author
 to choose to make @command{g77} as compatible with
-@code{f77} as feasible, which meant making @option{-fbackslash}
+@command{f77} as feasible, which meant making @option{-fbackslash}
 the default.
 
 The primary focus on compatibility is at the source-code
 level, and the question became ``What will users expect
-a replacement for @code{f77} to do, by default?''
-Although at least one UNIX @code{f77} does not provide
+a replacement for @command{f77} to do, by default?''
+Although at least one UNIX @command{f77} does not provide
 @option{-fbackslash} as a default, it appears that
 the majority of them do, which suggests that
-the majority of code that is compiled by UNIX @code{f77}
+the majority of code that is compiled by UNIX @command{f77}
 compilers expects @option{-fbackslash} to be the default.
 
 It is probably the case that more code exists
@@ -10060,14 +10060,14 @@ that would @emph{not} work with @option{-fbackslash}
 in force than code that requires it be in force.
 
 However, most of @emph{that} code is not being compiled
-with @code{f77},
+with @command{f77},
 and when it is, new build procedures (shell scripts,
 makefiles, and so on) must be set up anyway so that
 they work under UNIX.
 That makes a much more natural and safe opportunity for
 non-UNIX users to adapt their build procedures for
 @command{g77}'s default of @option{-fbackslash} than would
-exist for the majority of UNIX @code{f77} users who
+exist for the majority of UNIX @command{f77} users who
 would have to modify existing, working build procedures
 to explicitly specify @option{-fbackslash} if that was
 not the default.
@@ -10651,18 +10651,18 @@ their use into selective changes in your own code.
 
 @item
 @pindex ftnchek
-Validate your code with @code{ftnchek} or a similar code-checking
+Validate your code with @command{ftnchek} or a similar code-checking
 tool.
-@code{ftnchek} can be found at @uref{ftp://ftp.netlib.org/fortran}
+@command{ftnchek} can be found at @uref{ftp://ftp.netlib.org/fortran}
 or @uref{ftp://ftp.dsm.fordham.edu}.
 
 @pindex make
 @cindex Makefile example
-Here are some sample @file{Makefile} rules using @code{ftnchek}
-``project'' files to do cross-file checking and @code{sfmakedepend}
+Here are some sample @file{Makefile} rules using @command{ftnchek}
+``project'' files to do cross-file checking and @command{sfmakedepend}
 (from @uref{ftp://ahab.rutgers.edu/pub/perl/sfmakedepend})
 to maintain dependencies automatically.
-These assume the use of GNU @code{make}.
+These assume the use of GNU @command{make}.
 
 @smallexample
 # Dummy suffix for ftnchek targets:
@@ -10809,14 +10809,14 @@ for now, if you are sending more than a few lines of code, if
 your program's source file format contains ``interesting'' things
 like trailing spaces or strange characters, or if you need to
 include binary data files, it is acceptable to put all the
-files together in a @code{tar} archive, and, whether you need to
-do that, it is acceptable to then compress the single file (@code{tar}
+files together in a @command{tar} archive, and, whether you need to
+do that, it is acceptable to then compress the single file (@command{tar}
 archive or source file)
-using @code{gzip} and encode it via @code{uuencode}.
+using @command{gzip} and encode it via @command{uuencode}.
 Do not use any MIME stuff---the current maintainer can't decode this.
-Using @code{compress} instead of @code{gzip} is acceptable, assuming
+Using @command{compress} instead of @command{gzip} is acceptable, assuming
 you have licensed the use of the patented algorithm in
-@code{compress} from Unisys.)
+@command{compress} from Unisys.)
 
 To enable someone to investigate the bug, you should include all these
 things:
@@ -10898,7 +10898,7 @@ include that, send along any additional info you have that you
 don't see clearly represented in that output.)
 
 @item
-The operands you gave to the @code{configure} command when you installed
+The operands you gave to the @command{configure} command when you installed
 the compiler.
 
 @item
@@ -10992,7 +10992,7 @@ not in an argument.
 What you need to provide in addition to a backtrace are the values of
 the local variables for several stack frames up.  When a local
 variable or an argument is an RTX, first print its value and then use
-the GDB command @code{pr} to print the RTL expression that it points
+the GDB command @command{pr} to print the RTL expression that it points
 to.  (If GDB doesn't run on your machine, use your debugger to call
 the function @code{debug_rtx} with the RTX as an argument.)  In
 general, whenever a variable is a pointer, its value is no use
@@ -11697,7 +11697,7 @@ Some diagnostics produced by @command{g77} require sufficient explanation
 that the explanations are given below, and the diagnostics themselves
 identify the appropriate explanation.
 
-Identification uses the GNU Info format---specifically, the @code{info}
+Identification uses the GNU Info format---specifically, the @command{info}
 command that displays the explanation is given within square
 brackets in the diagnostic.
 For example:

@@ -78,7 +78,7 @@ therefore, the @command{g77} command).
 All @command{gcc} and @command{g77} options
 are accepted both by @command{g77} and by @command{gcc}
 (as well as any other drivers built at the same time,
-such as @code{g++}),
+such as @command{g++}),
 since adding @command{g77} to the @command{gcc} distribution
 enables acceptance of @command{g77} options
 by all of the relevant drivers.
@@ -269,7 +269,7 @@ Fortran source code that should not be preprocessed.
 Such source code cannot contain any preprocessor directives, such
 as @code{#include}, @code{#define}, @code{#if}, and so on.
 
-You can force @samp{.f} files to be preprocessed by @code{cpp} by using
+You can force @samp{.f} files to be preprocessed by @command{cpp} by using
 @option{-x f77-cpp-input}.
 @xref{LEX}.
 
@@ -286,18 +286,18 @@ You can force @samp{.f} files to be preprocessed by @code{cpp} by using
 @item @var{file}.fpp
 @item @var{file}.FPP
 Fortran source code that must be preprocessed (by the C preprocessor
-@code{cpp}, which is part of GNU CC).
+@command{cpp}, which is part of GNU CC).
 
 Note that preprocessing is not extended to the contents of
 files included by the @code{INCLUDE} directive---the @code{#include}
 preprocessor directive must be used instead.
 
 @cindex Ratfor preprocessor
-@cindex programs, @code{ratfor}
+@cindex programs, @command{ratfor}
 @cindex @samp{.r} filename suffix
-@cindex @code{ratfor}
+@cindex @command{ratfor}
 @item @var{file}.r
-Ratfor source code, which must be preprocessed by the @code{ratfor}
+Ratfor source code, which must be preprocessed by the @command{ratfor}
 command, which is available separately (as it is not yet part of the GNU
 Fortran distribution).
 One version in Fortran, adapted for use with @command{g77} is at
@@ -316,7 +316,7 @@ the @file{@var{file}.for} and @file{@var{file}.fpp} nomenclature.
 @cindex #define
 @cindex #include
 @cindex #if
-Use of the preprocessor @code{cpp} allows use of C-like
+Use of the preprocessor @command{cpp} allows use of C-like
 constructs such as @code{#define} and @code{#include}, but can
 lead to unexpected, even mistaken, results due to Fortran's source file
 format.
@@ -348,7 +348,7 @@ line being effectively commented out---unfortunate if that
 line is a non-comment line of important code!
 
 @emph{Note:} The @option{-traditional} and @option{-undef} flags are supplied
-to @code{cpp} by default, to help avoid unpleasant surprises.
+to @command{cpp} by default, to help avoid unpleasant surprises.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
 gcc,Using and Porting GNU CC}.
 This means that ANSI C preprocessor features (such as the @samp{#}
@@ -361,7 +361,7 @@ Use the @option{-v} option to see exactly how the preprocessor is invoked.
 
 @cindex /*
 Unfortunately, the @option{-traditional} flag will not avoid an error from
-anything that @code{cpp} sees as an unterminated C comment, such as:
+anything that @command{cpp} sees as an unterminated C comment, such as:
 @smallexample
 C Some Fortran compilers accept /* as starting
 C an inline comment.
@@ -382,7 +382,7 @@ by the @command{g77} and @command{gcc} commands in a GNU Fortran installation:
 @item -fversion
 Ensure that the @command{g77} version of the compiler phase is reported,
 if run,
-and, starting in @code{egcs} version 1.1,
+and, starting in @command{egcs} version 1.1,
 that internal consistency checks in the @file{f771} program are run.
 
 This option is supplied automatically when @option{-v} or @option{--verbose}
@@ -396,7 +396,7 @@ for @samp{.c} files.
 @cindex options, -fset-g77-defaults
 @item -fset-g77-defaults
 @emph{Version info:}
-This option was obsolete as of @code{egcs}
+This option was obsolete as of @command{egcs}
 version 1.1.
 The effect is instead achieved
 by the @code{lang_init_options} routine
@@ -439,7 +439,7 @@ with a diagnostic if it detects an inconsistency.
 @item -fno-silent
 Print (to @code{stderr}) the names of the program units as
 they are compiled, in a form similar to that used by popular
-UNIX @code{f77} implementations and @command{f2c}
+UNIX @command{f77} implementations and @command{f2c}
 @end table
 
 @xref{Overall Options,,Options Controlling the Kind of Output,
@@ -1670,7 +1670,7 @@ contains preprocessor directives.
 @cindex options, directory search
 @cindex search path
 
-These options affect how the @code{cpp} preprocessor searches
+These options affect how the @command{cpp} preprocessor searches
 for files specified via the @code{#include} directive.
 Therefore, when compiling Fortran programs, they are meaningful
 when the preprocessor is used.
@@ -1695,7 +1695,7 @@ These options are:
 @cindex search paths, for included files
 @cindex paths, search
 These affect interpretation of the @code{INCLUDE} directive
-(as well as of the @code{#include} directive of the @code{cpp}
+(as well as of the @code{#include} directive of the @command{cpp}
 preprocessor).
 
 Note that @option{-I@var{dir}} must be specified @emph{without} any
@@ -1706,7 +1706,7 @@ the latter form).
 @c this is due to toplev.c's inflexible option processing
 Also note that the general behavior of @option{-I} and
 @code{INCLUDE} is pretty much the same as of @option{-I} with
-@code{#include} in the @code{cpp} preprocessor, with regard to
+@code{#include} in the @command{cpp} preprocessor, with regard to
 looking for @file{header.gcc} files and other such things.
 
 @xref{Directory Options,,Options for Directory Search,
@@ -1947,7 +1947,7 @@ the @command{gcc} back end that provide direct support of
 
 (@command{gcc} had some bugs in its back-end support
 for @code{complex} arithmetic, due primarily to the support not being
-completed as of version 2.8.1 and @code{egcs} 1.1.2.)
+completed as of version 2.8.1 and @command{egcs} 1.1.2.)
 
 Use @option{-femulate-complex} if you suspect code-generation bugs,
 or experience compiler crashes,
