@@ -2349,7 +2349,8 @@ remember_web_was_spilled (web)
 			reg_class_contents[reg_alternate_class (web->regno)]);
     }
   else
-    COPY_HARD_REG_SET (web->usable_regs, reg_class_contents[(int) ALL_REGS]);
+    COPY_HARD_REG_SET (web->usable_regs,
+		       reg_class_contents[(int) GENERAL_REGS]);
   AND_COMPL_HARD_REG_SET (web->usable_regs, never_use_colors);
   prune_hardregs_for_mode (&web->usable_regs, PSEUDO_REGNO_MODE (web->regno));
 #ifdef CLASS_CANNOT_CHANGE_MODE
