@@ -1,3 +1,8 @@
+2002-01-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2.h (enum dwarf_call_frame_info): Add other DWARF 3 codes.
+	Sync with src version.
+
 2002-01-28  Paul Koning  <pkoning@equallogic.com>
 
 	* builtin-types.def (BT_FN_VOID_CONST_PTR_VAR): Replace
