@@ -1,5 +1,5 @@
 /* Allocate and read RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1991, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
