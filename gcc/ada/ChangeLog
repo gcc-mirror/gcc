@@ -1,3 +1,8 @@
+2004-04-23  Laurent GUERBY <laurent@guerby.net>
+
+	* Makefile.in: Remove RANLIB_TEST, use -$(RANLIB) including after 
+	install.
+	
 2004-04-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in (GNATBIND_OBJS): Add s-addope.o.
