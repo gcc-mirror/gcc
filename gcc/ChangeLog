@@ -1,3 +1,9 @@
+Sat Mar 28 01:37:33 1998  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* stmt.c (expand_expr_stmt): Must generate code for
+	statements within an expression (gcc's `({ ... )}')
+	even if -fsyntax-only.
+
 Sat Mar 28 01:06:12 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 			  Jeffrey A Law  (law@cygnus.com)
 
