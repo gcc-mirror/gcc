@@ -3197,6 +3197,7 @@ main (argc, argv)
      char **argv;
 {
   register int i;
+  int j;
   int value;
   int error_count = 0;
   int linker_was_run = 0;
@@ -3371,17 +3372,19 @@ main (argc, argv)
 	    input_suffix = "";
 
 	  len = 0;
-	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0] && cp->spec[i]; i++)
-	    len += strlen (cp->spec[i]);
+	  for (j = 0; j < sizeof cp->spec / sizeof cp->spec[0]; j++)
+	    if (cp->spec[j])
+	      len += strlen (cp->spec[j]);
 
 	  p = (char *) xmalloc (len + 1);
 
 	  len = 0;
-	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0] && cp->spec[i]; i++)
-	    {
-	      strcpy (p + len, cp->spec[i]);
-	      len += strlen (cp->spec[i]);
-	    }
+	  for (j = 0; j < sizeof cp->spec / sizeof cp->spec[0]; j++)
+	    if (cp->spec[j])
+	      {
+		strcpy (p + len, cp->spec[j]);
+		len += strlen (cp->spec[j]);
+	      }
 
 	  value = do_spec (p);
 	  free (p);
