@@ -78,7 +78,7 @@ namespace std
  *  @endif
 */
 template <class _Tp, class _Allocator, bool _IsStatic>
-class _Vector_alloc_base
+  class _Vector_alloc_base
 {
 public:
   typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
@@ -93,9 +93,9 @@ public:
 
 protected:
   allocator_type _M_data_allocator;
-  _Tp* _M_start;
-  _Tp* _M_finish;
-  _Tp* _M_end_of_storage;
+  _Tp*           _M_start;
+  _Tp*           _M_finish;
+  _Tp*           _M_end_of_storage;
 
   _Tp*
   _M_allocate(size_t __n) { return _M_data_allocator.allocate(__n); }
@@ -107,7 +107,7 @@ protected:
 
 /// @if maint Specialization for instanceless allocators.  @endif
 template <class _Tp, class _Allocator>
-class _Vector_alloc_base<_Tp, _Allocator, true>
+  class _Vector_alloc_base<_Tp, _Allocator, true>
 {
 public:
   typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
@@ -141,10 +141,11 @@ protected:
  *  @endif
 */
 template <class _Tp, class _Alloc>
-struct _Vector_base
+  struct _Vector_base
   : public _Vector_alloc_base<_Tp, _Alloc,
                               _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
 {
+public:
   typedef _Vector_alloc_base<_Tp, _Alloc,
                              _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
           _Base;
@@ -183,7 +184,7 @@ struct _Vector_base
  *  Subscripting ( @c [] ) access is also provided as with C-style arrays.
 */
 template <class _Tp, class _Alloc = allocator<_Tp> >
-class vector : protected _Vector_base<_Tp, _Alloc>
+  class vector : protected _Vector_base<_Tp, _Alloc>
 {
   // concept requirements
   __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
@@ -220,12 +221,6 @@ protected:
   using _Base::_M_finish;
   using _Base::_M_end_of_storage;
 
-protected:
-  void _M_insert_aux(iterator __position, const _Tp& __x);
-#ifdef _GLIBCPP_DEPRECATED
-  void _M_insert_aux(iterator __position);
-#endif
-
 public:
   // [23.2.4.1] construct/copy/destroy
   // (assign() and get_allocator() are also listed in this section)
@@ -243,7 +238,7 @@ public:
    * 
    *  This constructor fills the %vector with @a n copies of @a value.
   */
-  vector(size_type __n, const _Tp& __value,
+  vector(size_type __n, const value_type& __value,
          const allocator_type& __a = allocator_type())
     : _Base(__n, __a)
     { _M_finish = uninitialized_fill_n(_M_start, __n, __value); }
@@ -268,7 +263,7 @@ public:
    *  by @a x.  All the elements of @a x are copied, but any extra memory in
    *  @a x (for fast expansion) will not be copied.
   */
-  vector(const vector<_Tp, _Alloc>& __x)
+  vector(const vector& __x)
     : _Base(__x.size(), __x.get_allocator())
     { _M_finish = uninitialized_copy(__x.begin(), __x.end(), _M_start); }
 
@@ -288,37 +283,15 @@ public:
   template <class _InputIterator>
     vector(_InputIterator __first, _InputIterator __last,
            const allocator_type& __a = allocator_type())
-	: _Base(__a)
+      : _Base(__a)
     {
       // Check whether it's an integral type.  If so, it's not an iterator.
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
-      _M_initialize_aux(__first, __last, _Integral());
+      _M_initialize_dispatch(__first, __last, _Integral());
     }
 
-protected:
-  template<class _Integer>
-    void
-    _M_initialize_aux(_Integer __n, _Integer __value, __true_type)
-    {
-      _M_start = _M_allocate(__n);
-      _M_end_of_storage = _M_start + __n;
-      _M_finish = uninitialized_fill_n(_M_start, __n, __value);
-    }
-
-  template<class _InputIterator>
-    void
-    _M_initialize_aux(_InputIterator __first,_InputIterator __last,__false_type)
-    {
-      typedef typename iterator_traits<_InputIterator>::iterator_category
-                       _IterCategory;
-      _M_range_initialize(__first, __last, _IterCategory());
-    }
-
-public:
   /**
-   *  Creats a %vector consisting of copies of the elements from [first,last).
-   *
-   *  The dtor only erases the elements, and that if the elements
+   *  The dtor only erases the elements, and note that if the elements
    *  themselves are pointers, the pointed-to memory is not touched in any
    *  way.  Managing the pointer is the user's responsibilty.
   */
@@ -332,8 +305,8 @@ public:
    *  fast expansion) will not be copied.  Unlike the copy constructor, the
    *  allocator object is not copied.
   */
-  vector<_Tp, _Alloc>&
-  operator=(const vector<_Tp, _Alloc>& __x);
+  vector&
+  operator=(const vector& __x);
 
   /**
    *  @brief  Assigns a given value to a %vector.
@@ -346,13 +319,8 @@ public:
    *  Old data may be lost.
   */
   void
-  assign(size_type __n, const _Tp& __val) { _M_fill_assign(__n, __val); }
+  assign(size_type __n, const value_type& __val) { _M_fill_assign(__n, __val); }
 
-protected:
-  void
-  _M_fill_assign(size_type __n, const _Tp& __val);
-
-public:
   /**
    *  @brief  Assigns a range to a %vector.
    *  @param  first  An input iterator.
@@ -369,36 +337,11 @@ public:
     void
     assign(_InputIterator __first, _InputIterator __last)
     {
+      // Check whether it's an integral type.  If so, it's not an iterator.
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       _M_assign_dispatch(__first, __last, _Integral());
     }
 
-protected:
-  template<class _Integer>
-    void
-     _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-     { _M_fill_assign((size_type) __n, (_Tp) __val); }
-
-  template<class _InputIter>
-    void
-    _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
-    {
-      typedef typename iterator_traits<_InputIter>::iterator_category
-                       _IterCategory;
-      _M_assign_aux(__first, __last, _IterCategory());
-    }
-
-  template <class _InputIterator>
-    void 
-    _M_assign_aux(_InputIterator __first, _InputIterator __last,
-		  input_iterator_tag);
-
-  template <class _ForwardIterator>
-    void 
-    _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-		  forward_iterator_tag);
-
-public:
   /// Get a copy of the memory allocation object.
   allocator_type
   get_allocator() const { return _Base::get_allocator(); }
@@ -469,7 +412,7 @@ public:
 
   /**  Returns the size() of the largest possible %vector.  */
   size_type
-  max_size() const { return size_type(-1) / sizeof(_Tp); }
+  max_size() const { return size_type(-1) / sizeof(value_type); }
 
   /**
    *  @brief  Resizes the %vector to the specified number of elements.
@@ -482,7 +425,7 @@ public:
    *  are populated with given data.
   */
   void
-  resize(size_type __new_size, const _Tp& __x)
+  resize(size_type __new_size, const value_type& __x)
   {
     if (__new_size < size())
       erase(begin() + __new_size, end());
@@ -500,7 +443,7 @@ public:
    *  are default-constructed.
   */
   void
-  resize(size_type __new_size) { resize(__new_size, _Tp()); }
+  resize(size_type __new_size) { resize(__new_size, value_type()); }
 
   /**
    *  Returns the total number of elements that the %vector can hold before
@@ -534,7 +477,8 @@ public:
   void
   reserve(size_type __n)   // FIXME should be out of class
   {
-    if (capacity() < __n) {
+    if (capacity() < __n)
+    {
       const size_type __old_size = size();
       pointer __tmp = _M_allocate_and_copy(__n, _M_start, _M_finish);
       _Destroy(_M_start, _M_finish);
@@ -557,6 +501,7 @@ public:
   */
   reference
   operator[](size_type __n) { return *(begin() + __n); }
+  // XXX do we need to convert to normal_iterator first?
 
   /**
    *  @brief  Subscript access to the data contained in the %vector.
@@ -612,6 +557,7 @@ public:
   */
   reference
   front() { return *begin(); }
+  // XXX do we need to convert to normal_iterator first?
 
   /**
    *  Returns a read-only (constant) reference to the data at the first
@@ -645,7 +591,7 @@ public:
    *  time if the %vector has preallocated space available.
   */
   void
-  push_back(const _Tp& __x)
+  push_back(const value_type& __x)
   {
     if (_M_finish != _M_end_of_storage) {
       _Construct(_M_finish, __x);
@@ -682,15 +628,16 @@ public:
    *  it is frequently used the user should consider using std::list.
   */
   iterator
-  insert(iterator __position, const _Tp& __x)
+  insert(iterator __position, const value_type& __x)
   {
     size_type __n = __position - begin();
-    if (_M_finish != _M_end_of_storage && __position == end()) {
+    if (_M_finish != _M_end_of_storage && __position == end())
+    {
       _Construct(_M_finish, __x);
       ++_M_finish;
     }
     else
-      _M_insert_aux(iterator(__position), __x);
+      _M_insert_aux(__position, __x);
     return begin() + __n;
   }
 
@@ -701,8 +648,8 @@ public:
    *  @return  An iterator that points to the inserted element.
    *
    *  This function will insert a default-constructed element before the
-   *  specified location.  You should consider using insert(position,Tp())
-   *  instead.
+   *  specified location.  You should consider using
+   *  insert(position,value_type()) instead.
    *  Note that this kind of operation could be expensive for a vector and if
    *  it is frequently used the user should consider using std::list.
    *
@@ -712,16 +659,7 @@ public:
   */
   iterator
   insert(iterator __position)
-  {
-    size_type __n = __position - begin();
-    if (_M_finish != _M_end_of_storage && __position == end()) {
-      _Construct(_M_finish);
-      ++_M_finish;
-    }
-    else
-      _M_insert_aux(iterator(__position));
-    return begin() + __n;
-  }
+    { return insert(__position, value_type()); }
 #endif
 
   /**
@@ -737,14 +675,9 @@ public:
    *  it is frequently used the user should consider using std::list.
   */
   void
-  insert (iterator __pos, size_type __n, const _Tp& __x)
+  insert (iterator __pos, size_type __n, const value_type& __x)
     { _M_fill_insert(__pos, __n, __x); }
 
-protected:
-  void
-  _M_fill_insert (iterator __pos, size_type __n, const _Tp& __x);
-
-public:
   /**
    *  @brief  Inserts a range into the %vector.
    *  @param  pos  An iterator into the %vector.
@@ -766,27 +699,6 @@ public:
         _M_insert_dispatch(__pos, __first, __last, _Integral());
       }
 
-protected:
-  template<class _Integer>
-    void
-    _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __val,
-                       __true_type)
-    {
-      _M_fill_insert(__pos, static_cast<size_type>(__n),
-                            static_cast<_Tp>(__val));
-    }
-
-  template<class _InputIterator>
-    void
-    _M_insert_dispatch(iterator __pos, _InputIterator __first,
-                       _InputIterator __last, __false_type)
-    {
-      typedef typename iterator_traits<_InputIterator>::iterator_category
-                       _IterCategory;
-      _M_range_insert(__pos, __first, __last, _IterCategory());
-    }
-
-public:
   /**
    *  @brief  Remove element at given position.
    *  @param  position  Iterator pointing to element to be erased.
@@ -846,7 +758,7 @@ public:
    *  std::swap(v1,v2) will feed to this function.
   */
   void
-  swap(vector<_Tp, _Alloc>& __x)
+  swap(vector& __x)
   {
     std::swap(_M_start, __x._M_start);
     std::swap(_M_finish, __x._M_finish);
@@ -863,10 +775,16 @@ public:
   clear() { erase(begin(), end()); }
 
 protected:
+  /**
+   *  @if maint
+   *  Memory expansion handler.  Uses the member allocation function to
+   *  obtain @a n bytes of memory, and then copies [first,last) into it.
+   *  @endif
+  */
   template <class _ForwardIterator>
   pointer
-    _M_allocate_and_copy(size_type __n, _ForwardIterator __first,
-                         _ForwardIterator __last)
+    _M_allocate_and_copy(size_type __n,
+                         _ForwardIterator __first, _ForwardIterator __last)
   {
     pointer __result = _M_allocate(__n);
     try
@@ -881,6 +799,30 @@ protected:
       }
   }
 
+
+  // Internal constructor functions follow.
+
+  // called by the range constructor to implement [23.1.1]/9
+  template<class _Integer>
+    void
+    _M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
+    {
+      _M_start = _M_allocate(__n);
+      _M_end_of_storage = _M_start + __n;
+      _M_finish = uninitialized_fill_n(_M_start, __n, __value);
+    }
+
+  // called by the range constructor to implement [23.1.1]/9
+  template<class _InputIter>
+    void
+    _M_initialize_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    {
+      typedef typename iterator_traits<_InputIter>::iterator_category
+                       _IterCategory;
+      _M_range_initialize(__first, __last, _IterCategory());
+    }
+
+  // called by the second initialize_dispatch above
   template <class _InputIterator>
   void
     _M_range_initialize(_InputIterator __first,
@@ -890,7 +832,7 @@ protected:
       push_back(*__first);
   }
 
-  // This function is only called by the constructor.
+  // called by the second initialize_dispatch above
   template <class _ForwardIterator>
   void _M_range_initialize(_ForwardIterator __first,
                            _ForwardIterator __last, forward_iterator_tag)
@@ -901,15 +843,97 @@ protected:
     _M_finish = uninitialized_copy(__first, __last, _M_start);
   }
 
-  template <class _InputIterator>
-  void _M_range_insert(iterator __pos,
-                       _InputIterator __first, _InputIterator __last,
-                       input_iterator_tag);
 
+  // Internal assign functions follow.  The *_aux functions do the actual
+  // assignment work for the range versions.
+
+  // called by the range assign to implement [23.1.1]/9
+  template<class _Integer>
+    void
+     _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
+     {
+       _M_fill_assign(static_cast<size_type>(__n),
+                      static_cast<value_type>(__val));
+     }
+
+  // called by the range assign to implement [23.1.1]/9
+  template<class _InputIter>
+    void
+    _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    {
+      typedef typename iterator_traits<_InputIter>::iterator_category
+                       _IterCategory;
+      _M_assign_aux(__first, __last, _IterCategory());
+    }
+
+  // called by the second assign_dispatch above
+  template <class _InputIterator>
+    void 
+    _M_assign_aux(_InputIterator __first, _InputIterator __last,
+		  input_iterator_tag);
+
+  // called by the second assign_dispatch above
   template <class _ForwardIterator>
-  void _M_range_insert(iterator __pos,
-                       _ForwardIterator __first, _ForwardIterator __last,
-                       forward_iterator_tag);
+    void 
+    _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
+		  forward_iterator_tag);
+
+  // Called by assign(n,t), and the range assign when it turns out to be the
+  // same thing.
+  void
+  _M_fill_assign(size_type __n, const value_type& __val);
+
+
+  // Internal insert functions follow.
+
+  // called by the range insert to implement [23.1.1]/9
+  template<class _Integer>
+    void
+    _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __val,
+                       __true_type)
+    {
+      _M_fill_insert(__pos, static_cast<size_type>(__n),
+                            static_cast<value_type>(__val));
+    }
+
+  // called by the range insert to implement [23.1.1]/9
+  template<class _InputIterator>
+    void
+    _M_insert_dispatch(iterator __pos, _InputIterator __first,
+                       _InputIterator __last, __false_type)
+    {
+      typedef typename iterator_traits<_InputIterator>::iterator_category
+                       _IterCategory;
+      _M_range_insert(__pos, __first, __last, _IterCategory());
+    }
+
+  // called by the second insert_dispatch above
+  template <class _InputIterator>
+    void
+    _M_range_insert(iterator __pos,
+                    _InputIterator __first, _InputIterator __last,
+                    input_iterator_tag);
+
+  // called by the second insert_dispatch above
+  template <class _ForwardIterator>
+    void
+    _M_range_insert(iterator __pos,
+                    _ForwardIterator __first, _ForwardIterator __last,
+                    forward_iterator_tag);
+
+  // Called by insert(p,n,x), and the range insert when it turns out to be
+  // the same thing.
+  void
+  _M_fill_insert (iterator __pos, size_type __n, const value_type& __x);
+
+  // called by insert(p,x)
+  void
+  _M_insert_aux(iterator __position, const value_type& __x);
+
+#ifdef _GLIBCPP_DEPRECATED
+  // unused now (same situation as in deque)
+  void _M_insert_aux(iterator __position);
+#endif
 };
 
 
@@ -924,12 +948,12 @@ protected:
  *  and if corresponding elements compare equal.
 */
 template <class _Tp, class _Alloc>
-inline bool
-operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
-{
-  return __x.size() == __y.size() &&
-         equal(__x.begin(), __x.end(), __y.begin());
-}
+  inline bool
+  operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+  {
+    return __x.size() == __y.size() &&
+           equal(__x.begin(), __x.end(), __y.begin());
+  }
 
 /**
  *  @brief  Vector ordering relation.
@@ -943,19 +967,12 @@ operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
  *  See std::lexographical_compare() for how the determination is made.
 */
 template <class _Tp, class _Alloc>
-inline bool
-operator<(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
-{
-  return lexicographical_compare(__x.begin(), __x.end(),
-                                 __y.begin(), __y.end());
-}
-
-/// See std::vector::swap().
-template <class _Tp, class _Alloc>
-inline void swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
-{
-  __x.swap(__y);
-}
+  inline bool
+  operator<(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+  {
+    return lexicographical_compare(__x.begin(), __x.end(),
+                                   __y.begin(), __y.end());
+  }
 
 /// Based on operator==
 template <class _Tp, class _Alloc>
@@ -985,10 +1002,17 @@ operator>=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
   return !(__x < __y);
 }
 
-// XXX begin tcc me
+/// See std::vector::swap().
+template <class _Tp, class _Alloc>
+inline void swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
+{
+  __x.swap(__y);
+}
+
+
 template <class _Tp, class _Alloc>
 vector<_Tp,_Alloc>&
-vector<_Tp,_Alloc>::operator=(const vector<_Tp, _Alloc>& __x)
+vector<_Tp,_Alloc>::operator=(const vector<_Tp,_Alloc>& __x)
 {
   if (&__x != this) {
     const size_type __xlen = __x.size();
@@ -1013,10 +1037,11 @@ vector<_Tp,_Alloc>::operator=(const vector<_Tp, _Alloc>& __x)
 }
 
 template <class _Tp, class _Alloc>
-void vector<_Tp, _Alloc>::_M_fill_assign(size_t __n, const value_type& __val)
+void
+vector<_Tp, _Alloc>::_M_fill_assign(size_t __n, const value_type& __val)
 {
   if (__n > capacity()) {
-    vector<_Tp, _Alloc> __tmp(__n, __val, get_allocator());
+    vector __tmp(__n, __val, get_allocator());
     __tmp.swap(*this);
   }
   else if (__n > size()) {
