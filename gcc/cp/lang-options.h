@@ -130,4 +130,5 @@ DEFINE_LANG_NAME ("C++")
   { "-Wno-old-style-cast", "" },
   { "-Wnon-template-friend", "" }, 
   { "-Wno-non-template-friend", "Don't warn when non-templatized friend functions are declared within a template" },
-
+  { "-Wdeprecated", "" },
+  { "-Wno-deprecated", "Don't announce deprecation of compiler features" },

@@ -1,3 +1,12 @@
+1999-04-13  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* lang-options.h (-Wdeprecated): New flag.
+	* decl2.c (warn_deprecated): New flag.
+	(lang_decode_option): Deprecated this-is-variable,
+	external-templates, alt-external-templates.
+	Support -Wdeprecated.
+	* errfn.c (cp_deprecated): New function.
+
 1999-04-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (setup_initp): Compare DECL_ASSEMBLER_NAME instead

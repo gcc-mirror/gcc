@@ -109,7 +109,8 @@ in the following sections.
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
 -foperator-names  -fno-optional-diags  -frepo  -fstrict-prototype
 -fsquangle  -ftemplate-depth-@var{n}  -fthis-is-variable  -fvtable-thunks
--nostdinc++  -Wctor-dtor-privacy  -Weffc++  -Wno-non-template-friend 
+-nostdinc++  -Wctor-dtor-privacy -Wno-deprecated -Weffc++  
+-Wno-non-template-friend 
 -Wnon-virtual-dtor  -Wold-style-cast  -Woverloaded-virtual  
 -Wno-pmf-conversions  -Wreorder  -Wsign-promo  -Wsynth
 @end smallexample
@@ -1217,6 +1218,9 @@ Warn about violations of various style guidelines from Scott Meyers'
 @cite{Effective C++} books.  If you use this option, you should be aware
 that the standard library headers do not obey all of these guidelines;
 you can use @samp{grep -v} to filter out those warnings.
+
+@item -Wno-deprecated (C++ only)
+Do not warn about usage of deprecated features. @xref{Deprecated Features}.
 
 @item -Wno-non-template-friend (C++ only)
 Disable warnings when non-templatized friend functions are declared
