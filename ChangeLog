@@ -2,6 +2,7 @@
 
 	* configure.in (noconfigdirs) [mmix-*-*]: Disable
 	target-libgfortran.
+	* configure: Regenerate.
 
 2004-11-07  David Edelsohn  <edelsohn@gnu.org>
 
