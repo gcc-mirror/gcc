@@ -26,12 +26,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 struct var_refs_queue
-  {
-    rtx modified;
-    enum machine_mode promoted_mode;
-    int unsignedp;
-    struct var_refs_queue *next;
-  };
+{
+  rtx modified;
+  enum machine_mode promoted_mode;
+  int unsignedp;
+  struct var_refs_queue *next;
+};
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -206,6 +206,10 @@ extern tree *identify_blocks PROTO((tree, rtx));
    in push_function_context and pop_function_context.  */
 extern void (*save_machine_status) ();
 extern void (*restore_machine_status) ();
+
+/* Save and restore varasm.c status for a nested function.  */
+extern void save_varasm_status		PROTO((struct function *));
+extern void restore_varasm_status	PROTO((struct function *));
 
 #ifdef rtx
 #undef rtx
