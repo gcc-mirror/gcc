@@ -1,3 +1,8 @@
+2003-02-12  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/i386-387-1.c: Add new test for __builtin_atan2.
+	* gcc.dg/i386-387-2.c: Likewise.
+
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/ppc-spe.c: Fix formatting.

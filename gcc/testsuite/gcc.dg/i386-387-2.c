@@ -4,7 +4,9 @@
 /* { dg-final { scan-assembler "fsin" } } */
 /* { dg-final { scan-assembler "fcos" } } */
 /* { dg-final { scan-assembler "fsqrt" } } */
+/* { dg-final { scan-assembler "fpatan" } } */
 
 double f1(double x) { return __builtin_sin(x); }
 double f2(double x) { return __builtin_cos(x); }
 double f3(double x) { return __builtin_sqrt(x); }
+double f4(double x, double y) { return __builtin_atan2(x,y); }
