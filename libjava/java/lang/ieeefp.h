@@ -1,6 +1,10 @@
 #ifndef __IEEE_BIG_ENDIAN
 #ifndef __IEEE_LITTLE_ENDIAN
 
+#ifdef __alpha__
+#define __IEEE_LITTLE_ENDIAN
+#endif
+
 #ifdef __arm__
 /* ARM always has big-endian words.  Within those words the byte ordering
    appears to be big or little endian.  Newlib doesn't seem to care about
