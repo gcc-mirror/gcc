@@ -2697,7 +2697,8 @@ foo:	nop
 	mfcr 3,128';;
       *-*-darwin*) conftest_s='	.text
 	mfcr r3,128';;
-      *)       conftest_s='	.text
+      *)       conftest_s='	.machine power4
+	.text
 	mfcr 3,128';;
     esac
 

@@ -1,3 +1,9 @@
+2004-10-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.ac: Add .machine power4 directive when testing for
+	mfcr field.
+	* configure: Regenerate.
+
 2004-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Don't define.
