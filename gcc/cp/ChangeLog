@@ -1,5 +1,13 @@
 2003-12-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13081
+	* decl.c (duplicate_decls): Preserve inline-ness when redeclaring
+	a function template.
+
+	PR c++/12613
+	* decl.c (reshape_init): Reject GNU colon-style designated
+	initializers in arrays.
+
 	PR c++/13009
 	* call.c (build_special_member_call): Do not assume that we have a
 	pointer to the complete object in an assignment operator.
