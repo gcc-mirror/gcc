@@ -112,7 +112,7 @@ public class BufferedReader extends Reader
    * @param in The subordinate stream to read from
    * @param size The buffer size to use
    *
-   * @exception IllegalArgumentException if size &lt;&eq; 0
+   * @exception IllegalArgumentException if size &lt;= 0
    */
   public BufferedReader(Reader in, int size)
   {
