@@ -121,6 +121,8 @@ treelang_decode_option (num_options_left, first_option_left)
           fprintf (stdout, "Usage: tree1 [switches] -o output input\n");
           return 1;
         }
+      break;
+
     case 'v':
       if (!strcmp (first_option_left[0],"-v"))
         {
@@ -133,6 +135,8 @@ treelang_decode_option (num_options_left, first_option_left)
             }
           return 1;
         }
+      break;
+
     case 'y':
       if (!strcmp (first_option_left[0],"-y"))
         {
@@ -140,6 +144,8 @@ treelang_decode_option (num_options_left, first_option_left)
           option_parser_trace = 1;
           return 1;
         }
+      break;
+
     case 'f':
       if (!strcmp (first_option_left[0],"-fparser-trace"))
         {
@@ -151,7 +157,7 @@ treelang_decode_option (num_options_left, first_option_left)
           option_lexer_trace = 1;
           return 1;
         }
-      return 0;
+      break;
 
     case 'w':
       if (!strcmp (first_option_left[0],"-w"))
@@ -160,21 +166,20 @@ treelang_decode_option (num_options_left, first_option_left)
              all warnings.  */
           return 1;
         }
-      return 0;
+      break;
 
     case 'W':
       if (!strcmp (first_option_left[0],"-Wall"))
         {
           return 1;
         }
-      return 0;
+      break;
 
     default:
-      return 0;
+      break;
     }
 
   return 0;
-
 }
 
 /* Language dependent parser setup.  */
