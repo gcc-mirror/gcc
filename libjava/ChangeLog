@@ -1,3 +1,13 @@
+2000-08-27  Anthony Green  <green@redhat.com>
+
+	* java/util/ArrayList.java, java/util/Timer.java,
+	java/util/LinkedList.java, java/util/TimerTask.java,
+	java/util/HashMap.java, java/util/AbstractMap.java,
+	java/util/SortedMap.java, java/util/AbstractSequentialList.java,
+	java/util/SortedSet.java: Imported from GNU Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Added new files.
+	
 2000-08-26  Anthony Green  <green@redhat.com>
 
 	* Makefile.in: Rebuilt.
