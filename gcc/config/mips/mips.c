@@ -1539,8 +1539,10 @@ mips_move_2words (operands, insn)
 	    }
 	  else
 	    {
-	      operands[2] = GEN_INT (INTVAL (operands[1]) >> 32);
-	      operands[1] = GEN_INT (INTVAL (operands[1]) << 32 >> 32);
+	      /* We use multiple shifts here, to avoid warnings about out
+		 of range shifts on 32 bit hosts.  */
+	      operands[2] = GEN_INT (INTVAL (operands[1]) >> 16 >> 16);
+	      operands[1] = GEN_INT (INTVAL (operands[1]) << 16 << 16 >> 16 >> 16);
 	      ret = "li\t%M0,%2\n\tli\t%L0,%1";
 	    }
 	}
