@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Vax Version
-;;   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
+;;   Copyright (C) 1987, 1988, 1991, 1994, 1995 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1419,11 +1419,12 @@
 
 ;; When the field position and size are constant and the destination
 ;; is a register, extv and extzv are much slower than a rotate followed
-;; by a bicl or sign extension.
+;; by a bicl or sign extension.  Becase we might end up choosing ext[z]v
+;; anyway, we can't allow immediate values for the primary source operand.
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(sign_extract:SI (match_operand:SI 1 "nonmemory_operand" "r")
+	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
@@ -1440,7 +1441,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(zero_extract:SI (match_operand:SI 1 "register_operand" "ri")
+	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
