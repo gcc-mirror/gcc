@@ -1292,6 +1292,29 @@ cselib_record_sets (rtx insn)
      locations may go away.  */
   note_stores (body, cselib_invalidate_rtx, NULL);
 
+  /* If this is an asm, look for duplicate sets.  This can happen when the
+     user uses the same value as an output multiple times.  This is valid
+     if the outputs are not actually used thereafter.  Treat this case as
+     if the value isn't actually set.  We do this by smashing the destination
+     to pc_rtx, so that we won't record the value later.  */
+  if (n_sets >= 2 && asm_noperands (body) >= 0)
+    {
+      for (i = 0; i < n_sets; i++)
+	{
+	  rtx dest = sets[i].dest;
+	  if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+	    {
+	      int j;
+	      for (j = i + 1; j < n_sets; j++)
+		if (rtx_equal_p (dest, sets[j].dest))
+		  {
+		    sets[i].dest = pc_rtx;
+		    sets[j].dest = pc_rtx;
+		  }
+	    }
+	}
+    }
+
   /* Now enter the equivalences in our tables.  */
   for (i = 0; i < n_sets; i++)
     {
