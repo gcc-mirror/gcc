@@ -1,3 +1,7 @@
+2003-11-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/altivec-varargs-1.c: New test.
+
 2003-11-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20031023-4.c: XFAIL on SPARC64
