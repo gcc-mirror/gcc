@@ -844,7 +844,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  add_referenced_tmp_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
-	  add_phi_arg (&phi, convert (ret_type, integer_zero_node),
+	  add_phi_arg (&phi, fold_convert (ret_type, integer_zero_node),
 		       first->pred);
 	  a_acc = PHI_RESULT (phi);
 	}
@@ -857,7 +857,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  add_referenced_tmp_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
-	  add_phi_arg (&phi, convert (ret_type, integer_one_node),
+	  add_phi_arg (&phi, fold_convert (ret_type, integer_one_node),
 		       first->pred);
 	  m_acc = PHI_RESULT (phi);
 	}

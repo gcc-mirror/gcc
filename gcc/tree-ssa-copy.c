@@ -180,7 +180,7 @@ cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
      if (!lang_hooks.types_compatible_p (op_type, val_type)
            && TREE_CODE (val) != SSA_NAME)
 	{
-	  val = convert (TREE_TYPE (*op_p), val);
+	  val = fold_convert (TREE_TYPE (*op_p), val);
 	  if (!is_gimple_min_invariant (val)
 	      && TREE_CODE (val) != SSA_NAME)
 	    return false;

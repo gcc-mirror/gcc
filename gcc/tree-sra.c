@@ -587,7 +587,7 @@ csc_build_component_ref (tree base, tree field)
 	 the entire structure should be zeroed.  */
       if (CONSTRUCTOR_ELTS (base))
 	abort ();
-      return convert (TREE_TYPE (field), integer_zero_node);
+      return fold_convert (TREE_TYPE (field), integer_zero_node);
 
     default:
       /* Avoid sharing BASE when building the different COMPONENT_REFs.
