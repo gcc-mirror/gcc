@@ -1,3 +1,7 @@
+Sat Jun 27 12:18:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (g77): Depend on mkstemp.o.  Link in mkstemp.o
+	
 Wed Jun 24 01:01:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77spec.c (lang_specific_driver): Revert last change.
