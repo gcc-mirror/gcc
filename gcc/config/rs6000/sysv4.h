@@ -1589,4 +1589,4 @@ ncrtn.o%s"
    : DW_EH_PE_absptr)
 
 #define EXCEPTION_SECTION readonly_data_section
-#define DOUBLE_INT_ASM_OP ".quad"
+#define DOUBLE_INT_ASM_OP "\t.quad\t"

@@ -2481,7 +2481,7 @@ do {									\
     }									\
   else									\
     {									\
-      fprintf (FILE, "\t%s ", DOUBLE_INT_ASM_OP);			\
+      fprintf (FILE, "%s", DOUBLE_INT_ASM_OP);				\
       output_addr_const (FILE, (VALUE));				\
       putc ('\n', FILE);						\
     }									\

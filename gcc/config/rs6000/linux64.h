@@ -21,30 +21,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* Yes!  We are AIX! Err. Wait. We're Linux!. No, wait, we're a
   combo of both!*/
-#undef DEFAULT_ABI
+#undef  DEFAULT_ABI
 #define DEFAULT_ABI ABI_AIX
 
-#undef TARGET_AIX
+#undef  TARGET_AIX
 #define TARGET_AIX 1
 
-#undef TARGET_DEFAULT
+#undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_POWERPC64 | MASK_64BIT | MASK_NEW_MNEMONICS)
 
-/* AIX does not have any init/fini or ctor/dtor sections, so create
-    static constructors and destructors as normal functions.  */
-/* #define ASM_OUTPUT_CONSTRUCTOR(file, name) */
-/* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
 #define USER_LABEL_PREFIX  ""
-
-/* Tell the assembler to assume that all undefined names are external.
-
-   Don't do this until the fixed IBM assembler is more generally available.
-   When this becomes permanently defined, the ASM_OUTPUT_EXTERNAL,
-   ASM_OUTPUT_EXTERNAL_LIBCALL, and RS6000_OUTPUT_BASENAME macros will no
-   longer be needed.  Also, the extern declaration of mcount in ASM_FILE_START
-   will no longer be needed.  */
-
-/* #define ASM_SPEC "-u %(asm_cpu)" */
 
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
@@ -65,18 +51,17 @@ Boston, MA 02111-1307, USA.  */
    : MAX ((COMPUTED), (SPECIFIED)))
 
 /* Indicate that jump tables go in the text section.  */
-#undef JUMP_TABLES_IN_TEXT_SECTION
+#undef  JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Define cutoff for using external functions to save floating point.  */
-#undef FP_SAVE_INLINE
+#undef  FP_SAVE_INLINE
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
 
-#undef TARGET_NO_TOC
-#undef TARGET_TOC
-
 /* 64-bit PowerPC Linux always has a TOC.  */
+#undef  TARGET_NO_TOC
 #define TARGET_NO_TOC		0
+#undef  TARGET_TOC
 #define	TARGET_TOC		1
 
 /* 64-bit PowerPC Linux always has GPR13 fixed.  */
@@ -90,6 +75,7 @@ Boston, MA 02111-1307, USA.  */
 #define SETUP_FRAME_ADDRESSES() rs6000_aix_emit_builtin_unwind_init ()
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
+
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
@@ -109,10 +95,10 @@ Boston, MA 02111-1307, USA.  */
 /* The GNU C++ standard library currently requires _GNU_SOURCE being
    defined on glibc-based systems. This temporary hack accomplishes this,
    it should go away as soon as libstdc++-v3 has a real fix.  */
-#undef CPLUSPLUS_CPP_SPEC
+#undef  CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
-#undef LINK_SHLIB_SPEC
+#undef  LINK_SHLIB_SPEC
 #define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
 
 #undef	LIB_DEFAULT_SPEC
@@ -135,13 +121,13 @@ Boston, MA 02111-1307, USA.  */
   %{rdynamic:-export-dynamic} \
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
-#undef TOC_SECTION_ASM_OP
+#undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP "\t.section\t\".toc\",\"aw\""
 
-#undef MINIMAL_TOC_SECTION_ASM_OP
-#define	MINIMAL_TOC_SECTION_ASM_OP "\t.section\t\".toc1\",\"aw\"\n\t.align 3"
+#undef  MINIMAL_TOC_SECTION_ASM_OP
+#define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t\".toc1\",\"aw\"\n\t.align 3"
 
-#undef TARGET_VERSION
+#undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC64 GNU/Linux)");
 
 /* Must be at least as big as our pointer type.  */
@@ -157,19 +143,32 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 /* Override rs6000.h definition.  */
-#undef ASM_APP_ON
+#undef  ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 
 /* Override rs6000.h definition.  */
-#undef ASM_APP_OFF
+#undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
 /* PowerPC no-op instruction.  */
-#undef RS6000_CALL_GLUE
+#undef  RS6000_CALL_GLUE
 #define RS6000_CALL_GLUE "nop"
 
+#undef  RS6000_MCOUNT
+#define RS6000_MCOUNT ".__mcount"
+
+/* FP save and restore routines.  */
+#undef  SAVE_FP_PREFIX
+#define SAVE_FP_PREFIX "._savef"
+#undef  SAVE_FP_SUFFIX
+#define SAVE_FP_SUFFIX ""
+#undef  RESTORE_FP_PREFIX
+#define RESTORE_FP_PREFIX "._restf"
+#undef  RESTORE_FP_SUFFIX
+#define RESTORE_FP_SUFFIX ""
+
 /* Dwarf2 debugging.  */
-#undef PREFERRED_DEBUGGING_TYPE
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE  DWARF2_DEBUG
 
 /* This macro gets just the user-specified name
