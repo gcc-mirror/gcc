@@ -1,5 +1,9 @@
 2002-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in (AC_CHECK_HEADERS): Check for string.h & stdlib.h.
+	* libsupc++/Makefile.am (LTCOMPILE): Add $(DEFS).
+	* Makefile.in, config.h.in, configure: Regenerate.
+
 	* config/os/irix/irix5.2/bits/ctype_noninline.h (classic_table):
 	Return __ctype + 1.
 	(ctype:_M_table): Initialize to classic_table(), not __ctype.
