@@ -1,4 +1,13 @@
+2002-09-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.h (MASK_ACCUMULATE_OUTGOING_ARGS_SET, MASK_MMX_SET,
+	MASK_SSE_SET, MASK_SSE2_SET, MASK_3DNOW_SET, MASK_3DNOW_A_SET): Kill.
+	(TARGET_SWITCHES): Don't reference them.
+	* config/i386/i386.c (override_options): Use target_flags_explicit
+	to examine bits set by the user.
+
 2002-09-23  Dale Johannesen  <dalej@apple.com>
+
 	* dbxout.c (dbxout_parms):  Set current_sym_code for params
 	passed on stack by invisible reference.
 
