@@ -1,3 +1,8 @@
+2002-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (gccinstall.dvi): Pass absolute pathnames to
+	$(TEXI2DVI) -o.
+
 Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_promote_QImode): Set for Athlon
