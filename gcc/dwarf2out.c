@@ -5946,28 +5946,35 @@ output_loc_list (list_head)
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
   if (strcmp (curr->section, ".text") == 0)
     {
-      if (DWARF2_ADDR_SIZE == 4)
-	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffff, "Location list base address specifier fake entry");
-      else if (DWARF2_ADDR_SIZE == 8)
-	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffffffffffffLL, "Location list base address specifier fake entry");
-      else
-	abort();
-      dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section, "Location list base address specifier base");
+      /* dw2_asm_output_data will mask off any extra bits in the ~0.  */
+      dw2_asm_output_data (DWARF2_ADDR_SIZE, ~(unsigned HOST_WIDE_INT)0,
+			   "Location list base address specifier fake entry");
+      dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section,
+			     "Location list base address specifier base");
     }
   for (curr = list_head; curr != NULL; curr=curr->dw_loc_next)
     {
       int size;
-      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section, "Location list begin address (%s)", list_head->ll_symbol);
-      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->end, curr->section, "Location list end address (%s)", list_head->ll_symbol);
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
+			    "Location list begin address (%s)",
+			    list_head->ll_symbol);
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->end, curr->section,
+			    "Location list end address (%s)",
+			    list_head->ll_symbol);
       size = size_of_locs (curr->expr);
       
       /* Output the block length for this list of location operations.  */
-      dw2_asm_output_data (constant_size (size), size, "%s", "Location expression size");
+      dw2_asm_output_data (constant_size (size), size, "%s",
+			   "Location expression size");
       
       output_loc_sequence (curr->expr);
     }
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Location list terminator begin (%s)", list_head->ll_symbol);
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Location list terminator end (%s)", list_head->ll_symbol);
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0,
+		       "Location list terminator begin (%s)",
+		       list_head->ll_symbol);
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0,
+		       "Location list terminator end (%s)",
+		       list_head->ll_symbol);
 }
 /* Output the DIE and its attributes.  Called recursively to generate
    the definitions of each child DIE.  */

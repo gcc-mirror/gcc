@@ -1,3 +1,9 @@
+2001-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* dwarf2out.c (output_loc_list): Use an all ones mask for
+	.text asm output and don't rely on long long
+	literals. Reformat some long lines.
+
 2001-07-05  Andreas Jaeger  <aj@suse.de>
 
 	* doc/gcc.texi (GNU/Linux): Remove accidental re-add of GPL
