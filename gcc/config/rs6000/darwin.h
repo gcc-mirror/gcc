@@ -342,8 +342,8 @@ do {									\
 
 #undef PREFERRED_RELOAD_CLASS
 #define PREFERRED_RELOAD_CLASS(X,CLASS)				\
-  ((GET_CODE (X) == CONST_DOUBLE				\
-    && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)		\
+  ((CONSTANT_P (X)						\
+    && reg_classes_intersect_p ((CLASS), FLOAT_REGS))		\
    ? NO_REGS							\
    : ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == HIGH)	\
       && reg_class_subset_p (BASE_REGS, (CLASS)))		\

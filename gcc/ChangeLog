@@ -1,3 +1,15 @@
+2004-12-11  David Edelsohn  <edelsohn@gnu.org>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/18641
+	* config/rs6000/darwin.h (PREFERRED_RELOAD_CLASS): Reload all
+	constants into all register classes intersecting with FLOAT_REGS
+	via memory.
+	* config/rs6000/rs6000.h (PREFERRED_RELOAD_CLASS): Same.
+	* config/rs6000/rs6000.md (movdi_internal32): Ignore FPRs when
+	choosing register preferences.
+	(movdi_internal64): Same.
+
 2004-12-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-into-ssa.c (rewrite_ssa_into_ssa): Free SSA_NAME_AUX
