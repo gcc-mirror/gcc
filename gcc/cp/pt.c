@@ -7667,6 +7667,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 2), args, complain, in_decl));
+	TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
 	return r;
       }
 
@@ -8331,10 +8332,14 @@ tsubst_copy_and_build (tree t,
 	return cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t));
 
     case MODOP_EXPR:
-      return build_x_modify_expr
-	(RECUR (TREE_OPERAND (t, 0)),
-	 TREE_CODE (TREE_OPERAND (t, 1)),
-	 RECUR (TREE_OPERAND (t, 2)));
+      {
+	tree r = build_x_modify_expr
+	  (RECUR (TREE_OPERAND (t, 0)),
+	   TREE_CODE (TREE_OPERAND (t, 1)),
+	   RECUR (TREE_OPERAND (t, 2)));
+	TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	return r;
+      }
 
     case ARROW_EXPR:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),

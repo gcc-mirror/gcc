@@ -1,3 +1,8 @@
+2004-08-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c++/17041
+	* g++.dg/Wparentheses-3.C: New test.
+
 2004-08-19  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-1.c: Remove xfail from i?86-*-* x86_64-*-* due
