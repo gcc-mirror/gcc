@@ -1,3 +1,8 @@
+2001-05-11  Richard Henderson  <rth@redhat.com>
+
+        * exception.cc: Include unwind-pe.h.  Remove all pointer
+	encoding logic.
+
 2001-05-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
