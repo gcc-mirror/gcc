@@ -5048,26 +5048,36 @@ expand_expr (exp, target, tmode, modifier)
 	  tree old_list = placeholder_list;
 	  tree elt;
 
-	  /* See if the object is the type that we want.  Then see if
-	     the operand of any reference is the type we want.  */
+	  /* See if the object is the type that we want and does not contain
+	     this PLACEHOLDER_EXPR itself.  Then see if the operand of any
+	     reference is the type we want.  */
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_PURPOSE (placeholder_list)))
-	       == need_type))
+	       == need_type)
+	      && (! contains_this_placeholder_p
+		  (TREE_PURPOSE (placeholder_list), exp)))
 	    object = TREE_PURPOSE (placeholder_list);
 
-	  /* Find the innermost reference that is of the type we want.    */
-	  for (elt = TREE_PURPOSE (placeholder_list);
-	       elt != 0
-	       && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
-	       elt = ((TREE_CODE (elt) == COMPOUND_EXPR
-		       || TREE_CODE (elt) == COND_EXPR)
-		      ? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
-	    if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		&& (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
-		    == need_type))
-	      object = TREE_OPERAND (elt, 0);
+	  else
+	    /* Find the outermost reference that is of the type we want and
+	       that does not itself contain this PLACEHOLDER_EXPR.  */
+	    for (elt = TREE_PURPOSE (placeholder_list);
+		 elt != 0
+		 && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
+		 elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+			 || TREE_CODE (elt) == COND_EXPR)
+			? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
+	      if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
+		      == need_type)
+		  && ! contains_this_placeholder_p (TREE_OPERAND (elt, 0),
+						    exp))
+		{
+		  object = TREE_OPERAND (elt, 0);
+		  break;
+		}
 
 	  if (object != 0)
 	    {
