@@ -166,6 +166,12 @@ while (0)
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
 
+/* Define this macro if in some cases global symbols from one translation
+   unit may not be bound to undefined symbols in another translation unit
+   without user intervention.  For instance, under Microsoft Windows
+   symbols must be explicitly imported from shared libraries (DLLs).  */
+#define MULTIPLE_SYMBOL_SPACES
+
 /* For objects going into their own sections, a C expression of name of the
    section, expressed as a STRING_CST node, to put DECL into.  The
    STRING_CST node must be allocated in the saveable obstack.  Function
