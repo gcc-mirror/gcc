@@ -1,3 +1,9 @@
+2003-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/10336, c++/10401
+	* jump.c (never_reached_warning): Also stop looking if we reach the 
+	beginning of the function.
+
 2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR target/10338
