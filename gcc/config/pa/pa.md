@@ -2234,7 +2234,7 @@
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
 			  "=f,*r,RQ,?o,?Q,f,*r,*r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,RQ,o,Q"))]
+			  "fG,*rG,f,*r,*r,RQ,o,RQ"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && ! (GET_CODE (operands[1]) == CONST_DOUBLE
@@ -2425,7 +2425,7 @@
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
 			  "=r,o,Q,r,r,r,f,f,*TR")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,r,o,Q,i,fM,*TR,f"))]
+			  "rM,r,r,o*R,Q,i,fM,*TR,f"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && ! TARGET_SOFT_FLOAT"
