@@ -279,7 +279,7 @@ static struct token tokentab2[] = {
 
 struct operation
 cpp_lex (pfile)
-cpp_reader *pfile;
+     cpp_reader *pfile;
 {
   register int c;
   register int namelen;
@@ -793,11 +793,10 @@ cpp_parse_expr (pfile)
 		}
 	      break;
 	    case '-':
-	      if (skip_evaluation) ;	/* do nothing */
-	      else if (!(top->flags & HAVE_VALUE))
+	      if (!(top->flags & HAVE_VALUE))
 		{ /* Unary '-' */
 		  top->value = - v2;
-		  if ((top->value & v2) < 0 && ! unsigned2)
+		  if (!skip_evaluation && (top->value & v2) < 0 && !unsigned2)
 		    integer_overflow (pfile);
 		  top->unsignedp = unsigned2;
 		  top->flags |= HAVE_VALUE;
@@ -806,7 +805,7 @@ cpp_parse_expr (pfile)
 		{ /* Binary '-' */
 		  top->value = v1 - v2;
 		  top->unsignedp = unsigned1 || unsigned2;
-		  if (! top->unsignedp
+		  if (! top->unsignedp && ! skip_evaluation
 		      && ! possible_sum_sign (top->value, v2, v1))
 		    integer_overflow (pfile);
 		}
