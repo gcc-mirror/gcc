@@ -13,8 +13,8 @@ dnl PARTICULAR PURPOSE.
 dnl
 dnl Initialize configure bits.
 dnl
-dnl GLIBCPP_CONFIGURE
-AC_DEFUN(GLIBCPP_CONFIGURE, [
+dnl GLIBCPP_TOPREL_CONFIGURE
+AC_DEFUN(GLIBCPP_TOPREL_CONFIGURE, [
   dnl Default to --enable-multilib (this is also passed by default
   dnl from the ubercommon-top-level configure)
   AC_ARG_ENABLE(multilib,
@@ -46,6 +46,13 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
   toplevel_srcdir=\${top_srcdir}/$toprel
   AC_SUBST(toplevel_srcdir)
+])
+
+dnl
+dnl Initialize configure bits.
+dnl
+dnl GLIBCPP_CONFIGURE
+AC_DEFUN(GLIBCPP_CONFIGURE, [
 
 #possibly test for the presence of the compiler sources here?
 

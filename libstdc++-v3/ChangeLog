@@ -1,3 +1,11 @@
+2002-06-25  DJ Delorie  <dj@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE): Split out
+	GLIBCPP_TOPREL_CONFIGURE.
+	* aclocal.m4: Likewise.
+	* configure.in: Call it before AC_CANONICAL_SYSTEM.
+	* configure: Regenerate.
+
 2002-06-25  Jessica Han  <jessica@cup.hp.com>
 
 	* config/os/hpux/os_defines.h Define _GLIBCPP_VTABLE_PADDING
