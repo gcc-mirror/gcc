@@ -1,3 +1,8 @@
+2003-01-29  Nick Clifton  <nickc@redhat.com>
+
+	* Makefile.in (c-parse.o): Locate source file in $(parsedir)
+	not $(srcdir).
+
 2003-01-29  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c (walk_tree): Add CHAR_TYPE.
