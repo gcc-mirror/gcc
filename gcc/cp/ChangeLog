@@ -1,3 +1,8 @@
+2002-09-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7768
+	* pt.c (build_template_decl): Copy DECL_DESTRUCTOR_P.
+
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* error.c: Fix comment formatting.
