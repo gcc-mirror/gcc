@@ -1,5 +1,7 @@
 2001-08-20  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/GridBagConstraints.java: Removed comment.
+
 	* jni.cc (nathash, nathash_count, nathash_size): New globals.
 	(DELETED_ENTRY): New define.
 	(hash): New function.
