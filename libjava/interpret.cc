@@ -312,7 +312,7 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 
       if (! first_pass)
 	{
-	  insns = (insn_slot *) _Jv_Malloc (sizeof (insn_slot) * next);
+	  insns = (insn_slot *) _Jv_AllocBytes (sizeof (insn_slot) * next);
 	  next = 0;
 	}
 

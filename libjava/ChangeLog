@@ -1,3 +1,11 @@
+2002-12-06  Tom Tromey  <tromey@redhat.com>
+
+	* include/java-interp.h (class _Jv_InterpMethod): Added
+	JV_MARKOBJ_DECL.
+	* boehm.cc (_Jv_MarkObj): Consolidated interpreter code.  Also
+	mark `prepared' field of interpreted method.
+	* interpret.cc (compile): Use _Jv_AllocBytes.
+
 2002-12-05  Andrew Haley  <aph@redhat.com>
 
 	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Throw
