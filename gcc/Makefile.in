@@ -165,7 +165,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
     $(EXTRA_HEADERS)
 
-# The GCC to use for compiling libgcc.a, enquire, and crt*.o.
+# The GCC to use for compiling libgcc.a and crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
 GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include
@@ -768,7 +768,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
- enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
+ protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
@@ -921,8 +921,6 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc version.c
 
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
-# Note that we can compile enquire using the cross-compiler just built,
-# although we can't run it on this machine.
 all.cross: native gcc-cross cpp$(exeext) specs \
 	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc
 # This is what must be made before installing GCC and converting libraries.
@@ -2238,8 +2236,7 @@ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 # s-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-# Build the include directory including float.h (which no longer depends upon
-# enquire).
+# Build the include directory including float.h
 stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
@@ -2564,7 +2561,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # Delete debugging dump files.
 	-rm -f *.[0-9][0-9].* */*.[0-9][0-9].*
 # Delete some files made during installation.
-	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
+	-rm -f specs float.h-* SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump
 # Delete files generated for fixproto
 	-rm -rf fix-header$(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
@@ -3594,59 +3591,6 @@ risky-stage4: stage4
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
 
 force:
-
-# ---
-# The enquire rules are still useful for building new float-anything.h.
-# Special flags for compiling enquire.
-# We disable optimization to make floating point more reliable.
-ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
-ENQUIRE_LDFLAGS = $(LDFLAGS)
-
-# Enquire target (This is a variable so that a target can choose not to
-# build it.)
-ENQUIRE = enquire
-
-# Test to see whether <float.h> exists in the system header files,
-# and is not derived from GCC.
-FLOAT_H_TEST = \
-  [ -f $(SYSTEM_HEADER_DIR)/float.h ] && \
-  if grep 'ifndef _FLOAT_H___' $(SYSTEM_HEADER_DIR)/float.h >/dev/null; \
-  then false; \
-  else :; fi
-# We pretend to not having a usable <float.h>, hence disable the FLOAT_H_TEST
-# to ensure, we're emitting a full blown <float.h> ourselves.
-FLOAT_H_TEST = false
-
-# Used to compile enquire with standard cc, but have forgotten why.
-# Let's try with GCC.
-enquire: enquire.o $(GCC_PARTS)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
-enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
-	if $(FLOAT_H_TEST); then \
-	  rm -f include/float.h; \
-	  SYS_FLOAT_H_WRAP=1; \
-	else :; \
-	  SYS_FLOAT_H_WRAP=0; \
-	fi; \
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
-	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
-	  -I. -c $(srcdir)/enquire.c $(OUTPUT_OPTION)
-
-# Create float.h source for the native machine.
-# Make it empty if we can use the system float.h without changes.
-float.h-nat: enquire
-	-./enquire -f > tmp-float.h
-	grep '#define [^_]' tmp-float.h >/dev/null || true > tmp-float.h
-	mv tmp-float.h float.h-nat
-
-# Create a dummy float.h source for a cross-compiler.
-# ??? This isn't used anymore.  Should we create config/float-unkn.h
-# and make that the default float_format in configure?
-float.h-cross:
-	echo "#ifndef	__GCC_FLOAT_NOT_NEEDED" > t-float.h-cross
-	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
-	echo "#endif" >> t-float.h-cross
-	mv t-float.h-cross float.h-cross
 
 # Rules for generating translated message descriptions.
 # Disabled by autoconf if the tools are not available.
