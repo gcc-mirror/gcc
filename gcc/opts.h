@@ -31,12 +31,16 @@ struct cl_option
   unsigned short back_chain;
   unsigned char opt_len;
   unsigned int flags;
+  int *flag_var;
+  int has_set_value;
+  int set_value;
 };
 
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 
+#define CL_REPORT		(1 << 23) /* Report argument with -fverbose-asm  */
 #define CL_JOINED		(1 << 24) /* If takes joined argument.  */
 #define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
 #define CL_REJECT_NEGATIVE	(1 << 26) /* Reject no- form.  */

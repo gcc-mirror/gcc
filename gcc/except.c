@@ -82,9 +82,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 
-/* Nonzero means enable synchronous exceptions for non-call instructions.  */
-int flag_non_call_exceptions;
-
 /* Protect cleanup actions with must-not-throw regions, with a call
    to the given failure handler.  */
 tree (*lang_protect_cleanup_actions) (void);

@@ -46,36 +46,8 @@ bool g_switch_set;
 /* True if we should exit after parsing options.  */
 bool exit_after_options;
 
-/* If -version.  */
-bool version_flag;
-
 /* Print various extra warnings.  -W/-Wextra.  */
 bool extra_warnings;
-
-/* Don't print warning messages.  -w.  */
-bool inhibit_warnings;
-
-/* Treat warnings as errors.  -Werror.  */
-bool warnings_are_errors;
-
-/* Warn if a function returns an aggregate, since there are often
-   incompatible calling conventions for doing this.  */
-bool warn_aggregate_return;
-
-/* Nonzero means warn about pointer casts that increase the required
-   alignment of the target type (and might therefore lead to a crash
-   due to a misaligned access).  */
-bool warn_cast_align;
-
-/* Nonzero means warn about uses of __attribute__((deprecated))
-   declarations.  */
-bool warn_deprecated_decl = true;
-
-/* Warn when an optimization pass is disabled.  */
-bool warn_disabled_optimization;
-
-/* Nonzero means warn if inline function is too large.  */
-bool warn_inline;
 
 /* True to warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
@@ -83,48 +55,9 @@ bool warn_inline;
 bool warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
-/* Warn about functions which might be candidates for attribute noreturn.  */
-bool warn_missing_noreturn;
-
-/* True to warn about code which is never reached.  */
-bool warn_notreached;
-
-/* Warn if packed attribute on struct is unnecessary and inefficient.  */
-bool warn_packed;
-
-/* Warn when gcc pads a structure to an alignment boundary.  */
-bool warn_padded;
-
-/* True means warn about all declarations which shadow others.  */
-bool warn_shadow;
-
 /* Nonzero means warn about constructs which might not be
    strict-aliasing safe.  */
 int warn_strict_aliasing;
-
-/* True to warn if a switch on an enum, that does not have a default
-   case, fails to have a case for every enum value.  */
-bool warn_switch;
-
-/* Warn if a switch does not have a default case.  */
-bool warn_switch_default;
-
-/* Warn if a switch on an enum fails to have a case for every enum
-   value (regardless of the presence or otherwise of a default case).  */
-bool warn_switch_enum;
-
-/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
-bool warn_system_headers;
-
-/* True to warn about variables used before they are initialized.  */
-int warn_uninitialized;
-
-/* True to warn about unused variables, functions et.al.  */
-bool warn_unused_function;
-bool warn_unused_label;
-bool warn_unused_parameter;
-bool warn_unused_variable;
-bool warn_unused_value;
 
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
@@ -420,6 +353,19 @@ handle_option (const char **argv, unsigned int lang_mask)
 	}
     }
 
+  if (option->flag_var)
+    {
+      if (option->has_set_value)
+	{
+	  if (value)
+	    *option->flag_var = option->set_value;
+	  else
+	    *option->flag_var = !option->set_value;
+	}
+      else
+	*option->flag_var = value;
+    }
+  
   if (option->flags & lang_mask)
     if (lang_hooks.handle_option (opt_index, arg, value) == 0)
       result = 0;
@@ -691,18 +637,17 @@ decode_options (unsigned int argc, const char **argv)
 }
 
 /* Handle target- and language-independent options.  Return zero to
-   generate an "unknown option" message.  */
+   generate an "unknown option" message.  Only options that need
+   extra handling need to be listed here; if you simply want
+   VALUE assigned to a variable, it happens automatically.  */
+
 static int
-common_handle_option (size_t scode, const char *arg,
-		      int value ATTRIBUTE_UNUSED)
+common_handle_option (size_t scode, const char *arg, int value)
 {
   enum opt_code code = (enum opt_code) scode;
 
   switch (code)
     {
-    default:
-      abort ();
-
     case OPT__help:
       print_help ();
       exit_after_options = true;
@@ -737,36 +682,8 @@ common_handle_option (size_t scode, const char *arg,
       set_Wextra (value);
       break;
 
-    case OPT_Waggregate_return:
-      warn_aggregate_return = value;
-      break;
-
-    case OPT_Wcast_align:
-      warn_cast_align = value;
-      break;
-
-    case OPT_Wdeprecated_declarations:
-      warn_deprecated_decl = value;
-      break;
-
-    case OPT_Wdisabled_optimization:
-      warn_disabled_optimization = value;
-      break;
-
-    case OPT_Werror:
-      warnings_are_errors = value;
-      break;
-
     case OPT_Wextra:
       set_Wextra (value);
-      break;
-
-    case OPT_Wfatal_errors:
-      flag_fatal_errors = value;
-      break;
-
-    case OPT_Winline:
-      warn_inline = value;
       break;
 
     case OPT_Wlarger_than_:
@@ -774,73 +691,13 @@ common_handle_option (size_t scode, const char *arg,
       warn_larger_than = value != -1;
       break;
 
-    case OPT_Wmissing_noreturn:
-      warn_missing_noreturn = value;
-      break;
-
-    case OPT_Wpacked:
-      warn_packed = value;
-      break;
-
-    case OPT_Wpadded:
-      warn_padded = value;
-      break;
-
-    case OPT_Wshadow:
-      warn_shadow = value;
-      break;
-
     case OPT_Wstrict_aliasing:
     case OPT_Wstrict_aliasing_:
       warn_strict_aliasing = value;
       break;
 
-    case OPT_Wswitch:
-      warn_switch = value;
-      break;
-
-    case OPT_Wswitch_default:
-      warn_switch_default = value;
-      break;
-
-    case OPT_Wswitch_enum:
-      warn_switch_enum = value;
-      break;
-
-    case OPT_Wsystem_headers:
-      warn_system_headers = value;
-      break;
-
-    case OPT_Wuninitialized:
-      warn_uninitialized = value;
-      break;
-
-    case OPT_Wunreachable_code:
-      warn_notreached = value;
-      break;
-
     case OPT_Wunused:
       set_Wunused (value);
-      break;
-
-    case OPT_Wunused_function:
-      warn_unused_function = value;
-      break;
-
-    case OPT_Wunused_label:
-      warn_unused_label = value;
-      break;
-
-    case OPT_Wunused_parameter:
-      warn_unused_parameter = value;
-      break;
-
-    case OPT_Wunused_value:
-      warn_unused_value = value;
-      break;
-
-    case OPT_Wunused_variable:
-      warn_unused_variable = value;
       break;
 
     case OPT_aux_info:
@@ -870,89 +727,24 @@ common_handle_option (size_t scode, const char *arg,
       dump_base_name = arg;
       break;
 
-    case OPT_fPIC:
-      flag_pic = value + value;
-      break;
-
-    case OPT_fPIE:
-      flag_pie = value + value;
-      break;
-
-    case OPT_fabi_version_:
-      flag_abi_version = value;
-      break;
-
-    case OPT_falign_functions:
-      align_functions = !value;
-      break;
-
     case OPT_falign_functions_:
       align_functions = value;
-      break;
-
-    case OPT_falign_jumps:
-      align_jumps = !value;
       break;
 
     case OPT_falign_jumps_:
       align_jumps = value;
       break;
 
-    case OPT_falign_labels:
-      align_labels = !value;
-      break;
-
     case OPT_falign_labels_:
       align_labels = value;
-      break;
-
-    case OPT_falign_loops:
-      align_loops = !value;
       break;
 
     case OPT_falign_loops_:
       align_loops = value;
       break;
 
-    case OPT_fargument_alias:
-      flag_argument_noalias = !value;
-      break;
-
-    case OPT_fargument_noalias:
-      flag_argument_noalias = value;
-      break;
-
-    case OPT_fargument_noalias_global:
-      flag_argument_noalias = value + value;
-      break;
-
-    case OPT_fasynchronous_unwind_tables:
-      flag_asynchronous_unwind_tables = value;
-      break;
-
-    case OPT_fbounds_check:
-      flag_bounds_check = value;
-      break;
-
-    case OPT_fbranch_count_reg:
-      flag_branch_on_count_reg = value;
-      break;
-
     case OPT_fbranch_probabilities:
       flag_branch_probabilities_set = true;
-      flag_branch_probabilities = value;
-      break;
-
-    case OPT_fbranch_target_load_optimize:
-      flag_branch_target_load_optimize = value;
-      break;
-
-    case OPT_fbranch_target_load_optimize2:
-      flag_branch_target_load_optimize2 = value;
-      break;
-
-    case OPT_fbtr_bb_exclusive:
-      flag_btr_bb_exclusive = value;
       break;
 
     case OPT_fcall_used_:
@@ -961,46 +753,6 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fcall_saved_:
       fix_register (arg, 0, 0);
-      break;
-
-    case OPT_fcaller_saves:
-      flag_caller_saves = value;
-      break;
-
-    case OPT_fcommon:
-      flag_no_common = !value;
-      break;
-
-    case OPT_fcprop_registers:
-      flag_cprop_registers = value;
-      break;
-
-    case OPT_fcrossjumping:
-      flag_crossjumping = value;
-      break;
-
-    case OPT_fcse_follow_jumps:
-      flag_cse_follow_jumps = value;
-      break;
-
-    case OPT_fcse_skip_blocks:
-      flag_cse_skip_blocks = value;
-      break;
-
-    case OPT_fdata_sections:
-      flag_data_sections = value;
-      break;
-
-    case OPT_fdefer_pop:
-      flag_defer_pop = value;
-      break;
-
-    case OPT_fdelayed_branch:
-      flag_delayed_branch = value;
-      break;
-
-    case OPT_fdelete_null_pointer_checks:
-      flag_delete_null_pointer_checks = value;
       break;
 
     case OPT_fdiagnostics_show_location_:
@@ -1018,108 +770,12 @@ common_handle_option (size_t scode, const char *arg,
 	return 0;
       break;
 
-    case OPT_fdump_unnumbered:
-      flag_dump_unnumbered = value;
-      break;
-
-    case OPT_feliminate_dwarf2_dups:
-      flag_eliminate_dwarf2_dups = value;
-      break;
-
-    case OPT_feliminate_unused_debug_types:
-      flag_eliminate_unused_debug_types = value;
-      break;
-
-    case OPT_feliminate_unused_debug_symbols:
-      flag_debug_only_used_symbols = value;
-      break;
-
-    case OPT_fexceptions:
-      flag_exceptions = value;
-      break;
-
-    case OPT_fexpensive_optimizations:
-      flag_expensive_optimizations = value;
-      break;
-
     case OPT_ffast_math:
       set_fast_math_flags (value);
       break;
 
-    case OPT_ffinite_math_only:
-      flag_finite_math_only = value;
-      break;
-
     case OPT_ffixed_:
       fix_register (arg, 1, 1);
-      break;
-
-    case OPT_ffunction_cse:
-      flag_no_function_cse = !value;
-      break;
-
-    case OPT_ffloat_store:
-      flag_float_store = value;
-      break;
-
-    case OPT_fforce_addr:
-      flag_force_addr = value;
-      break;
-
-    case OPT_fforce_mem:
-      flag_force_mem = value;
-      break;
-
-    case OPT_ffunction_sections:
-      flag_function_sections = value;
-      break;
-
-    case OPT_fgcse:
-      flag_gcse = value;
-      break;
-
-    case OPT_fgcse_lm:
-      flag_gcse_lm = value;
-      break;
-
-    case OPT_fgcse_sm:
-      flag_gcse_sm = value;
-      break;
-
-    case OPT_fgcse_after_reload:
-      flag_gcse_after_reload = value;
-      break;
-
-    case OPT_fgcse_las:
-      flag_gcse_las = value;
-      break;
-
-    case OPT_fguess_branch_probability:
-      flag_guess_branch_prob = value;
-      break;
-
-    case OPT_fident:
-      flag_no_ident = !value;
-      break;
-
-    case OPT_fif_conversion:
-      flag_if_conversion = value;
-      break;
-
-    case OPT_fif_conversion2:
-      flag_if_conversion2 = value;
-      break;
-
-    case OPT_finhibit_size_directive:
-      flag_inhibit_size_directive = value;
-      break;
-
-    case OPT_finline:
-      flag_no_inline = !value;
-      break;
-
-    case OPT_finline_functions:
-      flag_inline_functions = value;
       break;
 
     case OPT_finline_limit_:
@@ -1129,131 +785,16 @@ common_handle_option (size_t scode, const char *arg,
       set_param_value ("max-inline-insns-rtl", value);
       break;
 
-    case OPT_finstrument_functions:
-      flag_instrument_function_entry_exit = value;
-      break;
-
-    case OPT_fkeep_inline_functions:
-      flag_keep_inline_functions =value;
-      break;
-
-    case OPT_fkeep_static_consts:
-      flag_keep_static_consts = value;
-      break;
-
-    case OPT_fleading_underscore:
-      flag_leading_underscore = value;
-      break;
-
-    case OPT_floop_optimize:
-      flag_loop_optimize = value;
-      break;
-
-    case OPT_fmath_errno:
-      flag_errno_math = value;
-      break;
-
-    case OPT_fmem_report:
-      mem_report = value;
-      break;
-
-    case OPT_fmerge_all_constants:
-      flag_merge_constants = value + value;
-      break;
-
-    case OPT_fmerge_constants:
-      flag_merge_constants = value;
-      break;
-
     case OPT_fmessage_length_:
       pp_set_line_maximum_length (global_dc->printer, value);
       break;
 
-    case OPT_fmove_all_movables:
-      flag_move_all_movables = value;
-      break;
-
-    case OPT_fmudflap:
-      flag_mudflap = value;
-      break;
-
-    case OPT_fmudflapth:
-      flag_mudflap = value;
-      flag_mudflap_threads = value;
-      break;
-
-    case OPT_fmudflapir:
-      flag_mudflap_ignore_reads = value;
-      break;
-
-    case OPT_fnew_ra:
-      flag_new_regalloc = value;
-      break;
-
-    case OPT_fnon_call_exceptions:
-      flag_non_call_exceptions = value;
-      break;
-
-    case OPT_fold_unroll_all_loops:
-      flag_old_unroll_all_loops = value;
-      break;
-
-    case OPT_fold_unroll_loops:
-      flag_old_unroll_loops = value;
-      break;
-
-    case OPT_fomit_frame_pointer:
-      flag_omit_frame_pointer = value;
-      break;
-
-    case OPT_foptimize_register_move:
-      flag_regmove = value;
-      break;
-
-    case OPT_foptimize_sibling_calls:
-      flag_optimize_sibling_calls = value;
-      break;
-
-    case OPT_fpack_struct:
-      flag_pack_struct = value;
-      break;
-
     case OPT_fpeel_loops:
       flag_peel_loops_set = true;
-      flag_peel_loops = value;
-      break;
-
-    case OPT_fpcc_struct_return:
-      flag_pcc_struct_return = value;
-      break;
-
-    case OPT_fpeephole:
-      flag_no_peephole = !value;
-      break;
-
-    case OPT_fpeephole2:
-      flag_peephole2 = value;
-      break;
-
-    case OPT_fpic:
-      flag_pic = value;
-      break;
-
-    case OPT_fpie:
-      flag_pie = value;
-      break;
-
-    case OPT_fprefetch_loop_arrays:
-      flag_prefetch_loop_arrays = value;
-      break;
-
-    case OPT_fprofile:
-      profile_flag = value;
       break;
 
     case OPT_fprofile_arcs:
       profile_arc_flag_set = true;
-      profile_arc_flag = value;
       break;
 
     case OPT_fprofile_use:
@@ -1282,12 +823,10 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fprofile_values:
       flag_profile_values_set = true;
-      flag_profile_values = value;
       break;
 
     case OPT_fvpt:
       flag_value_profile_transformations_set = value;
-      flag_value_profile_transformations = value;
       break;
 
     case OPT_frandom_seed:
@@ -1301,62 +840,6 @@ common_handle_option (size_t scode, const char *arg,
       flag_random_seed = arg;
       break;
 
-    case OPT_freduce_all_givs:
-      flag_reduce_all_givs = value;
-      break;
-
-    case OPT_freg_struct_return:
-      flag_pcc_struct_return = !value;
-      break;
-
-    case OPT_fregmove:
-      flag_regmove = value;
-      break;
-
-    case OPT_frename_registers:
-      flag_rename_registers = value;
-      break;
-
-    case OPT_freorder_blocks:
-      flag_reorder_blocks = value;
-      break;
-
-    case OPT_freorder_blocks_and_partition:
-      flag_reorder_blocks_and_partition = value;
-      break;
-  
-    case OPT_freorder_functions:
-      flag_reorder_functions = value;
-      break;
-
-    case OPT_frerun_cse_after_loop:
-      flag_rerun_cse_after_loop = value;
-      break;
-
-    case OPT_frerun_loop_opt:
-      flag_rerun_loop_opt = value;
-      break;
-
-    case OPT_frounding_math:
-      flag_rounding_math = value;
-      break;
-
-    case OPT_fsched_interblock:
-      flag_schedule_interblock = value;
-      break;
-
-    case OPT_fsched_spec:
-      flag_schedule_speculative = value;
-      break;
-
-    case OPT_fsched_spec_load:
-      flag_schedule_speculative_load = value;
-      break;
-
-    case OPT_fsched_spec_load_dangerous:
-      flag_schedule_speculative_load_dangerous = value;
-      break;
-
     case OPT_fsched_verbose_:
 #ifdef INSN_SCHEDULING
       fix_sched_param ("verbose", arg);
@@ -1365,56 +848,14 @@ common_handle_option (size_t scode, const char *arg,
       return 0;
 #endif
 
-    case OPT_fsched2_use_superblocks:
-      flag_sched2_use_superblocks = value;
-      break;
-
-    case OPT_fsched2_use_traces:
-      flag_sched2_use_traces = value;
-      break;
-
-    case OPT_fschedule_insns:
-      flag_schedule_insns = value;
-      break;
-
-    case OPT_fschedule_insns2:
-      flag_schedule_insns_after_reload = value;
-      break;
-
-    case OPT_fsched_stalled_insns:
-      flag_sched_stalled_insns = value;
-      break;
-
     case OPT_fsched_stalled_insns_:
       flag_sched_stalled_insns = value;
       if (flag_sched_stalled_insns == 0)
 	flag_sched_stalled_insns = -1;
       break;
 
-    case OPT_fsched_stalled_insns_dep:
-      flag_sched_stalled_insns_dep = 1;
-      break;
-
     case OPT_fsched_stalled_insns_dep_:
       flag_sched_stalled_insns_dep = value;
-      break;
-    case OPT_fmodulo_sched:
-      flag_modulo_sched = 1;
-      break;
-    case OPT_fshared_data:
-      flag_shared_data = value;
-      break;
-
-    case OPT_fsignaling_nans:
-      flag_signaling_nans = value;
-      break;
-
-    case OPT_fsingle_precision_constant:
-      flag_single_precision_constant = value;
-      break;
-
-    case OPT_fstack_check:
-      flag_stack_check = value;
       break;
 
     case OPT_fstack_limit:
@@ -1438,30 +879,6 @@ common_handle_option (size_t scode, const char *arg,
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (arg));
       break;
 
-    case OPT_fstrength_reduce:
-      flag_strength_reduce = value;
-      break;
-
-    case OPT_fstrict_aliasing:
-      flag_strict_aliasing = value;
-      break;
-
-    case OPT_fsyntax_only:
-      flag_syntax_only = value;
-      break;
-
-    case OPT_ftest_coverage:
-      flag_test_coverage = value;
-      break;
-
-    case OPT_fthread_jumps:
-      flag_thread_jumps = value;
-      break;
-
-    case OPT_ftime_report:
-      time_report = value;
-      break;
-
     case OPT_ftls_model_:
       if (!strcmp (arg, "global-dynamic"))
 	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
@@ -1477,59 +894,6 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_ftracer:
       flag_tracer_set = true;
-      flag_tracer = value;
-      break;
-
-    case OPT_ftrapping_math:
-      flag_trapping_math = value;
-      break;
-
-    case OPT_ftrapv:
-      flag_trapv = value;
-      break;
-
-    case OPT_ftree_based_profiling:
-      flag_tree_based_profiling = value;
-      break;
-
-    case OPT_ftree_ccp:
-      flag_tree_ccp = value;
-      break;
-
-    case OPT_ftree_dce:
-      flag_tree_dce = value;
-      break;
-
-    case OPT_ftree_combine_temps:
-      flag_tree_combine_temps = value;
-      break;
-
-    case OPT_ftree_ter:
-      flag_tree_ter = value;
-      break;
-
-    case OPT_ftree_lrs:
-      flag_tree_live_range_split = value;
-      break;
-
-    case OPT_ftree_dominator_opts:
-      flag_tree_dom = value;
-      break;
-
-    case OPT_ftree_copyrename:
-      flag_tree_copyrename = value;
-      break;
-
-    case OPT_ftree_ch:
-      flag_tree_ch = value;
-      break;
-
-    case OPT_ftree_dse:
-      flag_tree_dse = value;
-      break;
-
-    case OPT_ftree_sra:
-      flag_tree_sra = value;
       break;
 
     case OPT_ftree_points_to_:
@@ -1548,53 +912,8 @@ common_handle_option (size_t scode, const char *arg,
 	}
       break;
 
-    case OPT_ftree_pre:
-      flag_tree_pre = value;
-      break;
-
-    case OPT_funit_at_a_time:
-      flag_unit_at_a_time = value;
-      break;
-
-    case OPT_funroll_all_loops:
-      flag_unroll_all_loops = value;
-      break;
-
     case OPT_funroll_loops:
       flag_unroll_loops_set = true;
-      flag_unroll_loops = value;
-      break;
-
-    case OPT_funsafe_math_optimizations:
-      flag_unsafe_math_optimizations = value;
-      break;
-
-    case OPT_funswitch_loops:
-      flag_unswitch_loops = value;
-      break;
-
-    case OPT_funwind_tables:
-      flag_unwind_tables = value;
-      break;
-
-    case OPT_fvar_tracking:
-      flag_var_tracking = value;
-      break;
-
-    case OPT_fverbose_asm:
-      flag_verbose_asm = value;
-      break;
-
-    case OPT_fweb:
-      flag_web = value;
-      break;
-      
-    case OPT_fwrapv:
-      flag_wrapv = value;
-      break;
-
-    case OPT_fzero_initialized_in_bss:
-      flag_zero_initialized_in_bss = value;
       break;
 
     case OPT_g:
@@ -1635,29 +954,17 @@ common_handle_option (size_t scode, const char *arg,
       asm_file_name = arg;
       break;
 
-    case OPT_p:
-      profile_flag = 1;
-      break;
-
-    case OPT_pedantic:
-      pedantic = 1;
-      break;
-
     case OPT_pedantic_errors:
       flag_pedantic_errors = pedantic = 1;
       break;
 
-    case OPT_quiet:
-      quiet_flag = 1;
-      break;
+    default:
+      /* If the flag was handled in a standard way, assume the lack of
+	 processing here is intentional.  */
+      if (cl_options[scode].flag_var)
+	break;
 
-    case OPT_version:
-      version_flag = 1;
-      break;
-
-    case OPT_w:
-      inhibit_warnings = true;
-      break;      
+      abort ();
     }
 
   return 1;

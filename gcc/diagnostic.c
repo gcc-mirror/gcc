@@ -68,7 +68,6 @@ diagnostic_context *global_dc = &global_diagnostic_context;
 with preprocessed source if appropriate.\n\
 See %s for instructions.\n"
 
-int flag_fatal_errors = 0;
 
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */

@@ -226,82 +226,10 @@ tree current_function_func_begin_label;
 
 tree current_file_decl;
 
-/* Nonzero if doing dwarf2 duplicate elimination.  */
-
-int flag_eliminate_dwarf2_dups = 0;
-
-/* Nonzero if doing unused type elimination.  */
-
-int flag_eliminate_unused_debug_types = 1;
-
-/* Nonzero means emit debugging information only for symbols which are used.  */
-int flag_debug_only_used_symbols = 0;
-
-/* Nonzero if generating code to do profiling.  */
-
-int profile_flag = 0;
-
-/* Nonzero if generating code to profile program flow graph arcs.  */
-
-int profile_arc_flag = 0;
-
-/* Nonzero if value histograms should be measured.  */
-
-int flag_profile_values = 0;
-
-/* Nonzero if value histograms should be used to optimize code.  */
-int flag_value_profile_transformations = 0;
-
-/* Nonzero if generating info for gcov to calculate line test coverage.  */
-
-int flag_test_coverage = 0;
-
-/* Nonzero indicates that branch taken probabilities should be calculated.  */
-
-int flag_branch_probabilities = 0;
-
-/* Nonzero if basic blocks should be reordered.  */
-
-int flag_reorder_blocks = 0;
-
-/* Nonzero if blocks should be partitioned into hot and cold sections in
-   addition to being reordered.  */
-
-int flag_reorder_blocks_and_partition = 0;
-
-/* Nonzero if functions should be reordered.  */
-
-int flag_reorder_functions = 0;
-
-/* Nonzero if registers should be renamed.  When
-   flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING it will be set
-   according to optimize and default_debug_hooks in process_options (),
-   but we do not do this yet because it triggers aborts in flow.c.  */
-int flag_rename_registers = 0;
-int flag_cprop_registers = 0;
-
-/* Nonzero for -pedantic switch: warn about anything
-   that standard spec forbids.  */
-
-int pedantic = 0;
-
 /* Temporarily suppress certain warnings.
    This is set while reading code from a system header file.  */
 
 int in_system_header = 0;
-
-/* Don't print functions as they are compiled.  -quiet.  */
-
-int quiet_flag = 0;
-
-/* Print times taken by the various passes.  -ftime-report.  */
-
-int time_report = 0;
-
-/* Print memory still in use at end of compilation (which may have little
-   to do with peak memory consumption).  -fmem-report.  */
-
-int mem_report = 0;
 
 /* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
@@ -326,12 +254,6 @@ int flag_signed_char;
 
 int flag_short_enums;
 
-/* Nonzero for -fcaller-saves: allocate values in regs that need to
-   be saved across function calls, if that produces overall better code.
-   Optional now, so people can test it.  */
-
-int flag_caller_saves = 0;
-
 /* Nonzero if structures and unions should be returned in memory.
 
    This should only be defined if compatibility with another compiler or
@@ -345,163 +267,11 @@ int flag_caller_saves = 0;
 
 int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
-/* Nonzero for -fforce-mem: load memory value into a register
-   before arithmetic on it.  This makes better cse but slower compilation.  */
-
-int flag_force_mem = 0;
-
-/* Nonzero for -fforce-addr: load memory address into a register before
-   reference to memory.  This makes better cse but slower compilation.  */
-
-int flag_force_addr = 0;
-
-/* Nonzero for -fdefer-pop: don't pop args after each function call;
-   instead save them up to pop many calls' args with one insns.  */
-
-int flag_defer_pop = 0;
-
-/* Nonzero for -ffloat-store: don't allocate floats and doubles
-   in extended-precision registers.  */
-
-int flag_float_store = 0;
-
-/* Nonzero for -fcse-follow-jumps:
-   have cse follow jumps to do a more extensive job.  */
-
-int flag_cse_follow_jumps;
-
-/* Nonzero for -fcse-skip-blocks:
-   have cse follow a branch around a block.  */
-int flag_cse_skip_blocks;
-
-/* Nonzero for -fexpensive-optimizations:
-   perform miscellaneous relatively-expensive optimizations.  */
-int flag_expensive_optimizations;
-
-/* Nonzero for -fthread-jumps:
-   have jump optimize output of loop.  */
-
-int flag_thread_jumps;
-
-/* Nonzero enables strength-reduction in loop.c.  */
-
-int flag_strength_reduce = 0;
-
-/* Nonzero enables loop unrolling in unroll.c.  Only loops for which the
-   number of iterations can be calculated at compile-time (UNROLL_COMPLETELY,
-   UNROLL_MODULO) or at run-time (preconditioned to be UNROLL_MODULO) are
-   unrolled.  */
-
-int flag_old_unroll_loops;
-
-/* Nonzero enables loop unrolling in unroll.c.  All loops are unrolled.
-   This is generally not a win.  */
-
-int flag_old_unroll_all_loops;
-
-/* Enables unrolling of simple loops in loop-unroll.c.  */
-int flag_unroll_loops;
-
-/* Enables unrolling of all loops in loop-unroll.c.  */
-int flag_unroll_all_loops;
-
-/* Nonzero enables loop peeling.  */
-int flag_peel_loops;
-
-/* Nonzero enables loop unswitching.  */
-int flag_unswitch_loops;
-
-/* Nonzero enables prefetch optimizations for arrays in loops.  */
-
-int flag_prefetch_loop_arrays;
-
-/* Nonzero forces all invariant computations in loops to be moved
-   outside the loop.  */
-
-int flag_move_all_movables = 0;
-
-/* Nonzero forces all general induction variables in loops to be
-   strength reduced.  */
-
-int flag_reduce_all_givs = 0;
-
-/* Nonzero to perform full register move optimization passes.  This is the
-   default for -O2.  */
-
-int flag_regmove = 0;
-
-/* Nonzero means don't put addresses of constant functions in registers.
-   Used for compiling the Unix kernel, where strange substitutions are
-   done on the assembly output.  */
-
-int flag_no_function_cse = 0;
-
-/* Nonzero for -fomit-frame-pointer:
-   don't make a frame pointer in simple functions that don't require one.  */
-
-int flag_omit_frame_pointer = 0;
-
-/* Nonzero means place each function into its own section on those platforms
-   which support arbitrary section names and unlimited numbers of sections.  */
-
-int flag_function_sections = 0;
-
-/* ... and similar for data.  */
-
-int flag_data_sections = 0;
-
-/* Nonzero to inhibit use of define_optimization peephole opts.  */
-
-int flag_no_peephole = 0;
-
-/* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
-
-int flag_optimize_sibling_calls = 0;
-
-/* Nonzero means the front end generally wants `errno' maintained by math
-   operations, like built-in SQRT.  */
-
-int flag_errno_math = 1;
-
-/* Nonzero means that unsafe floating-point math optimizations are allowed
-   for the sake of speed.  IEEE compliance is not guaranteed, and operations
-   are allowed to assume that their arguments and results are "normal"
-   (e.g., nonnegative for SQRT).  */
-
-int flag_unsafe_math_optimizations = 0;
-
-/* Nonzero means that no NaNs or +-Infs are expected.  */
-
-int flag_finite_math_only = 0;
-
-/* Zero means that floating-point math operations cannot generate a
-   (user-visible) trap.  This is the case, for example, in nonstop
-   IEEE 754 arithmetic.  Trapping conditions include division by zero,
-   overflow, underflow, invalid and inexact, but does not include
-   operations on signaling NaNs (see below).  */
-
-int flag_trapping_math = 1;
-
-/* Nonzero means disable transformations that assume default floating
-   point rounding behavior.  */
-
-int flag_rounding_math = 0;
-
-/* Nonzero means disable transformations observable by signaling NaNs.
-   This option implies that any operation on an IEEE signaling NaN can
-   generate a (user-visible) trap.  */
-
-int flag_signaling_nans = 0;
-
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
    2 means C99-like requirements for complex divide (not yet implemented).  */
 
 int flag_complex_divide_method = 0;
-
-/* Nonzero means just do syntax checking; don't output anything.  */
-
-int flag_syntax_only = 0;
 
 /* Nonzero means performs web construction pass.  When flag_web ==
    AUTODETECT_FLAG_VAR_TRACKING it will be set according to optimize
@@ -509,99 +279,10 @@ int flag_syntax_only = 0;
 
 int flag_web = AUTODETECT_FLAG_VAR_TRACKING;
 
-/* Nonzero means perform loop optimizer.  */
-
-int flag_loop_optimize;
-
-/* Nonzero means perform crossjumping.  */
-
-int flag_crossjumping;
-
-/* Nonzero means perform if conversion.  */
-
-int flag_if_conversion;
-
-/* Nonzero means perform if conversion after reload.  */
-
-int flag_if_conversion2;
-
-/* Nonzero means to use global dataflow analysis to eliminate
-   useless null pointer tests.  */
-
-int flag_delete_null_pointer_checks;
-
-/* Nonzero means perform global CSE.  */
-
-int flag_gcse = 0;
-
-/* Nonzero means to do the enhanced load motion during gcse, which trys
-   to hoist loads by not killing them when a store to the same location
-   is seen.  */
-
-int flag_gcse_lm = 1;
-
-/* Nonzero means to perform store motion after gcse, which will try to
-   move stores closer to the exit block.  Its not very effective without
-   flag_gcse_lm.  */
-
-int flag_gcse_sm = 1;
-
-/* Nonzero if we want to perform redundant load after store elimination
-   in gcse.  */
-
-int flag_gcse_las = 1;
-
-/* Nonzero means perform global cse after register allocation.  */
-int flag_gcse_after_reload = 0;
-
-/* Perform target register optimization before prologue / epilogue
-   threading.  */
-
-int flag_branch_target_load_optimize = 0;
-
-/* Perform target register optimization after prologue / epilogue
-   threading and jump2.  */
-
-int flag_branch_target_load_optimize2 = 0;
-
-/* For the bt-load pass, nonzero means don't re-use branch target registers
-   in any basic block.  */
-
-int flag_btr_bb_exclusive;
-
-/* Nonzero means to rerun cse after loop optimization.  This increases
-   compilation time about 20% and picks up a few more common expressions.  */
-
-int flag_rerun_cse_after_loop;
-
-/* Nonzero means to run loop optimizations twice.  */
-
-int flag_rerun_loop_opt;
-
-/* Nonzero for -finline-functions: ok to inline functions that look like
-   good inline candidates.  */
-
-int flag_inline_functions;
-
-/* Nonzero for -fkeep-inline-functions: even if we make a function
-   go inline everywhere, keep its definition around for debugging
-   purposes.  */
-
-int flag_keep_inline_functions;
-
-/* Nonzero means that functions will not be inlined.  */
-
-int flag_no_inline = 2;
-
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */
 
 int flag_really_no_inline = 2;
-
-/* Nonzero means that we should emit static const variables
-   regardless of whether or not optimization is turned on.  */
-
-int flag_keep_static_consts = 1;
 
 /* Nonzero means we should be saving declaration info into a .X file.  */
 
@@ -610,26 +291,6 @@ int flag_gen_aux_info = 0;
 /* Specified name of aux-info file.  */
 
 const char *aux_info_file_name;
-
-/* Nonzero means make the text shared if supported.  */
-
-int flag_shared_data;
-
-/* Nonzero means schedule into delayed branch slots if supported.  */
-
-int flag_delayed_branch;
-
-/* Nonzero if we are compiling pure (sharable) code.
-   Value is 1 if we are doing "small" pic; value is 2 if we're doing
-   "large" pic.  */
-
-int flag_pic;
-
-/* Nonzero if we are compiling position independent code for executable.
-   The value is 1 if we are doing "small" pic; value is 2 if we're doing
-   "large" pic.  */
-
-int flag_pie;
 
 /* Nonzero if we are compiling code for a shared library, zero for
    executable.  */
@@ -640,97 +301,10 @@ int flag_shlib;
 
 enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
 
-/* Nonzero means generate extra code for exception handling and enable
-   exception handling.  */
-
-int flag_exceptions;
-
-/* Nonzero means generate frame unwind info table when supported.  */
-
-int flag_unwind_tables = 0;
-
-/* Nonzero means generate frame unwind info table exact at each insn
-   boundary.  */
-
-int flag_asynchronous_unwind_tables = 0;
-
-/* Nonzero means don't place uninitialized global data in common storage
-   by default.  */
-
-int flag_no_common;
-
 /* Nonzero means change certain warnings into errors.
    Usually these are warnings about failure to conform to some standard.  */
 
 int flag_pedantic_errors = 0;
-
-/* flag_schedule_insns means schedule insns within basic blocks (before
-   local_alloc).
-   flag_schedule_insns_after_reload means schedule insns after
-   global_alloc.  */
-
-int flag_schedule_insns = 0;
-int flag_schedule_insns_after_reload = 0;
-
-/* When flag_schedule_insns_after_reload is set, use EBB scheduler.  */
-int flag_sched2_use_superblocks = 0;
-
-/* When flag_schedule_insns_after_reload is set, construct traces and EBB
-   scheduler.  */
-int flag_sched2_use_traces = 0;
-
-/* The following flags have effect only for scheduling before register
-   allocation:
-
-   flag_schedule_interblock means schedule insns across basic blocks.
-   flag_schedule_speculative means allow speculative motion of non-load insns.
-   flag_schedule_speculative_load means allow speculative motion of some
-   load insns.
-   flag_schedule_speculative_load_dangerous allows speculative motion of more
-   load insns.  */
-
-int flag_schedule_interblock = 1;
-int flag_schedule_speculative = 1;
-int flag_schedule_speculative_load = 0;
-int flag_schedule_speculative_load_dangerous = 0;
-
-/* The following flags have an effect during scheduling after register
-   allocation:
-
-   flag_sched_stalled_insns means that insns can be moved prematurely from the queue
-   of stalled insns into the ready list.
-
-   flag_sched_stalled_insns_dep controls how many insn groups will be examined
-   for a dependency on a stalled insn that is candidate for premature removal
-   from the queue of stalled insns into the ready list (has an effect only if
-   the flag 'sched_stalled_insns' is set).  */
-
-int flag_sched_stalled_insns = 0;
-int flag_sched_stalled_insns_dep = 1;
-
-/* The following flag controls the module scheduling activation.  */
-int flag_modulo_sched = 0;
-
-int flag_single_precision_constant;
-
-/* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
-   by a cheaper branch on a count register.  */
-int flag_branch_on_count_reg = 1;
-
-/* -finhibit-size-directive inhibits output of .size for ELF.
-   This is used only for compiling crtstuff.c,
-   and it may be extended to other effects
-   needed for crtstuff.c on other systems.  */
-int flag_inhibit_size_directive = 0;
-
-/* -fverbose-asm causes extra commentary information to be produced in
-   the generated assembly code (to make it more readable).  This option
-   is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).
-   -fno-verbose-asm, the default, causes the extra information
-   to be omitted and is useful when comparing two assembler files.  */
-
-int flag_verbose_asm = 0;
 
 /* -dA causes debug commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
@@ -745,16 +319,6 @@ int flag_debug_asm = 0;
 
 int flag_dump_rtl_in_asm = 0;
 
-/* Nonzero means put zero initialized data in the bss section.  */
-int flag_zero_initialized_in_bss = 1;
-
-/* Tag all structures with __attribute__(packed).  */
-int flag_pack_struct = 0;
-
-/* Emit code to check for stack overflow; also may cause large objects
-   to be allocated dynamically.  */
-int flag_stack_check;
-
 /* When non-NULL, indicates that whenever space is allocated on the
    stack, the resulting stack pointer must not pass this
    address---that is, for stacks that grow downward, the stack pointer
@@ -764,107 +328,13 @@ int flag_stack_check;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-/* 0 if pointer arguments may alias each other.  True in C.
-   1 if pointer arguments may not alias each other but may alias
-   global variables.
-   2 if pointer arguments may not alias each other and may not
-   alias global variables.  True in Fortran.
-   This defaults to 0 for C.  */
-int flag_argument_noalias = 0;
-
-/* Nonzero if we should do (language-dependent) alias analysis.
-   Typically, this analysis will assume that expressions of certain
-   types do not alias expressions of certain other types.  Only used
-   if alias analysis (in general) is enabled.  */
-int flag_strict_aliasing = 0;
-
-/* Instrument functions with calls at entry and exit, for profiling.  */
-int flag_instrument_function_entry_exit = 0;
-
-/* Nonzero means ignore `#ident' directives.  0 means handle them.
-   On SVR4 targets, it also controls whether or not to emit a
-   string identifying the compiler.  */
-
-int flag_no_ident = 0;
-
-/* This will perform a peephole pass before sched2.  */
-int flag_peephole2 = 0;
-
-/* This will try to guess branch probabilities.  */
-int flag_guess_branch_prob = 0;
-
-/* -fcheck-bounds causes gcc to generate array bounds checks.
-   For C, C++, ObjC: defaults to off.
-   For Java: defaults to on.
-   For Fortran: defaults to off.  */
-int flag_bounds_check = 0;
-
-/* Mudflap bounds-checking transform.  */
-int flag_mudflap = 0;
-int flag_mudflap_threads = 0;
-int flag_mudflap_ignore_reads = 0;
-
-/* This will attempt to merge constant section constants, if 1 only
-   string constants and constants from constant pool, if 2 also constant
-   variables.  */
-int flag_merge_constants = 1;
-
 /* If one, renumber instruction UIDs to reduce the number of
    unused UIDs if there are a lot of instructions.  If greater than
    one, unconditionally renumber instruction UIDs.  */
 int flag_renumber_insns = 1;
 
-/* If nonzero, use the graph coloring register allocator.  */
-int flag_new_regalloc = 0;
-
-/* If nonzero, use tree-based instead of rtl-based profiling.  */
-int flag_tree_based_profiling = 0;
-
-/* Enable SSA-GVN on trees.  */
-int flag_tree_gvn = 0;
-
-/* Enable the SSA-PRE tree optimization.  */
-int flag_tree_pre = 0;
-
 /* Enable points-to analysis on trees.  */
 enum pta_type flag_tree_points_to = PTA_NONE;
-
-/* Enable SSA-CCP on trees.  */
-int flag_tree_ccp = 0;
-
-/* Enable SSA-DCE on trees.  */
-int flag_tree_dce = 0;
-
-/* Enable loop header copying on tree-ssa.  */
-int flag_tree_ch = 0;
-
-/* Enable scalar replacement of aggregates.  */
-int flag_tree_sra = 0;
-
-/* Enable SSA->normal pass memory location coalescing.  */
-int flag_tree_combine_temps = 0;
-
-/* Enable SSA->normal pass expression replacement.  */
-int flag_tree_ter = 0;
-
-/* Enable SSA->normal live range splitting.  */
-int flag_tree_live_range_split = 0;
-
-/* Enable dominator optimizations.  */
-int flag_tree_dom = 0;
-
-/* Enable copy rename optimization.  */
-int flag_tree_copyrename = 0;
-
-/* Enable dead store elimination.  */
-int flag_tree_dse = 0;
-
-/* Nonzero if we perform superblock formation.  */
-int flag_tracer = 0;
-
-/* Nonzero if we perform whole unit at a time compilation.  */
-
-int flag_unit_at_a_time = 0;
 
 /* Nonzero if we should track variables.  When
    flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING it will be set according
@@ -876,16 +346,12 @@ int flag_var_tracking = AUTODETECT_FLAG_VAR_TRACKING;
    For each variable, there is an _log variant which is the power
    of two not less than the variable, for .align output.  */
 
-int align_loops;
 int align_loops_log;
 int align_loops_max_skip;
-int align_jumps;
 int align_jumps_log;
 int align_jumps_max_skip;
-int align_labels;
 int align_labels_log;
 int align_labels_max_skip;
-int align_functions;
 int align_functions_log;
 
 /* Like align_functions_log above, but used by front-ends to force the
@@ -900,34 +366,8 @@ typedef struct
 }
 lang_independent_options;
 
-/* Nonzero if signed arithmetic overflow should trap.  */
-int flag_trapv = 0;
-
-/* Nonzero if signed arithmetic overflow should wrap around.  */
-int flag_wrapv = 0;
-
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 int flag_evaluation_order = 0;
-
-/* Add or remove a leading underscore from user symbols.  */
-int flag_leading_underscore = -1;
-
-/*  The version of the C++ ABI in use.  The following values are
-    allowed:
-
-    0: The version of the ABI believed most conformant with the
-       C++ ABI specification.  This ABI may change as bugs are
-       discovered and fixed.  Therefore, 0 will not necessarily
-       indicate the same ABI in different versions of G++.
-
-    1: The version of the ABI first used in G++ 3.2.
-
-    2: The version of the ABI first used in G++ 3.4.
-
-    Additional positive integers will be assigned as new versions of
-    the ABI become the default version of the ABI.  */
-
-int flag_abi_version = 2;
 
 /* The user symbol prefix after having resolved same.  */
 const char *user_label_prefix;
@@ -938,152 +378,6 @@ static const param_info lang_independent_params[] = {
 #include "params.def"
 #undef DEFPARAM
   { NULL, 0, NULL }
-};
-
-/* Table of language-independent -f options.
-   STRING is the option name.  VARIABLE is the address of the variable.
-   ON_VALUE is the value to store in VARIABLE
-    if `-fSTRING' is seen as an option.
-   (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
-
-static const lang_independent_options f_options[] =
-{
-  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1 },
-  {"eliminate-unused-debug-symbols", &flag_debug_only_used_symbols, 1 },
-  {"eliminate-unused-debug-types", &flag_eliminate_unused_debug_types, 1 },
-  {"float-store", &flag_float_store, 1 },
-  {"defer-pop", &flag_defer_pop, 1 },
-  {"omit-frame-pointer", &flag_omit_frame_pointer, 1 },
-  {"optimize-sibling-calls", &flag_optimize_sibling_calls, 1 },
-  {"tracer", &flag_tracer, 1 },
-  {"unit-at-a-time", &flag_unit_at_a_time, 1 },
-  {"cse-follow-jumps", &flag_cse_follow_jumps, 1 },
-  {"cse-skip-blocks", &flag_cse_skip_blocks, 1 },
-  {"expensive-optimizations", &flag_expensive_optimizations, 1 },
-  {"thread-jumps", &flag_thread_jumps, 1 },
-  {"strength-reduce", &flag_strength_reduce, 1 },
-  {"unroll-loops", &flag_unroll_loops, 1 },
-  {"unroll-all-loops", &flag_unroll_all_loops, 1 },
-  {"old-unroll-loops", &flag_old_unroll_loops, 1 },
-  {"old-unroll-all-loops", &flag_old_unroll_all_loops, 1 },
-  {"peel-loops", &flag_peel_loops, 1 },
-  {"unswitch-loops", &flag_unswitch_loops, 1 },
-  {"prefetch-loop-arrays", &flag_prefetch_loop_arrays, 1 },
-  {"move-all-movables", &flag_move_all_movables, 1 },
-  {"reduce-all-givs", &flag_reduce_all_givs, 1 },
-  {"peephole", &flag_no_peephole, 0 },
-  {"force-mem", &flag_force_mem, 1 },
-  {"force-addr", &flag_force_addr, 1 },
-  {"function-cse", &flag_no_function_cse, 0 },
-  {"inline-functions", &flag_inline_functions, 1 },
-  {"keep-inline-functions", &flag_keep_inline_functions, 1 },
-  {"inline", &flag_no_inline, 0 },
-  {"keep-static-consts", &flag_keep_static_consts, 1 },
-  {"syntax-only", &flag_syntax_only, 1 },
-  {"shared-data", &flag_shared_data, 1 },
-  {"caller-saves", &flag_caller_saves, 1 },
-  {"pcc-struct-return", &flag_pcc_struct_return, 1 },
-  {"reg-struct-return", &flag_pcc_struct_return, 0 },
-  {"delayed-branch", &flag_delayed_branch, 1 },
-  {"web", &flag_web, 1},
-  {"gcse", &flag_gcse, 1 },
-  {"gcse-lm", &flag_gcse_lm, 1 },
-  {"gcse-sm", &flag_gcse_sm, 1 },
-  {"gcse-las", &flag_gcse_las, 1 },
-  {"gcse-after-reload", &flag_gcse_after_reload, 1},
-  {"branch-target-load-optimize", &flag_branch_target_load_optimize, 1 },
-  {"branch-target-load-optimize2", &flag_branch_target_load_optimize2, 1 },
-  {"btr-bb-exclusive", &flag_btr_bb_exclusive, 1 },
-  {"loop-optimize", &flag_loop_optimize, 1 },
-  {"crossjumping", &flag_crossjumping, 1 },
-  {"if-conversion", &flag_if_conversion, 1 },
-  {"if-conversion2", &flag_if_conversion2, 1 },
-  {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1 },
-  {"rerun-loop-opt", &flag_rerun_loop_opt, 1 },
-  {"delete-null-pointer-checks", &flag_delete_null_pointer_checks, 1 },
-  {"schedule-insns", &flag_schedule_insns, 1 },
-  {"schedule-insns2", &flag_schedule_insns_after_reload, 1 },
-  {"sched-interblock",&flag_schedule_interblock, 1 },
-  {"sched-spec",&flag_schedule_speculative, 1 },
-  {"sched-spec-load",&flag_schedule_speculative_load, 1 },
-  {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1 },
-  {"sched-stalled-insns", &flag_sched_stalled_insns, 0 },
-  {"sched-stalled-insns-dep", &flag_sched_stalled_insns_dep, 1 },
-  {"sched2-use-superblocks", &flag_sched2_use_superblocks, 1 },
-  {"sched2-use-traces", &flag_sched2_use_traces, 1 },
-  {"modulo-sched", &flag_modulo_sched, 1 },
-  {"branch-count-reg",&flag_branch_on_count_reg, 1 },
-  {"pic", &flag_pic, 1 },
-  {"PIC", &flag_pic, 2 },
-  {"pie", &flag_pie, 1 },
-  {"PIE", &flag_pie, 2 },
-  {"exceptions", &flag_exceptions, 1 },
-  {"unwind-tables", &flag_unwind_tables, 1 },
-  {"asynchronous-unwind-tables", &flag_asynchronous_unwind_tables, 1 },
-  {"non-call-exceptions", &flag_non_call_exceptions, 1 },
-  {"profile-arcs", &profile_arc_flag, 1 },
-  {"profile-values", &flag_profile_values, 1 },
-  {"vpt", &flag_value_profile_transformations, 1 },
-  {"test-coverage", &flag_test_coverage, 1 },
-  {"branch-probabilities", &flag_branch_probabilities, 1 },
-  {"profile", &profile_flag, 1 },
-  {"tree-based-profiling", &flag_tree_based_profiling, 1 },
-  {"reorder-blocks", &flag_reorder_blocks, 1 },
-  {"reorder-blocks-and-partition", &flag_reorder_blocks_and_partition, 1},
-  {"reorder-functions", &flag_reorder_functions, 1 },
-  {"rename-registers", &flag_rename_registers, 1 },
-  {"cprop-registers", &flag_cprop_registers, 1 },
-  {"common", &flag_no_common, 0 },
-  {"inhibit-size-directive", &flag_inhibit_size_directive, 1 },
-  {"function-sections", &flag_function_sections, 1 },
-  {"data-sections", &flag_data_sections, 1 },
-  {"verbose-asm", &flag_verbose_asm, 1 },
-  {"regmove", &flag_regmove, 1 },
-  {"optimize-register-move", &flag_regmove, 1 },
-  {"pack-struct", &flag_pack_struct, 1 },
-  {"stack-check", &flag_stack_check, 1 },
-  {"argument-alias", &flag_argument_noalias, 0 },
-  {"argument-noalias", &flag_argument_noalias, 1 },
-  {"argument-noalias-global", &flag_argument_noalias, 2 },
-  {"strict-aliasing", &flag_strict_aliasing, 1 },
-  {"align-loops", &align_loops, 0 },
-  {"align-jumps", &align_jumps, 0 },
-  {"align-labels", &align_labels, 0 },
-  {"align-functions", &align_functions, 0 },
-  {"merge-constants", &flag_merge_constants, 1 },
-  {"merge-all-constants", &flag_merge_constants, 2 },
-  {"dump-unnumbered", &flag_dump_unnumbered, 1 },
-  {"instrument-functions", &flag_instrument_function_entry_exit, 1 },
-  {"zero-initialized-in-bss", &flag_zero_initialized_in_bss, 1 },
-  {"leading-underscore", &flag_leading_underscore, 1 },
-  {"ident", &flag_no_ident, 0 },
-  { "peephole2", &flag_peephole2, 1 },
-  {"finite-math-only", &flag_finite_math_only, 1 },
-  { "guess-branch-probability", &flag_guess_branch_prob, 1 },
-  {"math-errno", &flag_errno_math, 1 },
-  {"trapping-math", &flag_trapping_math, 1 },
-  {"rounding-math", &flag_rounding_math, 1 },
-  {"unsafe-math-optimizations", &flag_unsafe_math_optimizations, 1 },
-  {"signaling-nans", &flag_signaling_nans, 1 },
-  {"bounds-check", &flag_bounds_check, 1 },
-  {"single-precision-constant", &flag_single_precision_constant, 1 },
-  {"time-report", &time_report, 1 },
-  {"mem-report", &mem_report, 1 },
-  { "trapv", &flag_trapv, 1 },
-  { "wrapv", &flag_wrapv, 1 },
-  { "new-ra", &flag_new_regalloc, 1 },
-  { "var-tracking", &flag_var_tracking, 1},
-  { "tree-gvn", &flag_tree_gvn, 1 },
-  { "tree-pre", &flag_tree_pre, 1 },
-  { "tree-ccp", &flag_tree_ccp, 1 },
-  { "tree-dce", &flag_tree_dce, 1 },
-  { "tree-dominator-opts", &flag_tree_dom, 1 },
-  { "tree-copyrename", &flag_tree_copyrename, 1 },
-  { "tree-dse", &flag_tree_dse, 1 },
-  { "tree-combine-temps", &flag_tree_combine_temps, 1 },
-  { "tree-ter", &flag_tree_ter, 1 },
-  { "tree-lrs", &flag_tree_live_range_split, 1 },
-  { "tree-ch", &flag_tree_ch, 1 }
 };
 
 /* Here is a table, controlled by the tm.h file, listing each -m switch
@@ -1997,10 +1291,26 @@ print_switch_values (FILE *file, int pos, int max,
   pos = print_single_switch (file, 0, max, indent, *indent ? " " : "", term,
 			     _("options enabled: "), "");
 
-  for (j = 0; j < ARRAY_SIZE (f_options); j++)
-    if (*f_options[j].variable == f_options[j].on_value)
+  for (j = 0; j < cl_options_count; j++)
+    {
+      if (!cl_options[j].flag_var
+	  || !(cl_options[j].flags & CL_REPORT))
+	continue;
+
+      if (cl_options[j].has_set_value)
+	{
+	  if (*cl_options[j].flag_var != cl_options[j].set_value)
+	    continue;
+	}
+      else
+	{
+	  if (!*cl_options[j].flag_var)
+	    continue;
+	}
+      
       pos = print_single_switch (file, pos, max, indent, sep, term,
-				 "-f", f_options[j].string);
+				 "", cl_options[j].opt_text);
+    }
 
   /* Print target specific options.  */
 

@@ -104,7 +104,6 @@ extern const char *aux_base_name;
 extern const char *aux_info_file_name;
 extern const char *asm_file_name;
 extern bool exit_after_options;
-extern bool version_flag;
 
 extern int target_flags_explicit;
 

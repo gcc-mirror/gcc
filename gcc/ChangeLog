@@ -1,3 +1,26 @@
+2004-06-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (FLAGS_H): New.
+	(flags.h): Replace by FLAGS_H.
+	* c.opt: Document Var, VarExists, Init and Report attributes.
+	* common.opt: Fill the values of the attributes.
+	* diagnostic.c (flag_fatal_errors): Do not define.
+	* except.c (flag_non_call_exceptions): Do not define.
+	* flags.h: Include options.h.  Remove declarations conflicting with
+	the automatically defined ones.
+	* opts.c: Remove automatically defined variables.
+	(handle_option): Perform default initialization.
+	(common_handle_option): Do not handle options covered by the
+	default initialization.
+	* opts.h (struct cl_option): Add flag_var, has_set_value and set_value
+	fields.
+	(CL_REPORT): New.
+	* opts.sh: Generate variable declarations, handle CL_REPORT.
+	* toplev.c: Remove automatically defined variables.
+	(f_options): Removed.
+	(print_switch_values): Use cl_options instead of f_options.
+	* toplev.h (version_flag): Declaration removed.
+
 2004-06-14  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* config/sparc/sparc.h: Correct comment about availability of
