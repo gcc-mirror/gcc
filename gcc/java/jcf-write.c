@@ -2677,6 +2677,37 @@ perform_relocations (state)
 	  shrink += 3;
 	}
 
+      /* Optimize GOTO L; ... L: GOTO X by changing the first goto to
+	 jump directly to X.  We're careful here to avoid an infinite
+	 loop if the `goto's themselves form one.  We do this
+	 optimization because we can generate a goto-to-goto for some
+	 try/finally blocks.  */
+      while (reloc != NULL
+	     && reloc->kind == OPCODE_goto_w
+	     && reloc->label != block
+	     && reloc->label->v.chunk->data != NULL
+	     && reloc->label->v.chunk->data[0] == OPCODE_goto)
+	{
+	  /* Find the reloc for the first instruction of the
+	     destination block.  */
+	  struct jcf_relocation *first_reloc;
+	  for (first_reloc = reloc->label->u.relocations;
+	       first_reloc;
+	       first_reloc = first_reloc->next)
+	    {
+	      if (first_reloc->offset == 1
+		  && first_reloc->kind == OPCODE_goto_w)
+		{
+		  reloc->label = first_reloc->label;
+		  break;
+		}
+	    }
+
+	  /* If we didn't do anything, exit the loop.  */
+	  if (first_reloc == NULL)
+	    break;
+	}
+
       for (reloc = block->u.relocations;  reloc != NULL;  reloc = reloc->next)
 	{
 	  if (reloc->kind == SWITCH_ALIGN_RELOC)
