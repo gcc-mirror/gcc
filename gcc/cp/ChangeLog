@@ -1,3 +1,8 @@
+2003-09-18  Roger Sayle  <roger@eyesopen.com>
+
+	* lex.c (init_operators): Remove operator_name_info for FFS_EXPR.
+	* class.c (instantiate_type): Remove FFS_EXPR case.
+
 2003-09-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* ChangeLog: Fix recent commit.

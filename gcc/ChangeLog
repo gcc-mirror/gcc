@@ -1,3 +1,18 @@
+2003-09-18  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.def (FFS_EXPR, CLZ_EXPR, CTZ_EXPR, POPCOUNT_EXPR,
+	PARITY_EXPR): Delete unused tree codes.
+	* c-common.c (c_common_truthvalue_conversion): Delete references
+	to FFS_EXPR and POPCOUNT_EXPR.
+	* c-pretty-print.c (pp_c_postfix_expression): Remove FFS_EXPR.
+	(pp_c_expression): Likewise.
+	* expr.c (expand_expr): Delete RTL expansion of FFS_EXPR, CLZ_EXPR,
+	CTZ_EXPR, POPCOUNT_EXPR and PARITY_EXPR.
+	* fold-const.c (tree_expr_nonnegative_p): Remove FFS_EXPR, CLZ_EXPR,
+	CTZ_EXPR, POPCOUNT_EXPR and PARITY_EXPR.  Add support for calls to
+	BUILT_IN_FFS, BUILT_IN_PARITY and BUILT_IN_POPCOUNT and their long
+	and long long variants.
+
 2003-09-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (pp_type_specifier_seq): Fix thinko.

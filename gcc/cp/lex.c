@@ -205,7 +205,6 @@ init_operators (void)
   operator_name_info [(int) FLOOR_MOD_EXPR].name = "(floor %)";
   operator_name_info [(int) ROUND_MOD_EXPR].name = "(round %)";
   operator_name_info [(int) ABS_EXPR].name = "abs";
-  operator_name_info [(int) FFS_EXPR].name = "ffs";
   operator_name_info [(int) TRUTH_AND_EXPR].name = "strict &&";
   operator_name_info [(int) TRUTH_OR_EXPR].name = "strict ||";
   operator_name_info [(int) IN_EXPR].name = "in";

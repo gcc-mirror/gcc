@@ -1187,9 +1187,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       break;
 
     case ABS_EXPR:
-    case FFS_EXPR:
-      pp_c_identifier (pp,
-		       code == ABS_EXPR ? "__builtin_abs" : "__builtin_ffs");
+      pp_c_identifier (pp, "__builtin_abs");
       pp_c_left_paren (pp);
       pp_expression (pp, TREE_OPERAND (e, 0));
       pp_c_right_paren (pp);
@@ -1707,7 +1705,6 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case COMPLEX_EXPR:
     case VECTOR_CST:
     case ABS_EXPR:
-    case FFS_EXPR:
     case CONSTRUCTOR:
     case COMPOUND_LITERAL_EXPR:
     case VA_ARG_EXPR:

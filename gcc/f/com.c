@@ -1573,7 +1573,6 @@ ffecom_overlap_ (tree dest_decl, tree dest_offset, tree dest_size,
     case MIN_EXPR:
     case MAX_EXPR:
     case ABS_EXPR:
-    case FFS_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
@@ -8882,7 +8881,6 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset, tree *size, tree t)
     case MIN_EXPR:
     case MAX_EXPR:
     case ABS_EXPR:
-    case FFS_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
@@ -14801,7 +14799,6 @@ ffe_truthvalue_conversion (tree expr)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case FLOAT_EXPR:
-    case FFS_EXPR:
       /* These don't change whether an object is nonzero or zero.  */
       return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
