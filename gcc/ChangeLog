@@ -1,3 +1,8 @@
+2004-02-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* emit-rtl.c (mark_label_nuses): Check that a LABEL_REF refers to
+	a label before updating its usage count.
+
 2004-02-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c/14088
