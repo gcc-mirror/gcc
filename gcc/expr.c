@@ -8145,12 +8145,16 @@ do_tablejump (index, mode, range, table_label, default_label)
      GET_MODE_SIZE, because this indicates how large insns are.  The other
      uses should all be Pmode, because they are addresses.  This code
      could fail if addresses and insns are not the same size.  */
-  index = memory_address_noforce
-    (CASE_VECTOR_MODE,
-     gen_rtx (PLUS, Pmode,
-	      gen_rtx (MULT, Pmode, index,
-		       GEN_INT (GET_MODE_SIZE (CASE_VECTOR_MODE))),
-	      gen_rtx (LABEL_REF, Pmode, table_label)));
+  index = gen_rtx (PLUS, Pmode,
+		   gen_rtx (MULT, Pmode, index,
+			    GEN_INT (GET_MODE_SIZE (CASE_VECTOR_MODE))),
+		   gen_rtx (LABEL_REF, Pmode, table_label));
+#ifdef PIC_CASE_VECTOR_ADDRESS
+  if (flag_pic)
+    index = PIC_CASE_VECTOR_ADDRESS (index);
+  else
+#endif
+    index = memory_address_noforce (CASE_VECTOR_MODE, index);
   temp = gen_reg_rtx (CASE_VECTOR_MODE);
   vector = gen_rtx (MEM, CASE_VECTOR_MODE, index);
   RTX_UNCHANGING_P (vector) = 1;
