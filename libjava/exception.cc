@@ -20,8 +20,6 @@ details.  */
 
 #include "unwind.h"
 
-#include <gc.h>
-
 
 struct alignment_test_struct
 {
@@ -73,9 +71,8 @@ get_exception_header_from_ue (_Unwind_Exception *exc)
 extern "C" void
 _Jv_Throw (jthrowable value)
 {
-  /* FIXME: Use the proper API to the collector.  */
   java_exception_header *xh
-    = static_cast<java_exception_header *>(GC_malloc (sizeof (*xh)));
+    = static_cast<java_exception_header *>(_Jv_AllocRawObj (sizeof (*xh)));
 
   if (value == NULL)
     value = new java::lang::NullPointerException ();

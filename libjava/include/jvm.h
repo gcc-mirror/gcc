@@ -114,6 +114,9 @@ void *_Jv_AllocPtrFreeObj (jsize size, jclass cl) __attribute__((__malloc__));
 void *_Jv_AllocArray (jsize size, jclass cl) __attribute__((__malloc__));
 /* Allocate space that is known to be pointer-free.  */
 void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
+/* Allocate space for a new non-Java object, which does not have the usual 
+   Java object header but may contain pointers to other GC'ed objects.  */
+void *_Jv_AllocRawObj (jsize size) __attribute__((__malloc__));
 /* Explicitly throw an out-of-memory exception.	*/
 void _Jv_ThrowNoMemory() __attribute__((__noreturn__));
 /* Allocate an object with a single pointer.  The first word is reserved

@@ -66,6 +66,13 @@ _Jv_AllocBytes (jsize size)
   return obj;
 }
 
+void *
+_Jv_AllocRawObj (jsize size)
+{
+  total += size;
+  return calloc (size, 1);
+}
+
 void
 _Jv_RegisterFinalizer (void *, _Jv_FinalizerFunc *)
 {
