@@ -1,5 +1,10 @@
 2001-04-13  Phil Edwards  <pme@sources.redhat.com>
 
+	* include/bits/stl_algobase.h (equal):  Use EqualOpConcept instead
+	of EqualityComparableConcept.
+
+2001-04-13  Phil Edwards  <pme@sources.redhat.com>
+
 	* include/bits/boost_concept_check.h:  Uglify, fork from Boost.
 	* include/bits/concept_check.h:  Uglify.
 	* include/bits/stl_algo.h:  Likewise.
