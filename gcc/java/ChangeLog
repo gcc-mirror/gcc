@@ -1,3 +1,8 @@
+2001-10-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* parse.y (find_as_inner_class): Don't disregard the enclosing scope
+	when name qualifier matches a package name.
+
 2001-10-08  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/4489:
