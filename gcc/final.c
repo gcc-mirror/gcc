@@ -775,7 +775,7 @@ get_attr_length (insn)
 #endif
 
 #ifndef LABEL_ALIGN_MAX_SKIP
-#define LABEL_ALIGN_MAX_SKIP (align_labels-1)
+#define LABEL_ALIGN_MAX_SKIP align_labels_max_skip
 #endif
 
 #ifndef LOOP_ALIGN
@@ -783,7 +783,7 @@ get_attr_length (insn)
 #endif
 
 #ifndef LOOP_ALIGN_MAX_SKIP
-#define LOOP_ALIGN_MAX_SKIP (align_loops-1)
+#define LOOP_ALIGN_MAX_SKIP align_loops_max_skip
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
@@ -799,7 +799,7 @@ get_attr_length (insn)
 #endif
 
 #ifndef JUMP_ALIGN_MAX_SKIP
-#define JUMP_ALIGN_MAX_SKIP (align_jumps-1)
+#define JUMP_ALIGN_MAX_SKIP align_jumps_max_skip
 #endif
 
 #ifndef ADDR_VEC_ALIGN

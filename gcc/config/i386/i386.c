@@ -796,19 +796,21 @@ override_options ()
       const int target_enable;			/* Target flags to enable.  */
       const int target_disable;			/* Target flags to disable.  */
       const int align_loop;			/* Default alignments.  */
+      const int align_loop_max_skip;
       const int align_jump;
+      const int align_jump_max_skip;
       const int align_func;
       const int branch_cost;
     }
   const processor_target_table[PROCESSOR_max] =
     {
-      {&i386_cost, 0, 0, 2, 2, 2, 1},
-      {&i486_cost, 0, 0, 4, 4, 4, 1},
-      {&pentium_cost, 0, 0, -4, -4, -4, 1},
-      {&pentiumpro_cost, 0, 0, 4, -4, 4, 1},
-      {&k6_cost, 0, 0, -5, -5, 4, 1},
-      {&athlon_cost, 0, 0, 4, -4, 4, 1},
-      {&pentium4_cost, 0, 0, 2, 2, 2, 1}
+      {&i386_cost, 0, 0, 4, 3, 4, 3, 4, 1},
+      {&i486_cost, 0, 0, 16, 15, 16, 15, 16, 1},
+      {&pentium_cost, 0, 0, 16, 7, 16, 7, 16, 1},
+      {&pentiumpro_cost, 0, 0, 16, 15, 16, 7, 16, 1},
+      {&k6_cost, 0, 0, 32, 7, 32, 7, 32, 1},
+      {&athlon_cost, 0, 0, 16, 7, 64, 7, 16, 1},
+      {&pentium4_cost, 0, 0, 0, 0, 0, 0, 0, 1}
     };
 
   static struct pta
@@ -967,11 +969,19 @@ override_options ()
   /* Default align_* from the processor table.  */
 #define abs(n) (n < 0 ? -n : n)
   if (align_loops == 0)
-    align_loops = 1 << abs (processor_target_table[ix86_cpu].align_loop);
+    {
+      align_loops = processor_target_table[ix86_cpu].align_loop;
+      align_loops_max_skip = processor_target_table[ix86_cpu].align_loop_max_skip;
+    }
   if (align_jumps == 0)
-    align_jumps = 1 << abs (processor_target_table[ix86_cpu].align_jump);
+    {
+      align_jumps = processor_target_table[ix86_cpu].align_jump;
+      align_jumps_max_skip = processor_target_table[ix86_cpu].align_jump_max_skip;
+    }
   if (align_functions == 0)
-    align_functions = 1 << abs (processor_target_table[ix86_cpu].align_func);
+    {
+      align_functions = processor_target_table[ix86_cpu].align_func;
+    }
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
      The default of 128 bits is for Pentium III's SSE __m128, but we

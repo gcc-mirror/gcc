@@ -924,10 +924,13 @@ int flag_renumber_insns = 1;
 
 int align_loops;
 int align_loops_log;
+int align_loops_max_skip;
 int align_jumps;
 int align_jumps_log;
+int align_jumps_max_skip;
 int align_labels;
 int align_labels_log;
+int align_labels_max_skip;
 int align_functions;
 int align_functions_log;
 
@@ -4877,11 +4880,17 @@ toplev_main (argc, argv)
   /* Set up the align_*_log variables, defaulting them to 1 if they
      were still unset.  */
   if (align_loops <= 0) align_loops = 1;
+  if (align_loops_max_skip > align_loops || !align_loops)
+    align_loops_max_skip = align_loops - 1;
   align_loops_log = floor_log2 (align_loops * 2 - 1);
   if (align_jumps <= 0) align_jumps = 1;
+  if (align_jumps_max_skip > align_jumps || !align_jumps)
+    align_jumps_max_skip = align_jumps - 1;
   align_jumps_log = floor_log2 (align_jumps * 2 - 1);
   if (align_labels <= 0) align_labels = 1;
   align_labels_log = floor_log2 (align_labels * 2 - 1);
+  if (align_labels_max_skip > align_labels || !align_labels)
+    align_labels_max_skip = align_labels - 1;
   if (align_functions <= 0) align_functions = 1;
   align_functions_log = floor_log2 (align_functions * 2 - 1);
 
