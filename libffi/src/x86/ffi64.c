@@ -341,6 +341,8 @@ ffi_prep_args (stackLayout *stack, extended_cif *ecif)
 	{
 	  /* Pass this argument in memory.  */
 	  argp = (void *)ALIGN(argp, (*p_arg)->alignment);
+	  /* Stack arguments are *always* at least 8 byte aligned.  */
+	  argp = (void *)ALIGN(argp, 8);
 	  memcpy (argp, *p_argv, (*p_arg)->size);
 	  argp += (*p_arg)->size;
 	}

@@ -1,3 +1,7 @@
+2004-08-10  Andrew Haley  <aph@redhat.com>
+
+	* src/x86/ffi64.c (ffi_prep_args ): 8-align all stack arguments.
+
 2004-08-01  Robert Millan  <robertmh@gnu.org>
 
 	* configure.ac: Detect knetbsd-gnu and kfreebsd-gnu.
