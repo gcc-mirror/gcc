@@ -2288,6 +2288,8 @@ if (final_sequence != NULL_RTX)				\
   {"src_hi_operand", {SUBREG, REG, MEM, CONST_DOUBLE}}, 	\
   {"lsrc_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"tsrc_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
+  {"nonimmediate_src_operand", {SUBREG, REG, MEM}}, 		\
+  {"nonimmediate_lsrc_operand", {SUBREG, REG, MEM}}, 		\
   {"any_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"par_ind_operand", {MEM}},					\
   {"parallel_operand", {SUBREG, REG, MEM}},			\

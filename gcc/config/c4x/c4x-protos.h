@@ -157,6 +157,10 @@ extern int lsrc_operand PARAMS ((rtx, enum machine_mode));
 
 extern int tsrc_operand PARAMS ((rtx, enum machine_mode));
 
+extern int nonimmediate_src_operand PARAMS ((rtx, enum machine_mode));
+
+extern int nonimmediate_lsrc_operand PARAMS ((rtx, enum machine_mode));
+
 extern int addr_reg_operand PARAMS ((rtx, enum machine_mode));
 
 extern int index_reg_operand PARAMS ((rtx, enum machine_mode));
