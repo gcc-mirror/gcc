@@ -1233,7 +1233,7 @@ c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h flags.h \
 c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
    intl.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H)
-c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) c-lex.h c-tree.h \
+c-lex.o : c-lex.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) c-lex.h c-tree.h \
    $(srcdir)/c-parse.h input.h intl.h flags.h $(srcdir)/c-gperf.h c-pragma.h
 c-aux-info.o : c-aux-info.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h
