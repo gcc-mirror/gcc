@@ -1,3 +1,7 @@
+2000-12-04  Richard Henderson  <rth@redhat.com>
+
+	* demangle.h: Change "new_abi" to "v3" everywhere.
+
 2000-11-22  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* libiberty.h: Move #includes to top.  Prototype xmalloc_failed.
