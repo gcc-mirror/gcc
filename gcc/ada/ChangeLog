@@ -1,3 +1,10 @@
+2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
+	    Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/6637, PR ada/5911
+	Merge with libada-branch:
+        * config-lang.in: Build libada only when ada is built.
+
 2004-02-09  Ed Schonberg  <schonberg@gnat.com>
 
 	* exp_ch4.adb (Expand_N_Op_Eq): When looking for the primitive equality
