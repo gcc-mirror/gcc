@@ -63,6 +63,7 @@ public abstract class ByteBuffer extends Buffer
     this.backing_buffer = buffer;
     this.array_offset = offset;
   }
+  
   /**
    * Allocates a new direct byte buffer.
    */ 

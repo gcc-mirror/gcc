@@ -57,7 +57,7 @@ public abstract class Buffer
     limit (limit);
     position (position);
     
-    if (mark > 0)
+    if (mark >= 0)
     {
       if (mark > pos)
         throw new IllegalArgumentException ();

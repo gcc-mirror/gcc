@@ -62,7 +62,8 @@ public class FileLockImpl extends FileLock
   
   public boolean isValid ()
   {
-    return (released || !channel.isOpen ());
+    return (released
+            || !channel ().isOpen ());
   }
 
   private native void releaseImpl () throws IOException;

@@ -1,3 +1,20 @@
+2003-05-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/ByteBufferImpl.java
+	(putLong): Fixed conversion to bytes.
+	(putDouble): Fixed conversion to bytes.
+	* gnu/java/nio/DirectByteBufferImpl.java
+	(putLong): Fixed conversion to bytes.
+	(putDouble): Fixed conversion to bytes.
+	* gnu/java/nio/FileLockImpl.java
+	(isValid): Reformatted.
+	* java/nio/Buffer.java
+	(Buffer): Fixed off-by-one bug in handling mark.
+	* java/nio/ByteBuffer.java:
+	Added newline.
+	* java/nio/CharBuffer.java
+	(toString): Don't use relative get to get string data.
+
 2003-05-16  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/natFileDescriptorPosix.cc
