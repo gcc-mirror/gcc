@@ -1,3 +1,8 @@
+2004-01-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/call-super-2.m: Update line numbers
+	for the including of stddef.h.
+
 2004-01-30  Michael Matz  <matz@suse.de>
 
 	* g++.dg/ext/case-range1.C, g++.dg/ext/case-range2.C,
