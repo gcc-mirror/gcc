@@ -29,6 +29,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_GTHR_DCE_H
 #define GCC_GTHR_DCE_H
 
+/* If _DCE_THREADS is not defined, then we're building the single
+   threaded version of the libraries and do not want to reference
+   anything related to pthreads or dce.  */
+#ifndef _DCE_THREADS
+#include "gthr-single.h"
+#else
 /* DCE threads interface.
    DCE threads are based on POSIX threads draft 4, and many things
    have changed since then.  */
@@ -487,4 +493,5 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 
 #undef UNUSED
 
+#endif
 #endif /* ! GCC_GTHR_DCE_H */

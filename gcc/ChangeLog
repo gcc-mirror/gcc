@@ -1,3 +1,8 @@
+Fri Nov 30 12:48:26 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* gthr-dce.h: If _DCE_THREADS is not defined, then just include
+	gthr-single.
+
 2001-11-30  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (is_cxx): New fn.
