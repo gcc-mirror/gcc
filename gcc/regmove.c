@@ -550,7 +550,6 @@ copy_src_to_dest (insn, src, dest, loop_depth)
   rtx move_insn;
   rtx *p_insn_notes;
   rtx *p_move_notes;
-  int i;
   int src_regno;
   int dest_regno;
   int bb;

@@ -245,7 +245,7 @@ enum mips_abicalls_type mips_abicalls;
 REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
 /* Mode used for saving/restoring general purpose registers.  */
-static static enum machine_mode gpr_mode;
+static enum machine_mode gpr_mode;
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
