@@ -23,6 +23,18 @@ Mon Apr 26 01:02:34 1999  Nathan Sidwell  <nathan@acm.org>
 
 Mon Apr 26 00:58:54 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
+	* pa.h (architecture_type): New enum.
+	(pa_arch_string, pa_arch): Declare.
+	(MASK_PA_10, MASK_PA_20): New flags.
+	(TARGET_SWITCHES): Add pa-risc-2-0.  Update docs for PA1.0 codegen.
+	(TARGET_OPTIONS): Add -march= option.
+	* pa.c (pa_arch, pa_arch_string):  Define.
+	(override_options):  Set them.
+	* pa/pa-hpux10.h (ASM_FILE_START):  Output LEVEL 2.0 asm directive for
+	2.0 architecture. 
+	* invoke.texi (Option Summary, HPPA Options):  Document new
+	architecture flags.
+
 	* pa/pa-hpux.h, pa/pa-hpux10.h, pa/pa-hpux9.h, pa/pa-osf.h, pa.h,
 	pa.c, pa.md, configure.in, configure: Replace TARGET_SNAKE by
 	TARGET_PA_11 and MASK_SNAKE by MASK_PA_11.

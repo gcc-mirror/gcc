@@ -58,6 +58,12 @@ enum processor_type pa_cpu;
 /* String to hold which cpu we are scheduling for.  */
 char *pa_cpu_string;
 
+/* Which architecture we are generating code for.  */
+enum architecture_type pa_arch;
+
+/* String to hold which architecture we are generating code for.  */
+char *pa_arch_string;
+
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
@@ -126,6 +132,31 @@ override_options ()
   else
     {
       warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, and 8000\n", pa_cpu_string);
+    }
+
+  /* Set the instruction set architecture.  */
+  if (pa_arch_string && ! strcmp (pa_arch_string, "1.0"))
+    {
+      pa_arch_string = "1.0";
+      pa_arch = ARCHITECTURE_10;
+      target_flags &= ~(MASK_PA_11 | MASK_PA_20);
+    }
+  else if (pa_arch_string && ! strcmp (pa_arch_string, "1.1"))
+    {
+      pa_arch_string = "1.1";
+      pa_arch = ARCHITECTURE_11;
+      target_flags &= ~MASK_PA_20;
+      target_flags |= MASK_PA_11;
+    }
+  else if (pa_arch_string && ! strcmp (pa_arch_string, "2.0"))
+    {
+      pa_arch_string = "2.0";
+      pa_arch = ARCHITECTURE_20;
+      target_flags |= MASK_PA_11 | MASK_PA_20;
+    }
+  else if (pa_arch_string)
+    {
+      warning ("Unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
     }
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)

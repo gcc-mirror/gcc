@@ -46,7 +46,9 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
 do {  \
-     if (TARGET_PA_11) \
+     if (TARGET_PA_20) \
+       fputs("\t.LEVEL 2.0\n", FILE); \
+     else if (TARGET_PA_11) \
        fputs("\t.LEVEL 1.1\n", FILE); \
      else \
        fputs("\t.LEVEL 1.0\n", FILE); \
