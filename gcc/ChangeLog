@@ -1,3 +1,16 @@
+Tue Sep 28 16:43:14 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* dwarf2out.c (add_abstract_origin_attribute): Abort if
+	origin_die is NULL.
+	(gen_inlined_enumeration_type_die): Do not abort if the type has
+	not been writeen out.
+	(gen_inlined_structure_type_die): Do not abort if the type has
+	not been writeen out.
+	(gen_inlined_union_type_die): Do not abort if the type has
+	not been writeen out.
+	(gen_tagged_type_instantiation_die): Do not abort if the type
+	has not been written out.
+
 Tue Sep 28 14:33:47 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-decl.c (init_decl_processing): If MD_INIT_BUILTINS is defined,
