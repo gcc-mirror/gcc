@@ -30,6 +30,10 @@
 	* unroll.c (loop_iterations): Don't abort if iteration variable
 	was made by loop.
 
+	From Joern Rennecke:
+	* reload1.c (reloads_conflict): Reverse test comparing operand
+	numbers when testing for conflict between output/outaddr reloads.
+
 1999-11-29  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (init_cumulative_args): Fix type of third
