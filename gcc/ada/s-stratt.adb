@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package body System.Stream_Attributes is
 
    Err : exception renames Ada.IO_Exceptions.End_Error;
    --  Exception raised if insufficient data read (note that the RM implies
-   --  that Data_Error might be the appropriate choice, but AI195-00132
+   --  that Data_Error might be the appropriate choice, but AI95-00132
    --  decides with a binding interpretation that End_Error is preferred).
 
    SU : constant := System.Storage_Unit;

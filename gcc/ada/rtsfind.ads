@@ -1017,6 +1017,7 @@ package Rtsfind is
      RE_Raise_Program_Error_Unknown_Tag, -- System.Partition_Interface
      RE_Register_Passive_Package,        -- System.Partition_Interface
      RE_Register_Receiving_Stub,         -- System.Partition_Interface
+     RE_Request_Access,                  -- System.Partition_Interface
      RE_RCI_Locator,                     -- System.Partition_Interface
      RE_RCI_Subp_Info,                   -- System.Partition_Interface
      RE_RCI_Subp_Info_Array,             -- System.Partition_Interface
@@ -1056,7 +1057,6 @@ package Rtsfind is
      RE_NVList_Ref,                      -- System.PolyORB_Interface
      RE_NVList_Create,                   -- System.PolyORB_Interface
      RE_NVList_Add_Item,                 -- System.PolyORB_Interface
-     RE_Request_Access,                  -- System.PolyORB_Interface
      RE_Request_Create,                  -- System.PolyORB_Interface
      RE_Request_Invoke,                  -- System.PolyORB_Interface
      RE_Request_Arguments,               -- System.PolyORB_Interface
@@ -2098,6 +2098,7 @@ package Rtsfind is
      RE_Raise_Program_Error_Unknown_Tag  => System_Partition_Interface,
      RE_Register_Passive_Package         => System_Partition_Interface,
      RE_Register_Receiving_Stub          => System_Partition_Interface,
+     RE_Request_Access                   => System_Partition_Interface,
      RE_RCI_Locator                      => System_Partition_Interface,
      RE_RCI_Subp_Info                    => System_Partition_Interface,
      RE_RCI_Subp_Info_Array              => System_Partition_Interface,
@@ -2127,7 +2128,6 @@ package Rtsfind is
      RE_NVList_Ref                       => System_PolyORB_Interface,
      RE_NVList_Create                    => System_PolyORB_Interface,
      RE_NVList_Add_Item                  => System_PolyORB_Interface,
-     RE_Request_Access                   => System_PolyORB_Interface,
      RE_Request_Create                   => System_PolyORB_Interface,
      RE_Request_Invoke                   => System_PolyORB_Interface,
      RE_Request_Arguments                => System_PolyORB_Interface,

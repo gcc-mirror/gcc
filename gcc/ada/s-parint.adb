@@ -275,7 +275,7 @@ package body System.Partition_Interface is
 
    procedure Register_Receiving_Stub
      (Name          : Unit_Name;
-      Receiver      : RPC.RPC_Receiver;
+      Receiver      : RPC_Receiver;
       Version       : String := "";
       Subp_Info     : System.Address;
       Subp_Info_Len : Integer)
