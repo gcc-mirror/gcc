@@ -542,7 +542,8 @@ __deregister_frame (void *begin)
 	  struct object *ob = *p;
 	  *p = (*p)->next;
 
-	  if (ob->fde_array)
+	  /* If we've run init_frame for this object, free the FDE array.  */
+	  if (ob->pc_begin)
 	    free (ob->fde_array);
 	  free (ob);
 
