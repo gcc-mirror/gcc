@@ -949,6 +949,16 @@ extern const char * structure_size_string;
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
     }								\
 								\
+  if (TARGET_THUMB && optimize_size)				\
+    {								\
+      /* When optimizing for size, it's better not to use	\
+	 the HI regs, because of the overhead of stacking 	\
+	 them. */						\
+      for (regno = FIRST_HI_REGNUM;				\
+	   regno <= LAST_HI_REGNUM; ++regno)			\
+	fixed_regs[regno] = call_used_regs[regno] = 1;		\
+    }								\
+								\
   if (TARGET_CIRRUS)						\
     {								\
       for (regno = FIRST_ARM_FP_REGNUM;				\
@@ -1055,8 +1065,11 @@ extern const char * structure_size_string;
 /* The number of the last argument register.  */
 #define LAST_ARG_REGNUM 	ARG_REGISTER (NUM_ARG_REGS)
 
-/* The number of the last "lo" register (thumb).  */
+/* The numbers of the Thumb register ranges.  */
+#define FIRST_LO_REGNUM  	0
 #define LAST_LO_REGNUM  	7
+#define FIRST_HI_REGNUM		8
+#define LAST_HI_REGNUM		11
 
 /* The register that holds the return address in exception handlers.  */
 #define EXCEPTION_LR_REGNUM	2
@@ -2693,6 +2706,7 @@ extern int making_const_table;
   {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
   {"index_operand",      {SUBREG, REG, CONST_INT}},			\
   {"thumb_cmp_operand",  {SUBREG, REG, CONST_INT}},			\
+  {"thumb_cmpneg_operand", {CONST_INT}},				\
   {"thumb_cbrch_target_operand", {SUBREG, REG, MEM}},			\
   {"offsettable_memory_operand", {MEM}},				\
   {"bad_signed_byte_operand", {MEM}},					\

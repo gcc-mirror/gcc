@@ -1,5 +1,30 @@
 2003-10-24  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (arm_rtx_costs_1, case TARGET_THUMB): Adjust costs for
+	comparing a constant with small negative numbers and add costing
+	for constants in conjunction with AND.
+	(note_invalid_constants): Tidy previous change.
+	(thumb_cmp_operand): Tidy.
+	(thumb_cmpneg_operand): New function.
+	* arm.h (CONDITIONAL_REGISTER_USAGE): Don't use HI regs if optimizing
+	for size.
+	(FIRST_LO_REGNUM, FIRST_HI_REGNUM, LAST_HI_REGNUM): Define.
+	(PREDICATE_CODES): Add thumb_cmpneg_operand.
+	* arm.md (cbranchsi4): Convert to define_expand.  Handle comparison
+	with a negative constant.
+	(cbranchsi4_insn): Matcher for cbranchsi4.
+	(cbranchsi4_scratch): Similar, but a scratch is available for
+	handling negative constants.
+	(movsi_cbranchsi4): New pattern.
+	(tstsi3_cbranch): Renamed from andsi3_cbranch_scratch, remove scratch
+	and use the TST instruction.
+	(andsi3_cbranch, orrsi3_cbranch, xorsi3_cbranch, cbranchne_decr1)
+	(addsi3_cbranch, subsi3_cbranch): Ensure that register preferencing
+	cannot see high regs or memory alternatives.
+	(bicsi3_cbranch_scratch, bicsi3_cbranch): New patterns.
+
+2003-10-24  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (note_invalid_constants): Try to extract the constant
 	pool value using avoid_constant_pool_reference; only use
 	get_pool_constant if that returns the original reference.
@@ -119,8 +144,10 @@
 
 2003-10-22  Jan Hubicka  <jh@suse.cz>
 
-	* dwarf2out.c (dwarf2out_abstract_function): Use DW_AT to check presence of DW_AT_inline.
-	(gen_subprogram_die): Likewise; do not abort instead of emitting DW_AT_not_inline
+	* dwarf2out.c (dwarf2out_abstract_function): Use DW_AT to check
+	presence of DW_AT_inline.
+	(gen_subprogram_die): Likewise; do not abort instead of emitting
+	DW_AT_not_inline.
 
 2003-10-22  Jan Hubicka  <jh@suse.cz>
 

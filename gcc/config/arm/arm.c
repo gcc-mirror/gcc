@@ -3131,12 +3131,12 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 		return COSTS_N_INSNS (2);				
 	      return COSTS_N_INSNS (3);				
 	    }								
-	  else if (outer == PLUS					
+	  else if ((outer == PLUS || outer == COMPARE)
 		   && INTVAL (x) < 256 && INTVAL (x) > -256)		
-	    return 0;							
-	  else if (outer == COMPARE					
-		   && (unsigned HOST_WIDE_INT) INTVAL (x) < 256)	
-	    return 0;							
+	    return 0;
+	  else if (outer == AND
+		   && INTVAL (x) < 256 && INTVAL (x) >= -256)
+	    return COSTS_N_INSNS (1);
 	  else if (outer == ASHIFT || outer == ASHIFTRT		
 		   || outer == LSHIFTRT)				
 	    return 0;							
@@ -6903,13 +6903,11 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 		     us here.  Lets just hope that we can use the 
 		     constant pool value directly.  */
 		  if (op == cop)
-		    op = get_pool_constant (XEXP (op, 0));
-		  else
-		    op = cop;
+		    cop = get_pool_constant (XEXP (op, 0));
 
 		  push_minipool_fix (insn, address,
 				     recog_data.operand_loc[opno],
-				     recog_data.operand_mode[opno], op);
+				     recog_data.operand_mode[opno], cop);
 		}
 
 	      result = true;
@@ -12647,8 +12645,17 @@ int
 thumb_cmp_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT
-	   && (unsigned HOST_WIDE_INT) (INTVAL (op)) < 256)
+	   && INTVAL (op) < 256
+	   && INTVAL (op) >= 0)
 	  || s_register_operand (op, mode));
+}
+
+int
+thumb_cmpneg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) < 0
+	  && INTVAL (op) > -256);
 }
 
 /* Return TRUE if a result can be stored in OP without clobbering the
