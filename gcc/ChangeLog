@@ -1,3 +1,14 @@
+2000-07-27  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* gcc.c (struct prefix_list): Add member priority.
+	(enum path_prefix_priority): Declare.
+	(add_prefix): Replace ``first'' with ``priority''.  Append new
+	entry but keep list in priority order.
+	(process_command): Update.  Pass PREFIX_PRIORITY_B_OPT or
+	PREFIX_PRIORITY_LAST to add_prefix.
+	(process_command): Move include kludge - foo/stageN - to before
+	foo/include.
+
 2000-07-27  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (gen_typedef_die): Abort if we get identical
