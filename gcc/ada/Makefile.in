@@ -176,7 +176,6 @@ program_transform_name =
 objdir = .
 
 target=@target@
-target_alias=@target_alias@
 xmake_file = @xmake_file@
 tmake_file = @tmake_file@
 host_canonical=@host@

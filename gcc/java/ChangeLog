@@ -1,3 +1,8 @@
+2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Replace uses of $(target_alias) with
+	$(target_noncanonical).
+
 2003-10-09  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (java_init_decl_processing): Declare signers field.
