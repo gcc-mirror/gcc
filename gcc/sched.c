@@ -2508,12 +2508,19 @@ static void
 create_reg_dead_note (reg, insn)
      rtx reg, insn;
 {
-  rtx link = dead_notes;
+  rtx link, backlink;
 		
-  if (link == 0)
-    /* In theory, we should not end up with more REG_DEAD reg notes than we
-       started with.  In practice, this can occur as the result of bugs in
-       flow, combine and/or sched.  */
+  /* The number of registers killed after scheduling must be the same as the
+     number of registers killed before scheduling.  The number of REG_DEAD
+     notes may not be conserved, i.e. two SImode hard register REG_DEAD notes
+     might become one DImode hard register REG_DEAD note, but the number of
+     registers killed will be conserved.
+     
+     We carefully remove REG_DEAD notes from the dead_notes list, so that
+     there will be none left at the end.  If we run out early, then there
+     is a bug somewhere in flow, combine and/or sched.  */
+
+  if (dead_notes == 0)
     {
 #if 1
       abort ();
@@ -2523,7 +2530,40 @@ create_reg_dead_note (reg, insn)
 #endif
     }
   else
-    dead_notes = XEXP (dead_notes, 1);
+    {
+      /* Number of regs killed by REG.  */
+      int regs_killed = (REGNO (reg) >= FIRST_PSEUDO_REGISTER ? 1
+			 : HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)));
+      /* Number of regs killed by REG_DEAD notes taken off the list.  */
+      int reg_note_regs;
+
+      link = dead_notes;
+      reg_note_regs = (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
+		       : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
+					   GET_MODE (XEXP (link, 0))));
+      while (reg_note_regs < regs_killed)
+	{
+	  link = XEXP (link, 1);
+	  reg_note_regs += (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
+			    : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
+						GET_MODE (XEXP (link, 0))));
+	}
+      dead_notes = XEXP (link, 1);
+
+      /* If we took too many regs kills off, put the extra ones back.  */
+      while (reg_note_regs > regs_killed)
+	{
+	  rtx temp_reg, temp_link;
+
+	  temp_reg = gen_rtx (REG, word_mode, 0);
+	  temp_link = rtx_alloc (EXPR_LIST);
+	  PUT_REG_NOTE_KIND (temp_link, REG_DEAD);
+	  XEXP (temp_link, 0) = temp_reg;
+	  XEXP (temp_link, 1) = dead_notes;
+	  dead_notes = temp_link;
+	  reg_note_regs--;
+	}
+    }
 
   XEXP (link, 0) = reg;
   XEXP (link, 1) = REG_NOTES (insn);
@@ -3654,7 +3694,7 @@ schedule_block (b, file)
       head = note_head;
     }
 
-  /* In theory, there should be no REG_DEAD notes leftover at the end.
+  /* There should be no REG_DEAD notes leftover at the end.
      In practice, this can occur as the result of bugs in flow, combine.c,
      and/or sched.c.  The values of the REG_DEAD notes remaining are
      meaningless, because dead_notes is just used as a free list.  */
