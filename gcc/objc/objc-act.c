@@ -1105,26 +1105,9 @@ build_selector_translation_table ()
   int idx = 0;
   char buf[256];
 #else
-  tree _OBJC_SELECTOR_REFERENCES_id
-    = get_identifier ("_OBJC_SELECTOR_REFERENCES");
-
-  sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
-
-#ifdef OBJC_INT_SELECTORS
-  /* static unsigned int _OBJC_SELECTOR_REFERENCES[] = { 1, 2, ... }; */
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_UNSIGNED], sc_spec);
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  expr_decl = _OBJC_SELECTOR_REFERENCES_id;
-#else /* not OBJC_INT_SELECTORS */
-  /* static struct objc_selector *_OBJC_SELECTOR_REFERENCES[] = { 1, 2, .}; */
-  decl_specs = build_tree_list (NULLT,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
-  expr_decl = build1 (INDIRECT_REF, NULLT, _OBJC_SELECTOR_REFERENCES_id);
-#endif /* not OBJC_INT_SELECTORS */
-
-  expr_decl = build_nt (ARRAY_REF, expr_decl, NULLT);
-  _OBJC_SELECTOR_REFERENCES_decl = start_decl (expr_decl, decl_specs, 1);
+  /* The corresponding pop_obstacks is in finish_decl,
+     called at the end of this function.  */
+  push_obstacks_nochange ();
 #endif
 
   for (chain = sel_ref_chain; chain; chain = TREE_CHAIN (chain))
@@ -1135,19 +1118,9 @@ build_selector_translation_table ()
       sprintf (buf, "_OBJC_SELECTOR_REFERENCES_%d", idx);
       sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_STATIC]);
 
-#ifdef OBJC_INT_SELECTORS
-      /* static unsigned int _OBJC_SELECTOR_REFERENCES_n = ...; */
-      decl_specs = tree_cons (NULLT, ridpointers[(int) RID_UNSIGNED], sc_spec);
-      decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
+      /* static SEL _OBJC_SELECTOR_REFERENCES_n = ...; */
+      decl_specs = tree_cons (NULLT, selector_type, sc_spec);
       var_decl = get_identifier (buf);
-#else /* not OBJC_INT_SELECTORS */
-      /* static struct objc_selector *_OBJC_SELECTOR_REFERENCES_n = ...; */
-      decl_specs = tree_cons (NULLT,
-			      xref_tag (RECORD_TYPE,
-					get_identifier (TAG_SELECTOR)),
-			      sc_spec);
-      var_decl = build1 (INDIRECT_REF, NULLT, get_identifier (buf));
-#endif /* not OBJC_INT_SELECTORS */
 
       /* the `decl' that is returned from start_decl is the one that we
 	* forward declared in `build_selector_reference()'
@@ -1169,6 +1142,7 @@ build_selector_translation_table ()
     }
 
 #ifdef OBJC_NONUNIQUE_SELECTORS
+  DECL_INITIAL (_OBJC_SELECTOR_REFERENCES_decl) = (tree) 1;
   initlist = build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
   finish_decl (_OBJC_SELECTOR_REFERENCES_decl, initlist, NULLT);
 #endif
