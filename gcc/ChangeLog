@@ -1,3 +1,9 @@
+2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/mips/mips.h (REGISTER_MOVE_COST): Remove redundant
+        case for moving from HI/LO/HI_LO_REG.  This makes the behavior
+        match the comment for MIPS16.
+
 Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (split_edge): Do not call set_block_for_insn if we
