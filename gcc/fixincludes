@@ -252,9 +252,10 @@ while [ $# != 0 ]; do
 # But the argument to egrep must be kept small, or many versions of egrep
 # won't be able to handle it.
 #
-# We use the pattern [!-.0-~] instead of [^/ 	] to match a noncomment
+# We use the pattern [!-.0-z{|}~] instead of [^/ 	] to match a noncomment
 # following #else or #endif because some buggy egreps think [^/] matches
 # newline, and they thus think `#else ' matches `#e[ndiflse]*[ 	]+[^/ 	]'.
+# [!-.0-~] does not work properly on AIX 4.1.
 #
 # We use the pattern [^a-zA-Z0-9_][_a-ce-km-z][a-z0-9] to match an identifier
 # following #if or #elif that is not surrounded by __.  The `a-ce-km-z'
@@ -263,7 +264,7 @@ while [ $# != 0 ]; do
 # identifiers below start with `d' or `l'.  It also greatly improves
 # performance, since many files contain lines of the form `#if ... defined ...'
 # or `#if lint'.
-    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-zA-Z][a-zA-Z0-9]' $file >/dev/null; then
+    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-z\{\|\}\~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-zA-Z][a-zA-Z0-9]' $file >/dev/null; then
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
 	|| echo "Can't copy $file"
