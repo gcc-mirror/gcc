@@ -1,3 +1,8 @@
+2000-11-23  Graham Stott  <grahams@redhat.com>
+
+	* expr.c (store_constructor): If a field is non addressable and
+	the target is a MEM use MEM_ALIAS_SET otherwise use get_alias_set.
+
 2000-11-23  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* flow.c (print_rtl_and_abort): New function.
