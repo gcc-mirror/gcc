@@ -5235,10 +5235,13 @@ pop_init_level (implicit)
 	      && TYPE_DOMAIN (constructor_type) == 0)
 	    {
 	      int failure;
+	      int momentary_p;
 
 	      push_obstacks_nochange ();
 	      if (TREE_PERMANENT (constructor_type))
 		end_temporary_allocation ();
+
+	      momentary_p = suspend_momentary ();
 
 	      /* We shouldn't have an incomplete array type within
 		 some other type.  */
@@ -5252,6 +5255,7 @@ pop_init_level (implicit)
 		abort ();
 
 	      size = int_size_in_bytes (constructor_type);
+	      resume_momentary (momentary_p);
 	      pop_obstacks ();
 	    }
 
