@@ -1,3 +1,8 @@
+2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/22_locale/messages.html: Remove angle brackets.
+	* docs/html/17_intro/TODO: Add.
+	
 2002-01-22  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/ios_manip_basefield.cc: Enable test02.

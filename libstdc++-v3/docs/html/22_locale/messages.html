@@ -39,7 +39,7 @@ correspond to three protected virtual member functions.
 The public member functions are:
 
 <p>
-<code>catalog open(const basic_string<char>&, const locale&) const</code>
+<code>catalog open(const string&, const locale&) const</code>
 
 <p>
 <code>string_type get(catalog, int, int, const string_type&) const</code>
@@ -51,7 +51,7 @@ The public member functions are:
 While the virtual functions are:
 
 <p>
-<code>catalog do_open(const basic_string<char>&, const locale&) const</code>
+<code>catalog do_open(const string&, const locale&) const</code>
 <BLOCKQUOTE>
 <I>
 -1- Returns: A value that may be passed to get() to retrieve a
