@@ -1,3 +1,9 @@
+2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20755
+	* write.c (write_float): A G edit descriptor may locally change
+	the scale factor, but it needs to be restored afterwards.
+
 2005-04-03  Dale Ranta  <dir@lanl.gov>
             Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
