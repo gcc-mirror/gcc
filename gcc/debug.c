@@ -47,7 +47,8 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_tree,		         /* outlining_inline_function */
   debug_nothing_rtx,		         /* label */
   debug_nothing_int,		         /* handle_pch */
-  debug_nothing_rtx		         /* var_location */
+  debug_nothing_rtx,		         /* var_location */
+  0                                      /* start_end_main_source_file */
 };
 
 /* This file contains implementations of each debug hook that do

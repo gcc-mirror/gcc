@@ -3444,7 +3444,8 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_abstract_function,	/* outlining_inline_function */
   debug_nothing_rtx,		/* label */
   debug_nothing_int,		/* handle_pch */
-  dwarf2out_var_location
+  dwarf2out_var_location,
+  1                             /* start_end_main_source_file */
 };
 #endif
 

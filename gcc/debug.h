@@ -119,6 +119,10 @@ struct gcc_debug_hooks
 
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
   void (* var_location) (rtx);
+
+  /* This is 1 if the debug writer wants to see start and end commands for the
+     main source files, and 0 otherwise.  */
+  int start_end_main_source_file;
 };
 
 extern const struct gcc_debug_hooks *debug_hooks;
