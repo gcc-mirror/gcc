@@ -702,9 +702,6 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 				       TYPE_MODE (VALTYPE) == DFmode) ? \
 				      (TARGET_SNAKE ? 44 : 32) : 28))
 
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  FUNCTION_VALUE(VALTYPE, FUNC)
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
@@ -715,7 +712,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 28 || (N) == 32 || (N) == 44)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == 28 || (N) == (TARGET_SNAKE ? 44 : 32))
 
 /* 1 if N is a possible register number for function argument passing.  */
 
