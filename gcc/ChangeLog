@@ -1,16 +1,33 @@
+Thu Apr  2 06:19:25 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* reload.h (MEMORY_MOVE_COST): Define here if not already defined.
+	(memory_move_secondary_cost): Declare.
+	* regclass.c (MEMORY_MOVE_COST): Don't define default here.
+	(memory_move_secondary_cost) [HAVE_SECONDARY_RELOADS]: New function.
+	(regclass, record_reg_classes, copy_cost, record_address_regs):
+	Pass register class and direction of move to MEMORY_MOVE_COST.
+	(top_of_stack) [HAVE_SECONDARY_RELOADS]: New static array.
+	(init_regs) [HAVE_SECONDARY_RELOADS]: Initialize it.
+	* reload1.c (MEMORY_MOVE_COST): Don't define default here.
+	(emit_reload_insns, reload_cse_simplify_set): Pass register class
+	and direction of move to MEMORY_MOVE_COST.
+	* 1750a.h (MEMORY_MOVE_COST): Add extra ignored arguments.
+	* a29k.h, alpha.h, arc.h, arm.h, dsp16xx.h, i386.h, m32r.h: Likewise.
+	* m88k.h, rs6000.h: Likewise.
+	* mips.h (MEMORY_MOVE_COST): Likewise.
+	Add memory_move_secondary_cost result to cpu-specific cost.
+
 Mon Mar 30 13:56:30 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/ultrix.h (SUBTARGET_CPP_SPEC): Define.
 
 Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 
-	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum
-	direction.
+	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum direction.
 	(function_arg_padding): Declare.
 
 	* rs6000.c: Include stdlib.h if we have it.
-	(function_arg_padding): Change return type to int, cast enum's to
-	int.
+	(function_arg_padding): Change return type to int, cast enum's to int.
 
 	(From Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>)
 	* rs6000.c (rs6000_override_options): Change type of `i', `j' and
@@ -18,13 +35,12 @@ Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 	(rs6000_file_start): Likewise for `i'.
 	(rs6000_replace_regno): Add default case in enumeration switch.
 	(output_epilog): Remove unused variable `i'.
-	(rs6000_longcall_ref): Remove unused variables `len', `p', `reg1'
-	and `reg2'.
+	(rs6000_longcall_ref): Remove unused variables `len', `p', `reg[12]'.
  
 	* rs6000.h (ADDITIONAL_REGISTER_NAMES): Add missing braces around
 	initializer.
 	(get_issue_rate, non_logical_cint_operand): Add prototype.
-	(rs6000_output_load_toc_table): Ditto.
+	(rs6000_output_load_toc_table): Likewise.
  
 	* rs6000.md (udivmodsi4): Add explicit braces to avoid ambiguous
 	`else'.
