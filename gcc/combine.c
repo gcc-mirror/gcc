@@ -3690,6 +3690,8 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
   switch (GET_RTX_CLASS (code))
     {
     case '1':
+      if (op0_mode == VOIDmode)
+	op0_mode = GET_MODE (XEXP (x, 0));
       temp = simplify_unary_operation (code, mode, XEXP (x, 0), op0_mode);
       break;
     case '<':
