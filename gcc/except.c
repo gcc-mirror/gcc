@@ -409,6 +409,13 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
+/* ??? Temporary hack before this entire file is replaced.  */
+#ifdef IA64_UNWIND_INFO
+#define flag_new_exceptions 0
+#else
+#define flag_new_exceptions 1
+#endif
+
 /* One to enable asynchronous exception support.  */
 
 int flag_non_call_exceptions = 0;
