@@ -146,7 +146,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   update_lineno (yytext, yyleng);
 }
 
-[^[:alnum:]_]typedef{WS}{ID}{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?PARAMS {
+[^[:alnum:]_]typedef{WS}{ID}{WS}?"*"?{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?PARAMS {
   char *namestart;
   size_t namelen;
   struct type *t;
@@ -162,7 +162,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   update_lineno (yytext, yyleng);
 }
 
-[^[:alnum:]_]typedef{WS}{ID}{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?"(" {
+[^[:alnum:]_]typedef{WS}{ID}{WS}?"*"?{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?"(" {
   char *namestart;
   size_t namelen;
   struct type *t;

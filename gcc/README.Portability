@@ -14,18 +14,15 @@ I'm going to start from a base of the ISO C89 standard, since that is
 probably what most people code to naturally.  Obviously using
 constructs introduced after that is not a good idea.
 
-The first section of this file deals strictly with portability issues,
-the second with common coding pitfalls, and the third with obsolete
-K+R portability issues.
+For the complete coding style conventions used in GCC, please read
+http://gcc.gnu.org/codingconventions.html
 
-
-			Portability Issues
-			==================
 
 String literals
 ---------------
 
-Some SGI compilers choke on the parentheses in:-
+Irix6 "cc -n32" and OSF4 "cc" have problems with constant string
+initializers with parens around it, e.g.
 
 const char string[] = ("A string");
 
@@ -176,7 +173,7 @@ WITH UMLAUT.
 Other common pitfalls
 ---------------------
 
-o Expecting 'plain' char to be either sign or unsigned extending
+o Expecting 'plain' char to be either sign or unsigned extending.
 
 o Shifting an item by a negative amount or by greater than or equal to
   the number of bits in a type (expecting shifts by 32 to be sensible
@@ -198,204 +195,3 @@ o Passing incorrect types to fprintf and friends.
 o Adding a function declaration for a module declared in another file to
   a .c file instead of to a .h file.
 
-
-			K+R Portability Issues
-			======================
-
-Unary +
--------
-
-K+R C compilers and preprocessors have no notion of unary '+'.  Thus
-the following code snippet contained 2 portability problems.
-
-int x = +2;  /* int x = 2;  */
-#if +1       /* #if 1  */
-#endif
-
-
-Pointers to void
-----------------
-
-K+R C compilers did not have a void pointer, and used char * as the
-pointer to anything.  The macro PTR is defined as either void * or
-char * depending on whether you have a standards compliant compiler or
-a K+R one.  Thus
-
-  free ((void *) h->value.expansion);
-
-should have been written
-
-  free ((PTR) h->value.expansion);
-
-Further, an initial investigation indicates that pointers to functions
-returning void were okay.  Thus the example given by "Calling
-functions through pointers to functions" below appeared not to cause a
-problem.
-
-
-String literals
----------------
-
-K+R C did not allow concatenation of string literals like
-
-  "This is a " "single string literal".
-
-
-signed keyword
---------------
-
-The signed keyword did not exist in K+R compilers; it was introduced
-in ISO C89, so you could not use it.  In both K+R and standard C,
-unqualified char and bitfields may be signed or unsigned.  There is no
-way to portably declare signed chars or signed bitfields.
-
-All other arithmetic types are signed unless you use the 'unsigned'
-qualifier.  For instance, it was safe to write
-
-  short paramc;
-
-instead of
-
-  signed short paramc;
-
-If you have an algorithm that depends on signed char or signed
-bitfields, you had to find another way to write it before it could be
-integrated into GCC.
-
-
-Function prototypes
--------------------
-
-You need to provide a function prototype for every function before you
-use it, and functions had to be defined K+R style.  The function
-prototype should have used the PARAMS macro, which takes a single
-argument.  Therefore the parameter list had to be enclosed in
-parentheses.  For example,
-
-int myfunc PARAMS ((double, int *));
-
-int
-myfunc (var1, var2)
-     double var1;
-     int *var2;
-{
-  ...
-}
-
-This implies that if the function takes no arguments, it had to be
-declared and defined as follows:
-
-int myfunc PARAMS ((void));
-
-int
-myfunc ()
-{
-  ...
-}
-
-You also had to use PARAMS when referring to function protypes in
-other circumstances, for example see "Calling functions through
-pointers to functions" below.
-
-Variable-argument functions are best described by example:-
-
-void cpp_ice PARAMS ((cpp_reader *, const char *msgid, ...));
-
-void
-cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  ...
-  VA_CLOSE (ap);
-}
-
-See ansidecl.h for the definitions of the above macros and more.
-
-One aspect of using K+R style function declarations, is you could not
-have arguments whose types are char, short, or float, since without
-prototypes (ie, K+R rules), these types are promoted to int, int, and
-double respectively.
-
-Calling functions through pointers to functions
------------------------------------------------
-
-K+R C compilers require parentheses around the dereferenced function
-pointer expression in the call, whereas ISO C relaxes the syntax.  For
-example
-
-typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
-      *p->handler (pfile, p->arg);
-
-had to become
-
-      (*p->handler) (pfile, p->arg);
-
-
-Macros
-------
-
-The rules under K+R C and ISO C for achieving stringification and
-token pasting are quite different.  Therefore some macros have been
-defined which will get it right depending upon the compiler.
-
-  CONCAT2(a,b) CONCAT3(a,b,c) and CONCAT4(a,b,c,d)
-
-will paste the tokens passed as arguments.  You must not leave any
-space around the commas.  Also,
-
-  STRINGX(x)
-
-will stringify an argument; to get the same result on K+R and ISO
-compilers x should not have spaces around it.
-
-
-Passing structures by value
----------------------------
-
-You had to avoid passing structures by value, either to or from
-functions.  It seems some K+R compilers handle this differently or not
-at all.
-
-
-Enums
------
-
-In K+R C, you had to cast enum types to use them as integers, and some
-compilers in particular give lots of warnings for using an enum as an
-array index.
-
-
-Bitfields
----------
-
-See also "signed keyword" above.  In K+R C only unsigned int bitfields
-were defined (i.e. unsigned char, unsigned short, unsigned long.
-Using plain int/short/long was not allowed).
-
-
-Reserved Keywords
------------------
-
-K+R C has "entry" as a reserved keyword, so you had to not use it for
-your variable names.
-
-
-Type promotions
----------------
-
-K+R used unsigned-preserving rules for arithmetic expresssions, while
-ISO uses value-preserving.  This means an unsigned char compared to an
-int is done as an unsigned comparison in K+R (since unsigned char
-promotes to unsigned) while it is signed in ISO (since all of the
-values in unsigned char fit in an int, it promotes to int).
-
-
-Suffixes on Integer Constants
------------------------------
-
-K+R C did not accept a 'u' suffix on integer constants.  If you wanted
-to declare a constant to be be unsigned, you had to use an explicit
-cast.
