@@ -140,6 +140,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    tree init = build_decl (VAR_DECL, NULL_TREE,
 				    build_reference_type (type));
 	    DECL_RTL (init) = XEXP (return_target, 0);
+	    init = convert_from_reference (init);
 
 	    flag_access_control = 0;
 	    expand_aggr_init (slot, init, 0, LOOKUP_ONLYCONVERTING);
@@ -147,7 +148,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
 	    if (TYPE_NEEDS_DESTRUCTOR (type))
 	      {
-		init = maybe_build_cleanup (convert_from_reference (init));
+		init = maybe_build_cleanup (init);
 		if (init != NULL_TREE)
 		  expand_expr (init, const0_rtx, VOIDmode, 0);
 	      }
