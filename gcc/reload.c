@@ -2915,7 +2915,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0))
 		  win = 1;
-		if (CONSTANT_P (operand))
+		if (CONSTANT_P (operand)
+		    /* force_const_mem does not accept HIGH.  */
+		    && GET_CODE (operand) != HIGH)
 		  badop = 0;
 		constmemok = 1;
 		break;
@@ -2990,7 +2992,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     && offsettable_memref_p (reg_equiv_mem[REGNO (operand)]))
 			    || (reg_equiv_address[REGNO (operand)] != 0))))
 		  win = 1;
-		if (CONSTANT_P (operand) || GET_CODE (operand) == MEM)
+		/* force_const_mem does not accept HIGH.  */
+		if ((CONSTANT_P (operand) && GET_CODE (operand) != HIGH)
+		    || GET_CODE (operand) == MEM)
 		  badop = 0;
 		constmemok = 1;
 		offmemok = 1;
