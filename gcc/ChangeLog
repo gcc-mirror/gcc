@@ -1,3 +1,8 @@
+2003-08-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_ABS, BUILT_IN_IMAXABS, BUILT_IN_LABS,
+	BUILT_IN_LLABS): Move to miscellaneous section.
+
 2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/11534
