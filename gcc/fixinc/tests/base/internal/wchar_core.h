@@ -2,7 +2,7 @@
 
     It has been auto-edited by fixincludes from:
 
-	"fixinc/tests/inc/internals/wchar_core.h"
+	"fixinc/tests/inc/internal/wchar_core.h"
 
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */

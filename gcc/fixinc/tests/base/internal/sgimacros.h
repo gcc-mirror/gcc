@@ -2,7 +2,7 @@
 
     It has been auto-edited by fixincludes from:
 
-	"fixinc/tests/inc/internals/sgimacros.h"
+	"fixinc/tests/inc/internal/sgimacros.h"
 
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
