@@ -1,3 +1,7 @@
+2004-10-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-data-ref.c: Fix comment typos.
+
 2004-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Zdenek Dvorak  <dvorakz@suse.cz>
 
