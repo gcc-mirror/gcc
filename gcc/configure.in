@@ -110,8 +110,9 @@ if [[[ x$enable_threads = xno ]]]; then
 fi,
 enable_threads='')
 
+enable_threads_flag=$enable_threads
 # Check if a valid thread package
-case x${enable_threads} in
+case x${enable_threads_flag} in
 	x | xno)
 		# No threads
 		target_thread_file='single'
@@ -122,7 +123,7 @@ case x${enable_threads} in
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
 	xsolaris | xwin32 | xdce | xvxworks)
-		target_thread_file=$enable_threads
+		target_thread_file=$enable_threads_flag
 		;;
 	*)
 		echo "$enable_threads is an unknown thread package" 1>&2
@@ -252,6 +253,7 @@ for machine in $build $host $target; do
 	# configure entries modify them.
 	gas="$gas_flag"
 	gnu_ld="$gnu_ld_flag"
+	enable_threads=$enable_threads_flag
 
 	# Set default cpu_type, tm_file and xm_file so it can be updated in
 	# each machine entry.

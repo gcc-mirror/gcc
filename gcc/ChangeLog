@@ -1,3 +1,9 @@
+Thu May  7 15:39:14 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (enable_threads): Rename to enable_threads_flag before
+	main loop.  Set enable_threads to enable_threads_flag inside main
+	loop.
+
 Thu May  7 17:38:03 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* r6000/eabi.asm (__eabi): Restore LR in case __eabi is called
