@@ -327,159 +327,163 @@ esac
 
 # Common parts for widely ported systems.
 case ${target} in
+*-*-linux*libc1* | *-*-linux*aout*)
+  # Avoid the generic linux case.
+  ;;
 *-*-linux*)
-	case ${target} in
-	 *-*-linux*libc1* | *-*-linux*aout*)
-		;;
-	*)
-		extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-		gas=yes gnu_ld=yes
-		case x${enable_threads} in
-			x | xyes | xposix) thread_file='posix'
-			;;
-		esac
-		;;
-	esac
-	;;
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  gas=yes
+  gnu_ld=yes
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
+  ;;
 *-*-gnu*)
-	# On the Hurd, the setup is just about the same on
-	# each different CPU.  The specific machines that we
-	# support are matched above and just set $cpu_type.
-	tm_file="${cpu_type}/gnu.h"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-	# GNU tools are the only tools.
-	gnu_ld=yes
-	gas=yes
-	# These details are the same as for Linux.
-	# But here we need a little extra magic.
-	tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
-	case ${target} in
-	alpha*)
-		tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
-		;;
-	i[34567]86-*-*)
-		tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
-		;;
-	esac
-	;;
+  # On the Hurd, the setup is just about the same on
+  # each different CPU.  The specific machines that we
+  # support are matched above and just set $cpu_type.
+  tm_file="${cpu_type}/gnu.h"
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+  # GNU tools are the only tools.
+  gas=yes
+  gnu_ld=yes
+  # These details are the same as for Linux.
+  # But here we need a little extra magic.
+  tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
+  case ${target} in
+    alpha*)
+      tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
+      ;;
+    i[34567]86-*-*)
+      tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
+      ;;
+  esac
+  ;;
 *-*-openbsd*)
-	tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-		tmake_file="${tmake_file} t-openbsd-thread"
-	fi
-	;;
+  tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
+  case ${enable_threads} in
+    yes)
+      thread_file='posix'
+      tmake_file="${tmake_file} t-openbsd-thread"
+      ;;
+  esac
+  ;;
 *-*-netbsd*)
-	tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
-	gas=yes
-	gnu_ld=yes
+  tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
+  gas=yes
+  gnu_ld=yes
 
-	# NetBSD 2.0 and later get POSIX threads enabled by default.
-	# Allow them to be explicitly enabled on any other version.
-	case x${enable_threads} in
-	x)
-		case ${target} in
-		*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-			thread_file='posix'
-			tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-			;;
-		esac
-		;;
-	xyes | xposix)
-		thread_file='posix'
-		tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-		;;
-	esac
+  # NetBSD 2.0 and later get POSIX threads enabled by default.
+  # Allow them to be explicitly enabled on any other version.
+  case ${enable_threads} in
+    "")
+      case ${target} in
+        *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+          thread_file='posix'
+          tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
+          ;;
+      esac
+      ;;
+    yes | posix)
+      thread_file='posix'
+      tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
+      ;;
+  esac
 
-	# NetBSD 1.7 and later are set up to use GCC's crtstuff for
-	# ELF configurations.  We will clear extra_parts in the
-	# a.out configurations.
-	case ${target} in
-	*-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-		;;
-	esac
+  # NetBSD 1.7 and later are set up to use GCC's crtstuff for
+  # ELF configurations.  We will clear extra_parts in the
+  # a.out configurations.
+  case ${target} in
+    *-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+      extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+      ;;
+  esac
 
-	# NetBSD 2.0 and later provide __cxa_atexit(), which we use by
-	# default (unless overridden by --disable-__cxa_atexit).
-	case ${target} in
-	*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-		default_use_cxa_atexit=yes
-		;;
-	esac
-	;;
+  # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
+  # default (unless overridden by --disable-__cxa_atexit).
+  case ${target} in
+    *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+      default_use_cxa_atexit=yes
+      ;;
+  esac
+  ;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
-	# This is the place-holder for the generic a.out configuration
-	# of FreeBSD.  No actual configuration resides here since
-	# there was only ever a bare-bones ix86 configuration for
-	# a.out and it exists solely in the machine-specific section.
-	# This place-holder must exist to avoid dropping into
-	# the generic ELF configuration of FreeBSD (i.e. it must be
-	# ordered before that section).
-	;;
+  # This is the place-holder for the generic a.out configuration
+  # of FreeBSD.  No actual configuration resides here since
+  # there was only ever a bare-bones ix86 configuration for
+  # a.out and it exists solely in the machine-specific section.
+  # This place-holder must exist to avoid dropping into
+  # the generic ELF configuration of FreeBSD (i.e. it must be
+  # ordered before that section).
+  ;;
 *-*-freebsd*)
-	# This is the generic ELF configuration of FreeBSD.  Later
-	# machine-specific sections may refine and add to this
-	# configuration.
-	#
-	# Due to tm_file entry ordering issues that vary between cpu
-	# architectures, we only define fbsd_tm_file to allow the
-	# machine-specific section to dictate the final order of all
-	# entries of tm_file with the minor exception that components
-	# of the tm_file set here will always be of the form:
-	#
-	# freebsd<version_number>.h [freebsd-<conf_option>.h ...] freebsd-spec.h freebsd.h
-	#
-	# The machine-specific section should not tamper with this
-	# ordering but may order all other entries of tm_file as it
-	# pleases around the provided core setting.
-	gas=yes
-	gnu_ld=yes
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	case ${target} in
-	*-*-freebsd3 | *-*-freebsd[3].*) fbsd_tm_file="freebsd3.h";;
-	*-*-freebsd4 | *-*-freebsd[4].*) fbsd_tm_file="freebsd4.h";;
-	*-*-freebsd5 | *-*-freebsd[5].*) fbsd_tm_file="freebsd5.h";;
-	*-*-freebsd6 | *-*-freebsd[6].*) fbsd_tm_file="freebsd6.h";;
-	*) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
-	esac
-	tmake_file="t-slibgcc-elf-ver t-freebsd"
-	case x${enable_threads} in
-	xno) fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h";;
-	x | xyes | xpthreads | xposix)
-		thread_file='posix'
-		tmake_file="${tmake_file} t-freebsd-thread"
-		# Before 5.0, FreeBSD can't bind shared libraries to -lc
-		# when "optionally" threaded via weak pthread_* checks.
-		case ${target} in
-		*-*-freebsd[34] | *-*-freebsd[34].*)
-			tmake_file="${tmake_file} t-slibgcc-nolc-override";;
-		esac
-		;;
-	*) echo 'Unknown thread configuration for FreeBSD'; exit 1;;
-	esac
-	fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
-	;;
+  # This is the generic ELF configuration of FreeBSD.  Later
+  # machine-specific sections may refine and add to this
+  # configuration.
+  #
+  # Due to tm_file entry ordering issues that vary between cpu
+  # architectures, we only define fbsd_tm_file to allow the
+  # machine-specific section to dictate the final order of all
+  # entries of tm_file with the minor exception that components
+  # of the tm_file set here will always be of the form:
+  #
+  # freebsd<version_number>.h [freebsd-<conf_option>.h ...] freebsd-spec.h freebsd.h
+  #
+  # The machine-specific section should not tamper with this
+  # ordering but may order all other entries of tm_file as it
+  # pleases around the provided core setting.
+  gas=yes
+  gnu_ld=yes
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+  case ${target} in
+    *-*-freebsd3 | *-*-freebsd[3].*) fbsd_tm_file="freebsd3.h";;
+    *-*-freebsd4 | *-*-freebsd[4].*) fbsd_tm_file="freebsd4.h";;
+    *-*-freebsd5 | *-*-freebsd[5].*) fbsd_tm_file="freebsd5.h";;
+    *-*-freebsd6 | *-*-freebsd[6].*) fbsd_tm_file="freebsd6.h";;
+    *) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
+  esac
+  tmake_file="t-slibgcc-elf-ver t-freebsd"
+  case ${enable_threads} in
+    no)
+      fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h"
+      ;;
+    "" | yes | pthreads | posix)
+      thread_file='posix'
+      tmake_file="${tmake_file} t-freebsd-thread"
+      # Before 5.0, FreeBSD can't bind shared libraries to -lc
+      # when "optionally" threaded via weak pthread_* checks.
+      case ${target} in
+        *-*-freebsd[34] | *-*-freebsd[34].*)
+          tmake_file="${tmake_file} t-slibgcc-nolc-override"
+          ;;
+      esac
+      ;;
+    *) 
+      echo 'Unknown thread configuration for FreeBSD'
+      exit 1
+      ;;
+  esac
+  fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
+  ;;
 *-*-darwin*)
-	tm_file="${tm_file} darwin.h"
-	tm_p_file="${tm_p_file} darwin-protos.h"
-	tmake_file="t-darwin"
-	target_gtfiles="\$(srcdir)/config/darwin.c"
-	c_target_objs="darwin-c.o"
-	cxx_target_objs="darwin-c.o"
-	extra_parts="crt2.o"
-	extra_objs="darwin.o"
-	case x${enable_threads} in
-	     x | xyes | xposix) thread_file='posix'
-	     ;;
-	esac
-	;;	
+  tm_file="${tm_file} darwin.h"
+  tm_p_file="${tm_p_file} darwin-protos.h"
+  tmake_file="t-darwin"
+  target_gtfiles="\$(srcdir)/config/darwin.c"
+  c_target_objs="darwin-c.o"
+  cxx_target_objs="darwin-c.o"
+  extra_parts="crt2.o"
+  extra_objs="darwin.o"
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
+  ;;
 *-*-vxworks*)
-	tmake_file=t-vxworks
-	tm_file="${tm_file} elfos.h svr4.h vxworks.h"
-	thread_file='vxworks'
-	use_collect2=yes
-	;;
+  tmake_file=t-vxworks
+  tm_file="${tm_file} elfos.h svr4.h vxworks.h"
+  thread_file='vxworks'
+  use_collect2=yes
+  ;;
 esac
 
 case ${target} in
