@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
 #define _POSIX_SOURCE
 #endif /* Some BSDs break <sys/socket.h> if this is defined. */
-#define _GNU_SOURCE 
+#define _GNU_SOURCE
 #define _XOPEN_SOURCE
 #define _BSD_TYPES
 #define __EXTENSIONS__
@@ -125,7 +125,7 @@ static unsigned __mf_pthread_info_idx[LIBMUDFLAPTH_THREADS_MAX];
 
 /* Find any old empty entry in __mf_pthread_info; mark it used and
    return it.  Return NULL if there are no more available slots.  */
-struct pthread_info* 
+struct pthread_info*
 __mf_allocate_blank_threadinfo (unsigned* idx)
 {
   static unsigned probe = LIBMUDFLAPTH_THREADS_MAX-1;
@@ -158,7 +158,7 @@ __mf_allocate_blank_threadinfo (unsigned* idx)
 	}
     }
   while (probe != probe_at_start);
-  
+
   rc = pthread_mutex_unlock (& mutex);
   assert (rc == 0);
   return NULL;
@@ -177,7 +177,7 @@ __mf_allocate_blank_threadinfo (unsigned* idx)
    from this context, since a new thread might just be "booting up",
    making printf unsafe to call.
 */
-static struct pthread_info* 
+static struct pthread_info*
 __mf_find_threadinfo ()
 {
   pthread_t it = pthread_self ();
@@ -197,14 +197,14 @@ __mf_find_threadinfo ()
     else for (i = 0; i < LIBMUDFLAPTH_THREADS_MAX; i++)
       {
 	struct pthread_info* pi2 = & __mf_pthread_info [i];
-	if (pi2->used_p && pi2->self == it) 
+	if (pi2->used_p && pi2->self == it)
 	  {
 	    *hash = i;
 	    result = pi2;
 	    break;
 	  }
       }
-  }    
+  }
 
   if (result == NULL)
     {
@@ -247,7 +247,7 @@ __mf_find_threadinfo ()
   if (last != it)
     {
       /*
-      VERBOSE_TRACE ("found threadinfo for %u, slot %u\n", 
+      VERBOSE_TRACE ("found threadinfo for %u, slot %u\n",
 		     (unsigned) it,
 		     (unsigned) *hash);
       */
@@ -271,7 +271,7 @@ __mf_state_perthread ()
 }
 
 
-static void 
+static void
 __mf_pthread_cleanup (void *arg)
 {
   struct pthread_info *pi = arg;
@@ -302,11 +302,11 @@ __mf_pthread_spawner (void *arg)
   pi->state = active;
 
   VERBOSE_TRACE ("new user thread\n");
-  
+
   if (__mf_opts.heur_std_data)
     {
       pi->thread_errno = & errno;
-      __mf_register (pi->thread_errno, sizeof (int), 
+      __mf_register (pi->thread_errno, sizeof (int),
 		     __MF_TYPE_GUESS, "errno area (thread)");
       /* NB: we could use __MF_TYPE_STATIC above, but we guess that
 	 the thread errno is coming out of some dynamically allocated
@@ -327,7 +327,7 @@ __mf_pthread_spawner (void *arg)
 
     /* Signal the main thread to resume.  */
     psi->thread_info = pi;
-      
+
     result = (*user_fn)(user_arg);
   }
 
@@ -345,7 +345,7 @@ __mf_pthread_spawner (void *arg)
 #if PIC
 /* A special bootstrap variant. */
 int
-__mf_0fn_pthread_create (pthread_t *thr, const pthread_attr_t *attr, 
+__mf_0fn_pthread_create (pthread_t *thr, const pthread_attr_t *attr,
 			 void * (*start) (void *), void *arg)
 {
   return -1;
@@ -354,12 +354,12 @@ __mf_0fn_pthread_create (pthread_t *thr, const pthread_attr_t *attr,
 
 
 #undef pthread_create
-WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr, 
+WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 	 void * (*start) (void *), void *arg)
 {
   DECLARE(int, munmap, void *p, size_t l);
   DECLARE(void *, mmap, void *p, size_t l, int prot, int flags, int fd, off_t of);
-  DECLARE(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr, 
+  DECLARE(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 	  void * (*start) (void *), void *arg);
   int result;
   pthread_attr_t override_attr;
@@ -383,7 +383,7 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 
       /* VERBOSE_TRACE ("thread %u pi %p stack cleanup deferred (%u)\n",
 	 (unsigned) pi->self, pi, pi->dead_p); */
-	      
+
       /* Delay actual deallocation by a few cycles, try to discourage the
 	 race mentioned at the end of __mf_pthread_spawner().  */
       if (pi->dead_p)
@@ -452,8 +452,8 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 #endif
 
 #ifdef MF_MAP_ANON
-      override_stack = CALL_REAL (mmap, NULL, override_stacksize, 
-				  PROT_READ|PROT_WRITE, 
+      override_stack = CALL_REAL (mmap, NULL, override_stacksize,
+				  PROT_READ|PROT_WRITE,
 				  MAP_PRIVATE|MF_MAP_ANON,
 				  0, 0);
 #else
@@ -465,8 +465,8 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
         if (zerofd == -1)
           override_stack = MAP_FAILED;
         else
-          override_stack = CALL_REAL (mmap, NULL, override_stacksize, 
-                                      PROT_READ|PROT_WRITE, 
+          override_stack = CALL_REAL (mmap, NULL, override_stacksize,
+                                      PROT_READ|PROT_WRITE,
                                       MAP_PRIVATE, zerofd, 0);
       }
 #endif
@@ -477,7 +477,7 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 	  return -1;
 	}
 
-      VERBOSE_TRACE ("thread stack alloc %p size %lu\n", 
+      VERBOSE_TRACE ("thread stack alloc %p size %lu\n",
 		     override_stack, (unsigned long) override_stacksize);
 
       /* Save the original allocated values for later deallocation.  */
@@ -492,10 +492,10 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
       override_stack = (void *)
 	(((uintptr_t) override_stack + override_stacksize - alignment - perturb)
 	 & (~(uintptr_t)(alignment-1)));
-      
+
       /* XXX: consider using POSIX2K attr_setstack() */
       if (pthread_attr_setstackaddr (& override_attr, override_stack) != 0 ||
-	  pthread_attr_setstacksize (& override_attr, 
+	  pthread_attr_setstacksize (& override_attr,
 				     override_stacksize - alignment - perturb) != 0)
 	{
 	  /* This should not happen.  */
@@ -509,12 +509,12 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
   {
     struct pthread_start_info psi;
     struct pthread_info *pi = NULL;
-    
+
     /* Fill in startup-control fields.  */
     psi.user_fn = start;
     psi.user_arg = arg;
     psi.thread_info = NULL;
-    
+
     /* Actually create the thread.  */
     __mf_state = reentrant;
     result = CALL_REAL (pthread_create, thr, & override_attr,
@@ -529,7 +529,7 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
       {
 	volatile struct pthread_start_info *psip = & psi;
 	pi = psip->thread_info;
-	if (pi != NULL) 
+	if (pi != NULL)
 	  break;
 	sched_yield ();
       }
@@ -574,7 +574,7 @@ WRAPPER(int, pthread_join, pthread_t thr, void **rc)
   __mf_state = reentrant;
   result = CALL_REAL (pthread_join, thr, rc);
   __mf_state = active;
-  
+
   return result;
 }
 

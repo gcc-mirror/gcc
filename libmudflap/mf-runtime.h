@@ -51,7 +51,7 @@ extern "C" {
 
 extern void __mf_check (void *ptr, __mf_size_t sz, int type, const char *location)
        __attribute((nothrow));
-extern void __mf_register (void *ptr, __mf_size_t sz, int type, const char *name) 
+extern void __mf_register (void *ptr, __mf_size_t sz, int type, const char *name)
        __attribute((nothrow));
 extern void __mf_unregister (void *ptr, __mf_size_t sz, int type)
        __attribute((nothrow));
@@ -65,33 +65,33 @@ extern int __mf_set_options (const char *opts);
    done by simple #define rather than linker wrapping, since only
    instrumented modules are meant to be affected.  */
 
-#ifdef _MUDFLAP  
-#pragma redefine_extname memcpy __mfwrap_memcpy 
+#ifdef _MUDFLAP
+#pragma redefine_extname memcpy __mfwrap_memcpy
 #pragma redefine_extname memmove __mfwrap_memmove
-#pragma redefine_extname memset __mfwrap_memset 
-#pragma redefine_extname memcmp __mfwrap_memcmp 
-#pragma redefine_extname memchr __mfwrap_memchr 
+#pragma redefine_extname memset __mfwrap_memset
+#pragma redefine_extname memcmp __mfwrap_memcmp
+#pragma redefine_extname memchr __mfwrap_memchr
 #pragma redefine_extname memrchr __mfwrap_memrchr
-#pragma redefine_extname strcpy __mfwrap_strcpy 
-#pragma redefine_extname strncpy __mfwrap_strncpy 
-#pragma redefine_extname strcat __mfwrap_strcat 
+#pragma redefine_extname strcpy __mfwrap_strcpy
+#pragma redefine_extname strncpy __mfwrap_strncpy
+#pragma redefine_extname strcat __mfwrap_strcat
 #pragma redefine_extname strncat __mfwrap_strncat
-#pragma redefine_extname strcmp __mfwrap_strcmp 
-#pragma redefine_extname strcasecmp __mfwrap_strcasecmp 
-#pragma redefine_extname strncmp __mfwrap_strncmp 
+#pragma redefine_extname strcmp __mfwrap_strcmp
+#pragma redefine_extname strcasecmp __mfwrap_strcasecmp
+#pragma redefine_extname strncmp __mfwrap_strncmp
 #pragma redefine_extname strncasecmp __mfwrap_strncasecmp
-#pragma redefine_extname strdup __mfwrap_strdup 
-#pragma redefine_extname strndup __mfwrap_strndup 
-#pragma redefine_extname strchr __mfwrap_strchr 
+#pragma redefine_extname strdup __mfwrap_strdup
+#pragma redefine_extname strndup __mfwrap_strndup
+#pragma redefine_extname strchr __mfwrap_strchr
 #pragma redefine_extname strrchr __mfwrap_strrchr
-#pragma redefine_extname strstr __mfwrap_strstr 
-#pragma redefine_extname memmem __mfwrap_memmem 
-#pragma redefine_extname strlen __mfwrap_strlen 
+#pragma redefine_extname strstr __mfwrap_strstr
+#pragma redefine_extname memmem __mfwrap_memmem
+#pragma redefine_extname strlen __mfwrap_strlen
 #pragma redefine_extname strnlen __mfwrap_strnlen
-#pragma redefine_extname bzero __mfwrap_bzero 
-#pragma redefine_extname bcopy __mfwrap_bcopy 
-#pragma redefine_extname bcmp __mfwrap_bcmp 
-#pragma redefine_extname index __mfwrap_index 
+#pragma redefine_extname bzero __mfwrap_bzero
+#pragma redefine_extname bcopy __mfwrap_bcopy
+#pragma redefine_extname bcmp __mfwrap_bcmp
+#pragma redefine_extname index __mfwrap_index
 #pragma redefine_extname rindex __mfwrap_rindex
 #pragma redefine_extname asctime __mfwrap_asctime
 #pragma redefine_extname ctime __mfwrap_ctime

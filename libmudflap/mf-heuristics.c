@@ -4,7 +4,7 @@
    and Graydon Hoare <graydon@redhat.com>
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 2, or (at your option) any later
@@ -46,10 +46,10 @@ extern char _end;
 extern char _start;
 
 
-/* Run some quick validation of the given region.  
+/* Run some quick validation of the given region.
    Return -1 / 0 / 1 if the access known-invalid, possibly-valid, or known-valid.
 */
-int 
+int
 __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
 {
   VERBOSE_TRACE ("mf: heuristic check\n");
@@ -72,7 +72,7 @@ __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
       uintptr_t stack_segment_base = 0;
 #endif
 
-      VERBOSE_TRACE ("mf: stack estimated as %p-%p\n", 
+      VERBOSE_TRACE ("mf: stack estimated as %p-%p\n",
 		     (void *) stack_top_guess, (void *) stack_segment_base);
 
       if (ptr_high <= stack_segment_base &&
@@ -80,7 +80,7 @@ __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
 	  ptr_high >= ptr)
 	{
 	  return 1;
-	}            
+	}
     }
 #endif
 
@@ -118,13 +118,13 @@ __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
       if (! deja_vu)
 	{
 	  /* Time to run the heuristic.  Rescan /proc/self/maps; update the
-	     entry[] array; XXX: remove expired entries, add new ones.  
+	     entry[] array; XXX: remove expired entries, add new ones.
 	     XXX: Consider entries that have grown (e.g., stack).  */
 	  char buf[512];
 	  char flags[4];
 	  void *low, *high;
 	  FILE *fp;
-	  
+
 	  fp = fopen ("/proc/self/maps", "r");
 	  if (fp)
 	    {
@@ -145,17 +145,17 @@ __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
 				  break;
 				}
 			    }
-			  
+
 			  VERBOSE_TRACE ("mf: registering region #%d "
 					 "%p-%p given %s",
 					 i, (void *) low, (void *) high, buf);
-			  
+
 			  __mfu_register ((void *) low, (size_t) (high-low),
-					  __MF_TYPE_GUESS, 
+					  __MF_TYPE_GUESS,
 					  "/proc/self/maps segment");
-			  
+
 			  return 0; /* undecided (tending to cachable) */
-			} 
+			}
 		    }
 		}
 	      fclose (fp);
