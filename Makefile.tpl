@@ -204,7 +204,7 @@ BUILD_CONFIGARGS = @build_configargs@
 
 # This is set by configure to REALLY_SET_LIB_PATH if --enable-shared
 # was used.
-SET_LIB_PATH =
+SET_LIB_PATH = @SET_LIB_PATH@
 
 # This is the name of the environment variable used for the path to
 # the libraries.  This may be changed by configure.in.
