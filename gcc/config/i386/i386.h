@@ -1085,8 +1085,9 @@ do {									\
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode	\
      || (MODE) == V2SImode || (MODE) == SImode)
 
-#define UNITS_PER_SIMD_WORD \
-    (TARGET_SSE ? 16 : TARGET_MMX || TARGET_3DNOW ? 8 : 0)
+/* ??? No autovectorization into MMX or 3DNOW until we can reliably
+   place emms and femms instructions.  */
+#define UNITS_PER_SIMD_WORD (TARGET_SSE ? 16 : 0)
 
 #define VALID_FP_MODE_P(MODE)						\
     ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
