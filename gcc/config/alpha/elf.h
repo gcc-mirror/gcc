@@ -270,27 +270,29 @@ do {									\
 
 extern void text_section ();
 
-#define CONST_SECTION_FUNCTION						\
-void									\
-const_section ()							\
-{									\
-  if (!USE_CONST_SECTION)						\
-    text_section();							\
-  else if (in_section != in_const)					\
-    {									\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);		\
-      in_section = in_const;						\
-    }									\
+#define CONST_SECTION_FUNCTION					\
+void const_section PROTO ((void));				\
+void								\
+const_section ()						\
+{								\
+  if (!USE_CONST_SECTION)					\
+    text_section();						\
+  else if (in_section != in_const)				\
+    {								\
+      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);	\
+      in_section = in_const;					\
+    }								\
 }
 
-#define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)				\
-void FN ()								\
-{									\
-  if (in_section != ENUM)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", OP);				\
-      in_section = ENUM;						\
-    }									\
+#define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\
+void FN PROTO ((void));				\
+void FN ()					\
+{						\
+  if (in_section != ENUM)			\
+    {						\
+      fprintf (asm_out_file, "%s\n", OP);	\
+      in_section = ENUM;			\
+    }						\
 }
 
 

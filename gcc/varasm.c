@@ -42,10 +42,10 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "dbxout.h"
 #include "sdbout.h"
-
 #include "obstack.h"
 #include "c-pragma.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
