@@ -265,6 +265,16 @@ AC_ARG_ENABLE(multilib,
 [], [enable_multilib=yes])
 AC_SUBST(enable_multilib)
 
+# Enable -Werror in bootstrap stage2 and later.
+# Change the default to "no" on release branches.
+AC_ARG_ENABLE(werror, 
+[  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
+[enable_werror=yes])
+if test x$enable_werror = xyes ; then
+  WERROR=-Werror
+fi
+AC_SUBST(WERROR)
+
 # Enable expensive internal checks
 AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]

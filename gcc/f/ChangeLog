@@ -1,3 +1,7 @@
+Tue Jan 21 08:42:12 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Make-lang.in (f/sta.o-warn): Add -Wno-error.
+
 Thu Jan 16 10:53:16 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (f/target.o): Depend on toplev.h.

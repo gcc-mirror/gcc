@@ -821,6 +821,17 @@ Specify that the machine does not have a floating point unit.  This
 option only applies to @samp{m68k-sun-sunos@var{n}}.  On any other
 system, @option{--nfp} has no effect.
 
+@item --enable-werror
+@itemx --disable-werror
+@itemx --enable-werror=yes
+@itemx --enable-werror=no
+When you specify this option, it controls whether certain files in the
+compiler are built with @option{-Werror} in bootstrap stage2 and later.
+If you don't specify it, @option{-Werror} is turned on for the main
+development trunk.  However it defaults to off for release branches and
+final releases.  The specific files which get @option{-Werror} are
+controlled by the Makefiles.
+
 @item --enable-checking
 @itemx --enable-checking=@var{list}
 When you specify this option, the compiler is built to perform checking
@@ -975,7 +986,10 @@ be ignored.
 
 It is normal to have compiler warnings when compiling certain files.
 Unless you are a GCC developer, you can generally ignore these warnings
-unless they cause compilation to fail.
+unless they cause compilation to fail.  Developers should attempt to fix
+any warnings encountered, however they can temporarily continue past
+warnings-as-errors by specifying the configure flag
+@option{--disable-werror}.
 
 On certain old systems, defining certain environment variables such as
 @env{CC} can interfere with the functioning of @command{make}.

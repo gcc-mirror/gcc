@@ -1,3 +1,17 @@
+2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (GCC_WARN_CFLAGS): Add $(WERROR) $($@-warn)
+	(gtype-desc.o-warn, c-decl.o-warn, varasm.o-warn, gcc.o-warn,
+	insn-conditions.o-warn, out_object_file, gengtype-yacc.o-warn,
+	c-parse.o-warn): Add -Wno-error.
+	(STAGE2_FLAGS_TO_PASS): Add WERROR="@WERROR@".
+
+	* configure.in (--enable-werror): Add new flag.
+	* doc/install.texi (--enable-werror): Document.
+	* configure: Regenerate.
+
+	* objc/Make-lang.in (objc/objc-parse.o-warn): Add -Wno-error.
+
 2003-01-21  Andreas Schwab  <schwab@suse.de>
 
 	* genautomata.c (output_internal_insn_latency_func): Fix missing

@@ -90,6 +90,8 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
 
 # Use loose warnings for this front end.
 cp-warn =
+# This contains warnings from the PCH merge.
+cp/decl.o-warn = -Wno-error
 
 cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
 		  libcpp.a $(LIBDEPS)

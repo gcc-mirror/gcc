@@ -47,6 +47,8 @@ OBJECTIVE-C objective-c: cc1obj$(exeext)
 
 # Use maximal warnings for this front end.
 objc-warn = $(STRICT_WARN)
+# Bison-1.75 output yields (harmless) -Wtraditional warnings
+objc/objc-parse.o-warn = -Wno-error
 
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc/objc-lang.o objc/objc-parse.o objc/objc-act.o

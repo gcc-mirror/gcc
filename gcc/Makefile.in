@@ -109,7 +109,20 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 
 # This is how we control whether or not the additional warnings are applied.
 .-warn = $(STRICT_WARN)
-GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $(WERROR) $($@-warn)
+
+# These files are to have -Werror bypassed in stage2:
+# These contain warnings from the PCH merge.
+gtype-desc.o-warn = -Wno-error
+c-decl.o-warn = -Wno-error
+# These are very hard to completely clean due to target complexities.
+varasm.o-warn = -Wno-error
+gcc.o-warn = -Wno-error
+insn-conditions.o-warn = -Wno-error
+@out_object_file@-warn = -Wno-error
+# Bison-1.75 output often yields (harmless) -Wtraditional warnings
+gengtype-yacc.o-warn = -Wno-error
+c-parse.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -3349,6 +3362,7 @@ STAGE2_FLAGS_TO_PASS = \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
+	WERROR="@WERROR@" \
 	STRICT_WARN="$(STRICT2_WARN)" \
 	libdir=$(libdir) \
 	LANGUAGES="$(LANGUAGES)" \

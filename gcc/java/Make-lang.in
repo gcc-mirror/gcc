@@ -124,6 +124,8 @@ JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o
 
 # Use loose warnings for this front end.
 java-warn =
+# String length warnings
+jvspec.o-warn = -Wno-error
 
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f $@

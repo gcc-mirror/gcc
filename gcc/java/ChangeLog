@@ -1,3 +1,7 @@
+2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Make-lang.in (jvspec.o-warn): Add -Wno-error.
+
 2003-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* check-init.c: Fix comment typos.
