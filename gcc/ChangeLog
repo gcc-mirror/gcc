@@ -1,3 +1,7 @@
+Thu Jun 17 01:45:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (mulsi3): Don't add a no-op move at the end.
+
 Wed Jun 16 20:29:00 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* cse.c (cse_insn): Don't put hard register source into tables for
