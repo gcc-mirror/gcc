@@ -2250,7 +2250,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
                 tm_file="mips/little.h $tm_file"
                 ;;
 	esac
-	tmake_file="t-slibgcc-elf-ver t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	gas=yes

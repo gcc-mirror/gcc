@@ -1,3 +1,12 @@
+2002-01-16  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/t-linux: New.
+
+	* config.gcc: Add mips/t-linux to tmake_file for mips*-*-linux*.
+
+	* config/mips/linux.h: Don't include "gofast.h".
+	(INIT_SUBTARGET_OPTABS): Removed.
+
 2002-01-16  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Replace emit_a_shift with
