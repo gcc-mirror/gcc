@@ -29,10 +29,15 @@
 /* Define the macro guard, and redefine the macros to something that
    forces compilation of the conditional blocks.  */
 #define guard
+#undef EMPTYL
 #define EMPTYL 1 ||
+#undef EMPTYR
 #define EMPTYR || 1
+#undef NOT
 #define NOT
+#undef DEFINED
 #define DEFINED 0
+#undef NOT_DEFINED
 #define NOT_DEFINED 1
 
 #define VAR five
