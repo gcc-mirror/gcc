@@ -1,3 +1,8 @@
+2001-04-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-convert.c (convert): When converting to a BOOLEAN_TYPE, avoid
+	passing nested NOP_EXPRs to fold.
+
 2001-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Add comments.  Abort
