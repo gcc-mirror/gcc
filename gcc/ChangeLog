@@ -1,3 +1,9 @@
+Wed Sep 30 19:33:07 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reorg.c (check_annul_list_true_false): Remove unused variables.
+	(steal_delay_list_from_target): Add missing "used_annul" variable.
+	(try_merge_delay_insns): Close out half formed comment.
+
 Wed Sep 30 19:13:20 1998 Zack Weinberg  <zack@rabi.phys.columbia.edu>  
 
 	* toplev.c (documented_lang_options): Recognize -include,
