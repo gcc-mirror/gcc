@@ -1,3 +1,41 @@
+2000-03-27  Richard Henderson  <rth@cygnus.com>
+
+	* i386-protos.h (ix86_match_ccmode): Declare.
+	* i386.c (ix86_match_ccmode): New.
+	(ix86_expand_fp_compare): Update for pattern renames.
+	(ix86_expand_strlensi_unroll_1): Likewise.
+	* i386.h (EXTRA_CC_MODES): Add CCZ.
+	(SELECT_CC_MODE): Use it for EQ/NE zero.
+	* i386.md (cmpsi_ccz_1): New.
+	(cmpqi_ccz_1): New.
+	(*testsi_ccz_1): New.
+	(testqi_ccz_1): New.
+	(cmpsi_ccno_1): Rename from cmpsi_0.
+	(testsi_ccno_1): Rename from testsi_1.
+	(testqi_ccno_1): Rename from testqi_1.
+	(*testqi_ext_ccz_0): Rename from testqi_ext_0.
+	(testqi_ext_ccno_0): Rename from *testqi_ext_1.
+	(*cmphi_0): Use ix86_match_ccmode.
+	(*cmpqi_ext_2, *addsi_2, *addhi_2, *addqi_2): Likewise.
+	(*subsi_2, *subhi_2, *subqi_2, *testhi_1): Likewise.
+	(*testqi_ext_1, *testqi_ext_2, *testqi_ext_3): Likewise.
+	(*andsi_2, *andhi_2, *andqi_2, *andqi_ext_0_cc): Likewise.
+	(*iorsi_2, *iorhi_2, *iorqi_2): Likewise.
+	(*xorsi_2, *xorhi_2, *xorqi_cc_1): Likewise.
+	(*one_cmplsi2_2, *one_cmplhi2_2, *one_cmplqi2_2): Likewise.
+	(*ashlsi3_cmpno, *ashlhi3_cmpno, *ashlqi3_cmpno): Likewise.
+	(*ashrsi3_cmpno, *ashrhi3_cmpno, *ashrqi3_cmpno): Likewise.
+	(*lshrsi3_cmpno, *lshrhi3_cmpno, *lshrqi3_cmpno): Likewise.
+	(appropriate peepholes): Likewise.
+	(*cmphi_1, *cmpqi_ccno_1, *cmpqi_1): Star out name.
+	(*subsi_3, *subhi_3, *subqi_3): Remove.
+	(*negdi2_1+1 splitter): Use CCZ for neg patterns.
+	(*negsi2_cmp, *neghi2_cmp, *negqi2_cmp): Remove.
+	(*negsi2_cmpz): Rename from *negsi2_cmpno, use CCZ.
+	(*neghi2_cmpz, *negqi2_cmpz): Similarly.
+	(x86_shift_adj_1): Use CCZ.
+	(*dbra_ge+1, *dbra_ge+2, ffssi2, ffssi_1): Likewise.
+
 2000-03-27  Stan Cox  <scox@cygnus.com>	
 
 	* resource.h (mark_resource_type): New.

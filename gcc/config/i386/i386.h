@@ -2160,10 +2160,13 @@ while (0)
 
    Add CCNO to indicate No Overflow, which is often also includes
    No Carry.  This is typically used on the output of logicals,
-   and is only valid in comparisons against zero.  */
+   and is only valid in comparisons against zero.
+
+   Add CCZ to indicate that only the Zero flag is valid.  */
 
 #define EXTRA_CC_MODES \
 	CC(CCNOmode, "CCNO") \
+	CC(CCZmode, "CCZ") \
 	CC(CCFPmode, "CCFP") \
 	CC(CCFPUmode, "CCFPU")
 
@@ -2173,7 +2176,7 @@ while (0)
    For floating-point equality comparisons, CCFPEQmode should be used.
    VOIDmode should be used in all other cases.
 
-   For integer comparisons against zero, reduce to CCNOmode if
+   For integer comparisons against zero, reduce to CCNOmode or CCZmode if
    possible, to allow for more combinations.  */
 
 #define SELECT_CC_MODE(OP,X,Y)				\
@@ -2181,7 +2184,7 @@ while (0)
    ? (OP) == EQ || (OP) == NE ? CCFPUmode : CCFPmode	\
    : (OP) == LE || (OP) == GT ? CCmode			\
    : (Y) != const0_rtx ? CCmode				\
-   : CCNOmode)
+   : (OP) == EQ || (OP) == NE ? CCZmode : CCNOmode)
 
 /* Control the assembler format that we output, to the extent
    this does not vary between assemblers.  */
