@@ -1,3 +1,8 @@
+2001-11-28  Richard Henderson  <rth@redhat.com>
+
+	* doloop.c (doloop_modify_runtime): Properly select induction
+	variable; skip late entry test if biv initializer created by loop.
+
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (EXPR_WFL_LINECOL): Used by Java in node other than
