@@ -2387,6 +2387,7 @@ expand_return (retval)
 	  case TRUTH_AND_EXPR:
 	  case TRUTH_OR_EXPR:
 	  case TRUTH_NOT_EXPR:
+	  case TRUTH_XOR_EXPR:
 	    op0 = gen_label_rtx ();
 	    jumpifnot (retval_rhs, op0);
 	    expand_value_return (const1_rtx);
