@@ -1256,7 +1256,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  -DUNPROTOIZE $(srcdir)/protoize.c
 	mv protoize.o unprotoize.o
@@ -1265,7 +1265,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 	touch stamp-proto
