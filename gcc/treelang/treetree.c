@@ -589,6 +589,9 @@ tree_code_generate_return (tree type, tree exp)
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
       setret = build1 (RETURN_EXPR, type, setret);
+      /* Use EXPR_LOCUS so we don't lose any information about the file we
+	 are compiling.  */
+      SET_EXPR_LOCUS (setret, EXPR_LOCUS (exp));
     }
    else
      setret = build1 (RETURN_EXPR, type, NULL_TREE);
@@ -647,7 +650,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
 tree
 tree_code_get_expression (unsigned int exp_type,
                           tree type, tree op1, tree op2,
-			  tree op3 ATTRIBUTE_UNUSED)
+			  tree op3 ATTRIBUTE_UNUSED,
+			  location_t loc)
 {
   tree ret1;
   int operator;
@@ -685,12 +689,13 @@ tree_code_get_expression (unsigned int exp_type,
 
       /* Reference to a variable.  This is dead easy, just return the
          decl for the variable.  If the TYPE is different than the
-         variable type, convert it.  */
+         variable type, convert it.  However, to keep accurate location
+	 information we wrap it in a NOP_EXPR is is easily stripped.  */
     case EXP_REFERENCE:
       gcc_assert (op1);
       TREE_USED (op1) = 1;
       if (type == TREE_TYPE (op1))
-        ret1 = op1;
+        ret1 = build1 (NOP_EXPR, type, op1);
       else
         ret1 = fold (build1 (CONVERT_EXPR, type, op1));
       break;
@@ -710,6 +715,10 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_unreachable ();
     }
 
+  /* Declarations already have a location and constants can be shared so they
+     shouldn't a location set on them.  */
+  if (! DECL_P (ret1) && ! TREE_CONSTANT (ret1))
+    SET_EXPR_LOCATION (ret1, loc);
   return ret1;
 }
 
