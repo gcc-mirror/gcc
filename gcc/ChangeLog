@@ -1,3 +1,7 @@
+1999-10-25  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/genfixes:  Provide a means for specifying -D options to AutoGen
+
 Mon Oct 25 00:42:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (note_set_pseudo_multiple_uses_retval): New variable.
