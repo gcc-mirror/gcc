@@ -232,8 +232,8 @@ init_timevar ()
   memset ((void *) timevars, 0, sizeof (timevars));
 
   /* Initialize the names of timing variables.  */
-#define DEFTIMEVAR(identifer__, name__) \
-  timevars[identifer__].name = name__;
+#define DEFTIMEVAR(identifier__, name__) \
+  timevars[identifier__].name = name__;
 #include "timevar.def"
 #undef DEFTIMEVAR
 

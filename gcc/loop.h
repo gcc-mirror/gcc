@@ -135,7 +135,7 @@ struct induction
 				   subtracted from add_val when this giv
 				   derives another.  This occurs when the
 				   giv spans a biv update by incrementation.  */
-  rtx ext_dependant;		/* If nonzero, is a sign or zero extension
+  rtx ext_dependent;		/* If nonzero, is a sign or zero extension
 				   if a biv on which this giv is dependent.  */
   struct induction *next_iv;	/* For givs, links together all givs that are
 				   based on the same biv.  For bivs, links

@@ -208,7 +208,7 @@ static void record_giv PARAMS ((const struct loop *, struct induction *,
 				rtx, rtx, rtx, rtx, rtx, rtx, int,
 				enum g_types, int, int, rtx *));
 static void update_giv_derive PARAMS ((const struct loop *, rtx));
-static void check_ext_dependant_givs PARAMS ((struct iv_class *,
+static void check_ext_dependent_givs PARAMS ((struct iv_class *,
 					      struct loop_info *));
 static int basic_induction_var PARAMS ((const struct loop *, rtx,
 					enum machine_mode, rtx, rtx,
@@ -4332,7 +4332,7 @@ strength_reduce (loop, flags)
 
       /* Check each extension dependent giv in this class to see if its
 	 root biv is safe from wrapping in the interior mode.  */
-      check_ext_dependant_givs (bl, loop_info);
+      check_ext_dependent_givs (bl, loop_info);
 
       /* Combine all giv's for this iv_class.  */
       combine_givs (regs, bl);
@@ -4832,7 +4832,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
   v->dest_reg = dest_reg;
   v->mult_val = mult_val;
   v->add_val = inc_val;
-  v->ext_dependant = NULL_RTX;
+  v->ext_dependent = NULL_RTX;
   v->location = location;
   v->mode = GET_MODE (dest_reg);
   v->always_computable = ! not_every_iteration;
@@ -4934,7 +4934,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
   v->dest_reg = dest_reg;
   v->mult_val = mult_val;
   v->add_val = add_val;
-  v->ext_dependant = ext_val;
+  v->ext_dependent = ext_val;
   v->benefit = benefit;
   v->location = location;
   v->cant_derive = 0;
@@ -5995,12 +5995,12 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 	    arg0 = simplify_giv_expr (loop, tem, ext_val, benefit);
 	    if (*ext_val)
 	      {
-		if (!v->ext_dependant)
+		if (!v->ext_dependent)
 		  return arg0;
 	      }
 	    else
 	      {
-		*ext_val = v->ext_dependant;
+		*ext_val = v->ext_dependent;
 		return arg0;
 	      }
 	    return 0;
@@ -6217,7 +6217,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
   v->benefit = first_benefit;
   v->cant_derive = 0;
   v->derive_adjustment = 0;
-  v->ext_dependant = NULL_RTX;
+  v->ext_dependent = NULL_RTX;
 
   REG_IV_TYPE (ivs, REGNO (dest_reg)) = GENERAL_INDUCT;
   REG_IV_INFO (ivs, REGNO (dest_reg)) = v;
@@ -6531,7 +6531,7 @@ combine_givs_p (g1, g2)
    make the giv illegal.  */
 
 static void
-check_ext_dependant_givs (bl, loop_info)
+check_ext_dependent_givs (bl, loop_info)
      struct iv_class *bl;
      struct loop_info *loop_info;
 {
@@ -6616,9 +6616,9 @@ check_ext_dependant_givs (bl, loop_info)
 
   /* Invalidate givs that fail the tests.  */
   for (v = bl->giv; v; v = v->next_iv)
-    if (v->ext_dependant)
+    if (v->ext_dependent)
       {
-	enum rtx_code code = GET_CODE (v->ext_dependant);
+	enum rtx_code code = GET_CODE (v->ext_dependent);
 	int ok = 0;
 
 	switch (code)
@@ -6638,7 +6638,7 @@ check_ext_dependant_givs (bl, loop_info)
 	       derived GIV.  */
 	    if (se_ok && ze_ok)
 	      {
-		enum machine_mode outer_mode = GET_MODE (v->ext_dependant);
+		enum machine_mode outer_mode = GET_MODE (v->ext_dependent);
 		unsigned HOST_WIDE_INT max = GET_MODE_MASK (outer_mode) >> 1;
 
 		/* We know from the above that both endpoints are nonnegative,
@@ -6697,12 +6697,12 @@ extend_value_for_giv (v, value)
      struct induction *v;
      rtx value;
 {
-  rtx ext_dep = v->ext_dependant;
+  rtx ext_dep = v->ext_dependent;
 
   if (! ext_dep)
     return value;
 
-  /* Recall that check_ext_dependant_givs verified that the known bounds
+  /* Recall that check_ext_dependent_givs verified that the known bounds
      of a biv did not overflow or wrap with respect to the extension for
      the giv.  Therefore, constants need no additional adjustment.  */
   if (CONSTANT_P (value) && GET_MODE (value) == VOIDmode)
@@ -9797,9 +9797,9 @@ loop_giv_dump (v, file, verbose)
   if (v->no_const_addval)
     fprintf (file, " ncav");
 
-  if (v->ext_dependant)
+  if (v->ext_dependent)
     {
-      switch (GET_CODE (v->ext_dependant))
+      switch (GET_CODE (v->ext_dependent))
 	{
 	case SIGN_EXTEND:
 	  fprintf (file, " ext se");
