@@ -2893,7 +2893,7 @@ init_optabs ()
 #endif
 #ifdef HAVE_subti3
   if (HAVE_subti3)
-    sub_optab->handlers[(int) Imode].insn_code = CODE_FOR_subti3;
+    sub_optab->handlers[(int) TImode].insn_code = CODE_FOR_subti3;
 #endif
 #ifdef HAVE_subsf3
   if (HAVE_subsf3)
