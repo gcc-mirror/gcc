@@ -38,6 +38,9 @@
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 #undef SUBTARGET_SWITCHES
+
+#undef ASM_APP_ON
+#undef ASM_APP_OFF
 
 
 /* M32R/X overrides.  */
@@ -49,7 +52,6 @@
 %{m32r2:-D__M32R2__ -D__m32r2__ -U__M32RX__ -U__m32rx__} \
 %{m32r:-U__M32RX__  -U__m32rx__ -U__M32R2__ -U__m32r2__} \
  "
-
 
 /* Assembler switches.  */
 #define ASM_CPU_SPEC \
@@ -101,7 +103,7 @@
 #define TARGET_VERSION fprintf (stderr, " (m32r)")
 #endif
 
-/* Switch  Recognition by gcc.c.  Add -G xx support */
+/* Switch  Recognition by gcc.c.  Add -G xx support.  */
 
 #undef  SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
@@ -115,6 +117,13 @@
       builtin_define ("__M32R__");		\
       builtin_assert ("cpu=m32r");		\
       builtin_assert ("machine=m32r");		\
+      builtin_define (TARGET_BIG_ENDIAN		\
+                      ? "__BIG_ENDIAN__" : "__LITTLE_ENDIAN__"); \
+      if (flag_pic)				\
+        {					\
+          builtin_define ("__pic__");		\
+          builtin_define ("__PIC__");		\
+        }					\
     }						\
   while (0)
 
@@ -157,7 +166,7 @@
 #endif
 
 #ifndef RELAX_SPEC
-#if 0 /* not supported yet */
+#if 0 /* Not supported yet.  */
 #define RELAX_SPEC "%{mrelax:-relax}"
 #else
 #define RELAX_SPEC ""
@@ -174,11 +183,12 @@
   { "relax",			RELAX_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
+#undef  CC1_SPEC
 #define CC1_SPEC "%{G*} %(cc1_cpu)"
 
 /* Options to pass on to the assembler.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{v} %(asm_cpu) %(relax)"
+#define ASM_SPEC "%{v} %(asm_cpu) %(relax) %{fpic:-K PIC} %{fPIC:-K PIC}"
 
 #define LINK_SPEC "%{v} %(link_cpu) %(relax)"
 
@@ -234,6 +244,16 @@ extern int target_flags;
 #undef  TARGET_M32R
 #define TARGET_M32R             (! TARGET_M32RX && ! TARGET_M32R2)
 
+/* Big Endian Flag.  */
+#define BIG_ENDIAN_BIT 		(1 << 7)
+#define TARGET_BIG_ENDIAN       (target_flags & BIG_ENDIAN_BIT)
+
+/* Little Endian Flag.  */
+#define LITTLE_ENDIAN_BIT 	(1 <<  8)
+#ifndef TARGET_LITTLE_ENDIAN 	/* See little.h */
+#define TARGET_LITTLE_ENDIAN    (target_flags & LITTLE_ENDIAN_BIT)
+#endif
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -270,6 +290,11 @@ extern int target_flags;
 extern const char * m32r_model_string;
 extern const char * m32r_sdata_string;
 
+/* Cache-flush support.  */
+extern const char * m32r_cache_flush_func;
+extern const char * m32r_cache_flush_trap_string;
+extern int m32r_cache_flush_trap;
+
 #ifndef SUBTARGET_OPTIONS
 #define SUBTARGET_OPTIONS
 #endif
@@ -279,7 +304,15 @@ extern const char * m32r_sdata_string;
   { "model=", & m32r_model_string,					\
     N_("Code size: small, medium or large"), 0},			\
   { "sdata=", & m32r_sdata_string,					\
-    N_("Small data area: none, sdata, use"), 0}				\
+    N_("Small data area: none, sdata, use"), 0},			\
+  { "no-flush-func", & m32r_cache_flush_func,				\
+    N_("Don't call any cache flush functions") },			\
+  { "flush-func=", & m32r_cache_flush_func,				\
+    N_("Specify cache flush function") },				\
+  { "no-flush-trap", & m32r_cache_flush_trap_string,			\
+    N_("Don't call any cache flush trap") },				\
+  { "flush-trap=", & m32r_cache_flush_trap_string,			\
+    N_("Specify cache flush trap number") }				\
   SUBTARGET_OPTIONS							\
 }
 
@@ -307,13 +340,13 @@ extern const char * m32r_sdata_string;
 enum m32r_model { M32R_MODEL_SMALL, M32R_MODEL_MEDIUM, M32R_MODEL_LARGE };
 
 extern enum m32r_model m32r_model;
-#define TARGET_MODEL_SMALL (m32r_model == M32R_MODEL_SMALL)
+#define TARGET_MODEL_SMALL  (m32r_model == M32R_MODEL_SMALL)
 #define TARGET_MODEL_MEDIUM (m32r_model == M32R_MODEL_MEDIUM)
-#define TARGET_MODEL_LARGE (m32r_model == M32R_MODEL_LARGE)
-#define TARGET_ADDR24 (m32r_model == M32R_MODEL_SMALL)
-#define TARGET_ADDR32 (! TARGET_ADDR24)
-#define TARGET_CALL26 (! TARGET_CALL32)
-#define TARGET_CALL32 (m32r_model == M32R_MODEL_LARGE)
+#define TARGET_MODEL_LARGE  (m32r_model == M32R_MODEL_LARGE)
+#define TARGET_ADDR24       (m32r_model == M32R_MODEL_SMALL)
+#define TARGET_ADDR32       (! TARGET_ADDR24)
+#define TARGET_CALL26       (! TARGET_CALL32)
+#define TARGET_CALL32       (m32r_model == M32R_MODEL_LARGE)
 
 /* The default is the small model.  */
 #ifndef M32R_MODEL_DEFAULT
@@ -349,8 +382,7 @@ extern enum m32r_model m32r_model;
    .data).  ??? There can be a problem if the user passes a -G value greater
    than the default and a library object in a header file is that size.
    The default is 8 so this should be rare - if it occurs the user
-   is required to rebuild the libraries or use a smaller value for -G.
-*/
+   is required to rebuild the libraries or use a smaller value for -G.  */
 
 /* Maximum size of variables that go in .sdata/.sbss.
    The -msdata=foo switch also controls how small variables are handled.  */
@@ -361,9 +393,9 @@ extern enum m32r_model m32r_model;
 enum m32r_sdata { M32R_SDATA_NONE, M32R_SDATA_SDATA, M32R_SDATA_USE };
 
 extern enum m32r_sdata m32r_sdata;
-#define TARGET_SDATA_NONE (m32r_sdata == M32R_SDATA_NONE)
+#define TARGET_SDATA_NONE  (m32r_sdata == M32R_SDATA_NONE)
 #define TARGET_SDATA_SDATA (m32r_sdata == M32R_SDATA_SDATA)
-#define TARGET_SDATA_USE (m32r_sdata == M32R_SDATA_USE)
+#define TARGET_SDATA_USE   (m32r_sdata == M32R_SDATA_USE)
 
 /* Default is to disable the SDA
    [for upward compatibility with previous toolchains].  */
@@ -438,11 +470,11 @@ extern enum m32r_sdata m32r_sdata;
 #define BITS_BIG_ENDIAN 1
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
-#define BYTES_BIG_ENDIAN 1
+#define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
-#define WORDS_BIG_ENDIAN 1
+#define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
 /* Define this macro if WORDS_BIG_ENDIAN is not constant.  This must
    be a constant value with the same meaning as WORDS_BIG_ENDIAN,
@@ -481,7 +513,7 @@ extern enum m32r_sdata m32r_sdata;
 #define STACK_BOUNDARY 32
 
 /* ALIGN FRAMES on word boundaries */
-#define M32R_STACK_ALIGN(LOC) (((LOC)+3) & ~3)
+#define M32R_STACK_ALIGN(LOC) (((LOC) + 3) & ~ 3)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
@@ -516,6 +548,9 @@ extern enum m32r_sdata m32r_sdata;
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* Define LAVEL_ALIGN to calculate code length of PNOP at labels.  */
+#define LABEL_ALIGN(insn) 2
 
 /* Layout of source language data types.  */
 
@@ -611,6 +646,14 @@ extern enum m32r_sdata m32r_sdata;
 
 #ifdef SUBTARGET_CONDITIONAL_REGISTER_USAGE
 #define CONDITIONAL_REGISTER_USAGE SUBTARGET_CONDITIONAL_REGISTER_USAGE
+#else
+#define CONDITIONAL_REGISTER_USAGE			 \
+  do							 \
+    {							 \
+      if (flag_pic)					 \
+          fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	 \
+    }							 \
+  while (0)
 #endif
 
 /* If defined, an initializer for a vector of integers, containing the
@@ -621,7 +664,7 @@ extern enum m32r_sdata m32r_sdata;
 #define SUBTARGET_REG_ALLOC_ORDER
 #endif
 
-#if 1 /* better for int code */
+#if 1 /* Better for int code.  */
 #define REG_ALLOC_ORDER				\
 {						\
   4,  5,  6,  7,  2,  3,  8,  9, 10,		\
@@ -629,7 +672,7 @@ extern enum m32r_sdata m32r_sdata;
   SUBTARGET_REG_ALLOC_ORDER			\
 }
 
-#else /* better for fp code at expense of int code */
+#else /* Better for fp code at expense of int code.  */
 #define REG_ALLOC_ORDER				\
 {						\
    0,  1,  2,  3,  4,  5,  6,  7,  8,		\
@@ -643,13 +686,13 @@ extern enum m32r_sdata m32r_sdata;
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.  */
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 extern const unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 extern unsigned int m32r_mode_class[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-((m32r_hard_regno_mode_ok[REGNO] & m32r_mode_class[MODE]) != 0)
+  ((m32r_hard_regno_mode_ok[REGNO] & m32r_mode_class[MODE]) != 0)
 
 /* A C expression that is nonzero if it is desirable to choose
    register allocation so as to avoid move instructions between a
@@ -660,11 +703,11 @@ extern unsigned int m32r_mode_class[];
    MODE2)' must be zero.  */
 
 /* Tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-(GET_MODE_CLASS (MODE1) == MODE_INT		\
- && GET_MODE_CLASS (MODE2) == MODE_INT		\
- && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
- && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
+#define MODES_TIEABLE_P(MODE1, MODE2) 		\
+  (   GET_MODE_CLASS (MODE1) == MODE_INT	\
+   && GET_MODE_CLASS (MODE2) == MODE_INT	\
+   && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
+   && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
 
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m32r_hard_regno_rename_ok (OLD_REG, NEW_REG)
@@ -745,10 +788,10 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-#define REG_CLASS_FROM_LETTER(C)					\
-((C) == 'c'	? CARRY_REG						\
- : (C) == 'a'	? ACCUM_REGS						\
- :		  NO_REGS)
+#define REG_CLASS_FROM_LETTER(C)			\
+  (  (C) == 'c'	? CARRY_REG				\
+   : (C) == 'a'	? ACCUM_REGS				\
+   :		  NO_REGS)
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
@@ -756,22 +799,22 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-((REGNO) < FIRST_PSEUDO_REGISTER			\
- ? GPR_P (REGNO) || (REGNO) == ARG_POINTER_REGNUM	\
- : GPR_P (reg_renumber[REGNO]))
+  ((REGNO) < FIRST_PSEUDO_REGISTER			\
+   ? GPR_P (REGNO) || (REGNO) == ARG_POINTER_REGNUM	\
+   : GPR_P (reg_renumber[REGNO]))
+
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
-#define PREFERRED_RELOAD_CLASS(X,CLASS) \
-(CLASS)
+#define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
-((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* The letters I, J, K, L, M, N, O, P in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -794,37 +837,37 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    <= ((unsigned HOST_WIDE_INT)((HIGH) - (LOW))))
 
 /* Local to this file.  */
-#define INT8_P(X) ((X) >= -0x80 && (X) <= 0x7f)
-#define INT16_P(X) ((X) >= -0x8000 && (X) <= 0x7fff)
-#define CMP_INT16_P(X) ((X) >= -0x7fff && (X) <= 0x8000)
-#define UPPER16_P(X) (((X) & 0xffff) == 0				\
-		      && ((X) >> 16) >= -0x8000				\
-		      && ((X) >> 16) <= 0x7fff)
-#define UINT16_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0x0000ffff)
-#define UINT24_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0x00ffffff)
-#define UINT32_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0xffffffff)
-#define UINT5_P(X)  ((X) >= 0 && (X) < 32)
+#define INT8_P(X)      ((X) >= -   0x80 && (X) <= 0x7f)
+#define INT16_P(X)     ((X) >= - 0x8000 && (X) <= 0x7fff)
+#define CMP_INT16_P(X) ((X) >= - 0x7fff && (X) <= 0x8000)
+#define UPPER16_P(X)  (((X) & 0xffff) == 0				\
+		        && ((X) >> 16) >= - 0x8000			\
+		        && ((X) >> 16) <= 0x7fff)
+#define UINT16_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0x0000ffff)
+#define UINT24_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0x00ffffff)
+#define UINT32_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0xffffffff)
+#define UINT5_P(X)    ((X) >= 0 && (X) < 32)
 #define INVERTED_SIGNED_8BIT(VAL) ((VAL) >= -127 && (VAL) <= 128)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
-((C) == 'I' ? INT8_P (VALUE)						\
- : (C) == 'J' ? INT16_P (VALUE)						\
- : (C) == 'K' ? UINT16_P (VALUE)					\
- : (C) == 'L' ? UPPER16_P (VALUE)					\
- : (C) == 'M' ? UINT24_P (VALUE)					\
- : (C) == 'N' ? INVERTED_SIGNED_8BIT (VALUE)				\
- : (C) == 'O' ? UINT5_P (VALUE)						\
- : (C) == 'P' ? CMP_INT16_P (VALUE)					\
- : 0)
+  (  (C) == 'I' ? INT8_P (VALUE)					\
+   : (C) == 'J' ? INT16_P (VALUE)					\
+   : (C) == 'K' ? UINT16_P (VALUE)					\
+   : (C) == 'L' ? UPPER16_P (VALUE)					\
+   : (C) == 'M' ? UINT24_P (VALUE)					\
+   : (C) == 'N' ? INVERTED_SIGNED_8BIT (VALUE)				\
+   : (C) == 'O' ? UINT5_P (VALUE)					\
+   : (C) == 'P' ? CMP_INT16_P (VALUE)					\
+   : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.
    For the m32r, handle a few constants inline.
    ??? We needn't treat DI and DF modes differently, but for now we do.  */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-((C) == 'G' ? easy_di_const (VALUE)					\
- : (C) == 'H' ? easy_df_const (VALUE)					\
- : 0)
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
+  (  (C) == 'G' ? easy_di_const (VALUE)					\
+   : (C) == 'H' ? easy_df_const (VALUE)					\
+   : 0)
 
 /* A C expression that defines the optional machine-dependent constraint
    letters that can be used to segregate specific types of operands,
@@ -839,31 +882,25 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    U is for loads with post increment.  */
 
 #define EXTRA_CONSTRAINT(VALUE, C)					\
-(  (C) == 'Q' ? ((TARGET_ADDR24 && GET_CODE (VALUE) == LABEL_REF)	\
+  (  (C) == 'Q' ? ((TARGET_ADDR24 && GET_CODE (VALUE) == LABEL_REF)	\
 		 || addr24_operand (VALUE, VOIDmode))			\
- : (C) == 'R' ? ((TARGET_ADDR32 && GET_CODE (VALUE) == LABEL_REF)	\
+   : (C) == 'R' ? ((TARGET_ADDR32 && GET_CODE (VALUE) == LABEL_REF)	\
 		 || addr32_operand (VALUE, VOIDmode))			\
- : (C) == 'S' ? (GET_CODE (VALUE) == MEM				\
+   : (C) == 'S' ? (GET_CODE (VALUE) == MEM				\
 		 && STORE_PREINC_PREDEC_P (GET_MODE (VALUE),		\
 					   XEXP (VALUE, 0)))		\
- : (C) == 'T' ? (GET_CODE (VALUE) == MEM				\
+   : (C) == 'T' ? (GET_CODE (VALUE) == MEM				\
 		 && memreg_operand (VALUE, GET_MODE (VALUE)))		\
- : (C) == 'U' ? (GET_CODE (VALUE) == MEM				\
+   : (C) == 'U' ? (GET_CODE (VALUE) == MEM				\
 		 && LOAD_POSTINC_P (GET_MODE (VALUE),			\
 				    XEXP (VALUE, 0)))			\
- : 0)
+   : 0)
 
 /* Stack layout and stack pointer usage.  */
 
 /* Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD
-
-/* Define this if the nominal address of the stack frame
-   is at the high-address end of the local variables;
-   that is, each additional local variable allocated
-   goes at a more negative offset from the frame pointer.  */
-/*#define FRAME_GROWS_DOWNWARD*/
 
 /* Offset from frame pointer to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
@@ -872,7 +909,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* The frame pointer points at the same place as the stack pointer, except if
    alloca has been called.  */
 #define STARTING_FRAME_OFFSET \
-M32R_STACK_ALIGN (current_function_outgoing_args_size)
+  M32R_STACK_ALIGN (current_function_outgoing_args_size)
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
@@ -880,32 +917,6 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
-
-/* A C expression whose value is RTL representing the address in a
-   stack frame where the pointer to the caller's frame is stored.
-   Assume that FRAMEADDR is an RTL expression for the address of the
-   stack frame itself.
-
-   If you don't define this macro, the default is to return the value
-   of FRAMEADDR--that is, the stack frame address is also the address
-   of the stack word that points to the previous frame.  */
-/*define DYNAMIC_CHAIN_ADDRESS (FRAMEADDR)*/
-
-/* A C expression whose value is RTL representing the value of the
-   return address for the frame COUNT steps up from the current frame.
-   FRAMEADDR is the frame pointer of the COUNT frame, or the frame
-   pointer of the COUNT - 1 frame if `RETURN_ADDR_IN_PREVIOUS_FRAME'
-   is defined.  */
-/* The current return address is in r14.  */
-#if 0 /* The default value should work.  */
-#define RETURN_ADDR_RTX(COUNT, FRAME) \
-(((COUNT) == -1)							\
- ? gen_rtx_REG (Pmode, 14)						\
- : copy_to_reg (gen_rtx_MEM (Pmode,					\
-			     memory_address (Pmode,			\
-					     plus_constant ((FRAME),	\
-							    UNITS_PER_WORD)))))
-#endif
 
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM 15
@@ -916,30 +927,17 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 16
 
-/* The register number of the return address pointer register, which
-   is used to access the current function's return address from the
-   stack.  On some machines, the return address is not at a fixed
-   offset from the frame pointer or stack pointer or argument
-   pointer.  This register can be defined to point to the return
-   address on the stack, and then be converted by `ELIMINABLE_REGS'
-   into either the frame pointer or stack pointer.
-
-   Do not define this macro unless there is no other way to get the
-   return address from the stack.  */
-/* ??? revisit */
-/* #define RETURN_ADDRESS_POINTER_REGNUM */
-
-/* Register in which static-chain is passed to a function.  This must
-   not be a register used by the prologue.  */
-#define STATIC_CHAIN_REGNUM 7
+/* Register in which static-chain is passed to a function.
+   This must not be a register used by the prologue.  */
+#define STATIC_CHAIN_REGNUM  7
 
 /* These aren't official macros.  */
-#define PROLOGUE_TMP_REGNUM 4
-#define RETURN_ADDR_REGNUM 14
-/* #define GP_REGNUM 12 */
-#define CARRY_REGNUM 17
-#define ACCUM_REGNUM 18
-#define M32R_MAX_INT_REGS 16
+#define PROLOGUE_TMP_REGNUM  4
+#define RETURN_ADDR_REGNUM  14
+/* #define GP_REGNUM        12 */
+#define CARRY_REGNUM        17
+#define ACCUM_REGNUM        18
+#define M32R_MAX_INT_REGS   16
 
 #ifndef SUBTARGET_GPR_P
 #define SUBTARGET_GPR_P(REGNO) 0
@@ -1004,19 +1002,21 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    registers.  This macro must be defined if `ELIMINABLE_REGS' is
    defined.  */
 
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-{									\
-  int size = m32r_compute_frame_size (get_frame_size ());		\
-									\
- if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-   (OFFSET) = 0;							\
- else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
-   (OFFSET) = size - current_function_pretend_args_size;		\
- else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-   (OFFSET) = size - current_function_pretend_args_size;		\
-  else									\
-    abort ();								\
-}
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)				\
+  do										\
+    {										\
+      int size = m32r_compute_frame_size (get_frame_size ());			\
+										\
+      if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
+	(OFFSET) = 0;								\
+      else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
+	(OFFSET) = size - current_function_pretend_args_size;			\
+      else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
+	(OFFSET) = size - current_function_pretend_args_size;			\
+      else									\
+	abort ();								\
+    }										\
+  while (0)
 
 /* Function argument passing.  */
 
@@ -1029,22 +1029,6 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    onto the stack for each call; instead, the function prologue should
    increase the stack frame size by this amount.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
-
-/* Define this macro if functions should assume that stack space has
-   been allocated for arguments even when their values are passed in
-   registers.
-
-   The value of this macro is the size, in bytes, of the area
-   reserved for arguments passed in registers for the function
-   represented by FNDECL.
-
-   This space can be allocated by the caller, or be a part of the
-   machine-dependent stack frame: `OUTGOING_REG_PARM_STACK_SPACE' says
-   which.  */
-#if 0
-#define REG_PARM_STACK_SPACE(FNDECL) \
-  (M32R_MAX_PARM_REGS * UNITS_PER_WORD)
-#endif
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
@@ -1159,9 +1143,8 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 #if 0
 /* We assume PARM_BOUNDARY == UNITS_PER_WORD here.  */
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-(((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) <= PARM_BOUNDARY \
- ? PARM_BOUNDARY \
- : 2 * PARM_BOUNDARY)
+  (((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) <= PARM_BOUNDARY \
+   ? PARM_BOUNDARY : 2 * PARM_BOUNDARY)
 #endif
 
 /* This macro offers an alternative
@@ -1192,7 +1175,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    this case.  */
 
 #define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_SIZE, NO_RTL) \
- m32r_setup_incoming_varargs (&ARGS_SO_FAR, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
+  m32r_setup_incoming_varargs (& ARGS_SO_FAR, MODE, TYPE, & PRETEND_SIZE, NO_RTL)
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
@@ -1243,19 +1226,49 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
-#define FUNCTION_PROFILER(FILE, LABELNO) abort ()
+#undef  FUNCTION_PROFILER
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+  do								\
+    {								\
+      if (flag_pic)						\
+	{							\
+	  fprintf (FILE, "\tld24 r14,#mcount\n");		\
+	  fprintf (FILE, "\tadd r14,r12\n");			\
+	  fprintf (FILE, "\tld r14,@r14\n");			\
+	  fprintf (FILE, "\tjl r14\n");				\
+	}							\
+      else							\
+	{							\
+	  if (TARGET_ADDR24)					\
+	    fprintf (FILE, "\tbl mcount\n");			\
+	  else							\
+	    {							\
+	      fprintf (FILE, "\tseth r14,#high(mcount)\n");	\
+	      fprintf (FILE, "\tor3 r14,r14,#low(mcount)\n");	\
+	      fprintf (FILE, "\tjl r14\n");			\
+	    }							\
+	}							\
+      fprintf (FILE, "\taddi sp,#4\n");				\
+    }								\
+  while (0)
 
 /* Trampolines.  */
 
-/* On the M32R, the trampoline is
+/* On the M32R, the trampoline is:
 
-	ld24 r7,STATIC
-	ld24 r6,FUNCTION
-	jmp r6
-	nop
+        mv      r7, lr   -> bl L1        ; 178e 7e01
+L1:     add3    r6, lr, #L2-L1           ; 86ae 000c (L2 - L1 = 12)
+        mv      lr, r7   -> ld r7,@r6+   ; 1e87 27e6
+        ld      r6, @r6  -> jmp r6       ; 26c6 1fc6
+L2:     .word STATIC
+        .word FUNCTION  */
 
-   ??? Need addr32 support.
-*/
+#ifndef CACHE_FLUSH_FUNC
+#define CACHE_FLUSH_FUNC "_flush_cache"
+#endif
+#ifndef CACHE_FLUSH_TRAP
+#define CACHE_FLUSH_TRAP "12"
+#endif
 
 /* Length in bytes of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE 12
@@ -1263,16 +1276,35 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-do { \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 0)), \
-		  plus_constant ((CXT), 0xe7000000)); \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), \
-		  plus_constant ((FNADDR), 0xe6000000)); \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 8)), \
-		  GEN_INT (0x1fc67000)); \
-  emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)))); \
-} while (0)
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) 				\
+  do										\
+    {										\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 0)),		\
+		      GEN_INT							\
+		      (TARGET_LITTLE_ENDIAN ? 0x017e8e17 : 0x178e7e01));	\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)),		\
+		      GEN_INT							\
+		      (TARGET_LITTLE_ENDIAN ? 0x0c00ae86 : 0x86ae000c));	\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 8)),		\
+		      GEN_INT							\
+		      (TARGET_LITTLE_ENDIAN ? 0xe627871e : 0x1e8727e6));	\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)),		\
+		      GEN_INT							\
+		      (TARGET_LITTLE_ENDIAN ? 0xc616c626 : 0x26c61fc6));	\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 16)),		\
+		      (CXT));							\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 20)),		\
+		      (FNADDR));						\
+      if (m32r_cache_flush_trap_string && m32r_cache_flush_trap_string[0])	\
+	emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)),\
+				     GEN_INT (m32r_cache_flush_trap) ));	\
+      else if (m32r_cache_flush_func && m32r_cache_flush_func[0])		\
+	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, m32r_cache_flush_func), 	\
+			   0, VOIDmode, 3, TRAMP, Pmode,			\
+			   GEN_INT (TRAMPOLINE_SIZE), SImode,			\
+			   GEN_INT (3), SImode);				\
+    }										\
+  while (0)
 
 /* Library calls.  */
 
@@ -1286,14 +1318,17 @@ do { \
 
 /* We have post-inc load and pre-dec,pre-inc store,
    but only for 4 byte vals.  */
-#define HAVE_PRE_DECREMENT 1
-#define HAVE_PRE_INCREMENT 1
+#define HAVE_PRE_DECREMENT  1
+#define HAVE_PRE_INCREMENT  1
 #define HAVE_POST_INCREMENT 1
 
 /* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X) \
-(GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
- || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST)
+#define CONSTANT_ADDRESS_P(X)   \
+  (    GET_CODE (X) == LABEL_REF  \
+   ||  GET_CODE (X) == SYMBOL_REF \
+   ||  GET_CODE (X) == CONST_INT  \
+   || (GET_CODE (X) == CONST      \
+       && ! (flag_pic && ! m32r_legitimate_pic_operand_p (X))))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    We don't allow (plus symbol large-constant) as the relocations can't
@@ -1302,11 +1337,11 @@ do { \
    constant to memory if they can't handle them.  */
 
 #define LEGITIMATE_CONSTANT_P(X)					\
-(! (GET_CODE (X) == CONST						\
-    && GET_CODE (XEXP (X, 0)) == PLUS					\
-    && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF			\
-    && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
-    && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
+  (! (GET_CODE (X) == CONST						\
+      && GET_CODE (XEXP (X, 0)) == PLUS					\
+      && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF			\
+      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
+      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1333,9 +1368,9 @@ do { \
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X)		\
-(GPR_P (REGNO (X))			\
- || (REGNO (X)) == ARG_POINTER_REGNUM	\
- || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (GPR_P (REGNO (X))			\
+   || (REGNO (X)) == ARG_POINTER_REGNUM	\
+   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
@@ -1352,51 +1387,54 @@ do { \
 
 /* Local to this file.  */
 #define RTX_OK_FOR_OFFSET_P(X) \
-(GET_CODE (X) == CONST_INT && INT16_P (INTVAL (X)))
+  (GET_CODE (X) == CONST_INT && INT16_P (INTVAL (X)))
 
 /* Local to this file.  */
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X)				\
-(GET_CODE (X) == PLUS							\
- && RTX_OK_FOR_BASE_P (XEXP (X, 0))					\
- && RTX_OK_FOR_OFFSET_P (XEXP (X, 1)))
+#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X)			\
+  (GET_CODE (X) == PLUS						\
+   && RTX_OK_FOR_BASE_P (XEXP (X, 0))				\
+   && RTX_OK_FOR_OFFSET_P (XEXP (X, 1)))
 
 /* Local to this file.  */
 /* For LO_SUM addresses, do not allow them if the MODE is > 1 word,
    since more than one instruction will be required.  */
-#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)				\
-(GET_CODE (X) == LO_SUM							\
- && (MODE != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)		\
- && RTX_OK_FOR_BASE_P (XEXP (X, 0))					\
- && CONSTANT_P (XEXP (X, 1)))
+#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)			\
+  (GET_CODE (X) == LO_SUM					\
+   && (MODE != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)\
+   && RTX_OK_FOR_BASE_P (XEXP (X, 0))				\
+   && CONSTANT_P (XEXP (X, 1)))
 
 /* Local to this file.  */
 /* Is this a load and increment operation.  */
-#define LOAD_POSTINC_P(MODE, X)						\
-(((MODE) == SImode || (MODE) == SFmode)					\
- && GET_CODE (X) == POST_INC						\
- && GET_CODE (XEXP (X, 0)) == REG					\
- && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
+#define LOAD_POSTINC_P(MODE, X)					\
+  (((MODE) == SImode || (MODE) == SFmode)			\
+   && GET_CODE (X) == POST_INC					\
+   && GET_CODE (XEXP (X, 0)) == REG				\
+   && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
 
 /* Local to this file.  */
 /* Is this an increment/decrement and store operation.  */
-#define STORE_PREINC_PREDEC_P(MODE, X)					\
-(((MODE) == SImode || (MODE) == SFmode)					\
- && (GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC)		\
- && GET_CODE (XEXP (X, 0)) == REG					\
- && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
+#define STORE_PREINC_PREDEC_P(MODE, X)				\
+  (((MODE) == SImode || (MODE) == SFmode)			\
+   && (GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC)	\
+   && GET_CODE (XEXP (X, 0)) == REG				\
+   && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-{ if (RTX_OK_FOR_BASE_P (X))						\
-    goto ADDR;								\
-  if (LEGITIMATE_OFFSET_ADDRESS_P ((MODE), (X)))			\
-    goto ADDR;								\
-  if (LEGITIMATE_LO_SUM_ADDRESS_P ((MODE), (X)))			\
-    goto ADDR;								\
-  if (LOAD_POSTINC_P ((MODE), (X)))					\
-    goto ADDR;								\
-  if (STORE_PREINC_PREDEC_P ((MODE), (X)))				\
-    goto ADDR;								\
-}
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
+  do								\
+    {								\
+      if (RTX_OK_FOR_BASE_P (X))				\
+	goto ADDR;						\
+      if (LEGITIMATE_OFFSET_ADDRESS_P ((MODE), (X)))		\
+	goto ADDR;						\
+      if (LEGITIMATE_LO_SUM_ADDRESS_P ((MODE), (X)))		\
+	goto ADDR;						\
+      if (LOAD_POSTINC_P ((MODE), (X)))				\
+	goto ADDR;						\
+      if (STORE_PREINC_PREDEC_P ((MODE), (X)))			\
+	goto ADDR;						\
+    }								\
+  while (0)
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
@@ -1409,22 +1447,30 @@ do { \
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
+   opportunities to optimize the output.  */
 
-   ??? Is there anything useful we can do here for the M32R?  */
-
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)			 \
+  do								 \
+    {								 \
+      if (flag_pic)						 \
+	(X) = m32r_legitimize_pic_address (X, NULL_RTX);	 \
+      if (memory_address_p (MODE, X))				 \
+	goto WIN;						 \
+    }								 \
+  while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)			\
-do {									\
-  if (GET_CODE (ADDR) == PRE_DEC					\
-      || GET_CODE (ADDR) == PRE_INC					\
-      || GET_CODE (ADDR) == POST_INC					\
-      || GET_CODE (ADDR) == LO_SUM)					\
-    goto LABEL;								\
-} while (0)
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)		\
+  do								\
+    {						 		\
+      if (   GET_CODE (ADDR) == PRE_DEC		 		\
+	  || GET_CODE (ADDR) == PRE_INC		 		\
+	  || GET_CODE (ADDR) == POST_INC		 	\
+	  || GET_CODE (ADDR) == LO_SUM)		 		\
+	goto LABEL;					 	\
+    }								\
+  while (0)
 
 /* Condition code usage.  */
 
@@ -1481,9 +1527,9 @@ do {									\
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.
    This macro is irrelevant if there is no separate readonly data section.  */
-/*#define JUMP_TABLES_IN_TEXT_SECTION*/
+#define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
-/* PIC */
+/* Position Independent Code.  */
 
 /* The register number of the register used to address a table of static
    data addresses in memory.  In some cases this register is defined by a
@@ -1492,7 +1538,7 @@ do {									\
    pointer and frame pointer registers.  If this macro is not defined, it
    is up to the machine-dependent files to allocate such a register (if
    necessary).  */
-/*#define PIC_OFFSET_TABLE_REGNUM 12*/
+#define PIC_OFFSET_TABLE_REGNUM 12
 
 /* Define this macro if the register defined by PIC_OFFSET_TABLE_REGNUM is
    clobbered by calls.  Do not define this macro if PIC_OFFSET_TABLE_REGNUM
@@ -1514,7 +1560,7 @@ do {									\
    included in functions which used inline functions and were compiled to
    assembly language.)  */
 
-/*#define FINALIZE_PIC m32r_finalize_pic ()*/
+#define FINALIZE_PIC m32r_finalize_pic ()
 
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent code.
@@ -1523,7 +1569,7 @@ do {									\
    check it either.  You need not define this macro if all constants
    (including SYMBOL_REF) can be immediate operands when generating
    position independent code.  */
-/*#define LEGITIMATE_PIC_OPERAND_P(X)*/
+#define LEGITIMATE_PIC_OPERAND_P(X) m32r_legitimate_pic_operand_p (X)
 
 /* Control the assembler format that we output.  */
 
@@ -1620,10 +1666,10 @@ extern char m32r_punct_chars[256];
    are useful when a single `md' file must support multiple assembler
    formats.  In that case, the various `tm.h' files can define these
    macros differently.  */
-#define REGISTER_PREFIX ""
-#define LOCAL_LABEL_PREFIX ".L"
-#define USER_LABEL_PREFIX ""
-#define IMMEDIATE_PREFIX "#"
+#define REGISTER_PREFIX		""
+#define LOCAL_LABEL_PREFIX	".L"
+#define USER_LABEL_PREFIX	""
+#define IMMEDIATE_PREFIX	"#"
 
 /* This is how to output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
@@ -1648,7 +1694,7 @@ extern char m32r_punct_chars[256];
       fprintf (FILE, "-");				\
       ASM_GENERATE_INTERNAL_LABEL (label, "L", REL);	\
       assemble_name (FILE, label);			\
-      fprintf (FILE, ")\n");				\
+      fprintf (FILE, "\n");				\
     }							\
   while (0)
 
@@ -1720,7 +1766,7 @@ extern char m32r_punct_chars[256];
 /* Debugging information.  */
 
 /* Generate DBX and DWARF debugging information.  */
-#define DBX_DEBUGGING_INFO 1
+#define DBX_DEBUGGING_INFO    1
 #define DWARF2_DEBUGGING_INFO 1
 
 /* Prefer STABS (for now).  */
@@ -1734,7 +1780,7 @@ extern char m32r_punct_chars[256];
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE Pmode
+#define CASE_VECTOR_MODE (flag_pic ? SImode : Pmode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
@@ -1755,8 +1801,8 @@ extern char m32r_punct_chars[256];
    done, NIL if none.  */
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
+/* Max number of bytes we can move from memory
+   to memory in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order

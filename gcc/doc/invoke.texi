@@ -400,8 +400,16 @@ in the following sections.
 -mno-crt0  -mrelax}
 
 @emph{M32R/D Options}
-@gccoptlist{-m32r2 -m32rx -m32r -mcode-model=@var{model-type} @gol
--msdata=@var{sdata-type}  -G @var{num}}
+@gccoptlist{-m32r2 -m32rx -m32r @gol
+-mdebug @gol
+-malign-loops -mno-align-loops @gol
+-missue-rate=@var{number} @gol
+-mbranch-cost=@var{number} @gol
+-mmodel=@var{code-size-model-type} @gol
+-msdata=@var{sdata-type} @gol
+-mno-flush-func -mflush-func=@var{name} @gol
+-mno-flush-trap -mflush-trap=@var{number} @gol
+-G @var{num}}
 
 @emph{M88K Options}
 @gccoptlist{-m88000  -m88100  -m88110  -mbig-pic @gol
@@ -6834,8 +6842,8 @@ Generate code for the M32R/X@.
 @opindex m32r
 Generate code for the M32R@.  This is the default.
 
-@item -mcode-model=small
-@opindex mcode-model=small
+@item -mmodel=small
+@opindex mmodel=small
 Assume all objects live in the lower 16MB of memory (so that their addresses
 can be loaded with the @code{ld24} instruction), and assume all subroutines
 are reachable with the @code{bl} instruction.
@@ -6844,14 +6852,14 @@ This is the default.
 The addressability of a particular object can be set with the
 @code{model} attribute.
 
-@item -mcode-model=medium
-@opindex mcode-model=medium
+@item -mmodel=medium
+@opindex mmodel=medium
 Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume all subroutines are reachable with the @code{bl} instruction.
 
-@item -mcode-model=large
-@opindex mcode-model=large
+@item -mmodel=large
+@opindex mmodel=large
 Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume subroutines may not be reachable with the @code{bl} instruction
@@ -6892,6 +6900,49 @@ All modules should be compiled with the same @option{-G @var{num}} value.
 Compiling with different values of @var{num} may or may not work; if it
 doesn't the linker will give an error message---incorrect code will not be
 generated.
+
+@item -mdebug
+@opindex -mdebug
+Makes the M32R specific code in the compiler display some statistics
+that might help in debugging programs.
+
+@item -malign-loops
+@opindex
+Align all loops to a 32-byte boundary.
+
+@item -mno-align-loops
+@opindex
+Do not enforce a 32-byte alignment for loops.  This is the default.
+
+@item -missue-rate=@var{number}
+@opindex
+Issue @var{number} instructions per cycle.  @var{number} can only be 1
+or 2.
+
+@item -mbranch-cost=@var{number}
+@opindex
+@var{number} can only be 1 or 2.  If it is 1 then branches will be
+prefered over conditional code, if it is 2, then the opposite will
+apply.
+
+@item -mflush-trap=@var{number}
+@opindex
+Specifies the trap number to use to flush the cache.  The default is
+12.  Valid numbers are between 0 and 15 inclusive.
+
+@item -mno-flush-trap
+@opindex
+Specifies that the cache cannot be flushed by using a trap.
+
+@item -mflush-func=@var{name}
+@opindex
+Specifies the name of the operating system function to call to flush
+the cache.  The default is @emph{_flush_cache}, but a function call
+will only be used if a trap is not available.
+
+@item -mno-flush-func
+@opindex
+Indicates that there is no OS function for flushing the cache.
 
 @end table
 

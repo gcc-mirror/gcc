@@ -1,3 +1,41 @@
+2003-12-31  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config.gcc: Added m32r-linux m32rle-elf and m32le-linux targets.
+	* doc/invoke.texi: Document -mflush-func, -mflush-trap options.
+	Also add documentation for -mdebug, -malign-loops, -missue-rate,
+	and -mbranch-cost options.
+	* config/m32r/t-linux: New file: m32r-linux support.
+	* config/m32r/xm-linux.h: Likewise.
+	* config/m32r/xm-m32r.h: Likewise.
+	* config/m32r/linux.h: Likewise.
+	* config/m32r/little.h: New file: Little endian code generation
+	support.
+	* config/m32r/m32r-protos.h (m32r_legitimize_pic_address,
+	m32r_legitimate_pic_operand_p, load_pic_register): Add
+	prototypes.
+	* config/m32r/m32r.c (m32r_init): Add options for cache-flush.
+	(addr24_operand): Changes for PIC code generation.
+	* config/m32r/m32r.h (LABEL_ALIGN): Define to calculate PNOP
+	length at labels.
+	(ASM_SPEC): Add PIC support.
+	(FUNCTION_PROFILER): New define.
+	(TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE): Changed to support
+	trampoline.
+	(CONDITIONAL_REGISTER_USAGE, CONSTANT_ADDRESS_P,
+	 LEGITIMIZE_ADDRESS, JUMP_TABLES_IN_TEXT_SECTION,
+	 PIC_OFFSET_TABLE_REGNUM, FINALIZE_PIC, LEGITIMATE_PIC_OPERAND_P,
+	 ASM_OUTPUT_ADDR_DIFF_ELT, CASE_VECTOR_MODE): Define for PIC.
+	(move_src_operand, m32r_compute_frame_size, m32r_expand_prologue,
+	 m32r_finalize_pic): Changes for PIC and profile support.
+	(global_offset_table, load_pic_register, m32r_legitimate_pic_operand_p,
+	 m32r_legitimize_pic_address): Add for PIC support.
+	(m32r_file_start): Changed for little-endian-target.
+	* config/m32r/m32r.md (mvqi, movhi, movsi, movdi, movsf, movdf,
+	tablejump, tablejump_insn, call, call_value, call_value_via_label):
+	Changes for PIC.
+	(pic_load_addr, get_pc, builtin_setjmp_receiver): Added for PIC.
+	(flush_icache): Changes for cache-flush trap.
+
 2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/i386.h: Remove an unnecessary #undef.
