@@ -842,13 +842,7 @@ rtx_cost (x, outer_code)
   switch (code)
     {
     case MULT:
-      /* Count multiplication by 2**n as a shift,
-	 because if we are considering it, we would output it as a shift.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
-	total = 2;
-      else
-	total = COSTS_N_INSNS (5);
+      total = COSTS_N_INSNS (5);
       break;
     case DIV:
     case UDIV:
