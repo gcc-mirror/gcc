@@ -1,3 +1,8 @@
+2003-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/include/gcc-common.texi: Bump version number.
+	* version.c (version_string): Reset to prerelease format.
+
 2003-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/extend.texi: Fix typos.
