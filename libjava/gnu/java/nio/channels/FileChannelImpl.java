@@ -60,13 +60,8 @@ import java.nio.channels.WritableByteChannel;
  * Instances of this class are created by invoking getChannel
  * Upon a Input/Output/RandomAccessFile object.
  */
-
 public final class FileChannelImpl extends FileChannel
 {
-  // These are WHENCE values for seek.
-  static final int SET = 0;
-  static final int CUR = 1;
-
   // These are mode values for open().
   public static final int READ   = 1;
   public static final int WRITE  = 2;
@@ -139,24 +134,6 @@ public final class FileChannelImpl extends FileChannel
 
   public int read (ByteBuffer dst) throws IOException
   {
-    return implRead (dst);
-  }
-
-  public int read (ByteBuffer dst, long position)
-    throws IOException
-  {
-    if (position < 0)
-      throw new IllegalArgumentException ();
-    long oldPosition = implPosition ();
-    position (position);
-    int result = implRead (dst);
-    position (oldPosition);
-    
-    return result;
-  }
-
-  private int implRead (ByteBuffer dst) throws IOException
-  {
     int result;
     byte[] buffer = new byte [dst.remaining ()];
     
@@ -167,7 +144,20 @@ public final class FileChannelImpl extends FileChannel
 
     return result;
   }
-  
+
+  public int read (ByteBuffer dst, long position)
+    throws IOException
+  {
+    if (position < 0)
+      throw new IllegalArgumentException ();
+    long oldPosition = implPosition ();
+    position (position);
+    int result = read(dst);
+    position (oldPosition);
+    
+    return result;
+  }
+
   public native int read ()
     throws IOException;
 
@@ -189,7 +179,20 @@ public final class FileChannelImpl extends FileChannel
 
   public int write (ByteBuffer src) throws IOException
   {
-    return implWrite (src);
+    int len = src.remaining ();
+    if (src.hasArray())
+      {
+	byte[] buffer = src.array();
+	write(buffer, src.arrayOffset() + src.position(), len);
+      }
+    else
+      {
+	// Use a more efficient native method! FIXME!
+	byte[] buffer = new byte [len];
+    	src.get (buffer, 0, len);
+	write (buffer, 0, len);
+      }
+    return len;
   }
     
   public int write (ByteBuffer src, long position)
@@ -209,30 +212,12 @@ public final class FileChannelImpl extends FileChannel
 
     oldPosition = implPosition ();
     seek (position);
-    result = implWrite (src);
+    result = write(src);
     seek (oldPosition);
     
     return result;
   }
 
-  private int implWrite (ByteBuffer src) throws IOException
-  {
-    int len = src.remaining ();
-    if (src.hasArray())
-      {
-	byte[] buffer = src.array();
-	write(buffer, src.arrayOffset() + src.position(), len);
-      }
-    else
-      {
-	// Use a more efficient native method! FIXME!
-	byte[] buffer = new byte [len];
-    	src.get (buffer, 0, len);
-	write (buffer, 0, len);
-      }
-    return len;
-  }
-  
   public native void write (byte[] buffer, int offset, int length)
     throws IOException;
   
