@@ -613,13 +613,13 @@ command line.  If the same directory is named by both @samp{-I} and
 @samp{-isystem}, @samp{-I} wins; it is as if the @samp{-isystem} option
 had never been specified at all.
 
-@findex #pragma system_header
-There is also a directive, @samp{#pragma system_header}, which tells GCC
+@findex #pragma GCC system_header
+There is also a directive, @samp{#pragma GCC system_header}, which tells GCC
 to consider the rest of the current include file a system header, no
 matter where it was found.  Code that comes before the @samp{#pragma} in
 the file will not be affected.
 
-@samp{#pragma system_header} has no effect in the primary source file.
+@samp{#pragma GCC system_header} has no effect in the primary source file.
 
 @node Macros, Conditionals, Header Files, Top
 @section Macros
@@ -1503,23 +1503,27 @@ Recall that a comment counts as whitespace.
 @node Poisoning, Macro Pitfalls, Redefining, Macros
 @subsection Poisoning Macros
 @cindex poisoning macros
+@findex #pragma GCC poison
+@findex #pragma poison
 
 Sometimes, there is an identifier that you want to remove completely
 from your program, and make sure that it never creeps back in.  To
-enforce this, the @samp{#pragma poison} directive can be used.
-@samp{#pragma poison} is followed by a list of identifiers to poison,
+enforce this, the @samp{#pragma GCC poison} directive can be used.
+@samp{#pragma GCC poison} is followed by a list of identifiers to poison,
 and takes effect for the rest of the source.  You cannot @samp{#undef} a
 poisoned identifier or test to see if it's defined with @samp{#ifdef}.
 
 For example,
 
 @example
-#pragma poison printf sprintf fprintf
+#pragma GCC poison printf sprintf fprintf
 sprintf(some_string, "hello");
 @end example
 
 @noindent
 will produce an error.
+
+For backwards compatibility @samp{#pragma poison} is also recognized.
 
 @node Macro Pitfalls,, Poisoning, Macros
 @subsection Pitfalls and Subtleties of Macros
@@ -2637,11 +2641,15 @@ rather than a line of output containing just a @samp{#}.  Supposedly
 some old C programs contain such lines.
 
 @findex #pragma
+@findex #pragma GCC
+
 The ANSI standard specifies that the effect of the @samp{#pragma}
-directive is implementation-defined.  In the GNU C preprocessor,
-@samp{#pragma} directives are not used, except for @samp{#pragma once}
-(@pxref{Once-Only}).  However, they are left in the preprocessor output,
-so they are available to the compilation pass.
+directive is implementation-defined.  The GNU C preprocessor recognizes
+some pragmas, and passes unrecognized ones through to the preprocessor
+output, so they are available to the compilation pass.  GNU C preprocessor
+pragmas are of the form @samp{#pragma GCC ...}. For backwards
+compatibility previously supported pragmas are also recognized without
+the @samp{GCC}, however that use is deprecated.
 
 @findex #ident
 The @samp{#ident} directive is supported for compatibility with certain
