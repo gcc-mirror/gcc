@@ -1,5 +1,23 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileLockImpl.java:
+	Fixed filename in copyright.
+	(released): Removed.
+	(finalize): New method.
+	* gnu/java/nio/natFileLockImpl.cc
+	(releaseImpl): Implemented.
+	* java/nio/channels/FileChannelImpl.java:
+	Reworked imports.
+	(lock): Implemented.
+	(lockImpl): New method.
+	(tryLock): Implemented.
+	(tryLockImpl): New method.
+	* java/nio/channels/natFileChannelImpl.cc
+	(lockImpl): New method.
+	(tryLockImpl): New method.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileDescriptor.java
 	(lock): New method.
 	(tryLock): New method.

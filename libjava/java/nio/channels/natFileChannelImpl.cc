@@ -25,11 +25,13 @@ details.  */
 #endif
 
 #include <gnu/gcj/RawData.h>
+#include <gnu/java/nio/FileLockImpl.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/IOException.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/nio/channels/FileChannel.h>
 #include <java/nio/channels/FileChannelImpl.h>
+#include <java/nio/channels/FileLock.h>
 
 jlong
 java::nio::channels::FileChannelImpl::size ()
@@ -91,4 +93,18 @@ java::nio::channels::FileChannelImpl::nio_msync (gnu::gcj::RawData* /*map_addres
                                                  jint /*length*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("msync not implemented"));
+}
+
+void
+java::nio::channels::FileChannelImpl::lockImpl(jlong position, jlong size, jboolean shared)
+{
+  // FIXME: shared is unused, write is always true.
+  fd->lock(position, size, true);
+}
+
+jboolean
+java::nio::channels::FileChannelImpl::tryLockImpl(jlong position, jlong size, jboolean shared)
+{
+  // FIXME: shared is unused, write is always true.
+  return fd->tryLock(position, size, true);
 }

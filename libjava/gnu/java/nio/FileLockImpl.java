@@ -1,5 +1,5 @@
-/* FileChannelImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* FileLockImpl.java -- 
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,14 +60,24 @@ public class FileLockImpl extends FileLock
   }
   
   private FileDescriptor fd;
-  private boolean released;
   
   public FileLockImpl (FileDescriptor fd, FileChannel channel, long position,
                        long size, boolean shared)
   {
     super (channel, position, size, shared);
     this.fd = fd;
-    this.released = false;
+  }
+
+  public void finalize()
+  {
+    try
+      {
+	release();
+      }
+    catch (IOException e)
+      {
+	// Ignore this.
+      }
   }
   
   public boolean isValid ()
