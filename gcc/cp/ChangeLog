@@ -1,3 +1,14 @@
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9847
+	* cp-tree.h (duplicate_tag_error): Remove.
+	* class.c (duplicate_tag_error): Remove.
+	* semantics.c (begin_class_definition): Return immediately for a
+	duplicate class definition.
+
+	PR c++/10451
+	* decl.c (grokdeclarator): Correct logic for "mutable" errors.
+
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10446

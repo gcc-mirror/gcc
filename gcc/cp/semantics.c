@@ -1797,7 +1797,11 @@ begin_class_definition (t)
   /* If this type was already complete, and we see another definition,
      that's an error.  */
   if (COMPLETE_TYPE_P (t))
-    duplicate_tag_error (t);
+    {
+      error ("redefinition of `%#T'", t);
+      cp_error_at ("previous definition of `%#T'", t);
+      return error_mark_node;
+    }
 
   /* Update the location of the decl.  */
   DECL_SOURCE_FILE (TYPE_NAME (t)) = input_filename;

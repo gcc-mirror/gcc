@@ -3540,7 +3540,6 @@ extern void resort_type_method_vec
 extern void add_method				(tree, tree, int);
 extern int currently_open_class			(tree);
 extern tree currently_open_derived_class	(tree);
-extern void duplicate_tag_error			(tree);
 extern tree finish_struct			(tree, tree);
 extern void finish_struct_1			(tree);
 extern int resolves_to_fixed_type_p		(tree, int *);
