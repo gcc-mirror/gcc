@@ -637,42 +637,66 @@
 	(ashift:SI (match_operand:SI 1 "register_operand" "0")
 		   (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"lshlw %2,%0\", operands[2], 32); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"lshlw %2,%0\", operands[2], 32);
+}")
 
 (define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0")
 		     (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"ashrw %2,%0\", operands[2], 32); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"ashrw %2,%0\", operands[2], 32);
+}")
 
 (define_insn "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "0")
 		     (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"ashrl %2,%0\", operands[2], 64); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"ashrl %2,%0\", operands[2], 64);
+}")
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0")
 		     (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"lshrw %2,%0\", operands[2], 32); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"lshrw %2,%0\", operands[2], 32);
+}")
 
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand" "0")
 		   (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"rotlw %2,%0\", operands[2], 32); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"rotlw %2,%0\", operands[2], 32);
+}")
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotatert:SI (match_operand:SI 1 "register_operand" "0")
 		     (match_operand:SI 2 "general_operand" "rnm")))]
   ""
-  "* return output_shift (\"rotrw %2,%0\", operands[2], 32); ")
+  "*
+{
+  extern char *output_shift ();
+  return output_shift (\"rotrw %2,%0\", operands[2], 32);
+}")
 
 ;______________________________________________________________________
 ;
@@ -706,7 +730,11 @@
   [(set (match_operand:DI 0 "general_operand" "=r")
 	(match_operand:DI 1 "general_operand" "gF"))]
   ""
-  "* return output_move_double (operands); ")
+  "*
+{
+  extern char *output_move_double ();
+  return output_move_double (operands);
+}")
 
 ;; If the destination is a memory address, indexed source operands are
 ;; disallowed.
@@ -796,7 +824,11 @@
   [(set (match_operand:DF 0 "general_operand" "=r")
 	(match_operand:DF 1 "general_operand" "gF"))]
   ""
-  "* return output_move_double (operands); ")
+  "*
+{
+  extern char *output_move_double ();
+  return output_move_double (operands);
+}")
 
 ;; If the destination is a memory address, indexed source operands are
 ;; disallowed.
