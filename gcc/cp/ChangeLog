@@ -1,3 +1,10 @@
+2002-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5104
+	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
+	specifiers.
+	[METHOD_TYPE]: Use same code as FUNCTION_TYPE.
+
 2002-04-03  Richard Henderson  <rth@redhat.com>
 
 	* cp-lang.c (cxx_warn_unused_global_decl): New.

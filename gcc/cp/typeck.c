@@ -763,7 +763,7 @@ comp_except_types (a, b, exact)
 }
 
 /* Return 1 if TYPE1 and TYPE2 are equivalent exception specifiers.
-   If EXACT is 0, T2 can be a subset of T1 (according to 15.4/7),
+   If EXACT is 0, T2 can be stricter than T1 (according to 15.4/7),
    otherwise it must be exact. Exception lists are unordered, but
    we've already filtered out duplicates. Most lists will be in order,
    we should try to make use of that.  */
@@ -786,7 +786,7 @@ comp_except_specs (t1, t2, exact)
     return t2 != NULL_TREE && !TREE_VALUE (t2);
   if (t2 == NULL_TREE)              /* T2 is ... */
     return 0;
-  if (TREE_VALUE(t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
+  if (TREE_VALUE (t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
     return !exact;
   
   /* Neither set is ... or EMPTY, make sure each part of T2 is in T1.
@@ -987,20 +987,6 @@ comptypes (t1, t2, strict)
 	     && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict));
       break;
 
-    case METHOD_TYPE:
-      if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
-			       TYPE_RAISES_EXCEPTIONS (t2), 1))
-	return 0;
-
-      /* This case is anti-symmetrical!
-	 One can pass a base member (or member function)
-	 to something expecting a derived member (or member function),
-	 but not vice-versa!  */
-
-      val = (comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict)
-	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)));
-      break;
-
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       t1 = TREE_TYPE (t1);
@@ -1015,11 +1001,8 @@ comptypes (t1, t2, strict)
 	goto look_hard;
       break;
 
+    case METHOD_TYPE:
     case FUNCTION_TYPE:
-      if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
-			       TYPE_RAISES_EXCEPTIONS (t2), 1))
-	return 0;
-
       val = ((TREE_TYPE (t1) == TREE_TYPE (t2)
 	      || comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict))
 	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)));
