@@ -1,3 +1,9 @@
+2002-10-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(hpux11_abs):  use format fix
+	* fixinc/fixincl.x: regenerate
+	* fixinc/tests/base/stdlib.h: accommodate new fix test
+
 Sat Oct  5 19:42:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (cb_register_builtins):  Use really_no_inline.

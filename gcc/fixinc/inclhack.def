@@ -1172,7 +1172,9 @@ fix = {
     mach      = ia64-hp-hpux11*;
     files     = stdlib.h;
     select    = "ifndef _MATH_INCLUDED";
-    sed       = "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/";
+    c_fix     = format;
+    c_fix_arg = "if !defined(_MATH_INCLUDED) || defined(__GNUG__)";
+//  sed       = "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/";
     test_text = "#ifndef _MATH_INCLUDED";
 };
 
