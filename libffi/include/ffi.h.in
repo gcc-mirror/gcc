@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
    libffi @VERSION@ - Copyright (c) 1996-1999  Cygnus Solutions
 
-   $Id: ffi.h.in,v 1.5 2000/04/17 02:15:31 green Exp $
+   $Id: ffi.h.in,v 1.6 2000/12/08 19:41:15 green Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -43,11 +43,11 @@
 
    More details on the raw and cloure API can be found in:
 
-   http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00138.html
+   http://gcc.gnu.org/ml/java/1999-q3/msg00138.html
 
    and
 
-   http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00174.html
+   http://gcc.gnu.org/ml/java/1999-q3/msg00174.html
    -------------------------------------------------------------------- */
 
 #ifndef LIBFFI_H

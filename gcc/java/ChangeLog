@@ -1,3 +1,7 @@
+2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcj.texi: Change sources.redhat.com reference to gcc.gnu.org.
+
 2001-02-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (HANDLE_SYNTHETIC_ATTRIBUTE): Don't handle field

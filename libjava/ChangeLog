@@ -1,3 +1,9 @@
+2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* README, gij.cc, java/lang/natClass.cc, java/lang/natSystem.cc:
+	Change sources.redhat.com and sourceware.cygnus.com references to
+	gcc.gnu.org.
+
 2001-02-07  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/1906:

@@ -1005,7 +1005,7 @@ static _Jv_IDispatchTable null_idt = { {SHRT_MAX, 0, NULL} };
 // Generate tables for constant-time assignment testing and interface
 // method lookup. This implements the technique described by Per Bothner
 // <per@bothner.com> on the java-discuss mailing list on 1999-09-02:
-// http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00377.html
+// http://gcc.gnu.org/ml/java/1999-q3/msg00377.html
 void 
 _Jv_PrepareConstantTimeTables (jclass klass)
 {  
