@@ -96,11 +96,11 @@
 
 
 ;; Memory. Disregarding Cache misses, the Mustang memory times are:
-;; load: 1
+;; load: 2
 ;; store, fpstore: 3, no D-cache operations should be scheduled.
 ;; fpload: 3 (really 2 for flops, but I don't think we can specify that).
 
-(define_function_unit "memory" 1 1 (eq_attr "type" "load") 1 0)
+(define_function_unit "memory" 1 1 (eq_attr "type" "load") 2 0)
 (define_function_unit "memory" 1 1 (eq_attr "type" "store,fpstore") 3 0)
 (define_function_unit "memory" 1 1 (eq_attr "type" "fpload") 3 0)
 
