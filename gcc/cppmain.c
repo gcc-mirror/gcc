@@ -193,8 +193,13 @@ setup_callbacks ()
   if (! options->no_output)
     {
       cb->line_change = cb_line_change;
-      cb->ident      = cb_ident;
-      cb->def_pragma = cb_def_pragma;
+      /* Don't emit #pragma or #ident directives if we are processing
+	 assembly language; the assembler may choke on them.  */
+      if (options->lang != CLK_ASM)
+	{
+	  cb->ident      = cb_ident;
+	  cb->def_pragma = cb_def_pragma;
+	}
       if (! options->no_line_commands)
 	cb->file_change = cb_file_change;
     }
