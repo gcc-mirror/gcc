@@ -153,8 +153,6 @@ when optimising a loop, only certain registers are of interest.
 Perhaps there should be a bitmap argument to df_analyse to specify
  which registers should be analysed?   */
 
-#define HANDLE_SUBREG
-
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
@@ -175,18 +173,6 @@ Perhaps there should be a bitmap argument to df_analyse to specify
 do {								\
   unsigned int node_;						\
   EXECUTE_IF_SET_IN_BITMAP (BITMAP, MIN, node_, 		\
-    {(BB) = BASIC_BLOCK (node_); CODE;});} while (0)
-
-#define FOR_EACH_BB_IN_BITMAP_REV(BITMAP, MIN, BB, CODE)	\
-do {								\
-  unsigned int node_;						\
-  EXECUTE_IF_SET_IN_BITMAP_REV (BITMAP, node_, 		\
-    {(BB) = BASIC_BLOCK (node_); CODE;});} while (0)
-
-#define FOR_EACH_BB_IN_SBITMAP(BITMAP, MIN, BB, CODE)           \
-do {                                                            \
-  unsigned int node_;                                           \
-  EXECUTE_IF_SET_IN_SBITMAP (BITMAP, MIN, node_,                \
     {(BB) = BASIC_BLOCK (node_); CODE;});} while (0)
 
 static struct obstack df_ref_obstack;

@@ -198,13 +198,6 @@ fix_sched_param (param, val)
 
 struct haifa_insn_data *h_i_d;
 
-#define DONE_PRIORITY	-1
-#define MAX_PRIORITY	0x7fffffff
-#define TAIL_PRIORITY	0x7ffffffe
-#define LAUNCH_PRIORITY	0x7f000001
-#define DONE_PRIORITY_P(INSN) (INSN_PRIORITY (INSN) < 0)
-#define LOW_PRIORITY_P(INSN) ((INSN_PRIORITY (INSN) & 0x7f000000) == 0)
-
 #define LINE_NOTE(INSN)		(h_i_d[INSN_UID (INSN)].line_note)
 #define INSN_TICK(INSN)		(h_i_d[INSN_UID (INSN)].tick)
 

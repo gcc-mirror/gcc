@@ -595,13 +595,7 @@ static struct obstack irp;
 
 #define VLA_HWINT_BEGIN(vla) (&VARRAY_WIDE_INT ((vla).varray, 0))
 
-/* Do not use side effects in the macro argument.  */
-#define VLA_HWINT_LAST(vla) (&VARRAY_WIDE_INT ((vla).varray,          \
-                                              (vla).length - 1))
-
 #define VLA_HWINT_NULLIFY(vla)  ((vla).length = 0)
-
-#define VLA_HWINT_SHORTEN(vla, n)  ((vla).length -= (n))
 
 #define VLA_HWINT_EXPAND(vla, n)                                      \
   do {                                                                \

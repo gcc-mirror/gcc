@@ -36,10 +36,6 @@
 #include "toplev.h"
 #include "obstack.h"
 
-#ifndef REGNO_MODE_OK_FOR_BASE_P
-#define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
-#endif
-
 #ifndef REG_MODE_OK_FOR_BASE_P
 #define REG_MODE_OK_FOR_BASE_P(REGNO, MODE) REG_OK_FOR_BASE_P (REGNO)
 #endif
