@@ -103,6 +103,10 @@ static void report_main_declaration PROTO ((struct method_declarator *));
   int value;			/* For modifiers */
 }
 
+%{
+#include "lex.c"
+%}
+
 %pure_parser
 
 /* Things defined here have to match the order of what's in the
@@ -1104,8 +1108,6 @@ constant_expression:
 
 %%
 
-#include "lex.c"
-
 /* Create a new parser context */
 
 void

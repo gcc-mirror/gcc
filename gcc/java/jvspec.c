@@ -41,7 +41,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* True if this arg is a .class input file name. */
 #define CLASS_FILE_ARG	(1<<4)
 
+static char *find_spec_file	PROTO ((const char *));
 extern int do_spec		PROTO((char *));
+extern int lang_specific_pre_link PROTO((void));
+extern void lang_specific_driver PROTO ((void (*) (const char *, ...),
+					 int *, char ***, int *));
 extern char *input_filename;
 extern size_t input_filename_length;
 
@@ -68,7 +72,7 @@ char jvgenmain_spec[] =
    not.  */
 static char *
 find_spec_file (dir)
-     char *dir;
+     const char *dir;
 {
   char *spec;
   int x;
@@ -89,7 +93,7 @@ find_spec_file (dir)
 
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
-     void (*fn)();
+     void (*fn) PROTO ((const char *, ...));
      int *in_argc;
      char ***in_argv;
      int *in_added_libraries;

@@ -299,7 +299,39 @@ static void init_jcf_state PROTO ((struct jcf_partial *, struct obstack *));
 static void init_jcf_method PROTO ((struct jcf_partial *, tree));
 static void release_jcf_state PROTO ((struct jcf_partial *));
 static struct chunk * generate_classfile PROTO ((tree, struct jcf_partial *));
-
+static struct jcf_handler *alloc_handler PROTO ((struct jcf_block *,
+						 struct jcf_block *,
+						 struct jcf_partial *));
+static void push_constant1 PROTO ((int, struct jcf_partial *));
+static void push_constant2 PROTO ((int, struct jcf_partial *));
+static void push_int_const PROTO ((HOST_WIDE_INT, struct jcf_partial *));
+static int find_constant_wide PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+				      struct jcf_partial *));
+static int find_constant_index PROTO ((tree, struct jcf_partial *));
+static void push_long_const PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+				    struct jcf_partial *));
+static void field_op PROTO ((tree, int, struct jcf_partial *));
+static void maybe_wide PROTO ((int, int, struct jcf_partial *));
+static void emit_dup PROTO ((int, int, struct jcf_partial *));
+static void emit_pop PROTO ((int, struct jcf_partial *));
+static void emit_iinc PROTO ((tree, int, struct jcf_partial *));
+static void emit_load_or_store PROTO ((tree, int, struct jcf_partial *));
+static void emit_load PROTO ((tree, struct jcf_partial *));
+static void emit_store PROTO ((tree, struct jcf_partial *));
+static void emit_unop PROTO ((enum java_opcode, tree, struct jcf_partial *));
+static void emit_binop PROTO ((enum java_opcode, tree, struct jcf_partial *));
+static void emit_reloc PROTO ((HOST_WIDE_INT, int, struct jcf_block *,
+			       struct jcf_partial *));
+static void emit_switch_reloc PROTO ((struct jcf_block *,
+				      struct jcf_partial *));
+static void emit_case_reloc PROTO ((struct jcf_relocation *,
+				    struct jcf_partial *));
+static void emit_if PROTO ((struct jcf_block *, int, int,
+			    struct jcf_partial *));
+static void emit_goto PROTO ((struct jcf_block *, struct jcf_partial *));
+static void emit_jsr PROTO ((struct jcf_block *, struct jcf_partial *));
+static void call_cleanups PROTO ((struct jcf_block *, struct jcf_partial *));
+static char *make_class_file_name PROTO ((tree));
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
@@ -1334,7 +1366,7 @@ generate_bytecode_return (exp, state)
   if (returns_void)
     {
       op = OPCODE_return;
-      call_cleanups (NULL_TREE, state);
+      call_cleanups (NULL_PTR, state);
     }
   else
     {
@@ -1348,7 +1380,7 @@ generate_bytecode_return (exp, state)
 	      localvar_alloc (state->return_value_decl, state);
 	    }
 	  emit_store (state->return_value_decl, state);
-	  call_cleanups (NULL_TREE, state);
+	  call_cleanups (NULL_PTR, state);
 	  emit_load (state->return_value_decl, state);
 	  /* If we call localvar_free (state->return_value_decl, state),
 	     then we risk the save decl erroneously re-used in the
@@ -2264,7 +2296,7 @@ generate_bytecode_insns (exp, target, state)
 
 	/* Handle exceptions. */
 	localvar_alloc (return_link, state);
-	handler = alloc_handler (start_label, NULL_TREE, state);
+	handler = alloc_handler (start_label, NULL_PTR, state);
 	handler->end_label = handler->handler_label;
 	handler->type = NULL_TREE;
 	localvar_alloc (exception_decl, state);

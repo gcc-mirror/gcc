@@ -39,6 +39,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 static void put_decl_string PROTO ((const char *, int));
 static void put_decl_node PROTO ((tree));
 static void java_dummy_print PROTO ((const char *));
+static void lang_print_error PROTO ((const char *));
 
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"
@@ -453,7 +454,7 @@ lang_printable_name (decl, v)
 /* Print on stderr the current class and method context.  This function
    is the value of the hook print_error_function, called from toplev.c. */
 
-void
+static void
 lang_print_error (file)
      const char *file;
 {
@@ -507,17 +508,17 @@ lang_init ()
 
   /* Append to Gcc tree node definition arrays */
 
-  bcopy (java_tree_code_type,
-	 tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	 (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
-  bcopy ((char *)java_tree_code_length,
-	 (char *)(tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-	 (LAST_JAVA_TREE_CODE - 
-	  (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  bcopy ((char *)java_tree_code_name,
-	 (char *)(tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
-	 (LAST_JAVA_TREE_CODE - 
-	  (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_type,
+	  (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
+  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_length,
+	  (LAST_JAVA_TREE_CODE - 
+	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
+  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_name,
+	  (LAST_JAVA_TREE_CODE - 
+	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
 
   using_eh_for_cleanups ();
 }

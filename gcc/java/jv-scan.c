@@ -29,6 +29,7 @@ void warning VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PROTO ((struct obstack *obstack));
 
 #define JC1_LITE
+#include "jcf.h"
 #include "parse.h"
 
 /* Current input file and output file IO streams.  */
@@ -47,9 +48,8 @@ int flag_list_filename = 0;
 
 /* jc1-lite main entry point */
 int
-main (argc, argv)
-  int argc;
-  char **argv;
+DEFUN (main, (argc, argv),
+       int argc AND char **argv)
 {
   int i = 1;
   const char *output_file = NULL;
