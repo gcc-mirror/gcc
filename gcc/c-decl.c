@@ -6049,13 +6049,10 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
 	}
 
       /* It is intentional that this message does not mention the third
-	 argument, which is warned for only pedantically, because it's
-	 blessed by mention in an appendix of the standard.  */
+	 argument because it's only mentioned in an appendix of the
+	 standard.  */
       if (argct > 0 && (argct < 2 || argct > 3))
 	pedwarn_with_decl (decl1, "`%s' takes only zero or two arguments");
-
-      if (argct == 3 && pedantic)
-	pedwarn_with_decl (decl1, "third argument of `%s' is deprecated");
 
       if (! TREE_PUBLIC (decl1))
 	pedwarn_with_decl (decl1, "`%s' is normally a non-static function");
