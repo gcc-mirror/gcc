@@ -35,9 +35,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
    Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html) */
 
 #include "keyword.h"
+#include "flags.h"
 
 /* Function declaration  */
-static int java_lineterminator PARAMS ((unicode_t));
 static char *java_sprint_unicode PARAMS ((struct java_line *, int));
 static void java_unicode_2_utf8 PARAMS ((unicode_t));
 static void java_lex_error PARAMS ((const char *, int));
@@ -48,10 +48,13 @@ static tree build_wfl_node PARAMS ((tree));
 static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
 static unicode_t java_parse_escape_sequence PARAMS ((void));
 static int java_letter_or_digit_p PARAMS ((unicode_t));
+static int java_ignorable_control_p PARAMS ((unicode_t));
 static int java_parse_doc_section PARAMS ((unicode_t));
 static void java_parse_end_comment PARAMS ((unicode_t));
 static unicode_t java_get_unicode PARAMS ((void));
-static unicode_t java_read_unicode PARAMS ((java_lexer *, int, int *));
+static unicode_t java_read_unicode PARAMS ((java_lexer *, int *));
+static unicode_t java_read_unicode_collapsing_terminators
+    PARAMS ((java_lexer *, int *));
 static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
 static unicode_t java_read_char PARAMS ((java_lexer *));
 static void java_allocate_new_line PARAMS ((void));
@@ -494,9 +497,8 @@ java_store_unicode (l, c, unicode_escape_p)
 }
 
 static unicode_t
-java_read_unicode (lex, term_context, unicode_escape_p)
+java_read_unicode (lex, unicode_escape_p)
      java_lexer *lex;
-     int term_context;
      int *unicode_escape_p;
 {
   unicode_t c;
@@ -507,9 +509,7 @@ java_read_unicode (lex, term_context, unicode_escape_p)
   if (c != '\\')
     {
       lex->bs_count = 0;
-      return (term_context ? c : (java_lineterminator (c)
-				  ? '\n'
-				  : (unicode_t) c));
+      return c;
     }
 
   ++lex->bs_count;
@@ -532,17 +532,43 @@ java_read_unicode (lex, term_context, unicode_escape_p)
 		unicode |= (unicode_t)((c-'0') << shift);
 	      else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
 	        unicode |= (unicode_t)((10+(c | 0x20)-'a') << shift);
+	      else if (c == 'u')
+		{
+		  /* Recognize any number of u in \u.  */
+		  shift += 4;
+		}
 	      else
 		java_lex_error ("Non hex digit in Unicode escape sequence", 0);
 	    }
 	  lex->bs_count = 0;
 	  *unicode_escape_p = 1;
-	  return (term_context
-		  ? unicode : (java_lineterminator (c) ? '\n' : unicode));
+	  return unicode;
 	}
       lex->unget_value = c;
     }
   return (unicode_t) '\\';
+}
+
+static unicode_t
+java_read_unicode_collapsing_terminators (lex, unicode_escape_p)
+     java_lexer *lex;
+     int *unicode_escape_p;
+{
+  unicode_t c = java_read_unicode (lex, unicode_escape_p);
+
+  if (c == '\r')
+    {
+      /* We have to read ahead to see if we got \r\n.  In that case we
+	 return a single line terminator.  */
+      int dummy;
+      c = java_read_unicode (lex, &dummy);
+      if (c != '\n')
+	lex->unget_value = c;
+      /* In either case we must return a newline.  */
+      c = '\n';
+    }
+
+  return c;
 }
 
 static unicode_t
@@ -554,52 +580,26 @@ java_get_unicode ()
       unicode_t c;
       java_allocate_new_line ();
       if (ctxp->c_line->line[0] != '\n')
-	for (;;)
-	  {
-	    int unicode_escape_p;
-	    c = java_read_unicode (ctxp->lexer, 0, &unicode_escape_p);
-	    java_store_unicode (ctxp->c_line, c, unicode_escape_p);
-	    if (ctxp->c_line->white_space_only 
-		&& !JAVA_WHITE_SPACE_P (c) && c!='\n')
-	      ctxp->c_line->white_space_only = 0;
-	    if ((c == '\n') || (c == UEOF))
-	      break;
-	  }
+	{
+	  for (;;)
+	    {
+	      int unicode_escape_p;
+	      c = java_read_unicode_collapsing_terminators (ctxp->lexer,
+							    &unicode_escape_p);
+	      java_store_unicode (ctxp->c_line, c, unicode_escape_p);
+	      if (ctxp->c_line->white_space_only 
+		  && !JAVA_WHITE_SPACE_P (c)
+		  && c != '\n'
+		  && c != UEOF)
+		ctxp->c_line->white_space_only = 0;
+	      if ((c == '\n') || (c == UEOF))
+		break;
+	    }
+	}
     }
   ctxp->c_line->char_col += JAVA_COLUMN_DELTA (0);
   JAVA_LEX_CHAR (ctxp->c_line->line [ctxp->c_line->current]);
   return ctxp->c_line->line [ctxp->c_line->current++];
-}
-
-static int
-java_lineterminator (c)
-     unicode_t c;
-{
-  if (c == '\n')		/* LF */
-    return 1;
-  else if (c == '\r')		/* CR */
-    {
-      int unicode_escape_p;
-      c = java_read_unicode (ctxp->lexer, 1, &unicode_escape_p);
-      if (c == '\r')
-	{
-	  /* In this case we will have another terminator.  For some
-	     reason the lexer has several different unget methods.  We
-	     can't use the `ahead' method because then the \r will end
-	     up in the actual text of the line, causing an error.  So
-	     instead we choose a very low-level method.  FIXME: this
-	     is incredibly ugly.  */
-	  ctxp->lexer->unget_value = c;
-	}
-      else if (c != '\n')
-	{
-	  ctxp->c_line->ahead [0] = c;
-	  ctxp->c_line->unicode_escape_ahead_p = unicode_escape_p;
-	}
-      return 1;
-    }
-  else 
-    return 0;
 }
 
 /* Parse the end of a C style comment.
@@ -615,11 +615,13 @@ java_parse_end_comment (c)
 	{
 	case UEOF:
 	  java_lex_error ("Comment not terminated at end of input", 0);
+	  return;
 	case '*':
 	  switch (c = java_get_unicode ())
 	    {
 	    case UEOF:
 	      java_lex_error ("Comment not terminated at end of input", 0);
+	      return;
 	    case '/':
 	      return;
 	    case '*':	/* reparse only '*' */
@@ -692,6 +694,14 @@ java_letter_or_digit_p (c)
   return _JAVA_LETTER_OR_DIGIT_P (c);
 }
 
+/* This function to be used only by JAVA_ID_CHAR_P ().  */
+static int
+java_ignorable_control_p (c)
+     unicode_t c;
+{
+  return _JAVA_IDENTIFIER_IGNORABLE (c);
+}
+
 static unicode_t
 java_parse_escape_sequence ()
 {
@@ -747,7 +757,7 @@ java_parse_escape_sequence ()
     case '\n':
       return '\n';		/* ULT, caught latter as a specific error */
     default:
-      java_lex_error ("Illegal character in escape sequence", 0);
+      java_lex_error ("Invalid character in escape sequence", 0);
       return JAVA_CHAR_ERROR;
     }
 }
@@ -839,7 +849,14 @@ java_lex (java_lval)
 	    {
 	      c = java_get_unicode ();
 	      if (c == UEOF)
-		java_lex_error ("Comment not terminated at end of input", 0);
+		{
+		  /* It is ok to end a `//' comment with EOF, unless
+		     we're being pedantic.  */
+		  if (pedantic)
+		    java_lex_error ("Comment not terminated at end of input",
+				    0);
+		  return 0;
+		}
 	      if (c == '\n')	/* ULT */
 		goto step1;
 	    }
@@ -1134,6 +1151,7 @@ java_lex (java_lval)
     }
 
   ctxp->minus_seen = 0;
+
   /* Character literals */
   if (c == '\'')
     {
@@ -1141,10 +1159,14 @@ java_lex (java_lval)
       if ((c = java_get_unicode ()) == '\\')
 	char_lit = java_parse_escape_sequence ();
       else
-	char_lit = c;
+	{
+	  if (c == '\n' || c == '\'')
+	    java_lex_error ("Invalid character literal", 0);
+	  char_lit = c;
+	}
 
       c = java_get_unicode ();
-      
+
       if ((c == '\n') || (c == UEOF))
 	java_lex_error ("Character literal not terminated at end of line", 0);
       if (c != '\'')
@@ -1509,7 +1531,7 @@ java_lex (java_lval)
   /* Everything else is an invalid character in the input */
   {
     char lex_error_buffer [128];
-    sprintf (lex_error_buffer, "Invalid character '%s' in input", 
+    sprintf (lex_error_buffer, "Invalid character `%s' in input", 
 	     java_sprint_unicode (ctxp->c_line, ctxp->c_line->current));
     java_lex_error (lex_error_buffer, 1);
   }

@@ -1,3 +1,21 @@
+2000-11-03  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.h (_JAVA_IDENTIFIER_IGNORABLE): New macro.
+	(JAVA_ID_CHAR_P): Also try java_ignorable_control_p.
+	* lex.c (java_read_unicode): Removed `term_context' argument.
+	Recognize any number of `u' in `\u'.
+	(java_read_unicode_collapsing_terminators): New function.
+	(java_get_unicode): Use it.
+	(java_lineterminator): Removed.
+	(yylex): Produce error if character literal is newline or single
+	quote.  Return if eof found in middle of `//' comment.  EOF in
+	`//' comment is only an error if pedantic.
+	(java_ignorable_control_p): New function.
+	(java_parse_end_comment): Return if eof found in middle of
+	comment.
+	Include flags.h.
+	* jv-scan.c (pedantic): New global.
+
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in: Move all build rules here from Makefile.in,

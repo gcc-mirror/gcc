@@ -62,6 +62,8 @@ int flag_find_main = 0;
 int flag_dump_class = 0;
 int flag_list_filename = 0;
 
+int pedantic = 0;
+
 
 
 /* This is used to mark options with no short value.  */

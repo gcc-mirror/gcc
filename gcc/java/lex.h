@@ -256,6 +256,7 @@ extern void set_float_handler PARAMS ((jmp_buf));
 					    RANGE (c, '0', '9') ||	\
 					    c == '_'         ||		\
 					    c == '$'))       ||		\
+			       java_ignorable_control_p (c)  ||		\
 			       (c > 127 && java_letter_or_digit_p (c)))
 #define JAVA_ASCII_DIGIT(c)    RANGE(c,'0', '9')
 #define JAVA_ASCII_OCTDIGIT(c) RANGE(c,'0', '7')
@@ -551,6 +552,20 @@ extern void set_float_handler PARAMS ((jmp_buf));
     RANGE (c, 0xFFCA, 0xFFCF) ||		\
     RANGE (c, 0xFFD2, 0xFFD7) ||		\
     RANGE (c, 0xFFDA, 0xFFDC))
+
+/* Identifier-ignorable characters.  This should not be used
+   standalone.  Note that the JCL says 200a->200e.  That is a typo.
+   The correct values are 202a->202e.  Note also that we test against
+   0x0000 separately to avoid a warning.  */
+#define _JAVA_IDENTIFIER_IGNORABLE(c)					      \
+  (c == 0x0000								      \
+   || RANGE (c, 0x0001, 0x0008)						      \
+   || RANGE (c, 0x000e, 0x001b)						      \
+   || RANGE (c, 0x007f, 0x009f)						      \
+   || RANGE (c, 0x200c, 0x200f)						      \
+   || RANGE (c, 0x202a, 0x202e)						      \
+   || RANGE (c, 0x206a, 0x206f)						      \
+   || c == 0xfeff)
 
 /* Constants  */
 #define JAVA_CHAR_ERROR 0xFFC1	/* This is an illegal unicode!?! FIXME */
