@@ -1,3 +1,9 @@
+2002-02-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Revert change to -p interface.  Allow for local and
+	remote cases in creating directories.  Give an error if -p
+	argument names a directory.
+
 2002-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Correct handling of diff-generation.  Add

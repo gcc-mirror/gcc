@@ -294,7 +294,7 @@ build_tarfiles() {
 
 # Build diffs against an old release.
 build_diffs() {
-  old_dir=${1%/}
+  old_dir=${1%/*}
   old_file=${1##*/}
   old_vers=${old_file%.tar.gz}
   old_vers=${old_vers#gcc-}
@@ -334,13 +334,14 @@ upload_files() {
 
   changedir "${WORKING_DIRECTORY}"
 
-  if [ $LOCAL -ne 0 ]; then
+  # Make sure the directory exists on the server.
+  if [ $LOCAL -eq 0 ]; then
+    ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} mkdir ${FTP_PATH}
+  else
     mkdir -p "${FTP_PATH}" \
       || error "Could not create \`${FTP_PATH}'"
   fi
 
-  # Make sure the directory exists on the server.
-  ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} mkdir ${FTP_PATH}
   for x in gcc*.gz gcc*.bz2; do
     if [ -e ${x} ]; then
       # Make sure the file will be readable on the server.
@@ -463,7 +464,10 @@ while getopts "d:fr:u:t:p:sl" ARG; do
 	  SCP=cp
 	  FTP_PATH=~ftp/pub/gcc
 	  PATH=~:/usr/local/bin:$PATH;;
-    p)    OLD_TARS="${OLD_TARS} ${OPTARG}";;
+    p)    OLD_TARS="${OLD_TARS} ${OPTARG}"
+          if [ -d ${OPTARG} ]; then
+	    error "-p argument must name a tarball"
+	  fi;;
     \?)   usage;;
     esac
 done
