@@ -94,11 +94,11 @@ struct s390_address
 };
 
 static int s390_match_ccmode_set PARAMS ((rtx, enum machine_mode));
+static int s390_branch_condition_mask PARAMS ((rtx));
+static const char *s390_branch_condition_mnemonic PARAMS ((rtx, int));
 static int base_n_index_p PARAMS ((rtx));
 static int check_mode PARAMS ((rtx, enum machine_mode *));
 static int s390_decompose_address PARAMS ((rtx, struct s390_address *, int));
-static void output_branch_condition PARAMS ((FILE *, rtx));
-static void output_inverse_branch_condition PARAMS ((FILE *, rtx));
 static int reg_used_in_mem_p PARAMS ((int, rtx));
 static int addr_generation_dependency_p PARAMS ((rtx, rtx));
 static int other_chunk PARAMS ((int *, int, int));
@@ -135,15 +135,16 @@ s390_match_ccmode_set (set, req_mode)
   set_mode = GET_MODE (SET_DEST (set));
   switch (set_mode)
     {
-    case CCmode:
-      return 0;
-
     case CCSmode:
       if (req_mode != CCSmode)
         return 0;
       break;
     case CCUmode:
       if (req_mode != CCUmode)
+        return 0;
+      break;
+    case CCLmode:
+      if (req_mode != CCLmode)
         return 0;
       break;
     case CCZmode:
@@ -183,6 +184,161 @@ s390_match_ccmode (insn, req_mode)
 
   return 1;
 }
+
+/* Given a comparison code OP (EQ, NE, etc.) and the operands 
+   OP0 and OP1 of a COMPARE, return the mode to be used for the 
+   comparison.  */
+
+enum machine_mode
+s390_select_ccmode (code, op0, op1) 
+     enum rtx_code code;
+     rtx op0;
+     rtx op1;
+{
+  switch (code)
+    {
+      case EQ:
+      case NE:
+	if (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+	    || GET_CODE (op1) == NEG)
+	  return CCLmode;
+
+	return CCZmode;
+
+      case LE:
+      case LT:
+      case GE:
+      case GT:
+      case UNORDERED:
+      case ORDERED:
+      case UNEQ:
+      case UNLE:
+      case UNLT:
+      case UNGE:
+      case UNGT:
+      case LTGT:
+	return CCSmode;
+
+      case LEU:
+      case LTU:
+      case GEU:
+      case GTU:
+	return CCUmode;
+
+      default:
+	abort ();
+    }
+}
+
+/* Return branch condition mask to implement a branch 
+   specified by CODE.  */
+
+static int
+s390_branch_condition_mask (code)
+    rtx code;
+{ 
+  const int CC0 = 1 << 3;
+  const int CC1 = 1 << 2;
+  const int CC2 = 1 << 1;
+  const int CC3 = 1 << 0;
+
+  if (GET_CODE (XEXP (code, 0)) != REG
+      || REGNO (XEXP (code, 0)) != CC_REGNUM
+      || XEXP (code, 1) != const0_rtx)
+    abort ();
+
+  switch (GET_MODE (XEXP (code, 0)))
+    {
+    case CCZmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0;
+	case NE:	return CC1 | CC2 | CC3;
+	default:
+	  abort ();
+        }
+      break;
+
+    case CCLmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0 | CC2;
+	case NE:	return CC1 | CC3;
+	case UNORDERED:	return CC2 | CC3;  /* carry */
+	case ORDERED:	return CC0 | CC1;  /* no carry */
+	default:
+	  abort ();
+        }
+      break;
+
+    case CCUmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0;
+        case NE:	return CC1 | CC2 | CC3;
+        case LTU:	return CC1;
+        case GTU:	return CC2;
+        case LEU:	return CC0 | CC1;
+        case GEU:	return CC0 | CC2;
+	default:
+	  abort ();
+        }
+      break;
+
+    case CCSmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0;
+        case NE:	return CC1 | CC2 | CC3;
+        case LT:	return CC1;
+        case GT:	return CC2;
+        case LE:	return CC0 | CC1;
+        case GE:	return CC0 | CC2;
+	case UNORDERED:	return CC3;
+	case ORDERED:	return CC0 | CC1 | CC2;
+	case UNEQ:	return CC0 | CC3;
+        case UNLT:	return CC1 | CC3;
+        case UNGT:	return CC2 | CC3;
+        case UNLE:	return CC0 | CC1 | CC3;
+        case UNGE:	return CC0 | CC2 | CC3;
+	case LTGT:	return CC1 | CC2;
+	default:
+	  abort ();
+        }
+
+    default:
+      abort ();
+    }
+}
+
+/* If INV is false, return assembler mnemonic string to implement 
+   a branch specified by CODE.  If INV is true, return mnemonic 
+   for the corresponding inverted branch.  */
+
+static const char *
+s390_branch_condition_mnemonic (code, inv)
+     rtx code;
+     int inv;
+{
+  static const char *mnemonic[16] =
+    {
+      NULL, "o", "h", "nle",
+      "l", "nhe", "lh", "ne",
+      "e", "nlh", "he", "nl",
+      "le", "nh", "no", NULL
+    };
+
+  int mask = s390_branch_condition_mask (code);
+
+  if (inv)
+    mask ^= 15;
+
+  if (mask < 1 || mask > 14)
+    abort ();
+
+  return mnemonic[mask];
+}
+
 
 /* Change optimizations to be performed, depending on the 
    optimization level.
@@ -887,6 +1043,40 @@ legitimate_address_p (mode, addr, strict)
   return s390_decompose_address (addr, NULL, strict);
 }
 
+/* Return 1 if OP is a valid operand for the LA instruction.
+   In 31-bit, we need to prove that the result is used as an
+   address, as LA performs only a 31-bit addition.  */
+
+int
+legitimate_la_operand_p (op)
+     register rtx op;
+{
+  struct s390_address addr;
+  if (!s390_decompose_address (op, &addr, FALSE))
+    return FALSE;
+
+  if (TARGET_64BIT)
+    return TRUE;
+
+  /* Use of the base or stack pointer implies address.  */
+
+  if (addr.base && GET_CODE (addr.base) == REG)
+    {
+      if (REGNO (addr.base) == BASE_REGISTER
+          || REGNO (addr.base) == STACK_POINTER_REGNUM)
+        return TRUE;
+    }
+
+  if (addr.indx && GET_CODE (addr.indx) == REG)
+    {
+      if (REGNO (addr.indx) == BASE_REGISTER
+          || REGNO (addr.indx) == STACK_POINTER_REGNUM)
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
 /* Return a legitimate reference for ORIG (an address) using the
    register REG.  If REG is 0, a new pseudo is generated.
 
@@ -1199,86 +1389,51 @@ legitimize_address (x, oldx, mode)
      register rtx oldx ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (flag_pic && SYMBOLIC_CONST (x))
-    return legitimize_pic_address (x, 0);
+  rtx constant_term = const0_rtx;
+
+  if (flag_pic)
+    {
+      if (SYMBOLIC_CONST (x)
+          || (GET_CODE (x) == PLUS 
+              && (SYMBOLIC_CONST (XEXP (x, 0)) 
+                  || SYMBOLIC_CONST (XEXP (x, 1)))))
+	  x = legitimize_pic_address (x, 0);
+
+      if (legitimate_address_p (mode, x, FALSE))
+	return x;
+    }
+
+  x = eliminate_constant_term (x, &constant_term);
+
+  if (GET_CODE (x) == PLUS)
+    {
+      if (GET_CODE (XEXP (x, 0)) == REG)
+	{
+	  register rtx temp = gen_reg_rtx (Pmode);
+	  register rtx val  = force_operand (XEXP (x, 1), temp);
+	  if (val != temp)
+	    emit_move_insn (temp, val);
+
+	  x = gen_rtx_PLUS (Pmode, XEXP (x, 0), temp);
+	}
+
+      else if (GET_CODE (XEXP (x, 1)) == REG)
+	{
+	  register rtx temp = gen_reg_rtx (Pmode);
+	  register rtx val  = force_operand (XEXP (x, 0), temp);
+	  if (val != temp)
+	    emit_move_insn (temp, val);
+
+	  x = gen_rtx_PLUS (Pmode, temp, XEXP (x, 1));
+	}
+    }
+
+  if (constant_term != const0_rtx)
+    x = gen_rtx_PLUS (Pmode, x, constant_term);
 
   return x;
 }
 
-
-/* Output branch condition code of CODE in assembler
-   syntax to stdio stream FILE.  */
-
-static void
-output_branch_condition (file, code)
-     FILE *file;
-     rtx code;
-{
-  switch (GET_CODE (code)) 
-    {
-    case EQ:
-      fprintf (file, "e");
-      break;
-    case NE:
-      fprintf (file, "ne");
-      break;
-    case GT:
-    case GTU:
-      fprintf (file, "h");
-      break;
-    case LT:
-    case LTU:
-      fprintf (file, "l");
-      break;
-    case GE:
-    case GEU:
-      fprintf (file, "he");
-      break;
-    case LE:
-    case LEU:
-      fprintf (file, "le");
-      break;
-    default:
-      fatal_insn ("Unknown CC code", code);
-    }
-}
-
-/* Output the inverse of the branch condition code of CODE 
-   in assembler syntax to stdio stream FILE.  */
-
-static void
-output_inverse_branch_condition (file, code)
-     FILE *file;
-     rtx code;
-{
-  switch (GET_CODE (code)) 
-    {
-    case EQ:
-      fprintf (file, "ne");
-      break;
-    case NE:
-      fprintf (file, "e");
-      break;
-    case GT:
-    case GTU:
-      fprintf (file, "nh");
-      break;
-    case LT:
-    case LTU:
-      fprintf (file, "nl");
-      break;
-    case GE:
-    case GEU:
-      fprintf (file, "nhe");
-      break;
-    case LE:
-    case LEU:
-      fprintf (file, "nle");
-      break;
-    default:
-      fatal_insn ("Unknown CC code", code);
-    }
-}
 
 /* Output symbolic constant X in assembler syntax to 
    stdio stream FILE.  */
@@ -1417,11 +1572,11 @@ print_operand (file, x, code)
   switch (code)
     {
     case 'C':
-      output_branch_condition (file, x);
+      fprintf (file, s390_branch_condition_mnemonic (x, FALSE));
       return;
 
     case 'D':
-      output_inverse_branch_condition (file, x);
+      fprintf (file, s390_branch_condition_mnemonic (x, TRUE));
       return;
 
     case 'Y':
@@ -1806,7 +1961,7 @@ check_and_change_labels (insn, ltorg_uids)
      int *ltorg_uids;
 {
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-  rtx target, jump;
+  rtx target, jump, cjump;
   rtx pattern, tmp, body, label1;
   int addr0, addr1;
 
@@ -1878,7 +2033,10 @@ check_and_change_labels (insn, ltorg_uids)
 		    }
 		  
 		  label1 = gen_label_rtx ();
-		  emit_jump_insn_before (gen_icjump (label1, XEXP (body, 0)), insn);
+		  cjump = gen_rtx_LABEL_REF (VOIDmode, label1);
+		  cjump = gen_rtx_IF_THEN_ELSE (VOIDmode, XEXP (body, 0), pc_rtx, cjump);
+		  cjump = gen_rtx_SET (VOIDmode, pc_rtx, cjump);
+		  emit_jump_insn_before (cjump, insn);
 		  emit_insn_before (gen_movsi (temp_reg, target), insn);
 		  tmp = emit_jump_insn_before (gen_indirect_jump (jump), insn);
 		  INSN_ADDRESSES_NEW (emit_label_before (label1, insn), -1);
@@ -1912,7 +2070,10 @@ check_and_change_labels (insn, ltorg_uids)
 		    }
 		  
 		  label1 = gen_label_rtx ();
-		  emit_jump_insn_before (gen_cjump (label1, XEXP (body, 0)), insn);
+		  cjump = gen_rtx_LABEL_REF (VOIDmode, label1);
+		  cjump = gen_rtx_IF_THEN_ELSE (VOIDmode, XEXP (body, 0), cjump, pc_rtx);
+		  cjump = gen_rtx_SET (VOIDmode, pc_rtx, cjump);
+		  emit_jump_insn_before (cjump, insn);
 		  emit_insn_before (gen_movsi (temp_reg, target), insn);
 		  tmp = emit_jump_insn_before (gen_indirect_jump (jump), insn);
 		  INSN_ADDRESSES_NEW (emit_label_before (label1, insn), -1);
@@ -2541,8 +2702,7 @@ s390_function_prologue (file, lsize)
 
       /* Decrement stack.  */
 
-      if (TARGET_BACKCHAIN || (STARTING_FRAME_OFFSET +
-			       lsize + STACK_POINTER_OFFSET > 4095
+      if (TARGET_BACKCHAIN || (frame_size + STACK_POINTER_OFFSET > 4095
 			       || frame_pointer_needed
 			       || current_function_calls_alloca))
 	{
@@ -2582,8 +2742,7 @@ s390_function_prologue (file, lsize)
 
       /* Generate backchain.  */
 
-      if (TARGET_BACKCHAIN || (STARTING_FRAME_OFFSET + 
-			       lsize + STACK_POINTER_OFFSET > 4095
+      if (TARGET_BACKCHAIN || (frame_size + STACK_POINTER_OFFSET > 4095
 			       || frame_pointer_needed
 			       || current_function_calls_alloca))
 	{

@@ -42,7 +42,9 @@ extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 
 extern int s390_match_ccmode PARAMS ((rtx, enum machine_mode));
+extern enum machine_mode s390_select_ccmode PARAMS ((enum rtx_code, rtx, rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
+extern int legitimate_la_operand_p PARAMS ((rtx));
 extern int legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_constant_p PARAMS ((rtx));
 extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));

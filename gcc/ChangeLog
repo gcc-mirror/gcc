@@ -1,3 +1,38 @@
+2001-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (EXTRA_CC_MODES): Add CCLmode.
+	(SELECT_CC_MODE): Use s390_select_ccmode.
+	* config/s390/s390-protos.h (s390_select_ccmode): Add.
+	* config/s390/s390.c (s390_select_ccmode): New.
+	(s390_match_ccmode): Add CCLmode.
+	(s390_branch_condition_mask, s390_branch_condition_mnemonic): New.
+	(output_branch_condition, output_inverse_branch_condition): Removed.
+	(print_operand): Use s390_branch_condition_mnemonic.
+	* config/s390/s390.md (addsi3_cc, addsi3_cconly, addsi3_cconly2,
+	subsi3_cc, subsi3_cconly): Use logical instructions and CCLmode.
+	(bunordered, bordered, buneq, bungt, bunlt, bnuge, bunle, bltgt): New.
+
+	* config/s390/s390.c (check_and_change_labels): Preserve CC mode
+	when converting conditional branches to far branches.
+	* config/s390/s390.md (cmpstr_const, cmpstr_64, cmpstr_31, cmpint_si,
+	cmpint_di): Use CCSmode instead of CCUmode.
+
+	* config/s390/s390.c (legitimate_la_operand_p): New.
+	* config/s390/s390-protos.h (legitimate_la_operand_p): Add.
+	* config/s390/s390.md (movsi): Convert load address patterns to
+	arithmetic operations when necessary.
+	(addaddr_picR, addaddr_picL, addaddr_picN): Removed.
+	(do_la): Renamed to *do_la and use legitimate_la_operand_p.
+	(*do_la_reg_0): Don't use before reload.
+
+	* config/s390/s390.c (legitimize_address): Make more efficient
+	use of two-register addressing mode.
+
+	* config/s390/s390.c (s390_function_prologue): Fix incorrect prolog
+	with -mno-backchain in some corner cases.
+
+	* config/s390/s390.md (cmpsi_cct): Operands 0 and 1 do not commute.
+
 2001-09-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload.c (find_reloads): Mark new USE insns with QImode.
