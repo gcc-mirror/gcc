@@ -1,3 +1,8 @@
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* semantics.c (genrtl_finish_function): Don't init or check
+	can_reach_end; remove noreturn and return value checks.
+
 2000-10-05  Tom Tromey  <tromey@cygnus.com>
 
 	* init.c (build_java_class_ref): Use `build_static_name' with a
