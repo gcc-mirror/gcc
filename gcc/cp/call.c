@@ -3372,7 +3372,7 @@ build_over_call (cand, args, flags)
 	  arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
 
 	  if (DECL_CLASS_SCOPE_P (fn))
-	    popclass (0);
+	    popclass (1);
 	}
       converted_args = expr_tree_cons
 	(NULL_TREE, convert_default_arg (TREE_VALUE (parm), arg),

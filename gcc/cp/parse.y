@@ -1317,7 +1317,9 @@ notype_template_declarator:
 		
 direct_notype_declarator:
 	  complex_direct_notype_declarator
-	| notype_unqualified_id
+	/* This precedence declaration is to prefer this reduce
+	   to the Koenig lookup shift in primary, below.  I hate yacc.  */
+	| notype_unqualified_id %prec '('
 	| notype_template_declarator
 	| '(' expr_or_declarator ')'
 		{ $$ = finish_decl_parsing ($2); }

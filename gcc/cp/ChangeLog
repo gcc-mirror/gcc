@@ -1,3 +1,22 @@
+1998-07-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Convert integer_zero_node to
+ 	ssizetype before passing it to set_rtti_entry.
+	* typeck2.c (initializer_constant_valid_p): Allow conversion of 0
+	of any size to a pointer.
+
+1998-07-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (build_functional_cast): Handle default-initialization.
+
+	* call.c (build_over_call): Pass 1 to popclass.
+
+	* parse.y (direct_notype_declarator): Add precedence declaration
+	to notype_unqualified_id case.
+	* Makefile.in (EXPECT): Adjust.
+
+	* tree.c (ovl_member): Fix for single function in OVL.
+
 1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): OK, do return the from_obj value

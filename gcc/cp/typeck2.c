@@ -485,13 +485,18 @@ initializer_constant_valid_p (value, endtype)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
 					     endtype);
 
-      /* Likewise conversions from int to pointers.  */
+      /* Likewise conversions from int to pointers, but also allow
+	 conversions from 0.  */
       if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
-	  && (TYPE_PRECISION (TREE_TYPE (value))
-	      <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
-					     endtype);
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE)
+	{
+	  if (integer_zerop (TREE_OPERAND (value, 0)))
+	    return null_pointer_node;
+	  else if (TYPE_PRECISION (TREE_TYPE (value))
+		   <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0))))
+	    return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						 endtype);
+	}
 
       /* Allow conversions to union types if the value inside is okay.  */
       if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
@@ -1500,6 +1505,15 @@ build_functional_cast (exp, parms)
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
     return build_c_cast (type, TREE_VALUE (parms));
+
+  /* We need to zero-initialize POD types.  Let's do that for everything
+     that doesn't need a constructor.  */
+  if (parms == NULL_TREE && !TYPE_NEEDS_CONSTRUCTING (type)
+      && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+    {
+      exp = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      return get_target_expr (exp);
+    }
 
   exp = build_method_call (NULL_TREE, ctor_identifier, parms,
 			   TYPE_BINFO (type), LOOKUP_NORMAL);
