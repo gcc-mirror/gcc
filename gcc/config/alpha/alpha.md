@@ -6911,7 +6911,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(const_int 0)]
   "
 {
-  emit_note (NULL, NOTE_INSN_DELETED);
+  emit_note (NOTE_INSN_DELETED);
   DONE;
 }")
 
