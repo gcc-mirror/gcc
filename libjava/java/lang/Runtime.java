@@ -652,7 +652,7 @@ public class Runtime
     SecurityManager sm = securityManager; // Be thread-safe!
     if (sm != null)
       sm.checkLink(libname);
-    _load(libname, false);
+    _load(libname, true);
   }
 
   /**
