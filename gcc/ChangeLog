@@ -1,3 +1,9 @@
+2003-06-10  James E Wilson  <wilson@tuliptree.org>
+
+	PR target/8812
+	* reload1.c (choose_reload_regs): For equiv reg, add loop over all
+	hard regs for reload_reg_used_at_all and reg_class_contents checks.
+
 2003-06-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (print_operand): Remove support for
