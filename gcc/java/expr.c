@@ -2351,9 +2351,9 @@ get_primitive_array_vtable (tree elt)
 struct rtx_def *
 java_lang_expand_expr (exp, target, tmode, modifier)
      register tree exp;
-     rtx target ATTRIBUTE_UNUSED;
-     enum machine_mode tmode ATTRIBUTE_UNUSED;
-     enum expand_modifier modifier ATTRIBUTE_UNUSED;
+     rtx target;
+     enum machine_mode tmode;
+     enum expand_modifier modifier;
 {
   tree current;
 
@@ -2505,6 +2505,10 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	}
       expand_end_all_catch ();
       return const0_rtx;
+
+    case JAVA_EXC_OBJ_EXPR:
+      return expand_expr (build_exception_object_ref (TREE_TYPE (exp)),
+			  target, tmode, modifier);
 
     default:
       internal_error ("Can't expand %s", tree_code_name [TREE_CODE (exp)]);
@@ -2803,7 +2807,7 @@ process_jvm_instruction (PC, byte_ops, length)
   if (instruction_bits [PC] & BCODE_EXCEPTION_TARGET)
     {
       tree type = pop_type (ptr_type_node);
-      push_value (build_exception_object_ref (type));
+      push_value (build (JAVA_EXC_OBJ_EXPR, type));
     }
 
   switch (byte_ops[PC++])

@@ -93,6 +93,10 @@ DEFTREECODE (CLASS_LITERAL, "class_literal", '1', 1)
    is used for context detection, so that special rules can be
    enforced. */
 DEFTREECODE (INSTANCE_INITIALIZERS_EXPR, "instance_initializers_expr", '1', 1)
+
+/* The Java object within the exception object from the runtime.  */
+DEFTREECODE (JAVA_EXC_OBJ_EXPR, "java_exc_obj_expr", 'e', 0)
+
 /*
 Local variables:
 mode:c
