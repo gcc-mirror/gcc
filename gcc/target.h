@@ -421,6 +421,10 @@ struct gcc_target
      that type.  */
   bool (* default_short_enums) (void);
 
+  /* This target hook returns an rtx that is used to store the address
+     of the current frame into the built in @code{setjmp} buffer.  */
+  rtx (* builtin_setjmp_frame_value) (void);
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

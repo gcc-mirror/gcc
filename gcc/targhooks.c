@@ -105,6 +105,14 @@ default_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 {
 }
 
+/* The default implementation of TARGET_BUILTIN_SETJMP_FRAME_VALUE.  */
+
+rtx
+default_builtin_setjmp_frame_value (void)
+{
+  return virtual_stack_vars_rtx;
+}
+
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
 
 bool
