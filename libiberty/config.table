@@ -1,3 +1,9 @@
+# Don't build the shared library for build.
+if [ -n "${with_build_subdir}" ]; then
+  enable_shared=no
+fi
+
+frag=
 case "${host}" in
   rs6000-ibm-aix3.1 | rs6000-ibm-aix)
                         frag=mh-aix ;;
@@ -8,7 +14,11 @@ case "${host}" in
   i[345]86-*-windows*)	frag=mh-windows ;;
 esac
 
-frags=$frag
+if [ -n "${frag}" ]; then
+  frags=${libiberty_topdir}/libiberty/config/$frag
+else
+  frags=
+fi
 
 # If they didn't specify --enable-shared, don't generate shared libs.
 case "${enable_shared}" in
@@ -18,31 +28,26 @@ case "${enable_shared}" in
   *) shared=yes ;;
 esac
 if [ "${shared}" = "yes" ]; then
+  frag=
   case "${host}" in
     *-*-cygwin*)	;;
-    alpha*-*-linux*)	frags="${frags} ../../config/mh-elfalphapic" ;;
-    arm*-*-*)		frags="${frags} ../../config/mh-armpic" ;;
-    hppa*-*-*)		frags="${frags} ../../config/mh-papic" ;;
-    i[3456]86-*-*)	frags="${frags} ../../config/mh-x86pic" ;;
+    alpha*-*-linux*)	frag=mh-elfalphapic ;;
+    arm*-*-*)		frag=mh-armpic ;;
+    hppa*-*-*)		frag=mh-papic ;;
+    i[3456]86-*-*)	frag=mh-x86pic ;;
     powerpc*-*-aix*)	;;
-    powerpc*-*-*)	frags="${frags} ../../config/mh-ppcpic" ;;
-    sparc*-*-*)		frags="${frags} ../../config/mh-sparcpic" ;;
-    *-*-*)		frags="${frags} ../../config/mh-${host_cpu}pic" ;;
+    powerpc*-*-*)	frag=mh-ppcpic ;;
+    sparc*-*-*)		frag=mh-sparcpic ;;
+    *)			frag=mh-${host_cpu}pic ;;
   esac
+  if [ -n "${frag}" ]; then
+    frags="${frags} ${libiberty_topdir}/config/${frag}"
+  fi
 fi
 
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
 for frag in ${frags}; do
-  case ${frag} in
-    ../* )
-      if [ ${srcdir} = . ]; then
-	[ -n "${with_target_subdir}" ] && frag=../${frag}
-	[ -n "${with_multisrctop}" ] && frag=${with_multisrctop}${frag}
-      fi
-      ;;
-  esac
-  frag=${srcdir}/${xsrcdir}config/$frag
   if [ -f ${frag} ]; then
     echo "Appending ${frag} to xhost-mkfrag"
     echo "# Following fragment copied from ${frag}" >> temp-frag
