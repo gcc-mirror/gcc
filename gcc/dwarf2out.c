@@ -405,6 +405,12 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
   fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, (unsigned) (VALUE))
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_DATA8
+#define ASM_OUTPUT_DWARF_DATA8(FILE,VALUE) \
+  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_DOUBLE_INT_ASM_OP, \
+	   (unsigned long) (VALUE))
+#endif
+
 #ifndef ASM_OUTPUT_DWARF_DATA
 #define ASM_OUTPUT_DWARF_DATA(FILE,VALUE) \
   fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_OFFSET_ASM_OP, \
@@ -417,8 +423,8 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
 	   (unsigned long) (VALUE))
 #endif
 
-#ifndef ASM_OUTPUT_DWARF_DATA8
-#define ASM_OUTPUT_DWARF_DATA8(FILE,HIGH_VALUE,LOW_VALUE)		\
+#ifndef ASM_OUTPUT_DWARF_CONST_DOUBLE
+#define ASM_OUTPUT_DWARF_CONST_DOUBLE(FILE,HIGH_VALUE,LOW_VALUE)	\
   do {									\
     if (WORDS_BIG_ENDIAN)						\
       {									\
@@ -2011,6 +2017,7 @@ typedef struct pubname_struct *pubname_ref;
 typedef dw_die_ref *arange_ref;
 
 /* Describe a double word constant value.  */
+/* ??? Every instance of long_long in the code really means CONST_DOUBLE.  */
 
 typedef struct dw_long_long_struct
 {
@@ -5098,9 +5105,7 @@ output_die (die)
 	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, AT_unsigned (a));
 	      break;
 	    case 8:
-	      ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-				      a->dw_attr_val.v.val_long_long.hi,
-				      a->dw_attr_val.v.val_long_long.low);
+	      ASM_OUTPUT_DWARF_DATA8 (asm_out_file, AT_unsigned (a));
 	      break;
 	    default:
 	      abort ();
@@ -5114,9 +5119,9 @@ output_die (die)
 		   ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-				  a->dw_attr_val.v.val_long_long.hi,
-				  a->dw_attr_val.v.val_long_long.low);
+	  ASM_OUTPUT_DWARF_CONST_DOUBLE (asm_out_file,
+					 a->dw_attr_val.v.val_long_long.hi,
+					 a->dw_attr_val.v.val_long_long.low);
 
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file,

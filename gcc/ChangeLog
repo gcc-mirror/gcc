@@ -1,5 +1,15 @@
 2000-06-08  James E. Wilson  <wilson@cygnus.com>
 
+	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA8): Add new macro that uses
+	UNALIGNED_DOUBLE_INT_ASM_OP.  Rename old macro to
+	ASM_OUTPUT_DWARF_CONST_DOUBLE.
+	(output_die, case dw_val_class_unsigned_const): Correct call to
+	ASM_OUTPUT_DWARF_DATA8.
+	(output_die, case dw_val_class_long_long): Use
+	ASM_OUTPUT_DWARF_CONST_DOUBLE.
+	* tree.c (host_integerp): Accept unsigned HOST_WIDE_INT values when
+	pos is zero.
+	
 	* config/ia64/ia64-protos.h (ia64_output_end_prologue): Add.
 	(output_function_prologue): Fix mispelling.
 	(output_function_prologue, output_function_epilogue): Reorder to
