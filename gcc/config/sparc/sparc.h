@@ -547,7 +547,7 @@ extern int sparc_align_jumps;
 extern int sparc_align_funcs;
 
 #define DEFAULT_SPARC_ALIGN_FUNCS \
-(sparc_cpu = PROCESSOR_ULTRASPARC ? 5 : 2)
+(sparc_cpu == PROCESSOR_ULTRASPARC ? 5 : 2)
 
 /* target machine storage layout */
 
