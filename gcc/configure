@@ -6638,6 +6638,15 @@ do
 	fi
 done
 
+check_languages=
+for language in .. $all_languages
+do
+	if test $language != ".."
+	then
+		check_languages="$check_languages check-$language"
+	fi
+done
+
 # Since we can't use `::' targets, we link each language in
 # with a set of hooks, reached indirectly via lang.${target}.
 
@@ -6761,6 +6770,7 @@ objdir=`pwd`
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
+
 
 
 
@@ -7084,6 +7094,7 @@ s%@all_stagestuff@%$all_stagestuff%g
 s%@build_exeext@%$build_exeext%g
 s%@build_install_headers_dir@%$build_install_headers_dir%g
 s%@build_xm_file_list@%$build_xm_file_list%g
+s%@check_languages@%$check_languages%g
 s%@cc_set_by_configure@%$cc_set_by_configure%g
 s%@quoted_cc_set_by_configure@%$quoted_cc_set_by_configure%g
 s%@cpp_install_dir@%$cpp_install_dir%g

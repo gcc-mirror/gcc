@@ -2775,7 +2775,11 @@ site.exp: ./config.status Makefile
 		-e '1,/^## All variables above are.*##/ d' >> site.exp
 	-@rm -f ./tmp?
 
-CHECK_TARGETS = check-gcc check-g++ check-g77 check-objc @CHECK_PO@
+CHECK_TARGETS = check-gcc @check_languages@ @CHECK_PO@
+
+check-c++ : check-g++
+check-f77 : check-g77
+check-java : 
 
 check: $(CHECK_TARGETS)
 

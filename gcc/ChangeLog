@@ -1,3 +1,10 @@
+2001-02-13  DJ Delorie  <dj@redhat.com>
+
+	* configure.in (check_languages): determine languages to check
+	* Makefile.in (check-c++): alias for check-g++
+	(check-f77): alias for check-g77
+	(CHECK_TARGETS): depend on configured languages
+
 Wed Feb 14 01:13:59 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (fixsfsi2, fixdfdi2): Fix previous patch again.

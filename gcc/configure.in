@@ -1675,6 +1675,15 @@ do
 	fi
 done
 
+check_languages=
+for language in .. $all_languages
+do
+	if test $language != ".."
+	then
+		check_languages="$check_languages check-$language"
+	fi
+done
+
 # Since we can't use `::' targets, we link each language in
 # with a set of hooks, reached indirectly via lang.${target}.
 
@@ -1805,6 +1814,7 @@ AC_SUBST(all_stagestuff)
 AC_SUBST(build_exeext)
 AC_SUBST(build_install_headers_dir)
 AC_SUBST(build_xm_file_list)
+AC_SUBST(check_languages)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(quoted_cc_set_by_configure)
 AC_SUBST(cpp_install_dir)
