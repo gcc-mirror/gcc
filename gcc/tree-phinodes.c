@@ -349,29 +349,6 @@ add_phi_arg (tree *phi, tree def, edge e)
   PHI_NUM_ARGS (*phi)++;
 }
 
-/* Remove a PHI argument from PHI.  BLOCK is the predecessor block where
-   the PHI argument is coming from.  */
-
-void
-remove_phi_arg (tree phi, basic_block block)
-{
-  int i, num_elem = PHI_NUM_ARGS (phi);
-
-  for (i = 0; i < num_elem; i++)
-    {
-      basic_block src_bb;
-
-      src_bb = PHI_ARG_EDGE (phi, i)->src;
-
-      if (src_bb == block)
-	{
-	  remove_phi_arg_num (phi, i);
-	  return;
-	}
-    }
-}
-
-
 /* Remove the Ith argument from PHI's argument list.  This routine assumes
    ordering of alternatives in the vector is not important and implements
    removal by swapping the last alternative with the alternative we want to
@@ -398,6 +375,21 @@ remove_phi_arg_num (tree phi, int i)
      collector will not look at those elements beyond the first
      PHI_NUM_ARGS elements of the array.  */
   PHI_NUM_ARGS (phi)--;
+}
+
+/* Remove all PHI arguments associated with edge E.  */
+
+void
+remove_phi_args (edge e)
+{
+  tree phi;
+
+  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+    {
+      int index = phi_arg_from_edge (phi, e);
+      if (index >= 0)
+	remove_phi_arg_num (phi, index);
+    }
 }
 
 /* Remove PHI node PHI from basic block BB.  If PREV is non-NULL, it is

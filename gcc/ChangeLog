@@ -1,3 +1,12 @@
+2004-11-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow.h: Remove the prototype for remove_phi_arg.
+	Add a prototype for remove_phi_args.
+	* tree-phinodes.c (remove_phi_arg): Remove.
+	(remove_phi_args): New.
+	* tree-ssa.c (ssa_remove_edge): Call remove_phi_args instead
+	of remove_phi_arg.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
