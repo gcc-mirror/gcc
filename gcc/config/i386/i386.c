@@ -2591,8 +2591,14 @@ ix86_expand_epilogue (style)
 
   ix86_compute_frame_layout (&frame);
 
-  /* Calculate start of saved registers relative to ebp.  */
-  offset = -frame.nregs * UNITS_PER_WORD;
+  /* Calculate start of saved registers relative to ebp.  Special care 
+     must be taken for the normal return case of a function using
+     eh_return: the eax and edx registers are marked as saved, but not
+     restored along this path.  */
+  offset = frame.nregs;
+  if (current_function_calls_eh_return && style != 2)
+    offset -= 2;
+  offset *= -UNITS_PER_WORD;
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
   if (profile_block_flag == 2)
