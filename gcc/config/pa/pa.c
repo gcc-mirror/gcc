@@ -382,8 +382,9 @@ move_operand (op, mode)
   if (GET_CODE (op) == LO_SUM
       && GET_CODE (XEXP (op, 0)) == REG
       && REG_OK_FOR_BASE_P (XEXP (op, 0))
-      && GET_CODE (XEXP (op, 1)) == UNSPEC)
-    return 0;
+      && GET_CODE (XEXP (op, 1)) == UNSPEC
+      && GET_MODE (op) == Pmode)
+    return 1;
 
   /* Since move_operand is only used for source operands, we can always
      allow scaled indexing!  */
@@ -3816,6 +3817,7 @@ pa_adjust_insn_length (insn, length)
   /* Block move pattern.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) == PARALLEL
+	   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
