@@ -1,3 +1,8 @@
+Tue Mar 16 13:44:50 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* mn10200/mn10200.md (addsi3, subsi3, ashlsi3, lshrsi3, ashrsi3):
+	Delete emit_library_call_value declaration.
+
 1999-03-16 16:06 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppfiles.c (read_and_prescan): Map backslash-newline to '\r'
