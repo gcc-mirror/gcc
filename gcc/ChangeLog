@@ -1,3 +1,40 @@
+2005-03-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Remove prototypes for
+	general_operand_src, general_operand_dst, single_one_operand,
+	single_zero_operand, call_insn_operand,
+	two_insn_adds_subs_operand, small_call_insn_operand,
+	jump_address_operand, bit_operand, bit_memory_operand,
+	stack_pointer_operand, const_int_gt_2_operand,
+	const_int_ge_8_operand, const_int_qi_operand,
+	const_int_hi_operand, incdec_operand, bit_operator,
+	nshift_operator, eqne_operator, gtle_operator,
+	gtuleu_operator, iorxor_operator.
+	Add prototypes for h8sx_shift_type h8sx_classify_shift and
+	h8300_ldm_stm_parallel.
+	* config/h8300/h8300.c (h8sx_shift_type,): Move to
+	h8300-protos.h.
+	(SYMBOL_FLAG_FUNCVEC_FUNCTION, SYMBOL_FLAG_EIGHTBIT_DATA,
+	SYMBOL_FLAG_TINY_DATA): Move to h8300.h.
+	(h8300_ldm_stm_parallel): Make it extern.
+	(h8300_ldm_parallel, h8300_stm_parallel,
+	h8300_return_parallel, general_operand_src,
+	general_operand_dst, h8300_dst_operand, h8300_src_operand,
+	nibble_operand, reg_or_nibble_operand, single_one_operand,
+	single_zero_operand, call_insn_operand,
+	two_insn_adds_subs_operand, small_call_insn_operand,
+	jump_address_operand, bit_operand, bit_memory_operand,
+	stack_pointer_operand, const_int_gt_2_operand,
+	const_int_ge_8_operand, const_int_qi_operand,
+	const_int_hi_operand, incdec_operand, eqne_operator,
+	gtle_operator, gtuleu_operator, iorxor_operator, bit_operator,
+	h8sx_binary_memory_operator, h8sx_unary_memory_operator,
+	h8sx_unary_shift_operator, h8sx_binary_shift_operator,
+	nshift_operator): Move to predicates.md.
+	* config/h8300/h8300.h (PREDICATE_CODES): Remove.
+	* config/h8300/h8300.md: Include predicates.md.
+	* config/h8300/predicates.md: New.
+
 2005-03-17  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (ia64*-*-hpux*): Add extra_options.
