@@ -2671,9 +2671,9 @@ assign_parms (fndecl, second_time)
   bzero (parm_reg_stack_loc, nparmregs * sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
-  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_PTR);
+  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
 #else
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_PTR);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX);
 #endif
 
   /* We haven't yet found an argument that we must push and pretend the
