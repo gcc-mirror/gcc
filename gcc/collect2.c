@@ -2,7 +2,7 @@
    that can be traversed by C++ initialization and finalization
    routines.
 
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@osf.org),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -55,6 +55,15 @@ extern int errno;
 
 #ifdef USG
 #define vfork fork
+#endif
+
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
 #endif
 
 #ifndef R_OK
@@ -207,15 +216,40 @@ static struct head destructors;		/* list of destructors found */
 
 extern char *getenv ();
 extern char *mktemp ();
-static void  add_to_list ();
-static void  scan_prog_file ();
-static void  fork_execute ();
-static void  do_wait ();
-static void  write_c_file ();
-static void  my_exit ();
-static void  handler ();
-static void  maybe_unlink ();
-static void  choose_temp_base ();
+extern FILE *fdopen ();
+
+/* Structure to hold all the directories in which to search for files to
+   execute.  */
+
+struct prefix_list
+{
+  char *prefix;               /* String to prepend to the path. */
+  struct prefix_list *next;   /* Next in linked list. */
+};
+
+struct path_prefix
+{
+  struct prefix_list *plist;  /* List of prefixes to try */
+  int max_len;                /* Max length of a prefix in PLIST */
+  char *name;                 /* Name of this list (used in config stuff) */
+};
+
+static void my_exit		PROTO((int));
+static void handler		PROTO((int));
+static int is_ctor_dtor		PROTO((char *));
+static void choose_temp_base	PROTO((void));
+static int is_in_prefix_list	PROTO((struct path_prefix *, char *, int));
+static char *find_a_file	PROTO((struct path_prefix *, char *));
+static void add_prefix		PROTO((struct path_prefix *, char *));
+static void prefix_from_env	PROTO((char *, struct path_prefix *));
+static void do_wait		PROTO((char *));
+static void fork_execute	PROTO((char *, char **));
+static void maybe_unlink	PROTO((char *));
+static void add_to_list		PROTO((struct head *, char *));
+static void write_list		PROTO((FILE *, char *, struct id *));
+static void write_list_with_asm PROTO((FILE *, char *, struct id *));
+static void write_c_file	PROTO((FILE *, char *));
+static void scan_prog_file	PROTO((char *, enum pass));
 
 generic *xcalloc ();
 generic *xmalloc ();
@@ -224,6 +258,7 @@ extern char *index ();
 extern char *rindex ();
 
 #ifdef NO_DUP2
+int
 dup2 (oldfd, newfd)
      int oldfd;
      int newfd;
@@ -239,6 +274,8 @@ dup2 (oldfd, newfd)
     fdtmp[fdx++] = fd;
   while (fdx > 0)
     close (fdtmp[--fdx]);
+
+  return 0;
 }
 #endif
 
@@ -473,6 +510,7 @@ choose_temp_base ()
 
 #ifndef HAVE_PUTENV
 
+int
 putenv (str)
      char *str;
 {
@@ -501,7 +539,7 @@ putenv (str)
       if (!strncmp (str, *envp, name_len))
 	{
 	  *envp = str;
-	  return;
+	  return 0;
 	}
     }
 
@@ -509,7 +547,7 @@ putenv (str)
   environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
   *environ = str;
   bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
-
+  return 0;
 #endif	/* VMS */
 }
 
@@ -519,22 +557,6 @@ putenv (str)
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
 #endif
-
-/* Structure to hold all the directories in which to search for files to
-   execute.  */
-
-struct prefix_list
-{
-  char *prefix;               /* String to prepend to the path. */
-  struct prefix_list *next;   /* Next in linked list. */
-};
-
-struct path_prefix
-{
-  struct prefix_list *plist;  /* List of prefixes to try */
-  int max_len;                /* Max length of a prefix in PLIST */
-  char *name;                 /* Name of this list (used in config stuff) */
-};
 
 /* We maintain two prefix lists: one from COMPILER_PATH environment variable
    and one from the PATH variable.  */
@@ -1710,21 +1732,15 @@ struct file_info
 };
 
 extern int decode_mach_o_hdr ();
-
 extern int encode_mach_o_hdr ();
 
-static void bad_header ();
-
-static void print_header ();
-
-static void print_load_command ();
-
-static void add_func_table ();
-
-static struct file_info	*read_file ();
-
-static void end_file ();
-
+static void add_func_table	PROTO((mo_header_t *, load_all_t *,
+				       symbol_info_t *, int));
+static void print_header	PROTO((mo_header_t *));
+static void print_load_command	PROTO((load_union_t*, size_t, int));
+static void bad_header		PROTO((int));
+static struct file_info	*read_file  PROTO((hcar *, int, int));
+static void end_file		PROTO((struct file_info *));
 
 /* OSF/rose specific version to scan the name list of the loaded
    program for the symbols g++ uses for static constructors and
@@ -2286,7 +2302,6 @@ read_file (name, fd, rw)
 
   return p;
 }
-
 
 /* Do anything necessary to write a file back from memory.  */
 
