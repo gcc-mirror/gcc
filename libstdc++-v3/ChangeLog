@@ -1,3 +1,12 @@
+2003-10-02  Carlo Wood  <carlo@alinoe.com>
+
+	* include/bits/demangle.h (demangle<Allocator>::symbol(char const*)):
+	Decode symbols that start with _GLOBAL_[ID]_ differently: the
+	trailing part ends with a terminating zero and is not necessarily an
+	encoding.
+	* src/demangle.cc (): Same.
+	* testsuite/demangle/regression/cw-13.cc: Adjust for new output.
+
 2003-10-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/locale/cons/12438.cc: Use

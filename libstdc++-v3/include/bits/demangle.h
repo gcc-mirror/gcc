@@ -2293,7 +2293,7 @@ namespace __gnu_cxx
     demangle<Allocator>::symbol(char const* input)
     {
       // <mangled-name> ::= _Z <encoding>
-      // <mangled-name> ::= _GLOBAL_ _<type>_ _Z <encoding>		
+      // <mangled-name> ::= _GLOBAL_ _<type>_ <disambiguation part>
       //                    <type> can be I or D (GNU extension)
       typedef demangler::session<Allocator> demangler_type;
       string_type result;
@@ -2305,16 +2305,14 @@ namespace __gnu_cxx
 	{
 	  if (!strncmp(input, "_GLOBAL__", 9)
 	      && (input[9] == 'D' || input[9] == 'I')
-	      && input[10] == '_' && input[11] == '_' && input[12] == 'Z')
+	      && input[10] == '_')
 	  {
 	    if (input[9] == 'D')
 	      result.assign("global destructors keyed to ", 28);
 	    else
 	      result.assign("global constructors keyed to ", 29);
-	    int cnt = demangler_type::decode_encoding(result, input + 13,
-						      INT_MAX);
-	    if (cnt < 0 || input[cnt + 13] != 0)
-	      failure = true;
+	    // Output the disambiguation part as-is.
+	    result += input + 11;
 	  }
 	  else
 	    failure = true;

@@ -28,7 +28,7 @@ int main()
   using namespace __gnu_test;
 
   // cplus-dem CORE
-  verify_demangle("_GLOBAL__I__Z2fnv", "global constructors keyed to fn()");
+  verify_demangle("_GLOBAL__I__Z2fnv", "global constructors keyed to _Z2fnv");
 
   return 0;
 }
