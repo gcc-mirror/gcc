@@ -1071,8 +1071,9 @@ arm_override_options (void)
 	arm_float_abi = ARM_FLOAT_ABI_HARD;
     }
 
-  if (arm_float_abi == ARM_FLOAT_ABI_SOFTFP)
-    sorry ("-mfloat-abi=softfp");
+  if (arm_float_abi == ARM_FLOAT_ABI_HARD && TARGET_VFP)
+    sorry ("-mfloat-abi=hard and VFP");
+
   /* If soft-float is specified then don't use FPU.  */
   if (TARGET_SOFT_FLOAT)
     arm_fpu_arch = FPUTYPE_NONE;

@@ -268,8 +268,10 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
-#define TARGET_SOFT_FLOAT_ABI		(arm_float_abi != ARM_FLOAT_ABI_HARD)
-#define TARGET_HARD_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_HARD)
+/* Use hardware floating point instructions. */
+#define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
+/* Use hardware floating point calling convention.  */
+#define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
 #define TARGET_FPA			(arm_fp_model == ARM_FP_MODEL_FPA)
 #define TARGET_MAVERICK			(arm_fp_model == ARM_FP_MODEL_MAVERICK)
 #define TARGET_VFP			(arm_fp_model == ARM_FP_MODEL_VFP)
@@ -1549,10 +1551,10 @@ enum reg_class
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE)  \
-  (TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA			\
+  (TARGET_ARM && TARGET_HARD_FLOAT_ABI && TARGET_FPA			\
    && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
    ? gen_rtx_REG (MODE, FIRST_FPA_REGNUM)				\
-   : TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK			\
+   : TARGET_ARM && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK		\
      && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
    ? gen_rtx_REG (MODE, FIRST_CIRRUS_FP_REGNUM) 			\
    : TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (MODE)    	\
@@ -1572,10 +1574,10 @@ enum reg_class
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
   ((REGNO) == ARG_REGISTER (1) \
    || (TARGET_ARM && ((REGNO) == FIRST_CIRRUS_FP_REGNUM)		\
-       && TARGET_HARD_FLOAT && TARGET_MAVERICK)				\
+       && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK)			\
    || ((REGNO) == FIRST_IWMMXT_REGNUM && TARGET_IWMMXT_ABI) \
    || (TARGET_ARM && ((REGNO) == FIRST_FPA_REGNUM)			\
-       && TARGET_HARD_FLOAT && TARGET_FPA))
+       && TARGET_HARD_FLOAT_ABI && TARGET_FPA))
 
 /* How large values are returned */
 /* A C expression which can inhibit the returning of certain function values
