@@ -21,11 +21,17 @@ Boston, MA 02111-1307, USA.  */
 
 #define STARTFILE_SPEC  "crt0.o%s"
 
+#ifndef LIB_SPEC
 #define LIB_SPEC "-lc"
+#endif
 
+#ifndef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "-D__semi__"
+#endif
 
+#ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
+#endif
 
 #ifndef TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);

@@ -19,6 +19,9 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* elfos.h should have already been included.  Now just override
+   any conflicting definitions and add any extras.  */
+
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux)", stderr);
@@ -30,102 +33,24 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Now we define the strings used to build the spec file.  */
-#define STARTFILE_SPEC	"crtbegin%O%s crt0%O%s"
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC	" crti%O%s crtbegin%O%s crt0%O%s"
 
-#define ENDFILE_SPEC	"crtend%O%s"
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC	"crtend%O%s crtn%O%s"
 
-#define USER_LABEL_PREFIX 	""
-#define LOCAL_LABEL_PREFIX 	"."
+/* The __USES_INITFINI__ define is tested in newlib/libc/sys/arm/crt0.S
+   to see if it needs to invoked _init() and _fini().  */
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC  "-D__ELF__ -D__USES_INITFINI__"
 
-#define TEXT_SECTION_ASM_OP 	"\t.text"
-#define INIT_SECTION_ASM_OP	"\t.section\t.init"
-#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
-
-#define INVOKE__main
-
-/* Debugging */
-#define DWARF_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* Support for Constructors and Destrcutors .  */
-#define READONLY_DATA_SECTION	rdata_section
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-#define SUBTARGET_EXTRA_SECTIONS in_rdata
-
-/* A list of extra section function definitions.  */
-#define SUBTARGET_EXTRA_SECTION_FUNCTIONS	RDATA_SECTION_FUNCTION
-  
-#define RDATA_SECTION_ASM_OP	"\t.section .rodata"
-
-#define RDATA_SECTION_FUNCTION 					\
-void rdata_section PARAMS ((void));				\
-								\
-void								\
-rdata_section ()						\
-{								\
-  if (in_section != in_rdata)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", RDATA_SECTION_ASM_OP);	\
-      in_section = in_rdata;					\
-    }								\
-}
-
-/* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
-
-/* The ARM development system defines __main.  */
-#define NAME__MAIN "__gccmain"
-#define SYMBOL__MAIN __gccmain
 
 /* Return a non-zero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL)						\
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL)	\
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
-
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
-#define UNIQUE_SECTION(DECL, RELOC)					\
-  do									\
-    {									\
-      int len;								\
-      int sec;								\
-      const char * name;						\
-      char * string;							\
-      char * prefix;							\
-      static char * prefixes[4][2] =					\
-      {									\
-	{ ".text.",   ".gnu.linkonce.t." },				\
-	{ ".rodata.", ".gnu.linkonce.r." },				\
-	{ ".data.",   ".gnu.linkonce.d." },				\
-        { ".bss.",    ".gnu.linkonce.b." }				\
-      };								\
-      									\
-      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	sec = 0;							\
-      else if (DECL_READONLY_SECTION (DECL, RELOC))			\
-	sec = 1;							\
-      else if (DECL_INITIAL (DECL) == NULL_TREE)			\
-	sec = 3;							\
-      else								\
-	sec = 2;							\
-      									\
-      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];			\
-      name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
-      									\
-      /* Strip off any encoding in name.  */				\
-      STRIP_NAME_ENCODING (name, name);					\
-									\
-      len    = strlen (name) + strlen (prefix);				\
-      string = alloca (len + 1);					\
-      									\
-      sprintf (string, "%s%s", prefix, name);				\
-      									\
-      DECL_SECTION_NAME (DECL) = build_string (len, string);		\
-    }									\
-  while (0)
 
 #undef  ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)   	\
@@ -169,5 +94,3 @@ rdata_section ()						\
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
 #endif
 
-/* Now get the routine arm-elf definitions.  */
-#include "elf.h"

@@ -105,7 +105,9 @@ Boston, MA 02111-1307, USA.  */
 /* Arm Assembler barfs on dollars */
 #define DOLLARS_IN_IDENTIFIERS 0
 
+#ifndef NO_DOLLAR_IN_LABEL
 #define NO_DOLLAR_IN_LABEL 1
+#endif
 
 /* DBX register number for a given compiler register number */
 #define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
@@ -257,10 +259,12 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
   fprintf (STREAM, "\t.byte\t%d\n", VALUE)
 
+#undef  ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
   output_ascii_pseudo_op (STREAM, (const unsigned char *)(PTR), LEN)
 
 /* Output a gap.  In fact we fill it with nulls.  */
+#undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\
   fprintf (STREAM, "\t.space\t%d\n", NBYTES)
 

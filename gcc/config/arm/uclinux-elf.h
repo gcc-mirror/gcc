@@ -1,5 +1,5 @@
 /* Definitions for ARM running ucLinux using ELF
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
    Contributed by Philip Blundell <pb@nexus.co.uk>
 
 This file is part of GNU CC.
@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "arm/linux-elf.h"
 
 /* We don't want a PLT.  */
 #undef  NEED_PLT_RELOC
