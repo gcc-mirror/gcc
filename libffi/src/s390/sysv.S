@@ -42,13 +42,17 @@
 	.globl	ffi_call_SYSV
 	.type	ffi_call_SYSV,%function
 ffi_call_SYSV:
+.LFB1:
 	# Save registers
-	stm	%r7,%r15,28(%r15)
+	stm	%r6,%r15,24(%r15)
+.LCFI0:
 	l	%r7,96(%r15)	       # Get A(fn)
 	lr	%r0,%r15
 	ahi	%r15,-128	       # Make room for my args
+.LCFI1:
 	st	%r0,0(%r15)	       # Set backchain
 	lr	%r11,%r15	       # Establish my stack register
+.LCFI2:
 	sr	%r15,%r4	       # Make room for fn args
 	ahi	%r15,-96	       # Make room for new frame
 	lr	%r10,%r15	       # Establish stack build area
@@ -154,8 +158,66 @@ ffi_call_SYSV:
 .Lepilogue:
 	l	%r15,0(%r11)
 	l	%r4,56(%r15)
-	lm	%r7,%r15,28(%r15)
+	lm	%r6,%r15,24(%r15)
 	br	%r4
- 
+
+.LFE1: 
 .ffi_call_SYSV_end:
 	.size	 ffi_call_SYSV,.ffi_call_SYSV_end-ffi_call_SYSV
+
+
+	.section	.eh_frame,"aw",@progbits
+.Lframe1:
+	.4byte	.LECIE1-.LSCIE1	# Length of Common Information Entry
+.LSCIE1:
+	.4byte	0x0	# CIE Identifier Tag
+	.byte	0x1	# CIE Version
+	.ascii "\0"	# CIE Augmentation
+	.uleb128 0x1	# CIE Code Alignment Factor
+	.sleb128 -4	# CIE Data Alignment Factor
+	.byte	0xe	# CIE RA Column
+	.byte	0xc	# DW_CFA_def_cfa
+	.uleb128 0xf
+	.uleb128 0x60
+	.align	4
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1	# FDE Length
+.LASFDE1:
+	.4byte	.LASFDE1-.Lframe1	# FDE CIE offset
+	.4byte	.LFB1	# FDE initial location
+	.4byte	.LFE1-.LFB1	# FDE address range
+	.uleb128 0x0	# Augmentation size
+	.byte	0x4	# DW_CFA_advance_loc4
+	.4byte	.LCFI0-.LFB1
+	.byte	0x8f	# DW_CFA_offset, column 0xf
+	.uleb128 0x9
+	.byte	0x8e	# DW_CFA_offset, column 0xe
+	.uleb128 0xa
+	.byte	0x8d	# DW_CFA_offset, column 0xd
+	.uleb128 0xb
+	.byte	0x8c	# DW_CFA_offset, column 0xc
+	.uleb128 0xc
+	.byte	0x8b	# DW_CFA_offset, column 0xb
+	.uleb128 0xd
+	.byte	0x8a	# DW_CFA_offset, column 0xa
+	.uleb128 0xe
+	.byte	0x89	# DW_CFA_offset, column 0x9
+	.uleb128 0xf
+	.byte	0x88	# DW_CFA_offset, column 0x8
+	.uleb128 0x10
+	.byte	0x87	# DW_CFA_offset, column 0x7
+	.uleb128 0x11
+	.byte	0x86	# DW_CFA_offset, column 0x6
+	.uleb128 0x12
+	.byte	0x4	# DW_CFA_advance_loc4
+	.4byte	.LCFI1-.LCFI0
+	.byte	0xe	# DW_CFA_def_cfa_offset
+	.uleb128 0xe0
+	.byte	0x4	# DW_CFA_advance_loc4
+	.4byte	.LCFI2-.LCFI1
+	.byte	0xd	# DW_CFA_def_cfa_register
+	.uleb128 0xb
+	.align	4
+.LEFDE1:
+
