@@ -1,5 +1,11 @@
 2002-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/6119
+	* final.c (final_start_function): Don't bump profile_label_no here...
+	(final_end_function): ...but here.
+
+2002-04-04  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.md (pic): New attribute.
 	(do_builtin_setjmp_setup): Save %fp, %i7 and %l7 for TARGET_V9
 	into stack slots.
