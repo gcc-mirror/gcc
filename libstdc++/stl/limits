@@ -1,0 +1,404 @@
+/*
+ * Copyright (c) 1997
+ * Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, distribute and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation.  Silicon Graphics makes no
+ * representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without express or implied warranty.
+ */
+
+/* NOTE: This is not portable code.  Parts of numeric_limits<> are
+ * inherently machine-dependent, and this file is written for the MIPS
+ * architecture and the SGI MIPSpro C++ compiler.  Parts of it (in
+ * particular, some of the characteristics of floating-point types)
+ * are almost certainly incorrect for any other platform.
+ */
+
+#ifndef __SGI_CPP_LIMITS
+#define __SGI_CPP_LIMITS
+
+#include <limits.h>
+#include <float.h>
+#include <stl_config.h>
+
+__STL_BEGIN_NAMESPACE
+
+enum float_round_style {
+  round_indeterminate       = -1,
+  round_toward_zero         =  0,
+  round_to_nearest          =  1,
+  round_toward_infinity     =  2,
+  round_toward_neg_infinity =  3
+};
+  
+
+// Base class for all specializations of numeric_limits.
+
+template <class Number>
+class __numeric_limits_base {
+public:
+  static const bool is_specialized = false;
+
+  static Number min() __STL_NOTHROW { return Number(); }
+  static Number max() __STL_NOTHROW { return Number(); }
+
+  static const int digits   = 0;
+  static const int digits10 = 0;
+
+  static const bool is_signed  = false;
+  static const bool is_integer = false;
+  static const bool is_exact   = false;
+
+  static const int radix = 0;
+
+  static Number epsilon() __STL_NOTHROW     { return Number(); }
+  static Number round_error() __STL_NOTHROW { return Number(); }
+
+  static const int min_exponent   = 0;
+  static const int min_exponent10 = 0;
+  static const int max_exponent   = 0;
+  static const int max_exponent10 = 0;
+
+  static const bool has_infinity      = false;
+  static const bool has_quiet_NaN     = false;
+  static const bool has_signaling_NaN = false;
+  static const bool has_denorm        = false;
+  static const bool has_denorm_loss   = false;
+
+  static Number infinity() __STL_NOTHROW      { return Number(); }
+  static Number quiet_NaN() __STL_NOTHROW     { return Number(); }
+  static Number signaling_NaN() __STL_NOTHROW { return Number(); }
+  static Number denorm_min() __STL_NOTHROW    { return Number(); }
+
+  static const bool is_iec559  = false;
+  static const bool is_bounded = false;
+  static const bool is_modulo  = false;
+
+  static const bool traps           = false;
+  static const bool tinyness_before = false;
+  static const float_round_style round_style = round_toward_zero;
+};
+
+#define __declare_numeric_base_member(__type, __mem) \
+template <class Number> \
+  const __type __numeric_limits_base<Number>:: __mem
+
+__declare_numeric_base_member(bool, is_specialized);
+__declare_numeric_base_member(int, digits);
+__declare_numeric_base_member(int, digits10);
+__declare_numeric_base_member(bool, is_signed);
+__declare_numeric_base_member(bool, is_integer);
+__declare_numeric_base_member(bool, is_exact);
+__declare_numeric_base_member(int, radix);
+__declare_numeric_base_member(int, min_exponent);
+__declare_numeric_base_member(int, max_exponent);
+__declare_numeric_base_member(int, min_exponent10);
+__declare_numeric_base_member(int, max_exponent10);
+__declare_numeric_base_member(bool, has_infinity);
+__declare_numeric_base_member(bool, has_quiet_NaN);
+__declare_numeric_base_member(bool, has_signaling_NaN);
+__declare_numeric_base_member(bool, has_denorm);
+__declare_numeric_base_member(bool, has_denorm_loss);
+__declare_numeric_base_member(bool, is_iec559);
+__declare_numeric_base_member(bool, is_bounded);
+__declare_numeric_base_member(bool, is_modulo);
+__declare_numeric_base_member(bool, traps);
+__declare_numeric_base_member(bool, tinyness_before);
+__declare_numeric_base_member(float_round_style, round_style);
+
+#undef __declare_numeric_base_member
+
+// Base class for integers.
+
+template <class __Int,
+          __Int IMin,
+          __Int IMax,
+          int IDigits = -1>
+class __integer_limits : public __numeric_limits_base<__Int> 
+{
+public:
+  static const bool is_specialized = true;
+
+  static __Int min() __STL_NOTHROW { return IMin; }
+  static __Int max() __STL_NOTHROW { return IMax; }
+
+  static const int digits = 
+    (IDigits < 0) ? sizeof(__Int) * CHAR_BIT - (IMin == 0 ? 0 : 1) : IDigits;
+  static const int digits10 = (digits * 301) / 1000; 
+                                // log 2 = 0.301029995664...
+
+  static const bool is_signed = IMin != 0;
+  static const bool is_integer = true;
+  static const bool is_exact = true;
+  static const int radix = 2;
+
+
+  static const bool is_bounded = true;
+  static const bool is_modulo = true;
+};
+
+#define __declare_integer_limits_member(__type, __mem) \
+template <class __Int, __Int IMin, __Int IMax, int IDigits> \
+  const __type __integer_limits<__Int, IMin, IMax, IDigits>:: __mem
+
+__declare_integer_limits_member(bool, is_specialized);
+__declare_integer_limits_member(int, digits);
+__declare_integer_limits_member(int, digits10);
+__declare_integer_limits_member(bool, is_signed);
+__declare_integer_limits_member(bool, is_integer);
+__declare_integer_limits_member(bool, is_exact);
+__declare_integer_limits_member(int, radix);
+__declare_integer_limits_member(bool, is_bounded);
+__declare_integer_limits_member(bool, is_modulo);
+
+#undef __declare_integer_limits_member
+
+// Base class for floating-point numbers.
+template <class Number,
+         int FDigits, int FDigits10,
+         int FMinExp, int FMaxExp,
+         int FMinExp10, int FMaxExp10,
+         unsigned int FInfinityWord,
+         unsigned int FQNaNWord, unsigned int FSNaNWord,
+         bool FIsIEC559,
+         float_round_style FRoundStyle>
+class __floating_limits : public __numeric_limits_base<Number>
+{
+public:
+  static const bool is_specialized = true;
+
+  static const int digits   = FDigits;
+  static const int digits10 = FDigits10;
+
+  static const bool is_signed = true;
+
+  static const int radix = 2;
+
+  static const int min_exponent   = FMinExp;
+  static const int max_exponent   = FMaxExp;
+  static const int min_exponent10 = FMinExp10;
+  static const int max_exponent10 = FMaxExp10;
+
+  static const bool has_infinity      = true;
+  static const bool has_quiet_NaN     = true;
+  static const bool has_signaling_NaN = true;
+  static const bool has_denorm        = false;
+  static const bool has_denorm_loss   = false;
+
+  static Number infinity() __STL_NOTHROW {
+    static unsigned int inf[sizeof(Number) / sizeof(int)] = { FInfinityWord };
+    return *reinterpret_cast<Number*>(&inf);
+  }
+  static Number quiet_NaN() __STL_NOTHROW {
+    static unsigned int nan[sizeof(Number) / sizeof(int)] = { FQNaNWord };
+    return *reinterpret_cast<Number*>(&nan);
+  }
+  static Number signaling_NaN() __STL_NOTHROW {
+    static unsigned int nan[sizeof(Number) / sizeof(int)] = { FSNaNWord };
+    return *reinterpret_cast<Number*>(&nan);
+  }
+
+  static const bool is_iec559       = FIsIEC559;
+  static const bool is_bounded      = true;
+  static const bool traps           = true;
+  static const bool tinyness_before = false;
+
+  static const float_round_style round_style = FRoundStyle;
+};
+
+#define __declare_float_limits_member(__type, __mem) \
+template <class __Num, int __Dig, int __Dig10, \
+          int __MnX, int __MxX, int __MnX10, int __MxX10, \
+          unsigned int __Inf, unsigned int __QNaN, unsigned int __SNaN, \
+          bool __IsIEEE, float_round_style __Sty> \
+const __type __floating_limits<__Num, __Dig, __Dig10, \
+                               __MnX, __MxX, __MnX10, __MxX10, \
+                               __Inf, __QNaN, __SNaN,__IsIEEE, __Sty>:: __mem
+
+__declare_float_limits_member(bool, is_specialized);  
+__declare_float_limits_member(int, digits);  
+__declare_float_limits_member(int, digits10);  
+__declare_float_limits_member(bool, is_signed);  
+__declare_float_limits_member(int, radix);  
+__declare_float_limits_member(int, min_exponent);  
+__declare_float_limits_member(int, max_exponent);  
+__declare_float_limits_member(int, min_exponent10);  
+__declare_float_limits_member(int, max_exponent10);  
+__declare_float_limits_member(bool, has_infinity);
+__declare_float_limits_member(bool, has_quiet_NaN);
+__declare_float_limits_member(bool, has_signaling_NaN);
+__declare_float_limits_member(bool, has_denorm);
+__declare_float_limits_member(bool, has_denorm_loss);
+__declare_float_limits_member(bool, is_iec559);
+__declare_float_limits_member(bool, is_bounded);
+__declare_float_limits_member(bool, traps);
+__declare_float_limits_member(bool, tinyness_before);
+__declare_float_limits_member(float_round_style, round_style);
+
+#undef __declare_float_limits_member
+
+// Class numeric_limits
+
+// The unspecialized class.
+
+template<class T> 
+class numeric_limits : public __numeric_limits_base<T> {};
+
+// Specializations for all built-in integral types.
+
+#ifndef __STL_NEED_BOOL
+
+template<>
+class numeric_limits<bool>
+  : public __integer_limits<bool, false, true, 0>
+{};
+
+#endif /* __STL_NEED_BOOL */
+
+template<>
+class numeric_limits<char>
+  : public __integer_limits<char, CHAR_MIN, CHAR_MAX>
+{};
+
+template<>
+class numeric_limits<signed char>
+  : public __integer_limits<signed char, SCHAR_MIN, SCHAR_MAX>
+{};
+
+template<>
+class numeric_limits<unsigned char>
+  : public __integer_limits<unsigned char, 0, UCHAR_MAX>
+{};
+
+#ifdef _WCHAR_T_IS_KEYWORD
+
+template<>
+class numeric_limits<wchar_t>
+  : public __integer_limits<wchar_t, INT_MIN, INT_MAX>
+{};
+
+#endif
+
+template<>
+class numeric_limits<short>
+  : public __integer_limits<short, SHRT_MIN, SHRT_MAX>
+{};
+
+template<>
+class numeric_limits<unsigned short>
+  : public __integer_limits<unsigned short, 0, USHRT_MAX>
+{};
+
+template<>
+class numeric_limits<int>
+  : public __integer_limits<int, INT_MIN, INT_MAX>
+{};
+
+template<>
+class numeric_limits<unsigned int>
+  : public __integer_limits<unsigned int, 0, UINT_MAX>
+{};
+
+template<>
+class numeric_limits<long>
+  : public __integer_limits<long, LONG_MIN, LONG_MAX>
+{};
+
+template<>
+class numeric_limits<unsigned long>
+  : public __integer_limits<unsigned long, 0, ULONG_MAX>
+{};
+
+#if defined(_LONGLONG) && _SGIAPI
+
+template<>
+class numeric_limits<long long>
+  : public __integer_limits<long long, LONGLONG_MIN, LONGLONG_MAX>
+{};
+
+template<>
+class numeric_limits<unsigned long long>
+  : public __integer_limits<unsigned long long, 0, ULONGLONG_MAX>
+{};
+
+#endif /* _LONGLONG && _SGIAPI */
+
+// Specializations for all built-in floating-point type.
+
+template<> class numeric_limits<float>
+  : public __floating_limits<float, 
+                             FLT_MANT_DIG,   // Binary digits of precision
+                             FLT_DIG,        // Decimal digits of precision
+                             FLT_MIN_EXP,    // Minimum exponent
+                             FLT_MAX_EXP,    // Maximum exponent
+                             FLT_MIN_10_EXP, // Minimum base 10 exponent
+                             FLT_MAX_10_EXP, // Maximum base 10 exponent
+                             0x7f800000u,    // First word of +infinity
+                             0x7f810000u,    // First word of quiet NaN
+                             0x7fc10000u,    // First word of signaling NaN
+                             true,           // conforms to iec559
+                             round_to_nearest>
+{
+public:
+  static float min() __STL_NOTHROW { return FLT_MIN; }
+  static float denorm_min() __STL_NOTHROW { return FLT_MIN; }
+  static float max() __STL_NOTHROW { return FLT_MAX; }
+  static float epsilon() __STL_NOTHROW { return FLT_EPSILON; }
+  static float round_error() __STL_NOTHROW { return 0.5f; } // Units: ulps.
+};
+
+template<> class numeric_limits<double>
+  : public __floating_limits<double, 
+                             DBL_MANT_DIG,   // Binary digits of precision
+                             DBL_DIG,        // Decimal digits of precision
+                             DBL_MIN_EXP,    // Minimum exponent
+                             DBL_MAX_EXP,    // Maximum exponent
+                             DBL_MIN_10_EXP, // Minimum base 10 exponent
+                             DBL_MAX_10_EXP, // Maximum base 10 exponent
+                             0x7ff00000u,    // First word of +infinity
+                             0x7ff10000u,    // First word of quiet NaN
+                             0x7ff90000u,    // First word of signaling NaN
+                             true,           // conforms to iec559
+                             round_to_nearest>
+{
+public:
+  static double min() __STL_NOTHROW { return DBL_MIN; }
+  static double denorm_min() __STL_NOTHROW { return DBL_MIN; }
+  static double max() __STL_NOTHROW { return DBL_MAX; }
+  static double epsilon() __STL_NOTHROW { return DBL_EPSILON; }
+  static double round_error() __STL_NOTHROW { return 0.5; } // Units: ulps.
+};
+
+template<> class numeric_limits<long double>
+  : public __floating_limits<long double, 
+                             LDBL_MANT_DIG,  // Binary digits of precision
+                             LDBL_DIG,       // Decimal digits of precision
+                             LDBL_MIN_EXP,   // Minimum exponent
+                             LDBL_MAX_EXP,   // Maximum exponent
+                             LDBL_MIN_10_EXP,// Minimum base 10 exponent
+                             LDBL_MAX_10_EXP,// Maximum base 10 exponent
+                             0x7ff00000u,    // First word of +infinity
+                             0x7ff10000u,    // First word of quiet NaN
+                             0x7ff90000u,    // First word of signaling NaN
+                             false,          // Doesn't conform to iec559
+                             round_to_nearest>
+{
+public:
+  static long double min() __STL_NOTHROW { return LDBL_MIN; }
+  static long double denorm_min() __STL_NOTHROW { return LDBL_MIN; }
+  static long double max() __STL_NOTHROW { return LDBL_MAX; }
+  static long double epsilon() __STL_NOTHROW { return LDBL_EPSILON; }
+  static long double round_error() __STL_NOTHROW { return 4; } // Units: ulps.
+};
+
+__STL_END_NAMESPACE
+
+#endif /* __SGI_CPP_LIMITS */
+
+// Local Variables:
+// mode:C++
+// End:
