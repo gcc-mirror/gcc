@@ -8259,6 +8259,8 @@ complete_array_type (type, initial_value, do_default)
 	  /* Make an error message unless that happened already.  */
 	  if (initial_value != error_mark_node)
 	    value = 1;
+	  else
+	    initial_value = NULL_TREE;
 
 	  /* Prevent further error messages.  */
 	  maxindex = build_int_2 (0, 0);

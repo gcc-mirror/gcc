@@ -5920,6 +5920,9 @@ build_modify_expr (lhs, modifycode, rhs)
       olhstype = lhstype = TREE_TYPE (lhs);
     }
 
+  if (lhs == error_mark_node)
+    return lhs;
+
   if (TREE_CODE (lhstype) == REFERENCE_TYPE
       && modifycode != INIT_EXPR)
     {

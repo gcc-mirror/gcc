@@ -490,12 +490,20 @@ finish_switch_cond (cond)
       r = build_min_nt (SWITCH_STMT, cond, NULL_TREE);
       add_tree (r);
     }
-  else
+  else if (cond != error_mark_node)
     {
       emit_line_note (input_filename, lineno);
       c_expand_start_case (cond);
       r = NULL_TREE;
     }
+  else
+    {
+      /* The code is in error, but we don't want expand_end_case to
+         crash. */
+      c_expand_start_case (boolean_false_node);
+      r = NULL_TREE;
+    }
+
   push_switch ();
 
   /* Don't let the tree nodes for COND be discarded by

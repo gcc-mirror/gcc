@@ -1,3 +1,17 @@
+1999-03-13  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* semantics.c (finish_switch_cond): Handle error cases gracefully.
+	Detected by g++.law/enum5.C
+
+	* typeck.c (build_modify_expr): Check for errors after resolving
+	offsets. Detected by g++.brendan/static1.C
+
+	* decl.c (complete_array_type): Ignore initial_value if it is an
+	error. Detected by g++.benjamin/17930.C	
+
+	* typeck2.c (process_init_constructor): Return error if one argument
+	is in error. Detected by g++.benjamin/13478.C
+
 1999-03-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (select_decl): Allow class templates when we need types.

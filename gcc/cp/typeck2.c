@@ -932,6 +932,8 @@ process_init_constructor (type, init, elts)
 		  tree tail1 = tail;
 		  next1 = digest_init (TREE_TYPE (type),
 				       TREE_VALUE (tail), &tail1);
+		  if (next1 == error_mark_node)
+		    return next1;
 		  my_friendly_assert
 		    (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
 				  TYPE_MAIN_VARIANT (TREE_TYPE (next1))),
