@@ -1445,9 +1445,16 @@ layout_type (type)
 		= size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
 
 	    /* Complain if the user has requested an array too large to
-	       fit in size_t.  */
+	       fit in size_t.
+
+	       ??? Disable this test for signed sizetypes.  This has the effect
+	       of disabling it for Ada, where it will cause trouble.  However,
+	       this test doesn't make sense for C either since there should
+	       be no problem with a type whose size overflows, only an
+	       object whose size overflows.  */
 	    if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-		&& TREE_OVERFLOW (TYPE_SIZE (type)))
+		&& TREE_OVERFLOW (TYPE_SIZE (type))
+		&& TREE_UNSIGNED (TREE_TYPE (TYPE_SIZE (type))))
 	      {
 		error ("requested array too large for target");
 

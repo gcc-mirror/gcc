@@ -1,3 +1,8 @@
+Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (layout_type, case ARRAY_TYPE): Kludge to disable
+	array-too-large test for signed sizetype.
+
 Thu Sep 20 12:19:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (indirect_jump): Allow Pmode operand.
