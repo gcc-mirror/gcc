@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "obstack.h"
 #include "bitmap.h"
+#include "ggc.h"
 
 /* Commonly used modes.  */
 
@@ -187,6 +188,7 @@ static rtx free_insn;
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));
+static void mark_sequence_stack         PROTO((struct sequence_stack *));
 
 rtx
 gen_rtx_CONST_INT (mode, arg)
@@ -3465,6 +3467,41 @@ init_emit ()
 #ifdef INIT_EXPANDERS
   INIT_EXPANDERS;
 #endif
+}
+
+/* Mark SS for GC.  */
+
+static void
+mark_sequence_stack (ss)
+     struct sequence_stack *ss;
+{
+  while (ss)
+    {
+      ggc_mark_rtx (ss->first);
+      ggc_mark_tree (ss->sequence_rtl_expr);
+      ss = ss->next;
+    }
+}
+
+/* Mark ES for GC.  */
+
+void
+mark_emit_state (es)
+     struct emit_status *es;
+{
+  rtx *r;
+  int i;
+
+  if (es == 0)
+    return;
+
+  for (i = es->regno_pointer_flag_length, r = es->x_regno_reg_rtx;
+       i > 0; --i, ++r)
+    ggc_mark_rtx (*r);
+
+  mark_sequence_stack (es->sequence_stack);
+  ggc_mark_tree (es->sequence_rtl_expr);
+  ggc_mark_rtx (es->x_first_insn);
 }
 
 /* Create some permanent unique rtl objects shared between all functions.

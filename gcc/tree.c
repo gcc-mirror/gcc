@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -247,9 +248,30 @@ int (*lang_get_alias_set) PROTO((tree));
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
+/* Each hash table slot is a bucket containing a chain
+   of these structures.  */
+
+struct type_hash
+{
+  struct type_hash *next;	/* Next structure in the bucket.  */
+  int hashcode;			/* Hash code of this type.  */
+  tree type;			/* The type recorded here.  */
+};
+
+/* Now here is the hash table.  When recording a type, it is added
+   to the slot whose index is the hash code mod the table size.
+   Note that the hash table is used for several kinds of types
+   (function types, array types and array index range types, for now).
+   While all these live in the same table, they are completely independent,
+   and the hash code is computed differently for each of these.  */
+
+#define TYPE_HASH_SIZE 59
+struct type_hash *type_hash_table[TYPE_HASH_SIZE];
+
 static void set_type_quals PROTO((tree, int));
 static void append_random_chars PROTO((char *));
 static void build_real_from_int_cst_1 PROTO((PTR));
+static void mark_type_hash PROTO ((void *));
 
 void gcc_obstack_init ();
 
@@ -284,6 +306,11 @@ init_obstacks ()
 
   /* Init the hash table of identifiers.  */
   bzero ((char *) hash_table, sizeof hash_table);
+
+  ggc_add_tree_root (hash_table, MAX_HASH_TABLE);
+  ggc_add_root (type_hash_table, TYPE_HASH_SIZE, 
+		sizeof(struct type_hash *),
+		mark_type_hash);
 }
 
 void
@@ -3587,26 +3614,6 @@ build_type_copy (type)
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
-/* Each hash table slot is a bucket containing a chain
-   of these structures.  */
-
-struct type_hash
-{
-  struct type_hash *next;	/* Next structure in the bucket.  */
-  int hashcode;			/* Hash code of this type.  */
-  tree type;			/* The type recorded here.  */
-};
-
-/* Now here is the hash table.  When recording a type, it is added
-   to the slot whose index is the hash code mod the table size.
-   Note that the hash table is used for several kinds of types
-   (function types, array types and array index range types, for now).
-   While all these live in the same table, they are completely independent,
-   and the hash code is computed differently for each of these.  */
-
-#define TYPE_HASH_SIZE 59
-struct type_hash *type_hash_table[TYPE_HASH_SIZE];
-
 /* Compute a hash code for a list of types (chain of TREE_LIST nodes
    with types in the TREE_VALUE slots), by adding the hash codes
    of the individual types.  */
@@ -3712,6 +3719,21 @@ type_hash_canon (hashcode, type)
     type_hash_add (hashcode, type);
 
   return type;
+}
+
+/* Mark ARG (which is really a struct type_hash **) for GC.  */
+
+static void
+mark_type_hash (arg)
+     void *arg;
+{
+  struct type_hash *t = *(struct type_hash **) arg;
+
+  while (t)
+    {
+      ggc_mark_tree (t->type);
+      t = t->next;
+    }
 }
 
 /* Compute a hash code for a list of attributes (chain of TREE_LIST nodes

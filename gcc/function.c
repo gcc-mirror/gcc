@@ -57,6 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "hash.h"
+#include "ggc.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -272,6 +273,9 @@ static unsigned long insns_for_mem_hash PROTO ((hash_table_key));
 static boolean insns_for_mem_comp PROTO ((hash_table_key, hash_table_key));
 static int insns_for_mem_walk   PROTO ((rtx *, void *));
 static void compute_insns_for_mem PROTO ((rtx, rtx, struct hash_table *));
+static void mark_temp_slot PROTO ((struct temp_slot *));
+static void mark_function_state PROTO ((struct function *));
+static void mark_function_chain PROTO ((void *));
 
 
 /* Pointer to chain of `struct function' for containing functions.  */
@@ -5630,7 +5634,7 @@ init_function_start (subr, filename, line)
   /* Remember this function for later.  */
   current_function->next_global = all_functions;
   all_functions = current_function;
-
+  
   current_function_name = (*decl_printable_name) (subr, 2);
 
   /* Nonzero if this is a nested function that uses a static chain.  */
@@ -6636,4 +6640,117 @@ reposition_prologue_and_epilogue_notes (f)
 	}
     }
 #endif /* HAVE_prologue or HAVE_epilogue */
+}
+
+/* Mark T for GC.  */
+
+static void
+mark_temp_slot (t)
+  struct temp_slot *t;
+{
+  while (t)
+    {
+      ggc_mark_rtx (t->slot);
+      ggc_mark_rtx (t->address);
+      ggc_mark_tree (t->rtl_expr);
+
+      t = t->next;
+    }
+}
+
+/* Mark P for GC.  */
+
+static void
+mark_function_state (p)
+     struct function *p;
+{
+  int i;
+  rtx *r;
+
+  if (p == 0)
+    return;
+
+  ggc_mark_rtx (p->arg_offset_rtx);
+
+  for (i = p->x_max_parm_reg, r = p->x_parm_reg_stack_loc;
+       i > 0; --i, ++r)
+    ggc_mark_rtx (*r);
+
+  ggc_mark_rtx (p->return_rtx);
+  ggc_mark_rtx (p->x_cleanup_label);
+  ggc_mark_rtx (p->x_return_label);
+  ggc_mark_rtx (p->x_save_expr_regs);
+  ggc_mark_rtx (p->x_stack_slot_list);
+  ggc_mark_rtx (p->x_parm_birth_insn);
+  ggc_mark_rtx (p->x_tail_recursion_label);
+  ggc_mark_rtx (p->x_tail_recursion_reentry);
+  ggc_mark_rtx (p->internal_arg_pointer);
+  ggc_mark_rtx (p->x_arg_pointer_save_area);
+  ggc_mark_tree (p->x_rtl_expr_chain);
+  ggc_mark_rtx (p->x_last_parm_insn);
+  ggc_mark_tree (p->x_context_display);
+  ggc_mark_tree (p->x_trampoline_list);
+  ggc_mark_rtx (p->epilogue_delay_list);
+
+  mark_temp_slot (p->x_temp_slots);
+
+  {
+    struct var_refs_queue *q = p->fixup_var_refs_queue;
+    while (q)
+      {
+	ggc_mark_rtx (q->modified);
+	q = q->next;
+      }
+  }
+
+  ggc_mark_rtx (p->x_nonlocal_goto_handler_slots);
+  ggc_mark_rtx (p->x_nonlocal_goto_stack_level);
+  ggc_mark_tree (p->x_nonlocal_labels);
+}
+
+/* Mark the function chain ARG (which is really a struct function **)
+   for GC.  */
+
+static void
+mark_function_chain (arg)
+     void *arg;
+{
+  struct function *f = *(struct function **) arg;
+
+  for (; f; f = f->next_global)
+    {
+      if (f->can_garbage_collect)
+	continue;
+
+      ggc_mark_tree (f->decl);
+
+      mark_function_state (f);
+      mark_stmt_state (f->stmt);
+      mark_eh_state (f->eh);
+      mark_emit_state (f->emit);
+      mark_varasm_state (f->varasm);
+
+      ggc_mark_rtx (f->expr->x_saveregs_value);
+      ggc_mark_rtx (f->expr->x_apply_args_value);
+      ggc_mark_rtx (f->expr->x_forced_labels);
+
+      if (mark_machine_status)
+	(*mark_machine_status) (f);
+      if (mark_lang_status)
+	(*mark_lang_status) (f);
+
+      if (f->original_arg_vector)
+	ggc_mark_rtvec ((rtvec) f->original_arg_vector);
+      if (f->original_decl_initial)
+	ggc_mark_tree (f->original_decl_initial);
+    }
+}
+
+/* Called once, at initialization, to initialize function.c.  */
+
+void
+init_function_once ()
+{
+  ggc_add_root (&all_functions, 1, sizeof all_functions,
+		mark_function_chain);
 }
