@@ -1,0 +1,72 @@
+
+		Frequently Asked Questions about zlib
+
+
+If your question is not there, please check the zlib home page 
+http://www.cdrom.com/pub/infozip/zlib/ which may have more recent information.
+
+
+1) I need a Windows DLL
+2) I need a Visual Basic interface to zlib
+3) compress() returns Z_BUF_ERROR
+4) deflate or inflate returns Z_BUF_ERROR
+5) Where is the zlib documentation (man pages, etc...)?
+6) Why don't you use GNU autoconf, libtool, etc...?
+7) There is a bug in zlib.
+8) I get "undefined reference to gzputc"
+
+
+
+1) I need a Windows DLL
+
+  The zlib sources can be compiled without change to produce a DLL.
+  If you want a precompiled DLL, see http://www.winimage.com/zLibDll
+
+
+2) I need a Visual Basic interface to zlib
+
+  See http://www.tcfb.com/dowseware/cmp-z-it.zip
+      http://web2.airmail.net/markn/articles/zlibtool/zlibtool.htm
+  and contrib/visual-basic.txt
+
+3) compress() returns Z_BUF_ERROR
+
+  Make sure that before the call of compress, the length of the
+  compressed buffer is equal to the total size of the compressed buffer
+  and not zero.  For Visual Basic, check that this parameter is passed
+  by reference ("as any"), not by value ("as long").
+
+
+4) deflate or inflate returns Z_BUF_ERROR
+
+  Make sure that before the call avail_in and avail_out are not zero.
+
+
+5) Where is the zlib documentation (man pages, etc...)?
+
+  It's in zlib.h for the moment. Volunteers to transform this
+  to man pages, please contact jloup@gzip.org. Examples of zlib usage
+  are in the files example.c and minigzip.c.
+
+
+6) Why don't you use GNU autoconf, libtool, etc...?
+
+  Because we would like to keep zlib as a very small and simple package.
+  zlib is rather portable and doesn't need much configuration.
+
+
+7) There is a bug in zlib.
+
+  Most of the time, such problems are due to an incorrect usage
+  of zlib. Please try to reproduce the problem with a small
+  program and send us the corresponding source at zlib@quest.jpl.nasa.gov
+  Do not send multi-megabyte data files without prior agreement.
+
+
+8) I get "undefined reference to gzputc"
+
+  If "make test" produces something like
+     example.o(.text+0x174): 
+  check that you don't have old files libz.* in /usr/lib, /usr/local/lib
+  or /usr/X11R6/lib. Remove old versions then do "make install".
+
