@@ -1,5 +1,8 @@
 2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* final.c (split_double): Right shift of negative values is not
+	portable.
+
 	* ifcvt.c (if_convert): Scan and kill dead code.
 
 	* emit-rtl.c (unshare_all_rtl): Store the copied rtx.
