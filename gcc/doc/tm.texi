@@ -8175,12 +8175,6 @@ a new set of @code{PUT_SDB_@var{op}} macros if this is the only change
 required.
 @end defmac
 
-@defmac SDB_GENERATE_FAKE
-Define this macro to override the usual method of constructing a dummy
-name for anonymous structure and union types.  See @file{sdbout.c} for
-more information.
-@end defmac
-
 @defmac SDB_ALLOW_UNKNOWN_REFERENCES
 Define this macro to allow references to unknown structure,
 union, or enumeration tags to be emitted.  Standard COFF does not

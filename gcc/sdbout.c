@@ -252,11 +252,6 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 	   SDB_DELIM, SDB_DELIM, SDB_DELIM, (LINE), SDB_DELIM)
 #endif
 
-#ifndef SDB_GENERATE_FAKE
-#define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
-  sprintf ((BUFFER), ".%dfake", (NUMBER));
-#endif
-
 /* Return the sdb tag identifier string for TYPE
    if TYPE has already been defined; otherwise return a null pointer.  */
 
@@ -350,7 +345,7 @@ gen_fake_label (void)
 {
   char label[10];
   char *labelstr;
-  SDB_GENERATE_FAKE (label, unnamed_struct_number);
+  sprintf (label, ".%dfake", unnamed_struct_number);
   unnamed_struct_number++;
   labelstr = xstrdup (label);
   return labelstr;
