@@ -2017,11 +2017,8 @@ maybe_push_to_top_level (pseudo)
   previous_class_type = previous_class_values = NULL_TREE;
   processing_specialization = 0;
   processing_explicit_instantiation = 0;
-  if (!pseudo)
-    {
-      current_template_parms = NULL_TREE;
-      processing_template_decl = 0;
-    }
+  current_template_parms = NULL_TREE;
+  processing_template_decl = 0;
 
   s->prev = current_saved_scope;
   s->old_bindings = old_bindings;
@@ -2228,11 +2225,16 @@ pushtag (name, type, globalize)
 
 	  if (IS_AGGR_TYPE (type)
 	      && (/* If !GLOBALIZE then we are looking at a
-		     definition.  */
+		     definition.  It may not be a primary template.
+		     (For example, in:
+		  
+		       template <class T>
+		       struct S1 { class S2 {}; }
+		  
+		     we have to push_template_decl for S2.)  */
 		  (processing_template_decl && !globalize)
-		  /* This next condition is tricky.  If we are
-		     declaring a friend template class, we will have
-		     GLOBALIZE set, since something like:
+		  /* If we are declaring a friend template class, we
+		     will have GLOBALIZE set, since something like:
 
 		       template <class T>
 		       struct S1 {
@@ -2240,26 +2242,9 @@ pushtag (name, type, globalize)
 		         friend class S2; 
 		       };
 
-		     declares S2 to be at global scope.  The condition
-		     says that we are looking at a primary template
-		     that is being declared in class scope.  We can't
-		     just drop the `in class scope' and then not check
-		     GLOBALIZE either since on this code:
-		  
-		       template <class T>
-		       struct S1 {};
-		       template <class T>
-		       struct S2 { S1<T> f(); } 
-
-		     we get called by lookup_template_class (with TYPE
-		     set to S1<T> and GLOBALIZE set to 1).  However,
-		     lookup_template_class calls
-		     maybe_push_to_top_level which doesn't clear
-		     processing_template_decl, so we would then
-		     incorrectly call push_template_decl.  */
-		  || (current_class_type != NULL_TREE
-		      && (processing_template_decl > 
-			  template_class_depth (current_class_type)))))
+		     declares S2 to be at global scope.  */
+		  || (processing_template_decl > 
+		      template_class_depth (current_class_type))))
 	    {
 	      d = push_template_decl_real (d, globalize);
 	      /* If the current binding level is the binding level for

@@ -1,3 +1,10 @@
+Mon Apr 27 13:58:10 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (maybe_push_to_top_level): Always clear
+	current_template_parms and processing_template_decl.
+	(pushtag): Remove check of current_class_type and some comments,
+	since maybe_push_to_top_level no longer creates confusion.
+
 Sun Apr 26 12:10:18 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cp-tree.h (CLASSTYPE_IS_TEMPLATE): New macro.
