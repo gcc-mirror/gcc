@@ -1,3 +1,12 @@
+2004-04-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h (SET_ARRAY_OR_VECTOR_CHECK): Rename to SET_OR_ARRAY_CHECK
+	and adjust definition accordingly.
+	(TYPE_DOMAIN): Allow only SET_TYPE and ARRAY_TYPE.
+	(TYPE_DEBUG_REPRESENTATION_TYPE): Allow only VECTOR_TYPE.
+	* expr.c (store_constructor): Do not access TYPE_DOMAIN of a
+	VECTOR_TYPE.
+
 2004-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/14587
@@ -29,18 +38,18 @@
 	(legitimize_tls_address): Call s390_emit_tls_call_insn instead of
 	emit_call_insn.
 	(s390_emit_prologue): Use s390_emit_call instead of emit_call_insn.
-	(s390_emit_epilogue): Like s390_emit_prologue. Parameter for sibcalls 
+	(s390_emit_epilogue): Like s390_emit_prologue. Parameter for sibcalls
 	added.
-	* config/s390/s390.h (SIBCALL_REGNUM): New macro representing the 
+	* config/s390/s390.h (SIBCALL_REGNUM): New macro representing the
 	register number used to hold the target address for sibcalls.
 	* config/s390/s390.md ("sibcall", "sibcall_value", "sibcall_epilogue"):
 	New expanders.
-	("*sibcall_br", "*sibcall_brc", "*sibcall_brcl", "*sibcall_value_br", 
+	("*sibcall_br", "*sibcall_brc", "*sibcall_brcl", "*sibcall_value_br",
 	"*sibcall_value_brc", "*sibcall_value_brcl"): New insns.
-	("call_exp", "call_value_exp", "call_value_tls", "call_value_tls_exp"): 
+	("call_exp", "call_value_exp", "call_value_tls", "call_value_tls_exp"):
 	Expanders removed.
 	("call", "call_value"): Call s390_emit_call to emit the call patterns.
-	("*bras", "*brasl", "*bras_r", "*brasl_r", "*bras_tls", "*brasl_tls", 
+	("*bras", "*brasl", "*bras_r", "*brasl_r", "*bras_tls", "*brasl_tls",
 	"*basr", "*basr_r", "*basr_tls"): Added constraint: !SIBLING_CALL_P.
 	("epilogue"): Changed the call to s390_emit_epilogue to use the
 	new parameter.
@@ -205,7 +214,7 @@
 	(simplify_relational_operation_1): New function.
 	(simplify_ternary_operation): simplify_relational_operation
 	may now return another relational expression.
-	(simplify_rtx): Remove unnecessary temp variable. 
+	(simplify_rtx): Remove unnecessary temp variable.
 
 2004-04-29  Uros Bizjak  <uros@kss-loka.si>
 
@@ -213,7 +222,7 @@
 	(subst_stack_regs_pat): UNSPEC_FPATAN, UNSPEC_FYL2X: Use
 	swap_to_top().
 	(subst_stack_regs_pat): UNSPEC_FSCALE: Remove.
-	(subst_stack_regs_pat): Handle UNSPEC_FSCALE_FRACT and 
+	(subst_stack_regs_pat): Handle UNSPEC_FSCALE_FRACT and
 	UNSPEC_FSCALE_EXP.
 
 	* config/i386/i386.md (UNSPEC_FSCALE): Remove.
@@ -279,7 +288,7 @@
 
 2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* gcse.c (find_moveable_store): Do not accept store insns with 
+	* gcse.c (find_moveable_store): Do not accept store insns with
 	REG_EH_REGION note.
 
 2004-04-28  Paul Brook  <paul@codesourcery.com>
@@ -313,7 +322,7 @@
 	callers.
 	(multiple_reg_loc_descriptor, reg_loc_descriptor): Use gcc register
 	number for indexing hard_regno_nregs array.
-	
+
 2004-04-27  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (STARTFILE_SPEC): Use %s to find crt2.o.
