@@ -1,3 +1,8 @@
+Tue Mar 11 21:19:03 2003  Alexandre Oliva  <aoliva@redhat.com>
+
+	* toplev.c (independent_decode_option): Return success for --help,
+	--target-help and --version.
+
 Tue Mar 11 20:20:14 2003  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/linux64.h (DRIVER_SELF_SPECS): Add endian_spec.
