@@ -809,7 +809,7 @@ sdbout_symbol (decl, local)
 	      if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 		return;
 	    }
-	  regno = REGNO (alter_subreg (DECL_RTL (decl)));
+	  regno = REGNO (alter_subreg (&DECL_RTL (decl)));
 	  value = DECL_RTL (decl);
 	}
       /* Don't output anything if an auto variable

@@ -67,6 +67,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "target.h"
 #include "debug.h"
+#include "expr.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -242,7 +243,7 @@ static void profile_after_prologue PARAMS ((FILE *));
 static void add_bb		PARAMS ((FILE *));
 static int add_bb_string	PARAMS ((const char *, int));
 static void notice_source_line	PARAMS ((rtx));
-static rtx walk_alter_subreg	PARAMS ((rtx));
+static rtx walk_alter_subreg	PARAMS ((rtx *));
 static void output_asm_name	PARAMS ((void));
 static tree get_decl_from_op	PARAMS ((rtx, int *));
 static void output_asm_operand_names PARAMS ((rtx *, int *, int));
@@ -2634,15 +2635,15 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		&& insn != last_ignored_compare)
 	      {
 		if (GET_CODE (SET_SRC (set)) == SUBREG)
-		  SET_SRC (set) = alter_subreg (SET_SRC (set));
+		  SET_SRC (set) = alter_subreg (&SET_SRC (set));
 		else if (GET_CODE (SET_SRC (set)) == COMPARE)
 		  {
 		    if (GET_CODE (XEXP (SET_SRC (set), 0)) == SUBREG)
 		      XEXP (SET_SRC (set), 0)
-			= alter_subreg (XEXP (SET_SRC (set), 0));
+			= alter_subreg (&XEXP (SET_SRC (set), 0));
 		    if (GET_CODE (XEXP (SET_SRC (set), 1)) == SUBREG)
 		      XEXP (SET_SRC (set), 1)
-			= alter_subreg (XEXP (SET_SRC (set), 1));
+			= alter_subreg (&XEXP (SET_SRC (set), 1));
 		  }
 		if ((cc_status.value1 != 0
 		     && rtx_equal_p (SET_SRC (set), cc_status.value1))
@@ -3004,21 +3005,21 @@ cleanup_subreg_operands (insn)
   for (i = 0; i < recog_data.n_operands; i++)
     {
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
-	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
+	recog_data.operand[i] = alter_subreg (recog_data.operand_loc[i]);
       else if (GET_CODE (recog_data.operand[i]) == PLUS
 	       || GET_CODE (recog_data.operand[i]) == MULT
 	       || GET_CODE (recog_data.operand[i]) == MEM)
-	recog_data.operand[i] = walk_alter_subreg (recog_data.operand[i]);
+	recog_data.operand[i] = walk_alter_subreg (recog_data.operand_loc[i]);
     }
 
   for (i = 0; i < recog_data.n_dups; i++)
     {
       if (GET_CODE (*recog_data.dup_loc[i]) == SUBREG)
-	*recog_data.dup_loc[i] = alter_subreg (*recog_data.dup_loc[i]);
+	*recog_data.dup_loc[i] = alter_subreg (recog_data.dup_loc[i]);
       else if (GET_CODE (*recog_data.dup_loc[i]) == PLUS
 	       || GET_CODE (*recog_data.dup_loc[i]) == MULT
 	       || GET_CODE (*recog_data.dup_loc[i]) == MEM)
-	*recog_data.dup_loc[i] = walk_alter_subreg (*recog_data.dup_loc[i]);
+	*recog_data.dup_loc[i] = walk_alter_subreg (recog_data.dup_loc[i]);
     }
 }
 
@@ -3026,66 +3027,42 @@ cleanup_subreg_operands (insn)
    based on the thing it is a subreg of.  */
 
 rtx
-alter_subreg (x)
-     rtx x;
+alter_subreg (xp)
+     rtx *xp;
 {
+  rtx x = *xp;
   rtx y = SUBREG_REG (x);
 
-  if (GET_CODE (y) == SUBREG)
-    y = alter_subreg (y);
-
-  /* If reload is operating, we may be replacing inside this SUBREG.
-     Check for that and make a new one if so.  */
-  if (reload_in_progress && find_replacement (&SUBREG_REG (x)) != 0)
-    x = copy_rtx (x);
-
-  if (GET_CODE (y) == REG)
-    {
-      int regno = subreg_hard_regno (x, 1);
-
-      PUT_CODE (x, REG);
-      REGNO (x) = regno;
-      ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
-      /* This field has a different meaning for REGs and SUBREGs.  Make sure
-	 to clear it!  */
-      x->used = 0;
-    }
-  else if (GET_CODE (y) == MEM)
-    {
-      HOST_WIDE_INT offset = SUBREG_BYTE (x);
-
-      /* Catch these instead of generating incorrect code.  */
-      if ((offset % GET_MODE_SIZE (GET_MODE (x))) != 0)
-	abort ();
-
-      PUT_CODE (x, MEM);
-      MEM_COPY_ATTRIBUTES (x, y);
-      XEXP (x, 0) = plus_constant (XEXP (y, 0), offset);
-    }
-
-  return x;
+  /* simplify_subreg does not remove subreg from volatile references.
+     We are required to.  */
+  if (GET_CODE (y) == MEM)
+    *xp = adjust_address (y, GET_MODE (x), SUBREG_BYTE (x));
+  else
+    *xp = simplify_subreg (GET_MODE (x), y, GET_MODE (y), SUBREG_BYTE (x));
+  return *xp;
 }
 
 /* Do alter_subreg on all the SUBREGs contained in X.  */
 
 static rtx
-walk_alter_subreg (x)
-     rtx x;
+walk_alter_subreg (xp)
+     rtx *xp;
 {
+  rtx x = *xp;
   switch (GET_CODE (x))
     {
     case PLUS:
     case MULT:
-      XEXP (x, 0) = walk_alter_subreg (XEXP (x, 0));
-      XEXP (x, 1) = walk_alter_subreg (XEXP (x, 1));
+      XEXP (x, 0) = walk_alter_subreg (&XEXP (x, 0));
+      XEXP (x, 1) = walk_alter_subreg (&XEXP (x, 1));
       break;
 
     case MEM:
-      XEXP (x, 0) = walk_alter_subreg (XEXP (x, 0));
+      XEXP (x, 0) = walk_alter_subreg (&XEXP (x, 0));
       break;
 
     case SUBREG:
-      return alter_subreg (x);
+      return alter_subreg (xp);
 
     default:
       break;
@@ -3624,7 +3601,7 @@ output_operand (x, code)
      int code ATTRIBUTE_UNUSED;
 {
   if (x && GET_CODE (x) == SUBREG)
-    x = alter_subreg (x);
+    x = alter_subreg (&x);
 
   /* If X is a pseudo-register, abort now rather than writing trash to the
      assembler file.  */
@@ -3643,7 +3620,7 @@ void
 output_address (x)
      rtx x;
 {
-  walk_alter_subreg (x);
+  walk_alter_subreg (&x);
   PRINT_OPERAND_ADDRESS (asm_out_file, x);
 }
 

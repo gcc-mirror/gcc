@@ -2107,7 +2107,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 	  if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 	    return 0;
 	}
-      home = alter_subreg (home);
+      home = alter_subreg (&home);
     }
   if (GET_CODE (home) == REG)
     {
