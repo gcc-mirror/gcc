@@ -52,7 +52,7 @@ public class ServerSocket
     if (s != null)
       s.checkListen(port);
     impl.create(true);
-    impl.bind(bindAddr, port);
+    impl.bind(bindAddr == null ? ANY_IF : bindAddr, port);
     impl.listen(backlog);
   }
 

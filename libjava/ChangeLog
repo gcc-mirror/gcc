@@ -1,3 +1,8 @@
+1999-12-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava/java/net/ServerSocket.java (ServerSocket): Bind to any
+	interface if bindAddr is null.
+
 1999-11-30  Tom Tromey  <tromey@cygnus.com>
 
 	* posix-threads.cc (_Jv_MutexInit): Use _Jv_PthreadGetMutex to get
