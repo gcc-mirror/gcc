@@ -263,8 +263,7 @@ case $machine in
 	| we32k-* \
 )
   case $machine in
-	  a29k-*-udi | a29k-*-coff \
-	| mips-sni-sysv4 \
+	  mips-sni-sysv4 \
 	| m88k-*-aout* | m88k-*-openbsd* | m88k-*-sysv4* \
 	| ns32k-*-netbsd* | ns32k-*-openbsd* \
 	| romp-*-openbsd* \
@@ -272,7 +271,7 @@ case $machine in
     # Whitelisted.
     ;;
   *)
-    if test "x$enable_obsolete" = x; then
+    if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration $machine is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
       echo "*** Support will be REMOVED in the next major release of GCC," >&2
