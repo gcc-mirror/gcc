@@ -1,3 +1,15 @@
+Thu Sep 10 21:19:10 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* configure.in: Add check for GAS subsection -1 support.
+	* acconfig.h (HAVE_GAS_SUBSECTION_ORDERING): Add.
+	* configure config.in: Rebuilt.
+	* config/sparc/sparc.h (CASE_VECTOR_MODE): For V9 flag_pic, use
+	SImode is subsection -1 works, else use DImode.
+	(ASM_OUTPUT_ADDR_VEC_START, ASM_OUTPUT_ADDR_VEC_END): Define if
+	subsection -1 works.
+	* config/sparc/sparc.c (sparc_output_addr_vec,
+	sparc_output_addr_diff_vec): Use them if defined.
+
 Thu Sep 10 10:46:01 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* tree.h (DECL_ORIGIN): New macro.

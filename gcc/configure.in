@@ -3669,6 +3669,40 @@ if test x$gcc_cv_as != x; then
 fi
 AC_MSG_RESULT($gcc_cv_as_alignment_features)
 
+AC_MSG_CHECKING(assembler subsection support)
+gcc_cv_as_subsections=
+if test x$gcc_cv_as != x; then
+	# Check if we have .subsection
+	echo ".subsection 1" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_subsections=".subsection"
+		if test -x nm$host_exeext; then
+			gcc_cv_nm=./nm$host_exeext
+		elif test x$host = x$target; then
+			# Native build.
+			gcc_cv_nm=nm$host_exeext
+		fi
+		if test x$gcc_cv_nm != x; then
+			cat > conftest.s <<EOF
+conftest_label1: .word 0
+.subsection -1
+conftest_label2: .word 0
+.previous
+EOF
+			if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+				$gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
+				$gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
+				if ! cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
+					gcc_cv_as_subsections="working .subsection -1"
+					AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING)
+				fi
+			fi
+		fi
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+AC_MSG_RESULT($gcc_cv_as_subsections)
+
 # Figure out what language subdirectories are present.
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..

@@ -20,6 +20,10 @@
 /* Define if your assembler supports .balign and .p2align.  */
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
 
+/* Define if your assembler supports .subsection and .subsection -1 starts
+   emitting at the beginning of your section */
+#undef HAVE_GAS_SUBSECTION_ORDERING
+
 /* Define if you have a working <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 
