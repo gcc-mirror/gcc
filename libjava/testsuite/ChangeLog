@@ -1,5 +1,8 @@
 1999-06-25  Tom Tromey  <tromey@cygnus.com>
 
+	* lib/libjava.exp (test_libjava_from_javac): Fixed typo.  Always
+	make class_files a list.
+
 	* lib/libjava.exp (test_libjava_from_javac): Prepend `$objdir/' to
 	class file names.
 

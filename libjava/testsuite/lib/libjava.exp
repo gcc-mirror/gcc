@@ -366,12 +366,13 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     # nothing if the file contains an interface and not a class.  I
     # believe this is a jv-scan bug.
     if {$class_out == ""} then {
-	set class_files $objdir/[file rootname [file tail $srcfile]].class
+	set class_files \
+	  [list $objdir/[file rootname [file tail $srcfile]].class]
     } else {
 	# Turn "a b" into "a.class b.class".
 	set class_files {}
         foreach file [split [string trim $class_out]] {
-	    lappend class_out $objdir/$file.class
+	    lappend class_files $objdir/$file.class
 	}
     }
 
