@@ -96,7 +96,7 @@ typedef struct
 mstring;
 
 
-/* Flags to specify which standardi/extension contains a feature.  */
+/* Flags to specify which standard/extension contains a feature.  */
 #define GFC_STD_GNU                (1<<5)    /* GNU Fortran extension.  */
 #define GFC_STD_F2003             (1<<4)    /* New in F2003.  */
 /* Note that no features were obsoleted nor deleted in F2003.  */
