@@ -963,19 +963,8 @@ extern int alpha_memory_latency;
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-{ if ((FROM) == FRAME_POINTER_REGNUM)					\
-    (OFFSET) = (ALPHA_ROUND (current_function_outgoing_args_size)	\
-		+ alpha_sa_size ());					\
-  else if ((FROM) == ARG_POINTER_REGNUM)				\
-    (OFFSET) = (ALPHA_ROUND (current_function_outgoing_args_size)	\
-		+ alpha_sa_size ()					\
-		+ (ALPHA_ROUND (get_frame_size ()			\
-			       + current_function_pretend_args_size)	\
-		   - current_function_pretend_args_size));		\
-  else									\
-    abort ();								\
-}
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = alpha_initial_elimination_offset(FROM, TO))
 
 /* Define this if stack space is still allocated for a parameter passed
    in a register.  */
@@ -1122,58 +1111,9 @@ extern int alpha_memory_latency;
  ? 6 - (CUM) : 0)
 
 /* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
-
-   CUM is as above.
-
-   MODE and TYPE are the mode and type of the current parameter.
-
-   PRETEND_SIZE is a variable that should be set to the amount of stack
-   that must be pushed by the prolog to pretend that our caller pushed
-   it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed. 
-
-   On the Alpha, we allocate space for all 12 arg registers, but only
-   push those that are remaining.
-
-   However, if NO registers need to be saved, don't allocate any space.
-   This is not only because we won't need the space, but because AP includes
-   the current_pretend_args_size and we don't want to mess up any
-   ap-relative addresses already made.
-
-   If we are not to use the floating-point registers, save the integer
-   registers where we would put the floating-point registers.  This is
-   not the most efficient way to implement varargs with just one register
-   class, but it isn't worth doing anything more efficient in this rare
-   case.  */
-   
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM) < 6)							\
-    {									\
-      if (! (NO_RTL))							\
-	{								\
-	  rtx tmp; int set = get_varargs_alias_set ();			\
-	  tmp = gen_rtx_MEM (BLKmode,					\
-		             plus_constant (virtual_incoming_args_rtx,	\
-				            ((CUM) + 6)* UNITS_PER_WORD)); \
-	  set_mem_alias_set (tmp, set);					\
-	  move_block_from_reg						\
-	    (16 + CUM, tmp,						\
-	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
-									\
-	  tmp = gen_rtx_MEM (BLKmode,					\
-		             plus_constant (virtual_incoming_args_rtx,	\
-				            (CUM) * UNITS_PER_WORD));	\
-	  set_mem_alias_set (tmp, set);					\
-	  move_block_from_reg						\
-	    (16 + (TARGET_FPREGS ? 32 : 0) + CUM, tmp,			\
-	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
-	 }								\
-      PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
-    }									\
-}
+   variable number of arguments.  */
+#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
+  alpha_setup_incoming_varargs(CUM,MODE,TYPE,&(PRETEND_SIZE),NO_RTL)
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
    done in less than N insns.  Do all computations in MODE.  Returns the place
