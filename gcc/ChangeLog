@@ -1,3 +1,23 @@
+2002-04-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (pa_output_function_prologue): Don't accumulate the total
+	number of code bytes when using TARGET_64BIT, or gas, SOM and not
+	the portable runtime.
+	(output_deferred_plabels): Handle 64bit plabels.
+	(output_cbranch): Use $PIC_pcrel$0 for pc relative relocations when
+	generating pic code using the GAS assembler for object formats that
+	are not SOM (ie., ELF32 and ELF64).
+	(output_millicode_call): Check attribute type if attribute length is 28.
+	Likewise use $PIC_pcrel$0.  Only call get_attr_length and
+	dbr_sequence_length once.
+	(output_call): Likewise use $PIC_pcrel$0, and call get_attr_length and
+	dbr_sequence_length once.
+	* pa.h (TARGET_SOM): Define if not defined.
+	* pa.md (pattern to load address of label): Likewise use $PIC_pcrel$0
+	with GAS and not SOM.
+	(jump, call_internal_reg, call_value_internal_reg): Likewise.
+	* som.h (OBJ_SOM): Rename to TARGET_SOM.  Undefine before defining.
+
 2002-04-11  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd.h (NO_IMPLICIT_EXTERN_C, SCCS_DIRECTIVE): Give value.

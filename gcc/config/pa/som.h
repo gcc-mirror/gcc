@@ -19,7 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* So we can conditionalize small amounts of code in pa.c or pa.md.  */
-#define OBJ_SOM
+#undef TARGET_SOM
+#define TARGET_SOM 1
 
 /* We do not use BINCL stabs in SOM.
    ??? If it does not hurt, we probably should to avoid useless divergence
