@@ -1,3 +1,14 @@
+2003-04-14  Nathan Myers  <ncm@cantrip.org>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9701 (in_avail())
+	* include/std/std_streambuf.h (in_avail): Simplify, in_avail
+	doesn't care if there is anything in some putback cell.
+	* testsuite/27_io/basic_streambuf/in_avail/char/9701-3.cc: Add.
+
+	* testsuite/27_io/basic_filebuf/in_avail/char/1.cc: Remove some
+	unused string literals.
+
 2003-04-14  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (basic_filebuf::setbuf): Don't set
