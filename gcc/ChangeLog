@@ -1,3 +1,7 @@
+2003-10-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* web.c: Fix various comments.
+
 2003-10-20  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/arm.c (arm_override_options): Set arm_constant_limit

@@ -1,5 +1,5 @@
 /* Web construction code for GNU compiler.
-   Contributed by Jan Hubicka
+   Contributed by Jan Hubicka.
    Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,28 +19,28 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* Simple optimization pass that splits indepdendent uses of each pseudo
+/* Simple optimization pass that splits independent uses of each pseudo,
    increasing effectivity of other optimizations.  The optimization can
-   serve as an example of the use of dataflow module.
+   serve as an example of use for the dataflow module.
 
-   We don't split registers with REG_USERVAR set unless -fmessy-debugging is
-   used, because debug information about such split variables is almost
-   useless.  
+   We don't split registers with REG_USERVAR set unless -fmessy-debugging
+   is specified, because debugging information about such split variables
+   is almost unusable.
 
    TODO
-    - Add code to keep debugging up-to-date after splitting of user variable
-      pseudos.  This can be done by remembering all the pseudos used for the
-      variable and use life analysis information before reload to determing
-      wich one of the possible choices is alive and in case more are live,
-      choose one with latest definition.
+    - Add code to keep debugging up-to-date after splitting user variable
+      pseudos.  This can be done by keeping track of all the pseudos used
+      for the variable and using life analysis information before reload
+      to determine which one is live and, in case more than one are live,
+      choose the one with the latest definition.
 
-      Some other optimization passes will benefit from the infrastructure
-      too.
+      Other optimization passes can benefit from the infrastructure too.
 
-    - We may use profile information and ignore infrequent use for purposes
-      of web unifying inserting the compensation code later to implement full
-      induction variable expansion for loops (currently we expand only if
-      induction is dead afterwards, that is often the case anyway).  */
+    - We may use profile information and ignore infrequent use for the
+      purpose of web unifying, inserting the compensation code later to
+      implement full induction variable expansion for loops (currently
+      we expand only if the induction variable is dead afterward, which
+      is often the case).  */
 
 #include "config.h"
 #include "system.h"
@@ -60,9 +60,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This entry is allocated for each reference in the insn stream.  */
 struct web_entry
 {
-    /* pointer to the parent in the union/find tree.  */
+  /* Pointer to the parent in the union/find tree.  */
   struct web_entry *pred;
-    /* Newly assigned register to the entry.  Set only for roots.  */
+  /* Newly assigned register to the entry.  Set only for roots.  */
   rtx reg;
 };
 
@@ -77,7 +77,7 @@ static rtx entry_register		PARAMS ((struct web_entry *,
 static void replace_ref			PARAMS ((struct ref *, rtx));
 static int mark_addressof		PARAMS ((rtx *, void *));
 
-/* Find the root of unionfind tree (the representatnt of set).  */
+/* Find the root of unionfind tree (the representative of set).  */
 
 static struct web_entry *
 unionfind_root (element)
@@ -109,8 +109,8 @@ unionfind_union (first, second)
   second->pred = first;
 }
 
-/* For each use, all possible defs reaching it must come in same register,
-   union them.  */
+/* For each use, all possible defs reaching it must come in the same
+   register, union them.  */
 
 static void
 union_defs (df, use, def_entry, use_entry)
@@ -125,9 +125,9 @@ union_defs (df, use, def_entry, use_entry)
   struct df_link *def_link = DF_INSN_DEFS (df, insn);
   rtx set = single_set (insn);
 
-  /* Some instructions may use match_dup for it's operands.  In case the
-     operands are dead, we will assign them different pseudos creating
-     invalid instruction, so union all uses of the same operands for each
+  /* Some instructions may use match_dup for their operands.  In case the
+     operands are dead, we will assign them different pseudos, creating
+     invalid instructions, so union all uses of the same operand for each
      insn.  */
 
   while (use_link)
@@ -139,9 +139,9 @@ union_defs (df, use, def_entry, use_entry)
       use_link = use_link->next;
     }
 
-  /* Recognize trivial noop moves and attempt to keep them noop.
-     While most of noop moves should be removed we still keep some at
-     libcall boundaries and such.  */
+  /* Recognize trivial noop moves and attempt to keep them as noop.
+     While most of noop moves should be removed, we still keep some
+     of them at libcall boundaries and such.  */
 
   if (set
       && SET_SRC (set) == DF_REF_REG (use)
@@ -162,7 +162,7 @@ union_defs (df, use, def_entry, use_entry)
       link = link->next;
     }
 
-  /* An READ_WRITE use require the corresponding def to be in the same
+  /* A READ_WRITE use requires the corresponding def to be in the same
      register.  Find it and union.  */
   if (use->flags & DF_REF_READ_WRITE)
     {
@@ -176,7 +176,7 @@ union_defs (df, use, def_entry, use_entry)
     }
 }
 
-/* Find corresponding register for given entry.  */
+/* Find the corresponding register for the given entry.  */
 
 static rtx
 entry_register (entry, ref, used, use_addressof)
@@ -188,14 +188,12 @@ entry_register (entry, ref, used, use_addressof)
   struct web_entry *root;
   rtx reg, newreg;
 
-  /* Find corresponding web and see if it has been visited.  */
-
+  /* Find the corresponding web and see if it has been visited.  */
   root = unionfind_root (entry);
   if (root->reg)
     return root->reg;
 
-  /* We are seeing this web first time, do the assignment.  */
-
+  /* We are seeing this web for the first time, do the assignment.  */
   reg = DF_REF_REAL_REG (ref);
 
   /* In case the original register is already assigned, generate new one.  */
@@ -252,7 +250,7 @@ replace_ref (ref, reg)
   *loc = reg;
 }
 
-/* Mark each pseudo, whose address is taken.  */
+/* Mark each pseudo whose address is taken.  */
 
 static int
 mark_addressof (rtl, data)
@@ -312,8 +310,8 @@ web_main ()
     replace_ref (df->defs[i], entry_register (def_entry + i, df->defs[i],
 					      used, use_addressof));
 
-  /* Dataflow information is corrupt here, but it can be easy to update it
-     by creating new entries for new registers and update or calilng
+  /* Dataflow information is corrupt here, but it can be easily updated
+     by creating new entries for new registers and updates or calling
      df_insns_modify.  */
   free (def_entry);
   free (use_entry);
