@@ -1,3 +1,13 @@
+2001-04-10  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.h (__terminate_func_ptr): Remove typedef.
+	(__pure_virtual, __terminate, __terminate_set_func,
+	__default_terminate, __throw_type_match, __empty,
+	__get_eh_context, __get_eh_info, __get_dynamic_handler_chain,
+	__eh_rtime_match, __unwinding_cleanup, __rethrow,
+	__sjthrow, __sjpopnthrow, __eh_alloc, __eh_free):
+	Remove prototypes of deleted functions.
+
 2001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-typeck.c (convert_arguments): -Wtraditional now activates
