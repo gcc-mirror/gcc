@@ -1044,7 +1044,8 @@ build_mangled_name (parmtypes, begin, end)
               /* Every argument gets counted.  */
               typevec[maxtype++] = parmtype;
 
-              if (TREE_USED (parmtype) && parmtype == typevec[maxtype-2])
+              if (TREE_USED (parmtype) && parmtype == typevec[maxtype-2]
+		  && ! is_java_type (parmtype))
                 {
                   Nrepeats++;
                   continue;
@@ -1067,9 +1068,10 @@ build_mangled_name (parmtypes, begin, end)
                 }
 
               /* Only cache types which take more than one character.  */
-              if (parmtype != TYPE_MAIN_VARIANT (parmtype)
-                  || (TREE_CODE (parmtype) != INTEGER_TYPE
-                      && TREE_CODE (parmtype) != REAL_TYPE))
+              if ((parmtype != TYPE_MAIN_VARIANT (parmtype)
+		   || (TREE_CODE (parmtype) != INTEGER_TYPE
+		       && TREE_CODE (parmtype) != REAL_TYPE))
+		  && ! is_java_type (parmtype))
                 TREE_USED (parmtype) = 1;
             }
         if (TYPE_PTRMEMFUNC_P (parmtype))
@@ -1113,12 +1115,32 @@ process_modifiers (parmtype)
 
   if (TREE_READONLY (parmtype))
     OB_PUTC ('C');
-  if (TREE_CODE (parmtype) == INTEGER_TYPE && 
-             TYPE_MAIN_VARIANT (parmtype) == 
-                            unsigned_type (TYPE_MAIN_VARIANT (parmtype)))
-    OB_PUTC ('U');
+  if (TREE_CODE (parmtype) == INTEGER_TYPE
+      && (TYPE_MAIN_VARIANT (parmtype)
+	  == unsigned_type (TYPE_MAIN_VARIANT (parmtype)))
+      && ! is_java_type (parmtype))
+    {
+      OB_PUTC ('U');
+    }
   if (TYPE_VOLATILE (parmtype))
     OB_PUTC ('V');
+}
+
+/* True iff TYPE was declared as a "Java" type (inside extern "Java"). */
+
+int
+is_java_type (type)
+     tree type;
+{
+  if (TYPE_NAME (type) != NULL_TREE)
+    {
+      tree decl = TYPE_NAME (type);
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && DECL_LANG_SPECIFIC (decl) != NULL
+	  && DECL_LANGUAGE (decl) == lang_java)
+	return 1;
+    }
+  return 0;
 }
 
 /* Check to see if a tree node has been entered into the Bcode typelist 
@@ -1292,6 +1314,30 @@ process_overload_item (parmtype, extra_Gcode)
       }
 
     case INTEGER_TYPE:
+      /* "Java" integer types should mangle the same on all platforms,
+	 and only depend on precision, not target 'int' size. */
+      if (is_java_type (parmtype))
+	{
+	  if (TREE_UNSIGNED (parmtype))
+	    {
+	      switch (TYPE_PRECISION (parmtype))
+		{
+		case  8:  OB_PUTC ('b');  return;
+		case 16:  OB_PUTC ('w');  return;
+		}
+	    }
+	  else
+	    {
+	      switch (TYPE_PRECISION (parmtype))
+		{
+		case  8:  OB_PUTC ('c');  return;
+		case 16:  OB_PUTC ('s');  return;
+		case 32:  OB_PUTC ('i');  return;
+		case 64:  OB_PUTC ('x');  return;
+		}
+	    }
+	}
+
       parmtype = TYPE_MAIN_VARIANT (parmtype);
       if (parmtype == integer_type_node
           || parmtype == unsigned_type_node)

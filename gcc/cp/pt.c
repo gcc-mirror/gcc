@@ -5014,7 +5014,7 @@ tsubst_expr (t, args, in_decl)
 	dcl = start_decl
 	  (tsubst (TREE_OPERAND (t, 0), args, in_decl),
 	   tsubst (TREE_OPERAND (t, 1), args, in_decl),
-	   TREE_OPERAND (t, 2) != 0);
+	   TREE_OPERAND (t, 2) != 0, NULL_TREE, NULL_TREE);
 	init = tsubst_expr (TREE_OPERAND (t, 2), args, in_decl);
 	cp_finish_decl
 	  (dcl, init, NULL_TREE, 1, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
