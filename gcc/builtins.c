@@ -3095,12 +3095,14 @@ expand_builtin_frame_address (exp)
 /* Expand a call to the alloca builtin, with arguments ARGLIST.  Return 0 if
    we failed and the caller should emit a normal call, otherwise try to get
    the result in TARGET, if convenient.  */
+
 static rtx
 expand_builtin_alloca (arglist, target)
      tree arglist;
      rtx target;
 {
   rtx op0;
+  rtx result;
 
   if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -3109,13 +3111,20 @@ expand_builtin_alloca (arglist, target)
   op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
 
   /* Allocate the desired space.  */
-  return allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
+  result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  result = convert_memory_address (ptr_mode, result);
+#endif
+
+  return result;
 }
 
 /* Expand a call to the ffs builtin.  The arguments are in ARGLIST.
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  If convenient, the result should be placed in TARGET.
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
+
 static rtx
 expand_builtin_ffs (arglist, target, subtarget)
      tree arglist;
@@ -3138,6 +3147,7 @@ expand_builtin_ffs (arglist, target, subtarget)
 
 /* If the string passed to fputs is a constant and is one character
    long, we attempt to transform this call into __builtin_fputc(). */
+
 static rtx
 expand_builtin_fputs (arglist, ignore)
      tree arglist;
