@@ -1,3 +1,9 @@
+2002-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR optimization/6162
+	* doc/md.texi: Document restriction on commutative operand
+	specification.
+
 2002-10-31  Eric Christopher  <echristo@redhat.com>
 
         * explow.c (convert_memory_address): Use shallow_copy_rtx.

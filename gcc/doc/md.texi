@@ -1256,6 +1256,8 @@ instruction is defined:
   @dots{})
 @end smallexample
 @end ifset
+GCC can only handle one commutative pair in an asm; if you use more, 
+the compiler may fail.
 
 @cindex @samp{#} in constraint
 @item #
