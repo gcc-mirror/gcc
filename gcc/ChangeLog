@@ -1,3 +1,8 @@
+Sat Mar 18 14:38:00 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* bb-reorder.c (reorder_basic_blocks): Update PREV_INSN as well as
+	NEXT_INSN. Update last insn in chain.
+
 2000-03-17  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (dwarf2out_decl): Don't emit anything for types
