@@ -4804,6 +4804,7 @@ override_options ()
 	mips_abi = ABI_64;
     }
 
+#ifdef MIPS_CPU_STRING_DEFAULT
   /* A specified ABI defaults the ISA if it was not specified.  */
   else if (mips_isa_string == 0 && mips_abi_string
 	   && mips_abi != ABI_EABI && mips_abi != ABI_O64)
@@ -4815,6 +4816,7 @@ override_options ()
       else
 	mips_isa = 4;
     }
+#endif
 
   /* If both ABI and ISA were specified, check for conflicts.  */
   else if (mips_isa_string && mips_abi_string)
