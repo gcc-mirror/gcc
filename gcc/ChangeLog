@@ -1,3 +1,17 @@
+2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md (define_constants): Remove misleading
+	FIXME.  Add MMIX_fp_rO_OFFSET.
+	("nonlocal_goto_receiver"): Don't have stack-frame address of
+	saved rO as part of the pattern.  Remove FIXME.
+	("*nonlocal_goto_receiver_expanded"): Similar.  Generate address
+	here, at output-time.
+	* config/mmix/crti.asm (_init): Register _fini with atexit.
+	* config/mmix/crtn.asm (_fini): Add omitted "POP 0,0".
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Correct
+	unwind information when frame_pointer_needed.
+	(mmix_assemble_integer): Tweak wording in comment.
+
 2002-04-02  Richard Henderson  <rth@redhat.com>
 
 	PR opt/3967

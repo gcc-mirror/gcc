@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson <hp@bitrange.com>
 
 This file is free software; you can redistribute it and/or modify it
@@ -87,5 +87,6 @@ gnu_parm_reg_1 GREG
 	.section .fini,"ax",@progbits
 	GETA	$255,0F
 	PUT	rJ,$255
+	POP	0,0
 0H	PUT	rJ,$0
 	POP	0,0
