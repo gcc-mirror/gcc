@@ -1,3 +1,7 @@
+2000-07-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c99-main-1.c: New test.
+
 2000-07-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-impl-int-2.c, gcc.dg/c99-impl-int-2.c: New tests.
