@@ -1,5 +1,6 @@
 Wed Jan  5 00:26:20 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/compile/20000105-2.c: New test.
 	* gcc.c-torture/compile/20000105-1.c: New test.
 
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
