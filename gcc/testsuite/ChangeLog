@@ -1,7 +1,3 @@
-2002-04-11  Richard Sandiford  <rsandifo@redhat.com>
-
-	* g++.dg/ext/attrib5.C: New test.
-
 2002-04-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* g77.f-torture/execute/6177.f: New test.

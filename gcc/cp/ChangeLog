@@ -1,9 +1,3 @@
-2002-04-11  Richard Sandiford  <rsandifo@redhat.com>
-
-	* decl.c (duplicate_decls): Don't try to unify an implicit typedef
-	with an explicit one.
-	(lookup_tag): Extract the tag of an explicit typedef.
-
 2002-04-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5507
