@@ -1,3 +1,10 @@
+Wed Apr 22 12:30:10 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* configure.in (target_makefile_frag): If --enable-target-optspace,
+	use -Os to compile target libraries rather than -O2.  Default to
+	using -Os for m32r if --{enable,disable}-target-optspace is not
+	used.
+
 Tue Apr 14 11:33:51 1998  Krister Walfridsson <cato@df.lth.se>
 
 	* configure: Define DEFAULT_M4 by searching PATH.
