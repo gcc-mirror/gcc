@@ -1,3 +1,8 @@
+2001-03-20  Warren Levy  <warrenl@redhat.com>
+
+	* java/util/TimeZone.java: Sync up with Classpath.  Includes new
+	and corrected SimpleTimeZone's for the timezones hash table.
+
 2001-03-19  Per Bothner  <per@bothner.com>
 
 	* java/net/URLStreamHandler.java (parseURL):  Fix bug which would
