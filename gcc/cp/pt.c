@@ -4841,6 +4841,8 @@ instantiate_class_template (type)
       TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
       TYPE_METHODS (type) = TYPE_METHODS (pattern);
       CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
+      CLASSTYPE_VBASECLASSES (type) = CLASSTYPE_VBASECLASSES (pattern);
+      
       /* Pretend that the type is complete, so that we will look
 	 inside it during name lookup and such.  */
       TYPE_SIZE (type) = bitsize_zero_node;

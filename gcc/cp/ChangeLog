@@ -1,3 +1,8 @@
+2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (instantiate_class_template): Set CLASSTYPE_VBASECLASSES.
+	* semantics.c (begin_class_definition): Clear it.
+
 2000-07-02  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* cp-tree.h (genrtl_goto_stmt): Remove declaration.
