@@ -1241,6 +1241,12 @@ extern tree make_tree_vec		PROTO((int));
 
 extern tree get_identifier		PROTO((char *));
 
+/* If an identifier with the name TEXT (a null-terminated string) has
+   previously been referred to, return that node; otherwise return
+   NULL_TREE.  */
+
+extern tree maybe_get_identifier	PROTO((char *));
+
 /* Construct various types of nodes.  */
 
 #define build_int_2(LO,HI)  \
