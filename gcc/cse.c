@@ -5214,11 +5214,8 @@ cse_insn (insn, libcall_insn)
 		  break;
 		}
 
-	      /* We must actually validate the change.  Consider a target
-		 where unconditional jumps are more complex than
-		 (set (pc) (label_ref)) such as the fr30.  */
-	      if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
-		cse_jumps_altered = 1;
+	      PATTERN (insn) = gen_jump (trial);
+	      cse_jumps_altered = 1;
 	      break;
 	    }
 	   
