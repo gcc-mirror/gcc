@@ -3019,7 +3019,9 @@ fold (expr)
 	       || code == NON_LVALUE_EXPR)
 	      && TREE_CODE (t) == COND_EXPR
 	      && TREE_CODE (TREE_OPERAND (t, 1)) == code
-	      && TREE_CODE (TREE_OPERAND (t, 2)) == code)
+	      && TREE_CODE (TREE_OPERAND (t, 2)) == code
+	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0))
+		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 2), 0))))
 	    t = build1 (code, type,
 			build (COND_EXPR,
 			       TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)),
