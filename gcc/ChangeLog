@@ -1,3 +1,7 @@
+Tue Aug 11 17:45:39 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* README.g77: Update from Craig.
+
 Sat Aug  8 19:20:22 1998 Gary Thomas (gdt@linuxppc.org)
 
 	* rs6000.c (rs6000_allocate_stack_space) Fix typo which
