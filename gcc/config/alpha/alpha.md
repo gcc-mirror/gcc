@@ -2592,9 +2592,23 @@
 			 DImode, operands[4], const0_rtx);
 }")
 
-;; Here are the CALL and unconditional branch insns.
+;; Here are the CALL and unconditional branch insns.  Calls on NT and OSF
+;; work differently, so we have different patterns for each.
 
 (define_expand "call"
+  [(use (match_operand:DI 0 "" ""))
+   (use (match_operand 1 "" ""))]
+  ""
+  "
+{ if (WINDOWS_NT)
+    emit_call_insn (gen_call_nt (operands[0], operands[1]));
+  else
+    emit_call_insn (gen_call_osf (operands[0], operands[1]));
+
+  DONE;
+}")
+
+(define_expand "call_osf"
   [(parallel [(call (mem:DI (match_operand 0 "" ""))
 		    (match_operand 1 "" ""))
 	      (clobber (reg:DI 27))
@@ -2615,7 +2629,35 @@
     }
 }")
 
+(define_expand "call_nt"
+  [(parallel [(call (mem:DI (match_operand:DI 0 "" ""))
+		    (match_operand 1 "" ""))
+	      (clobber (reg:DI 26))])]
+  ""
+  "
+{ if (GET_CODE (operands[0]) != MEM)
+    abort ();
+  operands[0] = XEXP (operands[0], 0);
+
+  if (GET_CODE (operands[0]) != SYMBOL_REF)
+    operands[0] = force_reg (Pmode, operands[0]);
+}")
+
 (define_expand "call_value"
+  [(use (match_operand 0 "" ""))
+   (use (match_operand:DI 1 "" ""))
+   (use (match_operand 2 "" ""))]
+  ""
+  "
+{ if (WINDOWS_NT)
+    emit_call_insn (gen_call_value_nt (operands[0], operands[1], operands[2]));
+  else
+    emit_call_insn (gen_call_value_osf (operands[0], operands[1],
+					operands[2]));
+  DONE;
+}")
+
+(define_expand "call_value_osf"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:DI (match_operand 1 "" ""))
 			 (match_operand 2 "" "")))
@@ -2637,12 +2679,27 @@
     }
 }")
 
+(define_expand "call_value_nt"
+  [(parallel [(set (match_operand 0 "" "")
+		   (call (mem:DI (match_operand:DI 1 "" ""))
+			 (match_operand 2 "" "")))
+	      (clobber (reg:DI 26))])]
+  ""
+  "
+{ if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
+  operands[1] = XEXP (operands[1], 0);
+  if (GET_CODE (operands[1]) != SYMBOL_REF)
+    operands[1] = force_reg (Pmode, operands[1]);
+}")
+
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  ""
+  "! WINDOWS_NT"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%0..ng
@@ -2650,17 +2707,38 @@
   [(set_attr "type" "jsr,jsr,ibr")])
       
 (define_insn ""
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 26))]
+  "WINDOWS_NT"
+  "@
+   jsr $26,(%0)
+   bsr $26,%0"
+  [(set_attr "type" "jsr")])
+      
+(define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  ""
+  "! WINDOWS_NT"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%1..ng
    jsr $26,%1\;ldgp $29,0($26)"
   [(set_attr "type" "jsr,jsr,ibr")])
+
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "=rf,rf")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
+	      (match_operand 2 "" "")))
+   (clobber (reg:DI 26))]
+  "WINDOWS_NT"
+  "@
+   jsr $26,(%1)
+   bsr $26,%1"
+  [(set_attr "type" "jsr")])
 
 ;; Call subroutine returning any type.
 
@@ -2725,6 +2803,20 @@
   [(set_attr "type" "iaddlog")])
 
 (define_expand "tablejump"
+  [(use (match_operand:SI 0 "register_operand" ""))
+   (use (match_operand:SI 1 "" ""))]
+  ""
+  "
+{
+  if (WINDOWS_NT)
+    emit_jump_insn (gen_tablejump_nt (operands[0], operands[1]));
+  else
+    emit_jump_insn (gen_tablejump_osf (operands[0], operands[1]));
+
+  DONE;
+}")
+
+(define_expand "tablejump_osf"
   [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 0 "register_operand" "")))
    (parallel [(set (pc)
@@ -2735,12 +2827,22 @@
   "
 { operands[3] = gen_reg_rtx (DImode); }")
 
+(define_expand "tablejump_nt"
+  [(set (match_dup 3)
+	(sign_extend:DI (match_operand:SI 0 "register_operand" "")))
+   (parallel [(set (pc)
+		   (match_dup 3))
+	      (use (label_ref (match_operand 1 "" "")))])]
+  ""
+  "
+{ operands[3] = gen_reg_rtx (DImode); }")
+
 (define_insn ""
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "register_operand" "r")
 		 (label_ref:DI (match_operand 1 "" ""))))
    (clobber (match_scratch:DI 2 "=r"))]
-  "next_active_insn (insn) != 0
+  "! WINDOWS_NT && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
@@ -2776,6 +2878,49 @@
     }
   else
     return \"addq %0,$29,%2\;jmp $31,(%2),0\";
+}"
+  [(set_attr "type" "ibr")])
+
+(define_insn ""
+  [(set (pc)
+	(match_operand:DI 0 "register_operand" "r"))
+   (use (label_ref (match_operand 1 "" "")))]
+  "WINDOWS_NT && next_active_insn (insn) != 0
+   && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
+   && PREV_INSN (next_active_insn (insn)) == operands[1]"
+  "*
+{ rtx best_label = 0;
+  rtx jump_table_insn = next_active_insn (operands[1]);
+
+  if (GET_CODE (jump_table_insn) == JUMP_INSN
+      && GET_CODE (PATTERN (jump_table_insn)) == ADDR_DIFF_VEC)
+    {
+      rtx jump_table = PATTERN (jump_table_insn);
+      int n_labels = XVECLEN (jump_table, 1);
+      int best_count = -1;
+      int i, j;
+
+      for (i = 0; i < n_labels; i++)
+	{
+	  int count = 1;
+
+	  for (j = i + 1; j < n_labels; j++)
+	    if (XEXP (XVECEXP (jump_table, 1, i), 0)
+		== XEXP (XVECEXP (jump_table, 1, j), 0))
+	      count++;
+
+	  if (count > best_count)
+	    best_count = count, best_label = XVECEXP (jump_table, 1, i);
+	}
+    }
+
+  if (best_label)
+    {
+      operands[2] = best_label;
+      return \"jmp $31,(%0),%2\";
+    }
+  else
+    return \"jmp $31,(%0),0\";
 }"
   [(set_attr "type" "ibr")])
 
@@ -2845,8 +2990,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m")
 	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG"))]
-  "register_operand (operands[0], SImode)
-   || reg_or_0_operand (operands[1], SImode)"
+  "! WINDOWS_NT && (register_operand (operands[0], SImode)
+		    || reg_or_0_operand (operands[1], SImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
@@ -2860,6 +3005,26 @@
    lds %0,%1
    sts %R1,%0"
   [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ld,st,fpop,fpop,ld,st")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
+	(match_operand:SI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,m,fG"))]
+  "WINDOWS_NT && (register_operand (operands[0], SImode)
+		  || reg_or_0_operand (operands[1], SImode))"
+  "@
+   bis %1,%1,%0
+   bis $31,$31,%0
+   bis $31,%1,%0
+   lda %0,%1
+   ldah %0,%h1
+   lda %0,%1
+   ldl %0,%1
+   stl %r1,%0
+   cpys %1,%1,%0
+   cpys $f31,$f31,%0
+   lds %0,%1
+   sts %R1,%0"
+  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ldsym,ld,st,fpop,fpop,ld,st")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
