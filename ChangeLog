@@ -1,3 +1,9 @@
+2004-08-01  Robert Millan  <robertmh@gnu.org>
+
+	* configure.in: Turn mt-linux into mt-gnu. Use mt-gnu and enable
+	libmudflap for all GNU-based systems (with Glibc).
+	* configure: Regenerate.
+
 2004-08-03 Paolo Bonzini <bonzini@gnu.org>
 
 	* Makefile.def (host-modules): Add gcc.

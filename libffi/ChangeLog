@@ -1,3 +1,8 @@
+2004-08-01  Robert Millan  <robertmh@gnu.org>
+
+	* configure.ac: Detect knetbsd-gnu and kfreebsd-gnu.
+	* configure: Regenerate.
+
 2004-07-30  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* acinclude.m4 (AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h>
