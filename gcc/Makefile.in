@@ -638,6 +638,7 @@ rest.cross: $(LIBGCC) gfloat.h specs
 # Verify that it works to compile and link libgcc1-test.
 # If it does, then there are sufficient replacements for libgcc1.a.
 libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
+	@echo "Testing libgcc1.  Ignore linker warning messages."
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
 	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
 libgcc1-test.o: libgcc1-test.c native xgcc
