@@ -1,3 +1,10 @@
+2003-03-21  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR libstdc++/5730
+	* include/bits/c++config (_GLIBCPP_FAST_MATH): Define.
+        * include/std/std_complex.h (norm):  Use faster,
+        less accurate computation for builtin float types under --fast-math.
+
 2003-03-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/10167
