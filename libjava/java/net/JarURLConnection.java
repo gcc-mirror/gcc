@@ -1,5 +1,5 @@
 /* JarURLConnection.java -- Class for manipulating remote jar files
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.Map;
 import java.util.Vector;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.security.cert.Certificate;
 
@@ -80,19 +81,29 @@ import java.security.cert.Certificate;
  */
 public abstract class JarURLConnection extends URLConnection
 {
-  // three different ways to say the same thing
+  /**
+   * This is the actual URL that points the remote jar file.  This is parsed
+   * out of the jar URL by the constructor.
+   */
   private final URL jarFileURL;
 
-  /** The connection to the jar file itself. A JarURLConnection
-   *  can represent an entry in a jar file or an entire jar file.  In
-   *  either case this describes just the jar file itself. */
+  /**
+   * The connection to the jar file itself. A JarURLConnection
+   * can represent an entry in a jar file or an entire jar file.  In
+   * either case this describes just the jar file itself.
+   */
   protected URLConnection jarFileURLConnection;
 
-  // If this is a connection to a jar file element this is set, otherwise null.
-  private final String element;
+  /**
+   * This is the jar file "entry name" or portion after the "!/" in the
+   * URL which represents the pathname inside the actual jar file.
+   */
+  private final String entryName;
 
-  // Cached JarURLConnection's 
-  static Hashtable conn_cache = new Hashtable();
+  /**
+   * Cached JarURLConnection objects .
+   */
+  static HashMap connectionCache = new HashMap();
 
   /**
    * Creates a JarURLConnection from an URL object
@@ -108,6 +119,9 @@ public abstract class JarURLConnection extends URLConnection
   {
     super (url);
 
+    if (!url.getProtocol().equals ("jar"))
+      throw new MalformedURLException (url + ": Not jar protocol.");
+
     String spec = url.getFile();
     int bang = spec.indexOf ("!/");
     if (bang == -1)
@@ -116,8 +130,8 @@ public abstract class JarURLConnection extends URLConnection
     // Extract the url for the jar itself.
     jarFileURL = new URL (spec.substring (0, bang));
 
-    // Get the name of the element, if any.
-    element = (spec.length() == (bang + 2) ? null : spec.substring (bang + 2));
+    // Get the name of the entry, if any.
+    entryName = spec.length() == (bang + 2) ? null : spec.substring (bang + 2);
   }
 
   /**
@@ -140,7 +154,7 @@ public abstract class JarURLConnection extends URLConnection
    */
   public String getEntryName ()
   {
-    return element;
+    return entryName;
   }
 
   public synchronized void connect() throws IOException
@@ -151,14 +165,14 @@ public abstract class JarURLConnection extends URLConnection
 
     if (getUseCaches())
       {
-	jarFileURLConnection = (URLConnection) conn_cache.get (jarFileURL);
+	jarFileURLConnection = (URLConnection) connectionCache.get (jarFileURL);
 
 	if (jarFileURLConnection == null)
 	  {
 	    jarFileURLConnection = jarFileURL.openConnection ();
 	    jarFileURLConnection.setUseCaches (true);
 	    jarFileURLConnection.connect ();
-	    conn_cache.put (jarFileURL, jarFileURLConnection);
+	    connectionCache.put (jarFileURL, jarFileURLConnection);
 	  }
       }
     else
@@ -178,7 +192,7 @@ public abstract class JarURLConnection extends URLConnection
     if (! doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
 
-    if (element == null)
+    if (entryName == null)
       {
 	// This is a JarURLConnection for the entire jar file.  
 
@@ -187,7 +201,7 @@ public abstract class JarURLConnection extends URLConnection
 	return new JarInputStream(jar_is);
       }
 
-    // Reaching this point, we're looking for an element of a jar file.
+    // Reaching this point, we're looking for an entry of a jar file.
 
     JarFile jarfile = null;
 
@@ -195,7 +209,7 @@ public abstract class JarURLConnection extends URLConnection
       {
 	jarfile = getJarFile ();
       }
-    catch (java.io.IOException x)
+    catch (IOException x)
       {
 	/* ignore */
       }
@@ -203,7 +217,8 @@ public abstract class JarURLConnection extends URLConnection
     if (jarfile != null)
       {
 	// this is the easy way...
-	ZipEntry entry = jarfile.getEntry(element);
+	ZipEntry entry = jarfile.getEntry (entryName);
+        
 	if (entry != null)
 	  return jarfile.getInputStream (entry);
 	else
@@ -220,7 +235,7 @@ public abstract class JarURLConnection extends URLConnection
 	     ent != null; 
 	     ent = zis.getNextEntry ())
 	  {
-	    if (element.equals (ent.getName ()))
+	    if (entryName.equals (ent.getName()))
 	      {
 		int size = (int)ent.getSize();
 		byte[] data = new byte[size];
@@ -244,7 +259,7 @@ public abstract class JarURLConnection extends URLConnection
   {
     JarFile jarfile = null;
 
-    if (element == null)
+    if (entryName == null)
       return null;
 
     if (! doInput)
@@ -269,7 +284,7 @@ public abstract class JarURLConnection extends URLConnection
 	     ent != null; 
 	     ent = zis.getNextEntry ())
 	  {
-	    if (element.equals (ent.getName ()))
+	    if (entryName.equals (ent.getName()))
 	      {
 		return new JarEntry (ent);
 	      }
@@ -278,7 +293,7 @@ public abstract class JarURLConnection extends URLConnection
 
     else
       {
-	return jarfile.getJarEntry (element);
+	return jarfile.getJarEntry (entryName);
       }
 
     return null;
@@ -398,7 +413,7 @@ public abstract class JarURLConnection extends URLConnection
     // Add the only header we know about right now:  Content-length.
     long len = -1;
 
-    if (element == null)
+    if (entryName == null)
       if (jarFileURLConnection != null)
 	len = jarFileURLConnection.getContentLength ();
     else
