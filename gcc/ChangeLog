@@ -1,3 +1,23 @@
+2004-05-14  Steven Bosscher  <stevenb@suse.de>
+
+	* passes.c (rest_of_handle_null_pointer): Remove.
+	(rest_of_handle_cse): Don't call rest_of_handle_null_pointer.
+	(rest_of_compilation): Likewise.
+	* rtl.h (delete_null_pointer_checks): Remove prototype.
+	* gcse.c (rd_kill, rd_gen, reaching_defs, rd_out, ae_in, ae_out):
+	Remove declarations.
+	(get_bitmap_width, alloc_rd_mem, free_rd_mem, handle_rd_kill_set,
+	compute_kill_rd, compute_rd, alloc_avail_expr_mem,
+	free_avail_expr_mem, compute_ae_gen, expr_killed_p, compute_ae_kill,
+	expr_reaches_here_p, computing_insn, def_reaches_here_p,
+	can_disregard_other_sets, handle_avail_expr, classic_gcse,
+	one_classic_gcse_pass, invalidate_nonnull_info,
+	delete_null_pointer_checks_1, delete_null_pointer_checks,
+	expr_reached_here_p_work): Remove.
+	(gcse_main): Do not perform classic GCSE when optimizing for size.
+	(alloc_pre_mem, free_pre_mem): Don't touch ae_in and ae_out, they
+	are never used.
+
 2004-05-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR optimization/14466

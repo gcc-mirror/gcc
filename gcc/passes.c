@@ -1004,20 +1004,6 @@ rest_of_handle_jump_bypass (tree decl, rtx insns)
 #endif
 }
 
-/* Try to identify useless null pointer tests and delete them.  */
-static void
-rest_of_handle_null_pointer (tree decl, rtx insns)
-{
-  open_dump_file (DFI_null, decl);
-  if (dump_file)
-    dump_flow_info (dump_file);
-
-  if (delete_null_pointer_checks (insns))
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-
-  close_dump_file (DFI_null, print_rtl_with_bb, insns);
-}
-
 /* Try combining insns through substitution.  */
 static void
 rest_of_handle_combine (tree decl, rtx insns)
@@ -1120,19 +1106,6 @@ rest_of_handle_cse (tree decl, rtx insns)
 
   if (tem || optimize > 1)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-  /* Try to identify useless null pointer tests and delete them.  */
-  if (flag_delete_null_pointer_checks)
-    {
-      timevar_push (TV_JUMP);
-
-      if (delete_null_pointer_checks (insns))
-	cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-      timevar_pop (TV_JUMP);
-    }
-
-  /* The second pass of jump optimization is likely to have
-     removed a bunch more instructions.  */
-  renumber_insns (dump_file);
 
   timevar_pop (TV_CSE);
   close_dump_file (DFI_cse, print_rtl_with_bb, insns);
@@ -1546,9 +1519,6 @@ rest_of_compilation (tree decl)
 
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-
-  if (flag_delete_null_pointer_checks)
-    rest_of_handle_null_pointer (decl, insns);
 
   /* Jump optimization, and the removal of NULL pointer checks, may
      have reduced the number of instructions substantially.  CSE, and
