@@ -1706,6 +1706,7 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/nio/Buffer.java \
 java/nio/ByteBuffer.java \
 java/nio/MappedByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
@@ -2957,8 +2958,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/UnknownServiceException.P \
 .deps/java/net/natInetAddress.P .deps/java/net/natNetworkInterface.P \
 .deps/java/net/natPlainDatagramSocketImpl.P \
-.deps/java/net/natPlainSocketImpl.P .deps/java/nio/ByteBuffer.P \
-.deps/java/nio/MappedByteBuffer.P \
+.deps/java/net/natPlainSocketImpl.P .deps/java/nio/Buffer.P \
+.deps/java/nio/ByteBuffer.P .deps/java/nio/MappedByteBuffer.P \
 .deps/java/nio/channels/AlreadyConnectedException.P \
 .deps/java/nio/channels/ByteChannel.P .deps/java/nio/channels/Channel.P \
 .deps/java/nio/channels/ClosedChannelException.P \

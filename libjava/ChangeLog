@@ -1,5 +1,13 @@
 2002-10-07  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/Buffer.java: New stub file.
+	* java/nio/charset/spi/CharsetProvider.java: Commented out all usages
+	of class Charset.
+	* Makefile.am (java_native_source_files): Added java/nio/Buffer.java.
+	* Makefile.in: Regenerated.
+
+2002-10-07  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/ByteBuffer.java:
 	removed import of not commited class.
 
