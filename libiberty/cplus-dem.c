@@ -3153,12 +3153,13 @@ demangle_fund_type (work, mangled, result)
 	case 'C':
 	case 'V':
 	case 'u':
-	  (*mangled)++;
 	  if (PRINT_ANSI_QUALIFIERS)
 	    {
-	      APPEND_BLANK (result);
-	      string_append (result, demangle_qualifier (**mangled));
+              if (!STRING_EMPTY (result))
+                string_prepend (result, " ");
+	      string_prepend (result, demangle_qualifier (**mangled));
 	    }
+	  (*mangled)++;
 	  break;
 	case 'U':
 	  (*mangled)++;
