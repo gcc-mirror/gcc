@@ -1577,7 +1577,7 @@ expand_call (exp, target, ignore)
 	    emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
 
 	    for (bitpos = 0;
-		 bitpos < BITS_PER_WORD && bytes >= 0;
+		 bitpos < BITS_PER_WORD && bytes > 0;
 		 bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
 	      {
 		int xbitpos = (BYTES_BIG_ENDIAN
