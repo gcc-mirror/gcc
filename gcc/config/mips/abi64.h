@@ -86,12 +86,17 @@ Boston, MA 02111-1307, USA.  */
 	      || GET_MODE_CLASS (MODE) == MODE_INT)))			\
       ? downward : upward))
 
+/* Under the old (i.e., 32 and O64 ABIs) all BLKmode objects are
+   returned in memory.  Under the new (N32 and 64-bit MIPS ABIs) small
+   structures are returned in a register.  Objects with varying size
+   must still be returned in memory, of course.  */
 #undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE)						\
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64)				\
-   ? TYPE_MODE (TYPE) == BLKmode					\
-   : (int_size_in_bytes (TYPE)						\
-      > (2 * UNITS_PER_WORD)))
+#define RETURN_IN_MEMORY(TYPE)						 \
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64)				 \
+   ? TYPE_MODE (TYPE) == BLKmode					 \
+   : ((int_size_in_bytes (TYPE)						 \
+       > (2 * UNITS_PER_WORD)) 						 \
+      || (int_size_in_bytes (TYPE) == -1)))
 
 #ifdef ANSI_PROTOTYPES
 union tree_node;
