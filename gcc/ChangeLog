@@ -1,3 +1,48 @@
+Sat Feb  6 11:17:03 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	Support for ARM9
+	* config/arm/arm.c (all_procs): Add arm9 and arm9tdmi.
+	* config/arm/arm.h ((TARGET_CPU_arm9, TARGET_CPUD_arm9tdmi): Define.
+	(TARGET_CPU_DEFAULT): Rework to support ARM9.
+	(CPP_CPU_ARCH_SPEC): Likewise.
+	(enum processor_type): Likewise.
+	* config/arm/arm.md (attr cpu): Add arm9.
+
+	General scheduling changes 
+	* config/arm/arm.c (MAX_INSNS_SKIPPED): Delete.
+	(max_insns_skipped): New variable.
+	(arm_override_options): If generating hard floating point code for
+	the FPA, emit code for version 3.
+	When optimizing for space, don't synthesize constants.
+	Reword several flags based on the requested processor and optimization
+	level.
+	(use_return_insn): New argument iscond, all callers changed.  Don't
+	use a return insn if it will be conditional and that would be 
+	expensive; eg on StrongARM.
+	(arm_adjust_cost): Anti- and output- dependencies normally have no
+	cost.
+	(load_multiple_sequence): Newer ARMs don't benefit from ldm if
+	the sequence is short.
+	(final_prescan_insn): Use max_insns_skipped instead of 
+	MAX_INSNS_SKIPPED.  Note whether we will make a return instruction
+	conditional, and aviod this if it would be expensive.
+	* config/arm/arm.md (scheduling attributes and function units):
+ 	Rewrite to better describe ARM8, 9 and StrongARM.
+
+	* config/arm/arm.md (*movhi_insn_littleend): Make op0 predicate 
+	s_register_operand.
+	(*ifcompare_plus_move): Use arm_rhs_operand in place of 
+	arm_rhsm_operand.  Rework constraints.
+	(*if_plus_move): Likewise.
+	(*ifcompare_move_plus): Likewise.
+	(*if_move_plus): Likewise.
+	(*ifcompre_arith_move): Likewise.
+	(*if_arith_move): Likewise.
+	(*ifcompare_move_arith): Likewise.
+	(*if_move_arith): Likewise.
+
+	* config/arm/xm-netbsd.h: Don't include arm/xm-arm.h.
+	
 1999-02-05  Michael Meissner  <meissner@cygnus.com>
 
 	* loop.c (check_dbra_loop): A store using an address giv for which
