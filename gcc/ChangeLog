@@ -1,3 +1,8 @@
+2002-05-23  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (C++98 Thread-Local Edits): Update with
+	commentary from Mark.
+
 2002-05-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* bb-reorder.c (make_reorder_chain, make_reorder_chain_1):
