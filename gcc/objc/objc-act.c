@@ -1763,6 +1763,9 @@ build_module_descriptor ()
     init_function_decl = current_function_decl;
     TREE_PUBLIC (init_function_decl) = ! targetm.have_ctors_dtors;
     TREE_USED (init_function_decl) = 1;
+    /* Don't let this one be deferred.  */
+    DECL_INLINE (init_function_decl) = 0;
+    DECL_UNINLINABLE (init_function_decl) = 1;
     current_function_cannot_inline
       = "static constructors and destructors cannot be inlined";
 
@@ -3855,6 +3858,11 @@ build_dispatch_table_initializer (type, entries)
       elemlist = tree_cons (NULL_TREE,
 			    build_selector (METHOD_SEL_NAME (entries)),
 			    NULL_TREE);
+
+      /* Generate the method encoding if we don't have one already.  */
+      if (! METHOD_ENCODING (entries))
+	METHOD_ENCODING (entries) =
+	  encode_method_def (METHOD_DEFINITION (entries));
 
       elemlist = tree_cons (NULL_TREE,
 			    add_objc_string (METHOD_ENCODING (entries),
