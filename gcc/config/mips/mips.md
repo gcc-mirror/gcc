@@ -4103,7 +4103,7 @@ move\\t%0,%z4\\n\\
    (use (const_int 0))]					;; normal block move
   ""
   "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NORMAL);"
-  [(set_attr "type"	"multi")
+  [(set_attr "type"	"store")
    (set_attr "mode"	"none")
    (set_attr "length"	"20")])
 
@@ -4162,7 +4162,7 @@ move\\t%0,%z4\\n\\
    (use (const_int 1))]					;; all but last store
   ""
   "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NOT_LAST);"
-  [(set_attr "type"	"multi")
+  [(set_attr "type"	"store")
    (set_attr "mode"	"none")
    (set_attr "length"	"20")])
 
