@@ -5980,7 +5980,18 @@ in bits.
 
 The default version of this function takes care of putting read-only
 variables in @code{readonly_data_section}.
+
+See also @var{USE_SELECT_SECTION_FOR_FUNCTIONS}.
 @end deftypefn
+
+@defmac USE_SELECT_SECTION_FOR_FUNCTIONS
+Define this macro if you wish TARGET_ASM_SELECT_SECTION to be called
+for @code{FUNCTION_DECL}s as well as for variables and constants.
+
+In the case of a @code{FUNCTION_DECL}, @var{reloc} will be zero if the
+function has been determined to be likely to be called, and nonzero if
+it is unlikely to be called.
+@end defmac
 
 @deftypefn {Target Hook} void TARGET_ASM_UNIQUE_SECTION (tree @var{decl}, int @var{reloc})
 Build up a unique section name, expressed as a @code{STRING_CST} node,
