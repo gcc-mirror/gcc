@@ -158,7 +158,7 @@ struct _ffesymbol_
 #define ffesymbol_arraysize(s) ((s)->array_size)
 #define ffesymbol_attr(s,a) ((s)->attrs & ((ffesymbolAttrs) 1 << (a)))
 #define ffesymbol_attrs(s) ((s)->attrs)
-char *ffesymbol_attrs_string (ffesymbolAttrs attrs);
+const char *ffesymbol_attrs_string (ffesymbolAttrs attrs);
 #define ffesymbol_basictype(s) ffeinfo_basictype((s)->info)
 void ffesymbol_check (ffesymbol s, ffelexToken t, bool maybe_intrin);
 #define ffesymbol_common(s) ((s)->common)
@@ -177,8 +177,8 @@ ffesymbol ffesymbol_declare_sfdummy (ffelexToken t);
 ffesymbol ffesymbol_declare_subrunit (ffelexToken t);
 #define ffesymbol_dims(s) ((s)->dims)
 #define ffesymbol_dim_syms(s) ((s)->dim_syms)
-void ffesymbol_drive (ffesymbol (*fn) ());
-void ffesymbol_drive_sfnames (ffesymbol (*fn) ());
+void ffesymbol_drive (ffesymbol (*fn) (ffesymbol));
+void ffesymbol_drive_sfnames (ffesymbol (*fn) (ffesymbol));
 #define ffesymbol_dummyargs(s) ((s)->dummy_args)
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffesymbol_dump (ffesymbol s);
@@ -269,7 +269,7 @@ void ffesymbol_signal_change (ffesymbol s);
 #define ffesymbol_specific(s) ((s)->specific)
 #define ffesymbol_state(s) ((s)->state)
 #define ffesymbol_state_is_specable(s) ((s) <= FFESYMBOL_stateSEEN)
-char *ffesymbol_state_string (ffesymbolState state);
+const char *ffesymbol_state_string (ffesymbolState state);
 #define ffesymbol_storage(s) ((s)->storage)
 void ffesymbol_terminate_0 (void);
 void ffesymbol_terminate_1 (void);

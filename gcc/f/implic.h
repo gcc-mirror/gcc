@@ -55,7 +55,7 @@ bool ffeimplic_establish_initial (char c, ffeinfoBasictype basic_type,
 bool ffeimplic_establish_symbol (ffesymbol s);
 void ffeimplic_init_2 (void);
 void ffeimplic_none (void);
-ffeinfoBasictype ffeimplic_peek_symbol_type (ffesymbol s, char *name);
+ffeinfoBasictype ffeimplic_peek_symbol_type (ffesymbol s, const char *name);
 void ffeimplic_terminate_2 (void);
 
 /* Define macros. */

@@ -115,14 +115,14 @@ void ffeintrin_init_0 (void);
 #define ffeintrin_init_3()
 #define ffeintrin_init_4()
 bool ffeintrin_is_actualarg (ffeintrinSpec spec);
-bool ffeintrin_is_intrinsic (char *name, ffelexToken t, bool explicit,
+bool ffeintrin_is_intrinsic (const char *name, ffelexToken t, bool explicit,
 			     ffeintrinGen *gen, ffeintrinSpec *spec,
 			     ffeintrinImp *imp);
 bool ffeintrin_is_standard (ffeintrinGen gen, ffeintrinSpec spec);
 ffeinfoKindtype ffeintrin_kindtype (ffeintrinSpec spec);
-char *ffeintrin_name_generic (ffeintrinGen gen);
-char *ffeintrin_name_implementation (ffeintrinImp imp);
-char *ffeintrin_name_specific (ffeintrinSpec spec);
+const char *ffeintrin_name_generic (ffeintrinGen gen);
+const char *ffeintrin_name_implementation (ffeintrinImp imp);
+const char *ffeintrin_name_specific (ffeintrinSpec spec);
 ffeIntrinsicState ffeintrin_state_family (ffeintrinFamily family);
 #define ffeintrin_terminate_0()
 #define ffeintrin_terminate_1()

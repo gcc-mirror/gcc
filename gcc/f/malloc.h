@@ -109,14 +109,14 @@ void malloc_init (void);
 void malloc_kill_inpool_ (mallocPool pool, mallocType_ type, void *ptr,
 			  mallocSize size);
 void *malloc_new_ (mallocSize size);
-void *malloc_new_inpool_ (mallocPool pool, mallocType_ type, char *name,
+void *malloc_new_inpool_ (mallocPool pool, mallocType_ type, const char *name,
 			  mallocSize size);
-void *malloc_new_zinpool_ (mallocPool pool, mallocType_ type, char *name,
+void *malloc_new_zinpool_ (mallocPool pool, mallocType_ type, const char *name,
 			   mallocSize size, int z);
 void malloc_pool_display (mallocPool p);
 char malloc_pool_find_ (mallocPool p, mallocPool parent);
 void malloc_pool_kill (mallocPool p);
-mallocPool malloc_pool_new (char *name, mallocPool parent, unsigned long chunks);
+mallocPool malloc_pool_new (const char *name, mallocPool parent, unsigned long chunks);
 mallocPool malloc_pool_use (mallocPool p);
 void *malloc_resize_ (void *ptr, mallocSize new_size);
 void *malloc_resize_inpool_ (mallocPool pool, mallocType_ type, void *ptr,

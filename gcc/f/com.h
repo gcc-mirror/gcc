@@ -283,7 +283,7 @@ tree ffecom_arg_ptr_to_expr (ffebld expr, tree *length);
 tree ffecom_call_gfrt (ffecomGfrt ix, tree args);
 tree ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 			   ffeinfoKindtype kt, tree tree_type);
-tree ffecom_decl_field (tree context, tree prevfield, char *name,
+tree ffecom_decl_field (tree context, tree prevfield, const char *name,
 			tree type);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffecom_close_include (FILE *f);
@@ -299,7 +299,7 @@ tree ffecom_expr_rw (ffebld expr);
 void ffecom_finish_compile (void);
 void ffecom_finish_decl (tree decl, tree init, bool is_top_level);
 void ffecom_finish_progunit (void);
-tree ffecom_get_invented_identifier (char *pattern, char *text,
+tree ffecom_get_invented_identifier (const char *pattern, const char *text,
 				     int number);
 ffeinfoKindtype ffecom_gfrt_basictype (ffecomGfrt ix);
 ffeinfoKindtype ffecom_gfrt_kindtype (ffecomGfrt ix);

@@ -331,7 +331,7 @@ ffeimplic_none ()
 /* ffeimplic_peek_symbol_type -- Determine implicit type of a symbol
 
    ffesymbol s;
-   char *name;	// name for s in case it is NULL, or NULL if s never NULL
+   const char *name; // name for s in case it is NULL, or NULL if s never NULL
    if (ffeimplic_peek_symbol_type(s,name) == FFEINFO_basictypeCHARACTER)
        // is or will be a CHARACTER-typed name
 
@@ -348,7 +348,7 @@ ffeimplic_none ()
       needed anyway (as when ffecom calls it).	*/
 
 ffeinfoBasictype
-ffeimplic_peek_symbol_type (ffesymbol s, char *name)
+ffeimplic_peek_symbol_type (ffesymbol s, const char *name)
 {
   char c;
   ffeimplic_ imp;

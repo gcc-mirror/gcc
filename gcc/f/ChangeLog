@@ -1,3 +1,106 @@
+Sat Mar 27 13:00:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (_ffebad_message_, ffebad_string_, ffebad_message_,
+	ffebad_bufputs_, ffebad_bufputs_, ffebad_start_, ffebad_string,
+	ffebad_finish): Const-ify a char*.
+
+	* bld.c (ffebld_op_string_, ffebld_op_string): Likewise.
+
+	* bld.h (ffebld_op_string): Likewise.
+
+	* com.c (ffecom_arglist_expr_, ffecom_build_f2c_string_,
+	ffecom_debug_kludge_, ffecom_f2c_make_type_,
+	ffecom_get_appended_identifier_, ffecom_get_identifier_,
+	ffecom_gfrt_args_): Likewise.
+	(ffecom_convert_narrow_, ffecom_convert_widen_): Add prototype.
+	(builtin_function, ffecom_gfrt_name_, ffecom_gfrt_argstring_,
+	ffecom_arglist_expr_, ffecom_build_f2c_string_,
+	ffecom_debug_kludge_, ffecom_f2c_make_type_,
+	ffecom_get_appended_identifier_, ffecom_get_external_identifier_,
+	ffecom_get_identifier_, ffecom_decl_field,
+	ffecom_get_invented_identifier, lang_print_error_function,
+	skip_redundant_dir_prefix, read_name_map, print_containing_files):
+	Const-ify a char*. 
+	(savestring): Remove, use `xstrdup' instead.
+
+	* com.h (ffecom_decl_field, ffecom_get_invented_identifier):
+	Const-ify a char*.
+
+	* data.c (ffebld, ffedata_gather_): Make explicitly static.
+
+	* expr.c (ffeexpr_isdigits_, ffeexpr_percent_,
+	ffeexpr_reduced_concatenate_, ffeexpr_nil_real_,
+	ffeexpr_nil_number_, ffeexpr_nil_number_period_,
+	ffeexpr_nil_number_real_, ffeexpr_token_real_,
+	ffeexpr_token_number_, ffeexpr_token_number_period_,
+	ffeexpr_token_number_real_): Const-ify a char*.
+
+	* fini.c (xspaces): Likewise.
+
+	* global.c (ffeglobal_type_string_): Likewise.
+	(ffeglobal_drive): Protoize.
+	(ffeglobal_proc_def_arg): Const-ify a char*.
+
+	* global.h (ffeglobal_drive): Protoize.
+	(ffeglobal_proc_def_arg): Const-ify a char*.
+
+	* implic.c (ffeimplic_none, ffeimplic_peek_symbol_type):
+	Likewise.
+
+	* implic.h (ffeimplic_peek_symbol_type): Likewise.
+
+	* info.c (ffeinfo_basictype_string_, ffeinfo_kind_message_,
+	ffeinfo_kind_string_, ffeinfo_kindtype_string_,
+	ffeinfo_where_string_, ffeinfo_basictype_string,
+	ffeinfo_kind_message, ffeinfo_kind_string,
+	ffeinfo_kindtype_string, ffeinfo_where_string): Likewise.
+
+	* info.h (ffeinfo_basictype_string, ffeinfo_kind_message,
+	ffeinfo_kind_string, ffeinfo_kindtype_string,
+	ffeinfo_where_string): Likewise.
+
+	* intrin.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, ffeintrin_check_, ffeintrin_cmp_name_,
+	ffeintrin_fulfill_specific, ffeintrin_init_0,
+	ffeintrin_is_actualarg, ffeintrin_is_intrinsic,
+	ffeintrin_name_generic, ffeintrin_name_implementation,
+	ffeintrin_name_specific): Likewise.
+
+	* intrin.h (ffeintrin_is_intrinsic, ffeintrin_name_generic,
+	ffeintrin_name_implementation, ffeintrin_name_specific): Likewise.
+
+	* lex.c (ffelex_type_string_, ffelex_token_new_character,
+	ffelex_token_new_name, ffelex_token_new_names,
+	ffelex_token_new_number): Likewise.
+
+	* lex.h (ffelex_token_new_character, ffelex_token_new_name,
+	ffelex_token_new_names, ffelex_token_new_number): Likewise.
+
+	* malloc.c (malloc_types_, malloc_pool_new, malloc_new_inpool_,
+	malloc_new_zinpool_): Likewise.
+
+	* malloc.h (malloc_new_inpool_, malloc_new_zinpool_,
+	malloc_pool_new): Likewise.
+
+	* name.c (ffename_space_drive_global, ffename_space_drive_symbol):
+	Protoize.
+
+	* name.h (ffename_space_drive_global, ffename_space_drive_symbol):
+	Likewise.
+
+	* symbol.c (ffesymbol_state_name_, ffesymbol_attr_name_,
+	ffesymbol_attrs_string): Const-ify a char*.
+	(ffesymbol_drive, ffesymbol_drive_sfnames): Protoize.
+	(ffesymbol_state_string): Const-ify a char*.
+
+	* symbol.h (ffesymbol_attrs_string): Likewise.
+	(ffesymbol_drive, ffesymbol_drive_sfnames): Protoize.
+	(ffesymbol_state_string): Const-ify a char*.
+
+	* target.c (ffetarget_layout): Likewise.
+
+	* target.h (ffetarget_layout): Likewise.
+
 1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* Make-lang.in: Remove all references to g77.o/g77.c.

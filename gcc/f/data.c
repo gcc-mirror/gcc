@@ -668,7 +668,7 @@ tail_recurse:			/* :::::::::::::::::::: */
    expression doesn't already exist in the cache) and then puts the result
    in the cache.  */
 
-ffebld
+static ffebld
 ffedata_convert_ (ffebld source, ffelexToken source_token,
 		  ffelexToken dest_token, ffeinfoBasictype bt,
 		  ffeinfoKindtype kt, ffeinfoRank rk,
@@ -1119,7 +1119,7 @@ ffedata_eval_substr_end_ (ffebld expr, ffetargetCharacterSize min,
    If st has any initialization info, transfer that info into mst and
    clear st's info.  */
 
-void
+static void
 ffedata_gather_ (ffestorag mst, ffestorag st)
 {
   ffesymbol s;

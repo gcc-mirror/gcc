@@ -167,7 +167,7 @@ ffename_lookup (ffenameSpace ns, ffelexToken t)
    ffename_space_drive_global(ns,fn);  */
 
 void
-ffename_space_drive_global (ffenameSpace ns, ffeglobal (*fn) ())
+ffename_space_drive_global (ffenameSpace ns, ffeglobal (*fn) (ffeglobal))
 {
   ffename n;
 
@@ -188,7 +188,7 @@ ffename_space_drive_global (ffenameSpace ns, ffeglobal (*fn) ())
    ffename_space_drive_symbol(ns,fn);  */
 
 void
-ffename_space_drive_symbol (ffenameSpace ns, ffesymbol (*fn) ())
+ffename_space_drive_symbol (ffenameSpace ns, ffesymbol (*fn) (ffesymbol))
 {
   ffename n;
 

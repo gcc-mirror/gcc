@@ -1751,10 +1751,10 @@ ffelex_token_new_ ()
   return t;
 }
 
-static char *
+static const char *
 ffelex_type_string_ (ffelexType type)
 {
-  static char *types[] = {
+  static const char *types[] = {
     "FFELEX_typeNONE",
     "FFELEX_typeCOMMENT",
     "FFELEX_typeEOS",
@@ -4546,7 +4546,7 @@ ffelex_token_names_from_names (ffelexToken t, ffeTokenLength start,
 /* Make a new CHARACTER token.  */
 
 ffelexToken
-ffelex_token_new_character (char *s, ffewhereLine l, ffewhereColumn c)
+ffelex_token_new_character (const char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
 
@@ -4581,7 +4581,7 @@ ffelex_token_new_eof ()
 /* Make a new NAME token.  */
 
 ffelexToken
-ffelex_token_new_name (char *s, ffewhereLine l, ffewhereColumn c)
+ffelex_token_new_name (const char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
 
@@ -4602,7 +4602,7 @@ ffelex_token_new_name (char *s, ffewhereLine l, ffewhereColumn c)
 /* Make a new NAMES token.  */
 
 ffelexToken
-ffelex_token_new_names (char *s, ffewhereLine l, ffewhereColumn c)
+ffelex_token_new_names (const char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
 
@@ -4631,7 +4631,7 @@ ffelex_token_new_names (char *s, ffewhereLine l, ffewhereColumn c)
    in the original string.  */
 
 ffelexToken
-ffelex_token_new_number (char *s, ffewhereLine l, ffewhereColumn c)
+ffelex_token_new_number (const char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
   ffeTokenLength len;

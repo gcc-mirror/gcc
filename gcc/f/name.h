@@ -75,8 +75,8 @@ struct _ffename_space_
 ffename ffename_find (ffenameSpace ns, ffelexToken t);
 void ffename_kill (ffenameSpace ns, ffename n);
 ffename ffename_lookup (ffenameSpace ns, ffelexToken t);
-void ffename_space_drive_global (ffenameSpace ns, ffeglobal (*fn) ());
-void ffename_space_drive_symbol (ffenameSpace ns, ffesymbol (*fn) ());
+void ffename_space_drive_global (ffenameSpace ns, ffeglobal (*fn) (ffeglobal));
+void ffename_space_drive_symbol (ffenameSpace ns, ffesymbol (*fn) (ffesymbol));
 void ffename_space_kill (ffenameSpace ns);
 ffenameSpace ffename_space_new (mallocPool pool);
 

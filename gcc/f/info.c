@@ -55,21 +55,21 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Static objects accessed by functions in this module.	 */
 
-static char *ffeinfo_basictype_string_[]
+static const char *ffeinfo_basictype_string_[]
 =
 {
 #define FFEINFO_BASICTYPE(KWD,LNAM,SNAM) SNAM,
 #include "info-b.def"
 #undef FFEINFO_BASICTYPE
 };
-static char *ffeinfo_kind_message_[]
+static const char *ffeinfo_kind_message_[]
 =
 {
 #define FFEINFO_KIND(KWD,LNAM,SNAM) LNAM,
 #include "info-k.def"
 #undef FFEINFO_KIND
 };
-static char *ffeinfo_kind_string_[]
+static const char *ffeinfo_kind_string_[]
 =
 {
 #define FFEINFO_KIND(KWD,LNAM,SNAM) SNAM,
@@ -77,7 +77,7 @@ static char *ffeinfo_kind_string_[]
 #undef FFEINFO_KIND
 };
 static ffeinfoBasictype ffeinfo_combine_[FFEINFO_basictype][FFEINFO_basictype];
-static char *ffeinfo_kindtype_string_[]
+static const char *ffeinfo_kindtype_string_[]
 =
 {
   "",
@@ -91,7 +91,7 @@ static char *ffeinfo_kindtype_string_[]
   "8",
   "*",
 };
-static char *ffeinfo_where_string_[]
+static const char *ffeinfo_where_string_[]
 =
 {
 #define FFEINFO_WHERE(KWD,LNAM,SNAM) SNAM,
@@ -129,7 +129,7 @@ ffeinfo_basictype_combine (ffeinfoBasictype l, ffeinfoBasictype r)
 
    Returns the string based on the basic type.	*/
 
-char *
+const char *
 ffeinfo_basictype_string (ffeinfoBasictype basictype)
 {
   if (basictype >= ARRAY_SIZE (ffeinfo_basictype_string_))
@@ -186,7 +186,7 @@ ffeinfo_init_0 ()
 
    Returns the string based on the kind.  */
 
-char *
+const char *
 ffeinfo_kind_message (ffeinfoKind kind)
 {
   if (kind >= ARRAY_SIZE (ffeinfo_kind_message_))
@@ -201,7 +201,7 @@ ffeinfo_kind_message (ffeinfoKind kind)
 
    Returns the string based on the kind.  */
 
-char *
+const char *
 ffeinfo_kind_string (ffeinfoKind kind)
 {
   if (kind >= ARRAY_SIZE (ffeinfo_kind_string_))
@@ -232,7 +232,7 @@ ffeinfo_kindtype_max(ffeinfoBasictype bt,
 
    Returns the string based on the kind type.  */
 
-char *
+const char *
 ffeinfo_kindtype_string (ffeinfoKindtype kind_type)
 {
   if (kind_type >= ARRAY_SIZE (ffeinfo_kindtype_string_))
@@ -267,7 +267,7 @@ ffeinfo_type (ffeinfoBasictype basictype, ffeinfoKindtype kindtype)
 
    Returns the string based on the where.  */
 
-char *
+const char *
 ffeinfo_where_string (ffeinfoWhere where)
 {
   if (where >= ARRAY_SIZE (ffeinfo_where_string_))
