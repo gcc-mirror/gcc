@@ -1,5 +1,10 @@
 2000-06-29  Andrew Haley  <aph@cygnus.com>
 
+	* toplev.c (main): On an IA-64, make flag_unwind_tables defauit
+	to true.
+
+2000-06-29  Andrew Haley  <aph@cygnus.com>
+
         * config/ia64/linux.h (JMP_BUF_SIZE): Size is in Pmode units, not
         bytes: remove the multiply by 8.
 
