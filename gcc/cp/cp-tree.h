@@ -313,7 +313,7 @@ struct tree_baselink GTY(())
   tree access_binfo;
 };
 
-/* The different kinds of ids that we ecounter.  */
+/* The different kinds of ids that we encounter.  */
 
 typedef enum cp_id_kind
 {
@@ -738,8 +738,8 @@ struct language_function GTY(())
 #define cp_function_chain (cfun->language)
 
 /* In a constructor destructor, the point at which all derived class
-   destroying/contruction has been has been done. Ie. just before a
-   constuctor returns, or before any base class destroying will be done
+   destroying/construction has been has been done. Ie. just before a
+   constructor returns, or before any base class destroying will be done
    in a destructor.  */
 
 #define cdtor_label cp_function_chain->x_cdtor_label

@@ -2167,7 +2167,7 @@ write_template_arg_literal (const tree value)
   write_char ('E');
 }
 
-/* Non-terminal <tempalate-arg>.  
+/* Non-terminal <template-arg>.  
 
      <template-arg> ::= <type>                        # type
                     ::= L <type> </value/ number> E   # literal
