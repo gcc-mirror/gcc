@@ -367,6 +367,12 @@ struct temp_slot
   int level;
   /* Non-zero if this should survive a call to free_temp_slots.  */
   int keep;
+  /* The offset of the slot from the frame_pointer, including extra space
+     for alignment.  This info is for combine_temp_slots.  */
+  int base_offset;
+  /* The size of the slot, including extra space for alignment.  This
+     info is for combine_temp_slots.  */
+  int full_size;
 };
 
 /* List of all temporaries allocated, both available and in use.  */
@@ -870,12 +876,22 @@ assign_stack_temp (mode, size, keep)
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
 	 has performed all the frame alignment and size rounding for the
-	 requested temporary.  Otherwise combine_temp_slots won't think that
-	 adjacent slots really are adjacent.  */
+	 requested temporary.  Note that extra space added for alignment
+	 can be either above or below this stack slot depending on which
+	 way the frame grows.  We include the extra space if and only if it
+	 is above this slot.  */
 #ifdef FRAME_GROWS_DOWNWARD
       p->size = frame_offset_old - frame_offset;
 #else
-      p->size = frame_offset - frame_offset_old;
+      p->size = size;
+#endif
+      /* Now define the fields used by combine_temp_slots.  */
+#ifdef FRAME_GROWS_DOWNWARD
+      p->base_offset = frame_offset;
+      p->full_size = frame_offset_old - frame_offset;
+#else
+      p->base_offset = frame_offset_old;
+      p->full_size = frame_offset - frame_offset_old;
 #endif
       p->address = 0;
       p->next = temp_slots;
@@ -922,15 +938,13 @@ combine_temp_slots ()
 	    int delete_q = 0;
 	    if (! q->in_use && GET_MODE (q->slot) == BLKmode)
 	      {
-		if (rtx_equal_p (plus_constant (XEXP (p->slot, 0), p->size),
-				 XEXP (q->slot, 0)))
+		if (p->base_offset + p->full_size == q->base_offset)
 		  {
 		    /* Q comes after P; combine Q into P.  */
 		    p->size += q->size;
 		    delete_q = 1;
 		  }
-		else if (rtx_equal_p (plus_constant (XEXP (q->slot, 0), q->size),
-				      XEXP (p->slot, 0)))
+		else if (q->base_offset + q->full_size == p->base_offset)
 		  {
 		    /* P comes after Q; combine P into Q.  */
 		    q->size += p->size;
