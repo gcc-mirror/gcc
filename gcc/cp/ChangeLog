@@ -1,5 +1,7 @@
 2004-07-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* parser.c (cp_parser_simple_type_specifier): Fix typo.
+
 	PR c++/16637
 	* parser.c (cp_parser_simple_type_specifier): Do not record usage
 	of globally-qualified names.
