@@ -1,3 +1,8 @@
+Mon Dec  6 12:24:52 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (optimize_bit_field_compare): Only use one mode
+	for both RHS and LHS in non-constant case.
+
 1999-12-06  Nathan Sidwell  <nathan@acm.org>
 
 	* frame.c (start_fde_sort): Only allocate erratic array, if
