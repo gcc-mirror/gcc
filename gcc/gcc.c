@@ -4386,6 +4386,18 @@ main (argc, argv)
   else
     init_spec ();
 
+  /* We need to check standard_exec_prefix/just_machine_suffix/specs
+     for any override of as, ld and libraries. */
+  specs_file = (char *) alloca (strlen (standard_exec_prefix)
+				+ strlen (just_machine_suffix)
+				+ sizeof ("specs"));
+
+  strcpy (specs_file, standard_exec_prefix);
+  strcat (specs_file, just_machine_suffix);
+  strcat (specs_file, "specs");
+  if (access (specs_file, R_OK) == 0)
+    read_specs (specs_file, TRUE);
+ 
   /* Process any user specified specs in the order given on the command
      line.  */
   for (uptr = user_specs_head; uptr; uptr = uptr->next)
