@@ -2762,6 +2762,8 @@
         return \"mov\\t%1, %0\";
       else if (SPARC_SETHI_P (INTVAL (operands[1])))
         return \"sethi\\t%%hi(%a1), %0\";
+      else
+        abort ();
     }
   else
     return \"#\";
@@ -3357,8 +3359,8 @@
 ;; Now we allow the integer register cases even when
 ;; only arch64 is true.
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "general_operand" "=e,e,o,r,r,o")
-        (match_operand:TF 1 "input_operand"    "e,o,e,r,o,r"))]
+  [(set (match_operand:TF 0 "general_operand" "=e,o,r,o,e,r")
+        (match_operand:TF 1 "input_operand"    "o,e,o,r,e,r"))]
   "TARGET_FPU
    && TARGET_ARCH64
    && ! TARGET_HARD_QUAD
@@ -3368,8 +3370,8 @@
   [(set_attr "length" "2")])
 
 (define_insn "*movtf_no_e_insn_sp64"
-  [(set (match_operand:TF 0 "general_operand" "=r,r,o")
-        (match_operand:TF 1 "input_operand"    "r,o,r"))]
+  [(set (match_operand:TF 0 "general_operand" "=r,o,r")
+        (match_operand:TF 1 "input_operand"    "o,r,r"))]
   "! TARGET_FPU
    && TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
