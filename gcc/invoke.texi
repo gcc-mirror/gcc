@@ -167,17 +167,18 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{
 -fno-access-control  -fcheck-new  -fconserve-space @gol
--fdollars-in-identifiers  -fno-elide-constructors @gol
+-fno-const-strings  -fdollars-in-identifiers @gol
+-fno-elide-constructors @gol
 -fno-enforce-eh-specs  -fexternal-templates @gol
 -falt-external-templates @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fhonor-std @gol
 -fhuge-objects  -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
--fno-operator-names @gol
+-fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
--frepo  -fno-rtti -ftemplate-depth-@var{n} @gol
--fuse-cxa-atexit  -fvtable-thunks  -nostdinc++ @gol
+-frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
+-fuse-cxa-atexit  -fvtable-thunks  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated @gol
