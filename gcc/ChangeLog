@@ -1,3 +1,10 @@
+2004-05-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/ip2k/ip2k.c (ip2k_composite_xexp_not_uses_reg_p): Add
+	missing parenthesis.
+	* config/ip2k/ip2k.c (ip2k_unary_operator): Likewise.
+	* config/ip2k/ip2k.c (ip2k_binary_operator): Likewise.
+
 2004-05-19  Steven Bosscher  <stevenb@suse.de>
 
 	* expr.c (store_constructor): Build loop start and end by hand
