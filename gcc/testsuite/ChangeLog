@@ -1,3 +1,7 @@
+2002-02-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.c-torture/execute/20020227-1.c: New test.
+
 2002-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.law/visibility13.C: Remove "instantiated from
