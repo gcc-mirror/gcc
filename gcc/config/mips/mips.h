@@ -1047,7 +1047,7 @@ extern int mips_abi;
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{!gdwarf*:-mmdebug} %{gdwarf*:-mno-mdebug}"
+%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
 #endif
 
 /* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
