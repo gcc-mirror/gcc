@@ -1,3 +1,10 @@
+2002-07-25  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Remove unused
+	local var dwarfp.
+	(output_compiler_stub): Remove unused locals.
+	(output_call): Always initialize line number.
+
 Thu Jul 25 20:34:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (LOAD_EXTEND_OP): QImode zero-extends on SHmedia.

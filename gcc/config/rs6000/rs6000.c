@@ -10191,10 +10191,9 @@ rs6000_emit_prologue ()
      the store-multiple instructions.  */
   if (using_store_multiple)
     {
-      rtvec p, dwarfp;
+      rtvec p;
       int i;
       p = rtvec_alloc (32 - info->first_gp_reg_save);
-      dwarfp = rtvec_alloc (32 - info->first_gp_reg_save);
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	{
 	  rtx addr, reg, mem;
@@ -12597,8 +12596,7 @@ output_compiler_stub ()
 {
   char tmp_buf[256];
   char label_buf[256];
-  char *label;
-  tree tmp_stub, stub;
+  tree stub;
 
   if (!flag_pic)
     for (stub = stub_list; stub; stub = TREE_CHAIN (stub))
@@ -12684,7 +12682,7 @@ output_call (insn, call_dest, operand_number)
       
       if (no_previous_def (funname))
 	{
-	  int line_number;
+	  int line_number = 0;
 	  rtx label_rtx = gen_label_rtx ();
 	  char *label_buf, temp_buf[256];
 	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
