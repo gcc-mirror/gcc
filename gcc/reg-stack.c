@@ -1383,24 +1383,12 @@ subst_stack_regs_pat (insn, regstack, pat)
       if (STACK_REG_P (*src) 
           && find_regno_note (insn, REG_DEAD, REGNO (*src)))
         {
-	   /* In stupid allocation the USE might be used to extend lifetime
-	      of variable to given scope.  This may end up as USE of dead
-	      register.  */
-	   if (optimize || get_hard_regnum (regstack, *src) != -1)
-	     emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
+	   emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
 	   return;
         }
+      /* ??? Uninitialized USE should not happen.  */
       else if (get_hard_regnum (regstack, *src) == -1)
-	{
-	   if (optimize)
-	     abort();
-	   if (GET_CODE (PATTERN (insn)) != USE)
-	     abort();
-	   PATTERN (insn) = gen_rtx_SET (GET_MODE (*src), *src,
-					 CONST0_RTX (GET_MODE (*src)));
-	   subst_stack_regs_pat (insn, regstack, PATTERN (insn));
-	   return;
-	}
+	abort();
       break;
 
     case CLOBBER:
