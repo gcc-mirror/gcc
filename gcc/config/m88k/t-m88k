@@ -8,5 +8,3 @@ $(MOVE_ASM): $(srcdir)/config/m88k/m88k-move.sh
 	$(srcdir)/config/m88k/m88k-move.sh
 
 LIB2FUNCS_EXTRA = $(MOVE_ASM)
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null

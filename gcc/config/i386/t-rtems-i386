@@ -5,9 +5,6 @@
 # version of these files.
 #
 
-LIBGCC1 = 
-CROSS_LIBGCC1 = 
-
 crti.o: $(srcdir)/config/i386/sol2-ci.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-ci.asm >crti.s
 	$(GCC_FOR_TARGET) -c -o crti.o crti.s

@@ -1,4 +1,4 @@
-/* stuff needed for libgcc1 on win32. */
+/* stuff needed for libgcc on win32. */
 
 #ifdef L_chkstk
 

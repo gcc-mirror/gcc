@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func _call_via_rX _interwork_call_via_rX
 
@@ -30,6 +29,6 @@ LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 # Currently there is a bug somwehere in GCC's alias analysis
-# or scheduling code that is breaking _fpmul_parts in libgcc1.c.
+# or scheduling code that is breaking _fpmul_parts in fp-bit.c.
 # Disabling function inlining is a workaround for this problem.
 TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc -fno-inline

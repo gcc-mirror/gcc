@@ -1,5 +1,3 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = mn10200/lib1funcs.asm
 LIB1ASMFUNCS    = _divhi3 \
 		  _modhi3 \

@@ -181,7 +181,6 @@ config/i386/osf1elf.h
 config/i386/osf1elfgdb.h
 config/i386/osfelf.h
 config/i386/osfrose.h
-config/i386/perform.h
 config/i386/ptx4-i.h
 config/i386/rtems.h
 config/i386/rtemself.h
@@ -629,8 +628,6 @@ intl/localealias.c
 intl/textdomain.c
 jump.c
 lcm.c
-#libgcc1-test.c is used only by GCC maintainers and installers
-#libgcc1.c is part of the GCC library
 #libgcc2.c is part of the GCC library
 limitx.h
 limity.h

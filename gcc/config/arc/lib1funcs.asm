@@ -1,4 +1,4 @@
-; libgcc1 routines for ARC cpu.
+; libgcc routines for ARC cpu.
 
 /* Copyright (C) 1995, 1997 Free Software Foundation, Inc.
 

@@ -152,20 +152,6 @@ ZLIBINC = @zlibinc@
 # Substitution type for target's getgroups 2nd arg.
 TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
 
-# Compiler to use for compiling libgcc1.a.
-# OLDCC should not be the GNU C compiler,
-# since that would compile typical libgcc1.a functions such as mulsi3
-# into infinite recursions.
-OLDCC = cc
-
-# CFLAGS for use with OLDCC, for compiling libgcc1.a.
-# NOTE: -O does not work on some Unix systems!
-CCLIBFLAGS = -O
-
-# Version of ar to use when compiling libgcc1.a.
-OLDAR = ar
-OLDAR_FLAGS = qc
-
 # Target to use when installing include directory.  Either
 # install-headers-tar or install-headers-cpio.
 INSTALL_HEADERS_DIR = @build_install_headers_dir@
@@ -177,7 +163,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
     $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
 
-# The GCC to use for compiling libgcc.a, enquire, and libgcc1-test.
+# The GCC to use for compiling libgcc.a, enquire, and crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
 GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
@@ -368,19 +354,10 @@ VFPRINTF=@vfprintf@
 DOPRINT=@doprint@
 STRSTR=@strstr@
 
-# Specify the rule for actually making libgcc.a,
+# libgcc.a may be built directly or via stmp-multilib,
+# and installed likewise.  Overridden by t-fragment.
 LIBGCC = libgcc.a
-# and the rule for installing it.
 INSTALL_LIBGCC = install-libgcc
-
-# Specify the rule for actually making libgcc1.a.
-# The value may be empty; that means to do absolutely nothing
-# with or for libgcc1.a.
-LIBGCC1 = libgcc1.a
-
-# Specify the rule for making libgcc1.a for a cross-compiler.
-# The default rule assumes that libgcc1.a is supplied by the user.
-CROSS_LIBGCC1 = libgcc1.cross
 
 # Options to use when compiling libgcc2.a.
 # -g1 causes output of debug info only for file-scope entities.
@@ -401,9 +378,6 @@ TARGET_LIBGCC2_CFLAGS =
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
   $(srcdir)/unwind-sjlj.c
 LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h
-
-# libgcc1-test target (must also be overridable for a target)
-LIBGCC1_TEST = libgcc1-test
 
 # nm flags to list global symbols in libgcc object files.
 SHLIB_NM_FLAGS = -pg
@@ -436,15 +410,11 @@ EXTRA_HEADERS =@extra_headers_list@
 USE_COLLECT2 = @will_use_collect2@
 # If we might be using collect2, then this variable will be set to
 # -DUSE_COLLECT2.  toplev.c, collect2.c and libgcc2.c all need to
-# if we may be using collect2.
+# know if we may be using collect2.
 MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
 USE_COLLECT2 = collect2$(exeext)
-
-# List of extra C and assembler files to add to libgcc1.a.
-# Assembler files should have names ending in `.asm'.
-LIB1FUNCS_EXTRA =
 
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.asm'.
@@ -776,15 +746,6 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
 
-# Members of libgcc1.a.
-LIB1FUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
-   _lshrsi3 _ashrsi3 _ashlsi3 \
-   _divdf3 _muldf3 _negdf2 _adddf3 _subdf3 \
-   _fixdfsi _fixsfsi _floatsidf _floatsisf _truncdfsf2 _extendsfdf2 \
-   _addsf3 _negsf2 _subsf3 _mulsf3 _divsf3 \
-   _eqdf2 _nedf2 _gtdf2 _gedf2 _ltdf2 _ledf2 \
-   _eqsf2 _nesf2 _gtsf2 _gesf2 _ltsf2 _lesf2
-
 # Library members defined in libgcc2.c.
 LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
      _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 _clz \
@@ -952,7 +913,7 @@ all.internal: start.encap rest.encap doc
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
 all.cross: native gcc-cross cpp$(exeext) specs \
-	$(LIBGCC) $(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
+	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc$(exeext) cpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
@@ -975,15 +936,6 @@ PROTO: proto
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
 rest.cross: $(LIBGCC) specs
-
-# Verify that it works to compile and link libgcc1-test.
-# If it does, then there are sufficient replacements for libgcc1.a.
-libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
-	@echo "Testing libgcc1.  Ignore linker warning messages."
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
-	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
-libgcc1-test.o: libgcc1-test.c native xgcc$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/libgcc1-test.c
 
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
@@ -1042,11 +994,7 @@ LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext)
 	objext='$(objext)' \
-	OLDCC='$(OLDCC)' \
-	LIBGCC1='$(LIBGCC1)' \
-	LIB1FUNCS='$(LIB1FUNCS)' \
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
-	LIB1FUNCS_EXTRA='$(LIB1FUNCS_EXTRA)' \
 	LIB2FUNCS='$(LIB2FUNCS)' \
 	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
 	LIB2ADD='$(LIB2ADD)' \
@@ -1071,10 +1019,10 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 
 # All the things that might cause us to want to recompile bits of libgcc.
 LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
-	libgcc.mk $(srcdir)/libgcc1.c $(srcdir)/libgcc2.c $(TCONFIG_H) \
+	libgcc.mk $(srcdir)/libgcc2.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs \
 	tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(LIB2ADD_ST) $(LIB2ADDEH) \
-	$(LIB2ADDEHDEP) $(EXTRA_PARTS)
+	$(LIB2ADDEHDEP) $(EXTRA_PARTS) $(LIB1ASMSRC)
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
@@ -1082,7 +1030,6 @@ libgcc.a: $(LIBGCC_DEPS)
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
@@ -1117,7 +1064,6 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
@@ -2323,8 +2269,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(HOST_PREFIX_1)rtl.c
 	-rm -f $(HOST_PREFIX_1)obstack.c
 # Delete the temp files made in the course of building libgcc.a.
-	-rm -f xlimits.h libgcc1-test
-	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
+	-rm -f xlimits.h
 # Delete other built files.
 	-rm -f t-float.h-cross xsys-protos.hT
 # Delete the stamp and temporary files.
@@ -2650,7 +2595,6 @@ install-libgcc: libgcc.mk libgcc.a installdirs
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
@@ -2677,7 +2621,6 @@ install-multilib: stmp-multilib installdirs
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \

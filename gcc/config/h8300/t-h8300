@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = h8300/lib1funcs.asm
 LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3
 

@@ -1,5 +1,3 @@
-LIBGCC1 = libgcc1-asm.a
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = i386/cygwin.asm
 LIB1ASMFUNCS = _chkstk
 

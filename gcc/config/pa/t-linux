@@ -1,6 +1,3 @@
-LIBGCC1=libgcc1-asm.a
-CROSS_LIBGCC1=libgcc1-asm.a
-
 #Plug millicode routines into libgcc.a  We want these on both native and
 #cross compiles.
 
@@ -16,7 +13,6 @@ LIB1ASMSRC = pa/milli32.S
 CRTSTUFF_T_CFLAGS_S = -fPIC
 
 # Compile libgcc2.a as PIC.
-# This is also used when compiling libgcc1 if libgcc1 is the asm variety.
 TARGET_LIBGCC2_CFLAGS = -fPIC -DELF=1 -DLINUX=1
 
 ADA_CFLAGS=-mdisable-indexing

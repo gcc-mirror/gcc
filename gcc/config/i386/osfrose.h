@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #include "halfpic.h"
 #include "i386/gstabs.h"
 
-/* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
-
 #define OSF_OS
 
 #undef  WORD_SWITCH_TAKES_ARG

@@ -1,4 +1,4 @@
-/* libgcc1 routines for Matsushita mn10200.
+/* libgcc routines for Matsushita mn10200.
    Copyright (C) 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -3445,18 +3445,11 @@ with @samp{-msoft-float}.  Some standard parts of the C library, such as
 @code{bcopy} or @code{memcpy}, are also called automatically.  The usual
 function call interface is used for calling the library routines.
 
-These library routines should be defined in the library @file{libgcc.a},
-which GCC automatically searches whenever it links a program.  On
-machines that have multiply and divide instructions, if hardware
-floating point is in use, normally @file{libgcc.a} is not needed, but it
-is searched just in case.
-
-Each arithmetic function is defined in @file{libgcc1.c} to use the
-corresponding C arithmetic operator.  As long as the file is compiled
-with another C compiler, which supports all the C arithmetic operators,
-this file will work portably.  However, @file{libgcc1.c} does not work if
-compiled with GCC, because each arithmetic function would compile
-into a call to itself!
+Some of these routines can be defined in mostly machine-independent C;
+they appear in @file{libgcc2.c}.  Others must be hand-written in
+assembly language for each processor.  Wherever they are defined, they
+are compiled into the support library, @file{libgcc.a}, which is
+automatically searched when you link programs with GCC.
 @end ifset
 
 @ifset INTERNALS
@@ -4201,19 +4194,6 @@ The target makefile fragment, @file{t-@var{target}}, defines special
 target dependent variables and targets used in the @file{Makefile}:
 
 @table @code
-@findex LIBGCC1
-@item LIBGCC1
-The rule to use to build @file{libgcc1.a}.
-If your target does not need to use the functions in @file{libgcc1.a},
-set this to empty.
-@xref{Interface}.
-
-@findex CROSS_LIBGCC1
-@item CROSS_LIBGCC1
-The rule to use to build @file{libgcc1.a} when building a cross
-compiler.  If your target does not need to use the functions in
-@file{libgcc1.a}, set this to empty.  @xref{Cross Runtime}.
-
 @findex LIBGCC2_CFLAGS
 @item LIBGCC2_CFLAGS
 Compiler flags to use when compiling @file{libgcc2.c}.
@@ -4335,20 +4315,6 @@ dependent variables and targets used in the @file{Makefile}:
 @findex CC
 @item CC
 The compiler to use when building the first stage.
-
-@findex CLIB
-@item CLIB
-Additional host libraries to link with.
-
-@findex OLDCC
-@item OLDCC
-The compiler to use when building @file{libgcc1.a} for a native
-compilation.
-
-@findex OLDAR
-@item OLDAR
-The version of @code{ar} to use when building @file{libgcc1.a} for a native
-compilation.
 
 @findex INSTALL
 @item INSTALL

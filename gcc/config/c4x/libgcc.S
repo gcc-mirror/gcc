@@ -1,4 +1,4 @@
-/* libgcc1 routines for the Texas Instruments TMS320C[34]x
+/* libgcc routines for the Texas Instruments TMS320C[34]x
    Copyright (C) 1997,98, 1999 Free Software Foundation, Inc.
 
  Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)

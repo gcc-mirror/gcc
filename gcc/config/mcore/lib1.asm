@@ -1,4 +1,4 @@
-/* libgcc1 routines for the MCore.
+/* libgcc routines for the MCore.
    Copyright (C) 1993, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

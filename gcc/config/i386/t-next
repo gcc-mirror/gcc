@@ -1,7 +1,3 @@
-# libgcc1.c is not needed, since the standard library has these functions.
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
-
 # Specify other dirs of system header files to be fixed.
 OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
 

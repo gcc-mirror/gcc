@@ -8,11 +8,7 @@
 # of them, and positional args becomes quite ugly.
 #
 # objext
-# OLDCC
-# LIBGCC1
-# LIB1FUNCS
 # LIB1ASMFUNCS
-# LIB1FUNCS_EXTRA
 # LIB2FUNCS
 # LIB2FUNCS_ST
 # LIB2ADD
@@ -42,23 +38,6 @@ echo
 echo 'force:'
 echo
 
-# Detect gcc as OLDCC.  This indicates a target for which LIB1FUNCS
-# is not needed.  This is not quite the same as libgcc1.null, even
-# on a target not using libgcc1-asm.a.
-
-if [ "@build_canonical@" = "@target@" ]; then
-  tmp="tmp-$$.c"
-  cat > $tmp <<EOF
-#ifdef __GNUC__
-  yes;
-#endif
-EOF
-  if $OLDCC -E $tmp | grep yes > /dev/null 2>&1; then
-    LIB1FUNCS=""
-  fi
-  rm -f $tmp
-fi
-
 # Disable SHLIB_LINK if shared libgcc not enabled.
 if [ "@enable_shared@" = "no" ]; then
   SHLIB_LINK=""
@@ -67,7 +46,6 @@ fi
 # Build lines.
 
 gcc_compile='$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES)'
-oldcc_compile='$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)'
 make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
@@ -78,13 +56,10 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  LANGUAGES="$(LANGUAGES)"'
 
-# Dependancies for libgcc1.c
-libgcc1_c_dep='stmp-dirs $(srcdir)/libgcc1.c $(CONFIG_H)'
-
-# Dependancies for libgcc2.c
+# Dependencies for libgcc2.c
 libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
 
-# Dependancies for fp-bit.c
+# Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
 
 #
@@ -93,76 +68,24 @@ fpbit_c_dep='stmp-dirs config.status tsystem.h'
 
 libgcc1_objs=""
 
-case X"$LIBGCC1" in
-  Xlibgcc1.null | X)
-    ;;
+for name in $LIB1ASMFUNCS; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${name}${objext}"
 
-  Xlibgcc1.cross)
-    echo "You must find a way to make libgcc1 components yourself" 1>&2
-    ;;
-
-  Xlibgcc1-asm.a)
-    for name in $LIB1ASMFUNCS; do
-      for ml in $MULTILIBS; do
-        dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-        flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-        out="libgcc/${dir}/${name}${objext}"
-
-        echo ${out}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)'
-	echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
+    echo ${out}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)'
+    echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
 
-	# Remove any objects from LIB2FUNCS that are defined as optimized
-	# assembly code in LIB1ASMFUNCS.
-	LIB2FUNCS=`echo $LIB2FUNCS | sed -e 's/^'$name' //' \
-				         -e 's/ '$name' / /' \
-					 -e 's/ '$name'$//'`
-      done
-      libgcc1_objs="$libgcc1_objs ${name}${objext}"
-    done
-    ;;
-
-  Xlibgcc1.a)
-    for name in $LIB1FUNCS; do
-      out="libgcc/${name}${objext}"
-
-      echo $out: $libgcc1_c_dep
-      if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
-	echo "	$oldcc_compile" -DL$name $flags -c '$(srcdir)/libgcc1.c' -o $out
-      else
-	echo "	$oldcc_compile" -DL$name $flags -c '$(srcdir)/libgcc1.c'
-	echo "	mv libgcc1${objext} $out"
-      fi
-
-      libgcc1_objs="$libgcc1_objs ${name}${objext}"
-    done
-
-    for file in $LIB1FUNCS_EXTRA; do
-      name=`echo $file | sed -e 's/[.][cS]$//' -e 's/[.]asm$//'`
-      out="libgcc/${name}${objext}"
-
-      echo $out: $file
-      if [ ${name}.asm = $file ]; then
-        echo "	cp $file ${name}.s"
-        file=${name}.s
-      fi
-
-      if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
-	echo "	$oldcc_compile" -c $file -o $out
-      else
-	echo "	$oldcc_compile" -c $file
-	tmp=`echo $file | sed -e 's/[.][cs]$/'${objext}/ -e 's,.*/,,'`
-	echo "	mv $tmp $out"
-      fi
-
-      libgcc1_objs="$libgcc1_objs ${name}${objext}"
-    done
-    ;;
-  *)
-    echo "I'm confused about libgcc1." 1>&2
-    exit 1
-    ;;
-esac
+    # Remove any objects from LIB2FUNCS that are defined as optimized
+    # assembly code in LIB1ASMFUNCS.
+    LIB2FUNCS=`echo $LIB2FUNCS | sed -e 's/^'$name' //' \
+				     -e 's/ '$name' / /' \
+				     -e 's/ '$name'$//'`
+  done
+  libgcc1_objs="$libgcc1_objs ${name}${objext}"
+done
 
 #
 # Build libgcc2 components.
@@ -289,11 +212,7 @@ for ml in $MULTILIBS; do
 
   libgcc_objs=""
   for o in $libgcc1_objs; do
-    if [ "$LIBGCC1" = libgcc1-asm.a ]; then
-      libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
-    else
-      libgcc_objs="$libgcc_objs libgcc/$o"
-    fi
+    libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
   done
   for o in $libgcc2_objs; do
     libgcc_objs="$libgcc_objs libgcc/${dir}/$o"

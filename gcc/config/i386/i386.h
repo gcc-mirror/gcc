@@ -3064,13 +3064,6 @@ do { long l;						\
 	 }						\
      } while (0)
 
-/* Routines in libgcc that return floats must return them in an fp reg,
-   just as other functions do which return such values.
-   These macros make that happen.  */
-
-#define FLOAT_VALUE_TYPE float
-#define INTIFY(FLOATVAL) FLOATVAL
-
 /* a letter which is not needed by the normal asm syntax, which
    we can use for operand syntax in the extended asm */
 

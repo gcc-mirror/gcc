@@ -1,4 +1,4 @@
-@ libgcc1 routines for ARM cpu.
+@ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
 /* Copyright 1995, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.

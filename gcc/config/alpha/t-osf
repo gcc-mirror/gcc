@@ -1,6 +1,1 @@
-# Do not build libgcc1. Let gcc generate those functions.
-LIBGCC1 = 
-CROSS_LIBGCC1 =
-LIBGCC1_TEST =
-
 EXTRA_HEADERS = $(srcdir)/config/alpha/va_list.h

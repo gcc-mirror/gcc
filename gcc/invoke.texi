@@ -7125,7 +7125,7 @@ These @samp{-m} options are defined for the DEC Alpha implementations:
 @itemx -msoft-float
 Use (do not use) the hardware floating-point instructions for
 floating-point operations.  When @option{-msoft-float} is specified,
-functions in @file{libgcc1.c} will be used to perform floating-point
+functions in @file{libgcc.a} will be used to perform floating-point
 operations.  Unless they are replaced by routines that emulate the
 floating-point operations, or compiled in such a way as to call such
 emulations routines, these routines will issue floating-point

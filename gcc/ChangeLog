@@ -1,3 +1,93 @@
+2001-05-16  Zack Weinberg  <zackw@stanford.edu>
+
+	* libgcc1-test.c, libgcc1.c, config/i386/perform.h: Delete file.
+
+	* Makefile.in: Delete variables: OLDCC, CCLIBFLAGS, OLDAR,
+	OLDAR_FLAGS, LIBGCC1, LIBGCC1_TEST, CROSS_LIBGCC1,
+	LIB1FUNCS, and LIB1FUNCS_EXTRA.  Delete rules: libgcc1-test,
+	libgcc1-test.o.  Clarify commentary now that libgcc1 no longer exists.
+	* cross-make: Don't set LIBGCC1.
+	* mklibgcc.in: Delete all code for building from libgcc1.c.
+	Always honor LIB1ASMFUNCS if set.
+
+	* crtstuff.c, floatlib.c, longlong.h, config/fp-bit.c,
+	config/arc/lib1funcs.asm, config/arm/lib1funcs.asm,
+	config/d30v/libgcc1.asm, config/fr30/lib1funcs.asm,
+	config/h8300/lib1funcs.asm, config/i386/cygwin.asm,
+	config/i386/uwin.asm, config/m68hc11/larith.asm,
+	config/m68k/lb1sf68.asm, config/mcore/lib1.asm,
+	config/mn10200/lib1funcs.asm, config/sh/lib1funcs.asm,
+	config/sparc/lb1spc.asm, config/sparc/lb1spl.asm,
+	config/v850/lib1funcs.asm, config/c4x/libgcc.S:
+	Delete or update references to libgcc1 in commentary.
+
+	* config/t-libc-ok, config/t-linux, config/t-linux-aout,
+	config/t-netbsd, config/a29k/t-a29kbare, config/a29k/t-vx29k,
+	config/alpha/t-interix, config/alpha/t-osf, config/alpha/t-vms,
+	config/arc/t-arc, config/arm/t-arm-aout, config/arm/t-arm-coff,
+	config/arm/t-arm-elf, config/arm/t-linux, config/arm/t-pe,
+	config/arm/t-semi, config/arm/t-strongarm-coff,
+	config/arm/t-strongarm-elf, config/arm/t-strongarm-pe,
+	config/arm/t-xscale-coff, config/arm/t-xscale-elf, config/avr/t-avr,
+	config/c4x/t-c4x, config/d30v/t-d30v, config/fr30/t-fr30,
+	config/h8300/t-h8300, config/i386/t-beos, config/i386/t-cygwin,
+	config/i386/t-i386elf, config/i386/t-interix, config/i386/t-netware,
+	config/i386/t-next, config/i386/t-rtems-i386, config/i386/t-sol2,
+	config/i960/t-960bare, config/i960/t-vxworks960, config/ia64/t-ia64,
+	config/m32r/t-m32r, config/m68hc11/t-m68hc11-gas, config/m68k/t-lynx,
+	config/m68k/t-m68kbare, config/m68k/t-m68kelf,
+	config/m68k/t-mot3300-gald, config/m68k/t-mot3300-gas,
+	config/m68k/t-next, config/m68k/t-vxworks68, config/m88k/t-bug,
+	config/m88k/t-dgux, config/m88k/t-dgux-gas, config/m88k/t-dguxbcs,
+	config/m88k/t-luna, config/m88k/t-luna-gas, config/m88k/t-m88k,
+	config/m88k/t-m88k-gas, config/m88k/t-sysv4, config/mcore/t-mcore,
+	config/mcore/t-mcore-pe, config/mips/t-bsd, config/mips/t-bsd-gas,
+	config/mips/t-cross64, config/mips/t-ecoff, config/mips/t-elf,
+	config/mips/t-iris6, config/mips/t-r3900, config/mips/t-svr3,
+	config/mips/t-svr3-gas, config/mips/t-svr4, config/mips/t-svr4-gas,
+	config/mips/t-ultrix, config/mn10200/t-mn10200,
+	config/mn10300/t-mn10300, config/pa/t-linux, config/pa/t-linux64,
+	config/pa/t-pa, config/pa/t-pa64, config/pa/t-pro,
+	config/pdp11/t-pdp11, config/pj/t-pj, config/rs6000/t-aix43,
+	config/rs6000/t-beos, config/rs6000/t-darwin, config/rs6000/t-newas,
+	config/rs6000/t-ppccomm, config/rs6000/t-rs6000, config/sh/t-linux,
+	config/sh/t-sh, config/sparc/t-chorus-elf, config/sparc/t-elf,
+	config/sparc/t-sol2, config/sparc/t-sp86x, config/sparc/t-sparcbare,
+	config/sparc/t-sparclite, config/sparc/t-splet,
+	config/sparc/t-sunos41, config/sparc/t-vxsparc,
+	config/sparc/t-vxsparc64, config/v850/t-v850:
+	Don't set any of LIBGCC1, CROSS_LIBGCC1, or LIBGCC1_TEST.
+
+	* config/alpha/alpha.h, config/i386/i386.h, config/i860/i860.h: 
+	Don't set FLOAT_VALUE_TYPE, FLOAT_ARG_TYPE, INTIFY, or FLOATIFY.
+	* config/d30v/d30v.h: Don't mention LIBGCC_NEEDS_DOUBLE,
+	FLOAT_VALUE_TYPE, FLOAT_ARG_TYPE, FLOATIFY, INTIFY,
+	nongcc_SI_type, nongcc_word_type, or perform_*
+	* config/i860/fx2800: Don't define perform_umodsi3 or perform_modsi3.
+
+	* config/i386/386bsd.h, config/i386/beos-elf.h,
+	config/i386/linux-aout.h, config/i386/linux-oldld.h,
+	config/i386/linux.h, config/i386/mach.h, config/i386/netbsd.h,
+	config/i386/openbsd.h, config/i386/osfrose.h, config/i386/rtemself.h:
+	Don't include i386/perform.h.
+
+	* config/a29k/t-a29k, config/arm/t-semiaof, config/i370/t-i370,
+	config/i370/t-linux, config/i370/t-mvs, config/i370/t-oe,
+	config/i386/t-djgpp, config/i386/t-i386bare, config/i386/t-vsta,
+	config/ia64/t-hpux, config/mips/t-mips, config/mips/t-mips-gas,
+	config/mips/t-osfrose, config/sparc/t-sp64, config/sparc/t-sunos40,
+	config/vax/t-openbsd, config/vax/t-vax: Delete.
+
+	* config.gcc: Remove references to deleted files.
+	(arm-semi-aof): Use arm/t-semi for tmake_file.
+
+	* gcc.texi, install.texi, invoke.texi, tm.texi:
+	Delete or rewrite text which is no longer relevant now that
+	libgcc1 no longer exists.
+
+	* config/t-openbsd, config/alpha/t-interix, config/i386/t-interix:
+	No need to set INSTALL_ASSERT_H.  (Missed in previous sweep.)
+
 2001-05-16  Wolfgang Bangerth <wolfgang.bangerth@iwr.uni-heidelberg.de>
 	Bruce Korb <bkorb@gnu.org>
 

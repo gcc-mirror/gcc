@@ -1,6 +1,5 @@
-/* This is a software floating point library which can be used instead of
-   the floating point routines in libgcc1.c for targets without hardware
-   floating point. 
+/* This is a software floating point library which can be used
+   for targets without hardware floating point. 
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
    Free Software Foundation, Inc.
 
@@ -57,8 +56,7 @@ Boston, MA 02111-1307, USA.  */
    CMPtype: Specify the type that floating point compares should return.
      This defaults to SItype, aka int.
    US_SOFTWARE_GOFAST: This makes all entry points use the same names as the
-     US Software goFast library.  If this is not defined, the entry points use
-     the same names as libgcc1.c.
+     US Software goFast library.
    _DEBUG_BITFLOAT: This makes debugging the code a little easier, by adding
      two integers to the FLO_union_type.
    NO_DENORMALS: Disable handling of denormals.

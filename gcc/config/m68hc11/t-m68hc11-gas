@@ -15,7 +15,6 @@ RANLIB_FOR_TARGET = ` \
 
 T_CPPFLAGS = -DUSE_GAS
 
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = m68hc11/larith.asm
 LIB1ASMFUNCS = _mulsi3 \
 	_mulqi3 _ashlsi3 _ashrsi3 _lshrsi3 \

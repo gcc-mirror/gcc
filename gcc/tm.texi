@@ -4485,88 +4485,12 @@ Define this macro if GCC should generate calls to the ISO C
 
 @findex LIBGCC_NEEDS_DOUBLE
 @item LIBGCC_NEEDS_DOUBLE
-Define this macro if only @code{float} arguments cannot be passed to
-library routines (so they must be converted to @code{double}).  This
-macro affects both how library calls are generated and how the library
-routines in @file{libgcc1.c} accept their arguments.  It is useful on
+Define this macro if @code{float} arguments cannot be passed to library
+routines (so they must be converted to @code{double}).  This macro
+affects both how library calls are generated and how the library
+routines in @file{libgcc.a} accept their arguments.  It is useful on
 machines where floating and fixed point arguments are passed
 differently, such as the i860.
-
-@findex FLOAT_ARG_TYPE
-@item FLOAT_ARG_TYPE
-Define this macro to override the type used by the library routines to
-pick up arguments of type @code{float}.  (By default, they use a union
-of @code{float} and @code{int}.)
-
-The obvious choice would be @code{float}---but that won't work with
-traditional C compilers that expect all arguments declared as @code{float}
-to arrive as @code{double}.  To avoid this conversion, the library routines
-ask for the value as some other type and then treat it as a @code{float}.
-
-On some systems, no other type will work for this.  For these systems,
-you must use @code{LIBGCC_NEEDS_DOUBLE} instead, to force conversion of
-the values @code{double} before they are passed.
-
-@findex FLOATIFY
-@item FLOATIFY (@var{passed-value})
-Define this macro to override the way library routines redesignate a
-@code{float} argument as a @code{float} instead of the type it was
-passed as.  The default is an expression which takes the @code{float}
-field of the union.
-
-@findex FLOAT_VALUE_TYPE
-@item FLOAT_VALUE_TYPE
-Define this macro to override the type used by the library routines to
-return values that ought to have type @code{float}.  (By default, they
-use @code{int}.)
-
-The obvious choice would be @code{float}---but that won't work with
-traditional C compilers gratuitously convert values declared as
-@code{float} into @code{double}.
-
-@findex INTIFY
-@item INTIFY (@var{float-value})
-Define this macro to override the way the value of a
-@code{float}-returning library routine should be packaged in order to
-return it.  These functions are actually declared to return type
-@code{FLOAT_VALUE_TYPE} (normally @code{int}).
-
-These values can't be returned as type @code{float} because traditional
-C compilers would gratuitously convert the value to a @code{double}.
-
-A local variable named @code{intify} is always available when the macro
-@code{INTIFY} is used.  It is a union of a @code{float} field named
-@code{f} and a field named @code{i} whose type is
-@code{FLOAT_VALUE_TYPE} or @code{int}.
-
-If you don't define this macro, the default definition works by copying
-the value through that union.
-
-@findex nongcc_SI_type
-@item nongcc_SI_type
-Define this macro as the name of the data type corresponding to
-@code{SImode} in the system's own C compiler.
-
-You need not define this macro if that type is @code{long int}, as it usually
-is.
-
-@findex nongcc_word_type
-@item nongcc_word_type
-Define this macro as the name of the data type corresponding to the
-word_mode in the system's own C compiler.
-
-You need not define this macro if that type is @code{long int}, as it usually
-is.
-
-@findex perform_@dots{}
-@item perform_@dots{}
-Define these macros to supply explicit C statements to carry out various
-arithmetic operations on types @code{float} and @code{double} in the
-library routines in @file{libgcc1.c}.  See that file for a full list
-of these macros and their arguments.
-
-On most machines, you don't need to define any of these macros, because
-the C compiler that comes with the system takes care of doing them.
 
 @findex NEXT_OBJC_RUNTIME
 @item NEXT_OBJC_RUNTIME

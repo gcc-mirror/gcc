@@ -10,8 +10,7 @@
 Warning! Only single-precision is actually implemented.  This file
 won't really be much use until double-precision is supported.
 
-However, once that is done, this file might eventually become a
-replacement for libgcc1.c.  It might also make possible
+However, once that is done, this file might make possible
 cross-compilation for an IEEE target machine from a non-IEEE
 host such as a VAX.
 
