@@ -16,8 +16,9 @@ extern void abort (void);
 
 int main (int argc, char *argv[])
 {
-  str (\);			/* { dg-warning "valid string" "str(\)" } */
-  str (\\\);			/* { dg-warning "valid string" "str(\\\)" } */
+  str (\);		/* { dg-warning "valid string" "str(\\)" } */
+  str (\\);		/* OK.  */
+  str (\\\);		/* { dg-warning "valid string" "str(\\\\\\)" } */
 
   /* This also serves as a useful test of the value of __INCLUDE_LEVEL.  */
   if (strcmp (xstr (__INCLUDE_LEVEL__), "0"))
@@ -25,6 +26,9 @@ int main (int argc, char *argv[])
 
   if (strcmp(str (__INCLUDE_LEVEL__), "__INCLUDE_LEVEL__"))
     err ("macro name");
+
+  if (strcmp(str(), "") || strcmp(str( ), ""))
+    err ("empty string");
 
   if (strcmp(str ("s\n"), "\"s\\n\""))
     err ("quoted string");

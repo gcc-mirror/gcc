@@ -1,3 +1,8 @@
+2000-07-04  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/macro1.c: Add more macro expansion tests.
+	* gcc.dg/cpp/strify2.c: Same.
+
 2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* testsuite/gcc.dg/cpp/19951025-1.c: Adjust regexps.
