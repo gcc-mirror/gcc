@@ -3569,6 +3569,7 @@ relax_delay_slots (first)
 							 JUMP_LABEL (other))))
 	{
 	  rtx other_target = JUMP_LABEL (other);
+	  target_label = JUMP_LABEL (insn);
 
 	  /* Increment the count of OTHER_TARGET, so it doesn't get deleted
 	     as we move the label.  */
