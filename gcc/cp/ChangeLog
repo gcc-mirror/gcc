@@ -1,4 +1,9 @@
-2001-05-11  Alexandre Oliva  <aoliva@redhat.com>
+2001-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cp-tree.h (ptrmemfunc_vbit_where_t): Declare type.
+	* typeck.c (get_member_function_from_ptrfunc,
+	build_ptrmemfunc, expand_ptrmemfunc_cst): Take
+	TARGET_PTRMEMFUNC_VBIT_LOCATION into account.
 
 	Reverted Geoff Keating's 2001-05-03's patch.
 
