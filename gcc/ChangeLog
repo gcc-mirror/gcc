@@ -1,3 +1,9 @@
+2003-10-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c (cpp_options): Only pass -fworking-directory for -g* if
+	not overridden.
+	Fixes PR bootstrap/12173.
+
 2003-10-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* errors.c: Don't include coretypes.h or tm.h.
