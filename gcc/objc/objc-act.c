@@ -648,13 +648,16 @@ objc_comptypes (lhs, rhs, reflexive)
 		      tree cat;
 
 		      rproto_list = CLASS_PROTOCOL_LIST (rinter);
-		      /* If the underlying ObjC class does not have
-			 protocols attached to it, perhaps there are
-			 "one-off" protocols attached to the rhs?
-			 E.g., 'id<MyProt> foo;'.  */
-		      if (!rproto_list)
-			rproto_list = TYPE_PROTOCOL_LIST (TREE_TYPE (rhs));
 		      rproto = lookup_protocol_in_reflist (rproto_list, p);
+		      /* If the underlying ObjC class does not have
+			 the protocol we're looking for, check for "one-off"
+			 protocols (e.g., `NSObject<MyProt> foo;') attached
+			 to the rhs.  */
+		      if (!rproto)
+			{
+			  rproto_list = TYPE_PROTOCOL_LIST (TREE_TYPE (rhs));
+			  rproto = lookup_protocol_in_reflist (rproto_list, p);
+			}
 
 		      /* Check for protocols adopted by categories.  */
 		      cat = CLASS_CATEGORY_LIST (rinter);
@@ -2259,6 +2262,17 @@ is_class_name (ident)
     }
 
   return 0;
+}
+
+tree
+objc_is_id (ident)
+     tree ident;
+{
+  /* NB: This function may be called before the ObjC front-end
+     has been initialized, in which case ID_TYPE will be NULL. */
+  return (id_type && ident && TYPE_P (ident) && IS_ID (ident)) 
+	  ? id_type 
+	  : NULL_TREE;
 }
 
 tree

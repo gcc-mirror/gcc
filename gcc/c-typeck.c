@@ -3577,7 +3577,12 @@ build_c_cast (type, expr)
   
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
-  type = TYPE_MAIN_VARIANT (type);
+
+  /* The ObjC front-end uses TYPE_MAIN_VARIANT to tie together types differing
+     only in <protocol> qualifications.  But when constructing cast expressions,
+     the protocols do matter and must be kept around.  */
+  if (!flag_objc || !objc_is_id (type))
+    type = TYPE_MAIN_VARIANT (type);
 
 #if 0
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */

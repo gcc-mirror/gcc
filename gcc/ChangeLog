@@ -1,3 +1,13 @@
+2002-09-06  Ziemowit Laski <zlaski@apple.com>
+
+	* c-lang.c (objc_is_id): New stub.
+	* c-tree.h (objc_is_id): New forward declaration.
+	* c-typeck.c (build_c_cast): Do not strip protocol
+	qualifiers from 'id' type.
+	* objc/objc-act.c (objc_comptypes): Correct handling
+	of protocol qualifiers.
+	(objc_is_id): New.
+
 Fri Sep  6 13:10:08 2002  Jeffrey A Law  (law@redhat.com)
 
         * pentium.md (pentium-firstvboth): Fix typo.
