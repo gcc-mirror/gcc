@@ -567,17 +567,22 @@ doloop_modify_runtime (loop, iterations_max,
 		|| comparison_code == NE);
 
   /* The number of iterations (prior to any loop unrolling) is given by:
-     (abs (final - initial) + abs_inc - 1) / abs_inc.
+
+       n = (abs (final - initial) + abs_inc - 1) / abs_inc.
 
      However, it is possible for the summation to overflow, and a
      safer method is:
 
-     abs (final - initial) / abs_inc + (abs (final - initial) % abs_inc) != 0
+       n = abs (final - initial) / abs_inc;
+       n += (abs (final - initial) % abs_inc) != 0;
 
      If the loop has been unrolled, then the loop body has been
-     preconditioned to iterate a multiple of unroll_number times.
-     The number of iterations of the loop body is simply:
-     abs (final - initial) / (abs_inc * unroll_number).
+     preconditioned to iterate a multiple of unroll_number times.  If
+     abs_inc is != 1, the full calculation is
+
+       t1 = abs_inc * unroll_number;
+       n = abs (final - initial) / t1;
+       n += (abs (final - initial) % t1) > t1 - abs_inc;
 
      The division and modulo operations can be avoided by requiring
      that the increment is a power of 2 (precondition_loop_p enforces
@@ -591,34 +596,38 @@ doloop_modify_runtime (loop, iterations_max,
 		       copy_rtx (neg_inc ? final_value : initial_value),
 		       NULL_RTX, unsigned_p, OPTAB_LIB_WIDEN);
 
-  if (loop_info->unroll_number == 1)
+  if (abs_inc * loop_info->unroll_number != 1)
     {
+      int shift_count;
+      rtx extra;
+      rtx label;
+      unsigned HOST_WIDE_INT limit;
+
+      shift_count = exact_log2 (abs_inc * loop_info->unroll_number);
+      if (shift_count < 0)
+	abort ();
+
+      /* abs (final - initial) / (abs_inc * unroll_number)  */
+      iterations = expand_binop (GET_MODE (diff), lshr_optab,
+				 diff, GEN_INT (shift_count),
+				 NULL_RTX, 1,
+				 OPTAB_LIB_WIDEN);
+
       if (abs_inc != 1)
 	{
-	  int shift_count;
-	  rtx extra;
-	  rtx label;
-
-	  shift_count = exact_log2 (abs_inc);
-	  if (shift_count < 0)
-	    abort ();
-
-	  /* abs (final - initial) / abs_inc  */
-	  iterations = expand_binop (GET_MODE (diff), lshr_optab,
-				     diff, GEN_INT (shift_count),
-				     NULL_RTX, 1,
-				     OPTAB_LIB_WIDEN);
-
-	  /* abs (final - initial) % abs_inc  */
+	  /* abs (final - initial) % (abs_inc * unroll_number)  */
 	  extra = expand_binop (GET_MODE (iterations), and_optab,
-				diff, GEN_INT (abs_inc - 1),
+				diff, GEN_INT (abs_inc * loop_info->unroll_number - 1),
 				NULL_RTX, 1,
 				OPTAB_LIB_WIDEN);
 
-	  /* If (abs (final - initial) % abs_inc == 0) jump past
-	     following increment instruction.  */
+	  /* If (abs (final - initial) % (abs_inc * unroll_number)
+	       <= abs_inc * (unroll - 1)),
+	     jump past following increment instruction.  */
 	  label = gen_label_rtx();
-	  emit_cmp_and_jump_insns (extra, const0_rtx, EQ, NULL_RTX,
+	  limit = abs_inc * (loop_info->unroll_number - 1);
+	  emit_cmp_and_jump_insns (extra, GEN_INT (limit),
+				   limit == 0 ? EQ : LEU, NULL_RTX,
 				   GET_MODE (extra), 0, 0, label);
 	  JUMP_LABEL (get_last_insn ()) = label;
 	  LABEL_NUSES (label)++;
@@ -631,27 +640,9 @@ doloop_modify_runtime (loop, iterations_max,
 
 	  emit_label (label);
 	}
-      else
-	iterations = diff;
     }
   else
-    {
-      int shift_count;
-
-      /* precondition_loop_p has preconditioned the loop so that the
-	 iteration count of the loop body is always a power of 2.
-	 Since we won't get an overflow calculating the loop count,
-	 the code we emit is simpler.  */
-      shift_count = exact_log2 (loop_info->unroll_number * abs_inc);
-      if (shift_count < 0)
-	abort ();
-
-      iterations = expand_binop (GET_MODE (diff), lshr_optab,
-				 diff, GEN_INT (shift_count),
-				 NULL_RTX, 1,
-				 OPTAB_LIB_WIDEN);
-    }
-
+    iterations = diff;
 
   /* If there is a NOTE_INSN_LOOP_VTOP, we have a `for' or `while'
      style loop, with a loop exit test at the start.  Thus, we can
