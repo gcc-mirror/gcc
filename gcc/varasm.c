@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dbxout.h"
 #include "sdbout.h"
 #include "obstack.h"
+#include "hashtab.h"
 #include "c-pragma.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -185,6 +186,11 @@ static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_pool_constant          PARAMS ((struct pool_constant *));
 static void mark_const_hash_entry	PARAMS ((void *));
+static int mark_const_str_htab_1	PARAMS ((void **, void *));
+static void mark_const_str_htab		PARAMS ((void *));
+static hashval_t const_str_htab_hash	PARAMS ((const void *x));
+static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
+static void const_str_htab_del		PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
@@ -2342,6 +2348,17 @@ struct constant_descriptor
 #define MAX_HASH_TABLE 1009
 static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
 
+#define STRHASH(x) ((hashval_t)((long)(x) >> 3))
+
+struct deferred_string
+{
+  char *label;
+  tree exp;
+  int labelno;
+};
+
+static htab_t const_str_htab;
+
 /* Mark a const_hash_table descriptor for GC.  */
 
 static void 
@@ -2356,6 +2373,58 @@ mark_const_hash_entry (ptr)
       ggc_mark_rtx (desc->rtl);
       desc = desc->next;
     }
+}
+
+/* Mark the hash-table element X (which is really a pointer to an
+   struct deferred_string *).  */
+   
+static int
+mark_const_str_htab_1 (x, data)
+     void **x;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ggc_mark_tree (((struct deferred_string *) *x)->exp);
+  return 1;
+}
+
+/* Mark a const_str_htab for GC.  */
+
+static void 
+mark_const_str_htab (htab)
+     void *htab;
+{
+  htab_traverse (*((htab_t *) htab), mark_const_str_htab_1, NULL);
+}
+
+/* Returns a hash code for X (which is a really a
+   struct deferred_string *).  */
+
+static hashval_t
+const_str_htab_hash (x)
+     const void *x;
+{
+  return STRHASH (((struct deferred_string *) x)->label);
+}
+
+/* Returns non-zero if the value represented by X (which is really a
+   struct deferred_string *) is the same as that given by Y
+   (which is really a char *).  */
+
+static int
+const_str_htab_eq (x, y)
+     const void *x;
+     const void *y;
+{
+  return (((struct deferred_string *) x)->label == (char *) y);
+}
+
+/* Delete the hash table entry dfsp.  */
+
+static void
+const_str_htab_del (dfsp)
+    void *dfsp;
+{
+  free (dfsp);
 }
 
 /* Compute a hash code for a constant expression.  */
@@ -3056,18 +3125,25 @@ copy_constant (exp)
    Otherwise, output such a constant in memory (or defer it for later)
    and generate an rtx for it.
 
+   If DEFER is non-zero, the output of string constants can be deferred
+   and output only if referenced in the function after all optimizations.
+
    The TREE_CST_RTL of EXP is set up to point to that rtx.
    The const_hash_table records which constants already have label strings.  */
 
 rtx
-output_constant_def (exp)
+output_constant_def (exp, defer)
      tree exp;
+     int defer;
 {
   register int hash;
   register struct constant_descriptor *desc;
+  struct deferred_string **defstr;
   char label[256];
   int reloc;
   int found = 1;
+  int after_function = 0;
+  int labelno = -1;
 
   if (TREE_CST_RTL (exp))
     return TREE_CST_RTL (exp);
@@ -3095,7 +3171,8 @@ output_constant_def (exp)
 	 future calls to this function to find.  */
 	  
       /* Create a string containing the label name, in LABEL.  */
-      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+      labelno = const_labelno++;
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
 
       desc = record_constant (exp);
       desc->next = const_hash_table[hash];
@@ -3121,18 +3198,34 @@ output_constant_def (exp)
   ENCODE_SECTION_INFO (exp);
 #endif
 
+#ifdef CONSTANT_AFTER_FUNCTION_P
+  if (current_function_decl != 0
+      && CONSTANT_AFTER_FUNCTION_P (exp))
+    after_function = 1;
+#endif
+
+  if (found
+      && STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0))
+      && (!defer || defer_addressed_constants_flag || after_function))
+    {
+      defstr = (struct deferred_string **)
+	htab_find_slot_with_hash (const_str_htab, desc->label,
+				  STRHASH (desc->label), NO_INSERT);
+      if (defstr)
+	{
+	  /* If the string is currently deferred but we need to output it now,
+	     remove it from deferred string hash table.  */
+	  found = 0;
+	  labelno = (*defstr)->labelno;
+	  STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 0;
+	  htab_clear_slot (const_str_htab, (void **) defstr);
+	}
+    }
+
   /* If this is the first time we've seen this particular constant,
      output it (or defer its output for later).  */
   if (! found)
     {
-      int after_function = 0;
-
-#ifdef CONSTANT_AFTER_FUNCTION_P
-      if (current_function_decl != 0
-	  && CONSTANT_AFTER_FUNCTION_P (exp))
-	after_function = 1;
-#endif
-
       if (defer_addressed_constants_flag || after_function)
 	{
 	  struct deferred_constant *p;
@@ -3140,7 +3233,7 @@ output_constant_def (exp)
 
 	  p->exp = copy_constant (exp);
 	  p->reloc = reloc;
-	  p->labelno = const_labelno++;
+	  p->labelno = labelno;
 	  if (after_function)
 	    {
 	      p->next = after_function_constants;
@@ -3156,8 +3249,30 @@ output_constant_def (exp)
 	{
 	  /* Do no output if -fsyntax-only.  */
 	  if (! flag_syntax_only)
-	    output_constant_def_contents (exp, reloc, const_labelno);
-	  ++const_labelno;
+	    {
+	      if (TREE_CODE (exp) != STRING_CST
+		  || !defer
+		  || flag_writable_strings
+		  || (defstr = (struct deferred_string **)
+			       htab_find_slot_with_hash (const_str_htab,
+							 desc->label,
+							 STRHASH (desc->label),
+							 INSERT)) == NULL)
+		output_constant_def_contents (exp, reloc, labelno);
+	      else
+		{
+		  struct deferred_string *p;
+
+		  p = (struct deferred_string *)
+		      xmalloc (sizeof (struct deferred_string));
+
+		  p->exp = copy_constant (exp);
+		  p->label = desc->label;
+		  p->labelno = labelno;
+		  *defstr = p;
+		  STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 1;
+		}
+	    }
 	}
     }
 
@@ -3806,7 +3921,7 @@ mark_constant_pool ()
   register rtx insn;
   struct pool_constant *pool;
 
-  if (first_pool == 0)
+  if (first_pool == 0 && htab_elements (const_str_htab) == 0)
     return;
 
   for (pool = first_pool; pool; pool = pool->next)
@@ -3867,6 +3982,22 @@ mark_constants (x)
     {
       if (CONSTANT_POOL_ADDRESS_P (x))
 	find_pool_constant (cfun, x)->mark = 1;
+      else if (STRING_POOL_ADDRESS_P (x))
+	{
+	  struct deferred_string **defstr;
+
+	  defstr = (struct deferred_string **)
+		   htab_find_slot_with_hash (const_str_htab, XSTR (x, 0),
+					     STRHASH (XSTR (x, 0)), NO_INSERT);
+	  if (defstr)
+	    {
+	      struct deferred_string *p = *defstr;
+
+	      STRING_POOL_ADDRESS_P (x) = 0;
+	      output_constant_def_contents (p->exp, 0, p->labelno);
+	      htab_clear_slot (const_str_htab, (void **) defstr);
+	    }
+	}
       return;
     }
   /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
@@ -3943,7 +4074,7 @@ output_addressed_constants (exp)
 	    || TREE_CODE (constant) == CONSTRUCTOR)
 	  /* No need to do anything here
 	     for addresses of variables or functions.  */
-	  output_constant_def (constant);
+	  output_constant_def (constant, 0);
       }
       reloc = 1;
       break;
@@ -4757,8 +4888,12 @@ make_decl_one_only (decl)
 void
 init_varasm_once ()
 {
+  const_str_htab = htab_create (128, const_str_htab_hash, const_str_htab_eq,
+  				const_str_htab_del);
   ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof const_hash_table[0],
 		mark_const_hash_entry);
+  ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
+		mark_const_str_htab);
   ggc_add_string_root (&in_named_name, 1);
 }
 

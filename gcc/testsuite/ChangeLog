@@ -1,3 +1,8 @@
+2000-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20000801-4.c: Make sure the second string is
+	output.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/wtr-label-1.c, gcc.dg/990214-1.c: Add semicolons after

@@ -6143,7 +6143,7 @@ expand_expr (exp, target, tmode, modifier)
     case COMPLEX_CST:
     case STRING_CST:
       if (! TREE_CST_RTL (exp))
-	output_constant_def (exp);
+	output_constant_def (exp, 1);
 
       /* TREE_CST_RTL probably contains a constant address.
 	 On RISC machines where a constant address isn't valid,
@@ -6456,7 +6456,7 @@ expand_expr (exp, target, tmode, modifier)
 			&& ! mostly_zeros_p (exp))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
-	  rtx constructor = output_constant_def (exp);
+	  rtx constructor = output_constant_def (exp, 1);
 
 	  if (modifier != EXPAND_CONST_ADDRESS
 	      && modifier != EXPAND_INITIALIZER

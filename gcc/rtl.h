@@ -168,7 +168,9 @@ typedef struct rtx_def
      either changing how we compute the frame address or saving and
      restoring registers in the prologue and epilogue.
      1 in a MEM if the MEM refers to a scalar, rather than a member of
-     an aggregate.  */
+     an aggregate.
+     1 in a SYMBOL_REF if it addresses something in the per-function
+     constant string pool.  */
   unsigned frame_related : 1;
 
   /* The first element of the operands of this rtx.
@@ -904,6 +906,9 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 /* 1 in a SYMBOL_REF if it addresses this function's constants pool.  */
 #define CONSTANT_POOL_ADDRESS_P(RTX) ((RTX)->unchanging)
 
+/* 1 in a SYMBOL_REF if it addresses this function's string constant pool.  */
+#define STRING_POOL_ADDRESS_P(RTX) ((RTX)->frame_related)
+
 /* Flag in a SYMBOL_REF for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX) ((RTX)->volatil)
 
@@ -1587,7 +1592,7 @@ extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
 extern rtx *find_single_use		PARAMS ((rtx, rtx, rtx *));
 
-extern rtx output_constant_def		PARAMS ((union tree_node *));
+extern rtx output_constant_def		PARAMS ((union tree_node *, int));
 extern rtx immed_real_const		PARAMS ((union tree_node *));
 extern union tree_node *make_tree	PARAMS ((union tree_node *, rtx));
 

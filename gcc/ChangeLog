@@ -1,3 +1,22 @@
+2000-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (struct deferred_string): New structure.
+	(const_str_htab): New variable.
+	(STRHASH): New macro.
+	(mark_const_str_htab_1, mark_const_str_htab, const_str_htab_hash,
+	constr_str_htab_eq, const_str_htab_del): New functions.
+	(output_constant_def): Add DEFER argument, defer string
+	constants until mark_constant_pool time if requested.
+	(mark_constant_pool): Walk the insn chain even if const_str_htab is
+	not empty.
+	(mark_constants): If a SYMBOL_REF for deferred string is found,
+	output it and remove from hash table.
+	(output_addressed_constants): Set DEFER to 0 in call to
+	output_constant_def.
+	* rtl.h (STRING_POOL_ADDRESS_P): Define.
+	(output_constant_def): Adjust prototype.
+	* expr.c (expand_expr): Set DEFER to 1 in call to output_constant_def.
+
 2000-11-14  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* optabs.c (expand_complex_ab):: Use overflow-trapping optabs for
