@@ -3384,11 +3384,6 @@ sched_analyze_1 (deps, x, insn)
 		}
 	      else
 		SET_REGNO_REG_SET (reg_pending_clobbers, r);
-
-	      /* Function calls clobber all call_used regs.  */
-	      if (global_regs[r] || (code == SET && call_used_regs[r]))
-		for (u = deps->last_function_call; u; u = XEXP (u, 1))
-		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }
 	}
       else
@@ -3540,11 +3535,6 @@ sched_analyze_2 (deps, x, insn)
 		/* ??? This should never happen.  */
 		for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
-
-		if (call_used_regs[r] || global_regs[r])
-		  /* Function calls clobber all call_used regs.  */
-		  for (u = deps->last_function_call; u; u = XEXP (u, 1))
-		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	      }
 	  }
 	else
@@ -3987,9 +3977,11 @@ sched_analyze (deps, head, tail)
 		  {
 		    for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+ 		    free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
 		    for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
-		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		      add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
+ 		    free_INSN_LIST_list (&deps->reg_last_sets[i]);
 
 		    SET_REGNO_REG_SET (reg_pending_clobbers, i);
 		  }
