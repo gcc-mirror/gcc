@@ -102,14 +102,11 @@ static void
 make_reorder_chain ()
 {
   basic_block prev = NULL;
-  int nbb_m1 = n_basic_blocks - 1;
-  basic_block next;
+  basic_block next, bb;
 
   /* Loop until we've placed every block.  */
   do
     {
-      int i;
-
       next = NULL;
 
       /* Find the next unplaced block.  */
@@ -119,12 +116,13 @@ make_reorder_chain ()
 	 remove from the list as we place.  The head of that list is
 	 what we're looking for here.  */
 
-      for (i = 0; i <= nbb_m1 && !next; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK (i);
-	  if (! RBI (bb)->visited)
+      FOR_EACH_BB (bb)
+	if (! RBI (bb)->visited)
+	  {
 	    next = bb;
-	}
+	    break;
+	  }
+      
       if (next)
         prev = make_reorder_chain_1 (next, prev);
     }
@@ -164,7 +162,7 @@ make_reorder_chain_1 (bb, prev)
     }
   else
     {
-      if (bb->index != 0)
+      if (bb->prev_bb != ENTRY_BLOCK_PTR)
 	abort ();
     }
   RBI (bb)->visited = 1;

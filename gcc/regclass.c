@@ -1127,10 +1127,10 @@ scan_one_insn (insn, pass)
 	 INSN could not be at the beginning of that block.  */
       if (previnsn == 0 || GET_CODE (previnsn) == JUMP_INSN)
 	{
-	  int b;
-	  for (b = 0; b < n_basic_blocks; b++)
-	    if (insn == BLOCK_HEAD (b))
-	      BLOCK_HEAD (b) = newinsn;
+	  basic_block b;
+	  FOR_EACH_BB (b)
+	    if (insn == b->head)
+	      b->head = newinsn;
 	}
 
       /* This makes one more setting of new insns's dest.  */
@@ -1255,7 +1255,7 @@ regclass (f, nregs, dump)
 
   for (pass = 0; pass <= flag_expensive_optimizations; pass++)
     {
-      int index;
+      basic_block bb;
 
       if (dump)
 	fprintf (dump, "\n\nPass %i\n\n",pass);
@@ -1277,10 +1277,8 @@ regclass (f, nregs, dump)
 	    insn = scan_one_insn (insn, pass);
 	}
       else
-	for (index = 0; index < n_basic_blocks; index++)
+	FOR_EACH_BB (bb)
 	  {
-	    basic_block bb = BASIC_BLOCK (index);
-
 	    /* Show that an insn inside a loop is likely to be executed three
 	       times more than insns outside a loop.  This is much more
 	       aggressive than the assumptions made elsewhere and is being

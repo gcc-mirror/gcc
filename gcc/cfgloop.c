@@ -50,16 +50,17 @@ flow_loops_cfg_dump (loops, file)
      FILE *file;
 {
   int i;
+  basic_block bb;
 
   if (! loops->num || ! file || ! loops->cfg.dom)
     return;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
       edge succ;
 
-      fprintf (file, ";; %d succs { ", i);
-      for (succ = BASIC_BLOCK (i)->succ; succ; succ = succ->succ_next)
+      fprintf (file, ";; %d succs { ", bb->index);
+      for (succ = bb->succ; succ; succ = succ->succ_next)
 	fprintf (file, "%d ", succ->dest->index);
       flow_nodes_print ("} dom", loops->cfg.dom[i], file);
     }
@@ -643,6 +644,7 @@ flow_loops_find (loops, flags)
   sbitmap *dom;
   int *dfs_order;
   int *rc_order;
+  basic_block header;
 
   /* This function cannot be repeatedly called with different
      flags to build up the loop information.  The loop tree
@@ -667,11 +669,8 @@ flow_loops_find (loops, flags)
   /* Count the number of loop edges (back edges).  This should be the
      same as the number of natural loops.  */
   num_loops = 0;
-  for (b = 0; b < n_basic_blocks; b++)
+  FOR_EACH_BB (header)
     {
-      basic_block header;
-
-      header = BASIC_BLOCK (b);
       header->loop_depth = 0;
 
       for (e = header->pred; e; e = e->pred_next)
@@ -684,10 +683,7 @@ flow_loops_find (loops, flags)
 	     loop.  It also has single back edge to the header
 	     from a latch node.  Note that multiple natural loops
 	     may share the same header.  */
-	  if (b != header->index)
-	    abort ();
-
-	  if (latch != ENTRY_BLOCK_PTR && TEST_BIT (dom[latch->index], b))
+	  if (latch != ENTRY_BLOCK_PTR && TEST_BIT (dom[latch->index], header->index))
 	    num_loops++;
 	}
     }

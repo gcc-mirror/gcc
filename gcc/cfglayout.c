@@ -191,11 +191,10 @@ static void
 record_effective_endpoints ()
 {
   rtx next_insn = get_insns ();
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx end;
 
       if (PREV_INSN (bb->head) && next_insn != bb->head)
@@ -597,11 +596,10 @@ verify_insn_chain ()
 static void
 cleanup_unconditional_jumps ()
 {
-  int i;
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      basic_block bb = BASIC_BLOCK (i);
+  basic_block bb;
 
+  FOR_EACH_BB (bb)
+    {
       if (!bb->succ)
 	continue;
       if (bb->succ->flags & EDGE_FALLTHRU)
@@ -609,11 +607,10 @@ cleanup_unconditional_jumps ()
       if (!bb->succ->succ_next)
 	{
 	  rtx insn;
-	  if (GET_CODE (bb->head) != CODE_LABEL && forwarder_block_p (bb) && i)
+	  if (GET_CODE (bb->head) != CODE_LABEL && forwarder_block_p (bb)
+	      && bb->prev_bb != ENTRY_BLOCK_PTR)
 	    {
 	      basic_block prev = bb->prev_bb;
-
-	      i--;
 
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Removing forwarder BB %i\n",

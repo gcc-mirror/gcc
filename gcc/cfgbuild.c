@@ -284,7 +284,7 @@ make_edges (label_value_list, min, max, update_p)
      basic_block min, max;
      int update_p;
 {
-  int i;
+  basic_block bb;
   sbitmap *edge_cache = NULL;
 
   /* Assume no computed jump; revise as we create edges.  */
@@ -299,24 +299,24 @@ make_edges (label_value_list, min, max, update_p)
       sbitmap_vector_zero (edge_cache, n_basic_blocks);
 
       if (update_p)
-	for (i = min->index; i <= max->index; ++i)
+        FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
 	  {
 	    edge e;
 
-	    for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
+	    for (e = bb->succ; e ; e = e->succ_next)
 	      if (e->dest != EXIT_BLOCK_PTR)
-		SET_BIT (edge_cache[i], e->dest->index);
+		SET_BIT (edge_cache[bb->index], e->dest->index);
 	  }
     }
 
-  /* By nature of the way these get numbered, block 0 is always the entry.  */
+  /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
+     is always the entry.  */
   if (min == ENTRY_BLOCK_PTR->next_bb)
     cached_make_edge (edge_cache, ENTRY_BLOCK_PTR, min,
 		      EDGE_FALLTHRU);
 
-  for (i = min->index; i <= max->index; ++i)
+  FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx insn, x;
       enum rtx_code code;
       int force_fallthru = 0;
@@ -614,6 +614,8 @@ find_basic_blocks (f, nregs, file)
      FILE *file ATTRIBUTE_UNUSED;
 {
   int max_uid;
+  basic_block bb;
+
   timevar_push (TV_CFG);
 
   basic_block_for_insn = 0;
@@ -621,15 +623,13 @@ find_basic_blocks (f, nregs, file)
   /* Flush out existing data.  */
   if (basic_block_info != NULL)
     {
-      int i;
-
       clear_edges ();
 
       /* Clear bb->aux on all extant basic blocks.  We'll use this as a
 	 tag for reuse during create_basic_block, just in case some pass
 	 copies around basic block notes improperly.  */
-      for (i = 0; i < n_basic_blocks; ++i)
-	BASIC_BLOCK (i)->aux = NULL;
+      FOR_EACH_BB (bb)
+ 	bb->aux = NULL;
 
       VARRAY_FREE (basic_block_info);
     }
@@ -794,55 +794,53 @@ void
 find_many_sub_basic_blocks (blocks)
      sbitmap blocks;
 {
-  int i;
-  int min, max;
+  basic_block bb, min, max;
 
-  for (i = 0; i < n_basic_blocks; i++)
-    SET_STATE (BASIC_BLOCK (i),
-	       TEST_BIT (blocks, i) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
+  FOR_EACH_BB (bb)
+    SET_STATE (bb,
+	       TEST_BIT (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
-  for (i = 0; i < n_basic_blocks; i++)
-    if (STATE (BASIC_BLOCK (i)) == BLOCK_TO_SPLIT)
-      find_bb_boundaries (BASIC_BLOCK (i));
+  FOR_EACH_BB (bb)
+    if (STATE (bb) == BLOCK_TO_SPLIT)
+      find_bb_boundaries (bb);
 
-  for (i = 0; i < n_basic_blocks; i++)
-    if (STATE (BASIC_BLOCK (i)) != BLOCK_ORIGINAL)
+  FOR_EACH_BB (bb)
+    if (STATE (bb) != BLOCK_ORIGINAL)
       break;
 
-  min = max = i;
-  for (; i < n_basic_blocks; i++)
-    if (STATE (BASIC_BLOCK (i)) != BLOCK_ORIGINAL)
-      max = i;
+  min = max = bb;
+  for (; bb != EXIT_BLOCK_PTR; bb = bb->next_bb)
+    if (STATE (bb) != BLOCK_ORIGINAL)
+      max = bb;
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, BASIC_BLOCK (min), BASIC_BLOCK (max), 1);
+  make_edges (NULL, min, max, 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
-  for (i = min; i <= max; i++)
+  FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
     {
       edge e;
-      basic_block b = BASIC_BLOCK (i);
 
-      if (STATE (b) == BLOCK_ORIGINAL)
+      if (STATE (bb) == BLOCK_ORIGINAL)
 	continue;
-      if (STATE (b) == BLOCK_NEW)
+      if (STATE (bb) == BLOCK_NEW)
 	{
-	  b->count = 0;
-	  b->frequency = 0;
-	  for (e = b->pred; e; e=e->pred_next)
+	  bb->count = 0;
+	  bb->frequency = 0;
+	  for (e = bb->pred; e; e=e->pred_next)
 	    {
-	      b->count += e->count;
-	      b->frequency += EDGE_FREQUENCY (e);
+	      bb->count += e->count;
+	      bb->frequency += EDGE_FREQUENCY (e);
 	    }
 	}
 
-      compute_outgoing_frequencies (b);
+      compute_outgoing_frequencies (bb);
     }
 
-  for (i = 0; i < n_basic_blocks; i++)
-    SET_STATE (BASIC_BLOCK (i), 0);
+  FOR_EACH_BB (bb)
+    SET_STATE (bb, 0);
 }
 
 /* Like above but for single basic block only.  */
@@ -851,26 +849,24 @@ void
 find_sub_basic_blocks (bb)
      basic_block bb;
 {
-  int i;
-  int min, max;
+  basic_block min, max, b;
   basic_block next = bb->next_bb;
 
-  min = bb->index;
+  min = bb;
   find_bb_boundaries (bb);
-  max = next->prev_bb->index;
+  max = next->prev_bb;
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, BASIC_BLOCK (min), BASIC_BLOCK (max), 1);
+  make_edges (NULL, min, max, 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
-  for (i = min; i <= max; i++)
+  FOR_BB_BETWEEN (b, min, max->next_bb, next_bb)
     {
       edge e;
-      basic_block b = BASIC_BLOCK (i);
 
-      if (i != min)
+      if (b != min)
 	{
 	  b->count = 0;
 	  b->frequency = 0;

@@ -409,6 +409,7 @@ estimate_probability (loops_info)
      struct loops *loops_info;
 {
   sbitmap *dominators, *post_dominators;
+  basic_block bb;
   int i;
 
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
@@ -420,15 +421,14 @@ estimate_probability (loops_info)
      natural loop.  */
   for (i = 0; i < loops_info->num; i++)
     {
-      int j;
       int exits;
       struct loop *loop = &loops_info->array[i];
 
       flow_loop_scan (loops_info, loop, LOOP_EXIT_EDGES);
       exits = loop->num_exits;
 
-      for (j = loop->first->index; j <= loop->last->index; ++j)
-	if (TEST_BIT (loop->nodes, j))
+      FOR_BB_BETWEEN (bb, loop->first, loop->last->next_bb, next_bb)
+	if (TEST_BIT (loop->nodes, bb->index))
 	  {
 	    int header_found = 0;
 	    edge e;
@@ -437,12 +437,12 @@ estimate_probability (loops_info)
 	     statements construct loops via "non-loop" constructs
 	     in the source language and are better to be handled
 	     separately.  */
-	  if (predicted_by_p (BASIC_BLOCK (j), PRED_CONTINUE))
+	  if (predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
 	    /* Loop branch heuristics - predict an edge back to a
 	       loop's head as taken.  */
-	    for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
+	    for (e = bb->succ; e; e = e->succ_next)
 	      if (e->dest == loop->header
 		  && e->src == loop->latch)
 		{
@@ -453,7 +453,7 @@ estimate_probability (loops_info)
 	    /* Loop exit heuristics - predict an edge exiting the loop if the
 	       conditinal has no loop header successors as not taken.  */
 	    if (!header_found)
-	      for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
+	      for (e = bb->succ; e; e = e->succ_next)
 		if (e->dest->index < 0
 		    || !TEST_BIT (loop->nodes, e->dest->index))
 		  predict_edge
@@ -465,9 +465,8 @@ estimate_probability (loops_info)
     }
 
   /* Attempt to predict conditional jumps using a number of heuristics.  */
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx last_insn = bb->end;
       rtx cond, earliest;
       edge e;
@@ -604,11 +603,11 @@ estimate_probability (loops_info)
     }
 
   /* Attach the combined probability to each conditional jump.  */
-  for (i = 0; i < n_basic_blocks; i++)
-    if (GET_CODE (BLOCK_END (i)) == JUMP_INSN
-	&& any_condjump_p (BLOCK_END (i))
-	&& BASIC_BLOCK (i)->succ->succ_next != NULL)
-      combine_predictions_for_insn (BLOCK_END (i), BASIC_BLOCK (i));
+  FOR_EACH_BB (bb)
+    if (GET_CODE (bb->end) == JUMP_INSN
+	&& any_condjump_p (bb->end)
+	&& bb->succ->succ_next != NULL)
+      combine_predictions_for_insn (bb->end, bb);
 
   sbitmap_vector_free (post_dominators);
   sbitmap_vector_free (dominators);
@@ -834,7 +833,7 @@ process_note_predictions (bb, heads, dominators, post_dominators)
 void
 note_prediction_to_br_prob ()
 {
-  int i;
+  basic_block bb;
   sbitmap *post_dominators;
   int *dominators, *heads;
 
@@ -854,11 +853,8 @@ note_prediction_to_br_prob ()
 
   /* Process all prediction notes.  */
 
-  for (i = 0; i < n_basic_blocks; ++i)
-    {
-      basic_block bb = BASIC_BLOCK (i);
-      process_note_predictions (bb, heads, dominators, post_dominators);
-    }
+  FOR_EACH_BB (bb)
+    process_note_predictions (bb, heads, dominators, post_dominators);
 
   sbitmap_vector_free (post_dominators);
   free (dominators);
@@ -906,17 +902,15 @@ static void
 propagate_freq (head)
      basic_block head;
 {
-  basic_block bb = head;
-  basic_block last = bb;
+  basic_block bb;
+  basic_block last;
   edge e;
   basic_block nextbb;
-  int n;
 
   /* For each basic block we need to visit count number of his predecessors
      we need to visit first.  */
-  for (n = 0; n < n_basic_blocks; n++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (n);
       if (BLOCK_INFO (bb)->tovisit)
 	{
 	  int count = 0;
@@ -934,7 +928,8 @@ propagate_freq (head)
     }
 
   memcpy (&BLOCK_INFO (head)->frequency, &real_one, sizeof (real_one));
-  for (; bb; bb = nextbb)
+  last = head;
+  for (bb = head; bb; bb = nextbb)
     {
       REAL_VALUE_TYPE cyclic_probability, frequency;
 
@@ -1077,24 +1072,13 @@ static void
 counts_to_freqs ()
 {
   HOST_WIDEST_INT count_max = 1;
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
-    count_max = MAX (BASIC_BLOCK (i)->count, count_max);
+  FOR_EACH_BB (bb)
+    count_max = MAX (bb->count, count_max);
 
-  for (i = -2; i < n_basic_blocks; i++)
-    {
-      basic_block bb;
-
-      if (i == -2)
-	bb = ENTRY_BLOCK_PTR;
-      else if (i == -1)
-	bb = EXIT_BLOCK_PTR;
-      else
-	bb = BASIC_BLOCK (i);
-
-      bb->frequency = (bb->count * BB_FREQ_MAX + count_max / 2) / count_max;
-    }
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    bb->frequency = (bb->count * BB_FREQ_MAX + count_max / 2) / count_max;
 }
 
 /* Return true if function is likely to be expensive, so there is no point to
@@ -1107,7 +1091,7 @@ expensive_function_p (threshold)
 	int threshold;
 {
   unsigned int sum = 0;
-  int i;
+  basic_block bb;
   unsigned int limit;
 
   /* We can not compute accurately for large thresholds due to scaled
@@ -1123,9 +1107,8 @@ expensive_function_p (threshold)
 
   /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
   limit = ENTRY_BLOCK_PTR->frequency * threshold;
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx insn;
 
       for (insn = bb->head; insn != NEXT_INSN (bb->end);
@@ -1147,7 +1130,7 @@ static void
 estimate_bb_frequencies (loops)
      struct loops *loops;
 {
-  int i;
+  basic_block bb;
   REAL_VALUE_TYPE freq_max;
   enum machine_mode double_mode = TYPE_MODE (double_type_node);
 
@@ -1169,13 +1152,13 @@ estimate_bb_frequencies (loops)
       mark_dfs_back_edges ();
       /* Fill in the probability values in flowgraph based on the REG_BR_PROB
          notes.  */
-      for (i = 0; i < n_basic_blocks; i++)
+      FOR_EACH_BB (bb)
 	{
-	  rtx last_insn = BLOCK_END (i);
+	  rtx last_insn = bb->end;
 
 	  if (GET_CODE (last_insn) != JUMP_INSN || !any_condjump_p (last_insn)
 	      /* Avoid handling of conditional jumps jumping to fallthru edge.  */
-	      || BASIC_BLOCK (i)->succ->succ_next == NULL)
+	      || bb->succ->succ_next == NULL)
 	    {
 	      /* We can predict only conditional jumps at the moment.
 	         Expect each edge to be equally probable.
@@ -1183,14 +1166,14 @@ estimate_bb_frequencies (loops)
 	      int nedges = 0;
 	      edge e;
 
-	      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+	      for (e = bb->succ; e; e = e->succ_next)
 		{
 		  nedges++;
 		  if (e->probability != 0)
 		    break;
 		}
 	      if (!e)
-		for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+		for (e = bb->succ; e; e = e->succ_next)
 		  e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
 	    }
 	}
@@ -1200,22 +1183,13 @@ estimate_bb_frequencies (loops)
       /* Set up block info for each basic block.  */
       alloc_aux_for_blocks (sizeof (struct block_info_def));
       alloc_aux_for_edges (sizeof (struct edge_info_def));
-      for (i = -2; i < n_basic_blocks; i++)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
 	{
 	  edge e;
-	  basic_block bb;
-
-	  if (i == -2)
-	    bb = ENTRY_BLOCK_PTR;
-	  else if (i == -1)
-	    bb = EXIT_BLOCK_PTR;
-	  else
-	    bb = BASIC_BLOCK (i);
 
 	  BLOCK_INFO (bb)->tovisit = 0;
 	  for (e = bb->succ; e; e = e->succ_next)
 	    {
-
 	      REAL_VALUE_FROM_INT (EDGE_INFO (e)->back_edge_prob,
 				   e->probability, 0, double_mode);
 	      REAL_ARITHMETIC (EDGE_INFO (e)->back_edge_prob,
@@ -1229,31 +1203,23 @@ estimate_bb_frequencies (loops)
       estimate_loops_at_level (loops->tree_root);
 
       /* Now fake loop around whole function to finalize probabilities.  */
-      for (i = 0; i < n_basic_blocks; i++)
-	BLOCK_INFO (BASIC_BLOCK (i))->tovisit = 1;
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+	BLOCK_INFO (bb)->tovisit = 1;
 
       BLOCK_INFO (ENTRY_BLOCK_PTR)->tovisit = 1;
       BLOCK_INFO (EXIT_BLOCK_PTR)->tovisit = 1;
       propagate_freq (ENTRY_BLOCK_PTR);
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
-      for (i = 0; i < n_basic_blocks; i++)
+      FOR_EACH_BB (bb)
 	if (REAL_VALUES_LESS
-	    (freq_max, BLOCK_INFO (BASIC_BLOCK (i))->frequency))
-	  memcpy (&freq_max, &BLOCK_INFO (BASIC_BLOCK (i))->frequency,
+	    (freq_max, BLOCK_INFO (bb)->frequency))
+	  memcpy (&freq_max, &BLOCK_INFO (bb)->frequency,
 		  sizeof (freq_max));
 
-      for (i = -2; i < n_basic_blocks; i++)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
 	{
-	  basic_block bb;
 	  REAL_VALUE_TYPE tmp;
-
-	  if (i == -2)
-	    bb = ENTRY_BLOCK_PTR;
-	  else if (i == -1)
-	    bb = EXIT_BLOCK_PTR;
-	  else
-	    bb = BASIC_BLOCK (i);
 
 	  REAL_ARITHMETIC (tmp, MULT_EXPR, BLOCK_INFO (bb)->frequency,
 			   real_bb_freq_max);
@@ -1274,14 +1240,14 @@ estimate_bb_frequencies (loops)
 static void
 compute_function_frequency ()
 {
-  int i;
+  basic_block bb;
+
   if (!profile_info.count_profiles_merged
       || !flag_branch_probabilities)
     return;
   cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       if (maybe_hot_bb_p (bb))
 	{
 	  cfun->function_frequency = FUNCTION_FREQUENCY_HOT;

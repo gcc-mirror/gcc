@@ -636,7 +636,8 @@ allocno_compare (v1p, v2p)
 static void
 global_conflicts ()
 {
-  int b, i;
+  int i;
+  basic_block b;
   rtx insn;
   int *block_start_allocnos;
 
@@ -645,7 +646,7 @@ global_conflicts ()
 
   block_start_allocnos = (int *) xmalloc (max_allocno * sizeof (int));
 
-  for (b = 0; b < n_basic_blocks; b++)
+  FOR_EACH_BB (b)
     {
       memset ((char *) allocnos_live, 0, allocno_row_words * sizeof (INT_TYPE));
 
@@ -664,7 +665,7 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	regset old = BASIC_BLOCK (b)->global_live_at_start;
+	regset old = b->global_live_at_start;
 	int ax = 0;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
@@ -713,7 +714,7 @@ global_conflicts ()
 	     that is reached by an abnormal edge.  */
 
 	  edge e;
-	  for (e = BASIC_BLOCK (b)->pred; e ; e = e->pred_next)
+	  for (e = b->pred; e ; e = e->pred_next)
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
 	  if (e != NULL)
@@ -723,7 +724,7 @@ global_conflicts ()
 #endif
       }
 
-      insn = BLOCK_HEAD (b);
+      insn = b->head;
 
       /* Scan the code of this basic block, noting which allocnos
 	 and hard regs are born or die.  When one is born,
@@ -823,7 +824,7 @@ global_conflicts ()
 		}
 	    }
 
-	  if (insn == BLOCK_END (b))
+	  if (insn == b->end)
 	    break;
 	  insn = NEXT_INSN (insn);
 	}
@@ -1708,11 +1709,11 @@ void
 mark_elimination (from, to)
      int from, to;
 {
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      regset r = BASIC_BLOCK (i)->global_live_at_start; 
+      regset r = bb->global_live_at_start; 
       if (REGNO_REG_SET_P (r, from))
 	{
 	  CLEAR_REGNO_REG_SET (r, from);

@@ -223,7 +223,7 @@ mark_flags_life_zones (flags)
 {
   int flags_regno;
   int flags_nregs;
-  int block;
+  basic_block block;
 
 #ifdef HAVE_cc0
   /* If we found a flags register on a cc0 host, bail.  */
@@ -254,13 +254,13 @@ mark_flags_life_zones (flags)
   flags_set_1_rtx = flags;
 
   /* Process each basic block.  */
-  for (block = n_basic_blocks - 1; block >= 0; block--)
+  FOR_EACH_BB_REVERSE (block)
     {
       rtx insn, end;
       int live;
 
-      insn = BLOCK_HEAD (block);
-      end = BLOCK_END (block);
+      insn = block->head;
+      end = block->end;
 
       /* Look out for the (unlikely) case of flags being live across
 	 basic block boundaries.  */
@@ -269,7 +269,7 @@ mark_flags_life_zones (flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-	  live |= REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start,
+	  live |= REGNO_REG_SET_P (block->global_live_at_start,
 				   flags_regno + i);
       }
 #endif
@@ -1061,6 +1061,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
   int pass;
   int i;
   rtx copy_src, copy_dst;
+  basic_block bb;
 
   /* ??? Hack.  Regmove doesn't examine the CFG, and gets mightily
      confused by non-call exceptions ending blocks.  */
@@ -1076,8 +1077,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
   regmove_bb_head = (int *) xmalloc (sizeof (int) * (old_max_uid + 1));
   for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
-  for (i = 0; i < n_basic_blocks; i++)
-    regmove_bb_head[INSN_UID (BLOCK_HEAD (i))] = i;
+  FOR_EACH_BB (bb)
+    regmove_bb_head[INSN_UID (bb->head)] = bb->index;
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
@@ -1504,9 +1505,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
   /* In fixup_match_1, some insns may have been inserted after basic block
      ends.  Fix that here.  */
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx end = bb->end;
       rtx new = end;
       rtx next = NEXT_INSN (new);
@@ -2139,10 +2139,10 @@ static int record_stack_memrefs	PARAMS ((rtx *, void *));
 void
 combine_stack_adjustments ()
 {
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; ++i)
-    combine_stack_adjustments_for_block (BASIC_BLOCK (i));
+  FOR_EACH_BB (bb)
+    combine_stack_adjustments_for_block (bb);
 }
 
 /* Recognize a MEM of the form (sp) or (plus sp const).  */

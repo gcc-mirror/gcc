@@ -106,7 +106,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
      sbitmap *antin;
      sbitmap *antout;
 {
-  int bb;
+  basic_block bb;
   edge e;
   basic_block *worklist, *qin, *qout, *qend;
   unsigned int qlen;
@@ -123,10 +123,10 @@ compute_antinout_edge (antloc, transp, antin, antout)
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
-  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+  FOR_EACH_BB_REVERSE (bb)
     {
-      *qin++ = BASIC_BLOCK (bb);
-      BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
+      *qin++ =bb;
+      bb->aux = bb;
     }
 
   qin = worklist;
@@ -142,32 +142,31 @@ compute_antinout_edge (antloc, transp, antin, antout)
   while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *qout++;
-      bb = b->index;
+      bb = *qout++;
       qlen--;
 
       if (qout >= qend)
         qout = worklist;
 
-      if (b->aux == EXIT_BLOCK_PTR)
+      if (bb->aux == EXIT_BLOCK_PTR)
 	/* Do not clear the aux field for blocks which are predecessors of
 	   the EXIT block.  That way we never add then to the worklist
 	   again.  */
-	sbitmap_zero (antout[bb]);
+	sbitmap_zero (antout[bb->index]);
       else
 	{
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
-	  b->aux = NULL;
-	  sbitmap_intersection_of_succs (antout[bb], antin, bb);
+	  bb->aux = NULL;
+	  sbitmap_intersection_of_succs (antout[bb->index], antin, bb->index);
 	}
 
-      if (sbitmap_a_or_b_and_c_cg (antin[bb], antloc[bb],
-				   transp[bb], antout[bb]))
+      if (sbitmap_a_or_b_and_c_cg (antin[bb->index], antloc[bb->index],
+				   transp[bb->index], antout[bb->index]))
 	/* If the in state of this block changed, then we need
 	   to add the predecessors of this block to the worklist
 	   if they are not already on the worklist.  */
-	for (e = b->pred; e; e = e->pred_next)
+	for (e = bb->pred; e; e = e->pred_next)
 	  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
 	    {
 	      *qin++ = e->src;
@@ -263,9 +262,9 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
      struct edge_list *edge_list;
      sbitmap *earliest, *antloc, *later, *laterin;
 {
-  int bb, num_edges, i;
+  int num_edges, i;
   edge e;
-  basic_block *worklist, *qin, *qout, *qend;
+  basic_block *worklist, *qin, *qout, *qend, bb;
   unsigned int qlen;
 
   num_edges = NUM_EDGES (edge_list);
@@ -301,11 +300,10 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  FOR_EACH_BB (bb)
     {
-      basic_block b = BASIC_BLOCK (bb);
-      *qin++ = b;
-      b->aux = b;
+      *qin++ = bb;
+      bb->aux = bb;
     }
   qin = worklist;
   /* Note that we do not use the last allocated element for our queue,
@@ -318,20 +316,19 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
   while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *qout++;
-      b->aux = NULL;
+      bb = *qout++;
+      bb->aux = NULL;
       qlen--;
       if (qout >= qend)
         qout = worklist;
 
       /* Compute the intersection of LATERIN for each incoming edge to B.  */
-      bb = b->index;
-      sbitmap_ones (laterin[bb]);
-      for (e = b->pred; e != NULL; e = e->pred_next)
-	sbitmap_a_and_b (laterin[bb], laterin[bb], later[(size_t)e->aux]);
+      sbitmap_ones (laterin[bb->index]);
+      for (e = bb->pred; e != NULL; e = e->pred_next)
+	sbitmap_a_and_b (laterin[bb->index], laterin[bb->index], later[(size_t)e->aux]);
 
       /* Calculate LATER for all outgoing edges.  */
-      for (e = b->succ; e != NULL; e = e->succ_next)
+      for (e = bb->succ; e != NULL; e = e->succ_next)
 	if (sbitmap_union_of_diff_cg (later[(size_t) e->aux],
 				      earliest[(size_t) e->aux],
 				      laterin[e->src->index],
@@ -370,9 +367,10 @@ compute_insert_delete (edge_list, antloc, later, laterin,
      sbitmap *antloc, *later, *laterin, *insert, *delete;
 {
   int x;
+  basic_block bb;
 
-  for (x = 0; x < n_basic_blocks; x++)
-    sbitmap_difference (delete[x], antloc[x], laterin[x]);
+  FOR_EACH_BB (bb)
+    sbitmap_difference (delete[bb->index], antloc[bb->index], laterin[bb->index]);
 
   for (x = 0; x < NUM_EDGES (edge_list); x++)
     {
@@ -496,9 +494,8 @@ void
 compute_available (avloc, kill, avout, avin)
      sbitmap *avloc, *kill, *avout, *avin;
 {
-  int bb;
   edge e;
-  basic_block *worklist, *qin, *qout, *qend;
+  basic_block *worklist, *qin, *qout, *qend, bb;
   unsigned int qlen;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
@@ -512,10 +509,10 @@ compute_available (avloc, kill, avout, avin)
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of AVOUT above.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  FOR_EACH_BB (bb)
     {
-      *qin++ = BASIC_BLOCK (bb);
-      BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
+      *qin++ = bb;
+      bb->aux = bb;
     }
 
   qin = worklist;
@@ -531,8 +528,7 @@ compute_available (avloc, kill, avout, avin)
   while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *qout++;
-      bb = b->index;
+      bb = *qout++;
       qlen--;
 
       if (qout >= qend)
@@ -541,23 +537,23 @@ compute_available (avloc, kill, avout, avin)
       /* If one of the predecessor blocks is the ENTRY block, then the
 	 intersection of avouts is the null set.  We can identify such blocks
 	 by the special value in the AUX field in the block structure.  */
-      if (b->aux == ENTRY_BLOCK_PTR)
+      if (bb->aux == ENTRY_BLOCK_PTR)
 	/* Do not clear the aux field for blocks which are successors of the
 	   ENTRY block.  That way we never add then to the worklist again.  */
-	sbitmap_zero (avin[bb]);
+	sbitmap_zero (avin[bb->index]);
       else
 	{
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
-	  b->aux = NULL;
-	  sbitmap_intersection_of_preds (avin[bb], avout, bb);
+	  bb->aux = NULL;
+	  sbitmap_intersection_of_preds (avin[bb->index], avout, bb->index);
 	}
 
-      if (sbitmap_union_of_diff_cg (avout[bb], avloc[bb], avin[bb], kill[bb]))
+      if (sbitmap_union_of_diff_cg (avout[bb->index], avloc[bb->index], avin[bb->index], kill[bb->index]))
 	/* If the out state of this block changed, then we need
 	   to add the successors of this block to the worklist
 	   if they are not already on the worklist.  */
-	for (e = b->succ; e; e = e->succ_next)
+	for (e = bb->succ; e; e = e->succ_next)
 	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
 	    {
 	      *qin++ = e->dest;
@@ -627,9 +623,9 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
      struct edge_list *edge_list;
      sbitmap *farthest, *st_avloc, *nearer, *nearerout;
 {
-  int bb, num_edges, i;
+  int num_edges, i;
   edge e;
-  basic_block *worklist, *tos;
+  basic_block *worklist, *tos, bb;
 
   num_edges = NUM_EDGES (edge_list);
 
@@ -656,29 +652,27 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
 
   /* Add all the blocks to the worklist.  This prevents an early exit
      from the loop given our optimistic initialization of NEARER.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  FOR_EACH_BB (bb)
     {
-      basic_block b = BASIC_BLOCK (bb);
-      *tos++ = b;
-      b->aux = b;
+      *tos++ = bb;
+      bb->aux = bb;
     }
 
   /* Iterate until the worklist is empty.  */
   while (tos != worklist)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *--tos;
-      b->aux = NULL;
+      bb = *--tos;
+      bb->aux = NULL;
 
       /* Compute the intersection of NEARER for each outgoing edge from B.  */
-      bb = b->index;
-      sbitmap_ones (nearerout[bb]);
-      for (e = b->succ; e != NULL; e = e->succ_next)
-	sbitmap_a_and_b (nearerout[bb], nearerout[bb],
+      sbitmap_ones (nearerout[bb->index]);
+      for (e = bb->succ; e != NULL; e = e->succ_next)
+	sbitmap_a_and_b (nearerout[bb->index], nearerout[bb->index],
 			 nearer[(size_t) e->aux]);
 
       /* Calculate NEARER for all incoming edges.  */
-      for (e = b->pred; e != NULL; e = e->pred_next)
+      for (e = bb->pred; e != NULL; e = e->pred_next)
 	if (sbitmap_union_of_diff_cg (nearer[(size_t) e->aux],
 				      farthest[(size_t) e->aux],
 				      nearerout[e->dest->index],
@@ -714,9 +708,10 @@ compute_rev_insert_delete (edge_list, st_avloc, nearer, nearerout,
      sbitmap *st_avloc, *nearer, *nearerout, *insert, *delete;
 {
   int x;
+  basic_block bb;
 
-  for (x = 0; x < n_basic_blocks; x++)
-    sbitmap_difference (delete[x], st_avloc[x], nearerout[x]);
+  FOR_EACH_BB (bb)
+    sbitmap_difference (delete[bb->index], st_avloc[bb->index], nearerout[bb->index]);
 
   for (x = 0; x < NUM_EDGES (edge_list); x++)
     {
@@ -1019,7 +1014,8 @@ optimize_mode_switching (file)
      FILE *file;
 {
   rtx insn;
-  int bb, e;
+  int e;
+  basic_block bb;
   int need_commit = 0;
   sbitmap *kill;
   struct edge_list *edge_list;
@@ -1087,16 +1083,16 @@ optimize_mode_switching (file)
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
 	 Also compute the initial transparency settings.  */
-      for (bb = 0 ; bb < n_basic_blocks; bb++)
+      FOR_EACH_BB (bb)
 	{
 	  struct seginfo *ptr;
 	  int last_mode = no_mode;
 	  HARD_REG_SET live_now;
 
 	  REG_SET_TO_HARD_REG_SET (live_now,
-				   BASIC_BLOCK (bb)->global_live_at_start);
-	  for (insn = BLOCK_HEAD (bb);
-	       insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
+				   bb->global_live_at_start);
+	  for (insn = bb->head;
+	       insn != NULL && insn != NEXT_INSN (bb->end);
 	       insn = NEXT_INSN (insn))
 	    {
 	      if (INSN_P (insn))
@@ -1107,9 +1103,9 @@ optimize_mode_switching (file)
 		  if (mode != no_mode && mode != last_mode)
 		    {
 		      last_mode = mode;
-		      ptr = new_seginfo (mode, insn, bb, live_now);
-		      add_seginfo (info + bb, ptr);
-		      RESET_BIT (transp[bb], j);
+		      ptr = new_seginfo (mode, insn, bb->index, live_now);
+		      add_seginfo (info + bb->index, ptr);
+		      RESET_BIT (transp[bb->index], j);
 		    }
 
 		  /* Update LIVE_NOW.  */
@@ -1124,12 +1120,12 @@ optimize_mode_switching (file)
 		}
 	    }
 
-	  info[bb].computing = last_mode;
+	  info[bb->index].computing = last_mode;
 	  /* Check for blocks without ANY mode requirements.  */
 	  if (last_mode == no_mode)
 	    {
-	      ptr = new_seginfo (no_mode, insn, bb, live_now);
-	      add_seginfo (info + bb, ptr);
+	      ptr = new_seginfo (no_mode, insn, bb->index, live_now);
+	      add_seginfo (info + bb->index, ptr);
 	    }
 	}
 #ifdef NORMAL_MODE
@@ -1142,13 +1138,13 @@ optimize_mode_switching (file)
 
 	    for (eg = ENTRY_BLOCK_PTR->succ; eg; eg = eg->succ_next)
 	      {
-		bb = eg->dest->index;
+		bb = eg->dest;
 
 	        /* By always making this nontransparent, we save
 		   an extra check in make_preds_opaque.  We also
 		   need this to avoid confusing pre_edge_lcm when
 		   antic is cleared but transp and comp are set.  */
-		RESET_BIT (transp[bb], j);
+		RESET_BIT (transp[bb->index], j);
 
 		/* If the block already has MODE, pretend it
 		   has none (because we don't need to set it),
@@ -1166,7 +1162,7 @@ optimize_mode_switching (file)
 		  }
 	      }
 
-	    bb = n_basic_blocks - 1;
+	    bb = EXIT_BLOCK_PTR;
 	    info[bb].seginfo->mode = mode;
 	  }
       }
@@ -1186,21 +1182,21 @@ optimize_mode_switching (file)
 	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
 	  struct bb_info *info = bb_info[j];
 
-	  for (bb = 0 ; bb < n_basic_blocks; bb++)
+	  FOR_EACH_BB (bb)
 	    {
-	      if (info[bb].seginfo->mode == m)
-		SET_BIT (antic[bb], j);
+	      if (info[bb->index].seginfo->mode == m)
+		SET_BIT (antic[bb->index], j);
 
-	      if (info[bb].computing == m)
-		SET_BIT (comp[bb], j);
+	      if (info[bb->index].computing == m)
+		SET_BIT (comp[bb->index], j);
 	    }
 	}
 
       /* Calculate the optimal locations for the
 	 placement mode switches to modes with priority I.  */
 
-      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
-	sbitmap_not (kill[bb], transp[bb]);
+      FOR_EACH_BB (bb)
+	sbitmap_not (kill[bb->index], transp[bb->index]);
       edge_list = pre_edge_lcm (file, 1, transp, comp, antic,
 				kill, &insert, &delete);
 
@@ -1279,12 +1275,12 @@ optimize_mode_switching (file)
 		}
 	    }
 
-	  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
-	    if (TEST_BIT (delete[bb], j))
+	  FOR_EACH_BB_REVERSE (bb)
+	    if (TEST_BIT (delete[bb->index], j))
 	      {
-		make_preds_opaque (BASIC_BLOCK (bb), j);
+		make_preds_opaque (bb, j);
 		/* Cancel the 'deleted' mode set.  */
-		bb_info[j][bb].seginfo->mode = no_mode;
+		bb_info[j][bb->index].seginfo->mode = no_mode;
 	      }
 	}
 
@@ -1349,10 +1345,10 @@ optimize_mode_switching (file)
 	}
 #endif
 
-      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+      FOR_EACH_BB_REVERSE (bb)
 	{
 	  struct seginfo *ptr, *next;
-	  for (ptr = bb_info[j][bb].seginfo; ptr; ptr = next)
+	  for (ptr = bb_info[j][bb->index].seginfo; ptr; ptr = next)
 	    {
 	      next = ptr->next;
 	      if (ptr->mode != no_mode)

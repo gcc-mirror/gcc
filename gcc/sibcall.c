@@ -610,7 +610,7 @@ optimize_sibling_and_tail_recursive_calls ()
 
       /* Walk forwards through the last normal block and see if it
 	 does nothing except fall into the exit block.  */
-      for (insn = BLOCK_HEAD (n_basic_blocks - 1);
+      for (insn = EXIT_BLOCK_PTR->prev_bb->head;
 	   insn;
 	   insn = NEXT_INSN (insn))
 	{

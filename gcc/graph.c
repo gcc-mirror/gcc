@@ -258,7 +258,6 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
     fprintf (fp, "(nil)\n");
   else
     {
-      int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
       int *start = (int *) xmalloc (max_uid * sizeof (int));
@@ -266,6 +265,7 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       enum bb_state *in_bb_p = (enum bb_state *)
 	xmalloc (max_uid * sizeof (enum bb_state));
       basic_block bb;
+      int i;
 
       for (i = 0; i < max_uid; ++i)
 	{
@@ -273,12 +273,11 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 	  in_bb_p[i] = NOT_IN_BB;
 	}
 
-      for (i = n_basic_blocks - 1; i >= 0; --i)
+      FOR_EACH_BB_REVERSE (bb)
 	{
 	  rtx x;
-	  bb = BASIC_BLOCK (i);
-	  start[INSN_UID (bb->head)] = i;
-	  end[INSN_UID (bb->end)] = i;
+	  start[INSN_UID (bb->head)] = bb->index;
+	  end[INSN_UID (bb->end)] = bb->index;
 	  for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[INSN_UID (x)]
