@@ -90,9 +90,8 @@ Boston, MA 02111-1307, USA.  */
    FIXME: Could eliminate the duplication here if we were allowed to
    use string concatenation.  */
 
-#undef LIB_SPEC
 #ifdef NETBSD_ENABLE_PTHREADS
-#define LIB_SPEC		\
+#define NETBSD_LIB_SPEC		\
   "%{pthread:			\
      %{!p:			\
        %{!pg:-lpthread}}	\
@@ -110,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
        %{p:-lc_p}		\
        %{pg:-lc_p}}}"
 #else
-#define LIB_SPEC		\
+#define NETBSD_LIB_SPEC		\
   "%{posix:			\
      %{!p:			\
        %{!pg:-lposix}}		\
@@ -124,22 +123,27 @@ Boston, MA 02111-1307, USA.  */
        %{pg:-lc_p}}}"
 #endif
 
+#undef LIB_SPEC
+#define LIB_SPEC NETBSD_LIB_SPEC
+
 /* Provide a LIBGCC_SPEC appropriate for NetBSD.  We also want to exclude
    libgcc with -symbolic.  */
 
-#undef LIBGCC_SPEC
 #ifdef NETBSD_NATIVE
-#define LIBGCC_SPEC		\
+#define NETBSD_LIBGCC_SPEC	\
   "%{!symbolic:			\
      %{!shared:			\
        %{!p:			\
-	 %{!pg: -lgcc}}}		\
+	 %{!pg: -lgcc}}}	\
      %{shared: -lgcc_pic}	\
      %{p: -lgcc_p}		\
      %{pg: -lgcc_p}}"
 #else
-#define LIBGCC_SPEC "%{!shared:%{!symbolic: -lgcc}}"
+#define NETBSD_LIBGCC_SPEC "%{!shared:%{!symbolic: -lgcc}}"
 #endif
+
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC NETBSD_LIBGCC_SPEC
 
 /* When building shared libraries, the initialization and finalization 
    functions for the library are .init and .fini respectively.  */

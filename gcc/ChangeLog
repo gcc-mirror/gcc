@@ -1,3 +1,11 @@
+2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd-elf.h (STARTFILE_SPEC): Rename to
+	NETBSD_STARTFILE_SPEC.
+	(STARTFILE_SPEC): Redefine in terms of NETBSD_STARTFILE_SPEC.
+	(ENDFILE_SPEC): Likewise.
+	* config/netbsd.h (LIB_SPEC, LIBGCC_SPEC): Likewise.
+
 2002-11-24  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (install-driver): Remove versioned link before
