@@ -1490,7 +1490,7 @@ output_delay_insn (delay_insn)
     }
 
 #ifdef REGISTER_CONSTRAINTS
-  if (! constrain_operands (insn_code_number), 1)
+  if (! constrain_operands (insn_code_number, 1))
     abort ();
 #endif
 
