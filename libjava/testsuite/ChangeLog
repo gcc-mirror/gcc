@@ -1,3 +1,7 @@
+2001-08-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.lang/KeepInline.out: Fixed content.
+
 2001-08-17  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.compile/XercesBug.java: New file.
