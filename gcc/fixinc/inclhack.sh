@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 104 fixup scripts.
+# This script contains 105 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -1895,7 +1895,29 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  59:  Rs6000_Double
+    # Fix  59:  Read_Ret_Type
+    #
+    case "${file}" in ./stdio.h )
+    if ( test -n "`egrep 'extern int	.*, fread\\(\\), fwrite\\(\\)' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      read_ret_type"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/^\(extern int	fclose(), fflush()\), \(fread(), fwrite()\)\(.*\)$/extern unsigned int	\2;\
+\1\3/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of selection 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix  60:  Rs6000_Double
     #
     case "${file}" in ./math.h )
     if ( test -n "`egrep '[^a-zA-Z_]class\\(' ${file}`"
@@ -1921,7 +1943,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  60:  Rs6000_Fchmod
+    # Fix  61:  Rs6000_Fchmod
     #
     case "${file}" in ./sys/stat.h )
     if ( test -n "`egrep 'fchmod\\(char' ${file}`"
@@ -1942,7 +1964,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  61:  Rs6000_Param
+    # Fix  62:  Rs6000_Param
     #
     case "${file}" in ./stdio.h | \
 	./unistd.h )
@@ -1961,7 +1983,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  62:  Sony_Include
+    # Fix  63:  Sony_Include
     #
     case "${file}" in ./machine/machparam.h )
     if ( test -n "`egrep '\"\\.\\./machine/endian.h\"' ${file}`"
@@ -1982,7 +2004,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  63:  Statsswtch
+    # Fix  64:  Statsswtch
     #
     case "${file}" in ./rpcsvc/rstat.h )
     if ( test -n "`egrep 'boottime$' ${file}`"
@@ -2003,7 +2025,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  64:  Stdio_Va_List
+    # Fix  65:  Stdio_Va_List
     #
     case "${file}" in ./stdio.h )
     fixlist="${fixlist}
@@ -2042,7 +2064,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  65:  Sun_Bogus_Ifdef
+    # Fix  66:  Sun_Bogus_Ifdef
     #
     case "${file}" in ./hsfs/hsfs_spec.h | \
 	./hsfs/iso_spec.h )
@@ -2064,7 +2086,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  66:  Sun_Bogus_Ifdef_Sun4c
+    # Fix  67:  Sun_Bogus_Ifdef_Sun4c
     #
     case "${file}" in ./hsfs/hsnode.h )
     if ( test -n "`egrep '#ifdef __i386__ || __sun4c__' ${file}`"
@@ -2085,7 +2107,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  67:  Sun_Catmacro
+    # Fix  68:  Sun_Catmacro
     #
     case "${file}" in ./pixrect/memvar.h )
     if ( test -n "`egrep '^#define[ 	]+CAT\\(a,b\\)' ${file}`"
@@ -2113,7 +2135,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  68:  Sun_Malloc
+    # Fix  69:  Sun_Malloc
     #
     case "${file}" in ./malloc.h )
     fixlist="${fixlist}
@@ -2134,7 +2156,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  69:  Sun_Memcpy
+    # Fix  70:  Sun_Memcpy
     #
     case "${file}" in ./memory.h )
     if ( test -n "`egrep '/\\*	@\\(#\\)(head/memory.h	50.1	 |memory\\.h 1\\.[2-4] 8./../.. SMI; from S5R2 1\\.2	)\\*/' ${file}`"
@@ -2176,7 +2198,7 @@ extern int memcmp();\
 
 
     #
-    # Fix  70:  Sun_Rusers_Semi
+    # Fix  71:  Sun_Rusers_Semi
     #
     case "${file}" in ./rpcsvc/rusers.h )
     if ( test -n "`egrep '_cnt$' ${file}`"
@@ -2197,7 +2219,7 @@ extern int memcmp();\
 
 
     #
-    # Fix  71:  Sun_Signal
+    # Fix  72:  Sun_Signal
     #
     case "${file}" in ./sys/signal.h | \
 	./signal.h )
@@ -2226,7 +2248,7 @@ void	(*signal(...))(...);\
 
 
     #
-    # Fix  72:  Sun_Auth_Proto
+    # Fix  73:  Sun_Auth_Proto
     #
     case "${file}" in ./rpc/auth.h | \
 	./rpc/clnt.h | \
@@ -2255,7 +2277,7 @@ void	(*signal(...))(...);\
 
 
     #
-    # Fix  73:  Sunos_Matherr_Decl
+    # Fix  74:  Sunos_Matherr_Decl
     #
     case "${file}" in ./math.h )
     fixlist="${fixlist}
@@ -2276,7 +2298,7 @@ struct exception;
 
 
     #
-    # Fix  74:  Sunos_Strlen
+    # Fix  75:  Sunos_Strlen
     #
     case "${file}" in ./strings.h )
     fixlist="${fixlist}
@@ -2294,7 +2316,7 @@ struct exception;
 
 
     #
-    # Fix  75:  Systypes
+    # Fix  76:  Systypes
     #
     case "${file}" in ./sys/types.h | \
 	./stdlib.h | \
@@ -2348,7 +2370,7 @@ typedef __SIZE_TYPE__ size_t;\
 
 
     #
-    # Fix  76:  Systypes_For_Aix
+    # Fix  77:  Systypes_For_Aix
     #
     case "${file}" in ./sys/types.h )
     if ( test -n "`egrep 'typedef[ 	][ 	]*[A-Za-z_][ 	A-Za-z_]*[ 	]size_t' ${file}`" -a \
@@ -2376,7 +2398,7 @@ typedef __SIZE_TYPE__ size_t;\
 
 
     #
-    # Fix  77:  Sysv68_String
+    # Fix  78:  Sysv68_String
     #
     case "${file}" in ./string.h )
     fixlist="${fixlist}
@@ -2404,7 +2426,7 @@ extern unsigned int\
 
 
     #
-    # Fix  78:  Sysz_Stdlib_For_Sun
+    # Fix  79:  Sysz_Stdlib_For_Sun
     #
     case "${file}" in ./stdlib.h )
     fixlist="${fixlist}
@@ -2434,7 +2456,7 @@ extern unsigned int\
 
 
     #
-    # Fix  79:  Sysz_Stdtypes_For_Sun
+    # Fix  80:  Sysz_Stdtypes_For_Sun
     #
     case "${file}" in ./sys/stdtypes.h )
     fixlist="${fixlist}
@@ -2472,7 +2494,7 @@ extern unsigned int\
 
 
     #
-    # Fix  80:  Tinfo_Cplusplus
+    # Fix  81:  Tinfo_Cplusplus
     #
     case "${file}" in ./tinfo.h )
     fixlist="${fixlist}
@@ -2490,7 +2512,7 @@ extern unsigned int\
 
 
     #
-    # Fix  81:  Ultrix_Ansi_Compat
+    # Fix  82:  Ultrix_Ansi_Compat
     #
     case "${file}" in ./ansi_compat.h )
     if ( test -n "`egrep 'ULTRIX' ${file}`"
@@ -2514,7 +2536,7 @@ extern unsigned int\
 
 
     #
-    # Fix  82:  Ultrix_Fix_Fixproto
+    # Fix  83:  Ultrix_Fix_Fixproto
     #
     case "${file}" in ./sys/utsname.h )
     if ( test -n "`egrep 'ULTRIX' ${file}`"
@@ -2537,7 +2559,7 @@ struct utsname;
 
 
     #
-    # Fix  83:  Ultrix_Atof_Param
+    # Fix  84:  Ultrix_Atof_Param
     #
     case "${file}" in ./math.h )
     fixlist="${fixlist}
@@ -2559,7 +2581,7 @@ struct utsname;
 
 
     #
-    # Fix  84:  Ultrix_Const
+    # Fix  85:  Ultrix_Const
     #
     case "${file}" in ./stdio.h )
     fixlist="${fixlist}
@@ -2585,7 +2607,7 @@ struct utsname;
 
 
     #
-    # Fix  85:  Ultrix_Ifdef
+    # Fix  86:  Ultrix_Ifdef
     #
     case "${file}" in ./sys/file.h )
     if ( test -n "`egrep '#ifdef KERNEL' ${file}`"
@@ -2606,7 +2628,7 @@ struct utsname;
 
 
     #
-    # Fix  86:  Ultrix_Nested_Cmnt
+    # Fix  87:  Ultrix_Nested_Cmnt
     #
     case "${file}" in ./rpc/svc.h )
     fixlist="${fixlist}
@@ -2624,7 +2646,7 @@ struct utsname;
 
 
     #
-    # Fix  87:  Ultrix_Static
+    # Fix  88:  Ultrix_Static
     #
     case "${file}" in ./machine/cpu.h )
     if ( test -n "`egrep '#include \"r[34]_cpu' ${file}`"
@@ -2647,7 +2669,7 @@ struct utsname;
 
 
     #
-    # Fix  88:  Undefine_Null
+    # Fix  89:  Undefine_Null
     #
     if ( test -n "`egrep '^#[ 	]*define[ 	]*[ 	]NULL[ 	]' ${file}`" -a \
               -z "`egrep '#[ 	]*(ifn|un)def[ 	]*[ 	]NULL($|[ 	])' ${file}`"
@@ -2668,7 +2690,7 @@ struct utsname;
 
 
     #
-    # Fix  89:  Va_I960_Macro
+    # Fix  90:  Va_I960_Macro
     #
     case "${file}" in ./arch/i960/archI960.h )
     if ( test -n "`egrep '__(vsiz|vali|vpad|alignof__)' ${file}`"
@@ -2692,7 +2714,7 @@ struct utsname;
 
 
     #
-    # Fix  90:  Void_Null
+    # Fix  91:  Void_Null
     #
     case "${file}" in ./curses.h | \
 	./dbm.h | \
@@ -2723,7 +2745,7 @@ struct utsname;
 
 
     #
-    # Fix  91:  Vxworks_Gcc_Problem
+    # Fix  92:  Vxworks_Gcc_Problem
     #
     case "${file}" in ./types/vxTypesBase.h )
     if ( test -n "`egrep '__GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__' ${file}`"
@@ -2765,7 +2787,7 @@ struct utsname;
 
 
     #
-    # Fix  92:  Vxworks_Needs_Vxtypes
+    # Fix  93:  Vxworks_Needs_Vxtypes
     #
     case "${file}" in ./time.h )
     if ( test -n "`egrep 'uint_t[ 	][ 	]*_clocks_per_sec' ${file}`"
@@ -2786,7 +2808,7 @@ struct utsname;
 
 
     #
-    # Fix  93:  Vxworks_Needs_Vxworks
+    # Fix  94:  Vxworks_Needs_Vxworks
     #
     case "${file}" in ./sys/stat.h )
     if ( test -n "`egrep '#[ 	]define[ 	][ 	]*__INCstath' ${file}`" -a \
@@ -2812,7 +2834,7 @@ struct utsname;
 
 
     #
-    # Fix  94:  Vxworks_Time
+    # Fix  95:  Vxworks_Time
     #
     case "${file}" in ./time.h )
     if ( test -n "`egrep 'VOIDFUNCPTR' ${file}`" -a \
@@ -2844,7 +2866,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix  95:  X11_Class
+    # Fix  96:  X11_Class
     #
     case "${file}" in ./X11/ShellP.h )
     if ( test -z "`egrep '__cplusplus' ${file}`"
@@ -2872,7 +2894,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix  96:  X11_Class_Usage
+    # Fix  97:  X11_Class_Usage
     #
     case "${file}" in ./Xm/BaseClassI.h )
     if ( test -z "`egrep '__cplusplus' ${file}`"
@@ -2893,7 +2915,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix  97:  X11_New
+    # Fix  98:  X11_New
     #
     case "${file}" in ./Xm/Traversal.h )
     if ( test -z "`egrep '__cplusplus' ${file}`"
@@ -2922,7 +2944,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix  98:  X11_Sprintf
+    # Fix  99:  X11_Sprintf
     #
     case "${file}" in ./X11*/Xmu.h )
     fixlist="${fixlist}
@@ -2942,7 +2964,7 @@ extern char *	sprintf();\
 
 
     #
-    # Fix  99:  Zzz_Ki_Iface
+    # Fix 100:  Zzz_Ki_Iface
     #
     case "${file}" in ./sys/ki_iface.h )
     if ( test -n "`egrep 'These definitions are for HP Internal developers' ${file}`"
@@ -2953,7 +2975,7 @@ extern char *	sprintf();\
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
@@ -2969,7 +2991,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
 
     #
-    # Fix 100:  Zzz_Ki
+    # Fix 101:  Zzz_Ki
     #
     case "${file}" in ./sys/ki.h )
     if ( test -n "`egrep '11.00 HP-UX LP64' ${file}`"
@@ -2980,7 +3002,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
@@ -2996,7 +3018,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
 
     #
-    # Fix 101:  Zzz_Ki_Calls
+    # Fix 102:  Zzz_Ki_Calls
     #
     case "${file}" in ./sys/ki_calls.h )
     if ( test -n "`egrep 'kthread_create_caller_t' ${file}`"
@@ -3007,7 +3029,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
@@ -3023,7 +3045,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
 
     #
-    # Fix 102:  Zzz_Ki_Defs
+    # Fix 103:  Zzz_Ki_Defs
     #
     case "${file}" in ./sys/ki_defs.h )
     if ( test -n "`egrep 'Kernel Instrumentation Definitions' ${file}`"
@@ -3034,7 +3056,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
@@ -3050,7 +3072,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
 
     #
-    # Fix 103:  Zzz_Bad_Fixes
+    # Fix 104:  Zzz_Bad_Fixes
     #
     case "${file}" in ./sundev/ipi_error.h )
     fixlist="${fixlist}
@@ -3059,7 +3081,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
@@ -3074,7 +3096,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
 
     #
-    # Fix 104:  Zzz_Time
+    # Fix 105:  Zzz_Time
     #
     case "${file}" in ./sys/time.h )
     if ( test -n "`egrep '11.0 and later representation of ki time' ${file}`"
@@ -3085,7 +3107,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
     then infile=${file}
     else infile=${DESTFILE} ; fi 
     ( echo "Removing incorrect fix to <$file>" >&2
-rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp
+rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp
 cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output

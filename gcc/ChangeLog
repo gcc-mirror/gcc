@@ -1,3 +1,10 @@
+1999-06-23  Bruce Korb  <ddsinc09@ix.netcom.com>
+
+	*fixinc/inclhack.def:  Add fix development commentary
+	(read_ret_type): reactivate and add selection clause
+	(zzz_*): tweak output file name to match what is used in hackshell.tpl
+	*fixinc/{fixincl.x|inclhack.sh}: regen
+
 Wed Jun 23 00:48:21 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (expand_expr): STRIP_NOPS before checking against
