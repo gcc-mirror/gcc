@@ -1,3 +1,8 @@
+2001-10-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config.gcc (mips*-*-gnu*): Delete support.
+	* config/mips/gnu.h: Remove.
+
 2001-10-10  Kazu Hirata  <kazu@hxi.com>
 
 	* calls.c: Fix formatting.
