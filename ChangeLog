@@ -1,3 +1,7 @@
+2001-11-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* Makefile.in (MAKEINFO): Use "missing" for makeinfo older than 4.0.
+
 2001-11-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config.sub: Import from master sources, rev 1.226.
