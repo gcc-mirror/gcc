@@ -4174,7 +4174,6 @@ extern tree build_min				(enum tree_code, tree,
 extern tree build_min_nt			(enum tree_code, ...);
 extern tree build_cplus_new			(tree, tree);
 extern tree get_target_expr			(tree);
-extern tree break_out_calls			(tree);
 extern tree build_cplus_method_type		(tree, tree, tree);
 extern tree build_cplus_staticfn_type		(tree, tree, tree);
 extern tree build_cplus_array_type		(tree, tree);

@@ -1,3 +1,9 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10032
+	* doc/invoke.texi (C++ Dialect Options): Change documentation of
+	-fpermissive.
+
 2003-07-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* tm.texi (RETURN_ADDR_OFFSET): Document.

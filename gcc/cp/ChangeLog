@@ -1,3 +1,17 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10032
+	* decl.c (cxx_init_decl_processing): With -pedantic, pedwarns are
+	still errors.
+
+	PR c++/10527
+	* error.c (decl_to_string): Do not print default argument
+	expressions.
+
+	* cp-tree.h (break_out_calls): Remove declaration.
+	* tree.c (break_out_calls): Remove.
+	* typeck.c (build_modify_expr): Avoid invalid sharing of trees.
+	
 2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++ 9483
