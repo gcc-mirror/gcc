@@ -46,11 +46,12 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.MappedByteBuffer;
 import java.io.IOException;
+import gnu.gcj.RawData;
 
 final public class MappedByteFileBuffer
   extends MappedByteBuffer
 {
-  public long address;
+  RawData map_address;
   boolean readOnly;
   boolean direct;
   public FileChannelImpl ch;
@@ -60,13 +61,17 @@ final public class MappedByteFileBuffer
     super ((int) ch.size (), (int) ch.size (), 0, -1);
     
     this.ch = ch;
-    address = ch.address;
-    try {
-      long si = ch.size() / 1;
-      limit((int)si);
-    } catch (IOException e) {
-      System.err.println("failed to get size of file-channel's file");
-    }
+    map_address = ch.map_address;
+    
+    try
+      {
+        long si = ch.size () / 1;
+        limit ((int) si);
+      }
+    catch (IOException e)
+      {
+        System.err.println ("failed to get size of file-channel's file");
+      }
   }
   
   public MappedByteFileBuffer (MappedByteFileBuffer b)
@@ -76,7 +81,7 @@ final public class MappedByteFileBuffer
     
     this.readOnly = b.isReadOnly ();
     this.ch = b.ch;
-    address = b.address;
+    map_address = b.map_address;
     limit (b.limit ());
   }
 
@@ -87,57 +92,59 @@ final public class MappedByteFileBuffer
   
   public static native byte nio_read_Byte_file_channel (FileChannelImpl ch,
                                                         int index, int limit,
-                                                        long address);
+                                                        RawData map_address);
   public static native void nio_write_Byte_file_channel (FileChannelImpl ch,
                                                          int index, int limit,
                                                          byte value,
-                                                         long address);
+                                                         RawData map_address);
   public static native short nio_read_Short_file_channel (FileChannelImpl ch,
                                                           int index, int limit,
-                                                          long address);
+                                                          RawData map_address);
   public static native void nio_write_Short_file_channel (FileChannelImpl ch,
                                                           int index, int limit,
                                                           short value,
-                                                          long address);
+                                                          RawData map_address);
   public static native char nio_read_Char_file_channel (FileChannelImpl ch,
                                                         int index, int limit,
-                                                        long address);
+                                                        RawData map_address);
   public static native void nio_write_Char_file_channel (FileChannelImpl ch,
                                                          int index, int limit,
                                                          char value,
-                                                         long address);
+                                                         RawData map_address);
   public static native int nio_read_Int_file_channel (FileChannelImpl ch,
                                                       int index, int limit,
-                                                      long address);
+                                                      RawData map_address);
   public static native void nio_write_Int_file_channel (FileChannelImpl ch,
                                                         int index, int limit,
-                                                        int value, long address);
+                                                        int value,
+                                                        RawData map_address);
   public static native long nio_read_Long_file_channel (FileChannelImpl ch,
                                                         int index, int limit,
-                                                        long address);
+                                                        RawData map_address);
   public static native void nio_write_Long_file_channel (FileChannelImpl ch,
                                                          int index, int limit,
                                                          long value,
-                                                         long address);
+                                                         RawData map_address);
   public static native float nio_read_Float_file_channel (FileChannelImpl ch,
                                                           int index, int limit,
-                                                          long address);
+                                                          RawData map_address);
   public static native void nio_write_Float_file_channel (FileChannelImpl ch,
                                                           int index, int limit,
                                                           float value,
-                                                          long address);
-  public static native double nio_read_Double_file_channel (FileChannelImpl ch,
-                                                            int index, int limit,
-                                                            long address);
+                                                          RawData map_address);
+  public static native double
+    nio_read_Double_file_channel (FileChannelImpl ch, int index, int limit,
+                                  RawData map_address);
   public static native void nio_write_Double_file_channel (FileChannelImpl ch,
                                                            int index, int limit,
                                                            double value,
-                                                           long address);
+                                                           RawData map_address);
 
   final public byte get ()
   {
     byte a = MappedByteFileBuffer.nio_read_Byte_file_channel (ch, position (),
-                                                              limit (), address);
+                                                              limit (),
+                                                              map_address);
     position (position () + 1);
     return a;
   }
@@ -145,7 +152,7 @@ final public class MappedByteFileBuffer
   final public ByteBuffer put (byte b)
   {
     MappedByteFileBuffer.nio_write_Byte_file_channel (ch, position (), limit (),
-                                                      b, address);
+                                                      b, map_address);
     position (position () + 1);
     return this;
   }
@@ -154,14 +161,14 @@ final public class MappedByteFileBuffer
   {
     byte a = MappedByteFileBuffer.nio_read_Byte_file_channel (ch, index,
                                                               limit (),
-                                                              address);
+                                                              map_address);
     return a;
   }
 
   final public ByteBuffer put (int index, byte b)
   {
     MappedByteFileBuffer.nio_write_Byte_file_channel (ch, index, limit (), b,
-                                                      address);
+                                                      map_address);
     return this;
   }
 
@@ -203,27 +210,28 @@ final public class MappedByteFileBuffer
   
   final public byte getByte ()
   {
-    byte a = nio_read_Byte_file_channel (ch, position (), limit (), address);
+    byte a = nio_read_Byte_file_channel (ch, position (), limit (),
+                                         map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putByte (byte value)
   {
-    nio_write_Byte_file_channel (ch, position (), limit (), value, address);
+    nio_write_Byte_file_channel (ch, position (), limit (), value, map_address);
     position (position () + 1);
     return this;
   }
   
   final public byte getByte (int index)
   {
-    byte a = nio_read_Byte_file_channel (ch, index, limit(), address);
+    byte a = nio_read_Byte_file_channel (ch, index, limit(), map_address);
     return a;
   }
   
   final public ByteBuffer putByte (int index, byte value)
   {
-    nio_write_Byte_file_channel (ch, index, limit (), value, address);
+    nio_write_Byte_file_channel (ch, index, limit (), value, map_address);
     return this;
   };
   
@@ -237,27 +245,28 @@ final public class MappedByteFileBuffer
 
   final public char getChar ()
   {
-    char a = nio_read_Char_file_channel (ch, position (), limit (), address);
+    char a = nio_read_Char_file_channel (ch, position (), limit (),
+                                         map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putChar (char value)
   {
-    nio_write_Char_file_channel (ch, position (), limit (), value, address);
+    nio_write_Char_file_channel (ch, position (), limit (), value, map_address);
     position (position () + 1);
     return this;
   }
   
   final public char getChar (int index)
   {
-    char a = nio_read_Char_file_channel (ch, index, limit (), address);
+    char a = nio_read_Char_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putChar (int index, char value)
   {
-    nio_write_Char_file_channel (ch, index, limit (), value, address);
+    nio_write_Char_file_channel (ch, index, limit (), value, map_address);
     return this;
   };
 
@@ -271,27 +280,29 @@ final public class MappedByteFileBuffer
   
   final public short getShort ()
   {
-    short a = nio_read_Short_file_channel (ch, position (), limit (), address);
+    short a = nio_read_Short_file_channel (ch, position (), limit (),
+                                           map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putShort (short value)
   {
-    nio_write_Short_file_channel (ch, position (), limit (), value, address);
+    nio_write_Short_file_channel (ch, position (), limit (), value,
+                                  map_address);
     position (position () + 1);
     return this;
   }
   
   final public short getShort (int index)
   {
-    short a = nio_read_Short_file_channel (ch, index, limit (), address);
+    short a = nio_read_Short_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putShort (int index, short value)
   {
-    nio_write_Short_file_channel (ch, index, limit (), value, address);
+    nio_write_Short_file_channel (ch, index, limit (), value, map_address);
     return this;
   }
 
@@ -305,28 +316,27 @@ final public class MappedByteFileBuffer
   
   final public int getInt ()
   {
-    int a = nio_read_Int_file_channel (ch, position (), limit (), address);
+    int a = nio_read_Int_file_channel (ch, position (), limit (), map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putInt (int value)
   {
-    nio_write_Int_file_channel (ch, position (), limit (), value, address);
+    nio_write_Int_file_channel (ch, position (), limit (), value, map_address);
     position (position () + 1);
     return this;
   }
   
   final public int getInt (int index)
   {
-    int a = nio_read_Int_file_channel (ch, index, limit (),
-                                                            address);
+    int a = nio_read_Int_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putInt (int index, int value)
   {
-    nio_write_Int_file_channel (ch, index, limit (), value, address);
+    nio_write_Int_file_channel (ch, index, limit (), value, map_address);
     return this;
   }
 
@@ -340,27 +350,28 @@ final public class MappedByteFileBuffer
   
   final public long getLong ()
   {
-    long a = nio_read_Long_file_channel (ch, position (), limit (), address);
+    long a = nio_read_Long_file_channel (ch, position (), limit (),
+                                         map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putLong (long value)
   {
-    nio_write_Long_file_channel (ch, position (), limit (), value, address);
+    nio_write_Long_file_channel (ch, position (), limit (), value, map_address);
     position (position () + 1);
     return this;
   }
   
   final public long getLong (int index)
   {
-    long a = nio_read_Long_file_channel (ch, index, limit (), address);
+    long a = nio_read_Long_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putLong (int index, long value)
   {
-    nio_write_Long_file_channel (ch, index, limit (), value, address);
+    nio_write_Long_file_channel (ch, index, limit (), value, map_address);
     return this;
   }
 
@@ -374,27 +385,29 @@ final public class MappedByteFileBuffer
   
   final public float getFloat ()
   {
-    float a = nio_read_Float_file_channel (ch, position (), limit (), address);
+    float a = nio_read_Float_file_channel (ch, position (), limit (),
+                                           map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putFloat (float value)
   {
-    nio_write_Float_file_channel (ch, position (), limit (), value, address);
+    nio_write_Float_file_channel (ch, position (), limit (), value,
+                                  map_address);
     position (position () + 1);
     return this;
   }
   
   final public float getFloat (int index)
   {
-    float a = nio_read_Float_file_channel (ch, index, limit (), address);
+    float a = nio_read_Float_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putFloat (int index, float value)
   {
-    nio_write_Float_file_channel (ch, index, limit (), value, address);
+    nio_write_Float_file_channel (ch, index, limit (), value, map_address);
     return this;
   }
 
@@ -408,27 +421,29 @@ final public class MappedByteFileBuffer
   
   final public double getDouble ()
   {
-    double a = nio_read_Double_file_channel (ch, position (), limit (), address);
+    double a = nio_read_Double_file_channel (ch, position (), limit (),
+                                             map_address);
     position (position () + 1);
     return a;
   }
   
   final public ByteBuffer putDouble (double value)
   {
-    nio_write_Double_file_channel (ch, position (), limit (), value, address);
+    nio_write_Double_file_channel (ch, position (), limit (), value,
+                                   map_address);
     position (position () + 1);
     return this;
   }
   
   final public double getDouble (int index)
   {
-    double a = nio_read_Double_file_channel (ch, index, limit (), address);
+    double a = nio_read_Double_file_channel (ch, index, limit (), map_address);
     return a;
   }
   
   final public ByteBuffer putDouble (int index, double value)
   {
-    nio_write_Double_file_channel (ch, index, limit (), value, address);
+    nio_write_Double_file_channel (ch, index, limit (), value, map_address);
     return this;
   }
 }

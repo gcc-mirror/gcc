@@ -1,5 +1,37 @@
 2003-03-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java
+	(address): Removed.
+	(map_address): New member variable.
+	(length): Make it package private.
+	(fd): Make it package private.
+	(buf): Make it package private.
+	(file_obj): Make it package private.
+	(FileChannelImpl): New constructor.
+	(nio_mmap_file): Use RawData instead of long.
+	(nio_munmap_file): Use RawData instead of long.
+	(nio_msync): Use RawData instead of long.
+	(implCloseChannel): New implementation using map_address.
+	(read): Reformated.
+	(map): Implemented.
+	(create_direct_mapped_buffer): Implemented, use RawData, throws
+	IOException.
+	(force): Use map_address instead of address.
+	* gnu/java/nio/MappedByteFileBuffer.java
+	(address): Removed.
+	(map_address): New member variable.
+	(MappedByteFileBuffer): Use map_address instead of address, reformated.
+	(several methods): Use map_address instead of address, replaced long
+	with RawData where appropriate.
+	* gnu/java/nio/natFileChannelImpl.cc
+	(nio_mmap_file): Replaced long with RawData.
+	(nio_munmap_file): Replaced long with RawData.
+	(nio_msync): Replaced long with RawData.
+	* gnu/java/nio/natMappedByteFileBuffer.cc
+	(several methods): Replaced long with RawData where appropriate.
+
+2003-03-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java,
 	java/net/JarURLConnection.java,
 	java/net/PlainDatagramSocketImpl.java,

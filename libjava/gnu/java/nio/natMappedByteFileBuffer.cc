@@ -24,13 +24,14 @@ details.  */
 #include <fcntl.h>
 #endif
 
+#include <gnu/gcj/RawData.h>
 #include <gnu/java/nio/MappedByteFileBuffer.h>
 #include <java/lang/Error.h>
 
 jbyte
 gnu::java::nio::MappedByteFileBuffer::nio_read_Byte_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -38,7 +39,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Byte_file_channel
 jchar
 gnu::java::nio::MappedByteFileBuffer::nio_read_Char_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -46,7 +47,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Char_file_channel
 jdouble
 gnu::java::nio::MappedByteFileBuffer::nio_read_Double_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -54,7 +55,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Double_file_channel
 jfloat
 gnu::java::nio::MappedByteFileBuffer::nio_read_Float_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -62,7 +63,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Float_file_channel
 jint
 gnu::java::nio::MappedByteFileBuffer::nio_read_Int_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -70,7 +71,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Int_file_channel
 jlong
 gnu::java::nio::MappedByteFileBuffer::nio_read_Long_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -78,7 +79,7 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Long_file_channel
 jshort
 gnu::java::nio::MappedByteFileBuffer::nio_read_Short_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong)
+                                             jint, jint, gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -86,7 +87,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_read_Short_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Byte_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jbyte, jlong)
+                                             jint, jint, jbyte,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -94,7 +96,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Byte_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Char_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jchar, jlong)
+                                             jint, jint, jchar,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -102,7 +105,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Char_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Double_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jdouble, jlong)
+                                             jint, jint, jdouble,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -110,7 +114,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Double_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Float_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jfloat, jlong)
+                                             jint, jint, jfloat,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -118,7 +123,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Float_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Int_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jint, jlong)
+                                             jint, jint, jint,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -126,7 +132,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Int_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Long_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jlong, jlong)
+                                             jint, jint, jlong,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }
@@ -134,7 +141,8 @@ gnu::java::nio::MappedByteFileBuffer::nio_write_Long_file_channel
 void
 gnu::java::nio::MappedByteFileBuffer::nio_write_Short_file_channel
                                             (gnu::java::nio::FileChannelImpl*,
-                                             jint, jint, jshort, jlong)
+                                             jint, jint, jshort,
+                                             gnu::gcj::RawData*)
 {
   throw new ::java::lang::Error (_Jv_NewStringUTF ("not implemented"));
 }

@@ -24,6 +24,7 @@ details.  */
 #include <fcntl.h>
 #endif
 
+#include <gnu/gcj/RawData.h>
 #include <gnu/java/nio/FileChannelImpl.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/IOException.h>
@@ -55,20 +56,20 @@ gnu::java::nio::FileChannelImpl::implTruncate (jlong size)
   return this;
 }
 
-jlong
-gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong, jlong, jint)
+gnu::gcj::RawData*
+gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong pos, jlong size, jint /*mode*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("mmap not implemented"));
 }
 
 void
-gnu::java::nio::FileChannelImpl::nio_unmmap_file (jlong, jint)
+gnu::java::nio::FileChannelImpl::nio_unmmap_file (gnu::gcj::RawData* map_address, jint size)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("munmap not implemented"));
 }
 
 void
-gnu::java::nio::FileChannelImpl::nio_msync (jlong, jint)
+gnu::java::nio::FileChannelImpl::nio_msync (gnu::gcj::RawData* map_address, jint length)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("msync not implemented"));
 }
