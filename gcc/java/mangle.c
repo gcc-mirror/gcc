@@ -93,7 +93,7 @@ java_mangle_class_field (obstack, type)
      tree type;
 {
   init_mangling (obstack);
-  mangle_record_type (type, /* from_pointer = */ 0);
+  mangle_record_type (type, /* for_pointer = */ 0);
   MANGLE_RAW_STRING ("6class$");
   obstack_1grow (mangle_obstack, 'E');
   return finish_mangling ();
@@ -106,7 +106,7 @@ java_mangle_vtable (obstack, type)
 {
   init_mangling (obstack);
   MANGLE_RAW_STRING ("TV");
-  mangle_record_type (type, /* from_pointer = */ 0);
+  mangle_record_type (type, /* for_pointer = */ 0);
   obstack_1grow (mangle_obstack, 'E');
   return finish_mangling ();
 }
@@ -120,7 +120,7 @@ mangle_field_decl (decl)
      tree decl;
 {
   /* Mangle the name of the this the field belongs to */
-  mangle_record_type (DECL_CONTEXT (decl), /* from_pointer = */ 0);
+  mangle_record_type (DECL_CONTEXT (decl), /* for_pointer = */ 0);
   
   /* Mangle the name of the field */
   mangle_member_name (DECL_NAME (decl));
@@ -140,7 +140,7 @@ mangle_method_decl (mdecl)
   tree arglist;
 
   /* Mangle the name of the type that contains mdecl */
-  mangle_record_type (DECL_CONTEXT (mdecl), /* from_pointer = */ 0);
+  mangle_record_type (DECL_CONTEXT (mdecl), /* for_pointer = */ 0);
 
   /* Mangle the function name. There three cases
        - mdecl is java.lang.Object.Object(), use `C2' for its name
@@ -347,16 +347,21 @@ find_compression_record_match (type, next_current)
 
 /* Mangle a record type. If a non zero value is returned, it means
    that a 'N' was emitted (so that a matching 'E' can be emitted if
-   necessary.)  */
+   necessary.)  FOR_POINTER indicates that this element is for a pointer
+   symbol, meaning it was preceded by a 'P'. */
 
 static int
-mangle_record_type (type, from_pointer)
+mangle_record_type (type, for_pointer)
      tree type;
-     int from_pointer;
+     int for_pointer;
 {
   tree current;
   int match;
   int nadded_p = 0;
+  int qualified;
+  
+  /* Does this name have a package qualifier? */
+  qualified = QUALIFIED_P (DECL_NAME (TYPE_NAME (type)));
 
 #define ADD_N() \
   do { obstack_1grow (mangle_obstack, 'N'); nadded_p = 1; } while (0)
@@ -371,8 +376,8 @@ mangle_record_type (type, from_pointer)
   if (match >= 0)
     {
       /* If we had a pointer, and there's more, we need to emit
-	 'N' after 'P' (from pointer tells us we already emitted it.) */
-      if (from_pointer && current)
+	 'N' after 'P' (for_pointer tells us we already emitted it.) */
+      if (for_pointer && current)
 	ADD_N();
       emit_compression_string (match);
     }
@@ -380,8 +385,9 @@ mangle_record_type (type, from_pointer)
     {
       /* Add the new type to the table */
       compression_table_add (TREE_PURPOSE (current));
-      /* Add 'N' if we never got a chance to. */
-      if (!nadded_p)
+      /* Add 'N' if we never got a chance to, but only if we have a qualified
+         name.  For non-pointer elements, the name is always qualified. */
+      if ((qualified || !for_pointer) && !nadded_p)
 	ADD_N();
       /* Use the bare type name for the mangle. */
       append_gpp_mangled_name (IDENTIFIER_POINTER (TREE_VALUE (current)),
