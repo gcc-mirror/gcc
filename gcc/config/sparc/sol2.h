@@ -159,6 +159,7 @@ do {									\
    || (CHAR) == 'R' \
    || (CHAR) == 'A' \
    || (CHAR) == 'h' \
+   || (CHAR) == 'x' \
    || (CHAR) == 'z')
 
 /* ??? This does not work in SunOS 4.x, so it is not enabled in sparc.h.
