@@ -157,15 +157,23 @@ cxx_print_type (file, node, indent)
     }
 }
 
+static void
+cxx_print_binding (FILE *stream, cxx_binding *binding, const char *prefix)
+{
+  fprintf (stream, "%s <", prefix);
+  fprintf (stream, HOST_PTR_PRINTF, (char *) binding);
+  fprintf (stream, ">");
+}
+
 void
 cxx_print_identifier (file, node, indent)
      FILE *file;
      tree node;
      int indent;
 {
-  print_node (file, "bindings", IDENTIFIER_NAMESPACE_BINDINGS (node), indent + 4);
+  cxx_print_binding (file, IDENTIFIER_NAMESPACE_BINDINGS (node), "bindings");
   print_node (file, "class", IDENTIFIER_CLASS_VALUE (node), indent + 4);
-  print_node (file, "local bindings", IDENTIFIER_BINDING (node), indent + 4);
+  cxx_print_binding (file, IDENTIFIER_BINDING (node), "local bindings");
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
@@ -180,12 +188,6 @@ cxx_print_xnode (file, node, indent)
 {
   switch (TREE_CODE (node))
     {
-    case CPLUS_BINDING:
-      fprintf (file, " scope ");
-      fprintf (file, HOST_PTR_PRINTF, BINDING_SCOPE (node));
-      print_node (file, "value", BINDING_VALUE (node), indent+4);
-      print_node (file, "chain", TREE_CHAIN (node), indent+4);
-      break;
     case OVERLOAD:
       print_node (file, "function", OVL_FUNCTION (node), indent+4);
       print_node (file, "chain", TREE_CHAIN (node), indent+4);

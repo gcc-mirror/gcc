@@ -97,8 +97,8 @@ static void push_binding PARAMS ((tree, tree, struct cp_binding_level*));
 static int add_binding PARAMS ((tree, tree));
 static void pop_binding PARAMS ((tree, tree));
 static tree local_variable_p_walkfn PARAMS ((tree *, int *, void *));
-static tree find_binding PARAMS ((tree, tree));
-static tree select_decl PARAMS ((tree, int));
+static cxx_binding *find_binding (tree, tree, cxx_binding *);
+static tree select_decl (cxx_binding *, int);
 static int lookup_flags PARAMS ((int, int));
 static tree qualify_lookup PARAMS ((tree, int));
 static tree record_builtin_java_type PARAMS ((const char *, int));
@@ -903,13 +903,11 @@ note_level_for_catch ()
 
 /* For a binding between a name and an entity at a block scope,
    this is the `struct cp_binding_level' for the block.  */
-#define BINDING_LEVEL(NODE) \
-  (((struct tree_binding*)(NODE))->scope.level)
+#define BINDING_LEVEL(NODE) ((NODE)->scope.level)
 
-/* A free list of CPLUS_BINDING nodes, connected by their
-   TREE_CHAINs.  */
+/* A free list of "cxx_binding"s, connected by their PREVIOUS.  */
 
-static GTY((deletable (""))) tree free_bindings;
+static GTY((deletable (""))) cxx_binding *free_bindings;
 
 /* Make DECL the innermost binding for ID.  The LEVEL is the binding
    level at which this declaration is being bound.  */
@@ -920,15 +918,15 @@ push_binding (id, decl, level)
      tree decl;
      struct cp_binding_level* level;
 {
-  tree binding;
+  cxx_binding *binding;
 
   if (free_bindings)
     {
       binding = free_bindings;
-      free_bindings = TREE_CHAIN (binding);
+      free_bindings = binding->previous;
     }
   else
-    binding = make_node (CPLUS_BINDING);
+    binding = cxx_binding_make ();
 
   /* Now, fill in the binding information.  */
   BINDING_VALUE (binding) = decl;
@@ -939,7 +937,7 @@ push_binding (id, decl, level)
   BINDING_HAS_LEVEL_P (binding) = 1;
 
   /* And put it on the front of the list of bindings for ID.  */
-  TREE_CHAIN (binding) = IDENTIFIER_BINDING (id);
+  binding->previous = IDENTIFIER_BINDING (id);
   IDENTIFIER_BINDING (id) = binding;
 }
 
@@ -954,7 +952,7 @@ add_binding (id, decl)
      tree id;
      tree decl;
 {
-  tree binding = IDENTIFIER_BINDING (id);
+  cxx_binding *binding = IDENTIFIER_BINDING (id);
   int ok = 1;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -1104,7 +1102,7 @@ push_class_binding (id, decl)
      tree decl;
 {
   int result = 1;
-  tree binding = IDENTIFIER_BINDING (id);
+  cxx_binding *binding = IDENTIFIER_BINDING (id);
   tree context;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -1170,7 +1168,7 @@ pop_binding (id, decl)
      tree id;
      tree decl;
 {
-  tree binding;
+  cxx_binding *binding;
 
   if (id == NULL_TREE)
     /* It's easiest to write the loops that call this function without
@@ -1182,7 +1180,7 @@ pop_binding (id, decl)
   binding = IDENTIFIER_BINDING (id);
 
   /* The name should be bound.  */
-  my_friendly_assert (binding != NULL_TREE, 0);
+  my_friendly_assert (binding != NULL, 0);
 
   /* The DECL will be either the ordinary binding or the type
      binding for this identifier.  Remove that binding.  */
@@ -1197,10 +1195,10 @@ pop_binding (id, decl)
     {
       /* We're completely done with the innermost binding for this
 	 identifier.  Unhook it from the list of bindings.  */
-      IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
+      IDENTIFIER_BINDING (id) = binding->previous;
 
       /* Add it to the free list.  */
-      TREE_CHAIN (binding) = free_bindings;
+      binding->previous = free_bindings;
       free_bindings = binding;
 
       /* Clear the BINDING_LEVEL so the garbage collector doesn't walk
@@ -1419,8 +1417,8 @@ poplevel (keep, reverse, functionbody)
       if (leaving_for_scope && TREE_CODE (link) == VAR_DECL
           && DECL_NAME (link))
 	{
-	  tree outer_binding
-	    = TREE_CHAIN (IDENTIFIER_BINDING (DECL_NAME (link)));
+	  cxx_binding *outer_binding
+	    = IDENTIFIER_BINDING (DECL_NAME (link))->previous;
 	  tree ns_binding;
 
 	  if (!outer_binding)
@@ -1475,7 +1473,7 @@ poplevel (keep, reverse, functionbody)
 			     current_binding_level->level_chain->
 			     dead_vars_from_for);
 
-	      /* Although we don't pop the CPLUS_BINDING, we do clear
+	      /* Although we don't pop the cxx_binding, we do clear
 		 its BINDING_LEVEL since the level is going away now.  */
 	      BINDING_LEVEL (IDENTIFIER_BINDING (DECL_NAME (link)))
 		= 0;
@@ -1704,15 +1702,15 @@ poplevel_class ()
 	     shadowed;
 	     shadowed = TREE_CHAIN (shadowed))
 	  {
-	    tree t;
+	    cxx_binding *binding;
 
-	    t = IDENTIFIER_BINDING (TREE_PURPOSE (shadowed));
-	    while (t && BINDING_LEVEL (t) != b)
-	      t = TREE_CHAIN (t);
+	    binding = IDENTIFIER_BINDING (TREE_PURPOSE (shadowed));
+	    while (binding && BINDING_LEVEL (binding) != b)
+	      binding = binding->previous;
 
-	    if (t)
+	    if (binding)
 	      IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed))
-		= BINDING_VALUE (t);
+		= BINDING_VALUE (binding);
 	  }
     }
   else
@@ -2093,103 +2091,92 @@ print_binding_stack ()
   print_binding_level (global_binding_level);
 }
 
-/* Namespace binding access routines: The namespace_bindings field of
-   the identifier is polymorphic, with three possible values:
-   NULL_TREE, a list of CPLUS_BINDINGS, or any other tree_node
-   indicating the BINDING_VALUE of global_namespace.  */
+/* Namespace binding access routines.   */
 
 /* Check whether the a binding for the name to scope is known.
-   Assumes that the bindings of the name are already a list
-   of bindings. Returns the binding found, or NULL_TREE.  */
+   Returns the binding found, or NULL.  */
 
-static tree
-find_binding (name, scope)
-     tree name;
-     tree scope;
+static inline cxx_binding *
+find_binding (tree name, tree scope, cxx_binding *front)
 {
-  tree iter, prev = NULL_TREE;
+  cxx_binding *iter;
+  cxx_binding *prev = NULL;
 
   timevar_push (TV_NAME_LOOKUP);
 
-  scope = ORIGINAL_NAMESPACE (scope);
-
-  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name); iter;
-       iter = TREE_CHAIN (iter))
+  for (iter = front; iter; iter = iter->previous)
     {
-      my_friendly_assert (TREE_CODE (iter) == CPLUS_BINDING, 374);
       if (BINDING_SCOPE (iter) == scope)
 	{
 	  /* Move binding found to the front of the list, so
              subsequent lookups will find it faster.  */
 	  if (prev)
 	    {
-	      TREE_CHAIN (prev) = TREE_CHAIN (iter);
-	      TREE_CHAIN (iter) = IDENTIFIER_NAMESPACE_BINDINGS (name);
+	      prev->previous = iter->previous;
+	      iter->previous = front;
 	      IDENTIFIER_NAMESPACE_BINDINGS (name) = iter;
 	    }
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, iter);
 	}
       prev = iter;
     }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL);
 }
 
-/* Always returns a binding for name in scope. If the
-   namespace_bindings is not a list, convert it to one first.
+/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
+cxx_binding *
+cxx_scope_find_binding_for_name (tree scope, tree name)
+{
+  cxx_binding *b = IDENTIFIER_NAMESPACE_BINDINGS (name);
+  if (b)
+    {
+      scope = ORIGINAL_NAMESPACE (scope);
+      /* Fold-in case where NAME is used only once.  */
+      if (scope == BINDING_SCOPE (b) && b->previous == NULL)
+        return b;
+      return find_binding (name, scope, b);
+    }
+  return b;
+}
+
+
+/* Always returns a binding for name in scope.
    If no binding is found, make a new one.  */
 
-tree
-binding_for_name (name, scope)
-     tree name;
-     tree scope;
+cxx_binding *
+binding_for_name (tree name, tree scope)
 {
-  tree b = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  tree result;
+  cxx_binding *result;
 
   scope = ORIGINAL_NAMESPACE (scope);
-
-  if (b && TREE_CODE (b) != CPLUS_BINDING)
-    {
-      /* Get rid of optimization for global scope.  */
-      IDENTIFIER_NAMESPACE_BINDINGS (name) = NULL_TREE;
-      BINDING_VALUE (binding_for_name (name, global_namespace)) = b;
-      b = IDENTIFIER_NAMESPACE_BINDINGS (name);
-    }
-  if (b && (result = find_binding (name, scope)))
+  result = cxx_scope_find_binding_for_name (scope, name);
+  if (result)
     return result;
   /* Not found, make a new one.  */
-  result = make_node (CPLUS_BINDING);
-  TREE_CHAIN (result) = b;
-  IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
-  BINDING_SCOPE (result) = scope;
+  result = cxx_binding_make ();
+  result->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
   BINDING_TYPE (result) = NULL_TREE;
   BINDING_VALUE (result) = NULL_TREE;
+  BINDING_SCOPE (result) = scope;
+  result->is_local = false;
+  result->value_is_inherited = false;
+  result->has_level = false;
+  IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
   return result;
 }
 
-/* Return the binding value for name in scope, considering that
-   namespace_binding may or may not be a list of CPLUS_BINDINGS.  */
+/* Return the binding value for name in scope.  */
 
 tree
-namespace_binding (name, scope)
-     tree name;
-     tree scope;
+namespace_binding (tree name, tree scope)
 {
-  tree b = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  if (b == NULL_TREE)
-    return NULL_TREE;
-  if (scope == NULL_TREE)
-    scope = global_namespace;
-  if (TREE_CODE (b) != CPLUS_BINDING)
-    return (scope == global_namespace) ? b : NULL_TREE;
-  name = find_binding (name,scope);
-  if (name == NULL_TREE)
-    return name;
-  return BINDING_VALUE (name);
+  cxx_binding *b =
+    cxx_scope_find_binding_for_name (scope ? scope : global_namespace, name);
+
+  return b ? b->value : NULL_TREE;
 }
 
-/* Set the binding value for name in scope. If modifying the binding
-   of global_namespace is attempted, try to optimize it.  */
+/* Set the binding value for name in scope.  */
 
 void
 set_namespace_binding (name, scope, val)
@@ -2197,21 +2184,12 @@ set_namespace_binding (name, scope, val)
      tree scope;
      tree val;
 {
-  tree b;
+  cxx_binding *b;
 
   timevar_push (TV_NAME_LOOKUP);
   if (scope == NULL_TREE)
     scope = global_namespace;
 
-  if (scope == global_namespace)
-    {
-      b = IDENTIFIER_NAMESPACE_BINDINGS (name);
-      if (b == NULL_TREE || TREE_CODE (b) != CPLUS_BINDING)
-	{
-	  IDENTIFIER_NAMESPACE_BINDINGS (name) = val;
-          POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (void)0);
-	}
-    }
   b = binding_for_name (name, scope);
   BINDING_VALUE (b) = val;
   timevar_pop (TV_NAME_LOOKUP);
@@ -2352,7 +2330,7 @@ struct cxx_saved_binding GTY(())
   /* The name of the current binding.  */
   tree identifier;
   /* The binding we're saving.  */
-  tree binding;
+  cxx_binding *binding;
   tree class_value;
   tree real_type_value;
 };
@@ -2400,7 +2378,7 @@ store_bindings (tree names, cxx_saved_binding *old_bindings)
       saved->binding = IDENTIFIER_BINDING (id);
       saved->class_value = IDENTIFIER_CLASS_VALUE (id);;
       saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
-      IDENTIFIER_BINDING (id) = NULL_TREE;
+      IDENTIFIER_BINDING (id) = NULL;
       IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
       old_bindings = saved;
     skip_it:
@@ -2544,7 +2522,7 @@ set_identifier_type_value_with_scope (id, type, b)
     }
   else
     {
-      tree binding = binding_for_name (id, current_namespace);
+      cxx_binding *binding = binding_for_name (id, current_namespace);
       BINDING_TYPE (binding) = type;
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -4439,7 +4417,7 @@ push_class_level_binding (name, x)
      tree name;
      tree x;
 {
-  tree binding;
+  cxx_binding *binding;
   
   timevar_push (TV_NAME_LOOKUP);
   /* The class_binding_level will be NULL if x is a template
@@ -4689,7 +4667,7 @@ push_overloaded_decl (decl, flags)
 		  *d = tree_cons (NULL_TREE, new_binding,
 				  TREE_CHAIN (*d));
 
-		/* And update the CPLUS_BINDING node.  */
+		/* And update the cxx_binding node.  */
 		BINDING_VALUE (IDENTIFIER_BINDING (name))
 		  = new_binding;
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
@@ -5409,18 +5387,22 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	/* Do namespace lookup.  */
 	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
 	  {
-	    tree old = binding_for_name (name, tail);
+	    cxx_binding *binding =
+              cxx_scope_find_binding_for_name (tail, name);
+            tree old;
 
 	    /* If we just skipped past a template parameter level,
 	       even though THISLEVEL_ONLY, and we find a template
 	       class declaration, then we use the _TYPE node for the
 	       template.  See the example below.  */
 	    if (thislevel_only && !allow_template_parms_p
-		&& old && BINDING_VALUE (old)
-		&& DECL_CLASS_TEMPLATE_P (BINDING_VALUE (old)))
-	      old = TREE_TYPE (BINDING_VALUE (old));
-	    else
-	      old = BINDING_TYPE (old);
+		&& binding && BINDING_VALUE (binding)
+		&& DECL_CLASS_TEMPLATE_P (BINDING_VALUE (binding)))
+	      old = TREE_TYPE (BINDING_VALUE (binding));
+	    else if (binding)
+	      old = BINDING_TYPE (binding);
+            else
+              old = NULL;
 
 	    if (old)
 	      {
@@ -5533,6 +5515,7 @@ lookup_namespace_name (namespace, name)
 {
   tree val;
   tree template_id = NULL_TREE;
+  cxx_binding binding;
 
   timevar_push (TV_NAME_LOOKUP);
 
@@ -5563,13 +5546,13 @@ lookup_namespace_name (namespace, name)
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
 
-  val = make_node (CPLUS_BINDING);
-  if (!qualified_lookup_using_namespace (name, namespace, val, 0))
+  cxx_binding_clear (&binding);
+  if (!qualified_lookup_using_namespace (name, namespace, &binding, 0))
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
-  if (BINDING_VALUE (val))
+  if (binding.value)
     {
-      val = BINDING_VALUE (val);
+      val = binding.value;
 
       if (template_id)
 	{
@@ -5906,9 +5889,7 @@ make_unbound_class_template (context, name, complain)
 /* Select the right _DECL from multiple choices.  */
 
 static tree
-select_decl (binding, flags)
-     tree binding;
-     int flags;
+select_decl (cxx_binding *binding, int flags)
 {
   tree val;
   
@@ -5949,44 +5930,42 @@ unqualified_namespace_lookup (name, flags, spacesp)
      int flags;
      tree *spacesp;
 {
-  tree b = make_node (CPLUS_BINDING);
   tree initial = current_decl_namespace ();
   tree scope = initial;
   tree siter;
   struct cp_binding_level *level;
   tree val = NULL_TREE;
+  cxx_binding binding;
 
   timevar_push (TV_NAME_LOOKUP);
+  cxx_binding_clear (&binding);
   if (spacesp)
     *spacesp = NULL_TREE;
 
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
+      cxx_binding *b;
       if (spacesp)
 	*spacesp = tree_cons (scope, NULL_TREE, *spacesp);
-      val = binding_for_name (name, scope);
+      b = cxx_scope_find_binding_for_name (scope, name);
 
       /* Ignore anticipated built-in functions.  */
-      if (val && BINDING_VALUE (val)
-          && DECL_P (BINDING_VALUE (val))
-          && DECL_LANG_SPECIFIC (BINDING_VALUE (val))
-          && DECL_ANTICIPATED (BINDING_VALUE (val)))
-        {
-          BINDING_VALUE (b) = NULL_TREE;
-          BINDING_TYPE (b) = NULL_TREE;
-        }
-      else
+      if (b && BINDING_VALUE (b) && DECL_P (BINDING_VALUE (b))
+          && DECL_LANG_SPECIFIC (BINDING_VALUE (b))
+          && DECL_ANTICIPATED (BINDING_VALUE (b)))
+        /* Keep binding cleared.  */;
+      else if (b)
         {
           /* Initialize binding for this context.  */
-          BINDING_VALUE (b) = BINDING_VALUE (val);
-          BINDING_TYPE (b) = BINDING_TYPE (val);
+          binding.value = BINDING_VALUE (b);
+          binding.type = BINDING_TYPE (b);
         }
 
       /* Add all _DECLs seen through local using-directives.  */
       for (level = current_binding_level;
 	   !level->namespace_p;
 	   level = level->level_chain)
-	if (!lookup_using_namespace (name, b, level->using_directives,
+	if (!lookup_using_namespace (name, &binding, level->using_directives,
                                      scope, flags, spacesp))
 	  /* Give up because of error.  */
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
@@ -5996,7 +5975,8 @@ unqualified_namespace_lookup (name, flags, spacesp)
       siter = initial;
       while (1)
 	{
-	  if (!lookup_using_namespace (name, b, DECL_NAMESPACE_USING (siter),
+	  if (!lookup_using_namespace (name, &binding,
+                                       DECL_NAMESPACE_USING (siter),
 				       scope, flags, spacesp))
 	    /* Give up because of error.  */
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
@@ -6004,7 +5984,7 @@ unqualified_namespace_lookup (name, flags, spacesp)
 	  siter = CP_DECL_CONTEXT (siter);
 	}
 
-      val = select_decl (b, flags);
+      val = select_decl (&binding, flags);
       if (scope == global_namespace)
 	break;
     }
@@ -6159,6 +6139,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   tree from_obj = NULL_TREE;
   int flags;
   int val_is_implicit_typename = 0;
+  cxx_binding *iter;
 
   timevar_push (TV_NAME_LOOKUP);
 
@@ -6198,11 +6179,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    type = global_namespace;
 	  if (TREE_CODE (type) == NAMESPACE_DECL)
 	    {
-	      val = make_node (CPLUS_BINDING);
+              cxx_binding b;
+              cxx_binding_clear (&b);
 	      flags |= LOOKUP_COMPLAIN;
-	      if (!qualified_lookup_using_namespace (name, type, val, flags))
+	      if (!qualified_lookup_using_namespace (name, type, &b, flags))
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-	      val = select_decl (val, flags);
+	      val = select_decl (&b, flags);
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
@@ -6255,27 +6237,27 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   if (current_class_type == NULL_TREE)
     nonclass = 1;
 
-  for (t = IDENTIFIER_BINDING (name); t; t = TREE_CHAIN (t))
+  for (iter = IDENTIFIER_BINDING (name); iter; iter = iter->previous)
     {
       tree binding;
 
-      if (!LOCAL_BINDING_P (t) && nonclass)
+      if (!LOCAL_BINDING_P (iter) && nonclass)
 	/* We're not looking for class-scoped bindings, so keep going.  */
 	continue;
 
       /* If this is the kind of thing we're looking for, we're done.  */
-      if (qualify_lookup (BINDING_VALUE (t), flags))
-	binding = BINDING_VALUE (t);
+      if (qualify_lookup (BINDING_VALUE (iter), flags))
+	binding = BINDING_VALUE (iter);
       else if ((flags & LOOKUP_PREFER_TYPES)
-	       && qualify_lookup (BINDING_TYPE (t), flags))
-	binding = BINDING_TYPE (t);
+	       && qualify_lookup (BINDING_TYPE (iter), flags))
+	binding = BINDING_TYPE (iter);
       else
 	binding = NULL_TREE;
 
       /* Handle access control on types from enclosing or base classes.  */
       if (binding && ! yylex
-	  && BINDING_LEVEL (t) && BINDING_LEVEL (t)->parm_flag == 2)
-	type_access_control (BINDING_LEVEL (t)->this_class, binding);
+	  && BINDING_LEVEL (iter) && BINDING_LEVEL (iter)->parm_flag == 2)
+	type_access_control (BINDING_LEVEL (iter)->this_class, binding);
 
       if (binding
 	  && (!val || !IMPLICIT_TYPENAME_TYPE_DECL_P (binding)))
@@ -8347,8 +8329,8 @@ maybe_inject_for_scope_var (decl)
 	 Otherwise, we need to preserve the temp slot for decl to last
 	 into the outer binding level.  */
 
-      tree outer_binding
-	= TREE_CHAIN (IDENTIFIER_BINDING (DECL_NAME (decl)));
+      cxx_binding *outer_binding
+	= IDENTIFIER_BINDING (DECL_NAME (decl))->previous;
 
       if (outer_binding && BINDING_LEVEL (outer_binding) == outer
 	  && (TREE_CODE (BINDING_VALUE (outer_binding))
@@ -15031,7 +15013,6 @@ cp_tree_node_structure (t)
     {
     case DEFAULT_ARG:		return TS_CP_IDENTIFIER;
     case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
-    case CPLUS_BINDING:		return TS_CP_BINDING;
     case OVERLOAD:		return TS_CP_OVERLOAD;
     case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
     case PTRMEM_CST:		return TS_CP_PTRMEM;

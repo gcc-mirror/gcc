@@ -4031,17 +4031,15 @@ static tree
 parse_scoped_id (token)
      tree token;
 {
-  tree id;
-
-  id = make_node (CPLUS_BINDING);
-  if (!qualified_lookup_using_namespace (token, global_namespace, id, 0))
-    id = NULL_TREE;
-  else
-    id = BINDING_VALUE (id);
+  cxx_binding binding;
+ 
+  cxx_binding_clear (&binding);
+  if (!qualified_lookup_using_namespace (token, global_namespace, &binding, 0))
+    binding.value = NULL;
   if (yychar == YYEMPTY)
     yychar = yylex();
 
-  return do_scoped_id (token, id);
+  return do_scoped_id (token, binding.value);
 }
 
 /* AGGR may be either a type node (like class_type_node) or a

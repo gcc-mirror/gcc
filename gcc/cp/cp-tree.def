@@ -218,11 +218,6 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 2)
    the template may be a LOOKUP_EXPR.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
-/* An association between name and entity. Parameters are the scope
-   and the (non-type) value.  TREE_TYPE indicates the type bound to
-   the name. */
-DEFTREECODE (CPLUS_BINDING, "binding", 'x', 2)
-
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 
    the original name, and the parameter is the FUNCTION_DECL.  */
 DEFTREECODE (OVERLOAD, "overload", 'x', 1)
