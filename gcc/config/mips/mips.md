@@ -4003,6 +4003,18 @@ move\\t%0,%z4\\n\\
     }
 }")
 
+;; Block any insns from being moved before this point, since the
+;; profiling call to mcount can use various registers that aren't
+;; saved or used to pass arguments.
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] 0)]
+  ""
+  ""
+  [(set_attr "type"	"unknown")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"0")])
+
 ;; At present, don't expand the epilogue, reorg.c will clobber the
 ;; return register in compiling gen_lowpart (emit-rtl.c).
 ;; 
