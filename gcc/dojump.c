@@ -588,10 +588,15 @@ do_jump (exp, if_false_label, if_true_label)
         /* Note swapping the labels gives us not-equal.  */
         do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
       else if (GET_MODE (temp) != VOIDmode)
-        do_compare_rtx_and_jump (temp, CONST0_RTX (GET_MODE (temp)),
-                                 NE, TREE_UNSIGNED (TREE_TYPE (exp)),
-                                 GET_MODE (temp), NULL_RTX,
-                                 if_false_label, if_true_label);
+	{
+	  /* The RTL optimizers prefer comparisons against pseudos.  */
+	  if (GET_CODE (temp) == SUBREG)
+	    temp = copy_to_reg (temp);
+	  do_compare_rtx_and_jump (temp, CONST0_RTX (GET_MODE (temp)),
+				   NE, TREE_UNSIGNED (TREE_TYPE (exp)),
+				   GET_MODE (temp), NULL_RTX,
+				   if_false_label, if_true_label);
+	}
       else
         abort ();
     }

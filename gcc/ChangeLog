@@ -1,3 +1,7 @@
+2003-03-30  Roger Sayle  <roger@eyesopen.com>
+
+	* dojump.c (do_jump): Copy SUBREGs into a pseudo for comparison.
+
 2003-03-30  DJ Delorie  <dj@redhat.com>
 
 	* profile.c (instrument_edges): Make sure any newly created
