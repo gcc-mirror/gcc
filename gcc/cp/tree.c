@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1708,6 +1708,26 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
 
   va_end (p);
   return t;
+}
+
+/* Returns an INTEGER_CST (of type `int') corresponding to I.
+   Multiple calls with the same value of I may or may not yield the
+   same node; therefore, callers should never modify the node
+   returned.  */
+
+tree
+build_shared_int_cst (i)
+     int i;
+{
+  static tree cache[256];
+
+  if (i >= 256)
+    return build_int_2 (i, 0);
+  
+  if (!cache[i])
+    cache[i] = build_int_2 (i, 0);
+  
+  return cache[i];
 }
 
 tree
