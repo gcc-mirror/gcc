@@ -1,3 +1,8 @@
+1999-10-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (make_rtl_for_local_static): Don't create register RTL
+	for addressable constants.
+
 1999-10-13  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (build_x_va_arg): Prototype new function.

@@ -1,5 +1,6 @@
 // Build don't link:
 // Origin: Ulrich Drepper <drepper@cygnus.com>
+// Special g++ Options: -w
 
 struct st
 {
