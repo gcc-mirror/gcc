@@ -1631,7 +1631,11 @@ do_statement:
 
 for_statement:
 	for_begin SC_TK expression SC_TK for_update CP_TK statement
-		{ $$ = finish_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7); }
+		{
+		  if (TREE_CODE_CLASS (TREE_CODE ($3)) == 'c')
+		    $3 = build_wfl_node ($3);
+		  $$ = finish_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7);
+		}
 |	for_begin SC_TK SC_TK for_update CP_TK statement
 		{ 
 		  $$ = finish_for_loop (0, NULL_TREE, $4, $6);
