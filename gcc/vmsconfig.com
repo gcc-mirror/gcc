@@ -21,6 +21,14 @@ $DECK
 $EOD
 $ echo "Created `tconfig.h'.
 $ !
+$ if f$search("hconfig.h") .nes. "" then delete hconfig.h.*
+$ create []hconfig.h
+$DECK
+/* hconfig.h == config.h :: target and host configurations are the same */
+#include "config.h"
+$EOD
+$ echo "Created `hconfig.h'.
+$ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
 $ copy [.config]vax-vms.h []tm.h
 $ echo "Linked `tm.h' to `[.config]vax-vms.h'.
