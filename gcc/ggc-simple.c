@@ -300,7 +300,8 @@ ggc_free_rtx (r)
   fprintf (dump, "collect rtx %p\n", &r->rtx);
 #endif
 #ifdef GGC_POISON
-  memset (r, 0xAA, sizeof(*r));
+  memset (r, 0xAA, sizeof(*r) + ((GET_RTX_LENGTH (r->rtx.code) -1)
+				 * sizeof(rtunion)));
 #endif
 
   free (r);
