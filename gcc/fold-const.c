@@ -2230,7 +2230,7 @@ invert_truthvalue (arg)
   if (TREE_CODE_CLASS (code) == '<')
     {
       if (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
-	  && code != NE_EXPR && code != EQ_EXPR)
+	  && !flag_fast_math && code != NE_EXPR && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
 	return build (invert_tree_comparison (code), type,
@@ -5824,7 +5824,8 @@ fold (expr)
 	      t = build (code, type, tem,
 			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
 	      arg0 = tem;
-	      arg1 = TREE_OPERAND (t, 2);
+	      /* arg1 should be the first argument of the new T.  */
+	      arg1 = TREE_OPERAND (t, 1);
 	      STRIP_NOPS (arg1);
 	    }
 	}
