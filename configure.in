@@ -352,7 +352,7 @@ case "${enable_target_optspace}:${target}" in
   yes:*)
     target_makefile_frag="${target_makefile_frag} config/mt-ospace"
     ;;
-  :m32r-*)
+  :m32r-* | fr30-*)
     target_makefile_frag="${target_makefile_frag} config/mt-ospace"
     ;;
   no:* | :*)
@@ -611,6 +611,11 @@ case "${target}" in
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-librx target-libg++ target-libstdc++ target-libio target-libgloss"
+    ;;
+  fr30-*-elf*)
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
+    fi
     ;;
   h8300*-*-* | \
   h8500-*-*)

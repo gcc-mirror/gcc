@@ -174,7 +174,7 @@ case $basic_machine in
 		| mips64vr5000 | miprs64vr5000el \
 	        | m88110 | m680[012346]0 | m683?2 | m68360 | m5200 | z8k | v70 \
 		| sparc | sparclet | sparclite | sparc64 | sparc86x | sparcv9 \
-		| thumb | v850 | c4x | d10v | h8500 | w65)
+		| thumb | v850 | c4x | d10v | h8500 | w65 | fr30)
 		basic_machine=$basic_machine-unknown
 		;;
 	# We use `pc' rather than `unknown'
@@ -205,7 +205,7 @@ case $basic_machine in
 	      | mipstx39-* | mipstx39el-* \
 	      | f301-* | arm*-* | t3e-* \
 	      | m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | d10v-* \
-	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* )
+	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* | fr30-* )
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
