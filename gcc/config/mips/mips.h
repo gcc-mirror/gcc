@@ -1472,15 +1472,15 @@ extern enum reg_class mips_char_to_class[];
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
-#define CLASS_UNITS(mode, num)						\
-  ((GET_MODE_SIZE (mode) + ((num) * UNITS_PER_WORD) - 1) / ((num) * UNITS_PER_WORD))
+#define CLASS_UNITS(mode, size)						\
+  ((GET_MODE_SIZE (mode) + (size) - 1) / (size))
 
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (((CLASS) == FP_REGS && TARGET_FLOAT64)				\
-	? CLASS_UNITS (MODE, 2)						\
-	: (((CLASS) == FP_REGS)						\
-		? (2*CLASS_UNITS (MODE, 1))				\
-		: CLASS_UNITS (MODE, 1)))
+  ((CLASS) == FP_REGS							\
+   ? (TARGET_FLOAT64							\
+      ? CLASS_UNITS (MODE, 8)						\
+      : 2 * CLASS_UNITS (MODE, 8))					\
+   : CLASS_UNITS (MODE, UNITS_PER_WORD))
 
 /* If defined, this is a C expression whose value should be
    nonzero if the insn INSN has the effect of mysteriously
