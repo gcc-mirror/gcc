@@ -173,7 +173,7 @@ static char *concat ();
 static int do_spec ();
 static int do_spec_1 ();
 static char *find_file ();
-static int is_linker_dir ();
+static int is_directory ();
 static void validate_switches ();
 static void validate_all_switches ();
 static void give_switch ();
@@ -1438,7 +1438,8 @@ putenv_from_prefixes (paths, env_var)
     {
       int len = strlen (pprefix->prefix);
 
-      if (machine_suffix)
+      if (machine_suffix
+	  && is_directory (pprefix->prefix, machine_suffix, 0))
 	{
 	  if (!first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
@@ -1448,7 +1449,9 @@ putenv_from_prefixes (paths, env_var)
 	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
 	}
 
-      if (just_machine_suffix && pprefix->require_machine_suffix == 2)
+      if (just_machine_suffix
+	  && pprefix->require_machine_suffix == 2
+	  && is_directory (pprefix->prefix, just_machine_suffix, 0))
 	{
 	  if (!first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
@@ -2749,7 +2752,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 #endif
 		  if (machine_suffix)
 		    {
-		      if (is_linker_dir (pl->prefix, machine_suffix))
+		      if (is_directory (pl->prefix, machine_suffix, 1))
 			{
 			  do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
@@ -2771,7 +2774,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    }
 		  if (!pl->require_machine_suffix)
 		    {
-		      if (is_linker_dir (pl->prefix, ""))
+		      if (is_directory (pl->prefix, "", 1))
 			{
 			  do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
@@ -3515,19 +3518,27 @@ find_file (name)
   return newname ? newname : name;
 }
 
-/* Determine whether a -L option is relevant.  Not required for certain
-   fixed names and for directories that don't exist.  */
+/* Determine whether a directory exists.  If LINKER, return 0 for
+   certain fixed names not needed by the linker.  If not LINKER, it is
+   only important to return 0 if the host machine has a small ARG_MAX
+   limit.  */
 
 static int
-is_linker_dir (path1, path2)
+is_directory (path1, path2, linker)
      char *path1;
      char *path2;
+     int linker;
 {
   int len1 = strlen (path1);
   int len2 = strlen (path2);
   char *path = (char *) alloca (3 + len1 + len2);
   char *cp;
   struct stat st;
+
+#ifndef SMALL_ARG_MAX
+  if (! linker)
+    return 1;
+#endif
 
   /* Construct the path from the two parts.  Ensure the string ends with "/.".
      The resulting path will be a directory even if the given path is a
@@ -3541,8 +3552,9 @@ is_linker_dir (path1, path2)
   *cp = '\0';
 
   /* Exclude directories that the linker is known to search.  */
-  if ((cp - path == 6 && strcmp (path, "/lib/.") == 0)
-      || (cp - path == 10 && strcmp (path, "/usr/lib/.") == 0))
+  if (linker
+      && ((cp - path == 6 && strcmp (path, "/lib/.") == 0)
+	  || (cp - path == 10 && strcmp (path, "/usr/lib/.") == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
