@@ -193,7 +193,8 @@ force_fit_type (tree t, int overflow)
   low = TREE_INT_CST_LOW (t);
   high = TREE_INT_CST_HIGH (t);
 
-  if (POINTER_TYPE_P (TREE_TYPE (t)))
+  if (POINTER_TYPE_P (TREE_TYPE (t))
+      || TREE_CODE (TREE_TYPE (t)) == OFFSET_TYPE)
     prec = POINTER_SIZE;
   else
     prec = TYPE_PRECISION (TREE_TYPE (t));

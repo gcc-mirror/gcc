@@ -9284,7 +9284,26 @@ build_ptrmemfunc_type (tree type)
 tree
 build_ptrmem_type (tree class_type, tree member_type)
 {
-  return build_pointer_type (build_offset_type (class_type, member_type));
+  if (TREE_CODE (member_type) == METHOD_TYPE)
+    {
+      tree arg_types;
+
+      arg_types = TYPE_ARG_TYPES (member_type);
+      class_type = (cp_build_qualified_type 
+		    (class_type,
+		     cp_type_quals (TREE_TYPE (TREE_VALUE (arg_types)))));
+      member_type 
+	= build_cplus_method_type (class_type, 
+				   TREE_TYPE (member_type),
+				   TREE_CHAIN (arg_types));
+      return build_ptrmemfunc_type (build_pointer_type (member_type));
+    }
+  else
+    {
+      my_friendly_assert (TREE_CODE (member_type) != FUNCTION_TYPE,
+			  20030716);
+      return build_offset_type (class_type, member_type);
+    }
 }
 
 /* DECL is a VAR_DECL defined in-class, whose TYPE is also given.
@@ -9519,10 +9538,6 @@ create_array_type_for_decl (tree name, tree type, tree size)
 
     case REFERENCE_TYPE:
       error_msg = "array of references";
-      break;
-
-    case OFFSET_TYPE:
-      error_msg = "array of data members";
       break;
 
     case METHOD_TYPE:
@@ -11360,8 +11375,6 @@ grokdeclarator (tree declarator,
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_pointer_type (type);
-      else if (TREE_CODE (type) == OFFSET_TYPE)
-	type = build_pointer_type (type);
     }
 
   {
@@ -11988,12 +12001,6 @@ grokparms (tree first_parm)
 	  if (TREE_CODE (type) == METHOD_TYPE)
 	    {
 	      error ("parameter `%D' invalidly declared method type", decl);
-	      type = build_pointer_type (type);
-	      TREE_TYPE (decl) = type;
-	    }
-	  else if (TREE_CODE (type) == OFFSET_TYPE)
-	    {
-	      error ("parameter `%D' invalidly declared offset type", decl);
 	      type = build_pointer_type (type);
 	      TREE_TYPE (decl) = type;
 	    }

@@ -331,8 +331,6 @@ get_tinfo_decl (tree type)
       return error_mark_node;
     }
 
-  if (TREE_CODE (type) == OFFSET_TYPE)
-    type = TREE_TYPE (type);
   if (TREE_CODE (type) == METHOD_TYPE)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
@@ -715,19 +713,17 @@ qualifier_flags (tree type)
 static bool
 target_incomplete_p (tree type)
 {
-  while (TREE_CODE (type) == POINTER_TYPE)
+  while (true)
     if (TYPE_PTRMEM_P (type))
       {
-        if (!COMPLETE_TYPE_P (TYPE_PTRMEM_CLASS_TYPE (type)))
-          return true;
-        type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
+	if (!COMPLETE_TYPE_P (TYPE_PTRMEM_CLASS_TYPE (type)))
+	  return true;
+	type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
       }
-    else
+    else if (TREE_CODE (type) == POINTER_TYPE)
       type = TREE_TYPE (type);
-  if (!COMPLETE_OR_VOID_TYPE_P (type))
-    return true;
-  
-  return false;
+    else
+      return !COMPLETE_OR_VOID_TYPE_P (type);
 }
 
 /* Return a CONSTRUCTOR for the common part of the type_info objects. This
@@ -999,12 +995,10 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
   my_friendly_assert (at_eof, 20021120);
   switch (TREE_CODE (type))
     {
+    case OFFSET_TYPE:
+      return ptm_initializer (var_desc, type, non_public_p);
     case POINTER_TYPE:
-      if (TYPE_PTRMEM_P (type))
-	return ptm_initializer (var_desc, type, non_public_p);
-      else
-	return ptr_initializer (var_desc, type, non_public_p);
-      break;
+      return ptr_initializer (var_desc, type, non_public_p);
     case ENUMERAL_TYPE:
       return generic_initializer (var_desc, type);
       break;
@@ -1164,8 +1158,10 @@ get_pseudo_ti_desc (tree type)
 {
   switch (TREE_CODE (type))
     {
+    case OFFSET_TYPE:
+      return ptm_desc_type_node;
     case POINTER_TYPE:
-      return TYPE_PTRMEM_P (type) ? ptm_desc_type_node : ptr_desc_type_node;
+      return ptr_desc_type_node;
     case ENUMERAL_TYPE:
       return enum_desc_type_node;
     case FUNCTION_TYPE:

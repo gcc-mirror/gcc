@@ -2421,8 +2421,7 @@ struct lang_decl GTY(())
   (ARITHMETIC_TYPE_P (TYPE)			\
    || TREE_CODE (TYPE) == ENUMERAL_TYPE		\
    || TYPE_PTR_P (TYPE)				\
-   || TYPE_PTRMEM_P (TYPE)			\
-   || TYPE_PTRMEMFUNC_P (TYPE))
+   || TYPE_PTR_TO_MEMBER_P (TYPE))
 
 /* [dcl.init.aggr]
 
@@ -2508,14 +2507,15 @@ struct lang_decl GTY(())
 #define TYPE_HAS_TRIVIAL_ASSIGN_REF(NODE) \
   (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
 
-#define TYPE_PTRMEM_P(NODE)					\
-  (TREE_CODE (NODE) == POINTER_TYPE				\
-   && TREE_CODE (TREE_TYPE (NODE)) == OFFSET_TYPE)
-#define TYPE_PTR_P(NODE)				\
-  (TREE_CODE (NODE) == POINTER_TYPE			\
-   && TREE_CODE (TREE_TYPE (NODE)) != OFFSET_TYPE)
-#define TYPE_PTROB_P(NODE)						\
-  (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
+/* Returns true if NODE is a pointer-to-data-member.  */
+#define TYPE_PTRMEM_P(NODE)			\
+  (TREE_CODE (NODE) == OFFSET_TYPE)
+#define TYPE_PTR_P(NODE)			\
+  (TREE_CODE (NODE) == POINTER_TYPE)
+#define TYPE_PTROB_P(NODE)				\
+  (TYPE_PTR_P (NODE) 					\
+   && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
+   && TREE_CODE (TREE_TYPE (NODE)) != METHOD_TYPE	\
    && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
 #define TYPE_PTROBV_P(NODE)						\
   (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE)
@@ -2535,6 +2535,10 @@ struct lang_decl GTY(())
 
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->ptrmemfunc_flag)
+
+/* Returns true if NODE is a pointer-to-member.  */
+#define TYPE_PTR_TO_MEMBER_P(NODE) \
+  (TYPE_PTRMEM_P (NODE) || TYPE_PTRMEMFUNC_P (NODE))
 
 /* Indicates when overload resolution may resolve to a pointer to
    member function. [expr.unary.op]/3 */
@@ -2574,13 +2578,13 @@ struct lang_decl GTY(())
    type `const X*'.  */
 #define TYPE_PTRMEM_CLASS_TYPE(NODE)			\
   (TYPE_PTRMEM_P (NODE)					\
-   ? TYPE_OFFSET_BASETYPE (TREE_TYPE (NODE))		\
+   ? TYPE_OFFSET_BASETYPE (NODE)		\
    : TYPE_PTRMEMFUNC_OBJECT_TYPE (NODE))
 
 /* For a pointer-to-member type of the form `T X::*', this is `T'.  */
 #define TYPE_PTRMEM_POINTED_TO_TYPE(NODE)		\
    (TYPE_PTRMEM_P (NODE)				\
-    ? TREE_TYPE (TREE_TYPE (NODE))			\
+    ? TREE_TYPE (NODE)					\
     : TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (NODE)))
 
 /* For a pointer-to-member constant `X::Y' this is the RECORD_TYPE for
@@ -3527,7 +3531,6 @@ extern tree build_method_call (tree, tree, tree, tree, int);
 extern bool null_ptr_cst_p (tree);
 extern bool sufficient_parms_p (tree);
 extern tree type_decays_to (tree);
-extern tree resolve_scoped_fn_name (tree, tree);
 extern tree build_user_type_conversion (tree, tree, int);
 extern tree build_new_function_call (tree, tree);
 extern tree build_operator_new_call (tree, tree, tree *, tree *);
@@ -3876,8 +3879,7 @@ extern int is_aggr_type				(tree, int);
 extern tree get_aggr_from_typedef		(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init       		(tree, tree, bool);
-extern tree build_offset_ref			(tree, tree);
-extern tree resolve_offset_ref			(tree);
+extern tree build_offset_ref			(tree, tree, bool);
 extern tree build_new				(tree, tree, tree, int);
 extern tree build_vec_init			(tree, tree, tree, int);
 extern tree build_x_delete			(tree, int, tree);
@@ -4272,7 +4274,6 @@ extern tree commonparms				(tree, tree);
 extern tree original_type			(tree);
 extern bool comp_except_specs			(tree, tree, bool);
 extern bool comptypes				(tree, tree, int);
-extern int comp_target_types			(tree, tree, int);
 extern bool compparms				(tree, tree);
 extern int comp_cv_qualification                (tree, tree);
 extern int comp_cv_qual_signature               (tree, tree);

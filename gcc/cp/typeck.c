@@ -48,22 +48,17 @@ Boston, MA 02111-1307, USA.  */
 static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree);
-static int comp_target_parms (tree, tree);
 static int comp_ptr_ttypes_real (tree, tree, int);
 static int comp_ptr_ttypes_const (tree, tree);
-static int comp_ptr_ttypes_reinterpret (tree, tree);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (tree, tree, bool);
 static tree common_base_type (tree, tree);
 static tree lookup_anon_field (tree, tree);
 static tree pointer_diff (tree, tree, tree);
-static tree qualify_type_recursive (tree, tree);
 static tree get_delta_difference (tree, tree, int);
-static int comp_cv_target_types (tree, tree, int);
 static void casts_away_constness_r (tree *, tree *);
 static bool casts_away_constness (tree, tree);
 static void maybe_warn_about_returning_address_of_local (tree);
-static tree strip_all_pointer_quals (tree);
 static tree lookup_destructor (tree, tree, tree);
 
 /* Return the target type of TYPE, which means return T for:
@@ -77,7 +72,7 @@ target_type (tree type)
 	 || TREE_CODE (type) == ARRAY_TYPE
 	 || TREE_CODE (type) == FUNCTION_TYPE
 	 || TREE_CODE (type) == METHOD_TYPE
-	 || TREE_CODE (type) == OFFSET_TYPE)
+	 || TYPE_PTRMEM_P (type))
     type = TREE_TYPE (type);
   return type;
 }
@@ -169,56 +164,9 @@ type_unknown_p (tree exp)
 {
   return (TREE_CODE (exp) == OVERLOAD
           || TREE_CODE (exp) == TREE_LIST
-	  || TREE_TYPE (exp) == unknown_type_node
-	  /* Until we get the type of non type-dependent expressions
-	     correct, we can have non-type dependent expressions with
-	     no type.  */
-	  || (TREE_TYPE (exp)
-	      && TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
-	      && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node));
+	  || TREE_TYPE (exp) == unknown_type_node);
 }
 
-/* Return a pointer or pointer to member type similar to T1, with a
-   cv-qualification signature that is the union of the cv-qualification
-   signatures of T1 and T2: [expr.rel], [expr.eq].  */
-
-static tree
-qualify_type_recursive (tree t1, tree t2)
-{
-  if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
-      || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2)))
-    {
-      tree tt1;
-      tree tt2;
-      tree b1;
-      int type_quals;
-      tree tgt;
-      tree attributes = (*targetm.merge_type_attributes) (t1, t2);
-
-      if (TYPE_PTRMEM_P (t1))
-	{
-	  b1 = TYPE_PTRMEM_CLASS_TYPE (t1);
-	  tt1 = TYPE_PTRMEM_POINTED_TO_TYPE (t1);
-	  tt2 = TYPE_PTRMEM_POINTED_TO_TYPE (t2);
-	}
-      else
-	{
-	  b1 = NULL_TREE;
-	  tt1 = TREE_TYPE (t1);
-	  tt2 = TREE_TYPE (t2);
-	}
-
-      type_quals = (cp_type_quals (tt1) | cp_type_quals (tt2));
-      tgt = qualify_type_recursive (tt1, tt2);
-      tgt = cp_build_qualified_type (tgt, type_quals);
-      if (b1)
-	t1 = build_ptrmem_type (b1, tgt);
-      else
-	t1 = build_pointer_type (tgt);
-      t1 = build_type_attribute_variant (t1, attributes);
-    }
-  return t1;
-}
 
 /* Return the common type of two parameter lists.
    We assume that comptypes has already been done and returned 1;
@@ -447,16 +395,85 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
     }
 }
 
+/* Subroutine of composite_pointer_type to implement the recursive
+   case.  See that function for documentation fo the parameters.  */
+
+static tree
+composite_pointer_type_r (tree t1, tree t2, const char* location)
+{
+  tree pointee1;
+  tree pointee2;
+  tree result_type;
+  tree attributes;
+
+  /* Determine the types pointed to by T1 and T2.  */
+  if (TREE_CODE (t1) == POINTER_TYPE)
+    {
+      pointee1 = TREE_TYPE (t1);
+      pointee2 = TREE_TYPE (t2);
+    }
+  else
+    {
+      pointee1 = TYPE_PTRMEM_POINTED_TO_TYPE (t1);
+      pointee2 = TYPE_PTRMEM_POINTED_TO_TYPE (t2);
+    }
+
+  /* [expr.rel]
+
+     Otherwise, the composite pointer type is a pointer type
+     similar (_conv.qual_) to the type of one of the operands,
+     with a cv-qualification signature (_conv.qual_) that is the
+     union of the cv-qualification signatures of the operand
+     types.  */
+  if (same_type_ignoring_top_level_qualifiers_p (pointee1, pointee2))
+    result_type = pointee1;
+  else if ((TREE_CODE (pointee1) == POINTER_TYPE
+	    && TREE_CODE (pointee2) == POINTER_TYPE)
+	   || (TYPE_PTR_TO_MEMBER_P (pointee1)
+	       && TYPE_PTR_TO_MEMBER_P (pointee2)))
+    result_type = composite_pointer_type_r (pointee1, pointee2, location);
+  else
+    {
+      pedwarn ("%s between distinct pointer types `%T' and `%T' "
+	       "lacks a cast",
+	       location, t1, t2);
+      result_type = void_type_node;
+    }
+  result_type = cp_build_qualified_type (result_type,
+					 (cp_type_quals (pointee1)
+					  | cp_type_quals (pointee2)));
+  result_type = build_pointer_type (result_type);
+  /* If the original types were pointers to members, so is the
+     result.  */
+  if (TYPE_PTR_TO_MEMBER_P (t1))
+    {
+      if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
+			TYPE_PTRMEM_CLASS_TYPE (t2)))
+	pedwarn ("%s between distinct pointer types `%T' and `%T' "
+		 "lacks a cast",
+		 location, t1, t2);
+      result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
+				       result_type);
+    }
+
+  /* Merge the attributes.  */
+  attributes = (*targetm.merge_type_attributes) (t1, t2);
+  return build_type_attribute_variant (result_type, attributes);
+}
+
 /* Return the composite pointer type (see [expr.rel]) for T1 and T2.
    ARG1 and ARG2 are the values with those types.  The LOCATION is a
-   string describing the current location, in case an error occurs.  */
+   string describing the current location, in case an error occurs. 
+
+   This routine also implements the computation of a common type for
+   pointers-to-members as per [expr.eq].  */
 
 tree 
 composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 			const char* location)
 {
-  tree result_type;
-  tree attributes;
+  tree class1;
+  tree class2;
 
   /* [expr.rel]
 
@@ -467,16 +484,6 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
   if (null_ptr_cst_p (arg2))
     return t1;
  
-  /* Deal with pointer-to-member functions in the same way as we deal
-     with pointers to functions.  */
-  if (TYPE_PTRMEMFUNC_P (t1))
-    t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
-  if (TYPE_PTRMEMFUNC_P (t2))
-    t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
-  
-  /* Merge the attributes.  */
-  attributes = (*targetm.merge_type_attributes) (t1, t2);
-
   /* We have:
 
        [expr.rel]
@@ -487,45 +494,78 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
        and cv2.
 
     If either type is a pointer to void, make sure it is T1.  */
-  if (VOID_TYPE_P (TREE_TYPE (t2)))
+  if (TREE_CODE (t2) == POINTER_TYPE && VOID_TYPE_P (TREE_TYPE (t2)))
     {
       tree t;
       t = t1;
       t1 = t2;
       t2 = t;
     }
+
   /* Now, if T1 is a pointer to void, merge the qualifiers.  */
-  if (VOID_TYPE_P (TREE_TYPE (t1)))
+  if (TREE_CODE (t1) == POINTER_TYPE && VOID_TYPE_P (TREE_TYPE (t1)))
     {
+      tree attributes;
+      tree result_type;
+
       if (pedantic && TYPE_PTRFN_P (t2))
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
-      t1 = TREE_TYPE (t1);
-      t2 = TREE_TYPE (t2);
-      result_type = cp_build_qualified_type (void_type_node,
-					     (cp_type_quals (t1)
-					      | cp_type_quals (t2)));
+      result_type 
+	= cp_build_qualified_type (void_type_node,
+				   (cp_type_quals (TREE_TYPE (t1))
+				    | cp_type_quals (TREE_TYPE (t2))));
       result_type = build_pointer_type (result_type);
+      /* Merge the attributes.  */
+      attributes = (*targetm.merge_type_attributes) (t1, t2);
+      return build_type_attribute_variant (result_type, attributes);
     }
-  else
+
+  /* [expr.eq] permits the application of a pointer conversion to
+     bring the pointers to a common type.  */
+  if (TREE_CODE (t1) == POINTER_TYPE && TREE_CODE (t2) == POINTER_TYPE
+      && CLASS_TYPE_P (TREE_TYPE (t1))
+      && CLASS_TYPE_P (TREE_TYPE (t2))
+      && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (t1),
+						     TREE_TYPE (t2)))
     {
-      tree full1 = qualify_type_recursive (t1, t2);
-      tree full2 = qualify_type_recursive (t2, t1);
+      class1 = TREE_TYPE (t1);
+      class2 = TREE_TYPE (t2);
 
-      int val = comp_target_types (full1, full2, 1);
-
-      if (val > 0)
-	result_type = full1;
-      else if (val < 0)
-	result_type = full2;
+      if (DERIVED_FROM_P (class1, class2))
+	t2 = (build_pointer_type 
+	      (cp_build_qualified_type (class1, TYPE_QUALS (class2))));
+      else if (DERIVED_FROM_P (class2, class1))
+	t1 = (build_pointer_type 
+	      (cp_build_qualified_type (class2, TYPE_QUALS (class1))));
       else
 	{
-	  pedwarn ("%s between distinct pointer types `%T' and `%T' lacks a cast",
-		      location, t1, t2);
-	  result_type = ptr_type_node;
+	  error ("%s between distinct pointer types `%T' and `%T' "
+		 "lacks a cast", location, t1, t2);
+	  return error_mark_node;
+	}
+    }
+  /* [expr.eq] permits the application of a pointer-to-member
+     conversion to change the class type of one of the types.  */
+  else if (TYPE_PTR_TO_MEMBER_P (t1)
+	   && !same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
+			    TYPE_PTRMEM_CLASS_TYPE (t2)))
+    {
+      class1 = TYPE_PTRMEM_CLASS_TYPE (t1);
+      class2 = TYPE_PTRMEM_CLASS_TYPE (t2);
+
+      if (DERIVED_FROM_P (class1, class2))
+	t1 = build_ptrmem_type (class2, TYPE_PTRMEM_POINTED_TO_TYPE (t1));
+      else if (DERIVED_FROM_P (class2, class1))
+	t2 = build_ptrmem_type (class1, TYPE_PTRMEM_POINTED_TO_TYPE (t2));
+      else
+	{
+	  error ("%s between distinct pointer-to-member types `%T' and `%T' "
+		 "lacks a cast", location, t1, t2);
+	  return error_mark_node;
 	}
     }
 
-  return build_type_attribute_variant (result_type, attributes);
+  return composite_pointer_type_r (t1, t2, location);
 }
 
 /* Return the merged type of two types.
@@ -556,8 +596,6 @@ merge_types (tree t1, tree t2)
 
   /* Merge the attributes.  */
   attributes = (*targetm.merge_type_attributes) (t1, t2);
-
-  /* Treat an enum type as the unsigned integer type of the same width.  */
 
   if (TYPE_PTRMEMFUNC_P (t1))
     t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
@@ -706,7 +744,6 @@ common_type (tree t1, tree t2)
 	   || (TYPE_PTRMEMFUNC_P (t1) && TYPE_PTRMEMFUNC_P (t2)))
     return composite_pointer_type (t1, t2, error_mark_node, error_mark_node,
 				   "conversion");
-
   else
     abort ();
 }
@@ -995,206 +1032,6 @@ comptypes (tree t1, tree t2, int strict)
   return false;
 }
 
-/* Subroutine of comp_target-types.  Make sure that the cv-quals change
-   only in the same direction as the target type.  */
-
-static int
-comp_cv_target_types (tree ttl, tree ttr, int nptrs)
-{
-  int t;
-
-  if (!at_least_as_qualified_p (ttl, ttr)
-      && !at_least_as_qualified_p (ttr, ttl))
-    /* The qualifications are incomparable.  */
-    return 0;
-
-  if (TYPE_MAIN_VARIANT (ttl) == TYPE_MAIN_VARIANT (ttr))
-    return more_qualified_p (ttr, ttl) ? -1 : 1;
-
-  t = comp_target_types (ttl, ttr, nptrs);
-  if ((t == 1 && at_least_as_qualified_p (ttl, ttr)) 
-      || (t == -1 && at_least_as_qualified_p (ttr, ttl)))
-    return t;
-
-  return 0;
-}
-
-/* Return 1 or -1 if TTL and TTR are pointers to types that are equivalent,
-   ignoring their qualifiers, 0 if not. Return 1 means that TTR can be
-   converted to TTL. Return -1 means that TTL can be converted to TTR but
-   not vice versa.
-
-   NPTRS is the number of pointers we can strip off and keep cool.
-   This is used to permit (for aggr A, aggr B) A, B* to convert to A*,
-   but to not permit B** to convert to A**.
-
-   This should go away.  Callers should use can_convert or something
-   similar instead.  (jason 17 Apr 1997)  */
-
-int
-comp_target_types (tree ttl, tree ttr, int nptrs)
-{
-  ttl = TYPE_MAIN_VARIANT (ttl);
-  ttr = TYPE_MAIN_VARIANT (ttr);
-  if (same_type_p (ttl, ttr))
-    return 1;
-
-  if (TREE_CODE (ttr) != TREE_CODE (ttl))
-    return 0;
-
-  if ((TREE_CODE (ttr) == POINTER_TYPE
-       || TREE_CODE (ttr) == REFERENCE_TYPE)
-      /* If we get a pointer with nptrs == 0, we don't allow any tweaking
-	 of the type pointed to.  This is necessary for reference init
-	 semantics.  We won't get here from a previous call with nptrs == 1;
-	 for multi-level pointers we end up in comp_ptr_ttypes.  */
-      && nptrs > 0)
-    {
-      int is_ptr = TREE_CODE (ttr) == POINTER_TYPE;
-
-      ttl = TREE_TYPE (ttl);
-      ttr = TREE_TYPE (ttr);
-
-      if (is_ptr)
-	{
-	  if (TREE_CODE (ttl) == UNKNOWN_TYPE
-	      || TREE_CODE (ttr) == UNKNOWN_TYPE)
-	    return 1;
-	  else if (TREE_CODE (ttl) == VOID_TYPE
-		   && TREE_CODE (ttr) != FUNCTION_TYPE
-		   && TREE_CODE (ttr) != METHOD_TYPE
-		   && TREE_CODE (ttr) != OFFSET_TYPE)
-	    return 1;
-	  else if (TREE_CODE (ttr) == VOID_TYPE
-		   && TREE_CODE (ttl) != FUNCTION_TYPE
-		   && TREE_CODE (ttl) != METHOD_TYPE
-		   && TREE_CODE (ttl) != OFFSET_TYPE)
-	    return -1;
-	  else if (TREE_CODE (ttl) == POINTER_TYPE
-		   || TREE_CODE (ttl) == ARRAY_TYPE)
-	    {
-	      if (comp_ptr_ttypes (ttl, ttr))
-		return 1;
-	      else if (comp_ptr_ttypes (ttr, ttl))
-		return -1;
-	      return 0;
-	    }
-	}
-
-      /* Const and volatile mean something different for function types,
-	 so the usual checks are not appropriate.  */
-      if (TREE_CODE (ttl) == FUNCTION_TYPE || TREE_CODE (ttl) == METHOD_TYPE)
-	return comp_target_types (ttl, ttr, nptrs - 1);
-
-      return comp_cv_target_types (ttl, ttr, nptrs - 1);
-    }
-
-  my_friendly_assert (TREE_CODE (ttr) != ARRAY_TYPE, 20030617);
-  if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
-    {
-      tree argsl, argsr;
-      int saw_contra = 0;
-
-      if (pedantic)
-	{
-	  if (!same_type_p (TREE_TYPE (ttl), TREE_TYPE (ttr)))
-	    return 0;
-	}
-      else
-	{
-	  switch (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
-	    {
-	    case 0:
-	      return 0;
-	    case -1:
-	      saw_contra = 1;
-	    }
-	}
-
-      argsl = TYPE_ARG_TYPES (ttl);
-      argsr = TYPE_ARG_TYPES (ttr);
-
-      /* Compare 'this' here, not in comp_target_parms.  */
-      if (TREE_CODE (ttr) == METHOD_TYPE)
-	{
-	  tree tl = TYPE_METHOD_BASETYPE (ttl);
-	  tree tr = TYPE_METHOD_BASETYPE (ttr);
-
-	  if (!same_or_base_type_p (tr, tl))
-	    {
-	      if (same_or_base_type_p (tl, tr))
-		saw_contra = 1;
-	      else
-		return 0;
-	    }
-
-	  argsl = TREE_CHAIN (argsl);
-	  argsr = TREE_CHAIN (argsr);
-	}
-
-	switch (comp_target_parms (argsl, argsr))
-	  {
-	  case 0:
-	    return 0;
-	  case -1:
-	    saw_contra = 1;
-	  }
-
-	return saw_contra ? -1 : 1;
-    }
-  /* for C++ */
-  else if (TREE_CODE (ttr) == OFFSET_TYPE)
-    {
-      int base;
-
-      /* Contravariance: we can assign a pointer to base member to a pointer
-	 to derived member.  Note difference from simple pointer case, where
-	 we can pass a pointer to derived to a pointer to base.  */
-      if (same_or_base_type_p (TYPE_OFFSET_BASETYPE (ttr),
-			       TYPE_OFFSET_BASETYPE (ttl)))
-	base = 1;
-      else if (same_or_base_type_p (TYPE_OFFSET_BASETYPE (ttl),
-				    TYPE_OFFSET_BASETYPE (ttr)))
-	{
-	  tree tmp = ttl;
-	  ttl = ttr;
-	  ttr = tmp;
-	  base = -1;
-	}
-      else
-	return 0;
-
-      ttl = TREE_TYPE (ttl);
-      ttr = TREE_TYPE (ttr);
-
-      if (TREE_CODE (ttl) == POINTER_TYPE
-	  || TREE_CODE (ttl) == ARRAY_TYPE)
-	{
-	  if (comp_ptr_ttypes (ttl, ttr))
-	    return base;
-	  return 0;
-	}
-      else
-	{
-	  if (comp_cv_target_types (ttl, ttr, nptrs) == 1)
-	    return base;
-	  return 0;
-	}
-    }
-  else if (IS_AGGR_TYPE (ttl))
-    {
-      if (nptrs < 0)
-	return 0;
-      if (same_or_base_type_p (ttl, ttr))
-	return 1;
-      if (same_or_base_type_p (ttr, ttl))
-	return -1;
-      return 0;
-    }
-
-  return 0;
-}
-
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
 
 bool
@@ -1333,80 +1170,6 @@ compparms (tree parms1, tree parms2)
   return true;
 }
 
-/* This really wants return whether or not parameter type lists
-   would make their owning functions assignment compatible or not.
-
-   The return value is like for comp_target_types.
-
-   This should go away, possibly with the exception of the empty parmlist
-   conversion; there are no conversions between function types in C++.
-   (jason 17 Apr 1997)  */
-
-static int
-comp_target_parms (tree parms1, tree parms2)
-{
-  register tree t1 = parms1, t2 = parms2;
-  int warn_contravariance = 0;
-
-  /* In C, an unspecified parmlist matches any specified parmlist
-     whose argument types don't need default promotions.  This is not
-     true for C++, but let's do it anyway for unfixed headers.  */
-
-  if (t1 == 0 && t2 != 0)
-    {
-      pedwarn ("ISO C++ prohibits conversion from `%#T' to `(...)'",
-		  parms2);
-      return self_promoting_args_p (t2);
-    }
-  if (t2 == 0)
-    return self_promoting_args_p (t1);
-
-  for (; t1 || t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-    {
-      tree p1, p2;
-
-      /* If one parmlist is shorter than the other, they fail to match.  */
-      if (!t1 || !t2)
-	return 0;
-      p1 = TREE_VALUE (t1);
-      p2 = TREE_VALUE (t2);
-      if (same_type_p (p1, p2))
-	continue;
-
-      if (pedantic)
-	return 0;
-
-      if ((TREE_CODE (p1) == POINTER_TYPE && TREE_CODE (p2) == POINTER_TYPE)
-	  || (TREE_CODE (p1) == REFERENCE_TYPE
-	      && TREE_CODE (p2) == REFERENCE_TYPE))
-	{
-	  /* The following is wrong for contravariance,
-	     but many programs depend on it.  */
-	  if (TREE_TYPE (p1) == void_type_node)
-	    continue;
-	  if (TREE_TYPE (p2) == void_type_node)
-	    {
-	      warn_contravariance = 1;
-	      continue;
-	    }
-	  if (IS_AGGR_TYPE (TREE_TYPE (p1))
-	      && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (p1),
-							     TREE_TYPE (p2)))
-	    return 0;
-	}
-      /* Note backwards order due to contravariance.  */
-      if (comp_target_types (p2, p1, 1) <= 0)
-	{
-	  if (comp_target_types (p1, p2, 1) > 0)
-	    {
-	      warn_contravariance = 1;
-	      continue;
-	    }
-	  return 0;
-	}
-    }
-  return warn_contravariance ? -1 : 1;
-}
 
 tree
 cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
@@ -1429,12 +1192,6 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
       if (complain && (pedantic || warn_pointer_arith))
 	pedwarn ("invalid application of `%s' to a member function", op_name);
       value = size_one_node;
-    }
-  else if (type_code == OFFSET_TYPE)
-    {
-      if (complain)
-	error ("invalid application of `%s' to non-static member", op_name);
-      value = size_zero_node;
     }
   else
     value = c_sizeof_or_alignof_type (complete_type (type), op, complain);
@@ -2277,7 +2034,7 @@ build_indirect_ref (tree ptr, const char *errorstring)
     }
   /* `pointer' won't be an error_mark_node if we were given a
      pointer to member, so it's cool to check for this here.  */
-  else if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+  else if (TYPE_PTR_TO_MEMBER_P (type))
     error ("invalid use of `%s' on pointer to member", errorstring);
   else if (pointer != error_mark_node)
     {
@@ -3010,7 +2767,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       /* Subtraction of two similar pointers.
 	 We must subtract them as integers, then divide by object size.  */
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
-	  && comp_target_types (type0, type1, 1))
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
+							TREE_TYPE (type1)))
 	return pointer_diff (op0, op1, common_type (type0, type1));
       /* Handle pointer minus int.  Just like pointer plus int.  */
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
@@ -3172,12 +2930,15 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == COMPLEX_TYPE))
 	short_compare = 1;
-      else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
+      else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
+	       || (TYPE_PTRMEM_P (type0) && TYPE_PTRMEM_P (type1)))
 	result_type = composite_pointer_type (type0, type1, op0, op1,
 					      "comparison");
-      else if (code0 == POINTER_TYPE && null_ptr_cst_p (op1))
+      else if ((code0 == POINTER_TYPE || TYPE_PTRMEM_P (type0))
+	       && null_ptr_cst_p (op1))
 	result_type = type0;
-      else if (code1 == POINTER_TYPE && null_ptr_cst_p (op0))
+      else if ((code1 == POINTER_TYPE || TYPE_PTRMEM_P (type1))
+	       && null_ptr_cst_p (op0))
 	result_type = type1;
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
@@ -3656,8 +3417,6 @@ pointer_diff (register tree op0, register tree op1, register tree ptrtype)
 	pedwarn ("ISO C++ forbids using pointer to a function in subtraction");
       if (TREE_CODE (target_type) == METHOD_TYPE)
 	pedwarn ("ISO C++ forbids using pointer to a method in subtraction");
-      if (TREE_CODE (target_type) == OFFSET_TYPE)
-	pedwarn ("ISO C++ forbids using pointer to a member in subtraction");
     }
 
   /* First do the subtraction as integers;
@@ -3671,12 +3430,9 @@ pointer_diff (register tree op0, register tree op1, register tree ptrtype)
   if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (op1))))
     error ("invalid use of a pointer to an incomplete type in pointer arithmetic");
 
-  op1 = ((TREE_CODE (target_type) == VOID_TYPE
-	  || TREE_CODE (target_type) == FUNCTION_TYPE
-	  || TREE_CODE (target_type) == METHOD_TYPE
-	  || TREE_CODE (target_type) == OFFSET_TYPE)
-	 ? integer_one_node
-	 : size_in_bytes (target_type));
+  op1 = (TYPE_PTROB_P (ptrtype) 
+	 ? size_in_bytes (target_type)
+	 : integer_one_node);
 
   /* Do the division.  */
 
@@ -3999,7 +3755,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
 	if (TREE_CODE (argtype) == POINTER_TYPE)
 	  {
-	    enum tree_code tmp = TREE_CODE (TREE_TYPE (argtype));
 	    tree type = complete_type (TREE_TYPE (argtype));
 	    
 	    if (!COMPLETE_OR_VOID_TYPE_P (type))
@@ -4008,8 +3763,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 			  || code == POSTINCREMENT_EXPR)
 			 ? "increment" : "decrement"), TREE_TYPE (argtype));
 	    else if ((pedantic || warn_pointer_arith)
-		     && (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
-			 || tmp == VOID_TYPE || tmp == OFFSET_TYPE))
+		     && !TYPE_PTROB_P (argtype))
 	      pedwarn ("ISO C++ forbids %sing a pointer of type `%T'",
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
@@ -4072,13 +3826,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 		error ("invalid use of `--' on bool variable `%D'", arg);
 		return error_mark_node;
 	      }
-#if 0
-	    /* This will only work if someone can convince Kenner to accept
-	       my patch to expand_increment. (jason)  */
-	    val = build (code, TREE_TYPE (arg), arg, inc);
-#else
 	    val = boolean_increment (code, arg);
-#endif
 	  }
 	else
 	  val = build (code, TREE_TYPE (arg), arg, inc);
@@ -4092,6 +3840,10 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	 regardless of NOCONVERT.  */
 
       argtype = lvalue_type (arg);
+
+      if (TREE_CODE (arg) == OFFSET_REF)
+	goto offset_ref;
+
       if (TREE_CODE (argtype) == REFERENCE_TYPE)
 	{
 	  arg = build1
@@ -4183,9 +3935,10 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 			 "  Say `&%T::%D'",
 			 base, name);
 	    }
-	  arg = build_offset_ref (base, name);
+	  arg = build_offset_ref (base, name, /*address_p=*/true);
         }
-        
+
+    offset_ref:        
       if (type_unknown_p (arg))
 	return build1 (ADDR_EXPR, unknown_type_node, arg);
 	
@@ -4338,11 +4091,8 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 
   if (TREE_CODE (TREE_TYPE (arg)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (arg)) == METHOD_TYPE
-      || TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
+      || TREE_CODE (arg) == OFFSET_REF)
     {
-      /* The representation of something of type OFFSET_TYPE
-	 is really the representation of a pointer to it.
-	 Here give the representation its true type.  */
       tree t;
 
       my_friendly_assert (TREE_CODE (arg) != SCOPE_REF, 313);
@@ -4599,14 +4349,16 @@ build_compound_expr (tree list)
 }
 
 /* Issue an error message if casting from SRC_TYPE to DEST_TYPE casts
-   away constness.  */
+   away constness.  DESCRIPTION explains what operation is taking
+   place.  */
 
 static void
-check_for_casting_away_constness (tree src_type, tree dest_type)
+check_for_casting_away_constness (tree src_type, tree dest_type,
+				  const char *description)
 {
   if (casts_away_constness (src_type, dest_type))
-    error ("static_cast from type `%T' to type `%T' casts away constness",
-	   src_type, dest_type);
+    error ("%s from type `%T' to type `%T' casts away constness",
+	   description, src_type, dest_type);
 }
 
 /* Return an expression representing static_cast<TYPE>(EXPR).  */
@@ -4726,7 +4478,7 @@ build_static_cast (tree type, tree expr)
     {
       tree base;
 
-      check_for_casting_away_constness (intype, type);
+      check_for_casting_away_constness (intype, type, "static_cast");
       base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype), 
 			  ba_check | ba_quiet, NULL);
       return build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
@@ -4758,15 +4510,18 @@ build_static_cast (tree type, tree expr)
 	}
       if (can_convert (t1, t2))
 	{
-	  check_for_casting_away_constness (intype, type);
+	  check_for_casting_away_constness (intype, type, "static_cast");
 	  if (TYPE_PTRMEM_P (type))
 	    {
+	      tree delta;
+
 	      if (TREE_CODE (expr) == PTRMEM_CST)
 		expr = cplus_expand_constant (expr);
-	      expr = cp_build_binary_op (PLUS_EXPR, 
-					 cp_convert (ptrdiff_type_node, expr),
-					 get_delta_difference (c1, c2, 
-							       /*force=*/1));
+	      delta = get_delta_difference (c1, c2, /*force=*/1);
+	      if (!integer_zerop (delta))
+		expr = cp_build_binary_op (PLUS_EXPR, 
+					   build_nop (ptrdiff_type_node, expr),
+					   delta);
 	      return build_nop (type, expr);
 	    }
 	  else
@@ -4785,7 +4540,7 @@ build_static_cast (tree type, tree expr)
       && VOID_TYPE_P (TREE_TYPE (intype))
       && TYPE_PTROB_P (type))
     {
-      check_for_casting_away_constness (intype, type);
+      check_for_casting_away_constness (intype, type, "static_cast");
       return build_nop (type, expr);
     }
 
@@ -4856,10 +4611,7 @@ build_reinterpret_cast (tree type, tree expr)
   else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
-      if (! comp_ptr_ttypes_reinterpret (TREE_TYPE (type), TREE_TYPE (intype)))
-	pedwarn ("reinterpret_cast from `%T' to `%T' casts away const (or volatile)",
-		    intype, type);
-
+      check_for_casting_away_constness (intype, type, "reinterpret_cast");
       expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
@@ -4932,8 +4684,9 @@ build_const_cast (tree type, tree expr)
 	  return convert_from_reference (expr);
 	}
     }
-  else if (TREE_CODE (type) == POINTER_TYPE
-	   && TREE_CODE (intype) == POINTER_TYPE
+  else if (((TREE_CODE (type) == POINTER_TYPE
+	     && TREE_CODE (intype) == POINTER_TYPE)
+	    || (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype)))
 	   && comp_ptr_ttypes_const (TREE_TYPE (type), TREE_TYPE (intype)))
     return cp_convert (type, expr);
 
@@ -5048,11 +4801,11 @@ build_c_cast (tree type, tree expr)
                 otype, type);
 
   if (TREE_CODE (type) == INTEGER_TYPE
-      && TREE_CODE (otype) == POINTER_TYPE
+      && TYPE_PTR_P (otype)
       && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
     warning ("cast from pointer to integer of different size");
 
-  if (TREE_CODE (type) == POINTER_TYPE
+  if (TYPE_PTR_P (type)
       && TREE_CODE (otype) == INTEGER_TYPE
       && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
       /* Don't warn about converting any constant.  */
@@ -5785,12 +5538,8 @@ static tree
 convert_for_assignment (tree type, tree rhs,
 			const char *errtype, tree fndecl, int parmnum)
 {
-  register enum tree_code codel = TREE_CODE (type);
   register tree rhstype;
   register enum tree_code coder;
-
-  if (codel == OFFSET_TYPE)
-    abort ();
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
@@ -6266,7 +6015,7 @@ check_return_expr (tree retval)
 static int
 comp_ptr_ttypes_real (tree to, tree from, int constp)
 {
-  int to_more_cv_qualified = 0;
+  bool to_more_cv_qualified = false;
 
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
@@ -6289,8 +6038,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    {
 	      if (constp == 0)
 		return 0;
-	      else
-		++to_more_cv_qualified;
+	      to_more_cv_qualified = true;
 	    }
 
 	  if (constp > 0)
@@ -6369,40 +6117,6 @@ comp_ptr_ttypes_const (tree to, tree from)
     }
 }
 
-/* Like comp_ptr_ttypes, for reinterpret_cast.  */
-
-static int
-comp_ptr_ttypes_reinterpret (tree to, tree from)
-{
-  int constp = 1;
-
-  for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
-    {
-      if (TREE_CODE (from) == OFFSET_TYPE)
-	from = TREE_TYPE (from);
-      if (TREE_CODE (to) == OFFSET_TYPE)
-	to = TREE_TYPE (to);
-
-      /* Const and volatile mean something different for function types,
-	 so the usual checks are not appropriate.  */
-      if (TREE_CODE (from) != FUNCTION_TYPE && TREE_CODE (from) != METHOD_TYPE
-	  && TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
-	{
-	  if (!at_least_as_qualified_p (to, from))
-	    return 0;
-
-	  if (! constp
-	      && !at_least_as_qualified_p (from, to))
-	    return 0;
-	  constp &= TYPE_READONLY (to);
-	}
-
-      if (TREE_CODE (from) != POINTER_TYPE
-	  || TREE_CODE (to) != POINTER_TYPE)
-	return 1;
-    }
-}
-
 /* Returns the type qualifiers for this type, including the qualifiers on the
    elements for an array type.  */
 
@@ -6442,9 +6156,9 @@ casts_away_constness_r (tree *t1, tree *t2)
      pointer to member level is ignored when determining if a const
      cv-qualifier has been cast away.  */
   if (TYPE_PTRMEM_P (*t1))
-    *t1 = build_pointer_type (TREE_TYPE (TREE_TYPE (*t1)));
+    *t1 = build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (*t1));
   if (TYPE_PTRMEM_P (*t2))
-    *t2 = build_pointer_type (TREE_TYPE (TREE_TYPE (*t2)));
+    *t2 = build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (*t2));
 
   /* [expr.const.cast]
 
@@ -6513,8 +6227,8 @@ casts_away_constness (tree t1, tree t2)
        "pointer to T1" to the type "pointer to T2" casts away
        constness.  */
     return casts_away_constness
-      (build_pointer_type (TREE_TYPE (TREE_TYPE (t1))),
-       build_pointer_type (TREE_TYPE (TREE_TYPE (t2))));
+      (build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (t1)),
+       build_pointer_type (TYPE_PTRMEM_POINTED_TO_TYPE (t2)));
 
   /* Casting away constness is only something that makes sense for
      pointer or reference types.  */
@@ -6530,23 +6244,6 @@ casts_away_constness (tree t1, tree t2)
     return true;
 
   return false;
-}
-
-/* Returns TYPE with its cv qualifiers removed
-   TYPE is T cv* .. *cv where T is not a pointer type,
-   returns T * .. *. (If T is an array type, then the cv qualifiers
-   above are those of the array members.)  */
-
-static tree
-strip_all_pointer_quals (tree type)
-{
-  if (TREE_CODE (type) == POINTER_TYPE)
-    return build_pointer_type (strip_all_pointer_quals (TREE_TYPE (type)));
-  else if (TREE_CODE (type) == OFFSET_TYPE)
-    return build_offset_type (TYPE_OFFSET_BASETYPE (type),
-			      strip_all_pointer_quals (TREE_TYPE (type)));
-  else
-    return TYPE_MAIN_VARIANT (type);
 }
 
 /* If T is a REFERENCE_TYPE return the type to which T refers.

@@ -506,7 +506,7 @@ digest_init (tree type, tree init, tree* tail)
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
       || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
-      || TYPE_PTRMEMFUNC_P (type))
+      || TYPE_PTR_TO_MEMBER_P (type))
     {
       if (raw_constructor)
 	{
@@ -1070,8 +1070,7 @@ build_m_component_ref (tree datum, tree component)
     return error_mark_node;
 
   ptrmem_type = TREE_TYPE (component);
-  if (!TYPE_PTRMEM_P (ptrmem_type) 
-      && !TYPE_PTRMEMFUNC_P (ptrmem_type))
+  if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
     {
       error ("`%E' cannot be used as a member pointer, since it is of type `%T'", 
 	     component, ptrmem_type);
@@ -1107,10 +1106,12 @@ build_m_component_ref (tree datum, tree component)
       type = cp_build_qualified_type (type,
 				      (cp_type_quals (type)  
 				       | cp_type_quals (TREE_TYPE (datum))));
-
-      datum = build_base_path (PLUS_EXPR, build_address (datum), binfo, 1);
-      component = cp_convert (ptrdiff_type_node, component);
-      datum = build (PLUS_EXPR, build_pointer_type (type), datum, component);
+      /* Build an expression for "object + offset" where offset is the
+	 value stored in the pointer-to-data-member.  */
+      datum = build (PLUS_EXPR, build_pointer_type (type),
+		     build_base_path (PLUS_EXPR, build_address (datum), 
+				      binfo, 1),
+		     build_nop (ptrdiff_type_node, component));
       return build_indirect_ref (datum, 0);
     }
   else

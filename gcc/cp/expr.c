@@ -51,11 +51,8 @@ cplus_expand_constant (tree cst)
 	member = PTRMEM_CST_MEMBER (cst);
 
 	if (TREE_CODE (member) == FIELD_DECL) 
-	  {
-	    /* Find the offset for the field.  */
-	    tree offset = byte_position (member);
-	    cst = fold (build1 (NOP_EXPR, type, offset));
-	  }
+	  /* Find the offset for the field.  */
+	  cst = fold (build_nop (type, byte_position (member)));
 	else
 	  {
 	    tree delta;

@@ -1,3 +1,89 @@
+2003-07-22  Mark Mitchell  <mark@codesourcery.com>
+
+	Eliminate use of POINTER_TYPE for pointers-to-members.
+	* call.c (standard_conversion): Rework pointer-to-member handling.
+	Add comments.
+	(add_builtin_candidate): Likewise.
+	(resolve_scoped_fn_name): Remove.
+	(build_conditional_expr): Rework pointer-to-member handling.
+	(compare_ics): Likewise.
+	* class.c (check_field_decls): Use TYPE_PTR_P.
+	* cp-lang.c (cp_var_mod_type_p): Rework pointer-to-member
+	handling.
+	* cp-tree.h (SCALAR_TYPE_P): Use TYPE_PTR_TO_MEMBER_P.
+	(TYPE_PTRMEM_P): Add comment.
+	(TYPE_PTR_P): Simplify.
+	(TYPE_PTROB_P): Correct definition.
+	(TYPE_PTR_TO_MEMBER_P): New macro.
+	(TYPE_PTRMEM_CLASS_TYPE): Adjust.
+	(TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
+	(resolved_scoped_fn_name): Remove declaration.
+	(build_offset_ref): Change prototype.
+	(resolve_offset_ref): Remove.
+	(comp_target_types): Remove.
+	* cvt.c (cp_convert_to_pointer): Rework pointer-to-member
+	handling.
+	(convert_to_reference): Use can_convert.
+	(ocp_convert): Improve error handling.  Rework pointer-to-member
+	handling.
+	(perform_qualification_conversions): Rework pointer-to-member
+	handling.
+	* decl.c (build_ptrmem_type): Handle functions too.
+	(create_array_type_for_decl): Remove OFFSET_TYPE error message.
+	(grokdeclarator): Use OFFSET_TYPE for pointers to data members.
+	(grokparms): Remove OFFSET_TYPE error message.
+	* dump.c (cp_dump_tree): Rework pointer-to-member handling.
+	* error.c (dump_type_prefix): Likewise.
+	* expr.c (cplus_expand_constant): Use build_nop.
+	* init.c (build_offset_ref): Add address_p parameter.  Fold in
+	necessary bits from resolve_offset_ref.
+	(resolve_offset_ref): Remove.
+	* parser.c (cp_parser_postfix_expression): Remove special case
+	code for OFFSET_TYPE.
+	* pt.c (convert_nontype_argument): Rework pointer-to-member
+	handling.
+	(convert_template_argument): Likewise.
+	(unify): Likewise.
+	(invalid_nontype_parm_type_p): Likewise.
+	(dependent_type_p_r): Likewise.
+	* rtti.c (get_tinfo_decl): Remove OFFSET_TYPE special case.
+	(target_incomplete_p_): Rework pointer-to-member
+	handling.
+	(get_pseudo_ti_init): Likewise.
+	(get_pseudo_ti_desc): Likewise.
+	* semantics.c (finish_qualified_id_expr): Adjust call to
+	build_offset_ref.  Remove use of resolve_offset_ref.
+	* tree.c (pod_type_p): Use TYPE_PTR_TO_MEMBER_P.
+	* typeck.c (target_type): Use TYPE_PTRMEM_P.
+	(type_unknown_p): Remove obsolete code about the time before
+	non-dependent expressions were handled correctly.
+	(qualify_type_recursive): Remove.
+	(composite_pointer_type_r): New function.
+	(composite_pointer_type): Use it.
+	(merge_types): Remove dead comments.
+	(comp_cv_target_types): Remove.
+	(comp_target_types): Likewise.
+	(comp_target_parms): Likewise.
+	(cxx_sizeof_or_alignof_type): Remove OFFSET_TYPE error.
+	(build_indirect_ref): Use TYPE_PTR_TO_MEMBER_P.
+	(build_binary_op): Do not use of comp_target_types.
+	(pointer_diff): Remove OFFSET_TYPE case.
+	(build_unary_op): Adjust pointer-to-member handling.
+	(unary_complex_lvalue): Likewise.
+	(check_for_casting_away_constness): Add description parameter.
+	(build_static_cast): Pass it.
+	(build_reinterpret_cast): Use check_for_casting_away_constness.
+	(build_const_cast): Adjust pointer-to-member handling.
+	(build_c_cast): Likewise.
+	(convert_for_assignment): Remove OFFSET_TYPE error message.
+	(comp_ptr_ttypes_real): Adjust pointer-to-member handling.
+	(comp_ptr_ttypes_reinterpret): Remove.
+	(casts_away_constness_r): Adjust pointer-to-member handling.
+	(casts_away_constness): Liekwise.
+	(strip_all_pointer_quals): Remove.
+	* typeck2.c (digest_init): Adjust pointer-to-member handling.
+	(build_m_component_ref): Likewise.
+	
 2003-07-22  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* lex.c (unqualified_fn_lookup_error): Mention that the error

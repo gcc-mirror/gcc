@@ -3004,8 +3004,7 @@ convert_nontype_argument (tree type, tree expr)
        Check this first since if expr_type is the unknown_type_node
        we would otherwise complain below.  */
     ;
-  else if (TYPE_PTRMEM_P (expr_type)
-	   || TYPE_PTRMEMFUNC_P (expr_type))
+  else if (TYPE_PTR_TO_MEMBER_P (expr_type))
     {
       if (TREE_CODE (expr) != PTRMEM_CST)
 	goto bad_argument;
@@ -3038,8 +3037,7 @@ convert_nontype_argument (tree type, tree expr)
 		  else
 		    error ("it must be the address of an object with external linkage");
 		}
-	      else if (TYPE_PTRMEM_P (expr_type)
-		       || TYPE_PTRMEMFUNC_P (expr_type))
+	      else if (TYPE_PTR_TO_MEMBER_P (expr_type))
 		error ("it must be a pointer-to-member of the form `&X::Y'");
 
 	      return NULL_TREE;
@@ -3070,9 +3068,7 @@ convert_nontype_argument (tree type, tree expr)
 	  return error_mark_node;
 	}
     }
-  else if (INTEGRAL_TYPE_P (expr_type) 
-	   || TYPE_PTRMEM_P (expr_type) 
-	   || TYPE_PTRMEMFUNC_P (expr_type))
+  else if (INTEGRAL_TYPE_P (expr_type) || TYPE_PTR_TO_MEMBER_P (expr_type))
     {
       if (! TREE_CONSTANT (expr))
 	{
@@ -3117,31 +3113,32 @@ convert_nontype_argument (tree type, tree expr)
 	goto non_constant;
       
       return expr;
-	
+
+    case OFFSET_TYPE:
+      {
+	tree e;
+
+	/* For a non-type template-parameter of type pointer to data
+	   member, qualification conversions (_conv.qual_) are
+	   applied.  */
+	e = perform_qualification_conversions (type, expr);
+	if (TREE_CODE (e) == NOP_EXPR)
+	  /* The call to perform_qualification_conversions will
+	     insert a NOP_EXPR over EXPR to do express conversion,
+	     if necessary.  But, that will confuse us if we use
+	     this (converted) template parameter to instantiate
+	     another template; then the thing will not look like a
+	     valid template argument.  So, just make a new
+	     constant, of the appropriate type.  */
+	  e = make_ptrmem_cst (type, PTRMEM_CST_MEMBER (expr));
+	return e;
+      }
+
     case POINTER_TYPE:
       {
 	tree type_pointed_to = TREE_TYPE (type);
  
-	if (TYPE_PTRMEM_P (type))
-	  {
-	    tree e;
-
-	    /* For a non-type template-parameter of type pointer to data
-	       member, qualification conversions (_conv.qual_) are
-	       applied.  */
-	    e = perform_qualification_conversions (type, expr);
-	    if (TREE_CODE (e) == NOP_EXPR)
-	      /* The call to perform_qualification_conversions will
-		 insert a NOP_EXPR over EXPR to do express conversion,
-		 if necessary.  But, that will confuse us if we use
-		 this (converted) template parameter to instantiate
-		 another template; then the thing will not look like a
-		 valid template argument.  So, just make a new
-		 constant, of the appropriate type.  */
-	      e = make_ptrmem_cst (type, PTRMEM_CST_MEMBER (expr));
-	    return e;
-	  }
-	else if (TREE_CODE (type_pointed_to) == FUNCTION_TYPE)
+	if (TREE_CODE (type_pointed_to) == FUNCTION_TYPE)
 	  { 
 	    /* For a non-type template-parameter of type pointer to
 	       function, only the function-to-pointer conversion
@@ -3421,8 +3418,7 @@ convert_template_argument (tree parm,
   inner_args = INNERMOST_TEMPLATE_ARGS (args);
 
   if (TREE_CODE (arg) == TREE_LIST 
-      && TREE_TYPE (arg) != NULL_TREE
-      && TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
+      && TREE_CODE (TREE_VALUE (arg)) == OFFSET_REF)
     {  
       /* The template argument was the name of some
 	 member function.  That's usually
@@ -6815,21 +6811,26 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 	my_friendly_assert (TREE_CODE (type) != METHOD_TYPE, 20011231);
 	if (TREE_CODE (type) == FUNCTION_TYPE)
-	  /* This is really a method type. The cv qualifiers of the
-	     this pointer should _not_ be determined by the cv
-	     qualifiers of the class type.  They should be held
-	     somewhere in the FUNCTION_TYPE, but we don't do that at
-	     the moment.  Consider
-	        typedef void (Func) () const;
+	  {
+	    /* This is really a method type. The cv qualifiers of the
+	       this pointer should _not_ be determined by the cv
+	       qualifiers of the class type.  They should be held
+	       somewhere in the FUNCTION_TYPE, but we don't do that at
+	       the moment.  Consider
+		  typedef void (Func) () const;
 
-		template <typename T1> void Foo (Func T1::*);
+		  template <typename T1> void Foo (Func T1::*);
 
-	      */
-	  return build_cplus_method_type (TYPE_MAIN_VARIANT (r),
-					  TREE_TYPE (type),
-					  TYPE_ARG_TYPES (type));
+		*/
+	    tree method_type;
+
+	    method_type = build_cplus_method_type (TYPE_MAIN_VARIANT (r),
+						   TREE_TYPE (type),
+						   TYPE_ARG_TYPES (type));
+	    return build_ptrmemfunc_type (build_pointer_type (method_type));
+	  }
 	else
-	  return build_offset_type (r, type);
+	  return build_ptrmem_type (r, type);
       }
     case FUNCTION_TYPE:
     case METHOD_TYPE:
@@ -9511,12 +9512,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	}
       else
 	{
-	  /* If ARG is an offset type, we're trying to unify '*T' with
-	     'U C::*', which is ill-formed. See the comment in the
-	     POINTER_TYPE case about this ugliness.  */
-	  if (TREE_CODE (arg) == OFFSET_TYPE)
-	    return 1;
-	  
 	  /* If PARM is `const T' and ARG is only `int', we don't have
 	     a match unless we are allowing additional qualification.
 	     If ARG is `const int' and PARM is just `T' that's OK;
@@ -9616,18 +9611,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  /* The derived-to-base conversion only persists through one
 	     level of pointers.  */
 	  strict |= (strict_in & UNIFY_ALLOW_DERIVED);
-
-	if (TREE_CODE (TREE_TYPE (parm)) == OFFSET_TYPE
-	    && TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
-	  {
-	    /* Avoid getting confused about cv-quals; don't recurse here.
-	       Pointers to members should really be just OFFSET_TYPE, not
-	       this two-level nonsense...  */
-
-	    parm = TREE_TYPE (parm);
-	    arg = TREE_TYPE (arg);
-	    goto offset;
-	  }
 
 	return unify (tparms, targs, TREE_TYPE (parm), 
 		      TREE_TYPE (arg), strict);
@@ -9782,7 +9765,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 				    DEDUCE_EXACT, 0, -1);
 
     case OFFSET_TYPE:
-    offset:
       if (TREE_CODE (arg) != OFFSET_TYPE)
 	return 1;
       if (unify (tparms, targs, TYPE_OFFSET_BASETYPE (parm),
@@ -11286,9 +11268,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
   else if (POINTER_TYPE_P (type))
     return 0;
-  else if (TYPE_PTRMEM_P (type))
-    return 0;
-  else if (TYPE_PTRMEMFUNC_P (type))
+  else if (TYPE_PTR_TO_MEMBER_P (type))
     return 0;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return 0;
@@ -11325,7 +11305,7 @@ dependent_type_p_r (tree type)
         dependent.  */
   type = TYPE_MAIN_VARIANT (type);
   /* -- a compound type constructed from any dependent type.  */
-  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+  if (TYPE_PTR_TO_MEMBER_P (type))
     return (dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
 	    || dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE 
 					   (type)));

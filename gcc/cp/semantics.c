@@ -1367,7 +1367,8 @@ finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
     {
       if (TREE_CODE (expr) == SCOPE_REF)
 	expr = TREE_OPERAND (expr, 1);
-      expr = build_offset_ref (qualifying_class, expr);
+      expr = build_offset_ref (qualifying_class, expr, 
+			       /*address_p=*/true);
       return expr;
     }
 
@@ -1396,13 +1397,9 @@ finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
 		 BASELINK_ACCESS_BINFO (expr),
 		 /*preserve_reference=*/false));
       else if (done)
-	{
-	  /* The expression is a qualified name whose address is not
-	     being taken.  */
-	  expr = build_offset_ref (qualifying_class, expr);
-	  if (TREE_CODE (expr) == OFFSET_REF)
-	    expr = resolve_offset_ref (expr);
-	}
+	/* The expression is a qualified name whose address is not
+	   being taken.  */
+	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false);
     }
 
   return expr;
