@@ -2,6 +2,7 @@
 
 	* inclhack.def (freebsd_gcc4_breakage): Add.
 	* fixincl.x: Regenerate.
+	* tests/base/sys/cdefs.h: Update for new test.
 
 2004-09-10  Adam Nemet  <anemet@lnxw.com>
 
