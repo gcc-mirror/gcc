@@ -1,3 +1,7 @@
+Sat Aug 29 12:38:54 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* NEWS: Various updates.
+
 Tue Aug 25 19:35:24 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (powerpc-ibm-aix4.[12]*): Change from 4.[12].*.
