@@ -1,3 +1,8 @@
+Mon Dec 17 18:27:52 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (redirect_edge_and_branch):  Do simplify abnormal
+	edges resulting from computed jump
+
 Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cfgcleanup.o): Add cselib.h dependancy.
