@@ -564,7 +564,8 @@ static struct compiler default_compilers[] =
      linking is not done".  */
   {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".c++", "#C++"},
   {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
-  {".f", "#Fortran"},
+  {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
+  {".fpp", "#Fortran"},
   /* Next come the entries for C.  */
   {".c", "@c"},
   {"@c",
