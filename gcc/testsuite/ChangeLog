@@ -1,3 +1,7 @@
+2004-11-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.old-deja/g++.jason/thunk3.C: Remove mips*-*-* xfail.
+
 2004-11-26  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/cpp/isysroot-2.c: Move target selector from dg-options to
