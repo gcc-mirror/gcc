@@ -7362,7 +7362,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 }
 
 /* Called via for_each_rtx to see if an insn is using a LABEL_REF for which
-   there isn't a REG_DEAD note.  Return one if so.  DATA is the insn.  */
+   there isn't a REG_LABEL note.  Return one if so.  DATA is the insn.  */
 
 static int
 check_for_label_ref (rtl, data)
@@ -7376,6 +7376,7 @@ check_for_label_ref (rtl, data)
      LABEL_REF for a CODE_LABEL that isn't in the insn chain, don't do this
      since no REG_LABEL will be added.  */
   return (GET_CODE (*rtl) == LABEL_REF
+	  && ! LABEL_REF_NONLOCAL_P (*rtl)
 	  && LABEL_P (XEXP (*rtl, 0))
 	  && INSN_UID (XEXP (*rtl, 0)) != 0
 	  && ! find_reg_note (insn, REG_LABEL, XEXP (*rtl, 0)));
