@@ -1,7 +1,7 @@
-2003-05-04  Michael Koch  <konqueror@gmx.de>
+2003-05-05  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/DataInputStream.java:
-	Reordered methods to match libgcj.
+	Merged new documentation from classpath.
 
 2003-05-03  Matt Kraai  <kraai@alumni.cmu.edu>
 
