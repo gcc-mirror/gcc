@@ -1,3 +1,38 @@
+2003-08-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (gettags, pushdecl_function_level): Delete.
+	(last_function_parm_vars): Rename last_function_parm_others.
+	(current_function_parm_vars): Rename current_function_parm_others.
+	(struct c_scope): Rewrite comment explaining this data structure.
+	Add names_last, blocks_last, parms_last fields.  Rename
+	incomplete_list to incomplete.
+	(SCOPE_LIST_APPEND, SCOPE_LIST_CONCAT): New macros.
+	(poplevel): Ignore second argument.  No need to nreverse
+	anything.  Restructure such that each list is processed
+	exactly once.  Use 'const location_t *locus' syntactic sugar
+	variable where useful.  Issue unused variable warnings
+	ourselves, do not rely on function.c.
+	(insert_block, pushdecl, bind_label): Use SCOPE_LIST_APPEND.
+	(pushdecl_top_level): Likewise.  Don't call duplicate_decls.
+	(implicitly_declare): decl cannot be error_mark_node.
+	(undeclared_variable): Manipulate scope structure directly.
+	(c_make_fname_decl): Likewise.
+	(getdecls, c_init_decl_processing): Fix comment.
+	(mark_forward_parm_decls): Use SCOPE_LIST_CONCAT.  No need
+	for 'last' variable.
+	(grokparms): No need to nreverse parms list.
+	(store_parm_decls_newstyle): Set up the parms_last and
+	names_last fields of the new scope too.
+	(store_parm_decls_oldstyle): Can assume DECL_WEAK is not set
+	on parms to begin with; check this under ENABLE_CHECKING.  Set
+	up parms_last.
+	(check_for_loop_decls): Refer directly to current_scope->tags.
+	Use consistent quote style in diagnostics.
+	(c_write_global_declarations): The names list is not backward.
+
+	* c-common.h: Don't prototype gettags.
+	* c-parse.in: Call poplevel with second argument 0 always.
+
 2003-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def: Resort builtins.
@@ -194,8 +229,8 @@ Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-31  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * sched-deps.c (sched_analyze_2): Prevent interblock move of CC0
-        setter.
+	* sched-deps.c (sched_analyze_2): Prevent interblock move of CC0
+	setter.
 
 2003-07-30  Roger Sayle  <roger@eyesopen.com>
 
@@ -223,7 +258,7 @@ Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-31  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md (UNSPEC_ROUND, UNSPEC_SETHIGH, 
+	* config/s390/s390.md (UNSPEC_ROUND, UNSPEC_SETHIGH,
 	UNSPECV_BLOCKAGE): New constants.
 	("*sethighqisi", "*sethighhisi", "*sethiqidi_64", "*sethiqidi_31",
 	"*extractqi", "*extracthi", "*extendqidi2" splitter, "*extendqisi2"

@@ -318,7 +318,6 @@ struct c_language_function GTY(()) {
 extern void (*lang_expand_stmt) (tree);
 extern void (*lang_expand_decl_stmt) (tree);
 extern void (*lang_expand_function_end) (void);
-extern tree gettags (void);
 
 /* Callback that determines if it's ok for a function to have no
    noreturn attribute.  */
