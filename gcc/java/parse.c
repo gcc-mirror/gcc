@@ -211,6 +211,7 @@ static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
 static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
+static int maybe_yank_clinit PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
 static int  unresolved_type_p PARAMS ((tree, tree *));
 static void create_jdep_list PARAMS ((struct parser_ctxt *));
@@ -485,7 +486,7 @@ static tree package_list = NULL_TREE;
 } while (0)
 
 
-#line 414 "./parse.y"
+#line 415 "./parse.y"
 typedef union {
   tree node;
   int sub_token;
@@ -495,7 +496,7 @@ typedef union {
   } operator;
   int value;
 } YYSTYPE;
-#line 424 "./parse.y"
+#line 425 "./parse.y"
 
 #include "lex.c"
 #ifndef YYDEBUG
@@ -796,57 +797,57 @@ static const short yyrhs[] = {   123,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   573,   579,   581,   582,   583,   584,   585,   589,   591,   594,
-   596,   597,   600,   602,   605,   609,   613,   617,   623,   625,
-   627,   629,   634,   636,   639,   643,   648,   653,   655,   656,
-   657,   658,   659,   660,   661,   664,   669,   675,   677,   680,
-   686,   688,   692,   694,   697,   724,   726,   730,   743,   745,
-   749,   752,   754,   756,   766,   771,   786,   790,   790,   793,
-   793,   795,   797,   802,   806,   808,   810,   812,   816,   818,
-   820,   827,   833,   838,   842,   851,   861,   863,   866,   868,
-   869,   870,   877,   879,   881,   882,   884,   889,   892,   902,
-   905,   907,   911,   914,   921,   927,   935,   937,   939,   941,
-   943,   947,   949,   953,   964,   965,   969,   972,   974,   976,
-   978,   983,   985,   987,   989,   996,  1002,  1004,  1013,  1015,
-  1019,  1024,  1029,  1033,  1038,  1043,  1048,  1055,  1065,  1067,
-  1069,  1073,  1076,  1078,  1082,  1084,  1085,  1090,  1096,  1103,
-  1119,  1126,  1129,  1132,  1136,  1142,  1146,  1155,  1157,  1159,
-  1163,  1165,  1168,  1175,  1183,  1185,  1189,  1196,  1206,  1210,
-  1210,  1213,  1213,  1216,  1216,  1219,  1219,  1221,  1225,  1231,
-  1236,  1238,  1242,  1245,  1249,  1251,  1254,  1256,  1257,  1259,
-  1263,  1267,  1273,  1278,  1281,  1283,  1287,  1293,  1297,  1302,
-  1311,  1315,  1320,  1334,  1336,  1339,  1341,  1343,  1350,  1354,
-  1357,  1361,  1363,  1364,  1365,  1366,  1367,  1371,  1373,  1374,
-  1375,  1376,  1380,  1382,  1383,  1384,  1385,  1386,  1387,  1388,
-  1389,  1390,  1391,  1394,  1399,  1410,  1413,  1417,  1424,  1434,
-  1440,  1446,  1452,  1454,  1459,  1461,  1466,  1468,  1470,  1472,
-  1474,  1478,  1480,  1481,  1482,  1483,  1484,  1485,  1488,  1494,
-  1496,  1498,  1502,  1507,  1512,  1518,  1528,  1534,  1536,  1538,
-  1545,  1548,  1550,  1552,  1556,  1558,  1561,  1565,  1567,  1570,
-  1577,  1583,  1585,  1587,  1591,  1599,  1602,  1604,  1606,  1610,
-  1615,  1624,  1629,  1632,  1639,  1641,  1643,  1647,  1650,  1659,
-  1666,  1668,  1672,  1685,  1687,  1693,  1699,  1703,  1705,  1709,
-  1712,  1714,  1718,  1721,  1723,  1725,  1729,  1732,  1734,  1736,
-  1740,  1743,  1745,  1747,  1751,  1757,  1759,  1763,  1770,  1772,
-  1774,  1776,  1780,  1792,  1795,  1797,  1802,  1806,  1808,  1815,
-  1823,  1840,  1842,  1847,  1851,  1854,  1859,  1861,  1864,  1866,
-  1868,  1870,  1871,  1872,  1873,  1874,  1878,  1883,  1885,  1887,
-  1889,  1896,  1902,  1911,  1914,  1916,  1918,  1922,  1925,  1927,
-  1931,  1937,  1938,  1944,  1945,  1947,  1949,  1951,  1953,  1955,
-  1964,  1968,  1998,  2001,  2015,  2018,  2022,  2028,  2033,  2037,
-  2040,  2042,  2044,  2048,  2057,  2065,  2067,  2071,  2074,  2078,
-  2084,  2086,  2094,  2121,  2123,  2127,  2132,  2139,  2143,  2146,
-  2148,  2159,  2170,  2175,  2184,  2186,  2190,  2193,  2195,  2200,
-  2205,  2210,  2217,  2219,  2220,  2221,  2224,  2229,  2234,  2236,
-  2237,  2239,  2241,  2242,  2244,  2248,  2251,  2255,  2258,  2262,
-  2264,  2266,  2268,  2269,  2271,  2275,  2284,  2286,  2288,  2301,
-  2303,  2309,  2311,  2313,  2317,  2319,  2324,  2329,  2334,  2336,
-  2338,  2342,  2344,  2349,  2354,  2356,  2360,  2362,  2367,  2372,
-  2377,  2379,  2381,  2385,  2387,  2392,  2397,  2402,  2407,  2409,
-  2411,  2413,  2415,  2417,  2421,  2423,  2428,  2433,  2435,  2439,
-  2441,  2446,  2450,  2452,  2457,  2461,  2463,  2468,  2472,  2474,
-  2479,  2483,  2485,  2490,  2494,  2496,  2501,  2507,  2509,  2513,
-  2515,  2518,  2521,  2529,  2531,  2532,  2535,  2537,  2540,  2544
+   574,   580,   582,   583,   584,   585,   586,   590,   592,   595,
+   597,   598,   601,   603,   606,   610,   614,   618,   624,   626,
+   628,   630,   635,   637,   640,   644,   649,   654,   656,   657,
+   658,   659,   660,   661,   662,   665,   670,   676,   678,   681,
+   687,   689,   693,   695,   698,   725,   727,   731,   744,   746,
+   750,   753,   755,   757,   767,   772,   787,   791,   791,   794,
+   794,   796,   798,   803,   807,   809,   811,   813,   817,   819,
+   821,   828,   834,   839,   843,   852,   862,   864,   867,   869,
+   870,   871,   878,   880,   882,   883,   885,   890,   893,   903,
+   906,   908,   912,   915,   922,   928,   936,   938,   940,   942,
+   944,   948,   950,   954,   965,   966,   970,   973,   975,   977,
+   979,   984,   986,   988,   990,   997,  1003,  1005,  1014,  1016,
+  1020,  1025,  1030,  1034,  1039,  1044,  1049,  1056,  1066,  1068,
+  1070,  1074,  1077,  1079,  1083,  1085,  1086,  1091,  1097,  1104,
+  1120,  1127,  1130,  1133,  1137,  1143,  1147,  1156,  1158,  1160,
+  1164,  1166,  1169,  1176,  1184,  1186,  1190,  1197,  1207,  1211,
+  1211,  1214,  1214,  1217,  1217,  1220,  1220,  1222,  1226,  1232,
+  1237,  1239,  1243,  1246,  1250,  1252,  1255,  1257,  1258,  1260,
+  1264,  1268,  1274,  1279,  1282,  1284,  1288,  1294,  1298,  1303,
+  1312,  1316,  1321,  1335,  1337,  1340,  1342,  1344,  1351,  1355,
+  1358,  1362,  1364,  1365,  1366,  1367,  1368,  1372,  1374,  1375,
+  1376,  1377,  1381,  1383,  1384,  1385,  1386,  1387,  1388,  1389,
+  1390,  1391,  1392,  1395,  1400,  1411,  1414,  1418,  1425,  1435,
+  1441,  1447,  1453,  1455,  1460,  1462,  1467,  1469,  1471,  1473,
+  1475,  1479,  1481,  1482,  1483,  1484,  1485,  1486,  1489,  1495,
+  1497,  1499,  1503,  1508,  1513,  1519,  1529,  1535,  1537,  1539,
+  1546,  1549,  1551,  1553,  1557,  1559,  1562,  1566,  1568,  1571,
+  1578,  1584,  1586,  1588,  1592,  1600,  1603,  1605,  1607,  1611,
+  1616,  1625,  1630,  1633,  1640,  1642,  1644,  1648,  1651,  1660,
+  1667,  1669,  1673,  1686,  1688,  1694,  1700,  1704,  1706,  1710,
+  1713,  1715,  1719,  1722,  1724,  1726,  1730,  1733,  1735,  1737,
+  1741,  1744,  1746,  1748,  1752,  1758,  1760,  1764,  1771,  1773,
+  1775,  1777,  1781,  1793,  1796,  1798,  1803,  1807,  1809,  1816,
+  1824,  1841,  1843,  1848,  1852,  1855,  1860,  1862,  1865,  1867,
+  1869,  1871,  1872,  1873,  1874,  1875,  1879,  1884,  1886,  1888,
+  1890,  1897,  1903,  1912,  1915,  1917,  1919,  1923,  1926,  1928,
+  1932,  1938,  1939,  1945,  1946,  1948,  1950,  1952,  1954,  1956,
+  1965,  1969,  1999,  2002,  2016,  2019,  2023,  2029,  2034,  2038,
+  2041,  2043,  2045,  2049,  2058,  2066,  2068,  2072,  2075,  2079,
+  2085,  2087,  2095,  2122,  2124,  2128,  2133,  2140,  2144,  2147,
+  2149,  2160,  2171,  2176,  2185,  2187,  2191,  2194,  2196,  2201,
+  2206,  2211,  2218,  2220,  2221,  2222,  2225,  2230,  2235,  2237,
+  2238,  2240,  2242,  2243,  2245,  2249,  2252,  2256,  2259,  2263,
+  2265,  2267,  2269,  2270,  2272,  2276,  2285,  2287,  2289,  2302,
+  2304,  2310,  2312,  2314,  2318,  2320,  2325,  2330,  2335,  2337,
+  2339,  2343,  2345,  2350,  2355,  2357,  2361,  2363,  2368,  2373,
+  2378,  2380,  2382,  2386,  2388,  2393,  2398,  2403,  2408,  2410,
+  2412,  2414,  2416,  2418,  2422,  2424,  2429,  2434,  2436,  2440,
+  2442,  2447,  2451,  2453,  2458,  2462,  2464,  2469,  2473,  2475,
+  2480,  2484,  2486,  2491,  2495,  2497,  2502,  2508,  2510,  2514,
+  2516,  2519,  2522,  2530,  2532,  2533,  2536,  2538,  2541,  2545
 };
 #endif
 
@@ -2929,69 +2930,69 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 575 "./parse.y"
+#line 576 "./parse.y"
 {;
     break;}
 case 18:
-#line 619 "./parse.y"
+#line 620 "./parse.y"
 { 
 		  yyval.node = build_java_array_type (yyvsp[-2].node, -1);
 		  CLASS_LOADED_P (yyval.node) = 1;
 		;
     break;}
 case 19:
-#line 624 "./parse.y"
+#line 625 "./parse.y"
 { yyval.node = build_unresolved_array_type (yyvsp[-2].node); ;
     break;}
 case 20:
-#line 626 "./parse.y"
+#line 627 "./parse.y"
 { yyval.node = build_unresolved_array_type (yyvsp[-2].node); ;
     break;}
 case 21:
-#line 628 "./parse.y"
+#line 629 "./parse.y"
 {RULE ("']' expected"); RECOVER;;
     break;}
 case 22:
-#line 630 "./parse.y"
+#line 631 "./parse.y"
 {RULE ("']' expected"); RECOVER;;
     break;}
 case 26:
-#line 645 "./parse.y"
+#line 646 "./parse.y"
 { yyval.node = make_qualified_name (yyvsp[-2].node, yyvsp[0].node, yyvsp[-1].operator.location); ;
     break;}
 case 28:
-#line 654 "./parse.y"
+#line 655 "./parse.y"
 {yyval.node = NULL;;
     break;}
 case 36:
-#line 666 "./parse.y"
+#line 667 "./parse.y"
 {
 		  yyval.node = NULL;
 		;
     break;}
 case 37:
-#line 670 "./parse.y"
+#line 671 "./parse.y"
 {
 		  yyval.node = NULL;
 		;
     break;}
 case 40:
-#line 682 "./parse.y"
+#line 683 "./parse.y"
 { 
 		  ctxp->package = EXPR_WFL_NODE (yyvsp[-1].node);
 		  package_list = tree_cons (ctxp->package, NULL, package_list);
 		;
     break;}
 case 41:
-#line 687 "./parse.y"
+#line 688 "./parse.y"
 {yyerror ("Missing name"); RECOVER;;
     break;}
 case 42:
-#line 689 "./parse.y"
+#line 690 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 45:
-#line 699 "./parse.y"
+#line 700 "./parse.y"
 {
 		  tree name = EXPR_WFL_NODE (yyvsp[-1].node), node, last_name;
 		  int   i = IDENTIFIER_LENGTH (name)-1;
@@ -3019,15 +3020,15 @@ case 45:
 		;
     break;}
 case 46:
-#line 725 "./parse.y"
+#line 726 "./parse.y"
 {yyerror ("Missing name"); RECOVER;;
     break;}
 case 47:
-#line 727 "./parse.y"
+#line 728 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 48:
-#line 732 "./parse.y"
+#line 733 "./parse.y"
 {
 		  tree name = EXPR_WFL_NODE (yyvsp[-3].node);
 		  /* Don't import java.lang.* twice. */
@@ -3041,40 +3042,40 @@ case 48:
 		;
     break;}
 case 49:
-#line 744 "./parse.y"
+#line 745 "./parse.y"
 {yyerror ("'*' expected"); RECOVER;;
     break;}
 case 50:
-#line 746 "./parse.y"
+#line 747 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 51:
-#line 751 "./parse.y"
+#line 752 "./parse.y"
 { end_class_declaration (0); ;
     break;}
 case 52:
-#line 753 "./parse.y"
+#line 754 "./parse.y"
 { end_class_declaration (0); ;
     break;}
 case 53:
-#line 755 "./parse.y"
+#line 756 "./parse.y"
 { yyval.node = NULL; ;
     break;}
 case 54:
-#line 757 "./parse.y"
+#line 758 "./parse.y"
 {
 		  YYERROR_NOW;
 		  yyerror ("Class or interface declaration expected");
 		;
     break;}
 case 55:
-#line 768 "./parse.y"
+#line 769 "./parse.y"
 {
 		  yyval.value = (1 << yyvsp[0].value);
 		;
     break;}
 case 56:
-#line 772 "./parse.y"
+#line 773 "./parse.y"
 {
 		  int acc = (1 << yyvsp[0].value);
 		  if (yyval.value & acc)
@@ -3088,83 +3089,83 @@ case 56:
 		;
     break;}
 case 57:
-#line 788 "./parse.y"
+#line 789 "./parse.y"
 { create_class (yyvsp[-4].value, yyvsp[-2].node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 59:
-#line 791 "./parse.y"
+#line 792 "./parse.y"
 { create_class (0, yyvsp[-2].node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 61:
-#line 794 "./parse.y"
+#line 795 "./parse.y"
 {yyerror ("Missing class name"); RECOVER;;
     break;}
 case 62:
-#line 796 "./parse.y"
+#line 797 "./parse.y"
 {yyerror ("Missing class name"); RECOVER;;
     break;}
 case 63:
-#line 798 "./parse.y"
+#line 799 "./parse.y"
 {
 		  if (!ctxp->class_err) yyerror ("'{' expected"); 
 		  DRECOVER(class1);
 		;
     break;}
 case 64:
-#line 803 "./parse.y"
+#line 804 "./parse.y"
 {if (!ctxp->class_err) yyerror ("'{' expected"); RECOVER;;
     break;}
 case 65:
-#line 807 "./parse.y"
+#line 808 "./parse.y"
 { yyval.node = NULL; ;
     break;}
 case 66:
-#line 809 "./parse.y"
+#line 810 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 67:
-#line 811 "./parse.y"
+#line 812 "./parse.y"
 {yyerror ("'{' expected"); ctxp->class_err=1;;
     break;}
 case 68:
-#line 813 "./parse.y"
+#line 814 "./parse.y"
 {yyerror ("Missing super class name"); ctxp->class_err=1;;
     break;}
 case 69:
-#line 817 "./parse.y"
+#line 818 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 70:
-#line 819 "./parse.y"
+#line 820 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 71:
-#line 821 "./parse.y"
+#line 822 "./parse.y"
 {
 		  ctxp->class_err=1;
 		  yyerror ("Missing interface name"); 
 		;
     break;}
 case 72:
-#line 829 "./parse.y"
+#line 830 "./parse.y"
 { 
 		  ctxp->interface_number = 1;
 		  yyval.node = build_tree_list (yyvsp[0].node, NULL_TREE);
 		;
     break;}
 case 73:
-#line 834 "./parse.y"
+#line 835 "./parse.y"
 { 
 		  ctxp->interface_number++;
 		  yyval.node = chainon (yyvsp[-2].node, build_tree_list (yyvsp[0].node, NULL_TREE));
 		;
     break;}
 case 74:
-#line 839 "./parse.y"
+#line 840 "./parse.y"
 {yyerror ("Missing interface name"); RECOVER;;
     break;}
 case 75:
-#line 844 "./parse.y"
+#line 845 "./parse.y"
 { 
 		  /* Store the location of the `}' when doing xrefs */
 		  if (flag_emit_xref)
@@ -3174,7 +3175,7 @@ case 75:
 		;
     break;}
 case 76:
-#line 852 "./parse.y"
+#line 853 "./parse.y"
 { 
 		  /* Store the location of the `}' when doing xrefs */
 		  if (flag_emit_xref)
@@ -3184,30 +3185,30 @@ case 76:
 		;
     break;}
 case 82:
-#line 871 "./parse.y"
+#line 872 "./parse.y"
 {
 		  TREE_CHAIN (yyvsp[0].node) = CPC_INSTANCE_INITIALIZER_STMT (ctxp);
 		  SET_CPC_INSTANCE_INITIALIZER_STMT (ctxp, yyvsp[0].node);
 		;
     break;}
 case 84:
-#line 880 "./parse.y"
+#line 881 "./parse.y"
 { yyval.node = yyvsp[-1].node; ;
     break;}
 case 86:
-#line 883 "./parse.y"
+#line 884 "./parse.y"
 { end_class_declaration (1); ;
     break;}
 case 87:
-#line 885 "./parse.y"
+#line 886 "./parse.y"
 { end_class_declaration (1); ;
     break;}
 case 88:
-#line 891 "./parse.y"
+#line 892 "./parse.y"
 { register_fields (0, yyvsp[-2].node, yyvsp[-1].node); ;
     break;}
 case 89:
-#line 893 "./parse.y"
+#line 894 "./parse.y"
 {
 		  check_modifiers 
 		    ("Illegal modifier `%s' for field declaration",
@@ -3217,19 +3218,19 @@ case 89:
 		;
     break;}
 case 91:
-#line 906 "./parse.y"
+#line 907 "./parse.y"
 { yyval.node = chainon (yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 92:
-#line 908 "./parse.y"
+#line 909 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 93:
-#line 913 "./parse.y"
+#line 914 "./parse.y"
 { yyval.node = build_tree_list (yyvsp[0].node, NULL_TREE); ;
     break;}
 case 94:
-#line 915 "./parse.y"
+#line 916 "./parse.y"
 { 
 		  if (java_error_count)
 		    yyvsp[0].node = NULL_TREE;
@@ -3238,7 +3239,7 @@ case 94:
 		;
     break;}
 case 95:
-#line 922 "./parse.y"
+#line 923 "./parse.y"
 {
 		  yyerror ("Missing variable initializer");
 		  yyval.node = build_tree_list (yyvsp[-2].node, NULL_TREE);
@@ -3246,7 +3247,7 @@ case 95:
 		;
     break;}
 case 96:
-#line 928 "./parse.y"
+#line 929 "./parse.y"
 {
 		  yyerror ("';' expected");
 		  yyval.node = build_tree_list (yyvsp[-3].node, NULL_TREE);
@@ -3254,23 +3255,23 @@ case 96:
 		;
     break;}
 case 98:
-#line 938 "./parse.y"
+#line 939 "./parse.y"
 { yyval.node = build_unresolved_array_type (yyvsp[-2].node); ;
     break;}
 case 99:
-#line 940 "./parse.y"
+#line 941 "./parse.y"
 {yyerror ("Invalid declaration"); DRECOVER(vdi);;
     break;}
 case 100:
-#line 942 "./parse.y"
+#line 943 "./parse.y"
 {yyerror ("']' expected"); DRECOVER(vdi);;
     break;}
 case 101:
-#line 944 "./parse.y"
+#line 945 "./parse.y"
 {yyerror ("Unbalanced ']'"); DRECOVER(vdi);;
     break;}
 case 104:
-#line 955 "./parse.y"
+#line 956 "./parse.y"
 {
 		  current_function_decl = yyvsp[0].node;
 		  if (current_function_decl
@@ -3281,68 +3282,68 @@ case 104:
 		;
     break;}
 case 105:
-#line 964 "./parse.y"
+#line 965 "./parse.y"
 { finish_method_declaration (yyvsp[0].node); ;
     break;}
 case 106:
-#line 966 "./parse.y"
+#line 967 "./parse.y"
 {YYNOT_TWICE yyerror ("'{' expected"); RECOVER;;
     break;}
 case 107:
-#line 971 "./parse.y"
+#line 972 "./parse.y"
 { yyval.node = method_header (0, yyvsp[-2].node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 108:
-#line 973 "./parse.y"
+#line 974 "./parse.y"
 { yyval.node = method_header (0, void_type_node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 109:
-#line 975 "./parse.y"
+#line 976 "./parse.y"
 { yyval.node = method_header (yyvsp[-3].value, yyvsp[-2].node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 110:
-#line 977 "./parse.y"
+#line 978 "./parse.y"
 { yyval.node = method_header (yyvsp[-3].value, void_type_node, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 111:
-#line 979 "./parse.y"
+#line 980 "./parse.y"
 {
 		  yyerror ("Invalid method declaration, method name required");
 		  RECOVER;
 		;
     break;}
 case 112:
-#line 984 "./parse.y"
+#line 985 "./parse.y"
 {RECOVER;;
     break;}
 case 113:
-#line 986 "./parse.y"
+#line 987 "./parse.y"
 {yyerror ("Identifier expected"); RECOVER;;
     break;}
 case 114:
-#line 988 "./parse.y"
+#line 989 "./parse.y"
 {yyerror ("Identifier expected"); RECOVER;;
     break;}
 case 115:
-#line 990 "./parse.y"
+#line 991 "./parse.y"
 {
 		  yyerror ("Invalid method declaration, return type required");
 		  RECOVER;
 		;
     break;}
 case 116:
-#line 998 "./parse.y"
+#line 999 "./parse.y"
 { 
 		  ctxp->formal_parameter_number = 0;
 		  yyval.node = method_declarator (yyvsp[-2].node, NULL_TREE);
 		;
     break;}
 case 117:
-#line 1003 "./parse.y"
+#line 1004 "./parse.y"
 { yyval.node = method_declarator (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 118:
-#line 1005 "./parse.y"
+#line 1006 "./parse.y"
 {
 		  EXPR_WFL_LINECOL (wfl_operator) = yyvsp[-1].operator.location;
 		  TREE_PURPOSE (yyvsp[-2].node) = 
@@ -3353,59 +3354,59 @@ case 118:
 		;
     break;}
 case 119:
-#line 1014 "./parse.y"
+#line 1015 "./parse.y"
 {yyerror ("')' expected"); DRECOVER(method_declarator);;
     break;}
 case 120:
-#line 1016 "./parse.y"
+#line 1017 "./parse.y"
 {yyerror ("']' expected"); RECOVER;;
     break;}
 case 121:
-#line 1021 "./parse.y"
+#line 1022 "./parse.y"
 {
 		  ctxp->formal_parameter_number = 1;
 		;
     break;}
 case 122:
-#line 1025 "./parse.y"
+#line 1026 "./parse.y"
 {
 		  ctxp->formal_parameter_number += 1;
 		  yyval.node = chainon (yyvsp[-2].node, yyvsp[0].node);
 		;
     break;}
 case 123:
-#line 1030 "./parse.y"
+#line 1031 "./parse.y"
 { yyerror ("Missing formal parameter term"); RECOVER; ;
     break;}
 case 124:
-#line 1035 "./parse.y"
+#line 1036 "./parse.y"
 {
 		  yyval.node = build_tree_list (yyvsp[0].node, yyvsp[-1].node);
 		;
     break;}
 case 125:
-#line 1039 "./parse.y"
+#line 1040 "./parse.y"
 { 
 		  yyval.node = build_tree_list (yyvsp[0].node, yyvsp[-1].node);
 		  ARG_FINAL_P (yyval.node) = 1;
 		;
     break;}
 case 126:
-#line 1044 "./parse.y"
+#line 1045 "./parse.y"
 {
 		  yyerror ("Missing identifier"); RECOVER;
 		  yyval.node = NULL_TREE;
 		;
     break;}
 case 127:
-#line 1049 "./parse.y"
+#line 1050 "./parse.y"
 {
 		  yyerror ("Missing identifier"); RECOVER;
 		  yyval.node = NULL_TREE;
 		;
     break;}
 case 128:
-#line 1057 "./parse.y"
+#line 1058 "./parse.y"
 {
 		  check_modifiers ("Illegal modifier `%s'. Only `final' was expected here",
 				   yyvsp[0].value, ACC_FINAL);
@@ -3414,49 +3415,49 @@ case 128:
 		;
     break;}
 case 129:
-#line 1066 "./parse.y"
+#line 1067 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 130:
-#line 1068 "./parse.y"
+#line 1069 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 131:
-#line 1070 "./parse.y"
+#line 1071 "./parse.y"
 {yyerror ("Missing class type term"); RECOVER;;
     break;}
 case 132:
-#line 1075 "./parse.y"
+#line 1076 "./parse.y"
 { yyval.node = build_tree_list (yyvsp[0].node, yyvsp[0].node); ;
     break;}
 case 133:
-#line 1077 "./parse.y"
+#line 1078 "./parse.y"
 { yyval.node = tree_cons (yyvsp[0].node, yyvsp[0].node, yyvsp[-2].node); ;
     break;}
 case 134:
-#line 1079 "./parse.y"
+#line 1080 "./parse.y"
 {yyerror ("Missing class type term"); RECOVER;;
     break;}
 case 137:
-#line 1086 "./parse.y"
+#line 1087 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 138:
-#line 1092 "./parse.y"
+#line 1093 "./parse.y"
 {
 		  TREE_CHAIN (yyvsp[0].node) = CPC_STATIC_INITIALIZER_STMT (ctxp);
 		  SET_CPC_STATIC_INITIALIZER_STMT (ctxp, yyvsp[0].node);
 		;
     break;}
 case 139:
-#line 1097 "./parse.y"
+#line 1098 "./parse.y"
 {
 		  TREE_CHAIN (yyvsp[-1].node) = CPC_STATIC_INITIALIZER_STMT (ctxp);
 		  SET_CPC_STATIC_INITIALIZER_STMT (ctxp, yyvsp[-1].node);
 		;
     break;}
 case 140:
-#line 1105 "./parse.y"
+#line 1106 "./parse.y"
 {
 		  check_modifiers ("Illegal modifier `%s' for static initializer", yyvsp[0].value, ACC_STATIC);
 		  /* Can't have a static initializer in an innerclass */
@@ -3470,56 +3471,56 @@ case 140:
 		;
     break;}
 case 141:
-#line 1121 "./parse.y"
+#line 1122 "./parse.y"
 {
 		  current_function_decl = yyvsp[0].node;
 		  source_start_java_method (current_function_decl);
 		;
     break;}
 case 142:
-#line 1126 "./parse.y"
+#line 1127 "./parse.y"
 { finish_method_declaration (yyvsp[0].node); ;
     break;}
 case 143:
-#line 1131 "./parse.y"
+#line 1132 "./parse.y"
 { yyval.node = method_header (0, NULL_TREE, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 144:
-#line 1133 "./parse.y"
+#line 1134 "./parse.y"
 { yyval.node = method_header (yyvsp[-2].value, NULL_TREE, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 145:
-#line 1138 "./parse.y"
+#line 1139 "./parse.y"
 { 
 		  ctxp->formal_parameter_number = 0;  
 		  yyval.node = method_declarator (yyvsp[-2].node, NULL_TREE);
 		;
     break;}
 case 146:
-#line 1143 "./parse.y"
+#line 1144 "./parse.y"
 { yyval.node = method_declarator (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 147:
-#line 1151 "./parse.y"
+#line 1152 "./parse.y"
 { 
 		  BLOCK_EXPR_BODY (yyvsp[0].node) = empty_stmt_node;
 		  yyval.node = yyvsp[0].node;
 		;
     break;}
 case 148:
-#line 1156 "./parse.y"
+#line 1157 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 149:
-#line 1158 "./parse.y"
+#line 1159 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 150:
-#line 1160 "./parse.y"
+#line 1161 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 153:
-#line 1170 "./parse.y"
+#line 1171 "./parse.y"
 { 
 		  yyval.node = build_method_invocation (yyvsp[-3].node, NULL_TREE); 
 		  yyval.node = build_debugable_stmt (EXPR_WFL_LINECOL (yyvsp[-3].node), yyval.node);
@@ -3527,7 +3528,7 @@ case 153:
 		;
     break;}
 case 154:
-#line 1176 "./parse.y"
+#line 1177 "./parse.y"
 { 
 		  yyval.node = build_method_invocation (yyvsp[-4].node, yyvsp[-2].node); 
 		  yyval.node = build_debugable_stmt (EXPR_WFL_LINECOL (yyvsp[-4].node), yyval.node);
@@ -3535,15 +3536,15 @@ case 154:
 		;
     break;}
 case 155:
-#line 1184 "./parse.y"
+#line 1185 "./parse.y"
 {yyval.node = parse_jdk1_1_error ("explicit constructor invocation"); ;
     break;}
 case 156:
-#line 1186 "./parse.y"
+#line 1187 "./parse.y"
 {yyval.node = parse_jdk1_1_error ("explicit constructor invocation"); ;
     break;}
 case 157:
-#line 1191 "./parse.y"
+#line 1192 "./parse.y"
 {
 		  tree wfl = build_wfl_node (this_identifier_node);
 		  EXPR_WFL_LINECOL (wfl) = yyvsp[0].operator.location;
@@ -3551,7 +3552,7 @@ case 157:
 		;
     break;}
 case 158:
-#line 1197 "./parse.y"
+#line 1198 "./parse.y"
 {
 		  tree wfl = build_wfl_node (super_identifier_node);
 		  EXPR_WFL_LINECOL (wfl) = yyvsp[0].operator.location;
@@ -3559,109 +3560,109 @@ case 158:
 		;
     break;}
 case 159:
-#line 1208 "./parse.y"
+#line 1209 "./parse.y"
 { create_interface (0, yyvsp[0].node, NULL_TREE); ;
     break;}
 case 161:
-#line 1211 "./parse.y"
+#line 1212 "./parse.y"
 { create_interface (yyvsp[-2].value, yyvsp[0].node, NULL_TREE); ;
     break;}
 case 163:
-#line 1214 "./parse.y"
+#line 1215 "./parse.y"
 { create_interface (0, yyvsp[-1].node, yyvsp[0].node);	;
     break;}
 case 165:
-#line 1217 "./parse.y"
+#line 1218 "./parse.y"
 { create_interface (yyvsp[-3].value, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 167:
-#line 1220 "./parse.y"
+#line 1221 "./parse.y"
 {yyerror ("'{' expected"); RECOVER;;
     break;}
 case 168:
-#line 1222 "./parse.y"
+#line 1223 "./parse.y"
 {yyerror ("'{' expected"); RECOVER;;
     break;}
 case 169:
-#line 1227 "./parse.y"
+#line 1228 "./parse.y"
 { 
 		  ctxp->interface_number = 1;
 		  yyval.node = build_tree_list (yyvsp[0].node, NULL_TREE);
 		;
     break;}
 case 170:
-#line 1232 "./parse.y"
+#line 1233 "./parse.y"
 { 
 		  ctxp->interface_number++;
 		  yyval.node = chainon (yyvsp[-2].node, build_tree_list (yyvsp[0].node, NULL_TREE));
 		;
     break;}
 case 171:
-#line 1237 "./parse.y"
+#line 1238 "./parse.y"
 {yyerror ("Invalid interface type"); RECOVER;;
     break;}
 case 172:
-#line 1239 "./parse.y"
+#line 1240 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 173:
-#line 1244 "./parse.y"
+#line 1245 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 174:
-#line 1246 "./parse.y"
+#line 1247 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 179:
-#line 1258 "./parse.y"
+#line 1259 "./parse.y"
 { end_class_declaration (1); ;
     break;}
 case 180:
-#line 1260 "./parse.y"
+#line 1261 "./parse.y"
 { end_class_declaration (1); ;
     break;}
 case 182:
-#line 1269 "./parse.y"
+#line 1270 "./parse.y"
 { 
 		  check_abstract_method_header (yyvsp[-1].node);
 		  current_function_decl = NULL_TREE; /* FIXME ? */
 		;
     break;}
 case 183:
-#line 1274 "./parse.y"
+#line 1275 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 184:
-#line 1280 "./parse.y"
+#line 1281 "./parse.y"
 { yyval.node = build_new_array_init (yyvsp[-1].operator.location, NULL_TREE); ;
     break;}
 case 185:
-#line 1282 "./parse.y"
+#line 1283 "./parse.y"
 { yyval.node = build_new_array_init (yyvsp[-2].operator.location, yyvsp[-1].node); ;
     break;}
 case 186:
-#line 1284 "./parse.y"
+#line 1285 "./parse.y"
 { yyval.node = build_new_array_init (yyvsp[-3].operator.location, yyvsp[-2].node); ;
     break;}
 case 187:
-#line 1289 "./parse.y"
+#line 1290 "./parse.y"
 { 
 		  yyval.node = tree_cons (maybe_build_array_element_wfl (yyvsp[0].node), 
 				  yyvsp[0].node, NULL_TREE);
 		;
     break;}
 case 188:
-#line 1294 "./parse.y"
+#line 1295 "./parse.y"
 {
 		  yyval.node = tree_cons (maybe_build_array_element_wfl (yyvsp[0].node), yyvsp[0].node, yyvsp[-2].node);
 		;
     break;}
 case 189:
-#line 1298 "./parse.y"
+#line 1299 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 190:
-#line 1304 "./parse.y"
+#line 1305 "./parse.y"
 { 
 		  /* Store the location of the `}' when doing xrefs */
 		  if (current_function_decl && flag_emit_xref)
@@ -3671,15 +3672,15 @@ case 190:
 		;
     break;}
 case 191:
-#line 1312 "./parse.y"
+#line 1313 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 192:
-#line 1317 "./parse.y"
+#line 1318 "./parse.y"
 { enter_block (); ;
     break;}
 case 193:
-#line 1322 "./parse.y"
+#line 1323 "./parse.y"
 { 
 		  maybe_absorb_scoping_blocks ();
 		  /* Store the location of the `}' when doing xrefs */
@@ -3692,38 +3693,38 @@ case 193:
 		;
     break;}
 case 197:
-#line 1342 "./parse.y"
+#line 1343 "./parse.y"
 { java_method_add_stmt (current_function_decl, yyvsp[0].node); ;
     break;}
 case 198:
-#line 1344 "./parse.y"
+#line 1345 "./parse.y"
 { 
 		  LOCAL_CLASS_P (TREE_TYPE (GET_CPC ())) = 1;
 		  end_class_declaration (1);
 		;
     break;}
 case 200:
-#line 1356 "./parse.y"
+#line 1357 "./parse.y"
 { declare_local_variables (0, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 201:
-#line 1358 "./parse.y"
+#line 1359 "./parse.y"
 { declare_local_variables (yyvsp[-2].value, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 207:
-#line 1368 "./parse.y"
+#line 1369 "./parse.y"
 { yyval.node = exit_block (); ;
     break;}
 case 212:
-#line 1377 "./parse.y"
+#line 1378 "./parse.y"
 { yyval.node = exit_block (); ;
     break;}
 case 224:
-#line 1396 "./parse.y"
+#line 1397 "./parse.y"
 { yyval.node = empty_stmt_node; ;
     break;}
 case 225:
-#line 1401 "./parse.y"
+#line 1402 "./parse.y"
 {
 		  yyval.node = build_labeled_block (EXPR_WFL_LINECOL (yyvsp[-1].node), 
 					    EXPR_WFL_NODE (yyvsp[-1].node));
@@ -3733,19 +3734,19 @@ case 225:
 		;
     break;}
 case 226:
-#line 1412 "./parse.y"
+#line 1413 "./parse.y"
 { yyval.node = finish_labeled_statement (yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 227:
-#line 1414 "./parse.y"
+#line 1415 "./parse.y"
 {yyerror ("':' expected"); RECOVER;;
     break;}
 case 228:
-#line 1419 "./parse.y"
+#line 1420 "./parse.y"
 { yyval.node = finish_labeled_statement (yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 229:
-#line 1426 "./parse.y"
+#line 1427 "./parse.y"
 {
 		  /* We have a statement. Generate a WFL around it so
 		     we can debug it */
@@ -3756,7 +3757,7 @@ case 229:
 		;
     break;}
 case 230:
-#line 1435 "./parse.y"
+#line 1436 "./parse.y"
 {
 		  if (ctxp->prevent_ese != lineno)
 		    yyerror ("Invalid expression statement");
@@ -3764,7 +3765,7 @@ case 230:
 		;
     break;}
 case 231:
-#line 1441 "./parse.y"
+#line 1442 "./parse.y"
 {
 		  if (ctxp->prevent_ese != lineno)
 		    yyerror ("Invalid expression statement");
@@ -3772,7 +3773,7 @@ case 231:
 		;
     break;}
 case 232:
-#line 1447 "./parse.y"
+#line 1448 "./parse.y"
 {
 		  if (ctxp->prevent_ese != lineno)
 		    yyerror ("Invalid expression statement");
@@ -3780,82 +3781,82 @@ case 232:
 		;
     break;}
 case 233:
-#line 1453 "./parse.y"
+#line 1454 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 234:
-#line 1455 "./parse.y"
+#line 1456 "./parse.y"
 {
 		  parse_ctor_invocation_error ();
 		  RECOVER;
 		;
     break;}
 case 235:
-#line 1460 "./parse.y"
+#line 1461 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 236:
-#line 1462 "./parse.y"
+#line 1463 "./parse.y"
 {
 		  parse_ctor_invocation_error ();
 		  RECOVER;
 		;
     break;}
 case 237:
-#line 1467 "./parse.y"
+#line 1468 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 238:
-#line 1469 "./parse.y"
+#line 1470 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 239:
-#line 1471 "./parse.y"
+#line 1472 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 240:
-#line 1473 "./parse.y"
+#line 1474 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 241:
-#line 1475 "./parse.y"
+#line 1476 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 249:
-#line 1490 "./parse.y"
+#line 1491 "./parse.y"
 { 
 		  yyval.node = build_if_else_statement (yyvsp[-3].operator.location, yyvsp[-2].node, 
 						yyvsp[0].node, NULL_TREE);
 		;
     break;}
 case 250:
-#line 1495 "./parse.y"
+#line 1496 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 251:
-#line 1497 "./parse.y"
+#line 1498 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 252:
-#line 1499 "./parse.y"
+#line 1500 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 253:
-#line 1504 "./parse.y"
+#line 1505 "./parse.y"
 { yyval.node = build_if_else_statement (yyvsp[-5].operator.location, yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 254:
-#line 1509 "./parse.y"
+#line 1510 "./parse.y"
 { yyval.node = build_if_else_statement (yyvsp[-5].operator.location, yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 255:
-#line 1514 "./parse.y"
+#line 1515 "./parse.y"
 {
 		  enter_block ();
 		;
     break;}
 case 256:
-#line 1518 "./parse.y"
+#line 1519 "./parse.y"
 { 
 		  /* Make into "proper list" of COMPOUND_EXPRs.
 		     I.e. make the last statment also have its own
@@ -3866,42 +3867,42 @@ case 256:
 		;
     break;}
 case 257:
-#line 1530 "./parse.y"
+#line 1531 "./parse.y"
 { 
 		  yyval.node = build (SWITCH_EXPR, NULL_TREE, yyvsp[-1].node, NULL_TREE);
 		  EXPR_WFL_LINECOL (yyval.node) = yyvsp[-2].operator.location;
 		;
     break;}
 case 258:
-#line 1535 "./parse.y"
+#line 1536 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 259:
-#line 1537 "./parse.y"
+#line 1538 "./parse.y"
 {yyerror ("Missing term or ')'"); DRECOVER(switch_statement);;
     break;}
 case 260:
-#line 1539 "./parse.y"
+#line 1540 "./parse.y"
 {yyerror ("'{' expected"); RECOVER;;
     break;}
 case 261:
-#line 1547 "./parse.y"
+#line 1548 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 262:
-#line 1549 "./parse.y"
+#line 1550 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 263:
-#line 1551 "./parse.y"
+#line 1552 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 264:
-#line 1553 "./parse.y"
+#line 1554 "./parse.y"
 { yyval.node = NULL_TREE; ;
     break;}
 case 270:
-#line 1572 "./parse.y"
+#line 1573 "./parse.y"
 { 
 		  tree lab = build1 (CASE_EXPR, NULL_TREE, yyvsp[-1].node);
 		  EXPR_WFL_LINECOL (lab) = yyvsp[-2].operator.location;
@@ -3909,7 +3910,7 @@ case 270:
 		;
     break;}
 case 271:
-#line 1578 "./parse.y"
+#line 1579 "./parse.y"
 { 
 		  tree lab = build1 (DEFAULT_EXPR, NULL_TREE, NULL_TREE);
 		  EXPR_WFL_LINECOL (lab) = yyvsp[-1].operator.location;
@@ -3917,61 +3918,61 @@ case 271:
 		;
     break;}
 case 272:
-#line 1584 "./parse.y"
+#line 1585 "./parse.y"
 {yyerror ("Missing or invalid constant expression"); RECOVER;;
     break;}
 case 273:
-#line 1586 "./parse.y"
+#line 1587 "./parse.y"
 {yyerror ("':' expected"); RECOVER;;
     break;}
 case 274:
-#line 1588 "./parse.y"
+#line 1589 "./parse.y"
 {yyerror ("':' expected"); RECOVER;;
     break;}
 case 275:
-#line 1593 "./parse.y"
+#line 1594 "./parse.y"
 { 
 		  tree body = build_loop_body (yyvsp[-2].operator.location, yyvsp[-1].node, 0);
 		  yyval.node = build_new_loop (body);
 		;
     break;}
 case 276:
-#line 1601 "./parse.y"
+#line 1602 "./parse.y"
 { yyval.node = finish_loop_body (0, NULL_TREE, yyvsp[0].node, 0); ;
     break;}
 case 277:
-#line 1603 "./parse.y"
+#line 1604 "./parse.y"
 {YYERROR_NOW; yyerror ("'(' expected"); RECOVER;;
     break;}
 case 278:
-#line 1605 "./parse.y"
+#line 1606 "./parse.y"
 {yyerror ("Missing term and ')' expected"); RECOVER;;
     break;}
 case 279:
-#line 1607 "./parse.y"
+#line 1608 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 280:
-#line 1612 "./parse.y"
+#line 1613 "./parse.y"
 { yyval.node = finish_loop_body (0, NULL_TREE, yyvsp[0].node, 0); ;
     break;}
 case 281:
-#line 1617 "./parse.y"
+#line 1618 "./parse.y"
 { 
 		  tree body = build_loop_body (0, NULL_TREE, 1);
 		  yyval.node = build_new_loop (body);
 		;
     break;}
 case 282:
-#line 1626 "./parse.y"
+#line 1627 "./parse.y"
 { yyval.node = finish_loop_body (yyvsp[-3].operator.location, yyvsp[-2].node, yyvsp[-5].node, 1); ;
     break;}
 case 283:
-#line 1631 "./parse.y"
+#line 1632 "./parse.y"
 { yyval.node = finish_for_loop (EXPR_WFL_LINECOL (yyvsp[-4].node), yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 284:
-#line 1633 "./parse.y"
+#line 1634 "./parse.y"
 { 
 		  yyval.node = finish_for_loop (0, NULL_TREE, yyvsp[-2].node, yyvsp[0].node);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
@@ -3980,23 +3981,23 @@ case 284:
 		;
     break;}
 case 285:
-#line 1640 "./parse.y"
+#line 1641 "./parse.y"
 {yyerror ("Invalid control expression"); RECOVER;;
     break;}
 case 286:
-#line 1642 "./parse.y"
+#line 1643 "./parse.y"
 {yyerror ("Invalid update expression"); RECOVER;;
     break;}
 case 287:
-#line 1644 "./parse.y"
+#line 1645 "./parse.y"
 {yyerror ("Invalid update expression"); RECOVER;;
     break;}
 case 288:
-#line 1649 "./parse.y"
+#line 1650 "./parse.y"
 { yyval.node = finish_for_loop (EXPR_WFL_LINECOL (yyvsp[-4].node), yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node);;
     break;}
 case 289:
-#line 1651 "./parse.y"
+#line 1652 "./parse.y"
 { 
 		  yyval.node = finish_for_loop (0, NULL_TREE, yyvsp[-2].node, yyvsp[0].node);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
@@ -4005,7 +4006,7 @@ case 289:
 		;
     break;}
 case 290:
-#line 1661 "./parse.y"
+#line 1662 "./parse.y"
 { 
 		  /* This scope defined for local variable that may be
                      defined within the scope of the for loop */
@@ -4013,15 +4014,15 @@ case 290:
 		;
     break;}
 case 291:
-#line 1667 "./parse.y"
+#line 1668 "./parse.y"
 {yyerror ("'(' expected"); DRECOVER(for_1);;
     break;}
 case 292:
-#line 1669 "./parse.y"
+#line 1670 "./parse.y"
 {yyerror ("Invalid init statement"); RECOVER;;
     break;}
 case 293:
-#line 1674 "./parse.y"
+#line 1675 "./parse.y"
 { 
 		  /* We now declare the loop body. The loop is
                      declared as a for loop. */
@@ -4034,11 +4035,11 @@ case 293:
 		;
     break;}
 case 294:
-#line 1686 "./parse.y"
+#line 1687 "./parse.y"
 { yyval.node = empty_stmt_node; ;
     break;}
 case 295:
-#line 1688 "./parse.y"
+#line 1689 "./parse.y"
 { 
 		  /* Init statement recorded within the previously
                      defined block scope */
@@ -4046,7 +4047,7 @@ case 295:
 		;
     break;}
 case 296:
-#line 1694 "./parse.y"
+#line 1695 "./parse.y"
 { 
 		  /* Local variable are recorded within the previously
 		     defined block scope */
@@ -4054,94 +4055,94 @@ case 296:
 		;
     break;}
 case 297:
-#line 1700 "./parse.y"
+#line 1701 "./parse.y"
 {yyerror ("';' expected"); DRECOVER(for_init_1);;
     break;}
 case 298:
-#line 1704 "./parse.y"
+#line 1705 "./parse.y"
 {yyval.node = empty_stmt_node;;
     break;}
 case 299:
-#line 1706 "./parse.y"
+#line 1707 "./parse.y"
 { yyval.node = build_debugable_stmt (BUILD_LOCATION (), yyvsp[0].node); ;
     break;}
 case 300:
-#line 1711 "./parse.y"
+#line 1712 "./parse.y"
 { yyval.node = add_stmt_to_compound (NULL_TREE, NULL_TREE, yyvsp[0].node); ;
     break;}
 case 301:
-#line 1713 "./parse.y"
+#line 1714 "./parse.y"
 { yyval.node = add_stmt_to_compound (yyvsp[-2].node, NULL_TREE, yyvsp[0].node); ;
     break;}
 case 302:
-#line 1715 "./parse.y"
+#line 1716 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 303:
-#line 1720 "./parse.y"
+#line 1721 "./parse.y"
 { yyval.node = build_bc_statement (yyvsp[-1].operator.location, 1, NULL_TREE); ;
     break;}
 case 304:
-#line 1722 "./parse.y"
+#line 1723 "./parse.y"
 { yyval.node = build_bc_statement (yyvsp[-2].operator.location, 1, yyvsp[-1].node); ;
     break;}
 case 305:
-#line 1724 "./parse.y"
+#line 1725 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 306:
-#line 1726 "./parse.y"
+#line 1727 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 307:
-#line 1731 "./parse.y"
+#line 1732 "./parse.y"
 { yyval.node = build_bc_statement (yyvsp[-1].operator.location, 0, NULL_TREE); ;
     break;}
 case 308:
-#line 1733 "./parse.y"
+#line 1734 "./parse.y"
 { yyval.node = build_bc_statement (yyvsp[-2].operator.location, 0, yyvsp[-1].node); ;
     break;}
 case 309:
-#line 1735 "./parse.y"
+#line 1736 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 310:
-#line 1737 "./parse.y"
+#line 1738 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 311:
-#line 1742 "./parse.y"
+#line 1743 "./parse.y"
 { yyval.node = build_return (yyvsp[-1].operator.location, NULL_TREE); ;
     break;}
 case 312:
-#line 1744 "./parse.y"
+#line 1745 "./parse.y"
 { yyval.node = build_return (yyvsp[-2].operator.location, yyvsp[-1].node); ;
     break;}
 case 313:
-#line 1746 "./parse.y"
+#line 1747 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 314:
-#line 1748 "./parse.y"
+#line 1749 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 315:
-#line 1753 "./parse.y"
+#line 1754 "./parse.y"
 { 
 		  yyval.node = build1 (THROW_EXPR, NULL_TREE, yyvsp[-1].node);
 		  EXPR_WFL_LINECOL (yyval.node) = yyvsp[-2].operator.location;
 		;
     break;}
 case 316:
-#line 1758 "./parse.y"
+#line 1759 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 317:
-#line 1760 "./parse.y"
+#line 1761 "./parse.y"
 {yyerror ("';' expected"); RECOVER;;
     break;}
 case 318:
-#line 1765 "./parse.y"
+#line 1766 "./parse.y"
 { 
 		  yyval.node = build (SYNCHRONIZED_EXPR, NULL_TREE, yyvsp[-2].node, yyvsp[0].node);
 		  EXPR_WFL_LINECOL (yyval.node) = 
@@ -4149,23 +4150,23 @@ case 318:
 		;
     break;}
 case 319:
-#line 1771 "./parse.y"
+#line 1772 "./parse.y"
 {yyerror ("'{' expected"); RECOVER;;
     break;}
 case 320:
-#line 1773 "./parse.y"
+#line 1774 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 321:
-#line 1775 "./parse.y"
+#line 1776 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 322:
-#line 1777 "./parse.y"
+#line 1778 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 323:
-#line 1782 "./parse.y"
+#line 1783 "./parse.y"
 {
 		  check_modifiers (
              "Illegal modifier `%s'. Only `synchronized' was expected here",
@@ -4176,33 +4177,33 @@ case 323:
 		;
     break;}
 case 324:
-#line 1794 "./parse.y"
+#line 1795 "./parse.y"
 { yyval.node = build_try_statement (yyvsp[-2].operator.location, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 325:
-#line 1796 "./parse.y"
+#line 1797 "./parse.y"
 { yyval.node = build_try_finally_statement (yyvsp[-2].operator.location, yyvsp[-1].node, yyvsp[0].node); ;
     break;}
 case 326:
-#line 1798 "./parse.y"
+#line 1799 "./parse.y"
 { yyval.node = build_try_finally_statement 
 		    (yyvsp[-3].operator.location, build_try_statement (yyvsp[-3].operator.location,
 						       yyvsp[-2].node, yyvsp[-1].node), yyvsp[0].node);
 		;
     break;}
 case 327:
-#line 1803 "./parse.y"
+#line 1804 "./parse.y"
 {yyerror ("'{' expected"); DRECOVER (try_statement);;
     break;}
 case 329:
-#line 1809 "./parse.y"
+#line 1810 "./parse.y"
 { 
 		  TREE_CHAIN (yyvsp[0].node) = yyvsp[-1].node;
 		  yyval.node = yyvsp[0].node;
 		;
     break;}
 case 330:
-#line 1817 "./parse.y"
+#line 1818 "./parse.y"
 { 
 		  java_method_add_stmt (current_function_decl, yyvsp[0].node);
 		  exit_block ();
@@ -4210,7 +4211,7 @@ case 330:
 		;
     break;}
 case 331:
-#line 1825 "./parse.y"
+#line 1826 "./parse.y"
 { 
 		  /* We add a block to define a scope for
 		     formal_parameter (CCBP). The formal parameter is
@@ -4228,96 +4229,96 @@ case 331:
 		;
     break;}
 case 332:
-#line 1841 "./parse.y"
+#line 1842 "./parse.y"
 {yyerror ("'(' expected"); RECOVER; yyval.node = NULL_TREE;;
     break;}
 case 333:
-#line 1843 "./parse.y"
+#line 1844 "./parse.y"
 {
 		  yyerror ("Missing term or ')' expected"); 
 		  RECOVER; yyval.node = NULL_TREE;
 		;
     break;}
 case 334:
-#line 1848 "./parse.y"
+#line 1849 "./parse.y"
 {yyerror ("Missing term"); RECOVER; yyval.node = NULL_TREE;;
     break;}
 case 335:
-#line 1853 "./parse.y"
+#line 1854 "./parse.y"
 { yyval.node = yyvsp[0].node; ;
     break;}
 case 336:
-#line 1855 "./parse.y"
+#line 1856 "./parse.y"
 {yyerror ("'{' expected"); RECOVER; ;
     break;}
 case 340:
-#line 1867 "./parse.y"
+#line 1868 "./parse.y"
 { yyval.node = build_this (yyvsp[0].operator.location); ;
     break;}
 case 341:
-#line 1869 "./parse.y"
+#line 1870 "./parse.y"
 {yyval.node = yyvsp[-1].node;;
     break;}
 case 347:
-#line 1879 "./parse.y"
+#line 1880 "./parse.y"
 { 
 		  tree wfl = build_wfl_node (this_identifier_node);
 		  yyval.node = make_qualified_primary (yyvsp[-2].node, wfl, EXPR_WFL_LINECOL (yyvsp[-2].node));
 		;
     break;}
 case 348:
-#line 1884 "./parse.y"
+#line 1885 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 349:
-#line 1886 "./parse.y"
+#line 1887 "./parse.y"
 {yyerror ("'class' or 'this' expected" ); RECOVER;;
     break;}
 case 350:
-#line 1888 "./parse.y"
+#line 1889 "./parse.y"
 {yyerror ("'class' expected" ); RECOVER;;
     break;}
 case 351:
-#line 1890 "./parse.y"
+#line 1891 "./parse.y"
 {yyerror ("'class' expected" ); RECOVER;;
     break;}
 case 352:
-#line 1898 "./parse.y"
+#line 1899 "./parse.y"
 { 
 		  yyval.node = build_java_array_type (yyvsp[-2].node, -1);
 		  CLASS_LOADED_P (yyval.node) = 1;
 		;
     break;}
 case 353:
-#line 1903 "./parse.y"
+#line 1904 "./parse.y"
 { yyval.node = build_unresolved_array_type (yyvsp[-2].node); ;
     break;}
 case 354:
-#line 1913 "./parse.y"
+#line 1914 "./parse.y"
 { yyval.node = build_incomplete_class_ref (yyvsp[-1].operator.location, yyvsp[-2].node); ;
     break;}
 case 355:
-#line 1915 "./parse.y"
+#line 1916 "./parse.y"
 { yyval.node = build_incomplete_class_ref (yyvsp[-1].operator.location, yyvsp[-2].node); ;
     break;}
 case 356:
-#line 1917 "./parse.y"
+#line 1918 "./parse.y"
 { yyval.node = build_class_ref (yyvsp[-2].node); ;
     break;}
 case 357:
-#line 1919 "./parse.y"
+#line 1920 "./parse.y"
 { yyval.node = build_class_ref (void_type_node); ;
     break;}
 case 358:
-#line 1924 "./parse.y"
+#line 1925 "./parse.y"
 { yyval.node = build_new_invocation (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 359:
-#line 1926 "./parse.y"
+#line 1927 "./parse.y"
 { yyval.node = build_new_invocation (yyvsp[-2].node, NULL_TREE); ;
     break;}
 case 361:
-#line 1932 "./parse.y"
+#line 1933 "./parse.y"
 { 
 		  tree ctor = build_new_invocation (yyvsp[-2].node, NULL_TREE);
 		  yyval.node = make_qualified_primary (yyvsp[-3].node, ctor, 
@@ -4325,7 +4326,7 @@ case 361:
 		;
     break;}
 case 363:
-#line 1939 "./parse.y"
+#line 1940 "./parse.y"
 { 
 		  tree ctor = build_new_invocation (yyvsp[-3].node, yyvsp[-1].node);
 		  yyval.node = make_qualified_primary (yyvsp[-4].node, ctor, 
@@ -4333,35 +4334,35 @@ case 363:
 		;
     break;}
 case 365:
-#line 1946 "./parse.y"
+#line 1947 "./parse.y"
 {yyerror ("'(' expected"); DRECOVER(new_1);;
     break;}
 case 366:
-#line 1948 "./parse.y"
+#line 1949 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 367:
-#line 1950 "./parse.y"
+#line 1951 "./parse.y"
 {yyerror ("')' or term expected"); RECOVER;;
     break;}
 case 368:
-#line 1952 "./parse.y"
+#line 1953 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 369:
-#line 1954 "./parse.y"
+#line 1955 "./parse.y"
 {YYERROR_NOW; yyerror ("Identifier expected"); RECOVER;;
     break;}
 case 370:
-#line 1956 "./parse.y"
+#line 1957 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 371:
-#line 1966 "./parse.y"
+#line 1967 "./parse.y"
 { create_anonymous_class (yyvsp[-4].operator.location, yyvsp[-3].node); ;
     break;}
 case 372:
-#line 1968 "./parse.y"
+#line 1969 "./parse.y"
 { 
 		  tree id = build_wfl_node (DECL_NAME (GET_CPC ()));
 		  EXPR_WFL_LINECOL (id) = EXPR_WFL_LINECOL (yyvsp[-5].node);
@@ -4394,11 +4395,11 @@ case 372:
 		;
     break;}
 case 373:
-#line 1999 "./parse.y"
+#line 2000 "./parse.y"
 { create_anonymous_class (yyvsp[-3].operator.location, yyvsp[-2].node); ;
     break;}
 case 374:
-#line 2001 "./parse.y"
+#line 2002 "./parse.y"
 { 
 		  tree id = build_wfl_node (DECL_NAME (GET_CPC ()));
 		  EXPR_WFL_LINECOL (id) = EXPR_WFL_LINECOL (yyvsp[-4].node);
@@ -4413,49 +4414,49 @@ case 374:
 		;
     break;}
 case 375:
-#line 2017 "./parse.y"
+#line 2018 "./parse.y"
 { yyval.node = yyvsp[-2].node; ;
     break;}
 case 376:
-#line 2019 "./parse.y"
+#line 2020 "./parse.y"
 { yyval.node = yyvsp[-2].node; ;
     break;}
 case 377:
-#line 2024 "./parse.y"
+#line 2025 "./parse.y"
 { 
 		  yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, NULL_TREE);
 		  ctxp->formal_parameter_number = 1; 
 		;
     break;}
 case 378:
-#line 2029 "./parse.y"
+#line 2030 "./parse.y"
 {
 		  ctxp->formal_parameter_number += 1;
 		  yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, yyvsp[-2].node);
 		;
     break;}
 case 379:
-#line 2034 "./parse.y"
+#line 2035 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 380:
-#line 2039 "./parse.y"
+#line 2040 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-1].node, yyvsp[0].node, 0); ;
     break;}
 case 381:
-#line 2041 "./parse.y"
+#line 2042 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-1].node, yyvsp[0].node, 0); ;
     break;}
 case 382:
-#line 2043 "./parse.y"
+#line 2044 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-2].node, yyvsp[-1].node, CURRENT_OSB (ctxp));;
     break;}
 case 383:
-#line 2045 "./parse.y"
+#line 2046 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-2].node, yyvsp[-1].node, CURRENT_OSB (ctxp));;
     break;}
 case 384:
-#line 2049 "./parse.y"
+#line 2050 "./parse.y"
 {
 		  char *sig;
 		  while (CURRENT_OSB (ctxp)--)
@@ -4466,7 +4467,7 @@ case 384:
 		;
     break;}
 case 385:
-#line 2058 "./parse.y"
+#line 2059 "./parse.y"
 { 
 		  tree type = yyvsp[-2].node;
 		  while (CURRENT_OSB (ctxp)--)
@@ -4476,34 +4477,34 @@ case 385:
 		;
     break;}
 case 386:
-#line 2066 "./parse.y"
+#line 2067 "./parse.y"
 {yyerror ("'[' expected"); DRECOVER ("]");;
     break;}
 case 387:
-#line 2068 "./parse.y"
+#line 2069 "./parse.y"
 {yyerror ("']' expected"); RECOVER;;
     break;}
 case 388:
-#line 2073 "./parse.y"
+#line 2074 "./parse.y"
 { yyval.node = build_tree_list (NULL_TREE, yyvsp[0].node); ;
     break;}
 case 389:
-#line 2075 "./parse.y"
+#line 2076 "./parse.y"
 { yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, yyval.node); ;
     break;}
 case 390:
-#line 2080 "./parse.y"
+#line 2081 "./parse.y"
 { 
 		  EXPR_WFL_LINECOL (yyvsp[-1].node) = yyvsp[-2].operator.location;
 		  yyval.node = yyvsp[-1].node;
 		;
     break;}
 case 391:
-#line 2085 "./parse.y"
+#line 2086 "./parse.y"
 {yyerror ("']' expected"); RECOVER;;
     break;}
 case 392:
-#line 2087 "./parse.y"
+#line 2088 "./parse.y"
 {
 		  yyerror ("Missing term");
 		  yyerror ("']' expected");
@@ -4511,7 +4512,7 @@ case 392:
 		;
     break;}
 case 393:
-#line 2096 "./parse.y"
+#line 2097 "./parse.y"
 { 
 		  int allocate = 0;
 		  /* If not initialized, allocate memory for the osb
@@ -4539,19 +4540,19 @@ case 393:
 		;
     break;}
 case 394:
-#line 2122 "./parse.y"
+#line 2123 "./parse.y"
 { CURRENT_OSB (ctxp)++; ;
     break;}
 case 395:
-#line 2124 "./parse.y"
+#line 2125 "./parse.y"
 { yyerror ("']' expected"); RECOVER;;
     break;}
 case 396:
-#line 2129 "./parse.y"
+#line 2130 "./parse.y"
 { yyval.node = make_qualified_primary (yyvsp[-2].node, yyvsp[0].node, yyvsp[-1].operator.location); ;
     break;}
 case 397:
-#line 2133 "./parse.y"
+#line 2134 "./parse.y"
 {
 		  tree super_wfl = 
 		    build_wfl_node (super_identifier_node);
@@ -4560,19 +4561,19 @@ case 397:
 		;
     break;}
 case 398:
-#line 2140 "./parse.y"
+#line 2141 "./parse.y"
 {yyerror ("Field expected"); DRECOVER (super_field_acces);;
     break;}
 case 399:
-#line 2145 "./parse.y"
+#line 2146 "./parse.y"
 { yyval.node = build_method_invocation (yyvsp[-2].node, NULL_TREE); ;
     break;}
 case 400:
-#line 2147 "./parse.y"
+#line 2148 "./parse.y"
 { yyval.node = build_method_invocation (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 401:
-#line 2149 "./parse.y"
+#line 2150 "./parse.y"
 { 
 		  if (TREE_CODE (yyvsp[-4].node) == THIS_EXPR)
 		    yyval.node = build_this_super_qualified_invocation 
@@ -4585,7 +4586,7 @@ case 401:
 		;
     break;}
 case 402:
-#line 2160 "./parse.y"
+#line 2161 "./parse.y"
 { 
 		  if (TREE_CODE (yyvsp[-5].node) == THIS_EXPR)
 		    yyval.node = build_this_super_qualified_invocation 
@@ -4598,121 +4599,121 @@ case 402:
 		;
     break;}
 case 403:
-#line 2171 "./parse.y"
+#line 2172 "./parse.y"
 { 
 		  yyval.node = build_this_super_qualified_invocation 
 		    (0, yyvsp[-2].node, NULL_TREE, yyvsp[-4].operator.location, yyvsp[-3].operator.location);
 		;
     break;}
 case 404:
-#line 2176 "./parse.y"
+#line 2177 "./parse.y"
 {
 		  yyval.node = build_this_super_qualified_invocation 
 		    (0, yyvsp[-3].node, yyvsp[-1].node, yyvsp[-5].operator.location, yyvsp[-4].operator.location);
 		;
     break;}
 case 405:
-#line 2185 "./parse.y"
+#line 2186 "./parse.y"
 { yyerror ("'(' expected"); DRECOVER (method_invocation); ;
     break;}
 case 406:
-#line 2187 "./parse.y"
+#line 2188 "./parse.y"
 { yyerror ("'(' expected"); DRECOVER (method_invocation); ;
     break;}
 case 407:
-#line 2192 "./parse.y"
+#line 2193 "./parse.y"
 { yyval.node = build_array_ref (yyvsp[-2].operator.location, yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 408:
-#line 2194 "./parse.y"
+#line 2195 "./parse.y"
 { yyval.node = build_array_ref (yyvsp[-2].operator.location, yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 409:
-#line 2196 "./parse.y"
+#line 2197 "./parse.y"
 {
 		  yyerror ("Missing term and ']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 410:
-#line 2201 "./parse.y"
+#line 2202 "./parse.y"
 {
 		  yyerror ("']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 411:
-#line 2206 "./parse.y"
+#line 2207 "./parse.y"
 {
 		  yyerror ("Missing term and ']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 412:
-#line 2211 "./parse.y"
+#line 2212 "./parse.y"
 {
 		  yyerror ("']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 417:
-#line 2226 "./parse.y"
+#line 2227 "./parse.y"
 { yyval.node = build_incdec (yyvsp[0].operator.token, yyvsp[0].operator.location, yyvsp[-1].node, 1); ;
     break;}
 case 418:
-#line 2231 "./parse.y"
+#line 2232 "./parse.y"
 { yyval.node = build_incdec (yyvsp[0].operator.token, yyvsp[0].operator.location, yyvsp[-1].node, 1); ;
     break;}
 case 421:
-#line 2238 "./parse.y"
+#line 2239 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 422:
-#line 2240 "./parse.y"
+#line 2241 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 424:
-#line 2243 "./parse.y"
+#line 2244 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 425:
-#line 2245 "./parse.y"
+#line 2246 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 426:
-#line 2250 "./parse.y"
+#line 2251 "./parse.y"
 {yyval.node = build_incdec (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node, 0); ;
     break;}
 case 427:
-#line 2252 "./parse.y"
+#line 2253 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 428:
-#line 2257 "./parse.y"
+#line 2258 "./parse.y"
 {yyval.node = build_incdec (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node, 0); ;
     break;}
 case 429:
-#line 2259 "./parse.y"
+#line 2260 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 431:
-#line 2265 "./parse.y"
+#line 2266 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 432:
-#line 2267 "./parse.y"
+#line 2268 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 434:
-#line 2270 "./parse.y"
+#line 2271 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 435:
-#line 2272 "./parse.y"
+#line 2273 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 436:
-#line 2277 "./parse.y"
+#line 2278 "./parse.y"
 { 
 		  tree type = yyvsp[-3].node;
 		  while (CURRENT_OSB (ctxp)--)
@@ -4722,15 +4723,15 @@ case 436:
 		;
     break;}
 case 437:
-#line 2285 "./parse.y"
+#line 2286 "./parse.y"
 { yyval.node = build_cast (yyvsp[-3].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 438:
-#line 2287 "./parse.y"
+#line 2288 "./parse.y"
 { yyval.node = build_cast (yyvsp[-3].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 439:
-#line 2289 "./parse.y"
+#line 2290 "./parse.y"
 { 
 		  const char *ptr;
 		  while (CURRENT_OSB (ctxp)--)
@@ -4745,11 +4746,11 @@ case 439:
 		;
     break;}
 case 440:
-#line 2302 "./parse.y"
+#line 2303 "./parse.y"
 {yyerror ("']' expected, invalid type expression");;
     break;}
 case 441:
-#line 2304 "./parse.y"
+#line 2305 "./parse.y"
 {
 	          if (ctxp->prevent_ese != lineno)
 		    yyerror ("Invalid type expression"); RECOVER;
@@ -4757,243 +4758,243 @@ case 441:
 		;
     break;}
 case 442:
-#line 2310 "./parse.y"
+#line 2311 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 443:
-#line 2312 "./parse.y"
+#line 2313 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 444:
-#line 2314 "./parse.y"
+#line 2315 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 446:
-#line 2320 "./parse.y"
+#line 2321 "./parse.y"
 { 
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), 
 				    yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node);
 		;
     break;}
 case 447:
-#line 2325 "./parse.y"
+#line 2326 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 448:
-#line 2330 "./parse.y"
+#line 2331 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 449:
-#line 2335 "./parse.y"
+#line 2336 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 450:
-#line 2337 "./parse.y"
+#line 2338 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 451:
-#line 2339 "./parse.y"
+#line 2340 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 453:
-#line 2345 "./parse.y"
+#line 2346 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 454:
-#line 2350 "./parse.y"
+#line 2351 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 455:
-#line 2355 "./parse.y"
+#line 2356 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 456:
-#line 2357 "./parse.y"
+#line 2358 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 458:
-#line 2363 "./parse.y"
+#line 2364 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 459:
-#line 2368 "./parse.y"
+#line 2369 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 460:
-#line 2373 "./parse.y"
+#line 2374 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 461:
-#line 2378 "./parse.y"
+#line 2379 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 462:
-#line 2380 "./parse.y"
+#line 2381 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 463:
-#line 2382 "./parse.y"
+#line 2383 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 465:
-#line 2388 "./parse.y"
+#line 2389 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 466:
-#line 2393 "./parse.y"
+#line 2394 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 467:
-#line 2398 "./parse.y"
+#line 2399 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 468:
-#line 2403 "./parse.y"
+#line 2404 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 469:
-#line 2408 "./parse.y"
+#line 2409 "./parse.y"
 { yyval.node = build_binop (INSTANCEOF_EXPR, yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 470:
-#line 2410 "./parse.y"
+#line 2411 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 471:
-#line 2412 "./parse.y"
+#line 2413 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 472:
-#line 2414 "./parse.y"
+#line 2415 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 473:
-#line 2416 "./parse.y"
+#line 2417 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 474:
-#line 2418 "./parse.y"
+#line 2419 "./parse.y"
 {yyerror ("Invalid reference type"); RECOVER;;
     break;}
 case 476:
-#line 2424 "./parse.y"
+#line 2425 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 477:
-#line 2429 "./parse.y"
+#line 2430 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 478:
-#line 2434 "./parse.y"
+#line 2435 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 479:
-#line 2436 "./parse.y"
+#line 2437 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 481:
-#line 2442 "./parse.y"
+#line 2443 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 482:
-#line 2447 "./parse.y"
+#line 2448 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 484:
-#line 2453 "./parse.y"
+#line 2454 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 485:
-#line 2458 "./parse.y"
+#line 2459 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 487:
-#line 2464 "./parse.y"
+#line 2465 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 488:
-#line 2469 "./parse.y"
+#line 2470 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 490:
-#line 2475 "./parse.y"
+#line 2476 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 491:
-#line 2480 "./parse.y"
+#line 2481 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 493:
-#line 2486 "./parse.y"
+#line 2487 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 494:
-#line 2491 "./parse.y"
+#line 2492 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 496:
-#line 2497 "./parse.y"
+#line 2498 "./parse.y"
 {
 		  yyval.node = build (CONDITIONAL_EXPR, NULL_TREE, yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node);
 		  EXPR_WFL_LINECOL (yyval.node) = yyvsp[-3].operator.location;
 		;
     break;}
 case 497:
-#line 2502 "./parse.y"
+#line 2503 "./parse.y"
 {
 		  YYERROR_NOW;
 		  yyerror ("Missing term");
@@ -5001,19 +5002,19 @@ case 497:
 		;
     break;}
 case 498:
-#line 2508 "./parse.y"
+#line 2509 "./parse.y"
 {yyerror ("Missing term"); DRECOVER (2);;
     break;}
 case 499:
-#line 2510 "./parse.y"
+#line 2511 "./parse.y"
 {yyerror ("Missing term"); DRECOVER (3);;
     break;}
 case 502:
-#line 2520 "./parse.y"
+#line 2521 "./parse.y"
 { yyval.node = build_assignment (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 503:
-#line 2522 "./parse.y"
+#line 2523 "./parse.y"
 {
 		  if (ctxp->prevent_ese != lineno)
 		    yyerror ("Missing term");
@@ -5242,7 +5243,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 2548 "./parse.y"
+#line 2549 "./parse.y"
 
 
 
@@ -10085,17 +10086,17 @@ maybe_generate_pre_expand_clinit (class_type)
 
   end_artificial_method_body (mdecl);
 
-  /* Now we want to place <clinit> as the last method for interface so
-     that it doesn't interfere with the dispatch table based
-     lookup. */
-  if (CLASS_INTERFACE (TYPE_NAME (class_type))
-      && TREE_CHAIN (TYPE_METHODS (class_type)))
+  /* Now we want to place <clinit> as the last method (because we need
+     it at least for interface so that it doesn't interfere with the
+     dispatch table based lookup. */
+  if (TREE_CHAIN (TYPE_METHODS (class_type)))
     {
-      tree current = 
-	TYPE_METHODS (class_type) = TREE_CHAIN (TYPE_METHODS (class_type));
+      current = TREE_CHAIN (TYPE_METHODS (class_type));
+      TYPE_METHODS (class_type) = current;
 
       while (TREE_CHAIN (current))
 	current = TREE_CHAIN (current);
+
       TREE_CHAIN (current) = mdecl;
       TREE_CHAIN (mdecl) = NULL_TREE;
     }
@@ -10103,12 +10104,63 @@ maybe_generate_pre_expand_clinit (class_type)
   return mdecl;
 }
 
+/* See whether we could get rid of <clinit>. Criteria are: all static
+   final fields have constant initial values and the body of <clinit>
+   is empty. Return 1 if <clinit> was discarded, 0 otherwise. */
+
+static int
+maybe_yank_clinit (mdecl)
+     tree mdecl;
+{
+  tree type, current;
+  tree fbody, bbody;
+  
+  if (!DECL_CLINIT_P (mdecl))
+    return 0;
+  
+  /* If the body isn't empty, then we keep <clinit> */
+  fbody = DECL_FUNCTION_BODY (mdecl);
+  if ((bbody = BLOCK_EXPR_BODY (fbody)))
+    bbody = BLOCK_EXPR_BODY (bbody);
+  if (bbody && bbody != empty_stmt_node)
+    return 0;
+  
+  type = DECL_CONTEXT (mdecl);
+  current = TYPE_FIELDS (type);
+
+  for (current = (current ? TREE_CHAIN (current) : current); 
+       current; current = TREE_CHAIN (current))
+    if (!(FIELD_STATIC (current) && FIELD_FINAL (current)
+	  && DECL_INITIAL (current) && TREE_CONSTANT (DECL_INITIAL (current))))
+      break;
+
+  if (current)
+    return 0;
+
+  /* Get rid of <clinit> in the class' list of methods */
+  if (TYPE_METHODS (type) == mdecl)
+    TYPE_METHODS (type) = TREE_CHAIN (mdecl);
+  else
+    for (current = TYPE_METHODS (type); current; 
+	 current = TREE_CHAIN (current))
+      if (TREE_CHAIN (current) == mdecl)
+	{
+	  TREE_CHAIN (current) = TREE_CHAIN (mdecl);
+	  break;
+	}
+
+  return 1;
+}
+
+
 /* Complete and expand a method.  */
 
 static void
 java_complete_expand_method (mdecl)
      tree mdecl;
 {
+  int yank_clinit = 0;
+
   current_function_decl = mdecl;
   /* Fix constructors before expanding them */
   if (DECL_CONSTRUCTOR_P (mdecl))
@@ -10157,15 +10209,19 @@ java_complete_expand_method (mdecl)
 	  && !flag_emit_xref)
 	missing_return_error (current_function_decl);
 
-      complete_start_java_method (mdecl); 
-
+      /* Check wether we could just get rid of clinit, now the picture
+         is complete. */
+      if (!(yank_clinit = maybe_yank_clinit (mdecl)))
+	complete_start_java_method (mdecl); 
+      
       /* Don't go any further if we've found error(s) during the
-         expansion */
-      if (!java_error_count)
+	 expansion */
+      if (!java_error_count && !yank_clinit)
 	source_end_java_method ();
       else
 	{
-	  pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+	  if (java_error_count)
+	    pushdecl_force_head (DECL_ARGUMENTS (mdecl));
 	  poplevel (1, 0, 1);
 	}
 
