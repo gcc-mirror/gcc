@@ -1,3 +1,20 @@
+2001-07-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* include/ext/ropeimpl.h (_Rope_RopeRep::_M_free_c_string):
+	Replace destroy by _Destroy.
+	(_Rope_RopeRep::_S_free_string): Likewise.
+	(rope::c_str()): Likewise.
+	* include/ext/slist (_Slist_base::_M_erase_after>): Likewise.
+	(_Slist_base::_M_erase_after): Likewise.
+	(slist::_M_create_node): Replace construct by _Construct.
+	(slist::pop_front): Replace destroy by _Destroy.
+	* include/ext/stl_hashtable.h (hashtable::_M_new_node): Replace
+	construct by _Construct.
+	(hashtable::_M_delete_node): Replace destroy by _Destroy.
+	* include/ext/stl_rope.h (rope::rope): Replace construct by
+	_Construct.
+	(rope::copy): Replace destroy by _Destroy.
+
 2001-07-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/localefwd.h: Format.	

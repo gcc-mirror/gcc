@@ -265,7 +265,7 @@ protected:
     _Slist_node<_Tp>* __next = (_Slist_node<_Tp>*) (__pos->_M_next);
     _Slist_node_base* __next_next = __next->_M_next;
     __pos->_M_next = __next_next;
-    destroy(&__next->_M_data);
+    _Destroy(&__next->_M_data);
     _M_put_node(__next);
     return __next_next;
   }
@@ -280,7 +280,7 @@ _Slist_base<_Tp,_Alloc>::_M_erase_after(_Slist_node_base* __before_first,
   while (__cur != __last_node) {
     _Slist_node<_Tp>* __tmp = __cur;
     __cur = (_Slist_node<_Tp>*) __cur->_M_next;
-    destroy(&__tmp->_M_data);
+    _Destroy(&__tmp->_M_data);
     _M_put_node(__tmp);
   }
   __before_first->_M_next = __last_node;
@@ -318,7 +318,7 @@ private:
   _Node* _M_create_node(const value_type& __x) {
     _Node* __node = this->_M_get_node();
     __STL_TRY {
-      construct(&__node->_M_data, __x);
+      _Construct(&__node->_M_data, __x);
       __node->_M_next = 0;
     }
     __STL_UNWIND(this->_M_put_node(__node));
@@ -328,7 +328,7 @@ private:
   _Node* _M_create_node() {
     _Node* __node = this->_M_get_node();
     __STL_TRY {
-      construct(&__node->_M_data);
+      _Construct(&__node->_M_data);
       __node->_M_next = 0;
     }
     __STL_UNWIND(this->_M_put_node(__node));
@@ -425,7 +425,7 @@ public:
   void pop_front() {
     _Node* __node = (_Node*) this->_M_head._M_next;
     this->_M_head._M_next = __node->_M_next;
-    destroy(&__node->_M_data);
+    _Destroy(&__node->_M_data);
     this->_M_put_node(__node);
   }
 

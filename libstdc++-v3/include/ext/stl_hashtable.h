@@ -517,7 +517,7 @@ private:
     _Node* __n = _M_get_node();
     __n->_M_next = 0;
     __STL_TRY {
-      construct(&__n->_M_val, __obj);
+      _Construct(&__n->_M_val, __obj);
       return __n;
     }
     __STL_UNWIND(_M_put_node(__n));
@@ -525,7 +525,7 @@ private:
   
   void _M_delete_node(_Node* __n)
   {
-    destroy(&__n->_M_val);
+    _Destroy(&__n->_M_val);
     _M_put_node(__n);
   }
 
