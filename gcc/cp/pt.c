@@ -866,6 +866,9 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		SET_DECL_EXPLICIT_INSTANTIATION (decl);
 	      return decl;
 	    }
+	  else if (DECL_STATIC_FUNCTION_P (tmpl)
+		   && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	    revert_static_member_fn (&decl, 0, 0);
 
 	  /* Mangle the function name appropriately.  Note that we do
 	     not mangle specializations of non-template member
@@ -1822,11 +1825,23 @@ coerce_template_parms (parms, arglist, in_decl,
 	  continue;
 	}
 
-      /* In case we are checking arguments inside a template template
-	 parameter, ARG that does not come from default argument is 
-	 also a TREE_LIST node */
-      if (TREE_CODE (arg) == TREE_LIST && ! is_overloaded_fn (arg))
+      if (TREE_CODE (arg) == TREE_LIST 
+	  && TREE_TYPE (arg) != NULL_TREE
+	  && TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
+	{  
+	  /* The template argument was the name of some
+	     member function.  That's usually
+	     illegal, but static members are OK.  In any
+	     case, grab the underlying fields/functions
+	     and issue an error later if required.  */
+	  arg = TREE_VALUE (arg);
+	  TREE_TYPE (arg) = unknown_type_node;
+	}
+      else if (TREE_CODE (arg) == TREE_LIST && ! is_overloaded_fn (arg))
 	{
+	  /* In case we are checking arguments inside a template template
+	     parameter, ARG that does not come from default argument is 
+	     also a TREE_LIST node */
           is_tmpl_parm = 1;
 	  arg = TREE_VALUE (arg);
 	}

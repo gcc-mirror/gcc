@@ -136,7 +136,6 @@ static struct stack_level *decl_stack;
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
-static void revert_static_member_fn		PROTO((tree *, tree *, tree *));
 static tree push_overloaded_decl		PROTO((tree, int));
 static void push_overloaded_decl_top_level	PROTO((tree, int));
 
@@ -6484,8 +6483,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	{
 	  tree stmt = DECL_VINDEX (decl);
 	  /* If the decl is declaring a member of a local class (in a
-	     template function), there will be no associated stmt.  */
-	  if (stmt != NULL_TREE)
+	     template function), the DECL_VINDEX will either be NULL,
+	     or it will be an actual virtual function index, not a
+	     DECL_STMT.  */
+	  if (stmt != NULL_TREE && TREE_CODE (stmt) == DECL_STMT)
 	    {
 	      DECL_VINDEX (decl) = NULL_TREE;
 	      TREE_OPERAND (stmt, 2) = copy_to_permanent (init);
@@ -12997,7 +12998,7 @@ finish_stmt ()
    (TREE_TYPE (decl)) to ARGTYPES, as doing so will corrupt the types of
    other decls.  Either pass the addresses of local variables or NULL.  */
 
-static void
+void
 revert_static_member_fn (decl, fn, argtypes)
      tree *decl, *fn, *argtypes;
 {

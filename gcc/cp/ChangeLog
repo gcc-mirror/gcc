@@ -1,3 +1,24 @@
+Mon Feb  2 11:24:22 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (DECL_NONSTATIC_MEMBER_FUNCTION_P): New macro.	
+	(revert_static_member_fn): Declare.
+	* decl.c (revert_static_member_fn): Remove declaration.  Change
+	linkage from internal to external.
+	(cp_finish_decl): Deal with virtual functions in classes local to
+	template functions.
+	* decl2.c (finish_file): Don't forget to emit increment/decrement
+	expressions in initializers for file-scope variables.
+	* parse.y (typename_sub2): If the typename doesn't names a
+	template, rather than a type, issue an error message.
+	* pt.c (check_explicit_specialization): Handle specializations of
+	static member functions.
+	(coerce_template_parms): Handle offset references to lists of
+	member functions.
+	* search.c (note_debug_info_needed): Don't crash when handed a
+	type which is being defined.
+	* typeck.c (complete_type): Don't crash when handed NULL_TREE;
+	that can happen with some illegal code.
+
 Mon Feb  2 00:57:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (user_harshness): Initialize `code' to 0.

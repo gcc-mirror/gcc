@@ -3,7 +3,7 @@
 @setfilename g++FAQ.info
 @settitle Frequently asked questions about the GNU C++ compiler
 @setchapternewpage off
-@c version: @(#)g++FAQ.texi	1.57 12/14/97
+@c version: @(#)g++FAQ.texi	1.60 01/31/98
 @c %**end of header
 
 @iftex
@@ -12,7 +12,7 @@
 @titlepage
 @title G++ FAQ
 @subtitle Frequently asked questions about the GNU C++ compiler
-@subtitle December 14, 1997
+@subtitle January 31, 1998
 @sp 1
 @author Joe Buck
 @page
@@ -35,8 +35,9 @@ all those who sent suggestions for improvements.  Thanks to Marcus Speh
 for doing the index.  A hypertext version is available on the World Wide
 Web at @file{http://www.cygnus.com/misc/g++FAQ_toc.html}.
 
-@strong{News flash}: egcs has been released, and the 2.8.0 release is
-expected very soon!
+@strong{News flash}: gcc 2.8.0 has finally been released!
+This FAQ still has much material that refers to older releases; it will
+take some time before it is completely "modernized".
 
 Please send updates and corrections to the FAQ to
 @code{jbuck@@synopsys.com}.  Please do @emph{not} use me as a resource
@@ -62,85 +63,88 @@ You can find this FAQ at
 or in HTML form at @file{http://www.cerfnet.com/~mpcline/On-Line-C++-FAQs/}.
 
 @menu
-* basics::                      What is g++?  How do I get it?
-* egcs and 2.8.0::              The next generation(s) of g++
-* installation::                How to install, installation problems
-* evolution::                   The Evolution of g++
-* User Problems::               Commonly reported problems and bugs
-* legalities::                  Lawyer stuff, GPL, LGPL, etc.
-* index::                       Index of terms
+* basics::          What is g++?  How do I get it?
+* egcs and 2.8.0::  The next generation(s) of g++
+* installation::    How to install, installation problems
+* evolution::       The Evolution of g++
+* User Problems::   Commonly reported problems and bugs
+* legalities::      Lawyer stuff, GPL, LGPL, etc.
+* index::           Index of terms
 
  --- The Detailed Node Listing ---
 
 The basics: what is g++?
 
-* latest versions::             
-* g++ for Unix::                
-* g++ for HP::                  
-* g++ for Solaris 2.x::         
-* g++ for other platforms::     
-* 1.x vs 2.x versions::         
+* latest versions::  
+* g++ for Unix::    
+* g++ for HP::      
+* g++ for Solaris 2.x::  
+* g++ for other platforms::  
+* 1.x vs 2.x versions::  
 
 The Next Generation(s) of g++
 
-* egcs-intro::                  What is egcs?
-* egcs-whats-new::              What's new in egcs vs 2.7.2?
-* egcs-run-both::               How can I run both egcs and an FSF release?
-* egcs-vs-2.8.0::               How will egcs affect 2.8.0?
-* egcs-robustness::             How robust is egcs-1.0?
+* new-in-2.8.0::    What's new in gcc 2.8.0?    
+* egcs-intro::      What is egcs?
+* egcs-whats-new::  What's new in egcs vs 2.7.2?
+* egcs-bug-fixes::  What was fixed in egcs-1.0.1?
+* egcs-linux::      If I install on Linux, will it overwrite my libraries?
+* egcs-run-both::   How can I run both egcs and an FSF release?
+* egcs-vs-2.8.0::   How will egcs affect 2.8.0?
+* egcs-robustness::  How robust is egcs?
 
 Installation Issues and Problems
 
-* gcc-2 + g++-1::               
-* what else do I need?::        
-* use GNU linker?::             
-* Use GNU assembler?::          
-* shared libraries::            
-* repository::                  
-* repo bugs::                   
-* Use GNU C library?::          
+* gcc-2 + g++-1::   
+* what else do I need?::  
+* use GNU linker?::  
+* Use GNU assembler?::  
+* shared libraries::  
+* repository::      
+* repo bugs::       
+* Use GNU C library?::  
 * Global constructor problems::  
-* Strange assembler errors::    
+* Strange assembler errors::  
 * Other problems building libg++::  
-* More size_t problems::        
-* Rebuild libg++?::             
-* co-existing versions::        
-* Installing on Linux::         
-* Linux Slackware 3.0::         
+* More size_t problems::  
+* Rebuild libg++?::  
+* co-existing versions::  
+* Installing on Linux::  
+* Linux Slackware 3.0::  
 
 The Evolution of g++
 
-* version 2.7.x::               What's changed in 2.7.x from earlier versions
-* libstdc++::                   
+* version 2.7.x::   What's changed in 2.7.x from earlier versions
+* libstdc++::       
 
 User Problems
 
-* missing virtual table::       
-* for scope::                   
-* const constructor::           
-* unused parameter warnings::   
+* missing virtual table::  
+* for scope::       
+* const constructor::  
+* unused parameter warnings::  
 * jump crosses initialization::  
-* Demangler::                   
-* static data members::         
-* internal compiler error::     
-* bug reports::                 
-* porting to g++::              
-* name mangling::               
+* Demangler::       
+* static data members::  
+* internal compiler error::  
+* bug reports::     
+* porting to g++::  
+* name mangling::   
 * problems linking with other libraries::  
-* documentation::               
-* templates::                   
-* undefined templates::         
-* redundant templates::         
-* Standard Template Library::   
-* STL and string::              
-* exceptions::                  
-* namespaces::                  
-* agreement with standards::    
+* documentation::   
+* templates::       
+* undefined templates::  
+* redundant templates::  
+* Standard Template Library::  
+* STL and string::  
+* exceptions::      
+* namespaces::      
+* agreement with standards::  
 * compiling standard libraries::  
-* debugging on SVR4 systems::   
+* debugging on SVR4 systems::  
 * debugging problems on Solaris::  
-* X11 conflicts with libg++::   
-* assignment to streams::       
+* X11 conflicts with libg++::  
+* assignment to streams::  
 @end menu
 
 @node basics, egcs and 2.8.0, Top, Top
@@ -161,12 +165,12 @@ it is not public domain, but is protected by the GNU Public License,
 or GPL (@pxref{legalities}).
 
 @menu
-* latest versions::             
-* g++ for Unix::                
-* g++ for HP::                  
-* g++ for Solaris 2.x::         
-* g++ for other platforms::     
-* 1.x vs 2.x versions::         
+* latest versions::  
+* g++ for Unix::    
+* g++ for HP::      
+* g++ for Solaris 2.x::  
+* g++ for other platforms::  
+* 1.x vs 2.x versions::  
 @end menu
 
 @node latest versions, g++ for Unix, basics, basics
@@ -175,20 +179,23 @@ or GPL (@pxref{legalities}).
 @cindex egcs release
 
 The egcs project (on the Web: @file{http://www.cygnus.com/egcs/}) has
-now released egcs-1.0 as of December 3, 1997.
+released a bug-fix version, egcs-1.0.1, on January 6, 1998.  Folks
+using egcs-1.0 should upgrade, as it has some important bug fixes.
 
 @cindex gcc/g++, version date
-The current version of gcc/g++ is 2.7.2.3, released August 20, 1997.
-Although that looks very recent, the only change is a minor patch to
-resolve a problem with Linux and the GNU C library; users not interested
-in that functionality have no reason to upgrade.
+The current version of gcc/g++ is 2.8.0 (!), released January 14, 1998.
+It is a huge improvement over the 2.7.x releases, and thanks to
+extensive testing in the egcs framework, is perhaps the least buggy .0
+gcc release anyone can remember (though there are definitely a few).
 
-The current version of libg++ is 2.7.2, released July 4, 1996.
-The last release of gcc/g++ with improvements to the C++ front end was
-2.7.2, released Nov. 25, 1995, nearly two years ago.
+The current version of libg++ is 2.8.0, released January 19, 1998.
+However, libg++ is being deprecated; libstdc++-2.8.0 contains just the
+standard C++ classes and is a subset of libg++ 2.8.0.  The libstdc++
+library is identical to the one included in egcs-1.0.1.
 
 I would strongly recommend that anyone using a g++ version earlier
 than 2.7.2 should upgrade if at all possible (@pxref{version 2.7.x}).
+Folks who need modern C++ features should upgrade to 2.8.0 or egcs. 
 
 For some non-Unix platforms, the latest port of gcc may be an earlier
 version (2.6.3, say).  You'll need to use a version of libg++ that
@@ -411,7 +418,7 @@ places
 
 Eberhard Mattes did the EMX port.  His address is
 mattes@@azu.informatik.uni-stuttgart.de.
-Read the FAQ file included with the distribution before harassing the author.
+Read the FAQ file included with the distribution before harrassing the author.
 
 @cindex Apple support
 @cindex Macintosh support
@@ -432,7 +439,7 @@ him directly (shebs@@cygnus.com) for more information.
 @node 1.x vs 2.x versions,  , g++ for other platforms, basics
 @section But I can only find g++-1.42!
 
-``I keep hearing people talking about g++ 2.7.2 (or some other number
+``I keep hearing people talking about g++ 2.8.0 (or some other number
 starting with 2), but the latest version I can find is g++ 1.42.
 Where is it?''
 
@@ -450,14 +457,39 @@ convention.  It means ``the C++ compiler included with gcc-2.x.y.''
 @chapter The Next Generation(s) of g++
 
 @menu
-* egcs-intro::                  What is egcs?
-* egcs-whats-new::              What's new in egcs vs 2.7.2?
-* egcs-run-both::               How can I run both egcs and an FSF release?
-* egcs-vs-2.8.0::               How will egcs affect 2.8.0?
-* egcs-robustness::             How robust is egcs-1.0?
+* new-in-2.8.0::    What's new in gcc 2.8.0?    
+* egcs-intro::      What is egcs?
+* egcs-whats-new::  What's new in egcs vs 2.7.2?
+* egcs-bug-fixes::  What was fixed in egcs-1.0.1?
+* egcs-linux::      If I install on Linux, will it overwrite my libraries?
+* egcs-run-both::   How can I run both egcs and an FSF release?
+* egcs-vs-2.8.0::   How will egcs affect 2.8.0?
+* egcs-robustness::  How robust is egcs?
 @end menu
 
-@node egcs-intro, egcs-whats-new, egcs and 2.8.0, egcs and 2.8.0
+@node new-in-2.8.0, egcs-intro, egcs and 2.8.0, egcs and 2.8.0
+@section What's new in gcc/g++ 2.8.0?
+
+After a two-year wait, gcc 2.8.0 was released in January 1998, along
+with libstdc++-2.8.0 and libg++-2.8.0.  Note that the latter (libg++)
+contains the former (libstdc++) so there is no reason to install both
+library packages, but libstdc++ is required.  
+
+For those familiar with egcs, the most obvious difference between
+gcc-2.8.0 and egcs-1.0 or 1.0.1 is the packaging: egcs is bundled with
+libstdc++, and gcc-2.8.0 does not contain the class library.  Otherwise,
+except for the lack of the @code{-frepo} option and some bug fixes
+that have not yet made it into gcc-2.8.0, C++ users will find the
+two compilers to be almost the same at this stage, other than that 2.8.0
+users may get more bogus warnings with -Wall and optimization because
+some fixes to flow analysis in the presence of exceptions that egcs made
+are not yet present in gcc 2.8.0.
+
+Because the new feature lists for egcs and gcc 2.8 are almost the same,
+please see @xref{egcs-whats-new} for a list of new features.  It is a
+fairly long list.
+
+@node egcs-intro, egcs-whats-new, new-in-2.8.0, egcs and 2.8.0
 @section What is egcs?
 
 egcs is the Experimental GNU compiler system (see
@@ -466,35 +498,39 @@ accelerate development of new gcc features by providing a more open
 development model than gcc has traditionally used.
 
 The first egcs release, egcs-1.0, came out on December 3, 1997.
+The current release is egcs-1.0.1, released January 6, 1998.
 Questions not addressed here may be answered in the egcs FAQ
 (@file{http://www.cygnus.com/egcs/faq.html}).
 
-@node egcs-whats-new, egcs-run-both, egcs-intro, egcs and 2.8.0
+@node egcs-whats-new, egcs-bug-fixes, egcs-intro, egcs and 2.8.0
 @section What new C++ features are in egcs?
 
-@strong{Note}: unless indicated otherwise, these features are expected
-to be present in g++ 2.8.0 when released.
+@strong{Note}: unless indicated otherwise, these features are also
+present in g++ 2.8.0.
 
 @itemize @bullet
 @item
 @cindex integrated libstdc++
 
-The standard C++ classes are integrated with the egcs release (this is
-@emph{not} expected to be true of gcc-2.8.0).  libg++ is not being
-supported, though a version that will work with egcs has been
-contributed (FIXME: pointer?).  The compiler and library are configured
-and built in one step.
+The standard C++ classes are integrated with the egcs release (but
+@strong{not} for gcc-2.8.0, which does not include the class libraries).
+libg++ is not being
+supported, though an add-on version that will work with egcs can be found at
+@file{ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.0b6.6.tar.gz},
+thanks to H.J. Lu.  The compiler and library are configured and built
+in one step.
 
 @item
 @cindex new template implementation
 A completely new template implementation, much closer to the draft
 standard.  Limitations in 2.7.2.x concerning inlining template functions
-will be eliminated.  Static template data members, template class member
-functions, partial specification, and default template arguments will be
+are eliminated.  Static template data members, template class member
+functions, partial specification, and default template arguments are
 supported.  An instantiation method resembling that used in Borland C++
 (instantiating functions possibly in multiple .o files and using weak
 symbols to link correctly) is provided, in addition to other
-options.  The SGI version of STL is shipped verbatim with libstdc++.
+options.  The SGI version of STL is shipped verbatim with libstdc++
+(libstdc++ is included with egcs, separate with gcc-2.8.0).
 
 @item
 @cindex redundant template elimination
@@ -506,9 +542,9 @@ at link time.
 @item
 @cindex repository
 @cindex -frepo
-The @code{-frepo} flag is supported in egcs (it will not be in 2.8.0).
+The @code{-frepo} flag is supported in egcs (it is not in 2.8.0).
 However, because of the previous item, I don't recommend its use on ELF
-systems.
+systems, as the default method is better.
 
 @item
 @cindex new exception implementation
@@ -536,7 +572,54 @@ There are many more changes: see @file{http://www.cygnus.com/egcs/c++features.ht
 Features that are still missing include namespaces and templates as
 template arguments.
 
-@node egcs-run-both, egcs-vs-2.8.0, egcs-whats-new, egcs and 2.8.0
+@node egcs-bug-fixes, egcs-linux, egcs-whats-new, egcs and 2.8.0
+@section What was fixed in egcs-1.0.1?
+
+@itemize @bullet
+
+@item
+Add support for Red Hat 5.0 Linux and better support for Linux
+systems using glibc2.
+ 
+@item
+Compatibility with both egcs-1.0 and gcc-2.8 libgcc exception handling
+interfaces (see below).
+
+@item
+Various bugfixes in the x86, hppa, mips, and rs6000/ppc backends.
+
+@item 
+A few machine independent bugfixes, mostly to fix code generation bugs
+when building Linux kernels or glibc.
+
+@item 
+Fix a few critical exception handling and template bugs in the C++
+compiler.
+
+@item 
+Fix build problems on x86-solaris systems.
+@end itemize
+
+To avoid future compatibility problems, we strongly urge anyone who is
+planning on distributing shared libraries that contain C++ code to
+upgrade to egcs-1.0.1 first.  See
+@file{http://www.cygnus.com/egcs/egcs-1.0.1.html} for details about the
+compatibility issues as well as additional information about the
+bugfixes since the egcs-1.0 release.
+
+@node egcs-linux, egcs-run-both, egcs-bug-fixes, egcs and 2.8.0
+@section If I install egcs on Linux, will it overwrite my libraries?
+
+No.  If you build from sources, by default, egcs installs executables in
+@code{/usr/local/bin} and libraries in @code{/usr/local/lib}, and you
+can change this default if desired (see next section).
+
+If, however, you install a package (e.g. Debian or Red Hat) that wants
+to put egcs in @code{/usr/bin} and @code{/usr/lib}, then yes, you are
+replacing your system compiler and C++ library (I don't know if anyone
+has provided such packages yet -- proceed with caution).
+
+@node egcs-run-both, egcs-vs-2.8.0, egcs-linux, egcs and 2.8.0
 @section How can I run both egcs and an FSF release of g++ on the same machine?
 
 The recommended approach is to provide a different argument to the
@@ -553,56 +636,45 @@ ln -s /usr/local/egcs/bin/g++ /usr/local/bin/eg++
 @node egcs-vs-2.8.0, egcs-robustness, egcs-run-both, egcs and 2.8.0
 @section What about 2.8.0?  How does egcs affect the 2.8.x development?
 
-2.8.0 is expected Real Soon Now (I would guess by the end of 1997, but that
-is only a guess).  The C++ front end should be essentially the same.
+2.8.0 has now been released, with essentially the same C++ front end as
+egcs.
 
 Bug fixes generated in egcs will be passed to the 2.8.x releases for
 inclusion; the reverse is also taking place, though a bug fix may
-appear in one before it does in the other.
+appear in one before it does in the other.  egcs development is expected
+to proceed more quickly.
 
 @node egcs-robustness,  , egcs-vs-2.8.0, egcs and 2.8.0
-@section How solid is egcs-1.0?
+@section How robust is egcs?
 
 While the 'e' stands for 'experimental', egcs has been tested thoroughly
-and should be of high quality.  There are a few glitches which should be
-fixed shortly (in a 1.0.1 release, probably in early January):
+and should be of high quality.  A few glitches in the initial release
+were fixed in 1.0.1.  egcs-1.0 users should upgrade.
 
-@itemize @bullet
-@item
-Deeply nested templates sometimes lead to a very large memory requirement
-if the @code{-Wreturn-type} option is on (note: this flag is implicitly
-turned on by @code{-W} or @code{-Wall}.  A workaround is to give the
-flag @code{-Wno-return-type} if you use @code{-Wall}.
-
-@item
-On Red Hat 5.0, it may be necessary to link all C++ programs with
-@code{-lpthread} to work around an undefined symbol problem.
-
-@item
-A patch is needed to fix egcs on Solaris/X86.  It is in the egcs FAQ
-(see above).
-@end itemize
+Some memory bloat problems with deeply nested templates were fixed in
+1.0.1 (though it appears that there are still a few cases where
+excessive memory requirements occur).
 
 @node installation, evolution, egcs and 2.8.0, Top
 @chapter Installation Issues and Problems
 
 @menu
-* gcc-2 + g++-1::               
-* what else do I need?::        
-* use GNU linker?::             
-* Use GNU assembler?::          
-* shared libraries::            
-* repository::                  
-* repo bugs::                   
-* Use GNU C library?::          
+* gcc-2 + g++-1::   
+* what else do I need?::  
+* use GNU linker?::  
+* Use GNU assembler?::  
+* shared libraries::  
+* repository::      
+* repo bugs::       
+* Use GNU C library?::  
 * Global constructor problems::  
-* Strange assembler errors::    
+* Strange assembler errors::  
 * Other problems building libg++::  
-* More size_t problems::        
-* Rebuild libg++?::             
-* co-existing versions::        
-* Installing on Linux::         
-* Linux Slackware 3.0::         
+* More size_t problems::  
+* Rebuild libg++?::  
+* co-existing versions::  
+* Installing on Linux::  
+* Linux Slackware 3.0::  
 @end menu
 
 @node gcc-2 + g++-1, what else do I need?, installation, installation
@@ -701,7 +773,7 @@ debug format (e.g. Suns running SunOS 4.x), the GNU linker compresses
 the debug symbol table considerably.  The 2.7 version adds some symbol
 table compression for ELF and Solaris targets.
 
-Users of egcs or 2.8.0 (when released) on ELF systems should definitely
+Users of egcs or 2.8.0 on ELF systems should definitely
 use GNU ld (2.8 or later), as it will automatically remove duplicate
 instantiations of templates, virtual function tables, or ``outlined''
 copies of inline functions.
@@ -1102,19 +1174,20 @@ This chapter discusses the evolution of g++ and describes what can be expected
 in the future.
 
 @menu
-* version 2.7.x::               What's changed in 2.7.x from earlier versions
-* libstdc++::                   
+* version 2.7.x::   What's changed in 2.7.x from earlier versions
+* libstdc++::       
 @end menu
 
 @node version 2.7.x, libstdc++, evolution, evolution
 @section What's new in version 2.7.x of gcc/g++
 
-The current version of gcc/g++ is 2.7.2.2, released February 10, 1997.
-The only change between 2.7.2.1 and 2.7.2.2 is that support was added
-for using the GNU C library, version 2, on Linux; users not interested
-in that functionality have no reason to upgrade.
-The previous version of gcc/g++ is 2.7.2.1, released August 14, 1996.
-The current version of libg++ is 2.7.2, released July 4, 1996.
+[ This section is old now, since 2.8.0/egcs is the new stuff ] The
+latest 2.7.x version was 2.7.2.2, released February 10, 1997.  The only
+change between 2.7.2.1 and 2.7.2.2 is that support was added for using
+the GNU C library, version 2, on Linux; users not interested in that
+functionality have no reason to upgrade.  The previous version of
+gcc/g++ was 2.7.2.1, released August 14, 1996.  The libg++ version that
+should be used with any 2.7.x gcc/g++ is 2.7.2, released July 4, 1996.
 
 Note that gcc 2.7.2.1 just consists of several small patches to
 gcc-2.7.2.  The release is mainly
@@ -1265,32 +1338,32 @@ will always be available, enhancements to it should not be expected.
 @chapter User Problems
 
 @menu
-* missing virtual table::       
-* for scope::                   
-* const constructor::           
-* unused parameter warnings::   
+* missing virtual table::  
+* for scope::       
+* const constructor::  
+* unused parameter warnings::  
 * jump crosses initialization::  
-* Demangler::                   
-* static data members::         
-* internal compiler error::     
-* bug reports::                 
-* porting to g++::              
-* name mangling::               
+* Demangler::       
+* static data members::  
+* internal compiler error::  
+* bug reports::     
+* porting to g++::  
+* name mangling::   
 * problems linking with other libraries::  
-* documentation::               
-* templates::                   
-* undefined templates::         
-* redundant templates::         
-* Standard Template Library::   
-* STL and string::              
-* exceptions::                  
-* namespaces::                  
-* agreement with standards::    
+* documentation::   
+* templates::       
+* undefined templates::  
+* redundant templates::  
+* Standard Template Library::  
+* STL and string::  
+* exceptions::      
+* namespaces::      
+* agreement with standards::  
 * compiling standard libraries::  
-* debugging on SVR4 systems::   
+* debugging on SVR4 systems::  
 * debugging problems on Solaris::  
-* X11 conflicts with libg++::   
-* assignment to streams::       
+* X11 conflicts with libg++::  
+* assignment to streams::  
 @end menu
 
 @node missing virtual table, for scope, User Problems, User Problems
@@ -1711,7 +1784,7 @@ While there is no libg++-specific document describing the STL
 implementation, SGI's web site, at
 @file{http://www.sgi.com/Technology/STL/}, is an excellent resource.
 Note that the SGI version of STL is the one that is included with the
-egcs and 2.8.0 (when it occurs) releases of g++.
+egcs and 2.8.0 releases of g++/libstdc++.
 
 @end itemize
 
@@ -1746,10 +1819,10 @@ template ostream& operator << (ostream&, const A<int>&);
 @end example
 
 @cindex template limitations
-As of version 2.6.3, there are still a few limitations in the template
+As of version 2.7.2, there are still a few limitations in the template
 implementation besides the above (thanks to Jason Merrill for this info):
-These are still present in version 2.7.2, but a new implementation of
-templates planned for version 2.8 will eliminate them.
+
+@strong{Note}: these problems are eliminated in egcs and in gcc-2.8.0.
 
 @enumerate 1
 @item
@@ -1809,7 +1882,7 @@ void g () @{
 @}
 @end example
 
-A workaround that works in version 2.6.1 and later is to specify
+A workaround that works in version 2.6.1 through 2.7.2.x is to specify
 
 @example
 extern template int min (int, int);
@@ -1818,9 +1891,15 @@ extern template int min (int, int);
 before @code{f()}; this will force it to be instantiated (though not
 emitted). 
 
+@strong{Note:} this kind of ``guiding declaration'' is not standard and
+isn't supported by egcs or gcc-2.8.0, as the standard says that this
+declares a ``normal'' @code{min} function which has no relation to
+the template function @code{min<int>(int,int)}.  But then the new
+compilers have no problem inlining template functions.
+
 @item
 Member function templates are always instantiated when their containing
-class is.  This is wrong.
+class is.  This is wrong (fixed in egcs/2.8).
 @end enumerate
 
 @node undefined templates, redundant templates, templates, User Problems
@@ -1902,33 +1981,19 @@ This bug is fixed in 2.7.0.
 @node Standard Template Library, STL and string, redundant templates, User Problems
 @section Does g++ support the Standard Template Library?
 
-@cindex STL
-@cindex Standard Template Library
-The Standard Template Library (STL) uses many of the extensions that the
-ANSI/ISO committee has made to templates, and g++ doesn't support
-some of these yet.  So if you grab HP's free implementation of STL it
-isn't going to work.  However, starting with libg++-2.6.2 libg++ contains a
-hacked version of STL, based on work by Carsten Bormann, which permits
-g++ to compile at least the containers (thanks to Per Bothner for this
-text).
+If you want to use the Standard Template Library, do not pass go,
+upgrade immediately to gcc-2.8.0 or to egcs.  The new C++ front end
+handles STL very well, and the high-quality implementation of STL
+from SGI is included verbatim as part of the libstdc++ class library.
 
-Actually, as of libg++ version 2.7.2 most of this works quite well, most
-of the time;
-I've succeeded
-in making significant use of it.
-Almost all of the ObjectSpace examples (a set of
-over 200 simple examples of STL usage) now work.
-
-When version 2.8.0 is out (with its complete redesign of the template
-implementation) a much more complete implementation of the
-STL (based on a newer free implementation from SGI) will be included.
-In the meantime, a group at the Moscow Center for Sparc Technology has
+If for some reason you must use 2.7.2, you can probably get by with
+the hacked-up version of the old implementation from HP that is
+included with libg++-2.7.2, but it is definitely inferior and has more
+problems.  Alternatively, g++ 2.7.2.x users might try the following:
+a group at the Moscow Center for Sparc Technology has
 a port of the SGI STL implementation that mostly works with gcc-2.7.2.
 See
 @file{http://www.ipmce.su/people/fbp/stl/stlport.html}.
-
-In addition, there are several commercial suppliers of STL implementations;
-ObjectSpace's version supports gcc-2.7.x.
 
 Mumit Khan has produced an ``STL newbie guide'' with lots of information
 on using STL with gcc.  See
@@ -1937,6 +2002,8 @@ on using STL with gcc.  See
 
 @node STL and string, exceptions, Standard Template Library, User Problems
 @section I'm having problems mixing STL and the standard string class
+
+[ This section is for g++ 2.7.2.x users only ]
 
 This is due to a bug in g++ version 2.7.2 and 2.7.2.1; the compiler
 is confused by the operator declarations.  There is an easy workaround,
@@ -1981,29 +2048,34 @@ and ``VAX may also work'' (according to Mike Stump).
 
 As of version 2.7.2, g++ recognizes the keywords @code{namespace} and
 @code{using}, and there is some rudimentary code present, but almost
-nothing connected with namespaces works yet.  It appears that this will
-still be true when 2.8.0 is released.
+nothing connected with namespaces works yet.
+The new versions (2.8.0/egcs) still lack namespace support, but to help
+compile standard programs they make
+
+@example
+using namespace std;
+@end example
+
+a no-op.
 
 @node agreement with standards, compiling standard libraries, namespaces, User Problems
 @section What are the differences between g++ and the ARM specification of C++?
 
 @cindex ARM [Annotated C++ Ref Manual]
 @cindex exceptions
-As of version 2.7.0, g++ has exception support on most but not all
-platforms
-(no support on MIPS-based platforms yet), but
-it doesn't work right if optimization is enabled, which means the
-exception
-implementation is still
-not really ready for production use.
 
+Up until recently, there was no really usable exception support.  If you
+need exceptions, you want gcc-2.8.0 or egcs.  The implementation works
+fairly well.  The 2.7.x version was strictly alpha quality and quite
+fragile.
 
 @cindex mutable
 Some features that the ANSI/ISO standardization committee has voted in
 that don't appear in the ARM are supported, notably the @code{mutable}
-keyword, in version 2.5.x.  2.6.x adds support for the built-in boolean
-type @code{bool}, with constants @code{true} and @code{false}.  The
-beginnings of run-time type identification are present, so there are
+keyword, in version 2.5.x.  2.6.x added support for the built-in boolean
+type @code{bool}, with constants @code{true} and @code{false}.  Run-time
+type identification was rudimentary in 2.7.x but is fully supported in
+2.8.0, so there are
 more reserved words: @code{typeid}, @code{static_cast},
 @code{reinterpret_cast}, @code{const_cast}, and @code{dynamic_cast}.
 
@@ -2011,6 +2083,7 @@ more reserved words: @code{typeid}, @code{static_cast},
 As with any beta-test compiler, there are bugs.  You can help improve
 the compiler by submitting detailed bug reports.
 
+[ This paragraph obsoleted by 2.8.0/egcs: ]
 One of the weakest areas of g++ other than templates is the resolution
 of overloaded functions and operators in complex cases.  The usual
 symptom is that in a case where the ARM says that it is ambiguous which
@@ -2069,7 +2142,8 @@ debugging information in a format known as `DWARF'.
 Although the GNU C compiler already knows how to write out symbolic debugging
 information in the DWARF format, the GNU C++ compiler does not yet have this
 feature yet.  However, work is in progress for DWARF 2 debug support for
-gcc and g++ and will be available in a future release (probably 2.8.0).
+gcc and g++ and it works fairly well in 2.8.0 and egcs, though we'll
+have to wait for gdb 4.17 to be released to take full advantage.
 
 @cindex stabs
 @cindex --with-stabs
@@ -2234,6 +2308,10 @@ earlier), or @file{-lstdc++} now that it is available.  In version 2.7.0
 all the standard classes are in @file{-lstdc++}; you can do the link
 step with @code{c++} instead of @code{g++} to search only the
 @file{-lstdc++} library and avoid the LGPL'ed code in @file{-lg++}.
+
+Note that in egcs and in gcc-2.8.0, if you do not
+specify any libraries the @code{g++} command will only link in
+@file{-lstdc++}, so your executable will not be affected by the LGPL.
 
 If you wish to discuss legal issues connected with GNU software on the
 net, please use @file{gnu.misc.discuss}, not the technical newsgroups.

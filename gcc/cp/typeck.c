@@ -136,6 +136,11 @@ tree
 complete_type (type)
      tree type;
 {
+  if (type == NULL_TREE)
+    /* Rather than crash, we return something sure to cause an error
+       at some point.  */
+    return error_mark_node;
+
   if (type == error_mark_node || TYPE_SIZE (type) != NULL_TREE)
     ;
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
