@@ -5,11 +5,11 @@ int main()
 {
 #   if defined(LINUX_THREADS)
 #     ifdef USE_LD_WRAP
-	printf("-Wl,\"--wrap read\" -Wl,\"--wrap dlopen\" "
-	       "-Wl,\"--wrap pthread_create\" -Wl,\"--wrap pthread_join\" "
-	       "-Wl,\"--wrap pthread_sigmask\" -lpthread\n");
+	printf("-Wl,--wrap -Wl,read -Wl,--wrap -Wl,dlopen "
+	       "-Wl,--wrap -Wl,pthread_create -Wl,--wrap -Wl,pthread_join "
+	       "-Wl,--wrap -Wl,pthread_sigmask -lpthread -ldl\n");
 #     else
-	printf("-lpthread\n");
+	printf("-lpthread -ldl\n");
 #     endif
 #   endif
 #   if defined(IRIX_THREADS)

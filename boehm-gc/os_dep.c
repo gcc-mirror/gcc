@@ -667,7 +667,7 @@ ptr_t GC_get_stack_base()
     size_t i, buf_offset = 0;
 
     f = open("/proc/self/stat", O_RDONLY);
-    if (f < 0 || read(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
+    if (f < 0 || STAT_READ(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
 	ABORT("Couldn't read /proc/self/stat");
     }
     c = stat_buf[buf_offset++];

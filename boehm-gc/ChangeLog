@@ -1,3 +1,8 @@
+2000-05-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Imported 5.0 release version.
+	* acinclude.m4: Increment version to 5.0.
+
 2000-05-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Imported version 5.0alpha7.
