@@ -1369,6 +1369,10 @@ convert_and_check (type, expr)
 	{
 	  TREE_OVERFLOW (t) = 0;
 
+	  /* Do not diagnose overflow in a constant expression merely
+	     because a conversion overflowed.  */
+	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (expr);
+
 	  /* No warning for converting 0x80000000 to int.  */
 	  if (!(TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (expr))
 		&& TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
