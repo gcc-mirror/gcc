@@ -1,3 +1,8 @@
+Tue Dec  9 09:38:58 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (FUNCTION_ARG_PADDING): Define.
+	* rs6000.c (function_arg_padding): New function.
+
 Tue Dec  9 10:34:21 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* m68k.c: Include tree.h only once.
