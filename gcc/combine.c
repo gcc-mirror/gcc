@@ -2616,16 +2616,18 @@ subst (x, from, to, in_dest, unique_copy)
   if ((GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c')
       && GET_CODE (XEXP (x, 0)) == IF_THEN_ELSE)
     {
-      SUBST (XEXP (XEXP (x, 0), 1),
-	     subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 1),
-				XEXP (x, 1)),
-		    pc_rtx, pc_rtx, 0));
-      SUBST (XEXP (XEXP (x, 0), 2),
-	     subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 2),
-				XEXP (x, 1)),
-		    pc_rtx, pc_rtx, 0));
+      /* Don't do this by using SUBST inside X since we might be messing
+	 up a shared expression.  */
+      rtx cond = XEXP (XEXP (x, 0), 0);
+      rtx t_arm = subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 1),
+				     XEXP (x, 1)),
+			 pc_rtx, pc_rtx, 0);
+      rtx f_arm = subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 2),
+				     XEXP (x, 1)),
+			 pc_rtx, pc_rtx, 0);
 
-      x = XEXP (x, 0);
+
+      x = gen_rtx (IF_THEN_ELSE, mode, cond, t_arm, f_arm);
       goto restart;
     }
 
@@ -2633,14 +2635,13 @@ subst (x, from, to, in_dest, unique_copy)
 	   && GET_CODE (XEXP (x, 0)) == IF_THEN_ELSE
 	   && GET_MODE (XEXP (x, 0)) == mode)
     {
-      SUBST (XEXP (XEXP (x, 0), 1),
-	     subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 1)),
-		    pc_rtx, pc_rtx, 0));
-      SUBST (XEXP (XEXP (x, 0), 2),
-	     subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 2)),
-		    pc_rtx, pc_rtx, 0));
+      rtx cond = XEXP (XEXP (x, 0), 0);
+      rtx t_arm = subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 1)),
+			 pc_rtx, pc_rtx, 0);
+      rtx f_arm = subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 2)),
+			 pc_rtx, pc_rtx, 0);
 
-      x = XEXP (x, 0);
+      x = gen_rtx_combine (IF_THEN_ELSE, mode, cond, t_arm, f_arm);
       goto restart;
     }
 
@@ -7956,9 +7957,9 @@ simplify_comparison (code, pop0, pop1)
 	      || ((code == EQ || code == NE
 		   || code == GE || code == GT || code == LE || code == LT)
 		  && (num_sign_bit_copies (op0, tmode)
-		      >= GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
+		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
 		  && (num_sign_bit_copies (op1, tmode)
-		      >= GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
+		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
 	    {
 	      op0 = gen_lowpart_for_combine (tmode, op0);
 	      op1 = gen_lowpart_for_combine (tmode, op1);
