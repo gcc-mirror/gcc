@@ -1,3 +1,8 @@
+2000-06-29  Andrew Haley  <aph@cygnus.com>
+
+        * config/ia64/linux.h (JMP_BUF_SIZE): Size is in Pmode units, not
+        bytes: remove the multiply by 8.
+
 2000-06-29  Philipp Thomas  <pthomas@suse.de>
 
 	* rtl.c : Revert NLS changes.
