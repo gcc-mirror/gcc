@@ -281,7 +281,7 @@ file system, the shell's built-in @command{pwd} command will return
 temporary pathnames.  Using these can lead to various sorts of build
 problems.  To avoid this issue, set the @env{PWDCMD} environment
 variable to an automounter-aware @command{pwd} command, e.g.,
-@command{pawd} or @command{amq -w}, during the configuration and build
+@command{pawd} or @samp{amq -w}, during the configuration and build
 phases.
 
 First, we @strong{highly} recommend that GCC be built into a
@@ -346,7 +346,7 @@ implies that the host defaults to @var{target}.
 @heading Options specification
 
 Use @var{options} to override several configure time options for
-GCC@.  A list of supported @var{options} follows; @command{configure
+GCC@.  A list of supported @var{options} follows; @samp{configure
 --help} may list other options, but those not listed below may not
 work and should not normally be used.
 
@@ -976,7 +976,7 @@ Other broken versions may recompile parts of the compiler when
 installing the compiler.)
 
 Some commands executed when making the compiler may fail (return a
-nonzero status) and be ignored by @code{make}.  These failures, which
+nonzero status) and be ignored by @command{make}.  These failures, which
 are often due to files that were not found, are expected, and can safely
 be ignored.
 
@@ -1839,7 +1839,7 @@ target in an integral value on the host cannot be performed.  Building
 cross-compilers on the Alpha for 32-bit machines has only been tested in
 a few cases and may not work properly.
 
-@code{make compare} may fail on old versions of DEC Unix unless you add
+@samp{make compare} may fail on old versions of DEC Unix unless you add
 @option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
 assembler input file is stored in the object file, and that makes
 comparison fail if it differs between the @code{stage1} and
@@ -2630,7 +2630,7 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 @heading @anchor{m68k-crds-unos}m68k-crds-unos
 Use @samp{configure unos} for building on Unos.
 
-The Unos assembler is named @code{casm} instead of @code{as}.  For some
+The Unos assembler is named @command{casm} instead of @command{as}.  For some
 strange reason linking @file{/bin/as} to @file{/bin/casm} changes the
 behavior, and does not work.  So, when installing GCC, you should
 install the following script as @file{as} in the subdirectory where
@@ -2704,9 +2704,9 @@ kept up to date.  gdb does not understand that native HP-UX format, so
 you must use gas if you wish to use gdb.
 
 On HP-UX version 8.05, but not on 8.07 or more recent versions, the
-@code{fixproto} shell script triggers a bug in the system shell.  If you
+@command{fixproto} shell script triggers a bug in the system shell.  If you
 encounter this problem, upgrade your operating system or use BASH (the
-GNU shell) to run @code{fixproto}.  This bug will cause the fixproto
+GNU shell) to run @command{fixproto}.  This bug will cause the fixproto
 program to report an error of the form:
 
 @example
@@ -2776,7 +2776,7 @@ subsystem must be installed from the IDO CD-ROM supplied by Silicon
 Graphics.  It is also available for download from
 @uref{http://www.sgi.com/developers/devtools/apis/ido.html,,http://www.sgi.com/developers/devtools/apis/ido.html}.
 
-@code{make compare} may fail on version 5 of IRIX unless you add
+@samp{make compare} may fail on version 5 of IRIX unless you add
 @option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
 assembler input file is stored in the object file, and that makes
 comparison fail if it differs between the @code{stage1} and
@@ -3245,14 +3245,14 @@ On System V, if you get an error like this,
 that too indicates a problem with disk space, ulimit, or @code{MAXUMEM}.
 
 On a System V release 4 system, make sure @file{/usr/bin} precedes
-@file{/usr/ucb} in @code{PATH}.  The @code{cc} command in
+@file{/usr/ucb} in @code{PATH}.  The @command{cc} command in
 @file{/usr/ucb} uses libraries which have bugs.
 
 @html
 <hr />
 @end html
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
-Don't try compiling with VAX C (@code{vcc}).  It produces incorrect code
+Don't try compiling with VAX C (@command{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
 
 @html
