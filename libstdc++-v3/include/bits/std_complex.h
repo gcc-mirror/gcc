@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -464,7 +464,7 @@ namespace std
         }
       else
         {
-          _Tp __t = sqrt( 2 * abs(__z) + abs(__x));
+          _Tp __t = sqrt(2 * (abs(__z) + abs(__x)));
           _Tp __u = __t / 2;
           return __x > _Tp()
             ? complex<_Tp>(__u, __y / __t)
