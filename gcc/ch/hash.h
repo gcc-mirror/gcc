@@ -1,7 +1,7 @@
-/* KR-C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L KR-C -F , 0, 0, 0 -D -E -S1 -p -j1 -i 1 -g -o -t -k* gperf.tmp  */
+/* C code produced by gperf version 2.7.1 (19981006 egcs) */
+/* Command-line: gperf -L C -F , 0, 0, 0 -D -E -S1 -p -j1 -i 1 -g -o -t -k* gperf.tmp  */
 struct resword {
-  char        *name;
+  const char   *name;
   short        token;
   enum rid     rid;
   enum toktype { RESERVED, DIRECTIVE, PREDEF } flags;
@@ -14,7 +14,7 @@ __inline
 #endif
 static unsigned int
 hash (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   static unsigned short asso_values[] =
@@ -121,7 +121,7 @@ __inline
 #endif
 struct resword *
 in_word_set (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   enum
@@ -1342,7 +1342,7 @@ in_word_set (str, len)
         multicompare:
           while (wordptr < wordendptr)
             {
-              register char *s = wordptr->name;
+              register const char *s = wordptr->name;
 
               if (*str == *s && !strcmp (str + 1, s + 1))
                 return wordptr;
@@ -1351,7 +1351,7 @@ in_word_set (str, len)
           return 0;
         compare:
           {
-            register char *s = resword->name;
+            register const char *s = resword->name;
 
             if (*str == *s && !strcmp (str + 1, s + 1))
               return resword;
