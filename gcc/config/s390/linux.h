@@ -141,6 +141,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_DOUBLE "\t.double"
 
+/* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
+#define LOCAL_LABEL_PREFIX "."
 
 /* Prefix for internally generated assembler labels.  */
 #define LPREFIX ".L"
