@@ -1,3 +1,9 @@
+2003-10-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_expand_call): Force function address
+	to DImode.
+	* config/ia64/ia64.md (call_gp): Put DImode on operand 0.
+
 2003-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("muldf3", "*muldf3", "*muldf3_ibm",
