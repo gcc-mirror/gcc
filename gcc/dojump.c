@@ -551,7 +551,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             }
         }
     }
-      /* fall through and generate the normal code.  */
+      /* Fall through and generate the normal code.  */
 
     default:
     normal:

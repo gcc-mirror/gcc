@@ -3057,7 +3057,7 @@ find_split_point (rtx *loc, rtx insn)
 	  break;
 
 	case NE:
-	  /* if STORE_FLAG_VALUE is -1, this is (NE X 0) and only one bit of X
+	  /* If STORE_FLAG_VALUE is -1, this is (NE X 0) and only one bit of X
 	     is known to be on, this can be converted into a NEG of a shift.  */
 	  if (STORE_FLAG_VALUE == -1 && XEXP (SET_SRC (x), 1) == const0_rtx
 	      && GET_MODE (SET_SRC (x)) == GET_MODE (XEXP (SET_SRC (x), 0))

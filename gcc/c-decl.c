@@ -5164,11 +5164,11 @@ finish_struct (tree t, tree fieldlist, tree attributes)
           {
             field_array[len++] = x;
           
-            /* if there is anonymous struct or union break out of the loop */
+            /* If there is anonymous struct or union, break out of the loop.  */
             if (DECL_NAME (x) == NULL)
               break;
           }
-        /* found no anonymous struct/union add the TYPE_LANG_SPECIFIC. */
+        /* Found no anonymous struct/union.  Add the TYPE_LANG_SPECIFIC.  */
         if (x == NULL)
           {
             TYPE_LANG_SPECIFIC (t) = space;

@@ -5172,7 +5172,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	/* Backslash: treat next character as ordinary.  */
 	c = *p++;
 
-	/* fall through */
+	/* Fall through.  */
       default:
 	/* Ordinary character: put it into the current argument.  */
 	obstack_1grow (&obstack, c);

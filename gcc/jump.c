@@ -2345,7 +2345,7 @@ rtx_renumbered_equal_p (rtx x, rtx y)
 	case 'u':
 	  if (XEXP (x, i) != XEXP (y, i))
 	    return 0;
-	  /* fall through.  */
+	  /* Fall through.  */
 	case '0':
 	  break;
 

@@ -340,7 +340,7 @@ init_reg_sets_1 (void)
 	      continue;
 
 	    subclass1:
-	      /* keep the largest subclass */		/* SPEE 900308 */
+	      /* Keep the largest subclass.  */		/* SPEE 900308 */
 	      GO_IF_HARD_REG_SUBSET (reg_class_contents[k],
 				     reg_class_contents[(int) reg_class_subunion[i][j]],
 				     subclass2);
@@ -2156,7 +2156,7 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
     {
       size_t old_allocated = regno_allocated;
 
-      regno_allocated = num_regs + (num_regs / 20);	/* add some slop space */
+      regno_allocated = num_regs + (num_regs / 20);	/* Add some slop space.  */
       size_renumber = regno_allocated * sizeof (short);
 
       if (!reg_n_info)
@@ -2171,7 +2171,7 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	{
 	  VARRAY_GROW (reg_n_info, regno_allocated);
 
-	  if (new_p)		/* if we're zapping everything, no need to realloc */
+	  if (new_p)		/* If we're zapping everything, no need to realloc.  */
 	    {
 	      free ((char *) renumber);
 	      free ((char *) reg_pref);

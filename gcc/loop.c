@@ -2254,7 +2254,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			 and prevent further processing of it.  */
 		      m1->done = 1;
 
-		      /* if library call, delete all insns.  */
+		      /* If library call, delete all insns.  */
 		      if ((temp = find_reg_note (m1->insn, REG_RETVAL,
 						 NULL_RTX)))
 			delete_insn_chain (XEXP (temp, 0), m1->insn);

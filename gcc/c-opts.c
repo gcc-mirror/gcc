@@ -717,7 +717,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ffreestanding:
       value = !value;
-      /* Fall through...  */
+      /* Fall through....  */
     case OPT_fhosted:
       flag_hosted = value;
       flag_no_builtin = !value;
@@ -966,7 +966,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	 is not overridden.  */
     case OPT_pedantic_errors:
       cpp_opts->pedantic_errors = 1;
-      /* fall through */
+      /* Fall through.  */
     case OPT_pedantic:
       cpp_opts->pedantic = 1;
       cpp_opts->warn_endif_labels = 1;

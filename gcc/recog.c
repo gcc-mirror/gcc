@@ -333,7 +333,7 @@ apply_change_group (void)
     {
       rtx object = changes[i].object;
 
-      /* if there is no object to test or if it is the same as the one we
+      /* If there is no object to test or if it is the same as the one we
          already tested, ignore it.  */
       if (object == 0 || object == last_validated)
 	continue;

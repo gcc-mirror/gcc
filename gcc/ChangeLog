@@ -1,3 +1,27 @@
+2003-07-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c: Fix comment formatting.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-opts.c: Likewise.
+	* combine.c: Likewise.
+	* cpplib.c: Likewise.
+	* diagnostic.c: Likewise.
+	* dojump.c: Likewise.
+	* final.c: Likewise.
+	* fold-const.c: Likewise.
+	* gcc.c: Likewise.
+	* gcse.c: Likewise.
+	* ggc-page.c: Likewise.
+	* jump.c: Likewise.
+	* loop.c: Likewise.
+	* mips-tfile.c: Likewise.
+	* recog.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* tree.c: Likewise.
+	* tree.h: Likewise.
+
 2003-07-22  Per Bothner  <pbothner@apple.com>
 
 	* line-map.c (add_line_map):  Handle invalid LEAVE request.

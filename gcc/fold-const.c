@@ -712,7 +712,7 @@ div_and_round_double (enum tree_code code, int uns,
   decode (quo, lquo, hquo);
 
  finish_up:
-  /* if result is negative, make it so.  */
+  /* If result is negative, make it so.  */
   if (quo_neg)
     neg_double (*lquo, *hquo, lquo, hquo);
 
@@ -2209,7 +2209,7 @@ eval_subst (tree arg, tree old0, tree new0, tree old1, tree new1)
 	default:
 	  break;
 	}
-      /* fall through - ??? */
+      /* Fall through - ???  */
 
     case '<':
       {

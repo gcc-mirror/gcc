@@ -833,7 +833,7 @@ diagnostic_count_diagnostic (diagnostic_context *context,
       if (context->internal_error)
 	(*context->internal_error) (diagnostic->message.format_spec,
 				    diagnostic->message.args_ptr);
-      /* fall through */
+      /* Fall through.  */
 
     case DK_FATAL: case DK_SORRY:
     case DK_ANACHRONISM: case DK_NOTE:
@@ -857,7 +857,7 @@ diagnostic_count_diagnostic (diagnostic_context *context,
           context->warnings_are_errors_message = false;
         }
 
-      /* and fall through */
+      /* And fall through.  */
     case DK_ERROR:
       ++diagnostic_kind_count (context, DK_ERROR);
       break;

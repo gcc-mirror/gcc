@@ -2121,7 +2121,7 @@ gcse_constant_p (rtx x)
 
 
   /* Consider a COMPARE of the same registers is a constant
-    if they are not floating point registers. */
+    if they are not floating point registers.  */
   if (GET_CODE(x) == COMPARE
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == REG
