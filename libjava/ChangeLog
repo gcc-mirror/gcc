@@ -1,3 +1,11 @@
+2002-12-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (loadedClasses): New field.
+	(defineClass): Fixed indentation.  Put new class in
+	loadedClasses.
+	(findLoadedClass): Implement here.
+	* java/lang/natClassLoader.cc (findLoadedClass): Removed.
+
 2002-12-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

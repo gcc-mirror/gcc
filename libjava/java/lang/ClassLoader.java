@@ -87,6 +87,14 @@ import java.util.*;
 public abstract class ClassLoader
 {
   /**
+   * All classes loaded by this classloader. VM's may choose to implement
+   * this cache natively; but it is here available for use if necessary. It
+   * is not private in order to allow native code (and trusted subclasses)
+   * access to this field.
+   */
+  final Map loadedClasses = new HashMap();
+
+  /**
    * The desired assertion status of classes loaded by this loader, if not
    * overridden by package or class instructions.
    */
@@ -446,31 +454,32 @@ public abstract class ClassLoader
       throw new java.lang.LinkageError ("class " 
 					+ name 
 					+ " already loaded");
-    
+
     if (protectionDomain == null)
       protectionDomain = defaultProtectionDomain;
 
-    try {
-      // Since we're calling into native code here, 
-      // we better make sure that any generated
-      // exception is to spec!
-
-      return defineClass0 (name, data, off, len, protectionDomain);
-
-    } catch (LinkageError x) {
-      throw x;		// rethrow
-
-    } catch (java.lang.VirtualMachineError x) {
-      throw x;		// rethrow
-
-    } catch (java.lang.Throwable x) {
-      // This should never happen, or we are beyond spec.  
-      
-      throw new InternalError ("Unexpected exception "
-			       + "while defining class "
-			       + name + ": " 
-			       + x.toString ());
-    }
+    try
+      {
+	Class retval = defineClass0 (name, data, off, len, protectionDomain);
+	loadedClasses.put(retval.getName(), retval);
+	return retval;
+      }
+    catch (LinkageError x)
+      {
+	throw x;		// rethrow
+      }
+    catch (java.lang.VirtualMachineError x)
+      {
+	throw x;		// rethrow
+      }
+    catch (java.lang.Throwable x)
+      {
+	// This should never happen, or we are beyond spec.  
+      	throw new InternalError ("Unexpected exception "
+				 + "while defining class "
+				 + name + ": " 
+				 + x.toString ());
+      }
   }
 
   /** This is the entry point of defineClass into the native code */
@@ -722,8 +731,10 @@ public abstract class ClassLoader
    * @param     name  class to find.
    * @return    the class loaded, or null.
    */ 
-  protected final native Class findLoadedClass(String name);
-
+  protected final Class findLoadedClass(String name)
+  {
+    return (Class) loadedClasses.get(name);
+  }
 
   /**
    * Get a resource using the system classloader.
