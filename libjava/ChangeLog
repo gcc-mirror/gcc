@@ -1,3 +1,9 @@
+2001-05-03  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
+	checking.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+
 2001-04-30  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
