@@ -5,6 +5,11 @@
 
 # See README-fixinc for more information.
 
+# Directory where gcc sources (and sometimes special include files) live.
+# fixincludes doesn't use this, but fixinc.svr4 does, and I want to make
+# sure somebody doesn't try to use arg3 for something incompatible. -- gumby
+SRCDIR=${3-${SRCDIR-.}}
+
 # Directory containing the original header files.
 # (This was named INCLUDES, but that conflicts with a name in Makefile.in.)
 INPUT=${2-${INPUT-/usr/include}}
