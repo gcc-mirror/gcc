@@ -49,7 +49,7 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
     _GLIBCXX_BIND_MEMBERS
 
   public:
-    tuple() 
+    tuple()
     { }
 
 #if _GLIBCXX_NUM_ARGS == 2
@@ -75,8 +75,8 @@ template<class _U1, class _U2>
       tuple&
       operator=(const tuple<_GLIBCXX_TEMPLATE_ARGS_U>& __in)
       {
-	_GLIBCXX_TUPLE_ASSIGN
-	return *this;
+        _GLIBCXX_TUPLE_ASSIGN
+        return *this;
       }
 
     tuple(const tuple& __in) :
@@ -94,7 +94,7 @@ template<class _U1, class _U2>
     operator=(const tuple& __in)
     {
       _GLIBCXX_TUPLE_ASSIGN
-	return *this;
+        return *this;
     }
 
     template<int __i, typename __Type>
@@ -110,25 +110,25 @@ template<class _U1, class _U2>
 template<typename _Tp>
     struct __get_helper<_GLIBCXX_NUM_ARGS, _Tp>
     {
-      static typename __add_ref<typename tuple_element<_GLIBCXX_NUM_ARGS, 
-	                                               _Tp>::type>::type
+      static typename __add_ref<typename tuple_element<_GLIBCXX_NUM_ARGS,
+                                                       _Tp>::type>::type
       get_value(_Tp& __in)
       { return __in._GLIBCXX_CAT(_M_arg,_GLIBCXX_NUM_ARGS_PLUS_1); }
 
       static typename __add_c_ref<typename tuple_element<_GLIBCXX_NUM_ARGS,
-	                                                 _Tp>::type>::type
+                                                         _Tp>::type>::type
       get_value(const _Tp& __in)
       { return __in._GLIBCXX_CAT(_M_arg,_GLIBCXX_NUM_ARGS_PLUS_1); }
     };
 
-/// @brief class tuple_element 
-template<typename _T1, typename _T2, typename _T3, typename _T4, 
-         typename _T5, typename _T6, typename _T7, typename _T8, 
+/// @brief class tuple_element
+template<typename _T1, typename _T2, typename _T3, typename _T4,
+         typename _T5, typename _T6, typename _T7, typename _T8,
          typename _T9, typename _T10>
-   struct tuple_element<_GLIBCXX_NUM_ARGS, tuple<_T1, _T2, _T3, _T4, 
-                                                _T5, _T6, _T7, _T8, _T9, 
+   struct tuple_element<_GLIBCXX_NUM_ARGS, tuple<_T1, _T2, _T3, _T4,
+                                                _T5, _T6, _T7, _T8, _T9,
                                                 _T10> >
-  { typedef _GLIBCXX_CAT(_T,_GLIBCXX_NUM_ARGS_PLUS_1) type; };
+  { typedef _GLIBCXX_T_NUM_ARGS_PLUS_1 type; };
 
 #endif
 #if _GLIBCXX_NUM_ARGS == 0
@@ -145,7 +145,7 @@ tie()
 template<_GLIBCXX_TEMPLATE_PARAMS>
   typename __stripped_tuple_type<_GLIBCXX_TEMPLATE_ARGS>::__type
   make_tuple(_GLIBCXX_PARAMS)
-  { 
+  {
     return typename __stripped_tuple_type<_GLIBCXX_TEMPLATE_ARGS>::
       __type(_GLIBCXX_ARGS);
   }
