@@ -6906,10 +6906,6 @@ Indicates that there is no OS function for flushing the cache.
 
 @end table
 
-@c break page here to avoid unsightly interparagraph stretch.
-@c -zw, 2001-8-17
-@page
-
 @node RS/6000 and PowerPC Options
 @subsection IBM RS/6000 and PowerPC Options
 @cindex RS/6000 and PowerPC Options
