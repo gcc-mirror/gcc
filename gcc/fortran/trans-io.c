@@ -1046,7 +1046,7 @@ build_dt (tree * function, gfc_code * code)
 
 /* Translate the IOLENGTH form of an INQUIRE statement.  We treat
    this as a third sort of data transfer statement, except that
-   lengths are summed instead of actually transfering any data.  */
+   lengths are summed instead of actually transferring any data.  */
 
 tree
 gfc_trans_iolength (gfc_code * code)

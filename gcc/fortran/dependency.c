@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -382,7 +382,7 @@ get_deps (mpz_t x1, mpz_t x2, mpz_t y)
    (l_start:l_end:l_stride) -> (0:no_of_elements)
    (r_start:r_end:r_stride) -> (X1:X2)
    Where r_end is implicit as both sections must have the same number of
-   elelments.
+   elements.
    Returns 0 on success, 1 of the transformation failed.  */
 /* TODO: Should this be (0:no_of_elements-1) */
 

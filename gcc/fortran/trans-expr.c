@@ -1194,7 +1194,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&se->pre, &parmse.pre);
       gfc_add_block_to_block (&se->post, &parmse.post);
 
-      /* Character strings are passed as two paramarers, a length and a
+      /* Character strings are passed as two parameters, a length and a
          pointer.  */
       if (parmse.string_length != NULL_TREE)
         stringargs = gfc_chainon_list (stringargs, parmse.string_length);

@@ -2187,7 +2187,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
       e<i> = f<i>
       g<i> = h<i>
     end forall
-   (where e,f,g,h<i> are arbitary expressions possibly involving i)
+   (where e,f,g,h<i> are arbitrary expressions possibly involving i)
    Translates to:
     count = ((end + 1 - start) / staride)
     masktmp(:) = maskexpr(:)
@@ -3082,7 +3082,7 @@ gfc_trans_cycle (gfc_code * code)
 }
 
 
-/* EXIT a DO loop. Similair to CYCLE, but now the label is in
+/* EXIT a DO loop. Similar to CYCLE, but now the label is in
    TREE_VALUE (backend_decl) of the gfc_code node at the head of the
    loop.  */
 

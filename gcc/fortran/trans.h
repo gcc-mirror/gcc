@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -75,7 +75,7 @@ typedef struct gfc_se
 gfc_se;
 
 
-/* Scalarisation State chain.  Created by walking an expression tree before
+/* Scalarization State chain.  Created by walking an expression tree before
    creating the scalarization loops. Then passed as part of a gfc_se structure
    to translate the expression inside the loop.  Note that these chains are
    terminated by gfc_se_terminator, not NULL.  A NULL pointer in a gfc_se
@@ -106,7 +106,7 @@ typedef struct gfc_ss_info
   tree stride[GFC_MAX_DIMENSIONS];
   tree delta[GFC_MAX_DIMENSIONS];
 
-  /* Translation from scalariser dimensions to actual dimensions.
+  /* Translation from scalarizer dimensions to actual dimensions.
      actual = dim[scalarizer]  */
   int dim[GFC_MAX_DIMENSIONS];
 }
@@ -191,7 +191,7 @@ typedef struct gfc_ss
   struct gfc_ss *loop_chain;
   struct gfc_ss *next;
 
-  /* This is used by assignments requiring teporaries. The bits specify which
+  /* This is used by assignments requiring temporaries. The bits specify which
      loops the terms appear in.  This will be 1 for the RHS expressions,
      2 for the LHS expressions, and 3(=1|2) for the temporary.  */
   unsigned useflags:2;
@@ -213,7 +213,7 @@ typedef struct gfc_loopinfo
 
   /* All the SS involved with this loop.  */
   gfc_ss *ss;
-  /* The SS describing the teporary used in an assignment.  */
+  /* The SS describing the temporary used in an assignment.  */
   gfc_ss *temp_ss;
 
   /* The scalarization loop index variables.  */
