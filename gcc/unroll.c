@@ -2050,10 +2050,12 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	  if (JUMP_LABEL (insn) == start_label && insn == copy_end
 	      && ! last_iteration)
 	    {
-	      /* Update JUMP_LABEL correctly to make invert_jump working.  */
+	      /* Update JUMP_LABEL make invert_jump work correctly.  */
 	      JUMP_LABEL (copy) = get_label_from_map (map,
 						      CODE_LABEL_NUMBER
 						      (JUMP_LABEL (insn)));
+	      LABEL_NUSES (JUMP_LABEL (copy))++;
+
 	      /* This is a branch to the beginning of the loop; this is the
 		 last insn being copied; and this is not the last iteration.
 		 In this case, we want to change the original fall through

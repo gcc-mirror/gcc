@@ -1,3 +1,8 @@
+2000-09-19  Richard Henderson  <rth@cygnus.com>
+
+	* unroll.c (copy_loop_body): Update LABEL_NUSES before
+	calling invert_jump.
+
 2000-09-18  Geoff Keating  <geoffk@cygnus.com>
 
 	* combine.c (can_combine_p): Don't substitute an ASM_OPERANDS
