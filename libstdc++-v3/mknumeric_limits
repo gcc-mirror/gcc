@@ -47,7 +47,7 @@ if [ $XCOMPILE -eq 1 ]; then
   exit 0;
 fi   
 
-: ${CC:="$BUILD_DIR/../../gcc/xgcc -B$BUILD_DIR/../../gcc/"}
+CC=${CC="$BUILD_DIR/../../gcc/xgcc -B$BUILD_DIR/../../gcc/"}
 
 # We output to a temporary file, so that we don't appear to have
 # succeeded unless we actually do.

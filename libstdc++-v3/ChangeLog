@@ -1,3 +1,7 @@
+2001-02-23  Alexandre Oliva <aoliva@redhat.com>
+
+	* mknumeric_limits (CC): Use VAR=${VAR=...} form.
+
 2001-02-23  David Edelsohn <dje@watson.ibm.com>
 
 	* mknumeric_limits (CC): Use $BUILD_DIR/../../gcc/xgcc
