@@ -1,3 +1,8 @@
+2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_gen_highpart): Don't use
+	gen_highpart.
+
 2001-07-20  Daniel Berlin  <dan@cgsoftware.com>
 
 	* params.def: Change default max inline insns to 100.
