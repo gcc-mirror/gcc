@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GNU C-Compiler
-   Copyright (C) 1991, 1995, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

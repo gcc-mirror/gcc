@@ -1,5 +1,5 @@
 /* Communication between reload.c and reload1.c.
-   Copyright (C) 1987, 91-95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

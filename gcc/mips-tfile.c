@@ -2,7 +2,7 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Copyright (C) 1991, 93-95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93-95, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
    
 This file is part of GNU CC.

@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 91-93, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-93, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

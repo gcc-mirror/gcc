@@ -1,5 +1,5 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991, 1993, 1994, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 96, 98, 99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
