@@ -1,3 +1,10 @@
+2003-03-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR 10066
+	* arm.md (UNSPEC_PIC_BASE): New constant.
+	(pic_add_dot_plus_four): Wrap with unspec.
+	(pic_add_dot_plus_eight): Likewise.
+
 2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*insv_si_1_n): New.
