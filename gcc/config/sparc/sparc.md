@@ -29,6 +29,11 @@
 ;; constraint letter is 'e'.  To avoid any confusion, 'e' is used instead of
 ;; 'f' for all DF/TFmode values, including those that are specific to the v8.
 
+;; Attribute for cpu type.
+;; These must match those in sparc.h.
+(define_attr "cpu" "common,cypress,v8,supersparc,sparclite,sparclet,v9,ultrasparc"
+  (const (symbol_ref "sparc_cpu")))
+
 ;; Attribute for the instruction set.
 ;; At present we only need to distinguish v9/!v9, but for clarity we
 ;; test TARGET_V8 too.
@@ -43,12 +48,6 @@
  (const
   (cond [(symbol_ref "TARGET_ARCH64") (const_string "arch64bit")]
 	(const_string "arch32bit"))))
-
-;; CPU type.  This is only used for instruction scheduling.
-(define_attr "cpu" "cypress,supersparc"
- (const
-  (cond [(symbol_ref "TARGET_SUPERSPARC") (const_string "supersparc")]
-	(const_string "cypress"))))
 
 ;; Insn type.  Used to default other attribute values.
 
@@ -4621,7 +4620,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 4))])])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
@@ -4639,7 +4638,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "arch" "arch32bit") (const_int 2) (const_int 1))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 2))])])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -4664,7 +4663,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 4))])])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
@@ -4682,7 +4681,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "arch" "arch32bit") (const_int 2) (const_int 1))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 2))])])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
