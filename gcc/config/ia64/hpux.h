@@ -75,7 +75,7 @@ do {							\
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "+Accept TypeMismatch \
+  "-z +Accept TypeMismatch \
    %{shared:-b} \
    %{!shared: \
      -u main \
