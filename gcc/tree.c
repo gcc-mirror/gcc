@@ -913,6 +913,7 @@ make_node (code)
       TYPE_UID (t) = next_type_uid++;
       TYPE_ALIGN (t) = 1;
       TYPE_MAIN_VARIANT (t) = t;
+      TYPE_OBSTACK (t) = obstack;
       break;
 
     case 'c':
@@ -988,7 +989,10 @@ copy_node (node)
   if (TREE_CODE_CLASS (code) == 'd')
     DECL_UID (t) = next_decl_uid++;
   else if (TREE_CODE_CLASS (code) == 't')
-    TYPE_UID (t) = next_type_uid++;
+    {
+      TYPE_UID (t) = next_type_uid++;
+      TYPE_OBSTACK (t) = current_obstack;
+    }
 
   TREE_PERMANENT (t) = (current_obstack == &permanent_obstack);
 
@@ -2263,10 +2267,11 @@ build_type_variant (type, constp, volatilep)
         return t;
 
   /* We need a new one.  */
-  current_obstack
-    = TREE_PERMANENT (type) ? &permanent_obstack : saveable_obstack;
 
+  current_obstack = TYPE_OBSTACK (type);
   t = copy_node (type);
+  current_obstack = ambient_obstack;
+
   TYPE_READONLY (t) = constp;
   TYPE_VOLATILE (t) = volatilep;
   TYPE_POINTER_TO (t) = 0;
@@ -2276,7 +2281,6 @@ build_type_variant (type, constp, volatilep)
   TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
   TYPE_NEXT_VARIANT (m) = t;
 
-  current_obstack = ambient_obstack;
   return t;
 }
 
@@ -2318,10 +2322,10 @@ build_type_copy (type)
   register tree t, m = TYPE_MAIN_VARIANT (type);
   register struct obstack *ambient_obstack = current_obstack;
 
-  current_obstack
-    = TREE_PERMANENT (type) ? &permanent_obstack : saveable_obstack;
-
+  current_obstack = TYPE_OBSTACK (type);
   t = copy_node (type);
+  current_obstack = ambient_obstack;
+
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
 
@@ -2329,7 +2333,6 @@ build_type_copy (type)
   TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
   TYPE_NEXT_VARIANT (m) = t;
 
-  current_obstack = ambient_obstack;
   return t;
 }
 
@@ -2676,22 +2679,17 @@ build_pointer_type (to_type)
      tree to_type;
 {
   register tree t = TYPE_POINTER_TO (to_type);
-  register struct obstack *ambient_obstack = current_obstack;
-  register struct obstack *ambient_saveable_obstack = saveable_obstack;
 
   /* First, if we already have a type for pointers to TO_TYPE, use it.  */
 
   if (t)
     return t;
 
-  /* We need a new one.  If TO_TYPE is permanent, make this permanent too.  */
-  if (TREE_PERMANENT (to_type))
-    {
-      current_obstack = &permanent_obstack;
-      saveable_obstack = &permanent_obstack;
-    }
-
+  /* We need a new one.  Put this in the same obstack as TO_TYPE.   */
+  push_obstacks (TYPE_OBSTACK (to_type), TYPE_OBSTACK (to_type));
   t = make_node (POINTER_TYPE);
+  pop_obstacks ();
+
   TREE_TYPE (t) = to_type;
 
   /* Record this type as the pointer to TO_TYPE.  */
@@ -2699,11 +2697,9 @@ build_pointer_type (to_type)
 
   /* Lay out the type.  This function has many callers that are concerned
      with expression-construction, and this simplifies them all.
-     Also, it guarantees the TYPE_SIZE is permanent if the type is.  */
+     Also, it guarantees the TYPE_SIZE is in the same obstack as the type.  */
   layout_type (t);
 
-  current_obstack = ambient_obstack;
-  saveable_obstack = ambient_saveable_obstack;
   return t;
 }
 
