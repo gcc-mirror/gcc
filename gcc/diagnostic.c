@@ -1,5 +1,6 @@
 /* Language-independent diagnostic subroutines for the GNU C compiler
    Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GNU CC.
 
@@ -42,27 +43,23 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free  free
 
-#define diagnostic_args diagnostic_buffer->format_args
-#define diagnostic_msg diagnostic_buffer->cursor
-
 #define output_formatted_integer(BUFFER, FORMAT, INTEGER) \
   do {                                                    \
     sprintf (digit_buffer, FORMAT, INTEGER);              \
     output_add_string (BUFFER, digit_buffer);             \
   } while (0)
 
-/* This data structure serves to save/restore an output_buffer state.  */
-typedef struct
-{
-  const char *prefix;
-  int maximum_length;
-  int ideal_maximum_length;
-  int emitted_prefix_p;
-  int prefixing_rule;
-  const char *cursor;
-  va_list format_args;
-} output_state;
+#define output_text_length(BUFFER) (BUFFER)->line_length
+#define is_starting_newline(BUFFER) (output_text_length (BUFFER) == 0)
+#define output_prefix(BUFFER) (BUFFER)->state.prefix
+#define line_wrap_cutoff(BUFFER) (BUFFER)->state.maximum_length
+#define ideal_line_wrap_cutoff(BUFFER) (BUFFER)->state.ideal_maximum_length
+#define prefix_was_emitted_for(BUFFER) (BUFFER)->state.emitted_prefix_p
+#define prefixing_policy(BUFFER) (BUFFER)->state.prefixing_rule
+#define output_buffer_ptr_to_format_args(BUFFER) (BUFFER)->state.format_args
 
+#define diagnostic_args output_buffer_ptr_to_format_args (diagnostic_buffer)
+#define diagnostic_msg output_buffer_text_cursor (diagnostic_buffer)
 
 /* Prototypes. */
 static int doing_line_wrapping PARAMS ((void));
@@ -104,10 +101,6 @@ static void vsorry PARAMS ((const char *, va_list));
 static void report_file_and_line PARAMS ((const char *, int, int));
 static void vnotice PARAMS ((FILE *, const char *, va_list));
 static void set_real_maximum_length PARAMS ((output_buffer *));
-
-static void save_output_state PARAMS ((const output_buffer *, output_state *));
-static void restore_output_state PARAMS ((const output_state *,
-                                          output_buffer *));
                                           
 static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_decimal PARAMS ((output_buffer *, long int));
@@ -122,6 +115,8 @@ static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
                                      const char *));
+static void clear_text_info PARAMS ((output_buffer *));
+static void clear_diagnostic_info PARAMS ((output_buffer *));
 
 extern int rtl_dump_and_exit;
 extern int inhibit_warnings;
@@ -197,7 +192,7 @@ int
 output_is_line_wrapping (buffer)
      output_buffer *buffer;
 {
-  return buffer->ideal_maximum_length > 0;
+  return ideal_line_wrap_cutoff (buffer) > 0;
 }
 
 /* Return BUFFER's prefix.  */
@@ -205,7 +200,7 @@ const char *
 output_get_prefix (buffer)
      const output_buffer *buffer;
 {
-  return buffer->prefix;
+  return output_prefix (buffer);
 }
 
 /* Subroutine of output_set_maximum_length.  Set up BUFFER's
@@ -216,16 +211,17 @@ set_real_maximum_length (buffer)
 {
   /* If we're told not to wrap lines then do the obvious thing.  */
   if (! output_is_line_wrapping (buffer))
-    buffer->maximum_length = buffer->ideal_maximum_length;
+    line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer);
   else
     {
-      int prefix_length = buffer->prefix ? strlen (buffer->prefix) : 0;
+      int prefix_length =
+        output_prefix (buffer) ? strlen (output_prefix (buffer)) : 0;
       /* If the prefix is ridiculously too long, output at least
          32 characters.  */
-      if (buffer->ideal_maximum_length - prefix_length < 32)
-        buffer->maximum_length = buffer->ideal_maximum_length + 32;
+      if (ideal_line_wrap_cutoff (buffer) - prefix_length < 32)
+        line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer) + 32;
       else
-        buffer->maximum_length = buffer->ideal_maximum_length;
+        line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer);
     }
 }
 
@@ -236,7 +232,7 @@ output_set_maximum_length (buffer, length)
      output_buffer *buffer;
      int length;
 {
-  buffer->ideal_maximum_length = length;
+ ideal_line_wrap_cutoff (buffer) = length;
   set_real_maximum_length (buffer);
 }
 
@@ -246,9 +242,9 @@ output_set_prefix (buffer, prefix)
      output_buffer *buffer;
      const char *prefix;
 {
-  buffer->prefix = prefix;
+  output_prefix (buffer) = prefix;
   set_real_maximum_length (buffer);
-  buffer->emitted_prefix_p = 0;
+  prefix_was_emitted_for (buffer) = 0;
 }
 
 /* Free BUFFER's prefix, a previously malloc()'d string.  */
@@ -257,11 +253,30 @@ void
 output_destroy_prefix (buffer)
      output_buffer *buffer;
 {
-  if (buffer->prefix)
+  if (output_prefix (buffer) != NULL)
     {
-      free ((char *) buffer->prefix);
-      buffer->prefix = NULL;
+      free ((char *) output_prefix (buffer));
+      output_prefix (buffer) = NULL;
     }
+}
+
+/* Zero out any text output so far in BUFFER.  */
+static void
+clear_text_info (buffer)
+     output_buffer *buffer;
+{
+  obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
+  output_text_length (buffer) = 0;
+}
+
+/* Zero out any diagnostic data used so far by BUFFER.  */
+static void
+clear_diagnostic_info (buffer)
+     output_buffer *buffer;
+{
+  output_buffer_text_cursor (buffer) = NULL;
+  output_buffer_ptr_to_format_args (buffer) = NULL;
+  prefix_was_emitted_for (buffer) = 0;
 }
 
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
@@ -273,13 +288,11 @@ init_output_buffer (buffer, prefix, maximum_length)
      int maximum_length;
 {
   obstack_init (&buffer->obstack);
-  buffer->ideal_maximum_length = maximum_length;
-  buffer->line_length = 0;
+  ideal_line_wrap_cutoff (buffer) = maximum_length;
+  prefixing_policy (buffer) = current_prefixing_rule;
   output_set_prefix (buffer, prefix);
-  buffer->emitted_prefix_p = 0;
-  buffer->prefixing_rule = current_prefixing_rule;
-  
-  buffer->cursor = NULL;
+  output_text_length (buffer) = 0;
+  clear_diagnostic_info (buffer);  
 }
 
 /* Initialize BUFFER with a NULL prefix and current diagnostic message
@@ -296,8 +309,9 @@ default_initialize_buffer (buffer)
 void
 reshape_diagnostic_buffer ()
 {
-  diagnostic_buffer->ideal_maximum_length = diagnostic_message_length_per_line;
-  diagnostic_buffer->prefixing_rule = current_prefixing_rule;
+  ideal_line_wrap_cutoff (diagnostic_buffer) =
+    diagnostic_message_length_per_line;
+  prefixing_policy (diagnostic_buffer) = current_prefixing_rule;
   set_real_maximum_length (diagnostic_buffer);
 }
 
@@ -306,10 +320,8 @@ void
 output_clear (buffer)
      output_buffer *buffer;
 {
-  obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
-  buffer->line_length = 0;
-  buffer->cursor = NULL;
-  buffer->emitted_prefix_p = 0;
+  clear_text_info (buffer);
+  clear_diagnostic_info (buffer);
 }
 
 /* Finishes to construct a NULL-terminated character string representing
@@ -328,7 +340,7 @@ int
 output_space_left (buffer)
      const output_buffer *buffer;
 {
-  return buffer->maximum_length - buffer->line_length;
+  return line_wrap_cutoff (buffer) - output_text_length (buffer);
 }
 
 /* Write out BUFFER's prefix.  */
@@ -336,25 +348,25 @@ void
 output_emit_prefix (buffer)
      output_buffer *buffer;
 {
-  if (buffer->prefix)
+  if (output_prefix (buffer) != NULL)
     {
-      switch (buffer->prefixing_rule)
+      switch (prefixing_policy (buffer))
         {
         default:
         case DIAGNOSTICS_SHOW_PREFIX_NEVER:
           break;
 
         case DIAGNOSTICS_SHOW_PREFIX_ONCE:
-          if (buffer->emitted_prefix_p)
+          if (prefix_was_emitted_for (buffer))
             break;
-          else
-            buffer->emitted_prefix_p = 1;
-          /* Fall through.  */
+          /* Else fall through.  */
 
         case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
-          buffer->line_length += strlen (buffer->prefix);
-          obstack_grow
-            (&buffer->obstack, buffer->prefix, buffer->line_length);
+          {
+            int prefix_length = strlen (output_prefix (buffer));
+            output_append_r (buffer, output_prefix (buffer), prefix_length);
+            prefix_was_emitted_for (buffer) = 1;
+          }
           break;
         }
     }
@@ -366,7 +378,7 @@ output_add_newline (buffer)
      output_buffer *buffer;
 {
   obstack_1grow (&buffer->obstack, '\n');
-  buffer->line_length = 0;
+  output_text_length (buffer) = 0;
 }
 
 /* Appends a character to BUFFER.  */
@@ -378,7 +390,7 @@ output_add_character (buffer, c)
   if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
     output_add_newline (buffer);
   obstack_1grow (&buffer->obstack, c);
-  ++buffer->line_length;
+  ++output_text_length (buffer);
 }
 
 /* Adds a space to BUFFER.  */
@@ -392,7 +404,7 @@ output_add_space (buffer)
       return;
     }
   obstack_1grow (&buffer->obstack, ' ');
-  ++buffer->line_length;
+  ++output_text_length (buffer);
 }
 
 /* These functions format an INTEGER into BUFFER as suggested by their
@@ -470,12 +482,12 @@ output_append_r (buffer, start, length)
      int length;
 {
   obstack_grow (&buffer->obstack, start, length);
-  buffer->line_length += length;
+  output_text_length (buffer) += length;
 }
 
 /* Append a string deliminated by START and END to BUFFER.  No wrapping is
-   done.  However, if beginning a new line then emit BUFFER->PREFIX and
-   skip any leading whitespace if appropriate.  The caller must ensure
+   done.  However, if beginning a new line then emit output_prefix (BUFFER)
+   and skip any leading whitespace if appropriate.  The caller must ensure
    that it is safe to do so.  */
 void
 output_append (buffer, start, end)
@@ -484,7 +496,7 @@ output_append (buffer, start, end)
      const char *end;
 {
   /* Emit prefix and skip whitespace if we're starting a new line.  */
-  if (buffer->line_length == 0)
+  if (is_starting_newline (buffer))
     {
       output_emit_prefix (buffer);
       if (output_is_line_wrapping (buffer))
@@ -561,12 +573,12 @@ output_to_stream (buffer, file)
 {
   const char *text = output_finish (buffer);
   fputs (text, file);
-  output_clear (buffer);
+  clear_text_info (buffer);
 }
 
-/* Format a message pointed to by BUFFER->CURSOR using BUFFER->CURSOR
-   as appropriate.  The following format specifiers are recognized as
-   being language independent:
+/* Format a message pointed to by output_buffer_text_cursor (BUFFER) using
+   output_buffer_format_args (BUFFER) as appropriate.  The following format
+   specifiers are recognized as  being language independent:
    %d, %i: (signed) integer in base ten.
    %u: unsigned integer in base ten.
    %o: (signed) integer in base eight.
@@ -580,75 +592,85 @@ static void
 output_format (buffer)
      output_buffer *buffer;
 {
-  for (; *buffer->cursor; ++buffer->cursor)
+  for (; *output_buffer_text_cursor (buffer);
+       ++output_buffer_text_cursor (buffer))
     {
       int long_integer = 0;
       /* Ignore text.  */
       {
-        const char *p = buffer->cursor;
+        const char *p = output_buffer_text_cursor (buffer);
         while (*p && *p != '%')
           ++p;
-        maybe_wrap_text (buffer, buffer->cursor, p);
-        buffer->cursor = p;
+        maybe_wrap_text (buffer, output_buffer_text_cursor (buffer), p);
+        output_buffer_text_cursor (buffer) = p;
       }
-      if (!*buffer->cursor)
+      if (!*output_buffer_text_cursor (buffer))
         break;
 
       /* We got a '%'.  Let's see what happens. Record whether we're
          parsing a long integer format specifier.  */
-      if (*++buffer->cursor == 'l')
+      if (*++output_buffer_text_cursor (buffer) == 'l')
         {
           long_integer = 1;
-          ++buffer->cursor;
+          ++output_buffer_text_cursor (buffer);
         }
 
       /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %o, %s, %u,
          %x, %.*s; %%.  And nothing else.  Front-ends should install
          printers to grok language specific format specifiers.  */
-      switch (*buffer->cursor)
+      switch (*output_buffer_text_cursor (buffer))
         {
         case 'c':
           output_add_character
-            (buffer, va_arg (buffer->format_args, int));
+            (buffer, va_arg (output_buffer_format_args (buffer), int));
           break;
           
         case 'd':
         case 'i':
           if (long_integer)
             output_long_decimal
-              (buffer, va_arg (buffer->format_args, long int));
+              (buffer, va_arg (output_buffer_format_args (buffer), long int));
           else
-            output_decimal (buffer, va_arg (buffer->format_args, int));
+            output_decimal
+              (buffer, va_arg (output_buffer_format_args (buffer), int));
           break;
 
         case 'o':
           if (long_integer)
-            output_long_octal
-              (buffer, va_arg (buffer->format_args, unsigned long int));
+            output_long_octal (buffer,
+                               va_arg (output_buffer_format_args (buffer),
+                                       unsigned long int));
           else
-            output_octal (buffer, va_arg (buffer->format_args, unsigned int));
+            output_octal (buffer,
+                          va_arg (output_buffer_format_args (buffer),
+                                  unsigned int));
           break;
 
         case 's':
-          output_add_string
-            (buffer, va_arg (buffer->format_args, const char *));
+          output_add_string (buffer,
+                             va_arg (output_buffer_format_args (buffer),
+                                     const char *));
           break;
 
         case 'u':
           if (long_integer)
             output_long_unsigned_decimal
-              (buffer, va_arg (buffer->format_args, long unsigned int));
+              (buffer, va_arg (output_buffer_format_args (buffer),
+                               long unsigned int));
           else
             output_unsigned_decimal
-              (buffer, va_arg (buffer->format_args, unsigned int));
+              (buffer, va_arg (output_buffer_format_args (buffer),
+                               unsigned int));
           
         case 'x':
           if (long_integer)
             output_long_hexadecimal
-              (buffer, va_arg (buffer->format_args, unsigned long int));
+              (buffer, va_arg (output_buffer_format_args (buffer),
+                               unsigned long int));
           else
             output_hexadecimal
-              (buffer, va_arg (buffer->format_args, unsigned int));
+              (buffer, va_arg (output_buffer_format_args (buffer),
+                               unsigned int));
           break;
 
         case '%':
@@ -660,12 +682,12 @@ output_format (buffer)
             int n;
             const char *s;
             /* We handle no precision specifier but `%.*s'.  */
-            if (*++buffer->cursor != '*')
+            if (*++output_buffer_text_cursor (buffer) != '*')
               abort ();
-            else if (*++buffer->cursor != 's')
+            else if (*++output_buffer_text_cursor (buffer) != 's')
               abort();
-            n = va_arg (buffer->format_args, int);
-            s = va_arg (buffer->format_args, const char *);
+            n = va_arg (output_buffer_format_args (buffer), int);
+            s = va_arg (output_buffer_format_args (buffer), const char *);
             output_append (buffer, s, s + n);
           }
           break;
@@ -750,7 +772,8 @@ output_do_printf (buffer, msgid)
      output_buffer *buffer;
      const char *msgid;
 {
-  char *message = vbuild_message_string (msgid, buffer->format_args);
+  char *message = vbuild_message_string (msgid,
+                                         output_buffer_format_args (buffer));
 
   output_add_string (buffer, message);
   free (message);
@@ -767,20 +790,18 @@ output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
-  va_list old_args;
+  va_list *old_args;
 
   VA_START (ap, msgid);
 #ifndef ANSI_PROTOTYPES
-  buffer = va_arg (ap, struct output_buffer *);
+  buffer = va_arg (ap, output_buffer *);
   msgid = va_arg (ap, const char *);
 #endif
-  va_copy (old_args, buffer->format_args);
-
-  va_copy (buffer->format_args, ap);
+  old_args = output_buffer_ptr_to_format_args (buffer);
+  output_buffer_ptr_to_format_args (buffer) = &ap;
   output_do_printf (buffer, msgid);
-  va_end (buffer->format_args);
-
-  va_copy (buffer->format_args, old_args);
+  output_buffer_ptr_to_format_args (buffer) = old_args;
+  va_end (ap);
 }
 
 
@@ -794,20 +815,20 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
   FILE *file;
   const char *msgid;
 #endif
+  va_list ap;
   output_buffer buffer;
-  
-  default_initialize_buffer (&buffer);
-  VA_START (buffer.format_args, msgid);
+
+  VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (buffer.format_args, FILE *);
-  msgid = va_arg (buffer.format_args, const char *);
+  file = va_arg (ap, FILE *);
+  msgid = va_arg (ap, const char *);
 #endif  
-
+  default_initialize_buffer (&buffer);
+  output_buffer_ptr_to_format_args (&buffer) = &ap;
   output_do_printf (&buffer, msgid);
   output_to_stream (&buffer, file);
-
-  va_end (buffer.format_args);
+  va_end (ap);
 }
 
 
@@ -823,12 +844,11 @@ vline_wrapper_message_with_location (file, line, warn, msgid, ap)
   
   init_output_buffer (&buffer, context_as_prefix (file, line, warn),
 		      diagnostic_message_length_per_line);
-  va_copy (buffer.format_args, ap);
+  output_buffer_ptr_to_format_args (&buffer) = &ap;
   output_do_printf (&buffer, msgid);
   output_to_stream (&buffer, stderr);
-
-  output_destroy_prefix (&buffer);
   fputc ('\n', stderr);
+  output_destroy_prefix (&buffer);
 }
 
 
@@ -964,9 +984,8 @@ v_message_with_decl (decl, warn, msgid, ap)
     {
       if (doing_line_wrapping ())
         {
-	  va_copy (buffer.format_args, ap);
+          output_buffer_ptr_to_format_args (&buffer) = &ap;
           output_do_printf (&buffer, p);
-          va_copy (ap, buffer.format_args);
         }
       else
         vfprintf (stderr, p, ap);
@@ -1726,36 +1745,6 @@ warning VPARAMS ((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Save BUFFER's STATE.  */
-static void
-save_output_state (buffer, state)
-     const output_buffer *buffer;
-     output_state *state;
-{
-  state->prefix = buffer->prefix;
-  state->maximum_length = buffer->maximum_length;
-  state->ideal_maximum_length = buffer->ideal_maximum_length;
-  state->emitted_prefix_p = buffer->emitted_prefix_p;
-  state->prefixing_rule = buffer->prefixing_rule;
-  state->cursor = buffer->cursor;
-  va_copy (state->format_args, buffer->format_args);
-}
-
-/* Restore BUFFER's previously saved STATE.  */
-static void
-restore_output_state (state, buffer)
-     const output_state *state;
-     output_buffer *buffer;
-{
-  buffer->prefix = state->prefix;
-  buffer->maximum_length = state->maximum_length;
-  buffer->ideal_maximum_length = state->ideal_maximum_length;
-  buffer->emitted_prefix_p = state->emitted_prefix_p;
-  buffer->prefixing_rule = state->prefixing_rule;
-  buffer->cursor = state->cursor;
-  va_copy (buffer->format_args, state->format_args);
-}
-
 /* Flush diagnostic_buffer content on stderr.  */
 static void
 finish_diagnostic ()
@@ -1773,17 +1762,15 @@ output_do_verbatim (buffer, msg, args)
      const char *msg;
      va_list args;
 {
-  output_state os;
+  output_state os = buffer->state;
 
-  save_output_state (buffer, &os);
-  buffer->prefix = NULL;
-  buffer->prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  buffer->cursor = msg;
-  va_copy (buffer->format_args, args);
+  output_prefix (buffer) = NULL;
+  prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  output_buffer_text_cursor (buffer) = msg;
+  output_buffer_ptr_to_format_args (buffer) = &args;
   output_set_maximum_length (buffer, 0);
   output_format (buffer);
-  va_end (buffer->format_args);
-  restore_output_state (&os, buffer);
+  buffer->state = os;
 }
 
 /* Output MESSAGE verbatim into BUFFER.  */
@@ -1837,11 +1824,10 @@ report_diagnostic (msg, args, file, line, warn)
      int line;
      int warn;
 {
-  output_state os;
+  output_state os = diagnostic_buffer->state;
 
-  save_output_state (diagnostic_buffer, &os);
   diagnostic_msg = msg;
-  va_copy (diagnostic_args, args);
+  diagnostic_args = &args;
   if (count_error (warn))
     {
       report_error_function (file);
@@ -1851,6 +1837,5 @@ report_diagnostic (msg, args, file, line, warn)
       finish_diagnostic();
       output_destroy_prefix (diagnostic_buffer);
     }
-  va_end (diagnostic_args);
-  restore_output_state (&os, diagnostic_buffer);
+  diagnostic_buffer->state = os;
 }
