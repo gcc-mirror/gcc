@@ -997,6 +997,7 @@ darwin_encode_section_info (decl)
 
   if ((TREE_CODE (decl) == FUNCTION_DECL
        || TREE_CODE (decl) == VAR_DECL)
+      && !DECL_EXTERNAL (decl)
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
 	  || DECL_INITIAL (decl)))

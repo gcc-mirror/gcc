@@ -1,3 +1,8 @@
+2001-07-09  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.c (darwin_encode_section_info): Don't mark any
+	DECL_EXTERNAL node as defined.
+
 2001-07-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (pa_init_machine_status, pa_mark_machine_status,
