@@ -3672,11 +3672,29 @@ get_filename:
 
   switch (*fbeg++) {
   case '\"':
-    fend = fbeg;
-    while (fend != limit && *fend != '\"')
-      fend++;
-    if (*fend == '\"' && fend + 1 == limit) {
+    {
       FILE_BUF *fp;
+      /* Copy the operand text, concatenating the strings.  */
+      {
+	U_CHAR *fin = fbeg;
+	fbeg = (U_CHAR *) alloca (limit - fbeg + 1);
+	fend = fbeg;
+	while (fin != limit) {
+	  while (fin != limit && *fin != '\"')
+	    *fend++ = *fin++;
+	  fin++;
+	  if (fin == limit)
+	    break;
+	  /* If not at the end, there had better be another string.  */
+	  /* Skip just horiz space, and don't go past limit.  */
+	  while (fin != limit && is_hor_space[*fin]) fin++;
+	  if (fin != limit && *fin == '\"')
+	    fin++;
+	  else
+	    goto fail;
+	}
+      }
+      *fend++ = 0;
 
       /* We have "filename".  Figure out directory this source
 	 file is coming from and put it on the front of the list. */
