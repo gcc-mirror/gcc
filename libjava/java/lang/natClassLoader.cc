@@ -35,19 +35,17 @@ details.  */
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/Runtime.h>
+#include <java/io/Serializable.h>
+#include <java/lang/Cloneable.h>
 
-#define CloneableClass _CL_Q34java4lang9Cloneable
-extern java::lang::Class CloneableClass;
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
-#define VMClassLoaderClass _CL_Q34java4lang17VMClassLoader
-extern java::lang::Class VMClassLoader;
-#define ClassLoaderClass _CL_Q34java4lang11ClassLoader
-extern java::lang::Class ClassLoaderClass;
-#define SerializableClass _CL_Q34java2io12Serializable
-extern java::lang::Class SerializableClass;
+// FIXME: remove these.
+#define CloneableClass java::lang::Cloneable::class$
+#define ObjectClass java::lang::Object::class$
+#define ClassClass java::lang::Class::class$
+#define VMClassLoaderClass gnu::gcj::runtime::VMClassLoader::class$
+#define ClassLoaderClass java::lang::ClassLoader::class$
+#define SerializableClass java::io::Serializable::class$
+
 /////////// java.lang.ClassLoader native methods ////////////
 
 java::lang::ClassLoader *

@@ -190,6 +190,8 @@ public:
   // finalization
   void finalize ();
 
+  static java::lang::Class class$;
+
 private:   
 
   void checkMemberAccess (jint flags);

@@ -50,10 +50,9 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
 
-#define BooleanClass _CL_Q34java4lang7Boolean
-extern java::lang::Class BooleanClass;
-#define IntegerClass _CL_Q34java4lang7Integer
-extern java::lang::Class IntegerClass;
+// FIXME: remove these
+#define BooleanClass java::lang::Boolean::class$
+#define IntegerClass java::lang::Integer::class$
 
 #ifdef DISABLE_JAVA_NET
 

@@ -1,3 +1,52 @@
+2000-10-05  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natField.cc (BooleanClass): Don't define.
+	* java/lang/reflect/natArray.cc (BooleanClass): Don't define.
+	* java/lang/Class.h (Object): Added `class$' field.
+	* java/lang/Object.h (Object): Added `class$' field.
+	* defineclass.cc (ClassClass): Use `class$' form.
+	(ClassObject): Likewise.
+	* resolve.cc (ClassObject): Use `class$' form.
+	(ObjectClass): Likewise.
+	* interpret.cc (ClassError): Removed.
+	* java/net/natPlainDatagramSocketImpl.cc (BooleanClass): Use
+	`class$' form.
+	(IntegerClass): Likewise.
+	* java/net/natPlainSocketImpl.cc (BooleanClass): Use `class$'
+	form.
+	* java/lang/natClassLoader.cc (CloneableClass): Use `class$' form.
+	(ObjectClass, ClassClass, VMClassLoaderClass, ClassLoaderClass,
+	SerializableClass): Likewise.
+	Include Serializable.h, Cloneable.h.
+	* java/lang/natSystem.cc (SystemClass): Removed.
+	(init_properties): Use `class$' form.
+	* java/lang/natObject.cc (CloneableClass): Removed.
+	(clone): Use `class$' form.
+	* java/lang/natClass.cc (CloneableClass): Use `class$' form.
+	(ObjectClass, ErrorClass, ClassClass, MethodClass, FieldClass,
+	ConstructorClass): Likewise.
+	* java/lang/reflect/natMethod.cc (ObjectClass): Use `class$' form.
+	(ClassClass, VoidClass, ByteClass, ShortClass, CharacterClass,
+	IntegerClass, LongClass, FloatClass, DoubleClass): Likewise.
+	* java/io/natObjectInputStream.cc (ObjectClass): Use `class$'
+	form.
+	(ClassClass): Likewise.
+	* include/jvm.h (StringClass): Use `class$' form.
+	* prims.cc (ObjectClass): Removed.
+	(_Jv_RunMain): Use `class$' form.
+	(_Jv_AllocObject): Likewise.
+	* jni.cc (ClassClass): Use `class$' form.
+	(ThrowableClass): Likewise.
+	(ObjectClass): Likewise.
+	(MethodClass): Likewise.
+	(ThreadGroupClass): Likewise.
+	(NativeThreadClass): Likewise.
+	* boehm.cc (ObjectClass): Removed.
+	(ClassClass): Removed.
+	(_Jv_MarkObj): Use `class$' form.
+	* gcj/field.h (JvFieldIsRef): Use `class$' form.
+	Include RawData.h.
+
 2000-10-05  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am: Removed java/io/Replaceable.java and

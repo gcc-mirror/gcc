@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -25,9 +25,6 @@ details.  */
 #include <java/lang/Double.h>
 #include <java/lang/Boolean.h>
 #include <java/lang/Character.h>
-
-#define BooleanClass _CL_Q34java4lang7Boolean
-extern java::lang::Class BooleanClass;
 
 jint
 java::lang::reflect::Field::getModifiers ()
@@ -255,7 +252,7 @@ java::lang::reflect::Field::get (jclass caller, jobject obj)
     return new java::lang::Character (* (jchar*) addr);
   if (fld->type == JvPrimClass (boolean))
     {
-      _Jv_InitClass (&BooleanClass);
+      _Jv_InitClass (&java::lang::Boolean::class$);
       if (* (jboolean*) addr)
 	return java::lang::Boolean::TRUE;
       else

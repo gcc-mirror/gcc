@@ -25,9 +25,6 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Character.h>
 
-#define BooleanClass _CL_Q34java4lang7Boolean
-extern java::lang::Class BooleanClass;
-
 jobject
 java::lang::reflect::Array::newInstance (jclass componentType, jint length)
 {
@@ -215,7 +212,7 @@ java::lang::reflect::Array::get (jobject array, jint index)
     return new java::lang::Character (elements ((jcharArray) array) [index]);
   if (elementType == JvPrimClass (boolean))
     {
-      _Jv_InitClass (&BooleanClass);
+      _Jv_InitClass (&java::lang::Boolean::class$);
       if (elements ((jbooleanArray) array) [index])
 	return java::lang::Boolean::TRUE;
       else

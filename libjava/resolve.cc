@@ -41,11 +41,6 @@ static void throw_class_format_error (jstring msg)
 static void throw_class_format_error (char *msg)
 	__attribute__ ((__noreturn__));
 
-#define ClassObject _CL_Q34java4lang6Object
-extern java::lang::Class ClassObject;
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-
 // Exceptional return values for _Jv_DetermineVTableIndex
 #define METHOD_NOT_THERE (-2)
 #define METHOD_INACCESSIBLE (-1)
@@ -809,7 +804,8 @@ _Jv_InitField (jobject obj, jclass klass, int index)
       /* fall through */
 
     case JV_CONSTANT_ResolvedString:
-      if (! (field->type == &StringClass || field->type == &ObjectClass))
+      if (! (field->type == &StringClass
+ 	     || field->type == &java::lang::Class::class$))
 	throw_class_format_error ("string initialiser to non-string field");
 
       *(jstring*)addr = pool->data[init].string;

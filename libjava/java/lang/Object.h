@@ -57,6 +57,8 @@ public:
   friend JV_MARKARRAY_DECL;
 #endif
 
+  static java::lang::Class class$;
+
 protected:
   virtual jobject clone (void);
   virtual void finalize (void);

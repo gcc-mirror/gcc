@@ -67,9 +67,6 @@ details.  */
 #include <ltdl.h>
 #endif
 
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-
 // We allocate a single OutOfMemoryError exception which we keep
 // around for use if we run out of memory.
 static java::lang::OutOfMemoryError *no_memory;
@@ -358,7 +355,8 @@ _Jv_AllocObject (jclass klass, jint size)
   // implementation would look for Object.finalize in Object's method
   // table at startup, and then use that information to find the
   // appropriate index in the method vector.
-  if (klass->vtable->get_finalizer() != ObjectClass.vtable->get_finalizer())
+  if (klass->vtable->get_finalizer()
+      != java::lang::Object::class$.vtable->get_finalizer())
     _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
 
 #ifdef ENABLE_JVMPI
@@ -915,7 +913,7 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
       arg_vec = JvConvertArgv (1, &_Jv_Jar_Class_Path);
 
       main_thread = 
-	new gnu::gcj::runtime::FirstThread (&_CL_Q43gnu3gcj7runtime11FirstThread,
+	new gnu::gcj::runtime::FirstThread (&gnu::gcj::runtime::FirstThread::class$,
 					    arg_vec);
       main_thread->start();
       _Jv_ThreadWait ();

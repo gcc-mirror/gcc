@@ -49,8 +49,7 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/Integer.h>
 
-#define BooleanClass _CL_Q34java4lang7Boolean
-extern java::lang::Class BooleanClass;
+#define BooleanClass java::lang::Boolean::class$
 
 #ifdef DISABLE_JAVA_NET
 
