@@ -1,3 +1,10 @@
+#ifdef STACK_SIZE
+#if STACK_SIZE >= 8*100*100
+#define OK
+#endif
+#endif
+
+#ifdef OK
 double x[100][100];
 int main ()
 {
@@ -9,3 +16,10 @@ int main ()
     abort ();
   exit (0);
 }
+#else
+int
+main ()
+{
+  exit (0);
+}
+#endif
