@@ -209,10 +209,9 @@ cp_convert_to_pointer (type, expr, force)
           if (virt_binfo)
 	    {
 	      if (force)
-	        cp_warning ("pointer to member cast via virtual base `%T' of `%T' will only work for objects of dynamic type `%T'",
+	        cp_warning ("pointer to member cast via virtual base `%T' of `%T'",
 	                    BINFO_TYPE (virt_binfo),
-                            BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)),
-                            code == MINUS_EXPR ? b2 : b1);
+                            BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
               else
                 {
 	          cp_error ("pointer to member cast via virtual base `%T' of `%T'",
@@ -220,13 +219,16 @@ cp_convert_to_pointer (type, expr, force)
                             BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
 	          return error_mark_node;
 	        }
+	      /* This is a reinterpret cast, whose result is unspecified.
+	         We choose to do nothing.  */
+	      return build1 (NOP_EXPR, type, expr);
 	    }
 	      
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    expr = cplus_expand_constant (expr);
 
-	  if (binfo && ! TREE_VIA_VIRTUAL (binfo))
-	    expr = size_binop (code, convert (sizetype,expr),
+	  if (binfo)
+	    expr = size_binop (code, convert (sizetype, expr),
 			       BINFO_OFFSET (binfo));
 	}
       else if (TYPE_PTRMEMFUNC_P (type))

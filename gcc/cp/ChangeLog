@@ -1,3 +1,10 @@
+2000-12-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (get_delta_difference): If via a virtual base,
+	return zero.
+	* cvt.c (cp_convert_to_pointer): If via a virtual base, do no
+	adjustment.
+
 2000-12-04  Richard Henderson  <rth@redhat.com>
 
 	* error.c (dump_tree): Use output_add_string not OB_PUTS.

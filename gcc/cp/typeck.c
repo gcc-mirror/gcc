@@ -5936,31 +5936,39 @@ get_delta_difference (from, to, force)
       virt_binfo = binfo_from_vbase (binfo);
       
       if (virt_binfo)
-        cp_warning ("pointer to member cast via virtual base `%T' of `%T' will only work for objects of dynamic type `%T'",
-	            BINFO_TYPE (virt_binfo),
-	            BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)), from);
+        {
+          /* This is a reinterpret cast, we choose to do nothing. */
+          cp_warning ("pointer to member cast via virtual base `%T' of `%T'",
+	              BINFO_TYPE (virt_binfo),
+	              BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+          return delta;
+        }
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
-      
-      return cp_build_binary_op (MINUS_EXPR,
+      delta = cp_build_binary_op (MINUS_EXPR,
 				 integer_zero_node,
 				 delta);
+
+      return delta;
     }
 
   virt_binfo = binfo_from_vbase (binfo);
   if (virt_binfo)
     {
+      /* This is a reinterpret cast, we choose to do nothing. */
       if (force)
-        cp_warning ("pointer to member cast via virtual base `%T' of `%T' will only work for objects of dynamic type `%T'",
+        cp_warning ("pointer to member cast via virtual base `%T' of `%T'",
                     BINFO_TYPE (virt_binfo),
-                    BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)), to);
+                    BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
       else
 	cp_error ("pointer to member conversion via virtual base `%T' of `%T'",
 		  BINFO_TYPE (virt_binfo),
                   BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+      return delta;
     }
+  delta = BINFO_OFFSET (binfo);
 
-  return BINFO_OFFSET (binfo);
+  return cp_convert (ptrdiff_type_node, delta);
 }
 
 /* Return a constructor for the pointer-to-member-function TYPE using
