@@ -1,3 +1,11 @@
+2002-08-30  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Move language-
+	related defines to...
+	(SUBTARGET_LANGUAGE_CPP_BUILTINS): ...here.
+	* config/alpha/netbsd.h (SUBTARGET_LANGUAGE_CPP_BUILTINS): Redefine
+	as a no-op.
+
 2002-08-30  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/arm/arm.c (arm_asm_output_labelref): New function.
