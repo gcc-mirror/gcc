@@ -35,38 +35,101 @@ void test01()
   string str;
   locale loc_c = locale::classic();
 
-  locale loc_byname(locale::classic(), new collate_byname<char>("es_ES"));
+  locale loc_byname(locale::classic(), new collate_byname<char>("de_DE"));
   str = loc_byname.name();
 
-  locale loc_es("es_ES");
-  str = loc_es.name();
+  locale loc_de("de_DE");
+  str = loc_de.name();
 
-  VERIFY( loc_es != loc_byname );
+  VERIFY( loc_de != loc_byname );
 
   // cache the collate facets
-  const collate<char>& mssg_byname = use_facet<collate<char> >(loc_byname); 
-  const collate<char>& mssg_de = use_facet<collate<char> >(loc_es); 
+  const collate<char>& coll_byname = use_facet<collate<char> >(loc_byname); 
+  const collate<char>& coll_de = use_facet<collate<char> >(loc_de); 
 
-#if 0
-  // Check Spanish (es_ES) locale.
-  catalog cat_de = mssg_de.open("libstdc++", loc_c, dir);
-  string s01 = mssg_de.get(cat_de, 0, 0, "please");
-  string s02 = mssg_de.get(cat_de, 0, 0, "thank you");
-  VERIFY ( s01 == "bitte" );
-  VERIFY ( s02 == "danke" );
-  mssg_de.close(cat_de);
+  // Check German "de_DE" locale.
+  int i1;
+  int i2;
+  long l1;
+  long l2;
+  const char* strlit3 = "Äuglein Augment"; // "C" == "Augment Äuglein"
+  const char* strlit4 = "Base baß Baß Bast"; // "C" == "Base baß Baß Bast"
 
-  // Check byname locale.
-  catalog cat_byname = mssg_byname.open("libstdc++", loc_c, dir);
-  string s03 = mssg_byname.get(cat_de, 0, 0, "please");
-  string s04 = mssg_byname.get(cat_de, 0, 0, "thank you");
-  VERIFY ( s03 == "bitte" );
-  VERIFY ( s04 == "danke" );
-  mssg_byname.close(cat_byname);
+  int size3 = strlen(strlit3) - 1;
+  i1 = coll_de.compare(strlit3, strlit3 + size3, strlit3, strlit3 + 7);
+  VERIFY ( i1 > 0 );
+  i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size3);
+  VERIFY ( i1 < 0 );
+  i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
+  VERIFY ( i1 == 0 );
 
-  VERIFY ( s01 == s03 );
-  VERIFY ( s02 == s04 );
-#endif
+  i1 = coll_de.compare(strlit3, strlit3 + 6, strlit3 + 8, strlit3 + 14);
+  VERIFY ( i1 < 0 );
+
+  int size4 = strlen(strlit4) - 1;
+  i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + 13);
+  VERIFY ( i2 > 0 );
+  i2 = coll_de.compare(strlit4, strlit4 + 13, strlit4, strlit4 + size4);
+  VERIFY ( i2 < 0 );
+  i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + size4);
+  VERIFY ( i2 == 0 );
+
+  l1 = coll_de.hash(strlit3, strlit3 + size3);
+  l2 = coll_de.hash(strlit3, strlit3 + size3 - 1);
+  VERIFY ( l1 != l2 );
+  l1 = coll_de.hash(strlit3, strlit3 + size3);
+  l2 = coll_de.hash(strlit4, strlit4 + size4);
+  VERIFY ( l1 != l2 );
+
+  string str3 = coll_de.transform(strlit3, strlit3 + size3);
+  string str4 = coll_de.transform(strlit4, strlit4 + size4);
+  i1 = coll_de.compare(str3.c_str(), str3.c_str() + size3,
+		       str4.c_str(), str4.c_str() + size4);
+  i2 = coll_de.compare(strlit3, strlit3 + size3, strlit4, strlit4 + size4);
+  VERIFY(i1 == i2);
+
+
+  // Check byname locale
+  int i3;
+  int i4;
+  long l3;
+  long l4;
+  size4 = strlen(strlit3) - 1;
+  i3 = coll_de.compare(strlit3, strlit3 + size4, strlit3, strlit3 + 7);
+  VERIFY ( i3 > 0 );
+  i3 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size4);
+  VERIFY ( i3 < 0 );
+  i3 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
+  VERIFY ( i3 == 0 );
+
+  i3 = coll_de.compare(strlit3, strlit3 + 6, strlit3 + 8, strlit3 + 14);
+  VERIFY ( i3 < 0 );
+
+  size4 = strlen(strlit4) - 1;
+  i4 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + 13);
+  VERIFY ( i4 > 0 );
+  i4 = coll_de.compare(strlit4, strlit4 + 13, strlit4, strlit4 + size4);
+  VERIFY ( i4 < 0 );
+  i4 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + size4);
+  VERIFY ( i4 == 0 );
+
+  l3 = coll_de.hash(strlit3, strlit3 + size4);
+  l4 = coll_de.hash(strlit3, strlit3 + size4 - 1);
+  VERIFY ( l3 != l4 );
+  l3 = coll_de.hash(strlit3, strlit3 + size4);
+  l4 = coll_de.hash(strlit4, strlit4 + size4);
+  VERIFY ( l3 != l4 );
+
+  string str5 = coll_de.transform(strlit3, strlit3 + size4);
+  string str6 = coll_de.transform(strlit4, strlit4 + size4);
+  i3 = coll_de.compare(str5.c_str(), str5.c_str() + size4,
+		       str6.c_str(), str6.c_str() + size4);
+  i4 = coll_de.compare(strlit3, strlit3 + size4, strlit4, strlit4 + size4);
+  VERIFY(i3 == i4);
+
+  // Verify byname == de
+  VERIFY ( str5 == str3 );
+  VERIFY ( str6 == str4 );
 }
 
 int main()
