@@ -570,9 +570,6 @@ lang_decode_option (argc, argv)
   strings_processed = 0;
 #endif /* ! USE_CPPLIB */
 
-  /* Enable automatic line wrapping by default */
-  set_message_length (72);
-
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
   else if (p[0] == '-' && p[1] == 'f')
@@ -636,9 +633,9 @@ lang_decode_option (argc, argv)
 	name_mangling_version 
 	  = read_integral_parameter (p + 22, p - 2, name_mangling_version);
       else if (!strncmp (p, "message-length=", 15))
-          set_message_length
-              (read_integral_parameter (p + 15, p -2,
-                                        /* default line-wrap length */ 72));
+	set_message_length
+	  (read_integral_parameter (p + 15, p - 2,
+				    /* default line-wrap length */ 72));
       else if (!strncmp (p, "dump-translation-unit-", 22))
 	{
 	  if (p[22] == '\0')
