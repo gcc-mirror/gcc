@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.262 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -941,11 +941,15 @@ package body Sem_Ch5 is
                   F := Freeze_Entity (Id, Sloc (LP));
                   pragma Assert (F = No_List);
 
-                  --  Check for null or possibly null range and issue warning
+                  --  Check for null or possibly null range and issue warning.
+                  --  We suppress such messages in generic templates and
+                  --  instances, because in practice they tend to be dubious
+                  --  in these cases.
 
                   if Nkind (DS) = N_Range
                     and then Comes_From_Source (N)
                     and then not Inside_A_Generic
+                    and then not In_Instance
                   then
                      declare
                         L : constant Node_Id := Low_Bound  (DS);
@@ -965,11 +969,9 @@ package body Sem_Ch5 is
                         --  If range of loop is null, issue warning
 
                         if (LOK and HOK) and then Llo > Hhi then
-                           Warn_On_Instance := True;
                            Error_Msg_N
                              ("?loop range is null, loop will not execute",
                               DS);
-                           Warn_On_Instance := False;
 
                         --  The other case for a warning is a reverse loop
                         --  where the upper bound is the integer literal
