@@ -2532,6 +2532,46 @@
   ""
   "sll %1,%2,%0")
 
+(define_expand "lshldi3"
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (lshift:DI (match_operand:DI 1 "register_operand" "")
+			      (match_operand:DI 2 "const_int_operand" "")))
+	      (clobber (match_scratch:SI 3 ""))])]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lshift:DI (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:DI 2 "const_int_operand" "I")))
+   (clobber (match_scratch:SI 3 "=r"))]
+  "INTVAL (operands[2]) < 32"
+  "*
+{
+  operands[4] = GEN_INT (32 - INTVAL (operands[2]));
+  return \"srl %R1,%4,%3\;sll %R1,%2,%R0\;sll %1,%2,%0\;or %3,%0,%0\";
+}"
+ [(set_attr "type" "multi")
+  (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lshift:DI (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:DI 2 "const_int_operand" "I")))
+   (clobber (match_scratch:SI 3 "=X"))]
+  "INTVAL (operands[2]) >= 32"
+  "*
+{
+  operands[4] = GEN_INT (INTVAL (operands[2]) - 32);
+  return \"sll %R1,%4,%0\;mov %%g0,%R0\";
+}"
+ [(set_attr "type" "multi")
+  (set_attr "length" "2")])
+
 (define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
@@ -2545,6 +2585,46 @@
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
   "srl %1,%2,%0")
+
+(define_expand "lshrdi3"
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (lshiftrt:DI (match_operand:DI 1 "register_operand" "")
+				(match_operand:DI 2 "const_int_operand" "")))
+	      (clobber (match_scratch:SI 3 ""))])]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:DI 2 "const_int_operand" "I")))
+   (clobber (match_scratch:SI 3 "=r"))]
+  "INTVAL (operands[2]) < 32"
+  "*
+{
+  operands[4] = GEN_INT (32 - INTVAL (operands[2]));
+  return \"sll %1,%4,%3\;srl %1,%2,%0\;srl %R1,%2,%R0\;or %3,%R0,%R0\";
+}"
+ [(set_attr "type" "multi")
+  (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:DI 2 "const_int_operand" "I")))
+   (clobber (match_scratch:SI 3 "=X"))]
+  "INTVAL (operands[2]) >= 32"
+  "*
+{
+  operands[4] = GEN_INT (INTVAL (operands[2]) - 32);
+  return \"srl %1,%4,%R0\;mov %%g0,%0\";
+}"
+ [(set_attr "type" "multi")
+  (set_attr "length" "2")])
 
 ;; Unconditional and other jump instructions
 ;; On the Sparc, by setting the annul bit on an unconditional branch, the
