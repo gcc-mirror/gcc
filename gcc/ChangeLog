@@ -1,3 +1,10 @@
+2005-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/18947
+	* cgraphunit.c (cgraph_finalize_function): When redefining an extern
+	inline, remove all nodes that are inlined into the extern inline
+	being redefined.
+
 2005-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bt-load.c, cfgloop.c, convert.c, dominance.c, global.c,

@@ -1,3 +1,10 @@
+2005-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/18947
+	* gcc.c-torture/compile/20050215-1.c: New test.
+	* gcc.c-torture/compile/20050215-2.c: New test.
+	* gcc.c-torture/compile/20050215-3.c: New test.
+
 2005-02-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20028
