@@ -837,7 +837,7 @@ Optional Features:
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-objc-gc       enable the use of Boehm's garbage collector with
                           the GNU Objective-C runtime.
-  --enable-shared=PKGS  build shared libraries default=no
+  --enable-shared=PKGS  build shared libraries default=yes
   --enable-static=PKGS  build static libraries default=yes
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
@@ -2881,7 +2881,9 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
-# Disable shared libs by default
+# Enable Win32 DLL on MS Windows - FIXME
+
+
 # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
   enableval="$enable_shared"
@@ -2902,11 +2904,8 @@ no) enable_shared=no ;;
   ;;
 esac
 else
-  enable_shared=no
+  enable_shared=yes
 fi;
-# Enable Win32 DLL on MS Windows - FIXME
-
-
 # Check whether --enable-static or --disable-static was given.
 if test "${enable_static+set}" = set; then
   enableval="$enable_static"
@@ -3627,7 +3626,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3630 "configure"' > conftest.$ac_ext
+  echo '#line 3629 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
