@@ -1,3 +1,8 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* src/powerpc/ffi_darwin.c: Remove RCS version string.
+	* src/powerpc/darwin.S: Remove RCS version string.
+
 2003-01-03  Jeff Sturm  <jsturm@one-point.com>
 
 	* include/ffi.h.in: Add closure defines for SPARC, SPARC64.
