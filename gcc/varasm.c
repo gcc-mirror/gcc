@@ -1048,7 +1048,26 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* File-scope global variables are output here.  */
   if (write_symbols == XCOFF_DEBUG && top_level)
-    dbxout_symbol (decl, 0);
+    {
+      saved_in_section = in_section;
+
+      dbxout_symbol (decl, 0);
+
+      if (in_section != saved_in_section)
+	{
+	  /* Switch to the proper section for this data.  */
+#ifdef SELECT_SECTION
+	  SELECT_SECTION (decl, reloc);
+#else
+	  if (TREE_READONLY (decl)
+	      && ! TREE_THIS_VOLATILE (decl)
+	      && ! (flag_pic && reloc))
+	    readonly_data_section ();
+	  else
+	    data_section ();
+#endif
+	}
+    }
 #else
   /* There must be a statement after a label.  */
   ;
