@@ -1,4 +1,4 @@
-@c Copyright (C) 1999 Free Software Foundation, Inc.
+@c Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
@@ -37,22 +37,22 @@ need to take first.
 The current directory layout includes the following:
 
 @table @file
-@item @value{srcdir}/gcc/
+@item @var{srcdir}/gcc/
 Non-g77 files in gcc
 
-@item @value{srcdir}/gcc/f/
+@item @var{srcdir}/gcc/f/
 GNU Fortran front end sources
 
-@item @value{srcdir}/libf2c/
+@item @var{srcdir}/libf2c/
 @code{libg2c} configuration and @code{g2c.h} file generation
 
-@item @value{srcdir}/libf2c/libF77/
+@item @var{srcdir}/libf2c/libF77/
 General support and math portion of @code{libg2c}
 
-@item @value{srcdir}/libf2c/libI77/
+@item @var{srcdir}/libf2c/libI77/
 I/O portion of @code{libg2c}
 
-@item @value{srcdir}/libf2c/libU77/
+@item @var{srcdir}/libf2c/libU77/
 Additional interfaces to Unix @code{libc} for @code{libg2c}
 @end table
 
