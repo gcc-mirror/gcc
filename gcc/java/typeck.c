@@ -83,22 +83,22 @@ convert_ieee_real_to_integer (tree type, tree expr)
   tree result;
   expr = save_expr (expr);
 
-  result = build (COND_EXPR, type,
-		  build (NE_EXPR, boolean_type_node, expr, expr),
-		  convert (type, integer_zero_node),
-		  convert_to_integer (type, expr));
+  result = build3 (COND_EXPR, type,
+		   build2 (NE_EXPR, boolean_type_node, expr, expr),
+		   convert (type, integer_zero_node),
+		   convert_to_integer (type, expr));
 		  
-  result = build (COND_EXPR, type, 
-		  build (LE_EXPR, boolean_type_node, expr, 
-			 convert (TREE_TYPE (expr), TYPE_MIN_VALUE (type))),
-		  TYPE_MIN_VALUE (type),
-		  result);
+  result = build3 (COND_EXPR, type, 
+		   build2 (LE_EXPR, boolean_type_node, expr, 
+			   convert (TREE_TYPE (expr), TYPE_MIN_VALUE (type))),
+		   TYPE_MIN_VALUE (type),
+		   result);
 
-  result = build (COND_EXPR, type,
-		  build (GE_EXPR, boolean_type_node, expr, 
-			 convert (TREE_TYPE (expr), TYPE_MAX_VALUE (type))),	
-		  TYPE_MAX_VALUE (type),
-		  result);
+  result = build3 (COND_EXPR, type,
+		   build2 (GE_EXPR, boolean_type_node, expr, 
+			   convert (TREE_TYPE (expr), TYPE_MAX_VALUE (type))),	
+		   TYPE_MAX_VALUE (type),
+		   result);
 
   return result;
 }  

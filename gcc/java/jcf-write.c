@@ -2067,8 +2067,8 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 
 	    /* This function correctly handles the case where the LHS
 	       of a binary expression is NULL_TREE.  */
-	    rhs = build (TREE_CODE (rhs), TREE_TYPE (rhs),
-			 NULL_TREE, TREE_OPERAND (rhs, 1));
+	    rhs = build2 (TREE_CODE (rhs), TREE_TYPE (rhs),
+			  NULL_TREE, TREE_OPERAND (rhs, 1));
 	  }
 
 	generate_bytecode_insns (rhs, STACK_TARGET, state);
@@ -2490,9 +2490,9 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	tree x;
 	if (TREE_SIDE_EFFECTS (op0) || TREE_SIDE_EFFECTS (op1))
 	  abort ();
-	x = build (COND_EXPR, TREE_TYPE (exp), 
-		   build (code, boolean_type_node, op0, op1), 
-		   op0, op1);	  
+	x = build3 (COND_EXPR, TREE_TYPE (exp), 
+		    build2 (code, boolean_type_node, op0, op1), 
+		    op0, op1);	  
 	generate_bytecode_insns (x, target, state);
 	break;
       }					     

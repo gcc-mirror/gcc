@@ -113,8 +113,7 @@ update_aliases (tree decl, int index)
 	  && TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
 	{
 	  tree src = build1 (NOP_EXPR, TREE_TYPE (tmp), decl);
-	  java_add_stmt 
-	    (build (MODIFY_EXPR, TREE_TYPE (tmp), tmp, src));
+	  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (tmp), tmp, src));
 	}
       tmp = DECL_LOCAL_SLOT_CHAIN (tmp);      
     }
@@ -139,8 +138,7 @@ push_jvm_slot (int index, tree decl)
 	  /* At the point of its creation this decl inherits whatever
 	     is in the slot.  */
 	  tree src = build1 (NOP_EXPR, TREE_TYPE (decl), tmp);
-	  java_add_stmt 
-	    (build (MODIFY_EXPR, TREE_TYPE (decl), decl, src));	
+	  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, src));	
 	  break;
 	}
       tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
@@ -1345,7 +1343,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    }
 	  *var = NULL;
 	    
-	  bind =  build (BIND_EXPR, TREE_TYPE (block), BLOCK_VARS (block), 
+	  bind = build3 (BIND_EXPR, TREE_TYPE (block), BLOCK_VARS (block), 
 			 BLOCK_EXPR_BODY (block), block);
 	  BIND_EXPR_BODY (bind) = current_binding_level->stmts;
 	  
@@ -1800,9 +1798,8 @@ finish_method (tree fndecl)
 	lock = DECL_ARGUMENTS (fndecl);
       BUILD_MONITOR_ENTER (enter, lock);
       BUILD_MONITOR_EXIT (exit, lock);
-      *tp = build (COMPOUND_EXPR, void_type_node,
-		   enter,
-		   build (TRY_FINALLY_EXPR, void_type_node, *tp, exit));
+      *tp = build2 (COMPOUND_EXPR, void_type_node, enter,
+		    build2 (TRY_FINALLY_EXPR, void_type_node, *tp, exit));
     }
 
   /* Prepend class initialization for static methods reachable from
@@ -1812,11 +1809,11 @@ finish_method (tree fndecl)
       && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
     {
       tree clas = DECL_CONTEXT (fndecl);
-      tree init = build (CALL_EXPR, void_type_node,
-			 build_address_of (soft_initclass_node),
-			 build_tree_list (NULL_TREE, build_class_ref (clas)),
-			 NULL_TREE);
-      *tp = build (COMPOUND_EXPR, TREE_TYPE (*tp), init, *tp);
+      tree init = build3 (CALL_EXPR, void_type_node,
+			  build_address_of (soft_initclass_node),
+			  build_tree_list (NULL_TREE, build_class_ref (clas)),
+			  NULL_TREE);
+      *tp = build2 (COMPOUND_EXPR, TREE_TYPE (*tp), init, *tp);
     }
 
   /* Convert function tree to GENERIC prior to inlining.  */
@@ -1881,9 +1878,9 @@ add_stmt_to_compound (tree existing, tree type, tree stmt)
     return existing;
   else if (existing)
     {
-      tree expr = build (COMPOUND_EXPR, type, existing, stmt);
-      TREE_SIDE_EFFECTS (expr)
-	= TREE_SIDE_EFFECTS (existing) | TREE_SIDE_EFFECTS (stmt);
+      tree expr = build2 (COMPOUND_EXPR, type, existing, stmt);
+      TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (existing)
+				 | TREE_SIDE_EFFECTS (stmt);
       return expr;
     }
   else

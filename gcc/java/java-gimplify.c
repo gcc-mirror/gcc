@@ -144,15 +144,15 @@ static tree
 java_gimplify_case_expr (tree expr)
 {
   tree label = create_artificial_label ();
-  return build (CASE_LABEL_EXPR, void_type_node,
-		TREE_OPERAND (expr, 0), NULL_TREE, label);
+  return build3 (CASE_LABEL_EXPR, void_type_node,
+		 TREE_OPERAND (expr, 0), NULL_TREE, label);
 }
 
 static tree
 java_gimplify_default_expr (tree expr ATTRIBUTE_UNUSED)
 {
   tree label = create_artificial_label ();
-  return build (CASE_LABEL_EXPR, void_type_node, NULL_TREE, NULL_TREE, label);
+  return build3 (CASE_LABEL_EXPR, void_type_node, NULL_TREE, NULL_TREE, label);
 }
 
 /* Gimplify BLOCK into a BIND_EXPR.  */
@@ -187,7 +187,7 @@ java_gimplify_block (tree java_block)
       BLOCK_SUBBLOCKS (outer) = chainon (BLOCK_SUBBLOCKS (outer), block);
     }
 
-  return build (BIND_EXPR, TREE_TYPE (java_block), decls, body, block);
+  return build3 (BIND_EXPR, TREE_TYPE (java_block), decls, body, block);
 }
 
 /* Gimplify a NEW_ARRAY_INIT node into array/element assignments.  */
@@ -204,11 +204,12 @@ java_gimplify_new_array_init (tree exp)
   tree values = CONSTRUCTOR_ELTS (init);
 
   tree array_ptr_type = build_pointer_type (array_type);
-  tree block = build (BLOCK, array_ptr_type);
+  tree block = build0 (BLOCK, array_ptr_type);
   tree tmp = build_decl (VAR_DECL, get_identifier ("<tmp>"), array_ptr_type);
-  tree array = build_decl (VAR_DECL, get_identifier ("<array>"), array_ptr_type);
-  tree body = build (MODIFY_EXPR, array_ptr_type, tmp,
-		     build_new_array (element_type, length));
+  tree array = build_decl (VAR_DECL, get_identifier ("<array>"),
+			   array_ptr_type);
+  tree body = build2 (MODIFY_EXPR, array_ptr_type, tmp,
+		      build_new_array (element_type, length));
 
   int index = 0;
 
@@ -220,20 +221,20 @@ java_gimplify_new_array_init (tree exp)
     {
       /* FIXME: Should use build_java_arrayaccess here, but avoid
 	 bounds checking.  */
-      tree lhs = build (COMPONENT_REF, TREE_TYPE (data_field),    
-			build_java_indirect_ref (array_type, tmp, 0),
-			data_field, NULL_TREE);
-      tree assignment = build (MODIFY_EXPR, element_type,
-  			       build (ARRAY_REF, element_type, lhs,
-				      build_int_2 (index++, 0),
-				      NULL_TREE, NULL_TREE),
-			       TREE_VALUE (values));
-      body = build (COMPOUND_EXPR, element_type, body, assignment);
+      tree lhs = build3 (COMPONENT_REF, TREE_TYPE (data_field),    
+			 build_java_indirect_ref (array_type, tmp, 0),
+			 data_field, NULL_TREE);
+      tree assignment = build2 (MODIFY_EXPR, element_type,
+				build4 (ARRAY_REF, element_type, lhs,
+					build_int_2 (index++, 0),
+					NULL_TREE, NULL_TREE),
+				TREE_VALUE (values));
+      body = build2 (COMPOUND_EXPR, element_type, body, assignment);
       values = TREE_CHAIN (values);
     }
 
-  body = build (COMPOUND_EXPR, array_ptr_type, body,
-		build (MODIFY_EXPR, array_ptr_type, array, tmp));
+  body = build2 (COMPOUND_EXPR, array_ptr_type, body,
+		 build2 (MODIFY_EXPR, array_ptr_type, array, tmp));
   TREE_CHAIN (tmp) = array;
   BLOCK_VARS (block) = tmp;
   BLOCK_EXPR_BODY (block) = body;
@@ -252,16 +253,16 @@ java_gimplify_try_expr (tree try_expr)
     {
       tree java_catch = TREE_OPERAND (handler, 0);
       tree catch_type = TREE_TYPE (TREE_TYPE (BLOCK_EXPR_DECLS (java_catch)));
-      tree expr = build (CATCH_EXPR, void_type_node,
-			 prepare_eh_table_type (catch_type),
-			 handler);
+      tree expr = build2 (CATCH_EXPR, void_type_node,
+			  prepare_eh_table_type (catch_type),
+			  handler);
       if (catch)
-	catch = build (COMPOUND_EXPR, void_type_node, catch, expr);
+	catch = build2 (COMPOUND_EXPR, void_type_node, catch, expr);
       else
 	catch = expr;
       handler = TREE_CHAIN (handler);
     }
-  return build (TRY_CATCH_EXPR, void_type_node, body, catch);
+  return build2 (TRY_CATCH_EXPR, void_type_node, body, catch);
 }
 
 /* Dump a tree of some kind.  This is a convenience wrapper for the

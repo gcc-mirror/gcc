@@ -1,3 +1,20 @@
+2004-07-18  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (max_builtin, min_builtin,
+	java_build_function_call_expr): Replace calls to build with buildN.
+	* class.c (build_class_ref, build_static_field_ref,
+	get_dispatch_table, make_class_data, layout_class_method): Likewise.
+	* constants.c (build_ref_from_constant_pool): Likewise.
+	* decl.c (update_aliases, push_jvm_slot, poplevel, finish_method,
+	add_stmt_to_compound): Likewise.
+	* except.c (build_exception_object_ref, expand_end_java_handler):
+	Likewise.
+	* java-gimplify.c (java_gimplify_case_expr,
+	java_gimplify_default_expr, java_gimplify_block,
+	java_gimplify_new_array_init, java_gimplify_try_expr): Likewise.
+	* jcf-write.c (generate_bytecode_insns): Likewise.
+	* typeck.c (convert_ieee_real_to_integer): Likewise.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* java-tree.h (builtin_function): Declare.

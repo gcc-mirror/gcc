@@ -412,9 +412,9 @@ build_exception_object_ref (tree type)
 
   /* Java only passes object via pointer and doesn't require adjusting.
      The java object is immediately before the generic exception header.  */
-  obj = build (EXC_PTR_EXPR, build_pointer_type (type));
-  obj = build (MINUS_EXPR, TREE_TYPE (obj), obj,
-	       TYPE_SIZE_UNIT (TREE_TYPE (obj)));
+  obj = build0 (EXC_PTR_EXPR, build_pointer_type (type));
+  obj = build2 (MINUS_EXPR, TREE_TYPE (obj), obj,
+		TYPE_SIZE_UNIT (TREE_TYPE (obj)));
   obj = build1 (INDIRECT_REF, type, obj);
 
   return obj;
@@ -441,11 +441,11 @@ expand_end_java_handler (struct eh_range *range)
       type = prepare_eh_table_type (type);
 
       {
-	tree catch_expr 
-	  = build (CATCH_EXPR, void_type_node, type,
-		   build (GOTO_EXPR, void_type_node, TREE_VALUE (handler)));
-	tree try_catch_expr = build (TRY_CATCH_EXPR, void_type_node,
-				     *get_stmts (), catch_expr);	
+	tree catch_expr = build2 (CATCH_EXPR, void_type_node, type,
+				  build1 (GOTO_EXPR, void_type_node,
+					  TREE_VALUE (handler)));
+	tree try_catch_expr = build2 (TRY_CATCH_EXPR, void_type_node,
+				      *get_stmts (), catch_expr);	
 	*get_stmts () = try_catch_expr;
       }
     }
