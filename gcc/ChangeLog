@@ -1,3 +1,8 @@
+Fri Apr  3 00:17:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (output_global_address): Initialize base.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Initialize index.
+
 1998-04-03  Mike Stump  <mrs@wrs.com>
 
 	* gthr.h: Support systems that don't have weak, but have threads.

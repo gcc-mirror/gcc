@@ -1553,7 +1553,7 @@ extern struct rtx_def *hppa_builtin_saveregs ();
     goto ADDR;						\
   else if (GET_CODE (X) == PLUS)			\
     {							\
-      rtx base = 0, index;				\
+      rtx base = 0, index = 0;				\
       if (flag_pic && XEXP (X, 0) == pic_offset_table_rtx)\
 	{						\
 	  if (GET_CODE (XEXP (X, 1)) == REG		\
