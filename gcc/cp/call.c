@@ -4133,7 +4133,7 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 		  error ("cannot bind packed field `%E' to `%T'",
 			 expr, ref_type);
 		else
-		  my_friendly_assert (0, 20030715);
+		  error ("cannot bind rvalue `%E' to `%T'", expr, ref_type);
 		return error_mark_node;
 	      }
 	    expr = build_target_expr_with_type (expr, type);

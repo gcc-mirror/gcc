@@ -1,5 +1,10 @@
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11670
+	* call.c (convert_like_real): Add rvalue binding error message.
+	* error.c (dump_expr) <NOP_EXPR case>: Detect when the no expr is
+	really a cast.
+	
 	PR c++/10530
 	* pt.c (dependent_type_p_r): A dependent template-id is a class
 	type with dependent template arguments, or a bound template
