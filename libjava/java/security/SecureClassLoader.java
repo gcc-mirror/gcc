@@ -8,6 +8,7 @@ details.  */
 
 package java.security;
 
+// JDK1.2
 public class SecureClassLoader extends ClassLoader 
 {
     public SecureClassLoader ()

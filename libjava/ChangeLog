@@ -1,3 +1,44 @@
+2000-03-09  Warren Levy  <warrenl@cygnus.com>
+
+	* java/security/AlgorithmParameterGeneratorSpi.java: New file.
+	* java/security/DigestException.java: New file.
+	* java/security/GeneralSecurityException.java: New file.
+	* java/security/InvalidAlgorithmParameterException.java: New file.
+	* java/security/InvalidKeyException.java: New file.
+	* java/security/InvalidParameterException.java: New file.
+	* java/security/Key.java: New file.
+	* java/security/KeyException.java: New file.
+	* java/security/KeyPair.java: New file.
+	* java/security/KeyPairGenerator.java: New file.
+	* java/security/KeyPairGeneratorSpi.java: New file.
+	* java/security/NoSuchProviderException.java: New file.
+	* java/security/PrivateKey.java: New file.
+	* java/security/Provider.java: New file.
+	* java/security/PublicKey.java: New file.
+	* java/security/SecureRandom.java: New file.
+	* java/security/Security.java: New file.
+	* java/security/Signature.java: New file.
+	* java/security/SignatureException.java: New file.
+	* java/security/interfaces/DSAKey.java: New file.
+	* java/security/interfaces/DSAParams.java: New file.
+	* java/security/interfaces/DSAPrivateKey.java: New file.
+	* java/security/interfaces/DSAPublicKey.java: New file.
+	* java/security/interfaces/RSAPrivateCrtKey.java: New file.
+	* java/security/interfaces/RSAPrivateKey.java: New file.
+	* java/security/interfaces/RSAPublicKey.java: New file.
+	* java/security/spec/AlgorithmParameterSpec.java: New file.
+	* java/security/spec/InvalidKeySpecException.java: New file.
+	* java/security/spec/InvalidParameterSpecException.java: New file.
+	* java/security/spec/KeySpec.java: New file.
+	* java/security/spec/RSAPrivateCrtKeySpec.java: New file.
+	* java/security/spec/RSAPrivateKeySpec.java: New file.
+	* java/security/spec/RSAPublicKeySpec.java: New file.
+	* Makefile.am: Added above java.security files.
+	* Makefile.in: Rebuilt.
+
+	* java/security/MessageDigest.java: Rewritten.
+	* java/security/SecureClassLoader.java: Added JDK1.2 comment.
+
 2000-03-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* README: Updated.

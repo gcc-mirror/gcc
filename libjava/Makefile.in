@@ -514,9 +514,42 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/security/AlgorithmParameterGeneratorSpi.java \
+java/security/DigestException.java \
+java/security/GeneralSecurityException.java \
+java/security/InvalidAlgorithmParameterException.java \
+java/security/InvalidKeyException.java \
+java/security/InvalidParameterException.java \
+java/security/Key.java \
+java/security/KeyException.java \
+java/security/KeyPair.java \
+java/security/KeyPairGenerator.java \
+java/security/KeyPairGeneratorSpi.java \
 java/security/MessageDigest.java \
 java/security/NoSuchAlgorithmException.java \
+java/security/NoSuchProviderException.java \
+java/security/PrivateKey.java \
+java/security/Provider.java \
+java/security/PublicKey.java \
 java/security/SecureClassLoader.java \
+java/security/SecureRandom.java \
+java/security/Security.java \
+java/security/Signature.java \
+java/security/SignatureException.java \
+java/security/interfaces/DSAKey.java \
+java/security/interfaces/DSAParams.java \
+java/security/interfaces/DSAPrivateKey.java \
+java/security/interfaces/DSAPublicKey.java \
+java/security/interfaces/RSAPrivateCrtKey.java \
+java/security/interfaces/RSAPrivateKey.java \
+java/security/interfaces/RSAPublicKey.java \
+java/security/spec/AlgorithmParameterSpec.java \
+java/security/spec/InvalidKeySpecException.java \
+java/security/spec/InvalidParameterSpecException.java \
+java/security/spec/KeySpec.java \
+java/security/spec/RSAPrivateCrtKeySpec.java \
+java/security/spec/RSAPrivateKeySpec.java \
+java/security/spec/RSAPublicKeySpec.java \
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
@@ -899,10 +932,39 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/URLStreamHandlerFactory.P \
 .deps/java/net/UnknownHostException.P \
 .deps/java/net/UnknownServiceException.P \
+.deps/java/security/AlgorithmParameterGeneratorSpi.P \
+.deps/java/security/DigestException.P \
+.deps/java/security/GeneralSecurityException.P \
+.deps/java/security/InvalidAlgorithmParameterException.P \
+.deps/java/security/InvalidKeyException.P \
+.deps/java/security/InvalidParameterException.P \
+.deps/java/security/Key.P .deps/java/security/KeyException.P \
+.deps/java/security/KeyPair.P .deps/java/security/KeyPairGenerator.P \
+.deps/java/security/KeyPairGeneratorSpi.P \
 .deps/java/security/MessageDigest.P \
 .deps/java/security/NoSuchAlgorithmException.P \
-.deps/java/security/SecureClassLoader.P .deps/java/text/BreakIterator.P \
-.deps/java/text/CharacterIterator.P .deps/java/text/ChoiceFormat.P \
+.deps/java/security/NoSuchProviderException.P \
+.deps/java/security/PrivateKey.P .deps/java/security/Provider.P \
+.deps/java/security/PublicKey.P .deps/java/security/SecureClassLoader.P \
+.deps/java/security/SecureRandom.P .deps/java/security/Security.P \
+.deps/java/security/Signature.P \
+.deps/java/security/SignatureException.P \
+.deps/java/security/interfaces/DSAKey.P \
+.deps/java/security/interfaces/DSAParams.P \
+.deps/java/security/interfaces/DSAPrivateKey.P \
+.deps/java/security/interfaces/DSAPublicKey.P \
+.deps/java/security/interfaces/RSAPrivateCrtKey.P \
+.deps/java/security/interfaces/RSAPrivateKey.P \
+.deps/java/security/interfaces/RSAPublicKey.P \
+.deps/java/security/spec/AlgorithmParameterSpec.P \
+.deps/java/security/spec/InvalidKeySpecException.P \
+.deps/java/security/spec/InvalidParameterSpecException.P \
+.deps/java/security/spec/KeySpec.P \
+.deps/java/security/spec/RSAPrivateCrtKeySpec.P \
+.deps/java/security/spec/RSAPrivateKeySpec.P \
+.deps/java/security/spec/RSAPublicKeySpec.P \
+.deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
+.deps/java/text/ChoiceFormat.P \
 .deps/java/text/CollationElementIterator.P \
 .deps/java/text/CollationKey.P .deps/java/text/Collator.P \
 .deps/java/text/DateFormat.P .deps/java/text/DateFormatSymbols.P \
