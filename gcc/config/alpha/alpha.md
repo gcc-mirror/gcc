@@ -353,148 +353,108 @@
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.
 
 (define_expand "divsi3"
-  [(parallel [(set (reg:SI 27)
-		   (div:SI (match_operand:SI 1 "general_operand" "")
-			   (match_operand:SI 2 "general_operand" "")))
+  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+   (parallel [(set (reg:SI 27)
+		   (div:SI (reg:SI 24)
+			   (reg:SI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, SImode, 24);
-  rtx in1 = gen_rtx (REG, SImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "udivsi3"
-  [(parallel [(set (reg:SI 27)
-		   (udiv:SI (match_operand:SI 1 "general_operand" "")
-			    (match_operand:SI 2 "general_operand" "")))
+  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+   (parallel [(set (reg:SI 27)
+		   (udiv:SI (reg:SI 24)
+			    (reg:SI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, SImode, 24);
-  rtx in1 = gen_rtx (REG, SImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "modsi3"
-  [(parallel [(set (reg:SI 27)
-		   (mod:SI (match_operand:SI 1 "general_operand" "")
-			   (match_operand:SI 2 "general_operand" "")))
+  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+   (parallel [(set (reg:SI 27)
+		   (mod:SI (reg:SI 24)
+			   (reg:SI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, SImode, 24);
-  rtx in1 = gen_rtx (REG, SImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "umodsi3"
-  [(parallel [(set (reg:SI 27)
-		   (umod:SI (match_operand:SI 1 "general_operand" "")
-			    (match_operand:SI 2 "general_operand" "")))
+  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+   (parallel [(set (reg:SI 27)
+		   (umod:SI (reg:SI 24)
+			    (reg:SI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, SImode, 24);
-  rtx in1 = gen_rtx (REG, SImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "divdi3"
-  [(parallel [(set (reg:DI 27)
-		   (div:DI (match_operand:DI 1 "general_operand" "")
-			   (match_operand:DI 2 "general_operand" "")))
+  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
+   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
+   (parallel [(set (reg:DI 27)
+		   (div:DI (reg:DI 24)
+			   (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, DImode, 24);
-  rtx in1 = gen_rtx (REG, DImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "udivdi3"
-  [(parallel [(set (reg:DI 27)
-		   (udiv:DI (match_operand:DI 1 "general_operand" "")
-			    (match_operand:DI 2 "general_operand" "")))
+  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
+   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
+   (parallel [(set (reg:DI 27)
+		   (udiv:DI (reg:DI 24)
+			    (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, DImode, 24);
-  rtx in1 = gen_rtx (REG, DImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "moddi3"
-  [(parallel [(set (reg:DI 27)
-		   (mod:DI (match_operand:DI 1 "general_operand" "")
-			   (match_operand:DI 2 "general_operand" "")))
+  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
+   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
+   (parallel [(set (reg:DI 27)
+		   (mod:DI (reg:DI 24)
+			   (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, DImode, 24);
-  rtx in1 = gen_rtx (REG, DImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_expand "umoddi3"
-  [(parallel [(set (reg:DI 27)
-		   (umod:DI (match_operand:DI 1 "general_operand" "")
-			    (match_operand:DI 2 "general_operand" "")))
+  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
+   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
+   (parallel [(set (reg:DI 27)
+		   (umod:DI (reg:DI 24)
+			    (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
-  "
-{ rtx in0 = gen_rtx (REG, DImode, 24);
-  rtx in1 = gen_rtx (REG, DImode, 25);
-
-  emit_move_insn (in0, operands[1]);
-  emit_move_insn (in1, operands[2]);
-  operands[1] = in0, operands[2] = in1;
-}")
+  "")
 
 (define_insn ""
   [(set (reg:SI 27)
