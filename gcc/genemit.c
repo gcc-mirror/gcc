@@ -188,7 +188,7 @@ gen_exp (x)
       return;
 
     case MATCH_SCRATCH:
-      printf ("gen_rtx (SCRATCH, %smode, 0)", GET_MODE_NAME (GET_MODE (x)));
+      printf ("gen_rtx_SCRATCH (%smode)", GET_MODE_NAME (GET_MODE (x)));
       return;
 
     case ADDRESS:
@@ -230,9 +230,9 @@ gen_exp (x)
       break;
     }
 
-  printf ("gen_rtx (");
+  printf ("gen_rtx_");
   print_code (code);
-  printf (", %smode", GET_MODE_NAME (GET_MODE (x)));
+  printf (" (%smode", GET_MODE_NAME (GET_MODE (x)));
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
@@ -371,7 +371,7 @@ gen_insn (insn)
     }
   else
     {
-      printf ("  return gen_rtx (PARALLEL, VOIDmode, gen_rtvec (%d", XVECLEN (insn, 1));
+      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d", XVECLEN (insn, 1));
       for (i = 0; i < XVECLEN (insn, 1); i++)
 	{
 	  printf (",\n\t\t");

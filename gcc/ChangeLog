@@ -1,3 +1,15 @@
+Thu Jan  8 21:06:54 1998  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (OBJ, GEN, RTL_H): Add genrtl.[oh] bits.
+	* emit-rtl.c (gen_rtx): Move special code to ...
+	(gen_rtx_CONST_INT): New function.
+	(gen_rtx_REG): New function.
+	(*): Update all calls to gen_rtx.
+	* genemit.c (gen_exp): Emit calls to gen_rtx_FOO for constant FOO.
+	* rtl.h: Include genrtl.h; prototype CONST_INT & REG generators.
+	(GEN_INT): Call gen_rtx_CONST_INT.
+	* gengenrtl.c: New file.
+
 Mon Jan  5 13:00:18 1998  John F. Carr  <jfc@mit.edu>
 
 	* alias.c (*_dependence): Call base_alias_check before canon_rtx.
