@@ -342,9 +342,6 @@ while (0)
 /* Allow pairs of registers to be used, which is the intent of the default.  */
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TImode)
 
-/* A code distinguishing the floating point format of the target machine.  */
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting this nonzero tells the compiler to use
    function descriptors instead.  The value of this macro says how

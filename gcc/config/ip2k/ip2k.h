@@ -2481,8 +2481,6 @@ extern int ip2k_reorg_merge_qimode;
     = gen_rtx_SYMBOL_REF (Pmode, "_cmpsi2");		\
 }
 
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 #define PREDICATE_CODES					\
   {"ip2k_ip_operand", {MEM}},				\
   {"ip2k_short_operand", {MEM}},			\

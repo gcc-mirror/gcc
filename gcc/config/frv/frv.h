@@ -748,29 +748,6 @@ extern int g_switch_set;          /* whether -G xx was passed.  */
    Defined in svr4.h.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* A code distinguishing the floating point format of the target machine.
-   There are three defined values:
-
-   IEEE_FLOAT_FORMAT'
-        This code indicates IEEE floating point.  It is the default;
-        there is no need to define this macro when the format is IEEE.
-
-   VAX_FLOAT_FORMAT'
-        This code indicates the peculiar format used on the VAX.
-
-   UNKNOWN_FLOAT_FORMAT'
-        This code indicates any other format.
-
-   The value of this macro is compared with `HOST_FLOAT_FORMAT'
-   to determine whether the target machine has the same format as
-   the host machine.  If any other formats are actually in use on supported
-   machines, new codes should be defined for them.
-
-   The ordering of the component words of floating point values stored in
-   memory is controlled by `FLOAT_WORDS_BIG_ENDIAN' for the target machine and
-   `HOST_FLOAT_WORDS_BIG_ENDIAN' for the host.  */
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 /* GNU CC supports two ways of implementing C++ vtables: traditional or with
    so-called "thunks".  The flag `-fvtable-thunk' chooses between them.  Define
    this macro to be a C expression for the default value of that flag.  If

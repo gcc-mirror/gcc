@@ -151,19 +151,6 @@ extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
 /* ====================================================================== */
 /* Crap.  */
 
-/* Define codes for all the float formats that we know of.  */
-#define UNKNOWN_FLOAT_FORMAT 0
-#define IEEE_FLOAT_FORMAT 1
-#define VAX_FLOAT_FORMAT 2
-#define IBM_FLOAT_FORMAT 3
-#define C4X_FLOAT_FORMAT 4
-
-/* Default to IEEE float if not specified.  Nearly all machines use it.  */
-
-#ifndef TARGET_FLOAT_FORMAT
-#define	TARGET_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
-#endif
-
 #define REAL_ARITHMETIC(value, code, d1, d2) \
   real_arithmetic (&(value), code, &(d1), &(d2))
 

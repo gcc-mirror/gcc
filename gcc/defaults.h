@@ -523,6 +523,18 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define FUNCTION_ARG_REG_LITTLE_ENDIAN 0
 #endif
 
+/* Define codes for all the float formats that we know of.  */
+#define UNKNOWN_FLOAT_FORMAT 0
+#define IEEE_FLOAT_FORMAT 1
+#define VAX_FLOAT_FORMAT 2
+#define IBM_FLOAT_FORMAT 3
+#define C4X_FLOAT_FORMAT 4
+
+/* Default to IEEE float if not specified.  Nearly all machines use it.  */
+#ifndef TARGET_FLOAT_FORMAT
+#define	TARGET_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
+#endif
+
 /* Determine the register class for registers suitable to be the base
    address register in a MEM.  Allow the choice to be dependent upon
    the mode of the memory access.  */
