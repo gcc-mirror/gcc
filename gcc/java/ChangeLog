@@ -1,5 +1,7 @@
 2002-06-09  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (java/lang.o): Use LANGHOOKS_DEF_H.
+
 	* parse.y (method_header): Give error message in all cases.
 	Fixes PR java/6865.
 

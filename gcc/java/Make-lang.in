@@ -299,7 +299,7 @@ java/jv-scan.o: java/jv-scan.c $(CONFIG_H) $(SYSTEM_H) version.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H)
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
   toplev.h $(SYSTEM_H) $(RTL_H) $(EXPR_H) diagnostic.h langhooks.h \
-  langhooks-def.h gt-java-lang.h
+  $(LANGHOOKS_DEF_H) gt-java-lang.h
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   toplev.h $(GGC_H) gt-java-mangle.h
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
