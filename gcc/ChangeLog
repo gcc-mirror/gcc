@@ -1,3 +1,10 @@
+2004-12-13 Uros Bizjak <uros@kss-loka.si>
+
+	PR target/14941
+	PR target/18503
+	* config/i386/i386.md (sse_movss, sse2_movsd, sse2_movhpd):
+	Fix wrong vec_merge selector bitmask.
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/17186
