@@ -4030,6 +4030,7 @@ for_each_template_parm (t, fn, data)
       return for_each_template_parm (TREE_TYPE (t), fn, data);
 
     case ARRAY_REF:
+    case OFFSET_REF:
       return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
 	      || for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
 
@@ -7660,6 +7661,9 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
   if (TREE_CODE (arg) == COMPONENT_REF)
     /* Handle `&x' where `x' is some static or non-static member
        function name.  */
+    arg = TREE_OPERAND (arg, 1);
+
+  if (TREE_CODE (arg) == OFFSET_REF)
     arg = TREE_OPERAND (arg, 1);
 
   /* Strip baselink information.  */

@@ -1604,7 +1604,7 @@ build_offset_ref (type, name)
 	    t = ovl_cons (t, NULL_TREE);
 	  
 	  return build (OFFSET_REF, 
-			build_offset_type (type, unknown_type_node),
+			unknown_type_node,
 			decl,
 			build (TEMPLATE_ID_EXPR, 
 			       TREE_TYPE (t),
@@ -1638,8 +1638,8 @@ build_offset_ref (type, name)
 	  && ! allocation_temporary_p ())
 	fnfields = copy_list (fnfields);
 
-      TREE_TYPE (fnfields) = build_offset_type (type, unknown_type_node);
-      return fnfields;
+      TREE_TYPE (fnfields) = unknown_type_node;
+      return build (OFFSET_REF, unknown_type_node, decl, fnfields);
     }
 
   t = member;
@@ -1692,12 +1692,6 @@ resolve_offset_ref (exp)
   tree member;
   tree basetype, addr;
 
-  if (BASELINK_P (exp))
-    {
-      cp_pedwarn ("assuming & on overloaded member function");
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
-
   if (TREE_CODE (exp) == OFFSET_REF)
     {
       member = TREE_OPERAND (exp, 1);
@@ -1716,6 +1710,18 @@ resolve_offset_ref (exp)
       base = current_class_ref;
     }
 
+  if (BASELINK_P (member))
+    {
+      cp_pedwarn ("assuming & on overloaded member function");
+      return build_unary_op (ADDR_EXPR, exp, 0);
+    }
+
+  if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
+    {
+      cp_pedwarn ("assuming & on `%E'", member);
+      return build_unary_op (ADDR_EXPR, exp, 0);
+    }
+
   if ((TREE_CODE (member) == VAR_DECL
        && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member))
        && ! TYPE_PTRMEM_P (TREE_TYPE (member)))
@@ -1725,12 +1731,6 @@ resolve_offset_ref (exp)
       if (mark_addressable (member) == 0)
 	return error_mark_node;
       return member;
-    }
-
-  if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
-    {
-      cp_pedwarn ("assuming & on `%E'", member);
-      return build_unary_op (ADDR_EXPR, exp, 0);
     }
 
   if (TREE_CODE (TREE_TYPE (member)) == POINTER_TYPE

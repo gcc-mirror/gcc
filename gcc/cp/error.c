@@ -1680,11 +1680,14 @@ dump_expr (t, nop)
 	tree ob = TREE_OPERAND (t, 0);
 	if (is_dummy_object (ob))
 	  {
-	    if (TREE_CODE (TREE_OPERAND (t, 1)) == FUNCTION_DECL)
+	    t = TREE_OPERAND (t, 1);
+	    if (TREE_CODE (t) == FUNCTION_DECL)
 	      /* A::f */
-	      dump_expr (TREE_OPERAND (t, 1), 0);
+	      dump_expr (t, 0);
+	    else if (BASELINK_P (t))
+	      dump_expr (OVL_CURRENT (TREE_VALUE (t)), 0);
 	    else
-	      dump_decl (TREE_OPERAND (t, 1), 0);
+	      dump_decl (t, 0);
 	  }
 	else
 	  {
