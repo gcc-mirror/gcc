@@ -1,3 +1,11 @@
+2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Falk Hueffner  <falk@debian.org>
+
+	PR c/14188
+	* builtins.c (expand_builtin_va_arg): Emit an informative message
+	if a trap is generated.
+	* c-typeck.c (build_function_call): Likewise.
+
 2004-02-22  Christopher Faylor  <cgf@redhat.com>
 
 	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): *Really* specify

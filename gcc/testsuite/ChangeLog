@@ -1,3 +1,8 @@
+2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/cast-function-1.c: Adjust for new informative message.
+	* gcc.dg/va-arg-1.c: Likewise.
+
 2004-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14209
