@@ -55,7 +55,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This is only done when compiling the trampoline code.  */
 
 #ifdef  L_trampoline
-#include <types.h>
+#include <sys/param.h>
 #include <unistd.h>
 
 #ifdef _SC_PAGE_SIZE
