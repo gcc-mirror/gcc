@@ -1487,7 +1487,7 @@ init_cumulative_args (cum, fntype, libname, indirect)
 {
   cum->nregs = 18;
   cum->regno = FIRST_CUM_REG;
-  if (!libname)
+  if (!libname && fntype)
     {
       int stdarg = (TYPE_ARG_TYPES (fntype) != 0
                     && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
