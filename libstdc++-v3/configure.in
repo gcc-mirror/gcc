@@ -70,6 +70,19 @@ GLIBCPP_ENABLE_CONCEPT_CHECKS
 # Check for headers necessary for libsupc++ using dyn-string.c/cxa_demangle.c
 AC_CHECK_HEADERS(string.h stdlib.h)
 
+# No surprises, no surprises...
+if test $ATOMICITYH = cpu/generic ; then
+  AC_MSG_WARN([No native atomic operations are provided yet for this platform.])
+  if test $target_thread_file = single; then
+    AC_MSG_WARN([They cannot be faked when thread support is disabled.])
+    AC_MSG_WARN([Thread-safety of certain classes is not guaranteed.])
+  else
+    AC_MSG_WARN([They will be faked using a mutex.])
+    AC_MSG_WARN([Performance of certain classes will degrade as a result.])
+  fi
+fi
+
+
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
@@ -417,7 +430,7 @@ GLIBCPP_ENABLE_SYMVERS([yes])
 
 # Propagate the target-specific source directories through the build chain.
 # (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 
-# uses it, and they only get used here.)
+# uses it, and it only gets used in this file.)
 OS_INC_SRCDIR=config/${os_include_dir}
 ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
 AC_SUBST(OS_INC_SRCDIR)
