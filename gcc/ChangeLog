@@ -1,3 +1,9 @@
+2004-11-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Swap
+	the test when the edge has the opposite meaning, not when
+	the first argument is invariant.
+
 2004-11-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_override_options): Split e500v2
