@@ -118,12 +118,26 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
 }
 
 /* Compiler hook to pop an exception that has been finalized.  Used by
-   push_eh_cleanup().  */
+   push_eh_cleanup().  P is the info for the exception caught by the
+   current catch block, and HANDLER determines if we've been called from
+   an exception handler; if so, we avoid destroying the object on rethrow.  */
 
 extern "C" void
-__cp_pop_exception (void)
+__cp_pop_exception (cp_eh_info *p, bool handler)
 {
-  cp_eh_info *p = __eh_info;
+  cp_eh_info **q = &__eh_info;
+
+  if (handler && p == *q)
+    return;
+
+  for (; *q; q = &((*q)->next))
+    if (*q == p)
+      break;
+
+  if (! *q)
+    terminate ();
+
+  *q = p->next;
 
   if (p->cleanup)
     /* 3 is a magic value for destructors; see build_delete().  */
@@ -133,7 +147,6 @@ __cp_pop_exception (void)
   else
     delete p->value;
 
-  __eh_info = p->next;
   delete p;
 }
 
