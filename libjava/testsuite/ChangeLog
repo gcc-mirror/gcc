@@ -1,3 +1,10 @@
+2003-08-18  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/11951:
+	* libjava.jni/pr11951.c: New file.
+	* libjava.jni/pr11951.out: New file.
+	* libjava.jni/pr11951.java: New file.
+
 2003-08-12  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: Updated to account for new passes.
