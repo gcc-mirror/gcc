@@ -558,7 +558,9 @@ public class ArrayList extends AbstractList
     // We serialize unused list entries to preserve capacity.
     int len = data.length;
     s.writeInt(len);
-    for (int i = 0; i < len; i++)
+    // it would be more efficient to just write "size" items,
+    // this need readObject read "size" items too.
+    for (int i = 0; i < size; i++)
       s.writeObject(data[i]);
   }
 
@@ -578,7 +580,7 @@ public class ArrayList extends AbstractList
     s.defaultReadObject();
     int capacity = s.readInt();
     data = new Object[capacity];
-    for (int i = 0; i < capacity; i++)
+    for (int i = 0; i < size; i++)
       data[i] = s.readObject();
   }
 }

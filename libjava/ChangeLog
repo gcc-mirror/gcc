@@ -1,3 +1,42 @@
+2002-10-31  Stephen Crawley  <crawley@dstc.edu.au>
+
+	* java/lang/Double.java (valueOf): Return new Double(parseDouble(s)).
+
+2002-10-31  Wu Gansha <gansha.wu@intel.com>:
+
+        * java/util/ArrayList.java (readObject, writeObject): Only read/write
+        size items.
+
+2002-10-31  Wu Gansha <gansha.wu@intel.com>:
+
+        * java/io/DataInputStream.java (convertFromUTF): Give StringBuffer an
+        initial estimated size to avoid enlarge buffer frequently.
+
+2002-10-31  Wu Gansha <gansha.wu@intel.com>:
+
+	* java/lang/reflect/Proxy.java (ProxyType): Set loader to System
+	ClassLoader when null.
+	(ProxyType.hashCode): Loader null check no longer needed.
+	(ProxyType.sameTypes): New method.
+	(ProxyType.equals): Use new method.
+
+2002-10-31  Mark Wielaard  <mark@klomp.org>
+
+        * java/net/URLDecoder.java (decode): Initialize Stringbuffer size to
+	length of String.
+	* java/net/URLEncoder.java (encode): Likewise.
+
+2002-10-31  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipInputStream.java (getNextEntry): Throw IOException
+	when stream is closed.
+	(closeEntry): Likewise.
+	(read): Likewise.
+	* java/util/zip/ZipOutputStream.java (putNextEntry): Throw
+	ZipException when no entry active.
+	(closeEntry): Likewise.
+	(write): Likewise.
+
 2002-11-02  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h: Move JV_STATE_ERROR before JV_STATE_DONE.

@@ -63,7 +63,7 @@ import java.io.UnsupportedEncodingException;
 public class URLDecoder
 {
   /**
-   * Constructor for compatibility with Sun's JDK.
+   * Public contructor. Note that this class has only static methods.
    */
   public URLDecoder ()
   {
@@ -116,8 +116,6 @@ public class URLDecoder
   public static String decode(String s, String encoding)
     throws UnsupportedEncodingException
   {
-    StringBuffer result = new StringBuffer();
-
     // First convert all '+' characters to spaces.
     String str = s.replace('+', ' ');
     
@@ -126,6 +124,7 @@ public class URLDecoder
     int start = 0;
     byte[] bytes = null;
     int length = str.length();
+    StringBuffer result = new StringBuffer(length);
     while ((i = str.indexOf('%', start)) >= 0)
       {
 	// Add all non-encoded characters to the result buffer

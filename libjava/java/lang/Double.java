@@ -191,10 +191,7 @@ public final class Double extends Number implements Comparable
    */
   public static Double valueOf(String s)
   {
-    // XXX just call new Double(parseDouble(s));
-    if (s == null)
-      throw new NullPointerException();
-    return new Double(s);
+    return new Double(parseDouble(s));
   }
 
   /**
