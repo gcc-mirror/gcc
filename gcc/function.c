@@ -2859,8 +2859,14 @@ assign_parms (fndecl, second_time)
 		 if it becomes a problem.  */
 
 	      if (stack_parm == 0)
-		stack_parm
-		  = assign_stack_local (GET_MODE (entry_parm), size_stored, 0);
+		{
+		  stack_parm
+		    = assign_stack_local (GET_MODE (entry_parm), size_stored, 0);
+		  /* If this is a memory ref that contains aggregate components,
+		     mark it as such for cse and loop optimize.  */
+		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+		}
+
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
 
@@ -2989,8 +2995,15 @@ assign_parms (fndecl, second_time)
 	  if (entry_parm != stack_parm)
 	    {
 	      if (stack_parm == 0)
-		stack_parm = assign_stack_local (GET_MODE (entry_parm),
-						 GET_MODE_SIZE (GET_MODE (entry_parm)), 0);
+		{
+		  stack_parm
+		    = assign_stack_local (GET_MODE (entry_parm),
+					  GET_MODE_SIZE (GET_MODE (entry_parm)), 0);
+		  /* If this is a memory ref that contains aggregate components,
+		     mark it as such for cse and loop optimize.  */
+		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+		}
+
 	      emit_move_insn (validize_mem (stack_parm),
 			      validize_mem (entry_parm));
 	    }
