@@ -1,3 +1,9 @@
+1998-10-12 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+	
+	* expr.c (push_block): Handle targets where the stack grows
+	to higher addresses, but args grow to lower addresses and
+	ACCUMULATE_OUTGOING_ARGS is not defined.
+
 Tue Oct 13 08:00:52 1998  Catherine Moore  <clm@cygnus.com>
 
         * config/v850/v850.c (print_operand):  Extend meaning
