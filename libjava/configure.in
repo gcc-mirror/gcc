@@ -49,6 +49,18 @@ AC_ARG_ENABLE(fast-character,
 # Nothing
 , AC_DEFINE(COMPACT_CHARACTER))
 
+AC_ARG_ENABLE(java-awt,
+[  --enable-java-awt       enable AWT implementation],
+  awt=$enable_java_awt
+, [# Default to enabled on native systems.
+if test -z "${with_cross_host}"; then
+   awt=yes
+else
+   awt=no
+fi])
+
+AM_CONDITIONAL(AWT, test "$awt" = yes)
+
 dnl Should the runtime set system properties by examining the 
 dnl environment variable GCJ_PROPERTIES?
 AC_ARG_ENABLE(getenv-properties,

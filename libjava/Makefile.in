@@ -125,7 +125,9 @@ AUTOMAKE_OPTIONS = foreign no-installinfo
 @USE_LIBDIR_FALSE@toolexecdir = \
 @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
-toolexeclib_LTLIBRARIES = libgcj.la
+@AWT_TRUE@hack1 = \
+@AWT_TRUE@libgcjawt.la
+toolexeclib_LTLIBRARIES = libgcj.la $(hack1)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
@@ -186,6 +188,8 @@ javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
 
+awto_files = $(awt_java_source_files:.java=.lo)
+
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
@@ -204,13 +208,24 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
+libgcjawt_la_SOURCES = ## Nothing
+EXTRA_libgcjawt_la_SOURCES = $(awt_java_source_files)
+libgcjawt_la_DEPENDENCIES = libgcj.zip $(awto_files)
+libgcjawt_la_LIBADD = $(awto_files)
+libgcjawt_la_LDFLAGS = -rpath $(toolexeclibdir) \
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
+
+MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) \
+	$(awto_files)
+
 CLEANFILES = libgcj.zip
 
 SUFFIXES = .class .java .h
 
 nat_headers = $(ordinary_java_source_files:.java=.h) \
-	$(built_java_source_files:.java=.h)
+	$(built_java_source_files:.java=.h) \
+	$(cond_awt_java_source_files:.java=.h)
 
 
 extra_headers = java/lang/Object.h java/lang/Class.h
@@ -330,8 +345,9 @@ java/awt/peer/ContainerPeer.java \
 java/awt/peer/FramePeer.java \
 java/awt/peer/WindowPeer.java
 
-
-# $(awt_java_source_files)
+@AWT_TRUE@cond_awt_java_source_files = \
+@AWT_TRUE@$(awt_java_source_files)
+@AWT_FALSE@cond_awt_java_source_files = \
 
 built_java_source_files = java/lang/ConcreteProcess.java
 
@@ -759,6 +775,7 @@ LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
 defineclass.lo interpret.lo name-finder.lo
+libgcjawt_la_OBJECTS = 
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
@@ -823,7 +840,29 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
 .deps/gnu/gcj/util/EnumerationChain.P .deps/interpret.P \
-.deps/java/io/BufferedInputStream.P \
+.deps/java/awt/AWTEvent.P .deps/java/awt/AWTException.P \
+.deps/java/awt/BorderLayout.P .deps/java/awt/Color.P \
+.deps/java/awt/Component.P .deps/java/awt/Container.P \
+.deps/java/awt/Dimension.P .deps/java/awt/Event.P .deps/java/awt/Font.P \
+.deps/java/awt/Frame.P .deps/java/awt/Graphics.P .deps/java/awt/Image.P \
+.deps/java/awt/LayoutManager.P .deps/java/awt/LayoutManager2.P \
+.deps/java/awt/Menu.P .deps/java/awt/MenuBar.P \
+.deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
+.deps/java/awt/MenuItem.P .deps/java/awt/Paint.P \
+.deps/java/awt/PaintContext.P .deps/java/awt/Point.P \
+.deps/java/awt/Rectangle.P .deps/java/awt/Shape.P \
+.deps/java/awt/TextArea.P .deps/java/awt/TextComponent.P \
+.deps/java/awt/Toolkit.P .deps/java/awt/Transparency.P \
+.deps/java/awt/Window.P .deps/java/awt/event/ActionEvent.P \
+.deps/java/awt/event/ActionListener.P \
+.deps/java/awt/event/ComponentEvent.P .deps/java/awt/event/InputEvent.P \
+.deps/java/awt/event/KeyEvent.P .deps/java/awt/event/KeyListener.P \
+.deps/java/awt/event/TextEvent.P .deps/java/awt/event/TextListener.P \
+.deps/java/awt/event/WindowAdapter.P .deps/java/awt/event/WindowEvent.P \
+.deps/java/awt/event/WindowListener.P .deps/java/awt/geom/Dimension2D.P \
+.deps/java/awt/geom/Point2D.P .deps/java/awt/peer/ComponentPeer.P \
+.deps/java/awt/peer/ContainerPeer.P .deps/java/awt/peer/FramePeer.P \
+.deps/java/awt/peer/WindowPeer.P .deps/java/io/BufferedInputStream.P \
 .deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
 .deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \
 .deps/java/io/ByteArrayOutputStream.P .deps/java/io/CharArrayReader.P \
@@ -1019,8 +1058,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/libgcjdata.P \
 .deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
 .deps/posix-threads.P .deps/prims.P .deps/resolve.P
-SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
+SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(EXTRA_libgcjawt_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(libgcjawt_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -1140,6 +1179,9 @@ uninstall-toolexeclibLTLIBRARIES:
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
+
+libgcjawt.la: $(libgcjawt_la_OBJECTS) $(libgcjawt_la_DEPENDENCIES)
+	$(LINK) -rpath $(toolexeclibdir) $(libgcjawt_la_LDFLAGS) $(libgcjawt_la_OBJECTS) $(libgcjawt_la_LIBADD) $(LIBS)
 
 mostlyclean-binPROGRAMS:
 
@@ -1547,13 +1589,14 @@ mostlyclean distclean maintainer-clean
 
 
 $(java_source_files:.java=.class): libgcj.zip
+$(awt_java_source_files:.java=.class): libgcj.zip
 
 $(built_java_source_files:.java=.class): $(built_java_source_files)
 	javac="$(JAVAC)"; \
 	$$javac $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
 	  -d $(here) $?
 
-libgcj.zip: $(java_source_files)
+libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 	$(MAKE) $(built_java_source_files:.java=.class)
 	javac="$(JAVAC)"; cd $(srcdir); \
 	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
@@ -1581,10 +1624,10 @@ $(c_files): %.lo: %.c
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
-$(javao_files): %.lo: %.java
+$(awto_files) $(javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
-$(javao_files): libgcj.zip
+$(awto_files) $(javao_files): libgcj.zip
 
 .class.h:
 	$(GCJH) -classpath $(top_builddir) $(basename $<)

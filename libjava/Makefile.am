@@ -23,7 +23,11 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la
+## Some versions of automake can't handle a conditional _LTLIBRARIES.
+if AWT
+hack1 = libgcjawt.la
+endif
+toolexeclib_LTLIBRARIES = libgcj.la $(hack1)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
@@ -108,6 +112,8 @@ c_files = $(c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
+awto_files = $(awt_java_source_files:.java=.lo)
+
 ## Extract the libffi object file names.
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
@@ -123,6 +129,14 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
+libgcjawt_la_SOURCES = ## Nothing
+EXTRA_libgcjawt_la_SOURCES = $(awt_java_source_files)
+libgcjawt_la_DEPENDENCIES = libgcj.zip $(awto_files)
+libgcjawt_la_LIBADD = $(awto_files)
+libgcjawt_la_LDFLAGS = -rpath $(toolexeclibdir) \
+## The mysterious backslash is consumed by make.
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
 ## but that is ok, because the ones it fails to pick up are defined in
@@ -130,6 +144,7 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## only want to create headers for those files which do not have
 ## hand-maintained headers.
 $(java_source_files:.java=.class): libgcj.zip
+$(awt_java_source_files:.java=.class): libgcj.zip
 
 ## FIXME: this isn't really correct.
 $(built_java_source_files:.java=.class): $(built_java_source_files)
@@ -145,7 +160,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 ## up-to-date, and foo.class is removed, and bar.java is touched, then
 ## `make libgcj.zip' will not rebuilt foo.class.  That's because
 ## libgcj.zip is not out-of-date with respect to foo.java.
-libgcj.zip: $(java_source_files)
+libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 ## FIXME: this ought to depend on built_java_source_files, but right
 ## now it can't.  Ugly.
 	$(MAKE) $(built_java_source_files:.java=.class)
@@ -158,7 +173,8 @@ libgcj.zip: $(java_source_files)
 ## Note that we explicitly want to include directory information.
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
+MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) \
+	$(awto_files)
 CLEANFILES = libgcj.zip
 
 clean-local:
@@ -190,10 +206,10 @@ $(c_files): %.lo: %.c
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: GNU make.
-$(javao_files): %.lo: %.java
+$(awto_files) $(javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
-$(javao_files): libgcj.zip
+$(awto_files) $(javao_files): libgcj.zip
 
 ## ################################################################
 
@@ -207,7 +223,8 @@ $(javao_files): libgcj.zip
 
 ## Header files used when compiling some of the nat* files.
 nat_headers = $(ordinary_java_source_files:.java=.h) \
-	$(built_java_source_files:.java=.h)
+	$(built_java_source_files:.java=.h) \
+	$(cond_awt_java_source_files:.java=.h)
 
 $(nat_headers): libgcj.zip
 
@@ -519,7 +536,11 @@ java/awt/peer/ContainerPeer.java \
 java/awt/peer/FramePeer.java \
 java/awt/peer/WindowPeer.java
 
-# $(awt_java_source_files)
+if AWT
+cond_awt_java_source_files = $(awt_java_source_files)
+else
+cond_awt_java_source_files =
+endif
 
 ## Java files which are created by configure and thus are in the build
 ## directory.

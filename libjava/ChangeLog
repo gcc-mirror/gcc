@@ -1,3 +1,22 @@
+2000-04-05  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Recognize --enable-java-awt.
+	(AWT): New conditional.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Build libgcjawt.la if
+	requested.
+	(libgcjawt_la_SOURCES): New macro.
+	(EXTRA_libgcjawt_la_SOURCES): Likewise.
+	(libgcjawt_la_DEPENDENCIES): Likewise.
+	(libgcjawt_la_LIBADD): Likewise.
+	(libgcjawt_la_LDFLAGS): Likewise.
+	(libgcj.zip): Depend on cond_java_awt_source_files
+	(cond_awt_java_source_files): New macro.
+	(MOSTLYCLEANFILES): Added awto_files.
+	(awto_files): New macro.  Use where javao_files used.
+	(nat_headers): Use cond_awt_java_source_files.
+
 2000-04-04  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
