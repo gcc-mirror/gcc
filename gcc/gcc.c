@@ -579,7 +579,7 @@ static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
-			%{!A:%{!nostdlib:%S}} %{static:}\
+			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
 			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
 #else
 #ifdef LINK_LIBGCC_SPECIAL
@@ -588,7 +588,7 @@ static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
-			%{!A:%{!nostdlib:%S}} %{static:}\
+			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
 			%{L*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
 #else
 /* Use -L and have the linker do the search for -lgcc.  */
@@ -596,7 +596,7 @@ static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
-			%{!A:%{!nostdlib:%S}} %{static:}\
+			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
 			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}}";
 #endif
 #endif
