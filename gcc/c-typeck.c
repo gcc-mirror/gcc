@@ -1897,8 +1897,12 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
      Zero means they need to be converted to RESULT_TYPE.  */
   int converted = 0;
 
+  /* Nonzero means create the expression with this type, rather than
+     RESULT_TYPE.  */
+  tree build_type = 0;
+
   /* Nonzero means after finally constructing the expression
-     give it this type.  Otherwise, give it type RESULT_TYPE.  */
+     convert it to this type.  */
   tree final_type = 0;
 
   /* Nonzero if this is an operation like MIN or MAX which can
@@ -2169,8 +2173,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case NE_EXPR:
       /* Result of comparison is always int,
 	 but don't convert the args to int!  */
-      result_type = integer_type_node;
-      converted = 1;
+      build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == COMPLEX_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
@@ -2201,29 +2204,26 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    }
 	  else
 	    pedwarn ("comparison of distinct pointer types lacks a cast");
+	  result_type = common_type (type0, type1);
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
-	op1 = null_pointer_node;
+	result_type = type0;
       else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
 	       && integer_zerop (op0))
-	op0 = null_pointer_node;
+	result_type = type1;
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
+	  result_type = type0;
 	  if (! flag_traditional)
 	    pedwarn ("comparison between pointer and integer");
-	  op1 = convert (TREE_TYPE (op0), op1);
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
+	  result_type = type1;
 	  if (! flag_traditional)
 	    pedwarn ("comparison between pointer and integer");
-	  op0 = convert (TREE_TYPE (op1), op0);
 	}
-      else
-	/* If args are not valid, clear out RESULT_TYPE
-	   to cause an error message later.  */
-	result_type = 0;
       break;
 
     case MAX_EXPR:
@@ -2246,6 +2246,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+      build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
@@ -2259,39 +2260,34 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  else if (pedantic 
 		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
-	  result_type = integer_type_node;
+	  result_type = common_type (type0, type1);
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
 	{
-	  result_type = integer_type_node;
-	  op1 = null_pointer_node;
+	  result_type = type0;
 	  if (pedantic)
 	    pedwarn ("ordered comparison of pointer with integer zero");
 	}
       else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
 	       && integer_zerop (op0))
 	{
-	  result_type = integer_type_node;
-	  op0 = null_pointer_node;
+	  result_type = type1;
 	  if (pedantic)
 	    pedwarn ("ordered comparison of pointer with integer zero");
 	}
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  result_type = integer_type_node;
+	  result_type = type0;
 	  if (! flag_traditional)
 	    pedwarn ("comparison between pointer and integer");
-	  op1 = convert (TREE_TYPE (op0), op1);
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
-	  result_type = integer_type_node;
+	  result_type = type1;
 	  if (! flag_traditional)
 	    pedwarn ("comparison between pointer and integer");
-	  op0 = convert (TREE_TYPE (op1), op0);
 	}
-      converted = 1;
       break;
     }
 
@@ -2433,15 +2429,14 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
 	  if (val != 0)
 	    return val;
-	  op0 = xop0, op1 = xop1, result_type = xresult_type;
+	  op0 = xop0, op1 = xop1;
+	  converted = 1;
 	  resultcode = xresultcode;
 
 	  if (extra_warnings)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
-
-	      tree comp_type = TREE_TYPE (op0);
 
 	      /* Avoid spurious warnings for comparison with enumerators.  */
  
@@ -2451,19 +2446,33 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      STRIP_TYPE_NOPS (xop1);
 
 	      /* Give warnings for comparisons between signed and unsigned
-		 quantities that may fail.  Do not warn if the signed quantity
-		 is an unsuffixed integer literal (or some static constant
-		 expression involving such literals) and it is positive.
-		 Do not warn if the comparison is being done in a signed type,
-		 since the signed type will only be chosen if it can represent
-		 all the values of the unsigned type.  */
+		 quantities that may fail.  */
 	      /* Do the checking based on the original operand trees, so that
 		 casts will be considered, but default promotions won't be.  */
-	      if (TREE_UNSIGNED (comp_type)
-		  && ((op0_signed && (TREE_CODE (xop0) != INTEGER_CST
-				      || tree_int_cst_sgn (xop0) == -1))
-		      || (op1_signed && (TREE_CODE (xop1) != INTEGER_CST
-				       || tree_int_cst_sgn (xop1) == -1))))
+
+	      /* Do not warn if the comparison is being done in a signed type,
+		 since the signed type will only be chosen if it can represent
+		 all the values of the unsigned type.  */
+	      if (! TREE_UNSIGNED (result_type))
+		/* OK */;
+	      /* Do not warn if the signed quantity is an unsuffixed
+		 integer literal (or some static constant expression
+		 involving such literals) and it is non-negative.  */
+	      else if ((op0_signed && TREE_CODE (xop0) == INTEGER_CST
+			&& tree_int_cst_sgn (xop0) >= 0)
+		       || (op1_signed && TREE_CODE (xop1) == INTEGER_CST
+			   && tree_int_cst_sgn (xop1) >= 0))
+		/* OK */;
+	      /* Do not warn if the comparison is an equality operation,
+                 the unsigned quantity is an integral constant and it does
+                 not use the most significant bit of result_type.  */
+	      else if ((resultcode == EQ_EXPR || resultcode == NE_EXPR)
+		       && ((op0_signed && TREE_CODE (xop1) == INTEGER_CST
+			    && int_fits_type_p (xop1, signed_type (result_type))
+			   || (op1_signed && TREE_CODE (xop0) == INTEGER_CST
+			       && int_fits_type_p (xop0, signed_type (result_type))))))
+		/* OK */;
+	      else
 		warning ("comparison between signed and unsigned");
 	    }
 	}
@@ -2489,8 +2498,11 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	op1 = convert (result_type, op1); 
     }
 
+  if (build_type == NULL_TREE)
+    build_type = result_type;
+
   {
-    register tree result = build (resultcode, result_type, op0, op1);
+    register tree result = build (resultcode, build_type, op0, op1);
     register tree folded;
 
     folded = fold (result);
