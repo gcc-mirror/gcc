@@ -243,8 +243,10 @@ proc gcj_jni_invocation_test_one {file} {
 
   set cfile [file rootname $file].c
   # Darwin needs -liconv linked, otherwise we get some unresolved.
+  # Also, like in the cxxtest we need to add -lgcc_s since Darwin
+  # has no libgcc_s.dylib installed yet.
   if { [istarget "*-*-darwin*"] } {
-      set cxxflags "-L../.libs -lgcj -liconv"
+      set cxxflags "-L../.libs -lgcc_s -lgcj -liconv"
   } else {
       set cxxflags "-L../.libs -lgcj"
   }
