@@ -1,3 +1,14 @@
+2000-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Clear the entire
+	vtbl_init_data.  Start keeping track of the functions for which we
+	have created vcall offsets here.
+	(dfs_build_vcall_offset_vtbl_entries): Remove.
+	(build_vcall_offset_vtbl_entries): Reimplement.
+	(add_vcall_offset_vtbl_entries_r): New function.
+	(add_vcall_offset_vtbl_entries_1): Likewise.  Tweak logic for
+	computing when vcall offsets are necessary.
+
 2000-08-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (member_function_or_else): Use cp_error ... %T.
