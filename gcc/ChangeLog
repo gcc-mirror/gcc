@@ -1,5 +1,8 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* genattrtab.h, hosthooks-def.h, hosthooks.h, langhooks-def.h,
+	langhooks.h, tree-inline.h: Replace "GNU CC" with "GCC".
+
 	* c-pch.c, dummy-conditions.c, genautomata.c, genconditions.c,
 	langhooks.c, tree-inline.c, unwind-dw2-fde-darwin.c,
 	unwind-dw2-fde-glibc.c, unwind-libunwind.c, vmsdbgout.c: Replace
