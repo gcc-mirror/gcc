@@ -2001,8 +2001,8 @@ powerpc-*-sysv*)
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	;;
 powerpc-*-netbsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
-	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
+	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
+	tmake_file="${tmake_file} rs6000/t-netbsd"
 	;;
 powerpc-*-chorusos*)
 	xm_defines=POSIX

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC NetBSD systems.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2002 Free Software Foundation, Inc.
+   Contributed by Wasabi Systems, Inc.
 
 This file is part of GNU CC.
 
@@ -19,48 +20,54 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Under NetBSD, the normal location of the various *crt*.o files is
-   the /usr/lib directory [from config/netbsd.h].  */
+#undef TARGET_OS_CPP_BUILTINS	/* FIXME: sysv4.h should not define this! */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_ELF();		\
+      builtin_define ("__powerpc__");		\
+      builtin_assert ("cpu=powerpc");		\
+      builtin_assert ("machine=powerpc");	\
+    }						\
+  while (0)
 
-#undef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX "/usr/lib/"
+/* Make GCC agree with <machine/ansi.h>.  */
 
-/* FIXME: Should this macro be treated the same as for the other
-   spec's?  */
-/* NOTE: -dc and -dp are equivalent yet NetBSD's CC passes both both!
-   NetBSD's CC also passes -O1 but we can skip that.  NetBSD explictly
-   sets ``-e _start'', since LD knows this, skip it.  */
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
 
-#undef LINK_SHLIB_SPEC
-#define LINK_SHLIB_SPEC "\
-%{shared:-shared} \
-%{!shared: %{static:-dc -dp -static}} \
-%{!shared: %{!static:-dc -dp}} \
-"
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
-/* Override the defaults.  */
-#undef LIB_DEFAULT_SPEC
-#define LIB_DEFAULT_SPEC "%(lib_netbsd)"
+/* Undo the spec mess from sysv4.h, and just define the specs
+   the way NetBSD systems actually expect.  */
 
-#undef STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC "%(startfile_netbsd)"
+#undef CPP_SPEC
+#define CPP_SPEC NETBSD_CPP_SPEC
 
-#undef ENDFILE_DEFAULT_SPEC
-#define ENDFILE_DEFAULT_SPEC "%(endfile_netbsd)"
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{!msdata=none:%{G*}} %{msdata=none:-G0} \
+   %(netbsd_link_spec)"
 
-#undef LINK_START_DEFAULT_SPEC
-#define LINK_START_DEFAULT_SPEC "%(link_start_netbsd)"
+#define NETBSD_ENTRY_POINT "_start"
 
-#undef	LINK_OS_DEFAULT_SPEC
-#define LINK_OS_DEFAULT_SPEC "%(link_os_netbsd)"
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC NETBSD_STARTFILE_SPEC
 
-#undef	CPP_OS_DEFAULT_SPEC
-#define CPP_OS_DEFAULT_SPEC "%(cpp_os_netbsd)"
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "crtsavres%O%s %(netbsd_endfile_spec)"
+
+#undef LIB_SPEC
+#define LIB_SPEC NETBSD_LIB_SPEC
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS					\
+  { "netbsd_link_spec",		NETBSD_LINK_SPEC_ELF },		\
+  { "netbsd_entry_point",	NETBSD_ENTRY_POINT },		\
+  { "netbsd_endfile_spec",	NETBSD_ENDFILE_SPEC },
+
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC NetBSD/ELF)");
-
-/* Use STABS debugging information by default.  DWARF2 makes a mess of
-   the 1.5.2 linker.  */
-#undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define TARGET_VERSION fprintf (stderr, " (NetBSD/powerpc ELF)");
