@@ -51,7 +51,7 @@ INSTALL_LIBGCC = install-multilib
 
 
 # Both 32-bit and 64-bit objects in archives
-AR_FLAGS_FOR_TARGET=-X32_64 rc
+AR_FLAGS_FOR_TARGET=-X32_64
 
 # We need -lld for collect2 (actually this only matters
 # for a native compiler, but this is as good a place as any
