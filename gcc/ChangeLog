@@ -1,3 +1,10 @@
+Sun Jun 20 17:27:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_analyze_1): Use free_list instead of 
+	zapping reg_last_uses directly.
+	(sched_analyze_2, sched_analyze_insn): Likewise.
+	(sched_analyze): Likewise.  Don't clear reg_last_uses on calls.
+
 Sun Jun 20 16:57:29 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movdf_hardfloat32): Use worst case insn length
