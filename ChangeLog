@@ -93,6 +93,11 @@ Sun Feb  1 02:40:41 1998  Richard Henderson  <rth@cygnus.com>
 	(all-target-libf2c): Add dependences.
 	* configure.in (target_libs): Add libf2c. 
 
+Wed Jan 28 12:58:49 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config.guess: Use ${UNAME_MACHINE} rather than i386 for cygwin32
+	and mingw32.
+
 Wed Jan 28 10:26:37 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Remove passing $(local_prefix)
