@@ -2822,7 +2822,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			    || reg_equiv_address[REGNO (XEXP (operand, 0))] != 0))
 		    || (GET_CODE (operand) == REG
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
-			&& reg_renumber[REGNO (operand)] < 0))
+			&& reg_renumber[REGNO (operand)] < 0
+			/* If reg_equiv_address is nonzero, we will be
+			   loading it into a register; hence it will be
+			   offsettable, but we cannot say that reg_equiv_mem
+			   is offsettable without checking.  */
+			&& ((reg_equiv_mem[REGNO (operand)] != 0
+			     && offsettable_memref_p (reg_equiv_mem[REGNO (operand)]))
+			    || (reg_equiv_address[REGNO (operand)] != 0))))
 		  win = 1;
 		if (CONSTANT_P (operand) || GET_CODE (operand) == MEM)
 		  badop = 0;
@@ -2978,6 +2985,22 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		bad = 1;
 	      else if (modified[i] != RELOAD_WRITE && no_input_reloads)
 		bad = 1;
+
+	      /* If this is a constant that is reloaded into the desired
+		 class by copying it to memory first, count that as another
+		 reload.  This is consistent with other code and is
+		 required to avoid chosing another alternative when
+		 the constant is moved into memory by this function on
+		 an early reload pass.  Note that the test here is 
+		 precisely the same as in the code below that calls
+		 force_const_mem.  */
+	      if (CONSTANT_P (operand)
+		  && (PREFERRED_RELOAD_CLASS (operand,
+					      (enum reg_class) this_alternative[i])
+		      == NO_REGS)
+		  && this_alternative[i] != (int) NO_REGS
+		  && operand_mode[i] != VOIDmode)
+		losers++;
 
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.
@@ -3323,7 +3346,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  ;
 	/* Handle an operand with a nonoffsettable address
 	   appearing where an offsettable address will do
-	   by reloading the address into a base register.  */
+	   by reloading the address into a base register.
+
+	   ??? We can also do this when the operand is a register and
+	   reg_equiv_mem is not offsettable, but this is a bit tricky,
+	   so we don't bother with it.  It may not be worth doing.  */
 	else if (goal_alternative_matched[i] == -1
 		 && goal_alternative_offmemok[i]
 		 && GET_CODE (recog_operand[i]) == MEM)
