@@ -1,3 +1,16 @@
+Wed Mar 31 12:32:43 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (find_basic_blocks): New argument `do_cleanup'.
+	Conditionally call delete_unreachable_blocks.
+	(free_basic_block_vars): Zero ENTRY/EXIT data.
+	(allocate_for_life_analysis): Kill.  Split into...
+	(allocate_bb_life_data, allocate_reg_life_data): ... new functions.
+	(life_analysis_1): Update.
+	* gcse.c (gcse_main): Update find_basic_blocks call.
+	* toplev.c (rest_of_compilation): Likewise.
+	* stupid.c (stupid_life_analysis): Update life data calls.
+	* rtl.h, output.h: Update prototypes.
+
 Wed Mar 31 12:10:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* inclhack.def (several): added spaces in tests to ensure
