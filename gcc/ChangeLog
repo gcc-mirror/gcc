@@ -1,3 +1,8 @@
+2001-11-02  DJ Delorie  <dj@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Make sure that
+	using FP registers for DImode mem-mem moves is acceptable.
+
 2001-11-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* builtins.c (apply_args_size): Handle vector arguments.

@@ -1805,6 +1805,25 @@ rs6000_emit_move (dest, source, mode)
 	  || (CONST_DOUBLE_HIGH (operands[1]) == -1
 	      && CONST_DOUBLE_LOW (operands[1]) < 0)))
     abort ();
+
+  /* Check if GCC is setting up a block move that will end up using FP
+     registers as temporaries.  We must make sure this is acceptable.  */
+  if (GET_CODE (operands[0]) == MEM
+      && GET_CODE (operands[1]) == MEM
+      && mode == DImode
+      && ! TARGET_POWERPC64
+      && (SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[0]))
+	  || SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[1]))))
+    {
+      rtx reg1, reg2;
+      reg1 = gen_reg_rtx(SImode);
+      reg2 = gen_reg_rtx(SImode);
+      rs6000_emit_move (reg1, simplify_subreg (SImode, operands[1], DImode, 0), SImode);
+      rs6000_emit_move (reg2, simplify_subreg (SImode, operands[1], DImode, 4), SImode);
+      rs6000_emit_move (simplify_subreg (SImode, operands[0], DImode, 0), reg1, SImode);
+      rs6000_emit_move (simplify_subreg (SImode, operands[0], DImode, 4), reg2, SImode);
+      return;
+    }
   
   if (! no_new_pseudos && GET_CODE (operands[0]) != REG)
     operands[1] = force_reg (mode, operands[1]);
