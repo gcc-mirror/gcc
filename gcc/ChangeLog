@@ -1,3 +1,7 @@
+2000-07-05  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c: Fix trigraph replacement within strings.
+
 2000-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rs6000/aix.h (ASM_GENERATE_INTERNAL_LABEL): Fix format specifier.
