@@ -1254,7 +1254,16 @@ extern union tree_node *current_function_decl;
    (In the rare case of an FP register used in an integer MODE, we depend
    on secondary reloads and the final output pass to clean things up.)
 
-   Also change REG+(X*Y) into REG.  (With X*Y in an extra pseudo).  */
+
+   It is also beneficial to handle (plus (mult (X) (Y)) (Z)) in a special
+   manner if Y is 2, 4, or 8.  (allows more shadd insns and shifted indexed
+   adressing modes to be used).
+
+   Put X and Z into registers.  Then put the entire expression into
+   a register.
+
+   Other REG+(X*Y) addresses are placed into a register with the
+   X*Y subexpression placed in a register of its own.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
@@ -1270,6 +1279,21 @@ extern union tree_node *current_function_decl;
 				     XEXP (X, 0), int_reg));	\
       X = plus_constant (ptr_reg, offset & mask);		\
       goto WIN;							\
+    }								\
+  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT	\
+      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
+      && shadd_constant_p (INTVAL (XEXP (XEXP (X, 0), 1))))	\
+    {								\
+      int val = INTVAL (XEXP (XEXP (X, 0), 1));			\
+      rtx reg1, reg2;						\
+      reg1 = force_reg (SImode, force_operand (XEXP (X, 1), 0));\
+      reg2 = force_reg (SImode, 				\
+			force_operand (XEXP (XEXP (X, 0), 0), 0));\
+      (X) = force_reg (SImode,					\
+		       gen_rtx (PLUS, SImode,			\
+				gen_rtx (MULT, SImode, reg2, 	\
+					 GEN_INT (val)),	\
+				reg1));				\
     }								\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
     (X) = force_operand (gen_rtx (PLUS, SImode, XEXP (X, 1),	\
