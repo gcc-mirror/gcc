@@ -1,3 +1,15 @@
+2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md (*adcq, *subcq): Fix operand numbers.
+	(*ashlsi3_const16_zexthi, *ashlsi3_const1): Likewise.
+	(*lshrsi3_const, *lshrsi3_const1, *lshrsi3_const16): Likewise.
+	(*ashrsi3, *ashrsi3_const, *ashlsi3, *ashlsi3_const): Likewise.
+	(*ashlsi3_const1, *lshrsi3, *ashlsi3_const16): Likewise.
+	(cmphi_z_used): Don't use '@' for the output.
+	(tstqi_z_used): Likewise.
+	(cmpqi_z_used): Likewise.
+	(one_cmplsi2): Likewise.
+
 2001-01-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (barrier_align): Recognize branch around far
