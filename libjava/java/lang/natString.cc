@@ -1,6 +1,7 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -116,8 +117,8 @@ _Jv_StringGetSlot (jstring str)
   return _Jv_StringFindSlot(data, length, hashChars (data, length));
 }
 
-void
-java::lang::String::rehash()
+static void
+rehash ()
 {
   JvSynchronize sync (&StringClass);
 
@@ -287,7 +288,7 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
 
   JvSynchronize sync (&StringClass);
   if (3 * strhash_count >= 2 * strhash_size)
-    java::lang::String::rehash();
+    rehash ();
   jstring* ptr = _Jv_StringFindSlot (chrs, length, hash);
   if (*ptr != NULL && *ptr != DELETED_STRING)
     return (jstring) UNMASK_PTR (*ptr);

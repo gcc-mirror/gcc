@@ -1,5 +1,11 @@
 2004-11-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/String.java (rehash): Removed.
+	* java/lang/natString.cc (rehash): Made static.
+	(_Jv_NewStringUtf8Const): Use static rehash method.
+
+2004-11-23  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.in, aclocal.m4, configure, gcj/Makefile.in,
 	include/Makefile.in, testsuite/Makefile.in: Regenerated.
 
