@@ -1,3 +1,15 @@
+2003-08-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-1.c: Add macro helpers.  Add missing math
+	builtins.  Move cases from builtins-4.c here.
+
+	* gcc.dg/torture/builtin-math-1.c: New test taken from
+	bits of gcc.dg/builtins-3.c, gcc.dg/builtins-5.c and also some
+	additional cases.
+	
+	* gcc.dg/builtins-3.c, gcc.dg/builtins-4.c, gcc.dg/builtins-5.c:
+	Delete.
+
 2003-08-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9447
