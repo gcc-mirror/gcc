@@ -1,3 +1,8 @@
+Thu Dec 23 23:15:22 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (emit_input_reload_insns): Restore old behaviour
+	wrt. 'special' reloads.
+
 1999-12-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (ggc-simple.c, ggc-page.c): Don't depend on
