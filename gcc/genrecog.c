@@ -216,12 +216,24 @@ static struct pred_table
 
 #define NUM_KNOWN_PREDS (sizeof preds / sizeof preds[0])
 
+static const char * special_mode_pred_table[] = {
+#ifdef SPECIAL_MODE_PREDICATES
+  SPECIAL_MODE_PREDICATES
+#endif
+  NULL
+};
+
+#define NUM_SPECIAL_MODE_PREDS \
+  (sizeof (special_mode_pred_table) / sizeof (const char *) - 1)
+
 static struct decision *new_decision
   PROTO((const char *, struct decision_head *));
 static struct decision_test *new_decision_test
   PROTO((enum decision_type, struct decision_test ***));
-static void validate_pattern
+static rtx find_operand
   PROTO((rtx, int));
+static void validate_pattern
+  PROTO((rtx, rtx, int));
 static struct decision *add_to_sequence
   PROTO((rtx, struct decision_head *, const char *, enum routine_type, int));
 
@@ -356,66 +368,118 @@ new_decision_test (type, pplace)
   return test;
 }
 
-/* Check for various errors in patterns.  */
+/* Search for and return operand N.  */
 
-static void
-validate_pattern (pattern, set_dest)
+static rtx
+find_operand (pattern, n)
      rtx pattern;
-     int set_dest;
+     int n;
 {
   const char *fmt;
   RTX_CODE code;
   int i, j, len;
+  rtx r;
+
+  code = GET_CODE (pattern);
+  if ((code == MATCH_SCRATCH
+       || code == MATCH_INSN
+       || code == MATCH_OPERAND
+       || code == MATCH_OPERATOR
+       || code == MATCH_PARALLEL)
+      && XINT (pattern, 0) == n)
+    return pattern;
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  if ((r = find_operand (XEXP (pattern, i), n)) != NULL_RTX)
+	    return r;
+	  break;
+
+	case 'E':
+	  for (j = 0; j < XVECLEN (pattern, i); j++)
+	    if ((r = find_operand (XVECEXP (pattern, i, j), n)) != NULL_RTX)
+	      return r;
+	  break;
+
+	case 'i': case 'w': case '0': case 's':
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  return NULL;
+}
+
+/* Check for various errors in patterns.  */
+
+static void
+validate_pattern (pattern, insn, set_dest)
+     rtx pattern;
+     rtx insn;
+     int set_dest;
+{
+  const char *fmt;
+  RTX_CODE code;
+  size_t i, len;
+  int j;
 
   code = GET_CODE (pattern);
   switch (code)
     {
     case MATCH_SCRATCH:
-    case MATCH_INSN:
       return;
 
+    case MATCH_INSN:
     case MATCH_OPERAND:
+    case MATCH_OPERATOR:
       {
 	const char *pred_name = XSTR (pattern, 1);
+	int allows_non_lvalue = 1, allows_non_const = 1;
+	int special_mode_pred = 0;
+	const char *c_test;
+
+	if (GET_CODE (insn) == DEFINE_INSN)
+	  c_test = XSTR (insn, 2);
+	else
+	  c_test = XSTR (insn, 1);
 
 	if (pred_name[0] != 0)
 	  {
-	    /* See if we know about this predicate and save its number.  If
-	       we do, and it only accepts one code, note that fact.  The
-	       predicate `const_int_operand' only tests for a CONST_INT, so
-	       if we do so we can avoid calling it at all.
-
-	       Finally, if we know that the predicate does not allow
-	       CONST_INT, we know that the only way the predicate can match
-	       is if the modes match (here we use the kludge of relying on
-	       the fact that "address_operand" accepts CONST_INT; otherwise,
-	       it would have to be a special case), so we can test the mode
-	       (but we need not).  This fact should considerably simplify the
-	       generated code.  */
-
-	    for (i = 0; i < (int) NUM_KNOWN_PREDS; i++)
+	    for (i = 0; i < NUM_KNOWN_PREDS; i++)
 	      if (! strcmp (preds[i].name, pred_name))
 		break;
 
-	    if (i < (int) NUM_KNOWN_PREDS)
+	    if (i < NUM_KNOWN_PREDS)
 	      {
-		int j, allows_const_int;
+		int j;
 
-		allows_const_int = 0;
+		allows_non_lvalue = allows_non_const = 0;
 		for (j = 0; preds[i].codes[j] != 0; j++)
-		  if (preds[i].codes[j] == CONST_INT)
-		    {
-		      allows_const_int = 1;
-		      break;
-		    }
-
-		if (allows_const_int && set_dest)
 		  {
-		    message_with_line (pattern_lineno,
-				       "warning: `%s' accepts const_int,",
-				       pred_name);
-		    message_with_line (pattern_lineno,
-				       "  and used as destination of a set");
+		    RTX_CODE c = preds[i].codes[j];
+		    if (c != LABEL_REF
+			&& c != SYMBOL_REF
+			&& c != CONST_INT
+			&& c != CONST_DOUBLE
+			&& c != CONST
+			&& c != HIGH
+			&& c != CONSTANT_P_RTX)
+		      allows_non_const = 1;
+
+		    if (c != REG
+			&& c != SUBREG
+			&& c != MEM
+			&& c != CONCAT
+			&& c != PARALLEL
+			&& c != STRICT_LOW_PART)
+		      allows_non_lvalue = 1;
 		  }
 	      }
 	    else
@@ -423,36 +487,123 @@ validate_pattern (pattern, set_dest)
 #ifdef PREDICATE_CODES
 		/* If the port has a list of the predicates it uses but
 		   omits one, warn.  */
-		message_with_line (pattern_lineno, "warning: `%s' not in PREDICATE_CODES", pred_name);
+		message_with_line (pattern_lineno,
+				   "warning: `%s' not in PREDICATE_CODES",
+				   pred_name);
 #endif
 	      }
+
+	    for (i = 0; i < NUM_SPECIAL_MODE_PREDS; ++i)
+	      if (strcmp (pred_name, special_mode_pred_table[i]) == 0)
+		{
+		  special_mode_pred = 1;
+		  break;
+		}
+	  }
+
+	/* Allowing non-lvalues in destinations -- particularly CONST_INT --
+	   while not likely to occur at runtime, results in less efficient
+	   code from insn-recog.c.  */
+	if (set_dest
+	    && pred_name[0] != '\0'
+	    && allows_non_lvalue)
+	  {
+	    message_with_line (pattern_lineno,
+			       "warning: `%s' allows non-lvalue,",
+			       pred_name);
+	    message_with_line (pattern_lineno,
+			       "  and used as destination of a set");
+	  }
+
+	/* A modeless MATCH_OPERAND can be handy when we can
+	   check for multiple modes in the c_test.  In most other cases,
+	   it is a mistake.  Only DEFINE_INSN is eligible, since SPLIT
+	   and PEEP2 can FAIL within the output pattern.  */
+
+	if (GET_MODE (pattern) == VOIDmode
+	    && code == MATCH_OPERAND
+	    && pred_name[0] != '\0'
+	    && allows_non_const
+	    && ! special_mode_pred
+	    && strstr (c_test, "operands") != NULL
+	    && GET_CODE (insn) == DEFINE_INSN)
+	  {
+	    message_with_line (pattern_lineno,
+			       "warning: operand %d missing mode?",
+			       XINT (pattern, 0));
 	  }
 
 	return;
       }
 
     case SET:
-      /* The operands of a SET must have the same mode unless one
-	 is VOIDmode.  */
-      if (GET_MODE (SET_SRC (pattern)) != VOIDmode
-	  && GET_MODE (SET_DEST (pattern)) != VOIDmode
-	  && GET_MODE (SET_SRC (pattern)) != GET_MODE (SET_DEST (pattern))
-	  /* The mode of an ADDRESS_OPERAND is the mode of the memory
-	     reference, not the mode of the address.  */
-	  && ! (GET_CODE (SET_SRC (pattern)) == MATCH_OPERAND
-		&& ! strcmp (XSTR (SET_SRC (pattern), 1), "address_operand")))
-	{
-	  message_with_line (pattern_lineno,
-			     "mode mismatch in set: %smode vs %smode",
-			     GET_MODE_NAME (GET_MODE (SET_DEST (pattern))),
-			     GET_MODE_NAME (GET_MODE (SET_SRC (pattern))));
-	  error_count++;
-	}
+      {
+	enum machine_mode dmode, smode;
+	rtx dest, src;
 
-      validate_pattern (SET_DEST (pattern), 1);
-      validate_pattern (SET_SRC (pattern), 0);
+	dest = SET_DEST (pattern);
+	src = SET_SRC (pattern);
+
+	/* Find the referant for a DUP.  */
+
+	if (GET_CODE (dest) == MATCH_DUP
+	    || GET_CODE (dest) == MATCH_OP_DUP
+	    || GET_CODE (dest) == MATCH_PAR_DUP)
+	  dest = find_operand (insn, XINT (dest, 0));
+
+	if (GET_CODE (src) == MATCH_DUP
+	    || GET_CODE (src) == MATCH_OP_DUP
+	    || GET_CODE (src) == MATCH_PAR_DUP)
+	  src = find_operand (insn, XINT (src, 0));
+
+	/* STRICT_LOW_PART is a wrapper.  Its argument is the real
+	   destination, and it's mode should match the source.  */
+	if (GET_CODE (dest) == STRICT_LOW_PART)
+	  dest = XEXP (dest, 0);
+
+	dmode = GET_MODE (dest);
+	smode = GET_MODE (src);
+
+	/* The mode of an ADDRESS_OPERAND is the mode of the memory
+	   reference, not the mode of the address.  */
+	if (GET_CODE (src) == MATCH_OPERAND
+	    && ! strcmp (XSTR (src, 1), "address_operand"))
+	  ;
+
+        /* The operands of a SET must have the same mode unless one
+	   is VOIDmode.  */
+        else if (dmode != VOIDmode && smode != VOIDmode && dmode != smode)
+	  {
+	    message_with_line (pattern_lineno,
+			       "mode mismatch in set: %smode vs %smode",
+			       GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
+	    error_count++;
+	  }
+
+	/* If only one of the operands is VOIDmode, and PC or CC0 is 
+	   not involved, it's probably a mistake.  */
+	else if (dmode != smode
+		 && GET_CODE (dest) != PC
+		 && GET_CODE (dest) != CC0
+		 && GET_CODE (src) != CONST_INT)
+	  {
+	    const char *which;
+	    which = (dmode == VOIDmode ? "destination" : "source");
+	    message_with_line (pattern_lineno,
+			       "warning: %s missing a mode?", which);
+	  }
+
+	if (dest != SET_DEST (pattern))
+	  validate_pattern (dest, insn, 1);
+	validate_pattern (SET_DEST (pattern), insn, 1);
+        validate_pattern (SET_SRC (pattern), insn, 0);
+        return;
+      }
+
+    case CLOBBER:
+      validate_pattern (SET_DEST (pattern), insn, 1);
       return;
-      
+
     case LABEL_REF:
       if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
 	{
@@ -474,12 +625,12 @@ validate_pattern (pattern, set_dest)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  validate_pattern (XEXP (pattern, i), 0);
+	  validate_pattern (XEXP (pattern, i), insn, 0);
 	  break;
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    validate_pattern (XVECEXP (pattern, i, j), 0);
+	    validate_pattern (XVECEXP (pattern, i, j), insn, 0);
 	  break;
 
 	case 'i': case 'w': case '0': case 's':
@@ -489,7 +640,6 @@ validate_pattern (pattern, set_dest)
 	  abort ();
 	}
     }
-
 }
 
 /* Create a chain of nodes to verify that an rtl expression matches
@@ -2148,7 +2298,7 @@ make_insn_sequence (insn, type)
       PUT_MODE (x, VOIDmode);
     }
 
-  validate_pattern (x, 0);
+  validate_pattern (x, insn, 0);
 
   memset(&head, 0, sizeof(head));
   last = add_to_sequence (x, &head, "", type, 1);
