@@ -1,3 +1,9 @@
+2002-05-21  Jeffrey A Law  <law@redhat.com>
+
+	* i386.c (ix86_sched_reorder_ppro): Fix typo/thinko.
+	(ix86_sched_reorder): Make sure to initialize scheduling
+	data even when there's only one insn in the ready queue.
+
 2002-05-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (reserv_sets_hash_value): Fix a typo.

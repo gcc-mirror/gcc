@@ -10404,7 +10404,7 @@ ix86_sched_reorder_ppro (ready, e_ready)
   for (i = 1; i < 3; ++i)
     if (decode[i] == NULL)
       {
-	if (ready >= e_ready)
+	if (ready > e_ready)
 	  goto ppro_done;
 
 	insnp = e_ready;
@@ -10448,8 +10448,14 @@ ix86_sched_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
   int n_ready = *n_readyp;
   rtx *e_ready = ready + n_ready - 1;
 
+  /* Make sure to go ahead and initialize key items in 
+     ix86_sched_data if we are not going to bother trying to
+     reorder the ready queue.  */
   if (n_ready < 2)
-    goto out;
+    {
+      ix86_sched_data.ppro.issued_this_cycle = 1;
+      goto out;
+    }
 
   switch (ix86_cpu)
     {
