@@ -1,3 +1,8 @@
+2001-12-18  Jason Merrill  <jason@redhat.com>
+
+	* class.c (add_method): Do compare 'this' quals when trying to match a
+	used function.  Don't defer to another used function.
+
 2001-12-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (instantiate_clone): Remove, fold into ...
