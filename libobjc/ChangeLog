@@ -1,3 +1,9 @@
+2004-04-15  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR libobjc/14948
+	* configure.ac: De-precious CC so multilibs work.
+	* configure: Regenerate.
+
 2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Restore toolexecdir.
