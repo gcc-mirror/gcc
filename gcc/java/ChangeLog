@@ -1,3 +1,8 @@
+2004-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (java_init_decl_processing): Remove duplicate
+	gnu/gcj/RawData.
+
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir). 
