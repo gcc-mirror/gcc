@@ -948,8 +948,7 @@ dnl
 dnl GLIBCPP_ENABLE_LONG_LONG
 AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   define([GLIBCPP_ENABLE_LONG_LONG_DEFAULT], ifelse($1, yes, yes, no))dnl
-  # must do check_func outside the local msg_checking/msg_result
-  AC_CHECK_FUNC(strtoll,,ac_ll=no)
+
   AC_MSG_CHECKING([for enabled long long])
   AC_ARG_ENABLE(long-long,
   changequote(<<, >>)dnl
@@ -961,7 +960,15 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
-  if test x"$ac_ll" = xno; then enable_long_long=no; fi; unset ac_ll
+
+  # Check for the existance of functions used if long long is enabled.
+  AC_CHECK_FUNC(strtoll,,ac_strtoll=no)
+  AC_CHECK_FUNC(strtoull,,ac_strtoull=no)
+
+  if test x"$ac_strtoll" = xno || test x"$ac_strtoull" = xno; then 
+	enable_long_long=no; 
+  fi; unset ac_ll
+
   AC_MSG_RESULT($enable_long_long)
   dnl Option parsed, now set things appropriately
   case "$enable_long_long" in

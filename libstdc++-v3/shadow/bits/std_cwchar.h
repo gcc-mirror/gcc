@@ -213,7 +213,9 @@
     using ::_C_legacy::wcstok;
     using ::_C_legacy::wcslen;
 #ifndef __sun
+#ifdef __USE_GNU
     using ::_C_legacy::wcsdup;
+#endif
     using ::_C_legacy::wcsstr;
     using ::_C_legacy::wmemchr;
     using ::_C_legacy::wmemcmp;
