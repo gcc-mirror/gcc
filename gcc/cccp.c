@@ -9814,7 +9814,7 @@ new_include_prefix (prev_file_name, component, prefix, name)
     len = simplify_filename (dir->fname);
 
     /* Convert directory name to a prefix.  */
-    if (dir->fname[len - 1] != DIR_SEPARATOR) {
+    if (len && dir->fname[len - 1] != DIR_SEPARATOR) {
       if (len == 1 && dir->fname[len - 1] == '.')
 	len = 0;
       else
