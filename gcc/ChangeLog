@@ -1,3 +1,7 @@
+2004-09-27  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (athlon_cost, k8_cost): Set BRANCH_COST to 5.
+
 2004-09-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bitmap.h: Fix a comment typo.

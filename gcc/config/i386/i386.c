@@ -362,7 +362,7 @@ struct processor_costs athlon_cost = {
   5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
-  2,					/* Branch cost */
+  5,					/* Branch cost */
   4,					/* cost of FADD and FSUB insns.  */
   4,					/* cost of FMUL instruction.  */
   24,					/* cost of FDIV instruction.  */
@@ -406,7 +406,7 @@ struct processor_costs k8_cost = {
   5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
-  2,					/* Branch cost */
+  5,					/* Branch cost */
   4,					/* cost of FADD and FSUB insns.  */
   4,					/* cost of FMUL instruction.  */
   19,					/* cost of FDIV instruction.  */
