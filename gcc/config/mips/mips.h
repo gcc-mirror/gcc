@@ -2417,9 +2417,12 @@ extern enum reg_class mips_char_to_class[256];
    frame except by disassembling instructions in the prologue/epilogue.
    So currently we support only the current frame.  */
 
-#define RETURN_ADDR_RTX(count, frame)			\
-  ((count == 0)						\
-   ? gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM))\
+#define RETURN_ADDR_RTX(count, frame)					\
+  (((count) == 0)							\
+   ? (leaf_function_p ()						\
+      ? gen_rtx_REG (Pmode, GP_REG_FIRST + 31)				\
+      : gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode,				\
+					 RETURN_ADDRESS_POINTER_REGNUM))) \
    : (rtx) 0)
 
 /* Structure to be filled in by compute_frame_size with register
@@ -2483,7 +2486,6 @@ extern struct mips_frame_info current_frame_info;
  { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
  { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 30},			\
  { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 17},			\
- { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 31},			\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
@@ -2510,10 +2512,8 @@ extern struct mips_frame_info current_frame_info;
 
 #define CAN_ELIMINATE(FROM, TO)						\
   (((FROM) == RETURN_ADDRESS_POINTER_REGNUM				\
-    && ((! leaf_function_p ()						\
-	 && ((TO) == STACK_POINTER_REGNUM				\
- 	     || (TO) == HARD_FRAME_POINTER_REGNUM))			\
-	|| ((TO) == GP_REG_FIRST + 31 && leaf_function_p ())))  	\
+    && (((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed)	\
+ 	|| (TO) == HARD_FRAME_POINTER_REGNUM))				\
    || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
       && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
 	  || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed	\
@@ -2553,11 +2553,11 @@ extern struct mips_frame_info current_frame_info;
      so we must add 4 bytes to the offset to get the right value.  */	 \
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM)			 \
   {									 \
-   if (leaf_function_p ()) 						 \
-      (OFFSET) = 0;				 			 \
-   else (OFFSET) = current_frame_info.gp_sp_offset			 \
-	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))	 \
-		  * (BYTES_BIG_ENDIAN != 0));				 \
+    (OFFSET) = current_frame_info.gp_sp_offset			 	 \
+      + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))		 \
+	 * (BYTES_BIG_ENDIAN != 0));					 \
+    if (TARGET_MIPS16 && (TO) != STACK_POINTER_REGNUM)			 \
+      (OFFSET) -= current_function_outgoing_args_size;			 \
   }									 \
   else									 \
     abort();								 \
@@ -4153,7 +4153,7 @@ while (0)
   "$0",   "at",   "v0",   "v1",   "a0",   "a1",   "a2",   "a3",		\
   "t0",   "t1",   "t2",   "t3",   "t4",   "t5",   "t6",   "t7",		\
   "s0",   "s1",   "s2",   "s3",   "s4",   "s5",   "s6",   "s7",		\
-  "t8",   "t9",   "k0",   "k1",   "gp",   "sp",   "$fp",   "ra",	\
+  "t8",   "t9",   "k0",   "k1",   "gp",   "sp",   "$fp",  "ra",		\
   "$f0",  "$f1",  "$f2",  "$f3",  "$f4",  "$f5",  "$f6",  "$f7",	\
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",	\
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
