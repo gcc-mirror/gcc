@@ -18,6 +18,7 @@
 
         * gcc.c (cc1_options): Do not process -o or run the assembler if
 	-fsyntax-only.
+	* objc/lang-spec.h: Likewise.
 
 2000-08-21  Eli Zaretskii  <eliz@is.elta.co.il>
 

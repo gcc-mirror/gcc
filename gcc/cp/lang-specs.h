@@ -37,19 +37,21 @@ Boston, MA 02111-1307, USA.  */
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
        %(cpp_options) %(cc1_options) %{+e*}\
-       %{!S:-o %{|!pipe:%g.s} |\n\
-     as %(asm_options) %{!pipe:%g.s} %A }}}}"
+       %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+     as %(asm_options) %{!pipe:%g.s} %A }}}}}"
 #else /* ! USE_CPPLIB */
     "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
        %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\
-     cc1plus %{!pipe:%g.ii} %(cc1_options) %{+e*} %{!S:-o %{|!pipe:%g.s} |\n\
-     as %(asm_options) %{!pipe:%g.s} %A }}}}\n"
+     cc1plus %{!pipe:%g.ii} %(cc1_options) %{+e*}\
+     %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+     as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"
 #endif /* ! USE_CPPLIB */
   },
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
     cc1plus -fpreprocessed %i %(cc1_options) %{+e*}\
-    %{!S:-o %{|!pipe:%g.s} |\n as %(asm_options) %{!pipe:%g.s} %A }}}}"},
+    %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+    as %(asm_options) %{!pipe:%g.s} %A }}}}}"},
