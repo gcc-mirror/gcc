@@ -49,11 +49,6 @@ SUBDIRS =@subdirs@
 CONFIG_LANGUAGES = @all_languages@
 LANGUAGES = c gcov$(exeext) $(CONFIG_LANGUAGES)
 
-# Languages should create dependencies of $(INTL_TARGETS) on generated
-# sources in Make-lang.in.  Example:
-# $(INTL_TARGETS): $(srcdir)/cp/parse.c
-INTL_TARGETS = intl.all intl.install
-
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
 BOOT_LANGUAGES = c @all_boot_languages@
@@ -341,8 +336,7 @@ INTLDEPS = @INTLDEPS@
 LIBICONV = @LIBICONV@
 
 # List of internationalization subdirectories.
-POSUB = @POSUB@
-INTL_SUBDIRS = intl $(POSUB)
+INTL_SUBDIRS = intl
 
 # Change this to a null string if obstacks are installed in the
 # system library.
@@ -836,8 +830,9 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 #
 # The only suffixes we want for implicit rules are .c and .o, so clear
 # the list and add them.  This speeds up GNU Make, and allows -r to work.
+# For i18n support, we also need .gmo, .po, .pox.
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .o .po .pox .gmo 
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)
@@ -941,7 +936,7 @@ start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-host.h intl.all $(LANGUAGES) \
+native: config.status auto-host.h intl.all build-@POSUB@ $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -1969,9 +1964,6 @@ intl.o: intl.c $(CONFIG_H) system.h intl.h Makefile
 
 $(top_builddir)/intl/libintl.a: intl.all
 
-# Make sure all the headers are there for xgettext to scan.
-$(INTL_TARGETS): $(CONFIG_H) $(srcdir)/c-parse.c
-
 intl.all intl.install intl.uninstall \
   intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
 	@for d in $(INTL_SUBDIRS); do \
@@ -1980,6 +1972,14 @@ intl.all intl.install intl.uninstall \
 	  (cd $$d && AWK='$(AWK)' $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $$target); \
 	  if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
 	done
+
+# intl.all and intl.install need config.h to exist, and the files it includes.
+# (FIXME: intl/*.c shouldn't need to see insn-foo.h!)
+intl.all intl.install: config.h insn-flags.h insn-constants.h
+
+# Make-lang.in should add dependencies of po-generated on any generated
+# files which need to be scanned by gettext (usually Yacc-generated parsers).
+po-generated: c-parse.c tradcif.c
 
 #
 # Remake cpp and protoize.
@@ -2496,7 +2496,7 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    $(INSTALL_CPP) install-man install-info intl.install \
+    $(INSTALL_CPP) install-man install-info intl.install install-@POSUB@ \
     lang.install-normal install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
@@ -3337,3 +3337,66 @@ float.h-cross:
 	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
 	echo "#endif" >> t-float.h-cross
 	mv t-float.h-cross float.h-cross
+
+# Rules for generating translated message descriptions.
+# Disabled by autoconf if the tools are not available.
+
+XGETTEXT = @XGETTEXT@
+GMSGFMT = @GMSGFMT@
+MSGMERGE = msgmerge
+
+PACKAGE = @PACKAGE@
+CATALOGS = @CATALOGS@
+
+.PHONY: build- install- build-po install-po update-po 
+
+# Dummy rules to deal with dependencies produced by use of
+# "build-@POSUB@" and "install-@POSUB@" above, when NLS is disabled.
+build-: ; @true
+install-: ; @true
+
+build-po: $(CATALOGS)
+
+# This notation should be acceptable to all Make implementations used
+# by people who are interested in updating .po files.
+update-po: $(CATALOGS:.gmo=.pox)
+
+# Update files in $(srcdir) atomically.
+.po.gmo:
+	test -d po || mkdir po
+	$(GMSGFMT) --statistics $< -o $@
+	$(SHELL) $(srcdir)/move-if-change $@ $(srcdir)/$@
+
+# This rule does _not_ copy into $(srcdir).  User must do this
+# by hand.  (User is a translation maintainer and is expected to
+# go through the new .po by hand anyway.)
+.po.pox:
+	test -d po || mkdir po
+	$(MSGMERGE) $< $(srcdir)/po/$(PACKAGE).pot -o $@
+
+install-po:
+	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(datadir)
+	for cat in $(CATALOGS); do \
+	  cat=`basename $$cat`; \
+	  lang=`echo $$cat | sed 's/\.gmo$$//'`; \
+	  dir=$(localedir)/$$lang/LC_MESSAGES; \
+	  echo $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir; \
+	  $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir || exit 1; \
+	  echo $(INSTALL_DATA) $(srcdir)/po/$$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+	  $(INSTALL_DATA) $(srcdir)/po/$$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+	done
+
+# Rule for regenerating the message template (gcc.pot).
+# Instead of forcing everyone to edit POTFILES.in, which proved impractical,
+# this rule has no dependencies and always regenerates gcc.pot.  This is
+# relatively harmless since the .po files do not directly depend on it.
+# Note that exgettext has an awk script embedded in it which requires a
+# fairly modern (POSIX-compliant) awk.
+$(PACKAGE).pot: po/$(PACKAGE).pot
+po/$(PACKAGE).pot: force
+	test -d po || mkdir po
+	$(MAKE) po-generated
+	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
+		$(XGETTEXT) $(PACKAGE) $(srcdir)
+	$(SHELL) $(srcdir)/move-if-change $(PACKAGE).pot \
+		$(srcdir)/po/$(PACKAGE).pot

@@ -63,7 +63,7 @@ objc-parse.o : $(srcdir)/objc/objc-parse.c \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-parse.c $(OUTPUT_OPTION)
 
-$(INTL_TARGETS): $(srcdir)/objc/objc-parse.c
+po-generated: $(srcdir)/objc/objc-parse.c
 $(srcdir)/objc/objc-parse.c : $(srcdir)/objc/objc-parse.y
 	cd $(srcdir)/objc; \
 	$(BISON) $(BISONFLAGS) -o op$$$$.c objc-parse.y ; \

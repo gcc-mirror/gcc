@@ -77,7 +77,7 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 	-rm -f $(GCJ)-cross$(exeext)
 	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
 
-$(INTL_TARGETS): $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
+po-generated: $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
 
 $(srcdir)/java/parse.c: $(srcdir)/java/parse.y
 	$(BISON) -t --name-prefix=java_ $(BISONFLAGS) \

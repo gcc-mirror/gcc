@@ -1,3 +1,9 @@
+2001-10-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* EXCLUDES: New file.
+	* exgettext: New helper script; completely rewritten.
+	* Makefile.in.in, POTFILES.in: Delete.
+
 2001-10-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in.in: Upgrade to gettext-0.10.40.
