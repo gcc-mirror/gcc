@@ -1,3 +1,8 @@
+2001-01-05  Michael Meissner  <meissner@redhat.com>
+
+	* flags.h (flag_reorder_blocks): Add declaration.
+	(flag_rename_block): Ditto.
+
 2001-01-05  DJ Delorie  <dj@redhat.com>
 
 	* function.c (reorder_blocks): Make sure the flags are all reset
