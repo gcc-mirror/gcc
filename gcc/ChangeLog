@@ -1,3 +1,11 @@
+2004-06-21  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/i386.c: Include insn-codes.h
+	* config/i386/i386.h (FLAGS_REG, FPSR_REG, DIRFLAG_REG): Don't
+	define here.
+	* config/i386/i386.md (BP_REG, SP_REG, FLAGS_REG, FPSR_REG,
+	DIRFLAG_REG): New define_constants.  Use them everywhere.
+
 2004-06-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-linux (MULTILIB_OPTIONS): Remove.
