@@ -1,3 +1,9 @@
+2001-01-24  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* libU77/alarm_.c: Separate the #ifdef KR_headers logic from the
+	G77_alarm_0 function definition.  Check for SIG_ERR and provide our own
+	if missing.
+
 2001-01-24  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* libU77/Makefile.in:  Explicitly generate a.out for check.
