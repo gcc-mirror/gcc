@@ -5,6 +5,11 @@ Thu Nov 13 12:53:44 1997  Jim Wilson  <wilson@cygnus.com>
 
 Thu Nov 13 11:41:42 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (find_basic_blocks): During marking phase, if we encounter
+	an insn with a REG_LABEL note, make the target block live and
+	create an edge from the insn to the target block.  Do not make
+	edges from all blocks to the target block.
+
         * m68k/x-next (OTHER_FIXINCLUDES_DIRS): Include /NextDeveloper/Headers.
 
 	* confiugre.in: Tweak NCR entries.
