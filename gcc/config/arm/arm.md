@@ -4462,7 +4462,7 @@
   "flag_pic"
   "
 {
-  arm_finalize_pic (0);
+  arm_load_pic_register ();
   DONE;
 }")
 

@@ -3012,16 +3012,14 @@ thumb_find_work_register (int live_regs_mask)
   abort ();
 }
 
-/* Generate code to load the PIC register.  PROLOGUE is true if
-   called from arm_expand_prologue (in which case we want the 
-   generated insns at the start of the function);  false if called
-   by an exception receiver that needs the PIC register reloaded
-   (in which case the insns are just dumped at the current location).  */
+
+/* Generate code to load the PIC register.  */
+
 void
-arm_finalize_pic (int prologue ATTRIBUTE_UNUSED)
+arm_load_pic_register (void)
 {
 #ifndef AOF_ASSEMBLER
-  rtx l1, pic_tmp, pic_tmp2, seq, pic_rtx;
+  rtx l1, pic_tmp, pic_tmp2, pic_rtx;
   rtx global_offset_table;
 
   if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
@@ -3030,7 +3028,6 @@ arm_finalize_pic (int prologue ATTRIBUTE_UNUSED)
   if (!flag_pic)
     abort ();
 
-  start_sequence ();
   l1 = gen_label_rtx ();
 
   global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
@@ -3052,22 +3049,28 @@ arm_finalize_pic (int prologue ATTRIBUTE_UNUSED)
     }
   else
     {
-      emit_insn (gen_pic_load_addr_thumb (pic_offset_table_rtx, pic_rtx));
+      if (REGNO (pic_offset_table_rtx) > LAST_LO_REGNUM)
+	{
+	  int reg;
+
+	  /* We will have pushed the pic register, so should always be
+	     able to find a work register.  */
+	  reg = thumb_find_work_register (thumb_compute_save_reg_mask ());
+	  pic_tmp = gen_rtx_REG (SImode, reg);
+	  emit_insn (gen_pic_load_addr_thumb (pic_tmp, pic_rtx));
+	  emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
+	}
+      else
+	emit_insn (gen_pic_load_addr_thumb (pic_offset_table_rtx, pic_rtx));
       emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
     }
-
-  seq = get_insns ();
-  end_sequence ();
-  if (prologue)
-    emit_insn_after (seq, get_insns ());
-  else
-    emit_insn (seq);
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
   emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 #endif /* AOF_ASSEMBLER */
 }
+
 
 /* Return nonzero if X is valid as an ARM state addressing register.  */
 static int
@@ -10693,6 +10696,10 @@ arm_expand_prologue (void)
 					 hard_frame_pointer_rtx));
     }
 
+
+  if (flag_pic)
+    arm_load_pic_register ();
+
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
      scheduling in the prolog.  */
@@ -13356,6 +13363,11 @@ thumb_expand_prologue (void)
       error ("interrupt Service Routines cannot be coded in Thumb mode");
       return;
     }
+
+  /* Load the pic recister before setting the frame pointer, so we can use r7
+     as a temporary work register.  */
+  if (flag_pic)
+    arm_load_pic_register ();
 
   offsets = arm_get_frame_offsets ();
 
