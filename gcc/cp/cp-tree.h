@@ -1095,7 +1095,8 @@ struct lang_decl_flags
   unsigned comdat : 1;
   unsigned needs_final_overrider : 1;
   unsigned bitfield : 1;
-  unsigned dummy : 2;
+  unsigned defined_in_class : 1;
+  unsigned dummy : 1;
 
   tree access;
   tree context;
@@ -1164,6 +1165,11 @@ struct lang_decl
    case of a VAR_DECL, it is also used to determine how program storage
    should be allocated.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3(NODE))
+
+/* Nonzero if the DECL was defined in the class definition itself,
+   rather than outside the class.  */
+#define DECL_DEFINED_IN_CLASS_P(DECL) \
+ (DECL_LANG_SPECIFIC (DECL)->decl_flags.defined_in_class)
 
 /* Nonzero for FUNCTION_DECL means that this decl is just a
    friend declaration, and should not be added to the list of
@@ -1357,6 +1363,9 @@ struct lang_decl
 
 #define INNERMOST_TEMPLATE_PARMS(NODE)  TREE_VALUE(NODE)
 
+/* Nonzero if the NODE corresponds to the template parameters for a
+   member template, whose inline definition is being processed after
+   the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
 #define DECL_SAVED_TREE(NODE)		DECL_MEMFUNC_POINTER_TO (NODE)
@@ -2682,6 +2691,7 @@ extern void print_other_binding_stack		PROTO((struct binding_level *));
 extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 extern void cat_namespace_levels                PROTO((void));
 extern void fixup_anonymous_union               PROTO((tree));
+extern int check_static_variable_definition     PROTO((tree, tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));
