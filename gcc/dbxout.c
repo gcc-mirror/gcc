@@ -1980,7 +1980,12 @@ dbxout_symbol_location (decl, type, suffix, home)
   else if (GET_CODE (home) == MEM
 	   && (GET_CODE (XEXP (home, 0)) == MEM
 	       || (GET_CODE (XEXP (home, 0)) == REG
-		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM)))
+		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM
+		   && REGNO (XEXP (home, 0)) != STACK_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+		   && REGNO (XEXP (home, 0)) != ARG_POINTER_REGNUM
+#endif
+		   )))
     /* If the value is indirect by memory or by a register
        that isn't the frame pointer
        then it means the object is variable-sized and address through
