@@ -1,3 +1,18 @@
+1999-03-13  Nathan Sidwell  <nathan@acm.org>
+
+	* error.c (cp_printers): Add 'F' escape character.
+	(dump_type_real): Remove TREE_LIST (fnargs) printing.
+	Functionality moved to dump_parameters.
+	(dump_type_suffix): Use dump_parameters and dump_exception_spec.
+	(dump_function_decl): Extend meaning of V parameter. Use
+	dump_parameters and dump_exception_spec.
+	(dump_parameters): New static function.
+	(dump_exception_spec): New static function.
+	(fndecl_as_string): Change argument semantics. Use
+	dump_function_decl directly.
+	
+	* sig.c (build_signature_table_constructor): Use cp_error.
+	
 1999-03-13  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* semantics.c (finish_switch_cond): Handle error cases gracefully.

@@ -550,9 +550,8 @@ build_signature_table_constructor (sig_ty, rhs)
 	  if (rhs_methods == NULL_TREE
 	      || !accessible_p (basetypes, rhs_method))
 	    {
-	      error ("class `%s' does not contain a method conforming to `%s'",
-		     TYPE_NAME_STRING (rhstype),
-		     fndecl_as_string (sig_method, 1));
+	      cp_error ("`%T' does not contain a method conforming to `%#D'",
+		     rhstype, sig_method);
 	      undo_casts (sig_ty);
 	      return error_mark_node;
 	    }
