@@ -1,3 +1,7 @@
+2003-02-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cfg.c (dump_flow_info): Add back accidently deleted line.
+
 2003-02-07  Andrey Petrov <petrov@netbsd.org>
 
 	* optabs.c (expand_float): Search wider integer modes first.
