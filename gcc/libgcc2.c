@@ -1285,7 +1285,7 @@ BLOCK_PROFILER_CODE
 
 static struct bb *bb_head;
 
-static void
+void
 __bb_exit_func (void)
 {
   FILE *da_file;
