@@ -395,11 +395,7 @@ remove_phi_args (edge e)
   tree phi;
 
   for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-    {
-      int index = phi_arg_from_edge (phi, e);
-      if (index >= 0)
-	remove_phi_arg_num (phi, index);
-    }
+    remove_phi_arg_num (phi, e->dest_idx);
 }
 
 /* Remove PHI node PHI from basic block BB.  If PREV is non-NULL, it is
