@@ -1,3 +1,7 @@
+2003-04-15  DJ Delorie  <dj@redhat.com>
+
+	* maint-tool (deps): Scan for headers in $srcdir also.
+
 2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR target/10338
