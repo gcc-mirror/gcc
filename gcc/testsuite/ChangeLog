@@ -1,3 +1,8 @@
+2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11616
+	* g++.dg/template/instantiate5.C: New test.
+
 2003-11-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/12726

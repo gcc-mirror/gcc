@@ -1,5 +1,11 @@
 2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/11616
+	* pt.c (instantiate_pending_templates): Save and restore
+	input_location.
+
+2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/2019
 	* friend.c (add_friend): Don't display previous declaration in
 	case of duplicate friend warning.
