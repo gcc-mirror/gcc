@@ -71,6 +71,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   transient Container parent;
   transient java.awt.peer.ComponentPeer peer;
 
+  transient Object treeLock;
+
   transient ComponentListener componentListener;
   transient FocusListener focusListener;
   transient KeyListener keyListener;
@@ -140,8 +142,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   public final Object getTreeLock()
   {
-    // FIXME
-    return null;
+    return treeLock;
   }
 
   public Toolkit getToolkit()
@@ -172,8 +173,13 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public boolean isShowing()
   {
-    // FIXME
-    return false;
+    if (! visible)
+      return false;
+
+    if (parent != null)
+      return (parent.isShowing());
+
+    return true;
   }
   
   public boolean isEnabled()
