@@ -1,3 +1,10 @@
+1998-12-01  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (+target): Removed.
+	(+xmake_file): Likewise.
+	(+tmake_file): Likewise.
+	(.NOEXPORT): Removed duplicate.
+
 Fri Nov 27 13:20:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jc1, jv-scan): Link with $(SUBDIR_OBSTACK).
