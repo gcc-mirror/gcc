@@ -1743,10 +1743,16 @@ javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
 javax/print/attribute/Attribute.java \
 javax/print/attribute/AttributeSet.java \
+javax/print/attribute/AttributeSetUtilities.java \
 javax/print/attribute/DateTimeSyntax.java \
 javax/print/attribute/DocAttribute.java \
 javax/print/attribute/DocAttributeSet.java \
 javax/print/attribute/EnumSyntax.java \
+javax/print/attribute/HashAttributeSet.java \
+javax/print/attribute/HashDocAttributeSet.java \
+javax/print/attribute/HashPrintJobAttributeSet.java \
+javax/print/attribute/HashPrintRequestAttributeSet.java \
+javax/print/attribute/HashPrintServiceAttributeSet.java \
 javax/print/attribute/IntegerSyntax.java \
 javax/print/attribute/PrintJobAttribute.java \
 javax/print/attribute/PrintJobAttributeSet.java \
