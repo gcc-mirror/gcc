@@ -1,3 +1,11 @@
+2003-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libstdc++/9815
+	* config/cpu/i386/atomicity.h (__exchange_and_add): add intel
+	asm case to asm.
+	* config/cpu/i486/atomicity.h (__exchange_and_add): Likewise.
+	(__atomic_add): likewise.
+	
 2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/sstream.tcc (pbackfail): Minor clean up and
@@ -86,7 +94,8 @@
 
 2003-05-27  Jonathan Wakely  <redi@gcc.gnu.org>
 
-	* include/std/std_istream.h, include/std/std_ostream.h: Typo in comment.
+	* include/std/std_istream.h, include/std/std_ostream.h: Typo in
+	comment.
 
 2003-05-26  Benjamin Kosnik  <bkoz@redhat.com>
 
