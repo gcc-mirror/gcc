@@ -2110,7 +2110,7 @@ save_expr (expr)
      literal node. */
 
   if (TREE_CONSTANT (t) || (TREE_READONLY (t) && ! TREE_SIDE_EFFECTS (t))
-      || TREE_CODE (t) == SAVE_EXPR)
+      || TREE_CODE (t) == SAVE_EXPR || TREE_CODE (t) == ERROR_MARK)
     return t;
 
   /* If T contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
