@@ -1629,6 +1629,14 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
       errno_set = true; builtin_optab = exp_optab; break;
+    case BUILT_IN_EXP10:
+    case BUILT_IN_EXP10F:
+    case BUILT_IN_EXP10L:
+      errno_set = true; builtin_optab = exp10_optab; break;
+    case BUILT_IN_EXP2:
+    case BUILT_IN_EXP2F:
+    case BUILT_IN_EXP2L:
+      errno_set = true; builtin_optab = exp2_optab; break;
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
@@ -5107,6 +5115,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
+    case BUILT_IN_EXP10:
+    case BUILT_IN_EXP10F:
+    case BUILT_IN_EXP10L:
+    case BUILT_IN_EXP2:
+    case BUILT_IN_EXP2F:
+    case BUILT_IN_EXP2L:
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
