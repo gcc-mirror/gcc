@@ -1,3 +1,22 @@
+Wed Aug 25 12:46:22 1999  Fred Fish  <fnf@cygnus.com>
+			  Geoffrey Keating <geoffk@cygnus.com>
+
+	* Makefile.in (PREPROCESSOR_DEFINES): New macro.
+	(protoize.o):  Use PREPROCESSOR_DEFINES and DRIVER_DEFINES.
+	(unprotoize.o): Ditto.
+	(test-protoize-simple): Don't define STD_PROTO_DIR.
+	* protoize.c: Use PARAMS rather than PROTO.  Minor whitespace
+	changes to make 'test-protoize-simple' pass.
+ 	(STD_PROTO_DIR): Remove define.
+	(STANDARD_EXEC_PREFIX): Supply default define.
+	(standard_exec_prefix): New variable, init to STANDARD_EXEC_PREFIX.
+	(target_machine): New variable, init to DEFAULT_TARGET_MACHINE.
+	(target_version): New variable, init to DEFAULT_TARGET_VERSION.
+	(GET_ENV_PATH_LIST): New macro.
+	(default_syscalls_dir): No longer initialized to STD_PROTO_DIR.
+	(do_processing): Initialize default_syscalls_dir using new
+	macros.  Use it to initialize syscalls_absolute_filename.
+
 Tue Aug 24 16:58:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Do cmov opt on any single-set; force
