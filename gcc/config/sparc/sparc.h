@@ -3231,10 +3231,16 @@ do {									\
    Used for C++ multiple inheritance.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
+  int reg = 0;								\
+									\
+  if (TARGET_ARCH64							\
+      && aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))))		\
+    reg = 1;								\
   if ((DELTA) >= 4096 || (DELTA) < -4096)				\
-    fprintf (FILE, "\tset\t%d, %%g1\n\tadd\t%%o0, %%g1, %%o0\n", (DELTA));\
+    fprintf (FILE, "\tset\t%d, %%g1\n\tadd\t%%o%d, %%g1, %%o%d\n",	\
+	     (DELTA), reg, reg);					\
   else									\
-    fprintf (FILE, "\tadd\t%%o0, %d, %%o0\n", DELTA);			\
+    fprintf (FILE, "\tadd\t%%o%d, %d, %%o%d\n", reg, (DELTA), reg);	\
   fprintf (FILE, "\tor\t%%o7, %%g0, %%g1\n");				\
   fprintf (FILE, "\tcall\t");						\
   assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
