@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2003  Free Software Foundation
+/* Copyright (C) 2000, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -209,8 +209,7 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
     if (img instanceof XOffScreenImage)
     {
       // FIXME: have to enforce clip, or is it OK as-is?
-      XGraphicsConfiguration.XOffScreenImage offScreenImage
-        = ((XGraphicsConfiguration.XOffScreenImage)img);
+      XOffScreenImage offScreenImage = (XOffScreenImage) img;
       Pixmap pixmap = offScreenImage.getPixmap ();
       context.copyArea (pixmap, 0, 0, x, y,
         offScreenImage.getWidth (), offScreenImage.getHeight ());
