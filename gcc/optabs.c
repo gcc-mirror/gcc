@@ -246,7 +246,9 @@ static optab init_optab	PROTO((enum rtx_code));
 static void init_libfuncs PROTO((optab, int, int, char *, int));
 static void init_integral_libfuncs PROTO((optab, char *, int));
 static void init_floating_libfuncs PROTO((optab, char *, int));
+#ifdef HAVE_conditional_trap
 static void init_traps PROTO((void));
+#endif
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
