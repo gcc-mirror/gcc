@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fvtable-gc -fno-new-abi" }
+// { dg-options "-fvtable-gc" }
 // Origin: Hans-Peter Nilsson <hp@bitrange.com>
 
 class Base0
@@ -118,18 +118,16 @@ void x3 (Multivs1 *ii) { ii->f2();}
 void x4 (Multiss2 *ii) { ii->f2();}
 void x5 (Multivv3 *ii) { ii->f2();}
 
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multivv3 virtual table, 0" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multivv3::Side0 virtual table, Side0 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multivv3::Base2 virtual table, Base2 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multiss2 virtual table, Base2 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multiss2::Side0 virtual table, Side0 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multivs1 virtual table, Base2 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multivs1::Side0 virtual table, Side0 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multisv0 virtual table, Side0 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Multisv0::Base2 virtual table, Base2 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Side0 virtual table, 0" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VbasedA virtual table, 0" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VbasedA::Base2 virtual table, Base2 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Base2 virtual table, Base1 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Base1 virtual table, Base0 virtual table" } }
-// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*Base0 virtual table, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Multivv3, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VTT for Multivv3, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Multiss2, vtable for Base2" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Multivs1, vtable for Base2" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VTT for Multivs1, vtable for Base2" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Multisv0, vtable for Side0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VTT for Multisv0, vtable for Side0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Side0, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for VbasedA, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*VTT for VbasedA, 0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Base2, vtable for Base1" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Base1, vtable for Base0" } }
+// { dg-final { scan-assembler-dem vtgc1.C "\.vtable_inherit\[ \t\]*vtable for Base0, 0" } }

@@ -1,3 +1,7 @@
+2001-02-28  Geoffrey Keating  <geoffk@redhat.com>
+
+        * g++.dg/vtgc1.C: Update for new ABI.
+
 2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/vtable3.h: Check vcall offsets too.
@@ -363,9 +367,9 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we 
+        * gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we
         have an equivalent working one below it.
-	  
+
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.ext/instantiate2.C: Add explanatory comment.
@@ -455,7 +459,7 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-01-10  Alan Lehotsky  <lehotsky@tiac.net>
 
 	* gcc.dg/20000926-1.c: Parameterize for machines with 16-bit ints.
-	
+
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/error3.C: New test.
@@ -480,8 +484,8 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 	* gcc.c-torture/execute/921202-1.c: Use STACK_SIZE to avoid
 	problems on small machines.
 	* gcc.c-torture/execute/920730-1.c: Use values from <limits.h> to
-	parameterize. 
-	
+	parameterize.
+
 2001-01-09  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.ext/instantiate2.C: ERROR line should fail for
@@ -666,7 +670,7 @@ Thu Jan  4 13:54:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-01-03  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* lib/target-supports.exp (check_alias_available): Modified to
-	indicate aliases not supported if only weak aliases are supported. 
+	indicate aliases not supported if only weak aliases are supported.
 
 2001-01-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
