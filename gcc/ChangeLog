@@ -1,3 +1,9 @@
+2004-12-02  Richard Henderson  <rth@redhat.com>
+
+        * expr.c (write_complex_part): Use simplify_gen_subreg when the
+        submode is at least as large as a word.
+        (read_complex_part): Likewise.
+
 2004-12-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/9908

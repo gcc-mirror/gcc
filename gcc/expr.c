@@ -2794,17 +2794,33 @@ clear_storage_libcall_fn (int for_call)
 void
 write_complex_part (rtx cplx, rtx val, bool imag_p)
 {
-  if (GET_CODE (cplx) == CONCAT)
-    emit_move_insn (XEXP (cplx, imag_p), val);
-  else
-    {
-      enum machine_mode cmode = GET_MODE (cplx);
-      enum machine_mode imode = GET_MODE_INNER (cmode);
-      unsigned ibitsize = GET_MODE_BITSIZE (imode);
+  enum machine_mode cmode;
+  enum machine_mode imode;
+  unsigned ibitsize;
 
-      store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, imode, val,
-		       GET_MODE_SIZE (cmode));
+  if (GET_CODE (cplx) == CONCAT)
+    {
+      emit_move_insn (XEXP (cplx, imag_p), val);
+      return;
     }
+
+  cmode = GET_MODE (cplx);
+  imode = GET_MODE_INNER (cmode);
+  ibitsize = GET_MODE_BITSIZE (imode);
+
+  /* If the sub-object is at least word sized, then we know that subregging
+     will work.  This special case is important, since store_bit_field
+     wants to operate on integer modes, and there's rarely an OImode to
+     correspond to TCmode.  */
+  if (ibitsize >= BITS_PER_WORD)
+    {
+      rtx part = simplify_gen_subreg (imode, cplx, cmode,
+				      imag_p ? GET_MODE_SIZE (imode) : 0);
+      emit_move_insn (part, val);
+    }
+  else
+    store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, imode, val,
+		     GET_MODE_SIZE (cmode));
 }
 
 /* Extract one of the components of the complex value CPLX.  Extract the
@@ -2834,6 +2850,19 @@ read_complex_part (rtx cplx, bool imag_p)
 	      || TREE_CODE (part) == INTEGER_CST)
 	    return expand_expr (part, NULL_RTX, imode, EXPAND_NORMAL);
 	}
+    }
+
+  /* If the sub-object is at least word sized, then we know that subregging
+     will work.  This special case is important, since extract_bit_field
+     wants to operate on integer modes, and there's rarely an OImode to
+     correspond to TCmode.  */
+  if (ibitsize >= BITS_PER_WORD)
+    {
+      rtx ret = simplify_gen_subreg (imode, cplx, cmode,
+				     imag_p ? GET_MODE_SIZE (imode) : 0);
+      if (ret == NULL)
+	abort ();
+      return ret;
     }
 
   return extract_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0,
