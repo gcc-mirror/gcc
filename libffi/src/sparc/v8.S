@@ -56,6 +56,7 @@ _ffi_call_V8:
 	ld	[%l0+ARGS+20], %o5
 	call	%i5
 	mov	%l0, %sp	! (delay) switch to frame
+	nop			! STRUCT returning functions skip 12 instead of 8 bytes
 
 	! If the return value pointer is NULL, assume no return value.
 	tst	%i4
@@ -70,6 +71,9 @@ _ffi_call_V8:
 	be,a	done
 	st	%f0, [%i4+0]	! (delay)
 
+	cmp	%i3, FFI_TYPE_SINT64
+	be	longlong
+
 	cmp	%i3, FFI_TYPE_DOUBLE
 	bne	done
 	nop
@@ -77,6 +81,12 @@ _ffi_call_V8:
 	st	%f1, [%i4+4]
 	
 done:
+	ret
+	restore
+
+longlong:
+	st	%o0, [%i4+0]
+	st	%o1, [%i4+4]
 	ret
 	restore
 

@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = cygnus
 
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
-		src/sparc/ffi.c src/sparc/v8.S \
+		src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S \
 		src/x86/ffi.c src/x86/sysv.S \
 		src/alpha/ffi.c src/alpha/osf.S \
 		src/m68k/ffi.c src/m68k/sysv.S \
@@ -40,7 +40,7 @@ ffitest_LDADD = libffi.la
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
-TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S
+TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S

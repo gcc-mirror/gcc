@@ -1,3 +1,38 @@
+2000-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+        * include/ffi.h.in (SPARC64): Define for 64bit SPARC builds.
+	Set SPARC FFI_DEFAULT_ABI based on SPARC64 define.
+	* src/sparc/ffi.c (ffi_prep_args_v8): Renamed from ffi_prep_args.
+	Replace all void * sizeofs with sizeof(int).
+	Only compare type with FFI_TYPE_LONGDOUBLE if LONGDOUBLE is
+	different than DOUBLE.
+	Remove FFI_TYPE_SINT32 and FFI_TYPE_UINT32 cases (handled elsewhere).
+	(ffi_prep_args_v9): New function.
+	(ffi_prep_cif_machdep): Handle V9 ABI and long long on V8.
+	(ffi_V9_return_struct): New function.
+	(ffi_call): Handle FFI_V9 ABI from 64bit code and FFI_V8 ABI from
+	32bit code (not yet cross-arch calls).
+	* src/sparc/v8.S: Add struct return delay nop.
+	Handle long long.
+	* src/sparc/v9.S: New file.
+	* src/prep_cif.c (ffi_prep_cif): Return structure pointer
+	is used on sparc64 only for structures larger than 32 bytes.
+	Pass by reference for structures is done for structure arguments
+	larger than 16 bytes.
+	* src/ffitest.c (main): Use 64bit rint on sparc64.
+	Run long long tests on sparc.
+	* src/types.c (FFI_TYPE_POINTER): Pointer is 64bit on alpha and
+	sparc64.
+	(FFI_TYPE_LONGDOUBLE): long double is 128 bit aligned to 128 bits
+	on sparc64.
+	* configure.in (sparc-*-linux*): New supported target.
+	(sparc64-*-linux*): Likewise.
+	* configure: Rebuilt.
+	* Makefile.am: Add v9.S to SPARC files.
+	* Makefile.in: Likewise.
+	(LINK): Surround $(CCLD) into double quotes, so that multilib
+	compiles work correctly.
+
 2000-04-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* configure: Rebuilt.
