@@ -1,3 +1,8 @@
+2004-11-11  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Save PIC
+	register if current_function_uses_pic_offset_table is set.
+
 2004-11-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (define_attr "type"): Add two and three.
@@ -47,7 +52,7 @@
 2004-11-10  Fariborz Jahanian <fjahanian@apple.com>
 
 	PR tree-optimization/17892
-    	* tree-ssa-dom.c (unsafe_associative_fp_binop): Add test for
+	* tree-ssa-dom.c (unsafe_associative_fp_binop): Add test for
 	MINUS_EXPR operator.
 
 2004-11-10  James A. Morrison  <phython@gcc.gnu.org>
