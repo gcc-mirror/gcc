@@ -99,24 +99,28 @@ struct argdata
   int stringified_length;
 };
 
+/* Calculate hash of a string of length LEN.  */
+unsigned int
+_cpp_calc_hash (str, len)
+     const U_CHAR *str;
+     size_t len;
+{
+  size_t n = len;
+  unsigned int r = 0;
+
+  do
+    r = r * 67 + (*str++ - 113);
+  while (--n);
+  return r + len;
+}
+
 /* Calculate hash of a HASHNODE structure.  */
 static unsigned int
 hash_HASHNODE (x)
      const void *x;
 {
-  HASHNODE *h = (HASHNODE *)x;
-  const U_CHAR *s = h->name;
-  unsigned int len = h->length;
-  unsigned int n = len, r = 0;
-
-  if (h->hash != (unsigned long)-1)
-    return h->hash;
-  
-  do
-    r = r * 67 + (*s++ - 113);
-  while (--n);
-  h->hash = r + len;
-  return r + len;
+  const HASHNODE *h = (const HASHNODE *)x;
+  return h->hash;
 }
 
 /* Compare two HASHNODE structures.  */
@@ -192,9 +196,10 @@ _cpp_lookup (pfile, name, len)
 
   dummy.name = name;
   dummy.length = len;
-  dummy.hash = -1;
+  dummy.hash = _cpp_calc_hash (name, len);
 
-  return (HASHNODE *) htab_find (pfile->hashtab, (void *)&dummy);
+  return (HASHNODE *) htab_find_with_hash (pfile->hashtab,
+					   (void *)&dummy, dummy.hash);
 }
 
 /* Find the hashtable slot for name "name".  Used to insert or delete.  */
@@ -218,9 +223,11 @@ _cpp_lookup_slot (pfile, name, len, insert, hash)
 
   dummy.name = name;
   dummy.length = len;
-  dummy.hash = -1;
+  dummy.hash = _cpp_calc_hash (name, len);
 
-  slot = (HASHNODE **) htab_find_slot (pfile->hashtab, (void *)&dummy, insert);
+  slot = (HASHNODE **) htab_find_slot_with_hash (pfile->hashtab,
+						 (void *)&dummy,
+						 dummy.hash, insert);
   if (insert)
     *hash = dummy.hash;
   return slot;
@@ -336,8 +343,13 @@ collect_expansion (pfile, arglist)
 	  break;
 
 	case CPP_STRINGIZE:
+	  /* # is not special in object-like macros.  It is special in
+	     function-like macros with no args.  (6.10.3.2 para 1.) */
+	  if (arglist == NULL)
+	    goto norm;
+	  /* # is not special immediately after PASTE.
+	     (Implied by 6.10.3.3 para 4.)  */
 	  if (last_token == PASTE)
-	    /* Not really a stringifier.  */
 	    goto norm;
 	  last_token = STRIZE;
 	  CPP_SET_WRITTEN (pfile, here);  /* delete from replacement text */
@@ -374,11 +386,15 @@ collect_expansion (pfile, arglist)
 	case CPP_COMMENT:
 	  /* We must be in -traditional mode.  Pretend this was a
 	     token paste, but only if there was no leading or
-	     trailing space.  */
+	     trailing space and it's in the middle of the line.  */
 	  CPP_SET_WRITTEN (pfile, here);
+	  if (last_token == START)
+	    break;
 	  if (is_hspace (pfile->token_buffer[here-1]))
 	    break;
 	  if (is_hspace (PEEKC ()))
+	    break;
+	  if (PEEKC () == '\n')
 	    break;
 	  if (last_token == ARG)
 	    endpat->raw_after = 1;

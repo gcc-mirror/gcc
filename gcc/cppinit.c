@@ -660,7 +660,8 @@ initialize_builtins (pfile)
 	val = b->value;
 
       len = strlen (b->name);
-      hp = _cpp_make_hashnode (b->name, len, b->type, -1);
+      hp = _cpp_make_hashnode (b->name, len, b->type,
+			       _cpp_calc_hash (b->name, len));
       hp->value.cpval = val;
       *(htab_find_slot (pfile->hashtab, (void *)hp, 1)) = hp;
 

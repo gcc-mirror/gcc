@@ -66,18 +66,8 @@ static unsigned int
 hash_IHASH (x)
      const void *x;
 {
-  IHASH *i = (IHASH *)x;
-  unsigned int r = 0, len = 0;
-  const U_CHAR *s = i->nshort;
-
-  if (i->hash != (unsigned long)-1)
-    return i->hash;
-
-  do
-    len++, r = r * 67 + (*s++ - 113);
-  while (*s && *s != '.');
-  i->hash = r + len;
-  return r + len;
+  const IHASH *i = (const IHASH *)x;
+  return i->hash;
 }
 
 /* Compare an existing IHASH structure with a potential one.  */
@@ -158,8 +148,9 @@ cpp_included (pfile, fname)
 {
   IHASH dummy, *ptr;
   dummy.nshort = fname;
-  dummy.hash = -1;
-  ptr = htab_find (pfile->all_include_files, (const void *)&dummy);
+  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  ptr = htab_find_with_hash (pfile->all_include_files,
+			     (const void *)&dummy, dummy.hash);
   return (ptr != NULL);
 }
 
@@ -219,11 +210,12 @@ find_include_file (pfile, fname, search_start, ihash, before)
   int f;
   char *name;
 
-  dummy.hash = -1;
   dummy.nshort = fname;
+  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
   path = (fname[0] == '/') ? ABSOLUTE_PATH : search_start;
-  slot = (IHASH **) htab_find_slot (pfile->all_include_files,
-				    (const void *)&dummy, 1);
+  slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
+					      (const void *)&dummy,
+					      dummy.hash, 1);
 
   if (*slot && (ih = redundant_include_p (pfile, *slot, path)))
     {
@@ -280,10 +272,20 @@ find_include_file (pfile, fname, search_start, ihash, before)
     }
   else
     {
-      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name)
-			      + strlen (fname) + 1);
-      ih->nshort = ih->name + strlen (fname) + 1;
-      strcpy ((char *)ih->nshort, fname);
+      char *s;
+      
+      if ((s = strstr (name, fname)) != NULL)
+	{
+	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+	  ih->nshort = ih->name + (s - name);
+	}
+      else
+	{
+	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name)
+				  + strlen (fname) + 1);
+	  ih->nshort = ih->name + strlen (name) + 1;
+	  strcpy ((char *)ih->nshort, fname);
+	}
     }
   strcpy ((char *)ih->name, name);
   ih->foundhere = path;
@@ -620,10 +622,11 @@ cpp_read_file (pfile, fname)
   if (fname == NULL)
     fname = "";
 
-  dummy.hash = -1;
   dummy.nshort = fname;
-  slot = (IHASH **) htab_find_slot (pfile->all_include_files,
-				    (const void *) &dummy, 1);
+  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
+					      (const void *) &dummy,
+					      dummy.hash, 1);
   if (*slot && (ih = redundant_include_p (pfile, *slot, ABSOLUTE_PATH)))
     {
       if (ih == (IHASH *)-1)
