@@ -472,10 +472,6 @@ extern void push_ehqueue                        PARAMS ((void));
 /* Restore a previously pushed ehqueue.  */
 extern void pop_ehqueue                         PARAMS ((void));
 
-/* One to enable asynchronous exception support.  */
-
-extern int flag_non_call_exceptions;
-
 /* One to protect cleanup actions with a handler that calls
    __terminate, zero otherwise.  */
 
