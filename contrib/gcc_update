@@ -123,7 +123,7 @@ touch_files () {
     echo '	echo Touching $@... 1>&2; \' >> Makefile.$$
     echo '	touch $@' >> Makefile.$$
     files_and_dependencies | sed 's,[^ ]* ,,;s,$, :,' >> Makefile.$$
-    while ${MAKE-make} -f Makefile.$$ all | grep . > /dev/null; do
+    while ${MAKE-make} -s -f Makefile.$$ all | grep . > /dev/null; do
       sleep 1
     done 2>&1
     rm -f Makefile.$$
