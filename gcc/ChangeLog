@@ -1,3 +1,8 @@
+2001-04-28  Andreas Jaeger  <aj@suse.de>
+
+        * md.texi: Use XX-bit instead of XXbit or XX bit where
+        appropriate.
+
 2001-04-28  Jens Schweikhardt <schweikh@schweikhardt.net>
 
 	* gcc.c (process_command): Allow -l lib in addition to -llib
