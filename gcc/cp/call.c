@@ -136,7 +136,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 	  return error_mark_node;
 	}
 
-      if (TREE_CODE (field) == FIELD_DECL)
+      if (TREE_CODE (field) == FIELD_DECL || TREE_CODE (field) == VAR_DECL)
 	{
 	  /* If it's a field, try overloading operator (),
 	     or calling if the field is a pointer-to-function.  */
@@ -167,7 +167,8 @@ build_field_call (basetype_path, instance_ptr, name, parms)
   if (field == error_mark_node)
     return error_mark_node;
 
-  if (field && TREE_CODE (field) == FIELD_DECL)
+  if (field && (TREE_CODE (field) == FIELD_DECL ||
+		TREE_CODE (field) == VAR_DECL))
     {
       tree basetype;
       tree ftype = TREE_TYPE (field);

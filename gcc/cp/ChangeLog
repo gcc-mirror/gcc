@@ -1,5 +1,7 @@
 1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* call.c (build_field_call): handle static data members too
+
 	* typeck.c (comptypes): when comparing pointer types, check
 	whether referred types match even in strictest modes
 
