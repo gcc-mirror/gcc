@@ -521,6 +521,26 @@ else
   AC_CHECK_PROG(BISON, bison, bison, false)
 fi
 
+# These libraries may be used by collect2.
+# We may need a special search path to get them linked.
+AC_CACHE_CHECK(for collect2 libraries, gcc_cv_collect2_libs,
+[save_LIBS="$LIBS"
+for libs in '' -lld -lmld '-lmld -lexc' \
+		'-L/usr/lib/cmplrs/cc2.11 -lmld' \
+		'-L/usr/lib/cmplrs/cc3.11 -lmld'
+do
+	LIBS="$libs"
+	AC_TRY_LINK_FUNC(ldopen,
+		[gcc_cv_collect2_libs="$libs"; break])
+done
+LIBS="$save_LIBS"
+test -z "$gcc_cv_collect2_libs" && gcc_cv_collect2_libs='none required'])
+case $gcc_cv_collect2_libs in
+	"none required")	;;
+	*)	COLLECT2_LIBS=$gcc_cv_collect2_libs ;;
+esac
+AC_SUBST(COLLECT2_LIBS)
+
 # See if the stage1 system preprocessor understands the ANSI C
 # preprocessor stringification operator.  (Used by symcat.h.)
 AC_C_STRINGIZE
@@ -907,13 +927,15 @@ AC_ARG_ENABLE(win32-registry,
   --enable-win32-registry=KEY
                           Use KEY instead of GCC version as the last portion
                          of the registry key.],,)
-
+case $host_os in
+	win32 | pe | cygwin* | mingw32* | uwin*)
 AC_MSG_CHECKING(whether windows registry support is requested)
 if test x$enable_win32_registry != xno; then
   AC_DEFINE(ENABLE_WIN32_REGISTRY, 1,
 [Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts.])
   AC_MSG_RESULT(yes)
+  AC_SEARCH_LIBS(RegOpenKeyExA, advapi32)
 else
   AC_MSG_RESULT(no)
 fi
@@ -940,6 +962,8 @@ if test x$enable_win32_registry != xno; then
 	[Define to be the last portion of registry key on windows hosts.])
   AC_MSG_RESULT($gcc_cv_win32_registry_key)
 fi
+;;
+esac
 
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`

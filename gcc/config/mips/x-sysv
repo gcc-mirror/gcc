@@ -1,3 +1,0 @@
-# This enables collect2 to link.
-# Some systems use version 2.11 of the compilers.  Some use version 3.11.
-CLIB= -L/usr/lib/cmplrs/cc2.11 -L/usr/lib/cmplrs/cc3.11 -lmld

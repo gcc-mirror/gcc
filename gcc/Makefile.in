@@ -353,9 +353,6 @@ INTLLIBS = @INTLLIBS@
 POSUB = @POSUB@
 INTL_SUBDIRS = intl $(POSUB)
 
-# Additional system libraries to link with.
-CLIB=
-
 # Change this to a null string if obstacks are installed in the
 # system library.
 OBSTACK=obstack.o
@@ -513,7 +510,6 @@ HOST_CC=$(CC)
 # If you change any of the following variables, check whether a
 # similar change is needed in build-make.
 HOST_CFLAGS=$(ALL_CFLAGS) -DGENERATOR_FILE
-HOST_CLIB=$(CLIB)
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_OBSTACK=$(OBSTACK)
@@ -628,12 +624,12 @@ HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) \
 # How to link with both our special library facilities
 # and the system's installed libraries.
 LIBS =	$(OBSTACK) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) \
-	$(STRSTR) $(CLIB) ../libiberty/libiberty.a
+	$(STRSTR) ../libiberty/libiberty.a
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_VFPRINTF) \
-	    $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR) $(HOST_CLIB)
+	    $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
 		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o safe-ctype.o
@@ -680,7 +676,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
-	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"FLEX=$(FLEX)" \
@@ -1224,10 +1219,12 @@ sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h hard-reg-set.h \
     $(BASIC_BLOCK_H)
 
 COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o
+COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
-	-rm -f collect2$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(COLLECT2_OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@T \
+		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
+	mv -f $@T $@
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
