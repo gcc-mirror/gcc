@@ -3405,6 +3405,9 @@ check_field_decls (t, access_decls, empty_p,
            to be allowed in POD structs.  */
 	CLASSTYPE_NON_POD_P (t) = 1;
 
+      if (! zero_init_p (type))
+	CLASSTYPE_NON_ZERO_INIT_P (t) = 1;
+
       /* If any field is const, the structure type is pseudo-const.  */
       if (CP_TYPE_CONST_P (type))
 	{

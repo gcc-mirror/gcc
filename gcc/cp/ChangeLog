@@ -1,3 +1,22 @@
+2002-05-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cp-tree.h (struct lang_type): Added non_zero_init.
+	(CLASS_NON_ZERO_INIT_P): New macro.
+	(zero_init_p, force_store_init_value, build_forced_zero_init): Declare.
+	* class.c (check_field_decls): Test non_zero_init.
+	* cvt.c (convert_to_pointer_force): Use cp_convert_to_pointer for
+	zero-to-NULL conversions.
+	* decl.c (obscure_complex_init): Don't reset DECL_INITIAL of a
+	type that needs zero-initialization without zeros.
+	(check_initializer_decl): Compute zero-initializer for types
+	that require a non-trivial one.
+	* init.c (build_forced_zero_init): New function.
+	(build_default_init): Use it.
+	* tree.c (zero_init_p): New function.
+	* typeck2.c (force_store_init_value): New function.
+	(process_init_constructor): Create non-trivial zero-initializers
+	for array members and class fields.
+
 2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lang-specs.h: Remove redundant -lang-c++.
