@@ -5872,9 +5872,13 @@ output_millicode_call (insn, call_dest)
 
   /* Handle common case -- empty delay slot or no jump in the delay slot,
      and we're sure that the branch will reach the beginning of the $CODE$
-     subspace.  */
+     subspace.  The within reach form of the $$sh_func_adrs call has
+     a length of 28 and attribute type of multi.  This length is the
+     same as the maximum length of an out of reach PIC call to $$div.  */
   if ((dbr_sequence_length () == 0
-       && (get_attr_length (insn) == 8 || get_attr_length (insn) == 28))
+       && (get_attr_length (insn) == 8
+	   || (get_attr_length (insn) == 28 
+	       && get_attr_type (insn) == TYPE_MULTI)))
       || (dbr_sequence_length () != 0
 	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
 	  && get_attr_length (insn) == 4))
@@ -5885,7 +5889,7 @@ output_millicode_call (insn, call_dest)
     }
 
   /* This call may not reach the beginning of the $CODE$ subspace.  */
-  if (get_attr_length (insn) > 4)
+  if (get_attr_length (insn) > 8)
     {
       int delay_insn_deleted = 0;
 

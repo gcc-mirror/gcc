@@ -1,3 +1,8 @@
+2002-04-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (output_millicode_call): Check attribute type as well as length
+	when length is 28.
+
 2002-04-11  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/ia64/aix.h (CPP_PREDEFINES): Do not define _LP64/__LP64__
