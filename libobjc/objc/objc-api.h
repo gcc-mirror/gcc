@@ -342,7 +342,11 @@ typedef struct objc_category {
 typedef struct objc_super {
   id      self;                           /* Id of the object sending
                                                 the message. */
+#ifdef __cplusplus
+  Class super_class;
+#else
   Class class;                              /* Object's super class. */
+#endif
 } Super, *Super_t;
 
 IMP objc_msg_lookup_super(Super_t super, SEL sel);

@@ -4344,11 +4344,19 @@ build_super_template (void)
   field_decl = grokfield (field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
+#ifdef OBJCPLUS
+  /* struct objc_class *super_class; */
+#else
   /* struct objc_class *class; */
+#endif
 
   decl_specs = get_identifier (UTAG_CLASS);
   decl_specs = build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE, decl_specs));
+#ifdef OBJCPLUS
+  field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("super_class"));
+#else
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("class"));
+#endif
 
   field_decl = grokfield (field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
@@ -7883,7 +7891,11 @@ get_super_receiver (void)
 
       /* Set class to begin searching.  */
       super_expr = build_component_ref (UOBJC_SUPER_decl,
+#ifdef OBJCPLUS
+					get_identifier ("super_class"));
+#else
 					get_identifier ("class"));
+#endif
 
       if (TREE_CODE (objc_implementation_context) == CLASS_IMPLEMENTATION_TYPE)
 	{
