@@ -27,6 +27,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-pretty-print.h"
 #include "c-tree.h"
 
+/* The pretty-printer code is primarily designed to closely follow
+   (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
+   codes we used to have in the past.  Following a structured
+   approach (preferaably the official grammars) is believed to make it
+   much easier o add extensions and nifty pretty-printing effects that
+   takes expresssion or declaration contexts into account.  */
+
 /* literal  */
 static void pp_c_char (c_pretty_printer, int);
 static void pp_c_character_literal (c_pretty_printer, tree);
@@ -70,7 +77,12 @@ static void pp_c_function_specifier (c_pretty_printer, tree);
 
 /* Declarations.  */
 
-/* Print out CV-qualifiers.  Take care of possible extensions.  */
+/* Print out CV-qualifiers.  Take care of possible extensions.
+     cv-qualifier:
+        const
+        volatile
+        restrict
+        __restrict__   */
 void
 pp_c_cv_qualifier (c_pretty_printer ppi, int cv)
 {
@@ -82,6 +94,26 @@ pp_c_cv_qualifier (c_pretty_printer ppi, int cv)
     pp_c_identifier (ppi, flag_isoc99 ? "restrict" : "__restrict__");
 }
 
+/*
+  simple-type-specifier:
+     void
+     char
+     short
+     int
+     long
+     float
+     double
+     signed
+     unsigned
+     _Bool                          -- C99
+     _Complex                       -- C99
+     _Imaginary                     -- C99
+     typedef-name.
+
+  GNU extensions.
+  simple-type-specifier:
+      __complex__
+      __vector__   */
 static void
 pp_c_simple_type_specifier (c_pretty_printer ppi, tree t)
 {
@@ -149,6 +181,9 @@ pp_c_simple_type_specifier (c_pretty_printer ppi, tree t)
     }
 }
 
+/* specifier-qualifier-list:
+      type-specifier specifier-qualifier-list-opt
+      cv-qualifier specifier-qualifier-list-opt  */
 static inline void
 pp_c_specifier_qualifier_list (c_pretty_printer ppi, tree t)
 {
@@ -688,6 +723,23 @@ pp_c_expression_list (c_pretty_printer ppi, tree e)
     }
 }
 
+/* unary-expression:
+      postfix-expression
+      ++ cast-expression
+      -- cast-expression
+      unary-operator cast-expression
+      sizeof unary-expression
+      sizeof ( type-id )
+
+  unary-operator: one of
+      * &  + - ! ~
+      
+   GNU extensions.
+   unary-expression:
+      __alignof__ unary-expression
+      __alignof__ ( type-id )
+      __real__ unary-expression
+      __imag__ unary-expression  */
 static void
 pp_c_unary_expression (c_pretty_printer ppi, tree e)
 {
@@ -702,7 +754,6 @@ pp_c_unary_expression (c_pretty_printer ppi, tree e)
 
     case ADDR_EXPR:
     case INDIRECT_REF:
-    case CONVERT_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
