@@ -1,6 +1,6 @@
 /*  Special support for trampolines
  *
- *   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
+ *   Copyright (C) 1996, 1997, 2000, 2004 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it
@@ -103,7 +103,8 @@ Labort:
 #ifdef __DYNAMIC__
 	bl	L_abort$stub
 .data
-.picsymbol_stub
+.section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32
+	.align 2
 L_abort$stub:
         .indirect_symbol _abort
         mflr r0
@@ -112,9 +113,8 @@ L0$_abort:
         mflr r11
         addis r11,r11,ha16(L_abort$lazy_ptr-L0$_abort)
         mtlr r0
-        lwz r12,lo16(L_abort$lazy_ptr-L0$_abort)(r11)
+	lwzu r12,lo16(L_abort$lazy_ptr-L0$_abort)(r11)
         mtctr r12
-        addi r11,r11,lo16(L_abort$lazy_ptr-L0$_abort)
         bctr
 .data
 .lazy_symbol_pointer
