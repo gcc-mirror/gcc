@@ -2308,6 +2308,8 @@ extern struct mips_frame_info current_frame_info;
 	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))	 \
 		  * (BYTES_BIG_ENDIAN != 0));				 \
   }									 \
+  else									 \
+    abort();								 \
 }
 
 /* If we generate an insn to push BYTES bytes,
