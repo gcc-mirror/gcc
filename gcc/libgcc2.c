@@ -65,7 +65,7 @@ typedef		float TFtype	__attribute__ ((mode (TF)));
 /* Make sure that we don't accidentally use any normal C language built-in
    type names in the first part of this file.  Instead we want to use *only*
    the type names defined above.  The following macro definitions insure
-   that if we *do* accidentally use soem normal C language built-in type name,
+   that if we *do* accidentally use some normal C language built-in type name,
    we will get a syntax error.  */
 
 #define char bogus_type
