@@ -1,3 +1,10 @@
+2001-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+	* configure.target (cpu_include_dir): Set to `config/cpu/s390'
+	for s390 and s390x.
+ 
+	* config/cpu/s390/bits/atomicity.h: New.
+
 2001-08-14  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_limits.h: Fix thinko.
