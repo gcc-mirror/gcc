@@ -325,25 +325,34 @@ toc_section ()						\
 
 #undef ASM_OUTPUT_EXTERNAL
 
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-{ rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
-  if ((TREE_CODE (DECL) == VAR_DECL		\
-       || TREE_CODE (DECL) == FUNCTION_DECL)	\
-      && (NAME)[0] != '*'			\
-      && (NAME)[strlen (NAME) - 1] != ']')	\
-    {						\
-      char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
-      strcpy (_name, XSTR (_symref, 0));	\
-      XSTR (_symref, 0) = _name;		\
-    }						\
-  fprintf (FILE, "\t.extern ");			\
-  assemble_name (FILE, XSTR (_symref, 0));	\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)	\
-    {						\
-      fprintf (FILE, "\n\t.extern ..");		\
-      assemble_name (FILE, XSTR (_symref, 0));	\
-    }						\
-  fprintf (FILE, "\n");				\
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
+{									\
+  char *_name;								\
+  rtx _symref = XEXP (DECL_RTL (DECL), 0);				\
+  if ((TREE_CODE (DECL) == VAR_DECL					\
+       || TREE_CODE (DECL) == FUNCTION_DECL)				\
+      && (NAME)[0] != '*'						\
+      && (NAME)[strlen (NAME) - 1] != ']')				\
+    {									\
+      _name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5);	\
+      strcpy (_name, XSTR (_symref, 0));				\
+      XSTR (_symref, 0) = _name;					\
+    }									\
+  else									\
+    _name = XSTR (_symref, 0);						\
+									\
+  if (DECL_FUNCTION_CODE (DECL) == 0)					\
+    {									\
+      fputs ("\t.extern ", FILE);					\
+      assemble_name (FILE, _name);					\
+      putc ('\n', FILE);						\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	{								\
+	  fputs ("\t.extern ..", FILE);					\
+	  assemble_name (FILE, _name);					\
+	  putc ('\n', FILE);						\
+	}								\
+    }									\
 }
 
 /* Similar, but for libcall.  We only have to worry about the function name,

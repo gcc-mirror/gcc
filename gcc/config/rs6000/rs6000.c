@@ -2028,7 +2028,7 @@ print_operand (file, x, code)
 	 the left.  */
       if (val < 0 && (val & 1) == 0)
 	{
-	  fprintf (file, "0");
+	  putc ('0', file);
 	  return;
 	}
       else if (val >= 0)
@@ -2997,9 +2997,9 @@ output_prolog (file, size)
       if (TARGET_RELOCATABLE)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
-	  fprintf (file, "\tbl ");
+	  fputs ("\tbl ", file);
 	  assemble_name (file, buf);
-	  fprintf (file, "\n");
+	  putc ('\n', file);
 
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tmflr %s\n", reg_names[30]);
@@ -3008,7 +3008,7 @@ output_prolog (file, size)
 	  fprintf (file, " %s,(", reg_names[0]);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	  assemble_name (file, buf);
-	  fprintf (file, "-");
+	  putc ('-', file);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
 	  assemble_name (file, buf);
 	  fprintf (file, ")(%s)\n", reg_names[30]);
@@ -3197,10 +3197,10 @@ output_epilog (file, size)
       /* An all-zero word flags the start of the tbtab, for debuggers
 	 that have to find it by searching forward from the entry
 	 point or from the current pc.  */
-      fprintf (file, "\t.long 0\n");
+      fputs ("\t.long 0\n", file);
 
       /* Tbtab format type.  Use format type 0.  */
-      fprintf (file, "\t.byte 0,");
+      fputs ("\t.byte 0,", file);
 
       /* Language type.  Unfortunately, there doesn't seem to be any
 	 official way to get this info, so we use language_string.  C
@@ -3322,12 +3322,12 @@ output_epilog (file, size)
 	fprintf (file, "\t.long %d\n", parm_info);
 
       /* Offset from start of code to tb table.  */
-      fprintf (file, "\t.long ");
+      fputs ("\t.long ", file);
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
       RS6000_OUTPUT_BASENAME (file, fname);
-      fprintf (file, "-.");
+      fputs ("-.", file);
       RS6000_OUTPUT_BASENAME (file, fname);
-      fprintf (file, "\n");
+      putc ('\n', file);
 
       /* Interrupt handler mask.  */
       /* Omit this long, since we never set the interrupt handler bit
@@ -3348,7 +3348,7 @@ output_epilog (file, size)
       /* Register for alloca automatic storage; this is always reg 31.
 	 Only emit this if the alloca bit was set above.  */
       if (frame_pointer_needed)
-	fprintf (file, "\t.byte 31\n");
+	fputs ("\t.byte 31\n", file);
     }
 
   /* Reset varargs and save TOC indicator */
@@ -3397,7 +3397,7 @@ output_toc (file, x, labelno)
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LC");
       fprintf (file, "%d = .-", labelno);
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LCTOC");
-      fprintf (file, "1\n");
+      fputs ("1\n", file);
     }
   else
     ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
@@ -3452,7 +3452,7 @@ output_toc (file, x, labelno)
     abort ();
 
   if (TARGET_MINIMAL_TOC)
-    fprintf (file, "\t.long ");
+    fputs ("\t.long ", file);
   else
     {
       STRIP_NAME_ENCODING (real_name, name);
@@ -3463,10 +3463,10 @@ output_toc (file, x, labelno)
       else if (offset)
 	fprintf (file, ".P%d", offset);
 
-      fprintf (file, "[TC],");
+      fputs ("[TC],", file);
     }
   output_addr_const (file, x);
-  fprintf (file, "\n");
+  putc ('\n', file);
 }
 
 /* Output an assembler pseudo-op to write an ASCII string of N characters
@@ -3615,17 +3615,17 @@ output_function_profiler (file, labelno)
   ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
   if (TARGET_MINIMAL_TOC)
     {
-      fprintf (file, "\t.long ");
+      fputs ("\t.long ", file);
       assemble_name (file, buf);
-      fprintf (file, "\n");
+      putc ('\n', file);
     }
   else
     {
-      fprintf (file, "\t.tc\t");
+      fputs ("\t.tc\t", file);
       assemble_name (file, buf);
-      fprintf (file, "[TC],");
+      fputs ("[TC],", file);
       assemble_name (file, buf);
-      fprintf (file, "\n");
+      putc ('\n', file);
     }
   text_section ();
 
@@ -3642,19 +3642,19 @@ output_function_profiler (file, labelno)
      it might be set up as the frame pointer.  */
 
   for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-    fprintf (file, "\tai %d,%d,0\n", j, i);
+    asm_fprintf (file, "\tmr %d,%d\n", j, i);
 
   /* Load location address into r3, and call mcount.  */
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
-  fprintf (file, "\tl 3,");
+  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[3]);
   assemble_name (file, buf);
-  fprintf (file, "(2)\n\tbl .mcount\n");
+  asm_fprintf (file, "(%s)\n\tbl .mcount\n", reg_names[2]);
 
   /* Restore parameter registers.  */
 
   for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-    fprintf (file, "\tai %d,%d,0\n", i, j);
+    asm_fprintf (file, "\tmr %d,%d\n", i, j);
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of

@@ -404,8 +404,7 @@ extern char *rs6000_cpu_string;
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define INT_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
-#define MAX_INT_TYPE_SIZE 64
+#define INT_TYPE_SIZE 32
 
 /* A C expression for the size in bits of the type `long' on the
    target machine.  If you don't define this, the default is one
@@ -1914,7 +1913,7 @@ extern int rs6000_trunc_used;
     private_data_section ();					\
   text_section ();						\
   if (profile_flag)						\
-    fprintf (FILE, "\t.extern .mcount\n");			\
+    fputs ("\t.extern .mcount\n", FILE);			\
 }
 
 /* Output at end of assembler file.
@@ -1924,9 +1923,9 @@ extern int rs6000_trunc_used;
 #define ASM_FILE_END(FILE)					\
 {								\
   text_section ();						\
-  fprintf (FILE, "_section_.text:\n");				\
+  fputs ("_section_.text:\n", FILE);				\
   data_section ();						\
-  fprintf (FILE, "\t.long _section_.text\n");			\
+  fputs ("\t.long _section_.text\n", FILE);			\
 }
 
 /* We define this to prevent the name mangler from putting dollar signs into
@@ -2021,18 +2020,18 @@ toc_section ()						\
 	 in each file.  */						 \
       if (! toc_initialized)				\
 	{						\
-	  fprintf (asm_out_file, ".toc\nLCTOC..0:\n");	\
-	  fprintf (asm_out_file, "\t.tc toc_table[TC],toc_table[RW]\n"); \
+	  fputs (".toc\nLCTOC..0:\n", asm_out_file);	\
+	  fputs ("\t.tc toc_table[TC],toc_table[RW]\n", asm_out_file); \
 	  toc_initialized = 1;				\
 	}						\
 							\
       if (in_section != toc)				\
-	fprintf (asm_out_file, ".csect toc_table[RW]\n"); \
+	fputs (".csect toc_table[RW]\n", asm_out_file); \
     }							\
   else							\
     {							\
       if (in_section != toc)				\
-        fprintf (asm_out_file, ".toc\n");		\
+        fputs (".toc\n", asm_out_file);			\
     }							\
   in_section = toc;					\
 }
@@ -2050,27 +2049,27 @@ toc_section ()						\
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
 { if (TREE_PUBLIC (DECL))					\
     {								\
-      fprintf (FILE, "\t.globl .");				\
+      fputs ("\t.globl .", FILE);				\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, "\n");					\
+      putc ('\n', FILE);					\
     }								\
   else								\
     {								\
-      fprintf (FILE, "\t.lglobl .");				\
+      fputs ("\t.lglobl .", FILE);				\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, "\n");					\
+      putc ('\n', FILE);					\
     }								\
-  fprintf (FILE, ".csect ");					\
+  fputs (".csect ", FILE);					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fprintf (FILE, "[DS]\n");					\
+  fputs ("[DS]\n", FILE);					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fprintf (FILE, ":\n");					\
-  fprintf (FILE, "\t.long .");					\
+  fputs (":\n", FILE);						\
+  fputs ("\t.long .", FILE);					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fprintf (FILE, ", TOC[tc0], 0\n");				\
-  fprintf (FILE, ".csect .text[PR]\n.");			\
+  fputs (", TOC[tc0], 0\n", FILE);				\
+  fputs (".csect .text[PR]\n.", FILE);				\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fprintf (FILE, ":\n");					\
+  fputs (":\n", FILE);						\
   if (write_symbols == XCOFF_DEBUG)				\
     xcoffout_declare_function (FILE, DECL, NAME);		\
 }
@@ -2200,23 +2199,23 @@ toc_section ()						\
       strcat (_name, TREE_CODE (DECL) == FUNCTION_DECL ? "[DS]" : "[RW]"); \
       XSTR (_symref, 0) = _name;		\
     }						\
-  fprintf (FILE, "\t.extern ");			\
+  fputs ("\t.extern ", FILE);			\
   assemble_name (FILE, XSTR (_symref, 0));	\
   if (TREE_CODE (DECL) == FUNCTION_DECL)	\
     {						\
-      fprintf (FILE, "\n\t.extern .");		\
+      fputs ("\n\t.extern .", FILE);		\
       RS6000_OUTPUT_BASENAME (FILE, XSTR (_symref, 0));	\
     }						\
-  fprintf (FILE, "\n");				\
+  putc ('\n', FILE);				\
 }
 
 /* Similar, but for libcall.  We only have to worry about the function name,
    not that of the descriptor. */
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-{ fprintf (FILE, "\t.extern .");		\
+{ fputs ("\t.extern .", FILE);			\
   assemble_name (FILE, XSTR (FUN, 0));		\
-  fprintf (FILE, "\n");				\
+  putc ('\n', FILE);				\
 }
 
 /* Output to assembler file text saying following lines
@@ -2374,21 +2373,21 @@ toc_section ()						\
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.long "),			\
+( fputs ("\t.long ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  putc ('\n', FILE))
 
 /* Likewise for `char' and `short' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.short "),			\
+( fputs ("\t.short ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  putc ('\n', FILE))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
+( fputs ("\t.byte ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  putc ('\n', FILE))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
@@ -2427,23 +2426,23 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
   do { char buf[100];					\
-       fprintf (FILE, "\t.long ");			\
+       fputs ("\t.long ", FILE);			\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
-       fprintf (FILE, "\n");				\
+       putc ('\n', FILE);				\
      } while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
   do { char buf[100];					\
-       fprintf (FILE, "\t.long ");			\
+       fputs ("\t.long ", FILE);			\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
-       fprintf (FILE, "-");				\
+       putc ('-', FILE);				\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", REL);	\
        assemble_name (FILE, buf);			\
-       fprintf (FILE, "\n");				\
+       putc ('\n', FILE);				\
      } while (0)
 
 /* This is how to output an assembler line
