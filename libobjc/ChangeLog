@@ -1,3 +1,8 @@
+2001-02-28  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc-features.texi: Document the @compatibility_alias compiler
+	directive (description from Nicola Pero <n.pero@mi.flashnet.it>).
+
 Fri Feb 23 18:12:00 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sendmsg.c (__objc_forward): Delete strlen() declaration.
