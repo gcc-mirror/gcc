@@ -88,8 +88,8 @@ variable_size (size)
 {
   /* If the language-processor is to take responsibility for variable-sized
      items (e.g., languages which have elaboration procedures like Ada),
-     just return SIZE unchanged.  */
-  if (global_bindings_p () < 0)
+     just return SIZE unchanged.  Likewise for self-referential sizes.  */
+  if (global_bindings_p () < 0 || contains_placeholder_p (size))
     return size;
 
   size = save_expr (size);
