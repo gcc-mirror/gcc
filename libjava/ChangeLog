@@ -1,5 +1,9 @@
 2000-02-10  Tom Tromey  <tromey@cygnus.com>
 
+	* include/jni.h (JNI_FALSE): Renamed from JNI_TRUE; oops.
+	(jboolean): Declare as an attributed int, not a bool.
+	(_Jv_func): Declare differently for C.
+
 	* gnu/gcj/jni/natNativeThread.cc: New file.
 	* gnu/gcj/jni/NativeThread.java: New file.
 	* java/lang/Thread.java (data): Now a RawData.
