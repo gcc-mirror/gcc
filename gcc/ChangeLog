@@ -1,3 +1,7 @@
+2000-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cppmacro.c (builtin_macro): Use NT_VOID, not T_VOID.
+
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
 	* cpplib.c (skip_rest_of_line):  Use _cpp_get_token.

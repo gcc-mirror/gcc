@@ -191,7 +191,7 @@ builtin_macro (pfile, token)
 
 #ifdef STDC_0_IN_SYSTEM_HEADERS
 	if (CPP_IN_SYSTEM_HEADER (pfile)
-	    && pfile->spec_nodes.n__STRICT_ANSI__->type == T_VOID)
+	    && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_VOID)
 	  stdc = 0;
 #endif
 	make_number_token (pfile, token, stdc);
