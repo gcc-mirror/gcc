@@ -10,6 +10,23 @@
 
 2004-04-21  James E Wilson  <wilson@specifixinc.com>
 
+	* config/mips/mips-protos.h (fp_register_operand, lo_operand): Declare.
+	* config/mips/mips.c (mips_multipass_dfa_lookahead): Declare.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): New.
+	(fp_register_operand, lo_operand): New.
+	(mips_rtx_costs): Add TUNE_SB1 support.
+	(mips_issue_rate): Add comment.  Add PROCESSOR_SB1 support.
+	(mips_use_dfa_pipeline_interface): Add PROCESSOR_SB1 support.
+	(mips_multipass_dfa_lookahead): New.
+	* config/mips/mips.h (MASK_FP_EXCEPTIONS, TARGET_FP_EXCEPTIONS,
+	TUNE_SB1): New.
+	(TARGET_SWITCHES): Add -mfp-exceptions support.
+	(TARGET_FP_EXCEPTIONS_DEFAULT): New.
+	(BRANCH_COST): Fix whitespace.
+	* config/mips/mips.md: Include sb1.md.
+	* config/mips/sb1.md: New file.
+	* doc/invoke.texi: Document -mfp-exceptions.
+
 	* Makefile.in (fixinc.sh): Don't set or export WARN_CFLAGS.  Fix
 	comment.
 	* fixinc/Makefile.in (FL_LIST): Don't mention WARN_CFLAGS.

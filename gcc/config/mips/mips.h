@@ -173,6 +173,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_FIX_SB1	   0x04000000	/* Work around SB-1 errata.  */
 #define MASK_FIX_VR4120	   0x08000000   /* Work around VR4120 errata.  */
 
+#define MASK_FP_EXCEPTIONS 0x10000000   /* FP exceptions are enabled.  */
+
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
 #define MASK_DEBUG_C	0		/* don't expand seq, etc.  */
@@ -257,6 +259,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_FIX_R4400	(target_flags & MASK_FIX_R4400)
 #define TARGET_FIX_VR4120	(target_flags & MASK_FIX_VR4120)
 
+#define TARGET_FP_EXCEPTIONS	(target_flags & MASK_FP_EXCEPTIONS)
+
 /* True if we should use NewABI-style relocation operators for
    symbolic addresses.  This is never true for mips16 code,
    which has its own conventions.  */
@@ -339,6 +343,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
+#define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
@@ -630,6 +635,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Lift restrictions on GOT size") },				\
   {"no-xgot",		 -MASK_XGOT,					\
      N_("Do not lift restrictions on GOT size") },			\
+  {"fp-exceptions",	  MASK_FP_EXCEPTIONS,				\
+     N_("FP exceptions are enabled") },					\
+  {"no-fp-exceptions", 	  -MASK_FP_EXCEPTIONS,				\
+     N_("FP exceptions are not enabled") },				\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debugc",		  MASK_DEBUG_C,					\
@@ -640,7 +649,8 @@ extern const struct mips_cpu_info *mips_tune_info;
      NULL},								\
   {"",			  (TARGET_DEFAULT				\
 			   | TARGET_CPU_DEFAULT				\
-			   | TARGET_ENDIAN_DEFAULT),			\
+			   | TARGET_ENDIAN_DEFAULT			\
+			   | TARGET_FP_EXCEPTIONS_DEFAULT),		\
      NULL},								\
 }
 
@@ -656,6 +666,10 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #ifndef TARGET_ENDIAN_DEFAULT
 #define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
+#endif
+
+#ifndef TARGET_FP_EXCEPTIONS_DEFAULT
+#define TARGET_FP_EXCEPTIONS_DEFAULT MASK_FP_EXCEPTIONS
 #endif
 
 /* 'from-abi' makes a good default: you get whatever the ABI requires.  */
@@ -2674,7 +2688,7 @@ typedef struct mips_args {
 /* ??? Fix this to be right for the R8000.  */
 #define BRANCH_COST							\
   ((! TARGET_MIPS16							\
-    && (TUNE_MIPS4000 || TUNE_MIPS6000))	\
+    && (TUNE_MIPS4000 || TUNE_MIPS6000))				\
    ? 2 : 1)
 
 /* If defined, modifies the length assigned to instruction INSN as a
