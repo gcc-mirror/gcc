@@ -1,3 +1,7 @@
+Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* print-rtl.c (print_rtx): Increase buffer size for real numbers.
+
 2002-10-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (define_attr cpu): Add r4111.

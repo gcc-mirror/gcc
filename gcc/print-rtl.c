@@ -522,7 +522,7 @@ print_rtx (in_rtx)
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (in_rtx)))
 	{
-	  char s[30];
+	  char s[60];
 
 	  real_to_decimal (s, CONST_DOUBLE_REAL_VALUE (in_rtx), -1);
 	  fprintf (outfile, " %s", s);
