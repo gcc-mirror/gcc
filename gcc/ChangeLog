@@ -1,3 +1,8 @@
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP): Speed up by shifting
+	the currently visited word to right.
+
 2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/18045
