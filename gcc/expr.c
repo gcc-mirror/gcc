@@ -2786,12 +2786,55 @@ emit_move_insn_1 (x, y)
       /* Don't split destination if it is a stack push.  */
       int stack = push_operand (x, GET_MODE (x));
 
+      /* In case we output to the stack, but the size is smaller machine can
+	 push exactly, we need to use move instructions.  */
+      if (stack
+	  && PUSH_ROUNDING (GET_MODE_SIZE (submode)) != GET_MODE_SIZE (submode))
+	{
+	  rtx temp;
+	  int offset1, offset2;
+
+	  /* Do not use anti_adjust_stack, since we don't want to update
+	     stack_pointer_delta.  */
+	  temp = expand_binop (Pmode,
+#ifdef STACK_GROWS_DOWNWARD
+			       sub_optab,
+#else
+			       add_optab,
+#endif
+			       stack_pointer_rtx,
+			       GEN_INT
+				 (PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))),
+			       stack_pointer_rtx,
+			       0,
+			       OPTAB_LIB_WIDEN);
+	  if (temp != stack_pointer_rtx)
+	    emit_move_insn (stack_pointer_rtx, temp);
+#ifdef STACK_GROWS_DOWNWARD
+	  offset1 = 0;
+	  offset2 = GET_MODE_SIZE (submode);
+#else
+	  offset1 = -PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)));
+	  offset2 = (-PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))
+		     + GET_MODE_SIZE (submode));
+#endif
+	  emit_move_insn (change_address (x, submode,
+					  gen_rtx_PLUS (Pmode,
+						        stack_pointer_rtx,
+							GEN_INT (offset1))),
+			  gen_realpart (submode, y));
+	  emit_move_insn (change_address (x, submode,
+					  gen_rtx_PLUS (Pmode,
+						        stack_pointer_rtx,
+							GEN_INT (offset2))),
+			  gen_imagpart (submode, y));
+	}
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
 
 	 In that case, change_address is used only to convert
 	 the mode, not to change the address.  */
-      if (stack)
+      else if (stack)
 	{
 	  /* Note that the real part always precedes the imag part in memory
 	     regardless of machine's endianness.  */

@@ -1138,7 +1138,7 @@ enum reg_class
   ((n) < 8 || REX_INT_REGNO_P (n))
 
 #define GENERAL_REG_P(X) \
-  (REG_P (X) && GENERAL_REG_REGNO_P (X))
+  (REG_P (X) && GENERAL_REGNO_P (X))
 
 #define ANY_QI_REG_P(X) (TARGET_64BIT ? GENERAL_REG_P(X) : QI_REG_P (X))
 
