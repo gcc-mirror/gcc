@@ -1,3 +1,11 @@
+2003-05-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (use_return_insn): Do not use a single return
+	instruction for interrupt handlers which have to create a stack
+	frame.
+	(arm_expand_prologue): Do not pre-bias the return address of
+	interrupt handlers which create a stack frame.
+
 2003-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
