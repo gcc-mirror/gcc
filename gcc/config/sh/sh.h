@@ -732,8 +732,7 @@ struct sh_args {
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)		\
    && ((TYPE) == 0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))	\
-   /* ??? This is questionable.  Should perhaps be deleted.  */	\
-   && (! TARGET_SH3E || (TYPE) == 0 || (MODE) != BLKmode))
+   && (TARGET_SH3E && (ROUND_REG((CUM), (MODE)) + (GET_MODE_SIZE(MODE)/4) < NPARM_REGS (MODE))))
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
