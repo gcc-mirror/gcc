@@ -1,3 +1,9 @@
+2004-12-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/19211
+	* config/darwin.c (machopic_legitimize_pic_address): If the orig
+	is subregister return orig.
+
 2004-12-31  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-scalar-evolution.c (instantiate_parameters_1): Copy the
