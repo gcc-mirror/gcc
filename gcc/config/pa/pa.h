@@ -1755,7 +1755,8 @@ do { 									\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.blockz "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
+  fprintf (FILE, "\t.blockz "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
+	   (unsigned HOST_WIDE_INT)(SIZE))
 
 /* This says how to output an assembler line to define a global common symbol
    with size SIZE (in bytes) and alignment ALIGN (in bits).  */
@@ -1764,7 +1765,8 @@ do { 									\
 { bss_section ();							\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
-	   MAX ((HOST_WIDE_INT)(SIZE), (HOST_WIDE_INT)((ALIGNED) / BITS_PER_UNIT)));}
+	   MAX ((unsigned HOST_WIDE_INT)(SIZE),				\
+		((unsigned HOST_WIDE_INT)(ALIGNED) / BITS_PER_UNIT)));}
 
 /* This says how to output an assembler line to define a local common symbol
    with size SIZE (in bytes) and alignment ALIGN (in bits).  */
@@ -1774,7 +1776,7 @@ do { 									\
   fprintf ((FILE), "\t.align %d\n", ((ALIGNED) / BITS_PER_UNIT));	\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), "\n\t.block "HOST_WIDE_INT_PRINT_UNSIGNED"\n",	\
-	   (SIZE));}
+	   (unsigned HOST_WIDE_INT)(SIZE));}
   
 #define ASM_PN_FORMAT "%s___%lu"
 

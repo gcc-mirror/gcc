@@ -141,7 +141,8 @@ do {									\
   bss_section ();							\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
-	   MAX ((SIZE), ((ALIGN) / BITS_PER_UNIT)));			\
+	   MAX ((unsigned HOST_WIDE_INT)(SIZE),				\
+		((unsigned HOST_WIDE_INT)(ALIGN) / BITS_PER_UNIT)));	\
 } while (0)
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
@@ -150,7 +151,8 @@ do {									\
   bss_section ();							\
   fprintf ((FILE), "\t.align %d\n", ((ALIGN) / BITS_PER_UNIT));		\
   assemble_name ((FILE), (NAME));					\
-  fprintf ((FILE), "\n\t.block "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE));\
+  fprintf ((FILE), "\n\t.block "HOST_WIDE_INT_PRINT_UNSIGNED"\n",	\
+	   (unsigned HOST_WIDE_INT)(SIZE));				\
 } while (0)
 
 /* The define in pa.h doesn't work with the alias attribute.  The
