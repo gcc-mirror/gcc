@@ -104,7 +104,7 @@ int missing_extern_C_count = 0;
    directory.  (It might be more efficient to do directory pruning
    earlier in fixproto, but this is simpler and easier to customize.) */
 
-static char *files_to_ignore[] = {
+static const char *const files_to_ignore[] = {
   "X11/",
   FIXPROTO_IGNORE_LIST
   0
@@ -215,9 +215,9 @@ add_symbols (flags, names)
 }
 
 struct std_include_entry {
-  const char *name;
-  symbol_flags flags;
-  namelist names;
+  const char *const name;
+  const symbol_flags flags;
+  const namelist names;
 };
 
 const char NONE[] = "";  /* The empty namelist.  */
@@ -225,9 +225,9 @@ const char NONE[] = "";  /* The empty namelist.  */
 /* Special name to indicate a continuation line in std_include_table.  */
 const char CONTINUED[] = "";
 
-struct std_include_entry *include_entry;
+const struct std_include_entry *include_entry;
 
-struct std_include_entry std_include_table [] = {
+const struct std_include_entry std_include_table [] = {
   { "ctype.h", ANSI_SYMBOL,
       "isalnum\0isalpha\0iscntrl\0isdigit\0isgraph\0islower\0\
 isprint\0ispunct\0isspace\0isupper\0isxdigit\0tolower\0toupper\0" },
@@ -1102,7 +1102,7 @@ main (argc, argv)
 #ifdef FIXPROTO_IGNORE_LIST
   for (i = 0; files_to_ignore[i] != NULL; i++)
     {
-      char *ignore_name = files_to_ignore[i];
+      const char *const ignore_name = files_to_ignore[i];
       int ignore_len = strlen (ignore_name);
       if (strncmp (inc_filename, ignore_name, ignore_len) == 0)
 	{
@@ -1134,7 +1134,7 @@ main (argc, argv)
 
   if (include_entry->name != NULL)
     {
-      struct std_include_entry *entry;
+      const struct std_include_entry *entry;
       cur_symbol_table_size = 0;
       for (entry = include_entry; ;)
 	{

@@ -4531,7 +4531,7 @@ do_processing ()
 #endif /* !defined (UNPROTOIZE) */
 }
 
-static struct option longopts[] =
+static const struct option longopts[] =
 {
   {"version", 0, 0, 'V'},
   {"file_name", 0, 0, 'p'},

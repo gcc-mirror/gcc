@@ -357,7 +357,7 @@ struct parser_ctxt *ctxp_for_generation = NULL;
    covers both integral/floating point division. The code is changed
    once the type of both operator is worked out.  */
 
-static enum tree_code binop_lookup[19] = 
+static const enum tree_code binop_lookup[19] = 
   { 
     PLUS_EXPR, MINUS_EXPR, MULT_EXPR, RDIV_EXPR, TRUNC_MOD_EXPR,
     LSHIFT_EXPR, RSHIFT_EXPR, URSHIFT_EXPR, 

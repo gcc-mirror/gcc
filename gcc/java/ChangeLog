@@ -1,3 +1,12 @@
+2001-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* chartables.h: Const-ify.
+	* gjavah.c (options): Likewise.
+	* jcf-dump.c (options): Likewise.
+	* jv-scan.c (options): Likewise.
+	* lex.c (java_start_char_p, java_part_char_p): Likewise.
+	* parse.y (binop_lookup): Likewise.
+
 2001-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (keyword.h): Pass -C to gperf to const-ify

@@ -1,3 +1,18 @@
+2001-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (is_ctor_dtor): Const-ify.
+	* m88k-protos.c (output_file_start): Likewise.
+	* m88k.c (m88k_lang_independent_options, output_options,
+	output_file_start): Likewise.
+	* fix-header.c (files_to_ignore, std_include_entry, include_entry,
+	std_include_table, main): Likewise.
+	* protoize.c (longopts): Likewise.
+	* regclass.c (int_reg_class_contents): Likewise.
+	* toplev.c (dump_file, f_options, W_options): Make static.
+	(lang_independent_options, f_options, W_options): Const-ify.
+	* tree-dump.c (dump_file_info): Likewise.
+	* unroll.c (_factor): Make static.
+
 Wed Dec 26 17:55:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_align_insns): Remove warning.

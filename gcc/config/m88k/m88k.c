@@ -1514,16 +1514,16 @@ pc_or_label_ref (op, mode)
 /* This definition must match lang_independent_options from toplev.c.  */
 struct m88k_lang_independent_options
 {
-  const char *string;
-  int *variable;
-  int on_value;
-  const char *description;
+  const char *const string;
+  int *const variable;
+  const int on_value;
+  const char *const description;
 };
 
 static void output_options PARAMS ((FILE *,
-				    struct m88k_lang_independent_options *,
+				    const struct m88k_lang_independent_options *,
 				    int,
-				    struct m88k_lang_independent_options *,
+				    const struct m88k_lang_independent_options *,
 				    int, int, int, const char *, const char *,
 				    const char *));
 
@@ -1552,8 +1552,8 @@ static void
 output_options (file, f_options, f_len, W_options, W_len,
 		pos, max, sep, indent, term)
      FILE *file;
-     struct m88k_lang_independent_options *f_options;
-     struct m88k_lang_independent_options *W_options;
+     const struct m88k_lang_independent_options *f_options;
+     const struct m88k_lang_independent_options *W_options;
      int f_len, W_len;
      int pos;
      int max;
@@ -1599,8 +1599,8 @@ output_options (file, f_options, f_len, W_options, W_len,
 void
 output_file_start (file, f_options, f_len, W_options, W_len)
      FILE *file;
-     struct m88k_lang_independent_options *f_options;
-     struct m88k_lang_independent_options *W_options;
+     const struct m88k_lang_independent_options *f_options;
+     const struct m88k_lang_independent_options *W_options;
      int f_len, W_len;
 {
   register int pos;

@@ -785,8 +785,8 @@ dump_node (t, flags, stream)
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
-  const char *suffix;		/* suffix to give output file.  */
-  const char *swtch;		/* command line switch */
+  const char *const suffix;	/* suffix to give output file.  */
+  const char *const swtch;	/* command line switch */
   int flags;			/* user flags */
   int state;			/* state of play */
 };

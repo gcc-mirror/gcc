@@ -778,7 +778,7 @@ DEFUN(process_class, (jcf),
 #define OPT_VERSION   LONG_OPT (3)
 #define OPT_JAVAP     LONG_OPT (4)
 
-static struct option options[] =
+static const struct option options[] =
 {
   { "classpath", required_argument, NULL, OPT_classpath },
   { "CLASSPATH", required_argument, NULL, OPT_CLASSPATH },

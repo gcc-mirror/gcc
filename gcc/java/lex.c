@@ -738,7 +738,7 @@ java_start_char_p (c)
      unicode_t c;
 {
   unsigned int hi = c / 256;
-  char *page = type_table[hi];
+  const char *const page = type_table[hi];
   unsigned long val = (unsigned long) page;
   int flags;
 
@@ -758,7 +758,7 @@ java_part_char_p (c)
      unicode_t c;
 {
   unsigned int hi = c / 256;
-  char *page = type_table[hi];
+  const char *const page = type_table[hi];
   unsigned long val = (unsigned long) page;
   int flags;
 

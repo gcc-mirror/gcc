@@ -2103,7 +2103,7 @@ DEFUN(process_file, (jcf, out),
 #define OPT_MD        LONG_OPT (12)
 #define OPT_MMD       LONG_OPT (13)
 
-static struct option options[] =
+static const struct option options[] =
 {
   { "classpath", required_argument, NULL, OPT_classpath },
   { "CLASSPATH", required_argument, NULL, OPT_CLASSPATH },

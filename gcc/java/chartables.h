@@ -7,7 +7,7 @@
 #define LETTER_START 1
 #define LETTER_PART  2
 
-static char page0[256] = {
+static const char page0[256] = {
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 0, 0, 0, 0, 0, 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
@@ -87,7 +87,7 @@ static char page0[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START)
 };
 
-static char page2[256] = {
+static const char page2[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -178,7 +178,7 @@ static char page2[256] = {
   0, 0
 };
 
-static char page3[256] = {
+static const char page3[256] = {
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
@@ -252,7 +252,7 @@ static char page3[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page4[256] = {
+static const char page4[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -372,7 +372,7 @@ static char page4[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0
 };
 
-static char page5[256] = {
+static const char page5[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -443,7 +443,7 @@ static char page5[256] = {
   0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page6[256] = {
+static const char page6[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -530,7 +530,7 @@ static char page6[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 0, 0, 0
 };
 
-static char page7[256] = {
+static const char page7[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   (LETTER_PART | LETTER_START), (LETTER_PART), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -580,7 +580,7 @@ static char page7[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page9[256] = {
+static const char page9[256] = {
   0, (LETTER_PART), (LETTER_PART), (LETTER_PART), 0, 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -659,7 +659,7 @@ static char page9[256] = {
   0, 0, 0, 0, 0, 0, 0
 };
 
-static char page10[256] = {
+static const char page10[256] = {
   0, 0, (LETTER_PART), 0, 0, (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -727,7 +727,7 @@ static char page10[256] = {
   (LETTER_PART), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page11[256] = {
+static const char page11[256] = {
   0, (LETTER_PART), (LETTER_PART), (LETTER_PART), 0, 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -788,7 +788,7 @@ static char page11[256] = {
   0, 0, 0, 0, 0, 0
 };
 
-static char page12[256] = {
+static const char page12[256] = {
   0, (LETTER_PART), (LETTER_PART), (LETTER_PART), 0, 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -859,7 +859,7 @@ static char page12[256] = {
   0, 0, 0, 0, 0, 0
 };
 
-static char page13[256] = {
+static const char page13[256] = {
   0, 0, (LETTER_PART), (LETTER_PART), 0, (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -931,7 +931,7 @@ static char page13[256] = {
   (LETTER_PART), (LETTER_PART), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page14[256] = {
+static const char page14[256] = {
   0, (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -997,7 +997,7 @@ static char page14[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page15[256] = {
+static const char page15[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, (LETTER_PART), (LETTER_PART), 0, 0, 0, 0, 0, 0, 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
@@ -1046,7 +1046,7 @@ static char page15[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page16[256] = {
+static const char page16[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1120,7 +1120,7 @@ static char page16[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page17[256] = {
+static const char page17[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1244,7 +1244,7 @@ static char page17[256] = {
   0
 };
 
-static char page18[256] = {
+static const char page18[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1363,7 +1363,7 @@ static char page18[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START)
 };
 
-static char page19[256] = {
+static const char page19[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1456,7 +1456,7 @@ static char page19[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page20[256] = {
+static const char page20[256] = {
   0, (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1587,7 +1587,7 @@ static char page20[256] = {
   (LETTER_PART | LETTER_START)
 };
 
-static char page22[256] = {
+static const char page22[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1701,7 +1701,7 @@ static char page22[256] = {
   0, 0, 0, 0, 0, 0
 };
 
-static char page23[256] = {
+static const char page23[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -1746,7 +1746,7 @@ static char page23[256] = {
   0, 0
 };
 
-static char page24[256] = {
+static const char page24[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 0, 0, 0, 0, 0, 
@@ -1821,7 +1821,7 @@ static char page24[256] = {
   0
 };
 
-static char page30[256] = {
+static const char page30[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -1948,7 +1948,7 @@ static char page30[256] = {
   0
 };
 
-static char page31[256] = {
+static const char page31[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2060,7 +2060,7 @@ static char page31[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 0, 0, 0
 };
 
-static char page32[256] = {
+static const char page32[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (LETTER_PART), (LETTER_PART), 
@@ -2088,7 +2088,7 @@ static char page32[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page33[256] = {
+static const char page33[256] = {
   0, 0, (LETTER_PART | LETTER_START), 0, 0, 0, 0, 
   (LETTER_PART | LETTER_START), 0, 0, (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2124,7 +2124,7 @@ static char page33[256] = {
   0, 0, 0, 0
 };
 
-static char page48[256] = {
+static const char page48[256] = {
   0, 0, 0, 0, 0, (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
@@ -2227,7 +2227,7 @@ static char page48[256] = {
   (LETTER_PART | LETTER_START), 0
 };
 
-static char page49[256] = {
+static const char page49[256] = {
   0, 0, 0, 0, 0, (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2313,7 +2313,7 @@ static char page49[256] = {
   0, 0, 0, 0, 0, 0, 0
 };
 
-static char page52[256] = {
+static const char page52[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2327,7 +2327,7 @@ static char page52[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page77[256] = {
+static const char page77[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2375,7 +2375,7 @@ static char page77[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START)
 };
 
-static char page78[256] = {
+static const char page78[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2389,7 +2389,7 @@ static char page78[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page159[256] = {
+static const char page159[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2403,7 +2403,7 @@ static char page159[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page164[256] = {
+static const char page164[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2508,7 +2508,7 @@ static char page164[256] = {
   (LETTER_PART | LETTER_START)
 };
 
-static char page172[256] = {
+static const char page172[256] = {
   (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2522,7 +2522,7 @@ static char page172[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page215[256] = {
+static const char page215[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2536,7 +2536,7 @@ static char page215[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char page250[256] = {
+static const char page250[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2571,7 +2571,7 @@ static char page250[256] = {
   0, 0, 0, 0, 0
 };
 
-static char page251[256] = {
+static const char page251[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2676,7 +2676,7 @@ static char page251[256] = {
   (LETTER_PART | LETTER_START)
 };
 
-static char page253[256] = {
+static const char page253[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 
@@ -2777,7 +2777,7 @@ static char page253[256] = {
   (LETTER_PART | LETTER_START), (LETTER_PART | LETTER_START), 0, 0, 0, 0
 };
 
-static char page254[256] = {
+static const char page254[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0, 0, 0, 0, 0, (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -2858,7 +2858,7 @@ static char page254[256] = {
   (LETTER_PART | LETTER_START), 0, 0, (LETTER_PART)
 };
 
-static char page255[256] = {
+static const char page255[256] = {
   0, 0, 0, 0, (LETTER_PART | LETTER_START), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
   (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), (LETTER_PART), 
@@ -2950,7 +2950,7 @@ static char page255[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char *type_table[256] = {
+static const char *const type_table[256] = {
   page0,
   (char *) (LETTER_PART | LETTER_START),
   page2,

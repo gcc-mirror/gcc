@@ -140,7 +140,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define NUM_FACTORS 4
 
-struct _factor { int factor, count; }
+static struct _factor { const int factor; int count; }
 factors[NUM_FACTORS] = { {2, 0}, {3, 0}, {5, 0}, {7, 0}};
 
 /* Describes the different types of loop unrolling performed.  */
