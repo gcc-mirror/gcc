@@ -2364,7 +2364,7 @@ static int warn_B;
 static int warn_std;
 
 /* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
-static int *warn_std_ptr = NULL_PTR;
+static int *warn_std_ptr = 0;
 
 /* Create the vector `switches' and its contents.
    Store its length in `n_switches'.  */
