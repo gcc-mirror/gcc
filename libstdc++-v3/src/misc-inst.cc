@@ -262,11 +262,13 @@ namespace std {
 
   template
     void 
-    _S_pad_char (basic_ios<char>&, char*, const char*, int, int);
+    _S_pad_char (basic_ios<char>&, char*, const char*,
+		 const streamsize, const streamsize);
 #ifdef _GLIBCPP_USE_WCHAR_T
   template
     void 
-    _S_pad_char (basic_ios<wchar_t>&, wchar_t*, const wchar_t*, int, int);
+    _S_pad_char (basic_ios<wchar_t>&, wchar_t*, const wchar_t*,
+		 const streamsize, const streamsize);
 #endif
 
   template
@@ -283,16 +285,16 @@ namespace std {
   template
     ostreambuf_iterator<char>
     _S_output_float (ostreambuf_iterator<char>, ios_base&, char, 
-		     const char*, unsigned);
+		     const char*, size_t);
 #ifdef _GLIBCPP_USE_WCHAR_T
   template
     ostreambuf_iterator<wchar_t>
     _S_output_float (ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, 
-		     const wchar_t*, unsigned);
+		     const wchar_t*, size_t);
 #endif
 
   template
-    int
+    streamsize
     _S_copy_streambufs(basic_ios<char>&, 
 		       basic_streambuf<char>*,
 		       basic_streambuf<char>*); 
@@ -304,13 +306,3 @@ namespace std {
 		       basic_streambuf<wchar_t>*); 
 #endif
 } //std
-
-
-
-
-
-
-
-
-
-
