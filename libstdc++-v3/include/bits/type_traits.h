@@ -322,13 +322,13 @@ template<typename _Tp> struct _Is_normal_iterator {
 };
 
 // Forward declaration hack, should really include this from somewhere.
-namespace std 
+namespace __gnu_cxx
 {
   template<typename _Iterator, typename _Container> class __normal_iterator;
 }
 
 template<typename _Iterator, typename _Container>
-struct _Is_normal_iterator< std::__normal_iterator<_Iterator, _Container> > {
+struct _Is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator, _Container> > {
    typedef __true_type _Normal;
 };
 

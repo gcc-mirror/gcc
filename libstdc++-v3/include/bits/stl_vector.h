@@ -175,8 +175,9 @@ public:
   typedef _Tp 						value_type;
   typedef value_type* 					pointer;
   typedef const value_type* 				const_pointer;
-  typedef __normal_iterator<pointer, vector_type> 	iterator;
-  typedef __normal_iterator<const_pointer, vector_type> const_iterator;
+  typedef __gnu_cxx::__normal_iterator<pointer, vector_type> 	iterator;
+  typedef __gnu_cxx::__normal_iterator<const_pointer, vector_type>
+                                                        const_iterator;
   typedef value_type& 					reference;
   typedef const value_type& 				const_reference;
   typedef size_t 					size_type;
