@@ -1493,11 +1493,10 @@ extern struct rtx_def *legitimize_pic_address ();
 	return 0;						\
     return 8;
 
-/* SPARC offers addressing modes which are "as cheap as a register".
-   See sparc.c (or gcc.texinfo) for details.  */
+/* Compute the cost of an address.  For the sparc, all valid addresses are
+   the same cost.  */
 
-#define ADDRESS_COST(RTX) \
-  (GET_CODE (RTX) == REG ? 1 : sparc_address_cost (RTX))
+#define ADDRESS_COST(RTX)  1
 
 /* Compute extra cost of moving data between one register class
    and another.  */
