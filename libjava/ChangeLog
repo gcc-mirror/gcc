@@ -1,3 +1,8 @@
+2003-01-03  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/FileInputStream.java (finalize): Don't explicitly
+	finalize FileDescriptor.
+
 2003-01-03  Jeff Sturm  <jsturm@one-point.com>
 
 	* configure.host (sparc*-*): Enable bytecode interpreter.
