@@ -13,19 +13,19 @@ dnl retarray, array, pdim and mstride should not be used.
 dnl The variable n is declared as index_type and may be used.
 dnl Other variable declarations may be placed at the start of the code,
 dnl The types of the array parameter and the return value are
-dnl type_name and rtype_name respectively.
+dnl atype_name and rtype_name respectively.
 dnl Execution should be allowed to continue to the end of the block.
 dnl You should not return or break from the inner loop of the implementation.
 dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
 `void
-`__'name`'rtype_qual`_'type_code (rtype * retarray, atype *array, index_type *pdim)
+`__'name`'rtype_qual`_'atype_code (rtype * retarray, atype *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
   index_type sstride[GFC_MAX_DIMENSIONS - 1];
   index_type dstride[GFC_MAX_DIMENSIONS - 1];
-  type_name *base;
+  atype_name *base;
   rtype_name *dest;
   index_type rank;
   index_type n;
@@ -70,7 +70,7 @@ define(START_ARRAY_FUNCTION,
 
   while (base)
     {
-      type_name *src;
+      atype_name *src;
       rtype_name result;
       src = base;
       {
@@ -120,7 +120,7 @@ define(FINISH_ARRAY_FUNCTION,
 }')dnl
 define(START_MASKED_ARRAY_FUNCTION,
 `void
-`__m'name`'rtype_qual`_'type_code (rtype * retarray, atype * array, index_type *pdim, gfc_array_l4 * mask)
+`__m'name`'rtype_qual`_'atype_code (rtype * retarray, atype * array, index_type *pdim, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -128,7 +128,7 @@ define(START_MASKED_ARRAY_FUNCTION,
   index_type dstride[GFC_MAX_DIMENSIONS - 1];
   index_type mstride[GFC_MAX_DIMENSIONS - 1];
   rtype_name *dest;
-  type_name *base;
+  atype_name *base;
   GFC_LOGICAL_4 *mbase;
   int rank;
   int dim;
@@ -189,7 +189,7 @@ define(START_MASKED_ARRAY_FUNCTION,
 
   while (base)
     {
-      type_name *src;
+      atype_name *src;
       GFC_LOGICAL_4 *msrc;
       rtype_name result;
       src = base;

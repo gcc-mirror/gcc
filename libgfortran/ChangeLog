@@ -1,3 +1,17 @@
+2004-05-18  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.am: Remove references to types.m4.
+	* m4/iparm.m4: Merge with types.m4.
+	* m4/types.m4: Remove.
+	* m4/cshift1.m4, m4/dotprod.m4, m4/dotprodc.m4, m4/dotprodl.m4,
+	m4/eoshift1.m4, m4/eoshift3.m4, m4/iforeach.m4, m4/ifunction.m4,
+	m4/in_pack.m4, m4/in_unpack.m4, m4/iparm.m4, m4/matmul.m4,
+	m4/matmull.m4, m4/maxloc0.m4, m4/maxloc1.m4, m4/maxval.m4,
+	m4/minloc0.m4, m4/minloc1.m4, m4/minval.m4, m4/reshape.m4,
+	m4/shape.m4, m4/specific.m4, m4/specific2.m4, m4/transpose.m4):
+	Update to use new iparm.m4.
+	* generated/*.c: Regenerate.
+
 2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15235

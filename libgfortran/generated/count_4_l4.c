@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-
 void
 __count_4_l4 (gfc_array_i4 * retarray, gfc_array_l4 *array, index_type *pdim)
 {

@@ -30,9 +30,9 @@ include(iparm.m4)dnl
 include(iforeach.m4)dnl
 
 FOREACH_FUNCTION(
-`  type_name minval;
+`  atype_name minval;
 
-  minval = type_max;'
+  minval = atype_max;'
 ,
 `  if (*base < minval)
     {
@@ -42,9 +42,9 @@ FOREACH_FUNCTION(
     }')
 
 MASKED_FOREACH_FUNCTION(
-`  type_name minval;
+`  atype_name minval;
 
-  minval = type_max;'
+  minval = atype_max;'
 ,
 `  if (*mbase && *base < minval)
     {

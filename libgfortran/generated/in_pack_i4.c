@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-
 /* Allocates a block of memory with internal_malloc if the array needs
    repacking.  */
 

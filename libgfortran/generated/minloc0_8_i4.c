@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
-
 void
 __minloc0_8_i4 (gfc_array_i8 * retarray, gfc_array_i4 *array)
 {

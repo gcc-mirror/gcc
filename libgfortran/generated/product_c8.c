@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-
 void
 __product_c8 (gfc_array_c8 * retarray, gfc_array_c8 *array, index_type *pdim)
 {

@@ -24,18 +24,14 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include <string.h>
 #include "libgfortran.h"'
-include(types.m4)dnl
-define(htype_kind, regexp(file, `_\([0-9]+\)\.', `\1'))dnl
-define(htype_code,`i'rtype_name)dnl
-define(htype,get_arraytype(i,htype_kind))dnl
-define(htype_name, get_typename(i,htype_kind))dnl
+include(iparm.m4)dnl
 
 static const char zeros[16] =
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void
-`__eoshift1_'htype_kind (const gfc_array_char * ret, const gfc_array_char * array,
-    const htype * h, const char * pbound, const htype_name * pwhich)
+`__eoshift1_'atype_kind (const gfc_array_char * ret, const gfc_array_char * array,
+    const atype * h, const char * pbound, const atype_name * pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];
@@ -52,7 +48,7 @@ void
 `  /* h.* indicates the shift array.  */'
   index_type hstride[GFC_MAX_DIMENSIONS - 1];
   index_type hstride0;
-  const htype_name *hptr;
+  const atype_name *hptr;
 
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -61,8 +57,8 @@ void
   index_type len;
   index_type n;
   int which;
-  htype_name sh;
-  htype_name delta;
+  atype_name sh;
+  atype_name delta;
 
   if (pwhich)
     which = *pwhich - 1;
