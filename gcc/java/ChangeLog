@@ -1,3 +1,12 @@
+2001-09-26  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (check_final_variable_indirect_assignment): For
+	COMPOUND_EXPR, return only if finals were found initialized
+	properly, if not, keep on checking.
+	(check_final_variable_global_assignment_flag): New local
+	error_found, set when appropriate and used to decide whether to
+	report uninitialized finals. Fixed typo in comment.
+
 2001-09-22  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* decl.c (init_decl_processing): Fixed typo in predef_filenames
