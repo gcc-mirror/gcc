@@ -895,6 +895,12 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
+#if defined (DWARF_DEBUGGING_INFO) && DWARF_VERSION == 2
+  /* Output DWARF definition of the function.  */
+  if (write_symbols == DWARF_DEBUG)
+    dwarfout_begin_prologue ();
+#endif
+
   /* For SDB and XCOFF, the function beginning must be marked between
      the function label and the prologue.  We always need this, even when
      -g1 was used.  Defer on MIPS systems so that parameter descriptions
