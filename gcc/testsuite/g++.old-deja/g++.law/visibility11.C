@@ -37,7 +37,8 @@ public:
 
 class D : public B, public C
 {
-
+public:
+  D();
 protected:
 
     virtual void State(int a)
@@ -46,3 +47,6 @@ protected:
         C::State(a);
     }
 };
+
+
+

@@ -616,7 +616,7 @@ class ostream : public ios
     void do_osfx();
   public:
     ostream();
-    ostream(streambuf* sb, ostream* tied=((void *)0) );
+    ostream(streambuf* sb, ostream* tied=(__null) );
     ~ostream();
 
     int opfx() { if (!good()) return 0; if (_tie) _tie->flush(); return 1; }
@@ -661,7 +661,7 @@ class istream : public ios
     size_t _gcount;
   public:
     istream();
-    istream(streambuf* sb, ostream*tied=((void *)0) );
+    istream(streambuf* sb, ostream*tied=(__null) );
     ~istream();
     streambuf* istreambuf() const { return _strbuf; }
     istream& get(char& c);
@@ -2238,7 +2238,7 @@ class strstreambuf : public streambuf {
   public:
     strstreambuf();
     strstreambuf(int initial);
-    strstreambuf(char *ptr, int size, char *pstart = ((void *)0) );
+    strstreambuf(char *ptr, int size, char *pstart = (__null) );
     ~strstreambuf();
     int frozen() { return _frozen; }
     void freeze(int n=1) { _frozen = n != 0; }

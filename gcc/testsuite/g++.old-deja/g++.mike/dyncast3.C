@@ -3,11 +3,11 @@
 // Ensure that the return type of dynamic_cast is the real type.
 
 struct B {
-  virtual f() { }
+  virtual int f() { }
 };
 
 struct D : public B {
-  virtual f() { }
+  virtual int f() { }
   int i;
 } od;
 

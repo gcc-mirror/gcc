@@ -1,5 +1,5 @@
 // test for implicit declaration
-// Special g++ Options: -w
+// Special g++ Options: -w -fpermissive
 
 int
 main ()

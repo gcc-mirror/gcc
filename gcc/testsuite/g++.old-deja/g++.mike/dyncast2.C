@@ -6,11 +6,11 @@
 #include <typeinfo>
 
 struct B {
-  virtual f() { }
+  virtual int f() { }
 } ob;
 
 struct D : public B {
-  virtual f() { }
+  virtual int f() { }
 } od;
 
 main() {
