@@ -1483,6 +1483,7 @@ try_combine (i3, i2, i1)
 	  /* If I2DEST is a hard register or the only use of a pseudo,
 	     we can change its mode.  */
 	  if (GET_MODE (SET_DEST (newpat)) != GET_MODE (i2dest)
+	      && GET_MODE (SET_DEST (newpat)) != VOIDmode
 	      && (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
 		  || (reg_n_sets[REGNO (i2dest)] == 1 && ! added_sets_2
 		      && ! REG_USERVAR_P (i2dest))))
@@ -2952,6 +2953,18 @@ subst (x, from, to, in_dest, unique_copy)
 	     GET_MODE_BITSIZE (mode) - 1);
 	  goto restart;
 	}
+
+      /* If we are adding two things that have no bits in common, convert
+	 the addition into an IOR.  This will often be further simplified,
+	 for example in cases like ((a & 1) + (a & 2)), which can
+	 become a & 3.  */
+
+      if ((significant_bits (XEXP (x, 0), mode)
+	   & significant_bits (XEXP (x, 1), mode)) == 0)
+	{
+	  x = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+	  goto restart;
+	}
       break;
 
     case MINUS:
@@ -2964,18 +2977,6 @@ subst (x, from, to, in_dest, unique_copy)
 	{
 	  x = simplify_and_const_int (0, mode, XEXP (x, 0),
 				      - INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
-	  goto restart;
-	}
-
-      /* If we are adding two things that have no bits in common, convert
-	 the addition into an IOR.  This will often be further simplified,
-	 for example in cases like ((a & 1) + (a & 2)), which can
-	 become a & 3.  */
-
-      if ((significant_bits (XEXP (x, 0), mode)
-	   & significant_bits (XEXP (x, 1), mode)) == 0)
-	{
-	  x = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
 	  goto restart;
 	}
       break;
