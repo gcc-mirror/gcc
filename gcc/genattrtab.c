@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -94,8 +94,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       EQ_ATTR rtx is true if !volatil and false if volatil.  */
 
 
-#include "gvarargs.h"
 #include "hconfig.h"
+/* gvarargs must always be included after *config.h.  */
+#include "gvarargs.h"
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 #include <stdio.h>
