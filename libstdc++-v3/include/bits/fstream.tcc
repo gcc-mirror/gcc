@@ -44,15 +44,15 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_internal_buffer()
     {
-      if (!_M_buf_allocated && this->_M_buf_size)
+      // Allocate internal buffer only if one doesn't already exist
+      // (either allocated or provided by the user via setbuf).
+      if (!_M_buf_allocated && !this->_M_buf)
 	{
-	  // Allocate internal buffer.
 	  this->_M_buf = new char_type[this->_M_buf_size];
 	  _M_buf_allocated = true;
 	}
     }
 
-  // Both close and setbuf need to deallocate internal buffers, if it exists.
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
@@ -213,8 +213,8 @@ namespace std
 	  else
 	    {
               // Worst-case number of external bytes.
-              // XXX Not done encoding() == -1.
-              const int __enc = _M_codecvt->encoding();
+	      // XXX Not done encoding() == -1.
+	      const int __enc = _M_codecvt->encoding();
 	      streamsize __blen; // Minimum buffer size.
 	      streamsize __rlen; // Number of chars to read.
 	      if (__enc > 0)
@@ -539,29 +539,22 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     setbuf(char_type* __s, streamsize __n)
     {
-      if (!this->is_open() && __s == 0 && __n == 0)
-	this->_M_buf_size = 1;
-      else if (__s && __n > 0)
-	{
-	  // This is implementation-defined behavior, and assumes that
-	  // an external char_type array of length __n exists and has
-	  // been pre-allocated. If this is not the case, things will
-	  // quickly blow up. When __n > 1, __n - 1 positions will be
-	  // used for the get area, __n - 1 for the put area and 1
-	  // position to host the overflow char of a full put area.
-	  // When __n == 1, 1 position will be used for the get area
-	  // and 0 for the put area, as in the unbuffered case above.
-
-	  // Step 1: Destroy the current internal array.
-	  _M_destroy_internal_buffer();
-	  
-	  // Step 2: Use the external array.
-	  this->_M_buf = __s;
-	  this->_M_buf_size = __n;
-	  _M_reading = false;
-	  _M_writing = false;
-	  _M_set_buffer(-1);
-	}
+      if (!this->is_open())
+	if (__s == 0 && __n == 0)
+	  this->_M_buf_size = 1;
+	else if (__s && __n > 0)
+	  {
+	    // This is implementation-defined behavior, and assumes that
+	    // an external char_type array of length __n exists and has
+	    // been pre-allocated. If this is not the case, things will
+	    // quickly blow up. When __n > 1, __n - 1 positions will be
+	    // used for the get area, __n - 1 for the put area and 1
+	    // position to host the overflow char of a full put area.
+	    // When __n == 1, 1 position will be used for the get area
+	    // and 0 for the put area, as in the unbuffered case above.
+	    this->_M_buf = __s;
+	    this->_M_buf_size = __n;
+	  }
       return this; 
     }
   

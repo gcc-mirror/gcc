@@ -1,3 +1,17 @@
+2003-11-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12875
+	* include/bits/fstream.tcc (setbuf): Don't do anything
+	after open(), in particular don't discard data.
+	(_M_allocate_internal_buffer): Tweak to not allocate memory
+	in case the buffer is provided by the user via setbuf.
+	* include/ext/stdio_filebuf.h: Tweak comment.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-1.cc: New.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/2.cc: Tweak, now
+	setbuf does nothing after open().
+	* testsuite/27_io/basic_filebuf/setbuf/char/3.cc: Likewise.
+
 2003-11-11  Doug Gregor  <gregod@cs.rpi.edu>
 
 	* docs/html/debug.html: Document libstdc++ debug mode.

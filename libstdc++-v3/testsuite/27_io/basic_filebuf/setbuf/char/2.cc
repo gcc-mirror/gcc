@@ -32,8 +32,8 @@ void test01()
   const char* strlit = "how to tell a story and other essays: mark twain";
   const size_t strlitsize = std::strlen(strlit);
   filebuf fbuf;
-  fbuf.open("tmp_setbuf2", ios_base::out);
   fbuf.pubsetbuf(buf, 512);
+  fbuf.open("tmp_setbuf2", ios_base::out);
   fbuf.sputn(strlit, strlitsize);
   VERIFY( std::strncmp(strlit, buf, strlitsize) == 0 );
 }
