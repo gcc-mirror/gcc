@@ -1,3 +1,10 @@
+2005-03-15  Vincent Celier  <celier@adacore.com>
+
+	* mlib-tgt-darwin.adb (Library_Exist_For, Library_File_Name_For): 
+        Add new parameter In_Tree to specify the project tree: needed
+        by the project manager. Adapt to changes in project manager
+        using new parameter In_Tree.
+
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (ada/treeprs.ads, ada/einfo.h, ada/sinfo.h,
@@ -806,8 +813,8 @@
 2005-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR ada/19942
-	* utils.c (gnat_type_for_mode): Return null instead of ICE because we asked
-	for an unknown mode.
+	* utils.c (gnat_type_for_mode): Return null instead of ICE because
+        we asked for an unknown mode.
 
 2005-02-12  Richard Henderson  <rth@redhat.com>
 
