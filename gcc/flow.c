@@ -263,12 +263,7 @@ static int loop_depth;
 static int cc0_live;
 
 /* During propagate_block, this contains a list of all the MEMs we are
-   tracking for dead store elimination. 
-
-   ?!? Note we leak memory by not free-ing items on this list.  We need to
-   write some generic routines to operate on memory lists since cse, gcse,
-   loop, sched, flow and possibly other passes all need to do basically the
-   same operations on these lists.  */
+   tracking for dead store elimination.  */
 
 static rtx mem_set_list;
 
@@ -3227,7 +3222,6 @@ propagate_block (old, first, last, significant, bnum, flags)
   live = ALLOCA_REG_SET ();
 
   cc0_live = 0;
-  mem_set_list = NULL_RTX;
 
   if (flags & PROP_REG_INFO)
     {
@@ -3451,7 +3445,7 @@ propagate_block (old, first, last, significant, bnum, flags)
 				      flags, insn);
 
 		  /* Calls also clobber memory.  */
-		  mem_set_list = NULL_RTX;
+		  free_EXPR_LIST_list (&mem_set_list);
 		}
 
 	      /* Update OLD for the registers used or set.  */
@@ -3473,6 +3467,7 @@ propagate_block (old, first, last, significant, bnum, flags)
 
   FREE_REG_SET (dead);
   FREE_REG_SET (live);
+  free_EXPR_LIST_list (&mem_set_list);
 }
 
 /* Return 1 if X (the body of an insn, or part of it) is just dead stores
@@ -3730,20 +3725,23 @@ invalidate_mems_from_autoinc (insn)
         {
           rtx temp = mem_set_list;
           rtx prev = NULL_RTX;
+	  rtx next;
 
           while (temp)
 	    {
+	      next = XEXP (temp, 1);
 	      if (reg_overlap_mentioned_p (XEXP (note, 0), XEXP (temp, 0)))
 	        {
 	          /* Splice temp out of list.  */
 	          if (prev)
-	            XEXP (prev, 1) = XEXP (temp, 1);
+	            XEXP (prev, 1) = next;
 	          else
-	            mem_set_list = XEXP (temp, 1);
+	            mem_set_list = next;
+		  free_EXPR_LIST_node (temp);
 	        }
 	      else
 	        prev = temp;
-              temp = XEXP (temp, 1);
+              temp = next;
 	    }
 	}
     }
@@ -3836,9 +3834,11 @@ mark_set_1 (needed, dead, x, insn, significant, flags)
 	{
 	  rtx temp = mem_set_list;
 	  rtx prev = NULL_RTX;
+	  rtx next;
 
 	  while (temp)
 	    {
+	      next = XEXP (temp, 1);
 	      if ((GET_CODE (reg) == MEM
 		   && output_dependence (XEXP (temp, 0), reg))
 		  || (GET_CODE (reg) == REG
@@ -3846,13 +3846,14 @@ mark_set_1 (needed, dead, x, insn, significant, flags)
 		{
 		  /* Splice this entry out of the list.  */
 		  if (prev)
-		    XEXP (prev, 1) = XEXP (temp, 1);
+		    XEXP (prev, 1) = next;
 		  else
-		    mem_set_list = XEXP (temp, 1);
+		    mem_set_list = next;
+		  free_EXPR_LIST_node (temp);
 		}
 	      else
 		prev = temp;
-	      temp = XEXP (temp, 1);
+	      temp = next;
 	    }
 	}
 
@@ -4300,20 +4301,23 @@ mark_used_regs (needed, live, x, flags, insn)
 	    {
 	      rtx temp = mem_set_list;
 	      rtx prev = NULL_RTX;
+	      rtx next;
 
 	      while (temp)
 		{
+		  next = XEXP (temp, 1);
 		  if (anti_dependence (XEXP (temp, 0), x))
 		    {
 		      /* Splice temp out of the list.  */
 		      if (prev)
-			XEXP (prev, 1) = XEXP (temp, 1);
+			XEXP (prev, 1) = next;
 		      else
-			mem_set_list = XEXP (temp, 1);
+			mem_set_list = next;
+		      free_EXPR_LIST_node (temp);
 		    }
 		  else
 		    prev = temp;
-		  temp = XEXP (temp, 1);
+		  temp = next;
 		}
 	    }
 
@@ -4606,7 +4610,7 @@ mark_used_regs (needed, live, x, flags, insn)
 	   So for now, just clear the memory set list and mark any regs
 	   we can find in ASM_OPERANDS as used.  */
 	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
-	  mem_set_list = NULL_RTX;
+	  free_EXPR_LIST_list (&mem_set_list);
 
         /* For all ASM_OPERANDS, we must traverse the vector of input operands.
 	   We can not just fall through here since then we would be confused
