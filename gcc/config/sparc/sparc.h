@@ -663,9 +663,6 @@ extern enum processor_type sparc_cpu;
   { "cpu=",  &sparc_select[1].string, "Use features of and schedule code for given CPU" }, \
   { "tune=", &sparc_select[2].string, "Schedule code for given CPU" }, \
   { "cmodel=", &sparc_cmodel_string, "Use given Sparc code model" }, \
-  { "align-loops=",	&sparc_align_loops_string, "Loop code aligned to this power of 2" }, \
-  { "align-jumps=",	&sparc_align_jumps_string, "Jump targets are aligned to this power of 2" }, \
-  { "align-functions=",	&sparc_align_funcs_string, "Function starts are aligned to this power of 2" }, \
   SUBTARGET_OPTIONS 					\
 }
 
@@ -682,18 +679,6 @@ struct sparc_cpu_select
 };
 
 extern struct sparc_cpu_select sparc_select[];
-
-/* Variables to record values the user passes.  */
-extern const char *sparc_align_loops_string;
-extern const char *sparc_align_jumps_string;
-extern const char *sparc_align_funcs_string;
-/* Parsed values as a power of two.  */
-extern int sparc_align_loops;
-extern int sparc_align_jumps;
-extern int sparc_align_funcs;
-
-#define DEFAULT_SPARC_ALIGN_FUNCS \
-(sparc_cpu == PROCESSOR_ULTRASPARC ? 5 : 2)
 
 /* target machine storage layout */
 
@@ -799,7 +784,7 @@ if (TARGET_ARCH64				\
   (TARGET_ARCH64 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (1 << (sparc_align_funcs + 3))
+#define FUNCTION_BOUNDARY 32
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
@@ -3038,10 +3023,6 @@ do {									\
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
-
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (sparc_align_jumps)
-
-#define LOOP_ALIGN(LABEL) (sparc_align_loops)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))

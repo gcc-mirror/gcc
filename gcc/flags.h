@@ -507,6 +507,20 @@ extern int g_switch_set;
 
 extern int inline_max_insns;
 
+/* Values of the -falign-* flags: how much to align labels in code. 
+   0 means `use default', 1 means `don't align'.  
+   For each variable, there is an _log variant which is the power
+   of two not less than the variable, for .align output.  */
+
+extern int align_loops;
+extern int align_loops_log;
+extern int align_jumps;
+extern int align_jumps_log;
+extern int align_labels;
+extern int align_labels_log;
+extern int align_functions;
+extern int align_functions_log;
+
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
 

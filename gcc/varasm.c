@@ -979,6 +979,19 @@ assemble_start_function (decl, fnname)
   if (align > 0)
     ASM_OUTPUT_ALIGN (asm_out_file, align);
 
+  /* Handle a user-specified function alignment.
+     Note that we still need to align to FUNCTION_BOUNDARY, as above,
+     because ASM_OUTPUT_MAX_SKIP_ALIGN might not do any alignment at all.  */
+  if (align_functions_log > align)
+    {
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+      ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file, 
+				 align_functions_log, align_functions-1);
+#else
+      ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
+#endif
+    }
+
 #ifdef ASM_OUTPUT_FUNCTION_PREFIX
   ASM_OUTPUT_FUNCTION_PREFIX (asm_out_file, fnname);
 #endif

@@ -6474,6 +6474,18 @@ This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 
+Unless it's necessary to inspect the @var{label} parameter, it is better
+to set the variable @var{align_jumps} in the target's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+selection in @var{align_jumps} in a @code{LABEL_ALIGN_AFTER_BARRIER}
+implementation.
+
+@findex LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+@item LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+The maximum number of bytes to skip when applying 
+@code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
+@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
+
 @findex LOOP_ALIGN
 @item LOOP_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which follows
@@ -6483,11 +6495,31 @@ This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 
+Unless it's necessary to inspect the @var{label} parameter, it is better
+to set the variable @var{align_loops} in the target's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+selection in @var{align_loops} in a @code{LOOP_ALIGN} implementation.
+
+@findex LOOP_ALIGN_MAX_SKIP
+@item LOOP_ALIGN_MAX_SKIP
+The maximum number of bytes to skip when applying @code{LOOP_ALIGN}.
+This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
+
 @findex LABEL_ALIGN
 @item LABEL_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label}.
 If LABEL_ALIGN_AFTER_BARRIER / LOOP_ALIGN specify a different alignment,
 the maximum of the specified values is used.
+
+Unless it's necessary to inspect the @var{label} parameter, it is better
+to set the variable @var{align_labels} in the target's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+selection in @var{align_labels} in a @code{LABEL_ALIGN} implementation.
+
+@findex LABEL_ALIGN_MAX_SKIP
+@item LABEL_ALIGN_MAX_SKIP
+The maximum number of bytes to skip when applying @code{LABEL_ALIGN}.
+This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
 
 @findex ASM_OUTPUT_SKIP
 @item ASM_OUTPUT_SKIP (@var{stream}, @var{nbytes})

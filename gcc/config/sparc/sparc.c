@@ -132,16 +132,6 @@ const char *sparc_cmodel_string;
 /* Parsed value.  */
 enum cmodel sparc_cmodel;
 
-/* Record alignment options as passed by user.  */
-const char *sparc_align_loops_string;
-const char *sparc_align_jumps_string;
-const char *sparc_align_funcs_string;
-
-/* Parsed values, as a power of two.  */
-int sparc_align_loops;
-int sparc_align_jumps;
-int sparc_align_funcs;
-
 char sparc_hard_reg_printed[8];
 
 struct sparc_cpu_select sparc_select[] =
@@ -325,46 +315,9 @@ sparc_override_options ()
   if (! TARGET_FPU)
     target_flags &= ~MASK_VIS;
 
-  /* Validate -malign-loops= value, or provide default.  */
-  if (sparc_align_loops_string)
-    {
-      sparc_align_loops = exact_log2 (atoi (sparc_align_loops_string));
-      if (sparc_align_loops < 2 || sparc_align_loops > 7)
-	fatal ("-malign-loops=%s is not between 4 and 128 or is not a power of two",
-	       sparc_align_loops_string);
-    }
-  else
-    {
-      /* ??? This relies on ASM_OUTPUT_ALIGN to not emit the alignment if
-	 its 0.  This sounds a bit kludgey.  */
-      sparc_align_loops = 0;
-    }
-
-  /* Validate -malign-jumps= value, or provide default.  */
-  if (sparc_align_jumps_string)
-    {
-      sparc_align_jumps = exact_log2 (atoi (sparc_align_jumps_string));
-      if (sparc_align_jumps < 2 || sparc_align_loops > 7)
-	fatal ("-malign-jumps=%s is not between 4 and 128 or is not a power of two",
-	       sparc_align_jumps_string);
-    }
-  else
-    {
-      /* ??? This relies on ASM_OUTPUT_ALIGN to not emit the alignment if
-	 its 0.  This sounds a bit kludgey.  */
-      sparc_align_jumps = 0;
-    }
-
-  /* Validate -malign-functions= value, or provide default. */
-  if (sparc_align_funcs_string)
-    {
-      sparc_align_funcs = exact_log2 (atoi (sparc_align_funcs_string));
-      if (sparc_align_funcs < 2 || sparc_align_loops > 7)
-	fatal ("-malign-functions=%s is not between 4 and 128 or is not a power of two",
-	       sparc_align_funcs_string);
-    }
-  else
-    sparc_align_funcs = DEFAULT_SPARC_ALIGN_FUNCS;
+  /* Supply a default value for align_functions.  */
+  if (align_functions == 0 && sparc_cpu == PROCESSOR_ULTRASPARC)
+    align_functions = 32;
 
   /* Validate PCC_STRUCT_RETURN.  */
   if (flag_pcc_struct_return == DEFAULT_PCC_STRUCT_RETURN)

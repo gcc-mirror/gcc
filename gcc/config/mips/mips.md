@@ -2418,16 +2418,16 @@
       if (GENERATE_BRANCHLIKELY)
 	{
           if (GET_CODE (operands[1]) == CONST_INT)
-	    return \"%(beql\\t%0,$0,1f\\n\\tbreak\\t%2\\n1:%)\";
+	    return \"%(beql\\t%0,$0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
 	  else
-	    return \"%(beql\\t%0,%1,1f\\n\\tbreak\\t%2\\n1:%)\";
+	    return \"%(beql\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
 	}
       else
 	{
           if (GET_CODE (operands[1]) == CONST_INT)
-	    return \"%(bne\\t%0,$0,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+	    return \"%(bne\\t%0,$0,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
 	  else
-	    return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+	    return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
 	}
     }
   return \"\";
@@ -2462,9 +2462,9 @@
     {
       /* No branch delay slots on mips16. */ 
       if (GET_CODE (operands[1]) == CONST_INT)
-        return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
       else
-        return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
     }
   return \"\";
 }"
@@ -2820,12 +2820,12 @@
   if (REGNO (operands[0]) == REGNO (operands[1]))
     {
       if (GENERATE_BRANCHLIKELY)
-	return \"%(bltzl\\t%1,1f\\n\\tsubu\\t%0,%z2,%0\\n1:%)\";
+	return \"%(bltzl\\t%1,1f\\n\\tsubu\\t%0,%z2,%0\\n%~1:%)\";
       else
-	return \"bgez\\t%1,1f%#\\n\\tsubu\\t%0,%z2,%0\\n1:\";
+	return \"bgez\\t%1,1f%#\\n\\tsubu\\t%0,%z2,%0\\n%~1:\";
     }	  
   else
-    return \"%(bgez\\t%1,1f\\n\\tmove\\t%0,%1\\n\\tsubu\\t%0,%z2,%0\\n1:%)\";
+    return \"%(bgez\\t%1,1f\\n\\tmove\\t%0,%1\\n\\tsubu\\t%0,%z2,%0\\n%~1:%)\";
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
@@ -2842,9 +2842,9 @@
   operands[2] = const0_rtx;
 
   if (REGNO (operands[0]) == REGNO (operands[1]))
-    return \"%(bltzl\\t%1,1f\\n\\tdsubu\\t%0,%z2,%0\\n1:%)\";
+    return \"%(bltzl\\t%1,1f\\n\\tdsubu\\t%0,%z2,%0\\n%~1:%)\";
   else
-    return \"%(bgez\\t%1,1f\\n\\tmove\\t%0,%1\\n\\tdsubu\\t%0,%z2,%0\\n1:%)\";
+    return \"%(bgez\\t%1,1f\\n\\tmove\\t%0,%1\\n\\tdsubu\\t%0,%z2,%0\\n%~1:%)\";
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
@@ -2891,21 +2891,21 @@
     return \"%(\\
 move\\t%0,%z4\\n\\
 \\tbeq\\t%1,%z4,2f\\n\\
-1:\\tand\\t%2,%1,0x0001\\n\\
+%~1:\\tand\\t%2,%1,0x0001\\n\\
 \\taddu\\t%0,%0,1\\n\\
 \\tbeq\\t%2,%z4,1b\\n\\
 \\tsrl\\t%1,%1,1\\n\\
-2:%)\";
+%~2:%)\";
 
   return \"%(\\
 move\\t%0,%z4\\n\\
 \\tmove\\t%3,%1\\n\\
 \\tbeq\\t%3,%z4,2f\\n\\
-1:\\tand\\t%2,%3,0x0001\\n\\
+%~1:\\tand\\t%2,%3,0x0001\\n\\
 \\taddu\\t%0,%0,1\\n\\
 \\tbeq\\t%2,%z4,1b\\n\\
 \\tsrl\\t%3,%3,1\\n\\
-2:%)\";
+%~2:%)\";
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
@@ -2927,21 +2927,21 @@ move\\t%0,%z4\\n\\
     return \"%(\\
 move\\t%0,%z4\\n\\
 \\tbeq\\t%1,%z4,2f\\n\\
-1:\\tand\\t%2,%1,0x0001\\n\\
+%~1:\\tand\\t%2,%1,0x0001\\n\\
 \\tdaddu\\t%0,%0,1\\n\\
 \\tbeq\\t%2,%z4,1b\\n\\
 \\tdsrl\\t%1,%1,1\\n\\
-2:%)\";
+%~2:%)\";
 
   return \"%(\\
 move\\t%0,%z4\\n\\
 \\tmove\\t%3,%1\\n\\
 \\tbeq\\t%3,%z4,2f\\n\\
-1:\\tand\\t%2,%3,0x0001\\n\\
+%~1:\\tand\\t%2,%3,0x0001\\n\\
 \\tdaddu\\t%0,%0,1\\n\\
 \\tbeq\\t%2,%z4,1b\\n\\
 \\tdsrl\\t%3,%3,1\\n\\
-2:%)\";
+%~2:%)\";
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
@@ -6471,16 +6471,16 @@ move\\t%0,%z4\\n\\
 \\t%(b\\t3f\\n\\
 \\tmove\\t%L0,%z4%)\\n\\
 \\n\\
-1:\\n\\
+%~1:\\n\\
 \\t%(beq\\t%3,%z4,2f\\n\\
 \\tsll\\t%M0,%M1,%2%)\\n\\
 \\n\\
 \\tsubu\\t%3,%z4,%2\\n\\
 \\tsrl\\t%3,%L1,%3\\n\\
 \\tor\\t%M0,%M0,%3\\n\\
-2:\\n\\
+%~2:\\n\\
 \\tsll\\t%L0,%L1,%2\\n\\
-3:\";
+%~3:\";
 }"
   [(set_attr "type"	"darith")
    (set_attr "mode"	"SI")
@@ -6829,16 +6829,16 @@ move\\t%0,%z4\\n\\
 \\t%(b\\t3f\\n\\
 \\tsra\\t%M0,%M1,31%)\\n\\
 \\n\\
-1:\\n\\
+%~1:\\n\\
 \\t%(beq\\t%3,%z4,2f\\n\\
 \\tsrl\\t%L0,%L1,%2%)\\n\\
 \\n\\
 \\tsubu\\t%3,%z4,%2\\n\\
 \\tsll\\t%3,%M1,%3\\n\\
 \\tor\\t%L0,%L0,%3\\n\\
-2:\\n\\
+%~2:\\n\\
 \\tsra\\t%M0,%M1,%2\\n\\
-3:\";
+%~3:\";
 }"
   [(set_attr "type"	"darith")
    (set_attr "mode"	"DI")
@@ -7210,16 +7210,16 @@ move\\t%0,%z4\\n\\
 \\t%(b\\t3f\\n\\
 \\tmove\\t%M0,%z4%)\\n\\
 \\n\\
-1:\\n\\
+%~1:\\n\\
 \\t%(beq\\t%3,%z4,2f\\n\\
 \\tsrl\\t%L0,%L1,%2%)\\n\\
 \\n\\
 \\tsubu\\t%3,%z4,%2\\n\\
 \\tsll\\t%3,%M1,%3\\n\\
 \\tor\\t%L0,%L0,%3\\n\\
-2:\\n\\
+%~2:\\n\\
 \\tsrl\\t%M0,%M1,%2\\n\\
-3:\";
+%~3:\";
 }"
   [(set_attr "type"	"darith")
    (set_attr "mode"	"DI")
@@ -9308,7 +9308,7 @@ move\\t%0,%z4\\n\\
   "TARGET_EMBEDDED_PIC"
   "*
 {
-  output_asm_insn (\"%(bal\\t%S1\;sll\\t%0,2\\n%S1:\", operands);
+  output_asm_insn (\"%(bal\\t%S1\;sll\\t%0,2\\n%~%S1:\", operands);
   output_asm_insn (\"addu\\t%0,%0,$31%)\", operands);
   output_asm_insn (\"lw\\t%0,%1-%S1(%0)\;addu\\t%0,%0,$31\", operands);
   return \"j\\t%0\";

@@ -4413,6 +4413,7 @@ override_options ()
   mips_print_operand_punct['^'] = 1;
   mips_print_operand_punct['$'] = 1;
   mips_print_operand_punct['+'] = 1;
+  mips_print_operand_punct['~'] = 1;
 
   mips_char_to_class['d'] = TARGET_MIPS16 ? M16_REGS : GR_REGS;
   mips_char_to_class['e'] = M16_NA_REGS;
@@ -4493,6 +4494,17 @@ override_options ()
   /* Save GPR registers in word_mode sized hunks.  word_mode hasn't been
      initialized yet, so we can't use that here.  */
   gpr_mode = TARGET_64BIT ? DImode : SImode;
+
+  /* Provide default values for align_* for 64-bit targets.  */
+  if (TARGET_64BIT)
+    {
+      if (align_loops == 0) 
+	align_loops = 8;
+      if (align_jumps == 0) 
+	align_jumps = 8;
+      if (align_functions == 0) 
+	align_functions = 8;
+    }
 }
 
 /* On the mips16, we want to allocate $24 (T_REG) before other
@@ -4617,7 +4629,8 @@ mips_debugger_offset (addr, offset)
    '.'	Print the name of the register with a hard-wired zero (zero or $0).
    '^'	Print the name of the pic call-through register (t9 or $25).
    '$'	Print the name of the stack pointer register (sp or $29).
-   '+'	Print the name of the gp register (gp or $28).  */
+   '+'	Print the name of the gp register (gp or $28).
+   '~'	Output an branch alignment to LABEL_ALIGN(NULL).  */
 
 void
 print_operand (file, op, letter)
@@ -4737,6 +4750,13 @@ print_operand (file, op, letter)
 	    fprintf (file, "\n\t%s.set\tnovolatile", (TARGET_MIPS_AS) ? "" : "#");
 
 	  break;
+
+	case '~':
+	  {
+	    if (align_labels_log > 0)
+	      ASM_OUTPUT_ALIGN (file, align_labels_log);
+	  }
+	break;
 
 	default:
 	  error ("PRINT_OPERAND: Unknown punctuation '%c'", letter);
