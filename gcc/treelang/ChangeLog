@@ -1,3 +1,10 @@
+2002-07-11  Tim Josling  <tej@melbpc.org.au>
+
+	Remove front end hard coding from gengtype.c.  
+
+	* config-lang.in (gtfiles): Add files needed for this front
+	end.
+
 2002-07-09  Tim Josling  <tej@melbpc.org.au>
 
 	Support new attributes regime (Fix for PR c++/7099).

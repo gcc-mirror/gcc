@@ -305,7 +305,7 @@ yyerror (s)
 
 void
 parse_file (fname)
-      char *fname;
+      const char *fname;
 {
   yyin = fopen (fname, "r");
   lexer_line.file = fname;

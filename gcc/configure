@@ -2244,7 +2244,7 @@ EOF
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -8168,6 +8168,9 @@ all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 all_lang_makefiles=
 # Files for gengtype
 all_gtfiles="$config_gtfiles"
+# Files for gengtype with language
+all_gtfiles_files_langs=
+all_gtfiles_files_files=
 
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be
@@ -8208,7 +8211,29 @@ do
 		all_stagestuff="$all_stagestuff $stagestuff"
 		all_outputs="$all_outputs $outputs"
 		all_gtfiles="$all_gtfiles $gtfiles"
+                for f in .. $gtfiles
+                do
+          	     if test $f != ".."
+                     then
+                         all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
+                         all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
+                     fi
+                done
 	fi
+done
+
+# Pick up gtfiles for c
+gtfiles=
+s="c"
+. ${srcdir}/c-config-lang.in
+all_gtfiles="$all_gtfiles $gtfiles"
+for f in .. $gtfiles
+do
+     if test $f != ".."
+     then
+        all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
+        all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
+     fi
 done
 
 check_languages=
@@ -8341,6 +8366,9 @@ objdir=`${PWDCMD-pwd}`
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
+
+
+
 
 
 
@@ -8668,9 +8696,12 @@ s%@dollar@%$dollar%g
 s%@slibdir@%$slibdir%g
 s%@objdir@%$objdir%g
 s%@subdirs@%$subdirs%g
+s%@srcdir@%$srcdir%g
 s%@all_boot_languages@%$all_boot_languages%g
 s%@all_compilers@%$all_compilers%g
 s%@all_gtfiles@%$all_gtfiles%g
+s%@all_gtfiles_files_langs@%$all_gtfiles_files_langs%g
+s%@all_gtfiles_files_files@%$all_gtfiles_files_files%g
 s%@all_lang_makefiles@%$all_lang_makefiles%g
 s%@all_languages@%$all_languages%g
 s%@all_stagestuff@%$all_stagestuff%g

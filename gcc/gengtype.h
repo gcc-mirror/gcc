@@ -138,7 +138,7 @@ extern void note_yacc_type PARAMS ((options_p o, pair_p fields,
 extern int yylex PARAMS((void));
 extern void yyerror PARAMS ((const char *));
 extern int yyparse PARAMS ((void));
-extern void parse_file PARAMS ((char *name));
+extern void parse_file PARAMS ((const char *name));
 
 /* Output file handling.  */
 

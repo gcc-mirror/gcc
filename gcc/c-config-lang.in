@@ -1,4 +1,4 @@
-# Top level configure fragment for GNU C++.
+# Top level configure fragment for GNU C - C language.
 # Copyright (C) 1994, 1995, 1997, 1998, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -18,22 +18,9 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330,
 #Boston, MA 02111-1307, USA.
 
-# Configure looks for the existence of this file to auto-config each language.
-# We define several parameters used by configure:
-#
-# language	- name of language as it would appear in $(LANGUAGES)
-# compilers	- value to add to $(COMPILERS)
-# stagestuff	- files to add to $(STAGESTUFF)
-# diff_excludes	- files to ignore when building diffs between two versions.
+# This file c-config-lang.c is a special pseudo config-lang.in file
+# for the language C. It has limited use, specifically to record the
+# files used by C that have garbage collection GTY macros in them
+# which therefore need to be scanned by gengtype.c.
 
-language="treelang"
-
-compilers="tree1\$(exeext)"
-
-stagestuff=
-
-diff_excludes="-x lex.c -x parse.c -x parse.h"
-headers=
-build_by_default="no"
-
-gtfiles="\$(srcdir)/c-decl.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/treelang/tree1.c \$(srcdir)/treelang/treelang.h"
+gtfiles="\$(srcdir)/c-lang.c \$(srcdir)/c-parse.in \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.c \$(srcdir)/c-objc-common.c"

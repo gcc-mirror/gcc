@@ -2408,6 +2408,9 @@ all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 all_lang_makefiles=
 # Files for gengtype
 all_gtfiles="$config_gtfiles"
+# Files for gengtype with language
+all_gtfiles_files_langs=
+all_gtfiles_files_files=
 
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be
@@ -2448,7 +2451,29 @@ do
 		all_stagestuff="$all_stagestuff $stagestuff"
 		all_outputs="$all_outputs $outputs"
 		all_gtfiles="$all_gtfiles $gtfiles"
+                for f in .. $gtfiles
+                do
+          	     if test $f != ".."
+                     then
+                         all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
+                         all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
+                     fi
+                done
 	fi
+done
+
+# Pick up gtfiles for c
+gtfiles=
+s="c"
+. ${srcdir}/c-config-lang.in
+all_gtfiles="$all_gtfiles $gtfiles"
+for f in .. $gtfiles
+do
+     if test $f != ".."
+     then
+        all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
+        all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
+     fi
 done
 
 check_languages=
@@ -2578,9 +2603,12 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 # Substitute configuration variables
 AC_SUBST(subdirs)
+AC_SUBST(srcdir)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
+AC_SUBST(all_gtfiles_files_langs)
+AC_SUBST(all_gtfiles_files_files)
 AC_SUBST(all_lang_makefiles)
 AC_SUBST(all_languages)
 AC_SUBST(all_stagestuff)
