@@ -3751,6 +3751,24 @@ fold (expr)
 	      && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
 	    return TREE_OPERAND (arg0, 0);
 
+	  /* If we have ((A / C1) * C2) with C1 and C2 constant,
+	     C2 >= C1, and the division an unsigned CEIL_DIV_EXPR,
+	     we know that the addition that's part of the CEIL_DIV_EXPR
+	     cannot overflow while the generic CEIL_DIV_EXPR does not.
+	     So convert it into a TRUNC_DIV_EXPR of an add.  */
+	  if (TREE_CODE (arg0) == CEIL_DIV_EXPR && TREE_UNSIGNED (type)
+	      && TREE_CODE (arg1) == INTEGER_CST
+	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	      && ! tree_int_cst_lt (arg1, TREE_OPERAND (arg0, 1)))
+	    return
+	      build (MULT_EXPR, type,
+		     build (TRUNC_DIV_EXPR, type,
+			    build (PLUS_EXPR, type,
+				   TREE_OPERAND (TREE_OPERAND (arg0, 0), 0)),
+			    const_binop (MINUS_EXPR, TREE_OPERAND (arg0, 1),
+					 integer_one_node, 0)),
+		     arg1);
+				 
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg1, 0)))
