@@ -52,42 +52,42 @@ extern int  special_UC;
 #define DAYS_MAX                                            49
 
 /* forward declarations */
-static rtx chill_expand_expr		PROTO ((tree, rtx, enum machine_mode, 
+static rtx chill_expand_expr		PARAMS ((tree, rtx, enum machine_mode, 
 						enum expand_modifier));
-static tree chill_expand_case_expr	PROTO ((tree));
-static int check_arglist_length		PROTO ((tree, int, int, tree));
-static tree internal_build_compound_expr PROTO ((tree, int));
-static int is_really_instance		PROTO ((tree));
-static int invalid_operand		PROTO ((enum chill_tree_code,
+static tree chill_expand_case_expr	PARAMS ((tree));
+static int check_arglist_length		PARAMS ((tree, int, int, tree));
+static tree internal_build_compound_expr PARAMS ((tree, int));
+static int is_really_instance		PARAMS ((tree));
+static int invalid_operand		PARAMS ((enum chill_tree_code,
 						tree, int));
-static int invalid_right_operand	PROTO ((enum chill_tree_code, tree));
-static tree build_chill_abstime		PROTO ((tree));
-static tree build_allocate_memory_call	PROTO ((tree, tree));
-static tree build_allocate_global_memory_call PROTO ((tree, tree));
-static tree build_return_memory		PROTO ((tree));
-static tree build_chill_duration	PROTO ((tree, unsigned long,
+static int invalid_right_operand	PARAMS ((enum chill_tree_code, tree));
+static tree build_chill_abstime		PARAMS ((tree));
+static tree build_allocate_memory_call	PARAMS ((tree, tree));
+static tree build_allocate_global_memory_call PARAMS ((tree, tree));
+static tree build_return_memory		PARAMS ((tree));
+static tree build_chill_duration	PARAMS ((tree, unsigned long,
 						tree, unsigned long));
-static tree build_chill_floatcall	PROTO ((tree, const char *,
+static tree build_chill_floatcall	PARAMS ((tree, const char *,
 						const char *));
-static tree build_allocate_getstack	PROTO ((tree, tree, const char *,
+static tree build_allocate_getstack	PARAMS ((tree, tree, const char *,
 						const char *, tree, tree));
-static tree build_chill_allocate	PROTO ((tree, tree));
-static tree build_chill_getstack	PROTO ((tree, tree));
-static tree build_chill_terminate	PROTO ((tree));
-static tree build_chill_inttime		PROTO ((tree, tree));
-static tree build_chill_lower_or_upper	PROTO ((tree, int));
-static tree build_max_min		PROTO ((tree, int));
-static tree build_chill_pred_or_succ	PROTO ((tree, enum tree_code));
-static tree expand_packed_set		PROTO ((const char *, int, tree));
-static tree fold_set_expr		PROTO ((enum chill_tree_code,
+static tree build_chill_allocate	PARAMS ((tree, tree));
+static tree build_chill_getstack	PARAMS ((tree, tree));
+static tree build_chill_terminate	PARAMS ((tree));
+static tree build_chill_inttime		PARAMS ((tree, tree));
+static tree build_chill_lower_or_upper	PARAMS ((tree, int));
+static tree build_max_min		PARAMS ((tree, int));
+static tree build_chill_pred_or_succ	PARAMS ((tree, enum tree_code));
+static tree expand_packed_set		PARAMS ((const char *, int, tree));
+static tree fold_set_expr		PARAMS ((enum chill_tree_code,
 						tree, tree));
-static tree build_compare_set_expr	PROTO ((enum tree_code, tree, tree));
-static tree scalar_to_string		PROTO ((tree));
-static tree build_concat_expr		PROTO ((tree, tree));
-static tree build_compare_string_expr	PROTO ((enum tree_code, tree, tree));
-static tree compare_records		PROTO ((tree, tree));
-static tree string_char_rep		PROTO ((int, tree));
-static tree build_boring_bitstring	PROTO ((long, int));
+static tree build_compare_set_expr	PARAMS ((enum tree_code, tree, tree));
+static tree scalar_to_string		PARAMS ((tree));
+static tree build_concat_expr		PARAMS ((tree, tree));
+static tree build_compare_string_expr	PARAMS ((enum tree_code, tree, tree));
+static tree compare_records		PARAMS ((tree, tree));
+static tree string_char_rep		PARAMS ((int, tree));
+static tree build_boring_bitstring	PARAMS ((long, int));
 
 /* variable to hold the type the DESCR built-in returns */
 static tree descr_type = NULL_TREE;

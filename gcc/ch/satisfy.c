@@ -36,11 +36,11 @@ struct decl_chain
 };
 
 /* forward declarations */
-static tree satisfy		PROTO ((tree, struct decl_chain *));
-static void cycle_error_print	PROTO ((struct decl_chain *, tree));
-static tree safe_satisfy_decl	PROTO ((tree, struct decl_chain *));
-static void satisfy_list	PROTO ((tree, struct decl_chain *));
-static void satisfy_list_values	PROTO ((tree, struct decl_chain *));
+static tree satisfy		PARAMS ((tree, struct decl_chain *));
+static void cycle_error_print	PARAMS ((struct decl_chain *, tree));
+static tree safe_satisfy_decl	PARAMS ((tree, struct decl_chain *));
+static void satisfy_list	PARAMS ((tree, struct decl_chain *));
+static void satisfy_list_values	PARAMS ((tree, struct decl_chain *));
 
 static struct decl_chain dummy_chain;
 #define LOOKUP_ONLY (chain==&dummy_chain)

@@ -38,18 +38,18 @@ extern tree bit_one_node, bit_zero_node;
 extern tree string_one_type_node;
 extern tree bitstring_one_type_node;
 
-static tree convert_to_reference	PROTO ((tree, tree));
-static tree convert_to_boolean		PROTO ((tree, tree));
-static tree convert_to_char		PROTO ((tree, tree));
+static tree convert_to_reference	PARAMS ((tree, tree));
+static tree convert_to_boolean		PARAMS ((tree, tree));
+static tree convert_to_char		PARAMS ((tree, tree));
 #if 0
-static tree base_type_size_in_bytes	PROTO ((tree));
+static tree base_type_size_in_bytes	PARAMS ((tree));
 #endif
-static tree remove_tree_element		PROTO ((tree, tree *));
-static tree check_ps_range		PROTO ((tree, tree, tree));
-static tree digest_powerset_tuple	PROTO ((tree, tree));
-static tree digest_structure_tuple	PROTO ((tree, tree));
-static tree digest_array_tuple		PROTO ((tree, tree, int));
-static tree convert1			PROTO ((tree, tree));
+static tree remove_tree_element		PARAMS ((tree, tree *));
+static tree check_ps_range		PARAMS ((tree, tree, tree));
+static tree digest_powerset_tuple	PARAMS ((tree, tree));
+static tree digest_structure_tuple	PARAMS ((tree, tree));
+static tree digest_array_tuple		PARAMS ((tree, tree, int));
+static tree convert1			PARAMS ((tree, tree));
 
 static tree
 convert_to_reference (reftype, expr)

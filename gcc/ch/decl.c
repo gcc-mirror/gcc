@@ -205,12 +205,12 @@ extern struct obstack *saveable_obstack;
 extern tree signal_code;
 extern int special_UC;
 
-static tree get_next_decl             PROTO((void));
-static tree lookup_name_for_seizing   PROTO((tree));
+static tree get_next_decl             PARAMS ((void));
+static tree lookup_name_for_seizing   PARAMS ((tree));
 #if 0
-static tree lookup_name_current_level PROTO((tree));
+static tree lookup_name_current_level PARAMS ((tree));
 #endif
-static void save_decl                 PROTO((tree));
+static void save_decl                 PARAMS ((tree));
 
 extern struct obstack permanent_obstack;
 extern int in_pseudo_module;
@@ -240,21 +240,21 @@ tree chill_result_decl;
 int result_never_set;
 
 /* forward declarations */
-static void pushdecllist                     PROTO((tree, int));
-static int  init_nonvalue_struct             PROTO((tree));
-static int  init_nonvalue_array              PROTO((tree));
-static void set_nesting_level                PROTO((tree, int));
-static tree make_chill_variants              PROTO((tree, tree, tree));
-static tree fix_identifier                   PROTO((tree));
-static void proclaim_decl                    PROTO((tree, int));
-static tree maybe_acons                      PROTO((tree, tree));
-static void push_scope_decls                 PROTO((int));
-static void pop_scope_decls                  PROTO((tree, tree));
-static tree build_implied_names              PROTO((tree));
-static void bind_sub_modules                 PROTO((int));
-static void layout_array_type                PROTO((tree));
-static void do_based_decl                    PROTO((tree, tree, tree));
-static void handle_one_level                 PROTO((tree, tree));
+static void pushdecllist                     PARAMS ((tree, int));
+static int  init_nonvalue_struct             PARAMS ((tree));
+static int  init_nonvalue_array              PARAMS ((tree));
+static void set_nesting_level                PARAMS ((tree, int));
+static tree make_chill_variants              PARAMS ((tree, tree, tree));
+static tree fix_identifier                   PARAMS ((tree));
+static void proclaim_decl                    PARAMS ((tree, int));
+static tree maybe_acons                      PARAMS ((tree, tree));
+static void push_scope_decls                 PARAMS ((int));
+static void pop_scope_decls                  PARAMS ((tree, tree));
+static tree build_implied_names              PARAMS ((tree));
+static void bind_sub_modules                 PARAMS ((int));
+static void layout_array_type                PARAMS ((tree));
+static void do_based_decl                    PARAMS ((tree, tree, tree));
+static void handle_one_level                 PARAMS ((tree, tree));
 
 int current_nesting_level = BUILTIN_NESTING_LEVEL;
 int current_module_nesting_level = 0;
@@ -1545,7 +1545,7 @@ struct tree_pair
   tree decl;
 };
 
-static int  label_value_cmp                  PROTO((struct tree_pair *,
+static int  label_value_cmp                  PARAMS ((struct tree_pair *,
 						    struct tree_pair *));
 
 /* Function to help qsort sort variant labels by value order.  */
@@ -1739,7 +1739,7 @@ layout_chill_variants (utype)
       int limit;
       qsort (label_value_array,
 	     label_index, sizeof (struct tree_pair),
-	     (int (*) PROTO ((const void *, const void *))) label_value_cmp);
+	     (int (*) PARAMS ((const void *, const void *))) label_value_cmp);
       limit = label_index - 1;
       for (label_index = 0; label_index < limit; label_index++)
 	{
@@ -2493,7 +2493,7 @@ struct path
   tree node;
 };
 
-static tree find_implied_types            PROTO((tree, struct path *, tree));
+static tree find_implied_types            PARAMS ((tree, struct path *, tree));
 
 /* Look for implied types (enumeral types) implied by TYPE (a decl or type).
    Add these to list.

@@ -82,9 +82,9 @@ extern tree ridpointers[(int) RID_MAX];
 
 extern char *token_buffer;	/* Pointer to token buffer.  */
 
-extern tree make_pointer_declarator PROTO((tree, tree));
-extern void reinit_parse_for_function PROTO((void));
-extern int yylex PROTO((void));
+extern tree make_pointer_declarator PARAMS ((tree, tree));
+extern void reinit_parse_for_function PARAMS ((void));
+extern int yylex PARAMS ((void));
 
 extern tree default_grant_file;
 extern tree current_grant_file;
@@ -94,4 +94,4 @@ extern tree current_seize_file;
 extern int chill_at_module_level;
 extern tree chill_initializer_name;
 
-extern void prepare_paren_colon PROTO((void));
+extern void prepare_paren_colon PARAMS ((void));
