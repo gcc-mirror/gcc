@@ -47,5 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
+#define SET_ASM_OP	".set"
+
 /* We need that too. */
 #define HANDLE_SYSV_PRAGMA
