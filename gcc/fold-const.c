@@ -2994,6 +2994,8 @@ fold (expr)
   kind = TREE_CODE_CLASS (code);
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
     {
+      tree subop;
+
       /* Special case for conversion ops that can have fixed point args.  */
       arg0 = TREE_OPERAND (t, 0);
 
@@ -3001,9 +3003,14 @@ fold (expr)
       if (arg0 != 0)
 	STRIP_TYPE_NOPS (arg0);
 
-      if (arg0 != 0 && TREE_CODE (arg0) != INTEGER_CST
+      if (arg0 != 0 && TREE_CODE (arg0) == COMPLEX_CST)
+	subop = TREE_REALPART (arg0);
+      else
+	subop = arg0;
+
+      if (subop != 0 && TREE_CODE (subop) != INTEGER_CST
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-	  && TREE_CODE (arg0) != REAL_CST
+	  && TREE_CODE (subop) != REAL_CST
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 	  )
 	/* Note that TREE_CONSTANT isn't enough:
@@ -3019,6 +3026,7 @@ fold (expr)
       for (i = 0; i < len; i++)
 	{
 	  tree op = TREE_OPERAND (t, i);
+	  tree subop;
 
 	  if (op == 0)
 	    continue;		/* Valid for CALL_EXPR, at least.  */
@@ -3026,9 +3034,14 @@ fold (expr)
 	  /* Strip any conversions that don't change the mode.  */
 	  STRIP_NOPS (op);
 	  
-	  if (TREE_CODE (op) != INTEGER_CST
+	  if (TREE_CODE (op) == COMPLEX_CST)
+	    subop = TREE_REALPART (op);
+	  else
+	    subop = op;
+
+	  if (TREE_CODE (subop) != INTEGER_CST
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-	      && TREE_CODE (op) != REAL_CST
+	      && TREE_CODE (subop) != REAL_CST
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 	      )
 	    /* Note that TREE_CONSTANT isn't enough:
@@ -4383,6 +4396,49 @@ fold (expr)
       if (integer_zerop (arg1))
 	return non_lvalue (arg1);
       return arg1;
+
+    case COMPLEX_EXPR:
+      if (wins)
+	return build_complex (arg0, arg1);
+      return t;
+
+    case REALPART_EXPR:
+      if (TREE_CODE (type) != COMPLEX_TYPE)
+	return t;
+      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	return omit_one_operand (type, TREE_OPERAND (arg0, 0),
+				 TREE_OPERAND (arg0, 1));
+      else if (TREE_CODE (arg0) == COMPLEX_CST)
+	return TREE_REALPART (arg0);
+      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	return build_binary_op (TREE_CODE (arg0), type,
+				build_unary_op (REALPART_EXPR,
+						TREE_OPERAND (arg0, 0),
+						1),
+				build_unary_op (REALPART_EXPR,
+						TREE_OPERAND (arg0, 1),
+						1),
+				0);
+      return t;
+
+    case IMAGPART_EXPR:
+      if (TREE_CODE (type) != COMPLEX_TYPE)
+	return convert (type, integer_zero_node);
+      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	return omit_one_operand (type, TREE_OPERAND (arg0, 1),
+				 TREE_OPERAND (arg0, 0));
+      else if (TREE_CODE (arg0) == COMPLEX_CST)
+	return TREE_IMAGPART (arg0);
+      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	return build_binary_op (TREE_CODE (arg0), type,
+				build_unary_op (IMAGPART_EXPR,
+						TREE_OPERAND (arg0, 0),
+						1),
+				build_unary_op (IMAGPART_EXPR,
+						TREE_OPERAND (arg0, 1),
+						1),
+				0);
+      return t;
 
     default:
       return t;
