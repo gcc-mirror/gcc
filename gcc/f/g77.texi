@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-05-28
+@set last-update 1999-06-04
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -11428,6 +11428,7 @@ New facilities:
 * Increasing Precision/Range::
 
 Better diagnostics:
+* Better Warnings::
 * Gracefully Handle Sensible Bad Code::
 * Non-standard Conversions::
 * Non-standard Intrinsics::
@@ -12173,6 +12174,62 @@ are thread-safe, nor does @code{g77} have support for parallel processing
 (other than the instruction-level parallelism available on some
 processors).
 A package such as PVM might help here.
+
+@node Better Warnings
+@subsection Better Warnings
+
+Because of how @code{g77} generates code via the back end,
+it doesn't always provide warnings the user wants.
+Consider:
+
+@smallexample
+PROGRAM X
+PRINT *, A
+END
+@end smallexample
+
+Currently, the above is not flagged as a case of
+using an uninitialized variable,
+because @code{g77} generates a run-time library call that looks,
+to the GBE, like it might actually @emph{modify} @samp{A} at run time.
+(And, in fact, depending on the previous run-time library call,
+it would!)
+
+Fixing this requires one of the following:
+
+@itemize @bullet
+@item
+Switch to new library, @code{libg77}, that provides
+a more ``clean'' interface,
+vis-a-vis input, output, and modified arguments,
+so the GBE can tell what's going on.
+
+This would provide a pretty big performance improvement,
+at least theoretically, and, ultimately, in practice,
+for some types of code.
+
+@item
+Have @code{g77} pass a pointer to a temporary
+containing a copy of @samp{A},
+instead of to @samp{A} itself.
+The GBE would then complain about the copy operation
+involving a potentially uninitialized variable.
+
+This might also provide a performance boost for some code,
+because @samp{A} might then end up living in a register,
+which could help with inner loops.
+
+@item
+Have @code{g77} use a GBE construct similar to @code{ADDR_EXPR}
+but with extra information on the fact that the
+item pointed to won't be modified
+(a la @code{const} in C).
+
+Probably the best solution for now, but not quite trivial
+to implement in the general case.
+Worth considering after @code{g77} 0.6 is considered
+pretty solid.
+@end itemize
 
 @node Gracefully Handle Sensible Bad Code
 @subsection Gracefully Handle Sensible Bad Code
