@@ -664,7 +664,7 @@ static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-MD %W{!o: %b.d}%W{o*:%.d%*}}\
- %{MMD:-MD %W{!o: %b.d}%W{o*:%.d%*}}\
+ %{MMD:-MMD %W{!o: %b.d}%W{o*:%.d%*}}\
  %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
