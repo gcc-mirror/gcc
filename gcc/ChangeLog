@@ -1,3 +1,10 @@
+2002-09-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_address_cost): New function.
+	config/s390/s390-protos.h (s390_address_cost): Add prototype.
+	config/s390/s390.h (ADDRESS_COST): Call s390_address_cost.
+	(RTX_COST): Use COSTS_N_INSNS.
+
 2002-09-18  Douglas Rupp  <rupp@gnat.com>
 	    Donn Terry  <donnte@microsoft.com>
 
