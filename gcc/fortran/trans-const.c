@@ -306,7 +306,8 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
       return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind);
 
     case BT_LOGICAL:
-      return build_int_cst (NULL_TREE, expr->value.logical);
+      return build_int_cst (gfc_get_logical_type (expr->ts.kind),
+			    expr->value.logical);
 
     case BT_COMPLEX:
       {

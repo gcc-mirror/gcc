@@ -1,3 +1,9 @@
+2005-01-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/19543
+	* trans-const.c (gfc_conv_constant_to_tree): Give logical
+	constants the correct type.
+
 2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* arith.c, array.c, check.c, decl.c, expr.c, f95-lang.c,
