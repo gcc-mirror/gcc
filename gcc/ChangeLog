@@ -1,3 +1,14 @@
+2004-07-09  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.h (processor_costs): Define.
+	(sparc_costs): Declare.
+	* config/sparc/sparc.c (cypress_costs, supersparc_costs,
+	hypersparc_costs, sparclet_costs, ultrasparc_costs,
+	ultrasparc3_costs): New.
+	(sparc_override_options): Set sparc_costs as appropriate.
+	(sparc_rtx_costs): Use sparc_costs instead of messy
+	conditionals.
+	
 2004-07-09  Steven Bosscher  <stevenb@suse.de>
 
 	* doc/md.texi (Processor pipeline description): Mention that
