@@ -12018,6 +12018,10 @@ decls_for_scope (stmt, context_die, depth)
 	gen_decl_die (decl, context_die);
     }
 
+  /* If we're at -g1, we're not interested in subblocks.  */
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return;
+
   /* Output the DIEs to represent all sub-blocks (and the items declared
      therein) of this block.  */
   for (subblocks = BLOCK_SUBBLOCKS (stmt);
@@ -12286,7 +12290,9 @@ dwarf2out_decl (decl)
       /* If we're a nested function, initially use a parent of NULL; if we're
 	 a plain function, this will be fixed up in decls_for_scope.  If
 	 we're a method, it will be ignored, since we already have a DIE.  */
-      if (decl_function_context (decl))
+      if (decl_function_context (decl)
+	  /* But if we're in terse mode, we don't care about scope.  */
+	  && debug_info_level > DINFO_LEVEL_TERSE)
 	context_die = NULL;
       break;
 
