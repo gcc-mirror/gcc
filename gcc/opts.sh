@@ -48,7 +48,9 @@ ${AWK} '
 	flags = " " flags " "
 	result = "0"
 	for (j = 0; j < n_langs; j++) {
-	    if (flags ~ " " langs[j] " ")
+	    regex = " " langs[j] " "
+	    gsub ( "+", "\\+", regex )
+	    if (flags ~ regex)
 		result = result " | " macros[j]
 	}
         if (flags ~ " Common ") result = result " | CL_COMMON"
