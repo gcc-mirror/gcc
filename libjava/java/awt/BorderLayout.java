@@ -349,7 +349,28 @@ addLayoutComponent(Component component, Object constraints)
   if (constraints != null && ! (constraints instanceof String))
     throw new IllegalArgumentException("Constraint must be a string");
 
-  String str = (String)constraints;
+  addLayoutComponent((String) constraints, component);
+}
+
+/*************************************************************************/
+
+/**
+  * Adds a component to the layout in the specified constraint position, 
+  * which must be one of the string constants defined in this class.
+  *
+  * @param constraints The constraint string.
+  * @param component The component to add.
+  *
+  * @exception IllegalArgumentException If the constraint object is not
+  * one of the specified constants in this class.
+  *
+  * @deprecated This method is deprecated in favor of
+  * <code>addLayoutComponent(Component, Object)</code>.
+  */
+public void
+addLayoutComponent(String constraints, Component component)
+{
+  String str = constraints;
 
   if (str == null || str.equals(CENTER))
     center = component;
@@ -371,27 +392,6 @@ addLayoutComponent(Component component, Object constraints)
     lastItem = component;
   else
     throw new IllegalArgumentException("Constraint value not valid: " + str);
-}
-
-/*************************************************************************/
-
-/**
-  * Adds a component to the layout in the specified constraint position, 
-  * which must be one of the string constants defined in this class.
-  *
-  * @param constraints The constraint string.
-  * @param component The component to add.
-  *
-  * @exception IllegalArgumentException If the constraint object is not
-  * one of the specified constants in this class.
-  *
-  * @deprecated This method is deprecated in favor of
-  * <code>addLayoutComponent(Component, Object)</code>.
-  */
-public void
-addLayoutComponent(String constraints, Component component)
-{
-  addLayoutComponent(component, constraints);
 }
 
 /*************************************************************************/

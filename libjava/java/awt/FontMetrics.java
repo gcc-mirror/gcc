@@ -195,7 +195,7 @@ getMaxAscent()
 public int
 getMaxDescent()
 {
-  return(getDescent());
+  return getMaxDecent ();
 }
 
 /*************************************************************************/
@@ -212,7 +212,7 @@ getMaxDescent()
 public int
 getMaxDecent()
 {
-  return(getMaxDescent());
+  return getDescent ();
 }
 
 /*************************************************************************/

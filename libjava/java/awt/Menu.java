@@ -171,7 +171,7 @@ isTearOff()
 public int
 getItemCount()
 {
-  return(items.size());
+  return countItems ();
 }
 
 /**
@@ -183,7 +183,7 @@ getItemCount()
  */
 public int countItems ()
 {
-  return getItemCount ();
+  return items.size ();
 }
  
 /*************************************************************************/

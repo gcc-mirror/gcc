@@ -85,18 +85,12 @@ public class GtkListPeer extends GtkComponentPeer
   
   public Dimension getMinimumSize (int rows)
   {
-    int dims[] = new int[2];
-
-    getSize (rows, dims);
-    return (new Dimension (dims[0], dims[1]));
+    return minimumSize (rows);
   }
 
   public Dimension getPreferredSize (int rows)
   {
-    int dims[] = new int[2];
-
-    getSize (rows, dims);
-    return (new Dimension (dims[0], dims[1]));
+    return preferredSize (rows);
   }
   
   public native int[] getSelectedIndexes ();
@@ -104,12 +98,18 @@ public class GtkListPeer extends GtkComponentPeer
 
   public Dimension minimumSize (int rows)
   {
-    return (getMinimumSize (rows));
+    int dims[] = new int[2];
+
+    getSize (rows, dims);
+    return new Dimension (dims[0], dims[1]);
   }
 
   public Dimension preferredSize (int rows)
   {
-    return (getPreferredSize (rows));
+    int dims[] = new int[2];
+
+    getSize (rows, dims);
+    return new Dimension (dims[0], dims[1]);
   }
 
   public void removeAll ()

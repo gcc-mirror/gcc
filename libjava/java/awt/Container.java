@@ -106,7 +106,7 @@ public class Container extends Component
    */
   public int getComponentCount()
   {
-    return ncomponents;
+    return countComponents ();
   }
 
   /**
@@ -118,7 +118,7 @@ public class Container extends Component
    */
   public int countComponents()
   {
-    return getComponentCount();
+    return ncomponents;
   }
 
   /**
@@ -186,10 +186,7 @@ public class Container extends Component
    */
   public Insets getInsets()
   {
-    if (peer == null)
-      return new Insets(0, 0, 0, 0);
-    
-    return ((ContainerPeer) peer).getInsets();
+    return insets ();
   }
 
   /**
@@ -201,7 +198,10 @@ public class Container extends Component
    */
   public Insets insets()
   {
-    return getInsets();
+    if (peer == null)
+      return new Insets (0, 0, 0, 0);
+
+    return ((ContainerPeer) peer).getInsets ();
   }
 
   /**
@@ -463,8 +463,7 @@ public class Container extends Component
    */
   public void doLayout()
   {
-    if (layoutMgr != null)
-      layoutMgr.layoutContainer(this);
+    layout ();
   }
 
   /**
@@ -474,7 +473,8 @@ public class Container extends Component
    */
   public void layout()
   {
-    doLayout();
+    if (layoutMgr != null)
+      layoutMgr.layoutContainer (this);
   }
 
   /**
@@ -555,7 +555,7 @@ public class Container extends Component
    */
   public Dimension getPreferredSize()
   {
-      return preferredSize();
+    return preferredSize ();
   }
 
   /**
@@ -567,10 +567,10 @@ public class Container extends Component
    */
   public Dimension preferredSize()
   {
-      if (layoutMgr != null)
-	  return layoutMgr.preferredLayoutSize(this);
-      else
-	  return super.preferredSize();
+    if (layoutMgr != null)
+      return layoutMgr.preferredLayoutSize (this);
+    else
+      return super.preferredSize ();
   }
 
   /**
@@ -580,7 +580,7 @@ public class Container extends Component
    */
   public Dimension getMinimumSize()
   {
-      return minimumSize();
+    return minimumSize ();
   }
 
   /**
@@ -592,10 +592,10 @@ public class Container extends Component
    */
   public Dimension minimumSize()
   {
-      if (layoutMgr != null)
-	  return layoutMgr.minimumLayoutSize(this);
-      else
-	  return super.minimumSize();
+    if (layoutMgr != null)
+      return layoutMgr.minimumLayoutSize (this);
+    else
+      return super.minimumSize ();
   }
 
   /**
@@ -833,23 +833,7 @@ public class Container extends Component
    */
   public Component getComponentAt(int x, int y)
   {
-    synchronized (getTreeLock ())
-      {
-        if (! contains(x, y))
-          return null;
-        for (int i = 0; i < ncomponents; ++i)
-          {
-            // Ignore invisible children...
-            if (!component[i].isVisible())
-              continue;
-
-            int x2 = x - component[i].x;
-            int y2 = y - component[i].y;
-            if (component[i].contains(x2, y2))
-              return component[i];
-          }
-        return this;
-      }
+    return locate (x, y);
   }
 
   /**
@@ -869,7 +853,23 @@ public class Container extends Component
    */
   public Component locate(int x, int y)
   {
-    return getComponentAt(x, y);
+    synchronized (getTreeLock ())
+      {
+        if (!contains (x, y))
+          return null;
+        for (int i = 0; i < ncomponents; ++i)
+          {
+            // Ignore invisible children...
+            if (!component[i].isVisible ())
+              continue;
+
+            int x2 = x - component[i].x;
+            int y2 = y - component[i].y;
+            if (component[i].contains (x2, y2))
+              return component[i];
+          }
+        return this;
+      }
   }
 
   /**
@@ -886,7 +886,7 @@ public class Container extends Component
    */
   public Component getComponentAt(Point p)
   {
-    return getComponentAt(p.x, p.y);
+    return getComponentAt (p.x, p.y);
   }
 
   public Component findComponentAt(int x, int y)

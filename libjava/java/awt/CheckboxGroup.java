@@ -95,8 +95,8 @@ CheckboxGroup()
 public Checkbox
 getSelectedCheckbox()
 {
-  return(selectedCheckbox);
-} 
+  return getCurrent ();
+}
 
 /*************************************************************************/
 
@@ -126,17 +126,7 @@ getCurrent()
 public void
 setSelectedCheckbox(Checkbox selectedCheckbox)
 {
-  if (this.selectedCheckbox != null)
-    {
-      if (this.selectedCheckbox.getCheckboxGroup() != this)
-        return;
-
-      this.selectedCheckbox.setState(false);
-    }
-
-  this.selectedCheckbox = selectedCheckbox;
-  if (selectedCheckbox != null)
-    selectedCheckbox.setState(true);
+  setCurrent (selectedCheckbox);
 }
 
 /*************************************************************************/
@@ -153,7 +143,17 @@ setSelectedCheckbox(Checkbox selectedCheckbox)
 public void
 setCurrent(Checkbox selectedCheckbox)
 {
-  setSelectedCheckbox(selectedCheckbox);
+  if (this.selectedCheckbox != null)
+    {
+      if (this.selectedCheckbox.getCheckboxGroup() != this)
+        return;
+
+      this.selectedCheckbox.setState(false);
+    }
+
+  this.selectedCheckbox = selectedCheckbox;
+  if (selectedCheckbox != null)
+    selectedCheckbox.setState(true);
 }
 
 /*************************************************************************/

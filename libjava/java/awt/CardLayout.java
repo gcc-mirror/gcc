@@ -90,7 +90,7 @@ public class CardLayout implements LayoutManager2, Serializable
     if (! (constraints instanceof String))
       throw new IllegalArgumentException ("Object " + constraints
 					  + " is not a string");
-    tab.put (constraints, comp);
+    addLayoutComponent ((String) constraints, comp);
   }
 
   /** Add a new component to the layout.  The name can be used later
@@ -102,7 +102,7 @@ public class CardLayout implements LayoutManager2, Serializable
    */
   public void addLayoutComponent (String name, Component comp)
   {
-    addLayoutComponent (comp, name);
+    tab.put (name, comp);
   }
 
   /** Cause the first component in the container to be displayed.

@@ -288,13 +288,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension getMinimumSize (int rows, int columns)
   {
-    TextAreaPeer peer = (TextAreaPeer) getPeer ();
-
-    // Sun returns Dimension (0,0) in this case.
-    if (peer == null)
-      return new Dimension (0, 0);
-
-    return peer.getMinimumSize (rows, columns);
+    return minimumSize (rows, columns);
   }
 
   /**
@@ -311,7 +305,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension minimumSize ()
   {
-    return getMinimumSize (getRows (), getColumns ());
+    return minimumSize (getRows (), getColumns ());
   }
 
   /**
@@ -333,7 +327,13 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension minimumSize (int rows, int columns)
   {
-    return getMinimumSize (rows, columns);
+    TextAreaPeer peer = (TextAreaPeer) getPeer ();
+
+    // Sun returns Dimension (0,0) in this case.
+    if (peer == null)
+      return new Dimension (0, 0);
+
+    return peer.getMinimumSize (rows, columns);
   }
 
   /**
@@ -366,13 +366,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension getPreferredSize (int rows, int columns)
   {
-    TextAreaPeer peer = (TextAreaPeer) getPeer ();
-
-    // Sun returns Dimension (0,0) in this case.
-    if (peer == null)
-      return new Dimension (0, 0);
-
-    return peer.getPreferredSize (rows, columns);
+    return preferredSize (rows, columns);
   }
 
   /**
@@ -389,7 +383,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension preferredSize ()
   {
-    return getPreferredSize (getRows (), getColumns ());
+    return preferredSize (getRows (), getColumns ());
   }
 
   /**
@@ -411,7 +405,13 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension preferredSize (int rows, int columns)
   {
-    return getPreferredSize (rows, columns);
+    TextAreaPeer peer = (TextAreaPeer) getPeer ();
+
+    // Sun returns Dimension (0,0) in this case.
+    if (peer == null)
+      return new Dimension (0, 0);
+
+    return peer.getPreferredSize (rows, columns);
   }
 
   /**
@@ -440,9 +440,22 @@ public class TextArea extends TextComponent implements java.io.Serializable
   /**
    * Append the specified text to the end of the current text.
    *
-   * @param text The text to append.
+   * @param str The text to append.
    */
   public void append (String str)
+  {
+    appendText (str);
+  }
+
+  /**
+   * Append the specified text to the end of the current text.
+   *
+   * @param str The text to append.
+   *
+   * @deprecated This method is deprecated in favor of
+   * <code>append ()</code>.
+   */
+  public void appendText (String str)
   {
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
     if (peer == null)
@@ -452,47 +465,34 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Append the specified text to the end of the current text.
+   * Insert the specified text at the specified position.  The first
+   * character in the text area is at position zero.
    *
-   * @param text The text to append.
-   *
-   * @deprecated This method is deprecated in favor of
-   * <code>append ()</code>.
+   * @param str The text to insert.
+   * @param pos The position at which to insert text.
    */
-  public void appendText (String text)
+  public void insert (String str, int pos)
   {
-    append (text);
+    insertText (str, pos);
   }
 
   /**
    * Insert the specified text at the specified position.  The first
    * character in the text area is at position zero.
    *
-   * @param text The text to insert.
+   * @param str The text to insert.
    * @param pos The position at which to insert text.
+   *
+   * @deprecated This method is deprecated in favor of
+   * <code>insert ()</code>.
    */
-  public void insert (String text, int pos)
+  public void insertText (String str, int pos)
   {
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
     if (peer == null)
       return;
 
-    peer.insert (text, pos);
-  }
-
-  /**
-   * Insert the specified text at the specified position.  The first
-   * character in the text area is at position zero.
-   *
-   * @param text The text to insert.
-   * @param pos The position at which to insert text.
-   *
-   * @deprecated This method is depcreated in favor of
-   * <code>insert ()</code>.
-   */
-  public void insertText (String text, int pos)
-  {
-    insert (text, pos);
+    peer.insert (str, pos);
   }
 
   /**
@@ -503,17 +503,13 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * length of the replacement text may differ from the length of the
    * text that is replaced.
    *
-   * @param text The new text for the range.
+   * @param str The new text for the range.
    * @param start The start position of the replacement range.
    * @param end The end position of the replacement range.
    */
-  public void replaceRange (String text, int start, int end)
+  public void replaceRange (String str, int start, int end)
   {
-    TextAreaPeer peer = (TextAreaPeer) getPeer ();
-    if (peer == null)
-      return;
-
-    peer.replaceRange (text, start, end);
+    replaceText (str, start, end);
   }
 
   /**
@@ -524,16 +520,20 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * length of the replacement text may differ from the length of the
    * text that is replaced.
    *
-   * @param text The new text for the range.
+   * @param str The new text for the range.
    * @param start The start position of the replacement range.
    * @param end The end position of the replacement range.
    *
    * @deprecated This method is deprecated in favor of
    * <code>replaceRange ()</code>.
    */
-  public void replaceText (String text, int start, int end)
+  public void replaceText (String str, int start, int end)
   {
-    replaceRange (text, start, end);
+    TextAreaPeer peer = (TextAreaPeer) getPeer ();
+    if (peer == null)
+      return;
+
+    peer.replaceRange (str, start, end);
   }
 
   /**
