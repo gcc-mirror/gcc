@@ -16,7 +16,7 @@ int h2 (int (*)(double) = f); // ERROR - no matching f
 
 template <class T>
 int j (T t)
-{
+{				 // ERROR - declared here
   extern void k (int i = j (t)); // ERROR - default argument uses local
 
   k ();

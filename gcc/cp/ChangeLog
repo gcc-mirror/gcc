@@ -1,3 +1,18 @@
+2003-01-07  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9030
+	* decl.c (make_typename_type): Check access only when tf_error.
+	(make_unbound_class_template): Likewise.
+	* pt.c (saved_access_scope): New variable.
+	(push_access_scope_real): New function.
+	(push_access_scope): Likewise.
+	(pop_access_scope): Likewise.
+	(tsubst_default_argument): Use them.
+	(instantiate_template): Likewise.
+	(regenerate_decl_from_template): Likewise.
+	(instantiate_decl): Likewise.
+	(get_mostly_instantiated_function_type): Likewise.
+
 2003-01-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9165

@@ -5681,10 +5681,13 @@ make_typename_type (context, name, complain)
 	      return error_mark_node;
 	    }
 
-	  if (complain & tf_parsing)
-	    type_access_control (context, tmpl);
-	  else
-	    enforce_access (context, tmpl);
+	  if (complain & tf_error)
+	    {
+	      if (complain & tf_parsing)
+		type_access_control (context, tmpl);
+	      else
+		enforce_access (context, tmpl);
+	    }
 
 	  return lookup_template_class (tmpl,
 					TREE_OPERAND (fullname, 1),
@@ -5713,10 +5716,13 @@ make_typename_type (context, name, complain)
 		  return error_mark_node;
 		}
 
-	      if (complain & tf_parsing)
-		type_access_control (context, t);
-	      else
-		enforce_access (context, t);
+	      if (complain & tf_error)
+		{
+	      	  if (complain & tf_parsing)
+		    type_access_control (context, t);
+		  else
+		    enforce_access (context, t);
+		}
 
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
@@ -5784,10 +5790,13 @@ make_unbound_class_template (context, name, complain)
 	  return error_mark_node;
 	}
       
-      if (complain & tf_parsing)
-	type_access_control (context, tmpl);
-      else
-	enforce_access (context, tmpl);
+      if (complain & tf_error)
+	{
+	  if (complain & tf_parsing)
+	    type_access_control (context, tmpl);
+	  else
+	    enforce_access (context, tmpl);
+	}
 
       return tmpl;
     }
