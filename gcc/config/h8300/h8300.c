@@ -572,17 +572,6 @@ o_operand (operand, mode)
 	  && CONST_OK_FOR_O (INTVAL (operand)));
 }
 
-/* Return true if OP is a const valid for a bit set or bit xor instruction.  */
-
-int
-p_operand (operand, mode)
-     rtx operand;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (operand) == CONST_INT
-	  && CONST_OK_FOR_P (INTVAL (operand)));
-}
-
 /* Return true if OP is a valid call operand.  */
 
 int
