@@ -46,6 +46,20 @@ Mon Feb  1 20:44:47 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (java_complete_lhs):  Don't complain about unreachable
 	exit condition in a do-while statement.
+	
+Fri Jan 29 18:19:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_read_char): Fixed utf8 decoding.
+	(java_unicode_2_utf8): Fixed utf8 encoding in the 0x800-0xffff
+ 	range.
+	* parse.y (valid_builtin_assignconv_identity_widening_p): Fixed
+ 	comments. Local variable `all_primitive' is gone. Broadened
+ 	acceptance of `0' to floating point targets. `long' can now be
+ 	widened to `double' or `float'.
+	(valid_method_invocation_conversion_p): Added leading
+ 	comment. Fixed tabulation.
+	(build_string_concatenation): Optimize out left or right empty
+ 	string constants.
 
 Thu Jan 28 18:51:26 1999  Per Bothner  <bothner@cygnus.com>
 

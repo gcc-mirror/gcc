@@ -216,19 +216,19 @@ java_read_char ()
     return UEOF;
   else
     {
-      if (c & (0xe0 == 0xc0))
+      if ((c & 0xe0) == 0xc0)
         {
           c1 = GETC ();
-	  if (c1 & (0xc0 == 0x80))
+	  if ((c1 & 0xc0) == 0x80)
 	    return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
 	}
-      else if (c & (0xf0 == 0xe0))
+      else if ((c & 0xf0) == 0xe0)
         {
           c1 = GETC ();
-	  if (c1 & (0xc0 == 0x80))
+	  if ((c1 & 0xc0) == 0x80)
 	    {
 	      c2 = GETC ();
-	      if (c2 & (0xc0 == 0x80))
+	      if ((c2 & 0xc0) == 0x80)
 	        return (unicode_t)(((c & 0xf) << 12) + 
 				   (( c1 & 0x3f) << 6) + (c2 & 0x3f));
 	    }
@@ -1274,7 +1274,7 @@ java_unicode_2_utf8 (unicode)
       obstack_1grow (&temporary_obstack,
 		     (unsigned char)(0x80 | (unicode & 0x0fc0) >> 6));
       obstack_1grow (&temporary_obstack,
-		     (unsigned char)(0x80 | (unicode & 0x003f) >> 12));
+		     (unsigned char)(0x80 | (unicode & 0x003f)));
     }
 }
 
