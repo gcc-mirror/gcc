@@ -123,8 +123,8 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
     {
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
 	expand_direct_vtbls_init (real_base_binfo, base_binfo,
 				  is_not_base_vtable, can_elide, addr);

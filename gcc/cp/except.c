@@ -265,32 +265,32 @@ init_exception_processing ()
 
   push_lang_context (lang_name_c);
 
-  catch_match_fndecl =
-    builtin_function (flag_rtti
-		      ? "__throw_type_match_rtti"
-		      : "__throw_type_match",
-		      build_function_type (ptr_type_node,
-					   tree_cons (NULL_TREE, ptr_type_node,
-						      tree_cons (NULL_TREE, ptr_type_node,
-								 tree_cons (NULL_TREE, ptr_type_node,
-									    void_list_node)))),
-		      NOT_BUILT_IN, NULL_PTR);
-  find_first_exception_match_fndecl =
-    builtin_function ("__find_first_exception_table_match",
-		      build_function_type (ptr_type_node,
-					   tree_cons (NULL_TREE, ptr_type_node,
-						      void_list_node)),
-		      NOT_BUILT_IN, NULL_PTR);
-  unwind_fndecl =
-    builtin_function ("__unwind_function",
-		      build_function_type (void_type_node,
-					   tree_cons (NULL_TREE, ptr_type_node,
-						      void_list_node)),
-		      NOT_BUILT_IN, NULL_PTR);
-  empty_fndecl =
-    builtin_function ("__empty",
-		      build_function_type (void_type_node, void_list_node),
-		      NOT_BUILT_IN, NULL_PTR);
+  catch_match_fndecl
+    = builtin_function (flag_rtti
+			? "__throw_type_match_rtti"
+			: "__throw_type_match",
+			build_function_type (ptr_type_node,
+					     tree_cons (NULL_TREE, ptr_type_node,
+							tree_cons (NULL_TREE, ptr_type_node,
+								   tree_cons (NULL_TREE, ptr_type_node,
+									      void_list_node)))),
+			NOT_BUILT_IN, NULL_PTR);
+  find_first_exception_match_fndecl
+    = builtin_function ("__find_first_exception_table_match",
+			build_function_type (ptr_type_node,
+					     tree_cons (NULL_TREE, ptr_type_node,
+							void_list_node)),
+			NOT_BUILT_IN, NULL_PTR);
+  unwind_fndecl
+    = builtin_function ("__unwind_function",
+			build_function_type (void_type_node,
+					     tree_cons (NULL_TREE, ptr_type_node,
+							void_list_node)),
+			NOT_BUILT_IN, NULL_PTR);
+  empty_fndecl
+    = builtin_function ("__empty",
+			build_function_type (void_type_node, void_list_node),
+			NOT_BUILT_IN, NULL_PTR);
   DECL_EXTERNAL (empty_fndecl) = 1;
   TREE_PUBLIC (empty_fndecl) = 1;
 

@@ -1179,8 +1179,8 @@ instantiate_class_template (type)
 			TREE_VEC_LENGTH (args), NULL_TREE);
 	    BINFO_INHERITANCE_CHAIN (elt) = binfo;
 
-	    if (! uses_template_parms (type) &&
-		TYPE_SIZE (complete_type (TREE_TYPE (elt))) == NULL_TREE)
+	    if (! uses_template_parms (type)
+		&& TYPE_SIZE (complete_type (TREE_TYPE (elt))) == NULL_TREE)
 	      cp_error ("base class `%T' of `%T' has incomplete type",
 			TREE_TYPE (elt), type);
 	  }
@@ -1265,9 +1265,9 @@ instantiate_class_template (type)
 	      &TREE_VEC_ELT (args, 0), TREE_VEC_LENGTH (args), NULL_TREE);
 
   {
-    tree d = CLASSTYPE_FRIEND_CLASSES (type) =
-      tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), &TREE_VEC_ELT (args, 0),
-	      TREE_VEC_LENGTH (args), NULL_TREE);
+    tree d = CLASSTYPE_FRIEND_CLASSES (type)
+      = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), &TREE_VEC_ELT (args, 0),
+		TREE_VEC_LENGTH (args), NULL_TREE);
 
     /* This does injection for friend classes.  */
     for (; d; d = TREE_CHAIN (d))
@@ -1600,8 +1600,8 @@ tsubst (t, args, nargs, in_decl)
 	    else
 	      SET_DECL_IMPLICIT_INSTANTIATION (r);
 
-	    DECL_TEMPLATE_INSTANTIATIONS (tmpl) =
-	      tree_cons (argvec, r, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
+	    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
+	      = tree_cons (argvec, r, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
 	  }
 
 	/* Like grokfndecl.  If we don't do this, pushdecl will mess up our

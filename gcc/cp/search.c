@@ -245,9 +245,9 @@ static struct memoized_entry *
 my_new_memoized_entry (chain)
      struct memoized_entry *chain;
 {
-  struct memoized_entry *p =
-    (struct memoized_entry *)obstack_alloc (&type_obstack_entries,
-					    sizeof (struct memoized_entry));
+  struct memoized_entry *p
+    = (struct memoized_entry *)obstack_alloc (&type_obstack_entries,
+					      sizeof (struct memoized_entry));
   bzero ((char *) p, sizeof (struct memoized_entry));
   MEMOIZED_CHAIN (p) = chain;
   MEMOIZED_UID (p) = ++my_memoized_entry_counter;
@@ -854,9 +854,9 @@ compute_access (basetype_path, field)
   /* Replaces static decl above.  */
   tree previous_scope;
 #endif
-  int static_mem =
-    ((TREE_CODE (field) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (field))
-     || (TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field)));
+  int static_mem
+    = ((TREE_CODE (field) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (field))
+       || (TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field)));
 
   if (! flag_access_control)
     return access_public_node;
@@ -2182,8 +2182,8 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	abstract_virtuals
 	  = get_abstract_virtuals_1 (base_binfo, is_not_base_vtable,
@@ -2887,8 +2887,8 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
     {
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
 	fixup_virtual_upcast_offsets (real_base_binfo, base_binfo,
 				      is_not_base_vtable, can_elide, addr,

@@ -2144,8 +2144,8 @@ finish_vtbls (binfo, do_self, t)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
@@ -2162,11 +2162,11 @@ overrides (fndecl, base_fndecl)
      tree fndecl, base_fndecl;
 {
   /* Destructors have special names.  */
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl)) &&
-      DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl))
+      && DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
     return 1;
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl)) ||
-      DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl))
+      || DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
     return 0;
   if (DECL_NAME (fndecl) == DECL_NAME (base_fndecl))
     {
@@ -2397,8 +2397,8 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl, pfn);
     }
@@ -2493,8 +2493,8 @@ fixup_vtable_deltas (binfo, init_self, t)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	fixup_vtable_deltas (base_binfo, is_not_base_vtable, t);
     }
@@ -2525,8 +2525,8 @@ modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl, pfn)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  via_virtual = 1;
@@ -2705,8 +2705,8 @@ merge_overrides (binfo, old, do_self, t)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree old_base_binfo = TREE_VEC_ELT (old_binfos, i);
-      int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable
+	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	merge_overrides (base_binfo, old_base_binfo, is_not_base_vtable, t);
     }
@@ -3221,8 +3221,9 @@ finish_struct_1 (t, warn_anon)
 	  tree ctype = DECL_INITIAL (x);
 	  tree sname = DECL_NAME (x);
 	  tree access
-	    = TREE_PRIVATE (x) ? access_private_node :
-	      TREE_PROTECTED (x) ? access_protected_node : access_public_node;
+	    = TREE_PRIVATE (x) ? access_private_node
+			       : TREE_PROTECTED (x) ? access_protected_node
+						    : access_public_node;
 	  tree fdecl, binfo;
 
 	  if (last_x)
@@ -4606,9 +4607,9 @@ pushclass (type, modify)
   *current_class_stack++ = current_class_type;
   if (current_class_stack >= current_class_base + current_class_stacksize)
     {
-      current_class_base =
-	(tree *)xrealloc (current_class_base,
-			  sizeof (tree) * (current_class_stacksize + 10));
+      current_class_base
+	= (tree *)xrealloc (current_class_base,
+			    sizeof (tree) * (current_class_stacksize + 10));
       current_class_stack = current_class_base + current_class_stacksize;
       current_class_stacksize += 10;
     }
@@ -4790,9 +4791,9 @@ push_lang_context (name)
   *current_lang_stack++ = current_lang_name;
   if (current_lang_stack >= current_lang_base + current_lang_stacksize)
     {
-      current_lang_base =
-	(tree *)xrealloc (current_lang_base,
-			  sizeof (tree) * (current_lang_stacksize + 10));
+      current_lang_base
+	= (tree *)xrealloc (current_lang_base,
+			    sizeof (tree) * (current_lang_stacksize + 10));
       current_lang_stack = current_lang_base + current_lang_stacksize;
       current_lang_stacksize += 10;
     }
@@ -5257,8 +5258,8 @@ instantiate_type (lhstype, rhs, complain)
 	TREE_TYPE (rhs) = lhstype;
 	TREE_OPERAND (rhs, 0) = fn;
 	TREE_CONSTANT (rhs) = staticp (fn);
-	if (TREE_CODE (lhstype) == POINTER_TYPE &&
-	    TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
+	if (TREE_CODE (lhstype) == POINTER_TYPE
+	    && TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
 	  {
 	    build_ptrmemfunc_type (lhstype);
 	    rhs = build_ptrmemfunc (lhstype, rhs, 0);
