@@ -395,9 +395,9 @@ extern GTY(()) rtx aof_pic_label;
    N_("Specify the register to be used for PIC addressing"), 0},	\
   {"abi=", &target_abi_name, N_("Specify an ABI"), 0},			\
   {"soft-float", &target_float_switch,					\
-   N_("Alias for -mfloat-abi=soft"), 0},				\
+   N_("Alias for -mfloat-abi=soft"), "s"},				\
   {"hard-float", &target_float_switch,					\
-   N_("Alias for -mfloat-abi=hard"), 0}					\
+   N_("Alias for -mfloat-abi=hard"), "h"}				\
 }
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
