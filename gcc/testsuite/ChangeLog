@@ -1,3 +1,8 @@
+2002-06-10  Bob Wilson  <bob.wilson@acm.org>
+
+	* gcc.c-torture/compile/20001226-1.x: Only xfail for Xtensa
+	targets if not optimizing.
+
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020605-1.c: New test.
