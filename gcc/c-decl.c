@@ -6537,7 +6537,9 @@ c_expand_body (fndecl, nested_p, can_defer_p)
 
   /* Generate the RTL for this function.  */
   expand_stmt (DECL_SAVED_TREE (fndecl));
-  if (uninlinable)
+
+  /* Keep the function body if it's needed for inlining or dumping.  */
+  if (uninlinable && !dump_enabled_p (TDI_all))
     {
       /* Allow the body of the function to be garbage collected.  */
       DECL_SAVED_TREE (fndecl) = NULL_TREE;

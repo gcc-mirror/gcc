@@ -1,3 +1,9 @@
+2003-04-18  Alexander Sotirov  <sluncho@mirizma.org>
+
+	PR c/9177
+	* c-decl.c (c_expand_body): Don't garbage collect the function
+	body if we are going to dump it later.
+
 2003-04-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/7675
