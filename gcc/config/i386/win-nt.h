@@ -69,7 +69,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 #undef CPP_PREDEFINES
 #endif
 #define CPP_PREDEFINES "-Dunix -Di386 -DWIN32 -D_WIN32 \
-  -DWINNT -D_M_IX86=300 -D_X86_=1 -DALMOST_STDC -D_MSC_VER=800\
+  -DWINNT -D_M_IX86=300 -D_X86_=1 -D__STDC__=0 -DALMOST_STDC -D_MSC_VER=800 \
+  -D__stdcall=__attribute__((stdcall)) -D__cdecl=__attribute__((cdecl)) \
   -Asystem(unix) -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
 #define SIZE_TYPE "unsigned int"
