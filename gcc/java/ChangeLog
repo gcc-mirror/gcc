@@ -1,3 +1,7 @@
+2003-01-03  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (GNU Classpath Properties): Document new properties.
+
 2003-01-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
 
 	* java/jcf-reader.c, java/jvgenmain.c, java/keyword.gperf,
