@@ -315,7 +315,6 @@ free_after_parsing (struct function *f)
   /* f->eh->eh_return_stub_label is used by code generation.  */
 
   lang_hooks.function.final (f);
-  f->stmt = NULL;
 }
 
 /* Clear out all parts of the state in F that can safely be discarded
@@ -589,10 +588,9 @@ make_slot_available (struct temp_slot *temp)
 
    KEEP is 1 if this slot is to be retained after a call to
    free_temp_slots.  Automatic variables for a block are allocated
-   with this flag.  KEEP is 2 if we allocate a longer term temporary,
-   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  KEEP is 3
-   if we are to allocate something at an inner level to be treated as
-   a variable in the block (e.g., a SAVE_EXPR).
+   with this flag.  KEEP values of 2 or 3 were needed respectively
+   for variables whose lifetime is controlled by CLEANUP_POINT_EXPRs
+   or for SAVE_EXPRs, but they are now unused and will abort.
 
    TYPE is the type that will be used for the stack slot.  */
 
@@ -607,6 +605,10 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
   if (size == -1)
+    abort ();
+
+  /* These are now unused.  */
+  if (keep > 1)
     abort ();
 
   if (mode == BLKmode)
@@ -733,22 +735,8 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
   p->in_use = 1;
   p->addr_taken = 0;
   p->type = type;
-
-  if (keep == 2)
-    {
-      p->level = target_temp_slot_level;
-      p->keep = 1;
-    }
-  else if (keep == 3)
-    {
-      p->level = var_temp_slot_level;
-      p->keep = 0;
-    }
-  else
-    {
-      p->level = temp_slot_level;
-      p->keep = keep;
-    }
+  p->level = temp_slot_level;
+  p->keep = keep;
 
   pp = temp_slots_at_level (p->level);
   insert_slot_to_list (p, pp);
@@ -1190,8 +1178,6 @@ init_temp_slots (void)
   avail_temp_slots = 0;
   used_temp_slots = 0;
   temp_slot_level = 0;
-  var_temp_slot_level = 0;
-  target_temp_slot_level = 0;
 }
 
 /* These routines are responsible for converting virtual register references
@@ -3784,7 +3770,6 @@ allocate_struct_function (tree fndecl)
 
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
 
-  init_stmt_for_function ();
   init_eh_for_function ();
 
   lang_hooks.function.init (cfun);

@@ -4626,8 +4626,6 @@ emit_line_note (location_t location)
 {
   rtx note;
   
-  set_file_and_line_for_stmt (location);
-  
 #ifdef USE_MAPPED_LOCATION
   if (location == last_location)
     return NULL_RTX;

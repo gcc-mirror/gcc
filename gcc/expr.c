@@ -7697,7 +7697,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       goto binop;
 
     case TRUTH_OR_EXPR:
-      code = BIT_OR_EXPR;
+      code = BIT_IOR_EXPR;
     case BIT_IOR_EXPR:
       goto binop;
 
@@ -8144,27 +8144,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       abort ();
 
     case SWITCH_EXPR:
-      expand_start_case (SWITCH_COND (exp));
-      /* The switch body is lowered in gimplify.c, we should never have
-	 switches with a non-NULL SWITCH_BODY here.  */
-      if (SWITCH_BODY (exp))
-        abort ();
-      if (SWITCH_LABELS (exp))
-	{
-	  tree vec = SWITCH_LABELS (exp);
-	  size_t i = TREE_VEC_LENGTH (vec);
-
-	  do
-	    {
-	      tree elt = TREE_VEC_ELT (vec, --i);
-	      add_case_node (CASE_LOW (elt), CASE_HIGH (elt),
-			     CASE_LABEL (elt));
-	    }
-	  while (i);
-	}
-      else
-	abort ();
-      expand_end_case_type (SWITCH_COND (exp), TREE_TYPE (exp));
+      expand_case (exp);
       return const0_rtx;
 
     case LABEL_EXPR:
