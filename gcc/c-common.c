@@ -5774,7 +5774,7 @@ c_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     return NULL;
   switch (TREE_CODE (x))
     { 
-    /* Reconginze assignments of large structures and constructors of
+    /* Recognize assignments of large structures and constructors of
        big arrays.  */
     case MODIFY_EXPR:
     case CONSTRUCTOR:

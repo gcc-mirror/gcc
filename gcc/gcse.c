@@ -2205,7 +2205,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 		       && oprs_available_p (pat, tmp))))
 	insert_set_in_table (pat, insn, table);
     }
-  /* In case of store we want to consider the memory value as avaiable in
+  /* In case of store we want to consider the memory value as available in
      the REG stored in that memory. This makes it possible to remove
      redundant loads from due to stores to the same location.  */
   else if (flag_gcse_las && GET_CODE (src) == REG && GET_CODE (dest) == MEM)

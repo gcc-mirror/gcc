@@ -6282,7 +6282,7 @@ merge_states (automaton_t automaton, vla_ptr_t *equiv_classes)
 		}
           }
 	/* Its is important that alt states were sorted before and
-           after merging to have the same quering results.  */
+           after merging to have the same querying results.  */
         new_state->component_states = uniq_sort_alt_states (alt_states);
       }
     else

@@ -633,7 +633,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	if (GET_CODE (dest) == STRICT_LOW_PART)
 	  dest = XEXP (dest, 0);
 
-	/* Find the referant for a DUP.  */
+	/* Find the referent for a DUP.  */
 
 	if (GET_CODE (dest) == MATCH_DUP
 	    || GET_CODE (dest) == MATCH_OP_DUP

@@ -973,7 +973,7 @@ priority (rtx insn)
 }
 
 /* Macros and functions for keeping the priority queue sorted, and
-   dealing with queueing and dequeueing of instructions.  */
+   dealing with queuing and dequeuing of instructions.  */
 
 #define SCHED_SORT(READY, N_READY)                                   \
 do { if ((N_READY) == 2)				             \

@@ -1734,7 +1734,7 @@ copyprop_hardreg_forward (void)
       /* If a block has a single predecessor, that we've already
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
-      /* ??? Ought to use more intelligent queueing of blocks.  */
+      /* ??? Ought to use more intelligent queuing of blocks.  */
       if (bb->pred)
 	for (bbp = bb; bbp && bbp != bb->pred->src; bbp = bbp->prev_bb);
       if (bb->pred

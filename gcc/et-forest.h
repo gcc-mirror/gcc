@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    for tree operations (insertion and removal of nodes and edges) and
    poly-logarithmic time for nearest common ancestor.
 
-   ET tree stores its structue as a sequence of symbols obtained
+   ET tree stores its structure as a sequence of symbols obtained
    by dfs(root)
 
    dfs (node)

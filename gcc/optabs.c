@@ -5371,7 +5371,7 @@ init_optabs (void)
     abs_optab->handlers[TYPE_MODE (complex_double_type_node)].libfunc
       = init_one_libfunc ("cabs");
 
-  /* The ffs function op[1erates on `int'.  */
+  /* The ffs function operates on `int'.  */
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = init_one_libfunc ("ffs");
 

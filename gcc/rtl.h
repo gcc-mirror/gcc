@@ -1742,7 +1742,7 @@ rtx alloc_EXPR_LIST			(int, rtx, rtx);
 /* regclass.c */
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
-   Always at least 3, since the combiner could put that many togetherm
+   Always at least 3, since the combiner could put that many together
    and we want this to remain correct for all the remaining passes.  */
 
 extern int max_parallel;

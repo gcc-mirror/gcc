@@ -9341,7 +9341,7 @@ expand_increment (tree exp, int post, int ignore)
     {
       /* We have a true reference to the value in OP0.
 	 If there is an insn to add or subtract in this mode, queue it.
-	 Queueing the increment insn avoids the register shuffling
+	 Queuing the increment insn avoids the register shuffling
 	 that often results if we must increment now and first save
 	 the old value for subsequent use.  */
 

@@ -20,7 +20,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* Simple optimization pass that splits independent uses of each pseudo,
-   increasing effectivity of other optimizations.  The optimization can
+   increasing effectiveness of other optimizations.  The optimization can
    serve as an example of use for the dataflow module.
 
    We don't split registers with REG_USERVAR set unless -fmessy-debugging
