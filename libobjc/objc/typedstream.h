@@ -99,7 +99,7 @@ int objc_read_types (TypedStream* stream, const char* type, ...);
 int objc_write_object_reference (TypedStream* stream, id object);
 int objc_write_root_object (TypedStream* stream, id object);
 
-long objc_get_stream_class_version (TypedStream* stream, Class class);
+long objc_get_stream_class_version (TypedStream* stream, Class class_type);
 
 
 /*
