@@ -1,3 +1,9 @@
+2002-07-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6944
+	* g++.dg/init/array4.C: New test.
+	* g++.dg/init/array5.C: New test.
+
 Wed Jul  3 10:25:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-1.c (main): Also test &, |, ^, ~.
