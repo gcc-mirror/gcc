@@ -1,5 +1,8 @@
 2000-04-03  Tom Tromey  <tromey@cygnus.com>
 
+	* include/jvm.h (_Jv_GetArrayElementFromElementType): More
+	commentary from Alex.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am ($(javao_files)): Depend on libgcj.zip.
 	From H.J. Lu.
