@@ -1,3 +1,8 @@
+2001-11-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Remove all references to LANGUAGES
+	and the stamp files that depend on its value.
+
 Sun Nov 18 11:13:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (finish_parse): Remove.
