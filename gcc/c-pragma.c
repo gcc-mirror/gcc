@@ -188,59 +188,57 @@ handle_pragma_pack (dummy)
   tree x, id = 0;
   int align;
   enum cpp_ttype token;
-  enum { set, reset, push, pop } action;
+  enum { set, push, pop } action;
 
   if (c_lex (&x) != CPP_OPEN_PAREN)
     BAD ("missing '(' after '#pragma pack' - ignored");
 
   token = c_lex (&x);
   if (token == CPP_CLOSE_PAREN)
-    action = reset;
+    {
+      action = set;
+      align = 0;
+    }
   else if (token == CPP_NUMBER)
     {
       align = TREE_INT_CST_LOW (x);
       action = set;
+      if (c_lex (&x) != CPP_CLOSE_PAREN)
+	BAD ("malformed '#pragma pack' - ignored");
     }
   else if (token == CPP_NAME)
     {
-      if (!strcmp (IDENTIFIER_POINTER (x), "push"))
+      const char *op = IDENTIFIER_POINTER (x);
+      if (!strcmp (op, "push"))
 	action = push;
-      else if (!strcmp (IDENTIFIER_POINTER (x), "pop"))
+      else if (!strcmp (op, "pop"))
 	action = pop;
       else
-	BAD2 ("unknown action '%s' for '#pragma pack' - ignored",
-	      IDENTIFIER_POINTER (x));
-    }
-  else
-    BAD ("malformed '#pragma pack' - ignored");
+	BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
 
-  token = c_lex (&x);
-  if ((action == set || action == reset) && token != CPP_CLOSE_PAREN)
-    BAD ("malformed '#pragma pack' - ignored");
-  if ((action == push || action == pop) && token != CPP_COMMA)
-    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
-	  action == push ? "push" : "pop");
+      if (c_lex (&x) != CPP_COMMA)
+	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
 
-  if (action == push || action == pop)
-    {
       token = c_lex (&x);
       if (token == CPP_NAME)
 	{
 	  id = x;
 	  if (c_lex (&x) != CPP_COMMA)
-	    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
-		  action == push ? "push" : "pop");
+	    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
 	  token = c_lex (&x);
 	}
+
       if (token == CPP_NUMBER)
 	align = TREE_INT_CST_LOW (x);
       else
-	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
-	      action == push ? "push" : "pop");
+	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored", op);
 
       if (c_lex (&x) != CPP_CLOSE_PAREN)
 	BAD ("malformed '#pragma pack' - ignored");
     }
+  else
+    BAD ("malformed '#pragma pack' - ignored");
+
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma pack'");
 
@@ -261,7 +259,6 @@ handle_pragma_pack (dummy)
   switch (action)
     {
     case set:   SET_GLOBAL_ALIGNMENT (align);  break;
-    case reset: SET_GLOBAL_ALIGNMENT (0);      break;
     case push:  push_alignment (align, id);    break;
     case pop:   pop_alignment (id);            break;
     }

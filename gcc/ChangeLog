@@ -1,5 +1,11 @@
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* c-pragma.c (handle_pragma_pack): Correct parsing logic so it
+	won't give a spurious error for '#pragma pack()'.  Simplify
+	control flow for readability.  'reset' action is not necessary.
+
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* defaults.h: Provide default definitions for: CHAR_TYPE_SIZE,
 	SHORT_TYPE_SIZE, INT_TYPE_SIZE, LONG_TYPE_SIZE,
 	LONG_LONG_TYPE_SIZE, WCHAR_TYPE_SIZE, FLOAT_TYPE_SIZE,
