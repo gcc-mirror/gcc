@@ -1,3 +1,7 @@
+2003-05-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/m-un-2.c: Fix the typedef of size_t.
+
 2003-05-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9364, c++/10553, c++/10586
