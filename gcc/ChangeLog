@@ -1,3 +1,8 @@
+Mon Oct  5 10:02:36 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (simplify_rtx): Do not replace TRUNCATE with a SUBREG if
+	truncation is not a no-op.
+
 Mon Oct 5 09:02:04 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
