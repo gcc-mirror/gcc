@@ -1,3 +1,7 @@
+1999-10-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calloc.c: Add a public domain notice.
+
 Mon Oct 18 02:30:47 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* setenv.c (sys/types.h, stdio.h): Include those files unconditionaly.
