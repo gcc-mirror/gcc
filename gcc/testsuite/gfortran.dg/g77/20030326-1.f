@@ -4,7 +4,7 @@ C      larson@w6yx.stanford.edu
 C
        integer a, b, c
 
-       c = -2147483648 / -1 ! { dg-bogus "Arithmetic overflow" "Arithmetic overflow" { xfail *-*-* } } PR 16512
+       c = -2147483648 / -1 ! { dg-warning "outside symmetric range" "" }
 
        a = 1
        b = 0
