@@ -1,5 +1,8 @@
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
+	* doc/install.texi: Add documentation for installation into
+	tooldirs and with DESTDIR.
+
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Also pass DESTDIR.
 	(install-cpp, uninstall-cpp, installdirs, install-common)
 	(install-driver, install-info, install-man)
