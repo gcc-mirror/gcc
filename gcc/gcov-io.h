@@ -584,6 +584,9 @@ gcov_rewrite (void)
   fseek (gcov_var.file, 0L, SEEK_SET);
 }
 
+#ifdef __MINGW32__
+#define ftruncate _chsize
+#endif
 static inline void
 gcov_truncate (void)
 {
