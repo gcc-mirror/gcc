@@ -146,6 +146,8 @@ GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 GLIBCXX_TEST_ABI_FALSE = @GLIBCXX_TEST_ABI_FALSE@
 GLIBCXX_TEST_ABI_TRUE = @GLIBCXX_TEST_ABI_TRUE@
+GLIBCXX_TEST_THREAD_FALSE = @GLIBCXX_TEST_THREAD_FALSE@
+GLIBCXX_TEST_THREAD_TRUE = @GLIBCXX_TEST_THREAD_TRUE@
 GLIBCXX_TEST_WCHAR_T_FALSE = @GLIBCXX_TEST_WCHAR_T_FALSE@
 GLIBCXX_TEST_WCHAR_T_TRUE = @GLIBCXX_TEST_WCHAR_T_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
@@ -311,7 +313,7 @@ performance_script = ${glibcxx_srcdir}/scripts/check_performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols
+	     testsuite_* site.exp abi_check baseline_symbols *TEST*
 
 all: all-am
 
@@ -575,12 +577,17 @@ uninstall-am: uninstall-info-am
 	tags uninstall uninstall-am uninstall-info-am
 
 
-all-local: stamp_wchar testsuite_files
+all-local: stamp_wchar stamp_thread testsuite_files
 
 # Enable wchar_t tests if capable.
 @GLIBCXX_TEST_WCHAR_T_TRUE@stamp_wchar:
 @GLIBCXX_TEST_WCHAR_T_TRUE@	touch testsuite_wchar_t
 @GLIBCXX_TEST_WCHAR_T_FALSE@stamp_wchar:
+
+# Enable thread tests if capable.
+@GLIBCXX_TEST_THREAD_TRUE@stamp_thread:
+@GLIBCXX_TEST_THREAD_TRUE@	touch testsuite_thread
+@GLIBCXX_TEST_THREAD_FALSE@stamp_thread:
 
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up

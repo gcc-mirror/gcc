@@ -57,7 +57,7 @@ endif
 abi_check_SOURCES = abi_check.cc
 abi_check_DEPENDENCIES = libv3test.a
 
-all-local: stamp_wchar testsuite_files
+all-local: stamp_wchar stamp_thread testsuite_files
 
 # Enable wchar_t tests if capable.
 if GLIBCXX_TEST_WCHAR_T
@@ -65,6 +65,14 @@ stamp_wchar:
 	touch testsuite_wchar_t
 else
 stamp_wchar:
+endif
+
+# Enable thread tests if capable.
+if GLIBCXX_TEST_THREAD
+stamp_thread:
+	touch testsuite_thread
+else
+stamp_thread:
 endif
 
 # Generated lists of files to run.  All of these names are valid make
@@ -183,4 +191,4 @@ check-script check-script-install check-performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols
+	     testsuite_* site.exp abi_check baseline_symbols *TEST*

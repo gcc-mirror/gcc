@@ -29,13 +29,12 @@
 // Do not include <pthread.h> explicitly; if threads are properly
 // configured for the port, then it is picked up free from STL headers.
 
-#if __GTHREADS
-
 const int max_thread_count = 4;
 const int max_loop_count = 10000;
 
-__gnu_cxx::crope foo2;
-__gnu_cxx::crope foo4;
+typedef __gnu_cxx::rope<char, std::allocator<char> > rope_type;
+rope_type foo2;
+rope_type foo4;
 
 void* thread_main(void *) 
 {
@@ -73,7 +72,7 @@ main()
   pthread_setconcurrency (max_thread_count);
 #endif
 
-  __gnu_cxx::crope foo;
+  rope_type foo;
   foo += "bar";
   foo += "baz";
   foo += "bongle";
@@ -89,7 +88,7 @@ main()
     VERIFY( !std::strcmp (data2, "bar2baz2bongle2") );
   }
 
-  __gnu_cxx::crope foo3 ("hello");
+  rope_type foo3 ("hello");
   const char* data3 = foo3.c_str();
   VERIFY( !std::strcmp (data3, "hello") );
 
@@ -112,6 +111,3 @@ main()
 
   return 0;
 }
-#else
-int main (void) {}
-#endif

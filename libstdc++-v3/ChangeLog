@@ -1,4 +1,35 @@
 2004-10-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_THREADS): Set enable_thread.
+	(GLIBCXX_CONFIGURE_TESTSUITE): Use it.
+	* configure: Regenerated.
+	* testsuite/Makefile.am (CLEANFILES): Add TEST for
+	check-performance executables.
+	(stamp_thread): New.
+	(all-local): Use it.
+	* testsuite/Makefile.in: Regenerate.
+	* scripts/create_testsuite_files: Filter thread tests.
+
+	* testsuite/thread/pthread1.cc: Remove macro conditionals: this
+	file will only be run by thread enabled configurations.
+	* testsuite/thread/pthread7-rope.cc: Same, add rope_type typedef.
+	* testsuite/thread/pthread6.cc: Same.
+	* testsuite/thread/pthread5.cc: Same.
+	* testsuite/thread/pthread4.cc: Same.
+	* testsuite/thread/pthread3.cc: Same.
+	* testsuite/thread/pthread2.cc: Same.
+
+	* testsuite/ext/mt_allocator/instantiate.cc: Add in __GTHREADS guard.
+	* testsuite/ext/mt_allocator/deallocate_global-1.cc: Move to...
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: ...here.
+	* testsuite/ext/mt_allocator/deallocate_global-3.cc: Move to...
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: ...here. 
+	* testsuite/ext/mt_allocator/deallocate_local-1.cc: Move to...
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: ...here.
+	* testsuite/ext/mt_allocator/deallocate_local-3.cc: Move to...
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: ...here.
+
+2004-10-06  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/17780

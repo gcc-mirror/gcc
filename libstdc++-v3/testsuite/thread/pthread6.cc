@@ -30,8 +30,6 @@
 // Do not include <pthread.h> explicitly; if threads are properly
 // configured for the port, then it is picked up free from STL headers.
 
-#if __GTHREADS
-
 const int max_thread_count = 8;
 const int loops = 100000;
 
@@ -94,6 +92,3 @@ main (void)
 
   return 0;
 }
-#else
-int main (void) {}
-#endif

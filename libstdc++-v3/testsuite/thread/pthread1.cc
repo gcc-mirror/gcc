@@ -34,7 +34,6 @@
 // Do not include <pthread.h> explicitly; if threads are properly
 // configured for the port, then it is picked up free from STL headers.
 
-#if __GTHREADS
 using namespace std;
 
 const int thread_cycles = 10;
@@ -135,6 +134,3 @@ main ()
 
   return 0;
 }
-#else
-int main (void) {}
-#endif

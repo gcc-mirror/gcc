@@ -47,15 +47,22 @@ else
   grep -v wchar_t $tmp.1 > $tmp.2
 fi
 
-# Now filter out classes of tests.  These classes are run using special rules.
-grep _xin $tmp.2 > $tests_file_inter
-grep -v _xin $tmp.2 > $tmp.3
+# If the library is not configured to support threads, don't run those tests.
+if test -f "$outdir/testsuite_thread"; then
+  mv $tmp.2 $tmp.3
+else
+  grep -v thread $tmp.2 > $tmp.3
+fi
 
-grep performance $tmp.3 > $tests_file_perf
-grep -v performance $tmp.3 > $tmp.4
+# Now filter out classes of tests.  These classes are run using special rules.
+grep _xin $tmp.3 > $tests_file_inter
+grep -v _xin $tmp.3 > $tmp.4
+
+grep performance $tmp.4 > $tests_file_perf
+grep -v performance $tmp.4 > $tmp.5
 
 # ...more filters go here.
-cp $tmp.4 $tests_file_normal
+cp $tmp.5 $tests_file_normal
 
 rm $tmp*
 exit 0
