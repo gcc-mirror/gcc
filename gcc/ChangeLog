@@ -1,3 +1,10 @@
+2001-05-31  Rodney Brown  <rbrown64@csc.com.au>
+
+	* install.texi (Configuration): Add html links for --with-gnu-as &
+	--with-gnu-ld and refer to them from hppa & SCO triplets.
+	(Specific): Link back to with-gnu-ld for all ELF platfoms.
+	(Specific): Reword AVR binutils recommendation.
+
 2001-05-30  Zack Weinberg  <zackw@stanford.edu>
 
 	* ggc-page.c (size_lookup): Increase minimum allocation size
