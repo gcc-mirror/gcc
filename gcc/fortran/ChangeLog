@@ -1,3 +1,8 @@
+2004-10-03  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* trans-intrinsic.c: Fix comments on spacing and rrspacing
+	(gfc_conv_intrinsic_rrspacing): Add fold on constant trees.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* f95-lang.c (gfc_expand_function): Update call of
