@@ -718,27 +718,49 @@ while (0)
    in the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
 
 #undef	ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
-do									\
- {									\
-   ASM_OUTPUT_LABEL(STREAM,NAME);                                       \
-   HALF_PIC_DECLARE (NAME);						\
-   if (TARGET_ELF)							\
-     {									\
-       fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);			\
-       assemble_name (STREAM, NAME);					\
-       putc (',', STREAM);						\
-       fprintf (STREAM, TYPE_OPERAND_FMT, "object");			\
-       putc ('\n', STREAM);						\
-       if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-	 {								\
-	   fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			\
-	   assemble_name (STREAM, NAME);				\
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			     \
+do									     \
+ {									     \
+   ASM_OUTPUT_LABEL(STREAM,NAME);					     \
+   HALF_PIC_DECLARE (NAME);						     \
+   if (TARGET_ELF)							     \
+     {									     \
+       fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);			     \
+       assemble_name (STREAM, NAME);					     \
+       putc (',', STREAM);						     \
+       fprintf (STREAM, TYPE_OPERAND_FMT, "object");			     \
+       putc ('\n', STREAM);						     \
+       size_directive_output = 0;					     \
+       if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		     \
+	 {								     \
+           size_directive_output = 1;					     \
+	   fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			     \
+	   assemble_name (STREAM, NAME);				     \
 	   fprintf (STREAM, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
-	 }								\
-     }									\
- }									\
+	 }								     \
+     }									     \
+ }									     \
 while (0)
+
+/* Output the size directive for a decl in rest_of_decl_compilation
+   in the case where we did not do so before the initializer.
+   Once we find the error_mark_node, we know that the value of
+   size_directive_output was set
+   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
+
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
+do {									 \
+     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
+         && ! AT_END && TOP_LEVEL					 \
+	 && DECL_INITIAL (DECL) == error_mark_node			 \
+	 && !size_directive_output)					 \
+       {								 \
+	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
+	 assemble_name (FILE, name);					 \
+	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
+       }								 \
+   } while (0)
 
 /* This is how to declare a function name. */
 
