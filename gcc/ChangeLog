@@ -1,5 +1,23 @@
 2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
 
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Last two
+	arguments removed.
+	(slpeel_tree_peel_loop_to_edge): Call slpeel_make_loop_iterate_ntimes
+	without last two arguments. Update single_exit of loops.
+	(vect_update_niters_after_peeling): Removed. Its functionality was
+	moved to vect_do_peeling_for_alignment. 
+	(vect_do_peeling_for_loop_bound): New name for function previously
+	called vect_transform_for_unknown_loop_bound.
+	(vect_transform_loop_bound): Call slpeel_make_loop_iterate_ntimes
+	instead of code that duplicates the same functionality.
+	(vect_do_peeling_for_alignment): Functionality of   
+	vect_update_niters_after_peeling moved here.
+	(vect_transform_loop): Unify call to vect_do_peeling_for_loop_bound -
+	previously named vect_transform_for_unknown_loop_bound - for both known
+	and unknown loop bound cases.
+
+2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
+
 	* tree-vectorizer.c (slpeel_can_duplicate_loop_p): New name for function
 	previously called verify_loop_for_duplication. All conditions compacted
 	into one compound condition. Removed debug dumps.

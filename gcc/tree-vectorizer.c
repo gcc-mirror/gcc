@@ -165,7 +165,7 @@ static struct loop *slpeel_tree_duplicate_loop_to_edge_cfg
 static void slpeel_update_phis_for_duplicate_loop 
   (struct loop *, struct loop *, bool after);
 static void slpeel_update_phi_nodes_for_guard (edge, struct loop *);
-static void slpeel_make_loop_iterate_ntimes (struct loop *, tree, tree, tree);
+static void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 static edge slpeel_add_loop_guard (basic_block, tree, basic_block);
 static bool slpeel_can_duplicate_loop_p (struct loop *, edge);
 static void allocate_new_names (bitmap);
@@ -251,12 +251,11 @@ static void vect_generate_tmps_on_preheader
 static tree vect_build_loop_niters (loop_vec_info);
 static void vect_update_ivs_after_vectorizer (struct loop *, tree); 
 static tree vect_gen_niters_for_prolog_loop (loop_vec_info, tree);
-static void vect_update_niters_after_peeling (loop_vec_info, tree);
 static void vect_update_inits_of_dr 
   (struct data_reference *, struct loop *, tree niters);
 static void vect_update_inits_of_drs (loop_vec_info, tree);
 static void vect_do_peeling_for_alignment (loop_vec_info, struct loops *);
-static void vect_transform_for_unknown_loop_bound 
+static void vect_do_peeling_for_loop_bound 
   (loop_vec_info, tree *, struct loops *);
 
 /* Utilities for creation and deletion of vec_info structs.  */
@@ -605,16 +604,19 @@ slpeel_update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 
 
 /* Make the LOOP iterate NITERS times. This is done by adding a new IV
-   that starts at zero, increases by one and its limit is NITERS.  */
+   that starts at zero, increases by one and its limit is NITERS.
+
+   Assumption: the exit-condition of LOOP is the last stmt in the loop.  */
 
 static void
-slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters,
-				 tree begin_label, tree exit_label)
+slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 {
   tree indx_before_incr, indx_after_incr, cond_stmt, cond;
   tree orig_cond;
   edge exit_edge = loop->exit_edges[0];
   block_stmt_iterator loop_exit_bsi = bsi_last (exit_edge->src);
+  tree begin_label = tree_block_label (loop->latch);
+  tree exit_label = tree_block_label (loop->single_exit->dest);
 
   /* Flow loop scan does not update loop->single_exit field.  */
   loop->single_exit = loop->exit_edges[0];
@@ -948,17 +950,13 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
      and second loop preheader edge.  */
   flow_loop_scan (first_loop, LOOP_ALL);
   flow_loop_scan (second_loop, LOOP_ALL);  
+  /* Flow loop scan does not update loop->single_exit field.  */
+  first_loop->single_exit = first_loop->exit_edges[0];
+  second_loop->single_exit = second_loop->exit_edges[0];
 
   /* 3. Make first loop iterate FIRST_NITERS times, if needed.  */
   if (!update_first_loop_count)
-    {
-      tree first_loop_latch_lbl = tree_block_label (first_loop->latch);
-      tree first_loop_exit_lbl = tree_block_label (first_exit_bb);
-
-      slpeel_make_loop_iterate_ntimes (first_loop, first_niters,
-				first_loop_latch_lbl,
-				first_loop_exit_lbl);
-    }
+    slpeel_make_loop_iterate_ntimes (first_loop, first_niters);
   
   /* 4. Add the guard before first loop:
 
@@ -2791,16 +2789,11 @@ static void
 vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  edge exit_edge = loop->single_exit;
-  block_stmt_iterator loop_exit_bsi = bsi_last (exit_edge->src);
-  tree indx_before_incr, indx_after_incr;
   tree orig_cond_expr;
   HOST_WIDE_INT old_N = 0;
   int vf;
-  tree cond_stmt;
   tree new_loop_bound;
   bool symbol_niters;
-  tree cond;
   tree lb_type;
 
   symbol_niters = !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo);
@@ -2814,45 +2807,16 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 #ifdef ENABLE_CHECKING
   gcc_assert (orig_cond_expr);
 #endif
-  gcc_assert (orig_cond_expr == bsi_stmt (loop_exit_bsi));
-
-  create_iv (integer_zero_node, integer_one_node, NULL_TREE, loop, 
-	     &loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
-
-  /* bsi_insert is using BSI_NEW_STMT. We need to bump it back 
-     to point to the exit condition.  */
-  bsi_next (&loop_exit_bsi);
-  gcc_assert (bsi_stmt (loop_exit_bsi) == orig_cond_expr);
 
   /* new loop exit test:  */
   lb_type = TREE_TYPE (TREE_OPERAND (COND_EXPR_COND (orig_cond_expr), 1));
   if (!symbol_niters)
-    new_loop_bound = fold_convert (lb_type, 
-				   build_int_cst (unsigned_type_node, 
-						  old_N/vf));
+    new_loop_bound = 
+	fold_convert (lb_type, build_int_cst (unsigned_type_node, old_N/vf));
   else
     new_loop_bound = niters;
 
-  if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
-    cond = build2 (GE_EXPR, boolean_type_node, 
-		   indx_after_incr, new_loop_bound);
-  else /* 'then' edge loops back.  */
-    cond = build2 (LT_EXPR, boolean_type_node, 
-		   indx_after_incr, new_loop_bound);
-
-  cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond_expr), cond,
-		      COND_EXPR_THEN (orig_cond_expr),
-		      COND_EXPR_ELSE (orig_cond_expr));
-
-  bsi_insert_before (&loop_exit_bsi, cond_stmt, BSI_SAME_STMT);   
-
-  /* remove old loop exit test:  */
-  bsi_remove (&loop_exit_bsi);
-
-  if (vect_debug_details (NULL))
-    print_generic_expr (dump_file, cond_stmt, TDF_SLIM);
-
-  loop->nb_iterations = new_loop_bound;
+  slpeel_make_loop_iterate_ntimes (loop, new_loop_bound);
 }
 
 
@@ -2978,8 +2942,8 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
    unknown loop bound.  */
 
 static void 
-vect_transform_for_unknown_loop_bound (loop_vec_info loop_vinfo, tree * ratio,
-				       struct loops *loops)
+vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree * ratio,
+				struct loops *loops)
 {
 
   tree ni_name, ratio_mult_vf_name;
@@ -3095,21 +3059,6 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree niters)
 }
 
 
-/* Function vect_update_niters_after_peeling
-
-   NITERS iterations were peeled from the loop represented by LOOP_VINFO. 
-   The new number of iterations is therefore original_niters - NITERS.
-   Record the new number of iterations in LOOP_VINFO.  */
-
-static void
-vect_update_niters_after_peeling (loop_vec_info loop_vinfo, tree niters)
-{
-  tree n_iters = LOOP_VINFO_NITERS (loop_vinfo);
-  LOOP_VINFO_NITERS (loop_vinfo) = 
-    build (MINUS_EXPR, integer_type_node, n_iters, niters);      
-}
-
-
 /* Function vect_update_inits_of_dr
 
    NITERS iterations were peeled from LOOP.  DR represents a data reference
@@ -3183,6 +3132,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop, ni_name;
+  tree n_iters;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_do_peeling_for_alignment>>\n");
@@ -3196,7 +3146,9 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
 				 niters_of_prolog_loop, ni_name, false); 
 
   /* Update number of times loop executes.  */
-  vect_update_niters_after_peeling (loop_vinfo, niters_of_prolog_loop);
+  n_iters = LOOP_VINFO_NITERS (loop_vinfo);
+  LOOP_VINFO_NITERS (loop_vinfo) =
+    build (MINUS_EXPR, integer_type_node, n_iters, niters_of_prolog_loop);
 
   /* Update all inits of access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);
@@ -3233,32 +3185,21 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   /* Peel the loop if there are data refs with unknown alignment.
      Only one data ref with unknown store is allowed.  */
 
-  
   if (LOOP_DO_PEELING_FOR_ALIGNMENT (loop_vinfo))
     vect_do_peeling_for_alignment (loop_vinfo, loops);
   
-  /* If the loop has a symbolic number of iterations 'n' 
-     (i.e. it's not a compile time constant), 
-     then an epilog loop needs to be created. We therefore duplicate 
-     the initial loop. The original loop will be vectorized, and will compute
-     the first (n/VF) iterations. The second copy of the loop will remain 
-     serial and will compute the remaining (n%VF) iterations.
+  /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
+     compile time constant), or it is a constant that doesn't divide by the
+     vectorization factor, then an epilog loop needs to be created.
+     We therefore duplicate the loop: the original loop will be vectorized,
+     and will compute the first (n/VF) iterations. The second copy of the loop
+     will remain scalar and will compute the remaining (n%VF) iterations.
      (VF is the vectorization factor).  */
 
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    vect_transform_for_unknown_loop_bound (loop_vinfo, &ratio, loops);
-
-  /* FORNOW: we'll treat the case where niters is constant and 
-     
-                        niters % vf != 0
-
-     in the way similar to one with symbolic niters. 
-     For this we'll generate variable which value is equal to niters.  */
-
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) 
-      && (LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0))
-    vect_transform_for_unknown_loop_bound (loop_vinfo, &ratio, loops);
-
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+          && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0))
+    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio, loops);
 
   /* 1) Make sure the loop header has exactly two entries
      2) Make sure we have a preheader basic block.  */
