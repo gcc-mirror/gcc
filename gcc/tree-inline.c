@@ -2257,7 +2257,6 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
   /* We make copies of most nodes.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
-      || TREE_CODE_CLASS (code) == tcc_constant
       || code == TREE_LIST
       || code == TREE_VEC
       || code == TYPE_DECL)
@@ -2290,6 +2289,8 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   else if (TREE_CODE_CLASS (code) == tcc_type)
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == tcc_declaration)
+    *walk_subtrees = 0;
+  else if (TREE_CODE_CLASS (code) == tcc_constant)
     *walk_subtrees = 0;
   else
     gcc_assert (code != STATEMENT_LIST);

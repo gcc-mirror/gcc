@@ -1,3 +1,9 @@
+2004-09-16  Geoffrey Keating  <geoffk@apple.com>
+
+	PR pch/13361
+	* cp/lex.c (handle_pragma_interface): Duplicate string from tree.
+	(handle_pragma_implementation): Likewise.
+
 2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 

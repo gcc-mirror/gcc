@@ -1,3 +1,27 @@
+2004-09-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree-inline.c (copy_tree_r): Don't duplicate constants, they're
+	shared anyway.
+
+	PR pch/13361
+	* c-typeck.c (constructor_asmspec): Delete.
+	(struct initializer_stack): Delete field 'asmspec'.
+	(start_init): Delete saving of asmspec.
+	(finish_init): Don't update constructor_asmspec.
+	* dwarf2out.c (rtl_for_decl_location): Duplicate string from tree.
+	* stmt.c (expand_asm): Duplicate strings from tree.
+	(expand_asm_operands): Likewise.
+	* tree.c (tree_size): Update computation of size of STRING_CST.
+	(make_node): Don't make STRING_CST nodes.
+	(build_string): Allocate string with tree node.
+	(tree_code_size): Clean up assertions, don't allow requests
+	for "the size of a STRING_CST".
+	* tree.def (STRING_CST): Update comment.
+	* tree.h (TREE_STRING_POINTER): Adjust for change to STRING_CST.
+	(tree_string): Place contents of string in tree node.
+	* config/sh/sh.c (sh_handle_sp_switch_attribute): Duplicate string
+	from tree.
+
 2004-09-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (c-parse.o): Depend on $(C_PRAGMA_H).

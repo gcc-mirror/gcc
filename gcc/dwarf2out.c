@@ -9889,7 +9889,8 @@ rtl_for_decl_location (tree decl)
 				   TREE_STRING_LENGTH (init) - 1) == 0
 	      && ((size_t) TREE_STRING_LENGTH (init)
 		  == strlen (TREE_STRING_POINTER (init)) + 1))
-	    rtl = gen_rtx_CONST_STRING (VOIDmode, TREE_STRING_POINTER (init));
+	    rtl = gen_rtx_CONST_STRING (VOIDmode,
+					ggc_strdup (TREE_STRING_POINTER (init)));
 	}
       /* If the initializer is something that we know will expand into an
 	 immediate RTL constant, expand it now.  Expanding anything else

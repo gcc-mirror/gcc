@@ -1,3 +1,9 @@
+2004-09-16  Geoffrey Keating  <geoffk@apple.com>
+
+	PR pch/13361
+	* testsuite/g++.dg/pch/wchar-1.C: New.
+	* testsuite/g++.dg/pch/wchar-1.Hs: New.
+
 2004-09-17  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
 
 	* gcc.c-torture/execute/20040917-1.c: New test.
