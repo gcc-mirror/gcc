@@ -1353,8 +1353,8 @@ xtensa_expand_block_move (operands)
     return 0;
 
    /* make sure the memory addresses are valid */
-  operands[0] = change_address (dest, VOIDmode, NULL);
-  operands[1] = change_address (src, VOIDmode, NULL);
+  operands[0] = validize_mem (dest);
+  operands[1] = validize_mem (src);
 
   emit_insn (gen_movstrsi_internal (operands[0], operands[1],
 				    operands[2], operands[3]));

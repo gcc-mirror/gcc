@@ -1,3 +1,9 @@
+2002-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_block_move): Use
+	validize_mem() instead of change_address to avoid clobbering
+	memory attributes.
+
 2002-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.c (cb_ident, c_lex): Remove unnecessary cast.
