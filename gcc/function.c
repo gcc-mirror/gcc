@@ -2818,6 +2818,10 @@ put_addressof_into_stack (r)
 		      TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 }
 
+/* List of replacements made below in purge_addressof_1 when creating
+   bitfield insertions.  */
+static rtx purge_addressof_replacements;
+
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
    in INSN needs to be changed.  If FORCE, always put any ADDRESSOFs into
    the stack.  */
@@ -2880,6 +2884,25 @@ purge_addressof_1 (loc, insn, force, store)
 	{
 	  int size_x, size_sub;
 
+	  if (!insn)
+	    {
+	      /* When processing REG_NOTES look at the list of
+		 replacements done on the insn to find the register that X
+		 was replaced by.  */
+	      rtx tem;
+
+	      for (tem = purge_addressof_replacements; tem != NULL_RTX;
+		   tem = XEXP (XEXP (tem, 1), 1))
+		if (rtx_equal_p (x, XEXP (tem, 0)))
+		  {
+		    *loc = XEXP (XEXP (tem, 1), 0);
+		    return;
+		  }
+
+	      /* There should always be such a replacement.  */
+	      abort ();
+	    }
+
 	  size_x = GET_MODE_BITSIZE (GET_MODE (x));
 	  size_sub = GET_MODE_BITSIZE (GET_MODE (sub));
 
@@ -2895,12 +2918,15 @@ purge_addressof_1 (loc, insn, force, store)
 
 	      if (store)
 		{
-		  /* If we can't replace with a register, be afraid.  */
-
 		  start_sequence ();
 		  val = gen_reg_rtx (GET_MODE (x));
 		  if (! validate_change (insn, loc, val, 0))
-		    abort ();
+		    {
+		      /* Discard the current sequence and put the
+			 ADDRESSOF on stack.  */
+		      end_sequence ();
+		      goto give_up;
+		    }
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
@@ -2922,14 +2948,25 @@ purge_addressof_1 (loc, insn, force, store)
 					   GET_MODE_SIZE (GET_MODE (sub)),
 					   GET_MODE_SIZE (GET_MODE (sub)));
 
-		  /* If we can't replace with a register, be afraid.  */
 		  if (! validate_change (insn, loc, val, 0))
-		    abort ();
+		    {
+		      /* Discard the current sequence and put the
+			 ADDRESSOF on stack.  */
+		      end_sequence ();
+		      goto give_up;
+		    }
 
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
 		}
+
+	      /* Remember the replacement so that the same one can be done
+		 on the REG_NOTES.  */
+	      purge_addressof_replacements
+		= gen_rtx_EXPR_LIST (VOIDmode, x,
+				     gen_rtx_EXPR_LIST (VOIDmode, val,
+							purge_addressof_replacements));
 
 	      /* We replaced with a reg -- all done.  */
 	      return;
@@ -2937,6 +2974,7 @@ purge_addressof_1 (loc, insn, force, store)
 	}
       else if (validate_change (insn, loc, sub, 0))
 	goto restart;
+    give_up:;
       /* else give up and put it into the stack */
     }
   else if (code == ADDRESSOF)
@@ -2948,12 +2986,6 @@ purge_addressof_1 (loc, insn, force, store)
     {
       purge_addressof_1 (&SET_DEST (x), insn, force, 1);
       purge_addressof_1 (&SET_SRC (x), insn, force, 0);
-      return;
-    }
-  else if (code == CALL)
-    {
-      purge_addressof_1 (&XEXP (x, 0), insn, 1, 0);
-      purge_addressof_1 (&XEXP (x, 1), insn, force, 0);
       return;
     }
 
@@ -2985,6 +3017,7 @@ purge_addressof (insns)
 	purge_addressof_1 (&PATTERN (insn), insn,
 			   asm_noperands (PATTERN (insn)) > 0, 0);
 	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0);
+	purge_addressof_replacements = 0;
       }
 }
 
