@@ -1,3 +1,7 @@
+Tue Apr 25 18:07:43 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
+
+	* Make-lang.in: Change "realclean" to "maintainer-clean".
+
 Sun Apr 23 12:32:38 1995  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (finish_file): Fix broken linked list handling.
