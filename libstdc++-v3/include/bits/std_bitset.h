@@ -287,7 +287,7 @@ _Base_bitset<_Nw>::_M_do_find_next(size_t __prev, size_t __not_found) const
   // check subsequent words
   __i++;
   for ( ; __i < _Nw; __i++ ) {
-    _WordT __thisword = _M_w[__i];
+    __thisword = _M_w[__i];
     if ( __thisword != static_cast<_WordT>(0) ) {
       // find byte within word
       for ( size_t __j = 0; __j < sizeof(_WordT); __j++ ) {
