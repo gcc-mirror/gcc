@@ -26,6 +26,8 @@
 #   sysdeps_dir		Directory containing system-dependent headers
 #   slow_pthread_self   The synchronization code should try to avoid 
 #			pthread_self calls by caching thread IDs in a hashtable
+#   can_unwind_signal   Set to "yes" if the EH unwinder supports throwing
+#			from a signal handler.
 
 libgcj_flags=
 libgcj_cflags=
@@ -36,6 +38,7 @@ enable_java_net_default=yes
 enable_hash_synchronization_default=no
 sysdeps_dir=generic
 slow_pthread_self=
+can_unwind_signal=no
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -115,18 +118,21 @@ case "${host}" in
 esac
 
 # This case statement supports generic port properties and may refine
-# the above per-CPU defaults.  Note: If your OS does not implement
-# MD_FALLBACK_FRAME_STATE_FOR, then you may want to set CHECKREFSPEC,
-# DIVIDESPEC (to fix >20 test cases) and EXCEPTIONSPEC (to reduce EH
-# bloat only) here.
+# the above per-CPU defaults.  Note: If your OS implements
+# MD_FALLBACK_FRAME_STATE_FOR, then you want to set can_unwind_signal
+# here.
 case "${host}" in
+  i[34567]86*-linux* | \
+  powerpc*-linux* | \
+  alpha*-linux* | \
+  ia64-*)
+  	can_unwind_signal=yes
+	;;
   *-*-darwin*)
 	enable_hash_synchronization_default=no
 	slow_pthread_self=
 	;;
   *-*-freebsd*)
-	DIVIDESPEC=-fuse-divide-subroutine
-	CHECKREFSPEC=-fcheck-references
 	slow_pthread_self=
 	;;
 esac
