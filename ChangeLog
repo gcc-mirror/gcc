@@ -1,3 +1,9 @@
+2004-05-30  Andreas Jaeger  <aj@suse.de>
+	    Jim Wilson <wilson@specifixinc.com>
+
+	* config-ml.in: Pass FFLAGS and ADAFLAGS for multilibs, handle F77
+	like CC.
+
 2004-05-27  Daniel Jacobowitz  <dan@debian.org>
 
 	* configure.in: Fix sed invocation for GFORTRAN_FOR_TARGET.
