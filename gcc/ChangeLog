@@ -1,3 +1,7 @@
+2001-05-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in (tradcpp0): Correct typo in dependency list.
+
 2001-05-06  Andreas Jaeger  <aj@suse.de>
 
 	* invoke.texi (Option Summary): Add -momit-leaf-frame-pointer
