@@ -1119,6 +1119,11 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	  unroll_type = UNROLL_MODULO;
 	  loop_preconditioned = 1;
 
+	  /* Preconditioning changes the loop's initial value.  We set
+	     it to an unknown value so that doloop_optimize won't get
+	     confused.  */
+	  loop_info->initial_value = 0;
+
 	  /* Clean up.  */
 	  free (labels);
 	}

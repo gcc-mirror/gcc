@@ -1,3 +1,9 @@
+2004-03-10  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/13877
+	* unroll.c (unroll_loop): If precondition loop, clear the initial_value
+	field in loop_info.
+	
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
