@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Altos 3068 68020 version.
-   Copyright (C) 1988,1989 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1993 Free Software Foundation, Inc.
 
 Written by Jyrki Kuoppala <jkp@cs.hut.fi>
 Last modified: Mon Mar  6 22:47:58 1989
@@ -78,22 +78,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)                    \
-     fprintf (FILE, "\t.double 0r%.20e\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
+       fprintf (FILE, "\t.double 0r%s\n", dstr);	\
+     } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)                    \
-     fprintf (FILE, "\t.single 0r%.20e\n", (VALUE))
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
+       fprintf (FILE, "\t.single 0r%s\n", dstr);	\
+     } while (0)
 
 #undef ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(FILE,VALUE)                \
-     fprintf (FILE, "#0r%.9g", (VALUE))
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)	\
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);	\
+       fprintf (FILE, "#0r%s", dstr);			\
+     } while (0)
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
-#define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)                \
-     fprintf (FILE, "#0r%.20g", (VALUE))
+#define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)		\
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
+       fprintf (FILE, "#0r%s", dstr);			\
+     } while (0)
 
 /* Return pointer values in both d0 and a0.  */
 
