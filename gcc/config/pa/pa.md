@@ -1449,7 +1449,7 @@
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
 				"=r,r,r,r,r,Q,*q,!f,f,*T")
 	(match_operand:SI 1 "move_operand"
-				"r,J,N,K,Q,rM,rM,!fM,*T,f"))]
+				"r,J,N,K,RQ,rM,rM,!fM,*RT,f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && ! TARGET_SOFT_FLOAT"
@@ -1462,8 +1462,8 @@
    stw%M0 %r1,%0
    mtsar %r1
    fcpy,sgl %r1,%0
-   fldws%F1 %1,%0
-   fstws%F0 %1,%0"
+   fldw%F1 %1,%0
+   fstw%F0 %1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu,fpload,fpstore")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4")])
 
@@ -1471,7 +1471,7 @@
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
 				"=r,r,r,r,r,Q,*q")
 	(match_operand:SI 1 "move_operand"
-				"r,J,N,K,Q,rM,rM"))]
+				"r,J,N,K,RQ,rM,rM"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT"
@@ -1485,47 +1485,6 @@
    mtsar %r1"
   [(set_attr "type" "move,move,move,move,load,store,move")
    (set_attr "length" "4,4,4,4,4,4,4")])
-
-;; Load indexed.  We don't use unscaled modes since they can't be used
-;; unless we can tell which of the registers is the base and which is
-;; the index, due to PA's idea of segment selection using the top bits
-;; of the base register.
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 4))
-			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
-  "ldwx,s %1(0,%2),%0"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.)
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "&=r")
-	(mem:SI (plus:SI (plus:SI
-			    (mult:SI (match_operand:SI 1 "register_operand" "r")
-				     (const_int 4))
-			    (match_operand:SI 2 "register_operand" "r"))
-			 (match_operand:SI 3 "const_int_operand" "rI"))))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2addl %1,%2,%0\;ldw %3(0,%0),%0\";
-  else
-    return \"sh2addl %1,%2,%0\;ldwx %3(0,%0),%0\";
-}"
-  [(set_attr "type" "load")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1845,7 +1804,7 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
-	(match_operand:HI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fM"))]
+	(match_operand:HI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!fM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1859,74 +1818,6 @@
    fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
-
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-				  (const_int 2))
-			 (match_operand:SI 1 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
-  "ldhx,s %2(0,%1),%0"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-; Same thing with zero extension.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (mem:HI
-			  (plus:SI
-			    (mult:SI (match_operand:SI 2 "register_operand" "r")
-				     (const_int 2))
-			 (match_operand:SI 1 "register_operand" "r")))))]
-  "! TARGET_DISABLE_INDEXING"
-  "ldhx,s %2(0,%1),%0"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-;; These variants of the above insns can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=&r")
-	(mem:HI (plus:SI (plus:SI
-			    (mult:SI (match_operand:SI 2 "register_operand" "r")
-				     (const_int 2))
-			    (match_operand:SI 1 "register_operand" "r"))
-			 (match_operand:SI 3 "const_int_operand" "rI"))))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh1addl %2,%1,%0\;ldh %3(0,%0),%0\";
-  else
-    return \"sh1addl %2,%1,%0\;ldhx %3(0,%0),%0\";
-}"
-  [(set_attr "type" "load")
-   (set_attr "length" "8")])
-
-; Now the zero extended variant.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(zero_extend:SI (mem:HI (plus:SI (plus:SI
-			    (mult:SI (match_operand:SI 2 "register_operand" "r")
-				     (const_int 2))
-			    (match_operand:SI 1 "register_operand" "r"))
-			 (match_operand:SI 3 "const_int_operand" "rI")))))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh1addl %2,%1,%0\;ldh %3(0,%0),%0\";
-  else
-    return \"sh1addl %2,%1,%0\;ldhx %3(0,%0),%0\";
-}"
-  [(set_attr "type" "load")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -2074,7 +1965,7 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
-	(match_operand:QI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fM"))]
+	(match_operand:QI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!fM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -2360,7 +2251,7 @@
    && operands[1] != CONST0_RTX (DFmode)
    && ! TARGET_SOFT_FLOAT"
   "* return (which_alternative == 0 ? output_move_double (operands)
-				    : \"fldds%F1 %1,%0\");"
+				    : \"fldd%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
    (set_attr "length" "16,4")])
 
@@ -2409,9 +2300,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=f,*r,Q,?o,?Q,f,*r,*r")
+			  "=f,*r,RQ,?o,?Q,f,*r,*r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,Q,o,Q"))]
+			  "fG,*rG,f,*r,*r,RQ,o,Q"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && ! TARGET_SOFT_FLOAT"
@@ -2439,45 +2330,6 @@
 }"
   [(set_attr "type" "move,store,store,load,load")
    (set_attr "length" "8,8,16,8,16")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 8))
-			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
-  "flddx,s %1(0,%2),%0"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-;; Ugh. Output is a FP register; so we need to earlyclobber something
-;; else as a temporary.
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(mem:DF (plus:SI
-		  (plus:SI
-		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
-			     (const_int 8))
-		    (match_operand:SI 2 "register_operand" "r"))
-		  (match_operand:SI 3 "const_int_operand" "rL"))))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh3addl %1,%2,%1\;fldds %3(0,%1),%0\";
-  else
-    return \"sh3addl %1,%2,%1\;flddx %3(0,%1),%0\";
-}"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=fx")
@@ -2516,45 +2368,6 @@
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 8))
-			 (match_operand:SI 2 "register_operand" "r")))
-	(match_operand:DF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
-  "fstdx,s %0,%1(0,%2)"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-;; Ugh. Output is a FP register; so we need to earlyclobber something
-;; else as a temporary.
-(define_insn ""
-  [(set (mem:DF (plus:SI
-		  (plus:SI
-		     (mult:SI (match_operand:SI 1 "register_operand" "+&r")
-			      (const_int 8))
-		     (match_operand:SI 2 "register_operand" "r"))
-		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:DF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh3addl %1,%2,%1\;fstds %0,%3(0,%1)\";
-  else
-    return \"sh3addl %1,%2,%1\;fstdx %0,%3(0,%1)\";
-}"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (mem:DF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
@@ -2741,7 +2554,7 @@
    && operands[1] != CONST0_RTX (SFmode)
    && ! TARGET_SOFT_FLOAT"
   "* return (which_alternative == 0 ? singlemove_string (operands)
-				    : \" fldws%F1 %1,%0\");"
+				    : \" fldw%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
    (set_attr "length" "8,4")])
 
@@ -2790,18 +2603,18 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
-			  "=f,r,f,r,Q,Q")
+			  "=f,r,f,r,RQ,Q")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,rG,Q,Q,f,rG"))]
+			  "fG,rG,RQ,Q,f,rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && ! TARGET_SOFT_FLOAT"
   "@
    fcpy,sgl %r1,%0
    copy %r1,%0
-   fldws%F1 %1,%0
+   fldw%F1 %1,%0
    ldw%M1 %1,%0
-   fstws%F0 %r1,%0
+   fstw%F0 %r1,%0
    stw%M0 %r1,%0"
   [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
    (set_attr "length" "4,4,4,4,4,4")])
@@ -2820,45 +2633,6 @@
    stw%M0 %r1,%0"
   [(set_attr "type" "move,load,store")
    (set_attr "length" "4,4,4")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 4))
-			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
-  "fldwx,s %1(0,%2),%0"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-;; Ugh. Output is a FP register; so we need to earlyclobber something
-;; else as a temporary.
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mem:SF (plus:SI
-		  (plus:SI
-		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
-			     (const_int 4))
-		    (match_operand:SI 2 "register_operand" "r"))
-		  (match_operand:SI 3 "const_int_operand" "rL"))))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2addl %1,%2,%1\;fldws %3(0,%1),%0\";
-  else
-    return \"sh2addl %1,%2,%1\;fldwx %3(0,%1),%0\";
-}"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=fx")
@@ -2897,45 +2671,6 @@
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 4))
-			 (match_operand:SI 2 "register_operand" "r")))
-	(match_operand:SF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
-  "fstwx,s %0,%1(0,%2)"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the second operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-;; Ugh. Output is a FP register; so we need to earlyclobber something
-;; else as a temporary.
-(define_insn ""
-  [(set (mem:SF (plus:SI
-		  (plus:SI
-		     (mult:SI (match_operand:SI 1 "register_operand" "+&r")
-			      (const_int 4))
-		     (match_operand:SI 2 "register_operand" "r"))
-		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:SF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2addl %1,%2,%1\;fstws %0,%3(0,%1)\";
-  else
-    return \"sh2addl %1,%2,%1\;fstwx %0,%3(0,%1)\";
-}"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (mem:SF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
@@ -3072,7 +2807,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
-  "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
+  "fldw%F1 %1,%0\;fcnvxf,sgl,sgl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
 
@@ -3091,7 +2826,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
-  "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
+  "fldw%F1 %1,%0\;fcnvxf,sgl,dbl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
 
