@@ -5177,8 +5177,7 @@ build_message_expr (mess)
 	    method_prototype = lookup_class_method_static (iface, sel_name);
 	}
 
-      if (!method_prototype 
-          || TREE_CODE (method_prototype) != CLASS_METHOD_DECL)
+      if (!method_prototype)
 	{
 	  warning ("cannot find class (factory) method.");
 	  warning ("return type for `%s' defaults to id",
@@ -5687,7 +5686,9 @@ lookup_class_method_static (interface, ident)
     }
   while (inter);
 
-  /* Simulate wrap around.  */
+  /* If no class (factory) method was found, check if an _instance_
+     method of the same name exists in the root class.  This is what
+     the Objective-C runtime will do.  */
   return lookup_instance_method_static (root_inter, ident);
 }
 
