@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -510,7 +510,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	case A_ALIGNED:
 	  {
 	    tree align_expr
-	      = args ? TREE_VALUE (args) : size_int (BIGGEST_ALIGNMENT);
+	      = (args ? TREE_VALUE (args)
+		 : size_int (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 	    int align;
 
 	    /* Strip any NOPs of any kind.  */
