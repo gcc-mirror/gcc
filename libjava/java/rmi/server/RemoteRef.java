@@ -49,15 +49,24 @@ public interface RemoteRef extends Externalizable
   
   public static final String packagePrefix = "gnu.java.rmi.server";
 
+  /**
+   * @deprecated
+   */
   public void invoke(RemoteCall call) throws Exception;
   
   public Object invoke (Remote obj, Method method, Object[] params, long opnum)
     throws Exception;
   
+  /**
+   * @deprecated
+   */
   public RemoteCall newCall (RemoteObject obj, Operation[] op, int opnum,
                              long hash)
     throws RemoteException;
 
+  /**
+   * @deprecated
+   */
   public void done (RemoteCall call) throws RemoteException;
   
   public boolean remoteEquals (RemoteRef ref);

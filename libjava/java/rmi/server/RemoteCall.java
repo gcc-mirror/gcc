@@ -48,18 +48,39 @@ import java.io.StreamCorruptedException;
  */
 public interface RemoteCall
 {
+  /**
+   * @deprecated
+   */
   public ObjectOutput getOutputStream () throws IOException;
 
+  /**
+   * @deprecated
+   */
   public void releaseOutputStream () throws IOException;
 
+  /**
+   * @deprecated
+   */
   public ObjectInput getInputStream () throws IOException;
 
+  /**
+   * @deprecated
+   */
   public void releaseInputStream () throws IOException;
 
+  /**
+   * @deprecated
+   */
   public ObjectOutput getResultStream (boolean success)
     throws IOException, StreamCorruptedException;
 
+  /**
+   * @deprecated
+   */
   public void executeCall () throws Exception;
 
+  /**
+   * @deprecated
+   */
   public void done () throws IOException;
 }

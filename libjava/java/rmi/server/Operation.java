@@ -44,16 +44,25 @@ public class Operation
 {
   private String operation;
 
+  /**
+   * @deprecated
+   */
   public Operation (String op)
   {
     operation = op;
   }
 
+  /**
+   * @deprecated
+   */
   public String getOperation ()
   {
     return operation;
   }
 
+  /**
+   * @deprecated
+   */
   public String toString ()
   {
     return operation;

@@ -65,41 +65,65 @@ public class LogStream extends PrintStream
     throw new Error ("Not implemented");
   }
 
+  /**
+   * @deprecated
+   */
   public static PrintStream getDefaultStream ()
   {
     return defStream;
   }
   
+  /**
+   * @deprecated
+   */
   public static void setDefaultStream (PrintStream s)
   {
     defStream = s;
   }
 
+  /**
+   * @deprecated
+   */
   public OutputStream getOutputStream ()
   {
     return out;
   }
 
+  /**
+   * @deprecated
+   */
   public void setOutputStream (OutputStream s)
   {
     out = s;
   }
 
+  /**
+   * @deprecated
+   */
   public void write (int buffer)
   {
     super.write (buffer);
   }
 
+  /**
+   * @deprecated
+   */
   public void write (byte[] buffer, int offset, int len)
   {
     super.write (buffer, offset, len);
   }
 
+  /**
+   * @deprecated
+   */
   public String toString ()
   {
     throw new Error ("Not implemented");
   }
 
+  /**
+   * @deprecated
+   */
   public static int parseLevel (String s)
   {
     if (s.equalsIgnoreCase ("silent"))
