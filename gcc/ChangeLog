@@ -1,3 +1,11 @@
+2001-05-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* extend.texi: Clarify documentation of extensions included in ISO
+	C99.  Prefer C99 terminology and syntax to old GNU terminology and
+	syntax.  Add more index entries.  Document mixed declarations and
+	code as an extension in C89 mode.  Warn about future changes to
+	semantics of inline functions.  Fixes PR other/930.
+
 Sun May 20 16:39:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case ARRAY_REF): Don't fold constant
