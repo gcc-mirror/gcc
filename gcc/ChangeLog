@@ -460,67 +460,6 @@
 
 2004-10-04  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* Makefile.in (tree-ssa-loop-niter.o): Depends on tree-data-ref.h.
-	* cfgloop.c (initialize_loops_parallel_p): New.
-	(flow_loops_find): Initialize the parallel_p field to true for all
-	the loops.
-	* tree-ssa-loop-niter.c: Include "tree-data-ref.h".
-	(estimate_numbers_of_iterations_loop): Infers the loop bounds from
-	the size of the data accessed in the loop.
-	(struct nb_iter_bound): Moved...
-	* cfgloop.h (struct nb_iter_bound): ... here.
-	(estimated_nb_iterations, parallel_p): New fields in struct loop.
-	(record_estimate): Declare extern here.
-	* tree-chrec.c: Fix comments.
-	(nb_vars_in_chrec): New function.
-	* tree-chrec.h (nb_vars_in_chrec): Declared here.
-	* tree-data-ref.c: Don't include lambda.h, that is already included
-	in tree-data-ref.h.
-	(tree_fold_divides_p): Don't check for integer_onep.
-	(tree_fold_bezout): Removed.
-	(gcd): New static duplicated function.
-	(int_divides_p, dump_subscript): New.
-	(dump_data_dependence_relation): Use dump_subscript.
-	(dump_dist_dir_vectors, dump_ddrs, compute_estimated_nb_iterations,
-	estimate_niter_from_size_of_data): New.
-	(analyze_array_indexes, analyze_array): Call
-	estimate_niter_from_size_of_data during	the detection of array
-	references.  Pass in a pointer to the statement that contains the
-	array reference.
-	(all_chrecs_equal_p): New.
-	(compute_distance_vector): Renamed compute_subscript_distance.
-	Deal with multivariate conflict functions.
-	(initialize_data_dependence_relation): Initialize DDR_AFFINE_P,
-	DDR_SIZE_VECT, DDR_DIST_VECT, and DDR_DIR_VECT.
-	(non_affine_dependence_relation): New.
-	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine,
-	analyze_siv_subscript, analyze_miv_subscript,
-	analyze_overlapping_iterations, subscript_dependence_tester):
-	Initialize and return last_conflicts function.
-	(initialize_matrix_A, FLOOR, compute_overlap_steps_for_affine_univar,
-	compute_overlap_steps_for_affine_1_2): New.
-	(analyze_siv_subscript_affine_cst): Removed.
-	(analyze_subscript_affine_affine): Disprove dependences based on the
-	iteration domains.  Solve the univariate dependence case as before,
-	but use lambda_matrix_right_hermite instead of tree_fold_bezout.
-	Implement the multivariate case of 2 versus 1 variables.
-	(undetermined_conflicts_p, no_conflicts_p): New.
-	(build_classic_dist_vector, build_classic_dir_vector): Implement some
-	unhandled cases.
-	(find_data_references_in_loop): Compute and initialize
-	loop->estimated_nb_iterations and loop->parallel_p.
-	(analyze_all_data_dependences): Modify the debug dump order.
-	* tree-data-ref.h (SUB_LAST_CONFLICT_IN_A, SUB_LAST_CONFLICT_IN_B,
-	subscript->last_conflict_in_a, subscript->last_conflict_in_b): Removed.
-	(SUB_LAST_CONFLICT, subscript->last_conflict,
-	data_dependence_relation->affine_p, data_dependence_relation->size_vect,
-	DDR_AFFINE_P, DDR_SIZE_VECT): New.
-	(find_data_references_in_loop, initialize_data_dependence_relation,
-	dump_subscript, dump_ddrs, dump_dist_dir_vectors): Declared here.
-
-
-2004-10-04  Sebastian Pop  <pop@cri.ensmp.fr>
-
 	* tree-data-ref.c (array_base_name_differ_p): Fix comments.  When
 	the predicate cannot be computed, don't initialize the result to
 	false.
