@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.13 $"
+#define VERSION_INFO2   "$Revision: 1.14 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -85,13 +85,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	CPP_SPEC
 #define	CPP_SPEC "%{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
 		  %{!m88000:%{!m88110:%{m88100:-D__m88100__}}} \
-		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
+		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}} \
+		  %{msvr3:-D_M88KBCS_TARGET} %{!msvr3:-D_DGUX_TARGET}"
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
-%{!msvr3:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
+%{!msvr3:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
 %{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
