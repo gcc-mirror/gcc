@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -217,7 +217,7 @@ namespace std
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
 	    _M_pback_cur_save += this->gptr() != this->eback();
-	    this->setg(this->_M_buf, _M_pback_cur_save, _M_pback_end_save);
+	    this->setg(_M_buf, _M_pback_cur_save, _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
       }
@@ -374,16 +374,16 @@ namespace std
       void
       _M_set_buffer(streamsize __off)
       {
- 	const bool __testin = this->_M_mode & ios_base::in;
- 	const bool __testout = this->_M_mode & ios_base::out;
+ 	const bool __testin = _M_mode & ios_base::in;
+ 	const bool __testout = _M_mode & ios_base::out;
 	
 	if (__testin && __off > 0)
-	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
+	  this->setg(_M_buf, _M_buf, _M_buf + __off);
 	else
-	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf);
+	  this->setg(_M_buf, _M_buf, _M_buf);
 
-	if (__testout && __off == 0 && this->_M_buf_size > 1 )
-	  this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
+	if (__testout && __off == 0 && _M_buf_size > 1 )
+	  this->setp(_M_buf, _M_buf + _M_buf_size - 1);
 	else
 	  this->setp(NULL, NULL);
       }
