@@ -704,7 +704,8 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
 	  return FAILURE;
 	}
 
-      /* Checking a derived type parameter has to be put off until later.  */
+      /* Check if the assignment can happen. This has to be put off
+	 until later for a derived type variable.  */
       if (sym->ts.type != BT_DERIVED && init->ts.type != BT_DERIVED
 	  && gfc_check_assign_symbol (sym, init) == FAILURE)
 	return FAILURE;
@@ -930,7 +931,7 @@ variable_decl (void)
      variable immediately preceding, i.e.
        integer i, j /1, 2/
      is not allowed. Therefore we have to do some work manually, that
-     could otherwise be let to the matchers for DATA statements.  */
+     could otherwise be left to the matchers for DATA statements.  */
 
   if (!colon_seen && gfc_match (" /") == MATCH_YES)
     {
