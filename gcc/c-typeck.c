@@ -1378,16 +1378,9 @@ default_conversion (tree exp)
       type = TREE_TYPE (exp);
     }
 
-  /* Strip NON_LVALUE_EXPRs and no-op conversions, since we aren't using as
-     an lvalue.
-
-     Do not use STRIP_NOPS here!  It will remove conversions from pointer
-     to integer and cause infinite recursion.  */
+  /* Strip no-op conversions.  */
   orig_exp = exp;
-  while (TREE_CODE (exp) == NON_LVALUE_EXPR
-	 || (TREE_CODE (exp) == NOP_EXPR
-	     && TREE_TYPE (TREE_OPERAND (exp, 0)) == TREE_TYPE (exp)))
-    exp = TREE_OPERAND (exp, 0);
+  STRIP_TYPE_NOPS (exp);
 
   if (TREE_NO_WARNING (orig_exp))
     TREE_NO_WARNING (exp) = 1;
@@ -2133,11 +2126,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 	  argnum -= 2;
 	}
 
-      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-      /* Do not use STRIP_NOPS here!  We do not want an enumerator with value 0
-	 to convert automatically to a pointer.  */
-      if (TREE_CODE (val) == NON_LVALUE_EXPR)
-	val = TREE_OPERAND (val, 0);
+      STRIP_TYPE_NOPS (val);
 
       val = default_function_array_conversion (val);
 
@@ -3349,11 +3338,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  /* Do not use STRIP_NOPS here.  We do not want an enumerator
-     whose value is 0 to count as a null pointer constant.  */
-  if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
-    rhs = TREE_OPERAND (rhs, 0);
+  STRIP_TYPE_NOPS (rhs);
 
   newrhs = rhs;
 
@@ -3487,11 +3472,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       }						\
   } while (0)
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  /* Do not use STRIP_NOPS here.  We do not want an enumerator
-     whose value is 0 to count as a null pointer constant.  */
-  if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
-    rhs = TREE_OPERAND (rhs, 0);
+  STRIP_TYPE_NOPS (rhs);
 
   if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
       || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE)
@@ -3933,8 +3914,7 @@ store_init_value (tree decl, tree init)
     {
       tree inside_init = init;
 
-      if (TREE_CODE (init) == NON_LVALUE_EXPR)
-	inside_init = TREE_OPERAND (init, 0);
+      STRIP_TYPE_NOPS (inside_init);
       inside_init = fold (inside_init);
 
       if (TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
@@ -4154,11 +4134,7 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
       || TREE_TYPE (init) == error_mark_node)
     return error_mark_node;
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  /* Do not use STRIP_NOPS here.  We do not want an enumerator
-     whose value is 0 to count as a null pointer constant.  */
-  if (TREE_CODE (init) == NON_LVALUE_EXPR)
-    inside_init = TREE_OPERAND (init, 0);
+  STRIP_TYPE_NOPS (inside_init);
 
   inside_init = fold (inside_init);
 

@@ -1411,7 +1411,8 @@ check_case_value (tree value)
   if (value == NULL_TREE)
     return value;
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  /* ??? Can we ever get nops here for a valid case value?  We
+     shouldn't for C.  */
   STRIP_TYPE_NOPS (value);
   /* In C++, the following is allowed:
 
@@ -4934,11 +4935,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   *no_add_attrs = true;
 
-  /* Stripping NON_LVALUE_EXPR allows declarations such as
-     typedef short v4si __attribute__((vector_size (4 * sizeof(short)))).  */
   size = TREE_VALUE (args);
-  if (TREE_CODE (size) == NON_LVALUE_EXPR)
-    size = TREE_OPERAND (size, 0);
 
   if (!host_integerp (size, 1))
     {

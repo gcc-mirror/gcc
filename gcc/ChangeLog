@@ -1,3 +1,13 @@
+2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (check_case_value): Adjust comment about stripping
+	NOPs.
+	(handle_vector_size_attribute): Don't strip NON_LVALUE_EXPR.
+	* c-typeck.c (default_conversion, convert_arguments,
+	build_modify_expr, convert_for_assignment, store_init_value,
+	digest_init): Use STRIP_TYPE_NOPS instead of stripping nops
+	manually.  Remove inaccurate comments.
+
 2005-03-20  Roger Sayle  <roger@eyesopen.com>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
