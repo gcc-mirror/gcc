@@ -92,13 +92,13 @@ affix_data_type (param)
      add a blank after the data-type of course.  */
 
   if (p == type_or_decl)
-    return concat (data_type, " ", type_or_decl, NULL_PTR);
+    return concat (data_type, " ", type_or_decl, NULL);
 
   saved = *p;
   *p = '\0';
-  qualifiers_then_data_type = concat (type_or_decl, data_type, NULL_PTR);
+  qualifiers_then_data_type = concat (type_or_decl, data_type, NULL);
   *p = saved;
-  return concat (qualifiers_then_data_type, " ", p, NULL_PTR);
+  return concat (qualifiers_then_data_type, " ", p, NULL);
 }
 
 /* Given a tree node which represents some "function type", generate the
@@ -125,13 +125,13 @@ gen_formal_list_for_type (fntype, style)
       const char *this_type;
 
       if (*formal_list)
-        formal_list = concat (formal_list, ", ", NULL_PTR);
+        formal_list = concat (formal_list, ", ", NULL);
 
       this_type = gen_type ("", TREE_VALUE (formal_type), ansi);
       formal_list
 	= ((strlen (this_type))
-	   ? concat (formal_list, affix_data_type (this_type), NULL_PTR)
-	   : concat (formal_list, data_type, NULL_PTR));
+	   ? concat (formal_list, affix_data_type (this_type), NULL)
+	   : concat (formal_list, data_type, NULL));
 
       formal_type = TREE_CHAIN (formal_type);
     }
@@ -180,10 +180,10 @@ gen_formal_list_for_type (fntype, style)
          petered out to a NULL (i.e. without being terminated by a
          void_type_node) then we need to tack on an ellipsis.  */
       if (!formal_type)
-        formal_list = concat (formal_list, ", ...", NULL_PTR);
+        formal_list = concat (formal_list, ", ...", NULL);
     }
 
-  return concat (" (", formal_list, ")", NULL_PTR);
+  return concat (" (", formal_list, ")", NULL);
 }
 
 /* For the generation of an ANSI prototype for a function definition, we have
@@ -242,23 +242,23 @@ gen_formal_list_for_func_def (fndecl, style)
       const char *this_formal;
 
       if (*formal_list && ((style == ansi) || (style == k_and_r_names)))
-        formal_list = concat (formal_list, ", ", NULL_PTR);
+        formal_list = concat (formal_list, ", ", NULL);
       this_formal = gen_decl (formal_decl, 0, style);
       if (style == k_and_r_decls)
-        formal_list = concat (formal_list, this_formal, "; ", NULL_PTR);
+        formal_list = concat (formal_list, this_formal, "; ", NULL);
       else
-        formal_list = concat (formal_list, this_formal, NULL_PTR);
+        formal_list = concat (formal_list, this_formal, NULL);
       formal_decl = TREE_CHAIN (formal_decl);
     }
   if (style == ansi)
     {
       if (!DECL_ARGUMENTS (fndecl))
-        formal_list = concat (formal_list, "void", NULL_PTR);
+        formal_list = concat (formal_list, "void", NULL);
       if (deserves_ellipsis (TREE_TYPE (fndecl)))
-        formal_list = concat (formal_list, ", ...", NULL_PTR);
+        formal_list = concat (formal_list, ", ...", NULL);
     }
   if ((style == ansi) || (style == k_and_r_names))
-    formal_list = concat (" (", formal_list, ")", NULL_PTR);
+    formal_list = concat (" (", formal_list, ")", NULL);
   return formal_list;
 }
 
@@ -320,14 +320,14 @@ gen_type (ret_val, t, style)
         {
         case POINTER_TYPE:
           if (TYPE_READONLY (t))
-            ret_val = concat ("const ", ret_val, NULL_PTR);
+            ret_val = concat ("const ", ret_val, NULL);
           if (TYPE_VOLATILE (t))
-            ret_val = concat ("volatile ", ret_val, NULL_PTR);
+            ret_val = concat ("volatile ", ret_val, NULL);
 
-          ret_val = concat ("*", ret_val, NULL_PTR);
+          ret_val = concat ("*", ret_val, NULL);
 
 	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-	    ret_val = concat ("(", ret_val, ")", NULL_PTR);
+	    ret_val = concat ("(", ret_val, ")", NULL);
 
           ret_val = gen_type (ret_val, TREE_TYPE (t), style);
 
@@ -335,17 +335,17 @@ gen_type (ret_val, t, style)
 
         case ARRAY_TYPE:
 	  if (!COMPLETE_TYPE_P (t) || TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
-	    ret_val = gen_type (concat (ret_val, "[]", NULL_PTR),
+	    ret_val = gen_type (concat (ret_val, "[]", NULL),
 				TREE_TYPE (t), style);
 	  else if (int_size_in_bytes (t) == 0)
-	    ret_val = gen_type (concat (ret_val, "[0]", NULL_PTR),
+	    ret_val = gen_type (concat (ret_val, "[0]", NULL),
 				TREE_TYPE (t), style);
 	  else
 	    {
 	      int size = (int_size_in_bytes (t) / int_size_in_bytes (TREE_TYPE (t)));
 	      char buff[10];
 	      sprintf (buff, "[%d]", size);
-	      ret_val = gen_type (concat (ret_val, buff, NULL_PTR),
+	      ret_val = gen_type (concat (ret_val, buff, NULL),
 				  TREE_TYPE (t), style);
 	    }
           break;
@@ -353,7 +353,7 @@ gen_type (ret_val, t, style)
         case FUNCTION_TYPE:
           ret_val = gen_type (concat (ret_val,
 				      gen_formal_list_for_type (t, style),
-				      NULL_PTR),
+				      NULL),
 			      TREE_TYPE (t), style);
           break;
 
@@ -382,13 +382,13 @@ gen_type (ret_val, t, style)
 	      while (chain_p)
 		{
 		  data_type = concat (data_type, gen_decl (chain_p, 0, ansi),
-				      NULL_PTR);
+				      NULL);
 		  chain_p = TREE_CHAIN (chain_p);
-		  data_type = concat (data_type, "; ", NULL_PTR);
+		  data_type = concat (data_type, "; ", NULL);
 		}
-	      data_type = concat ("{ ", data_type, "}", NULL_PTR);
+	      data_type = concat ("{ ", data_type, "}", NULL);
 	    }
-	  data_type = concat ("struct ", data_type, NULL_PTR);
+	  data_type = concat ("struct ", data_type, NULL);
 	  break;
 
         case UNION_TYPE:
@@ -401,13 +401,13 @@ gen_type (ret_val, t, style)
 	      while (chain_p)
 		{
 		  data_type = concat (data_type, gen_decl (chain_p, 0, ansi),
-				      NULL_PTR);
+				      NULL);
 		  chain_p = TREE_CHAIN (chain_p);
-		  data_type = concat (data_type, "; ", NULL_PTR);
+		  data_type = concat (data_type, "; ", NULL);
 		}
-	      data_type = concat ("{ ", data_type, "}", NULL_PTR);
+	      data_type = concat ("{ ", data_type, "}", NULL);
 	    }
-	  data_type = concat ("union ", data_type, NULL_PTR);
+	  data_type = concat ("union ", data_type, NULL);
 	  break;
 
         case ENUMERAL_TYPE:
@@ -420,14 +420,14 @@ gen_type (ret_val, t, style)
 	      while (chain_p)
 		{
 		  data_type = concat (data_type,
-			IDENTIFIER_POINTER (TREE_PURPOSE (chain_p)), NULL_PTR);
+			IDENTIFIER_POINTER (TREE_PURPOSE (chain_p)), NULL);
 		  chain_p = TREE_CHAIN (chain_p);
 		  if (chain_p)
-		    data_type = concat (data_type, ", ", NULL_PTR);
+		    data_type = concat (data_type, ", ", NULL);
 		}
-	      data_type = concat ("{ ", data_type, " }", NULL_PTR);
+	      data_type = concat ("{ ", data_type, " }", NULL);
 	    }
-	  data_type = concat ("enum ", data_type, NULL_PTR);
+	  data_type = concat ("enum ", data_type, NULL);
 	  break;
 
         case TYPE_DECL:
@@ -439,7 +439,7 @@ gen_type (ret_val, t, style)
           /* Normally, `unsigned' is part of the deal.  Not so if it comes
     	     with a type qualifier.  */
           if (TREE_UNSIGNED (t) && TYPE_QUALS (t))
-    	    data_type = concat ("unsigned ", data_type, NULL_PTR);
+    	    data_type = concat ("unsigned ", data_type, NULL);
 	  break;
 
         case REAL_TYPE:
@@ -459,11 +459,11 @@ gen_type (ret_val, t, style)
         }
     }
   if (TYPE_READONLY (t))
-    ret_val = concat ("const ", ret_val, NULL_PTR);
+    ret_val = concat ("const ", ret_val, NULL);
   if (TYPE_VOLATILE (t))
-    ret_val = concat ("volatile ", ret_val, NULL_PTR);
+    ret_val = concat ("volatile ", ret_val, NULL);
   if (TYPE_RESTRICT (t))
-    ret_val = concat ("restrict ", ret_val, NULL_PTR);
+    ret_val = concat ("restrict ", ret_val, NULL);
   return ret_val;
 }
 
@@ -505,9 +505,9 @@ gen_decl (decl, is_func_definition, style)
      generate the qualifiers here.  */
 
   if (TREE_THIS_VOLATILE (decl))
-    ret_val = concat ("volatile ", ret_val, NULL_PTR);
+    ret_val = concat ("volatile ", ret_val, NULL);
   if (TREE_READONLY (decl))
-    ret_val = concat ("const ", ret_val, NULL_PTR);
+    ret_val = concat ("const ", ret_val, NULL);
 
   data_type = "";
 
@@ -526,7 +526,7 @@ gen_decl (decl, is_func_definition, style)
   if (TREE_CODE (decl) == FUNCTION_DECL && is_func_definition)
     {
       ret_val = concat (ret_val, gen_formal_list_for_func_def (decl, ansi),
-			NULL_PTR);
+			NULL);
 
       /* Since we have already added in the formals list stuff, here we don't
          add the whole "type" of the function we are considering (which
@@ -543,11 +543,11 @@ gen_decl (decl, is_func_definition, style)
   ret_val = affix_data_type (ret_val);
 
   if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
-    ret_val = concat ("register ", ret_val, NULL_PTR);
+    ret_val = concat ("register ", ret_val, NULL);
   if (TREE_PUBLIC (decl))
-    ret_val = concat ("extern ", ret_val, NULL_PTR);
+    ret_val = concat ("extern ", ret_val, NULL);
   if (TREE_CODE (decl) == FUNCTION_DECL && !TREE_PUBLIC (decl))
-    ret_val = concat ("static ", ret_val, NULL_PTR);
+    ret_val = concat ("static ", ret_val, NULL);
 
   return ret_val;
 }
