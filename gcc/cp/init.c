@@ -3036,9 +3036,6 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   expand_assignment (rval, base, 0, 0);
   base = get_temp_regvar (build_pointer_type (type), base);
 
-  if (init != NULL_TREE && TREE_CODE (init) == TREE_LIST)
-    init = build_compound_expr (init);
-
   if (init != NULL_TREE
       && TREE_CODE (init) == CONSTRUCTOR
       && (! decl || TREE_TYPE (init) == TREE_TYPE (decl)))
@@ -3154,18 +3151,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 			   array_type_nelts (type), 0, 0);
 	}
       else
-	{
-	  tree targ = build1 (INDIRECT_REF, type, base);
-	  tree rhs;
-
-	  if (init)
-	    rhs = convert_for_initialization (targ, type, init, LOOKUP_NORMAL,
-					      "initialization", NULL_TREE, 0);
-	  else
-	    rhs = NULL_TREE;
-
-	  expand_aggr_init (targ, rhs, 0, 0);
-	}
+	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0, 0);
 
       expand_assignment (base,
 			 build (PLUS_EXPR, build_pointer_type (type), base, size),
