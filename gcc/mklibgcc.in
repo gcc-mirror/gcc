@@ -436,10 +436,10 @@ for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
   if [ $dir != . ]; then
-    ldir='$(libsubdir)'/$dir
+    ldir='$(DESTDIR)$(libsubdir)'/$dir
     echo "	if [ -d $ldir ]; then true; else mkdir $ldir; chmod a+rx $ldir; fi;"
   else
-    ldir='$(libsubdir)'
+    ldir='$(DESTDIR)$(libsubdir)'
   fi
   echo '	$(INSTALL_DATA)' ${dir}/libgcc.a ${ldir}/
   echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc.a
@@ -495,10 +495,10 @@ for f in $EXTRA_MULTILIB_PARTS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     if [ $dir != . ]; then
       out=${dir}/$f
-      ldir='$(libsubdir)'/$dir
+      ldir='$(DESTDIR)$(libsubdir)'/$dir
     else
       out=$f
-      ldir='$(libsubdir)'
+      ldir='$(DESTDIR)$(libsubdir)'
     fi
     echo '	$(INSTALL_DATA)' $out $ldir/
   done

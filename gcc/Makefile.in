@@ -690,6 +690,7 @@ ORDINARY_FLAGS_TO_PASS = \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
+	"DESTDIR=$(DESTDIR)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"FLEX=$(FLEX)" \
@@ -2388,7 +2389,7 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 
 .PHONY: install-gcc-tooldir
 install-gcc-tooldir:
-	$(SHELL) ${srcdir}/mkinstalldirs $(gcc_tooldir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(gcc_tooldir)
 
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
@@ -2778,173 +2779,163 @@ install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
 # Handle cpp installation.
 install-cpp: cpp$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
-	  rm -f $(bindir)/$(CPP_CROSS_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(bindir)/$(CPP_CROSS_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(CPP_CROSS_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_CROSS_NAME)$(exeext); \
 	  if [ x$(cpp_install_dir) != x ]; then \
-	    rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
 	  else true; fi; \
 	else \
-	  rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  if [ x$(cpp_install_dir) != x ]; then \
-	    rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  else true; fi; \
 	fi
 
 # Create the installation directories.
+# $(libdir)/gcc-lib/include isn't currently searched by cpp.
 installdirs:
-	-if [ -d $(prefix) ] ; then true ; else mkdir $(prefix) ; chmod a+rx $(prefix) ; fi
-	-if [ -d $(exec_prefix) ] ; then true ; else mkdir $(exec_prefix) ; chmod a+rx $(exec_prefix) ; fi
-	-if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; chmod a+rx $(libdir) ; fi
-	-if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; chmod a+rx $(libdir)/gcc-lib ; fi
-# This dir isn't currently searched by cpp.
-#	-if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; chmod a+rx $(libdir)/gcc-lib/include ; fi
-	-fdir= ; for dir in `echo $(libsubdir) | tr '/' ' '`; do \
-	  fdir=$${fdir}/$${dir}; \
-	  if [ -d $${fdir} ] ; then true ; else mkdir $${fdir}; chmod a+rx $${fdir}; fi ; \
-	done
-	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; chmod a+rx $(bindir) ; fi
-	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; chmod a+rx $(includedir) ; fi
-	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
-	-if [ -d $(slibdir) ] ; then true ; else mkdir $(slibdir) ; chmod a+rx $(slibdir) ; fi
-# We don't use mkdir -p to create the parents of man1dir,
-# because some systems don't support it.
-# Instead, we use this technique to create the immediate parent of man1dir.
-	-parent=`echo $(man1dir)|sed -e 's@/[^/]*$$@@'`; \
-	if [ -d $$parent ] ; then true ; else mkdir $$parent ; chmod a+rx $$parent ; fi
-	-if [ -d $(man1dir) ] ; then true ; else mkdir $(man1dir) ; chmod a+rx $(man1dir) ; fi
-	-if [ -d $(man7dir) ] ; then true ; else mkdir $(man7dir) ; chmod a+rx $(man7dir) ; fi
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(libsubdir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(bindir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(includedir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(infodir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(slibdir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(man1dir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(man7dir)
 
 # Install the compiler executables built during cross compilation.
 install-common: native $(EXTRA_PARTS) lang.install-common
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
-	    rm -f $(libsubdir)/$$file; \
-	    $(INSTALL_PROGRAM) $$file $(libsubdir)/$$file; \
+	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
+	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libsubdir)/$$file; \
 	  else true; \
 	  fi; \
 	done
 	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2) ..; do \
 	  if [ x"$$file" != x.. ]; then \
-	    rm -f $(libsubdir)/$$file; \
-	    $(INSTALL_PROGRAM) $$file $(libsubdir)/$$file; \
+	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
+	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 	for file in $(EXTRA_PARTS) ..; do \
 	  if [ x"$$file" != x.. ]; then \
-	    rm -f $(libsubdir)/$$file; \
-	    $(INSTALL_DATA) $$file $(libsubdir)/$$file; \
-	    chmod a-x $(libsubdir)/$$file; \
+	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(libsubdir)/$$file; \
+	    chmod a-x $(DESTDIR)$(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 # Don't mess with specs if it doesn't exist yet.
 	-if [ -f specs ] ; then \
-	  rm -f $(libsubdir)/specs; \
-	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
-	  chmod a-x $(libsubdir)/specs; \
+	  rm -f $(DESTDIR)$(libsubdir)/specs; \
+	  $(INSTALL_DATA) specs $(DESTDIR)$(libsubdir)/specs; \
+	  chmod a-x $(DESTDIR)$(libsubdir)/specs; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize$(exeext) ]; \
 	then \
 	    if [ -f gcc-cross$(exeext) ] ; then \
-		rm -f $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
-		$(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
-		rm -f $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
-		$(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
+		rm -f $(DESTDIR)$(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) protoize$(exeext) $(DESTDIR)$(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
+		rm -f $(DESTDIR)$(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) unprotoize$(exeext) $(DESTDIR)$(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
 	    else \
-		rm -f $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
-		$(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
-		rm -f $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
-		$(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
+		rm -f $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) protoize$(exeext) $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
+		rm -f $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) unprotoize$(exeext) $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
 	    fi ; \
-	    rm -f $(libsubdir)/SYSCALLS.c.X; \
-	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
-	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
+	    rm -f $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
+	    $(INSTALL_DATA) SYSCALLS.c.X $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
+	    chmod a-x $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
 	fi
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
-	    rm -f $(bindir)/gcov$(exeext); \
-	    $(INSTALL_PROGRAM) gcov$(exeext) $(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/gcov$(exeext); \
+	    $(INSTALL_PROGRAM) gcov$(exeext) $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	fi
-	$(INSTALL_SCRIPT) gccbug $(bindir)/$(GCCBUG_INSTALL_NAME)
+	$(INSTALL_SCRIPT) gccbug $(DESTDIR)$(bindir)/$(GCCBUG_INSTALL_NAME)
 
 # Install the driver program as $(target_alias)-gcc, 
 # $(target-alias)-gcc-$(version)
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
 install-driver: installdirs xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
-	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
-	  rm -f $(bindir)/$(target_alias)-gcc-$(version); \
-	  $(LN) $(bindir)/$(GCC_CROSS_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-$(version) ; \
-	  if [ -d $(gcc_tooldir)/bin/. ] ; then \
-	    rm -f $(gcc_tooldir)/bin/gcc$(exeext); \
-	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(gcc_tooldir)/bin/gcc$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-$(version); \
+	  ( cd $(DESTDIR)$(bindir) && \
+	    $(LN) $(GCC_CROSS_NAME)$(exeext) $(target_alias)-gcc-$(version) ); \
+	  if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
+	    rm -f $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
+	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
 	  else true; fi; \
 	else \
-	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
-	  rm -f $(bindir)/$(target_alias)-gcc-$(version); \
-	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-$(version) ; \
-	  rm -f $(bindir)/$(target_alias)-gcc-tmp$(exeext); \
-	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-tmp$(exeext); \
-	  mv $(bindir)/$(target_alias)-gcc-tmp$(exeext) $(bindir)/$(GCC_TARGET_INSTALL_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-$(version); \
+	  ( cd $(DESTDIR)$(bindir) && \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_alias)-gcc-$(version) ); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-tmp$(exeext); \
+	  ( cd $(DESTDIR)$(bindir) && \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_alias)-gcc-tmp$(exeext) && \
+	    mv -f $(target_alias)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	fi
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.
 install-info: doc installdirs lang.install-info
-	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/cppinternals.info* $(infodir)/gccint.info*
+	-rm -f $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
+	-rm -f $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
 	if [ -f $(docdir)/gcc.info ]; then \
 	  for f in $(docdir)/cpp.info* $(docdir)/gcc.info* \
 		$(docdir)/cppinternals.info* $(docdir)/gccint.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	    $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
 	  done; \
 	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	  if [ -f $(infodir)/dir ] ; then \
+	  if [ -f $(DESTDIR)$(infodir)/dir ] ; then \
 	    for f in cpp.info gcc.info gccint.info cppinternals.info; do \
-		if [ -f $(infodir)/$$f ]; then \
-		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
+		if [ -f $(DESTDIR)$(infodir)/$$f ]; then \
+		  install-info --dir-file=$(DESTDIR)$(infodir)/dir $(DESTDIR)$(infodir)/$$f; \
 		else true; fi; \
 	    done; \
 	  else true; fi; \
 	else true; fi;
-	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-chmod a-x $(infodir)/cppinternals.info* $(infodir)/gccint.info*
+	-chmod a-x $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
+	-chmod a-x $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
 
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
-	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
-	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
-	  chmod a-x $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
+	  rm -f $(DESTDIR)$(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(DESTDIR)$(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
+	  chmod a-x $(DESTDIR)$(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
 	else \
-	  rm -f $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
-	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
-	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
+	  rm -f $(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
+	  chmod a-x $(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
 	fi
-	-rm -f $(man1dir)/cpp$(man1ext)
-	-$(INSTALL_DATA) $(docdir)/cpp.1 $(man1dir)/cpp$(man1ext)
-	-chmod a-x $(man1dir)/cpp$(man1ext)
-	-rm -f $(man1dir)/gcov$(man1ext)
-	-$(INSTALL_DATA) $(docdir)/gcov.1 $(man1dir)/gcov$(man1ext)
-	-chmod a-x $(man1dir)/gcov$(man1ext)
-	-rm -f $(man7dir)/fsf-funding$(man7ext)
-	-$(INSTALL_DATA) $(docdir)/fsf-funding.7 $(man7dir)/fsf-funding$(man7ext)
-	-chmod a-x $(man7dir)/fsf-funding$(man7ext)
-	-rm -f $(man7dir)/gfdl$(man7ext)
-	-$(INSTALL_DATA) $(docdir)/gfdl.7 $(man7dir)/gfdl$(man7ext)
-	-chmod a-x $(man7dir)/gfdl$(man7ext)
-	-rm -f $(man7dir)/gpl$(man7ext)
-	-$(INSTALL_DATA) $(docdir)/gpl.7 $(man7dir)/gpl$(man7ext)
-	-chmod a-x $(man7dir)/gpl$(man7ext)
+	-rm -f $(DESTDIR)$(man1dir)/cpp$(man1ext)
+	-$(INSTALL_DATA) $(docdir)/cpp.1 $(DESTDIR)$(man1dir)/cpp$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/cpp$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/gcov$(man1ext)
+	-$(INSTALL_DATA) $(docdir)/gcov.1 $(DESTDIR)$(man1dir)/gcov$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/gcov$(man1ext)
+	-rm -f $(DESTDIR)$(man7dir)/fsf-funding$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/fsf-funding.7 $(DESTDIR)$(man7dir)/fsf-funding$(man7ext)
+	-chmod a-x $(DESTDIR)$(man7dir)/fsf-funding$(man7ext)
+	-rm -f $(DESTDIR)$(man7dir)/gfdl$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/gfdl.7 $(DESTDIR)$(man7dir)/gfdl$(man7ext)
+	-chmod a-x $(DESTDIR)$(man7dir)/gfdl$(man7ext)
+	-rm -f $(DESTDIR)$(man7dir)/gpl$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/gpl.7 $(DESTDIR)$(man7dir)/gpl$(man7ext)
+	-chmod a-x $(DESTDIR)$(man7dir)/gpl$(man7ext)
 
 # Install the library.
 install-libgcc: libgcc.mk libgcc.a installdirs
@@ -2968,6 +2959,7 @@ install-libgcc: libgcc.mk libgcc.a installdirs
 	  MAKEOVERRIDES= \
 	  INSTALL_DATA="$(INSTALL_DATA)" \
 	  RANLIB_FOR_TARGET="$$r_f_t" \
+	  DESTDIR="$(DESTDIR)" \
 	  libsubdir="$(libsubdir)" \
 	  slibdir="$(slibdir)" \
 	  -f libgcc.mk install
@@ -2994,6 +2986,7 @@ install-multilib: stmp-multilib installdirs
 	  MAKEOVERRIDES= \
 	  INSTALL_DATA="$(INSTALL_DATA)" \
 	  RANLIB_FOR_TARGET="$$r_f_t" \
+	  DESTDIR="$(DESTDIR)" \
 	  libsubdir="$(libsubdir)" \
 	  slibdir="$(slibdir)" \
 	  -f libgcc.mk install
@@ -3003,23 +2996,23 @@ install-headers: $(INSTALL_HEADERS_DIR)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
 # Don't need to use LN_S here since we really do need ln -s and no substitutes.
-	-files=`cd $(libsubdir)/include; find . -type l -print 2>/dev/null`; \
+	-files=`cd $(DESTDIR)$(libsubdir)/include; find . -type l -print 2>/dev/null`; \
 	if [ $$? -eq 0 ]; then \
 	  dir=`cd include; ${PWD}`; \
 	  for i in $$files; do \
-	    dest=`ls -ld $(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
+	    dest=`ls -ld $(DESTDIR)$(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
 	    if expr "$$dest" : "$$dir.*" > /dev/null; then \
-	      rm -f $(libsubdir)/include/$$i; \
-	      ln -s `echo $$i | sed "s|/[^/]*|/..|g" | sed 's|/..$$||'``echo "$$dest" | sed "s|$$dir||"` $(libsubdir)/include/$$i; \
+	      rm -f $(DESTDIR)$(libsubdir)/include/$$i; \
+	      ln -s `echo $$i | sed "s|/[^/]*|/..|g" | sed 's|/..$$||'``echo "$$dest" | sed "s|$$dir||"` $(DESTDIR)$(libsubdir)/include/$$i; \
 	    fi; \
 	  done; \
 	fi
 
 # Create or recreate the gcc private include file directory.
 install-include-dir: installdirs
-	-rm -rf $(libsubdir)/include
-	mkdir $(libsubdir)/include
-	-chmod a+rx $(libsubdir)/include
+	-rm -rf $(DESTDIR)$(libsubdir)/include
+	mkdir $(DESTDIR)$(libsubdir)/include
+	-chmod a+rx $(DESTDIR)$(libsubdir)/include
 
 # Install the include directory using tar.
 install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
@@ -3028,7 +3021,7 @@ install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # found in CDPATH, corrupting the output.  We could just redirect the
 # output of `cd', but some shells lose on redirection within `()'s
 	(cd `${PWD}`/include ; \
-	 tar -cf - .; exit 0) | (cd $(libsubdir)/include; tar xpf - )
+	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include; tar xpf - )
 # /bin/sh on some systems returns the status of the first tar,
 # and that can lose with GNU tar which always writes a full block.
 # So use `exit 0' to ignore its exit status.
@@ -3037,78 +3030,78 @@ install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # See discussion about the use of `pwd` above
 	cd `${PWD}`/include ; \
-	find . -print | cpio -pdum $(libsubdir)/include
+	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include
 
 # Install the include directory using cp.
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
-	cp -p -r include $(libsubdir)
+	cp -p -r include $(DESTDIR)$(libsubdir)
 
 itoolsdir = $(libsubdir)/install-tools
 # Don't install the headers.  Instead, install appropriate scripts
 # and supporting files for fixincludes to be run later.
 install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
     mkheaders xlimits.h
-	-rm -rf $(itoolsdir)
-	$(SHELL) $(srcdir)/mkinstalldirs $(itoolsdir)/include
+	-rm -rf $(DESTDIR)$(itoolsdir)
+	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdir)/include
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	  $(INSTALL_DATA) $$file \
-	    $(itoolsdir)/include/$$realfile ; \
+	    $(DESTDIR)$(itoolsdir)/include/$$realfile ; \
 	done
-	$(INSTALL_DATA) xlimits.h $(itoolsdir)/include/limits.h
+	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdir)/include/limits.h
 	if [ x$(STMP_FIXINC) != x ] ; then \
 	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
-	    $(itoolsdir)/include/README ; \
-	  $(INSTALL_PROGRAM) fixinc.sh $(itoolsdir)/fixinc.sh ; \
-	  $(INSTALL_PROGRAM) fixinc/fixincl $(itoolsdir)/fixincl ; \
-	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h $(itoolsdir)/gsyslimits.h ; \
+	    $(DESTDIR)$(itoolsdir)/include/README ; \
+	  $(INSTALL_PROGRAM) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
+	  $(INSTALL_PROGRAM) fixinc/fixincl $(DESTDIR)$(itoolsdir)/fixincl ; \
+	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h $(DESTDIR)$(itoolsdir)/gsyslimits.h ; \
 	else :; fi
 	if [ x$(STMP_FIXPROTO) != x ] ; then \
 	  $(INSTALL_PROGRAM) $(srcdir)/mkinstalldirs \
-		$(itoolsdir)/mkinstalldirs ; \
-	  $(INSTALL_PROGRAM) $(srcdir)/fixproto $(itoolsdir)/fixproto ; \
+		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \
+	  $(INSTALL_PROGRAM) $(srcdir)/fixproto $(DESTDIR)$(itoolsdir)/fixproto ; \
 	  $(INSTALL_PROGRAM) fix-header$(build_exeext) \
-		$(itoolsdir)/fix-header$(build_exeext) ; \
+		$(DESTDIR)$(itoolsdir)/fix-header$(build_exeext) ; \
 	else :; fi
-	$(INSTALL_PROGRAM) mkheaders $(itoolsdir)/mkheaders
+	$(INSTALL_PROGRAM) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 	echo 'SYSTEM_HEADER_DIR="'"$(SYSTEM_HEADER_DIR)"'"' \
-		> $(itoolsdir)/mkheaders.conf
+		> $(DESTDIR)$(itoolsdir)/mkheaders.conf
 	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \
-		>> $(itoolsdir)/mkheaders.conf
+		>> $(DESTDIR)$(itoolsdir)/mkheaders.conf
 	echo 'FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"' \
-		>> $(itoolsdir)/mkheaders.conf
-	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' >> $(itoolsdir)/mkheaders.conf
-	echo 'STMP_FIXINC="$(STMP_FIXINC)"' >> $(itoolsdir)/mkheaders.conf
+		>> $(DESTDIR)$(itoolsdir)/mkheaders.conf
+	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' >> $(DESTDIR)$(itoolsdir)/mkheaders.conf
+	echo 'STMP_FIXINC="$(STMP_FIXINC)"' >> $(DESTDIR)$(itoolsdir)/mkheaders.conf
 
 # Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs
-	$(INSTALL_PROGRAM) collect2$(exeext) $(libsubdir)/collect2$(exeext)
+	$(INSTALL_PROGRAM) collect2$(exeext) $(DESTDIR)$(libsubdir)/collect2$(exeext)
 # Install the driver program as $(libsubdir)/gcc for collect2.
-	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
+	$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
 uninstall: intl.uninstall lang.uninstall
-	-rm -rf $(libsubdir)
-	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
-	-rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-rm -f $(bindir)/$(CPP_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(libsubdir)
+	-rm -rf $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(CPP_CROSS_NAME)$(exeext)
 	-if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
 	else true; fi
-	-rm -rf $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext)
-	-rm -rf $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext)
-	-rm -rf $(bindir)/$(GCOV_INSTALL_NAME)$(exeext)
-	-rm -rf $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext)
-	-rm -rf $(man1dir)/$(GCC_CROSS_NAME)$(man1ext)
-	-rm -rf $(man1dir)/cpp$(man1ext)
-	-rm -rf $(man1dir)/protoize$(man1ext)
-	-rm -rf $(man1dir)/unprotoize$(man1ext)
-	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/cppinternals.info* $(infodir)/gccint.info*
+	-rm -rf $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(GCC_CROSS_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/cpp$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/protoize$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/unprotoize$(man1ext)
+	-rm -f $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
+	-rm -f $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
 #
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.
