@@ -58,6 +58,8 @@ do {								\
     }								\
   fprintf (FILE, "\t.set noat\n");				\
   fprintf (FILE, "\t.set noreorder\n");				\
+  if (TARGET_EXPLICIT_RELOCS)					\
+    fprintf (FILE, "\t.set nomacro\n");				\
   if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
     {								\
       fprintf (FILE, "\t.arch %s\n",				\
@@ -591,3 +593,11 @@ void FN ()					\
    only EH sections.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)       \
   (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
+
+/* If defined, a C statement to be executed just prior to the output of
+   assembler code for INSN.  */
+#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)	\
+ (alpha_this_literal_sequence_number = 0,		\
+  alpha_this_gpdisp_sequence_number = 0)
+extern int alpha_this_literal_sequence_number;
+extern int alpha_this_gpdisp_sequence_number;
