@@ -44,6 +44,7 @@ extern int store_multiple_operation (rtx, enum machine_mode);
 extern int s390_single_part (rtx, enum machine_mode, enum machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, enum machine_mode, int);
 extern bool s390_split_ok_p (rtx, rtx, enum machine_mode, int);
+extern bool s390_offset_p (rtx, rtx, rtx);
 extern int tls_symbolic_operand (rtx);
 
 extern int s390_match_ccmode (rtx, enum machine_mode);

@@ -1,3 +1,28 @@
+2004-10-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_offset_p): Add prototype.
+	* config/s390/s390.c (s390_offset_p): New function.
+	* config/s390/s390.md ("*cmpdi_cct", "*cmpsi_cct", "*cmpdi_ccu",
+	"*cmpsi_ccu", "*cmphi_ccu", "*cmpqi_ccu"): Use splitter to
+	transform Q->Q alternatives to *clc pattern.
+	("*clc"): Move.
+	("movti", "*movdi_64", "*movdi_31", "*movsi_zarch", "*movsi_esa",
+	"*movhi", "*movqi", "*movdf_64", "*movdf_31", "movsf"): Use splitter
+	to transform Q->Q alternatives to *mvc pattern.
+	("*mvc"): Move.  Add peephole to merge adjacent MVCs.
+	("*anddi3", "*andsi3_zarch", "*andsi3_esa", "*andhi3_zarch",
+	"*andhi3_esa", "*andqi3_zarch", "*andqi3_esa"): Use splitter to
+	transform Q->Q alternatives to *nc pattern.
+	("*nc"): New insn.  New peephole to merge adjacent NCs.
+	("*iordi3", "*iorsi3_zarch", "*iorsi3_esa", "*iorhi3_zarch",
+	"*iorhi3_esa", "*iorqi3_zarch", "*iorqi3_esa"): Use splitter to
+	transform Q->Q alternatives to *oc pattern.
+	("*oc"): New insn.  New peephole to merge adjacent OCs.
+	("*xordi3", "*xorsi3", "*xorhi3", "*xorqi3"): Use splitter to
+	transform Q->Q alternatives to *xc pattern.
+	("*xc"): New insn.  New peephole to merge adjacent XCs.
+	("*xc_zero"): Move.  Add peephole to merge adjacent XCs.
+
 2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gimplify.c (gimple_push_condition): Make sure that we don't

@@ -1096,6 +1096,28 @@ s390_split_ok_p (rtx dst, rtx src, enum machine_mode mode, int first_subword)
   return true;
 }
 
+/* Check whether the address of memory reference MEM2 equals exactly
+   the address of memory reference MEM1 plus DELTA.  Return true if
+   we can prove this to be the case, false otherwise.  */
+
+bool
+s390_offset_p (rtx mem1, rtx mem2, rtx delta)
+{
+  rtx addr1, addr2, addr_delta;
+
+  if (GET_CODE (mem1) != MEM || GET_CODE (mem2) != MEM)
+    return false;
+
+  addr1 = XEXP (mem1, 0);
+  addr2 = XEXP (mem2, 0);
+
+  addr_delta = simplify_binary_operation (MINUS, Pmode, addr2, addr1);
+  if (!addr_delta || !rtx_equal_p (addr_delta, delta))
+    return false;
+
+  return true;
+}
+
 /* Expand logical operator CODE in mode MODE with operands OPERANDS.  */
 
 void
