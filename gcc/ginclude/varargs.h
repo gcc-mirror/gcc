@@ -1,4 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -63,10 +63,10 @@ typedef int __builtin_va_alist_t __attribute__((__mode__(__word__)));
 typedef __builtin_va_list __gnuc_va_list;
 #endif
 
-#define va_start(v)	__builtin_varargs_start(&(v))
+#define va_start(v)	__builtin_varargs_start((v))
 #define va_end		__builtin_va_end
 #define va_arg		__builtin_va_arg
-#define __va_copy(d,s)	__builtin_va_copy(&(d),(s))
+#define __va_copy(d,s)	__builtin_va_copy((d),(s))
 
 /* Define va_list from __gnuc_va_list.  */
 

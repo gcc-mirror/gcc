@@ -3478,7 +3478,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   tree traditional_cptr_type_node;
   tree traditional_len_type_node;
   tree traditional_len_endlink;
-  tree va_list_ptr_type_node;
+  tree va_list_ref_type_node;
   tree va_list_arg_type_node;
 
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
@@ -3490,13 +3490,17 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_size_t"),
 			sizetype));
 
-  va_list_ptr_type_node = build_pointer_type (va_list_type_node);
-
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
-    va_list_arg_type_node = build_pointer_type (TREE_TYPE (va_list_type_node));
+    {
+      va_list_arg_type_node = va_list_ref_type_node =
+	build_pointer_type (TREE_TYPE (va_list_type_node));
+    }
   else
-    va_list_arg_type_node = va_list_type_node;
-
+    {
+      va_list_arg_type_node = va_list_type_node;
+      va_list_ref_type_node = build_reference_type (va_list_type_node);
+    }
+ 
   endlink = void_list_node;
   int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   double_endlink = tree_cons (NULL_TREE, double_type_node, endlink);
@@ -3725,28 +3729,28 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_varargs_start",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
-						    va_list_ptr_type_node,
+						    va_list_ref_type_node,
 						    endlink)),
 		    BUILT_IN_VARARGS_START, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_stdarg_start",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
-						    va_list_ptr_type_node,
+						    va_list_ref_type_node,
 						    NULL_TREE)),
 		    BUILT_IN_STDARG_START, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_va_end",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
-						    va_list_arg_type_node,
+						    va_list_ref_type_node,
 						    endlink)),
 		    BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_va_copy",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
-						    va_list_ptr_type_node,
+						    va_list_ref_type_node,
 						    tree_cons (NULL_TREE,
 						      va_list_arg_type_node,
 						      endlink))),

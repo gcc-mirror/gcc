@@ -1,4 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -51,13 +51,13 @@ typedef __builtin_va_list __gnuc_va_list;
    actual type **after default promotions**.
    Thus, va_arg (..., short) is not valid.  */
 
-#define va_start(v,l)	__builtin_stdarg_start(&(v),l)
+#define va_start(v,l)	__builtin_stdarg_start((v),l)
 #define va_end		__builtin_va_end
 #define va_arg		__builtin_va_arg
 #if !defined(__STRICT_ANSI__) || __STDC_VERSION__ + 0 >= 199900L
-#define va_copy(d,s)	__builtin_va_copy(&(d),(s))
+#define va_copy(d,s)	__builtin_va_copy((d),(s))
 #endif
-#define __va_copy(d,s)	__builtin_va_copy(&(d),(s))
+#define __va_copy(d,s)	__builtin_va_copy((d),(s))
 
 
 /* Define va_list, if desired, from __gnuc_va_list. */

@@ -1,3 +1,18 @@
+2000-03-29  Geoff Keating  <geoffk@cygnus.com>
+
+	* c-common.c (c_common_nodes_and_builtins): The first parameter to
+	__builtin_va_start and __builtin_va_copy is now either a 'va_list'
+	or a reference to a va_list.
+	* builtins.c (stabilize_va_list): Simplify now we don't have to
+	work around C array address decay.
+	* c-typeck.c (convert_for_assignment): Handle assignment to
+	a reference parameter by taking the address of the RHS.
+	* ginclude/stdarg.h (va_start): Don't take address of first parameter.
+	(va_copy): Likewise.
+	(__va_copy): Likewise.
+	* ginclude/varargs.h (va_start): Likewise.
+	(__va_copy): Likewise.
+
 Wed Mar 29 15:44:53 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* stmt.c (stmt_loop_nest_empty): Fix thinko in last change.
