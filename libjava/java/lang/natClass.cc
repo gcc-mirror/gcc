@@ -741,9 +741,7 @@ java::lang::Class::initializeClass (void)
     wait ();
 
   // Steps 3 &  4.
-  if (state == JV_STATE_DONE
-      || state == JV_STATE_IN_PROGRESS
-      || thread == self)
+  if (state == JV_STATE_DONE || state == JV_STATE_IN_PROGRESS)
     {
       _Jv_MonitorExit (this);
       return;

@@ -1,5 +1,9 @@
 2002-11-02  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/Class.h: Move JV_STATE_ERROR before JV_STATE_DONE.
+	* java/lang/natClass.cc (initializeClass): Don't return just
+	because self==thread.
+
 	For PR java/8415:
 	* java/lang/reflect/natMethod.cc (getType): Use _Jv_FindClass.
 	* prims.cc (_Jv_FindClassFromSignature): Indentation fix.
