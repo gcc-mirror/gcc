@@ -1,3 +1,8 @@
+1999-05-12  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+
+	* lex.h: Never define HOST_WIDE_INT, HOST_BITS_PER_WIDE_INT or
+	HOST_BITS_PER_CHAR.
+
 1999-05-11  Andrew Haley  <aph@cygnus.com>
 
         * parse.y (source_end_java_method): If the current method contains

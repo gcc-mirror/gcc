@@ -111,9 +111,6 @@ typedef struct _java_lc {
 #ifdef JC1_LITE
 
 #define DCONST0 0
-#define HOST_WIDE_INT long
-#define HOST_BITS_PER_WIDE_INT 64
-#define HOST_BITS_PER_CHAR 8
 #define REAL_VALUE_TYPE int
 #define SET_FLOAT_HANDLER(H)
 #define GET_IDENTIFIER(S) xstrdup ((S))
