@@ -149,6 +149,79 @@ extern jboolean _Jv_equalUtf8Consts (_Jv_Utf8Const *, _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
 extern jboolean _Jv_equaln (_Jv_Utf8Const *, jstring, jint);
 
+/* Helper class which converts a jstring to a temporary char*.
+   Uses the supplied buffer, if non-null. Otherwise, allocates
+   the buffer on the heap. Use the JV_TEMP_UTF_STRING macro,
+   which follows, to automatically allocate a stack buffer if
+   the string is small enough. */
+class _Jv_TempUTFString
+{
+public:
+  _Jv_TempUTFString(jstring jstr, char* buf=0);
+  ~_Jv_TempUTFString();
+
+// Accessors
+  operator const char*() const
+  {
+    return buf_;
+  }
+  const char* buf() const
+  {
+    return buf_;
+  }
+  char* buf()
+  {
+    return buf_;
+  }
+
+private:
+  char* buf_;
+  bool heapAllocated_;
+};
+
+inline _Jv_TempUTFString::_Jv_TempUTFString (jstring jstr, char* buf)
+  : buf_(0), heapAllocated_(false)
+{
+  if (!jstr) return;
+  jsize len = JvGetStringUTFLength (jstr);
+  if (buf)
+    buf_ = buf;
+  else
+    {
+      buf_ = (char*) _Jv_Malloc (len+1);
+      heapAllocated_ = true;
+    }
+
+  JvGetStringUTFRegion (jstr, 0, jstr->length(), buf_);
+  buf_[len] = '\0';
+}
+
+inline _Jv_TempUTFString::~_Jv_TempUTFString ()
+{
+  if (heapAllocated_)
+    _Jv_Free (buf_);
+}
+
+/* Macro which uses _Jv_TempUTFString. Allocates a stack-based
+   buffer if the string and its null terminator are <= 256
+   characters in length. Otherwise, a heap-based buffer is
+   used. The parameters to this macro are the variable name
+   which is an instance of _Jv_TempUTFString (above) and a
+   jstring.
+   
+   Sample Usage:
+   
+   jstring jstr = getAJString();
+   JV_TEMP_UTF_STRING(utfstr, jstr);
+   printf("The string is: %s\n", utfstr.buf());
+   
+ */
+#define JV_TEMP_UTF_STRING(utfstr, jstr) \
+  jstring utfstr##thejstr = (jstr); \
+  jsize utfstr##_len = utfstr##thejstr ? JvGetStringUTFLength (utfstr##thejstr) + 1 : 0; \
+  char utfstr##_buf[utfstr##_len <= 256 ? utfstr##_len : 0]; \
+  _Jv_TempUTFString utfstr(utfstr##thejstr, sizeof(utfstr##_buf)==0 ? 0 : utfstr##_buf)
+
 // FIXME: remove this define.
 #define StringClass java::lang::String::class$
 
