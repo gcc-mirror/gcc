@@ -24,13 +24,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    c-parse.y and into objc-parse.y.  */
 
 /* To whomever it may concern: I have heard that such a thing was once
-written by AT&T, but I have never seen it.  */
+   written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 40
+%expect 42
 end ifobjc
 ifc
-%expect 28
+%expect 30
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -1310,41 +1310,34 @@ structsp:
 		  /* Start scope of tag before parsing components.  */
 		}
 	  component_decl_list '}' maybe_attribute 
-		{ $$ = finish_struct ($<ttype>4, $5);
-		  decl_attributes ($$, $7, NULL_TREE);
-		  /* Really define the structure.  */
-		}
+		{ $$ = finish_struct ($<ttype>4, $5, $7); }
 	| STRUCT '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (RECORD_TYPE, NULL_TREE),
-				      $3);
-		  decl_attributes ($$, $5, NULL_TREE);
+				      $3, $5);
 		}
 	| STRUCT identifier
 		{ $$ = xref_tag (RECORD_TYPE, $2); }
 	| UNION identifier '{'
 		{ $$ = start_struct (UNION_TYPE, $2); }
 	  component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct ($<ttype>4, $5);
-		  decl_attributes ($$, $7, NULL_TREE);
-		}
+		{ $$ = finish_struct ($<ttype>4, $5, $7); }
 	| UNION '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
-				      $3);
-		  decl_attributes ($$, $5, NULL_TREE);
+				      $3, $5);
 		}
 	| UNION identifier
 		{ $$ = xref_tag (UNION_TYPE, $2); }
 	| ENUM identifier '{'
 		{ $<itype>3 = suspend_momentary ();
 		  $$ = start_enum ($2); }
-	  enumlist maybecomma_warn '}'
-		{ $$ = finish_enum ($<ttype>4, nreverse ($5));
+	  enumlist maybecomma_warn '}' maybe_attribute
+		{ $$ = finish_enum ($<ttype>4, nreverse ($5), $8);
 		  resume_momentary ($<itype>3); }
 	| ENUM '{'
 		{ $<itype>2 = suspend_momentary ();
 		  $$ = start_enum (NULL_TREE); }
-	  enumlist maybecomma_warn '}'
-		{ $$ = finish_enum ($<ttype>3, nreverse ($4));
+	  enumlist maybecomma_warn '}' maybe_attribute
+		{ $$ = finish_enum ($<ttype>3, nreverse ($4), $7);
 		  resume_momentary ($<itype>2); }
 	| ENUM identifier
 		{ $$ = xref_tag (ENUMERAL_TYPE, $2); }
