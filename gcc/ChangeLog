@@ -1,3 +1,10 @@
+2002-07-12  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md ("zero_extendsidi2"): Use D_REG only for
+	the scratch register.
+	("*movhi2_push"): Accept Z_REG because a split pattern can make use
+	of it, forbid reload to use it.
+
 2002-07-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
