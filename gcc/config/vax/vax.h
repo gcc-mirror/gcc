@@ -1139,14 +1139,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (ROUNDED)))
 
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.
-	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>	#conservative entry mask
-	addl2	$DELTA, 4(ap)	#adjust first argument
-	jmp	FUNCTION+2	#jump beyond FUNCTION's entry mask
- */
-#define ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
-
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
