@@ -1,3 +1,8 @@
+1999-11-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION): Don't forget
+	to define tanh. 
+
 Sun Nov 14 09:47:51 1999  H.J. Lu  <hjl@gnu.org>
 
 	* Makefile.in ($(OBJS)): Depend on stamp-picdir.
