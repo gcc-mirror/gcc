@@ -1,3 +1,8 @@
+2002-11-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/init/brace2.C: New test.
+	* g++.old-deja/g++.mike/p9129.C: Correct.
+
 2002-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/empty10.C: Don't run on non-x86 targets.

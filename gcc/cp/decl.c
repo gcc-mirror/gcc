@@ -8017,7 +8017,19 @@ check_initializer (tree decl, tree init, int flags)
   else if (init)
     {
       if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
-	init = reshape_init (type, &init);
+	{
+	  /* [dcl.init] paragraph 13,
+	     If T is a scalar type, then a declaration of the form
+	     T x = { a };
+	     is equivalent to
+	     T x = a;
+	     
+	     reshape_init will complain about the extra braces,
+	     and doesn't do anything useful in the case where TYPE is
+	     scalar, so just don't call it.  */
+	  if (CP_AGGREGATE_TYPE_P (type))
+	    init = reshape_init (type, &init);
+	}
 
       /* If DECL has an array type without a specific bound, deduce the
 	 array size from the initializer.  */
