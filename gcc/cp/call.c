@@ -356,6 +356,7 @@ build_scoped_method_call (exp, basetype, name, parms)
      @@ But we do have to check access privileges later.  */
   tree binfo, decl;
   tree type = TREE_TYPE (exp);
+  tree tmp;
 
   if (type == error_mark_node
       || basetype == error_mark_node)
@@ -363,7 +364,8 @@ build_scoped_method_call (exp, basetype, name, parms)
 
   if (processing_template_decl)
     {
-      if (TREE_CODE (name) == BIT_NOT_EXPR)
+      if (TREE_CODE (name) == BIT_NOT_EXPR
+	  && TREE_CODE (TREE_OPERAND (name, 0)) == IDENTIFIER_NODE)
 	{
 	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
 	  if (type)
@@ -384,22 +386,42 @@ build_scoped_method_call (exp, basetype, name, parms)
   else
     binfo = NULL_TREE;
 
+  /* Check the destructor call syntax.  */
+  if (TREE_CODE (name) == BIT_NOT_EXPR)
+    {
+      tmp = TREE_OPERAND (name, 0);
+
+      if (TREE_CODE (tmp) == TYPE_DECL)
+	tmp = TREE_TYPE (tmp);
+      else if (TREE_CODE_CLASS (TREE_CODE (tmp)) == 't')
+	/* OK */;
+      else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
+	{
+	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
+	    tmp = basetype;
+	  else
+	    tmp = get_type_value (tmp);
+	}
+      else
+	my_friendly_abort (980605);
+      
+      if (! (tmp && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (tmp)))
+	{
+	  cp_error ("qualified type `%T' does not match destructor name `~%T'",
+		    basetype, TREE_OPERAND (name, 0));
+	  return error_mark_node;
+	}
+    }
+
   /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
      that explicit ~int is caught in the parser; this deals with typedefs
      and template parms.  */
   if (TREE_CODE (name) == BIT_NOT_EXPR && ! IS_AGGR_TYPE (basetype))
     {
-      tree tmp;
       if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		  exp, basetype, type);
-      name = TREE_OPERAND (name, 0);
-      if (! (name == TYPE_MAIN_VARIANT (basetype) 
-	     || ((tmp = get_type_value (name))
-		 && (TYPE_MAIN_VARIANT (basetype)
-		     == TYPE_MAIN_VARIANT (tmp)))))
-	cp_error ("qualified type `%T' does not match destructor name `~%T'",
-		  basetype, name);
+      
       return cp_convert (void_type_node, exp);
     }
 
@@ -434,17 +456,6 @@ build_scoped_method_call (exp, basetype, name, parms)
       /* Call to a destructor.  */
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
-	  /* Explicit call to destructor.  */
-	  name = TREE_OPERAND (name, 0);
-	  if (! (name == TYPE_MAIN_VARIANT (TREE_TYPE (decl))
-		 || name == constructor_name (TREE_TYPE (decl))
-		 || TREE_TYPE (decl) == get_type_value (name)))
-	    {
-	      cp_error
-		("qualified type `%T' does not match destructor name `~%T'",
-		 TREE_TYPE (decl), name);
-	      return error_mark_node;
-	    }
 	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
 	    return cp_convert (void_type_node, exp);
 	  
@@ -599,7 +610,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (processing_template_decl)
     {
-      if (TREE_CODE (name) == BIT_NOT_EXPR)
+      if (TREE_CODE (name) == BIT_NOT_EXPR
+	  && TREE_CODE (TREE_OPERAND (name, 0)) == IDENTIFIER_NODE)
 	{
 	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
 	  if (type)
@@ -635,6 +647,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       tree tmp;
+
       flags |= LOOKUP_DESTRUCTOR;
       name = TREE_OPERAND (name, 0);
       if (parms)
@@ -642,14 +655,24 @@ build_method_call (instance, name, parms, basetype_path, flags)
       basetype = TREE_TYPE (instance);
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	basetype = TREE_TYPE (basetype);
-      if (! (name == TYPE_MAIN_VARIANT (basetype)
-	     || (IS_AGGR_TYPE (basetype)
-		 && name == constructor_name (basetype))
-	     || ((tmp = get_type_value (name))
-		 && (TYPE_MAIN_VARIANT (basetype)
-		     == TYPE_MAIN_VARIANT (tmp)))))
+
+      if (TREE_CODE (name) == TYPE_DECL)
+	tmp = TREE_TYPE (name);
+      else if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+	tmp = name;
+      else if (TREE_CODE (name) == IDENTIFIER_NODE)
 	{
-	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
+	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
+	    tmp = basetype;
+	  else
+	    tmp = get_type_value (tmp);
+	}
+      else
+	my_friendly_abort (980605);
+
+      if (! (tmp && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (tmp)))
+	{
+	  cp_error ("destructor name `~%T' does not match type `%T' of expression",
 		    name, basetype);
 	  return cp_convert (void_type_node, instance);
 	}

@@ -1,3 +1,14 @@
+1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* spew.c (yylex): Also return the TYPE_DECL if got_object.
+	Don't clear got_object after '~'.
+	* call.c (build_scoped_method_call): Tweak destructor handling.
+	(build_method_call): Likewise.
+	* pt.c (tsubst_copy, case METHOD_CALL_EXPR): Don't mess with
+	TYPE_MAIN_VARIANT for destructors.
+	* semantics.c (finish_object_call_expr): Complain about calling a
+	TYPE_DECL.
+
 1998-06-05  Per Bothner  <bothner@cygnus.com>
 
 	* g++spec.c (lang_specific_pre_link, lang_specific_extra_ofiles):
