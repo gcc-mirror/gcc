@@ -1,3 +1,8 @@
+2001-02-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (sibcalli, sibcalli_pcrel, sibcalli): Set
+	fp_mode attribute.
+
 2001-02-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md: Change output contraint on post inc

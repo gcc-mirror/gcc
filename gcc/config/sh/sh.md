@@ -3544,6 +3544,9 @@
   ""
   "jmp	@%0%#"
   [(set_attr "needs_delay_slot" "yes")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
    (set_attr "type" "jump_ind")])
 
 (define_insn "sibcalli_pcrel"
@@ -3555,6 +3558,9 @@
   "TARGET_SH2"
   "braf	%0\\n%O2:%#"
   [(set_attr "needs_delay_slot" "yes")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
    (set_attr "type" "jump_ind")])
 
 (define_insn_and_split "sibcall_pcrel"
@@ -3577,7 +3583,12 @@
 						  lab));
   SIBLING_CALL_P (call_insn) = 1;
   DONE;
-}")
+}"
+  [(set_attr "needs_delay_slot" "yes")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
+   (set_attr "type" "jump_ind")])
 
 (define_expand "sibcall"
   [(parallel
