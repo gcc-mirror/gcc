@@ -1,3 +1,7 @@
+Tue Aug 18 19:19:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/*.x: Some updates for the h8300 targets.
+
 Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980816-1.c: New test.
