@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
      "i" an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN)
      "m" an rtx code for something that matches in insns (e.g, MATCH_DUP)
      "g" an rtx code for grouping insns together (e.g, GROUP_PARALLEL)
+     "a" an rtx code for autoincrement addressing modes (e.g. POST_DEC)
      "x" everything else
      
    */
@@ -756,18 +757,25 @@ DEF_RTL_EXPR(UMAX, "umax", "ee", 'c')
    containing MEM.  These operations exist in only two cases:
    1. pushes onto the stack.
    2. created automatically by the life_analysis pass in flow.c.  */
-DEF_RTL_EXPR(PRE_DEC, "pre_dec", "e", 'x')
-DEF_RTL_EXPR(PRE_INC, "pre_inc", "e", 'x')
-DEF_RTL_EXPR(POST_DEC, "post_dec", "e", 'x')
-DEF_RTL_EXPR(POST_INC, "post_inc", "e", 'x')
+DEF_RTL_EXPR(PRE_DEC, "pre_dec", "e", 'a')
+DEF_RTL_EXPR(PRE_INC, "pre_inc", "e", 'a')
+DEF_RTL_EXPR(POST_DEC, "post_dec", "e", 'a')
+DEF_RTL_EXPR(POST_INC, "post_inc", "e", 'a')
 
 /* These binary operations are used to represent generic address
    side-effects in memory addresses, except for simple incrementation
    or decrementation which use the above operations.  They are
-   created automatically by the life_analysis pass in flow.c. 
-   (Note that these operators are currently placeholders.)  */
-DEF_RTL_EXPR(PRE_MODIFY, "pre_modify", "ee", 'x')
-DEF_RTL_EXPR(POST_MODIFY, "post_modify", "ee", 'x')
+   created automatically by the life_analysis pass in flow.c.
+   The first operand is a REG which is used as the address.
+   The second operand is an expression that is assigned to the
+   register, either before (PRE_MODIFY) or after (POST_MODIFY)
+   evaluating the address.
+   Currently, the compiler can only handle second operands of the
+   form (plus (reg) (reg)) and (plus (reg) (const_int)), where
+   the first operand of the PLUS has to be the same register as
+   the first operand of the *_MODIFY.  */
+DEF_RTL_EXPR(PRE_MODIFY, "pre_modify", "ee", 'a')
+DEF_RTL_EXPR(POST_MODIFY, "post_modify", "ee", 'a')
 
 /* Comparison operations.  The ordered comparisons exist in two
    flavors, signed and unsigned.  */

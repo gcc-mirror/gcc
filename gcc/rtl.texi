@@ -165,6 +165,10 @@ An RTX code for an entire instruction:  @code{INSN}, @code{JUMP_INSN}, and
 An RTX code for something that matches in insns, such as
 @code{MATCH_DUP}.  These only occur in machine descriptions.
 
+@item a
+An RTX code for an auto-increment addressing mode, such as
+@code{POST_INC}.
+
 @item x
 All other RTX codes.  This category includes the remaining codes used
 only in machine descriptions (@code{DEFINE_*}, etc.).  It also includes

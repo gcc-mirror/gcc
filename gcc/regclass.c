@@ -1952,6 +1952,17 @@ record_address_regs (x, class, scale)
       }
       break;
 
+      /* Double the importance of a pseudo register that is incremented
+	 or decremented, since it would take two extra insns
+	 if it ends up in the wrong place.  */
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      record_address_regs (XEXP (x, 0), BASE_REG_CLASS, 2 * scale);
+      if (REG_P (XEXP (XEXP (x, 1), 1)))
+	record_address_regs (XEXP (XEXP (x, 1), 1),
+			     INDEX_REG_CLASS, 2 * scale);
+      break;
+
     case POST_INC:
     case PRE_INC:
     case POST_DEC:

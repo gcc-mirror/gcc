@@ -1790,6 +1790,8 @@ do {									\
 
 #define HAVE_POST_INCREMENT 1
 #define HAVE_POST_DECREMENT 1
+#define HAVE_POST_MODIFY_DISP 1
+#define HAVE_POST_MODIFY_REG 1
 
 /* A C expression that is 1 if the RTX X is a constant which is a valid
    address.  */
@@ -1798,31 +1800,38 @@ do {									\
 
 /* The max number of registers that can appear in a valid memory address.  */
 
-#define MAX_REGS_PER_ADDRESS 1
+#define MAX_REGS_PER_ADDRESS 2
 
 /* A C compound statement with a conditional `goto LABEL;' executed if X (an
    RTX) is a legitimate memory address on the target machine for a memory
    operand of mode MODE.  */
 
-/* ??? IA64 post increment addressing mode is much more powerful than this.  */
+#define LEGITIMATE_ADDRESS_REG(X)					\
+  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
+   || (GET_CODE (X) == SUBREG && GET_CODE (XEXP (X, 0)) == REG		\
+       && REG_OK_FOR_BASE_P (XEXP (X, 0))))
+
+#define LEGITIMATE_ADDRESS_DISP(R, X)					\
+  (GET_CODE (X) == PLUS							\
+   && rtx_equal_p (R, XEXP (X, 0))					\
+   && (GET_CODE (XEXP (X, 1)) == REG					\
+       || (GET_CODE (XEXP (X, 1)) == CONST_INT				\
+	   && INTVAL (XEXP (X, 1)) >= -512				\
+	   && INTVAL (XEXP (X, 1)) < 512)))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) 			\
 do {									\
-  if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
+  if (LEGITIMATE_ADDRESS_REG (X))					\
     goto LABEL;								\
-  else if (GET_CODE (X) == SUBREG && GET_CODE (XEXP (X, 0)) == REG	\
-	   && REG_OK_FOR_BASE_P (XEXP (X, 0)))				\
+  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	\
+	   && LEGITIMATE_ADDRESS_REG (XEXP (X, 0))			\
+	   && XEXP (X, 0) != arg_pointer_rtx)				\
     goto LABEL;								\
-  else if (GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	\
-    {									\
-      if (GET_CODE (XEXP (X, 0)) == REG					\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 0)))				\
-	goto LABEL;							\
-      else if (GET_CODE (XEXP (X, 0)) == SUBREG				\
-	       && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG		\
-	       && REG_OK_FOR_BASE_P (XEXP (XEXP (X, 0), 0)))		\
-	goto LABEL;							\
-    }									\
+  else if (GET_CODE (X) == POST_MODIFY					\
+	   && LEGITIMATE_ADDRESS_REG (XEXP (X, 0))			\
+	   && XEXP (X, 0) != arg_pointer_rtx				\
+	   && LEGITIMATE_ADDRESS_DISP (XEXP (X, 0), XEXP (X, 1)))	\
+    goto LABEL;								\
 } while (0)
 
 /* A C expression that is nonzero if X (assumed to be a `reg' RTX) is valid for
@@ -2719,6 +2728,7 @@ do {									\
 { "symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},			\
 { "function_operand", {SYMBOL_REF}},					\
 { "setjmp_operand", {SYMBOL_REF}},					\
+{ "destination_operand", {SUBREG, REG, MEM}},				\
 { "move_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		     CONSTANT_P_RTX, SYMBOL_REF, CONST, LABEL_REF}},	\
 { "reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\

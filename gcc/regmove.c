@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "reload.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -1185,7 +1184,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		continue;
 
 	      if (match.early_clobber[match_no]
-		  && count_occurrences (PATTERN (insn), src) > 1)
+		  && count_occurrences (PATTERN (insn), src, 0) > 1)
 		continue;
 
 	      /* Make sure match_operand is the destination.  */
@@ -1289,7 +1288,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		continue;
 
 	      if (match.early_clobber[match_no]
-		  && count_occurrences (PATTERN (insn), src) > 1)
+		  && count_occurrences (PATTERN (insn), src, 0) > 1)
 		continue;
 
 	      /* Make sure match_no is the destination.  */

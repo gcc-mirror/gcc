@@ -1885,8 +1885,7 @@ offsettable_address_p (strictp, mode, y)
       return good;
     }
 
-  if (ycode == PRE_DEC || ycode == PRE_INC
-      || ycode == POST_DEC || ycode == POST_INC)
+  if (GET_RTX_CLASS (ycode) == 'a')
     return 0;
 
   /* The offset added here is chosen as the maximum offset that

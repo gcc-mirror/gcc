@@ -2535,6 +2535,8 @@ hash_rtx (x, mode, create)
     case PRE_INC:
     case POST_DEC:
     case POST_INC:
+    case POST_MODIFY:
+    case PRE_MODIFY:
     case PC:
     case CC0:
     case CALL:

@@ -2633,6 +2633,8 @@ elimination_effects (x, mem_mode)
     case POST_INC:
     case PRE_DEC:
     case POST_DEC:
+    case POST_MODIFY:
+    case PRE_MODIFY:
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->to_rtx == XEXP (x, 0))
 	  {
@@ -2645,9 +2647,18 @@ elimination_effects (x, mem_mode)
 #endif
 	    if (code == PRE_DEC || code == POST_DEC)
 	      ep->offset += size;
-	    else
+	    else if (code == PRE_INC || code == POST_INC)
 	      ep->offset -= size;
+	    else if ((code == PRE_MODIFY || code == POST_MODIFY)
+		     && GET_CODE (XEXP (x, 1)) == PLUS
+		     && XEXP (x, 0) == XEXP (XEXP (x, 1), 0)
+		     && CONSTANT_P (XEXP (XEXP (x, 1), 1)))
+	      ep->offset -= INTVAL (XEXP (XEXP (x, 1), 1));
 	  }
+
+      /* These two aren't unary operators.  */
+      if (code == POST_MODIFY || code == PRE_MODIFY)
+	break;
 
       /* Fall through to generic unary operation case.  */
     case STRICT_LOW_PART:
@@ -3884,7 +3895,7 @@ reload_as_needed (live_known)
 			     use PATTERN (p) as argument to reg_set_p .  */
 			  if (reg_set_p (reload_reg, PATTERN (p)))
 			    break;
-			  n = count_occurrences (PATTERN (p), reload_reg);
+			  n = count_occurrences (PATTERN (p), reload_reg, 0);
 			  if (! n)
 			    continue;
 			  if (n == 1)
@@ -6190,7 +6201,7 @@ emit_input_reload_insns (chain, rl, old, j)
 				       reloadreg)
 	  /* This is unsafe if operand occurs more than once in current
 	     insn.  Perhaps some occurrences aren't reloaded.  */
-	  && count_occurrences (PATTERN (insn), old) == 1
+	  && count_occurrences (PATTERN (insn), old, 0) == 1
 	  /* Don't risk splitting a matching pair of operands.  */
 	  && ! reg_mentioned_p (old, SET_SRC (PATTERN (temp))))
 	{
@@ -6653,7 +6664,7 @@ do_input_reload (chain, rl, j)
       && TEST_HARD_REG_BIT (reg_reloaded_valid, reload_spill_index[j]))
     {
       expect_occurrences
-	= count_occurrences (PATTERN (insn), rl->in) == 1 ? 0 : -1;
+	= count_occurrences (PATTERN (insn), rl->in, 0) == 1 ? 0 : -1;
       rl->in
 	= regno_reg_rtx[reg_reloaded_contents[reload_spill_index[j]]];
     }
@@ -7415,9 +7426,9 @@ delete_output_reload (insn, j, last_reload_reg)
 	    return;
 	}
     }
-  n_occurrences = count_occurrences (PATTERN (insn), reg);
+  n_occurrences = count_occurrences (PATTERN (insn), reg, 0);
   if (substed)
-    n_occurrences += count_occurrences (PATTERN (insn), substed);
+    n_occurrences += count_occurrences (PATTERN (insn), substed, 0);
   if (n_occurrences > n_inherited)
     return;
 
@@ -7822,73 +7833,6 @@ constraint_accepts_reg_p (string, reg)
 	    value = 1;
 	}
       }
-}
-
-/* Return the number of places FIND appears within X, but don't count
-   an occurrence if some SET_DEST is FIND.  */
-
-int
-count_occurrences (x, find)
-     register rtx x, find;
-{
-  register int i, j;
-  register enum rtx_code code;
-  register const char *format_ptr;
-  int count;
-
-  if (x == find)
-    return 1;
-  if (x == 0)
-    return 0;
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case REG:
-    case QUEUED:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-      return 0;
-
-    case MEM:
-      if (GET_CODE (find) == MEM && rtx_equal_p (x, find))
-	return 1;
-      break;
-    case SET:
-      if (SET_DEST (x) == find)
-	return count_occurrences (SET_SRC (x), find);
-      break;
-
-    default:
-      break;
-    }
-
-  format_ptr = GET_RTX_FORMAT (code);
-  count = 0;
-
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  count += count_occurrences (XEXP (x, i), find);
-	  break;
-
-	case 'E':
-	  if (XVEC (x, i) != NULL)
-	    {
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		count += count_occurrences (XVECEXP (x, i, j), find);
-	    }
-	  break;
-	}
-    }
-  return count;
 }
 
 /* INSN is a no-op; delete it.

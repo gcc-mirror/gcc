@@ -721,6 +721,13 @@ mark_set_resources (x, res, in_dest, mark_type)
       mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
 
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      mark_set_resources (XEXP (x, 0), res, 1, 0);
+      mark_set_resources (XEXP (XEXP (x, 1), 0), res, 0, 0);
+      mark_set_resources (XEXP (XEXP (x, 1), 1), res, 0, 0);
+      return;
+
     case SIGN_EXTRACT:
     case ZERO_EXTRACT:
       if (! (mark_type == MARK_DEST && in_dest))
