@@ -292,4 +292,5 @@ objc.stage4:
 
 # This target creates the files that can be rebuilt, but go in the
 # distribution anyway.  It then copies the files to the distdir directory.
-objc.distdir:
+objc.distdir: $(srcdir)/objc-parse.c
+
