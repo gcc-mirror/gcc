@@ -1,3 +1,8 @@
+Wed May  6 08:22:24 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fix-header.c (write_rbrac): Add "abort" to functions which need to
+	be protected.
+
 Wed May  6 00:09:36 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Check in merge from gcc2.  See ChangeLog.12 for details.
