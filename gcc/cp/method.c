@@ -2386,7 +2386,13 @@ synthesize_method (fndecl)
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
-	setup_vtbl_ptr ();
+	{
+	  tree compound_stmt;
+
+	  setup_vtbl_ptr ();
+	  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+	  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+	}
     }
 
   finish_function (lineno, 0, nested);

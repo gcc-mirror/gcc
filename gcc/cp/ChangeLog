@@ -1,3 +1,11 @@
+1999-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Amend comment.
+	* except.c (expand_start_catch_block): Call push_template_decl for
+	catch-block parameters.
+	* method.c (synthesize_method): Build an empty compound statement
+	for the body of a constructor.
+
 1999-08-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (cp_build_qualified_type_real): If we're asking for the

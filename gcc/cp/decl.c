@@ -11067,10 +11067,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (staticp)
 	      {
-		/* C++ allows static class members.
-		   All other work for this is done by grokfield.
-		   This VAR_DECL is built by build_lang_decl.
-		   All other VAR_DECLs are built by build_decl.  */
+		/* C++ allows static class members.  All other work
+		   for this is done by grokfield.  */
 		decl = build_lang_decl (VAR_DECL, declarator, type);
 		TREE_STATIC (decl) = 1;
 		/* In class context, 'static' means public access.  */
