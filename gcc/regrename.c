@@ -101,8 +101,12 @@ note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
   HARD_REG_SET *pset = (HARD_REG_SET *) data;
   unsigned int regno;
   int nregs;
+
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
   if (GET_CODE (x) != REG)
     return;
+
   regno = REGNO (x);
   nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
 
