@@ -1,3 +1,11 @@
+2004-10-08  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (CONDITIONAL_REGISTER_USAGE): Don't exclude
+	fixed registers form all_used_regs. Update call_really_used_regs.
+	(CALL_REALLY_USED_REGISTERS): Define.
+	* config/m32r/m32r.c (MUST_SAVE_REGISTER): Replace call_used_regs
+	with call_really_used_regs.
+
 2004-10-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Choose gcrt1.o
