@@ -1,3 +1,7 @@
+Thu Oct 28 03:08:38 1999  Matteo Frigo <athena@fftw.org>
+
+	* sparc.h (ADJUST_COST): Fix thinko.
+
 Thu Oct 28 02:44:03 1999  Glen Nakamura  <glen.nakamura@usa.net>
 
 	* cccp.c (rescan): Fixed obp pointer handling around call to
