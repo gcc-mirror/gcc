@@ -5068,15 +5068,9 @@ arg_assoc (k, n)
     {
       my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
       
-      for (; n; n = OVL_CHAIN (n)) 
-        {
-          /* Do not consider function template decls during Koenig lookup.  */
-
-          tree fn = OVL_FUNCTION (n);
-	  if (!DECL_FUNCTION_TEMPLATE_P (fn)
-              && arg_assoc_type (k, TREE_TYPE (fn)))
-	    return 1;
-        }
+      for (; n; n = OVL_CHAIN (n))
+	if (arg_assoc_type (k, TREE_TYPE (OVL_FUNCTION (n))))
+	  return 1;
     }
 
   return 0;
