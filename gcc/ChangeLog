@@ -14,6 +14,10 @@ Thu Dec  3 11:19:50 1998  Mike Stump  <mrs@wrs.com>
 
 1998-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* pdp11.h: Use optimize_size for space optimizations.
+	* pdp11.c: Likewise.
+	* pdp11.md: Likewise.
+
 	* pdp11.h (TARGET_40_PLUS): Fix typo.
 
 Thu Dec  3 11:48:32 1998  Jeffrey A Law  (law@cygnus.com)

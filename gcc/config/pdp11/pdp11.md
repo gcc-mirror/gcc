@@ -1432,7 +1432,7 @@
   [(set (match_operand:HI 0 "general_operand" "=r")
 	(ashift:HI (match_operand:HI 1 "general_operand" "0")
 		   (match_operand:HI 2 "expand_shift_operand" "O")))]
-  "TARGET_TIME"
+  "! optimize_size"
   "*
 {
   register int i;
