@@ -919,6 +919,7 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
 		  && VARRAY_INT (set_in_loop, regno) == 1
 		  && ! side_effects_p (SET_SRC (set))
 		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
+		  && ! find_reg_note (p, REG_LABEL, NULL_RTX)
 		  && (! SMALL_REGISTER_CLASSES
 		      || (! (GET_CODE (SET_SRC (set)) == REG
 			     && REGNO (SET_SRC (set)) < FIRST_PSEUDO_REGISTER)))

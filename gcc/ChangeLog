@@ -1,5 +1,8 @@
 2001-01-11  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* loop.c (scan_loop): Disable copy propagation if we find a REG_LABEL
+	note.
+
 	Revert this patch:
 	2000-12-18  David Edelsohn  <edelsohn@gnu.org>
 	* rs6000.c (and64_operand): Use logical_u_operand.
