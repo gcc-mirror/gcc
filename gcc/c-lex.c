@@ -1694,7 +1694,7 @@ yylex ()
 	    int spec_long = 0;
 	    int spec_long_long = 0;
 	    int spec_imag = 0;
-	    int bytes, warn, i;
+	    int warn, i;
 
 	    traditional_type = ansi_type = type = NULL_TREE;
 	    while (1)

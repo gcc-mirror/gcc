@@ -1,3 +1,32 @@
+Sat Mar 20 21:46:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c (yylex): Remove unused variable `bytes'.
+
+	* flow.c (print_rtl_with_bb): Cast the return value of alloca.
+
+	* function.c (assign_parms): Wrap variable `varargs_setup' in
+	macro SETUP_INCOMING_VARARGS.
+	(thread_prologue_and_epilogue_insns): Mark parameter `f' with
+	ATTRIBUTE_UNUSED.
+
+	* local-alloc.c (no_equiv): Likewise for parameter `store'.
+
+	* sched.c (schedule_insns): Remove unused variables `insn' and `next'.
+
+	* tlink.c (symbol_hash_newfunc, symbol_hash_lookup,
+ 	file_hash_newfunc, file_hash_lookup, demangled_hash_newfunc,
+ 	demangled_hash_lookup, symbol_push, symbol_pop, file_push,
+ 	file_pop, tlink_init, tlink_execute, frob_extension,
+ 	obstack_fgets, tfgets, pfgets, freadsym, read_repo_file,
+ 	maybe_tweak, recompile_files, read_repo_files,
+ 	demangle_new_symbols, scan_linker_output): Add static prototype.
+
+	(symbol_hash_newfunc, file_hash_newfunc, demangled_hash_newfunc):
+	Make the third argument a `hash_table_key'.
+
+	* toplev.c (debug_start_source_file): Mark parameter `filename'
+	with ATTRIBUTE_UNUSED.
+
 Sun Mar 21 02:28:21 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* tm.texi (Varargs): Don't split argument of @item across lines.

@@ -4327,8 +4327,6 @@ schedule_insns (dump_file)
 
   for (b = 0; b < n_basic_blocks; b++)
     {
-      rtx insn, next;
-
       note_list = 0;
 
       split_block_insns (b, reload_completed == 0 || ! flag_schedule_insns);
