@@ -1109,8 +1109,7 @@ ffecom_convert_to_complex_ (tree type, tree expr)
 /* Like gcc's convert(), but crashes if widening might happen.  */
 
 static tree
-ffecom_convert_narrow_ (type, expr)
-     tree type, expr;
+ffecom_convert_narrow_ (tree type, tree expr)
 {
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
@@ -1180,8 +1179,7 @@ ffecom_convert_narrow_ (type, expr)
 /* Like gcc's convert(), but crashes if narrowing might happen.  */
 
 static tree
-ffecom_convert_widen_ (type, expr)
-     tree type, expr;
+ffecom_convert_widen_ (tree type, tree expr)
 {
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
@@ -13751,8 +13749,7 @@ push_parm_decl (tree parm)
 /* Like pushdecl, only it places X in GLOBAL_BINDING_LEVEL, if appropriate.  */
 
 static tree
-pushdecl_top_level (x)
-     tree x;
+pushdecl_top_level (tree x)
 {
   register tree t;
   register struct f_binding_level *b = current_binding_level;
@@ -13771,8 +13768,7 @@ pushdecl_top_level (x)
    after they are modified in the light of any missing parameters.  */
 
 static tree
-storedecls (decls)
-     tree decls;
+storedecls (tree decls)
 {
   return current_binding_level->names = decls;
 }
@@ -13936,8 +13932,7 @@ start_function (tree name, tree type, int nested, int public)
 /* Here are the public functions the GNU back end needs.  */
 
 tree
-convert (type, expr)
-     tree type, expr;
+convert (tree type, tree expr)
 {
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
@@ -14008,8 +14003,7 @@ ffecom_init_decl_processing ()
    so that the block can be reinserted where appropriate.  */
 
 static void
-delete_block (block)
-     tree block;
+delete_block (tree block)
 {
   tree t;
   if (current_binding_level->blocks == block)
@@ -14028,8 +14022,7 @@ delete_block (block)
 }
 
 void
-insert_block (block)
-     tree block;
+insert_block (tree block)
 {
   TREE_USED (block) = 1;
   current_binding_level->blocks
@@ -14123,8 +14116,7 @@ const char *const tree_code_name[] = {
 #undef DEFTREECODE
 
 static const char *
-ffe_init (filename)
-     const char *filename;
+ffe_init (const char *filename)
 {
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
@@ -14183,8 +14175,7 @@ ffe_init_options ()
 }
 
 static bool
-ffe_mark_addressable (exp)
-     tree exp;
+ffe_mark_addressable (tree exp)
 {
   register tree x = exp;
   while (1)
@@ -14254,10 +14245,7 @@ ffe_mark_addressable (exp)
    them into the BLOCK.  */
 
 tree
-poplevel (keep, reverse, functionbody)
-     int keep;
-     int reverse;
-     int functionbody;
+poplevel (int keep, int reverse, int functionbody)
 {
   register tree link;
   /* The chain of decls was accumulated in reverse order.
@@ -14393,10 +14381,7 @@ poplevel (keep, reverse, functionbody)
 }
 
 static void
-ffe_print_identifier (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+ffe_print_identifier (FILE *file, tree node, int indent)
 {
   print_node (file, "global", IDENTIFIER_GLOBAL_VALUE (node), indent + 4);
   print_node (file, "local", IDENTIFIER_LOCAL_VALUE (node), indent + 4);
@@ -14411,8 +14396,7 @@ ffe_print_identifier (file, node, indent)
    to agree with what X says.  */
 
 tree
-pushdecl (x)
-     tree x;
+pushdecl (tree x)
 {
   register tree t;
   register tree name = DECL_NAME (x);
@@ -14545,8 +14529,7 @@ kept_level_p ()
    not for that of tags.  */
 
 void
-pushlevel (tag_transparent)
-     int tag_transparent;
+pushlevel (int tag_transparent)
 {
   register struct f_binding_level *newlevel = NULL_BINDING_LEVEL;
 
@@ -14581,8 +14564,7 @@ pushlevel (tag_transparent)
    (the one we are currently in).  */
 
 void
-set_block (block)
-     register tree block;
+set_block (tree block)
 {
   current_binding_level->this_block = block;
   current_binding_level->names = chainon (current_binding_level->names,
@@ -14592,9 +14574,7 @@ set_block (block)
 }
 
 static tree
-ffe_signed_or_unsigned_type (unsignedp, type)
-     int unsignedp;
-     tree type;
+ffe_signed_or_unsigned_type (int unsignedp, tree type)
 {
   tree type2;
 
@@ -14620,8 +14600,7 @@ ffe_signed_or_unsigned_type (unsignedp, type)
 }
 
 static tree
-ffe_signed_type (type)
-     tree type;
+ffe_signed_type (tree type)
 {
   tree type1 = TYPE_MAIN_VARIANT (type);
   ffeinfoKindtype kt;
@@ -14675,8 +14654,7 @@ ffe_signed_type (type)
    The resulting type should always be `integer_type_node'.  */
 
 static tree
-ffe_truthvalue_conversion (expr)
-     tree expr;
+ffe_truthvalue_conversion (tree expr)
 {
   if (TREE_CODE (expr) == ERROR_MARK)
     return expr;
@@ -14854,9 +14832,7 @@ ffe_truthvalue_conversion (expr)
 }
 
 static tree
-ffe_type_for_mode (mode, unsignedp)
-     enum machine_mode mode;
-     int unsignedp;
+ffe_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   int i;
   int j;
@@ -14914,9 +14890,7 @@ ffe_type_for_mode (mode, unsignedp)
 }
 
 static tree
-ffe_type_for_size (bits, unsignedp)
-     unsigned bits;
-     int unsignedp;
+ffe_type_for_size (unsigned bits, int unsignedp)
 {
   ffeinfoKindtype kt;
   tree type_node;
@@ -14950,8 +14924,7 @@ ffe_type_for_size (bits, unsignedp)
 }
 
 static tree
-ffe_unsigned_type (type)
-     tree type;
+ffe_unsigned_type (tree type)
 {
   tree type1 = TYPE_MAIN_VARIANT (type);
   ffeinfoKindtype kt;
@@ -15091,8 +15064,7 @@ static struct file_name_map *read_name_map (const char *dirname);
    FIRST is the beginning of the chain to append, and LAST is the end.  */
 
 static void
-append_include_chain (first, last)
-     struct file_name_list *first, *last;
+append_include_chain (struct file_name_list *first, struct file_name_list *last)
 {
   struct file_name_list *dir;
 
@@ -15122,9 +15094,7 @@ append_include_chain (first, last)
    read_name_map.  */
 
 static FILE *
-open_include_file (filename, searchptr)
-     char *filename;
-     struct file_name_list *searchptr;
+open_include_file (char *filename, struct file_name_list *searchptr)
 {
   register struct file_name_map *map;
   register char *from;
@@ -15261,9 +15231,7 @@ print_containing_files (ffebadSeverity sev)
    file.  */
 
 static char *
-read_filename_string (ch, f)
-     int ch;
-     FILE *f;
+read_filename_string (int ch, FILE *f)
 {
   char *alloc, *set;
   int len;
@@ -15292,8 +15260,7 @@ read_filename_string (ch, f)
 /* Read the file name map file for DIRNAME.  */
 
 static struct file_name_map *
-read_name_map (dirname)
-     const char *dirname;
+read_name_map (const char *dirname)
 {
   /* This structure holds a linked list of file name maps, one per
      directory.  */
