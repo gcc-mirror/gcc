@@ -7911,13 +7911,6 @@ code that expects temporaries to be 80bit.
 
 This is the default choice for x86-64 compiler.
 
-@item pni
-Use all SSE extensions enabled by @option{-msse2} as well as the new
-SSE extensions in Prescott New Intrunctions. @option{-mpni} also
-enables 2 builtin functions, @code{__builtin_ia32_monitor} and
-@code{__builtin_ia32_mwait}, for new intrunctions @code{monitor} and
-@code{mwait}. 
-
 @item sse,387
 Attempt to utilize both instruction sets at once.  This effectively double the
 amount of available registers and on chips with separate execution units for

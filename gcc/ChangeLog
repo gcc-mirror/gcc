@@ -1,3 +1,7 @@
+2004-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Remove the pni option from -mfpmath=.
+
 2004-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
