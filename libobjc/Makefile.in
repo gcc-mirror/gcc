@@ -145,7 +145,7 @@ OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
 OBJS =    archive.lo class.lo encoding.lo gc.lo hash.lo init.lo linking.lo \
 	  misc.lo nil_method.lo NXConstStr.lo Object.lo objects.lo \
 	  Protocol.lo sarray.lo selector.lo sendmsg.lo thr.lo \
-	  $(OBJC_THREAD_FILE).lo
+	  $(OBJC_THREAD_FILE).lo exception.lo
 
 OBJS_GC = archive_gc.lo class_gc.lo encoding_gc.lo gc_gc.lo hash_gc.lo \
 	  init_gc.lo linking_gc.lo misc_gc.lo nil_method_gc.lo \
@@ -252,6 +252,10 @@ thr_gc.lo: thr.c
 $(OBJC_THREAD_FILE)_gc.lo: $(OBJC_THREAD_FILE).c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
 		$(INCLUDES) $<
+
+exception.lo: exception.c
+	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
+		-fexceptions $(INCLUDES) $<
 
 doc: info dvi html
 
