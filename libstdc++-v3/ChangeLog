@@ -1,3 +1,16 @@
+2000-07-05  brent verner  <brent@rcfile.org> 
+
+	* testsuite/27_io/ifstream_members.cc (test01): Add tests.
+	* testsuite/27_io/ofstream_members.cc (test01): Add tests.
+	* config/c_io_libio.cc (__basic_file::open): Unset
+	~_IO_DELETE_DONT_CLOSE.
+
+2000-07-05  Zack Weinberg  <zack@wolery.cumb.org>
+	
+        * bits/gslice_array.h, bits/indirect_array.h, bits/mask_array.h,
+        bits/slice_array.h, bits/std_valarray.h, bits/valarray_meta.h:
+        Do not paste anything after 'operator' keyword.
+
 2000-07-03  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/std_memory.h: Revert.

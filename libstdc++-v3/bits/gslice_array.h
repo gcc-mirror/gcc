@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice_array class.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -133,7 +133,7 @@ namespace std {
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _Tp>							\
 inline void								\
-gslice_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
+gslice_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const	\
 {									\
     _Array_augmented_##name (_M_array, _Array<size_t>(_M_index),	\
                               _Array<_Tp> (__v), __v.size ());		\
@@ -141,7 +141,7 @@ gslice_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
 									\
 template<typename _Tp> template<class E>        			\
 inline void 								\
-gslice_array<_Tp>::operator##op##= (const _Expr<E, _Tp>& __e) const	\
+gslice_array<_Tp>::operator op##= (const _Expr<E, _Tp>& __e) const	\
 {									\
     _Array_augmented_##name (_M_array, _Array<size_t>(_M_index), __e,	\
                               _M_index.size());				\

@@ -152,6 +152,7 @@ namespace std {
 #if _G_HAVE_IO_FILE_OPEN
 	__c_file_type* __f;
 	__f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
+	_flags &= ~_IO_DELETE_DONT_CLOSE;
 	__retval = __f ? this: NULL;
 #else
 	int __fd = ::open(__name, __p_mode, __prot);
