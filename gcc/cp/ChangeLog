@@ -1,3 +1,19 @@
+2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14324
+	* lex.c (retrofit_lang_decl): Treat entities with no linkage as
+	having C++ linkage for name-mangling purposes.
+
+	PR c++/14260
+	* parser.c (cp_parser_direct_declarator): Recognize constructor
+	declarators that use a template-id to name the class being
+	constructed.
+
+	PR c++/14337
+	* pt.c (tsubst_qualified_id): Handle dependent qualifying scopes.
+	(tsubst_expr): Do not call tsubst_copy, even when
+	processing_template_decl.	
+
 2004-03-01  Jeff Law  <law@redhat.com>
 
 	* init.c (build_vec_delete_1): Convert 2nd argument to NE_EXPR to
