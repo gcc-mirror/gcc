@@ -180,7 +180,14 @@ extern tree convert_and_check			PROTO((tree, tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
 /* Read the rest of the current #-directive line.  */
+#if USE_CPPLIB
+extern char *get_directive_line                 PROTO((void));
+#define GET_DIRECTIVE_LINE() get_directive_line ()
+#else
 extern char *get_directive_line                 PROTO((FILE *));
+#define GET_DIRECTIVE_LINE() get_directive_line (finput)
+#endif
+
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */

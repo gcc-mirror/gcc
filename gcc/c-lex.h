@@ -81,8 +81,6 @@ extern int check_newline PROTO((void));
 extern int yylex PROTO((void));
 extern void yyerror PROTO((char *));
 
-extern char *get_directive_line PROTO((FILE *));
- 
 extern void forget_protocol_qualifiers PROTO((void));
 extern void remember_protocol_qualifiers PROTO((void));
 extern tree is_class_name PROTO((tree));

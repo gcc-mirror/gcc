@@ -46,9 +46,8 @@ Boston, MA 02111-1307, USA.  */
 
 #if USE_CPPLIB
 #include "cpplib.h"
-cpp_reader parse_in;
-cpp_options parse_options;
-static enum cpp_token cpp_token;
+extern cpp_reader  parse_in;
+extern cpp_options parse_options;
 #else
 /* Stream for reading from the input file.  */
 FILE *finput;
@@ -63,24 +62,10 @@ tree ridpointers[(int) RID_MAX];
 #define YYDEBUG 1
 
 #if USE_CPPLIB
-static unsigned char *yy_cur, *yy_lim;
-
-int
-yy_get_token ()
-{
-  for (;;)
-    {
-      parse_in.limit = parse_in.token_buffer;
-      cpp_token = cpp_get_token (&parse_in);
-      if (cpp_token == CPP_EOF)
-	return -1;
-      yy_lim = CPP_PWRITTEN (&parse_in);
-      yy_cur = parse_in.token_buffer;
-      if (yy_cur < yy_lim)
-	return *yy_cur++;
-    }
-}
-
+extern unsigned char *yy_cur, *yy_lim;
+  
+extern int yy_get_token ();
+  
 #define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
 #define UNGETC(c) ((c), yy_cur--)
 #else
@@ -497,88 +482,6 @@ extend_token_buffer (p)
 
   return token_buffer + offset;
 }
-
-#if !USE_CPPLIB
-#define GET_DIRECTIVE_LINE() get_directive_line (finput)
-#else /* USE_CPPLIB */
-/* Read the rest of a #-directive from input stream FINPUT.
-   In normal use, the directive name and the white space after it
-   have already been read, so they won't be included in the result.
-   We allow for the fact that the directive line may contain
-   a newline embedded within a character or string literal which forms
-   a part of the directive.
-
-   The value is a string in a reusable buffer.  It remains valid
-   only until the next time this function is called.  */
-
-static char *
-GET_DIRECTIVE_LINE ()
-{
-  static char *directive_buffer = NULL;
-  static unsigned buffer_length = 0;
-  register char *p;
-  register char *buffer_limit;
-  register int looking_for = 0;
-  register int char_escaped = 0;
-
-  if (buffer_length == 0)
-    {
-      directive_buffer = (char *)xmalloc (128);
-      buffer_length = 128;
-    }
-
-  buffer_limit = &directive_buffer[buffer_length];
-
-  for (p = directive_buffer; ; )
-    {
-      int c;
-
-      /* Make buffer bigger if it is full.  */
-      if (p >= buffer_limit)
-        {
-	  register unsigned bytes_used = (p - directive_buffer);
-
-	  buffer_length *= 2;
-	  directive_buffer
-	    = (char *)xrealloc (directive_buffer, buffer_length);
-	  p = &directive_buffer[bytes_used];
-	  buffer_limit = &directive_buffer[buffer_length];
-        }
-
-      c = GETC ();
-
-      /* Discard initial whitespace.  */
-      if ((c == ' ' || c == '\t') && p == directive_buffer)
-	continue;
-
-      /* Detect the end of the directive.  */
-      if (c == '\n' && looking_for == 0)
-	{
-          UNGETC (c);
-	  c = '\0';
-	}
-
-      *p++ = c;
-
-      if (c == 0)
-	return directive_buffer;
-
-      /* Handle string and character constant syntax.  */
-      if (looking_for)
-	{
-	  if (looking_for == c && !char_escaped)
-	    looking_for = 0;	/* Found terminator... stop looking.  */
-	}
-      else
-        if (c == '\'' || c == '"')
-	  looking_for = c;	/* Don't stop buffering until we see another
-				   one of these (or an EOF).  */
-
-      /* Handle backslash.  */
-      char_escaped = (c == '\\' && ! char_escaped);
-    }
-}
-#endif /* USE_CPPLIB */
 
 /* At the beginning of a line, increment the line number
    and process any #-directive on this line.
