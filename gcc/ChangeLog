@@ -1,3 +1,8 @@
+2002-08-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* reload1.c (reload_cse_simplify): Before checking
+	REG_FUNCTION_VALUE_P, check REG_P.
+
 2002-08-13  Geoffrey Keating  <geoffk@redhat.com>
 
 	* Makefile.in (attribs.o): Remove $(OBSTACK_H) dependency.
