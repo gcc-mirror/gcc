@@ -1,3 +1,12 @@
+2000-02-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (fn_type_unification): Unify return type, whenever
+	provided.
+	(get_bindings_real): Only pass return type when necessary.
+	Remove explicit return type check.
+	* class.c (resolve_address_of_overloaded_function): Pass desired
+	return type to fn_type_unification.
+
 Mon Feb 28 08:15:23 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_vtbl_or_vbase_field, check_methods): Don't clear
