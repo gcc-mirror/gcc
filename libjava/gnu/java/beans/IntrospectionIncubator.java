@@ -57,9 +57,10 @@ import java.util.Vector;
 
 /**
  ** IntrospectionIncubator takes in a bunch of Methods, and
- ** Introspects only those Methods you give it. 
- ** Note that non-public and static methods are silently
- ** discarded.
+ ** Introspects only those Methods you give it.<br/>
+ **
+ ** See {@link addMethod(Method)} for details which rules apply to
+ ** the methods.
  **
  ** @author John Keiser
  ** @author Robert Schuster
@@ -79,39 +80,75 @@ public class IntrospectionIncubator {
 	public IntrospectionIncubator() {
 	}
 
-	/* Paving the way for automatic Introspection */
+	/** Examines the given method and files it in a suitable collection.
+	 * It files the method as a property method if it finds:
+	 * <lu>
+	 * <li>boolean "is" getter</li>
+	 * <li>"get" style getter</li>
+	 * <li>single argument setter</li>
+	 * <li>indiced setter and getter</li> 
+	 * </ul>
+	 * It files the method as a listener method if all of these rules apply:
+	 * <lu>
+	 * <li>the method name starts with "add" or "remove"</li>
+	 * <li>there is only a single argument</li>
+	 * <li>the argument type is a subclass of <code>java.util.EventListener</code></li>
+	 * </ul>
+	 * All public methods are filed as such. 
+	 *   
+	 * @param method The method instance to examine.
+	 */
 	public void addMethod(Method method) {
-		if(Modifier.isPublic(method.getModifiers()) &&
-			!Modifier.isStatic(method.getModifiers())) {
+		if(Modifier.isPublic(method.getModifiers())) {
 			String name = ClassHelper.getTruncatedName(method.getName());
 			Class retType = method.getReturnType();
 			Class[] params = method.getParameterTypes();
 			boolean isVoid = retType.equals(java.lang.Void.TYPE);
 			Class methodClass = method.getDeclaringClass();
-			if(propertyStopClass == null || (propertyStopClass.isAssignableFrom(methodClass) && !propertyStopClass.equals(methodClass))) {
-				if(name.startsWith("is")
+			
+			/* Accepts the method for examination if no stop class is given or the method is declared in a subclass of the stop class.
+			 * The rules for this are described in {@link java.beans.Introspector.getBeanInfo(Class, Class)}.
+			 * This block finds out whether the method is a suitable getter or setter method (or read/write method).  
+			 */
+			if(isReachable(propertyStopClass, methodClass)) {
+				/* At this point a method may regarded as a property's read or write method if its name
+				 * starts with "is", "get" or "set". However, if a method is static it cannot be part
+				 * of a property.
+				 */
+				if(Modifier.isStatic(method.getModifiers())) {
+					// files method as other because it is static
+					otherMethods.addElement(method);
+				} else if(name.startsWith("is")
 				   && retType.equals(java.lang.Boolean.TYPE)
 				   && params.length == 0) {
+				   	// files method as boolean "is" style getter
 					addToPropertyHash(name,method,IS);
 				} else if(name.startsWith("get") && !isVoid) {
 					if(params.length == 0) {
+						// files as legal non-argument getter
 						addToPropertyHash(name,method,GET);
 					} else if(params.length == 1 && params[0].equals(java.lang.Integer.TYPE)) {
+						// files as legal indiced getter
 						addToPropertyHash(name,method,GET_I);
 					} else {
+						// files as other because the method's signature is not Bean-like
 						otherMethods.addElement(method);
 					}
 				} else if(name.startsWith("set") && isVoid) {
 					if(params.length == 1) {
+						// files as legal single-argument setter method
 						addToPropertyHash(name,method,SET);
 					} else if(params.length == 2 && params[0].equals(java.lang.Integer.TYPE)) {
+						// files as legal indiced setter method
 						addToPropertyHash(name,method,SET_I);
 					} else {
+						// files as other because the method's signature is not Bean-like
 						otherMethods.addElement(method);
 					}
 				}
 			}
-			if(eventStopClass == null || (eventStopClass.isAssignableFrom(methodClass) && !eventStopClass.equals(methodClass))) {
+			
+			if(isReachable(eventStopClass, methodClass)) {
 				if(name.startsWith("add")
 				          && isVoid
 				          && params.length == 1
@@ -124,9 +161,12 @@ public class IntrospectionIncubator {
 					addToListenerHash(name,method,REMOVE);
 				}
 			}
-			if(methodStopClass == null || (methodStopClass.isAssignableFrom(methodClass) && !methodStopClass.equals(methodClass))) {
+			 
+			if(isReachable(methodStopClass, methodClass)) {
+				// files as reachable public method
 				otherMethods.addElement(method);
 			}
+			
 		}
 	}
 
@@ -293,7 +333,6 @@ public class IntrospectionIncubator {
 		methods[funcType] = method;
 	}
 
-
 	void addToListenerHash(String name, Method method, int funcType) {
 		String newName;
 		Class type;
@@ -321,6 +360,26 @@ public class IntrospectionIncubator {
 		methods[funcType] = method;
 	}
 
+	/* Determines whether <code>stopClass</code> is <code>null</code>
+	 * or <code>declaringClass<code> is a true subclass of <code>stopClass</code>.
+	 * This expression is useful to detect whether a method should be introspected or not.
+	 * The rules for this are described in {@link java.beans.Introspector.getBeanInfo(Class, Class)}.
+	 */
+	static boolean isReachable(Class stopClass, Class declaringClass) {
+		return stopClass == null || (stopClass.isAssignableFrom(declaringClass) && !stopClass.equals(declaringClass));
+	}
+
+	/** Transforms a property name into a part of a method name.
+	 * E.g. "value" becomes "Value" which can then concatenated with
+	 * "set", "get" or "is" to form a valid method name.
+	 * 
+	 * Implementation notes:
+	 * If "" is the argument, it is returned without changes.
+	 * If <code>null</code> is the argument, <code>null</code> is returned.
+	 * 
+	 * @param name Name of a property.
+	 * @return Part of a method name of a property.
+	 */
 	static String capitalize(String name) {
 		try {
 			if(Character.isUpperCase(name.charAt(0))) {
@@ -338,6 +397,14 @@ public class IntrospectionIncubator {
 	}
 }
 
+/** This class is a hashmap key that consists of a <code>Class</code> and a
+ * <code>String</code> element.
+ * 
+ * It is used for XXX: find out what this is used for
+ * 
+ * @author John Keiser
+ * @author Robert Schuster
+ */ 
 class DoubleKey {
 	Class type;
 	String name;
