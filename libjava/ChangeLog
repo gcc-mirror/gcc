@@ -1,3 +1,13 @@
+2001-12-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/String.java (String): New constructor.
+	* gnu/gcj/runtime/natStringBuffer.cc: New file.
+	* gnu/gcj/runtime/StringBuffer.java: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added
+	gnu/gcj/runtime/StringBuffer.java.
+	(nat_source_files): Added gnu/gcj/runtime/natStringBuffer.cc.
+
 2001-12-10  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/1147:

@@ -92,6 +92,16 @@ public final class String implements Serializable, Comparable, CharSequence
       }
   }
 
+  // This is used by gnu.gcj.runtime.StringBuffer, so it must have
+  // package-private protection.  It is accessed via CNI and so avoids
+  // ordinary protection mechanisms.
+  String (gnu.gcj.runtime.StringBuffer buffer)
+  {
+    // No need to synchronize or mark the buffer, since we know it is
+    // only used once.
+    init (buffer.value, 0, buffer.count, true);
+  }
+
   public String (char[] data)
   {
     init(data, 0, data.length, false);
