@@ -3454,8 +3454,13 @@ build_conditional_expr (ifexp, op1, op2)
       
   /* Quickly detect the usual case where op1 and op2 have the same type
      after promotion.  */
-  if (type1 == type2)
-    result_type = type1;
+  if (TYPE_MAIN_VARIANT (type1) == TYPE_MAIN_VARIANT (type2))
+    {
+      if (type1 == type2)
+	result_type = type1;
+      else
+	result_type = TYPE_MAIN_VARIANT (type1);
+    }
   else if ((code1 == INTEGER_TYPE || code1 == REAL_TYPE)
            && (code2 == INTEGER_TYPE || code2 == REAL_TYPE))
     {
