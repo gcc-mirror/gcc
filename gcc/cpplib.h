@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -654,6 +654,7 @@ extern void fatal ();
 extern void cpp_error_from_errno ();
 extern void cpp_perror_with_name ();
 extern void cpp_pfatal_with_name ();
+extern void cpp_notice ();
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern int cpp_parse_escape PARAMS ((cpp_reader *, char **));
