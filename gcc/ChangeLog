@@ -1,3 +1,10 @@
+Tue Jun 19 01:52:27 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (output_branch): Delete bogus code.
+
+	* sh.c (initial_elimination_offset):
+	Fix FROM == RETURN_ADDRESS_POINTER_REGNUM case.
+
 Mon Jun 18 12:50:49 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (find_unreachable_blocks): New function.

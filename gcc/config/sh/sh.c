@@ -802,12 +802,8 @@ output_branch (logic, insn, operands)
      rtx insn;
      rtx *operands;
 {
-  int len = get_attr_length (insn);
-
-  switch (len)
+  switch (get_attr_length (insn))
     {
-    case 16:
-    case 12:
     case 6:
       /* This can happen if filling the delay slot has caused a forward
 	 branch to exceed its range (we could reverse it, but only
@@ -830,24 +826,16 @@ output_branch (logic, insn, operands)
 	  if (final_sequence
 	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
 	    {
-	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n",
-			   logic ? "f" : "t",
+	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
 	                   ASSEMBLER_DIALECT ? "/" : ".", label);
 	      print_slot (final_sequence);
 	    }
 	  else
-	    asm_fprintf (asm_out_file, "\tb%s\t%LLF%d\n", logic ? "f" : "t",
-			 label);
+	    asm_fprintf (asm_out_file, "\tb%s\t%LLF%d\n", logic ? "f" : "t", label);
     
-	  if (len == 6)
-	    {
-	      output_asm_insn ("bra\t%l0", &op0);
-	      fprintf (asm_out_file, "\tnop\n");
-	    }
-	  else
-	    output_far_jump (insn, op0);
-
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LF", label);
+	  output_asm_insn ("bra\t%l0", &op0);
+	  fprintf (asm_out_file, "\tnop\n");
+	  ASM_OUTPUT_INTERNAL_LABEL(asm_out_file, "LF", label);
     
 	  return "";
 	}
@@ -856,6 +844,9 @@ output_branch (logic, insn, operands)
     case 2:
       return logic ? "bt%.\t%l0" : "bf%.\t%l0";
     default:
+      /* There should be no longer branches now - that would
+	 indicate that something has destroyed the branches set
+	 up in machine_dependent_reorg.  */
       abort ();
     }
 }
@@ -4555,13 +4546,7 @@ initial_elimination_offset (from, to)
 
   if (from == RETURN_ADDRESS_POINTER_REGNUM
       && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
-    {
-      int i, n = total_saved_regs_space;
-      for (i = PR_REG-1; i >= 0; i--)
-	if (live_regs_mask & (1 << i))
-	  n -= 4;
-      return n + total_auto_space;
-    }
+    return UNITS_PER_WORD + total_auto_space;
 
   abort ();
 }
