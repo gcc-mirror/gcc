@@ -1,3 +1,14 @@
+2003-09-04  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.compile/compile.exp: Test with -O3 rather than -O.
+	* libjava.lang/lang.exp: Likewise.
+
+2003-09-04  Jeff Sturm  <jsturm@one-point.com>
+
+	* lib/libjava.exp (libjava_arguments): Remove unneeded variables.
+	(test_libjava_from_source): Likewise.
+	(test_libjava_from_javac): Likewise.
+
 2003-08-23  Andreas Tobler <a.tobler@schweiz.ch> 
 
 	PR libgcj/8823

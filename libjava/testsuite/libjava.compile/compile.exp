@@ -12,7 +12,7 @@ foreach x $srcfiles {
     lappend args no-exec
 
     test_libjava "" "$x" "" "" "" $args
-    test_libjava "" "$x" "-O" "" "" $args
+    test_libjava "" "$x" "-O3" "" "" $args
 }
 
 # Local Variables:
