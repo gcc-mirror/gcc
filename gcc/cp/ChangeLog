@@ -1,3 +1,7 @@
+1999-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	* except.c (build_throw): Check throw expression validity.
+
 1999-06-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Don't treat arbitrary types as unsigned

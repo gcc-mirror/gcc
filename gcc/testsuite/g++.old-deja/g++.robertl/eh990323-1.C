@@ -17,7 +17,7 @@ template <class T> void ff(T)
 {
 }
 
-void g(void)
+void g(int)
 {
 }
 

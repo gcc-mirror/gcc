@@ -1152,6 +1152,30 @@ build_throw (e)
 
   if (e == null_node)
     cp_warning ("throwing NULL, which has integral, not pointer type");
+  
+  if (e != NULL_TREE)
+    {
+      tree core;
+      int is_ptr;
+      
+      /* Cannot throw an incomplete type. */
+      e = require_complete_type (e);
+      if (e == error_mark_node)
+        return e;
+      
+      /* Or a pointer or ref to one, other than cv void *.  */
+      core = TREE_TYPE (e);
+      is_ptr = TREE_CODE (core) == POINTER_TYPE;
+      if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
+        {
+          core = TREE_TYPE (core);
+      
+          if (is_ptr && same_type_p (TYPE_MAIN_VARIANT (core), void_type_node))
+            /* OK */;
+          else if (!complete_type_or_else (core, NULL_TREE))
+            return error_mark_node;
+        }
+    }
 
   e = build1 (THROW_EXPR, void_type_node, e);
   TREE_SIDE_EFFECTS (e) = 1;

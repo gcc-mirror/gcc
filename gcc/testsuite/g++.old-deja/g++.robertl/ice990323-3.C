@@ -1,3 +1,4 @@
+// Build don't link:
 // try throwing overloaded function
 
 void f(int)
@@ -10,5 +11,5 @@ void f(long)
 
 void g()
 {
-	throw &f;
+	throw &f; // ERROR - insufficient contextual information
 }
