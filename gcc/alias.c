@@ -79,7 +79,6 @@ typedef struct alias_set_entry
   splay_tree children;
 } *alias_set_entry;
 
-static rtx canon_rtx			PARAMS ((rtx));
 static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
 static rtx find_symbolic_term		PARAMS ((rtx));
 static rtx get_addr			PARAMS ((rtx));
@@ -544,7 +543,12 @@ record_base_value (regno, val, invariant)
   reg_base_value[regno] = find_base_value (val);
 }
 
-static rtx
+/* Returns a canonical version of X, from the point of view alias
+   analysis.  (For example, if X is a MEM whose address is a register,
+   and the register has a known value (say a SYMBOL_REF), then a MEM
+   whose address is the SYMBOL_REF is returned.)  */
+
+rtx
 canon_rtx (x)
      rtx x;
 {
@@ -627,23 +631,32 @@ rtx_equal_for_memref_p (x, y)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* REG, LABEL_REF, and SYMBOL_REF can be compared nonrecursively.  */
+  /* Some RTL can be compared without a recursive examination.  */
+  switch (code)
+    {
+    case REG:
+      return REGNO (x) == REGNO (y);
 
-  if (code == REG)
-    return REGNO (x) == REGNO (y);
-  if (code == LABEL_REF)
-    return XEXP (x, 0) == XEXP (y, 0);
-  if (code == SYMBOL_REF)
-    return XSTR (x, 0) == XSTR (y, 0);
-  if (code == CONST_INT)
-    return INTVAL (x) == INTVAL (y);
-  /* There's no need to compare the contents of CONST_DOUBLEs because
-     they're unique. */
-  if (code == CONST_DOUBLE)
-    return 0;
-  if (code == ADDRESSOF)
-    return (REGNO (XEXP (x, 0)) == REGNO (XEXP (y, 0))
-	    && XINT (x, 1) == XINT (y, 1));
+    case LABEL_REF:
+      return XEXP (x, 0) == XEXP (y, 0);
+      
+    case SYMBOL_REF:
+      return XSTR (x, 0) == XSTR (y, 0);
+
+    case CONST_INT:
+    case CONST_DOUBLE:
+      /* There's no need to compare the contents of CONST_DOUBLEs or
+	 CONST_INTs because pointer equality is a good enough
+	 comparison for these nodes.  */
+      return 0;
+
+    case ADDRESSOF:
+      return (REGNO (XEXP (x, 0)) == REGNO (XEXP (y, 0))
+	      && XINT (x, 1) == XINT (y, 1));
+
+    default:
+      break;
+    }
 
   /* For commutative operations, the RTX match if the operand match in any
      order.  Also handle the simple binary and unary cases without a loop.  */
