@@ -5909,7 +5909,7 @@ dump_edge_info (file, e, do_succ)
 
 	    if (comma)
 	      fputc (',', file);
-	    if (i < (int) (sizeof (bitnames) / sizeof (*bitnames)))
+	    if (i < (int) ARRAY_SIZE (bitnames))
 	      fputs (bitnames[i], file);
 	    else
 	      fprintf (file, "%d", i);
