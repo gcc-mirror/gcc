@@ -1,3 +1,7 @@
+2002-05-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config-ml.in: Allow for PWDCMD to determine ML_POPDIR.
+
 2002-05-06  Loren J. Rittle <ljrittle@acm.org>
 
 	* ltmain.sh: Detect and handle object name conflicts
