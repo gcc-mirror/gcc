@@ -464,8 +464,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 Ld$den:
 | Return and signal a denormalized number
 	orl	d7,d0
-	movew	IMM (UNDERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	movew	IMM (DOUBLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -475,8 +474,7 @@ Ld$overflow:
 	movel	IMM (0x7ff00000),d0
 	movel	IMM (0),d1
 	orl	d7,d0
-	movew	IMM (OVERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+OVERFLOW),d7
 	movew	IMM (DOUBLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -484,8 +482,7 @@ Ld$underflow:
 | Return 0 and set the exception flags 
 	movel	IMM (0),d0
 	movel	d0,d1
-	movew	IMM (UNDERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	movew	IMM (DOUBLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -493,8 +490,7 @@ Ld$inop:
 | Return a quiet NaN and set the exception flags
 	movel	IMM (QUIET_NaN),d0
 	movel	d0,d1
-	movew	IMM (INVALID_OPERATION),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
 	movew	IMM (DOUBLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -503,8 +499,7 @@ Ld$div$0:
 	movel	IMM (0x7ff00000),d0
 	movel	IMM (0),d1
 	orl	d7,d0
-	movew	IMM (DIVIDE_BY_ZERO),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+DIVIDE_BY_ZERO),d7
 	movew	IMM (DOUBLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -1719,8 +1714,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 Lf$den:
 | Return and signal a denormalized number
 	orl	d7,d0
-	movew	IMM (UNDERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	movew	IMM (SINGLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -1729,24 +1723,21 @@ Lf$overflow:
 | Return a properly signed INFINITY and set the exception flags 
 	movel	IMM (INFINITY),d0
 	orl	d7,d0
-	movew	IMM (OVERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+OVERFLOW),d7
 	movew	IMM (SINGLE_FLOAT),d6
 	jmp	$_exception_handler
 
 Lf$underflow:
 | Return 0 and set the exception flags 
 	movel	IMM (0),d0
-	movew	IMM (UNDERFLOW),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	movew	IMM (SINGLE_FLOAT),d6
 	jmp	$_exception_handler
 
 Lf$inop:
 | Return a quiet NaN and set the exception flags
 	movel	IMM (QUIET_NaN),d0
-	movew	IMM (INVALID_OPERATION),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
 	movew	IMM (SINGLE_FLOAT),d6
 	jmp	$_exception_handler
 
@@ -1754,8 +1745,7 @@ Lf$div$0:
 | Return a properly signed INFINITY and set the exception flags
 	movel	IMM (INFINITY),d0
 	orl	d7,d0
-	movew	IMM (DIVIDE_BY_ZERO),d7
-	orw	IMM (INEXACT_RESULT),d7
+	movew	IMM (INEXACT_RESULT+DIVIDE_BY_ZERO),d7
 	movew	IMM (SINGLE_FLOAT),d6
 	jmp	$_exception_handler
 
