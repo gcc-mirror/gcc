@@ -1,3 +1,9 @@
+2004-05-22  Victor Leikehman  <lei@haifasphere.co.il>
+
+	PR fortran/13249
+	* symbol.c (gfc_add_common): Disable checks to work around other more
+	fundamental inadequacies.
+
 2004-05-22  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c (gfc_get_extern_function_decl): Set DECL_IS_PURE
