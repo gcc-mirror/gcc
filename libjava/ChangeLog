@@ -1,3 +1,11 @@
+2002-02-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.in: Rebuilt with Eric's change below.
+
+	* java/lang/natMath.cc (abs(jdouble), abs(jfloat), round(jfloat),
+	round(jdouble), min(jfloat), max(jfloat), min(jdouble), min(jfloat)):
+	Removed functions which are now implemented in Math.java.
+
 2002-02-14  Eric Blake  <ebb9@email.byu.edu>
 
 	* gcj/javaprims.h (java::lang): Add java::lang::StrictMath.
