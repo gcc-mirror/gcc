@@ -1,3 +1,8 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/920428-2.x: Delete.
+	* gcc.c-torture/execute/920501-7.x: Likewise.
+
 2004-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.mist-tests/i386-prefetch.exp (PREFETCH_SSE): Change all
