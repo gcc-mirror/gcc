@@ -357,12 +357,6 @@ extern int setrlimit (int, const struct rlimit *);
 # endif
 #endif
 
-/* HAVE_VOLATILE only refers to the stage1 compiler.  We also check
-   __STDC__ and assume gcc sets it and has volatile in stage >=2.  */
-#if !defined(HAVE_VOLATILE) && !defined(__STDC__) && !defined(volatile)
-#define volatile
-#endif
-
 #if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
 extern void abort (void);
 #endif

@@ -163,36 +163,6 @@ fi
 AC_SUBST(LN)dnl
 ])
 
-dnl See whether the stage1 host compiler accepts the volatile keyword.
-AC_DEFUN(gcc_AC_C_VOLATILE,
-[AC_CACHE_CHECK([for volatile], gcc_cv_c_volatile,
-[AC_TRY_COMPILE(, [volatile int foo;],
-        gcc_cv_c_volatile=yes, gcc_cv_c_volatile=no)])
-if test $gcc_cv_c_volatile = yes ; then
-  AC_DEFINE(HAVE_VOLATILE, 1, [Define if your compiler understands volatile.])
-fi
-])
-
-dnl Check whether long double is supported.  This differs from the
-dnl built-in autoconf test in that it works for cross compiles.
-AC_DEFUN(gcc_AC_C_LONG_DOUBLE,
-[AC_CACHE_CHECK(for long double, gcc_cv_c_long_double,
-[if test "$GCC" = yes; then
-  gcc_cv_c_long_double=yes
-else
-AC_TRY_COMPILE(,
-[/* The Stardent Vistra knows sizeof(long double), but does not support it.  */
-long double foo = 0.0;
-/* On Ultrix 4.3 cc, long double is 4 and double is 8.  */
-switch (0) case 0: case (sizeof(long double) >= sizeof(double)):;],
-gcc_cv_c_long_double=yes, gcc_cv_c_long_double=no)
-fi])
-if test $gcc_cv_c_long_double = yes; then
-  AC_DEFINE(HAVE_LONG_DOUBLE, 1, 
-      [Define if your compiler supports the \`long double' type.])
-fi
-])
-
 dnl Check whether _Bool is built-in.
 AC_DEFUN(gcc_AC_C__BOOL,
 [AC_CACHE_CHECK(for built-in _Bool, gcc_cv_c__bool,

@@ -200,11 +200,7 @@ struct max_alignment {
   char c;
   union {
     HOST_WIDEST_INT i;
-#ifdef HAVE_LONG_DOUBLE
     long double d;
-#else
-    double d;
-#endif
   } u;
 };
 

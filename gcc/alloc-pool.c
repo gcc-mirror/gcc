@@ -54,11 +54,8 @@ typedef struct allocation_object_def
 	 the following elements are here.  They are never accessed so
 	 the allocated object may be even smaller than this structure.  */
       char *align_p;
-      double align_d;
       HOST_WIDEST_INT align_i;
-#ifdef HAVE_LONG_DOUBLE
       long double align_ld;
-#endif
     } u;
 } allocation_object;
 
