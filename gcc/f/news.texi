@@ -9,7 +9,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-18
+@c 1999-02-26
 
 @ifclear NEWSONLY
 @node News
@@ -66,7 +66,8 @@ somewhat more difficult.
 @itemize @bullet
 @item
 Fix @code{g77} so it no longer crashes when compiling
-I/O statements with @samp{IOSTAT=@var{j}},
+I/O statements using keywords that define @code{INTEGER} values,
+such as @samp{IOSTAT=@var{j}},
 where @var{j} is other than default @code{INTEGER}
 (such as @code{INTEGER*2}).
 Instead, it issues a diagnostic.
