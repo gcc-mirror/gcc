@@ -111,7 +111,7 @@ build_vfield_ref (datum, type)
   if (TREE_CODE (TREE_TYPE (datum)) == REFERENCE_TYPE)
     datum = convert_from_reference (datum);
 
-  if (! TYPE_USES_COMPLEX_INHERITANCE (type))
+  if (! TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (type))
     rval = build (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
 		  datum, TYPE_VFIELD (type));
   else

@@ -1134,7 +1134,7 @@ dump_function_decl (t, flags)
     /* OK */;
   else if (DECL_STATIC_FUNCTION_P (t))
     OB_PUTS ("static ");
-  else if (TYPE_VIRTUAL_P (t))
+  else if (TYPE_POLYMORPHIC_P (t))
     OB_PUTS ("virtual ");
   
   /* Print the return type?  */

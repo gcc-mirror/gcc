@@ -657,7 +657,7 @@ lookup_field_1 (type, name)
   if (name == vptr_identifier)
     {
       /* Give the user what s/he thinks s/he wants.  */
-      if (TYPE_VIRTUAL_P (type))
+      if (TYPE_POLYMORPHIC_P (type))
 	return TYPE_VFIELD (type);
     }
   return NULL_TREE;
@@ -2373,7 +2373,7 @@ dfs_debug_mark (binfo, data)
 
   /* If the class has virtual functions, we'll emit the debug info
      with the vtable.  */
-  if (TYPE_VIRTUAL_P (t))
+  if (TYPE_POLYMORPHIC_P (t))
     return NULL_TREE;
 
   /* We cannot rely on some alien method to solve our problems,
@@ -2942,7 +2942,7 @@ maybe_suppress_debug_info (t)
     /* Don't set it.  */;
   /* If the class has virtual functions, write out the debug info
      along with the vtable.  */
-  else if (TYPE_VIRTUAL_P (t))
+  else if (TYPE_POLYMORPHIC_P (t))
     TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
 
   /* Otherwise, just emit the debug info normally.  */

@@ -2480,7 +2480,7 @@ import_export_class (ctype)
   /* Base our import/export status on that of the first non-inline,
      non-abstract virtual function, if any.  */
   if (import_export == 0
-      && TYPE_VIRTUAL_P (ctype)
+      && TYPE_POLYMORPHIC_P (ctype)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
@@ -2684,7 +2684,7 @@ import_export_decl (decl)
 	import_export_class (ctype);
 
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
-	  && TYPE_VIRTUAL_P (ctype)
+	  && TYPE_POLYMORPHIC_P (ctype)
 	  /* If -fno-rtti, we're not necessarily emitting this stuff with
 	     the class, so go ahead and emit it now.  This can happen
 	     when a class is used in exception handling.  */
