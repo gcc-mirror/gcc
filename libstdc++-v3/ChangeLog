@@ -1,3 +1,9 @@
+2001-05-25  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/c_std/bits/std_cmath.h: Tweak.  #define away abs, cos,
+	fabs, sin, sqrt.  They are now implemented in terms of __builtin_
+	variants. 
+
 2001-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/2830
