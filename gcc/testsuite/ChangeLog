@@ -1,3 +1,8 @@
+2005-02-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/19786
+	* g++.dg/tree-ssa/pr19786.C: New.
+
 2005-02-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/gfortran-dg.exp (gfortran-dg-test): Split long regexps.
