@@ -1,3 +1,14 @@
+Tue Sep 12 13:51:13 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.h (ASSEMBLER_DIALECT): New macro declared.
+	* config/avr/avr.md (*movstrqi_insn): Cleanup output template.
+	(*clrstrqi): Likewise.
+	(xorhi3,xorsi3,absqi2): Likewise.
+	(one_cmplhi2,one_cmplsi2): Likewise.
+	(addsi3): Two stupid constraint alternatives removed.
+	(extendhisi2): Use `movw' for enhanced avr cores.
+	(zero_extendhisi2): Likewise.
+
 Wed Sep 13 02:31:23 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c (find_base_term): Use frame_pointer_rtx
