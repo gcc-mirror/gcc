@@ -79,6 +79,10 @@ extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 #define WCHAR_TYPE "int"
 #endif
 
+#ifndef WINT_TYPE
+#define WINT_TYPE "unsigned int"
+#endif
+
 #ifndef INTMAX_TYPE
 #define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
 		     ? "int"					\
@@ -6385,6 +6389,7 @@ init_decl_processing ()
 
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
+  unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
   /* Define both `signed char' and `unsigned char'.  */
   record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
@@ -6393,8 +6398,10 @@ init_decl_processing ()
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
-  set_sizetype
-    (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
+  c_size_type_node =
+    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+  signed_size_type_node = signed_type (c_size_type_node);
+  set_sizetype (c_size_type_node);
 
   /* Create the widest literal types. */
   widest_integer_literal_type_node = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
@@ -6553,6 +6560,9 @@ init_decl_processing ()
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
+
+  wint_type_node =
+    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WINT_TYPE)));
 
   intmax_type_node =
     TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (INTMAX_TYPE)));

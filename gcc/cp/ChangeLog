@@ -1,5 +1,11 @@
 2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* decl.c (WINT_TYPE): Define.
+	(init_decl_processing): Create types unsigned_ptrdiff_type_node,
+	c_size_type_node, signed_size_type_node and wint_type_node.
+
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* decl2.c (warn_missing_format_attribute): New variable.
 	(lang_decode_option): Decode -Wmissing-format-attribute.
 
