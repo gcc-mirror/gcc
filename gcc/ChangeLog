@@ -304,6 +304,11 @@
 	(idx_find_step): Replace uses of EXEC_BINARY with calls to
 	fold_binary_to_constant.
 
+2004-11-22  Nick Clifton  <nickc@redhat.com>
+
+	* sbitmap.c (sbitmap_union_of_preds): Remove redundant
+	initialisation of 'e'.
+
 2004-11-22  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.h (TARGET_USE_FANCY_MATH_387): New macro.
