@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.3 2001/05/17 18:18:51 mmitchel Exp $
+@comment $Id: install.texi,v 1.1.2.4 2001/05/22 14:49:07 gerald Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -968,16 +968,9 @@ GNU Compiler Collection on your machine.
 <h3><a name="alpha*-dec-linux*">alpha*-dec-linux*</a></h3>
 @end html
 
-We strongly recommend to upgrade to binutils 2.10 (or newer).
-
-The following error:
-@example
-  Error: macro requires $at register while noat in effect
-@end example
-
-indicates that you should upgrade to a newer version of
-the assembler, 2.9 or later.  If you can not upgrade the assembler, the
-compiler option "-Wa,-m21164a" may work around this problem.
+We require binutils 2.10 or newer.  Upgrading to binutils 2.11
+or newer is strongly recommended, as it will result in more 
+compact debugging and exception handling information.
 
 @html
 </p>
