@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -30,8 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    numbers have been substituted, and various pop and exchange insns have
    been emitted.  The hard register numbers and the virtual register
    numbers completely overlap - before this pass, all stack register
-   numbers are virtual, and afterward they are all hard, with the
-   exception of ASM_OPERANDS, which are discussed below.
+   numbers are virtual, and afterward they are all hard.
 
    The virtual registers can be manipulated normally by gcc, and their
    semantics are the same as for normal registers.  After the hard
@@ -81,14 +80,87 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    information is valid until after reg_to_stack returns, and is used
    from jump_optimize.
 
-   * Limitations:
+   * asm_operands:
 
-   Inline assembly isn't handled yet. */
+   There are several rules on the usage of stack-like regs in
+   asm_operands insns.  These rules apply only to the operands that are
+   stack-like regs:
+
+   1. Given a set of input regs that die in an asm_operands, it is
+      necessary to know which are implicitly popped by the asm, and
+      which must be explicitly popped by gcc.
+
+	An input reg that is implicitly popped by the asm must be
+	explicitly clobbered, unless it is constrained to match an
+	output operand.
+
+   2. For any input reg that is implicitly popped by an asm, it is
+      necessary to know how to adjust the stack to compensate for the pop.
+      If any non-popped input is closer to the top of the reg-stack than
+      the implicitly popped reg, it would not be possible to know what the
+      stack looked like - it's not clear how the rest of the stack "slides
+      up".
+
+	All implicitly popped input regs must be closer to the top of
+	the reg-stack than any input that is not implicitly popped.
+
+   3. It is possible that if an input dies in an insn, reload might
+      use the input reg for an output reload.  Consider this example:
+
+		asm ("foo" : "=t" (a) : "f" (b));
+
+      This asm says that input B is not popped by the asm, and that
+      the asm pushes a result onto the reg-stack, ie, the stack is one
+      deeper after the asm than it was before.  But, it is possible that
+      reload will think that it can use the same reg for both the input and
+      the output, if input B dies in this insn.
+
+	If any input operand uses the "f" constraint, all output reg
+	constraints must use the "&" earlyclobber.
+
+      The asm above would be written as
+
+		asm ("foo" : "=&t" (a) : "f" (b));
+
+   4. Some operands need to be in particular places on the stack.  All
+      output operands fall in this category - there is no other way to
+      know which regs the outputs appear in unless the user indicates
+      this in the constraints.
+
+	Output operands must specifically indicate which reg an output
+	appears in after an asm.  "=f" is not allowed: the operand
+	constraints must select a class with a single reg.
+
+   5. Output operands may not be "inserted" between existing stack regs.
+      Since no 387 opcode uses a read/write operand, all output operands
+      are dead before the asm_operands, and are pushed by the asm_operands.
+      It makes no sense to push anywhere but the top of the reg-stack.
+
+	Output operands must start at the top of the reg-stack: output
+	operands may not "skip" a reg.
+
+   6. Some asm statements may need extra stack space for internal
+      calculations.  This can be guaranteed by clobbering stack registers
+      unrelated to the inputs and outputs.
+
+   Here are a couple of reasonable asms to want to write.  This asm
+   takes one input, which is internally popped, and produces two outputs.
+
+	asm ("fsincos" : "=t" (cos), "=u" (sin) : "0" (inp));
+
+   This asm takes two inputs, which are popped by the fyl2xp1 opcode,
+   and replaces them with one output.  The user must code the "st(1)"
+   clobber for reg-stack.c to know that fyl2xp1 pops both inputs.
+
+	asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
+
+   */
 
 #include <stdio.h>
 #include "config.h"
 #include "tree.h"
 #include "rtl.h"
+#include "insn-config.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -147,9 +219,6 @@ static short *block_number;
 /* This is the register file for all register after conversion */
 static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
 
-/* ??? set of register to delete after ASM_OPERAND */
-HARD_REG_SET asm_regs;
-
 /* Get the basic block number of an insn.  See note at block_number
    definition are validity of this information. */
 
@@ -168,10 +237,9 @@ extern rtx emit_label_after ();
 
 static void find_blocks ();
 static void stack_reg_life_analysis ();
+static void change_stack ();
 static void convert_regs ();
 static void dump_stack_info ();
-static void fatal_for_asm ();
-
 
 /* Return non-zero if any stack register is mentioned somewhere within
    PAT. */
@@ -410,6 +478,503 @@ record_note_if_dead (insn, regstack, reg, dest)
       abort ();
 }
 
+/* Scan the OPERANDS and OPERAND_CONSTRAINTS of an asm_operands.
+   N_OPERANDS is the total number of operands.  Return which alternative
+   matched, or -1 is no alternative matches.
+
+   OPERAND_MATCHES is an array which indicates which operand this
+   operand matches due to the constraints, or -1 if no match is required.
+   If two operands match by coincidence, but are not required to match by
+   the constraints, -1 is returned.
+
+   OPERAND_CLASS is an array which indicates the smallest class
+   required by the constraints.  If the alternative that matches calls
+   for some class `class', and the operand matches a subclass of `class',
+   OPERAND_CLASS is set to `class' as required by the constraints, not to
+   the subclass. If an alternative allows more than one class,
+   OPERAND_CLASS is set to the smallest class that is a union of the
+   allowed classes. */
+
+static int
+constrain_asm_operands (n_operands, operands, operand_constraints,
+			operand_matches, operand_class)
+     int n_operands;
+     rtx *operands;
+     char **operand_constraints;
+     int *operand_matches;
+     enum reg_class *operand_class;
+{
+  char **constraints = (char **) alloca (n_operands * sizeof (char *));
+  char *q;
+  int this_alternative, this_operand;
+  int n_alternatives;
+  int j;
+
+  for (j = 0; j < n_operands; j++)
+    constraints[j] = operand_constraints[j];
+
+  /* Compute the number of alternatives in the operands.  reload has
+     already guaranteed that all operands have the same number of
+     alternatives.  */
+
+  n_alternatives = 1;
+  for (q = constraints[0]; *q; q++)
+    n_alternatives += (*q == ',');
+
+  this_alternative = 0;
+  while (this_alternative < n_alternatives)
+    {
+      int lose = 0;
+      int i;
+
+      /* No operands match, no narrow class requirements yet.  */
+      for (i = 0; i < n_operands; i++)
+	{
+	  operand_matches[i] = -1;
+	  operand_class[i] = NO_REGS;
+	}
+
+      for (this_operand = 0; this_operand < n_operands; this_operand++)
+	{
+	  rtx op = operands[this_operand];
+	  enum machine_mode mode = GET_MODE (op);
+	  char *p = constraints[this_operand];
+	  int offset = 0;
+	  int win = 0;
+	  int c;
+
+	  if (GET_CODE (op) == SUBREG)
+	    {
+	      if (GET_CODE (SUBREG_REG (op)) == REG
+		  && REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER)
+		offset = SUBREG_WORD (op);
+	      op = SUBREG_REG (op);
+	    }
+
+	  /* An empty constraint or empty alternative
+	     allows anything which matched the pattern.  */
+	  if (*p == 0 || *p == ',')
+	    win = 1;
+
+	  while (*p && (c = *p++) != ',')
+	    switch (c)
+	      {
+	      case '=':
+	      case '+':
+	      case '?':
+	      case '#':
+	      case '&':
+	      case '!':
+	      case '*':
+	      case '%':
+		/* Ignore these. */
+		break;
+
+	      case '0':
+	      case '1':
+	      case '2':
+	      case '3':
+	      case '4':
+	      case '5':
+		/* This operand must be the same as a previous one.
+		   This kind of constraint is used for instructions such
+		   as add when they take only two operands.
+
+		   Note that the lower-numbered operand is passed first. */
+
+		if (operands_match_p (operands[c - '0'],
+				      operands[this_operand]))
+		  {
+		    operand_matches[this_operand] = c - '0';
+		    win = 1;
+		  }
+		break;
+
+	      case 'p':
+		/* p is used for address_operands.  Since this is an asm,
+		   just to make sure that the operand is valid for Pmode. */
+
+		if (strict_memory_address_p (Pmode, op))
+		  win = 1;
+		break;
+
+	      case 'g':
+		/* Anything goes unless it is a REG and really has a hard reg
+		   but the hard reg is not in the class GENERAL_REGS.  */
+		if (GENERAL_REGS == ALL_REGS
+		    || GET_CODE (op) != REG
+		    || reg_fits_class_p (op, GENERAL_REGS, offset, mode))
+		  {
+		    if (GET_CODE (op) == REG)
+		      operand_class[this_operand]
+			= reg_class_subunion[(int) operand_class[this_operand]][(int) GENERAL_REGS];
+		    win = 1;
+		  }
+		break;
+
+	      case 'r':
+		if (GET_CODE (op) == REG
+		    && (GENERAL_REGS == ALL_REGS
+			|| reg_fits_class_p (op, GENERAL_REGS, offset, mode)))
+		  {
+		    operand_class[this_operand]
+		      = reg_class_subunion[(int) operand_class[this_operand]][(int) GENERAL_REGS];
+		    win = 1;
+		  }
+		break;
+
+	      case 'X':
+		/* This is used for a MATCH_SCRATCH in the cases when we
+		   don't actually need anything.  So anything goes any time. */
+		win = 1;
+		break;
+
+	      case 'm':
+		if (GET_CODE (op) == MEM)
+		  win = 1;
+		break;
+
+	      case '<':
+		if (GET_CODE (op) == MEM
+		    && (GET_CODE (XEXP (op, 0)) == PRE_DEC
+			|| GET_CODE (XEXP (op, 0)) == POST_DEC))
+		  win = 1;
+		break;
+
+	      case '>':
+		if (GET_CODE (op) == MEM
+		    && (GET_CODE (XEXP (op, 0)) == PRE_INC
+			|| GET_CODE (XEXP (op, 0)) == POST_INC))
+		  win = 1;
+		break;
+
+	      case 'E':
+		/* Match any CONST_DOUBLE, but only if
+		   we can examine the bits of it reliably.  */
+		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+		     || HOST_BITS_PER_INT != BITS_PER_WORD)
+		    && GET_CODE (op) != VOIDmode && ! flag_pretend_float)
+		  break;
+		if (GET_CODE (op) == CONST_DOUBLE)
+		  win = 1;
+		break;
+
+	      case 'F':
+		if (GET_CODE (op) == CONST_DOUBLE)
+		  win = 1;
+		break;
+
+	      case 'G':
+	      case 'H':
+		if (GET_CODE (op) == CONST_DOUBLE
+		    && CONST_DOUBLE_OK_FOR_LETTER_P (op, c))
+		  win = 1;
+		break;
+
+	      case 's':
+		if (GET_CODE (op) == CONST_INT
+		    || (GET_CODE (op) == CONST_DOUBLE
+			&& GET_MODE (op) == VOIDmode))
+		  break;
+		/* Fall through */
+	      case 'i':
+		if (CONSTANT_P (op))
+		  win = 1;
+		break;
+
+	      case 'n':
+		if (GET_CODE (op) == CONST_INT
+		    || (GET_CODE (op) == CONST_DOUBLE
+			&& GET_MODE (op) == VOIDmode))
+		  win = 1;
+		break;
+
+	      case 'I':
+	      case 'J':
+	      case 'K':
+	      case 'L':
+	      case 'M':
+	      case 'N':
+	      case 'O':
+	      case 'P':
+		if (GET_CODE (op) == CONST_INT
+		    && CONST_OK_FOR_LETTER_P (INTVAL (op), c))
+		  win = 1;
+		break;
+
+#ifdef EXTRA_CONSTRAINT
+              case 'Q':
+              case 'R':
+              case 'S':
+              case 'T':
+              case 'U':
+		if (EXTRA_CONSTRAINT (op, c))
+		  win = 1;
+		break;
+#endif
+
+	      case 'V':
+		if (GET_CODE (op) == MEM && ! offsettable_memref_p (op))
+		  win = 1;
+		break;
+
+	      case 'o':
+		if (offsettable_memref_p (op))
+		  win = 1;
+		break;
+
+	      default:
+		if (GET_CODE (op) == REG
+		    && reg_fits_class_p (op, REG_CLASS_FROM_LETTER (c),
+					 offset, mode))
+		  {
+		    operand_class[this_operand]
+		      = reg_class_subunion[(int)operand_class[this_operand]][(int) REG_CLASS_FROM_LETTER (c)];
+		    win = 1;
+		  }
+	      }
+
+	  constraints[this_operand] = p;
+	  /* If this operand did not win somehow,
+	     this alternative loses.  */
+	  if (! win)
+	    lose = 1;
+	}
+      /* This alternative won; the operands are ok.
+	 Change whichever operands this alternative says to change.  */
+      if (! lose)
+	break;
+
+      this_alternative++;
+    }
+
+  /* For operands constrained to match another operand, copy the other
+     operand's class to this operand's class. */
+  for (j = 0; j < n_operands; j++)
+    if (operand_matches[j] >= 0)
+      operand_class[j] = operand_class[operand_matches[j]];
+
+  return this_alternative == n_alternatives ? -1 : this_alternative;
+}
+
+/* Record the life info of each stack reg in INSN, updating REGSTACK.
+   N_INPUTS is the number of inputs; N_OUTPUTS the outputs.  CONSTRAINTS
+   is an array of the constraint strings used in the asm statement.
+   OPERANDS is an array of all operands for the insn, and is assumed to
+   contain all output operands, then all inputs operands.
+
+   There are many rules that an asm statement for stack-like regs must
+   follow.  Those rules are explained at the top of this file: the rule
+   numbers below refer to that explanation. */
+
+static void
+record_asm_reg_life (insn, regstack, operands, constraints,
+		     n_inputs, n_outputs)
+     rtx insn;
+     stack regstack;
+     rtx *operands;
+     char **constraints;
+     int n_inputs, n_outputs;
+{
+  int i;
+  int n_operands = n_inputs + n_outputs;
+  int first_input = n_outputs;
+  int n_clobbers;
+  int malformed_asm = 0;
+  rtx body = PATTERN (insn);
+
+  int *operand_matches = (int *) alloca (n_operands * sizeof (int *));
+
+  enum reg_class *operand_class 
+    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class *));
+
+  int reg_used_as_output[FIRST_PSEUDO_REGISTER];
+  int implicitly_dies[FIRST_PSEUDO_REGISTER];
+
+  rtx *clobber_reg;
+
+  /* Find out what the constraints required.  If no constraint
+     alternative matches, that is a compiler bug: we should have caught
+     such an insn during reload.  */
+  i = constrain_asm_operands (n_operands, operands, constraints,
+			      operand_matches, operand_class);
+  if (i < 0)
+    abort ();
+
+  /* Strip SUBREGs here to make the following code simpler. */
+  for (i = 0; i < n_operands; i++)
+    if (GET_CODE (operands[i]) == SUBREG
+	&& GET_CODE (SUBREG_REG (operands[i])) == REG)
+      operands[i] = SUBREG_REG (operands[i]);
+
+  /* Set up CLOBBER_REG.  */
+
+  n_clobbers = 0;
+  clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
+
+  if (GET_CODE (body) == PARALLEL)
+    for (i = 0; i < XVECLEN (body, 0); i++)
+      if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+	{
+	  rtx clobber = XVECEXP (body, 0, i);
+	  rtx reg = XEXP (clobber, 0);
+
+	  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	    reg = SUBREG_REG (reg);
+
+	  if (STACK_REG_P (reg))
+	    {
+	      clobber_reg[n_clobbers] = reg;
+	      n_clobbers++;
+	    }
+	}
+
+  /* Enforce rule #4: Output operands must specifically indicate which
+     reg an output appears in after an asm.  "=f" is not allowed: the
+     operand constraints must select a class with a single reg.
+
+     Also enforce rule #5: Output operands must start at the top of
+     the reg-stack: output operands may not "skip" a reg. */
+
+  bzero (reg_used_as_output, sizeof (reg_used_as_output));
+  for (i = 0; i < n_outputs; i++)
+    if (STACK_REG_P (operands[i]))
+      if (reg_class_size[operand_class[i]] != 1)
+	{
+	  error_for_asm
+	    (insn, "Output constraint %d must specify a single register", i);
+	  malformed_asm = 1;
+	}
+      else
+	reg_used_as_output[REGNO (operands[i])] = 1;
+
+
+  /* Search for first non-popped reg.  */
+  for (i = FIRST_STACK_REG; i < LAST_STACK_REG + 1; i++)
+    if (! reg_used_as_output[i])
+      break;
+
+  /* If there are any other popped regs, that's an error.  */
+  for (; i < LAST_STACK_REG + 1; i++)
+    if (reg_used_as_output[i])
+      break;
+
+  if (i != LAST_STACK_REG + 1)
+    {
+      error_for_asm (insn, "Output regs must be grouped at top of stack");
+      malformed_asm = 1;
+    }
+
+  /* Enforce rule #2: All implicitly popped input regs must be closer
+     to the top of the reg-stack than any input that is not implicitly
+     popped. */
+
+  bzero (implicitly_dies, sizeof (implicitly_dies));
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (STACK_REG_P (operands[i]))
+      {
+	/* An input reg is implicitly popped if it is tied to an
+	   output, or if there is a CLOBBER for it. */
+	int j;
+
+	for (j = 0; j < n_clobbers; j++)
+	  if (operands_match_p (clobber_reg[j], operands[i]))
+	    break;
+
+	if (j < n_clobbers || operand_matches[i] >= 0)
+	  implicitly_dies[REGNO (operands[i])] = 1;
+      }
+
+  /* Search for first non-popped reg.  */
+  for (i = FIRST_STACK_REG; i < LAST_STACK_REG + 1; i++)
+    if (! implicitly_dies[i])
+      break;
+
+  /* If there are any other popped regs, that's an error.  */
+  for (; i < LAST_STACK_REG + 1; i++)
+    if (implicitly_dies[i])
+      break;
+
+  if (i != LAST_STACK_REG + 1)
+    {
+      error_for_asm (insn,
+		     "Implicitly popped regs must be grouped at top of stack");
+      malformed_asm = 1;
+    }
+
+  /* Enfore rule #3: If any input operand uses the "f" constraint, all
+     output constraints must use the "&" earlyclobber.
+
+     ???  Detect this more deterministically by having constraint_asm_operands
+     record any earlyclobber. */
+
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (operand_matches[i] == -1)
+      {
+	int j;
+
+	for (j = 0; j < n_outputs; j++)
+	  if (operands_match_p (operands[j], operands[i]))
+	    {
+	      error_for_asm (insn,
+			     "Output operand %d must use `&' constraint", j);
+	      malformed_asm = 1;
+	    }
+      }
+
+  if (malformed_asm)
+    {
+      /* Avoid further trouble with this insn.  */
+      PATTERN (insn) = gen_rtx (USE, VOIDmode, const0_rtx);
+      PUT_MODE (insn, VOIDmode);
+      return;
+    }
+
+  /* Process all outputs */
+  for (i = 0; i < n_outputs; i++)
+    {
+      rtx op = operands[i];
+
+      if (! STACK_REG_P (op))
+	if (stack_regs_mentioned_p (op))
+	  abort ();
+	else
+	  continue;
+
+      /* Each destination is dead before this insn.  If the
+	 destination is not used after this insn, record this with
+	 REG_UNUSED.  */
+
+      if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (op)))
+	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED, op,
+				    REG_NOTES (insn));
+
+      CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (op));
+    }
+
+  /* Process all inputs */
+  for (i = first_input; i < first_input + n_inputs; i++)
+    {
+      if (! STACK_REG_P (operands[i]))
+	if (stack_regs_mentioned_p (operands[i]))
+	  abort ();
+	else
+	  continue;
+
+      /* If an input is dead after the insn, record a death note.
+	 But don't record a death note if there is already a death note,
+	 or if the input is also an output.  */
+
+      if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i]))
+	  && operand_matches[i] == -1
+	  && ! find_regno_note (insn, REG_DEAD, REGNO (operands[i])))
+	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, operands[i],
+				    REG_NOTES (insn));
+
+      SET_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i]));
+    }
+}
+
 /* Scan PAT, which is part of INSN, and record the life & death of
    stack registers in REGSTACK.  If a register was dead, but is an input
    operand in this insn, then mark the register live and record a death
@@ -429,14 +994,9 @@ record_reg_life_pat (insn, regstack, pat)
 {
   rtx src, dest;
 
-  if (GET_CODE (pat) == CLOBBER
-      && GET_CODE (PATTERN (insn)) == PARALLEL
-      && GET_CODE (SET_SRC (XVECEXP (PATTERN (insn), 0, 0))) == ASM_OPERANDS)
-    {
-      if (STACK_REG_P (XEXP (pat, 0)))
-	abort ();
-      return;
-    }
+  /* We should have already handled any asm.  */
+  if (GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ASM_OPERANDS)
+    abort ();
 
   if (GET_CODE (pat) != SET)
     return;
@@ -498,17 +1058,8 @@ record_reg_life_pat (insn, regstack, pat)
       break;
 
     case ASM_OPERANDS:
-      {
-	register int j;
-
-	/* ??? This needs much improvement */
-
-	if (stack_regs_mentioned_p (pat))
-	  abort ();
-
-	for (j = 0; j < XVECLEN (src, 3); j++)
-	  record_note_if_dead (insn, regstack, XVECEXP (src, 3, j), dest);
-      }
+    case ASM_INPUT:
+      abort ();  /* we should have caught this already. */
       break;
 
     case REG:
@@ -522,6 +1073,36 @@ record_reg_life_pat (insn, regstack, pat)
       if (stack_regs_mentioned_p (src))
 	abort ();
     }
+}
+
+/* Calculate the number of inputs and outputs in BODY, an
+   asm_operands.  N_OPERANDS is the total number of operands, and
+   N_INPUTS and N_OUTPUTS are pointers to ints into which the results are
+   placed. */
+
+static void
+get_asm_operand_lengths (body, n_operands, n_inputs, n_outputs)
+     rtx body;
+     int n_operands;
+     int *n_inputs, *n_outputs;
+{
+  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
+    *n_inputs = ASM_OPERANDS_INPUT_LENGTH (SET_SRC (body));
+
+  else if (GET_CODE (body) == ASM_OPERANDS)
+    *n_inputs = ASM_OPERANDS_INPUT_LENGTH (body);
+
+  else if (GET_CODE (body) == PARALLEL
+	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
+    *n_inputs = ASM_OPERANDS_INPUT_LENGTH (SET_SRC (XVECEXP (body, 0, 0)));
+
+  else if (GET_CODE (body) == PARALLEL
+	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
+    *n_inputs = ASM_OPERANDS_INPUT_LENGTH (XVECEXP (body, 0, 0));
+  else
+    abort ();
+
+  *n_outputs = n_operands - *n_inputs;
 }
 
 /* Scan INSN, which is in BLOCK, and record the life & death of stack
@@ -543,6 +1124,7 @@ record_reg_life (insn, block, regstack)
      stack regstack;
 {
   rtx note, *note_link;
+  int n_operands;
 
   if ((GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
       || INSN_DELETED_P (insn))
@@ -560,6 +1142,24 @@ record_reg_life (insn, block, regstack)
       note_link = &XEXP (note, 1);
 
   /* Process all patterns in the insn. */
+
+  n_operands = asm_noperands (PATTERN (insn));
+  if (n_operands >= 0)
+    {
+      /* This insn is an `asm' with operands.  Decode the operands,
+	 decide how many are inputs, and record the life information. */
+
+      rtx operands[MAX_RECOG_OPERANDS];
+      rtx body = PATTERN (insn);
+      int n_inputs, n_outputs;
+      char **constraints = (char **) alloca (n_operands * sizeof (char *));
+
+      decode_asm_operands (body, operands, 0, constraints, 0);
+      get_asm_operand_lengths (body, n_operands, &n_inputs, &n_outputs);
+      record_asm_reg_life (insn, regstack, operands, constraints,
+			   n_inputs, n_outputs);
+      return;
+    }
 
   if (GET_CODE (PATTERN (insn)) == PARALLEL)
     {
@@ -867,7 +1467,7 @@ replace_reg (reg, regno)
     abort ();
 
   if (GET_MODE_CLASS (GET_MODE (*reg)) != MODE_FLOAT)
-    abort;
+    abort ();
 
   *reg = FP_mode_reg[regno][(int) GET_MODE (*reg)];
 }
@@ -1019,6 +1619,8 @@ emit_swap_insn (insn, regstack, reg, when)
   int hard_regno;
 
   hard_regno = get_hard_regnum (regstack, reg);
+  if (hard_regno < FIRST_STACK_REG)
+    abort ();
 
   emit_hard_swap_insn (insn, regstack, hard_regno, when);
 }
@@ -1430,6 +2032,286 @@ subst_stack_regs_pat (insn, regstack, pat)
       }
 }
 
+/* Substitute hard regnums for any stack regs in INSN, which has
+   N_INPUTS inputs and N_OUTPUTS outputs.  REGSTACK is the stack info
+   before the insn, and is updated with changes made here.  CONSTAINTS is
+   an array of the constraint strings used in the asm statement.
+
+   OPERANDS is an array of the operands, and OPERANDS_LOC is a
+   parallel array of where the operands were found.  The output operands
+   all preceed the input operands.
+
+   There are several requirements and assumptions about the use of
+   stack-like regs in asm statements.  These rules are enforced by
+   record_asm_stack_regs; see comments there for details.  Any
+   asm_operands left in the RTL at this point may be assume to meet the
+   requirements, since record_asm_stack_regs removes any problem asm.  */
+
+static void
+subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
+		      n_inputs, n_outputs)
+     rtx insn;
+     stack regstack;
+     rtx *operands, **operands_loc;
+     char **constraints;
+     int n_inputs, n_outputs;
+{
+  int n_operands = n_inputs + n_outputs;
+  int first_input = n_outputs;
+  rtx body = PATTERN (insn);
+
+  int *operand_matches = (int *) alloca (n_operands * sizeof (int *));
+  enum reg_class *operand_class 
+    = (enum reg_class *) alloca (n_operands * sizeof (enum reg_class *));
+
+  rtx *note_reg;		/* Array of note contents */
+  rtx **note_loc;		/* Address of REG field of each note */
+  enum reg_note *note_kind;	/* The type of each note */
+
+  rtx *clobber_reg;
+  rtx **clobber_loc;
+
+  struct stack_def temp_stack;
+  int n_notes;
+  int n_clobbers;
+  rtx note;
+  int i;
+
+  /* Find out what the constraints required.  If no constraint
+     alternative matches, that is a compiler bug: we should have caught
+     such an insn during the life analysis pass (and reload should have
+     caught it regardless). */
+
+  i = constrain_asm_operands (n_operands, operands, constraints,
+			      operand_matches, operand_class);
+  if (i < 0)
+    abort ();
+
+  /* Strip SUBREGs here to make the following code simpler. */
+  for (i = 0; i < n_operands; i++)
+    if (GET_CODE (operands[i]) == SUBREG
+	&& GET_CODE (SUBREG_REG (operands[i])) == REG)
+      {
+	operands_loc[i] = & SUBREG_REG (operands[i]);
+	operands[i] = SUBREG_REG (operands[i]);
+      }
+
+  /* Set up NOTE_REG, NOTE_LOC and NOTE_KIND.  */
+
+  for (i = 0, note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    i++;
+
+  note_reg = (rtx *) alloca (i * sizeof (rtx));
+  note_loc = (rtx **) alloca (i * sizeof (rtx *));
+  note_kind = (enum reg_note *) alloca (i * sizeof (enum reg_note));
+
+  n_notes = 0;
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    {
+      rtx reg = XEXP (note, 0);
+      rtx *loc = & XEXP (note, 0);
+
+      if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	{
+	  loc = & SUBREG_REG (reg);
+	  reg = SUBREG_REG (reg);
+	}
+
+      if (STACK_REG_P (reg)
+	  && (REG_NOTE_KIND (note) == REG_DEAD
+	      || REG_NOTE_KIND (note) == REG_UNUSED))
+	{
+	  note_reg[n_notes] = reg;
+	  note_loc[n_notes] = loc;
+	  note_kind[n_notes] = REG_NOTE_KIND (note);
+	  n_notes++;
+	}
+    }
+
+  /* Set up CLOBBER_REG and CLOBBER_LOC.  */
+
+  n_clobbers = 0;
+  clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
+  clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx **));
+
+  if (GET_CODE (body) == PARALLEL)
+    for (i = 0; i < XVECLEN (body, 0); i++)
+      if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+	{
+	  rtx clobber = XVECEXP (body, 0, i);
+	  rtx reg = XEXP (clobber, 0);
+	  rtx *loc = & XEXP (clobber, 0);
+
+	  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	    {
+	      loc = & SUBREG_REG (reg);
+	      reg = SUBREG_REG (reg);
+	    }
+
+	  if (STACK_REG_P (reg))
+	    {
+	      clobber_reg[n_clobbers] = reg;
+	      clobber_loc[n_clobbers] = loc;
+	      n_clobbers++;
+	    }
+	}
+
+  bcopy (regstack, &temp_stack, sizeof (temp_stack));
+
+  /* Put the input regs into the desired place in TEMP_STACK.  */
+
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (STACK_REG_P (operands[i])
+	&& reg_class_subset_p (operand_class[i], FLOAT_REGS)
+	&& operand_class[i] != FLOAT_REGS)
+      {
+	/* If an operand needs to be in a particular reg in
+	   FLOAT_REGS, the constraint was either 't' or 'u'.  Since
+	   these constraints are for single register classes, and reload
+	   guaranteed that operand[i] is already in that class, we can
+	   just use REGNO (operands[i]) to know which actual reg this
+	   operand needs to be in. */
+
+	int regno = get_hard_regnum (&temp_stack, operands[i]);
+
+	if (regno < 0)
+	  abort ();
+
+	if (regno != REGNO (operands[i]))
+	  {
+	    /* operands[i] is not in the right place.  Find it
+	       and swap it with whatever is already in I's place.
+	       K is where operands[i] is now.  J is where it should
+	       be. */
+	    int j, k, temp;
+
+	    k = temp_stack.top - (regno - FIRST_STACK_REG);
+	    j = (temp_stack.top
+		 - (REGNO (operands[i]) - FIRST_STACK_REG));
+
+	    temp = temp_stack.reg[k];
+	    temp_stack.reg[k] = temp_stack.reg[j];
+	    temp_stack.reg[j] = temp;
+	  }
+      }
+
+  /* emit insns before INSN to make sure the reg-stack is in the right
+     order.  */
+
+  change_stack (insn, regstack, &temp_stack, emit_insn_before);
+
+  /* Make the needed input register substitutions.  Do death notes and
+     clobbers too, because these are for inputs, not outputs. */
+
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (STACK_REG_P (operands[i]))
+      {
+	int regnum = get_hard_regnum (regstack, operands[i]);
+
+	if (regnum < 0)
+	  abort ();
+
+	replace_reg (operands_loc[i], regnum);
+      }
+
+  for (i = 0; i < n_notes; i++)
+    if (note_kind[i] == REG_DEAD)
+      {
+	int regnum = get_hard_regnum (regstack, note_reg[i]);
+
+	if (regnum < 0)
+	  abort ();
+
+	replace_reg (note_loc[i], regnum);
+      }
+
+  for (i = 0; i < n_clobbers; i++)
+    {
+      /* It's OK for a CLOBBER to reference a reg that is not live.
+         Don't try to replace it in that case.  */
+      int regnum = get_hard_regnum (regstack, clobber_reg[i]);
+
+      if (regnum >= 0)
+	{
+	  /* Sigh - clobbers always have QImode.  But replace_reg knows
+	     that these regs can't be MODE_INT and will abort.  Just put
+	     the right reg there without calling replace_reg.  */
+
+	  *clobber_loc[i] = FP_mode_reg[regnum][(int) DFmode];
+	}
+    }
+
+  /* Now remove from REGSTACK any inputs that the asm implicitly popped. */
+
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (STACK_REG_P (operands[i]))
+      {
+	/* An input reg is implicitly popped if it is tied to an
+	   output, or if there is a CLOBBER for it. */
+	int j;
+
+	for (j = 0; j < n_clobbers; j++)
+	  if (operands_match_p (clobber_reg[j], operands[i]))
+	    break;
+
+	if (j < n_clobbers || operand_matches[i] >= 0)
+	  {
+	    /* operands[i] might not be at the top of stack.  But that's OK,
+	       because all we need to do is pop the right number of regs
+	       off of the top of the reg-stack.  record_asm_stack_regs
+	       guaranteed that all implicitly popped regs were grouped
+	       at the top of the reg-stack.  */
+
+	    CLEAR_HARD_REG_BIT (regstack->reg_set,
+				regstack->reg[regstack->top]);
+	    regstack->top--;
+	  }
+      }
+
+  /* Now add to REGSTACK any outputs that the asm implicitly pushed.
+     Note that there isn't any need to substitute register numbers.
+     ???  Explain why this is true. */
+
+  for (i = LAST_STACK_REG; i >= FIRST_STACK_REG; i--)
+    {
+      /* See if there is an output for this hard reg.  */
+      int j;
+
+      for (j = 0; j < n_outputs; j++)
+	if (STACK_REG_P (operands[j]) && REGNO (operands[j]) == i)
+	  {
+	    regstack->reg[++regstack->top] = i;
+	    SET_HARD_REG_BIT (regstack->reg_set, i);
+	    break;
+	  }
+    }
+
+  /* Now emit a pop insn for any REG_UNUSED output, or any REG_DEAD
+     input that the asm didn't implicitly pop.  If the asm didn't
+     implicitly pop a reg, that reg will still be live.
+
+     Note that we can't use find_regno_note here: the register numbers
+     in the death notes have already been substituted.  */
+
+  for (i = 0; i < n_outputs + n_inputs; i++)
+    if (STACK_REG_P (operands[i]))
+      {
+	int j;
+
+	for (j = 0; j < n_notes; j++)
+	  if (REGNO (operands[i]) == REGNO (note_reg[j])
+	      && (note_kind[j] == REG_UNUSED
+		  || (note_kind[j] == REG_DEAD
+		      && TEST_HARD_REG_BIT (regstack->reg_set,
+					    REGNO (operands[i])))))
+	    {
+	      insn = emit_pop_insn (insn, regstack, operands[i],
+				    emit_insn_after);
+	      break;
+	    }
+      }
+}
+
 /* Substitute stack hard reg numbers for stack virtual registers in
    INSN.  Non-stack register numbers are not changed.  REGSTACK is the
    current stack content.  Insns may be emitted as needed to arrange the
@@ -1442,6 +2324,7 @@ subst_stack_regs (insn, regstack)
 {
   register rtx *note_link, note;
   register int i;
+  int n_operands;
 
   if ((GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
       || INSN_DELETED_P (insn))
@@ -1462,6 +2345,27 @@ subst_stack_regs (insn, regstack)
 
   if (GET_MODE (insn) == QImode)
     {
+      n_operands = asm_noperands (PATTERN (insn));
+      if (n_operands >= 0)
+	{
+	  /* This insn is an `asm' with operands.  Decode the operands,
+	     decide how many are inputs, and do register substitution.
+	     Any REG_UNUSED notes will be handled by subst_asm_stack_regs. */
+
+	  rtx operands[MAX_RECOG_OPERANDS];
+	  rtx *operands_loc[MAX_RECOG_OPERANDS];
+	  rtx body = PATTERN (insn);
+	  int n_inputs, n_outputs;
+	  char **constraints
+	    = (char **) alloca (n_operands * sizeof (char *));
+
+	  decode_asm_operands (body, operands, operands_loc, constraints, 0);
+	  get_asm_operand_lengths (body, n_operands, &n_inputs, &n_outputs);
+	  subst_asm_stack_regs (insn, regstack, operands, operands_loc,
+				constraints, n_inputs, n_outputs);
+	  return;
+	}
+
       if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	for (i = 0; i < XVECLEN (PATTERN (insn) , 0); i++)
 	  {
@@ -1489,8 +2393,7 @@ subst_stack_regs (insn, regstack)
     if (REG_NOTE_KIND (note) == REG_UNUSED && STACK_REG_P (XEXP (note, 0)))
       {
 	*note_link = XEXP (note, 1);
-	emit_pop_insn (insn, regstack, XEXP (note, 0),
-		       emit_insn_after);
+	insn = emit_pop_insn (insn, regstack, XEXP (note, 0), emit_insn_after);
       }
     else
       note_link = &XEXP (note, 1);
@@ -1500,25 +2403,29 @@ subst_stack_regs (insn, regstack)
    block.  Some registers might have to be popped, but there can never be
    a register live in the new block that is not now live.
 
-   Insert any needed insns after INSN.  OLD is the original stack
-   layout, and NEW is the desired form.  OLD is updated to reflect the
-   code emitted, ie, it will be the same as NEW upon return.
+   Insert any needed insns before or after INSN.  WHEN is emit_insn_before
+   or emit_insn_after. OLD is the original stack layout, and NEW is
+   the desired form.  OLD is updated to reflect the code emitted, ie, it
+   will be the same as NEW upon return.
 
    This function will not preserve block_end[].  But that information
    is no longer needed once this has executed. */
 
 static void
-change_stack (insn, old, new)
+change_stack (insn, old, new, when)
      rtx insn;
      stack old;
      stack new;
+     rtx (*when)();
 {
   int reg;
 
-  /* We will be inserting new insns after INSN, by first finding the
-     next insn, and inserting before it. */
+  /* We will be inserting new insns "backwards", by calling emit_insn_before.
+     If we are to insert after INSN, find the next insn, and insert before
+     it.  */
 
-  insn = NEXT_INSN (insn);
+  if (when == emit_insn_after)
+    insn = NEXT_INSN (insn);
 
   /* Pop any registers that are not needed in the new block. */
 
@@ -1660,7 +2567,7 @@ goto_block_pat (insn, regstack, pat)
 	{
 	  /* change_stack will not emit any code in this case. */
 
-	  change_stack (label, regstack, label_stack);
+	  change_stack (label, regstack, label_stack, emit_insn_after);
 	  return;
 	}
     }
@@ -1712,7 +2619,7 @@ goto_block_pat (insn, regstack, pat)
 
   temp_stack = *regstack;
 
-  change_stack (new_label, &temp_stack, label_stack);
+  change_stack (new_label, &temp_stack, label_stack, emit_insn_after);
 }
 
 /* Traverse all basic blocks in a function, converting the register
@@ -1781,7 +2688,8 @@ convert_regs ()
       /* Likewise handle the case where we fall into the next block. */
 
       if ((block < blocks - 1) && block_drops_in[block+1])
-	change_stack (insn, &regstack, &block_stack_in[block+1]);
+	change_stack (insn, &regstack, &block_stack_in[block+1],
+		      emit_insn_after);
     }
 
   /* If the last basic block is the end of a loop, and that loop has
@@ -1895,45 +2803,5 @@ dump_stack_info (file)
 
       fprintf (file, "\n");
     }
-}
-
-/* Report an error at line LINE of file FILE.
-   S is a string and an arg for `printf'.  */
-
-/* Report an fatal error at the line number of the insn INSN (ASM_OPERAND).
-   S1, S2 is a string and an arg for `printf'. */
-
-static void
-fatal_for_asm (insn, s1, s2)
-     rtx insn;
-     char *s1, *s2;
-{
-  char *filename;
-  int line;
-  rtx body = PATTERN (insn);
-  rtx asmop = 0;
-
-  /* Find the (or one of the) ASM_OPERANDS in the insn.  */
-  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
-    asmop = SET_SRC (body);
-  else if (GET_CODE (body) == ASM_OPERANDS)
-    asmop = body;
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
-    asmop = SET_SRC (XVECEXP (body, 0, 0));
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
-    asmop = XVECEXP (body, 0, 0);
-  else
-    abort ();
-
-  filename = ASM_OPERANDS_SOURCE_FILE (asmop);
-  line = ASM_OPERANDS_SOURCE_LINE (asmop);
-
-  fprintf (stderr, s1);
-  debug_rtx (insn);
-
-  error_with_file_and_line (filename, line, s2, NULL, NULL);
-  exit (34);
 }
 #endif /* STACK_REGS */
