@@ -1,3 +1,53 @@
+2004-02-29  Per Bothner  <per@bothner.com>
+
+	* java/nio/channels/FileChannelImpl.java:  Moved to package
+	gnu/java/nio/channels, since we need to refer to it from java.io.
+	* java/nio/channels/natFileChannelImpl.cc:  Removed file.
+	* gnu/java/nio/channels/FileChannelImpl.java:  New class, renamed
+	from java/nio/channels.  Don't depend on FileDescriptor.
+	(in, out, err):  New static fields.
+	(mode):  New field.
+	(SET, CUR, READ, WRITE, APPEND, EXCL, SYNC, DSYNC):  Moved constants
+	from FileDescriptor.
+	(by):  Removed MappedByteBuffer field.
+	(map):  New working implementation.
+	* gnu/java/nio/channels/natFileChannelPosix.cc:  New file, though
+	some code "ported" from natFileDescriptoPosix.cc.
+	* gnu/java/nio/channels/natFileChannelEcos.cc:  Likewise.
+	* gnu/java/nio/channels/natFileChannelWin32.cc  Likewise.
+	* java/io/FileDescriptor.java:  Implement on top of FileChannel.
+	Remove native methods.
+	* Makefile.am, configure.in:  Updated accordingly.
+
+	* gnu/java/nio/FileLockImpl.java (fd):  Remove field, replacing it by:
+	(ch):  New FileChannelImpl field.  Update constructor to match.
+	(releaseImpl):  Remove native method.  Instead ...
+	(release):  Call unlock on channel.
+	* gnu/java/nio/natFileLockImpl.cc:  Removed file.
+
+	* java/io/natFileDescriptorEcos.cc:  Remove file.
+	* java/io/natFileDescriptorPosix.cc:  Remove file.
+	* java/io/natFileDescriptorWin32.cc:  Remove file.
+	* java/io/FileInputStream.java (ch):  Change type to FileChannelImpl.
+	(<init>(File)):  Allocate a FileChannelImpl, not a FileDescriptor.
+	(<init>(FileChannelImpl)):  New package-private constructor.
+	(<init>(FileDescriptor)):  Extract FileChannelImpl from arg.
+	(available, close, read, skip):  Implement using FileChannelImpl.
+	(getFD):  Allocate FileDescriptor if needed.
+	(getChannel):  Is now trivial.
+	* java/io/FileOutputStream.java:  Corresponding changes.
+	* java/io/RandomAccessFile.java:  Corresponding changes.
+
+	* java/nio/MappedByteBuffer.java: (forceImpl, isLoadedImpl, loadImpl,
+	unmapImpl):  New dummy methods, to be overridden by subclass.
+	(finalize, isLoaded, load, force):  New methods.
+	* java/nio/MappedByteBufferImpl.java:  More-or-less rewrite.
+	Now works, at least for read mapping.
+
+	* java/lang/natPosixProcess.cc (startProcess):  Implement standard
+	streams using FileChannelImpl, not FileDescriptor.
+	* java/lang/natWin32Process.cc (startProcess):  Likewise.
+
 2004-02-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectInputStream.java: Compile fix, damn I commited the
@@ -55,6 +105,7 @@
 	* Makefile.am: Generate and install headers for inner classes in
 	java.nio.channels.Pipe and gnu.java.nio.PipeImpl.
 	* Makefile.in: Regenerated.
+
 2004-02-24  Anthony Green  <green@redhat.com>
 
 	* java/lang/StringBuffer.java: No need to NULL out remainder of

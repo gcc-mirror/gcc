@@ -302,13 +302,12 @@ AC_EGREP_HEADER(mktime, time.h, AC_DEFINE(HAVE_MKTIME, 1,
 AC_EGREP_HEADER(localtime, time.h, AC_DEFINE(HAVE_LOCALTIME, 1,
                                   [Define is you have 'localtime' in <time.h>]))
 
-dnl Create the subdirectory for natFileDescriptor.cc, or the attempt
+dnl Create the subdirectory for natFile.cc, or the attempt
 dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
 AC_LINK_FILES(java/io/natFile${FILE-${PLATFORM}}.cc, java/io/natFile.cc)
-AC_LINK_FILES(java/io/natFileDescriptor${FILE-${PLATFORM}}.cc, java/io/natFileDescriptor.cc)
 
 dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
@@ -330,6 +329,8 @@ dnl Likewise for natPipeImpl.cc and natSelectorImpl.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
 AC_LINK_FILES(gnu/java/nio/natPipeImpl${PLATFORM}.cc, gnu/java/nio/natPipeImpl.cc)
 AC_LINK_FILES(gnu/java/nio/natSelectorImpl${PLATFORM}.cc, gnu/java/nio/natSelectorImpl.cc)
+test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
+AC_LINK_FILES(gnu/java/nio/channels/natFileChannel${PLATFORM}.cc, gnu/java/nio/channels/natFileChannelImpl.cc)
 
 case "${host}" in
     *mingw*)
