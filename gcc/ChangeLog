@@ -1,3 +1,12 @@
+Thu Apr  9 16:53:59 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.c: call_address_operand(): Only accept symbolic
+	addresses.
+	symbolic_memort_operand(), call32_operand(), int8_operand(),
+	int16_operand(), uint24_operand(), reg_or_int8_operand(): Removed.
+	Not used.
+	uint16_operand(): Made static.
+
 Thu Apr  9 01:43:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* calls.c (expand_call): Fix typo.

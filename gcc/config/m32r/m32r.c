@@ -1,4 +1,4 @@
-/* Subroutines used for code generation on the M32R/D cpu.
+/* Subroutines used for code generation on the Mitsubishi M32R cpu.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -416,9 +416,10 @@ call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (symbolic_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && LEGITIMATE_CONSTANT_P (op))
-	  || (GET_CODE (op) == REG));
+  return symbolic_operand (op, mode);
+
+  /* Constants and values in registers are not OK, because
+     the m32r BL instruction can only support PC relative branching.  */ 
 }
 
 int
@@ -448,23 +449,6 @@ symbolic_operand (op, mode)
     default:
       return 0;
     }
-}
-
-/* Return truth value of statement that OP is a symbolic memory
-   operand of mode MODE.  */
-
-int
-symbolic_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (GET_CODE (op) != MEM)
-    return 0;
-  op = XEXP (op, 0);
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST
-	  || GET_CODE (op) == LABEL_REF);
 }
 
 /* Return 1 if OP is a reference to an object in .sdata/.sbss.  */
@@ -561,16 +545,6 @@ call26_operand (op, mode)
   return TARGET_CALL26;
 }
 
-/* Return 1 if OP is a function that must be called with 32 bit addressing.  */
-
-int
-call32_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return ! call26_operand (op, mode);
-}
-
 /* Returns 1 if OP is an acceptable operand for seth/add3.  */
 
 int
@@ -592,30 +566,6 @@ seth_add3_operand (op, mode)
   return 0;
 }
 
-/* Return true if OP is a signed 8 bit immediate value.  */
-
-int
-int8_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  return INT8_P (INTVAL (op));
-}
-
-/* Return true if OP is a signed 16 bit immediate value.  */
-
-int
-int16_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  return INT16_P (INTVAL (op));
-}
-
 /* Return true if OP is a signed 16 bit immediate value
    useful in comparisons.  */
 
@@ -631,7 +581,7 @@ cmp_int16_operand (op, mode)
 
 /* Return true if OP is an unsigned 16 bit immediate value.  */
 
-int
+static int
 uint16_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -639,32 +589,6 @@ uint16_operand (op, mode)
   if (GET_CODE (op) != CONST_INT)
     return 0;
   return UINT16_P (INTVAL (op));
-}
-
-/* Return true if OP is an unsigned 24 bit immediate value.  */
-
-int
-uint24_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  return UINT24_P (INTVAL (op));
-}
-
-/* Return true if OP is a register or signed 8 bit value.  */
-
-int
-reg_or_int8_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
-    return register_operand (op, mode);
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  return INT8_P (INTVAL (op));
 }
 
 /* Return true if OP is a register or signed 8 bit value.  */
@@ -681,7 +605,7 @@ reg_or_int16_operand (op, mode)
   return INT16_P (INTVAL (op));
 }
 
-/* Return true if OP is a register or signed 8 bit value.  */
+/* Return true if OP is a register or an unsigned 16 bit value.  */
 
 int
 reg_or_uint16_operand (op, mode)
@@ -937,24 +861,26 @@ m32r_select_cc_mode (op, x, y)
 rtx
 gen_compare (code, x, y)
      enum rtx_code code;
-     rtx x, y;
+     rtx           x;
+     rtx           y;
 {
-  enum machine_mode mode = SELECT_CC_MODE (code, x, y);
-  enum rtx_code compare_code, branch_code;
-  rtx cc_reg = gen_rtx (REG, mode, CARRY_REGNUM);
-  int swap_p = 0;
+  enum rtx_code     compare_code;
+  enum rtx_code     branch_code;
+  enum machine_mode mode      = SELECT_CC_MODE (code, x, y);
+  rtx               cc_reg    = gen_rtx (REG, mode, CARRY_REGNUM);
+  int               must_swap = 0;
 
   switch (code)
     {
-    case EQ: compare_code = EQ; branch_code = NE; break;
-    case NE: compare_code = EQ; branch_code = EQ; break;
-    case LT: compare_code = LT; branch_code = NE; break;
-    case LE: compare_code = LT; branch_code = EQ; swap_p = 1; break;
-    case GT: compare_code = LT; branch_code = NE; swap_p = 1; break;
-    case GE: compare_code = LT; branch_code = EQ; break;
+    case EQ:  compare_code = EQ;  branch_code = NE; break;
+    case NE:  compare_code = EQ;  branch_code = EQ; break;
+    case LT:  compare_code = LT;  branch_code = NE; break;
+    case LE:  compare_code = LT;  branch_code = EQ; must_swap = 1; break;
+    case GT:  compare_code = LT;  branch_code = NE; must_swap = 1; break;
+    case GE:  compare_code = LT;  branch_code = EQ; break;
     case LTU: compare_code = LTU; branch_code = NE; break;
-    case LEU: compare_code = LTU; branch_code = EQ; swap_p = 1; break;
-    case GTU: compare_code = LTU; branch_code = NE; swap_p = 1; break;
+    case LEU: compare_code = LTU; branch_code = EQ; must_swap = 1; break;
+    case GTU: compare_code = LTU; branch_code = NE; must_swap = 1; break;
     case GEU: compare_code = LTU; branch_code = EQ; break;
     }
 
@@ -964,10 +890,12 @@ gen_compare (code, x, y)
       if (compare_code == EQ
 	  && register_operand (y, SImode))
 	return gen_rtx (code, mode, x, y);
+      
       /* reg/zero signed comparison */
       if ((compare_code == EQ || compare_code == LT)
 	  && y == const0_rtx)
 	return gen_rtx (code, mode, x, y);
+      
       /* reg/smallconst equal comparison */
       if (compare_code == EQ
 	  && GET_CODE (y) == CONST_INT
@@ -977,6 +905,7 @@ gen_compare (code, x, y)
 	  emit_insn (gen_cmp_ne_small_const_insn (tmp, x, y));
 	  return gen_rtx (code, mode, tmp, const0_rtx);
 	}
+      
       /* reg/const equal comparison */
       if (compare_code == EQ
 	  && CONSTANT_P (y))
@@ -986,28 +915,32 @@ gen_compare (code, x, y)
 	}
     }
 
-  if (swap_p && CONSTANT_P (y))
-    y = force_reg (GET_MODE (x), y);
-  else if (CONSTANT_P (y))
+  if (CONSTANT_P (y))
     {
-      int ok_const_p =
-	(code == LTU || code == LEU || code == GTU || code == GEU)
-	  ? uint16_operand (y, GET_MODE (y))
-	  : reg_or_cmp_int16_operand (y, GET_MODE (y));
-      if (! ok_const_p)
+      if (must_swap)
 	y = force_reg (GET_MODE (x), y);
+      else
+	{
+	  int ok_const =
+	    (code == LTU || code == LEU || code == GTU || code == GEU)
+	    ? uint16_operand (y, GET_MODE (y))
+	    : reg_or_cmp_int16_operand (y, GET_MODE (y));
+	  
+	  if (! ok_const)
+	    y = force_reg (GET_MODE (x), y);
+	}
     }
 
   switch (compare_code)
     {
     case EQ :
-      emit_insn (gen_cmp_eqsi_insn (swap_p ? y : x, swap_p ? x : y));
+      emit_insn (gen_cmp_eqsi_insn (must_swap ? y : x, must_swap ? x : y));
       break;
     case LT :
-      emit_insn (gen_cmp_ltsi_insn (swap_p ? y : x, swap_p ? x : y));
+      emit_insn (gen_cmp_ltsi_insn (must_swap ? y : x, must_swap ? x : y));
       break;
     case LTU :
-      emit_insn (gen_cmp_ltusi_insn (swap_p ? y : x, swap_p ? x : y));
+      emit_insn (gen_cmp_ltusi_insn (must_swap ? y : x, must_swap ? x : y));
       break;
     }
 
@@ -1289,8 +1222,8 @@ m32r_compute_frame_size (size)
 
 void
 m32r_output_function_prologue (file, size)
-     FILE *file;
-     int size;
+     FILE * file;
+     int    size;
 {
   int regno;
   int total_size, frame_size;
@@ -1388,8 +1321,8 @@ m32r_output_function_prologue (file, size)
 
 void
 m32r_output_function_epilogue (file, size)
-     FILE *file;
-     int size;
+     FILE * file;
+     int    size;
 {
   int regno;
   int noepilogue = FALSE;
@@ -1423,8 +1356,8 @@ m32r_output_function_epilogue (file, size)
       unsigned int args_size = current_frame_info.args_size;
       unsigned int gmask = current_frame_info.gmask;
       int can_trust_sp_p = !current_function_calls_alloca;
-      char *sp_str = reg_names[STACK_POINTER_REGNUM];
-      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      char * sp_str = reg_names[STACK_POINTER_REGNUM];
+      char * fp_str = reg_names[FRAME_POINTER_REGNUM];
 
       /* The first thing to do is point the sp at the bottom of the register
 	 save area.  */
@@ -1525,7 +1458,7 @@ m32r_initialize_trampoline (tramp, fnaddr, cxt)
 
 void
 m32r_asm_file_start (file)
-     FILE *file;
+     FILE * file;
 {
   if (flag_verbose_asm)
     fprintf (file, "%s M32R/D special options: -G %d\n",
@@ -1538,9 +1471,9 @@ m32r_asm_file_start (file)
 
 void
 m32r_print_operand (file, x, code)
-     FILE *file;
-     rtx x;
-     int code;
+     FILE * file;
+     rtx    x;
+     int    code;
 {
   switch (code)
     {
@@ -1655,7 +1588,7 @@ m32r_print_operand (file, x, code)
       break;
 
     case 'U' :
-      /* FIXME: wip */
+      /* ??? wip */
       /* Output a load/store with update indicator if appropriate.  */
       if (GET_CODE (x) == MEM)
 	{
@@ -1750,11 +1683,12 @@ m32r_print_operand (file, x, code)
 
 void
 m32r_print_operand_address (file, addr)
-     FILE *file;
-     rtx addr;
+     FILE * file;
+     rtx    addr;
 {
-  register rtx base, index = 0;
-  int offset = 0;
+  register rtx base;
+  register rtx index = 0;
+  int          offset = 0;
 
   switch (GET_CODE (addr))
     {
