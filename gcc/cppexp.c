@@ -343,7 +343,7 @@ parse_defined (pfile)
 {
   int paren = 0, len;
   U_CHAR *tok;
-  enum cpp_token token;
+  enum cpp_ttype token;
   struct operation op;
   long old_written = CPP_WRITTEN (pfile);
 
@@ -413,7 +413,7 @@ lex (pfile, skip_evaluation)
      int skip_evaluation;
 {
   const struct token *toktab;
-  enum cpp_token token;
+  enum cpp_ttype token;
   struct operation op;
   U_CHAR *tok_start, *tok_end;
   long old_written;

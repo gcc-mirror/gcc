@@ -124,7 +124,7 @@ cpp_scan_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = CPP_BUFFER (pfile);
-  enum cpp_token token;
+  enum cpp_ttype token;
   if (CPP_OPTION (pfile, no_output))
     {
       long old_written = CPP_WRITTEN (pfile);
@@ -209,25 +209,6 @@ cpp_expand_to_buffer (pfile, buf, length)
   CPP_NUL_TERMINATE (pfile);
 }
 
-void
-cpp_buf_line_and_col (pbuf, linep, colp)
-     register cpp_buffer *pbuf;
-     long *linep, *colp;
-{
-  if (pbuf)
-    {
-      *linep = pbuf->lineno;
-      if (colp)
-	*colp = pbuf->cur - pbuf->line_base;
-    }
-  else
-    {
-      *linep = 0;
-      if (colp)
-	*colp = 0;
-    }
-}
-
 /* Return the topmost cpp_buffer that corresponds to a file (not a macro).  */
 
 cpp_buffer *
@@ -248,11 +229,12 @@ static void
 skip_block_comment (pfile)
      cpp_reader *pfile;
 {
-  long line, col;
+  unsigned int line, col;
   const U_CHAR *limit, *cur;
 
   FORWARD(1);
-  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
+  line = CPP_BUF_LINE (CPP_BUFFER (pfile));
+  col = CPP_BUF_COL (CPP_BUFFER (pfile));
   limit = CPP_BUFFER (pfile)->rlimit;
   cur = CPP_BUFFER (pfile)->cur;
 
@@ -531,10 +513,11 @@ skip_string (pfile, c)
      cpp_reader *pfile;
      int c;
 {
-  long start_line, start_column;
+  unsigned int start_line, start_column;
   unsigned int null_count = 0;
 
-  cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
+  start_line = CPP_BUF_LINE (CPP_BUFFER (pfile));
+  start_column = CPP_BUF_COL (CPP_BUFFER (pfile));
   while (1)
     {
       int cc = GETC();
@@ -716,12 +699,12 @@ _cpp_parse_assertion (pfile)
 /* Get the next token, and add it to the text in pfile->token_buffer.
    Return the kind of token we got.  */
 
-enum cpp_token
+enum cpp_ttype
 _cpp_lex_token (pfile)
      cpp_reader *pfile;
 {
   register int c, c2, c3;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
  get_next:
   c = GETC();
@@ -1181,11 +1164,11 @@ maybe_macroexpand (pfile, written)
   return 1;
 }
 
-enum cpp_token
+enum cpp_ttype
 cpp_get_token (pfile)
      cpp_reader *pfile;
 {
-  enum cpp_token token;
+  enum cpp_ttype token;
   long written = CPP_WRITTEN (pfile);
 
  get_next:
@@ -1253,14 +1236,14 @@ cpp_get_token (pfile)
 
 /* Like cpp_get_token, but skip spaces and comments.  */
 
-enum cpp_token
+enum cpp_ttype
 cpp_get_non_space_token (pfile)
      cpp_reader *pfile;
 {
   int old_written = CPP_WRITTEN (pfile);
   for (;;)
     {
-      enum cpp_token token = cpp_get_token (pfile);
+      enum cpp_ttype token = cpp_get_token (pfile);
       if (token != CPP_COMMENT && token != CPP_HSPACE && token != CPP_VSPACE)
 	return token;
       CPP_SET_WRITTEN (pfile, old_written);
@@ -1274,12 +1257,12 @@ cpp_get_non_space_token (pfile)
    XXX This function will exist only till collect_expansion doesn't
    need to see whitespace anymore, then it'll be merged with
    _cpp_get_directive_token (below).  */
-enum cpp_token
+enum cpp_ttype
 _cpp_get_define_token (pfile)
      cpp_reader *pfile;
 {
   long old_written;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
  get_next:
   old_written = CPP_WRITTEN (pfile);
@@ -1340,14 +1323,14 @@ _cpp_get_define_token (pfile)
 /* Just like _cpp_get_define_token except that it discards horizontal
    whitespace.  */
 
-enum cpp_token
+enum cpp_ttype
 _cpp_get_directive_token (pfile)
      cpp_reader *pfile;
 {
   int old_written = CPP_WRITTEN (pfile);
   for (;;)
     {
-      enum cpp_token token = _cpp_get_define_token (pfile);
+      enum cpp_ttype token = _cpp_get_define_token (pfile);
       if (token != CPP_COMMENT && token != CPP_HSPACE)
 	return token;
       CPP_SET_WRITTEN (pfile, old_written);

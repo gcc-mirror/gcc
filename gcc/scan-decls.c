@@ -45,7 +45,7 @@ skip_to_closing_brace (pfile)
   int nesting = 1;
   for (;;)
     {
-      enum cpp_token token = cpp_get_token (pfile);
+      enum cpp_ttype token = cpp_get_token (pfile);
       if (token == CPP_EOF)
 	break;
       if (token == CPP_LBRACE)
@@ -90,7 +90,7 @@ scan_decls (pfile, argc, argv)
      decl-specs, or prev_id_start marks the start of the declarator.  */
   int declarator_start;
   int prev_id_start, prev_id_end = 0;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
  new_statement:
   CPP_SET_WRITTEN (pfile, 0);
@@ -135,8 +135,7 @@ scan_decls (pfile, argc, argv)
 	      int nesting = 1;
 	      int have_arg_list = 0;
 	      cpp_buffer *fbuf = cpp_file_buffer (pfile);
-	      long func_lineno;
-	      cpp_buf_line_and_col (fbuf, &func_lineno, NULL);
+	      unsigned int func_lineno = CPP_BUF_LINE (fbuf);
 	      for (;;)
 		{
 		  token = cpp_get_token (pfile);

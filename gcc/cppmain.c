@@ -39,7 +39,7 @@ main (argc, argv)
   char *p;
   cpp_reader *pfile = &parse_in;
   int argi = 1;  /* Next argument to handle.  */
-  enum cpp_token kind;
+  enum cpp_ttype kind;
   FILE *out;
   const char *out_fname;
 
