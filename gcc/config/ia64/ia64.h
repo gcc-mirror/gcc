@@ -44,8 +44,13 @@ do {						\
 	  builtin_define("__BIG_ENDIAN__");	\
 } while (0)
 
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
 #define EXTRA_SPECS \
-  { "asm_extra", ASM_EXTRA_SPEC },
+  { "asm_extra", ASM_EXTRA_SPEC }, \
+  SUBTARGET_EXTRA_SPECS
 
 #define CC1_SPEC "%(cc1_cpu) "
 
@@ -2179,8 +2184,6 @@ do {									\
 { "ar_lc_reg_operand", {REG}},						\
 { "ar_ccv_reg_operand", {REG}},						\
 { "ar_pfs_reg_operand", {REG}},						\
-{ "general_xfmode_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
-{ "destination_xfmode_operand", {SUBREG, REG, MEM}},			\
 { "xfreg_or_fp01_operand", {REG, CONST_DOUBLE}},			\
 { "basereg_operand", {SUBREG, REG}},
 

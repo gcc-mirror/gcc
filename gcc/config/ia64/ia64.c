@@ -955,26 +955,6 @@ ar_pfs_reg_operand (register rtx op, enum machine_mode mode)
 	  && REGNO (op) == AR_PFS_REGNUM);
 }
 
-/* Like general_operand, but don't allow (mem (addressof)).  */
-
-int
-general_xfmode_operand (rtx op, enum machine_mode mode)
-{
-  if (! general_operand (op, mode))
-    return 0;
-  return 1;
-}
-
-/* Similarly.  */
-
-int
-destination_xfmode_operand (rtx op, enum machine_mode mode)
-{
-  if (! destination_operand (op, mode))
-    return 0;
-  return 1;
-}
-
 /* Similarly.  */
 
 int
