@@ -1,5 +1,10 @@
 2004-05-01  Falk Hueffner  <falk@debian.org>
 
+	* config/alpha/alpha.md (builtin_insbl, builtin_inswl,
+	builtin_insll): Disallow 0 as first input operand.
+
+2004-05-01  Falk Hueffner  <falk@debian.org>
+
 	* config/alpha/alpha.c (alpha_rtx_costs): Fix shiftadd costs.
 
 2004-05-01  Ulrich Weigand  <uweigand@de.ibm.com>
