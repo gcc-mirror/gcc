@@ -3112,13 +3112,9 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	  arg2 = convert_from_reference (arg2);
 	  /* That may not quite have done the trick.  If the two types
 	     are cv-qualified variants of one another, we will have
-	     just used an IDENTITY_CONV.  (There's no conversion from
-	     an lvalue of one class type to an lvalue of another type,
-	     even a cv-qualified variant, and we don't want to lose
-	     lvalue-ness here.)  So, we manually add a NOP_EXPR here
-	     if necessary.  */
+	     just used an IDENTITY_CONV.  */
 	  if (!same_type_p (TREE_TYPE (arg2), arg3_type))
-	    arg2 = build1 (NOP_EXPR, arg3_type, arg2);
+	    arg2 = convert (arg3_type, arg2);
 	  arg2_type = TREE_TYPE (arg2);
 	}
       else if (conv3 && !ICS_BAD_FLAG (conv3))
@@ -3126,7 +3122,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	  arg3 = convert_like (conv3, arg3);
 	  arg3 = convert_from_reference (arg3);
 	  if (!same_type_p (TREE_TYPE (arg3), arg2_type))
-	    arg3 = build1 (NOP_EXPR, arg2_type, arg3);
+	    arg3 = convert (arg2_type, arg3);
 	  arg3_type = TREE_TYPE (arg3);
 	}
     }

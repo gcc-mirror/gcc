@@ -1,3 +1,9 @@
+2003-03-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9440
+	* call.c (build_conditional_expr): Use convert rather than an
+	explicit NOP_EXPR.
+
 2003-03-02  Matt Austern  <austern@apple.com>
 
 	* decl.c (cp_binding_level): Add static_decls varray member.
