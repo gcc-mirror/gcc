@@ -833,10 +833,11 @@ static void
 dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
 			     rtx addr, const char *label, int number)
 {
-  int line = sym ? DECL_SOURCE_LINE (sym) : 0;
+  int line ATTRIBUTE_UNUSED;
   char *str;
   size_t len;
 
+  line = sym ? DECL_SOURCE_LINE (sym) : 0;
   if (DBX_CONTIN_LENGTH > 0)
     {
       char *chunk;
