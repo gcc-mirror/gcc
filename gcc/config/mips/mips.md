@@ -8769,7 +8769,7 @@ move\\t%0,%z4\\n\\
   /* ??? I don't know why this is necessary.  This works around an
      assembler problem that appears when a label is defined, then referenced
      in a switch table, then used in a `j' instruction.  */
-  else if (mips_abi != ABI_32)
+  else if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     return \"%*b\\t%l0\";
   else	
     return \"%*j\\t%l0\";
@@ -8960,7 +8960,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (mips_abi == ABI_32)
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
