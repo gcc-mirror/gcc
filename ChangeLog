@@ -1,5 +1,11 @@
 2004-11-11  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 18423
+	* configure.in: Remove all instances of build-fixincludes from
+	noconfigdirs.
+	(build_configargs): Supply --target to subdirectories.
+	* configure: Regenerate.
+
 	* Makefile.def: Make gcc install depend on fixincludes install.
 	* Makefile.in: Regenerate.
 
