@@ -311,23 +311,6 @@ Boston, MA 02111-1307, USA.  */
 /* Output a source line for the debugger.  */
 /* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
 
-/* Output a section name.  */
-#ifndef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		     \
-  do									     \
-    {									     \
-      if (strcmp (NAME, ".text") != 0 && strcmp (NAME, ".data") != 0) 	     \
-        {                                                             	     \
-          fprintf (stderr,						     \
-"Section attribute supported only for sections \".text\" and \".data\".\n"); \
-          abort ();                                                   	     \
-        }                                                                    \
-      else                                                            	     \
-        fprintf (FILE, "%s\n", NAME);                               	     \
-    }									     \
-  while (0)
-#endif
-
 /* Output a #ident directive.  */
 #ifndef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(STREAM,STRING)  \
