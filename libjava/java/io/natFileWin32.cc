@@ -1,6 +1,6 @@
 // natFileWin32.cc - Native part of File class.
 
-/* Copyright (C) 1998, 1999, 2002  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2002, 2003  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -119,7 +119,8 @@ java::io::File::getCanonicalPath (void)
 jboolean
 java::io::File::isAbsolute (void)
 {
-  if (path->charAt(0) == '/' || path->charAt(0) == '\\')
+  if (path->length() > 0
+      && (path->charAt(0) == '/' || path->charAt(0) == '\\'))
     return true;
   if (path->length() < 3)
     return false;
