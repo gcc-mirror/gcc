@@ -3749,7 +3749,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (size)
 	    {
 	      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-	      STRIP_NOPS (size);
+	      STRIP_TYPE_NOPS (size);
 
 	      if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
 		  && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE)
@@ -5050,7 +5050,7 @@ build_enumerator (name, value)
 
   /* Remove no-op casts from the value.  */
   if (value)
-    STRIP_NOPS (value);
+    STRIP_TYPE_NOPS (value);
 
   if (value != 0 && TREE_CODE (value) != INTEGER_CST)
     {
