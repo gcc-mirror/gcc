@@ -131,6 +131,7 @@ static void pa_asm_out_constructor (rtx, int);
 static void pa_asm_out_destructor (rtx, int);
 #endif
 static void pa_init_builtins (void);
+static rtx hppa_builtin_saveregs (void);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel (const char *)
@@ -148,6 +149,7 @@ static void output_deferred_plabels (void);
 #ifdef HPUX_LONG_DOUBLE_LIBRARY
 static void pa_hpux_init_libfuncs (void);
 #endif
+static rtx pa_struct_value_rtx (tree, int);
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -260,6 +262,19 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS pa_hpux_init_libfuncs
 #endif
+
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX pa_struct_value_rtx
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY pa_return_in_memory
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5836,7 +5851,7 @@ function_arg_padding (enum machine_mode mode, tree type)
    to determine if stdargs or varargs is used and fill in an initial
    va_list.  A pointer to this constructor is returned.  */
 
-struct rtx_def *
+static rtx
 hppa_builtin_saveregs (void)
 {
   rtx offset, dest;
@@ -8748,7 +8763,7 @@ insn_refs_are_delayed (rtx insn)
    the mode is SF or DF. Then the value is returned in fr4 (32).
 
    This must perform the same promotions as PROMOTE_MODE, else
-   PROMOTE_FUNCTION_RETURN will not work correctly.
+   TARGET_PROMOTE_FUNCTION_RETURN will not work correctly.
 
    Small structures must be returned in a PARALLEL on PA64 in order
    to match the HP Compiler ABI.  */
@@ -9077,4 +9092,27 @@ pa_globalize_label (FILE *stream, const char *name)
     fputs (",DATA\n", stream);
   }
 }
+
+static rtx
+pa_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		     int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, PA_STRUCT_VALUE_REGNUM);
+}
+
+bool
+pa_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  /* SOM ABI says that objects larger than 64 bits are returned in memory.
+     PA64 ABI says that objects larger than 128 bits are returned in memory.
+     Note, int_size_in_bytes can return -1 if the size of the object is
+     variable or larger than the maximum value that can be expressed as
+     a HOST_WIDE_INT.   It can also return zero for an empty type.  The
+     simplest way to handle variable and empty types is to pass them in
+     memory.  This avoids problems in defining the boundaries of argument
+     slots, allocating registers, etc.  */
+  return (int_size_in_bytes (type) > (TARGET_64BIT ? 16 : 8)
+	  || int_size_in_bytes (type) <= 0);
+}
+
 #include "gt-pa.h"
