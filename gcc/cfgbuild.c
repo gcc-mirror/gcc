@@ -121,7 +121,7 @@ control_flow_insn_p (rtx insn)
       return (flag_non_call_exceptions && can_throw_internal (insn));
 
     case BARRIER:
-      /* It is nonsence to reach barrier when looking for the
+      /* It is nonsense to reach barrier when looking for the
          end of basic block, but before dead code is eliminated
          this may happen.  */
       return false;

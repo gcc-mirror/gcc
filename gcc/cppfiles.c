@@ -119,7 +119,7 @@ struct _cpp_file
 /* A singly-linked list for all searches for a given file name, with
    its head pointed to by a slot in FILE_HASH.  The file name is what
    appeared between the quotes in a #include directive; it can be
-   determined implicity from the hash table location or explicitly
+   determined implicitly from the hash table location or explicitly
    from FILE->name.
 
    FILE is a structure containing details about the file that was
@@ -494,7 +494,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 }
 
 /* Convenience wrapper around read_file_guts that opens the file if
-   necessary and closes the file desciptor after reading.  FILE must
+   necessary and closes the file descriptor after reading.  FILE must
    have been passed through find_file() at some stage.  */
 static bool
 read_file (cpp_reader *pfile, _cpp_file *file)

@@ -8364,7 +8364,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 
 #endif
 
-/* Perform constant folding and related simplification of intializer
+/* Perform constant folding and related simplification of initializer
    expression EXPR.  This behaves identically to "fold" but ignores
    potential run-time traps and exceptions that fold must preserve.  */
 

@@ -3823,7 +3823,7 @@ build_function_type (tree value_type, tree arg_types)
   return t;
 }
 
-/* Build a function type.  The RETURN_TYPE is the type retured by the
+/* Build a function type.  The RETURN_TYPE is the type returned by the
    function.  If additional arguments are provided, they are
    additional argument types.  The list of argument types must always
    be terminated by NULL_TREE.  */

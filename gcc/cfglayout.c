@@ -795,7 +795,7 @@ fixup_reorder_chain (void)
   prev_bb->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = prev_bb;
 
-  /* Anoying special case - jump around dead jumptables left in the code.  */
+  /* Annoying special case - jump around dead jumptables left in the code.  */
   FOR_EACH_BB (bb)
     {
       edge e;

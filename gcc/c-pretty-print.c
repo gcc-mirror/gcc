@@ -30,9 +30,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
    codes we used to have in the past.  Following a structured
-   approach (preferaably the official grammars) is believed to make it
-   much easier o add extensions and nifty pretty-printing effects that
-   takes expresssion or declaration contexts into account.  */
+   approach (preferably the official grammars) is believed to make it
+   much easier to add extensions and nifty pretty-printing effects that
+   takes expression or declaration contexts into account.  */
 
 
 #define pp_c_whitespace(PP)           \
@@ -299,7 +299,7 @@ pp_c_simple_type_specifier (c_pretty_printer ppi, tree t)
 
 
   Implementation note:  Because of the non-linearities in array or
-  function declarations, this routinie prints not just the
+  function declarations, this routine prints not just the
   specifier-qualifier-list of such entities or types of such entities,
   but also the 'pointer' production part of their declarators.  The
   remaining part is done by pp_declarator or pp_c_abstract_declarator.  */

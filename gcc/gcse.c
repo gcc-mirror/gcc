@@ -4530,7 +4530,7 @@ find_implicit_sets (void)
 
   count = 0;
   FOR_EACH_BB (bb)
-    /* Check for more than one sucessor.  */
+    /* Check for more than one successor.  */
     if (bb->succ && bb->succ->succ_next)
       {
 	cond = fis_get_condition (bb->end);
@@ -6756,7 +6756,7 @@ trim_ld_motion_mems (void)
 /* This routine will take an expression which we are replacing with
    a reaching register, and update any stores that are needed if
    that expression is in the ld_motion list.  Stores are updated by
-   copying their SRC to the reaching register, and then storeing
+   copying their SRC to the reaching register, and then storing
    the reaching register into the store location. These keeps the
    correct value in the reaching register for the loads.  */
 

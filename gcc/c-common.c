@@ -5639,7 +5639,7 @@ c_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
       return NULL;
     }
   /* Assume that constants and references counts nothing.  These should
-     be majorized by amount of operations amoung them we count later
+     be majorized by amount of operations among them we count later
      and are common target of CSE and similar optimizations.  */
   if (TREE_CODE_CLASS (TREE_CODE (x)) == 'c'
       || TREE_CODE_CLASS (TREE_CODE (x)) == 'r')

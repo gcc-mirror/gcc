@@ -217,7 +217,7 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
         default:
           break;
         }
-      /* We don't support precision behond that of "long long".  */
+      /* We don't support precision beyond that of "long long".  */
       if (precision > 2)
         abort();
 

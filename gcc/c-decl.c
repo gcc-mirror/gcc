@@ -6690,7 +6690,7 @@ make_pointer_declarator (tree type_quals_attrs, tree target)
 /* A wrapper around lhd_set_decl_assembler_name that gives static
    variables their C names if they are at file scope and only one
    translation unit is being compiled, for backwards compatibility
-   with certain bizzare assembler hacks (like crtstuff.c).  */
+   with certain bizarre assembler hacks (like crtstuff.c).  */
 
 void
 c_static_assembler_name (tree decl)
