@@ -1,6 +1,6 @@
 // Test that non-variadic function calls using thunks and PIC work right.
 // Skip if not native
-// Special g++ Options: -fvtable-thunks -fPIC
+// Special g++ Options: -fPIC
 // excess errors test - XFAIL m68k-motorola-sysv m88k-motorola-sysv3
 
 struct A {

@@ -1,5 +1,4 @@
 // Build don't link: 
-// Special g++ Options: -fvtable-thunks
 // GROUPS passed vtable
 struct C1
 {

@@ -3,8 +3,6 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Fredrik Öhrström <d92-foh@nada.kth.se>
 
-// Special g++ Options: -fvtable-thunks
-
 #include <cstdlib>
 
 using namespace std;

@@ -463,7 +463,6 @@ lang_f_options[] =
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"handle-exceptions", &flag_exceptions, 1},
   {"honor-std", &flag_honor_std, 1},
-  {"huge-objects", &flag_huge_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
@@ -475,8 +474,8 @@ lang_f_options[] =
   {"repo", &flag_use_repository, 1},
   {"rtti", &flag_rtti, 1},
   {"stats", &flag_detailed_statistics, 1},
+  {"vtable-gc", &flag_vtable_gc, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
-  {"vtable-thunks", &flag_vtable_thunks, 1},
   {"weak", &flag_weak, 1}
 };
 
@@ -488,13 +487,14 @@ static const char * const unsupported_options[] = {
   "cond-mismatch",
   "enum-int-equiv",
   "guiding-decls",
+  "huge-objects",
   "labels-ok",
   "new-abi",
   "nonnull-objects",
   "squangle",
   "strict-prototype",
   "this-is-variable",
-  "vtable-gc",
+  "vtable-thunks",
   "xref"
 };
 
@@ -2354,7 +2354,7 @@ maybe_make_one_only (decl)
      after a weak one is an error.  Also, not making explicit
      instantiations one_only means that we can end up with two copies of
      some template instantiations. */
-  if (! supports_one_only ())
+  if (! flag_weak)
     return;
 
   /* We can't set DECL_COMDAT on functions, or finish_file will think
