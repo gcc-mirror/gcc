@@ -3166,8 +3166,8 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 
   if (TARGET_BWX && size == 2)
     {
-      meml = adjust_address (mem, QImode, 0);
-      memh = adjust_address (mem, QImode, 1);
+      meml = adjust_address (mem, QImode, ofs);
+      memh = adjust_address (mem, QImode, ofs+1);
       if (BYTES_BIG_ENDIAN)
 	tmp = meml, meml = memh, memh = tmp;
       extl = gen_reg_rtx (DImode);
@@ -3328,8 +3328,8 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
       else
 	dstl = dsth = const0_rtx;
 
-      meml = adjust_address (dst, QImode, 0);
-      memh = adjust_address (dst, QImode, 1);
+      meml = adjust_address (dst, QImode, ofs);
+      memh = adjust_address (dst, QImode, ofs+1);
       if (BYTES_BIG_ENDIAN)
 	addr = meml, meml = memh, memh = addr;
 
