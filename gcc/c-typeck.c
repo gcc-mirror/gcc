@@ -4494,7 +4494,7 @@ static int spelling_size;		/* Size of the spelling stack.  */
    Alternative to SAVE_SPELLING_STACK.  */
 
 #define SPELLING_DEPTH() (spelling - spelling_base)
-#define RESTORE_SPELLING_DEPTH(depth) (spelling = spelling_base + depth)
+#define RESTORE_SPELLING_DEPTH(DEPTH) (spelling = spelling_base + (DEPTH))
 
 /* Save and restore the spelling stack around arbitrary C code.  */
 
