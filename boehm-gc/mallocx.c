@@ -202,7 +202,7 @@ register int k;
     if (0 == result) {
         return((*GC_oom_fn)(lb));
     } else {
-    	if (init & !GC_debugging_started) {
+    	if (init && !GC_debugging_started) {
 	    BZERO(result, n_blocks * HBLKSIZE);
         }
         return(result);
