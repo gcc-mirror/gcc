@@ -7566,7 +7566,7 @@ if test "${with_included_gettext+set}" = set; then
   withval="$with_included_gettext"
   nls_cv_force_use_gnu_gettext=$withval
 else
-  nls_cv_force_use_gnu_gettext=no
+  nls_cv_force_use_gnu_gettext=yes
 fi
 
       echo "$ac_t""$nls_cv_force_use_gnu_gettext" 1>&6
