@@ -3568,9 +3568,9 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  if (context)
 	    push_decl_namespace (context);
 	  if (current_class_type != NULL_TREE)
-	    template = 
+	    template =
 	      maybe_get_template_decl_from_type_decl
-	      (IDENTIFIER_CLASS_VALUE (d1));
+	      (IDENTIFIER_CLASS_VALUE (d1)));
 	  if (template == NULL_TREE)
 	    template = lookup_name_nonclass (d1);
 	  if (context)
@@ -3650,14 +3650,15 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
   else 
     {
       tree template_type = TREE_TYPE (template);
+      tree gen_tmpl;
       tree type_decl;
       tree found = NULL_TREE;
       int arg_depth;
       int parm_depth;
       int is_partial_instantiation;
 
-      template = most_general_template (template);
-      parmlist = DECL_TEMPLATE_PARMS (template);
+      gen_tmpl = most_general_template (template);
+      parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
       arg_depth = TMPL_ARGS_DEPTH (arglist);
 
@@ -3679,36 +3680,19 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	     TEMPLATE will be `template <class T> template
 	     <class U> struct S1<T>::S2'.  We must fill in the missing
 	     arguments.  */
-	  my_friendly_assert (context != NULL_TREE, 0);
-	  while (!IS_AGGR_TYPE_CODE (TREE_CODE (context))
-		 && context != global_namespace)
-	    context = DECL_REAL_CONTEXT (context);
-
-	  if (context == global_namespace)
-	    /* This is bad.  We cannot get enough arguments, even from
-	       the surrounding context, to resolve this class.  One
-	       case where this might happen is (illegal) code like:
-
-	           template <class U> 
-		   template <class T>
-		   struct S { 
-		     A(const A<T>& a) {}
-		   };  
-	    
-	       We should catch this error sooner (at the opening curly
-	       for `S', but it is better to be safe than sorry here.  */
-	    {
-	      cp_error ("invalid use of `%D'", template);
-	      return error_mark_node;
-	    }
-
-	  arglist = add_to_template_args (TYPE_TI_ARGS (context),
-					  arglist);
+	  arglist 
+	    = add_outermost_template_args (TYPE_TI_ARGS (TREE_TYPE (template)),
+					   arglist);
 	  arg_depth = TMPL_ARGS_DEPTH (arglist);
 	}
 
+      /* Now we should enough arguments.  */
       my_friendly_assert (parm_depth == arg_depth, 0);
       
+      /* From here on, we're only interested in the most general
+	 template.  */
+      template = gen_tmpl;
+
       /* Calculate the BOUND_ARGS.  These will be the args that are
 	 actually tsubst'd into the definition to create the
 	 instantiation.  */
