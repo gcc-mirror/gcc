@@ -2491,13 +2491,15 @@ expand_builtin_stpcpy (arglist, target, mode)
     return 0;
   else
     {
+      tree newarglist;
       tree len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
       if (len == 0)
 	return 0;
 
       len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
-      chainon (arglist, build_tree_list (NULL_TREE, len));
-      return expand_builtin_memcpy (arglist, target, mode, /*endp=*/2);
+      newarglist = copy_list (arglist);
+      chainon (newarglist, build_tree_list (NULL_TREE, len));
+      return expand_builtin_memcpy (newarglist, target, mode, /*endp=*/2);
     }
 }
 
