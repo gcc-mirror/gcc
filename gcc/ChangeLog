@@ -1,8 +1,26 @@
+2001-04-30  Zack Weinberg  <zackw@stanford.edu>
+
+	* dbxout.c, mips-tfile.c, config/mips/mips.c, xcoffout.c:
+	Always include gstab.h, not system stab.h.  Don't provide
+	default definitions of N_CATCH or N_OPT.  Always use the
+	gstab.h variant of STAB_CODE_TYPE.
+	* final.c: Don't include stab.h/gstab.h at all, or provide
+	defaults for N_SLINE and N_SOL.
+
+	* xcoffout.c: Can assume N_MAIN, N_DSLINE, N_BSLINE, N_BINCL,
+	N_EINCL, N_EXCL, N_M2C, N_SCOPE, N_CATCH, and N_OPT are
+	available.
+	* sdbout.c: Always include gsyms.h instead of system syms.h.
+
+	* configure.in: No need to check for stab.h.
+	* configure, config.in: Regenerate.
+	* Makefile.in (final.o): Don't depend on gstab.h.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
-            Richard Henderson  <rth@redhat.com>
-	
+	    Richard Henderson  <rth@redhat.com>
+
 	* extend.texi: Improve documentation of volatile asms.
-	
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.texi: Fix thinko.
@@ -20,7 +38,7 @@
 	(default_conversion): Remove now redundant boolean check.
 
 2001-04-30  Jan Hubicka  <jh@suse.cz>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* regmove.c (try_apply_stack_adjustment): Remove now redundant
 	sanity checks.
@@ -67,7 +85,7 @@
 
 	* config/darwin.h (STANDARD_EXEC_PREFIX): Don't define.
 	(NEXT_OBJC_RUNTIME): Define.
-	
+
 Sat Apr 28 21:02:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtl.h (simplify_gen_relational): Add cmp_mode parameter.
@@ -102,7 +120,7 @@ Sat Apr 28 10:36:23 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-04-28  Martin Kalen  <martin.kalen@todaysystems.com.au>
 
-        * pa.c (FRP): Remove erroneous white space in macro definition.
+	* pa.c (FRP): Remove erroneous white space in macro definition.
 
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
@@ -113,8 +131,8 @@ Sat Apr 28 10:36:23 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
-        * md.texi: Use XX-bit instead of XXbit or XX bit where
-        appropriate.
+	* md.texi: Use XX-bit instead of XXbit or XX bit where
+	appropriate.
 
 2001-04-28  Jens Schweikhardt <schweikh@schweikhardt.net>
 
@@ -442,8 +460,8 @@ Mon Apr 23 14:32:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* ABOUT-GCC-NLS: Now that gettext 0.10.37 is out,
 	require it instead of the CVS version.
-        * cpperror.c (v_message): Put a blank before the macro
-        body to not confuse exgettext.
+	* cpperror.c (v_message): Put a blank before the macro
+	body to not confuse exgettext.
 
 2001-04-21  Mark Mitchell  <mark@codesourcery.com>
 

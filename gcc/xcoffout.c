@@ -36,16 +36,10 @@ Boston, MA 02111-1307, USA.  */
 #ifdef XCOFF_DEBUGGING_INFO
 
 /* This defines the C_* storage classes.  */
-#include <dbxstclass.h>
-
+#include "dbxstclass.h"
 #include "xcoffout.h"
 #include "dbxout.h"
-
-#if defined (USG) || !defined (HAVE_STAB_H)
 #include "gstab.h"
-#else
-#include <stab.h>
-#endif
 
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using xcoff.  */
@@ -196,10 +190,8 @@ stab_to_sclass (stab)
     case N_LCSYM:
       return C_STSYM;
 
-#ifdef N_MAIN
     case N_MAIN:
       UNKNOWN_STAB ("N_MAIN");
-#endif
 
     case N_RSYM:
       return C_RSYM;
@@ -228,30 +220,20 @@ stab_to_sclass (stab)
     case N_SLINE:
       UNKNOWN_STAB ("N_SLINE");
 
-#ifdef N_DSLINE
     case N_DSLINE:
       UNKNOWN_STAB ("N_DSLINE");
-#endif
 
-#ifdef N_BSLINE
     case N_BSLINE:
       UNKNOWN_STAB ("N_BSLINE");
-#endif
 
-#ifdef N_BINCL
     case N_BINCL:
       UNKNOWN_STAB ("N_BINCL");
-#endif
 
-#ifdef N_EINCL
     case N_EINCL:
       UNKNOWN_STAB ("N_EINCL");
-#endif
 
-#ifdef N_EXCL
     case N_EXCL:
       UNKNOWN_STAB ("N_EXCL");
-#endif
 
     case N_LBRAC:
       UNKNOWN_STAB ("N_LBRAC");
@@ -272,25 +254,17 @@ stab_to_sclass (stab)
     case N_PC:
       UNKNOWN_STAB ("N_PC");
 
-#ifdef N_M2C
     case N_M2C:
       UNKNOWN_STAB ("N_M2C");
-#endif
 
-#ifdef N_SCOPE
     case N_SCOPE:
       UNKNOWN_STAB ("N_SCOPE");
-#endif
 
-#ifdef N_CATCH
     case N_CATCH:
       UNKNOWN_STAB ("N_CATCH");
-#endif
 
-#ifdef N_OPT
     case N_OPT:
       UNKNOWN_STAB ("N_OPT");
-#endif
 
     default:
       UNKNOWN_STAB ("?");

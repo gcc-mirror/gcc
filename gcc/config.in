@@ -221,9 +221,6 @@
 /* Define if you have the <nl_types.h> header file.  */
 #undef HAVE_NL_TYPES_H
 
-/* Define if you have the <stab.h> header file.  */
-#undef HAVE_STAB_H
-
 /* Define if you have the <stdbool.h> header file.  */
 #undef HAVE_STDBOOL_H
 

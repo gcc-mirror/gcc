@@ -56,22 +56,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
-
-/* Mips systems use the SDB functions to dump out symbols, but do not
-   supply usable syms.h include files.  Which syms.h file to use is a
-   target parameter so don't use the native one if we're cross compiling.  */
-
-#if defined(USG) && !defined(MIPS) && !defined (hpux) && !defined(_WIN32) && !defined(__linux__) && !defined(__INTERIX) && !defined(CROSS_COMPILE)
-#include <syms.h>
-/* Use T_INT if we don't have T_VOID.  */
-#ifndef T_VOID
-#define T_VOID T_INT
-#endif
-#else
 #include "gsyms.h"
-#endif
-
-/* #include <storclass.h>  used to be this instead of syms.h.  */
 
 /* 1 if PARM is passed to this function in memory.  */
 
