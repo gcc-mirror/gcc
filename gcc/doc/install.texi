@@ -2372,7 +2372,7 @@ additional OpenServer-specific flags.
 
 Systems based on OpenServer before 5.0.4 (@samp{uname -X}
 will tell you what you're running) require TLS597 from
-@uref{ftp://ftp.sco.com/TLS/,,ftp://ftp.sco.com/TLS/}
+@uref{ftp://stage.caldera.com/TLS/,,ftp://stage.caldera.com/TLS/}
 for C++ constructors and destructors to work right.
 
 The system linker in (at least) 5.0.4 and 5.0.5 will sometimes
@@ -2381,8 +2381,8 @@ code.  This can be seen as execution testsuite failures when using
 @option{-fPIC} on @file{921215-1.c}, @file{931002-1.c}, @file{nestfunc-1.c}, and @file{gcov-1.c}.
 For 5.0.5, an updated linker that will cure this problem is
 available.  You must install both
-@uref{ftp://ftp.sco.com/Supplements/rs505a/,,ftp://ftp.sco.com/Supplements/rs505a/}
-and @uref{ftp://ftp.sco.com/SLS/,,OSS499A}.
+@uref{ftp://ftp.sco.com/pub/openserver5/rs505a,,ftp://ftp.sco.com/pub/openserver5/rs505a}
+and @uref{ftp://ftp.sco.com/pub/openserver5,,OSS499A}.
 
 The dynamic linker in OpenServer 5.0.5 (earlier versions may show
 the same problem) aborts on certain G77-compiled programs.  It's particularly
