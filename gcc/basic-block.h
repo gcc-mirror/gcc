@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    that the initial part of a regset that contains information on the
    hard registers is the same format as a HARD_REG_SET.  */
 
-#define REGSET_ELT_TYPE HOST_WIDE_INT
+#define REGSET_ELT_TYPE unsigned HOST_WIDE_INT
 
 /* Define the type for a pointer to a set with a bit for each
    (hard or pseudo) register.  */
