@@ -225,7 +225,7 @@ infodir = @infodir@
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
-exeext = @exeext@
+exeext = @build_exeext@
 
 # Directory in which to put man pages.
 mandir = @mandir@/man1
