@@ -1974,8 +1974,7 @@ final (first, file, optimize, prescan)
 	  max_line = NOTE_LINE_NUMBER (insn);
     }
 
-  line_note_exists = (char *) oballoc (max_line + 1);
-  bzero (line_note_exists, max_line + 1);
+  line_note_exists = (char *) xcalloc (max_line + 1, sizeof (char));
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -2020,6 +2019,8 @@ final (first, file, optimize, prescan)
     add_bb (file);
 
   free_insn_eh_region ();
+  free (line_note_exists);
+  line_note_exists = NULL;
 }
 
 const char *

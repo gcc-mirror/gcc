@@ -19,6 +19,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "gansidecl.h"
+#include "varray.h"
 
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
@@ -40,10 +41,12 @@ struct rtvec_def;
 struct stmt_status;
 union  tree_node;
 struct varasm_status;
-struct varray_head_tag;
 
 /* Constants for general use.  */
 extern char *empty_string;
+
+/* Trees that have been marked, but whose children still need marking.  */
+extern varray_type ggc_pending_trees;
 
 /* Manipulate global roots that are needed between calls to gc.  */
 void ggc_add_root PARAMS ((void *base, int nelt, int size, void (*)(void *)));
@@ -64,7 +67,6 @@ extern void ggc_mark_roots PARAMS ((void));
 
 extern void ggc_mark_rtx_children PARAMS ((struct rtx_def *));
 extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
-extern void ggc_mark_tree_children PARAMS ((union tree_node *));
 
 /* If EXPR is not NULL and previously unmarked, mark it and evaluate
    to true.  Otherwise evaluate to false.  */
@@ -78,11 +80,11 @@ extern void ggc_mark_tree_children PARAMS ((union tree_node *));
       ggc_mark_rtx_children (r__);              \
   } while (0)
 
-#define ggc_mark_tree(EXPR)                     \
-  do {                                          \
-    tree t__ = (EXPR);                          \
-    if (ggc_test_and_set_mark (t__))            \
-      ggc_mark_tree_children (t__);             \
+#define ggc_mark_tree(EXPR)				\
+  do {							\
+    tree t__ = (EXPR);					\
+    if (ggc_test_and_set_mark (t__))			\
+      VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
   } while (0)
 
 #define ggc_mark_rtvec(EXPR)                    \

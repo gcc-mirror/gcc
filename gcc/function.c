@@ -445,6 +445,9 @@ void
 free_after_compilation (f)
      struct function *f;
 {
+  struct temp_slot *ts;
+  struct temp_slot *next;
+
   free_eh_status (f);
   free_expr_status (f);
   free_emit_status (f);
@@ -455,6 +458,13 @@ free_after_compilation (f)
 
   if (f->x_parm_reg_stack_loc)
     free (f->x_parm_reg_stack_loc);
+
+  for (ts = f->x_temp_slots; ts; ts = next)
+    {
+      next = ts->next;
+      free (ts);
+    }
+  f->x_temp_slots = NULL;
 
   f->arg_offset_rtx = NULL;
   f->return_rtx = NULL;
@@ -476,7 +486,6 @@ free_after_compilation (f)
   f->x_parm_birth_insn = NULL;
   f->x_last_parm_insn = NULL;
   f->x_parm_reg_stack_loc = NULL;
-  f->x_temp_slots = NULL;
   f->fixup_var_refs_queue = NULL;
   f->original_arg_vector = NULL;
   f->original_decl_initial = NULL;
@@ -714,7 +723,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
-	      p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
+	      p = (struct temp_slot *) xmalloc (sizeof (struct temp_slot));
 	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
@@ -744,7 +753,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
     {
       HOST_WIDE_INT frame_offset_old = frame_offset;
 
-      p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
+      p = (struct temp_slot *) xmalloc (sizeof (struct temp_slot));
 
       /* We are passing an explicit alignment request to assign_stack_local.
 	 One side effect of that is assign_stack_local will not round SIZE
@@ -935,7 +944,10 @@ combine_temp_slots ()
 	      }
 	    /* Either delete Q or advance past it.  */
 	    if (delete_q)
-	      prev_q->next = q->next;
+	      {
+		prev_q->next = q->next;
+		free (q);
+	      }
 	    else
 	      prev_q = q;
 	  }
@@ -3274,7 +3286,7 @@ purge_addressof (insns)
   /* When we actually purge ADDRESSOFs, we turn REGs into MEMs.  That
      requires a fixup pass over the instruction stream to correct
      INSNs that depended on the REG being a REG, and not a MEM.  But,
-     these fixup passes are slow.  Furthermore, more MEMs are not
+     these fixup passes are slow.  Furthermore, most MEMs are not
      mentioned in very many instructions.  So, we speed up the process
      by pre-calculating which REGs occur in which INSNs; that allows
      us to perform the fixup passes much more quickly.  */

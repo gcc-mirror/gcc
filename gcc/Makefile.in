@@ -762,6 +762,7 @@ REGS_H = regs.h varray.h $(MACHMODE_H)
 INTEGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h basic-block.h
 GCC_H = gcc.h version.h
+GGC_H = ggc.h varray.h
 #
 # Language makefile fragments.
 
@@ -1338,7 +1339,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 # C language specific files.
 
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h ggc.h \
+c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) \
     $(srcdir)/c-parse.h c-tree.h c-common.h input.h flags.h system.h toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.h: $(srcdir)/c-parse.c
@@ -1358,20 +1359,20 @@ $(srcdir)/c-gperf.h: c-parse.gperf
 	exit 1 )
 	 $(SHELL) $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
-c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h ggc.h \
+c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h $(GGC_H) \
     c-lex.h flags.h function.h output.h toplev.h defaults.h
 c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
     flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
-c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h ggc.h \
+c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h $(GGC_H) \
     c-lex.h toplev.h output.h function.h
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
     c-common.h $(srcdir)/c-parse.h $(srcdir)/c-gperf.h c-pragma.h input.h \
-    intl.h flags.h toplev.h output.h mbchar.h ggc.h
+    intl.h flags.h toplev.h output.h mbchar.h $(GGC_H)
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
     c-common.h flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) function.h \
-    defaults.h c-pragma.h toplev.h ggc.h
+    defaults.h c-pragma.h toplev.h $(GGC_H)
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     c-common.h flags.h toplev.h $(EXPR_H)
 mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
@@ -1423,7 +1424,7 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
-	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) ggc.h \
+	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H)
 
 # Language-independent files.
@@ -1464,17 +1465,17 @@ dumpvers: dumpvers.c
 version.o: version.c version.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
-	flags.h ggc.h varray.h hash.h
+	flags.h $(GGC_H) varray.h hash.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	ggc.h varray.h
+	$(GGC_H) varray.h
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	ggc.h varray.h
+	$(GGC_H) varray.h
 
-ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) ggc.h
+ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)
 
-ggc-callbacks.o: ggc-callbacks.c $(CONFIG_H) $(RTL_H) $(TREE_H) ggc.h
+ggc-callbacks.o: ggc-callbacks.c $(CONFIG_H) $(RTL_H) $(TREE_H) $(GGC_H)
 
 obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
@@ -1489,12 +1490,12 @@ prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 convert.o: convert.c $(CONFIG_H) system.h $(TREE_H) flags.h convert.h toplev.h
 
 tree.o : tree.c $(CONFIG_H) system.h $(TREE_H) flags.h function.h toplev.h \
-   ggc.h $(HASHTAB_H)
-print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H) ggc.h
+   $(GGC_H) $(HASHTAB_H)
+print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H) $(GGC_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
-   function.h $(EXPR_H) $(RTL_H) toplev.h ggc.h
+   function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H)
 fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
-   $(RTL_H) ggc.h
+   $(RTL_H) $(GGC_H)
 diagnostic.o : diagnostic.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) tm_p.h flags.h \
    input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h 
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
@@ -1506,7 +1507,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
 
-rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h ggc.h toplev.h
+rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) $(BASIC_BLOCK_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
@@ -1514,20 +1515,20 @@ errors.o : errors.c $(CONFIG_H) system.h errors.h
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \
    function.h defaults.h $(EXPR_H) hard-reg-set.h $(REGS_H) \
-   xcoffout.h output.h c-pragma.h toplev.h dbxout.h sdbout.h ggc.h
+   xcoffout.h output.h c-pragma.h toplev.h dbxout.h sdbout.h $(GGC_H)
 function.o : function.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h insn-codes.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
-   insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h ggc.h
+   insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h $(GGC_H)
 stmt.o : stmt.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h $(EXPR_H) except.h \
-   $(LOOP_H) $(RECOG_H) toplev.h output.h varray.h ggc.h
+   $(LOOP_H) $(RECOG_H) toplev.h output.h varray.h $(GGC_H)
 except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
-   insn-config.h $(RECOG_H) output.h except.h toplev.h intl.h ggc.h
+   insn-config.h $(RECOG_H) output.h except.h toplev.h intl.h $(GGC_H)
 expr.o : expr.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h \
    $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h $(RECOG_H) \
    output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h \
-   ggc.h intl.h
+   $(GGC_H) intl.h
 builtins.o : builtins.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
@@ -1541,7 +1542,7 @@ explow.o : explow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-codes.h toplev.h function.h
 optabs.o : optabs.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) reload.h \
-   toplev.h ggc.h real.h
+   toplev.h $(GGC_H) real.h
 dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h dbxout.h \
    toplev.h
@@ -1554,11 +1555,11 @@ dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h reload.h output.h defaults.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) toplev.h dwarf2out.h varray.h \
-   ggc.h except.h
+   $(GGC_H) except.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
-   flags.h toplev.h output.h dbxout.h ggc.h
+   flags.h toplev.h output.h dbxout.h $(GGC_H)
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
-   function.h $(REGS_H) insn-config.h $(RECOG_H) real.h ggc.h \
+   function.h $(REGS_H) insn-config.h $(RECOG_H) real.h $(GGC_H) \
    $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h toplev.h \
    $(HASHTAB_H)
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
@@ -1571,9 +1572,9 @@ jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
-   output.h function.h cselib.h ggc.h $(srcdir)/../include/obstack.h
+   output.h function.h cselib.h $(GGC_H) $(srcdir)/../include/obstack.h
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
-   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h function.h ggc.h
+   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h function.h $(GGC_H)
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
    function.h output.h toplev.h
@@ -1588,7 +1589,7 @@ ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) $(BASIC_BLOCK_H) \
    output.h insn-config.h
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
-   ggc.h
+   $(GGC_H)
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h $(LOOP_H) insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h cselib.h
@@ -1603,7 +1604,7 @@ combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h
 regclass.o : regclass.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h flags.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(RECOG_H) reload.h real.h \
-   toplev.h function.h output.h ggc.h
+   toplev.h function.h output.h $(GGC_H)
 local-alloc.o : local-alloc.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h $(RECOG_H) \
    output.h function.h insn-attr.h toplev.h
@@ -1625,7 +1626,7 @@ reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h insn-attr.h insn-flags.h \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
-   $(REGS_H) toplev.h output.h $(EXPR_H) insn-flags.h ggc.h function.h \
+   $(REGS_H) toplev.h output.h $(EXPR_H) insn-flags.h $(GGC_H) function.h \
    cselib.h $(TREE_H)
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    $(RECOG_H) output.h reload.h $(REGS_H) hard-reg-set.h flags.h function.h \
@@ -1648,7 +1649,7 @@ dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h
 predict.o: predict.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
-lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) ggc.h
+lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
@@ -1657,7 +1658,7 @@ regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h \
    $(RECOG_H) function.h resource.h
 
-$(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
+$(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h system.h toplev.h function.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)
@@ -1797,7 +1798,7 @@ s-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	touch s-attrtab
 
-insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) ggc.h $(REGS_H) real.h \
+insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h \
     conditions.h hard-reg-set.h insn-config.h insn-flags.h insn-attr.h \
     output.h $(RECOG_H) function.h insn-codes.h system.h toplev.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
@@ -1808,7 +1809,7 @@ s-output : $(md_file) genoutput $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-output.c insn-output.c
 	touch s-output
 
-genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) system.h ggc.h
+genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) system.h $(GGC_H)
 genrtl.c genrtl.h : s-genrtl
 	@true	# force gnu make to recheck modification times.
 
@@ -1902,7 +1903,7 @@ genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEP
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h errors.h ggc.h
+genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h errors.h $(GGC_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
 
 genoutput : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
@@ -1924,7 +1925,7 @@ gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h real.h
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
 # with the rules for rtl.o, alloca.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) \
-  bitmap.h ggc.h toplev.h
+  bitmap.h $(GGC_H) toplev.h
 	rm -f $(HOST_PREFIX)rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c

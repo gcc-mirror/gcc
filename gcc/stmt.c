@@ -539,6 +539,7 @@ mark_goto_fixup (g)
 {
   while (g)
     {
+      ggc_mark (g);
       ggc_mark_rtx (g->before_jump);
       ggc_mark_tree (g->target);
       ggc_mark_tree (g->context);
@@ -1002,7 +1003,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
     {
       /* Ok, a fixup is needed.  Add a fixup to the list of such.  */
       struct goto_fixup *fixup
-	= (struct goto_fixup *) oballoc (sizeof (struct goto_fixup));
+	= (struct goto_fixup *) ggc_alloc_obj (sizeof (struct goto_fixup), 0);
       /* In case an old stack level is restored, make sure that comes
 	 after any pending stack adjust.  */
       /* ?? If the fixup isn't to come at the present position,

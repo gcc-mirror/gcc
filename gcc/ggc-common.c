@@ -33,12 +33,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Statistics about the allocation.  */
 static ggc_statistics *ggc_stats;
 
+/* Trees that have been marked, but whose children still need marking.  */
+varray_type ggc_pending_trees;
+
 static void ggc_mark_rtx_ptr PARAMS ((void *));
 static void ggc_mark_tree_ptr PARAMS ((void *));
 static void ggc_mark_rtx_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_hash_table_ptr PARAMS ((void *));
 static void ggc_mark_string_ptr PARAMS ((void *));
+static void ggc_mark_trees PARAMS ((void));
 static boolean ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
 						       hash_table_key));
 
@@ -174,6 +178,8 @@ ggc_mark_roots ()
 {
   struct ggc_root* x;
   
+  VARRAY_TREE_INIT (ggc_pending_trees, 4096, "ggc_pending_trees");
+
   for (x = roots; x != NULL; x = x->next)
     {
       char *elt = x->base;
@@ -184,6 +190,10 @@ ggc_mark_roots ()
       for (i = 0; i < n; ++i, elt += s)
 	(*cb)(elt);
     }
+
+  /* Mark all the queued up trees, and their children.  */
+  ggc_mark_trees ();
+  VARRAY_FREE (ggc_pending_trees);
 }
 
 /* R had not been previously marked, but has now been marked via
@@ -297,148 +307,155 @@ ggc_mark_rtvec_children (v)
     ggc_mark_rtx (RTVEC_ELT (v, i));
 }
 
-/* T had not been previously marked, but has now been marked via
-   ggc_set_mark.  Now recurse and process the children.  */
+/* Recursively set marks on all of the children of the
+   GCC_PENDING_TREES.  */
 
-void
-ggc_mark_tree_children (t)
-     tree t;
+static void
+ggc_mark_trees ()
 {
-  enum tree_code code = TREE_CODE (t);
-
-  /* Collect statistics, if appropriate.  */
-  if (ggc_stats)
+  while (ggc_pending_trees->elements_used)
     {
-      ++ggc_stats->num_trees[(int) code];
-      ggc_stats->size_trees[(int) code] += ggc_get_size (t);
-    }
+      tree t;
+      enum tree_code code;
 
-  /* Bits from common.  */
-  ggc_mark_tree (TREE_TYPE (t));
-  ggc_mark_tree (TREE_CHAIN (t));
+      t = VARRAY_TOP_TREE (ggc_pending_trees);
+      VARRAY_POP (ggc_pending_trees);
+      code = TREE_CODE (t);
 
-  /* Some nodes require special handling.  */
-  switch (code)
-    {
-    case TREE_LIST:
-      ggc_mark_tree (TREE_PURPOSE (t));
-      ggc_mark_tree (TREE_VALUE (t));
-      return;
+      /* Collect statistics, if appropriate.  */
+      if (ggc_stats)
+	{
+	  ++ggc_stats->num_trees[(int) code];
+	  ggc_stats->size_trees[(int) code] += ggc_get_size (t);
+	}
 
-    case TREE_VEC:
-      {
-	int i = TREE_VEC_LENGTH (t);
-	while (--i >= 0)
-	  ggc_mark_tree (TREE_VEC_ELT (t, i));
-	return;
-      }
+      /* Bits from common.  */
+      ggc_mark_tree (TREE_TYPE (t));
+      ggc_mark_tree (TREE_CHAIN (t));
 
-    case SAVE_EXPR:
-      ggc_mark_tree (TREE_OPERAND (t, 0));
-      ggc_mark_tree (SAVE_EXPR_CONTEXT (t));
-      ggc_mark_rtx (SAVE_EXPR_RTL (t));
-      return;
+      /* Some nodes require special handling.  */
+      switch (code)
+	{
+	case TREE_LIST:
+	  ggc_mark_tree (TREE_PURPOSE (t));
+	  ggc_mark_tree (TREE_VALUE (t));
+	  continue;
 
-    case RTL_EXPR:
-      ggc_mark_rtx (RTL_EXPR_SEQUENCE (t));
-      ggc_mark_rtx (RTL_EXPR_RTL (t));
-      return;
+	case TREE_VEC:
+	  {
+	    int i = TREE_VEC_LENGTH (t);
+	    while (--i >= 0)
+	      ggc_mark_tree (TREE_VEC_ELT (t, i));
+	    continue;
+	  }
 
-    case CALL_EXPR:
-      ggc_mark_tree (TREE_OPERAND (t, 0));
-      ggc_mark_tree (TREE_OPERAND (t, 1));
-      ggc_mark_rtx (CALL_EXPR_RTL (t));
-      return;
+	case SAVE_EXPR:
+	  ggc_mark_tree (TREE_OPERAND (t, 0));
+	  ggc_mark_tree (SAVE_EXPR_CONTEXT (t));
+	  ggc_mark_rtx (SAVE_EXPR_RTL (t));
+	  continue;
 
-    case COMPLEX_CST:
-      ggc_mark_tree (TREE_REALPART (t));
-      ggc_mark_tree (TREE_IMAGPART (t));
-      break;
+	case RTL_EXPR:
+	  ggc_mark_rtx (RTL_EXPR_SEQUENCE (t));
+	  ggc_mark_rtx (RTL_EXPR_RTL (t));
+	  continue;
 
-    case STRING_CST:
-      ggc_mark_string (TREE_STRING_POINTER (t));
-      break;
+	case CALL_EXPR:
+	  ggc_mark_tree (TREE_OPERAND (t, 0));
+	  ggc_mark_tree (TREE_OPERAND (t, 1));
+	  ggc_mark_rtx (CALL_EXPR_RTL (t));
+	  continue;
 
-    case PARM_DECL:
-      ggc_mark_rtx (DECL_INCOMING_RTL (t));
-      break;
+	case COMPLEX_CST:
+	  ggc_mark_tree (TREE_REALPART (t));
+	  ggc_mark_tree (TREE_IMAGPART (t));
+	  break;
 
-    case FIELD_DECL:
-      ggc_mark_tree (DECL_FIELD_BIT_OFFSET (t));
-      break;
+	case STRING_CST:
+	  ggc_mark_string (TREE_STRING_POINTER (t));
+	  break;
 
-    case IDENTIFIER_NODE:
-      ggc_mark_string (IDENTIFIER_POINTER (t));
-      lang_mark_tree (t);
-      return;
+	case PARM_DECL:
+	  ggc_mark_rtx (DECL_INCOMING_RTL (t));
+	  break;
 
-    default:
-      break;
-    }
+	case FIELD_DECL:
+	  ggc_mark_tree (DECL_FIELD_BIT_OFFSET (t));
+	  break;
+
+	case IDENTIFIER_NODE:
+	  ggc_mark_string (IDENTIFIER_POINTER (t));
+	  lang_mark_tree (t);
+	  continue;
+
+	default:
+	  break;
+	}
   
-  /* But in general we can handle them by class.  */
-  switch (TREE_CODE_CLASS (code))
-    {
-    case 'd': /* A decl node.  */
-      ggc_mark_string (DECL_SOURCE_FILE (t));
-      ggc_mark_tree (DECL_SIZE (t));
-      ggc_mark_tree (DECL_SIZE_UNIT (t));
-      ggc_mark_tree (DECL_NAME (t));
-      ggc_mark_tree (DECL_CONTEXT (t));
-      ggc_mark_tree (DECL_ARGUMENTS (t));
-      ggc_mark_tree (DECL_RESULT_FLD (t));
-      ggc_mark_tree (DECL_INITIAL (t));
-      ggc_mark_tree (DECL_ABSTRACT_ORIGIN (t));
-      ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
-      ggc_mark_tree (DECL_SECTION_NAME (t));
-      ggc_mark_tree (DECL_MACHINE_ATTRIBUTES (t));
-      ggc_mark_rtx (DECL_RTL (t));
-      ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
-      ggc_mark_tree (DECL_VINDEX (t));
-      lang_mark_tree (t);
-      break;
+      /* But in general we can handle them by class.  */
+      switch (TREE_CODE_CLASS (code))
+	{
+	case 'd': /* A decl node.  */
+	  ggc_mark_string (DECL_SOURCE_FILE (t));
+	  ggc_mark_tree (DECL_SIZE (t));
+	  ggc_mark_tree (DECL_SIZE_UNIT (t));
+	  ggc_mark_tree (DECL_NAME (t));
+	  ggc_mark_tree (DECL_CONTEXT (t));
+	  ggc_mark_tree (DECL_ARGUMENTS (t));
+	  ggc_mark_tree (DECL_RESULT_FLD (t));
+	  ggc_mark_tree (DECL_INITIAL (t));
+	  ggc_mark_tree (DECL_ABSTRACT_ORIGIN (t));
+	  ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
+	  ggc_mark_tree (DECL_SECTION_NAME (t));
+	  ggc_mark_tree (DECL_MACHINE_ATTRIBUTES (t));
+	  ggc_mark_rtx (DECL_RTL (t));
+	  ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
+	  ggc_mark_tree (DECL_VINDEX (t));
+	  lang_mark_tree (t);
+	  break;
 
-    case 't': /* A type node.  */
-      ggc_mark_tree (TYPE_SIZE (t));
-      ggc_mark_tree (TYPE_SIZE_UNIT (t));
-      ggc_mark_tree (TYPE_ATTRIBUTES (t));
-      ggc_mark_tree (TYPE_VALUES (t));
-      ggc_mark_tree (TYPE_POINTER_TO (t));
-      ggc_mark_tree (TYPE_REFERENCE_TO (t));
-      ggc_mark_tree (TYPE_NAME (t));
-      ggc_mark_tree (TYPE_MIN_VALUE (t));
-      ggc_mark_tree (TYPE_MAX_VALUE (t));
-      ggc_mark_tree (TYPE_NEXT_VARIANT (t));
-      ggc_mark_tree (TYPE_MAIN_VARIANT (t));
-      ggc_mark_tree (TYPE_BINFO (t));
-      ggc_mark_tree (TYPE_NONCOPIED_PARTS (t));
-      ggc_mark_tree (TYPE_CONTEXT (t));
-      lang_mark_tree (t);
-      break;
+	case 't': /* A type node.  */
+	  ggc_mark_tree (TYPE_SIZE (t));
+	  ggc_mark_tree (TYPE_SIZE_UNIT (t));
+	  ggc_mark_tree (TYPE_ATTRIBUTES (t));
+	  ggc_mark_tree (TYPE_VALUES (t));
+	  ggc_mark_tree (TYPE_POINTER_TO (t));
+	  ggc_mark_tree (TYPE_REFERENCE_TO (t));
+	  ggc_mark_tree (TYPE_NAME (t));
+	  ggc_mark_tree (TYPE_MIN_VALUE (t));
+	  ggc_mark_tree (TYPE_MAX_VALUE (t));
+	  ggc_mark_tree (TYPE_NEXT_VARIANT (t));
+	  ggc_mark_tree (TYPE_MAIN_VARIANT (t));
+	  ggc_mark_tree (TYPE_BINFO (t));
+	  ggc_mark_tree (TYPE_NONCOPIED_PARTS (t));
+	  ggc_mark_tree (TYPE_CONTEXT (t));
+	  lang_mark_tree (t);
+	  break;
 
-    case 'b': /* A lexical block.  */
-      ggc_mark_tree (BLOCK_VARS (t));
-      ggc_mark_tree (BLOCK_SUBBLOCKS (t));
-      ggc_mark_tree (BLOCK_SUPERCONTEXT (t));
-      ggc_mark_tree (BLOCK_ABSTRACT_ORIGIN (t));
-      break;
+	case 'b': /* A lexical block.  */
+	  ggc_mark_tree (BLOCK_VARS (t));
+	  ggc_mark_tree (BLOCK_SUBBLOCKS (t));
+	  ggc_mark_tree (BLOCK_SUPERCONTEXT (t));
+	  ggc_mark_tree (BLOCK_ABSTRACT_ORIGIN (t));
+	  break;
 
-    case 'c': /* A constant.  */
-      ggc_mark_rtx (TREE_CST_RTL (t));
-      break;
+	case 'c': /* A constant.  */
+	  ggc_mark_rtx (TREE_CST_RTL (t));
+	  break;
 
-    case 'r': case '<': case '1':
-    case '2': case 'e': case 's': /* Expressions.  */
-      {
-	int i = tree_code_length[TREE_CODE (t)];
-	while (--i >= 0)
-	  ggc_mark_tree (TREE_OPERAND (t, i));
-	break;
-      }
+	case 'r': case '<': case '1':
+	case '2': case 'e': case 's': /* Expressions.  */
+	  {
+	    int i = tree_code_length[TREE_CODE (t)];
+	    while (--i >= 0)
+	      ggc_mark_tree (TREE_OPERAND (t, i));
+	    break;
+	  }
 
-    case 'x':
-      lang_mark_tree (t);
-      break;
+	case 'x':
+	  lang_mark_tree (t);
+	  break;
+	}
     }
 }
 
