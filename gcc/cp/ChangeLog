@@ -1,3 +1,8 @@
+2002-08-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_class_member_access_expr): Handle COMPOUND_EXPR
+	and COND_EXPR specially; fix error message output.
+
 2002-08-22  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_expr): RETURN_EXPR is now RETURN_STMT_EXPR.

@@ -1859,6 +1859,27 @@ build_class_member_access_expr (tree object, tree member,
   my_friendly_assert (DECL_P (member) || BASELINK_P (member),
 		      20020801);
 
+  /* Transform `(a, b).x' into `a, b.x' and `(a ? b : c).x' into 
+     `a ? b.x : c.x'.  These transformations should not really be
+     necessary, but they are.  */
+  if (TREE_CODE (object) == COMPOUND_EXPR)
+    {
+      result = build_class_member_access_expr (TREE_OPERAND (object, 1),
+					       member, access_path, 
+					       preserve_reference);
+      return build (COMPOUND_EXPR, TREE_TYPE (result), 
+		    TREE_OPERAND (object, 0), result);
+    }
+  else if (TREE_CODE (object) == COND_EXPR)
+    return (build_conditional_expr
+	    (TREE_OPERAND (object, 0),
+	     build_class_member_access_expr (TREE_OPERAND (object, 1),
+					     member, access_path,
+					     preserve_reference),
+	     build_class_member_access_expr (TREE_OPERAND (object, 2),
+					     member, access_path,
+					     preserve_reference)));
+
   /* [expr.ref]
 
      The type of the first expression shall be "class object" (of a
@@ -2135,7 +2156,7 @@ finish_class_member_access_expr (tree object, tree name)
 	  if (TREE_CODE (scope) == NAMESPACE_DECL)
 	    {
 	      error ("`%D::%D' is not a member of `%T'", 
-		     scope, member, object_type);
+		     scope, name, object_type);
 	      return error_mark_node;
 	    }
 
