@@ -1,7 +1,11 @@
+2001-01-14  Andreas Jaeger  <aj@suse.de>
+
+	* libio/libio.h: Add test for glibc 2.0.
+
 2001-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/djgpp/bits/*: Fix dates.
-	
+
 	* include/bits/basic_string.h (_S_find(const _CharT* __beg, const
 	_CharT* __end, _CharT __c): Remove.
 	* include/bits/basic_string.tcc: Substitute traits::find for _S_find.
@@ -16,8 +20,8 @@
 	* configure.target: set os_include_dir to config/os/djgpp under DJGPP.
 	* configure: regenerated.
 	* config/os/djgpp, config/os/djgpp/bits: new directories.
-	* config/os/djgpp/bits/ctype_base.h, 
-	config/os/djgpp/bits/ctype_inline.h, 
+	* config/os/djgpp/bits/ctype_base.h,
+	config/os/djgpp/bits/ctype_inline.h,
 	config/os/djgpp/bits/ctype_noninline.h,
 	config/os/djgpp/bits/os_defines.h: new files.
 
@@ -81,13 +85,13 @@
 	* include/bits/fpos.h (fpos:::fpos(streamoff __pos)): Explicitly
 	initialize mbstate_t member, name offset data members *off, not pos.
 	* include/bits/fstream.tcc (filebuf::filebuf): Same.
-	
+
 2001-01-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	reported by Chris G. Demetriou <cgd@sibyte.com>
 	* configure.in: Change -linux-* to -linux*.
 	* configure: Regenerate.
-	
+
 2001-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fix 27_io/filebuf_members.cc
@@ -103,7 +107,7 @@
 	to ios_base::Init.
 	* src/ios.cc (ios_base::Init::Init): Initialize here.
 	(ios_base::sync_with_stdio): Set here.
-	
+
 2001-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
         * config/c_io_stdio.cc (__basic_file<_CharT>::sys_open()): On
@@ -126,7 +130,7 @@
 	* acinclude.m4 (GLIBCPP_ENABLD_CSTDIO): Add in default value.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 	* include/bits/c++config (__GLIBCPP__): Bump version number.
 
 	* ChangeLog: Start new log for year 2001
@@ -136,7 +140,7 @@
 	add commentary.
 
 2001-01-01  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
-	
+
 	* include/c_std/bits/std_cwchar.h: Same.
 	* testsuite/17_intro/header_cwchar.cc: Same.
 	* include/c_std/bits/std_ctime.h: Same.
