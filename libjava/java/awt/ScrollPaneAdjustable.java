@@ -49,7 +49,6 @@ import java.io.Serializable;
  * @since 1.4
  */
 public class ScrollPaneAdjustable
-  extends Scrollbar
   implements Adjustable, Serializable
 {
   private static final long serialVersionUID = -3359745691033257079L;
@@ -60,13 +59,14 @@ public class ScrollPaneAdjustable
   int minimum;
   int maximum;
   int visibleAmount;
-  int unitIncrement;
-  int blockIncrement;
+  int unitIncrement = 1;
+  int blockIncrement = 1;
   AdjustmentListener adjustmentListener;
 
-  ScrollPaneAdjustable (int orientation)
+  ScrollPaneAdjustable (ScrollPane sp, int orientation)
   {
-    throw new Error ("not implemented");
+    this.sp = sp;
+    this.orientation = orientation;
   }
   
   ScrollPaneAdjustable (ScrollPane sp, int orientation, int value, int minimum,
