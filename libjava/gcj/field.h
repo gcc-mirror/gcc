@@ -30,13 +30,13 @@ struct _Jv_Field
   _Jv_ushort		flags;
 
 #ifdef COMPACT_FIELDS
-  short			nameIndex;  /* offset in class's name table */
+  jshort		nameIndex;  /* offset in class's name table */
 #else
   _Jv_ushort		bsize;  /* not really needed ... */
 #endif
 
   union {
-    int			boffset;  /* offset in bytes for instance field */
+    jint		boffset;  /* offset in bytes for instance field */
     void*		addr;  /* address of static field */
   } u;
 
