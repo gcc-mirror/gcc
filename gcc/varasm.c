@@ -538,7 +538,9 @@ make_decl_rtl (decl, asmspec, top_level)
 	 unit that behaved thusly).  So warn the user.  */
       else if (TREE_CODE (decl) == VAR_DECL
 	       && DECL_SECTION_NAME (decl) != NULL_TREE
-	       && DECL_INITIAL (decl) == NULL_TREE)
+	       && DECL_INITIAL (decl) == NULL_TREE
+	       && DECL_COMMON (decl)
+	       && ! flag_no_common)
 	{
 	  warning_with_decl (decl,
 			     "section attribute ignored for uninitialized variable `%s'");
