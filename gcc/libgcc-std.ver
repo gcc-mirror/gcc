@@ -191,7 +191,11 @@ GCC_3.3.1 {
   __gcc_personality_v0
 }
 
-%inherit GCC_3.4 GCC_3.3.1
+%inherit GCC_3.3.2 GCC_3.3.1
+GCC_3.3.2 {
+}
+
+%inherit GCC_3.4 GCC_3.3.2
 GCC_3.4 {
   # bit scanning and counting built-ins
   __clzsi2
