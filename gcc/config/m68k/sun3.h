@@ -147,7 +147,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Provide required defaults for linker -e and -d switches.  */
 
-#define LINK_SPEC "%{!e*:-e start} -dc -dp %{static:-Bstatic} %{assert*}"
+#define LINK_SPEC \
+ "%{nostdlib:%{!e*:-e start}} -dc -dp %{static:-Bstatic} %{assert*}"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
