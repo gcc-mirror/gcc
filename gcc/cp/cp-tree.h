@@ -3101,6 +3101,7 @@ extern tree create_implicit_typedef             PROTO((tree, tree));
 extern tree maybe_push_decl                     PROTO((tree));
 
 /* in decl2.c */
+extern void init_decl2				PROTO((void));
 extern int check_java_method			PROTO((tree));
 extern int lang_decode_option			PROTO((int, char **));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
@@ -3160,6 +3161,9 @@ extern void mark_used				PROTO((tree));
 extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
 extern void finish_static_data_member_decl      PROTO((tree, tree, tree, int, int));
+
+/* in parse.y */
+extern void cp_parse_init			PROTO((void));
 
 /* in errfn.c */
 /* The cp_* functions aren't suitable for ATTRIBUTE_PRINTF. */

@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarfout.h"
 #include "splay-tree.h"
 #include "varray.h"
+#include "ggc.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -5266,4 +5267,13 @@ handle_class_head (aggr, scope, id)
     decl = push_template_decl (decl);
 
   return decl;
+}
+
+/* Initialize decl2.c.  */
+
+void
+init_decl2 ()
+{
+  ggc_add_tree_root (&decl_namespace_list, 1);
+  ggc_add_tree_varray_root (&saved_inlines, 1);
 }
