@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 93, 94, 95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -440,10 +440,6 @@ extern int flag_no_asm;
 /* Nonzero means environment is hosted (i.e., not freestanding) */
 
 extern int flag_hosted;
-
-/* Nonzero means ignore `#ident' directives.  */
-
-extern int flag_no_ident;
 
 /* Nonzero means warn about implicit declarations.  */
 
