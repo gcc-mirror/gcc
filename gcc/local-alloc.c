@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -965,6 +965,7 @@ update_equiv_regs ()
   char *reg_equiv_replace
     = (char *) alloca (max_regno * sizeof *reg_equiv_replace);
   rtx insn;
+  int block, depth;
 
   reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx *));
 
@@ -1114,36 +1115,103 @@ update_equiv_regs ()
 	}
     }
 
-  /* Now scan all regs killed in an insn to see if any of them are registers
-     only used that once.  If so, see if we can replace the reference with
-     the equivalent from.  If we can, delete the initializing reference
-     and this register will go away.  */
-  for (insn = next_active_insn (get_insns ());
-       insn;
-       insn = next_active_insn (insn))
+  /* Now scan all regs killed in an insn to see if any of them are
+     registers only used that once.  If so, see if we can replace the
+     reference with the equivalent from.  If we can, delete the
+     initializing reference and this register will go away.  If we
+     can't replace the reference, and the instruction is not in a
+     loop, then move the register initialization just before the use,
+     so that they are in the same basic block.  */
+  block = -1;
+  depth = 0;
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx link;
 
+      /* Keep track of which basic block we are in.  */
+      if (block + 1 < n_basic_blocks
+	  && basic_block_head[block + 1] == insn)
+	++block;
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	{
+	  if (GET_CODE (insn) == NOTE)
+	    {
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+		++depth;
+	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+		{
+		  --depth;
+		  if (depth < 0)
+		    abort ();
+		}
+	    }
+
+	  continue;
+	}
+
       for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	if (REG_NOTE_KIND (link) == REG_DEAD
-	    /* Make sure this insn still refers to the register.  */
-	    && reg_mentioned_p (XEXP (link, 0), PATTERN (insn)))
-	  {
-	    int regno = REGNO (XEXP (link, 0));
+	{
+	  if (REG_NOTE_KIND (link) == REG_DEAD
+	      /* Make sure this insn still refers to the register.  */
+	      && reg_mentioned_p (XEXP (link, 0), PATTERN (insn)))
+	    {
+	      int regno = REGNO (XEXP (link, 0));
+	      rtx equiv_insn;
 
-	    if (reg_equiv_replace[regno]
-		&& validate_replace_rtx (regno_reg_rtx[regno],
-					 reg_equiv_replacement[regno], insn))
-	      {
-		rtx equiv_insn = reg_equiv_init_insn[regno];
+	      if (! reg_equiv_replace[regno])
+		continue;
 
-		remove_death (regno, insn);
-		reg_n_refs[regno] = 0;
-		PUT_CODE (equiv_insn, NOTE);
-		NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (equiv_insn) = 0;
-	      }
-	  }
+	      equiv_insn = reg_equiv_init_insn[regno];
+
+	      if (validate_replace_rtx (regno_reg_rtx[regno],
+					reg_equiv_replacement[regno], insn))
+		{
+		  remove_death (regno, insn);
+		  reg_n_refs[regno] = 0;
+		  PUT_CODE (equiv_insn, NOTE);
+		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (equiv_insn) = 0;
+		}
+	      /* If we aren't in a loop, and there are no calls in
+		 INSN or in the initialization of the register, then
+		 move the initialization of the register to just
+		 before INSN.  Update the flow information.  */
+	      else if (depth == 0
+		       && GET_CODE (equiv_insn) == INSN
+		       && GET_CODE (insn) == INSN
+		       && reg_basic_block[regno] < 0)
+		{
+		  int l, offset, bit;
+
+		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)),
+				    insn);
+		  REG_NOTES (PREV_INSN (insn)) =
+		    REG_NOTES (equiv_insn);
+
+		  PUT_CODE (equiv_insn, NOTE);
+		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (equiv_insn) = 0;
+		  REG_NOTES (equiv_insn) = 0;
+
+		  if (block < 0)
+		    reg_basic_block[regno] = 0;
+		  else
+		    reg_basic_block[regno] = block;
+		  reg_n_calls_crossed[regno] = 0;
+		  reg_live_length[regno] = 2;
+
+		  if (block >= 0 && insn == basic_block_head[block])
+		    basic_block_head[block] = PREV_INSN (insn);
+
+		  offset = regno / REGSET_ELT_BITS;
+		  bit = ((REGSET_ELT_TYPE) 1
+			 << (regno % REGSET_ELT_BITS));
+		  for (l = 0; l < n_basic_blocks; l++)
+		    basic_block_live_at_start[l][offset] &= ~ bit;
+		}
+	    }
+	}
     }
 }
 
