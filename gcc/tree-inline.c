@@ -1008,6 +1008,13 @@ inlinable_function_p (fn, id, nolimit)
   else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL
 	   && find_alloca_call (DECL_SAVED_TREE (fn)))
     ;
+  /* Can't inline functions which use varargs.  It's not theoretically
+     impossible, we just don't do it yet; at least one problem is that
+     expand_builtin_next_arg needs to handle the situation.  */
+  else if (TYPE_ARG_TYPES (TREE_TYPE (fn)) != 0
+	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (fn))))
+	       != void_type_node))
+    ;
   /* All is well.  We can inline this function.  Traditionally, GCC
      has refused to inline functions using alloca, or functions whose
      values are returned in a PARALLEL, and a few other such obscure

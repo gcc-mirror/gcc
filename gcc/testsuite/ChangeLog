@@ -1,3 +1,7 @@
+2003-04-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/inline-1.c: New file.
+
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10551

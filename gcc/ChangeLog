@@ -23,6 +23,9 @@
 
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* tree-inline.c (inlinable_function_p): Don't support inlining
+	functions using varargs.
+
 	* doc/invoke.texi (Overall Options): Mention -x objective-c-header.
 
 	* dwarf2out.c (output_call_frame_info): No need to output EH
