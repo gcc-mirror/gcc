@@ -1031,6 +1031,8 @@ build_mangled_name (parmtypes, begin, end)
     for ( ; parmtypes!=NULL; parmtypes = TREE_CHAIN (parmtypes))
       {
         parmtype = TREE_VALUE (parmtypes);
+        parmtype = build_type_variant (TYPE_MAIN_VARIANT (parmtype), 
+                      TYPE_READONLY (parmtype), TYPE_VOLATILE (parmtype));
         if (flag_do_squangling)       /* squangling style repeats */
           {
             if (parmtype == lasttype) 
