@@ -5254,12 +5254,14 @@ instantiate_class_template (tree type)
 		  if (TYPE_LANG_SPECIFIC (tag) && CLASSTYPE_IS_TEMPLATE (tag))
 		    /* Unfortunately, lookup_template_class sets
 		       CLASSTYPE_IMPLICIT_INSTANTIATION for a partial
-		       instantiation (i.e., for the type of a member template
-		       class nested within a template class.)  This behavior is
-		       required for maybe_process_partial_specialization to work
-		       correctly, but is not accurate in this case; the TAG is not
-		       an instantiation of anything.  (The corresponding
-		       TEMPLATE_DECL is an instantiation, but the TYPE is not.) */
+		       instantiation (i.e., for the type of a member
+		       template class nested within a template class.)
+		       This behavior is required for
+		       maybe_process_partial_specialization to work
+		       correctly, but is not accurate in this case;
+		       the TAG is not an instantiation of anything.
+		       (The corresponding TEMPLATE_DECL is an
+		       instantiation, but the TYPE is not.) */
 		    CLASSTYPE_USE_TEMPLATE (newtag) = 0;
 
 		  /* Now, we call pushtag to put this NEWTAG into the scope of
