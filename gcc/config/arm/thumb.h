@@ -1052,7 +1052,7 @@ int thumb_shiftable_const ();
     output_addr_const ((STREAM), (X));				\
 }
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '@')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '@' || ((CODE) == '_'))
 
 /* Emit a special directive when defining a function name.
    This is used by the assembler to assit with interworking.  */
