@@ -1,3 +1,8 @@
+2004-01-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.md (flush_icache): Use 1 for
+	unspec_volatile.
+
 2004-01-10  David Edelsohn  <edelsohn@gnu.org>
 	    James E Wilson  <wilson@specifixinc.com>
 
