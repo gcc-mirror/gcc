@@ -1,3 +1,11 @@
+2003-08-23  Jason Eckhardt  <jle@rice.edu>
+
+	* calls.c (emit_library_call_value_1): Remove code related
+	to LIBGCC_NEEDS_DOUBLE.
+	* config/stormy16/stormy16.h: Remove mention of LIBGCC_NEEDS_DOUBLE.
+	* doc/tm.texi: Likewise.
+	* system.h: Poison the LIBGCC_NEEDS_DOUBLE macro.
+
 2003-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/linux64.h (STARTFILE_PREFIX_SPEC): Remove.

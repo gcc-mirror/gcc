@@ -3733,13 +3733,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  || (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode))
 	abort ();
 
-      /* On some machines, there's no way to pass a float to a library fcn.
-	 Pass it as a double instead.  */
-#ifdef LIBGCC_NEEDS_DOUBLE
-      if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
-	val = convert_modes (DFmode, SFmode, val, 0), mode = DFmode;
-#endif
-
       /* There's no need to call protect_from_queue, because
 	 either emit_move_insn or emit_push_insn will do that.  */
 
