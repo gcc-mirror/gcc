@@ -1202,7 +1202,11 @@ duplicate_decls (newdecl, olddecl)
 	  return 0;
 	}
       else if (!types_match)
-	warning_with_decl (newdecl, "conflicting types for built-in function `%s'");
+	{
+	  /* If types don't match for a built-in, throw away the built-in.  */
+	  warning_with_decl (newdecl, "conflicting types for built-in function `%s'");
+	  return 0;
+	}
     }
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	   && DECL_SOURCE_LINE (olddecl) == 0)
