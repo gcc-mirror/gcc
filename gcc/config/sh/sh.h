@@ -591,6 +591,13 @@ do {									\
 #define UNITS_PER_WORD	(TARGET_SHMEDIA ? 8 : 4)
 #define MIN_UNITS_PER_WORD 4
 
+/* Scaling factor for Dwarf data offsets for CFI information.
+   The dwarf2out.c default would use -UNITS_PER_WORD, which is -8 for
+   SHmedia; however, since we do partial register saves for the registers
+   visible to SHcompact, and for target registers for SHMEDIA32, we have
+   to allow saves that are only 4-byte aligned.  */
+#define DWARF_CIE_DATA_ALIGNMENT -4
+
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE  (TARGET_SHMEDIA64 ? 64 : 32)
@@ -639,8 +646,8 @@ do {									\
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
-   ? MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
-   : ALIGN)
+   ? (unsigned) MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
+   : (unsigned) ALIGN)
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -816,16 +823,18 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define LAST_TARGET_REG  (FIRST_TARGET_REG + (TARGET_SHMEDIA ? 7 : -1))
 
 #define GENERAL_REGISTER_P(REGNO) \
-  IN_RANGE ((REGNO), FIRST_GENERAL_REG, LAST_GENERAL_REG)
+  IN_RANGE ((REGNO), \
+	    (unsigned HOST_WIDE_INT) FIRST_GENERAL_REG, \
+	    (unsigned HOST_WIDE_INT) LAST_GENERAL_REG)
 
 #define GENERAL_OR_AP_REGISTER_P(REGNO) \
   (GENERAL_REGISTER_P (REGNO) || ((REGNO) == AP_REG))
 
 #define FP_REGISTER_P(REGNO) \
-  ((REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG)
+  ((int) (REGNO) >= FIRST_FP_REG && (int) (REGNO) <= LAST_FP_REG)
 
 #define XD_REGISTER_P(REGNO) \
-  ((REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG)
+  ((int) (REGNO) >= FIRST_XD_REG && (int) (REGNO) <= LAST_XD_REG)
 
 #define FP_OR_XD_REGISTER_P(REGNO) \
   (FP_REGISTER_P (REGNO) || XD_REGISTER_P (REGNO))
@@ -838,7 +847,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    || (REGNO) == MACH_REG || (REGNO) == MACL_REG)
 
 #define TARGET_REGISTER_P(REGNO) \
-  ((REGNO) >= FIRST_TARGET_REG && (REGNO) <= LAST_TARGET_REG)
+  ((int) (REGNO) >= FIRST_TARGET_REG && (int) (REGNO) <= LAST_TARGET_REG)
 
 #define SHMEDIA_REGISTER_P(REGNO) \
   (GENERAL_REGISTER_P (REGNO) || FP_REGISTER_P (REGNO) \
@@ -951,7 +960,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   (TARGET_SHMEDIA32 \
    && GET_MODE_SIZE (MODE) > 4 \
    && (((REGNO) >= FIRST_GENERAL_REG + 10 \
-        && (REGNO) <= FIRST_GENERAL_REG + 14) \
+        && (REGNO) <= FIRST_GENERAL_REG + 15) \
+       || TARGET_REGISTER_P (REGNO) \
        || (REGNO) == PR_MEDIA_REG))
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -1137,7 +1147,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
        ? (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) \
        : GET_MODE_SIZE (TYPE_MODE (TYPE))) > 8) \
    : (TYPE_MODE (TYPE) == BLKmode \
-      || TARGET_HITACHI && TREE_CODE (TYPE) == RECORD_TYPE))
+      || (TARGET_HITACHI && TREE_CODE (TYPE) == RECORD_TYPE)))
 
 /* Don't default to pcc-struct-return, because we have already specified
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */
@@ -1273,7 +1283,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-extern int regno_reg_class[FIRST_PSEUDO_REGISTER];
+extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) regno_reg_class[(REGNO)]
 
 /* When defined, the compiler allows registers explicitly used in the
@@ -1363,7 +1373,9 @@ extern enum reg_class reg_class_from_letter[];
 #define CONSTRAINT_LEN(C,STR) \
   (((C) == 'L' || (C) == 'O' || (C) == 'D' || (C) == 'T' || (C) == 'U' \
     || (C) == 'Y' \
-    || ((C) == 'I' && (((STR)[1] != '0' && (STR)[1] != '1') || ! isdigit ((STR)[2]))) \
+    || ((C) == 'I' \
+        && (((STR)[1] != '0' && (STR)[1] != '1') \
+	    || (STR)[2] < '0' || (STR)[2] > '9')) \
     || ((C) == 'B' && ((STR)[1] != 's' || (STR)[2] != 'c')) \
     || ((C) == 'J' && ((STR)[1] != '1' || (STR)[2] != '6')) \
     || ((C) == 'K' && ((STR)[1] != '0' || (STR)[2] != '8')) \
@@ -1667,12 +1679,15 @@ extern enum reg_class reg_class_from_letter[];
    || (TARGET_SHMEDIA_FPU && (REGNO) == FIRST_FP_RET_REG))
 
 /* 1 if N is a possible register number for function argument passing.  */
+/* ??? There are some callers that pass REGNO as int, and others that pass
+   it as unsigned.  We get warnings unless we do casts everywhere.  */
 #define FUNCTION_ARG_REGNO_P(REGNO) \
-  (((REGNO) >= FIRST_PARM_REG && (REGNO) < (FIRST_PARM_REG		\
-					    + NPARM_REGS (SImode)))	\
+  (((unsigned) (REGNO) >= (unsigned) FIRST_PARM_REG			\
+    && (unsigned) (REGNO) < (unsigned) (FIRST_PARM_REG + NPARM_REGS (SImode)))\
    || (TARGET_FPU_ANY                                                   \
-       && (REGNO) >= FIRST_FP_PARM_REG && (REGNO) < (FIRST_FP_PARM_REG	\
-						     + NPARM_REGS (SFmode))))
+       && (unsigned) (REGNO) >= (unsigned) FIRST_FP_PARM_REG		\
+       && (unsigned) (REGNO) < (unsigned) (FIRST_FP_PARM_REG		\
+					   + NPARM_REGS (SFmode))))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -2057,13 +2072,13 @@ struct sh_args {
 	     (VOIDmode,							\
 	      gen_rtx_REG (SFmode,					\
 			   BASE_ARG_REG (MODE)				\
-			   + ROUND_REG ((CUM), (MODE)) ^ 1),		\
+			   + (ROUND_REG ((CUM), (MODE)) ^ 1)),		\
 	      const0_rtx)),						\
 	    (gen_rtx_EXPR_LIST						\
 	     (VOIDmode,							\
 	      gen_rtx_REG (SFmode,					\
 			   BASE_ARG_REG (MODE)				\
-			   + (ROUND_REG ((CUM), (MODE)) + 1) ^ 1),	\
+			   + ((ROUND_REG ((CUM), (MODE)) + 1) ^ 1)),	\
 	      GEN_INT (4)))))))						\
       : gen_rtx_REG ((MODE),						\
 		     ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) \
@@ -2311,9 +2326,7 @@ while (0)
    can ignore COUNT.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
-  (((COUNT) == 0)				\
-   ? get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG) \
-   : (rtx) 0)
+  (((COUNT) == 0) ? sh_get_pr_initial_val () : (rtx) 0)
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
@@ -2322,6 +2335,11 @@ while (0)
    the stack.  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_REG (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
+
+/* libstdc++-v3/libsupc++/eh_personality.cc:__gxx_personality_v0
+   can get confused by SHmedia return addresses when it does:
+   ip = _Unwind_GetIP (context) - 1;  */
+#define RETURN_ADDR_OFFSET (TARGET_SH5 ? -1 : 0)
 
 /* Generate necessary RTL for __builtin_saveregs().  */
 #define EXPAND_BUILTIN_SAVEREGS() sh_builtin_saveregs ()
@@ -3085,18 +3103,18 @@ while (0)
 
 #define SH_DBX_REGISTER_NUMBER(REGNO) \
   (GENERAL_REGISTER_P (REGNO) \
-   ? ((REGNO) - FIRST_GENERAL_REG) \
+   ? ((unsigned) (REGNO) - FIRST_GENERAL_REG) \
    : FP_REGISTER_P (REGNO) \
-   ? ((REGNO) - FIRST_FP_REG + (TARGET_SH5 ? (TARGET_SHCOMPACT ? 245 \
-					      : 77) : 25)) \
+   ? ((unsigned) (REGNO) - FIRST_FP_REG \
+      + (TARGET_SH5 ? (TARGET_SHCOMPACT ? 245 : 77) : 25)) \
    : XD_REGISTER_P (REGNO) \
-   ? ((REGNO) - FIRST_XD_REG + (TARGET_SH5 ? 289 : 87)) \
+   ? ((unsigned) (REGNO) - FIRST_XD_REG + (TARGET_SH5 ? 289 : 87)) \
    : TARGET_REGISTER_P (REGNO) \
-   ? ((REGNO) - FIRST_TARGET_REG + 68) \
+   ? ((unsigned) (REGNO) - FIRST_TARGET_REG + 68) \
    : (REGNO) == PR_REG \
    ? (TARGET_SH5 ? 241 : 17) \
    : (REGNO) == PR_MEDIA_REG \
-   ? (TARGET_SH5 ? 18 : -1) \
+   ? (TARGET_SH5 ? 18 : (unsigned) -1) \
    : (REGNO) == T_REG \
    ? (TARGET_SH5 ? 242 : 18) \
    : (REGNO) == GBR_REG \
@@ -3107,7 +3125,7 @@ while (0)
    ? (TARGET_SH5 ? 240 : 21) \
    : (REGNO) == FPUL_REG \
    ? (TARGET_SH5 ? 244 : 23) \
-   : -1)
+   : (unsigned) -1)
 
 /* This is how to output a reference to a symbol_ref.  On SH5,
    references to non-code symbols must be preceded by `datalabel'.  */
@@ -3449,9 +3467,10 @@ extern int rtx_equal_function_value_matters;
   (TARGET_SH5 ? DWARF_FRAME_REGNUM (PR_MEDIA_REG) : DWARF_FRAME_REGNUM (PR_REG))
 
 #define EH_RETURN_DATA_REGNO(N)	\
-  ((N) < 4 ? (N) + (TARGET_SH5 ? 2 : 4) : INVALID_REGNUM)
+  ((N) < 4 ? (N) + (TARGET_SH5 ? 2U : 4U) : INVALID_REGNUM)
 
-#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM)
+#define EH_RETURN_STACKADJ_REGNO STATIC_CHAIN_REGNUM
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, EH_RETURN_STACKADJ_REGNO)
 
 #if (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__
 /* SH constant pool breaks the devices in crtstuff.c to control section

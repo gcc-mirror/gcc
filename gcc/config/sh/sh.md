@@ -2052,7 +2052,7 @@
 "
 {
   enum machine_mode inmode = GET_MODE (operands[1]);
-  int regno, offset = 0;
+  int offset = 0;
 
   if (GET_CODE (operands[0]) == SUBREG)
     {
@@ -7247,6 +7247,8 @@ mov.l\\t1f,r0\\n\\
     {
       rtx r18 = gen_rtx_REG (DImode, PR_MEDIA_REG);
 
+      if (! call_used_regs[TR0_REG] || fixed_regs[TR0_REG])
+	abort ();
       tr_regno = TR0_REG;
       tr = gen_rtx_REG (DImode, tr_regno);
       emit_move_insn (tr, r18);

@@ -108,7 +108,7 @@ rtx sh_compare_op1;
 /* Provides the class number of the smallest class containing
    reg number.  */
 
-int regno_reg_class[FIRST_PSEUDO_REGISTER] =
+enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
 {
   R0_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
@@ -190,7 +190,7 @@ static rtx find_barrier PARAMS ((int, rtx, rtx));
 static int noncall_uses_reg PARAMS ((rtx, rtx, rtx *));
 static rtx gen_block_redirect PARAMS ((rtx, int, int));
 static void sh_reorg PARAMS ((void));
-static void output_stack_adjust PARAMS ((int, rtx, int, rtx (*) (rtx)));
+static void output_stack_adjust (int, rtx, int, HARD_REG_SET *);
 static rtx frame_insn PARAMS ((rtx));
 static rtx push PARAMS ((int));
 static void pop PARAMS ((int));
@@ -234,6 +234,10 @@ static int sh_address_cost PARAMS ((rtx));
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
+static int scavenge_reg (HARD_REG_SET *s);
+struct save_schedule_s;
+static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
+						struct save_schedule_s *, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -4558,17 +4562,16 @@ output_jump_label_table ()
 
 static int extra_push;
 
-/* Adjust the stack by SIZE bytes.  REG holds the rtl of the register
-  to be adjusted, and TEMP, if nonnegative, holds the register number
-  of a general register that we may clobber.  */
+/* Adjust the stack by SIZE bytes.  REG holds the rtl of the register to be
+   adjusted.  If epilogue_p is zero, this is for a prologue; otherwise, it's
+   for an epilogue.  If LIVE_REGS_MASK is nonzero, it points to a HARD_REG_SET
+   of all the registers that are about to be restored, and hence dead.  */
 
 static void
-output_stack_adjust (size, reg, temp, emit_fn)
-     int size;
-     rtx reg;
-     int temp;
-     rtx (*emit_fn) PARAMS ((rtx));
+output_stack_adjust (int size, rtx reg, int epilogue_p,
+		     HARD_REG_SET *live_regs_mask)
 {
+  rtx (*emit_fn) (rtx) = epilogue_p ? &emit_insn : &frame_insn;
   if (size)
     {
       HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
@@ -4591,10 +4594,43 @@ output_stack_adjust (size, reg, temp, emit_fn)
 	{
 	  rtx const_reg;
 	  rtx insn;
+	  int temp = epilogue_p ? 7 : (TARGET_SH5 ? 0 : 1);
+	  int i;
 
 	  /* If TEMP is invalid, we could temporarily save a general
 	     register to MACL.  However, there is currently no need
 	     to handle this case, so just abort when we see it.  */
+	  if (current_function_interrupt
+	      || ! call_used_regs[temp] || fixed_regs[temp])
+	    temp = -1;
+	  if (temp < 0 && ! current_function_interrupt)
+	    {
+	      HARD_REG_SET temps;
+	      COPY_HARD_REG_SET (temps, call_used_reg_set);
+	      AND_COMPL_HARD_REG_SET (temps, call_fixed_reg_set);
+	      if (epilogue_p)
+		{
+		  for (i = 0; i < HARD_REGNO_NREGS (FIRST_RET_REG, DImode); i++)
+		    CLEAR_HARD_REG_BIT (temps, FIRST_RET_REG + i);
+		  if (current_function_calls_eh_return)
+		    {
+		      CLEAR_HARD_REG_BIT (temps, EH_RETURN_STACKADJ_REGNO);
+		      for (i = 0; i <= 3; i++)
+			CLEAR_HARD_REG_BIT (temps, EH_RETURN_DATA_REGNO (i));
+		    }
+		}
+	      else
+		{
+		  for (i = FIRST_PARM_REG;
+		       i < FIRST_PARM_REG + NPARM_REGS (SImode); i++)
+		    CLEAR_HARD_REG_BIT (temps, i);
+		  if (current_function_needs_context)
+		    CLEAR_HARD_REG_BIT (temps, STATIC_CHAIN_REGNUM);
+		}
+	      temp = scavenge_reg (&temps);
+	    }
+	  if (temp < 0 && live_regs_mask)
+	    temp = scavenge_reg (live_regs_mask);
 	  if (temp < 0)
 	    abort ();
 	  const_reg = gen_rtx_REG (GET_MODE (reg), temp);
@@ -4612,7 +4648,7 @@ output_stack_adjust (size, reg, temp, emit_fn)
 	      emit_insn (GEN_MOV (const_reg, GEN_INT (size)));
 	      insn = emit_fn (GEN_ADD3 (reg, reg, const_reg));
 	    }
-	  if (emit_fn == frame_insn)
+	  if (! epilogue_p)
 	    REG_NOTES (insn)
 	      = (gen_rtx_EXPR_LIST
 		 (REG_FRAME_RELATED_EXPR,
@@ -4789,12 +4825,11 @@ calc_live_regs (live_regs_mask)
   int reg;
   int count;
   int interrupt_handler;
-  int pr_live;
+  int pr_live, has_call;
 
   interrupt_handler = sh_cfun_interrupt_handler_p ();
 
-  for (count = 0; 32 * count < FIRST_PSEUDO_REGISTER; count++)
-    CLEAR_HARD_REG_SET (*live_regs_mask);
+  CLEAR_HARD_REG_SET (*live_regs_mask);
   if (TARGET_SH4 && TARGET_FMOVD && interrupt_handler
       && regs_ever_live[FPSCR_REG])
     target_flags &= ~FPU_SINGLE_BIT;
@@ -4829,16 +4864,19 @@ calc_live_regs (live_regs_mask)
 	   & ~ CALL_COOKIE_RET_TRAMP (1))
 	  || current_function_has_nonlocal_label))
     pr_live = 1;
+  has_call = TARGET_SHMEDIA ? ! leaf_function_p () : pr_live;
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
-      if (reg == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
+      if ((! TARGET_SHMEDIA && reg == PR_REG)
 	  ? pr_live
 	  : (interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
 	     (regs_ever_live[reg]
 	      || (call_used_regs[reg]
 		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG)
-		  && pr_live))
+		  && has_call)
+	      || (has_call && REGISTER_NATURAL_MODE (reg) == SImode
+		  && (GENERAL_REGISTER_P (reg) || TARGET_REGISTER_P (reg))))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
 	     && reg != T_REG && reg != GBR_REG
@@ -4848,13 +4886,13 @@ calc_live_regs (live_regs_mask)
 	     (TARGET_SHCOMPACT
 	      && flag_pic
 	      && current_function_args_info.call_cookie
-	      && reg == PIC_OFFSET_TABLE_REGNUM)
+	      && reg == (int) PIC_OFFSET_TABLE_REGNUM)
 	     || (regs_ever_live[reg] && ! call_used_regs[reg])
 	     || (current_function_calls_eh_return
-		 && (reg == EH_RETURN_DATA_REGNO (0)
-		     || reg == EH_RETURN_DATA_REGNO (1)
-		     || reg == EH_RETURN_DATA_REGNO (2)
-		     || reg == EH_RETURN_DATA_REGNO (3)))))
+		 && (reg == (int) EH_RETURN_DATA_REGNO (0)
+		     || reg == (int) EH_RETURN_DATA_REGNO (1)
+		     || reg == (int) EH_RETURN_DATA_REGNO (2)
+		     || reg == (int) EH_RETURN_DATA_REGNO (3)))))
 	{
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
@@ -4891,6 +4929,19 @@ calc_live_regs (live_regs_mask)
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
 	}
+  /* If this is an interrupt handler, we don't have any call-clobbered
+     registers we can conveniently use for target register save/restore.
+     Make sure we save at least one general purpose register when we need
+     to save target registers.  */
+  if (interrupt_handler
+      && hard_regs_intersect_p (live_regs_mask,
+				&reg_class_contents[TARGET_REGS])
+      && ! hard_regs_intersect_p (live_regs_mask,
+				  &reg_class_contents[GENERAL_REGS]))
+    {
+      SET_HARD_REG_BIT (*live_regs_mask, R0_REG);
+      count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (R0_REG));
+    }
 
   return count;
 }
@@ -4921,6 +4972,9 @@ sh_media_register_for_return ()
 
   if (! current_function_is_leaf)
     return -1;
+  if (lookup_attribute ("interrupt_handler",
+			DECL_ATTRIBUTES (current_function_decl)))
+    return -1;
 
   tr0_used = flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
 
@@ -4929,6 +4983,130 @@ sh_media_register_for_return ()
       return regno;
 
   return -1;
+}
+
+/* The maximum registers we need to save are:
+   - 62 general purpose registers (r15 is stack pointer, r63 is zero)
+   - 32 floating point registers (for each pair, we save none,
+         one single precision value, or a double precision value).
+   -  8 target registers
+   -  add 1 entry for a delimiter.  */
+#define MAX_SAVED_REGS (62+32+8)
+
+typedef struct save_entry_s
+{
+  unsigned char reg;
+  unsigned char mode;
+  short offset;
+} save_entry;
+
+#define MAX_TEMPS 4
+
+/* There will be a delimiter entry with VOIDmode both at the start and the
+   end of a filled in schedule.  The end delimiter has the offset of the
+   save with the smallest (i.e. most negative) offset.  */
+typedef struct save_schedule_s
+{
+  save_entry entries[MAX_SAVED_REGS + 2];
+  int temps[MAX_TEMPS+1];
+} save_schedule;
+
+/* Fill in SCHEDULE according to LIVE_REGS_MASK.  If RESTORE is nonzero,
+   use reverse order.  Returns the last entry written to (not counting
+   the delimiter).  OFFSET_BASE is a number to be added to all offset
+   entries.  */
+   
+static save_entry *
+sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
+		    int offset_base)
+{
+  int align, i;
+  save_entry *entry = schedule->entries;
+  int tmpx = 0;
+  int offset;
+
+  if (! current_function_interrupt)
+    for (i = FIRST_GENERAL_REG; tmpx < MAX_TEMPS && i <= LAST_GENERAL_REG; i++)
+      if (call_used_regs[i] && ! fixed_regs[i]
+	  && ! FUNCTION_ARG_REGNO_P (i)
+	  && i != FIRST_RET_REG
+	  && ! (current_function_needs_context && i == STATIC_CHAIN_REGNUM)
+	  && ! (current_function_calls_eh_return
+		&& (i == EH_RETURN_STACKADJ_REGNO
+		    || ((unsigned)i <= EH_RETURN_DATA_REGNO (0)
+			&& (unsigned)i >= EH_RETURN_DATA_REGNO (3)))))
+	schedule->temps[tmpx++] = i;
+  entry->reg = -1;
+  entry->mode = VOIDmode;
+  entry->offset = offset_base;
+  entry++;
+  /* We loop twice: first, we save 8-byte aligned registers in the
+     higher addresses, that are known to be aligned.  Then, we
+     proceed to saving 32-bit registers that don't need 8-byte
+     alignment.
+     If this is an interrupt function, all registers that need saving
+     need to be saved in full.  moreover, we need to postpone saving
+     target registers till we have saved some general purpose registers
+     we can then use as scratch registers.  */
+  offset = offset_base;
+  for (align = 1; align >= 0; align--)
+    {
+      for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
+	if (TEST_HARD_REG_BIT (*live_regs_mask, i))
+	  {
+	    enum machine_mode mode = REGISTER_NATURAL_MODE (i);
+	    int reg = i;
+
+	    if (current_function_interrupt)
+	      {
+		if (TARGET_REGISTER_P (i))
+		  continue;
+		if (GENERAL_REGISTER_P (i))
+		  mode = DImode;
+	      }
+	    if (mode == SFmode && (i % 2) == 1
+		&& ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
+		&& (TEST_HARD_REG_BIT (*live_regs_mask, (i ^ 1))))
+	      {
+		mode = DFmode;
+		i--;
+		reg--;
+	      }
+
+	    /* If we're doing the aligned pass and this is not aligned,
+	       or we're doing the unaligned pass and this is aligned,
+	       skip it.  */
+	    if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT) == 0)
+		!= align)
+	      continue;
+
+	    if (current_function_interrupt
+		&& GENERAL_REGISTER_P (i)
+		&& tmpx < MAX_TEMPS)
+	      schedule->temps[tmpx++] = i;
+
+	    offset -= GET_MODE_SIZE (mode);
+	    entry->reg = i;
+	    entry->mode = mode;
+	    entry->offset = offset;
+	    entry++;
+	  }
+      if (align && current_function_interrupt)
+	for (i = LAST_TARGET_REG; i >= FIRST_TARGET_REG; i--)
+	  if (TEST_HARD_REG_BIT (*live_regs_mask, i))
+	    {
+	      offset -= GET_MODE_SIZE (DImode);
+	      entry->reg = i;
+	      entry->mode = DImode;
+	      entry->offset = offset;
+	      entry++;
+	    }
+    }
+  entry->reg = -1;
+  entry->mode = VOIDmode;
+  entry->offset = offset;
+  schedule->temps[tmpx] = -1;
+  return entry - 1;
 }
 
 void
@@ -4945,7 +5123,7 @@ sh_expand_prologue ()
      and partially on the stack, e.g. a large structure.  */
   output_stack_adjust (-current_function_pretend_args_size
 		       - current_function_args_info.stack_regs * 8,
-		       stack_pointer_rtx, TARGET_SH5 ? 0 : 1, frame_insn);
+		       stack_pointer_rtx, 0, NULL);
 
   extra_push = 0;
 
@@ -5034,14 +5212,19 @@ sh_expand_prologue ()
     
   if (TARGET_SH5)
     {
-      int i;
-      int offset;
-      int align;
-      rtx r0 = gen_rtx_REG (Pmode, R0_REG);
+      int offset_base, offset;
+      rtx r0 = NULL_RTX;
       int offset_in_r0 = -1;
       int sp_in_r0 = 0;
       int tregs_space = shmedia_target_regs_stack_adjust (&live_regs_mask);
       int total_size, save_size;
+      save_schedule schedule;
+      save_entry *entry;
+      int *tmp_pnt;
+
+      if (call_used_regs[R0_REG] && ! fixed_regs[R0_REG]
+	  && ! current_function_interrupt)
+	r0 = gen_rtx_REG (Pmode, R0_REG);
 
       /* D is the actual number of bytes that we need for saving registers,
 	 however, in initial_elimination_offset we have committed to using
@@ -5067,146 +5250,153 @@ sh_expand_prologue ()
 		  && total_size <= 2044)))
 	d_rounding = total_size - save_size;
 
-      offset = d + d_rounding;
+      offset_base = d + d_rounding;
 
       output_stack_adjust (-(save_size + d_rounding), stack_pointer_rtx,
-			   1, frame_insn);
+			   0, NULL);
 
-      /* We loop twice: first, we save 8-byte aligned registers in the
-	 higher addresses, that are known to be aligned.  Then, we
-	 proceed to saving 32-bit registers that don't need 8-byte
-	 alignment.  */
-      /* Note that if you change this code in a way that affects where
-	 the return register is saved, you have to update not only
-	 sh_expand_epilogue, but also sh_set_return_address.  */
-      for (align = 1; align >= 0; align--)
-	for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
+      sh5_schedule_saves (&live_regs_mask, &schedule, offset_base);
+      tmp_pnt = schedule.temps;
+      for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
+        {
+	  enum machine_mode mode = entry->mode;
+	  int reg = entry->reg;
+	  rtx reg_rtx, mem_rtx, pre_dec = NULL_RTX;
+
+	  offset = entry->offset;
+
+	  reg_rtx = gen_rtx_REG (mode, reg);
+
+	  mem_rtx = gen_rtx_MEM (mode,
+				 gen_rtx_PLUS (Pmode,
+					       stack_pointer_rtx,
+					       GEN_INT (offset)));
+
+	  GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_pre_dec);
+
+	  if (! r0)
+	    abort ();
+	  mem_rtx = NULL_RTX;
+
+	try_pre_dec:
+	  do
+	    if (HAVE_PRE_DECREMENT
+		&& (offset_in_r0 - offset == GET_MODE_SIZE (mode)
+		    || mem_rtx == NULL_RTX
+		    || reg == PR_REG || SPECIAL_REGISTER_P (reg)))
+	      {
+		pre_dec = gen_rtx_MEM (mode,
+				       gen_rtx_PRE_DEC (Pmode, r0));
+
+		GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (pre_dec, 0),
+					  pre_dec_ok);
+
+		pre_dec = NULL_RTX;
+
+		break;
+
+	      pre_dec_ok:
+		mem_rtx = NULL_RTX;
+		offset += GET_MODE_SIZE (mode);
+	      }
+	  while (0);
+
+	  if (mem_rtx != NULL_RTX)
+	    goto addr_ok;
+
+	  if (offset_in_r0 == -1)
 	    {
-	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
-	      int reg = i;
-	      rtx reg_rtx, mem_rtx, pre_dec = NULL_RTX;
-
-	      if (mode == SFmode && (i % 2) == 1
-		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
-		{
-		  mode = DFmode;
-		  i--;
-		  reg--;
-		}
-		
-	      /* If we're doing the aligned pass and this is not aligned,
-		 or we're doing the unaligned pass and this is aligned,
-		 skip it.  */
-	      if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT)
-		   == 0) != align)
-		continue;
-
-	      offset -= GET_MODE_SIZE (mode);
-
-	      reg_rtx = gen_rtx_REG (mode, reg);
-
-	      mem_rtx = gen_rtx_MEM (mode,
-				     gen_rtx_PLUS (Pmode,
-						   stack_pointer_rtx,
-						   GEN_INT (offset)));
-
-	      GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_pre_dec);
-
-	      mem_rtx = NULL_RTX;
-
-	    try_pre_dec:
-	      do
-		if (HAVE_PRE_DECREMENT
-		    && (offset_in_r0 - offset == GET_MODE_SIZE (mode)
-			|| mem_rtx == NULL_RTX
-			|| i == PR_REG || SPECIAL_REGISTER_P (i)))
-		  {
-		    pre_dec = gen_rtx_MEM (mode,
-					   gen_rtx_PRE_DEC (Pmode, r0));
-
-		    GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (pre_dec, 0),
-					      pre_dec_ok);
-
-		    pre_dec = NULL_RTX;
-
-		    break;
-
-		  pre_dec_ok:
-		    mem_rtx = NULL_RTX;
-		    offset += GET_MODE_SIZE (mode);
-		  }
-	      while (0);
-
-	      if (mem_rtx != NULL_RTX)
-		goto addr_ok;
-
-	      if (offset_in_r0 == -1)
-		{
-		  emit_move_insn (r0, GEN_INT (offset));
-		  offset_in_r0 = offset;
-		}
-	      else if (offset != offset_in_r0)
+	      emit_move_insn (r0, GEN_INT (offset));
+	      offset_in_r0 = offset;
+	    }
+	  else if (offset != offset_in_r0)
+	    {
+	      emit_move_insn (r0,
+			      gen_rtx_PLUS
+			      (Pmode, r0,
+			       GEN_INT (offset - offset_in_r0)));
+	      offset_in_r0 += offset - offset_in_r0;
+	    }
+					      
+	  if (pre_dec != NULL_RTX)
+	    {
+	      if (! sp_in_r0)
 		{
 		  emit_move_insn (r0,
 				  gen_rtx_PLUS
-				  (Pmode, r0,
-				   GEN_INT (offset - offset_in_r0)));
-		  offset_in_r0 += offset - offset_in_r0;
+				  (Pmode, r0, stack_pointer_rtx));
+		  sp_in_r0 = 1;
 		}
-						  
-	      if (pre_dec != NULL_RTX)
+
+	      offset -= GET_MODE_SIZE (mode);
+	      offset_in_r0 -= GET_MODE_SIZE (mode);
+
+	      mem_rtx = pre_dec;
+	    }
+	  else if (sp_in_r0)
+	    mem_rtx = gen_rtx_MEM (mode, r0);
+	  else
+	    mem_rtx = gen_rtx_MEM (mode,
+				   gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 r0));
+
+	  /* We must not use an r0-based address for target-branch
+	     registers or for special registers without pre-dec
+	     memory addresses, since we store their values in r0
+	     first.  */
+	  if (TARGET_REGISTER_P (reg)
+	      || ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
+		  && mem_rtx != pre_dec))
+	    abort ();
+
+	addr_ok:
+	  if (TARGET_REGISTER_P (reg)
+	      || ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
+		  && mem_rtx != pre_dec))
+	    {
+	      rtx tmp_reg = gen_rtx_REG (GET_MODE (reg_rtx), *tmp_pnt);
+
+	      emit_move_insn (tmp_reg, reg_rtx);
+
+	      if (REGNO (tmp_reg) == R0_REG)
 		{
-		  if (! sp_in_r0)
-		    {
-		      emit_move_insn (r0,
-				      gen_rtx_PLUS
-				      (Pmode, r0, stack_pointer_rtx));
-		      sp_in_r0 = 1;
-		    }
-
-		  offset -= GET_MODE_SIZE (mode);
-		  offset_in_r0 -= GET_MODE_SIZE (mode);
-
-		  mem_rtx = pre_dec;
-		}
-	      else if (sp_in_r0)
-		mem_rtx = gen_rtx_MEM (mode, r0);
-	      else
-		mem_rtx = gen_rtx_MEM (mode,
-				       gen_rtx_PLUS (Pmode,
-						     stack_pointer_rtx,
-						     r0));
-
-	      /* We must not use an r0-based address for target-branch
-		 registers or for special registers without pre-dec
-		 memory addresses, since we store their values in r0
-		 first.  */
-	      if (TARGET_REGISTER_P (i)
-		  || ((i == PR_REG || SPECIAL_REGISTER_P (i))
-		      && mem_rtx != pre_dec))
-		abort ();
-
-	    addr_ok:
-	      if (TARGET_REGISTER_P (i)
-		  || ((i == PR_REG || SPECIAL_REGISTER_P (i))
-		      && mem_rtx != pre_dec))
-		{
-		  rtx r0mode = gen_rtx_REG (GET_MODE (reg_rtx), R0_REG);
-
-		  emit_move_insn (r0mode, reg_rtx);
-
 		  offset_in_r0 = -1;
 		  sp_in_r0 = 0;
-
-		  reg_rtx = r0mode;
+		  if (refers_to_regno_p (R0_REG, R0_REG+1, mem_rtx, (rtx *) 0))
+		    abort ();
 		}
 
-	      emit_move_insn (mem_rtx, reg_rtx);
-	    }
+	      if (*++tmp_pnt <= 0)
+		tmp_pnt = schedule.temps;
 
-      if (offset != d_rounding)
+	      reg_rtx = tmp_reg;
+	    }
+	  {
+	    rtx insn;
+
+	    /* Mark as interesting for dwarf cfi generator */
+	    insn = emit_move_insn (mem_rtx, reg_rtx);
+	    RTX_FRAME_RELATED_P (insn) = 1;
+
+	    if (TARGET_SHCOMPACT && (offset_in_r0 != -1)) 
+	      {
+		rtx reg_rtx = gen_rtx_REG (mode, reg);
+		rtx set, note_rtx;
+		rtx mem_rtx = gen_rtx_MEM (mode,
+					   gen_rtx_PLUS (Pmode,
+							 stack_pointer_rtx,
+							 GEN_INT (offset)));
+
+		set = gen_rtx_SET (VOIDmode, mem_rtx, reg_rtx);
+		note_rtx = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, set,
+					      REG_NOTES (insn));
+		REG_NOTES (insn) = note_rtx;
+	      }
+	  }
+	}
+
+      if (entry->offset != d_rounding)
 	abort ();
     }
   else
@@ -5258,7 +5448,7 @@ sh_expand_prologue ()
   target_flags = save_flags;
 
   output_stack_adjust (-rounded_frame_size (d) + d_rounding,
-		       stack_pointer_rtx, TARGET_SH5 ? 0 : 1, frame_insn);
+		       stack_pointer_rtx, 0, NULL);
 
   if (frame_pointer_needed)
     frame_insn (GEN_MOV (frame_pointer_rtx, stack_pointer_rtx));
@@ -5318,7 +5508,7 @@ sh_expand_epilogue ()
 
   if (frame_pointer_needed)
     {
-      output_stack_adjust (frame_size, frame_pointer_rtx, 7, emit_insn);
+      output_stack_adjust (frame_size, frame_pointer_rtx, 1, &live_regs_mask);
 
       /* We must avoid moving the stack pointer adjustment past code
 	 which reads from the local frame, else an interrupt could
@@ -5334,7 +5524,7 @@ sh_expand_epilogue ()
 	 occur after the SP adjustment and clobber data in the local
 	 frame.  */
       emit_insn (gen_blockage ());
-      output_stack_adjust (frame_size, stack_pointer_rtx, 7, emit_insn);
+      output_stack_adjust (frame_size, stack_pointer_rtx, 1, &live_regs_mask);
     }
 
   if (SHMEDIA_REGS_STACK_ADJUST ())
@@ -5355,143 +5545,126 @@ sh_expand_epilogue ()
     emit_insn (gen_toggle_sz ());
   if (TARGET_SH5)
     {
-      int offset = d_rounding;
+      int offset_base, offset;
       int offset_in_r0 = -1;
       int sp_in_r0 = 0;
-      int align;
       rtx r0 = gen_rtx_REG (Pmode, R0_REG);
-      int tmp_regno = R20_REG;
+      save_schedule schedule;
+      save_entry *entry;
+      int *tmp_pnt;
       
-      /* We loop twice: first, we save 8-byte aligned registers in the
-	 higher addresses, that are known to be aligned.  Then, we
-	 proceed to saving 32-bit registers that don't need 8-byte
-	 alignment.  */
-      for (align = 0; align <= 1; align++)
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
+      entry = sh5_schedule_saves (&live_regs_mask, &schedule, d_rounding);
+      offset_base = -entry[1].offset + d_rounding;
+      tmp_pnt = schedule.temps;
+      for (; entry->mode != VOIDmode; entry--)
+	{
+	  enum machine_mode mode = entry->mode;
+	  int reg = entry->reg;
+	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX, insn;
+
+	  offset = offset_base + entry->offset;
+	  reg_rtx = gen_rtx_REG (mode, reg);
+
+	  mem_rtx = gen_rtx_MEM (mode,
+				 gen_rtx_PLUS (Pmode,
+					       stack_pointer_rtx,
+					       GEN_INT (offset)));
+
+	  GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_post_inc);
+
+	  mem_rtx = NULL_RTX;
+
+	try_post_inc:
+	  do
+	    if (HAVE_POST_INCREMENT
+		&& (offset == offset_in_r0
+		    || (offset + GET_MODE_SIZE (mode) != d + d_rounding
+			&& mem_rtx == NULL_RTX)
+		    || reg == PR_REG || SPECIAL_REGISTER_P (reg)))
+	      {
+		post_inc = gen_rtx_MEM (mode,
+					gen_rtx_POST_INC (Pmode, r0));
+
+		GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (post_inc, 0),
+					  post_inc_ok);
+
+		post_inc = NULL_RTX;
+
+		break;
+		
+	      post_inc_ok:
+		mem_rtx = NULL_RTX;
+	      }
+	  while (0);
+	  
+	  if (mem_rtx != NULL_RTX)
+	    goto addr_ok;
+
+	  if (offset_in_r0 == -1)
 	    {
-	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
-	      int reg = i;
-	      rtx reg_rtx, mem_rtx, post_inc = NULL_RTX, insn;
-
-	      if (mode == SFmode && (i % 2) == 0
-		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
-		{
-		  mode = DFmode;
-		  i++;
-		}
-
-	      /* If we're doing the aligned pass and this is not aligned,
-		 or we're doing the unaligned pass and this is aligned,
-		 skip it.  */
-	      if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT)
-		   == 0) != align)
-		continue;
-
-	      reg_rtx = gen_rtx_REG (mode, reg);
-
-	      mem_rtx = gen_rtx_MEM (mode,
-				     gen_rtx_PLUS (Pmode,
-						   stack_pointer_rtx,
-						   GEN_INT (offset)));
-
-	      GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_post_inc);
-
-	      mem_rtx = NULL_RTX;
-
-	    try_post_inc:
-	      do
-		if (HAVE_POST_INCREMENT
-		    && (offset == offset_in_r0
-			|| (offset + GET_MODE_SIZE (mode) != d + d_rounding
-			    && mem_rtx == NULL_RTX)
-			|| i == PR_REG || SPECIAL_REGISTER_P (i)))
-		  {
-		    post_inc = gen_rtx_MEM (mode,
-					    gen_rtx_POST_INC (Pmode, r0));
-
-		    GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (post_inc, 0),
-					      post_inc_ok);
-
-		    post_inc = NULL_RTX;
-
-		    break;
-		    
-		  post_inc_ok:
-		    mem_rtx = NULL_RTX;
-		  }
-	      while (0);
+	      emit_move_insn (r0, GEN_INT (offset));
+	      offset_in_r0 = offset;
+	    }
+	  else if (offset != offset_in_r0)
+	    {
+	      emit_move_insn (r0,
+			      gen_rtx_PLUS
+			      (Pmode, r0,
+			       GEN_INT (offset - offset_in_r0)));
+	      offset_in_r0 += offset - offset_in_r0;
+	    }
 	      
-	      if (mem_rtx != NULL_RTX)
-		goto addr_ok;
-
-	      if (offset_in_r0 == -1)
-		{
-		  emit_move_insn (r0, GEN_INT (offset));
-		  offset_in_r0 = offset;
-		}
-	      else if (offset != offset_in_r0)
+	  if (post_inc != NULL_RTX)
+	    {
+	      if (! sp_in_r0)
 		{
 		  emit_move_insn (r0,
 				  gen_rtx_PLUS
-				  (Pmode, r0,
-				   GEN_INT (offset - offset_in_r0)));
-		  offset_in_r0 += offset - offset_in_r0;
+				  (Pmode, r0, stack_pointer_rtx));
+		  sp_in_r0 = 1;
 		}
-		  
-	      if (post_inc != NULL_RTX)
-		{
-		  if (! sp_in_r0)
-		    {
-		      emit_move_insn (r0,
-				      gen_rtx_PLUS
-				      (Pmode, r0, stack_pointer_rtx));
-		      sp_in_r0 = 1;
-		    }
-		  
-		  mem_rtx = post_inc;
+	      
+	      mem_rtx = post_inc;
 
-		  offset_in_r0 += GET_MODE_SIZE (mode);
-		}
-	      else if (sp_in_r0)
-		mem_rtx = gen_rtx_MEM (mode, r0);
-	      else
-		mem_rtx = gen_rtx_MEM (mode,
-				       gen_rtx_PLUS (Pmode,
-						     stack_pointer_rtx,
-						     r0));
+	      offset_in_r0 += GET_MODE_SIZE (mode);
+	    }
+	  else if (sp_in_r0)
+	    mem_rtx = gen_rtx_MEM (mode, r0);
+	  else
+	    mem_rtx = gen_rtx_MEM (mode,
+				   gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 r0));
 
-	      if ((i == PR_REG || SPECIAL_REGISTER_P (i))
-		  && mem_rtx != post_inc)
-		abort ();
+	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
+	      && mem_rtx != post_inc)
+	    abort ();
 
-	    addr_ok:
-	      if ((i == PR_REG || SPECIAL_REGISTER_P (i))
-		  && mem_rtx != post_inc)
-		{
-		  insn = emit_move_insn (r0, mem_rtx);
-		  mem_rtx = r0;
-		}
-	      else if (TARGET_REGISTER_P (i))
-		{
-		  rtx tmp_reg = gen_rtx_REG (mode, tmp_regno);
+	addr_ok:
+	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
+	      && mem_rtx != post_inc)
+	    {
+	      insn = emit_move_insn (r0, mem_rtx);
+	      mem_rtx = r0;
+	    }
+	  else if (TARGET_REGISTER_P (reg))
+	    {
+	      rtx tmp_reg = gen_rtx_REG (mode, *tmp_pnt);
 
-		  /* Give the scheduler a bit of freedom by using R20..R23
-		     in a round-robin fashion.  Don't use R1 here because
-		     we want to use it for EH_RETURN_STACKADJ_RTX.  */
-		  insn = emit_move_insn (tmp_reg, mem_rtx);
-		  mem_rtx = tmp_reg;
-		  if (++tmp_regno > R23_REG)
-		    tmp_regno = R20_REG;
-		}
-
-	      insn = emit_move_insn (reg_rtx, mem_rtx);
-
-	      offset += GET_MODE_SIZE (mode);
+	      /* Give the scheduler a bit of freedom by using up to
+		 MAX_TEMPS registers in a round-robin fashion.  */
+	      insn = emit_move_insn (tmp_reg, mem_rtx);
+	      mem_rtx = tmp_reg;
+	      if (*++tmp_pnt < 0)
+		tmp_pnt = schedule.temps;
 	    }
 
-      if (offset != d + d_rounding)
+	  insn = emit_move_insn (reg_rtx, mem_rtx);
+
+	  offset += GET_MODE_SIZE (mode);
+	}
+
+      if (entry->offset + offset_base != d + d_rounding)
 	abort ();
     }
   else /* ! TARGET_SH5 */
@@ -5521,7 +5694,7 @@ sh_expand_epilogue ()
   output_stack_adjust (extra_push + current_function_pretend_args_size
 		       + save_size + d_rounding
 		       + current_function_args_info.stack_regs * 8,
-		       stack_pointer_rtx, 7, emit_insn);
+		       stack_pointer_rtx, 1, NULL);
 
   if (current_function_calls_eh_return)
     emit_insn (GEN_ADD3 (stack_pointer_rtx, stack_pointer_rtx,
@@ -5566,7 +5739,6 @@ sh_set_return_address (ra, tmp)
 {
   HARD_REG_SET live_regs_mask;
   int d;
-  int d_rounding = 0;
   int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
   int pr_offset;
 
@@ -5598,56 +5770,26 @@ sh_set_return_address (ra, tmp)
 
   if (TARGET_SH5)
     {
-      int i;
       int offset;
-      int align;
+      save_schedule schedule;
+      save_entry *entry;
       
-      if (d % (STACK_BOUNDARY / BITS_PER_UNIT))
-	d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
-		      - d % (STACK_BOUNDARY / BITS_PER_UNIT));
-
-      offset = 0;
-
-      /* We loop twice: first, we save 8-byte aligned registers in the
-	 higher addresses, that are known to be aligned.  Then, we
-	 proceed to saving 32-bit registers that don't need 8-byte
-	 alignment.  */
-      for (align = 0; align <= 1; align++)
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
-	    {
-	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
-
-	      if (mode == SFmode && (i % 2) == 0
-		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
-		{
-		  mode = DFmode;
-		  i++;
-		}
-
-	      /* If we're doing the aligned pass and this is not aligned,
-		 or we're doing the unaligned pass and this is aligned,
-		 skip it.  */
-	      if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT)
-		   == 0) != align)
-		continue;
-
-	      if (i == pr_reg)
-		goto found;
-
-	      offset += GET_MODE_SIZE (mode);
-	    }
+      entry = sh5_schedule_saves (&live_regs_mask, &schedule, 0);
+      offset = entry[1].offset;
+      for (; entry->mode != VOIDmode; entry--)
+	if (entry->reg == pr_reg)
+	  goto found;
 
       /* We can't find pr register.  */
       abort ();
 
     found:
-      pr_offset = (rounded_frame_size (d) - d_rounding + offset
+      offset = entry->offset - offset;
+      pr_offset = (rounded_frame_size (d) + offset
 		   + SHMEDIA_REGS_STACK_ADJUST ());
     }
   else
-    pr_offset = rounded_frame_size (d) - d_rounding;
+    pr_offset = rounded_frame_size (d);
 
   emit_insn (GEN_MOV (tmp, GEN_INT (pr_offset)));
   emit_insn (GEN_ADD3 (tmp, tmp, frame_pointer_rtx));
@@ -6188,9 +6330,10 @@ initial_elimination_offset (from, to)
     {
       if (TARGET_SH5)
 	{
-	  int i, n = total_saved_regs_space;
-	  int align;
+	  int n = total_saved_regs_space;
 	  int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
+	  save_schedule schedule;
+	  save_entry *entry;
 	  
 	  n += total_auto_space;
 
@@ -6200,40 +6343,13 @@ initial_elimination_offset (from, to)
 
 	  target_flags = copy_flags;
 
-	  /* We loop twice: first, check 8-byte aligned registers,
-	     that are stored in the higher addresses, that are known
-	     to be aligned.  Then, check 32-bit registers that don't
-	     need 8-byte alignment.  */
-	  for (align = 1; align >= 0; align--)
-	    for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	      if (TEST_HARD_REG_BIT (live_regs_mask, i))
-		{
-		  enum machine_mode mode = REGISTER_NATURAL_MODE (i);
-
-		  if (mode == SFmode && (i % 2) == 1
-		      && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		      && TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1)))
-		    {
-		      mode = DFmode;
-		      i--;
-		    }
-		
-		  /* If we're doing the aligned pass and this is not aligned,
-		     or we're doing the unaligned pass and this is aligned,
-		     skip it.  */
-		  if ((GET_MODE_SIZE (mode) % (STACK_BOUNDARY / BITS_PER_UNIT)
-		       == 0) != align)
-		    continue;
-
-		  n -= GET_MODE_SIZE (mode);
-
-		  if (i == pr_reg)
-		    {
-		      target_flags = save_flags;
-		      return n;
-		    }
-		}
-
+	  sh5_schedule_saves (&live_regs_mask, &schedule, n);
+	  for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
+	    if (entry->reg == pr_reg)
+	      {
+		target_flags = save_flags;
+		return entry->offset;
+	      }
 	  abort ();
 	}
       else
@@ -8703,6 +8819,24 @@ function_symbol (const char *name)
   rtx sym = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_FLAGS (sym) = SYMBOL_FLAG_FUNCTION;
   return sym;
+}
+
+/* Find the number of a general purpose register in S.  */
+static int
+scavenge_reg (HARD_REG_SET *s)
+{
+  int r;
+  for (r = FIRST_GENERAL_REG; r <= LAST_GENERAL_REG; r++)
+    if (TEST_HARD_REG_BIT (*s, r))
+      return r;
+  return -1;
+}
+
+rtx
+sh_get_pr_initial_val (void)
+{
+  return
+    get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
 }
 
 #include "gt-sh.h"

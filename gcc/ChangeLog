@@ -1,3 +1,44 @@
+2003-07-16  J"orn Rennecke <joern.rennecke@superh.com>
+	    Con Bradley <con.bradley@superh.com>
+
+	* sh-protos.h (sh_get_pr_initial_val): Declare.
+	* sh.c (regno_reg_class): Make its elements type enum reg_class.
+	(output_stack_adjust): Remove emit_fn argument.  Add epilogue_p
+	and live_regs_mask arguments.  Changed all callers.
+	(save_schedule_s): New structure.
+	(save_schedule): New typedef.
+	(scavenge_reg, sh5_schedule_saves, sh5_schedule_saves): New functions.
+	(calc_live_regs): For TARGET_SHMEDIA, use leaf_function_p.
+	In interrupts handlers, also save registers that are usually
+	partially saved, and make sure there is at least one general purpose
+	register saved if a target register needs saving.
+	Add casts in comparisons to avoid warnings.
+	(sh_media_register_for_return): return -1 for interrupt handlers.
+	(MAX_SAVED_REGS, MAX_TEMPS): New defines.
+	(sh_expand_prologue): Use sh5_schedule_saves.  Check that any temp
+	registers used are available.
+	Set RTX_FRAME_RELATED_P where appropriate.
+	Add an REG_FRAME_RELATED_EXPR for r0 + offset addressing.
+	(sh_expand_epilogue, sh_set_return_address): Use sh5_schedule_saves.
+	(initial_elimination_offset): Likewise.
+	* sh.h (DWARF_CIE_DATA_ALIGNMENT): Set to -4.
+	(LOCAL_ALIGNMENT, GENERAL_REGISTER_P): Add casts to avoid warnings.
+	(FP_REGISTER_P): Add casts to fix broken handling of unsigned REGNO.
+	(XD_REGISTER_P, TARGET_REGISTER_P): Likewise.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Also yield nonzero for r15,
+	and for target registers.
+	(RETURN_IN_MEMORY): Add parentheses to avoid warnings.
+	(regno_reg_class): Make its elements type enum reg_class.
+	(CONSTRAINT_LEN): Don't use isdigit.
+	(FUNCTION_ARG_REGNO_P): Add casts to avoid warnings.
+	(FUNCTION_ARG): Add parentheses to avoid warnings.
+	(RETURN_ADDR_RTX): Use sh_get_pr_initial_val.
+	(RETURN_ADDR_OFFSET): Define to -1 for TARGET_SH5.
+	(SH_DBX_REGISTER_NUMBER): Add casts to avoid warnings.
+	(EH_RETURN_DATA_REGNO): Use unsigned constants to avoid warnings.
+	* sh.md (xordi3+1): Remove unused variable regno.
+	(return_media): Check that tr0 is available before using it.
+
 2003-07-16  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c.opt: Document more options.

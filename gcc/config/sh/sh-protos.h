@@ -136,5 +136,6 @@ extern void sh_pr_interrupt PARAMS ((struct cpp_reader *));
 extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
 extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
 extern rtx function_symbol (const char *);
+extern rtx sh_get_pr_initial_val (void);
 
 #endif /* ! GCC_SH_PROTOS_H */
