@@ -1,3 +1,11 @@
+2004-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 13728
+	* c-decl.c (diagnose_mismatched_decls): Issue an error for two
+	parameters with the same name, unless one is a forward decl.
+	Do not issue a redundant-redeclaration warning for forward
+	decls of parameters.
+
 2004-03-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Document use of Bash to speed up
@@ -94,7 +102,7 @@
 2004-03-03  Stuart Hastings  <stuart@apple.com>
 
 	* gcc/config.gcc: Arrange for Darwin/x86 to build libgcc_eh.a.
-	
+
 2004-03-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (noov_compare64_op): Fix typo.
@@ -389,10 +397,10 @@
 
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/11767
-        * coverage.c (coverage_counter_ref): Set MEM_NOTRAP_P.
-        * optabs.c (prepare_cmp_insn): Force trapping memories to registers
-        before the compare, if flag_non_call_exceptions.
+	PR middle-end/11767
+	* coverage.c (coverage_counter_ref): Set MEM_NOTRAP_P.
+	* optabs.c (prepare_cmp_insn): Force trapping memories to registers
+	before the compare, if flag_non_call_exceptions.
 
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
@@ -873,7 +881,7 @@
 	enable_rtl_dump_file): Declare.
 
 2004-02-27  Eric Botcazou  <ebotcazou@act-europe.fr>
-            Roger Sayle  <roger@eyesopen.com>
+	    Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold): Revert 2004-02-25 change.  Use the original
 	operands to build a tree with swapped operands.
@@ -1084,11 +1092,11 @@
 
 2004-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
-        (spe_fixuns_truncsfsi2): Delete.
+	* config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
+	(spe_fixuns_truncsfsi2): Delete.
 
-        * config/rs6000/rs6000.md (fix_truncsfsi2): Delete.
-        (fixuns_truncsfsi2): Delete.
+	* config/rs6000/rs6000.md (fix_truncsfsi2): Delete.
+	(fixuns_truncsfsi2): Delete.
 
 2004-02-24  Josef Zlomek  <zlomekj@suse.cz>
 
@@ -1578,7 +1586,7 @@
 
 	* config/i386/i386.c: Rename pni to sse3.
 	* config/i386/i386.h: Likewise.
-        * config/i386/i386.md: Likewise.
+	* config/i386/i386.md: Likewise.
 	* config/i386/pmmintrin.h: Likewise.
 	* doc/extend.texi: Likewise.
 	* doc/invoke.texi: Likewise.
@@ -1628,7 +1636,7 @@
 	(movdf_softfloat64):  Ditto.
 
 2004-02-23  Fariborz Jahanian <fjahanian@apple.com>
-        * config/rs6000/rs6000.c (function_arg): call to
+	* config/rs6000/rs6000.c (function_arg): call to
 	rs6000_mixed_function_arg for DFmode moved to allow
 	normal DFmode incoming register assignment.
 
@@ -1668,7 +1676,7 @@
 	TARGET_DEFAULT_SHORT_ENUMS.  Update the description.
 
 2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Falk Hueffner  <falk@debian.org>
+	    Falk Hueffner  <falk@debian.org>
 
 	PR c/14188
 	* builtins.c (expand_builtin_va_arg): Emit an informative message
@@ -1810,7 +1818,7 @@
 
 2004-02-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        PR c++/12007
+	PR c++/12007
 	* dbxout.c (dbxout_parms): Check that DECL_RTL and DECL_INCOMING_RTL
 	are set for parameters before outputing debugging information.
 
@@ -1860,7 +1868,7 @@
 2004-02-20  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/install.texi (Building the Ada compiler): Remove
-        example.
+	example.
 
 2004-02-20  James E Wilson  <wilson@specifixinc.com>
 

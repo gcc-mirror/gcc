@@ -1,3 +1,8 @@
+2004-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 13728
+	* gcc.dg/decl-4.c: New testcase.
+
 2004-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/torture/builtin-explog-1.c (PREC): Make it the same
@@ -23,7 +28,7 @@
 
 	PR c++/14360
 	* g++.old-deja/g++.ns/koenig5.C: Remove some error markers.
-	
+
 	PR c++/14361
 	* g++.dg/parse/defarg7.C: New test.
 
@@ -92,8 +97,8 @@
 
 2004-02-26  Richard Henderson  <rth@redhat.com>
 
-        * g++.dg/ext/attrib10.C: Mark for warning.
-        * gcc.dg/attr-alias-1.c: New.
+	* g++.dg/ext/attrib10.C: Mark for warning.
+	* gcc.dg/attr-alias-1.c: New.
 
 2004-02-26  Richard Henderson  <rth@redhat.com>
 
@@ -105,28 +110,28 @@
 	* lib/target-supports.exp (check-iconv-available): New function.
 	* lib/gcc-dg.exp (dg-require-iconv): New function.
 	Use above.
-        * gcc.dg/charset: New directory.
-        * gcc.dg/charset/charset.exp: New file.
-        * gcc.dg/charset/asm1.c: Ditto.
-        * gcc.dg/charset/asm2.c: Ditto.
-        * gcc.dg/charset/asm3.c: Ditto.
-        * gcc.dg/charset/asm4.c: Ditto.
-        * gcc.dg/charset/asm5.c: Ditto.
-        * gcc.dg/charset/attribute1.c: Ditto.
-        * gcc.dg/charset/attribute2.c: Ditto.
-        * gcc.dg/charset/string1.c: Ditto.
-        * g++.dg/charset: New directory.
-        * g++.dg/dg.exp: Add here. Special options.
-        * g++.dg/charset/charset.exp: New file.
-        * g++.dg/charset/asm1.c: Ditto.
-        * g++.dg/charset/asm2.c: Ditto.
-        * g++.dg/charset/asm3.c: Ditto.
-        * g++.dg/charset/asm4.c: Ditto.
-        * g++.dg/charset/attribute1.c: Ditto.
-        * g++.dg/charset/attribute2.c: Ditto.
-        * g++.dg/charset/extern1.cc: Ditto.
-        * g++.dg/charset/extern2.cc: Ditto.
-        * g++.dg/charset/string1.c: Ditto.
+	* gcc.dg/charset: New directory.
+	* gcc.dg/charset/charset.exp: New file.
+	* gcc.dg/charset/asm1.c: Ditto.
+	* gcc.dg/charset/asm2.c: Ditto.
+	* gcc.dg/charset/asm3.c: Ditto.
+	* gcc.dg/charset/asm4.c: Ditto.
+	* gcc.dg/charset/asm5.c: Ditto.
+	* gcc.dg/charset/attribute1.c: Ditto.
+	* gcc.dg/charset/attribute2.c: Ditto.
+	* gcc.dg/charset/string1.c: Ditto.
+	* g++.dg/charset: New directory.
+	* g++.dg/dg.exp: Add here. Special options.
+	* g++.dg/charset/charset.exp: New file.
+	* g++.dg/charset/asm1.c: Ditto.
+	* g++.dg/charset/asm2.c: Ditto.
+	* g++.dg/charset/asm3.c: Ditto.
+	* g++.dg/charset/asm4.c: Ditto.
+	* g++.dg/charset/attribute1.c: Ditto.
+	* g++.dg/charset/attribute2.c: Ditto.
+	* g++.dg/charset/extern1.cc: Ditto.
+	* g++.dg/charset/extern2.cc: Ditto.
+	* g++.dg/charset/string1.c: Ditto.
 
 2004-02-26  Mark Mitchell  <mark@codesourcery.com>
 
