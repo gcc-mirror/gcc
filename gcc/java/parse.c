@@ -2222,7 +2222,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/gnu/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2415,7 +2415,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/gnu/share/bison.simple"
+#line 196 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4680,7 +4680,7 @@ case 493:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/gnu/share/bison.simple"
+#line 498 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -9771,8 +9771,21 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   /* Search interfaces */
   if (CLASS_INTERFACE (TYPE_NAME (class)))
     {
+      static tree searched_interfaces = NULL_TREE;
+      static int search_not_done = 0;
       int i, n;
       tree basetype_vec = TYPE_BINFO_BASETYPES (class);
+
+      /* Have we searched this interface already? */
+      if (searched_interfaces)
+	{  
+	  tree current;  
+	  for (current = searched_interfaces; 
+	       current; current = TREE_CHAIN (current))
+	    if (TREE_VALUE (current) == class)
+	      return NULL;
+	}
+      searched_interfaces = tree_cons (NULL_TREE, class, searched_interfaces);
 
       search_applicable_methods_list 
 	(lc, TYPE_METHODS (class), name, arglist, &list, &all_list);
@@ -9780,11 +9793,27 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       n = TREE_VEC_LENGTH (basetype_vec);
       for (i = 0; i < n; i++)
 	{
-	  tree rlist = 
-	    find_applicable_accessible_methods_list 
-	      (lc,  BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i)), 
-	       name, arglist);
+	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+	  tree rlist;
+
+	  /* Skip java.lang.Object (we'll search it once later.) */
+	  if (t == object_type_node)
+	    continue;
+
+	  search_not_done++;
+	  rlist = find_applicable_accessible_methods_list (lc,  t, name, 
+							   arglist);
 	  all_list = chainon (rlist, (list ? list : all_list)); 
+	  search_not_done--;
+	}
+
+      /* We're done. Reset the searched interfaces list and finally search
+         java.lang.Object */
+      if (!search_not_done)
+	{  
+	  searched_interfaces = NULL_TREE;  
+	  search_applicable_methods_list (lc, TYPE_METHODS (object_type_node),
+					  name, arglist, &list, &all_list);
 	}
     }
   /* Search classes */
