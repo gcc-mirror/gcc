@@ -1,3 +1,8 @@
+2001-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/crt1.asm (main_k): Modified so that start calls
+	___setup_argv_and_call_main.
+
 2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpphash.h (struct cpp_buffer): Move saved_flags from cpp_reader.

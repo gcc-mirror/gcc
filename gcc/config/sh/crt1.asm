@@ -83,7 +83,7 @@ edata_k:
 end_k:
 	.long	_end
 main_k:
-	.long	_main
+	.long	___setup_argv_and_call_main
 exit_k:
 	.long	_exit
 atexit_k:
