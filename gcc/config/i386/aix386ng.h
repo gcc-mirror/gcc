@@ -57,7 +57,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) 					\
-  do { fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);	\
+  do { fprintf (FILE, "\t.file\t");				\
+       output_quoted_string (FILE, dump_base_name);		\
+       fprintf (FILE, "\n");					\
        if (optimize)						\
           ASM_FILE_START_1 (FILE); 				\
        else							\

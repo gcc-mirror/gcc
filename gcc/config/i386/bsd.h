@@ -48,7 +48,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    ??? I am skeptical of this -- RMS.  */
 
 #define ASM_FILE_START(FILE) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);
+  do {	fprintf (FILE, "\t.file\t");				\
+	output_quoted_string (FILE, dump_base_name);		\
+	fprintf (FILE, "\n");					\
+  } while (0)
 
 /* This was suggested, but it shouldn't be right for DBX output. -- RMS
    #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) */

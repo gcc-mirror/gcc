@@ -1354,7 +1354,9 @@ extern char *current_function_name;
   for (p = main_input_filename; *p; p++)			\
     if (*p == '/')						\
       after_dir = p + 1;					\
-  fprintf (FILE, "\n\t.file 2 \"%s\"\n", after_dir);	        \
+  fprintf (FILE, "\n\t.file 2 ");			        \
+  output_quoted_string (FILE, after_dir);		        \
+  fprintf (FILE, "\n");					        \
 }
 
 /* Output to assembler file text saying following lines

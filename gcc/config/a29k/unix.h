@@ -61,7 +61,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   for (p = main_input_filename; *p; p++)			\
     if (*p == '/')						\
       after_dir = p + 1;					\
-  fprintf (FILE, "\t.file \"%s\"\n", after_dir);		\
+  fprintf (FILE, "\t.file ");					\
+  output_quoted_string (FILE, after_dir);			\
+  fprintf (FILE, "\n");						\
   if (flag_shared_data)						\
     fprintf (FILE, "\t.sect .shdata,data\n");			\
   fprintf (FILE, "\t.sect .lit,lit\n");  }
