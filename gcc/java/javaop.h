@@ -124,7 +124,11 @@ union DWord {
 static inline jdouble
 WORDS_TO_DOUBLE(jword hi, jword lo)
 { union DWord wu;
+#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN)
+  wu.l = WORDS_TO_LONG(lo, hi);
+#else
   wu.l = WORDS_TO_LONG(hi, lo);
+#endif
   return wu.d;
 } 
 
