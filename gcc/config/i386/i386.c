@@ -489,9 +489,6 @@ i386_return_pops_args (fundecl, funtype, size)
 { 
   int rtd = TARGET_RTD;
 
-  if (TREE_CODE (funtype) == IDENTIFIER_NODE)
-    return 0;
-
     /* Cdecl functions override -mrtd, and never pop the stack */
   if (!lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
   
