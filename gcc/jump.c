@@ -1869,9 +1869,21 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		   && (next_active_insn (JUMP_LABEL (insn))
 		       == next_active_insn (JUMP_LABEL (temp))))
 	    {
-	      delete_jump (insn);
-	      changed = 1;
-	      continue;
+	      rtx tem = temp;
+
+	      /* ??? Optional.  Disables some optimizations, but makes
+		 gcov output more accurate with -O.  */
+	      if (flag_test_coverage && !reload_completed)
+		for (tem = insn; tem != temp; tem = NEXT_INSN (tem))
+		  if (GET_CODE (tem) == NOTE && NOTE_LINE_NUMBER (tem) > 0)
+		    break;
+
+	      if (tem == temp)
+		{
+		  delete_jump (insn);
+		  changed = 1;
+		  continue;
+		}
 	    }
 	  /* Detect a conditional jump jumping over an unconditional jump.  */
 
@@ -3219,7 +3231,10 @@ follow_jumps (label)
       if (!reload_completed)
 	for (tem = value; tem != insn; tem = NEXT_INSN (tem))
 	  if (GET_CODE (tem) == NOTE
-	      && NOTE_LINE_NUMBER (tem) == NOTE_INSN_LOOP_BEG)
+	      && (NOTE_LINE_NUMBER (tem) == NOTE_INSN_LOOP_BEG
+		  /* ??? Optional.  Disables some optimizations, but makes
+		     gcov output more accurate with -O.  */
+		  || (flag_test_coverage && NOTE_LINE_NUMBER (tem) > 0)))
 	    return value;
 
       /* If we have found a cycle, make the insn jump to itself.  */
@@ -3340,7 +3355,10 @@ mark_jump_label (x, insn, cross_jump)
 	      break;
 	    else if (! cross_jump
 		     && (NOTE_LINE_NUMBER (next) == NOTE_INSN_LOOP_BEG
-			 || NOTE_LINE_NUMBER (next) == NOTE_INSN_FUNCTION_END))
+			 || NOTE_LINE_NUMBER (next) == NOTE_INSN_FUNCTION_END
+			 /* ??? Optional.  Disables some optimizations, but
+			    makes gcov output more accurate with -O.  */
+			 || (flag_test_coverage && NOTE_LINE_NUMBER (next) > 0)))
 	      break;
 	  }
 
@@ -3755,7 +3773,21 @@ invert_jump (jump, nlabel)
     return 0;
 
   if (redirect_jump (jump, nlabel))
-    return 1;
+    {
+      if (flag_branch_probabilities)
+	{
+	  rtx note = find_reg_note (jump, REG_BR_PROB, 0);
+
+	  /* An inverted jump means that a probability taken becomes a
+	     probability not taken.  Subtract the branch probability from the
+	     probability base to convert it back to a taken probability.
+	     (We don't flip the probability on a branch that's never taken.  */
+	  if (note && XINT (XEXP (note, 0), 0) >= 0)
+	    XINT (XEXP (note, 0), 0) = REG_BR_PROB_BASE - XINT (XEXP (note, 0), 0);
+	}
+
+      return 1;
+    }
 
   if (! invert_exp (PATTERN (jump), jump))
     /* This should just be putting it back the way it was.  */
