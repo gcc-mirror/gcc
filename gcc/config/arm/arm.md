@@ -1,5 +1,5 @@
 ;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
-;;  Copyright (C) 1991, 93-97, 1998 Free Software Foundation, Inc.
+;;  Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
