@@ -260,7 +260,7 @@ i386_pe_dllimport_p (decl)
 	}
 
       /* We ignore the dllimport attribute for inline member functions.
-	 This differs from MSVC behaviour which treats it like GNUC
+	 This differs from MSVC behavior which treats it like GNUC
      	 'extern inline' extension.   */
       else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
         {

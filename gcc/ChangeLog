@@ -1,5 +1,12 @@
 2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* ggc.h: Follow spelling conventions.
+	* config/i386/i386.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+
+2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* bt-load.c: Fix comment typos.
 	* c-incpath.c: Likewise.
 	* cfg.c: Likewise.
