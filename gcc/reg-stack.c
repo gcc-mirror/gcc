@@ -416,7 +416,7 @@ pop_stack (regstack, regno)
    code duplication created when the converter inserts pop insns on
    the edges.  */
 
-void
+bool
 reg_to_stack (first, file)
      rtx first;
      FILE *file;
@@ -437,11 +437,15 @@ reg_to_stack (first, file)
     if (regs_ever_live[i])
       break;
   if (i > LAST_STACK_REG)
-    return;
+    return false;
 
   /* Ok, floating point instructions exist.  If not optimizing,
-     build the CFG and run life analysis.  */
-  if (!optimize)
+     build the CFG and run life analysis.  
+     Also need to rebuild life when superblock scheduling is done
+     as it don't update liveness yet.  */
+  if (!optimize
+      || (flag_sched2_use_superblocks
+	  && flag_schedule_insns_after_reload))
     {
       count_or_remove_death_notes (NULL, 1);
       life_analysis (first, file, PROP_DEATH_NOTES);
@@ -498,6 +502,7 @@ reg_to_stack (first, file)
   convert_regs (file);
 
   free_aux_for_blocks ();
+  return true;
 }
 
 /* Check PAT, which is in INSN, for LABEL_REFs.  Add INSN to the

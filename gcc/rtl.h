@@ -2167,7 +2167,7 @@ extern void create_profiler		PARAMS ((void));
 
 /* In reg-stack.c */
 #ifdef BUFSIZ
-extern void reg_to_stack		PARAMS ((rtx, FILE *));
+extern bool reg_to_stack		PARAMS ((rtx, FILE *));
 #endif
 
 /* In fold-const.c */

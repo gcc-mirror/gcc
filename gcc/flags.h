@@ -416,6 +416,8 @@ extern int flag_shared_data;
 
 extern int flag_schedule_insns;
 extern int flag_schedule_insns_after_reload;
+extern int flag_sched2_use_superblocks;
+extern int flag_sched2_use_traces;
 
 /* The following flags have effect only for scheduling before register
    allocation:
