@@ -1822,7 +1822,7 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
   timevar_pop (TV_INTEGRATION);
 
   /* If inlining succeeded, return.  */
-  if (temp != (rtx) (HOST_WIDE_INT) - 1)
+  if (temp != (rtx) (size_t) - 1)
     {
       if (ACCUMULATE_OUTGOING_ARGS)
 	{
@@ -1902,7 +1902,7 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
       warning ("called from here");
     }
   mark_addressable (fndecl);
-  return (rtx) (HOST_WIDE_INT) - 1;
+  return (rtx) (size_t) - 1;
 }
 
 /* We need to pop PENDING_STACK_ADJUST bytes.  But, if the arguments
@@ -2285,7 +2285,7 @@ expand_call (exp, target, ignore)
       rtx temp = try_to_integrate (fndecl, actparms, target,
 				   ignore, TREE_TYPE (exp),
 				   structure_value_addr);
-      if (temp != (rtx) (HOST_WIDE_INT) - 1)
+      if (temp != (rtx) (size_t) - 1)
 	return temp;
     }
 

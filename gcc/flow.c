@@ -3974,13 +3974,13 @@ try_pre_increment (insn, reg, amount)
   use = 0;
   if (pre_ok)
     use = find_use_as_address (PATTERN (insn), reg, 0);
-  if (post_ok && (use == 0 || use == (rtx) 1))
+  if (post_ok && (use == 0 || use == (rtx) (size_t) 1))
     {
       use = find_use_as_address (PATTERN (insn), reg, -amount);
       do_post = 1;
     }
 
-  if (use == 0 || use == (rtx) 1)
+  if (use == 0 || use == (rtx) (size_t) 1)
     return 0;
 
   if (GET_MODE_SIZE (GET_MODE (use)) != (amount > 0 ? amount : - amount))
@@ -4008,7 +4008,7 @@ try_pre_increment (insn, reg, amount)
 
    If such an address does not appear, return 0.
    If REG appears more than once, or is used other than in such an address,
-   return (rtx)1.  */
+   return (rtx) 1.  */
 
 rtx
 find_use_as_address (x, reg, plusconst)
@@ -4036,11 +4036,11 @@ find_use_as_address (x, reg, plusconst)
       /* If REG occurs inside a MEM used in a bit-field reference,
 	 that is unacceptable.  */
       if (find_use_as_address (XEXP (x, 0), reg, 0) != 0)
-	return (rtx) (HOST_WIDE_INT) 1;
+	return (rtx) (size_t) 1;
     }
 
   if (x == reg)
-    return (rtx) (HOST_WIDE_INT) 1;
+    return (rtx) (size_t) 1;
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
@@ -4050,7 +4050,7 @@ find_use_as_address (x, reg, plusconst)
 	  if (value == 0)
 	    value = tem;
 	  else if (tem != 0)
-	    return (rtx) (HOST_WIDE_INT) 1;
+	    return (rtx) (size_t) 1;
 	}
       else if (fmt[i] == 'E')
 	{
@@ -4061,7 +4061,7 @@ find_use_as_address (x, reg, plusconst)
 	      if (value == 0)
 		value = tem;
 	      else if (tem != 0)
-		return (rtx) (HOST_WIDE_INT) 1;
+		return (rtx) (size_t) 1;
 	    }
 	}
     }

@@ -1,5 +1,15 @@
 2002-01-26  Graham Stott  <grahams@redhat.com>
 
+	* calls.c (try_to_integrate): Use "(size_t)" intermediate
+	cast and when casting an integer literal to "rtx" pointer.
+	(expand_call): Likewise.
+	* flow.c (try_pre_increment): Likewise.
+	(find_use_as_address): Likewise.
+	* integrate.c (expand_iline_function): Likewise.
+	* regmove.c (try_auto_increment): Likewise.
+
+2002-01-26  Graham Stott  <grahams@redhat.com>
+
 	* sched-rgn.c (passed): Use sbitmap_free.
 	(header): Likewise.
 	(inner): Likewise.
