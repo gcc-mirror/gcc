@@ -1,3 +1,8 @@
+2003-04-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Fix typos.
+	* doc/tm.texi: Likewise.
+
 2003-04-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-typeck.c (digest_init, push_init_level): Use CONSTRUCTOR_ELTS.
