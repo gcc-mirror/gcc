@@ -1,3 +1,13 @@
+2005-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/20561
+	* cfglayout.c (reemit_insn_block_notes): Don't put block notes in
+	between jump table and its label.
+	* final.c (shorten_branches): Handle notes in between ADDR_VEC
+	resp. ADDR_DIFF_VEC and the label preceeding it.
+	(final_scan_insn): Likewise.  Ensure ADDR_VEC resp. ADDR_DIFF_VEC
+	is emitted in the right section.
+
 2005-03-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/20539

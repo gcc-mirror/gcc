@@ -523,6 +523,12 @@ reemit_insn_block_notes (void)
     {
       tree this_block;
 
+      /* Avoid putting scope notes between jump table and its label.  */
+      if (JUMP_P (insn)
+	  && (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+	continue;
+
       this_block = insn_scope (insn);
       /* For sequences compute scope resulting from merging all scopes
          of instructions nested inside.  */
