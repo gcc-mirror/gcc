@@ -1,5 +1,8 @@
 Fri Apr 14 07:40:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_decl): Properly compare KNOWN_ALIGN to
+	see if DECL_BIT_FIELD needs to still be set.
+
 	* tree.h (struct tree_type): Make PRECISION 9 bits and MODE 7.
 
 	* dbxout.c (dbxout_type, case INTEGER_TYPE): Don't call
