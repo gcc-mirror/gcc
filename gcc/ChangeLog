@@ -1,3 +1,7 @@
+2003-12-17  Segher Boessenkool  <boessen@de.ibm.com>
+
+	* opts.c (wrap_help): Fix overflow.
+
 2003-12-17  Fred Fish  <fnf@redhat.com>
 
 	* configure.in: Remove code to examine linker scripts and set
