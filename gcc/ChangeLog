@@ -97,7 +97,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 	PR preprocessor/7150
 	* cppmain.c (scan_translation_unit_trad): Simplify.
-	* cpplib.c (cpp_scan_nooutput): Handle traditional case.
+	* cppmacro.c (cpp_scan_nooutput): Handle traditional case.
 
 2002-06-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
