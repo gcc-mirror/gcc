@@ -187,13 +187,12 @@ package body Exp_Ch9 is
       Append_Char      : Character := ' ') return Name_Id;
    --  Build a name in the form of Prefix__Selector, with an optional
    --  character appended. This is used for internal subprograms generated
-   --  for operations of protected types, including barrier functions. In
-   --  order to simplify the work of the debugger, the prefix includes the
-   --  characters PT. For the subprograms generated for entry bodies and
-   --  entry barriers, the generated name includes a sequence number that
-   --  makes names unique in the presence of entry overloading. This is
-   --  necessary because entry body procedures and barrier functions all
-   --  have the same signature.
+   --  for operations of protected types, including barrier functions.
+   --  For the subprograms generated for entry bodies and entry barriers,
+   --  the generated name includes a sequence number that makes names
+   --  unique in the presence of entry overloading. This is necessary
+   --  because entry body procedures and barrier functions all have the
+   --  same signature.
 
    procedure Build_Simple_Entry_Call
      (N       : Node_Id;
@@ -799,6 +798,7 @@ package body Exp_Ch9 is
       Loc    : Source_Ptr) return Node_Id
    is
    begin
+      Set_Needs_Debug_Info (Def_Id);
       return Make_Function_Specification (Loc,
         Defining_Unit_Name => Def_Id,
         Parameter_Specifications => New_List (
@@ -1395,6 +1395,7 @@ package body Exp_Ch9 is
       P : Entity_Id;
 
    begin
+      Set_Needs_Debug_Info (Def_Id);
       P := Make_Defining_Identifier (Loc, Name_uP);
 
       if Present (Ent_Id) then
@@ -1911,12 +1912,10 @@ package body Exp_Ch9 is
          Name_Len := Name_Len - 1;
       end if;
 
-      Name_Buffer (Name_Len + 1) := 'P';
-      Name_Buffer (Name_Len + 2) := 'T';
-      Name_Buffer (Name_Len + 3) := '_';
-      Name_Buffer (Name_Len + 4) := '_';
+      Name_Buffer (Name_Len + 1) := '_';
+      Name_Buffer (Name_Len + 2) := '_';
 
-      Name_Len := Name_Len + 4;
+      Name_Len := Name_Len + 2;
       for J in 1 .. Select_Len loop
          Name_Len := Name_Len + 1;
          Name_Buffer (Name_Len) := Select_Buffer (J);
