@@ -1,3 +1,9 @@
+2001-12-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* g++.old-deja/g++.jason/template31.C: Remove templates for classes
+        std::__malloc_alloc_template<0> and
+	std::__default_alloc_template<false, 0>.
+
 Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/bf-21.m: New test.
