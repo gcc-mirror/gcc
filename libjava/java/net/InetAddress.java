@@ -488,9 +488,9 @@ public class InetAddress implements Serializable
    */
   public String toString()
   {
-    String address = getHostAddress();
-    String host = (hostName != null) ? hostName : address;
-    return host + "/" + address;
+    String addr = getHostAddress();
+    String host = (hostName != null) ? hostName : addr;
+    return host + "/" + addr;
   }
 
   /**
