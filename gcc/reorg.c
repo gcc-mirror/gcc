@@ -2762,25 +2762,17 @@ mark_target_live_regs (target, res)
 	 marked live, plus live pseudo regs that have been renumbered to
 	 hard regs.  */
 
-#ifdef HARD_REG_SET
-      current_live_regs = *regs_live;
-#else
-      COPY_HARD_REG_SET (current_live_regs, regs_live);
-#endif
+      REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
 
-      for (offset = 0, i = 0; offset < regset_size; offset++)
-	{
-	  if (regs_live[offset] == 0)
-	    i += REGSET_ELT_BITS;
-	  else
-	    for (bit = 1; bit && i < max_regno; bit <<= 1, i++)
-	      if ((regs_live[offset] & bit)
-		  && (regno = reg_renumber[i]) >= 0)
-		for (j = regno;
-		     j < regno + HARD_REGNO_NREGS (regno,
-						   PSEUDO_REGNO_MODE (i));
-		     j++)
-		  SET_HARD_REG_BIT (current_live_regs, j);
+      EXECUTE_IF_SET_IN_REG_SET (regs_live, 0, i,
+				 {
+				   if ((regno = reg_renumber[i]) >= 0)
+				     for (j = regno;
+					  j < regno + HARD_REGNO_NREGS (regno,
+									PSEUDO_REGNO_MODE (i));
+					  j++)
+				       SET_HARD_REG_BIT (current_live_regs, j);
+				 });
 	}
 
       /* Get starting and ending insn, handling the case where each might

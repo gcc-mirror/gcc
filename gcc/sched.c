@@ -289,8 +289,7 @@ static int *insn_tick;
 
 struct sometimes
 {
-  int offset;
-  int bit;
+  int regno;
   int live_length;
   int calls_crossed;
 };
@@ -333,8 +332,7 @@ static void create_reg_dead_note	PROTO((rtx, rtx));
 static void attach_deaths		PROTO((rtx, rtx, int));
 static void attach_deaths_insn		PROTO((rtx));
 static rtx unlink_notes			PROTO((rtx, rtx));
-static int new_sometimes_live		PROTO((struct sometimes *, int, int,
-					       int));
+static int new_sometimes_live		PROTO((struct sometimes *, int, int));
 static void finish_sometimes_live	PROTO((struct sometimes *, int));
 static rtx reemit_notes			PROTO((rtx, rtx));
 static void schedule_block		PROTO((int, FILE *));
@@ -1733,8 +1731,7 @@ sched_analyze_1 (x, insn)
 	      if (reg_last_sets[regno + i])
 		add_dependence (insn, reg_last_sets[regno + i],
 				REG_DEP_OUTPUT);
-	      reg_pending_sets[(regno + i) / REGSET_ELT_BITS]
-		|= (REGSET_ELT_TYPE) 1 << ((regno + i) % REGSET_ELT_BITS);
+	      SET_REGNO_REG_SET (reg_pending_sets, regno + i);
 	      if ((call_used_regs[i] || global_regs[i])
 		  && last_function_call)
 		/* Function calls clobber all call_used regs.  */
@@ -1750,8 +1747,7 @@ sched_analyze_1 (x, insn)
 	  reg_last_uses[regno] = 0;
 	  if (reg_last_sets[regno])
 	    add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
-	  reg_pending_sets[regno / REGSET_ELT_BITS]
-	    |= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
+	  SET_REGNO_REG_SET (reg_pending_sets, regno);
 
 	  /* Pseudos that are REG_EQUIV to something may be replaced
 	     by that during reloading.  We need only add dependencies for
@@ -2132,18 +2128,11 @@ sched_analyze_insn (x, insn, loop_notes)
 	  sched_analyze_2 (XEXP (note, 0), insn);
     }
 
-  for (i = 0; i < regset_size; i++)
-    {
-      REGSET_ELT_TYPE sets = reg_pending_sets[i];
-      if (sets)
-	{
-	  register int bit;
-	  for (bit = 0; bit < REGSET_ELT_BITS; bit++)
-	    if (sets & ((REGSET_ELT_TYPE) 1 << bit))
-	      reg_last_sets[i * REGSET_ELT_BITS + bit] = insn;
-	  reg_pending_sets[i] = 0;
-	}
-    }
+  EXECUTE_IF_SET_AND_RESET_IN_REG_SET (reg_pending_sets, 0, i,
+				       {
+					 reg_last_sets[i] = insn;
+				       });
+
   if (reg_pending_sets_all)
     {
       for (i = 0; i < maxreg; i++)
@@ -2264,8 +2253,7 @@ sched_analyze (head, tail)
 		    reg_last_uses[i] = 0;
 		    if (reg_last_sets[i])
 		      add_dependence (insn, reg_last_sets[i], REG_DEP_ANTI);
-		    reg_pending_sets[i / REGSET_ELT_BITS]
-		      |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
+		    SET_REGNO_REG_SET (reg_pending_sets, i);
 		  }
 	    }
 
@@ -2358,10 +2346,6 @@ sched_note_set (b, x, death)
   regno = REGNO (reg);
   if (regno >= FIRST_PSEUDO_REGISTER || ! global_regs[regno])
     {
-      register int offset = regno / REGSET_ELT_BITS;
-      register REGSET_ELT_TYPE bit
-	= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
-
       if (death)
 	{
 	  /* If we only set part of the register, then this set does not
@@ -2375,17 +2359,14 @@ sched_note_set (b, x, death)
 	      int j = HARD_REGNO_NREGS (regno, GET_MODE (reg));
 	      while (--j >= 0)
 		{
-		  offset = (regno + j) / REGSET_ELT_BITS;
-		  bit = (REGSET_ELT_TYPE) 1 << ((regno + j) % REGSET_ELT_BITS);
-		  
-		  bb_live_regs[offset] &= ~bit;
-		  bb_dead_regs[offset] |= bit;
+		  CLEAR_REGNO_REG_SET (bb_live_regs, regno + j);
+		  SET_REGNO_REG_SET (bb_dead_regs, regno + j);
 		}
 	    }
 	  else
 	    {
-	      bb_live_regs[offset] &= ~bit;
-	      bb_dead_regs[offset] |= bit;
+	      CLEAR_REGNO_REG_SET (bb_live_regs, regno);
+	      SET_REGNO_REG_SET (bb_dead_regs, regno);
 	    }
 	}
       else
@@ -2396,17 +2377,14 @@ sched_note_set (b, x, death)
 	      int j = HARD_REGNO_NREGS (regno, GET_MODE (reg));
 	      while (--j >= 0)
 		{
-		  offset = (regno + j) / REGSET_ELT_BITS;
-		  bit = (REGSET_ELT_TYPE) 1 << ((regno + j) % REGSET_ELT_BITS);
-		  
-		  bb_live_regs[offset] |= bit;
-		  bb_dead_regs[offset] &= ~bit;
+		  SET_REGNO_REG_SET (bb_live_regs, regno + j);
+		  CLEAR_REGNO_REG_SET (bb_dead_regs, regno + j);
 		}
 	    }
 	  else
 	    {
-	      bb_live_regs[offset] |= bit;
-	      bb_dead_regs[offset] &= ~bit;
+	      SET_REGNO_REG_SET (bb_live_regs, regno);
+	      CLEAR_REGNO_REG_SET (bb_dead_regs, regno);
 	    }
 	}
     }
@@ -2524,14 +2502,12 @@ birthing_insn_p (pat)
     {
       rtx dest = SET_DEST (pat);
       int i = REGNO (dest);
-      int offset = i / REGSET_ELT_BITS;
-      REGSET_ELT_TYPE bit = (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
 
       /* It would be more accurate to use refers_to_regno_p or
 	 reg_mentioned_p to determine when the dest is not live before this
 	 insn.  */
 
-      if (bb_live_regs[offset] & bit)
+      if (REGNO_REG_SET_P (bb_live_regs, i))
 	return (REG_N_SETS (i) == 1);
 
       return 0;
@@ -2859,16 +2835,15 @@ attach_deaths (x, insn, set_p)
 	/* This code is very similar to mark_used_1 (if set_p is false)
 	   and mark_set_1 (if set_p is true) in flow.c.  */
 
-	register int regno = REGNO (x);
-	register int offset = regno / REGSET_ELT_BITS;
-	register REGSET_ELT_TYPE bit
-	  = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
-	REGSET_ELT_TYPE all_needed = (old_live_regs[offset] & bit);
-	REGSET_ELT_TYPE some_needed = (old_live_regs[offset] & bit);
+	register int regno;
+	int some_needed;
+	int all_needed;
 
 	if (set_p)
 	  return;
 
+	regno = REGNO (x);
+	all_needed = some_needed = REGNO_REG_SET_P (old_live_regs, regno);
 	if (regno < FIRST_PSEUDO_REGISTER)
 	  {
 	    int n;
@@ -2876,12 +2851,9 @@ attach_deaths (x, insn, set_p)
 	    n = HARD_REGNO_NREGS (regno, GET_MODE (x));
 	    while (--n > 0)
 	      {
-		some_needed |= (old_live_regs[(regno + n) / REGSET_ELT_BITS]
-				& ((REGSET_ELT_TYPE) 1
-				   << ((regno + n) % REGSET_ELT_BITS)));
-		all_needed &= (old_live_regs[(regno + n) / REGSET_ELT_BITS]
-			       & ((REGSET_ELT_TYPE) 1
-				  << ((regno + n) % REGSET_ELT_BITS)));
+		int needed = (REGNO_REG_SET_P (old_live_regs, regno + n));
+		some_needed |= needed;
+		all_needed &= needed;
 	      }
 	  }
 
@@ -2943,9 +2915,7 @@ attach_deaths (x, insn, set_p)
 			   register that is set in the insn.  */
 			for (i = HARD_REGNO_NREGS (regno, GET_MODE (x)) - 1;
 			     i >= 0; i--)
-			  if ((old_live_regs[(regno + i) / REGSET_ELT_BITS]
-			       & ((REGSET_ELT_TYPE) 1
-				  << ((regno +i) % REGSET_ELT_BITS))) == 0
+			  if (REGNO_REG_SET_P (old_live_regs, regno + i)
 			      && ! dead_or_set_regno_p (insn, regno + i))
 			    create_reg_dead_note (gen_rtx (REG,
 							   reg_raw_mode[regno + i],
@@ -2960,18 +2930,14 @@ attach_deaths (x, insn, set_p)
 		int j = HARD_REGNO_NREGS (regno, GET_MODE (x));
 		while (--j >= 0)
 		  {
-		    offset = (regno + j) / REGSET_ELT_BITS;
-		    bit
-		      = (REGSET_ELT_TYPE) 1 << ((regno + j) % REGSET_ELT_BITS);
-
-		    bb_dead_regs[offset] &= ~bit;
-		    bb_live_regs[offset] |= bit;
+		    CLEAR_REGNO_REG_SET (bb_dead_regs, regno + j);
+		    SET_REGNO_REG_SET (bb_live_regs, regno + j);
 		  }
 	      }
 	    else
 	      {
-		bb_dead_regs[offset] &= ~bit;
-		bb_live_regs[offset] |= bit;
+		CLEAR_REGNO_REG_SET (bb_dead_regs, regno);
+		SET_REGNO_REG_SET (bb_live_regs, regno);
 	      }
 	  }
 	return;
@@ -3113,13 +3079,12 @@ unlink_notes (insn, tail)
 /* Constructor for `sometimes' data structure.  */
 
 static int
-new_sometimes_live (regs_sometimes_live, offset, bit, sometimes_max)
+new_sometimes_live (regs_sometimes_live, regno, sometimes_max)
      struct sometimes *regs_sometimes_live;
-     int offset, bit;
+     int regno;
      int sometimes_max;
 {
   register struct sometimes *p;
-  register int regno = offset * REGSET_ELT_BITS + bit;
 
   /* There should never be a register greater than max_regno here.  If there
      is, it means that a define_split has created a new pseudo reg.  This
@@ -3129,8 +3094,7 @@ new_sometimes_live (regs_sometimes_live, offset, bit, sometimes_max)
     abort ();
 
   p = &regs_sometimes_live[sometimes_max];
-  p->offset = offset;
-  p->bit = bit;
+  p->regno = regno;
   p->live_length = 0;
   p->calls_crossed = 0;
   sometimes_max++;
@@ -3150,9 +3114,7 @@ finish_sometimes_live (regs_sometimes_live, sometimes_max)
   for (i = 0; i < sometimes_max; i++)
     {
       register struct sometimes *p = &regs_sometimes_live[i];
-      int regno;
-
-      regno = p->offset * REGSET_ELT_BITS + p->bit;
+      int regno = p->regno;
 
       sched_reg_live_length[regno] += p->live_length;
       sched_reg_n_calls_crossed[regno] += p->calls_crossed;
@@ -3240,8 +3202,8 @@ schedule_block (b, file)
   bzero ((char *) reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
   bzero ((char *) reg_last_sets, i * sizeof (rtx));
-  reg_pending_sets = (regset) alloca (regset_bytes);
-  bzero ((char *) reg_pending_sets, regset_bytes);
+  reg_pending_sets = ALLOCA_REG_SET ();
+  CLEAR_REG_SET (reg_pending_sets);
   reg_pending_sets_all = 0;
   clear_units ();
 
@@ -3526,12 +3488,8 @@ schedule_block (b, file)
 		      if (call_used_regs[j] && ! global_regs[j]
 			  && ! fixed_regs[j])
 			{
-			  register int offset = j / REGSET_ELT_BITS;
-			  register REGSET_ELT_TYPE bit
-			    = (REGSET_ELT_TYPE) 1 << (j % REGSET_ELT_BITS);
-
-			  bb_live_regs[offset] |= bit;
-			  bb_dead_regs[offset] &= ~bit;
+			  SET_REGNO_REG_SET (bb_live_regs, j);
+			  CLEAR_REGNO_REG_SET (bb_dead_regs, j);
 			}
 		  }
 
@@ -3543,9 +3501,6 @@ schedule_block (b, file)
 			&& GET_CODE (XEXP (link, 0)) == REG)
 		      {
 			register int regno = REGNO (XEXP (link, 0));
-			register int offset = regno / REGSET_ELT_BITS;
-			register REGSET_ELT_TYPE bit
-			  = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
 			if (regno < FIRST_PSEUDO_REGISTER)
 			  {
@@ -3553,18 +3508,14 @@ schedule_block (b, file)
 						      GET_MODE (XEXP (link, 0)));
 			    while (--j >= 0)
 			      {
-				offset = (regno + j) / REGSET_ELT_BITS;
-				bit = ((REGSET_ELT_TYPE) 1
-				       << ((regno + j) % REGSET_ELT_BITS));
-
-				bb_live_regs[offset] &= ~bit;
-				bb_dead_regs[offset] |= bit;
+				CLEAR_REGNO_REG_SET (bb_live_regs, regno + j);
+				SET_REGNO_REG_SET (bb_dead_regs, regno + j);
 			      }
 			  }
 			else
 			  {
-			    bb_live_regs[offset] &= ~bit;
-			    bb_dead_regs[offset] |= bit;
+			    CLEAR_REGNO_REG_SET (bb_live_regs, regno);
+			    SET_REGNO_REG_SET (bb_dead_regs, regno);
 			  }
 		      }
 		  }
@@ -3647,12 +3598,8 @@ schedule_block (b, file)
 		if (call_used_regs[j] && ! global_regs[j]
 		    && ! fixed_regs[j])
 		  {
-		    register int offset = j / REGSET_ELT_BITS;
-		    register REGSET_ELT_TYPE bit
-		      = (REGSET_ELT_TYPE) 1 << (j % REGSET_ELT_BITS);
-
-		    bb_live_regs[offset] |= bit;
-		    bb_dead_regs[offset] &= ~bit;
+		    SET_REGNO_REG_SET (bb_live_regs, j);
+		    CLEAR_REGNO_REG_SET (bb_dead_regs, j);
 		  }
 	    }
 
@@ -3666,9 +3613,6 @@ schedule_block (b, file)
 		  && GET_CODE (XEXP (link, 0)) == REG)
 		{
 		  register int regno = REGNO (XEXP (link, 0));
-		  register int offset = regno / REGSET_ELT_BITS;
-		  register REGSET_ELT_TYPE bit
-		    = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
 		  /* Only unlink REG_DEAD notes; leave REG_UNUSED notes
 		     alone.  */
@@ -3690,18 +3634,14 @@ schedule_block (b, file)
 						GET_MODE (XEXP (link, 0)));
 		      while (--j >= 0)
 			{
-			  offset = (regno + j) / REGSET_ELT_BITS;
-			  bit = ((REGSET_ELT_TYPE) 1
-				 << ((regno + j) % REGSET_ELT_BITS));
-
-			  bb_live_regs[offset] &= ~bit;
-			  bb_dead_regs[offset] |= bit;
+			  CLEAR_REGNO_REG_SET (bb_live_regs, regno + j);
+			  SET_REGNO_REG_SET (bb_dead_regs, regno + j);
 			}
 		    }
 		  else
 		    {
-		      bb_live_regs[offset] &= ~bit;
-		      bb_dead_regs[offset] |= bit;
+		      CLEAR_REGNO_REG_SET (bb_live_regs, regno);
+		      SET_REGNO_REG_SET (bb_dead_regs, regno);
 		    }
 		}
 	      else
@@ -3713,25 +3653,19 @@ schedule_block (b, file)
   if (reload_completed == 0)
     {
       /* Keep track of register lives.  */
-      old_live_regs = (regset) alloca (regset_bytes);
+      old_live_regs = ALLOCA_REG_SET ();
       regs_sometimes_live
 	= (struct sometimes *) alloca (max_regno * sizeof (struct sometimes));
       sometimes_max = 0;
 
       /* Start with registers live at end.  */
-      for (j = 0; j < regset_size; j++)
-	{
-	  REGSET_ELT_TYPE live = bb_live_regs[j];
-	  old_live_regs[j] = live;
-	  if (live)
-	    {
-	      register int bit;
-	      for (bit = 0; bit < REGSET_ELT_BITS; bit++)
-		if (live & ((REGSET_ELT_TYPE) 1 << bit))
-		  sometimes_max = new_sometimes_live (regs_sometimes_live, j,
-						      bit, sometimes_max);
-	    }
-	}
+      COPY_REG_SET (old_live_regs, bb_live_regs);
+      EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, 0, j,
+				 {
+				   sometimes_max
+				     = new_sometimes_live (regs_sometimes_live,
+							   j, sometimes_max);
+				 });
     }
 
   SCHED_SORT (ready, n_ready, 1);
@@ -3902,12 +3836,8 @@ schedule_block (b, file)
 		    if (call_used_regs[i] && ! global_regs[i]
 			&& ! fixed_regs[i])
 		      {
-			register int offset = i / REGSET_ELT_BITS;
-			register REGSET_ELT_TYPE bit
-			  = (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
-
-			bb_live_regs[offset] &= ~bit;
-			bb_dead_regs[offset] |= bit;
+			CLEAR_REGNO_REG_SET (bb_live_regs, i);
+			SET_REGNO_REG_SET (bb_dead_regs, i);
 		      }
 
 		  /* Regs live at the time of a call instruction must not
@@ -3918,8 +3848,7 @@ schedule_block (b, file)
 		     (below).  */
 		  p = regs_sometimes_live;
 		  for (i = 0; i < sometimes_max; i++, p++)
-		    if (bb_live_regs[p->offset]
-			& ((REGSET_ELT_TYPE) 1 << p->bit))
+		    if (REGNO_REG_SET_P (bb_live_regs, p->regno))
 		      p->calls_crossed += 1;
 		}
 
@@ -3928,20 +3857,12 @@ schedule_block (b, file)
 	      attach_deaths_insn (insn);
 
 	      /* Find registers now made live by that instruction.  */
-	      for (i = 0; i < regset_size; i++)
-		{
-		  REGSET_ELT_TYPE diff = bb_live_regs[i] & ~old_live_regs[i];
-		  if (diff)
-		    {
-		      register int bit;
-		      old_live_regs[i] |= diff;
-		      for (bit = 0; bit < REGSET_ELT_BITS; bit++)
-			if (diff & ((REGSET_ELT_TYPE) 1 << bit))
-			  sometimes_max
-			    = new_sometimes_live (regs_sometimes_live, i, bit,
-						  sometimes_max);
-		    }
-		}
+	      EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, 0, i,
+					 {
+					   sometimes_max
+					     = new_sometimes_live (regs_sometimes_live,
+								   i, sometimes_max);
+					 });
 
 	      /* Count lengths of all regs we are worrying about now,
 		 and handle registers no longer live.  */
@@ -3949,20 +3870,18 @@ schedule_block (b, file)
 	      for (i = 0; i < sometimes_max; i++)
 		{
 		  register struct sometimes *p = &regs_sometimes_live[i];
-		  int regno = p->offset*REGSET_ELT_BITS + p->bit;
+		  int regno = p->regno;
 
 		  p->live_length += 1;
 
-		  if ((bb_live_regs[p->offset]
-		       & ((REGSET_ELT_TYPE) 1 << p->bit)) == 0)
+		  if (REGNO_REG_SET_P (bb_live_regs, p->regno))
 		    {
 		      /* This is the end of one of this register's lifetime
 			 segments.  Save the lifetime info collected so far,
 			 and clear its bit in the old_live_regs entry.  */
 		      sched_reg_live_length[regno] += p->live_length;
 		      sched_reg_n_calls_crossed[regno] += p->calls_crossed;
-		      old_live_regs[p->offset]
-			&= ~((REGSET_ELT_TYPE) 1 << p->bit);
+		      CLEAR_REGNO_REG_SET (old_live_regs, p->regno);
 
 		      /* Delete the reg_sometimes_live entry for this reg by
 			 copying the last entry over top of it.  */
@@ -4875,8 +4794,8 @@ schedule_insns (dump_file)
     {
       sched_reg_n_calls_crossed = (int *) alloca (max_regno * sizeof (int));
       sched_reg_live_length = (int *) alloca (max_regno * sizeof (int));
-      bb_dead_regs = (regset) alloca (regset_bytes);
-      bb_live_regs = (regset) alloca (regset_bytes);
+      bb_dead_regs = ALLOCA_REG_SET ();
+      bb_live_regs = ALLOCA_REG_SET ();
       bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
       bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
       init_alias_analysis ();

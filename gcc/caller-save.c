@@ -367,31 +367,20 @@ save_call_clobbered_regs (insn_mode)
 	 saved because we restore all of them before the end of the basic
 	 block.  */
 
-#ifdef HARD_REG_SET
-      hard_regs_live = *regs_live;
-#else
-      COPY_HARD_REG_SET (hard_regs_live, regs_live);
-#endif
-
+      REG_SET_TO_HARD_REG_SET (hard_regs_live, regs_live);
       CLEAR_HARD_REG_SET (hard_regs_saved);
       CLEAR_HARD_REG_SET (hard_regs_need_restore);
       n_regs_saved = 0;
 
-      for (offset = 0, i = 0; offset < regset_size; offset++)
-	{
-	  if (regs_live[offset] == 0)
-	    i += REGSET_ELT_BITS;
-	  else
-	    for (bit = 1; bit && i < max_regno; bit <<= 1, i++)
-	      if ((regs_live[offset] & bit)
-		  && (regno = reg_renumber[i]) >= 0)
-		for (j = regno;
-		     j < regno + HARD_REGNO_NREGS (regno,
-						   PSEUDO_REGNO_MODE (i));
-		     j++)
-		  SET_HARD_REG_BIT (hard_regs_live, j);
-
-	}
+      EXECUTE_IF_SET_IN_REG_SET (regs_live, 0, i,
+				 {
+				   if ((regno = reg_renumber[i]) >= 0)
+				     for (j = regno;
+					  j < regno + HARD_REGNO_NREGS (regno,
+									PSEUDO_REGNO_MODE (i));
+					  j++)
+				       SET_HARD_REG_BIT (hard_regs_live, j);
+				 });
 
       /* Now scan the insns in the block, keeping track of what hard
 	 regs are live as we go.  When we see a call, save the live
