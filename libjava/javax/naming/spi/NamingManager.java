@@ -55,10 +55,10 @@ public class NamingManager
 {
   public static final String CPE = "java.naming.spi.CannotProceedException";
 
-  private static InitialContextFactoryBuilder icfb = null;
+  private static InitialContextFactoryBuilder icfb;
 
   // Package private so DirectoryManager can access it.
-  static ObjectFactoryBuilder ofb = null;
+  static ObjectFactoryBuilder ofb;
 
   // This class cannot be instantiated.
   NamingManager ()
