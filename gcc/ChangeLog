@@ -1,3 +1,12 @@
+2003-09-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+	    Jeff Law  <law@redhat.com>
+
+	* gcse.c (remove_reachable_equiv_notes): New.
+	replace_store_insn): Call it.  Update antic list.
+	(store_killed_in_insn): Take REG_EQUAL notes into account.
+	(build_store_vectors, delete_store): Add parameter to
+	replace_store_insn call.
+
 2003-09-15  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (LEGITIMATE_PIC_OPERAND_P): Use
