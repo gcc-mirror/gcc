@@ -1,3 +1,11 @@
+2004-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (state::check_no_uninitialized_objects): Removed.
+	(push_jump): Updated.
+	(push_exception_jump): Likewise.
+	(handle_ret_insn): Likewise.
+	(handle_jsr_insn): Likewise.
+
 2004-10-30  Mark Wielaard  <mark@klomp.org>
 
 	PR libgcj/18234
