@@ -1096,16 +1096,15 @@ void _Jv_ClassReader::handleField (int field_no,
 	    throw_class_format_error ("duplicate field name");
 	}
 
-      if (field->flags & (Modifier::SYNCHRONIZED
-			  | Modifier::NATIVE
-			  | Modifier::INTERFACE
-			  | Modifier::ABSTRACT))
-	throw_class_format_error ("erroneous field access flags");
-      
+      // At most one of PUBLIC, PRIVATE, or PROTECTED is allowed.
       if (1 < ( ((field->flags & Modifier::PUBLIC) ? 1 : 0)
 		+((field->flags & Modifier::PRIVATE) ? 1 : 0)
 		+((field->flags & Modifier::PROTECTED) ? 1 : 0)))
 	throw_class_format_error ("erroneous field access flags");
+
+      // FIXME: JVM spec S4.5: Verify ACC_FINAL and ACC_VOLATILE are not 
+      // both set. Verify modifiers for interface fields.
+      
     }
 
   if (verify)
@@ -1256,15 +1255,15 @@ void _Jv_ClassReader::handleMethod
 	    throw_class_format_error ("duplicate method");
 	}
 
-      if (method->accflags & (Modifier::VOLATILE
-			      | Modifier::TRANSIENT
-			      | Modifier::INTERFACE))
-	throw_class_format_error ("erroneous method access flags");
-      
+      // At most one of PUBLIC, PRIVATE, or PROTECTED is allowed.
       if (1 < ( ((method->accflags & Modifier::PUBLIC) ? 1 : 0)
 		+((method->accflags & Modifier::PRIVATE) ? 1 : 0)
 		+((method->accflags & Modifier::PROTECTED) ? 1 : 0)))
 	throw_class_format_error ("erroneous method access flags");
+
+      // FIXME: JVM spec S4.6: if ABSTRACT modifier is set, verify other 
+      // flags are not set. Verify flags for interface methods. Verifiy
+      // modifiers for initializers. 
     }
 }
 
