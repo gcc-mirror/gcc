@@ -6,7 +6,7 @@ LIBGCC1 =
 LIBGCC1_TEST =
 CROSS_LIBGCC1 =
 
-TARGET_LIBGCC2_CFLAGS = -mlibfuncs -Dinhibit_libc -O2
+TARGET_LIBGCC2_CFLAGS = -mlibfuncs -O2
 
 EXTRA_MULTILIB_PARTS = crti.o crtn.o crtbegin.o crtend.o
 
