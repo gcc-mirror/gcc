@@ -2853,13 +2853,13 @@ before we can access arbitrary stack frames.  You will seldom need to
 define this macro.
 @end defmac
 
-@defmac BUILTIN_SETJMP_FRAME_VALUE
-If defined, a C expression that contains an rtx that is used to store
+@deftypefn {Target Hook} bool TARGET_BUILTIN_SETJMP_FRAME_VALUE ()
+This target hook should return an rtx that is used to store
 the address of the current frame into the built in @code{setjmp} buffer.
 The default value, @code{virtual_stack_vars_rtx}, is correct for most
-machines.  One reason you may need to define this macro is if
+machines.  One reason you may need to define this target hook is if
 @code{hard_frame_pointer_rtx} is the appropriate value on your machine.
-@end defmac
+@end deftypefn
 
 @defmac RETURN_ADDR_RTX (@var{count}, @var{frameaddr})
 A C expression whose value is RTL representing the value of the return

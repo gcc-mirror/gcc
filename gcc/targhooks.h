@@ -27,6 +27,7 @@ extern bool default_return_in_memory (tree, tree);
 
 extern rtx default_expand_builtin_saveregs (void);
 extern void default_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
+extern rtx default_builtin_setjmp_frame_value (void);
 extern bool hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *);
 extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 

@@ -490,13 +490,9 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
      the buffer and use the rest of it for the stack save area, which
      is machine-dependent.  */
 
-#ifndef BUILTIN_SETJMP_FRAME_VALUE
-#define BUILTIN_SETJMP_FRAME_VALUE virtual_stack_vars_rtx
-#endif
-
   mem = gen_rtx_MEM (Pmode, buf_addr);
   set_mem_alias_set (mem, setjmp_alias_set);
-  emit_move_insn (mem, BUILTIN_SETJMP_FRAME_VALUE);
+  emit_move_insn (mem, targetm.builtin_setjmp_frame_value ());
 
   mem = gen_rtx_MEM (Pmode, plus_constant (buf_addr, GET_MODE_SIZE (Pmode))),
   set_mem_alias_set (mem, setjmp_alias_set);
