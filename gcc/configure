@@ -15155,7 +15155,6 @@ objdir=`${PWDCMD-pwd}`
 
 
 
-
 if test x"$SET_GCC_LIB_PATH_CMD" != x; then
   # SET_GCC_LIB_PATH_CMD is "XXX=path; export XXX;". It is expanded to
   #
