@@ -1,3 +1,7 @@
+2004-09-02  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.c (__aeabi_ul2d, __aeabi_ul2f): Remove.
+
 2004-09-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_classify_symbol, mips_fetch_insns):
