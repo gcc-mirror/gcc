@@ -1,3 +1,6 @@
+This directory contains the zlib package, which is not part of GCC but
+shipped with GCC as convenience.
+
 zlib 1.1.4 is a general purpose data compression library.  All the code
 is thread safe.  The data format used by the zlib library
 is described by RFCs (Request for Comments) 1950 to 1952 in the files 
