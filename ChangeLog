@@ -1,3 +1,8 @@
+Tue Jan 27 23:15:55 1998  Lassi A. Tuura  <lat@iki.fi>
+
+	* config.guess: More accurate determination of HP processor types.
+        * config.sub: More accurate determination of HP processor types.
+
 Sat Jan 24 01:59:45 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure (package_makefile_frag): Move inserting the
