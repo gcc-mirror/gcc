@@ -2,7 +2,7 @@
    for getting g++ file-scope static objects constructed.  This file
    will get included either by libgcc2.c (for systems that don't support
    a .init section) or by crtstuff.c (for those that do).
-   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com)
 
 This file is part of GNU CC.
@@ -30,8 +30,14 @@ Boston, MA 02111-1307, USA.  */
 	Note that this file should only be compiled with GCC.
 */
 
+#ifdef NEED_ATEXIT
+#ifndef HAVE_ATEXIT
+#define HAVE_ATEXIT	1	/* Take it from libgcc2.c */
+#endif
+#endif
+
 #ifdef HAVE_ATEXIT
-#ifdef WINNT
+#if defined (WINNT) || defined (NEED_ATEXIT)
 extern int atexit (void (*) (void));
 #else
 extern void atexit (void (*) (void));
@@ -39,7 +45,7 @@ extern void atexit (void (*) (void));
 #define ON_EXIT(FUNC,ARG) atexit ((FUNC))
 #else
 #ifdef sun
-extern void on_exit (void*, void*);
+extern int on_exit (void*, void*);	/* The man page says it returns int. */
 #define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
 #endif
 #endif
