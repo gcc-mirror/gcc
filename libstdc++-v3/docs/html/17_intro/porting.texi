@@ -102,12 +102,13 @@ directory.  The important information is that there needs to be a
 directory under @file{config/os} to store the files for your operating
 system.
 
-You'll have to change the @file{configure.target} file to ensure that
-your new directory is activated.  Look for the switch statement that
-sets @code{os_include_dir}, and add a pattern to handle your operating
-system.  The switch statement switches on only the OS portion of the
-standard target triplet; e.g., the @code{solaris2.8} in
-@code{sparc-sun-solaris2.8}.
+You might have to change the @file{configure.target} file to ensure that
+your new directory is activated.  Look for the switch statement that sets
+@code{os_include_dir}, and add a pattern to handle your operating system
+if the default will not suffice.  The switch statement switches on only
+the OS portion of the standard target triplet; e.g., the @code{solaris2.8}
+in @code{sparc-sun-solaris2.8}.  If the new directory is named after the
+OS portion of the triplet (the default), then nothing needs to be changed.
 
 The first file to create in this directory, should be called
 @file{os_defines.h}.  This file contains basic macro definitions
