@@ -1,3 +1,7 @@
+2003-12-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* testsuite/gcc.dg/cpp/trad/macro.c: New tests.
+
 2003-12-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/wchar_t-1.x: Delete.

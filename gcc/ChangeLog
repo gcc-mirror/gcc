@@ -1,3 +1,13 @@
+2003-12-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/12935 preprocessor/12952 preprocessor/13046
+	* cpplib.c (prepare_directive_trad): Clear skipping only in
+	#if and #elif directives.
+	(do_undef): Call the handler even if the identifier is not a macro.
+	* cpptrad.c (scan_parameters): Emit an error message.
+	(_cpp_create_trad_definition): Remember the params list even on
+	failure.
+
 2003-12-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* arm.c (ARM_ADDRESS_COST, THUMB_ADDRESS_COST): Convert macros
