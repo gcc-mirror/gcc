@@ -1,3 +1,8 @@
+1999-04-18 17:46 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppfiles.c (find_position, read_and_prescan): Use `unsigned
+	long' variables consistently to count line and column numbers.
+
 Sun Apr 18 15:50:33 EDT 1999  John Wehle  (john@feith.com)
 
 	* output.h (current_function_is_leaf,

@@ -764,10 +764,10 @@ static void
 find_position (start, limit, linep, colp)
      U_CHAR *start;
      U_CHAR *limit;
-     long *linep;
-     long *colp;
+     unsigned long *linep;
+     unsigned long *colp;
 {
-  long line = *linep, col = 0;
+  unsigned long line = *linep, col = 0;
   while (start < limit)
     {
       U_CHAR ch = *start++;
@@ -818,7 +818,8 @@ read_and_prescan (pfile, fp, desc, len)
   U_CHAR *buf = (U_CHAR *) xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
-  unsigned int line, deferred_newlines;
+  unsigned long line;
+  unsigned int deferred_newlines;
   int count;
   size_t offset;
   /* PIPE_BUF bytes of buffer proper, 2 to detect running off the end
@@ -1014,7 +1015,7 @@ read_and_prescan (pfile, fp, desc, len)
 
 		if (CPP_OPTIONS (pfile)->warn_trigraphs)
 		  {
-		    long col;
+		    unsigned long col;
 		    find_position (line_base, op, &line, &col);
 		    line_base = op - col;
 		    cpp_warning_with_line (pfile, line, col,
@@ -1066,7 +1067,7 @@ read_and_prescan (pfile, fp, desc, len)
 
   if (op[-1] != '\n')
     {
-      long col;
+      unsigned long col;
       find_position (line_base, op, &line, &col);
       cpp_warning_with_line (pfile, line, col, "no newline at end of file\n");
       if (offset + 1 > len)
