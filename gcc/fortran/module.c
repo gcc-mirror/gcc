@@ -2274,6 +2274,15 @@ mio_gmp_real (mpf_t * real)
       atom_string = gfc_getmem (strlen (p) + 20);
 
       sprintf (atom_string, "0.%s@%ld", p, exponent);
+
+      /* Fix negative numbers.  */
+      if (atom_string[2] == '-')
+	{
+	  atom_string[0] = '-';
+	  atom_string[1] = '0';
+	  atom_string[2] = '.';
+	}
+
       write_atom (ATOM_STRING, atom_string);
 
       gfc_free (atom_string);
