@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,16 +84,8 @@ namespace _C_legacy {
   _CPP_ceil_capture(float __x) { return ceil(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_COSF
   inline float 
   _CPP_cos_capture(float __x) { return __builtin_cosf(__x); }
-#elif _GLIBCPP_HAVE_COSF
-  inline float 
-  _CPP_cos_capture(float __x) { return cosf(__x); }
-#else
-  inline float 
-  _CPP_cos_capture(float __x) { return cos(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_COSHF
   inline float 
@@ -111,16 +103,8 @@ namespace _C_legacy {
   _CPP_exp_capture(float __x) { return exp(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_FABSF
   inline float 
   _CPP_fabs_capture(float __x) { return __builtin_fabsf(__x); }
-#elif _GLIBCPP_HAVE_FABSF
-  inline float 
-  _CPP_fabs_capture(float __x) { return fabsf(__x); }
-#else
-  inline float 
-  _CPP_fabs_capture(float __x) { return fabs(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_FLOORF
   inline float 
@@ -197,16 +181,8 @@ namespace _C_legacy {
 
   float pow(float, int);
 
-#if _GLIBCPP_HAVE___BUILTIN_SINF
   inline float 
   _CPP_sin_capture(float __x) { return __builtin_sinf(__x); }
-#elif _GLIBCPP_HAVE_SINF
-  inline float 
-  _CPP_sin_capture(float __x) { return sinf(__x); }
-#else
-  inline float 
-  _CPP_sin_capture(float __x) { return sin(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_SINHF
   inline float 
@@ -216,16 +192,8 @@ namespace _C_legacy {
   _CPP_sinh_capture(float __x) { return sinh(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_SQRTF
   inline float 
   _CPP_sqrt_capture(float __x) { return __builtin_sqrtf(__x); }
-#elif _GLIBCPP_HAVE_SQRTF
-  inline float 
-  _CPP_sqrt_capture(float __x) { return sqrtf(__x); }
-#else
-  inline float 
-  _CPP_sqrt_capture(float __x) { return sqrt(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_TANF
   inline float 
@@ -259,13 +227,8 @@ namespace _C_legacy {
   inline double 
   _CPP_ceil_capture(double __x) { return ceil(__x); }
 
-#if _GLIBCPP_HAVE___BUILTIN_COS
   inline double 
   _CPP_cos_capture(double __x) { return __builtin_cos(__x); }
-#else
-  inline double 
-  _CPP_cos_capture(double __x) { return cos(__x); }
-#endif
 
   inline double 
   _CPP_cosh_capture(double __x) { return cosh(__x); }
@@ -273,13 +236,8 @@ namespace _C_legacy {
   inline double 
   _CPP_exp_capture(double __x) { return exp(__x); }
 
-#if _GLIBCPP_HAVE___BUILTIN_FABS
   inline double 
   _CPP_fabs_capture(double __x) { return __builtin_fabs(__x); }
-#else
-  inline double 
-  _CPP_fabs_capture(double __x) { return fabs(__x); }
-#endif
 
   inline double 
   _CPP_floor_capture(double __x) { return floor(__x); }
@@ -305,24 +263,14 @@ namespace _C_legacy {
   inline double 
   _CPP_pow_capture(double __x, double __y) { return pow(__x, __y); }
 
-#if _GLIBCPP_HAVE___BUILTIN_SIN
   inline double 
   _CPP_sin_capture(double __x) { return __builtin_sin(__x); }
-#else
-  inline double 
-  _CPP_sin_capture(double __x) { return sin(__x); }
-#endif
 
   inline double 
   _CPP_sinh_capture(double __x) { return sinh(__x); }
 
-#if _GLIBCPP_HAVE___BUILTIN_SQRT
   inline double 
   _CPP_sqrt_capture(double __x) { return __builtin_sqrt(__x); }
-#else
-  inline double 
-  _CPP_sqrt_capture(double __x) { return sqrt(__x); }
-#endif
 
   inline double 
   _CPP_tan_capture(double __x) { return tan(__x); }
@@ -372,16 +320,8 @@ namespace _C_legacy {
   _CPP_ceil_capture(long double __x) { return ceil(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_COSL
   inline long double 
   _CPP_cos_capture(long double __x) { return __builtin_cosl(__x); }
-#elif _GLIBCPP_HAVE_COSL
-  inline long double 
-  _CPP_cos_capture(long double __x) { return cosl(__x); }
-#else
-  inline long double 
-  _CPP_cos_capture(long double __x) { return cos(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_COSHL
   inline long double 
@@ -399,16 +339,8 @@ namespace _C_legacy {
   _CPP_exp_capture(long double __x) { return exp(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_FABSL
   inline long double 
   _CPP_fabs_capture(long double __x) { return __builtin_fabsl(__x); }
-#elif _GLIBCPP_HAVE_FABSL
-  inline long double 
-  _CPP_fabs_capture(long double __x) { return fabsl(__x); }
-#else
-  inline long double 
-  _CPP_fabs_capture(long double __x) { return fabs(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_FLOORL
   inline long double 
@@ -489,16 +421,8 @@ namespace _C_legacy {
   { return pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_SINL
   inline long double 
   _CPP_sin_capture(long double __x) { return __builtin_sinl(__x); }
-#elif _GLIBCPP_HAVE_SINL
-  inline long double 
-  _CPP_sin_capture(long double __x) { return sinl(__x); }
-#else
-  inline long double 
-  _CPP_sin_capture(long double __x) { return sin(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_SINHL
   inline long double 
@@ -508,16 +432,8 @@ namespace _C_legacy {
   _CPP_sinh_capture(long double __x) { return sinh(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE___BUILTIN_SQRTL
   inline long double 
   _CPP_sqrt_capture(long double __x) { return __builtin_sqrtl(__x); }
-#elif _GLIBCPP_HAVE_SQRTL
-  inline long double 
-  _CPP_sqrt_capture(long double __x) { return sqrtl(__x); }
-#else
-  inline long double 
-  _CPP_sqrt_capture(long double __x) { return sqrt(static_cast<double>(__x)); }
-#endif
 
 #if _GLIBCPP_HAVE_TANL
   inline long double 
