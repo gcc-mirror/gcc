@@ -1,3 +1,8 @@
+2003-04-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (input_operand): Accept bare
+	CONSTANT_P_RTX operands.
+
 2003-04-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcse.c (struct ls_expr): Added pattern_regs field.
