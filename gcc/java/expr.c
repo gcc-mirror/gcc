@@ -356,9 +356,15 @@ pop_type_0 (type, messagep)
 	return object_ptr_type_node;
     }
 
-  *messagep = concat ("expected type '", lang_printable_name (type, 0),
-		      "' but stack contains '", lang_printable_name (t, 0),
-		      "'", NULL);
+  /* lang_printable_name uses a static buffer, so we must save the result
+     from calling it the first time.  */
+  {
+    char *temp = xstrdup (lang_printable_name (type, 0));
+    *messagep = concat ("expected type '", temp,
+			"' but stack contains '", lang_printable_name (t, 0),
+			"'", NULL);
+    free (temp);
+  }
   return type;
 }
 

@@ -1,3 +1,9 @@
+2001-04-02  Zack Weinberg  <zackw@stanford.edu>
+
+	* expr.c (pop_type_0): Save the result of the first
+	lang_printable_name call in a scratch buffer, so it 
+	won't be clobbered by the second call.
+
 2001-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (pop_type_0): Call `concat' rather than building the
