@@ -1,3 +1,9 @@
+Tue May 26 23:47:52 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* Makefile.in (gencheck.o): Use HOST_CC.
+	* i386/t-mingw32: New file.
+	* configure.in (i386-*-mingw32*): Use.
+
 Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (bad_signed_byte_operand): New predicate function.

@@ -1120,7 +1120,7 @@ for machine in $build $host $target; do
 	i[[34567]]86-*-mingw32*)
 		tm_file=i386/mingw32.h
 		xm_file="${xm_file} i386/xm-mingw32.h"
-		tmake_file=i386/t-cygwin32
+		tmake_file="i386/t-cygwin32 i386/t-mingw32"
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin32
 		fixincludes=Makefile.in
