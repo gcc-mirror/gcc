@@ -3097,6 +3097,8 @@ void
 shadow_tag_warned (declspecs, warned)
      tree declspecs;
      int warned;
+     /* 1 => we have done a pedwarn.  2 => we have done a warning, but
+	no pedwarn.  */
 {
   int found_tag = 0;
   register tree link;
@@ -3119,7 +3121,8 @@ shadow_tag_warned (declspecs, warned)
 
 	  if (name == 0)
 	    {
-	      if (!warned && code != ENUMERAL_TYPE) /* Empty unnamed enum OK */
+	      if (warned != 1 && code != ENUMERAL_TYPE)
+		/* Empty unnamed enum OK */
 		{
 		  pedwarn ("unnamed struct/union that defines no instances");
 		  warned = 1;
@@ -3139,15 +3142,18 @@ shadow_tag_warned (declspecs, warned)
       else
 	{
 	  if (!warned)
-	    pedwarn ("useless keyword or type name in empty declaration");
-	  warned = 1;
+	    {
+	      warning ("useless keyword or type name in empty declaration");
+	      warned = 2;
+	    }
 	}
     }
 
-  if (!warned)
+  if (found_tag > 1)
+    error ("two types specified in one empty declaration");
+
+  if (warned != 1)
     {
-      if (found_tag > 1)
-	error ("two types specified in one empty declaration");
       if (found_tag == 0)
 	pedwarn ("empty declaration");
     }
