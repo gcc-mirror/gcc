@@ -8429,22 +8429,25 @@ cse_basic_block (from, to, next_branch, around_loop)
 	  && GET_CODE (to) == CODE_LABEL && --LABEL_NUSES (to) == to_usage)
 	{
 	  struct cse_basic_block_data val;
+	  rtx prev;
 
 	  insn = NEXT_INSN (to);
 
 	  if (LABEL_NUSES (to) == 0)
-	    delete_insn (to);
+	    insn = delete_insn (to);
 
-	  /* Find the end of the following block.  Note that we won't be
-	     following branches in this case.  If TO was the last insn
-	     in the function, we are done.  Similarly, if we deleted the
-	     insn after TO, it must have been because it was preceded by
-	     a BARRIER.  In that case, we are done with this block because it
-	     has no continuation.  */
-
-	  if (insn == 0 || INSN_DELETED_P (insn))
+	  /* If TO was the last insn in the function, we are done.  */
+	  if (insn == 0)
 	    return 0;
 
+	  /* If TO was preceded by a BARRIER we are done with this block
+	     because it has no continuation.  */
+	  prev = prev_nonnote_insn (to);
+	  if (prev && GET_CODE (prev) == BARRIER)
+	    return insn;
+
+	  /* Find the end of the following block.  Note that we won't be
+	     following branches in this case.  */
 	  to_usage = 0;
 	  val.path_size = 0;
 	  cse_end_of_basic_block (insn, &val, 0, 0, 0);
