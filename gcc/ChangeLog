@@ -1,3 +1,9 @@
+2005-04-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/17245
+	* config/sparc/sparc.c (legitimate_address_p): Remove 'imm2'.
+	Revert 2004-10-08 patch.  Reject TFmode LO_SUM in 32-bit mode.
+
 2005-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/20076
