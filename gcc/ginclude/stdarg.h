@@ -4,9 +4,11 @@
    Thus, va_arg (..., short) is not valid.  */
 
 #ifndef _STDARG_H
+#ifndef _ANSI_STDARG_H
 #ifndef __need___va_list
 #define _STDARG_H
-#endif
+#define _ANSI_STDARG_H
+#endif /* not __need___va_list */
 #undef __need___va_list
 
 #ifndef __GNUC__
@@ -118,4 +120,5 @@ typedef __gnuc_va_list va_list;
 #endif /* _STDARG_H */
 
 #endif /* __GNUC__ */
+#endif /* not _ANSI_STDARG_H */
 #endif /* not _STDARG_H */
