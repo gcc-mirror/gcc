@@ -1,5 +1,7 @@
 Sun Sep  7 00:22:22 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
+	* cfgcleanup.c (try_simplify_condjump): Fix my previous patch.
+
 	* toplev.c  (rest_of_decl_compilation):  Do not finalize external
 	virables. 
 

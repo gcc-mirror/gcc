@@ -182,7 +182,13 @@ try_simplify_condjump (basic_block cbranch_block)
       next = NEXT_INSN (insn);
       if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	{
-	  reorder_insns (insn, insn, end);
+	  if (insn == end)
+	    {
+	      jump_block->end = PREV_INSN (insn);
+	      if (jump_block->end == end)
+	        break;
+	    }
+	  reorder_insns_nobb (insn, insn, end);
 	  end = insn;
 	}
     }
