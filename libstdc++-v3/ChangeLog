@@ -1,3 +1,7 @@
+2000-11-13  Loren J. Rittle  <ljrittle@acm.org>
+        * config/c_io_stdio.h: Don't define __c_wfile_type
+        when _GLIBCPP_USE_WCHAR_T is not defined.
+
 2000-11-13  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_TARGET):  New macro, replacing
