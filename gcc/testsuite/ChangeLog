@@ -1,5 +1,9 @@
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/20010605-2.c: New test.
+
+2001-06-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.old-deja/g++.other/overload14.C: New test.
 
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
