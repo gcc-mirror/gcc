@@ -502,11 +502,11 @@ enum reg_class {
    dangerous, so we claim that it always pushes a word, then we catch
    the mov.b rx,@-sp and turn it into a mov.w rx,@-sp on output.
 
-   On the H8/300h, we simplify TARGET_QUICKCALL by setting this to 4 and doing
-   a similar thing.  */
+   On the H8/300H, we simplify TARGET_QUICKCALL by setting this to 4
+   and doing a similar thing.  */
 
 #define PUSH_ROUNDING(BYTES) \
-  (((BYTES) + PARM_BOUNDARY/8 - 1) & -PARM_BOUNDARY/8)
+  (((BYTES) + PARM_BOUNDARY / 8 - 1) & -PARM_BOUNDARY / 8)
 
 /* Offset of first parameter from the argument pointer register value.  */
 /* Is equal to the size of the saved fp + pc, even if an fp isn't
@@ -574,7 +574,7 @@ enum reg_class {
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-/* On the h8 the return value is in R0/R1 */
+/* On the H8 the return value is in R0/R1.  */
 
 #define LIBCALL_VALUE(MODE) \
   gen_rtx_REG (MODE, 0)
@@ -615,9 +615,9 @@ enum reg_class {
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 
-   On the H8/300, this is a two item struct, the first is the number of bytes
-   scanned so far and the second is the rtx of the called library
-   function if any.  */
+   On the H8/300, this is a two item struct, the first is the number
+   of bytes scanned so far and the second is the rtx of the called
+   library function if any.  */
 
 #define CUMULATIVE_ARGS struct cum_arg
 struct cum_arg
@@ -989,7 +989,7 @@ struct cum_arg
 #define Pmode (TARGET_H8300H || TARGET_H8300S ? SImode : HImode)
 
 /* ANSI C types.
-   We use longs for the 300h because ints can be 16 or 32.
+   We use longs for the 300H because ints can be 16 or 32.
    GCC requires SIZE_TYPE to be the same size as pointers.  */
 #define NO_BUILTIN_SIZE_TYPE
 #define NO_BUILTIN_PTRDIFF_TYPE
@@ -1111,45 +1111,53 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 #define EXTRA_SECTIONS in_ctors, in_dtors, in_readonly_data
 
-#define EXTRA_SECTION_FUNCTIONS					\
-								\
-void								\
-ctors_section () 						\
-{								\
-  if (in_section != in_ctors)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
-      in_section = in_ctors;					\
-    }								\
-}								\
-								\
-void								\
-dtors_section () 						\
-{								\
-  if (in_section != in_dtors)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
-      in_section = in_dtors;					\
-    }								\
-}								\
-								\
-void								\
-readonly_data () 						\
-{								\
-  if (in_section != in_readonly_data)				\
-    {								\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);\
-      in_section = in_readonly_data;				\
-    }								\
+#define EXTRA_SECTION_FUNCTIONS						\
+									\
+void									\
+ctors_section ()							\
+{									\
+  if (in_section != in_ctors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
+      in_section = in_ctors;						\
+    }									\
+}									\
+									\
+void									\
+dtors_section ()							\
+{									\
+  if (in_section != in_dtors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
+      in_section = in_dtors;						\
+    }									\
+}									\
+									\
+void									\
+readonly_data ()							\
+{									\
+  if (in_section != in_readonly_data)					\
+    {									\
+      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);	\
+      in_section = in_readonly_data;					\
+    }									\
 }
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do { ctors_section();				\
-       fprintf(FILE, "%s_%s\n", ASM_WORD_OP, NAME); } while (0)
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)		\
+  do							\
+    {							\
+      ctors_section ();					\
+      fprintf (FILE, "%s_%s\n", ASM_WORD_OP, NAME);	\
+    }							\
+  while (0)
 
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
-  do { dtors_section();				\
-       fprintf(FILE, "%s_%s\n", ASM_WORD_OP, NAME); } while (0)
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)		\
+  do							\
+    {							\
+      dtors_section ();			       		\
+      fprintf (FILE, "%s_%s\n", ASM_WORD_OP, NAME);	\
+    }							\
+  while (0)
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
@@ -1182,29 +1190,31 @@ readonly_data () 						\
 /* If we are referencing a function that is supposed to be called
    through the function vector, the SYMBOL_REF_FLAG in the rtl
    so the call patterns can generate the correct code.  */
-#define ENCODE_SECTION_INFO(DECL)  \
-  if (TREE_CODE (DECL) == FUNCTION_DECL \
-       && h8300_funcvec_function_p (DECL)) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1; \
-  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
-      && TREE_CODE (DECL) == VAR_DECL \
-      && h8300_eightbit_data_p (DECL)) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1; \
-  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
-      && TREE_CODE (DECL) == VAR_DECL \
-      && h8300_tiny_data_p (DECL)) \
+#define ENCODE_SECTION_INFO(DECL)			\
+  if (TREE_CODE (DECL) == FUNCTION_DECL			\
+       && h8300_funcvec_function_p (DECL))		\
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
+  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
+      && TREE_CODE (DECL) == VAR_DECL			\
+      && h8300_eightbit_data_p (DECL))			\
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
+  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
+      && TREE_CODE (DECL) == VAR_DECL			\
+      && h8300_tiny_data_p (DECL))			\
     h8300_encode_label (DECL);
 
 /* Store the user-specified part of SYMBOL_NAME in VAR.
    This is sort of inverse to ENCODE_SECTION_INFO.  */
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*' || (SYMBOL_NAME)[0] == '@' || (SYMBOL_NAME)[0] == '&') 
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)		\
+  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'	\
+			   || (SYMBOL_NAME)[0] == '@'	\
+			   || (SYMBOL_NAME)[0] == '&');
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap"}
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap" }
 
 #define ADDITIONAL_REGISTER_NAMES \
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
@@ -1243,8 +1253,13 @@ readonly_data () 						\
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
-#define ASM_OUTPUT_LABEL(FILE, NAME)	\
-  do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
+#define ASM_OUTPUT_LABEL(FILE, NAME)		\
+  do						\
+    {						\
+      assemble_name (FILE, NAME);		\
+      fputs (":\n", FILE);			\
+    }						\
+  while (0)
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)  \
   asm_fprintf ((FILE), "%U%s", (NAME) + (TINY_DATA_NAME_P (NAME) ? 1 : 0))
@@ -1254,8 +1269,14 @@ readonly_data () 						\
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME)	\
-  do { fputs ("\t.global ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
+#define ASM_GLOBALIZE_LABEL(FILE, NAME)		\
+  do						\
+    {						\
+      fputs ("\t.global ", FILE);		\
+      assemble_name (FILE, NAME);		\
+      fputs ("\n", FILE);			\
+    }						\
+  while (0)
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
    ASM_OUTPUT_LABEL(FILE, NAME)
@@ -1284,18 +1305,22 @@ readonly_data () 						\
 /* This is how to output an assembler line defining a `double' constant.
    It is .dfloat or .gfloat, depending.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf (FILE, "\t.double %s\n", dstr);		\
-   } while (0)
+#define ASM_OUTPUT_DOUBLE(FILE, VALUE)				\
+  do								\
+    {								\
+      char dstr[30];						\
+      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
+      fprintf (FILE, "\t.double %s\n", dstr);			\
+    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf (FILE, "\t.float %s\n", dstr);		\
-   } while (0)
+#define ASM_OUTPUT_FLOAT(FILE, VALUE)				\
+  do								\
+    {								\
+      char dstr[30];						\
+      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
+      fprintf (FILE, "\t.float %s\n", dstr);			\
+    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
@@ -1354,7 +1379,7 @@ do { char dstr[30];					\
    that says to advance the location counter by SIZE bytes.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME)			\
-  fprintf(FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME)
+  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME)
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf (FILE, "\t.space %d\n", (SIZE))
@@ -1406,12 +1431,12 @@ do { char dstr[30];					\
 #define TARGET_CR 015
 
 /* Print an instruction operand X on file FILE.
-   look in h8300.c for details */
+   Look in h8300.c for details.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '#')
 
-#define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE,X,CODE)
+#define PRINT_OPERAND(FILE, X, CODE) print_operand(FILE,X,CODE)
 
 /* Print a memory operand whose address is X, on file FILE.
    This uses a function in h8300.c.  */
@@ -1419,12 +1444,16 @@ do { char dstr[30];					\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
 /* H8300 specific pragmas.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE) do {				\
-  cpp_register_pragma (PFILE, 0, "saveall", h8300_pr_saveall);		\
-  cpp_register_pragma (PFILE, 0, "interrupt", h8300_pr_interrupt);	\
-} while (0)
+#define REGISTER_TARGET_PRAGMAS(PFILE)					\
+  do									\
+    {									\
+      cpp_register_pragma (PFILE, 0, "saveall", h8300_pr_saveall);	\
+      cpp_register_pragma (PFILE, 0, "interrupt", h8300_pr_interrupt);	\
+    }									\
+  while (0)
 
-#define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
+#define FINAL_PRESCAN_INSN(insn, operand, nop)	\
+  final_prescan_insn (insn, operand, nop)
 
 /* Define this macro if GNU CC should generate calls to the System V
    (and ANSI C) library functions `memcpy' and `memset' rather than
@@ -1440,19 +1469,21 @@ do { char dstr[30];					\
 
 /* Perform target dependent optabs initialization.  */
 
-#define INIT_TARGET_OPTABS			\
-  do {						\
-    smul_optab->handlers[(int) HImode].libfunc	\
-      = init_one_libfunc (MULHI3_LIBCALL);	\
-    sdiv_optab->handlers[(int) HImode].libfunc	\
-      = init_one_libfunc (DIVHI3_LIBCALL);	\
-    udiv_optab->handlers[(int) HImode].libfunc	\
-      = init_one_libfunc (UDIVHI3_LIBCALL);	\
-    smod_optab->handlers[(int) HImode].libfunc	\
-      = init_one_libfunc (MODHI3_LIBCALL);	\
-    umod_optab->handlers[(int) HImode].libfunc	\
-      = init_one_libfunc (UMODHI3_LIBCALL);	\
-  } while (0)
+#define INIT_TARGET_OPTABS					\
+  do								\
+    {								\
+      smul_optab->handlers[(int) HImode].libfunc		\
+	= init_one_libfunc (MULHI3_LIBCALL);			\
+      sdiv_optab->handlers[(int) HImode].libfunc		\
+	= init_one_libfunc (DIVHI3_LIBCALL);			\
+      udiv_optab->handlers[(int) HImode].libfunc		\
+	= init_one_libfunc (UDIVHI3_LIBCALL);			\
+      smod_optab->handlers[(int) HImode].libfunc		\
+	= init_one_libfunc (MODHI3_LIBCALL);			\
+      umod_optab->handlers[(int) HImode].libfunc		\
+	= init_one_libfunc (UMODHI3_LIBCALL);			\
+    }								\
+  while (0)
 
 #define MOVE_RATIO 3
 
