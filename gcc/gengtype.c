@@ -449,24 +449,24 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	       number notes.  */
 	  case NOTE_INSN_MAX:
 	    note_flds->opt->name = "default";
-	    note_flds->name = "rtstr";
+	    note_flds->name = "rt_str";
 	    note_flds->type = &string_type;
 	    break;
 
 	  case NOTE_INSN_BLOCK_BEG:
 	  case NOTE_INSN_BLOCK_END:
-	    note_flds->name = "rttree";
+	    note_flds->name = "rt_tree";
 	    note_flds->type = tree_tp;
 	    break;
 
 	  case NOTE_INSN_EXPECTED_VALUE:
 	  case NOTE_INSN_VAR_LOCATION:
-	    note_flds->name = "rtx";
+	    note_flds->name = "rt_rtx";
 	    note_flds->type = rtx_tp;
 	    break;
 
 	  default:
-	    note_flds->name = "rtint";
+	    note_flds->name = "rt_int";
 	    note_flds->type = scalar_tp;
 	    break;
 	  }
@@ -497,48 +497,48 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case 'n':
 	    case 'w':
 	      t = scalar_tp;
-	      subname = "rtint";
+	      subname = "rt_int";
 	      break;
 
 	    case '0':
 	      if (i == MEM && aindex == 1)
-		t = mem_attrs_tp, subname = "rtmem";
+		t = mem_attrs_tp, subname = "rt_mem";
 	      else if (i == JUMP_INSN && aindex == 9)
-		t = rtx_tp, subname = "rtx";
+		t = rtx_tp, subname = "rt_rtx";
 	      else if (i == CODE_LABEL && aindex == 4)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == CODE_LABEL && aindex == 5)
-		t = rtx_tp, subname = "rtx";
+		t = rtx_tp, subname = "rt_rtx";
 	      else if (i == LABEL_REF
 		       && (aindex == 1 || aindex == 2))
-		t = rtx_tp, subname = "rtx";
+		t = rtx_tp, subname = "rt_rtx";
 	      else if (i == NOTE && aindex == 4)
 		t = note_union_tp, subname = "";
 	      else if (i == NOTE && aindex >= 7)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == ADDR_DIFF_VEC && aindex == 4)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == VALUE && aindex == 0)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == REG && aindex == 1)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == REG && aindex == 2)
-		t = reg_attrs_tp, subname = "rtreg";
+		t = reg_attrs_tp, subname = "rt_reg";
 	      else if (i == SCRATCH && aindex == 0)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 1)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 2)
-		t = tree_tp, subname = "rttree";
+		t = tree_tp, subname = "rt_tree";
 	      else if (i == BARRIER && aindex >= 3)
-		t = scalar_tp, subname = "rtint";
+		t = scalar_tp, subname = "rt_int";
 	      else
 		{
 		  error_at_line (&lexer_line,
 			"rtx type `%s' has `0' in position %lu, can't handle",
 				 rtx_name[i], (unsigned long) aindex);
 		  t = &string_type;
-		  subname = "rtint";
+		  subname = "rt_int";
 		}
 	      break;
 
@@ -546,34 +546,34 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case 'S':
 	    case 'T':
 	      t = &string_type;
-	      subname = "rtstr";
+	      subname = "rt_str";
 	      break;
 
 	    case 'e':
 	    case 'u':
 	      t = rtx_tp;
-	      subname = "rtx";
+	      subname = "rt_rtx";
 	      break;
 
 	    case 'E':
 	    case 'V':
 	      t = rtvec_tp;
-	      subname = "rtvec";
+	      subname = "rt_rtvec";
 	      break;
 
 	    case 't':
 	      t = tree_tp;
-	      subname = "rttree";
+	      subname = "rt_tree";
 	      break;
 
 	    case 'b':
 	      t = bitmap_tp;
-	      subname = "rtbit";
+	      subname = "rt_bit";
 	      break;
 
 	    case 'B':
 	      t = basic_block_tp;
-	      subname = "bb";
+	      subname = "rt_bb";
 	      break;
 
 	    default:
@@ -582,7 +582,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 			     rtx_name[i], rtx_format[i][aindex],
 			     (unsigned long)aindex);
 	      t = &string_type;
-	      subname = "rtint";
+	      subname = "rt_int";
 	      break;
 	    }
 

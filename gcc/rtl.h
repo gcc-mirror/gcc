@@ -161,19 +161,19 @@ typedef struct reg_attrs GTY(())
 
 union rtunion_def
 {
-  int rtint;
-  unsigned int rtuint;
-  const char *rtstr;
-  rtx rtx;
-  rtvec rtvec;
-  enum machine_mode rttype;
+  int rt_int;
+  unsigned int rt_uint;
+  const char *rt_str;
+  rtx rt_rtx;
+  rtvec rt_rtvec;
+  enum machine_mode rt_type;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
   struct cselib_val_struct *rt_cselib;
-  struct bitmap_head_def *rtbit;
-  tree rttree;
-  struct basic_block_def *bb;
-  mem_attrs *rtmem;
-  reg_attrs *rtreg;
+  struct bitmap_head_def *rt_bit;
+  tree rt_tree;
+  struct basic_block_def *rt_bb;
+  mem_attrs *rt_mem;
+  reg_attrs *rt_reg;
 };
 typedef union rtunion_def rtunion;
 
@@ -602,15 +602,15 @@ do {				\
   _rtx->return_val = 0;		\
 } while (0)
 
-#define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rtint)
-#define XSTR(RTX, N)	(RTL_CHECK2 (RTX, N, 's', 'S').rtstr)
-#define XEXP(RTX, N)	(RTL_CHECK2 (RTX, N, 'e', 'u').rtx)
-#define XVEC(RTX, N)	(RTL_CHECK2 (RTX, N, 'E', 'V').rtvec)
-#define XMODE(RTX, N)	(RTL_CHECK1 (RTX, N, 'M').rttype)
-#define XBITMAP(RTX, N) (RTL_CHECK1 (RTX, N, 'b').rtbit)
-#define XTREE(RTX, N)   (RTL_CHECK1 (RTX, N, 't').rttree)
-#define XBBDEF(RTX, N)	(RTL_CHECK1 (RTX, N, 'B').bb)
-#define XTMPL(RTX, N)	(RTL_CHECK1 (RTX, N, 'T').rtstr)
+#define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rt_int)
+#define XSTR(RTX, N)	(RTL_CHECK2 (RTX, N, 's', 'S').rt_str)
+#define XEXP(RTX, N)	(RTL_CHECK2 (RTX, N, 'e', 'u').rt_rtx)
+#define XVEC(RTX, N)	(RTL_CHECK2 (RTX, N, 'E', 'V').rt_rtvec)
+#define XMODE(RTX, N)	(RTL_CHECK1 (RTX, N, 'M').rt_type)
+#define XBITMAP(RTX, N) (RTL_CHECK1 (RTX, N, 'b').rt_bit)
+#define XTREE(RTX, N)   (RTL_CHECK1 (RTX, N, 't').rt_tree)
+#define XBBDEF(RTX, N)	(RTL_CHECK1 (RTX, N, 'B').rt_bb)
+#define XTMPL(RTX, N)	(RTL_CHECK1 (RTX, N, 'T').rt_str)
 
 #define XVECEXP(RTX, N, M)	RTVEC_ELT (XVEC (RTX, N), M)
 #define XVECLEN(RTX, N)		GET_NUM_ELEM (XVEC (RTX, N))
@@ -618,39 +618,39 @@ do {				\
 /* These are like XINT, etc. except that they expect a '0' field instead
    of the normal type code.  */
 
-#define X0INT(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rtint)
-#define X0UINT(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rtuint)
-#define X0STR(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rtstr)
-#define X0EXP(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rtx)
-#define X0VEC(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rtvec)
-#define X0MODE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rttype)
-#define X0BITMAP(RTX, N)   (RTL_CHECK1 (RTX, N, '0').rtbit)
-#define X0TREE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rttree)
-#define X0BBDEF(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').bb)
+#define X0INT(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_int)
+#define X0UINT(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_uint)
+#define X0STR(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_str)
+#define X0EXP(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_rtx)
+#define X0VEC(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_rtvec)
+#define X0MODE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_type)
+#define X0BITMAP(RTX, N)   (RTL_CHECK1 (RTX, N, '0').rt_bit)
+#define X0TREE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_tree)
+#define X0BBDEF(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_bb)
 #define X0ADVFLAGS(RTX, N) (RTL_CHECK1 (RTX, N, '0').rt_addr_diff_vec_flags)
 #define X0CSELIB(RTX, N)   (RTL_CHECK1 (RTX, N, '0').rt_cselib)
-#define X0MEMATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, MEM).rtmem)
-#define X0REGATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, REG).rtreg)
+#define X0MEMATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, MEM).rt_mem)
+#define X0REGATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, REG).rt_reg)
 
 /* Access a '0' field with any type.  */
 #define X0ANY(RTX, N)	   RTL_CHECK1 (RTX, N, '0')
 
-#define XCINT(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rtint)
-#define XCUINT(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rtuint)
-#define XCSTR(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rtstr)
-#define XCEXP(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rtx)
-#define XCVEC(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rtvec)
-#define XCMODE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rttype)
-#define XCBITMAP(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rtbit)
-#define XCTREE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rttree)
-#define XCBBDEF(RTX, N, C)    (RTL_CHECKC1 (RTX, N, C).bb)
+#define XCINT(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_int)
+#define XCUINT(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_uint)
+#define XCSTR(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_str)
+#define XCEXP(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtx)
+#define XCVEC(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtvec)
+#define XCMODE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_type)
+#define XCBITMAP(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_bit)
+#define XCTREE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_tree)
+#define XCBBDEF(RTX, N, C)    (RTL_CHECKC1 (RTX, N, C).rt_bb)
 #define XCADVFLAGS(RTX, N, C) (RTL_CHECKC1 (RTX, N, C).rt_addr_diff_vec_flags)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
 
 #define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
 #define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
 
-#define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rtx)
+#define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
 
 /* ACCESS MACROS for particular fields of insns.  */
 

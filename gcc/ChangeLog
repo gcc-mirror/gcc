@@ -1,3 +1,15 @@
+2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* rtl.h (union rtunion_def): Have all members  start with the
+	prefix "rt_".
+	(XINT, XSTR, XEXP, XVEC, XMODE, XBITMAP, XTREE, XBBDEF, XTMPL,
+	X0INT, X0UINT, X0STR, X0EXP, X0VEC, X0MODE, X0BITMAP, X0TREE, 
+	X0MEMATTR, X0BBDEF, X0REGATTR, XCINT, XCUINT, XCSTR, XCEXP,
+	XCVEC, XCMODE, XCBITMAP, XCTREE, XCBBDEF, XC2EXP): Adjust members
+	access. 
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* rtlanal.c (loc_mentioned_in_p): Likewise.
+
 2004-08-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips*-*-elf*, mips*-*-rtems*): Add elfos.h to tm_file.
