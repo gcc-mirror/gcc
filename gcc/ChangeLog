@@ -1,3 +1,16 @@
+2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (ggc-common.o): Depend on $(PARAMS_H)
+	* doc/invoke.texi (ggc-min-expand, ggc-min-heapsize): Update
+	documentation.
+	* ggc-common.c: Include params.h
+	(ggc_min_expand_heuristic, ggc_min_heapsize_heuristic,
+	init_ggc_heuristics): New functions.
+	* ggc.h (ggc_min_expand_heuristic, ggc_min_heapsize_heuristic,
+	init_ggc_heuristics): Prototype.
+	* toplev.c (print_version):  Output GGC heuristics.
+	(parse_options_and_default_flags): Call init_ggc_heuristics.
+
 Sat Feb 22 02:35:07 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (def_builtin):  Special case 64bit builtins.
