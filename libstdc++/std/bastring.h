@@ -84,22 +84,8 @@ private:
     inline void move (size_t, const charT *, size_t);
     inline void set  (size_t, const charT,   size_t);
 
-#if _G_ALLOC_CONTROL
-    // These function pointers allow you to modify the allocation policy used
-    // by the string classes.  By default they expand by powers of two, but
-    // this may be excessive for space-critical applications.
-
-    // Returns true if ALLOCATED is too much larger than LENGTH
-    static bool (*excess_slop) (size_t length, size_t allocated);
-    inline static bool default_excess (size_t, size_t);
-
-    // Returns a good amount of space to allocate for a string of length LENGTH
-    static size_t (*frob_size) (size_t length);
-    inline static size_t default_frob (size_t);
-#else
     inline static bool excess_slop (size_t, size_t);
     inline static size_t frob_size (size_t);
-#endif
 
   private:
     Rep &operator= (const Rep &);
@@ -273,7 +259,7 @@ public:
 
 private:
   static charT eos () { return traits::eos (); }
-  void unique () { if (rep ()->ref > 1) alloc (capacity (), true); }
+  void unique () { if (rep ()->ref > 1) alloc (length (), true); }
   void selfish () { unique (); rep ()->selfish = true; }
 
 public:
@@ -304,7 +290,7 @@ private:
 
 public:
   const charT* c_str () const
-    { terminate (); return data (); }
+    { if (length () == 0) return ""; terminate (); return data (); }
   void resize (size_type n, charT c);
   void resize (size_type n)
     { resize (n, eos ()); }
@@ -620,5 +606,7 @@ template <class charT, class traits, class Allocator> istream&
 getline (istream&, basic_string <charT, traits, Allocator>&, charT delim = '\n');
 
 } // extern "C++"
+
+#include <std/bastring.cc>
 
 #endif
