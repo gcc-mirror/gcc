@@ -40,7 +40,7 @@ void test01()
       fb.pubseekpos(pos);
       VERIFY( false );
     }
-  catch (exception&)
+  catch (std::exception&)
     {
     }
 }

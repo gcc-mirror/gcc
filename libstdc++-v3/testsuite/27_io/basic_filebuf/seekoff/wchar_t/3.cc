@@ -40,7 +40,7 @@ void test03()
       fb.pubseekoff(0, ios_base::cur);
       VERIFY( false );
     }
-  catch (exception&)
+  catch (std::exception&)
     {
     }
 }

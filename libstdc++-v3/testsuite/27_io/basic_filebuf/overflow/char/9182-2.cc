@@ -67,7 +67,7 @@ void test14()
       fbuf1.close();
       VERIFY( false );
     }
-  catch (exception&)
+  catch (std::exception&)
     {
     }
 }
