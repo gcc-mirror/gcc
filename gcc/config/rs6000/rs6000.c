@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "except.h"
 #include "function.h"
 
 #ifndef TARGET_NO_PROTOTYPE
