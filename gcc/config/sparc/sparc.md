@@ -5539,6 +5539,8 @@
   ""
   "
 {
+  HOST_WIDE_INT i;
+
   if (! TARGET_ARCH64)
     {
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
@@ -5551,9 +5553,17 @@
     }
   if (arith_double_4096_operand(operands[2], DImode))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			      gen_rtx_MINUS (DImode, operands[1],
-					     GEN_INT(-4096))));
+      switch (GET_CODE (operands[1]))
+	{
+	case CONST_INT: i = INTVAL (operands[1]); break;
+	case CONST_DOUBLE: i = CONST_DOUBLE_LOW (operands[1]); break;
+	default:
+	  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				  gen_rtx_MINUS (DImode, operands[1],
+						 GEN_INT(-4096))));
+	  DONE;
+	}
+      emit_insn (gen_movdi (operands[0], GEN_INT (i + 4096)));
       DONE;
     }
 }")
@@ -5768,11 +5778,15 @@
   ""
   "
 {
-  if (arith_4096_operand(operands[2], DImode))
+  if (arith_4096_operand(operands[2], SImode))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			      gen_rtx_MINUS (SImode, operands[1],
-					     GEN_INT(-4096))));
+      if (GET_CODE (operands[1]) == CONST_INT)
+	emit_insn (gen_movsi (operands[0],
+			      GEN_INT (INTVAL (operands[1]) + 4096)));
+      else
+	emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				gen_rtx_MINUS (SImode, operands[1],
+					       GEN_INT(-4096))));
       DONE;
     }
 }")
@@ -5967,7 +5981,7 @@
   ""
   "
 {
-  if (arith_4096_operand(operands[2], DImode))
+  if (arith_4096_operand(operands[2], SImode))
     {
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			      gen_rtx_PLUS (SImode, operands[1],

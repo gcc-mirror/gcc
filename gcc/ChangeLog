@@ -1,5 +1,12 @@
 2000-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.md (adddi3): If operands[2] is 4096 and
+	operands[1] is constant, calculate the sum and generate movdi.
+	(addsi3): Similarly.  Use SImode in call to arith_4096_operand.
+	(subsi3): Use SImode in call to arith_4096_operand.
+
+2000-11-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): On sparc64 we need to
 	adjust %o1, not %o0 if the return type is large structure.
 
