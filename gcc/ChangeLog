@@ -1,3 +1,7 @@
+2004-03-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* frontends.texi: Add missing line.
+
 2004-03-21  Zack Weinberg  <zack@codesourcery.com>
             Chris Devers  <cdevers@pobox.com>
             Joseph S. Myers  <jsm@polyomino.org.uk>
