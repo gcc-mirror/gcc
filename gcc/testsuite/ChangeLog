@@ -1,3 +1,8 @@
+2002-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020418-1.c: New test.
+	* gcc.dg/20020418-2.c: New test.
+
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
         * gcc.c-torture/compile/iftrap-1.c: New.
