@@ -1,3 +1,7 @@
+2000-09-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+        * bits/basic_file.h (_M_open_mode): Remove extra qualifier.
+
 2000-09-25  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* ext/stl_hashtable.h (_M_copy_from): Change __copy to __local_copy.
