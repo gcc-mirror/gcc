@@ -1,3 +1,84 @@
+2000-07-30  Michael Hayes  <mhayes@cygnus.com>
+	    Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (OBJS): Add doloop.o.
+	* doloop.c: New file.
+
+	* final.c (insn_current_reference_address): Return 0 before final.
+	* flags.h (flag_branch_on_count_reg): Fix typos in commentary.
+	* jump.c (any_uncondjump_p): Likewise.
+	* loop.c (indirect_jump_in_function): Make static.
+	(strength_reduce): Call doloop_optimize.
+	(insert_bct, instrument_loop_bct): Remove.
+	* loop.h (doloop_optimize): Prototype.
+	* recog.c (split_all_insns): Split all INSN_P.
+	* toplev.c (flag_branch_on_count_reg): Default on.
+
+	* config/c4x/c4x.c (c4x_optimization_options): Don't set
+	flag_branch_on_count_reg.
+	* config/i386/i386.c (override_options): Likewise.
+	* config/rs6000/rs6000.c (optimization_options): Likewise.
+
+	* config/i386/i386.md (decrement_and_branch_on_count): Remove.
+	(doloop_end): New.
+	(dbra_ge): Remove, as well as all it's splitters.
+
+	* config/rs6000/rs6000.md (decrement_and_branch_on_count): Remove.
+	(doloop_end): New.
+
+	* config/ia64/ia64-protos.h (ar_lc_reg_operand): Declare.
+	(ia64_register_move_cost): Declare.
+	* config/ia64/ia64.c (ar_lc_reg_operand): New.
+	(struct ia64_frame_info): Add ar_size.
+	(ia64_compute_frame_size): Set it.
+	(save_restore_insns): Save and restore ar.lc.
+	(ia64_register_move_cost): New, moved from header file.  Handle
+	application registers.
+	(REG_AR_PFS, REG_AR_EC): Remove.  Replace with AR_*_REGNUM numbers.
+	(emit_insn_group_barriers): Special case doloop_end_internal.
+	(ia64_epilogue_uses): Mark ar.lc live at end.
+	* config/ia64/ia64.h (AR_CCV_REGNUM, AR_LC_REGNUM): New registers.
+	(AR_EC_REGNUM, AR_PFS_REGNUM): New registers.
+	(FIRST_PSEUDO_REGISTER): Make room.
+	(AR_M_REGNO_P, AR_I_REGNO_P, AR_REGNO_P): New.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Update.
+	(REG_ALLOC_ORDER): Update.
+	(HARD_REGNO_MODE_OK): Update.
+	(REGISTER_NAMES): Update.
+	(enum reg_class): Add AR_M_REGS and AR_I_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update.
+	(REGNO_REG_CLASS): Update.
+	(LEGITIMATE_ADDRESS_DISP): Displacement range is 9 bits, not 10.
+	(REGISTER_MOVE_COST): Move out of line.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md (movdi patterns): Handle ar register classes.
+	(addsi3_plus1_alt, adddi3_plus1_alt): New.
+	(shladd_elim splitter): Allow constants in the predicate.
+	(doloop_end, doloop_end_internal): New.
+
+2000-07-30  Richard Henderson  <rth@cygnus.com>
+
+	* genattrtab.c (struct insn_def): Add lineno member.
+	(struct insn_ent): Likewise.
+	(struct attr_desc): Likewise.
+	(struct delay_desc): Likewise.
+	(struct function_unit_op): Likewise.
+	(struct function_unit): Likewise.
+	(check_attr_value): Use message_with_line.
+	(check_defs): Likewise.
+	(expand_units): Likewise.
+	(check_attr_test): Take a lineno argument.
+	(gen_attr): Likewise.
+	(gen_insn): Likewise.
+	(gen_delay): Likewise.
+	(gen_unit): Likewise.
+	(main): Give it to them.
+	(convert_set_attr_alternative): Take an insn_def argument
+	instead of num_alt and insn_index.
+	(convert_set_attr): Likewise.
+	(write_test_expr): Protect INSN_ADDRESSES load
+	with INSN_ADDRESSES_SET_P.
+
 2000-07-30  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (init_propagate_block_info): Use pc_set.

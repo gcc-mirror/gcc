@@ -254,3 +254,5 @@ int loop_insn_first_p PARAMS ((rtx, rtx));
 typedef rtx (*loop_insn_callback ) PARAMS ((struct loop *, rtx, int, int));
 void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
 
+/* Forward declarations for non-static functions declared in doloop.c.  */
+int doloop_optimize PARAMS ((const struct loop *));

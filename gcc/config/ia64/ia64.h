@@ -535,12 +535,11 @@ while (0)
 /* Register Basics */
 
 /* Number of hardware registers known to the compiler.  
-   We have 128 general registers, 128 floating point registers, 64 predicate
-   registers, 8 branch registers, and one frame pointer register.  */
+   We have 128 general registers, 128 floating point registers,
+   64 predicate registers, 8 branch registers, one frame pointer,
+   and several "application" registers.  */
 
-/* ??? Should add ar.lc, ar.ec and probably also ar.pfs.  */
-
-#define FIRST_PSEUDO_REGISTER 330
+#define FIRST_PSEUDO_REGISTER 334
 
 /* Ranges for the various kinds of registers.  */
 #define ADDL_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 3)
@@ -561,9 +560,22 @@ while (0)
 #define IN_REG(REGNO) ((REGNO) + 112)
 #define LOC_REG(REGNO) ((REGNO) + 32)
 
+#define AR_CCV_REGNUM	330
+#define AR_LC_REGNUM	331
+#define AR_EC_REGNUM	332
+#define AR_PFS_REGNUM	333
+
 #define IN_REGNO_P(REGNO) ((REGNO) >= IN_REG (0) && (REGNO) <= IN_REG (7))
 #define LOC_REGNO_P(REGNO) ((REGNO) >= LOC_REG (0) && (REGNO) <= LOC_REG (79))
 #define OUT_REGNO_P(REGNO) ((REGNO) >= OUT_REG (0) && (REGNO) <= OUT_REG (7))
+
+#define AR_M_REGNO_P(REGNO) ((REGNO) == AR_CCV_REGNUM)
+#define AR_I_REGNO_P(REGNO) ((REGNO) >= AR_LC_REGNUM \
+			     && (REGNO) < FIRST_PSEUDO_REGISTER)
+#define AR_REGNO_P(REGNO) ((REGNO) >= AR_CCV_REGNUM \
+			   && (REGNO) < FIRST_PSEUDO_REGISTER)
+
+
 
 /* ??? Don't really need two sets of macros.  I like this one better because
    it is less typing.  */
@@ -619,14 +631,14 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   0, 0, 0, 0, 0, 0, 0, 0,				\
-  /*FP RA*/						\
-  1, 1,							\
+  /*FP RA CCV LC EC PFS */				\
+     1, 1,  1, 1, 1,  1					\
  }
 
-/* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered (in
-   general) by function calls as well as for fixed registers.  This macro
-   therefore identifies the registers that are not available for general
-   allocation of values that must live across function calls.  */
+/* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered
+   (in general) by function calls as well as for fixed registers.  This
+   macro therefore identifies the registers that are not available for
+   general allocation of values that must live across function calls.  */
 
 #define CALL_USED_REGISTERS \
 { /* General registers.  */				\
@@ -654,8 +666,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
-  /*FP RA*/						\
-  1, 1,							\
+  /*FP RA CCV LC EC PFS */				\
+     1, 1,  1, 1, 1,  1					\
 }
 
 /* Define this macro if the target machine has register windows.  This C
@@ -787,10 +799,10 @@ while (0)
   R_PR (0),								   \
   /* Special branch registers.  */					   \
   R_BR (0),								   \
-  /* Frame pointer.  Return address.  */				   \
+  /* Other fixed registers.  */						   \
   FRAME_POINTER_REGNUM, RETURN_ADDRESS_POINTER_REGNUM,			   \
+  AR_CCV_REGNUM, AR_LC_REGNUM, AR_EC_REGNUM, AR_PFS_REGNUM		   \
 }
-
 
 /* How Values Fit in Registers */
 
@@ -815,6 +827,7 @@ while (0)
   (FR_REGNO_P (REGNO) ? (MODE) != CCmode				\
    : PR_REGNO_P (REGNO) ? (MODE) == CCmode				\
    : GR_REGNO_P (REGNO) ? (MODE) != XFmode				\
+   : AR_REGNO_P (REGNO) ? (MODE) == DImode				\
    : 1)
 
 /* A C expression that is nonzero if it is desirable to choose register
@@ -877,6 +890,8 @@ enum reg_class
   GR_REGS,
   FR_REGS,
   GR_AND_FR_REGS,
+  AR_M_REGS,
+  AR_I_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -890,7 +905,8 @@ enum reg_class
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \
 { "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", \
-  "FR_REGS", "GR_AND_FR_REGS", "ALL_REGS" }
+  "FR_REGS", "GR_AND_FR_REGS", "AR_M_REGS", "AR_I_REGS", \
+  "ALL_REGS" }
 
 /* An initializer containing the contents of the register classes, as integers
    which are bit masks.  The Nth integer specifies the contents of class N.
@@ -901,35 +917,43 @@ enum reg_class
   /* NO_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x000 },			\
+    0x00000000, 0x00000000, 0x0000 },			\
   /* PR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0xFFFFFFFF, 0xFFFFFFFF, 0x000 },			\
+    0xFFFFFFFF, 0xFFFFFFFF, 0x0000 },			\
   /* BR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x0FF },			\
+    0x00000000, 0x00000000, 0x00FF },			\
   /* ADDL_REGS.  */					\
   { 0x0000000F, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x000 },			\
+    0x00000000, 0x00000000, 0x0000 },			\
   /* GR_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x300 },			\
+    0x00000000, 0x00000000, 0x0300 },			\
   /* FR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0x00000000, 0x00000000, 0x000 },			\
+    0x00000000, 0x00000000, 0x0000 },			\
   /* GR_AND_FR_REGS.  */				\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0x00000000, 0x00000000, 0x300 },			\
+    0x00000000, 0x00000000, 0x0300 },			\
+  /* AR_M_REGS.  */					\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x0400 },			\
+  /* AR_I_REGS.  */					\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x3800 },			\
   /* ALL_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0xFFFFFFFF, 0xFFFFFFFF, 0x3FF },			\
+    0xFFFFFFFF, 0xFFFFFFFF, 0x3FFF },			\
 }
 
 /* A C expression whose value is a register class containing hard register
@@ -944,6 +968,8 @@ enum reg_class
  : FR_REGNO_P (REGNO) ? FR_REGS		\
  : PR_REGNO_P (REGNO) ? PR_REGS		\
  : BR_REGNO_P (REGNO) ? BR_REGS		\
+ : AR_M_REGNO_P (REGNO) ? AR_I_REGS	\
+ : AR_I_REGNO_P (REGNO) ? AR_M_REGS	\
  : NO_REGS)
 
 /* A macro whose definition is the name of the class to which a valid base
@@ -968,6 +994,8 @@ enum reg_class
  : (CHAR) == 'a' ? ADDL_REGS		\
  : (CHAR) == 'b' ? BR_REGS		\
  : (CHAR) == 'c' ? PR_REGS		\
+ : (CHAR) == 'd' ? AR_M_REGS		\
+ : (CHAR) == 'e' ? AR_I_REGS		\
  : NO_REGS)
 
 /* A C expression which is nonzero if register number NUM is suitable for use
@@ -1816,8 +1844,8 @@ do {									\
    && rtx_equal_p (R, XEXP (X, 0))					\
    && (GET_CODE (XEXP (X, 1)) == REG					\
        || (GET_CODE (XEXP (X, 1)) == CONST_INT				\
-	   && INTVAL (XEXP (X, 1)) >= -512				\
-	   && INTVAL (XEXP (X, 1)) < 512)))
+	   && INTVAL (XEXP (X, 1)) >= -256				\
+	   && INTVAL (XEXP (X, 1)) < 256)))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) 			\
 do {									\
@@ -1926,10 +1954,7 @@ do {									\
    one in class TO.  */
 
 #define REGISTER_MOVE_COST(FROM, TO) \
-((FROM) == BR_REGS && (TO) == BR_REGS ? 8				\
- : (((FROM) == BR_REGS && (TO) != GENERAL_REGS)				\
-    || ((TO) == BR_REGS && (FROM) != GENERAL_REGS)) ? 6			\
- : 2)
+  ia64_register_move_cost((FROM), (TO))
 
 /* A C expression for the cost of moving data of mode M between a register and
    memory.  */
@@ -2363,7 +2388,7 @@ do {									\
   /* Branch registers.  */						\
   "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7",			\
   /* Frame pointer.  Return address.  */				\
-  "sfp", "retaddr"							\
+  "sfp", "retaddr", "ar.ccv", "ar.lc", "ar.ec", "ar.pfs"		\
 }
 
 /* If defined, a C initializer for an array of structures containing a name and
@@ -2749,7 +2774,8 @@ do {									\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "call_multiple_values_operation", {PARALLEL}},			\
-{ "predicate_operator", {NE, EQ}},
+{ "predicate_operator", {NE, EQ}},					\
+{ "ar_lc_reg_operand", {REG}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */

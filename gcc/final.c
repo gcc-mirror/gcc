@@ -918,9 +918,14 @@ int
 insn_current_reference_address (branch)
      rtx branch;
 {
-  rtx dest;
-  rtx seq = NEXT_INSN (PREV_INSN (branch));
-  int seq_uid = INSN_UID (seq);
+  rtx dest, seq;
+  int seq_uid;
+
+  if (! INSN_ADDRESSES_SET_P ())
+    return 0;
+
+  seq = NEXT_INSN (PREV_INSN (branch));
+  seq_uid = INSN_UID (seq);
   if (GET_CODE (branch) != JUMP_INSN)
     /* This can happen for example on the PA; the objective is to know the
        offset to address something in front of the start of the function.
@@ -929,6 +934,7 @@ insn_current_reference_address (branch)
        any alignment we'd encounter, so we skip the call to align_fuzz.  */
     return insn_current_address;
   dest = JUMP_LABEL (branch);
+
   /* BRANCH has no proper alignment chain set, so use SEQ.  */
   if (INSN_SHUID (branch) < INSN_SHUID (dest))
     {

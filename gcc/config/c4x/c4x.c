@@ -295,10 +295,6 @@ c4x_optimization_options (level, size)
      instructions.  The benefit we gain we get by scheduling before
      register allocation is probably marginal anyhow.  */
   flag_schedule_insns = 0;
-
-  /* When optimizing, enable use of RPTB instruction.  */
-  if (level >= 1)
-    flag_branch_on_count_reg = 1;
 }
 
 

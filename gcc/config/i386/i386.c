@@ -630,10 +630,6 @@ override_options ()
   if (flag_fast_math)
     target_flags &= ~MASK_IEEE_FP;
 
-  /* If we're planning on using `loop', use it.  */
-  if (TARGET_USE_LOOP && optimize)
-    flag_branch_on_count_reg = 1;
-
   /* It makes no sense to ask for just SSE builtins, so MMX is also turned
      on by -msse.  */
   if (TARGET_SSE)

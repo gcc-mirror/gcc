@@ -559,6 +559,19 @@ predicate_operator (op, mode)
   return ((GET_MODE (op) == mode || mode == VOIDmode)
 	  && (code == EQ || code == NE));
 }
+
+/* Return 1 if this is the ar.lc register.  */
+
+int
+ar_lc_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_MODE (op) == DImode
+	  && (mode == DImode || mode == VOIDmode)
+	  && GET_CODE (op) == REG
+	  && REGNO (op) == AR_LC_REGNUM);
+}
 
 /* Return 1 if the operands of a move are ok.  */
 
@@ -683,6 +696,7 @@ struct ia64_frame_info
   long fr_pad_size;		/* # bytes needed to align FP save area.  */
   long pr_size;			/* # bytes needed to store predicate regs.  */
   long br_size;			/* # bytes needed to store branch regs.  */
+  long ar_size;			/* # bytes needed to store AR regs.  */
   HARD_REG_SET mask;		/* mask of saved registers.  */
   int initialized;		/* != 0 is frame size already calculated.  */
 };
@@ -713,6 +727,7 @@ ia64_compute_frame_size (size)
   int fr_pad_size = 0;
   int pr_size = 0;
   int br_size = 0;
+  int ar_size = 0;
   int pretend_pad_size = 0;
   int tmp;
   int regno;
@@ -772,6 +787,13 @@ ia64_compute_frame_size (size)
   else
     fr_pad_size = 0;
 
+  /* AR.LC, for reasons unexplained, is call saved.  */
+  if (regs_ever_live[AR_LC_REGNUM])
+    {
+      SET_HARD_REG_BIT (mask, AR_LC_REGNUM);
+      ar_size = 8;
+    }
+
   /* If we have an odd number of words of pretend arguments written to the
      stack, then the FR save area will be unaligned.  We pad below this area
      to keep things 16 byte aligned.  This needs to be kept distinct, to
@@ -780,7 +802,7 @@ ia64_compute_frame_size (size)
   pretend_pad_size = current_function_pretend_args_size % 16;
 
   /* The 16 bytes is for the scratch area.  */
-  tmp = (size + gr_size + fr_pad_size + fr_size + pr_size + br_size
+  tmp = (size + gr_size + fr_pad_size + fr_size + pr_size + br_size + ar_size
 	 + current_function_outgoing_args_size + 16);
   tmp += (current_function_pretend_args_size
 	  ? current_function_pretend_args_size - 16
@@ -810,6 +832,7 @@ ia64_compute_frame_size (size)
   current_frame_info.fr_pad_size = fr_pad_size;
   current_frame_info.pr_size = pr_size;
   current_frame_info.br_size = br_size;
+  current_frame_info.ar_size = ar_size;
   COPY_HARD_REG_SET (current_frame_info.mask, mask);
   current_frame_info.initialized = reload_completed;
 
@@ -822,8 +845,11 @@ save_restore_insns (save_p)
 {
   rtx insn;
 
-  if (current_frame_info.gr_size + current_frame_info.fr_size
-      + current_frame_info.br_size + current_frame_info.pr_size)
+  if (current_frame_info.gr_size
+      + current_frame_info.fr_size
+      + current_frame_info.br_size
+      + current_frame_info.pr_size
+      + current_frame_info.ar_size)
     {
       rtx tmp_reg = gen_rtx_REG (DImode, GR_REG (2));
       rtx tmp_post_inc = gen_rtx_POST_INC (DImode, tmp_reg);
@@ -833,6 +859,7 @@ save_restore_insns (save_p)
 		       + current_frame_info.fr_pad_size
 		       + current_frame_info.br_size
 		       + current_frame_info.pr_size
+		       + current_frame_info.ar_size
 		       + current_frame_info.var_size
 		       + current_frame_info.pretend_size
 		       + current_frame_info.pretend_pad_size));
@@ -961,6 +988,29 @@ save_restore_insns (save_p)
 	    if (save_p)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	  }
+
+      if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_LC_REGNUM))
+	{
+	  rtx src, dest;
+
+	  if (save_p)
+	    {
+	      src = gen_rtx_REG (DImode, AR_LC_REGNUM);
+	      dest = gen_rtx_MEM (DImode, tmp_post_inc);
+	    }
+	  else
+	    {
+	      src = gen_rtx_MEM (DImode, tmp_post_inc);
+	      dest = gen_rtx_REG (DImode, AR_LC_REGNUM);
+	    }
+
+	  insn = emit_insn (gen_movdi (tmp2_reg, src));
+	  if (save_p)
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_movdi (dest, tmp2_reg));
+	  if (save_p)
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 }
 
@@ -2149,6 +2199,28 @@ ia64_print_operand (file, x, code)
   return;
 }
 
+/* Calulate the cost of moving data from a register in class FROM to
+   one in class TO.  */
+
+int
+ia64_register_move_cost (from, to)
+     enum reg_class from, to;
+{
+  int from_hard, to_hard;
+  int from_gr, to_gr;
+
+  from_hard = (from == BR_REGS || from == AR_M_REGS || from == AR_I_REGS);
+  to_hard = (to == BR_REGS || to == AR_M_REGS || to == AR_I_REGS);
+  from_gr = (from == GENERAL_REGS);
+  to_gr = (to == GENERAL_REGS);
+
+  if (from_hard && to_hard)
+    return 8;
+  else if ((from_hard && !to_gr) || (!from_gr && to_hard))
+    return 6;
+
+  return 2;
+}
 
 /* This function returns the register class required for a secondary
    register when copying between one of the registers in CLASS, and X,
@@ -2382,14 +2454,11 @@ ia64_override_options ()
    complex).  */
 #define REG_GP		(GR_REG (1))
 #define REG_RP		(BR_REG (0))
-#define REG_AR_PFS	(FIRST_PSEUDO_REGISTER)
 #define REG_AR_CFM	(FIRST_PSEUDO_REGISTER + 1)
-/* ??? This will eventually need to be a hard register.  */
-#define REG_AR_EC	(FIRST_PSEUDO_REGISTER + 2)
 /* This is used for volatile asms which may require a stop bit immediately
    before and after them.  */
-#define REG_VOLATILE	(FIRST_PSEUDO_REGISTER + 3)
-#define NUM_REGS	(FIRST_PSEUDO_REGISTER + 4)
+#define REG_VOLATILE	(FIRST_PSEUDO_REGISTER + 2)
+#define NUM_REGS	(FIRST_PSEUDO_REGISTER + 3)
 
 /* For each register, we keep track of how many times it has been
    written in the current instruction group.  If a register is written
@@ -2521,15 +2590,13 @@ rws_access_reg (regno, flags, pred)
 	  /* Branches have several RAW exceptions that allow to avoid
 	     barriers.  */
 
-	  if (REGNO_REG_CLASS (regno) == BR_REGS || regno == REG_AR_PFS)
+	  if (REGNO_REG_CLASS (regno) == BR_REGS || regno == AR_PFS_REGNUM)
 	    /* RAW dependencies on branch regs are permissible as long
 	       as the writer is a non-branch instruction.  Since we
 	       never generate code that uses a branch register written
 	       by a branch instruction, handling this case is
 	       easy.  */
-	    /* ??? This assumes that we don't emit br.cloop, br.cexit, br.ctop,
-	       br.wexit, br.wtop.  This is true currently.  */
-	      return 0;
+	    return 0;
 
 	  if (REGNO_REG_CLASS (regno) == PR_REGS
 	      && ! rws_sum[regno].written_by_fp)
@@ -2678,7 +2745,7 @@ rtx_needs_barrier (x, flags, pred)
       new_flags.is_write = 0;
       /* ??? Why is this here?  It seems unnecessary.  */
       need_barrier |= rws_access_reg (REG_GP, new_flags, pred);
-      need_barrier |= rws_access_reg (REG_AR_EC, new_flags, pred);
+      need_barrier |= rws_access_reg (AR_EC_REGNUM, new_flags, pred);
 
       /* Avoid multiple register writes, in case this is a pattern with
 	 multiple CALL rtx.  This avoids an abort in rws_access_reg.  */
@@ -2688,7 +2755,7 @@ rtx_needs_barrier (x, flags, pred)
 	{
 	  new_flags.is_write = 1;
 	  need_barrier |= rws_access_reg (REG_RP, new_flags, pred);
-	  need_barrier |= rws_access_reg (REG_AR_PFS, new_flags, pred);
+	  need_barrier |= rws_access_reg (AR_PFS_REGNUM, new_flags, pred);
 	  need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
 	}
       break;
@@ -2877,7 +2944,7 @@ rtx_needs_barrier (x, flags, pred)
 	  /* Alloc must always be the first instruction.  Currently, we
 	     only emit it at the function start, so we don't need to worry
 	     about emitting a stop bit before it.  */
-	  need_barrier = rws_access_reg (REG_AR_PFS, flags, pred);
+	  need_barrier = rws_access_reg (AR_PFS_REGNUM, flags, pred);
 
 	  new_flags.is_write = 1;
 	  need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
@@ -2892,7 +2959,7 @@ rtx_needs_barrier (x, flags, pred)
 
 	case 4: /* mov ar.pfs= */
 	  new_flags.is_write = 1;
-	  need_barrier = rws_access_reg (REG_AR_PFS, new_flags, pred);
+	  need_barrier = rws_access_reg (AR_PFS_REGNUM, new_flags, pred);
 	  break;
 
 	case 5: /* set_bsp  */
@@ -2920,10 +2987,10 @@ rtx_needs_barrier (x, flags, pred)
     case RETURN:
       new_flags.is_write = 0;
       need_barrier  = rws_access_reg (REG_RP, flags, pred);
-      need_barrier |= rws_access_reg (REG_AR_PFS, flags, pred);
+      need_barrier |= rws_access_reg (AR_PFS_REGNUM, flags, pred);
 
       new_flags.is_write = 1;
-      need_barrier |= rws_access_reg (REG_AR_EC, new_flags, pred);
+      need_barrier |= rws_access_reg (AR_EC_REGNUM, new_flags, pred);
       need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
       break;
 
@@ -3041,6 +3108,12 @@ emit_insn_group_barriers (insns)
 		 get proper schedules.  Undo this for dv analysis.  */
 	      if (INSN_CODE (insn) == CODE_FOR_epilogue_deallocate_stack)
 		pat = XVECEXP (pat, 0, 0);
+
+	      /* ??? Similarly, the pattern we use for br.cloop
+		 confuses the code above.  The second element of the
+		 vector is representative.  */
+	      else if (INSN_CODE (insn) == CODE_FOR_doloop_end_internal)
+		pat = XVECEXP (pat, 0, 1);
 
 	      memset (rws_insn, 0, sizeof (rws_insn));
 	      need_barrier |= rtx_needs_barrier (pat, flags, 0);
@@ -3162,6 +3235,9 @@ ia64_epilogue_uses (regno)
   /* Conditional return patterns can't represent the use of `b0' as
      the return address, so we force the value live this way.  */
   if (regno == R_BR (0))
+    return 1;
+
+  if (regno == AR_LC_REGNUM)
     return 1;
 
   return 0;

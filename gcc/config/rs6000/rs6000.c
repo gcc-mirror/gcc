@@ -400,11 +400,6 @@ optimization_options (level, size)
      int level;
      int size ATTRIBUTE_UNUSED;
 {
-#ifdef HAVE_decrement_and_branch_on_count
-  /* When optimizing, enable use of BCT instruction.  */
-  if (level >= 1)
-      flag_branch_on_count_reg = 1;
-#endif
 }
 
 /* Do anything needed at the start of the asm file.  */

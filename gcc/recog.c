@@ -2626,7 +2626,7 @@ split_all_insns (upd_life)
 	  /* Can't use `next_real_insn' because that might go across
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
-	  if (GET_CODE (insn) != INSN)
+	  if (! INSN_P (insn))
 	    ;
 
 	  /* Don't split no-op move insns.  These should silently
