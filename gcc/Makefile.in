@@ -1526,7 +1526,7 @@ final.o : final.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h $(REGS_H) \
    toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h dbxout.h
 recog.o : recog.c $(CONFIG_H) system.h $(RTL_H)  \
    $(REGS_H) $(RECOG_H) hard-reg-set.h flags.h insn-config.h insn-attr.h \
-   insn-flags.h insn-codes.h real.h
+   insn-flags.h insn-codes.h real.h toplev.h
 reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
    $(REGS_H) hard-reg-set.h flags.h insn-config.h insn-flags.h toplev.h
 dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h gansidecl.h
@@ -1605,7 +1605,7 @@ s-codes : $(md_file) gencodes $(srcdir)/move-if-change
 	touch s-codes
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) $(EXPR_H) real.h output.h \
-  insn-config.h insn-flags.h insn-codes.h system.h reload.h
+  insn-config.h insn-flags.h insn-codes.h system.h reload.h recog.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c
 
 insn-emit.c: s-emit ; @true
@@ -1644,7 +1644,8 @@ s-extract : $(md_file) genextract $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-extract.c insn-extract.c
 	touch s-extract
 
-insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) $(REGS_H) output.h real.h system.h
+insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) $(REGS_H) output.h real.h \
+	system.h insn-config.h recog.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c
 
 insn-peep.c: s-peep ; @true

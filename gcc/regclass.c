@@ -584,8 +584,8 @@ fix_register (name, fixed, call_used)
 	  && (fixed == 0 || call_used == 0))
 	{
 	  static char* what_option[2][2] = {
-	    "call-saved", "call-used", 
-	    "no-such-option", "fixed" };
+	    { "call-saved", "call-used" },
+	    { "no-such-option", "fixed" }};
 	  
 	  error ("can't use '%s' as a %s register", name, 
 		 what_option[fixed][call_used]);
@@ -1842,7 +1842,6 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 {
   static size_t regno_allocated = 0;
   static short *renumber = (short *)0;
-  int i;
   size_t size_info;
   size_t size_renumber;
   size_t min = (new_p) ? 0 : reg_n_max;
@@ -1937,6 +1936,8 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	    {
 	      size_t max = max_index;
 	      size_t local_min = min - min_index;
+	      size_t i;
+
 	      if (min < min_index)
 		local_min = 0;
 	      if (!reg_data->used_p)	/* page just allocated with calloc */
