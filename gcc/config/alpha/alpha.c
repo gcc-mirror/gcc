@@ -135,10 +135,9 @@ add_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
-    return ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000
-	    || ((INTVAL (op) & 0xffff) == 0
-		&& (INTVAL (op) >> 31 == -1
-		    || INTVAL (op) >> 31 == 0)));
+    return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'K')
+	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')
+	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'));
 
   return register_operand (op, mode);
 }
