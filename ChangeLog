@@ -1,3 +1,7 @@
+2000-12-14  Tom Tromey  <tromey@redhat.com>
+
+	* MAINTAINERS: Added gcj developers.
+
 2000-12-13  Anthony Green  <green@redhat.com>
 	
 	* configure.in: Disable libgcj for any target not specifically

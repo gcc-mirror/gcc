@@ -103,6 +103,7 @@ in changes outside of the parts of the compiler they maintain.
 			Write After Approval
 Scott Bambrough					scottb@netwinder.org
 Phil Blundell					pb@futuretv.com
+Hans Boehm					hboehm@gcc.gnu.org
 Andrew cagney					cagney@redhat.com
 Eric Christopher				echristo@redhat.com
 William Cohen					wcohen@redhat.com
@@ -124,6 +125,7 @@ Brendan Kehoe					brendan@redhat.com
 Mumit Khan					khan@xraylith.wisc.edu
 Benjamin Kosnik					bkoz@redhat.com
 Marc Lehmann					pcg@goof.com
+Warren Levy					warrenl@redhat.com
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
 Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
@@ -132,6 +134,7 @@ Martin v. Löwis					loewis@informatik.hu-berlin.de
 Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
 Greg McGary					gkm@gnu.org
+Bryce McKinlay					bryce@gcc.gnu.org
 Toon Moene					toon@moene.indiv.nluug.nl
 Catherine Moore					clm@redhat.com
 Joseph Myers					jsm28@cam.ac.uk
@@ -143,8 +146,10 @@ Alexandre Oliva					oliva@lsd.ic.unicamp.br
 Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
+Rolf Rasmussen					rolfwr@gcc.gnu.org
 Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Alex Samuel					samuel@codesourcery.com
+Bradley Schatz					brads@gcc.gnu.org
 Bernd Schmidt					bernds@redhat.com
 Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
 Stan Shebs					shebs@apple.com
@@ -153,8 +158,9 @@ Franz Sirl					franz.sirl-kernel@lauterbach.com
 Mike Stump					mrs@windriver.com
 Ian Taylor					ian@zembu.com
 Philipp Thomas					pthomas@suse.de
+Kresten Krab Thorup				krab@gcc.gnu.org
 Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
-
+Mark Wielaard					mark@gcc.gnu.org
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
 can write in the source tree
