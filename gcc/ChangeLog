@@ -1,3 +1,10 @@
+2003-11-12  Alexey Starovoytov  <alexey.starovoytov@sun.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/12953
+	* tree-inline.c (inline_forbidden_p_1): Added check for BUILT_IN
+	before switch by FUNCTION_CODE.
+
 2003-11-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (storehi): Avoid use of explicit subreg.

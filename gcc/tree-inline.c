@@ -1000,10 +1000,11 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
   switch (TREE_CODE (node))
     {
     case CALL_EXPR:
-      /* Refuse to inline alloca call unless user explicitly forced so as this
-	 may change program's memory overhead drastically when the function
-	 using alloca is called in loop.  In GCC present in SPEC2000 inlining
-	 into schedule_block cause it to require 2GB of ram instead of 256MB.  */
+      /* Refuse to inline alloca call unless user explicitly forced so as
+	 this may change program's memory overhead drastically when the
+	 function using alloca is called in loop.  In GCC present in
+	 SPEC2000 inlining into schedule_block cause it to require 2GB of
+	 RAM instead of 256MB.  */
       if (alloca_call_p (node)
 	  && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
@@ -1025,40 +1026,42 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  return node;
 	}
 
-      switch (DECL_FUNCTION_CODE (t))
-	{
-	  /* We cannot inline functions that take a variable number of
-	     arguments.  */
-	case BUILT_IN_VA_START:
-	case BUILT_IN_STDARG_START:
-	case BUILT_IN_NEXT_ARG:
-	case BUILT_IN_VA_END:
+      if (DECL_BUILT_IN (t))
+	switch (DECL_FUNCTION_CODE (t))
 	  {
-	    inline_forbidden_reason
-	      = N_("%Jfunction '%F' can never be inlined because it "
-		   "uses variable argument lists");
-	    return node;
-	  }
-	case BUILT_IN_LONGJMP:
-	  {
-	    /* We can't inline functions that call __builtin_longjmp at all.
-	       The non-local goto machinery really requires the destination
-	       be in a different function.  If we allow the function calling
-	       __builtin_longjmp to be inlined into the function calling
-	       __builtin_setjmp, Things will Go Awry.  */
-	    /* ??? Need front end help to identify "regular" non-local goto.  */
-            if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL)
-	      {
-		inline_forbidden_reason
-		  = N_("%Jfunction '%F' can never be inlined "
-		       "because it uses setjmp-longjmp exception handling");
-	        return node;
-	      }
-	  }
+	    /* We cannot inline functions that take a variable number of
+	       arguments.  */
+	  case BUILT_IN_VA_START:
+	  case BUILT_IN_STDARG_START:
+	  case BUILT_IN_NEXT_ARG:
+	  case BUILT_IN_VA_END:
+	    {
+	      inline_forbidden_reason
+		= N_("%Jfunction '%F' can never be inlined because it "
+		     "uses variable argument lists");
+	      return node;
+	    }
+	  case BUILT_IN_LONGJMP:
+	    {
+	      /* We can't inline functions that call __builtin_longjmp at
+		 all.  The non-local goto machinery really requires the
+		 destination be in a different function.  If we allow the
+		 function calling __builtin_longjmp to be inlined into the
+		 function calling __builtin_setjmp, Things will Go Awry.  */
+	      /* ??? Need front end help to identify "regular" non-local
+		 goto.  */
+	      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL)
+		{
+		  inline_forbidden_reason
+		    = N_("%Jfunction '%F' can never be inlined because "
+			 "it uses setjmp-longjmp exception handling");
+		  return node;
+		}
+	    }
 
-	default:
-	  break;
-	}
+	  default:
+	    break;
+	  }
       break;
 
 #ifndef INLINER_FOR_JAVA
