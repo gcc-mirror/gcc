@@ -104,7 +104,8 @@ public class SelectorImpl extends AbstractSelector
 
   // A timeout value of -1 means block forever.
   private static native int implSelect (int[] read, int[] write,
-                                        int[] except, long timeout);
+                                        int[] except, long timeout)
+    throws IOException;
 
   private final int[] getFDsAsArray (int ops)
   {
@@ -144,6 +145,7 @@ public class SelectorImpl extends AbstractSelector
   }
 
   public int select (long timeout)
+    throws IOException
   {
     if (!isOpen())
       throw new ClosedSelectorException ();
