@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2276,16 +2276,18 @@ execute ()
 
   /* Wait for all the subprocesses to finish.
      We don't care what order they finish in;
-     we know that N_COMMANDS waits will get them all.  */
+     we know that N_COMMANDS waits will get them all.
+     Ignore subprocesses that we don't know about,
+     since they can be spawned by the process that exec'ed us.  */
 
   {
     int ret_code = 0;
 
-    for (i = 0; i < n_commands; i++)
+    for (i = 0; i < n_commands; )
       {
+	int j;
 	int status;
 	int pid;
-	char *prog = "unknown";
 
 #ifdef __MSDOS__
         status = pid = commands[i].pid;
@@ -2299,24 +2301,25 @@ execute ()
 	if (pid < 0)
 	  abort ();
 
-	if (status != 0)
-	  {
-	    int j;
-	    for (j = 0; j < n_commands; j++)
-	      if (commands[j].pid == pid)
-		prog = commands[j].prog;
-
-	    if (WIFSIGNALED (status))
-	      {
-		fatal ("Internal compiler error: program %s got fatal signal %d",
-		       prog, WTERMSIG (status));
-		signal_count++;
-		ret_code = -1;
-	      }
-	    else if (WIFEXITED (status)
-		     && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-	      ret_code = -1;
-	  }
+	for (j = 0; j < n_commands; j++)
+	  if (commands[j].pid == pid)
+	    {
+	      i++;
+	      if (status != 0)
+		{
+		  if (WIFSIGNALED (status))
+		    {
+		      fatal ("Internal compiler error: program %s got fatal signal %d",
+			     commands[j].prog, WTERMSIG (status));
+		      signal_count++;
+		      ret_code = -1;
+		    }
+		  else if (WIFEXITED (status)
+			   && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
+		    ret_code = -1;
+		}
+	      break;
+	    }
       }
     return ret_code;
   }
