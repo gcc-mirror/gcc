@@ -7537,7 +7537,8 @@ expand_expr (exp, target, tmode, modifier)
 
       /* If this mode is an integer too wide to compare properly,
 	 compare word by word.  Rely on cse to optimize constant cases.  */
-      if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode, ccp_jump))
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && ! can_compare_p (GE, mode, ccp_jump))
 	{
 	  if (code == MAX_EXPR)
 	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type),
@@ -7618,6 +7619,14 @@ expand_expr (exp, target, tmode, modifier)
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case UNNE_EXPR:
       preexpand_calls (exp);
       temp = do_store_flag (exp, target, tmode != VOIDmode ? tmode : mode, 0);
       if (temp != 0)
@@ -9413,7 +9422,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
 
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-		 && !can_compare_p (TYPE_MODE (inner_type), ccp_jump))
+		 && !can_compare_p (EQ, TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (exp, if_false_label, if_true_label);
 	else
 	  do_compare_and_jump (exp, EQ, EQ, if_false_label, if_true_label);
@@ -9453,7 +9462,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
 
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-		 && !can_compare_p (TYPE_MODE (inner_type), ccp_jump))
+		 && !can_compare_p (NE, TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (exp, if_true_label, if_false_label);
 	else
 	  do_compare_and_jump (exp, NE, NE, if_false_label, if_true_label);
@@ -9463,7 +9472,7 @@ do_jump (exp, if_false_label, if_true_label)
     case LT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && ! can_compare_p (mode, ccp_jump))
+	  && ! can_compare_p (LT, mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 1, if_false_label, if_true_label);
       else
 	do_compare_and_jump (exp, LT, LTU, if_false_label, if_true_label);
@@ -9472,7 +9481,7 @@ do_jump (exp, if_false_label, if_true_label)
     case LE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && ! can_compare_p (mode, ccp_jump))
+	  && ! can_compare_p (LE, mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 0, if_true_label, if_false_label);
       else
 	do_compare_and_jump (exp, LE, LEU, if_false_label, if_true_label);
@@ -9481,7 +9490,7 @@ do_jump (exp, if_false_label, if_true_label)
     case GT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && ! can_compare_p (mode, ccp_jump))
+	  && ! can_compare_p (GT, mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 0, if_false_label, if_true_label);
       else
 	do_compare_and_jump (exp, GT, GTU, if_false_label, if_true_label);
@@ -9490,10 +9499,85 @@ do_jump (exp, if_false_label, if_true_label)
     case GE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && ! can_compare_p (mode, ccp_jump))
+	  && ! can_compare_p (GE, mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 1, if_true_label, if_false_label);
       else
 	do_compare_and_jump (exp, GE, GEU, if_false_label, if_true_label);
+      break;
+
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+      {
+	enum rtx_code cmp, rcmp;
+	int do_rev;
+
+	if (code == UNORDERED_EXPR)
+	  cmp = UNORDERED, rcmp = ORDERED;
+	else
+	  cmp = ORDERED, rcmp = UNORDERED;
+        mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+
+	do_rev = 0;
+	if (! can_compare_p (cmp, mode, ccp_jump)
+	    && (can_compare_p (rcmp, mode, ccp_jump)
+		/* If the target doesn't provide either UNORDERED or ORDERED
+		   comparisons, canonicalize on UNORDERED for the library.  */
+		|| rcmp == UNORDERED))
+	  do_rev = 1;
+
+        if (! do_rev)
+	  do_compare_and_jump (exp, cmp, cmp, if_false_label, if_true_label);
+	else
+	  do_compare_and_jump (exp, rcmp, rcmp, if_true_label, if_false_label);
+      }
+      break;
+
+    {
+      enum rtx_code rcode1;
+      enum tree_code tcode2;
+
+      case UNLT_EXPR:
+	rcode1 = UNLT;
+	tcode2 = LT_EXPR;
+	goto unordered_bcc;
+      case UNLE_EXPR:
+	rcode1 = UNLE;
+	tcode2 = LE_EXPR;
+	goto unordered_bcc;
+      case UNGT_EXPR:
+	rcode1 = UNGT;
+	tcode2 = GT_EXPR;
+	goto unordered_bcc;
+      case UNGE_EXPR:
+	rcode1 = UNGE;
+	tcode2 = GE_EXPR;
+	goto unordered_bcc;
+      case UNEQ_EXPR:
+	rcode1 = UNEQ;
+	tcode2 = EQ_EXPR;
+	goto unordered_bcc;
+      case UNNE_EXPR:
+	rcode1 = UNNE;
+	tcode2 = NE_EXPR;
+      unordered_bcc:
+        mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+	if (can_compare_p (rcode1, mode, ccp_jump))
+	  do_compare_and_jump (exp, rcode1, rcode1, if_false_label,
+			       if_true_label);
+	else
+	  {
+	    tree op0 = save_expr (TREE_OPERAND (exp, 0));
+	    tree op1 = save_expr (TREE_OPERAND (exp, 1));
+	    tree cmp0, cmp1;
+
+	    /* If the target doesn't support combined unordered 
+	       compares, decompose into UNORDERED + comparison.  */
+	    cmp0 = fold (build (UNORDERED_EXPR, TREE_TYPE (exp), op0, op1));
+	    cmp1 = fold (build (tcode2, TREE_TYPE (exp), op0, op1));
+	    exp = build (TRUTH_ORIF_EXPR, TREE_TYPE (exp), cmp0, cmp1);
+	    do_jump (exp, if_false_label, if_true_label);
+	  }
+      }
       break;
 
     default:
@@ -9519,7 +9603,7 @@ do_jump (exp, if_false_label, if_true_label)
 	    emit_jump (target);
 	}
       else if (GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT
-	       && ! can_compare_p (GET_MODE (temp), ccp_jump))
+	       && ! can_compare_p (NE, GET_MODE (temp), ccp_jump))
 	/* Note swapping the labels gives us not-equal.  */
 	do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
       else if (GET_MODE (temp) != VOIDmode)
@@ -10059,6 +10143,32 @@ do_store_flag (exp, target, mode, only_cheap)
       else
 	code = unsignedp ? GEU : GE;
       break;
+
+    case UNORDERED_EXPR:
+      code = UNORDERED;
+      break;
+    case ORDERED_EXPR:
+      code = ORDERED;
+      break;
+    case UNLT_EXPR:
+      code = UNLT;
+      break;
+    case UNLE_EXPR:
+      code = UNLE;
+      break;
+    case UNGT_EXPR:
+      code = UNGT;
+      break;
+    case UNGE_EXPR:
+      code = UNGE;
+      break;
+    case UNEQ_EXPR:
+      code = UNEQ;
+      break;
+    case UNNE_EXPR:
+      code = UNNE;
+      break;
+
     default:
       abort ();
     }
@@ -10134,8 +10244,9 @@ do_store_flag (exp, target, mode, only_cheap)
     }
 
   /* Now see if we are likely to be able to do this.  Return if not.  */
-  if (! can_compare_p (operand_mode, ccp_store_flag))
+  if (! can_compare_p (code, operand_mode, ccp_store_flag))
     return 0;
+
   icode = setcc_gen_code[(int) code];
   if (icode == CODE_FOR_nothing
       || (only_cheap && insn_data[(int) icode].operand[0].mode != mode))

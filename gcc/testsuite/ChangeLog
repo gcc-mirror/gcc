@@ -1,3 +1,7 @@
+2000-01-24  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/fp-cmp-4.c: New.
+
 Thu Jan 20 12:34:48 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000120-2.c: New test.

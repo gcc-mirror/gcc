@@ -2311,6 +2311,7 @@ do {									\
   {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}},		\
   {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}},	\
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
+  {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
   {"fp0_operand", {CONST_DOUBLE}},					\
   {"current_file_function_operand", {SYMBOL_REF}},			\

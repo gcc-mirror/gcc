@@ -9163,6 +9163,8 @@ get_condition (jump, earliest)
 	  if (reverse_code)
 	    {
 	      code = reverse_condition (code);
+	      if (code == UNKNOWN)
+		return 0;
 	      did_reverse_condition ^= 1;
 	      reverse_code = 0;
 	    }
@@ -9227,9 +9229,10 @@ get_condition (jump, earliest)
     }
 
   /* If this was floating-point and we reversed anything other than an
-     EQ or NE, return zero.  */
+     EQ or NE or (UN)ORDERED, return zero.  */
   if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      && did_reverse_condition && code != NE && code != EQ
+      && did_reverse_condition
+      && code != NE && code != EQ && code != UNORDERED && code != ORDERED
       && ! flag_fast_math
       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     return 0;

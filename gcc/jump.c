@@ -3429,11 +3429,12 @@ can_reverse_comparison_p (comparison, insn)
 	      && GET_MODE_CLASS (GET_MODE (arg0)) != MODE_FLOAT));
 }
 
-/* Given an rtx-code for a comparison, return the code
-   for the negated comparison.
-   WATCH OUT!  reverse_condition is not safe to use on a jump
-   that might be acting on the results of an IEEE floating point comparison,
-   because of the special treatment of non-signaling nans in comparisons.  
+/* Given an rtx-code for a comparison, return the code for the negated
+   comparison.  If no such code exists, return UNKNOWN.
+
+   WATCH OUT!  reverse_condition is not safe to use on a jump that might
+   be acting on the results of an IEEE floating point comparison, because
+   of the special treatment of non-signaling nans in comparisons.  
    Use can_reverse_comparison_p to be sure.  */
 
 enum rtx_code
@@ -3444,37 +3445,39 @@ reverse_condition (code)
     {
     case EQ:
       return NE;
-
     case NE:
       return EQ;
-
     case GT:
       return LE;
-
     case GE:
       return LT;
-
     case LT:
       return GE;
-
     case LE:
       return GT;
-
     case GTU:
       return LEU;
-
     case GEU:
       return LTU;
-
     case LTU:
       return GEU;
-
     case LEU:
       return GTU;
+    case UNORDERED:
+      return ORDERED;
+    case ORDERED:
+      return UNORDERED;
+
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case UNEQ:
+    case UNNE:
+      return UNKNOWN;
 
     default:
       abort ();
-      return UNKNOWN;
     }
 }
 
@@ -3489,35 +3492,40 @@ swap_condition (code)
     {
     case EQ:
     case NE:
+    case UNORDERED:
+    case ORDERED:
+    case UNEQ:
+    case UNNE:
       return code;
 
     case GT:
       return LT;
-
     case GE:
       return LE;
-
     case LT:
       return GT;
-
     case LE:
       return GE;
-
     case GTU:
       return LTU;
-
     case GEU:
       return LEU;
-
     case LTU:
       return GTU;
-
     case LEU:
       return GEU;
 
+    case UNLT:
+      return UNGT;
+    case UNLE:
+      return UNGE;
+    case UNGT:
+      return UNLT;
+    case UNGE:
+      return UNLE;
+
     default:
       abort ();
-      return UNKNOWN;
     }
 }
 
@@ -5272,10 +5280,11 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  if (rtx_equal_for_thread_p (b1op0, b2op0, b2)
 	      && rtx_equal_for_thread_p (b1op1, b2op1, b2)
 	      && (comparison_dominates_p (code1, code2)
-		  || (comparison_dominates_p (code1, reverse_condition (code2))
-		      && can_reverse_comparison_p (XEXP (SET_SRC (PATTERN (b1)),
-							 0),
-						   b1))))
+		  || (can_reverse_comparison_p (XEXP (SET_SRC (PATTERN (b1)),
+						      0),
+						b1)
+		      && comparison_dominates_p (code1, reverse_condition (code2)))))
+
 	    {
 	      t1 = prev_nonnote_insn (b1);
 	      t2 = prev_nonnote_insn (b2);

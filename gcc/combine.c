@@ -7313,11 +7313,17 @@ known_cond (x, cond, reg, val)
       if (rtx_equal_p (XEXP (x, 0), reg) && rtx_equal_p (XEXP (x, 1), val))
 	{
 	  if (GET_RTX_CLASS (code) == '<')
-	    return (comparison_dominates_p (cond, code) ? const_true_rtx
-		    : (comparison_dominates_p (cond,
-					       reverse_condition (code))
-		       ? const0_rtx : x));
+	    {
+	      if (comparison_dominates_p (cond, code))
+		return const_true_rtx;
 
+	      code = reverse_condition (code);
+	      if (code != UNKNOWN
+		  && comparison_dominates_p (cond, code))
+		return const0_rtx;
+	      else
+		return x;
+	    }
 	  else if (code == SMAX || code == SMIN
 		   || code == UMIN || code == UMAX)
 	    {
@@ -10852,7 +10858,8 @@ reversible_comparison_p (x)
 {
   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
       || flag_fast_math
-      || GET_CODE (x) == NE || GET_CODE (x) == EQ)
+      || GET_CODE (x) == NE || GET_CODE (x) == EQ
+      || GET_CODE (x) == UNORDERED || GET_CODE (x) == ORDERED)
     return 1;
 
   switch (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))))

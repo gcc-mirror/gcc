@@ -3710,6 +3710,20 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_trap", void_ftype, BUILT_IN_TRAP,
 		    BUILT_IN_NORMAL, NULL_PTR);
 
+  /* ISO C99 IEEE Unordered compares.  */
+  builtin_function ("__builtin_isgreater", default_function_type,
+		    BUILT_IN_ISGREATER, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_isgreaterequal", default_function_type,
+		    BUILT_IN_ISGREATEREQUAL, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_isless", default_function_type,
+		    BUILT_IN_ISLESS, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_islessequal", default_function_type,
+		    BUILT_IN_ISLESSEQUAL, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_islessgreater", default_function_type,
+		    BUILT_IN_ISLESSGREATER, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_isunordered", default_function_type,
+		    BUILT_IN_ISUNORDERED, BUILT_IN_NORMAL, NULL_PTR);
+
   /* Untyped call and return.  */
   builtin_function ("__builtin_apply_args", ptr_ftype,
 		    BUILT_IN_APPLY_ARGS, BUILT_IN_NORMAL, NULL_PTR);

@@ -499,6 +499,7 @@ enum libfunc_index
   LTI_gehf2,
   LTI_lthf2,
   LTI_lehf2,
+  LTI_unordhf2,
 
   LTI_eqsf2,
   LTI_nesf2,
@@ -506,6 +507,7 @@ enum libfunc_index
   LTI_gesf2,
   LTI_ltsf2,
   LTI_lesf2,
+  LTI_unordsf2,
 
   LTI_eqdf2,
   LTI_nedf2,
@@ -513,6 +515,7 @@ enum libfunc_index
   LTI_gedf2,
   LTI_ltdf2,
   LTI_ledf2,
+  LTI_unorddf2,
 
   LTI_eqxf2,
   LTI_nexf2,
@@ -520,6 +523,7 @@ enum libfunc_index
   LTI_gexf2,
   LTI_ltxf2,
   LTI_lexf2,
+  LTI_unordxf2,
 
   LTI_eqtf2,
   LTI_netf2,
@@ -527,6 +531,7 @@ enum libfunc_index
   LTI_getf2,
   LTI_lttf2,
   LTI_letf2,
+  LTI_unordtf2,
 
   LTI_floatsisf,
   LTI_floatdisf,
@@ -627,6 +632,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define gehf2_libfunc	(libfunc_table[LTI_gehf2])
 #define lthf2_libfunc	(libfunc_table[LTI_lthf2])
 #define lehf2_libfunc	(libfunc_table[LTI_lehf2])
+#define unordhf2_libfunc	(libfunc_table[LTI_unordhf2])
 
 #define eqsf2_libfunc	(libfunc_table[LTI_eqsf2])
 #define nesf2_libfunc	(libfunc_table[LTI_nesf2])
@@ -634,6 +640,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define gesf2_libfunc	(libfunc_table[LTI_gesf2])
 #define ltsf2_libfunc	(libfunc_table[LTI_ltsf2])
 #define lesf2_libfunc	(libfunc_table[LTI_lesf2])
+#define unordsf2_libfunc	(libfunc_table[LTI_unordsf2])
 
 #define eqdf2_libfunc	(libfunc_table[LTI_eqdf2])
 #define nedf2_libfunc	(libfunc_table[LTI_nedf2])
@@ -641,6 +648,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define gedf2_libfunc	(libfunc_table[LTI_gedf2])
 #define ltdf2_libfunc	(libfunc_table[LTI_ltdf2])
 #define ledf2_libfunc	(libfunc_table[LTI_ledf2])
+#define unorddf2_libfunc	(libfunc_table[LTI_unorddf2])
 
 #define eqxf2_libfunc	(libfunc_table[LTI_eqxf2])
 #define nexf2_libfunc	(libfunc_table[LTI_nexf2])
@@ -648,6 +656,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define gexf2_libfunc	(libfunc_table[LTI_gexf2])
 #define ltxf2_libfunc	(libfunc_table[LTI_ltxf2])
 #define lexf2_libfunc	(libfunc_table[LTI_lexf2])
+#define unordxf2_libfunc	(libfunc_table[LTI_unordxf2])
 
 #define eqtf2_libfunc	(libfunc_table[LTI_eqtf2])
 #define netf2_libfunc	(libfunc_table[LTI_netf2])
@@ -655,6 +664,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define getf2_libfunc	(libfunc_table[LTI_getf2])
 #define lttf2_libfunc	(libfunc_table[LTI_lttf2])
 #define letf2_libfunc	(libfunc_table[LTI_letf2])
+#define unordtf2_libfunc	(libfunc_table[LTI_unordtf2])
 
 #define floatsisf_libfunc	(libfunc_table[LTI_floatsisf])
 #define floatdisf_libfunc	(libfunc_table[LTI_floatdisf])
@@ -795,9 +805,11 @@ enum can_compare_purpose
   ccp_cmov,
   ccp_store_flag
 };
+
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
-extern int can_compare_p PARAMS ((enum machine_mode, enum can_compare_purpose));
+extern int can_compare_p PARAMS ((enum rtx_code, enum machine_mode,
+				  enum can_compare_purpose));
 
 extern void prepare_cmp_insn PARAMS ((rtx *, rtx *, enum rtx_code *, rtx,
 				      enum machine_mode *, int *, int,
@@ -885,6 +897,7 @@ extern rtx gen_cond_trap PARAMS ((enum rtx_code, rtx, rtx, rtx));
 /* Functions from builtins.c:  */
 #ifdef TREE_CODE
 extern rtx expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+extern tree expand_tree_builtin PARAMS ((tree, tree, tree));
 extern void std_expand_builtin_va_start PARAMS ((int, tree, rtx));
 extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
 extern rtx expand_builtin_va_arg PARAMS ((tree, tree));

@@ -58,6 +58,7 @@ extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int alpha_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_swapped_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int signed_comparison_operator PARAMS ((rtx, enum machine_mode));
+extern int alpha_fp_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int divmod_operator PARAMS ((rtx, enum machine_mode));
 extern int aligned_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int unaligned_memory_operand PARAMS ((rtx, enum machine_mode));
