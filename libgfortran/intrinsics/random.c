@@ -121,7 +121,7 @@ random_seed (GFC_INTEGER_4 * size, const gfc_array_i4 * put,
 	abort ();
 
       /* If this is the case the array is a temporary */
-      if (get->dim[0].stride == 0)
+      if (put->dim[0].stride == 0)
 	return;
 
       /*  This code now should do correct strides. */

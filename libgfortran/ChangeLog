@@ -1,3 +1,7 @@
+2004-05-23  Steven G. Kargl  <kargls@comcast.net>
+
+	* random.c (random_seed): Use correct variable.
+
 2004-05-22  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsics/system_clock: New file.
