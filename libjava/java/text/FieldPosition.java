@@ -72,13 +72,13 @@ public class FieldPosition
   /**
    * This method initializes a new instance of <code>FieldPosition</code>
    * to have the specified field attribute. The attribute will be used as
-   * an id.
+   * an id. It is formally equivalent to calling FieldPosition(field, -1).
    *
    * @param field The field format attribute.
    */
   public FieldPosition (Format.Field field)
   {
-    this.field_attribute = field;
+    this(field, -1);
   }
 
   /**
