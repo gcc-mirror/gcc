@@ -1,3 +1,8 @@
+2005-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* doc/extend.texi (5.24 Declaring Attributes of Functions)<noreturn>:
+	Clarify that the alternative way doesn't work in GNU C++.
+
 2005-02-25  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/19930
