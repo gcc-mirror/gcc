@@ -1238,6 +1238,7 @@ h8300_rtx_costs (x, code, outer_code, total)
        If this operand isn't a register, fall back to 'R' handling.
    'Z' print int & 7.
    'b' print the bit opcode
+   'c' print the opcode corresponding to rtl
    'e' first word of 32 bit value - if reg, then least reg. if mem
        then least. if const then most sig word
    'f' second word of 32 bit value - if reg, then biggest reg. if mem
@@ -1385,6 +1386,19 @@ print_operand (file, x, code)
 	  break;
 	case AND:
 	  fprintf (file, "band");
+	  break;
+	default:
+	  break;
+	}
+      break;
+    case 'c':
+      switch (GET_CODE (x))
+	{
+	case IOR:
+	  fprintf (file, "or");
+	  break;
+	case XOR:
+	  fprintf (file, "xor");
 	  break;
 	default:
 	  break;
@@ -1901,6 +1915,18 @@ gtuleu_operator (x, mode)
   enum rtx_code code = GET_CODE (x);
 
   return (code == GTU || code == LEU);
+}
+
+/* Return nonzero if X is either IOR or XOR.  */
+
+int
+iorxor_operator (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  return (code == IOR || code == XOR);
 }
 
 /* Recognize valid operators for bit instructions.  */
