@@ -1,3 +1,17 @@
+Fri Aug 14 01:22:31 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* rtl.def (CONSTANT_P_RTX): Fix typo in string name.
+
+	* config/sparc/sparc.md (seqdi_special_trunc, snedi_special_trunc,
+	seqsi_special_extend, snesi_special_extend, snesi_zero_extend and
+	split, snedi_zero_trunc and split, seqsi_zero_extend and split,
+	seqdi_zero_trunc and split, pic_lo_sum_di, pic_sethi_di,
+	movdi_cc_sp64_trunc, movdi_cc_reg_sp64_trunc, addx_extend_sp32 and
+	split, addx_extend_sp64, subx_extend_sp64, subx_extend and split):
+	Fix mismatching modes in SET operands.
+	(conditional move patterns): Fix formatting.
+	(unnamed subx arch64 pattern): Remove duplicate insn.
+	
 Fri Aug 14 00:34:34 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (const64_operand, const64_high_operand):
