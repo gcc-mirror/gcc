@@ -56,10 +56,16 @@ bool test01(void)
   test &= csz01 == 8;
   csz01 = str01.find(str03, 12);
   test &= csz01 == npos;
+
+  // An empty string consists of no characters
+  // therefore it should be found at every point in a string,
+  // except beyond the end
   csz01 = str01.find(str04, 0);
   test &= csz01 == 0;
   csz01 = str01.find(str04, 5);
   test &= csz01 == 5;
+  csz01 = str01.find(str04, str01.size());
+  test &= csz01 == npos; 
   
   // size_type find(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find(str_lit01, 0, 3);
@@ -71,7 +77,7 @@ bool test01(void)
   csz01 = str01.find(str_lit01);
   test &= csz01 == 0;
   csz01 = str01.find(str_lit01, 3);
-  test &= csz01 == npos;
+  test &= csz01 == 3; // zero length string should be found at pos
 
   // size_type find(char c, size_type pos = 0) const;
   csz01 = str01.find('z');
@@ -80,7 +86,6 @@ bool test01(void)
   csz01 = str01.find('/');
   test &= csz01 == npos;
    
-
   // size_type find_first_of(const string&, size_type pos = 0) const;
   std::string str05("xena rulez");
   csz01 = str01.find_first_of(str01);
@@ -105,13 +110,11 @@ bool test01(void)
   // An empty string consists of no characters
   // therefore it should be found at every point in a string,
   // except beyond the end
+  // However, str1.find_first_of(str2,pos) finds the first character in 
+  // str1 (starting at pos) that exists in str2, which is none for empty str2
   csz01 = str01.find_first_of(str04, 0);
   test &= csz01 == npos;
   csz01 = str01.find_first_of(str04, 5);
-  test &= csz01 == npos;
-  csz01 = str01.find(str04, str01.size());
-  test &= csz01 == str01.size();
-  csz01 = str01.find(str04, str01.size() + 1);
   test &= csz01 == npos;
   
   // size_type find_first_of(const char* s, size_type pos, size_type n) const;

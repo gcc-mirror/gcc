@@ -602,8 +602,7 @@ namespace std
       size_t __xpos = __pos;
       const _CharT* __data = _M_data();
       for (; __xpos + __n <= this->size(); ++__xpos)
-	if (traits_type::eq(__data[__xpos], *__s)
-	    && traits_type::compare(__data + __xpos, __s, __n) == 0)
+	if (traits_type::compare(__data + __xpos, __s, __n) == 0)
 	  return __xpos;
       return npos;
     }

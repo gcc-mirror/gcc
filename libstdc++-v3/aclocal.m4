@@ -912,10 +912,10 @@ dnl Define HAVE_CARGF etc if "cargf" is found.
 dnl
 dnl GLIBCPP_CHECK_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
-   dnl Work around bug on powerpc compiler
+  dnl Work around bug on powerpc compiler
   ac_test_CFLAGS="${CFLAGS+set}"
   ac_save_CFLAGS="$CFLAGS"
-  CFLAGS='-Werror-implicit-function-declaration'
+  CFLAGS='-Werror-implicit-function-declaration -fno-builtins'
 
   dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")
