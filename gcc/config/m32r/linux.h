@@ -102,3 +102,4 @@
                                                                                 
 #define TARGET_OS_CPP_BUILTINS() LINUX_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
