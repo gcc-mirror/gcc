@@ -1,3 +1,8 @@
+2002-12-31  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Configuration): Explicitly refer
+	gcc/config.gcc for a list of cpu models.
+
 2002-12-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/gccint.texi: Update last modification dates.
