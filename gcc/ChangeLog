@@ -23,6 +23,23 @@ Fri Aug 27 09:36:17 1999  Andreas Schwab  <schwab@suse.de>
 
 1999-08-27 00:27 -0700  Zack Weinberg  <zack@bitmover.com>
 
+	* errors.c: New file; defines functions error, warning, and
+	fatal, variables have_error and progname.
+	* errors.h: New file; prototypes and decls for stuff in errors.c.
+
+	* Makefile: Add rules to build errors.o and
+	$(HOST_PREFIX)errors.o.  Link genconfig, gencodes, genemit,
+	genopinit, genrecog, genextract, genpeep, genattr, and
+	genoutput with errors.o.  Add errors.h to deps of genconfig.o,
+	gencodes.o, genemit.o, genopinit.o, genrecog.o, genextract.o,
+	genpeep.o, genattr.o, and genoutput.o.
+
+	* genconfig.c, gencodes.c, genemit.c, genopinit.c, genrecog.c,
+	genextract.c, genpeep.c, genattr.c:  Include errors.h.  Don't
+	define or prototype fatal.  Set progname at beginning of main.
+	* genoutput.c:  Likewise, and don't define or prototype error
+	either.
+	
 	* c-typeck.c (c_expand_start_case): Return immediately if exp
 	is an ERROR_MARK.
 	* fold-const.c (operand_equal_p): Return immediately if arg1
