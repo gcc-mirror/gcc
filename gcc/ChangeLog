@@ -1,3 +1,7 @@
+2003-08-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* rtlanal.c (may_trap_p): Simplify an integer comparison.
+
 2003-08-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (AAB_svr4_replace_byteorder):  Enhance
