@@ -1,3 +1,9 @@
+2003-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_output_function_prologue, pa_output_function_epilogue): Move
+	updating of total_code_bytes from prologue to epilogue.
+	(get_last_nonnote_insn): New function.
+
 2003-01-31  Jan Hubicka  <jh@suse.cz>
 
 	PR c/9506
