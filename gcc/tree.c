@@ -1692,6 +1692,8 @@ tree
 size_in_bytes (type)
      tree type;
 {
+  tree t;
+
   if (type == error_mark_node)
     return integer_zero_node;
   type = TYPE_MAIN_VARIANT (type);
@@ -1700,18 +1702,20 @@ size_in_bytes (type)
       incomplete_type_error (NULL_TREE, type);
       return integer_zero_node;
     }
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
-		     size_int (BITS_PER_UNIT));
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
+		  size_int (BITS_PER_UNIT));
+  force_fit_type (t);
+  return t;
 }
 
 /* Return the size of TYPE (in bytes) as an integer,
    or return -1 if the size can vary.  */
 
-int
+unsigned int
 int_size_in_bytes (type)
      tree type;
 {
-  int size;
+  unsigned int size;
   if (type == error_mark_node)
     return 0;
   type = TYPE_MAIN_VARIANT (type);
@@ -1719,6 +1723,12 @@ int_size_in_bytes (type)
     return -1;
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     return -1;
+  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0)
+    {
+      tree t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
+			   size_int (BITS_PER_UNIT));
+      return TREE_INT_CST_LOW (t);
+    }
   size = TREE_INT_CST_LOW (TYPE_SIZE (type));
   return (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 }
@@ -2676,6 +2686,13 @@ build_index_type (maxval)
   if (TREE_CODE (maxval) == INTEGER_CST)
     {
       int maxint = (int) TREE_INT_CST_LOW (maxval);
+      /* If the domain should be empty, make sure the maxval
+	 remains -1 and is not spoiled by truncation.  */
+      if (INT_CST_LT (maxval, integer_zero_node))
+	{
+	  TYPE_MAX_VALUE (itype) = build_int_2 (-1, -1);
+	  TREE_TYPE (TYPE_MAX_VALUE (itype)) = sizetype;
+	}
       return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else
