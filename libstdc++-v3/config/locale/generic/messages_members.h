@@ -40,7 +40,7 @@
      { _M_c_locale_messages = _S_c_locale; }
 
   template<typename _CharT>
-     messages<_CharT>::messages(__c_locale __cloc, const char*, size_t __refs) 
+     messages<_CharT>::messages(__c_locale, const char*, size_t __refs) 
      : locale::facet(__refs)
      { _M_c_locale_messages = _S_c_locale; }
 
