@@ -1,3 +1,9 @@
+2001-06-19  Bernd Schmidt  <bernds@redhat.com>
+
+	* regmove.c (optimize_reg_copy_3): Do nothing if previous insn
+	carries a REG_EQUIV note.  If it carries REG_EQUAL, delete the
+	note.
+
 Tue Jun 19 07:53:52 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa.c (ssa_uses): Remove definition.
