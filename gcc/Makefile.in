@@ -1809,14 +1809,12 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h objc-headers
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
 # Using basename would be simpler, but some systems don't have it.
-	objdir=`pwd`; \
-	cd $(srcdir); \
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	    rm -f $$objdir/include/$$realfile; \
-	    cp $$file $$objdir/include; \
-	    chmod a+r $$objdir/include/$$realfile; \
+	    rm -f include/$$realfile; \
+	    cp $$file include; \
+	    chmod a+r include/$$realfile; \
 	  fi; \
 	done
 	rm -f include/limits.h
