@@ -668,9 +668,15 @@ attr_rtx VPROTO((enum rtx_code code, ...))
     {
       HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
       if (arg0 == 0)
-	return false_rtx;
+	{
+	  va_end (p);
+	  return false_rtx;
+	}
       if (arg0 == 1)
-	return true_rtx;
+	{
+	  va_end (p);
+	  return true_rtx;
+	}
       goto nohash;
     }
   else

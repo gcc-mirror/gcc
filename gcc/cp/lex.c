@@ -4883,6 +4883,7 @@ compiler_error VPROTO ((const char *msg, ...))
 #endif
 
   vsprintf (buf, msg, ap);
+  va_end (ap);
   error_with_file_and_line (input_filename, lineno, "%s (compiler error)", buf);
 }
 
