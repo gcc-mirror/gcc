@@ -58,7 +58,7 @@ typedef new_allocator<test_type> new_alloc_type;
 typedef __mt_alloc<test_type> so_alloc_type;
 
 // The number of iterations to be performed.
-int iterations = 25000;
+int iterations = 10000;
 
 // TODO - restore Stefan's comment?  i don't understand it.  -- fwy
 int insert_values = 128;

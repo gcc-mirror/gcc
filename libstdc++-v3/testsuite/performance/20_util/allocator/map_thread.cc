@@ -49,7 +49,7 @@ using __gnu_cxx::new_allocator;
 using __gnu_cxx::malloc_allocator;
 
 // The number of iterations to be performed.
-int iterations = 25000;
+int iterations = 10000;
 
 template<typename Container>
   void*

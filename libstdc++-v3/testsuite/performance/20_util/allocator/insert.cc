@@ -51,7 +51,7 @@ using namespace std;
 typedef int test_type;
 
 // The number of iterations to be performed.
-int iterations = 100000;
+int iterations = 10000;
 
 // The number of values to insert in the container, 32 will cause 5
 // (re)allocations to be performed (sizes 4, 8, 16, 32 and 64)
@@ -71,30 +71,30 @@ template<typename TestType>
   };
 
 template<typename Container>
-  int
-  do_loop(Container& obj)
+  void
+  do_loop()
   {
+    Container obj;
     int test_iterations = 0;
-    try
+    value_type<test_type> test_value;
+    while (test_iterations < iterations)
       {
-	value_type<test_type> test_value;
-	while (test_iterations < iterations)
-	  {
-	    for (int j = 0; j < insert_values; ++j)
-	      obj.insert(obj.end(), ++test_value);
-	    ++test_iterations;
-	  }
+	for (int j = 0; j < insert_values; ++j)
+	  obj.insert(obj.end(), ++test_value);
+	++test_iterations;
       }
-    catch(...)
-      {
-	// No point allocating all available memory, repeatedly.	
-      }
-    return test_iterations;
+  }
+
+template<typename Container>
+  void*
+  do_test(void* p = NULL)
+  {
+    do_loop<Container>();
   }
 
 template<typename Container>
   void
-  test_container(Container obj)
+  test_container(Container obj, bool run_threaded = false)
   {
     using namespace __gnu_test;
     int status;
@@ -103,11 +103,36 @@ template<typename Container>
     resource_counter resource;
     clear_counters(time, resource);
     start_counters(time, resource);
-    int test_iterations = do_loop(obj);
+
+    if (! run_threaded)
+      {
+	do_loop<Container>();
+      }
+    else
+      {
+#if defined (_GLIBCXX_GCC_GTHR_POSIX_H) && !defined (NOTHREAD)
+	pthread_t  t1, t2, t3, t4;
+	pthread_create(&t1, 0, &do_test<Container>, 0);
+	pthread_create(&t2, 0, &do_test<Container>, 0);
+	pthread_create(&t3, 0, &do_test<Container>, 0);
+	pthread_create(&t4, 0, &do_test<Container>, 0);
+
+	pthread_join(t1, NULL);
+	pthread_join(t2, NULL);
+	pthread_join(t3, NULL);
+	pthread_join(t4, NULL);
+#else
+	return;
+#endif
+      }
+
     stop_counters(time, resource);
  
     std::ostringstream comment;
-    comment << "iterations: " << test_iterations << '\t';
+    if (run_threaded)
+      comment << "4-way threaded iterations: " << iterations*4 << '\t';
+    else
+      comment << "iterations: " << iterations << '\t';
     comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
 					       0, 0, &status);
     report_header(__FILE__, comment.str());
@@ -154,29 +179,74 @@ int main(void)
 
   typedef less<test_type> compare_type;
 #ifdef TEST_B9
-  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, m_alloc_type>());
 #endif
 #ifdef TEST_B10
-  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, n_alloc_type>());
 #endif
 #ifdef TEST_B11
-  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, so_alloc_type>());
 #endif
 
 #ifdef TEST_B12
-  iterations = 50000;
   test_container(set<test_type, compare_type, m_alloc_type>());
 #endif
 #ifdef TEST_B13
-  iterations = 50000;
   test_container(set<test_type, compare_type, n_alloc_type>());
 #endif
 #ifdef TEST_B14
-  iterations = 50000;
   test_container(set<test_type, compare_type, so_alloc_type>());
+#endif
+
+#ifdef TEST_T0
+  test_container(vector<test_type, m_alloc_type>(), true);
+#endif
+#ifdef TEST_T1
+  test_container(vector<test_type, n_alloc_type>(), true);
+#endif
+#ifdef TEST_T2
+  test_container(vector<test_type, so_alloc_type>(), true);
+#endif
+
+#ifdef TEST_T3
+  test_container(list<test_type, m_alloc_type>(), true);
+#endif
+#ifdef TEST_T4
+  test_container(list<test_type, n_alloc_type>(), true);
+#endif
+#ifdef TEST_T5
+  test_container(list<test_type, so_alloc_type>(), true);
+#endif
+
+#ifdef TEST_T6
+  test_container(deque<test_type, m_alloc_type>(), true);
+#endif
+#ifdef TEST_T7
+  test_container(deque<test_type, n_alloc_type>(), true);
+#endif
+#ifdef TEST_T8
+  test_container(deque<test_type, so_alloc_type>(), true);
+#endif
+
+  typedef less<test_type> compare_type;
+#ifdef TEST_T9
+  test_container(map<test_type, test_type, compare_type, m_alloc_type>(), true);
+#endif
+#ifdef TEST_T10
+  test_container(map<test_type, test_type, compare_type, n_alloc_type>(), true);
+#endif
+#ifdef TEST_T11
+  test_container(map<test_type, test_type, compare_type, so_alloc_type>(), true);
+#endif
+
+#ifdef TEST_T12
+  test_container(set<test_type, compare_type, m_alloc_type>(), true);
+#endif
+#ifdef TEST_T13
+  test_container(set<test_type, compare_type, n_alloc_type>(), true);
+#endif
+#ifdef TEST_T14
+  test_container(set<test_type, compare_type, so_alloc_type>(), true);
 #endif
 
   return 0;
