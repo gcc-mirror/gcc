@@ -281,8 +281,6 @@ extern const struct processor_costs *m68hc11_cost;
 /* Allocation boundary (bits) for the code of a function.  */
 #define FUNCTION_BOUNDARY	8
 
-/* Biggest alignment that any data type can require on this machine,
-   in bits.  */
 #define BIGGEST_ALIGNMENT	8
 
 /* Alignment of field after `int : 0' in a structure.  */

@@ -30,117 +30,22 @@
 
 /* Driver configuration */
 
-/* A C expression which determines whether the option `-CHAR' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.
-
-   By default, this macro is defined to handle the standard options properly.
-   You need not define it unless you wish to add additional options which take
-   arguments.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define SWITCH_TAKES_ARG(CHAR) */
 
-/* A C expression which determines whether the option `-NAME' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.  This macro rather than `SWITCH_TAKES_ARG' is used for
-   multi-character option names.
-
-   By default, this macro is defined as `DEFAULT_WORD_SWITCH_TAKES_ARG', which
-   handles the standard options properly.  You need not define
-   `WORD_SWITCH_TAKES_ARG' unless you wish to add additional options which take
-   arguments.  Any redefinition should call `DEFAULT_WORD_SWITCH_TAKES_ARG' and
-   then check for additional options.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define WORD_SWITCH_TAKES_ARG(NAME) */
 
-/* A string-valued C expression which is nonempty if the linker needs a space
-   between the `-L' or `-o' option and its argument.
-
-   If this macro is not defined, the default value is 0.  */
-/* #define SWITCHES_NEED_SPACES "" */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   CPP.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the CPP.
-
-   Do not define this macro if it does not need to do anything.  */
-/* #define CPP_SPEC "" */
-
-/* If this macro is defined, the preprocessor will not define the builtin macro
-   `__SIZE_TYPE__'.  The macro `__SIZE_TYPE__' must then be defined by
-   `CPP_SPEC' instead.
-
-   This should be defined if `SIZE_TYPE' depends on target dependent flags
-   which are not accessible to the preprocessor.  Otherwise, it should not be
-   defined.  */
-/* #define NO_BUILTIN_SIZE_TYPE */
-
-/* If this macro is defined, the preprocessor will not define the builtin macro
-   `__PTRDIFF_TYPE__'.  The macro `__PTRDIFF_TYPE__' must then be defined by
-   `CPP_SPEC' instead.
-
-   This should be defined if `PTRDIFF_TYPE' depends on target dependent flags
-   which are not accessible to the preprocessor.  Otherwise, it should not be
-   defined.  */
-/* #define NO_BUILTIN_PTRDIFF_TYPE */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   CPP.  By default, this macro is defined to pass the option
-   `-D__CHAR_UNSIGNED__' to CPP if `char' will be treated as `unsigned char' by
-   `cc1'.
-
-   Do not define this macro unless you need to override the default definition.  */
-/* #if DEFAULT_SIGNED_CHAR
-   #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
-   #else
-   #define SIGNED_CHAR_SPEC "%{!fsigned-char:-D__CHAR_UNSIGNED__}"
-   #endif */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   `cc1'.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the `cc1'.
-
-   Do not define this macro if it does not need to do anything.  */
-/* #define CC1_SPEC "" */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   `cc1plus'.  It can also specify how to translate options you give to GNU CC
-   into options for GNU CC to pass to the `cc1plus'.
-
-   Do not define this macro if it does not need to do anything.  */
-/* #define CC1PLUS_SPEC "" */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   the assembler.  It can also specify how to translate options you give to GNU
-   CC into options for GNU CC to pass to the assembler.  See the file `sun3.h'
-   for an example of this.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{!mno-asm-optimize: %{O*: %{!O0: -O} %{O0: %{masm-optimize: -O}}}} \
 %{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
 
-/* A C string constant that tells the GNU CC driver program how to run any
-   programs which cleanup after the normal assembler.  Normally, this is not
-   needed.  See the file `mips.h' for an example of this.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define ASM_FINAL_SPEC "" */
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   the linker.  It can also specify how to translate options you give to GNU CC
-   into options for GNU CC to pass to the linker.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
@@ -153,246 +58,31 @@
 %{Qy:} %{!Qn:-Qy} \
 %{mextmem: -m d30v_e} %{mextmemory: -m d30v_e} %{monchip: -m d30v_o}"
 
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `LIB_SPEC' is used at the end of the command given
-   to the linker.
-
-   If this macro is not defined, a default is provided that loads the standard
-   C library from the usual place.  See `gcc.c'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 #undef	LIB_SPEC
 #define LIB_SPEC "--start-group -lsim -lc --end-group"
 
-/* Another C string constant that tells the GNU CC driver program how and when
-   to place a reference to `libgcc.a' into the linker command line.  This
-   constant is placed both before and after the value of `LIB_SPEC'.
-
-   If this macro is not defined, the GNU CC driver provides a default that
-   passes the string `-lgcc' to the linker unless the `-shared' option is
-   specified.  */
-/* #define LIBGCC_SPEC "" */
-
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `STARTFILE_SPEC' is used at the very beginning of
-   the command given to the linker.
-
-   If this macro is not defined, a default is provided that loads the standard
-   C startup file from the usual place.  See `gcc.c'.
-
-   Defined in svr4.h.  */
-
+/* Defined in svr4.h.  */
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s crtbegin%O%s"
 
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `ENDFILE_SPEC' is used at the very end of the
-   command given to the linker.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
-
+/* Defined in svr4.h.  */
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s"
 
-/* Define this macro if the driver program should find the library `libgcc.a'
-   itself and should not pass `-L' options to the linker.  If you do not define
-   this macro, the driver program will pass the argument `-lgcc' to tell the
-   linker to do the search and will pass `-L' options to it.  */
-/* #define LINK_LIBGCC_SPECIAL */
-
-/* Define this macro if the driver program should find the library `libgcc.a'.
-   If you do not define this macro, the driver program will pass the argument
-   `-lgcc' to tell the linker to do the search.  This macro is similar to
-   `LINK_LIBGCC_SPECIAL', except that it does not affect `-L' options.  */
-/* #define LINK_LIBGCC_SPECIAL_1 */
-
-/* Define this macro to provide additional specifications to put in the `specs'
-   file that can be used in various specifications like `CC1_SPEC'.
-
-   The definition should be an initializer for an array of structures,
-   containing a string constant, that defines the specification name, and a
-   string constant that provides the specification.
-
-   Do not define this macro if it does not need to do anything.  */
-/* #define EXTRA_SPECS {{}} */
-
-/* Define this macro as a C expression for the initializer of an array of
-   string to tell the driver program which options are defaults for this target
-   and thus do not need to be handled specially when using `MULTILIB_OPTIONS'.
-
-   Do not define this macro if `MULTILIB_OPTIONS' is not defined in the target
-   makefile fragment or if none of the options listed in `MULTILIB_OPTIONS' are
-   set by default.  *Note Target Fragment::.  */
-/* #define MULTILIB_DEFAULTS {} */
-
-/* Define this macro to tell `gcc' that it should only translate a `-B' prefix
-   into a `-L' linker option if the prefix indicates an absolute file name. */
-/* #define RELATIVE_PREFIX_NOT_LINKDIR */
-
-/* Define this macro as a C string constant if you wish to override the
-   standard choice of `/usr/local/lib/gcc-lib/' as the default prefix to try
-   when searching for the executable files of the compiler. */
-/* #define STANDARD_EXEC_PREFIX "" */
-
-/* If defined, this macro is an additional prefix to try after
-   `STANDARD_EXEC_PREFIX'.  `MD_EXEC_PREFIX' is not searched when the `-b'
-   option is used, or the compiler is built as a cross compiler.
-
-   Defined in svr4.h for host compilers.  */
+/* Defined in svr4.h for host compilers.  */
 /* #define MD_EXEC_PREFIX "" */
 
-/* Define this macro as a C string constant if you wish to override the
-   standard choice of `/usr/local/lib/' as the default prefix to try when
-   searching for startup files such as `crt0.o'. */
-/* #define STANDARD_STARTFILE_PREFIX "" */
-
-/* If defined, this macro supplies an additional prefix to try after the
-   standard prefixes.  `MD_EXEC_PREFIX' is not searched when the `-b' option is
-   used, or when the compiler is built as a cross compiler.
-
-   Defined in svr4.h for host compilers.  */
+/* Defined in svr4.h for host compilers.  */
 /* #define MD_STARTFILE_PREFIX "" */
-
-/* If defined, this macro supplies yet another prefix to try after the standard
-   prefixes.  It is not searched when the `-b' option is used, or when the
-   compiler is built as a cross compiler. */
-/* #define MD_STARTFILE_PREFIX_1 "" */
-
-/* Define this macro as a C string constant if you with to set environment
-   variables for programs called by the driver, such as the assembler and
-   loader.  The driver passes the value of this macro to `putenv' to initialize
-   the necessary environment variables. */
-/* #define INIT_ENVIRONMENT "" */
-
-/* Define this macro as a C string constant if you wish to override the
-   standard choice of `/usr/local/include' as the default prefix to try when
-   searching for local header files.  `LOCAL_INCLUDE_DIR' comes before
-   `SYSTEM_INCLUDE_DIR' in the search order.
-
-   Cross compilers do not use this macro and do not search either
-   `/usr/local/include' or its replacement.  */
-/* #define LOCAL_INCLUDE_DIR "" */
-
-/* Define this macro as a C string constant if you wish to specify a
-   system-specific directory to search for header files before the standard
-   directory.  `SYSTEM_INCLUDE_DIR' comes before `STANDARD_INCLUDE_DIR' in the
-   search order.
-
-   Cross compilers do not use this macro and do not search the directory
-   specified. */
-/* #define SYSTEM_INCLUDE_DIR "" */
-
-/* Define this macro as a C string constant if you wish to override the
-   standard choice of `/usr/include' as the default prefix to try when
-   searching for header files.
-
-   Cross compilers do not use this macro and do not search either
-   `/usr/include' or its replacement. */
-/* #define STANDARD_INCLUDE_DIR "" */
-
-/* Define this macro if you wish to override the entire default search path for
-   include files.  The default search path includes `GCC_INCLUDE_DIR',
-   `LOCAL_INCLUDE_DIR', `SYSTEM_INCLUDE_DIR', `GPLUSPLUS_INCLUDE_DIR', and
-   `STANDARD_INCLUDE_DIR'.  In addition, `GPLUSPLUS_INCLUDE_DIR' and
-   `GCC_INCLUDE_DIR' are defined automatically by `Makefile', and specify
-   private search areas for GCC.  The directory `GPLUSPLUS_INCLUDE_DIR' is used
-   only for C++ programs.
-
-     The definition should be an initializer for an array of structures.  Each
-     array element should have two elements: the directory name (a string
-     constant) and a flag for C++-only directories.  Mark the end of the array
-     with a null element.  For example, here is the definition used for VMS:
-
-          #define INCLUDE_DEFAULTS \
-          {                                       \
-            { "GNU_GXX_INCLUDE:", 1},             \
-            { "GNU_CC_INCLUDE:", 0},              \
-            { "SYS$SYSROOT:[SYSLIB.]", 0},        \
-            { ".", 0},                            \
-            { 0, 0}                               \
-          }
-
-   Here is the order of prefixes tried for exec files:
-
-  1. Any prefixes specified by the user with `-B'.
-
-  2. The environment variable `GCC_EXEC_PREFIX', if any.
-
-  3. The directories specified by the environment variable
-     `COMPILER_PATH'.
-
-  4. The macro `STANDARD_EXEC_PREFIX'.
-
-  5. `/usr/lib/gcc/'.
-
-  6. The macro `MD_EXEC_PREFIX', if any.
-
-   Here is the order of prefixes tried for startfiles:
-
-  1. Any prefixes specified by the user with `-B'.
-
-  2. The environment variable `GCC_EXEC_PREFIX', if any.
-
-  3. The directories specified by the environment variable
-     `LIBRARY_PATH' (native only, cross compilers do not use this).
-
-  4. The macro `STANDARD_EXEC_PREFIX'.
-
-  5. `/usr/lib/gcc/'.
-
-  6. The macro `MD_EXEC_PREFIX', if any.
-
-  7. The macro `MD_STARTFILE_PREFIX', if any.
-
-  8. The macro `STANDARD_STARTFILE_PREFIX'.
-
-  9. `/lib/'.
-
- 10. `/usr/lib/'.  */
-/* #define INCLUDE_DEFAULTS {{ }} */
 
 
 /* Run-time target specifications */
 
-/* Define this to be a string constant containing `-D' options to define the
-   predefined macros that identify this machine and system.  These macros will
-   be predefined unless the `-ansi' option is specified.
-
-   In addition, a parallel set of macros are predefined, whose names are made
-   by appending `__' at the beginning and at the end.  These `__' macros are
-   permitted by the ANSI standard, so they are predefined regardless of whether
-   `-ansi' is specified.
-
-   For example, on the Sun, one can use the following value:
-
-        "-Dmc68000 -Dsun -Dunix"
-
-   The result is to define the macros `__mc68000__', `__sun__' and `__unix__'
-   unconditionally, and the macros `mc68000', `sun' and `unix' provided `-ansi'
-   is not specified.  */
 #define CPP_PREDEFINES "-D__D30V__ -Amachine=d30v"
 
 /* This declaration should be present.  */
 extern int target_flags;
-
-/* This series of macros is to allow compiler command arguments to enable or
-   disable the use of optional features of the target machine.  For example,
-   one machine description serves both the 68000 and the 68020; a command
-   argument tells the compiler whether it should use 68020-only instructions or
-   not.  This command argument works by means of a macro `TARGET_68020' that
-   tests a bit in `target_flags'.
-
-   Define a macro `TARGET_FEATURENAME' for each such option.  Its definition
-   should test a bit in `target_flags'; for example:
-
-        #define TARGET_68020 (target_flags & 1)
-
-   One place where these macros are used is in the condition-expressions of
-   instruction patterns.  Note how `TARGET_68020' appears frequently in the
-   68000 machine description file, `m68k.md'.  Another place they are used is
-   in the definitions of the other macros in the `MACHINE.h' file.  */
 
 #define MASK_NO_COND_MOVE	0x00000001	/* disable conditional moves */
 
@@ -411,31 +101,6 @@ extern int target_flags;
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0
 #endif
-
-/* This macro defines names of command options to set and clear bits in
-   `target_flags'.  Its definition is an initializer with a subgrouping for
-   each command option.
-
-   Each subgrouping contains a string constant, that defines the option name, a
-   number, which contains the bits to set in `target_flags', and a second
-   string which is the description displayed by `--help'.  If the number is
-   negative then the bits specified by the number are cleared instead of being
-   set.  If the description string is present but empty, then no help
-   information will be displayed for that option, but it will not count as an
-   undocumented option.  The actual option name is made by appending `-m' to
-   the specified name.
-
-   One of the subgroupings should have a null string.  The number in this
-   grouping is the default value for target_flags.  Any target options act
-   starting with that value.
-
-   Here is an example which defines -m68000 and -m68020 with opposite meanings,
-   and picks the latter as the default:
-
-  #define TARGET_SWITCHES \
-    { { "68020", TARGET_MASK_68020, "" },      \
-      { "68000", -TARGET_MASK_68020, "Compile for the 68000" }, \
-      { "", TARGET_MASK_68020, "" }}  */
 
 #define TARGET_SWITCHES							\
 {									\
@@ -472,25 +137,6 @@ extern int target_flags;
   { "",			 TARGET_DEFAULT, "" },				\
 }
 
-/* This macro is similar to `TARGET_SWITCHES' but defines names of command
-   options that have values.  Its definition is an initializer with a
-   subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the fixed part of
-   the option name, the address of a variable, and a description string.  The
-   variable, type `char *', is set to the variable part of the given option if
-   the fixed part matches.  The actual option name is made by appending `-m' to
-   the specified name.
-
-   Here is an example which defines `-mshort-data-<number>'.  If the given
-   option is `-mshort-data-512', the variable `m88k_short_data' will be set to
-   the string "512".
-
-   extern char *m88k_short_data;
-   #define TARGET_OPTIONS \
-     { { "short-data-", &m88k_short_data, \
-	 "Specify the size of the short data section" } } */
-
 #define TARGET_OPTIONS							\
 {									\
   {"branch-cost=",  &d30v_branch_cost_string,				\
@@ -500,146 +146,29 @@ extern int target_flags;
      N_("Change the threshold for conversion to conditional execution") }, \
 }
 
-/* This macro is a C statement to print on `stderr' a string describing the
-   particular machine description choice.  Every machine description should
-   define `TARGET_VERSION'.  For example:
-
-        #ifdef MOTOROLA
-        #define TARGET_VERSION \
-          fprintf (stderr, " (68k, Motorola syntax)");
-        #else
-        #define TARGET_VERSION \
-          fprintf (stderr, " (68k, MIT syntax)");
-        #endif  */
 #define TARGET_VERSION fprintf (stderr, " d30v")
-
-/* Sometimes certain combinations of command options do not make sense on a
-   particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
-   take account of this.  This macro, if defined, is executed once just after
-   all the command options have been parsed.
-
-   Don't use this macro to turn on various extra optimizations for `-O'.  That
-   is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS override_options ()
 
-/* Some machines may desire to change what optimizations are performed for
-   various optimization levels.  This macro, if defined, is executed once just
-   after the optimization level is determined and before the remainder of the
-   command options have been parsed.  Values set in this macro are used as the
-   default values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if `-O2' is specified, 1 if
-   `-O' is specified, and 0 if neither is specified.
-
-   SIZE is non-zero if `-Os' is specified, 0 otherwise.  
-
-   You should not use this macro to change options that are not
-   machine-specific.  These should uniformly selected by the same optimization
-   level on all supported machines.  Use this macro to enable machbine-specific
-   optimizations.
-
-   *Do not examine `write_symbols' in this macro!* The debugging options are
-   *not supposed to alter the generated code.  */
-
-/* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
-
-/* Define this macro if debugging can be performed even without a frame
-   pointer.  If this macro is defined, GNU CC will turn on the
-   `-fomit-frame-pointer' option whenever `-O' is specified.  */
 #define CAN_DEBUG_WITHOUT_FP
 
 
 /* Storage Layout */
 
-/* Define this macro to have the value 1 if the most significant bit in a byte
-   has the lowest number; otherwise define it to have the value zero.  This
-   means that bit-field instructions count from the most significant bit.  If
-   the machine has no bit-field instructions, then this must still be defined,
-   but it doesn't matter which value it is defined to.  This macro need not be
-   a constant.
-
-   This macro does not affect the way structure fields are packed into bytes or
-   words; that is controlled by `BYTES_BIG_ENDIAN'.  */
 #define BITS_BIG_ENDIAN 1
 
-/* Define this macro to have the value 1 if the most significant byte in a word
-   has the lowest number.  This macro need not be a constant.  */
 #define BYTES_BIG_ENDIAN 1
 
-/* Define this macro to have the value 1 if, in a multiword object, the most
-   significant word has the lowest number.  This applies to both memory
-   locations and registers; GNU CC fundamentally assumes that the order of
-   words in memory is the same as the order in registers.  This macro need not
-   be a constant.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Define this macro if WORDS_BIG_ENDIAN is not constant.  This must be a
-   constant value with the same meaning as WORDS_BIG_ENDIAN, which will be used
-   only when compiling libgcc2.c.  Typically the value will be set based on
-   preprocessor defines.  */
-/* #define LIBGCC2_WORDS_BIG_ENDIAN */
-
-/* Define this macro to have the value 1 if `DFmode', `XFmode' or `TFmode'
-   floating point numbers are stored in memory with the word containing the
-   sign bit at the lowest address; otherwise define it to have the value 0.
-   This macro need not be a constant.
-
-   You need not define this macro if the ordering is the same as for multi-word
-   integers.  */
-/* #define FLOAT_WORDS_BIG_EnNDIAN */
-
-/* Define this macro to be the number of bits in an addressable storage unit
-   (byte); normally 8.  */
 #define BITS_PER_UNIT 8
 
-/* Number of bits in a word; normally 32.  */
 #define BITS_PER_WORD 32
 
-/* Maximum number of bits in a word.  If this is undefined, the default is
-   `BITS_PER_WORD'.  Otherwise, it is the constant value that is the largest
-   value that `BITS_PER_WORD' can have at run-time.  */
-/* #define MAX_BITS_PER_WORD */
-
-/* Number of storage units in a word; normally 4.  */
 #define UNITS_PER_WORD 4
 
-/* Minimum number of units in a word.  If this is undefined, the default is
-   `UNITS_PER_WORD'.  Otherwise, it is the constant value that is the smallest
-   value that `UNITS_PER_WORD' can have at run-time.  */
-/* #define MIN_UNITS_PER_WORD */
-
-/* Width of a pointer, in bits.  You must specify a value no wider than the
-   width of `Pmode'.  If it is not equal to the width of `Pmode', you must
-   define `POINTERS_EXTEND_UNSIGNED'.  */
 #define POINTER_SIZE 32
 
-/* A C expression whose value is nonzero if pointers that need to be extended
-   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and zero if
-   they are zero-extended.
-
-   You need not define this macro if the `POINTER_SIZE' is equal to the width
-   of `Pmode'.  */
-/* #define POINTERS_EXTEND_UNSIGNED */
-
-/* A macro to update M and UNSIGNEDP when an object whose type is TYPE and
-   which has the specified mode and signedness is to be stored in a register.
-   This macro is only called when TYPE is a scalar type.
-
-   On most RISC machines, which only have operations that operate on a full
-   register, define this macro to set M to `word_mode' if M is an integer mode
-   narrower than `BITS_PER_WORD'.  In most cases, only integer modes should be
-   widened because wider-precision floating-point operations are usually more
-   expensive than their narrower counterparts.
-
-   For most machines, the macro definition does not change UNSIGNEDP.  However,
-   some machines, have instructions that preferentially handle either signed or
-   unsigned quantities of certain modes.  For example, on the DEC Alpha, 32-bit
-   loads from memory and 32-bit add instructions sign-extend the result to 64
-   bits.  On such machines, set UNSIGNEDP according to which kind of extension
-   is more efficient.
-
-   Do not define this macro if it would never modify M.  */
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)				\
 do {									\
   if (GET_MODE_CLASS (MODE) == MODE_INT					\
@@ -647,348 +176,66 @@ do {									\
     (MODE) = SImode;							\
 } while (0)
 
-/* Define this macro if the promotion described by `PROMOTE_MODE' should also
-   be done for outgoing function arguments.  */
-/* #define PROMOTE_FUNCTION_ARGS */
-
-/* Define this macro if the promotion described by `PROMOTE_MODE' should also
-   be done for the return value of functions.
-
-   If this macro is defined, `FUNCTION_VALUE' must perform the same promotions
-   done by `PROMOTE_MODE'.  */
-/* #define PROMOTE_FUNCTION_RETURN */
-
-/* Define this macro if the promotion described by `PROMOTE_MODE' should *only*
-   be performed for outgoing function arguments or function return values, as
-   specified by `PROMOTE_FUNCTION_ARGS' and `PROMOTE_FUNCTION_RETURN',
-   respectively.  */
-/* #define PROMOTE_FOR_CALL_ONLY */
-
-/* Normal alignment required for function parameters on the stack, in bits.
-   All stack parameters receive at least this much alignment regardless of data
-   type.  On most machines, this is the same as the size of an integer.  */
-
 #define PARM_BOUNDARY 32
-
-/* Define this macro if you wish to preserve a certain alignment for the stack
-   pointer.  The definition is a C expression for the desired alignment
-   (measured in bits).
-
-   If `PUSH_ROUNDING' is not defined, the stack will always be aligned to the
-   specified boundary.  If `PUSH_ROUNDING' is defined and specifies a less
-   strict alignment than `STACK_BOUNDARY', the stack may be momentarily
-   unaligned while pushing arguments.  */
 
 #define STACK_BOUNDARY 64
 
-/* Alignment required for a function entry point, in bits.  */
-
 #define FUNCTION_BOUNDARY 64
-
-/* Biggest alignment that any data type can require on this machine,
-   in bits.  */
 
 #define BIGGEST_ALIGNMENT 64
 
-/* Biggest alignment that any structure field can require on this machine, in
-   bits.  If defined, this overrides `BIGGEST_ALIGNMENT' for structure fields
-   only.  */
-/* #define BIGGEST_FIELD_ALIGNMENT */
-
-/* Biggest alignment supported by the object file format of this machine.  Use
-   this macro to limit the alignment which can be specified using the
-   `__attribute__ ((aligned (N)))' construct.  If not defined, the default
-   value is `BIGGEST_ALIGNMENT'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define MAX_OFILE_ALIGNMENT */
-
-/* If defined, a C expression to compute the alignment for a static variable.
-   TYPE is the data type, and BASIC-ALIGN is the alignment that the object
-   would ordinarily have.  The value of this macro is used instead of that
-   alignment to align the object.
-
-   If this macro is not defined, then BASIC-ALIGN is used.
-
-   One use of this macro is to increase alignment of medium-size data to make
-   it all fit in fewer cache lines.  Another is to cause character arrays to be
-   word-aligned so that `strcpy' calls that copy constants to character arrays
-   can be done inline.  */
 
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* If defined, a C expression to compute the alignment given to a constant that
-   is being placed in memory.  CONSTANT is the constant and BASIC-ALIGN is the
-   alignment that the object would ordinarily have.  The value of this macro is
-   used instead of that alignment to align the object.
-
-   If this macro is not defined, then BASIC-ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string constants
-   to be word aligned so that `strcpy' calls that copy constants can be done
-   inline.  */
-
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
   (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Alignment in bits to be given to a structure bit field that follows an empty
-   field such as `int : 0;'.
-
-   Note that `PCC_BITFIELD_TYPE_MATTERS' also affects the alignment that
-   results from an empty field.  */
-/* #define EMPTY_FIELD_BOUNDARY */
-
-/* Number of bits which any structure or union's size must be a multiple of.
-   Each structure or union's size is rounded up to a multiple of this.
-
-   If you do not define this macro, the default is the same as `BITS_PER_UNIT'.  */
-/* #define STRUCTURE_SIZE_BOUNDARY */
-
-/* Define this macro to be the value 1 if instructions will fail to work if
-   given data not on the nominal alignment.  If instructions will merely go
-   slower in that case, define this macro as 0.  */
-
 #define STRICT_ALIGNMENT 1
 
-/* Define this if you wish to imitate the way many other C compilers handle
-   alignment of bitfields and the structures that contain them.
-
-   The behavior is that the type written for a bitfield (`int', `short', or
-   other integer type) imposes an alignment for the entire structure, as if the
-   structure really did contain an ordinary field of that type.  In addition,
-   the bitfield is placed within the structure so that it would fit within such
-   a field, not crossing a boundary for it.
-
-   Thus, on most machines, a bitfield whose type is written as `int' would not
-   cross a four-byte boundary, and would force four-byte alignment for the
-   whole structure.  (The alignment used may not be four bytes; it is
-   controlled by the other alignment parameters.)
-
-   If the macro is defined, its definition should be a C expression; a nonzero
-   value for the expression enables this behavior.
-
-   Note that if this macro is not defined, or its value is zero, some bitfields
-   may cross more than one alignment boundary.  The compiler can support such
-   references if there are `insv', `extv', and `extzv' insns that can directly
-   reference memory.
-
-   The other known way of making bitfields work is to define
-   `STRUCTURE_SIZE_BOUNDARY' as large as `BIGGEST_ALIGNMENT'.  Then every
-   structure can be accessed with fullwords.
-
-   Unless the machine has bitfield instructions or you define
-   `STRUCTURE_SIZE_BOUNDARY' that way, you must define
-   `PCC_BITFIELD_TYPE_MATTERS' to have a nonzero value.
-
-   If your aim is to make GNU CC use the same conventions for laying out
-   bitfields as are used by another compiler, here is how to investigate what
-   the other compiler does.  Compile and run this program:
-
-        struct foo1
-        {
-          char x;
-          char :0;
-          char y;
-        };
-
-        struct foo2
-        {
-          char x;
-          int :0;
-          char y;
-        };
-
-        main ()
-        {
-          printf ("Size of foo1 is %d\n",
-                  sizeof (struct foo1));
-          printf ("Size of foo2 is %d\n",
-                  sizeof (struct foo2));
-          exit (0);
-        }
-
-   If this prints 2 and 5, then the compiler's behavior is what you would get
-   from `PCC_BITFIELD_TYPE_MATTERS'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to aligning
-   a bitfield within the structure.  */
-/* #define BITFIELD_NBYTES_LIMITED */
-
-/* Define this macro as an expression for the overall size of a structure
-   (given by STRUCT as a tree node) when the size computed from the fields is
-   SIZE and the alignment is ALIGN.
-
-   The default is to round SIZE up to a multiple of ALIGN.  */
-/* #define ROUND_TYPE_SIZE(STRUCT, SIZE, ALIGN) */
-
-/* Define this macro as an expression for the alignment of a structure (given
-   by STRUCT as a tree node) if the alignment computed in the usual way is
-   COMPUTED and the alignment explicitly specified was SPECIFIED.
-
-   The default is to use SPECIFIED if it is larger; otherwise, use the smaller
-   of COMPUTED and `BIGGEST_ALIGNMENT' */
-/* #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED) */
-
-/* An integer expression for the size in bits of the largest integer machine
-   mode that should actually be used.  All integer machine modes of this size
-   or smaller can be used for structures and unions with the appropriate sizes.
-   If this macro is undefined, `GET_MODE_BITSIZE (DImode)' is assumed.  */
-/* #define MAX_FIXED_MODE_SIZE */
-
-/* A C statement to validate the value VALUE (of type `double') for mode MODE.
-   This means that you check whether VALUE fits within the possible range of
-   values for mode MODE on this target machine.  The mode MODE is always a mode
-   of class `MODE_FLOAT'.  OVERFLOW is nonzero if the value is already known to
-   be out of range.
-
-   If VALUE is not valid or if OVERFLOW is nonzero, you should set OVERFLOW to
-   1 and then assign some valid value to VALUE.  Allowing an invalid value to
-   go through the compiler can produce incorrect assembler code which may even
-   cause Unix assemblers to crash.
-
-   This macro need not be defined if there is no work for it to do.  */
-/* #define CHECK_FLOAT_VALUE(MODE, VALUE, OVERFLOW) */
-
-/* A code distinguishing the floating point format of the target machine.
-   There are three defined values:
-
-   IEEE_FLOAT_FORMAT'
-        This code indicates IEEE floating point.  It is the default;
-        there is no need to define this macro when the format is IEEE.
-
-   VAX_FLOAT_FORMAT'
-        This code indicates the peculiar format used on the VAX.
-
-   UNKNOWN_FLOAT_FORMAT'
-        This code indicates any other format.
-
-   The value of this macro is compared with `HOST_FLOAT_FORMAT' (*note
-   Config::.) to determine whether the target machine has the same format as
-   the host machine.  If any other formats are actually in use on supported
-   machines, new codes should be defined for them.
-
-   The ordering of the component words of floating point values stored in
-   memory is controlled by `FLOAT_WORDS_BIG_ENDIAN' for the target machine and
-   `HOST_FLOAT_WORDS_BIG_ENDIAN' for the host.  */
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 
 /* Layout of Source Language Data Types */
 
-/* A C expression for the size in bits of the type `int' on the target machine.
-   If you don't define this, the default is one word.  */
 #define INT_TYPE_SIZE 32
 
-/* A C expression for the size in bits of the type `short' on the target
-   machine.  If you don't define this, the default is half a word.  (If this
-   would be less than one storage unit, it is rounded up to one unit.)  */
 #define SHORT_TYPE_SIZE 16
 
-/* A C expression for the size in bits of the type `long' on the target
-   machine.  If you don't define this, the default is one word.  */
 #define LONG_TYPE_SIZE 32
 
-/* Maximum number for the size in bits of the type `long' on the target
-   machine.  If this is undefined, the default is `LONG_TYPE_SIZE'.  Otherwise,
-   it is the constant value that is the largest value that `LONG_TYPE_SIZE' can
-   have at run-time.  This is used in `cpp'.  */
-/* #define MAX_LONG_TYPE_SIZE */
-
-/* A C expression for the size in bits of the type `long long' on the target
-   machine.  If you don't define this, the default is two words.  If you want
-   to support GNU Ada on your machine, the value of macro must be at least 64.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `char' on the target
-   machine.  If you don't define this, the default is one quarter of a word.
-   (If this would be less than one storage unit, it is rounded up to one unit.)  */
 #define CHAR_TYPE_SIZE 8
 
-/* Maximum number for the size in bits of the type `char' on the target
-   machine.  If this is undefined, the default is `CHAR_TYPE_SIZE'.  Otherwise,
-   it is the constant value that is the largest value that `CHAR_TYPE_SIZE' can
-   have at run-time.  This is used in `cpp'.  */
-/* #define MAX_CHAR_TYPE_SIZE */
-
-/* A C expression for the size in bits of the type `float' on the target
-   machine.  If you don't define this, the default is one word.  */
 #define FLOAT_TYPE_SIZE 32
 
-/* A C expression for the size in bits of the type `double' on the target
-   machine.  If you don't define this, the default is two words.  */
 #define DOUBLE_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `long double' on the target
-   machine.  If you don't define this, the default is two words.  */
 #define LONG_DOUBLE_TYPE_SIZE 64
 
-/* An expression whose value is 1 or 0, according to whether the type `char'
-   should be signed or unsigned by default.  The user can always override this
-   default with the options `-fsigned-char' and `-funsigned-char'.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* A C expression to determine whether to give an `enum' type only as many
-   bytes as it takes to represent the range of possible values of that type.  A
-   nonzero value means to do that; a zero value means all `enum' types should
-   be allocated like `int'.
-
-   If you don't define the macro, the default is 0.  */
-/* #define DEFAULT_SHORT_ENUMS */
-
-/* A C expression for a string describing the name of the data type to use for
-   size values.  The typedef name `size_t' is defined using the contents of the
-   string.
-
-   The string can contain more than one keyword.  If so, separate them with
-   spaces, and write first any length keyword, then `unsigned' if appropriate,
-   and finally `int'.  The string must exactly match one of the data type names
-   defined in the function `init_decl_processing' in the file `c-decl.c'.  You
-   may not omit `int' or change the order--that would cause the compiler to
-   crash on startup.
-
-   If you don't define this macro, the default is `"long unsigned int"'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define SIZE_TYPE */
 
-/* A C expression for a string describing the name of the data type to use for
-   the result of subtracting two pointers.  The typedef name `ptrdiff_t' is
-   defined using the contents of the string.  See `SIZE_TYPE' above for more
-   information.
-
-   If you don't define this macro, the default is `"long int"'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define PTRDIFF_TYPE */
 
-/* A C expression for a string describing the name of the data type to use for
-   wide characters.  The typedef name `wchar_t' is defined using the contents
-   of the string.  See `SIZE_TYPE' above for more information.
-
-   If you don't define this macro, the default is `"int"'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define WCHAR_TYPE */
 
-/* A C expression for the size in bits of the data type for wide characters.
-   This is used in `cpp', which cannot make use of `WCHAR_TYPE'.
-
-   Defined in svr4.h.  */
+/* Defined in svr4.h.  */
 /* #define WCHAR_TYPE_SIZE */
-
-/* Maximum number for the size in bits of the data type for wide characters.
-   If this is undefined, the default is `WCHAR_TYPE_SIZE'.  Otherwise, it is
-   the constant value that is the largest value that `WCHAR_TYPE_SIZE' can have
-   at run-time.  This is used in `cpp'.  */
-/* #define MAX_WCHAR_TYPE_SIZE */
 
 
 /* D30V register layout.  */
