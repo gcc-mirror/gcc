@@ -160,7 +160,10 @@ extern int target_flags;
    function, and one less allocable register.  */
 #define MASK_MINIMAL_TOC	0x00000200
 
-/* Nonzero for the 64bit model: longs and pointers are 64 bits.  */
+/* Nonzero for the 64 bit ABIs: longs and pointers are 64 bits.  The
+   chip is running in "64-bit mode", in which CR0 is set in dot
+   operations based on all 64 bits of the register, bdnz works on 64-bit
+   ctr, lr is 64 bits, and so on.  Requires MASK_POWERPC64.  */
 #define MASK_64BIT		0x00000400
 
 /* Disable use of FPRs.  */
