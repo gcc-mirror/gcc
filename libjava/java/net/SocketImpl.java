@@ -20,6 +20,8 @@ import java.io.*;
   * Believed complete and correct, except for implementation of toString.
   */
 
+// JDK1.2: needs to implement SocketOptions.
+// JDK1.2: public abstract class SocketImpl implements SocketOptions
 public abstract class SocketImpl
 {
   protected InetAddress address;
