@@ -2639,7 +2639,7 @@ function_arg_partial_nregs (cum, mode, type, named)
     {
       int words = (int_size_in_bytes (type) + 3) / 4;
 
-      if (words + cum->arg_words < MAX_ARGS_IN_REGISTERS)
+      if (words + cum->arg_words <= MAX_ARGS_IN_REGISTERS)
 	return 0;		/* structure fits in registers */
 
       if (TARGET_DEBUG_E_MODE)
