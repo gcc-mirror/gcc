@@ -5407,6 +5407,38 @@ fancy_abort ()
 {
   fatal ("Internal gcc abort.");
 }
+
+/* Determine if an insn has a constant number of delay slots. */
+void
+write_const_num_delay_slots ()
+{
+  struct attr_desc *attr = find_attr ("*num_delay_slots", 0);
+  struct attr_value *av;
+  struct insn_ent *ie;
+  int i;
+
+  if (attr)
+    {
+      printf ("int\nconst_num_delay_slots (insn)\n");
+      printf ("     rtx *insn;\n");
+      printf ("{\n");
+      printf ("  switch (recog_memoized (insn))\n");
+      printf ("    {\n");
+
+      for (av = attr->first_value; av; av = av->next)
+	if (GET_CODE (av->value) == COND && av->num_insns)
+	  {
+	    for (ie = av->first_insn; ie; ie = ie->next)
+	      if (ie->insn_code != -1)
+		printf ("    case %d:\n", ie->insn_code);
+	    printf ("      return 0;\n");
+	  }
+      printf ("    default:\n");
+      printf ("      return 1;\n");
+      printf ("    }\n}\n");
+    }
+}
+
 
 int
 main (argc, argv)
@@ -5573,6 +5605,9 @@ from the machine description file `md'.  */\n\n");
   /* Write out information about function units.  */
   if (num_units)
     write_function_unit_info ();
+
+  /* Write out constant delay slot info */
+  write_const_num_delay_slots ();
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
