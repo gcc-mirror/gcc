@@ -388,18 +388,31 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 		      && current_template_parms
 		      && uses_template_parms (decl));
 
-	  /* We can call pushdecl here, because the TREE_CHAIN of this
-	     FUNCTION_DECL is not needed for other purposes.  Don't do
-	     this for a template instantiation.  However, we don't
-	     call pushdecl() for a friend function of a template
-	     class, since in general, such a declaration depends on
-	     template parameters.  Instead, we call pushdecl when the
-	     class is instantiated.  */
-	  if (!is_friend_template
-	      && template_class_depth (current_class_type) == 0)
-	    decl = pushdecl (decl);
-	  else 
+	  if (is_friend_template
+	      || template_class_depth (current_class_type) != 0)
+	    /* We can't call pushdecl for a template class, since in
+	       general, such a declaration depends on template
+	       parameters.  Instead, we call pushdecl when the class
+	       is instantiated.  */
 	    decl = push_template_decl_real (decl, /*is_friend=*/1); 
+	  else if (current_function_decl)
+	    /* This must be a local class, so pushdecl will be ok, and
+	       insert an unqualified friend into the local scope
+	       (rather than the containing namespace scope, which the
+	       next choice will do). */
+	    decl = pushdecl (decl);
+	  else
+	    {
+	      /* We can't use pushdecl, as we might be in a template
+	         class specialization, and pushdecl will insert an
+	         unqualified friend decl into the template parameter
+	         scope, rather than the namespace containing it. */
+	      tree ns = decl_namespace_context (decl);
+	      
+	      push_nested_namespace (ns);
+	      decl = pushdecl_namespace_level (decl);
+	      pop_nested_namespace (ns);
+	    }
 
 	  if (warn)
 	    {
