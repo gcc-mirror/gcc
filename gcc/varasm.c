@@ -541,7 +541,7 @@ bc_make_decl_rtl (decl, asmspec, top_level)
 	  /* Can't use just the variable's own name for a variable
 	     whose scope is less than the whole file.
 	     Concatenate a distinguishing number.  */
-	  if (!top_level && !DECL_EXTERNAL (decl) && asmspec == 0)
+	  if (!top_level && !TREE_PUBLIC (decl) && asmspec == 0)
 	    {
 	      char *label;
 
@@ -748,7 +748,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  /* Can't use just the variable's own name for a variable
 	     whose scope is less than the whole file.
 	     Concatenate a distinguishing number.  */
-	  if (!top_level && !DECL_EXTERNAL (decl) && asmspec == 0)
+	  if (!top_level && !TREE_PUBLIC (decl) && asmspec == 0)
 	    {
 	      char *label;
 
