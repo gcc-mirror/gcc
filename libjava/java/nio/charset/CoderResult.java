@@ -1,5 +1,5 @@
 /* CoderResult.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -82,7 +82,8 @@ public class CoderResult
   private final int type;
   private final int length;
 
-  private CoderResult (int type, int length)
+  // Package-private to avoid a trampoline constructor.
+  CoderResult (int type, int length)
   {
     this.type = type;
     this.length = length;
@@ -157,19 +158,14 @@ public class CoderResult
   {
     private final HashMap cache;
 
-    private Cache ()
+    // Package-private to avoid a trampoline constructor.
+    Cache ()
     {
-      // If we didn't synchronize on this, then cache would be initialized
-      // without holding a lock.  Undefined behavior would occur if the
-      // first thread to call get(int) was not the same as the one that
-      // called the constructor.
-      synchronized (this)
-        {
-          cache = new HashMap ();
-        }
+      cache = new HashMap ();
     }
 
-    private synchronized CoderResult get (int length)
+    // Package-private to avoid a trampoline.
+    synchronized CoderResult get (int length)
     {
       if (length <= 0)
         throw new IllegalArgumentException ("Non-positive length");

@@ -1,5 +1,5 @@
 /* URLClassLoader.java --  ClassLoader that loads classes from one or more URLs
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -661,8 +661,9 @@ public class URLClassLoader extends SecureClassLoader
     addURLs(urls);
   }
 
+  // Package-private to avoid a trampoline constructor.
   /**
-   * Private constructor used by the static
+   * Package-private constructor used by the static
    * <code>newInstance(URL[])</code> method.  Creates an
    * <code>URLClassLoader</code> with the given parent but without any
    * <code>URL</code>s yet. This is used to bypass the normal security
@@ -674,8 +675,7 @@ public class URLClassLoader extends SecureClassLoader
    *
    * @param securityContext the security context of the unprivileged code.
    */
-  private URLClassLoader(ClassLoader parent,
-                         AccessControlContext securityContext)
+  URLClassLoader(ClassLoader parent, AccessControlContext securityContext)
   {
     super(parent);
     this.factory = null;
