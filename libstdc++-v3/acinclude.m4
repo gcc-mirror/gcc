@@ -1127,16 +1127,16 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       # Don't use gettext.
       USE_NLS=no
 
-      CLOCALE_H=config/locale/c_locale_generic.h
-      CLOCALE_CC=config/locale/c_locale_generic.cc
-      CCODECVT_H=config/locale/codecvt_specializations_generic.h
-      CCOLLATE_CC=config/locale/collate_members_generic.cc
-      CCTYPE_CC=config/locale/ctype_members_generic.cc
-      CMESSAGES_H=config/locale/messages_members_generic.h
-      CMESSAGES_CC=config/locale/messages_members_generic.cc
-      CMONEY_CC=config/locale/moneypunct_members_generic.cc
-      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_CC=config/locale/time_members_generic.cc
+      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_CC=config/locale/generic/c_locale.cc
+      CCODECVT_H=config/locale/generic/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/generic/ctype_members.cc
+      CMESSAGES_H=config/locale/generic/messages_members.h
+      CMESSAGES_CC=config/locale/generic/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_CC=config/locale/generic/time_members.cc
       ;;
     xgnu)
       AC_MSG_RESULT(gnu)
@@ -1157,33 +1157,33 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       AC_SUBST(glibcpp_MOFILES)
       AC_SUBST(glibcpp_POFILES)
 
-      CLOCALE_H=config/locale/c_locale_gnu.h
-      CLOCALE_CC=config/locale/c_locale_gnu.cc
-      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
-      CCOLLATE_CC=config/locale/collate_members_gnu.cc
-      CCTYPE_CC=config/locale/ctype_members_gnu.cc
-      CMESSAGES_H=config/locale/messages_members_gnu.h
-      CMESSAGES_CC=config/locale/messages_members_gnu.cc
-      CMONEY_CC=config/locale/moneypunct_members_gnu.cc
-      CNUMERIC_CC=config/locale/numpunct_members_gnu.cc
-      CTIME_CC=config/locale/time_members_gnu.cc
+      CLOCALE_H=config/locale/gnu/c_locale.h
+      CLOCALE_CC=config/locale/gnu/c_locale.cc
+      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/gnu/collate_members.cc
+      CCTYPE_CC=config/locale/gnu/ctype_members.cc
+      CMESSAGES_H=config/locale/gnu/messages_members.h
+      CMESSAGES_CC=config/locale/gnu/messages_members.cc
+      CMONEY_CC=config/locale/gnu/monetary_members.cc
+      CNUMERIC_CC=config/locale/gnu/numeric_members.cc
+      CTIME_CC=config/locale/gnu/time_members.cc
       ;;
-    xieee_1003.1)
+    xieee_1003.1-2001)
       AC_MSG_RESULT(generic)
 
       # Don't use gettext.
       USE_NLS=no
 
-      CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
-      CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
-      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
-      CCOLLATE_CC=config/locale/collate_members_generic.cc
-      CCTYPE_CC=config/locale/ctype_members_generic.cc
-      CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
-      CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
-      CMONEY_CC=config/locale/moneypunct_members_generic.cc
-      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_CC=config/locale/time_members_generic.cc
+      CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
+      CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
+      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/generic/ctype_members.cc
+      CMESSAGES_H=config/locale/ieee_1003.1-2001/messages_members.h
+      CMESSAGES_CC=config/locale/ieee_1003.1-2001/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_CC=config/locale/generic/time_members.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1204,8 +1204,8 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
   AC_LINK_FILES($CCTYPE_CC, src/ctype.cc)
   AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
-  AC_LINK_FILES($CMONEY_CC, src/moneypunct.cc)
-  AC_LINK_FILES($CNUMERIC_CC, src/numpunct.cc)
+  AC_LINK_FILES($CMONEY_CC, src/monetary.cc)
+  AC_LINK_FILES($CNUMERIC_CC, src/numeric.cc)
   AC_LINK_FILES($CTIME_CC, src/time.cc)
 ])
 
