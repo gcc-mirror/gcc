@@ -2987,32 +2987,15 @@ build_dtor_call (exp, in_charge, flags)
   else if (tree_int_cst_equal (in_charge, integer_two_node))
     name = complete_dtor_identifier;
   if (name)
-    {
-      if (!binfo)
-	return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
-      else
-	return build_scoped_method_call (exp, binfo, name, NULL_TREE);
-    }
+    return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
 
   /* If that didn't work, build the various alternatives.  */
-  if (!binfo)
-    {
-      call1 = build_method_call (exp, complete_dtor_identifier,
-				 NULL_TREE, NULL_TREE, flags);
-      call2 = build_method_call (exp, deleting_dtor_identifier,
-				 NULL_TREE, NULL_TREE, flags);
-      call3 = build_method_call (exp, base_dtor_identifier,
-				 NULL_TREE, NULL_TREE, flags);
-    }
-  else
-    {
-      call1 = build_scoped_method_call (exp, binfo, 
-					complete_dtor_identifier, NULL_TREE);
-      call2 = build_scoped_method_call (exp, binfo, 
-					deleting_dtor_identifier, NULL_TREE);
-      call3 = build_scoped_method_call (exp, binfo, 
-					base_dtor_identifier, NULL_TREE);
-    }
+  call1 = build_method_call (exp, complete_dtor_identifier,
+			     NULL_TREE, NULL_TREE, flags);
+  call2 = build_method_call (exp, deleting_dtor_identifier,
+			     NULL_TREE, NULL_TREE, flags);
+  call3 = build_method_call (exp, base_dtor_identifier,
+			     NULL_TREE, NULL_TREE, flags);
 
   /* Build the conditionals.  */
   result = build (COND_EXPR, void_type_node,
