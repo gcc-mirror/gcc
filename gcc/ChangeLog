@@ -1,5 +1,8 @@
 Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* flow.c (dump_flow_info): Also print number of sets and 
+	whether or not the pseudo is a user variable.
+
 	* flow.c (reg_n_max): New global variable.
 	* regclass.c (allocate_reg_info): Keep reg_n_max up to date.
 	Delete regno_max variable.
