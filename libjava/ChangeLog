@@ -1,5 +1,11 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/natSocketChannelImpl.cc
+	(SocketConnect): This is not implemented yet.
+	(SocketBind): This is not implemented yet.
+
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/natByteBufferImpl.cc,
 	gnu/java/nio/natCharBufferImpl.cc,
 	gnu/java/nio/natDoubleBufferImpl.cc,
