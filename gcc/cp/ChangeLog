@@ -1,3 +1,8 @@
+1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* class.c (finish_base_struct): Allow multiple COM base classes
+	as well as non-COM bases as long as it's not the leftmost.
+
 1999-12-13  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* lex.c (saving_parse_to_obstack): New global.
