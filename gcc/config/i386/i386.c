@@ -3379,7 +3379,7 @@ print_operand (file, x, code)
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       REAL_VALUE_TO_TARGET_SINGLE (r, l);
       PRINT_IMMED_PREFIX (file);
-      fprintf (file, "0x%x", l);
+      fprintf (file, "0x%lx", l);
     }
 
  /* These float cases don't actually occur as immediate operands. */

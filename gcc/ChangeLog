@@ -1,3 +1,9 @@
+Mon Jun  8 01:21:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h (TREE_VEC_END): Cast unused value to void.
+
+	* i386.c (print_operand): Use %lx for long operand.
+
 Mon Jun  8 00:04:07 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (summarize_insn): Ignore rtl slot format 'i'.
@@ -10539,3 +10545,7 @@ Mon Aug 11 10:04:49 1997  Jeffrey A Law  (law@cygnus.com)
 Sun Aug 10 12:00:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs project officially starts.
+
+Local Variables:
+add-log-time-format: current-time-string
+End:
