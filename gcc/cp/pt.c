@@ -11793,7 +11793,7 @@ build_non_dependent_expr (tree expr)
      the expression so that mangling (say) "f<g>" inside the body of
      "f" works out correctly.  Therefore, the REFERENCE_TYPE is
      stripped here.  */
-  return build (NON_DEPENDENT_EXPR, non_reference (TREE_TYPE (expr)));
+  return build1 (NON_DEPENDENT_EXPR, non_reference (TREE_TYPE (expr)), expr);
 }
 
 /* ARGS is a TREE_LIST of expressions as arguments to a function call.

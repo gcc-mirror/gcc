@@ -1876,9 +1876,7 @@ dump_expr (tree t, int flags)
       break;
 
     case NON_DEPENDENT_EXPR:
-      pp_string (cxx_pp, "<expression of type ");
-      dump_type (TREE_TYPE (t), flags);
-      pp_greater (cxx_pp);
+      dump_expr (TREE_OPERAND (t, 0), flags);
       break;
 
       /*  This list is incomplete, but should suffice for now.

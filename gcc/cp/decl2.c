@@ -2981,27 +2981,25 @@ finish_file ()
   input_location = locus;
 }
 
-/* FN is an OFFSET_REF indicating the function to call in parse-tree
-   form; it has not yet been semantically analyzed.  ARGS are the
-   arguments to the function.  They have already been semantically
-   analzyed.  */
+/* FN is an OFFSET_REF, DOTSTAR_EXPR or MEMBER_REF indicating the
+   function to call in parse-tree form; it has not yet been
+   semantically analyzed.  ARGS are the arguments to the function.
+   They have already been semantically analyzed.  */
 
 tree
 build_offset_ref_call_from_tree (tree fn, tree args)
 {
-  tree object_addr;
   tree orig_fn;
   tree orig_args;
   tree expr;
+  tree object;
 
   orig_fn = fn;
   orig_args = args;
+  object = TREE_OPERAND (fn, 0);
 
   if (processing_template_decl)
     {
-      tree object;
-      tree object_type;
-
       my_friendly_assert (TREE_CODE (fn) == DOTSTAR_EXPR
 			  || TREE_CODE (fn) == MEMBER_REF,
 			  20030708);
@@ -3013,10 +3011,9 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 	 parameter.  That must be done before the FN is transformed
 	 because we depend on the form of FN.  */
       args = build_non_dependent_args (args);
-      object_type = TREE_TYPE (TREE_OPERAND (fn, 0));
       if (TREE_CODE (fn) == DOTSTAR_EXPR)
-	object_type = build_pointer_type (non_reference (object_type));
-      object = build (NON_DEPENDENT_EXPR, object_type);
+	object = build_unary_op (ADDR_EXPR, object, 0);
+      object = build_non_dependent_expr (object);
       args = tree_cons (NULL_TREE, object, args);
       /* Now that the arguments are done, transform FN.  */
       fn = build_non_dependent_expr (fn);
@@ -3030,7 +3027,7 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 	void B::g() { (this->*p)(); }  */
   if (TREE_CODE (fn) == OFFSET_REF)
     {
-      object_addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (fn, 0), 0);
+      tree object_addr = build_unary_op (ADDR_EXPR, object, 0);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn);
       args = tree_cons (NULL_TREE, object_addr, args);
