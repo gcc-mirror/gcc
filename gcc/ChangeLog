@@ -1,3 +1,23 @@
+2003-07-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11320
+	* sched-int.h (struct deps) [reg_conditional_sets]: New field.
+	(struct sched_info) [compute_jump_reg_dependencies]: New prototype.
+	* sched-deps.c (sched_analyze_insn) [JUMP_INSN]: Update call to
+	current_sched_info->compute_jump_reg_dependencies. Record which
+	registers are used and which registers are set by the jump.
+	Clear deps->reg_conditional_sets after a barrier.
+	Set deps->reg_conditional_sets if the insn is a COND_EXEC.
+	Clear deps->reg_conditional_sets if the insn is not a COND_EXEC.
+	(init_deps): Initialize reg_conditional_sets.
+	(free_deps): Clear reg_conditional_sets.
+	* sched-ebb.c (compute_jump_reg_dependencies): New prototype.
+	Mark registers live on entry of the fallthrough block and conditionally
+	set as set by the jump. Mark registers live on entry of non-fallthrough
+	blocks as used by the jump.
+	* sched-rgn.c (compute_jump_reg_dependencies): New prototype.
+	Mark new parameters as unused.
+
 2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Resync MIPS -march documentation.
