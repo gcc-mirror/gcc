@@ -1,3 +1,8 @@
+2002-11-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.in: Move host-specific darwin noconfigdirs into
+	the host-specific section.
+
 2002-11-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* ltconfig (osf[345]): Append $major to soname_spec.
