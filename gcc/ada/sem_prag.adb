@@ -3298,7 +3298,9 @@ package body Sem_Prag is
             --  suppress check for any check id value.
 
             if C = All_Checks then
-               Scope_Suppress := (others => Suppress_Case);
+               for J in Scope_Suppress'Range loop
+                  Scope_Suppress (J) := Suppress_Case;
+               end loop;
             else
                Scope_Suppress (C) := Suppress_Case;
             end if;
