@@ -1743,12 +1743,7 @@ intl.o: intl.c intl.h gansidecl.h Makefile
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c `echo $(srcdir)/intl.c | sed 's,^\./,,'`
 
-# This is needed to when doing a partial build after a `make clean'.
-# libintl.a does not depend on intl.all,
-# as that would force a lot of recompiling.
-$(top_builddir)/intl/libintl.a:
-	@echo "$(MAKE) intl.all"
-	@$(MAKE) $(FLAGS_TO_PASS) intl.all
+$(top_builddir)/intl/libintl.a: intl.all
 
 # Make sure all the headers are there for xgettext to scan.
 $(INTL_TARGETS): $(srcdir)/c-gperf.h \
