@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -623,10 +623,11 @@ extern rtx gen_push_operand PROTO((void));
 extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
 				  int, rtx, int, rtx, rtx));
 
-/* Emit library call.  These cannot have accurate prototypes since they have
-   a variable number of args.  */
-extern void emit_library_call ();
-extern rtx emit_library_call_value ();
+/* Emit library call.  */
+extern void emit_library_call PROTO((rtx orgfun, int no_queue,
+  enum machine_mode outmode, int nargs, ...));
+extern rtx emit_library_call_value PROTO((rtx orgfun, rtx value, int no_queue,
+  enum machine_mode outmode, int nargs, ...));
 
 /* Expand an assignment that stores the value of FROM into TO. */
 extern rtx expand_assignment PROTO((tree, tree, int, int));
