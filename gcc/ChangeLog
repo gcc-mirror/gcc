@@ -1,3 +1,8 @@
+Wed Oct 15 21:38:18 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* pa.c (move_operand): Respect -mdisable-indexing.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Likewise.
+
 Wed Oct 15 21:34:45 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (udivsi3, divsi3): Split into MQ and non-MQ cases for

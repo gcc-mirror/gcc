@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -1548,6 +1548,7 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 		|| INT_5_BITS (index)))			\
 	  goto ADDR;					\
       if (! TARGET_SOFT_FLOAT				\
+	  && ! TARGET_DISABLE_INDEXING			\
 	  && base					\
 	  && (mode == SFmode || mode == DFmode)		\
 	  && GET_CODE (index) == MULT			\

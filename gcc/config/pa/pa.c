@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, , 1994, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -297,7 +297,8 @@ move_operand (op, mode)
 
   /* Since move_operand is only used for source operands, we can always
      allow scaled indexing!  */
-  if (GET_CODE (op) == PLUS
+  if (! TARGET_DISABLE_INDEXING
+      && GET_CODE (op) == PLUS
       && ((GET_CODE (XEXP (op, 0)) == MULT
 	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
 	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
