@@ -303,7 +303,7 @@ enum dwarf_source_language {
     LANG_FORTRAN90	= 0x00000008,
     LANG_PASCAL83	= 0x00000009,
     LANG_MODULA2	= 0x0000000a,
-    LANG_JAVA		= 0x00009af4
+    LANG_JAVA		= 0x0000000b
 };
 
 #define LANG_lo_user	0x00008000  /* implementation-defined range start */
