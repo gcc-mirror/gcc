@@ -1,3 +1,57 @@
+2000-04-14  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (cpp_output_tokens, cpp_scan_buffer_nooutput): New public
+	interfaces.
+	(safe_fwrite, output_line_command): New static functions.
+	(cpp_expand_to_buffer): Now private to cpplib.
+	(cpp_scan_buffer): Take a printer.
+
+	* cpphash.h: Update prototypes.
+	* cpplib.h: Update prototypes.
+	(cpp_printer): New.
+	(cpp_buffer): Remove last_nominal_fname.
+	(cpp_reader): Remove lineno.
+
+	* cppmain.c: Use a cpp_printer.
+	* fix-header.c: No need to inhibit line commands.  Call
+	cpp_start_read with no printer.
+
+	* cpperror.c (cpp_notice_from_errno): Provide default name.
+	* cppfiles.c (make_IHASH, _cpp_fake_ihash): New functions.
+	(find_include_file, cpp_read_file): Use make_IHASH.
+	(file_cleanup): Set control_macro and clear
+	input_stack_listing_current here.
+	(_cpp_execute_include): Don't output entering-file marker.
+	* cpphash.c (special_symbol): Look for the line number in the
+	buffer, not the reader.
+	(_cpp_macroexpand): No need to disable line commands.
+	(_cpp_dump_definition): No need to generate line commands.
+	(dump_hash_helper): Remove excess newline from output.
+	* cppinit.c (dump_special_to_buffer): No need to generate line
+	commands.
+	(cpp_printer_init): New.
+	(cpp_start_read): Take a printer, and start it up if it's not
+	NULL.  No need to generate line commands.
+	(cpp_finish): Expect no buffers stacked at all.  Take a
+	printer argument, and flush the output buffer if it's not
+	NULL.
+	* cpplex.c (_cpp_lex_token): Return EOF if there's no buffer.
+	Don't put two hashes at the beginning of an assertion.
+	(cpp_get_token): Don't increment pfile->lineno or emit line
+	commands here.  Return EOF if there's no buffer when we get
+	EOF.
+	* cpplib.c (do_define, skip_if_group): 
+	No need to disable line commands.
+	(_cpp_output_line_command): Delete function.
+	(do_line): Don't emit line commands here, but set things up so
+	they will be emitted if necessary.  Use _cpp_fake_ihash to
+	make unique nominal_fnames if necessary.
+	(do_elif, do_else, _cpp_handle_eof): Call cpp_error_with_line
+	with 0 for column, not -1.
+	(_cpp_handle_eof): Don't set the control macro here.  Don't
+	clear input_stack_listing_current here.  Don't emit line
+	commands.
+
 2000-04-14  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/sysv4.h (LINK_START_SOLARIS_SPEC): Define to empty

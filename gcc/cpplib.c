@@ -352,7 +352,6 @@ do_define (pfile)
   pfile->no_macro_expand++;
   pfile->parsing_define_directive++;
   CPP_OPTION (pfile, discard_comments)++;
-  CPP_OPTION (pfile, no_line_commands)++;
 
   here = CPP_WRITTEN (pfile);
   len = get_macro_name (pfile);
@@ -453,83 +452,7 @@ do_define (pfile)
   pfile->no_macro_expand--;
   pfile->parsing_define_directive--;
   CPP_OPTION (pfile, discard_comments)--;
-  CPP_OPTION (pfile, no_line_commands)--;
   return 0;
-}
-
-/*
- * write out a #line command, for instance, after an #include file.
- * FILE_CHANGE says whether we are entering a file, leaving, or neither.
- */
-
-void
-_cpp_output_line_command (pfile, file_change)
-     cpp_reader *pfile;
-     enum file_change_code file_change;
-{
-  unsigned int line;
-  cpp_buffer *ip;
-
-  if (CPP_OPTION (pfile, no_line_commands)
-      || CPP_OPTION (pfile, no_output))
-    return;
-
-  ip = cpp_file_buffer (pfile);
-  line = ip->lineno;
-
-  /* If the current file has not changed, we omit the #line if it would
-     appear to be a no-op, and we output a few newlines instead
-     if we want to increase the line number by a small amount.
-     We cannot do this if pfile->lineno is zero, because that means we
-     haven't output any line commands yet.  (The very first line command
-     output is a `same_file' command.)  */
-  if (file_change == same_file && pfile->lineno != 0)
-    {
-      if (line == pfile->lineno)
-	return;
-
-      /* If the inherited line number is a little too small,
-	 output some newlines instead of a #line command.  */
-      if (line > pfile->lineno && line < pfile->lineno + 8)
-	{
-	  CPP_RESERVE (pfile, 20);
-	  while (line > pfile->lineno)
-	    {
-	      CPP_PUTC_Q (pfile, '\n');
-	      pfile->lineno++;
-	    }
-	  return;
-	}
-    }
-
-  CPP_RESERVE (pfile, 4 * strlen (ip->nominal_fname) + 50);
-  CPP_PUTS_Q (pfile, "# ", 2);
-
-  sprintf ((char *) CPP_PWRITTEN (pfile), "%u ", line);
-  CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
-
-  _cpp_quote_string (pfile, ip->nominal_fname); 
-  if (file_change != same_file && file_change != rename_file)
-    {
-      CPP_PUTC_Q (pfile, ' ');
-      CPP_PUTC_Q (pfile, file_change == enter_file ? '1' : '2');
-    }
-  /* Tell cc1 if following text comes from a system header file.  */
-  if (ip->system_header_p)
-    {
-      CPP_PUTC_Q (pfile, ' ');
-      CPP_PUTC_Q (pfile, '3');
-    }
-#ifndef NO_IMPLICIT_EXTERN_C
-  /* Tell cc1plus if following text should be treated as C.  */
-  if (ip->system_header_p == 2 && CPP_OPTION (pfile, cplusplus))
-    {
-      CPP_PUTC_Q (pfile, ' ');
-      CPP_PUTC_Q (pfile, '4');
-    }
-#endif
-  CPP_PUTC_Q (pfile, '\n');
-  pfile->lineno = line;
 }
 
 /* Handle #include and #import.  */
@@ -713,9 +636,8 @@ do_line (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
-  int new_lineno;
+  unsigned int new_lineno;
   long old_written = CPP_WRITTEN (pfile);
-  enum file_change_code file_change = same_file;
   enum cpp_ttype token;
   char *x;
 
@@ -727,7 +649,7 @@ do_line (pfile)
       goto bad_line_directive;
     }
 
-  new_lineno = strtol (pfile->token_buffer + old_written, &x, 10);
+  new_lineno = strtoul (pfile->token_buffer + old_written, &x, 10);
   if (x[0] != '\0')
     {
       cpp_error (pfile, "token after `#line' is not an integer");
@@ -746,21 +668,22 @@ do_line (pfile)
       U_CHAR *end_name = CPP_PWRITTEN (pfile) - 1;
       int action_number = 0;
 
-      file_change = rename_file;
-
       if (read_line_number (pfile, &action_number))
 	{
 	  if (CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "garbage at end of `#line' command");
 
+	  /* This is somewhat questionable: change the buffer stack
+	     depth so that output_line_command thinks we've stacked
+	     another buffer. */
 	  if (action_number == 1)
 	    {
-	      file_change = enter_file;
+	      pfile->buffer_stack_depth++;
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
-	      file_change = leave_file;
+	      pfile->buffer_stack_depth--;
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
@@ -779,29 +702,11 @@ do_line (pfile)
       
       if (strcmp (fname, ip->nominal_fname))
 	{
-	  const char *newname, *oldname;
 	  if (!strcmp (fname, ip->ihash->name))
-	    newname = ip->ihash->name;
-	  else if (ip->last_nominal_fname
-		   && !strcmp (fname, ip->last_nominal_fname))
-	    newname = ip->last_nominal_fname;
+	    ip->nominal_fname = ip->ihash->name;
 	  else
-	    newname = xstrdup (fname);
-
-	  oldname = ip->nominal_fname;
-	  ip->nominal_fname = newname;
-
-	  if (ip->last_nominal_fname
-	      && ip->last_nominal_fname != oldname
-	      && ip->last_nominal_fname != newname
-	      && ip->last_nominal_fname != ip->ihash->name)
-	    free ((void *) ip->last_nominal_fname);
-
-	  if (newname == ip->ihash->name)
-	    ip->last_nominal_fname = NULL;
-	  else
-	    ip->last_nominal_fname = oldname;
-	} 
+	    ip->nominal_fname = _cpp_fake_ihash (pfile, fname);
+	}
     }
   else if (token != CPP_VSPACE && token != CPP_EOF)
     {
@@ -814,7 +719,6 @@ do_line (pfile)
      we must store a line number now that is one less.  */
   ip->lineno = new_lineno - 1;
   CPP_SET_WRITTEN (pfile, old_written);
-  _cpp_output_line_command (pfile, file_change);
   return 0;
 
  bad_line_directive:
@@ -1259,7 +1163,7 @@ do_elif (pfile)
       if (pfile->if_stack->type == T_ELSE)
 	{
 	  cpp_error (pfile, "`#elif' after `#else'");
-	  cpp_error_with_line (pfile, pfile->if_stack->lineno, -1,
+	  cpp_error_with_line (pfile, pfile->if_stack->lineno, 0,
 			       "the conditional began here");
 	}
       pfile->if_stack->type = T_ELIF;
@@ -1506,7 +1410,6 @@ skip_if_group (pfile)
 
   old_written = CPP_WRITTEN (pfile);
   pfile->no_macro_expand++;
-  CPP_OPTION (pfile, no_line_commands)++;
   for (;;)
     {
       /* We are at the end of a line.  Only cpp_get_token knows how to
@@ -1514,7 +1417,6 @@ skip_if_group (pfile)
       token = cpp_get_token (pfile);
       if (token == CPP_POP)
 	break;  /* Caller will issue error.  */
-      
       else if (token != CPP_VSPACE)
 	cpp_ice (pfile, "cpp_get_token returned %d in skip_if_group", token);
       CPP_SET_WRITTEN (pfile, old_written);
@@ -1533,7 +1435,6 @@ skip_if_group (pfile)
     }
   CPP_SET_WRITTEN (pfile, old_written);
   pfile->no_macro_expand--;
-  CPP_OPTION (pfile, no_line_commands)--;
   return ret;
 }
 
@@ -1565,7 +1466,7 @@ do_else (pfile)
       if (pfile->if_stack->type == T_ELSE)
 	{
 	  cpp_error (pfile, "`#else' after `#else'");
-	  cpp_error_with_line (pfile, pfile->if_stack->lineno, -1,
+	  cpp_error_with_line (pfile, pfile->if_stack->lineno, 0,
 			       "the conditional began here");
 	}
       pfile->if_stack->type = T_ELSE;
@@ -1628,7 +1529,6 @@ void
 _cpp_handle_eof (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *next_buf = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
   struct if_stack *ifs, *nifs;
 
   /* Unwind the conditional stack and generate error messages.  */
@@ -1636,7 +1536,7 @@ _cpp_handle_eof (pfile)
        ifs != CPP_BUFFER (pfile)->if_stack;
        ifs = nifs)
     {
-      cpp_error_with_line (pfile, ifs->lineno, -1,
+      cpp_error_with_line (pfile, ifs->lineno, 0,
 			   "unterminated `#%s' conditional",
 			   dtable[ifs->type].name);
 
@@ -1644,26 +1544,6 @@ _cpp_handle_eof (pfile)
       free (ifs);
     }
   pfile->if_stack = ifs;
-
-  if (pfile->potential_control_macro)
-    {
-      CPP_BUFFER (pfile)->ihash->control_macro
-	= pfile->potential_control_macro;
-      pfile->potential_control_macro = 0;
-    }
-
-  if (CPP_BUFFER (pfile)->nominal_fname && next_buf != NULL)
-    {
-      /* We're about to return from an #include file.
-	 Emit #line information now (as part of the CPP_POP) result.
-	 But the #line refers to the file we will pop to.  */
-      cpp_buffer *cur_buffer = CPP_BUFFER (pfile);
-      CPP_BUFFER (pfile) = next_buf;
-      pfile->input_stack_listing_current = 0;
-      _cpp_output_line_command (pfile, leave_file);
-      CPP_BUFFER (pfile) = cur_buffer;
-    }
-
   CPP_BUFFER (pfile)->seen_eof = 1;
 }
 

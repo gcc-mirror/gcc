@@ -911,7 +911,7 @@ special_symbol (hp, pfile)
     case T_SPECLINE:
       ip = cpp_file_buffer (pfile);
       CPP_RESERVE (pfile, 10);
-      sprintf (CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (pfile));
+      sprintf (CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (ip));
       CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
       return;
 
@@ -1025,7 +1025,6 @@ _cpp_macroexpand (pfile, hp)
 
       /* Skip over the opening parenthesis.  */
       CPP_OPTION (pfile, discard_comments)++;
-      CPP_OPTION (pfile, no_line_commands)++;
       pfile->no_macro_expand++;
       pfile->no_directives++;
 
@@ -1058,7 +1057,6 @@ _cpp_macroexpand (pfile, hp)
 	}
       while (token == CPP_COMMA);
       CPP_OPTION (pfile, discard_comments)--;
-      CPP_OPTION (pfile, no_line_commands)--;
       pfile->no_macro_expand--;
       pfile->no_directives--;
       if (token != CPP_RPAREN)
@@ -1221,9 +1219,9 @@ _cpp_macroexpand (pfile, hp)
 	      if (args[ap->argno].expand_length < 0)
 		{
 		  args[ap->argno].expanded = CPP_WRITTEN (pfile);
-		  cpp_expand_to_buffer (pfile,
-					ARG_BASE + args[ap->argno].raw,
-					args[ap->argno].raw_length);
+		  _cpp_expand_to_buffer (pfile,
+					 ARG_BASE + args[ap->argno].raw,
+					 args[ap->argno].raw_length);
 
 		  args[ap->argno].expand_length
 		    = CPP_WRITTEN (pfile) - args[ap->argno].expanded;
@@ -1611,9 +1609,6 @@ _cpp_dump_definition (pfile, sym, len, defn)
      long len;
      DEFINITION *defn;
 {
-  if (pfile->lineno == 0)
-    _cpp_output_line_command (pfile, same_file);
-
   CPP_RESERVE (pfile, len + sizeof "#define ");
   CPP_PUTS_Q (pfile, "#define ", sizeof "#define " -1);
   CPP_PUTS_Q (pfile, sym, len);
@@ -1691,7 +1686,7 @@ _cpp_dump_definition (pfile, sym, len, defn)
       if (*x == '\r') x += 2, i -= 2;
       if (i > 0) CPP_PUTS (pfile, x, i);
     }
-  if (pfile->lineno == 0)
+  if (CPP_BUFFER (pfile) == 0 || ! pfile->done_initializing)
     CPP_PUTC (pfile, '\n');
   CPP_NUL_TERMINATE (pfile);
 }
@@ -1706,10 +1701,7 @@ dump_hash_helper (h, p)
   cpp_reader *pfile = (cpp_reader *)p;
 
   if (hp->type == T_MACRO)
-    {
-      _cpp_dump_definition (pfile, hp->name, hp->length, hp->value.defn);
-      CPP_PUTC (pfile, '\n');
-    }
+    _cpp_dump_definition (pfile, hp->name, hp->length, hp->value.defn);
   return 1;
 }
 

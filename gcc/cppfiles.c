@@ -34,6 +34,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
 					   struct file_name_list *));
+static IHASH *make_IHASH	PARAMS ((const char *, const char *,
+					 struct file_name_list *,
+					 unsigned int, IHASH **));
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
@@ -154,6 +157,46 @@ cpp_included (pfile, fname)
   return (ptr != NULL);
 }
 
+/* Create an IHASH entry and insert it in SLOT.  */
+static IHASH *
+make_IHASH (name, fname, path, hash, slot)
+     const char *name, *fname;
+     struct file_name_list *path;
+     unsigned int hash;
+     IHASH **slot;
+{
+  IHASH *ih;
+  if (path == ABSOLUTE_PATH)
+    {
+      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+      ih->nshort = ih->name;
+    }
+  else
+    {
+      char *s;
+      
+      if ((s = strstr (name, fname)) != NULL)
+	{
+	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+	  ih->nshort = ih->name + (s - name);
+	}
+      else
+	{
+	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name)
+				  + strlen (fname) + 1);
+	  ih->nshort = ih->name + strlen (name) + 1;
+	  strcpy ((char *)ih->nshort, fname);
+	}
+    }
+  strcpy ((char *)ih->name, name);
+  ih->foundhere = path;
+  ih->control_macro = NULL;
+  ih->hash = hash;
+  ih->next_this_file = *slot;
+  *slot = ih;
+  return ih;
+}
+
 static int
 file_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
@@ -163,6 +206,12 @@ file_cleanup (pbuf, pfile)
     free ((PTR) pbuf->buf);
   if (pfile->system_include_depth)
     pfile->system_include_depth--;
+  if (pfile->potential_control_macro)
+    {
+      pbuf->ihash->control_macro = pfile->potential_control_macro;
+      pfile->potential_control_macro = 0;
+    }
+  pfile->input_stack_listing_current = 0;
   return 0;
 }
 
@@ -265,40 +314,33 @@ find_include_file (pfile, fname, search_start, ihash, before)
   if (f == -1)
     return -1;
 
-  if (path == ABSOLUTE_PATH)
-    {
-      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
-      ih->nshort = ih->name;
-    }
-  else
-    {
-      char *s;
-      
-      if ((s = strstr (name, fname)) != NULL)
-	{
-	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
-	  ih->nshort = ih->name + (s - name);
-	}
-      else
-	{
-	  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name)
-				  + strlen (fname) + 1);
-	  ih->nshort = ih->name + strlen (name) + 1;
-	  strcpy ((char *)ih->nshort, fname);
-	}
-    }
-  strcpy ((char *)ih->name, name);
-  ih->foundhere = path;
-  ih->control_macro = NULL;
-  ih->hash = dummy.hash;
-
-  ih->next_this_file = *slot;
-  *slot = ih;
-
+  ih = make_IHASH (name, fname, path, dummy.hash, slot);
   *before = 0;
   *ihash = ih;
   return f;
 }
+
+/* Create a dummy IHASH entry for FNAME, and return its name pointer.
+   This is used by #line.  */
+const char *
+_cpp_fake_ihash (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  IHASH *ih, **slot;
+  IHASH dummy;
+
+  dummy.nshort = fname;
+  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
+					      (const void *)&dummy,
+					      dummy.hash, 1);
+  if (*slot)
+    return (*slot)->name;
+  ih = make_IHASH (fname, 0, ABSOLUTE_PATH, dummy.hash, slot);
+  return ih->name;
+}
+
 
 /* The file_name_map structure holds a mapping of file names for a
    particular directory.  This mapping is read from the file named
@@ -594,14 +636,12 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
       fprintf (stderr, " %s\n", ihash->name);
     }
 
-  /* Actually process the file */
-
+  /* Actually process the file.  */
   if (no_reinclude)
     ihash->control_macro = (const U_CHAR *) "";
   
   if (read_include_file (pfile, fd, ihash))
     {
-      _cpp_output_line_command (pfile, enter_file);
       if (angle_brackets)
 	pfile->system_include_depth++;   /* Decremented in file_cleanup. */
     }
@@ -637,17 +677,7 @@ cpp_read_file (pfile, fname)
 	return 1;  /* Already included.  */
     }
   else
-    {
-      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (fname));
-      ih->control_macro = 0;
-      ih->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
-      ih->hash = dummy.hash;
-      strcpy ((char *)ih->name, fname);
-      ih->nshort = ih->name;
-
-      ih->next_this_file = *slot;
-      *slot = ih;
-    }
+    ih = make_IHASH (fname, 0, ABSOLUTE_PATH, dummy.hash, slot);
 
   if (*fname == '\0')
     f = 0;

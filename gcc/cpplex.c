@@ -47,6 +47,10 @@ static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
 static int null_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
 static void null_warning        PARAMS ((cpp_reader *, unsigned int));
 
+static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
+					 size_t, FILE *));
+static void output_line_command	PARAMS ((cpp_reader *, cpp_printer *));
+
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
 void
@@ -116,70 +120,131 @@ cpp_pop_buffer (pfile)
   return CPP_BUFFER (pfile);
 }
 
-/* Scan until CPP_BUFFER (PFILE) is exhausted into PFILE->token_buffer.
-   Pop the buffer when done.  */
-
-void
-cpp_scan_buffer (pfile)
+/* Deal with the annoying semantics of fwrite.  */
+static void
+safe_fwrite (pfile, buf, len, fp)
      cpp_reader *pfile;
+     const U_CHAR *buf;
+     size_t len;
+     FILE *fp;
 {
-  cpp_buffer *buffer = CPP_BUFFER (pfile);
-  enum cpp_ttype token;
-  if (CPP_OPTION (pfile, no_output))
+  size_t count;
+
+  while (len)
     {
-      long old_written = CPP_WRITTEN (pfile);
-      /* In no-output mode, we can ignore everything but directives.  */
-      for (;;)
-	{
-	  if (! pfile->only_seen_white)
-	    _cpp_skip_rest_of_line (pfile);
-	  token = cpp_get_token (pfile);
-	  if (token == CPP_EOF) /* Should not happen ...  */
-	    break;
-	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
-	    {
-	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
-		cpp_pop_buffer (pfile);
-	      break;
-	    }
-	}
-      CPP_SET_WRITTEN (pfile, old_written);
+      count = fwrite (buf, 1, len, fp);
+      if (count == 0)
+	goto error;
+      len -= count;
+      buf += count;
     }
-  else
-    {
-      for (;;)
-	{
-	  token = cpp_get_token (pfile);
-	  if (token == CPP_EOF) /* Should not happen ...  */
-	    break;
-	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
-	    {
-	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
-		cpp_pop_buffer (pfile);
-	      break;
-	    }
-	}
-    }
+  return;
+
+ error:
+  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
 }
 
-/*
- * Rescan a string (which may have escape marks) into pfile's buffer.
- * Place the result in pfile->token_buffer.
- *
- * The input is copied before it is scanned, so it is safe to pass
- * it something from the token_buffer that will get overwritten
- * (because it follows CPP_WRITTEN).  This is used by do_include.
- */
+/* Notify the compiler proper that the current line number has jumped,
+   or the current file name has changed.  */
+
+static void
+output_line_command (pfile, print)
+     cpp_reader *pfile;
+     cpp_printer *print;
+{
+  unsigned int line;
+  cpp_buffer *ip;
+  enum { same = 0, enter, leave, rname } change;
+  static const char * const codes[] = { "", " 1", " 2", "" };
+
+  if (CPP_OPTION (pfile, no_line_commands))
+    return;
+
+  ip = cpp_file_buffer (pfile);
+  if (ip == NULL)
+    return;
+  line = CPP_BUF_LINE (ip);
+
+  //  fprintf (print->outf, "[%u %u", print->lineno, line);
+
+  /* Determine whether the current filename has changed, and if so,
+     how.  'nominal_fname' values are unique, so they can be compared
+     by comparing pointers.  */
+  if (ip->nominal_fname == print->last_fname)
+    change = same;
+  else
+    {
+      if (pfile->buffer_stack_depth == print->last_bsd)
+	change = rname;
+      else
+	{
+	  if (pfile->buffer_stack_depth > print->last_bsd)
+	    change = enter;
+	  else
+	    change = leave;
+	  print->last_bsd = pfile->buffer_stack_depth;
+	}
+      print->last_fname = ip->nominal_fname;
+    }
+  /* If the current file has not changed, we can output a few newlines
+     instead if we want to increase the line number by a small amount.
+     We cannot do this if print->lineno is zero, because that means we
+     haven't output any line commands yet.  (The very first line
+     command output is a `same_file' command.)  */
+  if (change == same && print->lineno != 0
+      && line >= print->lineno && line < print->lineno + 8)
+    {
+      while (line > print->lineno)
+	{
+	  putc ('\n', print->outf);
+	  print->lineno++;
+	}
+      //      putc(']', print->outf);
+      return;
+    }
+
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (CPP_OPTION (pfile, cplusplus))
+    fprintf (print->outf, "# %u \"%s\"%s%s%s\n", line, ip->nominal_fname,
+	     codes[change],
+	     ip->system_header_p ? " 3" : "",
+	     (ip->system_header_p == 2) ? " 4" : "");
+  else
+#endif
+    fprintf (print->outf, "# %u \"%s\"%s%s\n", line, ip->nominal_fname,
+	     codes[change],
+	     ip->system_header_p ? " 3" : "");
+  print->lineno = line;
+}
+
+/* Write the contents of the token_buffer to the output stream, and
+   clear the token_buffer.  Also handles generating line commands and
+   keeping track of file transitions.  */
 
 void
-cpp_expand_to_buffer (pfile, buf, length)
+cpp_output_tokens (pfile, print)
+     cpp_reader *pfile;
+     cpp_printer *print;
+{
+  if (CPP_PWRITTEN (pfile)[-1] == '\n' && print->lineno)
+    print->lineno++;
+  safe_fwrite (pfile, pfile->token_buffer,
+	       CPP_WRITTEN (pfile) - print->written, print->outf);
+  output_line_command (pfile, print);
+  CPP_SET_WRITTEN (pfile, print->written);
+}
+
+/* Scan a string (which may have escape marks), perform macro expansion,
+   and write the result to the token_buffer.  */
+
+void
+_cpp_expand_to_buffer (pfile, buf, length)
      cpp_reader *pfile;
      const U_CHAR *buf;
      int length;
 {
-  register cpp_buffer *ip;
-  U_CHAR *buf1;
-  int save_no_output;
+  cpp_buffer *ip;
+  enum cpp_ttype token;
 
   if (length < 0)
     {
@@ -188,25 +253,83 @@ cpp_expand_to_buffer (pfile, buf, length)
     }
 
   /* Set up the input on the input stack.  */
-
-  buf1 = (U_CHAR *) alloca (length + 1);
-  memcpy (buf1, buf, length);
-  buf1[length] = 0;
-
-  ip = cpp_push_buffer (pfile, buf1, length);
+  ip = cpp_push_buffer (pfile, buf, length);
   if (ip == NULL)
     return;
   ip->has_escapes = 1;
 
   /* Scan the input, create the output.  */
-  save_no_output = CPP_OPTION (pfile, no_output);
-  CPP_OPTION (pfile, no_output) = 0;
-  CPP_OPTION (pfile, no_line_commands)++;
-  cpp_scan_buffer (pfile);
-  CPP_OPTION (pfile, no_line_commands)--;
-  CPP_OPTION (pfile, no_output) = save_no_output;
-
+  for (;;)
+    {
+      token = cpp_get_token (pfile);
+      if (token == CPP_EOF)
+	break;
+      if (token == CPP_POP && CPP_BUFFER (pfile) == ip)
+	{
+	  cpp_pop_buffer (pfile);
+	  break;
+	}
+    }
   CPP_NUL_TERMINATE (pfile);
+}
+
+/* Scan until CPP_BUFFER (PFILE) is exhausted, discarding output.
+   Then pop the buffer.  */
+
+void
+cpp_scan_buffer_nooutput (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buffer = CPP_BUFFER (pfile);
+  enum cpp_ttype token;
+  unsigned int old_written = CPP_WRITTEN (pfile);
+  /* In no-output mode, we can ignore everything but directives.  */
+  for (;;)
+    {
+      if (! pfile->only_seen_white)
+	_cpp_skip_rest_of_line (pfile);
+      token = cpp_get_token (pfile);
+      if (token == CPP_EOF)
+	break;
+      if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
+	{
+	  cpp_pop_buffer (pfile);
+	  break;
+	}
+    }
+  CPP_SET_WRITTEN (pfile, old_written);
+}
+
+/* Scan until CPP_BUFFER (pfile) is exhausted, writing output to PRINT.
+   Then pop the buffer.  */
+
+void
+cpp_scan_buffer (pfile, print)
+     cpp_reader *pfile;
+     cpp_printer *print;
+{
+  cpp_buffer *buffer = CPP_BUFFER (pfile);
+  enum cpp_ttype token;
+
+  for (;;)
+    {
+      token = cpp_get_token (pfile);
+      if ((token == CPP_POP && !CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+	  || token == CPP_EOF || token == CPP_VSPACE
+	  /* XXX Temporary kluge - force flush after #include only */
+	  || (token == CPP_DIRECTIVE
+	      && CPP_BUFFER (pfile)->nominal_fname != print->last_fname))
+	{
+	  cpp_output_tokens (pfile, print);
+	  if (token == CPP_EOF)
+	    return;
+	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
+	    {
+	      cpp_pop_buffer (pfile);
+	      return;
+	    }
+	}
+    }
 }
 
 /* Return the topmost cpp_buffer that corresponds to a file (not a macro).  */
@@ -706,6 +829,9 @@ _cpp_lex_token (pfile)
   register int c, c2;
   enum cpp_ttype token;
 
+  if (CPP_BUFFER (pfile) == NULL)
+    return CPP_EOF;
+
  get_next:
   c = GETC();
   switch (c)
@@ -749,6 +875,7 @@ _cpp_lex_token (pfile)
     hash:
       if (pfile->parsing_if_directive)
 	{
+	  CPP_ADJUST_WRITTEN (pfile, -1);
 	  if (_cpp_parse_assertion (pfile))
 	    return CPP_ASSERTION;
 	  return CPP_OTHER;
@@ -1227,12 +1354,6 @@ cpp_get_token (pfile)
       if (pfile->only_seen_white == 0)
 	pfile->only_seen_white = 1;
       CPP_BUMP_LINE (pfile);
-      if (! CPP_OPTION (pfile, no_line_commands))
-	{
-	  pfile->lineno++;
-	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
-	    _cpp_output_line_command (pfile, same_file);
-	}
       return token;
 
     case CPP_HSPACE:
@@ -1256,15 +1377,15 @@ cpp_get_token (pfile)
       return CPP_NAME;
 
     case CPP_EOF:
+      if (CPP_BUFFER (pfile) == NULL)
+	return CPP_EOF;
       if (CPP_BUFFER (pfile)->manual_pop)
 	/* If we've been reading from redirected input, the
 	   frontend will pop the buffer.  */
 	return CPP_EOF;
-      else if (CPP_BUFFER (pfile)->seen_eof)
-	{
-	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == NULL)
-	    return CPP_EOF;
 
+      if (CPP_BUFFER (pfile)->seen_eof)
+	{
 	  cpp_pop_buffer (pfile);
 	  goto get_next;
 	}
