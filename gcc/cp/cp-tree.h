@@ -379,10 +379,10 @@ typedef enum cp_id_kind
 
 /* The IDENTIFIER_BINDING is the innermost cxx_binding for the
     identifier.  It's PREVIOUS is the next outermost binding.  Each
-    BINDING_VALUE is a DECL for the associated declaration.  Thus,
+    VALUE field is a DECL for the associated declaration.  Thus,
     name lookup consists simply of pulling off the node at the front
     of the list (modulo oddities for looking up the names of types,
-    and such.)  You can use BINDING_SCOPE to determine the scope
+    and such.)  You can use SCOPE field to determine the scope
     that bound the name.  */
 #define IDENTIFIER_BINDING(NODE) \
   (LANG_IDENTIFIER_CAST (NODE)->bindings)
@@ -394,7 +394,7 @@ typedef enum cp_id_kind
 
 /* If IDENTIFIER_CLASS_VALUE is set, then NODE is bound in the current
    class, and IDENTIFIER_CLASS_VALUE is the value binding.  This is
-   just a pointer to the BINDING_VALUE of one of the bindings in the
+   just a pointer to the VALUE field of one of the bindings in the
    IDENTIFIER_BINDINGs list, so any time that this is non-NULL so is
    IDENTIFIER_BINDING.  */
 #define IDENTIFIER_CLASS_VALUE(NODE) \

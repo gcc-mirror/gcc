@@ -1,3 +1,8 @@
+2003-09-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h, name-lookup.h, decl.c, decl2.c: Remove reference to
+	macros 	BINDING_SCOPE, BINDING_VALUE and BINDING_TYPE.
+
 2003-09-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (pop_binding_level, suspend_binding_level,
@@ -14,7 +19,7 @@
 	(cp_parser_member_declaration): Use it.
 	(cp_parser_template_declaration_after_export): Likewise.
 
-2003-09-22  Gabriel Dos Reis  <gcc@integrable-solutions.net>
+2003-09-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (scope_kind): Add new enumerator.
 	(keep_next_level): Change parameter type to bool.

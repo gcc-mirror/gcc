@@ -3159,7 +3159,7 @@ ambiguous_decl (tree name, cxx_binding *old, cxx_binding *new, int flags)
   tree val, type;
   my_friendly_assert (old != NULL, 393);
   /* Copy the value.  */
-  val = BINDING_VALUE (new);
+  val = new->value;
   if (val)
     switch (TREE_CODE (val))
       {
@@ -3188,43 +3188,43 @@ ambiguous_decl (tree name, cxx_binding *old, cxx_binding *new, int flags)
           val = NULL_TREE;
       }
         
-  if (!BINDING_VALUE (old))
-    BINDING_VALUE (old) = val;
-  else if (val && val != BINDING_VALUE (old))
+  if (!old->value)
+    old->value = val;
+  else if (val && val != old->value)
     {
-      if (is_overloaded_fn (BINDING_VALUE (old)) && is_overloaded_fn (val))
-        BINDING_VALUE (old) = merge_functions (BINDING_VALUE (old), val);
+      if (is_overloaded_fn (old->value) && is_overloaded_fn (val))
+        old->value = merge_functions (old->value, val);
       else
 	{
 	  /* Some declarations are functions, some are not.  */
           if (flags & LOOKUP_COMPLAIN)
             {
 	      /* If we've already given this error for this lookup,
-		 BINDING_VALUE (old) is error_mark_node, so let's not
+		 old->value is error_mark_node, so let's not
 		 repeat ourselves.  */
-	      if (BINDING_VALUE (old) != error_mark_node)
+	      if (old->value != error_mark_node)
 		{
 		  error ("use of `%D' is ambiguous", name);
 		  cp_error_at ("  first declared as `%#D' here",
-			       BINDING_VALUE (old));
+			       old->value);
 		}
               cp_error_at ("  also declared as `%#D' here", val);
             }
-	  BINDING_VALUE (old) = error_mark_node;
+	  old->value = error_mark_node;
 	}
     }
   /* ... and copy the type.  */
-  type = BINDING_TYPE (new);
+  type = new->type;
   if (LOOKUP_NAMESPACES_ONLY (flags))
     type = NULL_TREE;
-  if (!BINDING_TYPE (old))
-    BINDING_TYPE (old) = type;
-  else if (type && BINDING_TYPE (old) != type)
+  if (!old->type)
+    old->type = type;
+  else if (type && old->type != type)
     {
       if (flags & LOOKUP_COMPLAIN)
         {
           error ("`%D' denotes an ambiguous type",name);
-          error ("%J  first type here", TYPE_MAIN_DECL (BINDING_TYPE (old)));
+          error ("%J  first type here", TYPE_MAIN_DECL (old->type));
           error ("%J  other type here", TYPE_MAIN_DECL (type));
         }
     }
@@ -3258,8 +3258,7 @@ lookup_using_namespace (tree name, cxx_binding *val, tree usings, tree scope,
         if (val1)
           val = ambiguous_decl (name, val, val1, flags);
       }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
-                          BINDING_VALUE (val) != error_mark_node);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val->value != error_mark_node);
 }
 
 /* [namespace.qual]
@@ -3286,7 +3285,7 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
       seen = tree_cons (scope, NULL_TREE, seen);
       if (binding)
         result = ambiguous_decl (name, result, binding, flags);
-      if (!BINDING_VALUE (result) && !BINDING_TYPE (result))
+      if (!result->value && !result->type)
 	/* Consider using directives.  */
 	for (usings = DECL_NAMESPACE_USING (scope); usings;
 	     usings = TREE_CHAIN (usings))
@@ -3993,16 +3992,16 @@ do_toplevel_using_decl (tree decl)
   
   binding = binding_for_name (NAMESPACE_LEVEL (current_namespace), name);
 
-  oldval = BINDING_VALUE (binding);
-  oldtype = BINDING_TYPE (binding);
+  oldval = binding->value;
+  oldtype = binding->type;
 
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   /* Copy declarations found.  */
   if (newval)
-    BINDING_VALUE (binding) = newval;
+    binding->value = newval;
   if (newtype)
-    BINDING_TYPE (binding) = newtype;
+    binding->type = newtype;
   return;
 }
 

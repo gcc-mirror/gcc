@@ -336,7 +336,7 @@ supplement_binding (cxx_binding *binding, tree decl)
   else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
     {
       /* The old binding was a type name.  It was placed in
-	 BINDING_VALUE because it was thought, at the point it was
+	 VALUE field because it was thought, at the point it was
 	 declared, to be the only entity with such a name.  Move the
 	 type name into the type slot; it is now hidden by the new
 	 binding.  */
@@ -395,7 +395,7 @@ find_binding (cxx_scope *scope, cxx_binding *binding)
   timevar_push (TV_NAME_LOOKUP);
 
   for (; binding != NULL; binding = binding->previous)
-    if (BINDING_SCOPE (binding) == scope)
+    if (binding->scope == scope)
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, binding);
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (cxx_binding *)0);
@@ -409,7 +409,7 @@ cxx_scope_find_binding_for_name (cxx_scope *scope, tree name)
   if (b)
     {
       /* Fold-in case where NAME is used only once.  */
-      if (scope == BINDING_SCOPE (b) && b->previous == NULL)
+      if (scope == b->scope && b->previous == NULL)
         return b;
       return find_binding (scope, b);
     }
@@ -430,7 +430,7 @@ binding_for_name (cxx_scope *scope, tree name)
   /* Not found, make a new one.  */
   result = cxx_binding_make (NULL, NULL);
   result->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  BINDING_SCOPE (result) = scope;
+  result->scope = scope;
   result->is_local = false;
   result->value_is_inherited = false;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
@@ -465,10 +465,8 @@ set_namespace_binding (tree name, tree scope, tree val)
   if (scope == NULL_TREE)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
-  if (!BINDING_VALUE (b)
-      || TREE_CODE (val) == OVERLOAD 
-      || val == error_mark_node)
-    BINDING_VALUE (b) = val;
+  if (!b->value || TREE_CODE (val) == OVERLOAD || val == error_mark_node)
+    b->value = val;
   else
     supplement_binding (b, val);
   timevar_pop (TV_NAME_LOOKUP);

@@ -72,21 +72,9 @@ typedef struct cp_binding_level cxx_scope;
    or namespace scope.  */
 #define LOCAL_BINDING_P(NODE) ((NODE)->is_local)
 
-/* Nonzero if BINDING_VALUE is from a base class of the class which is
+/* True if NODE->value is from a base class of the class which is
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
-
-/* For a binding between a name and an entity at a non-local scope,
-   defines the scope where the binding is declared.  (Either a class
-   _TYPE node, or a NAMESPACE_DECL.).  */
-#define BINDING_SCOPE(NODE) ((NODE)->scope)
-
-/* This is the declaration bound to the name. Possible values:
-   variable, overloaded function, namespace, template, enumerator.  */
-#define BINDING_VALUE(NODE) ((NODE)->value)
-
-/* If name is bound to a type, this is the type (struct, union, enum).  */
-#define BINDING_TYPE(NODE)   ((NODE)->type)
 
 /* Zero out a cxx_binding pointed to by B.  */
 #define cxx_binding_clear(B) memset ((B), 0, sizeof (cxx_binding))
