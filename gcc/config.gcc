@@ -2894,7 +2894,7 @@ v850*-*-*)
 	case "x$with_cpu" in
 		x)
 			;;
-		v850e)
+		xv850e)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
 			;;
 		*)

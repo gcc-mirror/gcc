@@ -1,3 +1,8 @@
+2002-09-26  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Add x prefix to v850e case for handling
+	--with-cpu=v850e.
+
 2002-09-25  David S. Miller  <davem@redhat.com>
 
 	PR target/7842
