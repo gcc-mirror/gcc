@@ -1244,11 +1244,27 @@ case " $skipdirs " in
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include -isystem $$s/newlib/libc/sys/cygwin -isystem $$s/newlib/libc/sys/cygwin32' ;;
    esac
 
-   # If we're using a pre-built compiler (which is the case for
-   # Canadian crosses or when gcc isn't being built), don't discard
-   # standard headers.
-   if test "${build}" = "${host}" && test -d ${topsrcdir}/gcc; then
+   # If we're not building GCC, don't discard standard headers.
+   if test -d ${topsrcdir}/gcc; then
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc'
+
+     if test "${build}" != "${host}"; then
+       # On Canadian crosses, CC_FOR_TARGET will have already been set
+       # by `configure', so we won't have an opportunity to add -Bgcc/
+       # to it.  This is right: we don't want to search that directory
+       # for binaries, but we want the header files in there, so add
+       # them explicitly.
+       FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -isystem $$r/gcc/include'
+
+       # Someone might think of using the pre-installed headers on
+       # Canadian crosses, in case the installed compiler is not fully
+       # compatible with the compiler being built.  In this case, it
+       # would be better to flag an error than risking having
+       # incompatible object files being constructed.  We can't
+       # guarantee that an error will be flagged, but let's hope the
+       # compiler will do it, when presented with incompatible header
+       # files.
+     fi
    fi
 
    # If we're building newlib, use its generic headers last, but search
