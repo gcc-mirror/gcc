@@ -3164,6 +3164,11 @@ for_each_template_parm (t, fn, data)
 {
   if (!t)
     return 0;
+
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+      && for_each_template_parm (TYPE_CONTEXT (t), fn, data))
+    return 1;
+
   switch (TREE_CODE (t))
     {
     case INDIRECT_REF:
