@@ -1997,7 +1997,7 @@ remove_phi_nodes_and_edges_for_unreachable_block (basic_block bb)
   while (phi)
     {
       tree next = PHI_CHAIN (phi);
-      remove_phi_node (phi, NULL_TREE, bb);
+      remove_phi_node (phi, NULL_TREE);
       phi = next;
     }
 

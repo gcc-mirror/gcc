@@ -1288,7 +1288,7 @@ kill_redundant_phi_nodes (void)
       if (repl != ssa_name (i))
 	{
 	  stmt = SSA_NAME_DEF_STMT (ssa_name (i));
-	  remove_phi_node (stmt, NULL_TREE, bb_for_stmt (stmt));
+	  remove_phi_node (stmt, NULL_TREE);
 	}
     }
 

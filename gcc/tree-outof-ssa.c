@@ -1030,7 +1030,7 @@ eliminate_virtual_phis (void)
 		    }
 		}
 #endif
-	      remove_phi_node (phi, NULL_TREE, bb);
+	      remove_phi_node (phi, NULL_TREE);
 	    }
 	}
     }
@@ -2371,7 +2371,7 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
       for (phi = phi_nodes (bb); phi; phi = next)
 	{
 	  next = PHI_CHAIN (phi);
-	  remove_phi_node (phi, NULL_TREE, bb);
+	  remove_phi_node (phi, NULL_TREE);
 	}
     }
 

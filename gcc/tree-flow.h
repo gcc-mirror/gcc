@@ -522,7 +522,7 @@ extern void reserve_phi_args_for_new_edge (basic_block);
 extern tree create_phi_node (tree, basic_block);
 extern void add_phi_arg (tree, tree, edge);
 extern void remove_phi_args (edge);
-extern void remove_phi_node (tree, tree, basic_block);
+extern void remove_phi_node (tree, tree);
 extern void remove_all_phi_nodes_for (bitmap);
 extern tree phi_reverse (tree);
 extern void dump_dfa_stats (FILE *);
