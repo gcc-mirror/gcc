@@ -1754,7 +1754,7 @@ constrain_operands (insn_code_num, strict)
 		   we can examine the bits of it reliably.  */
 		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 		     || HOST_BITS_PER_INT != BITS_PER_WORD)
-		    && GET_CODE (op) != VOIDmode && ! flag_pretend_float)
+		    && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
 		  break;
 		if (GET_CODE (op) == CONST_DOUBLE)
 		  win = 1;
