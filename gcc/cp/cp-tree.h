@@ -3129,6 +3129,8 @@ extern tree build_delete			PROTO((tree, tree, tree, int, int));
 extern tree build_vbase_delete			PROTO((tree, tree));
 extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
 extern tree create_temporary_var                PROTO((tree));
+extern void begin_init_stmts                    PROTO((tree *, tree *));
+extern tree finish_init_stmts                   PROTO((tree, tree));
 
 /* in input.c */
 

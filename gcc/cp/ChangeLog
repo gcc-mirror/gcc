@@ -1,5 +1,13 @@
 1999-08-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (begin_init_stmts): Declare.
+	(finish_init_stmts): Likewise.
+	* cvt.c (build_up_reference): Wrap the declaration of a temporary
+	in a statement-expression so that we will see it when expanding
+	tree structure later.
+	* init.c (begin_init_stmts): Don't make it static.
+	(finish_init_stmts): Likewise.
+
 	* cp-tree.h (start_handler_parms): New function.
 	(expand_start_catch_block): Take only one parameter.
 	(start_handler_parms): New function.
