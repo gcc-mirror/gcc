@@ -1,3 +1,7 @@
+2003-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* gennews (files): Add GCC 3.3 files.
+
 2003-08-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Fix handling of -t option.  Add -x option.
