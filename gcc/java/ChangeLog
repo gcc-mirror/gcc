@@ -1,3 +1,8 @@
+2004-10-18  Steven Bosscher  <stevenb@suse.de>
+
+	* Make-lang.in (java/parse.o-warn, java/parse-scan.o-warn):
+	New rules to work around old Bison warnings.
+
 2004-10-17  Steven Bosscher  <stevenb@suse.de>
 
 	* class.c (ident_subst): Always alloca buffer.
