@@ -211,6 +211,14 @@ m68hc11_override_options ()
 	  sizeof (m68hc11_reg_valid_for_index));
   memset (m68hc11_reg_valid_for_base, 0, sizeof (m68hc11_reg_valid_for_base));
 
+  /* Compilation with -fpic generates a wrong code.  */
+  if (flag_pic)
+    {
+      warning ("-f%s ignored for 68HC11/68HC12 (not supported)",
+	       (flag_pic > 1) ? "PIC" : "pic");
+      flag_pic = 0;
+    }
+
   /* Configure for a 68hc11 processor.  */
   if (TARGET_M6811)
     {
@@ -1808,7 +1816,8 @@ m68hc11_gen_lowpart (mode, x)
 	  if (mode == SImode)
 	    return gen_rtx (CONST_INT, VOIDmode, l[0]);
 
-	  return gen_rtx (CONST_INT, VOIDmode, l[0] & 0x0ffff);
+	  return gen_rtx (CONST_INT, VOIDmode,
+                          trunc_int_for_mode (l[0], HImode));
 	}
       else
 	{
@@ -1817,7 +1826,8 @@ m68hc11_gen_lowpart (mode, x)
       if (mode == SImode)
 	return gen_rtx (CONST_INT, VOIDmode, l[0]);
       else if (mode == HImode && GET_MODE (x) == SFmode)
-	return gen_rtx (CONST_INT, VOIDmode, l[0] & 0x0FFFF);
+	return gen_rtx (CONST_INT, VOIDmode,
+                        trunc_int_for_mode (l[0], HImode));
       else
 	abort ();
     }
@@ -1829,9 +1839,9 @@ m68hc11_gen_lowpart (mode, x)
   if (GET_CODE (x) == SUBREG && SUBREG_BYTE (x) != 0)
     {
       if (mode == SImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 2);
+	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 4);
       else if (mode == HImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 1);
+	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 2);
       else
 	abort ();
     }
@@ -1885,7 +1895,8 @@ m68hc11_gen_highpart (mode, x)
 	  if (mode == SImode)
 	    return gen_rtx (CONST_INT, VOIDmode, l[1]);
 
-	  return gen_rtx (CONST_INT, VOIDmode, (l[1] >> 16) & 0x0ffff);
+	  return gen_rtx (CONST_INT, VOIDmode,
+                          trunc_int_for_mode ((l[1] >> 16), HImode));
 	}
       else
 	{
@@ -1895,7 +1906,8 @@ m68hc11_gen_highpart (mode, x)
       if (mode == SImode)
 	return gen_rtx (CONST_INT, VOIDmode, l[1]);
       else if (mode == HImode && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	return gen_rtx (CONST_INT, VOIDmode, (l[0] >> 16) & 0x0FFFF);
+	return gen_rtx (CONST_INT, VOIDmode,
+                        trunc_int_for_mode ((l[0] >> 16), HImode));
       else
 	abort ();
     }
@@ -1905,11 +1917,13 @@ m68hc11_gen_highpart (mode, x)
 
       if (mode == QImode)
 	{
-	  return gen_rtx (CONST_INT, VOIDmode, val >> 8);
+	  return gen_rtx (CONST_INT, VOIDmode,
+                          trunc_int_for_mode (val >> 8, QImode));
 	}
       else if (mode == HImode)
 	{
-	  return gen_rtx (CONST_INT, VOIDmode, val >> 16);
+	  return gen_rtx (CONST_INT, VOIDmode,
+                          trunc_int_for_mode (val >> 16, HImode));
 	}
     }
   if (mode == QImode && D_REG_P (x))
