@@ -1,3 +1,8 @@
+2001-01-16  Phil Edwards  <pme@sources.redhat.com>
+
+	* gcc.c:  Revert previous -fsyntax-only-related change; move
+	  to cp/g++spec.c.
+
 2001-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (fcmov_comparison_operator): Only initialize
