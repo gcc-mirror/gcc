@@ -664,9 +664,8 @@ __paritysi2 (USItype x)
   nx ^= nx >> 16;
   nx ^= nx >> 8;
   nx ^= nx >> 4;
-  nx ^= nx >> 2;
-  nx ^= nx >> 1;
-  return nx & 1;
+  nx &= 0xf;
+  return (0x6996 >> nx) & 1;
 }
 #endif
 
@@ -680,9 +679,8 @@ __paritydi2 (UDItype x)
   nx ^= nx >> 16;
   nx ^= nx >> 8;
   nx ^= nx >> 4;
-  nx ^= nx >> 2;
-  nx ^= nx >> 1;
-  return nx & 1;
+  nx &= 0xf;
+  return (0x6996 >> nx) & 1;
 }
 #endif
 
