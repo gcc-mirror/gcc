@@ -3744,6 +3744,14 @@ duplicate_decls (newdecl, olddecl)
 	    = DECL_SOURCE_LOCATION (newdecl);
 	}
 
+      if (DECL_FUNCTION_TEMPLATE_P (newdecl))
+	{
+	  DECL_INLINE (DECL_TEMPLATE_RESULT (olddecl)) 
+	    |= DECL_INLINE (DECL_TEMPLATE_RESULT (newdecl));
+	  DECL_DECLARED_INLINE_P (DECL_TEMPLATE_RESULT (olddecl))
+	    |= DECL_DECLARED_INLINE_P (DECL_TEMPLATE_RESULT (newdecl));
+	}
+
       return 1;
     }
 

@@ -1,3 +1,11 @@
+2004-01-02  Matthias Klose  <doko@debian.org>
+
+	Backport from mainline:
+	2003-12-28  Mark Mitchell  <mark@codesourcery.com>
+ 
+	PR c++/13081
+	* g++.dg/opt/inline6.C: New test.
+
 2004-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/13521
