@@ -1,3 +1,8 @@
+2000-07-22  Tom Tromey  <tromey@cygnus.com>
+
+	* java/awt/geom/RectangularShape.java (getPathIterator):
+	Wrote.
+
 2000-07-23  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
 
 	* libjava/java/awt/image/ColorModel.java: New file, replaces the

@@ -165,9 +165,7 @@ public abstract class RectangularShape implements Shape, Cloneable
 
   public PathIterator getPathIterator (AffineTransform at, double flatness)
   {
-    // FIXME
-    // return new AffineTransform.Iterator (new Iterator ());
-    return null;
+    return at.new Iterator (new Iterator ());
   }
 
   public Object clone ()
