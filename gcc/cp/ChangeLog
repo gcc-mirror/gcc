@@ -1,5 +1,9 @@
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* Make-lang.in (cc1plus): Remove dependency on GGC.
+	* Makefile.in (OBJS): Don't mention ggc-simple.o.
+	(OBJDEPS): Don't mention ggc-simple.o.
+
 	* Make-lang.in (cc1plus): Depend on $(GGC).
 	* Makefile.in (OBJS): Add ggc-simple.o.
 	(OBJDEPS): Likewise.

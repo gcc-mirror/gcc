@@ -1,3 +1,8 @@
+1999-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (cc1chill): Depend on ggc-callbacks.o.
+	* Makefile.in (CHILL_OBJS): Add ggc-callbacks.o.
+
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.c (language_string): Constify.
