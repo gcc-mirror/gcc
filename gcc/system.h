@@ -88,11 +88,16 @@
 extern int errno;
 #endif
 
-#ifdef HAVE_STRING_H
+#ifdef STRING_WITH_STRINGS
 # include <string.h>
+# include <strings.h>
 #else
-# ifdef HAVE_STRINGS_H
-#  include <strings.h>
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
 # endif
 #endif
 
