@@ -166,6 +166,8 @@ static tree fold_builtin_copysign (tree, tree);
 static tree fold_builtin_isascii (tree);
 static tree fold_builtin_toascii (tree);
 static tree fold_builtin_isdigit (tree);
+static tree fold_builtin_fabs (tree, tree);
+static tree fold_builtin_abs (tree, tree);
 
 static tree simplify_builtin_memcmp (tree);
 static tree simplify_builtin_strcmp (tree);
@@ -5628,13 +5630,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
   switch (fcode)
     {
-    case BUILT_IN_ABS:
-    case BUILT_IN_LABS:
-    case BUILT_IN_LLABS:
-    case BUILT_IN_IMAXABS:
-      /* build_function_call changes these into ABS_EXPR.  */
-      abort ();
-
     case BUILT_IN_FABS:
     case BUILT_IN_FABSF:
     case BUILT_IN_FABSL:
@@ -7587,6 +7582,38 @@ fold_builtin_isdigit (tree arglist)
     }
 }
 
+/* Fold a call to fabs, fabsf or fabsl.  */
+
+static tree
+fold_builtin_fabs (tree arglist, tree type)
+{
+  tree arg;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST)
+    return fold_abs_const (arg, type);
+  return fold (build1 (ABS_EXPR, type, arg));
+}
+
+/* Fold a call to abs, labs, llabs or imaxabs.  */
+
+static tree
+fold_builtin_abs (tree arglist, tree type)
+{
+  tree arg;
+
+  if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == INTEGER_CST)
+    return fold_abs_const (arg, type);
+  return fold (build1 (ABS_EXPR, type, arg));
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -7628,9 +7655,13 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_FABS:
     case BUILT_IN_FABSF:
     case BUILT_IN_FABSL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	return fold (build1 (ABS_EXPR, type, TREE_VALUE (arglist)));
-      break;
+      return fold_builtin_fabs (arglist, type);
+
+    case BUILT_IN_ABS:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
+      return fold_builtin_abs (arglist, type);
 
     case BUILT_IN_CABS:
     case BUILT_IN_CABSF:
