@@ -1,5 +1,13 @@
 2003-04-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java,
+	java/text/CollationKey.java,
+	java/text/RuleBasedCollator.java:
+	Merged copyright and documentation from classpath and
+	rearranged some code. No code changes done.
+
+2003-04-30  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/regex/Matcher.java
 	(pattern): New member variable.
 	(appendReplacement): New method.
