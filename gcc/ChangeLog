@@ -1,5 +1,6 @@
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	PR c/9209
 	* c-common.c, c-common.h (dollars_in_ident): Remove.
 	* c-opts.c (DOLLARS_IN_IDENTIFIERS): Default to true.
 	(c_common_init_options, c_common_decode_option): Set dollars_in_ident.
