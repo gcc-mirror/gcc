@@ -9129,7 +9129,7 @@ do_decl_instantiation (declspecs, declarator, storage)
   mark_decl_instantiated (result, extern_p);
   repo_template_instantiated (result, extern_p);
   if (! extern_p)
-    instantiate_decl (result);
+    instantiate_decl (result, /*defer_ok=*/1);
 }
 
 void
@@ -9265,7 +9265,7 @@ do_type_instantiation (t, storage)
 	    mark_decl_instantiated (tmp, extern_p);
 	    repo_template_instantiated (tmp, extern_p);
 	    if (! extern_p)
-	      instantiate_decl (tmp);
+	      instantiate_decl (tmp, /*defer_ok=*/1);
 	  }
 
     for (tmp = TYPE_FIELDS (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -9274,7 +9274,7 @@ do_type_instantiation (t, storage)
 	  mark_decl_instantiated (tmp, extern_p);
 	  repo_template_instantiated (tmp, extern_p);
 	  if (! extern_p)
-	    instantiate_decl (tmp);
+	    instantiate_decl (tmp, /*defer_ok=*/1);
 	}
 
     for (tmp = CLASSTYPE_TAGS (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -9376,11 +9376,14 @@ regenerate_decl_from_template (decl, tmpl)
   register_specialization (decl, gen_tmpl, args);
 }
 
-/* Produce the definition of D, a _DECL generated from a template.  */
+/* Produce the definition of D, a _DECL generated from a template.  If
+   DEFER_OK is non-zero, then we don't have to actually do the
+   instantiation now; we just have to do it sometime.  */
 
 tree
-instantiate_decl (d)
+instantiate_decl (d, defer_ok)
      tree d;
+     int defer_ok;
 {
   tree tmpl = DECL_TI_TEMPLATE (d);
   tree args = DECL_TI_ARGS (d);
@@ -9513,20 +9516,18 @@ instantiate_decl (d)
       && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
     goto out;
 
+  /* We need to set up DECL_INITIAL regardless of pattern_defined if
+     the variable is a static const initialized in the class body.  */
   if (TREE_CODE (d) == VAR_DECL 
       && TREE_READONLY (d)
       && DECL_INITIAL (d) == NULL_TREE
       && DECL_INITIAL (code_pattern) != NULL_TREE)
-    /* We need to set up DECL_INITIAL regardless of pattern_defined if
-       the variable is a static const initialized in the class body.  */;
-  else if (pattern_defined && nested
-	   && TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d))
-    /* An inline function used in another function; instantiate it now so
-       we can inline it.  */;
-  else if (! pattern_defined || ! at_eof)
+    ;
+  /* Defer all other templates, unless we have been explicitly
+     forbidden from doing so.  We restore the source position here
+     because it's used by add_pending_template.  */
+  else if (! pattern_defined || defer_ok)
     {
-      /* Defer all other templates.  We restore the source position
-         here because it's used by add_pending_template.  */
       lineno = line;
       input_filename = file;
 
@@ -9657,7 +9658,7 @@ instantiate_pending_templates ()
 			 fn;
 			 fn = TREE_CHAIN (fn))
 		      if (! DECL_ARTIFICIAL (fn))
-			instantiate_decl (fn);
+			instantiate_decl (fn, /*defer_ok=*/0);
 		  if (COMPLETE_TYPE_P (instantiation))
 		    {
 		      instantiated_something = 1;
@@ -9674,10 +9675,11 @@ instantiate_pending_templates ()
 	    }
 	  else
 	    {
-	      if (DECL_TEMPLATE_INSTANTIATION (instantiation)
+	      if (!DECL_TEMPLATE_SPECIALIZATION (instantiation)
 		  && !DECL_TEMPLATE_INSTANTIATED (instantiation))
 		{
-		  instantiation = instantiate_decl (instantiation);
+		  instantiation = instantiate_decl (instantiation,
+						    /*defer_ok=*/0);
 		  if (DECL_TEMPLATE_INSTANTIATED (instantiation))
 		    {
 		      instantiated_something = 1;
@@ -9685,7 +9687,7 @@ instantiate_pending_templates ()
 		    }
 		}
 
-	      if (!DECL_TEMPLATE_INSTANTIATION (instantiation)
+	      if (DECL_TEMPLATE_SPECIALIZATION (instantiation)
 		  || DECL_TEMPLATE_INSTANTIATED (instantiation))
 		/* If INSTANTIATION has been instantiated, then we don't
 		   need to consider it again in the future.  */
@@ -9717,7 +9719,7 @@ instantiate_pending_templates ()
 	      template = TREE_PURPOSE (*t);
 	      args = get_bindings (template, fn, NULL_TREE);
 	      fn = instantiate_template (template, args);
-	      instantiate_decl (fn);
+	      instantiate_decl (fn, /*defer_ok=*/0);
 	      reconsider = 1;
 	    }
 	

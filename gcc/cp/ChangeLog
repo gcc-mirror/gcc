@@ -1,5 +1,14 @@
 2000-04-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (instantiate_decl): Change prototype.
+	* decl2.c (mark_used): Adjust call.
+	* optimize.c (inlinable_function_p): Adjust handling of templates.
+	* pt.c (do_decl_instantiation): Adjust call to instantiate_decl.
+	(do_type_instantiation): Likewise.
+	(instantiate_decl): Defer more templates.
+	(instantiate_pending_templates): Adjust logic to handle inline
+	friend functions.
+
 	* Makefile.in (GGC_H): New variable.  Use it throughout in place
 	of ggc.h.
 	

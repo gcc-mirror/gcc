@@ -5237,7 +5237,7 @@ mark_used (decl)
       && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
       && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	  || (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))))
-    instantiate_decl (decl);
+    instantiate_decl (decl, /*defer_ok=*/1);
 }
 
 /* Helper function for named_class_head_sans_basetype nonterminal.  We
