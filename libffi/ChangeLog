@@ -6,7 +6,7 @@
 	* configure.in: Read configure.host.
 	* configure.host: New file.  frv-elf needs libgloss.
 	* include/ffi.h.in: Force ffi_closure to have a nice big (8)
-	alignment.  This is needed to frv and should harm the others.
+	alignment.  This is needed to frv and shouldn't harm the others.
 	* include/ffi_common.h (ALIGN_DOWN): New macro.
 	* src/frv/ffi.c, src/frv/ffitarget.h, src/frv/eabi.S: New files.
 
