@@ -70,3 +70,30 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_PROFILING_NEEDS_GP
 
 #undef ASM_FINAL_SPEC
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function. 
+
+   This differs from the standard version in that:
+
+   We do not initialize the "hint" field because it is not the case
+   that the target is in range of something on the stack.  We save
+   a bogus branch-prediction cache line load by not setting "hint".
+
+   Linux always has an executable stack -- no need for a system call.
+ */
+
+#undef INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                       \
+{                                                                       \
+  rtx _addr;                                             		\
+                                                                        \
+  _addr = memory_address (Pmode, plus_constant ((TRAMP), 16));          \
+  emit_move_insn (gen_rtx (MEM, Pmode, _addr), (FNADDR));               \
+  _addr = memory_address (Pmode, plus_constant ((TRAMP), 24));          \
+  emit_move_insn (gen_rtx (MEM, Pmode, _addr), (CXT));                  \
+                                                                        \
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,                        \
+                      gen_rtvec (1, const0_rtx), 0));                   \
+}
