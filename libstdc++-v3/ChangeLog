@@ -1,3 +1,10 @@
+2003-06-02  Richard Kreckel  <Richard.Kreckel@GiNaC.DE>
+
+	PR libstdc++/11062
+	* config/cpu/mips/atomicity.h:  Change __attribute__ ((unused)) to
+	__attribute__ ((__unused__)).
+	* config/os/aix/atomicity.h:  Likewise.
+
 2003-05-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/os/hpux/os_defines.h: Define _LIBUNWIND_STD_ABI if we are
