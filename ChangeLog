@@ -3,6 +3,24 @@
 	* configure.in (baseargs): Don't remove first configure argument.
 	* configure: Regenerated.
 
+2002-12-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.tpl (local-distclean): Don't remove...
+	(multilib.ts): ... this.  Moved into...
+	(multilib.out): ... this.  Don't use sub-make.
+	($(BUILD_SUBDIR)/[+module+]/Makefile, [+module+]/Makefile,
+	$(TARGET_SUBDIR)/[+module+]/Makefile, gcc/Makefile): Moved into...
+	(configure-build-[+module+], configure-[+module+],
+	configure-target-[+module+], configure-gcc): ... these.  Test
+	for Makefile existence.  Drop config.status from dependencies.
+	* Makefile.in: Rebuilt.
+	* configure.in: Move gcc-version-trigger to the end of
+	ac_configure_args.  Add comments to maybedep.tmp and
+	serdep.tmp.  Introduce --disable-serial-configure.  Remove
+	nonopt from baseargs, matching and removing corresponding
+	whitespace while at it.
+	* configure: Rebuilt.
+
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (host_configargs): Replace reference to
