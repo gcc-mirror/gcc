@@ -1570,7 +1570,7 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, non-const arg
   sed -e 's@atof(\([ 	]*char[ 	]*\*[^)]*\))@atof(const \1)@' \
-      -e 's@inline int abs(int [a-z][a-z]*) {.*}@@' \
+      -e 's@inline int abs(int [a-z][a-z]*) {.*}@extern "C" int abs(int);@' \
       -e 's@inline double abs(double [a-z][a-z]*) {.*}@@' \
       -e 's@inline int sqr(int [a-z][a-z]*) {.*}@@' \
       -e 's@inline double sqr(double [a-z][a-z]*) {.*}@@' \
