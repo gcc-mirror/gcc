@@ -1,3 +1,7 @@
+2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Export all _S_construct.
+
 2002-11-13  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/7445
