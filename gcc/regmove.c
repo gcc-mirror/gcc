@@ -1,6 +1,6 @@
 /* Move registers around to reduce number of move instructions needed.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1505,6 +1505,17 @@ find_matches (insn, matchp)
   int op_no;
   int any_matches = 0;
 
+  if (GET_CODE (insn) == CALL_INSN
+      && CALL_INSN_FUNCTION_USAGE (insn))
+    {
+      rtx usage;
+
+      for (usage = CALL_INSN_FUNCTION_USAGE (insn);
+	   usage;
+	   usage = XEXP (usage, 1))
+	find_related (&XEXP (usage, 0), insn, luid, call_tally);
+    }
+
   extract_insn (insn);
   if (! constrain_operands (0))
     return 0;
@@ -1569,6 +1580,45 @@ find_matches (insn, matchp)
 	  }
     }
   return any_matches;
+}
+
+/* Try to replace all occurrences of DST_REG with SRC in LOC, that is
+   assumed to be in INSN.  */
+
+static void
+replace_in_call_usage (loc, dst_reg, src, insn)
+     rtx *loc;
+     int dst_reg;
+     rtx src;
+     rtx insn;
+{
+  rtx x = *loc;
+  enum rtx_code code;
+  const char *fmt;
+  int i, j;
+
+  if (! x)
+    return;
+  
+  code = GET_CODE (x);
+  if (code == REG)
+    {
+      if (REGNO (x) != dst_reg)
+	return;
+	
+      validate_change (insn, loc, src, 1);
+
+      return;
+    }
+  
+  /* Process each of our operands recursively.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
+    if (*fmt == 'e')
+      replace_in_call_usage (&XEXP (x, i), dst_reg, src, insn);
+    else if (*fmt == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	replace_in_call_usage (& XVECEXP (x, i, j), dst_reg, src, insn);
 }
 
 /* Try to replace output operand DST in SET, with input operand SRC.  SET is
@@ -1643,6 +1693,10 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 
   for (length = s_length = 0, p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
+      if (GET_CODE (p) == CALL_INSN)
+	replace_in_call_usage (& CALL_INSN_FUNCTION_USAGE (p),
+			       REGNO (dst), src, p);
+	  
       /* ??? We can't scan past the end of a basic block without updating
 	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
       if (perhaps_ends_bb_p (p))
