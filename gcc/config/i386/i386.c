@@ -1058,7 +1058,12 @@ print_operand (file, x, code)
 	  break;
 
 	default:
-	  abort ();
+	  {
+	    char str[50];
+
+	    sprintf (str, "invalid operand code `%c'", code);
+	    output_operand_lossage (str);
+	  }
 	}
     }
   if (GET_CODE (x) == REG)
