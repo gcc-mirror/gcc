@@ -3,15 +3,19 @@ extern "C" void abort();
 template <class T>
 void f(T)
 {
+  int j;
+
+  j = 6;
+
   struct S {
     int i;
   };
 
   S s;
 
-  s.i = 3;
+  s.i = j;
 
-  if (s.i != 3)
+  if (s.i != 6)
     abort();
 }
 
