@@ -1,7 +1,36 @@
 1998-07-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c: Incorporate changes from GCC version not present in
-	the libiberty version.
+	the libiberty version:
+	(string): Move definition before work_stuff.
+	(work_stuff): Add volatile_type, forgetting_types,
+	previous_argument, and nrepeats fields.
+	(SCOPE_STRING): New macro.
+	(demangle_template): Add `remember' parameter.  Add comment.
+	Register the `B' code type here, if remembering.  Tidy.  Fix crash
+	on NULL tmpl_argvec.  Be consistent with use of tname/trawname.
+	(demangle_nested_args): New function.
+	(internal_cplus_demangle): Handle volatile-qualified member
+	functions. 
+	(mop_up): Delete the previous_argument string if present.
+	(demangle_signature): Tidy.  Handle volatile-qualified member
+	functions.  Handle back-references using the `B' code.  Use extra
+	parameter to demangle_template and SCOPE_STRING where appropriate.
+	(demangle_template_value_parm): Fix thinko; 'B' is not an integral
+	code. 
+	(demangle_class): Use SCOPE_STRING.
+	(gnu_special): Pass additional argument to demangle_template.
+	Use SCOPE_STRING.
+	(demangle_qualified): Save qualified types for later
+	back-references.  Handle constructors and destructors for template
+	types correctly.
+	(do_type): Tidy.  Use SCOPE_STRING.  Pass extra argument to
+	demangle_template.  Use demangled_nested_args.  Don't remember
+	qualified types here; that's now done in demangle_qualified.
+	Similarly for templates.
+	(do_arg): Improve commment.  Handle 'n' repeat code.
+	(remember_type): Check forgetting_types.
+	(demangle_args): Deal with 'n' repeat codes.  Tidy.
 
 Sat May 30 22:17:13 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
