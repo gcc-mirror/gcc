@@ -10475,9 +10475,10 @@ mode and not take the performance hit of @samp{-ffloat-store}.  On x86
 and m68k GNU systems you can do this with a technique similar to that
 for turning on floating-point exceptions
 (@pxref{Floating-point Exception Handling}).
-The control word could be set to double precision by
-replacing the @code{__setfpucw} call or the @code{_FPU_SETCW} macro with one like this:
+The control word could be set to double precision by some code like this
+one:
 @smallexample
+#include <fpu_control.h>
 @{
   fpu_control_t cw = (_FPU_DEFAULT & ~_FPU_EXTENDED) | _FPU_DOUBLE;
   _FPU_SETCW(cw);
@@ -12150,17 +12151,17 @@ Most systems provide some C-callable mechanism to change this; this can
 be invoked at startup using @code{gcc}'s @code{constructor} attribute.
 For example, just compiling and linking the following C code with your
 program will turn on exception trapping for the ``common'' exceptions
-on an x86-based GNU system:
+on a GNU system using glibc 2.2 or newer:
 
 @smallexample
-#include <fpu_control.h>
+#define _GNU_SOURCE 1
+#include <fenv.h>
 static void __attribute__ ((constructor))
 trapfpe ()
 @{
-  fpu_control_t cw =
-    _FPU_DEFAULT &
-    ~(_FPU_MASK_IM | _FPU_MASK_ZM | _FPU_MASK_OM);
-  _FPU_SETCW(cw);
+  /* Enable some exceptions.  At startup all exceptions are masked.  */
+  
+  feenableexcept (FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
 @}
 @end smallexample
 

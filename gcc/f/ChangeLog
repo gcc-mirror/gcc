@@ -1,3 +1,9 @@
+2000-11-21  Andreas Jaeger  <aj@suse.de>
+
+	* g77.texi (Floating-point Exception Handling): Use feenableexcept
+	in example.
+	(Floating-point precision): Change to match above change.
+
 Sun Nov 19 17:29:22 2000  Matthias Klose  <doko@marvin.itso-berlin.de>
 
         * g77.texi (Floating-point precision): Adjust example
