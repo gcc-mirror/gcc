@@ -1,3 +1,8 @@
+1999-06-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* init.c (build_new_1): Look up operator delete even if there was
+	no explicit new placement.
+
 1999-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	* except.c (complete_ptr_ref_or_void_ptr_p): New function, broken out
