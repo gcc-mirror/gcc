@@ -107,6 +107,20 @@ char *pz_src_dir = NULL;
 char *pz_machine = NULL;
 int find_base_len = 0;
 
+typedef enum {
+  VERB_SILENT = 0,
+  VERB_FIXES,
+  VERB_APPLIES,
+  VERB_PROGRESS,
+  VERB_TESTS,
+  VERB_EVERYTHING
+} te_verbose;
+
+te_verbose  verbose_level = VERB_PROGRESS;
+
+#define VLEVEL(l)  (verbose_level >= l)
+#define NOT_SILENT VLEVEL(VERB_FIXES)
+
 pid_t process_chain_head = (pid_t) -1;
 
 char*  pz_curr_file;  /*  name of the current file under test/fix  */
@@ -258,7 +272,7 @@ main (argc, argv)
     } /*  for (;;) */
 
 #ifdef DO_STATS
-  {
+  if (VLEVEL( VERB_PROGRESS )) {
     tSCC zFmt[] =
       "\
 Processed %5d files containing %d bytes    \n\
@@ -330,6 +344,42 @@ initialize ()
   }
 
   {
+    static const char var[] = "VERBOSE";
+    char* pz = getenv (var);
+    if (pz != (char *) NULL)
+      {
+        if (isdigit( *pz ))
+          verbose_level = (te_verbose)atoi( pz );
+        else
+          switch (*pz) {
+          case 's':
+          case 'S':
+            verbose_level = VERB_SILENT;     break;
+
+          case 'f':
+          case 'F':
+            verbose_level = VERB_FIXES;      break;
+
+          case 'a':
+          case 'A':
+            verbose_level = VERB_APPLIES;    break;
+
+          case 'p':
+          case 'P':
+            verbose_level = VERB_PROGRESS;   break;
+
+          case 't':
+          case 'T':
+            verbose_level = VERB_TESTS;      break;
+
+          case 'e':
+          case 'E':
+            verbose_level = VERB_EVERYTHING; break;
+          }
+      }
+  }
+
+  {
     static const char var[] = "FIND_BASE";
     char *pz = getenv (var);
     if (pz == (char *) NULL)
@@ -383,14 +433,16 @@ wait_for_pid(child)
       {
         if (! WIFEXITED( status ))
           {
-            fprintf (stderr, "child process %d is hung on signal %d\n",
-                     child, WSTOPSIG( status ));
+            if (NOT_SILENT)
+              fprintf (stderr, "child process %d is hung on signal %d\n",
+                       child, WSTOPSIG( status ));
             exit (EXIT_FAILURE);
           }
         if (WEXITSTATUS( status ) != 0)
           {
-            fprintf (stderr, "child process %d exited with status %d\n",
-                     child, WEXITSTATUS( status ));
+            if (NOT_SILENT)
+              fprintf (stderr, "child process %d exited with status %d\n",
+                       child, WEXITSTATUS( status ));
             exit (EXIT_FAILURE);
           }
         break; /* normal child completion */
@@ -407,8 +459,9 @@ wait_for_pid(child)
           break;
 
         default:
-          fprintf (stderr, "Error %d (%s) waiting for %d to finish\n",
-                   errno, strerror( errno ), child );
+          if (NOT_SILENT)
+            fprintf (stderr, "Error %d (%s) waiting for %d to finish\n",
+                     errno, strerror( errno ), child );
           /* FALLTHROUGH */
 
         case ECHILD: /* no children to wait for?? */
@@ -434,8 +487,9 @@ load_file ( fname )
 
   if (stat (fname, &stbf) != 0)
     {
-      fprintf (stderr, "error %d (%s) stat-ing %s\n",
-               errno, strerror (errno), fname );
+      if (NOT_SILENT)
+        fprintf (stderr, "error %d (%s) stat-ing %s\n",
+                 errno, strerror (errno), fname );
       return (char *) NULL;
     }
   if (stbf.st_size == 0)
@@ -447,8 +501,9 @@ load_file ( fname )
 
   if (data_map_fd < 0)
     {
-      fprintf (stderr, "error %d (%s) opening %s for read\n",
-               errno, strerror (errno), fname);
+      if (NOT_SILENT)
+        fprintf (stderr, "error %d (%s) opening %s for read\n",
+                 errno, strerror (errno), fname);
       return (char*)NULL;
     }
 
@@ -691,7 +746,8 @@ create_file ()
                errno, strerror (errno), fname);
       exit (EXIT_FAILURE);
     }
-  fprintf (stderr, "Fixed:  %s\n", pz_curr_file);
+  if (NOT_SILENT)
+    fprintf (stderr, "Fixed:  %s\n", pz_curr_file);
   pf = fdopen (fd, "w");
 
 #ifdef LATER
@@ -837,7 +893,8 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
   char *pz_dir_end = strrchr (pz_fixed_file, '/');
   char *pz_incl_quot = pz_data;
 
-  fprintf (stderr, "Quoted includes in %s\n", pz_fixed_file);
+  if (VLEVEL( VERB_APPLIES ))
+    fprintf (stderr, "Quoted includes in %s\n", pz_fixed_file);
 
   /*  Set "pz_fixed_file" to point to the containing subdirectory of the source
       If there is none, then it is in our current directory, ".".   */
@@ -1000,6 +1057,12 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
       p_fixd->patch_args[2] = pz_cmd;
     }
 
+  /*  Start a fix process, handing off the  previous read fd for its
+      stdin and getting a new fd that reads from the fix process' stdout.
+      We normally will not loop, but we will up to 10 times if we keep
+      getting "EAGAIN" errors.
+
+      */
   for (;;)
     {
       static int failCt = 0;
@@ -1024,6 +1087,8 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
       sleep (1);
     }
 
+  /*  IF we allocated a shell script command,
+      THEN free it and restore the command format to the fix description */
   if (pz_cmd != (char*)NULL)
     {
       free ((void*)pz_cmd);
@@ -1044,6 +1109,9 @@ t_bool
 fix_applies (p_fixd)
   tFixDesc *p_fixd;
 {
+#ifdef DEBUG
+  static const char z_failed[] = "not applying %s to %s - test %d failed\n";
+#endif
   int test_ct;
   tTestDesc *p_test;
 
@@ -1068,8 +1136,14 @@ fix_applies (p_fixd)
           pz_scan = strstr (pz_scan + 1, pz_fname);
           /*  IF we can't match the string at all,
               THEN bail  */
-          if (pz_scan == (char *) NULL)
+          if (pz_scan == (char *) NULL) {
+#ifdef DEBUG
+            if (VLEVEL( VERB_EVERYTHING ))
+              fprintf (stderr, "file %s not in list for %s\n",
+                       pz_fname, p_fixd->fix_name );
+#endif
             return BOOL_FALSE;
+          }
 
           /*  IF the match is surrounded by the '|' markers,
               THEN we found a full match -- time to run the tests  */
@@ -1089,25 +1163,49 @@ fix_applies (p_fixd)
       switch (p_test->type)
         {
         case TT_TEST:
-          if (test_test (p_test, pz_curr_file) != APPLY_FIX)
+          if (test_test (p_test, pz_curr_file) != APPLY_FIX) {
+#ifdef DEBUG
+            if (VLEVEL( VERB_EVERYTHING ))
+              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
+                       p_fixd->test_ct - test_ct);
+#endif
             return BOOL_FALSE;
+          }
           break;
 
         case TT_EGREP:
-          if (egrep_test (pz_curr_data, p_test) != APPLY_FIX)
+          if (egrep_test (pz_curr_data, p_test) != APPLY_FIX) {
+#ifdef DEBUG
+            if (VLEVEL( VERB_EVERYTHING ))
+              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
+                       p_fixd->test_ct - test_ct);
+#endif
             return BOOL_FALSE;
+          }
           break;
 
         case TT_NEGREP:
-          if (egrep_test (pz_curr_data, p_test) == APPLY_FIX)
+          if (egrep_test (pz_curr_data, p_test) == APPLY_FIX) {
+#ifdef DEBUG
+            if (VLEVEL( VERB_EVERYTHING ))
+              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
+                       p_fixd->test_ct - test_ct);
+#endif
             /*  Negated sense  */
             return BOOL_FALSE;
+          }
           break;
 
         case TT_FUNCTION:
           if (run_test (p_test->pz_test_text, pz_curr_file, pz_curr_data)
-              != APPLY_FIX)
+              != APPLY_FIX) {
+#ifdef DEBUG
+            if (VLEVEL( VERB_EVERYTHING ))
+              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
+                       p_fixd->test_ct - test_ct);
+#endif
             return BOOL_FALSE;
+          }
           break;
         }
     }
@@ -1241,7 +1339,8 @@ process ()
 #ifdef DO_STATS
   process_ct++;
 #endif
-  fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
+  if (VLEVEL( VERB_PROGRESS ))
+    fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
   if (strstr (pz_curr_data, gnu_lib_mark) != (char *) NULL)
     {
       UNLOAD_DATA();
@@ -1256,8 +1355,9 @@ process ()
       if (! fix_applies (p_fixd))
         continue;
 
-      fprintf (stderr, "Applying %-24s to %s\n",
-               p_fixd->fix_name, pz_curr_file);
+      if (VLEVEL( VERB_APPLIES ))
+        fprintf (stderr, "Applying %-24s to %s\n",
+                 p_fixd->fix_name, pz_curr_file);
 
       if (p_fixd->fd_flags & FD_REPLACEMENT)
         {
