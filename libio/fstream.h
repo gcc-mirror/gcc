@@ -1,5 +1,5 @@
 /* This is part of libio/iostream, providing -*- C++ -*- input/output.
-Copyright (C) 1993 Free Software Foundation
+Copyright (C) 1993, 2000 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -62,9 +62,9 @@ class ifstream : public fstreambase, public istream {
     ifstream(int fd) : fstreambase(fd) { }
     ifstream(int fd, char *p, int l) : fstreambase(fd, p, l) { } /*Deprecated*/
     ifstream(const char *name, int mode=ios::in, int prot=0664)
-	: fstreambase(name, mode, prot) { }
+	: fstreambase(name, mode | ios::in, prot) { }
     void open(const char *name, int mode=ios::in, int prot=0664)
-	{ fstreambase::open(name, mode, prot); }
+	{ fstreambase::open(name, mode | ios::in, prot); }
 };
 
 class ofstream : public fstreambase, public ostream {
@@ -73,9 +73,9 @@ class ofstream : public fstreambase, public ostream {
     ofstream(int fd) : fstreambase(fd) { }
     ofstream(int fd, char *p, int l) : fstreambase(fd, p, l) { } /*Deprecated*/
     ofstream(const char *name, int mode=ios::out, int prot=0664)
-	: fstreambase(name, mode, prot) { }
+	: fstreambase(name, mode | ios::out, prot) { }
     void open(const char *name, int mode=ios::out, int prot=0664)
-	{ fstreambase::open(name, mode, prot); }
+	{ fstreambase::open(name, mode | ios::out, prot); }
 };
 
 class fstream : public fstreambase, public iostream {
