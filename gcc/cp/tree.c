@@ -42,7 +42,6 @@ static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
 static cp_lvalue_kind lvalue_p_1 (tree, int);
-static tree no_linkage_helper (tree *, int *, void *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
 static tree cp_unsave_r (tree *, int *, void *);
 static tree build_target_expr (tree, tree);
@@ -1068,38 +1067,69 @@ find_tree (tree t, tree x)
   return walk_tree_without_duplicates (&t, find_tree_r, x);
 }
 
-/* Passed to walk_tree.  Checks for the use of types with no linkage.  */
-
-static tree
-no_linkage_helper (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		   void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (TYPE_P (t)
-      && (CLASS_TYPE_P (t) || TREE_CODE (t) == ENUMERAL_TYPE)
-      && (decl_function_context (TYPE_MAIN_DECL (t))
-	  || TYPE_ANONYMOUS_P (t)))
-    return t;
-
-  return NULL_TREE;
-}
-
 /* Check if the type T depends on a type with no linkage and if so, return
    it.  */
 
 tree
 no_linkage_check (tree t)
 {
+  tree r;
+
   /* There's no point in checking linkage on template functions; we
      can't know their complete types.  */
   if (processing_template_decl)
     return NULL_TREE;
 
-  t = walk_tree_without_duplicates (&t, no_linkage_helper, NULL);
-  if (t != error_mark_node)
-    return t;
-  return NULL_TREE;
+  switch (TREE_CODE (t))
+    {
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	goto ptrmem;
+      /* Fall through.  */
+    case UNION_TYPE:
+      if (!CLASS_TYPE_P (t))
+	return NULL_TREE;
+      /* Fall through.  */
+    case ENUMERAL_TYPE:
+      if (decl_function_context (TYPE_MAIN_DECL (t))
+	  || TYPE_ANONYMOUS_P (t))
+	return t;
+      return NULL_TREE;
+
+    case ARRAY_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      return no_linkage_check (TREE_TYPE (t));
+
+    case OFFSET_TYPE:
+    ptrmem:
+      r = no_linkage_check (TYPE_PTRMEM_POINTED_TO_TYPE (t));
+      if (r)
+	return r;
+      return no_linkage_check (TYPE_PTRMEM_CLASS_TYPE (t));
+
+    case METHOD_TYPE:
+      r = no_linkage_check (TYPE_METHOD_BASETYPE (t));
+      if (r)
+	return r;
+      /* Fall through.  */
+    case FUNCTION_TYPE:
+      {
+	tree parm;
+	for (parm = TYPE_ARG_TYPES (t); 
+	     parm && parm != void_list_node; 
+	     parm = TREE_CHAIN (parm))
+	  {
+	    r = no_linkage_check (TREE_VALUE (parm));
+	    if (r)
+	      return r;
+	  }
+	return no_linkage_check (TREE_TYPE (t));
+      }
+
+    default:
+      return NULL_TREE;
+    }
 }
 
 #ifdef GATHER_STATISTICS
