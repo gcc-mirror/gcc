@@ -1,4 +1,14 @@
-2000-01-03  Graham Stott  <grahams@redhat.com>
+2002-01-03  Graham Stott  <grahams@redhat.com>
+
+	* mkconfig.sh: Output to config.h, hconfig.h and tconfig.h
+	forward defs for struct tags rtx_def, union_tree, rtvec_def
+	also output corresponding typedefs for rtxm, tree, and rtvcec.
+
+	* system.h: Move forward defs for struct tags rtx_def, union_tree,
+	rtvec_def along with corresponding typedefs for rtx, tree, and
+	rtvcec to config.h, hconfig.h, tconfig.h
+
+2002-01-03  Graham Stott  <grahams@redhat.com>
 
 	* tree.h: Update copyright date.
 	(IS_EXPR_CODE_CLASS): Add parenthesis.

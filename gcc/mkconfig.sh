@@ -35,6 +35,27 @@ if [ -n "$HEADERS" ]; then
     esac
 fi
 
+# Provide three core typedefs used by everything, if we are compiling
+# GCC.  These used to be found in rtl.h and tree.h, but this is no
+# longer practical. Providing these in config.h/tconfig.h/hconfig.h
+# rather than system.h allows the typedefs to be used anywhere in GCC.
+case $output in 
+    *config.h | *hconfig.h | *tconfig.h)
+        echo "#ifdef IN_GCC"
+        echo "/* Provide three core typedefs used by everything, if we are compiling"
+        echo "   GCC.  These used to be found in rtl.h and tree.h, but this is no"
+        echo "   longer practical.  Providing these here rather that system.h allows"
+        echo "   the typedefs to be used everywhere within GCC. */"
+        echo "struct rtx_def;"
+        echo "typedef struct rtx_def *rtx;"
+        echo "struct rtvec_def;"
+        echo "typedef struct rtvec_def *rtvec;"
+        echo "union tree_node;"
+        echo "typedef union tree_node *tree;"
+        echo "#endif"
+        ;;
+esac
+
 if [ -n "$HEADERS" ]; then
     echo '#ifdef IN_GCC'
     for file in $HEADERS; do
