@@ -1272,7 +1272,7 @@ do { char dstr[30];					\
    should be a C expression to be executed when #pragma is seen.  The
    argument STREAM is the stdio input stream from which the source
    text can be read.  CH is the first character after the #pragma.  The
-   result of the expressionsis the terminating character found
+   result of the expression is the terminating character found
    (newline or EOF).  */
 #define HANDLE_PRAGMA(FILE, CH) handle_pragma (FILE, CH)
 
