@@ -1,3 +1,7 @@
+Wed Mar 10 02:49:04 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* configure.in: Remove init_priority stuff.
+
 1999-03-11  Colin Smith <colin@wrs.com>
 
 	* sdbout.c (plain_type_1): Make boolean types work better with sdb.
@@ -735,8 +739,6 @@ Thu Feb 25 21:32:34 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* fixinc.wrap: Also handle struct queue in sys/stream.h.
 	* fixinc.svr4: Likewise.
-
-Thu Feb 25 21:23:06 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (scope_die_for): Set scope_die to comp_unit_die
 	rather than asserting it.
