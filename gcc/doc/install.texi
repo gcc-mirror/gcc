@@ -460,6 +460,43 @@ any in that directory---are not part of GCC@.  They are part of other
 programs---perhaps many others.  (GCC installs its own header files in
 another directory which is based on the @option{--prefix} value.)
 
+Both the local-prefix include directory and the GCC-prefix include
+directory are part of GCC's "system include" directories.  Although these
+two directories are not fixed, they need to be searched in the proper
+order for the correct processing of the include_next directive.  The
+local-prefix include directory is searched before the GCC-prefix
+include directory.  Another characteristic of system include directories
+is that pedantic warnings are turned off for headers in these directories.
+
+Some autoconf macros add @option{-I @var{directory}} options to the
+compiler command line, to ensure that directories containing installed
+packages' headers are searched.  When @var{directory} is one of GCC's
+system include directories, GCC will ignore the option so that system
+directories continue to be processed in the correct order.  This
+may result in a search order different from what was specified but the
+directory will still be searched.
+
+GCC automatically searches for ordinary libraries using
+@env{GCC_EXEC_PREFIX}.  Thus, when the same installation prefix is
+used for both GCC and packages, GCC will automatically search for
+both headers and libraries.  This provides a configuration that is
+easy to use.  GCC behaves in a manner similar to that when it is
+installed as a system compiler in @file{/usr}.
+
+Sites that need to install multiple versions of GCC may not want to
+use the above simple configuration.  It is possible to use the
+@option{--program-prefix}, @option{--program-suffix} and
+@option{--program-transform-name} options to install multiple versions
+into a single directory, but it may be simpler to use different prefixes
+and the @option{--with-local-prefix} option to specify the location of the
+site-specific files for each version.  It will then be necessary for
+users to specify explicitly the location of local site libraries
+(e.g., with @env{LIBRARY_PATH}).
+
+The same value can be used for both @option{--with-local-prefix} and
+@option{--prefix} provided it is not @file{/usr}.  This can be used
+to avoid the default search of @file{/usr/local/include}.
+
 @strong{Do not} specify @file{/usr} as the @option{--with-local-prefix}!
 The directory you use for @option{--with-local-prefix} @strong{must not}
 contain any of the system's standard header files.  If it did contain
