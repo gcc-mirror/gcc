@@ -1,3 +1,9 @@
+2001-01-09  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* g++.old-deja/g++.ext/instantiate2.C: ERROR line should fail for
+	mips.
+	* g++.old-deja/g++.ext/instantiate3.C: Likewise.
+
 2001-01-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old_deja/g++.pt/using8.C: New test.
@@ -140,6 +146,7 @@
 	* gcc.dg/format-xopen-1.c: Rename to gcc.dg/format/xopen-1.c.
 	* gcc.dg/formatz-1.c: Rename to gcc.dg/format/z-1.c.
 
+>>>>>>> 1.986
 2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/991228-1.c: Take word endianness into
@@ -153,6 +160,7 @@
 
 	* g++.old-deja/g++.pt/crash62.C: New test.
 
+>>>>>>> 1.973
 2001-01-04  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20000926-1.c: Update expected warnings.

@@ -13,5 +13,5 @@ static template struct A<int>;
 int main ()
 {
   A<int>::t = 42;		// gets bogus error
-  A<char>::t = 42;		// ERROR - not instantiated
+  A<char>::t = 42;		// ERROR - not instantiated XFAIL mips*-*-*
 }

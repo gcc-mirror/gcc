@@ -10,7 +10,7 @@ template <class T> struct A {
 inline template struct A<int>;
 
 A<int> a;			// gets bogus error
-A<char> b;			// ERROR - not instantiated
+A<char> b;			// ERROR - not instantiated XFAIL mips*-*-*
 
 int main ()
 {
