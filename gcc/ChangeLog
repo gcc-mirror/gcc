@@ -1,3 +1,10 @@
+2003-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/12546
+	* doc/install.texi: Document that zsh does not work when 
+	configuring gcc.
+
+
 2003-10-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/ptx4.h: Switch to DWARF 2; update comments.
