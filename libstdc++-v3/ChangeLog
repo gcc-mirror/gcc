@@ -1,3 +1,11 @@
+2001-06-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/indirect_array.h (indirect_array<>::operator=):
+	Make copy and assignment operator public.  Implement.  Format.
+
+	* include/bits/valarray_array.h (__valarray_copy): Add overloads
+	for copy between index arrays.  Format.
+
 2001-06-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* mknumeric_limits: Add static definitions, format.
