@@ -1961,7 +1961,6 @@ output_block_move (insn, operands, num_regs, move_type)
   int use_lwl_lwr	= FALSE;
   int last_operand	= num_regs+4;
   int i;
-  int j;
   rtx xoperands[10];
 
   struct {
@@ -1981,15 +1980,7 @@ output_block_move (insn, operands, num_regs, move_type)
       if (reg_mentioned_p (operands[i], operands[0])
 	  || reg_mentioned_p (operands[i], operands[1]))
 	{
-	  error ("register $%d passed as address and temp register to block move",
-		   REGNO (operands[i]));
-
-	  for (j = i+1; j < last_operand; j++)
-	    operands[j-1] = operands[j];
-
-	  operands[--last_operand] = (rtx)0;
-	  if (--num_regs == 0)
-	    abort ();
+	  abort_with_insn (insn, "register passed as address and temp register to block move");
 	}
     }
 
