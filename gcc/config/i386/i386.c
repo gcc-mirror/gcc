@@ -16198,11 +16198,21 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
     case V4HImode:
       if (!mmx_ok)
 	return false;
-      val = gen_lowpart (SImode, val);
-      x = gen_rtx_TRUNCATE (HImode, val);
-      x = gen_rtx_VEC_DUPLICATE (mode, x);
-      emit_insn (gen_rtx_SET (VOIDmode, target, x));
-      return true;
+      if (TARGET_SSE || TARGET_3DNOW_A)
+	{
+	  val = gen_lowpart (SImode, val);
+	  x = gen_rtx_TRUNCATE (HImode, val);
+	  x = gen_rtx_VEC_DUPLICATE (mode, x);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	  return true;
+	}
+      else
+	{
+	  smode = HImode;
+	  wsmode = SImode;
+	  wvmode = V2SImode;
+	  goto widen;
+	}
 
     case V8QImode:
       if (!mmx_ok)

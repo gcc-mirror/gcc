@@ -1111,7 +1111,7 @@
 	(vec_duplicate:V4HI
 	  (truncate:HI
 	    (match_operand:SI 1 "register_operand" "0"))))]
-  "TARGET_MMX"
+  "TARGET_SSE || TARGET_3DNOW_A"
   "pshufw\t{$0, %0, %0|%0, %0, 0}"
   [(set_attr "type" "mmxcvt")
    (set_attr "mode" "DI")])
