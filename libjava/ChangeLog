@@ -1,5 +1,7 @@
 2002-11-25  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (type::compatible): Backed out broken change.
+
 	* verify.cc (type::compatible): Check initialization status
 	first.
 	* interpret.cc (run) [insn_invokespecial, invokespecial_resolved]:
