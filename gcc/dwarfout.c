@@ -2986,6 +2986,28 @@ member_declared_type (member)
 	   : TREE_TYPE (member);
 }
 
+/* Get the function's label, as described by its RTL.
+   This may be different from the DECL_NAME name used
+   in the source file.  */
+
+static char *
+function_start_label (decl)
+    register tree decl;
+{
+  rtx x;
+  char *fnname;
+
+  x = DECL_RTL (decl);
+  if (GET_CODE (x) != MEM)
+    abort ();
+  x = XEXP (x, 0);
+  if (GET_CODE (x) != SYMBOL_REF)
+	       abort ();
+  fnname = XSTR (x, 0);
+  return fnname;
+}
+
+
 /******************************* DIEs ************************************/
 
 /* Output routines for individual types of DIEs.  */
@@ -3055,7 +3077,7 @@ output_entry_point_die (arg)
   if (DECL_ABSTRACT (decl))
     equate_decl_number_to_die_number (decl);
   else
-    low_pc_attribute (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+    low_pc_attribute (function_start_label (decl));
 }
 #endif
 
@@ -3214,7 +3236,7 @@ output_global_subroutine_die (arg)
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-	  low_pc_attribute (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	  low_pc_attribute (function_start_label (decl));
 	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
 	  high_pc_attribute (label);
 	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
@@ -3557,22 +3579,7 @@ output_local_subroutine_die (arg)
       if (TREE_ASM_WRITTEN (decl))
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-	  rtx x;
-	  char *fnname;
-
-	  /* Get the function's name, as described by its RTL.
-	     This may be different from the DECL_NAME name used
-             in the source file.  */
-
-	  x = DECL_RTL (decl);
-	  if (GET_CODE (x) != MEM)
-	    abort ();
-	  x = XEXP (x, 0);
-	  if (GET_CODE (x) != SYMBOL_REF)
-	    abort ();
-	  fnname = XSTR (x, 0);
-
-	  low_pc_attribute (fnname);
+	  low_pc_attribute (function_start_label (decl));
 	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
 	  high_pc_attribute (label);
 	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
