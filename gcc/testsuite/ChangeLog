@@ -1,3 +1,9 @@
+2005-03-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/20635
+	* compile/gcc.c-torture/compile/20050328-1.c: New testcase made
+	by Jakub Jelinek.
+
 2005-03-27  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/20626

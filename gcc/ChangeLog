@@ -1,5 +1,9 @@
 2005-03-28  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/20635
+	* varasm.c (mark_decl_referenced): Do not mark extern inline functions
+	as needed.
+
 	* tree-inline.c (estimate_num_insns_1): Use declaration to discover argument
 	types where possible.
 
