@@ -1,3 +1,8 @@
+2001-10-09  Danny Smith  <danny_r_smith_2001@yahoo.co.nz>
+
+	* config/i386/i386.c (ix86_attribute_table): Correct 
+	min_len, max_len fields for dllimport, dllexport and shared.
+
 2001-10-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/cppinternals.texi, doc/extend.texi,
