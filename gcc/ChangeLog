@@ -1,5 +1,7 @@
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (try_combine): Allow split to create a single insn.
+
 	* machmode.def: Add BImode.  Add a column for bitsize.
 	* machmode.h (DEF_MACHMODE): Adjust for extra column.
 	(GET_MODE_BITSIZE): Use it.
