@@ -1,3 +1,12 @@
+Tue May  5 01:28:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.def: Add NAMESPACE_DECL.
+	* dwarfout.c (type_ok_for_scope): Ignore NAMESPACE_DECLs for now.
+	* dwarf2out.c (push_decl_scope): Likewise.
+	(scope_die_for): Likewise.
+	* tree.c (decl_function_context): Use TREE_CODE_CLASS to determine
+	how to get next context level.
+
 Tue May  5 01:43:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.c (output_fix_trunc): Add code to emulate non-popping DImode
