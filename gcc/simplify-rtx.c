@@ -1169,10 +1169,10 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && ! side_effects_p (op0))
 	    return op1;
 
-	  /* In IEEE floating point, x*1 is not equivalent to x for nans.
-	     However, ANSI says we can drop signals,
-	     so we can do this anyway.  */
-	  if (trueop1 == CONST1_RTX (mode))
+	  /* In IEEE floating point, x*1 is not equivalent to x for
+	     signalling NaNs.  */
+	  if (!HONOR_SNANS (mode)
+	      && trueop1 == CONST1_RTX (mode))
 	    return op0;
 
 	  /* Convert multiply by constant power of two into shift unless
@@ -2193,12 +2193,12 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 
       /* Convert a == b ? b : a to "a".  */
       if (GET_CODE (op0) == NE && ! side_effects_p (op0)
-	  && (! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+	  && !HONOR_NANS (mode)
 	  && rtx_equal_p (XEXP (op0, 0), op1)
 	  && rtx_equal_p (XEXP (op0, 1), op2))
 	return op1;
       else if (GET_CODE (op0) == EQ && ! side_effects_p (op0)
-	  && (! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+	  && !HONOR_NANS (mode)
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && rtx_equal_p (XEXP (op0, 0), op2))
 	return op2;
