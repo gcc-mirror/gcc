@@ -1,3 +1,8 @@
+2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/security/Security.java
+	(static): Use AccessController.doPrivileged to get system property.
+
 2004-10-18  Sven de Marothy  <sven@physto.se>
 
 	* java/nio/ByteBufferHelper.java
