@@ -2057,6 +2057,8 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	  enum machine_mode cmp_mode = (GET_MODE (XEXP (op0, 0)) == VOIDmode
 					? GET_MODE (XEXP (op0, 1))
 					: GET_MODE (XEXP (op0, 0)));
+	  if (cmp_mode == VOIDmode)
+	    cmp_mode = op0_mode;
 	  rtx temp
 	     = simplify_relational_operation (GET_CODE (op0), cmp_mode,
 					      XEXP (op0, 0), XEXP (op0, 1));
