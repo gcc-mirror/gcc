@@ -1,3 +1,7 @@
+1999-12-27  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/mips/mips.h: Fix typo from 12/17/99 libgcc2 fix.
+
 1999-12-27  Christophe Jaillet  <jaillet.christophe@caramail.com>
 
 	* alias.c (nonlocal_reference_p): Add else for disjoint ifs.
