@@ -1,3 +1,10 @@
+2002-11-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*andorqi3): Use bor between bld and
+	bst.  Update the insn length.
+	(*andorhi3): Likewise.
+	(*andorsi3): Likewise.
+
 2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/sh/sh-protos.h (sh_mark_label): Declare.
