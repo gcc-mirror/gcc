@@ -1026,8 +1026,6 @@ implicitly_declare_fn (kind, type, const_p)
 
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 20000408);
 
-  if (kind != sfk_constructor && kind != sfk_destructor)
-    DECL_ARTIFICIAL (TREE_CHAIN (DECL_ARGUMENTS (fn))) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_THIS_INLINE (fn) = 1;

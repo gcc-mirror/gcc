@@ -1,3 +1,17 @@
+2001-02-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct lang_decl_flags): Remove uninlinable flag.
+	(DECL_UNINLINABLE): Move to middle-end.
+
+	* class.c (clone_function_decl): Set DECL_ABSTRACT on original fn.
+	* decl.c (duplicate_decls): Preserve DECL_ABSTRACT.
+	* class.c (build_clone): Set DECL_ABSTRACT_ORIGIN for the clone.
+	* optimize.c (maybe_clone_body): Set DECL_ABSTRACT_ORIGIN for the
+	parms and outer BLOCK.  note_deferral_of_defined_inline_function.
+
+	* method.c (implicitly_declare_fn): Don't set DECL_ARTIFICIAL on
+	second parm of op=.
+
 2001-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (set_decl_namespace): Allow explicit instantiations in
