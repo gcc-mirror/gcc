@@ -5097,7 +5097,7 @@ init_noncopied_parts (lhs, list)
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
       parts = chainon (parts, init_noncopied_parts (lhs, TREE_VALUE (tail)));
-    else
+    else if (TREE_PURPOSE (tail))
       {
 	tree part = TREE_VALUE (tail);
 	tree part_type = TREE_TYPE (part);
