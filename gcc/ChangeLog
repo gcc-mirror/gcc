@@ -1,3 +1,8 @@
+2003-05-20  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*iordi3_oi"): Do not mark commutative.
+	("*iorsi3_oi"): Likewise.
+
 2003-05-19  John David Anglin  <dave.anglin@nrc-gnrc.gc.ca>
 
 	* pa/milli64.S ($$mulI): Fix typo.
