@@ -1,5 +1,14 @@
 2004-01-12  Zack Weinberg  <zack@codesourcery.com>
 
+	PR 13656
+	* c-decl.c (diagnose_mismatched_decls): Whenever newtype or
+	oldtype is set, set *newtypep or *oldtypep too.  Do not set
+	them at the very end.
+	(validate_proto_after_old_defn): Restructure for comprehensibility;
+	make error messages clearer.
+
+2004-01-12  Zack Weinberg  <zack@codesourcery.com>
+
 	* varray.h (VARRAY_POP): Add checking variant, aborts on underflow.
 	(VARRAY_TOP): Use VARRAY_CHECK so the access is bounds-checked.
 	* varray.c: No need to prototype error.
