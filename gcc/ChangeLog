@@ -1101,7 +1101,7 @@
 
 2004-06-21  J"orn Rennecke <joern.rennecke@superh.com>
 
-	* sh.h (SUPPORT_SH1, SUPPORT_SH2E, SUPPORT_SH4): Conditionanlly define.
+	* sh.h (SUPPORT_SH1, SUPPORT_SH2E, SUPPORT_SH4): Conditionally define.
 	(SUPPORT_SH4_SINGLE): Likewise.
 	(TARGET_SWITCHES): Break out switches for cpu subtargets:
 	(TARGET_SWITCH_SH1, TARGET_SWITCH_SH2, TARGET_SWITCH_SH2E): Define.
