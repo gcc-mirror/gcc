@@ -1962,7 +1962,7 @@ GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
 # Don't use libstdc++-v3's flags to configure/build itself.
 libstdcxx_flags='`test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags --build-includes` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
-raw_libstdcxx_flags=' -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
+raw_libstdcxx_flags='-L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
 
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   if test "x${RAW_CXX_FOR_TARGET+set}" != xset; then
