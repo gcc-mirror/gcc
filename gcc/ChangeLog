@@ -1,3 +1,10 @@
+2004-09-16  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17528
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Do not
+	erase the may-alias set for a tag when merging it with
+	another.
+
 2004-09-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (call): Extend 32-bit addresses to DImode
