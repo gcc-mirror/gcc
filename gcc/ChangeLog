@@ -1,5 +1,9 @@
 2004-11-27  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/12769
+	* config/rs6000/rs6000.c (init_cumulative_args): Set call_cookie
+	from rs6000_default_long_calls for libcalls.
+
 	PR target/18686
 	* config/rs6000/rs6000-c.c (rs6000_pragma_longcall): Use
 	integer_zerop and integer_onep instead of comparing against
