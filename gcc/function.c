@@ -3216,7 +3216,7 @@ assign_parms (fndecl, second_time)
 	      else
 		{
 		  int size = int_size_in_bytes (type);
-		  copy = assign_stack_temp (BLKmode, size, 1);
+		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
 		}
 
 	      store_expr (parm, copy, 0);
