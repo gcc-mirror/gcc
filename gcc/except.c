@@ -1663,6 +1663,9 @@ assign_filter_values ()
   htab_delete (ehspec);
 }
 
+/* Generate the code to actually handle exceptions, which will follow the
+   landing pads.  */
+
 static void
 build_post_landing_pads ()
 {
