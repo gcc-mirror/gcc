@@ -2223,7 +2223,12 @@ dump_alias_info (FILE *file)
   for (i = 1; i < num_ssa_names; i++)
     {
       tree ptr = ssa_name (i);
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      struct ptr_info_def *pi;
+      
+      if (ptr == NULL_TREE)
+	continue;
+
+      pi = SSA_NAME_PTR_INFO (ptr);
       if (!SSA_NAME_IN_FREE_LIST (ptr)
 	  && pi
 	  && pi->name_mem_tag)

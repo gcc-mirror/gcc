@@ -1,3 +1,7 @@
+2004-09-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (dump_alias_info): Ignore NULL SSA_NAMEs.
+
 2004-09-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-into-ssa.c (rewrite_ssa_into_ssa):  Expect ssa_name to return
