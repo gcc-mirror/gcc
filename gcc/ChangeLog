@@ -1,3 +1,8 @@
+2001-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Make --disable-checking the default.
+	* configure: Regenerated.
+
 2001-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert the two previous changes.
