@@ -1,3 +1,8 @@
+2004-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR rtl-optimization/16590
+	* gcse.c (pre_delete): Do not create invalid REG_EQUAL notes.
+
 2004-08-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-ccp.c (ccp_visit_stmt): Remove #if 0 guards.
