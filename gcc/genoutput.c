@@ -530,7 +530,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
       ++num_dups;
-      return;
+      break;
 
     case ADDRESS:
       scan_operands (d, XEXP (part, 0), 1, 0);

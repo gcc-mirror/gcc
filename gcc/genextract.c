@@ -210,12 +210,12 @@ walk_rtx (x, path)
       break;
 
     case MATCH_DUP:
-    case MATCH_PAR_DUP:
       duplocs[dup_count] = xstrdup (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
       break;
 
+    case MATCH_PAR_DUP:
     case MATCH_OP_DUP:
       duplocs[dup_count] = xstrdup (path);
       dupnums[dup_count] = XINT (x, 0);
@@ -227,7 +227,7 @@ walk_rtx (x, path)
       
       for (i = XVECLEN (x, 1) - 1; i >= 0; i--)
         {
-	  newpath[depth] = '0' + i;
+	  newpath[depth] = (code == MATCH_OP_DUP ? '0' : 'a') + i;
 	  walk_rtx (XVECEXP (x, 1, i), newpath);
         }
       free (newpath);
