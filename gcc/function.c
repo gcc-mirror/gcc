@@ -2357,6 +2357,11 @@ fixup_stack_1 (x, insn)
 	  && GET_CODE (XEXP (ad, 0)) == REG
 	  && ((REGNO (XEXP (ad, 0)) >= FIRST_VIRTUAL_REGISTER
 	       && REGNO (XEXP (ad, 0)) <= LAST_VIRTUAL_REGISTER)
+	      || REGNO (XEXP (ad, 0)) == FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	      || REGNO (XEXP (ad, 0)) == HARD_FRAME_POINTER_REGNUM
+#endif
+	      || REGNO (XEXP (ad, 0)) == STACK_POINTER_REGNUM
 	      || XEXP (ad, 0) == current_function_internal_arg_pointer)
 	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
 	{
