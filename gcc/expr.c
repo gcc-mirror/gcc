@@ -612,9 +612,9 @@ convert_move (to, from, unsignedp)
       rtx value;
 
 #ifdef HAVE_extendqfhf2
-      if (HAVE_extendqfsf2 && from_mode == QFmode && to_mode == HFmode)
+      if (HAVE_extendqfhf2 && from_mode == QFmode && to_mode == HFmode)
 	{
-	  emit_unop_insn (CODE_FOR_extendqfsf2, to, from, UNKNOWN);
+	  emit_unop_insn (CODE_FOR_extendqfhf2, to, from, UNKNOWN);
 	  return;
 	}
 #endif
