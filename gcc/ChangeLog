@@ -1,4 +1,9 @@
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
+
+	* loop.c (count_loop_regs_set): Replace start and end arguments
+	with loop argument.  All callers udated.
+	
+2000-08-26  Michael Hayes  <mhayes@cygnus.com>
 	
 	* loop.c (constant_high_bytes): Delete.
 
