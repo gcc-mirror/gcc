@@ -284,9 +284,7 @@ static void
 prepare_directive_trad (pfile)
      cpp_reader *pfile;
 {
-  if (pfile->directive == &dtable[T_DEFINE])
-    CUR (pfile->context) = pfile->buffer->cur;
-  else
+  if (pfile->directive != &dtable[T_DEFINE])
     {
       bool no_expand = (pfile->directive
 			&& ! (pfile->directive->flags & EXPAND));
@@ -1937,9 +1935,6 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
 
   pfile->buffer = new;
 
-  if (CPP_OPTION (pfile, traditional))
-    _cpp_set_trad_context (pfile);
-
   return new;
 }
 
@@ -1984,9 +1979,6 @@ _cpp_pop_buffer (pfile)
 	    _cpp_maybe_push_include_file (pfile);
 	}
     }
-
-  if (pfile->buffer && CPP_OPTION (pfile, traditional))
-    _cpp_set_trad_context (pfile);
 }
 
 /* Enter all recognised directives in the hash table.  */
