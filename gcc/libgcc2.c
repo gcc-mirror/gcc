@@ -1202,14 +1202,14 @@ __bb_init_func (blocks)
 
 /* frills for C++ */
 
-#ifdef L_builtin_new
+#ifdef L_op_new
 typedef void (*vfp)(void);
 
 extern vfp __new_handler;
 
+/* void * operator new (size_t sz) */
 void *
-__builtin_new (sz)
-     size_t sz;
+__builtin_new (size_t sz)
 {
   void *p;
 
@@ -1221,9 +1221,9 @@ __builtin_new (sz)
     (*__new_handler) ();
   return p;
 }
-#endif
+#endif /* L_op_new */
 
-#ifdef L_caps_New
+#ifdef L_new_handler
 
 /* This gets us __GNU_LIBRARY__.  */
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
@@ -1241,31 +1241,6 @@ extern void *__builtin_new (size_t);
 static void default_new_handler (void);
 
 vfp __new_handler = default_new_handler;
-
-void *
-__builtin_vec_new (p, maxindex, size, ctor)
-     void *p;
-     size_t maxindex;
-     size_t size;
-     void (*ctor)(void *);
-{
-  size_t i;
-  size_t nelts = maxindex + 1;
-  void *rval;
-
-  if (p == 0)
-    p = __builtin_new (nelts * size);
-
-  rval = p;
-
-  for (i = 0; i < nelts; i++)
-    {
-      (*ctor) (p);
-      p += size;
-    }
-
-  return rval;
-}
 
 vfp
 __set_new_handler (handler)
@@ -1300,44 +1275,17 @@ default_new_handler ()
   _exit (-1);
 }
 #endif
-
-#ifdef L_builtin_del
-typedef void (*vfp)(void);
 
+#ifdef L_op_delete
+/* void operator delete (void *ptr) */
 void
-__builtin_delete (ptr)
-     void *ptr;
+__builtin_delete (void *ptr)
 {
   if (ptr)
     free (ptr);
 }
-
-void
-__builtin_vec_delete (ptr, maxindex, size, dtor, auto_delete_vec, auto_delete)
-     void *ptr;
-     size_t maxindex;
-     size_t size;
-     void (*dtor)(void *, int);
-     int auto_delete;
-{
-  size_t i;
-  size_t nelts = maxindex + 1;
-  void *p = ptr;
-
-  ptr += nelts * size;
-
-  for (i = 0; i < nelts; i++)
-    {
-      ptr -= size;
-      (*dtor) (ptr, auto_delete);
-    }
-
-  if (auto_delete_vec)
-    __builtin_delete (p);
-}
-
 #endif
-
+
 #ifdef L_shtab
 unsigned int __shtab[] = {
     0x00000001, 0x00000002, 0x00000004, 0x00000008,
