@@ -345,7 +345,7 @@ static int execute (void);
 static void alloc_args (void);
 static void clear_args (void);
 static void fatal_error (int);
-#ifdef ENABLE_SHARED_LIBGCC
+#if defined(ENABLE_SHARED_LIBGCC) && !defined(REAL_LIBGCC_SPEC)
 static void init_gcc_specs (struct obstack *, const char *, const char *,
 			    const char *);
 #endif
@@ -598,7 +598,9 @@ proper position among the other output files.  */
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
-#if defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
+#if defined(REAL_LIBGCC_SPEC)
+#define LIBGCC_SPEC REAL_LIBGCC_SPEC
+#elif defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
 /* Have gcc do the search for libgcc.a.  */
 #define LIBGCC_SPEC "libgcc.a%s"
 #else
@@ -1522,7 +1524,7 @@ static int processing_spec_function;
 /* Add appropriate libgcc specs to OBSTACK, taking into account
    various permutations of -shared-libgcc, -shared, and such.  */
 
-#ifdef ENABLE_SHARED_LIBGCC
+#if defined(ENABLE_SHARED_LIBGCC) && !defined(REAL_LIBGCC_SPEC)
 static void
 init_gcc_specs (struct obstack *obstack, const char *shared_name,
 		const char *static_name, const char *eh_name)
@@ -1589,7 +1591,7 @@ init_spec (void)
       next = sl;
     }
 
-#ifdef ENABLE_SHARED_LIBGCC
+#if defined(ENABLE_SHARED_LIBGCC) && !defined(REAL_LIBGCC_SPEC)
   /* ??? If neither -shared-libgcc nor --static-libgcc was
      seen, then we should be making an educated guess.  Some proposed
      heuristics for ELF include:
