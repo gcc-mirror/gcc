@@ -2969,7 +2969,7 @@ output_operand_lossage VPARAMS ((const char *msgid, ...))
 {
   char *fmt_string;
   char *new_message;
-  char *pfx_str;
+  const char *pfx_str;
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
