@@ -741,7 +741,7 @@ set_spec (name, spec)
 
   old_spec = sl->spec;
   if (name && spec[0] == '+' && isspace (spec[1]))
-    sl->spec = concat (name, spec + 1, "");
+    sl->spec = concat (old_spec, spec + 1, "");
   else
     sl->spec = save_string (spec, strlen (spec));
 
