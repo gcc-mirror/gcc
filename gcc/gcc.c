@@ -4890,7 +4890,7 @@ used_arg (p, len)
     {
       struct mswitchstr *matches;
       char *q;
-      int cnt = (*multilib_matches != '\0');
+      int cnt = 0;
 
       /* Break multilib_matches into the component strings of string and replacement
          string */
