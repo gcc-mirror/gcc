@@ -1,3 +1,10 @@
+Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (pushtag): Unset DECL_ASSEMBLER_NAME before setting it,
+	so as to avoid incorrect manglings.
+	* method.c (build_decl_overload_real): Don't mangle return types
+	for constructors.
+	
 Tue Oct 14 11:46:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (scratchalloc, build_scratch_list, make_scratch_vec,

@@ -2167,6 +2167,7 @@ pushtag (name, type, globalize)
 		DECL_IGNORED_P (d) = 1;
 
 	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
+	      DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
 	      DECL_ASSEMBLER_NAME (d)
 		= get_identifier (build_overload_name (type, 1, 1));
 	    }
