@@ -1,3 +1,7 @@
+Mon Nov 11 12:06:08 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (construct_container): Fix handling of SSE_CLASS.
+
 2002-11-10  Joel Sherrill <joel@gcc.gnu.org>
 
 	* config/m68k/t-crtstuff (crti.o): Use this...
