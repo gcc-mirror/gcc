@@ -1,3 +1,15 @@
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* checks.adb (Insert_Valid_Check): Apply validity check to expression 
+	of conversion, not to result of conversion.
+
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+	
+	* sem_ch3.adb (Build_Derived_Record_Type): set Controlled flag 
+	before freezing parent. If the declarations are mutually recursive, 
+	an access to the current record type may be frozen before the 
+	derivation is complete.
+
 2001-12-05  Vincent Celier <celier@gnat.com>
 
 	* gnatcmd.adb: (MAKE): Add new translations: -b /BIND_ONLY, 

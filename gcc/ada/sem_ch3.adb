@@ -5032,6 +5032,7 @@ package body Sem_Ch3 is
       Set_Size_Info      (Derived_Type,                 Parent_Type);
       Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
       Set_Convention     (Derived_Type, Convention     (Parent_Type));
+      Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));
 
       case Ekind (Parent_Type) is
