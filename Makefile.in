@@ -220,6 +220,7 @@ FLAGS_FOR_TARGET =
 CC_FOR_TARGET =
 CHILL_FOR_TARGET =
 CXX_FOR_TARGET =
+GCJ_FOR_TARGET =
 
 # If GCC_FOR_TARGET is not overriden on the command line, then this
 # variable is passed down to the gcc Makefile, where it is used to
@@ -333,6 +334,7 @@ BASE_FLAGS_TO_PASS = \
 	"CHILLFLAGS=$(CHILLFLAGS)" \
 	"CHILL_FOR_TARGET=$(CHILL_FOR_TARGET)" \
 	"CHILL_LIB=$(CHILL_LIB)" \
+	"GCJ_FOR_TARGET=$(GCJ_FOR_TARGET)" \
 	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
@@ -1280,6 +1282,7 @@ $(CONFIGURE_TARGET_MODULES):
 	    CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
 	    CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	    CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	    GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
 	    DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	    LD="$(LD_FOR_TARGET)"; export LD; \
             LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
