@@ -70,15 +70,21 @@ public class InflaterInputStream extends FilterInputStream
     this (in, infl, 512);
   }
 
-  public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
+  public InflaterInputStream (InputStream in, Inflater inf, int size)
   {
     super (in);
 
     if (in == null)
-      throw new NullPointerException();
+      throw new NullPointerException ("in may not be null");
+
+    if (inf == null)
+      throw new NullPointerException ("inf may not be null");
     
-    this.inf = infl;
-    this.buf = new byte[bufsize];
+    if (size < 0)
+      throw new IllegalArgumentException ("size may not be negative");
+    
+    this.inf = inf;
+    this.buf = new byte [size];
   }
 
   public int read () throws IOException
