@@ -1,3 +1,8 @@
+2004-08-18  Andrew Pinski  <apinski@apple.com>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Only set MEM_READONLY_P
+	in the non TARGET_TOC case.
+
 2004-08-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.def (NIL): Delete.
