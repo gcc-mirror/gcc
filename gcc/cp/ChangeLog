@@ -1,3 +1,8 @@
+2000-02-25  Alfred Minarik <a8601248@unet.univie.ac.at>
+
+	* rtti.c (get_vmi_pseudo_type_info): Move __vmi_class_type_info
+	pseudo_type_info creation into the std namespace
+
 2000-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_NEEDED_P): Tweak to correct usage before EOF.

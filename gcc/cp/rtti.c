@@ -1734,12 +1734,19 @@ get_vmi_pseudo_type_info (num_bases)
   array_domain = build_index_type (build_int_2 (num_bases, 0));
   base_array = build_array_type (base_desc_type_node, array_domain);
 
+  if (flag_honor_std)
+    push_namespace (get_identifier ("std"));
+
   desc = create_pseudo_type_info
             ("__vmi_class_type_info", num_bases,
              build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
              build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
              build_lang_decl (FIELD_DECL, NULL_TREE, base_array),
              NULL);
+
+  if (flag_honor_std)
+    pop_namespace ();
+
   TREE_VEC_ELT (vmi_class_desc_type_node, num_bases) = desc;
   return desc;
 }
