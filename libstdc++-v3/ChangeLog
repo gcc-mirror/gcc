@@ -1,3 +1,8 @@
+2002-09-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/std/std_limits.h (numeric_limits<unsigned char>::digits): 
+	Fix typo.
+	
 2002-09-23  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_plain_char_is_signed,
