@@ -1238,6 +1238,14 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 #endif
 			     args[i].pass_on_stack ? 0 : args[i].partial,
 			     fndecl, args_size, &args[i].locate);
+#ifdef BLOCK_REG_PADDING
+      else
+	/* The argument is passed entirely in registers.  See at which
+	   end it should be padded.  */
+	args[i].locate.where_pad =
+	  BLOCK_REG_PADDING (mode, type,
+			     int_size_in_bytes (type) <= UNITS_PER_WORD);
+#endif
 
       /* Update ARGS_SIZE, the total stack space for args so far.  */
 

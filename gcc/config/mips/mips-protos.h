@@ -80,6 +80,8 @@ extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
 extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int);
+extern bool mips_pad_arg_upward (enum machine_mode, tree);
+extern bool mips_pad_reg_upward (enum machine_mode, tree);
 extern int mips_setup_incoming_varargs (const CUMULATIVE_ARGS *,
 					enum machine_mode, tree, int);
 extern tree mips_build_va_list (void);
