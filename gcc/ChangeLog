@@ -15,6 +15,8 @@ Mon Oct  4 02:12:41 1999  Mark Mitchell  <mark@codesourcery.com>
 
 Sun Oct  3 14:14:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.c (asm_file_start): Fix typo.
+
 	* cppinit.c (is_idchar initializer): Tighten tests for when
 	to put the table into initialized memory.
 
