@@ -1709,13 +1709,16 @@ used in a future release.
 
 @deftypefun java::lang::Thread* JvAttachCurrentThread (jstring @var{name}, java::lang::ThreadGroup* @var{group})
 Registers an existing thread with the Java runtime.  This must be called once
-by a multi-threaded C++ application for each thread, before that thread makes
-any other Java or CNI calls.
+from each thread, before that thread makes any other Java or CNI calls. It
+must be called after @code{JvCreateJavaVM}.
 @var{name} specifies a name for the thread. It may be @code{NULL}, in which 
 case a name will be generated.
 @var{group} is the ThreadGroup in which this thread will be a member. If it
 is @code{NULL}, the thread will be a member of the main thread group.
 The return value is the Java @code{Thread} object that represents the thread.
+It is safe to call @code{JvAttachCurrentThread()} more than once from the same
+thread. If the thread is already attached, the call is ignored and the current
+thread object is returned.
 @end deftypefun
 
 @deftypefun jint JvDetachCurrentThread ()
@@ -1723,26 +1726,57 @@ Unregisters a thread from the Java runtime. This should be called by threads
 that were attached using @code{JvAttachCurrentThread()}, after they have 
 finished making calls to Java code. This ensures that any resources associated
 with the thread become eligible for garbage collection.
-This function returns @code{0} upon success.
+This function returns @code{0} upon success, or @code{-1} if the current thread
+is not attached.
 @end deftypefun
 
-The following example demonstrates the use of @code{JvCreateJavaVM()} from
-a simple C++ application. It can be compiled with 
-@command{c++ test.cc -lgcj}.
+@subsection Handling uncaught exceptions
+
+If an exception is thrown from Java code called using the invocation API, and
+no handler for the exception can be found, the runtime will abort the
+application. In order to make the application more robust, it is recommended 
+that code which uses the invocation API be wrapped by a top-level try/catch 
+block that catches all Java exceptions.
+
+@subsection Example
+
+The following code demonstrates the use of the invocation API. In this
+example, the C++ application initializes the Java runtime and attaches
+itself. The @code{java.lang.System} class is initialized in order to
+access its @code{out} field, and a Java string is printed. Finally, the thread
+is detached from the runtime once it has finished making Java calls. Everything
+is wrapped with a try/catch block to provide a default handler for any uncaught 
+exceptions.
+
+The example can be compiled with @command{c++ test.cc -lgcj}.
 
 @example
 // test.cc
 #include <gcj/cni.h>
 #include <java/lang/System.h>
 #include <java/io/PrintStream.h>
+#include <java/lang/Throwable.h>
 
 int main(int argc, char *argv)
 @{
   using namespace java::lang;
   
-  JvCreateJavaVM(NULL);
-  String *hello = JvNewStringLatin1("Hello from C++");
-  System::out->println(hello);
+  try
+  @{
+    JvCreateJavaVM(NULL);
+    JvAttachCurrentThread(NULL, NULL);
+
+    String *message = JvNewStringLatin1("Hello from C++");
+    JvInitClass(&System.class$);
+    System::out->println(message);
+
+    JvDetachCurrentThread();
+  @}
+  catch (Throwable *t)
+  @{
+    System::err->println(JvNewStringLatin1("Unhandled Java exception:"));
+    t->printStackTrace();
+  @}
 @}
 @end example
 
