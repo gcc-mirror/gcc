@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "sparc/sparc.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu=sparc -Amachine=sparc"
@@ -35,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC "%{v:-v} %{mlittle-endian-data:--little-endian-data} %(asm_cpu)"
 
 /* US Software GOFAST library support.  */
-#include "gofast.h"
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
 

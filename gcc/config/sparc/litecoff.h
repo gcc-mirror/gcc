@@ -19,15 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "sparc/lite.h"
-
-#undef ASM_OUTPUT_IDENT
-
-#undef SELECT_SECTION
-#undef SELECT_RTX_SECTION
 #define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-
-#include "svr3.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu=sparc -Amachine=sparc"
@@ -35,8 +27,6 @@ Boston, MA 02111-1307, USA.  */
 /* Default to stabs in COFF.  */
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#include "dbxcoff.h"
 
 /* Support the ctors and dtors sections for g++.  */
 

@@ -35,8 +35,6 @@ Boston, MA 02111-1307, USA.  */
 /* Use stabs instead of DWARF debug format.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#include <sparc/sysv4.h>
-
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 

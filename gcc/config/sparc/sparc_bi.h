@@ -1,6 +1,6 @@
-/* Definitions for rtems targeting a SPARC using ELF.
-   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
-   Contributed by Joel Sherrill (joel@OARcorp.com).
+/* Definitions of target machine for GNU compiler, for Sun SPARC.
+   Copyright (C) 2001 Free Software Foundation, Inc.
+   Contributed by David E. O'Brien <obrien@FreeBSD.org>.
 
 This file is part of GNU CC.
 
@@ -19,13 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Specify predefined symbols in preprocessor.  */
+/* Specify this in a cover file to provide bi-architecture (32/64) support.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -D__GCC_NEW_VARARGS__ -Drtems -D__rtems__ \
-  -Asystem=rtems"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
+#define SPARC_BI_ARCH

@@ -1,9 +1,3 @@
-#include <sparc/sparc.h>
-
-/* Get generic NetBSD definitions.  */
-
-#include <netbsd.h>
-
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES

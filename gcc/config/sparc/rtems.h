@@ -19,7 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "sparc/aout.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
@@ -31,6 +30,3 @@ Boston, MA 02111-1307, USA.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* Get machine-independent configuration parameters for RTEMS.  */
-#include <rtems.h>

@@ -1,8 +1,6 @@
 /* Definitions of target machine for GNU compiler, for 64-bit SPARC
    running Solaris 2 using the GNU linker.  */
 
-#include "sparc/sol2-sld-64.h"
-
 #ifdef LINKER_DOES_NOT_WORK_WITH_DWARF2
 #undef LINKER_DOES_NOT_WORK_WITH_DWARF2
 #endif
