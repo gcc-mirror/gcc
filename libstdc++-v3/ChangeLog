@@ -1,10 +1,17 @@
 2000-05-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* m4: Remove.
+	* m4/lc_message.m4: Merge into acinclude.m4.
+	* m4/mathfcts.m4: Same.
+	* m4/stringfcts.m4: Same.
+	* acinclude.m4: Add here.
+	* configure: Regnerate.
+	
 	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION): Remove
 	OPTLEVEL. Add FMTFLAGS.
 	* aclocal.m4: Regenerate.
-	* src/Makefile.am (AC_CXXFLAGS): Take out OPTLEVEL, as this is has
-	been disabled due to higher-level makefiles running amuck over
+	* src/Makefile.am (AC_CXXFLAGS): Take out OPTLEVEL, as this has
+	been disabled due to higher-level Makefiles running amuck over
 	this bit, and add in FMTFLAGS so that formatting is clear. 
 	* src/Makefile.in: Regenerate.
 	* configure: Regenerate.

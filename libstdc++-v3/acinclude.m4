@@ -1007,3 +1007,56 @@ AC_SUBST(SHADOW_INCLUDES)
 ])
 
 
+# Check whether LC_MESSAGES is available in <locale.h>.
+# Ulrich Drepper <drepper@cygnus.com>, 1995.
+#
+# This file file be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
+
+# serial 1
+
+AC_DEFUN(AC_LC_MESSAGES,
+  [if test $ac_cv_header_locale_h = yes; then
+    AC_CACHE_CHECK([for LC_MESSAGES], ac_cv_val_LC_MESSAGES,
+      [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
+       ac_cv_val_LC_MESSAGES=yes, ac_cv_val_LC_MESSAGES=no)])
+    if test $ac_cv_val_LC_MESSAGES = yes; then
+      AC_DEFINE(HAVE_LC_MESSAGES)
+    fi
+  fi])
+
+
+# Check for functions in math library.
+# Ulrich Drepper <drepper@cygnus.com>, 1998.
+#
+# This file can be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
+
+# serial 1
+
+dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
+AC_DEFUN(AC_REPLACE_MATHFUNCS,
+[AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])
+AC_SUBST(LIBMATHOBJS)dnl
+])
+
+
+# Check for string functions.
+# Ulrich Drepper <drepper@cygnus.com>, 1998.
+#
+# This file can be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
+
+# serial 1
+
+dnl AC_REPLACE_STRINGFUNCS(FUNCTION...)
+AC_DEFUN(AC_REPLACE_STRINGFUNCS,
+[AC_CHECK_FUNCS([$1], , [LIBSTRINGOBJS="$LIBSTRINGOBJS ${ac_func}.lo"])
+AC_SUBST(LIBSTRINGOBJS)dnl
+])
