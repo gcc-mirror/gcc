@@ -1,6 +1,7 @@
 2003-12-08  Jason Merrill <jason@redhat.com>
 	    Daniel Berlin  <dberlin@dberlin.org>
 
+	PR debug/11114
 	Support namespaces in DWARF 2 output.
 	* dwarf2out.c (gen_namespace_die): New function.
 	(force_namespace_die, setup_namespace_context): New fns.
