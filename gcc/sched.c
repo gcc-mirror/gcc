@@ -1610,6 +1610,16 @@ sched_analyze_1 (x, insn)
 	    add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
 	  reg_last_sets[regno] = insn;
 
+#if 0
+	  /* ??? This code has two serious problems:
+	     1) It can cause an infinite loop if regno is mentioned in
+	        its reg_known_value.
+	     2) It can cause execution time exponential in the size of the
+	        input if there are long chains of reg_known_values pointing
+		to other reg_known_values.
+	     This code was specifically added to handle fake argument pointers.
+	     It may need to be rewritten to just handle that specific case.  */
+
 	  /* Pseudos that are REG_EQUIV to something may be replaced
 	     by that during reloading, so we can potentially read
 	     quantities mentioned in those addresses. */
@@ -1617,6 +1627,7 @@ sched_analyze_1 (x, insn)
 	    if (reg_known_value[regno] != regno_reg_rtx[regno])
 	      if (GET_CODE (reg_known_value[regno]) == MEM)
 		sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
+#endif
 
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
@@ -1770,11 +1781,22 @@ sched_analyze_2 (x, insn)
 	    if (reg_last_sets[regno])
 	      add_dependence (insn, reg_last_sets[regno], 0);
 
+#if 0
+	  /* ??? This code has two serious problems:
+	     1) It can cause an infinite loop if regno is mentioned in
+	        its reg_known_value.
+	     2) It can cause execution time exponential in the size of the
+	        input if there are long chains of reg_known_values pointing
+		to other reg_known_values.
+	     This code was specifically added to handle fake argument pointers.
+	     It may need to be rewritten to just handle that specific case.  */
+
 	    /* Pseudos that are REG_EQUIV to something may be replaced
 	       by that, so we depend on anything mentioned there too. */
 	    if (! reload_completed)
 	      if (reg_known_value[regno] != regno_reg_rtx[regno])
 		sched_analyze_2 (reg_known_value[regno], insn);
+#endif
 
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
