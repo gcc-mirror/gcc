@@ -4019,13 +4019,6 @@ for_each_template_parm (t, fn, data)
 
   switch (TREE_CODE (t))
     {
-    case INDIRECT_REF:
-    case COMPONENT_REF:
-      /* We assume that the object must be instantiated in order to build
-	 the COMPONENT_REF, so we test only whether the type of the
-	 COMPONENT_REF uses template parms.  */
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
     case ARRAY_REF:
     case OFFSET_REF:
       return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
@@ -4183,10 +4176,6 @@ for_each_template_parm (t, fn, data)
       /* NOTREACHED */
       return 0;
 
-    case LOOKUP_EXPR:
-    case TYPENAME_TYPE:
-      return 1;
-
     case PTRMEM_CST:
       return for_each_template_parm (TREE_TYPE (t), fn, data);
 
@@ -4199,6 +4188,21 @@ for_each_template_parm (t, fn, data)
 				       (TREE_TYPE (t)), fn, data);
       return for_each_template_parm (TREE_OPERAND (t, 1), fn, data);
 
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
+
+    case INDIRECT_REF:
+    case COMPONENT_REF:
+      /* We assume that the object must be instantiated in order to build
+	 the COMPONENT_REF, so we test only whether the type of the
+	 COMPONENT_REF uses template parms.  On the other hand, if
+	 there's no type, then this thing must be some expression
+	 involving template parameters.  */
+      if (TREE_TYPE (t))
+	return for_each_template_parm (TREE_TYPE (t), fn, data);
+      /* Fall through.  */
+
     case MODOP_EXPR:
     case CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
@@ -4208,11 +4212,11 @@ for_each_template_parm (t, fn, data)
     case ARROW_EXPR:
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
-      return 1;
-
-    case SIZEOF_EXPR:
-    case ALIGNOF_EXPR:
-      return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
+    case LOOKUP_EXPR:
+    case TYPENAME_TYPE:
+      if (!fn)
+	return 1;
+      /* Fall through.  */
 
     default:
       switch (TREE_CODE_CLASS (TREE_CODE (t)))
