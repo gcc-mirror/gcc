@@ -84,7 +84,7 @@ case ${host} in
     host_exeext=.exe
     # This removes the cpu type and manufacturer components and
     #  replaces "." with "_" in the operating system version.
-    target_alias=`echo $host | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
+    target_noncanonical=`echo $host | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
     prefix=/gnu
     local_prefix=/gnu
     ;;
@@ -120,10 +120,10 @@ case ${host} in
   i[34567]86-pc-msdosdjgpp*)
     host_xm_file=i386/xm-djgpp.h
     host_exeext=.exe
-    # Shorten $target_alias for 8.3 filename conventions.
+    # Shorten $target_noncanonical for 8.3 filename conventions.
     case ${target} in
       *pc-msdosdjgpp*)
-        target_alias=djgpp
+        target_noncanonical=djgpp
         ;;
     esac
     ;;
