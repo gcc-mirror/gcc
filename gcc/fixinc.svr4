@@ -471,7 +471,6 @@ fi
 
 # Avoid the definition of the bool type in the Solaris 2.x curses.h when using
 # g++, since it's now an official type in the C++ language.
-# CYGNUS LOCAL
 file=curses.h
 base=`basename $file`
 if [ -r ${LIB}/$file ]; then
