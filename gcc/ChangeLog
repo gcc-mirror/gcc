@@ -1,3 +1,9 @@
+2003-10-06  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.c (prepare_float_lib_cmp):  Attach a REG_EQUAL note
+	describing the return value of the comparison libcall to the
+	REG_RETVAL instruction of the emitted sequence.
+
 2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/12215
