@@ -2136,6 +2136,11 @@ parser_build_binary_op (code, arg1, arg2)
 
   class = TREE_CODE_CLASS (TREE_CODE (result));
 
+  /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
+  if (class == '<' && extra_warnings
+      && (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<'))
+    warning ("comparisons like X<=Y<=Z do not have their mathematical meaning");
+
   /* Record the code that was specified in the source,
      for the sake of warnings about confusing nesting.  */
   if (class == 'e' || class == '1'
