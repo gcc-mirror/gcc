@@ -82,7 +82,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  CPP_SPEC
 #define CPP_SPEC "\
-%{!melf: -D__ROSE__} %{melf: -D__ELF__} \
+%{!melf: -D__ROSE__ %{!pic-none: -D__SHARED__}} \
+%{melf: -D__ELF__ %{fpic: -D__SHARED__}} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
 %{melf: %{!munderscores: -D__NO_UNDERSCORES__}} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \

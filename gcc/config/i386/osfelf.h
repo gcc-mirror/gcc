@@ -25,7 +25,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  CPP_SPEC
 #define CPP_SPEC "\
-%{mrose: -D__ROSE__} %{!mrose: -D__ELF__} \
+%{mrose: -D__ROSE__ %{!pic-none: -D__SHARED__}} \
+%{!mrose: -D__ELF__ %{fpic: -D__SHARED__}} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
 %{!mrose: %{!munderscores: -D__NO_UNDERSCORES__}} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
