@@ -9771,7 +9771,9 @@ do_jump (exp, if_false_label, if_true_label)
       /* Do any postincrements in the expression that was tested.  */
       emit_queue ();
 
-      if (GET_CODE (temp) == CONST_INT || GET_CODE (temp) == LABEL_REF)
+      if (GET_CODE (temp) == CONST_INT 
+	  || (GET_CODE (temp) == CONST_DOUBLE && GET_MODE (temp) == VOIDmode)
+	  || GET_CODE (temp) == LABEL_REF)
 	{
 	  rtx target = temp == const0_rtx ? if_false_label : if_true_label;
 	  if (target)
