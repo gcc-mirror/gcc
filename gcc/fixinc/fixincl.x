@@ -606,7 +606,7 @@ tSCC zNo_Double_SlashSelect0[] =
  *  perform the 'test' shell command - do fix on success
  */
 tSCC zNo_Double_SlashTest0[] =
-       "-z `echo ${file} | egrep '(CC|cxx|\\+\\+)/' `";
+       " -z \"`echo ${file} | egrep '(CC|cxx|++)/' `\"";
 
 #define    NO_DOUBLE_SLASH_TEST_CT  2
 #define    NO_DOUBLE_SLASH_RE_CT    1
