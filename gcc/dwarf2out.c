@@ -7820,7 +7820,6 @@ is_ada_subrange_type (tree type)
 
   if (is_ada ()
       && TREE_CODE (type) == INTEGER_TYPE
-      && TYPE_NAME (type) != NULL_TREE
       && subtype != NULL_TREE)
     {
       if (TREE_CODE (subtype) == INTEGER_TYPE && TREE_UNSIGNED (subtype))
@@ -7849,11 +7848,15 @@ subrange_type_die (tree type, dw_die_ref context_die)
   else
     subtype_die = base_type_die (TREE_TYPE (type));
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-
   subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
-  add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
+
+  if (name != NULL)
+    {
+      if (TREE_CODE (name) == TYPE_DECL)
+        name = DECL_NAME (name);
+      add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
+    }
+
   if (TYPE_MIN_VALUE (type) != NULL)
     add_bound_info (subrange_die, DW_AT_lower_bound,
                     TYPE_MIN_VALUE (type));
