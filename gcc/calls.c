@@ -2776,6 +2776,14 @@ expand_call (exp, target, ignore)
       if (is_longjmp)
 	current_function_calls_longjmp = 1, sibcall_failure = 1;
 
+      /* If this function is returning into a memory location marked as
+	 readonly, it means it is initializing that location.  But we normally
+	 treat functions as not clobbering such locations, so we need to
+	 specify that this one does.  */
+      if (target != 0 && GET_CODE (target) == MEM
+	  && structure_value_addr != 0 && RTX_UNCHANGING_P (target))
+	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+
       /* If value type not void, return an rtx for the value.  */
 
       /* If there are cleanups to be called, don't use a hard reg as target.

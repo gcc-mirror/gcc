@@ -1,3 +1,8 @@
+Thu Mar 23 17:10:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* calls.c (expand_call): If TARGET is passed by reference and
+	is readonly, write a CLOBBER.
+
 2000-03-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin): Handle bcmp.
