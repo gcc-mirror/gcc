@@ -614,7 +614,7 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 		internal_error ("SSA corruption");
 	      }
 #else
-	    gcc_assert (phi_ssa_name (tmp));
+	    gcc_assert (phi_ssa_name_p (tmp));
 #endif
 	    y = var_to_partition (map, tmp);
 	    gcc_assert (x != NO_PARTITION);
