@@ -2,6 +2,8 @@
 
 	* config/vax/vax.c (vax_rtx_cost): Never abort.
 
+	* config/vax/vax.h (REAL_ARITHMETIC): Define.
+
 2002-01-09  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (cprop_jump): Delete insn if simplified jump is no-op.
