@@ -1,3 +1,29 @@
+2004-12-25  Richard Henderson  <rth@redhat.com>
+
+	* src/x86/ffi64.c (struct register_args): Rename from stackLayout.
+	(enum x86_64_reg_class): Add X86_64_COMPLEX_X87_CLASS.
+	(merge_classes): Check for it.
+	(SSE_CLASS_P): New.
+	(classify_argument): Pass byte_offset by value; perform all updates
+	inside struct case.
+	(examine_argument): Add classes argument; handle
+	X86_64_COMPLEX_X87_CLASS.
+	(ffi_prep_args): Merge into ...
+	(ffi_call): ... here.  Share stack frame with ffi_call_unix64.
+	(ffi_prep_cif_machdep): Setup cif->flags for proper structure return.
+	(ffi_fill_return_value): Remove.
+	(ffi_prep_closure): Remove dead assert.
+	(ffi_closure_unix64_inner): Rename from ffi_closure_UNIX64_inner.
+	Rewrite to use struct register_args instead of va_list.  Create
+	flags for handling structure returns.
+	* src/x86/unix64.S: Remove dead strings.
+	(ffi_call_unix64): Rename from ffi_call_UNIX64.  Rewrite to share
+	stack frame with ffi_call.  Handle structure returns properly.
+	(float2sse, floatfloat2sse, double2sse): Remove.
+	(sse2float, sse2double, sse2floatfloat): Remove.
+	(ffi_closure_unix64): Rename from ffi_closure_UNIX64.  Rewrite
+	to handle structure returns properly.
+
 2004-12-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.am (AM_MAKEFLAGS): Remove duplicate LIBCFLAGS and
