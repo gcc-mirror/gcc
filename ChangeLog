@@ -1,3 +1,48 @@
+Tue Jun 22 23:39:29 1999  Tom Tromey  <tromey@cygnus.com>
+
+	* configure.in (target_libs): Added target-zlib.
+	* Makefile.in (ALL_TARGET_MODULES): Added zlib.
+	(CONFIGURE_TARGET_MODULES): Likewise.
+	(CHECK_TARGET_MODULES): Likewise.
+	(INSTALL_TARGET_MODULES): Likewise.
+	(CLEAN_TARGET_MODULES): Likewise.
+	(configure-target-zlib): New target.
+	(all-target-zlib): Likewise.
+	(all-target-libjava): Depend on all-target-zlib.
+	(configure-target-libjava): Depend on configure-target-zlib.
+
+	* Makefile.in (configure-target-libjava): Depend on
+	configure-target-newlib.
+	(configure-target-boehm-gc): New target.
+	(configure-target-qthreads): New target.
+
+        * configure.in (host_tools): Added zip.
+        * Makefile.in (all-target-libjava): Depend on all-zip.
+        (all-zip): New target.
+        (ALL_MODULES): Added all-zip.
+        (NATIVE_CHECK_MODULES): Added check-zip.
+        (INSTALL_MODULES): Added install-zip.
+        (CLEAN_MODULES): Added clean-zip.
+
+        * configure.in (target_libs): Added target-qthreads.
+        * Makefile.in (ALL_TARGET_MODULES): Added qthreads.
+        (CONFIGURE_TARGET_MODULES): Likewise.
+        (CHECK_TARGET_MODULES): Likewise.
+        (INSTALL_TARGET_MODULES): Likewise.
+        (CLEAN_TARGET_MODULES): Likewise.
+        (all-target-qthreads): New target.
+        (configure-target-libjava): Depend on configure-target-qthreads.
+        (all-target-libjava): Depend on all-target-qthreads.
+
+	* Makefile.in (ALL_TARGET_MODULES): Added libjava, boehm-gc.
+	(CONFIGURE_TARGET_MODULES): Likewise.
+	(CHECK_TARGET_MODULES): Likewise.
+	(INSTALL_TARGET_MODULES): Likewise.
+	(CLEAN_TARGET_MODULES): Likewise.
+	(all-target-libjava): New target.
+	(all-target-boehm-gc): Likewise.
+	* configure.in (target_libs): Added libjava, boehm-gc.
+
 Sun May 30 16:03:16 1999  Cort Dougan  <cort@cs.nmt.edu>
 
 	* config.guess (ppc-*-linux-gnu): Also use ld emul elf32ppclinux.
