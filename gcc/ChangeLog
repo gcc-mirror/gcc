@@ -1,3 +1,9 @@
+2003-11-01  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/sysv4.h (SDATA_SECTION_FUNCTION): Update to C90
+	prototypes.
+	(SBSS_SECTION_FUNCTION): Likewise.
+
 2003-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (GCC_CFLAGS): Add @WERROR@ for target files.

@@ -133,7 +133,7 @@ do {									\
 
 #define SDATA_SECTION_FUNCTION						\
 void									\
-sdata_section ()							\
+sdata_section (void)							\
 {									\
   if (in_section != in_sdata)						\
     {									\
@@ -146,7 +146,7 @@ sdata_section ()							\
 
 #define SBSS_SECTION_FUNCTION						\
 void									\
-sbss_section ()								\
+sbss_section (void)							\
 {									\
   if (in_section != in_sbss)						\
     {									\
