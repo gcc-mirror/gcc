@@ -402,6 +402,9 @@ int flag_eliminate_dwarf2_dups = 0;
 
 int flag_eliminate_unused_debug_types = 1;
 
+/* Nonzero means emit debugging information only for symbols which are used.  */
+int flag_debug_only_used_symbols = 0;
+
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -1055,6 +1058,8 @@ static const lang_independent_options f_options[] =
   {"eliminate-dwarf2-dups", &flag_dummy, 1,
    N_("Perform DWARF2 duplicate elimination") },
   {"eliminate-unused-debug-types", &flag_dummy, 1,
+   N_("Perform unused type elimination in debug info") },
+  {"eliminate-unused-debug-symbols", &flag_dummy, 1,
    N_("Perform unused type elimination in debug info") },
   {"float-store", &flag_dummy, 1,
    N_("Do not store floats in registers") },
@@ -4584,6 +4589,21 @@ general_init (char *argv0)
   init_ggc ();
   init_stringpool ();
   init_ttree ();
+
+  /* APPLE LOCAL setrlimit */
+#ifdef RLIMIT_STACK
+  /* Get rid of any avoidable limit on stack size.  */
+  {
+    struct rlimit rlim;
+
+    /* Set the stack limit huge.  (Compiles normally work within
+       a megabyte of stack, but the normal limit on OSX is 512K for
+       some reason.) */
+    getrlimit (RLIMIT_STACK, &rlim);
+    rlim.rlim_cur = rlim.rlim_max;
+    setrlimit (RLIMIT_STACK, &rlim);
+  }
+#endif /* RLIMIT_STACK defined */
 }
 
 /* Parse command line options and set default flag values, called

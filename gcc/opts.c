@@ -737,6 +737,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_eliminate_unused_debug_types = value;
       break;
 
+    case OPT_feliminate_unused_debug_symbols:
+      flag_debug_only_used_symbols = value;
+      break;
+
     case OPT_fexceptions:
       flag_exceptions = value;
       break;

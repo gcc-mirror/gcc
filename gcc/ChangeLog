@@ -1,3 +1,37 @@
+2003-06-26  Devang Patel <dpatel@apple.com>
+
+	* final.c (debug_flush_symbol_queue): New function.
+	(debug_queue_symbol): New function.
+	(debug_free_queue): New function.
+	(debug_nesting): New variable.
+	(symbol_queue): New variable.
+	(symbol_queue_index): Same.
+	(symbol_queue_size): Same.
+	* debug.h (debug_flush_symbol_queue): New.
+	(debug_queue_symbol): New.
+	(debug_free_queue): New.
+	(debug_nesting): New.
+	(symbol_queue_index): New.
+	* dbxout.c (DBXOUT_DECR_NESTING): New macro.
+	(DBXOUT_DECR_NESTING_AND_RETURN): New macro.
+	(dbxout_init): Delay symbol output.
+	(dbxout_global_decl): Save, set and reset TREE_USED bit around dbxout_symbol() 
+	call.
+	(dbxout_begin_function): Same.
+	(dbxout_finish): Free symbol queue.
+	(dbxout_type): Put appropriate symbols in queue.
+	(dbxout_symbol): Put info for symbol's type in queue. Decrement/Increment 
+	nesting counts flush symbol queue appropriately.
+	(dbxout_parms): Increment dbxout nesting.
+	(dbxout_reg_parms): Same.
+	* flags.h (flag_debug_only_used_symbols): New.
+	* toplev.c (flag_debug_only_used_symbols): New variable.
+	(lang_independent_options): Add entries for new option -feliminate-unused-debug-symbols.
+	* common.opt: Add entry for -feliminate-unused-debug-symbols.
+	* opts.c (common_handle_options): Same.
+	* config/rs6000/darwin.h (CC1_SPEC): Interpret -gused as -feliminate-unused-debug-symbols.
+	* doc/invoke.texi (Debugging Options): Document -feliminate-unused-debug-symbols.
+	
 2003-06-26  Roger Sayle  <roger@eyesopen.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

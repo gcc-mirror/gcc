@@ -241,6 +241,9 @@ Common
 feliminate-dwarf2-dups
 Common
 
+feliminate-unused-debug-symbols
+Common
+
 feliminate-unused-debug-types
 Common
 

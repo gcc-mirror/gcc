@@ -93,6 +93,7 @@ do {									\
 
 
 #define CC1_SPEC "\
+%{gused: -feliminate-unused-debug-symbols %<gused }\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
 %{!static:%{!mdynamic-no-pic:-fPIC}}"
 
