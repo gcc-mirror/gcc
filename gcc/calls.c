@@ -1588,7 +1588,7 @@ expand_call (exp, target, ignore)
 		 bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
 	      {
 		int xbitpos = (BYTES_BIG_ENDIAN
-			       ? bitpos = BITS_PER_WORD - bitpos - bitsize
+			       ? BITS_PER_WORD - bitpos - bitsize
 			       : bitpos);
 
 		store_bit_field (reg, bitsize, xbitpos, word_mode,
