@@ -35,6 +35,7 @@ extern void debug_start_source_file	PARAMS ((char *));
 extern void debug_end_source_file	PARAMS ((unsigned));
 extern void debug_define		PARAMS ((unsigned, char *));
 extern void debug_undef			PARAMS ((unsigned, char *));
+extern void debug_ignore_block		PARAMS ((union tree_node *));
 extern void fatal			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_io_error		PARAMS ((const char *))
