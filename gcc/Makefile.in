@@ -1327,19 +1327,19 @@ dumpvers: dumpvers.c
 
 version.o: version.c version.h
 
-ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
+ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) \
 	flags.h $(GGC_H) varray.h hash.h $(TM_P_H)
 
-ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
+ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
 	$(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)
 
-ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h toplev.h \
-	$(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)
+ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
+	toplev.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)
 
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	flags.h toplev.h
 
-ggc-none.o: ggc-none.c $(GCONFIG_H) $(GGC_H)
+ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 obstack.o: $(srcdir)/../libiberty/obstack.c $(GCONFIG_H)
@@ -1882,7 +1882,7 @@ $(HOST_PREFIX_1)strstr.o: $(srcdir)/../libiberty/strstr.c $(HCONFIG_H)
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/strstr.c > $(HOST_PREFIX)strstr.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)strstr.c
 
-$(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H)
+$(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H)
 	rm -f $(HOST_PREFIX)errors.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c
@@ -1893,7 +1893,7 @@ $(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H)
 $(HOST_PREFIX_1):
 	touch $(HOST_PREFIX_1)
 
-$(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H)
+$(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H)
 	rm -f $(HOST_PREFIX)ggc-none.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c

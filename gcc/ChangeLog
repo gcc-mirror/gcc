@@ -1,3 +1,9 @@
+2001-04-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* $(HOST_PREFIX_1)errors.o, $(HOST_PREFIX_1)ggc-none.o,
+	ggc-common.o, ggc-simple.o, ggc-page.o, ggc-none.o: Depend on
+	$(SYSTEM_H).
+
 2001-04-03  Alan Modra  <alan@linuxcare.com.au>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr): Move errant HIGH and
