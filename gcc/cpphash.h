@@ -274,7 +274,8 @@ extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
 						 const U_CHAR *, int));
 extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
-						 const U_CHAR *, int, int,
+						 const U_CHAR *, int,
+						 enum insert_option,
 						 unsigned long *));
 extern void _cpp_free_definition	PARAMS ((DEFINITION *));
 extern DEFINITION *_cpp_create_definition PARAMS ((cpp_reader *, int));

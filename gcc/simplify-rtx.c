@@ -2662,7 +2662,7 @@ cselib_lookup_mem (x, create)
 
   mem_elt = new_cselib_val (++next_unknown_value, GET_MODE (x));
   add_mem_for_addr (addr, mem_elt, x);
-  slot = htab_find_slot_with_hash (hash_table, x, mem_elt->value, 1);
+  slot = htab_find_slot_with_hash (hash_table, x, mem_elt->value, INSERT);
   *slot = mem_elt;
   return mem_elt;
 }
@@ -2782,7 +2782,7 @@ cselib_lookup (x, mode, create)
       e = new_cselib_val (++next_unknown_value, GET_MODE (x));
       e->locs = new_elt_loc_list (e->locs, x);
       REG_VALUES (i) = new_elt_list (REG_VALUES (i), e);
-      slot = htab_find_slot_with_hash (hash_table, x, e->value, 1);
+      slot = htab_find_slot_with_hash (hash_table, x, e->value, INSERT);
       *slot = e;
       return e;
     }
@@ -2795,7 +2795,8 @@ cselib_lookup (x, mode, create)
   if (! hashval)
     return 0;
 
-  slot = htab_find_slot_with_hash (hash_table, x, hashval, create);
+  slot = htab_find_slot_with_hash (hash_table, x, hashval,
+				   create ? INSERT : NO_INSERT);
   if (slot == 0)
     return 0;
 

@@ -248,7 +248,8 @@ gen_rtx_CONST_INT (mode, arg)
 #endif
 
   /* Look up the CONST_INT in the hash table.  */
-  slot = htab_find_slot_with_hash (const_int_htab, &arg, (hashval_t) arg, 1);
+  slot = htab_find_slot_with_hash (const_int_htab, &arg,
+				   (hashval_t) arg, INSERT);
   if (*slot == 0)
     {
       if (!ggc_p)

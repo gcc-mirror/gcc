@@ -21,14 +21,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-
+#include "hashtab.h"
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"
 #include "prefix.h"
 #include "intl.h"
 #include "version.h"
-#include "hashtab.h"
 #include "mkdeps.h"
 
 /* Predefined symbols, built-in macros, and the default include path. */
@@ -683,7 +682,7 @@ initialize_builtins (pfile)
       hp = _cpp_make_hashnode (b->name, len, b->type,
 			       _cpp_calc_hash (b->name, len));
       hp->value.cpval = val;
-      *(htab_find_slot (pfile->hashtab, (void *)hp, 1)) = hp;
+      *(htab_find_slot (pfile->hashtab, (void *) hp, INSERT)) = hp;
 
       if ((b->flags & DUMP) && CPP_OPTION (pfile, debug_output))
 	dump_special_to_buffer (pfile, b->name);
