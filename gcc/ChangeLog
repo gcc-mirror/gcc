@@ -1,3 +1,8 @@
+Wed Dec  9 10:15:45 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* except.c (duplicate_eh_handlers, rethrow_symbol_map): Function
+	pointer parameters changed to use the PARAMS() macro.
+
 Wed Dec  9 09:12:40 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (struct handler_info): Add handler_number field.

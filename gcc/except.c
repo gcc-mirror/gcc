@@ -978,7 +978,7 @@ clear_function_eh_region ()
 int 
 duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
      int old_note_eh_region, new_note_eh_region;
-     rtx (*map)(rtx);
+     rtx (*map) PARAMS ((rtx));
 {
   struct handler_info *ptr, *new_ptr;
   int new_region, region;
@@ -1029,7 +1029,7 @@ eh_region_from_symbol (sym)
 rtx 
 rethrow_symbol_map (sym, map)
      rtx sym;
-     rtx (*map)(rtx);
+     rtx (*map) PARAMS ((rtx));
 {
   int x, y;
   for (x = 0; x < current_func_eh_entry; x++)
