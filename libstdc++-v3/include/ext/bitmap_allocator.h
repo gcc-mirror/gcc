@@ -674,14 +674,14 @@ namespace __gnu_cxx
 	      // Ok, the new block is greater than or equal to the
 	      // last block in the list of free blocks. We just free
 	      // the new block.
-	      operator delete(static_cast<void*>(__addr));
+	      ::operator delete(static_cast<void*>(__addr));
 	      return;
 	    }
 	  else
 	    {
 	      // Deallocate the last block in the list of free lists,
 	      // and insert the new one in it's correct position.
-	      operator delete(static_cast<void*>(_S_free_list.back()));
+	      ::operator delete(static_cast<void*>(_S_free_list.back()));
 	      _S_free_list.pop_back();
 	    }
 	}
@@ -1095,10 +1095,13 @@ namespace __gnu_cxx
       void 
       deallocate(pointer __p, size_type __n) throw()
       {
-	if (__builtin_expect(__n == 1, true))
-	  this->_M_deallocate_single_object(__p);
-	else
-	  ::operator delete(__p);
+	if (__builtin_expect(__p != 0, true))
+	  {
+	    if (__builtin_expect(__n == 1, true))
+	      this->_M_deallocate_single_object(__p);
+	    else
+	      ::operator delete(__p);
+	  }
       }
 
       pointer 

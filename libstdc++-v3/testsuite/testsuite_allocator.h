@@ -202,6 +202,7 @@ namespace __gnu_test
     {
       // Let's not core here...
       Alloc  a;
+      a.deallocate(NULL, 1);
       a.deallocate(NULL, 10);
     }
 }; // namespace __gnu_test
