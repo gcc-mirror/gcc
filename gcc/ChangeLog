@@ -1,5 +1,10 @@
 2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
+	* configure.ac (gcc_cv_ld_as_needed): Use AC_CACHE_CHECK.
+	* configure: Regenerate.
+
+2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.c (used_arg): Check whether an option has been removed.
 
 2004-04-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
