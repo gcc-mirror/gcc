@@ -343,49 +343,6 @@ case "${enable_shared}" in
   *) shared=yes ;;
 esac
 
-if [ x${shared} = xyes ]; then
-  case "${host}" in
-    alpha*-*-linux*)
-      host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
-      ;;
-    arm*-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-armpic"
-      ;;
-    parisc*-*-* | hppa*-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-papic"
-      ;;
-    i[3456]86-*-cygwin*)
-      # We don't want -fPIC on Cygwin.
-      ;;
-    i[3456]86-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-x86pic"
-      ;;
-    i370-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-i370pic"
-      ;;
-    ia64-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-ia64pic"
-      ;;
-    sparc64-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-sparcpic"
-      ;;
-    powerpc*-*-aix*)
-      # We don't want -fPIC on AIX.
-      ;;
-    powerpc*-*-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-ppcpic"
-      ;;
-    s390-* | s390x-*)
-      host_makefile_frag="${host_makefile_frag} config/mh-s390pic"
-      ;;
-    *-*-*)
-      if test -f ${srcdir}/config/mh-${host_cpu}pic; then
-        host_makefile_frag="${host_makefile_frag} config/mh-${host_cpu}pic"
-      fi
-      ;;
-  esac
-fi
-
 rm -f mh-frag
 if [ -n "${host_makefile_frag}" ] ; then
   for f in ${host_makefile_frag}
@@ -1338,34 +1295,6 @@ fi
 if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " target-newlib " > /dev/null 2>&1 && [ -d ${srcdir}/newlib ] ; then
   with_newlib=yes
   withoptions="$withoptions --with-newlib"
-fi
-
-if [ x${shared} = xyes ]; then
-  case "${target}" in
-    hppa* | parisc*)
-      target_makefile_frag="${target_makefile_frag} config/mt-papic"
-      ;;
-    i[3456]86-*)
-      target_makefile_frag="${target_makefile_frag} config/mt-x86pic"
-      ;;
-    ia64-*)
-      target_makefile_frag="${target_makefile_frag} config/mt-ia64pic"
-      ;;
-    powerpc*-*-aix*)
-      # We don't want -fPIC on AIX.
-      ;;
-    powerpc*-*)
-      target_makefile_frag="${target_makefile_frag} config/mt-ppcpic"
-      ;;
-    alpha*-*-linux*)
-      target_makefile_frag="${target_makefile_frag} config/mt-elfalphapic"
-      ;;
-    *)
-      if test -f ${srcdir}/config/mt-${target_cpu}pic; then
-        target_makefile_frag="${target_makefile_frag} config/mt-${target_cpu}pic"
-      fi
-      ;;
-  esac
 fi
 
 rm -f mt-frag
