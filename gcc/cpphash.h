@@ -555,6 +555,10 @@ extern bool _cpp_expansions_different_trad PARAMS ((const cpp_macro *,
 extern uchar *_cpp_copy_replacement_text PARAMS ((const cpp_macro *, uchar *));
 extern size_t _cpp_replacement_text_len PARAMS ((const cpp_macro *));
 
+/* In cppcharset.c.  */
+cppchar_t _cpp_valid_ucn PARAMS ((cpp_reader *, const uchar **,
+				  int identifer_p));
+
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
 #define xnew(T)		(T *) xmalloc (sizeof(T))
