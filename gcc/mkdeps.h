@@ -34,8 +34,9 @@ extern struct deps *deps_init	PARAMS ((void));
 /* Destroy a deps buffer.  */
 extern void deps_free		PARAMS ((struct deps *));
 
-/* Add a target (appears on left side of the colon) to the deps list. */
-extern void deps_add_target	PARAMS ((struct deps *, const char *));
+/* Add a target (appears on left side of the colon) to the deps list.  Takes
+   a boolean indicating whether to quote the target for MAKE.  */
+extern void deps_add_target	PARAMS ((struct deps *, const char *, int));
 
 /* Sets the default target if none has been given already.  An empty
    string as the default target in interpreted as stdin.  */
@@ -56,6 +57,6 @@ extern void deps_write		PARAMS ((const struct deps *, FILE *,
    file, causing it to depend on nothing.  This is used to work around
    the intermediate-file deletion misfeature in Make, in some
    automatic dependency schemes.  */
-extern void deps_dummy_targets	PARAMS ((const struct deps *, FILE *));
+extern void deps_phony_targets	PARAMS ((const struct deps *, FILE *));
 
 #endif

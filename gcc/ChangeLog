@@ -1,3 +1,18 @@
+2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update for -MP.  Clarify behaviour of -MT.
+        * cppinit.c (initialize_dependency_output):  Update.
+        (cpp_finish): Output dummy targets for -MP.
+        (OPT_MP): New.
+        (cpp_handle_option): Handle -MP.  Don't quote -MT options.  
+        * cpplib.h (struct cpp_options): Add deps_phony_targets.
+        * gcc.c (cpp_options): Update to handle -MP.
+        * mkdeps.c (deps_add_target, deps_add_default_target): Update
+        to quote only the default target.
+        (deps_phony_targets): Insert a preceding newline.  Rename from
+        deps_dummy_targets for consistency.
+        * mkdeps.h: Update
+
 2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* calls.c (emit_library_call_value_1): Support

@@ -1,6 +1,6 @@
 /* Functions for handling dependency tracking when reading .class files.
 
-   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ jcf_dependency_set_target (name)
 {
   /* We just handle this the same as an `add_target'.  */
   if (dependencies != NULL && name != NULL)
-    deps_add_target (dependencies, name);
+    deps_add_target (dependencies, name, 1);
 }
 
 void
@@ -82,7 +82,7 @@ jcf_dependency_add_target (name)
      const char *name;
 {
   if (dependencies != NULL)
-    deps_add_target (dependencies, name);
+    deps_add_target (dependencies, name, 1);
 }
 
 void
@@ -138,6 +138,6 @@ jcf_dependency_write ()
 
   deps_write (dependencies, dep_out, 72);
   if (print_dummies)
-    deps_dummy_targets (dependencies, dep_out);
+    deps_phony_targets (dependencies, dep_out);
   fflush (dep_out);
 }

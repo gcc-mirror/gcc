@@ -760,7 +760,8 @@ initialize_dependency_output (pfile)
       s = strchr (spec, ' ');
       if (s)
 	{
-	  deps_add_target (pfile->deps, s + 1);
+	  /* Let the caller perform MAKE quoting.  */
+	  deps_add_target (pfile->deps, s + 1, 0);
 	  output_file = (char *) xmalloc (s - spec + 1);
 	  memcpy (output_file, spec, s - spec);
 	  output_file[s - spec] = 0;
@@ -1018,6 +1019,10 @@ cpp_finish (pfile)
       if (deps_stream)
 	{
 	  deps_write (pfile->deps, deps_stream, 72);
+
+	  if (CPP_OPTION (pfile, deps_phony_targets))
+	    deps_phony_targets (pfile->deps, deps_stream);
+
 	  if (CPP_OPTION (pfile, deps_file))
 	    {
 	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
@@ -1077,6 +1082,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
   DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
+  DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
   DEF_OPT("P",                        0,      OPT_P)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
@@ -1496,11 +1502,15 @@ cpp_handle_option (pfile, argc, argv)
 	      CPP_OPTION (pfile, no_output) = 1;
 	  break;
 
+	case OPT_MP:
+	  CPP_OPTION (pfile, deps_phony_targets) = 1;
+	  break;
+
 	case OPT_MT:
 	  /* Add a target.  */
 	  if (! pfile->deps)
 	    pfile->deps = deps_init ();
-	  deps_add_target (pfile->deps, arg);
+	  deps_add_target (pfile->deps, arg, 0);
 	  break;
 
 	case OPT_A:

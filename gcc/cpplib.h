@@ -329,6 +329,9 @@ struct cpp_options
      #include <...> as well.  */
   unsigned char print_deps;
 
+  /* Nonzero if phony targets are created for each header.  */
+  unsigned char deps_phony_targets;
+
   /* Nonzero if missing .h files in -M output are assumed to be
      generated files and not errors.  */
   unsigned char print_deps_missing_files;
@@ -570,7 +573,7 @@ struct cpp_reader
   cpp_token date;
   cpp_token time;
 
-  /* Buffer of -M output.  */
+  /* Opaque handle to the dependencies of mkdeps.c.  Used by -M etc.  */
   struct deps *deps;
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
