@@ -1,3 +1,15 @@
+2003-10-09  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9874
+	* include/bits/fstream.tcc (basic_filebuf::seekoff):
+	Move code needed for both seekoff and seekpos...
+	(basic_filebuf::_M_seek): ...here. New function.
+	(basic_filebuf::seekpos): Don't call seekoff, call _M_seek.
+	* include/std/std_fstream.h (basic_filebuf::_M_seek): Declare it.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: New test.
+
+	* testsuite/22_locale/locale/cons/12438.cc: Increase memory limit.
+
 2003-10-08  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc: More minor cosmetic
