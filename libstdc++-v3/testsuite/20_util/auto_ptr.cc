@@ -1,4 +1,4 @@
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -276,6 +276,21 @@ test07()
   return 0;
 }
 
+
+// http://gcc.gnu.org/ml/libstdc++/2002-07/msg00024.html
+struct Base{};
+struct Derived : public Base {};
+std::auto_ptr<Derived> conversiontest08()
+  { return std::auto_ptr<Derived>(new Derived); }
+
+void
+test08()
+{
+  std::auto_ptr<Base> ptr;
+  ptr = conversiontest08();
+}
+
+
 int 
 main()
 {
@@ -286,6 +301,7 @@ main()
   test05();
   test06();
   test07();
+  test08();
 
   return 0;
 }
