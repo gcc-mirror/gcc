@@ -1221,7 +1221,8 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 
       /* Scan incoming abnormal critical edges.  */
       for (e = b->pred; e; e = e->pred_next)
-	if (e->flags & (EDGE_ABNORMAL | EDGE_CRITICAL))
+	if ((e->flags & (EDGE_ABNORMAL | EDGE_CRITICAL)) 
+		== (EDGE_ABNORMAL | EDGE_CRITICAL))
 	  {
 	    rtx *alt = phi_alternative (set, e->src->index);
 	    int alt_regno;
@@ -1812,7 +1813,8 @@ convert_from_ssa()
   rtx insns = get_insns ();
     
   /* Need global_live_at_{start,end} up to date.  */
-  life_analysis (insns, NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
+  life_analysis (insns, NULL, 
+	  PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE | PROP_DEATH_NOTES);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
      therefore can be coalesced.  */

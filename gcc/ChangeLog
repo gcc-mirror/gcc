@@ -1,3 +1,10 @@
+Fri May 19 12:05:13 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* ssa.c (convert_from_ssa): Tell life_analysis we need death 
+	notes.
+	(make_regs_equivalent_over_bad_edges): Only look at abnormal
+	critical edges.
+
 2000-05-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (funlike_macroexpand): Make sure not to walk p1
