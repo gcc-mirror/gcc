@@ -6301,6 +6301,23 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  rtx tem = frame_pointer_rtx;
 	  int i;
 
+	  /* Some machines need special handling before we can access arbitrary
+	     frames.  For example, on the sparc, we must first flush all
+	     register windows to the stack.  */
+#ifdef SETUP_FRAME_ADDRESSES
+	  SETUP_FRAME_ADDRESSES ();
+#endif
+
+	  /* On the sparc, the return address is not in the frame, it is
+	     in a register.  There is no way to access it off of the current
+	     frame pointer, but it can be accessed off the previous frame
+	     pointer by reading the value from the register window save
+	     area.  */
+#ifdef RETURN_ADDR_IN_PREVIOUS_FRAME
+	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_RETURN_ADDRESS)
+	    count--;
+#endif
+
 	  /* Scan back COUNT frames to the specified frame.  */
 	  for (i = 0; i < count; i++)
 	    {
