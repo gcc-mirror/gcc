@@ -1,3 +1,7 @@
+2003-03-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* expr.c (convert_modes): Check for legal hard register.
+
 2003-03-04  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Fix CFA
