@@ -374,6 +374,13 @@ DEFTREECODE (ARRAY_REF, "array_ref", 'r', 2)
    of the range is taken from the type of the expression.  */
 DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 2)
 
+/* Vtable indexing.  Carries data useful for emitting information
+   for vtable garbage collection.
+   Operand 0: an array_ref (or equivalent expression)
+   Operand 1: the vtable base (must be a var_decl)
+   Operand 2: index into vtable (must be an integer_cst).  */
+DEFTREECODE (VTABLE_REF, "vtable_ref", 'r', 3)
+
 /* Constructor: return an aggregate value made from specified components.
    In C, this is used only for structure and array initializers.
    Also used for SET_TYPE in Chill (and potentially Pascal).

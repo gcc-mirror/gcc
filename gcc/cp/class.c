@@ -134,7 +134,8 @@ static tree add_implicitly_declared_members PARAMS ((tree, int, int, int));
 static tree fixed_type_or_null PARAMS ((tree, int *, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
 							  int, int, tree));
-static void build_vtable_entry_ref PARAMS ((tree, tree));
+static tree build_vtable_entry_ref PARAMS ((tree, tree, tree));
+static tree build_vtbl_ref_1 PARAMS ((tree, tree));
 static tree build_vtbl_initializer PARAMS ((tree, tree, tree, tree, int *));
 static int count_fields PARAMS ((tree));
 static int add_fields_to_vec PARAMS ((tree, tree, int));
@@ -424,38 +425,31 @@ build_vbase_path (code, type, expr, path, nonnull)
 
 /* Virtual function things.  */
 
-/* We want to give the assembler the vtable identifier as well as
-   the offset to the function pointer.  So we generate
-
-   __asm__ __volatile__ (".vtable_entry %c0, %c1"
-      : : "s"(&class_vtable),
-          "i"((long)&vtbl[idx].pfn - (long)&vtbl[0])); */
-
-static void
-build_vtable_entry_ref (basetype, idx)
-     tree basetype, idx;
+static tree
+build_vtable_entry_ref (array_ref, instance, idx)
+     tree array_ref, instance, idx;
 {
-  static const char asm_stmt[] = ".vtable_entry %c0, %c1";
-  tree s, i, i2;
-  tree vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
-  tree first_fn = TYPE_BINFO_VTABLE (basetype);
+  tree i, i2, vtable, first_fn, basetype;
 
-  s = build_unary_op (ADDR_EXPR, vtable, 0);
-  s = build_tree_list (build_string (1, "s"), s);
+  basetype = TREE_TYPE (instance);
+  if (TREE_CODE (basetype) == REFERENCE_TYPE)
+    basetype = TREE_TYPE (basetype);
 
-  i = build_array_ref (first_fn, idx);
-  /* We must not convert to ptrdiff_type node here, since this could widen
-     from a partial to an integral node, which would create a
-     convert_expression that would be in the way of any simplifications.  */
-  i = build_c_cast (string_type_node, build_unary_op (ADDR_EXPR, i, 0));
-  i2 = build_array_ref (vtable, build_int_2 (0,0));
-  i2 = build_c_cast (string_type_node, build_unary_op (ADDR_EXPR, i2, 0));
-  i = cp_build_binary_op (MINUS_EXPR, i, i2);
-  i = build_tree_list (build_string (1, "i"), i);
+  vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
+  first_fn = TYPE_BINFO_VTABLE (basetype);
 
-  finish_asm_stmt (ridpointers[RID_VOLATILE],
-		   build_string (sizeof(asm_stmt)-1, asm_stmt),
-		   NULL_TREE, chainon (s, i), NULL_TREE);
+  i = fold (build_array_ref (first_fn, idx));
+  i = fold (build_c_cast (ptrdiff_type_node,
+			  build_unary_op (ADDR_EXPR, i, 0)));
+  i2 = fold (build_array_ref (vtable, build_int_2 (0,0)));
+  i2 = fold (build_c_cast (ptrdiff_type_node,
+			   build_unary_op (ADDR_EXPR, i2, 0)));
+  i = fold (cp_build_binary_op (MINUS_EXPR, i, i2));
+
+  if (TREE_CODE (i) != INTEGER_CST)
+    abort ();
+
+  return build (VTABLE_REF, TREE_TYPE (array_ref), array_ref, vtable, i);
 }
 
 /* Given an object INSTANCE, return an expression which yields the
@@ -463,8 +457,8 @@ build_vtable_entry_ref (basetype, idx)
    cases for INSTANCE which we take care of here, mainly to avoid
    creating extra tree nodes when we don't have to.  */
 
-tree
-build_vtbl_ref (instance, idx)
+static tree
+build_vtbl_ref_1 (instance, idx)
      tree instance, idx;
 {
   tree vtbl, aref;
@@ -535,10 +529,19 @@ build_vtbl_ref (instance, idx)
 
   assemble_external (vtbl);
 
-  if (flag_vtable_gc)
-    build_vtable_entry_ref (basetype, idx);
-
   aref = build_array_ref (vtbl, idx);
+
+  return aref;
+}
+
+tree
+build_vtbl_ref (instance, idx)
+     tree instance, idx;
+{
+  tree aref = build_vtbl_ref_1 (instance, idx);
+
+  if (flag_vtable_gc)
+    aref = build_vtable_entry_ref (aref, instance, idx);
 
   return aref;
 }
@@ -550,13 +553,16 @@ tree
 build_vfn_ref (instance, idx)
      tree instance, idx;
 {
-  tree aref = build_vtbl_ref (instance, idx);
+  tree aref = build_vtbl_ref_1 (instance, idx);
 
   /* When using function descriptors, the address of the
      vtable entry is treated as a function pointer.  */
   if (TARGET_VTABLE_USES_DESCRIPTORS)
-    return build1 (NOP_EXPR, TREE_TYPE (aref),
+    aref = build1 (NOP_EXPR, TREE_TYPE (aref),
 		   build_unary_op (ADDR_EXPR, aref, /*noconvert=*/1));
+
+  if (flag_vtable_gc)
+    aref = build_vtable_entry_ref (aref, instance, idx);
 
   return aref;
 }
