@@ -892,6 +892,11 @@ dump_decl (t, flags)
       dump_simple_decl (t, TREE_TYPE (t), flags);
       break;
 
+    case RESULT_DECL:
+      OB_PUTS ("{return} ");
+      dump_simple_decl (t, TREE_TYPE (t), flags);
+      break;
+
     case NAMESPACE_DECL:
       dump_scope (CP_DECL_CONTEXT (t), flags);
       if (DECL_NAME (t) == anonymous_namespace_name)
