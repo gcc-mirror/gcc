@@ -1,3 +1,7 @@
+2001-08-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/BufferedReader.java: Re-merged with Classpath.
+
 2001-08-28  Per Bothner  <per@bothner.com>
 
 	* java/math/BigInteger.java (init(int,Random)):  New method.
