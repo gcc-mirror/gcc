@@ -10430,13 +10430,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  else if (RIDBIT_SETP (i, specbits))
 		    pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
 
-		  /* Diagnose "__thread extern".  Recall that this list
-		     is in the reverse order seen in the text.  */
-		  if (i == (int)RID_THREAD)
+		  /* Diagnose "__thread extern" or "__thread static".  */
+		  if (RIDBIT_SETP (RID_THREAD, specbits))
 		    {
-		      if (RIDBIT_SETP (RID_EXTERN, specbits))
+		      if (i == (int)RID_EXTERN)
 			error ("`__thread' before `extern'");
-		      if (RIDBIT_SETP (RID_STATIC, specbits))
+		      else if (i == (int)RID_STATIC)
 			error ("`__thread' before `static'");
 		    }
 

@@ -1,3 +1,8 @@
+2002-12-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Diagnost "extern thread" and "static
+	thread" correctly.
+
 2002-12-30  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* decl.c, decl2.c, decl.h:  GCC, not GNU CC.  This is the C++ front
