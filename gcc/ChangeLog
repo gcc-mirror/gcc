@@ -1,3 +1,10 @@
+2003-04-10  Steve Ellcey  <sje@cup.hp.com>
+
+	* expr.c (expand_assignment): Extend offset_rtx with convert_to_mode
+	not with convert_memory_address.
+	(store_constructor): Ditto, and same for copy_size_rtx.
+	(expand_expr): Ditto.
+
 2003-04-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (larl_operand): Do not allow symbols
