@@ -1236,9 +1236,9 @@ typedef struct {
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"-wp0 +'"	},
+  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"-wp0 +'I"	},
   { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0'"		},
+  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0'I"		},
 /* A GNU extension.  */
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "fFgG",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#'"	},
@@ -1916,7 +1916,7 @@ check_format_info (info, params)
 		has_operand_number = 0;
 	    }
 
-	  while (*format_chars != 0 && index (" +#0-'", *format_chars) != 0)
+	  while (*format_chars != 0 && index (" +#0-'I", *format_chars) != 0)
 	    {
 	      if (index (flag_chars, *format_chars) != 0)
 		warning ("repeated `%c' flag in format", *format_chars++);
@@ -1939,6 +1939,8 @@ check_format_info (info, params)
 	    warning ("use of both `0' and `-' flags in format");
 	  if (index (flag_chars, '\'') && pedantic)
 	    warning ("ISO C does not support the `'' format flag");
+	  if (index (flag_chars, 'I') && pedantic)
+	    warning ("ISO C does not support the `I' format flag");
 	  if (*format_chars == '*')
 	    {
 	      wide = TRUE;

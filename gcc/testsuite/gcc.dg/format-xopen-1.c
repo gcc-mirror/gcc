@@ -38,6 +38,7 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("% C", lc); /* { dg-warning "flag" "bad % C" } */
   printf ("%#C", lc); /* { dg-warning "flag" "bad %#C" } */
   printf ("%0C", lc); /* { dg-warning "flag" "bad %0C" } */
+  printf ("%'C", lc); /* { dg-warning "flag" "bad %'C" } */
   printf ("%S", ls);
   printf ("%3S", ls);
   printf ("%.3S", ls);
@@ -54,6 +55,7 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("% S", ls); /* { dg-warning "flag" "bad % S" } */
   printf ("%#S", ls); /* { dg-warning "flag" "bad %#S" } */
   printf ("%0S", ls); /* { dg-warning "flag" "bad %0S" } */
+  printf ("%'S", ls); /* { dg-warning "flag" "bad %'S" } */
   scanf ("%C", ls);
   scanf ("%S", ls);
   scanf ("%*C%*S");

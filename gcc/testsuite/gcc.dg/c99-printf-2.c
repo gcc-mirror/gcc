@@ -31,4 +31,6 @@ foo (int i, long long ll, size_t z, wint_t lc, wchar_t *ls)
   */
   printf ("%'d", i); /* { dg-warning "C" "printf ' flag" } */
   printf ("%1$d", i); /* { dg-warning "C" "printf $ format" } */
+  /* The flag character I is a GNU extension.  */
+  printf ("%Id", i); /* { dg-warning "C" "printf I flag" } */
 }

@@ -1,3 +1,10 @@
+2000-08-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (print_char_table): Allow 'I' flag with %d, %i and
+	%u.
+	(check_format_info): Support printf 'I' flag; warn about it with
+	-pedantic.
+
 2000-08-23  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (arm_expand_prologue): Ensure that the stack-adjustment
