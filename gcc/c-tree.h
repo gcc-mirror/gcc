@@ -429,6 +429,12 @@ extern int warn_nested_externs;
 
 extern int warn_cast_qual;
 
+/* Nonzero means warn when casting a function call to a type that does
+   not match the return type (e.g. (float)sqrt() or (anything*)malloc()
+   when there is no previous declaration of sqrt or malloc.  */
+
+extern int warn_bad_function_cast;
+
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 extern int warn_traditional;
