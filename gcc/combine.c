@@ -3085,7 +3085,9 @@ subst (x, from, to, in_dest, unique_copy)
       /* If we have (if_then_else FOO (pc) (label_ref BAR)) and FOO can be
 	 reversed, do so to avoid needing two sets of patterns for
 	 subtract-and-branch insns.  */
-      if (XEXP (x, 1) == pc_rtx && reversible_comparison_p (XEXP (x, 0)))
+      if (XEXP (x, 1) == pc_rtx
+	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && reversible_comparison_p (XEXP (x, 0)))
 	{
 	  SUBST (XEXP (x, 0),
 		 gen_rtx_combine (reverse_condition (GET_CODE (XEXP (x, 0))),
