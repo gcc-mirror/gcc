@@ -1,3 +1,11 @@
+Sat Apr  8 00:21:51 EDT 2000  John Wehle  (john@feith.com)
+
+	* i386.md (ashrsi3, ashrhi3, ashrqi3): Fix typo.
+
+	* i386.md (floathisf2, floathidf2, floathixf2): New patterns.
+	* i386.c (print_operand): Use the proper suffix for a 387 HImode
+	operand.  Abort if a 387 operand has an unsupported size.
+
 2000-04-08  Neil Booth  <NeilB@earthling.net>
 
 	* cppexp.c (parse_charconst): Null does not end character
