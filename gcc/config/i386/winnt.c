@@ -592,6 +592,8 @@ i386_pe_asm_file_end (file)
 {
   struct extern_list *p;
 
+  ix86_asm_file_end (file);
+
   for (p = extern_head; p != NULL; p = p->next)
     {
       tree decl;

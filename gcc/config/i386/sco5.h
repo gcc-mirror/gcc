@@ -213,6 +213,7 @@ do {									\
 #undef ASM_FILE_END
 #define ASM_FILE_END(FILE)						\
 do {									\
+     ix86_asm_file_end (FILE);						\
      if (!flag_no_ident)						\
 	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
 		 IDENT_ASM_OP, version_string);				\

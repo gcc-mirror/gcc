@@ -752,12 +752,13 @@ while (0)
 #define SCCS_DIRECTIVE
 
 /* This says what to print at the end of the assembly file */
+#undef ASM_FILE_END
 #define ASM_FILE_END(STREAM)						\
 do									\
   {									\
     if (HALF_PIC_P ())							\
       HALF_PIC_FINISH (STREAM);						\
-									\
+    ix86_asm_file_end (STREAM);						\
     if (!flag_no_ident)							\
       {									\
 	char *fstart = main_input_filename;				\

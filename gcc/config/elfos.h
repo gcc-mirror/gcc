@@ -100,6 +100,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define IDENT_ASM_OP "\t.ident\t"
 
+#undef ASM_FILE_END
 #define ASM_FILE_END(FILE)				\
   do							\
     {				 			\

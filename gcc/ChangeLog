@@ -1,3 +1,21 @@
+2001-01-15  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (asm_output_function_prefix): Remove.
+	(ix86_asm_file_end): New.
+	(load_pic_register): Generate pic_label_name into a
+	staticly allocated buffer.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.h (ASM_OUTPUT_FUNCTION_PREFIX): Remove.
+	(ASM_FILE_END): New.
+	* config/i386/i386afe.h: New file.
+	* config.gcc (i?86-*-elf) [tm_file]: Use it.
+	(i?86-*-{freebsd,linux*,moss*}): Likewise.
+	* config/elfos.h (ASM_FILE_END): Undef before redefinition.
+	* config/i386/cygwin.h (ASM_FILE_END): Likewise.
+	* config/i386/osfrose.h (ASM_FILE_END): Invoke ix86_asm_file_end.
+	* config/i386/sco5.h (ASM_FILE_END): Likewise.
+	* config/i386/winnt.c (i386_pe_asm_file_end): Likewise.
+
 2001-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (install-man): Remove explicit dependency on

@@ -498,6 +498,7 @@ do {									\
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 /* Output function declarations at the end of the file.  */
+#undef ASM_FILE_END
 #define ASM_FILE_END(FILE) \
   i386_pe_asm_file_end (FILE)
 
