@@ -61,14 +61,14 @@ static void usage (const char *) ATTRIBUTE_NORETURN;
 static void
 usage (const char *name)
 {
-  fprintf (stderr, "Usage: %s [OPTIONS]... CLASSNAME [OUTFILE]\n", name);
+  fprintf (stderr, "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n", name);
   exit (1);
 }
 
 int
-main (int argc, const char **argv)
+main (int argc, char **argv)
 {
-  const char *classname;
+  char *classname, *p;
   FILE *stream;
   const char *mangled_classname;
   int i, last_arg;
@@ -91,6 +91,13 @@ main (int argc, const char **argv)
   last_arg = i;
 
   classname = argv[i];
+
+  /* gcj always appends `main' to classname.  We need to strip this here.  */
+  p = strrchr (classname, 'm');
+  if (p == NULL || p == classname || strcmp (p, "main") != 0)
+    usage (argv[0]);
+  else
+    *p = '\0';
 
   gcc_obstack_init (mangle_obstack);
   mangled_classname = do_mangle_classname (classname);

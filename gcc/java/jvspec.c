@@ -52,8 +52,8 @@ int lang_specific_extra_outfiles = 0;
 int shared_libgcc = 1;
 
 const char jvgenmain_spec[] =
-  "jvgenmain %{D*} %i %{!pipe:%umain.i} |\n\
-   cc1 %{!pipe:%Umain.i} %1 \
+  "jvgenmain %{D*} %b %{!pipe:%u.i} |\n\
+   cc1 %{!pipe:%U.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} \
 		   %{v:-version} %{pg:-p} %{p}\
@@ -68,8 +68,8 @@ const char jvgenmain_spec[] =
 		   %{f*} -fdollars-in-identifiers\
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%Umain.s}} |\n\
-              %{!S:as %a %Y -o %d%w%umain%O %{!pipe:%Umain.s} %A\n }";
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%U.s}} |\n\
+              %{!S:as %a %Y -o %d%w%u%O %{!pipe:%U.s} %A\n }";
 
 /* Return full path name of spec file if it is in DIR, or NULL if
    not.  */
@@ -529,8 +529,14 @@ lang_specific_pre_link ()
   int err;
   if (main_class_name == NULL)
     return 0;
-  input_filename = main_class_name;
-  input_filename_length = strlen (main_class_name);
+  /* Append `main' to make the filename unique and allow
+
+	gcj --main=hello -save-temps hello.java
+
+     to work.  jvgenmain needs to strip this `main' to arrive at the correct
+     class name.  Append dummy `.c' that can be stripped by set_input so %b
+     is correct.  */ 
+  set_input (concat (main_class_name, "main.c", NULL));
   err = do_spec (jvgenmain_spec);
   if (err == 0)
     {
