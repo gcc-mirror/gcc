@@ -250,7 +250,7 @@ keyword.h: keyword.gperf
 	gperf -L KR-C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
 	keyword.gperf > keyword.h
 
-jcf-path.o: jcf-path.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
+jcf-path.o : jcf-path.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLIBJAVA_ZIP_FILE='"$(libjava_zip)"' $(srcdir)/jcf-path.c
 
@@ -273,10 +273,14 @@ clean:  mostlyclean
 
 force:
 
-parse.o: $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h
-jcf-dump.o: jcf-reader.c jcf.h javaop.h javaop.def
-gjavah.o: $(CONFIG_H) $(srcdir)/../system.h jcf-reader.c jcf.h javaop.h
+parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h
+jcf-dump.o : jcf-dump.c jcf-reader.c jcf.h javaop.h javaop.def
+gjavah.o : $(CONFIG_H) $(srcdir)/../system.h gjavah.c \
+  jcf-reader.c jcf.h javaop.h
 buffer.o : buffer.c $(CONFIG_H) buffer.h $(srcdir)/../gansidecl.h \
+  $(srcdir)/../system.h $(srcdir)/../toplev.h
+check-init.o : check-init.c $(CONFIG_H) $(srcdir)/../gansidecl.h \
+  $(srcdir)/../../include/libiberty.h $(JAVA_TREE_H) \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 class.o : class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) jcf.h $(PARSE_H) \
   $(srcdir)/../gansidecl.h $(srcdir)/../toplev.h $(srcdir)/../system.h \
@@ -292,14 +296,14 @@ expr.o : expr.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) $(EXPR_H) javaop.h java-opcodes.h $(srcdir)/../except.h \
   java-except.h java-except.h parse.h $(srcdir)/../toplev.h \
   $(srcdir)/../system.h
-jcf-depend.o: jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
-jcf-io.o: jcf-io.c $(CONFIG_H) $(srcdir)/../system.h
+jcf-depend.o : jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
+jcf-io.o : jcf-io.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../input.h java-except.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
   java-opcodes.h parse.h buffer.h $(srcdir)/../system.h $(srcdir)/../toplev.h
-jv-scan.o : $(CONFIG_H) $(srcdir)/../system.h
+jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h
 jvgenmain.o : jvgenmain.c $(CONFIG_H) $(srcdir)/../system.h
 lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
@@ -310,5 +314,5 @@ typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
   java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
-zextract.o: zextract.c $(CONFIG_H) $(srcdir)/../system.h zipfile.h
+zextract.o : zextract.c $(CONFIG_H) $(srcdir)/../system.h zipfile.h
 
