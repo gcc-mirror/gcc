@@ -1,3 +1,10 @@
+2002-02-11  DJ Delorie  <dj@redhat.com>
+
+	* acinclude.m4: Check for native targets that can't link at
+	this point in the build.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2003-02-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* hppa/atomicity.h (__Atomicity_lock<__inst>::_S_atomicity_lock):

@@ -2140,9 +2140,15 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_triplet}/baseline_symbols.txt"
   AC_SUBST(baseline_file)
 
+  case "$target" in
+    *-*-cygwin* ) enable_abi_check=no ;;
+    * ) enable_abi_check=yes ;;
+  esac
+
   # Don't do ABI checking unless native.
   AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK,
-                 test x"$build" = x"$host" && test -z "$with_cross_host")
+                 test x"$build" = x"$host" && test -z "$with_cross_host" \
+		 && test "$enable_abi_check" = yes )
 ])
 
 
