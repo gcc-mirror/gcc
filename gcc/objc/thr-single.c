@@ -142,7 +142,7 @@ objc_mutex_allocate(void)
 {
     _objc_mutex_t mutex;
     
-    if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+    if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
         return NULL;                            /* Abort if malloc failed.  */
     
     mutex->owner = NULL;                        /* No owner.                */
@@ -166,7 +166,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
         return -1;                              /* Yes, abort.              */
     depth = objc_mutex_lock(mutex);             /* Must have lock.          */
     
-    free(mutex);                                /* Free memory.             */
+    objc_free(mutex);                           /* Free memory.             */
     return depth;                               /* Return last depth.       */
 }
 

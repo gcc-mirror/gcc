@@ -211,13 +211,13 @@ objc_mutex_allocate(void)
     _objc_mutex_t mutex;
     int         err = 0;
     
-    if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+    if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
         return NULL;                            /* Abort if malloc failed.  */
     
     err = pthread_mutex_init(&mutex->lock, pthread_mutexattr_default);
     
     if (err != 0) {                             /* System init failed?      */
-        free(mutex);                            /* Yes, free local memory.  */
+        objc_free(mutex);                       /* Yes, free local memory.  */
         return NULL;                            /* Abort.                   */
     }
     mutex->owner = (_objc_thread_t) -1;         /* No owner.                */
@@ -244,7 +244,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
     pthread_mutex_unlock(&mutex->lock);         /* Must unlock system mutex.*/
     pthread_mutex_destroy(&mutex->lock);        /* Free system mutex.       */
     
-    free(mutex);                                /* Free memory.             */
+    objc_free(mutex);                           /* Free memory.             */
     return depth;                               /* Return last depth.       */
 }
 
