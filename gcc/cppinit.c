@@ -114,7 +114,6 @@ static int opt_comp			PARAMS ((const void *, const void *));
 static void sort_options		PARAMS ((void));
 #endif
 static int parse_option			PARAMS ((const char *));
-static int dump_macros_helper		PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -415,10 +414,6 @@ cpp_reader_init (pfile)
 
   memset ((char *) pfile, 0, sizeof (cpp_reader));
 
-  pfile->token_buffer_size = 200;
-  pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
-  CPP_SET_WRITTEN (pfile, 0);
-
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, cplusplus_comments) = 1;
   CPP_OPTION (pfile, warn_import) = 1;
@@ -434,6 +429,7 @@ cpp_reader_init (pfile)
   _cpp_init_macros (pfile);
   _cpp_init_stacks (pfile);
   _cpp_init_includes (pfile);
+  _cpp_init_internal_pragmas (pfile);
 }
 
 /* Initialize a cpp_printer structure.  As a side effect, open the
@@ -469,12 +465,6 @@ cpp_cleanup (pfile)
 {
   while (CPP_BUFFER (pfile) != NULL)
     cpp_pop_buffer (pfile);
-
-  if (pfile->token_buffer)
-    {
-      free (pfile->token_buffer);
-      pfile->token_buffer = NULL;
-    }
 
   if (pfile->deps)
     deps_free (pfile->deps);
@@ -857,18 +847,6 @@ cpp_start_read (pfile, print, fname)
 
   initialize_dependency_output (pfile);
 
-  /* -D and friends may produce output, which should be identified
-     as line 0.  */
-
-  CPP_BUFFER (pfile)->lineno = 0;
-  if (print)
-    {
-      print->last_fname = CPP_BUFFER (pfile)->nominal_fname;
-      print->last_id = pfile->include_depth;
-      print->written = CPP_WRITTEN (pfile);
-      print->lineno = 0;
-    }
-
   /* Install __LINE__, etc.  */
   initialize_builtins (pfile);
 
@@ -883,12 +861,12 @@ cpp_start_read (pfile, print, fname)
     }
   pfile->done_initializing = 1;
 
-  /* Now flush any output recorded during initialization, and advance
-     to line 1 of the main input file.  */
-  CPP_BUFFER (pfile)->lineno = 1;
-
-  if (print && ! CPP_OPTION (pfile, no_output))
-    cpp_output_tokens (pfile, print, 1);
+  /* We start at line 1 of the main input file.  */
+  if (print)
+    {
+      print->last_fname = CPP_BUFFER (pfile)->nominal_fname;
+      print->lineno = 1;
+    }
 
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the include stack and processed later,
@@ -907,9 +885,7 @@ cpp_start_read (pfile, print, fname)
   p = CPP_OPTION (pfile, pending)->include_head;
   while (p)
     {
-      if (cpp_read_file (pfile, p->arg)
-	  && print && ! CPP_OPTION (pfile, no_output))
-	cpp_output_tokens (pfile, print, 1);  /* record entry to file */
+      cpp_read_file (pfile, p->arg);
       q = p->next;
       free (p);
       p = q;
@@ -918,18 +894,6 @@ cpp_start_read (pfile, print, fname)
   free (CPP_OPTION (pfile, pending));
   CPP_OPTION (pfile, pending) = NULL;
 
-  return 1;
-}
-
-
-/* Dump out the hash table.  */
-static int
-dump_macros_helper (pfile, hp)
-     cpp_reader *pfile;
-     cpp_hashnode *hp;
-{
-  if (hp->type == T_MACRO)
-    _cpp_dump_definition (pfile, hp);
   return 1;
 }
 
@@ -975,13 +939,11 @@ cpp_finish (pfile, print)
 	}
     }
 
-  if (CPP_OPTION (pfile, dump_macros) == dump_only)
-    cpp_forall_identifiers (pfile, dump_macros_helper);
-
   /* Flush any pending output.  */
   if (print)
     {
-      cpp_output_tokens (pfile, print, print->lineno);
+      if (pfile->need_newline)
+	putc ('\n', print->outf);
       if (ferror (print->outf) || fclose (print->outf))
 	cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
     }

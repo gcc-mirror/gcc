@@ -49,7 +49,6 @@ static int  parse_include	PARAMS ((cpp_reader *, const U_CHAR *, int,
 					 int *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
-static void pass_thru_directive	PARAMS ((cpp_reader *));
 static int  read_line_number	PARAMS ((cpp_reader *, int *));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
@@ -60,7 +59,6 @@ static const cpp_hashnode *
 	    detect_if_not_defined PARAMS ((cpp_reader *));
 static cpp_hashnode *
 	    get_define_node	PARAMS ((cpp_reader *));
-static void dump_macro_name 	PARAMS ((cpp_reader *, cpp_hashnode *));
 static void unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 
 /* Utility.  */
@@ -214,29 +212,6 @@ _cpp_check_linemarker (pfile, token, bol)
   return &dtable[T_LINE];
 }  
 
-static void
-dump_macro_name (pfile, node)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
-{
-  CPP_PUTS (pfile, "#define ", sizeof "#define " - 1);
-  CPP_PUTS (pfile, node->name, node->length);
-}
-
-/* Pass the current directive through to the output file.  */
-static void
-pass_thru_directive (pfile)
-     cpp_reader *pfile;
-{
-  /* XXX This output may be genuinely needed even when there is no
-     printer.  */
-  if (! pfile->printer)
-    return;
-  /* Flush first (temporary).  */
-  cpp_output_tokens (pfile, pfile->printer, pfile->token_list.line);
-  _cpp_dump_list (pfile, &pfile->token_list, pfile->first_directive_token, 1);
-}
-
 static cpp_hashnode *
 get_define_node (pfile)
      cpp_reader *pfile;
@@ -288,13 +263,8 @@ do_define (pfile)
 
   if ((node = get_define_node (pfile)))
     if (_cpp_create_definition (pfile, node))
-      {
-	if (CPP_OPTION (pfile, debug_output)
-	    || CPP_OPTION (pfile, dump_macros) == dump_definitions)
-	  _cpp_dump_definition (pfile, node);
-	else if (CPP_OPTION (pfile, dump_macros) == dump_names)
-	  dump_macro_name (pfile, node);
-      }
+      if (pfile->cb.define)
+	(*pfile->cb.define) (pfile, node);
 }
 
 /* Remove the definition of a symbol from the symbol table.  */
@@ -311,12 +281,8 @@ do_undef (pfile)
      is not currently defined as a macro name.  */
   if (node && node->type != T_VOID)
     {
-      /* If we are generating additional info for debugging (with -g) we
-	 need to pass through all effective #undef commands.  */
-      if (CPP_OPTION (pfile, debug_output)
-	  || CPP_OPTION (pfile, dump_macros) == dump_definitions
-	  || CPP_OPTION (pfile, dump_macros) == dump_names)
-	pass_thru_directive (pfile);
+      if (pfile->cb.undef)
+	(*pfile->cb.undef) (pfile, node);
 
       if (node->type != T_MACRO)
 	cpp_warning (pfile, "undefining \"%s\"", node->name);
@@ -362,6 +328,9 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
   *lenp = name->val.str.len;
   *strp = name->val.str.text;
   *abp = (name->type == CPP_HEADER_NAME);
+
+  if (pfile->cb.include)
+    (*pfile->cb.include) (pfile, dir, *strp, *lenp, *abp);
   return 0;
 }
 
@@ -377,8 +346,6 @@ do_include (pfile)
     return;
 
   _cpp_execute_include (pfile, str, len, 0, 0, ab);
-  if (CPP_OPTION (pfile, dump_includes))
-    pass_thru_directive (pfile);
 }
 
 static void
@@ -401,8 +368,6 @@ do_import (pfile)
     return;
 
   _cpp_execute_include (pfile, str, len, 1, 0, ab);
-  if (CPP_OPTION (pfile, dump_includes))
-    pass_thru_directive (pfile);
 }
 
 static void
@@ -436,8 +401,6 @@ do_include_next (pfile)
     cpp_warning (pfile, "#include_next in primary source file");
 
   _cpp_execute_include (pfile, str, len, 0, search_start, ab);
-  if (CPP_OPTION (pfile, dump_includes))
-    pass_thru_directive (pfile);
 }
 
 /* Subroutine of do_line.  Read next token from PFILE without adding it to
@@ -504,6 +467,7 @@ do_line (pfile)
   /* C99 raised the minimum limit on #line numbers.  */
   unsigned int cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
   int action_number = 0;
+  int enter = 0, leave = 0;
   enum cpp_ttype type;
   const U_CHAR *str;
   char *fname;
@@ -558,18 +522,15 @@ do_line (pfile)
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "garbage at end of #line");
 
-  /* This is somewhat questionable: change the buffer stack
-     depth so that output_line_command thinks we've stacked
-     another buffer. */
   if (action_number == 1)
     {
-      pfile->buffer_stack_depth++;
+      enter = 1;
       cpp_make_system_header (pfile, ip, 0);
       read_line_number (pfile, &action_number);
     }
   else if (action_number == 2)
     {
-      pfile->buffer_stack_depth--;
+      leave = 1;
       cpp_make_system_header (pfile, ip, 0);
       read_line_number (pfile, &action_number);
     }
@@ -583,6 +544,11 @@ do_line (pfile)
       cpp_make_system_header (pfile, ip, 2);
       read_line_number (pfile, &action_number);
     }
+
+  if (enter && pfile->cb.enter_file)
+    (*pfile->cb.enter_file) (pfile);
+  if (leave && pfile->cb.leave_file)
+    (*pfile->cb.leave_file) (pfile);
 
  done:
   return;
@@ -598,13 +564,12 @@ static void
 do_error (pfile)
      cpp_reader *pfile;
 {
-  U_CHAR *text, *limit;
-
-  text = pfile->limit;
-  _cpp_dump_list (pfile, &pfile->token_list, pfile->first_directive_token, 0);
-  limit = pfile->limit;
-  pfile->limit = text;
-  cpp_error (pfile, "%.*s", (int)(limit - text), text);
+  if (_cpp_begin_message (pfile, ERROR, NULL, 0, 0))
+    {
+      cpp_output_list (pfile, stderr, &pfile->token_list,
+		       pfile->first_directive_token);
+      putc ('\n', stderr);
+    }
 }
 
 /*
@@ -616,13 +581,12 @@ static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
-  U_CHAR *text, *limit;
-
-  text = pfile->limit;
-  _cpp_dump_list (pfile, &pfile->token_list, pfile->first_directive_token, 0);
-  limit = pfile->limit;
-  pfile->limit = text;
-  cpp_warning (pfile, "%.*s", (int)(limit - text), text);
+  if (_cpp_begin_message (pfile, WARNING, NULL, 0, 0))
+    {
+      cpp_output_list (pfile, stderr, &pfile->token_list,
+		       pfile->first_directive_token);
+      putc ('\n', stderr);
+    }
 }
 
 /* Report program identification.  */
@@ -631,15 +595,14 @@ static void
 do_ident (pfile)
      cpp_reader *pfile;
 {
-  /* Next token should be a string constant.  */
-  if (_cpp_get_token (pfile)->type == CPP_STRING)
-    /* And then a newline.  */
-    if (_cpp_get_token (pfile)->type == CPP_EOF)
-      {
-	/* Good - ship it.  */
-	pass_thru_directive (pfile);
-	return;
-      }
+  const cpp_token *str = _cpp_get_token (pfile);
+
+  if (str->type == CPP_STRING && _cpp_get_token (pfile)->type == CPP_EOF)
+    {
+      if (pfile->cb.ident)
+	(*pfile->cb.ident) (pfile, str);
+      return;
+    }
 
   cpp_error (pfile, "invalid #ident");
 }
@@ -659,88 +622,154 @@ do_ident (pfile)
    They return 1 if the token buffer is to be popped, 0 if not. */
 struct pragma_entry
 {
+  struct pragma_entry *next;
   const char *name;
-  int (*handler) PARAMS ((cpp_reader *));
+  size_t len;
+  int isnspace;
+  union {
+    void (*handler) PARAMS ((cpp_reader *));
+    struct pragma_entry *space;
+  } u;
 };
 
-static int pragma_dispatch             
-    PARAMS ((cpp_reader *, const struct pragma_entry *, const cpp_hashnode *));
-static int do_pragma_once		PARAMS ((cpp_reader *));
-static int do_pragma_implementation	PARAMS ((cpp_reader *));
-static int do_pragma_poison		PARAMS ((cpp_reader *));
-static int do_pragma_system_header	PARAMS ((cpp_reader *));
-static int do_pragma_gcc                PARAMS ((cpp_reader *));
-static int do_pragma_dependency         PARAMS ((cpp_reader *));
-
-static const struct pragma_entry top_pragmas[] =
-{
-  {"once", do_pragma_once},
-  {"implementation", do_pragma_implementation},
-  {"poison", do_pragma_poison},
-  {"GCC", do_pragma_gcc},
-  {NULL, NULL}
-};
-
-static const struct pragma_entry gcc_pragmas[] =
-{
-  {"implementation", do_pragma_implementation},
-  {"poison", do_pragma_poison},
-  {"system_header", do_pragma_system_header},
-  {"dependency", do_pragma_dependency},
-  {NULL, NULL}
-};
-
-static int pragma_dispatch (pfile, table, node)
+void
+cpp_register_pragma (pfile, space, name, handler)
      cpp_reader *pfile;
-     const struct pragma_entry *table;
-     const cpp_hashnode *node;
+     const char *space;
+     const char *name;
+     void (*handler) PARAMS ((cpp_reader *));
 {
-  const U_CHAR *p = node->name;
-  size_t len = node->length;
+  struct pragma_entry **x, *new;
+  size_t len;
+
+  x = &pfile->pragmas;
+  if (space)
+    {
+      struct pragma_entry *p = pfile->pragmas;
+      len = strlen (space);
+      while (p)
+	{
+	  if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
+	    {
+	      x = &p->u.space;
+	      goto found;
+	    }
+	  p = p->next;
+	}
+      cpp_ice (pfile, "unknown #pragma namespace %s", space);
+      return;
+    }
+
+ found:
+  new = xnew (struct pragma_entry);
+  new->name = name;
+  new->len = strlen (name);
+  new->isnspace = 0;
+  new->u.handler = handler;
+
+  new->next = *x;
+  *x = new;
+}
+
+void
+cpp_register_pragma_space (pfile, space)
+     cpp_reader *pfile;
+     const char *space;
+{
+  struct pragma_entry *new;
+  const struct pragma_entry *p = pfile->pragmas;
+  size_t len = strlen (space);
+
+  while (p)
+    {
+      if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
+	{
+	  cpp_ice (pfile, "#pragma namespace %s already registered", space);
+	  return;
+	}
+      p = p->next;
+    }
+
+  new = xnew (struct pragma_entry);
+  new->name = space;
+  new->len = len;
+  new->isnspace = 1;
+  new->u.space = 0;
+
+  new->next = pfile->pragmas;
+  pfile->pragmas = new;
+}
   
-  for (; table->name; table++)
-    if (strlen (table->name) == len && !memcmp (p, table->name, len))
-      return (*table->handler) (pfile);
-  return 0;
+static void do_pragma_once		PARAMS ((cpp_reader *));
+static void do_pragma_poison		PARAMS ((cpp_reader *));
+static void do_pragma_system_header	PARAMS ((cpp_reader *));
+static void do_pragma_dependency	PARAMS ((cpp_reader *));
+
+void
+_cpp_init_internal_pragmas (pfile)
+     cpp_reader *pfile;
+{
+  /* top level */
+  cpp_register_pragma (pfile, 0, "poison", do_pragma_poison);
+  cpp_register_pragma (pfile, 0, "once", do_pragma_once);
+
+  /* GCC namespace */
+  cpp_register_pragma_space (pfile, "GCC");
+
+  cpp_register_pragma (pfile, "GCC", "poison", do_pragma_poison);
+  cpp_register_pragma (pfile, "GCC", "system_header", do_pragma_system_header);
+  cpp_register_pragma (pfile, "GCC", "dependency", do_pragma_dependency);
 }
 
 static void
 do_pragma (pfile)
      cpp_reader *pfile;
 {
+  const struct pragma_entry *p;
   const cpp_token *tok;
-  int pop;
+  const cpp_hashnode *node;
+  const U_CHAR *name;
+  size_t len;
 
+  p = pfile->pragmas;
+
+ new_space:
   tok = _cpp_get_token (pfile);
   if (tok->type == CPP_EOF)
     return;
-  else if (tok->type != CPP_NAME)
+
+  if (tok->type != CPP_NAME)
     {
       cpp_error (pfile, "malformed #pragma directive");
       return;
     }
 
-  pop = pragma_dispatch (pfile, top_pragmas, tok->val.node);
-  if (!pop)
-    pass_thru_directive (pfile);
+  node = tok->val.node;
+  name = node->name;
+  len = node->length;
+  while (p)
+    {
+      if (strlen (p->name) == len && !memcmp (p->name, name, len))
+	{
+	  if (p->isnspace)
+	    {
+	      p = p->u.space;
+	      goto new_space;
+	    }
+	  else
+	    {
+	      (*p->u.handler) (pfile);
+	      return;
+	    }
+	}
+      p = p->next;
+    }
+
+  if (pfile->cb.def_pragma)
+    (*pfile->cb.def_pragma) (pfile);
 }
 
-static int
-do_pragma_gcc (pfile)
-     cpp_reader *pfile;
-{
-  const cpp_token *tok;
-
-  tok = _cpp_get_token (pfile);
-  if (tok->type == CPP_EOF)
-    return 1;
-  else if (tok->type != CPP_NAME)
-    return 0;
-  
-  return pragma_dispatch (pfile, gcc_pragmas, tok->val.node);
-}
-
-static int
+static void
 do_pragma_once (pfile)
      cpp_reader *pfile;
 {
@@ -755,41 +784,9 @@ do_pragma_once (pfile)
     cpp_warning (pfile, "#pragma once outside include file");
   else
     ip->inc->cmacro = NEVER_REREAD;
-
-  return 1;
 }
 
-static int
-do_pragma_implementation (pfile)
-     cpp_reader *pfile;
-{
-  /* Be quiet about `#pragma implementation' for a file only if it hasn't
-     been included yet.  */
-  const cpp_token *tok = _cpp_get_token (pfile);
-  char *copy;
-
-  if (tok->type == CPP_EOF)
-    return 0;
-  else if (tok->type != CPP_STRING
-	   || _cpp_get_token (pfile)->type != CPP_EOF)
-    {
-      cpp_error (pfile, "malformed #pragma implementation");
-      return 1;
-    }
-
-  /* Make a NUL-terminated copy of the string.  */
-  copy = alloca (tok->val.str.len + 1);
-  memcpy (copy, tok->val.str.text, tok->val.str.len);
-  copy[tok->val.str.len] = '\0';
-  
-  if (cpp_included (pfile, copy))
-    cpp_warning (pfile,
-	 "#pragma implementation for %s appears after file is included",
-		 copy);
-  return 0;
-}
-
-static int
+static void
 do_pragma_poison (pfile)
      cpp_reader *pfile;
 {
@@ -797,13 +794,6 @@ do_pragma_poison (pfile)
      error message.  */
   const cpp_token *tok;
   cpp_hashnode *hp;
-  int writeit;
-
-  /* As a rule, don't include #pragma poison commands in output,  
-     unless the user asks for them.  */
-  writeit = (CPP_OPTION (pfile, debug_output)
-	     || CPP_OPTION (pfile, dump_macros) == dump_definitions
-	     || CPP_OPTION (pfile, dump_macros) == dump_names);
 
   for (;;)
     {
@@ -813,7 +803,7 @@ do_pragma_poison (pfile)
       if (tok->type != CPP_NAME)
 	{
 	  cpp_error (pfile, "invalid #pragma poison directive");
-	  return 1;
+	  return;
 	}
 
       hp = tok->val.node;
@@ -827,7 +817,9 @@ do_pragma_poison (pfile)
 	  hp->type = T_POISON;
 	}
     }
-  return !writeit;
+
+  if (pfile->cb.poison)
+    (*pfile->cb.poison) (pfile);
 }
 
 /* Mark the current header as a system header.  This will suppress
@@ -836,7 +828,7 @@ do_pragma_poison (pfile)
    conforming C, but cannot be certain that their headers appear in a
    system include directory.  To prevent abuse, it is rejected in the
    primary source file.  */
-static int
+static void
 do_pragma_system_header (pfile)
      cpp_reader *pfile;
 {
@@ -845,14 +837,12 @@ do_pragma_system_header (pfile)
     cpp_warning (pfile, "#pragma system_header outside include file");
   else
     cpp_make_system_header (pfile, ip, 1);
-
-  return 1;
 }
 
 /* Check the modified date of the current include file against a specified
    file. Issue a diagnostic, if the specified file is newer. We use this to
    determine if a fixed header should be refixed.  */
-static int
+static void
 do_pragma_dependency (pfile)
      cpp_reader *pfile;
 {
@@ -862,7 +852,7 @@ do_pragma_dependency (pfile)
   char left, right;
  
   if (parse_include (pfile, U"pragma dependency", 1, &name, &len, &ab))
-    return 1;
+    return;
 
   left = ab ? '<' : '"';
   right = ab ? '>' : '"';
@@ -876,21 +866,13 @@ do_pragma_dependency (pfile)
       
       cpp_warning (pfile, "current file is older than %c%.*s%c",
 		   left, (int)len, name, right);
-      if (msg->type != CPP_EOF)
+      if (msg->type != CPP_EOF
+	  && _cpp_begin_message (pfile, WARNING, NULL, msg->line, msg->col))
 	{
-	  U_CHAR *text, *limit;
-
-	  text = pfile->limit;
-	  _cpp_dump_list (pfile, &pfile->token_list, msg, 0);
-	  limit = pfile->limit;
-	  pfile->limit = text;
-	  /* There must be something non-whitespace after. */
-	  while (*text == ' ')
-	    text++; 
-	  cpp_warning (pfile, "%.*s", (int)(limit - text), text);
+	  cpp_output_list (pfile, stderr, &pfile->token_list, msg);
+	  putc ('\n', stderr);
 	}
     }
-  return 1;
 }
 
 /* Just ignore #sccs, on systems where we define it at all.  */
@@ -1513,15 +1495,21 @@ cpp_buffer *
 cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
+  int wfb;
   cpp_buffer *buf = CPP_BUFFER (pfile);
 
   unwind_if_stack (pfile, buf);
-  if (buf->inc)
+  wfb = (buf->inc != 0);
+  if (wfb)
     _cpp_pop_file_buffer (pfile, buf);
 
   CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
   obstack_free (pfile->buffer_ob, buf);
   pfile->buffer_stack_depth--;
+
+  if (wfb && pfile->cb.leave_file && CPP_BUFFER (pfile))
+    (*pfile->cb.leave_file) (pfile);
+  
   return CPP_BUFFER (pfile);
 }
 

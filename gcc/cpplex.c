@@ -24,13 +24,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 Cleanups to do:-
 
-o -dM and with _cpp_dump_list: too many \n output.
-o Put a printer object in cpp_reader?
 o Check line numbers assigned to all errors.
 o Replace strncmp with memcmp almost everywhere.
 o lex_line's use of cur_token, flags and list->token_used is a bit opaque.
-o Convert do_ functions to return void.  Kaveh thinks its OK; and said he'll
-  give it a run when we've got some code.
 o Distinguish integers, floats, and 'other' pp-numbers.
 o Store ints and char constants as binary values.
 o New command-line assertion syntax.
@@ -101,9 +97,7 @@ static void free_macro_args PARAMS ((macro_args *));
 
 #define auto_expand_name_space(list) \
     _cpp_expand_name_space ((list), 1 + (list)->name_cap / 2)
-static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
-					 size_t, FILE *));
-static void dump_param_spelling PARAMS ((cpp_reader *, const cpp_toklist *,
+static void dump_param_spelling PARAMS ((FILE *, const cpp_toklist *,
 					 unsigned int));
 static void output_line_command PARAMS ((cpp_reader *, cpp_printer *,
 					 unsigned int));
@@ -135,8 +129,8 @@ static cpp_token *stringify_arg PARAMS ((cpp_reader *, const cpp_token *));
 static void expand_context_stack PARAMS ((cpp_reader *));
 static unsigned char * spell_token PARAMS ((cpp_reader *, const cpp_token *,
 					    unsigned char *));
-static void output_token PARAMS ((cpp_reader *, const cpp_token *,
-				  const cpp_token *));
+static void output_token PARAMS ((cpp_reader *, FILE *, const cpp_token *,
+				  const cpp_token *, int));
 typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 					  cpp_token *));
 static cpp_token *make_string_token PARAMS ((cpp_token *, const U_CHAR *,
@@ -189,11 +183,21 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 
 /* An upper bound on the number of bytes needed to spell a token,
    including preceding whitespace.  */
-#define TOKEN_LEN(token) (5 + (TOKEN_SPELL(token) == SPELL_STRING	\
-			       ? (token)->val.str.len			\
-			       : (TOKEN_SPELL(token) == SPELL_IDENT	\
-				  ? (token)->val.node->length		\
-				  : 0)))
+static inline size_t TOKEN_LEN PARAMS ((const cpp_token *));
+static inline size_t
+TOKEN_LEN (token)
+     const cpp_token *token;
+{
+  size_t len;
+
+  switch (TOKEN_SPELL (token))
+    {
+    default:		len = 0;			break;
+    case SPELL_STRING:	len = token->val.str.len;	break;
+    case SPELL_IDENT:	len = token->val.node->length;	break;
+    }
+  return len + 5;
+}
 
 #define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
@@ -246,44 +250,6 @@ END
 #undef END
 #undef s
 
-/* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
-
-void
-_cpp_grow_token_buffer (pfile, n)
-     cpp_reader *pfile;
-     long n;
-{
-  long old_written = CPP_WRITTEN (pfile);
-  pfile->token_buffer_size = n + 2 * pfile->token_buffer_size;
-  pfile->token_buffer = (U_CHAR *)
-    xrealloc(pfile->token_buffer, pfile->token_buffer_size);
-  CPP_SET_WRITTEN (pfile, old_written);
-}
-
-/* Deal with the annoying semantics of fwrite.  */
-static void
-safe_fwrite (pfile, buf, len, fp)
-     cpp_reader *pfile;
-     const U_CHAR *buf;
-     size_t len;
-     FILE *fp;
-{
-  size_t count;
-
-  while (len)
-    {
-      count = fwrite (buf, 1, len, fp);
-      if (count == 0)
-	goto error;
-      len -= count;
-      buf += count;
-    }
-  return;
-
- error:
-  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-}
-
 /* Notify the compiler proper that the current line number has jumped,
    or the current file name has changed.  */
 
@@ -294,51 +260,30 @@ output_line_command (pfile, print, line)
      unsigned int line;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
-  enum { same = 0, enter, leave, rname } change;
-  static const char * const codes[] = { "", " 1", " 2", "" };
 
   if (line == 0)
     return;
 
   /* End the previous line of text.  */
   if (pfile->need_newline)
-    putc ('\n', print->outf);
+    {
+      putc ('\n', print->outf);
+      print->lineno++;
+    }
   pfile->need_newline = 0;
 
   if (CPP_OPTION (pfile, no_line_commands))
     return;
 
-  /* If ip is null, we've been called from cpp_finish, and they just
-     needed the final flush and trailing newline.  */
-  if (!ip)
-    return;
-
-  if (pfile->include_depth == print->last_id)
-    {
-      /* Determine whether the current filename has changed, and if so,
-	 how.  'nominal_fname' values are unique, so they can be compared
-	 by comparing pointers.  */
-      if (ip->nominal_fname == print->last_fname)
-	change = same;
-      else
-	change = rname;
-    }
-  else
-    {
-      if (pfile->include_depth > print->last_id)
-	change = enter;
-      else
-	change = leave;
-      print->last_id = pfile->include_depth;
-    }
-  print->last_fname = ip->nominal_fname;
-
   /* If the current file has not changed, we can output a few newlines
      instead if we want to increase the line number by a small amount.
      We cannot do this if print->lineno is zero, because that means we
      haven't output any line commands yet.  (The very first line
-     command output is a `same_file' command.)  */
-  if (change == same && print->lineno > 0
+     command output is a `same_file' command.)
+
+     'nominal_fname' values are unique, so they can be compared by
+     comparing pointers.  */
+  if (ip->nominal_fname == print->last_fname && print->lineno > 0
       && line >= print->lineno && line < print->lineno + 8)
     {
       while (line > print->lineno)
@@ -349,41 +294,41 @@ output_line_command (pfile, print, line)
       return;
     }
 
-#ifndef NO_IMPLICIT_EXTERN_C
-  if (CPP_OPTION (pfile, cplusplus))
-    fprintf (print->outf, "# %u \"%s\"%s%s%s\n", line, ip->nominal_fname,
-	     codes[change],
-	     ip->inc->sysp ? " 3" : "",
-	     (ip->inc->sysp == 2) ? " 4" : "");
-  else
-#endif
-    fprintf (print->outf, "# %u \"%s\"%s%s\n", line, ip->nominal_fname,
-	     codes[change],
-	     ip->inc->sysp ? " 3" : "");
+  fprintf (print->outf, "# %u \"%s\"%s\n", line, ip->nominal_fname,
+	   cpp_syshdr_flags (pfile, ip));
+
+  print->last_fname = ip->nominal_fname;
   print->lineno = line;
 }
 
-/* Write the contents of the token_buffer to the output stream, and
-   clear the token_buffer.  Also handles generating line commands and
-   keeping track of file transitions.  */
-
+/* Like fprintf, but writes to a printer object.  You should be sure
+   always to generate a complete line when you use this function.  */
 void
-cpp_output_tokens (pfile, print, line)
-     cpp_reader *pfile;
-     cpp_printer *print;
-     unsigned int line;
+cpp_printf VPARAMS ((cpp_reader *pfile, cpp_printer *print,
+		     const char *fmt, ...))
 {
-  if (CPP_WRITTEN (pfile) - print->written)
-    {
-      safe_fwrite (pfile, pfile->token_buffer,
-		   CPP_WRITTEN (pfile) - print->written, print->outf);
-      pfile->need_newline = 1;
-      if (print->lineno)
-	print->lineno++;
+  va_list ap;
+#ifndef ANSI_PROTOTYPES
+  cpp_reader *pfile;
+  cpp_printer *print;
+  const char *fmt;
+#endif
 
-      CPP_SET_WRITTEN (pfile, print->written);
-    }
-  output_line_command (pfile, print, line);
+  VA_START (ap, fmt);
+
+#ifndef ANSI_PROTOTYPES
+  pfile = va_arg (ap, cpp_reader *);
+  print = va_arg (ap, cpp_printer *);
+  fmt = va_arg (ap, const char *);
+#endif
+
+  /* End the previous line of text.  */
+  if (pfile->need_newline)
+    putc ('\n', print->outf);
+  pfile->need_newline = 0;
+
+  vfprintf (print->outf, fmt, ap);
+  va_end (ap);
 }
 
 /* Scan until CPP_BUFFER (PFILE) is exhausted, discarding output.  */
@@ -434,9 +379,6 @@ cpp_scan_buffer (pfile, print)
 	{
 	  cpp_pop_buffer (pfile);
 
-	  if (CPP_BUFFER (pfile))
-	    cpp_output_tokens (pfile, print, CPP_BUF_LINE (CPP_BUFFER (pfile)));
-
 	  if (CPP_BUFFER (pfile) == stop)
 	    return;
 
@@ -452,48 +394,18 @@ cpp_scan_buffer (pfile, print)
 	      continue;
 	    }
 
-	  cpp_output_tokens (pfile, print, pfile->token_list.line);
+	  output_line_command (pfile, print, pfile->token_list.line);
 	  prev = 0;
 	}
 
       if (token->type != CPP_PLACEMARKER)
-	output_token (pfile, token, prev);
-
-      prev = token;
-    }
-}
-
-/* Scan a single line of the input into the token_buffer.  */
-int
-cpp_scan_line (pfile)
-     cpp_reader *pfile;
-{
-  const cpp_token *token, *prev = 0;
-
-  if (pfile->buffer == NULL)
-    return 0;
-
-  do
-    {
-      token = cpp_get_token (pfile);
-      if (token->type == CPP_EOF)
 	{
-	  cpp_pop_buffer (pfile);
-	  break;
+	  output_token (pfile, print->outf, token, prev, 1);
+	  pfile->need_newline = 1;
 	}
 
-      /* If the last token on a line results from a macro expansion,
-	 the check below will fail to stop us from proceeding to the
-	 next line - so make sure we stick in a newline, at least.  */
-      if (token->flags & BOL)
-	CPP_PUTC (pfile, '\n');
-
-      output_token (pfile, token, prev);
       prev = token;
     }
-  while (pfile->cur_context > 0
-	 || pfile->contexts[0].posn < pfile->contexts[0].count);
-  return 1;
 }
 
 /* Helper routine used by parse_include, which can't see spell_token.
@@ -503,11 +415,14 @@ const cpp_token *
 _cpp_glue_header_name (pfile)
      cpp_reader *pfile;
 {
-  unsigned int written = CPP_WRITTEN (pfile);
   const cpp_token *t;
   cpp_token *hdr;
-  U_CHAR *buf;
-  size_t len;
+  U_CHAR *buf, *p;
+  size_t len, avail;
+
+  avail = 40;
+  len = 0;
+  buf = xmalloc (avail);
 
   for (;;)
     {
@@ -515,19 +430,23 @@ _cpp_glue_header_name (pfile)
       if (t->type == CPP_GREATER || t->type == CPP_EOF)
 	break;
 
-      CPP_RESERVE (pfile, TOKEN_LEN (t));
+      if (len + TOKEN_LEN (t) > avail)
+	{
+	  avail = len + TOKEN_LEN (t) + 40;
+	  buf = xrealloc (buf, avail);
+	}
+
       if (t->flags & PREV_WHITE)
-	CPP_PUTC_Q (pfile, ' ');
-      pfile->limit = spell_token (pfile, t, pfile->limit);
+	buf[len++] = ' ';
+
+      p = spell_token (pfile, t, buf + len);
+      len = (size_t) (p - buf);  /* p known >= buf */
     }
 
   if (t->type == CPP_EOF)
     cpp_error (pfile, "missing terminating > character");
 
-  len = CPP_WRITTEN (pfile) - written;
-  buf = xmalloc (len);
-  memcpy (buf, pfile->token_buffer + written, len);
-  CPP_SET_WRITTEN (pfile, written);
+  buf = xrealloc (buf, len);
 
   hdr = get_temp_token (pfile);
   hdr->type = CPP_HEADER_NAME;
@@ -1894,50 +1813,149 @@ lex_line (pfile, list)
 }
 
 /* Write the spelling of a token TOKEN, with any appropriate
-   whitespace before it, to the token_buffer.  PREV is the previous
-   token, which is used to determine if we need to shove in an extra
-   space in order to avoid accidental token paste.  */
+   whitespace before it, to FP.  PREV is the previous token, which
+   is used to determine if we need to shove in an extra space in order
+   to avoid accidental token paste.  If WHITE is 0, do not insert any
+   leading whitespace.  */
 static void
-output_token (pfile, token, prev)
+output_token (pfile, fp, token, prev, white)
      cpp_reader *pfile;
+     FILE *fp;
      const cpp_token *token, *prev;
+     int white;
 {
-  int dummy;
-
-  if (token->col && (token->flags & BOL))
+  if (white)
     {
-      /* Supply enough whitespace to put this token in its original
-	 column.  Don't bother trying to reconstruct tabs; we can't
-	 get it right in general, and nothing ought to care.  (Yes,
-	 some things do care; the fault lies with them.)  */
-      unsigned char *buffer;
-      unsigned int spaces = token->col - 1;
+      int dummy;
 
-      CPP_RESERVE (pfile, token->col);
-      buffer = pfile->limit;
+      if (token->col && (token->flags & BOL))
+	{
+	  /* Supply enough whitespace to put this token in its original
+	     column.  Don't bother trying to reconstruct tabs; we can't
+	     get it right in general, and nothing ought to care.  (Yes,
+	     some things do care; the fault lies with them.)  */
+	  unsigned int spaces = token->col - 1;
+      
+	  while (spaces--)
+	    putc (' ', fp);
+	}
+      else if (token->flags & PREV_WHITE)
+	putc (' ', fp);
+      else
+      /* Check for and prevent accidental token pasting.
+	 In addition to the cases handled by can_paste, consider
 
-      while (spaces--)
-	*buffer++ = ' ';
-      pfile->limit = buffer;
-    }
-  else if (token->flags & PREV_WHITE)
-    CPP_PUTC (pfile, ' ');
-  else if (prev)
-    {
-      /* Check for and prevent accidental token pasting.  */
-      if (can_paste (pfile, prev, token, &dummy) != CPP_EOF)
-	CPP_PUTC (pfile, ' ');
-      /* can_paste doesn't catch all the accidental pastes.
-	 Consider a + ++b - if there is not a space between the + and ++, it
-	 will be misparsed as a++ + b.  */
-      else if ((prev->type == CPP_PLUS && token->type == CPP_PLUS_PLUS)
-	       || (prev->type == CPP_MINUS && token->type == CPP_MINUS_MINUS))
-	CPP_PUTC (pfile, ' ');
+	 a + ++b - if there is not a space between the + and ++, it
+	 will be misparsed as a++ + b.  But + ## ++ doesn't produce
+	 a valid token.  */
+	if (prev
+	    && (can_paste (pfile, prev, token, &dummy) != CPP_EOF
+		|| (prev->type == CPP_PLUS && token->type == CPP_PLUS_PLUS)
+		|| (prev->type == CPP_MINUS && token->type == CPP_MINUS_MINUS)))
+	putc (' ', fp);
     }
 
-  CPP_RESERVE (pfile, TOKEN_LEN (token));
-  pfile->limit = spell_token (pfile, token, pfile->limit);
+  switch (TOKEN_SPELL (token))
+    {
+    case SPELL_OPERATOR:
+      {
+	const unsigned char *spelling;
+
+	if (token->flags & DIGRAPH)
+	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
+	else if (token->flags & NAMED_OP)
+	  goto spell_ident;
+	else
+	  spelling = TOKEN_NAME (token);
+
+	ufputs (spelling, fp);
+      }
+      break;
+
+    case SPELL_IDENT:
+      spell_ident:
+      ufputs (token->val.node->name, fp);
+      break;
+
+    case SPELL_STRING:
+      {
+	if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
+	  putc ('L', fp);
+
+	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
+	  putc ('"', fp);
+	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
+	  putc ('\'', fp);
+
+	fwrite (token->val.str.text, 1, token->val.str.len, fp);
+	
+	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
+	  putc ('"', fp);
+	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
+	  putc ('\'', fp);
+      }
+      break;
+
+    case SPELL_CHAR:
+      putc (token->val.aux, fp);
+      break;
+
+    case SPELL_NONE:
+      /* Placemarker or EOF - no output.  (Macro args are handled
+         elsewhere.  */
+      break;
+    }
 }
+
+/* Dump the original user's spelling of argument index ARG_NO to the
+   macro whose expansion is LIST.  */
+static void
+dump_param_spelling (fp, list, arg_no)
+     FILE *fp;
+     const cpp_toklist *list;
+     unsigned int arg_no;
+{
+  const U_CHAR *param = list->namebuf;
+
+  while (arg_no--)
+    param += ustrlen (param) + 1;
+  ufputs (param, fp);
+}
+
+/* Output all the tokens of LIST, starting at TOKEN, to FP.  */
+void
+cpp_output_list (pfile, fp, list, token)
+     cpp_reader *pfile;
+     FILE *fp;
+     const cpp_toklist *list;
+     const cpp_token *token;
+{
+  const cpp_token *limit = list->tokens + list->tokens_used;
+  const cpp_token *prev = 0;
+  int white = 0;
+
+  while (token < limit)
+    {
+      /* XXX Find some way we can write macro args from inside
+	 output_token/spell_token.  */
+      if (token->type == CPP_MACRO_ARG)
+	{
+	  if (white && token->flags & PREV_WHITE)
+	    putc (' ', fp);
+	  if (token->flags & STRINGIFY_ARG)
+	    putc ('#', fp);
+	  dump_param_spelling (fp, list, token->val.aux);
+	}
+      else
+	output_token (pfile, fp, token, prev, white);
+      if (token->flags & PASTE_LEFT)
+	fputs (" ##", fp);
+      prev = token;
+      token++;
+      white = 1;
+    }
+}
+
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
    already contain the enough space to hold the token's spelling.
@@ -3033,12 +3051,6 @@ process_directive (pfile, token)
   else if (token[1].type != CPP_NUMBER)
     cpp_ice (pfile, "directive begins with %s?!", TOKEN_NAME (token));
 
-  /* Flush pending tokens at this point, in case the directive produces
-     output.  XXX Directive output won't be visible to a direct caller of
-     cpp_get_token.  */
-  if (pfile->printer && CPP_WRITTEN (pfile) - pfile->printer->written)
-    cpp_output_tokens (pfile, pfile->printer, pfile->token_list.line);
-
   if (! (d->flags & EXPAND))
     prev_nme = prevent_macro_expansion (pfile);
   (void) (*d->handler) (pfile);
@@ -3463,58 +3475,6 @@ special_symbol (pfile, node, token)
   return result;
 }
 #undef DSC
-
-/* Dump the original user's spelling of argument index ARG_NO to the
-   macro whose expansion is LIST.  */
-static void
-dump_param_spelling (pfile, list, arg_no)
-     cpp_reader *pfile;
-     const cpp_toklist *list;
-     unsigned int arg_no;
-{
-  const U_CHAR *param = list->namebuf;
-
-  while (arg_no--)
-    param += ustrlen (param) + 1;
-  CPP_PUTS (pfile, param, ustrlen (param));
-}
-
-/* Dump a token list to the output.  */
-void
-_cpp_dump_list (pfile, list, token, flush)
-     cpp_reader *pfile;
-     const cpp_toklist *list;
-     const cpp_token *token;
-     int flush;
-{
-  const cpp_token *limit = list->tokens + list->tokens_used;
-  const cpp_token *prev = 0;
-
-  /* Avoid the CPP_EOF.  */
-  if (list->directive)
-    limit--;
-
-  while (token < limit)
-    {
-      if (token->type == CPP_MACRO_ARG)
-	{
-	  if (token->flags & PREV_WHITE)
-	    CPP_PUTC (pfile, ' ');
-	  if (token->flags & STRINGIFY_ARG)
-	    CPP_PUTC (pfile, '#');
-	  dump_param_spelling (pfile, list, token->val.aux);
-	}
-      else if (token->type != CPP_PLACEMARKER)
-	output_token (pfile, token, prev);
-      if (token->flags & PASTE_LEFT)
-	CPP_PUTS (pfile, " ##", 3);
-      prev = token;
-      token++;
-    }
-
-  if (flush && pfile->printer)
-    cpp_output_tokens (pfile, pfile->printer, pfile->token_list.line);
-}
 
 /* Allocate pfile->input_buffer, and initialize trigraph_map[]
    if it hasn't happened already.  */

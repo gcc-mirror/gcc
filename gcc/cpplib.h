@@ -432,18 +432,8 @@ struct cpp_options
 
 struct cpp_reader
 {
-  /* HACK FIXME.  Maybe make into cpp_printer printer later.  */
-  cpp_printer *printer;
-
   /* Top of buffer stack.  */
   cpp_buffer *buffer;
-
-  /* A buffer used for both for cpp_get_token's output, and also internally. */
-  unsigned char *token_buffer;
-  /* Allocated size of token_buffer.  CPP_RESERVE allocates space.  */
-  unsigned int token_buffer_size;
-  /* End of the written part of token_buffer. */
-  unsigned char *limit;
 
   /* Error counter for exit code */
   unsigned int errors;
@@ -523,6 +513,23 @@ struct cpp_reader
      real stack.  See cpplib.c */
   struct obstack *buffer_ob;
 
+  /* Pragma table - dynamic, because a library user can add to the
+     list of recognized pragmas.  */
+  struct pragma_entry *pragmas;
+
+  /* Call backs.  */
+  struct {
+    void (*enter_file) PARAMS ((cpp_reader *));
+    void (*leave_file) PARAMS ((cpp_reader *));
+    void (*include) PARAMS ((cpp_reader *, const unsigned char *,
+			     const unsigned char *, unsigned int, int));
+    void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
+    void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
+    void (*poison) PARAMS ((cpp_reader *));
+    void (*ident) PARAMS ((cpp_reader *, const cpp_token *));
+    void (*def_pragma) PARAMS ((cpp_reader *));
+  } cb;
+
   /* User visible options.  */
   struct cpp_options opts;
 
@@ -563,22 +570,12 @@ struct cpp_printer
 {
   FILE *outf;			/* stream to write to */
   const char *last_fname;	/* previous file name */
-  unsigned int last_id;		/* did we just push? */
   unsigned int lineno;		/* line currently being written */
-  unsigned int written;		/* low water mark in token buffer */
 };
 
 #define CPP_FATAL_LIMIT 1000
 /* True if we have seen a "fatal" error. */
 #define CPP_FATAL_ERRORS(READER) ((READER)->errors >= CPP_FATAL_LIMIT)
-
-/* Macros for manipulating the token_buffer. */
-
-/* Number of characters currently in PFILE's output buffer. */
-#define CPP_WRITTEN(PFILE) ((size_t)((PFILE)->limit - (PFILE)->token_buffer))
-#define CPP_PWRITTEN(PFILE) ((PFILE)->limit)
-#define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
-#define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
@@ -641,6 +638,12 @@ extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern cpp_printer *cpp_printer_init PARAMS ((cpp_reader *, cpp_printer *));
+
+extern void cpp_register_pragma PARAMS ((cpp_reader *,
+					 const char *, const char *,
+					 void (*) PARAMS ((cpp_reader *))));
+extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
+
 extern int cpp_start_read PARAMS ((cpp_reader *, cpp_printer *, const char *));
 extern void cpp_output_tokens PARAMS ((cpp_reader *, cpp_printer *,
 				       unsigned int));
@@ -695,9 +698,14 @@ extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
 extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
-extern int cpp_scan_line		PARAMS ((cpp_reader *));
 extern int cpp_ideq			PARAMS ((const cpp_token *,
 						 const char *));
+extern void cpp_printf			PARAMS ((cpp_reader *, cpp_printer *,
+						 const char *, ...));
+
+extern void cpp_output_list		PARAMS ((cpp_reader *, FILE *,
+						 const cpp_toklist *,
+						 const cpp_token *));
 
 /* In cpphash.c */
 extern cpp_hashnode *cpp_lookup	PARAMS ((cpp_reader *,
@@ -705,11 +713,15 @@ extern cpp_hashnode *cpp_lookup	PARAMS ((cpp_reader *,
 extern void cpp_forall_identifiers PARAMS ((cpp_reader *,
 					    int (*) PARAMS ((cpp_reader *,
 							     cpp_hashnode *))));
+/* In cppmacro.c */
+extern void cpp_dump_definition PARAMS ((cpp_reader *, FILE *,
+					 const cpp_hashnode *));
 
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern int cpp_read_file PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, cpp_buffer *, int));
+extern const char *cpp_syshdr_flags PARAMS ((cpp_reader *, cpp_buffer *));
 
 #ifdef __cplusplus
 }
