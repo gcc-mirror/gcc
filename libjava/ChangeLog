@@ -1,3 +1,8 @@
+2000-07-19  Jeff Sturm  <jeff.sturm@appnet.com>
+
+	* java/lang/natThrowable.cc (fillInStackTrace): Check for
+	zero return from backtrace().
+
 2000-07-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/awt/EventQueue.java (invokeAndWait): Call postEvent() within
