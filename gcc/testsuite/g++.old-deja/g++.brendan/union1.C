@@ -3,7 +3,6 @@
 // the DECL_SIZE of the decls, instead of comparing the DECL_SIZE nodes.
 
 // The compiler currently fails to allocate space for the static union.
-// excess errors test - XFAIL *-*-*
 
      unsigned
      hash(const double d)
