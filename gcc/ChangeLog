@@ -1,3 +1,7 @@
+Mon Feb  9 22:10:58 1998  Todd Vierling <tv@pobox.com>
+
+	* fixincludes: Tweak fix for struct exception in math.h
+
 Mon Feb  9 01:15:08 1998  Mark Mitchell  <mmitchell@usa.net>
 
         * integrate.c (get_label_from_map): New function.

@@ -2765,21 +2765,25 @@ if [ -r ${LIB}/$file ]; then
   sed -e '/struct exception/i\
 #ifdef __cplusplus\
 #define exception __math_exception\
-#endif'\
+#endif
+'\
       -e '/struct exception/a\
 #ifdef __cplusplus\
 #undef exception\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if egrep 'matherr()' ${LIB}/$file >/dev/null 2>&1; then
     sed -e '/matherr/i\
 #ifdef __cplusplus\
 #define exception __math_exception\
-#endif'\
+#endif
+'\
         -e '/matherr/a\
 #ifdef __cplusplus\
 #undef exception\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
