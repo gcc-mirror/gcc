@@ -1,3 +1,12 @@
+2002-04-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g77.dg/f77-edit-i-in.f: xfail for cris-*-elf.
+	* g77.f-torture/execute/io0.x, g77.f-torture/execute/io1.x,
+	g77.f-torture/execute/20001201.x,
+	g77.f-torture/execute/u77-test.x: Ditto.
+	* gcc.dg/wint_t-1.c: Mark excess errors for cris-*-elf.
+	* gcc.dg/wchar_t-1.c: Ditto.
+
 2002-04-21  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/opt/cleanup1.C (C::C()): Initialize member c.
