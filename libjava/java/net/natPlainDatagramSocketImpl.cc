@@ -158,7 +158,7 @@ union McastReq
 #if HAVE_STRUCT_IP_MREQ
   struct ip_mreq mreq;
 #endif
-#ifdef HAVE_INET6
+#if HAVE_STRUCT_IPV6_MREQ
   struct ipv6_mreq mreq6;
 #endif
 };
@@ -423,7 +423,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
       ptr = (const char *) &u.mreq;
     }
 #endif
-#ifdef HAVE_INET6
+#if HAVE_STRUCT_IPV6_MREQ
   else if (len == 16)
     {
       level = IPPROTO_IPV6;
@@ -531,7 +531,8 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	    len = sizeof (struct in_addr);
 	    ptr = (const char *) &u.addr;
 	  }
-#ifdef HAVE_INET6
+// Tru64 UNIX V5.0 has struct sockaddr_in6, but no IPV6_MULTICAST_IF
+#if defined (HAVE_INET6) && defined (IPV6_MULTICAST_IF)
 	else if (len == 16)
 	  {
 	    level = IPPROTO_IPV6;
