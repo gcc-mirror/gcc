@@ -1,3 +1,8 @@
+2000-06-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (verify_constructor_super): Use loop variable
+	`m_arg_type' initialized with `mdecl_arg_type'.
+
 2000-06-29  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (resolve_field_access): Handle case where `type_found'
