@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 1988, 1989, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
@@ -460,7 +460,7 @@ extern enum reg_class regno_reg_class[];
    for the Gmicro. The option name may be changed in the future. */
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && TREE_CODE (FUNDECL) != IDENTIFIER_NODE	\
+  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
 	    == void_type_node)))					\
