@@ -388,6 +388,85 @@ optimization_options (level)
 #endif
 }
 
+/* Sign-extend a 16-bit constant */
+
+struct rtx_def *
+i386_sext16_if_const (op)
+     struct rtx_def *op;
+{
+  if (GET_CODE (op) == CONST_INT)
+    {
+      HOST_WIDE_INT val = INTVAL (op);
+      HOST_WIDE_INT sext_val;
+      if (val & 0x8000)
+	sext_val = val | ~0xffff;
+      else
+	sext_val = val & 0xffff;
+      if (sext_val != val)
+	op = GEN_INT (sext_val);
+    }
+  return op;
+}
+
+/* Return nonzero if the rtx is aligned */
+
+static int
+i386_aligned_reg_p (regno)
+     int regno;
+{
+  return (regno == STACK_POINTER_REGNUM
+	  || (!flag_omit_frame_pointer
+	      && regno == FRAME_POINTER_REGNUM));
+}
+
+int
+i386_aligned_p (op)
+     rtx op;
+{
+  /* registers and immediate operands are always "aligned" */
+  if (GET_CODE (op) != MEM)
+    return 1;
+
+  /* Don't even try to do any aligned optimizations with volatiles */
+  if (MEM_VOLATILE_P (op))
+    return 0;
+
+  /* Get address of memory operand */
+  op = XEXP (op, 0);
+
+  switch (GET_CODE (op))
+    {
+    case CONST_INT:
+	if (INTVAL (op) & 3)
+	  break;
+	return 1;
+
+    /* match "reg + offset" */
+    case PLUS:
+	if (GET_CODE (XEXP (op, 1)) != CONST_INT)
+	  break;
+	if (INTVAL (XEXP (op, 1)) & 3)
+	  break;
+	op = XEXP (op, 0);
+	if (GET_CODE (op) != REG)
+	  break;
+	/* fall through */
+    case REG:
+	return i386_aligned_reg_p (REGNO (op));
+    }
+  return 0;
+}
+
+/* Return nonzero if INSN looks like it won't compute useful cc bits
+   as a side effect.  This information is only a hint. */
+
+int
+i386_cc_probably_useless_p (insn)
+     rtx insn;
+{
+  return !next_cc0_user (insn);
+}
+
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for DECL.  The attributes in ATTRIBUTES have previously been
    assigned to DECL.  */
@@ -854,7 +933,7 @@ asm_add (n, x)
     output_asm_insn (AS1 (dec%L0,%0), xops);
   else if (n == 1)
     output_asm_insn (AS1 (inc%L0,%0), xops);
-  else if (n < 0)
+  else if (n < 0 || n == 128)
     {
       xops[1] = GEN_INT (-n);
       output_asm_insn (AS2 (sub%L0,%1,%0), xops);
