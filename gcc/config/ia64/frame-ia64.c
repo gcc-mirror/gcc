@@ -678,7 +678,7 @@ read_P_record (data, val, ptr, header)
 /* Frame processing routines.  */
 
 /* Initialize a single register structure.  */
-static void 
+static inline void 
 init_ia64_reg_loc (reg, size)
      ia64_reg_loc *reg;
      short size;
@@ -692,7 +692,7 @@ init_ia64_reg_loc (reg, size)
 /* Iniitialize an entire frame to the default of nothing.  */
 static void
 init_ia64_unwind_frame (frame) 
-     ia64_frame_state *frame ;
+     ia64_frame_state *frame;
 {
   int x;
   
@@ -741,7 +741,7 @@ execute_one_ia64_descriptor (addr, frame, len)
   *len = -1;
   addr = get_unwind_record (&region_header, &r, addr);
 
-  /* process it in 2 phases, the first phase will either do the work,
+  /* Process it in 2 phases, the first phase will either do the work,
      or set up a pointer to the records we care about 
      (ie a special purpose ar perhaps, and the second will actually 
      fill in the record.  */
@@ -787,10 +787,12 @@ execute_one_ia64_descriptor (addr, frame, len)
 	  break;
 	}
       case mem_stack_f:
-      case mem_stack_v:
-        frame->sp.when = r.record.p.t; 
 	frame->sp.l.offset = r.record.p.size;
 	frame->sp.loc_type = IA64_UNW_LOC_TYPE_OFFSET;
+        frame->sp.when = r.record.p.t; 
+	break;
+      case mem_stack_v:
+	frame->psp.when = r.record.p.t;
 	break;
       case psp_gr:
       case psp_sprel:
@@ -1091,7 +1093,7 @@ normalize_reg_loc (frame, reg)
       case IA64_UNW_LOC_TYPE_BR:
         break;
       case IA64_UNW_LOC_TYPE_SPOFF:
-        /* offset from the stack pointer, calculate the memory address
+        /* Offset from the stack pointer, calculate the memory address
 	   now.  */
 	tmp = (unsigned char *)frame->my_sp + reg->l.offset * 4;
 	reg->l.mem = tmp;
@@ -1100,7 +1102,7 @@ normalize_reg_loc (frame, reg)
       case IA64_UNW_LOC_TYPE_PSPOFF:
         /* Actualy go get the value of the PSP add the offset, and thats 
 	   the mem location we can find this value at. */
-	tmp = (*(unsigned char **)(frame->psp.l.mem)) + 16 - reg->l.offset * 4;
+	tmp = (unsigned char *)frame->my_psp + 16 - reg->l.offset * 4;
 	reg->l.mem = tmp;
 	reg->loc_type = IA64_UNW_LOC_TYPE_MEM;
         break;
@@ -1114,7 +1116,8 @@ normalize_reg_loc (frame, reg)
     }
 
 }
-/* this function looks at a reg_loc and determines if its going
+
+/* This function looks at a reg_loc and determines if its going
    to be an executed record or not between time start and end.  
    It is executed if it is exectued at START time. It is NOT
    executed if it happens at END time. */
@@ -1173,7 +1176,7 @@ copy_reg_value (src, dest)
   else
     {
       void **d;
-      if (src->reg_size> 16)
+      if (src->reg_size > 16)
         abort ();
       if (dest->loc_type != IA64_UNW_LOC_TYPE_MEM)
         abort ();
@@ -1218,7 +1221,9 @@ process_state_between (frame, start, end)
   /* PSP, RP, SP, and PFS are handled seperately from here. */
 
   /* GR's, FR's and BR's are saved at an arbitrary point, so we
-      should handle them at teh very beginning.  */
+     should handle them at the very beginning.  */
+  /* ??? Err, no they aren't.  There's the spill_mask record that
+     tells us when each is processed.  */
   if (start == 0)
     {
       for (x = 0; x < 4 ; x++)
@@ -1252,25 +1257,52 @@ frame_translate (frame, unwind_time)
      ia64_frame_state *frame;
      long unwind_time;
 {
-  /* First, establish values of PFS and PSP and RP, if needed.  */
-
-  normalize_reg_loc (frame, &frame->pfs);
-  normalize_reg_loc (frame, &frame->psp);
-  normalize_reg_loc (frame, &frame->rp);
- 
+  /* ??? Is this supposed to mark the end of the stack?  */
   if (frame->rp.loc_type == IA64_UNW_LOC_TYPE_NONE)
     return;
 
-  /* The stack pointer at the function start is the PSP value
-     saved away.  */
-  frame->my_sp = __get_real_reg_value (&frame->psp);
+  /* At function entry, SP == PSP.  */
+  frame->my_psp = frame->my_sp;
+  if (frame->psp.loc_type != IA64_UNW_LOC_TYPE_NONE)
+    {
+      /* We've saved a frame pointer somewhere.  This will be the
+	 canonical PSP for the function.  */
+      normalize_reg_loc (frame, &frame->psp);
+      if (frame->psp.when < unwind_time)
+	frame->my_psp = __get_real_reg_value (&frame->psp);
+    }
+  else if (frame->sp.loc_type == IA64_UNW_LOC_TYPE_OFFSET)
+    {
+      /* We've a fixed sized stack frame.  The PSP is at a known offset.  */
+	
+      if (frame->sp.when < unwind_time)
+        frame->my_psp = frame->my_sp + frame->sp.l.offset;
+    }
+  /* Otherwise the stack frame size was zero and no adjustment needed.  */
 
-  if (frame->psp.loc_type != IA64_UNW_LOC_TYPE_MEM)
-    abort ();
+  /* Find PFS, RP and the spill base.  All of which might have
+     addresses based off the PSP computed above.  */
+  normalize_reg_loc (frame, &frame->pfs);
+  normalize_reg_loc (frame, &frame->rp);
 
-  /* spill base is set up off the PSP register, which should now 
-     have its value. */
-  normalize_reg_loc (frame, &frame->spill_base);
+  if (frame->spill_base.loc_type != IA64_UNW_LOC_TYPE_NONE)
+    normalize_reg_loc (frame, &frame->spill_base);
+  else
+    {
+      /* Otherwise we're supposed to infer it from the size of the
+	 saved GR/BR/FR registers, putting the top at psp+16.  */
+      long size = 0, i;
+      for (i = 0; i < 4; ++i)
+	if (frame->gr[i].when >= 0)
+	  size += 8;
+      for (i = 0; i < 5; ++i)
+	if (frame->br[i].when >= 0)
+	  size += 8;
+      for (i = 0; i < 20; ++i)
+	if (frame->fr[i].when >= 0)
+	  size += 16;
+      frame->spill_base.l.mem = frame->my_psp + 16 - size;
+    }
 
   /* If the SP is adjusted, process records up to where it
      is adjusted, then adjust it, then process the rest.  */
@@ -1279,24 +1311,23 @@ frame_translate (frame, unwind_time)
       process_state_between (frame, 0, frame->sp.when);
       if (frame->sp.loc_type != IA64_UNW_LOC_TYPE_OFFSET)
 	abort ();
-      frame->my_sp = 
-	      (unsigned char *)frame->my_sp - frame->sp.l.offset;
+      frame->my_sp = frame->my_psp - frame->sp.l.offset;
       process_state_between (frame, frame->sp.when, unwind_time);
     }
   else
     process_state_between (frame, 0, unwind_time);
 }
 
-/* this function will set a frame_state with all the required fields
+/* This function will set a frame_state with all the required fields
    from a functions unwind descriptors.
    pc is the location we need info up until (ie, the unwind point)
    frame is the frame_state structure to be set up.
    Returns a pointer to the unwind info pointer for the frame.  */
 unwind_info_ptr *
-__build_ia64_frame_state (pc, frame, bsp, pc_base_ptr)
+__build_ia64_frame_state (pc, frame, bsp, sp, pc_base_ptr)
      unsigned char *pc;
      ia64_frame_state *frame;
-     void *bsp;
+     void *bsp, *sp;
      void **pc_base_ptr;
 {
   long len;
@@ -1321,8 +1352,9 @@ __build_ia64_frame_state (pc, frame, bsp, pc_base_ptr)
 
   init_ia64_unwind_frame (frame);
   frame->my_bsp = bsp;
+  frame->my_sp = sp;
 
-  /* stop when we get to the end of the descriptor list, or if we
+  /* Stop when we get to the end of the descriptor list, or if we
      encounter a region whose initial offset is already past the
      PC we are unwinding too.  */
 
@@ -1336,6 +1368,7 @@ __build_ia64_frame_state (pc, frame, bsp, pc_base_ptr)
 	  last_region_size = len;
 	}
     }
+
   /* Now we go get the actual values.  */
   frame_translate (frame, pc_offset);
   if (pc_base_ptr)
@@ -1385,10 +1418,10 @@ __calc_caller_bsp (pfs, bsp)
 }
 
 static int 
-ia64_backtrace_helper (void **array, void *throw_pc, 
-		       ia64_frame_state *throw_frame,
-		       ia64_frame_state *frame, void *bsp, int size)
+ia64_backtrace_helper (void **array, ia64_frame_state *throw_frame,
+		       ia64_frame_state *frame, void *bsp, void *sp, int size)
 {
+  void *throw_pc = __builtin_return_address (0);
   void *pc = NULL;
   int frame_count = 0;
   unwind_info_ptr *info;
@@ -1396,7 +1429,7 @@ ia64_backtrace_helper (void **array, void *throw_pc,
   __builtin_ia64_flushrs ();      /*  Make the local register stacks available.  */
 
   /* Start at our stack frame, get our state.  */
-  info = __build_ia64_frame_state (throw_pc, throw_frame, bsp, NULL);
+  info = __build_ia64_frame_state (throw_pc, throw_frame, bsp, sp, NULL);
 
   *frame = *throw_frame;
 
@@ -1406,7 +1439,7 @@ ia64_backtrace_helper (void **array, void *throw_pc,
       --pc;
       bsp = __calc_caller_bsp 
 	((long)__get_real_reg_value (&frame->pfs), frame->my_bsp);
-      info = __build_ia64_frame_state (pc, frame, bsp, NULL);
+      info = __build_ia64_frame_state (pc, frame, bsp, frame->my_psp, NULL);
       if (frame->rp.loc_type == IA64_UNW_LOC_TYPE_NONE) /* We've finished. */
 	break;
     }
@@ -1419,6 +1452,7 @@ ia64_backtrace_helper (void **array, void *throw_pc,
 int
 __ia64_backtrace (void **array, int size)
 {
+  register void *stack_pointer __asm__("r12");
   ia64_frame_state my_frame;
   ia64_frame_state originator;	/* For the context handler is in.  */
   void *bsp;
@@ -1428,11 +1462,10 @@ __ia64_backtrace (void **array, int size)
      registers. */
   __builtin_unwind_init ();
 
-label_ia64:
   bsp = __builtin_ia64_bsp ();
   
-  return ia64_backtrace_helper (array, &&label_ia64, &my_frame, 
-				&originator, bsp, size);
+  return ia64_backtrace_helper (array, &my_frame, &originator, bsp,
+				stack_pointer, size);
 }
 
 
@@ -1482,9 +1515,11 @@ print_record (f, ptr)
 						 ptr->record.r.grsave);
 	break;
       case mem_stack_f:
-      case mem_stack_v:
 	fprintf (f, "(P7) t = %d, size = %d", ptr->record.p.t, 
 					 ptr->record.p.size);
+	break;
+      case mem_stack_v:
+	fprintf (f, "(P7) t = %d", ptr->record.p.t);
 	break;
       case psp_gr:
       case rp_gr:
