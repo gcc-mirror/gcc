@@ -1,3 +1,8 @@
+Sat Jan 17 21:28:08 1998  Pieter Nagel <pnagel@epiuse.co.za>
+
+	* Makefile.in (FLAGS_TO_PASS): Pass down gcc_include_dir and
+	local_prefix to sub-make invocations.
+
 Sat Jan 17 21:04:59 1998 H.J. Lu  (hjl@gnu.org)
 
 	* configure.in: Check makefile fragments in the source
