@@ -1146,7 +1146,7 @@ read_dependence (mem, x)
    to decide whether or not an address may vary; it should return
    nozero whenever variation is possible.  */
 
-rtx
+static rtx
 fixed_scalar_and_varying_struct_p (mem1, mem2, varies_p)
      rtx mem1;
      rtx mem2;
@@ -1173,7 +1173,7 @@ fixed_scalar_and_varying_struct_p (mem1, mem2, varies_p)
 /* Returns nonzero if something about the mode or address format MEM1
    indicates that it might well alias *anything*.  */
 
-int
+static int
 aliases_everything_p (mem)
      rtx mem;
 {
@@ -1248,7 +1248,7 @@ true_dependence (mem, mem_mode, x, varies)
 /* Returns non-zero if a write to X might alias a previous read from
    (or, if WRITEP is non-zero, a write to) MEM.  */
 
-int
+static int
 write_dependence_p (mem, x, writep)
      rtx mem;
      rtx x;
