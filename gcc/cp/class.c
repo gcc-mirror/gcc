@@ -5466,9 +5466,9 @@ pushclass (tree type)
   if (type != previous_class_type || current_class_depth > 1)
     {
       push_class_decls (type);
-      if (CLASSTYPE_IS_TEMPLATE (type))
+      if (CLASSTYPE_TEMPLATE_INFO (type) && !CLASSTYPE_USE_TEMPLATE (type))
 	{
-	  /* If we are entering the scope of a template (not a
+	  /* If we are entering the scope of a template declaration (not a
 	     specialization), we need to push all the using decls with
 	     dependent scope too.  */
 	  tree fields;
