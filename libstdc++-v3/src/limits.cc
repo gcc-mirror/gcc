@@ -305,8 +305,7 @@ namespace std
   const bool numeric_limits<unsigned long>::tinyness_before;
   const float_round_style numeric_limits<unsigned long>::round_style;
 
-  // XXX: Extensions
-#ifdef _GLIBCPP_USE_LONG_LONG  
+  // NOTA BENE:  long long is an extension
   const bool numeric_limits<long long>::is_specialized;
   const int  numeric_limits<long long>::digits;
   const int  numeric_limits<long long>::digits10;
@@ -352,7 +351,6 @@ namespace std
   const bool numeric_limits<unsigned long long>::traps;
   const bool numeric_limits<unsigned long long>::tinyness_before;
   const float_round_style numeric_limits<unsigned long long>::round_style;
-#endif // _GLIBCPP_USE_LONG_LONG
 
   // float
   const bool numeric_limits<float>::is_specialized;

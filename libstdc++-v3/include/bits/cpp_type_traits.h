@@ -200,7 +200,6 @@ namespace std
     };
   };
 
-# ifdef _GLIBCPP_USE_LONG_LONG
   template<>
   struct __is_integer<long long>
   {
@@ -218,7 +217,6 @@ namespace std
       _M_type = 1
     };
   };
-# endif
 
   //
   // Floating point types

@@ -97,11 +97,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   template <> struct _IntegerConcept<unsigned int> { void __constraints() {} };
   template <> struct _IntegerConcept<long> { void __constraints() {} };
   template <> struct _IntegerConcept<unsigned long> { void __constraints() {} };
-#ifdef _GLIBCPP_USE_LONG_LONG
   template <> struct _IntegerConcept<long long> { void __constraints() {} };
   template <> struct _IntegerConcept<unsigned long long>
                                                 { void __constraints() {} };
-#endif
 
   template <class _Tp>
   struct _SignedIntegerConcept {
@@ -112,9 +110,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   template <> struct _SignedIntegerConcept<short> { void __constraints() {} };
   template <> struct _SignedIntegerConcept<int> { void __constraints() {} };
   template <> struct _SignedIntegerConcept<long> { void __constraints() {} };
-#ifdef _GLIBCPP_USE_LONG_LONG
   template <> struct _SignedIntegerConcept<long long> { void __constraints(){}};
-#endif
 
   template <class _Tp>
   struct _UnsignedIntegerConcept {
@@ -128,10 +124,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     { void __constraints() {} };
   template <> struct _UnsignedIntegerConcept<unsigned long>
     { void __constraints() {} };
-#ifdef _GLIBCPP_USE_LONG_LONG
   template <> struct _UnsignedIntegerConcept<unsigned long long>
     { void __constraints() {} };
-#endif
 
   //===========================================================================
   // Basic Concepts

@@ -94,9 +94,7 @@ namespace __gnu_cxx
 
   _Instantiate(_LessThanComparableConcept<long> );
 
-#ifdef _GLIBCPP_USE_LONG_LONG
   _Instantiate(_LessThanComparableConcept<long long> );
-#endif
 
   _Instantiate(_LessThanComparableConcept<unsigned> );
 

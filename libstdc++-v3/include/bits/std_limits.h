@@ -103,10 +103,8 @@
 #ifndef __glibcpp_wchar_t_is_signed
 #define __glibcpp_wchar_t_is_signed true
 #endif
-#ifdef _GLIBCPP_USE_LONG_LONG
 #ifndef __glibcpp_long_long_bits
 #define __glibcpp_long_long_bits 64
-#endif
 #endif
 #ifndef __glibcpp_float_bits
 #define __glibcpp_float_bits 32
@@ -133,10 +131,8 @@
 #ifndef __glibcpp_wchar_t_traps
 #define __glibcpp_wchar_t_traps true
 #endif
-#ifdef _GLIBCPP_USE_LONG_LONG
 #ifndef __glibcpp_long_long_traps
 #define __glibcpp_long_long_traps true
-#endif
 #endif
 
 // You should not need to define any macros below this point, unless
@@ -433,8 +429,6 @@
 // You must define these macros in the configuration file.
 #endif
 
-#ifdef _GLIBCPP_USE_LONG_LONG
-
 // long long
 
 #define __glibcpp_signed_long_long_traps true
@@ -479,8 +473,6 @@
 #define __glibcpp_unsigned_long_long_traps true
 #else
 // You must define these macros in the configuration file.
-#endif
-
 #endif
 
 // wchar_t
@@ -1645,8 +1637,6 @@ namespace std
 #undef __glibcpp_unsigned_long_digits10
 #undef __glibcpp_unsigned_long_traps  
 
-#ifdef _GLIBCPP_USE_LONG_LONG
-
   template<>
     struct numeric_limits<long long>
     {
@@ -1757,9 +1747,6 @@ namespace std
 #undef __glibcpp_unsigned_long_long_digits
 #undef __glibcpp_unsigned_long_long_digits10
 #undef __glibcpp_unsigned_long_long_traps  
-  
-#endif // _GLIBCPP_USE_LONG_LONG
-  
 
   template<>
     struct numeric_limits<float>
