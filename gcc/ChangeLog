@@ -1,3 +1,8 @@
+Fri Apr  4 17:43:52 2003  Olivier Hainque <hainque@act-europe.fr>
+
+        * emit-rtl.c (get_mem_attrs): Adjust alignment tests determining
+        use of default attributes to agree MEM_ALIGN macro.
+
 Fri Apr  4 17:33:24 2003  Joel Brobecker  <brobecker@gnat.com>
 
         * dbxout.c (dbxout_type): When printing type index of range type
