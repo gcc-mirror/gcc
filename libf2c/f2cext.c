@@ -16,7 +16,7 @@ License along with GNU Fortran; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
+#include <math.h>		/* for j0 et al */
 #include <f2c.h>
 typedef void *sig_proc;	/* For now, this will have to do. */
 
