@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -59,7 +59,7 @@ jdouble java::lang::Math::atan(jdouble x)
 
 jdouble java::lang::Math::atan2(jdouble y, jdouble x)
 {
-  return (jdouble)::atan2((jdouble)y, (jdouble)x);
+  return (jdouble)::atan2((double)y, (double)x);
 }  
 
 jdouble java::lang::Math::log(jdouble x)
@@ -79,12 +79,12 @@ jdouble java::lang::Math::sqrt(jdouble x)
 
 jdouble java::lang::Math::pow(jdouble y, jdouble x)
 {
-  return (jdouble)::pow((jdouble)y, (jdouble)x);
+  return (jdouble)::pow((double)y, (double)x);
 }  
 
 jdouble java::lang::Math::IEEEremainder(jdouble y, jdouble x)
 {
-  return (jdouble)::__ieee754_remainder((jdouble)y, (jdouble)x);
+  return (jdouble)::__ieee754_remainder((double)y, (double)x);
 }  
 
 jdouble java::lang::Math::abs(jdouble x)

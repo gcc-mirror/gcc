@@ -2,7 +2,7 @@
  *
  * The author of this software is David M. Gay.
  *
- * Copyright (c) 1991 by AT&T.
+ * Copyright (c) 1991, 2000 by AT&T.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose without fee is hereby granted, provided that this entire notice
@@ -26,10 +26,6 @@
 	dmg@research.att.com or research!dmg
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <config.h>
 #include "ieeefp.h"
 
@@ -51,6 +47,9 @@ extern "C" {
 #include <sys/config.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* ISO C9X int type declarations */
 

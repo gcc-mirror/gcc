@@ -1,3 +1,12 @@
+2000-01-10  Jeff Sturm  <jsturm@sigma6.com>
+
+	* java/lang/natMath.cc (pow): Cast args to `double', not
+	`jdouble'.
+	(atan2): Likewise.
+	(IEEEremainder): Likewise.
+	* java/lang/mprec.h: Don't wrap includes in `extern "C"'.
+	* java/lang/fdlibm.h: Don't wrap includes in `extern "C"'.
+
 2000-01-09  Anthony Green  <green@cygnus.com>
 
 	* java/lang/natString.cc (init): Test for overflow condition

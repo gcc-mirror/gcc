@@ -2,7 +2,7 @@
 /* @(#)fdlibm.h 5.1 93/09/24 */
 /*
  * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+ * Copyright (C) 1993, 2000 by Sun Microsystems, Inc. All rights reserved.
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
@@ -11,10 +11,6 @@
  * ====================================================
  */
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <config.h>
 #include <stdlib.h>
@@ -47,6 +43,10 @@ extern "C" {
 /* These typedefs are true for the targets running Java. */
 
 #define _IEEE_LIBM
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * ANSI/POSIX
