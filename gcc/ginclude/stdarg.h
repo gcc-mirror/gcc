@@ -39,7 +39,11 @@
 #ifndef _VA_LIST
 #define _VA_LIST_
 #define _VA_LIST
+#ifndef __svr4__
 typedef char *va_list;
+#else
+typedef void *va_list;
+#endif
 #endif /* _VA_LIST */
 #endif /* _VA_LIST_ */
 
