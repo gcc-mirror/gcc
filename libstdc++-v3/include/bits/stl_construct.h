@@ -75,7 +75,11 @@ namespace std
   template <class _T1, class _T2>
     inline void
     _Construct(_T1* __p, const _T2& __value)
-    { new (static_cast<void*>(__p)) _T1(__value); }
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 402. wrong new expression in [some_]allocator::construct
+      ::new (static_cast<void*>(__p)) _T1(__value); 
+    }
   
   /**
    * @if maint
@@ -86,7 +90,11 @@ namespace std
   template <class _T1>
     inline void
     _Construct(_T1* __p)
-    { new (static_cast<void*>(__p)) _T1(); }
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 402. wrong new expression in [some_]allocator::construct     
+      ::new (static_cast<void*>(__p)) _T1();
+    }
 
   /**
    * @if maint
