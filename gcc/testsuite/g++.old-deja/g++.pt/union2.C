@@ -12,7 +12,7 @@ protected:
 };
 
 template<class T> struct vector : public vector_base<T> {
-  vector () { def_basep (); }
+  vector () { this->def_basep (); }
 };
 
 vector<int> iv;

@@ -1,3 +1,45 @@
+2003-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_id_kind): New type.
+	(unqualified_name_lookup_error): Change prototype.
+	(unqualified_fn_lookup_error): New function.
+	(do_identifier): Remove.
+	(do_scoped_id): Likewise.
+	(tsubst_copy_and_build): Change prototype.
+	(reregister_specialization): New function.
+	(perform_koenig_lookup): Likewise.
+	(finish_id_expression): Likewise.
+	* call.c (build_method_call): Adjust call to
+	unqualified_name_lookup_error.
+	* decl.c (duplicate_decls): Use reregister_specialization.
+	* lex.c (is_global): Remove.
+	(unqualified_name_lookup_error): Return a value.
+	(do_identifier): Remove.
+	(do_scoped_id): Likewise.
+	(identifier_typedecl_value): Remove.
+	(unqualified_fn_lookup_error): New function.
+	* parser.c (cp_parser_id_kind): Remove.
+	(cp_parser_non_constant_id_expression): Remove.
+	(cp_parser_primary_expression): Use finish_id_expression.
+	(cp_parser_class_or_namespace_name): Use cp_id_kind, not
+	cp_parser_id_kind.
+	(cp_parser_postfix_expression): Use perform_koenig_lookup.
+	(cp_parser_template_argument): Use cp_id_kind.
+	(cp_parser_fold_non_dependent_expr): Adjust call to
+	tsubst_copy_and_build.
+	* pt.c (unregister_specialization): Rename to ...
+	(reregister_specialization): This.
+	(tsubst_friend_function): Use it.
+	(maybe_fold_nontype_arg): Adjust call to tsubst_copy_and_build.
+	(tsubst_qualified_id): Likewise.
+	(tsubst_expr): Likewise.
+	(tsubst_copy_and_build): Add function_p parameter.  Use
+	finish_id_expression.  Introduce RECUR macro.
+	(tsubst_non_call_postfix_expression): New function.
+	(regenerate_decl_from_template): Use reregister_specialization.
+	* semantics.c (perform_koenig_lookup): New function.
+	(finish_id_expression): Likewise.
+	
 2003-07-13  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (push_access_scope_real): Remove.

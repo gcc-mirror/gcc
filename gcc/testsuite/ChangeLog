@@ -1,3 +1,23 @@
+2003-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11493
+	PR c++/11495
+	* g++.dg/parse/template9.C: Likewise.
+	* g++.dg/template/crash4.C: New test.
+	* g++.dg/template/koenig1.C: Likewise.
+	* g++.old-deja/g++.benjamin/tem03.C: Adjust error markers.
+	* g++.old-deja/g++.benjamin/tem06.C: Declare "x".
+	* g++.old-deja/g++.jason/overload33.C: Use this-> when calling
+	functions.
+	* g++.old-deja/g++.jason/template36.C: Likewise.
+	* g++.old-deja/g++.mike/p1989.C: Likewise.
+	* g++.old-deja/g++.pt/lookup2.C: Use -fpermissive when compiling.
+	* g++.old-deja/g++.pt/ttp20.C: Use this->.
+	* g++.old-deja/g++.pt/ttp21.C: Use this->.
+	* g++.old-deja/g++.pt/typename13.C: Use -fpermissive when
+	compiling.
+	* g++.old-deja/g++.pt/union2.C: Use this->.
+
 2003-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20030711-1.c: New test.

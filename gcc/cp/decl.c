@@ -3558,36 +3558,30 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      function_size - sizeof (struct tree_common));
 
       if (DECL_TEMPLATE_INSTANTIATION (newdecl))
-	{
-	  /* If newdecl is a template instantiation, it is possible that
-	     the following sequence of events has occurred:
+	/* If newdecl is a template instantiation, it is possible that
+	   the following sequence of events has occurred:
 
-	     o A friend function was declared in a class template.  The
-	     class template was instantiated.
+	   o A friend function was declared in a class template.  The
+	   class template was instantiated.
 
-	     o The instantiation of the friend declaration was
-	     recorded on the instantiation list, and is newdecl.
+	   o The instantiation of the friend declaration was
+	   recorded on the instantiation list, and is newdecl.
 
-	     o Later, however, instantiate_class_template called pushdecl
-	     on the newdecl to perform name injection.  But, pushdecl in
-	     turn called duplicate_decls when it discovered that another
-	     declaration of a global function with the same name already
-	     existed.
+	   o Later, however, instantiate_class_template called pushdecl
+	   on the newdecl to perform name injection.  But, pushdecl in
+	   turn called duplicate_decls when it discovered that another
+	   declaration of a global function with the same name already
+	   existed.
 
-	     o Here, in duplicate_decls, we decided to clobber newdecl.
+	   o Here, in duplicate_decls, we decided to clobber newdecl.
 
-	     If we're going to do that, we'd better make sure that
-	     olddecl, and not newdecl, is on the list of
-	     instantiations so that if we try to do the instantiation
-	     again we won't get the clobbered declaration.  */
-
-	  tree tmpl = DECL_TI_TEMPLATE (newdecl);
-	  tree decls = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-
-	  for (; decls; decls = TREE_CHAIN (decls))
-	    if (TREE_VALUE (decls) == newdecl)
-	      TREE_VALUE (decls) = olddecl;
-	}
+	   If we're going to do that, we'd better make sure that
+	   olddecl, and not newdecl, is on the list of
+	   instantiations so that if we try to do the instantiation
+	   again we won't get the clobbered declaration.  */
+	reregister_specialization (newdecl, 
+				   DECL_TI_TEMPLATE (newdecl), 
+				   olddecl);
     }
   else
     {

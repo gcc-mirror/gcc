@@ -1473,6 +1473,47 @@ finish_stmt_expr (tree rtl_expr)
   return result;
 }
 
+/* Perform Koenig lookup.  FN is the postfix-expression representing
+   the call; ARGS are the arguments to the call.  Returns the
+   functions to be considered by overload resolution.  */
+
+tree
+perform_koenig_lookup (tree fn, tree args)
+{
+  tree identifier = NULL_TREE;
+  tree functions = NULL_TREE;
+
+  /* Find the name of the overloaded function.  */
+  if (TREE_CODE (fn) == IDENTIFIER_NODE)
+    identifier = fn;
+  else if (is_overloaded_fn (fn))
+    {
+      functions = fn;
+      identifier = DECL_NAME (get_first_fn (functions));
+    }
+  else if (DECL_P (fn))
+    {
+      functions = fn;
+      identifier = DECL_NAME (fn);
+    }
+
+  /* A call to a namespace-scope function using an unqualified name.
+
+     Do Koenig lookup -- unless any of the arguments are
+     type-dependent.  */
+  if (!any_type_dependent_arguments_p (args))
+    {
+      fn = lookup_arg_dependent (identifier, functions, args);
+      if (!fn)
+	/* The unqualified name could not be resolved.  */
+	fn = unqualified_fn_lookup_error (identifier);
+    }
+  else
+    fn = build_min_nt (LOOKUP_EXPR, identifier);
+
+  return fn;
+}
+
 /* Generate an expression for `FN (ARGS)'.
 
    If DISALLOW_VIRTUAL is true, the call to FN will be not generated
@@ -2189,6 +2230,306 @@ check_multiple_declarators (void)
       || processing_explicit_instantiation
       || processing_specialization)
     error ("multiple declarators in template declaration");
+}
+
+/* ID_EXPRESSION is a representation of parsed, but unprocessed,
+   id-expression.  (See cp_parser_id_expression for details.)  SCOPE,
+   if non-NULL, is the type or namespace used to explicitly qualify
+   ID_EXPRESSION.  DECL is the entity to which that name has been
+   resolved.  
+
+   *CONSTANT_EXPRESSION_P is true if we are presently parsing a
+   constant-expression.  In that case, *NON_CONSTANT_EXPRESSION_P will
+   be set to true if this expression isn't permitted in a
+   constant-expression, but it is otherwise not set by this function.
+   *ALLOW_NON_CONSTANT_EXPRESSION_P is true if we are parsing a
+   constant-expression, but a non-constant expression is also
+   permissible.
+
+   If an error occurs, and it is the kind of error that might cause
+   the parser to abort a tentative parse, *ERROR_MSG is filled in.  It
+   is the caller's responsibility to issue the message.  *ERROR_MSG
+   will be a string with static storage duration, so the caller need
+   not "free" it.
+
+   Return an expression for the entity, after issuing appropriate
+   diagnostics.  This function is also responsible for transforming a
+   reference to a non-static member into a COMPONENT_REF that makes
+   the use of "this" explicit.  
+
+   Upon return, *IDK will be filled in appropriately.  */
+
+tree
+finish_id_expression (tree id_expression, 
+		      tree decl,
+		      tree scope,
+		      cp_id_kind *idk,
+		      tree *qualifying_class,
+		      bool constant_expression_p,
+		      bool allow_non_constant_expression_p,
+		      bool *non_constant_expression_p,
+		      const char **error_msg)
+{
+  /* Initialize the output parameters.  */
+  *idk = CP_ID_KIND_NONE;
+  *error_msg = NULL;
+
+  if (id_expression == error_mark_node)
+    return error_mark_node;
+  /* If we have a template-id, then no further lookup is
+     required.  If the template-id was for a template-class, we
+     will sometimes have a TYPE_DECL at this point.  */
+  else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+      || TREE_CODE (decl) == TYPE_DECL)
+    ;
+  /* Look up the name.  */
+  else 
+    {
+      if (decl == error_mark_node)
+	{
+	  /* Name lookup failed.  */
+	  if (scope && (!TYPE_P (scope) || !dependent_type_p (scope)))
+	    {
+	      /* Qualified name lookup failed, and the qualifying name
+		 was not a dependent type.  That is always an
+		 error.  */
+	      if (TYPE_P (scope) && !COMPLETE_TYPE_P (scope))
+		error ("incomplete type `%T' used in nested name "
+		       "specifier",
+		       scope);
+	      else if (scope != global_namespace)
+		error ("`%D' is not a member of `%D'",
+		       id_expression, scope);
+	      else
+		error ("`::%D' has not been declared", id_expression);
+	      return error_mark_node;
+	    }
+	  else if (!scope)
+	    {
+	      /* It may be resolved via Koenig lookup.  */
+	      *idk = CP_ID_KIND_UNQUALIFIED;
+	      return id_expression;
+	    }
+	}
+      /* If DECL is a variable that would be out of scope under
+	 ANSI/ISO rules, but in scope in the ARM, name lookup
+	 will succeed.  Issue a diagnostic here.  */
+      else
+	decl = check_for_out_of_scope_variable (decl);
+
+      /* Remember that the name was used in the definition of
+	 the current class so that we can check later to see if
+	 the meaning would have been different after the class
+	 was entirely defined.  */
+      if (!scope && decl != error_mark_node)
+	maybe_note_name_used_in_class (id_expression, decl);
+    }
+
+  /* If we didn't find anything, or what we found was a type,
+     then this wasn't really an id-expression.  */
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && !DECL_FUNCTION_TEMPLATE_P (decl))
+    {
+      *error_msg = "missing template arguments";
+      return error_mark_node;
+    }
+  else if (TREE_CODE (decl) == TYPE_DECL
+	   || TREE_CODE (decl) == NAMESPACE_DECL)
+    {
+      *error_msg = "expected primary-expression";
+      return error_mark_node;
+    }
+
+  /* If the name resolved to a template parameter, there is no
+     need to look it up again later.  Similarly, we resolve
+     enumeration constants to their underlying values.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    {
+      *idk = CP_ID_KIND_NONE;
+      if (DECL_TEMPLATE_PARM_P (decl) || !processing_template_decl)
+	return DECL_INITIAL (decl);
+      return decl;
+    }
+  else
+    {
+      bool dependent_p;
+
+      /* If the declaration was explicitly qualified indicate
+	 that.  The semantics of `A::f(3)' are different than
+	 `f(3)' if `f' is virtual.  */
+      *idk = (scope 
+	      ? CP_ID_KIND_QUALIFIED
+	      : (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+		 ? CP_ID_KIND_TEMPLATE_ID
+		 : CP_ID_KIND_UNQUALIFIED));
+
+
+      /* [temp.dep.expr]
+
+	 An id-expression is type-dependent if it contains an
+	 identifier that was declared with a dependent type.
+
+	 As an optimization, we could choose not to create a
+	 LOOKUP_EXPR for a name that resolved to a local variable in
+	 the template function that we are currently declaring; such a
+	 name cannot ever resolve to anything else.  If we did that we
+	 would not have to look up these names at instantiation time.
+
+	 The standard is not very specific about an id-expression that
+	 names a set of overloaded functions.  What if some of them
+	 have dependent types and some of them do not?  Presumably,
+	 such a name should be treated as a dependent name.  */
+      /* Assume the name is not dependent.  */
+      dependent_p = false;
+      if (!processing_template_decl)
+	/* No names are dependent outside a template.  */
+	;
+      /* A template-id where the name of the template was not resolved
+	 is definitely dependent.  */
+      else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+	       && (TREE_CODE (TREE_OPERAND (decl, 0)) 
+		   == IDENTIFIER_NODE))
+	dependent_p = true;
+      /* For anything except an overloaded function, just check its
+	 type.  */
+      else if (!is_overloaded_fn (decl))
+	dependent_p 
+	  = dependent_type_p (TREE_TYPE (decl));
+      /* For a set of overloaded functions, check each of the
+	 functions.  */
+      else
+	{
+	  tree fns = decl;
+
+	  if (BASELINK_P (fns))
+	    fns = BASELINK_FUNCTIONS (fns);
+
+	  /* For a template-id, check to see if the template
+	     arguments are dependent.  */
+	  if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
+	    {
+	      tree args = TREE_OPERAND (fns, 1);
+	      dependent_p = any_dependent_template_arguments_p (args);
+	      /* The functions are those referred to by the
+		 template-id.  */
+	      fns = TREE_OPERAND (fns, 0);
+	    }
+
+	  /* If there are no dependent template arguments, go through
+	     the overlaoded functions.  */
+	  while (fns && !dependent_p)
+	    {
+	      tree fn = OVL_CURRENT (fns);
+
+	      /* Member functions of dependent classes are
+		 dependent.  */
+	      if (TREE_CODE (fn) == FUNCTION_DECL
+		  && type_dependent_expression_p (fn))
+		dependent_p = true;
+	      else if (TREE_CODE (fn) == TEMPLATE_DECL
+		       && dependent_template_p (fn))
+		dependent_p = true;
+
+	      fns = OVL_NEXT (fns);
+	    }
+	}
+
+      /* If the name was dependent on a template parameter, we will
+	 resolve the name at instantiation time.  */
+      if (dependent_p)
+	{
+	  /* Create a SCOPE_REF for qualified names, if the scope is
+	     dependent.  */
+	  if (scope)
+	    {
+	      if (TYPE_P (scope))
+		*qualifying_class = scope;
+	      /* Since this name was dependent, the expression isn't
+		 constant -- yet.  No error is issued because it might
+		 be constant when things are instantiated.  */
+	      if (constant_expression_p)
+		*non_constant_expression_p = true;
+	      if (TYPE_P (scope) && dependent_type_p (scope))
+		return build_nt (SCOPE_REF, scope, id_expression);
+	      else if (TYPE_P (scope) && DECL_P (decl))
+		return build (SCOPE_REF, TREE_TYPE (decl), scope,
+			      id_expression);
+	      else
+		return decl;
+	    }
+	  /* A TEMPLATE_ID already contains all the information we
+	     need.  */
+	  if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
+	    return id_expression;
+	  /* Since this name was dependent, the expression isn't
+	     constant -- yet.  No error is issued because it might be
+	     constant when things are instantiated.  */
+	  if (constant_expression_p)
+	    *non_constant_expression_p = true;
+	  /* Create a LOOKUP_EXPR for other unqualified names.  */
+	  return build_min_nt (LOOKUP_EXPR, id_expression);
+	}
+
+      /* Only certain kinds of names are allowed in constant
+	 expression.  Enumerators have already been handled above.  */
+      if (constant_expression_p)
+	{
+	  /* Non-type template parameters of integral or enumeration
+	     type are OK.  */
+	  if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
+	  ;
+	  /* Const variables or static data members of integral or
+	     enumeration types initialized with constant expressions
+	     are OK.  We also accept dependent initializers; they may
+	     turn out to be constant at instantiation-time.  */
+	  else if (TREE_CODE (decl) == VAR_DECL
+		   && CP_TYPE_CONST_P (TREE_TYPE (decl))
+		   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
+		   && DECL_INITIAL (decl)
+		   && (TREE_CONSTANT (DECL_INITIAL (decl))
+		       || type_dependent_expression_p (DECL_INITIAL 
+						       (decl))
+		       || value_dependent_expression_p (DECL_INITIAL 
+							(decl))))
+	    ;
+	  else
+	    {
+	      if (!allow_non_constant_expression_p)
+		{
+		  error ("`%D' cannot appear in a constant-expression", decl);
+		  return error_mark_node;
+		}
+	      *non_constant_expression_p = true;
+	    }
+	}
+
+      if (scope)
+	{
+	  decl = (adjust_result_of_qualified_name_lookup 
+		  (decl, scope, current_class_type));
+	  if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
+	    *qualifying_class = scope;
+	  else if (!processing_template_decl)
+	    decl = convert_from_reference (decl);
+	  else if (TYPE_P (scope))
+	    decl = build (SCOPE_REF, TREE_TYPE (decl), scope, decl);
+	}
+      else
+	/* Transform references to non-static data members into
+	   COMPONENT_REFs.  */
+	decl = hack_identifier (decl, id_expression);
+
+      /* Resolve references to variables of anonymous unions
+	 into COMPONENT_REFs.  */
+      if (TREE_CODE (decl) == ALIAS_DECL)
+	decl = DECL_INITIAL (decl);
+    }
+
+  if (TREE_DEPRECATED (decl))
+    warn_deprecated_use (decl);
+
+  return decl;
 }
 
 /* Implement the __typeof keyword: Return the type of EXPR, suitable for
