@@ -1106,6 +1106,7 @@ print_operand (file, x, code)
 	      fprintf (file, "%s", names_big[REGNO (x)]);
 	      break;
 	    case SImode:
+	    case SFmode:
 	      fprintf (file, "%s", names_extended[REGNO (x)]);
 	      break;
 	    default:
