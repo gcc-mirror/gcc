@@ -1,3 +1,9 @@
+Sun Dec 21 15:51:10 1997  Manfred Hollstein  <manfred@lts.sel.alcatel.de>
+
+	* m68k/mot3300.h (ASM_BYTE_OP): Don't include '\t' in the
+	definition.
+	(ASM_OUTPUT_ASCII): Prefix ASM_BYTE_OP by one single '\t'.
+
 Sun Dec 21 13:58:39 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS): Define.
