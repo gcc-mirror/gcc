@@ -1,5 +1,11 @@
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/RuleBasedCollator.java
+	(CollationElement): Renamed from RBCElement and moved into
+	RuledBasedCollator as inner class.
+
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/CollationElementIterator.java
 	(CollationElementIterator): Moved, documenatation added, call setText.
 	(next): Reformated.

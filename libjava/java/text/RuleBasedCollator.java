@@ -137,20 +137,21 @@ import java.util.Vector;
  * @date March 25, 1999
  */
 
-final class RBCElement
-{
-  String key;
-  char relation;
-
-  RBCElement (String key, char relation)
-  {
-    this.key = key;
-    this.relation = relation;
-  }
-}
-
 public class RuleBasedCollator extends Collator
 {
+  final class CollationElement
+  {
+    String key;
+    char relation;
+
+    CollationElement (String key, char relation)
+    {
+      this.key = key;
+      this.relation = relation;
+    }
+
+  } // inner class CollationElement
+
   // True if we are using French-style accent ordering.
   private boolean frenchAccents;
 
@@ -426,7 +427,7 @@ public class RuleBasedCollator extends Collator
 		if (insertion_index >= item_index)
 		  --insertion_index;
 	      }
-	    RBCElement r = new RBCElement (arg, c);
+	    CollationElement r = new CollationElement (arg, c);
 	    vec.insertElementAt(r, insertion_index);
 	    ++insertion_index;
 	  }
@@ -456,7 +457,7 @@ public class RuleBasedCollator extends Collator
     Enumeration e = vec.elements();
     while (e.hasMoreElements())
       {
-	RBCElement r = (RBCElement) e.nextElement();
+	CollationElement r = (CollationElement) e.nextElement();
 	switch (r.relation)
 	  {
 	  case '<':
