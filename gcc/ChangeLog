@@ -1,3 +1,9 @@
+2004-06-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (compute_avail): Value number uses as well.
+	Strip useless type conversions.
+	Casts have to be treated slightly different than normal unaries.
+
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
 	* c-common.def (COMPOUND_STMT): Remove.

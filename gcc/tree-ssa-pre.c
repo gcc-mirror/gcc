@@ -1637,6 +1637,16 @@ compute_avail (basic_block block)
 		  insert_into_set (TMP_GEN (block), def);
 		  value_insert_into_set (AVAIL_OUT (block), def);
 		}
+	      for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
+		{
+		  tree use = USE_OP (STMT_USE_OPS (stmt), j);
+		  if (TREE_CODE (use) == SSA_NAME)
+		    {
+		      lookup_or_add (value_table, use);
+		      insert_into_set (TMP_GEN (block), use);
+		      value_insert_into_set (AVAIL_OUT (block), use);
+		    }
+		}
 	      continue;
 	    }
 	  else if (TREE_CODE (stmt) == RETURN_EXPR
@@ -1652,6 +1662,7 @@ compute_avail (basic_block block)
 	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
 		continue;
 	      op1 = TREE_OPERAND (stmt, 1);
+	      STRIP_USELESS_TYPE_CONVERSION (op1);
 	      if (TREE_CODE_CLASS (TREE_CODE (op1)) == 'c')
 		{
 		  add (value_table, op0, lookup_or_add (value_table, op1));
@@ -1682,7 +1693,8 @@ compute_avail (basic_block block)
 		  insert_into_set (TMP_GEN (block), op0);
 		  value_insert_into_set (AVAIL_OUT (block), op0);  
 		}
-	      else if (TREE_CODE_CLASS (TREE_CODE (op1)) == '1')
+	      else if (TREE_CODE_CLASS (TREE_CODE (op1)) == '1'
+		       && !is_gimple_cast (op1))
 		{
 		  tree uop;
 		  tree val, val1;
@@ -1718,7 +1730,18 @@ compute_avail (basic_block block)
 		      lookup_or_add (value_table, def);
 		      insert_into_set (TMP_GEN (block), def);
 		      value_insert_into_set (AVAIL_OUT (block), def);
-		      value_insert_into_set (AVAIL_OUT (block), op0);
+		      if (def != op0)
+			abort ();
+		    }
+		  for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
+		    {
+		      tree use = USE_OP (STMT_USE_OPS (stmt), j);
+		      if (TREE_CODE (use) == SSA_NAME)
+			{
+			  lookup_or_add (value_table, use);
+			  insert_into_set (TMP_GEN (block), use);
+			  value_insert_into_set (AVAIL_OUT (block), use);
+			}
 		    }
 		}
 	    }
@@ -1731,6 +1754,16 @@ compute_avail (basic_block block)
 		  lookup_or_add (value_table, def);
 		  insert_into_set (TMP_GEN (block), def);
 		  value_insert_into_set (AVAIL_OUT (block), def);
+		}
+	      for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
+		{
+		  tree use = USE_OP (STMT_USE_OPS (stmt), j);
+		  if (TREE_CODE (use) == SSA_NAME)
+		    {
+		      lookup_or_add (value_table, use);
+		      insert_into_set (TMP_GEN (block), use);
+		      value_insert_into_set (AVAIL_OUT (block), use);
+		    }
 		}
 	    }
 	}
