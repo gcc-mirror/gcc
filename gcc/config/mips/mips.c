@@ -10259,6 +10259,7 @@ mips_unique_section (decl, reloc)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   size = int_size_in_bytes (TREE_TYPE (decl));
+  STRIP_NAME_ENCODING (name, name);
 
   /* Determine the base section we are interested in:
      0=text, 1=rodata, 2=data, 3=sdata, [4=bss].  */
