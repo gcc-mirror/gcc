@@ -3774,7 +3774,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      /* If desired, advance to second version number.  */
 	      if (c1 == '2')
 		{
-		  /* Set P after the first period.  */
+		  /* Set V after the first period.  */
 		  while (*v != 0 && *v != ' ' && *v != '.')
 		    v++;
 		  if (*v == '.')
@@ -3785,7 +3785,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      while (*q != 0 && *q != ' ' && *q != '.')
 		q++;
 	      /* Empty string means zero.  */
-	      if (p == q)
+	      if (v == q)
 		{
 		  v = "0";
 		  q = v + 1;
