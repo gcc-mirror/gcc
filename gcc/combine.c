@@ -359,7 +359,7 @@ static int can_combine_p	PARAMS ((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int sets_function_arg_p	PARAMS ((rtx));
 static int combinable_i3pat	PARAMS ((rtx, rtx *, rtx, rtx, int, rtx *));
 static int contains_muldiv	PARAMS ((rtx));
-static rtx try_combine		PARAMS ((rtx, rtx, rtx));
+static rtx try_combine		PARAMS ((rtx, rtx, rtx, int *));
 static void undo_all		PARAMS ((void));
 static void undo_commit		PARAMS ((void));
 static rtx *find_split_point	PARAMS ((rtx *, rtx));
@@ -480,9 +480,11 @@ do_SUBST_INT(into, newval)
 #define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
 
 /* Main entry point for combiner.  F is the first insn of the function.
-   NREGS is the first unused pseudo-reg number.  */
+   NREGS is the first unused pseudo-reg number. 
 
-void
+   Return non-zero if the combiner has turned an indirect jump
+   instruction into a direct jump.  */
+int
 combine_instructions (f, nregs)
      rtx f;
      int nregs;
@@ -493,6 +495,8 @@ combine_instructions (f, nregs)
 #endif
   register int i;
   register rtx links, nextlinks;
+
+  int new_direct_jump_p = 0;
 
   combine_attempts = 0;
   combine_merges = 0;
@@ -617,7 +621,8 @@ combine_instructions (f, nregs)
 	  /* Try this insn with each insn it links back to.  */
 
 	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-	    if ((next = try_combine (insn, XEXP (links, 0), NULL_RTX)) != 0)
+	    if ((next = try_combine (insn, XEXP (links, 0), 
+				     NULL_RTX, &new_direct_jump_p)) != 0)
 	      goto retry;
 
 	  /* Try each sequence of three linked insns ending with this one.  */
@@ -626,7 +631,8 @@ combine_instructions (f, nregs)
 	    for (nextlinks = LOG_LINKS (XEXP (links, 0)); nextlinks;
 		 nextlinks = XEXP (nextlinks, 1))
 	      if ((next = try_combine (insn, XEXP (links, 0),
-				       XEXP (nextlinks, 0))) != 0)
+				       XEXP (nextlinks, 0),
+				       &new_direct_jump_p)) != 0)
 		goto retry;
 
 #ifdef HAVE_cc0
@@ -642,13 +648,15 @@ combine_instructions (f, nregs)
 	      && GET_CODE (prev) == INSN
 	      && sets_cc0_p (PATTERN (prev)))
 	    {
-	      if ((next = try_combine (insn, prev, NULL_RTX)) != 0)
+	      if ((next = try_combine (insn, prev, 
+				       NULL_RTX, &new_direct_jump_p)) != 0)
 		goto retry;
 
 	      for (nextlinks = LOG_LINKS (prev); nextlinks;
 		   nextlinks = XEXP (nextlinks, 1))
 		if ((next = try_combine (insn, prev,
-					 XEXP (nextlinks, 0))) != 0)
+					 XEXP (nextlinks, 0),
+					 &new_direct_jump_p)) != 0)
 		  goto retry;
 	    }
 
@@ -660,13 +668,15 @@ combine_instructions (f, nregs)
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
 	    {
-	      if ((next = try_combine (insn, prev, NULL_RTX)) != 0)
+	      if ((next = try_combine (insn, prev, 
+				       NULL_RTX, &new_direct_jump_p)) != 0)
 		goto retry;
 
 	      for (nextlinks = LOG_LINKS (prev); nextlinks;
 		   nextlinks = XEXP (nextlinks, 1))
 		if ((next = try_combine (insn, prev,
-					 XEXP (nextlinks, 0))) != 0)
+					 XEXP (nextlinks, 0),
+					 &new_direct_jump_p)) != 0)
 		  goto retry;
 	    }
 
@@ -680,7 +690,8 @@ combine_instructions (f, nregs)
 		&& (prev = prev_nonnote_insn (XEXP (links, 0))) != 0
 		&& GET_CODE (prev) == INSN
 		&& sets_cc0_p (PATTERN (prev))
-		&& (next = try_combine (insn, XEXP (links, 0), prev)) != 0)
+		&& (next = try_combine (insn, XEXP (links, 0), 
+					prev, &new_direct_jump_p)) != 0)
 	      goto retry;
 #endif
 
@@ -690,7 +701,8 @@ combine_instructions (f, nregs)
 	    for (nextlinks = XEXP (links, 1); nextlinks;
 		 nextlinks = XEXP (nextlinks, 1))
 	      if ((next = try_combine (insn, XEXP (links, 0),
-				       XEXP (nextlinks, 0))) != 0)
+				       XEXP (nextlinks, 0),
+				       &new_direct_jump_p)) != 0)
 		goto retry;
 
 	  if (GET_CODE (insn) != NOTE)
@@ -742,6 +754,8 @@ combine_instructions (f, nregs)
 
   /* Make recognizer allow volatile MEMs again.  */
   init_recog ();
+
+  return new_direct_jump_p;
 }
 
 /* Wipe the reg_last_xxx arrays in preparation for another pass.  */
@@ -1426,11 +1440,15 @@ contains_muldiv (x)
 
    Return 0 if the combination does not work.  Then nothing is changed. 
    If we did the combination, return the insn at which combine should
-   resume scanning.  */
+   resume scanning.  
+   
+   Set NEW_DIRECT_JUMP_P to a non-zero value if try_combine creates a
+   new direct jump instruction.  */
 
 static rtx
-try_combine (i3, i2, i1)
+try_combine (i3, i2, i1, new_direct_jump_p)
      register rtx i3, i2, i1;
+     register int *new_direct_jump_p;
 {
   /* New patterns for I3 and I3, respectively.  */
   rtx newpat, newi2pat = 0;
@@ -2684,14 +2702,21 @@ try_combine (i3, i2, i1)
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
 
-    /* If I3 is now an unconditional jump, ensure that it has a 
+    /* Set new_direct_jump_p if a new return or simple jump instruction
+       has been created.
+
+       If I3 is now an unconditional jump, ensure that it has a 
        BARRIER following it since it may have initially been a
        conditional jump.  It may also be the last nonnote insn.  */
+    
+    if (GET_CODE (newpat) == RETURN || simplejump_p (i3))
+      {
+	*new_direct_jump_p = 1;
 
-    if ((GET_CODE (newpat) == RETURN || simplejump_p (i3))
-	&& ((temp = next_nonnote_insn (i3)) == NULL_RTX
-	    || GET_CODE (temp) != BARRIER))
-      emit_barrier_after (i3);
+	if ((temp = next_nonnote_insn (i3)) == NULL_RTX
+	    || GET_CODE (temp) != BARRIER)
+	  emit_barrier_after (i3);
+      }
   }
 
   combine_successes++;
