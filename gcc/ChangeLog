@@ -1,3 +1,9 @@
+2005-02-09  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/19583
+	* gimple-low.c (try_catch_may_fallthru): In EH_FILTER_EXPR case,
+	just check whether EH_FILTER_FAILURE falls through.
+
 2005-02-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc/haifa-sched.c (schedule_block): Make queued sched group
