@@ -7072,6 +7072,13 @@ simplify_and_const_int (x, mode, varop, constop)
   return x;
 }
 
+/* We let num_sign_bit_copies recur into nonzero_bits as that is useful.
+   We don't let nonzero_bits recur into num_sign_bit_copies, because that
+   is less useful.  We can't allow both, because that results in exponential
+   run time recusion.  There is a nullstone testcase that triggered
+   this.  This macro avoids accidental uses of num_sign_bit_copies.  */
+#define num_sign_bit_copies()
+
 /* Given an expression, X, compute which bits in X can be non-zero.
    We don't care about bits outside of those defined in MODE.
 
@@ -7246,18 +7253,26 @@ nonzero_bits (x, mode)
       break;
 
     case NEG:
+#if 0
+      /* Disabled to avoid exponential mutual recursion between nonzero_bits
+	 and num_sign_bit_copies.  */
       if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (x))
 	  == GET_MODE_BITSIZE (GET_MODE (x)))
 	nonzero = 1;
+#endif
 
       if (GET_MODE_SIZE (GET_MODE (x)) < mode_width)
 	nonzero |= (GET_MODE_MASK (mode) & ~ GET_MODE_MASK (GET_MODE (x)));
       break;
 
     case ABS:
+#if 0
+      /* Disabled to avoid exponential mutual recursion between nonzero_bits
+	 and num_sign_bit_copies.  */
       if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (x))
 	  == GET_MODE_BITSIZE (GET_MODE (x)))
 	nonzero = 1;
+#endif
       break;
 
     case TRUNCATE:
@@ -7456,6 +7471,9 @@ nonzero_bits (x, mode)
 
   return nonzero;
 }
+
+/* See the macro definition above.  */
+#undef num_sign_bit_copies
 
 /* Return the number of bits at the high-order end of X that are known to
    be equal to the sign bit.  X will be used in mode MODE; if MODE is
