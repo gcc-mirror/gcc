@@ -1,6 +1,8 @@
 /* Disable this test for 16-bit targets.  */
 
-#if !(defined __GNUC__) || (__INT_MAX__ > 32767)
+#include <limits.h>
+
+#if !(defined __GNUC__) || (INT_MAX > 32767)
 
 #include "compat-common.h"
 #include "struct-align-2.h"
@@ -80,4 +82,4 @@ struct_align_2_x (void)
 
 void struct_align_2_x (void) {}
 
-#endif  /* __INT_MAX__ */
+#endif  /* INT_MAX */

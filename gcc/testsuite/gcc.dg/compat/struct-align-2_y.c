@@ -1,6 +1,8 @@
 /* Disable this test for 16-bit targets.  */
 
-#if !(defined __GNUC__) || (__INT_MAX__ > 32767)
+#include <limits.h>
+
+#if !(defined __GNUC__) || (INT_MAX > 32767)
 
 #include "compat-common.h"
 #include "struct-align-2.h"
@@ -68,4 +70,4 @@ TEST (pdata8)
 
 int i;  /* prevent compiling an empty file */
 
-#endif  /* __INT_MAX__ */
+#endif  /* INT_MAX */
