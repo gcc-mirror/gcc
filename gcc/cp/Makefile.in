@@ -1,5 +1,5 @@
 # Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90-5, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-5, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -246,7 +246,8 @@ spew.o : spew.c $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
 lex.o : lex.c $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
   $(srcdir)/../c-pragma.h $(srcdir)/../toplev.h \
-  $(srcdir)/../output.h $(srcdir)/../mbchar.h $(srcdir)/../ggc.h
+  $(srcdir)/../output.h $(srcdir)/../mbchar.h $(srcdir)/../ggc.h \
+  $(srcdir)/../input.h
 decl.o : decl.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \
@@ -301,7 +302,8 @@ semantics.o: semantics.c $(CXX_TREE_H) lex.h \
   $(srcdir)/../output.h $(RTL_H) 
 dump.o: dump.c $(CXX_TREE_H)
 optimize.o: optimize.c $(CXX_TREE_H) \
-  $(srcdir)/../rtl.h $(srcdir)/../integrate.h ../insn-config.h
+  $(srcdir)/../rtl.h $(srcdir)/../integrate.h ../insn-config.h \
+  $(srcdir)/../input.h
 
 #
 # These exist for maintenance purposes.

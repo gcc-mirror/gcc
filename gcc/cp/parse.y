@@ -3429,10 +3429,8 @@ for.init.statement:
 
 maybe_cv_qualifier:
 	  /* empty */
-		{ emit_line_note (input_filename, lineno);
-		  $$ = NULL_TREE; }
+		{ $$ = NULL_TREE; }
 	| CV_QUALIFIER
-		{ emit_line_note (input_filename, lineno); }
 	;
 
 xexpr:

@@ -1,3 +1,14 @@
+2000-02-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* lex.c (check_newline): Use push_srcloc and pop_srcloc, rather
+	than duplicating functionality here.
+	* optimize.c: Include input.h.
+	(expand_call_inline): Use push_srcloc and pop_srcloc.
+	* parse.y (maybe_cv_qualifier): Remove calls to emit_line_note.
+	* parse.c: Regenerated.
+	* Makefile.in (lex.o): Depend on input.h.
+	(optimize.o): Likewise.
+	
 2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokdeclarator): Diagnose qualifiers on non-member
