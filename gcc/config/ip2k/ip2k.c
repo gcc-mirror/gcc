@@ -3082,16 +3082,6 @@ unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
     }
 }
 
-
-/* Output section name to file FILE.  */
-
-void
-asm_output_section_name (FILE *file, tree decl ATTRIBUTE_UNUSED,
-			 const char *name, int reloc ATTRIBUTE_UNUSED)
-{
-  fprintf (file, ".section %s\n", name);
-}
-
 /* Return value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled
    because registers of CLASS are needed for spill registers.  */

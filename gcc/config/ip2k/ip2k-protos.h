@@ -25,7 +25,6 @@ extern int find_one_clear_bit_p (HOST_WIDE_INT);
 
 #ifdef TREE_CODE
 extern void unique_section (tree, int);
-extern void asm_output_section_name (FILE *, tree, const char *, int);
 extern int valid_machine_type_attribute (tree, tree, tree, tree);
 extern int valid_machine_decl_attribute (tree, tree, tree, tree);
 extern int ip2k_return_pops_args (tree, tree, int);
