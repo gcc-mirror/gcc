@@ -5589,7 +5589,8 @@ output_aranges ()
     fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, stripattributes (TEXT_SECTION));
+  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label,
+			       stripattributes (TEXT_SECTION));
   if (flag_debug_asm)
     fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
@@ -9850,7 +9851,8 @@ dwarf2out_finish ()
 	 was in .text.  */
       if (separate_line_info_table_in_use == 0)
 	{
-	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
+	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc,
+			 stripattributes (TEXT_SECTION));
 	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
 	}
 
