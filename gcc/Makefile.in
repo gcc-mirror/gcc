@@ -688,6 +688,7 @@ ORDINARY_FLAGS_TO_PASS = \
 	"LN_S=$(LN_S)" \
 	"MAKEINFO=$(MAKEINFO)" \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
+	"MAKEOVERRIDES=" \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
@@ -1055,6 +1056,7 @@ libgcc.a: $(LIBGCC_DEPS)
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
 
 # Use the genmultilib shell script to generate the information the gcc
@@ -1088,6 +1090,7 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
 	touch stmp-multilib
 
@@ -2843,6 +2846,7 @@ STAGE2_FLAGS_TO_PASS = \
 	STRICT_WARN="$(STRICT2_WARN)" \
 	libdir=$(libdir) \
 	LANGUAGES="$(LANGUAGES)" \
+	MAKEOVERRIDES= \
 	OUTPUT_OPTION="-o \$$@"
 
 # Only build the C compiler for stage1, because that is the only one that
