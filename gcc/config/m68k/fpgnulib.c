@@ -243,8 +243,11 @@ __fixdfsi (double a1)
       return SIGND (dl1) ? 0x80000000 : 0x7fffffff;
     }
 
-  /* shift down until exp = 0 or l = 0 */
-  if (exp < 0 && exp > -32 && l) 
+  if (exp <= -32)
+    return 0;
+
+  /* shift down until exp = 0 */
+  if (exp < 0)
     l >>= -exp;
 
   return (SIGND (dl1) ? -l : l);
