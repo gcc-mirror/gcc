@@ -100,6 +100,9 @@ static char dir_separator_str[] = { DIR_SEPARATOR, 0 };
    to the calling program.  */
 static int pass_exit_codes;
 
+/* Definition of string containing the arguments given to configure.  */
+#include "configargs.h"
+
 /* Flag saying to print the directories gcc will search through looking for
    programs, libraries, etc.  */
 
@@ -5504,6 +5507,8 @@ main (argc, argv)
   if (verbose_flag)
     {
       int n;
+
+      notice ("Configured with: %s\n", configuration_arguments);
 
       /* compiler_version is truncated at the first space when initialized
 	 from version string, so truncate version_string at the first space

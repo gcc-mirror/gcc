@@ -88,7 +88,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.27 $"
+version="$Revision: 1.28 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -399,6 +399,10 @@ do
 		;;
 	esac
 done
+
+# Remember the pristine configure arguments for later.  $arguments gets
+# built up with further defaults in preparation for recursion.
+original_arguments=$arguments
 
 # process host and target
 
@@ -1599,6 +1603,12 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
                 fi
         done
 fi
+
+# Remember configure arguments for later.
+cat > gcc/configargs.h <<EOF
+/* Generated automatically. */
+static const char configuration_arguments[] = "$original_arguments";
+EOF
 
 # Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 # and reset the trap handler.

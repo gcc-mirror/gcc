@@ -1,3 +1,8 @@
+2000-10-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* gcc.c (main): Include generated configargs.h header
+	and use arguments in '-v' output.
+
 Thu Oct  5 16:16:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c: Move data on prefixes forward in file and reorganize.
