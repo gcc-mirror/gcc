@@ -1,4 +1,4 @@
-// Allocator details.
+// Base to std::allocator -*- C++ -*-
 
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -27,23 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882:
-//
+#ifndef _CXX_ALLOCATOR_H
+#define _CXX_ALLOCATOR_H 1
 
-#include <bits/c++config.h>
-#include <memory>
-#include <ext/mt_allocator.h>
+// Define new_allocator as the base class to std::allocator.
 #include <ext/pool_allocator.h>
+#define ___glibcxx_base_allocator  __gnu_cxx::__pool_alloc
 
-// Explicitly instantiate the static data members of the underlying
-// allocator.
-namespace __gnu_cxx
-{
-  template class __mt_alloc<char>;
-  template class __mt_alloc<wchar_t>;
-
-  // Static members of __pool_alloc.
-  template class __pool_alloc<char>;
-  template class __pool_alloc<wchar_t>;
-} // namespace __gnu_cxx
+#endif

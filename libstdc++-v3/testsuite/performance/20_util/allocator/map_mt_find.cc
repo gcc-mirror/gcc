@@ -40,11 +40,13 @@
 #include <cxxabi.h>
 #include <testsuite_performance.h>
 #include <ext/bitmap_allocator.h>
+#include <ext/pool_allocator.h>
 
 using namespace std;
 using __gnu_cxx::malloc_allocator;
 using __gnu_cxx::__mt_alloc;
 using __gnu_cxx::bitmap_allocator;
+using __gnu_cxx::__pool_alloc;
 
 typedef int test_type;
 
@@ -144,5 +146,8 @@ int main()
 #endif
 #ifdef TEST_T3
   exec_tests<__mt_alloc<int> >();
+#endif
+#ifdef TEST_T4
+  exec_tests<__pool_alloc<int> >();
 #endif
 }
