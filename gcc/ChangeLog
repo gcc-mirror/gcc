@@ -1,3 +1,11 @@
+2001-07-25  Jan Hubicka  <jh@suse.cz>
+	    Richard Henderson  <rth@redhat.com>
+
+	* flow.c (find_sub_basic_blocks): Fix handling of the last BB in
+	the sequence.
+	(make_edges): New argument update_p; populate the edge cache if set.
+	(find_basic_blocks): Update make_edges invocation.
+
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
 	* config/i960/i960.h (CPP_SPEC): Define _SOFT_FLOAT for -msoft-float.
