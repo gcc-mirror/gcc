@@ -2270,9 +2270,9 @@ do {									\
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand (FILE, X, CODE)
 
 /* Determine which codes are valid without a following integer.  These must
-   not be alphabetic (the characters are chosen so that
-   PRINT_OPERAND_PUNCT_VALID_P translates into a simple range change when
-   using ASCII).
+   not be alphabetic.
+
+   ~    Generates the name of the current function.
 
    &	Generates fp-rounding mode suffix: nothing for normal, 'c' for
    	chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
@@ -2304,7 +2304,8 @@ do {									\
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '&' || (CODE) == '`' || (CODE) == '\'' || (CODE) == '('	\
-   || (CODE) == ')' || (CODE) == '+' || (CODE) == ',' || (CODE) == '-')
+   || (CODE) == ')' || (CODE) == '+' || (CODE) == ',' || (CODE) == '-'	\
+   || (CODE) == '~')
 
 /* Print a memory address as an operand to reference that memory location.  */
 

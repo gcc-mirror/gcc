@@ -97,6 +97,10 @@ static int alpha_function_needs_gp;
 
 static int alpha_sr_alias_set;
 
+/* The assembler name of the current function.  */
+
+static const char *alpha_fnname;
+
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1
   PARAMS ((rtx, int, int, int));
@@ -3243,6 +3247,11 @@ print_operand (file, x, code)
 
   switch (code)
     {
+    case '~':
+      /* Print the assembler name of the current function.  */
+      assemble_name (file, alpha_fnname);
+      break;
+
     case '&':
       /* Generates fp-rounding mode suffix: nothing for normal, 'c' for
 	 chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
@@ -4144,6 +4153,14 @@ alpha_expand_prologue ()
 
   alpha_sa_mask (&imask, &fmask);
 
+  /* Emit an insn to reload GP, if needed.  */
+  if (!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT)
+    {
+      alpha_function_needs_gp = alpha_does_function_need_gp ();
+      if (alpha_function_needs_gp)
+	emit_insn (gen_prologue_ldgp ());
+    }
+
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
      4096 bytes (we can probably get away without the latter test) and
@@ -4369,6 +4386,7 @@ alpha_start_function (file, fnname, decl)
   char *entry_label = (char *) alloca (strlen (fnname) + 6);
   int i;
 
+  alpha_fnname = fnname;
   sa_size = alpha_sa_size ();
 
   frame_size = get_frame_size ();
@@ -4413,6 +4431,15 @@ alpha_start_function (file, fnname, decl)
       fputs ("\t.ent ", file);
       assemble_name (file, fnname);
       putc ('\n', file);
+
+      /* If the function needs GP, we'll write the "..ng" label there.
+	 Otherwise, do it here.  */
+      if (! alpha_function_needs_gp)
+	{
+	  putc ('$', file);
+	  assemble_name (file, fnname);
+	  fputs ("..ng:\n", file);
+	}
     }
 
   strcpy (entry_label, fnname);
@@ -4492,20 +4519,6 @@ alpha_start_function (file, fnname, decl)
 		   frame_size >= (1l << 31) ? 0 : reg_offset - frame_size);
 	  putc ('\n', file);
 	}
-    }
-
-  /* Emit GP related things.  It is rather unfortunate about the alignment
-     issues surrounding a CODE_LABEL that forces us to do the label in 
-     plain text.  */
-  if (!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT)
-    {
-      alpha_function_needs_gp = alpha_does_function_need_gp ();
-      if (alpha_function_needs_gp)
-	fputs ("\tldgp $29,0($27)\n", file);
-
-      putc ('$', file);
-      assemble_name (file, fnname);
-      fputs ("..ng:\n", file);
     }
 
 #ifdef OPEN_VMS

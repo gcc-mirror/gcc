@@ -1,3 +1,13 @@
+Mon May 22 21:49:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c (alpha_fnname): New static variable.
+	(print_operand, case '~'): New case.
+	(alpha_expand_prologue): Emit prologue_ldgp insn if needed.
+	(alpha_start_function): Set alpha_fnname.
+	Write "ng" label if no ldgp; don't write ldgp insn.
+	* config/alpha/alpha.h (PRINT_OPERAND_PUNCT_VALID_P): New case '~'.
+	* config/alpha/alpha.md (prologue_ldgp): New define_insn.
+
 Mon May 22 11:30:48 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* jump.c (jump_optimize_1): Don't increment LABEL_NUSES

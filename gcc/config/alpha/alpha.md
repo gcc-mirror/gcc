@@ -5487,7 +5487,16 @@
 (define_expand "prologue"
   [(clobber (const_int 0))]
   ""
-  "alpha_expand_prologue (); DONE;")
+  "
+{
+  alpha_expand_prologue ();
+  DONE;
+}")
+
+(define_insn "prologue_ldgp"
+  [(unspec_volatile [(const_int 0)] 9)]
+  ""
+  "ldgp $29,0($27)\\n$%~..ng:")
 
 (define_insn "init_fp"
   [(set (match_operand:DI 0 "register_operand" "=r")
