@@ -1464,7 +1464,7 @@ output_function_prologue (file, size, leaf_function)
   /* Let's not try to bullshit more than we need to here. */
   /* This might be right a lot of the time */
   fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=%d", actual_fsize);
-    if (regs_ever_live[2])
+    if (regs_ever_live[2] || profile_flag)
       fprintf (file, ",CALLS,SAVE_RP\n");
     else
       fprintf (file, ",NO_CALLS\n");
@@ -1539,7 +1539,6 @@ output_function_prologue (file, size, leaf_function)
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
 	  print_ldw (file, i, arg_offset, basereg);
-      print_ldw (file, 2, -20 - offsetadj, basereg);
     }
 
   /* Normal register save. */
@@ -1680,16 +1679,17 @@ output_function_epilogue (file, size, leaf_function)
   if (frame_pointer_needed)
     {
       fprintf (file, "\tldo 8(4),30\n");
-      if (regs_ever_live[2])
+      if (regs_ever_live[2] || profile_flag)
 	fprintf (file, "\tldw -28(0,30),2\n");
       fprintf (file, "\tbv 0(2)\n\tldwm -8(30),4\n");
     }
   else if (actual_fsize)
     {
-      if (regs_ever_live[2] && VAL_14_BITS_P (actual_fsize + 20))
+      if ((regs_ever_live[2] || profile_flag)
+          && VAL_14_BITS_P (actual_fsize + 20))
 	fprintf (file, "\tldw %d(30),2\n\tbv 0(2)\n\tldo %d(30),30\n",
 		 -(actual_fsize + 20), -actual_fsize);
-      else if (regs_ever_live[2])
+      else if (regs_ever_live[2] || profile_flag)
 	fprintf (file,
 		 "\taddil L'%d,30\n\tldw %d(1),2\n\tbv 0(2)\n\tldo R'%d(1),30\n",
 		 - actual_fsize,
@@ -2379,16 +2379,6 @@ function_arg_padding (mode, type)
     return none;
 }
 
-int
-use_milli_regs (insn)
-     rtx insn;
-{
-  return (reg_mentioned_p (gen_rtx (REG, SImode, 1), insn) ||
-	  reg_mentioned_p (gen_rtx (REG, SImode, 25), insn) ||
-	  reg_mentioned_p (gen_rtx (REG, SImode, 26), insn) ||
-	  reg_mentioned_p (gen_rtx (REG, SImode, 29), insn) ||
-	  reg_mentioned_p (gen_rtx (REG, SImode, 31), insn));
-}
 
 /* Do what is necessary for `va_start'.  The argument is ignored;
    We look at the current function to determine if stdargs or varargs
