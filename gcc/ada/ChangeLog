@@ -1,3 +1,10 @@
+2001-12-22  Florian Weimer  <fw@deneb.enyo.de>
+
+	* make.adb (Add_Switch): Make Generic_Position a procedure.  The
+	function approach did not work well because of a side effect (the
+	function call could reallocate the table which was being indexed
+	using its result). Fixes ada/4851.
+
 2001-12-19  Robert Dewar <dewar@gnat.com>
 
 	* bindgen.adb: Minor reformatting
