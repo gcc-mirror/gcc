@@ -1,5 +1,16 @@
 2003-04-09  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* sched-deps.c (reg_pending_barrier_mode): New enumeration.
+	(reg_pending_barrier): Make it of the enumeration type.
+	(sched_analyze_2): Define the barrier as MOVE_BARRIER or
+	TRUE_BARRIER.
+	(sched_analyze): Ditto.
+	(sched_analyze_insn): Ditto.  Use anti-dependencies for
+	MOVE_BARRIER and true-dependencies as TRUE_BARRIER.
+	(init_deps_global): Initialize the barrier as NO_BARRIER.
+	
+2003-04-09  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* config/ia64/ia64.c (issue_nops_and_insn): Add new parameter.
 	Check that asm insn starts on a new cycle.  Add nops after asm
 	insn to end bundle.
