@@ -1,3 +1,8 @@
+2002-01-12  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* gcse.c (compute_pre_data, pre_gcse): Use sbitmap_free.
+	* lcm.c (compute_earliest, compute_farthest): Likewise.
+
 2002-01-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* expr.c (expand_assignment): Fix misuse of MEM_KEEP_ALIAS_SET.
