@@ -1,3 +1,8 @@
+2004-10-31  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/ieee754-sf.S (floatdisf): Fix regression with
+	values smaller than 2^32.
+
 2004-10-31 Jeff Law  <law@redhat.com>
 
 	* cfgloop.h (struct loop): Remove unused "nodes" field.

@@ -333,6 +333,8 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 
 	movs	ip, ah
 	moveq	ip, al
+	moveq	ah, al
+	moveq	al, #0
 
 	@ Add initial exponent to sign
 	orr	r3, r3, #((127 + 23 + 32) << 23)
