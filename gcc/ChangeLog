@@ -1,3 +1,8 @@
+2003-09-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold): Fold (A & ~B) - (A & B) into
+	(A ^ B) - B for any B.
+
 2003-09-30  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (arm*-*-kaos*, i[34567]86-*-kaos*, powerpc-*-kaos*,
