@@ -524,16 +524,18 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    reloaded into floating registers (since no move-insn can do that)
    and we ensure that QImodes aren't reloaded into the esi or edi reg.  */
 
-/* Don't put CONST_DOUBLE into FLOAT_REGS.
+/* Don't put float CONST_DOUBLE into any regs.
    QImode must go into class Q_REGS.
    MODE_INT must not go into FLOAT_REGS. */
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)			\
-  (GET_CODE (X) == CONST_DOUBLE				\
-   ? NO_REGS						\
-   : GET_MODE (X) == QImode				\
+#define PREFERRED_RELOAD_CLASS(X,CLASS)	\
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode		\
+   ? NO_REGS								\
+   : GET_MODE (X) == QImode						\
    ? (! reg_class_subset_p ((CLASS), Q_REGS) ? Q_REGS : (CLASS))	\
-   : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT && (CLASS) == FLOAT_REGS ? \
+   : ((CLASS) == FLOAT_REGS						\
+      && (GET_MODE (X) == VOIDmode					\
+	  || GET_MODE_CLASS (GET_MODE (X)) == MODE_INT) ?		\
       GENERAL_REGS : (CLASS)))
 
 /* Return the maximum number of consecutive registers
@@ -1180,7 +1182,10 @@ while (0)
     return flag_pic && SYMBOLIC_CONST (RTX) ? 2 : 0;		\
   case CONST_DOUBLE:						\
     {								\
-      int code = standard_80387_constant_p (RTX);		\
+      int code;							\
+      if (GET_MODE (RTX) == VOIDmode)				\
+	return 2;						\
+      code = standard_80387_constant_p (RTX);			\
       return code == 1 ? 0 :					\
 	     code == 2 ? 1 :					\
 			 2;					\
@@ -1510,7 +1515,7 @@ extern char *qi_high_reg_name[];
 #define DEBUG_PRINT_REG(X, CODE, FILE) \
   do { static char *hi_name[] = HI_REGISTER_NAMES;	\
        static char *qi_name[] = QI_REGISTER_NAMES;	\
-       fprintf (FILE, "%s", RP);			\
+       fprintf (FILE, "%d %s", REGNO (X), RP);	\
        if (REGNO (X) == ARG_POINTER_REGNUM)		\
 	 { fputs ("argp", FILE); break; }		\
        if (STACK_TOP_P (X))				\
