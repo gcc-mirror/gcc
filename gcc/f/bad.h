@@ -1,5 +1,5 @@
 /* bad.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -34,11 +34,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 typedef enum
   {
-#define FFEBAD_MSGS1(KWD,SEV,MSG) KWD,
-#define FFEBAD_MSGS2(KWD,SEV,LMSG,SMSG) KWD,
+#define FFEBAD_MSG(KWD,SEV,MSG) KWD,
 #include "bad.def"
-#undef FFEBAD_MSGS1
-#undef FFEBAD_MSGS2
+#undef FFEBAD_MSG
     FFEBAD
   } ffebad;
 
@@ -82,7 +80,7 @@ void ffebad_init_0 (void);
 bool ffebad_is_fatal (ffebad errnum);
 ffebadSeverity ffebad_severity (ffebad errnum);
 bool ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
-		    const char *message);
+		    const char *msgid);
 void ffebad_string (const char *string);
 
 /* Define macros. */
@@ -95,8 +93,8 @@ void ffebad_string (const char *string);
 #define ffebad_set_inhibit(f) (ffebad_is_inhibited_ = (f))
 #define ffebad_start(e) ffebad_start_ (FALSE, (e), FFEBAD_severity, NULL)
 #define ffebad_start_lex(e) ffebad_start_ (TRUE, (e), FFEBAD_severity, NULL)
-#define ffebad_start_msg(m,s) ffebad_start_ (FALSE, FFEBAD, (s), (m))
-#define ffebad_start_msg_lex(m,s) ffebad_start_ (TRUE, FFEBAD, (s), (m))
+#define ffebad_start_msg(msgid,s) ffebad_start_ (FALSE, FFEBAD, (s), (msgid))
+#define ffebad_start_msg_lex(msgid,s) ffebad_start_ (TRUE, FFEBAD, (s), (msgid))
 #define ffebad_terminate_0()
 #define ffebad_terminate_1()
 #define ffebad_terminate_2()

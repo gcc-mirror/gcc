@@ -1,5 +1,5 @@
 /* bad.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -42,6 +42,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "com.h"
 #include "toplev.h"
 #include "where.h"
+#include "intl.h"
 
 /* Externals defined here. */
 
@@ -70,15 +71,18 @@ struct _ffebad_message_
 static const struct _ffebad_message_ ffebad_messages_[]
 =
 {
-#define FFEBAD_MSGS1(KWD,SEV,MSG) { SEV, MSG },
+#define FFEBAD_MSG(kwd,sev,msgid) { sev, msgid },
 #if FFEBAD_LONG_MSGS_ == 0
-#define FFEBAD_MSGS2(KWD,SEV,LMSG,SMSG) { SEV, SMSG },
+#define LONG(m)
+#define SHORT(m) m
 #else
-#define FFEBAD_MSGS2(KWD,SEV,LMSG,SMSG) { SEV, LMSG },
+#define LONG(m) m
+#define SHORT(m)
 #endif
 #include "bad.def"
-#undef FFEBAD_MSGS1
-#undef FFEBAD_MSGS2
+#undef FFEBAD_MSG
+#undef LONG
+#undef SHORT
 };
 
 static struct
@@ -161,7 +165,7 @@ ffebad_severity (ffebad errnum)
 
 bool
 ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
-	       const char *message)
+	       const char *msgid)
 {
   unsigned char i;
 
@@ -174,12 +178,12 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
   if (errnum != FFEBAD)
     {
       ffebad_severity_ = ffebad_messages_[errnum].severity;
-      ffebad_message_ = ffebad_messages_[errnum].message;
+      ffebad_message_ = gettext (ffebad_messages_[errnum].message);
     }
   else
     {
       ffebad_severity_ = sev;
-      ffebad_message_ = message;
+      ffebad_message_ = gettext (msgid);
     }
 
   switch (ffebad_severity_)
@@ -379,15 +383,15 @@ ffebad_finish ()
   switch (ffebad_severity_)
     {
     case FFEBAD_severityINFORMATIONAL:
-      s = "note:";
+      s = _("note:");
       break;
 
     case FFEBAD_severityWARNING:
-      s = "warning:";
+      s = _("warning:");
       break;
 
     case FFEBAD_severitySEVERE:
-      s = "fatal:";
+      s = _("fatal:");
       break;
 
     default:
@@ -429,7 +433,7 @@ ffebad_finish ()
 		   pointer);
 	  last_line_num = ln;
 	  last_col_num = cn;
-	  s = "(continued):";
+	  s = _("(continued):");
 	}
       else
 	{
@@ -479,14 +483,14 @@ ffebad_finish ()
 
 	      if ((index < 0) || (index >= FFEBAD_MAX_))
 		{
-		  bufi = ffebad_bufputs_ (buf, bufi, "[REPORT BUG!!] %");
+		  bufi = ffebad_bufputs_ (buf, bufi, _("[REPORT BUG!!] %"));
 		  bufi = ffebad_bufputc_ (buf, bufi, c);
 		}
 	      else
 		{
 		  s = ffebad_string_[index];
 		  if (s == NULL)
-		    bufi = ffebad_bufputs_ (buf, bufi, "[REPORT BUG!!]");
+		    bufi = ffebad_bufputs_ (buf, bufi, _("[REPORT BUG!!]"));
 		  else
 		    bufi = ffebad_bufputs_ (buf, bufi, s);
 		}
@@ -497,7 +501,7 @@ ffebad_finish ()
 
 	      if ((index < 0) || (index >= FFEBAD_MAX_))
 		{
-		  bufi = ffebad_bufputs_ (buf, bufi, "[REPORT BUG!!] %");
+		  bufi = ffebad_bufputs_ (buf, bufi, _("[REPORT BUG!!] %"));
 		  bufi = ffebad_bufputc_ (buf, bufi, c);
 		}
 	      else
@@ -518,7 +522,7 @@ ffebad_finish ()
 	    bufi = ffebad_bufputc_ (buf, bufi, '%');
 	  else
 	    {
-	      bufi = ffebad_bufputs_ (buf, bufi, "[REPORT BUG!!]");
+	      bufi = ffebad_bufputs_ (buf, bufi, _("[REPORT BUG!!]"));
 	      bufi = ffebad_bufputc_ (buf, bufi, '%');
 	      bufi = ffebad_bufputc_ (buf, bufi, c);
 	    }
