@@ -19,6 +19,9 @@
 #  if defined (_PTHREAD_ENV_DECC) || defined (_PTHREAD_ENV_EPCC) || defined (__PRAGMA_EXTERN_PREFIX)
 #   define _PTHREAD_USE_PTDNAM_
 #  endif
+#  if defined (_PTHREAD_ENV_DECC) || defined (__PRAGMA_EXTERN_PREFIX)
+#   define _PTHREAD_USE_PTDNAM_
+#  endif
 #endif  /* ALPHA_PTHREAD_CHECK */
 
 

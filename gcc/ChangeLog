@@ -1,5 +1,27 @@
 2004-01-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* fixinc/inclhack.def (alpha___extern_prefix): Renamed to ...
+	(alpha___extern_prefix_sys_stat): ... this.
+	Apply to <sys/mount.h>, too.
+	Tweak to match more variations.
+	* fixinc/tests/base/sys/stat.h: Adapt for new hackname.
+
+	* fixinc/inclhack.def (alpha___extern_prefix,
+	alpha___extern_prefix_standards): New hacks to obey 
+ 	__PRAGMA_EXTERN_PREFIX.
+	* fixinc/tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: New
+	test.
+	* fixinc/tests/base/standards.h: Likewise.
+	
+	* fixincl/inclhack.def (alpha_pthread): Tweak to match more
+	variations.
+	New testcase.
+	* fixinc/tests/base/pthread.h: Handle it.
+	
+	* fixinc/fixincl.x: Regenerate.
+
+2004-01-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* fixinc/inclhack.def (bad_lval): Renamed to ...
 	(alpha_bad_lval): ... this.
 	Removed file list.

@@ -523,11 +523,50 @@ fix = {
 
 
 /*
- *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V5 <sys/stat.h>.
+ *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V4/5 headers.
  */
 fix = {
     hackname  = alpha___extern_prefix;
+    select    = "(.*)(defined\\(__DECC\\)|def[ \t]*__DECC)[ \t]*\n(#[ \t]*pragma[ \t]*extern_prefix.*)";
+
+    mach      = "alpha*-dec-osf*";
+    c_fix     = format;
+    c_fix_arg = "%1 (defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX))\n%3";
+
+    test_text = "#ifdef  __DECC\n"
+		"#pragma extern_prefix \"_P\"\n"
+		"#   if defined(__DECC)\n"
+		"#     pragma extern_prefix \"_E\"\n"
+		"# if !defined(_LIBC_POLLUTION_H_) && defined(__DECC)\n"
+		"#  pragma extern_prefix \"\"";
+};
+
+
+/*
+ *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V4/5 <standards.h>.
+ */
+fix = {
+    hackname  = alpha___extern_prefix_standards;
+    files     = standards.h;
+    select    = ".*!defined\\(_LIBC_POLLUTION_H_\\) && !defined\\(__DECC\\)";
+
+    mach      = "alpha*-dec-osf*";
+    c_fix     = format;
+    c_fix_arg = "%0 && !defined(__PRAGMA_EXTERN_PREFIX)";
+
+    test_text = "#if (_ISO_C_SOURCE>=19990L) && !defined(_LIBC_POLLUTION_H_) && !defined(__DECC)";
+};
+
+
+/*
+ *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V5 <sys/mount.h> and
+ *  <sys/stat.h>.  The tests for __DECC are special in various ways, so
+ *  alpha__extern_prefix cannot be used.
+ */
+fix = {
+    hackname  = alpha___extern_prefix_sys_stat;
     files     = sys/stat.h;
+    files     = sys/mount.h;
     select    = "#[ \t]*if[ \t]*defined\\(__DECC\\)";
 
     mach      = "alpha*-dec-osf5*";
@@ -616,14 +655,17 @@ fix = {
 fix = {
     hackname  = alpha_pthread;
     files     = pthread.h;
-    select    = "(#[ \t]*if defined \\(_PTHREAD_ENV_DECC\\) || defined \\(_PTHREAD_ENV_EPCC\\))\n"
+    select    = "((#[ \t]*if)([ \t]*defined[ \t]*\\(_PTHREAD_ENV_DECC\\)|def _PTHREAD_ENV_DECC)(.*))\n"
 		"(#[ \t]*define _PTHREAD_USE_PTDNAM_)";
 
     mach      = "alpha*-dec-osf*";
     c_fix     = format;
-    c_fix_arg = "%1 || defined (__PRAGMA_EXTERN_PREFIX)\n%2";
+    c_fix_arg = "%2 defined (_PTHREAD_ENV_DECC)%4 || defined (__PRAGMA_EXTERN_PREFIX)\n%5";
 
     test_text = "#  if defined (_PTHREAD_ENV_DECC) || defined (_PTHREAD_ENV_EPCC)\n"
+		"#   define _PTHREAD_USE_PTDNAM_\n"
+		"#  endif\n"
+		"#  ifdef _PTHREAD_ENV_DECC\n"
 		"#   define _PTHREAD_USE_PTDNAM_\n"
 		"#  endif";
 };

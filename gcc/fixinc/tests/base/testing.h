@@ -9,6 +9,16 @@
 
 
 
+#if defined( ALPHA___EXTERN_PREFIX_CHECK )
+#if (defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX))
+#pragma extern_prefix "_P"
+#   if  (defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX))
+#     pragma extern_prefix "_E"
+# if !defined(_LIBC_POLLUTION_H_) &&  (defined(__DECC) || defined(__PRAGMA_EXTERN_PREFIX))
+#  pragma extern_prefix ""
+#endif  /* ALPHA___EXTERN_PREFIX_CHECK */
+
+
 #if defined( ALPHA_BAD_LVAL_CHECK )
 #pragma extern_prefix "_FOO"
 #define something _FOOsomething
