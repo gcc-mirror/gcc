@@ -117,7 +117,7 @@ objc_init_statics ()
 	  /* Remove this module from the uninitialized list.  */
 	  struct objc_list *this = *cell;
 	  *cell = this->tail;
-	  free (this);
+	  objc_free(this);
 	}
       else
 	cell = &(*cell)->tail;
