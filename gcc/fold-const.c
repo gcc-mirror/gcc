@@ -5459,7 +5459,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code,
 				     tree cond, tree arg, int cond_first_p)
 {
   tree cond_type = cond_first_p ? TREE_TYPE (op0) : TREE_TYPE (op1);
-  tree arg_type = cond_first_p ? TREE_TYPE (op0) : TREE_TYPE (op1);
+  tree arg_type = cond_first_p ? TREE_TYPE (op1) : TREE_TYPE (op0);
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
