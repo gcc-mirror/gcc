@@ -1,3 +1,7 @@
+2004-07-09  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_stpcpy): Don't modify len.
+
 2004-07-10  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* flags.h: Delete redundant prototypes that are being generated
