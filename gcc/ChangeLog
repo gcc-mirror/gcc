@@ -1,3 +1,8 @@
+2005-03-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c: Convert uses of fold (build (...)) to
+	fold_buildN.
+
 2005-03-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/20249

@@ -1044,8 +1044,8 @@ negate_expr (tree t)
 				     TREE_OPERAND (t, 1)))
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 1));
-	      tem = fold (build2 (MINUS_EXPR, TREE_TYPE (t),
-				  tem, TREE_OPERAND (t, 0)));
+	      tem = fold_build2 (MINUS_EXPR, TREE_TYPE (t),
+				 tem, TREE_OPERAND (t, 0));
 	      return fold_convert (type, tem);
 	    }
 
@@ -1053,8 +1053,8 @@ negate_expr (tree t)
 	  if (negate_expr_p (TREE_OPERAND (t, 0)))
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 0));
-	      tem = fold (build2 (MINUS_EXPR, TREE_TYPE (t),
-				  tem, TREE_OPERAND (t, 1)));
+	      tem = fold_build2 (MINUS_EXPR, TREE_TYPE (t),
+				 tem, TREE_OPERAND (t, 1));
 	      return fold_convert (type, tem);
 	    }
 	}
@@ -1065,9 +1065,9 @@ negate_expr (tree t)
       if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
 	  && reorder_operands_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1)))
 	return fold_convert (type,
-			     fold (build2 (MINUS_EXPR, TREE_TYPE (t),
-					   TREE_OPERAND (t, 1),
-					   TREE_OPERAND (t, 0))));
+			     fold_build2 (MINUS_EXPR, TREE_TYPE (t),
+					  TREE_OPERAND (t, 1),
+					  TREE_OPERAND (t, 0)));
       break;
 
     case MULT_EXPR:
@@ -1082,15 +1082,15 @@ negate_expr (tree t)
 	  tem = TREE_OPERAND (t, 1);
 	  if (negate_expr_p (tem))
 	    return fold_convert (type,
-				 fold (build2 (TREE_CODE (t), TREE_TYPE (t),
-					       TREE_OPERAND (t, 0),
-					       negate_expr (tem))));
+				 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
+					      TREE_OPERAND (t, 0),
+					      negate_expr (tem)));
 	  tem = TREE_OPERAND (t, 0);
 	  if (negate_expr_p (tem))
 	    return fold_convert (type,
-				 fold (build2 (TREE_CODE (t), TREE_TYPE (t),
-					       negate_expr (tem),
-					       TREE_OPERAND (t, 1))));
+				 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
+					      negate_expr (tem),
+					      TREE_OPERAND (t, 1)));
 	}
       break;
 
@@ -1131,7 +1131,7 @@ negate_expr (tree t)
 			   ? lang_hooks.types.signed_type (type)
 			   : lang_hooks.types.unsigned_type (type);
 	      tree temp = fold_convert (ntype, TREE_OPERAND (t, 0));
-	      temp = fold (build2 (RSHIFT_EXPR, ntype, temp, op1));
+	      temp = fold_build2 (RSHIFT_EXPR, ntype, temp, op1);
 	      return fold_convert (type, temp);
 	    }
 	}
@@ -1141,7 +1141,7 @@ negate_expr (tree t)
       break;
     }
 
-  tem = fold (build1 (NEGATE_EXPR, TREE_TYPE (t), t));
+  tem = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
   return fold_convert (type, tem);
 }
 
@@ -1279,8 +1279,8 @@ associate_trees (tree t1, tree t2, enum tree_code code, tree type)
 		     fold_convert (type, t2));
     }
 
-  return fold (build2 (code, type, fold_convert (type, t1),
-		       fold_convert (type, t2)));
+  return fold_build2 (code, type, fold_convert (type, t1),
+		      fold_convert (type, t2));
 }
 
 /* Combine two integer constants ARG1 and ARG2 under operation CODE
@@ -1654,7 +1654,7 @@ size_binop (enum tree_code code, tree arg0, tree arg1)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return error_mark_node;
 
-  return fold (build2 (code, type, arg0, arg1));
+  return fold_build2 (code, type, arg0, arg1);
 }
 
 /* Given two values, either both of sizetype or both of bitsizetype,
@@ -1896,7 +1896,7 @@ fold_convert (tree type, tree arg)
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig)
       || lang_hooks.types_compatible_p (TYPE_MAIN_VARIANT (type),
 					TYPE_MAIN_VARIANT (orig)))
-    return fold (build1 (NOP_EXPR, type, arg));
+    return fold_build1 (NOP_EXPR, type, arg);
 
   switch (TREE_CODE (type))
     {
@@ -1911,15 +1911,15 @@ fold_convert (tree type, tree arg)
 	}
       if (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
 	  || TREE_CODE (orig) == OFFSET_TYPE)
-        return fold (build1 (NOP_EXPR, type, arg));
+        return fold_build1 (NOP_EXPR, type, arg);
       if (TREE_CODE (orig) == COMPLEX_TYPE)
 	{
-	  tem = fold (build1 (REALPART_EXPR, TREE_TYPE (orig), arg));
+	  tem = fold_build1 (REALPART_EXPR, TREE_TYPE (orig), arg);
 	  return fold_convert (type, tem);
 	}
       gcc_assert (TREE_CODE (orig) == VECTOR_TYPE
 		  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
-      return fold (build1 (NOP_EXPR, type, arg));
+      return fold_build1 (NOP_EXPR, type, arg);
 
     case REAL_TYPE:
       if (TREE_CODE (arg) == INTEGER_CST)
@@ -1940,14 +1940,14 @@ fold_convert (tree type, tree arg)
 	case INTEGER_TYPE: case CHAR_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
-	  return fold (build1 (FLOAT_EXPR, type, arg));
+	  return fold_build1 (FLOAT_EXPR, type, arg);
 
 	case REAL_TYPE:
-	  return fold (build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
-			       type, arg));
+	  return fold_build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
+			      type, arg);
 
 	case COMPLEX_TYPE:
-	  tem = fold (build1 (REALPART_EXPR, TREE_TYPE (orig), arg));
+	  tem = fold_build1 (REALPART_EXPR, TREE_TYPE (orig), arg);
 	  return fold_convert (type, tem);
 
 	default:
@@ -1972,15 +1972,15 @@ fold_convert (tree type, tree arg)
 	      {
 		rpart = fold_convert (TREE_TYPE (type), TREE_OPERAND (arg, 0));
 		ipart = fold_convert (TREE_TYPE (type), TREE_OPERAND (arg, 1));
-		return fold (build2 (COMPLEX_EXPR, type, rpart, ipart));
+		return fold_build2 (COMPLEX_EXPR, type, rpart, ipart);
 	      }
 
 	    arg = save_expr (arg);
-	    rpart = fold (build1 (REALPART_EXPR, TREE_TYPE (orig), arg));
-	    ipart = fold (build1 (IMAGPART_EXPR, TREE_TYPE (orig), arg));
+	    rpart = fold_build1 (REALPART_EXPR, TREE_TYPE (orig), arg);
+	    ipart = fold_build1 (IMAGPART_EXPR, TREE_TYPE (orig), arg);
 	    rpart = fold_convert (TREE_TYPE (type), rpart);
 	    ipart = fold_convert (TREE_TYPE (type), ipart);
-	    return fold (build2 (COMPLEX_EXPR, type, rpart, ipart));
+	    return fold_build2 (COMPLEX_EXPR, type, rpart, ipart);
 	  }
 
 	default:
@@ -1993,10 +1993,10 @@ fold_convert (tree type, tree arg)
       gcc_assert (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
       gcc_assert (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
 		  || TREE_CODE (orig) == VECTOR_TYPE);
-      return fold (build1 (NOP_EXPR, type, arg));
+      return fold_build1 (NOP_EXPR, type, arg);
 
     case VOID_TYPE:
-      return fold (build1 (CONVERT_EXPR, type, fold_ignored_result (arg)));
+      return fold_build1 (CONVERT_EXPR, type, fold_ignored_result (arg));
 
     default:
       gcc_unreachable ();
@@ -2309,8 +2309,8 @@ combine_comparisons (enum tree_code code, enum tree_code lcode,
   else if (compcode == COMPCODE_FALSE)
     return constant_boolean_node (false, truth_type);
   else
-    return fold (build2 (compcode_to_comparison (compcode),
-			 truth_type, ll_arg, lr_arg));
+    return fold_build2 (compcode_to_comparison (compcode),
+			truth_type, ll_arg, lr_arg);
 }
 
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
@@ -2779,16 +2779,16 @@ eval_subst (tree arg, tree old0, tree new0, tree old1, tree new1)
   switch (class)
     {
     case tcc_unary:
-      return fold (build1 (code, type,
-			   eval_subst (TREE_OPERAND (arg, 0),
-				       old0, new0, old1, new1)));
+      return fold_build1 (code, type,
+			  eval_subst (TREE_OPERAND (arg, 0),
+				      old0, new0, old1, new1));
 
     case tcc_binary:
-      return fold (build2 (code, type,
-			   eval_subst (TREE_OPERAND (arg, 0),
-				       old0, new0, old1, new1),
-			   eval_subst (TREE_OPERAND (arg, 1),
-				       old0, new0, old1, new1)));
+      return fold_build2 (code, type,
+			  eval_subst (TREE_OPERAND (arg, 0),
+				      old0, new0, old1, new1),
+			  eval_subst (TREE_OPERAND (arg, 1),
+				      old0, new0, old1, new1));
 
     case tcc_expression:
       switch (code)
@@ -2800,13 +2800,13 @@ eval_subst (tree arg, tree old0, tree new0, tree old1, tree new1)
 	  return eval_subst (TREE_OPERAND (arg, 1), old0, new0, old1, new1);
 
 	case COND_EXPR:
-	  return fold (build3 (code, type,
-			       eval_subst (TREE_OPERAND (arg, 0),
-					   old0, new0, old1, new1),
-			       eval_subst (TREE_OPERAND (arg, 1),
-					   old0, new0, old1, new1),
-			       eval_subst (TREE_OPERAND (arg, 2),
-					   old0, new0, old1, new1)));
+	  return fold_build3 (code, type,
+			      eval_subst (TREE_OPERAND (arg, 0),
+					  old0, new0, old1, new1),
+			      eval_subst (TREE_OPERAND (arg, 1),
+					  old0, new0, old1, new1),
+			      eval_subst (TREE_OPERAND (arg, 2),
+					  old0, new0, old1, new1));
 	default:
 	  break;
 	}
@@ -2831,7 +2831,7 @@ eval_subst (tree arg, tree old0, tree new0, tree old1, tree new1)
 	else if (arg1 == old1 || operand_equal_p (arg1, old1, 0))
 	  arg1 = new1;
 
-	return fold (build2 (code, type, arg0, arg1));
+	return fold_build2 (code, type, arg0, arg1);
       }
 
     default:
@@ -3063,8 +3063,8 @@ distribute_bit_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     return 0;
 
-  return fold (build2 (TREE_CODE (arg0), type, common,
-		       fold (build2 (code, type, left, right))));
+  return fold_build2 (TREE_CODE (arg0), type, common,
+		      fold_build2 (code, type, left, right));
 }
 
 /* Return a BIT_FIELD_REF of type TYPE to refer to BITSIZE bits of INNER
@@ -3345,8 +3345,8 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
   /* Merge it with the mask we found in the BIT_AND_EXPR, if any.  */
   if (and_mask != 0)
-    mask = fold (build2 (BIT_AND_EXPR, unsigned_type,
-			 fold_convert (unsigned_type, and_mask), mask));
+    mask = fold_build2 (BIT_AND_EXPR, unsigned_type,
+			fold_convert (unsigned_type, and_mask), mask);
 
   *pmask = mask;
   *pand_mask = and_mask;
@@ -3508,8 +3508,8 @@ range_binop (enum tree_code code, tree type, tree arg0, int upper0_p,
 
   if (arg0 != 0 && arg1 != 0)
     {
-      tem = fold (build2 (code, type != 0 ? type : TREE_TYPE (arg0),
-			  arg0, fold_convert (TREE_TYPE (arg0), arg1)));
+      tem = fold_build2 (code, type != 0 ? type : TREE_TYPE (arg0),
+			 arg0, fold_convert (TREE_TYPE (arg0), arg1));
       STRIP_NOPS (tem);
       return TREE_CODE (tem) == INTEGER_CST ? tem : 0;
     }
@@ -3768,11 +3768,11 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 		: TYPE_MAX_VALUE (arg0_type);
 
 	      if (TYPE_PRECISION (exp_type) == TYPE_PRECISION (arg0_type))
-		high_positive = fold (build2 (RSHIFT_EXPR, arg0_type,
-					      fold_convert (arg0_type,
-							    high_positive),
-					      fold_convert (arg0_type,
-							    integer_one_node)));
+		high_positive = fold_build2 (RSHIFT_EXPR, arg0_type,
+					     fold_convert (arg0_type,
+							   high_positive),
+					     fold_convert (arg0_type,
+							   integer_one_node));
 
 	      /* If the low bound is specified, "and" the range with the
 		 range for which the original unsigned value will be
@@ -3852,13 +3852,13 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
     return fold_convert (type, integer_one_node);
 
   if (low == 0)
-    return fold (build2 (LE_EXPR, type, exp, high));
+    return fold_build2 (LE_EXPR, type, exp, high);
 
   if (high == 0)
-    return fold (build2 (GE_EXPR, type, exp, low));
+    return fold_build2 (GE_EXPR, type, exp, low);
 
   if (operand_equal_p (low, high, 0))
-    return fold (build2 (EQ_EXPR, type, exp, low));
+    return fold_build2 (EQ_EXPR, type, exp, low);
 
   if (integer_zerop (low))
     {
@@ -3897,8 +3897,8 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	      etype = lang_hooks.types.signed_type (etype);
 	      exp = fold_convert (etype, exp);
 	    }
-	  return fold (build2 (GT_EXPR, type, exp,
-			       fold_convert (etype, integer_zero_node)));
+	  return fold_build2 (GT_EXPR, type, exp,
+			      fold_convert (etype, integer_zero_node));
 	}
     }
 
@@ -3936,7 +3936,7 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 
   if (value != 0 && ! TREE_OVERFLOW (value))
     return build_range_check (type,
-			      fold (build2 (MINUS_EXPR, etype, exp, low)),
+			      fold_build2 (MINUS_EXPR, etype, exp, low),
 			      1, fold_convert (etype, integer_zero_node),
 			      value);
 
@@ -4208,7 +4208,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
 	  arg1 = fold_convert (lang_hooks.types.signed_type
 			       (TREE_TYPE (arg1)), arg1);
-	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
+	tem = fold_build1 (ABS_EXPR, TREE_TYPE (arg1), arg1);
 	return pedantic_non_lvalue (fold_convert (type, tem));
       case UNLE_EXPR:
       case UNLT_EXPR:
@@ -4219,7 +4219,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
 	  arg1 = fold_convert (lang_hooks.types.signed_type
 			       (TREE_TYPE (arg1)), arg1);
-	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
+	tem = fold_build1 (ABS_EXPR, TREE_TYPE (arg1), arg1);
 	return negate_expr (fold_convert (type, tem));
       default:
 	gcc_assert (TREE_CODE_CLASS (comp_code) == tcc_comparison);
@@ -4298,8 +4298,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	      comp_op0 = fold_convert (comp_type, comp_op0);
 	      comp_op1 = fold_convert (comp_type, comp_op1);
 	      tem = (comp_code == LE_EXPR || comp_code == UNLE_EXPR)
-		    ? fold (build2 (MIN_EXPR, comp_type, comp_op0, comp_op1))
-		    : fold (build2 (MIN_EXPR, comp_type, comp_op1, comp_op0));
+		    ? fold_build2 (MIN_EXPR, comp_type, comp_op0, comp_op1)
+		    : fold_build2 (MIN_EXPR, comp_type, comp_op1, comp_op0);
 	      return pedantic_non_lvalue (fold_convert (type, tem));
 	    }
 	  break;
@@ -4312,8 +4312,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	      comp_op0 = fold_convert (comp_type, comp_op0);
 	      comp_op1 = fold_convert (comp_type, comp_op1);
 	      tem = (comp_code == GE_EXPR || comp_code == UNGE_EXPR)
-		    ? fold (build2 (MAX_EXPR, comp_type, comp_op0, comp_op1))
-		    : fold (build2 (MAX_EXPR, comp_type, comp_op1, comp_op0));
+		    ? fold_build2 (MAX_EXPR, comp_type, comp_op0, comp_op1)
+		    : fold_build2 (MAX_EXPR, comp_type, comp_op1, comp_op0);
 	      return pedantic_non_lvalue (fold_convert (type, tem));
 	    }
 	  break;
@@ -4345,7 +4345,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
       case EQ_EXPR:
 	/* We can replace A with C1 in this case.  */
 	arg1 = fold_convert (type, arg01);
-	return fold (build3 (COND_EXPR, type, arg0, arg1, arg2));
+	return fold_build3 (COND_EXPR, type, arg0, arg1, arg2);
 
       case LT_EXPR:
 	/* If C1 is C2 + 1, this is min(A, C2).  */
@@ -4355,8 +4355,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (PLUS_EXPR, arg2,
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold (build2 (MIN_EXPR,
-						    type, arg1, arg2)));
+	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
+						   type, arg1, arg2));
 	break;
 
       case LE_EXPR:
@@ -4367,8 +4367,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (MINUS_EXPR, arg2,
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold (build2 (MIN_EXPR,
-						    type, arg1, arg2)));
+	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
+						   type, arg1, arg2));
 	break;
 
       case GT_EXPR:
@@ -4379,8 +4379,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (MINUS_EXPR, arg2,
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold (build2 (MAX_EXPR,
-						    type, arg1, arg2)));
+	  return pedantic_non_lvalue (fold_build2 (MAX_EXPR,
+						   type, arg1, arg2));
 	break;
 
       case GE_EXPR:
@@ -4391,8 +4391,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (PLUS_EXPR, arg2,
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold (build2 (MAX_EXPR,
-						    type, arg1, arg2)));
+	  return pedantic_non_lvalue (fold_build2 (MAX_EXPR,
+						   type, arg1, arg2));
 	break;
       case NE_EXPR:
 	break;
@@ -4780,8 +4780,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       l_const = unextend (l_const, ll_bitsize, ll_unsignedp, ll_and_mask);
       l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos), 0);
       if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
-					fold (build1 (BIT_NOT_EXPR,
-						      lntype, ll_mask)),
+					fold_build1 (BIT_NOT_EXPR,
+						     lntype, ll_mask),
 					0)))
 	{
 	  warning ("comparison is always %d", wanted_code == NE_EXPR);
@@ -4795,8 +4795,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       r_const = unextend (r_const, rl_bitsize, rl_unsignedp, rl_and_mask);
       r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos), 0);
       if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
-					fold (build1 (BIT_NOT_EXPR,
-						      lntype, rl_mask)),
+					fold_build1 (BIT_NOT_EXPR,
+						     lntype, rl_mask),
 					0)))
 	{
 	  warning ("comparison is always %d", wanted_code == NE_EXPR);
@@ -5002,20 +5002,20 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
     case GE_EXPR:
       return
-	fold (build2 (TRUTH_ORIF_EXPR, type,
-		      optimize_minmax_comparison
-		      (EQ_EXPR, type, arg0, comp_const),
-		      optimize_minmax_comparison
-		      (GT_EXPR, type, arg0, comp_const)));
+	fold_build2 (TRUTH_ORIF_EXPR, type,
+		     optimize_minmax_comparison
+		     (EQ_EXPR, type, arg0, comp_const),
+		     optimize_minmax_comparison
+		     (GT_EXPR, type, arg0, comp_const));
 
     case EQ_EXPR:
       if (op_code == MAX_EXPR && consts_equal)
 	/* MAX (X, 0) == 0  ->  X <= 0  */
-	return fold (build2 (LE_EXPR, type, inner, comp_const));
+	return fold_build2 (LE_EXPR, type, inner, comp_const);
 
       else if (op_code == MAX_EXPR && consts_lt)
 	/* MAX (X, 0) == 5  ->  X == 5   */
-	return fold (build2 (EQ_EXPR, type, inner, comp_const));
+	return fold_build2 (EQ_EXPR, type, inner, comp_const);
 
       else if (op_code == MAX_EXPR)
 	/* MAX (X, 0) == -1  ->  false  */
@@ -5023,7 +5023,7 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
       else if (consts_equal)
 	/* MIN (X, 0) == 0  ->  X >= 0  */
-	return fold (build2 (GE_EXPR, type, inner, comp_const));
+	return fold_build2 (GE_EXPR, type, inner, comp_const);
 
       else if (consts_lt)
 	/* MIN (X, 0) == 5  ->  false  */
@@ -5031,13 +5031,13 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
       else
 	/* MIN (X, 0) == -1  ->  X == -1  */
-	return fold (build2 (EQ_EXPR, type, inner, comp_const));
+	return fold_build2 (EQ_EXPR, type, inner, comp_const);
 
     case GT_EXPR:
       if (op_code == MAX_EXPR && (consts_equal || consts_lt))
 	/* MAX (X, 0) > 0  ->  X > 0
 	   MAX (X, 0) > 5  ->  X > 5  */
-	return fold (build2 (GT_EXPR, type, inner, comp_const));
+	return fold_build2 (GT_EXPR, type, inner, comp_const);
 
       else if (op_code == MAX_EXPR)
 	/* MAX (X, 0) > -1  ->  true  */
@@ -5050,7 +5050,7 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
       else
 	/* MIN (X, 0) > -1  ->  X > -1  */
-	return fold (build2 (GT_EXPR, type, inner, comp_const));
+	return fold_build2 (GT_EXPR, type, inner, comp_const);
 
     default:
       return NULL_TREE;
@@ -5175,7 +5175,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
           tree cstype = (*lang_hooks.types.signed_type) (ctype);
           if ((t1 = extract_muldiv (op0, c, code, cstype)) != 0)
             {
-              t1 = fold (build1 (tcode, cstype, fold_convert (cstype, t1)));
+              t1 = fold_build1 (tcode, cstype, fold_convert (cstype, t1));
               return fold_convert (ctype, t1);
             }
           break;
@@ -5183,7 +5183,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
       /* FALLTHROUGH */
     case NEGATE_EXPR:
       if ((t1 = extract_muldiv (op0, c, code, wide_type)) != 0)
-	return fold (build1 (tcode, ctype, fold_convert (ctype, t1)));
+	return fold_build1 (tcode, ctype, fold_convert (ctype, t1));
       break;
 
     case MIN_EXPR:  case MAX_EXPR:
@@ -5199,8 +5199,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 	  if (tree_int_cst_sgn (c) < 0)
 	    tcode = (tcode == MIN_EXPR ? MAX_EXPR : MIN_EXPR);
 
-	  return fold (build2 (tcode, ctype, fold_convert (ctype, t1),
-			       fold_convert (ctype, t2)));
+	  return fold_build2 (tcode, ctype, fold_convert (ctype, t1),
+			      fold_convert (ctype, t2));
 	}
       break;
 
@@ -5241,8 +5241,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 		 are divisible by c.  */
 	      || (multiple_of_p (ctype, op0, c)
 	          && multiple_of_p (ctype, op1, c))))
-	return fold (build2 (tcode, ctype, fold_convert (ctype, t1),
-			     fold_convert (ctype, t2)));
+	return fold_build2 (tcode, ctype, fold_convert (ctype, t1),
+			    fold_convert (ctype, t2));
 
       /* If this was a subtraction, negate OP1 and set it to be an addition.
 	 This simplifies the logic below.  */
@@ -5292,17 +5292,17 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
       /* If we were able to eliminate our operation from the first side,
 	 apply our operation to the second side and reform the PLUS.  */
       if (t1 != 0 && (TREE_CODE (t1) != code || code == MULT_EXPR))
-	return fold (build2 (tcode, ctype, fold_convert (ctype, t1), op1));
+	return fold_build2 (tcode, ctype, fold_convert (ctype, t1), op1);
 
       /* The last case is if we are a multiply.  In that case, we can
 	 apply the distributive law to commute the multiply and addition
 	 if the multiplication of the constants doesn't overflow.  */
       if (code == MULT_EXPR)
-	return fold (build2 (tcode, ctype,
-			     fold (build2 (code, ctype,
-					   fold_convert (ctype, op0),
-					   fold_convert (ctype, c))),
-			     op1));
+	return fold_build2 (tcode, ctype,
+			    fold_build2 (code, ctype,
+					 fold_convert (ctype, op0),
+					 fold_convert (ctype, c)),
+			    op1);
 
       break;
 
@@ -5324,12 +5324,12 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 	 do something only if the second operand is a constant.  */
       if (same_p
 	  && (t1 = extract_muldiv (op0, c, code, wide_type)) != 0)
-	return fold (build2 (tcode, ctype, fold_convert (ctype, t1),
-			     fold_convert (ctype, op1)));
+	return fold_build2 (tcode, ctype, fold_convert (ctype, t1),
+			    fold_convert (ctype, op1));
       else if (tcode == MULT_EXPR && code == MULT_EXPR
 	       && (t1 = extract_muldiv (op1, c, code, wide_type)) != 0)
-	return fold (build2 (tcode, ctype, fold_convert (ctype, op0),
-			     fold_convert (ctype, t1)));
+	return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
+			    fold_convert (ctype, t1));
       else if (TREE_CODE (op1) != INTEGER_CST)
 	return 0;
 
@@ -5339,7 +5339,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 	  && 0 != (t1 = const_binop (MULT_EXPR, fold_convert (ctype, op1),
 				     fold_convert (ctype, c), 0))
 	  && ! TREE_OVERFLOW (t1))
-	return fold (build2 (tcode, ctype, fold_convert (ctype, op0), t1));
+	return fold_build2 (tcode, ctype, fold_convert (ctype, op0), t1);
 
       /* If these operations "cancel" each other, we have the main
 	 optimizations of this pass, which occur when either constant is a
@@ -5358,15 +5358,15 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 		  && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR)))
 	{
 	  if (integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
-	    return fold (build2 (tcode, ctype, fold_convert (ctype, op0),
-				 fold_convert (ctype,
-					       const_binop (TRUNC_DIV_EXPR,
-							    op1, c, 0))));
+	    return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
+				fold_convert (ctype,
+					      const_binop (TRUNC_DIV_EXPR,
+							   op1, c, 0)));
 	  else if (integer_zerop (const_binop (TRUNC_MOD_EXPR, c, op1, 0)))
-	    return fold (build2 (code, ctype, fold_convert (ctype, op0),
-				 fold_convert (ctype,
-					       const_binop (TRUNC_DIV_EXPR,
-							    c, op1, 0))));
+	    return fold_build2 (code, ctype, fold_convert (ctype, op0),
+				fold_convert (ctype,
+					      const_binop (TRUNC_DIV_EXPR,
+							   c, op1, 0)));
 	}
       break;
 
@@ -5503,7 +5503,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code,
 			     : build2 (code, type, arg, false_value));
     }
 
-  test = fold (build3 (COND_EXPR, type, test, lhs, rhs));
+  test = fold_build3 (COND_EXPR, type, test, lhs, rhs);
   return fold_convert (type, test);
 }
 
@@ -5581,8 +5581,8 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 	    return omit_one_operand (type, integer_one_node, arg);
 
 	  /* sqrt(x) > y is the same as x >= 0, if y is negative.  */
-	  return fold (build2 (GE_EXPR, type, arg,
-			       build_real (TREE_TYPE (arg), dconst0)));
+	  return fold_build2 (GE_EXPR, type, arg,
+			      build_real (TREE_TYPE (arg), dconst0));
 	}
       else if (code == GT_EXPR || code == GE_EXPR)
 	{
@@ -5595,8 +5595,8 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 	    {
 	      /* sqrt(x) > y is x == +Inf, when y is very large.  */
 	      if (HONOR_INFINITIES (mode))
-		return fold (build2 (EQ_EXPR, type, arg,
-				     build_real (TREE_TYPE (arg), c2)));
+		return fold_build2 (EQ_EXPR, type, arg,
+				    build_real (TREE_TYPE (arg), c2));
 
 	      /* sqrt(x) > y is always false, when y is very large
 		 and we don't care about infinities.  */
@@ -5604,8 +5604,8 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 	    }
 
 	  /* sqrt(x) > c is the same as x > c*c.  */
-	  return fold (build2 (code, type, arg,
-			       build_real (TREE_TYPE (arg), c2)));
+	  return fold_build2 (code, type, arg,
+			      build_real (TREE_TYPE (arg), c2));
 	}
       else if (code == LT_EXPR || code == LE_EXPR)
 	{
@@ -5624,14 +5624,14 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 	      /* sqrt(x) < y is x != +Inf when y is very large and we
 		 don't care about NaNs.  */
 	      if (! HONOR_NANS (mode))
-		return fold (build2 (NE_EXPR, type, arg,
-				     build_real (TREE_TYPE (arg), c2)));
+		return fold_build2 (NE_EXPR, type, arg,
+				    build_real (TREE_TYPE (arg), c2));
 
 	      /* sqrt(x) < y is x >= 0 when y is very large and we
 		 don't care about Infinities.  */
 	      if (! HONOR_INFINITIES (mode))
-		return fold (build2 (GE_EXPR, type, arg,
-				     build_real (TREE_TYPE (arg), dconst0)));
+		return fold_build2 (GE_EXPR, type, arg,
+				    build_real (TREE_TYPE (arg), dconst0));
 
 	      /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
 	      if (lang_hooks.decls.global_bindings_p () != 0
@@ -5639,32 +5639,32 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 		return NULL_TREE;
 
 	      arg = save_expr (arg);
-	      return fold (build2 (TRUTH_ANDIF_EXPR, type,
-				   fold (build2 (GE_EXPR, type, arg,
-						 build_real (TREE_TYPE (arg),
-							     dconst0))),
-				   fold (build2 (NE_EXPR, type, arg,
-						 build_real (TREE_TYPE (arg),
-							     c2)))));
+	      return fold_build2 (TRUTH_ANDIF_EXPR, type,
+				  fold_build2 (GE_EXPR, type, arg,
+					       build_real (TREE_TYPE (arg),
+							   dconst0)),
+				  fold_build2 (NE_EXPR, type, arg,
+					       build_real (TREE_TYPE (arg),
+							   c2)));
 	    }
 
 	  /* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
 	  if (! HONOR_NANS (mode))
-	    return fold (build2 (code, type, arg,
-				 build_real (TREE_TYPE (arg), c2)));
+	    return fold_build2 (code, type, arg,
+				build_real (TREE_TYPE (arg), c2));
 
 	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
 	  if (lang_hooks.decls.global_bindings_p () == 0
 	      && ! CONTAINS_PLACEHOLDER_P (arg))
 	    {
 	      arg = save_expr (arg);
-	      return fold (build2 (TRUTH_ANDIF_EXPR, type,
-				   fold (build2 (GE_EXPR, type, arg,
-						 build_real (TREE_TYPE (arg),
-							     dconst0))),
-				   fold (build2 (code, type, arg,
-						 build_real (TREE_TYPE (arg),
-							     c2)))));
+	      return fold_build2 (TRUTH_ANDIF_EXPR, type,
+				  fold_build2 (GE_EXPR, type, arg,
+					       build_real (TREE_TYPE (arg),
+							   dconst0)),
+				  fold_build2 (code, type, arg,
+					       build_real (TREE_TYPE (arg),
+							   c2)));
 	    }
 	}
     }
@@ -5715,7 +5715,7 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 	  && ! CONTAINS_PLACEHOLDER_P (arg0))
 	{
 	  arg0 = save_expr (arg0);
-	  return fold (build2 (EQ_EXPR, type, arg0, arg0));
+	  return fold_build2 (EQ_EXPR, type, arg0, arg0);
 	}
       break;
 
@@ -5723,30 +5723,30 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
     case GE_EXPR:
       /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
       real_maxval (&max, neg, mode);
-      return fold (build2 (neg ? LT_EXPR : GT_EXPR, type,
-			   arg0, build_real (TREE_TYPE (arg0), max)));
+      return fold_build2 (neg ? LT_EXPR : GT_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max));
 
     case LT_EXPR:
       /* x < +Inf is always equal to x <= DBL_MAX.  */
       real_maxval (&max, neg, mode);
-      return fold (build2 (neg ? GE_EXPR : LE_EXPR, type,
-			   arg0, build_real (TREE_TYPE (arg0), max)));
+      return fold_build2 (neg ? GE_EXPR : LE_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max));
 
     case NE_EXPR:
       /* x != +Inf is always equal to !(x > DBL_MAX).  */
       real_maxval (&max, neg, mode);
       if (! HONOR_NANS (mode))
-	return fold (build2 (neg ? GE_EXPR : LE_EXPR, type,
-			     arg0, build_real (TREE_TYPE (arg0), max)));
+	return fold_build2 (neg ? GE_EXPR : LE_EXPR, type,
+			    arg0, build_real (TREE_TYPE (arg0), max));
 
       /* The transformation below creates non-gimple code and thus is
 	 not appropriate if we are in gimple form.  */
       if (in_gimple_form)
 	return NULL_TREE;
 
-      temp = fold (build2 (neg ? LT_EXPR : GT_EXPR, type,
-			   arg0, build_real (TREE_TYPE (arg0), max)));
-      return fold (build1 (TRUTH_NOT_EXPR, type, temp));
+      temp = fold_build2 (neg ? LT_EXPR : GT_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max));
+      return fold_build1 (TRUTH_NOT_EXPR, type, temp);
 
     default:
       break;
@@ -5858,39 +5858,39 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
       if (TREE_OVERFLOW (lo) && TREE_OVERFLOW (hi))
 	return omit_one_operand (type, integer_zero_node, arg00);
       if (TREE_OVERFLOW (hi))
-	return fold (build2 (GE_EXPR, type, arg00, lo));
+	return fold_build2 (GE_EXPR, type, arg00, lo);
       if (TREE_OVERFLOW (lo))
-	return fold (build2 (LE_EXPR, type, arg00, hi));
+	return fold_build2 (LE_EXPR, type, arg00, hi);
       return build_range_check (type, arg00, 1, lo, hi);
 
     case NE_EXPR:
       if (TREE_OVERFLOW (lo) && TREE_OVERFLOW (hi))
 	return omit_one_operand (type, integer_one_node, arg00);
       if (TREE_OVERFLOW (hi))
-	return fold (build2 (LT_EXPR, type, arg00, lo));
+	return fold_build2 (LT_EXPR, type, arg00, lo);
       if (TREE_OVERFLOW (lo))
-	return fold (build2 (GT_EXPR, type, arg00, hi));
+	return fold_build2 (GT_EXPR, type, arg00, hi);
       return build_range_check (type, arg00, 0, lo, hi);
 
     case LT_EXPR:
       if (TREE_OVERFLOW (lo))
 	return omit_one_operand (type, integer_zero_node, arg00);
-      return fold (build2 (LT_EXPR, type, arg00, lo));
+      return fold_build2 (LT_EXPR, type, arg00, lo);
 
     case LE_EXPR:
       if (TREE_OVERFLOW (hi))
 	return omit_one_operand (type, integer_one_node, arg00);
-      return fold (build2 (LE_EXPR, type, arg00, hi));
+      return fold_build2 (LE_EXPR, type, arg00, hi);
 
     case GT_EXPR:
       if (TREE_OVERFLOW (hi))
 	return omit_one_operand (type, integer_zero_node, arg00);
-      return fold (build2 (GT_EXPR, type, arg00, hi));
+      return fold_build2 (GT_EXPR, type, arg00, hi);
 
     case GE_EXPR:
       if (TREE_OVERFLOW (lo))
 	return omit_one_operand (type, integer_one_node, arg00);
-      return fold (build2 (GE_EXPR, type, arg00, lo));
+      return fold_build2 (GE_EXPR, type, arg00, lo);
 
     default:
       break;
@@ -5932,9 +5932,9 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 	     == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg00))))
 	{
 	  tree stype = lang_hooks.types.signed_type (TREE_TYPE (arg00));
-	  return fold (build2 (code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-			       result_type, fold_convert (stype, arg00),
-			       fold_convert (stype, integer_zero_node)));
+	  return fold_build2 (code == EQ_EXPR ? GE_EXPR : LT_EXPR,
+			      result_type, fold_convert (stype, arg00),
+			      fold_convert (stype, integer_zero_node));
 	}
 
       /* Otherwise we have (A & C) != 0 where C is a single bit,
@@ -5974,8 +5974,8 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 			inner, size_int (bitnum));
 
       if (code == EQ_EXPR)
-	inner = fold (build2 (BIT_XOR_EXPR, intermediate_type,
-			      inner, integer_one_node));
+	inner = fold_build2 (BIT_XOR_EXPR, intermediate_type,
+			     inner, integer_one_node);
 
       /* Put the AND last so it can combine with more things.  */
       inner = build2 (BIT_AND_EXPR, intermediate_type,
@@ -6097,8 +6097,8 @@ fold_widened_comparison (enum tree_code code, tree type, tree arg0, tree arg1)
 	  || (TREE_CODE (arg1_unw) == INTEGER_CST
 	      && TREE_CODE (shorter_type) == INTEGER_TYPE
 	      && int_fits_type_p (arg1_unw, shorter_type))))
-    return fold (build (code, type, arg0_unw,
-			fold_convert (shorter_type, arg1_unw)));
+    return fold_build2 (code, type, arg0_unw,
+		       fold_convert (shorter_type, arg1_unw));
 
   if (TREE_CODE (arg1_unw) != INTEGER_CST)
     return NULL_TREE;
@@ -6200,7 +6200,7 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   else
     arg1 = fold_convert (inner_type, arg1);
 
-  return fold (build2 (code, type, arg0_inner, arg1));
+  return fold_build2 (code, type, arg0_inner, arg1);
 }
 
 /* Tries to replace &a[idx] CODE s * delta with &a[idx CODE delta], if s is
@@ -6274,9 +6274,9 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree mult)
       pos = TREE_OPERAND (pos, 0);
     }
 
-  TREE_OPERAND (pos, 1) = fold (build2 (code, itype,
-					TREE_OPERAND (pos, 1),
-					delta));
+  TREE_OPERAND (pos, 1) = fold_build2 (code, itype,
+				       TREE_OPERAND (pos, 1),
+				       delta);
 
   return build1 (ADDR_EXPR, TREE_TYPE (addr), ret);
 }
@@ -6319,11 +6319,11 @@ fold_to_nonsharp_ineq_using_bound (tree ineq, tree bound)
   if (TREE_TYPE (a1) != typea)
     return NULL_TREE;
 
-  diff = fold (build2 (MINUS_EXPR, typea, a1, a));
+  diff = fold_build2 (MINUS_EXPR, typea, a1, a);
   if (!integer_onep (diff))
     return NULL_TREE;
 
-  return fold (build2 (GE_EXPR, type, a, y));
+  return fold_build2 (GE_EXPR, type, a, y);
 }
 
 /* Fold complex addition when both components are accessible by parts.
@@ -6351,10 +6351,10 @@ fold_complex_add (tree type, tree ac, tree bc, enum tree_code code)
 
   inner_type = TREE_TYPE (type);
 
-  rr = fold (build2 (code, inner_type, ar, br));  
-  ri = fold (build2 (code, inner_type, ai, bi));  
+  rr = fold_build2 (code, inner_type, ar, br); 
+  ri = fold_build2 (code, inner_type, ai, bi); 
 
-  return fold (build2 (COMPLEX_EXPR, type, rr, ri));
+  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
 }
 
 /* Perform some simplifications of complex multiplication when one or more
@@ -6427,51 +6427,51 @@ fold_complex_mult_parts (tree type, tree ar, tree ai, tree br, tree bi)
     }
   else if (ai0 && bi0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ar, br));
+      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
       ri = zero;
     }
   else if (ai0 && br0)
     {
       rr = zero;
-      ri = fold (build2 (MULT_EXPR, inner_type, ar, bi));
+      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
     }
   else if (ar0 && bi0)
     {
       rr = zero;
-      ri = fold (build2 (MULT_EXPR, inner_type, ai, br));
+      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
     }
   else if (ar0 && br0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ai, bi));
-      rr = fold (build1 (NEGATE_EXPR, inner_type, rr));
+      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
+      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
       ri = zero;
     }
   else if (bi0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ar, br));
-      ri = fold (build2 (MULT_EXPR, inner_type, ai, br));
+      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
+      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
     }
   else if (ai0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ar, br));
-      ri = fold (build2 (MULT_EXPR, inner_type, ar, bi));
+      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
+      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
     }
   else if (br0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ai, bi));
-      rr = fold (build1 (NEGATE_EXPR, inner_type, rr));
-      ri = fold (build2 (MULT_EXPR, inner_type, ar, bi));
+      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
+      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
+      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
     }
   else if (ar0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ai, bi));
-      rr = fold (build1 (NEGATE_EXPR, inner_type, rr));
-      ri = fold (build2 (MULT_EXPR, inner_type, ai, br));
+      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
+      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
+      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
     }
   else
     return NULL;
 
-  return fold (build2 (COMPLEX_EXPR, type, rr, ri));
+  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
 }
 
 static tree
@@ -6562,40 +6562,40 @@ fold_complex_div_parts (tree type, tree ar, tree ai, tree br, tree bi,
 
   if (ai0 && bi0)
     {
-      rr = fold (build2 (code, inner_type, ar, br));
+      rr = fold_build2 (code, inner_type, ar, br);
       ri = zero;
     }
   else if (ai0 && br0)
     {
       rr = zero;
-      ri = fold (build2 (code, inner_type, ar, bi));
-      ri = fold (build1 (NEGATE_EXPR, inner_type, ri));
+      ri = fold_build2 (code, inner_type, ar, bi);
+      ri = fold_build1 (NEGATE_EXPR, inner_type, ri);
     }
   else if (ar0 && bi0)
     {
       rr = zero;
-      ri = fold (build2 (code, inner_type, ai, br));
+      ri = fold_build2 (code, inner_type, ai, br);
     }
   else if (ar0 && br0)
     {
-      rr = fold (build2 (code, inner_type, ai, bi));
+      rr = fold_build2 (code, inner_type, ai, bi);
       ri = zero;
     }
   else if (bi0)
     {
-      rr = fold (build2 (code, inner_type, ar, br));
-      ri = fold (build2 (code, inner_type, ai, br));
+      rr = fold_build2 (code, inner_type, ar, br);
+      ri = fold_build2 (code, inner_type, ai, br);
     }
   else if (br0)
     {
-      rr = fold (build2 (code, inner_type, ai, bi));
-      ri = fold (build2 (code, inner_type, ar, bi));
-      ri = fold (build1 (NEGATE_EXPR, inner_type, ri));
+      rr = fold_build2 (code, inner_type, ai, bi);
+      ri = fold_build2 (code, inner_type, ar, bi);
+      ri = fold_build1 (NEGATE_EXPR, inner_type, ri);
     }
   else
     return NULL;
 
-  return fold (build2 (COMPLEX_EXPR, type, rr, ri));
+  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
 }
 
 static tree
@@ -6663,17 +6663,17 @@ fold_unary (enum tree_code code, tree type, tree op0)
     {
       if (TREE_CODE (arg0) == COMPOUND_EXPR)
 	return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		       fold (build1 (code, type, TREE_OPERAND (arg0, 1))));
+		       fold_build1 (code, type, TREE_OPERAND (arg0, 1)));
       else if (TREE_CODE (arg0) == COND_EXPR)
 	{
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 	  tree arg02 = TREE_OPERAND (arg0, 2);
 	  if (! VOID_TYPE_P (TREE_TYPE (arg01)))
-	    arg01 = fold (build1 (code, type, arg01));
+	    arg01 = fold_build1 (code, type, arg01);
 	  if (! VOID_TYPE_P (TREE_TYPE (arg02)))
-	    arg02 = fold (build1 (code, type, arg02));
-	  tem = fold (build3 (COND_EXPR, type, TREE_OPERAND (arg0, 0),
-			      arg01, arg02));
+	    arg02 = fold_build1 (code, type, arg02);
+	  tem = fold_build3 (COND_EXPR, type, TREE_OPERAND (arg0, 0),
+			     arg01, arg02);
 
 	  /* If this was a conversion, and all we did was to move into
 	     inside the COND_EXPR, bring it back out.  But leave it if
@@ -6716,11 +6716,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      return arg0;
 	    }
 	  else if (TREE_CODE (type) != INTEGER_TYPE)
-	    return fold (build3 (COND_EXPR, type, arg0,
-				 fold (build1 (code, type,
-					       integer_one_node)),
-				 fold (build1 (code, type,
-					       integer_zero_node))));
+	    return fold_build3 (COND_EXPR, type, arg0,
+				fold_build1 (code, type,
+					     integer_one_node),
+				fold_build1 (code, type,
+					     integer_zero_node));
 	}
    }
 
@@ -6765,7 +6765,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
-	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
+	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 
 	  /* Likewise, if the intermediate and final types are either both
 	     float or both integer, we don't need the middle conversion if
@@ -6780,14 +6780,14 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
+	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
 	     replace that by a single zero-extension.  */
 	  if (inside_int && inter_int && final_int
 	      && inside_prec < inter_prec && inter_prec < final_prec
 	      && inside_unsignedp && !inter_unsignedp)
-	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
+	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 
 	  /* Two conversions in a row are not needed unless:
 	     - some conversion is floating-point (overstrict for now), or
@@ -6811,7 +6811,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, type, TREE_OPERAND (op0, 0)));
+	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 	}
 
       if (TREE_CODE (op0) == MODIFY_EXPR
@@ -6874,8 +6874,8 @@ fold_unary (enum tree_code code, tree type, tree op0)
 					TREE_INT_CST_HIGH (and1));
 	      tem = force_fit_type (tem, 0, TREE_OVERFLOW (and1),
 				    TREE_CONSTANT_OVERFLOW (and1));
-	      return fold (build2 (BIT_AND_EXPR, type,
-				   fold_convert (type, and0), tem));
+	      return fold_build2 (BIT_AND_EXPR, type,
+				  fold_convert (type, and0), tem);
 	    }
 	}
 
@@ -6912,24 +6912,24 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	return fold_convert (type, negate_expr (arg0));
       /* Convert - (~A) to A + 1.  */
       if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == BIT_NOT_EXPR)
-	return fold (build2 (PLUS_EXPR, type, TREE_OPERAND (arg0, 0),
-			     build_int_cst (type, 1)));
+	return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (arg0, 0),
+			    build_int_cst (type, 1));
       return NULL_TREE;
 
     case ABS_EXPR:
       if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
 	return fold_abs_const (arg0, type);
       else if (TREE_CODE (arg0) == NEGATE_EXPR)
-	return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0)));
+	return fold_build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
       /* Convert fabs((double)float) into (double)fabsf(float).  */
       else if (TREE_CODE (arg0) == NOP_EXPR
 	       && TREE_CODE (type) == REAL_TYPE)
 	{
 	  tree targ0 = strip_float_extensions (arg0);
 	  if (targ0 != arg0)
-	    return fold_convert (type, fold (build1 (ABS_EXPR,
-						     TREE_TYPE (targ0),
-						     targ0)));
+	    return fold_convert (type, fold_build1 (ABS_EXPR,
+						    TREE_TYPE (targ0),
+						    targ0));
 	}
       else if (tree_expr_nonnegative_p (arg0))
 	return arg0;
@@ -6939,7 +6939,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	{
 	  tem = fold_strip_sign_ops (arg0);
 	  if (tem)
-	    return fold (build1 (ABS_EXPR, type, fold_convert (type, tem)));
+	    return fold_build1 (ABS_EXPR, type, fold_convert (type, tem));
 	}
       return NULL_TREE;
 
@@ -6954,11 +6954,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	return build_complex (type, TREE_REALPART (arg0),
 			      negate_expr (TREE_IMAGPART (arg0)));
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold (build2 (TREE_CODE (arg0), type,
-			     fold (build1 (CONJ_EXPR, type,
-					   TREE_OPERAND (arg0, 0))),
-			     fold (build1 (CONJ_EXPR, type,
-					   TREE_OPERAND (arg0, 1)))));
+	return fold_build2 (TREE_CODE (arg0), type,
+			    fold_build1 (CONJ_EXPR, type,
+					 TREE_OPERAND (arg0, 0)),
+			    fold_build1 (CONJ_EXPR, type,
+					 TREE_OPERAND (arg0, 1)));
       else if (TREE_CODE (arg0) == CONJ_EXPR)
 	return TREE_OPERAND (arg0, 0);
       return NULL_TREE;
@@ -6970,15 +6970,15 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	return TREE_OPERAND (arg0, 0);
       /* Convert ~ (-A) to A - 1.  */
       else if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == NEGATE_EXPR)
-	return fold (build2 (MINUS_EXPR, type, TREE_OPERAND (arg0, 0),
-			     build_int_cst (type, 1)));
+	return fold_build2 (MINUS_EXPR, type, TREE_OPERAND (arg0, 0),
+			    build_int_cst (type, 1));
       /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
       else if (INTEGRAL_TYPE_P (type)
 	       && ((TREE_CODE (arg0) == MINUS_EXPR
 		    && integer_onep (TREE_OPERAND (arg0, 1)))
 		   || (TREE_CODE (arg0) == PLUS_EXPR
 		       && integer_all_onesp (TREE_OPERAND (arg0, 1)))))
-	return fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0)));
+	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
       return NULL_TREE;
 
     case TRUTH_NOT_EXPR:
@@ -7005,11 +7005,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
       else if (TREE_CODE (arg0) == COMPLEX_CST)
 	return TREE_REALPART (arg0);
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold (build2 (TREE_CODE (arg0), type,
-			     fold (build1 (REALPART_EXPR, type,
-					   TREE_OPERAND (arg0, 0))),
-			     fold (build1 (REALPART_EXPR, type,
-					   TREE_OPERAND (arg0, 1)))));
+	return fold_build2 (TREE_CODE (arg0), type,
+			    fold_build1 (REALPART_EXPR, type,
+					 TREE_OPERAND (arg0, 0)),
+			    fold_build1 (REALPART_EXPR, type,
+					 TREE_OPERAND (arg0, 1)));
       return NULL_TREE;
 
     case IMAGPART_EXPR:
@@ -7021,11 +7021,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
       else if (TREE_CODE (arg0) == COMPLEX_CST)
 	return TREE_IMAGPART (arg0);
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return fold (build2 (TREE_CODE (arg0), type,
-			     fold (build1 (IMAGPART_EXPR, type,
-					   TREE_OPERAND (arg0, 0))),
-			     fold (build1 (IMAGPART_EXPR, type,
-					   TREE_OPERAND (arg0, 1)))));
+	return fold_build2 (TREE_CODE (arg0), type,
+			    fold_build1 (IMAGPART_EXPR, type,
+					 TREE_OPERAND (arg0, 0)),
+			    fold_build1 (IMAGPART_EXPR, type,
+					 TREE_OPERAND (arg0, 1)));
       return NULL_TREE;
 
     default:
@@ -7125,7 +7125,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
      to ARG1 to reduce the number of tests below.  */
   if (commutative_tree_code (code)
       && tree_swap_operands_p (arg0, arg1, true))
-    return fold (build2 (code, type, op1, op0));
+    return fold_build2 (code, type, op1, op0);
 
   /* Now WINS is set as described above,
      ARG0 is the first operand of EXPR,
@@ -7156,12 +7156,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  || (TREE_CODE (arg0) == BIT_AND_EXPR
 		      && integer_onep (TREE_OPERAND (arg0, 1)))))))
     {
-      tem = fold (build2 (code == BIT_AND_EXPR ? TRUTH_AND_EXPR
-			  : code == BIT_IOR_EXPR ? TRUTH_OR_EXPR
-			  : TRUTH_XOR_EXPR,
-			  boolean_type_node,
-			  fold_convert (boolean_type_node, arg0),
-			  fold_convert (boolean_type_node, arg1)));
+      tem = fold_build2 (code == BIT_AND_EXPR ? TRUTH_AND_EXPR
+			 : code == BIT_IOR_EXPR ? TRUTH_OR_EXPR
+			 : TRUTH_XOR_EXPR,
+			 boolean_type_node,
+			 fold_convert (boolean_type_node, arg0),
+			 fold_convert (boolean_type_node, arg1));
 
       if (code == EQ_EXPR)
 	tem = invert_truthvalue (tem);
@@ -7172,23 +7172,23 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
   if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && TREE_CODE (arg0) == COMPOUND_EXPR)
     return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		   fold (build2 (code, type, TREE_OPERAND (arg0, 1), arg1)));
+		   fold_build2 (code, type, TREE_OPERAND (arg0, 1), arg1));
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && TREE_CODE (arg1) == COMPOUND_EXPR)
     return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
-		   fold (build2 (code, type, arg0, TREE_OPERAND (arg1, 1))));
+		   fold_build2 (code, type, arg0, TREE_OPERAND (arg1, 1)));
   else if (TREE_CODE_CLASS (code) == tcc_binary
 	   || TREE_CODE_CLASS (code) == tcc_comparison)
     {
       if (TREE_CODE (arg0) == COMPOUND_EXPR)
 	return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		       fold (build2 (code, type, TREE_OPERAND (arg0, 1),
-				     arg1)));
+		       fold_build2 (code, type, TREE_OPERAND (arg0, 1),
+				    arg1));
       if (TREE_CODE (arg1) == COMPOUND_EXPR
 	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
-		       fold (build2 (code, type,
-				     arg0, TREE_OPERAND (arg1, 1))));
+		       fold_build2 (code, type,
+				    arg0, TREE_OPERAND (arg1, 1)));
 
       if (TREE_CODE (arg0) == COND_EXPR || COMPARISON_CLASS_P (arg0))
 	{
@@ -7214,16 +7214,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case PLUS_EXPR:
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold (build2 (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
+	return fold_build2 (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0));
       /* (-A) + B -> B - A */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1))
-	return fold (build2 (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0)));
+	return fold_build2 (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0));
       /* Convert ~A + 1 to -A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && integer_onep (arg1))
-	return fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0)));
+	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
@@ -7278,19 +7278,19 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	      if (TREE_CODE (parg0) == MULT_EXPR
 		  && TREE_CODE (parg1) != MULT_EXPR)
-		return fold (build2 (pcode, type,
-				     fold (build2 (PLUS_EXPR, type,
-						   fold_convert (type, parg0),
-						   fold_convert (type, marg))),
-				     fold_convert (type, parg1)));
+		return fold_build2 (pcode, type,
+				    fold_build2 (PLUS_EXPR, type,
+						 fold_convert (type, parg0),
+						 fold_convert (type, marg)),
+				    fold_convert (type, parg1));
 	      if (TREE_CODE (parg0) != MULT_EXPR
 		  && TREE_CODE (parg1) == MULT_EXPR)
-		return fold (build2 (PLUS_EXPR, type,
-				     fold_convert (type, parg0),
-				     fold (build2 (pcode, type,
-						   fold_convert (type, marg),
-						   fold_convert (type,
-								 parg1)))));
+		return fold_build2 (PLUS_EXPR, type,
+				    fold_convert (type, parg0),
+				    fold_build2 (pcode, type,
+						 fold_convert (type, marg),
+						 fold_convert (type,
+							       parg1)));
 	    }
 
 	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
@@ -7341,20 +7341,20 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 		  if (exact_log2 (int11) > 0 && int01 % int11 == 0)
 		    {
-		      alt0 = fold (build2 (MULT_EXPR, type, arg00,
-					   build_int_cst (NULL_TREE,
-							  int01 / int11)));
+		      alt0 = fold_build2 (MULT_EXPR, type, arg00,
+					  build_int_cst (NULL_TREE,
+							 int01 / int11));
 		      alt1 = arg10;
 		      same = arg11;
 		    }
 		}
 
 	      if (same)
-		return fold (build2 (MULT_EXPR, type,
-				     fold (build2 (PLUS_EXPR, type,
-						   fold_convert (type, alt0),
-						   fold_convert (type, alt1))),
-				     same));
+		return fold_build2 (MULT_EXPR, type,
+				    fold_build2 (PLUS_EXPR, type,
+						 fold_convert (type, alt0),
+						 fold_convert (type, alt1)),
+				    same);
 	    }
 
 	  /* Try replacing &a[i1] + c * i2 with &a[i1 + i2], if c is step
@@ -7391,16 +7391,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      tem = fold_negate_const (arg1, type);
 	      if (!TREE_OVERFLOW (arg1) || !flag_trapping_math)
-		return fold (build2 (MINUS_EXPR, type,
-				     fold_convert (type, arg0),
-				     fold_convert (type, tem)));
+		return fold_build2 (MINUS_EXPR, type,
+				    fold_convert (type, arg0),
+				    fold_convert (type, tem));
 	    }
 
 	  /* Convert x+x into x*2.0.  */
 	  if (operand_equal_p (arg0, arg1, 0)
 	      && SCALAR_FLOAT_TYPE_P (type))
-	    return fold (build2 (MULT_EXPR, type, arg0,
-				 build_real (type, dconst2)));
+	    return fold_build2 (MULT_EXPR, type, arg0,
+				build_real (type, dconst2));
 
 	  /* Convert x*c+x into x*(c+1).  */
 	  if (flag_unsafe_math_optimizations
@@ -7413,8 +7413,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	      c = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
 	      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
-	      return fold (build2 (MULT_EXPR, type, arg1,
-				   build_real (type, c)));
+	      return fold_build2 (MULT_EXPR, type, arg1,
+				  build_real (type, c));
 	    }
 
 	  /* Convert x+x*c into x*(c+1).  */
@@ -7428,8 +7428,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	      c = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
 	      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
-	      return fold (build2 (MULT_EXPR, type, arg0,
-				   build_real (type, c)));
+	      return fold_build2 (MULT_EXPR, type, arg0,
+				  build_real (type, c));
 	    }
 
 	  /* Convert x*c1+x*c2 into x*(c1+c2).  */
@@ -7448,9 +7448,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      c1 = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
 	      c2 = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
 	      real_arithmetic (&c1, PLUS_EXPR, &c1, &c2);
-	      return fold (build2 (MULT_EXPR, type,
-				   TREE_OPERAND (arg0, 0),
-				   build_real (type, c1)));
+	      return fold_build2 (MULT_EXPR, type,
+				  TREE_OPERAND (arg0, 0),
+				  build_real (type, c1));
 	    }
           /* Convert a + (b*c + d*e) into (a + b*c) + d*e.  */
           if (flag_unsafe_math_optimizations
@@ -7463,8 +7463,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  && TREE_CODE (tree10) == MULT_EXPR)
                 {
                   tree tree0;
-                  tree0 = fold (build2 (PLUS_EXPR, type, arg0, tree10));
-                  return fold (build2 (PLUS_EXPR, type, tree0, tree11));
+                  tree0 = fold_build2 (PLUS_EXPR, type, arg0, tree10);
+                  return fold_build2 (PLUS_EXPR, type, tree0, tree11);
                 }
             }
           /* Convert (b*c + d*e) + a into b*c + (d*e +a).  */
@@ -7478,8 +7478,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  && TREE_CODE (tree00) == MULT_EXPR)
                 {
                   tree tree0;
-                  tree0 = fold (build2 (PLUS_EXPR, type, tree01, arg1));
-                  return fold (build2 (PLUS_EXPR, type, tree00, tree0));
+                  tree0 = fold_build2 (PLUS_EXPR, type, tree01, arg1);
+                  return fold_build2 (PLUS_EXPR, type, tree00, tree0);
                 }
             }
 	}
@@ -7653,25 +7653,25 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case MINUS_EXPR:
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold (build2 (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
+	return fold_build2 (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0));
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && (FLOAT_TYPE_P (type)
 	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv))
 	  && negate_expr_p (arg1)
 	  && reorder_operands_p (arg0, arg1))
-	return fold (build2 (MINUS_EXPR, type, negate_expr (arg1),
-			     TREE_OPERAND (arg0, 0)));
+	return fold_build2 (MINUS_EXPR, type, negate_expr (arg1),
+			    TREE_OPERAND (arg0, 0));
       /* Convert -A - 1 to ~A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == NEGATE_EXPR
 	  && integer_onep (arg1))
-	return fold (build1 (BIT_NOT_EXPR, type, TREE_OPERAND (arg0, 0)));
+	return fold_build1 (BIT_NOT_EXPR, type, TREE_OPERAND (arg0, 0));
 
       /* Convert -1 - A to ~A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && integer_all_onesp (arg0))
-	return fold (build1 (BIT_NOT_EXPR, type, arg1));
+	return fold_build1 (BIT_NOT_EXPR, type, arg1);
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
@@ -7692,15 +7692,15 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && TREE_CODE (arg1) == BIT_AND_EXPR)
 	    {
 	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0))
-		return fold (build2 (BIT_AND_EXPR, type,
-				     fold (build1 (BIT_NOT_EXPR, type,
-						   TREE_OPERAND (arg1, 0))),
-				     arg0));
+		return fold_build2 (BIT_AND_EXPR, type,
+				    fold_build1 (BIT_NOT_EXPR, type,
+						 TREE_OPERAND (arg1, 0)),
+				    arg0);
 	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
-		return fold (build2 (BIT_AND_EXPR, type,
-				     fold (build1 (BIT_NOT_EXPR, type,
-						   TREE_OPERAND (arg1, 1))),
-				     arg0));
+		return fold_build2 (BIT_AND_EXPR, type,
+				    fold_build1 (BIT_NOT_EXPR, type,
+						 TREE_OPERAND (arg1, 1)),
+				    arg0);
 	    }
 
 	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, where B is
@@ -7712,13 +7712,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      tree mask0 = TREE_OPERAND (arg0, 1);
 	      tree mask1 = TREE_OPERAND (arg1, 1);
-	      tree tem = fold (build1 (BIT_NOT_EXPR, type, mask0));
+	      tree tem = fold_build1 (BIT_NOT_EXPR, type, mask0);
 
 	      if (operand_equal_p (tem, mask1, 0))
 		{
-		  tem = fold (build2 (BIT_XOR_EXPR, type,
-				      TREE_OPERAND (arg0, 0), mask1));
-		  return fold (build2 (MINUS_EXPR, type, tem, mask1));
+		  tem = fold_build2 (BIT_XOR_EXPR, type,
+				     TREE_OPERAND (arg0, 0), mask1);
+		  return fold_build2 (MINUS_EXPR, type, tem, mask1);
 		}
 	    }
 	}
@@ -7750,7 +7750,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	       && (TREE_CODE (arg1) != REAL_CST
 		   ||  REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1))))
 	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
-	return fold (build2 (PLUS_EXPR, type, arg0, negate_expr (arg1)));
+	return fold_build2 (PLUS_EXPR, type, arg0, negate_expr (arg1));
 
       /* Try folding difference of addresses.  */
       {
@@ -7780,19 +7780,19 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
           /* (A * C) - (B * C) -> (A-B) * C.  */
 	  if (operand_equal_p (TREE_OPERAND (arg0, 1),
 			       TREE_OPERAND (arg1, 1), 0))
-	    return fold (build2 (MULT_EXPR, type,
-				 fold (build2 (MINUS_EXPR, type,
-					       TREE_OPERAND (arg0, 0),
-					       TREE_OPERAND (arg1, 0))),
-				 TREE_OPERAND (arg0, 1)));
+	    return fold_build2 (MULT_EXPR, type,
+				fold_build2 (MINUS_EXPR, type,
+					     TREE_OPERAND (arg0, 0),
+					     TREE_OPERAND (arg1, 0)),
+				TREE_OPERAND (arg0, 1));
           /* (A * C1) - (A * C2) -> A * (C1-C2).  */
 	  if (operand_equal_p (TREE_OPERAND (arg0, 0),
 			       TREE_OPERAND (arg1, 0), 0))
-	    return fold (build2 (MULT_EXPR, type,
-				 TREE_OPERAND (arg0, 0),
-				 fold (build2 (MINUS_EXPR, type,
-					       TREE_OPERAND (arg0, 1),
-					       TREE_OPERAND (arg1, 1)))));
+	    return fold_build2 (MULT_EXPR, type,
+				TREE_OPERAND (arg0, 0),
+				fold_build2 (MINUS_EXPR, type,
+					     TREE_OPERAND (arg0, 1),
+					     TREE_OPERAND (arg1, 1)));
 	}
 
       goto associate;
@@ -7800,13 +7800,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case MULT_EXPR:
       /* (-A) * (-B) -> A * B  */
       if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
-	return fold (build2 (MULT_EXPR, type,
-			     TREE_OPERAND (arg0, 0),
-			     negate_expr (arg1)));
+	return fold_build2 (MULT_EXPR, type,
+			    TREE_OPERAND (arg0, 0),
+			    negate_expr (arg1));
       if (TREE_CODE (arg1) == NEGATE_EXPR && negate_expr_p (arg0))
-	return fold (build2 (MULT_EXPR, type,
-			     negate_expr (arg0),
-			     TREE_OPERAND (arg1, 0)));
+	return fold_build2 (MULT_EXPR, type,
+			    negate_expr (arg0),
+			    TREE_OPERAND (arg1, 0));
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
@@ -7828,12 +7828,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg1, 0)))
-	    return fold (build2 (LSHIFT_EXPR, type, arg0,
-				 TREE_OPERAND (arg1, 1)));
+	    return fold_build2 (LSHIFT_EXPR, type, arg0,
+				TREE_OPERAND (arg1, 1));
 	  if (TREE_CODE (arg0) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg0, 0)))
-	    return fold (build2 (LSHIFT_EXPR, type, arg1,
-				 TREE_OPERAND (arg0, 1)));
+	    return fold_build2 (LSHIFT_EXPR, type, arg1,
+				TREE_OPERAND (arg0, 1));
 
 	  if (TREE_CODE (arg1) == INTEGER_CST
 	      && 0 != (tem = extract_muldiv (op0,
@@ -7871,8 +7871,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      tree tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 0),
 				      arg1, 0);
 	      if (tem)
-		return fold (build2 (RDIV_EXPR, type, tem,
-				     TREE_OPERAND (arg0, 1)));
+		return fold_build2 (RDIV_EXPR, type, tem,
+				    TREE_OPERAND (arg0, 1));
 	    }
 
           /* Strip sign operations from X in X*X, i.e. -Y*-Y -> Y*Y.  */
@@ -7882,7 +7882,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (tem != NULL_TREE)
 		{
 		  tem = fold_convert (type, tem);
-		  return fold (build2 (MULT_EXPR, type, tem, tem));
+		  return fold_build2 (MULT_EXPR, type, tem, tem);
 		}
 	    }
 
@@ -7906,7 +7906,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	          /* Optimize root(x)*root(y) as root(x*y).  */
 		  rootfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-		  arg = fold (build2 (MULT_EXPR, type, arg00, arg10));
+		  arg = fold_build2 (MULT_EXPR, type, arg00, arg10);
 		  arglist = build_tree_list (NULL_TREE, arg);
 		  return build_function_call_expr (rootfn, arglist);
 		}
@@ -7949,7 +7949,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  if (operand_equal_p (arg00, arg10, 0))
 		    {
 		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-		      tree arg = fold (build2 (PLUS_EXPR, type, arg01, arg11));
+		      tree arg = fold_build2 (PLUS_EXPR, type, arg01, arg11);
 		      tree arglist = tree_cons (NULL_TREE, arg00,
 						build_tree_list (NULL_TREE,
 								 arg));
@@ -8082,10 +8082,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && TREE_CODE (arg1) == BIT_NOT_EXPR)
 	{
-	  return fold (build1 (BIT_NOT_EXPR, type,
-			       build2 (BIT_AND_EXPR, type,
-				       TREE_OPERAND (arg0, 0),
-				       TREE_OPERAND (arg1, 0))));
+	  return fold_build1 (BIT_NOT_EXPR, type,
+			      build2 (BIT_AND_EXPR, type,
+				      TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 0)));
 	}
 
       /* See if this can be simplified into a rotate first.  If that
@@ -8096,7 +8096,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (integer_zerop (arg1))
 	return non_lvalue (fold_convert (type, arg0));
       if (integer_all_onesp (arg1))
-	return fold (build1 (BIT_NOT_EXPR, type, arg0));
+	return fold_build1 (BIT_NOT_EXPR, type, arg0);
       if (operand_equal_p (arg0, arg1, 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
 
@@ -8181,10 +8181,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && TREE_CODE (arg1) == BIT_NOT_EXPR)
 	{
-	  return fold (build1 (BIT_NOT_EXPR, type,
-			       build2 (BIT_IOR_EXPR, type,
-				       TREE_OPERAND (arg0, 0),
-				       TREE_OPERAND (arg1, 0))));
+	  return fold_build1 (BIT_NOT_EXPR, type,
+			      build2 (BIT_IOR_EXPR, type,
+				      TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 0)));
 	}
 
       goto associate;
@@ -8199,13 +8199,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* (-A) / (-B) -> A / B  */
       if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
-	return fold (build2 (RDIV_EXPR, type,
-			     TREE_OPERAND (arg0, 0),
-			     negate_expr (arg1)));
+	return fold_build2 (RDIV_EXPR, type,
+			    TREE_OPERAND (arg0, 0),
+			    negate_expr (arg1));
       if (TREE_CODE (arg1) == NEGATE_EXPR && negate_expr_p (arg0))
-	return fold (build2 (RDIV_EXPR, type,
-			     negate_expr (arg0),
-			     TREE_OPERAND (arg1, 0)));
+	return fold_build2 (RDIV_EXPR, type,
+			    negate_expr (arg0),
+			    TREE_OPERAND (arg1, 0));
 
       /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
       if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
@@ -8227,7 +8227,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  if (flag_unsafe_math_optimizations
 	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
 					  arg1, 0)))
-	    return fold (build2 (MULT_EXPR, type, arg0, tem));
+	    return fold_build2 (MULT_EXPR, type, arg0, tem);
 	  /* Find the reciprocal if optimizing and the result is exact.  */
 	  if (optimize)
 	    {
@@ -8236,24 +8236,24 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (exact_real_inverse (TYPE_MODE(TREE_TYPE(arg0)), &r))
 		{
 		  tem = build_real (type, r);
-		  return fold (build2 (MULT_EXPR, type, arg0, tem));
+		  return fold_build2 (MULT_EXPR, type, arg0, tem);
 		}
 	    }
 	}
       /* Convert A/B/C to A/(B*C).  */
       if (flag_unsafe_math_optimizations
 	  && TREE_CODE (arg0) == RDIV_EXPR)
-	return fold (build2 (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
-			     fold (build2 (MULT_EXPR, type,
-					   TREE_OPERAND (arg0, 1), arg1))));
+	return fold_build2 (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
+			    fold_build2 (MULT_EXPR, type,
+					 TREE_OPERAND (arg0, 1), arg1));
 
       /* Convert A/(B/C) to (A/B)*C.  */
       if (flag_unsafe_math_optimizations
 	  && TREE_CODE (arg1) == RDIV_EXPR)
-	return fold (build2 (MULT_EXPR, type,
-			     fold (build2 (RDIV_EXPR, type, arg0,
-					   TREE_OPERAND (arg1, 0))),
-			     TREE_OPERAND (arg1, 1)));
+	return fold_build2 (MULT_EXPR, type,
+			    fold_build2 (RDIV_EXPR, type, arg0,
+					 TREE_OPERAND (arg1, 0)),
+			    TREE_OPERAND (arg1, 1));
 
       /* Convert C1/(X*C2) into (C1/C2)/X.  */
       if (flag_unsafe_math_optimizations
@@ -8264,8 +8264,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  tree tem = const_binop (RDIV_EXPR, arg0,
 				  TREE_OPERAND (arg1, 1), 0);
 	  if (tem)
-	    return fold (build2 (RDIV_EXPR, type, tem,
-				 TREE_OPERAND (arg1, 0)));
+	    return fold_build2 (RDIV_EXPR, type, tem,
+				TREE_OPERAND (arg1, 0));
 	}
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
@@ -8286,7 +8286,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      tree arglist = build_tree_list (NULL_TREE,
 					      fold_convert (type, arg));
 	      arg1 = build_function_call_expr (expfn, arglist);
-	      return fold (build2 (MULT_EXPR, type, arg0, arg1));
+	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
 	    }
 
 	  /* Optimize x/pow(y,z) into x*pow(y,-z).  */
@@ -8301,7 +8301,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      tree arglist = tree_cons(NULL_TREE, arg10,
 				       build_tree_list (NULL_TREE, neg11));
 	      arg1 = build_function_call_expr (powfn, arglist);
-	      return fold (build2 (MULT_EXPR, type, arg0, arg1));
+	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
 	    }
 	}
 
@@ -8337,8 +8337,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		{
 		  tree tmp = TREE_OPERAND (arg0, 1);
 		  tmp = build_function_call_expr (tanfn, tmp);
-		  return fold (build2 (RDIV_EXPR, type,
-				       build_real (type, dconst1), tmp));
+		  return fold_build2 (RDIV_EXPR, type,
+				      build_real (type, dconst1), tmp);
 		}
 	    }
 
@@ -8392,7 +8392,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 after the last round to changes to the DIV code in expmed.c.  */
       if ((code == CEIL_DIV_EXPR || code == FLOOR_DIV_EXPR)
 	  && multiple_of_p (type, arg0, arg1))
-	return fold (build2 (EXACT_DIV_EXPR, type, arg0, arg1));
+	return fold_build2 (EXACT_DIV_EXPR, type, arg0, arg1);
 
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE)))
@@ -8456,8 +8456,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 
 	  mask = build_int_cst_wide (type, low, high);
-	  return fold (build2 (BIT_AND_EXPR, type,
-			       fold_convert (type, arg0), mask));
+	  return fold_build2 (BIT_AND_EXPR, type,
+			      fold_convert (type, arg0), mask);
 	}
 
       /* X % -C is the same as X % C.  */
@@ -8468,16 +8468,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && !flag_trapv
 	  /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
 	  && !sign_bit_p (arg1, arg1))
-	return fold (build2 (code, type, fold_convert (type, arg0),
-			     fold_convert (type, negate_expr (arg1))));
+	return fold_build2 (code, type, fold_convert (type, arg0),
+			    fold_convert (type, negate_expr (arg1)));
 
       /* X % -Y is the same as X % Y.  */
       if (code == TRUNC_MOD_EXPR
 	  && !TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == NEGATE_EXPR
 	  && !flag_trapv)
-	return fold (build2 (code, type, fold_convert (type, arg0),
-			     fold_convert (type, TREE_OPERAND (arg1, 0))));
+	return fold_build2 (code, type, fold_convert (type, arg0),
+			    fold_convert (type, TREE_OPERAND (arg1, 0)));
 
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE)))
@@ -8516,7 +8516,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				    GET_MODE_BITSIZE (TYPE_MODE (type)));
 	  tem = fold_convert (TREE_TYPE (arg1), tem);
 	  tem = const_binop (MINUS_EXPR, tem, arg1, 0);
-	  return fold (build2 (RROTATE_EXPR, type, arg0, tem));
+	  return fold_build2 (RROTATE_EXPR, type, arg0, tem);
 	}
 
       /* If we have a rotate of a bit operation with the rotate count and
@@ -8527,11 +8527,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      || TREE_CODE (arg0) == BIT_IOR_EXPR
 	      || TREE_CODE (arg0) == BIT_XOR_EXPR)
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	return fold (build2 (TREE_CODE (arg0), type,
-			     fold (build2 (code, type,
-					   TREE_OPERAND (arg0, 0), arg1)),
-			     fold (build2 (code, type,
-					   TREE_OPERAND (arg0, 1), arg1))));
+	return fold_build2 (TREE_CODE (arg0), type,
+			    fold_build2 (code, type,
+					 TREE_OPERAND (arg0, 0), arg1),
+			    fold_build2 (code, type,
+					 TREE_OPERAND (arg0, 1), arg1));
 
       /* Two consecutive rotates adding up to the width of the mode can
 	 be ignored.  */
@@ -8606,11 +8606,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (arg0, arg1);
 	  if (tem)
-	    return fold (build2 (code, type, tem, arg1));
+	    return fold_build2 (code, type, tem, arg1);
 
 	  tem = fold_to_nonsharp_ineq_using_bound (arg1, arg0);
 	  if (tem)
-	    return fold (build2 (code, type, arg0, tem));
+	    return fold_build2 (code, type, arg0, tem);
 	}
 
     truth_andor:
@@ -8641,23 +8641,23 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				 || code == TRUTH_OR_EXPR));
 
 	  if (operand_equal_p (a00, a10, 0))
-	    return fold (build2 (TREE_CODE (arg0), type, a00,
-				 fold (build2 (code, type, a01, a11))));
+	    return fold_build2 (TREE_CODE (arg0), type, a00,
+				fold_build2 (code, type, a01, a11));
 	  else if (commutative && operand_equal_p (a00, a11, 0))
-	    return fold (build2 (TREE_CODE (arg0), type, a00,
-				 fold (build2 (code, type, a01, a10))));
+	    return fold_build2 (TREE_CODE (arg0), type, a00,
+				fold_build2 (code, type, a01, a10));
 	  else if (commutative && operand_equal_p (a01, a10, 0))
-	    return fold (build2 (TREE_CODE (arg0), type, a01,
-				 fold (build2 (code, type, a00, a11))));
+	    return fold_build2 (TREE_CODE (arg0), type, a01,
+				fold_build2 (code, type, a00, a11));
 
 	  /* This case if tricky because we must either have commutative
 	     operators or else A10 must not have side-effects.  */
 
 	  else if ((commutative || ! TREE_SIDE_EFFECTS (a10))
 		   && operand_equal_p (a01, a11, 0))
-	    return fold (build2 (TREE_CODE (arg0), type,
-				 fold (build2 (code, type, a00, a10)),
-				 a01));
+	    return fold_build2 (TREE_CODE (arg0), type,
+				fold_build2 (code, type, a00, a10),
+				a01);
 	}
 
       /* See if we can build a range comparison.  */
@@ -8670,7 +8670,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == code
 	  && 0 != (tem = fold_truthop (code, type,
 				       TREE_OPERAND (arg0, 1), arg1)))
-	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), tem));
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0), tem);
 
       if ((tem = fold_truthop (code, type, arg0, arg1)) != 0)
 	return tem;
@@ -8721,7 +8721,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  /* Only call invert_truthvalue if operand is a truth value.  */
 	  if (TREE_CODE (TREE_TYPE (arg0)) != BOOLEAN_TYPE)
-	    tem = fold (build1 (TRUTH_NOT_EXPR, TREE_TYPE (arg0), arg0));
+	    tem = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (arg0), arg0);
 	  else
 	    tem = invert_truthvalue (arg0);
 	  return non_lvalue (fold_convert (type, tem));
@@ -8750,7 +8750,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case GE_EXPR:
       /* If one arg is a real or integer constant, put it last.  */
       if (tree_swap_operands_p (arg0, arg1, true))
-	return fold (build2 (swap_tree_comparison (code), type, arg1, arg0));
+	return fold_build2 (swap_tree_comparison (code), type, arg1, arg0);
 
       /* If this is an equality comparison of the address of a non-weak
 	 object against zero, then we know the result.  */
@@ -8804,7 +8804,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		offset1 = build_int_cst (TREE_TYPE (offset0), 0);
 
 	      if (TREE_TYPE (offset0) == TREE_TYPE (offset1))
-		return fold (build2 (code, type, offset0, offset1));
+		return fold_build2 (code, type, offset0, offset1);
 	    }
 	}
 
@@ -8819,14 +8819,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	  /* Fold (double)float1 CMP (double)float2 into float1 CMP float2.  */
 	  if (TYPE_PRECISION (newtype) < TYPE_PRECISION (TREE_TYPE (arg0)))
-	    return fold (build2 (code, type, fold_convert (newtype, targ0),
-				 fold_convert (newtype, targ1)));
+	    return fold_build2 (code, type, fold_convert (newtype, targ0),
+				fold_convert (newtype, targ1));
 
 	  /* (-a) CMP (-b) -> b CMP a  */
 	  if (TREE_CODE (arg0) == NEGATE_EXPR
 	      && TREE_CODE (arg1) == NEGATE_EXPR)
-	    return fold (build2 (code, type, TREE_OPERAND (arg1, 0),
-				 TREE_OPERAND (arg0, 0)));
+	    return fold_build2 (code, type, TREE_OPERAND (arg1, 0),
+				TREE_OPERAND (arg0, 0));
 
 	  if (TREE_CODE (arg1) == REAL_CST)
 	  {
@@ -8836,16 +8836,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    /* (-a) CMP CST -> a swap(CMP) (-CST)  */
 	    if (TREE_CODE (arg0) == NEGATE_EXPR)
 	      return
-		fold (build2 (swap_tree_comparison (code), type,
-			      TREE_OPERAND (arg0, 0),
-			      build_real (TREE_TYPE (arg1),
-					  REAL_VALUE_NEGATE (cst))));
+		fold_build2 (swap_tree_comparison (code), type,
+			     TREE_OPERAND (arg0, 0),
+			     build_real (TREE_TYPE (arg1),
+					 REAL_VALUE_NEGATE (cst)));
 
 	    /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
 	    /* a CMP (-0) -> a CMP 0  */
 	    if (REAL_VALUE_MINUS_ZERO (cst))
-	      return fold (build2 (code, type, arg0,
-				   build_real (TREE_TYPE (arg1), dconst0)));
+	      return fold_build2 (code, type, arg0,
+				  build_real (TREE_TYPE (arg1), dconst0));
 
 	    /* x != NaN is always true, other ops are always false.  */
 	    if (REAL_VALUE_ISNAN (cst)
@@ -8877,7 +8877,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					  ? MINUS_EXPR : PLUS_EXPR,
 					  arg1, TREE_OPERAND (arg0, 1), 0))
 	      && ! TREE_CONSTANT_OVERFLOW (tem))
-	    return fold (build2 (code, type, TREE_OPERAND (arg0, 0), tem));
+	    return fold_build2 (code, type, TREE_OPERAND (arg0, 0), tem);
 
 	  /* Likewise, we can simplify a comparison of a real constant with
 	     a MINUS_EXPR whose first operand is also a real constant, i.e.
@@ -8889,8 +8889,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && 0 != (tem = const_binop (MINUS_EXPR, TREE_OPERAND (arg0, 0),
 					  arg1, 0))
 	      && ! TREE_CONSTANT_OVERFLOW (tem))
-	    return fold (build2 (swap_tree_comparison (code), type,
-				 TREE_OPERAND (arg0, 1), tem));
+	    return fold_build2 (swap_tree_comparison (code), type,
+				TREE_OPERAND (arg0, 1), tem);
 
 	  /* Fold comparisons against built-in math functions.  */
 	  if (TREE_CODE (arg1) == REAL_CST
@@ -8924,16 +8924,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	  if (TREE_CODE (arg0) == POSTINCREMENT_EXPR)
 	    {
-	      newconst = fold (build2 (PLUS_EXPR, TREE_TYPE (arg0),
-				       arg1, TREE_OPERAND (arg0, 1)));
+	      newconst = fold_build2 (PLUS_EXPR, TREE_TYPE (arg0),
+				      arg1, TREE_OPERAND (arg0, 1));
 	      varop = build2 (PREINCREMENT_EXPR, TREE_TYPE (arg0),
 			      TREE_OPERAND (arg0, 0),
 			      TREE_OPERAND (arg0, 1));
 	    }
 	  else
 	    {
-	      newconst = fold (build2 (MINUS_EXPR, TREE_TYPE (arg0),
-				       arg1, TREE_OPERAND (arg0, 1)));
+	      newconst = fold_build2 (MINUS_EXPR, TREE_TYPE (arg0),
+				      arg1, TREE_OPERAND (arg0, 1));
 	      varop = build2 (PREDECREMENT_EXPR, TREE_TYPE (arg0),
 			      TREE_OPERAND (arg0, 0),
 			      TREE_OPERAND (arg0, 1));
@@ -8954,8 +8954,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      /* First check whether the comparison would come out
 		 always the same.  If we don't do that we would
 		 change the meaning with the masking.  */
-	      folded_compare = fold (build2 (code, type,
-					     TREE_OPERAND (varop, 0), arg1));
+	      folded_compare = fold_build2 (code, type,
+					    TREE_OPERAND (varop, 0), arg1);
 	      if (integer_zerop (folded_compare)
 		  || integer_onep (folded_compare))
 		return omit_one_operand (type, folded_compare, varop);
@@ -8963,13 +8963,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      shift = build_int_cst (NULL_TREE,
 				     TYPE_PRECISION (TREE_TYPE (varop)) - size);
 	      shift = fold_convert (TREE_TYPE (varop), shift);
-	      newconst = fold (build2 (LSHIFT_EXPR, TREE_TYPE (varop),
-				       newconst, shift));
-	      newconst = fold (build2 (RSHIFT_EXPR, TREE_TYPE (varop),
-				       newconst, shift));
+	      newconst = fold_build2 (LSHIFT_EXPR, TREE_TYPE (varop),
+				      newconst, shift);
+	      newconst = fold_build2 (RSHIFT_EXPR, TREE_TYPE (varop),
+				      newconst, shift);
 	    }
 
-	  return fold (build2 (code, type, varop, newconst));
+	  return fold_build2 (code, type, varop, newconst);
 	}
 
       /* Change X >= C to X > (C - 1) and X < C to X <= (C - 1) if C > 0.
@@ -8983,11 +8983,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	    case GE_EXPR:
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      return fold (build2 (GT_EXPR, type, arg0, arg1));
+	      return fold_build2 (GT_EXPR, type, arg0, arg1);
 
 	    case LT_EXPR:
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      return fold (build2 (LE_EXPR, type, arg0, arg1));
+	      return fold_build2 (LE_EXPR, type, arg0, arg1);
 
 	    default:
 	      break;
@@ -9061,13 +9061,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return omit_one_operand (type, integer_zero_node, arg0);
 
 		case GE_EXPR:
-		  return fold (build2 (EQ_EXPR, type, arg0, arg1));
+		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
 
 		case LE_EXPR:
 		  return omit_one_operand (type, integer_one_node, arg0);
 
 		case LT_EXPR:
-		  return fold (build2 (NE_EXPR, type, arg0, arg1));
+		  return fold_build2 (NE_EXPR, type, arg0, arg1);
 
 		/* The GE_EXPR and LT_EXPR cases above are not normally
 		   reached because of previous transformations.  */
@@ -9082,10 +9082,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		{
 		case GT_EXPR:
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  return fold (build2 (EQ_EXPR, type, arg0, arg1));
+		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
 		case LE_EXPR:
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  return fold (build2 (NE_EXPR, type, arg0, arg1));
+		  return fold_build2 (NE_EXPR, type, arg0, arg1);
 		default:
 		  break;
 		}
@@ -9098,13 +9098,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return omit_one_operand (type, integer_zero_node, arg0);
 
 		case LE_EXPR:
-		  return fold (build2 (EQ_EXPR, type, arg0, arg1));
+		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
 
 		case GE_EXPR:
 		  return omit_one_operand (type, integer_one_node, arg0);
 
 		case GT_EXPR:
-		  return fold (build2 (NE_EXPR, type, arg0, arg1));
+		  return fold_build2 (NE_EXPR, type, arg0, arg1);
 
 		default:
 		  break;
@@ -9116,10 +9116,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		{
 		case GE_EXPR:
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  return fold (build2 (NE_EXPR, type, arg0, arg1));
+		  return fold_build2 (NE_EXPR, type, arg0, arg1);
 		case LT_EXPR:
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  return fold (build2 (EQ_EXPR, type, arg0, arg1));
+		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
 		default:
 		  break;
 		}
@@ -9159,7 +9159,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				      ? MINUS_EXPR : PLUS_EXPR,
 				      arg1, TREE_OPERAND (arg0, 1), 0))
 	  && ! TREE_CONSTANT_OVERFLOW (tem))
-	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), tem));
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0), tem);
 
       /* Similarly for a NEGATE_EXPR.  */
       else if ((code == EQ_EXPR || code == NE_EXPR)
@@ -9168,14 +9168,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	       && 0 != (tem = negate_expr (arg1))
 	       && TREE_CODE (tem) == INTEGER_CST
 	       && ! TREE_CONSTANT_OVERFLOW (tem))
-	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), tem));
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0), tem);
 
       /* If we have X - Y == 0, we can convert that to X == Y and similarly
 	 for !=.  Don't do this for ordered comparisons due to overflow.  */
       else if ((code == NE_EXPR || code == EQ_EXPR)
 	       && integer_zerop (arg1) && TREE_CODE (arg0) == MINUS_EXPR)
-	return fold (build2 (code, type,
-			     TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1)));
+	return fold_build2 (code, type,
+			    TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1));
 
       else if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE
 	       && (TREE_CODE (arg0) == NOP_EXPR
@@ -9219,11 +9219,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	       && (0 != (tem = negate_expr (arg1)))
 	       && TREE_CODE (tem) == INTEGER_CST
 	       && ! TREE_CONSTANT_OVERFLOW (tem))
-	return fold (build2 (TRUTH_ANDIF_EXPR, type,
-			     build2 (GE_EXPR, type,
-				     TREE_OPERAND (arg0, 0), tem),
-			     build2 (LE_EXPR, type,
-				     TREE_OPERAND (arg0, 0), arg1)));
+	return fold_build2 (TRUTH_ANDIF_EXPR, type,
+			    build2 (GE_EXPR, type,
+				    TREE_OPERAND (arg0, 0), tem),
+			    build2 (LE_EXPR, type,
+				    TREE_OPERAND (arg0, 0), arg1));
 
       /* Convert ABS_EXPR<x> >= 0 to true.  */
       else if (code == GE_EXPR
@@ -9243,7 +9243,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       else if ((code == EQ_EXPR || code == NE_EXPR)
 	       && TREE_CODE (arg0) == ABS_EXPR
 	       && (integer_zerop (arg1) || real_zerop (arg1)))
-	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), arg1));
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0), arg1);
 
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
@@ -9258,23 +9258,23 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  if (TREE_CODE (arg00) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg00, 0)))
 	    return
-	      fold (build2 (code, type,
-			    build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-				    build2 (RSHIFT_EXPR, TREE_TYPE (arg00),
-					    arg01, TREE_OPERAND (arg00, 1)),
-				    fold_convert (TREE_TYPE (arg0),
-						  integer_one_node)),
-			    arg1));
+	      fold_build2 (code, type,
+			   build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				   build2 (RSHIFT_EXPR, TREE_TYPE (arg00),
+					   arg01, TREE_OPERAND (arg00, 1)),
+				   fold_convert (TREE_TYPE (arg0),
+						 integer_one_node)),
+			   arg1);
 	  else if (TREE_CODE (TREE_OPERAND (arg0, 1)) == LSHIFT_EXPR
 		   && integer_onep (TREE_OPERAND (TREE_OPERAND (arg0, 1), 0)))
 	    return
-	      fold (build2 (code, type,
-			    build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-				    build2 (RSHIFT_EXPR, TREE_TYPE (arg01),
-					    arg00, TREE_OPERAND (arg01, 1)),
-				    fold_convert (TREE_TYPE (arg0),
-						  integer_one_node)),
-			    arg1));
+	      fold_build2 (code, type,
+			   build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				   build2 (RSHIFT_EXPR, TREE_TYPE (arg01),
+					   arg00, TREE_OPERAND (arg01, 1)),
+				   fold_convert (TREE_TYPE (arg0),
+						 integer_one_node)),
+			   arg1);
 	}
 
       /* If this is an NE or EQ comparison of zero against the result of a
@@ -9290,14 +9290,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
 	{
 	  tree newtype = lang_hooks.types.unsigned_type (TREE_TYPE (arg0));
-	  tree newmod = fold (build2 (TREE_CODE (arg0), newtype,
-				      fold_convert (newtype,
-						    TREE_OPERAND (arg0, 0)),
-				      fold_convert (newtype,
-						    TREE_OPERAND (arg0, 1))));
+	  tree newmod = fold_build2 (TREE_CODE (arg0), newtype,
+				     fold_convert (newtype,
+						   TREE_OPERAND (arg0, 0)),
+				     fold_convert (newtype,
+						   TREE_OPERAND (arg0, 1)));
 
-	  return fold (build2 (code, type, newmod,
-			       fold_convert (newtype, arg1)));
+	  return fold_build2 (code, type, newmod,
+			      fold_convert (newtype, arg1));
 	}
 
       /* If this is an NE comparison of zero with an AND of one, remove the
@@ -9313,9 +9313,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_CODE (arg0) == BIT_AND_EXPR
 	  && integer_pow2p (TREE_OPERAND (arg0, 1))
 	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
-	return fold (build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
-			     arg0, fold_convert (TREE_TYPE (arg0),
-						 integer_zero_node)));
+	return fold_build2 (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
+			    arg0, fold_convert (TREE_TYPE (arg0),
+						integer_zero_node));
 
       /* If we have (A & C) != 0 or (A & C) == 0 and C is a power of
 	 2, then fold the expression into shifts and logical operations.  */
@@ -9330,11 +9330,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tree notc = fold (build1 (BIT_NOT_EXPR,
-				    TREE_TYPE (TREE_OPERAND (arg0, 1)),
-				    TREE_OPERAND (arg0, 1)));
-	  tree dandnotc = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-					arg1, notc));
+	  tree notc = fold_build1 (BIT_NOT_EXPR,
+				   TREE_TYPE (TREE_OPERAND (arg0, 1)),
+				   TREE_OPERAND (arg0, 1));
+	  tree dandnotc = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				       arg1, notc);
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (dandnotc))
 	    return omit_one_operand (type, rslt, arg0);
@@ -9347,9 +9347,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tree notd = fold (build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1));
-	  tree candnotd = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-					TREE_OPERAND (arg0, 1), notd));
+	  tree notd = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1);
+	  tree candnotd = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				       TREE_OPERAND (arg0, 1), notd);
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (candnotd))
 	    return omit_one_operand (type, rslt, arg0);
@@ -9397,7 +9397,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
 		  || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
 		return constant_boolean_node (1, type);
-	      return fold (build2 (EQ_EXPR, type, arg0, arg1));
+	      return fold_build2 (EQ_EXPR, type, arg0, arg1);
 
 	    case NE_EXPR:
 	      /* For NE, we can only do this simplification if integer
@@ -9451,20 +9451,20 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		 was the same as ARG1.  */
 
 	      tree high_result
-		= fold (build2 (code, type,
-				eval_subst (arg0, cval1, maxval,
-					    cval2, minval),
-				arg1));
+		= fold_build2 (code, type,
+			       eval_subst (arg0, cval1, maxval,
+					   cval2, minval),
+			       arg1);
 	      tree equal_result
-		= fold (build2 (code, type,
-				eval_subst (arg0, cval1, maxval,
-					    cval2, maxval),
-				arg1));
+		= fold_build2 (code, type,
+			       eval_subst (arg0, cval1, maxval,
+					   cval2, maxval),
+			       arg1);
 	      tree low_result
-		= fold (build2 (code, type,
-				eval_subst (arg0, cval1, minval,
-					    cval2, maxval),
-				arg1));
+		= fold_build2 (code, type,
+			       eval_subst (arg0, cval1, minval,
+					   cval2, maxval),
+			       arg1);
 
 	      /* All three of these results should be 0 or 1.  Confirm they
 		 are.  Then use those values to select the proper code
@@ -9548,16 +9548,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	  arg0 = save_expr (arg0);
 	  arg1 = save_expr (arg1);
-	  real0 = fold (build1 (REALPART_EXPR, subtype, arg0));
-	  imag0 = fold (build1 (IMAGPART_EXPR, subtype, arg0));
-	  real1 = fold (build1 (REALPART_EXPR, subtype, arg1));
-	  imag1 = fold (build1 (IMAGPART_EXPR, subtype, arg1));
+	  real0 = fold_build1 (REALPART_EXPR, subtype, arg0);
+	  imag0 = fold_build1 (IMAGPART_EXPR, subtype, arg0);
+	  real1 = fold_build1 (REALPART_EXPR, subtype, arg1);
+	  imag1 = fold_build1 (IMAGPART_EXPR, subtype, arg1);
 
-	  return fold (build2 ((code == EQ_EXPR ? TRUTH_ANDIF_EXPR
-				: TRUTH_ORIF_EXPR),
-			       type,
-			       fold (build2 (code, type, real0, real1)),
-			       fold (build2 (code, type, imag0, imag1))));
+	  return fold_build2 ((code == EQ_EXPR ? TRUTH_ANDIF_EXPR
+			       : TRUTH_ORIF_EXPR),
+			      type,
+			      fold_build2 (code, type, real0, real1),
+			      fold_build2 (code, type, imag0, imag1));
 	}
 
       /* Optimize comparisons of strlen vs zero to a compare of the
@@ -9579,11 +9579,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && (arglist = TREE_OPERAND (arg0, 1))
 	      && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE
 	      && ! TREE_CHAIN (arglist))
-	    return fold (build2 (code, type,
-				 build1 (INDIRECT_REF, char_type_node,
-					 TREE_VALUE (arglist)),
-				 fold_convert (char_type_node,
-					       integer_zero_node)));
+	    return fold_build2 (code, type,
+				build1 (INDIRECT_REF, char_type_node,
+					TREE_VALUE (arglist)),
+				fold_convert (char_type_node,
+					      integer_zero_node));
 	}
 
       /* We can fold X/C1 op C2 where C1 and C2 are integer constants
@@ -9667,8 +9667,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  newtype = TREE_TYPE (targ1);
 
 	if (TYPE_PRECISION (newtype) < TYPE_PRECISION (TREE_TYPE (arg0)))
-	  return fold (build2 (code, type, fold_convert (newtype, targ0),
-			       fold_convert (newtype, targ1)));
+	  return fold_build2 (code, type, fold_convert (newtype, targ0),
+			      fold_convert (newtype, targ1));
       }
 
       return NULL_TREE;
@@ -9799,7 +9799,7 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  tem = invert_truthvalue (arg0);
 
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build3 (code, type, tem, op2, op1));
+	    return fold_build3 (code, type, tem, op2, op1);
 	}
 
       /* Convert A ? 1 : 0 to simply A.  */
@@ -9825,8 +9825,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
           && integer_zerop (TREE_OPERAND (arg0, 1))
           && integer_zerop (op2)
           && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
-        return fold_convert (type, fold (build2 (BIT_AND_EXPR,
-						 TREE_TYPE (tem), tem, arg1)));
+        return fold_convert (type, fold_build2 (BIT_AND_EXPR,
+						TREE_TYPE (tem), tem, arg1));
 
       /* (A >> N) & 1 ? (1 << N) : 0 is simply A & (1 << N).  A & 1 was
 	 already handled above.  */
@@ -9841,8 +9841,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
               && TREE_CODE (TREE_OPERAND (tem, 1)) == INTEGER_CST
               && (unsigned HOST_WIDE_INT) tree_log2 (arg1) ==
 	         TREE_INT_CST_LOW (TREE_OPERAND (tem, 1)))
-	    return fold (build2 (BIT_AND_EXPR, type,
-				 TREE_OPERAND (tem, 0), arg1));
+	    return fold_build2 (BIT_AND_EXPR, type,
+				TREE_OPERAND (tem, 0), arg1);
 	}
 
       /* A & N ? N : 0 is simply A & N if N is a power of two.  This
@@ -9863,7 +9863,7 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
       if (integer_zerop (op2)
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (arg1)))
-	return fold (build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1));
+	return fold_build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1);
 
       /* Convert A ? B : 1 into !A || B if A and B are truth values.  */
       if (integer_onep (op2)
@@ -9873,7 +9873,7 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ORIF_EXPR, type, tem, arg1));
+	    return fold_build2 (TRUTH_ORIF_EXPR, type, tem, arg1);
 	}
 
       /* Convert A ? 0 : B into !A && B if A and B are truth values.  */
@@ -9884,14 +9884,14 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ANDIF_EXPR, type, tem, op2));
+	    return fold_build2 (TRUTH_ANDIF_EXPR, type, tem, op2);
 	}
 
       /* Convert A ? 1 : B into A || B if A and B are truth values.  */
       if (integer_onep (arg1)
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (op2)))
-	return fold (build2 (TRUTH_ORIF_EXPR, type, arg0, op2));
+	return fold_build2 (TRUTH_ORIF_EXPR, type, arg0, op2);
 
       return NULL_TREE;
 
@@ -11864,7 +11864,7 @@ ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
       if (type != TREE_TYPE (toffset2))
 	toffset2 = fold_convert (type, toffset2);
 
-      tdiff = fold (build2 (MINUS_EXPR, type, toffset1, toffset2));
+      tdiff = fold_build2 (MINUS_EXPR, type, toffset1, toffset2);
       if (!host_integerp (tdiff, 0))
 	return false;
 
@@ -11906,9 +11906,9 @@ fold_strip_sign_ops (tree exp)
       arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 0));
       arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
       if (arg0 != NULL_TREE || arg1 != NULL_TREE)
-	return fold (build2 (TREE_CODE (exp), TREE_TYPE (exp),
-			     arg0 ? arg0 : TREE_OPERAND (exp, 0),
-			     arg1 ? arg1 : TREE_OPERAND (exp, 1)));
+	return fold_build2 (TREE_CODE (exp), TREE_TYPE (exp),
+			    arg0 ? arg0 : TREE_OPERAND (exp, 0),
+			    arg1 ? arg1 : TREE_OPERAND (exp, 1));
       break;
 
     default:
