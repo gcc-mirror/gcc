@@ -1,3 +1,8 @@
+2000-10-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* std/std_valarray.h (valarray::valarray): Use __valarray_copy,
+	not __valarray_copy_construct.
+
 2000-10-08  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in (piclist): Fix sed command to also accept
