@@ -395,6 +395,8 @@ enum java_tree_index
   JTI_OTABLE_DECL,
   JTI_OTABLE_SYMS_DECL,
 
+  JTI_PREDEF_FILENAMES,
+
   JTI_MAX
 };
 
@@ -656,8 +658,8 @@ extern tree java_global_trees[JTI_MAX];
 #define nativecode_ptr_array_type_node \
   java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
 
-#define PREDEF_FILENAMES_SIZE 10
-extern tree predef_filenames[PREDEF_FILENAMES_SIZE];
+#define predef_filenames \
+  java_global_trees[JTI_PREDEF_FILENAMES]
 
 #define nativecode_ptr_type_node ptr_type_node
 
@@ -1085,6 +1087,9 @@ extern HOST_WIDE_INT java_array_type_length PARAMS ((tree));
 extern int read_class PARAMS ((tree));
 extern void load_class PARAMS ((tree, int));
 
+extern tree build_call_or_builtin PARAMS ((tree, tree, tree));
+extern void initialize_builtins PARAMS ((void));
+
 extern tree lookup_name PARAMS ((tree));
 extern tree build_known_method_ref PARAMS ((tree, tree, tree, tree, tree));
 extern tree build_class_init PARAMS ((tree, tree));
@@ -1111,7 +1116,6 @@ extern tree create_label_decl PARAMS ((tree));
 extern void push_labeled_block PARAMS ((tree));
 extern tree prepare_eh_table_type PARAMS ((tree));
 extern tree build_exception_object_ref PARAMS ((tree));
-extern void java_set_exception_lang_code PARAMS ((void));
 extern tree generate_name PARAMS ((void));
 extern void pop_labeled_block PARAMS ((void));
 extern const char *lang_printable_name PARAMS ((tree, int));
@@ -1221,6 +1225,9 @@ extern tree java_mangle_class_field_from_string PARAMS ((struct obstack *, char 
 extern tree java_mangle_vtable PARAMS ((struct obstack *, tree));
 extern const char *lang_printable_name_wls PARAMS ((tree, int));
 extern void append_gpp_mangled_name PARAMS ((const char *, int));
+
+extern void add_predefined_file PARAMS ((tree));
+extern int predefined_filename_p PARAMS ((tree));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */

@@ -1,3 +1,27 @@
+2002-01-22  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (java_init_decl_processing): Use add_predefined_file.
+	Predefine RawData.java.
+	(predef_filenames): Removed.
+	(java_init_decl_processing): Don't register predef_filenames.
+	* jcf-parse.c (add_predefined_file): New function.
+	(predefined_filename_p): Rewrote.
+	(predefined_filename_p): No longer static.
+	* decl.c (java_init_decl_processing): Call initialize_builtins.
+	* Make-lang.in (JAVA_OBJS): Added builtins.o.
+	(java/builtins.o): New target.
+	* builtins.c: New file.
+	* parse.y (patch_invoke): Use build_call_or_builtin.
+	* java-tree.h (build_call_or_builtin): Declare.
+	(initialize_builtins): Declare.
+	(java_set_exception_lang_code): Removed unused declaration.
+	(PREDEF_FILENAMES_SIZE): Removed.
+	(java_tree_index): Added JTI_PREDEF_FILENAMES.
+	(predef_filenames): New define.
+	(add_predefined_file): Declare.
+	(predefined_filename_p): Declare.
+	* expr.c (expand_invoke): Use build_call_or_builtin.
+
 2002-01-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (patch_switch_statement): Fix format specifier.
