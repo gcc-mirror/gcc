@@ -1,9 +1,13 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987 Free Software Foundation.
+   Copyright (C) 1987, 2000 Free Software Foundation.
+   Adapted from expread.y of GDB by Paul Rubin, July 1986.
+   Adapted to ANSI C, Richard Stallman, Jan 1987
+   Dusted off, polished, and adapted for use as traditional
+   preprocessor only, Zack Weinberg, Jul 2000
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 1, or (at your option) any
+Free Software Foundation; either version 2, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful,
@@ -13,13 +17,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!
-
- Adapted from expread.y of GDB by Paul Rubin, July 1986.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Parse a C expression from text in a string  */
    
