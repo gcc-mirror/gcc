@@ -1,3 +1,12 @@
+2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/natSystem.cc (init_properties): Update VM version
+	properties.
+	* configure.in: Set GCJVERSION.
+	* acconfig.h: Add GCJVERSION.
+	* configure: Rebuilt.
+	* include/config.h.in: Rebuilt.
+
 2002-03-17  Anthony Green  <green@redhat.com>
 
 	* java/lang/ieeefp.h: Add ARM thumb support (copied from newlib).
