@@ -1,5 +1,8 @@
 2003-03-15  Jason Merrill  <jason@redhat.com>
 
+	PR debug/9039
+	* dwarf2out.c (gen_decl_die): Ignore frontend tree codes.
+
 	PR debug/6387
 	* dwarf2out.c (dwarf2out_decl): If we're at -g1, just stick nested
 	function DIEs at toplevel.

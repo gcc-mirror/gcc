@@ -12194,6 +12194,9 @@ gen_decl_die (decl, context_die)
       break;
 
     default:
+      if ((int)TREE_CODE (decl) > NUM_TREE_CODES)
+	/* Probably some frontend-internal decl.  Assume we don't care.  */
+	break;
       abort ();
     }
 }
