@@ -2375,7 +2375,7 @@ eval_subst (arg, old0, new0, old1, new1)
 	default:
 	  break;
 	}
-      /* fall through (???) */
+      /* fall through - ??? */
 
     case '<':
       {
