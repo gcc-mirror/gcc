@@ -2,6 +2,8 @@
 // GROUPS passed error-reporting
 // Special g++ Options: -Wreturn-type
 
+// DR 295 allows qualification via typedef
+
 template <char C>
 class badoo
 {
@@ -44,7 +46,8 @@ class X{
 };
 
 typedef int const * bart ();
-typedef bart const * const * bar2; // ERROR - qualifiers
+typedef bart const * const * bar2; // ok - constifying qualifiers
+typedef bart volatile * const * bar2v; // WARNING - qualifiers
 
 bar2 baz (X::Y y)
 {				// ERROR - in this context

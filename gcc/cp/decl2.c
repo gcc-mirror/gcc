@@ -5219,7 +5219,7 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
 	    {
 	      /* According to the suggested resolution of core issue
 	     	 180, 'typename' is assumed after a class-key.  */
-	      decl = make_typename_type (scope, id, 1);
+	      decl = make_typename_type (scope, id, tf_error);
 	      if (decl != error_mark_node)
 		decl = TYPE_MAIN_DECL (decl);
 	      else

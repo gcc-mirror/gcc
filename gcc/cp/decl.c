@@ -5609,12 +5609,15 @@ build_typename_type (context, name, fullname, base_type)
 
 /* Resolve `typename CONTEXT::NAME'.  Returns an appropriate type,
    unless an error occurs, in which case error_mark_node is returned.
-   If COMPLAIN zero, don't complain about any errors that occur.  */
+   If we locate a non-artificial TYPE_DECL and TF_KEEP_TYPE_DECL is
+   set, we return that, rather than the _TYPE it corresponds to, in
+   other cases we look through the type decl.  If TF_ERROR is set,
+   complain about errors, otherwise be quiet.  */
 
 tree
 make_typename_type (context, name, complain)
      tree context, name;
-     int complain;
+     tsubst_flags_t complain;
 {
   tree fullname;
 
@@ -5653,7 +5656,7 @@ make_typename_type (context, name, complain)
     {
       /* We can get here from typename_sub0 in the explicit_template_type
 	 expansion.  Just fail.  */
-      if (complain)
+      if (complain & tf_error)
 	error ("no class template named `%#T' in `%#T'",
 		  name, context);
       return error_mark_node;
@@ -5669,7 +5672,7 @@ make_typename_type (context, name, complain)
 	    tmpl = lookup_field (context, name, 0, 0);
 	  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	    {
-	      if (complain)
+	      if (complain & tf_error)
 		error ("no class template named `%#T' in `%#T'",
 			  name, context);
 	      return error_mark_node;
@@ -5687,14 +5690,18 @@ make_typename_type (context, name, complain)
 
 	  if (!IS_AGGR_TYPE (context))
 	    {
-	      if (complain)
+	      if (complain & tf_error)
 		error ("no type named `%#T' in `%#T'", name, context);
 	      return error_mark_node;
 	    }
 
 	  t = lookup_field (context, name, 0, 1);
 	  if (t)
-	    return TREE_TYPE (t);
+	    {
+	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
+		t = TREE_TYPE (t);
+	      return t;
+	    }
 	}
     }
 
@@ -5702,7 +5709,7 @@ make_typename_type (context, name, complain)
      there now or its never going to be.  */
   if (!uses_template_parms (context))
     {
-      if (complain)
+      if (complain & tf_error)
 	error ("no type named `%#T' in `%#T'", name, context);
       return error_mark_node;
     }
@@ -5713,7 +5720,9 @@ make_typename_type (context, name, complain)
 
 /* Resolve `CONTEXT::template NAME'.  Returns an appropriate type,
    unless an error occurs, in which case error_mark_node is returned.
-   If COMPLAIN zero, don't complain about any errors that occur.  */
+   If we locate a TYPE_DECL, we return that, rather than the _TYPE it
+   corresponds to.  If COMPLAIN zero, don't complain about any errors
+   that occur.  */
 
 tree
 make_unbound_class_template (context, name, complain)
@@ -9606,9 +9615,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   tree spec;
   tree type = NULL_TREE;
   int longlong = 0;
-  int constp;
-  int restrictp;
-  int volatilep;
   int type_quals;
   int virtualp, explicitp, friendp, inlinep, staticp;
   int explicit_int = 0;
@@ -10314,26 +10320,24 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	type = build_complex_type (type);
     }
 
-  if (sfk == sfk_conversion
-      && (RIDBIT_SETP (RID_CONST, specbits)
-	  || RIDBIT_SETP (RID_VOLATILE, specbits)
-	  || RIDBIT_SETP (RID_RESTRICT, specbits)))
+  type_quals = TYPE_UNQUALIFIED;
+  if (RIDBIT_SETP (RID_CONST, specbits))
+    type_quals |= TYPE_QUAL_CONST;
+  if (RIDBIT_SETP (RID_VOLATILE, specbits))
+    type_quals |= TYPE_QUAL_VOLATILE;
+  if (RIDBIT_SETP (RID_RESTRICT, specbits))
+    type_quals |= TYPE_QUAL_RESTRICT;
+  if (sfk == sfk_conversion && type_quals != TYPE_UNQUALIFIED)
     error ("qualifiers are not allowed on declaration of `operator %T'",
 	      ctor_return_type);
 
-  /* Set CONSTP if this declaration is `const', whether by
-     explicit specification or via a typedef.
-     Likewise for VOLATILEP.  */
-
-  constp = !! RIDBIT_SETP (RID_CONST, specbits) + CP_TYPE_CONST_P (type);
-  restrictp =
-    !! RIDBIT_SETP (RID_RESTRICT, specbits) + CP_TYPE_RESTRICT_P (type);
-  volatilep =
-    !! RIDBIT_SETP (RID_VOLATILE, specbits) + CP_TYPE_VOLATILE_P (type);
-  type_quals = ((constp ? TYPE_QUAL_CONST : 0)
-		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
-		| (volatilep ? TYPE_QUAL_VOLATILE : 0));
-  type = cp_build_qualified_type (type, type_quals);
+  type_quals |= cp_type_quals (type);
+  type = cp_build_qualified_type_real
+    (type, type_quals, ((typedef_decl && !DECL_ARTIFICIAL (typedef_decl)
+ 			 ? tf_ignore_bad_quals : 0) | tf_error | tf_warning));
+  /* We might have ignored or rejected some of the qualifiers.  */
+  type_quals = cp_type_quals (type);
+  
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
@@ -10826,21 +10830,30 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    {
 	      register tree typemodlist;
 	      int erred = 0;
-
-	      constp = 0;
-	      volatilep = 0;
-	      restrictp = 0;
+	      int constp = 0;
+	      int volatilep = 0;
+	      int restrictp = 0;
+	      
 	      for (typemodlist = TREE_TYPE (declarator); typemodlist;
 		   typemodlist = TREE_CHAIN (typemodlist))
 		{
 		  tree qualifier = TREE_VALUE (typemodlist);
 
 		  if (qualifier == ridpointers[(int) RID_CONST])
-		    constp++;
+		    {
+		      constp++;
+		      type_quals |= TYPE_QUAL_CONST;
+		    }
 		  else if (qualifier == ridpointers[(int) RID_VOLATILE])
-		    volatilep++;
+		    {
+		      volatilep++;
+		      type_quals |= TYPE_QUAL_VOLATILE;
+		    }
 		  else if (qualifier == ridpointers[(int) RID_RESTRICT])
-		    restrictp++;
+		    {
+		      restrictp++;
+		      type_quals |= TYPE_QUAL_RESTRICT;
+		    }
 		  else if (!erred)
 		    {
 		      erred = 1;
@@ -10853,20 +10866,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		pedwarn ("duplicate `volatile'");
 	      if (restrictp > 1)
 		pedwarn ("duplicate `restrict'");
-
-	      type_quals = ((constp ? TYPE_QUAL_CONST : 0)
-			    | (restrictp ? TYPE_QUAL_RESTRICT : 0)
-			    | (volatilep ? TYPE_QUAL_VOLATILE : 0));
-	      if (TREE_CODE (declarator) == ADDR_EXPR
-		  && (constp || volatilep))
-		{
-		  if (constp)
-		    pedwarn ("discarding `const' applied to a reference");
-		  if (volatilep)
-		    pedwarn ("discarding `volatile' applied to a reference");
-		  type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-		}
 	      type = cp_build_qualified_type (type, type_quals);
+	      type_quals = cp_type_quals (type);
 	    }
 	  declarator = TREE_OPERAND (declarator, 0);
 	  ctype = NULL_TREE;
@@ -11110,7 +11111,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else if (type_quals & TYPE_QUAL_CONST)
 	{
 	  error ("const `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
+ 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
     }
 
