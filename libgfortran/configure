@@ -6821,7 +6821,8 @@ fi
 
 
 
-for ac_func in getrusage times mkstemp
+
+for ac_func in getrusage times mkstemp strtof
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5
