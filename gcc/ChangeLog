@@ -1,3 +1,7 @@
+2004-06-17  David Ayers  <d.ayers@inode.at>
+ 
+	* c-parse.in: Unify Objective-C token names.
+
 2004-06-17  Zack Weinberg  <zack@codesourcery.com>
 
 	Bug 14610
