@@ -131,7 +131,7 @@ not accurately reflect the status of the most recent @command{gfortran}.
 * Project Status::  Status of @command{gfortran}, Roadmap, proposed extensions.
 * Contributing::    Helping you can help.
 * Standards::	    Standards supported by @command{gfortran}
-* Extensions::      Laguage extensions implemented by @command{gfortran}
+* Extensions::      Language extensions implemented by @command{gfortran}
 * Index::	    Index of this documentation.
 @end menu
 
