@@ -1,5 +1,8 @@
 Mon Sep  7 18:33:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (get_inner_reference): If not COMPONENT_REF or BITFIELD_REF
+	and mode is BLKmode, set size_tree.
+
 	* expr.c (expand_builtin, case BUILT_IN_LONGJMP): Fix typo in
 	last change.
 
