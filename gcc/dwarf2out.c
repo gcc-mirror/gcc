@@ -144,13 +144,25 @@ dw_fde_node;
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
+
+/* The size of the target's pointer type.  */
 #ifndef PTR_SIZE
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
+/* The size of addresses as they appear in the Dwarf 2 data.
+   Some architectures use word addresses to refer to code locations,
+   but Dwarf 2 info always uses byte addresses.  On such machines,
+   Dwarf 2 addresses need to be larger than the architecture's
+   pointers.  */
+#ifndef DWARF2_ADDR_SIZE
+#define DWARF2_ADDR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
+#endif
+
 /* The size in bytes of a DWARF field indicating an offset or length
-   relative to a debug info section, specified to be 4 bytes in the DWARF-2
-   specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
+   relative to a debug info section, specified to be 4 bytes in the
+   DWARF-2 specification.  The SGI/MIPS ABI defines it to be the same
+   as DWARF2_ADDR_SIZE.  */
 
 #ifndef DWARF_OFFSET_SIZE
 #define DWARF_OFFSET_SIZE 4
@@ -312,9 +324,10 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
 #endif
 
 #ifndef UNALIGNED_WORD_ASM_OP
-#define UNALIGNED_WORD_ASM_OP \
-  ((PTR_SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : \
-   ((PTR_SIZE) == 2 ? UNALIGNED_SHORT_ASM_OP : UNALIGNED_INT_ASM_OP))
+#define UNALIGNED_WORD_ASM_OP						\
+  ((DWARF2_ADDR_SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP		\
+   : (DWARF2_ADDR_SIZE) == 2 ? UNALIGNED_SHORT_ASM_OP			\
+   : UNALIGNED_INT_ASM_OP)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
@@ -426,7 +439,7 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
    .debug_frame.  */
 
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
-  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), PTR_SIZE, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), DWARF2_ADDR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
   assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
@@ -450,7 +463,7 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
   assemble_integer (gen_rtx_MINUS (Pmode,				\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
-		    PTR_SIZE, 1)
+		    DWARF2_ADDR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
   ASM_OUTPUT_DWARF_DELTA4 (FILE,LABEL1,LABEL2)
@@ -1640,7 +1653,7 @@ output_call_frame_info (for_eh)
       tree label = get_file_function_name ('F');
 
       force_data_section ();
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
@@ -1744,7 +1757,7 @@ output_call_frame_info (for_eh)
     output_cfi (cfi, NULL);
 
   /* Pad the CIE out to an address sized boundary.  */
-  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
   ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
@@ -1816,7 +1829,7 @@ output_call_frame_info (for_eh)
 	output_cfi (cfi, fde);
 
       /* Pad the FDE out to an address sized boundary.  */
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
       ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
@@ -2147,13 +2160,14 @@ extern int flag_traditional;
 #define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
 
 /* Fixed size portion of the address range info.  */
-#define DWARF_ARANGES_HEADER_SIZE \
-  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) - DWARF_OFFSET_SIZE)
+#define DWARF_ARANGES_HEADER_SIZE					\
+  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, DWARF2_ADDR_SIZE * 2)	\
+   - DWARF_OFFSET_SIZE)
 
 /* Size of padding portion in the address range info.  It must be
    aligned to twice the pointer size.  */
 #define DWARF_ARANGES_PAD_SIZE \
-  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) \
+  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, DWARF2_ADDR_SIZE * 2) \
    - (2 * DWARF_OFFSET_SIZE + 4))
 
 /* The default is to have gcc emit the line number tables.  */
@@ -4460,7 +4474,7 @@ size_of_loc_descr (loc)
   switch (loc->dw_loc_opc)
     {
     case DW_OP_addr:
-      size += PTR_SIZE;
+      size += DWARF2_ADDR_SIZE;
       break;
     case DW_OP_const1u:
     case DW_OP_const1s:
@@ -4601,7 +4615,7 @@ size_of_die (die)
       switch (AT_class (a))
 	{
 	case dw_val_class_addr:
-	  size += PTR_SIZE;
+	  size += DWARF2_ADDR_SIZE;
 	  break;
 	case dw_val_class_loc:
 	  {
@@ -4634,7 +4648,7 @@ size_of_die (die)
 	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_lbl_id:
-	  size += PTR_SIZE;
+	  size += DWARF2_ADDR_SIZE;
 	  break;
 	case dw_val_class_lbl_offset:
 	  size += DWARF_OFFSET_SIZE;
@@ -4741,11 +4755,11 @@ size_of_aranges ()
   size = DWARF_ARANGES_HEADER_SIZE;
 
   /* Count the address/length pair for this compilation unit.  */
-  size += 2 * PTR_SIZE;
-  size += 2 * PTR_SIZE * arange_table_in_use;
+  size += 2 * DWARF2_ADDR_SIZE;
+  size += 2 * DWARF2_ADDR_SIZE * arange_table_in_use;
 
   /* Count the two zero words used to terminated the address range table.  */
-  size += 2 * PTR_SIZE;
+  size += 2 * DWARF2_ADDR_SIZE;
   return size;
 }
 
@@ -5212,7 +5226,7 @@ output_compilation_unit_header ()
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, PTR_SIZE);
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF2_ADDR_SIZE);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Pointer Size (in bytes)", ASM_COMMENT_START);
 
@@ -5366,7 +5380,7 @@ output_aranges ()
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, PTR_SIZE);
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF2_ADDR_SIZE);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Size of Address", ASM_COMMENT_START);
 
@@ -5388,7 +5402,7 @@ output_aranges ()
         fprintf (asm_out_file, ",0");
       if (flag_debug_asm)
         fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
-                 ASM_COMMENT_START, 2 * PTR_SIZE);
+                 ASM_COMMENT_START, 2 * DWARF2_ADDR_SIZE);
     }
 
   fputc ('\n', asm_out_file);
@@ -5632,13 +5646,14 @@ output_line_info ()
 	}
       else
 	{
-	  /* This can handle any delta.  This takes 4+PTR_SIZE bytes.  */
+	  /* This can handle any delta.  This takes
+             4+DWARF2_ADDR_SIZE bytes.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 		     ASM_COMMENT_START);
 	  fputc ('\n', asm_out_file);
-	  output_uleb128 (1 + PTR_SIZE);
+	  output_uleb128 (1 + DWARF2_ADDR_SIZE);
 	  fputc ('\n', asm_out_file);
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
 	  fputc ('\n', asm_out_file);
@@ -5730,7 +5745,7 @@ output_line_info ()
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
-      output_uleb128 (1 + PTR_SIZE);
+      output_uleb128 (1 + DWARF2_ADDR_SIZE);
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
       fputc ('\n', asm_out_file);
@@ -5780,7 +5795,7 @@ output_line_info ()
 		     ASM_COMMENT_START);
 
 	  fputc ('\n', asm_out_file);
-	  output_uleb128 (1 + PTR_SIZE);
+	  output_uleb128 (1 + DWARF2_ADDR_SIZE);
 	  fputc ('\n', asm_out_file);
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
 	  fputc ('\n', asm_out_file);
@@ -5809,7 +5824,7 @@ output_line_info ()
 		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 			 ASM_COMMENT_START);
 	      fputc ('\n', asm_out_file);
-	      output_uleb128 (1 + PTR_SIZE);
+	      output_uleb128 (1 + DWARF2_ADDR_SIZE);
 	      fputc ('\n', asm_out_file);
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
 	      fputc ('\n', asm_out_file);
@@ -5911,7 +5926,7 @@ output_line_info ()
 		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
 			 ASM_COMMENT_START);
 	      fputc ('\n', asm_out_file);
-	      output_uleb128 (1 + PTR_SIZE);
+	      output_uleb128 (1 + DWARF2_ADDR_SIZE);
 	      fputc ('\n', asm_out_file);
 	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
 	      fputc ('\n', asm_out_file);
