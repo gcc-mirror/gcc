@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}",
     "%{!M:%{!MM:%{!E:cc1obj %i %1 \
 		   %{nostdinc*} %{A*} %{I*} %{P} %I\
+                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
 		   -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 		   %{!undef:%{!ansi:%p} %P} %{trigraphs}\
 		   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
