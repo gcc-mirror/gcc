@@ -819,6 +819,19 @@ CUMULATIVE_ARGS;
     goto WIN;                                                           \
 }
 
+/* Try a machine-dependent way of reloading an illegitimate address
+   operand.  If we find one, push the reload and jump to WIN.  This
+   macro is used in only one place: `find_reloads_address' in reload.c.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN)	\
+do {									\
+  rtx new = legitimize_reload_address (AD, MODE, OPNUM, (int)(TYPE));	\
+  if (new)								\
+    {									\
+      (AD) = new;							\
+      goto WIN;								\
+    }									\
+} while (0)
+
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 #define LEGITIMATE_CONSTANT_P(X) \
