@@ -66,6 +66,7 @@ static const char jvgenmain_spec[] =
 		   %{<femit-class-file} %{<femit-class-files} %{<fencoding*}\
 		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
 		   %{<findirect-dispatch} \
+		   %{<fno-store-check}\
 		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
 		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
 		   %{<fcheck-references} %{<fno-check-references}\

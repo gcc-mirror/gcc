@@ -392,9 +392,20 @@ directory.
 
 @item -fno-bounds-check
 By default, @code{gcj} generates code which checks the bounds of all
-array indexing operations.  With this option, these checks are omitted.
-Note that this can result in unpredictable behavior if the code in
-question actually does violate array bounds constraints.
+array indexing operations.  With this option, these checks are omitted, which
+can improve performance for code that uses arrays extensively.  Note that this 
+can result in unpredictable behavior if the code in question actually does 
+violate array bounds constraints.  It is safe to use this option if you are 
+sure that your code will never throw an @code{ArrayIndexOutOfBoundsException}.
+
+@item -fno-store-check
+Don't generate array store checks.  When storing objects into arrays, a runtime
+check is normally generated in order to ensure that the object is assignment
+compatible with the component type of the array (which may not be known
+at compile-time).  With this option, these checks are omitted.  This can 
+improve performance for code which stores objects into arrays frequently.
+It is safe to use this option if you are sure your code will never throw an 
+@code{ArrayStoreException}.
 
 @item -fjni
 With @code{gcj} there are two options for writing native methods: CNI
