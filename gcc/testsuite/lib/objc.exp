@@ -25,6 +25,10 @@
 # They are also used by the various testsuites to define the environment:
 # where to find stdio.h, libc.a, etc.
 
+load_lib libgloss.exp
+load_lib prune.exp
+load_lib gcc-defs.exp
+
 #
 # OBJC_UNDER_TEST is the compiler under test.
 #
