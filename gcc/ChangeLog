@@ -1,6 +1,23 @@
 2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
 	    David O'Brien  <obrien@freebsd.org>
 
+	* config.gcc (the unlabeled system switch statement): Add
+	generic configuration section to handle *-*-freebsd*.  Also,
+	to match the system compiler, default to threading support (it
+	may be disabled with the standard --disable-threads
+	configuration-time switch).
+	(i[34567]86-*-freebsd* in machine-specific section): Use it.
+	(alpha*-*-freebsd* in machine-specific section): Likewise.
+
+	* config/freebsd3.h: New file to expose FBSD_MAJOR macro (3).
+	* config/freebsd4.h: New file to expose FBSD_MAJOR macro (4).
+	* config/freebsd5.h: New file to expose FBSD_MAJOR macro (5).
+	* config/freebsd6.h: New file to expose FBSD_MAJOR macro (6).
+	* config/freebsd-nthr.h: New file to expose FBSD_NO_THREADS macro.
+
+2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
+	    David O'Brien  <obrien@freebsd.org>
+
 	* config/t-freebsd (TARGET_LIBGCC2_CFLAGS): Add -fPIC.
 	* config/t-freebsd-thread (TARGET_LIBGCC2_CFLAGS): Add
 	-pthread instead setting macro.
