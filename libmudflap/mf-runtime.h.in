@@ -197,6 +197,11 @@ extern int __mf_set_options (const char *opts);
 #pragma redefine_extname getservbyname __mfwrap_getservbyname
 #pragma redefine_extname getservbyport __mfwrap_getservbyport
 #pragma redefine_extname gai_strerror __mfwrap_gai_strerror
+#pragma redefine_extname getmntent __mfwrap_getmntent
+#pragma redefine_extname inet_ntoa __mfwrap_inet_ntoa
+#pragma redefine_extname getprotoent __mfwrap_getprotoent
+#pragma redefine_extname getprotobyname __mfwrap_getprotobyname
+#pragma redefine_extname getprotobynumber __mfwrap_getprotobynumber
 
 /* Disable glibc macros.  */
 #define __NO_STRING_INLINES

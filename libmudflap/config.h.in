@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `addmntent' function. */
+#undef HAVE_ADDMNTENT
+
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
 /* Define to 1 if you have the `backtrace' function. */
 #undef HAVE_BACKTRACE
 
@@ -60,6 +66,18 @@
 /* Define to 1 if you have the `getlogin_r' function. */
 #undef HAVE_GETLOGIN_R
 
+/* Define to 1 if you have the `getmntent' function. */
+#undef HAVE_GETMNTENT
+
+/* Define to 1 if you have the `getprotobyname' function. */
+#undef HAVE_GETPROTOBYNAME
+
+/* Define to 1 if you have the `getprotobynumber' function. */
+#undef HAVE_GETPROTOBYNUMBER
+
+/* Define to 1 if you have the `getprotoent' function. */
+#undef HAVE_GETPROTOENT
+
 /* Define to 1 if you have the `getpwent' function. */
 #undef HAVE_GETPWENT
 
@@ -90,6 +108,9 @@
 /* Define to 1 if you have the <grp.h> header file. */
 #undef HAVE_GRP_H
 
+/* Define to 1 if you have the `inet_ntoa' function. */
+#undef HAVE_INET_NTOA
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -105,8 +126,14 @@
 /* Define to 1 if you have the `memrchr' function. */
 #undef HAVE_MEMRCHR
 
+/* Define to 1 if you have the <mntent.h> header file. */
+#undef HAVE_MNTENT_H
+
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
 
 /* define if you have <pthread.h> */
 #undef HAVE_PTHREAD_H
@@ -116,6 +143,9 @@
 
 /* Define to 1 if you have the `sethostname' function. */
 #undef HAVE_SETHOSTNAME
+
+/* Define to 1 if you have the `setmntent' function. */
+#undef HAVE_SETMNTENT
 
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL

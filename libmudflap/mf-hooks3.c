@@ -597,4 +597,5 @@ WRAPPER(void, pthread_exit, void *rc)
   /* __mf_state = reentrant; */
   CALL_REAL (pthread_exit, rc);
   /* NOTREACHED */
+  exit (0);  /* Satisfy noreturn attribute of pthread_exit.  */
 }

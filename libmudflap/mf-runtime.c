@@ -310,36 +310,36 @@ static struct option
       set_option,
       read_integer_option,
     } type;
-  int value;
-  int *target;
+  unsigned value;
+  unsigned *target;
 } 
 options [] =
   {
     {"mode-nop", 
      "mudflaps do nothing", 
-     set_option, (int)mode_nop, (int *)&__mf_opts.mudflap_mode},    
+     set_option, (unsigned)mode_nop, (unsigned *)&__mf_opts.mudflap_mode},    
     {"mode-populate", 
      "mudflaps populate object tree", 
-     set_option, (int)mode_populate, (int *)&__mf_opts.mudflap_mode},    
+     set_option, (unsigned)mode_populate, (unsigned *)&__mf_opts.mudflap_mode},    
     {"mode-check", 
      "mudflaps check for memory violations",
-     set_option, (int)mode_check, (int *)&__mf_opts.mudflap_mode},
+     set_option, (unsigned)mode_check, (unsigned *)&__mf_opts.mudflap_mode},
     {"mode-violate", 
      "mudflaps always cause violations (diagnostic)",
-     set_option, (int)mode_violate, (int *)&__mf_opts.mudflap_mode},
+     set_option, (unsigned)mode_violate, (unsigned *)&__mf_opts.mudflap_mode},
    
     {"viol-nop", 
      "violations do not change program execution",
-     set_option, (int)viol_nop, (int *)&__mf_opts.violation_mode},
+     set_option, (unsigned)viol_nop, (unsigned *)&__mf_opts.violation_mode},
     {"viol-abort", 
      "violations cause a call to abort()",
-     set_option, (int)viol_abort, (int *)&__mf_opts.violation_mode},
+     set_option, (unsigned)viol_abort, (unsigned *)&__mf_opts.violation_mode},
     {"viol-segv", 
      "violations are promoted to SIGSEGV signals",
-     set_option, (int)viol_segv, (int *)&__mf_opts.violation_mode},
+     set_option, (unsigned)viol_segv, (unsigned *)&__mf_opts.violation_mode},
     {"viol-gdb", 
      "violations fork a gdb process attached to current program",
-     set_option, (int)viol_gdb, (int *)&__mf_opts.violation_mode},
+     set_option, (unsigned)viol_gdb, (unsigned *)&__mf_opts.violation_mode},
     {"trace-calls", 
      "trace calls to mudflap runtime library",
      set_option, 1, &__mf_opts.trace_mf_calls},
@@ -728,6 +728,7 @@ __wrap_main (int argc, char* argv[])
 {
   extern char **environ;
   extern int main ();
+  extern int __real_main ();
   static int been_here = 0;
 
   if (__mf_opts.heur_std_data && ! been_here)
