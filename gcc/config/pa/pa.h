@@ -1255,7 +1255,7 @@ extern union tree_node *current_function_decl;
    This relies on the fact that most mode MODE_FLOAT references will use FP
    registers and most mode MODE_INT references will use integer registers.
    (In the rare case of an FP register used in an integer MODE, we depend
-   on secondary reloads and the final output pass to clean things up.)  */
+   on secondary reloads and the final output pass to clean things up.)
 
    Also change REG+(X*Y) into REG.  (With X*Y in an extra pseudo).  */
 
