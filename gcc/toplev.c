@@ -892,6 +892,8 @@ lang_independent_options f_options[] =
    "Do not generate .size directives" },
   {"function-sections", &flag_function_sections, 1,
    "place each function into its own section" },
+  {"data-sections", &flag_data_sections, 1,
+   "place data items into their own section" },
   {"verbose-asm", &flag_verbose_asm, 1,
    "Add extra commentry to assembler output"},
   {"gnu-linker", &flag_gnu_linker, 1,
@@ -936,8 +938,6 @@ documented_lang_options[] =
      enabled by default.  */
 
   { "-ansi", "Compile just for ANSI C" },
-  {"data-sections", &flag_data_sections, 1,
-   "place data items into their own section" },
   { "-fallow-single-precision",
     "Do not promote floats to double if using -traditional" },
 
@@ -2707,6 +2707,11 @@ compile_file (name)
       warning ("-ffunction-sections not supported for this target.");
       flag_function_sections = 0;
     }
+  if (flag_data_sections)
+    {
+      warning ("-fdata-sections not supported for this target.");
+      flag_data_sections = 0;
+    }
 #endif
 
   if (flag_function_sections
@@ -2815,12 +2820,6 @@ compile_file (name)
 
     for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
       vec[len - i - 1] = decl;
-  if (flag_data_sections)
-    {
-      warning ("-fdata-sections not supported for this target.");
-      flag_data_sections = 0;
-    }
-
 
     for (i = 0; i < len; i++)
       {
