@@ -1,3 +1,7 @@
+Thu Jul  9 10:38:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (duplicate_loop_exit_test): Fix thinko.
+
 Thu Jul  9 01:30:37 1998  Joel Sherrill  <joel@OARcorp.com>
 			  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
