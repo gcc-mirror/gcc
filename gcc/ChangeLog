@@ -1,3 +1,38 @@
+2005-01-13  Richard Henderson  <rth@redhat.com>
+
+	PR target/19099
+	PR target/19250
+	PR target/19252
+	* config/i386/i386.md (cmpdf, cmpsf, bunordered, bordered, buneq,
+	bunge, bungt, bunle, bunlt, bltgt): Enable for TARGET_SSE_MATH,
+	not just TARGET_SSE.
+	(cmpfp_i_387): Rename from cmpfp_i.  Move after sse patterns.
+	(cmpfp_i_mixed): Rename from cmpfp_i_sse; use for TARGET_MIX_SSE_I387.
+	(cmpfp_i_sse): Rename from cmpfp_i_sse_only; use for TARGET_SSE_MATH.
+	(cmpfp_iu_mixed, cmpfp_iu_sse, cmpfp_iu_387): Similarly.
+	(fp_jcc_1_mixed, fp_jcc_1_sse, fp_jcc_1_387): Similarly.
+	(fp_jcc_2_mixed, fp_jcc_2_sse, fp_jcc_2_387): Similarly.
+	(fp_jcc_3_387, fp_jcc_4_387, fp_jcc_5_387, fp_jcc_6_387,
+	fp_jcc_7_387, fp_jcc_8_387): Rename from fp_jcc_N.
+	(movdicc_c_rex64): Rename with '*'.
+	(movsfcc, movdfcc): Add checks for 387 and sse math to condition.
+	(movsfcc_1_sse_min, movsfcc_1_sse_max, movsfcc_1_sse): New.
+	(movsfcc_1_387): Rename from movsfcc_1.
+	(movdfcc_1_sse_min, movdfcc_1_sse_max, movdfcc_1_sse): New.
+	(movdfcc_1, movdfcc_1_rex64): Add check for 387.
+	(sminsf3, smaxsf3, smindf3, smaxdf3): New.
+	(minsf3, minsf, minsf_nonieee, minsf_sse, mindf3, mindf,
+	mindf_nonieee, mindf_sse, maxsf3, maxsf, maxsf_nonieee, maxsf_sse,
+	maxdf3, maxdf, maxdf_nonieee, maxdf_sse, sse_movsfcc, sse_movsfcc_eq,
+	sse_movdfcc, sse_movdfcc_eq, sse_movsfcc_const0_1,
+	sse_movsfcc_const0_2, sse_movsfcc_const0_3, sse_movsfcc_const0_4,
+	sse_movdfcc_const0_1, sse_movdfcc_const0_2, sse_movdfcc_const0_3,
+	sse_movdfcc_const0_4): Remove.
+	* config/i386/i386.c (ix86_expand_fp_movcc): For TARGET_SSE_MATH,
+	recognize min/max early.  Update for changed sse cmove patterns.
+	(ix86_split_sse_movcc): New.
+	* config/i386/i386-protos.h: Update.
+
 2005-01-13  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-dse.c (fix_phi_uses): Use SSA operand iterators.
