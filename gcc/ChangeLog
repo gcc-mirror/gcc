@@ -1,3 +1,8 @@
+2001-03-21  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (movsi_h8300hs): Split the 2nd alternative
+	into two parts.
+
 Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cse.c (find_comparison_args): Remove previous change.
