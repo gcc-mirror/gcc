@@ -2696,7 +2696,9 @@ fold_truthop (code, truth_type, lhs, rhs)
   int volatilep;
 
   /* Start by getting the comparison codes and seeing if this looks like
-     a range test.  Fail if anything is volatile.  */
+     a range test.  Fail if anything is volatile.  If one operand is a
+     BIT_AND_EXPR with the constant one, treat it as if it were surrounded
+     with a NE_EXPR.  */
 
   if (TREE_SIDE_EFFECTS (lhs)
       || TREE_SIDE_EFFECTS (rhs))
@@ -2704,6 +2706,12 @@ fold_truthop (code, truth_type, lhs, rhs)
 
   lcode = TREE_CODE (lhs);
   rcode = TREE_CODE (rhs);
+
+  if (lcode == BIT_AND_EXPR && integer_onep (TREE_OPERAND (lhs, 1)))
+    lcode = NE_EXPR, lhs = build (NE_EXPR, truth_type, lhs, integer_zero_node);
+
+  if (rcode == BIT_AND_EXPR && integer_onep (TREE_OPERAND (rhs, 1)))
+    rcode = NE_EXPR, rhs = build (NE_EXPR, truth_type, rhs, integer_zero_node);
 
   if (TREE_CODE_CLASS (lcode) != '<'
       || TREE_CODE_CLASS (rcode) != '<')
@@ -3102,7 +3110,26 @@ fold (expr)
      operation inside the compound or conditional to see if any folding
      can then be done.  Convert comparison to conditional for this purpose.
      The also optimizes non-constant cases that used to be done in
-     expand_expr.  */
+     expand_expr.
+
+     Before we do that, see if this is a BIT_AND_EXPR or a BIT_OR_EXPR,
+     one of the operands is a comparison and the other is either a comparison
+     or a BIT_AND_EXPR with the constant 1.  In that case, the code below
+     would make the expression more complex.  Change it to a
+     TRUTH_{AND,OR}_EXPR.  */
+
+  if ((code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
+      && ((TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+	   && (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
+	       || (TREE_CODE (arg1) == BIT_AND_EXPR
+		   && integer_onep (TREE_OPERAND (arg1, 1)))))
+	  || (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
+	      && (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+		  || (TREE_CODE (arg0) == BIT_AND_EXPR
+		      && integer_onep (TREE_OPERAND (arg0, 1)))))))
+    return fold (build (code == BIT_AND_EXPR ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
+			type, arg0, arg1));
+
   if (TREE_CODE_CLASS (code) == '1')
     {
       if (TREE_CODE (arg0) == COMPOUND_EXPR)
@@ -3139,11 +3166,13 @@ fold (expr)
 			    fold (build1 (code, type, integer_one_node)),
 			    fold (build1 (code, type, integer_zero_node))));
    }
-  else if (TREE_CODE_CLASS (code) == '2')
+  else if (TREE_CODE_CLASS (code) == '2'
+	   || TREE_CODE_CLASS (code) == '<')
     {
       if (TREE_CODE (arg1) == COMPOUND_EXPR)
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
-		      fold (build (code, type, arg0, TREE_OPERAND (arg1, 1))));
+		      fold (build (code, type,
+				   arg0, TREE_OPERAND (arg1, 1))));
       else if (TREE_CODE (arg1) == COND_EXPR
 	       || TREE_CODE_CLASS (TREE_CODE (arg1)) == '<')
 	{
@@ -3162,8 +3191,27 @@ fold (expr)
 	      false_value = integer_zero_node;
 	    }
 
-	  if (TREE_CODE (arg0) != VAR_DECL && TREE_CODE (arg0) != PARM_DECL)
-	    arg0 = save_expr (arg0);
+	  /* If ARG0 is complex we want to make sure we only evaluate
+	     it once.  Though this is only required if it is volatile, it
+	     might be more efficient even if it is not.  However, if we
+	     succeed in folding one part to a constant, we do not need
+	     to make this SAVE_EXPR.  Since we do this optimization
+	     primarily to see if we do end up with constant and this
+	     SAVE_EXPR interfers with later optimizations, suppressing
+	     it when we can is important.  */
+
+	  if ((TREE_CODE (arg0) != VAR_DECL && TREE_CODE (arg0) != PARM_DECL)
+	      || TREE_SIDE_EFFECTS (arg0))
+	    {
+	      tree lhs = fold (build (code, type, arg0, true_value));
+	      tree rhs = fold (build (code, type, arg0, false_value));
+
+	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs))
+		return fold (build (COND_EXPR, type, test, lhs, rhs));
+
+	      arg0 = save_expr (arg0);
+	    }
+
 	  test = fold (build (COND_EXPR, type, test,
 			      fold (build (code, type, arg0, true_value)),
 			      fold (build (code, type, arg0, false_value))));
@@ -3195,8 +3243,18 @@ fold (expr)
 	      false_value = integer_zero_node;
 	    }
 
-	  if (TREE_CODE (arg1) != VAR_DECL && TREE_CODE (arg1) != PARM_DECL)
-	    arg1 = save_expr (arg1);
+	  if ((TREE_CODE (arg1) != VAR_DECL && TREE_CODE (arg1) != PARM_DECL)
+	      || TREE_SIDE_EFFECTS (arg1))
+	    {
+	      tree lhs = fold (build (code, type, true_value, arg1));
+	      tree rhs = fold (build (code, type, false_value, arg1));
+
+	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs))
+		return fold (build (COND_EXPR, type, test, lhs, rhs));
+
+	      arg1 = save_expr (arg1);
+	    }
+
 	  test = fold (build (COND_EXPR, type, test,
 			      fold (build (code, type, true_value, arg1)),
 			      fold (build (code, type, false_value, arg1))));
