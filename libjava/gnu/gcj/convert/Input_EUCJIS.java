@@ -8,6 +8,12 @@ details.  */
 
 package gnu.gcj.convert;
 
+/**
+ * Convert EUCJIS (Extended Unix Code for Japan) to Unicode.
+ * @author Per Bothner <bothner@cygnus.com>
+ * @date April 1999.
+ */
+
 public class Input_EUCJIS extends BytesToUnicode
 {
   public String getName() { return "EUCJIS"; }
