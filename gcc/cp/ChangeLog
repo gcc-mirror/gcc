@@ -1,3 +1,9 @@
+2004-09-22  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14179
+	* parser.c (cp_parser_initializer): Speed up parsing of simple
+	literals as initializers.
+
 2004-09-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14179
