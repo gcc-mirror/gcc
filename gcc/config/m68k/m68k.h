@@ -121,8 +121,12 @@ extern int target_flags;
     { "68030", -01400},				\
     { "68030", 5},				\
     { "68040", 01007},				\
+    SUBTARGET_SWITCHES				\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
 
 #ifdef SUPPORT_SUN_FPA
 /* Blow away 68881 flag silently on TARGET_FPA (since we can't clear
@@ -132,14 +136,19 @@ extern int target_flags;
   if (TARGET_FPA) target_flags &= ~2;	\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+  SUBTARGET_OVERRIDE_OPTIONS		\
 }
 #else
 #define OVERRIDE_OPTIONS		\
 {					\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+  SUBTARGET_OVERRIDE_OPTIONS		\
 }
 #endif /* defined SUPPORT_SUN_FPA */
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_OVERRIDE_OPTIONS
 
 /* target machine storage layout */
 
