@@ -466,13 +466,7 @@ get_jump_table_offset (insn, earliest)
   rtx old_y;
   int i;
 
-  if (GET_CODE (insn) != JUMP_INSN
-      || ! (label = JUMP_LABEL (insn))
-      || ! (table = NEXT_INSN (label))
-      || GET_CODE (table) != JUMP_INSN
-      || (GET_CODE (PATTERN (table)) != ADDR_VEC
-	  && GET_CODE (PATTERN (table)) != ADDR_DIFF_VEC)
-      || ! (set = single_set (insn)))
+  if (!tablejump_p (insn, &label, &table) || !(set = single_set (insn)))
     return NULL_RTX;
 
   x = SET_SRC (set);

@@ -1757,10 +1757,7 @@ delete_related_insns (insn)
 	    next = NEXT_INSN (next);
 	  return next;
 	}
-      else if ((lab_next = next_nonnote_insn (lab)) != NULL
-	       && GET_CODE (lab_next) == JUMP_INSN
-	       && (GET_CODE (PATTERN (lab_next)) == ADDR_VEC
-		   || GET_CODE (PATTERN (lab_next)) == ADDR_DIFF_VEC))
+      else if (tablejump_p (insn, NULL, &lab_next))
 	{
 	  /* If we're deleting the tablejump, delete the dispatch table.
 	     We may not be able to kill the label immediately preceding

@@ -1,3 +1,16 @@
+2003-03-30  Richard Henderson  <rth@redhat.com>
+
+	* cfgbuild.c (make_edges): Use tablejump_p.
+	* cfgcleanup.c (label_is_jump_target_p): Likewise.
+	* cfglayout.c (cfg_layout_can_duplicate_bb_p): Likewise.
+	* cfgrtl.c (flow_delete_block_noexpunge): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(redirect_edge_and_branch): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* jump.c (delete_related_insns): Likewise.
+	* rtlanal.c (get_jump_table_offset): Likewise.
+	* ssa-ccp.c (ssa_ccp_df_delete_unreachable_insns): Likewise.
+
 2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
         * Makefile.in (STRICT_WARN): Don't warn for ISO C constructs.

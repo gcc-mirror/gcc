@@ -3352,17 +3352,11 @@ fold_rtx (x, insn)
       /* If the next insn is a CODE_LABEL followed by a jump table,
 	 PC's value is a LABEL_REF pointing to that label.  That
 	 lets us fold switch statements on the VAX.  */
-      if (insn && GET_CODE (insn) == JUMP_INSN)
-	{
-	  rtx next = next_nonnote_insn (insn);
-
-	  if (next && GET_CODE (next) == CODE_LABEL
-	      && NEXT_INSN (next) != 0
-	      && GET_CODE (NEXT_INSN (next)) == JUMP_INSN
-	      && (GET_CODE (PATTERN (NEXT_INSN (next))) == ADDR_VEC
-		  || GET_CODE (PATTERN (NEXT_INSN (next))) == ADDR_DIFF_VEC))
-	    return gen_rtx_LABEL_REF (Pmode, next);
-	}
+      {
+	rtx next;
+	if (tablejump_p (insn, &next, NULL))
+	  return gen_rtx_LABEL_REF (Pmode, next);
+      }
       break;
 
     case SUBREG:

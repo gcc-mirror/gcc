@@ -760,7 +760,6 @@ bool
 cfg_layout_can_duplicate_bb_p (bb)
      basic_block bb;
 {
-  rtx next;
   edge s;
 
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
@@ -775,11 +774,7 @@ cfg_layout_can_duplicate_bb_p (bb)
   /* Do not attempt to duplicate tablejumps, as we need to unshare
      the dispatch table.  This is difficult to do, as the instructions
      computing jump destination may be hoisted outside the basic block.  */
-  if (GET_CODE (bb->end) == JUMP_INSN && JUMP_LABEL (bb->end)
-      && (next = next_nonnote_insn (JUMP_LABEL (bb->end)))
-      && GET_CODE (next) == JUMP_INSN
-      && (GET_CODE (PATTERN (next)) == ADDR_VEC
-	  || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+  if (tablejump_p (bb->end, NULL, NULL))
     return false;
 
   /* Do not duplicate blocks containing insns that can't be copied.  */
