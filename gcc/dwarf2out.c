@@ -21,8 +21,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 
-#if defined(DWARF_DEBUGGING_INFO) && defined(DWARF_VERSION) \
-    && DWARF_VERSION == 2
+#ifndef DWARF_VERSION
+#define DWARF_VERSION 1
+#endif
+#if defined (DWARF_DEBUGGING_INFO) && (DWARF_VERSION == 2)
 #include <stdio.h>
 #include "dwarf2.h"
 #include "tree.h"
