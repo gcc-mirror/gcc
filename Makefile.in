@@ -100,8 +100,6 @@ LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 PICFLAG = 
 PICFLAG_FOR_TARGET = 
 
-CHILLFLAGS = $(CFLAGS)
-CHILL_LIB = -lchill
 CXX = c++
 
 # Use -O2 to stress test the compiler.
@@ -178,7 +176,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib librx winsup opcodes bsp libstub cygmon libf2c libchill libobjc
+TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib librx winsup opcodes bsp libstub cygmon libf2c libobjc
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -235,7 +233,6 @@ INSTALL_TARGET_CROSS = installdirs \
 # Should be substed by configure.in
 FLAGS_FOR_TARGET =
 CC_FOR_TARGET =
-CHILL_FOR_TARGET =
 CXX_FOR_TARGET =
 CXX_FOR_TARGET_FOR_RECURSIVE_MAKE =
 GCJ_FOR_TARGET =
@@ -359,9 +356,6 @@ BASE_FLAGS_TO_PASS = \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"CHILLFLAGS=$(CHILLFLAGS)" \
-	"CHILL_FOR_TARGET=$(CHILL_FOR_TARGET)" \
-	"CHILL_LIB=$(CHILL_LIB)" \
 	"GCJ_FOR_TARGET=$(GCJ_FOR_TARGET)" \
 	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
@@ -789,7 +783,6 @@ ALL_TARGET_MODULES = \
 	all-target-librx \
 	all-target-newlib \
 	all-target-libf2c \
-	all-target-libchill \
 	all-target-libobjc \
 	all-target-libtermcap \
 	all-target-winsup \
@@ -813,7 +806,6 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-librx \
 	configure-target-newlib \
 	configure-target-libf2c \
-	configure-target-libchill \
 	configure-target-libobjc \
 	configure-target-libtermcap \
 	configure-target-winsup \
@@ -836,7 +828,6 @@ CHECK_TARGET_MODULES = \
 	check-target-libstdc++-v3 \
 	check-target-newlib \
 	check-target-libf2c \
-	check-target-libchill \
 	check-target-libobjc \
 	check-target-winsup \
 	check-target-libiberty \
@@ -853,7 +844,6 @@ INSTALL_TARGET_MODULES = \
 	install-target-libstdc++-v3 \
 	install-target-newlib \
 	install-target-libf2c \
-	install-target-libchill \
 	install-target-libobjc \
 	install-target-libtermcap \
 	install-target-winsup \
@@ -942,7 +932,6 @@ CLEAN_TARGET_MODULES = \
 	clean-target-librx \
 	clean-target-newlib \
 	clean-target-libf2c \
-	clean-target-libchill \
 	clean-target-libobjc \
 	clean-target-winsup \
 	clean-target-libgloss \
@@ -1787,8 +1776,6 @@ all-target-libstub: configure-target-libstub
 all-libtool:
 configure-target-libf2c: $(ALL_GCC_C)
 all-target-libf2c: configure-target-libf2c all-target-libiberty
-configure-target-libchill: $(ALL_GCC_C)
-all-target-libchill: configure-target-libchill all-target-libiberty
 configure-target-libobjc: $(ALL_GCC_C)
 all-target-libobjc: configure-target-libobjc all-target-libiberty
 all-m4: all-libiberty all-texinfo

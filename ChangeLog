@@ -1,4 +1,22 @@
+2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* MAINTAINERS: Remove chill maintainers.
+	* Makefile.in (CHILLFLAGS): Remove.
+	(CHILL_LIB): Remove.
+	(TARGET_CONFIGDIRS): Remove libchill.
+	(CHILL_FOR_TARGET): Remove.
+	(BASE_FLAGS_TO_PASS): Don't pass CHILLFLAGS, CHILL_FOR_TARGET, or
+	CHILL_LIB.
+	(CONFIGURE_TARGET_MODULES): Remove configure-target-libchill.
+	(CHECK_TARGET_MODULES): Likewise.
+	(INSTALL_TARGET_MODULES): Likewise.
+	(CLEAN_TARGET_MODULES): Likewise.
+	(configure-target-libchill): Remove.
+	(all-target-libchill): Remove.
+	* configure.in (target_libs): Remove target-libchill.
+	Do not compute CHILL_FOR_TARGET.
+	* libchill: Remove directory.
+	
 2002-04-11  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in, configure.in: Sync with binutils, entries
