@@ -1,3 +1,8 @@
+Sat May 16 14:01:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config.table: Add line to set enable_shared in the Makefile
+	as needed.
+
 Wed May 13 14:24:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (squangle_mop_up): Change return type to void.
