@@ -1,3 +1,9 @@
+2001-07-24  Joel Sherrill <joel@OARcorp.com>
+
+	* configure.in: Add rtems as a supported thread model.
+	* gthr-rtems.h: Add missing entry point __gthread_active_p.
+	* configure: Rebuilt.
+
 2001-07-24  Lars Brinkhoff  <lars@nocrew.org>
 
 	* stor-layout.c (get_mode_alignment): make it work when
