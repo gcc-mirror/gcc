@@ -1511,7 +1511,7 @@ int gfc_default_double_kind (void);
 int gfc_default_character_kind (void);
 int gfc_default_logical_kind (void);
 int gfc_default_complex_kind (void);
-int gfc_validate_kind (bt, int);
+int gfc_validate_kind (bt, int, bool);
 extern int gfc_index_integer_kind;
 
 /* symbol.c */

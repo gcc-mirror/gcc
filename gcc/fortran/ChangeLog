@@ -1,3 +1,28 @@
+2004-08-25  Richard Henderson  <rth@redhat.com>
+
+	* arith.c (gfc_validate_kind): Add may_fail argument; abort if
+	false and we don't validate the kind.
+	(gfc_check_integer_range, gfc_check_real_range): Update to match.
+	* check.c (kind_check): Likewise.
+	* decl.c (gfc_match_old_kind_spec, gfc_match_kind_spec): Likewise.
+	(match_char_spec, match_logical_spec): Likewise.
+	* gfortran.h (gfc_validate_kind): Likewise.
+	* options.c (gfc_handle_option): Likewise.
+	* primary.c (match_integer_constant, match_real_constant,
+	match_string_constant, match_logical_constant,
+	match_const_complex_part): Likewise.
+	* simplify.c (get_kind, gfc_simplify_bit_size, gfc_simplify_digits,
+	gfc_simplify_epsilon, gfc_simplify_huge, gfc_simplify_ibclr,
+	gfc_simplify_ibset, gfc_simplify_ishft, gfc_simplify_ishftc,
+	gfc_simplify_maxexponent, gfc_simplify_minexponent,
+	gfc_simplify_nearest, gfc_simplify_not, gfc_simplify_precision,
+	gfc_simplify_radix, gfc_simplify_range, gfc_simplify_rrspacing,
+	gfc_simplify_scale, gfc_simplify_spacing, gfc_simplify_tan,
+	gfc_simplify_tiny): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_aint, gfc_conv_intrinsic_mod,
+	gfc_conv_intrinsic_minmaxloc, gfc_conv_intrinsic_minmaxval,
+	prepare_arg_info): Likewise.
+
 2004-08-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* expr.c (gfc_check_assign): Add comment. Add new warning.

@@ -208,7 +208,7 @@ match_integer_constant (gfc_expr ** result, int signflag)
   if (kind == -1)
     return MATCH_ERROR;
 
-  if (gfc_validate_kind (BT_INTEGER, kind) == -1)
+  if (gfc_validate_kind (BT_INTEGER, kind, true) < 0)
     {
       gfc_error ("Integer kind %d at %C not available", kind);
       return MATCH_ERROR;
@@ -477,7 +477,7 @@ done:
       if (kind == -2)
 	kind = gfc_default_real_kind ();
 
-      if (gfc_validate_kind (BT_REAL, kind) == -1)
+      if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
 	  gfc_error ("Invalid real kind %d at %C", kind);
 	  goto cleanup;
@@ -818,7 +818,7 @@ match_string_constant (gfc_expr ** result)
 	}
     }
 
-  if (gfc_validate_kind (BT_CHARACTER, kind) == -1)
+  if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
     {
       gfc_error ("Invalid kind %d for CHARACTER constant at %C", kind);
       return MATCH_ERROR;
@@ -907,7 +907,7 @@ match_logical_constant (gfc_expr ** result)
   if (kind == -2)
     kind = gfc_default_logical_kind ();
 
-  if (gfc_validate_kind (BT_LOGICAL, kind) == -1)
+  if (gfc_validate_kind (BT_LOGICAL, kind, true) < 0)
     gfc_error ("Bad kind for logical constant at %C");
 
   e = gfc_get_expr ();
@@ -1120,7 +1120,7 @@ done:
 	    kind = gfc_default_real_kind ();
 	}
 
-      if (gfc_validate_kind (BT_REAL, kind) == -1)
+      if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
 	  gfc_error ("Invalid real kind %d at %C", kind);
 	  return MATCH_ERROR;

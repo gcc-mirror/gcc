@@ -526,7 +526,7 @@ validate_character (int kind)
    type.  */
 
 int
-gfc_validate_kind (bt type, int kind)
+gfc_validate_kind (bt type, int kind, bool may_fail)
 {
   int rc;
 
@@ -550,6 +550,9 @@ gfc_validate_kind (bt type, int kind)
       gfc_internal_error ("gfc_validate_kind(): Got bad type");
     }
 
+  if (!may_fail && rc < 0)
+    gfc_internal_error ("gfc_validate_kind(): Got bad kind");
+
   return rc;
 }
 
@@ -563,10 +566,7 @@ gfc_check_integer_range (mpz_t p, int kind)
   arith result;
   int i;
 
-  i = validate_integer (kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_check_integer_range(): Bad kind");
-
+  i = gfc_validate_kind (BT_INTEGER, kind, false);
   result = ARITH_OK;
 
   if (mpz_cmp (p, gfc_integer_kinds[i].min_int) < 0
@@ -588,9 +588,7 @@ gfc_check_real_range (mpfr_t p, int kind)
   mpfr_t q;
   int i;
 
-  i = validate_real (kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_check_real_range(): Bad kind");
+  i = gfc_validate_kind (BT_REAL, kind, false);
 
   gfc_set_model (p);
   mpfr_init (q);

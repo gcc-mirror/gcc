@@ -632,7 +632,7 @@ gfc_match_old_kind_spec (gfc_typespec * ts)
   if (ts->type == BT_COMPLEX && ts->kind == 16)
     ts->kind = 8;
 
-  if (gfc_validate_kind (ts->type, ts->kind) == -1)
+  if (gfc_validate_kind (ts->type, ts->kind, true) < 0)
     {
       gfc_error ("Old-style kind %d not supported for type %s at %C",
 		 ts->kind, gfc_basic_typename (ts->type));
@@ -692,7 +692,7 @@ gfc_match_kind_spec (gfc_typespec * ts)
   gfc_free_expr (e);
   e = NULL;
 
-  if (gfc_validate_kind (ts->type, ts->kind) == -1)
+  if (gfc_validate_kind (ts->type, ts->kind, true) < 0)
     {
       gfc_error ("Kind %d not supported for type %s at %C", ts->kind,
 		 gfc_basic_typename (ts->type));
@@ -790,7 +790,7 @@ match_char_spec (gfc_typespec * ts)
 
       gfc_match_small_int (&kind);
 
-      if (gfc_validate_kind (BT_CHARACTER, kind) == -1)
+      if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
 	{
 	  gfc_error ("Kind %d is not a CHARACTER kind at %C", kind);
 	  return MATCH_YES;
@@ -833,7 +833,7 @@ syntax:
   m = MATCH_ERROR;
 
 done:
-  if (m == MATCH_YES && gfc_validate_kind (BT_CHARACTER, kind) == -1)
+  if (m == MATCH_YES && gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
     {
       gfc_error ("Kind %d is not a CHARACTER kind at %C", kind);
       m = MATCH_ERROR;
