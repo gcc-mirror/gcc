@@ -1,3 +1,11 @@
+2003-07-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* loop.c (check_ext_dependent_givs): Pass const struct loop *
+	instead of struct loop_info * as argument.  Accept BIVs with
+	increment +/- 1 provided there is a friendly exit test against
+	a loop-invariant value.
+	(strength_reduce): Adapt call to check_ext_dependent_givs.
+
 2003-07-16  J"orn Rennecke <joern.rennecke@superh.com>
 	    Con Bradley <con.bradley@superh.com>
 

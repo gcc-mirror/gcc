@@ -293,7 +293,7 @@ static void record_giv (const struct loop *, struct induction *, rtx, rtx,
 			rtx, rtx, rtx, rtx, int, enum g_types, int, int,
 			rtx *);
 static void update_giv_derive (const struct loop *, rtx);
-static void check_ext_dependent_givs (struct iv_class *, struct loop_info *);
+static void check_ext_dependent_givs (const struct loop *, struct iv_class *);
 static int basic_induction_var (const struct loop *, rtx, enum machine_mode,
 				rtx, rtx, rtx *, rtx *, rtx **);
 static rtx simplify_giv_expr (const struct loop *, rtx, rtx *, int *);
@@ -5143,7 +5143,7 @@ strength_reduce (struct loop *loop, int flags)
 
       /* Check each extension dependent giv in this class to see if its
 	 root biv is safe from wrapping in the interior mode.  */
-      check_ext_dependent_givs (bl, loop_info);
+      check_ext_dependent_givs (loop, bl);
 
       /* Combine all giv's for this iv_class.  */
       combine_givs (regs, bl);
@@ -7286,8 +7286,9 @@ combine_givs_p (struct induction *g1, struct induction *g2)
    make the giv illegal.  */
 
 static void
-check_ext_dependent_givs (struct iv_class *bl, struct loop_info *loop_info)
+check_ext_dependent_givs (const struct loop *loop, struct iv_class *bl)
 {
+  struct loop_info *loop_info = LOOP_INFO (loop);
   int ze_ok = 0, se_ok = 0, info_ok = 0;
   enum machine_mode biv_mode = GET_MODE (bl->biv->src_reg);
   HOST_WIDE_INT start_val;
@@ -7298,9 +7299,6 @@ check_ext_dependent_givs (struct iv_class *bl, struct loop_info *loop_info)
 
   /* Make sure the iteration data is available.  We must have
      constants in order to be certain of no overflow.  */
-  /* ??? An unknown iteration count with an increment of +-1
-     combined with friendly exit tests of against an invariant
-     value is also amenable to optimization.  Not implemented.  */
   if (loop_info->n_iterations > 0
       && bl->initial_value
       && GET_CODE (bl->initial_value) == CONST_INT
@@ -7367,6 +7365,37 @@ check_ext_dependent_givs (struct iv_class *bl, struct loop_info *loop_info)
 	}
     }
 
+  /* If we know the BIV is compared at run-time against an 
+     invariant value, and the increment is +/- 1, we may also 
+     be able to prove that the BIV cannot overflow.  */
+  else if (bl->biv->src_reg == loop_info->iteration_var
+           && loop_info->comparison_value
+           && loop_invariant_p (loop, loop_info->comparison_value)
+           && (incr = biv_total_increment (bl))
+           && GET_CODE (incr) == CONST_INT)
+    {
+      /* If the increment is +1, and the exit test is a <,
+         the BIV cannot overflow.  (For <=, we have the 
+         problematic case that the comparison value might
+         be the maximum value of the range.)  */
+       if (INTVAL (incr) == 1)
+         {
+           if (loop_info->comparison_code == LT)
+             se_ok = ze_ok = 1;
+           else if (loop_info->comparison_code == LTU)
+             ze_ok = 1;
+         }
+
+       /* Likewise for increment -1 and exit test >.  */
+       if (INTVAL (incr) == -1)
+         {
+           if (loop_info->comparison_code == GT)
+             se_ok = ze_ok = 1;
+           else if (loop_info->comparison_code == GTU)
+             ze_ok = 1;
+         }
+    }
+
   /* Invalidate givs that fail the tests.  */
   for (v = bl->giv; v; v = v->next_iv)
     if (v->ext_dependent)
@@ -7388,8 +7417,9 @@ check_ext_dependent_givs (struct iv_class *bl, struct loop_info *loop_info)
 	       signed or unsigned, so to safely truncate we must satisfy
 	       both.  The initial check here verifies the BIV itself;
 	       once that is successful we may check its range wrt the
-	       derived GIV.  */
-	    if (se_ok && ze_ok)
+	       derived GIV.  This works only if we were able to determine
+	       constant start and end values above.  */
+	    if (se_ok && ze_ok && info_ok)
 	      {
 		enum machine_mode outer_mode = GET_MODE (v->ext_dependent);
 		unsigned HOST_WIDE_INT max = GET_MODE_MASK (outer_mode) >> 1;
