@@ -343,6 +343,9 @@ case "${target}" in
   *-*-aix4.[3456789]* | *-*-aix[56789].*)
     target_makefile_frag="${target_makefile_frag} config/mt-aix43"
     ;;
+  mips*-*-pe | sh*-*-pe | *arm-wince-pe)
+    target_makefile_frag="${target_makefile_frag} config/mt-wince"
+    ;;
 esac
 
 # If --enable-target-optspace always use -Os instead of -O2 to build
@@ -587,6 +590,21 @@ case "${target}" in
     ;;
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
+  sh*-*-pe|mips*-*-pe|*arm-wince-pe)
+    noconfigdirs="$noconfigdirs target-libjava target-libffi target-zlib"
+    noconfigdirs="$noconfigdirs target-boehm-gc target-qthreads target-examples"
+    noconfigdirs="$noconfigdirs target-librx target-libiberty texinfo send-pr"
+    noconfigdirs="$noconfigdirs tcl tix tk itcl libgui sim"
+    noconfigdirs="$noconfigdirs expect dejagnu"
+    # the C++ libraries don't build on top of CE's C libraries
+    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio"
+    skipdirs="$skipdirs target-newlib"
+    case "${host}" in
+      *-*-cygwin*) ;; # keep gdb and readline
+      *) noconfigdirs="$noconfigdirs gdb readline target-libio target-libstdc++ target-libg++"
+	 ;;
+    esac
     ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss"
