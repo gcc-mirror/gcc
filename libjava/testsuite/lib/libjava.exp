@@ -368,8 +368,11 @@ proc libjava_arguments {{mode compile}} {
     }
 
     # Avoid libtool wrapper scripts when possible.
+    # but not if libtool warnings results in FAILs
     if {$mode == "link"} {
-        lappend args "additional_flags=-no-install"
+        if {! [istarget "*-*-cygwin*"]} {
+            lappend args "additional_flags=-no-install"
+        }
     }
 
     return $args

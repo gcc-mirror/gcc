@@ -1,5 +1,10 @@
 2002-05-06  David.Billinghurst  <David.Billinghurst@riotinto.com>
 
+	* testsuite/lib/libjava.exp (libjava_arguments): Don't link
+	with -no-install on *-*-cygwin*.
+
+2002-05-06  David.Billinghurst  <David.Billinghurst@riotinto.com>
+
 	* testsuite/lib/libjava.exp (test_libjava_from_source):
 	Add comment explaining last patch
 
