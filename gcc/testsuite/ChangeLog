@@ -1,5 +1,8 @@
 2003-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11704
+	* g++.dg/template/dependent-expr2.C: New test.
+
 	PR c++/11766
 	* g++.dg/expr/ptrmem1.C: New test.
 
