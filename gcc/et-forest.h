@@ -41,7 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
    the sequence is 1 2 4 2 5 3 1 3 1 4 1.
 
-   The sequence is stored in a sligtly modified splay tree.
+   The sequence is stored in a slightly modified splay tree.
    In order to support various types of node values, a hashtable
    is used to convert node values to the internal representation.  */
 

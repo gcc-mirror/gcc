@@ -5779,7 +5779,7 @@ fold (expr)
 	      /* Preserve the MINUS_EXPR if the negative part of the literal is
 		 greater than the positive part.  Otherwise, the multiplicative
 		 folding code (i.e extract_muldiv) may be fooled in case
-		 unsigned constants are substracted, like in the following
+		 unsigned constants are subtracted, like in the following
 		 example: ((X*2 + 4) - 8U)/2.  */
 	      if (minus_lit0 && lit0)
 		{

@@ -1069,8 +1069,8 @@ reorder_basic_blocks (void)
   set_edge_can_fallthru_flag ();
   mark_dfs_back_edges ();
 
-  /* We are estimating the lenght of uncond jump insn only once since the code
-     for getting the insn lenght always returns the minimal length now.  */
+  /* We are estimating the length of uncond jump insn only once since the code
+     for getting the insn length always returns the minimal length now.  */
   if (uncond_jump_length == 0)
     uncond_jump_length = get_uncond_jump_length ();
 

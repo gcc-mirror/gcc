@@ -765,7 +765,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
    Return NULL iff the attempt failed, otherwise return basic block
    where cleanup_cfg should continue.  Because the merging commonly
    moves basic block away or introduces another optimization
-   possiblity, return basic block just before B so cleanup_cfg don't
+   possibility, return basic block just before B so cleanup_cfg don't
    need to iterate.
 
    It may be good idea to return basic block before C in the case
@@ -1353,7 +1353,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	return false;
     }
 
-  /* We don't need to match the rest of edges as above checks should be enought
+  /* We don't need to match the rest of edges as above checks should be enough
      to ensure that they are equivalent.  */
   return true;
 }

@@ -499,7 +499,7 @@ find_evaluations (evals, nregs)
 
 /* Computing the Dominance Frontier:
 
-   As decribed in Morgan, section 3.5, this may be done simply by
+   As described in Morgan, section 3.5, this may be done simply by
    walking the dominator tree bottom-up, computing the frontier for
    the children before the parent.  When considering a block B,
    there are two cases:

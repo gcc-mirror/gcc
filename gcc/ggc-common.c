@@ -484,7 +484,7 @@ gt_pch_save (FILE *f)
 
   ggc_pch_prepare_write (state.d, state.f);
 
-  /* Pad the PCH file so that the mmaped area starts on a page boundary.  */
+  /* Pad the PCH file so that the mmapped area starts on a page boundary.  */
   {
     long o;
     o = ftell (state.f) + sizeof (mmi);

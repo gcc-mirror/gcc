@@ -1017,7 +1017,7 @@ inlinable_function_p (fn, id, nolimit)
 	   && currfn_insns > max_inline_insns_single)
     inlinable = 0;
   /* We can't inline functions that call __builtin_longjmp at all.
-     The non-local goto machenery really requires the destination
+     The non-local goto machinery really requires the destination
      be in a different function.  If we allow the function calling
      __builtin_longjmp to be inlined into the function calling
      __builtin_setjmp, Things will Go Awry.  */

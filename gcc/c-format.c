@@ -2715,7 +2715,7 @@ handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
       if (info.format_type == asm_fprintf_format_type)
 	init_dynamic_asm_fprintf_info();
       /* If this is one of the diagnostic attributes, then we have to
-         intialize `location_t' and `tree' at runtime.  */
+         initialize `location_t' and `tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type
 	       || info.format_type == gcc_cdiag_format_type
 	       || info.format_type == gcc_cxxdiag_format_type)

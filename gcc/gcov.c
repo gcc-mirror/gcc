@@ -1147,7 +1147,7 @@ solve_flow_graph (fn)
 	      {
 		arc->is_unconditional = 1;
 		/* If this block is instrumenting a call, it might be
-		   an artifical block. It is not artificial if it has
+		   an artificial block. It is not artificial if it has
 		   a non-fallthrough exit, or the destination of this
 		   arc has more than one entry.  Mark the destination
 		   block as a return site, if none of those conditions

@@ -1545,7 +1545,7 @@ detect_web_parts_to_rebuild ()
 
   /* We also recheck unconditionally all uses of any hardregs.  This means
      we _can_ delete all these uses from the live_at_end[] bitmaps.
-     And because we sometimes delete insn refering to hardregs (when
+     And because we sometimes delete insn referring to hardregs (when
      they became useless because they setup a rematerializable pseudo, which
      then was rematerialized), some of those uses will go away with the next
      df_analyse().  This means we even _must_ delete those uses from

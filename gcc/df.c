@@ -860,7 +860,7 @@ df_def_record_1 (struct df *df, rtx x, basic_block bb, rtx insn)
   rtx dst;
   enum df_ref_flags flags = 0;
 
- /* We may recursivly call ourselves on EXPR_LIST when dealing with PARALLEL
+ /* We may recursively call ourselves on EXPR_LIST when dealing with PARALLEL
      construct.  */
   if (GET_CODE (x) == EXPR_LIST || GET_CODE (x) == CLOBBER)
     loc = &XEXP (x, 0);

@@ -3280,7 +3280,7 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
   ggc_collect ();
 }
 
-/* Perform loop optimalizations.  It might be better to do them a bit
+/* Perform loop optimizations.  It might be better to do them a bit
    sooner, but we want the profile feedback to work more
    efficiently.  */
 static void
@@ -3296,7 +3296,7 @@ rest_of_handle_loop2 (tree decl, rtx insns)
 
   if (loops)
     {
-      /* The optimalizations:  */
+      /* The optimizations:  */
       if (flag_unswitch_loops)
 	unswitch_loops (loops);
 

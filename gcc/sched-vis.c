@@ -544,7 +544,7 @@ print_exp (buf, x, verbose)
     cur = safe_concat (buf, cur, ")");
 }		/* print_exp */
 
-/* Prints rtxes, I customly classified as values.  They're constants,
+/* Prints rtxes, I customarily classified as values.  They're constants,
    registers, labels, symbols and memory accesses.  */
 
 static void

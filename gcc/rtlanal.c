@@ -3600,7 +3600,7 @@ hoist_test_store (x, val, live)
   if (rtx_equal_p (x, val))
     return true;
 
-  /* Allow subreg of X in case it is not writting just part of multireg pseudo.
+  /* Allow subreg of X in case it is not writing just part of multireg pseudo.
      Then we would need to update all users to care hoisting the store too.
      Caller may represent that by specifying whole subreg as val.  */
 
@@ -3621,7 +3621,7 @@ hoist_test_store (x, val, live)
   if (!REG_P (x))
     return false;
 
-  /* Pseudo registers can be allways replaced by another pseudo to avoid
+  /* Pseudo registers can be always replaced by another pseudo to avoid
      the side effect, for hard register we must ensure that they are dead.
      Eventually we may want to add code to try turn pseudos to hards, but it
      is unlikely useful.  */

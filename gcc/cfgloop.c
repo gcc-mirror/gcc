@@ -1104,8 +1104,8 @@ cancel_loop_tree (struct loops *loops, struct loop *loop)
   cancel_loop (loops, loop);
 }
 
-/* Checks that LOOPS are allright:
-     -- sizes of loops are allright
+/* Checks that LOOPS are all right:
+     -- sizes of loops are all right
      -- results of get_loop_body really belong to the loop
      -- loop header have just single entry edge and single latch edge
      -- loop latches have only single successor that is header of their loop

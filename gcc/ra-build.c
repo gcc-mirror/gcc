@@ -622,7 +622,7 @@ struct curr_use {
    4 if both are SUBREG's of different size, but have bytes in common.
    -1 is a special case, for when DEF and USE refer to the same regno, but
       have for other reasons no bits in common (can only happen with
-      subregs refering to different words, or to words which already were
+      subregs referring to different words, or to words which already were
       defined for this USE).
    Furthermore it modifies use->undefined to clear the bits which get defined
    by DEF (only for cases with partial overlap).

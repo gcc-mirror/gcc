@@ -5123,7 +5123,7 @@ expand_fix (to, from, unsignedp)
 
      In the other path we know the value is positive in the range 2^63..2^64-1
      inclusive.  (as for other imput overflow happens and result is undefined)
-     So we know that the most important bit set in mantisa corresponds to
+     So we know that the most important bit set in mantissa corresponds to
      2^63.  The subtraction of 2^63 should not generate any rounding as it
      simply clears out that bit.  The rest is trivial.  */
 

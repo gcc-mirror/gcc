@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 
 /* This pass performs loop unrolling and peeling.  We only perform these
-   optimalizations on innermost loops (with single exception) because
+   optimizations on innermost loops (with single exception) because
    the impact on performance is greatest here, and we want to avoid
    unnecessary code size growth.  The gain is caused by greater sequentiality
    of code, better code to optimize for futher passes and in some cases
@@ -511,7 +511,7 @@ decide_unroll_constant_iterations (loops, loop, flags)
 
   /* Success; now compute number of iterations to unroll.  We alter
      nunroll so that as few as possible copies of loop body are
-     neccesary, while still not decreasing the number of unrollings
+     necessary, while still not decreasing the number of unrollings
      too much (at most by 1).  */
   best_copies = 2 * nunroll + 10;
 
@@ -1153,7 +1153,7 @@ decide_unroll_stupid (loops, loop, flags)
     }
 
   /* Success.  Now force nunroll to be power of 2, as it seems that this
-     improves results (partially because of better aligments, partially
+     improves results (partially because of better alignments, partially
      because of some dark magic).  */
   for (i = 1; 2 * i <= nunroll; i *= 2);
 

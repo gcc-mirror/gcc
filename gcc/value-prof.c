@@ -40,7 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    insn_values_to_profile function.  This function is called from branch_prob
    in profile.c and the requested values are instrumented by it in the first
    compilation with -fprofile-arcs.  The optimization may then read the
-   gathered data in the second compilation with -fbranch-probablities (the
+   gathered data in the second compilation with -fbranch-probabilities (the
    description of an exact way how to do it will be added here once the
    code responsible for reading of the data is merged).  */
 

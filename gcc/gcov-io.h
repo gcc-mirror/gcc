@@ -88,7 +88,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    most significant is allocated first.  Unused levels are zero.
    Active levels are odd-valued, so that the LSB of the level is one.
    A sub-level incorporates the values of its superlevels.  This
-   formatting allows you to determine the tag heirarchy, without
+   formatting allows you to determine the tag hierarchy, without
    understanding the tags themselves, and is similar to the standard
    section numbering used in technical documents.  Level values
    [1..3f] are used for common tags, values [41..9f] for the graph
@@ -514,7 +514,7 @@ gcov_is_error (void)
 }
 
 #if IN_LIBGCOV
-/* Move to beginning of file and intialize for writing.  */
+/* Move to beginning of file and initialize for writing.  */
 
 static inline void
 gcov_rewrite (void)

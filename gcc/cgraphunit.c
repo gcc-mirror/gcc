@@ -44,7 +44,7 @@ static void cgraph_mark_functions_to_inline_once PARAMS ((void));
 static void cgraph_optimize_function PARAMS ((struct cgraph_node *));
 
 /* Analyze function once it is parsed.  Set up the local information
-   available - create cgraph edges for function calles via BODY.  */
+   available - create cgraph edges for function calls via BODY.  */
 
 void
 cgraph_finalize_function (decl, body)
@@ -57,7 +57,7 @@ cgraph_finalize_function (decl, body)
 
   if (/* Externally visible functions must be output.  The exception are
 	 COMDAT functions that must be output only when they are needed.
-	 Similarly are handled defered functions and
+	 Similarly are handled deferred functions and
 	 external functions (GCC extension "extern inline") */
       (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
       /* ??? Constructors and destructors not called otherwise can be inlined
@@ -294,7 +294,7 @@ cgraph_expand_function (node)
   
    Attempt to topologically sort the nodes so function is output when
    all called functions are already assembled to allow data to be
-   propagated accross the callgraph.  Use a stack to get smaller distance
+   propagated across the callgraph.  Use a stack to get smaller distance
    between a function and it's callees (later we may choose to use a more
    sophisticated algorithm for function reordering; we will likely want
    to use subsections to make the output functions appear in top-down

@@ -32,7 +32,7 @@ struct cfg_hooks
   /* Basic CFG manipulation.  */
 
   /* Redirect edge E to the given basic block B and update underlying program
-     representation.  Returns false when edge is not easilly redirectable for
+     representation.  Returns false when edge is not easily redirectable for
      whatever reason.  */
   bool (*redirect_edge_and_branch) (edge e, basic_block b);
 

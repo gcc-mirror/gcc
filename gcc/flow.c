@@ -585,7 +585,7 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 /* Updates life information starting with the basic blocks set in BLOCKS.
    If BLOCKS is null, consider it to be the universal set.
 
-   If EXTENT is UPDATE_LIFE_LOCAL, such as after splitting or peepholeing,
+   If EXTENT is UPDATE_LIFE_LOCAL, such as after splitting or peepholing,
    we are only expecting local modifications to basic blocks.  If we find
    extra registers live at the beginning of a block, then we either killed
    useful data, or we have a broken split that wants data not provided.
