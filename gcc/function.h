@@ -65,6 +65,7 @@ struct function
   int calls_longjmp;
   int calls_alloca;
   int has_nonlocal_label;
+  int has_nonlocal_goto;
   rtx nonlocal_goto_handler_slot;
   rtx nonlocal_goto_stack_level;
   tree nonlocal_labels;
