@@ -225,6 +225,16 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	lappend cflags "additional_flags=$cflagsx"
     }
 
+    set tmp [lindex [grep $prog "Additional sources: .*"] 0]
+    regsub -all "\n\[^\n\]+(\n|$)" $tmp "\n" tmp
+    set tmp [string trim $tmp]
+    if ![string match "" $tmp] then {
+	regsub "^.*Additional.*sources:" $tmp "" tmp
+	regsub -all " " $tmp " [file dirname $prog]/" tmp
+	lappend cflags "additional_flags=$tmp"
+	verbose "Adding sources $tmp"
+    }
+
     lappend cflags "compiler=$compiler"
 
     regsub -all "\[./\]" "$name" "-" output;
