@@ -1,6 +1,6 @@
 /* SimpleDateFormat.java -- A class for parsing/formating simple 
    date constructs
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -411,8 +411,8 @@ public class SimpleDateFormat extends DateFormat
 	case DATE_FIELD:
 	  withLeadingZeros(theCalendar.get(Calendar.DATE),p.size,buffer);
 	  break;
-	case HOUR_OF_DAY1_FIELD:  // 1-12
-	  withLeadingZeros(theCalendar.get(Calendar.HOUR),p.size,buffer);
+	case HOUR_OF_DAY1_FIELD: // 1-24
+	  withLeadingZeros(((theCalendar.get(Calendar.HOUR_OF_DAY)+23)%24)+1,p.size,buffer);
 	  break;
 	case HOUR_OF_DAY0_FIELD: // 0-23
 	  withLeadingZeros(theCalendar.get(Calendar.HOUR_OF_DAY),p.size,buffer);
@@ -447,11 +447,11 @@ public class SimpleDateFormat extends DateFormat
 	case AM_PM_FIELD:
 	  buffer.append(formatData.ampms[theCalendar.get(Calendar.AM_PM)]);
 	  break;
-	case HOUR1_FIELD: // 1-24
-	  withLeadingZeros(theCalendar.get(Calendar.HOUR_OF_DAY)+1,p.size,buffer);
+	case HOUR1_FIELD: // 1-12
+	  withLeadingZeros(((theCalendar.get(Calendar.HOUR)+11)%12)+1,p.size,buffer);
 	  break;
 	case HOUR0_FIELD: // 0-11
-	  withLeadingZeros(theCalendar.get(Calendar.HOUR)-1,p.size,buffer);
+	  withLeadingZeros(theCalendar.get(Calendar.HOUR),p.size,buffer);
 	  break;
 	case TIMEZONE_FIELD:
 	  TimeZone zone = theCalendar.getTimeZone();
