@@ -1,3 +1,10 @@
+2005-03-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtin-types.def, c-convert.c, c-format.c, ddg.c, debug.c,
+	debug.h, et-forest.c, et-forest.h, gcov.c, rtl-profile.c,
+	rtlhooks-def.h, rtlhooks.c, sdbout.c, tree-inline.h,
+	tree-profile.c, tsystem.h, value-prof.h: Update copyright.
+
 2005-03-29  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (mips_gimplify_va_arg_expr): Update for
