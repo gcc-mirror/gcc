@@ -1,5 +1,10 @@
 2003-10-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/locale.cc (locale::locale(const char*)): Tweak
+	a couple of comparisons to use basic_string operators.
+
+2003-10-16  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/12540
 	* config/locale/gnu/monetary_members.cc
 	(moneypunct<wchar_t, true/false>::_M_initialize_moneypunct):
