@@ -206,10 +206,16 @@ void
 decl_attributes (decl, attributes)
      tree decl, attributes;
 {
-  tree a;
+  tree a, name, args, type, new_attr;
+
+  type = TREE_TYPE (decl);
+
+  new_attr = TYPE_ATTRIBUTES (type);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
-    if (TREE_VALUE (a) == get_identifier ("packed"))
+    if (!(name = TREE_VALUE (a)))
+	continue;
+    else if (name == get_identifier ("packed"))
       {
 	if (TREE_CODE (decl) == FIELD_DECL)
 	  DECL_PACKED (decl) = 1;
@@ -222,8 +228,6 @@ decl_attributes (decl, attributes)
     else if (TREE_VALUE (a) == get_identifier ("noreturn")
 	     || TREE_VALUE (a) == get_identifier ("volatile"))
       {
-	tree type = TREE_TYPE (decl);
-
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_THIS_VOLATILE (decl) = 1;
 	else if (TREE_CODE (type) == POINTER_TYPE
@@ -238,8 +242,6 @@ decl_attributes (decl, attributes)
       }
     else if (TREE_VALUE (a) == get_identifier ("const"))
       {
-	tree type = TREE_TYPE (decl);
-
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_READONLY (decl) = 1;
 	else if (TREE_CODE (type) == POINTER_TYPE
@@ -251,23 +253,43 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`const' attribute ignored");
       }
-    else if (TREE_VALUE (a) != 0
-	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("mode"))
+    else if (TREE_CODE (name) != TREE_LIST)
+     {
+#ifdef VALID_MACHINE_ATTRIBUTE
+	if (VALID_MACHINE_ATTRIBUTE (type, new_attr, name))
+	  { 
+	    register tree atlist;
+
+	    for (atlist = new_attr; atlist; atlist = TREE_CHAIN (atlist))
+	       if (TREE_VALUE (atlist) == name)
+		  goto found_attr;
+
+	    new_attr = tree_cons (NULL_TREE, name, new_attr);
+found_attr:;
+	  }
+	else
+#endif
+	  warning ("`%s' attribute directive ignored",
+		   IDENTIFIER_POINTER (name));
+     }
+    else if ( args = TREE_CHAIN(name),
+	      !strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
+	      && list_length (args) == 1
+	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
       {
 	int i;
 	char *specified_name
-	  = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (a)));
+	  = TREE_STRING_POINTER (TREE_VALUE (args));
 
 	/* Give this decl a type with the specified mode.  */
 	for (i = 0; i < NUM_MACHINE_MODES; i++)
 	  if (!strcmp (specified_name, GET_MODE_NAME (i)))
 	    {
-	      tree type
-		= type_for_mode (i, TREE_UNSIGNED (TREE_TYPE (decl)));
-	      if (type != 0)
+	      tree typefm
+		= type_for_mode (i, TREE_UNSIGNED (type));
+	      if (typefm != 0)
 		{
-		  TREE_TYPE (decl) = type;
+		  TREE_TYPE (decl) = type = typefm;
 		  DECL_SIZE (decl) = 0;
 		  layout_decl (decl, 0);
 		}
@@ -278,9 +300,9 @@ decl_attributes (decl, attributes)
 	if (i == NUM_MACHINE_MODES)
 	  error_with_decl (decl, "unknown machine mode `%s'", specified_name);
       }
-    else if (TREE_VALUE (a) != 0
-	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("section"))
+    else if (!strcmp (IDENTIFIER_POINTER (name), "section")
+	     && list_length (args) == 1
+	     && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
       {
 #ifdef ASM_OUTPUT_SECTION_NAME
 	if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
@@ -292,11 +314,11 @@ decl_attributes (decl, attributes)
 	       a previous declaration.  Ensure they match.  */
 	    else if (DECL_SECTION_NAME (decl) != NULL_TREE
 		     && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-				TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (a)))) != 0)
+				TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (args)))) != 0)
 	      error_with_decl (decl,
 			       "section of `%s' conflicts with previous declaration");
 	    else
-	      DECL_SECTION_NAME (decl) = TREE_VALUE (TREE_VALUE (a));
+	      DECL_SECTION_NAME (decl) = TREE_VALUE (TREE_VALUE (args));
 	  }
 	else
 	  error_with_decl (decl,
@@ -305,11 +327,11 @@ decl_attributes (decl, attributes)
 	error_with_decl (decl, "section attributes are not supported for this target");
 #endif
       }
-    else if (TREE_VALUE (a) != 0
-	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("aligned"))
+    else if (!strcmp (IDENTIFIER_POINTER (name), "aligned")
+	     && list_length (args) == 1
+	     && TREE_CODE (TREE_VALUE (args)) == INTEGER_CST)
       {
-	tree align_expr = TREE_VALUE (TREE_VALUE (a));
+	tree align_expr = TREE_VALUE (args);
 	int align;
 
 	/* Strip any NOPs of any kind.  */
@@ -337,14 +359,15 @@ decl_attributes (decl, attributes)
 	else
 	  DECL_ALIGN (decl) = align;
       }
-    else if (TREE_VALUE (a) != 0
-	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("format"))
+    else if (!strcmp (IDENTIFIER_POINTER (name), "format")
+	     && list_length (args) == 3
+	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE
+	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (args))) == INTEGER_CST
+	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)))) == INTEGER_CST )
       {
-        tree list = TREE_VALUE (TREE_VALUE (a));
-        tree format_type = TREE_PURPOSE (list);
-	tree format_num_expr = TREE_PURPOSE (TREE_VALUE (list));
-	tree first_arg_num_expr = TREE_VALUE (TREE_VALUE (list));
+        tree format_type = TREE_VALUE (args);
+	tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
+	tree first_arg_num_expr = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
 	int format_num;
 	int first_arg_num;
 	int is_scan;
@@ -358,9 +381,9 @@ decl_attributes (decl, attributes)
 	    continue;
 	  }
 	
-	if (format_type == get_identifier ("printf"))
+	if (!strcmp (IDENTIFIER_POINTER (format_type), "printf"))
 	  is_scan = 0;
-	else if (format_type == get_identifier ("scanf"))
+	else if (!strcmp (IDENTIFIER_POINTER (format_type), "scanf"))
 	  is_scan = 1;
 	else
 	  {
@@ -400,7 +423,7 @@ decl_attributes (decl, attributes)
 	/* If a parameter list is specified, verify that the format_num
 	   argument is actually a string, in case the format attribute
 	   is in error.  */
-	argument = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	argument = TYPE_ARG_TYPES (type);
 	if (argument)
 	  {
 	    for (arg_num = 1; ; ++arg_num)
@@ -435,6 +458,11 @@ decl_attributes (decl, attributes)
 	record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
 				is_scan, format_num, first_arg_num);
       }
+    else
+	warning ("`%s' attribute directive ignored",
+                       IDENTIFIER_POINTER (name));
+
+  TREE_TYPE (decl) = build_type_attribute_variant (type, new_attr);
 }
 
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
