@@ -1,3 +1,10 @@
+2004-02-22  Zack Weinberg <zack@codesourcery.com>
+	    Nathanael Nerode <neroden@twcny.rr.com>
+	    Alexandre Oliva <aoliva@redhat.com>
+
+	* config.sub, config.guess: Replace with forwarding scripts
+	which invoke the master copies in the top level.
+
 2004-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acinclude.m4: Remove old no-executables workaround;
@@ -41,13 +48,13 @@
 	* configure.in (NO_EXECUTE_PERMISSION): Remove global declaration;
 	add for ia64; remove for MIPS.
 	* configure: Regnerated.
-	
+
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Add in AC_PREREQ(2.13)
 
 2004-01-07  Dave Jones <davej@redhat.com>
- 
+
 	* malloc.c (GC_generic_malloc): Correct initialization typo.
 	* mallocx.c (GC_generic_malloc_ignore_off_page): Ditto.
 
@@ -110,7 +117,7 @@
 2003-07-31  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/gc.h (GC_CreateThread): Declare with WINAPI
-	attribute. 
+	attribute.
 	* win32_threads.c (GC_CreateThread): Make definitions consistent
 	with declaration.  Cast &thread_table[i].handle to PHANDLE
 	in call to DuplicateHandle
@@ -118,9 +125,9 @@
 
 2003-07-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* dyn_load.c: Define __private_extern__ to match Apple's system 
+	* dyn_load.c: Define __private_extern__ to match Apple's system
 	header.
- 
+
 2003-07-28  Loren J. Rittle  <ljrittle@acm.org>
 
 	* os_dep.c: Remove redundancy introduced in last merge.
@@ -195,12 +202,12 @@
 	* include/private/specific.h: Likewise.
 	* tests/test.c: Likewise.
 	* tests/test_cpp.cc: Likewise.
-	
+
 	* configure: Rebuild.
 	* Makefile.in: Rebuild.
-	
+
 	* mips_sgi_mach_dep.s: Add.
-	
+
 	* alpha_mach_dep.s: Remove.
 	* irix_threads.c: Remove.
 	* linux_threads.c: Remove.
@@ -322,7 +329,7 @@
 
 2002-08-23  Adam Megacz <adam@xwt.org>
 
-        * win32_threads.cc: Removed extraneous ABORT()
+	* win32_threads.cc: Removed extraneous ABORT()
 
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -345,9 +352,9 @@
 	Linux/mips.
 
 2002-06-28  Hans Boehm <Hans_Boehm@hp.com>
-            Jonathan Clark
+	    Jonathan Clark
 
-        * win32_threads.c (GC_push_all_stacks): Tolerate bad sp.
+	* win32_threads.c (GC_push_all_stacks): Tolerate bad sp.
 
 2002-06-09  H.J. Lu  (hjl@gnu.org)
 
@@ -440,7 +447,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 2002-03-30  Krister Walfridsson  <cato@df.lth.se>
 
 	* include/private/gcconfig.h: define DYNAMIC_LOADING for ELF
-        NetBSD/i386.
+	NetBSD/i386.
 
 2002-03-29  Hans Boehm  <Hans_Boehm@hp.com>
 
@@ -490,14 +497,14 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 2002-03-12  Adam Megacz  <adam@xwt.org>
 
-        * dyn_load.c: Renamed GC_win32s to GC_no_win32_dlls.
-        * misc.c: Renamed GC_is_win32s() to GC_no_win32_dlls
-        * os_dep.c: Renamed GC_win32s to GC_no_win32_dlls and
-        statically initialized it to TRUE if compiling with GCC.
-        * win32_threads.c (thread_start): We no longer use SEH if
-        compiling with GCC.
-        * mark.c (GC_mark_some): We no longer use SEH if
-        compiling with GCC.
+	* dyn_load.c: Renamed GC_win32s to GC_no_win32_dlls.
+	* misc.c: Renamed GC_is_win32s() to GC_no_win32_dlls
+	* os_dep.c: Renamed GC_win32s to GC_no_win32_dlls and
+	statically initialized it to TRUE if compiling with GCC.
+	* win32_threads.c (thread_start): We no longer use SEH if
+	compiling with GCC.
+	* mark.c (GC_mark_some): We no longer use SEH if
+	compiling with GCC.
 
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
@@ -892,7 +899,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-06-19  Andrew Haley  <aph@cygnus.com>
 
-        * os_dep.c (read): Pass two dummy args to syscall().
+	* os_dep.c (read): Pass two dummy args to syscall().
 
 2000-05-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
@@ -902,7 +909,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 2000-05-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Imported version 5.0alpha7.
-        * acinclude.m4: Update version to 5.0a7.
+	* acinclude.m4: Update version to 5.0a7.
 
 2000-04-26  Jakub Jelinek  <jakub@redhat.com>
 
@@ -958,7 +965,7 @@ Fri Jan 28 17:13:20 2000  Anthony Green  <green@cygnus.com>
 
 1999-12-19  Jeff Sturm  <jsturm@sigma6.com>
 
-        * gcconfig.h: Define DATASTART for Alpha Linux.
+	* gcconfig.h: Define DATASTART for Alpha Linux.
 
 1999-12-19  Anthony Green  <green@cygnus.com>
 

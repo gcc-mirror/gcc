@@ -1,3 +1,10 @@
+2004-02-22  Zack Weinberg <zack@codesourcery.com>
+	    Nathanael Nerode <neroden@twcny.rr.com>
+	    Alexandre Oliva <aoliva@redhat.com>
+
+	* config.sub, config.guess: Replace with forwarding scripts
+	which invoke the master copies in the top level.
+
 2004-02-20  Andrew Cagney  <cagney@redhat.com>
 
 	* config.guess: Update from version 2003-10-07 to 2004-02-16.
@@ -6,7 +13,7 @@
 2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't initialize GCINCS to boehm-gc/include.
-	* Regenerate.	
+	* Regenerate.
 
 2002-04-28  Mark Mitchell  <mark@codesourcery.com>
 
