@@ -1685,6 +1685,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			}
 
 		      p = delete_insn (p);
+		      while (p && GET_CODE (p) == NOTE)
+			p = NEXT_INSN (p);
 		    }
 
 		  start_sequence ();
