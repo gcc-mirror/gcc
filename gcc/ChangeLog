@@ -1,3 +1,9 @@
+2005-03-04  Devang Patel  <dpatel@apple.com>
+	
+	PR tree-optimization/18815
+	* tree-if-conv.c (combine_blocks): Adjust loop header edges for
+	loops with zero exit edges.
+	
 2005-03-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config.gcc (hppa*64*-*-hpux11*): Use pa/pa-hpux1111.h for
