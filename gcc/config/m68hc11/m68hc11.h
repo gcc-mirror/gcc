@@ -33,16 +33,6 @@ Note:
 
 */
 
-#undef GCC_VERSION
-#if 1 /* def N_*/
-# define GCC_VERSION 2096
-#else
-# define GCC_VERSION 2095
-
-/* NLS support in 2.96 */
-# define N_(X) X
-#endif
-
 #include "elfos.h"
 
 /*****************************************************************************
@@ -93,30 +83,6 @@ Note:
 #endif
 
 #include "gansidecl.h"
-
-#if GCC_VERSION == 2095
-#ifndef PARAMS
-#if defined(ANSI_PROTOTYPES) || defined(__cplusplus)
-#define PARAMS(args) args
-#else
-#define PARAMS(args) ()
-#endif
-#endif
-
-/* Forward type declaration for prototypes definitions.
-   rtx_ptr is equivalent to rtx. Can't use the same name. */
-struct rtx_def;
-typedef struct rtx_def *rtx_ptr;
-
-union tree_node;
-typedef union tree_node *tree_ptr;
-
-/* We can't declare enum machine_mode forward nor include 'machmode.h' here.
-   Prototypes defined here will use an int instead. It's better than no
-   prototype at all. */
-
-typedef int enum_machine_mode;
-#endif
 
 /*****************************************************************************
 **
@@ -1317,11 +1283,7 @@ extern enum reg_class m68hc11_index_reg_class;
 
 
 /* Internal macro, return 1 if REGNO is a valid base register.  */
-#if GCC_VERSION == 2095
-# define REG_VALID_P(REGNO) ((REGNO) >= 0)
-#else
-# define REG_VALID_P(REGNO) (1)	/* ? */
-#endif
+#define REG_VALID_P(REGNO) (1)	/* ? */
 
 extern unsigned char m68hc11_reg_valid_for_base[FIRST_PSEUDO_REGISTER];
 #define REG_VALID_FOR_BASE_P(REGNO) \
@@ -1934,14 +1896,3 @@ extern int debug_m6811;
 extern int z_replacement_completed;
 extern int current_function_interrupt;
 extern int current_function_trap;
-
-#if GCC_VERSION == 2095
-extern rtx_ptr iy_reg;
-extern rtx_ptr iy_reg;
-extern rtx_ptr d_reg;
-extern rtx_ptr m68hc11_soft_tmp_reg;
-extern rtx_ptr m68hc11_compare_op0;
-extern rtx_ptr m68hc11_compare_op1;
-extern long m68hc11_min_offset;
-extern long m68hc11_max_offset;
-#endif

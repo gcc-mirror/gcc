@@ -1,5 +1,13 @@
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c: Remove ifdef'ed gcc-2.95 code.
+	(m68hc11_reorg): Remove the gcc-2.95 compatible code.
+	(m68hc11_split_all_insns): Likewise, delete.
+	* config/m68hc11/m68hc11.h: Remove ifdef'ed gcc-2.95 code.
+	* config/m68hc11/m68hc11-protos.h: Likewise.
+
+2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber 
 	as an early clobber to make sure it is not used by reload in 
 	one of the operands.
