@@ -86,6 +86,7 @@ static int  type_unification_real PROTO((tree, tree *, tree, tree,
 static void note_template_header PROTO((int));
 static tree maybe_fold_nontype_arg PROTO((tree));
 static tree convert_nontype_argument PROTO((tree, tree));
+static tree get_bindings_overload PROTO((tree, tree, tree));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -5608,13 +5609,13 @@ more_specialized (pat1, pat2, explicit_args)
   tree targs;
   int winner = 0;
 
-  targs = get_bindings (pat1, pat2, explicit_args);
+  targs = get_bindings_overload (pat1, pat2, explicit_args);
   if (targs)
     {
       --winner;
     }
 
-  targs = get_bindings (pat2, pat1, explicit_args);
+  targs = get_bindings_overload (pat2, pat1, explicit_args);
   if (targs)
     {
       ++winner;
@@ -5653,11 +5654,13 @@ more_specialized_class (pat1, pat2)
 
 /* Return the template arguments that will produce the function signature
    DECL from the function template FN, with the explicit template
-   arguments EXPLICIT_ARGS.  */
+   arguments EXPLICIT_ARGS.  If CHECK_RETTYPE is 1, the return type must
+   also match.  */
 
-tree 
-get_bindings (fn, decl, explicit_args)
+static tree
+get_bindings_real (fn, decl, explicit_args, check_rettype)
      tree fn, decl, explicit_args;
+     int check_rettype;
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_scratch_vec (ntparms);
@@ -5691,18 +5694,37 @@ get_bindings (fn, decl, explicit_args)
 			   1,
 			   extra_fn_arg);
 
-  if (i == 0)
+  if (i != 0)
+    return NULL_TREE;
+
+  if (check_rettype)
     {
       /* Check to see that the resulting return type is also OK.  */
       tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)), targs, NULL_TREE);
 
       if (!comptypes (t, TREE_TYPE (TREE_TYPE (decl)), 1))
 	return NULL_TREE;
-
-      return targs;
     }
 
-  return NULL_TREE;
+  return targs;
+}
+
+/* For most uses, we want to check the return type.  */
+
+tree 
+get_bindings (fn, decl, explicit_args)
+     tree fn, decl, explicit_args;
+{
+  return get_bindings_real (fn, decl, explicit_args, 1);
+}
+
+/* But for more_specialized, we only care about the parameter types.  */
+
+static tree
+get_bindings_overload (fn, decl, explicit_args)
+     tree fn, decl, explicit_args;
+{
+  return get_bindings_real (fn, decl, explicit_args, 0);
 }
 
 static tree
