@@ -728,9 +728,9 @@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
 	echo timestamp > $(srcdir)/cstamp-h.in
-auto-config.h: cstamp-h ; @true
+auto-host.h: cstamp-h ; @true
 cstamp-h: config.in config.status
-	CONFIG_HEADERS=auto-config.h:config.in $(SHELL) config.status
+	CONFIG_HEADERS=auto-host.h:config.in $(SHELL) config.status
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
@@ -757,7 +757,7 @@ start.encap: native xgcc$(exeext) specs $(LIBGCC1) xlimits.h lang.start.encap
 rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-config.h cpp$(exeext) $(LANGUAGES) \
+native: config.status auto-host.h cpp$(exeext) $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -2115,7 +2115,8 @@ clean: mostlyclean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean lang.distclean
-	-rm -f tm.h config.h auto-config.h tconfig.h hconfig.h md cstamp-h
+	-rm -f tm.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
+	-rm -f md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile specs.h options.h *.oaux
