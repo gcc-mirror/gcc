@@ -46,9 +46,9 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 /* obstack.[ch] explicitly declined to prototype this. */
-extern int _obstack_allocated_p PROTO ((struct obstack *h, PTR obj));
+extern int _obstack_allocated_p PARAMS ((struct obstack *h, PTR obj));
 
-static void unsave_expr_now_r PROTO ((tree));
+static void unsave_expr_now_r PARAMS ((tree));
 
 /* Tree nodes of permanent duration are allocated in this obstack.
    They are the identifier nodes, and everything outside of
@@ -245,7 +245,7 @@ static int next_type_uid = 1;
 
 /* The language-specific function for alias analysis.  If NULL, the
    language does not do any special alias analysis.  */
-int (*lang_get_alias_set) PROTO((tree));
+int (*lang_get_alias_set) PARAMS ((tree));
 
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
@@ -271,19 +271,19 @@ struct type_hash
 #define TYPE_HASH_SIZE 59
 struct type_hash *type_hash_table[TYPE_HASH_SIZE];
 
-static void build_real_from_int_cst_1 PROTO((PTR));
-static void set_type_quals PROTO((tree, int));
-static void append_random_chars PROTO((char *));
-static void mark_type_hash PROTO ((void *));
-static void fix_sizetype PROTO ((tree));
+static void build_real_from_int_cst_1 PARAMS ((PTR));
+static void set_type_quals PARAMS ((tree, int));
+static void append_random_chars PARAMS ((char *));
+static void mark_type_hash PARAMS ((void *));
+static void fix_sizetype PARAMS ((tree));
 
 /* If non-null, these are language-specific helper functions for
    unsave_expr_now.  If present, LANG_UNSAVE is called before its
    argument (an UNSAVE_EXPR) is to be unsaved, and all other
    processing in unsave_expr_now is aborted.  LANG_UNSAVE_EXPR_NOW is
    called from unsave_expr_1 for language-specific tree codes.  */
-void (*lang_unsave) PROTO((tree *));
-void (*lang_unsave_expr_now) PROTO((tree));
+void (*lang_unsave) PARAMS ((tree *));
+void (*lang_unsave_expr_now) PARAMS ((tree));
 
 /* The string used as a placeholder instead of a source file name for
    built-in tree nodes.  The variable, which is dynamically allocated,
@@ -348,8 +348,8 @@ gcc_obstack_init (obstack)
 #define OBSTACK_CHUNK_FREE free
 #endif
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) PROTO ((long))) OBSTACK_CHUNK_ALLOC,
-		  (void (*) PROTO ((void *))) OBSTACK_CHUNK_FREE);
+		  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
+		  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
 }
 
 /* Save all variables describing the current status into the structure
@@ -1117,7 +1117,7 @@ make_node (code)
 /* A front-end can reset this to an appropriate function if types need
    special handling.  */
 
-tree (*make_lang_type_fn) PROTO((enum tree_code)) = make_node;
+tree (*make_lang_type_fn) PARAMS ((enum tree_code)) = make_node;
 
 /* Return a new type (with the indicated CODE), doing whatever
    language-specific processing is required.  */
@@ -3035,7 +3035,7 @@ stabilize_reference_1 (e)
    Constants, decls, types and misc nodes cannot be.  */
 
 tree
-build VPROTO((enum tree_code code, tree tt, ...))
+build VPARAMS ((enum tree_code code, tree tt, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;
@@ -3202,7 +3202,7 @@ build1 (code, type, node)
    or even garbage if their values do not matter.  */
 
 tree
-build_nt VPROTO((enum tree_code code, ...))
+build_nt VPARAMS ((enum tree_code code, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;
@@ -3232,7 +3232,7 @@ build_nt VPROTO((enum tree_code code, ...))
    on the temp_decl_obstack, regardless.  */
 
 tree
-build_parse_node VPROTO((enum tree_code code, ...))
+build_parse_node VPARAMS ((enum tree_code code, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;

@@ -194,24 +194,24 @@ static int *splittable_regs_updates;
 
 /* Forward declarations.  */
 
-static void init_reg_map PROTO((struct inline_remap *, int));
-static rtx calculate_giv_inc PROTO((rtx, rtx, int));
-static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
-static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
-static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
+static void init_reg_map PARAMS ((struct inline_remap *, int));
+static rtx calculate_giv_inc PARAMS ((rtx, rtx, int));
+static rtx initial_reg_note_copy PARAMS ((rtx, struct inline_remap *));
+static void final_reg_note_copy PARAMS ((rtx, struct inline_remap *));
+static void copy_loop_body PARAMS ((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
-static void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
-static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int,
+static void iteration_info PARAMS ((rtx, rtx *, rtx *, rtx, rtx));
+static int find_splittable_regs PARAMS ((enum unroll_types, rtx, rtx, rtx, int,
 				       unsigned HOST_WIDE_INT));
-static int find_splittable_givs PROTO((struct iv_class *, enum unroll_types,
+static int find_splittable_givs PARAMS ((struct iv_class *, enum unroll_types,
 				       rtx, rtx, rtx, int));
-static int reg_dead_after_loop PROTO((rtx, rtx, rtx));
-static rtx fold_rtx_mult_add PROTO((rtx, rtx, rtx, enum machine_mode));
-static int verify_addresses PROTO((struct induction *, rtx, int));
-static rtx remap_split_bivs PROTO((rtx));
-static rtx find_common_reg_term PROTO((rtx, rtx));
-static rtx subtract_reg_term PROTO((rtx, rtx));
-static rtx loop_find_equiv_value PROTO((rtx, rtx));
+static int reg_dead_after_loop PARAMS ((rtx, rtx, rtx));
+static rtx fold_rtx_mult_add PARAMS ((rtx, rtx, rtx, enum machine_mode));
+static int verify_addresses PARAMS ((struct induction *, rtx, int));
+static rtx remap_split_bivs PARAMS ((rtx));
+static rtx find_common_reg_term PARAMS ((rtx, rtx));
+static rtx subtract_reg_term PARAMS ((rtx, rtx));
+static rtx loop_find_equiv_value PARAMS ((rtx, rtx));
 
 /* Try to unroll one loop and split induction variables in the loop.
 

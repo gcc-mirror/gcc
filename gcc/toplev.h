@@ -26,26 +26,26 @@ union tree_node;
 struct rtx_def;
 #endif
 
-extern int read_integral_parameter	PROTO ((const char *, const char *,
+extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
-extern int count_error			PROTO ((int));
-extern void strip_off_ending		PROTO ((char *, int));
-extern void print_time			PROTO ((const char *, int));
-extern void debug_start_source_file	PROTO ((char *));
-extern void debug_end_source_file	PROTO ((unsigned));
-extern void debug_define		PROTO ((unsigned, char *));
-extern void debug_undef			PROTO ((unsigned, char *));
-extern void fatal			PVPROTO ((const char *, ...))
+extern int count_error			PARAMS ((int));
+extern void strip_off_ending		PARAMS ((char *, int));
+extern void print_time			PARAMS ((const char *, int));
+extern void debug_start_source_file	PARAMS ((char *));
+extern void debug_end_source_file	PARAMS ((unsigned));
+extern void debug_define		PARAMS ((unsigned, char *));
+extern void debug_undef			PARAMS ((unsigned, char *));
+extern void fatal			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void fatal_io_error		PROTO ((const char *))
+extern void fatal_io_error		PARAMS ((const char *))
   ATTRIBUTE_NORETURN;
-extern void pfatal_with_name		PROTO ((const char *))
+extern void pfatal_with_name		PARAMS ((const char *))
   ATTRIBUTE_NORETURN;
-extern void _fatal_insn_not_found	PROTO ((struct rtx_def *,
+extern void _fatal_insn_not_found	PARAMS ((struct rtx_def *,
 						const char *, int,
 						const char *))
   ATTRIBUTE_NORETURN;
-extern void _fatal_insn			PROTO ((const char *,
+extern void _fatal_insn			PARAMS ((const char *,
 						struct rtx_def *,
 						const char *, int,
 						const char *))
@@ -62,73 +62,73 @@ extern void _fatal_insn			PROTO ((const char *,
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, 0)
 #endif
-extern void warning			PVPROTO ((const char *, ...))
+extern void warning			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
-extern void error			PVPROTO ((const char *, ...))
+extern void error			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
-extern void pedwarn			PVPROTO ((const char *, ...))
+extern void pedwarn			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
-extern void pedwarn_with_file_and_line	PVPROTO ((const char *, int,
+extern void pedwarn_with_file_and_line	PARAMS ((const char *, int,
 						  const char *, ...))
   ATTRIBUTE_PRINTF_3;
-extern void warning_with_file_and_line	PVPROTO ((const char *, int,
+extern void warning_with_file_and_line	PARAMS ((const char *, int,
 						  const char *, ...))
   ATTRIBUTE_PRINTF_3;
-extern void error_with_file_and_line	PVPROTO ((const char *, int,
+extern void error_with_file_and_line	PARAMS ((const char *, int,
 						  const char *, ...))
   ATTRIBUTE_PRINTF_3;
-extern void sorry			PVPROTO ((const char *, ...))
+extern void sorry			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
-extern void really_sorry		PVPROTO((const char *, ...))
+extern void really_sorry		PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void default_print_error_function PROTO ((const char *));
-extern void report_error_function	PROTO ((const char *));
+extern void default_print_error_function PARAMS ((const char *));
+extern void report_error_function	PARAMS ((const char *));
 
-extern void rest_of_decl_compilation	PROTO ((union tree_node *,
+extern void rest_of_decl_compilation	PARAMS ((union tree_node *,
 						const char *, int, int));
-extern void rest_of_type_compilation	PROTO ((union tree_node *, int));
-extern void rest_of_compilation		PROTO ((union tree_node *));
+extern void rest_of_type_compilation	PARAMS ((union tree_node *, int));
+extern void rest_of_compilation		PARAMS ((union tree_node *));
 
 /* The *_with_decl functions aren't suitable for ATTRIBUTE_PRINTF. */
-extern void pedwarn_with_decl		PVPROTO ((union tree_node *,
+extern void pedwarn_with_decl		PARAMS ((union tree_node *,
 						  const char *, ...));
-extern void warning_with_decl		PVPROTO ((union tree_node *,
+extern void warning_with_decl		PARAMS ((union tree_node *,
 						  const char *, ...));
-extern void error_with_decl		PVPROTO ((union tree_node *,
+extern void error_with_decl		PARAMS ((union tree_node *,
 						  const char *, ...));
 
-extern void announce_function		PROTO ((union tree_node *));
+extern void announce_function		PARAMS ((union tree_node *));
 
-extern void error_for_asm		PVPROTO((struct rtx_def *,
+extern void error_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern void warning_for_asm		PVPROTO((struct rtx_def *,
+extern void warning_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...))
   ATTRIBUTE_PRINTF_2;
 #if defined (_JBLEN) || defined (setjmp)
-extern void set_float_handler PROTO((jmp_buf));
-extern int push_float_handler PROTO((jmp_buf, jmp_buf));
-extern void pop_float_handler PROTO((int, jmp_buf));
+extern void set_float_handler PARAMS ((jmp_buf));
+extern int push_float_handler PARAMS ((jmp_buf, jmp_buf));
+extern void pop_float_handler PARAMS ((int, jmp_buf));
 #endif
-extern int do_float_handler PROTO((void (*) (PTR), PTR));
+extern int do_float_handler PARAMS ((void (*) (PTR), PTR));
 
 #ifdef BUFSIZ
-extern void output_quoted_string	PROTO ((FILE *, const char *));
-extern void output_file_directive	PROTO ((FILE *, const char *));
+extern void output_quoted_string	PARAMS ((FILE *, const char *));
+extern void output_file_directive	PARAMS ((FILE *, const char *));
 #endif
-extern void do_abort			PROTO ((void)) ATTRIBUTE_NORETURN;
-extern void botch			PROTO ((const char *))
+extern void do_abort			PARAMS ((void)) ATTRIBUTE_NORETURN;
+extern void botch			PARAMS ((const char *))
   ATTRIBUTE_NORETURN;
 
 #ifdef BUFSIZ
-extern void fnotice			PROTO ((FILE *, const char *, ...))
+extern void fnotice			PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 #endif
 
-extern int wrapup_global_declarations   PROTO ((union tree_node **, int));
-extern void check_global_declarations   PROTO ((union tree_node **, int));
-extern void note_deferral_of_defined_inline_function PROTO ((union tree_node *));
-extern void set_message_length		PROTO ((int));
+extern int wrapup_global_declarations   PARAMS ((union tree_node **, int));
+extern void check_global_declarations   PARAMS ((union tree_node **, int));
+extern void note_deferral_of_defined_inline_function PARAMS ((union tree_node *));
+extern void set_message_length		PARAMS ((int));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;

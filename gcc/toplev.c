@@ -149,35 +149,35 @@ extern char *version_string;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-static void set_target_switch PROTO((const char *));
-static const char *decl_name PROTO((tree, int));
+static void set_target_switch PARAMS ((const char *));
+static const char *decl_name PARAMS ((tree, int));
 
-extern void set_fatal_function PROTO((void (*)(const char *, va_list)));
-static void float_signal PROTO((int)) ATTRIBUTE_NORETURN;
-static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
+extern void set_fatal_function PARAMS ((void (*)(const char *, va_list)));
+static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void pipe_closed PARAMS ((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE
 /* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
-static void output_lang_identify PROTO((FILE *)) ATTRIBUTE_UNUSED;
+static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
 #endif
-static void open_dump_file PROTO((const char *, const char *));
-static void close_dump_file PROTO((void (*) (FILE *, rtx), rtx));
-static void dump_rtl PROTO((const char *, tree, void (*) (FILE *, rtx), rtx));
-static void clean_dump_file PROTO((const char *));
-static void compile_file PROTO((char *));
-static void display_help PROTO ((void));
-static void mark_file_stack PROTO ((void *));
+static void open_dump_file PARAMS ((const char *, const char *));
+static void close_dump_file PARAMS ((void (*) (FILE *, rtx), rtx));
+static void dump_rtl PARAMS ((const char *, tree, void (*) (FILE *, rtx), rtx));
+static void clean_dump_file PARAMS ((const char *));
+static void compile_file PARAMS ((char *));
+static void display_help PARAMS ((void));
+static void mark_file_stack PARAMS ((void *));
 
-static void decode_d_option PROTO ((const char *));
-static int  decode_f_option PROTO ((const char *));
-static int  decode_W_option PROTO ((const char *));
-static int  decode_g_option PROTO ((const char *));
-static unsigned independent_decode_option PROTO ((int, char **, unsigned));
+static void decode_d_option PARAMS ((const char *));
+static int  decode_f_option PARAMS ((const char *));
+static int  decode_W_option PARAMS ((const char *));
+static int  decode_g_option PARAMS ((const char *));
+static unsigned independent_decode_option PARAMS ((int, char **, unsigned));
 
-static void print_version PROTO((FILE *, const char *));
-static int print_single_switch PROTO((FILE *, int, int, const char *,
+static void print_version PARAMS ((FILE *, const char *));
+static int print_single_switch PARAMS ((FILE *, int, int, const char *,
 				      const char *, const char *,
 				      const char *, const char *));
-static void print_switch_values PROTO((FILE *, int, int, const char *,
+static void print_switch_values PARAMS ((FILE *, int, int, const char *,
 				       const char *, const char *));
 
 /* Length of line when printing switch values.  */
@@ -315,22 +315,22 @@ int sorrycount = 0;
      2: and any other information that might be interesting, such as function
         parameter types in C++.  */
 
-const char *(*decl_printable_name)	PROTO ((tree, int));
+const char *(*decl_printable_name)	PARAMS ((tree, int));
 
 /* Pointer to function to compute rtl for a language-specific tree code.  */
 
 typedef rtx (*lang_expand_expr_t)
-  PROTO ((union tree_node *, rtx, enum machine_mode,
+  PARAMS ((union tree_node *, rtx, enum machine_mode,
 	  enum expand_modifier modifier));
 
 lang_expand_expr_t lang_expand_expr = 0;
 
-tree (*lang_expand_constant) PROTO((tree)) = 0;
+tree (*lang_expand_constant) PARAMS ((tree)) = 0;
 
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 
-void (*incomplete_decl_finalize_hook) PROTO((tree)) = 0;
+void (*incomplete_decl_finalize_hook) PARAMS ((tree)) = 0;
 
 /* Nonzero if generating code to do profiling.  */
 
@@ -1557,7 +1557,7 @@ set_float_handler (handler)
 
 int
 do_float_handler (fn, data)
-  void (*fn) PROTO ((PTR));
+  void (*fn) PARAMS ((PTR));
   PTR data;
 {
   jmp_buf buf;
@@ -1742,7 +1742,7 @@ open_dump_file (suffix, function_name)
 /* Routine to close a dump file.  */
 static void
 close_dump_file (func, insns)
-     void (*func) PROTO ((FILE *, rtx));
+     void (*func) PARAMS ((FILE *, rtx));
      rtx    insns;
 {
   TIMEVAR
@@ -1765,7 +1765,7 @@ static void
 dump_rtl (suffix, decl, func, insns)
      const char *suffix;
      tree   decl;
-     void (*func) PROTO ((FILE *, rtx));
+     void (*func) PARAMS ((FILE *, rtx));
      rtx    insns;
 {
   open_dump_file (suffix, decl_printable_name (decl, 2));
@@ -4486,7 +4486,7 @@ independent_decode_option (argc, argv, strings_processed)
    Exit code is 35 if can't open files, 34 if fatal error,
    33 if had nonfatal errors, else success.  */
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
