@@ -1,3 +1,7 @@
+2003-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030711-1.c: New test.
+
 2003-07-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11050

@@ -3579,6 +3579,40 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 
       if (size == 0)
 	abort ();
+#ifdef HAVE_cmpmemqi
+      if (HAVE_cmpmemqi
+	  && GET_CODE (size) == CONST_INT
+	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemqi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  emit_insn (gen_cmpmemqi (result, x, y, size, opalign));
+	}
+      else
+#endif
+#ifdef HAVE_cmpmemhi
+      if (HAVE_cmpmemhi
+	  && GET_CODE (size) == CONST_INT
+	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemhi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  emit_insn (gen_cmpmemhi (result, x, y, size, opalign));
+	}
+      else
+#endif
+#ifdef HAVE_cmpmemsi
+      if (HAVE_cmpmemsi)
+	{
+	  result_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
+	  result = gen_reg_rtx (result_mode);
+	  size = protect_from_queue (size, 0);
+	  emit_insn (gen_cmpmemsi (result, x, y,
+				   convert_to_mode (SImode, size, 1),
+				   opalign));
+	}
+      else
+#endif
 #ifdef HAVE_cmpstrqi
       if (HAVE_cmpstrqi
 	  && GET_CODE (size) == CONST_INT
