@@ -1,3 +1,12 @@
+Thu Sep 18 10:43:07 1997  Nick Clifton  <nickc@cygnus.com>
+ 
+ 	* v850.c (compute_register_save_size): Correct register
+ 	number.
+ 	* v850.md (save_interrupt, return_interrupt): Correct
+ 	register number.
+ 	* v850/lib1funcs.asm (save_interrupt): Correct register number.
+ 	(return_interrupt): Use stack pointer, not element pointer.
+
 1997-09-18  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* configure.in, configure: Make sure to create the stage* and include

@@ -1386,7 +1386,7 @@ compute_register_save_size (p_reg_saved)
 	       These registers are handled specially, so don't list them
 	       on the list of registers to save in the prologue.  */
 	  case 1:		/* temp used to hold ep */
-	  case 5:		/* gp */
+	  case 4:		/* gp */
 	  case 10:		/* temp used to call interrupt save/restore */
 	  case EP_REGNUM:	/* ep */
 	    size += 4;
