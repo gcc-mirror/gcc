@@ -1,3 +1,8 @@
+Wed Apr 15 15:31:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (sbitmap_union_of_successors):  New function.
+	* basic-block.h (sbitmap_union_of_successors): Declare it.
+
 Wed Apr 15 12:38:03 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (gnu_ld): Rename to gnu_ld_flag before main loop.
