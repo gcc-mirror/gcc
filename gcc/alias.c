@@ -1103,6 +1103,12 @@ rtx_equal_for_memref_p (x, y)
 	    return 0;
 	  break;
 
+	  /* This can happen for asm operands.  */
+	case 's':
+	  if (strcmp (XSTR (x, i), XSTR (y, i)))
+	    return 0;
+	  break;
+
 	/* This can happen for an asm which clobbers memory.  */
 	case '0':
 	  break;
