@@ -1,3 +1,7 @@
+Thu Aug 13 20:14:40 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.md (movhi_internal2+2): Fix typo mem:SI -> mem:HI.
+
 Thu Aug 13 17:08:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h: De-conditionalize init_priority code.

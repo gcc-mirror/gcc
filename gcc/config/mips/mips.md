@@ -5439,7 +5439,7 @@ move\\t%0,%z4\\n\\
 
 (define_split
   [(set (match_operand:HI 0 "register_operand" "")
-	(mem:SI (plus:SI (match_dup 0)
+	(mem:HI (plus:SI (match_dup 0)
 			 (match_operand:SI 1 "const_int_operand" ""))))]
   "TARGET_MIPS16 && reload_completed
    && GET_CODE (operands[0]) == REG
