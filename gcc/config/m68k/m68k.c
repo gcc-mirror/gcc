@@ -3334,6 +3334,23 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 			 "\tsubq.l %I%d,4(%Rsp)\n" :
 			 "\tsubql %I%d,%Rsp@(4)\n",
 		 (int) -delta);
+  else if (TARGET_COLDFIRE)
+    {
+      /* ColdFire can't add/sub a constant to memory unless it is in
+	 the range of addq/subq.  So load the value into %d0 and
+	 then add it to 4(%sp). */
+      if (delta >= -128 && delta <= 127)
+	asm_fprintf (file, MOTOROLA ?
+		     "\tmoveq.l %I%wd,%Rd0\n" :
+		     "\tmoveql %I%wd,%Rd0\n", delta);
+      else
+	asm_fprintf (file, MOTOROLA ?
+		     "\tmove.l %I%wd,%Rd0\n" :
+		     "\tmovel %I%wd,%Rd0\n", delta);
+      asm_fprintf (file, MOTOROLA ?
+		   "\tadd.l %Rd0,4(%Rsp)\n" :
+		   "\taddl %Rd0,%Rsp@(4)\n");
+    }
   else
     asm_fprintf (file, MOTOROLA ?
 			 "\tadd.l %I%wd,4(%Rsp)\n" :
