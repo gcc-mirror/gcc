@@ -486,8 +486,11 @@ global_alloc (file)
 
   allocno_row_words = (max_allocno + INT_BITS - 1) / INT_BITS;
 
-  conflicts = (INT_TYPE *) alloca (max_allocno * allocno_row_words
-				   * sizeof (INT_TYPE));
+  /* We used to use alloca here, but the size of what it would try to
+     allocate would occasionally cause it to exceed the stack limit and
+     cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
+  conflicts = (INT_TYPE *) xmalloc (max_allocno * allocno_row_words
+				    * sizeof (INT_TYPE));
   bzero ((char *) conflicts,
 	 max_allocno * allocno_row_words * sizeof (INT_TYPE));
 
@@ -569,6 +572,8 @@ global_alloc (file)
 	      find_reg (allocno_order[i], HARD_CONST (0), 1, 0, 0);
 	  }
     }
+
+  free (conflicts);
 
   /* Do the reloads now while the allocno data still exist, so that we can
      try to assign new hard regs to any pseudo regs that are spilled.  */
