@@ -1,3 +1,7 @@
+2002-07-19  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (debug_hard_reg_set): Remove.
+
 2002-07-19  Chris Demetriou  <cgd@broadcom.com>
 
 	* gcc.c (cpp_options): Include "%1" (cc1_spec).

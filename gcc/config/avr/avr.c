@@ -57,7 +57,6 @@ static int    out_set_stack_ptr    PARAMS ((FILE *, int, int));
 static RTX_CODE compare_condition  PARAMS ((rtx insn));
 static int    compare_sign_p       PARAMS ((rtx insn));
 static int    reg_was_0            PARAMS ((rtx insn, rtx op));
-void          debug_hard_reg_set   PARAMS ((HARD_REG_SET set));
 static tree   avr_handle_progmem_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree   avr_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec avr_attribute_table[];
@@ -5311,20 +5310,6 @@ test_hard_reg_class (class, x)
   return 0;
 }
 
-void
-debug_hard_reg_set (set)
-     HARD_REG_SET set;
-{
-  int i;
-  for (i=0; i < FIRST_PSEUDO_REGISTER; ++i)
-    {
-      if (TEST_HARD_REG_BIT (set, i))
-	{
-	  fprintf (stderr, "r%-2d ", i);
-	}
-    }
-  fprintf (stderr, "\n");
-}
 
 int
 jump_over_one_insn_p (insn, dest)
