@@ -120,3 +120,12 @@ extern void sbitmap_union_of_predsucc PROTO ((sbitmap, sbitmap *, int,
 					      struct int_list **));
 #define sbitmap_union_of_predecessors  sbitmap_union_of_predsucc
 #define sbitmap_union_of_successors    sbitmap_union_of_predsucc
+
+/* Intersection and Union of preds/succs using the new flow graph 
+   structure instead of the pred/succ arrays.  */
+
+extern void sbitmap_intersection_of_succs    PROTO ((sbitmap, sbitmap *, int));
+extern void sbitmap_intersection_of_preds    PROTO ((sbitmap, sbitmap *, int));
+extern void sbitmap_union_of_succs	     PROTO ((sbitmap, sbitmap *, int));
+extern void sbitmap_union_of_preds	     PROTO ((sbitmap, sbitmap *, int));
+

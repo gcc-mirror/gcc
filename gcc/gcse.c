@@ -2632,8 +2632,7 @@ compute_rd ()
       changed = 0;
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
-	  sbitmap_union_of_predecessors (reaching_defs[bb], rd_out,
-					 bb, s_preds);
+	  sbitmap_union_of_preds (reaching_defs[bb], rd_out, bb);
 	  changed |= sbitmap_union_of_diff (rd_out[bb], rd_gen[bb],
 					    reaching_defs[bb], rd_kill[bb]);
 	}
@@ -2833,7 +2832,7 @@ compute_available ()
       changed = 0;
       for (bb = 1; bb < n_basic_blocks; bb++)
 	{
-	  sbitmap_intersect_of_predecessors (ae_in[bb], ae_out, bb, s_preds);
+	  sbitmap_intersection_of_preds (ae_in[bb], ae_out, bb);
 	  changed |= sbitmap_union_of_diff (ae_out[bb], ae_gen[bb],
 					    ae_in[bb], ae_kill[bb]);
 	}
@@ -2870,7 +2869,7 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
      int check_self_loop;
      char *visited;
 {
-  int_list_ptr pred;
+  edge pred;
 
   if (visited == NULL)
     {
@@ -2878,9 +2877,9 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
       bzero (visited, n_basic_blocks);
     }
 
-  for (pred = s_preds[bb]; pred != NULL; pred = pred->next)
+  for (pred = BASIC_BLOCK(bb)->pred; pred != NULL; pred = pred->pred_next)
     {
-      int pred_bb = INT_LIST_VAL (pred);
+      int pred_bb = pred->src->index;
 
       if (visited[pred_bb])
 	{
@@ -3512,8 +3511,7 @@ compute_cprop_avinout ()
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
 	  if (bb != 0)
-	    sbitmap_intersect_of_predecessors (cprop_avin[bb],
-					       cprop_avout, bb, s_preds);
+	    sbitmap_intersection_of_preds (cprop_avin[bb], cprop_avout, bb);
 	  changed |= sbitmap_union_of_diff (cprop_avout[bb],
 					    cprop_pavloc[bb],
 					    cprop_avin[bb],
@@ -4125,7 +4123,7 @@ pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
      int check_pre_comp;
      char *visited;
 {
-  int_list_ptr pred;
+  edge pred;
 
   if (visited == NULL)
     {
@@ -4133,11 +4131,11 @@ pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
       bzero (visited, n_basic_blocks);
     }
 
-  for (pred = s_preds[bb]; pred != NULL; pred = pred->next)
+  for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
     {
-      int pred_bb = INT_LIST_VAL (pred);
+      int pred_bb = pred->src->index;
 
-      if (pred_bb == ENTRY_BLOCK
+      if (pred->src == ENTRY_BLOCK_PTR
 	  /* Has predecessor has already been visited?  */
 	  || visited[pred_bb])
 	{
