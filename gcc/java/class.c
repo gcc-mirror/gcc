@@ -1200,10 +1200,10 @@ finish_class (cl)
      tree cl;
 {
   tree method;
-
-  /* Emit deferred inline methods. */
-  for ( method = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
-	method != NULL_TREE; method = TREE_CHAIN (method))
+  tree type_methods = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
+  
+  /* Emit deferred inline methods. */  
+  for (method = type_methods; method != NULL_TREE; )
     {
       if (! TREE_ASM_WRITTEN (method) && DECL_SAVED_INSNS (method) != 0)
 	{
@@ -1215,8 +1215,13 @@ finish_class (cl)
 	      temporary_allocation ();
 	      output_inline_function (method);
 	      permanent_allocation (1);
+	      /* Scan the list again to see if there are any earlier
+                 methods to emit. */
+	      method = type_methods;
+	      continue;
 	    }
 	}
+      method = TREE_CHAIN (method);
     }
 
   make_class_data (current_class);
