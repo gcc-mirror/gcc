@@ -2352,7 +2352,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
             *total = COSTS_N_INSNS (36);
           return true;
         }
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case UDIV:
     case UMOD:
@@ -2822,7 +2822,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
 	    return 0;
 	}
 
-      /* allocate a pseudo to calculate the value in.  */
+      /* Allocate a pseudo to calculate the value in.  */
       result = gen_reg_rtx (mode);
     }
 
@@ -3854,7 +3854,7 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
       if (fp_saved > 0)
 	{
 	  /* We can't use move_block_from_reg, because it will use
-	     the wrong mode. */
+	     the wrong mode.  */
 	  enum machine_mode mode;
 	  int off, i;
 
@@ -4643,7 +4643,7 @@ override_options (void)
 
   if (TARGET_SGI_O32_AS)
     {
-      /* They don't recognize `.[248]byte'. */
+      /* They don't recognize `.[248]byte'.  */
       targetm.asm_out.unaligned_op.hi = "\t.align 0\n\t.half\t";
       targetm.asm_out.unaligned_op.si = "\t.align 0\n\t.word\t";
       /* The IRIX 6 O32 assembler gives an error for `align 0; .dword',
@@ -5065,7 +5065,7 @@ mips_conditional_register_usage (void)
       for (regno = FP_REG_FIRST + 20; regno < FP_REG_FIRST + 24; regno++)
 	call_really_used_regs[regno] = call_used_regs[regno] = 1;
     }
-  /* odd registers from fp21 to fp31 are now caller saved.  */
+  /* Odd registers from fp21 to fp31 are now caller saved.  */
   if (mips_abi == ABI_N32)
     {
       int regno;
@@ -5505,7 +5505,7 @@ print_operand_reloc (FILE *file, rtx op, const char **relocs)
       fputc (')', file);
 }
 
-/* Output address operand X to FILE.   */
+/* Output address operand X to FILE.  */
 
 void
 print_operand_address (FILE *file, rtx x)
@@ -7415,7 +7415,7 @@ mips_secondary_reload_class (enum reg_class class,
     {
       if (GET_CODE (x) == MEM)
 	{
-	  /* In this case we can use lwc1, swc1, ldc1 or sdc1. */
+	  /* In this case we can use lwc1, swc1, ldc1 or sdc1.  */
 	  return NO_REGS;
 	}
       else if (CONSTANT_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -8807,7 +8807,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  else
 	    return 6;
 	}
-    }  /* from == HI_REG, etc. */
+    }  /* from == HI_REG, etc.  */
   else if (from == ST_REGS && GR_REG_CLASS_P (to))
     return 4;
   else if (COP_REG_CLASS_P (from))
@@ -8815,7 +8815,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
       return 5;
     }  /* COP_REG_CLASS_P (from) */
 
-  /* fallthru */
+  /* Fall through.  */
 
   return 12;
 }
