@@ -135,6 +135,11 @@ extern PTR xmalloc PARAMS ((size_t));
 
 extern PTR xrealloc PARAMS ((PTR, size_t));
 
+/* Allocate memory without fail and set it to zero.  This works like
+   xmalloc.  */
+
+extern PTR xcalloc PARAMS ((size_t, size_t));
+
 /* Copy a string into a memory buffer without fail.  */
 
 extern char *xstrdup PARAMS ((const char *));
