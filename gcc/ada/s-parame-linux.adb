@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,7 +67,11 @@ package body System.Parameters is
 
    function Minimum_Stack_Size return Size_Type is
    begin
-      return 8 * 1024;
+      --  12K is required for stack-checking to work on this target, using the
+      --  System.Stack_Checking runtime facility and possibly relying on the
+      --  stack greedy GCC scheme to propagate an exception in the ZCX case.
+
+      return 12 * 1024;
    end Minimum_Stack_Size;
 
 end System.Parameters;
