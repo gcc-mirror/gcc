@@ -1,3 +1,9 @@
+2004-12-18  Daniel Berlin  <dberlin@dberlin.org>
+
+        * lambda-code.c (can_convert_to_perfect_nest): Make checking
+	match up with what perfect_nestify can actually handle.
+	(perfect_nestify): Don't return false in the phi node loop.
+
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (SSEINT16): New.
