@@ -1,3 +1,7 @@
+Mon Aug 10 19:02:55 1998  John Carr  <jfc@mit.edu>
+
+	* Makefile.in (mbchar.o): Depend on mbchar.c.
+
 Mon Aug 10 04:28:13 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 			  Richard Henderson  <rth@cygnus.com>
 	

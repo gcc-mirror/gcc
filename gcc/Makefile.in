@@ -1283,7 +1283,7 @@ c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) except.h \
     function.h defaults.h c-pragma.h toplev.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h toplev.h $(EXPR_H)
-mbchar.o: $(CONFIG_H) system.h gansidecl.h mbchar.h
+mbchar.o: mbchar.c $(CONFIG_H) system.h gansidecl.h mbchar.h
 
 collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	version.o choose-temp.o mkstemp.o $(LIBDEPS)
