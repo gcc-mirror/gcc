@@ -1864,10 +1864,8 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
       else
 	init_stack_free = actual_fsize;
 
-      /* Deallocate the rest of the stack if it is > 32K or if extra stack
-	 was allocated for an interrupt handler that makes a call.  */
-      if (actual_fsize > init_stack_free
-	  || (interrupt_handler && actual_fsize))
+      /* Deallocate the rest of the stack if it is > 32K.  */
+      if (actual_fsize > init_stack_free)
 	{
 	  int diff;
 
