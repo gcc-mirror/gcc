@@ -1218,11 +1218,11 @@ finish_parenthesized_expr (tree expr)
    preceded by `.' or `->'.  */
 
 tree
-finish_non_static_data_member (tree decl, tree qualifying_scope)
+finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 {
   my_friendly_assert (TREE_CODE (decl) == FIELD_DECL, 20020909);
 
-  if (current_class_ptr == NULL_TREE)
+  if (!object)
     {
       if (current_function_decl 
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
@@ -1236,27 +1236,42 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
     }
   TREE_USED (current_class_ptr) = 1;
   if (processing_template_decl)
-    return build_min (COMPONENT_REF, TREE_TYPE (decl),
-		      current_class_ref, DECL_NAME (decl));
+    {
+      tree type = TREE_TYPE (decl);
+
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
+      else
+	{
+	  /* Set the cv qualifiers */
+	  int quals = cp_type_quals (TREE_TYPE (current_class_ref));
+	  
+	  if (DECL_MUTABLE_P (decl))
+	    quals &= ~TYPE_QUAL_CONST;
+	  
+	  quals |= cp_type_quals (TREE_TYPE (decl));
+	  type = cp_build_qualified_type (type, quals);
+	}
+
+      return build_min (COMPONENT_REF, type, object, decl);
+    }
   else
     {
-      tree access_type = current_class_type;
-      tree object = current_class_ref;
-
-      while (access_type
-	     && !DERIVED_FROM_P (context_for_name_lookup (decl), access_type))
+      tree access_type = TREE_TYPE (object);
+      tree lookup_context = context_for_name_lookup (decl);
+      
+      while (!DERIVED_FROM_P (lookup_context, access_type))
 	{
 	  access_type = TYPE_CONTEXT (access_type);
 	  while (access_type && DECL_P (access_type))
 	    access_type = DECL_CONTEXT (access_type);
-	}
 
-      if (!access_type)
-	{
-	  cp_error_at ("object missing in reference to `%D'",
-		       decl);
-	  error ("from this location");
-	  return error_mark_node;
+	  if (!access_type)
+	    {
+	      cp_error_at ("object missing in reference to `%D'", decl);
+	      error ("from this location");
+	      return error_mark_node;
+	    }
 	}
 
       perform_or_defer_access_check (TYPE_BINFO (access_type), decl);
@@ -1357,7 +1372,8 @@ finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
     }
 
   if (TREE_CODE (expr) == FIELD_DECL)
-    expr = finish_non_static_data_member (expr, qualifying_class);
+    expr = finish_non_static_data_member (expr, current_class_ref,
+					  qualifying_class);
   else if (BASELINK_P (expr) && !processing_template_decl)
     {
       tree fn;

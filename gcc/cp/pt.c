@@ -8273,6 +8273,8 @@ tsubst_copy_and_build (tree t,
 		return error_mark_node;
 	      }
 	  }
+	else if (TREE_CODE (member) == FIELD_DECL)
+	  return finish_non_static_data_member (member, object, NULL_TREE);
 
 	return finish_class_member_access_expr (object, member);
       }

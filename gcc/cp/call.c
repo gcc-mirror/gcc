@@ -2651,7 +2651,7 @@ resolve_scoped_fn_name (tree scope, tree name)
 
       /* It might be the name of a function pointer member.  */
       if (fn && TREE_CODE (fn) == FIELD_DECL)
-	fn = finish_non_static_data_member (fn, scope);
+	fn = finish_non_static_data_member (fn, current_class_ref, scope);
     }
   
   if (!fn)
