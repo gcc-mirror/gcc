@@ -1,6 +1,7 @@
 // natTimeZone.cc -- Native side of TimeZone class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,51 +34,103 @@ details.  */
 
 #include <string.h>
 
-/*
- * This method returns a time zone string that is used by init_properties
- * to set the default timezone property 'user.timezone'.  That value is
- * used by default as a key into the timezone table used by the
- * java::util::TimeZone class.
+/**
+ * This method returns a time zone id string which is in the form
+ * (standard zone name) or (standard zone name)(GMT offset) or
+ * (standard zone name)(GMT offset)(daylight time zone name).  The
+ * GMT offset can be in seconds, or where it is evenly divisible by
+ * 3600, then it can be in hours.  The offset must be the time to
+ * add to the local time to get GMT.  If a offset is given and the
+ * time zone observes daylight saving then the (daylight time zone
+ * name) must also be given (otherwise it is assumed the time zone
+ * does not observe any daylight savings).
+ * <p>
+ * The result of this method is given to getDefaultTimeZone(String)
+ * which tries to map the time zone id to a known TimeZone.  See
+ * that method on how the returned String is mapped to a real
+ * TimeZone object.
  */
-static jstring
-getSystemTimeZone (void)
+jstring
+java::util::TimeZone::getDefaultTimeZoneId ()
 {
-  struct tm *tim;
+  struct tm tim;
+#ifndef HAVE_LOCALTIME_R
+  struct tm *lt_tim;
+#endif
+#ifdef HAVE_TM_ZONE
+  int month;
+#endif
   time_t current_time;
   long tzoffset;
   const char *tz1, *tz2;
   char *tzid;
 
-  current_time = time(0);
+  time(&current_time);
+#ifdef HAVE_LOCALTIME_R
+  localtime_r(&current_time, &tim);
+#else
+  /* Fall back on non-thread safe localtime. */
+  lt_tim = localtime(&current_time);
+  memcpy(&tim, lt_tim, sizeof (struct tm));
+#endif
+  mktime(&tim);
 
-  mktime(tim = localtime(&current_time));
+#ifdef HAVE_TM_ZONE
+  /* We will cycle through the months to make sure we hit dst. */
+  month = tim.tm_mon;
+  tz1 = tz2 = NULL;
+  while (tz1 == NULL || tz2 == NULL)
+    {
+      if (tim.tm_isdst > 0)
+        tz2 = tim.tm_zone;
+      else if (tz1 == NULL)
+        {
+          tz1 = tim.tm_zone;
+          month = tim.tm_mon;
+        }
+
+      if (tz1 == NULL || tz2 == NULL)
+        {
+          tim.tm_mon++;
+          tim.tm_mon %= 12;
+        }
+
+      if (tim.tm_mon == month && tz2 == NULL)
+        tz2 = "";
+      else
+        mktime(&tim);
+    }
+  /* We want to make sure the tm struct we use later on is not dst. */
+  tim.tm_mon = month;
+  mktime(&tim);
+#elif defined (HAVE_TZNAME)
+  /* If dst is never used, tzname[1] is the empty string. */
+  tzset();
+  tz1 = tzname[0];
+  tz2 = tzname[1];
+#else
+  /* Some targets have no concept of timezones. Assume GMT without dst. */
+  tz1 = "GMT";
+  tz2 = "";
+#endif
+
 #ifdef STRUCT_TM_HAS_GMTOFF
-  // tm_gmtoff is secs EAST of UTC.
-  tzoffset = -(tim->tm_gmtoff) + tim->tm_isdst * 3600L;
+  /* tm_gmtoff is the number of seconds that you must add to GMT to get
+     local time, we need the number of seconds to add to the local time
+     to get GMT. */
+  tzoffset = -1L * tim.tm_gmtoff;
 #elif HAVE_UNDERSCORE_TIMEZONE
   tzoffset = _timezone;
 #elif HAVE_TIMEZONE
-  // timezone is secs WEST of UTC.
+  /* timezone is secs WEST of UTC. */
   tzoffset = timezone;	
 #else
-  // FIXME: there must be another global if neither tm_gmtoff nor timezone
-  // is available, esp. if tzname is valid.
-  // Richard Earnshaw <rearnsha@arm.com> has suggested using difftime to
-  // calculate between gmtime and localtime (and accounting for possible
-  // daylight savings time) as an alternative.
+  /* FIXME: there must be another global if neither tm_gmtoff nor timezone
+     is available, esp. if tzname is valid.
+     Richard Earnshaw <rearnsha@arm.com> has suggested using difftime to
+     calculate between gmtime and localtime (and accounting for possible
+     daylight savings time) as an alternative. */
   tzoffset = 0L;
-#endif
-
-#ifdef HAVE_TM_ZONE
-  tz1 = tim->tm_zone;
-  tz2 = "";
-#elif defined (HAVE_TZNAME)
-  tz1 = tzname[0];
-  tz2 = strcmp (tzname[0], tzname[1]) ? tzname[1] : "";
-#else
-  // Some targets have no concept of timezones.
-  tz1 = "???";
-  tz2 = tz1;
 #endif
 
   if ((tzoffset % 3600) == 0)
@@ -89,82 +142,4 @@ getSystemTimeZone (void)
   _Jv_Free (tzid);
 
   return retval;
-}
-
-// Get the System Timezone as reported by the OS.  It should be in
-// the form PST8PDT so we'll need to parse it and check that it's valid.
-// FIXME: Using the code from Classpath for generating the System
-// Timezone IMO is suboptimal because it ignores whether the rules for
-// DST match up.
-jstring
-java::util::TimeZone::getDefaultTimeZoneId ()
-{
-  jstring sysTimeZoneId = getSystemTimeZone ();
-
-  using namespace java::lang;
-
-  // Check if this is a valid timezone.  Make sure the IDs match
-  // since getTimeZone returns GMT if no match is found.
-  TimeZone *tz = TimeZone::getTimeZone (sysTimeZoneId);
-  if (tz->getID ()->equals (sysTimeZoneId))
-    return sysTimeZoneId;
-
-  // Check if the base part of sysTimeZoneId is a valid timezone that
-  // matches with daylight usage and rawOffset.  Make sure the IDs match
-  // since getTimeZone returns GMT if no match is found.
-  // First find start of GMT offset info and any Daylight zone name.
-  int startGMToffset = 0;
-  int sysTimeZoneIdLength = sysTimeZoneId->length();
-  for (int i = 0; i < sysTimeZoneIdLength && startGMToffset == 0; i++)
-    {
-      if (Character::isDigit (sysTimeZoneId->charAt (i)))
-	startGMToffset = i;
-    }
-
-  int startDaylightZoneName = 0;
-  jboolean usesDaylight = false;
-  for (int i = sysTimeZoneIdLength - 1;
-       i >= 0 && !Character::isDigit (sysTimeZoneId->charAt (i)); --i)
-    {
-      startDaylightZoneName = i;
-    }
-  if (startDaylightZoneName > 0)
-    usesDaylight = true;
-
-  int GMToffset
-    = Integer::parseInt (startDaylightZoneName == 0 ?
-			 sysTimeZoneId->substring (startGMToffset) :
-			 sysTimeZoneId->substring (startGMToffset,
-						   startDaylightZoneName));
-
-  // Offset could be in hours or seconds.  Convert to millis.
-  if (GMToffset < 24)
-    GMToffset *= 60 * 60;
-  GMToffset *= -1000;
-
-  jstring tzBasename = sysTimeZoneId->substring (0, startGMToffset);
-  tz = TimeZone::getTimeZone (tzBasename);
-  if (tz->getID ()->equals (tzBasename) && tz->getRawOffset () == GMToffset)
-    {
-      jboolean tzUsesDaylight = tz->useDaylightTime ();
-      if (usesDaylight && tzUsesDaylight || !usesDaylight && !tzUsesDaylight)
-	return tzBasename;
-    }
-
-  // If no match, see if a valid timezone has the same attributes as this
-  // and then use it instead.
-  jstringArray IDs = TimeZone::getAvailableIDs (GMToffset);
-  jstring *elts = elements (IDs);
-  for (int i = 0; i < IDs->length; ++i)
-    {
-      // FIXME: The daylight savings rules may not match the rules
-      // for the desired zone.
-      jboolean IDusesDaylight =
-	TimeZone::getTimeZone (elts[i])->useDaylightTime ();
-      if (usesDaylight && IDusesDaylight || !usesDaylight && !IDusesDaylight)
-	return elts[i];
-    }
-
-  // If all else fails, return null.
-  return NULL;
 }
