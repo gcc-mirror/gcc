@@ -143,7 +143,7 @@ namespace std
       virtual __streambuf_type* 
       setbuf(char_type* __s, streamsize __n)
       { 
-	if (__n) 
+	if (__s && __n) 
 	  {
 	    _M_string = __string_type(__s, __n);
 	    _M_really_sync(0, 0);
