@@ -1,5 +1,10 @@
 2003-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/18600
+	* gfortran.dg/stfunc_1.f90: New test.
+
+2003-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/16907
 	* gfortran.dg/real_index_1.f90: New test.
 
