@@ -101,7 +101,7 @@ Sun Oct 11 01:03:05 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 Sun Oct 11 00:15:29 1998  Jeffrey A Law  (law@cygnus.com)
 
-	* flow.c (find_basic_blocks): Delte "live_reachable_p" argument.
+	* flow.c (find_basic_blocks): Delete "live_reachable_p" argument.
 	(find_basic_blocks_1): Similarly.
 	* output.h (find_basic_blocks): Fix prototype.
 	* gcse.c, toplev.c: Don't pass "live_reachable_p" argument to
