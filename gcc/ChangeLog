@@ -1,3 +1,8 @@
+2003-12-30  Geoffrey Keating  <geoffk@greed.local>
+
+	* doc/tm.texi (PREFERRED_RELOAD_CLASS): Describe use of NO_REGS
+	with constants.
+
 2003-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (layout_decl): Turn bitfields into ordinary
