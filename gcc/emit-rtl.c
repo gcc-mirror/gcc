@@ -212,7 +212,7 @@ void init_emit ();
 **	special machine mode associated with the rtx (if any) is specified
 **	in <mode>.
 **
-**	    gen_rtx() can be invoked in a way which resembles the lisp-like
+**	    gen_rtx can be invoked in a way which resembles the lisp-like
 **	rtx it will generate.   For example, the following rtx structure:
 **
 **	      (plus:QI (mem:QI (reg:SI 1))
@@ -330,7 +330,7 @@ gen_rtx (va_alist)
 	      break;
 
 	    default:
-	      abort();
+	      abort ();
 	    }
 	}
     }
@@ -746,7 +746,7 @@ gen_highpart (mode, x)
       && GET_MODE_SIZE (mode) != GET_MODE_UNIT_SIZE (GET_MODE (x)))
     abort ();
   if (GET_CODE (x) == CONST_DOUBLE
-#if !(TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT || defined(REAL_IS_NOT_DOUBLE))
+#if !(TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT || defined (REAL_IS_NOT_DOUBLE))
       && GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT
 #endif
       )
@@ -922,6 +922,20 @@ operand_subword (op, i, validate_address, mode)
   /* The only remaining cases are when OP is a constant.  If the host and
      target floating formats are the same, handling two-word floating
      constants are easy.  */
+#ifdef REAL_ARITHMETIC
+  if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
+      && GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && GET_CODE (op) == CONST_DOUBLE)
+    {
+      HOST_WIDE_INT k[2];
+      REAL_VALUE_TYPE rv;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
+      return GEN_INT (k[i]);
+    }
+#else /* no REAL_ARITHMETIC */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
        || flag_pretend_float)
@@ -941,10 +955,25 @@ operand_subword (op, i, validate_address, mode)
 		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 #endif
     }
+#endif /* no REAL_ARITHMETIC */
 
   /* Single word float is a little harder, since single- and double-word
      values often do not have the same high-order bits.  We have already
      verified that we want the only defined word of the single-word value.  */
+#ifdef REAL_ARITHMETIC
+  if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
+      && GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+      && GET_CODE (op) == CONST_DOUBLE)
+    {
+      HOST_WIDE_INT l;
+      REAL_VALUE_TYPE rv;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+      return GEN_INT (l);
+    }
+#else
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
        || flag_pretend_float)
@@ -960,6 +989,7 @@ operand_subword (op, i, validate_address, mode)
       u.f = d;
       return GEN_INT (u.i);
     }
+#endif /* no REAL_ARITHMETIC */
       
   /* The only remaining cases that we can handle are integers.
      Convert to proper endianness now since these cases need it.
@@ -1840,13 +1870,13 @@ make_insn_raw (pattern)
 {
   register rtx insn;
 
-  insn = rtx_alloc(INSN);
-  INSN_UID(insn) = cur_insn_uid++;
+  insn = rtx_alloc (INSN);
+  INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
-  LOG_LINKS(insn) = NULL;
-  REG_NOTES(insn) = NULL;
+  LOG_LINKS (insn) = NULL;
+  REG_NOTES (insn) = NULL;
 
   return insn;
 }
@@ -1860,13 +1890,13 @@ make_jump_insn_raw (pattern)
   register rtx insn;
 
   insn = rtx_alloc (JUMP_INSN);
-  INSN_UID(insn) = cur_insn_uid++;
+  INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
-  LOG_LINKS(insn) = NULL;
-  REG_NOTES(insn) = NULL;
-  JUMP_LABEL(insn) = NULL;
+  LOG_LINKS (insn) = NULL;
+  REG_NOTES (insn) = NULL;
+  JUMP_LABEL (insn) = NULL;
 
   return insn;
 }
@@ -2954,10 +2984,10 @@ init_emit_once (line_numbers)
   /* This will usually be one of the above constants, but may be a new rtx.  */
   const_true_rtx = GEN_INT (STORE_FLAG_VALUE);
 
-  dconst0 = REAL_VALUE_ATOF ("0");
-  dconst1 = REAL_VALUE_ATOF ("1");
-  dconst2 = REAL_VALUE_ATOF ("2");
-  dconstm1 = REAL_VALUE_ATOF ("-1");
+  dconst0 = REAL_VALUE_ATOF ("0", DFmode);
+  dconst1 = REAL_VALUE_ATOF ("1", DFmode);
+  dconst2 = REAL_VALUE_ATOF ("2", DFmode);
+  dconstm1 = REAL_VALUE_ATOF ("-1", DFmode);
 
   for (i = 0; i <= 2; i++)
     {
