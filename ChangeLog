@@ -1,3 +1,8 @@
+2000-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (HOST_LIB_PATH, TARGET_LIB_PATH): New macros.
+	(REALLY_SET_LIB_PATH): Use them.
+
 2000-11-17  Stan Shebs  <shebs@apple.com>
 
 	* MAINTAINERS: Add self to Write After Approval list.
