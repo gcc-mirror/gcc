@@ -1,3 +1,17 @@
+2001-01-13  Richard Henderson  <rth@redhat.com>
+
+	* ggc-page.c (USING_MALLOC_PAGE_GROUPS): New; set if not using mmap.
+	(struct page_entry): Add group member.
+	(struct page_group): New.
+	(struct globals): Add page_groups member.
+	(alloc_anon): Only define for using mmap; remove valloc call.
+	(page_group_index): New.
+	(set_page_group_in_use): New.
+	(clear_page_group_in_use): New.
+	(alloc_page): Implement USING_MALLOC_PAGE_GROUPS.
+	(free_page, release_pages): Likewise.
+	* configure.in (with-gc): Default to ggc-page always.
+
 2001-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload1.c (replace_pseudos_in_call_usage): Use

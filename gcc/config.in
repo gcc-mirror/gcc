@@ -207,9 +207,6 @@
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
 
-/* Define if you have the valloc function.  */
-#undef HAVE_VALLOC
-
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
 
