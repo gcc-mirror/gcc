@@ -116,6 +116,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* Common CPP definitions used by CPP_SPEC amongst the various targets
    for handling -mcpu=xxx switches.  */
+/* ??? v8plus/v9/ultrasparc handling is tentative */
 #define CPP_CPU_SPEC "\
 %{mcypress:} \
 %{msparclite:-D__sparclite__} \
@@ -126,6 +127,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:-D__sparc_v8__} \
 %{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=v8plus:-D__sparc_v9__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_default)}}}}}}} \
@@ -135,7 +137,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* This used to translate -dalign to -malign, but that is no good
    because it can't turn off the usual meaning of making debugging dumps.  */
 /* Translate old style -m<cpu> into new style -mcpu=<cpu>.
-   At some point support for -m<cpu> will be deleted.  */
+   ??? Delete support for -m<cpu> for 2.9.  */
 
 #define CC1_SPEC "\
 %{sun4:} %{target:} \
@@ -165,6 +167,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mf930:-Asparclite} %{mf934:-Asparclite} \
 %{mcpu=sparclite:-Asparclite} \
 %{mcpu=f930:-Asparclite} %{mcpu=f934:-Asparclite} \
+%{mcpu=v8plus:-Av9} \
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:-Av9} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_default)}}}}}}} \
