@@ -1,3 +1,8 @@
+Wed May  6 14:44:14 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/r3900.h (SUBTARGET_ASM_DEBUGGING_SPEC) : 
+	Replace -gdwarf-2 with -g0.
+
 Wed May  6 11:43:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (mips-tfile.o, mips-tdump.o): Depend on system.h.
