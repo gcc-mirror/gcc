@@ -1873,22 +1873,15 @@ xstormy16_expand_arith (mode, code, dest, src0, src1, carry)
   int firstloop = 1;
 
   if (code == NEG)
-    {
-      rtx zero_reg = gen_reg_rtx (word_mode);
-      emit_move_insn (zero_reg, src0);
-      src0 = zero_reg;
-    }
+    emit_move_insn (src0, const0_rtx);
   
   for (i = 0; i < num_words; i++)
     {
       rtx w_src0, w_src1, w_dest;
       rtx insn;
       
-      if (code == NEG)
-	w_src0 = src0;
-      else
-	w_src0 = simplify_gen_subreg (word_mode, src0, mode, 
-				      i * UNITS_PER_WORD);
+      w_src0 = simplify_gen_subreg (word_mode, src0, mode, 
+				    i * UNITS_PER_WORD);
       w_src1 = simplify_gen_subreg (word_mode, src1, mode, i * UNITS_PER_WORD);
       w_dest = simplify_gen_subreg (word_mode, dest, mode, i * UNITS_PER_WORD);
 
