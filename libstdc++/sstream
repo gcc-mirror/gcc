@@ -23,13 +23,14 @@ This exception does not however invalidate any other reasons why
 the executable file might be covered by the GNU General Public License. */
 
 /* Written by Magnus Fromreide (magfr@lysator.liu.se). */
+/* seekoff and ideas for overflow is largely borrowed from libstdc++-v3 */
 
 #ifndef __SSTREAM__
 #define __SSTREAM__
 
-#include <string>
 #include <iostream.h>
 #include <streambuf.h>
+#include <string>
 
 namespace std
 {
@@ -41,185 +42,302 @@ namespace std
     typedef streampos	pos_type;
     typedef streamoff	off_type;
 
-    explicit stringbuf(int which=ios::in|ios::out) :
-      streambuf(which), buf(), mode(static_cast<ios::open_mode>(which)),
-      rpos(0), bufsize(1)
-    { }
-	
-    explicit stringbuf(const std::string &s, int which=ios::in|ios::out) :
-      streambuf(which), buf(s), mode(static_cast<ios::open_mode>(which)),
-      bufsize(1)
+    explicit
+    stringbuf(int which=ios::in|ios::out)
+      : streambuf(), mode(static_cast<ios::open_mode>(which)),
+	stream(NULL), stream_len(0)
     {
-      if(mode & ios::in)
-	{
-	  setg(&defbuf, &defbuf + bufsize, &defbuf + bufsize);
-	}
-      if(mode & ios::out)
-	{
-	  setp(&defbuf, &defbuf + bufsize);
-	}
-      rpos = (mode & ios::ate ? s.size() : 0);
+      stringbuf_init();
     }
-	
-    std::string str() const
-    {
-      const_cast<stringbuf*>(this)->sync();  // Sigh, really ugly hack
-      return buf;
-    };
 
-    void str(const std::string& s)
+    explicit
+    stringbuf(const string &str, int which=ios::in|ios::out)
+      : streambuf(), mode(static_cast<ios::open_mode>(which)),
+	stream(NULL), stream_len(0)
     {
-      buf = s;
-      if(mode & ios::in)
+      if (mode & (ios::in|ios::out))
 	{
-	  gbump(egptr() - gptr());
+	  stream_len = str.size();
+	  stream = new char_type[stream_len];
+	  str.copy(stream, stream_len);
 	}
-      if(mode & ios::out)
-	{
-	  pbump(pbase() - pptr());
-	}
-      rpos = (mode & ios::ate ? s.size() : 0);
+      stringbuf_init();
+    }
+
+    virtual
+    ~stringbuf()
+    {
+      delete[] stream;
+    }
+
+    string
+    str() const
+    {
+      if (pbase() != 0)
+	return string(stream, pptr()-pbase());
+      else
+	return string();
+    }
+
+    void
+    str(const string& str)
+    {
+      delete[] stream;
+      stream_len = str.size();
+      stream = new char_type[stream_len];
+      str.copy(stream, stream_len);
+      stringbuf_init();
     }
 
   protected:
-    inline virtual int sync();
-    inline virtual int overflow(int = EOF);
-    inline virtual int underflow();
+    // The buffer is already in gptr, so if it ends then it is out of data.
+    virtual int
+    underflow()
+    {
+      return EOF;
+    }
+
+    virtual int
+    overflow(int c = EOF)
+    {
+      int res;
+      if (mode & ios::out)
+	{
+	  if (c != EOF)
+	    {
+	      streamsize old_stream_len = stream_len;
+	      stream_len += 1;
+	      char_type* new_stream = new char_type[stream_len];
+	      memcpy(new_stream, stream, old_stream_len);
+	      delete[] stream;
+	      stream = new_stream;
+	      stringbuf_sync(gptr()-eback(), pptr()-pbase());
+	      sputc(c);
+	      res = c;
+	    }
+	  else
+	    res = EOF;
+	}
+      else
+	res = 0;
+      return res;
+    }
+
+    virtual streambuf*
+    setbuf(char_type* s, streamsize n)
+    {
+      if (n != 0)
+	{
+	  delete[] stream;
+	  stream = new char_type[n];
+	  memcpy(stream, s, n);
+	  stream_len = n;
+	  stringbuf_sync(0, 0);
+	}
+      return this;
+    }
+
+    virtual pos_type
+    seekoff(off_type off, ios::seek_dir way, int which = ios::in | ios::out)
+    {
+      pos_type ret =  pos_type(off_type(-1));
+      bool testin = which & ios::in && mode & ios::in;
+      bool testout = which & ios::out && mode & ios::out;
+      bool testboth = testin && testout && way != ios::cur;
+
+      if (stream_len && ((testin != testout) || testboth))
+	{
+	  char_type* beg = stream;
+	  char_type* curi = NULL;
+	  char_type* curo = NULL;
+	  char_type* endi = NULL;
+	  char_type* endo = NULL;
+
+	  if (testin)
+	    {
+	      curi = gptr();
+	      endi = egptr();
+	    }
+	  if (testout)
+	    {
+	      curo = pptr();
+	      endo = epptr();
+	    }
+
+	  off_type newoffi = 0;
+	  off_type newoffo = 0;
+	  if (way == ios::beg)
+	    {
+	      newoffi = beg - curi;
+	      newoffo = beg - curo;
+	    }
+	  else if (way == ios::end)
+	    {
+	      newoffi = endi - curi;
+	      newoffo = endo - curo;
+	    }
+
+	  if (testin && newoffi + off + curi - beg >= 0 &&
+	      endi - beg >= newoffi + off + curi - beg)
+	    {
+	      gbump(newoffi + off);
+	      ret = pos_type(newoffi + off + curi);
+	    }
+	  if (testout && newoffo + off + curo - beg >= 0 &&
+	      endo - beg >= newoffo + off + curo - beg)
+	    {
+	      pbump(newoffo + off);
+	      ret = pos_type(newoffo + off + curo);
+	    }
+	}
+      return ret;
+    }
+
+    virtual pos_type
+    seekpos(pos_type sp, int which = ios::in | ios::out)
+    {
+      pos_type ret = seekoff(sp, ios::beg, which);
+      return ret;
+    }
+
   private:
-    std::string			buf;
-    ios::open_mode		mode;
-    std::string::size_type	rpos;
-    streamsize			bufsize;
-    char			defbuf;
-  };
+    void
+    stringbuf_sync(streamsize i, streamsize o)
+    {
+      if (mode & ios::in)
+	setg(stream, stream + i, stream + stream_len);
+      if (mode & ios::out)
+	{
+	  setp(stream, stream + stream_len);
+	  pbump(o);
+	}
+    }
+    void
+    stringbuf_init()
+    {
+      if (mode & ios::ate)
+	stringbuf_sync(0, stream_len);
+      else
+	stringbuf_sync(0, 0);
+    }
 
-  class stringstreambase : virtual public ios {
-  protected:
-    stringbuf __my_sb;
+  private:
+    ios::open_mode	mode;
+    char_type*		stream;
+    streamsize		stream_len;
+  };
+
+  class istringstream : public istream {
   public:
-    std::string str() const
+    typedef char	char_type;
+    typedef int		int_type;
+    typedef streampos	pos_type;
+    typedef streamoff	off_type;
+
+    explicit
+    istringstream(int which=ios::in)
+      : istream(&sb), sb(which | ios::in)
+    { }
+
+    explicit
+    istringstream(const string& str, int which=ios::in)
+      : istream(&sb), sb(str, which | ios::in)
+    { }
+
+    stringbuf*
+    rdbuf() const
     {
-      return dynamic_cast<stringbuf*>(_strbuf)->str();
+      return const_cast<stringbuf*>(&sb);
     }
-    void str(const std::string& s)
+
+    string
+    str() const
     {
-      clear();
-      dynamic_cast<stringbuf*>(_strbuf)->str(s);
+      return rdbuf()->str();
     }
-	
-    stringbuf* rdbuf()
+    void
+    str(const string& s)
     {
-      return &__my_sb;
+      rdbuf()->str(s);
     }
-  protected:
-    stringstreambase(int which) :
-      __my_sb(which)
-    {
-      init (&__my_sb);
-    }
-	
-    stringstreambase(const std::string& s, int which) :
-      __my_sb(s, which)
-    {
-      init (&__my_sb);
-    }
+  private:
+    stringbuf sb;
   };
-    
-  class istringstream : public stringstreambase, public istream {
+
+  class ostringstream : public ostream {
   public:
-    istringstream(int which=ios::in) :
-      stringstreambase(which)
+    typedef char	char_type;
+    typedef int		int_type;
+    typedef streampos	pos_type;
+    typedef streamoff	off_type;
+
+    explicit
+    ostringstream(int which=ios::out)
+      : ostream(&sb), sb(which | ios::out)
     { }
-	
-    istringstream(const std::string& s, int which=ios::in) :
-      stringstreambase(s, which)
+
+    explicit
+    ostringstream(const string& str, int which=ios::out)
+      : ostream(&sb), sb(str, which | ios::out)
     { }
+
+    stringbuf*
+    rdbuf() const
+    {
+      return const_cast<stringbuf*>(&sb);
+    }
+
+    string
+    str() const
+    {
+      return rdbuf()->str();
+    }
+
+    void str(const string& s)
+    {
+      rdbuf()->str(s);
+    }
+  private:
+    stringbuf sb;
   };
-    
-  class ostringstream : public stringstreambase, public ostream {
+
+  class stringstream : public iostream {
   public:
-    ostringstream(int which=ios::out) :
-      stringstreambase(which)
+    typedef char	char_type;
+    typedef int		int_type;
+    typedef streampos	pos_type;
+    typedef streamoff	off_type;
+
+    explicit
+    stringstream(int which=ios::out|ios::in)
+      : iostream(&sb), sb(which)
     { }
-	
-    ostringstream(const std::string& s, int which=ios::out) :
-      stringstreambase(s, which)
+
+    explicit
+    stringstream(const string& str, int which=ios::out|ios::in)
+      : iostream(&sb), sb(str, which)
     { }
+
+    stringbuf*
+    rdbuf() const
+    {
+      return const_cast<stringbuf*>(&sb);
+    }
+
+    string
+    str() const
+    {
+      return rdbuf()->str();
+    }
+
+    void
+    str(const string& s)
+    {
+      rdbuf()->str(s);
+    }
+  private:
+    stringbuf sb;
   };
-    
-  class stringstream : public stringstreambase, public iostream {
-  public:
-    stringstream(int which=ios::in|ios::out) :
-      stringstreambase(which)
-    { }
-    
-    stringstream(const std::string &s, int which=ios::in|ios::out) :
-      stringstreambase(s, which)
-    { }
-  };
-}
-
-inline int std::stringbuf::sync()
-{
-  if((mode & ios::out) == 0)
-    return EOF;
-
-  streamsize n = pptr() - pbase();
-  if(n)
-    {
-      buf.replace(rpos, std::string::npos, pbase(), n);
-      if(buf.size() - rpos != n)
-	return EOF;
-      rpos += n;
-      pbump(-n);
-      gbump(egptr() - gptr());
-    }
-  return 0;
-}
-
-inline int std::stringbuf::overflow(int ch)
-{
-  if((mode & ios::out) == 0)
-    return EOF;
-
-  streamsize n = pptr() - pbase();
-
-  if(n && sync())
-    return EOF;
-
-  if(ch != EOF)
-    {
-      std::string::size_type oldSize = buf.size();
-      
-      buf.replace(rpos, std::string::npos, ch);
-      if(buf.size() - oldSize != 1)
-	return EOF;
-      ++rpos;
-    }
-  return 0;
-}
-
-inline int std::stringbuf::underflow()
-{
-  sync();
-  if((mode & ios::in) == 0)
-    {
-      return EOF;
-    }
-  if(rpos >= buf.size())
-    {
-      return EOF;
-    }
-  
-  std::string::size_type n = egptr() - eback();
-  std::string::size_type s;
-
-  s = buf.copy(eback(), n, rpos);
-  pbump(pbase() - pptr());
-  gbump(eback() - gptr());
-  int res = (0377 & buf[rpos]);
-  rpos += s;
-  return res;
-}
+};
 
 #endif /* not __STRSTREAM__ */
