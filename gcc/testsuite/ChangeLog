@@ -1,3 +1,7 @@
+2001-09-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20010915-1.c: New test.
+
 2001-09-14  Janis Johnson  <janis187@us.ibm.com>
 
 	* g77.dg/bprob: New directory.
