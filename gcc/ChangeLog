@@ -1,3 +1,8 @@
+2004-04-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64intrin.h: Add intermediate cast to void * to
+	avoid aliasing warning.
+
 2004-04-22  Jan Hubicka  <jh@suse.cz>
 
       * cfgloopmanip.c (scale_bbs_frequencies): Use RDIV macro
