@@ -1,3 +1,11 @@
+Sat May 13 00:09:59 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/t-avr: Added definition of FLOAT while generates
+	fp-bit.c
+
+	* config/avr/avr.md: `NEXT_INSN (insn)' substituted to `insn' in
+	peepholes for tst+jump = sbrs/sbrc optimization.
+
 Fry May 12 20:03:00 CEST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_push_insn): Do not adjust stack pointer when

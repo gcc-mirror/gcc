@@ -1856,7 +1856,7 @@
 	(if_then_else (lt (cc0) (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
-  "jump_over_one_insn_p (NEXT_INSN (insn), operands[1])"
+  "jump_over_one_insn_p (insn, operands[1])"
   "sbrs %B0,7")
 
 (define_peephole
@@ -1874,7 +1874,7 @@
 	(if_then_else (lt (cc0) (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
-  "jump_over_one_insn_p (NEXT_INSN (insn), operands[1])"
+  "jump_over_one_insn_p (insn, operands[1])"
   "sbrs %D0,7")
 
 (define_peephole
