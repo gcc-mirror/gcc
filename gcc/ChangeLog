@@ -1,5 +1,31 @@
 2004-09-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	* unroll.c (unroll_loop, calculate_giv_inc, initial_reg_note_copy,
+	final_reg_note_copy, copy_loop_body, fold_rtx_mult_add,
+	final_giv_value, loop_iterations): Replace abort with gcc_assert and
+	gcc_unreachable.
+	* value-prof.c (rtl_find_values_to_profile,
+	rtl_register_value_prof_hooks, tree_find_values_to_profile,
+	tree_value_profile_transformations, tree_register_value_prof_hooks):
+	Likewise.
+	* varasm.c (named_section_flags, named_section, make_decl_rtl,
+	asm_emit_uninitialised, assemble_external, assemble_integer,
+	decode_addr_const, const_hash_1, compare_constant, copy_constant,
+	force_const_mem, output_constant_pool_2, output_constant_pool_1,
+	output_constant, output_constructor, supports_one_only,
+	make_decl_one_only, decl_tls_model, default_no_named_section,
+	default_elf_select_section_1, default_unique_section_1): Likewise.
+	* varray.c (varray_copy): Likewise.
+	* var-tracking.c (stack_adjust_offset_pre_post, variable_htab_free,
+	variable_union, dataflow_set_different_2, count_uses,
+	variable_was_changed, set_frame_base_location, set_variable_part,
+	emit_note_insn_var_location, vt_emit_notes,
+	vt_add_function_parameters): Likewise.
+	* vec.c (vec_gc_o_reserve): Likewise.
+	* vmsdbgout.c (addr_const_to_string): Likewise.
+
+2004-09-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	* lambda-mat.c (lambda_matrix_inverse_hard): Use gcc_assert
 	and gcc_unreachable instead of abort.
 	* lambda.h (lambda_vector_min_nz): Likewise.
@@ -205,6 +231,7 @@
 	* config/cris/cris.md ("return"): For location of return address,
 	also check cris_return_address_on_stack.
 
+>>>>>>> 2.5354
 2004-09-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Fix typo in
@@ -7164,7 +7191,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
