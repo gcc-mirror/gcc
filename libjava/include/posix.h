@@ -49,6 +49,13 @@ extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 
+inline void
+_Jv_platform_close_on_exec (jint fd)
+{
+  // Ignore errors.
+  ::fcntl (fd, F_SETFD, FD_CLOEXEC);
+}
+
 #ifndef DISABLE_JAVA_NET
 
 static inline int
@@ -67,13 +74,6 @@ inline int
 _Jv_close (jint fd)
 {
   return ::close (fd);
-}
-
-inline void
-_Jv_platform_close_on_exec (jint fd)
-{
-  // Ignore errors.
-  ::fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
 
 // Avoid macro definitions of bind from system headers, e.g. on

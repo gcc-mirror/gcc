@@ -1,3 +1,11 @@
+2002-11-22  Michael Koch <konqueror@gmx.de>
+
+	* include/posix.h:
+	(_Jv_platform_on_close): Moved out of #ifndef DISBALE_JAVA_NET.
+	* include/win32.h:
+	(_Jv_platform_on_close): Moved out of #ifndef DISBALE_JAVA_NET.
+	(backtrace): Moved out of #ifndef DISBALE_JAVA_NET.
+
 2002-11-21  Michael Koch <konqueror@gmx.de>
 
 	* include/posix.h: I put too much into the #ifndef DISABLE_JAVA_NET.

@@ -38,6 +38,12 @@ extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
 
+inline void
+_Jv_platform_close_on_exec (jint)
+{
+  // Ignore.
+}
+
 #ifndef DISBALE_JAVA_NET
 
 static inline int
@@ -56,12 +62,6 @@ inline int
 _Jv_close (jint fd)
 {
   return ::closesocket (fd);
-}
-
-inline void
-_Jv_platform_close_on_exec (jint)
-{
-  // Ignore.
 }
 
 inline int
@@ -93,12 +93,13 @@ _Jv_read(int s, void *buf, int len)
 {
   return ::recv (s, (char*) buf, len, 0);
 }
+
+#endif /* DISBALE_JAVA_NET */
+
 #define HAVE_BACKTRACE
 
 /* Store up to SIZE return address of the current program state in
    ARRAY and return the exact number of values stored.  */
 extern int backtrace (void **__array, int __size);
-
-#endif /* DISBALE_JAVA_NET */
 
 #endif /* __JV_WIN32_H__ */
