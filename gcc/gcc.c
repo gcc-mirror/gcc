@@ -2431,6 +2431,13 @@ process_command (argc, argv)
 		add_prefix (&startfile_prefix, value, 1, 0, temp);
 		add_prefix (&include_prefix, concat (value, "include", ""),
 			    1, 0, 0);
+
+		/* As a kludge, if the arg is "stageN/", just add
+		   "include" to the include prefix.  */
+		if (strlen (value) == 7 && value[6] == '/'
+		    && strncmp (value, "stage", 5) == 0
+		    && isdigit (value[5]))
+		  add_prefix (&include_prefix, "include", 1, 0, 0);
 	      }
 	      break;
 
