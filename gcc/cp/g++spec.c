@@ -34,9 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
 #endif
-#ifndef NEED_MATH_LIBRARY
-#define NEED_MATH_LIBRARY 1	/* Default is pass MATH_LIBRARY to linker */
-#endif
 
 extern char *xmalloc PROTO((size_t));
 
@@ -83,8 +80,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      LANGSPEC, MATHLIB, or WITHLIBC.  */
   int *args;
 
-  /* By default, we throw on the math library.  */
-  int need_math = NEED_MATH_LIBRARY;
+  /* By default, we throw on the math library if we have one.  */
+  int need_math = (MATH_LIBRARY[0] != '\0');
 
   /* The total number of arguments with the new stuff.  */
   int argc;
@@ -128,6 +125,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	    }
 	  else if (strcmp (argv[i], "-lm") == 0
 		   || strcmp (argv[i], "-lmath") == 0
+		   || strcmp (argv[i], MATH_LIBRARY) == 0
 #ifdef ALT_LIBM
 		   || strcmp (argv[i], ALT_LIBM) == 0
 #endif

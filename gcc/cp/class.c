@@ -5449,3 +5449,49 @@ is_empty_class (type)
     t = TREE_CHAIN (t);
   return (t == NULL_TREE);
 }
+
+/* Find the enclosing class of the given NODE.  NODE can be a *_DECL or
+   a *_TYPE node.  NODE can also be a local class.  */
+
+tree
+get_enclosing_class (type)
+     tree type;
+{
+  tree node = type;
+
+  while (node && TREE_CODE (node) != NAMESPACE_DECL)
+    {
+      switch (TREE_CODE_CLASS (TREE_CODE (node)))
+	{
+	case 'd':
+	  node = DECL_CONTEXT (node);
+	  break;
+
+	case 't':
+	  if (node != type)
+	    return node;
+	  node = TYPE_CONTEXT (node);
+	  break;
+
+	default:
+	  my_friendly_abort (0);
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Return 1 if TYPE or one of its enclosing classes is derived from BASE.  */
+
+int
+is_base_of_enclosing_class (base, type)
+     tree base, type;
+{
+  while (type)
+    {
+      if (get_binfo (base, type, 0))
+	return 1;
+
+      type = get_enclosing_class (type);
+    }
+  return 0;
+}
