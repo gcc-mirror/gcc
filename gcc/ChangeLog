@@ -4,6 +4,14 @@
 	(convert_cset): Change inbuf to type ICONV_CONST char.
 	* Makefile.in (LIBS): Add LIBICONV.
 
+	* doc/invoke.texi (-falign-functions): Document that
+	when n is zero then a machine-dependent default is used.
+	(-falign-labels): Document that when n is zero then a
+	machine-dependent default is used and that -falign-labels =1
+	is equivalent to -fno-align-labels.
+	(-falign-loops): Likewise.
+	(-falign-jumps): Likewise.
+
 2003-07-06  Art Haas  <ahaas@airmail.net>
 
 	* f/global.c (ffeglobal_type_string_): Fix obsolete GCC array
