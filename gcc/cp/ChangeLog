@@ -1,3 +1,7 @@
+Fri Oct  2 02:07:26 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* parse.y (nomods_initdcl0): Set up the parser stack correctly.
+
 1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Don't complain about different

@@ -1883,7 +1883,7 @@ notype_initdcl0:
 nomods_initdcl0:
           notype_declarator maybeasm
             { /* Set things up as initdcl0_innards expects.  */
-	      $<ttype>$ = $1; 
+	      $<ttype>2 = $1; 
               $1 = NULL_TREE; }
           initdcl0_innards 
             {}
