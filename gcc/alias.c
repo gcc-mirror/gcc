@@ -993,13 +993,24 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
       return;
     }
 
-  /* This is not the first set.  If the new value is not related to the
-     old value, forget the base value. Note that the following code is
-     not detected:
-     extern int x, y;  int *p = &x; p += (&y-&x);
+  /* If this is not the first set of REGNO, see whether the new value
+     is related to the old one.  There are two cases of interest:
+
+	(1) The register might be assigned an entirely new value
+	    that has the same base term as the original set.
+
+	(2) The set might be a simple self-modification that
+	    cannot change REGNO's base value.
+
+     If neither case holds, reject the original base value as invalid.
+     Note that the following situation is not detected:
+
+         extern int x, y;  int *p = &x; p += (&y-&x);
+
      ANSI C does not allow computing the difference of addresses
      of distinct top level objects.  */
-  if (new_reg_base_value[regno])
+  if (new_reg_base_value[regno] != 0
+      && find_base_value (src) != new_reg_base_value[regno])
     switch (GET_CODE (src))
       {
       case LO_SUM:
