@@ -1850,3 +1850,53 @@ sh_function_arg_partial_nregs (cum, mode, type, named)
     }
   return 0;
 }
+
+/* Return non-zero if REG is not used after INSN.
+   We assume REG is a reload reg, and therefore does
+   not live past labels or calls or jumps.  */
+int
+reg_unused_after (reg, insn)
+     rtx reg;
+     rtx insn;
+{
+  enum rtx_code code, prev_code = UNKNOWN;
+  rtx set;
+
+  /* If the reg is set by this instruction, then it is safe for our
+     case.  Disregard the case where this is a store to memory, since
+     we are checking a register used in the store address.  */
+  set = single_set (insn);
+  if (set && GET_CODE (SET_DEST (set)) != MEM
+      && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+    return 1;
+
+  while (insn = NEXT_INSN (insn))
+    {
+      if (prev_code == CALL_INSN && call_used_regs[REGNO (reg)])
+	return 1;
+
+      code = GET_CODE (insn);
+      if (GET_CODE (insn) == CODE_LABEL)
+	return 1;
+
+      if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	{
+	  insn = XVECEXP (PATTERN (insn), 0, 0);
+	  code = GET_CODE (insn);
+	}
+
+      if (GET_RTX_CLASS (code) == 'i')
+	{
+	  rtx set = single_set (insn);
+
+	  if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+	    return 0;
+	  if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	    return GET_CODE (SET_DEST (set)) != MEM;
+	  if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	    return 0;
+	}
+      prev_code = code;
+    }
+  return 1;
+}
