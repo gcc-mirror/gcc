@@ -1,3 +1,8 @@
+2003-05-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/linux.h, config/alpha/linux-elf.h: Remove
+	code protected by USE_GNULIBC_1.
+
 2003-05-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc: Purge all targets obsoleted in GCC 3.3.  Also
