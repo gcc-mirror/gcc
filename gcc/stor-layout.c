@@ -1408,6 +1408,7 @@ layout_type (type)
 #else
 	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
 #endif
+	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
 
 #ifdef ROUND_TYPE_SIZE
 	if (TYPE_SIZE (type) != 0)

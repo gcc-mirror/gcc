@@ -1,3 +1,9 @@
+2001-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20010903-1.c: New test.
+	* gcc.c-torture/execute/20010904-1.c: New test.
+	* gcc.c-torture/execute/20010904-2.c: New test.
+
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4203
