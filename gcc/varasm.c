@@ -5110,12 +5110,16 @@ assemble_alias (decl, target)
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
 #endif
   TREE_ASM_WRITTEN (decl) = 1;
-#else
-#ifdef ASM_OUTPUT_WEAK_ALIAS
+#else /* !ASM_OUTPUT_DEF */
+#if defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
   if (! DECL_WEAK (decl))
     warning ("only weak aliases are supported in this configuration");
 
+#ifdef ASM_WEAKEN_DECL
+  ASM_WEAKEN_DECL (asm_out_file, decl, name, IDENTIFIER_POINTER (target));
+#else
   ASM_OUTPUT_WEAK_ALIAS (asm_out_file, name, IDENTIFIER_POINTER (target));
+#endif
   TREE_ASM_WRITTEN (decl) = 1;
 #else
   warning ("alias definitions not supported in this configuration; ignored");

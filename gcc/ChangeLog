@@ -1,3 +1,11 @@
+2002-03-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* defaults.h (SUPPORTS_WEAK): Set if ASM_WEAKEN_DECL.
+	* varasm.c (assemble_alias): Use ASM_WEAKEN_DECL.
+	* doc/tm.texi (ASM_WEAKEN_DECL): Document.
+	(ASM_WEAKEN_LABEL): Mention ASM_WEAKEN_DECL.
+	(SUPPORTS_WEAK): Likewise.
+
 2002-03-19  Richard Henderson  <rth@redhat.com>
 
 	PR 5879
