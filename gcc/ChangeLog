@@ -1,5 +1,17 @@
 2002-10-18  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): Define 
+	__enable_execute_stack function. 
+	* config/alpha/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Define
+	as NETBSD_ENABLE_EXECUTE_STACK.
+	* config/i386/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
+	* config/i386/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
+	* config/i386/netbsd64.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
+	* config/sparc/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
+	* config/sparc/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
+
+2002-10-18  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/i386/i386.c (x86_initialize_trampoline): Emit a call
 	to __enable_execute_stack with the address of the trampoline
 	if TRANSFER_FROM_TRAMPOLINE is defined.

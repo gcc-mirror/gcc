@@ -67,3 +67,6 @@
    prefix is added.  */
 #undef GOT_SYMBOL_NAME
 #define GOT_SYMBOL_NAME "GLOBAL_OFFSET_TABLE_"
+
+/* Attempt to enable execute permissions on the stack.  */
+#define TRANSFER_FROM_TRAMPOLINE NETBSD_ENABLE_EXECUTE_STACK
