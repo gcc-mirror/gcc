@@ -279,7 +279,6 @@ local_fold (tree t)
   /* Strip away useless type conversions.  Both the NON_LVALUE_EXPR that
      may have been added by fold, and "useless" type conversions that might
      now be apparent due to propagation.  */
-  STRIP_MAIN_TYPE_NOPS (t);
   STRIP_USELESS_TYPE_CONVERSION (t);
 
   return t;

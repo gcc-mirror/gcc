@@ -1,5 +1,10 @@
 2004-07-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	
+	* tree-ssa.c (tree_ssa_useless_type_conversion): Also look at
+	VIEW_CONVERT_EXPR and NON_LVALUE_EXPR.
+	* tree-ssa-ccp.c (fold_stmt): Call just STRIP_USELESS_TYPE_CONVERSION.
+	* tree-ssa-dom.c (local_fold): Likewise.
+
 	* langhooks-def.h (LANG_HOOKS_TYPE_MAX_SIZE): New langhook.
 	* langhooks.h (strct lang_hooks): New field type_max_size.
 	* function.c (assign_temp): Call it.
