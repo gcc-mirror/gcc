@@ -123,14 +123,14 @@ indirect_array<_Tp>::operator= (const _Expr<_Dom,_Tp>& __e) const
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _Tp>							\
 inline void								\
-indirect_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
+indirect_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const	\
 {									\
   _Array_augmented_##name (_M_array, _M_index, _Array<_Tp> (__v), _M_sz); \
 }									\
 									\
 template<typename _Tp> template<class _Dom>				\
 inline void								\
-indirect_array<_Tp>::operator##op##= (const _Expr<_Dom,_Tp>& __e) const \
+indirect_array<_Tp>::operator op##= (const _Expr<_Dom,_Tp>& __e) const  \
 {									\
   _Array_augmented_##name (_M_array, _M_index, __e, _M_sz);		\
 }
