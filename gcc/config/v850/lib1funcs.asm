@@ -1170,8 +1170,8 @@ __return_r29_r31:
 	.align	2
 	.globl	__save_r31
 	.type	__save_r31,@function
-	/* Allocate space and save register 31 on the stack */
-	/* Also allocate space for the argument save area */
+	/* Allocate space and save register 31 on the stack.  */
+	/* Also allocate space for the argument save area.  */
 	/* Called via:	jalr __save_r31,r10 */
 __save_r31:
 	addi	-20,sp,sp
@@ -1179,7 +1179,7 @@ __save_r31:
 	jmp	[r10]
 	.size	__save_r31,.-__save_r31
 
-	/* Restore saved registers, deallocate stack and return to the user */
+	/* Restore saved registers, deallocate stack and return to the user.  */
 	/* Called via:	jr __return_r31 */
 	.align	2
 	.globl	__return_r31
@@ -1196,7 +1196,7 @@ __return_r31:
 	.align	2
 	.globl	__save_r6_r9
 	.type	__save_r6_r9,@function
-	/* Save registers 6 .. 9 on the stack for variable argument functions */
+	/* Save registers 6 .. 9 on the stack for variable argument functions.  */
 	/* Called via:	jalr __save_r6_r9,r10 */
 __save_r6_r9:
 	mov	ep,r1
@@ -1215,8 +1215,8 @@ __save_r6_r9:
 	.align	2
 	.globl	__save_interrupt
 	.type	__save_interrupt,@function
-	/* Save registers r1, r4 on stack and load up with expected values */
-	/* Note, 12 bytes of stack have already been allocated. */
+	/* Save registers r1, r4 on stack and load up with expected values.  */
+	/* Note, 12 bytes of stack have already been allocated.  */
 	/* Called via:	jalr __save_interrupt,r10 */
 __save_interrupt:
 	st.w	ep,0[sp]
@@ -1229,7 +1229,7 @@ __save_interrupt:
 	jmp	[r10]
 	.size	__save_interrupt,.-__save_interrupt
 
-	/* Restore saved registers, deallocate stack and return from the interrupt */
+	/* Restore saved registers, deallocate stack and return from the interrupt.  */
 	/* Called via:	jr __return_interrupt */
 	.align	2
 	.globl	__return_interrupt
@@ -1249,8 +1249,8 @@ __return_interrupt:
 	.align	2
 	.globl	__save_all_interrupt
 	.type	__save_all_interrupt,@function
-	/* Save all registers except for those saved in __save_interrupt */
-	/* allocate enough stack for all of the registers & 16 bytes of space */
+	/* Save all registers except for those saved in __save_interrupt.  */
+	/* Allocate enough stack for all of the registers & 16 bytes of space.  */
 	/* Called via:	jalr __save_all_interrupt,r10 */
 __save_all_interrupt:
 	addi	-120,sp,sp
@@ -1288,8 +1288,8 @@ __save_all_interrupt:
 
 	.globl	__restore_all_interrupt
 	.type	__restore_all_interrupt,@function
-	/* Restore all registers saved in __save_all_interrupt */
-	/* & deallocate the stack space */
+	/* Restore all registers saved in __save_all_interrupt and
+	   deallocate the stack space.  */
 	/* Called via:	jalr __restore_all_interrupt,r10 */
 __restore_all_interrupt:
 	mov	ep,r1
@@ -1455,7 +1455,7 @@ __callt_save_interrupt: .short ctoff(.L_save_interrupt)
         .call_table_text
 
 	/* Restore saved registers, deallocate stack and return from the interrupt.  */
-        /* Called via:  callt ctoff(__callt_restore_itnerrupt).   */
+        /* Called via:  callt ctoff(__callt_restore_itnerrupt).  */
 	.text
 	.align	2
 	.globl	__return_interrupt
@@ -1513,8 +1513,8 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 	prepare {r20 - r29, r31}, 4
 	ctret	
 
-	/* Restore all registers saved in __save_all_interrupt.  */
-	/* & deallocate the stack space.  */
+	/* Restore all registers saved in __save_all_interrupt
+	   deallocate the stack space.  */
 	/* Called via:	callt ctoff(__callt_restore_all_interrupt).  */
 	.align 2
 .L_restore_all_interrupt:
@@ -1570,7 +1570,7 @@ __callt_restore_all_interrupt:	.short ctoff(.L_restore_all_interrupt)
 .L_return_##START##_r29:							;\
 	dispose 0, { START - r29 }, r31						;\
 										;\
-	/* Place the offsets of the start of these funcs into the call table. */;\
+	/* Place the offsets of the start of these funcs into the call table.  */;\
 	.call_table_data							;\
 										;\
 	.global	__callt_save_##START##_r29					;\
@@ -1597,7 +1597,7 @@ __callt_return_##START##_r29:	.short ctoff(.L_return_##START##_r29 )
 .L_return_##START##_r31c:							;\
 	dispose 4, { START - r29, r31}, r31					;\
 										;\
-	/* Place the offsets of the start of these funcs into the call table. */;\
+	/* Place the offsets of the start of these funcs into the call table.  */;\
 	.call_table_data							;\
 										;\
 	.global	__callt_save_##START##_r31c					;\

@@ -1,5 +1,12 @@
 2003-12-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/v850/lib1funcs.asm: Fix comment formatting.
+	* config/v850/v850.c: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/v850/v850.md: Likewise.
+
+2003-12-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/i386.md (*movqi_insv_2): Remove AND in the
 	set source.
 
