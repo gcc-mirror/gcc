@@ -2395,9 +2395,7 @@ emit_unop_insn (icode, target, op0, code)
 
    INSNS is a block of code generated to perform the operation, not including
    the CLOBBER and final copy.  All insns that compute intermediate values
-   are first emitted, followed by the block as described above.  Only
-   INSNs are allowed in the block; no library calls or jumps may be
-   present.
+   are first emitted, followed by the block as described above.  
 
    TARGET, OP0, and OP1 are the output and inputs of the operations,
    respectively.  OP1 may be zero for a unary operation.
@@ -2406,7 +2404,8 @@ emit_unop_insn (icode, target, op0, code)
    on the last insn.
 
    If TARGET is not a register, INSNS is simply emitted with no special
-   processing.
+   processing.  Likewise if anything in INSNS is not an INSN or if
+   there is a libcall block inside INSNS.
 
    The final insn emitted is returned.  */
 
@@ -2421,6 +2420,11 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
 
   if (GET_CODE (target) != REG || reload_in_progress)
     return emit_insns (insns);
+  else
+    for (insn = insns; insn; insn = NEXT_INSN (insn))
+      if (GET_CODE (insn) != INSN
+	  || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	return emit_insns (insns);
 
   /* First emit all insns that do not store into words of the output and remove
      these from the list.  */
@@ -2430,9 +2434,6 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
       int i;
 
       next = NEXT_INSN (insn);
-
-      if (GET_CODE (insn) != INSN)
-	abort ();
 
       if (GET_CODE (PATTERN (insn)) == SET)
 	set = PATTERN (insn);
