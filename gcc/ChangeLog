@@ -1,3 +1,11 @@
+2005-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bt-load.c, cfgloop.c, convert.c, dominance.c, global.c,
+	loop-invariant.c, stmt.c, tree-ssa-forwprop.c,
+	tree-ssa-live.c, tree-ssanames.c, tree-vn.c,
+	config/host-linux.c, config/arm/fpa.md, config/avr/avr.h:
+	Update copyright.
+
 2005-02-17  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/19917
