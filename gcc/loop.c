@@ -9235,19 +9235,10 @@ insert_bct (loop_start, loop_end, loop_info)
 				   NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
 	if (increment_value_abs != 1)
-	  {
-	    /* ??? This will generate an expensive divide instruction for
-	       most targets.  The original authors apparently expected this
-	       to be a shift, since they test for power-of-2 divisors above,
-	       but just naively generating a divide instruction will not give 
-	       a shift.  It happens to work for the PowerPC target because
-	       the rs6000.md file has a divide pattern that emits shifts.
-	       It will probably not work for any other target.  */
-	    iterations_num_reg = expand_binop (loop_var_mode, sdiv_optab,
-					       temp_reg,
-					       GEN_INT (increment_value_abs),
-					       NULL_RTX, 0, OPTAB_LIB_WIDEN);
-	  }
+	  iterations_num_reg = expand_binop (loop_var_mode, asr_optab,
+					     temp_reg,
+					     GEN_INT (exact_log2 (increment_value_abs)),
+					     NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	else
 	  iterations_num_reg = temp_reg;
       }
