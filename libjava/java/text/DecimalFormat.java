@@ -330,7 +330,7 @@ public class DecimalFormat extends NumberFormat
     useExponentialNotation = false;
     groupingUsed = false;
     maximumFractionDigits = 0;
-    maximumIntegerDigits = 309;
+    maximumIntegerDigits = MAXIMUM_INTEGER_DIGITS;
     minimumFractionDigits = 0;
     minimumIntegerDigits = 1;
 
@@ -562,7 +562,7 @@ public class DecimalFormat extends NumberFormat
 	    dest.append (symbols.getDecimalSeparator(), NumberFormat.Field.DECIMAL_SEPARATOR);
 	  }
 
-
+	int fraction_begin = dest.length();
 	dest.setDefaultAttribute(NumberFormat.Field.FRACTION);
 	for (count = 0;
 	     count < localMaximumFractionDigits
@@ -592,6 +592,12 @@ public class DecimalFormat extends NumberFormat
 	    total_digits -= extra_zeros;
 	    if (total_digits == 0 && !decimalSeparatorAlwaysShown)
 	      dest.cutTail(1);
+	  }
+
+	if (fieldPos != null && fieldPos.getField() == FRACTION_FIELD)
+	  {
+	    fieldPos.setBeginIndex(fraction_begin);
+	    fieldPos.setEndIndex(dest.length());
 	  }
 
 	// Finally, print the exponent.
@@ -793,14 +799,19 @@ public class DecimalFormat extends NumberFormat
 
   public Number parse (String str, ParsePosition pos)
   {
-    // Our strategy is simple: copy the text into a buffer,
-    // translating or omitting locale-specific information.  Then
-    // let Double or Long convert the number for us.
+    /*
+     * Our strategy is simple: copy the text into separate buffers: one for the int part,
+     * one for the fraction part and for the exponential part.
+     * We translate or omit locale-specific information.  
+     * If exponential is sufficiently big we merge the fraction and int part and
+     * remove the '.' and then we use Long to convert the number. In the other
+     * case, we use Double to convert the full number.
+     */
 
     boolean is_neg = false;
     int index = pos.getIndex();
-    StringBuffer buf = new StringBuffer ();
-
+    StringBuffer int_buf = new StringBuffer ();
+        
     // We have to check both prefixes, because one might be empty.  We
     // want to pick the longest prefix that matches.
     boolean got_pos = str.startsWith(positivePrefix, index);
@@ -840,11 +851,17 @@ public class DecimalFormat extends NumberFormat
     // FIXME: do we have to respect minimum digits?
     // What about leading zeros?  What about multiplier?
 
+    StringBuffer buf = int_buf;
+    StringBuffer frac_buf = null;
+    StringBuffer exp_buf = null;
     int start_index = index;
     int max = str.length();
-    int last = index + maximumIntegerDigits;
+    int exp_index = -1;
+    int last = index + MAXIMUM_INTEGER_DIGITS;
+
     if (last > 0 && max > last)
       max = last;
+
     char zero = symbols.getZeroDigit();
     int last_group = -1;
     boolean int_part = true;
@@ -863,12 +880,11 @@ public class DecimalFormat extends NumberFormat
 		pos.setErrorIndex(index);
 		return null;
 	      }
-	    last_group = index;
+	    last_group = index+1;
 	  }
 	else if (c >= zero && c <= zero + 9)
 	  {
 	    buf.append((char) (c - zero + '0'));
-	    exp_part = false;
 	  }
 	else if (parseIntegerOnly)
 	  break;
@@ -881,14 +897,16 @@ public class DecimalFormat extends NumberFormat
 		pos.setErrorIndex(index);
 		return null;
 	      }
-	    buf.append('.');
+	    buf = frac_buf = new StringBuffer();
+	    frac_buf.append('.');
 	    int_part = false;
 	  }
 	else if (c == symbols.getExponential())
 	  {
-	    buf.append('E');
+	    buf = exp_buf = new StringBuffer();
 	    int_part = false;
 	    exp_part = true;
+	    exp_index = index+1;
 	  }
 	else if (exp_part
 		 && (c == '+' || c == '-' || c == symbols.getMinusSign()))
@@ -932,16 +950,111 @@ public class DecimalFormat extends NumberFormat
       }
 
     String suffix = is_neg ? ns : positiveSuffix;
-    if (is_neg)
-      buf.insert(0, '-');
+    long multiplier = 1;
+    boolean use_long;
 
-    String t = buf.toString();
-    Number result = null;
-    try
+    if (is_neg)
+      int_buf.insert(0, '-');
+
+    // Now handle the exponential part if there is one.
+    if (exp_buf != null)
       {
-	result = new Long (t);
+	int exponent_value;
+
+	try
+	  {
+	    exponent_value = Integer.parseInt(exp_buf.toString());
+	  }
+	catch (NumberFormatException x1)
+	  {
+	    pos.setErrorIndex(exp_index);
+	    return null;
+	  }
+
+	if (frac_buf == null)
+	  {
+	    // We only have to add some zeros to the int part.
+	    // Build a multiplier.
+	    for (int i = 0; i < exponent_value; i++)
+	      int_buf.append('0');
+	    
+	    use_long = true;
+	  }
+	else
+	  {
+	    boolean long_sufficient;
+
+	    if (exponent_value < frac_buf.length()-1)
+	      {
+		int lastNonNull = -1;
+		/* We have to check the fraction buffer: it may only be full of '0'
+		 * or be sufficiently filled with it to convert the number into Long.
+		 */
+		for (int i = 1; i < frac_buf.length(); i++)
+		  if (frac_buf.charAt(i) != '0')
+		    lastNonNull = i;
+
+		long_sufficient = (lastNonNull < 0 || lastNonNull <= exponent_value);
+	      }
+	    else
+	      long_sufficient = true;
+	    
+	    if (long_sufficient)
+	      {
+		for (int i = 1; i < frac_buf.length() && i < exponent_value; i++)
+		  int_buf.append(frac_buf.charAt(i));
+		for (int i = frac_buf.length()-1; i < exponent_value; i++)
+		  int_buf.append('0');
+		use_long = true;
+	      }
+	    else
+	      {
+		/*
+		 * A long type is not sufficient, we build the full buffer to
+		 * be parsed by Double.
+		 */
+		int_buf.append(frac_buf);
+		int_buf.append('E');
+		int_buf.append(exp_buf);
+		use_long = false;
+	      }
+	  }
       }
-    catch (NumberFormatException x1)
+    else
+      {
+	if (frac_buf != null)
+	  {
+	    /* Check whether the fraction buffer contains only '0' */
+	    int i;
+	    for (i = 1; i < frac_buf.length(); i++)
+	      if (frac_buf.charAt(i) != '0')
+		break;
+	   
+	    if (i != frac_buf.length())
+	      {
+		use_long = false;
+		int_buf.append(frac_buf);
+	      }
+	    else
+	      use_long = true;
+	  }
+	else
+	  use_long = true;
+      }
+
+    String t = int_buf.toString();
+    Number result = null;
+    if (use_long)
+      {
+	try
+	  {
+	    result = new Long (t);
+	  }
+	catch (NumberFormatException x1)
+	  {
+	  }
+      }
+    else
       {
 	try
 	  {
@@ -1109,6 +1222,8 @@ public class DecimalFormat extends NumberFormat
   {
     return computePattern (nonLocalizedSymbols);
   }
+
+  private static final int MAXIMUM_INTEGER_DIGITS = 309; 
 
   // These names are fixed by the serialization spec.
   private boolean decimalSeparatorAlwaysShown;
