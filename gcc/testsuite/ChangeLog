@@ -1,4 +1,9 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/compile/name_clash2.f90: Remove outdated
+	comment.
+
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/dg.exp: Use revised wilcard for suffixes, also allow 
