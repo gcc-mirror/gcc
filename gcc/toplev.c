@@ -630,6 +630,8 @@ char *lang_options[] =
   "-fno-nonnull-objects",
   "-fimplement-inlines",
   "-fno-implement-inlines",
+  "-fexternal-templates",
+  "-fno-external-templates",
 
   "-Wreturn-type",
   "-Wno-return-type",
@@ -639,6 +641,8 @@ char *lang_options[] =
   "-Wno-enum-clash",
   "-Wtemplate-debugging",
   "-Wno-template-debugging",
+  "-Wctor-dtor-privacy",
+  "-Wno-ctor-dtor-privacy",
 
   /* these are for obj c */
   "-lang-objc",
