@@ -1823,7 +1823,7 @@ rtl_verify_flow_info_1 (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       int n_fallthru = 0, n_eh = 0, n_call = 0, n_abnormal = 0, n_branch = 0;
-      edge e;
+      edge e, fallthru = NULL;
       rtx note;
 
       if (INSN_P (bb->end)
@@ -1841,7 +1841,7 @@ rtl_verify_flow_info_1 (void)
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  if (e->flags & EDGE_FALLTHRU)
-	    n_fallthru++;
+	    n_fallthru++, fallthru = e;
 
 	  if ((e->flags & ~(EDGE_DFS_BACK | EDGE_CAN_FALLTHRU | EDGE_IRREDUCIBLE_LOOP)) == 0)
 	    n_branch++;
@@ -1880,7 +1880,7 @@ rtl_verify_flow_info_1 (void)
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (bb->end)
-	  && JUMP_LABEL (bb->end) != bb->next_bb->head)
+	  && JUMP_LABEL (bb->end) != fallthru->dest->head)
 	{
 	  error ("Wrong amount of branch edges after conditional jump %i", bb->index);
 	  err = 1;
