@@ -1,3 +1,8 @@
+Thu Nov 29 00:24:15 EST 2001  John Wehle  (john@feith.com)
+
+	* alpha.md (tablejump): Use pic_offset_table_rtx
+	instead of gen_rtx_REG.
+
 Wed Nov 28 15:36:13 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (store_expr): When copying a string constant into an
