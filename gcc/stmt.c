@@ -1772,8 +1772,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    }
 	  else
 	    {
-	      warning ("asm operand %d uses deprecated memory input "
-		       "without lvalue", i + noutputs);
+	      warning ("use of memory input without lvalue in "
+		       "asm operand %d is deprecated", i + noutputs);
 
 	      if (CONSTANT_P (op))
 		{
