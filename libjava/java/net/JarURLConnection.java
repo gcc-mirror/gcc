@@ -66,8 +66,8 @@ import java.util.zip.ZipEntry;
  * local cache file, then performing standard jar operations on it.
  * (At least this is true for the default protocol implementation).
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Kresten Krab Thorup <krab@gnu.org>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Kresten Krab Thorup (krab@gnu.org)
  * @date Aug 10, 1999.
  *
  * @since 1.2

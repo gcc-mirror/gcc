@@ -1,5 +1,5 @@
 /* DSAParameters.java --- DSA Parameters Implementation
-   Copyright (C) 1999, 20032, 004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 

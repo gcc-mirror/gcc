@@ -1,5 +1,15 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/PlainDatagramSocketImpl.java:
+	Reworked import statements.
+	* gnu/java/security/provider/DSAParameters.java:
+	Fixed copyrigth years.
+	* java/net/JarURLConnection.java:
+	Fixed HTML in @author tags.
+	
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/activation/ActivationSystem.java
 	(SYSTEM_PORT): Initialize with correct port number.
 
