@@ -30,6 +30,11 @@
   "ld,st,ibr,fbr,jsr,iaddlog,shiftcm,icmp,imull,imulq,fpop,fdivs,fdivt,ldsym,isubr"
   (const_string "shiftcm"))
 
+;; The TRAP_TYPE attribute marks instructions that may generate traps
+;; (which are imprecise and may need a trapb if software complention
+;; is desired).
+(define_attr "trap" "yes,no" (const_string "no"))
+
 ;; We include four function units: ABOX, which computes the address,
 ;; BBOX, used for branches, EBOX, used for integer operations, and FBOX,
 ;; used for FP operations.
@@ -1175,21 +1180,51 @@
   "cpysn %R1,%R1,%0"
   [(set_attr "type" "fpop")])
 
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
+		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "adds%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
 (define_insn "addsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "adds %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "adds%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
+		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "adddf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "addt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(plus:DF (float_extend:DF
+		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1197,8 +1232,20 @@
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "addt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(plus:DF (float_extend:DF
+		  (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
+		 (float_extend:DF
+		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1207,8 +1254,9 @@
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "addt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "addt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
@@ -1225,59 +1273,137 @@
   "cvttqc %R1,%0"
   [(set_attr "type" "fpop")])
 
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(float:SF (match_operand:DI 1 "register_operand" "f")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cvtqs%+%& %1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
-  "cvtqs %1,%0"
-  [(set_attr "type" "fpop")])
+  "cvtqs%+%& %1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(float:DF (match_operand:DI 1 "register_operand" "f")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cvtqt%+%& %1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
-  "cvtqt %1,%0"
-  [(set_attr "type" "fpop")])
+  "cvtqt%+%& %1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f,f")
+	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "@
+   addt%)%& $f31,%1,%0
+   lds %0,%1"
+  [(set_attr "type" "fpop,ld")
+   (set_attr "trap" "yes")])
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m")))]
   "TARGET_FP"
   "@
-   addt $f31,%1,%0
+   addt%)%& $f31,%1,%0
    lds %0,%1"
-  [(set_attr "type" "fpop,ld")])
+  [(set_attr "type" "fpop,ld")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cvtts%)%& %R1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvtts %R1,%0"
-  [(set_attr "type" "fpop")])
+  "cvtts%)%& %R1,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
+		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "divs%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivs")
+   (set_attr "trap" "yes")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "divs %R1,%R2,%0"
-  [(set_attr "type" "fdivs")])
+  "divs%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivs")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
+		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "divt %R1,%R2,%0"
-  [(set_attr "type" "fdivt")])
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "divt %R1,%R2,%0"
-  [(set_attr "type" "fdivt")])
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
+		(float_extend:DF
+		 (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1285,32 +1411,73 @@
 		(float_extend:DF
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "divt %R1,%R2,%0"
-  [(set_attr "type" "fdivt")])
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		(float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "divt %R1,%R2,%0"
-  [(set_attr "type" "fdivt")])
+  "divt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fdivt")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
+		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "muls%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "muls %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "muls%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
+		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "mult %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(mult:DF (float_extend:DF
+		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1318,8 +1485,20 @@
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "mult %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(mult:DF (float_extend:DF
+		  (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
+		 (float_extend:DF
+		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1328,24 +1507,55 @@
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "mult %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "mult%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
+		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "subs%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "subs %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "subs%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
+		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "subt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(minus:DF (float_extend:DF
+		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1353,8 +1563,19 @@
 		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "subt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
+		  (float_extend:DF
+		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1362,8 +1583,20 @@
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "subt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(minus:DF (float_extend:DF
+		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		  (float_extend:DF
+		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1372,8 +1605,9 @@
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "subt %R1,%R2,%0"
-  [(set_attr "type" "fpop")])
+  "subt%)%& %R1,%R2,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 ;; Next are all the integer comparisons, and conditional moves and branches
 ;; and some of the related define_expand's and define_split's.
@@ -1783,13 +2017,35 @@
 ;; to DFmode.
 
 (define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(match_operator:DF 1 "alpha_comparison_operator"
+			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
+			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(match_operator:DF 1 "alpha_comparison_operator"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP"
-  "cmpt%C1 %R2,%R3,%0"
-  [(set_attr "type" "fpop")])
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(match_operator:DF 1 "alpha_comparison_operator"
+			   [(float_extend:DF
+			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
+			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1798,8 +2054,20 @@
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP"
-  "cmpt%C1 %R2,%R3,%0"
-  [(set_attr "type" "fpop")])
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(match_operator:DF 1 "alpha_comparison_operator"
+			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
+			    (float_extend:DF
+			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1808,8 +2076,21 @@
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP"
-  "cmpt%C1 %R2,%R3,%0"
-  [(set_attr "type" "fpop")])
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(match_operator:DF 1 "alpha_comparison_operator"
+			   [(float_extend:DF
+			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
+			    (float_extend:DF
+			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1819,7 +2100,22 @@
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP"
-  "cmpt%C1 %R2,%R3,%0"
+  "cmpt%C1%' %R2,%R3,%0"
+  [(set_attr "type" "fpop")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f,f")
+	(if_then_else:DF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(match_operand:DF 4 "reg_or_fp0_operand" "fG,fG")
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (match_operand:DF 1 "reg_or_fp0_operand" "fG,0")
+	 (match_operand:DF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
   [(set_attr "type" "fpop")])
 
 (define_insn ""
@@ -1837,6 +2133,20 @@
   [(set_attr "type" "fpop")])
 
 (define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f,f")
+	(if_then_else:SF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(match_operand:DF 4 "reg_or_fp0_operand" "fG,fG")
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (match_operand:SF 1 "reg_or_fp0_operand" "fG,0")
+	 (match_operand:SF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
+  [(set_attr "type" "fpop")])
+
+(define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF 
 	 (match_operator 3 "signed_comparison_operator"
@@ -1845,6 +2155,35 @@
 	 (match_operand:SF 1 "reg_or_fp0_operand" "fG,0")
 	 (match_operand:SF 5 "reg_or_fp0_operand" "0,fG")))]
   "TARGET_FP"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
+  [(set_attr "type" "fpop")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f,f")
+	(if_then_else:DF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(match_operand:DF 1 "reg_or_fp0_operand" "fG,fG")
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (float_extend:DF (match_operand:SF 4 "reg_or_fp0_operand" "fG,0"))
+	 (match_operand:DF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
+  [(set_attr "type" "fpop")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f,f")
+	(if_then_else:DF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(float_extend:DF 
+			   (match_operand:SF 4 "reg_or_fp0_operand" "fG,fG"))
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (match_operand:DF 1 "reg_or_fp0_operand" "fG,0")
+	 (match_operand:DF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
@@ -1880,6 +2219,21 @@
   [(set_attr "type" "fpop")])
 
 (define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f,f")
+	(if_then_else:SF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(float_extend:DF
+			   (match_operand:SF 4 "reg_or_fp0_operand" "fG,fG"))
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (match_operand:SF 1 "reg_or_fp0_operand" "fG,0")
+	 (match_operand:SF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
+  [(set_attr "type" "fpop")])
+
+(define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF 
 	 (match_operator 3 "signed_comparison_operator"
@@ -1889,6 +2243,21 @@
 	 (match_operand:SF 1 "reg_or_fp0_operand" "fG,0")
 	 (match_operand:SF 5 "reg_or_fp0_operand" "0,fG")))]
   "TARGET_FP"
+  "@
+   fcmov%C3 %R4,%R1,%0
+   fcmov%D3 %R4,%R5,%0"
+  [(set_attr "type" "fpop")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f,f")
+	(if_then_else:DF 
+	 (match_operator 3 "signed_comparison_operator"
+			 [(float_extend:DF
+			   (match_operand:SF 4 "reg_or_fp0_operand" "fG,fG"))
+			  (match_operand:DF 2 "fp0_operand" "G,G")])
+	 (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG,0"))
+	 (match_operand:DF 5 "reg_or_fp0_operand" "0,fG")))]
+  "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
@@ -2829,6 +3198,18 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
+  "! WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "@
+   jsr $26,($27),0\;trapb\;ldgp $29,4($26)
+   bsr $26,%0..ng\;trapb
+   jsr $26,%0\;trapb\;ldgp $29,4($26)"
+  [(set_attr "type" "jsr,jsr,ibr")])
+      
+(define_insn ""
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
   "! WINDOWS_NT"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
@@ -2846,6 +3227,19 @@
    bsr $26,%0"
   [(set_attr "type" "jsr")])
       
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
+	      (match_operand 2 "" "")))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "! WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "@
+   jsr $26,($27),0\;trapb\;ldgp $29,4($26)
+   bsr $26,%1..ng\;trapb
+   jsr $26,%1\;trapb\;ldgp $29,4($26)"
+  [(set_attr "type" "jsr,jsr,ibr")])
+
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
