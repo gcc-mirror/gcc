@@ -8080,8 +8080,8 @@ the @code{atexit} function.
 Define this if your @code{exit} function needs to do something
 besides calling an external function @code{_cleanup} before
 terminating with @code{_exit}.  The @code{EXIT_BODY} macro is
-only needed if neither @code{HAVE_ATEXIT} nor
-@code{INIT_SECTION_ASM_OP} are defined.
+only needed if @code{NEED_ATEXIT} is defined and @code{ON_EXIT} is not
+defined.
 
 @findex INSN_SETS_ARE_DELAYED
 @item INSN_SETS_ARE_DELAYED (@var{insn})

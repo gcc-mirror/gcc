@@ -258,7 +258,7 @@ esac
 # Common parts for GNU/Linux, GNU/Hurd and OpenBSD systems.
 case $machine in
 *-*-linux*)
-	xm_defines="HAVE_ATEXIT POSIX BSTRING"
+	xm_defines="POSIX"
 	;;
 *-*-gnu*)
 	# On the Hurd, the setup is just about the same on

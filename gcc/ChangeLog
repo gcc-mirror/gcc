@@ -1,5 +1,15 @@
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* config.gcc (*-*-linux*): Don't define HAVE_ATEXIT or BSTRING.
+	* tm.texi (EXIT_BODY): Update documentation.
+	* config/freebsd.h, config/netware.h, config/arm/coff.h,
+	config/arm/conix-elf.h, config/arm/unknown-elf.h,
+	config/d30v/d30v.h, config/mcore/mcore.h, config/pj/pj.h,
+	sparc/sp86x-aout.h: Remove definitions of HAVE_ATEXIT (some
+	commented out) and associated comments.
+
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (STD_C9L, ADJ_STD): Define.
 	(printf_length_specs, scanf_length_specs): Mark "ll" as standard
 	STD_C9L.

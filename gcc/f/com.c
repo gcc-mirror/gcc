@@ -180,9 +180,6 @@ static void hack_vms_include_specification ();
 typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define ino_t vms_ino_t
 #define INCLUDE_LEN_FUDGE 10	/* leave room for VMS syntax conversion */
-#ifdef __GNUC__
-#define BSTRING			/* VMS/GCC supplies the bstring routines */
-#endif /* __GNUC__ */
 #endif /* VMS */
 
 #ifndef O_RDONLY
