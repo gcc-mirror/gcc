@@ -1,3 +1,7 @@
+2002-05-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/rtl.texi (Flags): Update to reflect current usage.
+
 2002-05-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR opt/3995
