@@ -111,4 +111,6 @@ java::util::GregorianCalendar::computeFields ()
   elements(fields)[DST_OFFSET] = tim.tm_isdst <= 0 ? 0 : 60*60*1000;
   elements(fields)[ZONE_OFFSET] = getTimeZone()->getRawOffset();
   areFieldsSet = true;
+  for (int i = 0; i < FIELD_COUNT; i++)
+    elements(isSet__)[i] = true;
 }
