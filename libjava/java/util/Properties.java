@@ -1,5 +1,5 @@
 /* Properties.java -- a set of persistent properties
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -271,6 +271,13 @@ label   = Name:\\u0020</pre>
                   {
                     // The line continues on the next line.
                     line = reader.readLine();
+
+		    // We might have seen a backslash at the end of
+		    // the file.  The JDK ignores the backslash in
+		    // this case, so we follow for compatibility.
+		    if (line == null)
+		      break;
+
                     pos = 0;
                     while (pos < line.length()
                            && Character.isWhitespace(c = line.charAt(pos)))
