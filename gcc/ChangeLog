@@ -1,3 +1,12 @@
+Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sdbout.c: #include ggc.h.
+ 	(sdbout_init): Move to end of file.
+	Call ggc_add_tree_root for anonymous_types.
+	(sdbout_symbol): Use DECL_NAME for local, not DECL_ASSEMBLER_NAME.
+	(sdbout_one_type): Use DECL_NAME for field name.
+	* Makefile.in (sdbout.o): Show includes ggc.h.
+
 2001-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* crtstuff.c (init_dummy): Use CRT_END_INIT_DUMMY if defined.

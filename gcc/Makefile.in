@@ -1390,7 +1390,7 @@ dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) real.h \
-   insn-config.h $(OBSTACK_H) xcoffout.h c-pragma.h \
+   insn-config.h $(OBSTACK_H) xcoffout.h c-pragma.h ggc.h \
    sdbout.h toplev.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h toplev.h dwarfout.h
