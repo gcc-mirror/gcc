@@ -1,3 +1,11 @@
+2004-09-20  Robert Dewar  <dewar@gnat.com>
+
+	PR ada/17540
+
+	* freeze.adb (Check_Address_Clause): Reset Is_Imported and Is_Public
+	if an address clause is present, since that means that the Import
+	should be ignored.
+
 2004-09-20  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 5tsystem.ads: Removed, no longer used.
