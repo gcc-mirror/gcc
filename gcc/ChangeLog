@@ -1,3 +1,8 @@
+2004-04-30  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc: Simplify arm --with-{cpu,tune} test.
+	* config/arm/arm-cores.def: Document whitespace restrictions.
+
 2004-04-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR other/1963
