@@ -2888,9 +2888,17 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       && cmp_mode != VOIDmode
       && nonzero_bits (op0, cmp_mode) == 1
       && STORE_FLAG_VALUE == 1)
-    return GET_MODE_SIZE (mode) > GET_MODE_SIZE (cmp_mode)
-	   ? simplify_gen_unary (ZERO_EXTEND, mode, op0, cmp_mode)
-	   : gen_lowpart (mode, op0);
+    {
+      rtx tmp;
+      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (cmp_mode))
+	return simplify_gen_unary (ZERO_EXTEND, mode, op0, cmp_mode);
+      tmp = gen_lowpart_common (mode, op0);
+      if (tmp)
+	return tmp;
+      if (GET_MODE (op0) != mode)
+	return gen_lowpart_SUBREG (mode, op0);
+      return op0;
+    }
 
   return NULL_RTX;
 }
