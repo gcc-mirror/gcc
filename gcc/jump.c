@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4504,6 +4504,13 @@ rtx_equal_for_thread_p (x, y, yinsn)
      (REG:SI x) and (REG:HI x) are NOT equivalent.  */
 
   if (GET_MODE (x) != GET_MODE (y))
+    return 0;
+
+  /* For floating-point, consider everything unequal.  This is a bit
+     pessimistic, but this pass would only rarely do anything for FP
+     anyway.  */
+  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+      && FLOAT_MODE_P (GET_MODE (x)) && ! flag_fast_math)
     return 0;
 
   /* For commutative operations, the RTX match if the operand match in any
