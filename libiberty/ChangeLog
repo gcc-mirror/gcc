@@ -1,3 +1,19 @@
+2003-02-20  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in (CFILES): Add lrealpath.c.
+	(REQUIRED_OFILES): Add lrealpath.o.
+	(lrealpath.o): Add rule.
+	* aclocal.m4 (libiberty_NEED_DECLARATION): Add.
+	* configure.in: Add realpath and canonicalize_file_name to
+	checkfuncs and AC_CHECK_FUNCS.  Use libiberty_NEED_DECLARATION
+	for canonicalize_file_name.
+	* lrealpath.c: New file.
+	* make-relative-prefix.c: Update documentation.
+	(make_relative_prefix): Simplify.  Use lbasename and lrealpath.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* functions.texi: Regenerated.
+
 2003-02-20  jmc  <jmc@prioris.mini.pw.edu.pl>
 
 	* cplus_dem.c: Fix typo: intializes -> initializes.

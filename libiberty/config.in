@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -63,6 +63,9 @@
 /* Define if you have the calloc function.  */
 #undef HAVE_CALLOC
 
+/* Define if you have the canonicalize_file_name function.  */
+#undef HAVE_CANONICALIZE_FILE_NAME
+
 /* Define if you have the clock function.  */
 #undef HAVE_CLOCK
 
@@ -116,6 +119,9 @@
 
 /* Define if you have the random function.  */
 #undef HAVE_RANDOM
+
+/* Define if you have the realpath function.  */
+#undef HAVE_REALPATH
 
 /* Define if you have the rename function.  */
 #undef HAVE_RENAME
@@ -257,4 +263,7 @@
         STACK_DIRECTION < 0 => grows toward lower addresses
         STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
+
+/* Define if canonicalize_file_name is not declared in system header files. */
+#undef NEED_DECLARATION_CANONICALIZE_FILE_NAME
 
