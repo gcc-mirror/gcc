@@ -37,9 +37,7 @@
 
 extern "C++" {
 
-#ifdef __HONOR_STD
 namespace std {
-#endif
 
 class logic_error : public exception {
   string _what;
@@ -92,9 +90,7 @@ public:
   underflow_error (const string& what_arg): runtime_error (what_arg) { }
 };
 
-#ifdef __HONOR_STD
 } // namespace std
-#endif
  
 } // extern "C++"
 
