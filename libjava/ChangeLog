@@ -1,5 +1,22 @@
 2002-11-11  Michael Koch <konqueror@gmx.de>
 
+	* java/nio/charset/CharacterCodingException.java:
+	This class must be public.
+	* java/nio/charset/CoderMalfunctionError.java:
+	This class must be public.
+	* java/nio/charset/CodingErrorAction.java:
+	This class must be public.
+	* java/nio/charset/IllegalCharsetNameException.java:
+	This class must be public, better implementation.
+	* java/nio/charset/MalformedInputException.java:
+	This class must be public, better implementation.
+	* java/nio/charset/UnmappableCharacterException.java:
+	This class must be public, better implementation.
+	* java/nio/charset/UnsupportedCharsetException.java:
+	This class must be public, better implementation.
+	
+2002-11-11  Michael Koch <konqueror@gmx.de>
+
 	* java/nio/BufferOverflowException.java,
 	java/nio/BufferUnderflowException.java: New file.
 	* Makefile.am (ordinary_java_source_files):
