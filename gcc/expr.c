@@ -2807,14 +2807,6 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  to_rtx = change_address (to_rtx, VOIDmode,
 				   gen_rtx (PLUS, ptr_mode, XEXP (to_rtx, 0),
 					    force_reg (ptr_mode, offset_rtx)));
-	  /* If we have a variable offset, the known alignment
-	     is only that of the innermost structure containing the field.
-	     (Actually, we could sometimes do better by using the
-	     align of an element of the innermost array, but no need.)  */
-	  if (TREE_CODE (to) == COMPONENT_REF
-	      || TREE_CODE (to) == BIT_FIELD_REF)
-	    alignment
-	      = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (to, 0))) / BITS_PER_UNIT;
 	}
       if (volatilep)
 	{
@@ -5508,14 +5500,6 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx (PLUS, ptr_mode, XEXP (op0, 0),
 					   force_reg (ptr_mode, offset_rtx)));
-	  /* If we have a variable offset, the known alignment
-	     is only that of the innermost structure containing the field.
-	     (Actually, we could sometimes do better by using the
-	     size of an element of the innermost array, but no need.)  */
-	  if (TREE_CODE (exp) == COMPONENT_REF
-	      || TREE_CODE (exp) == BIT_FIELD_REF)
-	    alignment = (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-			 / BITS_PER_UNIT);
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
