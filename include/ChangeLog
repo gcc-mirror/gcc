@@ -1,3 +1,9 @@
+2004-10-07  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h (XSHAL_USE_ABSOLUTE_LITERALS,
+	XCHAL_HAVE_PREDICTED_BRANCHES, XCHAL_INST_FETCH_WIDTH): New.
+	(XCHAL_EXTRA_SA_SIZE, XCHAL_EXTRA_SA_ALIGN): Delete.
+
 2004-09-13  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* libiberty.h (basename): Prototype for __MINGW32__.
