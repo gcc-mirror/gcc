@@ -1,4 +1,30 @@
 2004-07-09  Zack Weinberg  <zack@codesourcery.com>
+	    Andrew Pinski  <apinski@apple.com>
+
+	* c-opts.c (c_common_post_options): Force unit-at-a-time mode
+	on when we have more than one input file.
+	(c_common_parse_file): Restore loop over all input files.
+	Clarify diagnostic for -dy when YYDEBUG wasn't defined.
+
+	* c-decl.c (set_type_context): New function.
+	(pop_scope): Use it to set context of types.  When we
+	encounter a TYPE_DECL, set the context of the attached type too.
+	(pop_file_scope): Don't call cpp_undef_all here.
+	(diagnose_mismatched_decls): Do not complain about a second
+	definition of an 'extern inline' function if it's not in the
+	same translation unit.  Do not complain about inline
+	declaration after use if the use was in a different
+	translation unit.
+	(merge_decls): Don't clobber olddecl's DECL_CONTEXT.
+	(pushdecl): Do not put DECL_EXTERNAL, !TREE_PUBLIC decls in
+	the external scope.
+	(pushdecl_top_level): Likewise.
+	(grokdeclarator): Clarify what is going on with setting
+	DECL_EXTERNAL on function types, a little.
+	(c_write_global_declarations): Don't do anything if
+	-fsyntax-only or errors have been encountered.
+
+2004-07-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* vec.c, vec.h (vec_assert_fail): Use unsigned int for LINE argument.
 

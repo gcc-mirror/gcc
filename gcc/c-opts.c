@@ -943,6 +943,11 @@ c_common_post_options (const char **pfilename)
       flag_inline_functions = 0;
     }
 
+  /* If we are given more than one input file, we must use
+     unit-at-a-time mode.  */
+  if (num_in_fnames > 1)
+    flag_unit_at_a_time = 1;
+
   /* Default to ObjC sjlj exception handling if NeXT runtime.  */
   if (flag_objc_sjlj_exceptions < 0)
     flag_objc_sjlj_exceptions = flag_next_runtime;
@@ -1061,22 +1066,37 @@ c_common_init (void)
 void
 c_common_parse_file (int set_yydebug)
 {
+  unsigned int i;
+
+  /* Enable parser debugging, if requested and we can.  If requested
+     and we can't, notify the user.  */
 #if YYDEBUG != 0
   yydebug = set_yydebug;
 #else
   if (set_yydebug)
-    warning ("YYDEBUG not defined");
+    warning ("YYDEBUG was not defined at build time, -dy ignored");
 #endif
 
-  if (num_in_fnames > 1)
-    fatal_error ("sorry, inter-module analysis temporarily out of commission");
+  i = 0;
+  for (;;)
+    {
+      finish_options ();
+      pch_init ();
+      push_file_scope ();
+      c_parse_file ();
+      finish_file ();
+      pop_file_scope ();
 
-  finish_options ();
-  pch_init ();
-  push_file_scope ();
-  c_parse_file ();
-  finish_file ();
-  pop_file_scope ();
+      if (++i >= num_in_fnames)
+	break;
+      cpp_undef_all (parse_in);
+      this_input_filename
+	= cpp_read_main_file (parse_in, in_fnames[i]);
+      /* If an input file is missing, abandon further compilation.
+         cpplib has issued a diagnostic.  */
+      if (!this_input_filename)
+	break;
+    }
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

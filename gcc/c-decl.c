@@ -622,6 +622,16 @@ push_scope (void)
     }
 }
 
+/* Set the TYPE_CONTEXT of all of TYPE's variants to CONTEXT.  */
+
+static void
+set_type_context (tree type, tree context)
+{
+  for (type = TYPE_MAIN_VARIANT (type); type;
+       type = TYPE_NEXT_VARIANT (type))
+    TYPE_CONTEXT (type) = context;
+}
+
 /* Exit a scope.  Restore the state of the identifier-decl mappings
    that were in effect when this scope was entered.  Return a BLOCK
    node containing all the DECLs in this scope that are of interest
@@ -711,7 +721,7 @@ pop_scope (void)
 	case ENUMERAL_TYPE:
 	case UNION_TYPE:
 	case RECORD_TYPE:
-	  TYPE_CONTEXT (p) = context;
+	  set_type_context (p, context);
 
 	  /* Types may not have tag-names, in which case the type
 	     appears in the bindings list with b->id NULL.  */
@@ -767,7 +777,11 @@ pop_scope (void)
 	     This makes same_translation_unit_p work, and causes
 	     static declarations to be given disambiguating suffixes.  */
 	  if (scope == file_scope && num_in_fnames > 1)
-	    DECL_CONTEXT (p) = context;
+	    {
+	      DECL_CONTEXT (p) = context;
+	      if (TREE_CODE (p) == TYPE_DECL)
+		set_type_context (TREE_TYPE (p), context);
+	    }
 
 	  /* Fall through.  */
 	  /* Parameters go in DECL_ARGUMENTS, not BLOCK_VARS, and have
@@ -865,7 +879,6 @@ pop_file_scope (void)
   /* Pop off the file scope and close this translation unit.  */
   pop_scope ();
   file_scope = 0;
-  cpp_undef_all (parse_in);
   cgraph_finalize_compilation_unit ();
 }
 
@@ -1215,7 +1228,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	      && !(DECL_DECLARED_INLINE_P (olddecl)
 		   && DECL_EXTERNAL (olddecl)
 		   && !(DECL_DECLARED_INLINE_P (newdecl)
-			&& DECL_EXTERNAL (newdecl))))
+			&& DECL_EXTERNAL (newdecl)
+	    		&& same_translation_unit_p (olddecl, newdecl))))
 	    {
 	      error ("%Jredefinition of '%D'", newdecl, newdecl);
 	      locate_old_decl (olddecl, error);
@@ -1385,8 +1399,11 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
       /* Inline declaration after use or definition.
 	 ??? Should we still warn about this now we have unit-at-a-time
-	 mode and can get it right?  */
-      if (DECL_DECLARED_INLINE_P (newdecl) && !DECL_DECLARED_INLINE_P (olddecl))
+	 mode and can get it right?
+	 Definitely don't complain if the decls are in different translation
+	 units.  */
+      if (DECL_DECLARED_INLINE_P (newdecl) && !DECL_DECLARED_INLINE_P (olddecl)
+	  && same_translation_unit_p (olddecl, newdecl))
 	{
 	  if (TREE_USED (olddecl))
 	    {
@@ -1669,14 +1686,16 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     }
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
-     But preserve OLDDECL's DECL_UID.  */
+     But preserve OLDDECL's DECL_UID and DECL_CONTEXT.  */
   {
     unsigned olddecl_uid = DECL_UID (olddecl);
+    tree olddecl_context = DECL_CONTEXT (olddecl);
 
     memcpy ((char *) olddecl + sizeof (struct tree_common),
 	    (char *) newdecl + sizeof (struct tree_common),
 	    sizeof (struct tree_decl) - sizeof (struct tree_common));
     DECL_UID (olddecl) = olddecl_uid;
+    DECL_CONTEXT (olddecl) = olddecl_context;
   }
 
   /* If OLDDECL had its DECL_RTL instantiated, re-invoke make_decl_rtl
@@ -1897,14 +1916,13 @@ pushdecl (tree x)
 	 they are in different translation units.  In any case,
 	 the static does not go in the externals scope.  */
       if (b
-	  && (DECL_EXTERNAL (x) || TREE_PUBLIC (x)
-	      || same_translation_unit_p (x, b->decl))
+	  && (TREE_PUBLIC (x) || same_translation_unit_p (x, b->decl))
 	  && duplicate_decls (x, b->decl))
 	{
 	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
 	  return b->decl;
 	}
-      else if (DECL_EXTERNAL (x) || TREE_PUBLIC (x))
+      else if (TREE_PUBLIC (x))
 	{
 	  bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
 	  nested = true;
@@ -1991,7 +2009,7 @@ pushdecl_top_level (tree x)
   if (I_SYMBOL_BINDING (name))
     abort ();
 
-  if (DECL_EXTERNAL (x) || TREE_PUBLIC (x))
+  if (TREE_PUBLIC (x))
     {
       bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
       nested = true;
@@ -4459,14 +4477,6 @@ grokdeclarator (tree declarator, tree declspecs,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	/* Every function declaration is "external"
-	   except for those which are inside a function body
-	   in which `auto' is used.
-	   That is a case not specified by ANSI C,
-	   and we use it for forward declarations for nested functions.  */
-	int extern_ref = (!(specbits & (1 << (int) RID_AUTO))
-			  || current_scope == file_scope);
-
 	if (specbits & (1 << (int) RID_AUTO)
 	    && (pedantic || current_scope == file_scope))
 	  pedwarn ("invalid storage class for function `%s'", name);
@@ -4497,8 +4507,16 @@ grokdeclarator (tree declarator, tree declspecs,
 	    && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	  warning ("`noreturn' function returns non-void value");
 
-	if (extern_ref)
+	/* Every function declaration is an external reference
+	   (DECL_EXTERNAL) except for those which are not at file
+	   scope and are explicitly declared "auto".  This is
+	   forbidden by standard C (C99 6.7.1p5) and is interpreted by
+	   GCC to signify a forward declaration of a nested function.  */
+	if ((specbits & (1 << RID_AUTO)) && current_scope != file_scope)
+	  DECL_EXTERNAL (decl) = 0;
+	else
 	  DECL_EXTERNAL (decl) = 1;
+	   
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
@@ -6628,6 +6646,11 @@ c_write_global_declarations (void)
 
   /* We don't want to do this if generating a PCH.  */
   if (pch_file)
+    return;
+
+  /* Don't waste time on further processing if -fsyntax-only or we've
+     encountered errors.  */
+  if (flag_syntax_only || errorcount || sorrycount || cpp_errors (parse_in))
     return;
 
   /* Close the external scope.  */

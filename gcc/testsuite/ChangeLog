@@ -1,3 +1,8 @@
+2004-07-09  Zack Weinberg  <zack@codesourcery.com>
+	    Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/noncompile/init-4.c: Remove bogus dg-error marker.
+
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.fortran-torture/compile/name_clash2.f90: Remove outdated
@@ -6,7 +11,7 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Brook  <paul@codesourcery.com>
 
-	* gfortran.dg/dg.exp: Use revised wilcard for suffixes, also allow 
+	* gfortran.dg/dg.exp: Use revised wilcard for suffixes, also allow
 	'.f95' and '.F95'.
 
 2004-07-09  Diego Novillo  <dnovillo@redhat.com>
@@ -27,7 +32,7 @@
 	* gfortran.fortran-torture/compile/implicit_2.f90: New test.
 
 	* gfortran.dg/implicit_1.f90: New test.
-	
+
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* lib/gfortran-dg.exp (gfortran-dg-test):  Adapt regular
@@ -37,7 +42,7 @@
 
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
-	* lib/fortran-torture.exp: Rename proc search_for to 
+	* lib/fortran-torture.exp: Rename proc search_for to
 	search_for_re.
 
 2004-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -60,7 +65,7 @@
 
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
-	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL 
+	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL
 	* gfortran.dg/g77/f77-edit-t-in.f: Likewise
 	* gfortran.dg/g77/f77-edit-x-out.f: Likewise
 
@@ -68,7 +73,7 @@
 
 	* gfortran.dg/g77/7388.f: Copy from g77.dg
 	* gfortran.dg/g77/f77-edit-i-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise  
+	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise
 	* gfortran.dg/g77/f77-edit-slash-out.f: Likewise
 	* gfortran.dg/g77/f77-edit-colon-out.f: Likewise
 	* gfortran.dg/g77/f77-edit-t-out.f: Likewise
