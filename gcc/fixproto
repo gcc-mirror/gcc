@@ -290,7 +290,7 @@ for code in ALL STD ; do
 	      required_list="memchr memcmp memcpy memmove memset strcat strchr strcmp strcoll strcpy strcspn strerror strlen strncat strncmp" ;;
 # Should perhaps also add NULL and size_t
 	    sys/stat.h)
-	      required_list="chmod fstat mkdir mkfifo stat umask"
+	      required_list="chmod fstat mkdir mkfifo stat lstat umask"
 	      extra_check_list="S_ISDIR S_ISBLK S_ISCHR S_ISFIFO S_ISREG S_ISLNK S_IFDIR S_IFBLK S_IFCHR S_IFIFO S_IFREG S_IFLNK" ;;
 	    sys/times.h)
 	      required_list="times" ;;
