@@ -1,3 +1,10 @@
+2000-11-28  Warren Levy  <warrenl@cygnus.com>
+
+	* java/text/DateFormatSymbols.java (zoneStringsDefault): Added
+	more time zone entries.
+	* java/text/SimpleDateFormat.java (format): Added case for
+	TIMEZONE_FIELD.
+
 2000-11-28  Bryce McKinlay  <bryce@abatross.co.nz>
 
 	* java/io/DataInputStream.java: Merge classpath docs. Call in.read()

@@ -454,7 +454,11 @@ public class SimpleDateFormat extends DateFormat
 	  withLeadingZeros(theCalendar.get(Calendar.HOUR)-1,p.size,buffer);
 	  break;
 	case TIMEZONE_FIELD:
-	  // TODO
+	  TimeZone zone = theCalendar.getTimeZone();
+	  boolean isDST = theCalendar.get(Calendar.DST_OFFSET) != 0;
+	  // FIXME: XXX: This should be a localized time zone.
+	  String zoneID = zone.getDisplayName(isDST, p.size > 3 ? TimeZone.LONG : TimeZone.SHORT);
+	  buffer.append(zoneID);
 	  break;
 	default:
 	  throw new IllegalArgumentException("Illegal pattern character");
@@ -1088,7 +1092,7 @@ public class SimpleDateFormat extends DateFormat
 
 	  /*
 	case TIMEZONE_FIELD:
-	  // TODO
+	  // TODO: FIXME: XXX
 	  break;
 	  */
 
