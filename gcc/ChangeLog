@@ -1,5 +1,28 @@
 2000-05-06  Richard Earnshaw (reanrsha@arm.com)
 
+	Use new tail-calling mechanism on ARM.
+	* arm.md (sibcall, sibcall_value): New expands.
+	(sibcall_insn, sibcall_value_insn, sibcall_epilogue): New insns.
+	(tailcalling peepholes): Delete.
+	(push_multi): Simplify.
+	* arm.c (lr_save_eliminated): Delete definition.
+	(pattern_really_clobbers_lr, function_really_clobbers_lr): Delete.
+	(output_return_instruction): Remove checks on lr_save_eliminated.
+	(output_arm_prologue): Remove old tail-calling code.
+	(arm_output_epilogue): New parameter, really_return.  All callers
+	changed.  Handle tail-calling epilogues.
+	* arm.h (lr_save_eliminated): Delete declaration.
+	(frame_pointer_needed): Delete declaration.
+	* arm-protos.h (arm_output_epilogue): Adjust prototype.
+
+	* arm.md (is_thumb): Examine symbol thumb_code, not expression
+	TARGET_ARM.
+	* arm.c (thumb_code): Define it.
+	(arm_override_options): Set it.
+	* arm.h (thumb_code): Declare it.
+	
+2000-05-06  Richard Earnshaw (reanrsha@arm.com)
+
 	* arm-protos.h (arm_dllexport_name_p, arm_dllimport_name_p): Constify.
 
 2000-05-06  Richard Earnshaw (reanrsha@arm.com)

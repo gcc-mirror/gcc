@@ -27,7 +27,7 @@ extern int    arm_process_pragma	PARAMS ((int (*)(void), void (*) (int),
 						char *));
 extern void   arm_finalize_pic		PARAMS ((void));
 extern int    arm_volatile_func		PARAMS ((void));
-extern char * arm_output_epilogue	PARAMS ((void));
+extern char * arm_output_epilogue	PARAMS ((int));
 extern void   output_func_epilogue	PARAMS ((int));
 extern void   arm_expand_prologue	PARAMS ((void));
 /* Used in arm.md, but defined in output.c.  */
