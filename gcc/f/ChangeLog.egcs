@@ -1,3 +1,7 @@
+Tue Apr 14 15:51:37 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* com.c (init_parse): Now returns char* containing filename;
+
 Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
 
 	* com.c (finput): New variable.
