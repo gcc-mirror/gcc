@@ -1,3 +1,11 @@
+2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP,
+	STARTFILE_SPEC, ENDFILE_SPEC): Remove define.
+	* config/sh/elf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP):
+	Remove undefine before config/elfos.h.
+	* config/sh/t-sh (EXTRA_MULTILIB_PARTS): Comment out.
+
 2000-09-14  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (H8/300 Options): Add -ms2600.
