@@ -1777,6 +1777,15 @@ do {									\
 
 /* Control the assembler format that we output.  */
 
+/* We don't emit these labels, so as to avoid getting linker errors about
+   missing exception handling info.  If we emit a gcc_compiled. label into
+   text, and the file has no code, then the DEC assembler gives us a zero
+   sized text section with no associated exception handling info.  The
+   DEC linker sees this text section, and gives a warning saying saying that
+   the exception handling info is missing.  */
+#define ASM_IDENTIFY_GCC
+#define ASM_IDENTIFY_LANGUAGE
+
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
