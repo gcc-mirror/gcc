@@ -1,5 +1,10 @@
 2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* expr.c (expand_expr_real_1) [MODIFY_EXPR]: Don't request a
+	value to expand_assignment.
+
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (cleanup_tree_cfg): Don't iterate on
 	thread_jumps.
 	(thread_jumps): Iterate until no new forwarder block arises.
