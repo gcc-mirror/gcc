@@ -1,5 +1,12 @@
 2004-04-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/mt_allocator.h (__mt_alloc<>::_S_initialize):
+	Streamline the second half, wrapping it in a single
+	'#ifdef __GTHREADS if (__gthread_active_p())' and avoiding
+	conditionals inside loops.
+
+2004-04-01  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/14775
 	* acconfig.h: Rename _GLIBCXX_MEM_LIMITS to _GLIBCXX_RES_LIMITS.
 	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT): Call

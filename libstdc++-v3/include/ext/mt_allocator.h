@@ -151,12 +151,7 @@ namespace __gnu_cxx
 	explicit _Tune()
 	: _M_max_bytes(128), _M_min_bin(8),
 	  _M_chunk_size(4096 - 4 * sizeof(void*)), 
-#ifdef __GTHREADS
-	  _M_max_threads(4096), 
-#else
-	  _M_max_threads(0), 
-#endif
-	  _M_freelist_headroom(10), 
+	  _M_max_threads(4096), _M_freelist_headroom(10), 
 	  _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false) 
 	{ }      
 
@@ -230,7 +225,7 @@ namespace __gnu_cxx
 
       union _Block_record
       {
-	// Points to the next block_record for its thread_id.
+	// Points to the block_record of the next free block.
         _Block_record* volatile         _M_next;
 
 	// The thread id of the thread which has requested this block.
@@ -522,10 +517,13 @@ namespace __gnu_cxx
           *__bp++ = __bint;
         }
 
+      // Initialize _S_bin and its members.
+      void* __v = ::operator new(sizeof(_Bin_record) * _S_bin_size);
+      _S_bin = static_cast<_Bin_record*>(__v);
+
       // If __gthread_active_p() create and initialize the list of
       // free thread ids. Single threaded applications use thread id 0
       // directly and have no need for this.
-      void* __v;
 #ifdef __GTHREADS
       if (__gthread_active_p())
         {
@@ -554,29 +552,14 @@ namespace __gnu_cxx
           // Initialize per thread key to hold pointer to
           // _S_thread_freelist.
           __gthread_key_create(&_S_thread_key, _S_destroy_thread_key);
-        }
-#endif
 
-      // Initialize _S_bin and its members.
-      __v = ::operator new(sizeof(_Bin_record) * _S_bin_size);
-      _S_bin = static_cast<_Bin_record*>(__v);
-	
-      // Maximum number of threads. 
-      size_t __max_threads = 1;
-#ifdef __GTHREADS
-      if (__gthread_active_p())
-        __max_threads = _S_options._M_max_threads + 1;
-#endif
+	  const size_t __max_threads = _S_options._M_max_threads + 1;
+	  for (size_t __n = 0; __n < _S_bin_size; ++__n)
+	    {
+	      _Bin_record& __bin = _S_bin[__n];
+	      __v = ::operator new(sizeof(_Block_record*) * __max_threads);
+	      __bin._M_first = static_cast<_Block_record**>(__v);
 
-      for (size_t __n = 0; __n < _S_bin_size; ++__n)
-        {
-	  _Bin_record& __bin = _S_bin[__n];
-	  __v = ::operator new(sizeof(_Block_record*) * __max_threads);
-          __bin._M_first = static_cast<_Block_record**>(__v);
-
-#ifdef __GTHREADS
-          if (__gthread_active_p())
-            {
 	      __v = ::operator new(sizeof(size_t) * __max_threads);
               __bin._M_free = static_cast<size_t*>(__v);
 
@@ -595,21 +578,26 @@ namespace __gnu_cxx
 #else
               { __GTHREAD_MUTEX_INIT_FUNCTION(__bin._M_mutex); }
 #endif
-            }
-#endif
 
-          for (size_t __threadn = 0; __threadn < __max_threads; ++__threadn)
-            {
-              __bin._M_first[__threadn] = NULL;
-#ifdef __GTHREADS
-              if (__gthread_active_p())
-                {
-                  __bin._M_free[__threadn] = 0;
-                  __bin._M_used[__threadn] = 0;
-                }
-#endif
-            }
-        }
+	      for (size_t __threadn = 0; __threadn < __max_threads;
+		   ++__threadn)
+		{
+		  __bin._M_first[__threadn] = NULL;
+		  __bin._M_free[__threadn] = 0;
+		  __bin._M_used[__threadn] = 0;
+		}
+	    }
+	}
+      else
+#endif	
+	for (size_t __n = 0; __n < _S_bin_size; ++__n)
+	  {
+	    _Bin_record& __bin = _S_bin[__n];
+	    __v = ::operator new(sizeof(_Block_record*));
+	    __bin._M_first = static_cast<_Block_record**>(__v);
+	    __bin._M_first[0] = NULL;
+	  }
+
       _S_init = true;
     }
 
