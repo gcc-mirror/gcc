@@ -1,3 +1,26 @@
+
+1999-02-15 16:59 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
+
+	* c-common.c (UNGETC [USE_CPPLIB=1]): Do nothing if c is EOF.
+	* c-lex.c: Likewise.
+	* cpplib.c (cpp_push_buffer, cpp_pop_buffer): Use a linked
+	list in malloced memory for the buffer stack.
+	(cpp_get_token): Don't pop the last buffer off the stack.
+	Calls after CPP_EOF has been returned produce CPP_EOF with no
+	state change.
+	(cpp_finish): Pop last buffer here.
+	(do_line): Don't free ip->last_nominal_fname if it is equal to
+	ip->fname.
+	(special_symbol): If a T_CONST is the empty string, push a
+	single `@ ' escape instead.
+	(macroexpand): Special symbol buffers have escapes too.
+	* cpplib.h (struct cpp_buffer): Remove unused fields, add prev
+	buffer pointer.
+	(struct cpp_reader): Remove buffer_stack.  Add
+	buffer_stack_depth.
+	(CPP_PREV_BUFFER, CPP_NULL_BUFFER): Buffer stack is now a
+	linked list.
+
 Mon Feb 15 14:44:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c: Don't define HOST_WIDE_INT.  Replace all occurrences of

@@ -1479,23 +1479,25 @@ cpp_push_buffer (pfile, buffer, length)
      U_CHAR *buffer;
      long length;
 {
-  register cpp_buffer *buf = CPP_BUFFER (pfile);
-  if (buf == pfile->buffer_stack)
+  cpp_buffer *buf = CPP_BUFFER (pfile);
+  cpp_buffer *new;
+  if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
     {
-      cpp_fatal (pfile, "%s: macro or `#include' recursion too deep",
-		 buf->fname);
+      cpp_fatal (pfile, "macro or `#include' recursion too deep");
       return NULL;
     }
-  buf--;
-  bzero ((char *) buf, sizeof (cpp_buffer));
-  CPP_BUFFER (pfile) = buf;
-  buf->if_stack = pfile->if_stack;
-  buf->cleanup = null_cleanup;
-  buf->underflow = null_underflow;
-  buf->buf = buf->cur = buffer;
-  buf->alimit = buf->rlimit = buffer + length;
-  
-  return buf;
+
+  new = xcalloc (sizeof (cpp_buffer), 1);
+
+  new->if_stack = pfile->if_stack;
+  new->cleanup = null_cleanup;
+  new->underflow = null_underflow;
+  new->buf = new->cur = buffer;
+  new->alimit = new->rlimit = buffer + length;
+  new->prev = buf;
+
+  CPP_BUFFER (pfile) = new;
+  return new;
 }
 
 cpp_buffer *
@@ -1504,7 +1506,10 @@ cpp_pop_buffer (pfile)
 {
   cpp_buffer *buf = CPP_BUFFER (pfile);
   (*buf->cleanup) (buf, pfile);
-  return ++CPP_BUFFER (pfile);
+  CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
+  free (buf);
+  pfile->buffer_stack_depth--;
+  return CPP_BUFFER (pfile);
 }
 
 /* Scan until CPP_BUFFER (PFILE) is exhausted into PFILE->token_buffer.
@@ -1940,6 +1945,8 @@ special_symbol (hp, pfile)
       buf = hp->value.cpval;
       if (!buf)
 	return;
+      if (*buf == '\0')
+	buf = "@ ";
 
       len = strlen (buf);
       CPP_RESERVE (pfile, len + 1);
@@ -2166,6 +2173,7 @@ macroexpand (pfile, hp)
       CPP_SET_WRITTEN (pfile, old_written);
       bcopy (CPP_PWRITTEN (pfile), xbuf, xbuf_len + 1);
       push_macro_expansion (pfile, xbuf, xbuf_len, hp);
+      CPP_BUFFER (pfile)->has_escapes = 1;
       return;
     }
 
@@ -2976,7 +2984,8 @@ do_line (pfile, keyword)
 
 	  if (ip->last_nominal_fname
 	      && ip->last_nominal_fname != oldname
-	      && ip->last_nominal_fname != newname)
+	      && ip->last_nominal_fname != newname
+	      && ip->last_nominal_fname != ip->fname)
 	    free (ip->last_nominal_fname);
 
 	  if (newname == ip->fname)
@@ -3711,7 +3720,7 @@ cpp_get_token (pfile)
   long start_line, start_column;
   enum cpp_token token;
   struct cpp_options *opts = CPP_OPTIONS (pfile);
-  CPP_BUFFER (pfile)->prev = CPP_BUFFER (pfile)->cur;
+
  get_next:
   c = GETC();
   if (c == EOF)
@@ -3719,10 +3728,11 @@ cpp_get_token (pfile)
     handle_eof:
       if (CPP_BUFFER (pfile)->seen_eof)
 	{
-	  if (cpp_pop_buffer (pfile) != CPP_NULL_BUFFER (pfile))
-	    goto get_next;
-	  else
+	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == CPP_NULL_BUFFER (pfile))
 	    return CPP_EOF;
+
+	  cpp_pop_buffer (pfile);
+	  goto get_next;
 	}
       else
 	{
@@ -5523,6 +5533,11 @@ cpp_finish (pfile)
      cpp_reader *pfile;
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
+
+  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != CPP_NULL_BUFFER (pfile))
+    cpp_fatal (pfile,
+	       "cpplib internal error: buffers still stacked in cpp_finish");
+  cpp_pop_buffer (pfile);
   
   if (opts->print_deps)
     {
@@ -5578,7 +5593,7 @@ cpp_cleanup (pfile)
      cpp_reader *pfile;
 {
   int i;
-  while ( CPP_BUFFER (pfile) != CPP_NULL_BUFFER (pfile))
+  while (CPP_BUFFER (pfile) != CPP_NULL_BUFFER (pfile))
     cpp_pop_buffer (pfile);
 
   if (pfile->token_buffer)
