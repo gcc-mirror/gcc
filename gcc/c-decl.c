@@ -3440,7 +3440,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    if (pedantic)
 		      pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
 		    else if (longlong)
-		      warning ("`long long long' is too long for GCC");
+		      error ("`long long long' is too long for GCC");
 		    else
 		      longlong = 1;
 		  }
@@ -3898,9 +3898,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    }
 		}
 	      if (constp > 1)
-		warning ("duplicate `const'");
+		pedwarn ("duplicate `const'");
 	      if (volatilep > 1)
-		warning ("duplicate `volatile'");
+		pedwarn ("duplicate `volatile'");
 	    }
 
 	  declarator = TREE_OPERAND (declarator, 0);
