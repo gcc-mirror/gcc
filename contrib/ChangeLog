@@ -1,3 +1,7 @@
+2001-08-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release: Correct quoting.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.

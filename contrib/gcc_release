@@ -131,7 +131,7 @@ EOF
     for x in gcc/version.c; do 
       y=`basename ${x}`
       (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-          sed -e 's|= \".*\"|= \"${RELEASE}\"|g' < ${y} > ${y}.new && \
+          sed -e 's|= \".*\"|= \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
 	  mv ${y}.new ${y} && \
           ${CVS} ci -m 'Update version' ${y}) || \
 	  error "Could not update ${x}"
@@ -155,7 +155,7 @@ EOF
   # Tag the sources.
   if [ -n "${TAG}" ]; then
     inform "Tagging release sources"
-    ${CVS} rtag -r ${BRANCH} ${TAG} gcc || \
+    ${CVS} rtag -r ${BRANCH} -F ${TAG} gcc || \
       error "Could not tag release sources"
     BRANCH=$TAG
   fi
