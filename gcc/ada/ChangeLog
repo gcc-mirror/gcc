@@ -1,3 +1,12 @@
+2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/20344
+	Backport from mainline:
+
+	Eric Botcazou  <ebotcazou@adacore.com>
+	* lang.opt: Fix specification of -fRTS=.
+	* misc.c (gnat_handle_option): Accept OPT_fRTS_, not OPT_fRTS.
+    
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (ada/treeprs.ads, ada/einfo.h, ada/sinfo.h,
