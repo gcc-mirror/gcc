@@ -1,3 +1,7 @@
+Thu May 21 23:23:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/980520-1.c: New test.
+
 Wed May 20 14:37:15 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* gcc.dg/980502-1.c: Fix return type.
