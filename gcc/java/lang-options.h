@@ -42,8 +42,10 @@ DEFINE_LANG_NAME ("Java")
   { "-M", "Print dependencies to stdout" },
   { "-MM", "Print dependencies to stdout" },
 #endif /* ! USE_CPPLIB */
-  { "-fclasspath", "Set class path and suppress system path" },
-  { "-fCLASSPATH", "Set class path" },
+  { "--classpath", "Set class path and suppress system path" },
+  { "--CLASSPATH", "Set class path" },
+  { "--main", "Choose class whose main method should be used" },
+  { "--encoding", "Choose input encoding (default is UTF-8)" },
   { "-I", "Add directory to class path" },
   { "-foutput-class-dir", "Directory where class files should be written" },
   { "-fuse-divide-subroutine", "" },

@@ -121,6 +121,9 @@ int flag_hash_synchronization;
    JNI, not CNI.  */
 int flag_jni = 0;
 
+/* The encoding of the source file.  */
+char *current_encoding = NULL;
+
 /* When non zero, report the now deprecated empty statements.  */
 int flag_extraneous_semicolon;
 
@@ -222,6 +225,13 @@ lang_decode_option (argc, argv)
       return 1;
     }
 #undef ARG
+#define ARG "-fencoding="
+  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
+    {
+      current_encoding = p + sizeof (ARG) - 1;
+      return 1;
+    }
+#undef ARG
 
   if (p[0] == '-' && p[1] == 'f')
     {
@@ -309,7 +319,9 @@ lang_decode_option (argc, argv)
   return 0;
 }
 
+/* Global open file.  */
 FILE *finput;
+
 const char *
 init_parse (filename)
      const char *filename;
@@ -362,6 +374,7 @@ init_parse (filename)
 	    }
 	}
     }
+
   init_lex ();
 
   return filename;
@@ -370,7 +383,6 @@ init_parse (filename)
 void
 finish_parse ()
 {
-  fclose (finput);
   jcf_dependency_write ();
 }
 

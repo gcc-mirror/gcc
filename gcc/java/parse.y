@@ -2618,9 +2618,12 @@ java_pop_parser_context (generate)
       next->incomplete_class = ctxp->incomplete_class;
       next->gclass_list = ctxp->gclass_list;
       lineno = ctxp->lineno;
-      finput = ctxp->finput;
       current_class = ctxp->current_class;
     }
+
+  /* If the old and new lexers differ, then free the old one.  */
+  if (ctxp->lexer && next && ctxp->lexer != next->lexer)
+    java_destroy_lexer (ctxp->lexer);
 
   /* Set the single import class file flag to 0 for the current list
      of imported things */
@@ -2661,7 +2664,6 @@ java_parser_context_save_global ()
   else if (ctxp->saved_data)
     create_new_parser_context (1);
 
-  ctxp->finput = finput;
   ctxp->lineno = lineno;
   ctxp->current_class = current_class;
   ctxp->filename = input_filename;
@@ -2675,7 +2677,6 @@ java_parser_context_save_global ()
 void
 java_parser_context_restore_global ()
 {
-  finput = ctxp->finput;
   lineno = ctxp->lineno;
   current_class = ctxp->current_class;
   input_filename = ctxp->filename;

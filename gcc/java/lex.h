@@ -35,6 +35,13 @@ extern int   lineno;
 /* A Unicode character, as read from the input file  */
 typedef unsigned short unicode_t;
 
+#ifdef HAVE_ICONV
+#include <iconv.h>
+#endif /* HAVE_ICONV */
+
+/* Default encoding to use if no encoding is specified.  */
+#define DEFAULT_ENCODING "UTF-8"
+
 /* Debug macro to print-out what we match  */
 #ifdef JAVA_LEX_DEBUG
 #ifdef JAVA_LEX_DEBUG_CHAR
@@ -96,12 +103,38 @@ typedef struct _java_lc {
   int col;
 } java_lc;
 
+typedef struct java_lexer
+{
+  /* The file from which we're reading.  */
+  FILE *finput;
+
+  /* Number of consecutive backslashes we've read.  */
+  int bs_count;
+
+  /* If nonzero, a value that was pushed back.  */
+  unicode_t unget_value;
+
+#ifdef HAVE_ICONV
+  /* The handle for the iconv converter we're using.  */
+  iconv_t handle;
+
+  /* Bytes we've read from the file but have not sent to iconv.  */
+  char buffer[1024];
+
+  /* Index of first valid character in buffer, -1 if no valid
+     characters.  */
+  int first;
+
+  /* Index of last valid character in buffer, plus one.  -1 if no
+     valid characters in buffer.  */
+  int last;
+#endif /* HAVE_ICONV */
+} java_lexer;
+
+/* Destroy a lexer object.  */
+extern void java_destroy_lexer PARAMS ((java_lexer *));
 
 #define JAVA_LINE_MAX 80
-
-/* Macro to read and unread bytes */
-#define UNGETC(c) ungetc(c, finput)
-#define GETC()    getc(finput)
 
 /* Build a location compound integer */
 #define BUILD_LOCATION() ((ctxp->elc.line << 12) | (ctxp->elc.col & 0xfff))
