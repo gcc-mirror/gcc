@@ -23,11 +23,9 @@ x(a)
 
 main ()
 {
-#ifndef __I960__
 #ifndef NO_LABEL_VALUES
   if (x (DEPTH) != DEPTH)
     abort ();
-#endif
 #endif
   exit (0);
 }
