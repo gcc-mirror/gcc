@@ -7929,6 +7929,7 @@ loc_descriptor_from_tree (loc, addressp)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
       return loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp);
 
@@ -8849,6 +8850,7 @@ add_bound_info (subrange_die, bound_attr, bound)
     case CONVERT_EXPR:
     case NOP_EXPR:
     case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
       add_bound_info (subrange_die, bound_attr, TREE_OPERAND (bound, 0));
       break;
 

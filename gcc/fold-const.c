@@ -5308,6 +5308,12 @@ fold (expr)
 	}
       return fold_convert (t, arg0);
 
+    case VIEW_CONVERT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == VIEW_CONVERT_EXPR)
+	return build1 (VIEW_CONVERT_EXPR, type,
+		       TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+      return t;
+
 #if 0  /* This loses on &"foo"[0].  */
     case ARRAY_REF:
 	{

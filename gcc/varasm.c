@@ -4288,6 +4288,7 @@ initializer_constant_valid_p (value, endtype)
     case FDESC_EXPR:
       return staticp (TREE_OPERAND (value, 0)) ? TREE_OPERAND (value, 0) : 0;
 
+    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
 
@@ -4442,10 +4443,9 @@ output_constant (exp, size, align)
 {
   enum tree_code code = TREE_CODE (TREE_TYPE (exp));
 
-  /* Some front-ends use constants other than the standard
-     language-indepdent varieties, but which may still be output
-     directly.  Give the front-end a chance to convert EXP to a
-     language-independent representation.  */
+  /* Some front-ends use constants other than the standard language-indepdent
+     varieties, but which may still be output directly.  Give the front-end a
+     chance to convert EXP to a language-independent representation.  */
   if (lang_expand_constant)
     {
       exp = (*lang_expand_constant) (exp);
@@ -4462,9 +4462,9 @@ output_constant (exp, size, align)
   while ((TREE_CODE (exp) == NOP_EXPR
 	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
 	      || AGGREGATE_TYPE_P (TREE_TYPE (exp))))
-	 || (TREE_CODE (exp) == CONVERT_EXPR
-	     && code == UNION_TYPE)
-	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
+	 || (TREE_CODE (exp) == CONVERT_EXPR && code == UNION_TYPE)
+	 || TREE_CODE (exp) == NON_LVALUE_EXPR
+	 || TREE_CODE (exp) == VIEW_CONVERT_EXPR)
     {
       exp = TREE_OPERAND (exp, 0);
       code = TREE_CODE (TREE_TYPE (exp));

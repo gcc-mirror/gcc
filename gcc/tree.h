@@ -2587,6 +2587,10 @@ extern tree get_inner_reference		PARAMS ((tree, HOST_WIDE_INT *,
 						 enum machine_mode *, int *,
 						 int *));
 
+/* Return 1 if T is an expression that get_inner_reference handles.  */
+
+extern int handled_component_p		PARAMS ((tree));
+
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */
 

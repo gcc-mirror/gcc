@@ -95,7 +95,6 @@ static void record_set			PARAMS ((rtx, rtx, void *));
 static rtx find_base_term		PARAMS ((rtx));
 static int base_alias_check		PARAMS ((rtx, rtx, enum machine_mode,
 						 enum machine_mode));
-static int handled_component_p		PARAMS ((tree));
 static rtx find_base_value		PARAMS ((rtx));
 static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
 static int insert_subset_children       PARAMS ((splay_tree_node, void*));
@@ -393,31 +392,6 @@ find_base_decl (t)
       /* At this point all are nonzero or all are zero.  If all three are the
 	 same, return it.  Otherwise, return zero.  */
       return (d0 == d1 && d1 == d2) ? d0 : 0;
-
-    default:
-      return 0;
-    }
-}
-
-/* Return 1 if T is an expression that get_inner_reference handles.  */
-
-static int
-handled_component_p (t)
-     tree t;
-{
-  switch (TREE_CODE (t))
-    {
-    case BIT_FIELD_REF:
-    case COMPONENT_REF:
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
-    case NON_LVALUE_EXPR:
-      return 1;
-
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-      return (TYPE_MODE (TREE_TYPE (t))
-	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))));
 
     default:
       return 0;

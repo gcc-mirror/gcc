@@ -1,3 +1,22 @@
+Mon Nov 19 15:13:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.def (VIEW_CONVERT_EXPR): New tree code.
+	* tree.h (handled_component_p): New declaration.
+	* alias.c (handled_component_p): Move function from here ...
+	* expr.c (handled_component_p): ... to here and non longer static.
+	(is_zeros_p, case VIEW_CONVERT_EXPR): New case.
+	(store_field): Remove unneeded MEM_COPY_ATTRIBUTES call.
+	(get_inner_reference): Handle VIEW_CONVERT_EXPR.
+	(expand_expr, case VAR_DECL): Clean up handling of re-layout case.
+	(expand_expr, case VIEW_CONVERT_EXPR): New case.
+	(expand_expr, cse ADDR_EXPR): No need to copy if already
+	BIGGEST_ALIGNMENT.
+	* fold-const.c (fold, case VIEW_CONVERT_EXPR): New case.
+	* varasm.c (initializer_constant_value_p, case VIEW_CONVERT_EXPR): New.
+	(output_constant): Handle VIEW_CONVERT_EXPR.
+	* dwarf2out.c (loc-descriptor_from_tree, add_bound_info):
+	Add new case for VIEW_CONVERT_EXPR.
+
 2001-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* a29k/unix.h (ASM_FILE_START): Const-ify.
