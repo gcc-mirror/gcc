@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -50,4 +50,4 @@ Boston, MA 02111-1307, USA.  */
 __init:
         .section .fini
         .global  __fini
-__fini:  
+__fini:

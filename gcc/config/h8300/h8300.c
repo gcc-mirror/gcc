@@ -2958,7 +2958,7 @@ compute_a_shift_length (insn, operands)
 	    }
 
 	  wlength += h8300_asm_insn_count (info.shift1) * n;
-	    
+
 	  return 2 * wlength;
 
 	case SHIFT_ROT_AND:
@@ -2977,7 +2977,7 @@ compute_a_shift_length (insn, operands)
 	      }
 
 	    wlength += h8300_asm_insn_count (info.shift1) * m;
-	    
+
 	    /* Now mask off the high bits.  */
 	    switch (mode)
 	      {
