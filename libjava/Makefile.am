@@ -23,10 +23,10 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
-if NO_X
-cond_x_ltlibrary =
-else
+if XLIB_AWT
 cond_x_ltlibrary = libgcjx.la
+else
+cond_x_ltlibrary =
 endif
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
