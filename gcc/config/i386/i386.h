@@ -2981,7 +2981,7 @@ extern enum asm_dialect ix86_asm_dialect;
 extern int ix86_regparm;
 extern const char *ix86_regparm_string;
 
-extern int ix86_preferred_stack_boundary;
+extern unsigned int ix86_preferred_stack_boundary;
 extern const char *ix86_preferred_stack_boundary_string;
 
 extern int ix86_branch_cost;
