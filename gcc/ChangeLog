@@ -1,3 +1,9 @@
+2001-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (grokdeclarator): Use INTEGRAL_TYPE_P.
+
+	* c-typeck.c (c_start_case): Likewise.
+
 2001-06-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (store_field): Don't set MEM_ALIAS_SET for a field
