@@ -564,6 +564,8 @@ static const char *cpp_options =
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
  %{ffast-math:-D__FAST_MATH__}\
  %{fshort-wchar:-U__WCHAR_TYPE__ -D__WCHAR_TYPE__=short\\ unsigned\\ int}\
+ %{ffreestanding:-D__STDC_HOSTED__=0} %{fno-hosted:-D__STDC_HOSTED__=0}\
+ %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
  %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{U*} %{D*} %{i*} %Z %i\
