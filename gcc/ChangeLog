@@ -1,3 +1,8 @@
+Sat Apr 24 20:49:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (PRINT_OPERAND_ADDRESS): Break out to ...
+	* alpha.c (print_operand_address): here.  Handle subregs.
+
 Fri Apr 23 22:35:41 EDT 1999  John Wehle  (john@feith.com)
 
 	* acconfig.h (HAVE_GAS_FILDS_FISTS): Add.

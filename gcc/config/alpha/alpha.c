@@ -2929,6 +2929,40 @@ print_operand (file, x, code)
       output_operand_lossage ("invalid %%xn code");
     }
 }
+
+void
+print_operand_address (file, addr)
+    FILE *file;
+     rtx addr;
+{
+  rtx basereg = NULL_RTX;
+  HOST_WIDE_INT offset = 0;
+
+  if (GET_CODE (addr) == AND)
+    addr = XEXP (addr, 0);
+  if (GET_CODE (addr) == SUBREG)
+    addr = SUBREG_REG (addr);
+
+  if (GET_CODE (addr) == REG)
+    basereg = addr;
+  else if (GET_CODE (addr) == CONST_INT)
+    offset = INTVAL (addr);
+  else if (GET_CODE (addr) == PLUS
+           && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+    {
+      offset = INTVAL (XEXP (addr, 1));
+      basereg = XEXP (addr, 0);
+      if (GET_CODE (basereg) == SUBREG)
+	basereg = SUBREG_REG (basereg);
+      if (GET_CODE (basereg) != REG)
+	abort ();
+    }
+  else
+    abort ();
+
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
+  fprintf (file, "($%d)", basereg ? REGNO (basereg) : 31);
+}
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at
    TRAMP. FNADDR is an RTX for the address of the function's pure

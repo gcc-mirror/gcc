@@ -2297,28 +2297,9 @@ do {									\
 
 /* Print a memory address as an operand to reference that memory location.  */
 
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)		\
-{ rtx addr = (ADDR);					\
-  int basereg = 31;					\
-  HOST_WIDE_INT offset = 0;				\
-							\
-  if (GET_CODE (addr) == AND)				\
-    addr = XEXP (addr, 0);				\
-							\
-  if (GET_CODE (addr) == REG)				\
-    basereg = REGNO (addr);				\
-  else if (GET_CODE (addr) == CONST_INT)		\
-    offset = INTVAL (addr);				\
-  else if (GET_CODE (addr) == PLUS			\
-	   && GET_CODE (XEXP (addr, 0)) == REG		\
-	   && GET_CODE (XEXP (addr, 1)) == CONST_INT)	\
-    basereg = REGNO (XEXP (addr, 0)), offset = INTVAL (XEXP (addr, 1)); \
-  else							\
-    abort ();						\
-							\
-  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, offset);		\
-  fprintf (FILE, "($%d)", basereg);		\
-}
+#define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
+  print_operand_address((FILE), (ADDR))
+
 /* Define the codes that are matched by predicates in alpha.c.  */
 
 #define PREDICATE_CODES 						\
@@ -2524,6 +2505,7 @@ extern int current_file_function_operand ();
 extern int alpha_sa_size ();
 extern int alpha_adjust_cost ();
 extern void print_operand ();
+extern void print_operand_address ();
 extern int reg_or_0_operand ();
 extern int reg_or_8bit_operand ();
 extern int mul8_operand ();
