@@ -176,7 +176,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 typedef enum
   {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) CODE,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) CODE,
 #include "com-rt.def"
 #undef DEFGFRT
     FFECOM_gfrt

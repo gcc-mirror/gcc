@@ -1,3 +1,16 @@
+2000-08-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com-rt.def: Adapt macro DEFGFRT to accept CONST boolean.
+	* com.c (macro DEFGFRT): Use CONST boolean.
+	(ffecom_call_binop_): Choose between call by value
+	and call by reference.
+	(ffecom_expr_): Use direct calls to (g)libc functions for
+	POW_DD, LOG10, (float) MOD.
+	(ffecom_make_gfrt_): Add const indication to table of
+	intrinsics.
+	* com.h (macro DEFGFRT): Use CONST boolean.
+	* intrin.def: Adjust DEFIMP definition of LOG10, (float) MOD.
+
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
         
         * lang-specs.h: Do not process -o or run the assembler if

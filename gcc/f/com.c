@@ -371,7 +371,7 @@ static tree ffecom_call_binop_ (tree fn, ffeinfoKindtype kt,
 				ffebld left, ffebld right,
 				tree dest_tree, ffebld dest,
 				bool *dest_used, tree callee_commons,
-				bool scalar_args, tree hook);
+				bool scalar_args, bool ref, tree hook);
 static void ffecom_char_args_x_ (tree *xitem, tree *length,
 				 ffebld expr, bool with_null);
 static tree ffecom_check_size_overflow_ (ffesymbol s, tree type, bool dummy);
@@ -518,7 +518,7 @@ static int ffecom_typesize_integer1_;
 static tree ffecom_gfrt_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) NULL_TREE,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) NULL_TREE,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -528,7 +528,7 @@ static tree ffecom_gfrt_[FFECOM_gfrt]
 static const char *ffecom_gfrt_name_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) NAME,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) NAME,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -538,7 +538,7 @@ static const char *ffecom_gfrt_name_[FFECOM_gfrt]
 static bool ffecom_gfrt_volatile_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) VOLATILE,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) VOLATILE,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -548,7 +548,18 @@ static bool ffecom_gfrt_volatile_[FFECOM_gfrt]
 static bool ffecom_gfrt_complex_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) COMPLEX,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) COMPLEX,
+#include "com-rt.def"
+#undef DEFGFRT
+};
+
+/* Whether the function is const
+   (i.e., has no side effects and only depends on its arguments).  */
+
+static bool ffecom_gfrt_const_[FFECOM_gfrt]
+=
+{
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) CONST,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -558,7 +569,7 @@ static bool ffecom_gfrt_complex_[FFECOM_gfrt]
 static ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) TYPE,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) TYPE,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -568,7 +579,7 @@ static ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
 static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 =
 {
-#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) ARGS,
+#define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) ARGS,
 #include "com-rt.def"
 #undef DEFGFRT
 };
@@ -1930,15 +1941,26 @@ static tree
 ffecom_call_binop_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 		    tree type, ffebld left, ffebld right,
 		    tree dest_tree, ffebld dest, bool *dest_used,
-		    tree callee_commons, bool scalar_args, tree hook)
+		    tree callee_commons, bool scalar_args, bool ref, tree hook)
 {
   tree left_tree;
   tree right_tree;
   tree left_length;
   tree right_length;
 
-  left_tree = ffecom_arg_ptr_to_expr (left, &left_length);
-  right_tree = ffecom_arg_ptr_to_expr (right, &right_length);
+  if (ref)
+    {
+      /* Pass arguments by reference.  */
+      left_tree = ffecom_arg_ptr_to_expr (left, &left_length);
+      right_tree = ffecom_arg_ptr_to_expr (right, &right_length);
+    }
+  else
+    {
+      /* Pass arguments by value.  */
+      left_tree = ffecom_arg_expr (left, &left_length);
+      right_tree = ffecom_arg_expr (right, &right_length);
+    }
+
 
   left_tree = build_tree_list (NULL_TREE, left_tree);
   right_tree = build_tree_list (NULL_TREE, right_tree);
@@ -3355,9 +3377,11 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	ffecomGfrt code;
 	ffeinfoKindtype rtkt;
 	ffeinfoKindtype ltkt;
+	bool ref = TRUE;
 
 	switch (ffeinfo_basictype (ffebld_info (right)))
 	  {
+
 	  case FFEINFO_basictypeINTEGER:
 	    if (1 || optimize)
 	      {
@@ -3447,7 +3471,11 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 				       FFEINFO_kindtypeREALDOUBLE, 0,
 				       FFETARGET_charactersizeNONE,
 				       FFEEXPR_contextLET);
-	    code = FFECOM_gfrtPOW_DD;
+	    /* We used to call FFECOM_gfrtPOW_DD here,
+	       which passes arguments by reference.  */
+	    code = FFECOM_gfrtL_POW;
+	    /* Pass arguments by value. */
+	    ref  = FALSE;
 	    break;
 
 	  case FFEINFO_basictypeCOMPLEX:
@@ -3465,6 +3493,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 				       FFETARGET_charactersizeNONE,
 				       FFEEXPR_contextLET);
 	    code = FFECOM_gfrtPOW_ZZ;	/* Overlapping result okay. */
+	    ref = TRUE;			/* Pass arguments by reference. */
 	    break;
 
 	  default:
@@ -3478,7 +3507,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 				    && ffecom_gfrt_complex_[code]),
 				   tree_type, left, right,
 				   dest_tree, dest, dest_used,
-				   NULL_TREE, FALSE,
+				   NULL_TREE, FALSE, ref,
 				   ffebld_nonter_hook (expr));
       }
 
@@ -4318,9 +4347,11 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	break;	/* Already picked one, stick with it. */
 
       if (kt == FFEINFO_kindtypeREAL1)
-	gfrt = FFECOM_gfrtALOG10;
+	/* We used to call FFECOM_gfrtALOG10 here.  */
+	gfrt = FFECOM_gfrtL_LOG10;
       else if (kt == FFEINFO_kindtypeREAL2)
-	gfrt = FFECOM_gfrtDLOG10;
+	/* We used to call FFECOM_gfrtDLOG10 here.  */
+	gfrt = FFECOM_gfrtL_LOG10;
       break;
 
     case FFEINTRIN_impMAX:
@@ -4382,9 +4413,11 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			 convert (tree_type, ffecom_expr (arg2)));
 
       if (kt == FFEINFO_kindtypeREAL1)
-	gfrt = FFECOM_gfrtAMOD;
+	/* We used to call FFECOM_gfrtAMOD here.  */
+	gfrt = FFECOM_gfrtL_FMOD;
       else if (kt == FFEINFO_kindtypeREAL2)
-	gfrt = FFECOM_gfrtDMOD;
+	/* We used to call FFECOM_gfrtDMOD here.  */
+	gfrt = FFECOM_gfrtL_FMOD;
       break;
 
     case FFEINTRIN_impNINT:
@@ -7068,8 +7101,17 @@ ffecom_make_gfrt_ (ffecomGfrt ix)
 		  get_identifier (ffecom_gfrt_name_[ix]),
 		  ttype);
   DECL_EXTERNAL (t) = 1;
+  TREE_READONLY (t) = ffecom_gfrt_const_[ix] ? 1 : 0;
   TREE_PUBLIC (t) = 1;
   TREE_THIS_VOLATILE (t) = ffecom_gfrt_volatile_[ix] ? 1 : 0;
+
+  /* Sanity check:  A function that's const cannot be volatile.  */
+
+  assert (ffecom_gfrt_const_[ix] ? !ffecom_gfrt_volatile_[ix] : 1);
+
+  /* Sanity check: A function that's const cannot return complex.  */
+
+  assert (ffecom_gfrt_const_[ix] ? !ffecom_gfrt_complex_[ix] : 1);
 
   t = start_decl (t, TRUE);
 
