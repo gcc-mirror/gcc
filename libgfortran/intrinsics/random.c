@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2004 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
 
   The algorithm was taken from the paper :
@@ -37,7 +37,11 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <assert.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "libgfortran.h"
 
 /*Use the 'big' generator by default ( period -> 2**19937 ).  */

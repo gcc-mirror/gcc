@@ -1,3 +1,11 @@
+2004-05-30  Andreas Jaeger  <aj@suse.de>
+
+	* intrinsics/random.c: Include unistd.h for close and read
+	prototypes, remove unneeded inclusion of assert.h.
+
+	* intrinsics/abort.c: Include stdlib.h for abort prototype, remove
+	unneeded inclusion of assert.h.
+
 2004-05-27  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
 
 	PR fortran/15234
@@ -196,7 +204,7 @@
 	* io/unix.c (find_file0): Use fd field of struct
 
 2004-04-03  Bud Davis  <bdavis9659@comcast.net>
- 
+
 	PR 14831
 	* io/inquire.c (inquire_via_unit): Changed return string for
 	BLANK=NULL. Use correct variable for ACTION.
@@ -313,7 +321,7 @@
 	* m4/minloc1.m4: Ditto.
 	* m4/ifunction.m4: Set return value for zero sized arrays.
 	* m4/iforeach.m4: Ditto.
-	* m4/all.m4, m4/any.m4, m4/count.m4, m4/maxloc1.m4, m4/minloc1.m4, 
+	* m4/all.m4, m4/any.m4, m4/count.m4, m4/maxloc1.m4, m4/minloc1.m4,
 	m4/mxaval.m4, m4/minval.m4, m4/product.m4, m4/sum.m4: Ditto.
 	* generated/*: Update.
 
@@ -372,7 +380,7 @@
 	* generated/_mod*.f90: New files.
 
 2003-09-20  Kejia Zhao  <kejia_zh@yahoo.com.cn>
- 
+
 	* intrinsics/selected_kind.f90: New file.
 	* Makefile.am: Add it.
 	* Makefile.in: regenerate.
@@ -404,7 +412,7 @@
 	* libgfortran.h (xtoa, itoa): Parameter modified.
 	* io/io.h (namelist_info): Declaration to support namelist I/O
 	(st_parameter): Add namelist related component
-	(ionml, empty_internal_buffer, st_set_nml_var_int, 
+	(ionml, empty_internal_buffer, st_set_nml_var_int,
 	st_set_nml_var_float, st_set_nml_var_char, st_set_nml_var_complex,
 	st_set_nml_var_log): Declaration
 	(set_integer, set_integer): Parameter changed
@@ -416,7 +424,7 @@
 	(next_char): Add detection of End_Of_Line support
 	(convert_integer): Now can process 64 bits interger
 	(read_real): Bug fixed
-	(init_at_eol, find_nml_node, match_namelist_name): Add new functions 
+	(init_at_eol, find_nml_node, match_namelist_name): Add new functions
 	(match_namelist_name): New implemention
 	* io/lock.c (ionml): New global variable
 	(library_end): Free memory in ionml
@@ -426,11 +434,11 @@
 	 features
 	(read_f, read_radix): Input bug fix
 	* io/transfer.c: (sf_seen_eor): New static variable
-	(read_sf): Zeroize base buffer; fix bugs: single read statement can 
+	(read_sf): Zeroize base buffer; fix bugs: single read statement can
 	not get input in mutli line when read from stdin
 	(formatted_transfer): Fix bug of FMT_O, FMT_B, FMT_Z for INTEGER type
 	 request
-	(data_transfer_init): Clear internal buffer for Internel File I/O. 
+	(data_transfer_init): Clear internal buffer for Internel File I/O.
 	Internal File now worked. Detect some error condition for namelist.
 	Some minor bug fix
 	(next_record_w): Internal file and Namelist I/O support.
@@ -449,7 +457,7 @@
 	(write_decimal): New function to output decimal number
 	(otoa, btoa): Better implemention and 64 bits interger support
 	(namelist_write): New function
-	* runtime/error.c (itoa, xtoa): Better implemention and 64 bits 
+	* runtime/error.c (itoa, xtoa): Better implemention and 64 bits
 	interger support
 
 2003-08-15  Arnaud Desitter  <arnaud.desitter@geography.oxford.ac.uk>
@@ -546,7 +554,7 @@
 	* io/list_read.c: Add Separator '\t'.
 	(parse_real, read_real): Accept real values starting with an optional
 	sign follows a decimal point.
- 
+
 2003-06-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.am: Don't put cmath objects in subdir.
@@ -717,7 +725,7 @@
 2003-02-02  Arnaud Desitter  <arnaud.desitter@geography.oxford.ac.uk>
 
 	* reshape_packed.c, lock.c: Add #include <string.h>.
-	* libgfor.h, format.c, inquire.c, io.h, transfer.c, unix.c, 
+	* libgfor.h, format.c, inquire.c, io.h, transfer.c, unix.c,
 	environ.c, error.c, memory.c, string.c: Add const.
 	* error.c (show_locus): Add void.
 
@@ -773,7 +781,7 @@
 	* Makefile.in: Regenerate.
 	* gfortypes.h: Kill, include everything in...
 	* libgfor.h: ...here.  Include config.h
- 	* fmain.c, intrinsics/ishftc.c, intrinsic/reshape_generic.c,
+	* fmain.c, intrinsics/ishftc.c, intrinsic/reshape_generic.c,
 	intrinsics/reshape_i4.c, intrinsics/reshape_i8.c,
 	intrinsics/reshape_packed.c, intrinsics/size.c,
 	m4/reshape.m4, runtime/main.c, runtime/memory.c: Use macro
@@ -783,7 +791,7 @@
 
 	* io/lock.c (library_end): Propagate library return
 	code.
-	
+
 2003-01-19  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	Port fixes from Andy's tree:
