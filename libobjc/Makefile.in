@@ -102,7 +102,12 @@ FLAGS_TO_PASS = \
 	"LOADLIBES=$(LOADLIBES)" \
 	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
-	"SHELL=$(SHELL)"
+	"SHELL=$(SHELL)" \
+	"prefix=$(prefix)" \
+	"exec_prefix=$(exec_prefix)" \
+	"libdir=$(libdir)" \
+	"libsubdir=$(libsubdir)" \
+	"tooldir=$(tooldir)"
 
 all: libobjc.a @OBJC_BOEHM_GC@
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all

@@ -85,7 +85,12 @@ FLAGS_TO_PASS = \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LOADLIBES=$(LOADLIBES)" \
 	"RANLIB=$(RANLIB)" \
-	"SHELL=$(SHELL)"
+	"SHELL=$(SHELL)" \
+	"prefix=$(prefix)" \
+	"exec_prefix=$(exec_prefix)" \
+	"libdir=$(libdir)" \
+	"libsubdir=$(libsubdir)" \
+	"tooldir=$(tooldir)"
 
 all: stamp-picdir $(TARGETLIB) needed-list required-list all-subdir
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
