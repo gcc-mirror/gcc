@@ -1,3 +1,8 @@
+2002-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (force_to_mode): Only replace with (not Y) if all bits in fuller_mask
+	(not just mask) are set in C.
+
 2002-11-19  Andreas Jaeger  <aj@suse.de>
 
 	* loop.c (record_giv): Initialize not_replaceable.
