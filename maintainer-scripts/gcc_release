@@ -337,9 +337,11 @@ upload_files() {
   # Make sure the directory exists on the server.
   if [ $LOCAL -eq 0 ]; then
     ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} mkdir ${FTP_PATH}
+    UPLOAD_PATH="${GCC_USERNAME}@${GCC_HOSTNAME}:${FTP_PATH}"
   else
     mkdir -p "${FTP_PATH}" \
       || error "Could not create \`${FTP_PATH}'"
+    UPLOAD_PATH=${FTP_PATH}
   fi
 
   for x in gcc*.gz gcc*.bz2; do
@@ -347,8 +349,9 @@ upload_files() {
       # Make sure the file will be readable on the server.
       chmod a+r ${x}
       # Copy it.
-      ${SCP} ${x} ${FTP_PATH} || \
-        error "Could not upload ${x}"
+      if [ $LOCAL -eq 0 ]; then
+        ${SCP} ${x} ${UPLOAD_PATH} || error "Could not upload ${x}"
+      fi
     fi
   done
 }
