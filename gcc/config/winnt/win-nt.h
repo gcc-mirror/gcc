@@ -53,5 +53,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     { 0, 0, 0 }						\
   }
 
-#undef STDC_VALLUE
+#undef STDC_VALUE
 #define STDC_VALUE 0
