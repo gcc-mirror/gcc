@@ -1,3 +1,9 @@
+2004-05-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* simplify-rtx.c (simplify_ternary_operation): When
+	converting an IF_THEN_ELSE to a relational op, return
+	correct mode.
+
 2004-04-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_round): Fix comment typo.
