@@ -7587,12 +7587,13 @@ startup modules.
 @opindex mpreferred-stack-boundary
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
 byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
-the default is 4 (16 bytes or 128 bits).
+the default is 4 (16 bytes or 128 bits), except when optimizing for code
+size (@option{-Os}), in which case the default is the minimum correct
+alignment (4 bytes for x86, and 8 bytes for x86-64).
 
-The stack is required to be aligned on a 4 byte boundary.  On Pentium
-and PentiumPro, @code{double} and @code{long double} values should be
-aligned to an 8 byte boundary (see @option{-malign-double}) or suffer
-significant run time performance penalties.  On Pentium III, the
+On Pentium and PentiumPro, @code{double} and @code{long double} values
+should be aligned to an 8 byte boundary (see @option{-malign-double}) or
+suffer significant run time performance penalties.  On Pentium III, the
 Streaming SIMD Extension (SSE) data type @code{__m128} suffers similar
 penalties if it is not 16 byte aligned.
 
@@ -7604,10 +7605,10 @@ stack boundary from a function compiled with a lower preferred stack
 boundary will most likely misalign the stack.  It is recommended that
 libraries that use callbacks always use the default setting.
 
-This extra alignment does consume extra stack space.  Code that is sensitive
-to stack space usage, such as embedded systems and operating system kernels,
-may want to reduce the preferred alignment to
-@option{-mpreferred-stack-boundary=2}.
+This extra alignment does consume extra stack space, and generally
+increases code size.  Code that is sensitive to stack space usage, such
+as embedded systems and operating system kernels, may want to reduce the
+preferred alignment to @option{-mpreferred-stack-boundary=2}.
 
 @item -mmmx
 @itemx -mno-mmx
