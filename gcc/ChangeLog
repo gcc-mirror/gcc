@@ -1,5 +1,12 @@
 2000-05-04  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* i386/cygwin.h (CPP_PREDEFINES): Don't define __STDC__. Move 
+	attribute macros from here ...
+	(CPP_SPEC): to here.
+	* i386/mingw32.h (CPP_PREDEFINES): Likewise.
+	(CPP_SPEC): Likewise.
+	* i386/crtdll.h (CPP_PREDEFINES): Delete attribute macros. 
+
 	* Makefile.in ($(HOST_PREFIX_1)gensupport.o): Add build rule.
 	(libgcc.a): Pass LIB1ASMSRC to libgcc.mk.
 

@@ -66,10 +66,7 @@ Boston, MA 02111-1307, USA. */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_WIN32 \
-  -DWINNT  -D_X86_=1 -D__STDC__=1\
-  -D__stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  -D__declspec(x)=__attribute__((x)) \
+  -DWINNT  -D_X86_=1 \
   -Asystem(winnt)"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
@@ -84,6 +81,11 @@ Boston, MA 02111-1307, USA. */
 
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  -D__stdcall=__attribute__((__stdcall__)) \
+  -D__cdecl=__attribute__((__cdecl__)) \
+  %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
+    -D_cdecl=__attribute__((__cdecl__))} \
+  -D__declspec(x)=__attribute__((x)) \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__} \
   %{mno-cygwin:-iwithprefixbefore \
     ../../../../%(mingw_include_path)/include/mingw32 -D__MINGW32__=0.2}"
