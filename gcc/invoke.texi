@@ -1721,6 +1721,10 @@ This data could be analyzed by a program like @code{tcov}.  Note,
 however, that the format of the data is not what @code{tcov} expects.
 Eventually GNU @code{gprof} should be extended to process this data.
 
+@item -Q
+Makes the compiler print out each function name as it is compiled, and
+print some statistics about each pass when it finishes.
+
 @item -ax
 Generate extra code to profile basic blocks.  Your executable will
 produce output that is a superset of that produced when @samp{-a} is
