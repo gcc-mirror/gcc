@@ -1,3 +1,8 @@
+2001-09-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	        * Make-lang.in (cp/error.o): Depend on real.h
+	        * error.c: #include "real.h"
+
 2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mangle.c (mangle_conv_op_name_for_type): Use concat in lieu of
