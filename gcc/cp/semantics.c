@@ -798,6 +798,14 @@ finish_for_expr (tree expr, tree for_stmt)
       cxx_incomplete_type_error (expr, TREE_TYPE (expr));
       expr = error_mark_node;
     }
+  if (!processing_template_decl)
+    {
+      if (warn_sequence_point)
+        verify_sequence_points (expr);
+      expr = convert_to_void (expr, "3rd expression in for");
+    }
+  else if (!type_dependent_expression_p (expr))
+    convert_to_void (build_non_dependent_expr (expr), "3rd expression in for");
   expr = maybe_cleanup_point_expr_void (expr);
   FOR_EXPR (for_stmt) = expr;
 }

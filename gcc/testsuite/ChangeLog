@@ -1,3 +1,8 @@
+2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17661
+	* testsuite/g++.dg/expr/for2.C: New test.
+
 2004-10-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/inherit/thunk1.C: Run on the SPARC.

@@ -1,3 +1,9 @@
+2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17661
+	* semantics.c (finish_for_expr): Convert expression to void
+	so that we don't create temporaries for a?b:c.
+
 2004-10-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* search.c: Fix a comment typo.
