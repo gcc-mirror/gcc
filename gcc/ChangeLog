@@ -1,3 +1,9 @@
+2000-08-28  Greg McGary  <greg@mcgary.org>
+
+	* config/i386/i386-protos.h (ix86_expand_compare): Add extern decl.
+	* config/i386/i386.c (ix86_expand_compare): Remove `static'.
+	* config/i386/i386.md (trap, conditional_trap): New insn & expand.
+
 2000-08-27  Greg McGary  <greg@mcgary.org>
 
 	* cpplex.c (parse_string): Don't look for backslash
