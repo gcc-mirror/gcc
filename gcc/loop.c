@@ -4228,6 +4228,7 @@ strength_reduce (loop, insn_count, flags)
 	      HOST_WIDE_INT offset;
 	      rtx set, add_val, old_reg, dest_reg, last_use_insn, note;
 	      int old_regno, new_regno;
+	      rtx next_loc_insn;
 
 	      if (! v->always_executed
 		  || v->maybe_multiple
@@ -4262,7 +4263,17 @@ strength_reduce (loop, insn_count, flags)
 		  VARRAY_GROW (reg_single_usage, nregs);
 		}
     
-	      if (! validate_change (next->insn, next->location, add_val, 0))
+	      /* Some bivs are incremented with a multi-insn sequence.
+		 The first insn contains the add.  */
+	      next_loc_insn = next->insn;
+	      while (! loc_mentioned_in_p (next->location,
+					   PATTERN (next_loc_insn)))
+		next_loc_insn = PREV_INSN (next_loc_insn);
+
+	      if (next_loc_insn == v->insn)
+		abort ();
+
+	      if (! validate_change (next_loc_insn, next->location, add_val, 0))
 		{
 		  vp = &v->next_iv;
 		  continue;
@@ -4274,7 +4285,7 @@ strength_reduce (loop, insn_count, flags)
 	      /* Set last_use_insn so that we can check against it.  */
 
 	      for (last_use_insn = v->insn, p = NEXT_INSN (v->insn);
-		   p != next->insn;
+		   p != next_loc_insn;
 		   p = next_insn_in_loop (loop, p))
 		{
 		  if (!INSN_P (p))
@@ -4294,7 +4305,7 @@ strength_reduce (loop, insn_count, flags)
 		  || ! validate_change (v->insn, &SET_DEST (set), dest_reg, 0))
 		{
 		  /* Change the increment at NEXT back to what it was.  */
-		  if (! validate_change (next->insn, next->location,
+		  if (! validate_change (next_loc_insn, next->location,
 		      next->add_val, 0))
 		    abort ();
 		  vp = &v->next_iv;
@@ -4353,7 +4364,7 @@ strength_reduce (loop, insn_count, flags)
 		 the replaced increment and the next increment, and
 		 remember the last insn that needed a replacement.  */
 	      for (last_use_insn = v->insn, p = NEXT_INSN (v->insn);
-		   p != next->insn;
+		   p != next_loc_insn;
 		   p = next_insn_in_loop (loop, p))
 		{
 		  rtx note;
