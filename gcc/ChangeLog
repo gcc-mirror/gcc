@@ -1,3 +1,8 @@
+2004-02-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (TARGET_GPWORD): Return false for TARGET_NEWABI
+	&& TARGET_IRIX.
+
 2004-02-09  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 12028

@@ -290,9 +290,22 @@ extern const struct mips_cpu_info *mips_tune_info;
   (!TARGET_MIPS16 && (!TARGET_ABICALLS || TARGET_EXPLICIT_RELOCS))
 
 /* True if .gpword or .gpdword should be used for switch tables.
-   Not all SGI assemblers support this.  */
+   There are some problems with using these directives with the
+   native IRIX tools:
 
-#define TARGET_GPWORD (TARGET_ABICALLS && (!TARGET_NEWABI || TARGET_GAS))
+      - It has been reported that some versions of the native n32
+	assembler mishandle .gpword, complaining that symbols are
+	global when they are in fact local.
+
+      - The native assemblers don't understand .gpdword.
+
+      - Although GAS does understand .gpdword, the native linker
+	mishandles the relocations GAS generates (R_MIPS_GPREL32
+	followed by R_MIPS_64).
+
+   We therefore disable GP-relative switch tables for n32 and n64
+   on IRIX targets.  */
+#define TARGET_GPWORD (TARGET_ABICALLS && !(TARGET_NEWABI && TARGET_IRIX))
 
 					/* Generate mips16 code */
 #define TARGET_MIPS16		(target_flags & MASK_MIPS16)
