@@ -1,5 +1,12 @@
 Wed Nov 21 17:37:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (keep_stack_depressed): Major rework.
+	(handle_epilogue_set, emit_equiv_load): New functions.
+	(thread_prologue_and_epilogue_insns): keep_stack_depressed now
+	has return value.
+	* jump.c (returnjump_p_1): Also return 1 if SET with SET_IS_RETURN_P.
+	* rtl.h (SET_IS_RETURN_P): New macro.
+
 	* expr.c (expand_expr, case VIEW_CONVERT_EXPR): Refine slightly
 	and also support TREE_ADDRESSABLE.
 	* tree.def (VIEW_CONVERT_EXPR): Document TREE_ADDRESSABLE.
