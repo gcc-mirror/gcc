@@ -291,7 +291,7 @@ arm_override_options ()
 		       a warning though, and we prefer the CPU over the
 		       architecture. */
 		    if (insn_flags != 0 && (insn_flags ^ sel->flags))
-		      warning ("switch -mcpu=%s conflicts with -mtune= switch",
+		      warning ("switch -mcpu=%s conflicts with -march= switch",	
 			       ptr->string);
 		    
 		    insn_flags = sel->flags;

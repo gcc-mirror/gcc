@@ -1,3 +1,8 @@
+Tue May 18 17:44:22 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/arm.c (arm_override_options): Fix erroneous warning
+	message.
+	
 Sat May 22 09:06:33 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (NEED_PLT_GOT): Only define if not already
