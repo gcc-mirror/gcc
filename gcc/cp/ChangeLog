@@ -1,3 +1,9 @@
+2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.1, ChangeLog.2, ChangeLog, NEWS, call.c, class.c,
+	cp-tree.h, decl.c, decl2.c, except.c, operators.def, optimize.c,
+	pt.c, rtti.c, semantics.c, typeck.c: Fix spelling errors.
+
 2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* lang-options.h: Use American spelling in messages.
@@ -1308,7 +1314,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove old-abi remnants. Remove comments about old abi
-	behaviour. Remove refences to 'new-abi' in comments.
+	behaviour. Remove references to 'new-abi' in comments.
 	* cp-tree.h: Adjust comments.
 	(vbase_offsets_in_vtable_p): Delete.
 	(vcall_offsets_in_vtable_p): Delete.
@@ -3652,7 +3658,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (struct binding_level): Adjust class_shadowed comments
 	to reflect reality.
-	(push_class_level_binding): Ajust comments to reflect reality.
+	(push_class_level_binding): Adjust comments to reflect reality.
 	Set IDENTIFIER_CLASS_VALUE when replacing an existing binding.
 	Don't set TREE_VALUE on the class_shadowed list.
 
@@ -6406,7 +6412,7 @@ Wed Jul 26 15:05:51 CEST 2000	Marc Espie <espie@cvs.openbsd.org>
 2000-06-23  Kriang Lerdsuwanakij <lerdsuwa@scf.usc.edu>
 
 	* parse.y (template_arg): Convert TEMPLATE_DECL
-	that is a template template paramter to
+	that is a template template parameter to
 	TEMPLATE_TEMPLATE_PARM here.
 
 	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Adjust comment.
@@ -7471,10 +7477,10 @@ Sat May 27 11:25:46 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* tinfo.h (__user_type_info::contained_virtual_p): New
 	predicate.
 	* tinfo.cc (__user_type_info::do_upcast): Fix bug with diamond
-	shaped heirarchy.
+	shaped hierarchy.
 	(__vmi_class_type_info::__do_upcast): Fix bug with NULL pointer to
-	diamond shaped heirarchy. Add early out for mixed diamond and
-	duplicate shaped heirarchy.
+	diamond shaped hierarchy. Add early out for mixed diamond and
+	duplicate shaped hierarchy.
 
 2000-05-24  Mark Mitchell  <mark@codesourcery.com>
 
@@ -7519,7 +7525,7 @@ Mon May 15 11:46:29 2000  Donald Lindsay  <dlindsay@cygnus.com>
 	(__si_class_type_info::__do_upcast): Adjust. Use parent's
 	__do_upcast.
 	(__vmi_class_type_info::__do_upcast): Likewise. Fix private
-	virtual base in diamond heirarchy bug.
+	virtual base in diamond hierarchy bug.
 
 2000-05-23  Mark Mitchell  <mark@codesourcery.com>
 
@@ -10559,7 +10565,7 @@ Wed Jan 26 22:19:14 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	build_static_cast, build_reinterpret_cast, build_const_cast,
 	build_c_cast, build_modify_expr, get_delta_difference,
 	build_ptrmemfunc, check_return_expr): Replace 'ANSI C++' with
-	'ISO C++'.  Fusion consecutive calls to diagnotic message routines
+	'ISO C++'.  Fusion consecutive calls to diagnostic message routines
 	into a single one.
 	* typeck2.c (readonly_error, abstract_virtuals_error,
 	process_init_constructor, check_for_new_type): Likewise.

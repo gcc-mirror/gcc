@@ -1216,7 +1216,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 1999-10-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_expr): Set DECL_TEMPLATE_INSTANTIATED for a catch
-	paramter.
+	parameter.
 	
 	* semantics.c (expand_stmt): Don't pretend to have asmspecs for
 	local statics if we don't really have them.
@@ -1357,7 +1357,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(mark_lang_function): Use mark_stmt_tree.
 	* expr.c (cplus_expand_expr): Don't handle VEC_INIT_EXPR.
 	* init.c (build_new_1): Remove creation of VEC_INIT_EXPR.
-	(build_vec_init): Remove creation of stand-in intializer.
+	(build_vec_init): Remove creation of stand-in initializer.
 	* pt.c (begin_tree): Remove.
 	(end_tree): Likewise.
 	* semantics.c (SET_LAST_STMT): New macro.  Use it throughout.
@@ -1463,7 +1463,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	(pushlevel_class): Don't push_decl_level.
 	(poplevel_class): Don't pop_stack_level.
 	(push_class_level_binding): Don't push_cache_obstack.
-	(init_decl_processing): Don't intialize decl_obstack.
+	(init_decl_processing): Don't initialize decl_obstack.
 	* search.c (push_class_decls): Don't push_cache_obstack.
 	* tree.c (list_hash_add): Put hash node on permanent_obstack.
 	(hash_tree_cons): Don't mess with obstacks.
@@ -2255,7 +2255,7 @@ Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	if appropriate.
 	(finish_decl_cleanup): New function.
 	(expand_stmt): Use emit_local_var to output variables.		
-	(expand_body): Set current_funtion_name_declared.
+	(expand_body): Set current_function_name_declared.
 	
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
@@ -4139,7 +4139,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	(ARITHMETIC_TYPE_P): Adjust definition for standard conformance.
 	(strip_top_quals): Declare.
 	(ncp_convert): Likewise.
-	(type_after_usual_arithmetic_converions): Likewise.
+	(type_after_usual_arithmetic_conversions): Likewise.
 	(composite_pointer_type): Likewise.
 	* call.c (strip_top_quals): Don't make it static.
 	(promoted_arithmetic_type_p): New function.
@@ -4670,7 +4670,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 1999-05-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_vtbls): Copy BINFO_VIRTUALs before using it to
-	intialize a vtable.
+	initialize a vtable.
 
 	* cp-tree.h (NAMESPACE_LEVEL): Reformat.
 	(lang_decl_flags): Document MEMFUNC_POINTER_TO.  Save four bytes
@@ -9673,7 +9673,7 @@ Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 	push_template_decl_real instead of push_template_decl.
 	* method.c (build_decl_overload_real): Remove prototype.  Give it
 	external linkage.
-	(build_overload_identififer): Adjust call to innermost_args.
+	(build_overload_identifier): Adjust call to innermost_args.
 	(build_template_decl_overload): Remove.
 	(set_mangled_name_for_decl): New function.
 	* parse.y (.finish_template_type): New non-terminal.

@@ -194,7 +194,7 @@ maybe_clone_body (fn)
       for (; parm;
 	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
 	{
-	  /* Update this paramter.  */
+	  /* Update this parameter.  */
 	  update_cloned_parm (parm, clone_parm);
 	  /* We should only give unused information for one clone. */
 	  if (!first)

@@ -324,7 +324,7 @@ original_type (t)
 }
 
 /* T1 and T2 are arithmetic or enumeration types.  Return the type
-   that will result from the "usual arithmetic converions" on T1 and
+   that will result from the "usual arithmetic conversions" on T1 and
    T2 as described in [expr].  */
 
 tree
@@ -7010,7 +7010,7 @@ casts_away_constness (t1, t2)
        Casting from an rvalue of type "pointer to data member of X
        of type T1" to the type "pointer to data member of Y of type
        T2" casts away constness if a cast from an rvalue of type
-       "poitner to T1" to the type "pointer to T2" casts away
+       "pointer to T1" to the type "pointer to T2" casts away
        constness.  */
     return casts_away_constness
       (build_pointer_type (TREE_TYPE (TREE_TYPE (t1))),

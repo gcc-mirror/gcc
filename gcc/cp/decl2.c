@@ -1690,7 +1690,7 @@ grokbitfield (declarator, declspecs, width)
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      cp_error ("cannot declare bitfield `%D' with funcion type",
+      cp_error ("cannot declare bitfield `%D' with function type",
 		DECL_NAME (value));
       return NULL_TREE;
     }

@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
    NAME
 
      The name of the operator, as a C string, but without the
-     preceeding `operator'.  This is the name that would be given in
+     preceding `operator'.  This is the name that would be given in
      the source program.  For `operator +', for example, this would be
      `+'.
    
@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
    OLD_MANGLING
 
-     Analagous, but for the old ABI.
+     Analogous, but for the old ABI.
 
    ARITY
    
@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 
    There is code (such as in grok_op_properties) that depends on the
    order the operators are presented in this file.  In particular,
-   unary operators must preceed binary operators.  */
+   unary operators must precede binary operators.  */
  
 /* Use DEF_SIMPLE_OPERATOR to define a non-assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
