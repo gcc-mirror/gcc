@@ -465,6 +465,29 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
           __asm__ __volatile__("mb": : :"memory");
           *(addr) = 0;
        }
+#    elif defined(__powerpc__)
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
+	 int ret, oldval=0, newval=1;
+  
+	 __asm__ __volatile__("sync" : : : "memory");
+	 __asm__ __volatile__(
+			      "0:    lwarx %0,0,%1 ;"
+			      "      xor. %0,%3,%0;"
+			      "      bne 1f;"
+			      "      stwcx. %2,0,%1;"
+			      "      bne- 0b;"
+			      "1:    "
+			      : "=&r"(ret)
+			      : "r"(addr), "r"(newval), "r"(oldval)
+			      : "cr0", "memory");
+	 __asm__ __volatile__("sync" : : : "memory");
+	 return ret == 0;
+       }
+       inline static void GC_clear(volatile unsigned int *addr) {
+          __asm__ __volatile__("sync": : :"memory");
+          *(addr) = 0;
+       }
+
 #    else
        -- > Need implementation of GC_test_and_set()
 #    endif
