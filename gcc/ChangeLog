@@ -1,5 +1,9 @@
 2003-09-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* diagnostic.c (warn_deprecated_use): Move to toplev.c
+
+2003-09-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* langhooks.c (lhd_print_error_function): Move from diagnostic.c.
 	* Makefile.in (langhooks.o): Depend on diagnostic.h
 
