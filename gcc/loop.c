@@ -132,17 +132,6 @@ struct movable
   struct movable *next;
 };
 
-struct movables
-{
-  /* Head of movable chain.  */
-  struct movable *head;
-  /* Last movable in chain.  */
-  struct movable *last;
-  /* Number of movables in the loop.  */
-  int num;
-};
-
-static struct movables the_movables;
 
 FILE *loop_dump_stream;
 
@@ -170,15 +159,19 @@ static void replace_call_address PARAMS ((rtx, rtx, rtx));
 #endif
 static rtx skip_consec_insns PARAMS ((rtx, int));
 static int libcall_benefit PARAMS ((rtx));
-static void ignore_some_movables PARAMS ((struct movables *));
-static void force_movables PARAMS ((struct movables *));
-static void combine_movables PARAMS ((struct movables *, struct loop_regs *));
-static int regs_match_p PARAMS ((rtx, rtx, struct movables *));
-static int rtx_equal_for_loop_p PARAMS ((rtx, rtx, struct movables *,
+static void ignore_some_movables PARAMS ((struct loop_movables *));
+static void force_movables PARAMS ((struct loop_movables *));
+static void combine_movables PARAMS ((struct loop_movables *,
+				      struct loop_regs *));
+static int regs_match_p PARAMS ((rtx, rtx, struct loop_movables *));
+static int rtx_equal_for_loop_p PARAMS ((rtx, rtx, struct loop_movables *,
 					 struct loop_regs *));
 static void add_label_notes PARAMS ((rtx, rtx));
-static void move_movables PARAMS ((struct loop *loop, struct movables *,
+static void move_movables PARAMS ((struct loop *loop, struct loop_movables *,
 				   int, int));
+static void loop_movables_add PARAMS((struct loop_movables *,
+				      struct movable *));
+static void loop_movables_free PARAMS((struct loop_movables *));
 static int count_nonfixed_reads PARAMS ((const struct loop *, rtx));
 static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
@@ -517,7 +510,7 @@ scan_loop (loop, flags)
   /* The SET from an insn, if it is the only SET in the insn.  */
   rtx set, set1;
   /* Chain describing insns movable in current loop.  */
-  struct movables *movables = &the_movables;
+  struct loop_movables *movables = LOOP_MOVABLES (loop);
   /* Ratio of extra register life span we can justify
      for saving an instruction.  More if loop doesn't call subroutines
      since in that case saving an insn makes more difference
@@ -809,7 +802,7 @@ scan_loop (loop, flags)
 		  continue;
 		}
 
-	      m = (struct movable *) alloca (sizeof (struct movable));
+	      m = (struct movable *) xmalloc (sizeof (struct movable));
 	      m->next = 0;
 	      m->insn = p;
 	      m->set_src = src;
@@ -841,11 +834,7 @@ scan_loop (loop, flags)
 		m->savings += libcall_benefit (p);
 	      VARRAY_INT (regs->set_in_loop, regno) = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
-	      if (movables->head == 0)
-		movables->head = m;
-	      else
-		movables->last->next = m;
-	      movables->last = m;
+	      loop_movables_add (movables, m);
 
 	      if (m->consec > 0)
 		{
@@ -950,11 +939,7 @@ scan_loop (loop, flags)
 		  m->savings = 1;
 		  VARRAY_INT (regs->set_in_loop, regno) = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
-		  if (movables->head == 0)
-		    movables->head = m;
-		  else
-		    movables->last->next = m;
-		  movables->last = m;
+		  loop_movables_add (movables, m);
 		}
 	    }
 	}
@@ -1056,6 +1041,10 @@ scan_loop (loop, flags)
 	  && --LABEL_NUSES (update_end) == 0)
 	delete_insn (update_end);
     }
+
+
+  /* The movable information is required for strength reduction.  */
+  loop_movables_free (movables);
 
   VARRAY_FREE (regs->single_usage);
   VARRAY_FREE (regs->set_in_loop);
@@ -1256,7 +1245,7 @@ skip_consec_insns (insn, count)
 
 static void
 ignore_some_movables (movables)
-     struct movables *movables;
+     struct loop_movables *movables;
 {
   register struct movable *m, *m1;
 
@@ -1288,7 +1277,7 @@ ignore_some_movables (movables)
 
 static void
 force_movables (movables)
-     struct movables *movables;
+     struct loop_movables *movables;
 {
   register struct movable *m, *m1;
   for (m1 = movables->head; m1; m1 = m1->next)
@@ -1327,7 +1316,7 @@ force_movables (movables)
 
 static void
 combine_movables (movables, regs)
-     struct movables *movables;
+     struct loop_movables *movables;
      struct loop_regs *regs;
 {
   register struct movable *m;
@@ -1447,7 +1436,7 @@ combine_movables (movables, regs)
 static int
 regs_match_p (x, y, movables)
      rtx x, y;
-     struct movables *movables;
+     struct loop_movables *movables;
 {
   unsigned int xn = REGNO (x);
   unsigned int yn = REGNO (y);
@@ -1476,7 +1465,7 @@ regs_match_p (x, y, movables)
 static int
 rtx_equal_for_loop_p (x, y, movables, regs)
      rtx x, y;
-     struct movables *movables;
+     struct loop_movables *movables;
      struct loop_regs *regs;
 {
   register int i;
@@ -1633,7 +1622,7 @@ add_label_notes (x, insns)
 static void
 move_movables (loop, movables, threshold, insn_count)
      struct loop *loop;
-     struct movables *movables;
+     struct loop_movables *movables;
      int threshold;
      int insn_count;
 {
@@ -2136,6 +2125,34 @@ move_movables (loop, movables, threshold, insn_count)
   free (reg_map);
   free (already_moved);
 }
+
+
+static void
+loop_movables_add (movables, m)
+     struct loop_movables *movables;
+     struct movable *m;
+{
+  if (movables->head == 0)
+    movables->head = m;
+  else
+    movables->last->next = m;
+  movables->last = m;
+}
+
+
+static void
+loop_movables_free (movables)
+     struct loop_movables *movables;
+{
+  struct movable *m;
+  struct movable *m_next;
+
+  for (m = movables->head; m; m = m_next)
+    {
+      m_next = m->next;
+      free (m);
+    }
+}  
 
 #if 0
 /* Scan X and replace the address of any MEM in it with ADDR.
@@ -6020,8 +6037,9 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 	  if (loop_invariant_p (loop, x) == 1)
 	    {
 	      struct movable *m;
+	      struct loop_movables *movables = LOOP_MOVABLES (loop);
 
-	      for (m = the_movables.head; m; m = m->next)
+	      for (m = movables->head; m; m = m->next)
 		if (rtx_equal_p (x, m->set_dest))
 		  {
 		    /* Ok, we found a match.  Substitute and simplify.  */
@@ -7317,7 +7335,7 @@ check_dbra_loop (loop, insn_count)
 	   && ! loop_info->has_volatile
 	   && reversible_mem_store
 	   && (bl->giv_count + bl->biv_count + loop_info->num_mem_sets
-	       + the_movables.num + compare_and_branch == insn_count)
+	       + LOOP_MOVABLES (loop)->num + compare_and_branch == insn_count)
 	   && (bl == ivs->loop_iv_list && bl->next == 0))
 	  || no_use_except_counting)
 	{

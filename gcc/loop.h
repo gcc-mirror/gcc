@@ -28,6 +28,9 @@ Boston, MA 02111-1307, USA.  */
 /* Get the loop info pointer of a loop.  */
 #define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux)
 
+/* Get a pointer to the loop movables structure.  */
+#define LOOP_MOVABLES(LOOP) (&LOOP_INFO (loop)->movables)
+
 /* Get a pointer to the loop registers structure.  */
 #define LOOP_REGS(LOOP) (&LOOP_INFO (loop)->regs)
 
@@ -236,12 +239,28 @@ struct loop_regs
   int multiple_uses;
 };
 
+
+struct loop_movables
+{
+  /* Head of movable chain.  */
+  struct movable *head;
+  /* Last movable in chain.  */
+  struct movable *last;
+  /* Number of movables in the loop.  */
+  int num;
+};
+
+
 /* Information pertaining to a loop.  */
 
 struct loop_info
 {
   /* Nonzero if there is a subroutine call in the current loop.  */
   int has_call;
+  /* Nonzero if there is a libcall in the current loop.  */
+  int has_libcall;
+  /* Nonzero if there is a non constant call in the current loop.  */
+  int has_nonconst_call;
   /* Nonzero if there is a volatile memory reference in the current
      loop.  */
   int has_volatile;
@@ -304,6 +323,8 @@ struct loop_info
   int num_mem_sets;
   /* The insn where the first of these was found.  */
   rtx first_loop_store_insn;
+  /* The chain of movable insns in loop.  */
+  struct loop_movables movables;
   /* The registers used the in loop.  */
   struct loop_regs regs;
   /* The induction variable information in loop.  */
