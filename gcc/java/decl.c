@@ -57,7 +57,6 @@ static struct binding_level *make_binding_level (void);
 static tree create_primitive_vtable (const char *);
 static tree check_local_named_variable (tree, tree, int, int *);
 static tree check_local_unnamed_variable (tree, tree, tree);
-static void dump_function (enum tree_dump_index, tree);
 
 /* Name of the Cloneable class.  */
 tree java_lang_cloneable_identifier_node;
@@ -1863,33 +1862,6 @@ java_expand_body (tree fndecl)
   input_line = saved_lineno;
 
   current_function_decl = NULL_TREE;
-}
-
-/* Dump FUNCTION_DECL FN as tree dump PHASE. */
-
-static void
-dump_function (enum tree_dump_index phase, tree fn)
-{
-  FILE *stream;
-  int flags;
-
-  stream = dump_begin (phase, &flags);
-  if (stream)
-    {
-      dump_node (fn, TDF_SLIM | flags, stream);
-      dump_end (phase, stream);
-    }
-}
- 
-void java_optimize_inline (tree fndecl)
-{
-  if (flag_inline_trees)
-    {
-      timevar_push (TV_INTEGRATION);
-      optimize_inline_calls (fndecl);
-      timevar_pop (TV_INTEGRATION);
-      dump_function (TDI_inlined, fndecl);
-    }
 }
 
 /* We pessimistically marked all methods and fields external until we

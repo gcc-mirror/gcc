@@ -1281,7 +1281,6 @@ extern void append_gpp_mangled_name (const char *, int);
 extern void add_predefined_file (tree);
 extern int predefined_filename_p (tree);
 
-extern void java_optimize_inline (tree);
 extern tree decl_constant_value (tree);
 
 extern void java_mark_class_local (tree);

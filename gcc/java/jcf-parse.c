@@ -1120,13 +1120,12 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)
     {
-      if (flag_unit_at_a_time)
-	{
-	  cgraph_finalize_compilation_unit ();
-	  cgraph_optimize ();
-	  java_finish_classes ();
-	}
+      /* Optimize and expand all classes compiled from source.  */
+      cgraph_finalize_compilation_unit ();
+      cgraph_optimize ();
+      java_finish_classes ();
 
+      /* Emit the .jcf section.  */
       emit_register_classes ();
       if (flag_indirect_dispatch)
 	emit_offset_symbol_table ();
