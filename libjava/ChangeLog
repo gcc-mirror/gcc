@@ -1,3 +1,12 @@
+2005-03-10  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/nio/channels/FileChannelImpl.java (smallTransferFrom):
+	New.
+	(smallTransferTo): New.
+	(transferFrom): Loop around smallTransferFrom, copying pageSize
+	bytes each time.
+	(transferTo): Likewise.
+
 2005-03-09  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/20389
