@@ -3756,7 +3756,8 @@ fold (expr)
 		      fold (build (code, type,
 				   arg0, TREE_OPERAND (arg1, 1))));
       else if (TREE_CODE (arg1) == COND_EXPR
-	       || TREE_CODE_CLASS (TREE_CODE (arg1)) == '<')
+	       || (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
+		   && TREE_CODE_CLASS (code) != '<'))
 	{
 	  tree test, true_value, false_value;
 
@@ -3812,7 +3813,8 @@ fold (expr)
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
 		      fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
       else if (TREE_CODE (arg0) == COND_EXPR
-	       || TREE_CODE_CLASS (TREE_CODE (arg0)) == '<')
+	       || (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+		   && TREE_CODE_CLASS (code) != '<'))
 	{
 	  tree test, true_value, false_value;
 
