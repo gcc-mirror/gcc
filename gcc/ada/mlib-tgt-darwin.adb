@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2004, Free Software Foundation, Inc.     --
+--              Copyright (C) 2001-2005, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,15 +48,13 @@ package body MLib.Tgt is
 
    Wl_Init_String : aliased String         := "-Wl,-init";
    Wl_Init        : constant String_Access := Wl_Init_String'Access;
-   Wl_Fini_String : aliased String         := "-Wl,-fini";
-   Wl_Fini        : constant String_Access := Wl_Fini_String'Access;
 
    Init_Fini_List :  constant Argument_List_Access :=
                        new Argument_List'(1 => Wl_Init,
-                                          2 => null,
-                                          3 => Wl_Fini,
-                                          4 => null);
-   --  Used to put switches for automatic elaboration/finalization
+                                          2 => null);
+   --  Used to put switches for automatic elaboration. Note that there is no
+   --  linking option on Darwin for automatic finalization of a shared
+   --  library.
 
    ---------------------
    -- Archive_Builder --
@@ -145,8 +143,7 @@ package body MLib.Tgt is
 
       if Auto_Init then
          Init_Fini := Init_Fini_List;
-         Init_Fini (2) := new String'("-Wl," & Lib_Filename & "init");
-         Init_Fini (4) := new String'("-Wl," & Lib_Filename & "final");
+         Init_Fini (2) := new String'("-Wl,_" & Lib_Filename & "init");
       end if;
 
       if Lib_Version = "" then
@@ -158,7 +155,11 @@ package body MLib.Tgt is
             Options_2   => Options_2);
 
       else
-         Version_Arg := new String'("-Wl,-flat_namespace"); -- ???
+         --  Instruct the linker to build the shared library as a flat
+         --  namespace image, which is not the default. The default is a two
+         --  level namespace image.
+
+         Version_Arg := new String'("-Wl,-flat_namespace");
 
          if Is_Absolute_Path (Lib_Version) then
             Utl.Gcc
@@ -250,7 +251,7 @@ package body MLib.Tgt is
 
    function Is_Archive_Ext (Ext : String) return Boolean is
    begin
-      return Ext = ".a" or else Ext = ".dyld";
+      return Ext = ".dylib" or else Ext = ".a";
    end Is_Archive_Ext;
 
    -------------
