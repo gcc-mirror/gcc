@@ -3215,7 +3215,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	      tree parmval 
 		= convert_default_arg (TREE_VALUE (typetail), 
 				       TREE_PURPOSE (typetail), 
-				       fndecl);
+				       fndecl, i);
 
 	      if (parmval == error_mark_node)
 		return error_mark_node;
@@ -6421,6 +6421,59 @@ pfn_from_ptrmemfunc (t)
 	     pfn_identifier, NULL_TREE, 0)); 
 }
 
+/* Expression EXPR is about to be implicitly converted to TYPE.  Warn
+   if this is a potentially dangerous thing to do.  Returns a possibly
+   marked EXPR.  */
+
+tree
+dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
+     tree type;
+     tree expr;
+     const char *errtype;
+     tree fndecl;
+     int parmnum;
+{
+  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  if (ARITHMETIC_TYPE_P (type) && expr == null_node)
+    {
+      if (fndecl)
+        cp_warning ("passing NULL used for non-pointer %s %P of `%D'",
+                    errtype, parmnum, fndecl);
+      else
+        cp_warning ("%s to non-pointer type `%T' from NULL", errtype, type);
+    }
+  
+  /* Warn about assigning a floating-point type to an integer type.  */
+  if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+      && TREE_CODE (type) == INTEGER_TYPE)
+    {
+      if (fndecl)
+	cp_warning ("passing `%T' for %s %P of `%D'",
+		    TREE_TYPE (expr), errtype, parmnum, fndecl);
+      else
+	cp_warning ("%s to `%T' from `%T'", errtype, type, TREE_TYPE (expr));
+    }
+  /* And warn about assigning a negative value to an unsigned
+     variable.  */
+  else if (TREE_UNSIGNED (type) && TREE_CODE (type) != BOOLEAN_TYPE)
+    {
+      if (TREE_CODE (expr) == INTEGER_CST
+	  && TREE_NEGATED_INT (expr))
+	{
+	  if (fndecl)
+	    cp_warning ("passing negative value `%E' for %s %P of `%D'",
+			expr, errtype, parmnum, fndecl);
+	  else
+	    cp_warning ("%s of negative value `%E' to `%T'",
+			errtype, expr, type);
+	}
+      overflow_warning (expr);
+      if (TREE_CONSTANT (expr))
+	expr = fold (expr);
+    }
+  return expr;
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  ERRTYPE is a string to use in error
    messages: "assignment", "return", etc.  If FNDECL is non-NULL, we
@@ -6456,12 +6509,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   if (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node)
     return error_mark_node;
 
-  /* Issue warnings about peculiar, but legal, uses of NULL.  We
-     do this *before* the call to decl_constant_value so as to
-     avoid duplicate warnings on code like `const int I = NULL;
-     f(I);'.  */
-  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-    cp_warning ("converting NULL to non-pointer type");
+  rhs = dubious_conversion_warnings (type, rhs, errtype, fndecl, parmnum);
 
   /* The RHS of an assignment cannot have void type.  */
   if (coder == VOID_TYPE)
@@ -6475,34 +6523,6 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     rhs = DECL_INITIAL (rhs);
   else if (TREE_READONLY_DECL_P (rhs))
     rhs = decl_constant_value (rhs);
-
-  /* Warn about assigning a floating-point type to an integer type.  */
-  if (coder == REAL_TYPE && codel == INTEGER_TYPE)
-    {
-      if (fndecl)
-	cp_warning ("`%T' used for argument %P of `%D'",
-		    rhstype, parmnum, fndecl);
-      else
-	cp_warning ("%s to `%T' from `%T'", errtype, type, rhstype);
-    }
-  /* And warn about assigning a negative value to an unsigned
-     variable.  */
-  else if (TREE_UNSIGNED (type) && codel != BOOLEAN_TYPE)
-    {
-      if (TREE_CODE (rhs) == INTEGER_CST
-	  && TREE_NEGATED_INT (rhs))
-	{
-	  if (fndecl)
-	    cp_warning ("negative value `%E' passed as argument %P of `%D'",
-			rhs, parmnum, fndecl);
-	  else
-	    cp_warning ("%s of negative value `%E' to `%T'",
-			errtype, rhs, type);
-	}
-      overflow_warning (rhs);
-      if (TREE_CONSTANT (rhs))
-	rhs = fold (rhs);
-    }
 
   /* [expr.ass]
 

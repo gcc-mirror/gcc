@@ -1,3 +1,22 @@
+2000-03-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (convert_like): Macrofy.
+	(convert_like_with_context): New macro.
+	(convert_like_real): Renamed from convert_like.  Add calling
+	context parameters, for diagnostics. Add recursive flag.  Call 
+	dubious_conversion_warnings for outer conversion.
+	(build_user_type_conversion): Use convert_like_with_context.
+	(build_over_call): Likewise. Don't warn about dubious
+	conversions here. Adjust convert_default_arg calls.
+	(convert_default_arg): Add context parameters for diagnostics.
+	Pass throught to convert_like_with_context.
+	* cp-tree.h (convert_default_arg): Add context parameters.
+	(dubious_conversion_warnings): Prototype new function.
+	* typeck.c (convert_arguments): Adjust convert_default_arg call.
+	(dubious_conversion_warnings): New function, broken
+	out of convert_for_assignment. 
+	(convert_for_assignment): Adjust.
+
 2000-03-03  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl2.c (key_method): Break out from...

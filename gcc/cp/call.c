@@ -49,7 +49,9 @@ static int equal_functions PARAMS ((tree, tree));
 static int joust PARAMS ((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PARAMS ((tree, tree));
 static tree build_over_call PARAMS ((struct z_candidate *, tree, int));
-static tree convert_like PARAMS ((tree, tree));
+#define convert_like(CONV, EXPR) convert_like_real (CONV, EXPR, NULL_TREE, 0, 0)
+#define convert_like_with_context(CONV, EXPR, FN, ARGNO) convert_like_real (CONV, EXPR, FN, ARGNO, 0)
+static tree convert_like_real PARAMS ((tree, tree, tree, int, int));
 static void op_error PARAMS ((enum tree_code, enum tree_code, tree, tree,
 			    tree, const char *));
 static tree build_object_call PARAMS ((tree, tree));
@@ -2450,7 +2452,9 @@ build_user_type_conversion (totype, expr, flags)
     {
       if (TREE_CODE (cand->second_conv) == AMBIG_CONV)
 	return error_mark_node;
-      return convert_from_reference (convert_like (cand->second_conv, expr));
+      return convert_from_reference
+              (convert_like_with_context
+                (cand->second_conv, expr, cand->fn, 0));
     }
   return NULL_TREE;
 }
@@ -2654,7 +2658,8 @@ build_object_call (obj, args)
       && DECL_NAME (cand->fn) == ansi_opname [CALL_EXPR])
     return build_over_call (cand, mem_args, LOOKUP_NORMAL);
 
-  obj = convert_like (TREE_VEC_ELT (cand->convs, 0), obj);
+  obj = convert_like_with_context
+          (TREE_VEC_ELT (cand->convs, 0), obj, cand->fn, -1);
 
   /* FIXME */
   return build_function_call (obj, args);
@@ -3593,11 +3598,17 @@ enforce_access (basetype_path, decl)
   return 1;
 }
 
-/* Perform the conversions in CONVS on the expression EXPR.  */
+/* Perform the conversions in CONVS on the expression EXPR. 
+   FN and ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
+   indicates the `this' argument of a method.  INNER is non-zero when
+   being called to continue a conversion chain. */
 
 static tree
-convert_like (convs, expr)
+convert_like_real (convs, expr, fn, argnum, inner)
      tree convs, expr;
+     tree fn;
+     int argnum;
+     int inner;
 {
   if (ICS_BAD_FLAG (convs)
       && TREE_CODE (convs) != USER_CONV
@@ -3609,19 +3620,22 @@ convert_like (convs, expr)
 	{
 	  if (TREE_CODE (t) == USER_CONV)
 	    {
-	      expr = convert_like (t, expr);
+	      expr = convert_like_real (t, expr, fn, argnum, 1);
 	      break;
 	    }
 	  else if (TREE_CODE (t) == AMBIG_CONV)
-	    return convert_like (t, expr);
+	    return convert_like_real (t, expr, fn, argnum, 1);
 	  else if (TREE_CODE (t) == IDENTITY_CONV)
 	    break;
 	}
       return convert_for_initialization
 	(NULL_TREE, TREE_TYPE (convs), expr, LOOKUP_NORMAL,
-	 "conversion", NULL_TREE, 0);
+	 "conversion", fn, argnum);
     }
-
+  
+  if (!inner)
+    expr = dubious_conversion_warnings
+             (TREE_TYPE (convs), expr, "argument", fn, argnum);
   switch (TREE_CODE (convs))
     {
     case USER_CONV:
@@ -3665,7 +3679,7 @@ convert_like (convs, expr)
       break;
     };
 
-  expr = convert_like (TREE_OPERAND (convs, 0), expr);
+  expr = convert_like_real (TREE_OPERAND (convs, 0), expr, fn, argnum, 1);
   if (expr == error_mark_node)
     return error_mark_node;
 
@@ -3840,10 +3854,11 @@ convert_type_from_ellipsis (type)
    conversions.  Return the converted value.  */
 
 tree
-convert_default_arg (type, arg, fn)
+convert_default_arg (type, arg, fn, parmnum)
      tree type;
      tree arg;
      tree fn;
+     int parmnum;
 {
   if (fn && DECL_TEMPLATE_INFO (fn))
     arg = tsubst_default_argument (fn, type, arg);
@@ -3854,7 +3869,7 @@ convert_default_arg (type, arg, fn)
     {
       arg = digest_init (type, arg, 0);
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
-					"default argument", 0, 0);
+					"default argument", fn, parmnum);
     }
   else
     {
@@ -3863,7 +3878,7 @@ convert_default_arg (type, arg, fn)
 	arg = copy_node (arg);
 
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
-					"default argument", 0, 0);
+					"default argument", fn, parmnum);
       if (PROMOTE_PROTOTYPES
 	  && (TREE_CODE (type) == INTEGER_TYPE
 	      || TREE_CODE (type) == ENUMERAL_TYPE)
@@ -3956,7 +3971,7 @@ build_over_call (cand, args, flags)
 	      if (TREE_CODE (t) == USER_CONV
 		  || TREE_CODE (t) == AMBIG_CONV)
 		{
-		  val = convert_like (t, val);
+		  val = convert_like_with_context (t, val, fn, i - is_method);
 		  break;
 		}
 	      else if (TREE_CODE (t) == IDENTITY_CONV)
@@ -3964,16 +3979,13 @@ build_over_call (cand, args, flags)
 	    }
 	  val = convert_for_initialization
 	    (NULL_TREE, type, val, LOOKUP_NORMAL,
-	     "argument passing", fn, i - is_method);
+	     "argument", fn, i - is_method);
 	}
       else
 	{
-	  /* Issue warnings about peculiar, but legal, uses of NULL.  */
-	  if (ARITHMETIC_TYPE_P (TREE_VALUE (parm))
-	      && TREE_VALUE (arg) == null_node)
-	    cp_warning ("converting NULL to non-pointer type");
-	    
-	  val = convert_like (conv, TREE_VALUE (arg));
+	  val = TREE_VALUE (arg);
+	  val = convert_like_with_context
+	          (conv, TREE_VALUE (arg), fn, i - is_method);
 	}
 
       if (PROMOTE_PROTOTYPES
@@ -3985,12 +3997,12 @@ build_over_call (cand, args, flags)
     }
 
   /* Default arguments */
-  for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm))
+  for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm), i++)
     converted_args 
       = tree_cons (NULL_TREE, 
 		   convert_default_arg (TREE_VALUE (parm), 
 					TREE_PURPOSE (parm),
-					fn),
+					fn, i - is_method),
 		   converted_args);
 
   /* Ellipsis */

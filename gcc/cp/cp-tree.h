@@ -3616,7 +3616,7 @@ extern tree build_op_delete_call		PARAMS ((enum tree_code, tree, tree, int, tree
 extern int can_convert				PARAMS ((tree, tree));
 extern int can_convert_arg			PARAMS ((tree, tree, tree));
 extern int enforce_access                       PARAMS ((tree, tree));
-extern tree convert_default_arg                 PARAMS ((tree, tree, tree));
+extern tree convert_default_arg                 PARAMS ((tree, tree, tree, int));
 extern tree convert_arg_to_ellipsis             PARAMS ((tree));
 extern tree build_x_va_arg                      PARAMS ((tree, tree));
 extern tree convert_type_from_ellipsis          PARAMS ((tree));
@@ -4407,6 +4407,7 @@ extern tree build_const_cast			PARAMS ((tree, tree));
 extern tree build_c_cast			PARAMS ((tree, tree));
 extern tree build_x_modify_expr			PARAMS ((tree, enum tree_code, tree));
 extern tree build_modify_expr			PARAMS ((tree, enum tree_code, tree));
+extern tree dubious_conversion_warnings         PARAMS ((tree, tree, const char *, tree, int));
 extern tree convert_for_initialization		PARAMS ((tree, tree, tree, int, const char *, tree, int));
 extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, char *, int));
 extern void c_expand_return			PARAMS ((tree));
