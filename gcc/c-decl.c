@@ -262,6 +262,7 @@ tree static_ctors, static_dtors;
 
 static struct c_scope *make_scope (void);
 static void pop_scope (void);
+static tree match_builtin_function_types (tree, tree);
 static int duplicate_decls (tree, tree, int, int);
 static int redeclaration_error_message (tree, tree);
 static tree make_label (tree, location_t);
@@ -691,6 +692,46 @@ pushtag (tree name, tree type)
   TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_STUB_DECL (type));
 }
 
+/* Subroutine of duplicate_decls.  Allow harmless mismatches in return
+   and argument types provided that the type modes match.  This function
+   return a unified type given a suitable match, and 0 otherwise.  */
+
+static tree
+match_builtin_function_types (tree oldtype, tree newtype)
+{
+  tree newrettype, oldrettype;
+  tree newargs, oldargs;
+  tree trytype, tryargs;
+
+  /* Accept the return type of the new declaration if same modes.  */
+  oldrettype = TREE_TYPE (oldtype);
+  newrettype = TREE_TYPE (newtype);
+
+  if (TYPE_MODE (oldrettype) != TYPE_MODE (newrettype))
+    return 0;
+
+  oldargs = TYPE_ARG_TYPES (oldtype);
+  newargs = TYPE_ARG_TYPES (newtype);
+  tryargs = newargs;
+
+  while (oldargs || newargs)
+    {
+      if (! oldargs
+	  || ! newargs
+	  || ! TREE_VALUE (oldargs)
+	  || ! TREE_VALUE (newargs)
+	  || TYPE_MODE (TREE_VALUE (oldargs))
+	     != TYPE_MODE (TREE_VALUE (newargs)))
+	return 0;
+
+      oldargs = TREE_CHAIN (oldargs);
+      newargs = TREE_CHAIN (newargs);
+    }
+
+  trytype = build_function_type (newrettype, tryargs);
+  return build_type_attribute_variant (trytype, TYPE_ATTRIBUTES (oldtype));
+}
+
 /* Handle when a new declaration NEWDECL
    has the same name as an old one OLDDECL
    in the same binding contour.
@@ -822,49 +863,18 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	}
       else if (!types_match)
 	{
-	  /* Accept the return type of the new declaration if same modes.  */
-	  tree oldreturntype = TREE_TYPE (oldtype);
-	  tree newreturntype = TREE_TYPE (newtype);
-
-	  if (TYPE_MODE (oldreturntype) == TYPE_MODE (newreturntype))
-	    {
-	      /* Function types may be shared, so we can't just modify
-		 the return type of olddecl's function type.  */
-	      tree trytype
-		= build_function_type (newreturntype,
-				       TYPE_ARG_TYPES (oldtype));
-	      trytype = build_type_attribute_variant (trytype,
-						      TYPE_ATTRIBUTES (oldtype));
-
-              types_match = comptypes (newtype, trytype, comptype_flags);
-	      if (types_match)
-		oldtype = trytype;
-	    }
-	  /* Accept harmless mismatch in first argument type also.
+	  /* Accept harmless mismatch in function types.
 	     This is for the ffs and fprintf builtins.  */
-	  if (TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0
-	      && TYPE_ARG_TYPES (oldtype) != 0
-	      && TREE_VALUE (TYPE_ARG_TYPES (newtype)) != 0
-	      && TREE_VALUE (TYPE_ARG_TYPES (oldtype)) != 0
-	      && (TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (newtype)))
-		  == TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (oldtype)))))
-	    {
-	      /* Function types may be shared, so we can't just modify
-		 the return type of olddecl's function type.  */
-	      tree trytype
-		= build_function_type (TREE_TYPE (oldtype),
-				       tree_cons (NULL_TREE,
-						  TREE_VALUE (TYPE_ARG_TYPES (newtype)),
-						  TREE_CHAIN (TYPE_ARG_TYPES (oldtype))));
-	      trytype = build_type_attribute_variant (trytype,
-						      TYPE_ATTRIBUTES (oldtype));
+	  tree trytype = match_builtin_function_types (oldtype, newtype);
 
+	  if (trytype)
+	    {
 	      types_match = comptypes (newtype, trytype, comptype_flags);
 	      if (types_match)
 		oldtype = trytype;
+	      if (! different_binding_level)
+		TREE_TYPE (olddecl) = oldtype;
 	    }
-	  if (! different_binding_level)
-	    TREE_TYPE (olddecl) = oldtype;
 	}
       else if (TYPE_ARG_TYPES (oldtype) == NULL
 	       && TYPE_ARG_TYPES (newtype) != NULL)
