@@ -1,3 +1,13 @@
+2001-06-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): Always use
+	gen_pro_epilogue_adjust_stack; update arguments.
+	(ix86_emit_epilogue_esp_adjustment): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	* config/i386/i386.md (pro_epilogue_adjust_stack): Use a BLKmode
+	clobber of scratch memory instead of a modification of EBP as the
+	barrier.  Update all peepholes to match.
+
 2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Change the font used for @def... commands to a
