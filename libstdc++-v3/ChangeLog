@@ -1,5 +1,9 @@
 2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/stl_algo.h: Minor cosmetic reformattings.
+
+2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/stl_algo.h (search_n): Tweak, to spare the
 	first --__n.
 
