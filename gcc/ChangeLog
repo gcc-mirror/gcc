@@ -1,3 +1,8 @@
+Sat Apr 10 06:14:31 1999  Jan Hubicka  <hubicka@paru.cas.cz>
+
+	* extend.texi (Assembler Instructions with C Expression Operands):
+	Document the i386 floating point operands.
+
 1999-04-10  Mike Stump  <mrs@wrs.com>
 
 	* configure.in (*-*-vxworks): Add vxWorks thread support for all
