@@ -6,6 +6,10 @@
 	(_cpp_read_and_prescan): Change to use unified table.  Use
 	is_hspace to test for whitespace.
 
+	* dbxout.c (CONTIN): If it doesn't have to do anything, give it a
+	definition that doesn't provoke the "empty body in an
+	if-statement" warning.
+
 2000-04-04  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* builtins.c (expand_builtin_strlen): Force the source to
