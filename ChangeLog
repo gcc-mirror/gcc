@@ -1,3 +1,7 @@
+2004-10-01  Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* MAINTAINERS: Change my email address to my new work account.
+
 2004-09-24  Michael Roth  <mroth@nessie.de>
 
 	* configure.in (--without-headers): Add missing double quotes.
