@@ -711,7 +711,7 @@ AC_DEFUN([GLIBCXX_EXPORT_FLAGS], [
   OPTIMIZE_CXXFLAGS=
   AC_SUBST(OPTIMIZE_CXXFLAGS)
 
-  WARN_FLAGS='-Wall -W -Wwrite-strings -Wcast-qual'
+  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
   AC_SUBST(WARN_FLAGS)
 ])
 
