@@ -142,8 +142,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmove.c	\
 	 mempcpy.c memset.c mkstemps.c					\
 	objalloc.c obstack.c						\
-	partition.c							\
-	 pex-djgpp.c pex-msdos.c					\
+	partition.c pexecute.c						\
+	 pex-common.c pex-djgpp.c pex-msdos.c pex-one.c			\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
@@ -170,7 +170,8 @@ REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o	\
 	./lbasename.o ./lrealpath.o					\
 	./make-relative-prefix.o ./make-temp-file.o			\
 	./objalloc.o ./obstack.o					\
-	./partition.o ./physmem.o @pexecute@				\
+	./partition.o ./pexecute.o ./physmem.o				\
+	./pex-common.o ./pex-one.o @pexecute@				\
 	./safe-ctype.o ./sort.o ./spaces.o ./splay-tree.o ./strerror.o	\
 	 ./strsignal.o							\
 	./ternary.o							\
@@ -756,6 +757,13 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/partition.c $(OUTPUT_OPTION)
 
+./pex-common.o: $(srcdir)/pex-common.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-common.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/pex-common.c $(OUTPUT_OPTION)
+
 ./pex-djgpp.o: $(srcdir)/pex-djgpp.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -771,6 +779,13 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-msdos.c $(OUTPUT_OPTION)
 
+./pex-one.o: $(srcdir)/pex-one.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-one.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/pex-one.c $(OUTPUT_OPTION)
+
 ./pex-unix.o: $(srcdir)/pex-unix.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -784,6 +799,13 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-win32.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-win32.c $(OUTPUT_OPTION)
+
+./pexecute.o: $(srcdir)/pexecute.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pexecute.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/pexecute.c $(OUTPUT_OPTION)
 
 ./physmem.o: $(srcdir)/physmem.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h

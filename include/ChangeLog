@@ -1,3 +1,13 @@
+2005-03-28  Ian Lance Taylor  <ian@airs.com>
+
+	* libiberty.h: Include <stdio.h>.
+	(PEX_RECORD_TIMES, PEX_USE_PIPES, PEX_SAVE_TEMPS): Define.
+	(PEX_LAST, PEX_SEARCH, PEX_SUFFIX, PEX_STDERR_TO_STDOUT): Define.
+	(PEX_BINARY_INPUT, PEX_BINARY_OUTPUT): Define.
+	(pex_init, pex_run, pex_read_output): Declare.
+	(pex_get_status, pex_get_times, pex_free, pex_one): Declare.
+	(struct pex_time): Define.
+
 2005-03-28  Mark Mitchell <mark@codesourcery.com>
 
 	* libiberty.h (ffs): Declare, if necessary.

@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "pex-common.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -35,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include <io.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/stat.h>
 
 /* mingw32 headers may not define the following.  */
 
@@ -53,27 +57,49 @@ Boston, MA 02111-1307, USA.  */
    to remove the outermost set of double quotes from all arguments.  */
 
 static const char * const *
-fix_argv (char **argvec)
+fix_argv (char * const *argvec)
 {
+  char **argv;
   int i;
-  char * command0 = argvec[0];
+  char *command0;
+
+  /* See whether we need to change anything.  */
+  for (command0 = argvec[0]; *command0 != '\0'; command0++)
+    if (*command0 == '/')
+      break;
+  if (*command0 == '\0')
+    {
+      for (i = 1; argvec[i] != NULL; i++)
+	if (strpbrk (argvec[i], "\" \t") != NULL)
+	  break;
+
+      if (argvec[i] == NULL)
+	return (const char * const *) argvec;
+    }
+
+  for (i = 0; argvec[i] != NULL; i++)
+    ;
+  argv = xmalloc ((i + 1) * sizeof (char *));
+  for (i = 0; argvec[i] != NULL; i++)
+    argv[i] = xstrdup (argvec[i]);
+  argv[i] = NULL;
 
   /* Ensure that the executable pathname uses Win32 backslashes. This
-     is not necessary on NT, but on W9x, forward slashes causes failure
-     of spawn* and exec* functions (and probably any function that
-     calls CreateProcess) *iff* the executable pathname (argvec[0]) is
-     a quoted string.  And quoting is necessary in case a pathname
-     contains  embedded white space. You can't win.  */
-  for (; *command0 != '\0'; command0++)
+     is not necessary on NT, but on W9x, forward slashes causes
+     failure of spawn* and exec* functions (and probably any function
+     that calls CreateProcess) *iff* the executable pathname (argv[0])
+     is a quoted string.  And quoting is necessary in case a pathname
+     contains embedded white space.  You can't win.  */
+  for (command0 = argv[0]; *command0 != '\0'; command0++)
     if (*command0 == '/')
       *command0 = '\\';
- 
-  for (i = 1; argvec[i] != 0; i++)
+
+  for (i = 1; argv[i] != 0; i++)
     {
       int len, j;
       char *temp, *newtemp;
 
-      temp = argvec[i];
+      temp = argv[i];
       len = strlen (temp);
       for (j = 0; j < len; j++)
         {
@@ -90,17 +116,21 @@ fix_argv (char **argvec)
             }
         }
 
-        argvec[i] = temp;
-      }
+      if (argv[i] != temp)
+	{
+	  free (argv[i]);
+	  argv[i] = temp;
+	}
+    }
 
-  for (i = 0; argvec[i] != 0; i++)
+  for (i = 0; argv[i] != 0; i++)
     {
-      if (strpbrk (argvec[i], " \t"))
+      if (strpbrk (argv[i], " \t"))
         {
 	  int len, trailing_backslash;
 	  char *temp;
 
-	  len = strlen (argvec[i]);
+	  len = strlen (argv[i]);
 	  trailing_backslash = 0;
 
 	  /* There is an added complication when an arg with embedded white
@@ -111,8 +141,8 @@ fix_argv (char **argvec)
 	     We handle this case by escaping the trailing backslash, provided
 	     it was not escaped in the first place.  */
 	  if (len > 1 
-	      && argvec[i][len-1] == '\\' 
-	      && argvec[i][len-2] != '\\')
+	      && argv[i][len-1] == '\\' 
+	      && argv[i][len-2] != '\\')
 	    {
 	      trailing_backslash = 1;
 	      ++len;			/* to escape the final backslash. */
@@ -122,127 +152,289 @@ fix_argv (char **argvec)
 
 	  temp = xmalloc (len + 1);
 	  temp[0] = '"';
-	  strcpy (temp + 1, argvec[i]);
+	  strcpy (temp + 1, argv[i]);
 	  if (trailing_backslash)
-	    temp[len-2] = '\\';
-	  temp[len-1] = '"';
+	    temp[len - 2] = '\\';
+	  temp[len - 1] = '"';
 	  temp[len] = '\0';
 
-	  argvec[i] = temp;
+	  free (argv[i]);
+	  argv[i] = temp;
 	}
     }
 
-  return (const char * const *) argvec;
+  return (const char * const *) argv;
 }
 
-/* Win32 supports pipes */
-int
-pexecute (const char *program, char * const *argv,
-          const char *this_pname ATTRIBUTE_UNUSED,
-          const char *temp_base ATTRIBUTE_UNUSED,
-          char **errmsg_fmt, char **errmsg_arg, int flags)
+static int pex_win32_open_read (struct pex_obj *, const char *, int);
+static int pex_win32_open_write (struct pex_obj *, const char *, int);
+static long pex_win32_exec_child (struct pex_obj *, int, const char *,
+				  char * const *, int, int, int,
+				  const char **, int *);
+static int pex_win32_close (struct pex_obj *, int);
+static int pex_win32_wait (struct pex_obj *, long, int *,
+			   struct pex_time *, int, const char **, int *);
+static int pex_win32_pipe (struct pex_obj *, int *, int);
+static FILE *pex_win32_fdopenr (struct pex_obj *, int, int);
+
+/* The list of functions we pass to the common routines.  */
+
+const struct pex_funcs funcs =
 {
-  int pid;
-  int pdes[2];
-  int org_stdin = -1;
-  int org_stdout = -1;
-  int input_desc, output_desc;
+  pex_win32_open_read,
+  pex_win32_open_write,
+  pex_win32_exec_child,
+  pex_win32_close,
+  pex_win32_wait,
+  pex_win32_pipe,
+  pex_win32_fdopenr,
+  NULL /* cleanup */
+};
 
-  /* Pipe waiting from last process, to be used as input for the next one.
-     Value is STDIN_FILE_NO if no pipe is waiting
-     (i.e. the next command is the first of a group).  */
-  static int last_pipe_input;
+/* Return a newly initialized pex_obj structure.  */
 
-  /* If this is the first process, initialize.  */
-  if (flags & PEXECUTE_FIRST)
-    last_pipe_input = STDIN_FILE_NO;
+struct pex_obj *
+pex_init (int flags, const char *pname, const char *tempbase)
+{
+  return pex_init_common (flags, pname, tempbase, &funcs);
+}
 
-  input_desc = last_pipe_input;
+/* Open a file for reading.  */
 
-  /* If this isn't the last process, make a pipe for its output,
-     and record it as waiting to be the input to the next process.  */
-  if (! (flags & PEXECUTE_LAST))
+static int
+pex_win32_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
+		     int binary)
+{
+  return _open (name, _O_RDONLY | (binary ? _O_BINARY : _O_TEXT));
+}
+
+/* Open a file for writing.  */
+
+static int
+pex_win32_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
+		      int binary)
+{
+  /* Note that we can't use O_EXCL here because gcc may have already
+     created the temporary file via make_temp_file.  */
+  return _open (name,
+		(_O_WRONLY | _O_CREAT | _O_TRUNC
+		 | (binary ? _O_BINARY : _O_TEXT)),
+		_S_IREAD | _S_IWRITE);
+}
+
+/* Close a file.  */
+
+static int
+pex_win32_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
+{
+  return _close (fd);
+}
+
+/* Execute a child.  */
+
+static long
+pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
+		      const char *executable, char * const * argv,
+		      int in, int out, int errdes, const char **errmsg,
+		      int *err)
+{
+  int org_in, org_out, org_errdes;
+  long pid;
+
+  org_in = -1;
+  org_out = -1;
+  org_errdes = -1;
+
+  if (in != STDIN_FILE_NO)
     {
-      if (_pipe (pdes, 256, O_BINARY) < 0)
+      org_in = _dup (STDIN_FILE_NO);
+      if (org_in < 0)
 	{
-	  *errmsg_fmt = "pipe";
-	  *errmsg_arg = NULL;
+	  *err = errno;
+	  *errmsg = "_dup";
 	  return -1;
 	}
-      output_desc = pdes[WRITE_PORT];
-      last_pipe_input = pdes[READ_PORT];
-    }
-  else
-    {
-      /* Last process.  */
-      output_desc = STDOUT_FILE_NO;
-      last_pipe_input = STDIN_FILE_NO;
-    }
-
-  if (input_desc != STDIN_FILE_NO)
-    {
-      org_stdin = dup (STDIN_FILE_NO);
-      dup2 (input_desc, STDIN_FILE_NO);
-      close (input_desc); 
+      if (_dup2 (in, STDIN_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (in) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
     }
 
-  if (output_desc != STDOUT_FILE_NO)
+  if (out != STDOUT_FILE_NO)
     {
-      org_stdout = dup (STDOUT_FILE_NO);
-      dup2 (output_desc, STDOUT_FILE_NO);
-      close (output_desc);
+      org_out = _dup (STDOUT_FILE_NO);
+      if (org_out < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup";
+	  return -1;
+	}
+      if (_dup2 (out, STDOUT_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (out) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
     }
 
-  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv)
-    (_P_NOWAIT, program, fix_argv(argv));
-
-  if (input_desc != STDIN_FILE_NO)
+  if (errdes != STDERR_FILE_NO
+      || (flags & PEX_STDERR_TO_STDOUT) != 0)
     {
-      dup2 (org_stdin, STDIN_FILE_NO);
-      close (org_stdin);
+      org_errdes = _dup (STDERR_FILE_NO);
+      if (org_errdes < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup";
+	  return -1;
+	}
+      if (_dup2 ((flags & PEX_STDERR_TO_STDOUT) != 0 ? STDOUT_FILE_NO : errdes,
+		 STDERR_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (errdes != STDERR_FILE_NO)
+	{
+	  if (_close (errdes) < 0)
+	    {
+	      *err = errno;
+	      *errmsg = "_close";
+	      return -1;
+	    }
+	}
     }
 
-  if (output_desc != STDOUT_FILE_NO)
-    {
-      dup2 (org_stdout, STDOUT_FILE_NO);
-      close (org_stdout);
-    }
+  pid = (((flags & PEX_SEARCH) != 0 ? _spawnvp : _spawnv)
+	 (_P_NOWAIT, executable, fix_argv (argv)));
 
   if (pid == -1)
     {
-      *errmsg_fmt = install_error_msg;
-      *errmsg_arg = (char*) program;
-      return -1;
+      *err = errno;
+      *errmsg = ((flags & PEX_SEARCH) != 0) ? "_spawnvp" : "_spawnv";
+    }
+
+  if (in != STDIN_FILE_NO)
+    {
+      if (_dup2 (org_in, STDIN_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_in) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  if (out != STDOUT_FILE_NO)
+    {
+      if (_dup2 (org_out, STDOUT_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_out) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  if (errdes != STDERR_FILE_NO
+      || (flags & PEX_STDERR_TO_STDOUT) != 0)
+    {
+      if (_dup2 (org_errdes, STDERR_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_errdes) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
     }
 
   return pid;
 }
 
-/* MS CRTDLL doesn't return enough information in status to decide if the
-   child exited due to a signal or not, rather it simply returns an
-   integer with the exit code of the child; eg., if the child exited with 
-   an abort() call and didn't have a handler for SIGABRT, it simply returns
-   with status = 3. We fix the status code to conform to the usual WIF*
-   macros. Note that WIFSIGNALED will never be true under CRTDLL. */
+/* Wait for a child process to complete.  MS CRTDLL doesn't return
+   enough information in status to decide if the child exited due to a
+   signal or not, rather it simply returns an integer with the exit
+   code of the child; eg., if the child exited with an abort() call
+   and didn't have a handler for SIGABRT, it simply returns with
+   status == 3.  We fix the status code to conform to the usual WIF*
+   macros.  Note that WIFSIGNALED will never be true under CRTDLL. */
 
-int
-pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
+static int
+pex_win32_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, long pid,
+		int *status, struct pex_time *time, int done ATTRIBUTE_UNUSED,
+		const char **errmsg, int *err)
 {
   int termstat;
 
-  pid = _cwait (&termstat, pid, WAIT_CHILD);
+  if (time != NULL)
+    memset (time, 0, sizeof *time);
 
-  /* ??? Here's an opportunity to canonicalize the values in STATUS.
-     Needed?  */
+  /* FIXME: If done is non-zero, we should probably try to kill the
+     process.  */
 
-  /* cwait returns the child process exit code in termstat.
-     A value of 3 indicates that the child caught a signal, but not
-     which one.  Since only SIGABRT, SIGFPE and SIGINT do anything, we
-     report SIGABRT.  */
+  if (_cwait (&termstat, pid, WAIT_CHILD) < 0)
+    {
+      *err = errno;
+      *errmsg = "_cwait";
+      return -1;
+    }
+
+  /* cwait returns the child process exit code in termstat.  A value
+     of 3 indicates that the child caught a signal, but not which one.
+     Since only SIGABRT, SIGFPE and SIGINT do anything, we report
+     SIGABRT.  */
+
   if (termstat == 3)
     *status = SIGABRT;
   else
-    *status = (((termstat) & 0xff) << 8);
+    *status = ((termstat & 0xff) << 8);
 
-  return pid;
+  return 0;
+}
+
+/* Create a pipe.  */
+
+static int
+pex_win32_pipe (struct pex_obj *obj ATTRIBUTE_UNUSED, int *p,
+		int binary)
+{
+  return _pipe (p, 256, binary ? _O_BINARY : _O_TEXT);
+}
+
+/* Get a FILE pointer to read from a file descriptor.  */
+
+static FILE *
+pex_win32_fdopenr (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
+		   int binary)
+{
+  return fdopen (fd, binary ? "rb" : "r");
 }

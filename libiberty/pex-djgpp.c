@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  DJGPP specialization.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2005
    Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
@@ -38,59 +38,246 @@ extern int errno;
 #define PWAIT_ERROR EINVAL
 #endif
 
-/* MSDOS doesn't multitask, but for the sake of a consistent interface
-   the code behaves like it does.  pexecute runs the program, tucks the
-   exit code away, and returns a "pid".  pwait must be called to fetch the
-   exit code.  */
+static int pex_djgpp_open_read (struct pex_obj *, const char *, int);
+static int pex_djgpp_open_write (struct pex_obj *, const char *, int);
+static long pex_djgpp_exec_child (struct pex_obj *, int, const char *,
+				  char * const *, int, int, int,
+				  const char **, int *);
+static int pex_djgpp_close (struct pex_obj *, int);
+static int pex_djgpp_wait (struct pex_obj *, long, int *, struct pex_time *,
+			   int, const char **, int *);
 
-/* For communicating information from pexecute to pwait.  */
-static int last_pid = 0;
-static int last_status = 0;
-static int last_reaped = 0;
+/* The list of functions we pass to the common routines.  */
 
-int
-pexecute (const char *program, char * const *argv, const char *this_pname,
-          const char *temp_base, char **errmsg_fmt,
-          char **errmsg_arg, int flags)
+const struct pex_funcs funcs =
 {
-  int rc;
+  pex_djgpp_open_read,
+  pex_djgpp_open_write,
+  pex_djgpp_exec_child,
+  pex_djgpp_close,
+  pex_djgpp_wait,
+  NULL, /* pipe */
+  NULL, /* fdopenr */
+  NULL  /* cleanup */
+};
 
-  last_pid++;
-  if (last_pid < 0)
-    last_pid = 1;
+/* Return a newly initialized pex_obj structure.  */
 
-  if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
-    abort ();
-
-  /* ??? What are the possible return values from spawnv?  */
-  rc = (flags & PEXECUTE_SEARCH ? spawnvp : spawnv) (P_WAIT, program, argv);
-
-  if (rc == -1)
-    {
-      *errmsg_fmt = install_error_msg;
-      *errmsg_arg = (char *)program;
-      return -1;
-    }
-
-  /* Tuck the status away for pwait, and return a "pid".  */
-  last_status = rc << 8;
-  return last_pid;
+struct pex_obj *
+pex_init (int flags, const char *pname, const char *tempbase)
+{
+  /* DJGPP does not support pipes.  */
+  flags &= ~ PEX_USE_PIPES;
+  return pex_init_common (flags, pname, tempbase, funcs);
 }
 
-int
-pwait (int pid, int *status, int flags)
+/* Open a file for reading.  */
+
+static int
+pex_djgpp_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED,
+		     const char *name, int binary)
 {
-  /* On MSDOS each pexecute must be followed by its associated pwait.  */
-  if (pid != last_pid
-      /* Called twice for the same child?  */
-      || pid == last_reaped)
+  return open (name, O_RDONLY | (binary ? O_BINARY : O_TEXT));
+}
+
+/* Open a file for writing.  */
+
+static int
+pex_djgpp_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED,
+		      const char *name, int binary)
+{
+  /* Note that we can't use O_EXCL here because gcc may have already
+     created the temporary file via make_temp_file.  */
+  return open (name,
+	       (O_WRONLY | O_CREAT | O_TRUNC
+		| (binary ? O_BINARY : O_TEXT)),
+	       S_IRUSR | S_IWUSR);
+}
+
+/* Close a file.  */
+
+static int
+pex_djgpp_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
+{
+  return close (fd);
+}
+
+/* Execute a child.  */
+
+static long
+pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
+		      char * const * argv, int in, int out, int errdes,
+		      const char **errmsg, int *err)
+{
+  int org_in, org_out, org_errdes;
+  int status;
+  int *statuses;
+
+  org_in = -1;
+  org_out = -1;
+  org_errdes = -1;
+
+  if (in != STDIN_FILE_NO)
     {
-      errno = PWAIT_ERROR;
-      return -1;
+      org_in = _dup (STDIN_FILE_NO);
+      if (org_in < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup";
+	  return -1;
+	}
+      if (_dup2 (in, STDIN_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (in) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
     }
-  /* ??? Here's an opportunity to canonicalize the values in STATUS.
-     Needed?  */
-  *status = (last_status >> 8);
-  last_reaped = last_pid;
-  return last_pid;
+
+  if (out != STDOUT_FILE_NO)
+    {
+      org_out = _dup (STDOUT_FILE_NO);
+      if (org_out < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup";
+	  return -1;
+	}
+      if (_dup2 (out, STDOUT_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (out) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  if (errdes != STDERR_FILE_NO
+      || (flags & PEX_STDERR_TO_STDOUT) != 0)
+    {
+      int e;
+
+      org_errdes = _dup (STDERR_FILE_NO);
+      if (org_errdes < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup";
+	  return -1;
+	}
+      if (_dup2 ((flags & PEX_STDERR_TO_STDOUT) != 0 ? STDOUT_FILE_NO : errdes,
+		 STDERR_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (errdes != STDERR_FILE_NO)
+	{
+	  if (_close (errdes) < 0)
+	    {
+	      *err = errno;
+	      *errmsg = "_close";
+	      return -1;
+	    }
+	}
+    }
+
+  status = (((flags & PEX_SEARCH) != 0 ? _spawnvp : _spawnv)
+	    (P_WAIT, program, (const char **) argv));
+
+  if (status == -1)
+    {
+      *err = errno;
+      *errmsg = ((flags & PEX_SEARCH) != 0) ? "_spawnvp" : "_spawnv";
+    }
+
+  if (in != STDIN_FILE_NO)
+    {
+      if (_dup2 (org_in, STDIN_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_in) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  if (out != STDOUT_FILE_NO)
+    {
+      if (_dup2 (org_out, STDOUT_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_out) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  if (errdes != STDERR_FILE_NO
+      || (flags & PEX_STDERR_TO_STDOUT) != 0)
+    {
+      if (_dup2 (org_errdes, STDERR_FILE_NO) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_dup2";
+	  return -1;
+	}
+      if (_close (org_errdes) < 0)
+	{
+	  *err = errno;
+	  *errmsg = "_close";
+	  return -1;
+	}
+    }
+
+  /* Save the exit status for later.  When we are called, obj->count
+     is the number of children which have executed before this
+     one.  */
+  statuses = (int *) obj->sysdep;
+  statuses = xrealloc (statuses, (obj->count + 1) * sizeof (int));
+  statuses[obj->count] = status;
+  obj->sysdep = (void *) statuses;
+
+  return obj->count;
+}
+
+/* Wait for a child process to complete.  Actually the child process
+   has already completed, and we just need to return the exit
+   status.  */
+
+static int
+pex_djgpp_wait (struct pex_obj *obj, long pid, int *status,
+		struct pex_time *time, int done, const char **errmsg,
+		int *err)
+{
+  int *statuses;
+
+  if (time != NULL)
+    memset (time, 0, sizeof *time);
+
+  statuses = (int *) obj->sysdep;
+  *status = statuses[pid];
+
+  return 0;
 }
