@@ -20,6 +20,13 @@ Tue Apr 13 05:04:59 1999  Richard Earnshaw (rearnsha@arm.com)
 
 Tue Apr 13 02:11:11 1999  Jeffrey A Law  (law@cygnus.com)
 
+        * pa.c: Avoid Using immediate zero for register zero.
+        * pa.md: Likewise.
+
+        * pa.c (print_operand, case 'f'): New case for FP register or 0.0.
+        (print_operand, case 'r'): Use %r0 for zero value.
+        * pa.md (move patterns, fcmp patterns): Use new %f output arg.
+
         * pa.c: Use a register name, not a raw immediate in branch,
 	compare/clear, sub, subb, uaddcm and vshd instructions.
 	* pa.md: Likewise.

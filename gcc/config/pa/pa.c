@@ -1881,7 +1881,7 @@ output_fp_move_double (operands)
     {
       if (FP_REG_P (operands[1])
 	  || operands[1] == CONST0_RTX (GET_MODE (operands[0])))
-	output_asm_insn ("fcpy,dbl %r1,%0", operands);
+	output_asm_insn ("fcpy,dbl %f1,%0", operands);
       else
 	output_asm_insn ("fldd%F1 %1,%0", operands);
     }
@@ -3659,7 +3659,18 @@ print_operand (file, x, code)
 	  || (x == CONST0_RTX (DFmode))
 	  || (x == CONST0_RTX (SFmode)))
 	{
-	  fputs ("0", file);
+	  fputs ("%r0", file);
+	  return;
+	}
+      else
+	break;
+    case 'f':
+      /* A register or zero (floating point). */
+      if (x == const0_rtx
+	  || (x == CONST0_RTX (DFmode))
+	  || (x == CONST0_RTX (SFmode)))
+	{
+	  fputs ("%fr0", file);
 	  return;
 	}
       else
@@ -4715,9 +4726,9 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (nullify && negated)
-	      strcat (buf, " %0,%1,1,%%r0\n\tbn %3");
+	      strcat (buf, " %0,%1,1,%%r0\n\tb,n %3");
 	    else if (nullify && ! negated)
-	      strcat (buf, " %0,%1,1,%%r0\n\tbn %2");
+	      strcat (buf, " %0,%1,1,%%r0\n\tb,n %2");
 	    else if (negated)
 	      strcat (buf, " %0,%1,1,%%r0\n\tb %3");
 	    else
@@ -4853,9 +4864,9 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (nullify && negated)
-	      strcat (buf, " %0,1,%%r0\n\tbn %3");
+	      strcat (buf, " %0,1,%%r0\n\tb,n %3");
 	    else if (nullify && ! negated)
-	      strcat (buf, " %0,1,%%r0\n\tbn %2");
+	      strcat (buf, " %0,1,%%r0\n\tb,n %2");
 	    else if (negated)
 	      strcat (buf, " %0,1,%%r0\n\tb %3");
 	    else
@@ -5226,7 +5237,7 @@ output_millicode_call (insn, call_dest)
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
   if (! VAL_14_BITS_P (distance))
-    output_asm_insn ("bl %0,%%r31\n\tnop\n\tbl,n %1,%%r0", xoperands);
+    output_asm_insn ("bl %0,%%r31\n\tnop\n\tb,n %1", xoperands);
   else
     {
       xoperands[3] = gen_label_rtx ();
@@ -5475,7 +5486,7 @@ output_call (insn, call_dest)
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
   if (! VAL_14_BITS_P (distance))
-    output_asm_insn ("bl %0,%%r2\n\tnop\n\tbl,n %1,%%r0", xoperands);
+    output_asm_insn ("bl %0,%%r2\n\tnop\n\tb,n %1", xoperands);
   else
     {
       xoperands[3] = gen_label_rtx ();

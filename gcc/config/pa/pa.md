@@ -453,7 +453,7 @@
 			     [(match_operand:SF 0 "reg_or_0_operand" "fG")
 			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "fcmp,sgl,%Y2 %r0,%r1"
+  "fcmp,sgl,%Y2 %f0,%f1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
@@ -463,7 +463,7 @@
 			     [(match_operand:DF 0 "reg_or_0_operand" "fG")
 			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "fcmp,dbl,%Y2 %r0,%r1"
+  "fcmp,dbl,%Y2 %f0,%f1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
@@ -629,7 +629,7 @@
 				   [(match_operand:SI 4 "register_operand" "r")
 				    (match_operand:SI 5 "arith11_operand" "rI")])))]
   ""
-  "com%I2clr,%S3 %2,%1,0\;com%I5clr,%B6 %5,%4,%0\;ldi 1,%0"
+  "com%I2clr,%S3 %2,%1,%%r0\;com%I5clr,%B6 %5,%4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -657,7 +657,7 @@
 			 (match_operand:SI 3 "arith11_operand" "rI"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub%I3 %3,%2,0\;addc 0,%1,%0"
+  "sub%I3 %3,%2,%%r0\;addc %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -669,7 +669,7 @@
 			 (match_operand:SI 3 "register_operand" "r"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub %2,%3,0\;addc 0,%1,%0"
+  "sub %2,%3,%%r0\;addc %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -682,7 +682,7 @@
 			 (match_operand:SI 3 "int11_operand" "I"))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "addi %k3,%2,0\;addc 0,%1,%0"
+  "addi %k3,%2,%%r0\;addc %%r0,%1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -694,8 +694,8 @@
 		 (match_operand:SI 1 "register_operand" "0,?r")))]
   ""
   "@
-   com%I3clr,%B4 %3,%2,0\;addi 1,%0,%0
-   com%I3clr,%B4 %3,%2,0\;addi,tr 1,%1,%0\;copy %1,%0"
+   com%I3clr,%B4 %3,%2,%%r0\;addi 1,%0,%0
+   com%I3clr,%B4 %3,%2,%%r0\;addi,tr 1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "8,12")])
 
@@ -705,7 +705,7 @@
 		  (gtu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "arith11_operand" "rI"))))]
   ""
-  "sub%I3 %3,%2,0\;subb %1,0,%0"
+  "sub%I3 %3,%2,%%r0\;subb %1,0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -716,7 +716,7 @@
 				    (match_operand:SI 3 "arith11_operand" "rI")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "sub%I3 %3,%2,0\;subb %1,%4,%0"
+  "sub%I3 %3,%2,%%r0\;subb %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -728,7 +728,7 @@
 		  (ltu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "register_operand" "r"))))]
   ""
-  "sub %2,%3,0\;subb %1,0,%0"
+  "sub %2,%3,%%r0\;subb %1,0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -739,7 +739,7 @@
 				    (match_operand:SI 3 "register_operand" "r")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "sub %2,%3,0\;subb %1,%4,%0"
+  "sub %2,%3,%%r0\;subb %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -752,7 +752,7 @@
 		  (leu:SI (match_operand:SI 2 "register_operand" "r")
 			  (match_operand:SI 3 "int11_operand" "I"))))]
   ""
-  "addi %k3,%2,0\;subb %1,0,%0"
+  "addi %k3,%2,%%r0\;subb %1,0,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -763,7 +763,7 @@
 				    (match_operand:SI 3 "int11_operand" "I")))
 		  (match_operand:SI 4 "register_operand" "r")))]
   ""
-  "addi %k3,%2,0\;subb %1,%4,%0"
+  "addi %k3,%2,%%r0\;subb %1,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -775,8 +775,8 @@
 		      (match_operand:SI 3 "arith11_operand" "rI,rI")])))]
   ""
   "@
-   com%I3clr,%B4 %3,%2,0\;addi -1,%0,%0
-   com%I3clr,%B4 %3,%2,0\;addi,tr -1,%1,%0\;copy %1,%0"
+   com%I3clr,%B4 %3,%2,%%r0\;addi -1,%0,%0
+   com%I3clr,%B4 %3,%2,%%r0\;addi,tr -1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "8,12")])
 
@@ -789,8 +789,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,> %2,%0,0\;copy %2,%0
-  comiclr,> %2,%0,0\;ldi %2,%0
+  comclr,> %2,%0,%%r0\;copy %2,%0
+  comiclr,> %2,%0,%%r0\;ldi %2,%0
   comclr,> %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
@@ -801,8 +801,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I")))]
   ""
   "@
-  comclr,>> %2,%0,0\;copy %2,%0
-  comiclr,>> %2,%0,0\;ldi %2,%0"
+  comclr,>> %2,%0,%%r0\;copy %2,%0
+  comiclr,>> %2,%0,%%r0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
  (set_attr "length" "8,8")])
 
@@ -812,8 +812,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,< %2,%0,0\;copy %2,%0
-  comiclr,< %2,%0,0\;ldi %2,%0
+  comclr,< %2,%0,%%r0\;copy %2,%0
+  comiclr,< %2,%0,%%r0\;ldi %2,%0
   comclr,< %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
@@ -824,8 +824,8 @@
 		 (match_operand:SI 2 "arith11_operand" "r,I")))]
   ""
   "@
-  comclr,<< %2,%0,0\;copy %2,%0
-  comiclr,<< %2,%0,0\;ldi %2,%0"
+  comclr,<< %2,%0,%%r0\;copy %2,%0
+  comiclr,<< %2,%0,%%r0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
  (set_attr "length" "8,8")])
 
@@ -833,7 +833,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(abs:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "or,>= %%r0,%1,%0\;subi 0,%0,%0"
+  "or,>= %%r0,%1,%0\;subi %%r0,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -874,7 +874,7 @@
 	 (const_int 0)))]
   ""
   "@
-   com%I4clr,%S5 %4,%3,0\;ldi 0,%0
+   com%I4clr,%S5 %4,%3,%%r0\;ldi 0,%0
    com%I4clr,%B5 %4,%3,%0\;copy %1,%0
    com%I4clr,%B5 %4,%3,%0\;ldi %1,%0
    com%I4clr,%B5 %4,%3,%0\;ldil L'%1,%0
@@ -892,14 +892,14 @@
 	 (match_operand:SI 2 "reg_or_cint_move_operand" "r,J,N,K,0,0,0,0")))]
   ""
   "@
-   com%I4clr,%S5 %4,%3,0\;copy %2,%0
-   com%I4clr,%S5 %4,%3,0\;ldi %2,%0
-   com%I4clr,%S5 %4,%3,0\;ldil L'%2,%0
-   com%I4clr,%S5 %4,%3,0\;zdepi %Z2,%0
-   com%I4clr,%B5 %4,%3,0\;copy %1,%0
-   com%I4clr,%B5 %4,%3,0\;ldi %1,%0
-   com%I4clr,%B5 %4,%3,0\;ldil L'%1,%0
-   com%I4clr,%B5 %4,%3,0\;zdepi %Z1,%0"
+   com%I4clr,%S5 %4,%3,%%r0\;copy %2,%0
+   com%I4clr,%S5 %4,%3,%%r0\;ldi %2,%0
+   com%I4clr,%S5 %4,%3,%%r0\;ldil L'%2,%0
+   com%I4clr,%S5 %4,%3,%%r0\;zdepi %Z2,%0
+   com%I4clr,%B5 %4,%3,%%r0\;copy %1,%0
+   com%I4clr,%B5 %4,%3,%%r0\;ldi %1,%0
+   com%I4clr,%B5 %4,%3,%%r0\;ldil L'%1,%0
+   com%I4clr,%B5 %4,%3,%%r0\;zdepi %Z1,%0"
   [(set_attr "type" "multi,multi,multi,nullshift,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8,8,8,8")])
 
@@ -1317,9 +1317,9 @@
   "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
-    return \"ftest\;bl,n %0,0\";
+    return \"ftest\;b,n %0\";
   else
-    return \"ftest\;bl%* %0,0\";
+    return \"ftest\;b%* %0\";
 }"
   [(set_attr "type" "fbranch")
    (set_attr "length" "8")])
@@ -1332,9 +1332,9 @@
   "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
-    return \"ftest\;add,tr 0,0,0\;bl,n %0,0\";
+    return \"ftest\;add,tr %%r0,%%r0,%%r0\;b,n %0\";
   else
-    return \"ftest\;add,tr 0,0,0\;bl%* %0,0\";
+    return \"ftest\;add,tr %%r0,%%r0,%%r0\;b%* %0\";
 }"
   [(set_attr "type" "fbranch")
    (set_attr "length" "12")])
@@ -1411,7 +1411,7 @@
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
-   fcpy,sgl %r1,%0
+   fcpy,sgl %f1,%0
    fldw%F1 %1,%0
    fstw%F0 %1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu,fpload,fpstore")
@@ -1768,7 +1768,7 @@
    ldh%M1 %1,%0
    sth%M0 %r1,%0
    mtsar %r1
-   fcpy,sgl %r1,%0"
+   fcpy,sgl %f1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
@@ -1930,7 +1930,7 @@
    ldb%M1 %1,%0
    stb%M0 %r1,%0
    mtsar %r1
-   fcpy,sgl %r1,%0"
+   fcpy,sgl %f1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
@@ -2572,7 +2572,7 @@
     || reg_or_0_operand (operands[1], SFmode))
    && ! TARGET_SOFT_FLOAT"
   "@
-   fcpy,sgl %r1,%0
+   fcpy,sgl %f1,%0
    copy %r1,%0
    fldw%F1 %1,%0
    ldw%M1 %1,%0
@@ -3600,7 +3600,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fsub,dbl 0,%1,%0"
+  "fsub,dbl %%fr0,%1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -3608,7 +3608,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fsub,sgl 0,%1,%0"
+  "fsub,sgl %%fr0,%1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -4036,12 +4036,12 @@
   extern int optimize;
 
   if (GET_MODE (insn) == SImode)
-    return \"bl %l0,0%#\";
+    return \"b %l0%#\";
 
   /* An unconditional branch which can reach its target.  */
   if (get_attr_length (insn) != 24
       && get_attr_length (insn) != 16)
-    return \"bl%* %l0,0\";
+    return \"b%* %l0\";
 
   /* An unconditional branch which can not reach its target.
 
@@ -4157,7 +4157,7 @@
 				(match_operand:SI 0 "register_operand" "r")))
 	       (label_ref (match_operand 1 "" ""))))]
   ""
-  "blr %0,0\;nop"
+  "blr %0,%%r0\;nop"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -4276,7 +4276,7 @@
 
   /* Long millicode call for portable runtime.  */
   if (get_attr_length (insn) == 20)
-    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n %%r0(%%r31)\;nop\";
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr %%r0,%%r2\;bv,n %%r0(%%r31)\;nop\";
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[0];
@@ -4286,7 +4286,7 @@
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (xoperands[1]));
   output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
-  output_asm_insn (\"blr 0,%%r2\", xoperands);
+  output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
 }"
@@ -4436,7 +4436,7 @@
 
   /* Long millicode call for portable runtime.  */
   if (get_attr_length (insn) == 20)
-    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n %%r0(%%r31)\;nop\";
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr %%r0,%%r2\;bv,n %%r0(%%r31)\;nop\";
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[1];
@@ -4446,7 +4446,7 @@
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (xoperands[1]));
   output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
-  output_asm_insn (\"blr 0,%%r2\", xoperands);
+  output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
 }"
