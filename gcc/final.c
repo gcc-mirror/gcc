@@ -2602,7 +2602,7 @@ cleanup_subreg_operands (rtx insn)
 	recog_data.operand[i] = alter_subreg (recog_data.operand_loc[i]);
       else if (GET_CODE (recog_data.operand[i]) == PLUS
 	       || GET_CODE (recog_data.operand[i]) == MULT
-	       || GET_CODE (recog_data.operand[i]) == MEM)
+	       || MEM_P (recog_data.operand[i]))
 	recog_data.operand[i] = walk_alter_subreg (recog_data.operand_loc[i]);
     }
 
@@ -2612,7 +2612,7 @@ cleanup_subreg_operands (rtx insn)
 	*recog_data.dup_loc[i] = alter_subreg (recog_data.dup_loc[i]);
       else if (GET_CODE (*recog_data.dup_loc[i]) == PLUS
 	       || GET_CODE (*recog_data.dup_loc[i]) == MULT
-	       || GET_CODE (*recog_data.dup_loc[i]) == MEM)
+	       || MEM_P (*recog_data.dup_loc[i]))
 	*recog_data.dup_loc[i] = walk_alter_subreg (recog_data.dup_loc[i]);
     }
 }
@@ -2628,7 +2628,7 @@ alter_subreg (rtx *xp)
 
   /* simplify_subreg does not remove subreg from volatile references.
      We are required to.  */
-  if (GET_CODE (y) == MEM)
+  if (MEM_P (y))
     *xp = adjust_address (y, GET_MODE (x), SUBREG_BYTE (x));
   else
     {
@@ -2906,7 +2906,7 @@ get_mem_expr_from_op (rtx op, int *paddressp)
 
   if (REG_P (op))
     return REG_EXPR (op);
-  else if (GET_CODE (op) != MEM)
+  else if (!MEM_P (op))
     return 0;
 
   if (MEM_EXPR (op) != 0)

@@ -1676,11 +1676,11 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
 					      recog_op_alt[i][alt].class,
 					      insn, vd);
-	      else if (GET_CODE (recog_data.operand[i]) == MEM)
+	      else if (MEM_P (recog_data.operand[i]))
 		replaced = replace_oldest_value_mem (recog_data.operand[i],
 						     insn, vd);
 	    }
-	  else if (GET_CODE (recog_data.operand[i]) == MEM)
+	  else if (MEM_P (recog_data.operand[i]))
 	    replaced = replace_oldest_value_mem (recog_data.operand[i],
 						 insn, vd);
 

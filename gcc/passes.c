@@ -440,7 +440,7 @@ rest_of_handle_final (void)
        different from the DECL_NAME name used in the source file.  */
 
     x = DECL_RTL (current_function_decl);
-    if (GET_CODE (x) != MEM)
+    if (!MEM_P (x))
       abort ();
     x = XEXP (x, 0);
     if (GET_CODE (x) != SYMBOL_REF)

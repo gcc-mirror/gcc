@@ -622,7 +622,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
          sequences.  */
       /* Copy to register to avoid generating bad insns by cse
          from (set (mem ...) (arithop))  (set (cc0) (mem ...)).  */
-      if (!cse_not_expected && GET_CODE (temp) == MEM)
+      if (!cse_not_expected && MEM_P (temp))
         temp = copy_to_reg (temp);
 #endif
       do_pending_stack_adjust ();

@@ -792,7 +792,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_MODE_BITSIZE (from_mode) > BITS_PER_WORD
       && GET_MODE_BITSIZE (to_mode) <= BITS_PER_WORD)
     {
-      if (!((GET_CODE (from) == MEM
+      if (!((MEM_P (from)
 	     && ! MEM_VOLATILE_P (from)
 	     && direct_load[(int) to_mode]
 	     && ! mode_dependent_address_p (XEXP (from, 0)))
@@ -811,7 +811,7 @@ convert_move (rtx to, rtx from, int unsignedp)
       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (to_mode),
 				GET_MODE_BITSIZE (from_mode)))
     {
-      if (!((GET_CODE (from) == MEM
+      if (!((MEM_P (from)
 	     && ! MEM_VOLATILE_P (from)
 	     && direct_load[(int) to_mode]
 	     && ! mode_dependent_address_p (XEXP (from, 0)))
@@ -984,7 +984,7 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
 	  && GET_MODE_CLASS (oldmode) == MODE_INT
 	  && (GET_CODE (x) == CONST_DOUBLE
 	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (oldmode)
-		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
+		  && ((MEM_P (x) && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])
 		      || (REG_P (x)
 			  && (! HARD_REGISTER_P (x)
@@ -1358,9 +1358,9 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
   y = protect_from_queue (y, 0);
   size = protect_from_queue (size, 0);
 
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     abort ();
-  if (GET_CODE (y) != MEM)
+  if (!MEM_P (y))
     abort ();
   if (size == 0)
     abort ();
@@ -1883,7 +1883,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 	 from strange tricks we might play; but make sure that the source can
 	 be loaded directly into the destination.  */
       src = orig_src;
-      if (GET_CODE (orig_src) != MEM
+      if (!MEM_P (orig_src)
 	  && (!CONSTANT_P (orig_src)
 	      || (GET_MODE (orig_src) != mode
 		  && GET_MODE (orig_src) != VOIDmode)))
@@ -1897,7 +1897,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 	}
 
       /* Optimize the access just a bit.  */
-      if (GET_CODE (src) == MEM
+      if (MEM_P (src)
 	  && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (src))
 	      || MEM_ALIGN (src) >= GET_MODE_ALIGNMENT (mode))
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
@@ -2043,7 +2043,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
       emit_group_load (dst, temp, type, ssize);
       return;
     }
-  else if (GET_CODE (dst) != MEM && GET_CODE (dst) != CONCAT)
+  else if (!MEM_P (dst) && GET_CODE (dst) != CONCAT)
     {
       dst = gen_reg_rtx (GET_MODE (orig_dst));
       /* Make life a bit easier for combine.  */
@@ -2102,7 +2102,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	}
 
       /* Optimize the access just a bit.  */
-      if (GET_CODE (dest) == MEM
+      if (MEM_P (dest)
 	  && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (dest))
 	      || MEM_ALIGN (dest) >= GET_MODE_ALIGNMENT (mode))
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
@@ -2560,7 +2560,7 @@ rtx
 clear_storage (rtx object, rtx size)
 {
   rtx retval = 0;
-  unsigned int align = (GET_CODE (object) == MEM ? MEM_ALIGN (object)
+  unsigned int align = (MEM_P (object) ? MEM_ALIGN (object)
 			: GET_MODE_ALIGNMENT (GET_MODE (object)));
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
@@ -2824,14 +2824,14 @@ emit_move_insn (rtx x, rtx y)
 
   /* If X or Y are memory references, verify that their addresses are valid
      for the machine.  */
-  if (GET_CODE (x) == MEM
+  if (MEM_P (x)
       && ((! memory_address_p (GET_MODE (x), XEXP (x, 0))
 	   && ! push_operand (x, GET_MODE (x)))
 	  || (flag_force_addr
 	      && CONSTANT_ADDRESS_P (XEXP (x, 0)))))
     x = validize_mem (x);
 
-  if (GET_CODE (y) == MEM
+  if (MEM_P (y)
       && (! memory_address_p (GET_MODE (y), XEXP (y, 0))
 	  || (flag_force_addr
 	      && CONSTANT_ADDRESS_P (XEXP (y, 0)))))
@@ -3056,14 +3056,14 @@ emit_move_insn_1 (rtx x, rtx y)
       if (reload_in_progress)
 	{
 	  x = gen_lowpart_common (tmode, x1);
-	  if (x == 0 && GET_CODE (x1) == MEM)
+	  if (x == 0 && MEM_P (x1))
 	    {
 	      x = adjust_address_nv (x1, tmode, 0);
 	      copy_replacements (x1, x);
 	    }
 
 	  y = gen_lowpart_common (tmode, y1);
-	  if (y == 0 && GET_CODE (y1) == MEM)
+	  if (y == 0 && MEM_P (y1))
 	    {
 	      y = adjust_address_nv (y1, tmode, 0);
 	      copy_replacements (y1, y);
@@ -3145,10 +3145,10 @@ emit_move_insn_1 (rtx x, rtx y)
 
       /* If we are in reload, see if either operand is a MEM whose address
 	 is scheduled for replacement.  */
-      if (reload_in_progress && GET_CODE (x) == MEM
+      if (reload_in_progress && MEM_P (x)
 	  && (inner = find_replacement (&XEXP (x, 0))) != XEXP (x, 0))
 	x = replace_equiv_address_nv (x, inner);
-      if (reload_in_progress && GET_CODE (y) == MEM
+      if (reload_in_progress && MEM_P (y)
 	  && (inner = find_replacement (&XEXP (y, 0))) != XEXP (y, 0))
 	y = replace_equiv_address_nv (y, inner);
 
@@ -3791,7 +3791,7 @@ expand_assignment (tree to, tree from, int want_value)
 	{
 	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
 
-	  if (GET_CODE (to_rtx) != MEM)
+	  if (!MEM_P (to_rtx))
 	    abort ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -3804,7 +3804,7 @@ expand_assignment (tree to, tree from, int want_value)
 
 	  /* A constant address in TO_RTX can have VOIDmode, we must not try
 	     to call force_reg for that case.  Avoid that case.  */
-	  if (GET_CODE (to_rtx) == MEM
+	  if (MEM_P (to_rtx)
 	      && GET_MODE (to_rtx) == BLKmode
 	      && GET_MODE (XEXP (to_rtx, 0)) != VOIDmode
 	      && bitsize > 0
@@ -3821,7 +3821,7 @@ expand_assignment (tree to, tree from, int want_value)
 				   				   offset));
 	}
 
-      if (GET_CODE (to_rtx) == MEM)
+      if (MEM_P (to_rtx))
 	{
 	  /* If the field is at offset zero, we could have been given the
 	     DECL_RTX of the parent struct.  Don't munge it.  */
@@ -3832,7 +3832,7 @@ expand_assignment (tree to, tree from, int want_value)
 
       /* Deal with volatile and readonly fields.  The former is only done
 	 for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
-      if (volatilep && GET_CODE (to_rtx) == MEM)
+      if (volatilep && MEM_P (to_rtx))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
@@ -3844,14 +3844,14 @@ expand_assignment (tree to, tree from, int want_value)
 	  /* We can't assert that a MEM won't be set more than once
 	     if the component is not addressable because another
 	     non-addressable component may be referenced by the same MEM.  */
-	  && ! (GET_CODE (to_rtx) == MEM && ! can_address_p (to)))
+	  && ! (MEM_P (to_rtx) && ! can_address_p (to)))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
 	  RTX_UNCHANGING_P (to_rtx) = 1;
 	}
 
-      if (GET_CODE (to_rtx) == MEM && ! can_address_p (to))
+      if (MEM_P (to_rtx) && ! can_address_p (to))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
@@ -4152,7 +4152,7 @@ store_expr (tree exp, rtx target, int want_value)
 	dont_return_target = 1;
     }
   else if ((want_value & 1) != 0
-	   && GET_CODE (target) == MEM
+	   && MEM_P (target)
 	   && ! MEM_VOLATILE_P (target)
 	   && GET_MODE (target) != BLKmode)
     /* If target is in memory and caller wants value in a register instead,
@@ -4216,7 +4216,7 @@ store_expr (tree exp, rtx target, int want_value)
 	 only necessary if the MEM is volatile, or if the address
 	 overlaps TARGET.  But not performing the load twice also
 	 reduces the amount of rtl we generate and then have to CSE.  */
-      if (GET_CODE (temp) == MEM && (want_value & 1) != 0)
+      if (MEM_P (temp) && (want_value & 1) != 0)
 	temp = copy_to_reg (temp);
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
@@ -4269,7 +4269,7 @@ store_expr (tree exp, rtx target, int want_value)
 	 or if we really want the correct value.  */
       if (!(target && REG_P (target)
 	    && REGNO (target) < FIRST_PSEUDO_REGISTER)
-	  && !(GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
+	  && !(MEM_P (target) && MEM_VOLATILE_P (target))
 	  && ! rtx_equal_p (temp, target)
 	  && (CONSTANT_P (temp) || (want_value & 1) != 0))
 	dont_return_target = 1;
@@ -4427,7 +4427,7 @@ store_expr (tree exp, rtx target, int want_value)
 
   /* If we are supposed to return TEMP, do so as long as it isn't a MEM.
      ??? The latter test doesn't seem to make sense.  */
-  else if (dont_return_target && GET_CODE (temp) != MEM)
+  else if (dont_return_target && !MEM_P (temp))
     return temp;
 
   /* Return TARGET itself if it is a hard register.  */
@@ -4651,9 +4651,9 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
       /* If we have a nonzero bitpos for a register target, then we just
 	 let store_field do the bitfield handling.  This is unlikely to
 	 generate unnecessary clear instructions anyways.  */
-      && (bitpos == 0 || GET_CODE (target) == MEM))
+      && (bitpos == 0 || MEM_P (target)))
     {
-      if (GET_CODE (target) == MEM)
+      if (MEM_P (target))
 	target
 	  = adjust_address (target,
 			    GET_MODE (target) == BLKmode
@@ -4663,7 +4663,7 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 
 
       /* Update the alias set, if required.  */
-      if (GET_CODE (target) == MEM && ! MEM_KEEP_ALIAS_SET_P (target)
+      if (MEM_P (target) && ! MEM_KEEP_ALIAS_SET_P (target)
 	  && MEM_ALIAS_SET (target) != 0)
 	{
 	  target = copy_rtx (target);
@@ -4800,7 +4800,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 							     target));
 
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
-	      if (GET_CODE (to_rtx) != MEM)
+	      if (!MEM_P (to_rtx))
 		abort ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -4817,7 +4817,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	  if (TREE_READONLY (field))
 	    {
-	      if (GET_CODE (to_rtx) == MEM)
+	      if (MEM_P (to_rtx))
 		to_rtx = copy_rtx (to_rtx);
 
 	      RTX_UNCHANGING_P (to_rtx) = 1;
@@ -4854,7 +4854,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    }
 #endif
 
-	  if (GET_CODE (to_rtx) == MEM && !MEM_KEEP_ALIAS_SET_P (to_rtx)
+	  if (MEM_P (to_rtx) && !MEM_KEEP_ALIAS_SET_P (to_rtx)
 	      && DECL_NONADDRESSABLE_P (field))
 	    {
 	      to_rtx = copy_rtx (to_rtx);
@@ -5032,7 +5032,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  && (lo = tree_low_cst (lo_index, 0),
 		      hi = tree_low_cst (hi_index, 0),
 		      count = hi - lo + 1,
-		      (GET_CODE (target) != MEM
+		      (!MEM_P (target)
 		       || count <= 2
 		       || (host_integerp (TYPE_SIZE (elttype), 1)
 			   && (tree_low_cst (TYPE_SIZE (elttype), 1) * count
@@ -5043,7 +5043,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    {
 		      bitpos = lo * tree_low_cst (TYPE_SIZE (elttype), 0);
 
-		      if (GET_CODE (target) == MEM
+		      if (MEM_P (target)
 			  && !MEM_KEEP_ALIAS_SET_P (target)
 			  && TREE_CODE (type) == ARRAY_TYPE
 			  && TYPE_NONALIASED_COMPONENT (type))
@@ -5165,7 +5165,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      else
 		bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
 
-	      if (GET_CODE (target) == MEM && !MEM_KEEP_ALIAS_SET_P (target)
+	      if (MEM_P (target) && !MEM_KEEP_ALIAS_SET_P (target)
 		  && TREE_CODE (type) == ARRAY_TYPE
 		  && TYPE_NONALIASED_COMPONENT (type))
 		{
@@ -5254,7 +5254,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		      /* The assumption here is that it is safe to use
 			 XEXP if the set is multi-word, but not if
 			 it's single-word.  */
-		      if (GET_CODE (target) == MEM)
+		      if (MEM_P (target))
 			to_rtx = adjust_address (target, mode, offset);
 		      else if (offset == 0)
 			to_rtx = target;
@@ -5325,7 +5325,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      emit_move_insn (targetx, target);
 	    }
 
-	  else if (GET_CODE (target) == MEM)
+	  else if (MEM_P (target))
 	    targetx = target;
 	  else
 	    abort ();
@@ -5486,7 +5486,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 boundary.  If so, we simply do a block copy.  */
       if (GET_MODE (target) == BLKmode && GET_MODE (temp) == BLKmode)
 	{
-	  if (GET_CODE (target) != MEM || GET_CODE (temp) != MEM
+	  if (!MEM_P (target) || !MEM_P (temp)
 	      || bitpos % BITS_PER_UNIT != 0)
 	    abort ();
 
@@ -5508,7 +5508,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  /* The caller wants an rtx for the value.
 	     If possible, avoid refetching from the bitfield itself.  */
 	  if (width_mask != 0
-	      && ! (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
+	      && ! (MEM_P (target) && MEM_VOLATILE_P (target)))
 	    {
 	      tree count;
 	      enum machine_mode tmode;
@@ -5829,7 +5829,7 @@ force_operand (rtx value, rtx target)
   /* Check for subreg applied to an expression produced by loop optimizer.  */
   if (code == SUBREG
       && !REG_P (SUBREG_REG (value))
-      && GET_CODE (SUBREG_REG (value)) != MEM)
+      && !MEM_P (SUBREG_REG (value)))
     {
       value = simplify_gen_subreg (GET_MODE (value),
 				   force_reg (GET_MODE (SUBREG_REG (value)),
@@ -5940,7 +5940,7 @@ force_operand (rtx value, rtx target)
 #ifdef INSN_SCHEDULING
   /* On machines that have insn scheduling, we want all memory reference to be
      explicit, so we need to deal with such paradoxical SUBREGs.  */
-  if (GET_CODE (value) == SUBREG && GET_CODE (SUBREG_REG (value)) == MEM
+  if (GET_CODE (value) == SUBREG && MEM_P (SUBREG_REG (value))
       && (GET_MODE_SIZE (GET_MODE (value))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (value)))))
     value
@@ -5985,7 +5985,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 	      != INTEGER_CST)
 	  && GET_MODE (x) == BLKmode)
       /* If X is in the outgoing argument area, it is always safe.  */
-      || (GET_CODE (x) == MEM
+      || (MEM_P (x)
 	  && (XEXP (x, 0) == virtual_outgoing_args_rtx
 	      || (GET_CODE (XEXP (x, 0)) == PLUS
 		  && XEXP (XEXP (x, 0), 0) == virtual_outgoing_args_rtx))))
@@ -6094,7 +6094,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  if (DECL_P (exp))
 	    {
 	      if (!DECL_RTL_SET_P (exp)
-		  || GET_CODE (DECL_RTL (exp)) != MEM)
+		  || !MEM_P (DECL_RTL (exp)))
 		return 0;
 	      else
 		exp_rtl = XEXP (DECL_RTL (exp), 0);
@@ -6102,7 +6102,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  break;
 
 	case INDIRECT_REF:
-	  if (GET_CODE (x) == MEM
+	  if (MEM_P (x)
 	      && alias_sets_conflict_p (MEM_ALIAS_SET (x),
 					get_alias_set (exp)))
 	    return 0;
@@ -6112,7 +6112,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  /* Assume that the call will clobber all hard registers and
 	     all of memory.  */
 	  if ((REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-	      || GET_CODE (x) == MEM)
+	      || MEM_P (x))
 	    return 0;
 	  break;
 
@@ -6196,7 +6196,7 @@ safe_from_p (rtx x, tree exp, int top_p)
       /* If the rtl is X, then it is not safe.  Otherwise, it is unless both
 	 are memory and they conflict.  */
       return ! (rtx_equal_p (x, exp_rtl)
-		|| (GET_CODE (x) == MEM && GET_CODE (exp_rtl) == MEM
+		|| (MEM_P (x) && MEM_P (exp_rtl)
 		    && true_dependence (exp_rtl, VOIDmode, x,
 					rtx_addr_varies_p)));
     }
@@ -6571,7 +6571,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  && modifier != EXPAND_CONST_ADDRESS)
 	{
 	  temp = expand_expr (exp, NULL_RTX, VOIDmode, modifier);
-	  if (GET_CODE (temp) == MEM)
+	  if (MEM_P (temp))
 	    temp = copy_to_reg (temp);
 	  return const0_rtx;
 	}
@@ -6676,7 +6676,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       if (context != 0 && context != current_function_decl
 	  /* If var is static, we don't need a static chain to access it.  */
-	  && ! (GET_CODE (DECL_RTL (exp)) == MEM
+	  && ! (MEM_P (DECL_RTL (exp))
 		&& CONSTANT_P (XEXP (DECL_RTL (exp), 0))))
 	{
 	  rtx addr;
@@ -6686,10 +6686,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  if (DECL_NO_STATIC_CHAIN (current_function_decl))
 	    abort ();
 	  lang_hooks.mark_addressable (exp);
-	  if (GET_CODE (DECL_RTL (exp)) != MEM)
+	  if (!MEM_P (DECL_RTL (exp)))
 	    abort ();
 	  addr = XEXP (DECL_RTL (exp), 0);
-	  if (GET_CODE (addr) == MEM)
+	  if (MEM_P (addr))
 	    addr
 	      = replace_equiv_address (addr,
 				       fix_lexical_addr (XEXP (addr, 0), exp));
@@ -6703,7 +6703,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 from its initializer, while the initializer is still being parsed.
 	 See expand_decl.  */
 
-      else if (GET_CODE (DECL_RTL (exp)) == MEM
+      else if (MEM_P (DECL_RTL (exp))
 	       && REG_P (XEXP (DECL_RTL (exp), 0)))
 	temp = validize_mem (DECL_RTL (exp));
 
@@ -6711,7 +6711,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 the address is not valid or it is not a register and -fforce-addr
 	 is specified, get the address into a register.  */
 
-      else if (GET_CODE (DECL_RTL (exp)) == MEM
+      else if (MEM_P (DECL_RTL (exp))
 	       && modifier != EXPAND_CONST_ADDRESS
 	       && modifier != EXPAND_SUM
 	       && modifier != EXPAND_INITIALIZER
@@ -6730,7 +6730,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 if the address is a register.  */
       if (temp != 0)
 	{
-	  if (GET_CODE (temp) == MEM && REG_P (XEXP (temp, 0)))
+	  if (MEM_P (temp) && REG_P (XEXP (temp, 0)))
 	    mark_reg_pointer (XEXP (temp, 0), DECL_ALIGN (exp));
 
 	  return temp;
@@ -6856,7 +6856,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      put_var_into_stack (exp, /*rescan=*/true);
 	      temp = SAVE_EXPR_RTL (exp);
 	    }
-	  if (temp == 0 || GET_CODE (temp) != MEM)
+	  if (temp == 0 || !MEM_P (temp))
 	    abort ();
 	  return
 	    replace_equiv_address (temp,
@@ -7325,7 +7325,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
  	   C, but can in Ada if we have unchecked conversion of an expression
  	   from a scalar type to an array or record type or for an
  	   ARRAY_RANGE_REF whose type is BLKmode.  */
-	else if (GET_CODE (op0) != MEM
+	else if (!MEM_P (op0)
 		 && (offset != 0
 		     || (code == ARRAY_RANGE_REF && mode == BLKmode)))
 	  {
@@ -7355,7 +7355,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode,
 					  EXPAND_SUM);
 
-	    if (GET_CODE (op0) != MEM)
+	    if (!MEM_P (op0))
 	      abort ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -7385,12 +7385,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	/* If OFFSET is making OP0 more aligned than BIGGEST_ALIGNMENT,
 	   record its alignment as BIGGEST_ALIGNMENT.  */
-	if (GET_CODE (op0) == MEM && bitpos == 0 && offset != 0
+	if (MEM_P (op0) && bitpos == 0 && offset != 0
 	    && is_aligning_offset (offset, tem))
 	  set_mem_align (op0, BIGGEST_ALIGNMENT);
 
 	/* Don't forget about volatility even if this is a bitfield.  */
-	if (GET_CODE (op0) == MEM && volatilep && ! MEM_VOLATILE_P (op0))
+	if (MEM_P (op0) && volatilep && ! MEM_VOLATILE_P (op0))
 	  {
 	    if (op0 == orig_op0)
 	      op0 = copy_rtx (op0);
@@ -7426,7 +7426,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    || (mode1 != BLKmode
 		&& (((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
 		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)
-		      || (GET_CODE (op0) == MEM
+		      || (MEM_P (op0)
 			  && (MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode1)
 			      || (bitpos % GET_MODE_ALIGNMENT (mode1) != 0))))
 		     && ((modifier == EXPAND_CONST_ADDRESS
@@ -7446,8 +7446,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    enum machine_mode ext_mode = mode;
 
 	    if (ext_mode == BLKmode
-		&& ! (target != 0 && GET_CODE (op0) == MEM
-		      && GET_CODE (target) == MEM
+		&& ! (target != 0 && MEM_P (op0)
+		      && MEM_P (target)
 		      && bitpos % BITS_PER_UNIT == 0))
 	      ext_mode = mode_for_size (bitsize, MODE_INT, 1);
 
@@ -7461,8 +7461,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 		/* In this case, BITPOS must start at a byte boundary and
 		   TARGET, if specified, must be a MEM.  */
-		if (GET_CODE (op0) != MEM
-		    || (target != 0 && GET_CODE (target) != MEM)
+		if (!MEM_P (op0)
+		    || (target != 0 && !MEM_P (target))
 		    || bitpos % BITS_PER_UNIT != 0)
 		  abort ();
 
@@ -7479,7 +7479,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	    op0 = validize_mem (op0);
 
-	    if (GET_CODE (op0) == MEM && REG_P (XEXP (op0, 0)))
+	    if (MEM_P (op0) && REG_P (XEXP (op0, 0)))
 	      mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
@@ -7742,7 +7742,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		target = assign_temp (type, 0, 1, 1);
 	    }
 
-	  if (GET_CODE (target) == MEM)
+	  if (MEM_P (target))
 	    /* Store data into beginning of memory target.  */
 	    store_expr (TREE_OPERAND (exp, 0),
 			adjust_address (target, TYPE_MODE (valtype), 0),
@@ -7825,7 +7825,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	       && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_WORD
 	       && GET_MODE_SIZE (GET_MODE (op0)) <= UNITS_PER_WORD)
 	op0 = gen_lowpart (TYPE_MODE (type), op0);
-      else if (GET_CODE (op0) != MEM)
+      else if (!MEM_P (op0))
 	{
 	  /* If the operand is not a MEM, force it into memory.  Since we
 	     are going to be be changing the mode of the MEM, don't call
@@ -7850,7 +7850,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 that the operand is known to be aligned, indicate that it is.
 	 Otherwise, we need only be concerned about alignment for non-BLKmode
 	 results.  */
-      if (GET_CODE (op0) == MEM)
+      if (MEM_P (op0))
 	{
 	  op0 = copy_rtx (op0);
 
@@ -8263,7 +8263,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       target = original_target;
       if (target == 0
 	  || modifier == EXPAND_STACK_PARM
-	  || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
+	  || (MEM_P (target) && MEM_VOLATILE_P (target))
 	  || GET_MODE (target) != mode
 	  || (REG_P (target)
 	      && REGNO (target) < FIRST_PSEUDO_REGISTER))
@@ -8286,7 +8286,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */
 
-      if (GET_CODE (target) == MEM)
+      if (MEM_P (target))
 	target = gen_reg_rtx (mode);
 
       /* If op1 was placed in target, swap op0 and op1.  */
@@ -8654,7 +8654,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		     || REG_P (original_target)
 		     || TREE_ADDRESSABLE (type))
 #endif
-		 && (GET_CODE (original_target) != MEM
+		 && (!MEM_P (original_target)
 		     || TREE_ADDRESSABLE (type)))
 	  temp = original_target;
 	else if (TREE_ADDRESSABLE (type))
@@ -9100,7 +9100,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		}
 	    }
 
-	  if (GET_CODE (op0) != MEM)
+	  if (!MEM_P (op0))
 	    abort ();
 
 	  mark_temp_addr_taken (op0);
@@ -9725,7 +9725,7 @@ expand_increment (tree exp, int post, int ignore)
 
 	  return enqueue_insn (op0, GEN_FCN (icode) (op0, op0, op1));
 	}
-      if (icode != (int) CODE_FOR_nothing && GET_CODE (op0) == MEM)
+      if (icode != (int) CODE_FOR_nothing && MEM_P (op0))
 	{
 	  rtx addr = (general_operand (XEXP (op0, 0), mode)
 		      ? force_reg (Pmode, XEXP (op0, 0))

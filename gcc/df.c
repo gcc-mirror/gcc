@@ -985,7 +985,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
     case CLOBBER:
       /* If we are clobbering a MEM, mark any registers inside the address
 	 as being used.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	df_uses_record (df, &XEXP (XEXP (x, 0), 0),
 			DF_REF_REG_MEM_STORE, bb, insn, flags);
 

@@ -434,7 +434,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	  rtx t = l->loc;
 
 	  /* Avoid infinite recursion.  */
-	  if (REG_P (t) || GET_CODE (t) == MEM)
+	  if (REG_P (t) || MEM_P (t))
 	    continue;
 	  else if (rtx_equal_for_cselib_p (t, y))
 	    return 1;
@@ -452,7 +452,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	{
 	  rtx t = l->loc;
 
-	  if (REG_P (t) || GET_CODE (t) == MEM)
+	  if (REG_P (t) || MEM_P (t))
 	    continue;
 	  else if (rtx_equal_for_cselib_p (x, t))
 	    return 1;
@@ -720,7 +720,7 @@ add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
 
   /* Avoid duplicates.  */
   for (l = mem_elt->locs; l; l = l->next)
-    if (GET_CODE (l->loc) == MEM
+    if (MEM_P (l->loc)
 	&& CSELIB_VAL_PTR (XEXP (l->loc, 0)) == addr_elt)
       return;
 
@@ -923,7 +923,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
       return e;
     }
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     return cselib_lookup_mem (x, create);
 
   hashval = hash_rtx (x, mode, create);
@@ -1085,7 +1085,7 @@ cselib_invalidate_mem (rtx mem_rtx)
 
 	  /* MEMs may occur in locations only at the top level; below
 	     that every MEM or REG is substituted by its VALUE.  */
-	  if (GET_CODE (x) != MEM)
+	  if (!MEM_P (x))
 	    {
 	      p = &(*p)->next;
 	      continue;
@@ -1148,7 +1148,7 @@ cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
 
   if (REG_P (dest))
     cselib_invalidate_regno (REGNO (dest), GET_MODE (dest));
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     cselib_invalidate_mem (dest);
 
   /* Some machines don't define AUTO_INC_DEC, but they still use push
@@ -1199,7 +1199,7 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 	n_useless_values--;
       src_elt->locs = new_elt_loc_list (src_elt->locs, dest);
     }
-  else if (GET_CODE (dest) == MEM && dest_addr_elt != 0
+  else if (MEM_P (dest) && dest_addr_elt != 0
 	   && cselib_record_memory)
     {
       if (src_elt->locs == 0)
@@ -1275,13 +1275,13 @@ cselib_record_sets (rtx insn)
 
       /* We don't know how to record anything but REG or MEM.  */
       if (REG_P (dest)
-	  || (GET_CODE (dest) == MEM && cselib_record_memory))
+	  || (MEM_P (dest) && cselib_record_memory))
         {
 	  rtx src = sets[i].src;
 	  if (cond)
 	    src = gen_rtx_IF_THEN_ELSE (GET_MODE (src), cond, src, dest);
 	  sets[i].src_elt = cselib_lookup (src, GET_MODE (dest), 1);
-	  if (GET_CODE (dest) == MEM)
+	  if (MEM_P (dest))
 	    sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0), Pmode, 1);
 	  else
 	    sets[i].dest_addr_elt = 0;
@@ -1303,7 +1303,7 @@ cselib_record_sets (rtx insn)
       for (i = 0; i < n_sets; i++)
 	{
 	  rtx dest = sets[i].dest;
-	  if (REG_P (dest) || GET_CODE (dest) == MEM)
+	  if (REG_P (dest) || MEM_P (dest))
 	    {
 	      int j;
 	      for (j = i + 1; j < n_sets; j++)
@@ -1321,7 +1321,7 @@ cselib_record_sets (rtx insn)
     {
       rtx dest = sets[i].dest;
       if (REG_P (dest)
-	  || (GET_CODE (dest) == MEM && cselib_record_memory))
+	  || (MEM_P (dest) && cselib_record_memory))
 	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
     }
 }

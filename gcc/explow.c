@@ -283,7 +283,7 @@ int_expr_size (tree exp)
 static rtx
 break_out_memory_refs (rtx x)
 {
-  if (GET_CODE (x) == MEM
+  if (MEM_P (x)
       || (CONSTANT_P (x) && CONSTANT_ADDRESS_P (x)
 	  && GET_MODE (x) != VOIDmode))
     x = force_reg (GET_MODE (x), x);
@@ -414,7 +414,7 @@ copy_all_regs (rtx x)
 	  )
 	x = copy_to_reg (x);
     }
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     x = copy_to_reg (x);
   else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
 	   || GET_CODE (x) == MULT)
@@ -574,7 +574,7 @@ memory_address_noforce (enum machine_mode mode, rtx x)
 rtx
 validize_mem (rtx ref)
 {
-  if (GET_CODE (ref) != MEM)
+  if (!MEM_P (ref))
     return ref;
   if (! (flag_force_addr && CONSTANT_ADDRESS_P (XEXP (ref, 0)))
       && memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
@@ -620,7 +620,7 @@ maybe_set_unchanging (rtx ref, tree t)
 rtx
 stabilize (rtx x)
 {
-  if (GET_CODE (x) != MEM
+  if (!MEM_P (x)
       || ! rtx_unstable_p (XEXP (x, 0)))
     return x;
 
@@ -763,7 +763,7 @@ force_not_mem (rtx x)
 {
   rtx temp;
 
-  if (GET_CODE (x) != MEM || GET_MODE (x) == BLKmode)
+  if (!MEM_P (x) || GET_MODE (x) == BLKmode)
     return x;
 
   temp = gen_reg_rtx (GET_MODE (x));

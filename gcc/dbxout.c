@@ -276,7 +276,7 @@ static const char *cwd;
 /* 1 if PARM is passed to this function in memory.  */
 
 #define PARM_PASSED_IN_MEMORY(PARM) \
- (GET_CODE (DECL_INCOMING_RTL (PARM)) == MEM)
+ (MEM_P (DECL_INCOMING_RTL (PARM)))
 
 /* A C expression for the integer offset value of an automatic variable
    (N_LSYM) having address X (an RTX).  */
@@ -2169,7 +2169,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       context = decl_function_context (decl);
       if (context == current_function_decl)
 	break;
-      if (GET_CODE (DECL_RTL (decl)) != MEM
+      if (!MEM_P (DECL_RTL (decl))
 	  || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
 	break;
       FORCE_TEXT;
@@ -2473,7 +2473,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
      no letter at all, and N_LSYM, for auto variable,
      r and N_RSYM for register variable.  */
 
-  if (GET_CODE (home) == MEM
+  if (MEM_P (home)
       && GET_CODE (XEXP (home, 0)) == SYMBOL_REF)
     {
       if (TREE_PUBLIC (decl))
@@ -2546,8 +2546,8 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       current_sym_code = N_RSYM;
       current_sym_value = DBX_REGISTER_NUMBER (regno);
     }
-  else if (GET_CODE (home) == MEM
-	   && (GET_CODE (XEXP (home, 0)) == MEM
+  else if (MEM_P (home)
+	   && (MEM_P (XEXP (home, 0))
 	       || (REG_P (XEXP (home, 0))
 		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM
 		   && REGNO (XEXP (home, 0)) != STACK_POINTER_REGNUM
@@ -2586,13 +2586,13 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       type = make_node (POINTER_TYPE);
       TREE_TYPE (type) = TREE_TYPE (decl);
     }
-  else if (GET_CODE (home) == MEM
+  else if (MEM_P (home)
 	   && REG_P (XEXP (home, 0)))
     {
       current_sym_code = N_LSYM;
       current_sym_value = DEBUGGER_AUTO_OFFSET (XEXP (home, 0));
     }
-  else if (GET_CODE (home) == MEM
+  else if (MEM_P (home)
 	   && GET_CODE (XEXP (home, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (home, 0), 1)) == CONST_INT)
     {
@@ -2601,7 +2601,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	 We want the value of that CONST_INT.  */
       current_sym_value = DEBUGGER_AUTO_OFFSET (XEXP (home, 0));
     }
-  else if (GET_CODE (home) == MEM
+  else if (MEM_P (home)
 	   && GET_CODE (XEXP (home, 0)) == CONST)
     {
       /* Handle an obscure case which can arise when optimizing and
@@ -2892,7 +2892,7 @@ dbxout_parms (tree parms)
 	    dbxout_type (parm_type, 0);
 	    dbxout_finish_symbol (parms);
 	  }
-	else if (GET_CODE (DECL_RTL (parms)) == MEM
+	else if (MEM_P (DECL_RTL (parms))
 		 && REG_P (XEXP (DECL_RTL (parms), 0))
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != HARD_FRAME_POINTER_REGNUM
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != STACK_POINTER_REGNUM
@@ -2946,8 +2946,8 @@ dbxout_parms (tree parms)
 	    dbxout_type (TREE_TYPE (parms), 0);
 	    dbxout_finish_symbol (parms);
 	  }
-	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
+	else if (MEM_P (DECL_RTL (parms))
+		 && MEM_P (XEXP (DECL_RTL (parms), 0)))
 	  {
 	    /* Parm was passed via invisible reference, with the reference
 	       living on the stack.  DECL_RTL looks like
@@ -2973,7 +2973,7 @@ dbxout_parms (tree parms)
 	    dbxout_type (TREE_TYPE (parms), 0);
 	    dbxout_finish_symbol (parms);
 	  }
-	else if (GET_CODE (DECL_RTL (parms)) == MEM
+	else if (MEM_P (DECL_RTL (parms))
 		 && XEXP (DECL_RTL (parms), 0) != const0_rtx
 		 /* ??? A constant address for a parm can happen
 		    when the reg it lives in is equiv to a constant in memory.
@@ -3064,7 +3064,7 @@ dbxout_reg_parms (tree parms)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));
 	/* Report parms that live in memory but not where they were passed.  */
-	else if (GET_CODE (DECL_RTL (parms)) == MEM
+	else if (MEM_P (DECL_RTL (parms))
 		 && ! rtx_equal_p (DECL_RTL (parms), DECL_INCOMING_RTL (parms)))
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));

@@ -1599,7 +1599,7 @@ calculate_giv_inc (rtx pattern, rtx src_insn, unsigned int regno)
 
       /* Some ports store large constants in memory and add a REG_EQUAL
 	 note to the store insn.  */
-      else if (GET_CODE (increment) == MEM)
+      else if (MEM_P (increment))
 	{
 	  rtx note = find_reg_note (src_insn, REG_EQUAL, 0);
 	  if (note)

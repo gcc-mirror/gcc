@@ -671,7 +671,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
     return;
 
   if (! (set = single_set (p))
-      || GET_CODE (SET_SRC (set)) != MEM
+      || !MEM_P (SET_SRC (set))
       /* If there's a REG_EQUIV note, this must be an insn that loads an
 	 argument.  Prefer keeping the note over doing this optimization.  */
       || find_reg_note (p, REG_EQUIV, NULL_RTX)
@@ -2134,7 +2134,7 @@ combine_stack_adjustments (void)
 static int
 stack_memref_p (rtx x)
 {
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     return 0;
   x = XEXP (x, 0);
 
@@ -2411,7 +2411,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 	     turn it into a direct store.  Obviously we can't do this if
 	     there were any intervening uses of the stack pointer.  */
 	  if (memlist == NULL
-	      && GET_CODE (dest) == MEM
+	      && MEM_P (dest)
 	      && ((GET_CODE (XEXP (dest, 0)) == PRE_DEC
 		   && (last_sp_adjust
 		       == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))

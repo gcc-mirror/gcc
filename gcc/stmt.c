@@ -1513,12 +1513,12 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  || is_inout)
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_WRITE);
-	  if (GET_CODE (op) == MEM)
+	  if (MEM_P (op))
 	    op = validize_mem (op);
 
-	  if (! allows_reg && GET_CODE (op) != MEM)
+	  if (! allows_reg && !MEM_P (op))
 	    error ("output number %d not directly addressable", i);
-	  if ((! allows_mem && GET_CODE (op) == MEM)
+	  if ((! allows_mem && MEM_P (op))
 	      || GET_CODE (op) == CONCAT)
 	    {
 	      real_output_rtx[i] = protect_from_queue (op, 1);
@@ -1587,7 +1587,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       /* Never pass a CONCAT to an ASM.  */
       if (GET_CODE (op) == CONCAT)
 	op = force_reg (GET_MODE (op), op);
-      else if (GET_CODE (op) == MEM)
+      else if (MEM_P (op))
 	op = validize_mem (op);
 
       if (asm_operand_ok (op, constraint) <= 0)
@@ -1597,7 +1597,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  else if (!allows_mem)
 	    warning ("asm operand %d probably doesn't match constraints",
 		     i + noutputs);
-	  else if (GET_CODE (op) == MEM)
+	  else if (MEM_P (op))
 	    {
 	      /* We won't recognize either volatile memory or memory
 		 with a queued address as available a memory_operand
@@ -2108,7 +2108,7 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
 
   /* If all we do is reference a volatile value in memory,
      copy it to a register to be sure it is actually touched.  */
-  if (value && GET_CODE (value) == MEM && TREE_THIS_VOLATILE (exp))
+  if (value && MEM_P (value) && TREE_THIS_VOLATILE (exp))
     {
       if (TYPE_MODE (type) == VOIDmode)
 	;
@@ -3297,7 +3297,7 @@ expand_decl (tree decl)
 	 to the proper address.  */
       if (DECL_RTL_SET_P (decl))
 	{
-	  if (GET_CODE (DECL_RTL (decl)) != MEM
+	  if (!MEM_P (DECL_RTL (decl))
 	      || !REG_P (XEXP (DECL_RTL (decl), 0)))
 	    abort ();
 	  oldaddr = XEXP (DECL_RTL (decl), 0);
@@ -3621,7 +3621,7 @@ expand_anon_union_decl (tree decl, tree cleanup, tree decl_elts)
 
       /* (SUBREG (MEM ...)) at RTL generation time is invalid, so we
          instead create a new MEM rtx with the proper mode.  */
-      if (GET_CODE (x) == MEM)
+      if (MEM_P (x))
 	{
 	  if (mode == GET_MODE (x))
 	    SET_DECL_RTL (decl_elt, x);
@@ -4530,7 +4530,7 @@ expand_end_case_type (tree orig_index, tree orig_type)
 	  do_pending_stack_adjust ();
 
 	  index = protect_from_queue (index, 0);
-	  if (GET_CODE (index) == MEM)
+	  if (MEM_P (index))
 	    index = copy_to_reg (index);
 	  if (GET_CODE (index) == CONST_INT
 	      || TREE_CODE (index_expr) == INTEGER_CST)

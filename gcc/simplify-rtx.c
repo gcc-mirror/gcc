@@ -3719,7 +3719,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      SUBREG with it.  Don't do this if the MEM has a mode-dependent address
      or if we would be widening it.  */
 
-  if (GET_CODE (op) == MEM
+  if (MEM_P (op)
       && ! mode_dependent_address_p (XEXP (op, 0))
       /* Allow splitting of volatile memory references in case we don't
          have instruction to move the whole thing.  */

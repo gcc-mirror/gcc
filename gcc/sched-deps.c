@@ -526,7 +526,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	  if (!reload_completed && get_reg_known_equiv_p (regno))
 	    {
 	      rtx t = get_reg_known_value (regno);
-	      if (GET_CODE (t) == MEM)
+	      if (MEM_P (t))
 	        sched_analyze_2 (deps, XEXP (t, 0), insn);
 	    }
 
@@ -536,7 +536,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	    add_dependence_list (insn, deps->last_function_call, REG_DEP_ANTI);
 	}
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     {
       /* Writing memory.  */
       rtx t = dest;
@@ -664,7 +664,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	    if (!reload_completed && get_reg_known_equiv_p (regno))
 	      {
 		rtx t = get_reg_known_value (regno);
-		if (GET_CODE (t) == MEM)
+		if (MEM_P (t))
 		  sched_analyze_2 (deps, XEXP (t, 0), insn);
 	      }
 

@@ -763,7 +763,7 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
     case CLOBBER:
       /* The only thing we can do with a USE or CLOBBER is possibly do
 	 some substitutions in a MEM within it.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	subst_constants (&XEXP (XEXP (x, 0), 0), insn, map, 0);
       return;
 
@@ -864,7 +864,7 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	  }
 
 	/* Do substitute in the address of a destination in memory.  */
-	if (GET_CODE (*dest_loc) == MEM)
+	if (MEM_P (*dest_loc))
 	  subst_constants (&XEXP (*dest_loc, 0), insn, map, 0);
 
 	/* Check for the case of DEST a SUBREG, both it and the underlying
@@ -1320,7 +1320,7 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 
       if (x == NULL_RTX || REG_N_SETS (REGNO (ivs->entries[i].pseudo)) > 1)
 	; /* Do nothing.  */
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	reg_equiv_memory_loc[regno] = x;
       else if (REG_P (x))
 	{

@@ -1134,7 +1134,7 @@ mark_temp_addr_taken (rtx x)
 
   /* If X is not in memory or is at a constant address, it cannot be in
      a temporary slot.  */
-  if (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+  if (!MEM_P (x) || CONSTANT_P (XEXP (x, 0)))
     return;
 
   p = find_temp_slot_from_address (XEXP (x, 0));
@@ -1181,7 +1181,7 @@ preserve_temp_slots (rtx x)
   /* If X is not in memory or is at a constant address, it cannot be in
      a temporary slot, but it can contain something whose address was
      taken.  */
-  if (p == 0 && (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0))))
+  if (p == 0 && (!MEM_P (x) || CONSTANT_P (XEXP (x, 0))))
     {
       for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
 	{
@@ -1242,7 +1242,7 @@ preserve_rtl_expr_result (rtx x)
 
   /* If X is not in memory or is at a constant address, it cannot be in
      a temporary slot.  */
-  if (x == 0 || GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+  if (x == 0 || !MEM_P (x) || CONSTANT_P (XEXP (x, 0)))
     return;
 
   /* If we can find a match, move it to our level unless it is already at
@@ -1400,7 +1400,7 @@ put_var_into_stack (tree decl, int rescan)
      reference, with a pseudo to address it, put that pseudo into the stack
      if the var is non-local.  */
   if (TREE_CODE (decl) != SAVE_EXPR && DECL_NONLOCAL (decl)
-      && GET_CODE (reg) == MEM
+      && MEM_P (reg)
       && REG_P (XEXP (reg, 0))
       && REGNO (XEXP (reg, 0)) > LAST_VIRTUAL_REGISTER)
     {
@@ -1425,7 +1425,7 @@ put_var_into_stack (tree decl, int rescan)
   /* If we can't use ADDRESSOF, make sure we see through one we already
      generated.  */
   if (! can_use_addressof_p
-      && GET_CODE (reg) == MEM
+      && MEM_P (reg)
       && GET_CODE (XEXP (reg, 0)) == ADDRESSOF)
     reg = XEXP (XEXP (reg, 0), 0);
 
@@ -1442,7 +1442,7 @@ put_var_into_stack (tree decl, int rescan)
 	  /* If this was previously a MEM but we've removed the ADDRESSOF,
 	     set this address into that MEM so we always use the same
 	     rtx for this variable.  */
-	  if (orig_reg != reg && GET_CODE (orig_reg) == MEM)
+	  if (orig_reg != reg && MEM_P (orig_reg))
 	    XEXP (orig_reg, 0) = XEXP (reg, 0);
     }
   else if (GET_CODE (reg) == CONCAT)
@@ -2157,7 +2157,7 @@ fixup_var_refs_1 (rtx var, enum machine_mode promoted_mode, rtx *loc, rtx insn,
 		 means that the insn may have become invalid again.  We can't
 		 in this case make a new replacement since we already have one
 		 and we must deal with MATCH_DUPs.  */
-	      if (GET_CODE (replacement->new) == MEM)
+	      if (MEM_P (replacement->new))
 		{
 		  INSN_CODE (insn) = -1;
 		  if (recog_memoized (insn) >= 0)
@@ -2702,13 +2702,13 @@ optimize_bit_field (rtx body, rtx insn, rtx *equiv_mem)
       /* Now check that the containing word is memory, not a register,
 	 and that it is safe to change the machine mode.  */
 
-      if (GET_CODE (XEXP (bitfield, 0)) == MEM)
+      if (MEM_P (XEXP (bitfield, 0)))
 	memref = XEXP (bitfield, 0);
       else if (REG_P (XEXP (bitfield, 0))
 	       && equiv_mem != 0)
 	memref = equiv_mem[REGNO (XEXP (bitfield, 0))];
       else if (GET_CODE (XEXP (bitfield, 0)) == SUBREG
-	       && GET_CODE (SUBREG_REG (XEXP (bitfield, 0))) == MEM)
+	       && MEM_P (SUBREG_REG (XEXP (bitfield, 0))))
 	memref = SUBREG_REG (XEXP (bitfield, 0));
       else if (GET_CODE (XEXP (bitfield, 0)) == SUBREG
 	       && equiv_mem != 0
@@ -2947,7 +2947,7 @@ flush_addressof (tree decl)
 {
   if ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL)
       && DECL_RTL (decl) != 0
-      && GET_CODE (DECL_RTL (decl)) == MEM
+      && MEM_P (DECL_RTL (decl))
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF
       && REG_P (XEXP (XEXP (DECL_RTL (decl), 0), 0)))
     put_addressof_into_stack (XEXP (DECL_RTL (decl), 0), 0);
@@ -3043,7 +3043,7 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
     {
       rtx sub, insns;
 
-      if (GET_CODE (XEXP (x, 0)) != MEM)
+      if (!MEM_P (XEXP (x, 0)))
 	put_addressof_into_stack (x, ht);
 
       /* We must create a copy of the rtx because it was created by
@@ -3077,7 +3077,7 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
 
-      if (GET_CODE (sub) == MEM)
+      if (MEM_P (sub))
 	sub = adjust_address_nv (sub, GET_MODE (x), 0);
       else if (REG_P (sub)
 	       && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
@@ -3706,7 +3706,7 @@ instantiate_decl (rtx x, HOST_WIDE_INT size, int valid_only)
   /* If this is not a MEM, no need to do anything.  Similarly if the
      address is a constant or a register that is not a virtual register.  */
 
-  if (x == 0 || GET_CODE (x) != MEM)
+  if (x == 0 || !MEM_P (x))
     return;
 
   addr = XEXP (x, 0);
@@ -4129,7 +4129,7 @@ instantiate_virtual_regs_1 (rtx *loc, rtx object, int extra_insns)
 	 go ahead and make the invalid one, but do it to a copy.  For a REG,
 	 just make the recursive call, since there's no chance of a problem.  */
 
-      if ((GET_CODE (XEXP (x, 0)) == MEM
+      if ((MEM_P (XEXP (x, 0))
 	   && instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 0), XEXP (x, 0),
 					  0))
 	  || (REG_P (XEXP (x, 0))
@@ -4169,7 +4169,7 @@ instantiate_virtual_regs_1 (rtx *loc, rtx object, int extra_insns)
       if (REG_P (XEXP (x, 0)))
 	return 1;
 
-      else if (GET_CODE (XEXP (x, 0)) == MEM)
+      else if (MEM_P (XEXP (x, 0)))
 	{
 	  /* If we have a (addressof (mem ..)), do any instantiation inside
 	     since we know we'll be making the inside valid when we finally
@@ -5106,7 +5106,7 @@ assign_parms (tree fndecl)
 	  if (nominal_mode == passed_mode
 	      && ! did_conversion
 	      && stack_parm != 0
-	      && GET_CODE (stack_parm) == MEM
+	      && MEM_P (stack_parm)
 	      && locate.offset.var == 0
 	      && reg_mentioned_p (virtual_incoming_args_rtx,
 				  XEXP (stack_parm, 0)))
@@ -5254,7 +5254,7 @@ assign_parms (tree fndecl)
 	      /* Set MEM_EXPR to the original decl, i.e. to PARM,
 		 instead of the copy of decl, i.e. FNARGS.  */
 	      if (DECL_INCOMING_RTL (parm)
-		  && GET_CODE (DECL_INCOMING_RTL (parm)) == MEM)
+		  && MEM_P (DECL_INCOMING_RTL (parm)))
 		set_mem_expr (DECL_INCOMING_RTL (parm), parm);
 	    }
 	  fnargs = TREE_CHAIN (fnargs);
@@ -5737,7 +5737,7 @@ setjmp_protect (tree block)
 	 || TREE_CODE (decl) == PARM_DECL)
 	&& DECL_RTL (decl) != 0
 	&& (REG_P (DECL_RTL (decl))
-	    || (GET_CODE (DECL_RTL (decl)) == MEM
+	    || (MEM_P (DECL_RTL (decl))
 		&& GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF))
 	/* If this variable came from an inline function, it must be
 	   that its life doesn't overlap the setjmp.  If there was a
@@ -5770,7 +5770,7 @@ setjmp_protect_args (void)
 	 || TREE_CODE (decl) == PARM_DECL)
 	&& DECL_RTL (decl) != 0
 	&& (REG_P (DECL_RTL (decl))
-	    || (GET_CODE (DECL_RTL (decl)) == MEM
+	    || (MEM_P (DECL_RTL (decl))
 		&& GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF))
 	&& (
 	    /* If longjmp doesn't restore the registers,
@@ -5802,7 +5802,7 @@ fix_lexical_addr (rtx addr, tree var)
 
   fp = find_function_data (context);
 
-  if (GET_CODE (addr) == ADDRESSOF && GET_CODE (XEXP (addr, 0)) == MEM)
+  if (GET_CODE (addr) == ADDRESSOF && MEM_P (XEXP (addr, 0)))
     addr = XEXP (XEXP (addr, 0), 0);
 
   /* Decode given address as base reg plus displacement.  */
@@ -7050,10 +7050,10 @@ keep_stack_depressed (rtx insns)
 	      insn = next;
 	      continue;
 	    }
-	  else if (GET_CODE (retaddr) == MEM
+	  else if (MEM_P (retaddr)
 		   && REG_P (XEXP (retaddr, 0)))
 	    base = gen_rtx_REG (Pmode, REGNO (XEXP (retaddr, 0))), offset = 0;
-	  else if (GET_CODE (retaddr) == MEM
+	  else if (MEM_P (retaddr)
 		   && GET_CODE (XEXP (retaddr, 0)) == PLUS
 		   && REG_P (XEXP (XEXP (retaddr, 0), 0))
 		   && GET_CODE (XEXP (XEXP (retaddr, 0), 1)) == CONST_INT)

@@ -1140,7 +1140,7 @@ gen_complex_constant_part (enum machine_mode mode, rtx x, int imagpart_p)
 {
   tree decl, part;
 
-  if (GET_CODE (x) == MEM
+  if (MEM_P (x)
       && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
     {
       decl = SYMBOL_REF_DECL (XEXP (x, 0));
@@ -1223,7 +1223,7 @@ gen_highpart (enum machine_mode mode, rtx x)
   /* simplify_gen_subreg is not guaranteed to return a valid operand for
      the target if we have a MEM.  gen_highpart must return a valid operand,
      emitting code if necessary to do so.  */
-  if (result != NULL_RTX && GET_CODE (result) == MEM)
+  if (result != NULL_RTX && MEM_P (result))
     result = validize_mem (result);
 
   if (!result)
@@ -1349,7 +1349,7 @@ operand_subword (rtx op, unsigned int offset, int validate_address, enum machine
     return const0_rtx;
 
   /* Form a new MEM at the requested address.  */
-  if (GET_CODE (op) == MEM)
+  if (MEM_P (op))
     {
       rtx new = adjust_address_nv (op, word_mode, offset * UNITS_PER_WORD);
 
@@ -1802,7 +1802,7 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
 {
   rtx new;
 
-  if (GET_CODE (memref) != MEM)
+  if (!MEM_P (memref))
     abort ();
   if (mode == VOIDmode)
     mode = GET_MODE (memref);
@@ -2785,7 +2785,7 @@ make_safe_from (rtx x, rtx other)
 	goto done;
       }
  done:
-  if ((GET_CODE (other) == MEM
+  if ((MEM_P (other)
        && ! CONSTANT_P (x)
        && !REG_P (x)
        && GET_CODE (x) != SUBREG)

@@ -1689,7 +1689,7 @@ static int
 check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
-  if (*x && GET_CODE (*x) == MEM)
+  if (*x && MEM_P (*x))
     return canon_true_dependence (d->exp, d->mode, d->addr, *x,
 		    		  cse_rtx_varies_p);
   else
@@ -2246,7 +2246,7 @@ canon_hash (rtx x, enum machine_mode mode)
 	 handling since the MEM may be BLKmode which normally
 	 prevents an entry from being made.  Pure calls are
 	 marked by a USE which mentions BLKmode memory.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM
+      if (MEM_P (XEXP (x, 0))
 	  && ! MEM_VOLATILE_P (XEXP (x, 0)))
 	{
 	  hash += (unsigned) USE;
@@ -4195,7 +4195,7 @@ equiv_constant (rtx x)
      is a constant-pool reference.  Then try to look it up in the hash table
      in case it is something whose value we have seen before.  */
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     {
       struct table_elt *elt;
 
@@ -4231,7 +4231,7 @@ gen_lowpart_if_possible (enum machine_mode mode, rtx x)
 
   if (result)
     return result;
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     {
       /* This is the only other case we handle.  */
       int offset = 0;
@@ -4700,7 +4700,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      /* If we clobber memory, canon the address.
 		 This does nothing when a register is clobbered
 		 because we have already invalidated the reg.  */
-	      if (GET_CODE (XEXP (y, 0)) == MEM)
+	      if (MEM_P (XEXP (y, 0)))
 		canon_reg (XEXP (y, 0), NULL_RTX);
 	    }
 	  else if (GET_CODE (y) == USE
@@ -4719,7 +4719,7 @@ cse_insn (rtx insn, rtx libcall_insn)
     }
   else if (GET_CODE (x) == CLOBBER)
     {
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	canon_reg (XEXP (x, 0), NULL_RTX);
     }
 
@@ -4789,7 +4789,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	     || GET_CODE (dest) == SIGN_EXTRACT)
 	dest = XEXP (dest, 0);
 
-      if (GET_CODE (dest) == MEM)
+      if (MEM_P (dest))
 	canon_reg (dest, insn);
     }
 
@@ -4916,7 +4916,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	 RTL would be referring to SRC, so we don't lose any optimization
 	 opportunities by not having SRC in the hash table.  */
 
-      if (GET_CODE (src) == MEM
+      if (MEM_P (src)
 	  && find_reg_note (insn, REG_EQUIV, NULL_RTX) != 0
 	  && REG_P (dest)
 	  && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
@@ -5130,7 +5130,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       if (flag_expensive_optimizations && src_related == 0
 	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	  && GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_CODE (src) == MEM && ! do_not_record
+	  && MEM_P (src) && ! do_not_record
 	  && LOAD_EXTEND_OP (mode) != NIL)
 	{
 	  enum machine_mode tmode;
@@ -5391,7 +5391,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      if (libcall_insn
 		  && (REG_P (sets[i].orig_src)
 		      || GET_CODE (sets[i].orig_src) == SUBREG
-		      || GET_CODE (sets[i].orig_src) == MEM))
+		      || MEM_P (sets[i].orig_src)))
 		{
 	          rtx note = find_reg_equal_equiv_note (libcall_insn);
 		  if (note != 0)
@@ -5426,7 +5426,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 			 && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
 			 && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)
 		   && (src_folded == 0
-		       || (GET_CODE (src_folded) != MEM
+		       || (!MEM_P (src_folded)
 			   && ! src_folded_force_flag))
 		   && GET_MODE_CLASS (mode) != MODE_CC
 		   && mode != VOIDmode)
@@ -5542,7 +5542,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 
       sets[i].inner_dest = dest;
 
-      if (GET_CODE (dest) == MEM)
+      if (MEM_P (dest))
 	{
 #ifdef PUSH_ROUNDING
 	  /* Stack pushes invalidate the stack pointer.  */
@@ -5658,7 +5658,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	{
 	  if (REG_P (dest) || GET_CODE (dest) == SUBREG)
 	    invalidate (dest, VOIDmode);
-	  else if (GET_CODE (dest) == MEM)
+	  else if (MEM_P (dest))
 	    {
 	      /* Outgoing arguments for a libcall don't
 		 affect any recorded expressions.  */
@@ -5831,7 +5831,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	   we have just done an invalidate_memory that covers even those.  */
 	if (REG_P (dest) || GET_CODE (dest) == SUBREG)
 	  invalidate (dest, VOIDmode);
-	else if (GET_CODE (dest) == MEM)
+	else if (MEM_P (dest))
 	  {
 	    /* Outgoing arguments for a libcall don't
 	       affect any recorded expressions.  */
@@ -5931,7 +5931,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	   floating-point values in registers that might be wider than
 	   memory.  */
 	if ((flag_float_store
-	     && GET_CODE (dest) == MEM
+	     && MEM_P (dest)
 	     && FLOAT_MODE_P (GET_MODE (dest)))
 	    /* Don't record BLKmode values, because we don't know the
 	       size of it, and can't be sure that other BLKmode values
@@ -5973,7 +5973,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 	    }
 
-	if (GET_CODE (inner_dest) == MEM
+	if (MEM_P (inner_dest)
 	    && GET_CODE (XEXP (inner_dest, 0)) == ADDRESSOF)
 	  /* Given (SET (MEM (ADDRESSOF (X))) Y) we don't want to say
 	     that (MEM (ADDRESSOF (X))) is equivalent to Y.
@@ -5985,7 +5985,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  elt = insert (dest, sets[i].src_elt,
 			sets[i].dest_hash, GET_MODE (dest));
 
-	elt->in_memory = (GET_CODE (sets[i].inner_dest) == MEM
+	elt->in_memory = (MEM_P (sets[i].inner_dest)
 			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
 			      || fixed_base_plus_p (XEXP (sets[i].inner_dest,
 							  0))));
@@ -6248,7 +6248,7 @@ invalidate_from_clobbers (rtx x)
       if (ref)
 	{
 	  if (REG_P (ref) || GET_CODE (ref) == SUBREG
-	      || GET_CODE (ref) == MEM)
+	      || MEM_P (ref))
 	    invalidate (ref, VOIDmode);
 	  else if (GET_CODE (ref) == STRICT_LOW_PART
 		   || GET_CODE (ref) == ZERO_EXTRACT)
@@ -6265,7 +6265,7 @@ invalidate_from_clobbers (rtx x)
 	    {
 	      rtx ref = XEXP (y, 0);
 	      if (REG_P (ref) || GET_CODE (ref) == SUBREG
-		  || GET_CODE (ref) == MEM)
+		  || MEM_P (ref))
 		invalidate (ref, VOIDmode);
 	      else if (GET_CODE (ref) == STRICT_LOW_PART
 		       || GET_CODE (ref) == ZERO_EXTRACT)
@@ -6517,7 +6517,7 @@ cse_check_loop_start (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
       || GET_CODE (x) == CC0 || GET_CODE (x) == PC)
     return;
 
-  if ((GET_CODE (x) == MEM && GET_CODE (*cse_check_loop_start_value) == MEM)
+  if ((MEM_P (x) && MEM_P (*cse_check_loop_start_value))
       || reg_overlap_mentioned_p (x, *cse_check_loop_start_value))
     *cse_check_loop_start_value = NULL_RTX;
 }
@@ -6637,7 +6637,7 @@ cse_set_around_loop (rtx x, rtx insn, rtx loop_start)
   /* See comment on similar code in cse_insn for explanation of these
      tests.  */
   if (REG_P (SET_DEST (x)) || GET_CODE (SET_DEST (x)) == SUBREG
-      || GET_CODE (SET_DEST (x)) == MEM)
+      || MEM_P (SET_DEST (x)))
     invalidate (SET_DEST (x), VOIDmode);
   else if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
 	   || GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
@@ -7303,7 +7303,7 @@ count_reg_usage (rtx x, int *counts, int incr)
     case CLOBBER:
       /* If we are clobbering a MEM, mark any registers inside the address
          as being used.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	count_reg_usage (XEXP (XEXP (x, 0), 0), counts, incr);
       return;
 

@@ -896,7 +896,7 @@ make_decl_rtl (tree decl, const char *asmspec)
 void
 make_var_volatile (tree var)
 {
-  if (GET_CODE (DECL_RTL (var)) != MEM)
+  if (!MEM_P (DECL_RTL (var)))
     abort ();
 
   MEM_VOLATILE_P (DECL_RTL (var)) = 1;
@@ -1059,7 +1059,7 @@ notice_global_symbol (tree decl)
 	      || (DECL_COMMON (decl)
 		  && (DECL_INITIAL (decl) == 0
 		      || DECL_INITIAL (decl) == error_mark_node))))
-      || GET_CODE (DECL_RTL (decl)) != MEM)
+      || !MEM_P (DECL_RTL (decl)))
     return;
 
   /* We win when global object is found, but it is useful to know about weak
@@ -1652,7 +1652,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
     {
       rtx rtl = DECL_RTL (decl);
 
-      if (GET_CODE (rtl) == MEM && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
+      if (MEM_P (rtl) && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
 	  && !SYMBOL_REF_USED (XEXP (rtl, 0))
 	  && !incorporeal_function_p (decl))
 	{
@@ -2039,7 +2039,7 @@ decode_addr_const (tree exp, struct addr_const *value)
       abort ();
     }
 
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     abort ();
   x = XEXP (x, 0);
 
@@ -4029,7 +4029,7 @@ mark_weak (tree decl)
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)
-      && GET_CODE (DECL_RTL (decl)) == MEM
+      && MEM_P (DECL_RTL (decl))
       && XEXP (DECL_RTL (decl), 0)
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF)
     SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = 1;
@@ -4893,7 +4893,7 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   int flags;
 
   /* Careful not to prod global register variables.  */
-  if (GET_CODE (rtl) != MEM)
+  if (!MEM_P (rtl))
     return;
   symbol = XEXP (rtl, 0);
   if (GET_CODE (symbol) != SYMBOL_REF)

@@ -51,7 +51,7 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 	abort ();
       return result;
     }
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     {
       /* The only additional case we can do is MEM.  */
       int offset = 0;

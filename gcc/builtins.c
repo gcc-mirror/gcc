@@ -965,7 +965,7 @@ expand_builtin_prefetch (tree arglist)
     op0 = protect_from_queue (op0, 0);
   /* Don't do anything with direct references to volatile memory, but
      generate code to handle other side effects.  */
-  if (GET_CODE (op0) != MEM && side_effects_p (op0))
+  if (!MEM_P (op0) && side_effects_p (op0))
     emit_insn (op0);
 }
 
@@ -5329,7 +5329,7 @@ expand_builtin_profile_func (bool exitp)
   rtx this, which;
 
   this = DECL_RTL (current_function_decl);
-  if (GET_CODE (this) == MEM)
+  if (MEM_P (this))
     this = XEXP (this, 0);
   else
     abort ();
@@ -5836,7 +5836,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_AGGREGATE_INCOMING_ADDRESS:
       if (arglist != 0
 	  || ! AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl)))
-	  || GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) != MEM)
+	  || !MEM_P (DECL_RTL (DECL_RESULT (current_function_decl))))
 	return const0_rtx;
       else
 	return XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);

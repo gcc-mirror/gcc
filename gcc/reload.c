@@ -862,7 +862,7 @@ can_reload_into (rtx in, int regno, enum machine_mode mode)
      that are already scheduled, which can become quite complicated.
      And since we've already handled address reloads for this MEM, it
      should always succeed anyway.  */
-  if (GET_CODE (in) == MEM)
+  if (MEM_P (in))
     return 1;
 
   /* If we can make a simple SET insn that does the job, everything should
@@ -961,7 +961,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 
   /* If we have a read-write operand with an address side-effect,
      change either IN or OUT so the side-effect happens only once.  */
-  if (in != 0 && out != 0 && GET_CODE (in) == MEM && rtx_equal_p (in, out))
+  if (in != 0 && out != 0 && MEM_P (in) && rtx_equal_p (in, out))
     switch (GET_CODE (XEXP (in, 0)))
       {
       case POST_INC: case POST_DEC:   case POST_MODIFY:
@@ -1016,7 +1016,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || strict_low
 	  || (((REG_P (SUBREG_REG (in))
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
-	       || GET_CODE (SUBREG_REG (in)) == MEM)
+	       || MEM_P (SUBREG_REG (in)))
 	      && ((GET_MODE_SIZE (inmode)
 		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
 #ifdef LOAD_EXTEND_OP
@@ -1068,7 +1068,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
       inloc = &SUBREG_REG (in);
       in = *inloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
-      if (GET_CODE (in) == MEM)
+      if (MEM_P (in))
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	if (GET_MODE_SIZE (GET_MODE (in)) > GET_MODE_SIZE (inmode))
@@ -1125,7 +1125,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || strict_low
 	  || (((REG_P (SUBREG_REG (out))
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
-	       || GET_CODE (SUBREG_REG (out)) == MEM)
+	       || MEM_P (SUBREG_REG (out)))
 	      && ((GET_MODE_SIZE (outmode)
 		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
 #ifdef WORD_REGISTER_OPERATIONS
@@ -1166,7 +1166,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
       outloc = &SUBREG_REG (out);
       out = *outloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
-      if (GET_CODE (out) == MEM
+      if (MEM_P (out)
 	  && GET_MODE_SIZE (GET_MODE (out)) > GET_MODE_SIZE (outmode))
 	abort ();
 #endif
@@ -1201,8 +1201,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
     }
 
   /* If IN appears in OUT, we can't share any input-only reload for IN.  */
-  if (in != 0 && out != 0 && GET_CODE (out) == MEM
-      && (REG_P (in) || GET_CODE (in) == MEM)
+  if (in != 0 && out != 0 && MEM_P (out)
+      && (REG_P (in) || MEM_P (in))
       && reg_overlap_mentioned_for_reload_p (in, XEXP (out, 0)))
     dont_share = 1;
 
@@ -2268,7 +2268,7 @@ decompose (rtx x)
 
   memset (&val, 0, sizeof (val));
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     {
       rtx base = NULL_RTX, offset = 0;
       rtx addr = XEXP (x, 0);
@@ -2407,10 +2407,10 @@ immune_p (rtx x, rtx y, struct decomposition ydata)
   if (ydata.safe)
     return 1;
 
-  if (GET_CODE (y) != MEM)
+  if (!MEM_P (y))
     abort ();
   /* If Y is memory and X is not, Y can't affect X.  */
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     return 1;
 
   xdata = decompose (x);
@@ -2761,7 +2761,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	     wider reload.  */
 
 	  if (replace
-	      && GET_CODE (op) == MEM
+	      && MEM_P (op)
 	      && REG_P (reg)
 	      && (GET_MODE_SIZE (GET_MODE (reg))
 		  >= GET_MODE_SIZE (GET_MODE (op))))
@@ -2955,7 +2955,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		     ??? When is it right at this stage to have a subreg
 		     of a mem that is _not_ to be handled specially?  IMO
 		     those should have been reduced to just a mem.  */
-		  || ((GET_CODE (operand) == MEM
+		  || ((MEM_P (operand)
 		       || (REG_P (operand)
 			   && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
 #ifndef WORD_REGISTER_OPERATIONS
@@ -3066,7 +3066,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		       offsettable address was expected, then we must reject
 		       this combination, because we can't reload it.  */
 		    if (this_alternative_offmemok[m]
-			&& GET_CODE (recog_data.operand[m]) == MEM
+			&& MEM_P (recog_data.operand[m])
 			&& this_alternative[m] == (int) NO_REGS
 			&& ! this_alternative_win[m])
 		      bad = 1;
@@ -3125,7 +3125,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      case 'm':
 		if (force_reload)
 		  break;
-		if (GET_CODE (operand) == MEM
+		if (MEM_P (operand)
 		    || (REG_P (operand)
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0))
@@ -3136,7 +3136,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		break;
 
 	      case '<':
-		if (GET_CODE (operand) == MEM
+		if (MEM_P (operand)
 		    && ! address_reloaded[i]
 		    && (GET_CODE (XEXP (operand, 0)) == PRE_DEC
 			|| GET_CODE (XEXP (operand, 0)) == POST_DEC))
@@ -3144,7 +3144,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		break;
 
 	      case '>':
-		if (GET_CODE (operand) == MEM
+		if (MEM_P (operand)
 		    && ! address_reloaded[i]
 		    && (GET_CODE (XEXP (operand, 0)) == PRE_INC
 			|| GET_CODE (XEXP (operand, 0)) == POST_INC))
@@ -3155,7 +3155,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      case 'V':
 		if (force_reload)
 		  break;
-		if (GET_CODE (operand) == MEM
+		if (MEM_P (operand)
 		    && ! (ind_levels ? offsettable_memref_p (operand)
 			  : offsettable_nonstrict_memref_p (operand))
 		    /* Certain mem addresses will become offsettable
@@ -3172,7 +3172,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      case 'o':
 		if (force_reload)
 		  break;
-		if ((GET_CODE (operand) == MEM
+		if ((MEM_P (operand)
 		     /* If IND_LEVELS, find_reloads_address won't reload a
 			pseudo that didn't get a hard reg, so we have to
 			reject that case.  */
@@ -3193,7 +3193,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			    || (reg_equiv_address[REGNO (operand)] != 0))))
 		  win = 1;
 		if (CONST_POOL_OK_P (operand)
-		    || GET_CODE (operand) == MEM)
+		    || MEM_P (operand))
 		  badop = 0;
 		constmemok = 1;
 		offmemok = 1;
@@ -3295,7 +3295,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		          win = 1;
 			/* If the address was already reloaded,
 			   we win as well.  */
-			else if (GET_CODE (operand) == MEM
+			else if (MEM_P (operand)
 				 && address_reloaded[i])
 			  win = 1;
 			/* Likewise if the address will be reloaded because
@@ -3313,7 +3313,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			   constants via force_const_mem, and other
 			   MEMs by reloading the address like for 'o'.  */
 			if (CONST_POOL_OK_P (operand)
-			    || GET_CODE (operand) == MEM)
+			    || MEM_P (operand))
 			  badop = 0;
 			constmemok = 1;
 			offmemok = 1;
@@ -3513,7 +3513,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	    for (j = 0; j < noperands; j++)
 	      /* Is this an input operand or a memory ref?  */
-	      if ((GET_CODE (recog_data.operand[j]) == MEM
+	      if ((MEM_P (recog_data.operand[j])
 		   || modified[j] != RELOAD_WRITE)
 		  && j != i
 		  /* Ignore things like match_operator operands.  */
@@ -3801,7 +3801,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	   so we don't bother with it.  It may not be worth doing.  */
 	else if (goal_alternative_matched[i] == -1
 		 && goal_alternative_offmemok[i]
-		 && GET_CODE (recog_data.operand[i]) == MEM)
+		 && MEM_P (recog_data.operand[i]))
 	  {
 	    operand_reloadnum[i]
 	      = push_reload (XEXP (recog_data.operand[i], 0), NULL_RTX,
@@ -3907,7 +3907,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	while (GET_CODE (operand) == SUBREG)
 	  operand = SUBREG_REG (operand);
-	if ((GET_CODE (operand) == MEM
+	if ((MEM_P (operand)
 	     || (REG_P (operand)
 		 && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
 	    /* If this is only for an output, the optional reload would not
@@ -3948,7 +3948,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	   we then need to emit a USE and/or a CLOBBER so that reload
 	   inheritance will do the right thing.  */
 	else if (replace
-		 && (GET_CODE (operand) == MEM
+		 && (MEM_P (operand)
 		     || (REG_P (operand)
 			 && REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			 && reg_renumber [REGNO (operand)] < 0)))
@@ -3984,7 +3984,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	while (GET_CODE (operand) == SUBREG)
 	  operand = SUBREG_REG (operand);
-	if ((GET_CODE (operand) == MEM
+	if ((MEM_P (operand)
 	     || (REG_P (operand)
 		 && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
 	    && ((enum reg_class) goal_alternative[goal_alternative_matches[i]]
@@ -4796,7 +4796,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
      frame and stack pointers is not its initial value.  In that case the
      pseudo will have been replaced by a MEM referring to the
      stack pointer.  */
-  if (GET_CODE (ad) == MEM)
+  if (MEM_P (ad))
     {
       /* First ensure that the address in this MEM is valid.  Then, unless
 	 indirect addresses are valid, reload the MEM into a register.  */
@@ -4822,7 +4822,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 
       if (ind_levels == 0
 	  || (GET_CODE (XEXP (tem, 0)) == SYMBOL_REF && ! indirect_symref_ok)
-	  || GET_CODE (XEXP (tem, 0)) == MEM
+	  || MEM_P (XEXP (tem, 0))
 	  || ! (REG_P (XEXP (tem, 0))
 		|| (GET_CODE (XEXP (tem, 0)) == PLUS
 		    && REG_P (XEXP (XEXP (tem, 0), 0))
@@ -5524,7 +5524,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 		 memory location, since this will make it harder to
 		 reuse address reloads, and increases register pressure.
 		 Also don't do this if we can probably update x directly.  */
-	      rtx equiv = (GET_CODE (XEXP (x, 0)) == MEM
+	      rtx equiv = (MEM_P (XEXP (x, 0))
 			   ? XEXP (x, 0)
 			   : reg_equiv_mem[regno]);
 	      int icode = (int) add_optab->handlers[(int) Pmode].insn_code;
@@ -5573,7 +5573,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	  return value;
 	}
 
-      else if (GET_CODE (XEXP (x, 0)) == MEM)
+      else if (MEM_P (XEXP (x, 0)))
 	{
 	  /* This is probably the result of a substitution, by eliminate_regs,
 	     of an equivalent address for a pseudo that was not allocated to a
@@ -6311,7 +6311,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	  abort ();
 	}
     }
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     return refers_to_mem_for_reload_p (in);
   else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
 	   || GET_CODE (x) == CC0)
@@ -6323,7 +6323,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	 (plus (sp) (const_int 64)), since that can lead to incorrect reload
 	 allocation when spuriously changing a RELOAD_FOR_OUTPUT_ADDRESS
 	 into a RELOAD_OTHER on behalf of another RELOAD_OTHER.  */
-      while (GET_CODE (in) == MEM)
+      while (MEM_P (in))
 	in = XEXP (in, 0);
       if (REG_P (in))
 	return 0;
@@ -6351,7 +6351,7 @@ refers_to_mem_for_reload_p (rtx x)
   const char *fmt;
   int i;
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     return 1;
 
   if (REG_P (x))
@@ -6361,7 +6361,7 @@ refers_to_mem_for_reload_p (rtx x)
   fmt = GET_RTX_FORMAT (GET_CODE (x));
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     if (fmt[i] == 'e'
-	&& (GET_CODE (XEXP (x, i)) == MEM
+	&& (MEM_P (XEXP (x, i))
 	    || refers_to_mem_for_reload_p (XEXP (x, i))))
       return 1;
 
@@ -6416,7 +6416,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
     regno = goalreg;
   else if (REG_P (goal))
     regno = REGNO (goal);
-  else if (GET_CODE (goal) == MEM)
+  else if (MEM_P (goal))
     {
       enum rtx_code code = GET_CODE (XEXP (goal, 0));
       if (MEM_VOLATILE_P (goal))
@@ -6719,10 +6719,10 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 		  if (xregno == STACK_POINTER_REGNUM && need_stable_sp)
 		    return 0;
 		}
-	      else if (goal_mem && GET_CODE (dest) == MEM
+	      else if (goal_mem && MEM_P (dest)
 		       && ! push_operand (dest, GET_MODE (dest)))
 		return 0;
-	      else if (GET_CODE (dest) == MEM && regno >= FIRST_PSEUDO_REGISTER
+	      else if (MEM_P (dest) && regno >= FIRST_PSEUDO_REGISTER
 		       && reg_equiv_memory_loc[regno] != 0)
 		return 0;
 	      else if (need_stable_sp && push_operand (dest, GET_MODE (dest)))
@@ -6765,10 +6765,10 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 			  if (xregno == STACK_POINTER_REGNUM && need_stable_sp)
 			    return 0;
 			}
-		      else if (goal_mem && GET_CODE (dest) == MEM
+		      else if (goal_mem && MEM_P (dest)
 			       && ! push_operand (dest, GET_MODE (dest)))
 			return 0;
-		      else if (GET_CODE (dest) == MEM && regno >= FIRST_PSEUDO_REGISTER
+		      else if (MEM_P (dest) && regno >= FIRST_PSEUDO_REGISTER
 			       && reg_equiv_memory_loc[regno] != 0)
 			return 0;
 		      else if (need_stable_sp
@@ -6808,7 +6808,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 			    return 0;
 			}
 
-		      else if (goal_mem && GET_CODE (dest) == MEM
+		      else if (goal_mem && MEM_P (dest)
 			       && ! push_operand (dest, GET_MODE (dest)))
 			return 0;
 		      else if (need_stable_sp

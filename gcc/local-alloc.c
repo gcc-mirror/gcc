@@ -450,7 +450,7 @@ validate_equiv_mem_from_store (rtx dest, rtx set ATTRIBUTE_UNUSED,
 {
   if ((REG_P (dest)
        && reg_overlap_mentioned_p (dest, equiv_mem))
-      || (GET_CODE (dest) == MEM
+      || (MEM_P (dest)
 	  && true_dependence (dest, VOIDmode, equiv_mem, rtx_varies_p)))
     equiv_mem_modified = 1;
 }
@@ -711,7 +711,7 @@ memref_referenced_p (rtx memref, rtx x)
     case SET:
       /* If we are setting a MEM, it doesn't count (its address does), but any
 	 other SET_DEST that has a MEM in it is referencing the MEM.  */
-      if (GET_CODE (SET_DEST (x)) == MEM)
+      if (MEM_P (SET_DEST (x)))
 	{
 	  if (memref_referenced_p (memref, XEXP (SET_DEST (x), 0)))
 	    return 1;
@@ -882,7 +882,7 @@ update_equiv_regs (void)
 	      || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
 	      || reg_equiv[regno].init_insns == const0_rtx
 	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
-		  && GET_CODE (src) == MEM))
+		  && MEM_P (src)))
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
@@ -940,7 +940,7 @@ update_equiv_regs (void)
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
 	  if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
-	      && GET_CODE (SET_SRC (set)) == MEM
+	      && MEM_P (SET_SRC (set))
 	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
 	    REG_NOTES (insn) = note = gen_rtx_EXPR_LIST (REG_EQUIV, SET_SRC (set),
 							 REG_NOTES (insn));
