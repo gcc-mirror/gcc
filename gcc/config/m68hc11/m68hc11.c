@@ -2670,38 +2670,46 @@ m68hc11_expand_compare_and_branch (code, op0, op1, label)
   return 0;
 }
 
-/* Return 1 if the TO and FROM operands contain compatible address
-   increment and decrement modes for a split_move.  One of the two
-   operands must not use an autoinc mode or both must go in the
-   same direction.  */
+/* Return the increment/decrement mode of a MEM if it is such.
+   Return CONST if it is anything else.  */
 static int
-m68hc11_autoinc_compatible_p (to, from)
-     rtx to, from;
+autoinc_mode (x)
+     rtx x;
 {
-  enum { INCOP, DECOP } type_to, type_from;
+  if (GET_CODE (x) != MEM)
+    return CONST;
 
-  /* If one of them is not a MEM, it is ok.  */
-  if (GET_CODE (to) != MEM || GET_CODE (from) != MEM)
-    return 1;
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == PRE_INC
+      || GET_CODE (x) == PRE_DEC
+      || GET_CODE (x) == POST_INC
+      || GET_CODE (x) == POST_DEC)
+    return GET_CODE (x);
 
-  to = XEXP (to, 0);
-  from = XEXP (from, 0);
+  return CONST;
+}
 
-  if (GET_CODE (to) == PRE_INC || GET_CODE (to) == POST_INC)
-    type_to = INCOP;
-  else if (GET_CODE (to) == PRE_DEC || GET_CODE (to) == POST_DEC)
-    type_to = DECOP;
-  else
-    return 1;
+static int
+m68hc11_make_autoinc_notes (x, data)
+     rtx *x;
+     void *data;
+{
+  rtx insn;
   
-  if (GET_CODE (from) == PRE_INC || GET_CODE (from) == POST_INC)
-    type_from = INCOP;
-  else if (GET_CODE (from) == PRE_DEC || GET_CODE (from) == POST_DEC)
-    type_from = DECOP;
-  else
-    return 1;
+  switch (GET_CODE (*x))
+    {
+    case PRE_DEC:
+    case PRE_INC:
+    case POST_DEC:
+    case POST_INC:
+      insn = (rtx) data;
+      REG_NOTES (insn) = alloc_EXPR_LIST (REG_INC, XEXP (*x, 0),
+                                          REG_NOTES (insn));
+      return -1;
 
-  return type_to == type_from;
+    default:
+      return 0;
+    }
 }
 
 /* Split a DI, SI or HI move into several smaller move operations.
@@ -2713,40 +2721,115 @@ m68hc11_split_move (to, from, scratch)
 {
   rtx low_to, low_from;
   rtx high_to, high_from;
+  rtx insn;
   enum machine_mode mode;
   int offset = 0;
+  int autoinc_from = autoinc_mode (from);
+  int autoinc_to = autoinc_mode (to);
 
   mode = GET_MODE (to);
+
+  /* If the TO and FROM contain autoinc modes that are not compatible
+     together (one pop and the other a push), we must change one to
+     an offsetable operand and generate an appropriate add at the end.  */
+  if (TARGET_M6812 && GET_MODE_SIZE (mode) > 2)
+    {
+      rtx reg;
+      int code;
+
+      /* The source uses an autoinc mode which is not compatible with
+         a split (this would result in a word swap).  */
+      if (autoinc_from == PRE_INC || autoinc_from == POST_DEC)
+        {
+          code = GET_CODE (XEXP (from, 0));
+          reg = XEXP (XEXP (from, 0), 0);
+          offset = GET_MODE_SIZE (GET_MODE (from));
+          if (code == POST_DEC)
+            offset = -offset;
+
+          if (code == PRE_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+
+          m68hc11_split_move (to, gen_rtx_MEM (GET_MODE (from), reg), scratch);
+          if (code == POST_DEC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+          return;
+        }
+
+      /* Likewise for destination.  */
+      if (autoinc_to == PRE_INC || autoinc_to == POST_DEC)
+        {
+          code = GET_CODE (XEXP (to, 0));
+          reg = XEXP (XEXP (to, 0), 0);
+          offset = GET_MODE_SIZE (GET_MODE (to));
+          if (code == POST_DEC)
+            offset = -offset;
+
+          if (code == PRE_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+
+          m68hc11_split_move (gen_rtx_MEM (GET_MODE (to), reg), from, scratch);
+          if (code == POST_DEC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+          return;
+        }
+
+      /* The source and destination auto increment modes must be compatible
+         with each other: same direction.  */
+      if ((autoinc_to != autoinc_from
+           && autoinc_to != CONST && autoinc_from != CONST)
+          /* The destination address register must not be used within
+             the source operand because the source address would change
+             while doing the copy.  */
+          || (autoinc_to != CONST
+              && reg_mentioned_p (XEXP (XEXP (to, 0), 0), from)
+              && !IS_STACK_PUSH (to)))
+        {
+          /* Must change the destination.  */
+          code = GET_CODE (XEXP (to, 0));
+          reg = XEXP (XEXP (to, 0), 0);
+          offset = GET_MODE_SIZE (GET_MODE (to));
+          if (code == PRE_DEC || code == POST_DEC)
+            offset = -offset;
+
+          if (code == PRE_DEC || code == PRE_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+          m68hc11_split_move (gen_rtx_MEM (GET_MODE (to), reg), from, scratch);
+          if (code == POST_DEC || code == POST_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+
+          return;
+        }
+
+      /* Likewise, the source address register must not be used within
+         the destination operand.  */
+      if (autoinc_from != CONST
+          && reg_mentioned_p (XEXP (XEXP (from, 0), 0), to)
+          && !IS_STACK_PUSH (to))
+        {
+          /* Must change the source.  */
+          code = GET_CODE (XEXP (from, 0));
+          reg = XEXP (XEXP (from, 0), 0);
+          offset = GET_MODE_SIZE (GET_MODE (from));
+          if (code == PRE_DEC || code == POST_DEC)
+            offset = -offset;
+
+          if (code == PRE_DEC || code == PRE_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+          m68hc11_split_move (to, gen_rtx_MEM (GET_MODE (from), reg), scratch);
+          if (code == POST_DEC || code == POST_INC)
+            emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+
+          return;
+        }
+    }
+
   if (GET_MODE_SIZE (mode) == 8)
     mode = SImode;
   else if (GET_MODE_SIZE (mode) == 4)
     mode = HImode;
   else
     mode = QImode;
-
-  /* If the TO and FROM contain autoinc modes that are not compatible
-     together (one pop and the other a push), we must change one to
-     an offsetable operand and generate an appropriate add at the end.  */
-  if (TARGET_M6812 && m68hc11_autoinc_compatible_p (to, from) == 0)
-    {
-      rtx reg;
-      int code;
-
-      /* Decide to change the source.  */
-      code = GET_CODE (XEXP (from, 0));
-      reg = XEXP (XEXP (from, 0), 0);
-      offset = GET_MODE_SIZE (GET_MODE (from));
-      if (code == PRE_DEC || code == POST_DEC)
-        offset = -offset;
-
-      if (code == PRE_DEC || code == PRE_INC)
-        emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
-      m68hc11_split_move (to, gen_rtx_MEM (GET_MODE (from), reg), scratch);
-      if (code == POST_DEC || code == POST_INC)
-        emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
-
-      return;
-    }
 
   if (TARGET_M6812
       && IS_STACK_PUSH (to)
@@ -2783,6 +2866,25 @@ m68hc11_split_move (to, from, scratch)
       high_from = adjust_address (high_from, mode, offset);
       low_from = high_from;
     }
+
+  /* When copying with a POST_INC mode, we must copy the
+     high part and then the low part to guarantee a correct
+     32/64-bit copy.  */
+  if (TARGET_M6812
+      && GET_MODE_SIZE (mode) >= 2
+      && autoinc_from != autoinc_to
+      && (autoinc_from == POST_INC || autoinc_to == POST_INC))
+    {
+      rtx swap;
+
+      swap = low_to;
+      low_to = high_to;
+      high_to = swap;
+
+      swap = low_from;
+      low_from = high_from;
+      high_from = swap;
+    }
   if (mode == SImode)
     {
       m68hc11_split_move (low_to, low_from, scratch);
@@ -2800,18 +2902,23 @@ m68hc11_split_move (to, from, scratch)
 	       && (!m68hc11_register_indirect_p (to, GET_MODE (to))
 		   || m68hc11_small_indexed_indirect_p (to, GET_MODE (to)))))
     {
-      emit_move_insn (low_to, low_from);
-      emit_move_insn (high_to, high_from);
+      insn = emit_move_insn (low_to, low_from);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
+
+      insn = emit_move_insn (high_to, high_from);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
     }
   else
     {
-      rtx insn;
-
-      emit_move_insn (scratch, low_from);
+      insn = emit_move_insn (scratch, low_from);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
       insn = emit_move_insn (low_to, scratch);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
 
-      emit_move_insn (scratch, high_from);
+      insn = emit_move_insn (scratch, high_from);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
       insn = emit_move_insn (high_to, scratch);
+      for_each_rtx (&PATTERN (insn), m68hc11_make_autoinc_notes, insn);
     }
 }
 
