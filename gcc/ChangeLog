@@ -1,3 +1,82 @@
+2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/altivec.md (VIshort): New mode macro.
+	(altivec_vaddubs, altivec_vadduhs, altivec_vadduws): Replace
+	with ...
+	(altivec_vaddu<VI_char>s): ... this.
+	(altivec_vaddsbs, altivec_vaddshs, altivec_vaddsws): Replace
+	with ...
+	(altivec_vadds<VI_char>s): ... this.
+	(altivec_vsububs, altivec_vsubuhs, altivec_vsubuws): Replace
+	with ...
+	(altivec_vsubu<VI_char>s): ... this.
+	(altivec_vsubsbs, altivec_vsubshs, altivec_vsubsws): Replace
+	with ...
+	(altivec_vsubs<VI_char>s): ... this.
+	(altivec_vavgub, altivec_vavguh, altivec_vavguw): Replace
+	with ...
+	(altivec_vavgu<VI_char>): ... this.
+	(altivec_vavgsb, altivec_vavgsh, altivec_vavgsw): Replace
+	with ...
+	(altivec_vavgs<VI_char>): ... this.
+	(altivec_vmsumubm, altivec_vmsumuhm): Replace with ...
+	(altivec_vmsumu<VI_char>m): ... this.
+	(altivec_vmsummbm, altivec_vmsummhm): Replace
+	with ...
+	(altivec_vmsumm<VI_char>m): ... this.
+	(altivec_vandc): Remove.
+	(*andc<mode>3): Renamed to ...
+	(andc<mode>3): ... here. Swap operand 1 and 2 numbering.
+	(altivec_vrlb, altivec_vrlh, altivec_vrlw): Replace
+	with ...
+	(altivec_vrl<VI_char>): ... this.
+	(altivec_vslb, altivec_vslh, altivec_vslw): Replace
+	with ...
+	(altivec_vsl<VI_char>): ... this.
+	(altivec_vsrb, altivec_vsrh, altivec_vsrw): Replace
+	with ...
+	(altivec_vsr<VI_char>): ... this.
+	(altivec_vsrab, altivec_vsrah, altivec_vsraw): Replace
+	with ...
+	(altivec_vsra<VI_char>): ... this.
+	(altivec_vsum4sbs, altivec_vsum4shs): Replace with ...
+	(altivec_vsum4s<VI_char>s): ... this.
+	(altivec_vperm_4si, altivec_vperm_8hi, altivec_vperm_16qi): Replace
+	with ...
+	(altivec_vperm_<mode>): ... this.
+	(altivec_vsel_4sf): Rename to ...
+	(altivec_vsel_v4sf): ... here.
+	(altivec_vsel_4si, altivec_vsel_8hi, altivec_vsel_16qi): Replace
+	with ...
+	(altivec_vsel_<mode>): ... this.
+	(altivec_vsldoi_4si, altivec_vsldoi_8hi,
+	altivec_vsldoi_16qi): Rename to ...
+	(altivec_vsldoi_v4si, altivec_vsldoi_v8hi,
+	altivec_vsldoi_v16qi): ... here.
+	(altivec_vsldoi_4sf): Rename to ...
+	(altivec_vsldoi_v4sf): ... here.
+	(altivec_predicate_v4si, altivec_predicate_v8hi,
+	altivec_predicate_v16qi): Replace with ...
+	(altivec_predicate_<mode>): ... this.
+	(altivec_lvebx, altivec_lvehx, altivec_lvewx): Replace
+	with ...
+	(altivec_lve<VI_char>x): ... this.
+	(altivec_stvebx, altivec_stvehx, altivec_stvewx): Replace
+	with ...
+	(altivec_stve<VI_char>x): ... this.
+	(absv16qi2, absv8hi2, absv4si2): Replace
+	with ...
+	(abs<mode>2): ... this.
+	(altivec_abss_v16qi, altivec_abss_v8hi, altivec_abss_v4si): Replace
+	with ...
+	(altivec_abss_<mode>): ... this.
+	(vec_realign_load_v16qi, vec_realign_load_v8hi,
+	vec_realign_load_v4si): Replace with ...
+	(vec_realign_load_<mode>): ... this.
+	* config/rs6000/rs6000.c (bdesc_3arg, bdesc_2arg): Update tweaked
+	insn names.
+	(rs6000_expand_ternop_builtin): Likewise.
+
 2004-11-25  Andrew Haley  <aph@redhat.com>
 
 	* gcc.c (process_command): Don't supply -v to linker.
@@ -796,6 +875,7 @@
 
 2004-11-22  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR target/18531
 	* config/rs6000/altivec.md (VI_char): New mode attribute.
 	(addv16qi3, addv8hi3, addv4ai3): Replace with ...
 	(add<mode>3): ... this.
