@@ -44,9 +44,9 @@ typedef struct sstring
 struct partial_proto;
 struct fn_decl
 {
-  char *fname;
-  char *rtype;
-  char *params;
+  const char *fname;
+  const char *rtype;
+  const char *params;
   struct partial_proto *partial;
 };
 

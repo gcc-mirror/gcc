@@ -261,7 +261,7 @@ static int find_free_reg	PROTO((enum reg_class, enum machine_mode,
 static void mark_life		PROTO((int, enum machine_mode, int));
 static void post_mark_life	PROTO((int, enum machine_mode, int, int, int));
 static int no_conflict_p	PROTO((rtx, rtx, rtx));
-static int requires_inout	PROTO((char *));
+static int requires_inout	PROTO((const char *));
 
 /* Allocate a new quantity (new within current basic block)
    for register number REGNO which is born at index BIRTH
@@ -1105,7 +1105,7 @@ block_alloc (b)
 
 	      for (i = 1; i < recog_n_operands; i++)
 		{
-		  char *p = recog_constraints[i];
+		  const char *p = recog_constraints[i];
 		  int this_match = (requires_inout (p));
 
 		  n_matching_alts += this_match;
@@ -2177,7 +2177,7 @@ no_conflict_p (insn, r0, r1)
 
 static int
 requires_inout (p)
-     char *p;
+  const char *p;
 {
   char c;
   int found_zero = 0;

@@ -1405,7 +1405,8 @@ find_matches (insn, matchp)
 
   for (op_no = 0; op_no < recog_n_operands; op_no++)
     {
-      char *p, c;
+      const char *p;
+      char c;
       int i = 0;
 
       p = recog_constraints[op_no];

@@ -1,3 +1,38 @@
+Sat Jan 23 22:34:57 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* final.c (bb_str): Qualify a char* with the keyword `const'.
+	(add_bb_string, final_scan_insn, output_asm_insn): Likewise.
+
+	* fix-header.c (read_scan_file): Likewise.
+
+	* genoutput.c (output_epilogue, process_template): Likewise.
+	
+	* local-alloc.c (requires_inout, block_alloc): Likewise.
+
+	* output.h (output_asm_insn, assemble_string): Likewise.
+
+	* recog.c (recog_constraints, check_asm_operands,
+	decode_asm_operands, extract_insn, preprocess_constraints,
+	constrain_operands): Likewise.
+
+	* recog.h (operand_alternative, recog_constraints, insn_template,
+	insn_outfun, insn_operand_constraint, insn_name): Likewise.
+
+	* regclass.c (record_reg_classes, scan_one_insn): Likewise.
+
+	* regmove.c (find_matches): Likewise.
+
+	* reload.c (alternative_allows_memconst): Likewise.
+
+	* reload1.c (constraint_accepts_reg_p,
+	reload_cse_simplify_operands): Likewise.
+
+	* rtl.h (decode_asm_operands): Likewise.
+
+	* scan.h (fn_decl): Likewise.
+
+	* varasm.c (assemble_string): Likewise.
+
 Sat Jan 23 01:37:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (gcc_tooldir): Handle case where exec_prefix has

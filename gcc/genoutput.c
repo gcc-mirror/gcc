@@ -233,7 +233,7 @@ output_epilogue ()
 {
   register struct data *d;
 
-  printf ("\nchar * const insn_template[] =\n  {\n");
+  printf ("\nconst char * const insn_template[] =\n  {\n");
   for (d = insn_data; d; d = d->next)
     {
       if (d->template)
@@ -243,7 +243,7 @@ output_epilogue ()
     }
   printf ("  };\n");
 
-  printf ("\nchar *(*const insn_outfun[])() =\n  {\n");
+  printf ("\nconst char *(*const insn_outfun[])() =\n  {\n");
   for (d = insn_data; d; d = d->next)
     {
       if (d->outfun)
@@ -263,7 +263,7 @@ output_epilogue ()
     }
   printf ("  };\n");
 
-  printf ("\nchar *insn_name[] =\n  {\n");
+  printf ("\nconst char *insn_name[] =\n  {\n");
   {
     int offset = 0;
     int next;
@@ -304,7 +304,7 @@ output_epilogue ()
       }
   }
   printf ("  };\n");
-  printf ("char **insn_name_ptr = insn_name;\n");
+  printf ("const char **insn_name_ptr = insn_name;\n");
 
   printf ("\nconst int insn_n_operands[] =\n  {\n");
   for (d = insn_data; d; d = d->next)
@@ -318,7 +318,7 @@ output_epilogue ()
 
   if (have_constraints)
     {
-      printf ("\nchar *const insn_operand_constraint[][MAX_RECOG_OPERANDS] =\n  {\n");
+      printf ("\nconst char *const insn_operand_constraint[][MAX_RECOG_OPERANDS] =\n  {\n");
       for (d = insn_data; d; d = d->next)
 	{
 	  register int i;
@@ -595,7 +595,7 @@ process_template (d, template)
   d->template = 0;
   d->outfun = 1;
 
-  printf ("\nstatic char *\n");
+  printf ("\nstatic const char *\n");
   printf ("output_%d (operands, insn)\n", d->code_number);
   printf ("     rtx *operands ATTRIBUTE_UNUSED;\n");
   printf ("     rtx insn ATTRIBUTE_UNUSED;\n");
@@ -608,7 +608,7 @@ process_template (d, template)
   if (template[0] == '@')
     {
 
-      printf ("  static /*const*/ char *const strings_%d[] = {\n",
+      printf ("  static const char *const strings_%d[] = {\n",
 	      d->code_number);
 
       for (i = 0, cp = &template[1]; *cp; )

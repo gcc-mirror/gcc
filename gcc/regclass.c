@@ -693,7 +693,7 @@ static int loop_cost;
 
 static rtx scan_one_insn	PROTO((rtx, int));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
-				       char **, rtx));
+				       const char **, rtx));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
 				       enum reg_class, int));
 static void record_address_regs	PROTO((rtx, enum reg_class, int));
@@ -755,7 +755,7 @@ scan_one_insn (insn, pass)
 {
   enum rtx_code code = GET_CODE (insn);
   enum rtx_code pat_code;
-  char *constraints[MAX_RECOG_OPERANDS];
+  const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
   rtx set, note;
   int i, j;
@@ -898,7 +898,7 @@ scan_one_insn (insn, pass)
   for (i = 0; i < recog_n_operands - 1; i++)
     if (constraints[i][0] == '%')
       {
-	char *xconstraints[MAX_RECOG_OPERANDS];
+	const char *xconstraints[MAX_RECOG_OPERANDS];
 	int j;
 
 	/* Handle commutative operands by swapping the constraints.
@@ -1136,7 +1136,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
      int n_ops;
      rtx *ops;
      enum machine_mode *modes;
-     char **constraints;
+     const char **constraints;
      rtx insn;
 {
   int alt;
@@ -1156,7 +1156,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 
       for (i = 0; i < n_ops; i++)
 	{
-	  char *p = constraints[i];
+	  const char *p = constraints[i];
 	  rtx op = ops[i];
 	  enum machine_mode mode = modes[i];
 	  int allows_mem = 0;

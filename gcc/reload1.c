@@ -426,7 +426,7 @@ static void delete_output_reload	PROTO((rtx, int, int));
 static void delete_address_reloads	PROTO((rtx, rtx));
 static void delete_address_reloads_1	PROTO((rtx, rtx, rtx));
 static rtx inc_for_reload		PROTO((rtx, rtx, rtx, int));
-static int constraint_accepts_reg_p	PROTO((char *, rtx));
+static int constraint_accepts_reg_p	PROTO((const char *, rtx));
 static void reload_cse_regs_1		PROTO((rtx));
 static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
 static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
@@ -8238,7 +8238,7 @@ inc_for_reload (reloadreg, in, value, inc_amount)
 
 static int
 constraint_accepts_reg_p (string, reg)
-     char *string;
+     const char *string;
      rtx reg;
 {
   int value = 0;
@@ -9012,7 +9012,7 @@ reload_cse_simplify_operands (insn)
 #ifdef REGISTER_CONSTRAINTS
   int i,j;
 
-  char *constraints[MAX_RECOG_OPERANDS];
+  const char *constraints[MAX_RECOG_OPERANDS];
   
   /* Vector recording how bad an alternative is.  */
   int *alternative_reject;
@@ -9046,7 +9046,7 @@ reload_cse_simplify_operands (insn)
     {
       enum machine_mode mode;
       int regno;
-      char *p;
+      const char *p;
 
       op_alt_regno[i] = (int *) alloca (recog_n_alternatives * sizeof (int));
       for (j = 0; j < recog_n_alternatives; j++)

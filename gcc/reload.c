@@ -324,7 +324,7 @@ static int earlyclobber_operand_p PROTO((rtx));
 static int hard_reg_set_here_p	PROTO((int, int, rtx));
 static struct decomposition decompose PROTO((rtx));
 static int immune_p		PROTO((rtx, rtx, struct decomposition));
-static int alternative_allows_memconst PROTO((char *, int));
+static int alternative_allows_memconst PROTO((const char *, int));
 static rtx find_reloads_toplev	PROTO((rtx, int, enum reload_type, int, int, rtx));
 static rtx make_memloc		PROTO((rtx, int));
 static int find_reloads_address	PROTO((enum machine_mode, rtx *, rtx, rtx *,
@@ -4272,7 +4272,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 static int
 alternative_allows_memconst (constraint, altnum)
-     char *constraint;
+     const char *constraint;
      int altnum;
 {
   register int c;

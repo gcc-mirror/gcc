@@ -692,7 +692,7 @@ read_scan_file (in_fname, argc, argv)
 	  /* Append "_filbuf" and/or "_flsbuf" to the required functions.  */
 	  if (need_filbuf + need_flsbuf)
 	    {
-	      char *new_list;
+	      const char *new_list;
 	      if (need_filbuf)
 		SET_REQUIRED (fn);
 	      if (need_flsbuf)
