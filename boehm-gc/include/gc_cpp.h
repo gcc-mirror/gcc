@@ -255,12 +255,12 @@ inline gc_cleanup::gc_cleanup() {
     GC_finalization_proc oldProc;
     void* oldData;
     void* base = GC_base( (void *) this );
-    if (0 == base) return;
-    GC_REGISTER_FINALIZER_IGNORE_SELF( 
-        base, cleanup, (void*) ((char*) this - (char*) base), 
+    if (0 != base)  {
+      GC_REGISTER_FINALIZER_IGNORE_SELF( 
+        base, (GC_finalization_proc)cleanup, (void*) ((char*) this - (char*) base), 
         &oldProc, &oldData );
-    if (0 != oldProc) {
-        GC_REGISTER_FINALIZER_IGNORE_SELF( base, oldProc, oldData, 0, 0 );}}
+      if (0 != oldProc) {
+        GC_REGISTER_FINALIZER_IGNORE_SELF( base, oldProc, oldData, 0, 0 );}}}
 
 inline void* operator new( 
     size_t size, 
