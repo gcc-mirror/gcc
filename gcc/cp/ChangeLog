@@ -289,23 +289,12 @@ Wed Mar 31 11:30:43 1999  Nathan Sidwell  <nathan@acm.org>
 	* parse.y (declmods, nonempty_cv_qualifiers): Use hash_tree_cons.
 
 Wed Mar 31 10:48:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-<<<<<<< ChangeLog
-
-        * Makefile.in (hash.h): Generate using gperf language 'C', not
-        'KR-C', so gperf uses the `const' keyword on strings.
-	 
-        * gxx.gperf (resword): Const-ify a char*.
-=======
 
 	* Makefile.in (hash.h): Generate using gperf language 'C', not
 	'KR-C', so gperf uses the `const' keyword on strings.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-=======
 	* gxx.gperf (resword): Const-ify a char*.
 
->>>>>>> 1.988
 1999-03-30  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (IDENTIFIER_AS_DESC, IDENTIFIER_AS_LIST,
@@ -7154,29 +7143,15 @@ Fri Mar  6 23:27:35 1998  Jeffrey A Law  (law@cygnus.com)
 	* method.c: Fix typo.
 
 Fri Mar  6 10:06:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-<<<<<<< ChangeLog
-=======
 
 	* method.c: Include "system.h" to get stdlib.h, stdio.h,
 	ctype.h, string.h, etc.
 	(issue_nrepeats): Add default case in enumeration switch.
 	(check_btype): Likewise.
 	(process_overload_item): Likewise.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * method.c: Include "system.h" to get stdlib.h, stdio.h,
-        ctype.h, string.h, etc.
-        (issue_nrepeats): Add default case in enumeration switch.
-        (check_btype): Likewise.
-        (process_overload_item): Likewise.
-	 
-        * Makefile.in (method.o): Depend on system.h.
-
-=======
 	* Makefile.in (method.o): Depend on system.h.
 
->>>>>>> 1.988
 Wed Mar  4 22:26:53 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* lex.c (do_scoped_id): Fix parenthesizing.
@@ -9160,23 +9135,6 @@ Sat Sep 27 16:22:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(notype_qualified_id): Don't add template declarators here.
 
 Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
-<<<<<<< ChangeLog
-
-        * call.c (add_template_candidate): Add explicit_targs parameter.
-        (build_scoped_method_call): Use it.
-        (build_overload_call_real): Likewise.
-        (build_user_type_conversion_1): Likewise.
-        (build_new_function_call): Likewise.
-        (build_object_call): Likewise.
-        (build_new_op): Likewise.
-        (build_new_method_call): Likewise.
-        (build_new_function_call): Handle TEMPLATE_ID_EXPR.
-        (build_new_method_call): Likewise.
-
-        * class.c (finish_struct_methods): Add specialization pass to
-        determine which methods were specializing which other methods.
-        (instantiate_type): Handle TEMPLATE_ID_EXPR.
-=======
 
 	* call.c (add_template_candidate): Add explicit_targs parameter.
 	(build_scoped_method_call): Use it.
@@ -9188,45 +9146,15 @@ Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
 	(build_new_method_call): Likewise.
 	(build_new_function_call): Handle TEMPLATE_ID_EXPR.
 	(build_new_method_call): Likewise.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * cp-tree.def (TEMPLATE_ID_EXPR): New tree code.
-=======
 	* class.c (finish_struct_methods): Add specialization pass to
 	determine which methods were specializing which other methods.
 	(instantiate_type): Handle TEMPLATE_ID_EXPR.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * cp-tree.h (name_mangling_version): New variable.
-=======
 	* cp-tree.def (TEMPLATE_ID_EXPR): New tree code.
 
 	* cp-tree.h (name_mangling_version): New variable.
->>>>>>> 1.988
 	(flag_guiding_decls): Likewise.
-<<<<<<< ChangeLog
-        (build_template_decl_overload): New function.
-        (begin_specialization): Likewise.
-        (reset_specialization): Likewise.
-        (end_specialization): Likewise.
-        (determine_explicit_specialization): Likewise.
-        (check_explicit_specialization): Likewise.
-        (lookup_template_function): Likewise.
-        (fn_type_unification): Add explicit_targs parameter.
-        (type_unification): Likewise.
-
-        * decl.c (duplicate_decls): Add smarts for explicit
-        specializations.
-        (grokdeclarator): Handle TEMPLATE_ID_EXPR, and function
-        specializations.
-        (grokfndecl): Call check_explicit_specialization.
-
-        * decl2.c (lang_decode_option): Handle -fname-mangling-version.
-        (build_expr_from_tree): Handle TEMPLATE_ID_EXPR.
-        (check_classfn): Handle specializations.
-=======
 	(build_template_decl_overload): New function.
 	(begin_specialization): Likewise.
 	(reset_specialization): Likewise.
@@ -9246,99 +9174,20 @@ Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
 	* decl2.c (lang_decode_option): Handle -fname-mangling-version.
 	(build_expr_from_tree): Handle TEMPLATE_ID_EXPR.
 	(check_classfn): Handle specializations.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * error.c (dump_function_name): Print specialization arguments.
-=======
 	* error.c (dump_function_name): Print specialization arguments.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-	* friend.c (do_friend): Don't call pushdecl for template 
-        instantiations. 
-=======
 	* friend.c (do_friend): Don't call pushdecl for template
 	instantiations.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * init.c (build_member_call): Handle TEMPLATE_ID_EXPR.
-
-        * lang-options.h: Add -fname-mangling-version, -fguiding-decls, 
-=======
 	* init.c (build_member_call): Handle TEMPLATE_ID_EXPR.
 
 	* lang-options.h: Add -fname-mangling-version, -fguiding-decls,
->>>>>>> 1.988
 	and -fno-guiding-decls.
-<<<<<<< ChangeLog
-
-        * lex.c (identifier_type): Return PFUNCNAME for template function
-        names.
-=======
 
 	* lex.c (identifier_type): Return PFUNCNAME for template function
 	names.
->>>>>>> 1.988
 
-<<<<<<< ChangeLog
-        * method.c (build_decl_overload_real): New function.
-        (build_template_parm_names): New function.
-        (build_overload_identifier): Use it.
-        (build_underscore_int): New function.
-        (build_overload_int): Use it.  Add levels for template
-        parameters.
-        (build_overload_name): Likewise.  Also, handle TYPENAME_TYPEs.
-        (build_overload_nested_names): Handle template type parameters.
-        (build_template_decl_overload): New function.
-
-        * parse.y (YYSTYPE): New ntype member.
-        (nested_name_specifier): Use it.
-        (nested_name_specifier_1): Likewise.
-        (PFUNCNAME): New token.
-        (template_id, object_template_id): New non-terminals.
-        (template_parm_list): Note specializations.
-        (template_def): Likewise.
-        (structsp): Likewise.
-        (fn.def2): Handle member template specializations.
-        (component_decl_1): Likewise.
-        (direct_notype_declarator): Handle template-ids.
-        (component_decl_1): Likewise.
-        (direct_notype_declarator): Handle template-ids.
-        (primary): Handle TEMPLATE_ID_EXPR, and template-ids.
-
-        * pt.c (processing_specializations): New variable.
-        (template_header_count): Likewise.
-        (type_unification_real): New function.
-        (processing_explicit_specialization): Likewise.
-        (note_template_header): Likewise.
-        (is_member_template): Handle specializations.
-        (end_template_decl): Call reset_specialization.
-        (push_template_decl): Handle member template specializations.
-        (tsubst): Likewise.
-        (tsubst_copy): Handle TEMPLATE_ID_EXPR.
-        (instantiate_template): Handle specializations.
-        (instantiate_decl): Likewise.
-        (fn_type_unification): Handle explicit_targs.
-        (type_unification): Likewise.  Allow incomplete unification
-        without an error message, if allow_incomplete.
-        (get_bindings): Use new calling sequence for fn_type_unification.
-
-        * spew.c (yylex): Handle PFUNCNAME.
-
-        * tree.c (is_overloaded_fn): Handle TEMPLATE_ID_EXPR.
-        (really_overloaded_fn): Likewise.
-        (get_first_fn): Handle function templates.
-
-        * typeck.c (build_x_function_call): Use really_overloaded_fn.
-        Handle TEMPLATE_ID_EXPR.
-        (build_x_unary_op): Likewise.
-        (build_unary_op): Likewise.
-        (mark_addressable): Templates whose address is taken are marked  
-        as used. 
-
-=======
 	* method.c (build_decl_overload_real): New function.
 	(build_template_parm_names): New function.
 	(build_overload_identifier): Use it.
@@ -9394,7 +9243,6 @@ Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
 	(mark_addressable): Templates whose address is taken are marked
 	as used.
 
->>>>>>> 1.988
 1997-09-25  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* decl.c (init_decl_processing): Declare __builtin_constant_p as
