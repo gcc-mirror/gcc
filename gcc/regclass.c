@@ -515,6 +515,7 @@ init_regs ()
     /* Make some fake stack-frame MEM references for use in
        memory_move_secondary_cost.  */
     int i;
+
     for (i = 0; i < MAX_MACHINE_MODE; i++)
       top_of_stack[i] = gen_rtx_MEM (i, stack_pointer_rtx);
     ggc_add_rtx_root (top_of_stack, MAX_MACHINE_MODE);
