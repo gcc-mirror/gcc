@@ -44,10 +44,6 @@
 #undef SHRT_MAX
 #define SHRT_MAX 32767
 
-/* Maximum value an `unsigned short int' can hold.  (Minimum is 0).  */
-#undef USHRT_MAX
-#define USHRT_MAX 65535
-
 /* Minimum and maximum values a `signed int' can hold.  */
 #ifndef __INT_MAX__
 #define __INT_MAX__ 2147483647
@@ -56,6 +52,14 @@
 #define INT_MIN (-INT_MAX-1)
 #undef INT_MAX
 #define INT_MAX __INT_MAX__
+
+/* Maximum value an `unsigned short int' can hold.  (Minimum is 0).  */
+#undef USHRT_MAX
+#if INT_MAX < 65535
+#define USHRT_MAX 65535U
+#else
+#define USHRT_MAX 65535
+#endif
 
 /* Maximum value an `unsigned int' can hold.  (Minimum is 0).  */
 #undef UINT_MAX
