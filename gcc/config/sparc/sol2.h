@@ -60,15 +60,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))
 
-#undef ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fputs ("\t.local\t", (FILE));		\
-  assemble_name ((FILE), (NAME));					\
-  putc ('\n', (FILE));							\
-  ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);			\
-} while (0)
-
 /* This is how to output a definition of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
