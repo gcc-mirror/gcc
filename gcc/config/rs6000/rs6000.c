@@ -4368,6 +4368,29 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
 	 pointer.  */
       if (is_attribute_p ("dllexport", identifier))
 	return (args == NULL_TREE);
+
+      /* Exception attribute allows the user to specify 1-2 strings or identifiers
+	 that will fill in the 3rd and 4th fields of the structured exception
+	 table.  */
+      if (is_attribute_p ("exception", identifier))
+	{
+	  int i;
+
+	  if (args == NULL_TREE)
+	    return 0;
+
+	  for (i = 0; i < 2 && args != NULL_TREE; i++)
+	    {
+	      tree this_arg = TREE_VALUE (args);
+	      args = TREE_PURPOSE (args);
+
+	      if (TREE_CODE (this_arg) != STRING_CST
+		  && TREE_CODE (this_arg) != IDENTIFIER_NODE)
+		return 0;
+	    }
+
+	  return (args == NULL_TREE);
+	}
     }
 
   return 0;
