@@ -1477,7 +1477,15 @@ rewrite_blocks (bool fix_virtual_phis)
   /* Finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
+  /* Debugging dumps.  */
+  if (dump_file && (dump_flags & TDF_STATS))
+    {
+      dump_dfa_stats (dump_file);
+      dump_tree_ssa_stats (dump_file);
+    }
+
   htab_delete (def_blocks);
+  def_blocks = NULL;
   
   VEC_free (tree_on_heap, block_defs_stack);
   block_defs_stack = NULL;
@@ -1610,13 +1618,6 @@ rewrite_into_ssa (bool all)
   insert_phi_nodes (dfs, NULL);
 
   rewrite_blocks (false);
-
-  /* Debugging dumps.  */
-  if (dump_file && (dump_flags & TDF_STATS))
-    {
-      dump_dfa_stats (dump_file);
-      dump_tree_ssa_stats (dump_file);
-    }
 
   /* Free allocated memory.  */
   FOR_EACH_BB (bb)
