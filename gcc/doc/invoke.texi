@@ -11294,7 +11294,7 @@ You will normally not enable this option; instead, a language processor
 that needs this handling would enable it on your behalf.
 
 @item -fasynchronous-unwind-tables
-@opindex funwind-tables
+@opindex fasynchronous-unwind-tables
 Generate unwind table in dwarf2 format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
 unwinding from asynchronous events (such as debugger or garbage collector).
