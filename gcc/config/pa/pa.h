@@ -31,6 +31,12 @@ enum cmp_type				/* comparison type */
 #define DBX_DEBUGGING_INFO
 #define DEFAULT_GDB_EXTENSIONS 0
 
+#if (TARGET_DEFAULT & 1) == 0
+#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}"
+#else
+#define CPP_SPEC "-D__hp9000s700 -D_PA_RISC1_1"
+#endif
+
 /* Defines for a K&R CC */
 
 #ifdef OLD_CC
@@ -66,12 +72,8 @@ enum cmp_type				/* comparison type */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#ifdef hpux
-#define CPP_PREDEFINES "-Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE"
-#else
-#define CPP_PREDEFINES "-Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
-#endif
-
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
+y
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (hp9000s800)");
