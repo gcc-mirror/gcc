@@ -1,3 +1,8 @@
+2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* dbxout.c (dbxout_symbol_location): Resolve constant pool references
+	even for variables with NULL DECL_INITIAL.
+
 2005-01-26  Stuart Hastings  <stuart@apple.com>
 
 	* gcc/gimplify.c (shortcut_cond_expr): Re-compute side-effects.
