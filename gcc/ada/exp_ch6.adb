@@ -1833,9 +1833,26 @@ package body Exp_Ch6 is
          Subp := Parent_Subp;
       end if;
 
+      --  Check for violation of No_Abort_Statements
+
       if Is_RTE (Subp, RE_Abort_Task) then
          Check_Restriction (No_Abort_Statements, N);
+
+      --  Check for violation of No_Dynamic_Attachment
+
+      elsif RTU_Loaded (Ada_Interrupts)
+        and then (Is_RTE (Subp, RE_Is_Reserved)      or else
+                  Is_RTE (Subp, RE_Is_Attached)      or else
+                  Is_RTE (Subp, RE_Current_Handler)  or else
+                  Is_RTE (Subp, RE_Attach_Handler)   or else
+                  Is_RTE (Subp, RE_Exchange_Handler) or else
+                  Is_RTE (Subp, RE_Detach_Handler)   or else
+                  Is_RTE (Subp, RE_Reference))
+      then
+         Check_Restriction (No_Dynamic_Attachment, N);
       end if;
+
+      --  Deal with case where call is an explicit dereference
 
       if Nkind (Name (N)) = N_Explicit_Dereference then
 
@@ -3189,7 +3206,7 @@ package body Exp_Ch6 is
 
          begin
             while Present (F) loop
-               if Is_RTE (Root_Type (Etype (F)), RE_Address) then
+               if Is_Descendent_Of_Address (Etype (F)) then
                   Set_Is_Pure (Spec_Id, False);
 
                   if Spec_Id /= Body_Id then

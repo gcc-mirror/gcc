@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -347,20 +347,22 @@ package Sem is
    -- Handling of Check Suppression --
    -----------------------------------
 
-   --  There are two kinds of suppress checks, scope based suppress checks
-   --  (from initial command line arguments, or from Suppress pragmas not
-   --  including an entity name). The scope based suppress checks are recorded
+   --  There are two kinds of suppress checks: scope based suppress checks,
+   --  and entity based suppress checks.
+
+   --  Scope based suppress chems (from initial command line arguments,
+   --  or from Suppress pragmas not including an entity name) are recorded
    --  in the Sem.Supress variable, and all that is necessary is to save the
    --  state of this variable on scope entry, and restore it on scope exit.
 
-   --  The other kind of suppress check is entity based suppress checks, from
-   --  Suppress pragmas giving an Entity_Id. These are handled as follows. If
-   --  a suppress or unsuppress pragma is encountered for a given entity, then
-   --  the flag Checks_May_Be_Suppressed is set in the entity and an entry is
-   --  made in either the Local_Entity_Suppress table (case of pragma that
-   --  appears in other than a package spec), or in the Global_Entity_Suppress
-   --  table (case of pragma that appears in a package spec, which is by the
-   --  rule of RM 11.5(7) applicable throughout the life of the entity).
+   --  Entity based suppress checks, from Suppress pragmas giving an Entity_Id,
+   --  are handled as follows. If a suppress or unsuppress pragma is
+   --  encountered for a given entity, then the flag Checks_May_Be_Suppressed
+   --  is set in the entity and an entry is made in either the
+   --  Local_Entity_Suppress table (case of pragma that appears in other than
+   --  a package spec), or in the Global_Entity_Suppress table (case of pragma
+   --  that appears in a package spec, which is by the rule of RM 11.5(7)
+   --  applicable throughout the life of the entity).
 
    --  If the Checks_May_Be_Suppressed flag is set in an entity then the
    --  procedure is to search first the local and then the global suppress

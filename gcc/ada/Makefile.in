@@ -1260,6 +1260,7 @@ endif
 ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
+  a-numaux.ads<a-numaux-libc-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-osinte.ads<s-osinte-linux.ads \

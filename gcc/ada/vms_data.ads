@@ -4246,6 +4246,8 @@ package VMS_Data is
    --      UPPER_CASE
 
    S_Pretty_Comments  : aliased constant S := "/COMMENTS_LAYOUT="          &
+                                              "UNTOUCHED "                 &
+                                                 "-c0 "                    &
                                               "DEFAULT "                   &
                                                  "-c1 "                    &
                                               "STANDARD_INDENT "           &
@@ -4256,17 +4258,20 @@ package VMS_Data is
                                                  "-c4";
    --        /COMMENTS_LAYOUT[=layout-option, layout-option, ...]
    --
-   --   Set the comment layout. By default, comments use the GNAT style comment
-   --   line indentation.
-   --   layout-option may be one of the following:
+   --   Set the comment layout. By default, comments use the GNAT style
+   --   comment line indentation.
    --
+   --   layout-option is be one of the following:
+   --
+   --     UNTOUCHED           All the comments remain unchanged
    --     DEFAULT (D)         GNAT style comment line indentation
    --     STANDARD_INDENT     Standard comment line indentation
    --     GNAT_BEGINNING      GNAT style comment beginning
    --     REFORMAT            Reformat comment blocks
    --
    --     All combinations of layout options are allowed, except for DEFAULT
-   --     and STANDARD_INDENT which are mutually exclusive.
+   --     and STANDARD_INDENT which are mutually exclusive, and also if
+   --     UNTOUCHED is specified, this must be the only option.
    --
    --     The difference between "GNAT style comment line indentation" and
    --     "standard comment line indentation" is the following: for standard
@@ -4492,6 +4497,13 @@ package VMS_Data is
    --
    --      MIXED_CASE        Names are in mixed case.
 
+   S_Pretty_No_Backup : aliased constant S := "/NO_BACKUP "               &
+                                                 "-rnb";
+   --        /REPLACE_NO_BACKUP
+   --
+   --   Replace the argument source with the pretty-printed source without
+   --   creating any backup copy of the argument source.
+
    S_Pretty_No_Labels : aliased constant S := "/NO_MISSED_LABELS "         &
                                                  "-e";
    --        /NO_MISSED_LABELS
@@ -4533,7 +4545,8 @@ package VMS_Data is
                                               "LOWER_CASE "                &
                                                  "-pL "                    &
                                               "UPPER_CASE "                &
-      --        /PRAGMA_CASING[=pragma-option]
+                                                 "-pU";
+   --        /PRAGMA_CASING[=pragma-option]
    --
    --   Set the case of pragma identifiers. The default is Mixed case.
    --   pragma-option may be one of the following:
@@ -4541,9 +4554,9 @@ package VMS_Data is
    --      MIXED_CASE (D)
    --      LOWER_CASE
    --      UPPER_CASE
-                                              "-pU";
-   S_Pretty_Project   : aliased constant S := "/PROJECT_FILE=<"               &
-                                            "-P>";
+
+   S_Pretty_Project   : aliased constant S := "/PROJECT_FILE=<"            &
+                                                "-P>";
    --        /PROJECT_FILE=filename
    --
    --   Specifies the main project file to be used. The project files rooted
@@ -4621,6 +4634,7 @@ package VMS_Data is
       S_Pretty_Maxind    'Access,
       S_Pretty_Mess      'Access,
       S_Pretty_Names     'Access,
+      S_Pretty_No_Backup 'Access,
       S_Pretty_No_Labels 'Access,
       S_Pretty_Notabs    'Access,
       S_Pretty_Output    'Access,

@@ -1970,12 +1970,12 @@ package Einfo is
 --       Present in all entities. Relevant (and can be set True) only for
 --       objects of an access type. It is set if the object is currently
 --       known to have a non-null value (meaning that no access checks
---       are needed). The indication can for example3 come from assignment
+--       are needed). The indication can for example come from assignment
 --       of an access parameter or an allocator.
 --
 --       Note: this flag is set according to the sequential flow of the
 --       program, watching the current value of the variable. However,
---       this processing can cases of changing the value of an aliased
+--       this processing can miss cases of changing the value of an aliased
 --       or constant object, so even if this flag is set, it should not
 --       be believed if the variable is aliased or volatile. It would
 --       be a little neater to avoid the flag being set in the first

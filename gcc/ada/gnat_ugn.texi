@@ -9995,9 +9995,9 @@ recognized by @code{GNAT}:
    Long_Float
    Normalize_Scalars
    Polling
+   Profile
    Propagate_Exceptions
    Queuing_Policy
-   Ravenscar
    Restricted_Run_Time
    Restrictions
    Reviewable
@@ -14647,6 +14647,9 @@ on their effect.
 
 @table @option
 @cindex @option{^-c@var{n}^/COMMENTS_LAYOUT^} (@command{gnatpp})
+@item ^-c0^/COMMENTS_LAYOUT=UNTOUCHED^
+All the comments remain unchanged
+
 @item ^-c1^/COMMENTS_LAYOUT=DEFAULT^
 GNAT-style comment line indentation (this is the default).
 
@@ -14680,7 +14683,8 @@ stops.
 @noindent
 The @option{-c1} and @option{-c2} switches are incompatible.
 The @option{-c3} and @option{-c4} switches are compatible with each other and
-also with @option{-c1} and @option{-c2}.
+also with @option{-c1} and @option{-c2}. The @option{-c0} switch disables all
+the other comment formatting switches.
 
 The @option{-l1}, @option{-l2}, and @option{-l3} switches are incompatible.
 @end ifclear
@@ -14827,6 +14831,11 @@ reading or processing the input file.
 @cindex @option{^-rf^/OVERRIDING_REPLACE^} (@code{gnatpp})
 Like @option{^-r^/REPLACE^} except that if the file with the specified name
 already exists, it is overwritten.
+
+@item ^-rnb^/NO_BACKUP^
+@cindex @option{^-rnb^/NO_BACKUP^} (@code{gnatpp})
+Replace the input source file with the reformatted output without
+creating any backup copy of the input source.
 @end table
 
 @noindent
