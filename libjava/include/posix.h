@@ -8,6 +8,11 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+/* Required on Tru64 UNIX V4/V5 so <sys/socket.h> defines prototypes of
+   socket functions with socklen_t instead of size_t.  This must be defined
+   early so <standards.h> defines the correct version of __PIIX.  */
+#define _POSIX_PII_SOCKET
+
 #include <time.h>
 #include <sys/types.h>
 
