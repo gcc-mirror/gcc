@@ -1146,6 +1146,12 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
+/* FPA registers can't do dubreg as all values are reformatted to internal
+   precision.  */
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
+   ? reg_classes_intersect_p (FPA_REGS, (CLASS)) : 0)
+
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
