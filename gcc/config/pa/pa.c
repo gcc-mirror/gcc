@@ -1954,7 +1954,7 @@ print_operand (file, x, code)
 	}
       else
 	break;
-    case 'C':
+    case 'C':			/* Plain (C)ondition */
     case 'X':
       switch (GET_CODE (x))
 	{	
@@ -1984,7 +1984,7 @@ print_operand (file, x, code)
 	  abort ();
 	}
       return;
-    case 'N':
+    case 'N':			/* Condition, (N)egated */
     case 'Y':
       switch (GET_CODE (x))
 	{
@@ -2013,6 +2013,75 @@ print_operand (file, x, code)
 	  debug_rtx (x);
 	  abort ();
 	}
+      return;
+    case 'S':			/* Condition, operands are (S)wapped.  */
+      switch (GET_CODE (x))
+	{
+	case EQ:
+	  fprintf (file, "=");  break;
+	case NE:
+	  fprintf (file, "<>");  break;
+	case GT:
+	  fprintf (file, "<");  break;
+	case GE:
+	  fprintf (file, "<=");  break;
+	case GEU:
+	  fprintf (file, "<<=");  break;
+	case GTU:
+	  fprintf (file, "<<");  break;
+	case LT:
+	  fprintf (file, ">");  break;
+	case LE:
+	  fprintf (file, ">=");  break;
+	case LEU:
+	  fprintf (file, ">>=");  break;
+	case LTU:
+	  fprintf (file, ">>");  break;
+	default:
+	  printf ("Can't grok '%c' operator:\n", code);
+	  debug_rtx (x);
+	  abort ();
+	}	  
+      return;
+    case 'B':			/* Condition, (B)oth swapped and negate.  */
+      switch (GET_CODE (x))
+	{
+	case EQ:
+	  fprintf (file, "<>");  break;
+	case NE:
+	  fprintf (file, "=");  break;
+	case GT:
+	  fprintf (file, ">=");  break;
+	case GE:
+	  fprintf (file, ">");  break;
+	case GEU:
+	  fprintf (file, ">>");  break;
+	case GTU:
+	  fprintf (file, ">>=");  break;
+	case LT:
+	  fprintf (file, "<=");  break;
+	case LE:
+	  fprintf (file, "<");  break;
+	case LEU:
+	  fprintf (file, "<<");  break;
+	case LTU:
+	  fprintf (file, "<<=");  break;
+	default:
+	  printf ("Can't grok '%c' operator:\n", code);
+	  debug_rtx (x);
+	  abort ();
+	}	  
+      return;
+    case 'k':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (file, "%d", ~INTVAL (x));
+	  return;
+	}
+      abort();
+    case 'I':
+      if (GET_CODE (x) == CONST_INT)
+	fputs ("i", file);
       return;
     case 'M':
       switch (GET_CODE (XEXP (x, 0)))
@@ -2623,20 +2692,6 @@ fmpysuboperands(operands)
   return 1;
 }
 
-
-/* Return 1 iff OP is a valid operator to use in an incscc 
-   instruction.  Adding or subtracting the condition code
-   to/from another operand is valid on the PA, so return 1 
-   for PLUS or MINUS.  */
-int
-incscc_operator (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == PLUS || GET_CODE (op) == MINUS);
-}
-
-
 /* Return 1 if OP is suitable for the second add operand (the unshifed 
    operand) in an shadd instruction.   Allow CONST_INT to work around
    a reload bug.  */
@@ -2672,4 +2727,3 @@ shadd_constant_p (val)
   else
     return 0;
 }
-
