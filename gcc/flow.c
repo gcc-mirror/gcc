@@ -768,11 +768,24 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
 
   sbitmap_zero (update_life_blocks);
   FOR_EACH_BB (bb)
-    if (bb->flags & BB_DIRTY)
-      {
-	SET_BIT (update_life_blocks, bb->index);
-	n++;
-      }
+    {
+      if (extent == UPDATE_LIFE_LOCAL)
+	{
+	  if (bb->flags & BB_DIRTY)
+	    {
+	      SET_BIT (update_life_blocks, bb->index);
+	      n++;
+	    }
+	}
+      else
+	{
+	  /* ??? Bootstrap with -march=pentium4 fails to terminate
+	     with only a partial life update.  */
+	  SET_BIT (update_life_blocks, bb->index);
+	  if (bb->flags & BB_DIRTY)
+	    n++;
+	}
+    }
 
   if (n)
     retval = update_life_info (update_life_blocks, extent, prop_flags);
