@@ -1,5 +1,9 @@
 2005-02-20  Steven G. Kargl  <kargls@comcast.net>
 
+	* symbol.c: Typos in comments.
+
+2005-02-20  Steven G. Kargl  <kargls@comcast.net>
+
 	* expr.c (gfc_type_convert_binary): Typo in comment.
 
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
