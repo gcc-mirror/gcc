@@ -1622,7 +1622,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    On RS/6000, this is r3, fp1, and v2 (for AltiVec).  */
 #define FUNCTION_VALUE_REGNO_P(N)					\
   ((N) == GP_ARG_RETURN							\
-   || ((N) == FP_ARG_RETURN && TARGET_HARD_FLOAT)			\
+   || ((N) == FP_ARG_RETURN && TARGET_HARD_FLOAT && TARGET_FPRS)	\
    || ((N) == ALTIVEC_ARG_RETURN && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI))
 
 /* 1 if N is a possible register number for function argument passing.
@@ -1633,7 +1633,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    || ((unsigned) (N) - ALTIVEC_ARG_MIN_REG < ALTIVEC_ARG_NUM_REG	\
        && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)				\
    || ((unsigned) (N) - FP_ARG_MIN_REG < FP_ARG_NUM_REG			\
-       && TARGET_HARD_FLOAT))
+       && TARGET_HARD_FLOAT && TARGET_FPRS))
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
