@@ -12,7 +12,7 @@ public:
     void f() {}
 };
 
-int g() { return 0; } // gets bogus error - referenced below XFAIL *-*-*
+int g() { return 0; } // gets bogus error - referenced below
 
 int main()
 {
