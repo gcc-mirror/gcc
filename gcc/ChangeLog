@@ -1,3 +1,8 @@
+2003-04-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_field): When making temporary for store, don't
+	make it TYPE_QUAL_CONST.
+
 2003-04-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* toplev.c (read_integral_parameter):  Use "argument" in error
