@@ -1,3 +1,7 @@
+2000-04-06  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* regrename.c (regrename_optimize): Handle no REG_ALLOC_ORDER.
+	
 2000-04-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (CPP_IS_MACRO_BUFFER, FORWARD, PEEKC): Delete.
