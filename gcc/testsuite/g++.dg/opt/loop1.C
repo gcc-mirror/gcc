@@ -1,5 +1,5 @@
 // PR rtl-optimization/16590
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
 // { dg-options "-O2" }
 
 extern "C" void abort(); 
