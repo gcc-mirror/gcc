@@ -1,3 +1,7 @@
+2001-05-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* partition.c: Fix misspelling of `implementation'.
+
 2001-05-09  Thiemo Seufer  <seufer@csv.ica.uni-stuttgart.de>
 
 	* md5.c (md5_init_ctx): Declare constants as unsigned.
