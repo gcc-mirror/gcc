@@ -21,6 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Look for the include files in the system-defined places.  */
 
+#ifndef CROSS_COMPILE
 #undef GPLUSPLUS_INCLUDE_DIR
 #define GPLUSPLUS_INCLUDE_DIR "/usr/include/g++"
 
@@ -40,6 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef STANDARD_STARTFILE_PREFIX
 #define STANDARD_STARTFILE_PREFIX "/usr/lib/"
+#endif
 
 /* Provide a LINK_SPEC appropriate for NetBSD.  Here we provide support
    for the special GCC options -static, -assert, and -nostdlib.  */
@@ -47,12 +49,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
   "%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
-   %{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+   %{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp %{static:-Bstatic} %{assert*}"
 
-/* We have atexit(3) and strerror(3).  */
+/* We have atexit(3).  */
 
 #define HAVE_ATEXIT
-#define HAVE_STRERROR
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
