@@ -129,6 +129,8 @@ extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern enum reg_class sh_cannot_change_mode_class
 	      PARAMS ((enum machine_mode, enum machine_mode));
 extern void sh_mark_label PARAMS ((rtx, int));
+extern int sh_register_move_cost
+  PARAMS ((enum machine_mode mode, enum reg_class, enum reg_class));
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
