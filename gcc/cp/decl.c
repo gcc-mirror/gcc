@@ -2139,7 +2139,7 @@ pushtag (name, type, globalize)
 	      TYPE_NAME (type) = d;
 	      DECL_CONTEXT (d) = context;
 	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
-		push_template_decl (d);
+		d = push_template_decl (d);
 
 	      if (b->parm_flag == 2)
 		d = pushdecl_class_level (d);
@@ -2155,7 +2155,7 @@ pushtag (name, type, globalize)
 	      TYPE_NAME (type) = d;
 	      DECL_CONTEXT (d) = context;
 	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
-		push_template_decl (d);
+		d = push_template_decl (d);
 
 	      d = pushdecl_class_level (d);
 	    }
@@ -2754,8 +2754,10 @@ duplicate_decls (newdecl, olddecl)
     {
       if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE)
 	{
-	  TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-	  DECL_TEMPLATE_RESULT (olddecl) = DECL_TEMPLATE_RESULT (newdecl);
+	  if (! duplicate_decls (DECL_TEMPLATE_RESULT (newdecl),
+				 DECL_TEMPLATE_RESULT (olddecl)))
+	    cp_error ("invalid redeclaration of %D", newdecl);
+	  TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
 	  DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
 	}
       return 1;
@@ -4463,7 +4465,8 @@ make_implicit_typename (context, t)
 {
   tree retval;
 
-  if (uses_template_parms (DECL_CONTEXT (t))
+  if (TREE_CODE (context) != TYPENAME_TYPE 
+      && uses_template_parms (DECL_CONTEXT (t))
       && DECL_CONTEXT (t) != context)
     {
       tree binfo = get_binfo (DECL_CONTEXT (t), context, 0);
@@ -6141,7 +6144,7 @@ start_decl (declarator, declspecs, initialized)
   if (processing_template_decl)
     {
       if (! current_function_decl)
-	push_template_decl (tem);
+	tem = push_template_decl (tem);
       else if (minimal_parse_mode)
 	DECL_VINDEX (decl)
 	    = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
@@ -8457,6 +8460,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	type = build_complex_type (type);
     }
 
+  if (return_type == return_conversion 
+      && (RIDBIT_SETP (RID_CONST, specbits)
+	  || RIDBIT_SETP (RID_VOLATILE, specbits)))
+    cp_error ("`operator %T' cannot be cv-qualified",
+	      ctor_return_type);
+
   /* Set CONSTP if this declaration is `const', whether by
      explicit specification or via a typedef.
      Likewise for VOLATILEP.  */
@@ -9797,6 +9806,27 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    if (initialized)
 	      {
+		if (!staticp)
+		  {
+		    /* An attempt is being made to initialize a non-static
+		       member.  But, from [class.mem]:
+		       
+		       4 A member-declarator can contain a
+		       constant-initializer only if it declares a static
+		       member (_class.static_) of integral or enumeration
+		       type, see _class.static.data_.  
+
+		       This used to be relatively common practice, but
+		       the rest of the compiler does not correctly
+		       handle the initialization unless the member is
+		       static so we make it static below.  */
+		    cp_pedwarn ("ANSI C++ forbids initialization of %s `%D'",
+				constp ? "const member" : "member", 
+				declarator);
+		    cp_pedwarn ("making `%D' static", declarator);
+		    staticp = 1;
+		  }
+
 		/* Motion 10 at San Diego: If a static const integral data
 		   member is initialized with an integral constant
 		   expression, the initializer may appear either in the
@@ -9804,34 +9834,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   but not both.  If it appears in the class, the member is
 		   a member constant.  The file-scope definition is always
 		   required.  */
-		if (staticp)
-		  {
-		    if (pedantic)
-		      {
-			if (! constp)
-			  cp_pedwarn ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
-				      declarator);
-
-			else if (! INTEGRAL_TYPE_P (type))
-			  cp_pedwarn ("ANSI C++ forbids member constant `%D' of non-integral type `%T'", declarator, type);
-		      }
-		  }
-
-		/* Note that initialization of const members is prohibited
-		   by the draft ANSI standard, though it appears to be in
-		   common practice.  12.6.2: The argument list is used to
-		   initialize the named nonstatic member....  This (or an
-		   initializer list) is the only way to initialize
-		   nonstatic const and reference members.  */
-		else if (pedantic || ! constp)
-		  cp_pedwarn ("ANSI C++ forbids initialization of %s `%D'",
-			      constp ? "const member" : "member", declarator);
+		if (! constp)
+		  /* According to Mike Stump, we generate bad code for
+		     this case, so we might as well always make it an
+		     error.  */
+		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
+			    declarator);
+		
+		if (pedantic && ! INTEGRAL_TYPE_P (type))
+		  cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", declarator, type);
 	      }
 
-	    if (staticp || (constp && initialized))
+	    if (staticp)
 	      {
 		/* ANSI C++ Apr '95 wp 9.2 */
-		if (staticp && declarator == current_class_name)
+		if (declarator == current_class_name)
 		  cp_pedwarn ("ANSI C++ forbids static member `%D' with same name as enclosing class",
 			      declarator);
 
@@ -9842,7 +9859,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		decl = build_lang_field_decl (VAR_DECL, declarator, type);
 		TREE_STATIC (decl) = 1;
 		/* In class context, 'static' means public access.  */
-		TREE_PUBLIC (decl) = DECL_EXTERNAL (decl) = !!staticp;
+		TREE_PUBLIC (decl) = DECL_EXTERNAL (decl) = 1;
 	      }
 	    else
 	      {
@@ -11616,7 +11633,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      use the old decl.  */
 
   if (processing_template_decl)
-    push_template_decl (decl1);
+    decl1 = push_template_decl (decl1);
   else if (pre_parsed_p == 0)
     {
       /* A specialization is not used to guide overload resolution.  */
@@ -12667,7 +12684,7 @@ start_method (declspecs, declarator)
     DECL_INLINE (fndecl) = 1;
 
   if (processing_template_decl)
-    push_template_decl (fndecl);
+    fndecl = push_template_decl (fndecl);
 
   /* We read in the parameters on the maybepermanent_obstack,
      but we won't be getting back to them until after we

@@ -1935,7 +1935,12 @@ build_component_ref (datum, component, basetype_path, protect)
 			  datum = build_indirect_ref (addr, NULL_PTR);
 			  my_friendly_assert (datum != error_mark_node, 310);
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
-			  TREE_TYPE (fndecl) = build_pointer_type (fntype);
+			  /* The type of fndecl is a function type,
+			     not a pointer-to-function type, since
+			     build_vfn_ref returns not the correct
+			     vtable slot, but the indirection of the
+			     correct vtable slot.  */
+			  TREE_TYPE (fndecl) = fntype;
 			}
 		      else
 			mark_used (fndecl);

@@ -1,3 +1,35 @@
+Mon Feb  9 22:23:31 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (push_template_decl): Return the decl passed in, or an
+	equivalent duplicate.
+	* decl.c (pushtag): Use the return value from push_template_decl.
+	(duplicate_decls): When duplicating a template declaration, merge
+	the DECL_TEMPLATE_RESULTs as well.
+	(make_implicit_typename): Don't try to dive into typename types to
+	find a context for making a new implicit typename.
+	(start_decl): Use the return value from push_template_decl.
+	(grokdeclarator): Complain about declarations list `const operator
+	int'.  Since we don't correctly handle in-class initializations of
+	non-static data members, complain about this (now illegal)
+	practice.  Issue an error for initializations of non-const statics
+	since that is illegal as well, and since we don't handle that case
+	correctly either.
+	(start_function): Use the return value from push_template_decl.
+	(start_method): Likewise.
+	* decl2.c (grokfield): Likewise.  Since the change to
+	grokdeclarator ensures that all initialized fields are in fact
+	static, remove a redundant test for TREE_PUBLIC.
+	* parse.y (initlist): Disable labeled initializers since they do
+	not work as per the documentation, and since they do not use the
+	same syntax as the C front end.
+	* pt.c (push_template_decl): Return the decl passed in, or an
+	equivalent duplicate.
+	(lookup_template_class): When searching in a nested context,
+	use the right arguments.
+	(uses_template_parms): Handle the DECL_INITIAL for a CONST_DECL.
+	* typeck.c (build_component_ref): Assign the correct type to the
+	result of build_vfn_ref.
+	
 Tue Feb 10 23:56:46 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (convert_nontype_argument): Fix typo.

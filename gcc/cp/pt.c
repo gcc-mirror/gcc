@@ -1211,7 +1211,12 @@ build_template_decl (decl, parms)
 }
 
   
-void
+/* Creates a TEMPLATE_DECL for the indicated DECL using the template
+   parameters given by current_template_args, or reuses a previously
+   existing one, if appropriate.  Returns the DECL, or an equivalent
+   one, if it is replaced via a call to duplicate_decls.  */
+
+tree
 push_template_decl (decl)
      tree decl;
 {
@@ -1246,14 +1251,14 @@ push_template_decl (decl)
 	  /* purpose: args to main template
 	     value: spec template */
 	  if (comp_template_args (TREE_PURPOSE (spec), mainargs))
-	    return;
+	    return decl;
 	}
 
       DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
 	= perm_tree_cons (mainargs, TREE_VALUE (current_template_parms),
 			  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
       TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
-      return;
+      return decl;
     }
 
   args = current_template_args ();
@@ -1286,7 +1291,7 @@ push_template_decl (decl)
       else if (! DECL_TEMPLATE_INFO (decl))
 	{
 	  cp_error ("template definition of non-template `%#D'", decl);
-	  return;
+	  return decl;
 	}
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
@@ -1315,7 +1320,7 @@ push_template_decl (decl)
 		perm_tree_cons (tmpl, args, NULL_TREE);
 
 	      register_specialization (new_tmpl, tmpl, args);
-	      return;
+	      return decl;
 	    }
 	  
 	  a = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
@@ -1385,6 +1390,8 @@ push_template_decl (decl)
     cp_error ("template declaration of `%#D'", decl);
   else
     DECL_TEMPLATE_INFO (decl) = info;
+
+  return DECL_TEMPLATE_RESULT (tmpl);
 }
 
 
@@ -2366,8 +2373,13 @@ lookup_template_class (d1, arglist, in_decl, context)
     }
   else
     {
-      tree ctx = lookup_template_class (TYPE_CONTEXT (TREE_TYPE (template)),
-					arglist, in_decl, NULL_TREE);
+      tree type_ctx = TYPE_CONTEXT (TREE_TYPE (template));
+      tree args = tsubst (CLASSTYPE_TI_ARGS (type_ctx),
+			  arglist,
+			  TREE_VEC_LENGTH (arglist),
+			  in_decl);
+      tree ctx = lookup_template_class (type_ctx, args,
+					in_decl, NULL_TREE);
       id = d1;
       arglist = CLASSTYPE_TI_ARGS (ctx);
 
@@ -2496,6 +2508,11 @@ uses_template_parms (t)
          parameter */
       return 0;
       
+    case CONST_DECL:
+      if (uses_template_parms (DECL_INITIAL (t)))
+	return 1;
+      goto check_type_and_context;
+
     case FUNCTION_DECL:
     case VAR_DECL:
       /* ??? What about FIELD_DECLs?  */
@@ -2503,8 +2520,8 @@ uses_template_parms (t)
 	  && uses_template_parms (DECL_TI_ARGS (t)))
 	return 1;
       /* fall through */
-    case CONST_DECL:
     case PARM_DECL:
+    check_type_and_context:
       if (uses_template_parms (TREE_TYPE (t)))
 	return 1;
       if (DECL_CONTEXT (t) && uses_template_parms (DECL_CONTEXT (t)))
