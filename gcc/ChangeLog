@@ -1,3 +1,13 @@
+2000-09-12  Greg McGary  <greg@mcgary.org>
+
+	* config/mips/mips-protos.h
+	(trap_cmp_op, mips_gen_conditional_trap): New func decls.
+	* config/mips/mips.h (ISA_HAS_COND_TRAP): New macro.
+	(PREDICATE_CODES): Add "trap_cmp_op".
+	* config/mips/mips.c
+	(trap_cmp_op, mips_gen_conditional_trap): New functions.
+	* config/mips/mips.md (trap, conditional_trap): New patterns.
+
 2000-09-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* flow.c (try_pre_increment_1): Don't do anything to sets of the stack
