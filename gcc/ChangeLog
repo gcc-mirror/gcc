@@ -1,3 +1,10 @@
+2004-11-12  Mike Stump  <mrs@apple.com>
+
+	* doc/cppinternals.texi (Index): Fix html generation with makeinfo by
+	renaming this node to Concept Index.
+	* doc/gccint.texi (Index): Likewise.  Also minor formatting tweaks
+	to more closely match gcc.texi.
+
 2004-11-12  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (hashtab.h): Include.

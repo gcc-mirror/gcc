@@ -98,7 +98,7 @@ the way they have.
 * Line Numbering::      Tracking location within files.
 * Guard Macros::        Optimizing header files with guard macros.
 * Files::               File handling.
-* Index::               Index.
+* Concept Index::       Index.
 @end menu
 
 @node Conventions
@@ -1058,8 +1058,8 @@ command line (or system) include directories to which the mapping
 applies.  This may be higher up the directory tree than the full path to
 the file minus the base name.
 
-@node Index
-@unnumbered Index
+@node Concept Index
+@unnumbered Concept Index
 @printindex cp
 
 @bye

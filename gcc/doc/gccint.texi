@@ -21,11 +21,13 @@
 @syncodeindex pg cp
 @syncodeindex tp cp
 
+@paragraphindent 1
+
 @c %**end of header
 
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -53,9 +55,11 @@ included in the section entitled ``GNU Free Documentation License''.
 This file documents the internals of the GNU compilers.
 @sp 1
 @insertcopying
+@sp 1
 @end ifnottex
 
 @setchapternewpage odd
+@shorttitlepage GNU Compiler Collection Internals (GCC)
 @titlepage
 @center @titlefont{GNU Compiler Collection Internals}
 @sp 2
@@ -128,7 +132,7 @@ Additional tutorial information is linked to from
 * Contributors::    People who have contributed to GCC.
 
 * Option Index::    Index to command line options.
-* Index::	    Index of concepts and symbol names.
+* Concept Index::   Index of concepts and symbol names.
 @end menu
 
 @include contribute.texi
@@ -177,8 +181,8 @@ form; it may sometimes be useful to look up both forms.
 
 @printindex op
 
-@node Index
-@unnumbered Index
+@node Concept Index
+@unnumbered Concept Index
 
 @printindex cp
 
