@@ -1,3 +1,7 @@
+2003-02-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c: Revert 2003-01-31 change.
+
 Sat Feb  1 14:14:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx):  Use reversed_comparison_code_parts.
