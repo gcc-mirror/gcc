@@ -44,9 +44,6 @@ trap 'rm -f dummy.c dummy.o dummy; exit 1' 1 2 15
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
-    *:NetBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*//'`
-	exit 0 ;;
     alpha:OSF1:V*:*)
 	# After 1.2, OSF1 uses "V1.3" for uname -r.
 	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^V//'`
@@ -239,10 +236,13 @@ EOF
     i[34]86:BSD/386:*:*)
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
-    i[34]86:FreeBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-freebsd
+    *:FreeBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-freebsd${UNAME_RELEASE}
 	exit 0 ;;
-    i[34]86:Linux:*:*)
+    *:NetBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
+	exit 0 ;;
+    *:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux
 	exit 0 ;;
     i[34]86:UNIX_SV:4.*:* | i[34]86:SYSTEM_V:4.*:*)
@@ -292,8 +292,8 @@ EOF
 	echo m68k-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     mc68030:UNIX_System_V:4.*:*)
-        echo m68k-atari-sysv4
-        exit 0 ;;
+	echo m68k-atari-sysv4
+	exit 0 ;;
     i[34]86:LynxOS:2.2*:*)
 	echo i386-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
