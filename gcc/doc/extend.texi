@@ -5316,6 +5316,7 @@ instructions, but allow the compiler to schedule those calls.
 * ARM Built-in Functions::
 * FR-V Built-in Functions::
 * X86 Built-in Functions::
+* MIPS Paired-Single Support::
 * PowerPC AltiVec Built-in Functions::
 @end menu
 
@@ -6198,6 +6199,321 @@ v2sf __builtin_ia32_pi2fw (v2si)
 v2sf __builtin_ia32_pswapdsf (v2sf)
 v2si __builtin_ia32_pswapdsi (v2si)
 @end smallexample
+
+@node MIPS Paired-Single Support
+@subsection MIPS Paired-Single Support
+
+The MIPS64 architecture includes a number of instructions that
+operate on pairs of single-precision floating-point values.
+Each pair is packed into a 64-bit floating-point register,
+with one element being designated the ``upper half'' and
+the other being designated the ``lower half''.
+
+GCC supports paired-single operations using both the generic
+vector extensions (@pxref{Vector Extensions}) and a collection of
+MIPS-specific built-in functions.  Both kinds of support are
+enabled by the @option{-mpaired-single} command-line option.
+
+The vector type associated with paired-single values is usually
+called @code{v2sf}.  It can be defined in C as follows:
+
+@smallexample
+typedef float v2sf __attribute__ ((vector_size (8)));
+@end smallexample
+
+@code{v2sf} values are initialized in the same way as aggregates.
+For example:
+
+@smallexample
+v2sf a = @{1.5, 9.1@};
+v2sf b;
+float e, f;
+b = (v2sf) @{e, f@};
+@end smallexample
+
+@emph{Note:} The CPU's endianness determines which value is stored in
+the upper half of a register and which value is stored in the lower half.
+On little-endian targets, the first value is the lower one and the second
+value is the upper one.  The opposite order applies to big-endian targets.
+For example, the code above will set the lower half of @code{a} to
+@code{1.5} on little-endian targets and @code{9.1} on big-endian targets.
+
+@menu
+* Paired-Single Arithmetic::
+* Paired-Single Built-in Functions::
+* MIPS-3D Built-in Functions::
+@end menu
+
+@node Paired-Single Arithmetic
+@subsubsection Paired-Single Arithmetic
+
+The table below lists the @code{v2sf} operations for which hardware
+support exists.  @code{a}, @code{b} and @code{c} are @code{v2sf}
+values and @code{x} is an integral value.
+
+@multitable @columnfractions .50 .50
+@item C code @tab MIPS instruction
+@item @code{a + b} @tab @code{add.ps}
+@item @code{a - b} @tab @code{sub.ps}
+@item @code{-a} @tab @code{neg.ps}
+@item @code{a * b} @tab @code{mul.ps}
+@item @code{a * b + c} @tab @code{madd.ps}
+@item @code{a * b - c} @tab @code{msub.ps}
+@item @code{-(a * b + c)} @tab @code{nmadd.ps}
+@item @code{-(a * b - c)} @tab @code{nmsub.ps}
+@item @code{x ? a : b} @tab @code{movn.ps}/@code{movz.ps}
+@end multitable
+
+Note that the multiply-accumulate instructions can be disabled
+using the command-line option @code{-mno-fused-madd}.
+
+@node Paired-Single Built-in Functions
+@subsubsection Paired-Single Built-in Functions
+
+The following paired-single functions map directly to a particular
+MIPS instruction.  Please refer to the architecture specification
+for details on what each instruction does.
+
+@table @code
+@item v2sf __builtin_mips_pll_ps (v2sf, v2sf)
+Pair lower lower (@code{pll.ps}).
+
+@item v2sf __builtin_mips_pul_ps (v2sf, v2sf)
+Pair upper lower (@code{pul.ps}).
+
+@item v2sf __builtin_mips_plu_ps (v2sf, v2sf)
+Pair lower upper (@code{plu.ps}).
+
+@item v2sf __builtin_mips_puu_ps (v2sf, v2sf)
+Pair upper upper (@code{puu.ps}).
+
+@item v2sf __builtin_mips_cvt_ps_s (float, float)
+Convert pair to paired single (@code{cvt.ps.s}).
+
+@item float __builtin_mips_cvt_s_pl (v2sf)
+Convert pair lower to single (@code{cvt.s.pl}).
+
+@item float __builtin_mips_cvt_s_pu (v2sf)
+Convert pair upper to single (@code{cvt.s.pu}).
+
+@item v2sf __builtin_mips_abs_ps (v2sf)
+Absolute value (@code{abs.ps}).
+
+@item v2sf __builtin_mips_alnv_ps (v2sf, v2sf, int)
+Align variable (@code{alnv.ps}).
+
+@emph{Note:} The value of the third parameter must be 0 or 4
+modulo 8, otherwise the result will be unpredictable.  Please read the
+instruction description for details.
+@end table
+
+The following multi-instruction functions are also available.
+In each case, @var{cond} can be any of the 16 floating-point conditions:
+@code{f}, @code{un}, @code{eq}, @code{ueq}, @code{olt}, @code{ult},
+@code{ole}, @code{ule}, @code{sf}, @code{ngle}, @code{seq}, @code{ngl},
+@code{lt}, @code{nge}, @code{le} or @code{ngt}.
+
+@table @code
+@item v2sf __builtin_mips_movt_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+@itemx v2sf __builtin_mips_movf_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+Conditional move based on floating point comparison (@code{c.@var{cond}.ps},
+@code{movt.ps}/@code{movf.ps}).
+
+The @code{movt} functions return the value @var{x} computed by:
+
+@smallexample
+c.@var{cond}.ps @var{cc},@var{a},@var{b}
+mov.ps @var{x},@var{c}
+movt.ps @var{x},@var{d},@var{cc}
+@end smallexample
+
+The @code{movf} functions are similar but use @code{movf.ps} instead
+of @code{movt.ps}.
+
+@item int __builtin_mips_upper_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+@itemx int __builtin_mips_lower_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+Comparison of two paired-single values (@code{c.@var{cond}.ps},
+@code{bc1t}/@code{bc1f}).
+
+These functions compare @var{a} and @var{b} using @code{c.@var{cond}.ps}
+and return either the upper or lower half of the result.  For example:
+
+@smallexample
+v2sf a, b;
+if (__builtin_mips_upper_c_eq_ps (a, b))
+  upper_halves_are_equal ();
+else
+  upper_halves_are_unequal ();
+
+if (__builtin_mips_lower_c_eq_ps (a, b))
+  lower_halves_are_equal ();
+else
+  lower_halves_are_unequal ();
+@end smallexample
+@end table
+
+@node MIPS-3D Built-in Functions
+@subsubsection MIPS-3D Built-in Functions
+
+The MIPS-3D Application-Specific Extension (ASE) includes additional
+paired-single instructions that are designed to improve the performance
+of 3D graphics operations.  Support for these instructions is controlled
+by the @option{-mips3d} command-line option.
+
+The functions listed below map directly to a particular MIPS-3D
+instruction.  Please refer to the architecture specification for
+more details on what each instruction does.
+
+@table @code
+@item v2sf __builtin_mips_addr_ps (v2sf, v2sf)
+Reduction add (@code{addr.ps}).
+
+@item v2sf __builtin_mips_mulr_ps (v2sf, v2sf)
+Reduction multiply (@code{mulr.ps}).
+
+@item v2sf __builtin_mips_cvt_pw_ps (v2sf)
+Convert paired single to paired word (@code{cvt.pw.ps}).
+
+@item v2sf __builtin_mips_cvt_ps_pw (v2sf)
+Convert paired word to paired single (@code{cvt.ps.pw}).
+
+@item float __builtin_mips_recip1_s (float)
+@itemx double __builtin_mips_recip1_d (double)
+@itemx v2sf __builtin_mips_recip1_ps (v2sf)
+Reduced precision reciprocal (sequence step 1) (@code{recip1.@var{fmt}}).
+
+@item float __builtin_mips_recip2_s (float, float)
+@itemx double __builtin_mips_recip2_d (double, double)
+@itemx v2sf __builtin_mips_recip2_ps (v2sf, v2sf)
+Reduced precision reciprocal (sequence step 2) (@code{recip2.@var{fmt}}).
+
+@item float __builtin_mips_rsqrt1_s (float)
+@itemx double __builtin_mips_rsqrt1_d (double)
+@itemx v2sf __builtin_mips_rsqrt1_ps (v2sf)
+Reduced precision reciprocal square root (sequence step 1)
+(@code{rsqrt1.@var{fmt}}).
+
+@item float __builtin_mips_rsqrt2_s (float, float)
+@itemx double __builtin_mips_rsqrt2_d (double, double)
+@itemx v2sf __builtin_mips_rsqrt2_ps (v2sf, v2sf)
+Reduced precision reciprocal square root (sequence step 2)
+(@code{rsqrt2.@var{fmt}}).
+@end table
+
+The following multi-instruction functions are also available.
+In each case, @var{cond} can be any of the 16 floating-point conditions:
+@code{f}, @code{un}, @code{eq}, @code{ueq}, @code{olt}, @code{ult},
+@code{ole}, @code{ule}, @code{sf}, @code{ngle}, @code{seq},
+@code{ngl}, @code{lt}, @code{nge}, @code{le} or @code{ngt}.
+
+@table @code
+@item int __builtin_mips_cabs_@var{cond}_s (float @var{a}, float @var{b})
+@itemx int __builtin_mips_cabs_@var{cond}_d (double @var{a}, double @var{b})
+Absolute comparison of two scalar values (@code{cabs.@var{cond}.@var{fmt}},
+@code{bc1t}/@code{bc1f}).
+
+These functions compare @var{a} and @var{b} using @code{cabs.@var{cond}.s}
+or @code{cabs.@var{cond}.d} and return the result as a boolean value.
+For example:
+
+@smallexample
+float a, b;
+if (__builtin_mips_cabs_eq_s (a, b))
+  true ();
+else
+  false ();
+@end smallexample
+
+@item int __builtin_mips_upper_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+@itemx int __builtin_mips_lower_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+Absolute comparison of two paired-single values (@code{cabs.@var{cond}.ps},
+@code{bc1t}/@code{bc1f}).
+
+These functions compare @var{a} and @var{b} using @code{cabs.@var{cond}.ps}
+and return either the upper or lower half of the result.  For example:
+
+@smallexample
+v2sf a, b;
+if (__builtin_mips_upper_cabs_eq_ps (a, b))
+  upper_halves_are_equal ();
+else
+  upper_halves_are_unequal ();
+
+if (__builtin_mips_lower_cabs_eq_ps (a, b))
+  lower_halves_are_equal ();
+else
+  lower_halves_are_unequal ();
+@end smallexample
+
+@item v2sf __builtin_mips_movt_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+@itemx v2sf __builtin_mips_movf_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+Conditional move based on absolute comparison (@code{cabs.@var{cond}.ps},
+@code{movt.ps}/@code{movf.ps}).
+
+The @code{movt} functions return the value @var{x} computed by:
+
+@smallexample
+cabs.@var{cond}.ps @var{cc},@var{a},@var{b}
+mov.ps @var{x},@var{c}
+movt.ps @var{x},@var{d},@var{cc}
+@end smallexample
+
+The @code{movf} functions are similar but use @code{movf.ps} instead
+of @code{movt.ps}.
+
+@item int __builtin_mips_any_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+@itemx int __builtin_mips_all_c_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+@itemx int __builtin_mips_any_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+@itemx int __builtin_mips_all_cabs_@var{cond}_ps (v2sf @var{a}, v2sf @var{b})
+Comparison of two paired-single values
+(@code{c.@var{cond}.ps}/@code{cabs.@var{cond}.ps},
+@code{bc1any2t}/@code{bc1any2f}).
+
+These functions compare @var{a} and @var{b} using @code{c.@var{cond}.ps}
+or @code{cabs.@var{cond}.ps}.  The @code{any} forms return true if either
+result is true and the @code{all} forms return true if both results are true.
+For example:
+
+@smallexample
+v2sf a, b;
+if (__builtin_mips_any_c_eq_ps (a, b))
+  one_is_true ();
+else
+  both_are_false ();
+
+if (__builtin_mips_all_c_eq_ps (a, b))
+  both_are_true ();
+else
+  one_is_false ();
+@end smallexample
+
+@item int __builtin_mips_any_c_@var{cond}_4s (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+@itemx int __builtin_mips_all_c_@var{cond}_4s (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+@itemx int __builtin_mips_any_cabs_@var{cond}_4s (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+@itemx int __builtin_mips_all_cabs_@var{cond}_4s (v2sf @var{a}, v2sf @var{b}, v2sf @var{c}, v2sf @var{d})
+Comparison of four paired-single values
+(@code{c.@var{cond}.ps}/@code{cabs.@var{cond}.ps},
+@code{bc1any4t}/@code{bc1any4f}).
+
+These functions use @code{c.@var{cond}.ps} or @code{cabs.@var{cond}.ps}
+to compare @var{a} with @var{b} and to compare @var{c} with @var{d}.
+The @code{any} forms return true if any of the four results are true
+and the @code{all} forms return true if all four results are true.
+For example:
+
+@smallexample
+v2sf a, b, c, d;
+if (__builtin_mips_any_c_eq_4s (a, b, c, d))
+  some_are_true ();
+else
+  all_are_false ();
+
+if (__builtin_mips_all_c_eq_4s (a, b, c, d))
+  all_are_true ();
+else
+  some_are_false ();
+@end smallexample
+@end table
 
 @node PowerPC AltiVec Built-in Functions
 @subsection PowerPC AltiVec Built-in Functions
