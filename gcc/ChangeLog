@@ -1,5 +1,7 @@
 2004-10-27  Geoffrey Keating  <geoffk@apple.com>
 
+	* doc/tm.texi (USE_SELECT_SECTION_FOR_FUNCTIONS): Document.
+
 	* config/darwin.h (GTHREAD_USE_WEAK): Define.
 
 2004-10-28  Ben Elliston  <bje@au.ibm.com>
