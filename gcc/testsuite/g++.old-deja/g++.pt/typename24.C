@@ -18,7 +18,7 @@ const typename T::fooz &operator<<(const Foo &, const T &t)
   return t;
 }
 
-void main()
+int main()
 {
   Foo foo;
 
