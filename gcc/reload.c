@@ -3407,9 +3407,9 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 reload here.  */
 	      if (GET_CODE (operand) == REG
 		  && REGNO (operand) < FIRST_PSEUDO_REGISTER
-		  && this_alternative[i] != NO_REGS
+		  && (enum reg_class) this_alternative[i] != NO_REGS
 		  && (SECONDARY_MEMORY_NEEDED
-		      (this_alternative[i],
+		      ((enum reg_class) this_alternative[i],
 		       REGNO_REG_CLASS (REGNO (operand)),
 		       GET_MODE (operand))))
 		losers++;
