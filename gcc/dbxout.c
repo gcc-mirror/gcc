@@ -78,6 +78,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "reload.h"
 #include "defaults.h"
+#include "output.h" /* ASM_OUTPUT_SOURCE_LINE may refer to sdb functions.  */
 
 #ifndef errno
 extern int errno;
