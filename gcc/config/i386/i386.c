@@ -886,6 +886,7 @@ static tree ix86_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static int extended_reg_mentioned_1 (rtx *, void *);
 static bool ix86_rtx_costs (rtx, int, int, int *);
 static int min_insn_size (rtx);
+static tree ix86_md_asm_clobbers (tree clobbers);
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor (rtx, int);
@@ -1026,6 +1027,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
+
+#undef TARGET_MD_ASM_CLOBBERS
+#define TARGET_MD_ASM_CLOBBERS ix86_md_asm_clobbers
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
@@ -16022,6 +16026,23 @@ ix86_expand_vector_init (rtx target, rtx vals)
       default:
 	abort ();
     }
+}
+
+/* Worker function for TARGET_MD_ASM_CLOBBERS.
+
+   We do this in the new i386 backend to maintain source compatibility
+   with the old cc0-based compiler.  */
+
+static tree
+ix86_md_asm_clobbers (tree clobbers)
+{
+  clobbers = tree_cons (NULL_TREE, build_string (5, "flags"),	
+			clobbers);				
+  clobbers = tree_cons (NULL_TREE, build_string (4, "fpsr"),	
+			clobbers);				
+  clobbers = tree_cons (NULL_TREE, build_string (7, "dirflag"),	
+			clobbers);				
+  return clobbers;
 }
 
 #include "gt-i386.h"

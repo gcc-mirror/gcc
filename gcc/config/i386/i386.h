@@ -1591,22 +1591,6 @@ enum reg_class
      || MAYBE_MMX_CLASS_P (CLASS) 			\
    : GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
    ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
-
-/* A C statement that adds to CLOBBERS any hard regs the port wishes
-   to automatically clobber for all asms.
-
-   We do this in the new i386 backend to maintain source compatibility
-   with the old cc0-based compiler.  */
-
-#define MD_ASM_CLOBBERS(CLOBBERS)					\
-  do {									\
-    (CLOBBERS) = tree_cons (NULL_TREE, build_string (5, "flags"),	\
-			    (CLOBBERS));				\
-    (CLOBBERS) = tree_cons (NULL_TREE, build_string (4, "fpsr"),	\
-			    (CLOBBERS));				\
-    (CLOBBERS) = tree_cons (NULL_TREE, build_string (7, "dirflag"),	\
-			    (CLOBBERS));				\
-  } while (0)
 
 /* Stack layout; function entry, exit and calling.  */
 
