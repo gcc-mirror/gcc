@@ -7085,10 +7085,6 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
   register tree rhstype;
   register enum tree_code coder;
 
-  /* Issue warnings about peculiar, but legal, uses of NULL.  */
-  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-    cp_warning ("converting NULL to non-pointer type");
-
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since RHS is used in non-lvalue context.  */
   if (TREE_CODE (rhs) == NOP_EXPR
@@ -7176,8 +7172,16 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
   if (type == TREE_TYPE (rhs))
     {
+      /* Issue warnings about peculiar, but legal, uses of NULL.  We
+	 do this *before* the call to decl_constant_value so as to
+	 avoid duplicate warnings on code like `const int I = NULL;
+	 f(I);'.  */
+      if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
+	cp_warning ("converting NULL to non-pointer type");
+
       if (TREE_READONLY_DECL_P (rhs))
 	rhs = decl_constant_value (rhs);
+
       return rhs;
     }
 
