@@ -5121,7 +5121,7 @@ format provides support for this concept, such as the @samp{COMDAT}
 section flags in the Microsoft Windows PE/COFF format, and this support
 requires changes to @var{decl}, such as putting it in a separate section.
 
-@findex SUPPORTS_ONE_ONLY
+@findex SUPPORTS_WEAK
 @item SUPPORTS_WEAK
 A C expression which evaluates to true if the target supports one-only
 semantics.
