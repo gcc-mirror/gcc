@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -284,8 +284,11 @@ int switch_table_difference_label_flag;
    operand of a function call. */
 #undef LEGITIMATE_PIC_OPERAND_P
 #define LEGITIMATE_PIC_OPERAND_P(X) \
-  (! symbolic_operand (X, VOIDmode) \
-   || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
+  ((! symbolic_operand (X, VOIDmode) \
+    && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
+	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
+	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0), VOIDmode))) \
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
 
 /* Turn off function cse if we are doing PIC. We always want function call
    to be done as `bsr foo@PLTPC', so it will force the assembler to create 
