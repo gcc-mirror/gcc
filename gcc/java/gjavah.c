@@ -1122,7 +1122,7 @@ DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
        AND int name_index AND int signature_index
        AND int is_init AND const char *name_override AND int flags)
 {
-  const char *const prefix = flag_jni ? "Java_" : "\n";
+  const char *const prefix = flag_jni ? "Java_" : "";
   print_cxx_classname (stream, prefix, jcf, jcf->this_class);
   fputs (flag_jni ? "_" : "::", stream);
   print_full_cxx_name (stream, jcf, name_index, 
@@ -1188,9 +1188,8 @@ DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
 
       /* When printing a JNI header we need to respect the space.  In
 	 other cases we're just going to insert a newline anyway.  */
-      if (flag_jni)
-	fputs (need_space && ! stubs ? " " : "\n", stream);
-
+      fputs (need_space && ! stubs ? " " : "\n", stream);
+      
       /* Now print the name of the thing.  */
       print_name_for_stub_or_jni (stream, jcf, name_index,
 				  signature_index, is_init, name_override,
@@ -1251,7 +1250,7 @@ print_cxx_classname (stream, prefix, jcf, index)
   fputs (prefix, stream);
 
   /* Print a leading "::" so we look in the right namespace.  */
-  if (! flag_jni)
+  if (! flag_jni && ! stubs)
     fputs ("::", stream);
 
   while (s < limit)
@@ -1691,6 +1690,7 @@ DEFUN(process_file, (jcf, out),
 	  if (len > 6 && ! strcmp (&jcf->classname[len - 6], ".class"))
 	    len -= 6;
 	  print_include (out, jcf->classname, len);
+	  print_include (out, "gcj/cni", -1);
 	}
     }
 
