@@ -1,5 +1,18 @@
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/c4x/c4x.h (FUNCTION_VALUE): Use gen_rtx_REG instead
+	of gen_rtx.
+	(LIBCALL_VALUE): Likewise.
+	* config/ip2k/ip2k.c (mdr_try_propagate_clr_sequence): Use
+	gen_rtx_CC0 instead of gen_rtx.
+	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use
+	gen_rtx_fmt_e and gen_rtx_fmt_ee instead of gen_rtx.
+	(m68hc11_expand_compare): Use gen_rtx_fmt_ee instead of
+	gen_rtx.
+	(m68hc11_emit_logical): Likewise.
+
+2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/alpha/alpha.c, config/arm/arm.c, config/c4x/c4x.c,
 	config/fr30/fr30.md, config/frv/frv.c, config/frv/frv.md,
 	config/h8300/h8300.c, config/ia64/ia64.c, config/ip2k/ip2k.md,
