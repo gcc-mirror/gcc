@@ -1,5 +1,12 @@
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
+	* g++.old-deja/g++.other/instan1.C, instan2.C: Move to...
+	* g++.old-deja/g++.pt/instantiate1.C, instantiate2.C: ...here.
+	* gcc.dg/cpp/19960224-2.c, endif.c, if-6.c: Move into...
+	* gcc.dg/cpp/extratokens.c: ...here.
+
+2000-12-04  Neil Booth  <neilb@earthling.net>
+
         * gcc.dg/cpp/assert_trad1.c, assert_trad2.c, assert_trad3.c:
         New tests.
 
