@@ -1,3 +1,8 @@
+Sat Oct  2 10:53:22 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (ffs expander): Emit Pentium friendly code for
+	TARGET_PENTIUM.
+
 Sat Oct  2 02:48:21 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* tree.c (build): Don't look at TREE_SIDE_EFFECTS or TREE_RAISES 
