@@ -1510,10 +1510,13 @@ find_if_block (test_bb, then_edge, else_edge)
 	{
 	  rtx last_insn = then_bb->end;
 
-	  if (GET_CODE (last_insn) == NOTE)
-	    last_insn = prev_nonnote_insn (last_insn);
+	  while (last_insn
+		 && GET_CODE (last_insn) == NOTE
+		 && last_insn != then_bb->head)
+	    last_insn = PREV_INSN (last_insn);
 
-	  if (GET_CODE (last_insn) == JUMP_INSN
+	  if (last_insn
+	      && GET_CODE (last_insn) == JUMP_INSN
 	      && ! simplejump_p (last_insn))
 	    return FALSE;
 
