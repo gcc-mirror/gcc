@@ -1,5 +1,18 @@
 2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
 
+	* Makefile.am: Added gnu/awt/xlib/XFontPeer.java.
+	* Makefile.in: Re-generated.
+	* gnu/awt/xlib/XFontPeer.java: New file.
+	* gnu/awt/xlib/XGraphics.java (setFont): Test for null font.
+	(setClip): Commented out debug printout.
+	* gnu/awt/xlib/XToolkit.java: Change superclass to ClasspathToolkit.
+	(getFontPeer): Return XFontPeer.
+	(getLocalGraphicsEnvironment): New method.
+	(getClasspathFontPeer): New method.
+	(createFont): New method.
+
+2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
+
 	* gnu/java/awt/peer/ClasspathFontPeer.java (getTransform): Never
 	return null. 
 

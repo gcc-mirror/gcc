@@ -11,20 +11,23 @@ package gnu.awt.xlib;
 import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.dnd.peer.*;
+import java.awt.font.*;
 import java.awt.im.*;
 import java.awt.peer.*;
 import java.awt.image.ImageProducer;
 import java.awt.image.ImageObserver;
 import java.net.*;
 import java.awt.datatransfer.Clipboard;
-import java.util.Properties;
+import java.io.InputStream;
 import java.util.Map;
-
+import java.util.Properties;
 import gnu.gcj.xlib.Display;
 import gnu.gcj.xlib.Screen;
 import gnu.gcj.xlib.Visual;
+import gnu.java.awt.ClasspathToolkit;
+import gnu.java.awt.peer.ClasspathFontPeer;
 
-public class XToolkit extends Toolkit
+public class XToolkit extends ClasspathToolkit
 {
   static XToolkit INSTANCE;
   
@@ -158,7 +161,7 @@ public class XToolkit extends Toolkit
 
   protected java.awt.peer.FontPeer getFontPeer(String name, int style) 
   {
-    return null;
+    return new XFontPeer (name,style);
   }
 
   public Dimension getScreenSize()
@@ -345,4 +348,87 @@ public class XToolkit extends Toolkit
   {
     throw new UnsupportedOperationException("not implemented");
   }
+  
+  /** Returns a shared instance of the local, platform-specific
+   * graphics environment.
+   *
+   * <p>This method is specific to GNU Classpath. It gets called by
+   * the Classpath implementation of {@link
+   * GraphicsEnvironment.getLocalGraphcisEnvironment()}.
+   */
+  public GraphicsEnvironment getLocalGraphicsEnvironment ()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+  
+  /** Acquires an appropriate {@link ClasspathFontPeer}, for use in
+   * classpath's implementation of {@link java.awt.Font}.
+   *
+   * @param name The logical name of the font. This may be either a face
+   * name or a logical font name, or may even be null. A default
+   * implementation of name decoding is provided in
+   * {@link ClasspathFontPeer}, but may be overridden in other toolkits.
+   *
+   * @param attrs Any extra {@link java.awt.font.TextAttribute} attributes
+   * this font peer should have, such as size, weight, family name, or
+   * transformation.
+   */
+  public ClasspathFontPeer getClasspathFontPeer (String name, Map attrs)
+  {
+    int style = Font.PLAIN;
+    float size = 12;
+
+    if (attrs.containsKey (TextAttribute.WEIGHT))
+      {
+        Float weight = (Float) attrs.get (TextAttribute.WEIGHT);
+        if (weight.floatValue () >= TextAttribute.WEIGHT_BOLD.floatValue ())
+          style += Font.BOLD;
+      }
+
+    if (attrs.containsKey (TextAttribute.POSTURE))
+      {
+        Float posture = (Float) attrs.get (TextAttribute.POSTURE);
+        if (posture.floatValue () >= TextAttribute.POSTURE_OBLIQUE.floatValue ())
+          style += Font.ITALIC;
+      }
+
+    if (attrs.containsKey (TextAttribute.SIZE))
+      {
+        Float fsize = (Float) attrs.get (TextAttribute.SIZE);
+        size = fsize.floatValue ();
+      }
+
+    return new XFontPeer (name,style,size);
+  }
+  
+  /** Creates a font, reading the glyph definitions from a stream.
+   *
+   * <p>This method provides the platform-specific implementation for
+   * the static factory method {@link Font#createFont(int,
+   * java.io.InputStream)}.
+   *
+   * @param format the format of the font data, such as {@link
+   * Font#TRUETYPE_FONT}. An implementation may ignore this argument
+   * if it is able to automatically recognize the font format from the
+   * provided data.
+   *
+   * @param stream an input stream from where the font data is read
+   * in. The stream will be advanced to the position after the font
+   * data, but not closed.
+   *
+   * @throws IllegalArgumentException if <code>format</code> is
+   * not supported.
+   *
+   * @throws FontFormatException if <code>stream</code> does not
+   * contain data in the expected format, or if required tables are
+   * missing from a font.
+   *
+   * @throws IOException if a problem occurs while reading in the
+   * contents of <code>stream</code>.
+   */
+  public Font createFont (int format, InputStream stream)
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+  
 }
