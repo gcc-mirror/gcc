@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Tahoe version.
-   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * File: tahoe.h
- *
  * Original port made at the University of Buffalo by Devon Bowen,
  * Dale Wiles and Kevin Zachmann.
  *
@@ -327,7 +325,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 
 /* the tahoe return function takes care of everything on the stack */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) (SIZE)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (SIZE)
 
 /* function values for all types are returned in register 0 */
 

@@ -31,7 +31,7 @@
    structures. */
 
 #undef RETURN_POPS_ARGS
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE)   \
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
   (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE ? 0			\
    : (TARGET_RTD						\
       && (TYPE_ARG_TYPES (FUNTYPE) == 0				\

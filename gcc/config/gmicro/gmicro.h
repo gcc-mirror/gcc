@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 1988, 1989 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1995 Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
@@ -443,6 +443,7 @@ extern enum reg_class regno_reg_class[];
 
 /* Value is the number of byte of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack. 
@@ -457,7 +458,7 @@ extern enum reg_class regno_reg_class[];
    On the m68k this is an RTD option, so I use the same name
    for the Gmicro. The option name may be changed in the future. */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE)   \
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
   ((TARGET_RTD && TREE_CODE (FUNTYPE) != IDENTIFIER_NODE	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\

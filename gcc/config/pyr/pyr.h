@@ -1,6 +1,6 @@
 /* Definitions of target machine parameters for GNU compiler,
    for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
+
 /*
  * If you're going to change this, and you haven't already,
  * you should get and read
@@ -484,6 +484,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
@@ -492,7 +493,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    using RETD in this way violates the Pyramid calling convention.
    We may nevertheless provide this as an option.   */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE)   \
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
   ((TARGET_RETD && TREE_CODE (FUNTYPE) != IDENTIFIER_NODE	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\

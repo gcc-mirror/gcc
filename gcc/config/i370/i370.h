@@ -447,7 +447,7 @@ enum reg_class
 /* Define if returning from a function call automatically pops the
    arguments described by the number-of-args field in the call.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE, STACKSIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 /* Define how to find the value returned by a function.  VALTYPE is the
    data type of the value (as a tree).
