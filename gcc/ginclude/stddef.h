@@ -20,7 +20,7 @@
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
 #if defined (__BSD_NET2__) || defined (____386BSD____)
-#include <ansi.h>
+#include <machines/ansi.h>
 #endif
 
 /* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
