@@ -11790,14 +11790,10 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpeqss", IX86_BUILTIN_CMPEQSS, EQ, 0 },
   { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpltss", IX86_BUILTIN_CMPLTSS, LT, 0 },
   { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpless", IX86_BUILTIN_CMPLESS, LE, 0 },
-  { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpgtss", IX86_BUILTIN_CMPGTSS, LT, 1 },
-  { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpgess", IX86_BUILTIN_CMPGESS, LE, 1 },
   { MASK_SSE1, CODE_FOR_vmmaskcmpv4sf3, "__builtin_ia32_cmpunordss", IX86_BUILTIN_CMPUNORDSS, UNORDERED, 0 },
   { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpneqss", IX86_BUILTIN_CMPNEQSS, EQ, 0 },
   { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpnltss", IX86_BUILTIN_CMPNLTSS, LT, 0 },
   { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpnless", IX86_BUILTIN_CMPNLESS, LE, 0 },
-  { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpngtss", IX86_BUILTIN_CMPNGTSS, LT, 1 },
-  { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpngess", IX86_BUILTIN_CMPNGESS, LE, 1 },
   { MASK_SSE1, CODE_FOR_vmmaskncmpv4sf3, "__builtin_ia32_cmpordss", IX86_BUILTIN_CMPORDSS, UNORDERED, 0 },
 
   { MASK_SSE1, CODE_FOR_sminv4sf3, "__builtin_ia32_minps", IX86_BUILTIN_MINPS, 0, 0 },
@@ -11919,14 +11915,10 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmpeqsd", IX86_BUILTIN_CMPEQSD, EQ, 0 },
   { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmpltsd", IX86_BUILTIN_CMPLTSD, LT, 0 },
   { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmplesd", IX86_BUILTIN_CMPLESD, LE, 0 },
-  { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmpgtsd", IX86_BUILTIN_CMPGTSD, LT, 1 },
-  { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmpgesd", IX86_BUILTIN_CMPGESD, LE, 1 },
   { MASK_SSE2, CODE_FOR_vmmaskcmpv2df3, "__builtin_ia32_cmpunordsd", IX86_BUILTIN_CMPUNORDSD, UNORDERED, 0 },
   { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpneqsd", IX86_BUILTIN_CMPNEQSD, EQ, 0 },
   { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpnltsd", IX86_BUILTIN_CMPNLTSD, LT, 0 },
   { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpnlesd", IX86_BUILTIN_CMPNLESD, LE, 0 },
-  { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpngtsd", IX86_BUILTIN_CMPNGTSD, LT, 1 },
-  { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpngesd", IX86_BUILTIN_CMPNGESD, LE, 1 },
   { MASK_SSE2, CODE_FOR_vmmaskncmpv2df3, "__builtin_ia32_cmpordsd", IX86_BUILTIN_CMPORDSD, UNORDERED, 0 },
 
   { MASK_SSE2, CODE_FOR_sminv2df3, "__builtin_ia32_minpd", IX86_BUILTIN_MINPD, 0, 0 },
@@ -13731,7 +13723,8 @@ ix86_memory_move_cost (mode, class, in)
 	if (mode == TFmode)
 	  mode = XFmode;
 	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
-		* (int) GET_MODE_SIZE (mode) / 4);
+		* ((int) GET_MODE_SIZE (mode)
+		   + UNITS_PER_WORD -1 ) / UNITS_PER_WORD);
     }
 }
 
