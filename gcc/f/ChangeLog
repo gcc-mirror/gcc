@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-06-30  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Mention 2 Gbyte limit on 32-bit targets

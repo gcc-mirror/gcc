@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-06-25  Andreas Schwab  <schwab@suse.de>
 
 	* expr.c (JSR): Avoid undefined operation on PC.

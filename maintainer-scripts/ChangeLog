@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-05-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_release: Add gcc/ada/gnatvsn.ads to list of files in which

@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (add_method): Correct handling of conversion operators.

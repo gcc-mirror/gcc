@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-demangle.c (demangle_operator_name): Add type_arg parameter.

@@ -1,3 +1,7 @@
+2002-07-25  Release Manager
+
+	* GCC 3.1.1 Released.
+
 2002-06-25  DJ Delorie  <dj@redhat.com>
 
 	* aclocal.m4 (GLIBCPP_CONFIGURE): Split out
