@@ -105,11 +105,13 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
 	}
     }
 
+/* FIXME: comment this out until its better tested/implemented
   if ((jflags & SYNC))
     flags |= O_SYNC;
 
   if ((jflags & DSYNC))
     flags |= O_DSYNC;
+*/
 
   int fd = ::open (buf, flags, mode);
   if (fd == -1 && errno == EMFILE)

@@ -1,3 +1,9 @@
+2003-05-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/natFileDescriptorPosix.cc
+	(open): Commented out the O_SYNC and O_DSYNC usage until its better
+	tested.
+
 2003-05-14  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/FileLockImpl.java
