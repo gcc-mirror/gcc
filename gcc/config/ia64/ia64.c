@@ -719,6 +719,19 @@ predicate_operator (op, mode)
 	  && (code == EQ || code == NE));
 }
 
+/* Return 1 if this operator can be used in a conditional operation.  */
+
+int
+condop_operator (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+  return ((GET_MODE (op) == mode || mode == VOIDmode)
+	  && (code == PLUS || code == MINUS || code == AND
+	      || code == IOR || code == XOR));
+}
+
 /* Return 1 if this is the ar.lc register.  */
 
 int

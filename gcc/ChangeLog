@@ -15,6 +15,11 @@
 	* config/ia64/ia64.c (ia64_sched_reorder): Defer scheduling of
 	asms if other insns are available.
 
+	* config/ia64/ia64.c (condop_operator): New predicate.
+	* config/ia64/ia64.h (PREDICATE_CODES): Add it.
+	* config/ia64/ia64.md (cond_opsi2_internal and splitters): New
+	patterns.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/sh/sh.c (sh_asm_named_section): Fix typo in align

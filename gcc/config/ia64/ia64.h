@@ -2664,6 +2664,7 @@ do {									\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "signed_inequality_operator", {GE, GT, LE, LT}},			\
 { "predicate_operator", {NE, EQ}},					\
+{ "condop_operator", {PLUS, MINUS, IOR, XOR, AND}},			\
 { "ar_lc_reg_operand", {REG}},						\
 { "ar_ccv_reg_operand", {REG}},						\
 { "general_tfmode_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
