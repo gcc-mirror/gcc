@@ -933,7 +933,7 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # switches.
 multilib.h: $(srcdir)/genmultilib Makefile
 	$(SHELL) $(srcdir)/genmultilib "$(MULTILIB_OPTIONS)" \
-	  "$(MULTILIB_DIRNAMES)" "$(MULTILIB_MATCHES)" > multilib.h
+	  "$(MULTILIB_DIRNAMES)" "$(MULTILIB_MATCHES)" "$(MULTILIB_EXCEPTIONS)" > multilib.h
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
