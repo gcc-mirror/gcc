@@ -848,7 +848,7 @@ finish_call_expr (fn, args, koenig)
       if (TREE_CODE (fn) == BIT_NOT_EXPR)
 	fn = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND (fn, 0));
       else if (TREE_CODE (fn) != TEMPLATE_ID_EXPR)
-	fn = do_identifier (fn, 0, args);
+	fn = do_identifier (fn, 2, args);
     }
   result = build_x_function_call (fn, args, current_class_ref);
 
@@ -1135,7 +1135,7 @@ finish_declarator (declarator, declspecs, attributes,
 		     prefix_attributes); 
 }
 
-/* Finish a transltation unit.  */
+/* Finish a translation unit.  */
 
 void 
 finish_translation_unit ()

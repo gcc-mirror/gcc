@@ -3212,6 +3212,11 @@ lookup_template_class (d1, arglist, in_decl, context)
 	  && CLASSTYPE_INTERFACE_KNOWN (TREE_TYPE (template))
 	  && ! CLASSTYPE_INTERFACE_ONLY (TREE_TYPE (template)))
 	add_pending_template (t);
+
+      if (uses_template_parms (arglist))
+	/* If the type makes use of template parameters, the
+	   code that generates debugging information will crash.  */
+	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;
     }
 
   return t;

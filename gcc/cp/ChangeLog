@@ -1,3 +1,25 @@
+1998-07-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Look for class value even if we don't
+	have a global value.  Do implicit declaration if parsing is 2.
+	* semantics.c (finish_call_expr): Pass 2 if we're doing Koenig
+	lookup.
+
+1998-07-19  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (pushtag): Revert previous change.
+	* pt.c (lookup_template_class): Don't put out debugging
+	information for types that use template parameters.
+
+	* decl.c (pushtag): Don't put out debugging information for
+	compiler-generated typedefs.
+	
+	* error.c (dump_type_real): Don't crash when presented with
+	intQI_type_node or the like.
+
+	* semantics.c (finish_translation_unit): Fix spelling error in
+	comment.
+
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): Pull out single function here.
