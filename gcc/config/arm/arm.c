@@ -267,7 +267,10 @@ static struct processors all_cores[] =
   {"arm700",	FL_CO_PROC | FL_MODE26 | FL_MODE32 },
   {"arm700i",	FL_CO_PROC | FL_MODE26 | FL_MODE32 },
   {"arm710",	             FL_MODE26 | FL_MODE32 },
+  {"arm710t",	             FL_MODE26 | FL_MODE32                           | FL_THUMB },
   {"arm720",	             FL_MODE26 | FL_MODE32 },
+  {"arm720t",	             FL_MODE26 | FL_MODE32                           | FL_THUMB },
+  {"arm740t",	             FL_MODE26 | FL_MODE32                           | FL_THUMB },
   {"arm710c",	             FL_MODE26 | FL_MODE32 },
   {"arm7100",	             FL_MODE26 | FL_MODE32 },
   {"arm7500",	             FL_MODE26 | FL_MODE32 },
@@ -279,11 +282,16 @@ static struct processors all_cores[] =
   {"arm9",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
   {"arm920",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED },
   {"arm920t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
+  {"arm940t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
   {"arm9tdmi",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
+  {"arm9e",	       	      		 FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED },
   {"strongarm",	             FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm110",           FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1100",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
-  {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_ARCH5 | FL_ARCH5E },
+  {"strongarm1110",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
+  {"arm10tdmi",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
+  {"arm1020t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
+  {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_ARCH5 | FL_ARCH5E | FL_XSCALE },
   
   {NULL, 0}
 };
@@ -2235,8 +2243,10 @@ legitimize_pic_address (orig, mode, reg)
    generated insns at the start of the function);  false if called
    by an exception receiver that needs the PIC register reloaded
    (in which case the insns are just dumped at the current location).  */
+
 void
-arm_finalize_pic (int prologue)
+arm_finalize_pic (prologue)
+     int prologue;
 {
 #ifndef AOF_ASSEMBLER
   rtx l1, pic_tmp, pic_tmp2, seq, pic_rtx;
@@ -8817,16 +8827,12 @@ arm_init_builtins ()
 
   /* Initialize arm V5 builtins.  */
   if (arm_arch5)
-    {
-      def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
-    }
+    def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
 
   /* Initialize arm V5E builtins.  */
   if (arm_arch5e)
-    {
-      def_builtin ("__builtin_prefetch", void_ftype_pchar,
-		   ARM_BUILTIN_PREFETCH);
-    }
+    def_builtin ("__builtin_prefetch", void_ftype_pchar,
+		 ARM_BUILTIN_PREFETCH);
 }
 
 /* Expand an expression EXP that calls a built-in function,

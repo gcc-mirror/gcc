@@ -1,3 +1,8 @@
+2001-02-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (all_cores): Add 710T, 720T, 740T, 940T, 9e,
+	StrongARM1110, 10TDMI, and 1020T.
+
 2001-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.h (MULTILIB_ISA_DEFAULT): Don't use #elif.
