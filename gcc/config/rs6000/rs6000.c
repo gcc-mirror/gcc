@@ -5057,12 +5057,15 @@ rs6000_return_addr (count, frame)
   /* Currently we don't optimize very well between prolog and body code and
      for PIC code the code can be actually quite bad, so don't try to be
      too clever here.  */
-  if (count != 0 || flag_pic != 0)
+  if (count != 0
+      || flag_pic != 0
+      || DEFAULT_ABI == ABI_AIX
+      || DEFAULT_ABI == ABI_AIX_NODESC)
     {
       cfun->machine->ra_needs_full_frame = 1;
       return
 	gen_rtx_MEM (Pmode,
-	  memory_address (Pmode,
+          memory_address (Pmode,
 			  plus_constant (copy_to_reg (gen_rtx_MEM (Pmode,
 								   memory_address (Pmode, frame))),
 					 RETURN_ADDRESS_OFFSET)));
