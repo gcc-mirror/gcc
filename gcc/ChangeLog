@@ -1,3 +1,16 @@
+Thu Jul  2 18:43:53 1998  James Carlson  <carlson@ironbridgenetworks.com>
+ 
+	* floatlib.c (HIDDEND_LL, MANTD_LL, PACKD_LL): New macros.
+	(__addsf3): Fixed cases returning wrong type and causing unintended
+	conversions and data corruption.
+	(__mulsf3): Fixed rounding flaws caused wrong scaling.
+	(__float{didf,sisf,disf},__fix{,uns}dfdi): New functions.
+	(__{gt,ge,lt,le,eq,ne}df2): Likewise.
+	(__truncdfsf2): Fixed normalization problems
+	(__fixunsdfsi): Fixed compiler warning
+	(__{add,sub,mul}df3): Rewrite to do real DP math.
+	(__divdf3): Removed previous version by Barrett Richardson.
+
 Thu Jul  2 17:57:20 1998  Douglas B. Rupp  <rupp@gnat.com>
 
 	* cpperror.c: Include errno.h.
