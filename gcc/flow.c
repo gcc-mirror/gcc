@@ -2741,8 +2741,7 @@ mark_used_regs (needed, live, x, final, insn)
 
 	  while (temp)
 	    {
-	      if (anti_dependence (XEXP (temp, 0), GET_MODE (x),
-				   x, rtx_addr_varies_p))
+	      if (anti_dependence (XEXP (temp, 0), x))
 		{
 		  /* Splice temp out of the list.  */
 		  if (prev)
