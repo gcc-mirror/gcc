@@ -294,8 +294,8 @@ static int contains		PARAMS ((rtx, varray_type));
 static void emit_return_into_block PARAMS ((basic_block, rtx));
 #endif
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
-static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
-					  struct hash_table *));
+static int purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
+				      struct hash_table *));
 static void purge_single_hard_subreg_set PARAMS ((rtx));
 #ifdef HAVE_epilogue
 static void keep_stack_depressed PARAMS ((rtx));
@@ -2969,7 +2969,7 @@ static rtx purge_addressof_replacements;
    the stack.  If the function returns FALSE then the replacement could not
    be made.  */
 
-static boolean
+static /* boolean */ int
 purge_addressof_1 (loc, insn, force, store, ht)
      rtx *loc;
      rtx insn;
@@ -2980,14 +2980,14 @@ purge_addressof_1 (loc, insn, force, store, ht)
   RTX_CODE code;
   int i, j;
   const char *fmt;
-  boolean result = true;
+  int /*boolean */ result = /* true */ 1;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:
 
   x = *loc;
   if (x == 0)
-    return true;
+    return 1;
 
   code = GET_CODE (x);
 
@@ -3010,7 +3010,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
       if (validate_change (insn, loc, sub, 0)
 	  || validate_replace_rtx (x, sub, insn))
-	return true;
+	return 1;
 
       start_sequence ();
       sub = force_operand (sub, NULL_RTX);
@@ -3021,7 +3021,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
       insns = gen_sequence ();
       end_sequence ();
       emit_insn_before (insns, insn);
-      return true;
+      return 1;
     }
 
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
@@ -3055,7 +3055,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		if (rtx_equal_p (x, XEXP (tem, 0)))
 		  {
 		    *loc = XEXP (XEXP (tem, 1), 0);
-		    return true;
+		    return 1;
 		  }
 
 	      /* See comment for purge_addressof_replacements.  */
@@ -3095,7 +3095,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		      z = gen_lowpart (GET_MODE (x), z);
 
 		    *loc = z;
-		    return true;
+		    return 1;
 		  }
 
 	      /* Sometimes we may not be able to find the replacement.  For
@@ -3105,7 +3105,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		 generate an example of this siutation.  Rather than complain
 		 we return false, which will prompt our caller to remove the
 		 offending note.  */
-	      return false;
+	      return /* false */ 0;
 	    }
 
 	  size_x = GET_MODE_BITSIZE (GET_MODE (x));
@@ -3191,7 +3191,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 				      purge_bitfield_addressof_replacements));
 
 	      /* We replaced with a reg -- all done.  */
-	      return true;
+	      return 1;
 	    }
 	}
 
@@ -3209,13 +3209,13 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		if (rtx_equal_p (XEXP (x, 0), XEXP (tem, 0)))
 		  {
 		    XEXP (XEXP (tem, 1), 0) = sub;
-		    return true;
+		    return 1;
 		  }
 	      purge_addressof_replacements
 		= gen_rtx (EXPR_LIST, VOIDmode, XEXP (x, 0),
 			   gen_rtx_EXPR_LIST (VOIDmode, sub,
 					      purge_addressof_replacements));
-	      return true;
+	      return 1;
 	    }
 	  goto restart;
 	}
@@ -3226,7 +3226,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
   else if (code == ADDRESSOF)
     {
       put_addressof_into_stack (x, ht);
-      return true;
+      return 1;
     }
   else if (code == SET)
     {

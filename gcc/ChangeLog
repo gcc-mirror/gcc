@@ -1,3 +1,9 @@
+2001-03-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* function.c (purge_addressof_1): Change type of function
+	purge_addressof_1 from boolean to int.  Change local variable
+	`result' to int, and false and true to 0 and 1, respectively.
+
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/larith.asm (__mulqi3): Fix multiplication of two
