@@ -1,3 +1,7 @@
+2001-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.md: Use (HOST_WIDE_INT)1<<63 in lieu of 0x8000000000000000.
+
 2001-12-07  Stephane Carrez  <Stephane.Carrez@sun.com>
 
 	* config/sparc/sparc.c (epilogue_renumber): Do not replace %fp
