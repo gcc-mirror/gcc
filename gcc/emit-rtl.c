@@ -692,14 +692,14 @@ gen_lowpart_common (mode, x)
 
       i = INTVAL (x);
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
-      return immed_real_const_1 (r, mode);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
     {
       union {HOST_WIDE_INT i; float d; } u;
 
       u.i = INTVAL (x);
-      return immed_real_const_1 (u.d, mode);
+      return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
 #endif
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
@@ -730,7 +730,7 @@ gen_lowpart_common (mode, x)
 	i[0] = low, i[1] = high;
 
       r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
-      return immed_real_const_1 (r, mode);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
     {
@@ -748,7 +748,7 @@ gen_lowpart_common (mode, x)
       u.i[0] = low, u.i[1] = high;
 #endif
 
-      return immed_real_const_1 (u.d, mode);
+      return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
 #endif
   /* Similarly, if this is converting a floating-point value into a
