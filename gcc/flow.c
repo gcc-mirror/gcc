@@ -6393,7 +6393,7 @@ verify_flow_info ()
 	      if (!e2)
 		{
 		  error ("Basic block %i edge lists are corrupted", bb->index);
-		  abort;
+		  abort ();
 		}
 	    }
 	  e = e->pred_next;
