@@ -877,14 +877,16 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
 #ifdef USE_WIN32_SIGNALLING
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
-#else
+#elif defined(HAVE_SIGACTION)
   // We only want this on POSIX systems.
   struct sigaction act;
   act.sa_handler = SIG_IGN;
   sigemptyset (&act.sa_mask);
   act.sa_flags = 0;
   sigaction (SIGPIPE, &act, NULL);
-#endif /* USE_WIN32_SIGNALLING */
+#else
+  signal (SIGPIPE, SIG_IGN);
+#endif
 
   _Jv_JNI_Init ();
 

@@ -269,6 +269,9 @@
 /* Define if you have the setlocale function.  */
 #undef HAVE_SETLOCALE
 
+/* Define if you have the sigaction function.  */
+#undef HAVE_SIGACTION
+
 /* Define if you have the sleep function.  */
 #undef HAVE_SLEEP
 
