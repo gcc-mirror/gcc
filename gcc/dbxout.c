@@ -381,8 +381,7 @@ dbxout_init (asm_file, input_file_name, syms)
   asmfile = asm_file;
 
   typevec_len = 100;
-  typevec = (struct typeinfo *) xmalloc (typevec_len * sizeof typevec[0]);
-  bzero ((char *) typevec, typevec_len * sizeof typevec[0]);
+  typevec = (struct typeinfo *) xcalloc (typevec_len, sizeof typevec[0]);
 
   /* Convert Ltext into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
