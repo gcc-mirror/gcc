@@ -1739,7 +1739,13 @@ main (argc, argv)
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
 	    new->control_macro = 0;
+#ifdef NO_IMPLICIT_EXTERN_C
+	    /* On some systems, the system header files are C++-compatible.
+	       So don't pretend they are `extern "C"'.  */
+	    new->c_system_include_path = 0;
+#else
 	    new->c_system_include_path = !p->cplusplus;
+#endif
 	    append_include_chain (new, new);
 	    if (first_system_include == 0)
 	      first_system_include = new;
