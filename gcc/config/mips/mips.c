@@ -3269,7 +3269,6 @@ override_options ()
     {
       mips_abicalls = MIPS_ABICALLS_YES;
       flag_pic = 1;
-      /* ??? Is this sufficient?  */
       if (mips_section_threshold > 0)
 	warning ("-G is incompatible with PIC code which is the default");
     }
