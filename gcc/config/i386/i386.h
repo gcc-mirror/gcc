@@ -300,7 +300,7 @@ extern int x86_prefetch_sse;
 
 #define ASSEMBLER_DIALECT (ix86_asm_dialect)
 
-#define TARGET_SSE ((target_flags & (MASK_SSE | MASK_SSE2)) != 0)
+#define TARGET_SSE ((target_flags & MASK_SSE) != 0)
 #define TARGET_SSE2 ((target_flags & MASK_SSE2) != 0)
 #define TARGET_SSE_MATH ((ix86_fpmath & FPMATH_SSE) != 0)
 #define TARGET_MIX_SSE_I387 ((ix86_fpmath & FPMATH_SSE) \
@@ -393,7 +393,7 @@ extern int x86_prefetch_sse;
     N_("Support MMX and SSE built-in functions and code generation") },	      \
   { "no-sse",			 -MASK_SSE,				      \
     N_("Do not support MMX and SSE built-in functions and code generation") },\
-  { "sse2",			 MASK_SSE2,				      \
+  { "sse2",			 (MASK_SSE2|MASK_SSE),			      \
     N_("Support MMX, SSE and SSE2 built-in functions and code generation") }, \
   { "no-sse2",			 -MASK_SSE2,				      \
     N_("Do not support MMX, SSE and SSE2 built-in functions and code generation") },    \
