@@ -1,3 +1,9 @@
+2003-12-16  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/21_strings/howto.html: Document shrink-to-fit reserve().
+	* docs/html/faq/index.html: Reducing vector's capacity() to size().
+	* docs/html/documentation.html, docs/html/faq/index.txt: Regenerate.
+
 2003-12-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/narrow_widen_char.cc: Tweak the
