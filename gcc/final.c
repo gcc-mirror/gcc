@@ -997,7 +997,7 @@ compute_alignments ()
 	 align it.  It is most likely an first block of loop.  */
       if (has_fallthru
 	  && branch_frequency + fallthru_frequency > BB_FREQ_MAX / 10
-	  && branch_frequency > fallthru_frequency * 5)
+	  && branch_frequency > fallthru_frequency * 2)
 	{
 	  log = LOOP_ALIGN (label);
 	  if (max_log < log)
