@@ -974,7 +974,8 @@ extern union tree_node *current_function_decl;
   fprintf (FILE, "\tldw 12(0,%%r22),%%r21\n");	\
   fprintf (FILE, "\tbe 0(4,%%r21)\n");		\
   fprintf (FILE, "\tldw 16(0,%%r22),%%r29\n");	\
-  fprintf (FILE, "\t.long 0,0\n");		\
+  fprintf (FILE, "\t.word 0\n");		\
+  fprintf (FILE, "\t.word 0\n");		\
 }
 
 /* Length in units of the trampoline for entering a nested function.
