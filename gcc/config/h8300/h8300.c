@@ -54,6 +54,7 @@ static unsigned int compute_saved_regs PARAMS ((void));
 static void push PARAMS ((FILE *, int));
 static void pop PARAMS ((FILE *, int));
 static const char *cond_string PARAMS ((enum rtx_code));
+static unsigned int h8300_asm_insn_count PARAMS ((const char *));
 const struct attribute_spec h8300_attribute_table[];
 static tree h8300_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree h8300_handle_eightbit_data_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -2863,6 +2864,160 @@ output_a_shift (operands)
 	}
     }
 }
+
+static unsigned int
+h8300_asm_insn_count (const char *template)
+{
+  unsigned int count = 1;
+
+  for (; *template; template++)
+    if (*template == '\n')
+      count++;
+
+  return count;
+}
+
+unsigned int
+compute_a_shift_length (insn, operands)
+     rtx insn ATTRIBUTE_UNUSED;
+     rtx *operands;
+{
+  rtx shift = operands[3];
+  enum machine_mode mode = GET_MODE (shift);
+  enum rtx_code code = GET_CODE (shift);
+  enum shift_type shift_type;
+  enum shift_mode shift_mode;
+  struct shift_info info;
+  unsigned int wlength = 0;
+
+  switch (mode)
+    {
+    case QImode:
+      shift_mode = QIshift;
+      break;
+    case HImode:
+      shift_mode = HIshift;
+      break;
+    case SImode:
+      shift_mode = SIshift;
+      break;
+    default:
+      abort ();
+    }
+
+  switch (code)
+    {
+    case ASHIFTRT:
+      shift_type = SHIFT_ASHIFTRT;
+      break;
+    case LSHIFTRT:
+      shift_type = SHIFT_LSHIFTRT;
+      break;
+    case ASHIFT:
+      shift_type = SHIFT_ASHIFT;
+      break;
+    default:
+      abort ();
+    }
+
+  if (GET_CODE (operands[2]) != CONST_INT)
+    {
+      /* Get the assembler code to do one shift.  */
+      get_shift_alg (shift_type, shift_mode, 1, &info);
+
+      return (4 + h8300_asm_insn_count (info.shift1)) * 2;
+    }
+  else
+    {
+      int n = INTVAL (operands[2]);
+
+      /* If the count is negative, make it 0.  */
+      if (n < 0)
+	n = 0;
+      /* If the count is too big, truncate it.
+         ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
+	 do the intuitive thing.  */
+      else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
+	n = GET_MODE_BITSIZE (mode);
+
+      get_shift_alg (shift_type, shift_mode, n, &info);
+
+      switch (info.alg)
+	{
+	case SHIFT_SPECIAL:
+	  wlength += h8300_asm_insn_count (info.special);
+	  /* Fall through.  */
+
+	case SHIFT_INLINE:
+	  n = info.remainder;
+
+	  if (info.shift2 != NULL)
+	    {
+	      wlength += h8300_asm_insn_count (info.shift2) * (n / 2);
+	      n = n % 2;
+	    }
+
+	  wlength += h8300_asm_insn_count (info.shift1) * n;
+	    
+	  return 2 * wlength;
+
+	case SHIFT_ROT_AND:
+	  {
+	    int m = GET_MODE_BITSIZE (mode) - n;
+
+	    /* Not all possibilities of rotate are supported.  They shouldn't
+	       be generated, but let's watch for 'em.  */
+	    if (info.shift1 == 0)
+	      abort ();
+
+	    if (info.shift2 != NULL)
+	      {
+		wlength += h8300_asm_insn_count (info.shift2) * (m / 2);
+		m = m % 2;
+	      }
+
+	    wlength += h8300_asm_insn_count (info.shift1) * m;
+	    
+	    /* Now mask off the high bits.  */
+	    switch (mode)
+	      {
+	      case QImode:
+		wlength += 1;
+		break;
+	      case HImode:
+		wlength += 2;
+		break;
+	      case SImode:
+		if (TARGET_H8300)
+		  abort ();
+		wlength += 3;
+		break;
+	      default:
+		abort ();
+	      }
+	    return 2 * wlength;
+	  }
+
+	case SHIFT_LOOP:
+	  /* A loop to shift by a "large" constant value.
+	     If we have shift-by-2 insns, use them.  */
+	  if (info.shift2 != NULL)
+	    {
+	      wlength += 3 + h8300_asm_insn_count (info.shift2);
+	      if (n % 2)
+		wlength += h8300_asm_insn_count (info.shift1);
+	    }
+	  else
+	    {
+	      wlength += 3 + h8300_asm_insn_count (info.shift1);
+	    }
+	  return 2 * wlength;
+
+	default:
+	  abort ();
+	}
+    }
+}
 
 /* A rotation by a non-constant will cause a loop to be generated, in
    which a rotation by one bit is used.  A rotation by a constant,
@@ -3434,50 +3589,6 @@ h8300_adjust_insn_length (insn, length)
 	      return 4 - 6;
 	    }
 	}
-    }
-
-  /* Shifts need various adjustments.  */
-  if (GET_CODE (pat) == PARALLEL
-      && GET_CODE (XVECEXP (pat, 0, 0)) == SET
-      && (GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFTRT
-	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == LSHIFTRT
-	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFT))
-    {
-      rtx src = SET_SRC (XVECEXP (pat, 0, 0));
-      enum machine_mode mode = GET_MODE (src);
-      int shift;
-
-      if (GET_CODE (XEXP (src, 1)) != CONST_INT)
-	return 0;
-
-      shift = INTVAL (XEXP (src, 1));
-      /* According to ANSI, negative shift is undefined.  It is
-         considered to be zero in this case (see function
-         output_a_shift above).  */
-      if (shift < 0)
-	shift = 0;
-
-      /* QImode shifts by small constants take one insn
-	 per shift.  So the adjustment is 20 (md length) -
-	 # shifts * 2.  */
-      if (mode == QImode && shift <= 4)
-	return -(20 - shift * 2);
-
-      /* Similarly for HImode and SImode shifts by small constants on
-	 the H8/300H and H8/S.  */
-      if ((TARGET_H8300H || TARGET_H8300S)
-	  && (mode == HImode || mode == SImode) && shift <= 4)
-	return -(20 - shift * 2);
-
-      /* HImode shifts by small constants for the H8/300.  */
-      if (mode == HImode && shift <= 4)
-	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 2 : 4)));
-
-      /* SImode shifts by small constants for the H8/300.  */
-      if (mode == SImode && shift <= 2)
-	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 6 : 8)));
-
-      /* XXX ??? Could check for more shift/rotate cases here.  */
     }
 
   /* Rotations need various adjustments.  */

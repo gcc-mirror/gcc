@@ -1,3 +1,14 @@
+2002-03-02  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	compute_a_shift_length.
+	* config/h8300/h8300.c (h8300_asm_insn_count): New.
+	(compute_a_shift_length): Likewise.
+	(h8300_adjust_insn_length): Do not adjust insn length of shift
+	insns.
+	* config/h8300/h8300.md (anonymous shift patterns): Use
+	compute_a_shift_length.
+
 Sat Mar  2 06:30:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (sparc_initialize_trampoline): Use
