@@ -720,14 +720,13 @@ gen_lowpart_common (mode, x)
 		: GEN_INT (CONST_DOUBLE_LOW (x)));
       else
 	{
-	  /* MODE must be narrower than HOST_BITS_PER_INT.  */
+	  /* MODE must be narrower than HOST_BITS_PER_WIDE_INT.  */
 	  int width = GET_MODE_BITSIZE (mode);
 	  HOST_WIDE_INT val = (GET_CODE (x) == CONST_INT ? INTVAL (x)
 			       : CONST_DOUBLE_LOW (x));
 
-	  if (((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
-	       != ((HOST_WIDE_INT) (-1) << (width - 1))))
-	    val &= ((HOST_WIDE_INT) 1 << width) - 1;
+	  /* Sign extend to HOST_WIDE_INT.  */
+	  val = val << (HOST_BITS_PER_WIDE_INT - width) >> (HOST_BITS_PER_WIDE_INT - width);
 
 	  return (GET_CODE (x) == CONST_INT && INTVAL (x) == val ? x
 		  : GEN_INT (val));
@@ -984,7 +983,11 @@ gen_highpart (mode, x)
       )
     return GEN_INT (CONST_DOUBLE_HIGH (x) & GET_MODE_MASK (mode));
   else if (GET_CODE (x) == CONST_INT)
-    return const0_rtx;
+    {
+      if (HOST_BITS_PER_WIDE_INT <= BITS_PER_WORD)
+	return const0_rtx;
+      return GEN_INT (INTVAL (x) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
+    }
   else if (GET_CODE (x) == MEM)
     {
       register int offset = 0;

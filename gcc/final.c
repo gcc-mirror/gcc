@@ -3677,16 +3677,12 @@ split_double (value, first, second)
       if (HOST_BITS_PER_WIDE_INT >= (2 * BITS_PER_WORD))
 	{
 	  /* In this case the CONST_INT holds both target words.
-	     Extract the bits from it into two word-sized pieces.  */
+	     Extract the bits from it into two word-sized pieces.
+	     Sign extend each half to HOST_WIDE_INT.  */
 	  rtx low, high;
-	  HOST_WIDE_INT word_mask;
-	  /* Avoid warnings for shift count >= BITS_PER_WORD.  */
-	  int shift_count = BITS_PER_WORD - 1;
 
-	  word_mask = (HOST_WIDE_INT) 1 << shift_count;
-	  word_mask |= word_mask - 1;
-	  low = GEN_INT (INTVAL (value) & word_mask);
-	  high = GEN_INT ((INTVAL (value) >> (shift_count + 1)) & word_mask);
+	  low = GEN_INT (INTVAL (value) << (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
+	  high = GEN_INT (INTVAL (value) << (HOST_BITS_PER_WIDE_INT - 2 * BITS_PER_WORD) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
 	  if (WORDS_BIG_ENDIAN)
 	    {
 	      *first = high;
