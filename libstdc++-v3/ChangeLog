@@ -1,5 +1,13 @@
 2002-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.target: Use cpu_include_dir="config/cpu/sparc" for all
+	sparc targets.
+	* config/cpu/sparc/atomicity.h: New file.
+	* config/cpu/sparc/sparc32/atomicity.h: Removed.
+	* config/cpu/sparc/sparc64/atomicity.h: Removed.
+
+2002-09-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/os/gnu-linux/ctype_noninline.h
 	[_GLIBCPP_USE_SHADOW_HEADERS]: Remove using _C_legacy::__ctype_*.
 	(ctype<char>::classic_table): If _GLIBCPP_C_LOCALE_GNU, return
