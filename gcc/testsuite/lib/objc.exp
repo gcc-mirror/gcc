@@ -162,8 +162,10 @@ proc objc_target_compile { source dest type options } {
     if [target_info exists objc,no_label_values] {
 	lappend options "additional_flags=-DNO_LABEL_VALUES"
     }
+    # TOOL_OPTIONS must come first, so that it doesn't override testcase
+    # specific options.
     if [info exists TOOL_OPTIONS] {
-	lappend options "additional_flags=$TOOL_OPTIONS"
+	set options [concat "additional_flags=$TOOL_OPTIONS" $options];
     }
 
     # Point to the ObjC headers in libobjc.

@@ -1,3 +1,9 @@
+2003-06-11  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* lib/gcc.exp (gcc_target_compile): Put TOOL_OPTIONS at front of
+	options instead of at the end.
+	* lib/objc.exp (objc_target_compile): Likewise.
+
 2003-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10432
