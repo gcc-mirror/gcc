@@ -4535,7 +4535,8 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	    code1 = GET_CODE (op1);
 	  }
 
-	if (code0 == MULT || code0 == SIGN_EXTEND || code1 == MEM)
+	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE 
+	    || code0 == ZERO_EXTEND || code1 == MEM)
 	  {
 	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
 				    ind_levels);
@@ -4543,7 +4544,8 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 				    ind_levels);
 	  }
 
-	else if (code1 == MULT || code1 == SIGN_EXTEND || code0 == MEM)
+	else if (code1 == MULT || code1 == SIGN_EXTEND || code1 == TRUNCATE
+		 || code1 == ZERO_EXTEND || code0 == MEM)
 	  {
 	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
 				    ind_levels);
