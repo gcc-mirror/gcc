@@ -3514,30 +3514,27 @@ store_constructor (exp, target, cleared)
 	      tree hi_index = TREE_OPERAND (index, 1);
 	      rtx index_r, pos_rtx, addr, hi_r, loop_top, loop_end;
 	      struct nesting *loop;
-		tree position;
+	      HOST_WIDE_INT lo, hi, count;
+	      tree position;
 
+	      /* If the range is constant and "small", unroll the loop. */
 	      if (TREE_CODE (lo_index) == INTEGER_CST
-		  && TREE_CODE (hi_index) == INTEGER_CST)
+		  && TREE_CODE (hi_index) == INTEGER_CST
+		  && (lo = TREE_INT_CST_LOW (lo_index),
+		      hi = TREE_INT_CST_LOW (hi_index),
+		      count = hi - lo + 1,
+		      (GET_CODE (target) != MEM
+		       || count <= 2
+		       || (TREE_CODE (TYPE_SIZE (elttype)) == INTEGER_CST
+			   && TREE_INT_CST_LOW (TYPE_SIZE (elttype)) * count
+			   <= 40 * 8))))
 		{
-		  HOST_WIDE_INT lo = TREE_INT_CST_LOW (lo_index);
-		  HOST_WIDE_INT hi = TREE_INT_CST_LOW (hi_index);
-		  HOST_WIDE_INT count = hi - lo + 1;
-
-		  /* If the range is constant and "small", unroll the loop.
-		     We must also use store_field if the target is not MEM. */
-		  if (GET_CODE (target) != MEM
-		      || count <= 2
-		      || (TREE_CODE (TYPE_SIZE (elttype)) == INTEGER_CST
-			  && TREE_INT_CST_LOW (TYPE_SIZE (elttype)) * count
-			  <= 40 * 8))
+		  lo -= minelt;  hi -= minelt;
+		  for (; lo <= hi; lo++)
 		    {
-		      lo -= minelt;  hi -= minelt;
-		      for (; lo <= hi; lo++)
-			{
-			  bitpos = lo * TREE_INT_CST_LOW (TYPE_SIZE (elttype));
-			  store_constructor_field (target, bitsize, bitpos,
-						   mode, value, type, cleared);
-			}
+		      bitpos = lo * TREE_INT_CST_LOW (TYPE_SIZE (elttype));
+		      store_constructor_field (target, bitsize, bitpos,
+					       mode, value, type, cleared);
 		    }
 		}
 	      else
@@ -3575,7 +3572,7 @@ store_constructor (exp, target, cleared)
 		  addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
 		  xtarget = change_address (target, mode, addr);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
-		    store_constructor (exp, xtarget, cleared);
+		    store_constructor (value, xtarget, cleared);
 		  else
 		    store_expr (value, xtarget, 0);
 
