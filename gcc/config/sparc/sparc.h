@@ -25,11 +25,13 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files include this one and then override
    whatever definitions are necessary.  */
 
-/* Target CPU builtins.  */
+/* Target CPU builtins.  FIXME: Defining sparc is for the benefit of
+   Solaris only; otheriwse just define __sparc__.  Sadly the headers
+   are such a mess there is no Solaris-specific header.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__sparc__");		\
+	builtin_define_std ("sparc");		\
 	if (TARGET_64BIT)			\
 	  { 					\
 	    builtin_assert ("cpu=sparc");	\
