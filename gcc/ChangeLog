@@ -1,3 +1,18 @@
+2004-07-18  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (simplify_builtin_memcmp, simplify_builtin_strcmp,
+	simplify_builtin_strncmp): Delete.
+	(fold_builtin_memcmp, fold_builtin_strcmp, fold_builtin_strncmp):
+	Change argument to accept an arglist instead of an "exp".  Assume
+	that the return type is always integer_type_node.  Copy missing
+	transformations from their now obsolete simplify_builtin_*
+	equivalents.
+	(fold_builtin_1): Pass arglist instead of exp to fold_builtin_memcmp,
+	fold_builtin_strcmp and fold_builtin_strncmp.
+	(simplify_builtin): Call fold_builtin_memcmp, fold_builtin_strcmp
+	and fold_builtin_strncmp instead of simplify_builtin_memcmp,
+	simplify_builtin_strcmp and simplify_builtin_strncmp respectively.
+
 2004-07-18  Daniel Jacobowitz  <dan@debian.org>
 
 	* Makefile.in (tree-alias-common.o): Update dependencies.
