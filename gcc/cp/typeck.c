@@ -804,6 +804,9 @@ comptypes (type1, type2, strict)
       if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
 	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
 	return 0;
+      if (! comp_template_parms (DECL_TEMPLATE_PARMS (TYPE_NAME (t1)),
+				 DECL_TEMPLATE_PARMS (TYPE_NAME (t2))))
+	return 0;
       if (! CLASSTYPE_TEMPLATE_INFO (t1) && ! CLASSTYPE_TEMPLATE_INFO (t2))
 	return 1;
       /* Don't check inheritance.  */

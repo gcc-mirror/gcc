@@ -298,7 +298,7 @@ dicat (lo, hi)
   OB_PUTC ('0' + ulo);
 }
 
-__inline void
+static __inline void
 flush_repeats (nrepeats, type)
      int nrepeats;
      tree type;

@@ -1,6 +1,27 @@
+1998-07-12  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+	* typeck.c (comptypes, case TEMPLATE_TEMPLATE_PARM): Add parameter 
+	comparison.
+
+	* pt.c (for_each_template_parm, case TEMPLATE_DECL): If it is a 
+	template template parameter, record its use.
+	(for_each_template_parm, case TEMPLATE_TEMPLATE_PARM): Traverse 
+	its template arguments if exists.
+
+	* pt.c (coerce_template_template_parms): New function equivalent
+	to coerce_template_parms when IS_TMPL_PARM is true.
+	(coerce_template_parms): Use it.  Remove the IS_TMPL_PARM parameter,
+	all callers changed.
+
+	(coerce_template_parms): Access ARGLIST properly when creating a
+	new vector.  Only accept implicit TYPE_DECL as valid argument for
+	a template template parameter when it is a base class of
+	current_class_type.  Don't display error message when COMPLAIN is
+	false.
+
 1998-07-12  Klaus Kaempf (kkaempf@progis.de)
 
- 	* repo.c (get_base_filename): Use file_name_nondirectory ().
+ 	* repo.c (get_base_filename): Use file_name_nondirectory.
  	(open_repo_file): Ditto.
 	* cp-tree.h (file_name_nondirectory): Add prototype.
 
