@@ -1,5 +1,15 @@
 2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* a29k-protos.h: New file.
+
+	* a29k.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* a29k.h: Move prototypes to a29k-protos.h.  Fix compile time
+	warnings.
+
+2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* clipper-protos.h: New file.
 
 	* clipper.c: Include tm_p.h.  Add static prototypes.  Fix compile
