@@ -216,6 +216,15 @@ data_section ()
       in_section = in_data;
     }
 }
+/* Tell assembler to ALWAYS switch to data section, in case
+   it's not sure where it it.  */
+
+void
+force_data_section ()
+{
+  in_section = no_section;
+  data_section ();
+}
 
 /* Tell assembler to switch to read-only data section.  This is normally
    the text section.  */

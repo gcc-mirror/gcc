@@ -1,3 +1,11 @@
+Mon Dec 14 17:13:36 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* output.h (force_data_section): New prototype.
+	* varasm.c (force_data_section): New function to force the
+	data section, regardless of what in_section thinks.
+	* dwarf2out.c (output_call_frame_info): Call force_data_section
+	since varasm may not realize we've changes sections.
+
 Mon Dec 14 14:09:34 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* reload1.c (reload): Delete REG_RETVAL and REG_LIBCALL notes
