@@ -5317,95 +5317,109 @@ free_bb_mem ()
   free_int_list (&pred_int_list_blocks);
 }
 
-/* Compute dominator relationships.  */
-void
-compute_dominators (dominators, post_dominators, s_preds, s_succs)
-     sbitmap *dominators;
-     sbitmap *post_dominators;
-     int_list_ptr *s_preds;
-     int_list_ptr *s_succs;
-{
-  int bb, changed, passes;
-  sbitmap *temp_bitmap;
-
-  temp_bitmap = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  sbitmap_vector_ones (dominators, n_basic_blocks);
-  sbitmap_vector_ones (post_dominators, n_basic_blocks);
-  sbitmap_vector_zero (temp_bitmap, n_basic_blocks);
-
-  sbitmap_zero (dominators[0]);
-  SET_BIT (dominators[0], 0);
-
-  sbitmap_zero (post_dominators[n_basic_blocks - 1]);
-  SET_BIT (post_dominators[n_basic_blocks - 1], 0);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 1; bb < n_basic_blocks; bb++)
-	{
-	  sbitmap_intersect_of_predecessors (temp_bitmap[bb], dominators,
-					     bb, s_preds);
-	  SET_BIT (temp_bitmap[bb], bb);
-	  changed |= sbitmap_a_and_b (dominators[bb],
-				      dominators[bb],
-				      temp_bitmap[bb]);
-	  sbitmap_intersect_of_successors (temp_bitmap[bb], post_dominators,
-					   bb, s_succs);
-	  SET_BIT (temp_bitmap[bb], bb);
-	  changed |= sbitmap_a_and_b (post_dominators[bb],
-				      post_dominators[bb],
-				      temp_bitmap[bb]);
-	}
-      passes++;
-    }
-
-  free (temp_bitmap);
-}
-
 /* Compute dominator relationships using new flow graph structures.  */
 void
 compute_flow_dominators (dominators, post_dominators)
      sbitmap *dominators;
      sbitmap *post_dominators;
 {
-  int bb, changed, passes;
+  int bb;
   sbitmap *temp_bitmap;
+  edge e;
+  basic_block *worklist, *tos;
+
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
+		    * n_basic_blocks);
 
   temp_bitmap = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  sbitmap_vector_ones (dominators, n_basic_blocks);
-  sbitmap_vector_ones (post_dominators, n_basic_blocks);
   sbitmap_vector_zero (temp_bitmap, n_basic_blocks);
 
-  sbitmap_zero (dominators[0]);
-  SET_BIT (dominators[0], 0);
-
-  sbitmap_zero (post_dominators[n_basic_blocks - 1]);
-  SET_BIT (post_dominators[n_basic_blocks - 1], 0);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
+  if (dominators)
     {
-      changed = 0;
-      for (bb = 1; bb < n_basic_blocks; bb++)
+      sbitmap_vector_ones (dominators, n_basic_blocks);
+      sbitmap_zero (dominators[0]);
+      SET_BIT (dominators[0], 0);
+
+      /* Put the successors of the entry block on the worklist.  */
+      for (e = BASIC_BLOCK (0)->succ; e; e = e->succ_next)
 	{
+	  *tos++ = e->dest;
+	  e->dest->aux = e;
+	}
+
+      /* Iterate until the worklist is empty.  */
+      while (tos != worklist)
+	{
+	  /* Take the first entry off the worklist.  */
+	  basic_block b = *--tos;
+	  b->aux = NULL;
+	  bb = b->index;
+
 	  sbitmap_intersection_of_preds (temp_bitmap[bb], dominators, bb);
 	  SET_BIT (temp_bitmap[bb], bb);
-	  changed |= sbitmap_a_and_b (dominators[bb],
-				      dominators[bb],
-				      temp_bitmap[bb]);
-	  sbitmap_intersection_of_succs (temp_bitmap[bb], post_dominators, bb);
-	  SET_BIT (temp_bitmap[bb], bb);
-	  changed |= sbitmap_a_and_b (post_dominators[bb],
-				      post_dominators[bb],
-				      temp_bitmap[bb]);
+
+	  /* If the out state of this block changed, then we need to
+	     add the successors of this block to the worklist if they
+	     are not already on the worklist.  */
+	  if (sbitmap_a_and_b (dominators[bb], dominators[bb], temp_bitmap[bb]))
+	    {
+	      for (e = b->succ; e; e = e->succ_next)
+		{
+		  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
+		    {
+		      *tos++ = e->dest;
+		      e->dest->aux = e;
+		    }
+		}
+	    }
 	}
-      passes++;
     }
 
+  if (post_dominators)
+    {
+      sbitmap_vector_ones (post_dominators, n_basic_blocks);
+      sbitmap_zero (post_dominators[n_basic_blocks - 1]);
+      SET_BIT (post_dominators[n_basic_blocks - 1], 0);
+
+      /* Put the predecessors of the exit block on the worklist.  */
+      for (e = BASIC_BLOCK (n_basic_blocks - 1)->pred; e; e = e->pred_next)
+	{
+	  *tos++ = e->src;
+	  e->src->aux = e;
+	}
+
+      /* Iterate until the worklist is empty.  */
+      while (tos != worklist)
+	{
+	  /* Take the first entry off the worklist.  */
+	  basic_block b = *--tos;
+	  b->aux = NULL;
+	  bb = b->index;
+
+	  sbitmap_intersection_of_succs (temp_bitmap[bb], post_dominators, bb);
+	  SET_BIT (temp_bitmap[bb], bb);
+
+	  /* If the out state of this block changed, then we need to
+	     add the successors of this block to the worklist if they
+	     are not already on the worklist.  */
+	  if (sbitmap_a_and_b (post_dominators[bb],
+			       post_dominators[bb],
+			       temp_bitmap[bb]))
+	    {
+	      for (e = b->pred; e; e = e->pred_next)
+		{
+		  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
+		    {
+		      *tos++ = e->src;
+		      e->src->aux = e;
+		    }
+		}
+	    }
+	}
+    }
   free (temp_bitmap);
 }
 

@@ -6965,7 +6965,7 @@ schedule_insns (dump_file)
 	{
 	  int_list_ptr *s_preds, *s_succs;
 	  int *num_preds, *num_succs;
-	  sbitmap *dom, *pdom;
+	  sbitmap *dom;
 
 	  s_preds = (int_list_ptr *) xmalloc (n_basic_blocks
 					      * sizeof (int_list_ptr));
@@ -6974,7 +6974,6 @@ schedule_insns (dump_file)
 	  num_preds = (int *) xmalloc (n_basic_blocks * sizeof (int));
 	  num_succs = (int *) xmalloc (n_basic_blocks * sizeof (int));
 	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-	  pdom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
 
 	  /* The scheduler runs after flow; therefore, we can't blindly call
 	     back into find_basic_blocks since doing so could invalidate the
@@ -6993,7 +6992,7 @@ schedule_insns (dump_file)
 	  /* Compute the dominators and post dominators.  We don't
 	     currently use post dominators, but we should for
 	     speculative motion analysis.  */
-	  compute_dominators (dom, pdom, s_preds, s_succs);
+	  compute_flow_dominators (dom, NULL);
 
 	  /* build_control_flow will return nonzero if it detects unreachable
 	     blocks or any other irregularity with the cfg which prevents
@@ -7010,7 +7009,6 @@ schedule_insns (dump_file)
 	     to using the cfg code in flow.c.  */
 	  free_bb_mem ();
 	  free (dom);
-	  free (pdom);
 	  free (s_preds);
 	  free (s_succs);
 	  free (num_preds);
