@@ -283,10 +283,10 @@ eval_token (pfile, token)
      const cpp_token *token;
 {
   unsigned int temp;
+  int unsignedp = 0;
   struct op op;
 
   op.op = CPP_NUMBER;
-  op.unsignedp = 0;
 
   switch (token->type)
     {
@@ -294,9 +294,8 @@ eval_token (pfile, token)
       return parse_number (pfile, token);
 
     case CPP_WCHAR:
-      op.unsignedp = WCHAR_UNSIGNED;
-    case CPP_CHAR:		/* Always unsigned.  */
-      op.value = cpp_interpret_charconst (pfile, token, 1, &temp);
+    case CPP_CHAR:
+      op.value = cpp_interpret_charconst (pfile, token, 1, &temp, &unsignedp);
       break;
 
     case CPP_NAME:
@@ -331,6 +330,7 @@ eval_token (pfile, token)
       op.value = temp;
     }
 
+  op.unsignedp = unsignedp;
   return op;
 }
 
