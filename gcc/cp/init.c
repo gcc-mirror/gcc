@@ -1730,7 +1730,7 @@ build_offset_ref (type, name)
 
   if (TREE_CODE (t) == FIELD_DECL && DECL_C_BIT_FIELD (t))
     {
-      error ("illegal pointer to bit field `%D'", t);
+      error ("illegal pointer to bit-field `%D'", t);
       return error_mark_node;
     }
 
