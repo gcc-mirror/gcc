@@ -1,3 +1,7 @@
+2001-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.c (build_unary_op): Clarify error message.
+
 2001-02-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * cp/parse.y (component_constructor_declarator): allow optional
