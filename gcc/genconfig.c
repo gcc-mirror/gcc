@@ -126,7 +126,15 @@ walk_insn_part (part, recog_p, non_pc_set_src)
       return;
 
     case IF_THEN_ELSE:
-      if (recog_p && non_pc_set_src)
+      /* Only consider this machine as having a conditional move if the
+	 two arms of the IF_THEN_ELSE are both MATCH_OPERAND.  Otherwise,
+	 we have some specific IF_THEN_ELSE construct (like the doz
+	 instruction on the RS/6000) that can't be used in the general
+	 context we want it for.  */
+
+      if (recog_p && non_pc_set_src
+	  && GET_CODE (XEXP (part, 1)) == MATCH_OPERAND
+	  && GET_CODE (XEXP (part, 2)) == MATCH_OPERAND)
 	have_cmove_flag = 1;
       break;
 
