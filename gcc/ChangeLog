@@ -1,5 +1,8 @@
 Thu Dec 10 07:21:44 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (move_by_pieces_1): Give inner arg types of function passed
+	as first operand.
+
 	* aclocal.m4 (GCC_HEADER_INTTYPES, GCC_CHECK_STRINGIFY): New macros.
 	* configure.in: Use them instead of inline text.
 	(malloc.h): Check for presence.
