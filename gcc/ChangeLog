@@ -1,3 +1,8 @@
+Mon Jan 14 07:08:55 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c (alpha_expand_mov): Don't call
+	alpha_legitimize_address unless mode is Pmode.
+
 2002-01-13  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/md.texi (Modifiers): Document the '*' constraint for the
