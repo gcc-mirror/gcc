@@ -1504,6 +1504,14 @@ layout_type (type)
      record it so set_sizetype can fix it up.  */
   if (! sizetype_set)
     early_type_list = tree_cons (NULL_TREE, type, early_type_list);
+
+  /* If an alias set has been set for this aggregate when it was incomplete,
+     force it into alias set 0.
+     This is too conservative, but we cannot call record_component_aliases
+     here because some frontends still change the aggregates after
+     layout_type.  */
+  if (AGGREGATE_TYPE_P (type) && TYPE_ALIAS_SET_KNOWN_P (type))
+    TYPE_ALIAS_SET (type) = 0;
 }
 
 /* Create and return a type for signed integers of PRECISION bits.  */
