@@ -1,3 +1,34 @@
+2000-10-20  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (string_list_def): Add caret_position and comments.
+	(result_caret_pos): New macro.
+	(result_append_string): Rename to...
+	(result_add_string): ... this, and insert at caret position.
+	Rename throughout. 
+	(result_append): Rename to...
+	(result_add): ... this, and insert at caret position.  Rename
+	throughout. 
+	(result_append_char): Rename to...
+	(result_add_char): ... this, and insert at caret position.  Rename
+	throughout. 
+	(result_append_space): Remove.
+	(string_list_new): Initialize caret position.
+	(result_add_separated_char): Use caret position.
+	(result_get_caret): New funtion.
+	(result_set_caret): Likewise.
+	(result_shift_caret): Likewise.
+	(result_previous_char_is_space): Likewise.
+	(substitution_start): Use caret position.
+	(substitution_add): Likewise.
+	(demangling_new): Initialize caret position.
+	(demangle_encoding): Use caret position.
+	(demanglin_nested_name): Put CV qualifiers after name. 
+	(demangle_type_ptr): Use switch statement.  Handle pointers to
+	arrays.  Don't use result_append_space.  Use caret position.
+	(demangle_type): Emit CV qualifiers after underlying type.  Adjust
+	call to demangle_array_type. 
+	(demangle_array_type): Add parameter to handle pointers to arrays. 
+	
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.c (splay_tree_insert): Fix formatting.
