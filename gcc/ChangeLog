@@ -1,3 +1,13 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.h (lang_specific_driver): Constify second argument.
+	* gcc.c (translate_options, process_command, main): Likewise.
+	Constify variables to match.  Cast second argument to
+	pexecute.
+
+	* cppspec.c, gccspec.c: Adjust type of second argument to
+	lang_specific_driver, and update code as necessary.
+
 2000-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* loop.c (scan_loop): Ensure update_end label does not

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc ATTRIBUTE_UNUSED;
-     char ***in_argv ATTRIBUTE_UNUSED;
+     const char *const **in_argv ATTRIBUTE_UNUSED;
      int *in_added_libraries ATTRIBUTE_UNUSED;
 {
   return;  /* Not used for C. */

@@ -72,12 +72,12 @@ static const char *const known_suffixes[] =
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
-     char ***in_argv;
+     const char *const **in_argv;
      int *in_added_libraries ATTRIBUTE_UNUSED;
 {
   int argc = *in_argc;
-  char **argv = *in_argv;
-  
+  const char *const *argv = *in_argv;
+
   /* Do we need to read stdin? */
   int read_stdin = 1;
 
@@ -100,7 +100,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int need_fixups = 1;
   
   int i, j, quote = 0;
-  char **real_new_argv;
   const char **new_argv;
   int new_argc;
 
@@ -196,8 +195,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     return;
 
   /* One more slot for a terminating null.  */
-  real_new_argv = (char **) xmalloc ((new_argc + 1) * sizeof(char *));
-  new_argv = (const char **) real_new_argv;
+  new_argv = (const char **) xmalloc ((new_argc + 1) * sizeof(char *));
 
   new_argv[0] = argv[0];
   j = 1;
@@ -225,7 +223,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   new_argv[j] = NULL;
   *in_argc = new_argc;
-  *in_argv = real_new_argv;
+  *in_argv = new_argv;
 } 
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
