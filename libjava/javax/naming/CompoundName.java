@@ -264,7 +264,7 @@ public class CompoundName implements Name, Cloneable, Serializable
     int delta = elts.size () - cn.elts.size ();
     for (int i = 0; i < cn.elts.size (); ++i)
       {
-	String f = canonicalize ((String) elts.get (i));
+	String f = canonicalize ((String) elts.get (delta + i));
 	if (! f.equals (canonicalize ((String) cn.elts.get (i))))
 	  return false;
       }
