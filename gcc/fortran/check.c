@@ -809,12 +809,18 @@ try
 gfc_check_iand (gfc_expr * i, gfc_expr * j)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (j, 1, BT_INTEGER) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (i, 0, j, 1) == FAILURE)
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Different type kinds at %L",
+                          &i->where) == FAILURE)
+	return FAILURE;
+    }
 
   return SUCCESS;
 }
@@ -824,9 +830,10 @@ try
 gfc_check_ibclr (gfc_expr * i, gfc_expr * pos)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (pos, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -837,10 +844,13 @@ try
 gfc_check_ibits (gfc_expr * i, gfc_expr * pos, gfc_expr * len)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE
-      || type_check (len, 2, BT_INTEGER) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (pos, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (len, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -851,9 +861,10 @@ try
 gfc_check_ibset (gfc_expr * i, gfc_expr * pos)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (pos, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -875,12 +886,18 @@ try
 gfc_check_ieor (gfc_expr * i, gfc_expr * j)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (j, 1, BT_INTEGER) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (i, 0, j, 1) == FAILURE)
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Different type kinds at %L",
+                          &i->where) == FAILURE)
+	return FAILURE;
+    }
 
   return SUCCESS;
 }
@@ -924,12 +941,18 @@ try
 gfc_check_ior (gfc_expr * i, gfc_expr * j)
 {
 
-  if (type_check (i, 0, BT_INTEGER) == FAILURE
-      || type_check (j, 1, BT_INTEGER) == FAILURE)
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (i, 0, j, 1) == FAILURE)
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
     return FAILURE;
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Different type kinds at %L",
+                          &i->where) == FAILURE)
+    return FAILURE;
+    }
 
   return SUCCESS;
 }
