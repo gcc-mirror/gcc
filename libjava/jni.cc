@@ -767,9 +767,6 @@ static T
   obj = unwrap (obj);
   klass = unwrap (klass);
 
-  if (style == normal)
-    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
-
   jclass decl_class = klass ? klass : obj->getClass ();
   JvAssert (decl_class != NULL);
 
@@ -791,6 +788,7 @@ static T
       jvalue result;
       _Jv_CallAnyMethodA (obj, return_type, id,
 			  style == constructor,
+			  style == normal,
 			  arg_types, args, &result);
 
       return wrap_value (env, extract_from_jvalue<T>(result));
@@ -826,9 +824,6 @@ static T
   obj = unwrap (obj);
   klass = unwrap (klass);
 
-  if (style == normal)
-    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
-
   jclass decl_class = klass ? klass : obj->getClass ();
   JvAssert (decl_class != NULL);
 
@@ -857,6 +852,7 @@ static T
       jvalue result;
       _Jv_CallAnyMethodA (obj, return_type, id,
 			  style == constructor,
+			  style == normal,
 			  arg_types, arg_copy, &result);
 
       return wrap_value (env, extract_from_jvalue<T>(result));
@@ -877,9 +873,6 @@ static void
   obj = unwrap (obj);
   klass = unwrap (klass);
 
-  if (style == normal)
-    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
-
   jclass decl_class = klass ? klass : obj->getClass ();
   JvAssert (decl_class != NULL);
 
@@ -899,6 +892,7 @@ static void
 
       _Jv_CallAnyMethodA (obj, return_type, id,
 			  style == constructor,
+			  style == normal,
 			  arg_types, args, NULL);
     }
   catch (jthrowable t)
@@ -924,9 +918,6 @@ static void
 (JNICALL _Jv_JNI_CallAnyVoidMethodA) (JNIEnv *env, jobject obj, jclass klass,
 			              jmethodID id, jvalue *args)
 {
-  if (style == normal)
-    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
-
   jclass decl_class = klass ? klass : obj->getClass ();
   JvAssert (decl_class != NULL);
 
@@ -950,6 +941,7 @@ static void
 
       _Jv_CallAnyMethodA (obj, return_type, id,
 			  style == constructor,
+			  style == normal,
 			  arg_types, args, NULL);
     }
   catch (jthrowable t)

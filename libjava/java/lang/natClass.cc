@@ -1779,16 +1779,6 @@ _Jv_linkExceptionClassTable (jclass self)
   self->catch_classes->classname = (_Jv_Utf8Const *)-1;
 }
   
-
-// Returns true if METH should get an entry in a VTable.
-static jboolean
-isVirtualMethod (_Jv_Method *meth)
-{
-  using namespace java::lang::reflect;
-  return (((meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) == 0)
-          && meth->name->data[0] != '<');
-}
-
 // This is put in empty vtable slots.
 static void
 _Jv_abstractMethodError (void)
@@ -1842,7 +1832,7 @@ _Jv_LayoutVTableMethods (jclass klass)
       _Jv_Method *meth = &klass->methods[i];
       _Jv_Method *super_meth = NULL;
 
-      if (! isVirtualMethod (meth))
+      if (! _Jv_isVirtualMethod (meth))
 	continue;
 
       if (superclass != NULL)

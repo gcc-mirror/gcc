@@ -335,6 +335,14 @@ _Jv_VTable::new_vtable (int count)
   return (_Jv_VTable *) _Jv_AllocBytes (size);
 }
 
+// Determine if METH gets an entry in a VTable.
+static inline jboolean _Jv_isVirtualMethod (_Jv_Method *meth)
+{
+  using namespace java::lang::reflect;
+  return (((meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) == 0)
+          && meth->name->data[0] != '<');
+}
+
 // This function is used to determine the hash code of an object.
 inline jint
 _Jv_HashCode (jobject obj)
@@ -418,6 +426,7 @@ extern void _Jv_CallAnyMethodA (jobject obj,
 				jclass return_type,
 				jmethodID meth,
 				jboolean is_constructor,
+				jboolean is_virtual_call,
 				JArray<jclass> *parameter_types,
 				jvalue *args,
 				jvalue *result,

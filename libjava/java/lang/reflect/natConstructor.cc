@@ -45,34 +45,39 @@ java::lang::reflect::Constructor::getType ()
 jobject
 java::lang::reflect::Constructor::newInstance (jobjectArray args)
 {
+  using namespace java::lang::reflect;
+
   if (parameter_types == NULL)
     getType ();
 
-  gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(4);
-  Class *caller = NULL;
-  try
+  jmethodID meth = _Jv_FromReflectedConstructor (this);
+
+  // Check accessibility, if required.
+  if (! (Modifier::isPublic (meth->accflags) || this->isAccessible()))
     {
-      for (int i = 1; !caller; i++)
+      gnu::gcj::runtime::StackTrace *t 
+	= new gnu::gcj::runtime::StackTrace(4);
+      Class *caller = NULL;
+      try
 	{
-	  caller = t->classAt (i);
+	  for (int i = 1; !caller; i++)
+	    {
+	      caller = t->classAt (i);
+	    }
 	}
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
+      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+	{
+	}
+
+      if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
+	throw new IllegalAccessException;
     }
 
-  if (! isAccessible() && ! _Jv_CheckAccess(caller, declaringClass,
-					    declaringClass->getModifiers()))
-    throw new java::lang::IllegalAccessException;
-
-  using namespace java::lang::reflect;
   if (Modifier::isAbstract (declaringClass->getModifiers()))
     throw new InstantiationException;
 
   _Jv_InitClass (declaringClass);
 
-  jmethodID meth = _Jv_FromReflectedConstructor (this);
   // In the constructor case the return type is the type of the
   // constructor.
   return _Jv_CallAnyMethodA (NULL, declaringClass, meth, true,

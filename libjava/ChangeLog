@@ -1,3 +1,26 @@
+2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/lang/reflect/Constructor.java (toString): Avoid extra 
+	whitespace on constructor with no modifiers.
+	* java/lang/reflect/natConstructor.java (newInstance): Look up
+	caller and perform accessibility check only if constructor is
+	non-public and accessible flag is not set.
+
+2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* jni.cc (_Jv_JNI_CallAnyMethodV, _Jv_JNI_CallAnyMethodA,
+	_Jv_JNI_CallAnyVoidMethodV, _Jv_JNI_CallAnyVoidMethodA): Don't
+	use _Jv_LookupDeclaredMethod(). Call _Jv_CallAnyMethodA with 
+	is_virtual_call argument.
+	* include/jvm.h (_Jv_isVirtualMethod): Moved and renamed from 
+	natClass.cc.
+	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Use 
+	_Jv_isVirtualMethod.
+	* java/lang/reflect/natMethod.cc (invoke): Don't use 
+	_Jv_LookupDeclaredMethod.
+	(_Jv_CallAnyMethodA): New is_virtual_call argument. If specified,
+	look up method in target object's vtable.
+
 2003-10-25  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/ClasspathToolkit.java: New abstract class.
