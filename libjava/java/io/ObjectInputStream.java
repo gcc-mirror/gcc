@@ -291,29 +291,7 @@ public class ObjectInputStream extends InputStream
 	      
 	      if (osc.realClassIsExternalizable)
 		{
-		  Externalizable obj = null;
-		  
-		  try
-		    {
-		      obj = (Externalizable)clazz.newInstance();
-		    }
-		  catch (InstantiationException e)
-		    {
-		      throw new ClassNotFoundException
-			("Instance of " + clazz + " could not be created");
-		    }
-		  catch (IllegalAccessException e)
-		    {
-		      throw new ClassNotFoundException
-			("Instance of " + clazz + " could not be created because class or "
-			 + "zero-argument constructor is not accessible");
-		    }
-		  catch (NoSuchMethodError e)
-		    {
-		      throw new ClassNotFoundException
-			("Instance of " + clazz
-			 + " could not be created because zero-argument constructor is not defined");
-		    }
+		  Externalizable obj = osc.newInstance();
 		  
 		  int handle = assignNewHandle(obj);
 		  
