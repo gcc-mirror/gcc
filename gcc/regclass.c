@@ -1866,9 +1866,11 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	  size_t max_index = reg_data->max_index;
 
 	  reg_next = reg_data->next;
-	  if (min_index <= num_regs)
+	  if (min_index <= regno_allocated)
 	    {
-	      size_t max = (max_index > num_regs) ? num_regs : max_index;
+	      size_t max = max_index;
+	      if (max > regno_allocated)
+		max = regno_allocated;
 	      if (!reg_data->used_p)	/* page just allocated with calloc */
 		reg_data->used_p = 1;	/* no need to zero */
 	      else
