@@ -1,3 +1,7 @@
+2001-05-30  Gordon Sadler <gbsadler1@lcisp.com>
+
+	* invoke.texi (Option Summary): Remove -isystem-c++ from options.
+
 2001-05-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.in (s-mlib): Make backtick-commands always succeed.
