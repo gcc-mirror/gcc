@@ -1,3 +1,8 @@
+2004-09-26  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (compute_branch_probabilities): Use REG_BR_PROB notes
+	when re-constructing profile previously invalidated by loop.
+
 2004-09-25  Dale Johannesen  <dalej@apple.com>
 
 	* tree-gimple.c:  Move GIMPLE definition...
