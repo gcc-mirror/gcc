@@ -375,13 +375,13 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
-      char insn_letter
-	= insn_data[(int) icode].operand[!in_p].constraint[in_p];
-      enum reg_class insn_class
-	= (insn_letter == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+      char insn_letter, t_letter;
 
-      if (insn_class == NO_REGS
+      insn_letter = insn_data[(int) icode].operand[!in_p].constraint[in_p];
+      class = (insn_letter == 'r' ? GENERAL_REGS
+	       : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+
+      if (class == NO_REGS
 	  || (in_p
 	      && insn_data[(int) icode].operand[!in_p].constraint[0] != '=')
 	  /* The scratch register's constraint must start with "=&".  */
@@ -389,18 +389,12 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  || insn_data[(int) icode].operand[2].constraint[1] != '&')
 	abort ();
 
-      if (reg_class_subset_p (reload_class, insn_class))
-	mode = insn_data[(int) icode].operand[2].mode;
-      else
-	{
-	  char t_letter = insn_data[(int) icode].operand[2].constraint[2];
-	  class = insn_class;
-	  t_mode = insn_data[(int) icode].operand[2].mode;
-	  t_class = (t_letter == 'r' ? GENERAL_REGS
-		     : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
-	  t_icode = icode;
-	  icode = CODE_FOR_nothing;
-	}
+      t_letter = insn_data[(int) icode].operand[2].constraint[2];
+      t_mode = insn_data[(int) icode].operand[2].mode;
+      t_class = (t_letter == 'r' ? GENERAL_REGS
+		 : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
+      t_icode = icode;
+      icode = CODE_FOR_nothing;
     }
 
   /* This case isn't valid, so fail.  Reload is allowed to use the same
@@ -410,15 +404,14 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
      silently generating incorrect code later.
 
      The convention is that secondary input reloads are valid only if the
-     secondary_class is different from class.  If you have such a case, you
-     can not use secondary reloads, you must work around the problem some
-     other way.
+     secondary class is different from the reload class.  If you have such
+     a case, you can not use secondary reloads, you must work around the
+     problem some other way.
 
-     Allow this when MODE is not reload_mode and assume that the generated
-     code handles this case (it does on the Alpha, which is the only place
-     this currently happens).  */
+     Allow this when a tertiary reload is used; i.e. assume that the
+     generated code handles this case.  */
 
-  if (in_p && class == reload_class && mode == reload_mode)
+  if (in_p && class == reload_class && t_class == NO_REGS)
     abort ();
 
   /* If we need a tertiary reload, see if we have one we can reuse or else
