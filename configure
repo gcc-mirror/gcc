@@ -62,6 +62,7 @@ moveifchange=
 norecursion=
 other_options=
 package_makefile_frag=
+package_makefile_rules_frag=
 prefix=/usr/local
 progname=
 program_prefix=
@@ -81,7 +82,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.7 $"
+version="$Revision: 1.22 $"
 x11=default
 
 ### we might need to use some other shell than /bin/sh for running subshells
@@ -1038,24 +1039,43 @@ EOF
         # been somewhat optimized and is perhaps a bit twisty.
 
         # code is order so as to try to sed the smallest input files we know.
+        # so do these separately because I don't trust the order of sed -e expressions.
 
-        # the four makefile fragments MUST end up in the resulting Makefile in this order: 
-        # package, target, host, and site.  so do these separately because I don't trust the
-        #  order of sed -e expressions.
+        # the five makefile fragments MUST end up in the resulting Makefile in this order: 
+        # package macros, target, host, site, and package rules.
 
         if [ -f ${srcdir}/${subdir}/${Makefile_in} ] ; then
 
+            # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
+            rm -f ${subdir}/${Makefile}.tem
+            case "${package_makefile_rules_frag}" in
+              "") cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem ;;
+              *)
+                      if [ ! -f ${package_makefile_rules_frag} ] ; then
+                              package_makefile_rules_frag=${srcdir}/${package_makefile_rules_frag}
+                      fi
+                      if [ -f ${package_makefile_rules_frag} ] ; then
+                              sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}.tem
+                      else
+                              echo '***' Expected package makefile rules fragment \"${package_makefile_rules_frag}\" 1>&2
+                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
+                              cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
+                      fi
+            esac
+            # working copy now in ${Makefile}.tem
+
             # Conditionalize for this site.
             rm -f ${Makefile}
-            case "${site}" in
-              "") cp ${srcdir}/${subdir}/${Makefile_in} ${Makefile} ;;
+              case "${site}" in
+              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
               *)
                       site_makefile_frag=${srcdir}/config/ms-${site}
 
                       if [ -f ${site_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${site_makefile_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}
+                              sed -e "/^####/  r ${site_makefile_frag}" ${subdir}/Makefile.tem \
+                                      > ${Makefile}
                       else
-                              cp ${srcdir}/${subdir}/${Makefile_in} ${Makefile}
+                              mv ${subdir}/Makefile.tem ${Makefile}
                               site_makefile_frag=
                       fi
                       ;;
@@ -1098,8 +1118,8 @@ EOF
             esac
             # working copy now in ${Makefile}
 
-            # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
-            rm -f ${subdir}/${Makefile}.tem
+            # Emit the default values of this package's macros.
+            rm -f ${subdir}/Makefile.tem
             case "${package_makefile_frag}" in
               "") mv ${Makefile} ${subdir}/Makefile.tem ;;
               *)
@@ -1107,17 +1127,13 @@ EOF
                               package_makefile_frag=${srcdir}/${package_makefile_frag}
                       fi
                       if [ -f ${package_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ${subdir}/${Makefile}.tem
+                              sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
                       else
-                              echo '***' Expected package makefile fragment \"${package_makefile_frag}\" 1>&2
+                              echo '***' Expected package makefile fragment \"${package_makefile_rules_frag}\" 1>&2
                               echo '***' is missing in ${PWD=`pwd`}. 1>&2
                               mv ${Makefile} ${subdir}/Makefile.tem
                       fi
             esac
-            # real copy now in ${subdir}/${Makefile}.tem
-
-            mv ${subdir}/${Makefile}.tem ${subdir}/Makefile.tem 2>/dev/null
-
             # real copy now in ${subdir}/Makefile.tem
 
             # prepend warning about editting, and a bunch of variables.

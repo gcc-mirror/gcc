@@ -1,3 +1,10 @@
+Tue Jan 27 23:25:06 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure (package_makefile_rules_frag): New variable, which names
+	a file with generic rules, ...
+	Change comment to mention we now have FIVE parts.
+	* configure: Undo last change.
+
 Tue Jan 27 23:15:55 1998  Lassi A. Tuura  <lat@iki.fi>
 
 	* config.guess: More accurate determination of HP processor types.
