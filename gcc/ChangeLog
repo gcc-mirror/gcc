@@ -241,6 +241,7 @@
 	* config/rs6000/sysv4.h (CPP_OS_FREEBSD_SPEC): Add __ELF__ to mirror
 	other FreeBSD ports.
 	(LINK_OS_FREEBSD_SPEC): Mirror conventions on other FreeBSD ports.
+	(_LITTLE_ENDIAN): Use __LITTLE_ENDIAN__ instead.
 
 2003-05-05  Janis Johnson  <janis187@us.ibm.com>
 
