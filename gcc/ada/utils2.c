@@ -29,6 +29,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "rtl.h"
 #include "flags.h"
 #include "output.h"
 #include "ada.h"
@@ -1345,23 +1346,20 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 /* Similar, but for COND_EXPR.  */
 
 tree
-build_cond_expr (tree result_type,
-                 tree condition_operand,
-                 tree true_operand,
-                 tree false_operand)
+build_cond_expr (tree result_type, tree condition_operand,
+                 tree true_operand, tree false_operand)
 {
   tree result;
   int addr_p = 0;
 
-  /* Front-end verifies that result, true and false operands have same base
-     type. Convert everything to the result type.  */
+  /* The front-end verifies that result, true and false operands have same base
+     type.  Convert everything to the result type.  */
 
   true_operand  = convert (result_type, true_operand);
   false_operand = convert (result_type, false_operand);
 
   /* If the result type is unconstrained, take the address of
      the operands and then dereference our result.  */
-
   if (TREE_CODE (result_type) == UNCONSTRAINED_ARRAY_TYPE
       || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (result_type)))
     {
@@ -1450,7 +1448,7 @@ tree
 build_call_raise (int msg)
 {
   tree fndecl = gnat_raise_decls[msg];
-  const char *str = discard_file_names ? "" : ref_filename;
+  const char *str = Debug_Flag_NN ? "" : ref_filename;
   int len = strlen (str) + 1;
   tree filename = build_string (len, str);
 
@@ -1743,7 +1741,11 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 
   else if (gnu_obj)
     return build_call_1_expr (free_decl, gnu_obj);
-  else if (gnat_pool == -1)
+
+  /* ??? For now, disable variable-sized allocators in the stack since
+     we can't yet gimplify an ALLOCATE_EXPR.  */
+  else if (gnat_pool == -1
+	   && TREE_CODE (gnu_size) == INTEGER_CST && !flag_stack_check)
     {
       /* If the size is a constant, we can put it in the fixed portion of
 	 the stack frame to avoid the need to adjust the stack pointer.  */
@@ -1760,7 +1762,10 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
 	}
       else
+	abort ();
+#if 0
 	return build (ALLOCATE_EXPR, ptr_void_type_node, gnu_size, gnu_align);
+#endif
     }
   else
     {
@@ -1977,7 +1982,6 @@ gnat_mark_addressable (tree expr_node)
       case VIEW_CONVERT_EXPR:
       case CONVERT_EXPR:
       case NON_LVALUE_EXPR:
-      case GNAT_NOP_EXPR:
       case NOP_EXPR:
 	expr_node = TREE_OPERAND (expr_node, 0);
 	break;
@@ -1989,7 +1993,19 @@ gnat_mark_addressable (tree expr_node)
       case VAR_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	put_var_into_stack (expr_node, true);
+	/* If we have already made a REG for this decl, we must put it
+	   directly into the stack.  Likewise for a MEM whose address is a
+	   pseudo.  Otherwise, set a flag to mark us to do it later.  */
+	if (DECL_RTL_SET_P (expr_node)
+	    && (GET_CODE (DECL_RTL (expr_node)) == REG
+		|| (GET_CODE (DECL_RTL (expr_node)) == MEM
+		    && GET_CODE (XEXP (DECL_RTL (expr_node), 0)) == REG
+		    && (REGNO (XEXP (DECL_RTL (expr_node), 0))
+			> LAST_VIRTUAL_REGISTER))))
+	  put_var_into_stack (expr_node, 1);
+	else
+	  TREE_ADDRESSABLE (expr_node) = 1;
+
 	return true;
 
       case FUNCTION_DECL:

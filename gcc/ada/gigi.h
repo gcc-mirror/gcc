@@ -36,12 +36,6 @@ extern unsigned int largest_move_alignment;
 
 /* Declare all functions and types used by gigi.  */
 
-/* Record the current code position in GNAT_NODE.  */
-extern void record_code_position (Node_Id);
-
-/* Insert the code for GNAT_NODE at the position saved for that node.  */
-extern void insert_code_for (Node_Id);
-
 /* Compute the alignment of the largest mode that can be used for copying
    objects.  */
 extern void gnat_compute_largest_alignment (void);
@@ -49,9 +43,6 @@ extern void gnat_compute_largest_alignment (void);
 /* Routine called by gcc for emitting a stack check. GNU_EXPR is the
    expression that contains the last address on the stack to check. */
 extern tree emit_stack_check (tree);
-
-/* Make a TRANSFORM_EXPR to later expand GNAT_NODE into code.  */
-extern tree make_transform_expr (Node_Id);
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
@@ -92,6 +83,12 @@ extern tree gnat_to_gnu_type (Entity_Id);
 /* Add GNU_STMT to the current BLOCK_STMT node.  */
 extern void add_stmt (tree);
 
+/* Similar, but set the location of GNU_STMT to that of GNAT_NODE.  */
+extern void add_stmt_with_node (tree, Node_Id);
+
+/* Set the BLOCK node corresponding to the current code group to GNU_BLOCK.  */
+extern void set_block_for_group (tree);
+
 /* Add a declaration statement for GNU_DECL to the current BLOCK_STMT node.
    Get SLOC from Entity_Id.  */
 extern void add_decl_stmt (tree, Entity_Id);
@@ -111,7 +108,7 @@ extern tree make_dummy_type (Entity_Id);
 extern tree get_unpadded_type (Entity_Id);
 
 /* Called when we need to protect a variable object using a save_expr.  */
-extern tree maybe_variable (tree, Node_Id);
+extern tree maybe_variable (tree);
 
 /* Create a record type that contains a field of TYPE with a starting bit
    position so that it is aligned to ALIGN bits.  */
@@ -147,21 +144,13 @@ extern tree get_entity_name (Entity_Id);
    SUFFIX.  */
 extern tree create_concat_name (Entity_Id, const char *);
 
-/* Flag indicating whether file names are discarded in exception messages */
-extern int discard_file_names;
-
-/* If true, then gigi is being called on an analyzed but unexpanded
-   tree, and the only purpose of the call is to properly annotate
-   types with representation information */
+/* If true, then gigi is being called on an analyzed but unexpanded tree, and
+   the only purpose of the call is to properly annotate types with
+   representation information.  */
 extern int type_annotate_only;
 
 /* Current file name without path */
 extern const char *ref_filename;
-
-/* List of TREE_LIST nodes representing a block stack.  TREE_VALUE
-   of each gives the variable used for the setjmp buffer in the current
-   block, if any.  */
-extern GTY(()) tree gnu_block_stack;
 
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
@@ -170,11 +159,6 @@ extern void gigi (Node_Id, int, int, struct Node *, Node_Id *, Node_Id *,
 		  struct Elist_Header *, struct Elmt_Item *,
 		  struct String_Entry *, Char_Code *, struct List_Header *,
 		  Int, char *, Entity_Id, Entity_Id, Entity_Id, Int);
-
-/* This function is the driver of the GNAT to GCC tree transformation process.
-   GNAT_NODE is the root of some gnat tree.  It generates code for that
-   part of the tree.  */
-extern void gnat_to_code (Node_Id);
 
 /* GNAT_NODE is the root of some GNAT tree.  Return the root of the
    GCC tree corresponding to that GNAT tree.  Normally, no code is generated;
@@ -185,19 +169,23 @@ extern tree gnat_to_gnu (Node_Id);
 /* GNU_STMT is a statement.  We generate code for that statement.  */
 extern void gnat_expand_stmt (tree);
 
+extern int gnat_gimplify_expr (tree *, tree *, tree *);
+
+/* Expand the body of GNU_DECL, which is not a nested function.  */
+extern void gnat_expand_body (tree);
+
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise
    make a GCC type for GNAT_ENTITY and set up the correspondance.  */
 
 extern void process_type (Entity_Id);
 
-/* Determine the input_filename and the input_line from the source location
-   (Sloc) of GNAT_NODE node.  Set the global variable input_filename and
-   input_line.  If WRITE_NOTE_P is true, emit a line number note. */
-extern void set_lineno (Node_Id, int);
-
-/* Likewise, but passed a Sloc.  */
-extern void set_lineno_from_sloc (Source_Ptr, int);
+/* Convert Sloc into *LOCUS (a location_t).  Return true if this Sloc
+   corresponds to a source code location and false if it doesn't.  In the
+   latter case, we don't update *LOCUS.  We also set the Gigi global variable
+   REF_FILENAME to the reference file name as given by sinput (i.e no
+   directory).  */
+extern bool Sloc_to_locus (Source_Ptr, location_t *);
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
@@ -383,10 +371,15 @@ extern int global_bindings_p (void);
    is in reverse order (it has to be so for back-end compatibility).  */
 extern tree getdecls (void);
 
-/* Enter and exit a new binding level. We return the BLOCK node, if any
-   when we exit a binding level.  */
+/* Enter and exit a new binding level. */
 extern void gnat_pushlevel (void);
-extern tree gnat_poplevel (void);
+extern void gnat_poplevel (void);
+
+/* Set the jmpbuf_decl for the current binding level to DECL.  */
+extern void set_block_jmpbuf_decl (tree);
+
+/* Get the setjmp_decl, if any, for the current binding level.  */
+extern tree get_block_jmpbuf_decl (void);
 
 /* Insert BLOCK at the end of the list of subblocks of the
    current binding level.  This is used when a BIND_EXPR is expanded,
@@ -563,8 +556,9 @@ extern tree create_label_decl (tree);
 extern void begin_subprog_body (tree);
 
 /* Finish the definition of the current subprogram and compile it all the way
-   to assembler language output.  */
-extern void end_subprog_body (void);
+   to assembler language output.  BODY is the tree corresponding to
+   the subprogram.  */
+extern void end_subprog_body (tree);
 
 /* Build a template of type TEMPLATE_TYPE from the array bounds of ARRAY_TYPE.
    EXPR is an expression that we can use to locate any PLACEHOLDER_EXPRs.
