@@ -1,3 +1,10 @@
+2003-09-27  Roger Sayle  <roger@eyesopen.com>
+
+	* toplev.c (flag_evaluation_order): New global variable.
+	* flags.h (flag_evaluation_order): Prototype here.
+	* expr.c (expand_operands): If we need to preserve observable
+	evaluation order, protect exp1 from clobbering exp0's result.
+
 2003-09-28  Andreas Jaeger  <aj@suse.de>
 
 	* c-decl.c (finish_function): Convert definition to ISO C90.

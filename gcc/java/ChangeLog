@@ -1,3 +1,11 @@
+2003-09-27  Roger Sayle  <roger@eyesopen.com>
+
+	* lang.c (java_init_options): Set flag_evaluation_order.
+	* expr.c (force_evaluation_order): Don't attempt to force
+	evaluation order of binary operations using save_expr.
+	* parse.y (java_complete_lhs): No longer need to call
+	force_evaluation_order when constructing binary operators.
+
 2003-09-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
 	    Bryce McKinlay  <bryce@mckinlay.net.nz>
 

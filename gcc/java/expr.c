@@ -3324,16 +3324,11 @@ force_evaluation_order (tree node)
 {
   if (flag_syntax_only)
     return node;
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == '2')
-    {
-      if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, 1)))
-	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
-    }
-  else if (TREE_CODE (node) == CALL_EXPR
-           || TREE_CODE (node) == NEW_CLASS_EXPR
-           || (TREE_CODE (node) == COMPOUND_EXPR
-               && TREE_CODE (TREE_OPERAND (node, 0)) == CALL_EXPR
-               && TREE_CODE (TREE_OPERAND (node, 1)) == SAVE_EXPR)) 
+  if (TREE_CODE (node) == CALL_EXPR
+      || TREE_CODE (node) == NEW_CLASS_EXPR
+      || (TREE_CODE (node) == COMPOUND_EXPR
+	  && TREE_CODE (TREE_OPERAND (node, 0)) == CALL_EXPR
+	  && TREE_CODE (TREE_OPERAND (node, 1)) == SAVE_EXPR)) 
     {
       tree arg, cmp;
 
