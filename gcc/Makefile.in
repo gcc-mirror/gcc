@@ -647,6 +647,16 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _bb _shtab _clear_cache _trampoline __main _exit \
     _ctors _eh  _pure
 
+FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
+    _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
+    _lt_sf _le_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
+    _sf_to_df
+
+DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
+    _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
+    _lt_df _le_df _si_to_df _df_to_si _negate_df _make_df \
+    _df_to_sf
+
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
 # All they would do is cause complete recompilation every time
@@ -974,7 +984,7 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	fi
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
-libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2ADD) \
+libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
    machmode.h longlong.h frame.h gansidecl.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
@@ -994,6 +1004,28 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2ADD) \
 	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
+	if [ x$(FPBIT) != x ]; then \
+	  for name in $(FPBIT_FUNCS); \
+	  do \
+	    echo $${name}; \
+	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
+	        -DFINE_GRAINED_LIBRARIES $(FPBIT) -o $${name}$(objext); \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	    rm -f $${name}$(objext); \
+	  done; \
+	else true; fi;
+	if [ x$(DPBIT) != x ]; then \
+	  for name in $(DPBIT_FUNCS); \
+	  do \
+	    echo $${name}; \
+	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
+	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o $${name}$(objext); \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	    rm -f $${name}$(objext); \
+	  done; \
+	else true; fi;
 # Some shells crash when a loop has no items.
 # So make sure there is always at least one--`..'.
 # Then ignore it.

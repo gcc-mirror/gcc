@@ -1,3 +1,19 @@
+Sun Dec 21 13:58:39 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS): Define.
+	(libgcc2.a): Depend on $(DPBIT) and $(FPBIT).  Add rules to
+	generate more fine grained floating point emulation libraries.
+	* config/fp-bit.c: Add protecting #ifdef to all functions so
+	that they can be compiled separately.  If !FINE_GRAINED_LIBRARIES,
+	then compile all suitable functions.
+	(pack_d, unpack_d, fpcmp_parts): Add declarations, define with two
+	underscores to avoid namespace pollution.
+	* t-mn10200 (LIB2FUNCS_EXTRA): Remove fp-bit.c
+	(FPBIT): Define.
+	* t-mn10300 (LIB2FUNCS_EXTRA): Remove fp-bit.c and dp-bit.c
+	(FPBIT): Define.
+	(DPBIT): Define.
+
 Sat Dec 20 11:26:47 1997  Kaveh R. Ghazi  <ghazi@tragg.rutgers.edu>
 			  Jeff Law  <law@cygnus.com>
 
