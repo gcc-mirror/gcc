@@ -1,3 +1,13 @@
+Mon Jun  7 14:07:39 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* c-lex.c (GETC): Redefine to call getch.
+	(UNGETC): Redefine to call put_back.
+	(putback_buffer): New structure type.
+	(putback): New static structure.
+	(getch): New function.
+	(put_back): New function.
+	(yylex): Replace unused bytes from bad multibyte character.
+
 Mon Jun  7 13:33:39 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cpplib.c (do_define): Cast `alloca' return value.

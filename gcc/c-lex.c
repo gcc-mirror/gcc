@@ -71,10 +71,47 @@ extern int yy_get_token ();
 
 #define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
 #define UNGETC(c) ((c) == EOF ? 0 : yy_cur--)
-#else
-#define GETC() getc (finput)
-#define UNGETC(c) ungetc (c, finput)
-#endif
+
+#else /* ! USE_CPPLIB */
+
+#define GETC() getch ()
+#define UNGETC(c) put_back (c)
+
+struct putback_buffer {
+  char *buffer;
+  int   buffer_size;
+  int   index;
+};
+
+static struct putback_buffer putback = {NULL, 0, -1};
+
+static inline int
+getch ()
+{
+  if (putback.index != -1)
+    {
+      int ch = putback.buffer[putback.index];
+      --putback.index;
+      return ch;
+    }
+  return getc (finput);
+}
+
+static inline void
+put_back (ch)
+     int ch;
+{
+  if (ch != EOF)
+    {
+      if (putback.index == putback.buffer_size - 1)
+	{
+	  putback.buffer_size += 16;
+	  putback.buffer = xrealloc (putback.buffer, putback.buffer_size);
+	}
+      putback.buffer[++putback.index] = ch;
+    }
+}
+#endif /* ! USE_CPPLIB */
 
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,
@@ -1972,12 +2009,17 @@ yylex ()
 		else
 		  {
 		    if (char_len == -1)
-		      warning ("Ignoring invalid multibyte character");
-		    if (wide_flag)
-		      c = wc;
+		      {
+			warning ("Ignoring invalid multibyte character");
+			/* Replace all but the first byte.  */
+			for (--i; i > 1; --i)
+			  UNGETC (token_buffer[i]);
+			wc = token_buffer[1];
+		      }
 #ifdef MAP_CHARACTER
-		    else
-		      c = MAP_CHARACTER (c);
+		      c = MAP_CHARACTER (wc);
+#else
+		      c = wc;
 #endif
 		  }
 #else /* ! MULTIBYTE_CHARS */
@@ -2095,20 +2137,24 @@ yylex ()
 		    c = GETC ();
 		  }
 		if (char_len == -1)
-		  warning ("Ignoring invalid multibyte character");
-		else
 		  {
-		    /* mbtowc sometimes needs an extra char before accepting */
-		    if (char_len <= i)
-		      UNGETC (c);
-		    if (! wide_flag)
-		      {
-			p += (i + 1);
-			c = GETC ();
-			continue;
-		      }
-		    c = wc;
+		    warning ("Ignoring invalid multibyte character");
+		    /* Replace all except the first byte.  */
+		    UNGETC (c);
+		    for (--i; i > 0; --i)
+		      UNGETC (p[i]);
+		    char_len = 1;
 		  }
+		/* mbtowc sometimes needs an extra char before accepting */
+		if (char_len <= i)
+		  UNGETC (c);
+		if (! wide_flag)
+		  {
+		    p += (i + 1);
+		    c = GETC ();
+		    continue;
+		  }
+		c = wc;
 #endif /* MULTIBYTE_CHARS */
 	      }
 
