@@ -1,3 +1,12 @@
+2000-03-26  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (handle_braces): Recognize `%{<S}' construct.
+	(SWITCH_OK, SWITCH_FALSE, SWITCH_IGNORE, SWITCH_LIVE): New
+	defines.
+	(process_command): Use them.
+	(check_live_switch): Likewise.
+	(give_switch): Skip ignored switches.
+
 2000-03-26  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (jump_optimize_1): Fix typo in elide optimizations
@@ -40,7 +49,6 @@ Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (mark_all_labels): Handle CALL_PLACEHOLDERs.
-
 
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
