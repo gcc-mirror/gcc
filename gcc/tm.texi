@@ -6908,6 +6908,13 @@ Normally, if the user specifies only @samp{-ggdb} GNU CC will use Dwarf
 version 2 if available; this macro disables this.  See the description
 of the @code{PREFERRED_DEBUGGING_TYPE} macro for more details.
 
+@findex DWARF2_GENERATE_TEXT_SECTION_LABEL
+@item DWARF2_GENERATE_TEXT_SECTION_LABEL
+By default, the Dwarf 2 debugging information generator will generate a
+label to mark the beginning of the text section.  If it is better simply
+to use the name of the text section itself, rather than an explicit label,
+to indicate the beginning of the text section, define this macro to zero.
+
 @findex PUT_SDB_@dots{}
 @item PUT_SDB_@dots{}
 Define these macros to override the assembler syntax for the special
