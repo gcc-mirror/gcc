@@ -1,3 +1,9 @@
+2005-02-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/InflaterInputStream.java (markSupported):
+	Override.
+	(mark, reset): Likewise.
+
 2005-02-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/URI.java (AUTHORITY_REGEXP): Handle case where user
