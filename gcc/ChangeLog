@@ -1,3 +1,22 @@
+2000-09-25  Branko Cibej  <branko.cibej@hermes.si>
+
+        * flags.h:  Declare warning flag warn_system_headers.
+        * toplev.c:  Define it.
+        (W_options): Add option -Wsystem-headers.
+        * diagnostic.c (count_error): Test warn_system_headers.
+        * invoke.texi:  Add description for -Wsystem-headers.
+	* cpplib.h (cpp_options): New member warn_system_headers.
+	* cpphash.h (CPP_PEDANTIC, CPP_WTRADITIONAL): Don't test
+	CPP_IN_SYSTEM_HEADER.
+	* cpplib.c (do_import, do_pragma_once): Likewise.
+	* cpperror.c (_cpp_begin_message): Test warn_system_headers
+	and CPP_IN_SYSTEM_HEADER.
+	* cppinit.c (handle_option): Recognize -Wsystem_headers.
+	(print_help): Describe -Wsystem_headers.
+	* cpplex.c (lex_line): Reorganize condition so that warnings
+	about C++ comments in system headers can be enabled. Remove
+	label do_line_comment.
+
 Mon 25-Sep-2000 23:38:27 BST  Neil Booth  <neilb@earthling.net>
 
 	* cpplex.c (save_comment): Only store the initial '/'

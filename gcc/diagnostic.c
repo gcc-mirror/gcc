@@ -1051,7 +1051,9 @@ int
 count_error (warningp)
      int warningp;
 {
-  if (warningp && inhibit_warnings)
+  if (warningp
+      && (inhibit_warnings
+          || (in_system_header && !warn_system_headers)))
     return 0;
 
   if (warningp && !warnings_are_errors)
