@@ -1203,6 +1203,10 @@ override_options (void)
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)
@@ -1223,10 +1227,6 @@ override_options (void)
       if (flag_pcc_struct_return == 2)
 	flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
     }
-
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
 
   if (!ix86_tune_string && ix86_arch_string)
     ix86_tune_string = ix86_arch_string;
