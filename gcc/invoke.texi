@@ -7731,33 +7731,37 @@ and Linux.
 
 @item -mgnu-as
 @itemx -mno-gnu-as
-Generate code for the GNU assembler.  This is the default.  Also, this is
-the default if the configure option @samp{--with-gnu-as} is used.
+Generate (or don't) code for the GNU assembler.  This is the default.
+@c Also, this is the default if the configure option @samp{--with-gnu-as}
+@c is used.
 
 @item -mgnu-ld
 @itemx -mno-gnu-ld
-Generate code for the GNU linker.  This is the default.  Also, this is the
-default if the configure option @samp{--with-gnu-ld} is used.
+Generate (or don't) code for the GNU linker.  This is the default.
+@c Also, this is the default if the configure option @samp{--with-gnu-ld}
+@c is used.
 
 @item -mno-pic
-Generate code that does not use a global pointer register.
+Generate code that does not use a global pointer register.  The result
+is not position independent code, and violates the IA-64 ABI.
 
 @item -mvolatile-asm-stop
 @itemx -mno-volatile-asm-stop
-Generate a stop bit immediately before and after volatile asm statements.
+Generate (or don't) a stop bit immediately before and after volatile asm
+statements.
 
 @item -mb-step
 Generate code that works around Itanium B step errata.
 
 @item -mregister-names
 @itemx -mno-register-names
-Generate @samp{in}, @samp{loc}, and @samp{out} register names for the
-stacked registers.
+Generate (or don't) @samp{in}, @samp{loc}, and @samp{out} register names for
+the stacked registers.  This may make assembler output more readable.
 
 @item -mno-sdata
 @itemx -msdata
-Disable optimizations that use the small data section.  This may be useful
-for working around optimizer bugs.
+Disable (or enable) optimizations that use the small data section.  This may
+be useful for working around optimizer bugs.
 
 @item -mconstant-gp
 Generate code that uses a single constant global pointer value.  This is
@@ -7775,8 +7779,8 @@ Generate code for inline divides using the maximum throughput algorithm.
 
 @item -mno-dwarf2-asm
 @itemx -mdwarf2-asm
-Don't generate assembler code for the DWARF2 line number debugging info.
-This may be useful when not using the GNU assembler.
+Don't (or do) generate assembler code for the DWARF2 line number debugging
+info.  This may be useful when not using the GNU assembler.
 
 @item -mfixed-range=@var{register range}
 Generate code treating the given register range as fixed registers.
