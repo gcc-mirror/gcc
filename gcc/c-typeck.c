@@ -5737,6 +5737,11 @@ set_init_label (fieldname)
   tree tail;
   int passed = 0;
 
+  /* Don't die if an entire brace-pair level is superfluous
+     in the containing level.  */
+  if (constructor_type == 0)
+    return;
+
   for (tail = TYPE_FIELDS (constructor_type); tail;
        tail = TREE_CHAIN (tail))
     {
