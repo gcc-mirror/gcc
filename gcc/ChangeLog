@@ -1,3 +1,11 @@
+2003-09-01  Josef Zlomek  <zlomekj@suse.cz>
+
+	* c-typeck.c (build_binary_op): Kill BIT_ANDTC_EXPR.
+	* convert.c (convert_to_integer): Kill BIT_ANDTC_EXPR.
+	* fold-const.c (int_const_binop): Kill BIT_ANDTC_EXPR.
+	(fold): Kill BIT_ANDTC_EXPR and label bit_and.
+	* tree.def (BIT_ANDTC_EXPR): Kill.
+
 2003-08-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Remove uses of "for x in .. ${foo}" idiom.
