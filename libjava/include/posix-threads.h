@@ -250,6 +250,24 @@ _Jv_ThreadSelf (void)
 
 #endif /* __ia64__ */
 
+#ifdef __alpha__
+
+#include <asm/pal.h>
+
+typedef unsigned long _Jv_ThreadId_t;
+
+inline _Jv_ThreadId_t
+_Jv_ThreadSelf (void)
+{
+  unsigned long id;
+  __asm__ ("call_pal %1\n\tmov $0, %0" : "=r"(id) : "i"(PAL_rduniq) : "$0");
+  return id;
+}
+
+#define JV_SELF_DEFINED
+
+#endif /* __alpha__ */
+
 #if defined(SLOW_PTHREAD_SELF)
 
 typedef pthread_t _Jv_ThreadId_t;
