@@ -1,3 +1,10 @@
+2003-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/special/ecos.exp (gcsec-1.c): Find linker used by gcc.
+	* gcc.dg/old-style-asm-1.c (dg-final): Add hpux label alternative to
+	regular expression.
+	* gcc.dg/inline-1.c (dg-final): Check for "xyzzy?,%r" on hppa*-*-*.
+
 2003-03-12  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* gcc.dg/return-type-3.c: New test.

@@ -155,7 +155,9 @@ if { [ check_weak_available ] == 1 } {
 # gcsec-1.c
 ###########
 
-set ld_output [ remote_exec host "[ find_ld ]" "--help" ]
+# Check if the ld used by gcc supports --gc-sections.
+set gcc_ld [lindex [gcc_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+set ld_output [remote_exec host "$gcc_ld" "--help"]
 
 # AIX gld supports garbage collection. But AIX gcc does not support 
 # -ffunction-sections or -fdata-sections.
