@@ -170,7 +170,27 @@ dosize (file, op, size)
       break;
     default:
       if (TARGET_H8300)
-	fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,sp\n", size, op);
+	{
+	  if (current_function_needs_context
+	      && strcmp (op, "sub") == 0)
+	    {
+	      /* Egad.  We don't have a temporary to hold the
+		 size of the frame in the prologue!  Just inline
+		 the bastard since this shouldn't happen often.  */
+	      while (size >= 2)
+		{
+		  fprintf (file, "\tsubs\t#2,sp\n");
+		  size -= 2;
+		}
+
+	      if (size)
+		fprintf (file, "\tsubs\t#1,sp\n");
+
+	      size = 0;
+	    }
+	  else
+	    fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,sp\n", size, op);
+	}
       else
 	fprintf (file, "\t%s\t#%d,sp\n", op, size);
       size = 0;
