@@ -1,3 +1,12 @@
+Fri Oct  8 17:49:08 1999  Richard Henderson  <rth@cygnus.com>
+
+	* config/mips/mips.md (movstrsi+[123]) : Combine these into
+	a single pattern.  Scrap the 'd' versions as unnecessary. 
+
+	* config/mips/mips.md (tablejump_internal3,tablejump_mips161,
+	tablejump_mips162,tablejump_internal4): The operands to a
+	label_ref must be VOIDmode.
+
 Fri Oct  8 16:12:42 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (c-mbchar): Append, don't overwrite, `extra_c_flags'.
