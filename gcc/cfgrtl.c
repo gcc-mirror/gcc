@@ -2186,17 +2186,26 @@ purge_dead_edges (bb)
  
 	  e->flags &= ~EDGE_ABNORMAL;
 
-	  /* Check purposes we can have edge.  */
-	  if ((e->flags & EDGE_FALLTHRU)
-	      && any_condjump_p (insn))
+	  /* See if this edge is one we should keep.  */
+	  if ((e->flags & EDGE_FALLTHRU) && any_condjump_p (insn))
+	    /* A conditional jump can fall through into the next
+	       block, so we should keep the edge.  */
 	    continue;
 	  else if (e->dest != EXIT_BLOCK_PTR
 		   && e->dest->head == JUMP_LABEL (insn))
+	    /* If the destination block is the target of the jump,
+	       keep the edge.  */
 	    continue;
-	  else if (e->dest == EXIT_BLOCK_PTR
-		   && returnjump_p (insn))
+	  else if (e->dest == EXIT_BLOCK_PTR && returnjump_p (insn))
+	    /* If the destination block is the exit block, and this
+	       instruction is a return, then keep the edge.  */
+	    continue;
+	  else if ((e->flags & EDGE_EH) && can_throw_internal (insn))
+	    /* Keep the edges that correspond to exceptions thrown by
+	       this instruction.  */
 	    continue;
 
+	  /* We do not need this edge.  */
 	  bb->flags |= BB_DIRTY;
 	  purged = true;
 	  remove_edge (e);
