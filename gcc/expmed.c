@@ -300,7 +300,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 rtx value, HOST_WIDE_INT total_size)
 {
   unsigned int unit
-    = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
+    = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   rtx op0 = str_rtx;
@@ -332,7 +332,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* Use vec_extract patterns for extracting parts of vectors whenever
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
-      && GET_CODE (op0) != MEM
+      && !MEM_P (op0)
       && (vec_set_optab->handlers[GET_MODE (op0)].insn_code
 	  != CODE_FOR_nothing)
       && fieldmode == GET_MODE_INNER (GET_MODE (op0))
@@ -396,7 +396,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   if (bitpos == 0
       && bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (GET_CODE (op0) != MEM
+      && (!MEM_P (op0)
 	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
 	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
 	     && byte_offset % GET_MODE_SIZE (fieldmode) == 0)
@@ -435,7 +435,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
     if (imode != GET_MODE (op0))
       {
-	if (GET_CODE (op0) == MEM)
+	if (MEM_P (op0))
 	  op0 = adjust_address (op0, imode, 0);
 	else if (imode != BLKmode)
 	  op0 = gen_lowpart (imode, op0);
@@ -446,7 +446,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* We may be accessing data outside the field, which means
      we can alias adjacent data.  */
-  if (GET_CODE (op0) == MEM)
+  if (MEM_P (op0))
     {
       op0 = shallow_copy_rtx (op0);
       set_mem_alias_set (op0, 0);
@@ -457,14 +457,14 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
   if (BYTES_BIG_ENDIAN
-      && GET_CODE (op0) != MEM
+      && !MEM_P (op0)
       && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
 
   /* Storing an lsb-aligned field in a register
      can be done with a movestrict instruction.  */
 
-  if (GET_CODE (op0) != MEM
+  if (!MEM_P (op0)
       && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (movstrict_optab->handlers[fieldmode].insn_code
@@ -554,7 +554,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
 
-  if (GET_CODE (op0) != MEM)
+  if (!MEM_P (op0))
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
@@ -615,7 +615,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 into a register and save it back later.  */
       /* This used to check flag_force_mem, but that was a serious
 	 de-optimization now that flag_force_mem is enabled by -O2.  */
-      if (GET_CODE (op0) == MEM
+      if (MEM_P (op0)
 	  && ! ((*insn_data[(int) CODE_FOR_insv].operand[0].predicate)
 		(op0, VOIDmode)))
 	{
@@ -658,7 +658,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       volatile_ok = save_volatile_ok;
 
       /* Add OFFSET into OP0's address.  */
-      if (GET_CODE (xop0) == MEM)
+      if (MEM_P (xop0))
 	xop0 = adjust_address (xop0, byte_mode, offset);
 
       /* If xop0 is a register, we need it in MAXMODE
@@ -678,7 +678,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       /* We have been counting XBITPOS within UNIT.
 	 Count instead within the size of the register.  */
-      if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
+      if (BITS_BIG_ENDIAN && !MEM_P (xop0))
 	xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
 
       unit = GET_MODE_BITSIZE (maxmode);
@@ -971,7 +971,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  /* We must do an endian conversion exactly the same way as it is
 	     done in extract_bit_field, so that the two calls to
 	     extract_fixed_bit_field will have comparable arguments.  */
-	  if (GET_CODE (value) != MEM || GET_MODE (value) == BLKmode)
+	  if (!MEM_P (value) || GET_MODE (value) == BLKmode)
 	    total_bits = BITS_PER_WORD;
 	  else
 	    total_bits = GET_MODE_BITSIZE (GET_MODE (value));
@@ -1057,7 +1057,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   HOST_WIDE_INT total_size)
 {
   unsigned int unit
-    = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
+    = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   rtx op0 = str_rtx;
@@ -1101,7 +1101,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* Use vec_extract patterns for extracting parts of vectors whenever
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
-      && GET_CODE (op0) != MEM
+      && !MEM_P (op0)
       && (vec_extract_optab->handlers[GET_MODE (op0)].insn_code
 	  != CODE_FOR_nothing)
       && ((bitsize + bitnum) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
@@ -1159,7 +1159,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
     if (imode != GET_MODE (op0))
       {
-	if (GET_CODE (op0) == MEM)
+	if (MEM_P (op0))
 	  op0 = adjust_address (op0, imode, 0);
 	else if (imode != BLKmode)
 	  op0 = gen_lowpart (imode, op0);
@@ -1170,7 +1170,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* We may be accessing data outside the field, which means
      we can alias adjacent data.  */
-  if (GET_CODE (op0) == MEM)
+  if (MEM_P (op0))
     {
       op0 = shallow_copy_rtx (op0);
       set_mem_alias_set (op0, 0);
@@ -1189,7 +1189,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
   if (BYTES_BIG_ENDIAN
-      && GET_CODE (op0) != MEM
+      && !MEM_P (op0)
       && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
 
@@ -1216,12 +1216,12 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	   && (BYTES_BIG_ENDIAN
 	       ? bitpos + bitsize == BITS_PER_WORD
 	       : bitpos == 0)))
-      && ((GET_CODE (op0) != MEM
+      && ((!MEM_P (op0)
 	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				     GET_MODE_BITSIZE (GET_MODE (op0)))
 	   && GET_MODE_SIZE (mode1) != 0
 	   && byte_offset % GET_MODE_SIZE (mode1) == 0)
-	  || (GET_CODE (op0) == MEM
+	  || (MEM_P (op0)
 	      && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
 		  || (offset * BITS_PER_UNIT % bitsize == 0
 		      && MEM_ALIGN (op0) % bitsize == 0)))))
@@ -1342,7 +1342,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
 
-  if (GET_CODE (op0) != MEM)
+  if (!MEM_P (op0))
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
@@ -1376,7 +1376,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  rtx pat;
 	  enum machine_mode maxmode = mode_for_extraction (EP_extzv, 0);
 
-	  if (GET_CODE (xop0) == MEM)
+	  if (MEM_P (xop0))
 	    {
 	      int save_volatile_ok = volatile_ok;
 	      volatile_ok = 1;
@@ -1440,13 +1440,13 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    xbitpos = unit - bitsize - xbitpos;
 
 	  /* Now convert from counting within UNIT to counting in MAXMODE.  */
-	  if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
+	  if (BITS_BIG_ENDIAN && !MEM_P (xop0))
 	    xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
 
 	  unit = GET_MODE_BITSIZE (maxmode);
 
 	  if (xtarget == 0
-	      || (flag_force_mem && GET_CODE (xtarget) == MEM))
+	      || (flag_force_mem && MEM_P (xtarget)))
 	    xtarget = xspec_target = gen_reg_rtx (tmode);
 
 	  if (GET_MODE (xtarget) != maxmode)
@@ -1509,7 +1509,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  rtx pat;
 	  enum machine_mode maxmode = mode_for_extraction (EP_extv, 0);
 
-	  if (GET_CODE (xop0) == MEM)
+	  if (MEM_P (xop0))
 	    {
 	      /* Is the memory operand acceptable?  */
 	      if (! ((*insn_data[(int) CODE_FOR_extv].operand[1].predicate)
@@ -1569,13 +1569,13 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 	  /* XBITPOS counts within a size of UNIT.
 	     Adjust to count within a size of MAXMODE.  */
-	  if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
+	  if (BITS_BIG_ENDIAN && !MEM_P (xop0))
 	    xbitpos += (GET_MODE_BITSIZE (maxmode) - unit);
 
 	  unit = GET_MODE_BITSIZE (maxmode);
 
 	  if (xtarget == 0
-	      || (flag_force_mem && GET_CODE (xtarget) == MEM))
+	      || (flag_force_mem && MEM_P (xtarget)))
 	    xtarget = xspec_target = gen_reg_rtx (tmode);
 
 	  if (GET_MODE (xtarget) != maxmode)
@@ -2514,7 +2514,7 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
   /* Avoid referencing memory over and over.
      For speed, but also for correctness when mem is volatile.  */
-  if (GET_CODE (op0) == MEM)
+  if (MEM_P (op0))
     op0 = force_reg (mode, op0);
 
   /* ACCUM starts out either as OP0 or as a zero, depending on
@@ -3290,9 +3290,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	  /* Don't clobber an operand while doing a multi-step calculation.  */
 	  || ((rem_flag || op1_is_constant)
 	      && (reg_mentioned_p (target, op0)
-		  || (GET_CODE (op0) == MEM && GET_CODE (target) == MEM)))
+		  || (MEM_P (op0) && MEM_P (target))))
 	  || reg_mentioned_p (target, op1)
-	  || (GET_CODE (op1) == MEM && GET_CODE (target) == MEM)))
+	  || (MEM_P (op1) && MEM_P (target))))
     target = 0;
 
   /* Get the mode in which to perform this computation.  Normally it will
@@ -3381,9 +3381,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 
   /* If one of the operands is a volatile MEM, copy it into a register.  */
 
-  if (GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0))
+  if (MEM_P (op0) && MEM_VOLATILE_P (op0))
     op0 = force_reg (compute_mode, op0);
-  if (GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
+  if (MEM_P (op1) && MEM_VOLATILE_P (op1))
     op1 = force_reg (compute_mode, op1);
 
   /* If we need the remainder or if OP1 is constant, we need to
@@ -4610,7 +4610,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD * 2
       && GET_MODE_CLASS (mode) == MODE_INT
       && op1 == const0_rtx
-      && (GET_CODE (op0) != MEM || ! MEM_VOLATILE_P (op0)))
+      && (!MEM_P (op0) || ! MEM_VOLATILE_P (op0)))
     {
       if (code == EQ || code == NE)
 	{

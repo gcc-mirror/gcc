@@ -566,7 +566,7 @@ get_alias_set (tree t)
 	 it.  This is necessary for C++ anonymous unions, whose component
 	 variables don't look like union members (boo!).  */
       if (TREE_CODE (t) == VAR_DECL
-	  && DECL_RTL_SET_P (t) && GET_CODE (DECL_RTL (t)) == MEM)
+	  && DECL_RTL_SET_P (t) && MEM_P (DECL_RTL (t)))
 	return MEM_ALIAS_SET (DECL_RTL (t));
 
       /* Now all we care about is the type.  */
@@ -1197,7 +1197,7 @@ canon_rtx (rtx x)
      the loop optimizer.   Note we want to leave the original
      MEM alone, but need to return the canonicalized MEM with
      all the flags with their original values.  */
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     x = replace_equiv_address_nv (x, canon_rtx (XEXP (x, 0)));
 
   return x;
@@ -1608,7 +1608,7 @@ get_addr (rtx x)
 	if (CONSTANT_P (l->loc))
 	  return l->loc;
       for (l = v->locs; l; l = l->next)
-	if (!REG_P (l->loc) && GET_CODE (l->loc) != MEM)
+	if (!REG_P (l->loc) && !MEM_P (l->loc))
 	  return l->loc;
       if (v->locs)
 	return v->locs->loc;
@@ -2110,7 +2110,7 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
   /* If either RTL is not a MEM, it must be a REG or CONCAT, meaning they
      can't overlap unless they are the same because we never reuse that part
      of the stack frame used for locals for spilled pseudos.  */
-  if ((GET_CODE (rtlx) != MEM || GET_CODE (rtly) != MEM)
+  if ((!MEM_P (rtlx) || !MEM_P (rtly))
       && ! rtx_equal_p (rtlx, rtly))
     return 1;
 
@@ -2118,11 +2118,11 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
      know both are and are the same, so use that as the base.  The only
      we can avoid overlap is if we can deduce that they are nonoverlapping
      pieces of that decl, which is very rare.  */
-  basex = GET_CODE (rtlx) == MEM ? XEXP (rtlx, 0) : rtlx;
+  basex = MEM_P (rtlx) ? XEXP (rtlx, 0) : rtlx;
   if (GET_CODE (basex) == PLUS && GET_CODE (XEXP (basex, 1)) == CONST_INT)
     offsetx = INTVAL (XEXP (basex, 1)), basex = XEXP (basex, 0);
 
-  basey = GET_CODE (rtly) == MEM ? XEXP (rtly, 0) : rtly;
+  basey = MEM_P (rtly) ? XEXP (rtly, 0) : rtly;
   if (GET_CODE (basey) == PLUS && GET_CODE (XEXP (basey, 1)) == CONST_INT)
     offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
 
@@ -2137,10 +2137,10 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
 	    || (CONSTANT_P (basey) && REG_P (basex)
 		&& REGNO_PTR_FRAME_P (REGNO (basex))));
 
-  sizex = (GET_CODE (rtlx) != MEM ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
+  sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
 	   : -1);
-  sizey = (GET_CODE (rtly) != MEM ? (int) GET_MODE_SIZE (GET_MODE (rtly))
+  sizey = (!MEM_P (rtly) ? (int) GET_MODE_SIZE (GET_MODE (rtly))
 	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
 	   -1);
 
@@ -2557,7 +2557,7 @@ nonlocal_referenced_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
       if (nonlocal_mentioned_p (SET_SRC (x)))
 	return 1;
 
-      if (GET_CODE (SET_DEST (x)) == MEM)
+      if (MEM_P (SET_DEST (x)))
 	return nonlocal_mentioned_p (XEXP (SET_DEST (x), 0));
 
       /* If the destination is anything other than a CC0, PC,
@@ -2577,7 +2577,7 @@ nonlocal_referenced_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
       return 0;
 
     case CLOBBER:
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	return nonlocal_mentioned_p (XEXP (XEXP (x, 0), 0));
       return 0;
 
@@ -2789,7 +2789,7 @@ static bool memory_modified;
 static void
 memory_modified_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
 {
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     {
       if (anti_dependence (x, (rtx)data) || output_dependence (x, (rtx)data))
 	memory_modified = true;

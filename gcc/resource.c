@@ -315,7 +315,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	mark_referenced_resources (x, res, 0);
       else if (GET_CODE (x) == SUBREG)
 	x = SUBREG_REG (x);
-      if (GET_CODE (x) == MEM)
+      if (MEM_P (x))
 	mark_referenced_resources (XEXP (x, 0), res, 0);
       return;
 

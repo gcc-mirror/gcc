@@ -1234,7 +1234,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	 are intervening stores.  Also, don't move a volatile asm or
 	 UNSPEC_VOLATILE across any other insns.  */
       || (! all_adjacent
-	  && (((GET_CODE (src) != MEM
+	  && (((!MEM_P (src)
 		|| ! find_reg_note (insn, REG_EQUIV, src))
 	       && use_crosses_set_p (src, INSN_CUID (insn)))
 	      || (GET_CODE (src) == ASM_OPERANDS && MEM_VOLATILE_P (src))
@@ -1433,7 +1433,7 @@ combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest,
 	 into the address of a MEM, so only prevent the combination if
 	 i1 or i2 set the same MEM.  */
       if ((inner_dest != dest &&
-	   (GET_CODE (inner_dest) != MEM
+	   (!MEM_P (inner_dest)
 	    || rtx_equal_p (i2dest, inner_dest)
 	    || (i1dest && rtx_equal_p (i1dest, inner_dest)))
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
@@ -1914,7 +1914,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 #if 0
   if (!(GET_CODE (PATTERN (i3)) == SET
 	&& REG_P (SET_SRC (PATTERN (i3)))
-	&& GET_CODE (SET_DEST (PATTERN (i3))) == MEM
+	&& MEM_P (SET_DEST (PATTERN (i3)))
 	&& (GET_CODE (XEXP (SET_DEST (PATTERN (i3)), 0)) == POST_INC
 	    || GET_CODE (XEXP (SET_DEST (PATTERN (i3)), 0)) == POST_DEC)))
     /* It's not the exception.  */
@@ -2414,7 +2414,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 #ifdef INSN_SCHEDULING
 	  /* If *SPLIT is a paradoxical SUBREG, when we split it, it should
 	     be written as a ZERO_EXTEND.  */
-	  if (split_code == SUBREG && GET_CODE (SUBREG_REG (*split)) == MEM)
+	  if (split_code == SUBREG && MEM_P (SUBREG_REG (*split)))
 	    {
 #ifdef LOAD_EXTEND_OP
 	      /* Or as a SIGN_EXTEND if LOAD_EXTEND_OP says that that's
@@ -3046,7 +3046,7 @@ find_split_point (rtx *loc, rtx insn)
 #ifdef INSN_SCHEDULING
       /* If we are making a paradoxical SUBREG invalid, it becomes a split
 	 point.  */
-      if (GET_CODE (SUBREG_REG (x)) == MEM)
+      if (MEM_P (SUBREG_REG (x)))
 	return loc;
 #endif
       return find_split_point (&SUBREG_REG (x), insn);
@@ -3995,7 +3995,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 
       /* Don't change the mode of the MEM if that would change the meaning
 	 of the address.  */
-      if (GET_CODE (SUBREG_REG (x)) == MEM
+      if (MEM_P (SUBREG_REG (x))
 	  && (MEM_VOLATILE_P (SUBREG_REG (x))
 	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0))))
 	return gen_rtx_CLOBBER (mode, const0_rtx);
@@ -5358,7 +5358,7 @@ simplify_set (rtx x)
       && SUBREG_BYTE (src) == 0
       && (GET_MODE_SIZE (GET_MODE (src))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
-      && GET_CODE (SUBREG_REG (src)) == MEM)
+      && MEM_P (SUBREG_REG (src)))
     {
       SUBST (SET_SRC (x),
 	     gen_rtx_fmt_e (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))),
@@ -6139,7 +6139,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 The subreg adds or removes high bits; its mode is
 	 irrelevant to the meaning of this extraction,
 	 since POS and LEN count from the lsb.  */
-      if (GET_CODE (SUBREG_REG (inner)) == MEM)
+      if (MEM_P (SUBREG_REG (inner)))
 	is_mode = GET_MODE (SUBREG_REG (inner));
       inner = SUBREG_REG (inner);
     }
@@ -6180,11 +6180,11 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (tmode != BLKmode
       && ! (spans_byte && inner_mode != tmode)
       && ((pos_rtx == 0 && (pos % BITS_PER_WORD) == 0
-	   && GET_CODE (inner) != MEM
+	   && !MEM_P (inner)
 	   && (! in_dest
 	       || (REG_P (inner)
 		   && have_insn_for (STRICT_LOW_PART, tmode))))
-	  || (GET_CODE (inner) == MEM && pos_rtx == 0
+	  || (MEM_P (inner) && pos_rtx == 0
 	      && (pos
 		  % (STRICT_ALIGNMENT ? GET_MODE_ALIGNMENT (tmode)
 		     : BITS_PER_UNIT)) == 0
@@ -6202,7 +6202,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 If INNER is not a MEM, get a piece consisting of just the field
 	 of interest (in this case POS % BITS_PER_WORD must be 0).  */
 
-      if (GET_CODE (inner) == MEM)
+      if (MEM_P (inner))
 	{
 	  HOST_WIDE_INT offset;
 
@@ -6261,7 +6261,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 make a STRICT_LOW_PART unless we made a MEM.  */
 
       if (in_dest)
-	return (GET_CODE (new) == MEM ? new
+	return (MEM_P (new) ? new
 		: (GET_CODE (new) != SUBREG
 		   ? gen_rtx_CLOBBER (tmode, const0_rtx)
 		   : gen_rtx_STRICT_LOW_PART (VOIDmode, new)));
@@ -6312,7 +6312,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      length is not 1.  In all other cases, we would only be going outside
      our object in cases when an original shift would have been
      undefined.  */
-  if (! spans_byte && GET_CODE (inner) == MEM
+  if (! spans_byte && MEM_P (inner)
       && ((pos_rtx == 0 && pos + len > GET_MODE_BITSIZE (is_mode))
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
@@ -6355,7 +6355,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   /* If this is not from memory, the desired mode is wanted_inner_reg_mode;
      if we have to change the mode of memory and cannot, the desired mode is
      EXTRACTION_MODE.  */
-  if (GET_CODE (inner) != MEM)
+  if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;
   else if (inner_mode != wanted_inner_mode
 	   && (mode_dependent_address_p (XEXP (inner, 0))
@@ -6373,7 +6373,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 If it's a MEM we need to recompute POS relative to that.
 	 However, if we're extracting from (or inserting into) a register,
 	 we want to recompute POS relative to wanted_inner_mode.  */
-      int width = (GET_CODE (inner) == MEM
+      int width = (MEM_P (inner)
 		   ? GET_MODE_BITSIZE (is_mode)
 		   : GET_MODE_BITSIZE (wanted_inner_mode));
 
@@ -6383,7 +6383,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	pos_rtx
 	  = gen_rtx_MINUS (GET_MODE (pos_rtx), GEN_INT (width - len), pos_rtx);
       /* POS may be less than 0 now, but we check for that below.
-	 Note that it can only be less than 0 if GET_CODE (inner) != MEM.  */
+	 Note that it can only be less than 0 if !MEM_P (inner).  */
     }
 
   /* If INNER has a wider mode, make it smaller.  If this is a constant
@@ -6391,7 +6391,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      the value.  */
   if (wanted_inner_mode != VOIDmode
       && GET_MODE_SIZE (wanted_inner_mode) < GET_MODE_SIZE (is_mode)
-      && ((GET_CODE (inner) == MEM
+      && ((MEM_P (inner)
 	   && (inner_mode == wanted_inner_mode
 	       || (! mode_dependent_address_p (XEXP (inner, 0))
 		   && ! MEM_VOLATILE_P (inner))))))
@@ -6429,7 +6429,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   /* If INNER is not memory, we can always get it into the proper mode.  If we
      are changing its mode, POS must be a constant and smaller than the size
      of the new mode.  */
-  else if (GET_CODE (inner) != MEM)
+  else if (!MEM_P (inner))
     {
       if (GET_MODE (inner) != wanted_inner_mode
 	  && (pos_rtx != 0
@@ -7771,14 +7771,14 @@ rtx_equal_for_field_assignment_p (rtx x, rtx y)
   /* Check for a paradoxical SUBREG of a MEM compared with the MEM.
      Note that all SUBREGs of MEM are paradoxical; otherwise they
      would have been rewritten.  */
-  if (GET_CODE (x) == MEM && GET_CODE (y) == SUBREG
-      && GET_CODE (SUBREG_REG (y)) == MEM
+  if (MEM_P (x) && GET_CODE (y) == SUBREG
+      && MEM_P (SUBREG_REG (y))
       && rtx_equal_p (SUBREG_REG (y),
 		      gen_lowpart (GET_MODE (SUBREG_REG (y)), x)))
     return 1;
 
-  if (GET_CODE (y) == MEM && GET_CODE (x) == SUBREG
-      && GET_CODE (SUBREG_REG (x)) == MEM
+  if (MEM_P (y) && GET_CODE (x) == SUBREG
+      && MEM_P (SUBREG_REG (x))
       && rtx_equal_p (SUBREG_REG (x),
 		      gen_lowpart (GET_MODE (SUBREG_REG (x)), y)))
     return 1;
@@ -9348,7 +9348,7 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
      won't know what to do.  So we will strip off the SUBREG here and
      process normally.  */
-  if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM)
+  if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
     {
       x = SUBREG_REG (x);
       if (GET_MODE (x) == mode)
@@ -9369,7 +9369,7 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
   if (result)
     return result;
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     {
       int offset = 0;
 
@@ -10899,7 +10899,7 @@ record_dead_and_set_regs_1 (rtx dest, rtx setter, void *data)
       else
 	record_value_for_reg (dest, record_dead_insn, NULL_RTX);
     }
-  else if (GET_CODE (dest) == MEM
+  else if (MEM_P (dest)
 	   /* Ignore pushes, they clobber nothing.  */
 	   && ! push_operand (dest, GET_MODE (dest)))
     mem_last_set = INSN_CUID (record_dead_insn);
@@ -11088,7 +11088,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
   /* If this is a memory reference, make sure that there were
      no stores after it that might have clobbered the value.  We don't
      have alias info, so we assume any store invalidates it.  */
-  else if (GET_CODE (x) == MEM && ! RTX_UNCHANGING_P (x)
+  else if (MEM_P (x) && ! RTX_UNCHANGING_P (x)
 	   && INSN_CUID (insn) <= mem_last_set)
     {
       if (replace)
@@ -11384,7 +11384,7 @@ mark_used_regs_combine (rtx x)
     case CLOBBER:
       /* If we are clobbering a MEM, mark any hard registers inside the
 	 address as used.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	mark_used_regs_combine (XEXP (XEXP (x, 0), 0));
       return;
 
@@ -11425,7 +11425,7 @@ mark_used_regs_combine (rtx x)
 	       || GET_CODE (testreg) == STRICT_LOW_PART)
 	  testreg = XEXP (testreg, 0);
 
-	if (GET_CODE (testreg) == MEM)
+	if (MEM_P (testreg))
 	  mark_used_regs_combine (XEXP (testreg, 0));
 
 	mark_used_regs_combine (SET_SRC (x));
@@ -11624,7 +11624,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
 	 For a REG (the only other possibility), the entire value is
 	 being replaced so the old value is not used in this insn.  */
 
-      if (GET_CODE (dest) == MEM)
+      if (MEM_P (dest))
 	move_deaths (XEXP (dest, 0), maybe_kill_insn, from_cuid,
 		     to_insn, pnotes);
       return;
@@ -12356,7 +12356,7 @@ unmentioned_reg_p_1 (rtx *loc, void *expr)
   rtx x = *loc;
 
   if (x != NULL_RTX
-      && (REG_P (x) || GET_CODE (x) == MEM)
+      && (REG_P (x) || MEM_P (x))
       && ! reg_mentioned_p (x, (rtx) expr))
     return 1;
   return 0;

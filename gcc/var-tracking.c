@@ -370,7 +370,7 @@ stack_adjust_offset_pre_post (rtx pattern, HOST_WIDE_INT *pre,
       else
 	*post -= INTVAL (XEXP (src, 1));
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     {
       /* (set (mem (pre_dec (reg sp))) (foo)) */
       src = XEXP (dest, 0);
@@ -474,7 +474,7 @@ bb_stack_adjust_offset (basic_block bb)
 	offset += VTI (bb)->mos[i].u.adjust;
       else if (VTI (bb)->mos[i].type != MO_CALL)
 	{
-	  if (GET_CODE (VTI (bb)->mos[i].u.loc) == MEM)
+	  if (MEM_P (VTI (bb)->mos[i].u.loc))
 	    {
 	      VTI (bb)->mos[i].u.loc
 		= adjust_stack_reference (VTI (bb)->mos[i].u.loc, -offset);
@@ -1466,13 +1466,13 @@ track_expr_p (tree expr)
      extern char **_dl_argv_internal __attribute__ ((alias ("_dl_argv")));
      char **_dl_argv;
   */
-  if (GET_CODE (decl_rtl) == MEM
+  if (MEM_P (decl_rtl)
       && contains_symbol_ref (XEXP (decl_rtl, 0)))
     return 0;
 
   /* If RTX is a memory it should not be very large (because it would be
      an array or struct).  */
-  if (GET_CODE (decl_rtl) == MEM)
+  if (MEM_P (decl_rtl))
     {
       /* Do not track structures and arrays.  */
       if (GET_MODE (decl_rtl) == BLKmode)
@@ -1501,7 +1501,7 @@ count_uses (rtx *loc, void *insn)
 #endif
 	VTI (bb)->n_mos++;
     }
-  else if (GET_CODE (*loc) == MEM
+  else if (MEM_P (*loc)
 	   && MEM_EXPR (*loc)
 	   && track_expr_p (MEM_EXPR (*loc)))
     {
@@ -1544,7 +1544,7 @@ add_uses (rtx *loc, void *insn)
       mo->u.loc = *loc;
       mo->insn = (rtx) insn;
     }
-  else if (GET_CODE (*loc) == MEM
+  else if (MEM_P (*loc)
 	   && MEM_EXPR (*loc)
 	   && track_expr_p (MEM_EXPR (*loc)))
     {
@@ -1585,7 +1585,7 @@ add_stores (rtx loc, rtx expr, void *insn)
       mo->u.loc = loc;
       mo->insn = (rtx) insn;
     }
-  else if (GET_CODE (loc) == MEM
+  else if (MEM_P (loc)
 	   && MEM_EXPR (loc)
 	   && track_expr_p (MEM_EXPR (loc)))
     {
@@ -1631,7 +1631,7 @@ compute_bb_dataflow (basic_block bb)
 
 	      if (REG_P (loc))
 		var_reg_delete_and_set (out, loc);
-	      else if (GET_CODE (loc) == MEM)
+	      else if (MEM_P (loc))
 		var_mem_delete_and_set (out, loc);
 	    }
 	    break;
@@ -1643,7 +1643,7 @@ compute_bb_dataflow (basic_block bb)
 
 	      if (REG_P (loc))
 		var_reg_delete (out, loc);
-	      else if (GET_CODE (loc) == MEM)
+	      else if (MEM_P (loc))
 		var_mem_delete (out, loc);
 	    }
 	    break;
@@ -2472,7 +2472,7 @@ vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
 	  return true;
 	}
     }
-  else if (GET_CODE (rtl) == MEM)
+  else if (MEM_P (rtl))
     {
       if (MEM_ATTRS (rtl))
 	{
@@ -2529,7 +2529,7 @@ vt_add_function_parameters (void)
 #endif
 
       incoming = eliminate_regs (incoming, 0, NULL_RTX);
-      if (!frame_pointer_needed && GET_CODE (incoming) == MEM)
+      if (!frame_pointer_needed && MEM_P (incoming))
 	incoming = adjust_stack_reference (incoming, -stack_adjust);
       out = &VTI (ENTRY_BLOCK_PTR)->out;
 
@@ -2543,7 +2543,7 @@ vt_add_function_parameters (void)
 			     parm, offset, incoming);
 	  set_variable_part (out, incoming, parm, offset);
 	}
-      else if (GET_CODE (incoming) == MEM)
+      else if (MEM_P (incoming))
 	{
 	  set_variable_part (out, incoming, parm, offset);
 	}

@@ -2208,7 +2208,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    structure_value_addr = expand_expr (return_arg, NULL_RTX,
 						VOIDmode, EXPAND_NORMAL);
 	  }
-	else if (target && GET_CODE (target) == MEM)
+	else if (target && MEM_P (target))
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
@@ -3101,7 +3101,7 @@ expand_call (tree exp, rtx target, int ignore)
 	target = const0_rtx;
       else if (structure_value_addr)
 	{
-	  if (target == 0 || GET_CODE (target) != MEM)
+	  if (target == 0 || !MEM_P (target))
 	    {
 	      target
 		= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
@@ -3156,7 +3156,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  /* If we are setting a MEM, this code must be executed.  Since it is
 	     emitted after the call insn, sibcall optimization cannot be
 	     performed in that case.  */
-	  if (GET_CODE (target) == MEM)
+	  if (MEM_P (target))
 	    sibcall_failure = 1;
 	}
       else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
@@ -3281,7 +3281,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 adding to call_fusage before the call to emit_call_1 because TARGET
 	 may be modified in the meantime.  */
       if (structure_value_addr != 0 && target != 0
-	  && GET_CODE (target) == MEM && RTX_UNCHANGING_P (target))
+	  && MEM_P (target) && RTX_UNCHANGING_P (target))
 	add_function_usage_to
 	  (last_call_insn (),
 	   gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_CLOBBER (VOIDmode, target),
@@ -3609,7 +3609,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    value = gen_reg_rtx (outmode);
 #else /* not PCC_STATIC_STRUCT_RETURN */
 	  struct_value_size = GET_MODE_SIZE (outmode);
-	  if (value != 0 && GET_CODE (value) == MEM)
+	  if (value != 0 && MEM_P (value))
 	    mem_value = value;
 	  else
 	    mem_value = assign_temp (tfom, 0, 1, 1);
@@ -3659,7 +3659,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       nargs++;
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (!REG_P (addr) && GET_CODE (addr) != MEM
+      if (!REG_P (addr) && !MEM_P (addr)
 	  && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
 	addr = force_operand (addr, NULL_RTX);
 
@@ -3705,7 +3705,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	 either emit_move_insn or emit_push_insn will do that.  */
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (!REG_P (val) && GET_CODE (val) != MEM
+      if (!REG_P (val) && !MEM_P (val)
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
@@ -4530,7 +4530,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    }
 	}
 
-      if ((flags & ECF_SIBCALL) && GET_CODE (arg->value) == MEM)
+      if ((flags & ECF_SIBCALL) && MEM_P (arg->value))
 	{
 	  /* emit_push_insn might not work properly if arg->value and
 	     argblock + arg->locate.offset areas overlap.  */

@@ -2985,7 +2985,7 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   op1 = gen_label_rtx ();
   if (target == 0 || ! safe
       || GET_MODE (target) != mode
-      || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
+      || (MEM_P (target) && MEM_VOLATILE_P (target))
       || (REG_P (target)
 	  && REGNO (target) < FIRST_PSEUDO_REGISTER))
     target = gen_reg_rtx (mode);
@@ -3241,7 +3241,7 @@ emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
     op0 = copy_to_mode_reg (mode0, op0);
 
   if (! (*insn_data[icode].operand[0].predicate) (temp, GET_MODE (temp))
-      || (flag_force_mem && GET_CODE (temp) == MEM))
+      || (flag_force_mem && MEM_P (temp)))
     temp = gen_reg_rtx (GET_MODE (temp));
 
   pat = GEN_FCN (icode) (temp, op0);

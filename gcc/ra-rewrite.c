@@ -570,7 +570,7 @@ slots_overlap_p (rtx s1, rtx s2)
 	return 0;
       return 1;
     }
-  if (GET_CODE (s1) != MEM || GET_CODE (s2) != MEM)
+  if (!MEM_P (s1) || GET_CODE (s2) != MEM)
     abort ();
   s1 = XEXP (s1, 0);
   s2 = XEXP (s2, 0);
@@ -722,7 +722,7 @@ insert_stores (bitmap new_deaths)
 	    slots = NULL;
 	  else
 	    {
-	      if (1 || GET_CODE (SET_SRC (set)) == MEM)
+	      if (1 || MEM_P (SET_SRC (set)))
 	        delete_overlapping_slots (&slots, SET_SRC (set));
 	    }
 	}

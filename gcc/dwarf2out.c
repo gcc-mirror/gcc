@@ -1000,7 +1000,7 @@ stack_adjust_offset (rtx pattern)
       if (code == PLUS)
 	offset = -offset;
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (MEM_P (dest))
     {
       /* (set (mem (pre_dec (reg sp))) (foo)) */
       src = XEXP (dest, 0);
@@ -8735,7 +8735,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
     case ADDRESSOF:
       /* If this is a MEM, return its address.  Otherwise, we can't
 	 represent this.  */
-      if (GET_CODE (XEXP (rtl, 0)) == MEM)
+      if (MEM_P (XEXP (rtl, 0)))
 	return mem_loc_descriptor (XEXP (XEXP (rtl, 0), 0), mode,
 				   can_use_fbreg);
       else
@@ -8927,7 +8927,7 @@ loc_descriptor_from_tree (tree loc, int addressp)
 	  if (rtl == NULL_RTX)
 	    return 0;
 
-	  if (GET_CODE (rtl) != MEM)
+	  if (!MEM_P (rtl))
 	    return 0;
 	  rtl = XEXP (rtl, 0);
 	  if (! CONSTANT_P (rtl))
@@ -8963,7 +8963,7 @@ loc_descriptor_from_tree (tree loc, int addressp)
 	  {
 	    enum machine_mode mode = GET_MODE (rtl);
 
-	    if (GET_CODE (rtl) == MEM)
+	    if (MEM_P (rtl))
 	      {
 		indirect_p = 1;
 		rtl = XEXP (rtl, 0);
@@ -9045,7 +9045,7 @@ loc_descriptor_from_tree (tree loc, int addressp)
 	rtx rtl = lookup_constant_def (loc);
 	enum machine_mode mode;
 
-	if (GET_CODE (rtl) != MEM)
+	if (!MEM_P (rtl))
 	  return 0;
 	mode = GET_MODE (rtl);
 	rtl = XEXP (rtl, 0);
@@ -9823,7 +9823,7 @@ rtl_for_decl_location (tree decl)
     {
       if (rtl
 	  && (CONSTANT_P (rtl)
-	      || (GET_CODE (rtl) == MEM
+	      || (MEM_P (rtl)
 	          && CONSTANT_P (XEXP (rtl, 0)))
 	      || (REG_P (rtl)
 	          && TREE_CODE (decl) == VAR_DECL
@@ -9860,11 +9860,11 @@ rtl_for_decl_location (tree decl)
 	 we reach the big endian correction code there.  It isn't clear if all
 	 of these checks are necessary here, but keeping them all is the safe
 	 thing to do.  */
-      else if (GET_CODE (rtl) == MEM
+      else if (MEM_P (rtl)
 	       && XEXP (rtl, 0) != const0_rtx
 	       && ! CONSTANT_P (XEXP (rtl, 0))
 	       /* Not passed in memory.  */
-	       && GET_CODE (DECL_INCOMING_RTL (decl)) != MEM
+	       && !MEM_P (DECL_INCOMING_RTL (decl))
 	       /* Not passed by invisible reference.  */
 	       && (!REG_P (XEXP (rtl, 0))
 		   || REGNO (XEXP (rtl, 0)) == HARD_FRAME_POINTER_REGNUM
@@ -9888,7 +9888,7 @@ rtl_for_decl_location (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL
 	   && rtl
-	   && GET_CODE (rtl) == MEM
+	   && MEM_P (rtl)
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
 	   && BYTES_BIG_ENDIAN)
     {
@@ -9949,7 +9949,7 @@ rtl_for_decl_location (tree decl)
 	  rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
 			     EXPAND_INITIALIZER);
 	  /* If expand_expr returns a MEM, it wasn't immediate.  */
-	  if (rtl && GET_CODE (rtl) == MEM)
+	  if (rtl && MEM_P (rtl))
 	    abort ();
 	}
     }
@@ -10268,7 +10268,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	 value there unless it was going to be used repeatedly in the
 	 function, i.e. for cleanups.  */
       if (SAVE_EXPR_RTL (bound)
-	  && (! optimize || GET_CODE (SAVE_EXPR_RTL (bound)) == MEM))
+	  && (! optimize || MEM_P (SAVE_EXPR_RTL (bound))))
 	{
 	  dw_die_ref ctx = lookup_decl_die (current_function_decl);
 	  dw_die_ref decl_die = new_die (DW_TAG_variable, ctx, bound);
@@ -10276,7 +10276,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 
 	  /* If the RTL for the SAVE_EXPR is memory, handle the case where
 	     it references an outer function's frame.  */
-	  if (GET_CODE (loc) == MEM)
+	  if (MEM_P (loc))
 	    {
 	      rtx new_addr = fix_lexical_addr (XEXP (loc, 0), bound);
 
@@ -10848,7 +10848,7 @@ decl_start_label (tree decl)
   const char *fnname;
 
   x = DECL_RTL (decl);
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     abort ();
 
   x = XEXP (x, 0);

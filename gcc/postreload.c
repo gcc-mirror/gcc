@@ -232,7 +232,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
      that combine made wrt the contents of sign bits.  We'll do this by
      generating an extend instruction instead of a reg->reg copy.  Thus
      the destination must be a register that we can widen.  */
-  if (GET_CODE (src) == MEM
+  if (MEM_P (src)
       && GET_MODE_BITSIZE (GET_MODE (src)) < BITS_PER_WORD
       && (extend_op = LOAD_EXTEND_OP (GET_MODE (src))) != NIL
       && !REG_P (SET_DEST (set)))
@@ -244,7 +244,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
     return 0;
 
   /* If memory loads are cheaper than register copies, don't change them.  */
-  if (GET_CODE (src) == MEM)
+  if (MEM_P (src))
     old_cost = MEMORY_MOVE_COST (GET_MODE (src), dclass, 1);
   else if (REG_P (src))
     old_cost = REGISTER_MOVE_COST (GET_MODE (src),
@@ -404,7 +404,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
       op = recog_data.operand[i];
       mode = GET_MODE (op);
 #ifdef LOAD_EXTEND_OP
-      if (GET_CODE (op) == MEM
+      if (MEM_P (op)
 	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
 	  && LOAD_EXTEND_OP (mode) != NIL)
 	{
@@ -418,7 +418,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	     extension applies.
 	     Also, if there is an explicit extension, we don't have to
 	     worry about an implicit one.  */
-	  else if (GET_CODE (SET_DEST (set)) == MEM
+	  else if (MEM_P (SET_DEST (set))
 		   || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART
 		   || GET_CODE (SET_SRC (set)) == ZERO_EXTEND
 		   || GET_CODE (SET_SRC (set)) == SIGN_EXTEND)
@@ -1432,7 +1432,7 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 
   /* Some targets do argument pushes without adding REG_INC notes.  */
 
-  if (GET_CODE (dst) == MEM)
+  if (MEM_P (dst))
     {
       dst = XEXP (dst, 0);
       if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC

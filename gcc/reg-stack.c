@@ -1530,7 +1530,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	/* See if this is a `movM' pattern, and handle elsewhere if so.  */
 	if (STACK_REG_P (*src)
 	    || (STACK_REG_P (*dest)
-		&& (REG_P (*src) || GET_CODE (*src) == MEM
+		&& (REG_P (*src) || MEM_P (*src)
 		    || GET_CODE (*src) == CONST_DOUBLE)))
 	  {
 	    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);

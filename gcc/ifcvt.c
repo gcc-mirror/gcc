@@ -1188,7 +1188,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
      early because it'll screw alias analysis.  Note that we've
      already checked for no side effects.  */
   if (! no_new_pseudos && cse_not_expected
-      && GET_CODE (a) == MEM && GET_CODE (b) == MEM
+      && MEM_P (a) && MEM_P (b)
       && BRANCH_COST >= 5)
     {
       a = XEXP (a, 0);
@@ -1629,7 +1629,7 @@ noce_try_abs (struct noce_if_info *if_info)
 	return FALSE;
       c = XEXP (note, 0);
     }
-  if (GET_CODE (c) == MEM
+  if (MEM_P (c)
       && GET_CODE (XEXP (c, 0)) == SYMBOL_REF
       && CONSTANT_POOL_ADDRESS_P (XEXP (c, 0)))
     c = get_pool_constant (XEXP (c, 0));
@@ -1833,7 +1833,7 @@ noce_operand_ok (rtx op)
 {
   /* We special-case memories, so handle any of them with
      no address side effects.  */
-  if (GET_CODE (op) == MEM)
+  if (MEM_P (op))
     return ! side_effects_p (XEXP (op, 0));
 
   if (side_effects_p (op))
@@ -2022,7 +2022,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
      for most optimizations if writing to x may trap, i.e. it's a memory
      other than a static var or a stack slot.  */
   if (! set_b
-      && GET_CODE (orig_x) == MEM
+      && MEM_P (orig_x)
       && ! MEM_NOTRAP_P (orig_x)
       && rtx_addr_can_trap_p (XEXP (orig_x, 0)))
     {
@@ -2997,7 +2997,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 static int
 find_memory (rtx *px, void *data ATTRIBUTE_UNUSED)
 {
-  return GET_CODE (*px) == MEM;
+  return MEM_P (*px);
 }
 
 /* Used by the code above to perform the actual rtl transformations.

@@ -1,3 +1,111 @@
+2004-07-01  Jerry Quinn  <jlquinn@optonline.net>
+
+	* alias.c (get_alias_set, canon_rtx, get_addr,
+	nonoverlapping_memrefs_p, nonlocal_referenced_p_1, memory_modified_1):
+	Use MEM_P.
+	* builtins.c (expand_builtin_prefetch, expand_builtin_profile_func,
+	expand_builtin): Likewise.
+	* calls.c (expand_call, emit_library_call_value_1, store_one_arg):
+	Likewise. 
+	* combine.c (can_combine_p, combinable_i3pat, try_combine,
+	find_split_point, combine_simplify_rtx, simplify_set, make_extraction,
+	rtx_equal_for_field_assignment_p, gen_lowpart_for_combine,
+	record_dead_and_set_regs_1, get_last_value_validate,
+	mark_used_regs_combine, move_deaths, unmentioned_reg_p_1): Likewise.
+	* cse.c (check_dependence, canon_hash, equiv_constant,
+	gen_lowpart_if_possible, cse_insn, invalidate_from_clobbers,
+	cse_around_loop, cse_check_loop_start, cse_set_around_loop,
+	count_reg_usage): Likewise.
+	* cselib.c (rtx_equal_for_cselib_p, add_mem_for_addr, cselib_lookup,
+	cselib_invalidate_mem, cselib_invalidate_rtx, cselib_record_set,
+	cselib_record_sets): Likewise.
+	* dbxout.c (PARM_PASSED_IN_MEMORY, dbxout_symbol,
+	dbxout_symbol_location, dbxout_parms, dbxout_reg_parms): Likewise.
+	* ddg.c (mark_mem_use, mark_mem_store, rtx_mem_access_p): Likewise.
+	* df.c (df_uses_record): Likewise.
+	* dojump (do_jump): Likewise.
+	* dwarf2out.c (stack_adjust_offset, mem_loc_descriptor,
+	loc_descriptor_from_tree, rtl_for_decl_location, add_bound_info,
+	decl_start_label): Likewise.
+	* emit-rtl.c (gen_complex_constant_part, gen_highpart,
+	operand_subword, change_address_1, make_safe_from): Likewise.
+	* explow.c (break_out_memory_refs, copy_all_regs, validize_mem,
+	stabilize, force_not_mem): Likewise.
+	* expmed.c (store_bit_field, store_split_bit_field, extract_bit_field,
+	expand_mult_const, expand_divmod, emit_store_flag): Likewise.
+	* expr.c (convert_move, convert_modes, emit_block_move,
+	emit_group_load, emit_group_store, clear_storage, emit_move_insn,
+	emit_move_insn_1, expand_assignment, store_expr,
+	store_constructor_field, store_constructor, store_field,
+	force_operand, safe_from_p, expand_expr_real_1, expand_increment):
+	Likewise. 
+	* final.c (cleanup_subreg_operands, alter_subreg,
+	get_mem_expr_from_op): Likewise.
+	* flow.c (notice_stack_pointer_modification_1,
+	init_propagate_block_info, insn_dead_p, mark_set_1, mark_used_regs):
+	Likewise. 
+	* function.c (mark_temp_addr_taken, preserve_temp_slots,
+	preserve_rtl_expr_result, put_var_into_stack, fixup_var_refs_1,
+	optimize_bit_field, flush_addressof, purge_addressof_1,
+	instantiate_decl, instantiate_virtual_regs_1, assign_parms,
+	setjmp_protect, setjmp_protect_args, fix_lexical_addr,
+	keep_stack_depressed): Likewise.
+	* ifcvt.c (noce_try_cmove_arith, noce_try_abs, noce_operand_ok,
+	noce_process_if_block, find_memory): Likewise.
+	* integrate.c (subst_constants, allocate_initial_values): Likewise.
+	* local-alloc.c (validate_equiv_mem_from_store, memref_referenced_p,
+	update_equiv_regs): Likewise.
+	* loop.c (scan_loop, prescan_loop, note_addr_stored, check_store,
+	maybe_eliminate_biv_1, find_mem_in_note_1): Likewise.
+	* optabs.c (expand_abs, emit_unop_insn): Likewise.
+	* passes.c (rest_of_handle_final): Likewise.
+	* postreload.c (reload_cse_simplify_set, reload_cse_simplify_operands,
+	move2add_note_store): Likewise.
+	* ra-build.c (detect_remat_webs): Likewise.
+	* ra-debug.c (dump_static_insn_cost): Likewise.
+	* ra-rewrite.c (slots_overlap_p, insert_stores): Likewise.
+	* recog.c (validate_change, apply_change_group, cancel_changes,
+	validate_replace_rtx_1, general_operand, register_operand,
+	nonmemory_operand, push_operand, pop_operand, memory_operand,
+	indirect_operand, asm_operand_ok, offsettable_memref_p,
+	offsettable_nonstrict_memref_p, constrain_operands,
+	store_data_bypass_p): Likewise.
+	* reg-stack.c (subst_stack_regs_pat): Likewise.
+	* regclass.c (record_operand_costs, scan_one_insn, record_reg_classes,
+	copy_cost, reg_scan_mark_refs): Likewise.
+	* regmove.c (optimize_reg_copy_3, stack_memref_p,
+	combine_stack_adjustments_for_block): Likewise.
+	* regrename.c (copyprop_hardreg_forward_1): Likewise.
+	* reload.c (can_reload_into, push_reload, decompose, immune_p,
+	find_reloads, find_reloads_address, find_reloads_address_1,
+	reg_overlap_mentioned_for_reload_p, refers_to_mem_for_reload_p,
+	find_equiv_reg): Likewise.
+	* reload1.c (reload, eliminate_regs, eliminate_regs_in_insn,
+	reload_as_needed, choose_reload_regs, emit_input_reload_insns,
+	do_input_reload, emit_reload_insns, gen_reload, delete_output_reload,
+	delete_address_reloads): Likewise.
+	* resource.c (mark_referenced_resources): Likewise.
+	* rtlanal.c (get_jump_table_offset, count_occurrences,
+	reg_referenced_p, reg_set_p, set_of_1, set_noop_p,
+	reg_overlap_mentioned_p, note_uses, replace_regs, nonzero_bits1,
+	num_sign_bit_copies1): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* sched-deps.c (sched_analyze_1, sched_analyze_2): Likewise.
+	* sdbout.c (PARM_PASSED_IN_MEMORY, sdbout_symbol,
+	sdbout_toplevel_data, sdbout_parms, sdbout_reg_parms,
+	sdbout_global_decl): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* stmt.c (expand_asm_operands, expand_expr_stmt_value, expand_decl,
+	expand_anon_union_decl, expand_end_case_type): Likewise.
+	* unroll.c (calculate_giv_inc): Likewise.
+	* var-tracking.c (stack_adjust_offset_pre_post,
+	bb_stack_adjust_offset, track_expr_p, count_uses, add_uses,
+	add_stores, compute_bb_dataflow, vt_get_decl_and_offset,
+	vt_add_function_parameters): Likewise.
+	* varasm.c (make_var_volatile, notice_global_symbol,
+	assemble_external, decode_addr_const, mark_weak,
+	default_encode_section_info): Likewise.
+
 2004-07-01  Steven Bosscher  <stevenb@suse.de>
 
 	* stmt.c (check_seenlabel): Remove.

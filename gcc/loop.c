@@ -825,7 +825,7 @@ scan_loop (struct loop *loop, int flags)
 			  = gen_rtx_EXPR_LIST (VOIDmode, XEXP (x, 0),
 					       dependencies);
 		      else if (GET_CODE (x) == CLOBBER 
-			       && GET_CODE (XEXP (x, 0)) == MEM)
+			       && MEM_P (XEXP (x, 0)))
 			dependencies = find_regs_nested (dependencies, 
 						  XEXP (XEXP (x, 0), 0));
 		    }
@@ -2593,7 +2593,7 @@ prescan_loop (struct loop *loop)
 		rtx fusage = XEXP (fusage_entry, 0);
 
 		if (GET_CODE (fusage) == CLOBBER
-		    && GET_CODE (XEXP (fusage, 0)) == MEM
+		    && MEM_P (XEXP (fusage, 0))
 		    && RTX_UNCHANGING_P (XEXP (fusage, 0)))
 		  {
 		    note_stores (fusage, note_addr_stored, loop_info);
@@ -3233,7 +3233,7 @@ note_addr_stored (rtx x, rtx y ATTRIBUTE_UNUSED,
 {
   struct loop_info *loop_info = data;
 
-  if (x == 0 || GET_CODE (x) != MEM)
+  if (x == 0 || !MEM_P (x))
     return;
 
   /* Count number of memory writes.
@@ -3657,7 +3657,7 @@ check_store (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   struct check_store_data *d = (struct check_store_data *) data;
 
-  if ((GET_CODE (x) == MEM) && rtx_equal_p (d->mem_address, XEXP (x, 0)))
+  if ((MEM_P (x)) && rtx_equal_p (d->mem_address, XEXP (x, 0)))
     d->mem_write = 1;
 }
 
@@ -8960,7 +8960,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 		  return 1;
 	      }
 	}
-      else if (REG_P (arg) || GET_CODE (arg) == MEM)
+      else if (REG_P (arg) || MEM_P (arg))
 	{
 	  if (loop_invariant_p (loop, arg) == 1)
 	    {
@@ -10288,7 +10288,7 @@ try_swap_copy_prop (const struct loop *loop, rtx replacement,
 static int
 find_mem_in_note_1 (rtx *x, void *data)
 {
-  if (*x != NULL_RTX && GET_CODE (*x) == MEM)
+  if (*x != NULL_RTX && MEM_P (*x))
     {
       rtx *res = (rtx *) data;
       *res = *x;

@@ -793,7 +793,7 @@ reload (rtx first, int global)
 		     and the MEM is not SET_SRC, the equivalencing insn
 		     is one with the MEM as a SET_DEST and it occurs later.
 		     So don't mark this insn now.  */
-		  if (GET_CODE (x) != MEM
+		  if (!MEM_P (x)
 		      || rtx_equal_p (SET_SRC (set), x))
 		    reg_equiv_init[i]
 		      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[i]);
@@ -803,7 +803,7 @@ reload (rtx first, int global)
 
       /* If this insn is setting a MEM from a register equivalent to it,
 	 this is the equivalencing insn.  */
-      else if (set && GET_CODE (SET_DEST (set)) == MEM
+      else if (set && MEM_P (SET_DEST (set))
 	       && REG_P (SET_SRC (set))
 	       && reg_equiv_memory_loc[REGNO (SET_SRC (set))]
 	       && rtx_equal_p (SET_DEST (set),
@@ -1171,7 +1171,7 @@ reload (rtx first, int global)
 	     && (GET_MODE (insn) == QImode
 		 || find_reg_note (insn, REG_EQUAL, NULL_RTX)))
 	    || (GET_CODE (PATTERN (insn)) == CLOBBER
-		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != MEM
+		&& (!MEM_P (XEXP (PATTERN (insn), 0))
 		    || GET_MODE (XEXP (PATTERN (insn), 0)) != BLKmode
 		    || (GET_CODE (XEXP (XEXP (PATTERN (insn), 0), 0)) != SCRATCH
 			&& XEXP (XEXP (PATTERN (insn), 0), 0)
@@ -2287,7 +2287,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
 	 removed after CSE.  */
       new = eliminate_regs (XEXP (x, 0), 0, insn);
-      if (GET_CODE (new) == MEM)
+      if (MEM_P (new))
 	return XEXP (new, 0);
       return x;
 
@@ -2529,7 +2529,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	  int x_size = GET_MODE_SIZE (GET_MODE (x));
 	  int new_size = GET_MODE_SIZE (GET_MODE (new));
 
-	  if (GET_CODE (new) == MEM
+	  if (MEM_P (new)
 	      && ((x_size < new_size
 #ifdef WORD_REGISTER_OPERATIONS
 		   /* On these machines, combine can create rtl of the form
@@ -3128,7 +3128,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	   insn, write a CLOBBER insn.  */
 	  if (recog_data.operand_type[i] != OP_IN
 	      && REG_P (orig_operand[i])
-	      && GET_CODE (substed_operand[i]) == MEM
+	      && MEM_P (substed_operand[i])
 	      && replace)
 	    emit_insn_after (gen_rtx_CLOBBER (VOIDmode, orig_operand[i]),
 			     insn);
@@ -3189,9 +3189,9 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		 the MEM in recog_data.operand to the one in the insn.
 		 If they are not equal, then rerecognize the insn.  */
 	      || (old_set != 0
-		  && ((GET_CODE (SET_SRC (old_set)) == MEM
+		  && ((MEM_P (SET_SRC (old_set))
 		       && SET_SRC (old_set) != recog_data.operand[1])
-		      || (GET_CODE (SET_DEST (old_set)) == MEM
+		      || (MEM_P (SET_DEST (old_set))
 			  && SET_DEST (old_set) != recog_data.operand[0])))
 	      /* If this was an add insn before, rerecognize.  */
 	      || GET_CODE (SET_SRC (old_set)) == PLUS))
@@ -3821,7 +3821,7 @@ reload_as_needed (int live_known)
 
 	  if ((GET_CODE (PATTERN (insn)) == USE
 	       || GET_CODE (PATTERN (insn)) == CLOBBER)
-	      && GET_CODE (XEXP (PATTERN (insn), 0)) == MEM)
+	      && MEM_P (XEXP (PATTERN (insn), 0)))
 	    XEXP (XEXP (PATTERN (insn), 0), 0)
 	      = eliminate_regs (XEXP (XEXP (PATTERN (insn), 0), 0),
 				GET_MODE (XEXP (PATTERN (insn), 0)),
@@ -5354,7 +5354,7 @@ choose_reload_regs (struct insn_chain *chain)
 	  if (rld[r].in != 0 && rld[r].reg_rtx != 0
 	      && (rtx_equal_p (rld[r].in, rld[r].reg_rtx)
 		  || (rtx_equal_p (rld[r].out, rld[r].reg_rtx)
-		      && GET_CODE (rld[r].in) != MEM
+		      && !MEM_P (rld[r].in)
 		      && true_regnum (rld[r].in) < FIRST_PSEUDO_REGISTER)))
 	    continue;
 
@@ -5592,7 +5592,7 @@ choose_reload_regs (struct insn_chain *chain)
 	      && (CONSTANT_P (rld[r].in)
 		  || GET_CODE (rld[r].in) == PLUS
 		  || REG_P (rld[r].in)
-		  || GET_CODE (rld[r].in) == MEM)
+		  || MEM_P (rld[r].in))
 	      && (rld[r].nregs == max_group_size
 		  || ! reg_classes_intersect_p (rld[r].class, group_class)))
 	    search_equiv = rld[r].in;
@@ -6205,7 +6205,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
      because we will use this equiv reg right away.  */
 
   if (oldequiv == 0 && optimize
-      && (GET_CODE (old) == MEM
+      && (MEM_P (old)
 	  || (REG_P (old)
 	      && REGNO (old) >= FIRST_PSEUDO_REGISTER
 	      && reg_renumber[REGNO (old)] < 0)))
@@ -6837,7 +6837,7 @@ static void
 do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
 {
   rtx insn = chain->insn;
-  rtx old = (rl->in && GET_CODE (rl->in) == MEM
+  rtx old = (rl->in && MEM_P (rl->in)
 	     ? rl->in_reg : rl->in);
 
   if (old != 0
@@ -6852,8 +6852,8 @@ do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
      e.g. inheriting a SImode output reload for
      (mem:HI (plus:SI (reg:SI 14 fp) (const_int 10)))  */
   if (optimize && reload_inherited[j] && rl->in
-      && GET_CODE (rl->in) == MEM
-      && GET_CODE (rl->in_reg) == MEM
+      && MEM_P (rl->in)
+      && MEM_P (rl->in_reg)
       && reload_spill_index[j] >= 0
       && TEST_HARD_REG_BIT (reg_reloaded_valid, reload_spill_index[j]))
     rl->in = regno_reg_rtx[reg_reloaded_contents[reload_spill_index[j]]];
@@ -7283,7 +7283,7 @@ emit_reload_insns (struct insn_chain *chain)
 	 it thinks only about the original insn.  So invalidate it here.  */
       if (i < 0 && rld[r].out != 0
 	  && (REG_P (rld[r].out)
-	      || (GET_CODE (rld[r].out) == MEM
+	      || (MEM_P (rld[r].out)
 		  && REG_P (rld[r].out_reg))))
 	{
 	  rtx out = (REG_P (rld[r].out)
@@ -7426,11 +7426,11 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
   if (GET_CODE (in) == PLUS
       && (REG_P (XEXP (in, 0))
 	  || GET_CODE (XEXP (in, 0)) == SUBREG
-	  || GET_CODE (XEXP (in, 0)) == MEM)
+	  || MEM_P (XEXP (in, 0)))
       && (REG_P (XEXP (in, 1))
 	  || GET_CODE (XEXP (in, 1)) == SUBREG
 	  || CONSTANT_P (XEXP (in, 1))
-	  || GET_CODE (XEXP (in, 1)) == MEM))
+	  || MEM_P (XEXP (in, 1))))
     {
       /* We need to compute the sum of a register or a MEM and another
 	 register, constant, or MEM, and put it into the reload
@@ -7497,7 +7497,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 
       code = (int) add_optab->handlers[(int) GET_MODE (out)].insn_code;
 
-      if (CONSTANT_P (op1) || GET_CODE (op1) == MEM || GET_CODE (op1) == SUBREG
+      if (CONSTANT_P (op1) || MEM_P (op1) || GET_CODE (op1) == SUBREG
 	  || (REG_P (op1)
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER)
 	  || (code != CODE_FOR_nothing
@@ -7627,7 +7627,7 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
       rtx reg2 = rld[k].in;
       if (! reg2)
 	continue;
-      if (GET_CODE (reg2) == MEM || reload_override_in[k])
+      if (MEM_P (reg2) || reload_override_in[k])
 	reg2 = rld[k].in_reg;
 #ifdef AUTO_INC_DEC
       if (rld[k].out && ! rld[k].out_reg)
@@ -7773,7 +7773,7 @@ delete_address_reloads (rtx dead_insn, rtx current_insn)
   if (set)
     {
       rtx dst = SET_DEST (set);
-      if (GET_CODE (dst) == MEM)
+      if (MEM_P (dst))
 	delete_address_reloads_1 (dead_insn, XEXP (dst, 0), current_insn);
     }
   /* If we deleted the store from a reloaded post_{in,de}c expression,

@@ -955,10 +955,10 @@ dump_static_insn_cost (FILE *file, const char *message, const char *prefix)
 		    src = SUBREG_REG (src);
 		  if (GET_CODE (dest) == SUBREG)
 		    dest = SUBREG_REG (dest);
-		  if (GET_CODE (src) == MEM && GET_CODE (dest) != MEM
+		  if (MEM_P (src) && !MEM_P (dest)
 		      && memref_is_stack_slot (src))
 		    pcost = &load;
-		  else if (GET_CODE (src) != MEM && GET_CODE (dest) == MEM
+		  else if (!MEM_P (src) && MEM_P (dest)
 			   && memref_is_stack_slot (dest))
 		    pcost = &store;
 		}

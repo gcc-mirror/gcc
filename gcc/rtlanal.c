@@ -534,7 +534,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
     }
 
   /* If X isn't a MEM then this isn't a tablejump we understand.  */
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     return NULL_RTX;
 
   /* Strip off the MEM.  */
@@ -688,7 +688,7 @@ count_occurrences (rtx x, rtx find, int count_dest)
       return 0;
 
     case MEM:
-      if (GET_CODE (find) == MEM && rtx_equal_p (x, find))
+      if (MEM_P (find) && rtx_equal_p (x, find))
 	return 1;
       break;
 
@@ -898,7 +898,7 @@ reg_referenced_p (rtx x, rtx body)
       return 0;
 
     case CLOBBER:
-      if (GET_CODE (XEXP (body, 0)) == MEM)
+      if (MEM_P (XEXP (body, 0)))
 	if (reg_overlap_mentioned_p (x, XEXP (XEXP (body, 0), 0)))
 	  return 1;
       return 0;
@@ -968,7 +968,7 @@ reg_set_p (rtx reg, rtx insn)
 		 information holds all clobbered registers.  */
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
-		  || GET_CODE (reg) == MEM
+		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return 1;
 
@@ -1186,7 +1186,7 @@ set_of_1 (rtx x, rtx pat, void *data1)
 {
    struct set_of_data *data = (struct set_of_data *) (data1);
    if (rtx_equal_p (x, data->pat)
-       || (GET_CODE (x) != MEM && reg_overlap_mentioned_p (data->pat, x)))
+       || (!MEM_P (x) && reg_overlap_mentioned_p (data->pat, x)))
      data->found = pat;
 }
 
@@ -1299,7 +1299,7 @@ set_noop_p (rtx set)
   if (dst == pc_rtx && src == pc_rtx)
     return 1;
 
-  if (GET_CODE (dst) == MEM && GET_CODE (src) == MEM)
+  if (MEM_P (dst) && MEM_P (src))
     return rtx_equal_p (dst, src) && !side_effects_p (dst);
 
   if (GET_CODE (dst) == SIGN_EXTRACT
@@ -1573,7 +1573,7 @@ reg_overlap_mentioned_p (rtx x, rtx in)
 	const char *fmt;
 	int i;
 
-	if (GET_CODE (in) == MEM)
+	if (MEM_P (in))
 	  return 1;
 
 	fmt = GET_RTX_FORMAT (GET_CODE (in));
@@ -1708,7 +1708,7 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
       return;
 
     case CLOBBER:
-      if (GET_CODE (XEXP (body, 0)) == MEM)
+      if (MEM_P (XEXP (body, 0)))
 	(*fun) (&XEXP (XEXP (body, 0), 0), data);
       return;
 
@@ -1729,7 +1729,7 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
 	while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART)
 	  dest = XEXP (dest, 0);
 
-	if (GET_CODE (dest) == MEM)
+	if (MEM_P (dest))
 	  (*fun) (&XEXP (dest, 0), data);
       }
       return;
@@ -2033,7 +2033,7 @@ pure_call_p (rtx insn)
       rtx u, m;
 
       if (GET_CODE (u = XEXP (link, 0)) == USE
-	  && GET_CODE (m = XEXP (u, 0)) == MEM && GET_MODE (m) == BLKmode
+	  && MEM_P (m = XEXP (u, 0)) && GET_MODE (m) == BLKmode
 	  && GET_CODE (XEXP (m, 0)) == SCRATCH)
 	return 1;
     }
@@ -2648,7 +2648,7 @@ replace_regs (rtx x, rtx *reg_map, unsigned int nregs, int replace_dest)
       if (replace_dest)
 	SET_DEST (x) = replace_regs (SET_DEST (x), reg_map, nregs, 0);
 
-      else if (GET_CODE (SET_DEST (x)) == MEM
+      else if (MEM_P (SET_DEST (x))
 	       || GET_CODE (SET_DEST (x)) == STRICT_LOW_PART)
 	/* Even if we are not to replace destinations, replace register if it
 	   is CONTAINED in destination (destination is memory or
@@ -4266,7 +4266,7 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 			<< (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) - 1))))
 		   != 0))
 	       : LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) != ZERO_EXTEND)
-	      || GET_CODE (SUBREG_REG (x)) != MEM)
+	      || !MEM_P (SUBREG_REG (x)))
 #endif
 	    {
 	      /* On many CISC machines, accessing an object in a wider mode
@@ -4575,7 +4575,7 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
       if ((GET_MODE_SIZE (GET_MODE (x))
 	   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 	  && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND
-	  && GET_CODE (SUBREG_REG (x)) == MEM)
+	  && MEM_P (SUBREG_REG (x)))
 	return cached_num_sign_bit_copies (SUBREG_REG (x), mode,
 					   known_x, known_mode, known_ret);
 #endif

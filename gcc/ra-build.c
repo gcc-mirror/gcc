@@ -2597,7 +2597,7 @@ detect_remat_webs (void)
 		  we created them ourself.  They might not have set their
 		  unchanging flag set, but nevertheless they are stable across
 		  the livetime in question.  */
-	       || (GET_CODE (src) == MEM
+	       || (MEM_P (src)
 		   && INSN_UID (insn) >= orig_max_uid
 		   && memref_is_stack_slot (src)))
 	      /* And we must be able to construct an insn without

@@ -967,7 +967,7 @@ record_operand_costs (rtx insn, struct costs *op_costs,
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
 
-      if (GET_CODE (recog_data.operand[i]) == MEM)
+      if (MEM_P (recog_data.operand[i]))
 	record_address_regs (XEXP (recog_data.operand[i], 0),
 			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
       else if (constraints[i][0] == 'p'
@@ -1038,10 +1038,10 @@ scan_one_insn (rtx insn, int pass)
      parameter is stored in memory.  Record this fact.  */
 
   if (set != 0 && REG_P (SET_DEST (set))
-      && GET_CODE (SET_SRC (set)) == MEM
+      && MEM_P (SET_SRC (set))
       && (note = find_reg_note (insn, REG_EQUIV,
 				NULL_RTX)) != 0
-      && GET_CODE (XEXP (note, 0)) == MEM)
+      && MEM_P (XEXP (note, 0)))
     {
       costs[REGNO (SET_DEST (set))].mem_cost
 	-= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)),
@@ -1570,19 +1570,19 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  /* It doesn't seem worth distinguishing between offsettable
 		     and non-offsettable addresses here.  */
 		  allows_mem[i] = 1;
-		  if (GET_CODE (op) == MEM)
+		  if (MEM_P (op))
 		    win = 1;
 		  break;
 
 		case '<':
-		  if (GET_CODE (op) == MEM
+		  if (MEM_P (op)
 		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
 			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
 		    win = 1;
 		  break;
 
 		case '>':
-		  if (GET_CODE (op) == MEM
+		  if (MEM_P (op)
 		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
 			  || GET_CODE (XEXP (op, 0)) == POST_INC))
 		    win = 1;
@@ -1643,7 +1643,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 'g':
-		  if (GET_CODE (op) == MEM
+		  if (MEM_P (op)
 		      || (CONSTANT_P (op)
 #ifdef LEGITIMATE_PIC_OPERAND_P
 			  && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
@@ -1669,7 +1669,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    {
 		      /* Every MEM can be reloaded to fit.  */
 		      allows_mem[i] = 1;
-		      if (GET_CODE (op) == MEM)
+		      if (MEM_P (op))
 			win = 1;
 		    }
 		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
@@ -1909,7 +1909,7 @@ copy_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
      cost to move between the register classes, and use 2 for everything
      else (constants).  */
 
-  if (GET_CODE (x) == MEM || class == NO_REGS)
+  if (MEM_P (x) || class == NO_REGS)
     return MEMORY_MOVE_COST (mode, class, to_p);
 
   else if (REG_P (x))
@@ -2418,7 +2418,7 @@ reg_scan_mark_refs (rtx x, rtx insn, int note_flag, unsigned int min_regno)
 	    REG_N_SETS (REGNO (reg))++;
 	    REG_N_REFS (REGNO (reg))++;
 	  }
-	else if (GET_CODE (reg) == MEM)
+	else if (MEM_P (reg))
 	  reg_scan_mark_refs (XEXP (reg, 0), insn, note_flag, min_regno);
       }
       break;
@@ -2505,7 +2505,7 @@ reg_scan_mark_refs (rtx x, rtx insn, int note_flag, unsigned int min_regno)
 
 	  if (!REG_ATTRS (dest) && REG_P (src))
 	    REG_ATTRS (dest) = REG_ATTRS (src);
-	  if (!REG_ATTRS (dest) && GET_CODE (src) == MEM)
+	  if (!REG_ATTRS (dest) && MEM_P (src))
 	    set_reg_attrs_from_mem (dest, src);
 	}
 

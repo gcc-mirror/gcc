@@ -858,7 +858,7 @@ notice_stack_pointer_modification_1 (rtx x, rtx pat ATTRIBUTE_UNUSED,
       /* The stack pointer is only modified indirectly as the result
 	 of a push until later in flow.  See the comments in rtl.texi
 	 regarding Embedded Side-Effects on Addresses.  */
-      || (GET_CODE (x) == MEM
+      || (MEM_P (x)
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_AUTOINC
 	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
     current_function_sp_is_unchanging = 0;
@@ -1934,7 +1934,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
       for (insn = BB_END (bb); insn != BB_HEAD (bb); insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == INSN
 	    && (set = single_set (insn))
-	    && GET_CODE (SET_DEST (set)) == MEM)
+	    && MEM_P (SET_DEST (set)))
 	  {
 	    rtx mem = SET_DEST (set);
 	    rtx canon_mem = canon_rtx (mem);
@@ -2104,7 +2104,7 @@ insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
       else if (volatile_refs_p (SET_SRC (x)))
 	return 0;
 
-      if (GET_CODE (r) == MEM)
+      if (MEM_P (r))
 	{
 	  rtx temp, canon_r;
 
@@ -2540,7 +2540,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	     || GET_CODE (reg) == ZERO_EXTRACT
 	     || GET_CODE (reg) == SIGN_EXTRACT
 	     || GET_CODE (reg) == STRICT_LOW_PART);
-      if (GET_CODE (reg) == MEM)
+      if (MEM_P (reg))
 	break;
       not_dead = (unsigned long) REGNO_REG_SET_P (pbi->reg_live, REGNO (reg));
       /* Fall through.  */
@@ -2611,10 +2611,10 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
       /* If the memory reference had embedded side effects (autoincrement
 	 address modes.  Then we may need to kill some entries on the
 	 memory set list.  */
-      if (insn && GET_CODE (reg) == MEM)
+      if (insn && MEM_P (reg))
 	for_each_rtx (&PATTERN (insn), invalidate_mems_from_autoinc, pbi);
 
-      if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
+      if (MEM_P (reg) && ! side_effects_p (reg)
 	  /* ??? With more effort we could track conditional memory life.  */
 	  && ! cond)
 	add_to_mem_set_list (pbi, canon_rtx (reg));
@@ -3730,7 +3730,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
     case CLOBBER:
       /* If we are clobbering a MEM, mark any registers inside the address
 	 as being used.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	mark_used_regs (pbi, XEXP (XEXP (x, 0), 0), cond, insn);
       return;
 
@@ -3811,7 +3811,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 
 	/* If storing into MEM, don't show it as being used.  But do
 	   show the address as being used.  */
-	if (GET_CODE (testreg) == MEM)
+	if (MEM_P (testreg))
 	  {
 #ifdef AUTO_INC_DEC
 	    if (flags & PROP_AUTOINC)
