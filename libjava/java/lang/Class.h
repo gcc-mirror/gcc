@@ -472,8 +472,8 @@ private:
   friend class ::_Jv_ClassReader;	
   friend class ::_Jv_InterpClass;
   friend class ::_Jv_InterpMethod;
-  friend class ::_Jv_StackTrace;
 #endif
+  friend class ::_Jv_StackTrace;
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;

@@ -120,6 +120,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   // the java code and not the interpreter itself. This assumes a 1:1 
   // correspondance between call frames in the interpreted stack and occurances
   // of _Jv_InterpMethod::run() on the native stack.
+#ifdef INTERPRETER
   if (func_addr == (_Unwind_Ptr) &_Jv_InterpMethod::run)
     {
       state->frames[pos].type = frame_interpreter;
@@ -128,6 +129,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->interp_frame = state->interp_frame->next;
     }
   else
+#endif
     {
       state->frames[pos].type = frame_native;
       state->frames[pos].ip = (void *) _Unwind_GetIP (context);
@@ -174,6 +176,7 @@ void
 _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder, 
 		 jstring *sourceFileName, jint *lineNum)
 {
+#ifdef INTERPRETER
   if (frame->type == frame_interpreter)
     {
       _Jv_InterpMethod *interp_meth = frame->interp.meth;
@@ -183,6 +186,7 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
       *lineNum = interp_meth->get_source_line(frame->interp.pc);
       return;
     }
+#endif
   // Use dladdr() to determine in which binary the address IP resides.
 #if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
   extern char **_Jv_argv;
@@ -245,12 +249,14 @@ _Jv_StackTrace::FillInFrameInfo (_Jv_StackFrame *frame)
 	      }
 	  }
     }
+#ifdef INTERPRETER
   else if (frame->type == frame_interpreter)
     {
       _Jv_InterpMethod *interp_meth = frame->interp.meth;
       klass = interp_meth->defining_class;
       meth = interp_meth->self;
     }
+#endif
   else
     JvFail ("Unknown frame type");
   
@@ -495,11 +501,13 @@ _Jv_StackTrace::non_system_trace_fn (_Jv_UnwindState *state)
   if (frame->klass)
     {
       classLoader = frame->klass->getClassLoaderInternal();
+#ifdef INTERPRETER
       if (classLoader != NULL && classLoader != ClassLoader::systemClassLoader)
         {
           state->trace_data = (void *) classLoader;
 	  return _URC_NORMAL_STOP;
 	}
+#endif
     }
 
   return _URC_NO_REASON;

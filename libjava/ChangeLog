@@ -1,3 +1,15 @@
+2005-03-15  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Protect
+	interpreter-specific code with #ifdef INTERPRETER.
+	(_Jv_StackTrace::getLineNumberForFrame): Likewise.
+	(_Jv_StackTrace::FillInFrameInfo): Likewise.
+	(_Jv_StackTrace::non_system_trace_fn): Likewise.
+	* include/java-stack.h (struct _Jv_InterpFrameInfo): Protect with
+	#ifdef INTERPRETER. Also protect declarations that use it.
+	* java/lang/Class.h: Move _Jv_StackTrace friend declaration outside 
+	#ifdef INTERPRETER block.
+
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcj/20251

@@ -71,7 +71,9 @@ struct _Jv_UnwindState
   jint length;                   // length of FRAMES
   jint pos;                      // current position in FRAMES
   _Jv_StackFrame *frames;        // array of stack frame data to be filled.
+#ifdef INTERPRETER
   _Jv_InterpFrame *interp_frame; // current frame in the interpreter stack.
+#endif
   _Jv_TraceFn trace_function;    // function to call back after each frame
   				 // is enumerated. May be NULL.
   void *trace_data;		 // additional state data for trace_function.
@@ -84,8 +86,10 @@ struct _Jv_UnwindState
       Thread *thread = Thread::currentThread();
       // Check for NULL currentThread(), in case an exception is created 
       // very early during the runtime startup.
+#ifdef INTERPRETER
       if (thread)
 	interp_frame = (_Jv_InterpFrame *) thread->interp_frame;
+#endif
       trace_function = NULL;
       trace_data = NULL;
     }
