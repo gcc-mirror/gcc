@@ -1154,7 +1154,7 @@
   "TARGET_HARD_FLOAT"
   "*
 {
-  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+  if (volatile_refs_p (PATTERN (insn)))
     output_asm_insn (\"memw\", operands);
   return \"lsiu\\t%0, %1, %2\";
 }"
@@ -1171,7 +1171,7 @@
   "TARGET_HARD_FLOAT"
   "*
 {
-  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
+  if (volatile_refs_p (PATTERN (insn)))
     output_asm_insn (\"memw\", operands);
   return \"ssiu\\t%2, %0, %1\";
 }"
