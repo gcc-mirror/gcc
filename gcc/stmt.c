@@ -1390,7 +1390,7 @@ parse_output_constraint (constraint_p,
       {
       case '+':
       case '=':
-	error ("operand constraint contains '+' or '=' at illegal position.");
+	error ("operand constraint contains incorrectly positioned '+' or '='");
 	return false;
 	
       case '%':

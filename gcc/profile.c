@@ -972,7 +972,7 @@ init_branch_prob (filename)
       strip_off_ending (da_file_name, len);
       strcat (da_file_name, ".da");
       if ((da_file = fopen (da_file_name, "rb")) == 0)
-	warning ("file %s not found, execution counts assumed to be zero.",
+	warning ("file %s not found, execution counts assumed to be zero",
 		 da_file_name);
 
       /* The first word in the .da file gives the number of instrumented

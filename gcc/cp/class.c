@@ -5258,7 +5258,7 @@ finish_struct (t, attributes)
   if (current_class_type)
     popclass ();
   else
-    error ("trying to finish struct, but kicked out due to previous parse errors.");
+    error ("trying to finish struct, but kicked out due to previous parse errors");
 
   if (processing_template_decl)
     {

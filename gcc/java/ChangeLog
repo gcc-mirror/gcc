@@ -1,3 +1,10 @@
+2001-12-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* expr.c (expand_byte_code): Remove trailing periods from messages.
+	* jcf-parse.c (load_class, jcf_parse): Similarly.
+	* jcf-write.c (generate_classfile): Similarly.
+	* lex.c (java_lex): Similarly.
+
 2001-11-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* class.c (add_interface_do): Set BINFO_VPTR_FIELD.

@@ -1888,11 +1888,11 @@ spill_failure (insn, class)
 {
   static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
-    error_for_asm (insn, "Can't find a register in class `%s' while reloading `asm'.",
+    error_for_asm (insn, "Can't find a register in class `%s' while reloading `asm'",
 		   reg_class_names[class]);
   else
     {
-      error ("Unable to find a register to spill in class `%s'.",
+      error ("Unable to find a register to spill in class `%s'",
 	     reg_class_names[class]);
       fatal_insn ("This is the insn:", insn);
     }

@@ -7054,7 +7054,7 @@ check_tag_decl (declspecs)
          --end example]  */
       if (saw_typedef)
         {
-          error ("Missing type-name in typedef-declaration.");
+          error ("missing type-name in typedef-declaration");
           return NULL_TREE;
         }
       /* Anonymous unions are objects, so they can have specifiers.  */;
