@@ -1,4 +1,4 @@
-@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-bugs 2001-05-22
+@set last-update-bugs 2001-06-10
 
 @include root.texi
 
@@ -81,18 +81,6 @@ of @code{g77} within @code{gcc})
 is available via
 @uref{http://www.gnu.org/software/gcc/onlinedocs/g77_bugs.html}.
 Follow the ``Known Bugs'' link.
-
-@ifset DOC-G77
-For information on bugs that might afflict people who
-configure, port, build, and install @code{g77},
-see @ref{Problems Installing}.
-@end ifset
-
-@ifset DOC-BUGS
-For information on bugs that might afflict people who
-configure, port, build, and install @code{g77},
-see "Problems Installing" in @file{@value{path-g77}/INSTALL}.
-@end ifset
 
 The following information was last updated on @value{last-update-bugs}:
 
@@ -167,9 +155,40 @@ improvements to the compiler.)
 Note that @code{g77} does display a warning message to
 notify the user before the compiler appears to hang.
 @ifset DOC-G77
-@xref{Large Initialization,,Initialization of Large Aggregate Areas},
-for information on how to change the point at which
-@code{g77} decides to issue this warning.
+A warning message is issued when @code{g77} sees code that provides
+initial values (e.g. via @code{DATA}) to an aggregate area (@code{COMMON}
+or @code{EQUIVALENCE}, or even a large enough array or @code{CHARACTER}
+variable)
+that is large enough to increase @code{g77}'s compile time by roughly
+a factor of 10.
+
+This size currently is quite small, since @code{g77}
+currently has a known bug requiring too much memory
+and time to handle such cases.
+In @file{@value{path-g77}/data.c}, the macro
+@code{FFEDATA_sizeTOO_BIG_INIT_} is defined
+to the minimum size for the warning to appear.
+The size is specified in storage units,
+which can be bytes, words, or whatever, on a case-by-case basis.
+
+After changing this macro definition, you must
+(of course) rebuild and reinstall @code{g77} for
+the change to take effect.
+
+Note that, as of version 0.5.18, improvements have
+reduced the scope of the problem for @emph{sparse}
+initialization of large arrays, especially those
+with large, contiguous uninitialized areas.
+However, the warning is issued at a point prior to
+when @code{g77} knows whether the initialization is sparse,
+and delaying the warning could mean it is produced
+too late to be helpful.
+
+Therefore, the macro definition should not be adjusted to
+reflect sparse cases.
+Instead, adjust it to generate the warning when densely
+initialized arrays begin to cause responses noticeably slower
+than linear performance would suggest.
 @end ifset
 
 @cindex code, displaying main source
