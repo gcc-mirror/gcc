@@ -13,14 +13,14 @@
 /* Boehm, March 29, 1995 12:51 pm PST */
 # ifdef CHECKSUMS
 
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 /* This is debugging code intended to verify the results of dirty bit	*/
 /* computations. Works only in a single threaded environment.		*/
 /* We assume that stubborn objects are changed only when they are 	*/
 /* enabled for writing.  (Certain kinds of writing are actually		*/
 /* safe under other conditions.)					*/
-# define NSUMS 2000
+# define NSUMS 10000
 
 # define OFFSET 0x10000
 
@@ -29,7 +29,7 @@ typedef struct {
 	word old_sum;
 	word new_sum;
 	struct hblk * block;	/* Block to which this refers + OFFSET  */
-				/* to hide it from colector.		*/
+				/* to hide it from collector.		*/
 } page_entry;
 
 page_entry GC_sums [NSUMS];
@@ -76,12 +76,13 @@ int index;
 {
     page_entry *pe = GC_sums + index;
     register hdr * hhdr = HDR(h);
+    struct hblk *b;
     
     if (pe -> block != 0 && pe -> block != h + OFFSET) ABORT("goofed");
     pe -> old_sum = pe -> new_sum;
     pe -> new_sum = GC_checksum(h);
 #   if !defined(MSWIN32) && !defined(MSWINCE)
-        if (pe -> new_sum != 0 && !GC_page_was_ever_dirty(h)) {
+        if (pe -> new_sum != 0x80000000 && !GC_page_was_ever_dirty(h)) {
             GC_printf1("GC_page_was_ever_dirty(0x%lx) is wrong\n",
         	       (unsigned long)h);
         }
@@ -91,13 +92,19 @@ int index;
     } else {
     	GC_n_clean++;
     }
-    if (pe -> new_valid && pe -> old_sum != pe -> new_sum) {
+    b = h;
+    while (IS_FORWARDING_ADDR_OR_NIL(hhdr) && hhdr != 0) {
+	b -= (word)hhdr;
+	hhdr = HDR(b);
+    }
+    if (pe -> new_valid
+	&& hhdr != 0 && hhdr -> hb_descr != 0 /* may contain pointers */
+	&& pe -> old_sum != pe -> new_sum) {
     	if (!GC_page_was_dirty(h) || !GC_page_was_ever_dirty(h)) {
     	    /* Set breakpoint here */GC_n_dirty_errors++;
     	}
 #	ifdef STUBBORN_ALLOC
-    	  if (!IS_FORWARDING_ADDR_OR_NIL(hhdr)
-    	    && hhdr -> hb_map != GC_invalid_map
+    	  if ( hhdr -> hb_map != GC_invalid_map
     	    && hhdr -> hb_obj_kind == STUBBORN
     	    && !GC_page_was_changed(h)
     	    && !GC_on_free_list(h)) {
@@ -120,26 +127,17 @@ word dummy;
    register hdr * hhdr = HDR(h);
    register bytes = WORDS_TO_BYTES(hhdr -> hb_sz);
    
-   bytes += HDR_BYTES + HBLKSIZE-1;
+   bytes += HBLKSIZE-1;
    bytes &= ~(HBLKSIZE-1);
    GC_bytes_in_used_blocks += bytes;
 }
 
 void GC_check_blocks()
 {
-    word bytes_in_free_blocks = 0;
-    struct hblk * h = GC_hblkfreelist;
-    hdr * hhdr = HDR(h);
-    word sz;
+    word bytes_in_free_blocks = GC_large_free_bytes;
     
     GC_bytes_in_used_blocks = 0;
     GC_apply_to_all_blocks(GC_add_block, (word)0);
-    while (h != 0) {
-        sz = hhdr -> hb_sz;
-        bytes_in_free_blocks += sz;
-        h = hhdr -> hb_next;
-        hhdr = HDR(h);
-    }
     GC_printf2("GC_bytes_in_used_blocks = %ld, bytes_in_free_blocks = %ld ",
     		GC_bytes_in_used_blocks, bytes_in_free_blocks);
     GC_printf1("GC_heapsize = %ld\n", GC_heapsize);

@@ -53,7 +53,7 @@
 /* respectively for the allocated objects.  Mark_proc will be 		*/
 /* used to build the descriptor for objects allocated through the	*/
 /* debugging interface.  The mark_proc will be invoked on all such 	*/
-/* objects with an "environment" value of 1.  The client may chose	*/
+/* objects with an "environment" value of 1.  The client may choose	*/
 /* to use the same mark_proc for some of its generated mark descriptors.*/
 /* In that case, it should use a different "environment" value to	*/
 /* detect the presence or absence of the debug header.			*/
@@ -87,6 +87,17 @@ extern void * GC_debug_gcj_fast_malloc(size_t lw,
 /* beginning of the resulting object is always maintained.		*/
 extern void * GC_gcj_malloc_ignore_off_page(size_t lb,
 				void * ptr_to_struct_containing_descr);
+
+/* The kind numbers of normal and debug gcj objects.		*/
+/* Useful only for debug support, we hope.			*/
+extern int GC_gcj_kind;
+
+extern int GC_gcj_debug_kind;
+
+# if defined(GC_LOCAL_ALLOC_H) && defined(GC_REDIRECT_TO_LOCAL)
+    --> gc_local_alloc.h should be included after this.  Otherwise
+    --> we undo the redirection.
+# endif
 
 # ifdef GC_DEBUG
 #   define GC_GCJ_MALLOC(s,d) GC_debug_gcj_malloc(s,d,GC_EXTRAS)

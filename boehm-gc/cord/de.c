@@ -569,9 +569,9 @@ char ** argv;
 #if defined(MACINTOSH)
 	console_options.title = "\pDumb Editor";
 	cshow(stdout);
-	GC_init();
 	argc = ccommand(&argv);
 #endif
+    GC_INIT();
     
     if (argc != 2) goto usage;
     arg_file_name = argv[1];

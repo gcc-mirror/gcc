@@ -36,7 +36,7 @@ CFLAGS= -O -I$(srcdir)/include -DATOMIC_UNCOLLECTABLE -DNO_SIGNALS -DNO_EXECUTE_
 # -DGC_LINUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC
 # To build the parallel collector in a static library on HP/UX,
 # add to the above:
-# -DGC_HPUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC -DUSE_HPUX_TLS -D_POSIX_C_SOURCE=199506L
+# -DGC_HPUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC -D_POSIX_C_SOURCE=199506L
 # To build the thread-safe collector on Tru64, add to the above:
 # -pthread -DGC_OSF1_THREADS
 
@@ -182,7 +182,7 @@ HOSTCFLAGS=$(CFLAGS)
 #   this facility is only used in a few places.  It is intended primarily
 #   for debugging of the garbage collector itself, but could also
 # -DDBG_HDRS_ALL Make sure that all objects have debug headers.  Increases
-#   the reliability (from 99.9999% to 100%) of some of the debugging
+#   the reliability (from 99.9999% to 100% mod. bugs) of some of the debugging
 #   code (especially KEEP_BACK_PTRS).  Makes -DSHORT_DBG_HDRS possible.
 #   Assumes that all client allocation is done through debugging
 #   allocators.
@@ -235,6 +235,10 @@ HOSTCFLAGS=$(CFLAGS)
 #   in a way that usually does not involve acquisition of a global lock.
 #   Currently requires -DGC_LINUX_THREADS, but should be easy to port to
 #   other pthreads environments.  Recommended for multiprocessors.
+# -DUSE_COMPILER_TLS causes thread local allocation to use compiler-supported
+#   "__thread" thread-local variables.  This is the default in HP/UX.  It
+#   may help performance on recent Linux installations.  (It failed for
+#   me on RedHat 8, but appears to work on RedHat 9.)
 # -DPARALLEL_MARK allows the marker to run in multiple threads.  Recommended
 #   for multiprocessors.  Currently requires Linux on X86 or IA64, though
 #   support for other Posix platforms should be fairly easy to add,
@@ -316,14 +320,15 @@ DOC_FILES= README.QUICK doc/README.Mac doc/README.MacOSX doc/README.OS2 \
 	doc/README.environment doc/tree.html doc/gcdescr.html \
 	doc/README.autoconf doc/README.macros doc/README.ews4800 \
 	doc/README.DGUX386 doc/README.arm.cross doc/leak.html \
-	doc/scale.html doc/gcinterface.html doc/README.darwin
+	doc/scale.html doc/gcinterface.html doc/README.darwin \
+	doc/simple_example.html
 
 TESTS= tests/test.c tests/test_cpp.cc tests/trace_test.c \
-	tests/leak_test.c tests/thread_leak_test.c
+	tests/leak_test.c tests/thread_leak_test.c tests/middle.c
 
 GNU_BUILD_FILES= configure.in Makefile.am configure acinclude.m4 \
 		 libtool.m4 install-sh configure.host Makefile.in \
-		 ltconfig aclocal.m4 config.sub config.guess \
+		 aclocal.m4 config.sub config.guess \
 		 include/Makefile.am include/Makefile.in \
 		 doc/Makefile.am doc/Makefile.in \
 		 ltmain.sh mkinstalldirs depcomp missing
@@ -331,7 +336,7 @@ GNU_BUILD_FILES= configure.in Makefile.am configure acinclude.m4 \
 OTHER_MAKEFILES= OS2_MAKEFILE NT_MAKEFILE NT_THREADS_MAKEFILE gc.mak \
 		 BCC_MAKEFILE EMX_MAKEFILE WCC_MAKEFILE Makefile.dj \
 		 PCR-Makefile SMakefile.amiga Makefile.DLLs \
-		 digimars.mak Makefile.direct
+		 digimars.mak Makefile.direct NT_STATIC_THREADS_MAKEFILE
 #	Makefile and Makefile.direct are copies of each other.
 
 OTHER_FILES= Makefile setjmp_t.c callprocs pc_excludes \
@@ -363,16 +368,23 @@ SPECIALCFLAGS = -I$(srcdir)/include
 
 all: gc.a gctest
 
-BSD-pkg-all: bsd-libgc.a
+LEAKFLAGS=$(CFLAGS) -DFIND_LEAK
+
+BSD-pkg-all: bsd-libgc.a bsd-libleak.a
 
 bsd-libgc.a:
 	$(MAKE) CFLAGS="$(CFLAGS)" clean c++-t
 	mv gc.a bsd-libgc.a
 
+bsd-libleak.a:
+	$(MAKE) -f Makefile.direct CFLAGS="$(LEAKFLAGS)" clean c++-nt
+	mv gc.a bsd-libleak.a
+
 BSD-pkg-install: BSD-pkg-all
 	${CP} bsd-libgc.a libgc.a
 	${INSTALL_DATA} libgc.a ${PREFIX}/lib
 	${INSTALL_DATA} gc.h gc_cpp.h ${PREFIX}/include
+	${INSTALL_MAN} doc/gc.man ${PREFIX}/man/man3/gc.3
 
 pcr: PCR-Makefile include/private/gc_private.h include/private/gc_hdrs.h \
 include/private/gc_locks.h include/gc.h include/private/gcconfig.h \

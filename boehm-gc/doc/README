@@ -1,7 +1,7 @@
 Copyright (c) 1988, 1989 Hans-J. Boehm, Alan J. Demers
 Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
 Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
-Copyright (c) 1999-2003 by Hewlett-Packard Company. All rights reserved.
+Copyright (c) 1999-2004 Hewlett-Packard Development Company, L.P.
 
 The file linux_threads.c is also
 Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
@@ -28,7 +28,7 @@ are GPL'ed, but with an exception that should cover all uses in the
 collector.  (If you are concerned about such things, I recommend you look
 at the notice in config.guess or ltmain.sh.)
 
-This is version 6.3alpha1 of a conservative garbage collector for C and C++.
+This is version 6.3 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 

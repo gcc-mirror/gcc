@@ -19,10 +19,8 @@
  * This interface should not be used by normal C or C++ clients.
  * It will be useful to runtimes for other languages.
  * 
- * Note that this file is not "namespace-clean", i.e. it introduces names
- * not prefixed with GC_, which may collide with the client's names.  It
- * should be included only in those few places that directly provide
- * information to the collector.
+ * This is an experts-only interface!  There are many ways to break the
+ * collector in subtle ways by using this functionality.
  */
 #ifndef GC_MARK_H
 # define GC_MARK_H
@@ -142,6 +140,64 @@ struct GC_ms_entry *GC_mark_and_push
 	  (GC_word)obj <= (GC_word)GC_greatest_plausible_heap_addr)? \
 	  GC_mark_and_push(obj, msp, lim, src) : \
 	  msp)
+
+extern size_t GC_debug_header_size;
+       /* The size of the header added to objects allocated through    */
+       /* the GC_debug routines.                                       */
+       /* Defined as a variable so that client mark procedures don't   */
+       /* need to be recompiled for collector version changes.         */
+#define GC_USR_PTR_FROM_BASE(p) ((GC_PTR)((char *)(p) + GC_debug_header_size))
+
+/* And some routines to support creation of new "kinds", e.g. with	*/
+/* custom mark procedures, by language runtimes.			*/
+/* The _inner versions assume the caller holds the allocation lock.	*/
+
+/* Return a new free list array.	*/
+void ** GC_new_free_list GC_PROTO((void));
+void ** GC_new_free_list_inner GC_PROTO((void));
+
+/* Return a new kind, as specified. */
+int GC_new_kind GC_PROTO((void **free_list, GC_word mark_descriptor_template,
+		          int add_size_to_descriptor, int clear_new_objects));
+		/* The last two parameters must be zero or one. */
+int GC_new_kind_inner GC_PROTO((void **free_list,
+				GC_word mark_descriptor_template,
+		                int add_size_to_descriptor,
+				int clear_new_objects));
+
+/* Return a new mark procedure identifier, suitable for use as	*/
+/* the first argument in GC_MAKE_PROC.				*/
+int GC_new_proc GC_PROTO((GC_mark_proc));
+int GC_new_proc_inner GC_PROTO((GC_mark_proc));
+
+/* Allocate an object of a given kind.  Note that in multithreaded	*/
+/* contexts, this is usually unsafe for kinds that have the descriptor	*/
+/* in the object itself, since there is otherwise a window in which	*/
+/* the descriptor is not correct.  Even in the single-threaded case,	*/
+/* we need to be sure that cleared objects on a free list don't		*/
+/* cause a GC crash if they are accidentally traced.			*/
+/* ptr_t */char * GC_generic_malloc GC_PROTO((GC_word lb, int k));
+
+/* FIXME - Should return void *, but that requires other changes.	*/
+
+typedef void (*GC_describe_type_fn) GC_PROTO((void *p, char *out_buf));
+				/* A procedure which			*/
+				/* produces a human-readable 		*/
+				/* description of the "type" of object	*/
+				/* p into the buffer out_buf of length	*/
+				/* GC_TYPE_DESCR_LEN.  This is used by	*/
+				/* the debug support when printing 	*/
+				/* objects.				*/ 
+				/* These functions should be as robust	*/
+				/* as possible, though we do avoid 	*/
+				/* invoking them on objects on the 	*/
+				/* global free list.			*/
+#	define GC_TYPE_DESCR_LEN 40
+
+void GC_register_describe_type_fn GC_PROTO((int kind, GC_describe_type_fn knd));
+				/* Register a describe_type function	*/
+				/* to be used when printing objects	*/
+				/* of a particular kind.		*/
 
 #endif  /* GC_MARK_H */
 

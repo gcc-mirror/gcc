@@ -192,7 +192,7 @@ int APIENTRY WinMain(
 # endif
 #endif
 
-   GC_init();
+   GC_INIT();
 
 #  if defined(MACOS)                        // MacOS
     char* argv_[] = {"test_cpp", "10"};     //   doesn't

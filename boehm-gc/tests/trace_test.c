@@ -10,6 +10,7 @@ struct treenode {
 struct treenode * mktree(int i) {
   struct treenode * r = GC_MALLOC(sizeof(struct treenode));
   if (0 == i) return 0;
+  if (1 == i) r = GC_MALLOC_ATOMIC(sizeof(struct treenode));
   r -> x = mktree(i-1);
   r -> y = mktree(i-1);
   return r;

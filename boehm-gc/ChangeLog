@@ -1,3 +1,19 @@
+2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.ac (gc_cflags): Add -Iinclude.
+	(AC_CONFIG_HEADERS): New. Configure gc_config.h header.
+	Don't write DEFS to boehm-cflags file.
+	* configure: Rebuilt.
+	* gcj_mlc.c: Check #ifdef GC_GCJ_SUPPORT after including headers.
+	* specific.c: Check #ifdef GC_LINUX_THREADS after including headers.
+	* include/gc_config_macros.h: Remove backward-compatibility 
+	redefinitions of GC_ names.
+	* include/gc.h: Include <gc_config.h>.
+
+2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Import Boehm GC version 6.3.
+
 2004-08-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* include/Makefile.in: Regenerate

@@ -431,6 +431,9 @@ ptr_t cold_gc_frame;
 		  (void) setjmp(regs);
 #	      else
 	          (void) _setjmp(regs);
+		  /* We don't want to mess with signals. According to	*/
+		  /* SUSV3, setjmp() may or may not save signal mask.	*/
+		  /* _setjmp won't, but is less portable.		*/
 #	      endif
 #	    endif /* !HAVE_BUILTIN_UNWIND_INIT */
 #           if (defined(SPARC) && !defined(HAVE_BUILTIN_UNWIND_INIT)) \

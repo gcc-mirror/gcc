@@ -133,7 +133,7 @@ int GC_n_attempts = 0;		/* Number of attempts at finishing	*/
 	  if (GC_print_stats) {
 	    GC_printf0("Abandoning stopped marking after ");
 	    GC_printf1("%lu msecs", (unsigned long)time_diff);
-	    GC_printf1("(attempt %d)\n", (unsigned long) GC_n_attempts);
+	    GC_printf1("(attempt %ld)\n", (unsigned long) GC_n_attempts);
 	  }
 #	endif
     	return(1);
@@ -228,10 +228,15 @@ void GC_clear_a_few_frames()
     for (i = 0; i < NWORDS; i++) frames[i] = 0;
 }
 
+/* Heap size at which we need a collection to avoid expanding past	*/
+/* limits used by blacklisting.						*/
+static word GC_collect_at_heapsize = (word)(-1);
+
 /* Have we allocated enough to amortize a collection? */
 GC_bool GC_should_collect()
 {
-    return(GC_adj_words_allocd() >= min_words_allocd());
+    return(GC_adj_words_allocd() >= min_words_allocd()
+	   || GC_heapsize >= GC_collect_at_heapsize);
 }
 
 
@@ -924,25 +929,37 @@ word n;
 #	endif
       }
 #   endif
-    expansion_slop = 8 * WORDS_TO_BYTES(min_words_allocd());
-    if (5 * HBLKSIZE * MAXHINCR > expansion_slop) {
-        expansion_slop = 5 * HBLKSIZE * MAXHINCR;
-    }
+    expansion_slop = WORDS_TO_BYTES(min_words_allocd()) + 4*MAXHINCR*HBLKSIZE;
     if (GC_last_heap_addr == 0 && !((word)space & SIGNB)
         || GC_last_heap_addr != 0 && GC_last_heap_addr < (ptr_t)space) {
         /* Assume the heap is growing up */
         GC_greatest_plausible_heap_addr =
-            GC_max(GC_greatest_plausible_heap_addr,
-                   (ptr_t)space + bytes + expansion_slop);
+            (GC_PTR)GC_max((ptr_t)GC_greatest_plausible_heap_addr,
+                           (ptr_t)space + bytes + expansion_slop);
     } else {
         /* Heap is growing down */
         GC_least_plausible_heap_addr =
-            GC_min(GC_least_plausible_heap_addr,
-                   (ptr_t)space - expansion_slop);
+            (GC_PTR)GC_min((ptr_t)GC_least_plausible_heap_addr,
+                           (ptr_t)space - expansion_slop);
     }
+#   if defined(LARGE_CONFIG)
+      if (((ptr_t)GC_greatest_plausible_heap_addr <= (ptr_t)space + bytes
+           || (ptr_t)GC_least_plausible_heap_addr >= (ptr_t)space)
+	  && GC_heapsize > 0) {
+	/* GC_add_to_heap will fix this, but ... */
+	WARN("Too close to address space limit: blacklisting ineffective\n", 0);
+      }
+#   endif
     GC_prev_heap_addr = GC_last_heap_addr;
     GC_last_heap_addr = (ptr_t)space;
     GC_add_to_heap(space, bytes);
+    /* Force GC before we are likely to allocate past expansion_slop */
+      GC_collect_at_heapsize =
+	  GC_heapsize + expansion_slop - 2*MAXHINCR*HBLKSIZE;
+#     if defined(LARGE_CONFIG)
+        if (GC_collect_at_heapsize < GC_heapsize /* wrapped */)
+	  GC_collect_at_heapsize = (word)(-1);
+#     endif
     return(TRUE);
 }
 

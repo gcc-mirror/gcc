@@ -2,7 +2,7 @@
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1997 by Silicon Graphics.  All rights reserved.
- * Copyright (c) 1999-2000 by Hewlett-Packard Company.  All rights reserved.
+ * Copyright (c) 1999-2004 Hewlett-Packard Development Company, L.P.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -195,13 +195,13 @@ ptr_t p;
 		 (unsigned long)i);
       switch(source) {
 	case GC_REFD_FROM_ROOT:
-	  GC_err_printf1("root at 0x%lx\n", (unsigned long)base);
+	  GC_err_printf1("root at 0x%lx\n\n", (unsigned long)base);
 	  goto out;
 	case GC_REFD_FROM_REG:
-	  GC_err_printf0("root in register\n");
+	  GC_err_printf0("root in register\n\n");
 	  goto out;
 	case GC_FINALIZER_REFD:
-	  GC_err_printf0("list of finalizable objects\n");
+	  GC_err_printf0("list of finalizable objects\n\n");
 	  goto out;
 	case GC_REFD_FROM_HEAP:
 	  GC_err_printf1("offset %ld in object:\n", (unsigned long)offset);
@@ -217,13 +217,18 @@ ptr_t p;
 
   /* Force a garbage collection and generate a backtrace from a	*/
   /* random heap address.					*/
-  void GC_generate_random_backtrace(void)
+  void GC_generate_random_backtrace_no_gc(void)
   {
     void * current;
-    GC_gcollect();
     current = GC_generate_random_valid_address();
-    GC_printf1("Chose address 0x%lx in object\n", (unsigned long)current);
+    GC_printf1("\n****Chose address 0x%lx in object\n", (unsigned long)current);
     GC_print_backtrace(current);
+  }
+    
+  void GC_generate_random_backtrace(void)
+  {
+    GC_gcollect();
+    GC_generate_random_backtrace_no_gc();
   }
     
 #endif /* KEEP_BACK_PTRS */
@@ -325,6 +330,58 @@ register oh * ohdr;
 }
 #endif /* !SHORT_DBG_HDRS */
 
+static GC_describe_type_fn GC_describe_type_fns[MAXOBJKINDS] = {0};
+
+void GC_register_describe_type_fn(kind, fn)
+int kind;
+GC_describe_type_fn fn;
+{
+  GC_describe_type_fns[kind] = fn;
+}
+
+/* Print a type description for the object whose client-visible address	*/
+/* is p.								*/
+void GC_print_type(p)
+ptr_t p;
+{
+    hdr * hhdr = GC_find_header(p);
+    char buffer[GC_TYPE_DESCR_LEN + 1];
+    int kind = hhdr -> hb_obj_kind;
+
+    if (0 != GC_describe_type_fns[kind] && GC_is_marked(GC_base(p))) {
+	/* This should preclude free list objects except with	*/
+	/* thread-local allocation.				*/
+	buffer[GC_TYPE_DESCR_LEN] = 0;
+	(GC_describe_type_fns[kind])(p, buffer);
+	GC_ASSERT(buffer[GC_TYPE_DESCR_LEN] == 0);
+	GC_err_puts(buffer);
+    } else {
+	switch(kind) {
+	  case PTRFREE:
+	    GC_err_puts("PTRFREE");
+	    break;
+	  case NORMAL:
+	    GC_err_puts("NORMAL");
+	    break;
+	  case UNCOLLECTABLE:
+	    GC_err_puts("UNCOLLECTABLE");
+	    break;
+#	  ifdef ATOMIC_UNCOLLECTABLE
+	    case AUNCOLLECTABLE:
+	      GC_err_puts("ATOMIC UNCOLLECTABLE");
+	      break;
+#	  endif
+	  case STUBBORN:
+	    GC_err_puts("STUBBORN");
+	    break;
+	  default:
+	    GC_err_printf2("kind %ld, descr 0x%lx", kind, hhdr -> hb_descr);
+	}
+    }
+}
+
+    
+
 void GC_print_obj(p)
 ptr_t p;
 {
@@ -334,11 +391,13 @@ ptr_t p;
     GC_err_printf1("0x%lx (", ((unsigned long)ohdr + sizeof(oh)));
     GC_err_puts(ohdr -> oh_string);
 #   ifdef SHORT_DBG_HDRS
-      GC_err_printf1(":%ld)\n", (unsigned long)(ohdr -> oh_int));
+      GC_err_printf1(":%ld, ", (unsigned long)(ohdr -> oh_int));
 #   else
-      GC_err_printf2(":%ld, sz=%ld)\n", (unsigned long)(ohdr -> oh_int),
+      GC_err_printf2(":%ld, sz=%ld, ", (unsigned long)(ohdr -> oh_int),
           			        (unsigned long)(ohdr -> oh_sz));
 #   endif
+    GC_print_type((ptr_t)(ohdr + 1));
+    GC_err_puts(")\n");
     PRINT_CALL_CHAIN(ohdr);
 }
 
@@ -402,6 +461,8 @@ void GC_start_debugging()
     GC_debugging_started = TRUE;
     GC_register_displacement((word)sizeof(oh));
 }
+
+size_t GC_debug_header_size = sizeof(oh);
 
 # if defined(__STDC__) || defined(__cplusplus)
     void GC_debug_register_displacement(GC_word offset)
@@ -757,7 +818,15 @@ GC_PTR p;
 		    uncollectable = TRUE;
 	    }
 #	endif
-	if (uncollectable) GC_free(base);
+	if (uncollectable) {
+	    GC_free(base);
+	} else {
+	    size_t i;
+	    size_t obj_sz = hhdr -> hb_sz - BYTES_TO_WORDS(sizeof(oh));
+
+	    for (i = 0; i < obj_sz; ++i) ((word *)p)[i] = 0xdeadbeef;
+	    GC_ASSERT((word *)p + i == (word *)base + hhdr -> hb_sz);
+	}
     } /* !GC_find_leak */
 }
 
@@ -1013,7 +1082,8 @@ GC_PTR *ocd;
     GC_finalization_proc my_old_fn;
     GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
-    if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
+    if (0 == base) return;
+    if ((ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	    "GC_debug_register_finalizer called with non-base-pointer 0x%lx\n",
 	    obj);
@@ -1045,7 +1115,8 @@ GC_PTR *ocd;
     GC_finalization_proc my_old_fn;
     GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
-    if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
+    if (0 == base) return;
+    if ((ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	  "GC_debug_register_finalizer_no_order called with non-base-pointer 0x%lx\n",
 	  obj);
@@ -1078,7 +1149,8 @@ GC_PTR *ocd;
     GC_finalization_proc my_old_fn;
     GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
-    if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
+    if (0 == base) return;
+    if ((ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	    "GC_debug_register_finalizer_ignore_self called with non-base-pointer 0x%lx\n",
 	    obj);

@@ -1,6 +1,6 @@
 The garbage collector looks at a number of environment variables which are
 then used to affect its operation.  These are examined only on Un*x-like
-platforms.
+platforms and win32.
 
 GC_INITIAL_HEAP_SIZE=<bytes> -	Initial heap size in bytes.  May speed up
 				process start-up.
@@ -25,6 +25,14 @@ GC_DUMP_REGULARLY - Generate a GC debugging dump GC_dump() on startup
 		    and during every collection.  Very verbose.  Useful
 		    if you have a bug to report, but please include only the
 		    last complete dump.
+
+GC_BACKTRACES=<n> - Generate n random backtraces (for heap profiling) after
+		    each GC.  Collector must have been built with
+		    KEEP_BACK_PTRS.  This won't generate useful output unless
+		    most objects in the heap were allocated through debug
+		    allocators.  This is intended to be only a statistical
+		    sample;  individual traces may be erroneous due to
+		    concurrent heap mutation.
 
 GC_PRINT_ADDRESS_MAP - Linux only.  Dump /proc/self/maps, i.e. various address
 		       maps for the process, to stderr on every GC.  Useful for
@@ -85,6 +93,28 @@ GC_RETRY_SIGNALS, GC_NO_RETRY_SIGNALS - Try to compensate for lost
 		     similar issues on some other operating systems, it
 		     was turned into a runtime flag to enable last-minute
 		     work-arounds.
+
+GC_IGNORE_FB[=<n>] -  (Win32 only.) Try to avoid treating a mapped
+		frame buffer as part of the root set.  Certain (higher end?)
+		graphics cards seems to result in the graphics memory mapped
+		into the user address space as writable memory.
+		Unfortunately, there seems to be no systematic way to
+		identify such memory.  Setting the environment variable to n
+		causes the collector to ignore mappings longer than n MB.
+		The default value of n is currently 15.  (This should cover
+		a 16 MB graphics card, since the mapping appears to be slightly
+		shorter than all of graphics memory.  It will fail if a dll
+		writes pointers to collectable objects into a data segment
+		whose length is >= 15MB.  Empirically that's rare, but
+		certainly possible.)  WARNING: Security sensitive applications
+		should probably disable this feature by setting
+		GC_disallow_ignore_fb, or by building with -DNO_GETENV,
+		since small values could force collection of reachable
+		objects, which is conceivably a	(difficult to exploit)
+		security hole.  GC_IGNORE_FB values less than 3 MB
+		are never honored, eliminating this risk for most,
+		but not all, applications.  This feature is likely to disappear
+		if/when we find a less disgusting "solution".
 
 The following turn on runtime flags that are also program settable.  Checked
 only during initialization.  We expect that they will usually be set through

@@ -208,7 +208,6 @@ sexpr y;
 #ifdef GC_GCJ_SUPPORT
 
 #include "gc_mark.h"
-#include "private/dbg_mlc.h"  /* For USR_PTR_FROM_BASE */
 #include "gc_gcj.h"
 
 /* The following struct emulates the vtable in gcj.	*/
@@ -233,7 +232,7 @@ struct GC_ms_entry * fake_gcj_mark_proc(word * addr,
     sexpr x;
     if (1 == env) {
 	/* Object allocated with debug allocator.	*/
-	addr = (word *)USR_PTR_FROM_BASE(addr);
+	addr = (word *)GC_USR_PTR_FROM_BASE(addr);
     }
     x = (sexpr)(addr + 1); /* Skip the vtable pointer. */
     mark_stack_ptr = GC_MARK_AND_PUSH(
@@ -1256,9 +1255,11 @@ void run_one_test()
 	FAIL;
       }
       if (!TEST_FAIL_COUNT(1)) {
-#	if!(defined(RS6000) || defined(POWERPC) || defined(IA64))
+#	if!(defined(RS6000) || defined(POWERPC) || defined(IA64)) || defined(M68K)
 	  /* ON RS6000s function pointers point to a descriptor in the	*/
 	  /* data segment, so there should have been no failures.	*/
+	  /* The same applies to IA64.  Something similar seems to	*/
+	  /* be going on with NetBSD/M68K.				*/
     	  (void)GC_printf0("GC_is_visible produced wrong failure indication\n");
     	  FAIL;
 #	endif
@@ -1486,10 +1487,6 @@ void SetMinimumStack(long minSize)
 #   endif
     n_tests = 0;
     
-#if defined(__APPLE__) && defined(__MACH__)
-	GC_INIT();
-#endif
-    
 #   if defined(DJGPP)
 	/* No good way to determine stack base from library; do it */
 	/* manually on this platform.				   */
@@ -1501,7 +1498,7 @@ void SetMinimumStack(long minSize)
 	/* Cheat and let stdio initialize toolbox for us.	*/
 	printf("Testing GC Macintosh port.\n");
 #   endif
-    GC_INIT();	/* Only needed if gc is dynamic library.	*/
+    GC_INIT();	/* Only needed on a few platforms.	*/
     (void) GC_set_warn_proc(warn_proc);
 #   if (defined(MPROTECT_VDB) || defined(PROC_VDB)) \
           && !defined(MAKE_BACK_GRAPH)
@@ -1794,9 +1791,7 @@ main()
           (void)GC_printf0("pthread_default_stacksize_np failed.\n");
 	}
 #   endif	/* GC_HPUX_THREADS */
-# 	if defined(__APPLE__) && defined(__MACH__)
-		GC_INIT();
-#	endif
+    GC_INIT();
 
     pthread_attr_init(&attr);
 #   if defined(GC_IRIX_THREADS) || defined(GC_FREEBSD_THREADS) \

@@ -123,7 +123,6 @@ typedef struct {
 #   define UNCOLLECTABLE_DEBUG_BYTES (sizeof (oh) + sizeof (word))
 #   define DEBUG_BYTES (UNCOLLECTABLE_DEBUG_BYTES - EXTRA_BYTES)
 #endif
-#define USR_PTR_FROM_BASE(p) ((ptr_t)(p) + sizeof(oh))
 
 /* Round bytes to words without adding extra byte at end.	*/
 #define SIMPLE_ROUNDED_UP_WORDS(n) BYTES_TO_WORDS((n) + WORDS_TO_BYTES(1) - 1)
