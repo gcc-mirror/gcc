@@ -1,5 +1,9 @@
 2005-01-10  Tom Tromey  <tromey@redhat.com>
 
+	* mauve-libgcj: Exclude some swing tests.
+
+2005-01-10  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/12016, PR libgcj/18405, PR libgcj/17738:
 	* java/lang/Package.java (getPackages): Use VMClassLoader when
 	appropriate.
