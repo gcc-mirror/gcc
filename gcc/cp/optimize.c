@@ -336,10 +336,6 @@ copy_body_r (tp, walk_subtrees, data)
 	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
 	  TREE_OPERAND (*tp, 3) = NULL_TREE;
 	}
-      /* Similarly, if we're copying a CALL_EXPR, the RTL for the
-	 result is no longer valid.  */
-      else if (TREE_CODE (*tp) == CALL_EXPR)
-	CALL_EXPR_RTL (*tp) = NULL_RTX;
     }
 
   /* Keep iterating.  */

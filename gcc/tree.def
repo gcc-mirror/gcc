@@ -454,10 +454,8 @@ DEFTREECODE (BIND_EXPR, "bind_expr", 'e', 3)
 
 /* Function call.  Operand 0 is the function.
    Operand 1 is the argument list, a list of expressions
-   made out of a chain of TREE_LIST nodes.
-   There is no operand 2.  That slot is used for the
-   CALL_EXPR_RTL macro (see preexpand_calls).  */
-DEFTREECODE (CALL_EXPR, "call_expr", 'e', 3)
+   made out of a chain of TREE_LIST nodes.  */
+DEFTREECODE (CALL_EXPR, "call_expr", 'e', 2)
 
 /* Call a method.  Operand 0 is the method, whose type is a METHOD_TYPE.
    Operand 1 is the expression for "self".
