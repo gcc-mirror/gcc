@@ -58,7 +58,7 @@ ALLOCA_FINISH = true
 XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
-BOOT_CFLAGS = -O $(CFLAGS)
+BOOT_CFLAGS = -O2 $(CFLAGS)
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
