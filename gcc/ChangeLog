@@ -1,3 +1,8 @@
+2003-10-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c (function_value [ENABLE_CHECKING]): Don't call
+	alpha_return_in_memory if no VALTYPE specified.
+
 2003-10-22  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/12389
