@@ -79,7 +79,9 @@ java::lang::ClassLoader::defineClass0 (jstring name,
     {
       _Jv_Utf8Const *   name2 = _Jv_makeUtf8Const (name);
 
-      _Jv_VerifyClassName (name2);
+      if (! _Jv_VerifyClassName (name2))
+	JvThrow (new java::lang::ClassFormatError 
+		 (JvNewStringLatin1 ("erroneous class name")));
 
       klass->name = name2;
     }
