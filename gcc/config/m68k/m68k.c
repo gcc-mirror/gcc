@@ -44,6 +44,10 @@ enum reg_class regno_reg_class[]
 
 #endif /* defined SUPPORT_SUN_FPA */
 
+/* This flag is used to communicate between movhi and ASM_OUTPUT_CASE_END,
+   if SGS_SWITCH_TABLE.  */
+int switch_table_difference_label_flag;
+
 static rtx find_addr_reg ();
 rtx legitimize_pic_address ();
 
