@@ -1,3 +1,14 @@
+2000-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (sparc_output_scratch_registers): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	(sparc_va_arg, sparc_flat_output_function_prologue,
+	sparc_flat_output_function_epilogue): Cast value to unsigned in
+	comparison.
+	(sparc_emit_float_lib_cmp): Remove unused variable `cmp'.
+	
+	* sparc.md: Add default case in switch.
+
 2000-02-19  Richard Henderson  <rth@cygnus.com>
 
 	* c-typeck.c (add_pending_init): Don't abort for multiple

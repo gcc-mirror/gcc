@@ -3271,7 +3271,7 @@ build_big_number (file, num, reg)
 /* Output any necessary .register pseudo-ops.  */
 void
 sparc_output_scratch_registers (file)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_AS_REGISTER_PSEUDO_OP
   int i;
@@ -4542,7 +4542,7 @@ sparc_va_arg (valist, type)
 
   if (TARGET_ARCH64)
     {
-      if (TYPE_ALIGN (type) >= 2 * BITS_PER_WORD)
+      if (TYPE_ALIGN (type) >= 2 * (unsigned) BITS_PER_WORD)
 	align = 2 * UNITS_PER_WORD;
 
       if (AGGREGATE_TYPE_P (type))
@@ -4821,7 +4821,6 @@ sparc_emit_float_lib_cmp (x, y, comparison)
      enum rtx_code comparison;
 {
   char *qpfunc;
-  rtx cmp = const0_rtx;
   rtx slot0, slot1, result, tem, tem2;
   enum machine_mode mode;
 
@@ -6346,7 +6345,7 @@ sparc_flat_output_function_prologue (file, size)
 	 the gdb folk first.  */
 
       /* Is the entire register save area offsettable from %sp?  */
-      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
+      if (reg_offset < 4096 - 64 * (unsigned) UNITS_PER_WORD)
 	{
 	  if (size <= 4096)
 	    {
@@ -6531,7 +6530,7 @@ sparc_flat_output_function_epilogue (file, size)
 	}
 
       /* Is the entire register save area offsettable from %sp?  */
-      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
+      if (reg_offset < 4096 - 64 * (unsigned) UNITS_PER_WORD)
 	{
 	  size1 = 0;
 	}
