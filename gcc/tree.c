@@ -892,6 +892,22 @@ real_twop (expr)
 	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
+/* Return 1 if EXPR is the real constant minus one.  */
+
+int
+real_minus_onep (expr)
+     tree expr;
+{
+  STRIP_NOPS (expr);
+
+  return ((TREE_CODE (expr) == REAL_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1))
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && real_minus_onep (TREE_REALPART (expr))
+	      && real_zerop (TREE_IMAGPART (expr))));
+}
+
 /* Nonzero if EXP is a constant or a cast of a constant.  */
 
 int
