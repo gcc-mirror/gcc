@@ -238,6 +238,10 @@ __cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 }
 
 
+extern void __cshift0_4 (gfc_array_char *, const gfc_array_char *,
+			 const GFC_INTEGER_4 *, const GFC_INTEGER_4 *);
+export_proto_np(__cshift0_4);
+
 void
 __cshift0_4 (gfc_array_char * ret, const gfc_array_char * array,
     const GFC_INTEGER_4 * pshift, const GFC_INTEGER_4 * pdim)
@@ -245,6 +249,9 @@ __cshift0_4 (gfc_array_char * ret, const gfc_array_char * array,
   __cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
 }
 
+extern void __cshift0_8 (gfc_array_char *, const gfc_array_char *,
+			 const GFC_INTEGER_8 *, const GFC_INTEGER_8 *);
+export_proto_np(__cshift0_8);
 
 void
 __cshift0_8 (gfc_array_char * ret, const gfc_array_char * array,

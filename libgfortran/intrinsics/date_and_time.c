@@ -121,6 +121,10 @@ Boston, MA 02111-1307, USA.  */
      be to use ftime.
 */
 
+extern void date_and_time (char *, char *, char *, gfc_array_i4 *,
+			   GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(date_and_time);
+
 void
 date_and_time (char *__date,
 	       char *__time,

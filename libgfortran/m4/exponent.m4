@@ -23,8 +23,11 @@ Boston, MA 02111-1307, USA.  */
 
 include(`mtype.m4')dnl
 
+extern GFC_INTEGER_4 exponent_r`'kind (real_type s);
+export_proto(exponent_r`'kind);
+
 GFC_INTEGER_4
-prefix(exponent_r`'kind) (real_type s)
+exponent_r`'kind (real_type s)
 {
   int ret;
   frexp`'q (s, &ret);

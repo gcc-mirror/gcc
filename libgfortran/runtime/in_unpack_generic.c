@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+extern void internal_unpack (gfc_array_char *, const void *);
+export_proto(internal_unpack);
+
 void
 internal_unpack (gfc_array_char * d, const void * s)
 {

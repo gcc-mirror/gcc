@@ -28,15 +28,20 @@ Boston, MA 02111-1307, USA.  */
    INTEGER FNUM
    INTEGER, INTENT(IN), :: UNIT  */
 
+extern GFC_INTEGER_4 fnum_i4 (GFC_INTEGER_4 *);
+export_proto(fnum_i4);
+
 GFC_INTEGER_4
-prefix(fnum_i4) (GFC_INTEGER_4 * unit)
+fnum_i4 (GFC_INTEGER_4 *unit)
 {
   return unit_to_fd (*unit);
 }
 
+extern GFC_INTEGER_8 fnum_i8 (GFC_INTEGER_8 *);
+export_proto(fnum_i8);
 
 GFC_INTEGER_8
-prefix(fnum_i8) (GFC_INTEGER_8 * unit)
+fnum_i8 (GFC_INTEGER_8 * unit)
 {
   return unit_to_fd (*unit);
 }

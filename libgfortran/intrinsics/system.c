@@ -39,9 +39,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "libgfortran.h"
 
+extern void system_sub (const char *fcmd, GFC_INTEGER_4 * status,
+			gfc_charlen_type cmd_len);
+iexport_proto(system_sub);
+
 void
-prefix(system_sub) (const char * fcmd, GFC_INTEGER_4 * status,
-		    gfc_charlen_type cmd_len)
+system_sub (const char *fcmd, GFC_INTEGER_4 *status, gfc_charlen_type cmd_len)
 {
   char cmd[cmd_len + 1];
   int stat;
@@ -53,12 +56,15 @@ prefix(system_sub) (const char * fcmd, GFC_INTEGER_4 * status,
   if (status)
     *status = stat;
 }
+iexport(system_sub);
+
+extern GFC_INTEGER_4 PREFIX(system) (const char *, gfc_charlen_type);
+export_proto_np(PREFIX(system));
 
 GFC_INTEGER_4
-prefix(system) (char * fcmd, gfc_charlen_type cmd_len)
+PREFIX(system) (const char *fcmd, gfc_charlen_type cmd_len)
 {
   GFC_INTEGER_4 stat;
-
-  prefix(system_sub) (fcmd, &stat, cmd_len);
+  system_sub (fcmd, &stat, cmd_len);
   return stat;
 }

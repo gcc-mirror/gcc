@@ -33,6 +33,9 @@ static st_option status_opt[] = {
 };
 
 
+extern void st_close (void);
+export_proto(st_close);
+
 void
 st_close (void)
 {

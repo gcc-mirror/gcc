@@ -203,6 +203,10 @@ __eoshift2 (gfc_array_char * ret, const gfc_array_char * array,
     }
 }
 
+extern void __eoshift2_4 (gfc_array_char *, const gfc_array_char *,
+			  const GFC_INTEGER_4 *, const gfc_array_char *,
+			  const GFC_INTEGER_4 *);
+export_proto_np(__eoshift2_4);
 
 void
 __eoshift2_4 (gfc_array_char * ret, const gfc_array_char * array,
@@ -212,6 +216,10 @@ __eoshift2_4 (gfc_array_char * ret, const gfc_array_char * array,
   __eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }
 
+extern void __eoshift2_8 (gfc_array_char *, const gfc_array_char *,
+			  const GFC_INTEGER_8 *, const gfc_array_char *,
+			  const GFC_INTEGER_8 *);
+export_proto_np(__eoshift2_8);
 
 void
 __eoshift2_8 (gfc_array_char * ret, const gfc_array_char * array,

@@ -22,13 +22,16 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 
-/* Uuse Binary Method to calculate the powi. This is not an optimal but
+/* Use Binary Method to calculate the powi. This is not an optimal but
    a simple and reasonable arithmetic. See section 4.6.3, "Evaluation of
    Powers" of Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art
    of Computer Programming", 3rd Edition, 1998.  */
 
+GFC_INTEGER_4 pow_i4_i4 (GFC_INTEGER_4 a, GFC_INTEGER_4 b);
+export_proto(pow_i4_i4);
+
 GFC_INTEGER_4
-prefix(pow_i4_i4) (GFC_INTEGER_4 a, GFC_INTEGER_4 b)
+pow_i4_i4 (GFC_INTEGER_4 a, GFC_INTEGER_4 b)
 {
   GFC_INTEGER_4 pow, x;
   GFC_INTEGER_4 n, u;

@@ -35,11 +35,13 @@ Boston, MA 02111-1307, USA.  */
    CHARACTER(LEN= ), INTENT(IN) :: NAME
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS)  */
 
-void
-prefix(unlink_i4_sub) (char * name, GFC_INTEGER_4 * status,
-		       gfc_charlen_type name_len)
-{
+extern void unlink_i4_sub (char *name, GFC_INTEGER_4 *status,
+			   gfc_charlen_type name_len);
+iexport_proto(unlink_i4_sub);
 
+void
+unlink_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
+{
   char *str, *s;
   GFC_INTEGER_4 stat;
 
@@ -57,14 +59,17 @@ prefix(unlink_i4_sub) (char * name, GFC_INTEGER_4 * status,
   if (status != NULL) 
     *status = (stat == 0) ? stat : errno;
 }
+iexport(unlink_i4_sub);
 
+extern void unlink_i8_sub (char *name, GFC_INTEGER_8 *status,
+			   gfc_charlen_type name_len);
+export_proto(unlink_i8_sub);
 
 void
-prefix(unlink_i8_sub) (char * name, GFC_INTEGER_8 * status,
-		               gfc_charlen_type name_len)
+unlink_i8_sub (char *name, GFC_INTEGER_8 *status, gfc_charlen_type name_len)
 {
   GFC_INTEGER_4 status4;
-  prefix (unlink_i4_sub) (name, &status4, name_len);
+  unlink_i4_sub (name, &status4, name_len);
   if (status)
     *status = status4;
 }
@@ -73,10 +78,13 @@ prefix(unlink_i8_sub) (char * name, GFC_INTEGER_8 * status,
 /* INTEGER FUNCTION UNLINK(NAME)
    CHARACTER(LEN= ), INTENT(IN) :: NAME  */
 
+extern GFC_INTEGER_4 PREFIX(unlink) (char *, gfc_charlen_type);
+export_proto_np(PREFIX(unlink));
+
 GFC_INTEGER_4
-prefix(unlink) (char * name, gfc_charlen_type name_len)
+PREFIX(unlink) (char *name, gfc_charlen_type name_len)
 {
   GFC_INTEGER_4 status;
-  prefix(unlink_i4_sub) (name, &status, name_len);
+  unlink_i4_sub (name, &status, name_len);
   return status;
 }

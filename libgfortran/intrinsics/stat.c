@@ -52,9 +52,13 @@ Boston, MA 02111-1307, USA.  */
    CHARACTER(len=*), INTENT(IN) :: FILE
    INTEGER, INTENT(OUT), :: SARRAY(13)  */
 
+extern void stat_i4_sub (char *, gfc_array_i4 *, GFC_INTEGER_4 *,
+			 gfc_charlen_type);
+iexport_proto(stat_i4_sub);
+
 void
-prefix(stat_i4_sub) (char * name, gfc_array_i4 * sarray,
-                     GFC_INTEGER_4 * status,  gfc_charlen_type name_len)
+stat_i4_sub (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
+	     gfc_charlen_type name_len)
 {
   int val;
   char *str;
@@ -68,10 +72,10 @@ prefix(stat_i4_sub) (char * name, gfc_array_i4 * sarray,
 
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
-	runtime_error ("Array size of SARRAY is too small.");
+    runtime_error ("Array size of SARRAY is too small.");
 
   if (sarray->dim[0].stride == 0)
-	sarray->dim[0].stride = 1;
+    sarray->dim[0].stride = 1;
 
   /* Trim trailing spaces from name.  */
   while (name_len > 0 && name[name_len - 1] == ' ')
@@ -141,10 +145,15 @@ prefix(stat_i4_sub) (char * name, gfc_array_i4 * sarray,
   if (status != NULL) 
     *status = (val == 0) ? 0 : errno;
 }
+iexport(stat_i4_sub);
+
+extern void stat_i8_sub (char *, gfc_array_i8 *, GFC_INTEGER_8 *,
+			 gfc_charlen_type);
+iexport_proto(stat_i8_sub);
 
 void
-prefix(stat_i8_sub) (char * name, gfc_array_i8 * sarray,
-                     GFC_INTEGER_8 * status, gfc_charlen_type name_len)
+stat_i8_sub (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
+	     gfc_charlen_type name_len)
 {
   int val;
   char *str;
@@ -158,10 +167,10 @@ prefix(stat_i8_sub) (char * name, gfc_array_i8 * sarray,
 
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
-	runtime_error ("Array size of SARRAY is too small.");
+    runtime_error ("Array size of SARRAY is too small.");
 
   if (sarray->dim[0].stride == 0)
-	sarray->dim[0].stride = 1;
+    sarray->dim[0].stride = 1;
 
   /* Trim trailing spaces from name.  */
   while (name_len > 0 && name[name_len - 1] == ' ')
@@ -231,25 +240,27 @@ prefix(stat_i8_sub) (char * name, gfc_array_i8 * sarray,
   if (status != NULL) 
     *status = (val == 0) ? 0 : errno;
 }
+iexport(stat_i8_sub);
 
+extern GFC_INTEGER_4 stat_i4 (char *, gfc_array_i4 *, gfc_charlen_type);
+export_proto(stat_i4);
 
 GFC_INTEGER_4
-prefix(stat_i4) (char * name, gfc_array_i4 * sarray,
-                 gfc_charlen_type name_len)
+stat_i4 (char *name, gfc_array_i4 *sarray, gfc_charlen_type name_len)
 {
-
   GFC_INTEGER_4 val;
-  prefix(stat_i4_sub) (name, sarray, &val, name_len);
+  stat_i4_sub (name, sarray, &val, name_len);
   return val;
 }
 
+extern GFC_INTEGER_8 stat_i8 (char *, gfc_array_i8 *, gfc_charlen_type);
+export_proto(stat_i8);
 
 GFC_INTEGER_8
-prefix(stat_i8) (char * name, gfc_array_i8 * sarray,
-                 gfc_charlen_type name_len)
+stat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
 {
   GFC_INTEGER_8 val;
-  prefix(stat_i8_sub) (name, sarray, &val, name_len);
+  stat_i8_sub (name, sarray, &val, name_len);
   return val;
 }
 
@@ -264,9 +275,11 @@ prefix(stat_i8) (char * name, gfc_array_i8 * sarray,
    INTEGER, INTENT(IN) :: UNIT 
    INTEGER, INTENT(OUT) :: SARRAY(13)  */
 
+extern void fstat_i4_sub (GFC_INTEGER_4 *, gfc_array_i4 *, GFC_INTEGER_4 *);
+iexport_proto(fstat_i4_sub);
+
 void
-prefix(fstat_i4_sub) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray,
-                     GFC_INTEGER_4 * status)
+fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray, GFC_INTEGER_4 *status)
 {
   int val;
   struct stat sb;
@@ -279,10 +292,10 @@ prefix(fstat_i4_sub) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray,
 
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
-	runtime_error ("Array size of SARRAY is too small.");
+    runtime_error ("Array size of SARRAY is too small.");
 
   if (sarray->dim[0].stride == 0)
-	sarray->dim[0].stride = 1;
+    sarray->dim[0].stride = 1;
 
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd (*unit);
@@ -346,10 +359,13 @@ prefix(fstat_i4_sub) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray,
   if (status != NULL) 
     *status = (val == 0) ? 0 : errno;
 }
+iexport(fstat_i4_sub);
+
+extern void fstat_i8_sub (GFC_INTEGER_8 *, gfc_array_i8 *, GFC_INTEGER_8 *);
+iexport_proto(fstat_i8_sub);
 
 void
-prefix(fstat_i8_sub) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray,
-                     GFC_INTEGER_8 * status)
+fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray, GFC_INTEGER_8 *status)
 {
   int val;
   struct stat sb;
@@ -362,10 +378,10 @@ prefix(fstat_i8_sub) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray,
 
   /* If the array is too small, abort.  */
   if (sarray->dim[0].ubound + 1 - sarray->dim[0].lbound < 13)
-	runtime_error ("Array size of SARRAY is too small.");
+    runtime_error ("Array size of SARRAY is too small.");
 
   if (sarray->dim[0].stride == 0)
-	sarray->dim[0].stride = 1;
+    sarray->dim[0].stride = 1;
 
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd ((int) *unit);
@@ -429,21 +445,26 @@ prefix(fstat_i8_sub) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray,
   if (status != NULL) 
     *status = (val == 0) ? 0 : errno;
 }
+iexport(fstat_i8_sub);
 
+extern GFC_INTEGER_4 fstat_i4 (GFC_INTEGER_4 *, gfc_array_i4 *);
+export_proto(fstat_i4);
 
 GFC_INTEGER_4
-prefix(fstat_i4) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray)
+fstat_i4 (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray)
 {
   GFC_INTEGER_4 val;
-  prefix(fstat_i4_sub) (unit, sarray, &val);
+  fstat_i4_sub (unit, sarray, &val);
   return val;
 }
 
+extern GFC_INTEGER_8 fstat_i8 (GFC_INTEGER_8 *, gfc_array_i8 *);
+export_proto(fstat_i8);
 
 GFC_INTEGER_8
-prefix(fstat_i8) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray)
+fstat_i8 (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray)
 {
   GFC_INTEGER_8 val;
-  prefix(fstat_i8_sub) (unit, sarray, &val);
+  fstat_i8_sub (unit, sarray, &val);
   return val;
 }

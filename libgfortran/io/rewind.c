@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2002-2003 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -24,6 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #include "io.h"
 
 /* rewind.c--  Implement the rewind statement */
+
+extern void st_rewind (void);
+export_proto(st_rewind);
 
 void
 st_rewind (void)

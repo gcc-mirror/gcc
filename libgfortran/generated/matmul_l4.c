@@ -26,6 +26,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Dimensions: retarray(x,y) a(x, count) b(count,y).
    Either a or b can be rank 1.  In this case x or y is 1.  */
+
+extern void __matmul_l4 (gfc_array_l4 *, gfc_array_l4 *, gfc_array_l4 *);
+export_proto_np(__matmul_l4);
+
 void
 __matmul_l4 (gfc_array_l4 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
 {

@@ -22,8 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
+extern GFC_INTEGER_4 exponent_r8 (GFC_REAL_8 s);
+export_proto(exponent_r8);
+
 GFC_INTEGER_4
-prefix(exponent_r8) (GFC_REAL_8 s)
+exponent_r8 (GFC_REAL_8 s)
 {
   int ret;
   frexp (s, &ret);

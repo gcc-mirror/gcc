@@ -21,7 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-index_type size0 (const array_t * array)
+index_type
+size0 (const array_t * array)
 {
   int n;
   index_type size;
@@ -37,9 +38,13 @@ index_type size0 (const array_t * array)
     }
   return size;
 }
+iexport(size0);
 
-#define size1 prefix(size1)
-index_type size1 (const array_t * array, index_type dim)
+extern index_type size1 (const array_t * array, index_type dim);
+export_proto(size1);
+
+index_type
+size1 (const array_t * array, index_type dim)
 {
   index_type size;
 

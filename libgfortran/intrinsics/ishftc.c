@@ -21,11 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-#define ishftc4 prefix(ishftc4)
-GFC_INTEGER_4 ishftc4 (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4);
-
-#define ishftc8 prefix(ishftc8)
-GFC_INTEGER_8 ishftc8 (GFC_INTEGER_8, GFC_INTEGER_8, GFC_INTEGER_8);
+extern GFC_INTEGER_4 ishftc4 (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(ishftc4);
 
 GFC_INTEGER_4
 ishftc4 (GFC_INTEGER_4 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
@@ -44,6 +41,8 @@ ishftc4 (GFC_INTEGER_4 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
   return (i & mask) | (bits >> (size - shift)) | ((i << shift) & ~mask);
 }
 
+extern GFC_INTEGER_8 ishftc8 (GFC_INTEGER_8, GFC_INTEGER_8, GFC_INTEGER_8);
+export_proto(ishftc8);
 
 GFC_INTEGER_8
 ishftc8 (GFC_INTEGER_8 i, GFC_INTEGER_8 shift, GFC_INTEGER_8 size)

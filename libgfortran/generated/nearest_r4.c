@@ -23,8 +23,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
+extern GFC_REAL_4 nearest_r4 (GFC_REAL_4 s, GFC_REAL_4 dir);
+export_proto(nearest_r4);
+
 GFC_REAL_4
-prefix(nearest_r4) (GFC_REAL_4 s, GFC_REAL_4 dir)
+nearest_r4 (GFC_REAL_4 s, GFC_REAL_4 dir)
 {
   dir = copysignf (__builtin_inff (), dir);
   if (FLT_EVAL_METHOD != 0)

@@ -31,9 +31,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include <errno.h>
 
+extern void getcwd_i4_sub (char *, GFC_INTEGER_4 *, gfc_charlen_type);
+iexport_proto(getcwd_i4_sub);
+
 void
-prefix(getcwd_i4_sub) (char * cwd, GFC_INTEGER_4 * status,
-		       gfc_charlen_type cwd_len)
+getcwd_i4_sub (char *cwd, GFC_INTEGER_4 *status, gfc_charlen_type cwd_len)
 {
   char str[cwd_len + 1], *s;
   GFC_INTEGER_4 stat;
@@ -50,22 +52,27 @@ prefix(getcwd_i4_sub) (char * cwd, GFC_INTEGER_4 * status,
   if (status != NULL) 
     *status = stat;
 }
+iexport(getcwd_i4_sub);
+
+extern void getcwd_i8_sub (char *, GFC_INTEGER_8 *, gfc_charlen_type);
+export_proto(getcwd_i8_sub);
 
 void
-prefix(getcwd_i8_sub) (char * cwd, GFC_INTEGER_8 * status,
-		               gfc_charlen_type cwd_len)
+getcwd_i8_sub (char *cwd, GFC_INTEGER_8 *status, gfc_charlen_type cwd_len)
 {
   GFC_INTEGER_4 status4;
-
-  prefix (getcwd_i4_sub) (cwd, &status4, cwd_len);
+  getcwd_i4_sub (cwd, &status4, cwd_len);
   if (status)
     *status = status4;
 }
 
+extern GFC_INTEGER_4 PREFIX(getcwd) (char *, gfc_charlen_type);
+export_proto_np(PREFIX(getcwd));
+
 GFC_INTEGER_4
-prefix(getcwd) (char * cwd, gfc_charlen_type cwd_len)
+PREFIX(getcwd) (char *cwd, gfc_charlen_type cwd_len)
 {
   GFC_INTEGER_4 status;
-  prefix(getcwd_i4_sub) (cwd, &status, cwd_len);
+  getcwd_i4_sub (cwd, &status, cwd_len);
   return status;
 }

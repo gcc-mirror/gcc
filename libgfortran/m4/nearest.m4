@@ -24,8 +24,11 @@ Boston, MA 02111-1307, USA.  */
 
 include(`mtype.m4')dnl
 
+extern real_type nearest_r`'kind (real_type s, real_type dir);
+export_proto(nearest_r`'kind);
+
 real_type
-prefix(nearest_r`'kind) (real_type s, real_type dir)
+nearest_r`'kind (real_type s, real_type dir)
 {
   dir = copysign`'q (__builtin_inf`'q (), dir);
   if (FLT_EVAL_METHOD != 0)

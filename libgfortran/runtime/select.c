@@ -30,15 +30,18 @@ typedef struct
 }
 select_struct;
 
-
-#define select_string prefix(select_string)
+extern void * select_string (select_struct *table, int table_len,
+			     void *default_jump, const char *selector,
+			     int selector_len);
+export_proto(select_string);
 
 
 /* select_string()-- Given a selector string and a table of
  * select_struct structures, return the address to jump to. */
 
-void *select_string (select_struct *table, int table_len, void *default_jump,
-                    const char *selector, int selector_len)
+void *
+select_string (select_struct *table, int table_len, void *default_jump,
+	       const char *selector, int selector_len)
 {
   select_struct *t;
   int i, low, high, mid;

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include <setjmp.h>
 #include "libgfortran.h"
+
 #define DEFAULT_TEMPDIR "/var/tmp"
 
 /* Basic types used in data transfers.  */
@@ -44,10 +45,10 @@ typedef struct stream
 {
   char *(*alloc_w_at) (struct stream *, int *, gfc_offset);
   char *(*alloc_r_at) (struct stream *, int *, gfc_offset);
-    try (*sfree) (struct stream *);
-    try (*close) (struct stream *);
-    try (*seek) (struct stream *, gfc_offset);
-    try (*truncate) (struct stream *);
+  try (*sfree) (struct stream *);
+  try (*close) (struct stream *);
+  try (*seek) (struct stream *, gfc_offset);
+  try (*truncate) (struct stream *);
 }
 stream;
 
@@ -230,13 +231,11 @@ typedef struct
 }
 st_parameter;
 
-
-
-#define ioparm prefix(ioparm)
 extern st_parameter ioparm;
+iexport_data_proto(ioparm);
 
-#define ionml prefix(ionml)
 extern namelist_info * ionml;
+internal_proto(ionml);
 
 typedef struct
 {
@@ -311,13 +310,11 @@ typedef struct
 }
 global_t;
 
-
-#define g prefix(g)
 extern global_t g;
+internal_proto(g);
 
-
-#define current_unit prefix(current_unit)
 extern gfc_unit *current_unit;
+internal_proto(current_unit);
 
 /* Format tokens.  Only about half of these can be stored in the
    format nodes.  */
@@ -384,283 +381,230 @@ fnode;
 
 /* unix.c */
 
-#define sys_exit prefix(sys_exit)
-void sys_exit (int) __attribute__ ((noreturn));
+extern int move_pos_offset (stream *, int);
+internal_proto(move_pos_offset);
 
-#define move_pos_offset prefix(move_pos_offset)
-int move_pos_offset (stream *, int);
+extern int compare_files (stream *, stream *);
+internal_proto(compare_files);
 
-#define get_oserror prefix(get_oserror)
-const char *get_oserror (void);
+extern stream *init_error_stream (void);
+internal_proto(init_error_stream);
 
-#define compare_files prefix(compare_files)
-int compare_files (stream *, stream *);
+extern stream *open_external (unit_flags *);
+internal_proto(open_external);
 
-#define init_error_stream prefix(init_error_stream)
-stream *init_error_stream (void);
+extern stream *open_internal (char *, int);
+internal_proto(open_internal);
 
-#define open_external prefix(open_external)
-stream *open_external (unit_flags *);
+extern stream *input_stream (void);
+internal_proto(input_stream);
 
-#define open_internal prefix(open_internal)
-stream *open_internal (char *, int);
+extern stream *output_stream (void);
+internal_proto(output_stream);
 
-#define input_stream prefix(input_stream)
-stream *input_stream (void);
+extern int compare_file_filename (stream *, const char *, int);
+internal_proto(compare_file_filename);
 
-#define output_stream prefix(output_stream)
-stream *output_stream (void);
+extern gfc_unit *find_file (void);
+internal_proto(find_file);
 
-#define compare_file_filename prefix(compare_file_filename)
-int compare_file_filename (stream *, const char *, int);
+extern int stream_at_bof (stream *);
+internal_proto(stream_at_bof);
 
-#define find_file prefix(find_file)
-gfc_unit *find_file (void);
+extern int stream_at_eof (stream *);
+internal_proto(stream_at_eof);
 
-#define stream_at_bof prefix(stream_at_bof)
-int stream_at_bof (stream *);
+extern int delete_file (gfc_unit *);
+internal_proto(delete_file);
 
-#define stream_at_eof prefix(stream_at_eof)
-int stream_at_eof (stream *);
+extern int file_exists (void);
+internal_proto(file_exists);
 
-#define delete_file prefix(delete_file)
-int delete_file (gfc_unit *);
+extern const char *inquire_sequential (const char *, int);
+internal_proto(inquire_sequential);
 
-#define file_exists prefix(file_exists)
-int file_exists (void);
+extern const char *inquire_direct (const char *, int);
+internal_proto(inquire_direct);
 
-#define inquire_sequential prefix(inquire_sequential)
-const char *inquire_sequential (const char *, int);
+extern const char *inquire_formatted (const char *, int);
+internal_proto(inquire_formatted);
 
-#define inquire_direct prefix(inquire_direct)
-const char *inquire_direct (const char *, int);
+extern const char *inquire_unformatted (const char *, int);
+internal_proto(inquire_unformatted);
 
-#define inquire_formatted prefix(inquire_formatted)
-const char *inquire_formatted (const char *, int);
+extern const char *inquire_read (const char *, int);
+internal_proto(inquire_read);
 
-#define inquire_unformatted prefix(inquire_unformatted)
-const char *inquire_unformatted (const char *, int);
+extern const char *inquire_write (const char *, int);
+internal_proto(inquire_write);
 
-#define inquire_read prefix(inquire_read)
-const char *inquire_read (const char *, int);
+extern const char *inquire_readwrite (const char *, int);
+internal_proto(inquire_readwrite);
 
-#define inquire_write prefix(inquire_write)
-const char *inquire_write (const char *, int);
+extern gfc_offset file_length (stream *);
+internal_proto(file_length);
 
-#define inquire_readwrite prefix(inquire_readwrite)
-const char *inquire_readwrite (const char *, int);
+extern gfc_offset file_position (stream *);
+internal_proto(file_position);
 
-#define file_length prefix(file_length)
-gfc_offset file_length (stream *);
+extern int is_seekable (stream *);
+internal_proto(is_seekable);
 
-#define file_position prefix(file_position)
-gfc_offset file_position (stream *);
+extern void empty_internal_buffer(stream *);
+internal_proto(empty_internal_buffer);
 
-#define is_seekable prefix(is_seekable)
-int is_seekable (stream *);
+extern try flush (stream *);
+internal_proto(flush);
 
-#define empty_internal_buffer prefix(empty_internal_buffer)
-void empty_internal_buffer(stream *);
-
-#define flush prefix(flush)
-try flush (stream *);
-
-#define unit_to_fd prefix(unit_to_fd)
-int unit_to_fd (int);
+extern int unit_to_fd (int);
+internal_proto(unit_to_fd);
 
 /* unit.c */
 
-#define insert_unit prefix(insert_unix)
-void insert_unit (gfc_unit *);
+extern void insert_unit (gfc_unit *);
+internal_proto(insert_unit);
 
-#define close_unit prefix(close_unit)
-int close_unit (gfc_unit *);
+extern int close_unit (gfc_unit *);
+internal_proto(close_unit);
 
-#define is_internal_unit prefix(is_internal_unit)
-int is_internal_unit (void);
+extern int is_internal_unit (void);
+internal_proto(is_internal_unit);
 
-#define find_unit prefix(find_unit)
-gfc_unit *find_unit (int);
+extern gfc_unit *find_unit (int);
+internal_proto(find_unit);
 
-#define get_unit prefix(get_unit)
-gfc_unit *get_unit (int);
+extern gfc_unit *get_unit (int);
+internal_proto(get_unit);
 
 /* open.c */
 
-#define test_endfile prefix(test_endfile)
-void test_endfile (gfc_unit *);
+extern void test_endfile (gfc_unit *);
+internal_proto(test_endfile);
 
-#define new_unit prefix(new_unit)
-void new_unit (unit_flags *);
+extern void new_unit (unit_flags *);
+internal_proto(new_unit);
 
 /* format.c */
 
-#define parse_format prefix(parse_format)
-void parse_format (void);
+extern void parse_format (void);
+internal_proto(parse_format);
 
-#define next_format prefix(next_format)
-fnode *next_format (void);
+extern fnode *next_format (void);
+internal_proto(next_format);
 
-#define unget_format prefix(unget_format)
-void unget_format (fnode *);
+extern void unget_format (fnode *);
+internal_proto(unget_format);
 
-#define format_error prefix(format_error)
-void format_error (fnode *, const char *);
+extern void format_error (fnode *, const char *);
+internal_proto(format_error);
 
-#define free_fnodes prefix(free_fnodes)
-void free_fnodes (void);
+extern void free_fnodes (void);
+internal_proto(free_fnodes);
 
 /* transfer.c */
 
 #define SCRATCH_SIZE 300
 
-#define scratch prefix(scratch)
 extern char scratch[];
+internal_proto(scratch);
 
-#define type_name prefix(type_name)
-const char *type_name (bt);
+extern const char *type_name (bt);
+internal_proto(type_name);
 
-#define read_block prefix(read_block)
-void *read_block (int *);
+extern void *read_block (int *);
+internal_proto(read_block);
 
-#define write_block prefix(write_block)
-void *write_block (int);
+extern void *write_block (int);
+internal_proto(write_block);
 
-#define transfer_integer prefix(transfer_integer)
-void transfer_integer (void *, int);
-
-#define transfer_real prefix(transfer_real)
-void transfer_real (void *, int);
-
-#define transfer_logical prefix(transfer_logical)
-void transfer_logical (void *, int);
-
-#define transfer_character prefix(transfer_character)
-void transfer_character (void *, int);
-
-#define transfer_complex prefix(transfer_complex)
-void transfer_complex (void *, int);
-
-#define next_record prefix(next_record)
-void next_record (int);
-
-#define st_set_nml_var_int prefix(st_set_nml_var_int)
-void st_set_nml_var_int (void * , char * , int , int );
-
-#define st_set_nml_var_float prefix(st_set_nml_var_float)
-void st_set_nml_var_float (void * , char * , int , int );
-
-#define st_set_nml_var_char prefix(st_set_nml_var_char)
-void st_set_nml_var_char (void * , char * , int , int, gfc_charlen_type);
-
-#define st_set_nml_var_complex prefix(st_set_nml_var_complex)
-void st_set_nml_var_complex (void * , char * , int , int );
-
-#define st_set_nml_var_log prefix(st_set_nml_var_log)
-void st_set_nml_var_log (void * , char * , int , int );
+extern void next_record (int);
+internal_proto(next_record);
 
 /* read.c */
 
-#define set_integer prefix(set_integer)
-void set_integer (void *, int64_t, int);
+extern void set_integer (void *, int64_t, int);
+internal_proto(set_integer);
 
-#define max_value prefix(max_value)
-uint64_t max_value (int, int);
+extern uint64_t max_value (int, int);
+internal_proto(max_value);
 
-#define convert_real prefix(convert_real)
-int convert_real (void *, const char *, int);
+extern int convert_real (void *, const char *, int);
+internal_proto(convert_real);
 
-#define read_a prefix(read_a)
-void read_a (fnode *, char *, int);
+extern void read_a (fnode *, char *, int);
+internal_proto(read_a);
 
-#define read_f prefix(read_f)
-void read_f (fnode *, char *, int);
+extern void read_f (fnode *, char *, int);
+internal_proto(read_f);
 
-#define read_l prefix(read_l)
-void read_l (fnode *, char *, int);
+extern void read_l (fnode *, char *, int);
+internal_proto(read_l);
 
-#define read_x prefix(read_x)
-void read_x (fnode *);
+extern void read_x (fnode *);
+internal_proto(read_x);
 
-#define read_radix prefix(read_radix)
-void read_radix (fnode *, char *, int, int);
+extern void read_radix (fnode *, char *, int, int);
+internal_proto(read_radix);
 
-#define read_decimal prefix(read_decimal)
-void read_decimal (fnode *, char *, int);
+extern void read_decimal (fnode *, char *, int);
+internal_proto(read_decimal);
 
 /* list_read.c */
 
-#define list_formatted_read prefix(list_formatted_read)
-void list_formatted_read (bt, void *, int);
+extern void list_formatted_read (bt, void *, int);
+internal_proto(list_formatted_read);
 
-#define finish_list_read prefix(finish_list_read)
-void finish_list_read (void);
+extern void finish_list_read (void);
+internal_proto(finish_list_read);
 
-#define init_at_eol prefix(init_at_eol)
-void init_at_eol();
+extern void init_at_eol();
+internal_proto(init_at_eol);
 
-#define namelist_read prefix(namelist_read)
-void namelist_read();
+extern void namelist_read();
+internal_proto(namelist_read);
 
-#define namelist_write prefix(namelist_write)
-void namelist_write();
+extern void namelist_write();
+internal_proto(namelist_write);
 
 /* write.c */
 
-#define write_a prefix(write_a)
-void write_a (fnode *, const char *, int);
+extern void write_a (fnode *, const char *, int);
+internal_proto(write_a);
 
-#define write_b prefix(write_b)
-void write_b (fnode *, const char *, int);
+extern void write_b (fnode *, const char *, int);
+internal_proto(write_b);
 
-#define write_d prefix(write_d)
-void write_d (fnode *, const char *, int);
+extern void write_d (fnode *, const char *, int);
+internal_proto(write_d);
 
-#define write_e prefix(write_e)
-void write_e (fnode *, const char *, int);
+extern void write_e (fnode *, const char *, int);
+internal_proto(write_e);
 
-#define write_en prefix(write_en)
-void write_en (fnode *, const char *, int);
+extern void write_en (fnode *, const char *, int);
+internal_proto(write_en);
 
-#define write_es prefix(write_es)
-void write_es (fnode *, const char *, int);
+extern void write_es (fnode *, const char *, int);
+internal_proto(write_es);
 
-#define write_f prefix(write_f)
-void write_f (fnode *, const char *, int);
+extern void write_f (fnode *, const char *, int);
+internal_proto(write_f);
 
-#define write_i prefix(write_i)
-void write_i (fnode *, const char *, int);
+extern void write_i (fnode *, const char *, int);
+internal_proto(write_i);
 
-#define write_l prefix(write_l)
-void write_l (fnode *, char *, int);
+extern void write_l (fnode *, char *, int);
+internal_proto(write_l);
 
-#define write_o prefix(write_o)
-void write_o (fnode *, const char *, int);
+extern void write_o (fnode *, const char *, int);
+internal_proto(write_o);
 
-#define write_x prefix(write_x)
-void write_x (fnode *);
+extern void write_x (fnode *);
+internal_proto(write_x);
 
-#define write_z prefix(write_z)
-void write_z (fnode *, const char *, int);
+extern void write_z (fnode *, const char *, int);
+internal_proto(write_z);
 
-#define list_formatted_write prefix(list_formatted_write)
-void list_formatted_write (bt, void *, int);
-
-
-#define st_open prefix(st_open)
-#define st_close prefix(st_close)
-#define st_inquire prefix(st_inquire)
-#define st_iolength prefix(st_iolength)
-#define st_iolength_done prefix(st_iolength_done)
-#define st_rewind prefix(st_rewind)
-#define st_read prefix(st_read)
-#define st_read_done prefix(st_read_done)
-#define st_write prefix(st_write)
-#define st_write_done prefix(st_write_done)
-#define st_backspace prefix(st_backspace)
-#define st_endfile prefix(st_endfile)
-
-
-void __MAIN (void);
+extern void list_formatted_write (bt, void *, int);
+internal_proto(list_formatted_write);
 
 #endif

@@ -30,8 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/resource.h>
 #endif
 
+extern void etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result);
+iexport_proto(etime_sub);
+
 void
-prefix(etime_sub) (gfc_array_r4 *t, GFC_REAL_4 *result)
+etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
 {
   GFC_REAL_4 tu, ts, tt, *tp;
   index_type dim;
@@ -70,17 +73,24 @@ prefix(etime_sub) (gfc_array_r4 *t, GFC_REAL_4 *result)
   *tp = ts;
   *result = tt;
 }
+iexport(etime_sub);
+
+extern GFC_REAL_4 etime (gfc_array_r4 *t);
+export_proto(etime);
 
 GFC_REAL_4
-prefix(etime) (gfc_array_r4 *t)
+etime (gfc_array_r4 *t)
 {
   GFC_REAL_4 val;
-  prefix(etime_sub) (t, &val);
+  etime_sub (t, &val);
   return val;
 }
 
 /* LAPACK's test programs declares ETIME external, therefore we 
    need this.  */
+
+extern GFC_REAL_4 etime_ (GFC_REAL_4 *t);
+export_proto_np(etime_);
 
 GFC_REAL_4
 etime_ (GFC_REAL_4 *t)
@@ -94,6 +104,6 @@ etime_ (GFC_REAL_4 *t)
   desc.dim[0].stride = 1;
   desc.data = t;
 
-  prefix(etime_sub) (&desc, &val);
+  etime_sub (&desc, &val);
   return val;
 }

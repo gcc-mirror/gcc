@@ -30,6 +30,11 @@ typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
 dnl Only the kind (ie size) is used to name the function.
+
+extern void `__reshape_'rtype_kind (rtype *, rtype *, shape_type *,
+				    rtype *, shape_type *);
+extern_proto_np(`__reshape_'rtype_kind);
+
 void
 `__reshape_'rtype_kind (rtype * ret, rtype * source, shape_type * shape,
                       rtype * pad, shape_type * order)
@@ -224,4 +229,3 @@ void
         }
     }
 }
-

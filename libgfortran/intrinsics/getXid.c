@@ -30,22 +30,34 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 #ifdef HAVE_GETGID
-GFC_INTEGER_4 prefix(getgid) (void)
+extern GFC_INTEGER_4 PREFIX(getgid) (void);
+export_proto_np(PREFIX(getgid));
+
+GFC_INTEGER_4
+PREFIX(getgid) (void)
 {
-  return (GFC_INTEGER_4) getgid ();
+  return getgid ();
 }
 #endif
 
 #ifdef HAVE_GETPID
-GFC_INTEGER_4 prefix(getpid) (void)
+extern GFC_INTEGER_4 PREFIX(getpid) (void);
+export_proto_np(PREFIX(getpid));
+
+GFC_INTEGER_4
+PREFIX(getpid) (void)
 {
-  return (GFC_INTEGER_4) getpid ();
+  return getpid ();
 }
 #endif
 
 #ifdef HAVE_GETUID
-GFC_INTEGER_4 prefix(getuid) (void)
+extern GFC_INTEGER_4 PREFIX(getuid) (void);
+export_proto_np(PREFIX(getuid));
+
+GFC_INTEGER_4
+PREFIX(getuid) (void)
 {
-  return (GFC_INTEGER_4) getuid ();
+  return getuid ();
 }
 #endif

@@ -21,8 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-#define associated prefix(associated)
-
+extern GFC_LOGICAL_4 associated (const gfc_array_void *,
+				 const gfc_array_void *);
+export_proto(associated);
 
 GFC_LOGICAL_4
 associated (const gfc_array_void *pointer, const gfc_array_void *target)

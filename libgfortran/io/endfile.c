@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* endfile.c--  Implement the ENDFILE statement */
 
+extern void st_endfile (void);
+export_proto(st_endfile);
+
 void
 st_endfile (void)
 {

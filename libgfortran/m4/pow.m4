@@ -23,13 +23,16 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-/* Uuse Binary Method to calculate the powi. This is not an optimal but
+/* Use Binary Method to calculate the powi. This is not an optimal but
    a simple and reasonable arithmetic. See section 4.6.3, "Evaluation of
    Powers" of Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art
    of Computer Programming", 3rd Edition, 1998.  */
 
+rtype_name `pow_'rtype_code`_'atype_code (rtype_name a, atype_name b);
+export_proto(pow_`'rtype_code`_'atype_code);
+
 rtype_name
-`prefix(pow_'rtype_code`_'atype_code) (rtype_name a, atype_name b)
+`pow_'rtype_code`_'atype_code (rtype_name a, atype_name b)
 {
   rtype_name pow, x;
   atype_name n, u;

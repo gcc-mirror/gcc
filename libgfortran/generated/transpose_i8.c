@@ -23,6 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+extern void __transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source);
+export_proto_np(__transpose_8);
+
 void
 __transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source)
 {
