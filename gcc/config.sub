@@ -515,6 +515,9 @@ case $os in
 	-svr3)
 		os=-sysv3
 		;;
+	-xenix)
+		os=-xenix
+		;;
 	-none)
 		;;
 	*)
