@@ -60,7 +60,7 @@ case $machine in
         fixincludes=fixinc.ptx
         ;;
 
-    alpha*-dec-vms* | \
+    alpha*-dec-*vms* | \
     arm-semi-aout | \
     armel-semi-aout | \
     arm-semi-aof | \
