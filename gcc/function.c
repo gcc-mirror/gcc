@@ -307,6 +307,7 @@ static void fixup_var_refs_1 ();
 static void optimize_bit_field ();
 static void instantiate_decls ();
 static void instantiate_decls_1 ();
+static void instantiate_decl ();
 static int instantiate_virtual_regs_1 ();
 static rtx fixup_memory_subreg ();
 static rtx walk_fixup_memory_subreg ();
@@ -1902,20 +1903,10 @@ instantiate_decls (fndecl, valid_only)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM
-	  && (! valid_only
-	      || ! mode_dependent_address_p (XEXP (DECL_RTL (decl), 0))))
-	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
-				    (valid_only ? DECL_RTL (decl) : NULL_RTX),
-				    0);
-      if (DECL_INCOMING_RTL (decl)
-	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM
-	  && (! valid_only
-	      || ! mode_dependent_address_p (XEXP (DECL_INCOMING_RTL (decl), 0))))
-	instantiate_virtual_regs_1 (&XEXP (DECL_INCOMING_RTL (decl), 0),
-				    (valid_only ? DECL_INCOMING_RTL (decl)
-				     : NULL_RTX),
-				    0);
+      instantiate_decl (DECL_RTL (decl), int_size_in_bytes (TREE_TYPE (decl)),
+			valid_only);	
+      instantiate_decl (DECL_INCOMING_RTL (decl),
+			int_size_in_bytes (TREE_TYPE (decl)), valid_only);
     }
 
   /* Now process all variables defined in the function or its subblocks. */
@@ -1942,15 +1933,76 @@ instantiate_decls_1 (let, valid_only)
   tree t;
 
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    if (DECL_RTL (t) && GET_CODE (DECL_RTL (t)) == MEM
-	&& (! valid_only
-	    || ! mode_dependent_address_p (XEXP (DECL_RTL (t), 0))))
-      instantiate_virtual_regs_1 (& XEXP (DECL_RTL (t), 0),
-				  valid_only ? DECL_RTL (t) : NULL_RTX, 0);
+    instantiate_decl (DECL_RTL (t), int_size_in_bytes (TREE_TYPE (t)),
+		      valid_only);
 
   /* Process all subblocks.  */
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
     instantiate_decls_1 (t, valid_only);
+}
+
+/* Subroutine of the preceeding procedures: Given RTL representing a
+   decl and the size of the object, do any instantiation required.
+
+   If VALID_ONLY is non-zero, it means that the RTL should only be
+   changed if the new address is valid.  */
+
+static void
+instantiate_decl (x, size, valid_only)
+     rtx x;
+     int size;
+     int valid_only;
+{
+  enum machine_mode mode;
+  rtx addr;
+
+  /* If this is not a MEM, no need to do anything.  Similarly if the
+     address is a constant or a register that is not a virtual register.  */
+
+  if (x == 0 || GET_CODE (x) != MEM)
+    return;
+
+  addr = XEXP (x, 0);
+  if (CONSTANT_P (addr)
+      || (GET_CODE (addr) == REG
+	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
+	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
+    return;
+
+  /* If we should only do this if the address is valid, copy the address.
+     We need to do this so we can undo any changes that might make the
+     address invalid.  This copy is unfortunate, but probably can't be
+     avoided.  */
+
+  if (valid_only)
+    addr = copy_rtx (addr);
+
+  instantiate_virtual_regs_1 (&addr, NULL_RTX, 0);
+
+  if (! valid_only)
+    return;
+
+  /* Now verify that the resulting address is valid for every integer or
+     floating-point mode up to and including SIZE bytes long.  We do this
+     since the object might be accessed in any mode and frame addresses
+     are shared.  */
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+       mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (! memory_address_p (mode, addr))
+      return;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+       mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (! memory_address_p (mode, addr))
+      return;
+
+  /* Otherwise, put back the address, now that we have updated it and we
+     know it is valid.  */
+
+  XEXP (x, 0) = addr;
 }
 
 /* Given a pointer to a piece of rtx and an optional pointer to the
