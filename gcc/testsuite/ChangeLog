@@ -1,5 +1,9 @@
 2005-02-09  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/20050209-1.c: New test.
+
+2005-02-09  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR target/19799
 	* gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c: XFAIL on hppa*64*-*.
 
