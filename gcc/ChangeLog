@@ -1,3 +1,7 @@
+Sun Sep  5 11:11:59 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (DBR_OUTPUT_SEQEND): Use XVECEXP not XEXPs.
+
 Sun Sep  5 10:13:19 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (CALLER_SAVE_PROFITABLE): Disable.
