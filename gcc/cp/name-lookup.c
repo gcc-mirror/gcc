@@ -69,7 +69,7 @@ find_binding (cxx_scope *scope, cxx_binding *binding)
     if (BINDING_SCOPE (binding) == scope)
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, binding);
 
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (cxx_binding *)0);
 }
 
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */

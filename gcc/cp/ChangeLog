@@ -1,3 +1,8 @@
+2003-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* name-lookup.c (find_binding): Pass appropriate pointer type to
+	POP_TIMEVAR_AND_RETURN.
+
 2003-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (cp-warn): Add $(STRICT_WARN).
