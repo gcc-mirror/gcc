@@ -668,6 +668,7 @@ scan_linker_output (fname)
 	     mistakenly use GNU ld's "In function `foo':" message.  */
 	  if (q && (strstr (oldq, "ndefined")
 		    || strstr (oldq, "nresolved")
+		    || strstr (oldq, "nsatisfied")
 		    || strstr (oldq, "ultiple")))
 	    {
 	      *q = 0;

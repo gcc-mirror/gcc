@@ -1,3 +1,15 @@
+2001-11-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (add_data_member_location_attribute): Do the
+	right thing for virtual bases.
+	* dbxout.c (dbxout_type): For a virtual base, print the offset
+	within the vtable.
+
+2001-08-14  Steve Ellcey <sje@cup.hp.com>
+
+	* tlink.c (scan_linker_output): Check string for unsatisfied in
+	addition to undefined and unresolved.
+
 2001-11-29  Zoltan Hidvegi  <hzoli@hzoli.2y.net>
 
 	* doloop.c (doloop_valid_p): Check for LTU and GTU as well.
