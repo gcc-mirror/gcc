@@ -1,5 +1,10 @@
 2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* config/locale/moneypunct_members_generic.cc
+	(money_base::_S_construct_pattern): Remove unused parameters.
+
+2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/Makefile.am (stamp-target): Remove link to self.
 	* inclulde/Makefile.in: Regenerate.
 	

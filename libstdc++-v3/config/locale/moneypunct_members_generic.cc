@@ -40,7 +40,7 @@ namespace std
   // Construct and return valid pattern consisting of some combination of:
   // space none symbol sign value
   money_base::pattern
-  money_base::_S_construct_pattern(char __preceeds, char __space, char __posn)
+  money_base::_S_construct_pattern(char, char, char)
   { return _S_default_pattern; }
 
   template<> 
