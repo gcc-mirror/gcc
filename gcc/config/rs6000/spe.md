@@ -1915,7 +1915,7 @@
         (minus:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		    (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
   "TARGET_SPE"
-  "evsubfw %0,%1,%2"
+  "evsubfw %0,%2,%1"
   [(set_attr "type" "veccomplex")
    (set_attr  "length" "4")])
 
