@@ -10,6 +10,10 @@ in this list are accidental.  Feel free to contact
 or some of your contributions are not listed.  Please keep this list in
 alphabetical order.
 
+Some projects operating under the GCC project maintain their own list
+of contributors, such as
+@uref{http://gcc.gnu.org/libstdc++/,the C++ library}.
+
 @itemize @bullet
 
 @item
