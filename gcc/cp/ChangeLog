@@ -1,3 +1,21 @@
+2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
+
+	* cp-tree.h (BINFO_PRIMARY_MARKED_P): Change definition.
+	(BINFO_VBASE_PRIMARY_P): New macro.
+	(BINFO_VIRTUALS): Add to documentation.
+	(SET_BINFO_PRIMARY_MARKED_P): Remove.
+	(CLEAR_BINFO_PRIMARY_MARKED_P): Likewise.
+	(dfs_mark_primary_bases_queue_p): Likewise.
+	(dfs_unmarked_real_bases_queue_p): New function.
+	(dfs_marked_real_bases_queue_p): Likewise.
+	* search.c (dfs_mark_primary_bases): Adjust.
+	(mark_primary_bases): Likewise.
+	(get_shared_vbase_if_not_primary): New function.
+	(dfs_unmarked_real_bases_queue_p): Likewise.
+	(dfs_marked_real_bases_queue_p): Likewise.
+	(dfs_get_pure_virtuals): Simplify.
+	(get_pure_virtuals): Likewise.
+	
 2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c: Include tm_p.h.
