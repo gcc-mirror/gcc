@@ -1209,7 +1209,8 @@ next_record_r (int done)
 
     case FORMATTED_SEQUENTIAL:
       length = 1;
-      if (sf_seen_eor && done)
+      /* sf_read has already terminated input because of an '\n'  */
+      if (sf_seen_eor) 
          break;
 
       do
