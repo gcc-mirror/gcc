@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("_LD64");				\
 	builtin_define ("__UNICOSMK__");			\
 	builtin_define ("__INT_MAX__=9223372036854775807");	\
-	builtin_define ("__SHRT_MAX__=2147483647")		\
+	builtin_define ("__SHRT_MAX__=2147483647");		\
     } while (0)
 
 #define SHORT_TYPE_SIZE 32
