@@ -245,12 +245,12 @@ extern int errno;
   return (*msg)(self, aSel, anObject1, anObject2);
 }
 
-- forward:(SEL)aSel :(af_frame)argFrame
+- forward:(SEL)aSel :(arglist_t)argFrame
 {
   return [self doesNotRecognize: aSel];
 }
 
-- performv:(SEL)aSel :(af_frame)argFrame
+- performv:(SEL)aSel :(arglist_t)argFrame
 {
   return objc_msg_sendv(self, aSel, method_get_argsize(0), argFrame);
 }

@@ -60,12 +60,9 @@ libobjc.a: $(OBJC_O)
 	$(AR) rc libobjc.a $(OBJC_O)
 # ranlib is run in the parent directory's makefile.
 
-ARGFRAME_H = argframe.h af-sparc.h
-
 OBJC_H = hash.h list.h sarray.h objc.h \
          objc-api.h cache.h \
-	 Object.h Protocol.h mutex.h \
-	 $(ARGFRAME_H)
+	 Object.h Protocol.h mutex.h
 
 # copy objc headers to installation include directory
 copy-headers: $(OBJC_H)
@@ -76,6 +73,19 @@ copy-headers: $(OBJC_H)
 	  cp $$realfile $(incinstalldir)/objc; \
 	  chmod a+r $(incinstalldir)/objc; \
 	done
+
+sendmsg.o: sendmsg.c fflags
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/sendmsg.c
+
+## Next to are for heuristics on forwarding mechanism... 
+_forward: _forward.c
+	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/_forward.c
+	-$(GCC_FOR_TARGET) ./_forward.o -o _forward
+	if [ ! -f ./_forward ]; then touch ./_forward; fi	
+
+fflags: _forward
+	-rm -f fflags
+	-if [ -s ./_forward ]; then ./_forward > fflags; else touch fflags; fi
 
 mostlyclean:
 	-rm -f *.o libobjc.a _forward fflags
