@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 extern int current_function_anonymous_args;
 
 
-/* Return non-zero if DECL is a dllexport'd object.  */
+/* Return nonzero if DECL is a dllexport'd object.  */
 
 tree current_class_type; /* FIXME */
 
@@ -52,7 +52,7 @@ arm_dllexport_p (decl)
   return 0;
 }
 
-/* Return non-zero if DECL is a dllimport'd object.  */
+/* Return nonzero if DECL is a dllimport'd object.  */
 
 int
 arm_dllimport_p (decl)
@@ -74,7 +74,7 @@ arm_dllimport_p (decl)
   return 0;
 }
 
-/* Return non-zero if SYMBOL is marked as being dllexport'd.  */
+/* Return nonzero if SYMBOL is marked as being dllexport'd.  */
 
 int
 arm_dllexport_name_p (symbol)
@@ -83,7 +83,7 @@ arm_dllexport_name_p (symbol)
   return symbol[0] == ARM_PE_FLAG_CHAR && symbol[1] == 'e' && symbol[2] == '.';
 }
 
-/* Return non-zero if SYMBOL is marked as being dllimport'd.  */
+/* Return nonzero if SYMBOL is marked as being dllimport'd.  */
 
 int
 arm_dllimport_name_p (symbol)

@@ -2207,7 +2207,7 @@ current_file_function_operand (sym_ref)
   return 0;
 }
 
-/* Return non-zero if a 32 bit "long_call" should be generated for
+/* Return nonzero if a 32 bit "long_call" should be generated for
    this call.  We generate a long_call if the function:
 
         a.  has an __attribute__((long call))
@@ -2260,7 +2260,7 @@ arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
     || TARGET_LONG_CALLS;
 }
 
-/* Return non-zero if it is ok to make a tail-call to DECL.  */
+/* Return nonzero if it is ok to make a tail-call to DECL.  */
 
 int
 arm_function_ok_for_sibcall (decl)
@@ -8059,7 +8059,7 @@ emit_sfm (base_reg, count)
   may not be needed, giving rise to the possibility of
   eliminating some of the registers.
 
-  The values returned by this function must reflect the behaviour
+  The values returned by this function must reflect the behavior
   of arm_expand_prologue() and arm_compute_save_reg_mask().
 
   The sign of the number returned reflects the direction of stack
@@ -9872,7 +9872,7 @@ thumb_shiftable_const (val)
   return 0;
 }
 
-/* Returns non-zero if the current function contains,
+/* Returns nonzero if the current function contains,
    or might contain a far jump.  */
 
 int
@@ -9942,7 +9942,7 @@ thumb_far_jump_used_p (in_prologue)
   return 0;
 }
 
-/* Return non-zero if FUNC must be entered in ARM mode.  */
+/* Return nonzero if FUNC must be entered in ARM mode.  */
 
 int
 is_called_in_ARM_mode (func)

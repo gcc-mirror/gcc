@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Return a non-zero value if DECL has a section attribute.  */
+/* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL)						\
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL)	\
    && DECL_SECTION_NAME (DECL) != NULL_TREE)

@@ -728,7 +728,7 @@ extern int arm_structure_size_boundary;
 /* Used when parsing command line option -mstructure_size_boundary.  */
 extern const char * structure_size_string;
 
-/* Non-zero if move instructions will actually fail to work
+/* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
