@@ -1,3 +1,8 @@
+2004-08-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (register_specialization): Check DECL_TEMPLATE_SPECIALIZATION
+	before calling comp_template_args.
+
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (build_vtbl_initializer): Use build_int_cst for
