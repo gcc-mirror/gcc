@@ -1,5 +1,7 @@
 2000-06-01  Richard Henderson  <rth@cygnus.com>
 
+	* Makefile.in (c-decl.o): Depend on $(EXPR_H), not expr.h.
+
         * c-decl.c (init_decl_processing): Set lang_get_alias_set first thing.
 
 2000-05-31  Richard Henderson  <rth@cygnus.com>
