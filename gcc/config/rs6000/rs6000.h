@@ -704,6 +704,10 @@ extern int rs6000_default_long_calls;
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
+/* Add 32 dwarf columns for synthetic SPE registers.  The SPE
+   synthetic registers are 113 through 145.  */
+#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 32)
+
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
@@ -1395,6 +1399,7 @@ typedef struct rs6000_stack {
   int spe_padding_size;
   int toc_size;			/* size to hold TOC if not in save_size */
   int total_size;		/* total bytes allocated for stack */
+  int spe_64bit_regs_used;
 } rs6000_stack_t;
 
 /* Define this if pushing a word on the stack

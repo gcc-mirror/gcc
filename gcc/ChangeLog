@@ -1,3 +1,18 @@
+2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (DWARF_FRAME_REGISTERS): Define.
+        (rs6000_stack_t): Add spe_64bit_regs_used.
+
+        * config/rs6000/rs6000.c (rs6000_stack_info): Calculate
+        spe_64bit_regs_used, and use it to determine the size of the
+        frame.
+        (spe_func_has_64bit_regs_p): New.
+        (spe_synthesize_frame_save): New.
+        (rs6000_frame_related): Handle SPE synthetic registers.
+        (rs6000_emit_prologue): Only save in 64-bits if the function used
+        any registers in 64-bit mode.
+        (rs6000_emit_epilogue): Same, but for restore.
+
 2003-03-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (enum floating_point_type): Delete.  Replace with...
