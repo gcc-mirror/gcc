@@ -1809,6 +1809,11 @@ enum tree_index
   TI_DOUBLE_TYPE,
   TI_LONG_DOUBLE_TYPE,
 
+  TI_FLOAT_PTR_TYPE,
+  TI_DOUBLE_PTR_TYPE,
+  TI_LONG_DOUBLE_PTR_TYPE,
+  TI_INTEGER_PTR_TYPE,
+
   TI_VOID_TYPE,
   TI_PTR_TYPE,
   TI_CONST_PTR_TYPE,
@@ -1886,6 +1891,11 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define float_type_node			global_trees[TI_FLOAT_TYPE]
 #define double_type_node		global_trees[TI_DOUBLE_TYPE]
 #define long_double_type_node		global_trees[TI_LONG_DOUBLE_TYPE]
+
+#define float_ptr_type_node		global_trees[TI_FLOAT_PTR_TYPE]
+#define double_ptr_type_node		global_trees[TI_DOUBLE_PTR_TYPE]
+#define long_double_ptr_type_node	global_trees[TI_LONG_DOUBLE_PTR_TYPE]
+#define integer_ptr_type_node		global_trees[TI_INTEGER_PTR_TYPE]
 
 #define complex_integer_type_node	global_trees[TI_COMPLEX_INTEGER_TYPE]
 #define complex_float_type_node		global_trees[TI_COMPLEX_FLOAT_TYPE]
