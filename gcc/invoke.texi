@@ -1789,6 +1789,9 @@ typically represent bit patterns, are not warned about.
 
 @item
 Usage of ANSI string concatenation is detected.
+
+@item
+A function macro appears without arguments.
 @end itemize
 
 @item -Wundef
