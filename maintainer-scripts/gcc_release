@@ -336,7 +336,6 @@ build_diff() {
 }
 
 # Upload the files to the FTP server.
-
 upload_files() {
   inform "Uploading files"
 
@@ -370,6 +369,30 @@ upload_files() {
         || error "Could not upload ${x}"
     fi
   done
+}
+
+# Announce a snapshot, both on the web and via mail.
+announce_snapshot() {
+  inform "Updating links and READMEs on the FTP server"
+  
+  TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
+  cd ~ftp/pub/gcc/snapshots
+  sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
+    -e "s%@LONG_DATE@%$LONG_DATE%g" \
+    -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-README > $$
+  mv $$ README
+  sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
+    -e "s%@LONG_DATE@%$LONG_DATE%g" \
+    -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-index.html > $$
+  mv $$ index.html
+
+  touch LATEST-IS-$LONG_DATE
+  rm -f LATEST-IS-$LAST_LONG_DATE
+
+  inform "Sending mail"
+
+  export QMAILHOST=gcc.gnu.org
+  mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
 }
 
 ########################################################################
@@ -629,28 +652,11 @@ if [ $MODE_UPLOAD -ne 0 ]; then
 
   # For snapshots, make some further updates.
   if [ $SNAPSHOT -ne 0 ] && [ $LOCAL -ne 0 ]; then
-    # Update links on the FTP server.
-    TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
-    cd ~ftp/pub/gcc/snapshots
-    sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
-      -e "s%@LONG_DATE@%$LONG_DATE%g" \
-      -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-README > $$
-    mv $$ README
-    sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
-      -e "s%@LONG_DATE@%$LONG_DATE%g" \
-      -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-index.html > $$
-    mv $$ index.html
-
-    touch LATEST-IS-$LONG_DATE
-    rm -f LATEST-IS-$LAST_LONG_DATE
+    announce_snapshot
 
     # Update snapshot date file.
     changedir ~
     echo $DATE >.snapshot_date
-
-    # Announce the snapshot.
-    export QMAILHOST=gcc.gnu.org
-    mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
 
     # Remove working directory
     rm -rf ${WORKING_DIRECTORY}

@@ -1,3 +1,10 @@
+2003-06-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Factor the updating of links and READMEs on the
+	FTP server and sending mail for snapshots into a...
+	(announce_snapshot): ...new function.
+	Add informative output for both.
+
 2003-06-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Do not update gcc_latest_snapshot tag any longer.
