@@ -1,5 +1,14 @@
 2003-07-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-decl.c (struct c_scope): Remove keep_if_subblocks field.
+	(keep_next_if_subblocks): Rename next_is_function_body.
+	(pushlevel): Adjust commentary.  Always set ->keep on the
+	outermost level of a function.  Don't set ->keep_if_subblocks.
+	(poplevel): Adjust commentary.  Don't look at ->keep_if_subblocks.
+	(store_parm_decls): Adjust to match.
+	(finish_function): Adjust to match.
+	Call poplevel with all three arguments zero.
+
 	* c-decl.c (store_parm_decls_newstyle, store_parm_decls_oldstyle):
 	New functions split out of store_parm_decls.
 	Avoid unnecessary work. Use local variables consistently.
