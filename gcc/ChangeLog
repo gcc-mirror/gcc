@@ -1,3 +1,8 @@
+2005-01-09  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_enhance_data_refs_alignment): Add dump prints.
+	(vect_analyze_data_refs_alignment): Add dump prints.
+
 2005-01-09  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_analyze_offset_expr): Use 

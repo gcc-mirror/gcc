@@ -1,3 +1,90 @@
+2005-01-09  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/pr18400.c: Add checks for alignment prints.
+	* gcc.dg/vect/pr18425.c: Add checks for alignment prints.
+	* gcc.dg/vect/pr18536.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-1.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-2.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-3.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-4.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-5.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-6.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-7.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-13.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-17.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-18.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-19.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-20.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-21.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-22.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-23.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-24.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-25.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-26.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-27.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-28.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-29.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-31.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-32.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-33.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-34.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-35.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-36.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-37.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-40.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-41.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-42.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-43.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-44.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-46.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-47.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-48.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-50.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-52.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-53.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-56.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-58.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-60.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-62.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-64.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-65.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-66.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-67.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-68.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-69.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-70.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-71.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-72.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-73.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-74.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-75.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-76.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-77.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-78.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-80.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-86.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-87.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-88.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-89.c: Add checks for alignment prints.
+	* gcc.dg/vect/vect-all.c: Add checks for alignment prints.
+
+	* gcc.dg/vect/vect-1.c: Fix spelling.
+	* gcc.dg/vect/vect-10.c: Fix spelling.
+	* gcc.dg/vect/vect-11.c: Fix spelling.
+	* gcc.dg/vect/vect-12.c: Fix spelling.
+	* gcc.dg/vect/vect-14.c: Fix spelling.
+	* gcc.dg/vect/vect-15.c: Fix spelling.
+	* gcc.dg/vect/vect-16.c: Fix spelling.
+	* gcc.dg/vect/vect-46.c: Remove obsolete comment.
+	* gcc.dg/vect/vect-64.c: Fix comments.
+	* gcc.dg/vect/vect-none.c: Remove vectorizable loop.
+
+2005-01-09  Dorit Naishlos  <dorit@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-70.c: New test.
+	* gcc.dg/vect/vect-71.c: New test.
+
 2005-01-09  Manfred Hollstein  <mh@suse.com>
 
 	* gcc.dg/pr18241-1.c: Fix dg-do parameter.
