@@ -1,5 +1,10 @@
 2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* cse.c (cse_insn) [src_folded]: Check that the tentative replacement
+	was successfully forced to memory before using the result.
+
+2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR optimization/8178
 	* config/i386/i386.md (*movsi_zero): New insn to set
 	a register to zero on TARGET_USE_MOV0 targets.
