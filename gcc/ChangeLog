@@ -1,5 +1,11 @@
 2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.h (LINK_SPEC): Support -mrelax.
+	* config/m68hc11/t-m68hc11-gas (LIBGCC2_DEBUG_CFLAGS): Can use -g now.
+	(LIBGCC2_CFLAGS): Compile with -mrelax.
+
+2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* doc/invoke.texi: Document -minmax for 68HC12.
 
 	* config/m68hc11/m68hc11.md ("umaxqi3"): Use TARGET_MIN_MAX.
