@@ -733,10 +733,6 @@ void vn_delete (void);
 /* In tree-sra.c  */
 void insert_edge_copies (tree stmt, basic_block bb);
 
-/* In tree-ssa-operands.c  */
-extern void build_ssa_operands (tree, stmt_ann_t, stmt_operands_p, 
-				stmt_operands_p);
-
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (struct loops *);
 
