@@ -1,3 +1,11 @@
+2002-02-15  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/5695:
+	* verify.cc (is_assignable_from_slow): Check to see if target is
+	an Object before checking to see if source is an interface.
+	(verify_instructions_0) [op_invokeinterface]: Handle case where
+	we're making an interface call on Object.
+
 2002-02-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.in: Rebuilt with Eric's change below.

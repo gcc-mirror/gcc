@@ -259,6 +259,11 @@ private:
 	    if (source == NULL)
 	      return false;
 	  }
+	// We must do this check before we check to see if SOURCE is
+	// an interface.  This way we know that any interface is
+	// assignable to an Object.
+	else if (target == &java::lang::Object::class$)
+	  return true;
 	else if (source->isInterface ())
 	  {
 	    for (int i = 0; i < target->interface_count; ++i)
@@ -272,8 +277,6 @@ private:
 	    if (target == NULL)
 	      return false;
 	  }
-	else if (target == &java::lang::Object::class$)
-	  return true;
 	else if (source == &java::lang::Object::class$)
 	  return false;
 	else
@@ -2786,9 +2789,28 @@ private:
 		      // In this case the PC doesn't matter.
 		      t.set_uninitialized (type::UNINIT, this);
 		    }
-		  t = pop_type (t);
+		  type raw = pop_raw ();
+		  bool ok = false;
+		  if (t.compatible (raw, this))
+		    {
+		      ok = true;
+		    }
+		  else if (opcode == op_invokeinterface)
+		    {
+		      // This is a hack.  We might have merged two
+		      // items and gotten `Object'.  This can happen
+		      // because we don't keep track of where merges
+		      // come from.  This is safe as long as the
+		      // interpreter checks interfaces at runtime.
+		      type obj (&java::lang::Object::class$);
+		      ok = raw.compatible (obj, this);
+		    }
+
+		  if (! ok)
+		    verify_fail ("incompatible type on stack");
+
 		  if (is_init)
-		    current_state->set_initialized (t.get_pc (),
+		    current_state->set_initialized (raw.get_pc (),
 						    current_method->max_locals);
 		}
 
