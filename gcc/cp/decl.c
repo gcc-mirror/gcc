@@ -13293,6 +13293,10 @@ finish_constructor_body ()
   /* In check_return_expr we translate an empty return from a
      constructor to a return of `this'.  */
   finish_return_stmt (NULL_TREE);
+
+  /* Mark the end of the main constructor body.  */
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
+    add_tree (build_min_nt (CTOR_COMPLETE));
 }
 
 /* At the end of every destructor we generate code to restore virtual
@@ -13521,9 +13525,6 @@ finish_function (lineno, flags)
 	;
       else if (DECL_CONSTRUCTOR_P (fndecl))
 	{
-	  /* All subobjects have been fully constructed at this point.  */
-	  end_protect_partials ();
-
 	  if (call_poplevel)
 	    do_poplevel ();
 	}
