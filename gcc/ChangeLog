@@ -1,3 +1,8 @@
+1999-11-28 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* reorg.c (dbr_schedule) Print more statistics. Corrected
+	problem when printing info when 3 delay slots are filled.
+
 1999-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (setup_incoming_promotions): Pass an outgoing
