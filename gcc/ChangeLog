@@ -1,5 +1,13 @@
 2000-11-07  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/fde-glibc.c (find_fde_for_dso): Do a binary
+	search on the unwind region section.
+
+	* config/ia64/ia64.md (movbi): Add r/r alternative.
+	(cmovdi_internal_astep): Describe all combinations of register
+	classes for sources & destinations; remove matching constraints.
+	(cmovdi_internal): Likewise.
+
 	* gcc.c (default_compilers) [@cpp-output]: Add -fpreprocessed.
 
 2000-11-07  Richard Henderson  <rth@redhat.com>
