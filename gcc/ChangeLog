@@ -1,3 +1,10 @@
+2004-05-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* rtl.h (skip_consecutive_labels): Declare.
+	* emit-rtl.c (skip_consecutive_labels): New function.
+	* reorg.c (relax_delay_slots, dbr_schedule): Use it.
+	* jump.c (follow_jumps): Say what null return values mean.
+
 2004-05-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/13250

@@ -999,6 +999,7 @@ sets_cc0_p (rtx x)
 
 /* Follow any unconditional jump at LABEL;
    return the ultimate label reached by any such chain of jumps.
+   Return null if the chain ultimately leads to a return instruction.
    If LABEL is not followed by a jump, return LABEL.
    If the chain loops or we can't find end, return LABEL,
    since that tells caller to avoid changing the insn.

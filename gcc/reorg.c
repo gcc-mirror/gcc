@@ -3079,11 +3079,7 @@ relax_delay_slots (rtx first)
 	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && (target_label = JUMP_LABEL (insn)) != 0)
 	{
-	  target_label = follow_jumps (target_label);
-	  /* See comment further down why we must use next_real_insn here,
-	     instead of next_active_insn.  */
-	  target_label = prev_label (next_real_insn (target_label));
-
+	  target_label = skip_consecutive_labels (follow_jumps (target_label));
 	  if (target_label == 0)
 	    target_label = find_end_label ();
 
@@ -3231,14 +3227,8 @@ relax_delay_slots (rtx first)
 	{
 	  /* If this jump goes to another unconditional jump, thread it, but
 	     don't convert a jump into a RETURN here.  */
-	  trial = follow_jumps (target_label);
-	  /* We use next_real_insn instead of next_active_insn, so that
-	     the special USE insns emitted by reorg won't be ignored.
-	     If they are ignored, then they will get deleted if target_label
-	     is now unreachable, and that would cause mark_target_live_regs
-	     to fail.  */
-	  trial = prev_label (next_real_insn (trial));
-	  if (trial == 0 && target_label != 0)
+	  trial = skip_consecutive_labels (follow_jumps (target_label));
+	  if (trial == 0)
 	    trial = find_end_label ();
 
 	  if (trial != target_label
@@ -3621,7 +3611,7 @@ dbr_schedule (rtx first, FILE *file)
       if (GET_CODE (insn) == JUMP_INSN
 	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && JUMP_LABEL (insn) != 0
-	  && ((target = prev_label (next_active_insn (JUMP_LABEL (insn))))
+	  && ((target = skip_consecutive_labels (JUMP_LABEL (insn)))
 	      != JUMP_LABEL (insn)))
 	redirect_jump (insn, target, 1);
     }

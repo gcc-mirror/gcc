@@ -1695,6 +1695,7 @@ extern rtx next_active_insn (rtx);
 extern int active_insn_p (rtx);
 extern rtx prev_label (rtx);
 extern rtx next_label (rtx);
+extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
 
