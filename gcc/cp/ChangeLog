@@ -788,6 +788,12 @@ Thu Sep 25 11:11:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl.c (start_function): Up warning of no return type to be a
 	pedwarn.
 
+Mon Sep 22 14:15:34 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* init.c (expand_member_init): Don't set TREE_USED.
+	* decl.c (cp_finish_decl): Mark decls used if type has TREE_USED
+	set,don't clear TREE_USED wholesale.
+
 Sat Sep 20 15:31:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Do require_complete_type before
