@@ -139,7 +139,11 @@ init_expr_once ()
 {
   rtx insn, pat;
   enum machine_mode mode;
+  /* Try indexing by frame ptr and try by stack ptr.
+     It is known that on the Convex the stack ptr isn't a valid index.
+     With luck, one or the other is valid on any machine.  */
   rtx mem = gen_rtx (MEM, VOIDmode, stack_pointer_rtx);
+  rtx mem1 = gen_rtx (MEM, VOIDmode, frame_pointer_rtx);
 
   start_sequence ();
   insn = emit_insn (gen_rtx (SET, 0, 0));
@@ -154,6 +158,7 @@ init_expr_once ()
 
       direct_load[(int) mode] = direct_store[(int) mode] = 0;
       PUT_MODE (mem, mode);
+      PUT_MODE (mem1, mode);
 
       /* See if there is some register that can be used in this mode and
 	 directly loaded or stored from memory.  */
@@ -173,8 +178,18 @@ init_expr_once ()
 	    if (recog (pat, insn, &num_clobbers) >= 0)
 	      direct_load[(int) mode] = 1;
 
+	    SET_SRC (pat) = mem1;
+	    SET_DEST (pat) = reg;
+	    if (recog (pat, insn, &num_clobbers) >= 0)
+	      direct_load[(int) mode] = 1;
+
 	    SET_SRC (pat) = reg;
 	    SET_DEST (pat) = mem;
+	    if (recog (pat, insn, &num_clobbers) >= 0)
+	      direct_store[(int) mode] = 1;
+
+	    SET_SRC (pat) = reg;
+	    SET_DEST (pat) = mem1;
 	    if (recog (pat, insn, &num_clobbers) >= 0)
 	      direct_store[(int) mode] = 1;
 	  }
