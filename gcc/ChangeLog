@@ -1,3 +1,8 @@
+2003-11-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR optimization/12845
+	* pa.c (output_cbranch): Use cmpb for DImode comparisons with 0.
+
 2003-11-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* print-rtl.c (print_rtx): Call PRINT_REG with second argument -1.

@@ -5579,6 +5579,12 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
   if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
     return "nop";
 
+  /* The doubleword form of the cmpib instruction doesn't have the LEU
+     and GTU conditions while the cmpb instruction does.  Since we accept
+     zero for cmpb, we must ensure that we use cmpb for the comparison.  */
+  if (GET_MODE (operands[1]) == DImode && operands[2] == const0_rtx)
+    operands[2] = gen_rtx_REG (DImode, 0);
+
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
   if (length == 8 && dbr_sequence_length () == 0)
