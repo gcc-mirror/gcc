@@ -1,3 +1,10 @@
+2001-01-03  Graham Stott  <grahams@redhat.com>
+
+        * class.c (compile_resource_file): Update copyright date.
+        Constify filename parameter.
+        (java-tree.h): Update copyright date.
+        (compile_resource_file): Constify filename parameter.
+
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
         * gcc/jcf-parse.c: Update copyright date.
