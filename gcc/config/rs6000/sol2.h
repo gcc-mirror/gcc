@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Copyright (C) 1996 Free Software Foundation, Inc.
+   Contributed by David Reese (Dave.Reese@East.Sun.COM)
 
 This file is part of GNU CC.
 
@@ -49,14 +49,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
        %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
    %{Qy:} %{!Qn:-Qy}"
 
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | \
 			MASK_NEW_MNEMONICS | \
 			MASK_LITTLE_ENDIAN | \
-			MASK_NO_MAIN_INIT | \
 			MASK_REGNAMES)
 
 #undef	LIB_DEFAULT_SPEC
