@@ -1,3 +1,11 @@
+Tue Nov 25 10:00:42 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* va-sh.h (__va_arg_sh1): Define.
+	(va_arg): Use it.
+	SH3E doesn't use any integer registers for subsequent arguments
+	once a non-float value was passed in the stack.
+	* sh.h (PASS_IN_REG_P): Fix SH3E case.
+
 Tue Nov 25 10:00:42 1997  Richard Henderson  (rth@cygnus.com)
 
 	* alpha.h (CONST_OK_FOR_LETTER): Fix 'L' handling.
