@@ -2106,9 +2106,10 @@ EOF
 	    else
 	      $show "extracting exported symbol list from \`$soname'"
 	      IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
-	      eval cmds=\"$extract_expsyms_cmds\"
+	      cmds=$extract_expsyms_cmds
 	      for cmd in $cmds; do
 		IFS="$save_ifs"
+		eval cmd=\"$cmd\"
 		$show "$cmd"
 		$run eval "$cmd" || exit $?
 	      done
@@ -2119,9 +2120,10 @@ EOF
 	    if test -f "$output_objdir/$newlib"; then :; else
 	      $show "generating import library for \`$soname'"
 	      IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
-	      eval cmds=\"$old_archive_from_expsyms_cmds\"
+	      cmds=$old_archive_from_expsyms_cmds
 	      for cmd in $cmds; do
 		IFS="$save_ifs"
+		eval cmd=\"$cmd\"
 		$show "$cmd"
 		$run eval "$cmd" || exit $?
 	      done
@@ -3249,11 +3251,13 @@ EOF
 
 	# Do each of the archive commands.
 	if test -n "$export_symbols" && test -n "$archive_expsym_cmds"; then
-	  eval cmds=\"$archive_expsym_cmds\"
+	  eval test_cmds=\"$archive_expsym_cmds\"
+	  cmds=$archive_expsym_cmds
 	else
-	  eval cmds=\"$archive_cmds\"
+	  eval test_cmds=\"$archive_cmds\"
+	  cmds=$archive_cmds
 	fi
-        if len=`expr "X$cmds" : ".*"` &&
+        if len=`expr "X$test_cmds" : ".*"` &&
            test $len -le $max_cmd_len; then
           :
         else
@@ -3329,6 +3333,7 @@ EOF
           IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
           for cmd in $concat_cmds; do
             IFS="$save_ifs"
+	    eval cmd=\"$cmd\"
             $show "$cmd"
             $run eval "$cmd" || exit $?
           done
@@ -3346,9 +3351,9 @@ EOF
 
 	  # Do each of the archive commands.
           if test -n "$export_symbols" && test -n "$archive_expsym_cmds"; then
-            eval cmds=\"$archive_expsym_cmds\"
-          else
-            eval cmds=\"$archive_cmds\"
+	    cmds=$archive_expsym_cmds
+	  else
+	    cmds=$archive_cmds
           fi
 
 	  # Append the command to remove the reloadable object files
@@ -3358,6 +3363,7 @@ EOF
         IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
         for cmd in $cmds; do
           IFS="$save_ifs"
+	  eval cmd=\"$cmd\"
           $show "$cmd"
           $run eval "$cmd" || exit $?
         done
