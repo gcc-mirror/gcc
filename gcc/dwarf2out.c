@@ -7341,6 +7341,7 @@ is_base_type (type)
     case FILE_TYPE:
     case OFFSET_TYPE:
     case LANG_TYPE:
+    case VECTOR_TYPE:
       return 0;
 
     default:

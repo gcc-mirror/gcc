@@ -1,3 +1,10 @@
+2001-01-05  Daniel Berlin  <dberlin@redhat.com>
+
+	* c-common.c (lang_get_alias_set): Say we know nothing of
+	VECTOR_TYPE aliasing. 
+
+	* dwarf2out.c (is_base_type): Handle VECTOR_TYPE properly.
+
 2001-01-05  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/mkfixinc.sh(vax-*-bsd): convert exit and atexit calls to
