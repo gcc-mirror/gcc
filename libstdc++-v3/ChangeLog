@@ -1,3 +1,13 @@
+2003-07-05  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: xfail on cygwin
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Ditto
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Ditto
+ 	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Ditto
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Ditto
+ 	* testsuite/27_io/objects/char/7.cc: Ditto
+ 	* testsuite/27_io/objects/char/9661-1.cc: Ditto
+
 2003-07-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_bitset.h: Fully qualify standard

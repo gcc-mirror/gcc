@@ -23,6 +23,9 @@
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
 
+// XXX cygwin does not support mkfifo
+// { dg-do run { xfail *-*-cygwin* } }
+
 #include <fstream>
 #include <iostream>
 #include <unistd.h>
