@@ -59,15 +59,6 @@ namespace std
   locale::_Impl* 		locale::_S_global; 
   const size_t 			locale::_S_num_categories;
 
-  // Definitions for locale::id of standard facets that are specialized.
-  locale::id ctype<char>::id;
-  locale::id codecvt<char, char, mbstate_t>::id;
-
-#ifdef _GLIBCPP_USE_WCHAR_T  
-  locale::id ctype<wchar_t>::id;
-  locale::id codecvt<wchar_t, char, mbstate_t>::id;
-#endif
-
   // Definitions for static const data members of locale::id
   _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
 
@@ -397,97 +388,6 @@ namespace std
   locale::id::id() 
   { }
 
-  // Definitions for static const data members of ctype_base.
-  const ctype_base::mask ctype_base::space;
-  const ctype_base::mask ctype_base::print;
-  const ctype_base::mask ctype_base::cntrl;
-  const ctype_base::mask ctype_base::upper;
-  const ctype_base::mask ctype_base::lower;
-  const ctype_base::mask ctype_base::alpha;
-  const ctype_base::mask ctype_base::digit;
-  const ctype_base::mask ctype_base::punct;
-  const ctype_base::mask ctype_base::xdigit;
-  const ctype_base::mask ctype_base::alnum;
-  const ctype_base::mask ctype_base::graph;
-
-  // Platform-specific initialization code for ctype tables.
-  #include <bits/ctype_noninline.h>
-
-  const size_t ctype<char>::table_size;
-
-  ctype<char>::~ctype()
-  { 
-    if (_M_c_locale_ctype != _S_c_locale)
-      _S_destroy_c_locale(_M_c_locale_ctype);
-    if (_M_del) 
-      delete[] this->table(); 
-  }
-
-  // These are dummy placeholders as these virtual functions are never called.
-  bool 
-  ctype<char>::do_is(mask, char_type) const 
-  { return false; }
-  
-  const char*
-  ctype<char>::do_is(const char_type* __c, const char_type*, mask*) const 
-  { return __c; }
-  
-  const char*
-  ctype<char>::do_scan_is(mask, const char_type* __c, const char_type*) const 
-  { return __c; }
-
-  const char* 
-  ctype<char>::do_scan_not(mask, const char_type* __c, const char_type*) const
-  { return __c; }
-
-  char
-  ctype<char>::do_widen(char __c) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_widen(const char* __lo, const char* __hi, char* __dest) const
-  {
-    memcpy(__dest, __lo, __hi - __lo);
-    return __hi;
-  }
-  
-  char
-  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_narrow(const char* __lo, const char* __hi, 
-			 char /*__dfault*/, char* __dest) const
-  {
-    memcpy(__dest, __lo, __hi - __lo);
-    return __hi;
-  }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  ctype<wchar_t>::ctype(size_t __refs) 
-  : __ctype_abstract_base<wchar_t>(__refs)
-  { _M_c_locale_ctype = _S_c_locale; }
-
-  ctype<wchar_t>::ctype(__c_locale __cloc, size_t __refs) 
-  : __ctype_abstract_base<wchar_t>(__refs) 
-  { _M_c_locale_ctype = _S_clone_c_locale(__cloc); }
-
-  ctype<wchar_t>::~ctype() 
-  { 
-    if (_M_c_locale_ctype != _S_c_locale)
-      _S_destroy_c_locale(_M_c_locale_ctype); 
-  }
-
-  template<>
-    ctype_byname<wchar_t>::ctype_byname(const char* __s, size_t __refs)
-    : ctype<wchar_t>(__refs) 
-    { 	
-      if (_M_c_locale_ctype != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_ctype);
-      _S_create_c_locale(_M_c_locale_ctype, __s); 
-    }
-#endif
-
   // Definitions for static const data members of time_base
   template<> 
     const char*
@@ -510,26 +410,6 @@ namespace std
   // Definitions for static const data members of money_base
   const money_base::pattern 
   money_base::_S_default_pattern =  { {symbol, sign, none, value} };
-
-  template<>
-    const ctype<char>&
-    use_facet<ctype<char> >(const locale& __loc)
-    {
-      size_t __i = ctype<char>::id._M_id();
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<char>&>(*(__tmp->_M_facets[__i]));
-    }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    const ctype<wchar_t>&
-    use_facet<ctype<wchar_t> >(const locale& __loc)
-    {
-      size_t __i = ctype<wchar_t>::id._M_id();
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<wchar_t>&>(*(__tmp->_M_facets[__i]));
-    }
-#endif
 
   const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
 

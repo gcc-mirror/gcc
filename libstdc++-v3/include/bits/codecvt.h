@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,15 +66,11 @@
     {
     public:
       // Types:
-      typedef codecvt_base::result			result;
-      typedef _InternT 					intern_type;
-      typedef _ExternT 					extern_type;
-      typedef _StateT  					state_type;
- 
-    protected:
-      __c_locale		_M_c_locale_codecvt;
-
-    public:
+      typedef codecvt_base::result	result;
+      typedef _InternT 			intern_type;
+      typedef _ExternT 			extern_type;
+      typedef _StateT  			state_type;
+      
       // 22.2.1.5.1 codecvt members
       result
       out(state_type& __state, const intern_type* __from, 
@@ -163,17 +159,23 @@
     {
     public:      
       // Types:
-      typedef codecvt_base::result			result;
-      typedef _InternT intern_type;
-      typedef _ExternT extern_type;
-      typedef _StateT  state_type;
+      typedef codecvt_base::result	result;
+      typedef _InternT 			intern_type;
+      typedef _ExternT 			extern_type;
+      typedef _StateT  			state_type;
 
-      // Data Members:
-      static locale::id id;
+    protected:
+      __c_locale			_M_c_locale_codecvt;
+
+    public:
+      static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0) 
-      : __codecvt_abstract_base<_InternT,_ExternT,_StateT> (__refs) { }
+      : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs) { }
+
+      explicit 
+      codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       virtual 
@@ -219,19 +221,21 @@
     {
     public:      
       // Types:
-      typedef char 	intern_type;
-      typedef char 	extern_type;
-      typedef mbstate_t state_type;
+      typedef char 			intern_type;
+      typedef char 			extern_type;
+      typedef mbstate_t 		state_type;
 
-      // Data Members:
+    protected:
+      __c_locale			_M_c_locale_codecvt;
+
+    public:
       static locale::id id;
 
       explicit 
       codecvt(size_t __refs = 0);
 
-      // Non-standard.
       explicit 
-      codecvt(__c_locale __cloc, size_t __refs = 0); 
+      codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       virtual 
@@ -275,17 +279,19 @@
     {
     public:
       // Types:
-      typedef wchar_t 	intern_type;
-      typedef char 	extern_type;
-      typedef mbstate_t state_type;
+      typedef wchar_t 			intern_type;
+      typedef char 			extern_type;
+      typedef mbstate_t 		state_type;
 
-      // Data Members:
-      static locale::id id;
+    protected:
+      __c_locale			_M_c_locale_codecvt;
+
+    public:
+      static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0);
 
-      // Non-standard.
       explicit 
       codecvt(__c_locale __cloc, size_t __refs = 0);
 

@@ -1175,6 +1175,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
       CCODECVT_H=config/locale/generic/codecvt_specializations.h
+      CCODECVT_CC=config/locale/generic/codecvt_members.cc
       CCOLLATE_CC=config/locale/generic/collate_members.cc
       CCTYPE_CC=config/locale/generic/ctype_members.cc
       CMESSAGES_H=config/locale/generic/messages_members.h
@@ -1208,6 +1209,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/gnu/c_locale.h
       CLOCALE_CC=config/locale/gnu/c_locale.cc
       CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCODECVT_CC=config/locale/gnu/codecvt_members.cc
       CCOLLATE_CC=config/locale/gnu/collate_members.cc
       CCTYPE_CC=config/locale/gnu/ctype_members.cc
       CMESSAGES_H=config/locale/gnu/messages_members.h
@@ -1223,6 +1225,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
       CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
       CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCODECVT_CC=config/locale/generic/codecvt_members.cc
       CCOLLATE_CC=config/locale/generic/collate_members.cc
       CCTYPE_CC=config/locale/generic/ctype_members.cc
       CMESSAGES_H=config/locale/ieee_1003.1-2001/messages_members.h
@@ -1243,17 +1246,22 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   glibcpp_localedir=${glibcpp_builddir}/po/share/locale
   AC_SUBST(glibcpp_localedir)
 
+  # For the time being, transform ctype_noninline.h to ctype_members_char.cc
+#  CCTYPE_CHAR_CC=config/${os_include_dir}/ctype_noninline.h
+
   AC_SUBST(USE_NLS)
   AC_SUBST(CLOCALE_H)
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
-  AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
-  AC_LINK_FILES($CCTYPE_CC, src/ctype.cc)
-  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
-  AC_LINK_FILES($CMONEY_CC, src/monetary.cc)
-  AC_LINK_FILES($CNUMERIC_CC, src/numeric.cc)
-  AC_LINK_FILES($CTIME_CC, src/time.cc)
+  AC_LINK_FILES($CCODECVT_CC, src/codecvt_members.cc)
+  AC_LINK_FILES($CCOLLATE_CC, src/collate_members.cc)
+#  AC_LINK_FILES($CCTYPE_CHAR_CC, src/ctype_members_char.cc)
+  AC_LINK_FILES($CCTYPE_CC, src/ctype_members.cc)
+  AC_LINK_FILES($CMESSAGES_CC, src/messages_members.cc)
+  AC_LINK_FILES($CMONEY_CC, src/monetary_members.cc)
+  AC_LINK_FILES($CNUMERIC_CC, src/numeric_members.cc)
+  AC_LINK_FILES($CTIME_CC, src/time_members.cc)
   AC_LINK_FILES($CLOCALE_INTERNAL_H, src/c++locale_internal.h)
 ])
 
