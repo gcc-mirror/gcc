@@ -233,6 +233,7 @@ typedef __SIZE_TYPE__ size_t;
 typedef _BSD_RUNE_T_ rune_t;
 #endif
 #endif
+#undef __need_wint_t
 #endif
 
 #ifndef __WCHAR_TYPE__
