@@ -377,6 +377,14 @@ for machine in $build $host $target; do
 		tmake_file=arm/t-semiaof
 		fixincludes=Makefile.in # There is nothing to fix
 		;;
+	arm-*-netbsd*)
+		tm_file=arm/netbsd.h
+		xm_file=arm/xm-netbsd.h
+		tmake_file=arm-t-netbsd
+		# On NetBSD, the headers are already okay.
+		fixincludes=Makefile.in
+		use_collect2=yes
+		;;
 	arm-*-linux-gnuaout*)		# ARM Linux
 		cpu_type=arm
 		xm_file=arm/xm-linux.h
