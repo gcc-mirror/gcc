@@ -52,6 +52,7 @@ fi
 ## ------------------------ ##
 AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME, AC_PACKAGE_VERSION, -)
 AM_CONFIG_HEADER([config.h:config-h.in])
+AM_MAINTAINER_MODE
 
 
 ## ------------------ ##

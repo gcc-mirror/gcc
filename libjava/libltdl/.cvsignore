@@ -8,3 +8,4 @@ libtool
 *.lo
 *.la
 stamp-h
+autom4te.cache
