@@ -1,3 +1,24 @@
+2003-03-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9978, c++/9708
+	* cp-tree.h (instantiate_template): Add tsubst_flags parameter.
+	* call.c (add_template_candidate_real): Adjust
+	instantiate_template call.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+	* decl.c (build_enumerator): Set TREE_CONSTANT.
+	* pt.c (check_instantiated_args): New.
+	(push_inline_template_parms_recursive): Set TREE_CONSTANT,
+	TREE_READONLY.
+	(build_template_parm_index): Copy TREE_CONSTANT, TREE_READONLY.
+	(reduce_template_parm_level): Likewise.
+	(process_template_parm): Likewise.
+	(check_explicit_specialization): Adjust instantiate_template call.
+	(convert_template_argument): Don't check non-type argument here.
+	(lookup_template_class): Check them here.
+	(tsubst_friend_function): Adjust instantiate_template call.
+	(instantiate_template): Add tsubst_flags parameter, use it. Check
+	instantiated args.
+
 2003-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c: Update calls to shadow_warning.

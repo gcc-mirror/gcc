@@ -4016,7 +4016,7 @@ extern tree lookup_template_class		(tree, tree, tree, tree, int, tsubst_flags_t)
 extern tree lookup_template_function            (tree, tree);
 extern int uses_template_parms			(tree);
 extern tree instantiate_class_template		(tree);
-extern tree instantiate_template		(tree, tree);
+extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern int fn_type_unification                  (tree, tree, tree, tree, tree, unification_kind_t, int);
 extern tree tinst_for_decl			(void);
 extern void mark_decl_instantiated		(tree, int);

@@ -13286,8 +13286,8 @@ build_enumerator (tree name, tree value, tree enumtype)
     decl = build_decl (CONST_DECL, name, type);
 
   DECL_CONTEXT (decl) = FROB_CONTEXT (context);
+  TREE_CONSTANT (decl) = TREE_READONLY (decl) = 1;
   DECL_INITIAL (decl) = value;
-  TREE_READONLY (decl) = 1;
 
   if (context && context == current_class_type)
     /* In something like `struct S { enum E { i = 7 }; };' we put `i'

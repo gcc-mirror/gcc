@@ -1,3 +1,11 @@
+2003-03-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9978, c++/9708
+	* g++.dg/ext/vlm1.C: Adjust expected error.
+	* g++.dg/ext/vla2.C: New test.
+	* g++.dg/template/arg1.C: New test.
+	* g++.dg/template/arg2.C: New test.
+
 2003-03-22  Bud Davis  <bdavis9659@comcast.net>
 
 	* g77.f-torture/execute/select.f: New test.
