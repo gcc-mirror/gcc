@@ -6911,6 +6911,7 @@ do_output_reload (chain, rl, j)
   rtx pseudo = rl->out_reg;
 
   if (pseudo
+      && optimize
       && GET_CODE (pseudo) == REG
       && ! rtx_equal_p (rl->in_reg, pseudo)
       && REGNO (pseudo) >= FIRST_PSEUDO_REGISTER
