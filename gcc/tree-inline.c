@@ -1403,9 +1403,18 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	      break;
 	    }
 
-	arg = TREE_OPERAND (x, 1);
-	for (arg = TREE_OPERAND (x, 1); arg; arg = TREE_CHAIN (arg))
-	  *count += estimate_move_cost (TREE_TYPE (TREE_VALUE (arg)));
+	/* Our cost must be kept in sync with cgraph_estimate_size_after_inlining
+	   that does use function declaration to figure out the arguments.  */
+	if (!decl)
+	  {
+	    for (arg = TREE_OPERAND (x, 1); arg; arg = TREE_CHAIN (arg))
+	      *count += estimate_move_cost (TREE_TYPE (TREE_VALUE (arg)));
+	  }
+	else
+	  {
+	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	      *count += estimate_move_cost (TREE_TYPE (arg));
+	  }
 
 	*count += PARAM_VALUE (PARAM_INLINE_CALL_COST);
 	break;
