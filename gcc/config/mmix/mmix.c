@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -133,9 +133,12 @@ static void mmix_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
+static void mmix_setup_incoming_varargs
+  (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
 static bool mmix_rtx_costs (rtx, int, int, int *);
+static rtx mmix_struct_value_rtx (tree, int);
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -186,6 +189,21 @@ static bool mmix_rtx_costs (rtx, int, int, int *);
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mmix_reorg
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#if 0
+/* Apparently not doing TRT if int < register-size.  FIXME: Perhaps
+   FUNCTION_VALUE and LIBCALL_VALUE needs tweaking as some ports say.  */
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#endif
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX mmix_struct_value_rtx
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS mmix_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -803,9 +821,11 @@ mmix_function_profiler (FILE *stream ATTRIBUTE_UNUSED,
   sorry ("function_profiler support for MMIX");
 }
 
-/* SETUP_INCOMING_VARARGS.  */
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.  For the moment,
+   let's stick to pushing argument registers on the stack.  Later, we
+   can parse all arguments in registers, to improve performance.  */
 
-void
+static void
 mmix_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_farp,
 			     enum machine_mode mode,
 			     tree vartype,
@@ -2936,6 +2956,15 @@ mmix_intval (rtx x)
     }
 
   fatal_insn ("MMIX Internal: This is not a constant:", x);
+}
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
+static rtx
+mmix_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		       int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, MMIX_STRUCT_VALUE_REGNUM);
 }
 
 /*

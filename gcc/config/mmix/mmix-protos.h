@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mmix.c
-   Copyright (C) 2000, 2001, 2002, 2003  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -60,8 +60,6 @@ extern int mmix_function_value_regno_p (int);
 extern int mmix_data_alignment (tree, int);
 extern int mmix_constant_alignment (tree, int);
 extern int mmix_local_alignment (tree, int);
-extern void mmix_setup_incoming_varargs
-  (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 extern void mmix_asm_output_pool_prologue (FILE *, const char *, tree, int);
 extern void mmix_asm_output_aligned_common (FILE *, const char *, int, int);
 extern void mmix_asm_output_aligned_local (FILE *, const char *, int, int);
