@@ -1,5 +1,10 @@
 2005-01-08  Roger Sayle  <roger@eyesopen.com>
 
+	* tree.c (int_fits_type_p): Always honor integer constant
+	TYPE_MIN_VALUE and TYPE_MAX_VALUE if they exist.
+
+2005-01-08  Roger Sayle  <roger@eyesopen.com>
+
 	* ifcvt.c (find_if_case_1): Reinstate 2005-01-04 change, now that
 	the latent bug in rtl_delete_block has been resolved.
 
