@@ -8110,11 +8110,11 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 		{
 		  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
 				     VOIDmode, modifier);
-		  /* Don't go to both_summands if modifier
-		     says it's not right to return a PLUS.  */
-		  if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-		    goto binop2;
-		  goto both_summands;
+		  /* Return a PLUS if modifier says it's OK.  */
+		  if (modifier == EXPAND_SUM
+		      || modifier == EXPAND_INITIALIZER)
+		    return simplify_gen_binary (PLUS, mode, op0, op1);
+		  goto binop2;
 		}
 	      /* Use immed_double_const to ensure that the constant is
 		 truncated according to the mode of OP1, then sign extended
@@ -8161,55 +8161,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 			   VOIDmode, modifier);
       else
 	op1 = op0;
-
-      /* We come here from MINUS_EXPR when the second operand is a
-         constant.  */
-    both_summands:
-      /* Make sure any term that's a sum with a constant comes last.  */
-      if (GET_CODE (op0) == PLUS
-	  && CONSTANT_P (XEXP (op0, 1)))
-	{
-	  temp = op0;
-	  op0 = op1;
-	  op1 = temp;
-	}
-      /* If adding to a sum including a constant,
-	 associate it to put the constant outside.  */
-      if (GET_CODE (op1) == PLUS
-	  && CONSTANT_P (XEXP (op1, 1)))
-	{
-	  rtx constant_term = const0_rtx;
-
-	  temp = simplify_binary_operation (PLUS, mode, XEXP (op1, 0), op0);
-	  if (temp != 0)
-	    op0 = temp;
-	  /* Ensure that MULT comes first if there is one.  */
-	  else if (GET_CODE (op0) == MULT)
-	    op0 = gen_rtx_PLUS (mode, op0, XEXP (op1, 0));
-	  else
-	    op0 = gen_rtx_PLUS (mode, XEXP (op1, 0), op0);
-
-	  /* Let's also eliminate constants from op0 if possible.  */
-	  op0 = eliminate_constant_term (op0, &constant_term);
-
-	  /* CONSTANT_TERM and XEXP (op1, 1) are known to be constant, so
-	     their sum should be a constant.  Form it into OP1, since the
-	     result we want will then be OP0 + OP1.  */
-
-	  temp = simplify_binary_operation (PLUS, mode, constant_term,
-					    XEXP (op1, 1));
-	  if (temp != 0)
-	    op1 = temp;
-	  else
-	    op1 = gen_rtx_PLUS (mode, constant_term, XEXP (op1, 1));
-	}
-
-      /* Put a constant term last and put a multiplication first.  */
-      if (CONSTANT_P (op0) || GET_CODE (op1) == MULT)
-	temp = op1, op1 = op0, op0 = temp;
-
-      temp = simplify_binary_operation (PLUS, mode, op0, op1);
-      return temp ? temp : gen_rtx_PLUS (mode, op0, op1);
+      return simplify_gen_binary (PLUS, mode, op0, op1);
 
     case MINUS_EXPR:
       /* For initializers, we are allowed to return a MINUS of two
@@ -8256,7 +8208,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
       if (GET_CODE (op1) == CONST_INT)
 	{
 	  op1 = negate_rtx (mode, op1);
-	  goto both_summands;
+	  return simplify_gen_binary (PLUS, mode, op0, op1);
 	}
 
       goto binop2;

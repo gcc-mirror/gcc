@@ -1,3 +1,10 @@
+2003-09-02  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (expand_expr): The code following both_summands performs
+	the same task as simplify_gen_binary.  Replace all gotos to
+	both_summands with a call to simplify_gen_binary and delete the
+	now unused label.
+
 2003-09-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/7327
