@@ -1844,7 +1844,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	  HOST_WIDE_INT new = INTVAL (cmp1) + p_info->const_add;
 	  /* If modification of cmp1 caused overflow,
 	     we would get the wrong answer if we follow the usual path;
-	     thus, x > 0xffffffffu would turn into x > 0u.  */
+	     thus, x > 0xffffffffU would turn into x > 0U.  */
 	  if ((p_info->unsignedp
 	       ? (unsigned HOST_WIDE_INT) new > INTVAL (cmp1)
 	       : new > INTVAL (cmp1))
