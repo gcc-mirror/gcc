@@ -1,3 +1,8 @@
+2004-06-12  Bud Davis  <bdavis9659@comcast.net>
+
+	PR gfortran/12839
+	* io/write.c(write_float): format inf and nan IAW F2003.
+
 2004-06-09  Bud Davis  <bdavis9659@comcaste.net>
 
 	PR gfortran/14897
