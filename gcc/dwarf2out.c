@@ -8777,7 +8777,7 @@ rtl_for_decl_location (decl)
      gets fixed).  */
 
   /* Use DECL_RTL as the "location" unless we find something better.  */
-  rtl = DECL_RTL (decl);
+  rtl = DECL_RTL_IF_SET (decl);
 
   if (TREE_CODE (decl) == PARM_DECL)
     {
