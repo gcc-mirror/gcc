@@ -1,3 +1,7 @@
+2003-07-23  Dave Fluri  <dave.fluri@onlink.net>
+
+	* doc/extend.texi: Fixes to spelling, grammar, and diction.
+
 2003-07-21  H.J. Lu <hongjiu.lu@intel.com>
 
 	PR optimization/11599
