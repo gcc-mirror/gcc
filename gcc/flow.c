@@ -1450,9 +1450,10 @@ propagate_block (old, first, last, final, significant, bnum)
 	     merged into a following memory address.  */
 #ifdef AUTO_INC_DEC
 	  {
-	    register rtx x = PATTERN (insn);
+	    register rtx x = single_set (insn);
+
 	    /* Does this instruction increment or decrement a register?  */
-	    if (final && GET_CODE (x) == SET
+	    if (final && x != 0
 		&& GET_CODE (SET_DEST (x)) == REG
 		&& (GET_CODE (SET_SRC (x)) == PLUS
 		    || GET_CODE (SET_SRC (x)) == MINUS)
@@ -2588,7 +2589,7 @@ try_pre_increment_1 (insn)
 {
   /* Find the next use of this reg.  If in same basic block,
      make it do pre-increment or pre-decrement if appropriate.  */
-  rtx x = PATTERN (insn);
+  rtx x = single_set (insn);
   HOST_WIDE_INT amount = ((GET_CODE (SET_SRC (x)) == PLUS ? 1 : -1)
 		* INTVAL (XEXP (SET_SRC (x), 1)));
   int regno = REGNO (SET_DEST (x));
@@ -2598,8 +2599,7 @@ try_pre_increment_1 (insn)
       /* Don't do this if the reg dies, or gets set in y; a standard addressing
 	 mode would be better.  */
       && ! dead_or_set_p (y, SET_DEST (x))
-      && try_pre_increment (y, SET_DEST (PATTERN (insn)),
-			    amount))
+      && try_pre_increment (y, SET_DEST (x), amount))
     {
       /* We have found a suitable auto-increment
 	 and already changed insn Y to do it.
