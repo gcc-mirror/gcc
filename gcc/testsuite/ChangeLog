@@ -1,3 +1,9 @@
+2004-08-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vmx/cw-bug-2.c: Remove.
+	* gcc.dg/vmx/vprint-1.c: Remove.
+	* gcc.dg/vmx/vscan-1.c: Remove.
+
 2004-08-12  Devang patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-20040809-2.c: New test.
