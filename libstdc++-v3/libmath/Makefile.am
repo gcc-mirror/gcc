@@ -26,17 +26,10 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 noinst_LTLIBRARIES = libmath.la
 
 EXTRA_LONG_DOUBLE_yes = \
-	ccosl.c cexpl.c clog10l.c csinhl.c \
-	csqrtl.c ctanhl.c ctanl.c hypotl.c \
-	signbitl.c
+	csqrtl.c hypotl.c signbitl.c
 
 EXTRA_DIST = \
-	ccos.c ccosf.c ccosh.c ccoshf.c ccoshl.c \
-	cexp.c cexpf.c clog10.c clog10f.c \
-	csin.c csinf.c csinh.c csinhf.c \
-	csinl.c csqrt.c csqrtf.c  ctan.c ctanf.c ctanh.c \
-	ctanhf.c hypot.c hypotf.c\
-	atan2f.c expf.c \
+	csqrt.c csqrtf.c hypot.c hypotf.c atan2f.c expf.c \
 	$(EXTRA_LONG_DOUBLE_yes) 
 
 libmath_la_LIBADD = \

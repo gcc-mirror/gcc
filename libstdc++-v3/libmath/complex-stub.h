@@ -34,45 +34,9 @@
 #ifndef _COMPLEX_H
 #define _COMPLEX_H	1
 
-__complex__ double ccos (__complex__ double x);
-__complex__ float ccosf (__complex__ float x);
-__complex__ long double ccosl (__complex__ long double x);
-
-__complex__ double ccosh (__complex__ double x);
-__complex__ float ccoshf (__complex__ float x);
-__complex__ long double ccoshl (__complex__ long double x);
-
-__complex__ double cexp (__complex__ double x);
-__complex__ float cexpf (__complex__ float x);
-__complex__ long double cexpl (__complex__ long double x);
-
-__complex__ double clog10 (__complex__ double x);
-__complex__ float clog10f (__complex__ float x);
-__complex__ long double clog10l (__complex__ long double x);
-
-__complex__ double csin (__complex__ double x);
-__complex__ float csinf (__complex__ float x);
-__complex__ long double csinl (__complex__ long double x);
-
-__complex__ double csinh (__complex__ double x);
-__complex__ float csinhf (__complex__ float x);
-__complex__ long double csinhl (__complex__ long double x);
-
 __complex__ double csqrt (__complex__ double x);
 __complex__ float csqrtf (__complex__ float x);
 __complex__ long double csqrtl (__complex__ long double x);
-
-__complex__ double ctan (__complex__ double x);
-__complex__ float ctanf (__complex__ float x);
-__complex__ long double ctanl (__complex__ long double x);
-
-__complex__ double ctanh (__complex__ double x);
-__complex__ float ctanhf (__complex__ float x);
-__complex__ long double ctanhl (__complex__ long double x);
-
-double carg (__complex__ double x);
-float cargf (__complex__ float x);
-long double cargl (__complex__ long double x);
 
 #endif
 

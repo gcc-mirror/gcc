@@ -48,15 +48,4 @@ namespace std
   complex<FLT>
   sqrt(const complex<FLT>& __x)
   { return complex<FLT>(csqrt(__x._M_value)); }
-  
-  template<>
-  complex<FLT>
-  tan(const complex<FLT>& __x)
-  { return complex<FLT>(ctan(__x._M_value)); }
-  
-  template<>
-  complex<FLT>
-  tanh(const complex<FLT>& __x)
-  { return complex<FLT>(ctanh(__x._M_value)); }
-  
 } // namespace std
