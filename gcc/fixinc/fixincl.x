@@ -1117,6 +1117,46 @@ static const char* apzBadquotePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Bsd_Stdio_Attrs_Conflict fix
+ */
+tSCC zBsd_Stdio_Attrs_ConflictName[] =
+     "bsd_stdio_attrs_conflict";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zBsd_Stdio_Attrs_ConflictList[] =
+  "|stdio.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzBsd_Stdio_Attrs_ConflictMachs[] = {
+        "*-*-*bsd*",
+        "*-*-*darwin*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zBsd_Stdio_Attrs_ConflictSelect0[] =
+       "^#define[ \t]*vfscanf[ \t]*__svfscanf[ \t]*$";
+
+#define    BSD_STDIO_ATTRS_CONFLICT_TEST_CT  1
+static tTestDesc aBsd_Stdio_Attrs_ConflictTests[] = {
+  { TT_EGREP,    zBsd_Stdio_Attrs_ConflictSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Bsd_Stdio_Attrs_Conflict
+ */
+static const char* apzBsd_Stdio_Attrs_ConflictPatch[] = {
+    "format",
+    "#define _BSD_STRING(_BSD_X) _BSD_STRINGX(_BSD_X)\n\
+#define _BSD_STRINGX(_BSD_X) #_BSD_X\n\
+int vfscanf(FILE *, const char *, __builtin_va_list) __asm__ (_BSD_STRING(__USER_LABEL_PREFIX__) \"__svfscanf\");",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Broken_Assert_Stdio fix
  */
 tSCC zBroken_Assert_StdioName[] =
@@ -5871,6 +5911,7 @@ typedef enum {
     BAD_LVAL_FIXIDX,
     BAD_STRUCT_TERM_FIXIDX,
     BADQUOTE_FIXIDX,
+    BSD_STDIO_ATTRS_CONFLICT_FIXIDX,
     BROKEN_ASSERT_STDIO_FIXIDX,
     BROKEN_ASSERT_STDLIB_FIXIDX,
     BROKEN_CABS_FIXIDX,
@@ -6121,6 +6162,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzBadquoteMachs,
      BADQUOTE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aBadquoteTests,   apzBadquotePatch, 0 },
+
+  {  zBsd_Stdio_Attrs_ConflictName,    zBsd_Stdio_Attrs_ConflictList,
+     apzBsd_Stdio_Attrs_ConflictMachs,
+     BSD_STDIO_ATTRS_CONFLICT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aBsd_Stdio_Attrs_ConflictTests,   apzBsd_Stdio_Attrs_ConflictPatch, 0 },
 
   {  zBroken_Assert_StdioName,    zBroken_Assert_StdioList,
      apzBroken_Assert_StdioMachs,
