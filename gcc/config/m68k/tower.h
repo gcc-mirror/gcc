@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
 #undef IMMEDIATE_PREFIX
 #define IMMEDIATE_PREFIX "&"
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 /* We do not want leading underscores.  */
 

@@ -68,18 +68,18 @@ static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 
 
 /* Alignment to use for loops and jumps */
-/* Specify power of two alignment used for loops. */
+/* Specify power of two alignment used for loops.  */
 const char *m68k_align_loops_string;
-/* Specify power of two alignment used for non-loop jumps. */
+/* Specify power of two alignment used for non-loop jumps.  */
 const char *m68k_align_jumps_string;
-/* Specify power of two alignment used for functions. */
+/* Specify power of two alignment used for functions.  */
 const char *m68k_align_funcs_string;
 
-/* Specify power of two alignment used for loops. */
+/* Specify power of two alignment used for loops.  */
 int m68k_align_loops;
-/* Specify power of two alignment used for non-loop jumps. */
+/* Specify power of two alignment used for non-loop jumps.  */
 int m68k_align_jumps;
-/* Specify power of two alignment used for functions. */
+/* Specify power of two alignment used for functions.  */
 int m68k_align_funcs;
 
 /* Nonzero if the last compare/test insn had FP operands.  The
@@ -290,7 +290,7 @@ m68k_output_function_prologue (stream, size)
 
       int i;
 
-      /* Undo the work from above. */
+      /* Undo the work from above.  */
       for (i = 0; i< 16; i++)
         if (mask & (1 << i))
           fprintf (stream, "\tmove.l %s,-(sp)\n", reg_names[15 - i]);
@@ -470,7 +470,7 @@ m68k_output_function_prologue (stream, size)
 	    {
 	      if (!TARGET_5200)
 		{
-		  /* asm_fprintf() cannot handle %. */
+		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 		  asm_fprintf (stream, "\tsubq.w %0I%d,%Rsp\n", fsize + 4);
 #else
@@ -479,7 +479,7 @@ m68k_output_function_prologue (stream, size)
 		}
 	      else
 		{
-		  /* asm_fprintf() cannot handle %. */
+		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 		  asm_fprintf (stream, "\tsubq.l %0I%d,%Rsp\n", fsize + 4);
 #else
@@ -490,8 +490,8 @@ m68k_output_function_prologue (stream, size)
 	  else if (fsize + 4 <= 16 && TARGET_CPU32)
 	    {
 	      /* On the CPU32 it is faster to use two subqw instructions to
-		 subtract a small integer (8 < N <= 16) to a register. */
-	      /* asm_fprintf() cannot handle %. */
+		 subtract a small integer (8 < N <= 16) to a register.  */
+	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tsubq.w %0I8,%Rsp\n\tsubq.w %0I%d,%Rsp\n",
 			   fsize + 4 - 8);
@@ -505,7 +505,7 @@ m68k_output_function_prologue (stream, size)
 	  if (TARGET_68040)
 	    {
 	      /* Adding negative number is faster on the 68040.  */
-	      /* asm_fprintf() cannot handle %. */
+	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
 #else
@@ -523,7 +523,7 @@ m68k_output_function_prologue (stream, size)
 	}
       else
 	{
-	/* asm_fprintf() cannot handle %. */
+	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", - (fsize + 4));
 #else
@@ -649,7 +649,7 @@ m68k_output_function_prologue (stream, size)
 
       int i;
 
-      /* Undo the work from above. */
+      /* Undo the work from above.  */
       for (i = 0; i< 16; i++)
         if (mask & (1 << i))
 	  {
@@ -951,11 +951,11 @@ m68k_output_function_epilogue (stream, size)
       /* Restore each separately in the same order moveml does.
          Using two movel instructions instead of a single moveml
          is about 15% faster for the 68020 and 68030 at no expense
-         in code size. */
+         in code size.  */
 
       int i;
 
-      /* Undo the work from above. */
+      /* Undo the work from above.  */
       for (i = 0; i< 16; i++)
         if (mask & (1 << i))
           {
@@ -1230,7 +1230,7 @@ m68k_output_function_epilogue (stream, size)
   offset = foffset + nregs * 4;
   /* FIXME : leaf_function_p below is too strong.
      What we really need to know there is if there could be pending
-     stack adjustment needed at that point. */
+     stack adjustment needed at that point.  */
   restore_from_sp = ! frame_pointer_needed
 	     || (! current_function_calls_alloca && leaf_function_p ());
   if (offset + fsize >= 0x8000
@@ -1249,11 +1249,11 @@ m68k_output_function_epilogue (stream, size)
       /* Restore each separately in the same order moveml does.
          Using two movel instructions instead of a single moveml
          is about 15% faster for the 68020 and 68030 at no expense
-         in code size. */
+         in code size.  */
 
       int i;
 
-      /* Undo the work from above. */
+      /* Undo the work from above.  */
       for (i = 0; i< 16; i++)
         if (mask & (1 << i))
           {
@@ -1440,8 +1440,8 @@ m68k_output_function_epilogue (stream, size)
       else if (fsize + 4 <= 16 && TARGET_CPU32)
 	{
 	  /* On the CPU32 it is faster to use two addqw instructions to
-	     add a small integer (8 < N <= 16) to a register. */
-	  /* asm_fprintf() cannot handle %. */
+	     add a small integer (8 < N <= 16) to a register.  */
+	  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\taddq.w %0I8,%Rsp\n\taddq.w %0I%d,%Rsp\n",
 		       fsize + 4 - 8);
@@ -1456,7 +1456,7 @@ m68k_output_function_epilogue (stream, size)
 	{
 	  if (TARGET_68040)
 	    { 
-	      /* asm_fprintf() cannot handle %. */
+	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
 #else
@@ -1474,7 +1474,7 @@ m68k_output_function_epilogue (stream, size)
 	}
       else
 	{
-	/* asm_fprintf() cannot handle %. */
+	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", fsize + 4);
 #else
@@ -1635,7 +1635,7 @@ output_dbcc_and_branch (operands)
     }
 
   /* If the decrement is to be done in SImode, then we have
-     to compensate for the fact that dbcc decrements in HImode. */
+     to compensate for the fact that dbcc decrements in HImode.  */
   switch (GET_MODE (operands[0]))
     {
       case SImode:
@@ -1915,7 +1915,7 @@ symbolic_operand (op, mode)
     }
 }
 
-/* Check for sign_extend or zero_extend.  Used for bit-count operands. */
+/* Check for sign_extend or zero_extend.  Used for bit-count operands.  */
 
 int
 extend_operator(x, mode)
@@ -2043,12 +2043,12 @@ const_method (constant)
   if (USE_MOVQ (i))
     return MOVQ;
 
-  /* The Coldfire doesn't have byte or word operations. */
+  /* The Coldfire doesn't have byte or word operations.  */
   /* FIXME: This may not be useful for the m68060 either */
   if (!TARGET_5200) 
     {
       /* if -256 < N < 256 but N is not in range for a moveq
-	 N^ff will be, so use moveq #N^ff, dreg; not.b dreg. */
+	 N^ff will be, so use moveq #N^ff, dreg; not.b dreg.  */
       if (USE_MOVQ (i ^ 0xff))
 	return NOTB;
       /* Likewise, try with not.w */
@@ -2622,7 +2622,7 @@ compadr:
 	  if (addreg0 || addreg1)
 	    abort ();
 
-	  /* Only the middle reg conflicts; simply put it last. */
+	  /* Only the middle reg conflicts; simply put it last.  */
 	  output_asm_insn (singlemove_string (operands), operands);
 	  output_asm_insn (singlemove_string (latehalf), latehalf);
 	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
@@ -2808,7 +2808,7 @@ output_addsi3 (operands)
 	}
       /* On the CPU32 it is faster to use two addql instructions to
 	 add a small integer (8 < N <= 16) to a register.
-	 Likewise for subql. */
+	 Likewise for subql.  */
       if (TARGET_CPU32 && REG_P (operands[0]))
 	{
 	  if (INTVAL (operands[2]) > 8
@@ -2945,7 +2945,7 @@ notice_update_cc (exp, insn)
 	/* (SET r1 (ZERO_EXTEND r2)) on this machine
 	   ends with a move insn moving r2 in r2's mode.
 	   Thus, the cc's are set for r2.
-	   This can set N bit spuriously. */
+	   This can set N bit spuriously.  */
 	cc_status.flags |= CC_NOT_NEGATIVE; 
 
       default:
@@ -3035,7 +3035,7 @@ output_move_const_single (operands)
    The value, anded with 0xff, gives the code to use in fmovecr
    to get the desired constant.  */
 
-/* This code has been fixed for cross-compilation. */
+/* This code has been fixed for cross-compilation.  */
   
 static int inited_68881_table = 0;
 
@@ -3062,7 +3062,7 @@ static const int codes_68881[7] = {
 REAL_VALUE_TYPE values_68881[7];
 
 /* Set up values_68881 array by converting the decimal values
-   strings_68881 to binary.   */
+   strings_68881 to binary.  */
 
 void
 init_68881_table ()
@@ -3094,7 +3094,7 @@ standard_68881_constant_p (x)
 #endif
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
-     used at all on those chips. */
+     used at all on those chips.  */
   if (TARGET_68040 || TARGET_68060)
     return 0;
 
@@ -3167,7 +3167,7 @@ floating_exact_log2 (x)
 /* Return nonzero if X, a CONST_DOUBLE, has a value that we can get
    from the Sun FPA's constant RAM.
    The value returned, anded with 0x1ff, gives the code to use in fpmove
-   to get the desired constant. */
+   to get the desired constant.  */
 
 static int inited_FPA_table = 0;
 
@@ -3262,7 +3262,7 @@ static const int codes_FPA[38] = {
 
 REAL_VALUE_TYPE values_FPA[38];
 
-/* This code has been fixed for cross-compilation. */
+/* This code has been fixed for cross-compilation.  */
 
 void
 init_FPA_table ()
@@ -3834,7 +3834,7 @@ print_operand_address (file, addr)
 	  {
 #ifdef MOTOROLA
 #ifdef SGS
-	    /* Many SGS assemblers croak on size specifiers for constants. */
+	    /* Many SGS assemblers croak on size specifiers for constants.  */
 	    fprintf (file, "%d", (int) INTVAL (addr));
 #else
 	    fprintf (file, "%d.w", (int) INTVAL (addr));

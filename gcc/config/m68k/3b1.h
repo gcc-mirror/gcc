@@ -167,7 +167,7 @@ do { long l;					\
 
 #define ASM_NO_SKIP_IN_TEXT 1
 
-/* The beginnings of sdb support... */
+/* The beginnings of sdb support...  */
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
   do {	fprintf (FILE, "\tfile\t");		\
@@ -180,7 +180,7 @@ do { long l;					\
 	   (sdb_begin_function_line		\
 	    ? (LINENO) - sdb_begin_function_line : 1))
 
-/* Yet another null terminated string format. */
+/* Yet another null terminated string format.  */
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register int sp = 0, lp = 0; \
@@ -380,7 +380,7 @@ do { long l;					\
    we want.  This difference can be accommodated by making the assembler
    define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
    string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
-   macro. */
+   macro.  */
 
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 { if (switch_table_difference_label_flag)				\

@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68k.h"
 
-/* See m68k.h.  7 means 68020 with 68881. */
+/* See m68k.h.  7 means 68020 with 68881.  */
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif

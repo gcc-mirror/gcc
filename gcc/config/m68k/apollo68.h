@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Target switches for the Apollo is the same as in m68k.h, except
-   there is no Sun FPA. */
+   there is no Sun FPA.  */
 
 #undef TARGET_SWITCHES
 #define TARGET_SWITCHES  \
@@ -138,7 +138,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify how to pad function arguments.
    Arguments are not padded at all; the stack is kept aligned on long
-   boundaries. */
+   boundaries.  */
 
 #define FUNCTION_ARG_PADDING(mode, size) none
 
@@ -152,7 +152,7 @@ Boston, MA 02111-1307, USA.  */
    a scalar value cannot be returned in registers.
    For Apollo, anything larger than one integer register is returned
    using the structure-value mechanism, i.e. objects of DFmode are
-   returned that way. */
+   returned that way.  */
 
 #define RETURN_IN_MEMORY(type) \
   (TYPE_MODE (type) == BLKmode \

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  For the
    Amiga, these definitions match those of the native AT&T compiler.  Note
    that we override the definition in m68kv4.h, where SVR4 is defined and
-   AMIX isn't. */
+   AMIX isn't.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -95,7 +95,7 @@ do {									\
 /* This definition of ASM_OUTPUT_ASCII is the same as the one in m68k/sgs.h,
    which has been overridden by the one in svr4.h.  However, we can't use
    the one in svr4.h because the amix assembler croaks on some of the
-   strings that it emits (such as .string "\"%s\"\n"). */
+   strings that it emits (such as .string "\"%s\"\n").  */
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\

@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
 
-/* Lynx uses d2 and d3 as scratch registers. */
+/* Lynx uses d2 and d3 as scratch registers.  */
 #undef CALL_USED_REGISTERS
 #define CALL_USED_REGISTERS \
  {1, 1, 1, 1, 0, 0, 0, 0,   \

@@ -25,19 +25,19 @@ Boston, MA 02111-1307, USA.  */
 
 #define MOTOROLA
 
-/* Get generic m68k definitions. */
+/* Get generic m68k definitions.  */
 
 #include "m68k/m68k.h"
 #include "m68k/m68kemb.h"
 
 /* Default processor type is a (pure) 68040 with 68881 emulation using
-   the floating-point support package. */
+   the floating-point support package.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_68040_ONLY|MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* Options passed to CPP, GAS, CC1 and CC1PLUS. We override
-   m68k-none.h for consistency with TARGET_DEFAULT. */
+   m68k-none.h for consistency with TARGET_DEFAULT.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC \
@@ -59,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
  "%{m68000:%{!m68881:-msoft-float }}%{m68302:-m68000}%{m68332:-m68020 -mnobitfield %{!m68881:-msoft-float}}%{!m68000:%{!mc68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:-m68040}}}}}}}}}}"
 
 
-/* Get processor-independent pSOS definitions. */
+/* Get processor-independent pSOS definitions.  */
 
 #include "psos.h"
 

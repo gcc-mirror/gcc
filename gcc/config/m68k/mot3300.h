@@ -235,11 +235,11 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* If TARGET_68881, return SF and DF values in fp0 instead of d0.  */
-/* NYI: If FP=M68881U return SF and DF values in d0. */
+/* NYI: If FP=M68881U return SF and DF values in d0.  */
 /* NYI: If -mold return pointer in a0 and d0 */
 
 #undef FUNCTION_VALUE
-/* sysV68 (brain damaged) cc convention support. */
+/* sysV68 (brain damaged) cc convention support.  */
 #define FUNCTION_VALUE(VALTYPE,FUNC) \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881 	\
    ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)		\
@@ -262,7 +262,7 @@ Boston, MA 02111-1307, USA.  */
    d0 may be used, and fp0 as well if -msoft-float is not specified.  */
 
 #undef FUNCTION_VALUE_REGNO_P
-/* sysV68 (brain damaged) cc convention support. */
+/* sysV68 (brain damaged) cc convention support.  */
 #define FUNCTION_VALUE_REGNO_P(N) \
  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
 
@@ -399,7 +399,7 @@ do { long l;					\
 /* The beginnings of sdb support...  */
 
 /* Undefining these will allow `output_file_directive' (in toplev.c)
-   to default to the right thing. */
+   to default to the right thing.  */
 #undef ASM_OUTPUT_MAIN_SOURCE_FILENAME
 #ifndef USE_GAS
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
@@ -475,7 +475,7 @@ do { long l;					\
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
     asm_fprintf (FILE, "%L%s%d:\n", PREFIX, NUM)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
@@ -736,7 +736,7 @@ do {(CUM).offset = 0;\
    tell g++.c about that.  */
 #define ALT_LIBM	"-lm881"
 
-#if (TARGET_DEFAULT & MASK_68881)      /* The default configuration has a 6888[12] FPU. */
+#if (TARGET_DEFAULT & MASK_68881)      /* The default configuration has a 6888[12] FPU.  */
 #define MATH_LIBRARY	"-lm881"
 #endif
 
@@ -752,7 +752,7 @@ do {(CUM).offset = 0;\
       _cleanup ();						\
     } while (0)
 
-/* FINALIZE_TRAMPOLINE clears the instruction cache. */
+/* FINALIZE_TRAMPOLINE clears the instruction cache.  */
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)	\

@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is (not really) BSD, so (but) it wants DBX format.  */
 #define DBX_DEBUGGING_INFO
 
-/* Brain damage. */
+/* Brain damage.  */
 #define SCCS_DIRECTIVE
 
 /* Specify how to pad function arguments.

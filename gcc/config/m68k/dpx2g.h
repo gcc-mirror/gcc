@@ -10,7 +10,7 @@
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}\
   huge.o%s"
 
-/* Gas understands dollars in labels. */
+/* Gas understands dollars in labels.  */
 #undef NO_DOLLAR_IN_LABEL
 /* GAS does not understand .ident so don't output anything for #ident.  */
 #undef ASM_OUTPUT_IDENT
