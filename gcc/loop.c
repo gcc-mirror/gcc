@@ -354,6 +354,7 @@ static rtx loop_insn_sink_or_swim PARAMS((const struct loop *, rtx));
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 static void loop_delete_insns PARAMS ((rtx, rtx));
 static HOST_WIDE_INT remove_constant_addition PARAMS ((rtx *));
+static rtx gen_load_of_final_value PARAMS ((rtx, rtx));
 void debug_ivs PARAMS ((const struct loop *));
 void debug_iv_class PARAMS ((const struct iv_class *));
 void debug_biv PARAMS ((const struct induction *));
@@ -4798,7 +4799,8 @@ loop_givs_rescan (loop, bl, reg_map)
 			       v->mult_val, v->add_val, v->dest_reg);
       else if (v->final_value)
 	loop_insn_sink_or_swim (loop,
-				gen_move_insn (v->dest_reg, v->final_value));
+				gen_load_of_final_value (v->dest_reg,
+							 v->final_value));
 
       if (loop_dump_stream)
 	{
@@ -5155,8 +5157,9 @@ strength_reduce (loop, flags)
 	     value, so we don't need another one.  We can't calculate the
 	     proper final value for such a biv here anyways.  */
 	  if (bl->final_value && ! bl->reversed)
-	      loop_insn_sink_or_swim (loop, gen_move_insn
-				      (bl->biv->dest_reg, bl->final_value));
+	      loop_insn_sink_or_swim (loop,
+				      gen_load_of_final_value (bl->biv->dest_reg,
+							       bl->final_value));
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "Reg %d: biv eliminated\n",
@@ -5165,8 +5168,8 @@ strength_reduce (loop, flags)
       /* See above note wrt final_value.  But since we couldn't eliminate
 	 the biv, we must set the value after the loop instead of before.  */
       else if (bl->final_value && ! bl->reversed)
-	loop_insn_sink (loop, gen_move_insn (bl->biv->dest_reg,
-					     bl->final_value));
+	loop_insn_sink (loop, gen_load_of_final_value (bl->biv->dest_reg,
+						       bl->final_value));
     }
 
   /* Go through all the instructions in the loop, making all the
@@ -8361,7 +8364,7 @@ check_dbra_loop (loop, insn_count)
 	      if ((REGNO_LAST_UID (bl->regno) != INSN_UID (first_compare))
 		  || ! bl->init_insn
 		  || REGNO_FIRST_UID (bl->regno) != INSN_UID (bl->init_insn))
-		loop_insn_sink (loop, gen_move_insn (reg, final_value));
+		loop_insn_sink (loop, gen_load_of_final_value (reg, final_value));
 
 	      /* Delete compare/branch at end of loop.  */
 	      delete_related_insns (PREV_INSN (loop_end));
@@ -10352,6 +10355,21 @@ loop_insn_sink (loop, pattern)
   return loop_insn_emit_before (loop, 0, loop->sink, pattern);
 }
 
+/* bl->final_value can be eighter general_operand or PLUS of general_operand
+   and constant.  Emit sequence of intructions to load it into REG  */
+static rtx
+gen_load_of_final_value (reg, final_value)
+     rtx reg, final_value;
+{
+  rtx seq;
+  start_sequence ();
+  final_value = force_operand (final_value, reg);
+  if (final_value != reg)
+    emit_move_insn (reg, final_value);
+  seq = gen_sequence ();
+  end_sequence ();
+  return seq;
+}
 
 /* If the loop has multiple exits, emit insn for PATTERN before the
    loop to ensure that it will always be executed no matter how the
