@@ -141,6 +141,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=arm8:-D__ARM_ARCH_4__} \
 %{march=arm810:-D__ARM_ARCH_4__} \
 %{march=arm9:-D__ARM_ARCH_4T__} \
+%{march=arm920:-D__ARM_ARCH_4__} \
+%{march=arm920t:-D__ARM_ARCH_4T__} \
 %{march=arm9tdmi:-D__ARM_ARCH_4T__} \
 %{march=strongarm:-D__ARM_ARCH_4__} \
 %{march=strongarm110:-D__ARM_ARCH_4__} \
@@ -171,6 +173,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=arm8:-D__ARM_ARCH_4__} \
  %{mcpu=arm810:-D__ARM_ARCH_4__} \
  %{mcpu=arm9:-D__ARM_ARCH_4T__} \
+ %{mcpu=arm920:-D__ARM_ARCH_4__} \
+ %{mcpu=arm920t:-D__ARM_ARCH_4T__} \
  %{mcpu=arm9tdmi:-D__ARM_ARCH_4T__} \
  %{mcpu=strongarm:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
@@ -317,7 +321,7 @@ function tries to return. */
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
 /* Note: TARGET_SHORT_BY_BYTES is really a misnomer.  What it means is
-   that short values sould not be accessed using word load instructions
+   that short values should not be accessed using word load instructions
    as there is a possibility that they may not be word aligned and this
    would generate an MMU fault.  On processors which do not have a 16 bit
    load instruction therefore, short values must be loaded by individual
