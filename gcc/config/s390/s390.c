@@ -182,6 +182,12 @@ s390_match_ccmode_set (set, req_mode)
 	  && req_mode != CCSRmode && req_mode != CCURmode)
         return 0;
       break;
+
+    case CCAPmode:
+    case CCANmode:
+      if (req_mode != CCAmode)
+        return 0;
+      break;
  
     default:
       abort ();
@@ -274,6 +280,9 @@ s390_select_ccmode (code, op0, op1)
     {
       case EQ:
       case NE:
+	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	    && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op0, 1)), 'K')) 
+	  return CCAPmode;
 	if (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
 	    || GET_CODE (op1) == NEG)
 	  return CCLmode;
@@ -306,6 +315,14 @@ s390_select_ccmode (code, op0, op1)
       case LT:
       case GE:
       case GT:
+	  if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op0, 1)), 'K')) 
+            {
+	      if (INTVAL (XEXP((op0), 1)) < 0)
+	        return CCANmode;
+              else
+	        return CCAPmode;
+	    }
       case UNORDERED:
       case ORDERED:
       case UNEQ:
@@ -456,6 +473,34 @@ s390_branch_condition_mask (code)
         case GTU:	return CC1;
         case LEU:	return CC0 | CC2;
         case GEU:	return CC0 | CC1;
+	default:
+	  abort ();
+        }
+      break;
+
+    case CCAPmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0;
+        case NE:	return CC1 | CC2 | CC3;
+        case LT:	return CC1 | CC3;
+        case GT:	return CC2;
+        case LE:	return CC0 | CC1 | CC3;
+        case GE:	return CC0 | CC2;
+	default:
+	  abort ();
+        }
+      break;
+
+    case CCANmode:
+      switch (GET_CODE (code))
+        {
+        case EQ:	return CC0;
+        case NE:	return CC1 | CC2 | CC3;
+        case LT:	return CC1;
+        case GT:	return CC2 | CC3;
+        case LE:	return CC0 | CC1;
+        case GE:	return CC0 | CC2 | CC3;
 	default:
 	  abort ();
         }
@@ -758,11 +803,6 @@ optimization_options (level, size)
      int level ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
-#ifdef HAVE_decrement_and_branch_on_count
-  /* When optimizing, enable use of BRCT instruction.  */
-  if (level >= 1)
-      flag_branch_on_count_reg = 1;
-#endif
 }
 
 void
@@ -2605,12 +2645,8 @@ static void
 s390_split_branches ()
 {
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-  rtx insn, pat, label, target, jump, tmp;
-
-  /* In 64-bit mode we can jump +- 4GB.  */
-
-  if (TARGET_64BIT)
-    return;
+  rtx insn, pat, tmp, target;
+  rtx *label;
 
   /* We need correct insn addresses.  */
 
@@ -2624,62 +2660,61 @@ s390_split_branches ()
 	continue;
 
       pat = PATTERN (insn);
-      if (GET_CODE (pat) != SET)
+      if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+	pat = XVECEXP (pat, 0, 0);
+      if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
 	continue;
 
       if (GET_CODE (SET_SRC (pat)) == LABEL_REF) 
 	{
-	  label = SET_SRC (pat);
+	  label = &SET_SRC (pat);
 	} 
       else if (GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE) 
 	{
 	  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == LABEL_REF) 
-	    label = XEXP (SET_SRC (pat), 1);
+	    label = &XEXP (SET_SRC (pat), 1);
           else if (GET_CODE (XEXP (SET_SRC (pat), 2)) == LABEL_REF) 
-            label = XEXP (SET_SRC (pat), 2);
+            label = &XEXP (SET_SRC (pat), 2);
 	  else
 	    continue;
         }
       else
 	continue;
 
-      if (get_attr_length (insn) == 4)
+      if (get_attr_length (insn) <= (TARGET_64BIT ? 6 : 4))
 	continue;
 
       regs_ever_live[RETURN_REGNUM] = 1;
 
-      if (flag_pic)
+      if (TARGET_64BIT)
 	{
-	  target = gen_rtx_UNSPEC (SImode, gen_rtvec (1, label), 100);
-	  target = gen_rtx_CONST (SImode, target);
-	  target = force_const_mem (SImode, target);
-	  jump = gen_rtx_REG (Pmode, BASE_REGISTER);
-	  jump = gen_rtx_PLUS (Pmode, jump, temp_reg);
+	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, *label), insn);
+	  INSN_ADDRESSES_NEW (tmp, -1);
+
+	  target = temp_reg;
+	}
+      else if (!flag_pic)
+	{
+	  tmp = force_const_mem (Pmode, *label);
+	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
+	  INSN_ADDRESSES_NEW (tmp, -1);
+
+	  target = temp_reg;
 	}
       else
 	{
-	  target = force_const_mem (Pmode, label);
-	  jump = temp_reg;
+	  tmp = gen_rtx_UNSPEC (SImode, gen_rtvec (1, *label), 100);
+	  tmp = gen_rtx_CONST (SImode, tmp);
+	  tmp = force_const_mem (SImode, tmp);
+	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
+	  INSN_ADDRESSES_NEW (tmp, -1);
+
+	  target = gen_rtx_REG (Pmode, BASE_REGISTER);
+	  target = gen_rtx_PLUS (Pmode, target, temp_reg);
 	}
 
-      if (GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
-	{
-	  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == LABEL_REF)
-	    jump = gen_rtx_IF_THEN_ELSE (VOIDmode, XEXP (SET_SRC (pat), 0),
-					 jump, pc_rtx);
-	  else
-	    jump = gen_rtx_IF_THEN_ELSE (VOIDmode, XEXP (SET_SRC (pat), 0),
-					 pc_rtx, jump);
-	}
-
-      tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
-      INSN_ADDRESSES_NEW (tmp, -1);
-
-      tmp = emit_jump_insn_before (gen_rtx_SET (VOIDmode, pc_rtx, jump), insn);
-      INSN_ADDRESSES_NEW (tmp, -1);
-
-      remove_insn (insn);
-      insn = tmp;
+      if (!validate_change (insn, label, target, 0))
+	abort ();
     }
 }
 
@@ -3177,6 +3212,9 @@ s390_chunkify_pool ()
       else if (GET_CODE (insn) == JUMP_INSN) 
 	{
           rtx pat = PATTERN (insn);
+	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+	    pat = XVECEXP (pat, 0, 0);
+
           if (GET_CODE (pat) == SET) 
             {
 	      rtx label = 0;
