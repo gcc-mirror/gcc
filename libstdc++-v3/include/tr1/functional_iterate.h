@@ -28,7 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file function_iterate.h
+/** @file functional_iterate.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
@@ -390,7 +390,101 @@ template<typename _Res, typename _Class _GLIBCXX_COMMA_SHIFTED
   };
 #endif
 
-template<typename _Signature, typename _Functor> class _Function_handler;
+#if _GLIBCXX_NUM_ARGS > 0
+namespace placeholders
+{
+namespace
+{
+   _Placeholder<_GLIBCXX_NUM_ARGS> _GLIBCXX_JOIN(_,_GLIBCXX_NUM_ARGS);
+}
+}
+#endif
+
+template<typename _Functor _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+class _Bind<_Functor(_GLIBCXX_TEMPLATE_ARGS)>
+  : public _Weak_result_type<_Functor>
+{
+  typedef _Bind __self_type;
+
+  _Functor _M_f;
+  _GLIBCXX_BIND_MEMBERS
+
+ public:
+#if _GLIBCXX_NUM_ARGS == 0
+  explicit
+#endif
+  _Bind(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+    : _M_f(__f) _GLIBCXX_COMMA _GLIBCXX_BIND_MEMBERS_INIT { }
+
+#define _GLIBCXX_BIND_REPEAT_HEADER <tr1/bind_iterate.h>
+#include <tr1/bind_repeat.h>
+#undef _GLIBCXX_BIND_REPEAT_HEADER
+};
+
+template<typename _Result, typename _Functor
+         _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+class _Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>
+{
+  _Functor _M_f;
+  _GLIBCXX_BIND_MEMBERS
+
+ public:
+  typedef _Result result_type;
+
+#if _GLIBCXX_NUM_ARGS == 0
+  explicit
+#endif
+  _Bind_result(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+    : _M_f(__f) _GLIBCXX_COMMA _GLIBCXX_BIND_MEMBERS_INIT { }
+
+#define _GLIBCXX_BIND_REPEAT_HEADER <tr1/bind_iterate.h>
+#define _GLIBCXX_BIND_HAS_RESULT_TYPE
+#include <tr1/bind_repeat.h>
+#undef _GLIBCXX_BIND_HAS_RESULT_TYPE
+#undef _GLIBCXX_BIND_REPEAT_HEADER
+};
+
+// Handle member pointers
+template<typename _Tp, typename _Class _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+inline _Bind<_Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
+bind(_Tp _Class::* __pm _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+{
+  typedef _Bind<_Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)> __result_type;
+  return __result_type(_Mem_fn<_Tp _Class::*>(__pm)
+                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
+}
+
+template<typename _Result, typename _Tp, typename _Class
+         _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+inline _Bind_result<_Result, _Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
+bind(_Tp _Class::* __pm _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+{
+  typedef _Bind_result<_Result, _Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
+    __result_type;
+  return __result_type(_Mem_fn<_Tp _Class::*>(__pm)
+                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
+}
+
+// Handle arbitrary function objects
+template<typename _Functor _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+inline _Bind<_Functor(_GLIBCXX_TEMPLATE_ARGS)>
+bind(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+{
+  typedef _Bind<_Functor(_GLIBCXX_TEMPLATE_ARGS)> __result_type;
+  return __result_type(__f _GLIBCXX_COMMA _GLIBCXX_ARGS);
+}
+
+template<typename _Result, typename _Functor
+         _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
+inline
+typename __enable_if<_Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>,
+                     !is_member_pointer<_Functor>::value>::__type
+bind(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
+{
+  typedef _Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>
+    __result_type;
+  return __result_type(__f _GLIBCXX_COMMA _GLIBCXX_ARGS);
+}
 
 template<typename _Res, typename _Functor _GLIBCXX_COMMA
          _GLIBCXX_TEMPLATE_PARAMS>

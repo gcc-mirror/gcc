@@ -40,6 +40,7 @@
 #include <bits/cpp_type_traits.h>
 #include <string>               // for std::tr1::hash
 #include <cstdlib>              // for std::abort
+#include <tr1/tuple>
 
 namespace std
 {
@@ -452,6 +453,17 @@ namespace tr1
              == sizeof(__check_const<_Tp>(__get_ref<_Tp>(), (_Tp*)0)))>
       { };
 
+    template<typename _Signature>
+      struct result;
+
+    template<typename _CVMem, typename _Tp>
+      struct result<_CVMem(_Tp)>
+        : public _Result_type<_Tp> { };
+
+    template<typename _CVMem, typename _Tp>
+      struct result<_CVMem(_Tp&)>
+        : public _Result_type<_Tp> { };
+
     explicit _Mem_fn(_Res _Class::*__pm) : __pm(__pm) { }
 
     // Handle objects
@@ -489,6 +501,201 @@ namespace tr1
     {
       return _Mem_fn<_Tp _Class::*>(__pm);
     }
+
+  /**
+   *  @brief Determines if the given type _Tp is a function object
+   *  should be treated as a subexpression when evaluating calls to
+   *  function objects returned by bind(). [TR1 3.6.1]
+   */
+  template<typename _Tp>
+    struct is_bind_expression
+    {
+      static const bool value = false;
+    };
+
+  /**
+   *  @brief Determines if the given type _Tp is a placeholder in a
+   *  bind() expression and, if so, which placeholder it is. [TR1 3.6.2]
+   */
+  template<typename _Tp>
+    struct is_placeholder
+    {
+      static const int value = 0;
+    };
+
+  /**
+   *  @if maint
+   *  The type of placeholder objects defined by libstdc++.
+   *  @endif
+   */
+  template<int _Num> struct _Placeholder { };
+
+  /**
+   *  @if maint
+   *  Partial specialization of is_placeholder that provides the placeholder
+   *  number for the placeholder objects defined by libstdc++.
+   *  @endif
+   */
+  template<int _Num>
+    struct is_placeholder<_Placeholder<_Num> >
+    {
+      static const int value = _Num;
+    };
+
+  /**
+   *  @if maint
+   *  Maps an argument to bind() into an actual argument to the bound
+   *  function object [TR1 3.6.3/5]. Only the first parameter should
+   *  be specified: the rest are used to determine among the various
+   *  implementations. Note that, although this class is a function
+   *  object, isn't not entirely normal because it takes only two
+   *  parameters regardless of the number of parameters passed to the
+   *  bind expression. The first parameter is the bound argument and
+   *  the second parameter is a tuple containing references to the
+   *  rest of the arguments.
+   *  @endif
+   */
+  template<typename _Arg,
+           bool _IsBindExp = is_bind_expression<_Arg>::value,
+           bool _IsPlaceholder = (is_placeholder<_Arg>::value > 0)>
+    class _Mu;
+
+  /**
+   *  @if maint
+   *  If the argument is reference_wrapper<_Tp>, returns the
+   *  underlying reference. [TR1 3.6.3/5 bullet 1]
+   *  @endif
+   */
+  template<typename _Tp>
+    class _Mu<reference_wrapper<_Tp>, false, false>
+    {
+    public:
+      typedef _Tp& result_type;
+
+      /* Note: This won't actually work for const volatile
+       * reference_wrappers, because reference_wrapper::get() is const
+       * but not volatile-qualified. This might be a defect in the TR.
+       */
+      template<typename _CVRef, typename _Tuple>
+      result_type
+      operator()(_CVRef& __arg, const _Tuple&) const volatile
+      { return __arg.get(); }
+    };
+
+  /**
+   *  @if maint
+   *  If the argument is a bind expression, we invoke the underlying
+   *  function object with the same cv-qualifiers as we are given and
+   *  pass along all of our arguments (unwrapped). [TR1 3.6.3/5 bullet 2]
+   *  @endif
+   */
+  template<typename _Arg>
+    class _Mu<_Arg, true, false>
+    {
+    public:
+      template<typename _Signature> class result;
+
+#define _GLIBCXX_REPEAT_HEADER <tr1/mu_iterate.h>
+#  include <tr1/repeat.h>
+#undef _GLIBCXX_REPEAT_HEADER
+    };
+
+  /**
+   *  @if maint
+   *  If the argument is a placeholder for the Nth argument, returns
+   *  a reference to the Nth argument to the bind function object.
+   *  [TR1 3.6.3/5 bullet 3]
+   *  @endif
+   */
+  template<typename _Arg>
+    class _Mu<_Arg, false, true>
+    {
+    public:
+      template<typename _Signature> class result;
+
+      template<typename _CVMu, typename _CVArg, typename _Tuple>
+      class result<_CVMu(_CVArg, _Tuple)>
+      {
+        // Add a reference, if it hasn't already been done for us.
+        // This allows us to be a little bit sloppy in constructing
+        // the tuple that we pass to result_of<...>.
+        typedef typename tuple_element<(is_placeholder<_Arg>::value - 1),
+                                       _Tuple>::type __base_type;
+
+      public:
+        typedef typename add_reference<__base_type>::type type;
+      };
+
+      template<typename _Tuple>
+      typename result<_Mu(_Arg, _Tuple)>::type
+      operator()(const volatile _Arg&, const _Tuple& __tuple) const volatile
+      {
+        return ::std::tr1::get<(is_placeholder<_Arg>::value - 1)>(__tuple);
+      }
+    };
+
+  /**
+   *  @if maint
+   *  If the argument is just a value, returns a reference to that
+   *  value. The cv-qualifiers on the reference are the same as the
+   *  cv-qualifiers on the _Mu object. [TR1 3.6.3/5 bullet 4]
+   *  @endif
+   */
+  template<typename _Arg>
+    class _Mu<_Arg, false, false>
+    {
+    public:
+      template<typename _Signature> struct result;
+
+      template<typename _CVMu, typename _CVArg, typename _Tuple>
+      struct result<_CVMu(_CVArg, _Tuple)>
+      {
+        typedef typename add_reference<_CVArg>::type type;
+      };
+
+      // Pick up the cv-qualifiers of the argument
+      template<typename _CVArg, typename _Tuple>
+      _CVArg& operator()(_CVArg& __arg, const _Tuple&) const volatile
+      { return __arg; }
+    };
+
+  /**
+   *  @if maint
+   *  Type of the function object returned from bind().
+   *  @endif
+   */
+   template<typename _Signature>
+     struct _Bind;
+
+  /**
+   *  @if maint
+   *  Type of the function object returned from bind<R>().
+   *  @endif
+   */
+   template<typename _Result, typename _Signature>
+     struct _Bind_result;
+
+  /**
+   *  @if maint
+   *  Class template _Bind is always a bind expression.
+   *  @endif
+   */
+   template<typename _Signature>
+    struct is_bind_expression<_Bind<_Signature> >
+    {
+      static const bool value = true;
+    };
+
+  /**
+   *  @if maint
+   *  Class template _Bind_result is always a bind expression.
+   *  @endif
+   */
+   template<typename _Result, typename _Signature>
+   struct is_bind_expression<_Bind_result<_Result, _Signature> >
+    {
+      static const bool value = true;
+    };
 
   /**
    *  @brief Exception class thrown when class template function's
@@ -845,9 +1052,15 @@ namespace tr1
       __x.swap(__y);
     }
 
+#define _GLIBCXX_JOIN(X,Y) _GLIBCXX_JOIN2( X , Y )
+#define _GLIBCXX_JOIN2(X,Y) _GLIBCXX_JOIN3(X,Y)
+#define _GLIBCXX_JOIN3(X,Y) X##Y
 #define _GLIBCXX_REPEAT_HEADER <tr1/functional_iterate.h>
 #include <tr1/repeat.h>
 #undef _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_JOIN3
+#undef _GLIBCXX_JOIN2
+#undef _GLIBCXX_JOIN
 
 // Definition of default hash function std::tr1::hash<>.  The types for
 // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
