@@ -532,7 +532,6 @@ expand_call (exp, target, ignore)
   /* Nonzero if a reg parm has been scanned.  */
   int reg_parm_seen;
   /* Nonzero if this is an indirect function call.  */
-  int current_call_is_indirect = 0;
 
   /* Nonzero if we must avoid push-insns in the args for this call. 
      If stack space is allocated for register parameters, but not by the
@@ -816,15 +815,6 @@ expand_call (exp, target, ignore)
   if (fndecl && DECL_NAME (fndecl))
     name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
-  /* On some machines (such as the PA) indirect calls have a different
-     calling convention than normal calls.  FUNCTION_ARG in the target
-     description can look at current_call_is_indirect to determine which
-     calling convention to use.  */
-  current_call_is_indirect = (fndecl == 0);
-#if 0
-    = TREE_CODE (TREE_OPERAND (exp, 0)) == NON_LVALUE_EXPR ? 1 : 0;
-#endif
-
 #if 0
   /* Unless it's a call to a specific function that isn't alloca,
      if it has one argument, we must assume it might be alloca.  */
@@ -913,8 +903,13 @@ expand_call (exp, target, ignore)
      we make.  */
   push_temp_slots ();
 
-  /* Start updating where the next arg would go.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX);
+  /* Start updating where the next arg would go.
+
+     On some machines (such as the PA) indirect calls have a different
+     calling convention than normal calls.  The last argument in
+     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
+     or not.  */
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, (fndecl == 0));
 
   /* If struct_value_rtx is 0, it means pass the address
      as if it were an extra parameter.  */
@@ -2259,8 +2254,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
-  /* library calls are never indirect calls.  */
-  int current_call_is_indirect = 0;
 
   VA_START (p, nargs);
 
@@ -2282,7 +2275,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   argvec = (struct arg *) alloca (nargs * sizeof (struct arg));
 
-  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun);
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
 
   args_size.constant = 0;
   args_size.var = 0;
@@ -2538,8 +2531,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   rtx mem_value = 0;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
-  /* library calls are never indirect calls.  */
-  int current_call_is_indirect = 0;
   int is_const;
 
   VA_START (p, nargs);
@@ -2590,7 +2581,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
   argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
 
-  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun);
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
 
   args_size.constant = 0;
   args_size.var = 0;
