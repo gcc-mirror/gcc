@@ -60,6 +60,9 @@ static const char *cpp_filename;
 /* The current line map.  */
 static const struct line_map *map;
 
+/* The line used to refresh the lineno global variable after each token.  */
+static unsigned int src_lineno;
+
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
 static splay_tree file_info_tree;
@@ -89,6 +92,7 @@ static tree lex_string		PARAMS ((const char *, unsigned int, int));
 static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
+static void cb_line_change     PARAMS ((cpp_reader *, const cpp_token *, int));
 static void cb_ident		PARAMS ((cpp_reader *, unsigned int,
 					 const cpp_string *));
 static void cb_file_change    PARAMS ((cpp_reader *, const struct line_map *));
@@ -125,6 +129,7 @@ init_c_lex (filename)
 
   cb = cpp_get_callbacks (parse_in);
 
+  cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->file_change = cb_file_change;
   cb->def_pragma = cb_def_pragma;
@@ -241,6 +246,17 @@ cb_ident (pfile, line, str)
       ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
     }
 #endif
+}
+
+/* Called at the start of every non-empty line.  TOKEN is the first
+   lexed token on the line.  Used for diagnostic line numbers.  */
+static void
+cb_line_change (pfile, token, parsing_args)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const cpp_token *token;
+     int parsing_args ATTRIBUTE_UNUSED;
+{
+  src_lineno = SOURCE_LINE (map, token->line);
 }
 
 static void
@@ -762,7 +778,7 @@ c_lex (value)
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
      every time we return a token.  */
-  lineno = SOURCE_LINE (map, cpp_get_line (parse_in)->line);
+  lineno = src_lineno;
 
   *value = NULL_TREE;
   type = tok.type;

@@ -135,7 +135,7 @@ builtin_macro (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
-  unsigned char flags = ((token->flags & PREV_WHITE) | AVOID_LPASTE);
+  unsigned char flags = ((token->flags & (PREV_WHITE | BOL)) | AVOID_LPASTE);
   cpp_hashnode *node = token->val.node;
 
   switch (node->value.builtin)
@@ -209,21 +209,6 @@ builtin_macro (pfile, token)
     }
 
   token->flags = flags;
-}
-
-/* Used by cpperror.c to obtain the correct line and column to report
-   in a diagnostic.  */
-const cpp_lexer_pos *
-cpp_get_line (pfile)
-     cpp_reader *pfile;
-{
-  if (pfile->context->prev == NULL)
-    {
-      pfile->lexer_pos.line = pfile->cur_token[-1].line;
-      pfile->lexer_pos.col = pfile->cur_token[-1].col;
-    }
-
-  return &pfile->lexer_pos;
 }
 
 static void
@@ -454,8 +439,8 @@ paste_all_tokens (pfile, lhs)
 
   /* The pasted token has the PREV_WHITE flag of the LHS, is no longer
      PASTE_LEFT, and is subject to macro expansion.  */
-  lhs->flags &= ~(PREV_WHITE | PASTE_LEFT | NO_EXPAND);
-  lhs->flags |= orig_flags & (PREV_WHITE | AVOID_LPASTE);
+  lhs->flags &= ~(PREV_WHITE | BOL | PASTE_LEFT | NO_EXPAND);
+  lhs->flags |= orig_flags & (PREV_WHITE | BOL | AVOID_LPASTE);
 }
 
 /* Reads the unexpanded tokens of a macro argument into ARG.  VAR_ARGS
@@ -818,8 +803,8 @@ replace_args (pfile, macro, args, list)
 	    memcpy (dest, from, count * sizeof (cpp_token));
 
 	    /* The first token gets PREV_WHITE of the CPP_MACRO_ARG.  */
-	    dest->flags &= ~PREV_WHITE;
-	    dest->flags |= src->flags & PREV_WHITE;
+	    dest->flags &= ~(PREV_WHITE | BOL);
+	    dest->flags |= src->flags & (PREV_WHITE | BOL);
 	    dest->flags |= AVOID_LPASTE;
 
 	    /* The last token gets the PASTE_LEFT of the CPP_MACRO_ARG.  */
@@ -984,7 +969,7 @@ cpp_get_token (pfile, token)
 	  else if (enter_macro_context (pfile, node))
 	    {
 	      /* Pass AVOID_LPASTE and our PREV_WHITE to next token.  */
-	      pfile->buffer->saved_flags = ((token->flags & PREV_WHITE)
+	      pfile->buffer->saved_flags = ((token->flags & (PREV_WHITE | BOL))
 					    | AVOID_LPASTE);
 	      continue;
 	    }
@@ -1042,8 +1027,6 @@ _cpp_backup_tokens (pfile, count)
 	  pfile->cur_token--;
 	  if (pfile->cur_token == pfile->cur_run->base)
 	    {
-	      if (pfile->cur_run == NULL)
-		abort ();
 	      pfile->cur_run = pfile->cur_run->prev;
 	      pfile->cur_token = pfile->cur_run->limit;
 	    }

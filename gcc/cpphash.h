@@ -368,7 +368,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* In cpperror.c  */
 enum error_type { WARNING = 0, WARNING_SYSHDR, PEDWARN, ERROR, FATAL, ICE };
 extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
-				       const cpp_lexer_pos *));
+				       unsigned int, unsigned int));
 
 /* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));

@@ -29,8 +29,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_location		PARAMS ((cpp_reader *,
-						 const cpp_lexer_pos *));
+static void print_location PARAMS ((cpp_reader *, unsigned int, unsigned int));
 
 /* Don't remove the blank before do, as otherwise the exgettext
    script will mistake this as a function definition */
@@ -38,9 +37,9 @@ static void print_location		PARAMS ((cpp_reader *,
  do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
 
 static void
-print_location (pfile, pos)
+print_location (pfile, line, col)
      cpp_reader *pfile;
-     const cpp_lexer_pos *pos;
+     unsigned int line, col;
 {
   cpp_buffer *buffer = pfile->buffer;
 
@@ -48,17 +47,18 @@ print_location (pfile, pos)
     fprintf (stderr, "%s: ", progname);
   else
     {
-      unsigned int line, col;
       const struct line_map *map;
 
-      if (pos == 0)
-	pos = cpp_get_line (pfile);
-      map = lookup_line (&pfile->line_maps, pos->line);
+      if (line == 0)
+	{
+	  line = pfile->cur_token[-1].line;
+	  col = pfile->cur_token[-1].col;
+	}
 
+      map = lookup_line (&pfile->line_maps, line);
       print_containing_files (&pfile->line_maps, map);
 
-      line = SOURCE_LINE (map, pos->line);
-      col = pos->col;
+      line = SOURCE_LINE (map, line);
       if (col == 0)
 	col = 1;
 
@@ -74,14 +74,15 @@ print_location (pfile, pos)
 }
 
 /* Set up for an error message: print the file and line, bump the error
-   counter, etc.
-   If it returns 0, this error has been suppressed.  */
+   counter, etc.  LINE is the logical line number; zero means to print
+   at the location of the previously lexed token, which tends to be the
+   correct place by default.  Returns 0 if the error has been suppressed.  */
 
 int
-_cpp_begin_message (pfile, code, pos)
+_cpp_begin_message (pfile, code, line, column)
      cpp_reader *pfile;
      enum error_type code;
-     const cpp_lexer_pos *pos;
+     unsigned int line, column;
 {
   int is_warning = 0;
 
@@ -125,7 +126,7 @@ _cpp_begin_message (pfile, code, pos)
       break;
     }
 
-  print_location (pfile, pos);
+  print_location (pfile, line, column);
   if (is_warning)
     fputs (_("warning: "), stderr);
 
@@ -144,7 +145,7 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, ICE, 0))
+  if (_cpp_begin_message (pfile, ICE, 0, 0))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -163,7 +164,7 @@ cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, FATAL, 0))
+  if (_cpp_begin_message (pfile, FATAL, 0, 0))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -176,7 +177,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, ERROR, 0))
+  if (_cpp_begin_message (pfile, ERROR, 0, 0))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -186,17 +187,13 @@ void
 cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
 			     const char *msgid, ...))
 {
-  cpp_lexer_pos pos;
-  
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, int, line);
   VA_FIXEDARG (ap, int, column);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  pos.line = line;
-  pos.col = column;
-  if (_cpp_begin_message (pfile, ERROR, &pos))
+  if (_cpp_begin_message (pfile, ERROR, line, column))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -218,7 +215,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, WARNING, 0))
+  if (_cpp_begin_message (pfile, WARNING, 0, 0))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -228,17 +225,13 @@ void
 cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
-  cpp_lexer_pos pos;
-
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, int, line);
   VA_FIXEDARG (ap, int, column);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  pos.line = line;
-  pos.col = column;
-  if (_cpp_begin_message (pfile, WARNING, &pos))
+  if (_cpp_begin_message (pfile, WARNING, line, column))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -251,7 +244,7 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, PEDWARN, 0))
+  if (_cpp_begin_message (pfile, PEDWARN, 0, 0))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -261,17 +254,13 @@ void
 cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
-  cpp_lexer_pos pos;
-  
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, cpp_reader *, pfile);
   VA_FIXEDARG (ap, int, line);
   VA_FIXEDARG (ap, int, column);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  pos.line = line;
-  pos.col = column;
-  if (_cpp_begin_message (pfile, PEDWARN, &pos))
+  if (_cpp_begin_message (pfile, PEDWARN, line, column))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);

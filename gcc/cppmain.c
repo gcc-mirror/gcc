@@ -52,6 +52,7 @@ static void maybe_print_line PARAMS ((const struct line_map *, unsigned int));
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
+static void cb_line_change PARAMS ((cpp_reader *, const cpp_token *, int));
 static void cb_define	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
 static void cb_undef	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
 static void cb_include	PARAMS ((cpp_reader *, unsigned int,
@@ -192,6 +193,7 @@ setup_callbacks ()
 {
   cpp_callbacks *cb = cpp_get_callbacks (pfile);
 
+  cb->line_change = cb_line_change;
   if (! options->no_output)
     {
       cb->ident      = cb_ident;
@@ -217,7 +219,7 @@ static void
 scan_translation_unit (pfile)
      cpp_reader *pfile;
 {
-  unsigned int index, line;
+  unsigned int index;
   cpp_token tokens[2], *token;
 
   for (index = 0;; index = 1 - index)
@@ -228,27 +230,8 @@ scan_translation_unit (pfile)
       if (token->type == CPP_EOF)
 	break;
 
-      line = cpp_get_line (pfile)->output_line;
-      if (print.line != line)
-	{
-	  unsigned int col = cpp_get_line (pfile)->col;
-
-	  /* Supply enough whitespace to put this token in its original
-	     column.  Don't bother trying to reconstruct tabs; we can't
-	     get it right in general, and nothing ought to care.  (Yes,
-	     some things do care; the fault lies with them.)  */
-	  maybe_print_line (print.map, line);
-	  if (col > 1)
-	    {
-	      if (token->flags & PREV_WHITE)
-		col--;
-	      while (--col)
-		putc (' ', print.outf);
-	    }
-	}
-      else if ((token->flags & (PREV_WHITE | AVOID_LPASTE))
-	       == AVOID_LPASTE
-	       && cpp_avoid_paste (pfile, &tokens[1 - index], token))
+      if ((token->flags & (PREV_WHITE | AVOID_LPASTE | BOL)) == AVOID_LPASTE
+	  && cpp_avoid_paste (pfile, &tokens[1 - index], token))
 	token->flags |= PREV_WHITE;
       /* Special case '# <directive name>': insert a space between
 	 the # and the token.  This will prevent it from being
@@ -259,7 +242,6 @@ scan_translation_unit (pfile)
 	token->flags |= PREV_WHITE;
 
       cpp_output_token (token, print.outf);
-      print.printed = 1;
       if (token->type == CPP_STRING || token->type == CPP_WSTRING
 	  || token->type == CPP_COMMENT)
 	check_multiline_token (&token->val.str);
@@ -335,7 +317,34 @@ print_line (map, line, special_flags)
     }
 }
 
-/* Callbacks.  */
+/* Called when a line of output is started.  TOKEN is the first token
+   of the line, and maybe be CPP_EOF.  */
+
+static void
+cb_line_change (pfile, token, parsing_args)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const cpp_token *token;
+     int parsing_args;
+{
+  if (token->type == CPP_EOF || parsing_args)
+    return;
+
+  maybe_print_line (print.map, token->line);
+  print.printed = 1;
+
+  /* Supply enough spaces to put this token in its original column,
+     one space per column greater than 2, since scan_translation_unit
+     will provide a space if PREV_WHITE.  Don't bother trying to
+     reconstruct tabs; we can't get it right in general, and nothing
+     ought to care.  Some things do care; the fault lies with them.  */
+  if (token->col > 2)
+    {
+      unsigned int spaces = token->col - 2;
+
+      while (spaces--)
+	putc (' ', print.outf);
+    }
+}
 
 static void
 cb_ident (pfile, line, str)
