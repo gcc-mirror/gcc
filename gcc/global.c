@@ -1040,7 +1040,11 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
     }
  no_prefs:
 
-  /* If we haven't succeeded yet, try with caller-saves.  */
+  /* If we haven't succeeded yet, try with caller-saves. 
+     We need not check to see if the current function has nonlocal
+     labels because we don't put any pseudos that are live over calls in
+     registers in that case.  */
+
   if (flag_caller_saves && best_reg < 0)
     {
       /* Did not find a register.  If it would be profitable to
