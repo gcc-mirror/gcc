@@ -364,7 +364,6 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       DECL_CONSTRUCTOR_P (thunk) = 0;
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
-      DECL_VTT_PARM (thunk) = NULL_TREE;
       /* Even if this thunk is a member of a local class, we don't
 	 need a static chain.  */
       DECL_NO_STATIC_CHAIN (thunk) = 1;
@@ -536,11 +535,9 @@ static void
 do_build_copy_constructor (fndecl)
      tree fndecl;
 {
-  tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
+  tree parm = FUNCTION_FIRST_USER_PARM (fndecl);
   tree t;
 
-  if (DECL_HAS_IN_CHARGE_PARM_P (fndecl))
-    parm = TREE_CHAIN (parm);
   parm = convert_from_reference (parm);
 
   if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type)
@@ -760,9 +757,7 @@ synthesize_method (fndecl)
     setup_vtbl_ptr (NULL_TREE, NULL_TREE);
   else
     {
-      tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);
-      if (DECL_HAS_IN_CHARGE_PARM_P (fndecl))
-	arg_chain = TREE_CHAIN (arg_chain);
+      tree arg_chain = FUNCTION_FIRST_USER_PARMTYPE (fndecl);
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
@@ -1040,4 +1035,23 @@ implicitly_declare_fn (kind, type, const_p)
   defer_fn (fn);
   
   return fn;
+}
+
+/* Given a FUNCTION_DECL FN and a chain LIST, skip as many elements of LIST
+   as there are artificial parms in FN.  */
+
+tree
+skip_artificial_parms_for (fn, list)
+     tree fn, list;
+{
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+    list = TREE_CHAIN (list);
+  else
+    return list;
+
+  if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+    list = TREE_CHAIN (list);
+  if (DECL_HAS_VTT_PARM_P (fn))
+    list = TREE_CHAIN (list);
+  return list;
 }

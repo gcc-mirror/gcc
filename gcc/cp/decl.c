@@ -3399,7 +3399,9 @@ duplicate_decls (newdecl, olddecl)
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
-      DECL_LANG_SPECIFIC (newdecl)->u2 = DECL_LANG_SPECIFIC (olddecl)->u2;
+      if (DECL_OVERLOADED_OPERATOR_P (olddecl) != ERROR_MARK)
+	SET_OVERLOADED_OPERATOR_CODE
+	  (newdecl, DECL_OVERLOADED_OPERATOR_P (olddecl));
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
       /* Optionally warn about more than one declaration for the same
@@ -11300,15 +11302,8 @@ friend declaration requires class-key, i.e. `friend %#T'",
 		/* The constructor can be called with exactly one
 		   parameter if there is at least one parameter, and
 		   any subsequent parameters have default arguments.
-		   We don't look at the first parameter, which is
-		   really just the `this' parameter for the new
-		   object.  */
-		tree arg_types =
-		  TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)));
-
-		/* Skip the `in_chrg' argument too, if present.  */
-		if (DECL_HAS_IN_CHARGE_PARM_P (decl))
-		  arg_types = TREE_CHAIN (arg_types);
+		   Ignore any compiler-added parms.  */
+		tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (decl);
 
 		if (arg_types == void_list_node
 		    || (arg_types
@@ -11923,9 +11918,7 @@ copy_args_p (d)
   if (!DECL_FUNCTION_MEMBER_P (d))
     return 0;
 
-  t = FUNCTION_ARG_CHAIN (d);
-  if (DECL_CONSTRUCTOR_P (d) && DECL_HAS_IN_CHARGE_PARM_P (d))
-    t = TREE_CHAIN (t);
+  t = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
       && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
 	  == DECL_CONTEXT (d))
@@ -11948,21 +11941,8 @@ int
 grok_ctor_properties (ctype, decl)
      tree ctype, decl;
 {
-  tree parmtypes = FUNCTION_ARG_CHAIN (decl);
+  tree parmtypes = FUNCTION_FIRST_USER_PARMTYPE (decl);
   tree parmtype = parmtypes ? TREE_VALUE (parmtypes) : void_type_node;
-
-  /* When a type has virtual baseclasses, a magical first int argument is
-     added to any ctor so we can tell if the class has been initialized
-     yet.  This could screw things up in this function, so we deliberately
-     ignore the leading int if we're in that situation.  */
-  if (DECL_HAS_IN_CHARGE_PARM_P (decl))
-    {
-      my_friendly_assert (parmtypes
-			  && TREE_VALUE (parmtypes) == integer_type_node,
-			  980529);
-      parmtypes = TREE_CHAIN (parmtypes);
-      parmtype = TREE_VALUE (parmtypes);
-    }
 
   /* [class.copy]
 
@@ -13473,8 +13453,18 @@ start_function (declspecs, declarator, attrs, flags)
 
       /* Constructors and destructors need to know whether they're "in
 	 charge" of initializing virtual base classes.  */
+      t = TREE_CHAIN (t);
       if (DECL_HAS_IN_CHARGE_PARM_P (decl1))
-	current_in_charge_parm = TREE_CHAIN (t);
+	{
+	  current_in_charge_parm = t;
+	  t = TREE_CHAIN (t);
+	}
+      if (DECL_HAS_VTT_PARM_P (decl1))
+	{
+	  if (DECL_NAME (t) != vtt_parm_identifier)
+	    abort ();
+	  current_vtt_parm = t;
+	}
     }
 
   if (DECL_INTERFACE_KNOWN (decl1))
@@ -14425,8 +14415,6 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->context);
 	      ggc_mark_tree (ld->cloned_function);
-	      if (!DECL_OVERLOADED_OPERATOR_P (t))
-		ggc_mark_tree (ld->u2.vtt_parm);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL

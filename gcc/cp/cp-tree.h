@@ -881,6 +881,7 @@ struct cp_language_function
   tree x_current_class_ref;
   tree x_eh_spec_try_block;
   tree x_in_charge_parm;
+  tree x_vtt_parm;
 
   tree *x_vcalls_possible_p;
 
@@ -927,9 +928,14 @@ struct cp_language_function
 #define current_eh_spec_try_block cp_function_chain->x_eh_spec_try_block
 
 /* The `__in_chrg' parameter for the current function.  Only used for
-   destructors.  */
+   constructors and destructors.  */
 
 #define current_in_charge_parm cp_function_chain->x_in_charge_parm
+
+/* The `__vtt_parm' parameter for the current function.  Only used for
+   constructors and destructors.  */
+
+#define current_vtt_parm cp_function_chain->x_vtt_parm
 
 /* In destructors, this is a pointer to a condition in an
    if-statement.  If the pointed-to value is boolean_true_node, then
@@ -1249,7 +1255,18 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    ? (ENTRY)								\
    : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0)))
 
-#define FUNCTION_ARG_CHAIN(NODE) (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
+#define FUNCTION_ARG_CHAIN(NODE) \
+  (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
+
+/* Given a FUNCTION_DECL, returns the first TREE_LIST out of TYPE_ARG_TYPES
+   which refers to a user-written parameter.  */
+#define FUNCTION_FIRST_USER_PARMTYPE(NODE) \
+  (skip_artificial_parms_for (NODE, TYPE_ARG_TYPES (TREE_TYPE (NODE))))
+
+/* Similarly, but for DECL_ARGUMENTS.  */
+#define FUNCTION_FIRST_USER_PARM(NODE) \
+  (skip_artificial_parms_for (NODE, DECL_ARGUMENTS (NODE)))
+
 #define PROMOTES_TO_AGGR_TYPE(NODE,CODE)	\
   (((CODE) == TREE_CODE (NODE)			\
        && IS_AGGR_TYPE (TREE_TYPE (NODE)))	\
@@ -1825,7 +1842,7 @@ struct lang_decl_flags
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
   unsigned generate_with_vtable_p : 1;
-  unsigned dummy : 1;
+  unsigned has_vtt_parm_p : 1;
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -1876,9 +1893,6 @@ struct lang_decl
     /* In an overloaded operator, this is the value of
        DECL_OVERLOADED_OPERATOR_P.  */
     enum tree_code operator_code;
-    /* In a maybe-in-charge constructor or destructor, this is
-       DECL_VTT_PARM.  */
-    tree vtt_parm;
   } u2;
 };
 
@@ -1978,10 +1992,9 @@ struct lang_decl
 #define DECL_CLONED_FUNCTION(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->cloned_function)
 
-/* In a maybe-in-charge constructor or destructor, this is the VTT
-   parameter.  It's not actually on the DECL_ARGUMENTS list.  */
-#define DECL_VTT_PARM(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u2.vtt_parm)
+/* Non-zero if the VTT parm has been added to NODE.  */
+#define DECL_HAS_VTT_PARM_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_vtt_parm_p)
 
 /* Non-zero if NODE is a FUNCTION_DECL for which a VTT parameter is
    required.  */
@@ -3723,6 +3736,7 @@ extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));
 extern void print_class_statistics		PARAMS ((void));
 extern void build_self_reference		PARAMS ((void));
+extern int same_signature_p			PARAMS ((tree, tree));
 extern void warn_hidden				PARAMS ((tree));
 extern tree get_enclosing_class			PARAMS ((tree));
 int is_base_of_enclosing_class			PARAMS ((tree, tree));
@@ -4085,6 +4099,7 @@ extern tree make_thunk				PARAMS ((tree, tree, tree, int));
 extern void use_thunk				PARAMS ((tree, int));
 extern void synthesize_method			PARAMS ((tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
+extern tree skip_artificial_parms_for		PARAMS ((tree, tree));
 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));

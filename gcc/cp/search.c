@@ -2046,22 +2046,13 @@ look_for_overrides_r (type, fndecl)
                   return 1;
                 }
             }
-          else
+          else if (same_signature_p (fndecl, fn))
             {
-              if (/* The first parameter is the `this' parameter,
-	             which has POINTER_TYPE, and we can therefore
-	             safely use TYPE_QUALS, rather than
-		     CP_TYPE_QUALS.  */
-	          (TYPE_QUALS (TREE_TYPE (TREE_VALUE (btypes)))
-	           == TYPE_QUALS (thistype))
-	          && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes)))
-                {
-                  /* It's definitely virtual, even if not explicitly set.  */
-                  DECL_VIRTUAL_P (fndecl) = 1;
-	          check_final_overrider (fndecl, fn);
-	      
-	          return 1;
-	        }
+	      /* It's definitely virtual, even if not explicitly set.  */
+	      DECL_VIRTUAL_P (fndecl) = 1;
+	      check_final_overrider (fndecl, fn);
+
+	      return 1;
 	    }
 	}
     }

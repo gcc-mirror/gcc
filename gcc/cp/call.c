@@ -1296,17 +1296,12 @@ add_function_candidate (candidates, fn, ctype, arglist, flags)
   tree parmnode, argnode;
   int viable = 1;
 
-  /* The `this' and `in_chrg' arguments to constructors are not considered
-     in overload resolution.  */
+  /* The `this', `in_chrg' and VTT arguments to constructors are not
+     considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
     {
-      parmlist = TREE_CHAIN (parmlist);
-      arglist = TREE_CHAIN (arglist);
-      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
-	{
-	  parmlist = TREE_CHAIN (parmlist);
-	  arglist = TREE_CHAIN (arglist);
-	}
+      parmlist = skip_artificial_parms_for (fn, parmlist);
+      arglist = skip_artificial_parms_for (fn, arglist);
     }
 
   len = list_length (arglist);
@@ -2373,10 +2368,11 @@ build_user_type_conversion_1 (totype, expr, flags)
       t = build_int_2 (0, 0);
       TREE_TYPE (t) = build_pointer_type (totype);
       args = build_tree_list (NULL_TREE, expr);
-      if (DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors)))
-	args = tree_cons (NULL_TREE, 
-			  in_charge_arg_for_name (complete_ctor_identifier), 
-			  args);
+      if (DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
+	  || DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)))
+	/* We should never try to call the abstract or base constructor
+	   from here.  */
+	abort ();
       args = tree_cons (NULL_TREE, t, args);
     }
   for (; ctors; ctors = OVL_NEXT (ctors))
@@ -3726,8 +3722,11 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (convfn));
 
 	    args = build_tree_list (NULL_TREE, expr);
-	    if (DECL_HAS_IN_CHARGE_PARM_P (convfn))
-	      args = tree_cons (NULL_TREE, integer_one_node, args);
+	    if (DECL_HAS_IN_CHARGE_PARM_P (convfn)
+		|| DECL_HAS_VTT_PARM_P (convfn))
+	      /* We should never try to call the abstract or base constructor
+		 from here.  */
+	      abort ();
 	    args = tree_cons (NULL_TREE, t, args);
 	  }
 	else
@@ -4056,6 +4055,9 @@ build_over_call (cand, args, flags)
       arg = TREE_CHAIN (arg);
       parm = TREE_CHAIN (parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+	/* We should never try to call the abstract constructor.  */
+	abort ();
+      if (DECL_HAS_VTT_PARM_P (fn))
 	{
 	  converted_args = tree_cons
 	    (NULL_TREE, TREE_VALUE (arg), converted_args);
@@ -4160,9 +4162,7 @@ build_over_call (cand, args, flags)
 	   && DECL_COPY_CONSTRUCTOR_P (fn))
     {
       tree targ;
-      arg = TREE_CHAIN (converted_args);
-      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
-	arg = TREE_CHAIN (arg);
+      arg = skip_artificial_parms_for (fn, converted_args);
       arg = TREE_VALUE (arg);
 
       /* Pull out the real argument, disregarding const-correctness.  */
@@ -4430,7 +4430,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  vtt = build (COND_EXPR, TREE_TYPE (vtt),
 		       build (EQ_EXPR, boolean_type_node,
 			      current_in_charge_parm, integer_zero_node),
-		       DECL_VTT_PARM (current_function_decl),
+		       current_vtt_parm,
 		       vtt);
 	  if (TREE_VIA_VIRTUAL (basebinfo))
 	    basebinfo = binfo_for_vbase (basetype, current_class_type);

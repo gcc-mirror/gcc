@@ -1208,6 +1208,7 @@ copy_default_args_to_explicit_spec (decl)
   tree t;
   tree object_type = NULL_TREE;
   tree in_charge = NULL_TREE;
+  tree vtt = NULL_TREE;
 
   /* See if there's anything we need to do.  */
   tmpl = DECL_TI_TEMPLATE (decl);
@@ -1236,6 +1237,11 @@ copy_default_args_to_explicit_spec (decl)
           in_charge = spec_types;
 	  spec_types = TREE_CHAIN (spec_types);
 	}
+      if (DECL_HAS_VTT_PARM_P (decl))
+	{
+	  vtt = spec_types;
+	  spec_types = TREE_CHAIN (spec_types);
+	}
     }
 
   /* Compute the merged default arguments.  */
@@ -1245,6 +1251,11 @@ copy_default_args_to_explicit_spec (decl)
   /* Compute the new FUNCTION_TYPE.  */
   if (object_type)
     {
+      if (vtt)
+        new_spec_types = hash_tree_cons (TREE_PURPOSE (vtt),
+			  	         TREE_VALUE (vtt),
+				         new_spec_types);
+
       if (in_charge)
         /* Put the in-charge parameter back.  */
         new_spec_types = hash_tree_cons (TREE_PURPOSE (in_charge),

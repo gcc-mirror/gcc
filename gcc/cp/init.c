@@ -860,7 +860,7 @@ expand_virtual_init (binfo, decl)
       tree vtt_parm;
 
       /* Compute the value to use, when there's a VTT.  */
-      vtt_parm = DECL_VTT_PARM (current_function_decl);
+      vtt_parm = current_vtt_parm;
       vtbl2 = build (PLUS_EXPR, 
 		     TREE_TYPE (vtt_parm), 
 		     vtt_parm,
