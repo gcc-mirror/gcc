@@ -100,7 +100,7 @@ EXTRA_DISTCLEAN='target-mkfrag'
 if [ -n "${with_cross_host}" ] ; then
     rm -f Makefile.tem
     sed \
-        -e 's|INSTALLDIR.*=.*$|INSTALLDIR = $(tooldir)/lib|' \
+        -e 's|\(INSTALLDIR[ 	]*=[ 	]*\)[^ 	;]*|\1$(tooldir)/lib|' \
         Makefile >Makefile.tem
     mv -f Makefile.tem Makefile
 fi
