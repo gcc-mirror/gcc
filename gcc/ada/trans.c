@@ -393,7 +393,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	      && DECL_BY_COMPONENT_PTR_P (gnu_result))))
     {
       bool ro = DECL_POINTS_TO_READONLY_P (gnu_result);
-      tree initial;
+      tree renamed_obj;
 
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_COMPONENT_PTR_P (gnu_result))
@@ -402,34 +402,17 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 			    convert (build_pointer_type (gnu_result_type),
 				     gnu_result));
 
-      /* If the object is constant, we try to do the dereference directly
-	 through the DECL_INITIAL.  This is actually required in order to get
-	 correct aliasing information for renamed objects that are components
-	 of non-aliased aggregates, because the type of the renamed object and
-	 that of the aggregate don't alias.
-
-	 Note that we expect the initial value to have been stabilized.
-	 If it contains e.g. a variable reference, we certainly don't want
-	 to re-evaluate the variable each time the renaming is used.
-
-	 Stabilization is currently not performed at the global level but
-	 create_var_decl avoids setting DECL_INITIAL if the value is not
-	 constant then, and we get to the pointer dereference below.
-
-	 ??? Couldn't the aliasing issue show up again in this case ?
-	 There is no obvious reason why not.  */
-      else if (TREE_READONLY (gnu_result)
-	       && DECL_INITIAL (gnu_result)
-	       /* Strip possible conversion to reference type.  */
-	       && ((initial = TREE_CODE (DECL_INITIAL (gnu_result))
-		    == NOP_EXPR
-		    ? TREE_OPERAND (DECL_INITIAL (gnu_result), 0)
-		    : DECL_INITIAL (gnu_result), 1))
-	       && TREE_CODE (initial) == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (initial, 0)) == ARRAY_REF
-		   || (TREE_CODE (TREE_OPERAND (initial, 0))
-		       == COMPONENT_REF)))
-	gnu_result = TREE_OPERAND (initial, 0);
+      /* If it's a renaming pointer and we are at the right binding level,
+	 we can reference the renamed object directly, since the renamed
+	 expression has been protected against multiple evaluations.  */
+      else if (TREE_CODE (gnu_result) == VAR_DECL
+	       && (renamed_obj = DECL_RENAMED_OBJECT (gnu_result)) != 0
+	       && (! DECL_RENAMING_GLOBAL_P (gnu_result)
+		   || global_bindings_p ())
+	       /* Make sure it's an lvalue like INDIRECT_REF.  */
+	       && (TREE_CODE_CLASS (TREE_CODE (renamed_obj)) == 'd'
+		   || TREE_CODE_CLASS (TREE_CODE (renamed_obj)) == 'r'))
+	gnu_result = renamed_obj;
       else
 	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,
 				     fold (gnu_result));
@@ -746,8 +729,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       if (CONTAINS_PLACEHOLDER_P (gnu_result))
 	{
 	  if (TREE_CODE (gnu_prefix) != TYPE_DECL)
-	    gnu_result = substitute_placeholder_in_expr (gnu_result,
-							 gnu_expr);
+	    gnu_result = substitute_placeholder_in_expr (gnu_result, gnu_expr);
 	  else
 	    gnu_result = max_size (gnu_result, true);
 	}
@@ -4011,6 +3993,27 @@ gnat_to_gnu (Node_Id gnat_node)
 	    post_error_ne
               ("\\?or use `pragma No_Strict_Aliasing (&);`",
                gnat_node, Target_Type (gnat_node));
+	  }
+
+	/* The No_Strict_Aliasing flag is not propagated to the back-end for
+	   fat pointers so unconditionally warn in problematic cases.  */
+	else if (TYPE_FAT_POINTER_P (gnu_target_type))
+	  {
+	    tree array_type
+	      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_target_type)));
+
+	    if (get_alias_set (array_type) != 0
+		&& (!TYPE_FAT_POINTER_P (gnu_source_type)
+		    || (get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_source_type))))
+			!= get_alias_set (array_type))))
+	      {
+		post_error_ne
+		  ("?possible aliasing problem for type&",
+		   gnat_node, Target_Type (gnat_node));
+		post_error
+		  ("\\?use -fno-strict-aliasing switch for references",
+		   gnat_node);
+	      }
 	  }
       }
       gnu_result = alloc_stmt_list ();

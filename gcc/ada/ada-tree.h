@@ -260,6 +260,9 @@ struct lang_type GTY(()) {tree t; };
 /* Nonzero in a PARM_DECL if we are to pass by descriptor.  */
 #define DECL_BY_DESCRIPTOR_P(NODE) DECL_LANG_FLAG_5 (PARM_DECL_CHECK (NODE))
 
+/* Nonzero in a VAR_DECL if it is a pointer renaming a global object.  */
+#define DECL_RENAMING_GLOBAL_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+
 /* In a CONST_DECL, points to a VAR_DECL that is allocatable to
    memory.  Used when a scalar constant is aliased or has its
    address taken.  */
@@ -274,6 +277,14 @@ struct lang_type GTY(()) {tree t; };
   GET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))
 #define SET_DECL_ORIGINAL_FIELD(NODE, X) \
   SET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE), X)
+
+/* In a VAR_DECL, points to the object being renamed if the VAR_DECL is a
+   renaming pointer, otherwise 0.  Note that this object is guaranteed to
+   be protected against multiple evaluations.  */
+#define DECL_RENAMED_OBJECT(NODE) \
+  GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
+#define SET_DECL_RENAMED_OBJECT(NODE, X) \
+  SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
 
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
