@@ -23,8 +23,14 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
 
-/* 68020 with 68881 */
+/* Default target comes from config.gcc.  */
+
+#undef TARGET_DEFAULT
+#ifdef TARGET_CPU_DEFAULT
+#define TARGET_DEFAULT TARGET_CPU_DEFAULT
+#else
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
+#endif
 
 /* for 68k machines this only needs to be TRUE for the 68000 */
 

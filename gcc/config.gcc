@@ -2302,6 +2302,20 @@ fi
 		esac
 		;;
 
+	m68k*-linux*)
+		supported_defaults="cpu"
+		case "$with_cpu" in
+		"" | "m68020" | "m68030" | "m68040" | "m68060" | "m68020-40" | "m68020-60")
+			# OK
+			;;
+		*)
+			echo "Unknown CPU used in --with-cpu=$with_cpu, known values:"  1>&2
+			echo "m68020 m68030 m68040 m68060 m68020-40 m68020-60" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	hppa*-*-* | parisc*-*-*)
 		supported_defaults="arch schedule"
 
@@ -2490,6 +2504,37 @@ fi
 
 		*)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
+			;;
+		esac
+		;;
+
+	m68k*-linux*)
+		case "x$with_cpu" in
+		x)
+			# The most generic
+			target_cpu_default2="(MASK_68020|MASK_68881|MASK_BITFIELD)"
+			;;
+		xm68020)
+			target_cpu_default2="(MASK_68020|MASK_68881|MASK_BITFIELD)"
+			;;
+		xm68030)
+			target_cpu_default2="(MASK_68030|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			;;
+		xm68040)
+			target_cpu_default2="(MASK_68040|MASK_68040_ONLY|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			;;
+		xm68060)
+			target_cpu_default2="(MASK_68060|MASK_68040_ONLY|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			;;
+		xm68020-40)
+			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040)"
+			;;
+		xm68020-60)
+			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040|MASK_68060)"
+			;;
+		*)
+			echo "Unknown CPU used in --with-cpu=$with_cpu"  1>&2
+			exit 1
 			;;
 		esac
 		;;
