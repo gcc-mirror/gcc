@@ -3321,12 +3321,15 @@ simplify_binary_operation (code, mode, op0, op1)
 
   /* We can fold some multi-word operations.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
-      && GET_CODE (op0) == CONST_DOUBLE
+      && (GET_CODE (op0) == CONST_DOUBLE || GET_CODE (op0) == CONST_INT)
       && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
     {
       HOST_WIDE_INT l1, l2, h1, h2, lv, hv;
 
-      l1 = CONST_DOUBLE_LOW (op0), h1 = CONST_DOUBLE_HIGH (op0);
+      if (GET_CODE (op0) == CONST_DOUBLE)
+	l1 = CONST_DOUBLE_LOW (op0), h1 = CONST_DOUBLE_HIGH (op0);
+      else
+	l1 = INTVAL (op0), h1 = l1 < 0 ? -1 : 0;
 
       if (GET_CODE (op1) == CONST_DOUBLE)
 	l2 = CONST_DOUBLE_LOW (op1), h2 = CONST_DOUBLE_HIGH (op1);
@@ -3463,11 +3466,15 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* Handle both-operands-constant cases.  We can only add
 	     CONST_INTs to constants since the sum of relocatable symbols
-	     can't be handled by most assemblers.  */
+	     can't be handled by most assemblers.  Don't add CONST_INT
+	     to CONST_INT since overflow won't be computed properly if wider
+	     than HOST_BITS_PER_WIDE_INT.  */
 
-	  if (CONSTANT_P (op0) && GET_CODE (op1) == CONST_INT)
+	  if (CONSTANT_P (op0) && GET_MODE (op0) != VOIDmode
+	      && GET_CODE (op1) == CONST_INT)
 	    return plus_constant (op0, INTVAL (op1));
-	  else if (CONSTANT_P (op1) && GET_CODE (op0) == CONST_INT)
+	  else if (CONSTANT_P (op1) && GET_MODE (op1) != VOIDmode
+		   && GET_CODE (op0) == CONST_INT)
 	    return plus_constant (op1, INTVAL (op0));
 
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
@@ -3542,7 +3549,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    return tem;
 
 	  /* Don't let a relocatable value get a negative coeff.  */
-	  if (GET_CODE (op1) == CONST_INT)
+	  if (GET_CODE (op1) == CONST_INT && GET_MODE (op1) != VOIDmode)
 	    return plus_constant (op0, - INTVAL (op1));
 	  break;
 
