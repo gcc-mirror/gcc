@@ -87,4 +87,4 @@ dtor_section ()							\
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
-  if ((LOG) != 0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
+  if ((LOG) != 0) fprintf ((FILE), "\t.p2align %d\n", LOG)
