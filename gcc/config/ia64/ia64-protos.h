@@ -50,18 +50,18 @@ extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
 extern int destination_operand PARAMS((rtx, enum machine_mode));
-extern int ia64_rap_fp_offset PARAMS((void));
-extern unsigned int ia64_compute_frame_size PARAMS((int));
-extern void save_restore_insns PARAMS((int));
+extern HOST_WIDE_INT ia64_initial_elimination_offset PARAMS((int, int));
 extern void ia64_expand_prologue PARAMS((void));
 extern void ia64_expand_epilogue PARAMS((void));
 extern void ia64_function_prologue PARAMS((FILE *, int));
-extern void ia64_funtion_epilogue PARAMS((FILE *, int));
+extern void ia64_function_epilogue PARAMS((FILE *, int));
 extern int ia64_direct_return PARAMS((void));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ar_lc_reg_operand PARAMS((rtx, enum machine_mode));
+extern int ar_ccv_reg_operand PARAMS((rtx, enum machine_mode));
 
 extern int ia64_move_ok PARAMS((rtx, rtx));
+extern rtx ia64_gp_save_reg PARAMS((int));
 
 extern void ia64_expand_load_address PARAMS((rtx, rtx));
 extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
@@ -69,6 +69,7 @@ extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
 extern void ia64_expand_op_and_fetch PARAMS ((enum fetchop_code,
 					      enum machine_mode, rtx []));
 
+extern void ia64_initialize_trampoline PARAMS((rtx, rtx, rtx));
 extern void ia64_print_operand_address PARAMS((FILE *, rtx));
 extern void ia64_print_operand PARAMS((FILE *, rtx, int));
 extern enum reg_class ia64_secondary_reload_class PARAMS((enum reg_class,
@@ -107,17 +108,10 @@ extern void ia64_encode_section_info PARAMS((tree));
 extern int ia64_register_move_cost PARAMS((enum reg_class, enum reg_class));
 extern int ia64_epilogue_uses PARAMS((int));
 extern void ia64_file_start PARAMS((FILE *));
-extern void ia64_expand_prologue PARAMS((void));
-extern void ia64_expand_epilogue PARAMS((void));
-extern void ia64_function_prologue PARAMS((FILE *, int));
 extern void ia64_output_end_prologue PARAMS((FILE *));
-extern void ia64_function_epilogue PARAMS((FILE *, int));
-extern int ia64_direct_return PARAMS((void));
-extern int ia64_rap_fp_offset PARAMS((void));
 extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
-extern unsigned int ia64_compute_frame_size PARAMS((int));
-extern void save_restore_insns PARAMS((int));
+extern int ia64_dbx_register_number PARAMS((int));
 
 /* ??? Flag defined in toplev.c, for ia64.md -fssa hack.  */
 extern int flag_ssa;

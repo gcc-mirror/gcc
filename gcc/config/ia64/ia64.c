@@ -52,31 +52,6 @@ int ia64_asm_output_label = 0;
 struct rtx_def * ia64_compare_op0;
 struct rtx_def * ia64_compare_op1;
 
-/* Register number where ar.pfs was saved in the prologue, or zero
-   if it was not saved.  */
-
-int ia64_arpfs_regno;
-
-/* Register number where rp was saved in the prologue, or zero if it was
-   not saved.  */
-
-int ia64_rp_regno;
-
-/* Register number where frame pointer was saved in the prologue, or zero
-   if it was not saved.  */
-
-int ia64_fp_regno;
-
-/* Number of input and local registers used.  This is needed for the .regstk
-   directive, and also for debugging info.  */
-
-int ia64_input_regs;
-int ia64_local_regs;
-
-/* If true, then we must emit a .regstk directive.  */
-
-int ia64_need_regstk;
-
 /* Register names for ia64_expand_prologue.  */
 static const char * const ia64_reg_numbers[96] =
 { "r32", "r33", "r34", "r35", "r36", "r37", "r38", "r39",
@@ -121,6 +96,16 @@ const char *ia64_fixed_range_string;
 
 unsigned int ia64_section_threshold;
 
+static int find_gr_spill PARAMS ((int));
+static int next_scratch_gr_reg PARAMS ((void));
+static void mark_reg_gr_used_mask PARAMS ((rtx, void *));
+static void ia64_compute_frame_size PARAMS ((HOST_WIDE_INT));
+static void setup_spill_pointers PARAMS ((int, rtx, HOST_WIDE_INT));
+static void finish_spill_pointers PARAMS ((void));
+static rtx spill_restore_mem PARAMS ((rtx, HOST_WIDE_INT));
+static void do_spill PARAMS ((rtx (*)(rtx, rtx), rtx, HOST_WIDE_INT, rtx));
+static void do_restore PARAMS ((rtx (*)(rtx, rtx), rtx, HOST_WIDE_INT));
+
 static enum machine_mode hfa_element_mode PARAMS ((tree, int));
 static void fix_range PARAMS ((const char *));
 static void ia64_add_gc_roots PARAMS ((void));
@@ -355,6 +340,7 @@ reg_or_8bit_operand (op, mode)
 	  || register_operand (op, mode));
 }
 
+
 /* Return 1 if OP is a register operand, or an 8 bit adjusted immediate
    operand.  */
 
@@ -572,6 +558,18 @@ ar_lc_reg_operand (op, mode)
 	  && GET_CODE (op) == REG
 	  && REGNO (op) == AR_LC_REGNUM);
 }
+
+/* Return 1 if this is the ar.ccv register.  */
+
+int
+ar_ccv_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_MODE (op) == mode || mode == VOIDmode)
+	  && GET_CODE (op) == REG
+	  && REGNO (op) == AR_CCV_REGNUM);
+}
 
 /* Return 1 if the operands of a move are ok.  */
 
@@ -643,6 +641,46 @@ ia64_expand_load_address (dest, src)
   if (temp != dest)
     emit_move_insn (dest, temp);
 }
+
+rtx
+ia64_gp_save_reg (setjmp_p)
+     int setjmp_p;
+{
+  rtx save = cfun->machine->ia64_gp_save;
+
+  if (save != NULL)
+    {
+      /* We can't save GP in a pseudo if we are calling setjmp, because
+	 pseudos won't be restored by longjmp.  For now, we save it in r4.  */
+      /* ??? It would be more efficient to save this directly into a stack
+	 slot.  Unfortunately, the stack slot address gets cse'd across
+	 the setjmp call because the NOTE_INSN_SETJMP note is in the wrong
+	 place.  */
+
+      /* ??? Get the barf bag, Virginia.  We've got to replace this thing
+         in place, since this rtx is used in exception handling receivers.
+         Moreover, we must get this rtx out of regno_reg_rtx or reload
+         will do the wrong thing.  */
+      unsigned int old_regno = REGNO (save);
+      if (setjmp_p && old_regno != GR_REG (4))
+        {
+          REGNO (save) = GR_REG (4);
+          regno_reg_rtx[old_regno] = gen_rtx_raw_REG (DImode, old_regno);
+        }
+    }
+  else
+    {
+      if (setjmp_p)
+	save = gen_rtx_REG (DImode, GR_REG (4));
+      else if (! optimize)
+	save = gen_rtx_REG (DImode, LOC_REG (0));
+      else
+	save = gen_reg_rtx (DImode);
+      cfun->machine->ia64_gp_save = save;
+    }
+
+  return save;
+}
 
 /* Begin the assembly file.  */
 
@@ -680,338 +718,617 @@ ia64_file_start (f)
     fputc ('\n', f);
 }
 
+
 /* Structure to be filled in by ia64_compute_frame_size with register
    save masks and offsets for the current function.  */
 
 struct ia64_frame_info
 {
-  long total_size;		/* # bytes that the entire frame takes up.  */
-  long var_size;		/* # bytes that variables take up.  */
-  long args_size;		/* # bytes that outgoing arguments take up.  */
-  long pretend_size;		/* # bytes that stdarg arguments take up.  */
-  long pretend_pad_size;	/* # bytes padding to align stdarg args.  */
-  long extra_size;		/* # bytes of extra gunk.  */
-  long gr_size;			/* # bytes needed to store general regs.  */
-  long fr_size;			/* # bytes needed to store FP regs.  */
-  long fr_pad_size;		/* # bytes needed to align FP save area.  */
-  long pr_size;			/* # bytes needed to store predicate regs.  */
-  long br_size;			/* # bytes needed to store branch regs.  */
-  long ar_size;			/* # bytes needed to store AR regs.  */
+  HOST_WIDE_INT total_size;	/* size of the stack frame, not including
+				   the caller's scratch area.  */
+  HOST_WIDE_INT spill_cfa_off;	/* top of the reg spill area from the cfa.  */
+  HOST_WIDE_INT spill_size;	/* size of the gr/br/fr spill area.  */
+  HOST_WIDE_INT extra_spill_size;  /* size of spill area for others.  */
   HARD_REG_SET mask;		/* mask of saved registers.  */
-  int initialized;		/* != 0 is frame size already calculated.  */
+  unsigned int gr_used_mask;	/* mask of registers in use as gr spill 
+				   registers or long-term scratches.  */
+  int n_spilled;		/* number of spilled registers.  */
+  int reg_fp;			/* register for fp.  */
+  int reg_save_b0;		/* save register for b0.  */
+  int reg_save_pr;		/* save register for prs.  */
+  int reg_save_ar_pfs;		/* save register for ar.pfs.  */
+  int reg_save_ar_unat;		/* save register for ar.unat.  */
+  int reg_save_ar_lc;		/* save register for ar.lc.  */
+  int n_input_regs;		/* number of input registers used.  */
+  int n_local_regs;		/* number of local registers used.  */
+  int n_output_regs;		/* number of output registers used.  */
+  int n_rotate_regs;		/* number of rotating registers used.  */
+
+  char need_regstk;		/* true if a .regstk directive needed.  */
+  char initialized;		/* true if the data is finalized.  */
 };
 
-/* Current frame information calculated by compute_frame_size.  */
-struct ia64_frame_info current_frame_info;
+/* Current frame information calculated by ia64_compute_frame_size.  */
+static struct ia64_frame_info current_frame_info;
 
-/* Helper function for INITIAL_ELIMINATION_OFFSET.  Return the offset from the
-   frame pointer where b0 is saved.  */
+/* Helper function for ia64_compute_frame_size: find an appropriate general
+   register to spill some special register to.  SPECIAL_SPILL_MASK contains
+   bits in GR0 to GR31 that have already been allocated by this routine.
+   TRY_LOCALS is true if we should attempt to locate a local regnum.  */
 
-int
-ia64_rap_fp_offset ()
+static int
+find_gr_spill (try_locals)
+     int try_locals;
 {
-  return - current_frame_info.br_size;
+  int regno;
+
+  /* If this is a leaf function, first try an otherwise unused
+     call-clobbered register.  */
+  if (current_function_is_leaf)
+    {
+      for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
+	if (! regs_ever_live[regno]
+	    && call_used_regs[regno]
+	    && ! fixed_regs[regno]
+	    && ! global_regs[regno]
+	    && ((current_frame_info.gr_used_mask >> regno) & 1) == 0)
+	  {
+	    current_frame_info.gr_used_mask |= 1 << regno;
+	    return regno;
+	  }
+    }
+
+  if (try_locals)
+    {
+      regno = current_frame_info.n_local_regs;
+      if (regno < 80)
+	{
+	  current_frame_info.n_local_regs = regno + 1;
+	  return LOC_REG (0) + regno;
+	}
+    }
+
+  /* Failed to find a general register to spill to.  Must use stack.  */
+  return 0;
+}
+
+/* In order to make for nice schedules, we try to allocate every temporary
+   to a different register.  We must of course stay away from call-saved,
+   fixed, and global registers.  We must also stay away from registers
+   allocated in current_frame_info.gr_used_mask, since those include regs
+   used all through the prologue.
+
+   Any register allocated here must be used immediately.  The idea is to
+   aid scheduling, not to solve data flow problems.  */
+
+static int last_scratch_gr_reg;
+
+static int
+next_scratch_gr_reg ()
+{
+  int i, regno;
+
+  for (i = 0; i < 32; ++i)
+    {
+      regno = (last_scratch_gr_reg + i + 1) & 31;
+      if (call_used_regs[regno]
+	  && ! fixed_regs[regno]
+	  && ! global_regs[regno]
+	  && ((current_frame_info.gr_used_mask >> regno) & 1) == 0)
+	{
+	  last_scratch_gr_reg = regno;
+	  return regno;
+	}
+    }
+
+  /* There must be _something_ available.  */
+  abort ();
+}
+
+/* Helper function for ia64_compute_frame_size, called through
+   diddle_return_value.  Mark REG in current_frame_info.gr_used_mask.  */
+
+static void
+mark_reg_gr_used_mask (reg, data)
+     rtx reg;
+     void *data ATTRIBUTE_UNUSED;
+{
+  unsigned int regno = REGNO (reg);
+  if (regno < 32)
+    current_frame_info.gr_used_mask |= 1 << regno;
 }
 
 /* Returns the number of bytes offset between the frame pointer and the stack
    pointer for the current function.  SIZE is the number of bytes of space
    needed for local variables.  */
-unsigned int
+
+static void
 ia64_compute_frame_size (size)
-     int size;
+     HOST_WIDE_INT size;
 {
-  int total_size;
-  int extra_size;
-  int gr_size = 0;
-  int fr_size = 0;
-  int fr_pad_size = 0;
-  int pr_size = 0;
-  int br_size = 0;
-  int ar_size = 0;
-  int pretend_pad_size = 0;
-  int tmp;
-  int regno;
+  HOST_WIDE_INT total_size;
+  HOST_WIDE_INT spill_size = 0;
+  HOST_WIDE_INT extra_spill_size = 0;
+  HOST_WIDE_INT pretend_args_size;
   HARD_REG_SET mask;
+  int n_spilled = 0;
+  int spilled_gr_p = 0;
+  int spilled_fr_p = 0;
+  unsigned int regno;
+  int i;
 
-  /* Reload used to round the frame size to STACK_BOUNDARY.  Now we do it
-     here.  */
-  size = IA64_STACK_ALIGN (size);
+  if (current_frame_info.initialized)
+    return;
 
+  memset (&current_frame_info, 0, sizeof current_frame_info);
   CLEAR_HARD_REG_SET (mask);
 
-  /* Calculate space needed for general registers.  */
-  /* We never need to save any of the stacked registers, which are regs
-     32 to 127.  */
-  for (regno = GR_REG (0); regno <= GR_REG (31); regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-      {
-	SET_HARD_REG_BIT (mask, regno);
-	gr_size += 8;
-      }
+  /* Don't allocate scratches to the return register.  */
+  diddle_return_value (mark_reg_gr_used_mask, NULL);
 
-  /* Allocate space to save/restore the unat from.  */
-  if (gr_size != 0
-      || current_function_varargs || current_function_stdarg)
-    gr_size += 8;
+  /* Don't allocate scratches to the EH scratch registers.  */
+  if (cfun->machine->ia64_eh_epilogue_sp)
+    mark_reg_gr_used_mask (cfun->machine->ia64_eh_epilogue_sp, NULL);
+  if (cfun->machine->ia64_eh_epilogue_bsp)
+    mark_reg_gr_used_mask (cfun->machine->ia64_eh_epilogue_bsp, NULL);
 
-  /* Calculate space needed for FP registers.  */
-  for (regno = FR_REG (0); regno <= FR_REG (127); regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-      {
-	SET_HARD_REG_BIT (mask, regno);
-	fr_size += 16;
-      }
+  /* Find the size of the register stack frame.  We have only 80 local
+     registers, because we reserve 8 for the inputs and 8 for the
+     outputs.  */
 
-  /* Calculate space needed for predicate registers.  */
-  for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-      {
-	SET_HARD_REG_BIT (mask, regno);
-	pr_size = 8;
-      }
+  /* Skip HARD_FRAME_POINTER_REGNUM (loc79) when frame_pointer_needed,
+     since we'll be adjusting that down later.  */
+  regno = LOC_REG (78) + ! frame_pointer_needed;
+  for (; regno >= LOC_REG (0); regno--)
+    if (regs_ever_live[regno])
+      break;
+  current_frame_info.n_local_regs = regno - LOC_REG (0) + 1;
 
-  /* Calculate space needed for branch registers.  */
-  for (regno = BR_REG (0); regno <= BR_REG (7); regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-      {
-	SET_HARD_REG_BIT (mask, regno);
-	br_size += 8;
-      }
-
-  /* The FR save area needs to be 16-byte aligned.  */
-  if (fr_size)
+  if (current_function_varargs || current_function_stdarg)
+    current_frame_info.n_input_regs = 8;
+  else
     {
-      tmp = (size + fr_size + br_size);
-      fr_pad_size = IA64_STACK_ALIGN (tmp) - tmp;
+      for (regno = IN_REG (7); regno >= IN_REG (0); regno--)
+	if (regs_ever_live[regno])
+	  break;
+      current_frame_info.n_input_regs = regno - IN_REG (0) + 1;
+    }
+
+  for (regno = OUT_REG (7); regno >= OUT_REG (0); regno--)
+    if (regs_ever_live[regno])
+      break;
+  i = regno - OUT_REG (0) + 1;
+
+  /* When -p profiling, we need one output register for the mcount argument.
+     Likwise for -a profiling for the bb_init_func argument.  For -ax
+     profiling, we need two output registers for the two bb_init_trace_func
+     arguments.  */
+  if (profile_flag || profile_block_flag == 1)
+    i = MAX (i, 1);
+  else if (profile_block_flag == 2)
+    i = MAX (i, 2);
+  current_frame_info.n_output_regs = i;
+
+  /* ??? No rotating register support yet.  */
+  current_frame_info.n_rotate_regs = 0;
+
+  /* Discover which registers need spilling, and how much room that
+     will take.  Begin with floating point and general registers, 
+     which will always wind up on the stack.  */
+
+  for (regno = FR_REG (2); regno <= FR_REG (127); regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      {
+	SET_HARD_REG_BIT (mask, regno);
+	spill_size += 16;
+	n_spilled += 1;
+	spilled_fr_p = 1;
+      }
+
+  for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      {
+	SET_HARD_REG_BIT (mask, regno);
+	spill_size += 8;
+	n_spilled += 1;
+	spilled_gr_p = 1;
+      }
+
+  for (regno = BR_REG (1); regno <= BR_REG (7); regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      {
+	SET_HARD_REG_BIT (mask, regno);
+	spill_size += 8;
+	n_spilled += 1;
+      }
+
+  /* Now come all special registers that might get saved in other
+     general registers.  */
+  
+  if (frame_pointer_needed)
+    {
+      current_frame_info.reg_fp = find_gr_spill (1);
+      /* We should have gotten at least LOC79, since that's what
+	 HARD_FRAME_POINTER_REGNUM is.  */
+      if (current_frame_info.reg_fp == 0)
+	abort ();
+    }
+
+  if (! current_function_is_leaf)
+    {
+      /* Emit a save of BR0 if we call other functions.  Do this even
+	 if this function doesn't return, as EH depends on this to be
+	 able to unwind the stack.  */
+      SET_HARD_REG_BIT (mask, BR_REG (0));
+
+      current_frame_info.reg_save_b0 = find_gr_spill (1);
+      if (current_frame_info.reg_save_b0 == 0)
+	{
+	  spill_size += 8;
+	  n_spilled += 1;
+	}
+
+      /* Similarly for ar.pfs.  */
+      SET_HARD_REG_BIT (mask, AR_PFS_REGNUM);
+      current_frame_info.reg_save_ar_pfs = find_gr_spill (1);
+      if (current_frame_info.reg_save_ar_pfs == 0)
+	{
+	  extra_spill_size += 8;
+	  n_spilled += 1;
+	}
     }
   else
-    fr_pad_size = 0;
+    {
+      if (regs_ever_live[BR_REG (0)] && ! call_used_regs[BR_REG (0)])
+	{
+	  SET_HARD_REG_BIT (mask, BR_REG (0));
+	  spill_size += 8;
+	  n_spilled += 1;
+	}
+    }
 
-  /* AR.LC, for reasons unexplained, is call saved.  */
+  /* Unwind descriptor hackery: things are most efficient if we allocate
+     consecutive GR save registers for RP, PFS, FP in that order. However,
+     it is absolutely critical that FP get the only hard register that's
+     guaranteed to be free, so we allocated it first.  If all three did
+     happen to be allocated hard regs, and are consecutive, rearrange them
+     into the preferred order now.  */
+  if (current_frame_info.reg_fp != 0
+      && current_frame_info.reg_save_b0 == current_frame_info.reg_fp + 1
+      && current_frame_info.reg_save_ar_pfs == current_frame_info.reg_fp + 2)
+    {
+      current_frame_info.reg_save_b0 = current_frame_info.reg_fp;
+      current_frame_info.reg_save_ar_pfs = current_frame_info.reg_fp + 1;
+      current_frame_info.reg_fp = current_frame_info.reg_fp + 2;
+    }
+
+  /* See if we need to store the predicate register block.  */
+  for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      break;
+  if (regno <= PR_REG (63))
+    {
+      SET_HARD_REG_BIT (mask, PR_REG (0));
+      current_frame_info.reg_save_pr = find_gr_spill (1);
+      if (current_frame_info.reg_save_pr == 0)
+	{
+	  extra_spill_size += 8;
+	  n_spilled += 1;
+	}
+
+      /* ??? Mark them all as used so that register renaming and such
+	 are free to use them.  */
+      for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
+	regs_ever_live[regno] = 1;
+    }
+
+  /* If we're forced to use st8.spill, we're forced to save and restore
+     ar.unat as well.  */
+  if (spilled_gr_p || current_function_varargs || current_function_stdarg)
+    {
+      SET_HARD_REG_BIT (mask, AR_UNAT_REGNUM);
+      current_frame_info.reg_save_ar_unat = find_gr_spill (spill_size == 0);
+      if (current_frame_info.reg_save_ar_unat == 0)
+	{
+	  extra_spill_size += 8;
+	  n_spilled += 1;
+	}
+    }
+
   if (regs_ever_live[AR_LC_REGNUM])
     {
       SET_HARD_REG_BIT (mask, AR_LC_REGNUM);
-      ar_size = 8;
+      current_frame_info.reg_save_ar_lc = find_gr_spill (spill_size == 0);
+      if (current_frame_info.reg_save_ar_lc == 0)
+	{
+	  extra_spill_size += 8;
+	  n_spilled += 1;
+	}
     }
 
-  /* If we have an odd number of words of pretend arguments written to the
-     stack, then the FR save area will be unaligned.  We pad below this area
-     to keep things 16 byte aligned.  This needs to be kept distinct, to
-     avoid confusing it with padding added below the GR save area, which does
-     not affect the FR area alignment.  */
-  pretend_pad_size = current_function_pretend_args_size % 16;
+  /* If we have an odd number of words of pretend arguments written to
+     the stack, then the FR save area will be unaligned.  We round the
+     size of this area up to keep things 16 byte aligned.  */
+  if (spilled_fr_p)
+    pretend_args_size = IA64_STACK_ALIGN (current_function_pretend_args_size);
+  else
+    pretend_args_size = current_function_pretend_args_size;
 
-  /* The 16 bytes is for the scratch area.  */
-  tmp = (size + gr_size + fr_pad_size + fr_size + pr_size + br_size + ar_size
-	 + current_function_outgoing_args_size + 16);
-  tmp += (current_function_pretend_args_size
-	  ? current_function_pretend_args_size - 16
-	  : 0) + pretend_pad_size;
-  total_size = IA64_STACK_ALIGN (tmp);
-  extra_size = total_size - tmp + 16;
+  total_size = (spill_size + extra_spill_size + size + pretend_args_size
+		+ current_function_outgoing_args_size);
+  total_size = IA64_STACK_ALIGN (total_size);
 
-  /* If this is a leaf routine, and if there is no stack space needed for
-     register saves, then don't allocate the 16 byte scratch area.  */
-  if (total_size == 16 && current_function_is_leaf)
-    {
-      total_size = 0;
-      extra_size = 0;
-    }
+  /* We always use the 16-byte scratch area provided by the caller, but
+     if we are a leaf function, there's no one to which we need to provide
+     a scratch area.  */
+  if (current_function_is_leaf)
+    total_size = MAX (0, total_size - 16);
 
   current_frame_info.total_size = total_size;
-  current_frame_info.var_size = size;
-  current_frame_info.args_size = current_function_outgoing_args_size;
-  current_frame_info.pretend_size
-    = (current_function_pretend_args_size
-       ? current_function_pretend_args_size - 16
-       : 0);
-  current_frame_info.pretend_pad_size = pretend_pad_size;
-  current_frame_info.extra_size = extra_size;
-  current_frame_info.gr_size = gr_size;
-  current_frame_info.fr_size = fr_size;
-  current_frame_info.fr_pad_size = fr_pad_size;
-  current_frame_info.pr_size = pr_size;
-  current_frame_info.br_size = br_size;
-  current_frame_info.ar_size = ar_size;
+  current_frame_info.spill_cfa_off = pretend_args_size - 16;
+  current_frame_info.spill_size = spill_size;
+  current_frame_info.extra_spill_size = extra_spill_size;
   COPY_HARD_REG_SET (current_frame_info.mask, mask);
+  current_frame_info.n_spilled = n_spilled;
   current_frame_info.initialized = reload_completed;
-
-  return total_size;
 }
 
-void
-save_restore_insns (save_p)
-     int save_p;
+/* Compute the initial difference between the specified pair of registers.  */
+
+HOST_WIDE_INT
+ia64_initial_elimination_offset (from, to)
+     int from, to;
 {
-  rtx insn;
+  HOST_WIDE_INT offset;
 
-  if (current_frame_info.gr_size
-      + current_frame_info.fr_size
-      + current_frame_info.br_size
-      + current_frame_info.pr_size
-      + current_frame_info.ar_size)
+  ia64_compute_frame_size (get_frame_size ());
+  switch (from)
     {
-      rtx tmp_reg = gen_rtx_REG (DImode, GR_REG (2));
-      rtx tmp_post_inc = gen_rtx_POST_INC (DImode, tmp_reg);
-      rtx tmp2_reg = gen_rtx_REG (DImode, GR_REG (3));
-      int offset = (current_frame_info.total_size
-		    - (current_frame_info.gr_size + current_frame_info.fr_size
-		       + current_frame_info.fr_pad_size
-		       + current_frame_info.br_size
-		       + current_frame_info.pr_size
-		       + current_frame_info.ar_size
-		       + current_frame_info.var_size
-		       + current_frame_info.pretend_size
-		       + current_frame_info.pretend_pad_size));
-      rtx offset_rtx;
-      int regno;
+    case FRAME_POINTER_REGNUM:
+      if (to == HARD_FRAME_POINTER_REGNUM)
+	{
+	  if (current_function_is_leaf)
+	    offset = -current_frame_info.total_size;
+	  else
+	    offset = -(current_frame_info.total_size
+		       - current_function_outgoing_args_size - 16);
+	}
+      else if (to == STACK_POINTER_REGNUM)
+	{
+	  if (current_function_is_leaf)
+	    offset = 0;
+	  else
+	    offset = 16 + current_function_outgoing_args_size;
+	}
+      else
+	abort ();
+      break;
 
-      /* If there is a frame pointer, then we use it instead of the stack
-	 pointer, so that the stack pointer does not need to be valid when
-	 the epilogue starts.  See EXIT_IGNORE_STACK.  */
-      if (frame_pointer_needed)
-	offset = offset - current_frame_info.total_size;
+    case ARG_POINTER_REGNUM:
+      /* Arguments start above the 16 byte save area, unless stdarg
+	 in which case we store through the 16 byte save area.  */
+      if (to == HARD_FRAME_POINTER_REGNUM)
+	offset = 16 - current_function_pretend_args_size;
+      else if (to == STACK_POINTER_REGNUM)
+	offset = (current_frame_info.total_size
+		  + 16 - current_function_pretend_args_size);
+      else
+	abort ();
+      break;
 
-      if (CONST_OK_FOR_I (offset))
-	offset_rtx = GEN_INT (offset);
+    case RETURN_ADDRESS_POINTER_REGNUM:
+      offset = 0;
+      break;
+
+    default:
+      abort ();
+    }
+
+  return offset;
+}
+
+/* If there are more than a trivial number of register spills, we use
+   two interleaved iterators so that we can get two memory references
+   per insn group.
+
+   In order to simplify things in the prologue and epilogue expanders,
+   we use helper functions to fix up the memory references after the
+   fact with the appropriate offsets to a POST_MODIFY memory mode.
+   The following data structure tracks the state of the two iterators
+   while insns are being emitted.  */
+
+struct spill_fill_data
+{
+  rtx init_after;		/* point at which to emit intializations */
+  rtx init_reg[2];		/* initial base register */
+  rtx iter_reg[2];		/* the iterator registers */
+  rtx *prev_addr[2];		/* address of last memory use */
+  HOST_WIDE_INT prev_off[2];	/* last offset */
+  int n_iter;			/* number of iterators in use */
+  int next_iter;		/* next iterator to use */
+  unsigned int save_gr_used_mask;
+};
+
+static struct spill_fill_data spill_fill_data;
+
+static void
+setup_spill_pointers (n_spills, init_reg, cfa_off)
+     int n_spills;
+     rtx init_reg;
+     HOST_WIDE_INT cfa_off;
+{
+  int i;
+
+  spill_fill_data.init_after = get_last_insn ();
+  spill_fill_data.init_reg[0] = init_reg;
+  spill_fill_data.init_reg[1] = init_reg;
+  spill_fill_data.prev_addr[0] = NULL;
+  spill_fill_data.prev_addr[1] = NULL;
+  spill_fill_data.prev_off[0] = cfa_off;
+  spill_fill_data.prev_off[1] = cfa_off;
+  spill_fill_data.next_iter = 0;
+  spill_fill_data.save_gr_used_mask = current_frame_info.gr_used_mask;
+
+  spill_fill_data.n_iter = 1 + (n_spills > 2);
+  for (i = 0; i < spill_fill_data.n_iter; ++i)
+    {
+      int regno = next_scratch_gr_reg ();
+      spill_fill_data.iter_reg[i] = gen_rtx_REG (DImode, regno);
+      current_frame_info.gr_used_mask |= 1 << regno;
+    }
+}
+
+static void
+finish_spill_pointers ()
+{
+  current_frame_info.gr_used_mask = spill_fill_data.save_gr_used_mask;
+}
+
+static rtx
+spill_restore_mem (reg, cfa_off)
+     rtx reg;
+     HOST_WIDE_INT cfa_off;
+{
+  int iter = spill_fill_data.next_iter;
+  HOST_WIDE_INT disp = spill_fill_data.prev_off[iter] - cfa_off;
+  rtx disp_rtx = GEN_INT (disp);
+  rtx mem;
+
+  if (spill_fill_data.prev_addr[iter])
+    {
+      if (CONST_OK_FOR_N (disp))
+	*spill_fill_data.prev_addr[iter]
+	  = gen_rtx_POST_MODIFY (DImode, spill_fill_data.iter_reg[iter],
+				 gen_rtx_PLUS (DImode,
+					       spill_fill_data.iter_reg[iter],
+					       disp_rtx));
       else
 	{
-	  offset_rtx = tmp_reg;
-	  insn = emit_insn (gen_movdi (tmp_reg, GEN_INT (offset)));
-	  if (save_p)
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	}
-      insn = emit_insn (gen_adddi3 (tmp_reg,
-				    (frame_pointer_needed ? frame_pointer_rtx
-				     : stack_pointer_rtx),
-				    offset_rtx));
-      if (save_p)
-	RTX_FRAME_RELATED_P (insn) = 1;
-
-      /* If one is used, we save/restore all of them.  */
-      for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
-	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
-	  {
-	    rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
-	    if (save_p)
-	      {
-		insn = emit_insn (gen_pr_spill (tmp2_reg));
-		RTX_FRAME_RELATED_P (insn) = 1;
-		insn = emit_insn (gen_movdi (mem, tmp2_reg));
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      }
-	    else
-	      {
-		insn = emit_insn (gen_movdi (tmp2_reg, mem));
-		insn = emit_insn (gen_pr_restore (tmp2_reg));
-	      }
-	    break;
-	  }
-
-      /* Must save/restore ar.unat if any GR is spilled/restored.  */
-      if (current_frame_info.gr_size != 0
-	  || current_function_varargs || current_function_stdarg)
-	{
-	  rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
-	  if (save_p)
+	  /* ??? Could use register post_modify for loads.  */
+	  if (! CONST_OK_FOR_I (disp))
 	    {
-	      insn = emit_insn (gen_unat_spill (tmp2_reg));
-	      if (save_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      insn = emit_insn (gen_movdi (mem, tmp2_reg));
-	      if (save_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
+	      rtx tmp = gen_rtx_REG (DImode, next_scratch_gr_reg ());
+	      emit_move_insn (tmp, disp_rtx);
+	      disp_rtx = tmp;
 	    }
-	  else
-	    {
-	      insn = emit_insn (gen_movdi (tmp2_reg, mem));
-	      if (save_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      /* The restore happens after the last ld8.fill instruction.  */
-	    }
-	}
-
-      for (regno = GR_REG (0); regno <= GR_REG (127); regno++)
-	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
-	  {
-	    rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
-	    if (save_p)
-	      insn = emit_insn (gen_gr_spill (mem,
-					      gen_rtx_REG (DImode, regno)));
-	    else
-	      insn = emit_insn (gen_gr_restore (gen_rtx_REG (DImode, regno),
-						mem));
-	    if (save_p)
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	  }
-
-      /* Now restore the unat register if necessary.  */
-      if ((current_frame_info.gr_size != 0
-	   || current_function_varargs || current_function_stdarg)
-	  && ! save_p)
-	emit_insn (gen_unat_restore (tmp2_reg));
-
-      for (regno = FR_REG (0); regno <= FR_REG (127); regno++)
-	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
-	  {
-	    rtx mem = gen_rtx_MEM (XFmode, tmp_post_inc);
-	    if (save_p)
-	      insn = emit_insn (gen_fr_spill (mem,
-					      gen_rtx_REG (XFmode, regno)));
-	    else
-	      insn = emit_insn (gen_fr_restore (gen_rtx_REG (XFmode, regno),
-						mem));
-	    if (save_p)
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	  }
-
-      for (regno = BR_REG (0); regno <= BR_REG (7); regno++)
-	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
-	  {
-	    rtx src, dest;
-
-	    if (save_p)
-	      {
-		src = gen_rtx_REG (DImode, regno);
-		dest = gen_rtx_MEM (DImode, tmp_post_inc);
-	      }
-	    else
-	      {
-		src = gen_rtx_MEM (DImode, tmp_post_inc);
-		dest = gen_rtx_REG (DImode, regno);
-	      }
-
-	    insn = emit_insn (gen_movdi (tmp2_reg, src));
-	    if (save_p)
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    insn = emit_insn (gen_movdi (dest, tmp2_reg));
-	    if (save_p)
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	  }
-
-      if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_LC_REGNUM))
-	{
-	  rtx src, dest;
-
-	  if (save_p)
-	    {
-	      src = gen_rtx_REG (DImode, AR_LC_REGNUM);
-	      dest = gen_rtx_MEM (DImode, tmp_post_inc);
-	    }
-	  else
-	    {
-	      src = gen_rtx_MEM (DImode, tmp_post_inc);
-	      dest = gen_rtx_REG (DImode, AR_LC_REGNUM);
-	    }
-
-	  insn = emit_insn (gen_movdi (tmp2_reg, src));
-	  if (save_p)
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	  insn = emit_insn (gen_movdi (dest, tmp2_reg));
-	  if (save_p)
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	  emit_insn (gen_adddi3 (spill_fill_data.iter_reg[iter],
+				 spill_fill_data.iter_reg[iter], disp_rtx));
 	}
     }
+  /* Micro-optimization: if we've created a frame pointer, it's at
+     CFA 0, which may allow the real iterator to be initialized lower,
+     slightly increasing parallelism.  Also, if there are few saves
+     it may eliminate the iterator entirely.  */
+  else if (disp == 0
+	   && spill_fill_data.init_reg[iter] == stack_pointer_rtx
+	   && frame_pointer_needed)
+    {
+      mem = gen_rtx_MEM (GET_MODE (reg), hard_frame_pointer_rtx);
+      MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+      return mem;
+    }
+  else
+    {
+      rtx seq;
+
+      if (disp == 0)
+	seq = gen_movdi (spill_fill_data.iter_reg[iter],
+			 spill_fill_data.init_reg[iter]);
+      else
+	{
+	  start_sequence ();
+
+	  if (! CONST_OK_FOR_I (disp))
+	    {
+	      rtx tmp = gen_rtx_REG (DImode, next_scratch_gr_reg ());
+	      emit_move_insn (tmp, disp_rtx);
+	      disp_rtx = tmp;
+	    }
+
+	  emit_insn (gen_adddi3 (spill_fill_data.iter_reg[iter],
+				 spill_fill_data.init_reg[iter],
+				 disp_rtx));
+
+	  seq = gen_sequence ();
+	  end_sequence ();
+	}
+
+      /* Careful for being the first insn in a sequence.  */
+      if (spill_fill_data.init_after)
+	spill_fill_data.init_after
+	  = emit_insn_after (seq, spill_fill_data.init_after);
+      else
+	spill_fill_data.init_after
+	  = emit_insn_before (seq, get_insns ());
+    }
+
+  mem = gen_rtx_MEM (GET_MODE (reg), spill_fill_data.iter_reg[iter]);
+
+  /* ??? Not all of the spills are for varargs, but some of them are.
+     The rest of the spills belong in an alias set of their own.  But
+     it doesn't actually hurt to include them here.  */
+  MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+
+  spill_fill_data.prev_addr[iter] = &XEXP (mem, 0);
+  spill_fill_data.prev_off[iter] = cfa_off;
+
+  if (++iter >= spill_fill_data.n_iter)
+    iter = 0;
+  spill_fill_data.next_iter = iter;
+
+  return mem;
+}
+
+static void
+do_spill (move_fn, reg, cfa_off, frame_reg)
+     rtx (*move_fn) PARAMS ((rtx, rtx));
+     rtx reg, frame_reg;
+     HOST_WIDE_INT cfa_off;
+{
+  rtx mem, insn;
+
+  mem = spill_restore_mem (reg, cfa_off);
+  insn = emit_insn ((*move_fn) (mem, reg));
+
+  if (frame_reg)
+    {
+      rtx base;
+      HOST_WIDE_INT off;
+
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      /* Don't even pretend that the unwind code can intuit its way 
+	 through a pair of interleaved post_modify iterators.  Just
+	 provide the correct answer.  */
+
+      if (frame_pointer_needed)
+	{
+	  base = hard_frame_pointer_rtx;
+	  off = - cfa_off;
+	}
+      else
+	{
+	  base = stack_pointer_rtx;
+	  off = current_frame_info.total_size - cfa_off;
+	}
+
+      REG_NOTES (insn)
+	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+		gen_rtx_SET (VOIDmode,
+			     gen_rtx_MEM (GET_MODE (reg),
+					  plus_constant (base, off)),
+			     frame_reg),
+		REG_NOTES (insn));
+    }
+}
+
+static void
+do_restore (move_fn, reg, cfa_off)
+     rtx (*move_fn) PARAMS ((rtx, rtx));
+     rtx reg;
+     HOST_WIDE_INT cfa_off;
+{
+  emit_insn ((*move_fn) (reg, spill_restore_mem (reg, cfa_off)));
 }
 
 
@@ -1023,33 +1340,37 @@ save_restore_insns (save_p)
    insn to prevent such scheduling.
 
    Also any insns generated here should have RTX_FRAME_RELATED_P(insn) = 1
-   so that the debug info generation code can handle them properly.  */
+   so that the debug info generation code can handle them properly.
+
+   The register save area is layed out like so:
+   cfa+16
+	[ varargs spill area ]
+	[ fr register spill area ]
+	[ br register spill area ]
+	[ ar register spill area ]
+	[ pr register spill area ]
+	[ gr register spill area ] */
 
 /* ??? Get inefficient code when the frame size is larger than can fit in an
    adds instruction.  */
 
-/* ??? If this is a leaf function, then fp/rp/ar.pfs should be put in the
-   low 32 regs.  */
-
-/* ??? Should not reserve a local register for rp/ar.pfs.  Should
-   instead check to see if any local registers are unused, and if so,
-   allocate them to rp/ar.pfs in that order.  Not sure what to do about
-   fp, we may still need to reserve a local register for it.  */
-
 void
 ia64_expand_prologue ()
 {
-  rtx insn, offset;
-  int i, locals, inputs, outputs, rotates;
-  int frame_size = ia64_compute_frame_size (get_frame_size ());
-  int epilogue_p;
-  edge e;
+  rtx insn, ar_pfs_save_reg, ar_unat_save_reg;
+  int i, epilogue_p, regno, alt_regno, cfa_off, n_varargs;
+  rtx reg, alt_reg;
 
-  /* If there is no epilogue, then we don't need some prologue insns.  We
-     need to avoid emitting the dead prologue insns, because flow will complain
-     about them.  */
+  ia64_compute_frame_size (get_frame_size ());
+  last_scratch_gr_reg = 15;
+
+  /* If there is no epilogue, then we don't need some prologue insns.
+     We need to avoid emitting the dead prologue insns, because flow
+     will complain about them.  */
   if (optimize)
     {
+      edge e;
+
       for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
 	if ((e->flags & EDGE_FAKE) == 0
 	    && (e->flags & EDGE_FALLTHRU) != 0)
@@ -1059,193 +1380,313 @@ ia64_expand_prologue ()
   else
     epilogue_p = 1;
 
-  /* Find the highest local register used.  */
-  /* We have only 80 local registers, because we reserve 8 for the inputs
-     and 8 for the outputs.  */
-
-  for (i = LOC_REG (79); i >= LOC_REG (0); i--)
-    if (regs_ever_live[i])
-      break;
-  locals = i - LOC_REG (0) + 1;
-
-  /* Likewise for inputs.  */
-
-  for (i = IN_REG (7); i >= IN_REG (0); i--)
-    if (regs_ever_live[i])
-      break;
-  inputs = i - IN_REG (0) + 1;
-
-#if 0
-  /* If the function was declared with syscall_linkage, then we may need to
-     preserve all declared input registers, even if they weren't used.
-     Currently, syscall_linkage does not have this effect.  */
-
-  if (lookup_attribute ("syscall_linkage",
-			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
-    inputs = MAX (inputs, current_function_args_info.words);
-#endif
-
-  /* Likewise for outputs.  */
-
-  for (i = OUT_REG (7); i >= OUT_REG (0); i--)
-    if (regs_ever_live[i])
-      break;
-  outputs = i - OUT_REG (0) + 1;
-
-  /* When -p profiling, we need one output register for the mcount argument.
-     Likwise for -a profiling for the bb_init_func argument.  For -ax
-     profiling, we need two output registers for the two bb_init_trace_func
-     arguments.  */
-  if (profile_flag || profile_block_flag == 1)
-    outputs = MAX (outputs, 1);
-  else if (profile_block_flag == 2)
-    outputs = MAX (outputs, 2);
-
-  /* No rotating register support as yet.  */
-
-  rotates = 0;
-
-  /* Allocate two extra locals for saving/restoring rp and ar.pfs.  Also
-     allocate one local for use as the frame pointer if frame_pointer_needed
-     is true.  */
-  /* ??? If this is a leaf function, then we aren't using one of these local
-     registers for the RP anymore.  */
-  locals += 2 + frame_pointer_needed;
-
-  /* Save these values in global registers for debugging info.  */
-  ia64_input_regs = inputs;
-  ia64_local_regs = locals;
-
   /* Set the local, input, and output register names.  We need to do this
      for GNU libc, which creates crti.S/crtn.S by splitting initfini.c in
      half.  If we use in/loc/out register names, then we get assembler errors
-     in crtn.S because there is no alloc insn or regstk directive in there.
-     We give in/loc/out names to unused registers, to make invalid uses of
-     them easy to spot.  */
+     in crtn.S because there is no alloc insn or regstk directive in there.  */
   if (! TARGET_REG_NAMES)
     {
-      for (i = 0; i < 8; i++)
-	{
-	  if (i < inputs)
-	    reg_names[IN_REG (i)] = ia64_reg_numbers[i];
-	  else
-	    reg_names[IN_REG (i)] = ia64_input_reg_names[i];
-	}
-      for (i = 0; i < 80; i++)
-	{
-	  if (i < locals)
-	    reg_names[LOC_REG (i)] = ia64_reg_numbers[inputs + i];
-	  else
-	    reg_names[LOC_REG (i)] = ia64_local_reg_names[i];
-	}
-      for (i = 0; i < 8; i++)
-	{
-	  if (i < outputs)
-	    reg_names[OUT_REG (i)] = ia64_reg_numbers[inputs + locals + i];
-	  else
-	    reg_names[OUT_REG (i)] = ia64_output_reg_names[i];
-	}
+      int inputs = current_frame_info.n_input_regs;
+      int locals = current_frame_info.n_local_regs;
+      int outputs = current_frame_info.n_output_regs;
+
+      for (i = 0; i < inputs; i++)
+	reg_names[IN_REG (i)] = ia64_reg_numbers[i];
+      for (i = 0; i < locals; i++)
+	reg_names[LOC_REG (i)] = ia64_reg_numbers[inputs + i];
+      for (i = 0; i < outputs; i++)
+	reg_names[OUT_REG (i)] = ia64_reg_numbers[inputs + locals + i];
     }
 
-  /* Set the frame pointer register name now that it is known, and the
-     local register names are known.  */
-  if (frame_pointer_needed)
+  /* Set the frame pointer register name.  The regnum is logically loc79,
+     but of course we'll not have allocated that many locals.  Rather than
+     worrying about renumbering the existing rtxs, we adjust the name.  */
+  if (current_frame_info.reg_fp)
     {
-      reg_names[FRAME_POINTER_REGNUM]
-	= reg_names[LOC_REG (locals - 3)];
-      ia64_fp_regno = LOC_REG (inputs + locals - 3);
+      const char *tmp = reg_names[HARD_FRAME_POINTER_REGNUM];
+      reg_names[HARD_FRAME_POINTER_REGNUM]
+	= reg_names[current_frame_info.reg_fp];
+      reg_names[current_frame_info.reg_fp] = tmp;
     }
-  else
-    ia64_fp_regno = 0;
 
-  /* We don't need an alloc instruction if this is a leaf function, and the
-     locals and outputs are both zero sized.  Since we have already allocated
-     two locals for rp and ar.pfs, we check for two locals.  */
-  /* Leaf functions can use output registers as call-clobbered temporaries.  */
-  if (locals == 2 && outputs == 0 && current_function_is_leaf)
+  /* Fix up the return address placeholder.  */
+  /* ??? We can fail if __builtin_return_address is used, and we didn't
+     allocate a register in which to save b0.  I can't think of a way to
+     eliminate RETURN_ADDRESS_POINTER_REGNUM to a local register and
+     then be sure that I got the right one.  Further, reload doesn't seem
+     to care if an eliminable register isn't used, and "eliminates" it
+     anyway.  */
+  if (regs_ever_live[RETURN_ADDRESS_POINTER_REGNUM]
+      && current_frame_info.reg_save_b0 != 0)
+    XINT (return_address_pointer_rtx, 0) = current_frame_info.reg_save_b0;
+
+  /* We don't need an alloc instruction if we've used no outputs or locals.  */
+  if (current_frame_info.n_local_regs == 0
+      && current_frame_info.n_output_regs == 0)
     {
       /* If there is no alloc, but there are input registers used, then we
 	 need a .regstk directive.  */
-      if (TARGET_REG_NAMES)
-	ia64_need_regstk = 1;
-      else
-	ia64_need_regstk = 0;
-
-      ia64_arpfs_regno = 0;
-      ia64_rp_regno = 0;
+      current_frame_info.need_regstk = (TARGET_REG_NAMES != 0);
+      ar_pfs_save_reg = NULL_RTX;
     }
   else
     {
-      ia64_need_regstk = 0;
-      ia64_arpfs_regno = LOC_REG (locals - 1);
+      current_frame_info.need_regstk = 0;
 
-      insn = emit_insn (gen_alloc (gen_rtx_REG (DImode, ia64_arpfs_regno),
-				   GEN_INT (inputs), GEN_INT (locals),
-				   GEN_INT (outputs), GEN_INT (rotates)));
-      RTX_FRAME_RELATED_P (insn) = 1;
-
-      /* Emit a save of BR_REG (0) if we call other functions.
-	 Do this even if this function doesn't return, as EH
-         depends on this to be able to unwind the stack.  */
-      if (! current_function_is_leaf)
-	{
-	  rtx ia64_rp_reg;
-
-	  ia64_rp_regno = LOC_REG (locals - 2);
-	  ia64_rp_reg = gen_rtx_REG (DImode, ia64_rp_regno);
-	  insn = emit_move_insn (ia64_rp_reg, gen_rtx_REG (DImode,
-							   BR_REG (0)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  if (! epilogue_p)
-	    {
-	      /* If we don't have an epilogue, then the return value
-		 doesn't appear to be needed and the above store will
-		 appear dead and will elicit a warning from flow.  */
-	      emit_insn (gen_rtx_USE (VOIDmode, ia64_rp_reg));
-	    }
-
-	  /* Fix up the return address placeholder.  */
-	  if (regs_ever_live[RETURN_ADDRESS_POINTER_REGNUM])
-	    XINT (return_address_pointer_rtx, 0) = ia64_rp_regno;
-	}
+      if (current_frame_info.reg_save_ar_pfs)
+	regno = current_frame_info.reg_save_ar_pfs;
       else
-	ia64_rp_regno = 0;
+	regno = next_scratch_gr_reg ();
+      ar_pfs_save_reg = gen_rtx_REG (DImode, regno);
+
+      insn = emit_insn (gen_alloc (ar_pfs_save_reg, 
+				   GEN_INT (current_frame_info.n_input_regs),
+				   GEN_INT (current_frame_info.n_local_regs),
+				   GEN_INT (current_frame_info.n_output_regs),
+				   GEN_INT (current_frame_info.n_rotate_regs)));
+      RTX_FRAME_RELATED_P (insn) = (current_frame_info.reg_save_ar_pfs != 0);
     }
 
-  /* Set up frame pointer and stack pointer.  */
+  /* Set up frame pointer, stack pointer, and spill iterators.  */
+
+  n_varargs = current_function_pretend_args_size / UNITS_PER_WORD;
+  setup_spill_pointers (current_frame_info.n_spilled + n_varargs,
+			stack_pointer_rtx, 0);
+
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_movdi (hard_frame_pointer_rtx, stack_pointer_rtx));
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-  if (frame_size != 0)
-    {
-      if (CONST_OK_FOR_I (-frame_size))
-	offset = GEN_INT (-frame_size);
-      else
-	{
-	  /* ??? We use r2 to tell process_set that this is a stack pointer
-	     decrement.  See also ia64_expand_epilogue.  */
-	  offset = gen_rtx_REG (DImode, GR_REG (2));
-	  insn = emit_insn (gen_movdi (offset, GEN_INT (-frame_size)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-      /* If there is a frame pointer, then we need to make the stack pointer
-	 decrement depend on the frame pointer, so that the stack pointer
-	 update won't be moved past fp-relative stores to the frame.  */
-      if (frame_pointer_needed)
-	insn = emit_insn (gen_prologue_allocate_stack (stack_pointer_rtx,
-						       stack_pointer_rtx,
-						       offset,
-						       hard_frame_pointer_rtx));
-      else
-	insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				      offset));
+      insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  /* Save registers to frame.  */
-  save_restore_insns (1);
+  if (current_frame_info.total_size != 0)
+    {
+      rtx frame_size_rtx = GEN_INT (- current_frame_info.total_size);
+      rtx offset;
+
+      if (CONST_OK_FOR_I (- current_frame_info.total_size))
+	offset = frame_size_rtx;
+      else
+	{
+	  regno = next_scratch_gr_reg ();
+ 	  offset = gen_rtx_REG (DImode, regno);
+	  emit_move_insn (offset, frame_size_rtx);
+	}
+
+      insn = emit_insn (gen_adddi3 (stack_pointer_rtx,
+				    stack_pointer_rtx, offset));
+
+      if (! frame_pointer_needed)
+	{
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (GET_CODE (offset) != CONST_INT)
+	    {
+	      REG_NOTES (insn)
+		= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (VOIDmode,
+				     stack_pointer_rtx,
+				     gen_rtx_PLUS (DImode,
+						   stack_pointer_rtx,
+						   frame_size_rtx)),
+			REG_NOTES (insn));
+	    }
+	}
+
+      /* ??? At this point we must generate a magic insn that appears to
+	 modify the stack pointer, the frame pointer, and all spill
+	 iterators.  This would allow the most scheduling freedom.  For
+	 now, just hard stop.  */
+      emit_insn (gen_blockage ());
+    }
+
+  /* Must copy out ar.unat before doing any integer spills.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM))
+    {
+      if (current_frame_info.reg_save_ar_unat)
+	ar_unat_save_reg
+	  = gen_rtx_REG (DImode, current_frame_info.reg_save_ar_unat);
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  ar_unat_save_reg = gen_rtx_REG (DImode, alt_regno);
+	  current_frame_info.gr_used_mask |= 1 << alt_regno;
+	}
+
+      reg = gen_rtx_REG (DImode, AR_UNAT_REGNUM);
+      insn = emit_move_insn (ar_unat_save_reg, reg);
+      RTX_FRAME_RELATED_P (insn) = (current_frame_info.reg_save_ar_unat != 0);
+
+      /* Even if we're not going to generate an epilogue, we still
+	 need to save the register so that EH works.  */
+      if (! epilogue_p && current_frame_info.reg_save_ar_unat)
+	emit_insn (gen_rtx_USE (VOIDmode, ar_unat_save_reg));
+    }
+  else
+    ar_unat_save_reg = NULL_RTX;
+
+  /* Spill all varargs registers.  Do this before spilling any GR registers,
+     since we want the UNAT bits for the GR registers to override the UNAT
+     bits from varargs, which we don't care about.  */
+
+  cfa_off = -16;
+  for (regno = GR_ARG_FIRST + 7; n_varargs > 0; --n_varargs, --regno)
+    {
+      reg = gen_rtx_REG (DImode, regno);
+
+      /* ??? These aren't really "frame related" in the unwind sense,
+	 but marking them so gives us the chance to emit .mem.offset
+	 markers so that we don't get assembler WAW warnings.  */
+      do_spill (gen_gr_spill, reg, cfa_off += 8, reg);
+    }
+
+  /* Locate the bottom of the register save area.  */
+  cfa_off = (current_frame_info.spill_cfa_off
+	     + current_frame_info.spill_size
+	     + current_frame_info.extra_spill_size);
+
+  /* Save the predicate register block either in a register or in memory.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, PR_REG (0)))
+    {
+      reg = gen_rtx_REG (DImode, PR_REG (0));
+      if (current_frame_info.reg_save_pr != 0)
+	{
+	  alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_pr);
+	  insn = emit_move_insn (alt_reg, reg);
+
+	  /* ??? Denote pr spill/fill by a DImode move that modifies all
+	     64 hard registers.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (VOIDmode, alt_reg, reg),
+			REG_NOTES (insn));
+
+	  /* Even if we're not going to generate an epilogue, we still
+	     need to save the register so that EH works.  */
+	  if (! epilogue_p)
+	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	}
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  insn = emit_move_insn (alt_reg, reg);
+	  do_spill (gen_movdi, alt_reg, cfa_off, reg);
+	  cfa_off -= 8;
+	}
+    }
+
+  /* Handle AR regs in numerical order.  All of them get special handling.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM)
+      && current_frame_info.reg_save_ar_unat == 0)
+    {
+      reg = gen_rtx_REG (DImode, AR_UNAT_REGNUM);
+      do_spill (gen_movdi, ar_unat_save_reg, cfa_off, reg);
+      cfa_off -= 8;
+    }
+
+  /* The alloc insn already copied ar.pfs into a general register.  The
+     only thing we have to do now is copy that register to a stack slot
+     if we'd not allocated a local register for the job.  */
+  if (current_frame_info.reg_save_ar_pfs == 0
+      && ! current_function_is_leaf)
+    {
+      reg = gen_rtx_REG (DImode, AR_PFS_REGNUM);
+      do_spill (gen_movdi, ar_pfs_save_reg, cfa_off, reg);
+      cfa_off -= 8;
+    }
+
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_LC_REGNUM))
+    {
+      reg = gen_rtx_REG (DImode, AR_LC_REGNUM);
+      if (current_frame_info.reg_save_ar_lc != 0)
+	{
+	  alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_ar_lc);
+	  insn = emit_move_insn (alt_reg, reg);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  /* Even if we're not going to generate an epilogue, we still
+	     need to save the register so that EH works.  */
+	  if (! epilogue_p)
+	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	}
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  emit_move_insn (alt_reg, reg);
+	  do_spill (gen_movdi, alt_reg, cfa_off, reg);
+	  cfa_off -= 8;
+	}
+    }
+
+  /* We should now be at the base of the gr/br/fr spill area.  */
+  if (cfa_off != (current_frame_info.spill_cfa_off
+		  + current_frame_info.spill_size))
+    abort ();
+
+  /* Spill all general registers.  */
+  for (regno = GR_REG (1); regno <= GR_REG (31); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+	reg = gen_rtx_REG (DImode, regno);
+	do_spill (gen_gr_spill, reg, cfa_off, reg);
+	cfa_off -= 8;
+      }
+
+  /* Handle BR0 specially -- it may be getting stored permanently in
+     some GR register.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, BR_REG (0)))
+    {
+      reg = gen_rtx_REG (DImode, BR_REG (0));
+      if (current_frame_info.reg_save_b0 != 0)
+	{
+	  alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_b0);
+	  insn = emit_move_insn (alt_reg, reg);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  /* Even if we're not going to generate an epilogue, we still
+	     need to save the register so that EH works.  */
+	  if (! epilogue_p)
+	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	}
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  emit_move_insn (alt_reg, reg);
+	  do_spill (gen_movdi, alt_reg, cfa_off, reg);
+	  cfa_off -= 8;
+	}
+    }
+
+  /* Spill the rest of the BR registers.  */
+  for (regno = BR_REG (1); regno <= BR_REG (7); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+	alt_regno = next_scratch_gr_reg ();
+	alt_reg = gen_rtx_REG (DImode, alt_regno);
+	reg = gen_rtx_REG (DImode, regno);
+	emit_move_insn (alt_reg, reg);
+	do_spill (gen_movdi, alt_reg, cfa_off, reg);
+	cfa_off -= 8;
+      }
+
+  /* Align the frame and spill all FR registers.  */
+  for (regno = FR_REG (2); regno <= FR_REG (127); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+        if (cfa_off & 15)
+	  abort ();
+	reg = gen_rtx_REG (XFmode, regno);
+	do_spill (gen_fr_spill, reg, cfa_off, reg);
+	cfa_off -= 16;
+      }
+
+  if (cfa_off != current_frame_info.spill_cfa_off)
+    abort ();
+
+  finish_spill_pointers ();
 }
 
 /* Called after register allocation to add any instructions needed for the
@@ -1258,72 +1699,239 @@ ia64_expand_prologue ()
 void
 ia64_expand_epilogue ()
 {
-  rtx insn;
+  rtx insn, reg, alt_reg, ar_unat_save_reg;
+  int regno, alt_regno, cfa_off;
 
-  /* Restore registers from frame.  */
-  save_restore_insns (0);
+  ia64_compute_frame_size (get_frame_size ());
 
-  /* ??? The gen_epilogue_deallocate_stack call below does not work.  This
-     is mainly because there is no fp+offset addressing mode, so most loads
-     from the frame do not actually use the frame pointer; they use a pseudo
-     computed from the frame pointer.  The same problem exists with the
-     stack pointer when there is no frame pointer.  I think this can be
-     fixed only by making the dependency analysis code in sched smarter, so
-     that it recognizes references to the frame, and makes succeeding stack
-     pointer updates anti-dependent on them.  */
-  emit_insn (gen_blockage ());
-
-  if (cfun->machine->ia64_eh_epilogue_sp == NULL_RTX)
-    {
-    if (frame_pointer_needed)
-      {
-	/* If there is a frame pointer, then we need to make the stack pointer
-	   restore depend on the frame pointer, so that the stack pointer
-	   restore won't be moved up past fp-relative loads from the frame.  */
-	insn
-	  = emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						      hard_frame_pointer_rtx));
-	RTX_FRAME_RELATED_P (insn) = 1;
-      }
-    else
-      {
-	int frame_size = current_frame_info.total_size;
-	rtx offset;
-
-	if (frame_size != 0)
-	  {
-	    if (CONST_OK_FOR_I (frame_size))
-	      offset = GEN_INT (frame_size);
-	    else
-	      {
-		/* ??? We use r3 to tell process_set that this is a stack
-		   pointer increment.  See also ia64_expand_prologue.  */
-		offset = gen_rtx_REG (DImode, GR_REG (3));
-		emit_insn (gen_movdi (offset, GEN_INT (frame_size)));
-	      }
-	    insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  offset));
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	  }
-      }
-    }
-    /* Return via eh_epilogue, so we already have our new stack pointer.  */
+  /* If there is a frame pointer, then we use it instead of the stack
+     pointer, so that the stack pointer does not need to be valid when
+     the epilogue starts.  See EXIT_IGNORE_STACK.  */
+  if (frame_pointer_needed)
+    setup_spill_pointers (current_frame_info.n_spilled,
+			  hard_frame_pointer_rtx, 0);
   else
-    emit_insn (gen_movdi (stack_pointer_rtx, cfun->machine->ia64_eh_epilogue_sp));
+    setup_spill_pointers (current_frame_info.n_spilled, stack_pointer_rtx, 
+			  current_frame_info.total_size);
 
-  if (ia64_arpfs_regno)
-    emit_insn (gen_pfs_restore (gen_rtx_REG (DImode, ia64_arpfs_regno)));
-
-  if (ia64_rp_regno)
-    emit_move_insn (gen_rtx_REG (DImode, BR_REG (0)),
-		    gen_rtx_REG (DImode, ia64_rp_regno));
-
-  if (cfun->machine->ia64_eh_epilogue_bsp != NULL_RTX)
+  if (current_frame_info.total_size != 0)
     {
-      /* We have to restore the bsp.  */
-      emit_insn (gen_set_bsp (cfun->machine->ia64_eh_epilogue_bsp));
+      /* ??? At this point we must generate a magic insn that appears to
+         modify the spill iterators and the frame pointer.  This would
+	 allow the most scheduling freedom.  For now, just hard stop.  */
+      emit_insn (gen_blockage ());
     }
+
+  /* Locate the bottom of the register save area.  */
+  cfa_off = (current_frame_info.spill_cfa_off
+	     + current_frame_info.spill_size
+	     + current_frame_info.extra_spill_size);
+
+  /* Restore the predicate registers.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, PR_REG (0)))
+    {
+      if (current_frame_info.reg_save_pr != 0)
+	alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_pr);
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  do_restore (gen_movdi, alt_reg, cfa_off);
+	  cfa_off -= 8;
+	}
+      reg = gen_rtx_REG (DImode, PR_REG (0));
+      emit_move_insn (reg, alt_reg);
+    }
+
+  /* Restore the application registers.  */
+
+  /* Load the saved unat from the stack, but do not restore it until
+     after the GRs have been restored.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM))
+    {
+      if (current_frame_info.reg_save_ar_unat != 0)
+        ar_unat_save_reg
+	  = gen_rtx_REG (DImode, current_frame_info.reg_save_ar_unat);
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  ar_unat_save_reg = gen_rtx_REG (DImode, alt_regno);
+	  current_frame_info.gr_used_mask |= 1 << alt_regno;
+	  do_restore (gen_movdi, ar_unat_save_reg, cfa_off);
+	  cfa_off -= 8;
+	}
+    }
+  else
+    ar_unat_save_reg = NULL_RTX;
+      
+  if (current_frame_info.reg_save_ar_pfs != 0)
+    {
+      alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_ar_pfs);
+      reg = gen_rtx_REG (DImode, AR_PFS_REGNUM);
+      emit_move_insn (reg, alt_reg);
+    }
+  else if (! current_function_is_leaf)
+    {
+      alt_regno = next_scratch_gr_reg ();
+      alt_reg = gen_rtx_REG (DImode, alt_regno);
+      do_restore (gen_movdi, alt_reg, cfa_off);
+      cfa_off -= 8;
+      reg = gen_rtx_REG (DImode, AR_PFS_REGNUM);
+      emit_move_insn (reg, alt_reg);
+    }
+
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_LC_REGNUM))
+    {
+      if (current_frame_info.reg_save_ar_lc != 0)
+	alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_ar_lc);
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  do_restore (gen_movdi, alt_reg, cfa_off);
+	  cfa_off -= 8;
+	}
+      reg = gen_rtx_REG (DImode, AR_LC_REGNUM);
+      emit_move_insn (reg, alt_reg);
+    }
+
+  /* We should now be at the base of the gr/br/fr spill area.  */
+  if (cfa_off != (current_frame_info.spill_cfa_off
+		  + current_frame_info.spill_size))
+    abort ();
+
+  /* Restore all general registers.  */
+  for (regno = GR_REG (1); regno <= GR_REG (31); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+	reg = gen_rtx_REG (DImode, regno);
+	do_restore (gen_gr_restore, reg, cfa_off);
+	cfa_off -= 8;
+      }
+  
+  /* Restore the branch registers.  Handle B0 specially, as it may
+     have gotten stored in some GR register.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, BR_REG (0)))
+    {
+      if (current_frame_info.reg_save_b0 != 0)
+	alt_reg = gen_rtx_REG (DImode, current_frame_info.reg_save_b0);
+      else
+	{
+	  alt_regno = next_scratch_gr_reg ();
+	  alt_reg = gen_rtx_REG (DImode, alt_regno);
+	  do_restore (gen_movdi, alt_reg, cfa_off);
+	  cfa_off -= 8;
+	}
+      reg = gen_rtx_REG (DImode, BR_REG (0));
+      emit_move_insn (reg, alt_reg);
+    }
+    
+  for (regno = BR_REG (1); regno <= BR_REG (7); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+	alt_regno = next_scratch_gr_reg ();
+	alt_reg = gen_rtx_REG (DImode, alt_regno);
+	do_restore (gen_movdi, alt_reg, cfa_off);
+	cfa_off -= 8;
+	reg = gen_rtx_REG (DImode, regno);
+	emit_move_insn (reg, alt_reg);
+      }
+
+  /* Restore floating point registers.  */
+  for (regno = FR_REG (2); regno <= FR_REG (127); ++regno)
+    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+      {
+        if (cfa_off & 15)
+	  abort ();
+	reg = gen_rtx_REG (XFmode, regno);
+	do_restore (gen_fr_restore, reg, cfa_off);
+	cfa_off -= 16;
+      }
+
+  /* Restore ar.unat for real.  */
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM))
+    {
+      reg = gen_rtx_REG (DImode, AR_UNAT_REGNUM);
+      emit_move_insn (reg, ar_unat_save_reg);
+    }
+
+  if (cfa_off != current_frame_info.spill_cfa_off)
+    abort ();
+
+  finish_spill_pointers ();
+
+  if (current_frame_info.total_size || cfun->machine->ia64_eh_epilogue_sp)
+    {
+      /* ??? At this point we must generate a magic insn that appears to
+         modify the spill iterators, the stack pointer, and the frame
+	 pointer.  This would allow the most scheduling freedom.  For now,
+	 just hard stop.  */
+      emit_insn (gen_blockage ());
+    }
+
+  if (cfun->machine->ia64_eh_epilogue_sp)
+    emit_move_insn (stack_pointer_rtx, cfun->machine->ia64_eh_epilogue_sp);
+  else if (frame_pointer_needed)
+    {
+      insn = emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  else if (current_frame_info.total_size)
+    {
+      rtx offset, frame_size_rtx;
+
+      frame_size_rtx = GEN_INT (current_frame_info.total_size);
+      if (CONST_OK_FOR_I (current_frame_info.total_size))
+	offset = frame_size_rtx;
+      else
+	{
+	  regno = next_scratch_gr_reg ();
+	  offset = gen_rtx_REG (DImode, regno);
+	  emit_move_insn (offset, frame_size_rtx);
+	}
+
+      insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				    offset));
+
+      RTX_FRAME_RELATED_P (insn) = 1;
+      if (GET_CODE (offset) != CONST_INT)
+	{
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (VOIDmode,
+				     stack_pointer_rtx,
+				     gen_rtx_PLUS (DImode,
+						   stack_pointer_rtx,
+						   frame_size_rtx)),
+			REG_NOTES (insn));
+	}
+    }
+
+  if (cfun->machine->ia64_eh_epilogue_bsp)
+    emit_insn (gen_set_bsp (cfun->machine->ia64_eh_epilogue_bsp));
+ 
   emit_jump_insn (gen_return_internal (gen_rtx_REG (DImode, BR_REG (0))));
+}
+
+/* Return 1 if br.ret can do all the work required to return from a
+   function.  */
+
+int
+ia64_direct_return ()
+{
+  if (reload_completed && ! frame_pointer_needed)
+    {
+      ia64_compute_frame_size (get_frame_size ());
+
+      return (current_frame_info.total_size == 0
+	      && current_frame_info.n_spilled == 0
+	      && current_frame_info.reg_save_b0 == 0
+	      && current_frame_info.reg_save_pr == 0
+	      && current_frame_info.reg_save_ar_pfs == 0
+	      && current_frame_info.reg_save_ar_unat == 0
+	      && current_frame_info.reg_save_ar_lc == 0);
+    }
+  return 0;
 }
 
 /* Emit the function prologue.  */
@@ -1333,39 +1941,66 @@ ia64_function_prologue (file, size)
      FILE *file;
      int size ATTRIBUTE_UNUSED;
 {
-  rtx insn;
-  if (ia64_need_regstk)
-    fprintf (file, "\t.regstk %d, 0, 0, 0\n", ia64_input_regs);
+  int mask, grsave, grsave_prev;
+
+  if (current_frame_info.need_regstk)
+    fprintf (file, "\t.regstk %d, %d, %d, %d\n",
+	     current_frame_info.n_input_regs,
+	     current_frame_info.n_local_regs,
+	     current_frame_info.n_output_regs,
+	     current_frame_info.n_rotate_regs);
 
   if (!flag_unwind_tables && (!flag_exceptions || exceptions_via_longjmp))
     return;
 
-  /* Emit the .prologue directive. in order to do this, we need to find
-     where the stack pointer is moved toa GR, if it is, and mark it.  */
+  /* Emit the .prologue directive.  */
 
-  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+  mask = 0;
+  grsave = grsave_prev = 0;
+  if (current_frame_info.reg_save_b0 != 0)
     {
-      if (RTX_FRAME_RELATED_P (insn) && GET_CODE (insn) == INSN)
-        {
-	  rtx pat = PATTERN (insn);
-	  if (GET_CODE (pat) == SET)
-	    {
-	      rtx dest = SET_DEST (pat);
-	      rtx src = SET_SRC (pat);
-	      if (GET_CODE (src) == REG && REGNO (src) == STACK_POINTER_REGNUM
-		  && GET_CODE (dest) == REG)
-		{
-		  int reg = REGNO (dest);
-		  if (REGNO (dest) == FRAME_POINTER_REGNUM)
-		    reg = ia64_fp_regno;
-		  fprintf (file, "\t.prologue 0x2, %d\n", reg);
-		  break;
-		}
-	    }
-        }
+      mask |= 8;
+      grsave = grsave_prev = current_frame_info.reg_save_b0;
     }
-  if (insn == NULL_RTX)
-    fprintf (file, "\t.prologue\n");
+  if (current_frame_info.reg_save_ar_pfs != 0
+      && (grsave_prev == 0
+	  || current_frame_info.reg_save_ar_pfs == grsave_prev + 1))
+    {
+      mask |= 4;
+      if (grsave_prev == 0)
+	grsave = current_frame_info.reg_save_ar_pfs;
+      grsave_prev = current_frame_info.reg_save_ar_pfs;
+    }
+  if (current_frame_info.reg_fp != 0
+      && (grsave_prev == 0
+	  || current_frame_info.reg_fp == grsave_prev + 1))
+    {
+      mask |= 2;
+      if (grsave_prev == 0)
+	grsave = HARD_FRAME_POINTER_REGNUM;
+      grsave_prev = current_frame_info.reg_fp;
+    }
+  if (current_frame_info.reg_save_pr != 0
+      && (grsave_prev == 0
+	  || current_frame_info.reg_save_pr == grsave_prev + 1))
+    {
+      mask |= 1;
+      if (grsave_prev == 0)
+	grsave = current_frame_info.reg_save_pr;
+    }
+
+  if (mask)
+    fprintf (file, "\t.prologue %d, %d\n", mask,
+	     ia64_dbx_register_number (grsave));
+  else
+    fputs ("\t.prologue\n", file);
+
+  /* Emit a .spill directive, if necessary, to relocate the base of
+     the register spill area.  */
+  if (current_frame_info.spill_cfa_off != -16)
+    fprintf (file, "\t.spill %ld\n",
+	     (long) (current_frame_info.spill_cfa_off
+		     + current_frame_info.spill_size));
 }
 
 /* Emit the .body directive at the scheduled end of the prologue.  */
@@ -1387,54 +2022,103 @@ ia64_function_epilogue (file, size)
      FILE *file ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
-}
+  /* Reset from the function's potential modifications.  */
+  XINT (return_address_pointer_rtx, 0) = RETURN_ADDRESS_POINTER_REGNUM;
 
-/* Return 1 if br.ret can do all the work required to return from a
-   function.  */
+  if (current_frame_info.reg_fp)
+    {
+      const char *tmp = reg_names[HARD_FRAME_POINTER_REGNUM];
+      reg_names[HARD_FRAME_POINTER_REGNUM]
+	= reg_names[current_frame_info.reg_fp];
+      reg_names[current_frame_info.reg_fp] = tmp;
+    }
+  if (! TARGET_REG_NAMES)
+    {
+      int i;
+
+      for (i = 0; i < current_frame_info.n_input_regs; i++)
+	reg_names[IN_REG (i)] = ia64_input_reg_names[i];
+      for (i = 0; i < current_frame_info.n_local_regs; i++)
+	reg_names[LOC_REG (i)] = ia64_local_reg_names[i];
+      for (i = 0; i < current_frame_info.n_output_regs; i++)
+	reg_names[OUT_REG (i)] = ia64_output_reg_names[i];
+    }
+  current_frame_info.initialized = 0;
+}
 
 int
-ia64_direct_return ()
+ia64_dbx_register_number (regno)
+     int regno;
 {
-  return (reload_completed && ! frame_pointer_needed
-	  && ia64_compute_frame_size (get_frame_size ()) == 0);
+  /* In ia64_expand_prologue we quite literally renamed the frame pointer
+     from its home at loc79 to something inside the register frame.  We
+     must perform the same renumbering here for the debug info.  */
+  if (current_frame_info.reg_fp)
+    {
+      if (regno == HARD_FRAME_POINTER_REGNUM)
+	regno = current_frame_info.reg_fp;
+      else if (regno == current_frame_info.reg_fp)
+	regno = HARD_FRAME_POINTER_REGNUM;
+    }
+
+  if (IN_REGNO_P (regno))
+    return 32 + regno - IN_REG (0);
+  else if (LOC_REGNO_P (regno))
+    return 32 + current_frame_info.n_input_regs + regno - LOC_REG (0);
+  else if (OUT_REGNO_P (regno))
+    return (32 + current_frame_info.n_input_regs
+	    + current_frame_info.n_local_regs + regno - OUT_REG (0));
+  else
+    return regno;
 }
 
+void
+ia64_initialize_trampoline (addr, fnaddr, static_chain)
+     rtx addr, fnaddr, static_chain;
+{
+  rtx addr_reg, eight = GEN_INT (8);
+
+  /* Load up our iterator.  */
+  addr_reg = gen_reg_rtx (Pmode);
+  emit_move_insn (addr_reg, addr);
+
+  /* The first two words are the fake descriptor:
+     __ia64_trampoline, ADDR+16.  */
+  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg),
+		  gen_rtx_SYMBOL_REF (Pmode, "__ia64_trampoline"));
+  emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+
+  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg),
+		  copy_to_reg (plus_constant (addr, 16)));
+  emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+
+  /* The third word is the target descriptor.  */
+  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg), fnaddr);
+  emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+
+  /* The fourth word is the static chain.  */
+  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg), static_chain);
+}
 
 /* Do any needed setup for a variadic function.  CUM has not been updated
-   for the last named argument which has type TYPE and mode MODE.  */
+   for the last named argument which has type TYPE and mode MODE.
+
+   We generate the actual spill instructions during prologue generation.  */
+
 void
 ia64_setup_incoming_varargs (cum, int_mode, type, pretend_size, second_time)
      CUMULATIVE_ARGS cum;
      int             int_mode ATTRIBUTE_UNUSED;
      tree            type ATTRIBUTE_UNUSED;
      int *           pretend_size;
-     int	     second_time;
+     int	     second_time ATTRIBUTE_UNUSED;
 {
   /* If this is a stdarg function, then don't save the current argument.  */
   int offset = ! current_function_varargs;
 
   if (cum.words < MAX_ARGUMENT_SLOTS)
-    {
-      if (! second_time)
-	{
-	  int i;
-	  int first_reg = GR_ARG_FIRST + cum.words + offset;
-	  rtx reg1 = gen_reg_rtx (Pmode);
-	  rtx mem1 = gen_rtx_MEM (DImode, reg1);
-
-	  /* We must emit st8.spill insns instead of st8 because we might
-	     be saving non-argument registers, and non-argument registers
-	     might not contain valid values.  */
-	  emit_move_insn (reg1, virtual_incoming_args_rtx);
-	  for (i = first_reg; i < GR_ARG_FIRST + 8; i++)
-	    {
-	      emit_insn (gen_gr_spill (mem1, gen_rtx_REG (DImode, i)));
-	      emit_insn (gen_adddi3 (reg1, reg1, GEN_INT (8)));
-	    }
-	}
-      *pretend_size = ((MAX_ARGUMENT_SLOTS - cum.words - offset)
-		       * UNITS_PER_WORD);
-    }
+    *pretend_size = ((MAX_ARGUMENT_SLOTS - cum.words - offset)
+		     * UNITS_PER_WORD);
 }
 
 /* Check whether TYPE is a homogeneous floating point aggregate.  If
@@ -1838,7 +2522,6 @@ rtx
 ia64_va_arg (valist, type)
      tree valist, type;
 {
-  HOST_WIDE_INT size;
   tree t;
 
   /* Arguments with alignment larger than 8 bytes start at the next even
@@ -2253,49 +2936,67 @@ ia64_secondary_reload_class (class, mode, x)
   if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
-  /* ??? This is required because of a bad gcse/cse/global interaction.
-     We end up with two pseudos with overlapping lifetimes both of which are
-     equiv to the same constant, and both which need to be in BR_REGS.  This
-     results in a BR_REGS to BR_REGS copy which doesn't exist.  To reproduce,
-     return NO_REGS here, and compile divdi3 in libgcc2.c.  This seems to be
-     a cse bug.  cse_basic_block_end changes depending on the path length,
-     which means the qty_first_reg check in make_regs_eqv can give different
-     answers at different times.  */
-  /* ??? At some point I'll probably need a reload_indi pattern to handle
-     this.  */
-  if (class == BR_REGS && BR_REGNO_P (regno))
-    return GR_REGS;
+  switch (class)
+    {
+    case BR_REGS:
+      /* ??? This is required because of a bad gcse/cse/global interaction.
+	 We end up with two pseudos with overlapping lifetimes both of which
+	 are equiv to the same constant, and both which need to be in BR_REGS.
+	 This results in a BR_REGS to BR_REGS copy which doesn't exist.  To
+	 reproduce, return NO_REGS here, and compile divdi3 in libgcc2.c.
+	 This seems to be a cse bug.  cse_basic_block_end changes depending
+	 on the path length, which means the qty_first_reg check in
+	 make_regs_eqv can give different answers at different times.  */
+      /* ??? At some point I'll probably need a reload_indi pattern to handle
+	 this.  */
+      if (BR_REGNO_P (regno))
+	return GR_REGS;
 
-  /* This is needed if a pseudo used as a call_operand gets spilled to a
-     stack slot.  */
-  if (class == BR_REGS && GET_CODE (x) == MEM)
-    return GR_REGS;
+      /* This is needed if a pseudo used as a call_operand gets spilled to a
+	 stack slot.  */
+      if (GET_CODE (x) == MEM)
+	return GR_REGS;
+      break;
 
-  /* This can happen when a paradoxical subreg is an operand to the muldi3
-     pattern.  */
-  /* ??? This shouldn't be necessary after instruction scheduling is enabled,
-     because paradoxical subregs are not accepted by register_operand when
-     INSN_SCHEDULING is defined.  Or alternatively, stop the paradoxical subreg
-     stupidity in the *_operand functions in recog.c.  */
-  if (class == FR_REGS
-      && GET_CODE (x) == MEM
-      && (GET_MODE (x) == SImode || GET_MODE (x) == HImode
-	  || GET_MODE (x) == QImode))
-    return GR_REGS;
+    case FR_REGS:
+      /* This can happen when a paradoxical subreg is an operand to the
+	 muldi3 pattern.  */
+      /* ??? This shouldn't be necessary after instruction scheduling is
+	 enabled, because paradoxical subregs are not accepted by
+	 register_operand when INSN_SCHEDULING is defined.  Or alternatively,
+	 stop the paradoxical subreg stupidity in the *_operand functions
+	 in recog.c.  */
+      if (GET_CODE (x) == MEM
+	  && (GET_MODE (x) == SImode || GET_MODE (x) == HImode
+	      || GET_MODE (x) == QImode))
+	return GR_REGS;
 
-  /* This can happen because of the ior/and/etc patterns that accept FP
-     registers as operands.  If the third operand is a constant, then it
-     needs to be reloaded into a FP register.  */
-  if (class == FR_REGS && GET_CODE (x) == CONST_INT)
-    return GR_REGS;
+      /* This can happen because of the ior/and/etc patterns that accept FP
+	 registers as operands.  If the third operand is a constant, then it
+	 needs to be reloaded into a FP register.  */
+      if (GET_CODE (x) == CONST_INT)
+	return GR_REGS;
 
-  /* ??? This happens if we cse/gcse a CCmode value across a call, and the
-     function has a nonlocal goto.  This is because global does not allocate
-     call crossing pseudos to hard registers when current_function_has_
-     nonlocal_goto is true.  This is relatively common for C++ programs that
-     use exceptions.  To reproduce, return NO_REGS and compile libstdc++.  */
-  if (class == PR_REGS && GET_CODE (x) == MEM)
-    return GR_REGS;
+      /* This can happen because of register elimination in a muldi3 insn.
+	 E.g. `26107 * (unsigned long)&u'.  */
+      if (GET_CODE (x) == PLUS)
+	return GR_REGS;
+      break;
+
+    case PR_REGS:
+      /* ??? This happens if we cse/gcse a CCmode value across a call,
+	 and the function has a nonlocal goto.  This is because global
+	 does not allocate call crossing pseudos to hard registers when
+	 current_function_has_nonlocal_goto is true.  This is relatively
+	 common for C++ programs that use exceptions.  To reproduce,
+	 return NO_REGS and compile libstdc++.  */
+      if (GET_CODE (x) == MEM)
+	return GR_REGS;
+      break;
+
+    default:
+      break;
+    }
 
   return NO_REGS;
 }
@@ -2425,9 +3126,6 @@ ia64_init_machine_status (p)
 {
   p->machine =
     (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-
-  /* Reset from the previous function's potential modifications.  */
-  XINT (return_address_pointer_rtx, 0) = RETURN_ADDRESS_POINTER_REGNUM;
 }
 
 static void
@@ -2436,6 +3134,7 @@ ia64_mark_machine_status (p)
 {
   ggc_mark_rtx (p->machine->ia64_eh_epilogue_sp);
   ggc_mark_rtx (p->machine->ia64_eh_epilogue_bsp);
+  ggc_mark_rtx (p->machine->ia64_gp_save);
 }
 
 
@@ -2509,7 +3208,8 @@ struct reg_flags
 
 static void rws_update PARAMS ((struct reg_write_state *, int,
 				struct reg_flags, int));
-static int rws_access_reg PARAMS ((int, struct reg_flags, int));
+static int rws_access_regno PARAMS ((int, struct reg_flags, int));
+static int rws_access_reg PARAMS ((rtx, struct reg_flags, int));
 static int rtx_needs_barrier PARAMS ((rtx, struct reg_flags, int));
 
 /* Update *RWS for REGNO, which is being written by the current instruction,
@@ -2532,13 +3232,12 @@ rws_update (rws, regno, flags, pred)
    a dependency with an earlier instruction in the same group.  */
 
 static int
-rws_access_reg (regno, flags, pred)
+rws_access_regno (regno, flags, pred)
      int regno;
      struct reg_flags flags;
      int pred;
 {
   int need_barrier = 0;
-  int is_predicate_reg;
 
   if (regno >= NUM_REGS)
     abort ();
@@ -2553,27 +3252,13 @@ rws_access_reg (regno, flags, pred)
 
       /* Update info for current instruction.  */
       rws_update (rws_insn, regno, flags, pred);
-
-      /* ??? This is necessary because predicate regs require two hard
-	 registers.  However, this should be using HARD_REGNO_NREGS so that
-	 it works for all multi-reg hard registers, instead of only for
-	 predicate registers.  */
-      is_predicate_reg = REGNO_REG_CLASS (regno) == PR_REGS;
-      if (is_predicate_reg)
-	rws_update (rws_insn, regno + 1, flags, pred);
-
-      /* ??? Likewise.  */
       write_count = rws_sum[regno].write_count;
-      if (is_predicate_reg)
-	write_count = MAX (write_count, rws_sum[regno + 1].write_count);
 
       switch (write_count)
 	{
 	case 0:
 	  /* The register has not been written yet.  */
 	  rws_update (rws_sum, regno, flags, pred);
-	  if (is_predicate_reg)
-	    rws_update (rws_sum, regno + 1, flags, pred);
 	  break;
 
 	case 1:
@@ -2584,8 +3269,6 @@ rws_access_reg (regno, flags, pred)
 	  if ((rws_sum[regno].first_pred ^ 1) != pred)
 	    need_barrier = 1;
 	  rws_update (rws_sum, regno, flags, pred);
-	  if (is_predicate_reg)
-	    rws_update (rws_sum, regno + 1, flags, pred);
 	  break;
 
 	case 2:
@@ -2648,6 +3331,26 @@ rws_access_reg (regno, flags, pred)
     }
 
   return need_barrier;
+}
+
+static int
+rws_access_reg (reg, flags, pred)
+     rtx reg;
+     struct reg_flags flags;
+     int pred;
+{
+  int regno = REGNO (reg);
+  int n = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
+
+  if (n == 1)
+    return rws_access_regno (regno, flags, pred);
+  else
+    {
+      int need_barrier = 0;
+      while (--n >= 0)
+	need_barrier |= rws_access_regno (regno + n, flags, pred);
+      return need_barrier;
+    }
 }
 
 /* Handle an access to rtx X of type FLAGS using predicate register PRED.
@@ -2741,9 +3444,10 @@ rtx_needs_barrier (x, flags, pred)
 	  break;
 	}
       need_barrier = rtx_needs_barrier (src, flags, pred);
+
       /* This instruction unconditionally uses a predicate register.  */
       if (cond)
-	need_barrier |= rws_access_reg (REGNO (cond), flags, 0);
+	need_barrier |= rws_access_reg (cond, flags, 0);
 
       dst = SET_DEST (x);
       if (GET_CODE (dst) == ZERO_EXTRACT)
@@ -2758,9 +3462,7 @@ rtx_needs_barrier (x, flags, pred)
 
     case CALL:
       new_flags.is_write = 0;
-      /* ??? Why is this here?  It seems unnecessary.  */
-      need_barrier |= rws_access_reg (REG_GP, new_flags, pred);
-      need_barrier |= rws_access_reg (AR_EC_REGNUM, new_flags, pred);
+      need_barrier |= rws_access_regno (AR_EC_REGNUM, new_flags, pred);
 
       /* Avoid multiple register writes, in case this is a pattern with
 	 multiple CALL rtx.  This avoids an abort in rws_access_reg.  */
@@ -2769,9 +3471,9 @@ rtx_needs_barrier (x, flags, pred)
       if (! rws_insn[REG_AR_CFM].write_count)
 	{
 	  new_flags.is_write = 1;
-	  need_barrier |= rws_access_reg (REG_RP, new_flags, pred);
-	  need_barrier |= rws_access_reg (AR_PFS_REGNUM, new_flags, pred);
-	  need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
+	  need_barrier |= rws_access_regno (REG_RP, new_flags, pred);
+	  need_barrier |= rws_access_regno (AR_PFS_REGNUM, new_flags, pred);
+	  need_barrier |= rws_access_regno (REG_AR_CFM, new_flags, pred);
 	}
       break;
 
@@ -2818,7 +3520,7 @@ rtx_needs_barrier (x, flags, pred)
 	  if (! rws_insn[REG_VOLATILE].write_count)
 	    {
 	      new_flags.is_write = 1;
-	      rws_access_reg (REG_VOLATILE, new_flags, pred);
+	      rws_access_regno (REG_VOLATILE, new_flags, pred);
 	    }
 	  return 1;
 	}
@@ -2843,7 +3545,7 @@ rtx_needs_barrier (x, flags, pred)
       x = SUBREG_REG (x);
       /* FALLTHRU */
     case REG:
-      need_barrier = rws_access_reg (REGNO (x), flags, pred);
+      need_barrier = rws_access_reg (x, flags, pred);
       break;
 
     case MEM:
@@ -2862,9 +3564,9 @@ rtx_needs_barrier (x, flags, pred)
 	abort ();
 
       new_flags.is_write = 0;
-      need_barrier  = rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      need_barrier  = rws_access_reg (XEXP (x, 0), new_flags, pred);
       new_flags.is_write = 1;
-      need_barrier |= rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      need_barrier |= rws_access_reg (XEXP (x, 0), new_flags, pred);
       break;
 
     case POST_MODIFY:
@@ -2872,10 +3574,10 @@ rtx_needs_barrier (x, flags, pred)
 	abort ();
 
       new_flags.is_write = 0;
-      need_barrier  = rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      need_barrier  = rws_access_reg (XEXP (x, 0), new_flags, pred);
       need_barrier |= rtx_needs_barrier (XEXP (x, 1), new_flags, pred);
       new_flags.is_write = 1;
-      need_barrier |= rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      need_barrier |= rws_access_reg (XEXP (x, 0), new_flags, pred);
       break;
 
       /* Handle common unary and binary ops for efficiency.  */
@@ -2910,40 +3612,10 @@ rtx_needs_barrier (x, flags, pred)
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
-	case 5: /* mov =pr */
-	  /* This reads all predicate registers.  */
-	  for (i = PR_REG (1); i < PR_REG (64); i++)
-	    need_barrier |= rws_access_reg (i, flags, pred);
-	  break;
-
-	case 6:
-	case 7:
-	  abort ();
-
-	  /* ??? Should track unat reads and writes.  */
-	case 9: /* mov =ar.unat */
-	case 10: /* mov ar.unat= */
-	  break;
-        case 11: /* mov ar.ccv= */
-          break;
         case 12: /* mf */
-          break;
         case 13: /* cmpxchg_acq */
-          break;
-        case 14: /* val_compare_and_swap */
-          break;
-        case 15: /* lock_release */
-          break;
-        case 16: /* lock_test_and_set */
-          break;
-        case 17: /* _and_fetch */
-          break;
-        case 18: /* fetch_and_ */
-          break;
         case 19: /* fetchadd_acq */
-          break;
 	case 20: /* mov = ar.bsp */
-          break;
 	case 21: /* flushrs */
           break;
 
@@ -2959,37 +3631,19 @@ rtx_needs_barrier (x, flags, pred)
 	  /* Alloc must always be the first instruction.  Currently, we
 	     only emit it at the function start, so we don't need to worry
 	     about emitting a stop bit before it.  */
-	  need_barrier = rws_access_reg (AR_PFS_REGNUM, flags, pred);
+	  need_barrier = rws_access_regno (AR_PFS_REGNUM, flags, pred);
 
 	  new_flags.is_write = 1;
-	  need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
+	  need_barrier |= rws_access_regno (REG_AR_CFM, new_flags, pred);
 	  return need_barrier;
 
 	case 1: /* blockage */
 	case 2: /* insn group barrier */
 	  return 0;
 
-	case 3: /* flush_cache */
-	  return rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
-
-	case 4: /* mov ar.pfs= */
-	  new_flags.is_write = 1;
-	  need_barrier = rws_access_reg (AR_PFS_REGNUM, new_flags, pred);
-	  break;
-
 	case 5: /* set_bsp  */
 	  need_barrier = 1;
           break;
-
-	case 6: /* mov pr= */
-	  /* This writes all predicate registers.  */
-	  new_flags.is_write = 1;
-	  /* We need to skip by two, because rws_access_reg always writes
-	     to two predicate registers at a time.  */
-	  /* ??? Strictly speaking, we shouldn't be counting writes to pr0.  */
-	  for (i = PR_REG (0); i < PR_REG (64); i += 2)
-	    need_barrier |= rws_access_reg (i, new_flags, pred);
-	  break;
 
 	case 7: /* pred.rel.mutex */
 	  return 0;
@@ -3001,12 +3655,12 @@ rtx_needs_barrier (x, flags, pred)
 
     case RETURN:
       new_flags.is_write = 0;
-      need_barrier  = rws_access_reg (REG_RP, flags, pred);
-      need_barrier |= rws_access_reg (AR_PFS_REGNUM, flags, pred);
+      need_barrier  = rws_access_regno (REG_RP, flags, pred);
+      need_barrier |= rws_access_regno (AR_PFS_REGNUM, flags, pred);
 
       new_flags.is_write = 1;
-      need_barrier |= rws_access_reg (AR_EC_REGNUM, new_flags, pred);
-      need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
+      need_barrier |= rws_access_regno (AR_EC_REGNUM, new_flags, pred);
+      need_barrier |= rws_access_regno (REG_AR_CFM, new_flags, pred);
       break;
 
     default:
@@ -3136,7 +3790,7 @@ emit_insn_group_barriers (insns)
 	      /* Check to see if the previous instruction was a volatile
 		 asm.  */
 	      if (! need_barrier)
-		need_barrier = rws_access_reg (REG_VOLATILE, flags, 0);
+		need_barrier = rws_access_regno (REG_VOLATILE, flags, 0);
 
 	      if (need_barrier)
 		{
@@ -3252,7 +3906,12 @@ ia64_epilogue_uses (regno)
   if (regno == R_BR (0))
     return 1;
 
-  if (regno == AR_LC_REGNUM)
+  if (regs_ever_live[AR_LC_REGNUM] && regno == AR_LC_REGNUM)
+    return 1;
+  if (! current_function_is_leaf && regno == AR_PFS_REGNUM)
+    return 1;
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM)
+      && regno == AR_UNAT_REGNUM)
     return 1;
 
   return 0;
@@ -3349,7 +4008,7 @@ ia64_encode_section_info (decl)
 	  || ! strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
 		       ".sbss")))
     {
-      int size = int_size_in_bytes (TREE_TYPE (decl));
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
 
       /* If the variable has already been defined in the output file, then it
 	 is too late to put it in sdata if it wasn't put there in the first
@@ -3361,10 +4020,11 @@ ia64_encode_section_info (decl)
 
       /* If this is an incomplete type with size 0, then we can't put it in
 	 sdata because it might be too big when completed.  */
-      else if (size > 0 && size <= ia64_section_threshold
+      else if (size > 0
+	       && size <= (HOST_WIDE_INT) ia64_section_threshold
 	       && symbol_str[0] != SDATA_NAME_FLAG_CHAR)
 	{
-	  int len = strlen (symbol_str);
+	  size_t len = strlen (symbol_str);
 	  char *newstr;
 
 	  if (ggc_p)
@@ -3394,15 +4054,9 @@ ia64_encode_section_info (decl)
 
 /* Output assmebly directives for prologue regions.  */
 
-static int spill_offset;
-static int sp_offset;
-static int spill_offset_emitted = 1;
-static rtx tmp_reg = NULL_RTX;
-static int tmp_saved = -1;
-
-
 /* This function processes a SET pattern looking for specific patterns
    which result in emitting an assembly directive required for unwinding.  */
+
 static int
 process_set (asm_out_file, pat)
      FILE *asm_out_file;
@@ -3410,20 +4064,26 @@ process_set (asm_out_file, pat)
 {
   rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
-  static rtx frame_reg = NULL_RTX;
-  static int frame_size = 0;
+  int src_regno, dest_regno;
 
-  /* Look for the ALLOC insn.  reg = alloc .... */
-  if (GET_CODE (src) == UNSPEC_VOLATILE && XINT (src, 1) == 0
-      && GET_CODE (dest) == REG && GR_REGNO_P (REGNO (dest)))
+  /* Look for the ALLOC insn.  */
+  if (GET_CODE (src) == UNSPEC_VOLATILE
+      && XINT (src, 1) == 0
+      && GET_CODE (dest) == REG)
     {
-      /* Assume this is a stack allocate insn.  */
+      dest_regno = REGNO (dest);
+
+      /* If this isn't the final destination for ar.pfs, the alloc
+	 shouldn't have been marked frame related.  */
+      if (dest_regno != current_frame_info.reg_save_ar_pfs)
+	abort ();
+
       fprintf (asm_out_file, "\t.save ar.pfs, r%d\n",
-	       REGNO (dest) + ia64_input_regs);
+	       ia64_dbx_register_number (dest_regno));
       return 1;
     }
 
-  /* look for SP = .... */
+  /* Look for SP = .... */
   if (GET_CODE (dest) == REG && REGNO (dest) == STACK_POINTER_REGNUM)
     {
       if (GET_CODE (src) == PLUS)
@@ -3438,166 +4098,189 @@ process_set (asm_out_file, pat)
 		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
 			   -INTVAL (op1));
 		  fputc ('\n', asm_out_file);
-		  frame_size = INTVAL (op1);
 		}
 	      else
 		fprintf (asm_out_file, "\t.restore sp\n");
-	    }
-	  else if (op0 == dest && GET_CODE (op1) == REG)
-	    {
-	      /* ia64_expand_prologue uses r2 for stack pointer decrements,
-		 ia64_expand_epilogue uses r3 for stack pointer increments.  */
-	      if (REGNO (op1) == GR_REG (2))
-		{
-		  fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
-		  frame_size = 0;
-		}
-	      else if (REGNO (op1) == GR_REG (3))
-		fprintf (asm_out_file, "\t.restore sp\n");
-	      else
-		abort ();
 	    }
 	  else
 	    abort ();
 	}
-      else if (GET_CODE (src) == REG && REGNO (src) == FRAME_POINTER_REGNUM)
+      else if (GET_CODE (src) == REG
+	       && REGNO (src) == HARD_FRAME_POINTER_REGNUM)
 	fprintf (asm_out_file, "\t.restore sp\n");
       else
 	abort ();
 
       return 1;
     }
-  /* Look for a frame offset.  */
-  if (GET_CODE (dest) == REG)
-    {
-      if (GET_CODE (src) == PLUS)
-        {
-	  rtx op0 = XEXP (src, 0);
-	  rtx op1 = XEXP (src, 1);
-	  if (GET_CODE (op0) == REG && REGNO (op0) == FRAME_POINTER_REGNUM
-	      && GET_CODE (op1) == CONST_INT)
-	    {
-	      sp_offset = -frame_size + INTVAL (op1);
-	      spill_offset = INTVAL (op1);
-	      spill_offset_emitted = 0;
-	      frame_reg = dest;
-	      /* We delay issuing the spill offset since we might
-		 be saving non-spill things off this register,
-		 thus adjusting its offset before a spill is seen.  */
-	      return 1;
-	    }
-	}
-    }
 
   /* Register move we need to look at.  */
   if (GET_CODE (dest) == REG && GET_CODE (src) == REG)
     {
-      int regno = REGNO (src);
-      if (BR_REGNO_P (regno))
-        {
-	  /* Saving return address pointer.  */
-	  if (regno == BR_REG (0))
-	    {
-	      fprintf (asm_out_file, "\t.save rp, r%d\n",
-		       REGNO (dest) + ia64_input_regs);
-	      return 1;
-	    }
-	  /* If its br1 to br5, we copy them to temp regs, then save the
-	     temp reg to memory next.  */
-	  if (regno >= BR_REG (1) && regno <= BR_REG (5))
-	    {
-	      tmp_reg = dest;
-	      tmp_saved = regno;
-	      return 1;
-	    }
-	}
-    }
-  /* Search for special reg moves.  */
-  if (GET_CODE (dest) == REG && GET_CODE (src) == UNSPEC)
-    {
-      int unspec_code = XINT (src, 1);
-      /* Copied to a temp register, save it until we see the temp
-	 register stored.  */
-      if (unspec_code == 5 || unspec_code == 9)
-	{
-	  tmp_reg = dest;
-	  tmp_saved = unspec_code;
-	  return 1;
-	}
-    }
-  if (GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == POST_INC
-      && GET_CODE (XEXP (XEXP (dest, 0), 0)) == REG)
-    {
-      int spill_unspec = 0;
-      /* We adjust the spill_offset early, so we dont miss it later.  */
-      spill_offset += 8;
-      sp_offset += 8;
-      if (GET_CODE (src) == UNSPEC)
-	{
-	  spill_unspec = XINT (src, 1);
-	  /* 1 and 3 are unspecs for the GR and FR spills.  */
-	  if (spill_unspec != 1 && spill_unspec != 3)
-	    spill_unspec = 0;
-	}
-      /* ST8 or st8.spill insn.  */
-      if ((GET_CODE (src) == REG) || spill_unspec != 0)
-        {
-	  int regno;
-	  if (spill_unspec != 0)
-	    {
-	      regno = REGNO (XVECEXP (src, 0, 0));
-	      if (!spill_offset_emitted)
-	        {
-		  fprintf (asm_out_file, "\t.spill %d\n",
-			   (-(spill_offset - 8) + 16));
-		  spill_offset_emitted = 1;
-		}
-	    }
-	  else
-	    regno = REGNO (src);
+      src_regno = REGNO (src);
+      dest_regno = REGNO (dest);
 
-          if (GR_REGNO_P (regno))
-	    {
-	      if (regno >= GR_REG (4) && regno <= GR_REG (7))
-		fprintf (asm_out_file, "\t.save.g 0x%x\n",
-			 1 << (regno - GR_REG (4)));
-	      else if (tmp_reg != NULL_RTX && regno == REGNO (tmp_reg))
-	        {
-		  /* We saved a special reg to a temp reg, and now we're
-		     dumping it to memory.  */
-		  tmp_reg = NULL_RTX;
-		  /* register 9 is ar.unat.  */
-		  if (tmp_saved == 9)
-		    fprintf (asm_out_file, "\t.savesp ar.unat, %d\n",
-			     (sp_offset - 8));
-		  else if (tmp_saved == 5)
-		    fprintf (asm_out_file, "\t.savesp pr, %d\n",
-			     (sp_offset - 8));
-		  else if (tmp_saved >= BR_REG (1) && tmp_saved <= BR_REG (5))
-		    {
-		      /* BR regs are saved this way too.  */
-		      fprintf (asm_out_file, "\t.save.b 0x%x\n",
-			       1 << (tmp_saved - BR_REG (1)));
-		    }
-		}
-	      else
-	        return 0;
-	    }
-	  if (FR_REGNO_P (regno))
-	    {
-	      if (regno >= FR_REG (2) && regno <= FR_REG (5))
-		fprintf (asm_out_file, "\t.save.f 0x%x\n",
-			 1 << (regno - FR_REG (2)));
-	      else
-		if (regno >= FR_REG (16) && regno <= FR_REG (31))
-		  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
-			   1 << (regno - FR_REG (12)));
-		else
-		  return 0;
-	    }
+      switch (src_regno)
+	{
+	case BR_REG (0):
+	  /* Saving return address pointer.  */
+	  if (dest_regno != current_frame_info.reg_save_b0)
+	    abort ();
+	  fprintf (asm_out_file, "\t.save rp, r%d\n",
+		   ia64_dbx_register_number (dest_regno));
 	  return 1;
+
+	case PR_REG (0):
+	  if (dest_regno != current_frame_info.reg_save_pr)
+	    abort ();
+	  fprintf (asm_out_file, "\t.save pr, r%d\n",
+		   ia64_dbx_register_number (dest_regno));
+	  return 1;
+
+	case AR_UNAT_REGNUM:
+	  if (dest_regno != current_frame_info.reg_save_ar_unat)
+	    abort ();
+	  fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
+		   ia64_dbx_register_number (dest_regno));
+	  return 1;
+
+	case AR_LC_REGNUM:
+	  if (dest_regno != current_frame_info.reg_save_ar_lc)
+	    abort ();
+	  fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
+		   ia64_dbx_register_number (dest_regno));
+	  return 1;
+
+	case STACK_POINTER_REGNUM:
+	  if (dest_regno != HARD_FRAME_POINTER_REGNUM
+	      || ! frame_pointer_needed)
+	    abort ();
+	  fprintf (asm_out_file, "\t.vframe r%d\n",
+		   ia64_dbx_register_number (dest_regno));
+	  return 1;
+
+	default:
+	  /* Everything else should indicate being stored to memory.  */
+	  abort ();
 	}
     }
+
+  /* Memory store we need to look at.  */
+  if (GET_CODE (dest) == MEM && GET_CODE (src) == REG)
+    {
+      long off;
+      rtx base;
+      const char *saveop;
+
+      if (GET_CODE (XEXP (dest, 0)) == REG)
+	{
+	  base = XEXP (dest, 0);
+	  off = 0;
+	}
+      else if (GET_CODE (XEXP (dest, 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT)
+	{
+	  base = XEXP (XEXP (dest, 0), 0);
+	  off = INTVAL (XEXP (XEXP (dest, 0), 1));
+	}
+      else
+	abort ();
+
+      if (base == hard_frame_pointer_rtx)
+	{
+	  saveop = ".savepsp";
+	  off = - off;
+	}
+      else if (base == stack_pointer_rtx)
+	saveop = ".savesp";
+      else
+	abort ();
+
+      src_regno = REGNO (src);
+      switch (src_regno)
+	{
+	case BR_REG (0):
+	  if (current_frame_info.reg_save_b0 != 0)
+	    abort ();
+	  fprintf (asm_out_file, "\t%s rp, %ld\n", saveop, off);
+	  return 1;
+
+	case PR_REG (0):
+	  if (current_frame_info.reg_save_pr != 0)
+	    abort ();
+	  fprintf (asm_out_file, "\t%s pr, %ld\n", saveop, off);
+	  return 1;
+
+	case AR_LC_REGNUM:
+	  if (current_frame_info.reg_save_ar_lc != 0)
+	    abort ();
+	  fprintf (asm_out_file, "\t%s ar.lc, %ld\n", saveop, off);
+	  return 1;
+
+	case AR_PFS_REGNUM:
+	  if (current_frame_info.reg_save_ar_pfs != 0)
+	    abort ();
+	  fprintf (asm_out_file, "\t%s ar.pfs, %ld\n", saveop, off);
+	  return 1;
+
+	case AR_UNAT_REGNUM:
+	  if (current_frame_info.reg_save_ar_unat != 0)
+	    abort ();
+	  fprintf (asm_out_file, "\t%s ar.unat, %ld\n", saveop, off);
+	  return 1;
+
+	case GR_REG (4):
+	case GR_REG (5):
+	case GR_REG (6):
+	case GR_REG (7):
+	  fprintf (asm_out_file, "\t.save.g 0x%x\n",
+		   1 << (src_regno - GR_REG (4)));
+	  /* FALLTHRU */
+
+	case GR_ARG_FIRST + 0:
+	case GR_ARG_FIRST + 1:
+	case GR_ARG_FIRST + 2:
+	case GR_ARG_FIRST + 3:
+	case GR_ARG_FIRST + 4:
+	case GR_ARG_FIRST + 5:
+	case GR_ARG_FIRST + 6:
+	case GR_ARG_FIRST + 7:
+	  /* ??? These aren't really "frame related" in the unwind sense,
+	     but marking them so gives us the chance to emit .mem.offset
+	     markers so that we don't get assembler WAW warnings.  */
+	  fprintf (asm_out_file, "\t.mem.offset %ld, 0\n", off);
+	  return 1;
+
+	case BR_REG (1):
+	case BR_REG (2):
+	case BR_REG (3):
+	case BR_REG (4):
+	case BR_REG (5):
+	  fprintf (asm_out_file, "\t.save.b 0x%x\n",
+		   1 << (src_regno - BR_REG (1)));
+	  return 1;
+
+	case FR_REG (2):
+	case FR_REG (3):
+	case FR_REG (4):
+	case FR_REG (5):
+	  fprintf (asm_out_file, "\t.save.f 0x%x\n",
+		   1 << (src_regno - FR_REG (2)));
+	  return 1;
+
+	case FR_REG (16): case FR_REG (17): case FR_REG (18): case FR_REG (19):
+	case FR_REG (20): case FR_REG (21): case FR_REG (22): case FR_REG (23):
+	case FR_REG (24): case FR_REG (25): case FR_REG (26): case FR_REG (27):
+	case FR_REG (28): case FR_REG (29): case FR_REG (30): case FR_REG (31):
+	  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
+		   1 << (src_regno - FR_REG (12)));
+	  return 1;
+
+	default:
+	  return 0;
+	}
+    }
+
   return 0;
 }
 
@@ -3613,7 +4296,13 @@ process_for_unwind_directive (asm_out_file, insn)
        || (flag_exceptions && !exceptions_via_longjmp))
       && RTX_FRAME_RELATED_P (insn))
     {
-      rtx pat = PATTERN (insn);
+      rtx pat;
+
+      pat = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
+      if (pat)
+	pat = XEXP (pat, 0);
+      else
+	pat = PATTERN (insn);
 
       switch (GET_CODE (pat))
         {
@@ -3825,37 +4514,21 @@ ia64_expand_fetch_and_op (code, mode, operands)
      enum machine_mode mode;
      rtx operands[];
 {
-  rtx oldval, newlabel;
-  rtx tmp_reg = gen_rtx_REG (mode, GR_REG(0));
-  rtx mfreg = gen_rtx_MEM (BLKmode, tmp_reg);
-  RTX_UNCHANGING_P (mfreg) = 1;
+  rtx mfreg = gen_rtx_MEM (BLKmode, gen_rtx_REG (mode, GR_REG (1)));
+  rtx oldval, newlabel, tmp_reg, ccv;
+
   emit_insn (gen_mf (mfreg));
   tmp_reg = gen_reg_rtx (mode);
   oldval = gen_reg_rtx (mode);
+  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
 
-  if (mode == SImode)
-    {
-      emit_insn (gen_movsi (operands[0], operands[1]));
-      emit_insn (gen_movsi (tmp_reg, operands[0]));
-    }
-  else
-    {
-      emit_insn (gen_movdi (operands[0], operands[1]));
-      emit_insn (gen_movdi (tmp_reg, operands[0]));
-    }
+  emit_move_insn (operands[0], operands[1]);
+  emit_move_insn (tmp_reg, operands[0]);
 
   newlabel = gen_label_rtx ();
   emit_label (newlabel);
-  if (mode == SImode)
-    {
-      emit_insn (gen_movsi (oldval, tmp_reg));
-      emit_insn (gen_ccv_restore_si (tmp_reg));
-    }
-  else
-    {
-      emit_insn (gen_movdi (oldval, tmp_reg));
-      emit_insn (gen_ccv_restore_di (tmp_reg));
-    }
+  emit_move_insn (oldval, tmp_reg);
+  emit_move_insn (ccv, tmp_reg);
 
   /* Perform the specific operation. */
   switch (code)
@@ -3914,9 +4587,9 @@ ia64_expand_fetch_and_op (code, mode, operands)
   }
 
   if (mode == SImode)
-    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], tmp_reg));
+    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], tmp_reg, ccv));
   else
-    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], tmp_reg));
+    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], tmp_reg, ccv));
 
   emit_cmp_and_jump_insns (tmp_reg, oldval, NE, 0, mode, 1, 0, newlabel);
 }
@@ -3938,31 +4611,20 @@ ia64_expand_op_and_fetch (code, mode, operands)
      enum machine_mode mode;
      rtx operands[];
 {
-  rtx oldval, newlabel;
-  rtx tmp_reg, tmp2_reg = gen_rtx_REG (mode, GR_REG(0));
-  rtx mfreg = gen_rtx_MEM (BLKmode, tmp2_reg);
-  RTX_UNCHANGING_P (mfreg) = 1;
+  rtx mfreg = gen_rtx_MEM (BLKmode, gen_rtx_REG (mode, GR_REG (1)));
+  rtx oldval, newlabel, tmp_reg, ccv;
 
   emit_insn (gen_mf (mfreg));
   tmp_reg = gen_reg_rtx (mode);
-  if (mode == SImode)
-    emit_insn (gen_movsi (tmp_reg, operands[1]));
-  else
-    emit_insn (gen_movdi (tmp_reg, operands[1]));
+  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+
+  emit_move_insn (tmp_reg, operands[1]);  
 
   newlabel = gen_label_rtx ();
   emit_label (newlabel);
   oldval = gen_reg_rtx (mode);
-  if (mode == SImode)
-    {
-      emit_insn (gen_movsi (oldval, tmp_reg));
-      emit_insn (gen_ccv_restore_si (tmp_reg));
-    }
-  else
-    {
-      emit_insn (gen_movdi (oldval, tmp_reg));
-      emit_insn (gen_ccv_restore_di (tmp_reg));
-    }
+  emit_move_insn (oldval, tmp_reg);
+  emit_move_insn (ccv, tmp_reg);
 
   /* Perform the specific operation. */
   switch (code)
@@ -4006,9 +4668,9 @@ ia64_expand_op_and_fetch (code, mode, operands)
   }
 
   if (mode == SImode)
-    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], operands[0]));
+    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], operands[0], ccv));
   else
-    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], operands[0]));
+    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], operands[0], ccv));
 
   emit_cmp_and_jump_insns (tmp_reg, oldval, NE, 0, mode, 1, 0, newlabel);
 }
@@ -4045,7 +4707,6 @@ ia64_expand_compare_and_swap (icode, arglist, target, boolcode)
   mode2 = insn_data[icode].operand[3].mode;
 
   op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  RTX_UNCHANGING_P (op0) = 1;
   if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
   if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
@@ -4120,7 +4781,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
   tree arg0, arg1;
   tree arglist = TREE_OPERAND (exp, 1);
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode tmode, mode0, mode1;
   enum insn_code icode;
   size_t i;
@@ -4161,7 +4822,6 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
       op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      RTX_UNCHANGING_P (op0) = 1;
       if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
         op1 = copy_to_mode_reg (mode1, op1);
       if (target == 0
@@ -4184,7 +4844,6 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
       op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      RTX_UNCHANGING_P (op0) = 1;
       if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
         op1 = copy_to_mode_reg (mode1, op1);
       if (target == 0

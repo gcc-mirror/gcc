@@ -115,14 +115,8 @@ while (0)
   } while (0)
 
 /* svr4.h undefines this, so we need to define it here.  */
-#define DBX_REGISTER_NUMBER(REGNO) 					\
-  (IN_REGNO_P (REGNO) ? (32 + (REGNO) - IN_REG (0)) 			\
-   : LOC_REGNO_P (REGNO) ? (32 + ia64_input_regs +			\
-			    (REGNO) - LOC_REG (0))			\
-   : OUT_REGNO_P (REGNO) ? (32 + ia64_input_regs + ia64_local_regs	\
-			    + (REGNO) - OUT_REG (0))			\
-   : (REGNO) == FRAME_POINTER_REGNUM ? ia64_fp_regno 			\
-   : (REGNO))
+#define DBX_REGISTER_NUMBER(REGNO) \
+  ia64_dbx_register_number(REGNO)
 
 /* Things that svr4.h defines to the wrong type, because it assumes 32 bit
    ints and 32 bit longs.  */
