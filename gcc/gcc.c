@@ -55,16 +55,6 @@ extern void set_std_prefix PROTO((char *, int));
 #define exit __posix_exit
 #endif
 
-/* Test if something is a normal file.  */
-#ifndef S_ISREG
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
-
-/* Test if something is a directory.  */
-#ifndef S_ISDIR
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
 /* By default there is no special suffix for executables.  */
 #ifdef EXECUTABLE_SUFFIX
 #define HAVE_EXECUTABLE_SUFFIX

@@ -1,3 +1,9 @@
+Mon Nov 23 10:16:38 1998  "Melissa O'Neill" <oneill@cs.sfu.ca>
+
+	* cccp.c (S_ISREG, S_ISDIR): Delete defines.
+	* cpplib.c, gcc.c: Likewise.
+	* system.h (S_ISREG, S_ISDIR): Define if not already defined.
+
 Mon Nov 23 09:53:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* local-alloc.c (local_alloc): Use malloc not alloca for
