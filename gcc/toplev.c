@@ -2483,7 +2483,6 @@ rest_of_compilation (decl)
      carry magic hard reg data throughout the function.  */
   rtx_equal_function_value_matters = 0;
   purge_hard_subreg_sets (get_insns ());
-  emit_initial_value_sets ();
 
   /* Early return if there were errors.  We can run afoul of our
      consistency checks, and there's not really much point in fixing them.
@@ -2517,6 +2516,10 @@ rest_of_compilation (decl)
       close_dump_file (DFI_eh, print_rtl, get_insns ());
       timevar_pop (TV_JUMP);
     }
+
+  /* Delay emitting hard_reg_initial_value sets until after EH landing pad
+     generation, which might create new sets.  */
+  emit_initial_value_sets ();
 
 #ifdef FINALIZE_PIC
   /* If we are doing position-independent code generation, now
