@@ -3855,7 +3855,7 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
    output_a_rotate () at the insn emit time.  */
 
 int
-expand_a_rotate (enum rtx_code code, rtx operands[])
+expand_a_rotate (rtx operands[])
 {
   rtx dst = operands[0];
   rtx src = operands[1];

@@ -1,3 +1,11 @@
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update the prototype for
+	expand_a_rotate().
+	* config/h8300/h8300.c (expand_a_rotate): Remove the first
+	argument.
+	* config/h8300/h8300.md: Update all callers.
+
 2004-02-18  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_unary_operation): Deal with logicals on
