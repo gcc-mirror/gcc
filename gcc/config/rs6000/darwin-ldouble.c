@@ -48,6 +48,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This code currently assumes big-endian.  */
 
+#if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__))
+
 #define fabs(x) __builtin_fabs(x)
 
 #define unlikely(x) __builtin_expect ((x), 0)
@@ -199,3 +201,5 @@ _xlqdiv (double a, double b, double c, double d)
   z.dval[1] = (t - u) + tau;
   return z.ldval;
 }
+
+#endif

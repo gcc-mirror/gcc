@@ -1,3 +1,21 @@
+2004-03-11  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Add darwin-ldouble.c.
+	(SHLIB_MAPFILES): Add libgcc-ppc64.ver.
+	(SHLIB_MKMAP_OPTS): Delete.
+	(TARGET_LIBGCC2_CFLAGS): Add -specs.
+	(bispecs): Add rule.
+	* config/rs6000/libgcc-ppc64.ver: New file.
+	* config/rs6000/ppc64-fp.c (__fixtfdi, __floatditf): New functions.
+	(__floatdidf, __floatdisf): Optimize multiply.
+	(__fixunstfdi): New function.
+	* config/rs6000/rs6000.c (rs6000_complex_function_value): Allow for
+	real and imag parts larger than one register.
+	(function_arg): Correct type of reg used when fp arg split partially
+	to stack.
+	* config/rs6000/darwin-ldouble.c: Protect with #if !_SOFT_FLOAT
+	and __MACH__ or __powerpc64__.
+
 2004-03-10  Richard Henderson  <rth@redhat.com>
 
         PR c/14517
