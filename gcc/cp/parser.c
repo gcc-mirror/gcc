@@ -2018,6 +2018,13 @@ cp_parser_name_lookup_error (cp_parser* parser,
 	       parser->scope, name);
       else if (parser->scope == global_namespace)
 	error ("`::%D' has not been declared", name);
+      else if (parser->object_scope 
+	       && !CLASS_TYPE_P (parser->object_scope))
+	error ("request for member `%D' in non-class type `%T'",
+	       name, parser->object_scope);
+      else if (parser->object_scope)
+	error ("`%T::%D' has not been declared", 
+	       parser->object_scope, name);
       else
 	error ("`%D' has not been declared", name);
     }
@@ -4488,6 +4495,9 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 {
   bool nested_name_specifier_p;
 
+  /* Assume that things will not work out.  */
+  *type = error_mark_node;
+
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/true);
   /* Look for the optional nested-name-specifier.  */
@@ -4520,17 +4530,18 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
       /* Look for the type-name.  */
       *scope = TREE_TYPE (cp_parser_type_name (parser));
 
-      /* If we didn't get an aggregate type, or we don't have ::~,
-	 then something has gone wrong.  Since the only caller of this
-	 function is looking for something after `.' or `->' after a
-	 scalar type, most likely the program is trying to get a
-	 member of a non-aggregate type.  */
-      if (*scope == error_mark_node
-	  || cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE)
+      if (*scope == error_mark_node)
+	return;
+
+      /* If we don't have ::~, then something has gone wrong.  Since
+	 the only caller of this function is looking for something
+	 after `.' or `->' after a scalar type, most likely the
+	 program is trying to get a member of a non-aggregate
+	 type.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE)
 	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_COMPL)
 	{
 	  cp_parser_error (parser, "request for member of non-aggregate type");
-	  *type = error_mark_node;
 	  return;
 	}
 
