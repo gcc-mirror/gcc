@@ -3,6 +3,7 @@
 	* libjava.compile/pr172.java: Correct classname to match file name.
 	* libjava.compile/pr174.java: ditto. Remove superfluous main()
 	method.
+	* libjava.compile/PR140.xfail: New file.
 
 2000-03-14  Tom Tromey  <tromey@cygnus.com>
 
