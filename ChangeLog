@@ -3,6 +3,8 @@
 	* Makefile.tpl: Replace PWD with PWD_COMMAND.
 	* Makefile.in: Regenerated.
 
+	* config-ml.in: Replace PWD with PWD_COMMAND.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* intl: New directory; see intl/ChangeLog for details.
