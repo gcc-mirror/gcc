@@ -1468,7 +1468,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
 
-rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h ggc.h
+rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h ggc.h toplev.h
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h basic-block.h
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)

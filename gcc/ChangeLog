@@ -1,3 +1,7 @@
+Mon Nov  8 03:03:07 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* Makefile.in (rtl.o): Depend on toplev.h.
+
 Sun Nov  7 20:55:14 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* cse.c (delete_trivially_dead_insns): Replace alloca with
