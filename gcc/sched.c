@@ -3823,7 +3823,8 @@ schedule_block (b, file)
 		     for those mentioned in the call pattern which will be
 		     made live again later.  */
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (call_used_regs[i] || global_regs[i])
+		    if ((call_used_regs[i] && ! fixed_regs[i])
+			|| global_regs[i])
 		      {
 			register int offset = i / REGSET_ELT_BITS;
 			register REGSET_ELT_TYPE bit
