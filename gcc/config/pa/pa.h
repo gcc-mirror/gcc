@@ -1459,7 +1459,7 @@ while (0)
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return COSTS_N_INSNS (20);				\
+    return TARGET_SNAKE ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20);	\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
