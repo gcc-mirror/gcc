@@ -1,3 +1,8 @@
+2004-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/md.texi (constraints) <% modifier>: Mention that it is
+	useless when the two alternatives are strictly identical.
+
 2004-11-12  Richard Henderson  <rth@redhat.com>
 
 	PR 17778

@@ -1257,7 +1257,9 @@ instruction is defined:
 @end smallexample
 @end ifset
 GCC can only handle one commutative pair in an asm; if you use more,
-the compiler may fail.
+the compiler may fail.  Note that you need not use the modifier if
+the two alternatives are strictly identical; this would only waste
+time in the reload pass.
 
 @cindex @samp{#} in constraint
 @item #
