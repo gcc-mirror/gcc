@@ -1,3 +1,12 @@
+2003-03-22  DJ Delorie  <dj at redhat dot com>,
+	Bruce Korb  <bkorb at gnu dot org>
+
+	* fixinc/inclhack.def (solaris_mutex_init_1): New; Fix
+	buggy Solaris 2.6 mutex/cond initializers.
+	(solaris_mutex_init): Rename to solaris_mutex_init_2.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/pthread.h: Update.
+
 2003-03-22  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/i386.c (ix86_init_machine_status): Return value.

@@ -284,6 +284,7 @@ ENV_TABLE
     case 'A':
       verbose_level = VERB_APPLIES;    break;
 
+    default:
     case 'p':
     case 'P':
       verbose_level = VERB_PROGRESS;   break;
@@ -296,11 +297,14 @@ ENV_TABLE
     case 'E':
       verbose_level = VERB_EVERYTHING; break;
     }
-
- while ((pz_find_base[0] == '.') && (pz_find_base[1] == '/'))
-   pz_find_base += 2;
- if ((pz_find_base[0] != '.') || (pz_find_base[1] != NUL))
-   find_base_len = strlen( pz_find_base );
+  if (verbose_level >= VERB_EVERYTHING) {
+    verbose_level = VERB_EVERYTHING;
+    fputs ("fixinc verbosity:  EVERYTHING\n", stderr);
+  }
+  while ((pz_find_base[0] == '.') && (pz_find_base[1] == '/'))
+    pz_find_base += 2;
+  if ((pz_find_base[0] != '.') || (pz_find_base[1] != NUL))
+    find_base_len = strlen( pz_find_base );
 
   /*  Compile all the regular expressions now.
       That way, it is done only once for the whole run.

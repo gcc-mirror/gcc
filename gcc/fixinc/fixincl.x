@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 147 fixup descriptions.
+ * This file contains 148 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2338,6 +2338,46 @@ static const char* apzIp_Missing_SemiPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Irix___Restrict fix
+ */
+tSCC zIrix___RestrictName[] =
+     "irix___restrict";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zIrix___RestrictList[] =
+  "|internal/sgimacros.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzIrix___RestrictMachs[] = {
+        "mips-sgi-irix6.5",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zIrix___RestrictSelect0[] =
+       "(#ifdef __c99\n\
+)(#[ \t]*define __restrict restrict)";
+
+#define    IRIX___RESTRICT_TEST_CT  1
+static tTestDesc aIrix___RestrictTests[] = {
+  { TT_EGREP,    zIrix___RestrictSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Irix___Restrict
+ */
+static const char* apzIrix___RestrictPatch[] = {
+    "format",
+    "%1#  ifndef __cplusplus\n\
+%2\n\
+#  endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Irix_Asm_Apostrophe fix
  */
 tSCC zIrix_Asm_ApostropheName[] =
@@ -2405,46 +2445,6 @@ static tTestDesc aIrix_Limits_ConstTests[] = {
 static const char* apzIrix_Limits_ConstPatch[] = {
     "format",
     "extern __const ",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Irix___Restrict fix
- */
-tSCC zIrix___RestrictName[] =
-     "irix___restrict";
-
-/*
- *  File name selection pattern
- */
-tSCC zIrix___RestrictList[] =
-  "|internal/sgimacros.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzIrix___RestrictMachs[] = {
-        "mips-sgi-irix6.5",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zIrix___RestrictSelect0[] =
-       "(#ifdef __c99\n\
-)(#[ \t]*define __restrict restrict)";
-
-#define    IRIX___RESTRICT_TEST_CT  1
-static tTestDesc aIrix___RestrictTests[] = {
-  { TT_EGREP,    zIrix___RestrictSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Irix___Restrict
- */
-static const char* apzIrix___RestrictPatch[] = {
-    "format",
-    "%1#  ifndef __cplusplus\n\
-%2\n\
-#  endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3749,35 +3749,70 @@ static const char* apzSco_UtimePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Solaris_Mutex_Init fix
+ *  Description of Solaris_Mutex_Init_1 fix
  */
-tSCC zSolaris_Mutex_InitName[] =
-     "solaris_mutex_init";
+tSCC zSolaris_Mutex_Init_1Name[] =
+     "solaris_mutex_init_1";
 
 /*
  *  File name selection pattern
  */
-tSCC zSolaris_Mutex_InitList[] =
+tSCC zSolaris_Mutex_Init_1List[] =
   "|pthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
-#define apzSolaris_Mutex_InitMachs (const char**)NULL
+#define apzSolaris_Mutex_Init_1Machs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
  */
-tSCC zSolaris_Mutex_InitSelect0[] =
-       "@\\(#\\)pthread.h[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+tSCC zSolaris_Mutex_Init_1Select0[] =
+       "@\\(#\\)pthread.h[ \t]+1.1[0-9][ \t]+97/[0-9/]+ SMI";
 
-#define    SOLARIS_MUTEX_INIT_TEST_CT  1
-static tTestDesc aSolaris_Mutex_InitTests[] = {
-  { TT_EGREP,    zSolaris_Mutex_InitSelect0, (regex_t*)NULL }, };
+#define    SOLARIS_MUTEX_INIT_1_TEST_CT  1
+static tTestDesc aSolaris_Mutex_Init_1Tests[] = {
+  { TT_EGREP,    zSolaris_Mutex_Init_1Select0, (regex_t*)NULL }, };
 
 /*
- *  Fix Command Arguments for Solaris_Mutex_Init
+ *  Fix Command Arguments for Solaris_Mutex_Init_1
  */
-static const char* apzSolaris_Mutex_InitPatch[] = {
+static const char* apzSolaris_Mutex_Init_1Patch[] = { "sed",
+    "-e", "/define[ \t]*PTHREAD_MUTEX_INI/s/{0, 0,/{{{0}, 0}, {{{0}}},/\n\
+/define[ \t]*PTHREAD_COND_INI/s/{0,/{{{0},0},/",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Solaris_Mutex_Init_2 fix
+ */
+tSCC zSolaris_Mutex_Init_2Name[] =
+     "solaris_mutex_init_2";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris_Mutex_Init_2List[] =
+  "|pthread.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSolaris_Mutex_Init_2Machs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSolaris_Mutex_Init_2Select0[] =
+       "@\\(#\\)pthread.h[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+
+#define    SOLARIS_MUTEX_INIT_2_TEST_CT  1
+static tTestDesc aSolaris_Mutex_Init_2Tests[] = {
+  { TT_EGREP,    zSolaris_Mutex_Init_2Select0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Solaris_Mutex_Init_2
+ */
+static const char* apzSolaris_Mutex_Init_2Patch[] = {
     "format",
     "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n\
 %0\n\
@@ -5803,9 +5838,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          159
+#define REGEX_COUNT          160
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            147
+#define FIX_COUNT            148
 
 /*
  *  Enumerate the fixes
@@ -5867,9 +5902,9 @@ typedef enum {
     IO_QUOTES_DEF_FIXIDX,
     IO_QUOTES_USE_FIXIDX,
     IP_MISSING_SEMI_FIXIDX,
+    IRIX___RESTRICT_FIXIDX,
     IRIX_ASM_APOSTROPHE_FIXIDX,
     IRIX_LIMITS_CONST_FIXIDX,
-    IRIX___RESTRICT_FIXIDX,
     IRIX_SOCKLEN_T_FIXIDX,
     IRIX_STDIO_VA_LIST_FIXIDX,
     IRIX_WCSFTIME_FIXIDX,
@@ -5904,7 +5939,8 @@ typedef enum {
     RS6000_PARAM_FIXIDX,
     SCO_STATIC_FUNC_FIXIDX,
     SCO_UTIME_FIXIDX,
-    SOLARIS_MUTEX_INIT_FIXIDX,
+    SOLARIS_MUTEX_INIT_1_FIXIDX,
+    SOLARIS_MUTEX_INIT_2_FIXIDX,
     SOLARIS_STDIO_TAG_FIXIDX,
     SOLARIS_WIDEC_FIXIDX,
     STATSSWTCH_FIXIDX,
@@ -6241,6 +6277,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      IP_MISSING_SEMI_TEST_CT, FD_MACH_ONLY,
      aIp_Missing_SemiTests,   apzIp_Missing_SemiPatch, 0 },
 
+  {  zIrix___RestrictName,    zIrix___RestrictList,
+     apzIrix___RestrictMachs,
+     IRIX___RESTRICT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIrix___RestrictTests,   apzIrix___RestrictPatch, 0 },
+
   {  zIrix_Asm_ApostropheName,    zIrix_Asm_ApostropheList,
      apzIrix_Asm_ApostropheMachs,
      IRIX_ASM_APOSTROPHE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
@@ -6250,11 +6291,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzIrix_Limits_ConstMachs,
      IRIX_LIMITS_CONST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIrix_Limits_ConstTests,   apzIrix_Limits_ConstPatch, 0 },
-
-  {  zIrix___RestrictName,    zIrix___RestrictList,
-     apzIrix___RestrictMachs,
-     IRIX___RESTRICT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aIrix___RestrictTests,   apzIrix___RestrictPatch, 0 },
 
   {  zIrix_Socklen_TName,    zIrix_Socklen_TList,
      apzIrix_Socklen_TMachs,
@@ -6426,10 +6462,15 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      SCO_UTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSco_UtimeTests,   apzSco_UtimePatch, 0 },
 
-  {  zSolaris_Mutex_InitName,    zSolaris_Mutex_InitList,
-     apzSolaris_Mutex_InitMachs,
-     SOLARIS_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aSolaris_Mutex_InitTests,   apzSolaris_Mutex_InitPatch, 0 },
+  {  zSolaris_Mutex_Init_1Name,    zSolaris_Mutex_Init_1List,
+     apzSolaris_Mutex_Init_1Machs,
+     SOLARIS_MUTEX_INIT_1_TEST_CT, FD_MACH_ONLY,
+     aSolaris_Mutex_Init_1Tests,   apzSolaris_Mutex_Init_1Patch, 0 },
+
+  {  zSolaris_Mutex_Init_2Name,    zSolaris_Mutex_Init_2List,
+     apzSolaris_Mutex_Init_2Machs,
+     SOLARIS_MUTEX_INIT_2_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSolaris_Mutex_Init_2Tests,   apzSolaris_Mutex_Init_2Patch, 0 },
 
   {  zSolaris_Stdio_TagName,    zSolaris_Stdio_TagList,
      apzSolaris_Stdio_TagMachs,
