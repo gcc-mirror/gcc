@@ -1,3 +1,8 @@
+2001-07-07  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Append # to end
+	of the label inside NAME as opposed to just the end of NAME.
+
 2001-07-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* config/alpha/alpha-protos.h (vms_valid_decl_attribute_p): Delete.
