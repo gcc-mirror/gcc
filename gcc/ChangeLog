@@ -1,5 +1,9 @@
 Sat Nov 27 08:38:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* combine.c (try_combine): Add code to try to merge a set of a
+	two-word pseudo to a constant with a setting of one of those words
+	to a constant.
+
 	* fold-const.c (negate_expr, associate_trees, extract_muldiv): New.
 	(split_tree): Completely rework to make more general.
 	(make_range, fold): Call negate_expr.
