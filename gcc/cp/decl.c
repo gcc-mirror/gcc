@@ -8097,7 +8097,7 @@ grokdeclarator (tree declarator,
 	   && ! bitfield)
     {
       error ("abstract declarator `%T' used as declaration", type);
-      declarator = make_anon_name ();
+      return error_mark_node;
     }
 
   /* Only functions may be declared using an operator-function-id.  */
