@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define STARTFILE_SPEC32 \
   "%{!shared: \
-     %{pg:/usr/lib/gcrt1.o%s} %{!pg:%{/usr/lib/p:gcrt1.o%s} %{!p:/usr/lib/crt1.o%s}}}\
+     %{pg:/usr/lib/gcrt1.o%s} %{!pg:%{p:/usr/lib/gcrt1.o%s} %{!p:/usr/lib/crt1.o%s}}}\
    /usr/lib/crti.o%s %{static:crtbeginT.o%s}\
    %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
 
