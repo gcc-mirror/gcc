@@ -1,3 +1,7 @@
+2003-12-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md: New split patterns for optimizing bitfield accesses.
+
 2003-12-10  Steven Bosscher  <stevenb@suse.de>
 
 	* README.Portability: Remove K+R section.
