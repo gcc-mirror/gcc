@@ -2509,6 +2509,7 @@ s@ _VA_LIST_));@ __gnuc_va_list));@
 s@ va_list@ __not_va_list__@
 s@\*va_list@*__not_va_list__@
 s@ __va_list)@ __gnuc_va_list)@
+s@typedef[ 	]\(.*\)[ 	]va_list[ 	]*;@typedef \1 __not_va_list__;@
 s@GNUC_VA_LIST@GNUC_Va_LIST@
 s@_NEED___VA_LIST@_NEED___Va_LIST@
 s@VA_LIST@DUMMY_VA_LIST@
