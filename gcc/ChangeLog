@@ -1,3 +1,18 @@
+2002-01-08  Graham Stott  <grahams@redhat.com>
+
+	* c-tree.h (C_TYPE_FIELDS_READONLY): Uppercase macro parameter.
+	(C_TYPE_FIELDS_VOLATILE): Likewise.
+	(C_TYPE_BEING_DEFINED): Likewise.
+	(C_IS_RESERVED_WORD): Likewise.
+	(C_TYPE_VARIABLE_SIZE): Likewise.
+	(C_DECL_VARIABLE_SIZE): Likewise.
+	(C_MISSING_PROTOTYPE_WARNED): Likewise.
+	(C_SET_EXP_ORIGINAL_CODE): Likewise.
+	(C_TYPEDEF_EXPLICITLY_SIGNED): Uppercase macro parameter and remove
+	parenthesis.
+	(C_DECL_ANTICIPATED): Likewise.
+	(c_build_type_variant): Add parenthesis.
+
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c (option_map): Remove --version.

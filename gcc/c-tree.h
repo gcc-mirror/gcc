@@ -1,6 +1,6 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -86,19 +86,19 @@ struct lang_decl
    TREE_ADDRESSABLE   to record that the address of such a decl was used.  */
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
-#define C_TYPE_FIELDS_READONLY(type) TREE_LANG_FLAG_1 (type)
+#define C_TYPE_FIELDS_READONLY(TYPE) TREE_LANG_FLAG_1 (TYPE)
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is volatile.  */
-#define C_TYPE_FIELDS_VOLATILE(type) TREE_LANG_FLAG_2 (type)
+#define C_TYPE_FIELDS_VOLATILE(TYPE) TREE_LANG_FLAG_2 (TYPE)
 
 /* In a RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE
    nonzero if the definition of the type has already started.  */
-#define C_TYPE_BEING_DEFINED(type) TYPE_LANG_FLAG_0 (type)
+#define C_TYPE_BEING_DEFINED(TYPE) TYPE_LANG_FLAG_0 (TYPE)
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
    keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
    and C_RID_YYCODE is the token number wanted by Yacc.  */
-#define C_IS_RESERVED_WORD(id) TREE_LANG_FLAG_0 (id)
+#define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
 
 /* This function was declared inline.  This flag controls the linkage
    semantics of 'inline'; whether or not the function is inlined is
@@ -115,27 +115,27 @@ struct lang_type
 
 /* Record whether a type or decl was written with nonconstant size.
    Note that TYPE_SIZE may have simplified to a constant.  */
-#define C_TYPE_VARIABLE_SIZE(type) TYPE_LANG_FLAG_1 (type)
-#define C_DECL_VARIABLE_SIZE(type) DECL_LANG_FLAG_0 (type)
+#define C_TYPE_VARIABLE_SIZE(TYPE) TYPE_LANG_FLAG_1 (TYPE)
+#define C_DECL_VARIABLE_SIZE(TYPE) DECL_LANG_FLAG_0 (TYPE)
 
 #if 0 /* Not used.  */
 /* Record whether a decl for a function or function pointer has
    already been mentioned (in a warning) because it was called
    but didn't have a prototype.  */
-#define C_MISSING_PROTOTYPE_WARNED(decl) DECL_LANG_FLAG_2(decl)
+#define C_MISSING_PROTOTYPE_WARNED(DECL) DECL_LANG_FLAG_2 (DECL)
 #endif
 
 /* Store a value in that field.  */
-#define C_SET_EXP_ORIGINAL_CODE(exp, code) \
-  (TREE_COMPLEXITY (exp) = (int) (code))
+#define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
+  (TREE_COMPLEXITY (EXP) = (int) (CODE))
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
-#define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
+#define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
 /* Nonzero for a declaration of a built in function if there has been no
    occasion that would declare the function in ordinary C.
    Using the function draws a pedantic warning in this case.  */
-#define C_DECL_ANTICIPATED(exp) DECL_LANG_FLAG_3 ((exp))
+#define C_DECL_ANTICIPATED(EXP) DECL_LANG_FLAG_3 (EXP)
 
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
@@ -177,7 +177,7 @@ extern void c_objc_common_finish_file		PARAMS ((void));
 extern int defer_fn				PARAMS ((tree));
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
-  c_build_qualified_type (TYPE,				  \
+  c_build_qualified_type ((TYPE),				  \
 			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 extern int  c_decode_option                     PARAMS ((int, char **));
