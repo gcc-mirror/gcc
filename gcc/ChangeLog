@@ -1,3 +1,9 @@
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/aix.h (LINK_LIBGCC_SPECIAL_1): New.
+	* config/rs6000/rs6000.h (LIBGCC_SPEC): Remove.
+	* config/rs6000/sysv4.h (LIBGCC_SPEC): Remove.
+
 2001-01-07  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.c (count_loop_regs_set): Delete.

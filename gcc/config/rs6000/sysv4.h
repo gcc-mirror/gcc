@@ -1267,10 +1267,6 @@ do {									\
 %{mcall-solaris: %(lib_solaris) } \
 %{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(lib_default) }}}}}}"
 
-/* Override rs6000.h definition.  */
-#undef	LIBGCC_SPEC
-#define	LIBGCC_SPEC "libgcc.a%s"
-
 #define LIB_DEFAULT_SPEC ""
 
 /* Override svr4.h definition.  */

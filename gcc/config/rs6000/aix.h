@@ -72,8 +72,10 @@ Boston, MA 02111-1307, USA.  */
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR
 
-/* Names to predefine in the preprocessor for this target machine.  */
+/* Because of the above, we must have gcc search itself to find libgcc.a.  */
+#define LINK_LIBGCC_SPECIAL_1
 
+/* Names to predefine in the preprocessor for this target machine.  */
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG \
 -Asystem=unix -Asystem=aix -Acpu=rs6000 -Amachine=rs6000"
 
