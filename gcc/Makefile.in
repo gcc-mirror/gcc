@@ -621,7 +621,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
  s-flags s-config s-codes s-mlib s-under\
- s-output s-recog s-emit s-extract s-peep s-check \
+ s-output s-recog s-emit s-extract s-peep s-check s-ver \
  s-attr s-attrtab s-opinit s-proto s-crt s-crtS s-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
@@ -702,15 +702,17 @@ RECOG_H = recog.h gansidecl.h
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
 
-$(srcdir)/version.c: $(VERSION_DEP)
+$(srcdir)/version.c: s-ver ; @true
+s-ver: $(VERSION_DEP)
 	(cd $(srcdir); cvs log -h `basename $?`) >tmp-ver
 	tag=`sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q' tmp-ver`; \
 	ver=`echo $${tag} | sed 's/-.*//' | sed 's/_/./g'`; \
 	date=`echo $${tag} | sed 's/.*-//'`; \
 	if [ $${date} != RELEASE ]; then ver="testgcc-$${ver} $${date} experimental"; fi; \
-	echo "char *version_string = \"$${ver}\";" >>tmp-version.c
+	echo "char *version_string = \"$${ver}\";" >tmp-version.c
 	rm -f tmp-ver
 	$(srcdir)/move-if-change tmp-version.c $(srcdir)/version.c
+	touch s-ver
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)
