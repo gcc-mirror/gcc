@@ -1905,7 +1905,6 @@ renumber_insns (stream)
      FILE *stream;
 {
   rtx insn;
-  int old_max_uid = cur_insn_uid;
 
   /* If we're not supposed to renumber instructions, don't.  */
   if (!flag_renumber_insns)

@@ -11061,7 +11061,7 @@ record_promoted_value (insn, subreg)
     rtx insn;
     rtx subreg;
 {
-  rtx links, links2, set;
+  rtx links, set;
   int regno = REGNO (SUBREG_REG (subreg));
   enum machine_mode mode = GET_MODE (subreg);
 
