@@ -1298,7 +1298,7 @@
 	(rotatert:SI (match_operand:SI 1 "general_operand" "g")
 		     (match_operand:QI 2 "const_int_operand" "n")))]
   ""
-  "rotl $%R2,%1,%0")
+  "rotl %R2,%1,%0")
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
