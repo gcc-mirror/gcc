@@ -1,3 +1,7 @@
+2001-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Use -d when invoking gcc_update.
+
 2001-05-18  Andreas Jaeger  <aj@suse.de>
 
 	* gcc_update: Add rules for libf2c/libI77.
