@@ -4305,6 +4305,7 @@ build_over_call (cand, args, flags)
 	     Ideally, the notions of having side-effects and of being
 	     useless would be orthogonal.  */
 	  TREE_SIDE_EFFECTS (val) = 1;
+	  TREE_NO_UNUSED_WARNING (val) = 1;
 	}
       else
 	val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
