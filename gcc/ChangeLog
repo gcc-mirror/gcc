@@ -1,3 +1,24 @@
+Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
+                          Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppinit.c: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
+
+	* gansidecl.h: Likewise.
+
+	* rtl.c: Likewise.
+
+	* rtl.h: Likewise.
+
+	* toplev.h: Likewise.
+
+	* tree.c: Likewise.
+
+	* tree.h: Likewise.
+
+	* varray.c: Likewise.
+
+	* varray.h: Likewise.
+
 Wed Nov 10 10:57:22 1999  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* gcov.c (struct arcdata): Add hits and total, remove prob.

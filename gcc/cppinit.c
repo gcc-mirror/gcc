@@ -216,7 +216,7 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 #define CAT(a, b) a/**/b
 #endif
 
-#if HAVE_GCC_VERSION(2,7)
+#if (GCC_VERSION >= 2007)
 #define TABLE(id) static inline void CAT(init_, id) PARAMS ((void)) {} \
 unsigned char id[256] = {
 #define s(p, v) [p] = v,

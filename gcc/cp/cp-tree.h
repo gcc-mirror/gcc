@@ -124,7 +124,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Language-specific tree checkers. */
 
-#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
+#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)			\
 ({  const tree __t = NODE;					\
