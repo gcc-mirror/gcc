@@ -1,3 +1,9 @@
+2001-07-19  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.lang/PR3731.java: New file.
+	* libjava.lang/PR3731.out: New file.
+	* libjava.lang/PR3731.xfail: New file.
+
 2001-07-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.compile/anon_ctor_itf_arg.java: Moved to `libjava.lang.'
