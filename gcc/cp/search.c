@@ -842,7 +842,7 @@ dfs_access_in_type (binfo, data)
 	 access to the DECL.  The CONST_DECL for an enumeration
 	 constant will not have DECL_LANG_SPECIFIC, and thus no
 	 DECL_ACCESS.  */
-      if (DECL_LANG_SPECIFIC (decl))
+      if (DECL_LANG_SPECIFIC (decl) && !DECL_DISCRIMINATOR_P (decl))
 	{
 	  tree decl_access = purpose_member (type, DECL_ACCESS (decl));
 	  if (decl_access)

@@ -1458,6 +1458,9 @@ alter_access (t, fdecl, access)
   if (!DECL_LANG_SPECIFIC (fdecl))
     retrofit_lang_decl (fdecl);
 
+  if (DECL_DISCRIMINATOR_P (fdecl))
+    abort ();
+
   elem = purpose_member (t, DECL_ACCESS (fdecl));
   if (elem)
     {

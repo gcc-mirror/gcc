@@ -887,6 +887,7 @@ struct cp_language_function
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
   struct binding_level *bindings;
+  varray_type x_local_names;
 
   const char *cannot_inline;
 };
@@ -1840,6 +1841,9 @@ struct lang_decl_flags
     /* This is DECL_ACCESS.  */
     tree access;
 
+    /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
+    int discriminator;
+
     /* In a namespace-scope FUNCTION_DECL, this is
        GLOBAL_INIT_PRIORITY.  */
     int init_priority;
@@ -1851,12 +1855,6 @@ struct lang_decl_flags
 };
 
 struct unparsed_text;
-
-struct lang_decl_inlined_fns
-{
-  size_t num_fns;
-  tree fns[1];
-};
 
 struct lang_decl
 {
@@ -1871,8 +1869,9 @@ struct lang_decl
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
 
-  /* In a FUNCTION_DECL, this is a list of trees inlined into its body.  */
-  struct lang_decl_inlined_fns *inlined_fns;
+  /* In a FUNCTION_DECL, these are function data which is to be kept
+     as long as FUNCTION_DECL is kept.  */
+  tree inlined_fns;
 
   union
   {
@@ -1988,6 +1987,15 @@ struct lang_decl
 /* List of FUNCION_DECLs inlined into this function's body.  */
 #define DECL_INLINED_FNS(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->inlined_fns)
+
+/* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
+#define DECL_DISCRIMINATOR_P(NODE)	\
+  (TREE_CODE (NODE) == VAR_DECL		\
+   && DECL_FUNCTION_SCOPE_P (NODE))
+
+/* Discriminator for name mangling.  */
+#define DECL_DISCRIMINATOR(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.u2.discriminator)
 
 /* Non-zero if the VTT parm has been added to NODE.  */
 #define DECL_HAS_VTT_PARM_P(NODE) \
