@@ -4472,7 +4472,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 	  addr = plus_constant (addr, offset);
 	  x = gen_rtx_MEM (GET_MODE (x), addr);
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);
-	  find_reloads_address (GET_MODE (x), NULL_PTR,
+	  find_reloads_address (GET_MODE (x), &x,
 				XEXP (x, 0),
 				&XEXP (x, 0), opnum, type, ind_levels, insn);
 	  /* If this is not a toplevel operand, find_reloads doesn't see this
