@@ -157,6 +157,7 @@ The following information was last updated on @value{last-update-news}:
 @item
 The @code{TtyNam} intrinsics now set @var{Name} to all spaces (at run time)
 if the system has no @code{ttyname} implementation available.
+@end ifclear
 
 @ifclear USERVISONLY
 @item
