@@ -614,6 +614,8 @@ function_prologue (file, size)
   register int regno;
   int limit;
   rtx xops[4];
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
 
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
@@ -639,14 +641,13 @@ function_prologue (file, size)
   limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
   for (regno = limit - 1; regno >= 0; regno--)
     if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (current_function_uses_pic_offset_table
-	    && regno == PIC_OFFSET_TABLE_REGNUM))
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       {
 	xops[0] = gen_rtx (REG, SImode, regno);
 	output_asm_insn ("push%L0 %0", xops);
       }
 
-  if (current_function_uses_pic_offset_table)
+  if (pic_reg_used)
     {
       xops[0] = pic_offset_table_rtx;
       xops[1] = (rtx) gen_label_rtx ();
@@ -675,6 +676,8 @@ simple_386_epilogue ()
   int nregs = 0;
   int reglimit = (frame_pointer_needed
 		  ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
 
 #ifdef NON_SAVING_SETJMP
   if (NON_SAVING_SETJMP && current_function_calls_setjmp)
@@ -686,8 +689,7 @@ simple_386_epilogue ()
 
   for (regno = reglimit - 1; regno >= 0; regno--)
     if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (current_function_uses_pic_offset_table
-	    && regno == PIC_OFFSET_TABLE_REGNUM))
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       nregs++;
 
   return nregs == 0 || ! frame_pointer_needed;
@@ -706,6 +708,8 @@ function_epilogue (file, size)
   register int nregs, limit;
   int offset;
   rtx xops[3];
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
 
   /* Compute the number of registers to pop */
 
@@ -717,8 +721,7 @@ function_epilogue (file, size)
 
   for (regno = limit - 1; regno >= 0; regno--)
     if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (current_function_uses_pic_offset_table
-	    && regno == PIC_OFFSET_TABLE_REGNUM))
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       nregs++;
 
   /* sp is often  unreliable so we must go off the frame pointer,
@@ -744,8 +747,7 @@ function_epilogue (file, size)
 
       for (regno = 0; regno < limit; regno++)
 	if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	    || (current_function_uses_pic_offset_table
-		&& regno == PIC_OFFSET_TABLE_REGNUM))
+	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
 	  {
 	    xops[0] = gen_rtx (REG, SImode, regno);
 	    output_asm_insn ("pop%L0 %0", xops);
@@ -754,8 +756,7 @@ function_epilogue (file, size)
   else
     for (regno = 0; regno < limit; regno++)
       if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	  || (current_function_uses_pic_offset_table
-	      && regno == PIC_OFFSET_TABLE_REGNUM))
+	  || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
 	{
 	  xops[0] = gen_rtx (REG, SImode, regno);
 	  xops[1] = adj_offsettable_operand (AT_BP (Pmode), offset);

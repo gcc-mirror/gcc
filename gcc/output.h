@@ -138,6 +138,9 @@ extern int flag_pic;
 /* This is nonzero if the current function uses pic_offset_table_rtx.  */
 extern int current_function_uses_pic_offset_table;
 
+/* This is nonzero if the current function uses the constant pool.  */
+extern int current_function_uses_const_pool;
+
 /* The line number of the beginning of the current function.
    sdbout.c needs this so that it can output relative linenumbers.  */
 
