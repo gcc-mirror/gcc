@@ -1,5 +1,7 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/tree-ssa/20040204-1.c: Remove powerpc from xfail list.
+
 	* g++.dg/eh/simd-2.C: Check for AltiVec HW support at runtime.
 	* g++.dg/eh/check-vect.h: New.
 
