@@ -7277,9 +7277,20 @@
 	      (clobber (reg:SI 31))])
    (set (match_operand:SI 0 "register_operand" "")
 	(reg:SI 29))]
-  "! TARGET_PORTABLE_RUNTIME && !TARGET_64BIT && !TARGET_ELF32"
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
   "
 {
+  if (TARGET_ELF32)
+    {
+      rtx canonicalize_funcptr_for_compare_libfunc
+        = init_one_libfunc (CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL);
+
+      emit_library_call_value (canonicalize_funcptr_for_compare_libfunc,
+      			       operands[0], LCT_NORMAL, Pmode,
+			       1, operands[1], Pmode);
+      DONE;
+    }
+
   operands[2] = gen_reg_rtx (SImode);
   if (GET_CODE (operands[1]) != REG)
     {

@@ -1,3 +1,13 @@
+2002-12-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/fptr.c (__canonicalize_funcptr_for_compare): New file and function.
+	* pa.md (canonicalize_funcptr_for_compare): Output library call to
+	canonicalize_funcptr_for_compare_libfunc on TARGET_ELF32.
+	* pa32-linux.h (CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL,
+	CTOR_LIST_BEGIN): New defines.
+	* pa/t-linux (LIB2FUNCS_EXTRA): New define.
+	(fptr.c): Add make rules.
+
 2002-12-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* combine.c (combine_simplify_rtx): Add new canonicalizations.

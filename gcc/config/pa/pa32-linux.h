@@ -29,3 +29,22 @@ Boston, MA 02111-1307, USA.  */
    subspace stubs, so we allow sibcalls to all functions.  */
 #undef FUNCTION_OK_FOR_SIBCALL
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
+
+/* We need a libcall to canonicalize function pointers because of
+   the way function pointers are handled when doing lazy linking.  */
+#define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
+  "__canonicalize_funcptr_for_compare"
+
+/* The libcall __canonicalize_funcptr_for_compare is referenced in
+   crtend.o and the reference isn't resolved in objects that don't
+   compare function pointers.  Thus, we need to play games to provide
+   a reference in crtbegin.o.  The rest of the define is the same
+   as that in crtstuff.c  */
+#define CTOR_LIST_BEGIN \
+  asm (".type __canonicalize_funcptr_for_compare,@function\n"		\
+"	.text\n"							\
+"	.word __canonicalize_funcptr_for_compare-$PIC_pcrel$0");	\
+  STATIC func_ptr __CTOR_LIST__[1]					\
+    __attribute__ ((__unused__, section(".ctors"),			\
+		    aligned(sizeof(func_ptr))))				\
+    = { (func_ptr) (-1) }
