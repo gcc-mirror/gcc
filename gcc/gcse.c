@@ -583,7 +583,7 @@ static void compute_cprop_data	PARAMS ((void));
 static void find_used_regs	PARAMS ((rtx));
 static int try_replace_reg	PARAMS ((rtx, rtx, rtx));
 static struct expr *find_avail_set PARAMS ((int, rtx));
-static int cprop_jump		PARAMS ((rtx, rtx, struct reg_use *, rtx));
+static int cprop_jump		PARAMS ((rtx, rtx, rtx));
 #ifdef HAVE_cc0
 static int cprop_cc0_jump	PARAMS ((rtx, struct reg_use *, rtx));
 #endif
@@ -1114,7 +1114,7 @@ record_one_set (regno, insn)
      int regno;
      rtx insn;
 {
-  /* allocate a new reg_set element and link it onto the list */
+  /* Allocate a new reg_set element and link it onto the list.  */
   struct reg_set *new_reg_info;
 
   /* If the table isn't big enough, enlarge it.  */
@@ -1334,7 +1334,9 @@ hash_expr (x, mode, do_not_record_p, hash_table_size)
   hash = hash_expr_1 (x, mode, do_not_record_p);
   return hash % hash_table_size;
 }
+
 /* Hash a string.  Just add its bytes up.  */
+
 static inline unsigned
 hash_string_1 (ps)
      const char *ps;
@@ -1857,7 +1859,6 @@ insert_set_in_table (x, insn)
       /* Set the fields of the expr element.
 	 We must copy X because it can be modified when copy propagation is
 	 performed on its operands.  */
-      /* ??? Should this go in a different obstack?  */
       cur_expr->expr = copy_rtx (x);
       cur_expr->bitmap_index = n_sets++;
       cur_expr->next_same_hash = NULL;
@@ -1910,14 +1911,21 @@ hash_scan_set (pat, insn, set_p)
 {
   rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
+  rtx note;
 
   if (GET_CODE (src) == CALL)
     hash_scan_call (src, insn);
 
-  if (GET_CODE (dest) == REG)
+  else if (GET_CODE (dest) == REG)
     {
-      int regno = REGNO (dest);
+      unsigned int regno = REGNO (dest);
       rtx tmp;
+
+      /* If this is a single set and we are doing constant propagation,
+	 see if a REG_NOTE shows this equivalent to a constant.  */
+      if (set_p && (note = find_reg_equal_equiv_note (insn)) != 0
+	  && CONSTANT_P (XEXP (note, 0)))
+	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
       if (! set_p
@@ -1925,7 +1933,9 @@ hash_scan_set (pat, insn, set_p)
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
 	  && can_copy_p [GET_MODE (dest)]
 	  /* Is SET_SRC something we want to gcse?  */
-	  && want_to_gcse_p (src))
+	  && want_to_gcse_p (src)
+	  /* Don't CSE a nop.  */
+	  && src != dest)
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn.  */
@@ -1942,7 +1952,8 @@ hash_scan_set (pat, insn, set_p)
 	       && regno >= FIRST_PSEUDO_REGISTER
 	       && ((GET_CODE (src) == REG
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
-		    && can_copy_p [GET_MODE (dest)])
+		    && can_copy_p [GET_MODE (dest)]
+		    && REGNO (src) != regno)
 		   || GET_CODE (src) == CONST_INT
 		   || GET_CODE (src) == SYMBOL_REF
 		   || GET_CODE (src) == CONST_DOUBLE)
@@ -1992,25 +2003,21 @@ hash_scan_insn (insn, set_p, in_libcall_block)
   rtx pat = PATTERN (insn);
   int i;
 
+  if (in_libcall_block)
+    return;
+
   /* Pick out the sets of INSN and for other forms of instructions record
      what's been modified.  */
 
-  if (GET_CODE (pat) == SET && ! in_libcall_block)
-    {
-      /* Ignore obvious no-ops.  */
-      if (SET_SRC (pat) != SET_DEST (pat))
-	hash_scan_set (pat, insn, set_p);
-    }
+  if (GET_CODE (pat) == SET)
+    hash_scan_set (pat, insn, set_p);
   else if (GET_CODE (pat) == PARALLEL)
     for (i = 0; i < XVECLEN (pat, 0); i++)
       {
 	rtx x = XVECEXP (pat, 0, i);
 
 	if (GET_CODE (x) == SET)
-	  {
-	    if (GET_CODE (SET_SRC (x)) == CALL)
-	      hash_scan_call (SET_SRC (x), insn);
-	  }
+	  hash_scan_set (x, insn, set_p);
 	else if (GET_CODE (x) == CLOBBER)
 	  hash_scan_clobber (x, insn);
 	else if (GET_CODE (x) == CALL)
@@ -2611,7 +2618,8 @@ static void
 compute_kill_rd ()
 {
   int bb, cuid;
-  int regno, i;
+  unsigned int regno;
+  int i;
 
   /* For each block
        For each set bit in `gen' of the block (i.e each insn which
@@ -3603,63 +3611,53 @@ static int
 try_replace_reg (from, to, insn)
      rtx from, to, insn;
 {
-  rtx note;
+  rtx note = find_reg_equal_equiv_note (insn);
   rtx src;
-  int success;
-  rtx set;
+  int success = 0;
+  rtx set = single_set (insn);
 
-  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-
-  if (!note)
-    note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
-
-  /* If this fails we could try to simplify the result of the
-     replacement and attempt to recognize the simplified insn.
-
-     But we need a general simplify_rtx that doesn't have pass
-     specific state variables.  I'm not aware of one at the moment.  */
-
-  success = validate_replace_src (from, to, insn);
-  set = single_set (insn);
-
-  /* We've failed to do replacement. Try to add REG_EQUAL note to not loose
-     information.  */
-  if (!success && !note)
+  /* If this is a single set, try to simplify the source of the set given
+     our substitution.  We could perhaps try this for multiple SETs, but
+     it probably won't buy us anything.  */
+  if (set != 0)
     {
-      if (!set)
-	return 0;
+      src = simplify_replace_rtx (SET_SRC (set), from, to);
 
-      note = REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
-						   copy_rtx (SET_SRC (set)),
-						   REG_NOTES (insn));
+      /* Try this two ways: first just replace SET_SRC.  If that doesn't
+	 work and this is a PARALLEL, try to replace the whole pattern
+	 with a new SET.  */
+      if (validate_change (insn, &SET_SRC (set), src, 0))
+	success = 1;
+      else if (GET_CODE (PATTERN (insn)) == PARALLEL
+	       && validate_change (insn, &PATTERN (insn),
+				   gen_rtx_SET (VOIDmode, SET_DEST (set),
+						src),
+				   0))
+	success = 1;
     }
 
-  /* Always do the replacement in REQ_EQUAL and REG_EQUIV notes.  Also
-     try to simplify them.  */
-  if (note)
-    {
-      rtx simplified;
+  /* Otherwise, try to do a global replacement within the insn.  */
+  if (!success)
+    success = validate_replace_src (from, to, insn);
 
-      if (!validate_replace_rtx_subexp (from, to, insn, &XEXP (note, 0)))
-	abort();
+  /* We've failed to do replacement, have a single SET, and don't already
+     have a note, two to add a REG_EQUAL note to not lose information.  */
+  if (!success && note == 0 && set != 0)
+    note= REG_NOTES (insn)
+      = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
 
-      src = XEXP (note, 0);
+  /* If there is already a NOTE, update the expression in it with our
+     replacement.  */
+  else if (note != 0)
+    XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), from, to);
 
-      /* Try to simplify resulting note. */
-      simplified = simplify_rtx (src);
-      if (simplified)
-	{
-	  src = simplified;
-	  XEXP (note, 0) = src;
-	}
+  /* REG_EQUAL may get simplified into register.
+     We don't allow that. Remove that note. This code ought
+     not to hapen, because previous code ought to syntetize
+     reg-reg move, but be on the safe side.  */
+  if (note && REG_P (XEXP (note, 0)))
+    remove_note (insn, note);
 
-      /* REG_EQUAL may get simplified into register.
-         We don't allow that. Remove that note. This code ought
-         not to hapen, because previous code ought to syntetize
-         reg-reg move, but be on the safe side.  */
-      else if (REG_P (src))
-	remove_note (insn, note);
-    }
   return success;
 }
 
@@ -3734,82 +3732,57 @@ find_avail_set (regno, insn)
 }
 
 /* Subroutine of cprop_insn that tries to propagate constants into
-   JUMP_INSNS.  INSN must be a conditional jump; COPY is a copy of it
-   that we can use for substitutions.
-   REG_USED is the use we will try to replace, SRC is the constant we
-   will try to substitute for it.
-   Returns nonzero if a change was made.  */
+   JUMP_INSNS.  INSN must be a conditional jump.  FROM is what we will try to
+   replace, SRC is the constant we will try to substitute for it.  Returns
+   nonzero if a change was made.  We know INSN has just a SET.  */
 
 static int
-cprop_jump (insn, copy, reg_used, src)
-     rtx insn, copy;
-     struct reg_use *reg_used;
+cprop_jump (insn, from, src)
+     rtx insn;
+     rtx from;
      rtx src;
 {
-  rtx set = PATTERN (copy);
-  rtx temp;
-
-  /* Replace the register with the appropriate constant.  */
-  replace_rtx (SET_SRC (set), reg_used->reg_rtx, src);
-
-  temp = simplify_ternary_operation (GET_CODE (SET_SRC (set)),
-				     GET_MODE (SET_SRC (set)),
-				     GET_MODE (XEXP (SET_SRC (set), 0)),
-				     XEXP (SET_SRC (set), 0),
-				     XEXP (SET_SRC (set), 1),
-				     XEXP (SET_SRC (set), 2));
+  rtx set = PATTERN (insn);
+  rtx new = simplify_replace_rtx (SET_SRC (set), from, src);
 
   /* If no simplification can be made, then try the next
      register.  */
-  if (temp == 0)
+  if (rtx_equal_p (new, SET_SRC (set)))
     return 0;
  
-  SET_SRC (set) = temp;
-
-  /* That may have changed the structure of TEMP, so
-     force it to be rerecognized if it has not turned
-     into a nop or unconditional jump.  */
-		
-  INSN_CODE (copy) = -1;
-  if ((SET_DEST (set) == pc_rtx
-       && (SET_SRC (set) == pc_rtx
-	   || GET_CODE (SET_SRC (set)) == LABEL_REF))
-      || recog (PATTERN (copy), copy, NULL) >= 0)
+  /* If this is now a no-op leave it that way, but update LABEL_NUSED if
+     necessary.  */
+  if (new == pc_rtx)
     {
-      /* This has either become an unconditional jump
-	 or a nop-jump.  We'd like to delete nop jumps
-	 here, but doing so confuses gcse.  So we just
-	 make the replacement and let later passes
-	 sort things out.  */
-      PATTERN (insn) = set;
-      INSN_CODE (insn) = -1;
+      SET_SRC (set) = new;
 
-      /* One less use of the label this insn used to jump to
-	 if we turned this into a NOP jump.  */
-      if (SET_SRC (set) == pc_rtx && JUMP_LABEL (insn) != 0)
+      if (JUMP_LABEL (insn) != 0)
 	--LABEL_NUSES (JUMP_LABEL (insn));
-
-      /* If this has turned into an unconditional jump,
-	 then put a barrier after it so that the unreachable
-	 code will be deleted.  */
-      if (GET_CODE (SET_SRC (set)) == LABEL_REF)
-	emit_barrier_after (insn);
-
-      run_jump_opt_after_gcse = 1;
-
-      const_prop_count++;
-      if (gcse_file != NULL)
-	{
-	  fprintf (gcse_file,
-		   "CONST-PROP: Replacing reg %d in insn %d with constant ",
-		   REGNO (reg_used->reg_rtx), INSN_UID (insn));
-	  print_rtl (gcse_file, src);
-	  fprintf (gcse_file, "\n");
-	}
-
-      return 1;
     }
-  return 0;
+
+  /* Otherwise, this must be a valid instruction.  */
+  else if (! validate_change (insn, &SET_SRC (set), new, 0))
+    return 0;
+
+  /* If this has turned into an unconditional jump,
+     then put a barrier after it so that the unreachable
+     code will be deleted.  */
+  if (GET_CODE (SET_SRC (set)) == LABEL_REF)
+    emit_barrier_after (insn);
+
+  run_jump_opt_after_gcse = 1;
+
+  const_prop_count++;
+  if (gcse_file != NULL)
+    {
+      fprintf (gcse_file,
+	       "CONST-PROP: Replacing reg %d in insn %d with constant ",
+	       REGNO (from), INSN_UID (insn));
+      print_rtl (gcse_file, src);
+      fprintf (gcse_file, "\n");
+    }
+
+  return 1;
 }
 
 #ifdef HAVE_cc0
@@ -3826,20 +3799,20 @@ cprop_cc0_jump (insn, reg_used, src)
      struct reg_use *reg_used;
      rtx src;
 {
+  /* First substitute in the SET_SRC of INSN, then substitute that for
+     CC0 in JUMP.  */
   rtx jump = NEXT_INSN (insn);
-  rtx copy = copy_rtx (jump);
-  rtx set = PATTERN (copy);
+  rtx new_src = simplify_replace_rtx (SET_SRC (PATTERN (insn)),
+				      reg_used->reg_rtx, src);
 
-  /* We need to copy the source of the cc0 setter, as cprop_jump is going to
-     substitute into it.  */
-  replace_rtx (SET_SRC (set), cc0_rtx, copy_rtx (SET_SRC (PATTERN (insn))));
-  if (! cprop_jump (jump, copy, reg_used, src))
+  if (! cprop_jump (jump, cc0_rtx, new_src))
     return 0;
 
   /* If we succeeded, delete the cc0 setter.  */
   PUT_CODE (insn, NOTE);
   NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
   NOTE_SOURCE_FILE (insn) = 0;
+
   return 1;
  }
 #endif
@@ -3858,17 +3831,13 @@ cprop_insn (insn, alter_jumps)
 
   /* Only propagate into SETs.  Note that a conditional jump is a
      SET with pc_rtx as the destination.  */
-  if ((GET_CODE (insn) != INSN
-       && GET_CODE (insn) != JUMP_INSN)
-      || GET_CODE (PATTERN (insn)) != SET)
+  if (GET_CODE (insn) != INSN && GET_CODE (insn) != JUMP_INSN)
     return 0;
 
   reg_use_count = 0;
   find_used_regs (PATTERN (insn));
   
-  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
-  if (!note)
-    note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+  note = find_reg_equal_equiv_note (insn);
 
   /* We may win even when propagating constants into notes. */
   if (note)
@@ -3938,7 +3907,8 @@ cprop_insn (insn, alter_jumps)
 		   && GET_CODE (insn) == JUMP_INSN
 		   && condjump_p (insn)
 		   && ! simplejump_p (insn))
-	    changed |= cprop_jump (insn, copy_rtx (insn), reg_used, src);
+	    changed |= cprop_jump (insn, reg_used->reg_rtx, src);
+
 #ifdef HAVE_cc0
 	  /* Similar code for machines that use a pair of CC0 setter and
 	     conditional jump insn.  */
@@ -3947,13 +3917,11 @@ cprop_insn (insn, alter_jumps)
 		   && SET_DEST (PATTERN (insn)) == cc0_rtx
 		   && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
 		   && condjump_p (NEXT_INSN (insn))
-		   && ! simplejump_p (NEXT_INSN (insn)))
-            {
-	      if (cprop_cc0_jump (insn, reg_used, src))
-		{
-		  changed = 1;
-		  break;
-		}
+		   && ! simplejump_p (NEXT_INSN (insn))
+		   && cprop_cc0_jump (insn, reg_used, src))
+	    {
+	      changed = 1;
+	      break;
 	    }
 #endif
 	}
@@ -4006,17 +3974,15 @@ cprop (alter_jumps)
       for (insn = BLOCK_HEAD (bb);
 	   insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
-	{
-	  if (INSN_P (insn))
-	    {
-	      changed |= cprop_insn (insn, alter_jumps);
+	if (INSN_P (insn))
+	  {
+	    changed |= cprop_insn (insn, alter_jumps);
 
-	      /* Keep track of everything modified by this insn.  */
-	      /* ??? Need to be careful w.r.t. mods done to INSN.  Don't
-	         call mark_oprs_set if we turned the insn into a NOTE.  */
-	      if (GET_CODE (insn) != NOTE)
-		mark_oprs_set (insn);
-	    }
+	    /* Keep track of everything modified by this insn.  */
+	    /* ??? Need to be careful w.r.t. mods done to INSN.  Don't
+	       call mark_oprs_set if we turned the insn into a NOTE.  */
+	    if (GET_CODE (insn) != NOTE)
+	      mark_oprs_set (insn);
 	}
     }
 
