@@ -1648,14 +1648,31 @@ emit_move_insn_1 (x, y)
 
 	 In that case, change_address is used only to convert
 	 the mode, not to change the address.  */
-      emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		 ((stack ? change_address (x, submode, (rtx) 0)
-		   : gen_highpart (submode, x)),
-		  gen_highpart (submode, y)));
-      emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		 ((stack ? change_address (x, submode, (rtx) 0)
-		   : gen_lowpart (submode, x)),
-		  gen_lowpart (submode, y)));
+      if (stack)
+	{
+#ifdef STACK_GROWS_DOWNWARD
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
+		      gen_highpart (submode, y)));
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
+		      gen_lowpart (submode, y)));
+#else
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
+		      gen_lowpart (submode, y)));
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
+		      gen_highpart (submode, y)));
+#endif
+	}
+      else
+	{
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_highpart (submode, x), gen_highpart (submode, y)));
+	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		     (gen_lowpart (submode, x), gen_lowpart (submode, y)));
+	}
 
       group_insns (prev);
 
