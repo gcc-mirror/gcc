@@ -151,7 +151,7 @@ java::lang::Double::toString(jdouble value, jboolean isFloat)
 }
 
 jdouble 
-java::lang::Double::doubleValueOf(jstring str)
+java::lang::Double::parseDouble(jstring str)
 {
   int length = str->length();
   // Note that UTF can expand 3x.
