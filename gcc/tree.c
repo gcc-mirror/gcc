@@ -4879,10 +4879,17 @@ int_fits_type_p (tree c, tree type)
   /* Perform some generic filtering first, which may allow making a decision
      even if the bounds are not constant.  First, negative integers never fit
      in unsigned types, */
-  if ((TYPE_UNSIGNED (type) && tree_int_cst_sgn (c) < 0)
-      /* Also, unsigned integers with top bit set never fit signed types.  */
-      || (! TYPE_UNSIGNED (type)
-	  && TYPE_UNSIGNED (TREE_TYPE (c)) && tree_int_cst_msb (c)))
+  if (TYPE_UNSIGNED (type) && tree_int_cst_sgn (c) < 0)
+    return 0;
+
+  /* Second, narrower types always fit in wider ones.  */
+  if (TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (c)))
+    return 1;
+
+  /* Third, unsigned integers with top bit set never fit signed types.  */
+  if (! TYPE_UNSIGNED (type)
+      && TYPE_UNSIGNED (TREE_TYPE (c))
+      && tree_int_cst_msb (c))
     return 0;
 
   /* If at least one bound of the type is a constant integer, we can check
