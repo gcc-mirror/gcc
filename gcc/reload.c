@@ -3580,8 +3580,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
 	   || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
 	  && (operand_reloadnum[reload_opnum[i]] < 0
-	      || reload_optional[operand_reloadnum[reload_opnum[i]]])
-	  && ! reload_secondary_p[i])
+	      || reload_optional[operand_reloadnum[reload_opnum[i]]]))
 	reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
 
       if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
