@@ -1,3 +1,8 @@
+1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c (maybe_downcase, getlc, handle_generic_pragma,
+	check_newline): Use uppercase ctype macro from system.h.
+
 1999-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (warn_unhandled): Use xstrdup, not xmalloc/strcpy.

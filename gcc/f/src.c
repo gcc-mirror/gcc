@@ -120,10 +120,10 @@ ffesrc_init_1 ()
     }
 
   for (i = 'A'; i <= 'Z'; ++i)
-    ffesrc_tolower_[i] = tolower (i);
+    ffesrc_tolower_[i] = TOLOWER (i);
 
   for (i = 'a'; i <= 'z'; ++i)
-    ffesrc_toupper_[i] = toupper (i);
+    ffesrc_toupper_[i] = TOUPPER (i);
 
   ffesrc_check_symbol_ = (ffe_case_symbol () != FFE_caseNONE);
 
@@ -153,7 +153,7 @@ ffesrc_init_1 ()
 
   if (ffesrc_ok_match_init_lower_)
     for (i = 'a'; i <= 'z'; ++i)
-      ffesrc_char_match_init_[i] = toupper (i);
+      ffesrc_char_match_init_[i] = TOUPPER (i);
   else
     for (i = 'a'; i <= 'z'; ++i)
       ffesrc_char_match_init_[i] = FFESRC_INVALID_SYMBOL_CHAR_;
@@ -164,21 +164,21 @@ ffesrc_init_1 ()
 
   if (ffesrc_ok_match_noninit_lower_)
     for (i = 'a'; i <= 'z'; ++i)
-      ffesrc_char_match_noninit_[i] = toupper (i);
+      ffesrc_char_match_noninit_[i] = TOUPPER (i);
   else
     for (i = 'a'; i <= 'z'; ++i)
       ffesrc_char_match_noninit_[i] = FFESRC_INVALID_SYMBOL_CHAR_;
 
   if (ffe_case_source () == FFE_caseLOWER)
     for (i = 'A'; i <= 'Z'; ++i)
-      ffesrc_char_source_[i] = tolower (i);
+      ffesrc_char_source_[i] = TOLOWER (i);
   else if (ffe_case_source () == FFE_caseUPPER)
     for (i = 'a'; i <= 'z'; ++i)
-      ffesrc_char_source_[i] = toupper (i);
+      ffesrc_char_source_[i] = TOUPPER (i);
 
   if (ffe_case_match () == FFE_caseLOWER)
     for (i = 'A'; i <= 'Z'; ++i)
-      ffesrc_char_internal_init_[i] = tolower (i);
+      ffesrc_char_internal_init_[i] = TOLOWER (i);
 
   switch (ffe_case_symbol ())
     {

@@ -4324,7 +4324,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       for (q = opname; *q; )
 	*p++ = *q++;
       for (q = mname; *q; q++)
-	*p++ = tolower ((unsigned char)*q);
+	*p++ = TOLOWER (*q);
       *p++ = suffix;
       *p++ = '\0';
 

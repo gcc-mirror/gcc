@@ -1,3 +1,15 @@
+Thu Sep 16 18:07:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Use uppercase ctype macro from system.h.
+
+	* fini.c (main): Likewise.
+
+	* intrin.c (ffeintrin_init_0): Likewise.
+
+	* lex.c (ffelex_hash_): Likewise.
+
+	* src.c (ffesrc_init_1): Likewise.
+
 Tue Sep 14 12:14:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g77spec.c (lang_specific_driver): Remove unnecessary argument in

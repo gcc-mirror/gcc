@@ -1,3 +1,45 @@
+Thu Sep 16 18:06:35 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (CTYPE_CONV, TOUPPER, TOLOWER): New macros.  Use
+	CTYPE_CONV in all ctype macros.
+
+	* cccp.c (initialize_char_syntax): Use uppercase ctype macro
+	from system.h.
+
+	* cexp.y (initialize_random_junk): Likewise.
+
+	* c4x.c (c4x_interrupt_function_p, c4x_handle_pragma): Likewise.
+
+	* i370.c (handle_pragma): Likewise.
+
+	* i370.h (ASM_OUTPUT_LABELREF, ASM_OUTPUT_ASCII): Likewise.
+
+	* v850.c (override_options): Likewise.
+
+	* doprint.c (_doprnt): Likewise.
+
+	* fixinc/fixincl.c (main, quoted_file_exists, extract_quoted_files):
+	Likewise.
+
+	* fixinc/server.c (load_data): Likewise.
+
+	* fold-const.c (real_hex_to_f): Likewise.
+
+	* genattr.c (write_upcase, gen_attr): Likewise.
+
+	* genattrtab.c (convert_const_symbol_ref, evaluate_eq_attr,
+	write_upcase): Likewise.
+
+	* genemit.c (print_code): Likewise.
+
+	* genopinit.c (gen_insn): Likewise.
+
+	* genpeep.c (print_code): Likewise.
+
+	* genrecog.c (print_code): Likewise.
+
+	* optabs.c (init_libfuncs): Likewise.
+
 Thu Sep 16 14:03:32 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* haifa-sched.c (sched_analyze): Keep the list of notes organized

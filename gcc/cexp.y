@@ -1113,9 +1113,9 @@ initialize_random_junk ()
    * refer to them.
    */
   for (i = 'a'; i <= 'z'; i++) {
-    ++is_idchar[toupper(i)];
+    ++is_idchar[TOUPPER(i)];
     ++is_idchar[i];
-    ++is_idstart[toupper(i)];
+    ++is_idstart[TOUPPER(i)];
     ++is_idstart[i];
   }
   for (i = '0'; i <= '9'; i++)

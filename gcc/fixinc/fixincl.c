@@ -221,13 +221,13 @@ main (argc, argv)
           {
             if (fgets (pz_buf, MAXPATHLEN, stdin) == (char *) NULL)
               break;
-            while (isspace (*pz_buf))
+            while (ISSPACE (*pz_buf))
               pz_buf++;
             if ((*pz_buf == '\0') || (*pz_buf == '#'))
               continue;
             apz_names[file_name_ct++] = pz_buf;
             pz_buf += strlen (pz_buf);
-            while (isspace (pz_buf[-1]))
+            while (ISSPACE (pz_buf[-1]))
               pz_buf--;
             *pz_buf++ = '\0';
           }
@@ -813,7 +813,7 @@ quoted_file_exists (pz_src_path, pz_file_path, pz_file)
 
   for (;;) {
     char ch = *pz_file++;
-    if (! isgraph( ch ))
+    if (! ISGRAPH(ch))
       return 0;
     if (ch == '"')
       break;
@@ -875,9 +875,10 @@ extract_quoted_files (pz_data, pz_file_name, p_re_match)
       pz_incl_quot += p_re_match->rm_so;
 
       /*  Skip forward to the included file name */
-      while (isspace (*pz_incl_quot))
+      while (ISSPACE (*pz_incl_quot))
         pz_incl_quot++;
-      while (isspace (*++pz_incl_quot))
+      /* ISSPACE() may evaluate is argument more than once!  */
+      while ((++pz_incl_quot, ISSPACE (*pz_incl_quot)))
         ;
       pz_incl_quot += sizeof ("include") - 1;
       while (*pz_incl_quot++ != '"')

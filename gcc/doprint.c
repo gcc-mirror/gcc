@@ -88,7 +88,7 @@ _doprnt (format, ap, stream)
 	  if (*ptr == '*')
 	    COPY_VA_INT;
 	  else
-	    while (isdigit(*ptr)) /* Handle explicit numeric value. */
+	    while (ISDIGIT(*ptr)) /* Handle explicit numeric value. */
 	      *sptr++ = *ptr++;
 	  
 	  if (*ptr == '.')
@@ -97,7 +97,7 @@ _doprnt (format, ap, stream)
 	      if (*ptr == '*')
 		COPY_VA_INT;
 	      else
-		while (isdigit(*ptr)) /* Handle explicit numeric value. */
+		while (ISDIGIT(*ptr)) /* Handle explicit numeric value. */
 		  *sptr++ = *ptr++;
 	    }
 	  while (strchr ("hlL", *ptr))

@@ -888,7 +888,7 @@ maybe_downcase (str)
   while (*str)
     {
       if (ISUPPER ((unsigned char) *str))
-	*str = tolower ((unsigned char)*str);
+	*str = TOLOWER (*str);
       str++;
     }
 }
@@ -1470,8 +1470,8 @@ getlc (file)
   register int c;
 
   c = getc (file);  
-  if (ISUPPER (c) && ignore_case)
-    c = tolower (c);
+  if (ignore_case)
+    c = TOLOWER (c);
   return c;
 }
 
@@ -1524,7 +1524,7 @@ handle_generic_pragma (buffer)
 	  * buff ++ = c;
 	  c = getc (finput);
 	}
-      while (c != EOF && isascii (c) && ! isspace (c) && c != '\n'
+      while (c != EOF && isascii (c) && ! ISSPACE (c) && c != '\n'
 	     && buff < buffer + 128); /* XXX shared knowledge about size of buffer.  */
       
       ungetc (c, finput);
@@ -1577,8 +1577,8 @@ check_newline ()
      it and ignore it; otherwise, ignore the line, with an error
      if the word isn't `pragma', `ident', `define', or `undef'.  */
 
-  if (ISUPPER (c) && ignore_case)
-    c = tolower (c);
+  if (ignore_case)
+    c = TOLOWER (c);
 
   if (c >= 'a' && c <= 'z')
     {

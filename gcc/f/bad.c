@@ -461,7 +461,7 @@ ffebad_finish ()
 	{
 	  char c;
 
-	  c = toupper (s[0]);
+	  c = TOUPPER (s[0]);
 	  fprintf (stderr, "%c%s ", c, &s[1]);
 	}
       else if (s[0] != '\0')

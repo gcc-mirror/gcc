@@ -89,27 +89,52 @@ extern int fputs_unlocked PROTO ((const char *, FILE *));
 # define IN_CTYPE_DOMAIN(c) isascii(c)
 #endif
 
+/* The ctype functions are often implemented as macros which do
+   lookups in arrays using the parameter as the offset.  If the ctype
+   function parameter is a char, then gcc will (appropriately) warn
+   that a "subscript has type char".  Using a (signed) char as a subscript
+   is bad because you may get negative offsets and thus it is not 8-bit
+   safe.  The CTYPE_CONV macro ensures that the parameter is cast to an
+   unsigned char when a char is passed in.  When an int is passed in, the
+   parameter is left alone so we don't lose EOF.
+*/
+
+#define CTYPE_CONV(CH) \
+  (sizeof(CH) == sizeof(unsigned char) ? (int)(unsigned char)(CH) : (int)(CH))
+
+
+/* WARNING!  The argument to the ctype replacement macros below is
+   evaluated more than once so it must not have side effects!  */
+
 #ifdef isblank
-# define ISBLANK(c) (IN_CTYPE_DOMAIN (c) && isblank (c))
+# define ISBLANK(c) (IN_CTYPE_DOMAIN (c) && isblank (CTYPE_CONV(c)))
 #else
 # define ISBLANK(c) ((c) == ' ' || (c) == '\t')
 #endif
 #ifdef isgraph
-# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isgraph (c))
+# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isgraph (CTYPE_CONV(c)))
 #else
-# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isprint (c) && !isspace (c))
+# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isprint (CTYPE_CONV(c)) && !isspace (CTYPE_CONV(c)))
 #endif
 
-#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
-#define ISALNUM(c) (IN_CTYPE_DOMAIN (c) && isalnum (c))
-#define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha (c))
-#define ISCNTRL(c) (IN_CTYPE_DOMAIN (c) && iscntrl (c))
-#define ISLOWER(c) (IN_CTYPE_DOMAIN (c) && islower (c))
-#define ISPUNCT(c) (IN_CTYPE_DOMAIN (c) && ispunct (c))
-#define ISSPACE(c) (IN_CTYPE_DOMAIN (c) && isspace (c))
-#define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper (c))
-#define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit (c))
-#define ISDIGIT_LOCALE(c) (IN_CTYPE_DOMAIN (c) && isdigit (c))
+#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (CTYPE_CONV(c)))
+#define ISALNUM(c) (IN_CTYPE_DOMAIN (c) && isalnum (CTYPE_CONV(c)))
+#define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha (CTYPE_CONV(c)))
+#define ISCNTRL(c) (IN_CTYPE_DOMAIN (c) && iscntrl (CTYPE_CONV(c)))
+#define ISLOWER(c) (IN_CTYPE_DOMAIN (c) && islower (CTYPE_CONV(c)))
+#define ISPUNCT(c) (IN_CTYPE_DOMAIN (c) && ispunct (CTYPE_CONV(c)))
+#define ISSPACE(c) (IN_CTYPE_DOMAIN (c) && isspace (CTYPE_CONV(c)))
+#define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper (CTYPE_CONV(c)))
+#define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit (CTYPE_CONV(c)))
+#define ISDIGIT_LOCALE(c) (IN_CTYPE_DOMAIN (c) && isdigit (CTYPE_CONV(c)))
+
+#if STDC_HEADERS
+# define TOLOWER(c) (tolower (CTYPE_CONV(c)))
+# define TOUPPER(c) (toupper (CTYPE_CONV(c)))
+#else
+# define TOLOWER(c) (ISUPPER (c) ? tolower (CTYPE_CONV(c)) : (c))
+# define TOUPPER(c) (ISLOWER (c) ? toupper (CTYPE_CONV(c)) : (c))
+#endif
 
 /* ISDIGIT differs from ISDIGIT_LOCALE, as follows:
    - Its arg may be any int or unsigned int; it need not be an unsigned char.

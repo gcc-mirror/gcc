@@ -381,8 +381,8 @@ main (int argc, char **argv)
 	  cc = buf[i];
 	  if (ISALPHA (cc))
 	    {
-	      newname->name_uc[i] = toupper (cc);
-	      newname->name_lc[i] = tolower (cc);
+	      newname->name_uc[i] = TOUPPER (cc);
+	      newname->name_lc[i] = TOLOWER (cc);
 	      newname->name_ic[i] = cc;
 	    }
 	  else

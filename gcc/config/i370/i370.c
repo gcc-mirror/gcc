@@ -976,7 +976,7 @@ handle_pragma (finput, node)
 	  do {
 	    *s++ = c;
 	    c = getc (finput);
-	  } while (isalnum(c) || c == '_');
+	  } while (ISALNUM(c) || c == '_');
 	  if (c == '\n')
 	    goto PRAGMA_WARNING;
 	  *s = 0;
@@ -1014,7 +1014,7 @@ handle_pragma (finput, node)
 	              }
 	            *s++ = c;
 	            c = getc (finput);
-	            if (isspace(c) || c == ')')
+	            if (ISSPACE(c) || c == ')')
 	              goto PRAGMA_WARNING;
 	          } while (c != '"');
 	          *s = 0;

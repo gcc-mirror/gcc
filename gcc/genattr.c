@@ -56,7 +56,7 @@ struct function_unit
 
 static void extend_range PROTO((struct range *, int, int));
 static void init_range PROTO((struct range *));
-static void write_upcase PROTO((char *));
+static void write_upcase PROTO((const char *));
 static void gen_attr PROTO((rtx));
 static void write_units PROTO((int, struct range *, struct range *,
 			       struct range *, struct range *,
@@ -81,13 +81,10 @@ init_range (range)
 
 static void
 write_upcase (str)
-    char *str;
+    const char *str;
 {
   for (; *str; str++)
-    if (ISLOWER(*str))
-      printf ("%c", toupper(*str));
-    else
-      printf ("%c", *str);
+    putchar (TOUPPER(*str));
 }
 
 static void
@@ -117,10 +114,8 @@ gen_attr (attr)
 	      write_upcase (XSTR (attr, 0));
 	      printf ("_");
 	    }
-	  else if (ISLOWER(*p))
-	    printf ("%c", toupper(*p));
 	  else
-	    printf ("%c", *p);
+	    putchar (TOUPPER(*p));
 	}
 
       printf ("};\n");
