@@ -1,3 +1,17 @@
+2004-03-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_conditional_expr): Do not call force_rvalue for
+	operands of void_type when the conditional expression itself has
+	void type.
+	* name-lookup.c (pushdecl): Don't consider a declaration of a
+	function named "main" to be an overload of a type named "main".
+	* parser.c (cp_parser_template_name): Perform name lookup when the
+	template name is proceeded by "template" if the qualifying scope
+	is non-dependent.
+	* typeck.c (composite_pointer_type_r): Correctly handle
+	pointer-to-member types.
+	(build_const_cast): Likewise.
+
 2004-03-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14586

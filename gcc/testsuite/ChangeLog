@@ -1,5 +1,12 @@
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/expr/cond5.C: New test.
+	* g++.dg/expr/constcast1.C: Likewise.
+	* g++.dg/expr/ptrmem2.C: Likewise.
+	* g++.dg/expr/ptrmem3.C: Likewise.
+	* g++.dg/lookup/main1.C: Likewise.
+	* g++.dg/template/lookup6.C: Likewise.
+
 	* gcc.dg/local1.c: New test.
 
 	* gcc.dg/debug/dwarf2/c99-typedef1.c: New test.

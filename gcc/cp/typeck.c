@@ -443,7 +443,6 @@ composite_pointer_type_r (tree t1, tree t2, const char* location)
   result_type = cp_build_qualified_type (result_type,
 					 (cp_type_quals (pointee1)
 					  | cp_type_quals (pointee2)));
-  result_type = build_pointer_type (result_type);
   /* If the original types were pointers to members, so is the
      result.  */
   if (TYPE_PTR_TO_MEMBER_P (t1))
@@ -456,6 +455,8 @@ composite_pointer_type_r (tree t1, tree t2, const char* location)
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
+  else
+    result_type = build_pointer_type (result_type);
 
   /* Merge the attributes.  */
   attributes = (*targetm.merge_type_attributes) (t1, t2);
@@ -4727,7 +4728,7 @@ build_const_cast (tree type, tree expr)
       return t;
     }
 
-  if (!POINTER_TYPE_P (type))
+  if (!POINTER_TYPE_P (type) && !TYPE_PTRMEM_P (type))
     error ("invalid use of const_cast with type `%T', which is not a pointer, reference, nor a pointer-to-data-member type", type);
   else if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {

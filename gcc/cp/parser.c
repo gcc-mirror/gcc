@@ -8118,7 +8118,15 @@ cp_parser_template_name (cp_parser* parser,
 	    *is_identifier = true;
 	  return identifier;
 	}
-      if (template_keyword_p)
+
+      /* If the "template" keyword is present, then there is generally
+	 no point in doing name-lookup, so we just return IDENTIFIER.
+	 But, if the qualifying scope is non-dependent then we can
+	 (and must) do name-lookup normally.  */
+      if (template_keyword_p
+	  && (!parser->scope
+	      || (TYPE_P (parser->scope) 
+		  && dependent_type_p (parser->scope))))
 	return identifier;
     }
 

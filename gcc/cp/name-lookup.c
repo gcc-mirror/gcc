@@ -712,7 +712,7 @@ pushdecl (tree x)
 
 		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 		}
-	      else if (DECL_MAIN_P (x))
+	      else if (DECL_MAIN_P (x) && TREE_CODE (t) == FUNCTION_DECL)
 		{
 		  /* A redeclaration of main, but not a duplicate of the
 		     previous one.
