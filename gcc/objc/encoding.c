@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -111,6 +111,9 @@ objc_sizeof_type(const char* type)
     return sizeof(double);
     break;
 
+  case _C_VOID:
+    return sizeof(void);
+    break;
   case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
