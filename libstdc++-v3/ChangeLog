@@ -1,5 +1,12 @@
 2004-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/12971
+	* include/bits/locale_facets.tcc
+	(money_put::do_put(..., long double)): Fix conversion
+	specification as per DR 328 [WP].
+
+2004-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/locale/gnu/monetary_members.cc: Don't leak memory
 	on exception.
 	
