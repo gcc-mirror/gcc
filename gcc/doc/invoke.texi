@@ -4348,7 +4348,7 @@ In each case, the @var{value} is an integer.  The allowable choices for
 @table @gcctabopt
 @item max-crossjump-edges
 The maximum number of incoming edges to consider for crossjumping.
-The algorithm used by @option(-fcrossjumping) is @math{O(N^2)} in
+The algorithm used by @option{-fcrossjumping} is @math{O(N^2)} in
 the number of edges incoming to each block.  Increasing values mean
 more aggressive optimization, making the compile time increase with
 probably small improvement in executable size.

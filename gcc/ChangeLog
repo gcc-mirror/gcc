@@ -1,3 +1,7 @@
+2003-02-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Optimize Options): Correct @option syntax.
+
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (cfglayout.o): Depend on TARGET_H.
