@@ -690,8 +690,8 @@ static int check_dependence	PARAMS ((rtx *, void *));
 
 static void flush_hash_table	PARAMS ((void));
 static bool insn_live_p		PARAMS ((rtx, int *));
-static bool set_live_p		PARAMS ((rtx, int *));
-static bool dead_libcall_p	PARAMS ((rtx, int *));
+static bool set_live_p		PARAMS ((rtx, rtx, int *));
+static bool dead_libcall_p	PARAMS ((rtx));
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
@@ -7486,8 +7486,9 @@ count_reg_usage (x, counts, dest, incr)
 
 /* Return true if set is live.  */
 static bool
-set_live_p (set, counts)
+set_live_p (set, insn, counts)
      rtx set;
+     rtx insn;
      int *counts;
 {
 #ifdef HAVE_cc0
@@ -7527,20 +7528,23 @@ insn_live_p (insn, counts)
 {
   int i;
   if (GET_CODE (PATTERN (insn)) == SET)
-    return set_live_p (PATTERN (insn), counts);
+    return set_live_p (PATTERN (insn), insn, counts);
   else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-    for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-      {
-	rtx elt = XVECEXP (PATTERN (insn), 0, i);
+    {
+      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+	{
+	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
 
-	if (GET_CODE (elt) == SET)
-	  {
-	    if (set_live_p (elt, counts))
-	      return true;
-	  }
-	else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)
-	  return true;
-      }
+	  if (GET_CODE (elt) == SET)
+	    {
+	      if (set_live_p (elt, insn, counts))
+		return true;
+	    }
+	  else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)
+	    return true;
+	}
+      return false;
+    }
   else
     return true;
 }
@@ -7548,9 +7552,8 @@ insn_live_p (insn, counts)
 /* Return true if libcall is dead as a whole.  */
 
 static bool
-dead_libcall_p (insn, counts)
+dead_libcall_p (insn)
      rtx insn;
-     int *counts;
 {
   rtx note;
   /* See if there's a REG_EQUAL note on this insn and try to
@@ -7616,7 +7619,6 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
     for (; insn; insn = prev)
       {
 	int live_insn = 0;
-	rtx note;
 
 	prev = prev_real_insn (insn);
 
@@ -7629,7 +7631,7 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	  {
 	    in_libcall = 1;
 	    live_insn = 1;
-	    dead_libcall = dead_libcall_p (insn, counts);
+	    dead_libcall = dead_libcall_p (insn);
 	  }
 	else if (in_libcall)
 	  live_insn = ! dead_libcall;
@@ -7656,7 +7658,6 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
       for (bb = BASIC_BLOCK (i), insn = bb->end; insn != bb->head; insn = prev)
 	{
 	  int live_insn = 0;
-	  rtx note;
 
 	  prev = PREV_INSN (insn);
 	  if (!INSN_P (insn))
@@ -7671,7 +7672,7 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	    {
 	      in_libcall = 1;
 	      live_insn = 1;
-	      dead_libcall = dead_libcall_p (insn, counts);
+	      dead_libcall = dead_libcall_p (insn);
 	    }
 	  else if (in_libcall)
 	    live_insn = ! dead_libcall;
