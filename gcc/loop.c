@@ -258,7 +258,9 @@ static void count_loop_regs_set ();
 static void note_addr_stored ();
 static int loop_reg_used_before_p ();
 static void scan_loop ();
+#if 0
 static void replace_call_address ();
+#endif
 static rtx skip_consec_insns ();
 static int libcall_benefit ();
 static void ignore_some_movables ();
