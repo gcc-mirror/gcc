@@ -1,5 +1,10 @@
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/logging/Level.java
+	(parse): Use String.equals() instead of ==.
+
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/jar/Connection.java
 	(getContentLength): New method.
 
