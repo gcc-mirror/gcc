@@ -542,6 +542,30 @@ predicate_operator (op, mode)
   return ((GET_MODE (op) == mode || mode == VOIDmode)
 	  && (code == EQ || code == NE));
 }
+
+/* Return 1 if the operands of a move are ok.  */
+
+int
+ia64_move_ok (dst, src)
+     rtx dst, src;
+{
+  /* If we're under init_recog_no_volatile, we'll not be able to use
+     memory_operand.  So check the code directly and don't worry about
+     the validity of the underlying address, which should have been
+     checked elsewhere anyway.  */
+  if (GET_CODE (dst) != MEM)
+    return 1;
+  if (GET_CODE (src) == MEM)
+    return 0;
+  if (register_operand (src, VOIDmode))
+    return 1;
+
+  /* Otherwise, this must be a constant, and that either 0 or 0.0 or 1.0.  */
+  if (INTEGRAL_MODE_P (GET_MODE (dst)))
+    return src == const0_rtx;
+  else
+    return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
+}
 
 /* Begin the assembly file.  */
 
