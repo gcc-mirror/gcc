@@ -3,6 +3,12 @@
 	* reload1.c (forget_old_reloads_1): If a hard reg is stored, clear
 	its entry in spill_reg_store.
 	* config/sh/lib1funcs.ams (movstr_i4 functions): Always compile in.
+	* sh.c (reg_no_subreg_operand): New function.
+	* sh-protos.h (reg_no_subreg_operand): Declare it.
+	* sh.h (PREDICATE_CODES): Add it.
+	* sh.md (floatsisf2_i4, floatsidf2_i, extendsfdf2_i4): Use it for
+	input operand that needs to be in fpul.
+	(fix_truncsfsi2, fix_truncsfsi2_i4): Use register_operand for output.
 
 2000-09-18  Alexandre Oliva  <aoliva@redhat.com>
 

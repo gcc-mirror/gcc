@@ -4645,6 +4645,20 @@ general_movdst_operand (op, mode)
   return general_operand (op, mode);
 }
 
+/* Accept a register, but not a subreg of any kind.  This allows us to
+   avoid pathological cases in reload wrt data movement common in 
+   int->fp conversion.  */
+
+int
+reg_no_subreg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == SUBREG)
+    return 0;
+  return register_operand (op, mode);
+}
+
 /* Returns 1 if OP is a normal arithmetic register.  */
 
 int

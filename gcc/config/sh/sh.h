@@ -2231,6 +2231,7 @@ extern struct rtx_def *fpscr_rtx;
 #define PREDICATE_CODES \
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_reg_operand", {SUBREG, REG}},					\
+  {"reg_no_subreg_operand", {REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"binary_float_operator", {PLUS, MULT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
