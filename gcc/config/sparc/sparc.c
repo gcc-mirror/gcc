@@ -1523,9 +1523,7 @@ emit_move_sequence (operands, mode)
     {
       if (TARGET_ARCH64)
 	abort ();
-      /* ??? This might suffer from the same problem the DImode case did:
-	 flags in operand1 not being propagated.  */
-      emit_insn (gen_move_pic_label_si (operand0, XEXP (operand1, 0)));
+      emit_insn (gen_move_pic_label_si (operand0, operand1));
       return 1;
     }
   /* Non-pic LABEL_REF's in sparc64 are expensive to do the normal way,
