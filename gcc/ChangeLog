@@ -1,3 +1,8 @@
+Thu Sep  9 20:15:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c (finish_function): When processing a nested function,
+	push and pop GC context around rest_of_compilation.
+
 Thu Sep  9 16:42:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (override_options): Remove ppro, pentium2, and p2 as aliases.
