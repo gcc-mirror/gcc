@@ -3564,6 +3564,7 @@ c_expand_expr (exp, target, tmode, modifier)
 	tree rtl_expr;
 	rtx result;
 	bool preserve_result = false;
+	bool return_target = false;
 
 	/* Since expand_expr_stmt calls free_temp_slots after every
 	   expression statement, we must call push_temp_slots here.
@@ -3591,8 +3592,20 @@ c_expand_expr (exp, target, tmode, modifier)
 	    if (TREE_CODE (last) == SCOPE_STMT
 		&& TREE_CODE (expr) == EXPR_STMT)
 	      {
-	        TREE_ADDRESSABLE (expr) = 1;
-		preserve_result = true;
+		if (target && TREE_CODE (EXPR_STMT_EXPR (expr)) == VAR_DECL
+		    && DECL_RTL_IF_SET (EXPR_STMT_EXPR (expr)) == target)
+		  /* If the last expression is a variable whose RTL is the
+		     same as our target, just return the target; if it
+		     isn't valid expanding the decl would produce different
+		     RTL, and store_expr would try to do a copy.  */
+		  return_target = true;
+		else
+		  {
+		    /* Otherwise, note that we want the value from the last
+		       expression.  */
+		    TREE_ADDRESSABLE (expr) = 1;
+		    preserve_result = true;
+		  }
 	      }
 	  }
 
@@ -3600,7 +3613,9 @@ c_expand_expr (exp, target, tmode, modifier)
 	expand_end_stmt_expr (rtl_expr);
 
 	result = expand_expr (rtl_expr, target, tmode, modifier);
-	if (preserve_result && GET_CODE (result) == MEM)
+	if (return_target)
+	  result = target;
+	else if (preserve_result && GET_CODE (result) == MEM)
 	  {
 	    if (GET_MODE (result) != BLKmode)
 	      result = copy_to_reg (result);
