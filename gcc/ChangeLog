@@ -1,3 +1,8 @@
+2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_a_rotate_length): Fix the
+	references to the amount of a rotation.
+
 2003-06-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/sh/coff.h: Don't include dbxcoff.h.
