@@ -1,6 +1,9 @@
 Mon Mar 22 23:52:01 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 			  Donn Terry  <donn@interix.com>
 
+	* sdbout.c (syms.h): Don't include on Interix.
+	* toplev.c (main): No sbrk on Interix.
+
 	* configure.in: Add i386-pc-interix support.
 	* configure: Regenerate.
 	* fixinc.interix: New file.
