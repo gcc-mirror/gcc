@@ -1093,6 +1093,12 @@ documented_lang_options[] =
   { "-A", "" },
   { "-D", "" },
   { "-I", "" },
+#if USE_CPPLIB
+  { "-MD", "Print dependencies to FILE.d" },
+  { "-MMD", "Print dependencies to FILE.d" },
+  { "-M", "Print dependencies to stdout" },
+  { "-MM", "Print dependencies to stdout" },
+#endif /* USE_CPPLIB */
   { "-U", "" },
   { "-H", "" },
   { "-idirafter", "" },
