@@ -1023,12 +1023,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 
       if (bitmap_first_set_bit (call_clobbered_vars) >= 0)
 	{
+	  /* A 'pure' or a 'const' functions never call clobber anything. 
+	     A 'noreturn' function might, but since we don't return anyway 
+	     there is no point in recording that.  */ 
 	  if (!(call_flags
-		& (ECF_PURE
-		   | ECF_CONST
-		   | ECF_NORETURN
-		   | ECF_MALLOC
-		   | ECF_MAY_BE_ALLOCA)))
+		& (ECF_PURE | ECF_CONST | ECF_NORETURN)))
 	    add_call_clobber_ops (stmt, prev_vops);
 	  else if (!(call_flags & (ECF_CONST | ECF_NORETURN)))
 	    add_call_read_ops (stmt, prev_vops);
