@@ -3800,9 +3800,9 @@ output_call (insn, call_dest, return_pointer)
   else
     {
       xoperands[3] = gen_label_rtx ();
+      output_asm_insn ("\n\tbl %0,%r2\n\tldo %1-%3(%r2),%r2", xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
 				 CODE_LABEL_NUMBER (xoperands[3]));
-      output_asm_insn ("\n\tbl %0,%r2\n\tldo %1-%3-8(%r2),%r2", xoperands);
     }
 
   /* Delete the jump.  */
