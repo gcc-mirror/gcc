@@ -116,7 +116,7 @@ static char *qty_phys_has_sugg;
 
 /* Element Q is the number of refs to quantity Q.  */
 
-static short *qty_n_refs;
+static int *qty_n_refs;
 
 /* Element Q is a reg class contained in (smaller than) the
    preferred classes of all the pseudo regs that are tied in quantity Q.
@@ -170,13 +170,13 @@ static rtx *qty_scratch_rtx;
    reg_qty value is Q, or -1 is this quantity is for a SCRATCH.  This
    register should be the head of the chain maintained in reg_next_in_qty.  */
 
-static short *qty_first_reg;
+static int *qty_first_reg;
 
 /* If (REG N) has been assigned a quantity number, is a register number
    of another register assigned the same quantity number, or -1 for the
    end of the chain.  qty_first_reg point to the head of this chain.  */
 
-static short *reg_next_in_qty;
+static int *reg_next_in_qty;
 
 /* reg_qty[N] (where N is a pseudo reg number) is the qty number of that reg
    if it is >= 0,
@@ -403,17 +403,17 @@ local_alloc ()
   qty_birth = (int *) alloca (max_qty * sizeof (int));
   qty_death = (int *) alloca (max_qty * sizeof (int));
   qty_scratch_rtx = (rtx *) alloca (max_qty * sizeof (rtx));
-  qty_first_reg = (short *) alloca (max_qty * sizeof (short));
+  qty_first_reg = (int *) alloca (max_qty * sizeof (int));
   qty_size = (int *) alloca (max_qty * sizeof (int));
   qty_mode = (enum machine_mode *) alloca (max_qty * sizeof (enum machine_mode));
   qty_n_calls_crossed = (int *) alloca (max_qty * sizeof (int));
   qty_min_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
   qty_alternate_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
-  qty_n_refs = (short *) alloca (max_qty * sizeof (short));
+  qty_n_refs = (int *) alloca (max_qty * sizeof (int));
 
   reg_qty = (int *) alloca (max_regno * sizeof (int));
   reg_offset = (char *) alloca (max_regno * sizeof (char));
-  reg_next_in_qty = (short *) alloca (max_regno * sizeof (short));
+  reg_next_in_qty = (int *) alloca (max_regno * sizeof (int));
 
   reg_renumber = (short *) oballoc (max_regno * sizeof (short));
   for (i = 0; i < max_regno; i++)
@@ -1084,7 +1084,7 @@ block_alloc (b)
   int insn_number = 0;
   int insn_count = 0;
   int max_uid = get_max_uid ();
-  short *qty_order;
+  int *qty_order;
   int no_conflict_combined_regno = -1;
 
   /* Count the instructions in the basic block.  */
@@ -1367,7 +1367,7 @@ block_alloc (b)
      decreasing length of life.  Normally call qsort, but if we 
      have only a very small number of quantities, sort them ourselves.  */
 
-  qty_order = (short *) alloca (next_qty * sizeof (short));
+  qty_order = (int *) alloca (next_qty * sizeof (int));
   for (i = 0; i < next_qty; i++)
     qty_order[i] = i;
 
@@ -1397,7 +1397,7 @@ block_alloc (b)
       break;
 
     default:
-      qsort (qty_order, next_qty, sizeof (short), qty_compare_1);
+      qsort (qty_order, next_qty, sizeof (int), qty_compare_1);
     }
 
   /* Try to put each quantity in a suggested physical register, if it has one.
@@ -1497,7 +1497,7 @@ qty_compare (q1, q2)
 
 static int
 qty_compare_1 (q1, q2)
-     short *q1, *q2;
+     int *q1, *q2;
 {
   register int tem;
 
