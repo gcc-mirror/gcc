@@ -68,7 +68,7 @@ static tree cos_builtin (tree, tree);
 static tree sin_builtin (tree, tree);
 static tree sqrt_builtin (tree, tree);
 
-static tree build_function_call_expr (tree, tree);
+static tree java_build_function_call_expr (tree, tree);
 static void define_builtin (enum built_in_function, const char *,
 			    enum built_in_class, tree, int);
 static tree define_builtin_type (int, int, int, int, int);
@@ -140,7 +140,7 @@ abs_builtin (tree method_return_type, tree method_arguments)
 
 /* Mostly copied from ../builtins.c.  */
 static tree
-build_function_call_expr (tree fn, tree arglist)
+java_build_function_call_expr (tree fn, tree arglist)
 {
   tree call_expr;
 
@@ -158,7 +158,7 @@ cos_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
   tree fn = built_in_decls[BUILT_IN_COS];
   if (fn == NULL_TREE)
     return NULL_TREE;
-  return build_function_call_expr (fn, method_arguments);
+  return java_build_function_call_expr (fn, method_arguments);
 }
 
 static tree
@@ -168,7 +168,7 @@ sin_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
   tree fn = built_in_decls[BUILT_IN_SIN];
   if (fn == NULL_TREE)
     return NULL_TREE;
-  return build_function_call_expr (fn, method_arguments);
+  return java_build_function_call_expr (fn, method_arguments);
 }
 
 static tree
@@ -178,7 +178,7 @@ sqrt_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
   tree fn = built_in_decls[BUILT_IN_SQRT];
   if (fn == NULL_TREE)
     return NULL_TREE;
-  return build_function_call_expr (fn, method_arguments);
+  return java_build_function_call_expr (fn, method_arguments);
 }
 
 
