@@ -1,3 +1,8 @@
+2004-06-02  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Don't mess with c-parse.[ch].
+	Do include c-parse.in.
+
 2004-06-02  Eric Christopher  <echristo@redhat.com>
 
 	* c-typeck.c (common_type): Don't lose type qualifiers
