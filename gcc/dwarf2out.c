@@ -8714,8 +8714,8 @@ static dw_loc_descr_ref
 concat_loc_descriptor (rtx x0, rtx x1)
 {
   dw_loc_descr_ref cc_loc_result = NULL;
-  dw_loc_descr_ref x0_ref = loc_descriptor (x0, true);
-  dw_loc_descr_ref x1_ref = loc_descriptor (x1, true);
+  dw_loc_descr_ref x0_ref = loc_descriptor (x0, false);
+  dw_loc_descr_ref x1_ref = loc_descriptor (x1, false);
 
   if (x0_ref == 0 || x1_ref == 0)
     return 0;
@@ -8934,7 +8934,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 
 	    /* Certain constructs can only be represented at top-level.  */
 	    if (want_address == 2)
-	      return loc_descriptor (rtl, true);
+	      return loc_descriptor (rtl, false);
 
 	    mode = GET_MODE (rtl);
 	    if (MEM_P (rtl))
@@ -8942,7 +8942,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 		rtl = XEXP (rtl, 0);
 		have_address = 1;
 	      }
-	    ret = mem_loc_descriptor (rtl, mode, true);
+	    ret = mem_loc_descriptor (rtl, mode, false);
 	  }
       }
       break;
@@ -9021,7 +9021,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  return 0;
 	mode = GET_MODE (rtl);
 	rtl = XEXP (rtl, 0);
-	ret = mem_loc_descriptor (rtl, mode, true);
+	ret = mem_loc_descriptor (rtl, mode, false);
 	have_address = 1;
 	break;
       }
@@ -9971,6 +9971,29 @@ rtl_for_decl_location (tree decl)
   return rtl;
 }
 
+/* Return true if DECL's containing function has a frame base attribute.
+   Return false otherwise.  */
+
+static bool
+containing_function_has_frame_base (tree decl)
+{
+  tree declcontext = decl_function_context (decl);
+  dw_die_ref context;
+  dw_attr_ref attr;
+  
+  if (!declcontext)
+    return false;
+
+  context = lookup_decl_die (declcontext);
+  if (!context)
+    return false;
+
+  for (attr = context->die_attr; attr; attr = attr->dw_attr_next)
+    if (attr->dw_attr == DW_AT_frame_base)
+      return true;
+  return false;
+}
+  
 /* Generate *either* a DW_AT_location attribute or else a DW_AT_const_value
    data attribute for a variable or a parameter.  We generate the
    DW_AT_const_value attribute only in those cases where the given variable
@@ -9989,12 +10012,15 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
   rtx rtl;
   dw_loc_descr_ref descr;
   var_loc_list *loc_list;
-
+  bool can_use_fb;
+  struct var_loc_node *node;
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
+	     
+  can_use_fb = containing_function_has_frame_base (decl);
 
   /* See if we possibly have multiple locations for this variable.  */
   loc_list = lookup_decl_loc (decl);
@@ -10007,7 +10033,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       const char *endname;
       dw_loc_list_ref list;
       rtx varloc;
-      struct var_loc_node *node;
+
 
       /* We need to figure out what section we should use as the base
 	 for the address ranges where a given location is valid.
@@ -10046,7 +10072,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 
       node = loc_list->first;
       varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-      list = new_loc_list (loc_descriptor (varloc, attr != DW_AT_frame_base),
+      list = new_loc_list (loc_descriptor (varloc, can_use_fb),
 			   node->label, node->next->label, secname, 1);
       node = node->next;
 
@@ -10058,7 +10084,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	    varloc = NOTE_VAR_LOCATION (node->var_loc_note);
 	    add_loc_descr_to_loc_list (&list,
 				       loc_descriptor (varloc,
-						       attr != DW_AT_frame_base),
+						       can_use_fb),
 				       node->label, node->next->label, secname);
 	  }
 
@@ -10079,7 +10105,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	    }
 	  add_loc_descr_to_loc_list (&list,
 				     loc_descriptor (varloc,
-						     attr != DW_AT_frame_base),
+						     can_use_fb),
 				     node->label, endname, secname);
 	}
 
@@ -10088,16 +10114,36 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       return;
     }
 
+  /* Try to get some constant RTL for this decl, and use that as the value of
+     the location.  */
+  
   rtl = rtl_for_decl_location (decl);
   if (rtl && (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING))
     {
       add_const_value_attribute (die, rtl);
       return;
     }
-
+  
+  /* We couldn't get any rtl, and we had no >1 element location list, so try
+     directly generating the location description from the tree.  */
   descr = loc_descriptor_from_tree (decl);
   if (descr)
-    add_AT_location_description (die, attr, descr);
+    {
+      add_AT_location_description (die, attr, descr);
+      return;
+    }
+  
+  /* Lastly, if we have tried to generate the location otherwise, and it
+     didn't work out (we wouldn't be here if we did), and we have a one entry
+     location list, try generating a location from that.  */
+  if (loc_list && loc_list->first)
+    {
+      node = loc_list->first;
+      descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note), 
+			      can_use_fb);
+      if (descr)
+	add_AT_location_description (die, attr, descr);
+    }
 }
 
 /* If we don't have a copy of this variable in memory for some reason (such
