@@ -93,7 +93,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @smallexample
--ansi -flang-isoc9x -fallow-single-precision  -fcond-mismatch  -fno-asm
+-ansi -fstd  -fallow-single-precision  -fcond-mismatch  -fno-asm
 -fno-builtin  -ffreestanding  -fhosted  -fsigned-bitfields  -fsigned-char
 -funsigned-bitfields  -funsigned-char  -fwritable-strings
 -traditional  -traditional-cpp  -trigraphs
@@ -667,14 +667,37 @@ programs that might use these names for other things.
 The functions @code{alloca}, @code{abort}, @code{exit}, and
 @code{_exit} are not builtin functions when @samp{-ansi} is used.
 
-@item -flang-isoc9x
-Enable support for features found in the C9X standard.  In particular,
-enable support for the C9X @code{restrict} keyword.  
+@item -fstd=
+Determine the language standard.  A value for this option must be provided;
+possible values are 
 
-Even when this option is not specified, you can still use some C9X
-features in so far as they do not conflict with previous C standards.
-For example, you may use @code{__restrict__} even when -flang-isoc9x
-is not specified. 
+@itemize @minus
+@item iso9899:1990
+Same as -ansi
+
+@item iso9899:199409
+ISO C as modified in amend. 1
+
+@item iso9899:199x
+ISO C 9x
+
+@item c89
+same as -std=iso9899:1990
+
+@item c9x
+same as -std=iso9899:199x
+
+@item gnu89
+default, iso9899:1990 + gnu extensions
+
+@item gnu9x
+iso9899:199x + gnu extensions
+@end itemize
+
+Even when this option is not specified, you can still use some of the
+features of newer standards in so far as they do not conflict with
+previous C standards.  For example, you may use @code{__restrict__} even
+when -fstd=c9x is not specified.
 
 @item -fno-asm
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a

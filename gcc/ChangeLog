@@ -1,3 +1,8 @@
+1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* invoke.texi (C Dialect Options): Remove -flang-c9x, add -std
+	documentation.
+
 Sun Oct 31 22:32:17 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2gas.h: I had installed the wrong version of Sept
