@@ -2260,14 +2260,11 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
   validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust), 1);
 
   for (ml = memlist; ml ; ml = ml->next)
-    {
-      HOST_WIDE_INT c = ml->sp_offset - delta;
-      rtx new = gen_rtx_MEM (GET_MODE (*ml->mem),
-			     plus_constant (stack_pointer_rtx, c));
-
-      MEM_COPY_ATTRIBUTES (new, *ml->mem);
-      validate_change (ml->insn, ml->mem, new, 1);
-    }
+    validate_change
+      (ml->insn, ml->mem,
+       replace_equiv_address_nv (*ml->mem,
+				 plus_constant (stack_pointer_rtx,
+						ml->sp_offset - delta)), 1);
 
   if (apply_change_group ())
     {

@@ -4382,16 +4382,15 @@ gen_lowpart_if_possible (mode, x)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
 		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
       if (BYTES_BIG_ENDIAN)
-	{
-	  /* Adjust the address so that the address-after-the-data is
-	     unchanged.  */
-	  offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
-	}
-      new = gen_rtx_MEM (mode, plus_constant (XEXP (x, 0), offset));
+	/* Adjust the address so that the address-after-the-data is
+	   unchanged.  */
+	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
+		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
+
+      new = adjust_address_nv (x, mode, offset);
       if (! memory_address_p (mode, XEXP (new, 0)))
 	return 0;
-      MEM_COPY_ATTRIBUTES (new, x);
+
       return new;
     }
   else

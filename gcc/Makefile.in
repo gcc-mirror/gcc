@@ -1520,8 +1520,8 @@ final.o : final.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h intl.h \
    xcoffout.h toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h \
    dbxout.h $(BASIC_BLOCK_H) $(TM_P_H) $(TARGET_H)
 recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) function.h $(BASIC_BLOCK_H) \
-   $(REGS_H) $(RECOG_H) hard-reg-set.h flags.h insn-config.h $(INSN_ATTR_H) \
-   real.h toplev.h output.h reload.h $(TM_P_H)
+   $(REGS_H) $(RECOG_H) $(EXPR_H) hard-reg-set.h flags.h insn-config.h \
+   $(INSN_ATTR_H) real.h toplev.h output.h reload.h $(TM_P_H)
 reg-stack.o : reg-stack.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) $(RECOG_H) \
    $(REGS_H) hard-reg-set.h flags.h insn-config.h toplev.h reload.h \
    varray.h function.h $(TM_P_H)

@@ -972,17 +972,8 @@ canon_rtx (x)
      MEM alone, but need to return the canonicalized MEM with
      all the flags with their original values.  */
   else if (GET_CODE (x) == MEM)
-    {
-      rtx addr = canon_rtx (XEXP (x, 0));
+    x = replace_equiv_address_nv (x, canon_rtx (XEXP (x, 0)));
 
-      if (addr != XEXP (x, 0))
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (x), addr);
-
-	  MEM_COPY_ATTRIBUTES (new, x);
-	  x = new;
-	}
-    }
   return x;
 }
 

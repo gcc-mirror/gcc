@@ -2094,9 +2094,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 		  pos %= GET_MODE_BITSIZE (wanted_mode);
 
-		  newmem = gen_rtx_MEM (wanted_mode,
-					plus_constant (XEXP (tem, 0), offset));
-		  MEM_COPY_ATTRIBUTES (newmem, tem);
+		  newmem = adjust_address_nv (tem, wanted_mode, offset);
 
 		  /* Make the change and see if the insn remains valid.  */
 		  INSN_CODE (insn) = -1;
@@ -2284,10 +2282,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 		    pos %= GET_MODE_BITSIZE (wanted_mode);
 
-		    newmem = gen_rtx_MEM (wanted_mode,
-					  plus_constant (XEXP (tem, 0),
-							 offset));
-		    MEM_COPY_ATTRIBUTES (newmem, tem);
+		    newmem = adjust_address_nv (tem, wanted_mode, offset);
 
 		    /* Make the change and see if the insn remains valid.  */
 		    INSN_CODE (insn) = -1;
@@ -3027,14 +3022,9 @@ purge_addressof_1 (loc, insn, force, store, ht)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
-      rtx sub2;
 
       if (GET_CODE (sub) == MEM)
-	{
-	  sub2 = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
-	  MEM_COPY_ATTRIBUTES (sub2, sub);
-	  sub = sub2;
-	}
+	sub = adjust_address_nv (sub, GET_MODE (x), 0);
       else if (GET_CODE (sub) == REG
 	       && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
 	;

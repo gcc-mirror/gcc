@@ -3846,16 +3846,14 @@ gen_move_insn (x, y)
 	  x = gen_lowpart_common (tmode, x1);
 	  if (x == 0 && GET_CODE (x1) == MEM)
 	    {
-	      x = gen_rtx_MEM (tmode, XEXP (x1, 0));
-	      MEM_COPY_ATTRIBUTES (x, x1);
+	      x = adjust_address_nv (x1, tmode, 0);
 	      copy_replacements (x1, x);
 	    }
 
 	  y = gen_lowpart_common (tmode, y1);
 	  if (y == 0 && GET_CODE (y1) == MEM)
 	    {
-	      y = gen_rtx_MEM (tmode, XEXP (y1, 0));
-	      MEM_COPY_ATTRIBUTES (y, y1);
+	      y = adjust_address_nv (y1, tmode, 0);
 	      copy_replacements (y1, y);
 	    }
 	}

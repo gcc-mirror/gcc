@@ -3093,7 +3093,7 @@ alter_subreg (x)
     }
   else if (GET_CODE (y) == MEM)
     {
-      register int offset = SUBREG_BYTE (x);
+      HOST_WIDE_INT offset = SUBREG_BYTE (x);
 
       /* Catch these instead of generating incorrect code.  */
       if ((offset % GET_MODE_SIZE (GET_MODE (x))) != 0)

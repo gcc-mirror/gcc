@@ -1147,18 +1147,29 @@ extern rtx memory_address_noforce PARAMS ((enum machine_mode, rtx));
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)  */
-extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
+   NULL for ADDR means don't change the address.)
+   VALIDATE is nonzero if the returned memory location is required to be
+   valid.  */
+extern rtx change_address_1 PARAMS ((rtx, enum machine_mode, rtx, int));
+
+#define change_address(MEMREF, MODE, ADDR) \
+  change_address_1 (MEMREF, MODE, ADDR, 1)
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
 extern rtx adjust_address PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
+
+/* Likewise, but the reference is not required to be valid.  */
+extern rtx adjust_address_nv PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
 
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
    by putting something into a register.  */
 extern rtx replace_equiv_address PARAMS ((rtx, rtx));
+
+/* Likewise, but the reference is not required to be valid.  */
+extern rtx replace_equiv_address_nv PARAMS ((rtx, rtx));
 
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */

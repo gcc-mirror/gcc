@@ -706,7 +706,6 @@ add_mem_for_addr (addr_elt, mem_elt, x)
      cselib_val *addr_elt, *mem_elt;
      rtx x;
 {
-  rtx new;
   struct elt_loc_list *l;
 
   /* Avoid duplicates.  */
@@ -715,11 +714,10 @@ add_mem_for_addr (addr_elt, mem_elt, x)
 	&& CSELIB_VAL_PTR (XEXP (l->loc, 0)) == addr_elt)
       return;
 
-  new = gen_rtx_MEM (GET_MODE (x), addr_elt->u.val_rtx);
-  MEM_COPY_ATTRIBUTES (new, x);
-
   addr_elt->addr_list = new_elt_list (addr_elt->addr_list, mem_elt);
-  mem_elt->locs = new_elt_loc_list (mem_elt->locs, new);
+  mem_elt->locs
+    = new_elt_loc_list (mem_elt->locs,
+			replace_equiv_address_nv (x, addr_elt->u.val_rtx));
 }
 
 /* Subroutine of cselib_lookup.  Return a value for X, which is a MEM rtx.
