@@ -1573,16 +1573,19 @@ move_block_to_reg (regno, x, nregs, mode)
 
   /* See if the machine can do this with a load multiple insn.  */
 #ifdef HAVE_load_multiple
-  last = get_last_insn ();
-  pat = gen_load_multiple (gen_rtx (REG, word_mode, regno), x,
-			   GEN_INT (nregs));
-  if (pat)
+  if (HAVE_load_multiple)
     {
-      emit_insn (pat);
-      return;
+      last = get_last_insn ();
+      pat = gen_load_multiple (gen_rtx (REG, word_mode, regno), x,
+			       GEN_INT (nregs));
+      if (pat)
+	{
+	  emit_insn (pat);
+	  return;
+	}
+      else
+	delete_insns_since (last);
     }
-  else
-    delete_insns_since (last);
 #endif
 
   for (i = 0; i < nregs; i++)
@@ -1625,16 +1628,19 @@ move_block_from_reg (regno, x, nregs, size)
 
   /* See if the machine can do this with a store multiple insn.  */
 #ifdef HAVE_store_multiple
-  last = get_last_insn ();
-  pat = gen_store_multiple (x, gen_rtx (REG, word_mode, regno),
-			    GEN_INT (nregs));
-  if (pat)
+  if (HAVE_store_multiple)
     {
-      emit_insn (pat);
-      return;
+      last = get_last_insn ();
+      pat = gen_store_multiple (x, gen_rtx (REG, word_mode, regno),
+				GEN_INT (nregs));
+      if (pat)
+	{
+	  emit_insn (pat);
+	  return;
+	}
+      else
+	delete_insns_since (last);
     }
-  else
-    delete_insns_since (last);
 #endif
 
   for (i = 0; i < nregs; i++)
