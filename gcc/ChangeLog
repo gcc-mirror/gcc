@@ -1,4 +1,10 @@
-2002-02-07  Chris Demetriou  <cgd@broadcom.com>
+2002-02-08  Chris Demetriou  <cgd@broadcom.com>
+
+        * config/mips/mips.md (casesi_internal, casesi_internal_di):
+        Protect jump delay slot instructions with .set noreorder and
+        .set nomacro.
+
+2002-02-08  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (casesi_internal_di): Calculate
 	the index into the target offset table correctly.

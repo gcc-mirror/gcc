@@ -9476,7 +9476,7 @@ move\\t%0,%z4\\n\\
    (clobber (reg:SI 31))]
   "TARGET_EMBEDDED_PIC"
   "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
-lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
+lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
@@ -9493,7 +9493,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
    (clobber (reg:DI 31))]
   "TARGET_EMBEDDED_PIC"
   "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
-ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
+ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
