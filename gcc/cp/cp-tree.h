@@ -299,7 +299,7 @@ typedef struct
 
 typedef struct 
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   HOST_WIDE_INT index;
   HOST_WIDE_INT level;
   HOST_WIDE_INT orig_level;
@@ -308,7 +308,7 @@ typedef struct
 
 typedef struct ptrmem_cst
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   /* This isn't used, but the middle-end expects all constants to have 
      this field.  */
   struct rtx_def *rtl;
@@ -351,7 +351,7 @@ typedef struct ptrmem_cst
 
 struct tree_binding
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   union {
     tree scope;
     struct binding_level *level;
@@ -374,7 +374,7 @@ struct tree_binding
 
 struct tree_overload
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   tree function;
 };
 
@@ -391,7 +391,7 @@ struct tree_overload
 
 struct tree_wrapper
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   union {
     void *ptr;
     int i;
@@ -402,7 +402,7 @@ struct tree_wrapper
 #define SRCLOC_LINE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->linenum)
 struct tree_srcloc
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   const char *filename;
   int linenum;
 };

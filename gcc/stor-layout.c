@@ -1173,9 +1173,6 @@ finish_record_layout (rli)
       rli->pending_statics = TREE_CHAIN (rli->pending_statics);
     }
 
-  /* Show any alias subsetting we need.  */
-  record_component_aliases (rli->t);
-
   /* Clean up.  */
   free (rli);
 }

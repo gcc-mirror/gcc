@@ -1109,7 +1109,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* If TYPE is a transparent union, pass things the way we would
 	 pass the first field of the union.  We have already verified that
 	 the modes are the same.  */
-      if (TYPE_TRANSPARENT_UNION (type))
+      if (TREE_CODE (type) == UNION_TYPE && TYPE_TRANSPARENT_UNION (type))
 	type = TREE_TYPE (TYPE_FIELDS (type));
 
       /* Decide where to pass this arg.

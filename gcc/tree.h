@@ -671,7 +671,7 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 
 struct tree_int_cst
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 			   (rtl) info */
   unsigned HOST_WIDE_INT int_cst_low;
@@ -695,7 +695,7 @@ struct tree_int_cst
 
 struct tree_real_cst
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   REAL_VALUE_TYPE real_cst;
@@ -707,7 +707,7 @@ struct tree_real_cst
 
 struct tree_string
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   int length;
@@ -720,7 +720,7 @@ struct tree_string
 
 struct tree_complex
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   union tree_node *real;
@@ -734,7 +734,7 @@ struct tree_complex
 
 struct tree_identifier
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   int length;
   char *pointer;
 };
@@ -745,7 +745,7 @@ struct tree_identifier
 
 struct tree_list
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   union tree_node *purpose;
   union tree_node *value;
 };
@@ -757,7 +757,7 @@ struct tree_list
 
 struct tree_vec
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   int length;
   union tree_node *a[1];
 };
@@ -813,7 +813,7 @@ struct tree_vec
 
 struct tree_exp
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   int complexity;
   union tree_node *operands[1];
 };
@@ -839,7 +839,7 @@ struct tree_exp
 
 struct tree_block
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
 
   unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
@@ -1007,11 +1007,18 @@ struct tree_block
 
 /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
-#define TYPE_NEEDS_CONSTRUCTING(NODE) (TYPE_CHECK (NODE)->type.needs_constructing_flag)
+#define TYPE_NEEDS_CONSTRUCTING(NODE) \
+  (TYPE_CHECK (NODE)->type.needs_constructing_flag)
 
 /* Indicates that objects of this type (a UNION_TYPE), should be passed
    the same way that the first union alternative would be passed.  */
-#define TYPE_TRANSPARENT_UNION(NODE) (TYPE_CHECK (NODE)->type.transparent_union_flag)
+#define TYPE_TRANSPARENT_UNION(NODE)  \
+  (UNION_TYPE_CHECK (NODE)->type.transparent_union_flag)
+
+/* For an ARRAY_TYPE, indicates that it is not permitted to
+   take the address of a component of the type.  */
+#define TYPE_NONALIASED_COMPONENT(NODE) \
+  (ARRAY_TYPE_CHECK (NODE)->type.transparent_union_flag)
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
@@ -1070,15 +1077,15 @@ struct tree_block
    default_pointer_boundedness at the time TYPE was created.  It is
    useful for choosing default boundedness of function arguments for
    non-prototype function decls and for varargs/stdarg lists.  */
-
-#define TYPE_AMBIENT_BOUNDEDNESS(TYPE) (TYPE_CHECK (TYPE)->type.transparent_union_flag)
+#define TYPE_AMBIENT_BOUNDEDNESS(TYPE) \
+  (FUNCTION_TYPE_CHECK (TYPE)->type.transparent_union_flag)
 
 #define MAX_POINTER_DEPTH 2
 #define VA_LIST_POINTER_DEPTH 3
 
 struct tree_type
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   union tree_node *values;
   union tree_node *size;
   union tree_node *size_unit;
@@ -1522,6 +1529,11 @@ struct tree_type
    an address constant.  */
 #define DECL_NON_ADDR_CONST_P(NODE) (DECL_CHECK (NODE)->decl.non_addr_const_p)
 
+/* Used in a FIELD_DECL to indicate that we cannot form the address of
+   this component.  */
+#define DECL_NONADDRESSABLE_P(NODE) \
+  (FIELD_DECL_CHECK (NODE)->decl.non_addressable)
+
 /* Used to indicate an alias set for the memory pointed to by this
    particular FIELD_DECL, PARM_DECL, or VAR_DECL, which must have
    pointer (or reference) type.  */
@@ -1544,7 +1556,7 @@ struct tree_type
 
 struct tree_decl
 {
-  char common[sizeof (struct tree_common)];
+  struct tree_common common;
   const char *filename;
   int linenum;
   unsigned int uid;
@@ -1575,9 +1587,12 @@ struct tree_decl
   unsigned comdat_flag : 1;
   unsigned malloc_flag : 1;
   unsigned no_limit_stack : 1;
-  unsigned pure_flag : 1;
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
+
+  unsigned pure_flag : 1;
   unsigned pointer_depth : 2;
+  unsigned non_addressable : 1;
+  /* Four unused bits.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

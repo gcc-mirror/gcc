@@ -201,7 +201,8 @@ function_cannot_inline_p (fndecl)
     {
       if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
 	return N_("function with varying-size parameter cannot be inline");
-      else if (TYPE_TRANSPARENT_UNION (TREE_TYPE (parms)))
+      else if (TREE_CODE (TREE_TYPE (parms)) == UNION_TYPE
+	       && TYPE_TRANSPARENT_UNION (TREE_TYPE (parms)))
 	return N_("function with transparent unit parameter cannot be inline");
     }
 

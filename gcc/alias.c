@@ -79,6 +79,10 @@ typedef struct alias_set_entry
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
   splay_tree children;
+
+  /* Nonzero if would have a child of zero: this effectively makes this
+     alias set the same as alias set zero.  */
+  int has_zero_child;
 } *alias_set_entry;
 
 static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
@@ -239,14 +243,18 @@ mems_in_disjoint_alias_sets_p (mem1, mem2)
 
   /* See if the first alias set is a subset of the second.  */
   ase = get_alias_set_entry (MEM_ALIAS_SET (mem1));
-  if (ase != 0 && splay_tree_lookup (ase->children,
-				     (splay_tree_key) MEM_ALIAS_SET (mem2)))
+  if (ase != 0
+      && (ase->has_zero_child
+	  || splay_tree_lookup (ase->children,
+				(splay_tree_key) MEM_ALIAS_SET (mem2))))
     return  0;
 
   /* Now do the same, but with the alias sets reversed.  */
   ase = get_alias_set_entry (MEM_ALIAS_SET (mem2));
-  if (ase != 0 && splay_tree_lookup (ase->children,
-				     (splay_tree_key) MEM_ALIAS_SET (mem1)))
+  if (ase != 0
+      && (ase->has_zero_child
+	  || splay_tree_lookup (ase->children,
+				(splay_tree_key) MEM_ALIAS_SET (mem1))))
     return  0;
 
   /* The two MEMs are in distinct alias sets, and neither one is the
@@ -406,7 +414,12 @@ get_alias_set (t)
 
   /* See if the language has special handling for this type.  */
   if ((set = lang_get_alias_set (t)) != -1)
-    ;
+    {
+      /* If the alias set is now known, we are done.  */
+      if (TYPE_ALIAS_SET_KNOWN_P (t))
+	return TYPE_ALIAS_SET (t);
+    }
+
   /* There are no objects of FUNCTION_TYPE, so there's no point in
      using up an alias set for them.  (There are, of course, pointers
      and references to functions, but that's different.)  */
@@ -417,6 +430,12 @@ get_alias_set (t)
     set = new_alias_set ();
 
   TYPE_ALIAS_SET (t) = set;
+
+  /* If this is an aggregate type, we must record any component aliasing
+     information.  */
+  if (AGGREGATE_TYPE_P (t))
+    record_component_aliases (t);
+
   return set;
 }
 
@@ -468,18 +487,26 @@ record_alias_subset (superset, subset)
 
     }
 
-  subset_entry = get_alias_set_entry (subset);
+  if (subset == 0)
+    superset_entry->has_zero_child = 1;
+  else
+    {
+      subset_entry = get_alias_set_entry (subset);
+      /* If there is an entry for the subset, enter all of its children
+	 (if they are not already present) as children of the SUPERSET.  */
+      if (subset_entry) 
+	{
+	  if (subset_entry->has_zero_child)
+	    superset_entry->has_zero_child = 1;
 
-  /* If there is an entry for the subset, enter all of its children
-     (if they are not already present) as children of the SUPERSET.  */
-  if (subset_entry) 
-    splay_tree_foreach (subset_entry->children,
-			insert_subset_children,
-			superset_entry->children);
+	  splay_tree_foreach (subset_entry->children, insert_subset_children,
+			      superset_entry->children);
+	}
 
-  /* Enter the SUBSET itself as a child of the SUPERSET.  */
-  splay_tree_insert (superset_entry->children, 
-		     (splay_tree_key) subset, 0);
+      /* Enter the SUBSET itself as a child of the SUPERSET.  */
+      splay_tree_insert (superset_entry->children, 
+			 (splay_tree_key) subset, 0);
+    }
 }
 
 /* Record that component types of TYPE, if any, are part of that type for
@@ -493,7 +520,6 @@ record_component_aliases (type)
      tree type;
 {
   HOST_WIDE_INT superset = get_alias_set (type);
-  HOST_WIDE_INT subset;
   tree field;
 
   if (superset == 0)
@@ -502,20 +528,16 @@ record_component_aliases (type)
   switch (TREE_CODE (type))
     {
     case ARRAY_TYPE:
-      subset = get_alias_set (TREE_TYPE (type));
-      if (subset != 0)
-	record_alias_subset (superset, subset);
+      if (! TYPE_NONALIASED_COMPONENT (type))
+	record_alias_subset (superset, get_alias_set (TREE_TYPE (type)));
       break;
 
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
-	{
-	  subset = get_alias_set (TREE_TYPE (field));
-	  if (TREE_ADDRESSABLE (field) && subset != 0 && subset != superset)
-	    record_alias_subset (superset, subset);
-	}
+	if (! DECL_NONADDRESSABLE_P (field))
+	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
       break;
 
     default:
