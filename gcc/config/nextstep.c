@@ -45,7 +45,7 @@ extern char *get_directive_line ();
    The result is 1 if the pragma was handled.  */
 
 int
-handle_pragma (p_getc, p_ungetc, name)
+handle_pragma (p_getc, p_ungetc, pname)
      int (*  p_getc) PROTO ((void));
      void (* p_ungetc) PROTO ((int));
      char * pname;
