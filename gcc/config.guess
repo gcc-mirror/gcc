@@ -306,13 +306,13 @@ EOF
 	fi
 	exit 0 ;;
     i[34]86:*:3.2:*)
-	if /bin/uname -X 2>/dev/null >/dev/null ; then
+	if test -f /usr/options/cb.name; then
+		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
+		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
+	elif /bin/uname -X 2>/dev/null >/dev/null ; then
 		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
 		echo ${UNAME_MACHINE}-unknown-sco$UNAME_REL
-	elif test -f /usr/options/cb.name; then
-		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
-		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
 	else
 		echo ${UNAME_MACHINE}-unknown-sysv32
 	fi
