@@ -82,5 +82,5 @@ prefix(irand) (GFC_INTEGER_4 *i)
 GFC_REAL_4
 prefix(rand) (GFC_INTEGER_4 *i)
 {
-  return normalize_r4_i4 (irand (i) - 1, GFC_RAND_M1 - 1);
+  return normalize_r4_i4 (prefix(irand) (i) - 1, GFC_RAND_M1 - 1);
 }
