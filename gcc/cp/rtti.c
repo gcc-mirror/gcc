@@ -1129,7 +1129,7 @@ synthesize_tinfo_fn (fndecl)
   addr = decay_conversion (tdecl);
   tmp = cp_convert (build_pointer_type (ptr_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
-  tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node, 1);
+  tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node);
   expand_start_cond (tmp, 0);
 
   if (TREE_CODE (type) == FUNCTION_TYPE)

@@ -2871,7 +2871,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 			   (build_component_ref (function,
 						 index_identifier,
 						 NULL_TREE, 0)));
-	  e1 = build_binary_op (GT_EXPR, idx, integer_zero_node, 1);
+	  e1 = build_binary_op (GT_EXPR, idx, integer_zero_node);
 
 	  /* Convert down to the right base, before using the instance.  */
 	  instance = convert_pointer_to_real (basetype, instance_ptr);
@@ -2887,7 +2887,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	  vtbl = build_indirect_ref (vtbl, NULL_PTR);
 	  aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
 							 idx,
-							 integer_one_node, 1));
+							 integer_one_node));
 	  if (! flag_vtable_thunks)
 	    {
 	      aref = save_expr (aref);
@@ -2899,7 +2899,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 							      delta_identifier,
 							      NULL_TREE, 0),
 					 integer_zero_node),
-		 delta, 1);
+		 delta);
 	    }
 
 	  if (flag_vtable_thunks)
@@ -3262,10 +3262,9 @@ build_x_binary_op (code, arg1, arg2)
 }
 
 tree
-build_binary_op (code, arg1, arg2, convert_p)
+build_binary_op (code, arg1, arg2)
      enum tree_code code;
      tree arg1, arg2;
-     int convert_p ATTRIBUTE_UNUSED;
 {
   return build_binary_op_nodefault (code, arg1, arg2, code);
 }
@@ -3661,18 +3660,17 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree e1, e2, e3;
 	  tree integer_neg_one_node
 	    = build_binary_op (MINUS_EXPR, integer_zero_node,
-			       integer_one_node, 1);
-	  e1 = build_binary_op (EQ_EXPR, index0, index1, 1);
-	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node, 1);
+			       integer_one_node);
+	  e1 = build_binary_op (EQ_EXPR, index0, index1);
+	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
-				build_binary_op (EQ_EXPR, delta20, delta21, 1),
-				1);
-	  e3 = build_binary_op (EQ_EXPR, pfn0, pfn1, 1);
-	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3, 1);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2, 1);
+				build_binary_op (EQ_EXPR, delta20, delta21));
+	  e3 = build_binary_op (EQ_EXPR, pfn0, pfn1);
+	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
+	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
 	  if (code == EQ_EXPR)
 	    return e2;
-	  return build_binary_op (EQ_EXPR, e2, integer_zero_node, 1);
+	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
 	}
       else if (TYPE_PTRMEMFUNC_P (type0)
 	       && TYPE_PTRMEMFUNC_FN_TYPE (type0) == type1)
@@ -3685,7 +3683,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree delta21 = integer_zero_node;
 	  tree e1, e2, e3;
 	  tree integer_neg_one_node
-	    = build_binary_op (MINUS_EXPR, integer_zero_node, integer_one_node, 1);
+	    = build_binary_op (MINUS_EXPR, integer_zero_node, integer_one_node);
 	  if (TREE_CODE (TREE_OPERAND (op1, 0)) == FUNCTION_DECL
 	      && DECL_VINDEX (TREE_OPERAND (op1, 0)))
 	    {
@@ -3710,23 +3708,20 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    TREE_CONSTANT (nop1) = TREE_CONSTANT (op1);
 	    op1 = nop1;
 	  }
-	  e1 = build_binary_op (EQ_EXPR, index0, index1, 1);
-	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node, 1);
+	  e1 = build_binary_op (EQ_EXPR, index0, index1);
+	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
-				build_binary_op (EQ_EXPR, delta20, delta21, 1),
-				1);
-	  e3 = build_binary_op (EQ_EXPR, pfn0, op1, 1);
-	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3, 1);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2, 1);
+				build_binary_op (EQ_EXPR, delta20, delta21));
+	  e3 = build_binary_op (EQ_EXPR, pfn0, op1);
+	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
+	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
 	  if (code == EQ_EXPR)
 	    return e2;
-	  return build_binary_op (EQ_EXPR, e2, integer_zero_node, 1);
+	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1)
 	       && TYPE_PTRMEMFUNC_FN_TYPE (type1) == type0)
-	{
-	  return build_binary_op (code, op1, op0, 1);
-	}
+	return build_binary_op (code, op1, op0);
       break;
 
     case MAX_EXPR:
@@ -4165,7 +4160,7 @@ pointer_int_sum (resultcode, ptrop, intop)
       enum tree_code subcode = resultcode;
       if (TREE_CODE (intop) == MINUS_EXPR)
 	subcode = (subcode == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR);
-      ptrop = build_binary_op (subcode, ptrop, TREE_OPERAND (intop, 1), 1);
+      ptrop = build_binary_op (subcode, ptrop, TREE_OPERAND (intop, 1));
       intop = TREE_OPERAND (intop, 0);
     }
 
@@ -4182,8 +4177,7 @@ pointer_int_sum (resultcode, ptrop, intop)
   intop = cp_convert (result_type,
 		      build_binary_op (MULT_EXPR, intop,
 				       cp_convert (TREE_TYPE (intop),
-						   size_exp),
-				       1));
+						   size_exp)));
 
   /* Create the sum or difference.  */
 
@@ -4226,7 +4220,7 @@ pointer_diff (op0, op1, ptrtype)
      then drop through to build the divide operator.  */
 
   op0 = build_binary_op (MINUS_EXPR, cp_convert (restype, op0),
-			 cp_convert (restype, op1), 1);
+			 cp_convert (restype, op1));
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
@@ -4669,7 +4663,7 @@ build_unary_op (code, xarg, noconvert)
 	  if (mark_addressable (TREE_OPERAND (arg, 0)) == 0)
 	    return error_mark_node;
 	  return build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
-				  TREE_OPERAND (arg, 1), 1);
+				  TREE_OPERAND (arg, 1));
 	}
 
       /* Uninstantiated types are all functions.  Taking the
@@ -6025,7 +6019,7 @@ build_modify_expr (lhs, modifycode, rhs)
   else
     {
       lhs = stabilize_reference (lhs);
-      newrhs = build_binary_op (modifycode, lhs, rhs, 1);
+      newrhs = build_binary_op (modifycode, lhs, rhs);
       if (newrhs == error_mark_node)
 	{
 	  cp_error ("  in evaluation of `%Q(%#T, %#T)'", modifycode,
@@ -6387,7 +6381,7 @@ get_delta_difference (from, to, force)
       
       return build_binary_op (MINUS_EXPR,
 			      integer_zero_node,
-			      delta, 1);
+			      delta);
     }
 
   if (TREE_VIA_VIRTUAL (binfo))
@@ -6525,8 +6519,8 @@ build_ptrmemfunc (type, pfn, force)
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 				force);
 
-      delta = build_binary_op (PLUS_EXPR, ndelta, n, 1);
-      delta2 = build_binary_op (PLUS_EXPR, ndelta2, n, 1);
+      delta = build_binary_op (PLUS_EXPR, ndelta, n);
+      delta2 = build_binary_op (PLUS_EXPR, ndelta2, n);
       e1 = fold (build (GT_EXPR, boolean_type_node, idx, integer_zero_node));
 	  
       e2 = build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type), delta, idx,
@@ -6605,8 +6599,7 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
       *delta2 = size_binop (PLUS_EXPR, *delta2,
 			   build_binary_op (PLUS_EXPR,
 					    *delta, 
-					    integer_zero_node,
-					    1));
+					    integer_zero_node));
     }
 }
 

@@ -6136,7 +6136,7 @@ tsubst (t, args, complain, in_decl)
 	    return error_mark_node;
 	  }
 
-	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node, 1));
+	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node));
 	if (!TREE_PERMANENT (max) && !allocation_temporary_p ())
 	  max = copy_to_permanent (max);
 	return build_index_type (max);

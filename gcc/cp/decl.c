@@ -8303,7 +8303,7 @@ expand_static_init (decl, init)
 
       /* Begin the conditional initialization.  */
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
-					  integer_zero_node, 1), 0);
+					  integer_zero_node), 0);
       expand_start_target_temps ();
 
       /* Do the initialization itself.  */
@@ -10225,7 +10225,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  = fold (build_binary_op (MINUS_EXPR,
 					   cp_convert (index_type, size),
 					   cp_convert (index_type,
-						       integer_one_node), 1));
+						       integer_one_node)));
 		if (! TREE_CONSTANT (itype))
 		  itype = variable_size (itype);
 		else if (TREE_OVERFLOW (itype))
@@ -13973,7 +13973,7 @@ finish_function (lineno, flags, nested)
 	  if (! ok_to_optimize_dtor)
 	    {
 	      cond = build_binary_op (NE_EXPR,
-				      current_class_ptr, integer_zero_node, 1);
+				      current_class_ptr, integer_zero_node);
 	      expand_start_cond (cond, 0);
 	    }
 
@@ -14033,7 +14033,7 @@ finish_function (lineno, flags, nested)
 	  if (flag_this_is_variable > 0)
 	    {
 	      cond = build_binary_op (EQ_EXPR,
-				      current_class_ptr, integer_zero_node, 1);
+				      current_class_ptr, integer_zero_node);
 	      thenclause = build_modify_expr (current_class_ptr, NOP_EXPR,
 					      build_new (NULL_TREE, current_class_type, void_type_node, 0));
 	    }
