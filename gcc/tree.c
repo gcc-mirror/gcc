@@ -4245,7 +4245,8 @@ int_fits_type_p (c, type)
      tree c, type;
 {
   /* If the bounds of the type are integers, we can check ourselves.
-     Otherwise,. use force_fit_type, which checks against the precision.  */
+     If not, but this type is a subtype, try checking against that.
+     Otherwise, use force_fit_type, which checks against the precision.  */
   if (TYPE_MAX_VALUE (type) != NULL_TREE
       && TYPE_MIN_VALUE (type) != NULL_TREE
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
@@ -4264,6 +4265,8 @@ int_fits_type_p (c, type)
 		&& ! (TREE_INT_CST_HIGH (c) < 0
 		      && TREE_UNSIGNED (TREE_TYPE (c))));
     }
+  else if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != 0)
+    return int_fits_type_p (c, TREE_TYPE (type));
   else
     {
       c = copy_node (c);

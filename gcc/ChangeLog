@@ -1,5 +1,8 @@
 Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.c (int_fits_type_p): If bounds of a subtype are variable, see
+	if fits in bounds of base type.
+
 	* dwarf2out.c (equate_decl_number_to_die): Add "int" to decls.
 	(loc_descriptor_from_tree, case CALL_EXPR, case ADDR_EXPR): New.
 	(add_bound_info, default): If can't find a context, make a
