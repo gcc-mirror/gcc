@@ -1,3 +1,29 @@
+2004-10-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (print_operand): Support 'S' format flag.
+	* config/s390/s390.md ("*tmqi_mem"): Use 'S' format flag.
+	("*tstsi", "*tstsi_cconly", "*tstsi_cconly2"): Likewise.
+	("*tsthiCCT", "*tsthiCCT_cconly", "*tsthi", "*tsthi_cconly"): Likewise.
+	("*tstqiCCT", "*tstqiCCT_cconly", "*tstqi", "*tstqi_cconly"): Likewise.
+	("*cmphi_ccu", "*cmpqi_ccu", "*clc"): Likewise
+	("movti", "*movdi_31", "*movqi", "*movdf_31", "*mvc"): Likewise.
+	("*movstricthi"): Likewise.
+	("*load_multiple_di", "*load_multiple_si"): Likewise.
+	("*store_multiple_di", "*store_multiple_si"): Likewise.
+	("*sethiqisi", "*sethihisi"): Likewise.
+	("*sethiqidi_64", "*sethiqidi_31"): Likewise.
+	("*andqi3_zarch", "*andqi3_esa", "*nc"): Likewise.
+	("*iorqi3_zarch", "*iorqi3_esa", "*oc"): Likewise.
+	("*xorqi3", "*xc", "*xc_zero"): Likewise.
+	("get_tp_64", "get_tp_31", "set_tp_64", "set_tp_31"): Likewise.
+
+	("*tmhi_full"): Fix incorrect op_type attribute.
+
+	("*adddi3_alc_cc", "*adddi3_alc"): Remove double backslash.
+	("*subdi3_slb_cc", "*subdi3_slb"): Likewise.
+	("*addsi3_alc_cc", "*addsi3_alc"): Likewise.
+	("*subsi3_slb_cc", "*subsi3_slb"): Likewise.
+
 2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu
 
 	PR middle-end/16266
