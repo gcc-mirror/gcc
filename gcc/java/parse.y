@@ -14413,7 +14413,7 @@ patch_switch_statement (node)
   se_type = TREE_TYPE (se);
   /* The type of the switch expression must be char, byte, short or
      int */
-  if (!JINTEGRAL_TYPE_P (se_type))
+  if (! JINTEGRAL_TYPE_P (se_type) || se_type == long_type_node)
     {
       EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
       parse_error_context (wfl_operator,
