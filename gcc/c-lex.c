@@ -922,9 +922,6 @@ yylex ()
   while (1)
     switch (c)
       {
-      case '\r':
-	if (!flag_traditional)	/* ANSI says no */
-	  goto found_nonwhite;
       case ' ':
       case '\t':
       case '\f':
@@ -932,6 +929,9 @@ yylex ()
       case '\b':
 	c = getc (finput);
 	break;
+
+      case '\r':
+	/* Call skip_white_space so we can warn if appropriate.  */
 
       case '\n':
       case '/':
