@@ -275,16 +275,29 @@ The _S_initialize() function:
     a thread decides to return some blocks to the global freelist.
 </p>
 
-<p> Notes about deallocation. On systems with the function
-<code>__cxa_atexit</code>, the allocator will free all memory
-allocated before program termination. However, because this relies on
-the precise and exactly-conforming ordering of static destructors,
-including those of a static local <code>__pool</code> object, it is
-not available on systems that don't have the necessary underlying
-support. On those systems, memory debugging programs like valgrind or
-purify may notice leaks: sorry about this inconvenience. However, most
-operating systems actually reclaim this memory at program termination
-anyway.
+<p> Notes about deallocation. This allocator does not explicitly
+release memory. Because of this, memory debugging programs like
+valgrind or purify may notice leaks: sorry about this
+inconvenience. Operating systems will reclaim allocated memory at
+program termination anyway. If sidestepping this kind of noise is
+desired, there are two options: use an allocator, like
+<code>new_allocator</code> that releases memory while debugging, or
+use GLIBCXX_FORCE_NEW to bypass the allocator's internal pools.</p>
+
+<p>On systems with the function <code>__cxa_atexit</code>, the
+allocator can be forced to free all memory allocated before program
+termination with the member function
+<code>__pool_type::_M_destroy</code>. However, because this member
+function relies on the precise and exactly-conforming ordering of
+static destructors, including those of a static local
+<code>__pool</code> object, it should not be used, ever, on systems
+that don't have the necessary underlying support. In addition, in
+practice, forcing deallocation can be tricky, as it requires the
+<code>__pool</code> object to be fully-constructed before the object
+that uses it is fully constructed. For most (but not all) STL
+containers, this works, as an instance of the allocator is constructed
+as part of a container's constructor. However, this assumption is
+implementation-specific, and subject to change.
 </p>
 
 <h3 class="left">

@@ -31,10 +31,11 @@ struct count_check
   count_check() {}
   ~count_check()
   {
-#ifdef _GLIBCXX_USE___CXA_ATEXIT
     if (count != 0)
-      throw std::runtime_error("count isn't zero");
-#endif
+      {
+	// NB: __mt_allocator doesn't clean itself up. Thus, this will
+	// not be zero.
+      }
   }
 };
  
@@ -63,11 +64,11 @@ void operator delete(void* p) throw()
   free(p);
 }
 
-typedef char char_t;
-typedef std::char_traits<char_t> traits_t;
-typedef __gnu_cxx::__per_type_pool_policy<char_t, true> pool_t;
-typedef __gnu_cxx::__mt_alloc<char_t, pool_t> allocator_t;
-typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
+typedef char value_t;
+typedef std::char_traits<value_t> traits_t;
+typedef __gnu_cxx::__per_type_pool_policy<value_t, true> policy_t;
+typedef __gnu_cxx::__mt_alloc<value_t, policy_t> allocator_t;
+typedef std::basic_string<value_t, traits_t, allocator_t> string_t;
 
 int main()
 {

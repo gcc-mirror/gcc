@@ -274,6 +274,9 @@ namespace __gnu_cxx
 	  }
       }
 
+      void
+      _M_destroy() throw();
+
       char* 
       _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
@@ -319,7 +322,7 @@ namespace __gnu_cxx
 	_M_once = __tmp;
       }
 
-      ~__pool();
+      ~__pool() { }
 
     private:
       // An "array" of bin_records each of which represents a specific
@@ -364,6 +367,9 @@ namespace __gnu_cxx
 	  _M_initialize();
       }
 
+      void
+      _M_destroy() throw();
+
       char* 
       _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
@@ -387,7 +393,7 @@ namespace __gnu_cxx
       explicit __pool(const __pool_base::_Tune& __tune) 
       : __pool_base(__tune), _M_bin(NULL), _M_bin_size(1) { }
 
-      ~__pool();
+      ~__pool() { }
 
     private:
       // An "array" of bin_records each of which represents a specific
@@ -638,9 +644,6 @@ namespace __gnu_cxx
 	  typedef __mt_alloc<_Tp1, pol_type> other;
 	};
 
-      // Create pool instance so that order of construction will be
-      // pool_type first, then allocator. This is necessary for
-      // correct global and static object construction/destruction.
       __mt_alloc() throw() 
       { __policy_type::_S_get_pool(); }
 

@@ -1,5 +1,30 @@
 2004-10-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/stl_deque.h: Correct for over-long lines.
+
+2004-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/17937
+	* include/ext/mt_allocator.h (__pool::_M_destroy): New.
+	* src/mt_allocator.cc (__pool::~__pool): Change definitions to
+	_M_destroy.
+	* acconfig.h: Remove _GLIBCXX_USE___CXA_ATEXIT.
+	* acinclude.m4 (GLIBCXX_ENABLE_CXA_ATEXIT): Remove.
+	* configure.ac: Remove call to GLIBCXX_ENABLE_CXA_EXIT.
+	* configure: Regenerate.
+	* config/linker-map.gnu: Tweak exports.
+	* docs/html/ext/mt_allocator.html: Update docs.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Fix.	
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Fix.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Fix.
+
+2004-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/16614 continued.
 	* include/ext/mt_allocator.h
 	(__per_type_pool_policy::_S_get_pool): Use saner defaults based on

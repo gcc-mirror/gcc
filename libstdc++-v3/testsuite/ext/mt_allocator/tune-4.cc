@@ -30,7 +30,7 @@ struct test_policy
 template<bool _Thread>
 struct test_policy<__gnu_cxx::__common_pool_policy<_Thread> >
 { 
-  typedef __gnu_cxx::__common_pool_policy<_Thread> pool_type;
+  typedef __gnu_cxx::__common_pool_policy<_Thread> policy_type;
   static bool per_type() { return false; } 
 };
 

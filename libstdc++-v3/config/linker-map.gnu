@@ -269,7 +269,7 @@ GLIBCXX_3.4.3 {
     _ZN9__gnu_cxx6__poolILb1EE16_M_get_thread_idEv;
     _ZN9__gnu_cxx6__poolILb[01]EE16_M_reserve_blockE[jm][jm];
     _ZN9__gnu_cxx6__poolILb[01]EE16_M_reclaim_blockEPc[jm];
-    _ZN9__gnu_cxx6__poolILb[01]EED[12]Ev;
+    _ZN9__gnu_cxx6__poolILb[01]EE10_M_destroyEv;
  
     # stub functions from libmath
     acosf;

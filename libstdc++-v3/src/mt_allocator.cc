@@ -46,9 +46,9 @@ namespace __gnu_internal
 
 namespace __gnu_cxx
 {
-  __pool<false>::~__pool()
+  void
+  __pool<false>::_M_destroy() throw()
   {
-#ifdef _GLIBCXX_USE___CXA_ATEXIT
     if (_M_init && !_M_options._M_force_new)
       {
 	for (size_t __n = 0; __n < _M_bin_size; ++__n)
@@ -66,7 +66,6 @@ namespace __gnu_cxx
 	delete _M_bin;
 	delete _M_binmap;
       }
-#endif
   }
 
   void
@@ -174,9 +173,9 @@ namespace __gnu_cxx
   }
   
 #ifdef __GTHREADS
-  __pool<true>::~__pool()
+  void
+  __pool<true>::_M_destroy() throw()
   {
-#ifdef _GLIBCXX_USE___CXA_ATEXIT
     if (_M_init && !_M_options._M_force_new)
       {
 	if (__gthread_active_p())
@@ -216,7 +215,6 @@ namespace __gnu_cxx
 	delete _M_bin;
 	delete _M_binmap;
       }
-#endif
   }
 
   void
