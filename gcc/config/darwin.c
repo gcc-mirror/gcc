@@ -1242,7 +1242,7 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     literal4_section ();
-  else if (! MACHO_DYNAMIC_NO_PIC_P
+  else if (MACHOPIC_INDIRECT
 	   && (GET_CODE (x) == SYMBOL_REF
 	       || GET_CODE (x) == CONST
 	       || GET_CODE (x) == LABEL_REF))

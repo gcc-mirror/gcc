@@ -1,3 +1,7 @@
+2003-09-20  Andrew Pinski <apinski@apple.com>
+
+	* config/darwin.c (machopic_select_rtx_section): Fix check for PIC code.
+
 2003-09-20  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Don't set (unused) DLLTOOL.
