@@ -1995,12 +1995,14 @@ out_movsi_r_mr (insn, op, l)
       if (reg_base == REG_X)        /* (R26) */
         {
           if (reg_dest == REG_X)
-            return *l=6, (AS2 (adiw,r26,3) CR_TAB
-                          AS2 (ld,%D0,X)  CR_TAB
-                          AS2 (ld,%C0,-X) CR_TAB
-                          AS2 (ld,__tmp_reg__,-X)  CR_TAB
-                          AS2 (ld,%A0,-X)  CR_TAB
-                          AS2 (mov,%B0,__tmp_reg__));
+	    /* "ld r26,-X" is undefined */
+	    return *l=7, (AS2 (adiw,r26,3)        CR_TAB
+			  AS2 (ld,r29,X)          CR_TAB
+			  AS2 (ld,r28,-X)         CR_TAB
+			  AS2 (ld,__tmp_reg__,-X) CR_TAB
+			  AS2 (sbiw,r26,1)        CR_TAB
+			  AS2 (ld,r26,X)          CR_TAB
+			  AS2 (mov,r27,__tmp_reg__));
           else if (reg_dest == REG_X - 2)
             return *l=5, (AS2 (ld,%A0,X+)  CR_TAB
                           AS2 (ld,%B0,X+) CR_TAB
@@ -2073,6 +2075,37 @@ out_movsi_r_mr (insn, op, l)
 	}
 
       reg_base = true_regnum (XEXP (base, 0));
+      if (reg_base == REG_X)
+	{
+	  /* R = (X + d) */
+	  if (reg_dest == REG_X)
+	    {
+	      *l = 7;
+	      /* "ld r26,-X" is undefined */
+	      return (AS2 (adiw,r26,%o1+3)    CR_TAB
+		      AS2 (ld,r29,X)          CR_TAB
+		      AS2 (ld,r28,-X)         CR_TAB
+		      AS2 (ld,__tmp_reg__,-X) CR_TAB
+		      AS2 (sbiw,r26,1)        CR_TAB
+		      AS2 (ld,r26,X)          CR_TAB
+		      AS2 (mov,r27,__tmp_reg__));
+	    }
+	  *l = 6;
+	  if (reg_dest == REG_X - 2)
+	    return (AS2 (adiw,r26,%o1)      CR_TAB
+		    AS2 (ld,r24,X+)         CR_TAB
+		    AS2 (ld,r25,X+)         CR_TAB
+		    AS2 (ld,__tmp_reg__,X+) CR_TAB
+		    AS2 (ld,r27,X)          CR_TAB
+		    AS2 (mov,r26,__tmp_reg__));
+
+	  return (AS2 (adiw,r26,%o1) CR_TAB
+		  AS2 (ld,%A0,X+)    CR_TAB
+		  AS2 (ld,%B0,X+)    CR_TAB
+		  AS2 (ld,%C0,X+)    CR_TAB
+		  AS2 (ld,%D0,X)     CR_TAB
+		  AS2 (sbiw,r26,%o1+3));
+	}
       if (reg_dest == reg_base)
         return *l=5, (AS2 (ldd,%D0,%D1) CR_TAB
                       AS2 (ldd,%C0,%C1) CR_TAB
@@ -2137,19 +2170,22 @@ out_movsi_mr_r (insn, op, l)
         {
           if (reg_src == REG_X)
             {
+	      /* "st X+,r26" is undefined */
               if (reg_unused_after (insn, base))
-                return *l=5, (AS2 (mov,__tmp_reg__,%B1) CR_TAB
-                              AS2 (st,%0+,%A1) CR_TAB
-                              AS2 (st,%0+,__tmp_reg__)  CR_TAB
-                              AS2 (st,%0+,%C1) CR_TAB
-                              AS2 (st,%0,%D1));
+		return *l=6, (AS2 (mov,__tmp_reg__,r27) CR_TAB
+			      AS2 (st,X,r26)            CR_TAB
+			      AS2 (adiw,r26,1)          CR_TAB
+			      AS2 (st,X+,__tmp_reg__)   CR_TAB
+			      AS2 (st,X+,r28)           CR_TAB
+			      AS2 (st,X,r29));
               else
-                return *l=6, (AS2 (mov,__tmp_reg__,%B1) CR_TAB
-                              AS2 (st,%0+,%A1) CR_TAB
-                              AS2 (st,%0+,__tmp_reg__)  CR_TAB
-                              AS2 (st,%0+,%C1) CR_TAB
-                              AS2 (st,%0,%D1)  CR_TAB
-                              AS2 (sbiw,r26,3));
+                return *l=7, (AS2 (mov,__tmp_reg__,r27) CR_TAB
+			      AS2 (st,X,r26)            CR_TAB
+			      AS2 (adiw,r26,1)          CR_TAB
+			      AS2 (st,X+,__tmp_reg__)   CR_TAB
+			      AS2 (st,X+,r28)           CR_TAB
+			      AS2 (st,X,r29)            CR_TAB
+			      AS2 (sbiw,r26,3));
             }
           else if (reg_base == reg_src + 2)
             {
@@ -2186,9 +2222,10 @@ out_movsi_mr_r (insn, op, l)
   else if (GET_CODE (base) == PLUS) /* (R + i) */
     {
       int disp = INTVAL (XEXP (base, 1));
+      reg_base = REGNO (XEXP (base, 0));
       if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
-	  if (REGNO (XEXP (base, 0)) != REG_Y)
+	  if (reg_base != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    {
@@ -2212,6 +2249,43 @@ out_movsi_mr_r (insn, op, l)
 			   AS2 (subi, r28, lo8(%4))   CR_TAB
 			   AS2 (sbci, r29, hi8(%4)));
 	    }
+	}
+      if (reg_base == REG_X)
+	{
+	  /* (X + d) = R */
+	  if (reg_src == REG_X)
+	    {
+	      *l = 9;
+	      return (AS2 (mov,__tmp_reg__,r26)  CR_TAB
+		      AS2 (mov,__zero_reg__,r27) CR_TAB
+		      AS2 (adiw,r26,%o0)         CR_TAB
+		      AS2 (st,X+,__tmp_reg__)    CR_TAB
+		      AS2 (st,X+,__zero_reg__)   CR_TAB
+		      AS2 (st,X+,r28)            CR_TAB
+		      AS2 (st,X,r29)             CR_TAB
+		      AS1 (clr,__zero_reg__)     CR_TAB
+		      AS2 (sbiw,r26,%o0+3));
+	    }
+	  else if (reg_src == REG_X - 2)
+	    {
+	      *l = 9;
+	      return (AS2 (mov,__tmp_reg__,r26)  CR_TAB
+		      AS2 (mov,__zero_reg__,r27) CR_TAB
+		      AS2 (adiw,r26,%o0)         CR_TAB
+		      AS2 (st,X+,r24)            CR_TAB
+		      AS2 (st,X+,r25)            CR_TAB
+		      AS2 (st,X+,__tmp_reg__)    CR_TAB
+		      AS2 (st,X,__zero_reg__)    CR_TAB
+		      AS1 (clr,__zero_reg__)     CR_TAB
+		      AS2 (sbiw,r26,%o0+3));
+	    }
+	  *l = 6;
+	  return (AS2 (adiw,r26,%o0) CR_TAB
+		  AS2 (st,X+,%A1)    CR_TAB
+		  AS2 (st,X+,%B1)    CR_TAB
+		  AS2 (st,X+,%C1)    CR_TAB
+		  AS2 (st,X,%D1)     CR_TAB
+		  AS2 (sbiw,r26,%o0+3));
 	}
       return *l=4, (AS2 (std,%A0,%A1)    CR_TAB
 		    AS2 (std,%B0,%B1) CR_TAB
@@ -2545,15 +2619,18 @@ out_movhi_mr_r (insn, op, l)
         {
           if (reg_src == REG_X)
             {
+	      /* "st X+,r26" is undefined */
               if (reg_unused_after (insn, src))
-                return *l=3, (AS2 (mov,__tmp_reg__,r27) CR_TAB
-                              AS2 (st ,X+,r26) CR_TAB
-                              AS2 (st ,X,__tmp_reg__));
+		return *l=4, (AS2 (mov,__tmp_reg__,r27) CR_TAB
+			      AS2 (st,X,r26)            CR_TAB
+			      AS2 (adiw,r26,1)          CR_TAB
+			      AS2 (st,X,__tmp_reg__));
               else
-                return *l=4, (AS2 (mov,__tmp_reg__,r27) CR_TAB
-                              AS2 (st ,X+,r26) CR_TAB
-                              AS2 (st ,X,__tmp_reg__)   CR_TAB
-                              AS2 (sbiw,r26,1));
+		return *l=5, (AS2 (mov,__tmp_reg__,r27) CR_TAB
+			      AS2 (st,X,r26)            CR_TAB
+			      AS2 (adiw,r26,1)          CR_TAB
+			      AS2 (st,X,__tmp_reg__)    CR_TAB
+			      AS2 (sbiw,r26,1));
             }
           else
             {
@@ -2573,9 +2650,10 @@ out_movhi_mr_r (insn, op, l)
   else if (GET_CODE (base) == PLUS)
     {
       int disp = INTVAL (XEXP (base, 1));
+      reg_base = REGNO (XEXP (base, 0));
       if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
-	  if (REGNO (XEXP (base, 0)) != REG_Y)
+	  if (reg_base != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    {
@@ -2595,6 +2673,26 @@ out_movhi_mr_r (insn, op, l)
 			   AS2 (subi, r28, lo8(%4))  CR_TAB
 			   AS2 (sbci, r29, hi8(%4)));
 	    }
+	}
+      if (reg_base == REG_X)
+	{
+	  /* (X + d) = R */
+	  if (reg_src == REG_X)
+	    {
+	      *l = 7;
+	      return (AS2 (mov,__tmp_reg__,r26)  CR_TAB
+		      AS2 (mov,__zero_reg__,r27) CR_TAB
+		      AS2 (adiw,r26,%o0)         CR_TAB
+		      AS2 (st,X+,__tmp_reg__)    CR_TAB
+		      AS2 (st,X,__zero_reg__)    CR_TAB
+		      AS1 (clr,__zero_reg__)     CR_TAB
+		      AS2 (sbiw,r26,%o0+1));
+	    }
+	  *l = 4;
+	  return (AS2 (adiw,r26,%o0) CR_TAB
+		  AS2 (st,X+,%A1)    CR_TAB
+		  AS2 (st,X,%B1)     CR_TAB
+		  AS2 (sbiw,r26,%o0+1));
 	}
       return *l=2, (AS2 (std,%A0,%A1)    CR_TAB
 		    AS2 (std,%B0,%B1));
