@@ -18,6 +18,9 @@
 	Make them static.
 	* c-tree.h: Remove the corresponding prototypes.
 
+	* explow.c (round_push): Make it static.
+	* expr.h: Remove the corresponding prototype.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* function.c (expand_function_end): Remove an "if" statement
