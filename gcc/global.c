@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "regs.h"
 #include "insn-config.h"
+#include "reload.h"
 #include "output.h"
 #include "toplev.h"
 
@@ -268,6 +269,9 @@ static void mark_reg_death	PROTO((rtx));
 static void mark_reg_live_nc	PROTO((int, enum machine_mode));
 static void set_preference	PROTO((rtx, rtx));
 static void dump_conflicts	PROTO((FILE *));
+static void reg_becomes_live	PROTO((rtx, rtx));
+static void reg_dies		PROTO((int, enum machine_mode));
+static void build_insn_chain	PROTO((rtx));
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
@@ -573,7 +577,10 @@ global_alloc (file)
 	 for the sake of debugging information.  */
   if (n_basic_blocks > 0)
 #endif
-    retval = reload (get_insns (), 1, file);
+    {
+      build_insn_chain (get_insns ());
+      retval = reload (get_insns (), 1, file);
+    }
 
   free (conflicts);
   return retval;
@@ -1646,6 +1653,135 @@ mark_elimination (from, to)
 	CLEAR_REGNO_REG_SET (basic_block_live_at_start[i], from);
 	SET_REGNO_REG_SET (basic_block_live_at_start[i], to);
       }
+}
+
+/* Used for communication between the following functions.  Holds the
+   current life information.  */
+static regset live_relevant_regs;
+
+/* Record in live_relevant_regs that register REG became live.  This
+   is called via note_stores.  */
+static void
+reg_becomes_live (reg, setter)
+     rtx reg;
+     rtx setter ATTRIBUTE_UNUSED;
+{
+  int regno;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+
+  if (GET_CODE (reg) != REG)
+    return;
+  
+  regno = REGNO (reg);
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      while (nregs-- > 0)
+	SET_REGNO_REG_SET (live_relevant_regs, regno++);
+    }
+  else if (reg_renumber[regno] >= 0)
+    SET_REGNO_REG_SET (live_relevant_regs, regno);
+}
+
+/* Record in live_relevant_regs that register REGNO died.  */
+static void
+reg_dies (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      int nregs = HARD_REGNO_NREGS (regno, mode);
+      while (nregs-- > 0)
+	CLEAR_REGNO_REG_SET (live_relevant_regs, regno++);
+    }
+  else
+    CLEAR_REGNO_REG_SET (live_relevant_regs, regno);
+}
+
+/* Walk the insns of the current function and build reload_insn_chain,
+   and record register life information.  */
+static void
+build_insn_chain (first)
+     rtx first;
+{
+  struct insn_chain **p = &reload_insn_chain;
+  struct insn_chain *prev = 0;
+  int b = 0;
+
+  live_relevant_regs = ALLOCA_REG_SET ();
+
+  for (; first; first = NEXT_INSN (first))
+    {
+      struct insn_chain *c;
+
+      if (first == basic_block_head[b])
+	{
+	  int i;
+	  CLEAR_REG_SET (live_relevant_regs);
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (REGNO_REG_SET_P (basic_block_live_at_start[b], i)
+		&& ! TEST_HARD_REG_BIT (eliminable_regset, i))
+	      SET_REGNO_REG_SET (live_relevant_regs, i);
+
+	  for (; i < max_regno; i++)
+	    if (reg_renumber[i] >= 0
+		&& REGNO_REG_SET_P (basic_block_live_at_start[b], i))
+	      SET_REGNO_REG_SET (live_relevant_regs, i);
+	}
+
+      if (GET_CODE (first) != NOTE && GET_CODE (first) != BARRIER)
+	{
+	  c = new_insn_chain ();
+	  c->prev = prev;
+	  prev = c;
+	  *p = c;
+	  p = &c->next;
+	  c->insn = first;
+	  c->block = b;
+
+	  COPY_REG_SET (c->live_before, live_relevant_regs);
+
+	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
+	    {
+	      rtx link;
+
+	      /* Mark the death of everything that dies in this instruction.  */
+
+	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
+		if (REG_NOTE_KIND (link) == REG_DEAD
+		    && GET_CODE (XEXP (link, 0)) == REG)
+		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)));
+
+	      /* Mark everything born in this instruction as live.  */
+
+	      note_stores (PATTERN (first), reg_becomes_live);
+	    }
+
+	  /* Remember which registers are live at the end of the insn, before
+	     killing those with REG_UNUSED notes.  */
+	  COPY_REG_SET (c->live_after, live_relevant_regs);
+
+	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
+	    {
+	      rtx link;
+
+	      /* Mark anything that is set in this insn and then unused as dying.  */
+
+	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
+		if (REG_NOTE_KIND (link) == REG_UNUSED
+		    && GET_CODE (XEXP (link, 0)) == REG)
+		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)));
+	    }
+	}
+
+      if (first == basic_block_end[b])
+	b++;
+    }
+  FREE_REG_SET (live_relevant_regs);
+  *p = 0;
 }
 
 /* Print debugging trace information if -greg switch is given,
