@@ -1,3 +1,11 @@
+Mon Jul  2 23:14:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (try_redirect_by_replacing_jump): Remove cc0 setter.
+
+	* flow.c (forwarder_block_p): Fix for fallthru blocks.
+	(try_redirect_by_replacing_jump): Update properly the count
+	and frequency information.
+
 Mon Jul  2 14:20:13 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (dump_file_index): Move SSA dumps just after first
