@@ -1476,8 +1476,18 @@ expand_call (exp, target, ignore)
 
   /* Get the function to call, in the form of RTL.  */
   if (fndecl)
-    /* Get a SYMBOL_REF rtx for the function address.  */
-    funexp = XEXP (DECL_RTL (fndecl), 0);
+    {
+      /* If this is the first use of the function, see if we need to
+	 make an external definition for it.  */
+      if (! TREE_USED (fndecl))
+	{
+	  assemble_external (fndecl);
+	  TREE_USED (fndecl) = 1;
+	}
+
+      /* Get a SYMBOL_REF rtx for the function address.  */
+      funexp = XEXP (DECL_RTL (fndecl), 0);
+    }
   else
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
