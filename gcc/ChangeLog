@@ -1,3 +1,10 @@
+Fri Apr 24 16:11:47 1998  John Carr  <jfc@mit.edu>
+
+	* expr.c (expand_builtin, case MEMSET): Set MEM_IN_STRUCT_P
+	if the argument is the address of a structure or array.
+
+	* configure.in: Enable Haifa scheduler by default for SPARC.
+
 Fri Apr 24 20:55:47 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* cse.c (cse_set_around_loop): Don't do optimization when
