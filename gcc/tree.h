@@ -1053,13 +1053,13 @@ struct tree_real_cst GTY(())
 
 /* In a STRING_CST */
 #define TREE_STRING_LENGTH(NODE) (STRING_CST_CHECK (NODE)->string.length)
-#define TREE_STRING_POINTER(NODE) (STRING_CST_CHECK (NODE)->string.pointer)
+#define TREE_STRING_POINTER(NODE) (STRING_CST_CHECK (NODE)->string.str)
 
 struct tree_string GTY(())
 {
   struct tree_common common;
   int length;
-  const char *pointer;
+  const char str[1];
 };
 
 /* In a COMPLEX_CST node.  */

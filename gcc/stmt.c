@@ -267,7 +267,8 @@ expand_asm (tree string, int vol)
   if (TREE_CODE (string) == ADDR_EXPR)
     string = TREE_OPERAND (string, 0);
 
-  body = gen_rtx_ASM_INPUT (VOIDmode, TREE_STRING_POINTER (string));
+  body = gen_rtx_ASM_INPUT (VOIDmode,
+			    ggc_strdup (TREE_STRING_POINTER (string)));
 
   MEM_VOLATILE_P (body) = vol;
 
@@ -851,7 +852,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
   body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
 				: GET_MODE (output_rtx[0])),
-			       TREE_STRING_POINTER (string),
+			       ggc_strdup (TREE_STRING_POINTER (string)),
 			       empty_string, 0, argvec, constraintvec,
 			       locus);
 
@@ -932,7 +933,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       ASM_OPERANDS_INPUT (body, i) = op;
 
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
-	= gen_rtx_ASM_INPUT (TYPE_MODE (type), constraints[i + noutputs]);
+	= gen_rtx_ASM_INPUT (TYPE_MODE (type), 
+			     ggc_strdup (constraints[i + noutputs]));
 
       if (decl_conflicts_with_clobbers_p (val, clobbered_regs))
 	clobber_conflict_found = 1;
@@ -966,7 +968,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
   if (noutputs == 1 && nclobbers == 0)
     {
-      ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
+      ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = ggc_strdup (constraints[0]);
       emit_insn (gen_rtx_SET (VOIDmode, output_rtx[0], body));
     }
 
@@ -994,9 +996,9 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 			   output_rtx[i],
 			   gen_rtx_ASM_OPERANDS
 			   (GET_MODE (output_rtx[i]),
-			    TREE_STRING_POINTER (string),
-			    constraints[i], i, argvec, constraintvec,
-			    locus));
+			    ggc_strdup (TREE_STRING_POINTER (string)),
+			    ggc_strdup (constraints[i]),
+			    i, argvec, constraintvec, locus));
 
 	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
 	}

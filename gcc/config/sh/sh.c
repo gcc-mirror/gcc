@@ -7161,8 +7161,8 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      sp_switch = gen_rtx_SYMBOL_REF (VOIDmode,
-				      TREE_STRING_POINTER (TREE_VALUE (args)));
+      char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
+      sp_switch = gen_rtx_SYMBOL_REF (VOIDmode, s);
     }
 
   return NULL_TREE;

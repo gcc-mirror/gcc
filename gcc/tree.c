@@ -159,17 +159,12 @@ decl_assembler_name (tree decl)
   return DECL_CHECK (decl)->decl.assembler_name;
 }
 
-/* Compute the number of bytes occupied by a tree with code CODE.  This
-   function cannot be used for TREE_VEC or PHI_NODE codes, which are of
-   variable length.  */
+/* Compute the number of bytes occupied by a tree with code CODE.
+   This function cannot be used for TREE_VEC, PHI_NODE, or STRING_CST
+   codes, which are of variable length.  */
 size_t
 tree_code_size (enum tree_code code)
 {
-  /* We can't state the size of a TREE_VEC or PHI_NODE
-     without knowing how many elements it will have.  */
-  gcc_assert (code != TREE_VEC);
-  gcc_assert (code != PHI_NODE);
-
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_declaration:  /* A decl node */
@@ -194,7 +189,7 @@ tree_code_size (enum tree_code code)
 	case REAL_CST:		return sizeof (struct tree_real_cst);
 	case COMPLEX_CST:	return sizeof (struct tree_complex);
 	case VECTOR_CST:	return sizeof (struct tree_vector);
-	case STRING_CST:	return sizeof (struct tree_string);
+	case STRING_CST:	gcc_unreachable ();
 	default:
 	  return lang_hooks.tree_size (code);
 	}
@@ -208,7 +203,8 @@ tree_code_size (enum tree_code code)
 	case ERROR_MARK:
 	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
 
-	case PHI_NODE:		
+	case TREE_VEC:
+	case PHI_NODE:		gcc_unreachable ();
 
 	case SSA_NAME:		return sizeof (struct tree_ssa_name);
 
@@ -240,6 +236,9 @@ tree_size (tree node)
     case TREE_VEC:
       return (sizeof (struct tree_vec)
 	      + (TREE_VEC_LENGTH (node) - 1) * sizeof(char *));
+
+    case STRING_CST:
+      return sizeof (struct tree_string) + TREE_STRING_LENGTH (node) - 1;
 
     default:
       return tree_code_size (code);
@@ -719,10 +718,23 @@ build_real_from_int_cst (tree type, tree i)
 tree
 build_string (int len, const char *str)
 {
-  tree s = make_node (STRING_CST);
+  tree s;
+  size_t length;
+  
+  length = len + sizeof (struct tree_string);
 
+#ifdef GATHER_STATISTICS
+  tree_node_counts[(int) c_kind]++;
+  tree_node_sizes[(int) c_kind] += length;
+#endif  
+
+  s = ggc_alloc_tree (length);
+
+  memset (s, 0, sizeof (struct tree_common));
+  TREE_SET_CODE (s, STRING_CST);
   TREE_STRING_LENGTH (s) = len;
-  TREE_STRING_POINTER (s) = ggc_alloc_string (str, len);
+  memcpy ((char *) TREE_STRING_POINTER (s), str, len);
+  ((char *) TREE_STRING_POINTER (s))[len] = '\0';
 
   return s;
 }
