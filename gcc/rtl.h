@@ -1206,7 +1206,7 @@ extern int memory_address_p		PROTO ((enum machine_mode, rtx));
 extern int constrain_operands		PROTO ((int, int));
 extern int mode_dependent_address_p	PROTO ((rtx));
 extern void init_recog_no_volatile	PROTO ((void));
-extern int offsettable_memref_pq	PROTO ((rtx));
+extern int offsettable_memref_p		PROTO ((rtx));
 extern int offsettable_nonstrict_memref_p PROTO ((rtx));
 extern int reg_fits_class_p		PROTO ((rtx, register enum reg_class,
 						int, enum machine_mode));

@@ -40,6 +40,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -415,8 +418,10 @@ static void instantiate_decl	PROTO((rtx, int, int));
 static int instantiate_virtual_regs_1 PROTO((rtx *, rtx, int));
 static void delete_handlers	PROTO((void));
 static void pad_to_arg_alignment PROTO((struct args_size *, int));
+#ifndef ARGS_GROW_DOWNWARD
 static void pad_below		PROTO((struct args_size *, enum  machine_mode,
 				       tree));
+#endif
 static tree round_down		PROTO((tree, int));
 static rtx round_trampoline_addr PROTO((rtx));
 static tree blocks_nreverse	PROTO((tree));
@@ -4607,6 +4612,7 @@ pad_to_arg_alignment (offset_ptr, boundary)
     }
 }
 
+#ifndef ARGS_GROW_DOWNWARD
 static void
 pad_below (offset_ptr, passed_mode, sizetree)
      struct args_size *offset_ptr;
@@ -4634,6 +4640,7 @@ pad_below (offset_ptr, passed_mode, sizetree)
 	}
     }
 }
+#endif
 
 static tree
 round_down (value, divisor)
@@ -6021,7 +6028,7 @@ reposition_prologue_and_epilogue_notes (f)
 		     move it to just after the last prologue insn.  */
 		  if (note == 0)
 		    {
-		      for (note = insn; note = NEXT_INSN (note);)
+		      for (note = insn; (note = NEXT_INSN (note));)
 			if (GET_CODE (note) == NOTE
 			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
 			  break;
@@ -6059,7 +6066,7 @@ reposition_prologue_and_epilogue_notes (f)
 		     move it to just before the first epilogue insn.  */
 		  if (note == 0)
 		    {
-		      for (note = insn; note = PREV_INSN (note);)
+		      for (note = insn; (note = PREV_INSN (note));)
 			if (GET_CODE (note) == NOTE
 			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
 			  break;

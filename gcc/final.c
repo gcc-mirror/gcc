@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -583,7 +583,7 @@ app_enable ()
 {
   if (! app_on)
     {
-      fprintf (asm_out_file, ASM_APP_ON);
+      fputs (ASM_APP_ON, asm_out_file);
       app_on = 1;
     }
 }
@@ -596,7 +596,7 @@ app_disable ()
 {
   if (app_on)
     {
-      fprintf (asm_out_file, ASM_APP_OFF);
+      fputs (ASM_APP_OFF, asm_out_file);
       app_on = 0;
     }
 }
@@ -1099,7 +1099,9 @@ profile_function (file)
 #else
 #if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
-    ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_REGNUM);
+    {
+      ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_REGNUM);
+    }
 #endif
 #endif
 
@@ -1109,7 +1111,9 @@ profile_function (file)
 #else
 #if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
-    ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_REGNUM);
+    {
+      ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_REGNUM);
+    }
 #endif
 #endif
 
@@ -1121,7 +1125,9 @@ profile_function (file)
 #else
 #if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
-    ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_REGNUM);
+    {
+      ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_REGNUM);
+    }
 #endif
 #endif
 
@@ -1131,7 +1137,9 @@ profile_function (file)
 #else
 #if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
-    ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_REGNUM);
+    {
+      ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_REGNUM);
+    }
 #endif
 #endif
 }
@@ -1148,7 +1156,7 @@ final_end_function (first, file, optimize)
 {
   if (app_on)
     {
-      fprintf (file, ASM_APP_OFF);
+      fputs (ASM_APP_OFF, file);
       app_on = 0;
     }
 
@@ -1476,7 +1484,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	break;			/* An insn that was "deleted" */
       if (app_on)
 	{
-	  fprintf (file, ASM_APP_OFF);
+	  fputs (ASM_APP_OFF, file);
 	  app_on = 0;
 	}
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
@@ -1660,7 +1668,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
       if (app_on)
 	{
-	  fprintf (file, ASM_APP_OFF);
+	  fputs (ASM_APP_OFF, file);
 	  app_on = 0;
 	}
       if (NEXT_INSN (insn) != 0
@@ -1700,7 +1708,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
     default:
       {
-	register rtx body = PATTERN (insn), set;
+	register rtx body = PATTERN (insn);
 	int insn_code_number;
 	char *template;
 #ifdef HAVE_cc0
@@ -1740,7 +1748,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	    if (app_on)
 	      {
-		fprintf (file, ASM_APP_OFF);
+		fputs (ASM_APP_OFF, file);
 		app_on = 0;
 	      }
 
@@ -1792,7 +1800,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      break;
 	    if (! app_on)
 	      {
-		fprintf (file, ASM_APP_ON);
+		fputs (ASM_APP_ON, file);
 		app_on = 1;
 	      }
 	    fprintf (asm_out_file, "\t%s\n", XSTR (body, 0));
@@ -1813,7 +1821,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	    if (! app_on)
 	      {
-		fprintf (file, ASM_APP_ON);
+		fputs (ASM_APP_ON, file);
 		app_on = 1;
 	      }
 
@@ -1832,7 +1840,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	if (prescan <= 0 && app_on)
 	  {
-	    fprintf (file, ASM_APP_OFF);
+	    fputs (ASM_APP_OFF, file);
 	    app_on = 0;
 	  }
 

@@ -5887,9 +5887,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	/* If domain is empty, answer is no.  Likewise if index is constant
 	   and out of bounds.  */
-	if ((TREE_CODE (set_high_bound) == INTEGER_CST
+	if (((TREE_CODE (set_high_bound) == INTEGER_CST
 	     && TREE_CODE (set_low_bound) == INTEGER_CST
-	     && tree_int_cst_lt (set_high_bound, set_low_bound)
+	     && tree_int_cst_lt (set_high_bound, set_low_bound))
 	     || (TREE_CODE (index) == INTEGER_CST
 		 && TREE_CODE (set_low_bound) == INTEGER_CST
 		 && tree_int_cst_lt (index, set_low_bound))

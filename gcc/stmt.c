@@ -4073,7 +4073,7 @@ add_case_node (low, high, label, duplicate)
 	      if (r->balance < 0)
 		{
 		  /* R-Rotation */
-		  if (p->left = s = r->right)
+		  if ((p->left = s = r->right))
 		    s->parent = p;
 
 		  r->right = p;
@@ -4082,7 +4082,7 @@ add_case_node (low, high, label, duplicate)
 		  s = p->parent;
 		  p->parent = r;
 
-		  if (r->parent = s)
+		  if ((r->parent = s))
 		    {
 		      if (s->left == p)
 			s->left = r;
@@ -4100,11 +4100,11 @@ add_case_node (low, high, label, duplicate)
 		  int b2;
 		  struct case_node *t = r->right;
 
-		  if (p->left = s = t->right)
+		  if ((p->left = s = t->right))
 		    s->parent = p;
 
 		  t->right = p;
-		  if (r->right = s = t->left)
+		  if ((r->right = s = t->left))
 		    s->parent = r;
 
 		  t->left = r;
@@ -4118,7 +4118,7 @@ add_case_node (low, high, label, duplicate)
 		  p->parent = t;
 		  r->parent = t;
 
-		  if (t->parent = s)
+		  if ((t->parent = s))
 		    {
 		      if (s->left == p)
 			s->left = t;
@@ -4152,7 +4152,7 @@ add_case_node (low, high, label, duplicate)
 		{
 		  /* L-Rotation */
 
-		  if (p->right = s = r->left)
+		  if ((p->right = s = r->left))
 		    s->parent = p;
 
 		  r->left = p;
@@ -4160,7 +4160,7 @@ add_case_node (low, high, label, duplicate)
 		  r->balance = 0;
 		  s = p->parent;
 		  p->parent = r;
-		  if (r->parent = s)
+		  if ((r->parent = s))
 		    {
 		      if (s->left == p)
 			s->left = r;
@@ -4179,12 +4179,12 @@ add_case_node (low, high, label, duplicate)
 		  int b2;
 		  struct case_node *t = r->left;
 
-		  if (p->right = s = t->left)
+		  if ((p->right = s = t->left))
 		    s->parent = p;
 
 		  t->left = p;
 
-		  if (r->left = s = t->right)
+		  if ((r->left = s = t->right))
 		    s->parent = r;
 
 		  t->right = r;
@@ -4198,7 +4198,7 @@ add_case_node (low, high, label, duplicate)
 		  p->parent = t;
 		  r->parent = t;
 
-		  if (t->parent = s)
+		  if ((t->parent = s))
 		    {
 		      if (s->left == p)
 			s->left = t;
@@ -4981,7 +4981,7 @@ case_tree2list (node, right)
     right = case_tree2list (node->right, right);
 
   node->right = right;
-  if (left = node->left)
+  if ((left = node->left))
     {
       node->left = 0;
       return case_tree2list (left, node);
