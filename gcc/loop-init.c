@@ -27,7 +27,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "cfglayout.h"
-#include "gcov-io.h"
 #include "profile.h"
 
 /* Initialize loop optimizer.  */

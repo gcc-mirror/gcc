@@ -135,24 +135,30 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    merged.
 
    This file is included by both the compiler, gcov tools and the
-   library.  The IN_LIBGCC2 define distinguishes these cases.  When
-   IN_LIBGCC2 is nonzero, we're building libgcc2 for the target and
-   know the compiler is (the just built) gcc.  Otherwise we're
-   generating code for the host, and the compiler may or may not be
-   gcc.  In this latter case, you must ensure that 'gcov_type' is
-   typedefed to something suitable (unsigned HOST_WIDEST_INT is
-   usually what you want).  */
+   runtime support library libgcov. IN_LIBGCOV and IN_GCOV are used to
+   distinguish which case is which.  If IN_LIBGCOV is non-zero,
+   libgcov is being built. If IN_GCOV is non-zero, the gcov tools are
+   being built. Otherwise the compiler is being built. IN_GCOV may be
+   positive or negative. If positive, we are compiling a tool that
+   requires additional functions (see the code for knowledge of what
+   those functions are).  */
 
 #ifndef GCC_GCOV_IO_H
 #define GCC_GCOV_IO_H
 
-#if IN_LIBGCC2
+#if IN_LIBGCOV
 #if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
 typedef long gcov_type;
 #else
 typedef long long gcov_type;
 #endif
-#endif /* IN_LIBGCC2 */
+#endif /* IN_LIBGCOV */
+#if IN_GCOV
+typedef HOST_WIDEST_INT gcov_type;
+#if IN_GCOV > 0
+#include <sys/types.h>
+#endif
+#endif
 
 /* File suffixes.  */
 #define GCOV_DATA_SUFFIX ".da"
@@ -228,7 +234,7 @@ struct counter_section
   unsigned n_counters;	/* Number of counters in the section.  */
 };
 
-#if IN_LIBGCC2
+#if IN_LIBGCOV
 /* Information about section of counters for an object file.  */
 struct counter_section_data
 {
@@ -272,139 +278,369 @@ extern void __gcov_flush (void);
 
 /* Since this file is used in both host and target files, and we don't
    include ansidecl.h in target files, provide some necessary macros.  */
-#ifndef PARAMS
-# define PARAMS(X) X
-#endif
 #ifndef ATTRIBUTE_UNUSED
 # define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif
 
-#endif /* IN_LIBGCC2 */
+#endif /* IN_LIBGCOV */
+
+/* Because small reads and writes, interspersed with seeks cause lots
+   of disk activity, we buffer the entire count files.  */
+
+static FILE *gcov_file;
+static size_t gcov_position;
+static size_t gcov_length;
+static unsigned char *gcov_buffer;
+static size_t gcov_alloc;
+static int gcov_modified;
+static int gcov_errored = 1;
 
 /* Functions for reading and writing gcov files.  */
-static int gcov_write_unsigned PARAMS((FILE *, unsigned))
-     ATTRIBUTE_UNUSED;
-static int gcov_write_counter PARAMS((FILE *, gcov_type))
-     ATTRIBUTE_UNUSED;
-static int gcov_write_string PARAMS((FILE *, const char *, unsigned))
-     ATTRIBUTE_UNUSED;
-static int gcov_read_unsigned PARAMS((FILE *, unsigned *))
-     ATTRIBUTE_UNUSED;
-static int gcov_read_counter PARAMS((FILE *, gcov_type *))
-     ATTRIBUTE_UNUSED;
-#if !IN_LIBGCC2
-static int gcov_read_string PARAMS((FILE *, char **, unsigned *))
-     ATTRIBUTE_UNUSED;
+static int gcov_open (const char */*name*/, int /*truncate*/);
+static int gcov_close (void);
+#if !IN_GCOV
+static unsigned char *gcov_write_bytes (unsigned);
+static int gcov_write_unsigned (unsigned);
+#if IN_LIBGCOV
+static int gcov_write_counter (gcov_type);
 #endif
-static int gcov_read_summary PARAMS ((FILE *, struct gcov_summary *))
-     ATTRIBUTE_UNUSED;
-#if IN_LIBGCC2
-static int gcov_write_summary PARAMS ((FILE *, unsigned,
-				       const struct gcov_summary *))
-     ATTRIBUTE_UNUSED;
+static int gcov_write_string (const char *);
+static unsigned long gcov_reserve_length (void);
+static int gcov_write_length (unsigned long /*position*/);
+#if IN_LIBGCOV
+static int gcov_write_summary (unsigned, const struct gcov_summary *);
 #endif
-#define gcov_save_position(STREAM) \
- 	da_file_position (STREAM)
-#define gcov_reserve_length(STREAM) \
-	(gcov_write_unsigned (STREAM, 0) ? 0 : da_file_position (STREAM) - 4)
-static int gcov_write_length PARAMS((FILE *, long))
-     ATTRIBUTE_UNUSED;
-#define gcov_resync(STREAM, BASE, LENGTH) \
-	da_file_seek (STREAM, BASE + (long)LENGTH, SEEK_SET)
-#define gcov_skip(STREAM, LENGTH) \
-	da_file_seek (STREAM, LENGTH, SEEK_CUR)
-#define gcov_skip_string(STREAM, LENGTH) \
-	da_file_seek (STREAM, (LENGTH) + 4 - ((LENGTH) & 3), SEEK_CUR)
-#if IN_LIBGCC2
-static FILE *da_file_open PARAMS ((const char *, int *));
-static int da_file_close PARAMS ((void));
-static int da_file_eof PARAMS ((void));
-static int da_file_error PARAMS ((void));
+#endif /* !IN_GCOV */
+static const unsigned char *gcov_read_bytes (unsigned);
+static int gcov_read_unsigned (unsigned *);
+static int gcov_read_counter (gcov_type *);
+#if !IN_LIBGCOV
+static int gcov_read_string (char **);
 #endif
-static unsigned long da_file_position PARAMS ((FILE *));
-static int da_file_seek PARAMS ((FILE *, long, int));
-static size_t da_file_write PARAMS ((const void *, size_t, size_t, FILE *));
-static size_t da_file_read PARAMS ((void *, size_t, size_t, FILE *));
+static int gcov_read_summary (struct gcov_summary *);
+static __inline__ unsigned long gcov_save_position (void);
+static int gcov_resync (unsigned long /*base*/, unsigned /*length */);
+static unsigned long gcov_seek_end (void);
+static int gcov_skip (unsigned /*length*/);
+static int gcov_skip_string (unsigned /*length*/);
+static int gcov_ok (void);
+static int gcov_error (void);
+static int gcov_eof (void);
+#if IN_GCOV > 0
+static time_t gcov_time (void);
+#endif
 
-/* Write VALUE to coverage file FILE.  Return nonzero if failed due to
+/* Open a gcov file. NAME is the name of the file to open and MODE
+   indicates whether a new file should be created, or an existing file
+   opened for modification. If MODE is >= 0 an existing file will be
+   opened, if possible, and if MODE is <= 0, a new file will be
+   created. Use MODE=0 to attempt to reopen an existing file and then
+   fall back on creating a new one.  Return zero on failure, >0 on
+   opening an existing file and <0 on creating a new one.  */
+
+static int
+gcov_open (const char *name, int mode)
+{
+  int result = 1;
+  size_t alloc = 1024;
+#if defined (TARGET_HAS_F_SETLKW) && IN_LIBGCOV
+  struct flock s_flock;
+
+  s_flock.l_type = F_WRLCK;
+  s_flock.l_whence = SEEK_SET;
+  s_flock.l_start = 0;
+  s_flock.l_len = 0; /* Until EOF.  */
+  s_flock.l_pid = getpid ();
+#endif
+  
+  if (gcov_file)
+    abort ();
+  gcov_position = gcov_length = 0;
+  gcov_errored = gcov_modified = 0;
+  if (mode >= 0)
+    gcov_file = fopen (name, "r+b");
+  if (!gcov_file && mode <= 0)
+    {
+      result = -1;
+      gcov_file = fopen (name, "w+b");
+    }
+  if (!gcov_file)
+    return 0;
+
+#if defined (TARGET_HAS_F_SETLKW) && IN_LIBGCOV
+  while (fcntl (fileno (gcov_file), F_SETLKW, &s_flock)
+	 && errno == EINTR)
+    continue;
+#endif
+
+  if (result >= 0)
+    {
+      if (fseek (gcov_file, 0, SEEK_END))
+	{
+	  fclose (gcov_file);
+	  gcov_file = 0;
+	  return 0;
+	}
+      gcov_length = ftell (gcov_file);
+      fseek (gcov_file, 0, SEEK_SET);
+      alloc += gcov_length;
+    }
+  if (alloc > gcov_alloc)
+    {
+      if (gcov_buffer)
+	free (gcov_buffer);
+      gcov_alloc = alloc;
+#if IN_LIBGCOV
+      gcov_buffer = malloc (gcov_alloc);
+      if (!gcov_buffer)
+	{
+	  fclose (gcov_file);
+	  gcov_file = 0;
+	  gcov_length = 0;
+	  gcov_alloc = 0;
+	  return 0;
+	}
+#else
+      gcov_buffer = xmalloc (gcov_alloc);
+#endif
+    }
+  if (result >= 0 && fread (gcov_buffer, gcov_length, 1, gcov_file) != 1)
+    {
+      fclose (gcov_file);
+      gcov_file = 0;
+      gcov_length = 0;
+      return 0;
+    }
+  return result;
+}
+
+/* Close the current gcov file. Flushes data to disk. Returns nonzero
+   on failure or error flag set.  */
+
+static int
+gcov_close ()
+{
+  int result = 0;
+  
+  if (gcov_file)
+    {
+      if (gcov_modified
+	  && (fseek (gcov_file, 0, SEEK_SET)
+	      || fwrite (gcov_buffer, gcov_length, 1, gcov_file) != 1))
+	result = -1;
+      fclose (gcov_file);
+      gcov_file = 0;
+      gcov_length = 0;
+    }
+  return result || gcov_errored;
+}
+
+#if !IN_GCOV
+/* Allocate space to write BYTES bytes to the gcov file. Return a
+   pointer to those bytes, or NULL on failure.  */
+
+static unsigned char *
+gcov_write_bytes (unsigned bytes)
+{
+  char unsigned *result;
+
+  if (gcov_position + bytes > gcov_alloc)
+    {
+      size_t new_size = (gcov_alloc + bytes) * 3 / 2;
+
+      if (!gcov_buffer)
+	return 0;
+#if IN_LIBGCOV
+      result = realloc (gcov_buffer, new_size);
+      if (!result)
+	{
+	  free (gcov_buffer);
+	  gcov_buffer = 0;
+	  gcov_alloc = 0;
+	  gcov_position = gcov_length = 0;
+	  return 0;
+	}
+#else
+      result = xrealloc (gcov_buffer, new_size);
+#endif
+      gcov_alloc = new_size;
+      gcov_buffer = result;
+    }
+  
+  result = &gcov_buffer[gcov_position];
+  gcov_position += bytes;
+  gcov_modified = 1;
+  if (gcov_position > gcov_length)
+    gcov_length = gcov_position;
+  return result;
+}
+
+/* Write VALUE to coverage file.  Return nonzero if failed due to
    file i/o error, or value error.  */
 
 static int
-gcov_write_unsigned (file, value)
-     FILE *file;
-     unsigned value;
+gcov_write_unsigned (unsigned value)
 {
-  char buffer[4];
+  unsigned char *buffer = gcov_write_bytes (4);
   unsigned ix;
 
-  for (ix = sizeof (buffer); ix--; )
+  if (!buffer)
+    return 1;
+  
+  for (ix = 4; ix--; )
     {
       buffer[ix] = value;
       value >>= 8;
     }
-  return ((sizeof (value) > sizeof (buffer) && value)
-	  || da_file_write (buffer, 1, sizeof (buffer), file) != sizeof (buffer));
+  return sizeof (value) > 4 && value;
 }
 
-/* Write VALUE to coverage file FILE.  Return nonzero if failed due to
+/* Write VALUE to coverage file.  Return nonzero if failed due to
    file i/o error, or value error.  Negative values are not checked
    here -- they are checked in gcov_read_counter.  */
 
+#if IN_LIBGCOV
 static int
-gcov_write_counter (file, value)
-     FILE *file;
-     gcov_type value;
+gcov_write_counter (gcov_type value)
 {
-  char buffer[8];
+  unsigned char *buffer = gcov_write_bytes (8);
   unsigned ix;
 
-  for (ix = sizeof (buffer); ix--; )
+  if (!buffer)
+    return 1;
+  
+  for (ix = 8; ix--; )
     {
       buffer[ix] = value;
       value >>= 8;
     }
-  return ((sizeof (value) > sizeof (buffer) && value != 0 && value != -1)
-	  || da_file_write (buffer, 1, sizeof (buffer), file) != sizeof (buffer));
+  return sizeof (value) > 8 && value;
 }
+#endif /* IN_LIBGCOV */
 
-/* Write VALUE to coverage file FILE.  Return nonzero if failed due to
+/* Write VALUE to coverage file.  Return nonzero if failed due to
    file i/o error, or value error.  */
 
 static int
-gcov_write_string (file, string, length)
-     FILE *file;
-     unsigned length;
-     const char *string;
+gcov_write_string (const char *string)
 {
-  unsigned pad = 0;
-  unsigned rem = 4 - (length & 3);
-
   if (string)
-    return (gcov_write_unsigned (file, length)
-	    || da_file_write (string, 1, length, file) != length
-	    || da_file_write (&pad, 1, rem, file) != rem);
+    {
+      unsigned length = strlen (string);
+      unsigned pad = 0;
+      unsigned rem = 4 - (length & 3);
+      unsigned char *buffer;
+
+      if (gcov_write_unsigned (length))
+	return 1;
+      buffer = gcov_write_bytes (length + rem);
+      if (!buffer)
+	return 1;
+      memcpy (buffer, string, length);
+      memcpy (buffer + length, &pad, rem);
+      return 0;
+    }
   else
-    return gcov_write_unsigned (file, 0);
+    return gcov_write_unsigned (0);
 }
 
-/* Read *VALUE_P from coverage file FILE.  Return nonzero if failed
+/* Allocate space to write a record tag length.  Return a value to be
+   used for gcov_write_length.  */
+
+static unsigned long
+gcov_reserve_length (void)
+{
+  unsigned long result = gcov_position;
+  unsigned char *buffer = gcov_write_bytes (4);
+
+  if (!buffer)
+    return 0;
+  memset (buffer, 0, 4);
+  return result;
+}
+
+/* Write a record length at PLACE.  The current file position is the
+   end of the record, and is restored before returning.  Returns
+   nonzero on failure.  */
+
+static int
+gcov_write_length (unsigned long position)
+{
+  unsigned length = gcov_position - position - 4;
+  unsigned char *buffer = &gcov_buffer[position];
+  unsigned ix;
+
+  if (!position)
+    return 1;
+  for (ix = 4; ix--; )
+    {
+      buffer[ix] = length;
+      length >>= 8;
+    }
+  return 0;
+}
+
+#if IN_LIBGCOV
+/* Write a summary structure to the gcov file.  */
+
+static int
+gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
+{
+  volatile unsigned long base; /* volatile is necessary to work around
+				  a compiler bug. */
+
+  if (gcov_write_unsigned (tag))
+    return 1;
+  base = gcov_reserve_length ();
+  if (gcov_write_unsigned (summary->checksum))
+    return 1;
+  if (gcov_write_unsigned (summary->runs)
+      || gcov_write_unsigned (summary->arcs))
+    return 1;
+  if (gcov_write_counter (summary->arc_sum)
+      || gcov_write_counter (summary->arc_max_one)
+      || gcov_write_counter (summary->arc_max_sum)
+      || gcov_write_counter (summary->arc_sum_max))
+    return 1;
+  if (gcov_write_length (base))
+    return 1;
+  return 0;
+}
+#endif /* IN_LIBGCOV */
+
+#endif /*!IN_GCOV */
+
+/* Return a pointer to read BYTES bytes from the gcov file. Returns
+   NULL on failure (read past EOF). */
+
+static const unsigned char *
+gcov_read_bytes (unsigned bytes)
+{
+  const unsigned char *result;
+  
+  if (gcov_position + bytes > gcov_length)
+    return 0;
+  result = &gcov_buffer[gcov_position];
+  gcov_position += bytes;
+  return result;
+}
+
+/* Read *VALUE_P from coverage file.  Return nonzero if failed
    due to file i/o error, or range error.  */
 
 static int
-gcov_read_unsigned (file, value_p)
-     FILE *file;
-     unsigned *value_p;
+gcov_read_unsigned (unsigned *value_p)
 {
   unsigned value = 0;
   unsigned ix;
-  unsigned char buffer[4];
+  const unsigned char *buffer = gcov_read_bytes (4);
 
-  if (da_file_read (buffer, 1, sizeof (buffer), file) != sizeof (buffer))
+  if (!buffer)
     return 1;
-  for (ix = sizeof (value); ix < sizeof (buffer); ix++)
+  for (ix = sizeof (value); ix < 4; ix++)
     if (buffer[ix])
       return 1;
-  for (ix = 0; ix != sizeof (buffer); ix++)
+  for (ix = 0; ix != 4; ix++)
     {
       value <<= 8;
       value |= buffer[ix];
@@ -413,24 +649,22 @@ gcov_read_unsigned (file, value_p)
   return 0;
 }
 
-/* Read *VALUE_P from coverage file FILE.  Return nonzero if failed
+/* Read *VALUE_P from coverage file.  Return nonzero if failed
    due to file i/o error, or range error.  */
 
 static int
-gcov_read_counter (file, value_p)
-     FILE *file;
-     gcov_type *value_p;
+gcov_read_counter (gcov_type *value_p)
 {
   gcov_type value = 0;
   unsigned ix;
-  unsigned char buffer[8];
+  const unsigned char *buffer = gcov_read_bytes (8);
 
-  if (da_file_read (buffer, 1, sizeof (buffer), file) != sizeof (buffer))
+  if (!buffer)
     return 1;
-  for (ix = sizeof (value); ix < sizeof (buffer); ix++)
+  for (ix = sizeof (value); ix < 8; ix++)
     if (buffer[ix])
       return 1;
-  for (ix = 0; ix != sizeof (buffer); ix++)
+  for (ix = 0; ix != 8; ix++)
     {
       value <<= 8;
       value |= buffer[ix];
@@ -440,377 +674,139 @@ gcov_read_counter (file, value_p)
   return value < 0;
 }
 
-#if !IN_LIBGCC2
+#if !IN_LIBGCOV
 
-/* Read string from coverage file FILE.  Length is stored in *LENGTH_P
-   (if non-null), a buffer is allocated and returned in *STRING_P.
-   Return nonzero if failed due to file i/o error, or range
-   error.  Uses xmalloc to allocate the string buffer.  */
+/* Read string from coverage file.  A buffer is allocated and returned
+   in *STRING_P.  Return nonzero if failed due to file i/o error, or
+   range error.  Uses xmalloc to allocate the string buffer.  */
 
 static int
-gcov_read_string (file, string_p, length_p)
-     FILE *file;
-     char **string_p;
-     unsigned *length_p;
+gcov_read_string (char **string_p)
 {
   unsigned length;
+  const unsigned char *buffer;
 
-  if (gcov_read_unsigned (file, &length))
+  if (gcov_read_unsigned (&length))
     return 1;
 
-  if (length_p)
-    *length_p = length;
   free (*string_p);
-
   *string_p = NULL;
   if (!length)
     return 0;
 
   length += 4 - (length & 3);
-  *string_p = (char *) xmalloc (length);
+  buffer = gcov_read_bytes (length);
+  if (!buffer)
+    return 1;
+  
+  *string_p = xmalloc (length);
+  if (!*string_p)
+    return 1;
 
-  return da_file_read (*string_p, 1, length, file) != length;
-
+  memcpy (*string_p, buffer, length);
+  return 0;
 }
 
-#endif /* !IN_LIBGCC2 */
-
-/* Write a record length at PLACE.  The current file position is the
-   end of the record, and is restored before returning.  Returns
-   nonzero on failure.  */
-
-static int
-gcov_write_length (file, place)
-     FILE *file;
-     long place;
-{
-  long here = da_file_position (file);
-  int result = (!place || da_file_seek (file, place, SEEK_SET)
-		|| gcov_write_unsigned (file, here - place - 4));
-  if (da_file_seek (file, here, SEEK_SET))
-    result = 1;
-  return result;
-}
+#endif /* !IN_LIBGCOV */
 
 #define GCOV_SUMMARY_LENGTH 44
 static int
-gcov_read_summary (da_file, summary)
-     FILE *da_file;
-     struct gcov_summary *summary;
+gcov_read_summary (struct gcov_summary *summary)
 {
-  return (gcov_read_unsigned (da_file, &summary->checksum)
-	  || gcov_read_unsigned (da_file, &summary->runs)
-	  || gcov_read_unsigned (da_file, &summary->arcs)
-	  || gcov_read_counter (da_file, &summary->arc_sum)
-	  || gcov_read_counter (da_file, &summary->arc_max_one)
-	  || gcov_read_counter (da_file, &summary->arc_max_sum)
-	  || gcov_read_counter (da_file, &summary->arc_sum_max));
+  return (gcov_read_unsigned (&summary->checksum)
+	  || gcov_read_unsigned (&summary->runs)
+	  || gcov_read_unsigned (&summary->arcs)
+	  || gcov_read_counter (&summary->arc_sum)
+	  || gcov_read_counter (&summary->arc_max_one)
+	  || gcov_read_counter (&summary->arc_max_sum)
+	  || gcov_read_counter (&summary->arc_sum_max));
 }
 
-#if IN_LIBGCC2
-static int
-gcov_write_summary (da_file, tag, summary)
-     FILE *da_file;
-     unsigned tag;
-     const struct gcov_summary *summary;
+/* Save the current position in the gcov file.  */
+
+static inline unsigned long
+gcov_save_position (void)
 {
-  long base;
-
-  return (gcov_write_unsigned (da_file, tag)
-	  || !(base = gcov_reserve_length (da_file))
-	  || gcov_write_unsigned (da_file, summary->checksum)
-	  || gcov_write_unsigned (da_file, summary->runs)
-	  || gcov_write_unsigned (da_file, summary->arcs)
-	  || gcov_write_counter (da_file, summary->arc_sum)
-	  || gcov_write_counter (da_file, summary->arc_max_one)
-	  || gcov_write_counter (da_file, summary->arc_max_sum)
-	  || gcov_write_counter (da_file, summary->arc_sum_max)
-	  || gcov_write_length (da_file, base));
-}
-#endif
-
-#if IN_LIBGCC2
-/* The kernel had problems with managing a lot of small reads/writes we use;
-   the functions below are used to buffer whole file in memory, thus reading and
-   writing it only once.  This should be feasible, as we have this amount
-   of memory for counters allocated anyway.  */
-
-static FILE *actual_da_file;
-static unsigned long actual_da_file_position;
-static unsigned long actual_da_file_length;
-static char *actual_da_file_buffer;
-static unsigned long actual_da_file_buffer_size;
-
-/* Open the file NAME and return it; in EXISTED return 1 if it existed
-   already.  */
-static FILE *
-da_file_open (name, existed)
-     const char *name;
-     int *existed;
-{
-#if defined (TARGET_HAS_F_SETLKW)
-  struct flock s_flock;
-
-  s_flock.l_type = F_WRLCK;
-  s_flock.l_whence = SEEK_SET;
-  s_flock.l_start = 0;
-  s_flock.l_len = 0; /* Until EOF.  */
-  s_flock.l_pid = getpid ();
-#endif
-
-  if (actual_da_file)
-    return 0;
-  actual_da_file_position = 0;
-  if (!actual_da_file_buffer)
-    {
-      actual_da_file_buffer = malloc (1);
-      actual_da_file_buffer_size = 1;
-    }
-
-  actual_da_file = fopen (name, "r+t");
-  if (actual_da_file)
-    *existed = 1;
-  else
-    {
-      actual_da_file = fopen (name, "w+t");
-      if (actual_da_file)
-	*existed = 0;
-      else
-	return 0;
-    }
-
-#if defined (TARGET_HAS_F_SETLKW)
-  /* After a fork, another process might try to read and/or write
-     the same file simultaneously.  So if we can, lock the file to
-     avoid race conditions.  */
-  while (fcntl (fileno (actual_da_file), F_SETLKW, &s_flock)
-	 && errno == EINTR)
-    continue;
-#endif
-
-  if (*existed)
-    {
-      if (fseek (actual_da_file, 0, SEEK_END))
-	{
-	  fclose (actual_da_file);
-	  actual_da_file = 0;
-	  return 0;
-	}
-      actual_da_file_length = ftell (actual_da_file);
-      rewind (actual_da_file);
-    }
-  else
-    actual_da_file_length = 0;
-
-  if (actual_da_file_length > actual_da_file_buffer_size)
-    {
-      actual_da_file_buffer_size = actual_da_file_length;
-      actual_da_file_buffer = realloc (actual_da_file_buffer,
-				       actual_da_file_buffer_size);
-      if (!actual_da_file_buffer)
-	{
-	  fclose (actual_da_file);
-	  actual_da_file = 0;
-	  return 0;
-	}
-    }
-
-  if (*existed)
-    {
-      if (fread (actual_da_file_buffer, actual_da_file_length,
-		 1, actual_da_file) != 1)
-	{
-	  fclose (actual_da_file);
-	  actual_da_file = 0;
-	  return 0;
-	}
-      rewind (actual_da_file);
-    }
-
-  return actual_da_file;
+  return gcov_position;
 }
 
-/* Write changes to the .da file and close it.  */
-static int da_file_close ()
+/* Reset to a known position.  BASE should have been obtained from
+   gcov_save_position, LENGTH should be a record length, or zero.  */
+
+static inline int
+gcov_resync (unsigned long base, unsigned length)
 {
-  if (!actual_da_file)
-    return -1;
-  
-  if (fwrite (actual_da_file_buffer, actual_da_file_length,
-     	      1, actual_da_file) != 1)
-    return da_file_error ();
-
-  if (fclose (actual_da_file))
-    {
-      actual_da_file = 0;
-      return -1;
-    }
-
-  actual_da_file = 0;
+  if (gcov_buffer)
+    gcov_position = base + length;
   return 0;
 }
 
-/* Returns current position in .da file.  */
-static unsigned long
-da_file_position (file)
-     FILE *file;
+/* Move to the end of the gcov file.  */
+
+static inline unsigned long
+gcov_seek_end ()
 {
-  if (file)
-    return ftell (file);
-  return actual_da_file_position;
+  gcov_position = gcov_length;
+  return gcov_position;
+}
+
+/* Skip LENGTH bytes in the file.  */
+
+static inline int
+gcov_skip (unsigned length)
+{
+  if (gcov_length < gcov_position + length)
+    return 1;
+  gcov_position += length;
+  return 0;
+}
+
+/* Skip a string of LENGTH bytes.  */
+
+static inline int
+gcov_skip_string (unsigned length)
+{
+  return gcov_skip (length + 4 - (length & 3));
 }
 
 /* Tests whether we have reached end of .da file.  */
-static int
-da_file_eof ()
+
+static inline int
+gcov_eof ()
 {
-  return actual_da_file_position == actual_da_file_length;
+  return gcov_position == gcov_length;
 }
 
-/* Change position in the .da file.  */
-static int
-da_file_seek (file, pos, whence)
-     FILE *file;
-     long pos;
-     int whence;
+/* Return non-zero if the error flag is set.  */
+
+static inline int
+gcov_ok ()
 {
-  if (file)
-    return fseek (file, pos, whence);
-
-  if (!actual_da_file)
-    return -1;
-
-  switch (whence)
-    {
-    case SEEK_CUR:
-      if (pos < 0 && (unsigned long) -pos > actual_da_file_position)
-	return da_file_error ();
-
-      actual_da_file_position += pos;
-      break;
-    case SEEK_SET:
-      actual_da_file_position = pos;
-      break;
-    case SEEK_END:
-      if ((unsigned long) -pos > actual_da_file_length)
-	return da_file_error ();
-      actual_da_file_position = actual_da_file_length + pos;
-    }
-  if (actual_da_file_position > actual_da_file_length)
-    return da_file_error ();
-  return 0;
+  return gcov_file != 0 && !gcov_errored;
 }
 
-/* Write LEN chars of DATA to actual .da file; ELTS is expected to be 1,
-   FILE 0.  */
-static size_t
-da_file_write (data, elts, len, file)
-     const void *data;
-     size_t elts;
-     size_t len;
-     FILE *file;
+/* Set the error flag. */
+static inline int
+gcov_error ()
 {
-  size_t l = len;
-  const char *dat = data;
-
-  if (file)
-    return fwrite (data, elts, len, file);
-
-  if (elts != 1)
-    abort ();
-
-  if (!actual_da_file)
-    return -1;
-  if (actual_da_file_position + len > actual_da_file_buffer_size)
-    {
-      actual_da_file_buffer_size = 2 * (actual_da_file_position + len);
-      actual_da_file_buffer = realloc (actual_da_file_buffer,
-				       actual_da_file_buffer_size);
-      if (!actual_da_file_buffer)
-	return da_file_error ();
-    }
-  while (len--)
-    actual_da_file_buffer[actual_da_file_position++] = *dat++;
-  if (actual_da_file_position > actual_da_file_length)
-    actual_da_file_length = actual_da_file_position;
-
-  return l;
-}
-
-/* Read LEN chars of DATA from actual .da file; ELTS is expected to be 1,
-   FILE 0.  */
-static size_t
-da_file_read (data, elts, len, file)
-     void *data;
-     size_t elts;
-     size_t len;
-     FILE *file;
-{
-  size_t l;
-  char *dat = data;
-
-  if (file)
-    return fread (data, elts, len, file);
-
-  if (elts != 1)
-    abort ();
-
-  if (!actual_da_file)
-    return -1;
-  if (actual_da_file_position + len > actual_da_file_length)
-    len = actual_da_file_length - actual_da_file_position;
-  l = len;
+  int error = gcov_errored;
   
-  while (len--)
-    *dat++ = actual_da_file_buffer[actual_da_file_position++];
-  return l;
+  gcov_errored = 1;
+  return error;
 }
 
-/* Close the current .da file and report error.  */
-static int
-da_file_error ()
-{
-  if (actual_da_file)
-    fclose (actual_da_file);
-  actual_da_file = 0;
-  return -1;
-}
-#else /* !IN_LIBGCC2 */
-static size_t
-da_file_write (data, elts, len, file)
-     const void *data;
-     size_t elts;
-     size_t len;
-     FILE *file;
-{
-  return fwrite (data, elts, len, file);
-}
+#if IN_GCOV > 0
+/* Return the modification time of the current gcov file.  */
 
-static size_t
-da_file_read (data, elts, len, file)
-     void *data;
-     size_t elts;
-     size_t len;
-     FILE *file;
+static time_t
+gcov_time ()
 {
-  return fread (data, elts, len, file);
+  struct stat status;
+  
+  if (fstat (fileno (gcov_file), &status))
+    return 0;
+  else
+    return status.st_mtime;
 }
-
-static unsigned long
-da_file_position (file)
-     FILE *file;
-{
-  return ftell (file);
-}
-
-static int
-da_file_seek (file, pos, whence)
-     FILE *file;
-     long pos;
-     int whence;
-{
-  return fseek (file, pos, whence);
-}
-#endif
-
+#endif /* IN_GCOV */
 #endif /* GCC_GCOV_IO_H */

@@ -1,3 +1,50 @@
+2003-04-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Change gcov file interface to single file at a time.
+	* gcov-io.h: Replace IN_LIBGCC1 with IN_LIBGCOV. Use IN_GCOV.
+	Convert to C89 prototypes.
+	(gcov_file, gcov_length, gcov_position, gcov_buffer, gcov_alloc,
+	gcov_error, gcov_modified): New static variables.
+	(gcov_open, gcov_close, gcov_read_bytes, gcov_write_bytes): New
+	functions.
+	(gcov_write_unsigned, gcov_write_counter, gcov_write_string,
+	gcov_read_unsigned, gcov_read_counter, gcov_read_string): Adjust.
+	(gcov_read_summary, gcov_write_summary): Adjust.
+	(gcov_save_position, gcov_reserve_length, gcov_write_length):
+	Adjust.
+	(gcov_resync, gcov_skip, gcov_skip_string): Adjust.
+	(da_file_open, da_file_close, da_file_eof, da_file_error): Remove.
+	(da_file_position, da_file_seek, da_file_write, da_file_read):
+	Remove.
+	(gcov_error, gcov_eof, gcov_ok, gcov_time): New functions.
+	* gcov.c (gcov_type): Don't typedef here.
+	(IN_GCOV): #define
+	(read_graph_file, read_count_file): Adjust.
+	* gcov-dump.c (gcov_type): Don't typedef here.
+	(IN_GCOV): #define.
+	(tag_function, tag_blocks, tag_arcs, tag_lines, tag_arc_counts):
+	Remove FILE parameter, adjust.
+	(struct tag_format): Adjust proc member.
+	(dump_file): Adjust.
+	* libgcov.c (IN_LIBGCOV): #define.
+	(gcov_exit): Adjust.
+	* loop-init.c: Don't #include gcov-io.h
+	* profile.c (struct counts_entry): New structure to hold counter
+	values.
+	(struct section_reference, struct da_index_entry): Remove.
+	(bbg_file, da_file): Remove.
+	(htab_counts_index_hash, htab_counts_index_eq,
+	htab_counts_index_del): Replace with ...
+	(htab_counts_entry_hash, htab_counts_entry_eq,
+	htab_counts_entry_del): ... these.
+	(cleanup_counts_index, index_counts_file): Remove.
+	(read_counts_file): New function.
+	(get_exec_counts): Adjust.
+	(compute_branch_probabilities): Don't free the exec counts here.
+	(branch_prob): Adjust.
+	(init_branch_prob): Adjust.
+	(end_branch_prob): Adjust.
+
 2003-04-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/invoke.texi (RS/6000 and PowerPC Options): Document
