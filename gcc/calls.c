@@ -1994,8 +1994,10 @@ expand_call (tree exp, rtx target, int ignore)
 	    structure_value_addr = expand_expr (return_arg, NULL_RTX,
 						VOIDmode, EXPAND_NORMAL);
 	  }
+#if 0
 	else if (target && MEM_P (target))
 	  structure_value_addr = XEXP (target, 0);
+#endif
 	else
 	  {
 	    /* For variable-sized objects, we must be called with a target
