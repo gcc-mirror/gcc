@@ -1,3 +1,8 @@
+2000-03-08  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* config.guess, config.sub: Update from the gcc tree.
+	Fix for PR libgcj/168.
+
 2000-03-03  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Fixed ia64 by hand.
