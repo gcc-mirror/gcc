@@ -1295,20 +1295,20 @@ do {							\
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD ((unsigned int) (TARGET_64BIT ? 64 : 32))
+#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD ((unsigned int) (TARGET_64BIT ? 8 : 4))
+#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
 #define MIN_UNITS_PER_WORD 4
 
 /* For MIPS, width of a floating point register.  */
-#define UNITS_PER_FPREG ((unsigned int) (TARGET_FLOAT64 ? 8 : 4))
+#define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
 
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define INT_TYPE_SIZE ((unsigned int) (TARGET_INT64 ? 64 : 32))
+#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
 #define MAX_INT_TYPE_SIZE 64
 
 /* Tell the preprocessor the maximum size of wchar_t.  */
@@ -1327,7 +1327,7 @@ do {							\
 /* A C expression for the size in bits of the type `long' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define LONG_TYPE_SIZE ((unsigned int) (TARGET_LONG64 ? 64 : 32))
+#define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
 #define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
@@ -1359,14 +1359,14 @@ do {							\
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
 #ifndef POINTER_SIZE
-#define POINTER_SIZE ((unsigned int) (Pmode == DImode ? 64 : 32))
+#define POINTER_SIZE (Pmode == DImode ? 64 : 32)
 #endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
-#define POINTER_BOUNDARY ((unsigned int) (Pmode == DImode ? 64 : 32))
+#define POINTER_BOUNDARY (Pmode == DImode ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY ((unsigned int) (TARGET_64BIT ? 64 : 32))
+#define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
