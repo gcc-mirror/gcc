@@ -1,3 +1,9 @@
+2002-02-21  Eric Christopher  <echristo@redhat.com>
+
+	* expmed.c (store_bit_field): Try to simplify the subreg
+	before generating a new one when when the mode size of
+	value is less than maxmode.
+
 2002-02-21  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (offset_address): Use simplify_gen_binary rather
@@ -95,7 +101,7 @@ Thu Feb 21 15:35:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	bits of SImode const_int.
 	(includes_rshift_p): Likewise.
 	(print_operand): Call mask_operand and mask64_operand with correct
-	mode. 
+	mode.
 	(rs6000_output_function_epilogue): Pad traceback table to word.
 	* config/rs6000/rs6000.h (MASK_64BIT): Correct comment.
 	(EXTRA_CONSTRAINT, 'S' and 'T'): Call mask_operand and
@@ -161,7 +167,7 @@ Thu Feb 21 15:35:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(ix86_expand_unop1_builtin): Likewise.
 
 2002-02-20  Philip Blundell  <philb@gnu.org>
-	
+
 	PR 5705
 	* config/arm/arm.h (HARD_REGNO_RENAME_OK): New macro.
 
@@ -203,7 +209,7 @@ Wed Feb 20 00:03:25 EST 2002 Alan Matsuoka <alanm@redhat.com>
 
 	* cppinit.c (init_dependency_output): Take deps output file
 	from -o if none given with -MF.  Suppress normal output.
-	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.	
+	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.
 	* doc/cpp.texi, doc/invoke.texi: Update.
 
 2002-02-19  Zack Weinberg  <zack@codesourcery.com>
@@ -217,7 +223,7 @@ Wed Feb 20 00:03:25 EST 2002 Alan Matsuoka <alanm@redhat.com>
 	really_call_used[VRSAVE_REGNO] if not Altivec.
 
 2002-02-19  Alan Modra  <amodra@bigpond.net.au>
-	
+
 	* config/rs6000/rs6000.c (u_short_cint_operand): Mask op with
 	MODE_MASK.
 	(constant_pool_expr_1): Fix formatting.
@@ -283,7 +289,7 @@ Tue Feb 19 20:13:57 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(arm_assemble_integer): Likewise.
 	* config/arm/arm.h (ARM_ENCODE_CALL_TYPE): Allow any decl to be
 	marked local.
-	
+
 2002-02-19  matthew green  <mrg@eterna.com.au>
 
 	* config.gcc (sparc-*-netbsdelf*): Enable target.
@@ -465,7 +471,7 @@ Tue Feb 19 12:37:23 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(decode_rtx_const): Add case for vector.
 
 	* config/rs6000/rs6000-protos.h: Add zero_constant.
-	
+
 	* config/rs6000/rs6000.c (rs6000_emit_move): Handle vector
 	constants.  Force easy vector constants into memory.
 	(easy_vector_constant): New.
@@ -537,7 +543,7 @@ Mon Feb 18 11:55:55 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-02-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* objc/objc-act.c (handle_impent): Remove leading '*'
-	from objc_class_name. 
+	from objc_class_name.
 
 2002-02-17  Richard Henderson  <rth@redhat.com>
 
@@ -593,7 +599,7 @@ Mon Feb 18 11:55:55 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/arc/arc.c config/fr30/fr30.c config/m32r/m32r.c
 	config/m88k/m88k.c : Adapt all calls to output_operand_lossage.
 	Update copyright date where necessary.
-	
+
 	* config/i386/i386.c (print_operand): Likewise. Remove use of
 	sprintf.
 
@@ -662,15 +668,15 @@ Sat Feb 16 13:39:09 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (pool_stop_uid, other_chunk, far_away, 
+	* config/s390/s390.c (pool_stop_uid, other_chunk, far_away,
 	check_and_change_labels, s390_final_chunkify): Delete.
 	(s390_split_branches, s390_chunkify_pool): New functions.
 	(s390_function_prologue): Call them.
-	
+
 	* config/s390/s390.h (S390_REL_MAX): Delete.
 	(S390_CHUNK_MAX, S390_CHUNK_OV): Adjust values.
 
-	* config/s390/s390.md (cjump, icjump, jump): Fix length 
+	* config/s390/s390.md (cjump, icjump, jump): Fix length
 	attribute calculation.
 
 
