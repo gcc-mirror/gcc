@@ -128,6 +128,7 @@ static tree patch_invoke PROTO ((tree, tree, tree));
 static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PROTO ((int, tree, tree, tree));
 static tree obtain_incomplete_type PROTO ((tree));
+static tree java_complete_lhs PROTO ((tree));
 static tree java_complete_tree PROTO ((tree));
 static void java_complete_expand_method PROTO ((tree));
 static int  unresolved_type_p PROTO ((tree, tree *));
@@ -239,6 +240,7 @@ static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
 static tree patch_initialized_static_field PROTO ((tree));
+static tree fold_constant_for_init PROTO ((tree, tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -3002,9 +3004,11 @@ lookup_field_wrapper (class, name)
      tree class, name;
 {
   tree type = class;
+  tree decl;
   java_parser_context_save_global ();
-  return lookup_field (&type, name);
+  decl = lookup_field (&type, name);
   java_parser_context_restore_global ();
+  return decl;
 }
 
 /* Find duplicate field within the same class declarations and report
@@ -3139,6 +3143,7 @@ register_fields (flags, type, variable_list)
 		 appropriately. */
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
+	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	    }
 	  /* A non-static field declared with an immediate initialization is
 	     to be initialized in <init>, if any.  This field is remembered
@@ -3149,6 +3154,7 @@ register_fields (flags, type, variable_list)
 	      ctxp->non_static_initialized = init;
 	    }
 	  INITIALIZED_P (field_decl) = 1;
+	  MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
 	}
     }
   lineno = saved_lineno;
@@ -5943,7 +5949,6 @@ resolve_expression_name (id, orig)
 	  decl = lookup_field_wrapper (current_class, name);
 	  if (decl)
 	    {
-	      tree value = NULL_TREE;
 	      int fs = FIELD_STATIC (decl);
 	      /* Instance variable (8.3.1.1) can't appear within
 		 static method, static initializer or initializer for
@@ -5967,9 +5972,6 @@ resolve_expression_name (id, orig)
 		     "constructor has been called", IDENTIFIER_POINTER (name));
 		  return error_mark_node;
 		}
-	      /* The field is final. We may use its value instead */
-	      if (fs && FIELD_FINAL (decl) && DECL_INITIAL (decl))
-		value = DECL_INITIAL (decl);
 
 	      /* Otherwise build what it takes to access the field */
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
@@ -5980,7 +5982,7 @@ resolve_expression_name (id, orig)
 	      if (orig)
 		*orig = decl;
 	      /* And we return what we got */
-	      return (value ? value : decl);
+	      return decl;
 	    }
 	  /* Fall down to error report on undefined variable */
 	}
@@ -7356,10 +7358,33 @@ breakdown_qualified (left, right, source)
 }
 
 /* Patch tree nodes in a function body. When a BLOCK is found, push
-   local variable decls if present.  */
+   local variable decls if present.
+   Same as java_complete_lhs, but does resolve static finals to values. */
 
 static tree
 java_complete_tree (node)
+     tree node;
+{
+  node = java_complete_lhs (node);
+  if (TREE_CODE (node) == VAR_DECL && FIELD_STATIC (node)
+      && FIELD_FINAL (node) && DECL_INITIAL (node) != NULL_TREE)
+    {
+      tree value = DECL_INITIAL (node);
+      DECL_INITIAL (node) = NULL_TREE;
+      value = fold_constant_for_init (value, node);
+      DECL_INITIAL (node) = value;
+      if (value != NULL_TREE)
+	return value;
+    }
+  return node;
+}
+
+/* Patch tree nodes in a function body. When a BLOCK is found, push
+   local variable decls if present.
+   Same as java_complete_tree, but does not resolve static finals to values. */
+
+static tree
+java_complete_lhs (node)
      tree node;
 {
   tree nn, cn, wfl_op1, wfl_op2, wfl_op3;
@@ -7634,7 +7659,11 @@ java_complete_tree (node)
 	}
       else
 	{
-	  tree body = java_complete_tree (EXPR_WFL_NODE (node));
+	  tree body;
+	  int save_lineno = lineno;
+	  lineno = EXPR_WFL_LINENO (node);
+	  body = java_complete_tree (EXPR_WFL_NODE (node));
+	  lineno = save_lineno;
 	  EXPR_WFL_NODE (node) = body;
 	  TREE_SIDE_EFFECTS (node) = 1;
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
@@ -7707,7 +7736,7 @@ java_complete_tree (node)
       /* Save potential wfls */
       wfl_op1 = TREE_OPERAND (node, 0);
       wfl_op2 = TREE_OPERAND (node, 1);
-      TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
+      TREE_OPERAND (node, 0) = java_complete_lhs (wfl_op1);
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
 
@@ -7765,6 +7794,7 @@ java_complete_tree (node)
          optimizations. (VAR_DECL means it's a static field. See
          add_field. */
       if (DECL_NAME (current_function_decl) == clinit_identifier_node
+	  && MODIFY_EXPR_FROM_INITIALIZATION_P (node)
 	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL)
 	node = patch_initialized_static_field (node);
 
@@ -8359,14 +8389,19 @@ patch_initialized_static_field (node)
   tree field = TREE_OPERAND (node, 0);
   tree value = TREE_OPERAND (node, 1);
 
-  if (FIELD_FINAL (field) && TREE_CONSTANT (value)
-      && JPRIMITIVE_TYPE_P (TREE_TYPE (value)))
+  if (DECL_INITIAL (field) != NULL_TREE)
     {
-      if (DECL_LANG_SPECIFIC (field) == NULL)
-	DECL_LANG_SPECIFIC (field) = (struct lang_decl *)
-	  permalloc (sizeof (struct lang_decl_var));
-      DECL_INITIAL (field) = value;
-      return empty_stmt_node;
+      tree type = TREE_TYPE (value);
+      if (FIELD_FINAL (field) && TREE_CONSTANT (value)
+	  && (JPRIMITIVE_TYPE_P (type)
+	      || (flag_emit_class_files
+		  && TREE_CODE (type) == POINTER_TYPE
+		  && TREE_TYPE (type) == string_type_node)))
+	{
+	  DECL_INITIAL (field) = value;
+	  return empty_stmt_node;
+	}
+      DECL_INITIAL (field) = NULL_TREE;
     }
   return node;
 }
@@ -11030,3 +11065,135 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   return node;
 }
 
+/* Try to constant fold NODE.
+   If NODE is not a constant expression, return NULL_EXPR.
+   CONTEXT is a static final VAR_DECL whose initializer we are folding. */
+
+static tree
+fold_constant_for_init (node, context)
+     tree node;
+     tree context;
+{
+  tree op0, op1, val;
+  enum tree_code code = TREE_CODE (node);
+
+  if (code == INTEGER_CST || code == REAL_CST || code == STRING_CST)
+    return node;
+  if (TREE_TYPE (node) != NULL_TREE)
+    return NULL_TREE;
+
+  switch (code)
+    {
+    case MULT_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case URSHIFT_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_IOR_EXPR:
+    case TRUNC_MOD_EXPR:
+    case RDIV_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+    case EQ_EXPR: 
+    case NE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+      op0 = TREE_OPERAND (node, 0);
+      op1 = TREE_OPERAND (node, 1);
+      val = fold_constant_for_init (op0, context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 0) = val;
+      val = fold_constant_for_init (op1, context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 1) = val;
+      return patch_binop (node, op0, op1);
+
+    case UNARY_PLUS_EXPR:
+    case NEGATE_EXPR:
+    case TRUTH_NOT_EXPR:
+    case BIT_NOT_EXPR:
+    case CONVERT_EXPR:
+      op0 = TREE_OPERAND (node, 0);
+      val = fold_constant_for_init (op0, context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 0) = val;
+      node = patch_unaryop (node, op0);
+      break;
+
+    case COND_EXPR:
+      val = fold_constant_for_init (TREE_OPERAND (node, 0), context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 0) = val;
+      val = fold_constant_for_init (TREE_OPERAND (node, 1), context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 1) = val;
+      val = fold_constant_for_init (TREE_OPERAND (node, 2), context);
+      if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	return NULL_TREE;
+      TREE_OPERAND (node, 2) = val;
+      return integer_zerop (TREE_OPERAND (node, 0)) ? TREE_OPERAND (node, 1)
+	: TREE_OPERAND (node, 2);
+
+    case VAR_DECL:
+      if (! FIELD_STATIC (node) || ! FIELD_FINAL (node)
+	  || DECL_INITIAL (node) == NULL_TREE)
+	return NULL_TREE;
+      val = DECL_INITIAL (node);
+      /* Guard against infinite recursion. */
+      DECL_INITIAL (node) = NULL_TREE;
+      val = fold_constant_for_init (val, DECL_CONTEXT (node));
+      DECL_INITIAL (node) = val;
+      return val;
+
+    case EXPR_WITH_FILE_LOCATION:
+      /* Compare java_complete_tree and resolve_expression_name. */
+      if (!EXPR_WFL_NODE (node) /* Or a PRIMARY flag ? */
+	  || TREE_CODE (EXPR_WFL_NODE (node)) == IDENTIFIER_NODE)
+	{
+	  tree name = EXPR_WFL_NODE (node);
+	  tree decl;
+	  if (PRIMARY_P (node))
+	    return NULL_TREE;
+	  else if (! QUALIFIED_P (name))
+	    {
+	      decl = lookup_field_wrapper (DECL_CONTEXT (context), name);
+	      if (! FIELD_STATIC (decl))
+		return NULL_TREE;
+	      return fold_constant_for_init (decl, decl);
+	    }
+	  else
+	    {
+#if 0
+	      /* Wait until the USE_COMPONENT_REF re-write.  FIXME. */
+	      qualify_ambiguous_name (node);
+	      if (resolve_field_access (node, &decl, NULL)
+		  && decl != NULL_TREE)
+		return fold_constant_for_init (decl, decl);
+#endif
+	      return NULL_TREE;
+	    }
+	}
+      else
+	{
+	  op0 = TREE_OPERAND (node, 0);
+	  val = fold_constant_for_init (op0, context);
+	  if (val == NULL_TREE || ! TREE_CONSTANT (val))
+	    return NULL_TREE;
+	  TREE_OPERAND (node, 0) = val;
+	  return val;
+	}
+
+    default:
+      return NULL_TREE;
+    }
+}
