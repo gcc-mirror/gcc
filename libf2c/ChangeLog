@@ -1,3 +1,7 @@
+Mon Apr 12 21:38:14 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+	
+	* libF77/getenv_.c: Include stdlib.h.
+
 Sun Apr 11 23:30:42 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* libU77/dtime_.c: Handle all variants of WIN32.
