@@ -1947,6 +1947,17 @@ alpha_legitimize_address (rtx x, rtx scratch,
   }
 }
 
+/* Primarily this is required for TLS symbols, but given that our move
+   patterns *ought* to be able to handle any symbol at any time, we
+   should never be spilling symbolic operands to the constant pool, ever.  */
+
+static bool
+alpha_cannot_force_const_mem (rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  return code == SYMBOL_REF || code == LABEL_REF || code == CONST;
+}
+
 /* We do not allow indirect calls to be optimized into sibling calls, nor
    can we allow a call to a function with a different GP to be optimized
    into a sibcall.  */
@@ -10215,6 +10226,8 @@ alpha_init_libfuncs (void)
 #define TARGET_FUNCTION_OK_FOR_SIBCALL alpha_function_ok_for_sibcall
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P alpha_cannot_copy_insn_p
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM alpha_cannot_force_const_mem
 
 #if TARGET_ABI_OSF
 #undef TARGET_ASM_OUTPUT_MI_THUNK
@@ -10257,4 +10270,3 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 
 
 #include "gt-alpha.h"
-
