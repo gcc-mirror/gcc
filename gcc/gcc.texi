@@ -150,7 +150,7 @@ instead of in the original English.
 @sp 1
 @c The version number appears five times more in this file.
 
-@center for egcs-1.1
+@center for gcc-2.95
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96, 98  Free Software Foundation, Inc.

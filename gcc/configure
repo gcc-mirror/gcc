@@ -608,7 +608,7 @@ echo "$ac_t""$library_path_setting" 1>&6
 if test "$library_path_setting" != "ok"; then
 { echo "configure: error: 
 *** LIBRARY_PATH shouldn't contain the current directory when
-*** building egcs. Please change the environment variable
+*** building gcc. Please change the environment variable
 *** and run configure again." 1>&2; exit 1; }
 fi
 
@@ -633,7 +633,7 @@ echo "$ac_t""$gcc_exec_prefix_setting" 1>&6
 if test "$gcc_exec_prefix_setting" != "ok"; then
 { echo "configure: error: 
 *** GCC_EXEC_PREFIX shouldn't contain the current directory when
-*** building egcs. Please change the environment variable
+*** building gcc. Please change the environment variable
 *** and run configure again." 1>&2; exit 1; }
 fi
 

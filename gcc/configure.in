@@ -53,7 +53,7 @@ AC_MSG_RESULT($library_path_setting)
 if test "$library_path_setting" != "ok"; then
 AC_MSG_ERROR([
 *** LIBRARY_PATH shouldn't contain the current directory when
-*** building egcs. Please change the environment variable
+*** building gcc. Please change the environment variable
 *** and run configure again.])
 fi
 
@@ -79,7 +79,7 @@ AC_MSG_RESULT($gcc_exec_prefix_setting)
 if test "$gcc_exec_prefix_setting" != "ok"; then
 AC_MSG_ERROR([
 *** GCC_EXEC_PREFIX shouldn't contain the current directory when
-*** building egcs. Please change the environment variable
+*** building gcc. Please change the environment variable
 *** and run configure again.])
 fi
 
