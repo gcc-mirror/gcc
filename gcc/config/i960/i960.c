@@ -296,10 +296,24 @@ power2_operand (op,mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE(op) != CONST_INT)
+  if (GET_CODE (op) != CONST_INT)
     return 0;
 
   return exact_log2 (INTVAL (op)) >= 0;
+}
+
+/* Return true if OP is an integer constant which is the complement of a
+   power of 2.  */
+
+int
+cmplpower2_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  return exact_log2 (~ INTVAL (op)) >= 0;
 }
 
 /* If VAL has only one bit set, return the index of that bit.  Otherwise
