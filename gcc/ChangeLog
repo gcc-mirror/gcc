@@ -1,3 +1,8 @@
+2003-09-06  James E Wilson  <wilson@tuliptree.org>
+
+	* loop.c (loop_regs_update): Delete else clause for PATTERN rtx and
+	simplify.
+
 2003-09-07  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* Makefile.in: Define $REMAKE to be $MAKE with LANGUAGES & BOOT_CFLAGS
