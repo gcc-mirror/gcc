@@ -1,4 +1,8 @@
 2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20030125-1.c: Remove.
+
+2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.c-torture/execute/20030125-1.c: New test.
