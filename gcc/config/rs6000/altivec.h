@@ -246,67 +246,133 @@ struct __vec_step_help
 };
 
 template<>
-struct __vec_step_help<vector signed short>
+struct __vec_step_help<__vector signed short>
 {
   static const int _S_elem = 8;
 };
 
 template<>
-struct __vec_step_help<vector unsigned short>
+struct __vec_step_help<const __vector signed short>
 {
   static const int _S_elem = 8;
 };
 
 template<>
-struct __vec_step_help<vector bool short>
+struct __vec_step_help<__vector unsigned short>
 {
   static const int _S_elem = 8;
 };
 
 template<>
-struct __vec_step_help<vector pixel>
+struct __vec_step_help<const __vector unsigned short>
 {
   static const int _S_elem = 8;
 };
 
 template<>
-struct __vec_step_help<vector signed int>
+struct __vec_step_help<__vector bool short>
+{
+  static const int _S_elem = 8;
+};
+
+template<>
+struct __vec_step_help<const __vector bool short>
+{
+  static const int _S_elem = 8;
+};
+
+template<>
+struct __vec_step_help<__vector pixel>
+{
+  static const int _S_elem = 8;
+};
+
+template<>
+struct __vec_step_help<const __vector pixel>
+{
+  static const int _S_elem = 8;
+};
+
+template<>
+struct __vec_step_help<__vector signed int>
 {
   static const int _S_elem = 4;
 };
 
 template<>
-struct __vec_step_help<vector unsigned int>
+struct __vec_step_help<const __vector signed int>
 {
   static const int _S_elem = 4;
 };
 
 template<>
-struct __vec_step_help<vector bool int>
+struct __vec_step_help<__vector unsigned int>
 {
   static const int _S_elem = 4;
 };
 
 template<>
-struct __vec_step_help<vector unsigned char>
+struct __vec_step_help<const __vector unsigned int>
+{
+  static const int _S_elem = 4;
+};
+
+template<>
+struct __vec_step_help<__vector bool int>
+{
+  static const int _S_elem = 4;
+};
+
+template<>
+struct __vec_step_help<const __vector bool int>
+{
+  static const int _S_elem = 4;
+};
+
+template<>
+struct __vec_step_help<__vector unsigned char>
 {
   static const int _S_elem = 16;
 };
 
 template<>
-struct __vec_step_help<vector signed char>
+struct __vec_step_help<const __vector unsigned char>
 {
   static const int _S_elem = 16;
 };
 
 template<>
-struct __vec_step_help<vector bool char>
+struct __vec_step_help<__vector signed char>
 {
   static const int _S_elem = 16;
 };
 
 template<>
-struct __vec_step_help<vector float>
+struct __vec_step_help<const __vector signed char>
+{
+  static const int _S_elem = 16;
+};
+
+template<>
+struct __vec_step_help<__vector bool char>
+{
+  static const int _S_elem = 16;
+};
+
+template<>
+struct __vec_step_help<const __vector bool char>
+{
+  static const int _S_elem = 16;
+};
+
+template<>
+struct __vec_step_help<__vector float>
+{
+  static const int _S_elem = 4;
+};
+
+template<>
+struct __vec_step_help<const __vector float>
 {
   static const int _S_elem = 4;
 };
