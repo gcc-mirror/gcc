@@ -1,3 +1,9 @@
+2003-02-15  Mark Wielaard  <mark@klomp.org>
+
+       * lib/libjava.exp (test_libjava_from_javac): Use regsub not string map.
+       * libjava.mauve/mauve.exp (mauve_compute_uses): Likewise.
+       (test_mauve): Likewise.
+
 2003-02-14  Mark Wielaard  <mark@klomp.org>
 
 	* lib/libjava.exp (test_libjava_from_javac): Don't create .o files

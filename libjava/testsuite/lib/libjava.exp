@@ -788,7 +788,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	foreach c_file $class_files {
 	    set executable [file rootname [file tail $c_file]].o
 	    # Don't write files which contain $ chars.
-	    set executable [string map {$ ^} $executable]
+	    regsub -all "\\$" $executable "\^" executable
 	    set x [libjava_prune_warnings \
 		     [libjava_tcompile '$c_file' "$executable" $type $args]]
 	    lappend removeList $executable
