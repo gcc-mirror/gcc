@@ -4207,6 +4207,12 @@ mips_expand_prologue ()
       if (frame_pointer_needed)
 	emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
     }
+
+  /* If we are profiling, make sure no instructions are scheduled before
+     the call to mcount.  */
+
+  if (profile_flag || profile_block_flag)
+    emit_insn (gen_blockage ());
 }
 
 
