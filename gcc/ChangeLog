@@ -1,3 +1,9 @@
+Fri Oct 16 17:26:10 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* cpplib.c (cpp_get_token): Replace whitespace that occurs between
+	a macro name and the next token with a single blank if that whitespace
+	is in a macro buffer and the next token is not '('.
+
 Fri Oct 16 15:44:02 1998  Dave Brolley  <brolley@cygnus.com>
 
         * cccp.c (rescan): Handle multibyte chartacters ending in backslash.
