@@ -3527,6 +3527,7 @@ tsubst (t, args, in_decl)
 	    TYPE_STUB_DECL (r) = TYPE_NAME (r) = TEMPLATE_TYPE_DECL (r);
 	    TYPE_MAIN_VARIANT (r) = r;
 	    TYPE_POINTER_TO (r) = NULL_TREE;
+	    TYPE_REFERENCE_TO (r) = NULL_TREE;
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
