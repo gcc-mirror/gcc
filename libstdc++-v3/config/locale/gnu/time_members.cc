@@ -46,14 +46,18 @@ namespace std
 	   const tm* __tm) const
     {
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      __strftime_l(__s, __maxlen, __format, __tm, _M_c_locale_timepunct);
+      const size_t __len = __strftime_l(__s, __maxlen, __format, __tm,
+					_M_c_locale_timepunct);
 #else
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, _M_name_timepunct);
-      strftime(__s, __maxlen, __format, __tm);
+      const size_t __len = strftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
       free(__old);
 #endif
+      // Make sure __s is null terminated.
+      if (__len == 0)
+	__s[0] = '\0';
     }
 
   template<> 
@@ -194,14 +198,18 @@ namespace std
 	   const tm* __tm) const
     {
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      __wcsftime_l(__s, __maxlen, __format, __tm, _M_c_locale_timepunct);
+      const size_t __len = __wcsftime_l(__s, __maxlen, __format, __tm,
+					_M_c_locale_timepunct);
 #else
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, _M_name_timepunct);
-      wcsftime(__s, __maxlen, __format, __tm);
+      const size_t __len = wcsftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
       free(__old);
 #endif
+      // Make sure __s is null terminated.
+      if (__len == 0)
+	__s[0] = L'\0';
     }
 
   template<> 

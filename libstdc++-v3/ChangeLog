@@ -1,3 +1,14 @@
+2004-08-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/17038 (partial)
+	* include/bits/locale_facets.tcc (time_put<>::do_put): Increase
+	__maxlen to 128.
+	* config/locale/generic/time_members.cc (_M_put): Always null
+	terminate __s.
+	* config/locale/gnu/time_members.cc (_M_put): Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: New.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: New.
+
 2004-08-27  Matthias Klose  <doko@debian.org>
 
 	* configure.host: For mips*-*-linux* update cpu_include_dir
