@@ -1,3 +1,7 @@
+2003-04-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* doc/contrib.texi (Contributors): Correct my entry.
+
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11-protos.h 

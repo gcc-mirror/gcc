@@ -409,7 +409,8 @@ with analysis and improvements of x86 performance.
 Ted Lemon wrote parts of the RTL reader and printer.
 
 @item
-Kriang Lerdsuwanakij for improvements to the demangler and many c++ fixes.
+Kriang Lerdsuwanakij for C++ improvements including template as template
+parameter support, and many C++ fixes.
 
 @item
 Warren Levy for tremendous work on libgcj (Java Runtime Library) and
