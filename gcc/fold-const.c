@@ -48,11 +48,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle floating overflow for `const_binop'.  */
 static jmp_buf float_error;
 
-void lshift_double ();
-void rshift_double ();
-void lrotate_double ();
-void rrotate_double ();
-static tree const_binop ();
+static void encode	PROTO((short *, HOST_WIDE_INT, HOST_WIDE_INT));
+static void decode	PROTO((short *, HOST_WIDE_INT *, HOST_WIDE_INT *));
+static int div_and_round_double PROTO((enum tree_code, int, HOST_WIDE_INT,
+				       HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, HOST_WIDE_INT *,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *,
+				       HOST_WIDE_INT *));
+static int split_tree	PROTO((tree, enum tree_code, tree *, tree *, int *));
+static tree const_binop PROTO((enum tree_code, tree, tree, int));
+static tree fold_convert PROTO((tree, tree));
+static enum tree_code invert_tree_comparison PROTO((enum tree_code));
+static enum tree_code swap_tree_comparison PROTO((enum tree_code));
+static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
+static int twoval_comparison_p PROTO((tree, tree *, tree *));
+static tree eval_subst	PROTO((tree, tree, tree, tree, tree));
+static tree omit_one_operand PROTO((tree, tree, tree));
+static tree distribute_bit_expr PROTO((enum tree_code, tree, tree, tree));
+static tree make_bit_field_ref PROTO((tree, tree, int, int, int));
+static tree optimize_bit_field_compare PROTO((enum tree_code, tree,
+					      tree, tree));
+static tree decode_field_reference PROTO((tree, int *, int *,
+					  enum machine_mode *, int *,
+					  int *, tree *));
+static int all_ones_mask_p PROTO((tree, int));
+static int simple_operand_p PROTO((tree));
+static tree range_test	PROTO((enum tree_code, tree, enum tree_code,
+			       enum tree_code, tree, tree, tree));
+static tree fold_truthop PROTO((enum tree_code, tree, tree, tree));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -345,8 +368,8 @@ mul_double (l1, h1, l2, h2, lv, hv)
 
 void
 lshift_double (l1, h1, count, prec, lv, hv, arith)
-     HOST_WIDE_INT l1, h1;
-     int count, prec;
+     HOST_WIDE_INT l1, h1, count;
+     int prec;
      HOST_WIDE_INT *lv, *hv;
      int arith;
 {
@@ -387,7 +410,8 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 
 void
 rshift_double (l1, h1, count, prec, lv, hv, arith)
-     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT l1, h1, count;
+     int prec;
      HOST_WIDE_INT *lv, *hv;
      int arith;
 {
@@ -422,7 +446,8 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
 
 void
 lrotate_double (l1, h1, count, prec, lv, hv)
-     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT l1, h1, count;
+     int prec;
      HOST_WIDE_INT *lv, *hv;
 {
   short arg1[MAX_SHORTS];
@@ -461,7 +486,8 @@ lrotate_double (l1, h1, count, prec, lv, hv)
 
 void
 rrotate_double (l1, h1, count, prec, lv, hv)
-     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT l1, h1, count;
+     int prec;
      HOST_WIDE_INT *lv, *hv;
 {
   short arg1[MAX_SHORTS];
@@ -2487,9 +2513,6 @@ all_ones_mask_p (mask, size)
 /* Subroutine for fold_truthop: determine if an operand is simple enough
    to be evaluated unconditionally.  */
 
-#ifdef __GNUC__
-__inline
-#endif
 static int 
 simple_operand_p (exp)
      tree exp;
@@ -2531,7 +2554,7 @@ simple_operand_p (exp)
 
    We return the simplified tree or 0 if no optimization is possible.  */
 
-tree
+static tree
 range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
      enum tree_code jcode, lo_code, hi_code;
      tree type, var, lo_cst, hi_cst;
