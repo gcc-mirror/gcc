@@ -1587,6 +1587,9 @@ emit_swap_insn (insn, regstack, reg)
 	return;
     }
 
+  if (sets_cc0_p (PATTERN (i1)))
+    link_cc0_insns (i1);
+
   swap_rtx = gen_swapdf (FP_mode_reg[hard_regno][(int) DFmode],
 			 FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
   swap_insn = emit_insn_after (swap_rtx, i1);
