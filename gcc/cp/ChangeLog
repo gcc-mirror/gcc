@@ -1,3 +1,10 @@
+1998-11-02  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* parse.y (apparent_template_type): new type
+	(named_complex_class_head_sans_basetype): use it
+	* Makefile.in (CONFLICTS): one new conflict
+	* parse.c: Regenerated
+
 1998-11-01  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (COMPARE_STRICT): New macro.
