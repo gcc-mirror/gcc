@@ -1,3 +1,8 @@
+2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
+
+	* expmed.c (store_bit_field): Ignore adjustment to bitpos
+	and use bitnum to decide about register move.
+
 2001-08-27  Richard Henderson  <rth@redhat.com>
 
 	* genattr.c (main): Emit state_t even when not doing scheduling.
