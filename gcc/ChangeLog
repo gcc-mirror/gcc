@@ -1,3 +1,9 @@
+2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (combine_strings): Emit a pedantic warning when a
+	string length is greater than the minimum ANSI C is required
+	to support.
+
 Wed Jul 12 13:24:30 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa/xm-pa64.h (NO_SYS_SIGLIST): Kill.
