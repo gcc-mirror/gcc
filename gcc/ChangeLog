@@ -1,3 +1,9 @@
+Wed Aug 11 00:34:22 1999  Joe Buck  <jbuck@synopsys.com>
+
+	* invoke.texi: s/GNU CC/GCC/ for consistency with gcc.texi.
+	Fix documentation of -ansi flag to describe its C++ behavior.
+	Remove bogus reference to GCC 2.9.
+
 Tue Aug 10 22:40:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Aug  5 22:27:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
