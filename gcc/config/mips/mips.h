@@ -3193,13 +3193,13 @@ while (0)
 /* This says how to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\
-  mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (ROUNDED))
+  mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (SIZE))
 
 /* This says how to define a local common symbol (ie, not visible to
    linker).  */
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (ROUNDED))
+  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE))
 
 
 /* This says how to output an external.  It would be possible not to
