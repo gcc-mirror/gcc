@@ -1601,8 +1601,14 @@ __main ()
 /* We declare the lists here with two elements each,
    so that they are valid empty lists if no other definition is loaded.  */
 #if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
+#ifdef __NeXT__
+/* After 2.3, try this definition on all systems.  */
+func_ptr __CTOR_LIST__[2] = {0, 0};
+func_ptr __DTOR_LIST__[2] = {0, 0};
+#else
 func_ptr __CTOR_LIST__[2];
 func_ptr __DTOR_LIST__[2];
+#endif
 #endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
 #endif /* L_ctors */
 
