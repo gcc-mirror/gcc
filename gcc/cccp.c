@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA. */
 #define PRINTF_PROTO_4(ARGS) PRINTF_PROTO(ARGS, 4, 5)
 
 #include "system.h"
-#include <sys/stat.h>
 #include <signal.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
