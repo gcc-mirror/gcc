@@ -5863,11 +5863,15 @@ fold (expr)
 		return pedantic_non_lvalue (convert (type, arg1));
 	      case GE_EXPR:
 	      case GT_EXPR:
+		if (TREE_UNSIGNED (TREE_TYPE (arg1)))
+		  arg1 = convert (signed_type (TREE_TYPE (arg1)), arg1);
 		return pedantic_non_lvalue
 		  (convert (type, fold (build1 (ABS_EXPR,
 						TREE_TYPE (arg1), arg1))));
 	      case LE_EXPR:
 	      case LT_EXPR:
+		if (TREE_UNSIGNED (TREE_TYPE (arg1)))
+		  arg1 = convert (signed_type (TREE_TYPE (arg1)), arg1);
 		return pedantic_non_lvalue
 		  (fold (build1 (NEGATE_EXPR, type,
 				 convert (type,
