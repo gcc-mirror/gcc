@@ -52,12 +52,13 @@ static tree call_eh_info PROTO((void));
 static void push_eh_info PROTO((void));
 static tree get_eh_info PROTO((void));
 static tree get_eh_value PROTO((void));
+#if 0
 static tree get_eh_type PROTO((void));
+#endif
 static tree get_eh_caught PROTO((void));
 static tree get_eh_handlers PROTO((void));
 static tree do_pop_exception PROTO((void));
 static void process_start_catch_block PROTO((tree, tree));
-static void process_start_catch_block_old PROTO((tree, tree));
 static tree build_eh_type_type_ref PROTO((tree));
 static tree build_terminate_handler PROTO((void));
 static tree alloc_eh_object PROTO((tree));
@@ -360,12 +361,14 @@ get_eh_value ()
 
 /* Returns a reference to the current exception type.  */
 
+#if 0
 static tree
 get_eh_type ()
 {
   return build_component_ref (get_eh_info (), get_identifier ("type"),
 			      NULL_TREE, 0);
 }
+#endif
 
 /* Returns a reference to whether or not the current exception
    has been caught.  */

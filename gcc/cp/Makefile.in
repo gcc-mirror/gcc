@@ -243,8 +243,8 @@ $(srcdir)/hash.h:
 	gperf -p -j1 -g -o -t -N is_reserved_word '-k1,4,7,$$' \
 		$(srcdir)/gxx.gperf >$(srcdir)/hash.h
 
-spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
-  $(PARSE_H) $(srcdir)/../flags.h lex.h $(srcdir)/../system.h
+spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
+  lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
   $(srcdir)/../c-pragma.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
