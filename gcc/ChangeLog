@@ -1,3 +1,8 @@
+Fri Oct 15 03:01:01 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* config/t-freebsd: Do not override USER_H.
+	* ginclude/stddef.h: Generalize check for _MACHINE_ANSI_H_.
+
 Fri Oct 15 02:37:28 1999  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
 			  Mumit Khan  <khan@xraylith.wisc.edu>
 
