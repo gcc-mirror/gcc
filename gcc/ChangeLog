@@ -1,3 +1,20 @@
+2002-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5gas.h (DWARF2_DEBUGGING_INFO): Define.
+	(PREFERRED_DEBUGGING_TYPE): Use DWARF2_DEBUG.
+	(LINK_SPEC): Define.
+	(STARTFILE_SPEC): Define.
+	(ENDFILE_SPEC): Define.
+
+	* config/mips/iris6-o32.h (LINK_SPEC): Move ...
+	* config/mips/iris6-o32-as.h (LINK_SPEC): ... here.
+
+	* config/mips/iris6-o32-gas.h: New file.
+	* config.gcc (mips-sgi-irix6*o32): Use it.
+
+	* config/mips/t-iris5-gas: New file.
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): Use it.
+
 2002-07-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (ALWAYS_EVAL): Remove.
