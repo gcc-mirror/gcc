@@ -901,10 +901,6 @@ typedef struct xtensa_args
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   xtensa_va_start (valist, nextarg)
 
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  xtensa_va_arg (valist, type)
-
 /* If defined, a C expression that produces the machine-specific code
    to setup the stack so that arbitrary frames can be accessed.
 
