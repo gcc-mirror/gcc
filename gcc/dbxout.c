@@ -1941,8 +1941,8 @@ dbxout_symbol (decl, local)
 	  && DECL_INITIAL (decl) != 0
 	  && host_integerp (DECL_INITIAL (decl), 0)
 	  && ! TREE_ASM_WRITTEN (decl)
-	  && (DECL_FIELD_CONTEXT (decl) == NULL_TREE
-	      || TREE_CODE (DECL_FIELD_CONTEXT (decl)) == BLOCK))
+	  && (DECL_CONTEXT (decl) == NULL_TREE
+	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK))
 	{
 	  if (TREE_PUBLIC (decl) == 0)
 	    {

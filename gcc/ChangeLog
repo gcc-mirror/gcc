@@ -1,3 +1,8 @@
+Wed Jun 28 21:09:33 2000   Raja R Harinath <harinath@cs.umn.edu>
+
+	* dbxout.c (dbxout_symbol, case RESULT_DECL, VAR_DECL): Use
+	DECL_CONTEXT, not DECL_FIELD_CONTEXT.
+
 2000-06-29  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* flow.c (flow_depth_first_order_compute): Fix algorithm.
