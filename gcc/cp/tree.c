@@ -403,21 +403,18 @@ build_cplus_array_type_1 (elt_type, index_type)
      tree elt_type;
      tree index_type;
 {
-  register struct obstack *ambient_obstack = current_obstack;
-  register struct obstack *ambient_saveable_obstack = saveable_obstack;
   tree t;
 
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
+  push_obstacks_nochange ();
+
   /* We need a new one.  If both ELT_TYPE and INDEX_TYPE are permanent,
      make this permanent too.  */
   if (TREE_PERMANENT (elt_type)
       && (index_type == 0 || TREE_PERMANENT (index_type)))
-    {
-      current_obstack = &permanent_obstack;
-      saveable_obstack = &permanent_obstack;
-    }
+    end_temporary_allocation ();
 
   if (processing_template_decl 
       || uses_template_parms (elt_type) 
@@ -432,10 +429,11 @@ build_cplus_array_type_1 (elt_type, index_type)
 
   /* Push these needs up so that initialization takes place
      more easily.  */
-  TYPE_NEEDS_CONSTRUCTING (t) = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
-  TYPE_NEEDS_DESTRUCTOR (t) = TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
-  current_obstack = ambient_obstack;
-  saveable_obstack = ambient_saveable_obstack;
+  TYPE_NEEDS_CONSTRUCTING (t) 
+    = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
+  TYPE_NEEDS_DESTRUCTOR (t) 
+    = TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
+  pop_obstacks ();
   return t;
 }
 
@@ -500,30 +498,43 @@ cp_build_qualified_type_real (type, type_quals, complain)
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree real_main_variant = TYPE_MAIN_VARIANT (type);
-      tree element_type = cp_build_qualified_type_real (TREE_TYPE (type),
-							type_quals,
-							complain);
-      push_obstacks (TYPE_OBSTACK (real_main_variant),
-		     TYPE_OBSTACK (real_main_variant));
-      type = build_cplus_array_type_1 (element_type,
-				       TYPE_DOMAIN (type));
-      if (type == error_mark_node)
+      /* In C++, the qualification really applies to the array element
+	 type.  Obtain the appropriately qualified element type.  */
+      tree t;
+      tree element_type 
+	= cp_build_qualified_type_real (TREE_TYPE (type), 
+					type_quals,
+					complain);
+
+      if (element_type == error_mark_node)
 	return error_mark_node;
 
-      /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
-	 make a copy.  (TYPE might have come from the hash table and
-	 REAL_MAIN_VARIANT might be in some function's obstack.)  */
+      /* See if we already have an identically qualified type.  */
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	if (CP_TYPE_QUALS (t) == type_quals)
+	  break;
 
-      if (TYPE_OBSTACK (type) != TYPE_OBSTACK (real_main_variant))
+      /* If we didn't already have it, create it now.  */
+      if (!t)
 	{
-	  type = copy_node (type);
-	  TYPE_POINTER_TO (type) = TYPE_REFERENCE_TO (type) = 0;
+	  /* Make a new array type, just like the old one, but with the
+	     appropriately qualified element type.  */
+	  t = build_type_copy (type);
+	  TREE_TYPE (t) = element_type;
 	}
 
-      TYPE_MAIN_VARIANT (type) = real_main_variant;
-      pop_obstacks ();
-      return type;
+      /* Even if we already had this variant, we update
+	 TYPE_NEEDS_CONSTRUCTING and TYPE_NEEDS_DESTRUCTOR in case
+	 they changed since the variant was originally created.  
+	 
+	 This seems hokey; if there is some way to use a previous
+	 variant *without* coming through here,
+	 TYPE_NEEDS_CONSTRUCTING will never be updated.  */
+      TYPE_NEEDS_CONSTRUCTING (t) 
+	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (element_type));
+      TYPE_NEEDS_DESTRUCTOR (t) 
+	= TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (element_type));
+      return t;
     }
   return build_qualified_type (type, type_quals);
 }
