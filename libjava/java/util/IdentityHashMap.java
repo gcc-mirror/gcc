@@ -172,7 +172,7 @@ public class IdentityHashMap extends AbstractMap
 	if (table[h] == emptyslot)
 	  return null;
 	h += 2;
-	if (h > table.length)
+	if (h >= table.length)
 	  h = 0;
 	if (h == save)
 	  return null;
@@ -257,7 +257,7 @@ public class IdentityHashMap extends AbstractMap
 	    break;
 	  }
 	h += 2;
-	if (h > table.length)
+	if (h >= table.length)
 	  h = 0;
 	if (h == save)
 	  break;

@@ -1,3 +1,8 @@
+2001-08-21  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/util/IdentityHashMap.java (get): Fix off-by-one error.
+	(put): Likewise.
+
 2001-08-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/GridBagConstraints.java: Removed comment.
