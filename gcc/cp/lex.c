@@ -2853,6 +2853,9 @@ is_global (d)
   while (1)
     switch (TREE_CODE (d))
       {
+      case ERROR_MARK:
+	return 1;
+
       case OVERLOAD: d = OVL_FUNCTION (d); continue;
       case TREE_LIST: d = TREE_VALUE (d); continue;
       default:

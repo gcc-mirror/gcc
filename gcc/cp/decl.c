@@ -2571,20 +2571,9 @@ decls_match (newdecl, olddecl)
 	types_match = TREE_TYPE (newdecl) == NULL_TREE;
       else if (TREE_TYPE (newdecl) == NULL_TREE)
 	types_match = 0;
-      /* Qualifiers must match, and they may be present on either, the type
-	 or the decl.  */
-      else if ((TREE_READONLY (newdecl)
-		|| TYPE_READONLY (TREE_TYPE (newdecl)))
-	       == (TREE_READONLY (olddecl)
-		   || TYPE_READONLY (TREE_TYPE (olddecl)))
-	       && (TREE_THIS_VOLATILE (newdecl)
-		    || TYPE_VOLATILE (TREE_TYPE (newdecl)))
-		   == (TREE_THIS_VOLATILE (olddecl)
-		       || TYPE_VOLATILE (TREE_TYPE (olddecl))))
-	types_match = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (newdecl)),
-				 TYPE_MAIN_VARIANT (TREE_TYPE (olddecl)), 1);
       else
-	types_match = 0;
+	types_match = comptypes (TREE_TYPE (newdecl),
+				 TREE_TYPE (olddecl), 1);
     }
 
   return types_match;
@@ -2907,13 +2896,6 @@ duplicate_decls (newdecl, olddecl)
 	      cp_warning_at ("previous non-inline declaration here",
 			     olddecl);
 	    }
-	}
-      /* These bits are logically part of the type for non-functions.  */
-      else if (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
-	       || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl))
-	{
-	  cp_pedwarn ("type qualifiers for `%#D'", newdecl);
-	  cp_pedwarn_at ("conflict with previous decl `%#D'", olddecl);
 	}
     }
 
@@ -9084,7 +9066,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   constp = !! RIDBIT_SETP (RID_CONST, specbits) + TYPE_READONLY (type);
   volatilep = !! RIDBIT_SETP (RID_VOLATILE, specbits) + TYPE_VOLATILE (type);
-  type = build_type_variant (type, 0, 0);
+  type = cp_build_type_variant (type, constp, volatilep);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
@@ -9817,6 +9799,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    pedwarn ("discarding `volatile' applied to a reference");
 		  constp = volatilep = 0;
 		}
+	      type = cp_build_type_variant (type, constp, volatilep);
 	    }
 	  declarator = TREE_OPERAND (declarator, 0);
 	  ctype = NULL_TREE;
@@ -10903,7 +10886,11 @@ grokparms (first_parm, funcdef_flag)
 					 NULL_TREE);
 		  if (! decl)
 		    continue;
-		  type = TREE_TYPE (decl);
+
+		  /* Top-level qualifiers on the parameters are
+		     ignored for function types.  */
+		  type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
+
 		  if (TREE_CODE (type) == VOID_TYPE)
 		    decl = void_type_node;
 		  else if (TREE_CODE (type) == METHOD_TYPE)

@@ -48,8 +48,9 @@ static tree *current_class_base, *current_class_stack;
 static int current_class_stacksize;
 int current_class_depth;
 
-/* The current_class_ptr is the pointer to the current class.
-   current_class_ref is the actual current class.  */
+/* When we're processing a member function, current_class_ptr is the
+   PARM_DECL for the `this' pointer.  The current_class_ref is an
+   expression for `*this'.  */
 tree current_class_ptr, current_class_ref;
 
 /* The following two can be derived from the previous one */

@@ -321,7 +321,7 @@ build_member_function_pointer (member)
   GNU_xref_ref (current_function_decl, name);
 
   entry = build_lang_field_decl (FIELD_DECL, get_identifier (name),
-				 TYPE_MAIN_VARIANT (sigtable_entry_type));
+				 sigtable_entry_type);
   TREE_CONSTANT (entry) = 1;
   TREE_READONLY (entry) = 1;
 

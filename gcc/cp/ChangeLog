@@ -1,3 +1,36 @@
+1998-10-03  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (current_class_ptr, current_class_ref): Clarify
+	documentation.
+	* cvt.c (ocp_convert): Don't expect fold to remove all trivial
+	NOP type conversions.
+	* decl.c (decls_match): Use comptypes directly; ignore
+	qualifiers on the DECL.
+	(duplicate_decls): Remove qualifier checks on DECL.
+	(grokdeclarator): Make the type built up include top-level
+	qualifiers.
+	* decl2.c (do_dtors): Fix spelling error.
+	* error.c (dump_simple_decl): Don't look at qualifiers on the decl
+	when printing type information.
+	* init.c (build_new_1): Add documentation.  Deal with the fact
+	that type of allocated memory now contains qualifiers.
+	* lex.c (is_global): Improve error-recovery.
+	* sig.c (build_member_function_pointer): Don't cast away const
+	on fields of sigtable_entry_type.
+	* tree.c (lvalue_type): Don't look at top-level qualifiers on
+	expressions.
+	* typeck.c (decay_conversion): Likewise.
+	(build_component_ref): Make sure the type of the COMPONENT_REF
+	contains top-level qualifiers, as appropriate.  Improve
+	error-handling. 
+	(build_indirect_ref): Simplify.  Don't strip top-level qualifiers.
+	(build_array_ref): Likewise.
+	(build_unary_op): Improve error-recovery.
+	(unary_complex_lvalue): Make taking the address a bound member
+	function an error, not a sorry.
+	(build_conditional_expr): Look at the type qualifiers, not the
+	qualifiers on the expression itself.
+	
 1998-10-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (merge_functions): Remove duplicates.

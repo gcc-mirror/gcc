@@ -3192,7 +3192,7 @@ do_dtors (start)
 
 	       Access control for implicit calls to the constructors,
 	       the conversion functions, or the destructor called to
-	       create and destroy a static data member is per- formed as
+	       create and destroy a static data member is performed as
 	       if these calls appeared in the scope of the member's
 	       class.  
 
