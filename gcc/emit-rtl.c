@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "real.h"
 #include "obstack.h"
+#include "bitmap.h"
 
 /* Commonly used modes.  */
 
@@ -382,6 +383,14 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
 	    case 'E':		/* An RTX vector?  */
 	      XVEC (rt_val, i) = va_arg (p, rtvec);
+	      break;
+
+	    case 'b':           /* A bitmap? */
+	      XBITMAP (rt_val, i) = va_arg (p, bitmap);
+	      break;
+
+	    case 't':           /* A tree? */
+	      XTREE (rt_val, i) = va_arg (p, tree);
 	      break;
 
 	    default:

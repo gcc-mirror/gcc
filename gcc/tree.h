@@ -671,6 +671,18 @@ struct tree_exp
 #define BLOCK_ABSTRACT_ORIGIN(NODE) ((NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) ((NODE)->block.abstract_flag)
 #define BLOCK_END_NOTE(NODE) ((NODE)->block.end_note)
+/* Nonzero means that this block has separate live range regions */
+#define BLOCK_LIVE_RANGE_FLAG(NOTE) ((NOTE)->block.live_range_flag)
+
+/* Nonzero means that this block has a variable declared in it
+   that is split into separate live ranges.  */
+#define BLOCK_LIVE_RANGE_VAR_FLAG(NOTE) ((NOTE)->block.live_range_var_flag)
+
+/* Index for marking the start of the block for live ranges.  */
+#define BLOCK_LIVE_RANGE_START(NOTE) ((NOTE)->block.live_range_start)
+
+/* Index for marking the end of the block for live ranges.  */
+#define BLOCK_LIVE_RANGE_END(NOTE) ((NOTE)->block.live_range_end)
 
 /* Nonzero means that this block is prepared to handle exceptions
    listed in the BLOCK_VARS slot.  */
@@ -682,6 +694,8 @@ struct tree_block
 
   unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
+  unsigned live_range_flag : 1;
+  unsigned live_range_var_flag : 1;
 
   union tree_node *vars;
   union tree_node *type_tags;
@@ -689,6 +703,8 @@ struct tree_block
   union tree_node *supercontext;
   union tree_node *abstract_origin;
   struct rtx_def *end_note;
+  int live_range_start;
+  int live_range_end;
 };
 
 /* Define fields and accessors for nodes representing data types.  */
@@ -971,6 +987,9 @@ struct tree_type
    to the variable's data type, while the mode
    of DECL_RTL is the mode actually used to contain the data.  */
 #define DECL_RTL(NODE) ((NODE)->decl.rtl)
+/* Holds an INSN_LIST of all of the live ranges in which the variable
+   has been moved to a possibly different register.  */
+#define DECL_LIVE_RANGE_RTL(NODE) ((NODE)->decl.live_range_rtl)
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
 #define DECL_INCOMING_RTL(NODE) ((NODE)->decl.saved_insns.r)
@@ -1191,6 +1210,7 @@ struct tree_decl
   union tree_node *machine_attributes;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
+  struct rtx_def *live_range_rtl;
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For FIELD_DECL, this is DECL_FIELD_SIZE.  */
   union {
