@@ -1,3 +1,8 @@
+2000-10-20  Tom Tromey  <tromey@cygnus.com>
+
+	* cppspec.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Added -MF and -MT.
+	* gcc.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Added -MF and -MT.
+
 Fri Oct 20 17:05:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case SAVE_EXPR): Set RTX_UNCHANGING_P on
