@@ -90,16 +90,6 @@
 extern int option_main;
 extern char **file_names;
 
-/* Flags etc required by c code.  */
-
-int warn_format = 0;
-int warn_format_y2k = 0;
-int warn_format_extra_args = 0;
-int warn_format_nonliteral = 0;
-int warn_format_security = 0;
-int warn_format_zero_length = 0;
-
-
 /* The front end language hooks (addresses of code for this front
    end).  Mostly just use the C routines.  */
 
@@ -850,21 +840,6 @@ tree_ggc_storage_always_used (void * m)
 
 /* Following  from c-lang.c.  */
 
-/* Tell the c code we are not objective C.  */
-
-int
-maybe_objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
-                      tree rhs ATTRIBUTE_UNUSED,
-                      int reflexive ATTRIBUTE_UNUSED);
-
-int
-maybe_objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
-                      tree rhs ATTRIBUTE_UNUSED,
-                      int reflexive ATTRIBUTE_UNUSED)
-{
-  return -1;
-}
-
 /* Used by c-typeck.c (build_external_ref), but only for objc.  */
 
 tree
@@ -881,17 +856,6 @@ check_function_format (int *status ATTRIBUTE_UNUSED,
                        tree params ATTRIBUTE_UNUSED)
 {
   return;
-}
-
-/* Tell the c code we are not objective C.  */
-
-tree
-maybe_building_objc_message_expr (void);
-
-tree
-maybe_building_objc_message_expr ()
-{
-  return 0;
 }
 
 /* Tell the c code we are not objective C.  */
@@ -966,14 +930,6 @@ expand_stmt (tree t ATTRIBUTE_UNUSED)
 
 cpp_reader *
 cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-cpp_post_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   abort ();
 }
@@ -1063,17 +1019,6 @@ set_Wformat (int setting ATTRIBUTE_UNUSED)
   abort ();
 }
 
-/* Should not be called for treelang.   */
-
-void
-maybe_objc_check_decl (tree decl ATTRIBUTE_UNUSED);
-
-void
-maybe_objc_check_decl (tree decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
 /* Used for objective C.  */
 
 void
@@ -1082,6 +1027,7 @@ objc_check_decl (tree decl ATTRIBUTE_UNUSED);
 void
 objc_check_decl (tree decl ATTRIBUTE_UNUSED)
 {
+  abort ();
 }
 
 /* Tell the c code we are not objective C.  */
@@ -1201,12 +1147,6 @@ cpp_get_callbacks (cpp_reader * cr ATTRIBUTE_UNUSED)
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
-
-/* This variable keeps a table for types for each precision so that we
-   only allocate each of them once.  Signed and unsigned types are
-   kept separate.  */
-
-tree integer_types[itk_none] = { NULL_TREE};
 
 /* The reserved keyword table.  */
 struct resword
