@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-23
+@set last-update-news 1999-04-24
 
 @include root.texi
 
@@ -179,6 +179,9 @@ Instead, it issues a diagnostic.
 Fix @code{g77} so it properly handles @samp{DATA A/@var{rpt}*@var{val}/},
 where @var{rpt} is not default @code{INTEGER}, such as @code{INTEGER*2},
 instead of producing a spurious diagnostic.
+Also fix @samp{DATA (A(I),I=1,N)},
+where @samp{N} is not default @code{INTEGER}
+to work instead of crashing @code{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
