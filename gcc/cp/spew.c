@@ -351,9 +351,6 @@ read_token (t)
       t->yychar = STRING;
       break;
 
-      /* This token should not be generated in C++ mode.  */
-    case CPP_OSTRING:
-
       /* These tokens should not survive translation phase 4.  */
     case CPP_HASH:
     case CPP_PASTE:
@@ -1499,8 +1496,7 @@ yyerror (msgid)
 	error ("%s before %s'\\x%x'", string, ell, val);
     }
   else if (last_token == CPP_STRING
-	   || last_token == CPP_WSTRING
-	   || last_token == CPP_OSTRING)
+	   || last_token == CPP_WSTRING)
     error ("%s before string constant", string);
   else if (last_token == CPP_NUMBER
 	   || last_token == CPP_INT

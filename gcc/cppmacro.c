@@ -291,8 +291,7 @@ stringify_arg (pfile, arg)
       unsigned int len = cpp_token_len (token);
 
       escape_it = (token->type == CPP_STRING || token->type == CPP_WSTRING
-		   || token->type == CPP_CHAR || token->type == CPP_WCHAR
-		   || token->type == CPP_OSTRING);
+		   || token->type == CPP_CHAR || token->type == CPP_WCHAR);
 
       if (escape_it)
 	/* Worst case is each char is octal.  */
