@@ -1,3 +1,8 @@
+2004-10-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17581
+	* gcc.dg/pr17581-1.c: New test case.
+
 2004-10-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/conversion/dr195.C: Adjust expected errors for DR195 not
