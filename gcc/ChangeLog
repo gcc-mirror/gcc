@@ -1,3 +1,11 @@
+2003-02-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/rs6000/rs6000.md (clzsi2): Rename from cntlzw2.
+	(ffssi2): Use clz instead of unspec.
+	(clzdi2): Rename from cntlzd2.
+	(ffsdi2): Use clz instead of unspec.
+
 2003-02-07  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/alpha/freebsd.h (LINK_SPEC): Weaken error to notice.
