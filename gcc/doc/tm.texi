@@ -7610,6 +7610,15 @@ Default value is false if @code{EH_FRAME_SECTION_NAME} is defined, and
 true otherwise.
 @end deftypevar
 
+@deftypefn {Target Hook} rtx TARGET_DWARF_REGISTER_SPAN (rtx @var{reg})
+Given a register, this hook should return a parallel of registers to
+represent where to find the register pieces.  Define this hook if the
+register and its mode are represented in Dwarf in non-contiguous
+locations, or if the register should be represented in more than one
+register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
+If not defined, the default is to return @code{NULL_RTX}.
+@end deftypefn
+
 @node Alignment Output
 @subsection Assembler Commands for Alignment
 

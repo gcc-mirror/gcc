@@ -157,3 +157,10 @@ hook_rtx_rtx_identity (x)
   return x;
 }
 
+/* Generic hook that takes an rtx and returns NULL_RTX.  */
+rtx
+hook_rtx_rtx_null (x)
+     rtx x ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
