@@ -1161,11 +1161,9 @@ build_aggr_init (exp, init, flags)
 	  return error_mark_node;
 	}
       if (cp_type_quals (type) != TYPE_UNQUALIFIED)
-	{
-	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
-	  if (init)
-	    TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
-	}
+	TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
+      if (itype && cp_type_quals (itype) != TYPE_UNQUALIFIED)
+	TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
       stmt_expr = build_vec_init (exp, init,
 				  init && same_type_p (TREE_TYPE (init),
 						       TREE_TYPE (exp)));
@@ -2586,6 +2584,10 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
      This is also the containing expression returned by this function.  */
   tree controller = NULL_TREE;
 
+  /* We should only have 1-D arrays here.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    abort ();
+
   if (! IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
       loop = integer_zero_node;
@@ -3002,12 +3004,20 @@ build_vec_init (base, init, from_array)
       && from_array != 2)
     {
       tree e;
+      tree m = cp_build_binary_op (MINUS_EXPR, maxindex, iterator);
+
+      /* Flatten multi-dimensional array since build_vec_delete only
+	 expects one-dimensional array.  */
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  m = cp_build_binary_op (MULT_EXPR, m,
+				  array_type_nelts_total (type));
+	  type = strip_array_types (type);
+	}
 
       finish_compound_stmt (/*has_no_scope=*/1, try_body);
       finish_cleanup_try_block (try_block);
-      e = build_vec_delete_1 (rval,
-			      cp_build_binary_op (MINUS_EXPR, maxindex, 
-						  iterator),
+      e = build_vec_delete_1 (rval, m,
 			      type,
 			      sfk_base_destructor,
 			      /*use_global_delete=*/0);
