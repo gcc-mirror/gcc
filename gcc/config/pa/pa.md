@@ -979,6 +979,27 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "&=r")
+	(mem:SI (plus:SI (plus:SI 
+			    (mult:SI (match_operand:SI 1 "register_operand" "r")
+				     (const_int 4))
+			    (match_operand:SI 2 "register_operand" "r"))
+			 (match_operand:SI 3 "const_int_operand" "rI"))))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh2add %1,%2,%0\;ldw %3(0,%0),%0\";
+  else
+    return \"sh2add %1,%2,%0\;ldwx %3(0,%0),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "8")])
+
 ;; Load or store with base-register modification.
 
 (define_insn "pre_ldwm"
@@ -1186,6 +1207,27 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=&r")
+	(mem:HI (plus:SI (plus:SI 
+			    (mult:SI (match_operand:SI 2 "register_operand" "r")
+				     (const_int 2))
+			    (match_operand:SI 1 "register_operand" "r"))
+			 (match_operand:SI 3 "const_int_operand" "rI"))))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh1add %2,%1,%0\;ldh %3(0,%0),%0\";
+  else
+    return \"sh1add %2,%1,%0\;ldhx %3(0,%0),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "8")])
+
 (define_insn ""
   [(set (match_operand:HI 3 "register_operand" "=r")
 	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
@@ -1380,6 +1422,30 @@
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
 
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+;; Ugh. Output is a FP register; so we need to earlyclobber something
+;; else as a temporary. 
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(mem:DF (plus:SI 
+		  (plus:SI 
+		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
+			     (const_int 8))
+		    (match_operand:SI 2 "register_operand" "r"))
+		  (match_operand:SI 3 "const_int_operand" "rL"))))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh3add %1,%2,%1\;fldds %3(0,%1),%0\";
+  else
+    return \"sh3add %1,%2,%1\;flddx %3(0,%1),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "8")])
+
 (define_insn ""
   [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 8))
@@ -1389,6 +1455,30 @@
   "fstdx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
+
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+;; Ugh. Output is a FP register; so we need to earlyclobber something
+;; else as a temporary. 
+(define_insn ""
+  [(set (mem:DF (plus:SI 
+		  (plus:SI 
+		     (mult:SI (match_operand:SI 1 "register_operand" "+&r")
+			      (const_int 8))
+		     (match_operand:SI 2 "register_operand" "r"))
+		  (match_operand:SI 3 "const_int_operand" "rL")))
+	(match_operand:DF 0 "register_operand" "=fx"))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh3add %1,%2,%1\;fstds %3(0,%1),%0\";
+  else
+    return \"sh3add %1,%2,%1\;fstdx %3(0,%1),%0\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "8")])
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
@@ -1562,6 +1652,30 @@
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
 
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+;; Ugh. Output is a FP register; so we need to earlyclobber something
+;; else as a temporary. 
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(mem:SF (plus:SI 
+		  (plus:SI 
+		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
+			     (const_int 4))
+		    (match_operand:SI 2 "register_operand" "r"))
+		  (match_operand:SI 3 "const_int_operand" "rL"))))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh2add %1,%2,%1\;fldws %3(0,%1),%0\";
+  else
+    return \"sh2add %1,%2,%1\;fldwx %3(0,%1),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "8")])
+
 (define_insn ""
   [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
@@ -1571,6 +1685,30 @@
   "fstwx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
+
+;; This variant of the above insn can occur if the second operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize it while reloading.
+;; Ugh. Output is a FP register; so we need to earlyclobber something
+;; else as a temporary. 
+(define_insn ""
+  [(set (mem:SF (plus:SI 
+		  (plus:SI 
+		     (mult:SI (match_operand:SI 1 "register_operand" "+&r")
+			      (const_int 4))
+		     (match_operand:SI 2 "register_operand" "r"))
+		  (match_operand:SI 3 "const_int_operand" "rL")))
+	(match_operand:SF 0 "register_operand" "=fx"))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh2add %1,%2,%1\;fstds %3(0,%1),%0\";
+  else
+    return \"sh2add %1,%2,%1\;fstdx %3(0,%1),%0\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "8")])
 
 ;;- zero extension instructions
 
@@ -2392,7 +2530,7 @@
 
 ;; This variant of the above insn can occur if the first operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize them while reloading.
+;; seem to be a way around it.  Only recognize it while reloading.
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=&r")
