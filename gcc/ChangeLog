@@ -1,3 +1,21 @@
+2004-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s_imm_operand): Remove.
+	(s390_pool_operand): Add prototype.
+	* config/s390/s390.c (general_s_operand): Remove.
+	(s_imm_operand): Remove.
+	(s_operand): Merge contents of general_s_operand.
+	(s390_pool_operand): New function.
+	* config/s390/s390.h (PREDICATE_CODES): Remove s_imm_operand.
+	* config/s390/s390.md ("*cmpdi_cct", "*cmpsi_cct"): New insns.
+	("*cmpdi_ccu"): Merge Q->Q alternative.
+	("*cmpsi_ccu", "*cmphi_ccu"): Likewise.
+	("*cmpqi_ccu"): Merge Q->Q, n->Q, n->S alternatives.
+	("*cli"): Remove.
+	("*cmpdi_ccu_mem", "*cmpsi_ccu_mem"): Likewise.
+	("*cmphi_ccu_mem", "*cmpqi_ccu_mem"): Likewise.
+	("*movstricthi"): Use memory_operand instead of s_imm_operand.
+
 2004-10-06  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.h (FUNCTION_ARG_BOUNDARY): Change macro to
