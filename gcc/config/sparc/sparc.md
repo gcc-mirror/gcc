@@ -93,6 +93,9 @@
 
 (define_attr "branch_type" "none,icc,fcc,reg" (const_string "none"))
 
+(define_attr "pic" "false,true"
+  (symbol_ref "flag_pic != 0"))
+
 ;; Length (in # of insns).
 (define_attr "length" ""
   (cond [(eq_attr "type" "uncond_branch,call,sibcall")
@@ -8877,22 +8880,41 @@
   DONE;
 }")
 
-;; ??? Should set length to zero when !current_function_calls_alloca,
-;; ??? but there is no easy way to get at that definition.  It would
-;; ??? require including function.h into sparc-protos.h and that is
-;; ??? likely not a good idea. -DaveM
 (define_insn "do_builtin_setjmp_setup"
   [(unspec_volatile [(const_int 0)] 5)]
   ""
   "*
 {
-  if (!current_function_calls_alloca)
-    return \"\";
-  if (TARGET_V9)
-    return \"flushw\";
-  return \"ta\\t3\";
+  if (! current_function_calls_alloca || ! TARGET_V9 || TARGET_FLAT)
+    return \"#\";
+  fputs (\"\tflushw\n\", asm_out_file);
+  if (flag_pic)
+    fprintf (asm_out_file, \"\tst%c\t%%l7, [%%sp+%d]\n\",
+	     TARGET_ARCH64 ? 'x' : 'w',
+	     SPARC_STACK_BIAS + 7 * UNITS_PER_WORD);
+  fprintf (asm_out_file, \"\tst%c\t%%fp, [%%sp+%d]\n\",
+	   TARGET_ARCH64 ? 'x' : 'w',
+	   SPARC_STACK_BIAS + 14 * UNITS_PER_WORD);
+  fprintf (asm_out_file, \"\tst%c\t%%i7, [%%sp+%d]\n\",
+	   TARGET_ARCH64 ? 'x' : 'w',
+	   SPARC_STACK_BIAS + 15 * UNITS_PER_WORD);
+  return \"\";
 }"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set (attr "length") (if_then_else (eq_attr "pic" "true")
+				       (const_int 4)
+				       (const_int 3)))])
+
+(define_split
+  [(unspec_volatile [(const_int 0)] 5)]
+  "! current_function_calls_alloca || ! TARGET_V9 || TARGET_FLAT"
+  [(const_int 0)]
+  "
+{
+  if (current_function_calls_alloca)
+    emit_insn (gen_flush_register_windows ());
+  DONE;
+}")
 
 ;; Pattern for use after a setjmp to store FP and the return register
 ;; into the stack area.
