@@ -243,6 +243,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	printf ("const1_rtx");
       else if (INTVAL (x) == -1)
 	printf ("constm1_rtx");
+      else if (-MAX_SAVED_CONST_INT <= INTVAL (x)
+	  && INTVAL (x) <= MAX_SAVED_CONST_INT)
+	printf ("const_int_rtx[MAX_SAVED_CONST_INT + (%d)]",
+		(int) INTVAL (x));
       else if (INTVAL (x) == STORE_FLAG_VALUE)
 	printf ("const_true_rtx");
       else

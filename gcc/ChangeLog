@@ -1,5 +1,10 @@
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* genemit.c (gen_exp) [CONST_INT]: Use const_int_rtx whenever
+	possible.
+
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* reload1.c (eliminate_regs_in_insn): If a set has a REG_EQUAL
 	note containing (plus (reg) (const_int)), where reg is an
 	eliminable reg, then perform the register elimination without
