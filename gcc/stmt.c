@@ -3510,6 +3510,17 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
       tree cleanup_elt = TREE_PURPOSE (decl_elts);
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (decl_elt));
 
+      /* Propagate the union's alignment to the elements.  */
+      DECL_ALIGN (decl_elt) = DECL_ALIGN (decl);
+
+      /* If the element has BLKmode and the union doesn't, the union is
+         aligned such that the element doesn't need to have BLKmode, so
+         change the element's mode to the appropriate one for its size.  */
+      if (mode == BLKmode && DECL_MODE (decl) != BLKmode)
+	DECL_MODE (decl_elt) = mode
+	  = mode_for_size (TREE_INT_CST_LOW (DECL_SIZE (decl_elt)),
+			   MODE_INT, 1);
+
       /* (SUBREG (MEM ...)) at RTL generation time is invalid, so we
          instead create a new MEM rtx with the proper mode.  */
       if (GET_CODE (x) == MEM)
