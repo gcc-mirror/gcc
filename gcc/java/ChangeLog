@@ -1,5 +1,20 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	Minor optimization of static ggc roots.
+	* jcf-parse.c (parse_roots):  New static field.
+	(current_field, current_method, current_file_list):  Replace by macros
+	naming fields of parse_roots.
+	(init_jcf_parse):  Combine 3 ggc_add_tree_root calls to 1.
+	* class.c (class_roots):  New static field.
+	(registered_class, fields_ident, info_ident, class_list):
+	New macros naming fields of parse_roots.
+	(build_static_field_ref):  Don't register roots here.
+	(layout_class):  Static field list replaced by macro class_list.
+	(init_class_processing):  Call ggc_add_tree_root for 4 roots.
+	Initialize fields_ident and info_ident here.
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	* jcf-parse.c (ggc_mark_jcf):  New function.
 	(init_jcf_parse):  Register current_jcf as ggc root.
 
