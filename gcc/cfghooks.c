@@ -321,7 +321,7 @@ split_block (basic_block bb, void *i)
       set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
     }
 
-  return make_edge (bb, new_bb, EDGE_FALLTHRU);
+  return make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 }
 
 /* Splits block BB just after labels.  The newly created edge is returned.  */
@@ -566,6 +566,9 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 	dummy->frequency = 0;
       if (dummy->count < 0)
 	dummy->count = 0;
+      fallthru->count -= e->count;
+      if (fallthru->count < 0)
+	fallthru->count = 0;
 
       jump = redirect_edge_and_branch_force (e, bb);
       if (jump)

@@ -1,3 +1,11 @@
+2004-06-22  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* cfghooks.c (make_forwarder_block): Decrement count on fallthru edge
+	when redirecting back edges.
+
+	* cfghooks.c (split_block): Call make_single_succ_edge so that edge
+	count/probability are set correctly.
+
 2004-06-22  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (emit_side_effect_warnings): Ignore error marks.
