@@ -1,3 +1,7 @@
+1999-04-01  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (cppmain$(exeext)): Depend on intl.o.  Link in intl.o.
+
 Thu Apr  1 03:48:34 1999  H.J. Lu  (hjl@gnu.org)
 
 	* i386.c (output_fp_conditional_move): Abort for LT, LE, GE, and GT
