@@ -1,3 +1,10 @@
+2002-04-07  Mark Wielaard <mark@klomp.org>
+
+	* java/util/Hashtable.java (contains): Remove NullPointer check.
+	(containsValue): Add NullPointer check.
+	(remove): Always throw NullPointerException when key
+	is null.
+
 2002-04-07  Adam King <aking@dreammechanics.com>
 
 	* java/lang/natSystem.cc (init_properties): Call new function
@@ -25,7 +32,7 @@
 
 2002-04-05  Mark Wielaard <mark@klomp.org>
 
-	* java/util/ArrayList.jva (removeRange): If toIndex == fromIndex do
+	* java/util/ArrayList.java (removeRange): If toIndex == fromIndex do
 	nothing, if toIndex < fromIndex throw IndexOutIfBoundsException.
 
 2002-04-05  Adam Megacz <adam@xwt.org>
