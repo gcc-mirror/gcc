@@ -47,9 +47,12 @@ Boston, MA 02111-1307, USA.  */
    macros. */
 
 #define TREE_CODE(TYPE) *TYPE
+#define TREE_TYPE(TREE) TREE
+
 #define RECORD_TYPE     _C_STRUCT_B
 #define UNION_TYPE      _C_UNION_B
 #define QUAL_UNION_TYPE _C_UNION_B
+#define ARRAY_TYPE      _C_ARY_B
 
 #define TYPE_FIELDS(TYPE)     objc_skip_typespec (TYPE)
 
@@ -57,6 +60,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define DFmode          _C_DBL
 
+#define get_inner_array_type(TYPE)      objc_skip_typespec(TYPE)
 
 
 static inline int
