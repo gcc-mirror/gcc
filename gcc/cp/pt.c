@@ -7483,13 +7483,6 @@ tsubst_expr (t, args, complain, in_decl)
     
   switch (TREE_CODE (t))
     {
-    case RETURN_INIT:
-      prep_stmt (t);
-      finish_named_return_value
-	(TREE_OPERAND (t, 0),
-	 tsubst_expr (TREE_OPERAND (t, 1), args, complain, in_decl));
-      break;
-
     case CTOR_INITIALIZER:
       prep_stmt (t);
       finish_mem_initializers (tsubst_initializer_list 

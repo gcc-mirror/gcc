@@ -1104,7 +1104,6 @@ cp_statement_code_p (code)
   switch (code)
     {
     case CTOR_INITIALIZER:
-    case RETURN_INIT:
     case TRY_BLOCK:
     case HANDLER:
     case EH_SPEC_BLOCK:

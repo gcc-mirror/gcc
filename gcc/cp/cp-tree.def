@@ -256,7 +256,6 @@ DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 1)
-DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
 DEFTREECODE (TRY_BLOCK, "try_block", 'e', 2)
 DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", 'e', 2)
 /* A HANDLER wraps a catch handler for the HANDLER_TYPE.  If this is

@@ -855,6 +855,21 @@ begin_scope (sk)
 
   switch (sk)
     {
+    case sk_block:
+      break;
+
+    case sk_try:
+      current_binding_level->is_try_scope = 1;
+      break;
+
+    case sk_catch:
+      current_binding_level->is_catch_scope = 1;
+      break;
+
+    case sk_for:
+      current_binding_level->is_for_scope = 1;
+      break;
+
     case sk_template_spec:
       current_binding_level->template_spec_p = 1;
       /* Fall through.  */
@@ -874,28 +889,6 @@ void
 finish_scope ()
 {
   poplevel (0, 0, 0);
-}
-
-void
-note_level_for_for ()
-{
-  current_binding_level->is_for_scope = 1;
-}
-
-/* Record that the current binding level represents a try block.  */
-
-void
-note_level_for_try ()
-{
-  current_binding_level->is_try_scope = 1;
-}
-
-/* Record that the current binding level represents a catch block.  */
-
-void
-note_level_for_catch ()
-{
-  current_binding_level->is_catch_scope = 1;
 }
 
 /* For a binding between a name and an entity at a block scope,
@@ -1394,7 +1387,7 @@ poplevel (keep, reverse, functionbody)
 
   /* We still support the old for-scope rules, whereby the variables
      in a for-init statement were in scope after the for-statement
-     ended.  We only use the new rules in flag_new_for_scope is
+     ended.  We only use the new rules if flag_new_for_scope is
      nonzero.  */
   leaving_for_scope
     = current_binding_level->is_for_scope && flag_new_for_scope == 1;
@@ -8199,8 +8192,6 @@ maybe_inject_for_scope_var (decl)
 	    = DECL_SHADOWED_FOR_VAR (BINDING_VALUE (outer_binding));
 	  current_binding_level->is_for_scope = 0;
 	}
-      else if (DECL_IN_MEMORY_P (decl))
-	preserve_temp_slots (DECL_RTL (decl));
     }
 }
 

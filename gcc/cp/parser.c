@@ -1198,7 +1198,7 @@ static cp_parser_context *cp_parser_context_new
 
 /* Class variables.  */
 
-static GTY(()) cp_parser_context* cp_parser_context_free_list;
+static GTY((deletable (""))) cp_parser_context* cp_parser_context_free_list;
 
 /* Constructors and destructors.  */
 
@@ -8332,7 +8332,6 @@ cp_parser_template_argument (parser)
 
      Therefore, we try a type-id first.  */
   cp_parser_parse_tentatively (parser);
-  /* Otherwise, try a type-id.  */
   argument = cp_parser_type_id (parser);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */

@@ -1857,14 +1857,6 @@ struct lang_decl GTY(())
        && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)))	\
    || (flag_syntax_only && TREE_USED (DECL)))
 
-/* Nonzero iff DECL is memory-based.  The DECL_RTL of
-   certain const variables might be a CONST_INT, or a REG
-   in some cases.  We cannot use `memory_operand' as a test
-   here because on most RISC machines, a variable's address
-   is not, by itself, a legitimate address.  */
-#define DECL_IN_MEMORY_P(NODE) \
-  (DECL_RTL_SET_P (NODE) && GET_CODE (DECL_RTL (NODE)) == MEM)
-
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
    class, or a local variable) do not have linkage at all, and this
@@ -3043,6 +3035,11 @@ typedef enum cp_lvalue_kind {
 
 /* The kinds of scopes we recognize.  */
 typedef enum scope_kind {
+  sk_block,          /* An ordinary block scope.  */
+  sk_try,	     /* A try-block.  */
+  sk_catch,          /* A catch-block.  */
+  sk_for,            /* The scope of the variable declared in a
+			for-init-statement.  */
   sk_template_parms, /* A scope for template parameters.  */
   sk_template_spec   /* A scope corresponding to a template
 			specialization.  There is never anything in
@@ -3689,9 +3686,6 @@ extern void set_class_shadows			PARAMS ((tree));
 extern void maybe_push_cleanup_level		PARAMS ((tree));
 extern void begin_scope                         PARAMS ((scope_kind));
 extern void finish_scope                        PARAMS ((void));
-extern void note_level_for_for			PARAMS ((void));
-extern void note_level_for_try			PARAMS ((void));
-extern void note_level_for_catch		PARAMS ((void));
 extern void resume_level			PARAMS ((struct cp_binding_level *));
 extern void delete_block			PARAMS ((tree));
 extern void add_block_current_level		PARAMS ((tree));
@@ -4224,10 +4218,9 @@ extern tree finish_sizeof			PARAMS ((tree));
 extern tree finish_alignof			PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_eh_cleanup                   PARAMS ((tree));
-extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
 extern tree nullify_returns_r		      PARAMS ((tree *, int *, void *));
-extern void do_pushlevel                        PARAMS ((void));
+extern void do_pushlevel                        (scope_kind);
 extern tree do_poplevel                         PARAMS ((void));
 extern void begin_mem_initializers              (void);
 extern void finish_mem_initializers             PARAMS ((tree));
@@ -4426,9 +4419,6 @@ extern tree mangle_ref_init_variable            PARAMS ((tree));
 
 /* in dump.c */
 extern int cp_dump_tree                         PARAMS ((void *, tree));
-
-/* in parser.c */
-extern int pending_lang_change;
 
 /* -- end of C++ */
 

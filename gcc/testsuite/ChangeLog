@@ -1,5 +1,7 @@
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/init/array9.C: New test.
+
 	PR c++/9112
 	* g++.dg/parse/expr1.C: New test.
 
