@@ -36,7 +36,7 @@
 
 #pragma GCC system_header
 
-#include <fstream>
+#include <streambuf>
 #include <unistd.h>
 
 #if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
@@ -47,6 +47,8 @@
 #  define _GLIBCXX_ISREG(x) (((x) & S_IFMT) == S_IFREG)
 # endif
 #endif
+
+#include <cstdio>
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 #include <cwchar>
