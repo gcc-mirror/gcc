@@ -1,3 +1,7 @@
+2003-11-17  Eric Christopher  <echristo@redhat.com>
+
+	* reload1.c (reload): Fix previous change.
+
 2003-11-17  Scott Snyder  <snyder@fnal.gov>
 
 	PR debug/11325
@@ -92,7 +96,7 @@
 	autoconf, automake and perl requirements.  Document required
 	gettext version.
 
-2003-11-14  Jason Merrill  <jason@redhat.com>
+<2003-11-14  Jason Merrill  <jason@redhat.com>
 
 	* function.c (assign_parms): Use TREE_TYPE to determine the real
 	type of the argument object.
@@ -119,7 +123,7 @@
 	* config/frv/frv-protos.h: Update for C90.
 	* config/frv/frv.h: Likewise.
 	* config/frv/frvbegin.c: Likewise.
-	* config/frv/frv.c: Likewise. 
+	* config/frv/frv.c: Likewise.
 	(frv_adjust_field_align): Delete unused variable.
 
 2003-11-14  Geoffrey Keating  <geoffk@apple.com>
@@ -165,7 +169,7 @@
 
 2003-11-14  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c (arm_emit_vector_const, arm_output_load_gr): Use ISO C 
+	* arm.c (arm_emit_vector_const, arm_output_load_gr): Use ISO C
 	function definition syntax.
 
 2003-11-14  Eric Christopher  <echristo@redhat.com>

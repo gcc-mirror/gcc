@@ -915,9 +915,9 @@ reload (rtx first, int global)
 	    if (strict_memory_address_p (GET_MODE (regno_reg_rtx[i]),
 					 XEXP (x, 0)))
 	      reg_equiv_mem[i] = x, reg_equiv_address[i] = 0;
-	    else if ((CONSTANT_P (x)
-		      && LEGITIMATE_CONSTANT_P (x)
-		      && PREFERRED_RELOAD_CLASS (x, class) != NO_REGS)
+	    else if ((CONSTANT_P (XEXP (x, 0))
+		      && LEGITIMATE_CONSTANT_P (XEXP (x, 0))
+		      && PREFERRED_RELOAD_CLASS (XEXP (x, 0), class) != NO_REGS)
 		     || (GET_CODE (XEXP (x, 0)) == REG
 			 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
 		     || (GET_CODE (XEXP (x, 0)) == PLUS
