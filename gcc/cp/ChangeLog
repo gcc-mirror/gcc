@@ -1,3 +1,8 @@
+2001-12-08  Aldy Hernandez  <aldyh@redhat.com>
+
+        * lex.c (rid_to_yy): Add RID_CHOOSE_EXPR and
+        RID_TYPES_COMPATIBLE_P.
+
 2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* semantics.c (simplify_aggr_init_exprs_r): Add DIRECT_BIND flag in
