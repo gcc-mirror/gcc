@@ -1,4 +1,32 @@
-Thu Mar 14 19:04:29 CET 2002  Jan HUbicka  <jh@suse.cz>
+2002-03-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpphash.h (struct lexer_state): Remove line_extension member.
+	* cpplib.c (dequote_string, do_linemarker): New functions.
+	(linemarker_dir): New data object.
+	(DIRECTIVE_TABLE): No longer need to interpret #line in
+	preprocessed source.  Delete obsolete comment about return
+	values of handlers.
+	(end_directive, directive_diagnostics, _cpp_handle_directive):
+	Don't muck with line_extension.
+	(directive_diagnostics): No need to issue warnings for
+	linemarkers here.
+	(_cpp_handle_directive): Issue warnings for linemarkers here,
+	when appropriate.  Dispatch linemarkers to do_linemarker, not
+	do_line.
+	(do_line): Code to handle linemarkers split out to do_linemarker.
+	Convert escape sequences in filename argument, both places.
+
+	* cppmacro.c (quote_string): Rename cpp_quote_string and
+	export.  All callers changed.
+	* cpplib.h (cpp_quote_string): Prototype.
+	* cppmain.c (print_line): Call cpp_quote_string on to_file
+	before printing it.
+
+	* doc/cpp.texi: Document that escapes are now interpreted in
+	#line and in linemarkers, and that non-printing characters are
+	converted to octal escapes when linemarkers are generated.
+
+Thu Mar 14 19:04:29 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (try_split): Use delete_insns.
 	* recog.c (split_all_insns): Fix terminating condition.
@@ -79,7 +107,7 @@ Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-03-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_target_asm_function_prologue): Revert
-	2002-03-12 internal visibility change. 
+	2002-03-12 internal visibility change.
 	(cris_encode_section_info): Consider MODULE_LOCAL_P when encoding
 	visibility into SYMBOL_REF_FLAG.
 
@@ -96,8 +124,8 @@ Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-13  Hartmut Penner  <hpenner@de.ibm.com>
 
-        * config/s390/s390.h (PROFILE_BEFORE_PROLOGUE): Emit profile code
-        before prologue, to avoid scheduling problems.
+	* config/s390/s390.h (PROFILE_BEFORE_PROLOGUE): Emit profile code
+	before prologue, to avoid scheduling problems.
 
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -207,7 +235,7 @@ Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-03-12  Tom Rix  <trix@redhat.com>
 
 	* collect2.c (resolve_lib_name): Move outside of
-	OBJECT_FORMAT_COFF ifdef. 
+	OBJECT_FORMAT_COFF ifdef.
 	(ignore_library): Same.
 
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
@@ -331,7 +359,7 @@ Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 	    Daniel Berlin  <dan@dberlin.org>
 
 	C++ alias analysis improvement.
-	* alias.c (record_component_aliases): Record aliases for base 
+	* alias.c (record_component_aliases): Record aliases for base
 	classes too.
 
 2002-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
