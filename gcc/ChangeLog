@@ -1,3 +1,9 @@
+2000-12-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/lib1funcs.asm (interwork_call_via_, call_via_): Do
+	not create these functions if the target architecture does not
+	support Thumb instructions.
+
 2000-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ONEWS: New file with the current contents of NEWS up to EGCS

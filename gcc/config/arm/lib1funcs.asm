@@ -657,10 +657,9 @@ Lover12:
    assembler because their presence allows interworked code to be linked even
    when the GCC library is this one.  */
 		
-/* Do not build the interworking functions when the target cpu
-   is the arm v3 architecture.  (This is one of the multilib
-   options).  */
-#if defined L_call_via_rX && ! defined __ARM_ARCH_3__
+/* Do not build the interworking functions when the target architecture does 
+   not support Thumb instructions.  (This can be a multilib option).  */
+#if defined L_call_via_rX && (defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__ || defined __ARM_ARCH_5TE__)
 
 /* These labels & instructions are used by the Arm/Thumb interworking code. 
    The address of function to be called is loaded into a register and then 
@@ -699,10 +698,9 @@ Lover12:
 
 #endif /* L_call_via_rX */
 /* ------------------------------------------------------------------------ */
-/* Do not build the interworking functions when the target cpu
-   is the arm v3 architecture.  (This is one of the multilib
-   options).  */
-#if defined L_interwork_call_via_rX && ! defined __ARM_ARCH_3__
+/* Do not build the interworking functions when the target architecture does 
+   not support Thumb instructions.  (This can be a multilib option).  */
+#if defined L_interwork_call_via_rX && (defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__ || defined __ARM_ARCH_5TE__)
 
 /* These labels & instructions are used by the Arm/Thumb interworking code,
    when the target address is in an unknown instruction set.  The address 
