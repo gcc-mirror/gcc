@@ -1,3 +1,7 @@
+2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* gccbug.in: Update optimization -> tree-optimization/rtl-optimization.
+
 2004-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* real.c: Fix bit count in head comment.
