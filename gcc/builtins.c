@@ -3090,7 +3090,14 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 {
   /* If return value is ignored, transform stpcpy into strcpy.  */
   if (target == const0_rtx)
-    return expand_builtin_strcpy (arglist, target, mode);
+    {
+      tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+      if (!fn)
+	return 0;
+
+      return expand_expr (build_function_call_expr (fn, arglist),
+			  target, mode, EXPAND_NORMAL);
+    }
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
