@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -650,7 +650,7 @@ init_parse (filename)
   IDENTIFIER_OPNAME_P (ansi_opname[(int) VEC_NEW_EXPR]) = 1;
   ansi_opname[(int) VEC_DELETE_EXPR] = get_identifier ("__vd");
   IDENTIFIER_OPNAME_P (ansi_opname[(int) VEC_DELETE_EXPR]) = 1;
-  ansi_opname[(int) TYPE_EXPR] = get_identifier ("__op");
+  ansi_opname[(int) TYPE_EXPR] = get_identifier (OPERATOR_TYPENAME_FORMAT);
   IDENTIFIER_OPNAME_P (ansi_opname[(int) TYPE_EXPR]) = 1;
 
   /* This is not true: these operators are not defined in ANSI,

@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -293,10 +293,12 @@ struct tree_srcloc
 /* Nonzero if this identifier is the prefix for a mangled C++ operator name.  */
 #define IDENTIFIER_OPNAME_P(NODE) TREE_LANG_FLAG_2(NODE)
 
-#define IDENTIFIER_TYPENAME_P(NODE)	\
-  (! strncmp (IDENTIFIER_POINTER (NODE),			\
-	      IDENTIFIER_POINTER (ansi_opname[(int) TYPE_EXPR]),	\
-	      IDENTIFIER_LENGTH (ansi_opname[(int) TYPE_EXPR])))
+/* Nonzero if this identifier is the name of a type-conversion
+   operator.  */
+#define IDENTIFIER_TYPENAME_P(NODE)			\
+  (! strncmp (IDENTIFIER_POINTER (NODE),		\
+              OPERATOR_TYPENAME_FORMAT,			\
+	      strlen (OPERATOR_TYPENAME_FORMAT)))
 
 /* Nonzero means reject anything that ANSI standard C forbids.  */
 extern int pedantic;
@@ -723,11 +725,12 @@ struct lang_type
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
+      unsigned is_partial_instantiation : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 12;
+      unsigned dummy : 11;
     } type_flags;
 
   int n_ancestors;
@@ -1913,6 +1916,12 @@ extern int flag_new_for_scope;
 #define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
   (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
 
+/* Non-zero if TYPE is a partial instantiation of a template class,
+   i.e., an instantiation whose instantiation arguments involve
+   template types.  */
+#define PARTIAL_INSTANTIATION_P(TYPE) \
+  (TYPE_LANG_SPECIFIC (TYPE)->type_flags.is_partial_instantiation)
+
 /* Non-zero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
    full specialization.  */
@@ -2189,12 +2198,6 @@ extern int current_function_parms_stored;
 #define OPERATOR_ASSIGN_FORMAT "__a%s"
 #define OPERATOR_FORMAT "__%s"
 #define OPERATOR_TYPENAME_FORMAT "__op"
-#define OPERATOR_TYPENAME_P(ID_NODE) \
-  (IDENTIFIER_POINTER (ID_NODE)[0] == '_'	\
-   && IDENTIFIER_POINTER (ID_NODE)[1] == '_'	\
-   && IDENTIFIER_POINTER (ID_NODE)[2] == 'o'	\
-   && IDENTIFIER_POINTER (ID_NODE)[3] == 'p')
-
 
 /* Cannot use '$' up front, because this confuses gdb
    (names beginning with '$' are gdb-local identifiers).
