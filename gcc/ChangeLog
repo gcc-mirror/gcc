@@ -1,3 +1,8 @@
+2002-04-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/pa/pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON,
+        ASM_OUTPUT_ALIGNED_LOCAL): Redefine them.
+
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-decl.c (grokdeclarator): Update.
