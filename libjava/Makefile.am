@@ -142,9 +142,12 @@ $(java_source_files:.java=.class): libgcj.zip
 $(built_java_source_files:.java=.class): $(built_java_source_files)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
-	javac="$(JAVAC)"; \
-	$$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
-	  -d $(here) $?
+	@javac="$(JAVAC)"; \
+	for f in $?; do \
+	  echo $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` -d $(here) $$f; \
+	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	  -d $(here) $$f; \
+	done
 
 ## We have the zip file depend on the java sources and not the class
 ## files, because we don't know the names of all the class files.
@@ -153,20 +156,24 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 ## `make libgcj.zip' will not rebuilt foo.class.  That's because
 ## libgcj.zip is not out-of-date with respect to foo.java.
 libgcj.zip: $(java_source_files)
+## Create a list of all Java sources, without exceeding any shell limits.
+	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 ## FIXME: this ought to depend on built_java_source_files, but right
 ## now it can't.  Ugly.
 	$(MAKE) $(built_java_source_files:.java=.class)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
-	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
-	    $(subst $(srcdir)/,,$?)
-	-@rm -f libgcj.zip
+	@javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
+	  for f in `cat $$dir/tmp-list`; do \
+	    echo $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
+	    $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
+	done
+	-@rm -f tmp-list libgcj.zip
 ## Note that we explicitly want to include directory information.
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
-CLEANFILES = libgcj.zip
+CLEANFILES = tmp-list libgcj.zip
 
 clean-local:
 ## We just remove every .class file that was created.

@@ -207,7 +207,7 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 libgcj_la_LINK = $(LIBLINK)
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
-CLEANFILES = libgcj.zip
+CLEANFILES = tmp-list libgcj.zip
 
 SUFFIXES = .class .java .h
 
@@ -2060,16 +2060,22 @@ mostlyclean distclean maintainer-clean
 $(java_source_files:.java=.class): libgcj.zip
 
 $(built_java_source_files:.java=.class): $(built_java_source_files)
-	javac="$(JAVAC)"; \
-	$$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
-	  -d $(here) $?
+	@javac="$(JAVAC)"; \
+	for f in $?; do \
+	  echo $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` -d $(here) $$f; \
+	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	  -d $(here) $$f; \
+	done
 
 libgcj.zip: $(java_source_files)
+	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 	$(MAKE) $(built_java_source_files:.java=.class)
-	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
-	    $(subst $(srcdir)/,,$?)
-	-@rm -f libgcj.zip
+	@javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
+	  for f in `cat $$dir/tmp-list`; do \
+	    echo $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
+	    $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
+	done
+	-@rm -f tmp-list libgcj.zip
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
 clean-local:
