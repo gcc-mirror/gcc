@@ -1,5 +1,11 @@
 2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_stack_info): Fix caching of SPE
+	64-bit register usage.
+	(spe_func_has_64bit_regs_p): Add FIXME note.
+
+2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
+
 	* config/rs6000/rs6000.c (rs6000_generate_compare): Replace
 	flag_finite_math_only with flag_unsafe_math_optimizations.
 
