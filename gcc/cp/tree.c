@@ -171,7 +171,7 @@ lvalue_p (ref)
 int
 lvalue_or_else (ref, string)
      tree ref;
-     char *string;
+     const char *string;
 {
   int win = lvalue_p (ref);
   if (! win)
