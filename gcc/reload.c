@@ -381,13 +381,16 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  insn_class
 	    = (insn_letter == 'r' ? GENERAL_REGS
 	       : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+
+          if (insn_class == NO_REGS)
+	    abort ();
+	  if (in_p
+	      && insn_data[(int) icode].operand[!in_p].constraint[0] != '=')
+	    abort ();
 	}
 
-      if (insn_class == NO_REGS
-	  || (in_p
-	      && insn_data[(int) icode].operand[!in_p].constraint[0] != '=')
-	  /* The scratch register's constraint must start with "=&".  */
-	  || insn_data[(int) icode].operand[2].constraint[0] != '='
+      /* The scratch register's constraint must start with "=&".  */
+      if (insn_data[(int) icode].operand[2].constraint[0] != '='
 	  || insn_data[(int) icode].operand[2].constraint[1] != '&')
 	abort ();
 
