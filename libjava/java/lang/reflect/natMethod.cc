@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,10 +37,6 @@ details.  */
 #include <java/lang/Class.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
-
-// FIXME: remove these
-#define ObjectClass java::lang::Object::class$
-#define ClassClass java::lang::Class::class$
 
 #include <stdlib.h>
 
@@ -200,14 +196,27 @@ java::lang::reflect::Method::getName ()
 void
 java::lang::reflect::Method::getType ()
 {
-  _Jv_GetTypesFromSignature (_Jv_FromReflectedMethod (this),
+  _Jv_Method *method = _Jv_FromReflectedMethod (this);
+  _Jv_GetTypesFromSignature (method,
 			     declaringClass,
 			     &parameter_types,
 			     &return_type);
 
-  // FIXME: for now we have no way to get exception information.
-  exception_types = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass,
-							 NULL);
+  int count = 0;
+  if (method->throws != NULL)
+    {
+      while (method->throws[count] != NULL)
+	++count;
+    }
+
+  exception_types
+    = (JArray<jclass> *) JvNewObjectArray (count,
+					   &java::lang::Class::class$,
+					   NULL);
+  jclass *elts = elements (exception_types);
+  for (int i = 0; i < count; ++i)
+    elts[i] = _Jv_FindClassFromSignature (method->throws[i]->data,
+					  declaringClass->getClassLoader ());
 }
 
 void
@@ -254,7 +263,7 @@ _Jv_GetTypesFromSignature (jmethodID method,
     }
 
   JArray<jclass> *args = (JArray<jclass> *)
-    JvNewObjectArray (numArgs, &ClassClass, NULL);
+    JvNewObjectArray (numArgs, &java::lang::Class::class$, NULL);
   jclass* argPtr = elements (args);
   for (ptr = sig->data; *ptr != '\0'; ptr++)
     {

@@ -77,11 +77,11 @@ public final class Constructor extends AccessibleObject implements Member
       StringBuffer b = new StringBuffer ();
       b.append(Modifier.toString(getModifiers()));
       b.append(" ");
-      b.append(getName());
+      Method.appendClassName (b, declaringClass);
       b.append("(");
       for (int i = 0; i < parameter_types.length; ++i)
 	{
-	  b.append(parameter_types[i].getName());
+	  Method.appendClassName (b, parameter_types[i]);
 	  if (i < parameter_types.length - 1)
 	    b.append(",");
 	}

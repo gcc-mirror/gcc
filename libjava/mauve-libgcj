@@ -32,3 +32,4 @@ java.text.StringCharacterIterator.iter
 !java.text.DecimalFormatSymbols.DumpDefault12
 !java.text.DecimalFormatSymbols.GetSet12
 !java.text.resources
+!java.lang.Math

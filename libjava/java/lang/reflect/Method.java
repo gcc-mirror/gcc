@@ -25,24 +25,24 @@ import gnu.gcj.RawData;
 public final class Method extends AccessibleObject implements Member
 {
   public boolean equals (Object obj)
-    {
-      if (! (obj instanceof Method))
-	return false;
-      Method m = (Method) obj;
-      return declaringClass == m.declaringClass && offset == m.offset;
-    }
+  {
+    if (! (obj instanceof Method))
+      return false;
+    Method m = (Method) obj;
+    return declaringClass == m.declaringClass && offset == m.offset;
+  }
 
   public Class getDeclaringClass ()
-    {
-      return declaringClass;
-    }
+  {
+    return declaringClass;
+  }
 
   public Class[] getExceptionTypes ()
-    {
-      if (exception_types == null)
-	getType();
-      return (Class[]) exception_types.clone();
-    }
+  {
+    if (exception_types == null)
+      getType();
+    return (Class[]) exception_types.clone();
+  }
 
   public native int getModifiers ();
 
@@ -51,62 +51,82 @@ public final class Method extends AccessibleObject implements Member
   private native void getType ();
 
   public Class[] getParameterTypes ()
-    {
-      if (parameter_types == null)
-	getType();
-      return (Class[]) parameter_types.clone();
-    }
+  {
+    if (parameter_types == null)
+      getType();
+    return (Class[]) parameter_types.clone();
+  }
 
   public Class getReturnType ()
-    {
-      if (return_type == null)
-	getType();
-      return return_type;
-    }
+  {
+    if (return_type == null)
+      getType();
+    return return_type;
+  }
 
   public int hashCode ()
-    {
-      // FIXME.
-      return getName().hashCode() + declaringClass.getName().hashCode();
-    }
+  {
+    // FIXME.
+    return getName().hashCode() + declaringClass.getName().hashCode();
+  }
 
   public native Object invoke (Object obj, Object[] args)
     throws IllegalAccessException, IllegalArgumentException,
-           InvocationTargetException;
+    InvocationTargetException;
+
+  // Append a class name to a string buffer.  We try to print the
+  // fully-qualified name, the way that a Java programmer would expect
+  // it to be written.  Weirdly, Class has no appropriate method for
+  // this.
+  static void appendClassName (StringBuffer buf, Class k)
+  {
+    if (k.isArray ())
+      {
+	appendClassName (buf, k.getComponentType ());
+	buf.append ("[]");
+      }
+    else
+      {
+	// This is correct for primitive and reference types.  Really
+	// we'd like `Main$Inner' to be printed as `Main.Inner', I
+	// think, but that is a pain.
+	buf.append (k.getName ());
+      }
+  }
 
   public String toString ()
-    {
-      if (parameter_types == null)
-	getType ();
+  {
+    if (parameter_types == null)
+      getType ();
 
-      StringBuffer b = new StringBuffer ();
-      Modifier.toString(getModifiers(), b);
-      b.append(" ");
-      b.append(return_type.getName());
-      b.append(" ");
-      b.append(declaringClass.getName());
-      b.append(".");
-      b.append(getName());
-      b.append("(");
-      for (int i = 0; i < parameter_types.length; ++i)
-	{
-	  b.append(parameter_types[i].getName());
-	  if (i < parameter_types.length - 1)
-	    b.append(",");
-	}
-      b.append(")");
-      if (exception_types.length > 0)
-	{
-	  b.append(" throws ");
-	  for (int i = 0; i < exception_types.length; ++i)
-	    {
-	      b.append(exception_types[i].getName());
-	      if (i < exception_types.length - 1)
-		b.append(",");
-	    }
-	}
-      return b.toString();
-    }
+    StringBuffer b = new StringBuffer ();
+    Modifier.toString(getModifiers(), b);
+    b.append(" ");
+    appendClassName (b, return_type);
+    b.append(" ");
+    appendClassName (b, declaringClass);
+    b.append(".");
+    b.append(getName());
+    b.append("(");
+    for (int i = 0; i < parameter_types.length; ++i)
+      {
+	appendClassName (b, parameter_types[i]);
+	if (i < parameter_types.length - 1)
+	  b.append(",");
+      }
+    b.append(")");
+    if (exception_types.length > 0)
+      {
+	b.append(" throws ");
+	for (int i = 0; i < exception_types.length; ++i)
+	  {
+	    appendClassName (b, exception_types[i]);
+	    if (i < exception_types.length - 1)
+	      b.append(",");
+	  }
+      }
+    return b.toString();
+  }
 
   private Method ()
   {

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -257,9 +257,9 @@ public final class Field extends AccessibleObject implements Member
 	Modifier.toString(mods, sbuf);
 	sbuf.append(' ');
       }
-    sbuf.append(getType().getName());
+    Method.appendClassName (sbuf, getType ());
     sbuf.append(' ');
-    sbuf.append(getDeclaringClass().getName());
+    Method.appendClassName (sbuf, getDeclaringClass());
     sbuf.append('.');
     sbuf.append(getName());
     return sbuf.toString();

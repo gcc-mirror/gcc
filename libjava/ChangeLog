@@ -1,3 +1,20 @@
+2001-08-23  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/Field.java (toString): Use
+	Method.appendClassName.
+	* java/lang/reflect/Constructor.java (toString): Use
+	Method.appendClassName.
+	* java/lang/reflect/Method.java: Reindented.
+	(appendClassName): New method.
+	(toString): Use it.
+	* defineclass.cc (handleMethod ): Initialize `throws' field of
+	method.
+	(read_one_method_attribute): Handle Exceptions attribute.
+	* java/lang/reflect/natMethod.cc (ClassClass): Removed.
+	(ObjectClass): Removed.
+	(getType): Compute `exception_types'.
+	* java/lang/Class.h (struct _Jv_Method): Added `throws' field.
+
 2001-08-21  Anthony Green  <green@redhat.com>
 
         * java/lang/natClassLoader.cc (findClass): Search for
