@@ -1,3 +1,8 @@
+2001-01-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_lookup_label): Set DECL_CONTEXT for FORMAT
+	label to current_function_decl.
+
 Fri Jan 12 17:21:33 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77spec.c (lang_specific_driver): Update copyright year to 2001.
