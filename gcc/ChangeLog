@@ -1,3 +1,8 @@
+Fri Jun  8 21:52:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (CONST_COSTS): set cost of constants representable in
+	immediate fields to 0.
+
 Fri Jun  8 21:34:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (diddle_return_value): Kill code to determine
