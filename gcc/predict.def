@@ -104,6 +104,7 @@ DEF_PREDICTOR (PRED_CALL, "call", HITRATE (70), 0)
 
 /* Branch causing function to terminate is probably not taken.  */
 DEF_PREDICTOR (PRED_EARLY_RETURN, "early return", HITRATE (67), 0)
+DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (67), 0)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (70), 0)
