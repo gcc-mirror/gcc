@@ -1112,8 +1112,17 @@
   else
     {
       rtx macl = gen_rtx_REG (SImode, MACL_REG);
+      rtx giv_insn;
+
       first = emit_insn (gen_mul_l (operands[1], operands[2]));
-      emit_insn (gen_movsi_i ((operands[0]), macl));
+      /* consec_sets_giv can only recognize the first insn that sets a
+	 giv as the giv insn.  So we must tag this also with a REG_EQUAL
+	 note.  */
+      giv_insn = emit_insn (gen_movsi_i ((operands[0]), macl));
+      REG_NOTES (giv_insn)
+	= gen_rtx_EXPR_LIST (REG_EQUAL,
+			     gen_rtx_MULT (SImode, operands[1], operands[2]),
+					   REG_NOTES (giv_insn));
       /* The sequence must end in a no-op move, lest cse puts macl in its
 	 tables and does invalid substitutions.  */
       last = emit_insn (gen_movsi_i ((operands[0]), operands[0]));
