@@ -7488,12 +7488,12 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
 	if (unordered_p)
 	  return "ucomiss\t{%1, %0|%0, %1}";
 	else
-	  return "comiss\t{%1, %0|%0, %y}";
+	  return "comiss\t{%1, %0|%0, %1}";
       else
 	if (unordered_p)
 	  return "ucomisd\t{%1, %0|%0, %1}";
 	else
-	  return "comisd\t{%1, %0|%0, %y}";
+	  return "comisd\t{%1, %0|%0, %1}";
     }
 
   if (! STACK_TOP_P (cmp_op0))
