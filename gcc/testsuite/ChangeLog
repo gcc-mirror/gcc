@@ -1,3 +1,7 @@
+2003-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030309-1.c: New test.
+
 2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
         * gcc.c-torture/execute/20030316-1.c: New test case.

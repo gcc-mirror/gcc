@@ -1,3 +1,8 @@
+2003-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* ifcvt.c (dead_or_predicable): Fail if there are any references
+	to tablejump in merge_bb other than the final JUMP_INSN.
+
 2003-03-19  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/10073
