@@ -25,6 +25,7 @@ extern const char *rev_cond_name (rtx);
 extern void split_quadword_operands (rtx *, rtx *, int);
 extern void print_operand_address (FILE *, rtx);
 extern int vax_float_literal (rtx);
+extern void vax_notice_update_cc (rtx, rtx);
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE

@@ -788,3 +788,72 @@ vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 {
   return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
 }
+
+/* Worker function for NOTICE_UPDATE_CC.  */
+
+void
+vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (exp) == SET)
+    {
+      if (GET_CODE (SET_SRC (exp)) == CALL)
+	CC_STATUS_INIT;
+      else if (GET_CODE (SET_DEST (exp)) != ZERO_EXTRACT
+	       && GET_CODE (SET_DEST (exp)) != PC)
+	{
+	  cc_status.flags = 0;
+	  /* The integer operations below don't set carry or
+	     set it in an incompatible way.  That's ok though
+	     as the Z bit is all we need when doing unsigned
+	     comparisons on the result of these insns (since
+	     they're always with 0).  Set CC_NO_OVERFLOW to
+	     generate the correct unsigned branches.  */
+	  switch (GET_CODE (SET_SRC (exp)))
+	    {
+	    case NEG:
+	      if (GET_MODE_CLASS (GET_MODE (exp)) == MODE_FLOAT)
+	 	break;
+	    case AND:
+	    case IOR:
+	    case XOR:
+	    case NOT:
+	    case MEM:
+	    case REG:
+	      cc_status.flags = CC_NO_OVERFLOW;
+	      break;
+	    default:
+	      break;
+	    }
+	  cc_status.value1 = SET_DEST (exp);
+	  cc_status.value2 = SET_SRC (exp);
+	}
+    }
+  else if (GET_CODE (exp) == PARALLEL
+	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
+    {
+      if (GET_CODE (SET_SRC (XVECEXP (exp, 0, 0))) == CALL)
+	CC_STATUS_INIT;
+      else if (GET_CODE (SET_DEST (XVECEXP (exp, 0, 0))) != PC)
+	{
+	  cc_status.flags = 0;
+	  cc_status.value1 = SET_DEST (XVECEXP (exp, 0, 0));
+	  cc_status.value2 = SET_SRC (XVECEXP (exp, 0, 0));
+	}
+      else
+	/* PARALLELs whose first element sets the PC are aob,
+	   sob insns.  They do change the cc's.  */
+	CC_STATUS_INIT;
+    }
+  else
+    CC_STATUS_INIT;
+  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG
+      && cc_status.value2
+      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
+    cc_status.value2 = 0;
+  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM
+      && cc_status.value2
+      && GET_CODE (cc_status.value2) == MEM)
+    cc_status.value2 = 0;
+  /* Actual condition, one line up, should be that value2's address
+     depends on value1, but that is too much of a pain.  */
+}
