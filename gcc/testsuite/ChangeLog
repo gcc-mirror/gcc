@@ -1,3 +1,13 @@
+2004-11-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-choose-expr-2.c, gcc.dg/cast-1.c,
+	gcc.dg/cast-2.c, gcc.dg/cast-3.c, gcc.dg/format/opt-1.c,
+	gcc.dg/format/opt-2.c, gcc.dg/format/opt-3.c,
+	gcc.dg/format/opt-4.c, gcc.dg/format/opt-5.c,
+	gcc.dg/format/opt-6.c, gcc.dg/pointer-arith-5.c,
+	gcc.dg/pointer-arith-6.c, gcc.dg/pointer-arith-7.c,
+	gcc.dg/pointer-arith-8.c: New tests.
+
 2004-11-27  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18364
