@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.188 1996/11/09 18:44:09 karl Exp karl $
+%% $Id: texinfo.tex,v 2.189 1996/11/09 23:37:11 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.188 $
+\deftexinfoversion$Revision: 2.189 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -3792,17 +3792,16 @@ width0pt\relax} \fi
 }
 
 % Fine, but then we have to eventually remove the \empty *and* the
-% braces (if any).  That's what this does, putting the result in \tptemp.
+% braces (if any).  That's what this does.
 % 
-\def\removeemptybraces\empty#1\relax{\def\tptemp{#1}}%
+\def\removeemptybraces\empty#1\relax{#1}
 
 % After \spacesplit has done its work, this is called -- #1 is the final
 % thing to call, #2 the type name (which starts with \empty), and #3
 % (which might be empty) the arguments.
 % 
 \def\parsetpheaderline#1#2#3{%
-  \removeemptybraces#2\relax
-  #1{\tptemp}{#3}%
+  #1{\removeemptybraces#2\relax}{#3}%
 }%
 
 \def\defopvarparsebody #1#2#3#4#5 {\begingroup\inENV %
