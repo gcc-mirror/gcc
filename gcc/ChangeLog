@@ -1,3 +1,9 @@
+2004-09-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.c, tree.h (tree_class_strings): Make array const.
+	Reindent per coding convention.  Move asterisk to proper place
+	per coding convention.
+
 2004-09-18  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (gimple-low.o): Depend on $(EXPR_H).
