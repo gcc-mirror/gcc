@@ -21,8 +21,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
-#if defined (DWARF_DEBUGGING_INFO) && (! defined (DWARF_VERSION) \
-				       || DWARF_VERSION != 2)
+#ifndef DWARF_VERSION
+#define DWARF_VERSION 1
+#endif
+#if defined (DWARF_DEBUGGING_INFO) && (DWARF_VERSION != 2)
 #include <stdio.h>
 #include "dwarf.h"
 #include "tree.h"
@@ -33,10 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "output.h"
 #include "defaults.h"
-
-#ifndef DWARF_VERSION
-#define DWARF_VERSION 1
-#endif
 
 /* #define NDEBUG 1 */
 #include "assert.h"
@@ -5732,4 +5730,4 @@ dwarfout_finish ()
     }
 }
 
-#endif /* DWARF_DEBUGGING_INFO */
+#endif /* DWARF_DEBUGGING_INFO && DWARF_VERSION != 2 */
