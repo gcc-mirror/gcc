@@ -1,3 +1,13 @@
+Tue Feb 24 01:40:24 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Don't instantiate if pedantic
+	and the args use template parms.
+
+	* pt.c (push_tinst_level): If the instantiaton uses template parms,
+	fail silently.
+	* decl.c (xref_basetypes): Do call complete_type for basetypes
+	that involve template parameters.
+
 Tue Feb 24 00:36:43 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (process_init_constructor): Fix labeled init check.
