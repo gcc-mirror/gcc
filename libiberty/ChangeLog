@@ -1,3 +1,8 @@
+Wed Jan 13 07:26:44 1999  H.J. Lu  (hjl@gnu.org)
+
+	* cplus-dem.c (mop_up): Set work->previous_argument to NULL after
+	freeing it.
+
 Wed Jan 13 14:16:36 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xstrdup.c (xstrdup): Switch from strcpy to memcpy for speed.
@@ -11,7 +16,7 @@ Tue Dec 22 09:43:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* argv.c (buildargv): Cast the result of alloca in assignment.
 
 	* choose-temp.c: Include stdlib.h.
-	
+
 	* cplus-dem.c (demangle_arm_pt): Remove unused prototype.
   	(snarf_numeric_literal): Constify first parameter.
   	(code_for_qualifier): Avoid a gcc extension, make the parameter an
@@ -29,7 +34,7 @@ Tue Dec 22 09:43:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* floatformat.c (floatformat_to_double): Add explicit braces to
  	avoid ambiguous `else'.
-	
+
 	* fnmatch.c (fnmatch): Change type of variables `c', `c1',
  	`cstart' and `cend' to unsigned char.  Cast the argument of macro
  	`FOLD', which uses ctype functions, to unsigned char.
@@ -54,11 +59,11 @@ Mon Dec 14 09:55:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* memchr.c (memchr): Likewise.
 	* memcpy.c (memcpy): Likewise.
 	* memmove.c (memmove): Likewise.
-	
+
 	* mkstemp.c: Don't check IN_GCC anymore.
 	* pexecute.c: Likewise.
 	* splay-tree.c: Likewise.
-	
+
 	* strchr.c (strchr): Use `const', not `CONST'.
 	* strrchr.c (strrchr): Likewise.
 	* strtol.c (strtol): Likewise.
@@ -204,7 +209,7 @@ Mon Nov  2 10:22:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (gnu_special): Fix handling of virtual tables in
 	anonymous namespaces.
-	
+
 1998-10-23  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (work_stuff): Replace const_type and volatile_type
@@ -416,13 +421,13 @@ Sat Jul 11 16:19:48 1998  Mark Mitchell  <mark@markmitchell.com>
 	on NULL tmpl_argvec.  Be consistent with use of tname/trawname.
 	(demangle_nested_args): New function.
 	(internal_cplus_demangle): Handle volatile-qualified member
-	functions. 
+	functions.
 	(mop_up): Delete the previous_argument string if present.
 	(demangle_signature): Tidy.  Handle volatile-qualified member
 	functions.  Handle back-references using the `B' code.  Use extra
 	parameter to demangle_template and SCOPE_STRING where appropriate.
 	(demangle_template_value_parm): Fix thinko; 'B' is not an integral
-	code. 
+	code.
 	(demangle_class): Use SCOPE_STRING.
 	(gnu_special): Pass additional argument to demangle_template.
 	Use SCOPE_STRING.
@@ -436,7 +441,7 @@ Sat Jul 11 16:19:48 1998  Mark Mitchell  <mark@markmitchell.com>
 	(do_arg): Improve commment.  Handle 'n' repeat code.
 	(remember_type): Check forgetting_types.
 	(demangle_args): Deal with 'n' repeat codes.  Tidy.
-	
+
 Thu Jul  2 16:26:24 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* config.table: Only use mh-fbsd21 on *-*-freebsd2.2.[012], not on
@@ -480,7 +485,7 @@ Fri May 22 01:38:07 1998  Hans-Peter Nilsson  <hp@axis.se>
 1998-05-21  Mark Mitchell  <mmitchell@usa.net>
 
 	* cplus-dem.c (do_type): Handle volatile qualification.
-	
+
 1998-05-21  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in: Check for unistd.h as well.
@@ -672,13 +677,13 @@ Wed Apr 22 10:53:49 EDT 1998 Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (struct work stuff): Add field for B and K mangle codes.
 	(cplus_demangle_opname): Call mop_up_squangle.
-	(cplus_demangle): Initialize squangle info, then call 
+	(cplus_demangle): Initialize squangle info, then call
 	internal_cplus_demangle. (Most code moved there as well)
-	(internal_cplus_demangle): New function, performs most of what use 
+	(internal_cplus_demangle): New function, performs most of what use
 	to be done in cplus_demangle, but is only called with this file.
 	(squangle_mop_up): New function to clean up B and K code data.
 	(mop_up): set pointers to NULL after freeing.
-	(demangle_signature, demangle_template, demangle_class): Add 
+	(demangle_signature, demangle_template, demangle_class): Add
 	switch elements to handle K and B codes.
 	(demangle_prefix, gnu_special, demangle_qualified): Add
 	code to handle K and B codes.
@@ -917,7 +922,7 @@ Wed Apr 30 12:15:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Apr 28 19:04:31 1997  Michael Snyder  <msnyder@cleaver.cygnus.com>
 
-	* obstack.c: move _obstack_memory_used outside of ifdef.  Cannot be 
+	* obstack.c: move _obstack_memory_used outside of ifdef.  Cannot be
 	elided; needed by gdb and not present in libc.
 
 Thu Apr 24 19:33:47 1997  Ian Lance Taylor  <ian@cygnus.com>
@@ -926,7 +931,7 @@ Thu Apr 24 19:33:47 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 Tue Apr 22 10:25:15 1997  Fred Fish  <fnf@cygnus.com>
 
-	* floatformat.c (floatformat_ieee_double_littlebyte_bigword): 
+	* floatformat.c (floatformat_ieee_double_littlebyte_bigword):
 	Add new floatformat, mainly for ARM doubles.
 
 Mon Apr 14 12:11:16 1997  Ian Lance Taylor  <ian@cygnus.com>
@@ -983,7 +988,7 @@ Sat Mar 15 18:49:41 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 Fri Mar 14 14:18:47 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-	* cplus-dem.c: Add prototypes for all static functions. 
+	* cplus-dem.c: Add prototypes for all static functions.
 	(mystrstr): Make static.  Make arguments and result const.
 	(cplus_match): Remove; not used.
 
@@ -1054,13 +1059,13 @@ Mon Nov 18 14:08:00 1996  Dawn Perchik  <dawn@critters.cygnus.com>
 
 Wed Nov 13 08:22:00 1996  Dawn Perchik  <dawn@critters.cygnus.com>
 
-	* cplus-dem.c: Revert last two commits due to conflicts with 
-	hpux system headers.        
+	* cplus-dem.c: Revert last two commits due to conflicts with
+	hpux system headers.
 
 Wed Nov 13 08:22:00 1996  Dawn Perchik  <dawn@critters.cygnus.com>
 
 	* alloca.c, argv.c, spaces.c, strcasecmp.c, vasprintf.c, vprintf.c:
-	Revert last commit due to conflicts with hpux system headers.        
+	Revert last commit due to conflicts with hpux system headers.
 
 Wed Nov 13 10:36:50 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
@@ -1069,16 +1074,16 @@ Wed Nov 13 10:36:50 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Tue Nov 12 16:31:00 1996  Dawn Perchik  <dawn@critters.cygnus.com>
 
-	* alloca.c: Include libiberty.h for definition of xmalloc.  
+	* alloca.c: Include libiberty.h for definition of xmalloc.
 	Don't redefine NULL.
 	* argv.c: Move prototypes to libiberty.h.
-	* cplus-dem.c: Include libiberty.h for definition of xmalloc.  
+	* cplus-dem.c: Include libiberty.h for definition of xmalloc.
 	Don't redefine NULL.
 	Use casts to eliminate compiler warnings.
-	* spaces.c: Remove prototypes for malloc and free which are 
+	* spaces.c: Remove prototypes for malloc and free which are
 	already in libibrty.h.
 	* strcasecmp.c: Use casts to eliminate compiler warnings.
-	* vasprintf.c: Include libiberty.h for definition of malloc.  
+	* vasprintf.c: Include libiberty.h for definition of malloc.
 	Don't redefine NULL.
 	* vprintf.c: Include stdarg.h if __STDC__.
 
@@ -1289,7 +1294,7 @@ Tue Feb 27 12:00:50 1996  Raymond Jou  <rjou@mexican.cygnus.com>
 
 	* mpw.c (mpwify_filename): Change 6 to 5 in
 	strncmp (unixname, "/tmp/", 5).
-	
+
 Tue Feb 20 10:55:53 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 	* cplus-dem.c (demangle_template): Initialize is_bool.  Correctly
@@ -1789,9 +1794,9 @@ Wed Aug  3 05:52:14 1994  D. V. Henkel-Wallace  (gumby@cygnus.com)
 	newlib; includes and such don't belong to us).  This is specific
 	to the Cygnus Support environment.
 
-Tue Aug  2 15:25:12 1994  Kung Hsu  (kung@mexican.cygnus.com)        
+Tue Aug  2 15:25:12 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
-	* cplus-dem.c (demangle_template): demangle as xxx<'Q'> not 
+	* cplus-dem.c (demangle_template): demangle as xxx<'Q'> not
 	xxx<ch=81>.
 
 Mon Aug  1 17:02:48 1994  Kung Hsu  (kung@mexican.cygnus.com)
@@ -1871,7 +1876,7 @@ Fri May 13 16:20:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 Fri May  6 14:44:21 1994  Steve Chamberlain  (sac@cygnus.com)
 
-	* config.table: Add go32  
+	* config.table: Add go32
 	* config/mh-go32: New template.
 
 Fri May  6 11:01:59 1994  D. V. Henkel-Wallace  (gumby@rtl.cygnus.com)
@@ -1950,8 +1955,8 @@ Sun Feb 27 21:50:11 1994  Jim Kingdon  (kingdon@deneb.cygnus.com)
 Thu Feb 24 11:51:12 1994  David J. Mackenzie  (djm@rtl.cygnus.com)
 
 	* getopt.c: Remove #ifdef GETOPT_COMPAT and #if 0 code.
-	 (_getopt_initialize): New function, broken out of _getopt_internal. 
-	 (_getopt_internal): 
+	 (_getopt_initialize): New function, broken out of _getopt_internal.
+	 (_getopt_internal):
 	 If long_only and the ARGV-element has the form "-f", where f is
 	 a valid short option, don't consider it an abbreviated form of
 	 a long option that starts with f.  Otherwise there would be no
@@ -2283,7 +2288,7 @@ Fri Aug  6 17:03:13 1993  David J. Mackenzie  (djm@thepub.cygnus.com)
 
 	* obstack.c, alloca.c: Update from FSF.
 	* getopt.c, getopt1.c: Update to current FSF version, which
-	doesn't use alloca. 
+	doesn't use alloca.
 
 Tue Jul 27 14:03:57 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
@@ -2926,7 +2931,7 @@ Wed Dec 11 17:40:39 1991  Steve Chamberlain  (sac at rtl.cygnus.com)
 	* msdos.c: stub functions for dos.
 	* makefile.dos, configdj.bat: new.
 	* getopt.c: Don't include alloca-conf.h in a GO32 world.
-	
+
 
 Tue Dec 10 04:14:49 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
