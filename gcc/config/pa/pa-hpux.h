@@ -47,26 +47,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* hpux8 and later have C++ compatable include files, so do not
    pretend they are `extern "C"'.  */
 #define NO_IMPLICIT_EXTERN_C
-
-/* We need to use the vendor nm for collect, since GNU nm isn't clever
-   enough to distinguish between the duplicate symbols used with shared
-   libraries under HPUX.  */
-#define REAL_NM_FILE_NAME "/bin/nm"
-
-/* To the hpux nm, -p means BSD-style output; we don't want that.  */
-#define NM_FLAGS "-h"
-
-/* When dealing with shared libraries, the hpux ld can create duplicate
-   symbols.  The fourth field of nm's output distinguishes between the real
-   one (type "code") and the fake one (type "entry").  */
-#define COLLECT_QUALIFY_MATCH		\
-{					\
-  char *p = end;			\
-  int cnt = 0;				\
-  for (; *p != '\n';)			\
-    if (*p++ == '|'			\
-	&& ++cnt == 3)			\
-      break;				\
-  if (*p != 'c')			\
-    continue;				\
-}
