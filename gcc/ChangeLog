@@ -1,3 +1,8 @@
+2003-09-17  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_mov): Do gen_movdi_er_maybe_g
+	always during initial code generation.
+
 2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11646
