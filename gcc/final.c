@@ -892,8 +892,9 @@ final_start_function (first, file, optimize)
 
   /* For SDB and XCOFF, the function beginning must be marked between
      the function label and the prologue.  We always need this, even when
-     -g1 was used.  */
-#ifdef SDB_DEBUGGING_INFO
+     -g1 was used.  Defer on MIPS systems so that parameter descriptions
+     follow function entry. */
+#if defined(SDB_DEBUGGING_INFO) && !defined(MIPS_DEBUGGING_INFO)
   if (write_symbols == SDB_DEBUG)
     sdbout_begin_function (last_linenum);
   else
@@ -1314,6 +1315,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	break;
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
 	{
+#if defined(SDB_DEBUGGING_INFO) && defined(MIPS_DEBUGGING_INFO)
+	  /* MIPS stabs require the parameter descriptions to be after the
+	     function entry point rather than before. */
+	  if (write_symbols == SDB_DEBUG)
+	    sdbout_begin_function (last_linenum);
+	  else
+#endif
 #ifdef DWARF_DEBUGGING_INFO
 	  /* This outputs a marker where the function body starts, so it
 	     must be after the prologue.  */
