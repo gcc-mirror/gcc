@@ -8634,7 +8634,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* There could be a void* cast on top of the object.  */
 	  while (TREE_CODE (dest) == NOP_EXPR)
 	    dest = TREE_OPERAND (dest, 0);
-	  type = TREE_TYPE (TREE_TYPE (dest));
+
+	  if (TREE_CODE (dest) == ADDR_EXPR)
+	    /* If this is the address of an object, check whether the
+	       object is an array.  */
+	    type = TREE_TYPE (TREE_OPERAND (dest, 0));
+	  else
+	    type = TREE_TYPE (TREE_TYPE (dest));
 	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 
 	  dest_addr = clear_storage (dest_mem, len_rtx, dest_align);
