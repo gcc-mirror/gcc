@@ -139,7 +139,6 @@ objc_get_class (const char *name)
 void __objc_resolve_class_links()
 {
   node_ptr node;
-  Class_t class1;
   Class_t object_class = objc_get_class ("Object");
 
   assert(object_class);
@@ -230,8 +229,7 @@ class_pose_as (Class_t impostor, Class_t super_class)
   Class_t new_class = (Class_t) calloc (1, sizeof (Class));
   MetaClass_t new_meta_class =
     (MetaClass_t) __objc_xmalloc(sizeof (MetaClass));
-  node_ptr node;
-  char *new_name = (char *)__objc_xmalloc (strlen (super_class->name) + 12);
+  char *new_name = (char *)__objc_xmalloc ((size_t)strlen ((char*)super_class->name) + 12);
 
   /* We must know the state of the hierachy.  Do initial setup if needed */
   if(!CLS_ISRESOLV(impostor))

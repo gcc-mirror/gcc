@@ -45,7 +45,6 @@ hash_new (unsigned int size, hash_func_type hash_func,
 {
   cache_ptr cache;
 
-
   /* Pass me a value greater than 0 and a power of 2.  */
   assert (size);
   assert (!(size & (size - 1)));
@@ -84,7 +83,7 @@ hash_delete (cache_ptr cache)
 
 
   /* Purge all key/value pairs from the table.  */
-  while (node = hash_next (cache, NULL))
+  while ((node = hash_next (cache, NULL)))
     hash_remove (cache, node->key);
 
   /* Release the array of nodes and the cache itself.  */
@@ -145,7 +144,7 @@ hash_add (cache_ptr *cachep, const void *key, void *value)
 		  *cachep, (*cachep)->size, new->size);
 
     /* Copy the nodes from the first hash table to the new one.  */
-    while (node1 = hash_next (*cachep, node1))
+    while ((node1 = hash_next (*cachep, node1)))
       hash_add (&new, node1->key, node1->value);
 
     /* Trash the old cache.  */

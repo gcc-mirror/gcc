@@ -26,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/sarray.h"
 #include <stdio.h>
 #include "assert.h"
+#include <memory.h>
 
 int nbuckets = 0;
 int nindices = 0;
@@ -43,7 +44,9 @@ const char* __objc_sparse3_id = "3 level sparse indices";
 void
 sarray_at_put(struct sarray* array, sidx index, void* element)
 {
+#ifdef OBJC_SPARSE3
   struct sindex** the_index;
+#endif
   struct sbucket** the_bucket;
 #ifdef OBJC_SPARSE3
   size_t ioffset;
@@ -84,7 +87,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
 
     /* The index was previously empty, allocate a new */
     *the_index = (struct sindex*)__objc_xmalloc(sizeof(struct sindex));
-    bcopy(array->empty_index, *the_index, sizeof(struct sindex));
+    memcpy(*the_index, array->empty_index, sizeof(struct sindex));
     (*the_index)->version = array->version;
     the_bucket = &((*the_index)->buckets[boffset]);
     nindices += 1;
@@ -94,7 +97,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
     /* This index must be lazy copied */
     struct sindex* old_index = *the_index;
     *the_index = (struct sindex*)__objc_xmalloc(sizeof(struct sindex));
-    bcopy(old_index, *the_index, sizeof(struct sindex));
+    memcpy( *the_index,old_index, sizeof(struct sindex));
     (*the_index)->version = array->version;
     the_bucket = &((*the_index)->buckets[boffset]);
     nindices += 1;
@@ -110,7 +113,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
     /* The bucket was previously empty (or something like that), */
     /* allocate a new.  This is the effect of `lazy' allocation */  
     *the_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
-    bcopy(array->empty_bucket, *the_bucket, sizeof(struct sbucket));
+    memcpy( *the_bucket,array->empty_bucket, sizeof(struct sbucket));
     (*the_bucket)->version = array->version;
     nbuckets += 1;
 
@@ -119,7 +122,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
     /* Perform lazy copy. */
     struct sbucket* old_bucket = *the_bucket;
     *the_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
-    bcopy(old_bucket, *the_bucket, sizeof(struct sbucket));
+    memcpy( *the_bucket,old_bucket, sizeof(struct sbucket));
     (*the_bucket)->version = array->version;
     nbuckets += 1;
 
@@ -401,7 +404,7 @@ sarray_lazy_copy(struct sarray* oarr)
 
   /* Allocate core array */
   arr = (struct sarray*) __objc_xmalloc(sizeof(struct sarray));
-  bcopy(oarr, arr, sizeof(struct sarray));
+  memcpy( arr,oarr, sizeof(struct sarray));
   arr->version = oarr->version + 1;
   arr->is_copy_of = oarr;
   oarr->ref_count += 1;
@@ -411,13 +414,13 @@ sarray_lazy_copy(struct sarray* oarr)
   /* Copy bucket table */
   arr->indices = (struct sindex**) 
     __objc_xmalloc(sizeof(struct sindex*)*num_indices);
-  bcopy(oarr->indices, arr->indices, 
+  memcpy( arr->indices,oarr->indices, 
 	sizeof(struct sindex*)*num_indices);
 #else 
   /* Copy bucket table */
   arr->buckets = (struct sbucket**) 
     __objc_xmalloc(sizeof(struct sbucket*)*num_indices);
-  bcopy(oarr->buckets, arr->buckets, 
+  memcpy( arr->buckets,oarr->buckets, 
 	sizeof(struct sbucket*)*num_indices);
 #endif
 

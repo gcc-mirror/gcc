@@ -105,7 +105,7 @@ extern int errno;
 
 - (unsigned int)hash
 {
-  return (unsigned int)self;
+  return (size_t)self;
 }
 
 - (BOOL)isEqual:anObject
@@ -290,8 +290,8 @@ extern int errno;
 - error:(const char *)aString, ...
 {
 #define FMT "error: %s (%s)\n%s\n"
-  char fmt[(strlen(FMT)+strlen(object_get_class_name(self))
-            +((aString!=NULL)?strlen(aString):0)+8)];
+  char fmt[(strlen((char*)FMT)+strlen((char*)object_get_class_name(self))
+            +((aString!=NULL)?strlen((char*)aString):0)+8)];
   va_list ap;
 
   sprintf(fmt, FMT, object_get_class_name(self),

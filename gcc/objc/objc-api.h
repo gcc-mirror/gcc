@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "objc/objc.h"
 #include "objc/hash.h"
-
+#include <memory.h>
 
 static const ARGSIZE = 96;		/* for `method_get_argsize()' */
 
@@ -154,7 +154,7 @@ object_copy(id object)
         {
           id copy = class_create_instance(object->class_pointer);
           if (copy!=nil)
-            bcopy(object, copy, object->class_pointer->instance_size);
+            memcpy(copy, object, (size_t)object->class_pointer->instance_size);
           return copy;
         }
       return nil;
