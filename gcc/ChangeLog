@@ -1,5 +1,8 @@
 Fri Oct  2 02:01:59 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* regclass.c (reg_scan_mark_refs): Return immediately if passed a
+	NULL_RTX as an argument.
+
 	* Makefile.in (unlibsubdir): Define.
 	(DRIVER_DEFINES): Use unlibsubdir.
 	(cccp.o, cpplib.o, protoize.o, unprotoize.o): Similarly.
