@@ -1,5 +1,9 @@
 2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
+	* sdbout.c (PUT_SDB_DEF): Fix after last bogus change.
+
+2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
 	* cppinit.c (INO_T_EQ): Don't use #elif, fix formatting.
 
 2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
