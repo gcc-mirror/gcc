@@ -1,3 +1,8 @@
+Wed Mar 11 07:31:08 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst): Clear TYPE_REFERENCE_TO when creating a
+        reduced-level template type parameter.
+
 Wed Mar 11 07:25:20 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* parse.y (new_initializer): Make sure all initializers are
