@@ -103,7 +103,7 @@ static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
 						      int (*) (rtx)));
 static int aliases_everything_p         PARAMS ((rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
-static int nonlocal_reference_p         PARAMS ((rtx));
+static int nonlocal_mentioned_p         PARAMS ((rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -1728,11 +1728,11 @@ output_dependence (mem, x)
   return write_dependence_p (mem, x, /*writep=*/1);
 }
 
-/* Returns non-zero if X might refer to something which is not
+/* Returns non-zero if X mentions something which is not
    local to the function and is not constant.  */
 
 static int
-nonlocal_reference_p (x)
+nonlocal_mentioned_p (x)
      rtx x;
 {
   rtx base;
@@ -1792,13 +1792,7 @@ nonlocal_reference_p (x)
       return 1;
 
     case CALL:
-      /* Recursion introduces no additional considerations.  */
-      if (GET_CODE (XEXP (x, 0)) == MEM
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
-	  && strcmp(XSTR (XEXP (XEXP (x, 0), 0), 0),
-		    IDENTIFIER_POINTER (
-			  DECL_ASSEMBLER_NAME (current_function_decl))) == 0)
-	return 0;
+      /* Non-constant calls and recursion are not local.  */
       return 1;
 
     case MEM:
@@ -1829,9 +1823,15 @@ nonlocal_reference_p (x)
 	}
       return 1;
 
+    case UNSPEC_VOLATILE:
     case ASM_INPUT:
-    case ASM_OPERANDS:
       return 1;
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+    /* FALLTHROUGH */
 
     default:
       break;
@@ -1847,14 +1847,14 @@ nonlocal_reference_p (x)
       {
 	if (fmt[i] == 'e' && XEXP (x, i))
 	  {
-	    if (nonlocal_reference_p (XEXP (x, i)))
+	    if (nonlocal_mentioned_p (XEXP (x, i)))
 	      return 1;
 	  }
 	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
-	      if (nonlocal_reference_p (XVECEXP (x, i, j)))
+	      if (nonlocal_mentioned_p (XVECEXP (x, i, j)))
 		return 1;
 	  }
       }
@@ -1869,22 +1869,34 @@ void
 mark_constant_function ()
 {
   rtx insn;
+  int nonlocal_mentioned;
 
   if (TREE_PUBLIC (current_function_decl)
       || TREE_READONLY (current_function_decl)
+      || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
       || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode)
     return;
 
+  nonlocal_mentioned = 0;
+
+  init_alias_analysis ();
+
   /* Determine if this is a constant function.  */
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && nonlocal_reference_p (insn))
-      return;
+    if (INSN_P (insn) && nonlocal_mentioned_p (insn))
+      {
+	nonlocal_mentioned = 1;
+	break;
+      }
+
+  end_alias_analysis ();
 
   /* Mark the function.  */
 
-  TREE_READONLY (current_function_decl) = 1;
+  if (! nonlocal_mentioned)
+    TREE_READONLY (current_function_decl) = 1;
 }
 
 

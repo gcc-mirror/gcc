@@ -1,3 +1,29 @@
+Fri Oct 20 00:57:00 EDT 2000  John Wehle  (john@feith.com)
+
+	* alias.c: (mark_constant_function): Don't check pure functions.
+	Initialize and end alias analysis.
+	(nonlocal_mentioned_p): Rename from nonlocal_reference_p.
+	Don't make a special exception for recursion.  Handle
+	UNSPEC_VOLATILE.  Don't assume ASM_OPERANDS is non-local
+	unless it's volatile.
+
+	* local-alloc.c (equivalence): New structure.
+	(reg_equiv): Define.
+	(contains_replace_regs): Remove array and use
+	field in reg_equiv.
+	(memref_referenced_p): Likewise.
+	(no_equiv): Likewise.
+	(update_equiv_regs): Likewise.
+
+	(equiv_init_varies_p,
+	equiv_init_movable_p): New functions.
+	(update_equiv_regs): Use them.  Use rtx_varies_p
+	instead of function_invariant_p.  Process insns
+	from end to beginning.  Allow a REG_EQUIV insn
+	within the same loop as a use to be moved, also
+	allow it to be moved out of a loop.  Update
+	REG_DEAD notes when substituting into an insn.
+
 2000-10-19  Jim Wilson  <wilson@cygnus.com>
 
 	* c-decl.c (start_decl): Check for error_mark_node type before using
