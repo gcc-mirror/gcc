@@ -1,5 +1,5 @@
 /* Program to generate "main" a Java(TM) class containing a main method.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -33,6 +33,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "tree.h"
 #include "java-tree.h"
+#include "intl.h"
 
 static char * do_mangle_classname (const char *string);
 
@@ -44,7 +45,8 @@ static void usage (const char *) ATTRIBUTE_NORETURN;
 static void
 usage (const char *name)
 {
-  fprintf (stderr, "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n", name);
+  fprintf (stderr, _("Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"),
+	   name);
   exit (1);
 }
 
@@ -55,6 +57,8 @@ main (int argc, char **argv)
   FILE *stream;
   const char *mangled_classname;
   int i, last_arg;
+
+  gcc_init_libintl ();
 
   if (argc < 2)
     usage (argv[0]);
@@ -91,7 +95,7 @@ main (int argc, char **argv)
       stream = fopen (outfile, "w");
       if (stream == NULL)
 	{
-	  fprintf (stderr, "%s: Cannot open output file: %s\n",
+	  fprintf (stderr, _("%s: Cannot open output file: %s\n"),
 		   argv[0], outfile);
 	  exit (1);
 	}
@@ -128,7 +132,7 @@ main (int argc, char **argv)
   fprintf (stream, "}\n");
   if (stream != stdout && fclose (stream) != 0)
     {
-      fprintf (stderr, "%s: Failed to close output file %s\n",
+      fprintf (stderr, _("%s: Failed to close output file %s\n"),
 	       argv[0], argv[2]);
       exit (1);
     }

@@ -1,3 +1,33 @@
+2004-02-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gjavah.c: Include "intl.h".
+	(error): New function.
+	(main): Call gcc_init_libintl.
+	(get_field_name, throwable_p, print_c_decl, print_full_cxx_name,
+	print_stub_or_jni, process_file, main): Use error rather than
+	fprintf.
+	(print_method_info, usage, help, version, main): Mark strings for
+	translation with _.  Avoid splitting up sentences.  Send
+	information messages to stdout.
+	* jcf-dump.c: Include "intl.h".
+	(main): Call gcc_init_libintl.
+	(process_class, usage, help, version, main, CHECK_PC_IN_RANGE):
+	Mark error, usage and version messages for translation with _.
+	Avoid splitting up sentences.
+	* jv-scan.c: Include "intl.h".
+	(fatal_error, warning): Change parameter s to msgid.  Translate
+	messages.
+	(main): Call gcc_init_libintl.
+	(usage, help, version): Mark error, usage and version messages for
+	translation with _.  Avoid splitting up sentences.
+	* jvgenmain.c: Include "intl.h".
+	(main): Call gcc_init_libintl.
+	(usage, main): Mark error messages for translation with _.
+	* Make-lang.in (GCJH_OBJS, JVSCAN_OBJS, JCFDUMP_OBJS,
+	JVGENMAIN_OBJS): Add intl.o.
+	(java/jcf-dump.o, java/gjavah.o, java/jv-scan.o,
+	java/jvgenmain.o): Update dependencies.
+
 2004-02-08  Per Bothner  <per@bothner.com>
 
 	* parse.y (resolve_qualified_expression_name):  In case of inaccessible
