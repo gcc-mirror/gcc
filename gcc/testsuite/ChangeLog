@@ -1,3 +1,7 @@
+Sat Oct 30 22:23:46 1999  Stephen L Moshier <moshier@mediaone.net>
+
+	* gcc.c-torture/execute/991030-1.c: New test.
+
 Tue Oct 26 20:25:42 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/compile/991026-2.c: New test.
