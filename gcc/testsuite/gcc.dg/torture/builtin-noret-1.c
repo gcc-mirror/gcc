@@ -15,6 +15,11 @@ extern void t_Exit (void);
 
 extern void link_failure (void);
 
+/* Some libcs have _exit and/or _Exit, and won't allow it to be re-defined,
+   so make it weak.  */
+#pragma weak _exit
+#pragma weak _Exit
+
 int
 main (void)
 {
