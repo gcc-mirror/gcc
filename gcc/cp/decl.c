@@ -8638,7 +8638,8 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
 	      object, type);
   if (friendp)
     cp_error_at ("`%D' declared as a friend", object);
-  if (raises)
+  if (raises && !TYPE_PTRFN_P (TREE_TYPE (object))
+      && !TYPE_PTRMEMFUNC_P (TREE_TYPE (object)))
     cp_error_at ("`%D' declared with an exception specification", object);
 }
 

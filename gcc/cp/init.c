@@ -218,7 +218,7 @@ build_default_init (type)
        anything with a CONSTRUCTOR for arrays here, as that would imply
        copy-initialization.  */
     return NULL_TREE;
-  else if (AGGREGATE_TYPE_P (type))
+  else if (AGGREGATE_TYPE_P (type) && !TYPE_PTRMEMFUNC_P (type))
     {
       /* This is a default initialization of an aggregate, but not one of
 	 non-POD class type.  We cleverly notice that the initialization

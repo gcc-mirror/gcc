@@ -917,6 +917,9 @@ build_artificial_parm (name, type)
 
   parm = build_decl (PARM_DECL, name, type);
   DECL_ARTIFICIAL (parm) = 1;
+  /* All our artificial parms are implicitly `const'; they cannot be
+     assigned to.  */
+  TREE_READONLY (parm) = 1;
   DECL_ARG_TYPE (parm) = type;
   return parm;
 }
