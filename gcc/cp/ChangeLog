@@ -1,5 +1,16 @@
 1999-10-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (DUMP_CHILDREN): Remove.
+	(DUMP_BINFO): Adjust.
+	(struct dump_node_info): Remove dump_children_p.
+	(queue_and_dump_type): Remove dump_children_p parameter.
+	(queue): Don't set dump_children_p.
+	(dump_child): Pass DUMP_NONE, instead of DUMP_CHILDREN, to
+	queue_and_dump_index.
+	(dequeue_and_dump): Unconditionally print children.  Adjust calls
+	to functions mentioned above.
+	(dump_node):  Pass DUMP_NONE, instead of DUMP_CHILDREN to queue.
+	
 	* ir.texi: Document BIND_EXPR, LOOP_EXPR, and EXIT_EXPR.
 	* dump.c (dequeue_and_dump): Dump them.
 	

@@ -27,8 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Flags used with queue functions.  */
 #define DUMP_NONE     0
-#define DUMP_CHILDREN 1
-#define DUMP_BINFO    2
+#define DUMP_BINFO    1
 
 /* Information about a node to be dumped.  */
 
@@ -36,8 +35,6 @@ typedef struct dump_node_info
 {
   /* The index for the node.  */
   unsigned int index;
-  /* Nonzero if we should dump the children of the node.  */
-  unsigned int dump_children_p : 1;
   /* Nonzero if the node is a binfo.  */
   unsigned int binfo_p : 1;
 } *dump_node_info_p;
@@ -78,7 +75,7 @@ typedef struct dump_info
 static unsigned int queue PROTO ((dump_info_p, tree, int));
 static void dump_index PROTO ((dump_info_p, unsigned int));
 static void queue_and_dump_index PROTO ((dump_info_p, const char *, tree, int));
-static void queue_and_dump_type PROTO ((dump_info_p, tree, int));
+static void queue_and_dump_type PROTO ((dump_info_p, tree));
 static void dequeue_and_dump PROTO ((dump_info_p));
 static void dump_new_line PROTO ((dump_info_p));
 static void dump_maybe_newline PROTO ((dump_info_p));
@@ -89,9 +86,8 @@ static void dump_node PROTO ((tree, FILE *));
 static void dump_stmt PROTO ((dump_info_p, tree));
 static void dump_next_stmt PROTO ((dump_info_p, tree));
 
-/* Add T to the end of the queue of nodes to dump.  If DUMP_CHILDREN_P
-   is non-zero, then its children should be dumped as well.  Returns
-   the index assigned to T.  */
+/* Add T to the end of the queue of nodes to dump.  Returns the index
+   assigned to T.  */
 
 static unsigned int
 queue (di, t, flags)
@@ -118,7 +114,6 @@ queue (di, t, flags)
   /* Create a new entry in the splay-tree.  */
   dni = (dump_node_info_p) xmalloc (sizeof (struct dump_node_info));
   dni->index = index;
-  dni->dump_children_p = ((flags & DUMP_CHILDREN) != 0);
   dni->binfo_p = ((flags & DUMP_BINFO) != 0);
   dq->node = splay_tree_insert (di->nodes, (splay_tree_key) t, 
 				(splay_tree_value) dni);
@@ -181,12 +176,11 @@ queue_and_dump_index (di, field, t, flags)
 /* Dump the type of T.  */
 
 static void
-queue_and_dump_type (di, t, dump_children_p)
+queue_and_dump_type (di, t)
      dump_info_p di;
      tree t;
-     int dump_children_p;
 {
-  queue_and_dump_index (di, "type", TREE_TYPE (t), dump_children_p);
+  queue_and_dump_index (di, "type", TREE_TYPE (t), DUMP_NONE);
 }
 
 /* Insert a new line in the dump output, and indent to an appropriate
@@ -273,7 +267,7 @@ dump_stmt (di, t)
 
 /* Dump the CHILD and its children.  */
 #define dump_child(field, child) \
-  queue_and_dump_index (di, field, child, DUMP_CHILDREN)
+  queue_and_dump_index (di, field, child, DUMP_NONE)
 
 /* Dump the next statement after STMT.  */
 
@@ -296,7 +290,6 @@ dequeue_and_dump (di)
   dump_node_info_p dni;
   tree t;
   unsigned int index;
-  int dump_children_p;
   enum tree_code code;
   char code_class;
   const char* code_name;
@@ -307,7 +300,6 @@ dequeue_and_dump (di)
   t = (tree) stn->key;
   dni = (dump_node_info_p) stn->value;
   index = dni->index;
-  dump_children_p = dni->dump_children_p;
 
   /* Remove the node from the queue, and put it on the free list.  */
   di->queue = dq->next;
@@ -343,11 +335,8 @@ dequeue_and_dump (di)
       if (TREE_VIA_VIRTUAL (t))
 	dump_string (di, "virt");
 	    
-      if (dump_children_p) 
-	{
-	  dump_child ("type", BINFO_TYPE (t));
-	  dump_child ("base", BINFO_BASETYPES (t));
-	}
+      dump_child ("type", BINFO_TYPE (t));
+      dump_child ("base", BINFO_BASETYPES (t));
 
       goto done;
     }
@@ -357,29 +346,26 @@ dequeue_and_dump (di)
   if (IS_EXPR_CODE_CLASS (code_class))
     {
       /* If we're dumping children, dump them now.  */
-      if (dump_children_p)
-	{
-	  queue_and_dump_type (di, t, 1);
+      queue_and_dump_type (di, t);
 
-	  switch (code_class)
-	    {
-	    case '1':
-	      dump_child ("op 0", TREE_OPERAND (t, 0));
-	      break;
+      switch (code_class)
+	{
+	case '1':
+	  dump_child ("op 0", TREE_OPERAND (t, 0));
+	  break;
 	      
-	    case '2':
-	    case '<':
-	      dump_child ("op 0", TREE_OPERAND (t, 0));
-	      dump_child ("op 1", TREE_OPERAND (t, 1));
-	      break;
+	case '2':
+	case '<':
+	  dump_child ("op 0", TREE_OPERAND (t, 0));
+	  dump_child ("op 1", TREE_OPERAND (t, 1));
+	  break;
 	      
-	    case 'e':
-	      /* These nodes are handled explicitly below.  */
-	      break;
+	case 'e':
+	  /* These nodes are handled explicitly below.  */
+	  break;
 	      
-	    default:
-	      my_friendly_abort (19990726);
-	    }
+	default:
+	  my_friendly_abort (19990726);
 	}
     }
   else if (code_class == 'd')
@@ -388,11 +374,8 @@ dequeue_and_dump (di)
       if (DECL_NAME (t))
 	dump_child ("name", DECL_NAME (t));
       /* And types.  */
-      if (dump_children_p)
-	{
-	  queue_and_dump_type (di, t, 1);
-	  queue_and_dump_index (di, "scpe", DECL_CONTEXT (t), 0);
-	}
+      queue_and_dump_type (di, t);
+      queue_and_dump_index (di, "scpe", DECL_CONTEXT (t), 0);
       /* And a source position.  */
       if (DECL_SOURCE_FILE (t))
 	{
@@ -430,22 +413,19 @@ dequeue_and_dump (di)
       /* All types have associated declarations.  */
       dump_child ("name", TYPE_NAME (t));
 
-      if (dump_children_p)
-	{
-	  /* All types have a main variant.  */
-	  if (TYPE_MAIN_VARIANT (t) != t)
-	    dump_child ("unql", TYPE_MAIN_VARIANT (t));
+      /* All types have a main variant.  */
+      if (TYPE_MAIN_VARIANT (t) != t)
+	dump_child ("unql", TYPE_MAIN_VARIANT (t));
       
-	  /* And sizes.  */
-	  dump_child ("size", TYPE_SIZE (t));
-	}
+      /* And sizes.  */
+      dump_child ("size", TYPE_SIZE (t));
 
       /* All types have alignments.  */
       dump_int (di, "algn", TYPE_ALIGN (t));
     }
-  else if (code_class == 'c' && dump_children_p)
+  else if (code_class == 'c')
     /* All constants can have types.  */
-    queue_and_dump_type (di, t, 1);
+    queue_and_dump_type (di, t);
 
   /* Now handle the various kinds of nodes.  */
   switch (code)
@@ -467,23 +447,19 @@ dequeue_and_dump (di)
       break;
 
     case TREE_LIST:
-      if (dump_children_p)
-	{
-	  dump_child ("purp", TREE_PURPOSE (t));
-	  dump_child ("valu", TREE_VALUE (t));
-	  dump_child ("chan", TREE_CHAIN (t));
-	}
+      dump_child ("purp", TREE_PURPOSE (t));
+      dump_child ("valu", TREE_VALUE (t));
+      dump_child ("chan", TREE_CHAIN (t));
       break;
 
     case TREE_VEC:
       dump_int (di, "lngt", IDENTIFIER_LENGTH (t));
-      if (dump_children_p)
-	for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
-	  {
-	    char buffer[32];
-	    sprintf (buffer, "%u", i);
-	    queue_and_dump_index (di, buffer, TREE_VEC_ELT (t, i), 1);
-	  }
+      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
+	{
+	  char buffer[32];
+	  sprintf (buffer, "%u", i);
+	  queue_and_dump_index (di, buffer, TREE_VEC_ELT (t, i), 1);
+	}
       break;
 
     case INTEGER_TYPE:
@@ -491,13 +467,10 @@ dequeue_and_dump (di)
       dump_int (di, "prec", TYPE_PRECISION (t));
       if (TREE_UNSIGNED (t))
 	dump_string (di, "unsigned");
-      if (dump_children_p)
-	{
-	  dump_child ("min", TYPE_MIN_VALUE (t));
-	  dump_child ("max", TYPE_MAX_VALUE (t));
-	}
+      dump_child ("min", TYPE_MIN_VALUE (t));
+      dump_child ("max", TYPE_MAX_VALUE (t));
 
-      if (code == ENUMERAL_TYPE && dump_children_p)
+      if (code == ENUMERAL_TYPE)
 	dump_child ("csts", TYPE_VALUES (t));
       break;
 
@@ -506,45 +479,34 @@ dequeue_and_dump (di)
       break;
 
     case POINTER_TYPE:
-      if (dump_children_p)
+      if (TYPE_PTRMEM_P (t))
 	{
-	  if (TYPE_PTRMEM_P (t))
-	    {
-	      dump_string (di, "ptrmem");
-	      queue_and_dump_index (di, "ptd", 
-				    TYPE_PTRMEM_POINTED_TO_TYPE (t), 1);
-	      queue_and_dump_index (di, "cls", 
-				    TYPE_PTRMEM_CLASS_TYPE (t), 1);
-	    }
-	  else
-	    dump_child ("ptd", TREE_TYPE (t));
+	  dump_string (di, "ptrmem");
+	  queue_and_dump_index (di, "ptd", 
+				TYPE_PTRMEM_POINTED_TO_TYPE (t), 1);
+	  queue_and_dump_index (di, "cls", 
+				TYPE_PTRMEM_CLASS_TYPE (t), 1);
 	}
+      else
+	dump_child ("ptd", TREE_TYPE (t));
       break;
 
     case REFERENCE_TYPE:
-      if (dump_children_p)
-	dump_child ("refd", TREE_TYPE (t));
+      dump_child ("refd", TREE_TYPE (t));
       break;
 
     case METHOD_TYPE:
-      if (dump_children_p)
-	dump_child ("clas", TYPE_METHOD_BASETYPE (t));
+      dump_child ("clas", TYPE_METHOD_BASETYPE (t));
       /* Fall through.  */
 
     case FUNCTION_TYPE:
-      if (dump_children_p)
-	{
-	  dump_child ("retn", TREE_TYPE (t));
-	  dump_child ("prms", TYPE_ARG_TYPES (t));
-	}
+      dump_child ("retn", TREE_TYPE (t));
+      dump_child ("prms", TYPE_ARG_TYPES (t));
       break;
 
     case ARRAY_TYPE:
-      if (dump_children_p)
-	{
-	  dump_child ("elts", TREE_TYPE (t));
-	  dump_child ("domn", TYPE_DOMAIN (t));
-	}
+      dump_child ("elts", TREE_TYPE (t));
+      dump_child ("domn", TYPE_DOMAIN (t));
       break;
 
     case RECORD_TYPE:
@@ -566,36 +528,29 @@ dequeue_and_dump (di)
 	  else
 	    dump_string (di, "union");
 
-	  if (dump_children_p)
-	    {
-	      dump_child ("flds", TYPE_FIELDS (t));
-	      dump_child ("fncs", TYPE_METHODS (t));
-	      queue_and_dump_index (di, "binf", TYPE_BINFO (t), 
-				    DUMP_CHILDREN | DUMP_BINFO);
-	    }
+	  dump_child ("flds", TYPE_FIELDS (t));
+	  dump_child ("fncs", TYPE_METHODS (t));
+	  queue_and_dump_index (di, "binf", TYPE_BINFO (t), 
+				DUMP_BINFO);
 	}
       break;
 
     case CONST_DECL:
-      if (dump_children_p)
-	dump_child ("cnst", DECL_INITIAL (t));
+      dump_child ("cnst", DECL_INITIAL (t));
       break;
 
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
     case RESULT_DECL:
-      if (dump_children_p)
-	{
-	  if (TREE_CODE (t) == PARM_DECL)
-	    dump_child ("argt", DECL_ARG_TYPE (t));
-	  else
-	    dump_child ("init", DECL_INITIAL (t));
-	  dump_child ("size", DECL_SIZE (t));
-	}
+      if (TREE_CODE (t) == PARM_DECL)
+	dump_child ("argt", DECL_ARG_TYPE (t));
+      else
+	dump_child ("init", DECL_INITIAL (t));
+      dump_child ("size", DECL_SIZE (t));
       dump_int (di, "algn", DECL_ALIGN (t));
 
-      if (TREE_CODE (t) == FIELD_DECL && dump_children_p)
+      if (TREE_CODE (t) == FIELD_DECL)
 	{
 	  if (DECL_C_BIT_FIELD (t))
 	    dump_string (di, "bitfield");
@@ -605,12 +560,9 @@ dequeue_and_dump (di)
 
     case FUNCTION_DECL:
     case THUNK_DECL:
-      if (dump_children_p)
-	{
-	  queue_and_dump_index (di, "scpe", DECL_REAL_CONTEXT (t), 0);
-	  dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
-	  dump_child ("args", DECL_ARGUMENTS (t));
-	}
+      queue_and_dump_index (di, "scpe", DECL_REAL_CONTEXT (t), 0);
+      dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
+      dump_child ("args", DECL_ARGUMENTS (t));
       if (DECL_EXTERNAL (t))
 	dump_string (di, "undefined");
       if (TREE_PUBLIC (t))
@@ -638,8 +590,7 @@ dequeue_and_dump (di)
 	      dump_int (di, "prio", GLOBAL_INIT_PRIORITY (t));
 	    }
 
-	  if (dump_children_p)
-	    dump_child ("body", DECL_SAVED_TREE (t));
+	  dump_child ("body", DECL_SAVED_TREE (t));
 	}
       else
 	{
@@ -653,34 +604,26 @@ dequeue_and_dump (di)
 	 and therefore many other macros do not work on it.  */
       if (t == std_node)
 	break;
-      if (dump_children_p)
-	dump_child ("dcls", cp_namespace_decls (t));
+      dump_child ("dcls", cp_namespace_decls (t));
       break;
 
     case TEMPLATE_DECL:
-      if (dump_children_p)
-	dump_child ("spcs", DECL_TEMPLATE_SPECIALIZATIONS (t));
+      dump_child ("spcs", DECL_TEMPLATE_SPECIALIZATIONS (t));
       break;
 
     case OVERLOAD:
-      if (dump_children_p)
-	{
-	  dump_child ("crnt", OVL_CURRENT (t));
-	  dump_child ("chan", OVL_CHAIN (t));
-	}
+      dump_child ("crnt", OVL_CURRENT (t));
+      dump_child ("chan", OVL_CHAIN (t));
       break;
 
     case ASM_STMT:
       dump_stmt (di, t);
       if (ASM_VOLATILE_P (t))
 	dump_string (di, "volatile");
-      if (dump_children_p)
-	{
-	  dump_child ("strg", ASM_STRING (t));
-	  dump_child ("outs", ASM_OUTPUTS (t));
-	  dump_child ("ins", ASM_INPUTS (t));
-	  dump_child ("clbr", ASM_CLOBBERS (t));
-	}
+      dump_child ("strg", ASM_STRING (t));
+      dump_child ("outs", ASM_OUTPUTS (t));
+      dump_child ("ins", ASM_INPUTS (t));
+      dump_child ("clbr", ASM_CLOBBERS (t));
       dump_next_stmt (di, t);
       break;
 
@@ -693,140 +636,108 @@ dequeue_and_dump (di)
     case CASE_LABEL:
       /* Note that a case label is not like other statments; there is
 	 no way to get the line-number of a case label.  */
-      if (dump_children_p)
-	{
-	  dump_child ("low", CASE_LOW (t));
-	  dump_child ("high", CASE_HIGH (t));
-	}
+      dump_child ("low", CASE_LOW (t));
+      dump_child ("high", CASE_HIGH (t));
       dump_next_stmt (di, t);
       break;
 
     case COMPOUND_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("body", COMPOUND_BODY (t));
+      dump_child ("body", COMPOUND_BODY (t));
       dump_next_stmt (di, t);
       break;
 
     case DECL_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("decl", DECL_STMT_DECL (t));
+      dump_child ("decl", DECL_STMT_DECL (t));
       dump_next_stmt (di, t);
       break;
       
     case DO_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("body", DO_BODY (t));
-	  dump_child ("cond", DO_COND (t));
-	}
+      dump_child ("body", DO_BODY (t));
+      dump_child ("cond", DO_COND (t));
       dump_next_stmt (di, t);
       break;
 
     case EXPR_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("expr", EXPR_STMT_EXPR (t));
+      dump_child ("expr", EXPR_STMT_EXPR (t));
       dump_next_stmt (di, t);
       break;
 
     case FOR_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("init", FOR_INIT_STMT (t));
-	  dump_child ("cond", FOR_COND (t));
-	  dump_child ("expr", FOR_EXPR (t));
-	  dump_child ("body", FOR_BODY (t));
-	}
+      dump_child ("init", FOR_INIT_STMT (t));
+      dump_child ("cond", FOR_COND (t));
+      dump_child ("expr", FOR_EXPR (t));
+      dump_child ("body", FOR_BODY (t));
       dump_next_stmt (di, t);
       break;
 
     case GOTO_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("dest", GOTO_DESTINATION (t));
+      dump_child ("dest", GOTO_DESTINATION (t));
       dump_next_stmt (di, t);
       break;
 
     case IF_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("cond", IF_COND (t));
-	  dump_child ("then", THEN_CLAUSE (t));
-	  dump_child ("else", ELSE_CLAUSE (t));
-	}
+      dump_child ("cond", IF_COND (t));
+      dump_child ("then", THEN_CLAUSE (t));
+      dump_child ("else", ELSE_CLAUSE (t));
       dump_next_stmt (di, t);
       break;
 
     case LABEL_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("labl", LABEL_STMT_LABEL (t));
+      dump_child ("labl", LABEL_STMT_LABEL (t));
       dump_next_stmt (di, t);
       break;
 
     case RETURN_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("expr", RETURN_EXPR (t));
+      dump_child ("expr", RETURN_EXPR (t));
       dump_next_stmt (di, t);
       break;
 
     case SWITCH_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("cond", SWITCH_COND (t));
-	  dump_child ("body", SWITCH_BODY (t));
-	}
+      dump_child ("cond", SWITCH_COND (t));
+      dump_child ("body", SWITCH_BODY (t));
       dump_next_stmt (di, t);
       break;
 
     case TRY_BLOCK:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("body", TRY_STMTS (t));
-	  dump_child ("hdlr", TRY_HANDLERS (t));
-	}
+      dump_child ("body", TRY_STMTS (t));
+      dump_child ("hdlr", TRY_HANDLERS (t));
       dump_next_stmt (di, t);
       break;
 
     case WHILE_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("cond", WHILE_COND (t));
-	  dump_child ("body", WHILE_BODY (t));
-	}
+      dump_child ("cond", WHILE_COND (t));
+      dump_child ("body", WHILE_BODY (t));
       dump_next_stmt (di, t);
       break;
 
     case SUBOBJECT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	dump_child ("clnp", TREE_OPERAND (t, 0));
+      dump_child ("clnp", TREE_OPERAND (t, 0));
       dump_next_stmt (di, t);
       break;
 
     case START_CATCH_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	queue_and_dump_type (di, TREE_TYPE (t), /*dump_children_p=*/1);
+      queue_and_dump_type (di, TREE_TYPE (t));
       dump_next_stmt (di, t);
       break;
 
     case CLEANUP_STMT:
       dump_stmt (di, t);
-      if (dump_children_p)
-	{
-	  dump_child ("decl", CLEANUP_DECL (t));
-	  dump_child ("expr", CLEANUP_EXPR (t));
-	}
+      dump_child ("decl", CLEANUP_DECL (t));
+      dump_child ("expr", CLEANUP_EXPR (t));
       dump_next_stmt (di, t);
       break;
 
@@ -853,11 +764,8 @@ dequeue_and_dump (di)
       break;
 
     case PTRMEM_CST:
-      if (dump_children_p)
-	{
-	  dump_child ("clas", PTRMEM_CST_CLASS (t));
-	  dump_child ("mbr", PTRMEM_CST_MEMBER (t));
-	}
+      dump_child ("clas", PTRMEM_CST_CLASS (t));
+      dump_child ("mbr", PTRMEM_CST_MEMBER (t));
       break;
 
     case TRUTH_NOT_EXPR:
@@ -865,8 +773,7 @@ dequeue_and_dump (di)
     case INDIRECT_REF:
     case THROW_EXPR:
       /* These nodes are unary, but do not have code class `1'.  */
-      if (dump_children_p)
-	dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 0", TREE_OPERAND (t, 0));
       break;
 
     case TRUTH_ANDIF_EXPR:
@@ -878,71 +785,52 @@ dequeue_and_dump (di)
     case COND_EXPR:
     case ARRAY_REF:
       /* These nodes are binary, but do not have code class `2'.  */
-      if (dump_children_p)
-	{
-	  dump_child ("op 0", TREE_OPERAND (t, 0));
-	  dump_child ("op 1", TREE_OPERAND (t, 1));
-	}
+      dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 1", TREE_OPERAND (t, 1));
       break;
 
     case CALL_EXPR:
-      if (dump_children_p)
-	{
-	  dump_child ("fn", TREE_OPERAND (t, 0));
-	  dump_child ("args", TREE_OPERAND (t, 1));
-	}
+      dump_child ("fn", TREE_OPERAND (t, 0));
+      dump_child ("args", TREE_OPERAND (t, 1));
       break;
 
     case CONSTRUCTOR:
-      if (dump_children_p)
-	dump_child ("elts", TREE_OPERAND (t, 1));
+      dump_child ("elts", TREE_OPERAND (t, 1));
       break;
 
     case STMT_EXPR:
-      if (dump_children_p)
-	dump_child ("stmt", STMT_EXPR_STMT (t));
+      dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
     case BIND_EXPR:
-      if (dump_children_p)
-	{
-	  dump_child ("vars", TREE_OPERAND (t, 0));
-	  dump_child ("body", TREE_OPERAND (t, 1));
-	}
+      dump_child ("vars", TREE_OPERAND (t, 0));
+      dump_child ("body", TREE_OPERAND (t, 1));
       break;
 
     case LOOP_EXPR:
-      if (dump_children_p)
-	dump_child ("body", TREE_OPERAND (t, 0));
+      dump_child ("body", TREE_OPERAND (t, 0));
       break;
 
     case EXIT_EXPR:
-      if (dump_children_p)
-	dump_child ("cond", TREE_OPERAND (t, 0));
+      dump_child ("cond", TREE_OPERAND (t, 0));
       break;
 
     case TARGET_EXPR:
-      if (dump_children_p)
-	{
-	  dump_child ("decl", TREE_OPERAND (t, 0));
-	  dump_child ("init", TREE_OPERAND (t, 1));
-	  dump_child ("clnp", TREE_OPERAND (t, 2));
-	  /* There really are two possible places the initializer can
-	     be.  After RTL expansion, the second operand is moved to
-	     the position of the fourth operand, and the second
-	     operand becomes NULL.  */
-	  dump_child ("init", TREE_OPERAND (t, 3));
-	}
+      dump_child ("decl", TREE_OPERAND (t, 0));
+      dump_child ("init", TREE_OPERAND (t, 1));
+      dump_child ("clnp", TREE_OPERAND (t, 2));
+      /* There really are two possible places the initializer can be.
+	 After RTL expansion, the second operand is moved to the
+	 position of the fourth operand, and the second operand
+	 becomes NULL.  */
+      dump_child ("init", TREE_OPERAND (t, 3));
       break;
       
     case AGGR_INIT_EXPR:
       dump_int (di, "ctor", AGGR_INIT_VIA_CTOR_P (t));
-      if (dump_children_p)
-	{
-	  dump_child ("fn", TREE_OPERAND (t, 0));
-	  dump_child ("args", TREE_OPERAND (t, 1));
-	  dump_child ("decl", TREE_OPERAND (t, 2));
-	}
+      dump_child ("fn", TREE_OPERAND (t, 0));
+      dump_child ("args", TREE_OPERAND (t, 1));
+      dump_child ("decl", TREE_OPERAND (t, 2));
       break;
 
     default:
@@ -977,7 +865,7 @@ dump_node (t, stream)
 			     (splay_tree_delete_value_fn) &free);
 
   /* Queue up the first node.  */
-  queue (&di, t, DUMP_CHILDREN);
+  queue (&di, t, DUMP_NONE);
 
   /* Until the queue is empty, keep dumping nodes.  */
   while (di.queue)
