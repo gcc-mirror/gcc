@@ -1,3 +1,11 @@
+2004-06-07  Dhruv Matani  <dhruvbird@gmx.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/testsuite_performance.h
+	(resource_counter::allocated_memory): Make it return the right
+	number of bytes requested by the allocators/application. This is
+	the sbrk+mmaped memory.
+
 2004-06-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_complex.h (log): Tidy.
