@@ -3527,6 +3527,12 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 			va_list_type_node));
 
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_ptrdiff_t"),
+			ptrdiff_type_node));
+
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_size_t"),
+			sizetype));
+
   va_list_ptr_type_node = build_pointer_type (va_list_type_node);
 
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
