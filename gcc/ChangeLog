@@ -1,3 +1,13 @@
+Thu Oct 31 18:08:00 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (override_options): Set defaults for flag_omit_frame_pointer,
+	flag_asynchronous_unwind_tables, flag_pcc_struct_return.
+	* i386.c (optimization_options): Set flag_omit_frame_pointer,
+	flag_asynchronous_unwind_tables, flag_pcc_struct_return to 2.
+	Do not clear -momit-leaf-frame-pointer when profiling.
+	(ix86_frame_pointer_required): Frame pointer is allways required when
+	profiling.
+
 Thu Oct 31 16:09:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (negdf2_ifs_rex64): Don't allow GPR operand.
