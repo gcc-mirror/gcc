@@ -551,7 +551,7 @@ int flag_pic;
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
 
-int flag_exceptions = 1;
+int flag_exceptions = 2;
 
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
@@ -2361,10 +2361,32 @@ compile_file (name)
   input_file_stack->next = 0;
   input_file_stack->name = input_filename;
 
+  /* Gross. Gross.  lang_init is (I think) the first callback into
+     the language front end, and is thus the first opportunity to
+     have the selected language override the default value for any
+     -f option.
+
+     So the default value for flag_exceptions is 2 (uninitialized).
+     If we encounter -fno-exceptions or -fexceptions, then flag_exceptions
+     will be set to zero or one respectively.
+
+     flag_exceptions can also be set by lang_init to something other
+     than the default "uninitialized" value of 2.
+
+     After lang_init, if the value is still 2, then we default to
+     -fno-exceptions (value will be reset to zero).
+
+     When our EH mechanism is low enough overhead that we can enable
+     it by default for languages other than C++, then all this braindamage
+     will go away.  */
+  
   /* Perform language-specific initialization.
      This may set main_input_filename.  */
   lang_init ();
 
+  if (flag_exceptions == 2)
+    flag_exceptions = 0;
+     
   /* If the input doesn't start with a #line, use the input name
      as the official input file name.  */
   if (main_input_filename == 0)

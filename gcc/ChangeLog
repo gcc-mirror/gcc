@@ -1,5 +1,9 @@
 Wed Oct 22 00:34:12 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (flag_exceptions): Default value is 2.
+	(compile_file): If flag_exceptions still has the value 2, then
+	set it to 0.
+
 	* rs6000.c (struct machine_function): Add pic_offset_table_rtx.
 	(rs6000_save_machine_status): Save pic_offset_table_rtx.
 	(rs6000_restore_machine_status: Restore pic_offset_table_rtx.
