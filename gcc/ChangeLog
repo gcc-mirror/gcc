@@ -1,5 +1,11 @@
 2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* function.c (thread_prologue_and_epilogue): Move
+	NOTE_INSN_FUNCTION_END and NOTE_INSN_FUNCTION_BEG notes
+	before the epilogue.
+
+2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* dbxout.c (dbxout_symbol_location): Do not output references
 	to optimized-out constant pool symbols.
 
