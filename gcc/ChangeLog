@@ -1,3 +1,8 @@
+Wed Oct 20 15:36:11 1999  Andrew Haley  <aph@cygnus.com>
+
+	* config/arm/thumb.h (GO_IF_LEGITIMATE_ADDRESS): Take account of
+	the mode size when finding out if an offset is legal.
+
 Wed Oct 20 06:26:58 1999  Richard Henderson  <rth@cygnus.com>
 
 	* basic-block.h (PROP_*): Move constants from ...
