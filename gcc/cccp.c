@@ -7987,7 +7987,7 @@ print_containing_files ()
 	first = 0;
 	fprintf (stderr, "In file included");
       } else {
-	fprintf (stderr, ",");
+	fprintf (stderr, ",\n                ");
       }
 
       fprintf (stderr, " from %s:%d", ip->nominal_fname, ip->lineno);
