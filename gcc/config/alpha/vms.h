@@ -29,13 +29,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "alpha/alpha.h"
 
-/* Predefine this in CPP because VMS limits the size of command options
-   and GNU CPP is not used on VMS except with GNU C.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
 "-Dalpha -D__ALPHA -Dvms -DVMS -D__alpha__ -D__alpha -D__vms__ -D__VMS__\
- -D__VMS_VER=70000022 \
- -D__GNUC__=2 -D__GNUC_MINOR__=7 -Asystem(vms) -Acpu(alpha) -Amachine(alpha)"
+ -Asystem(vms) -Acpu(alpha) -Amachine(alpha)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "\

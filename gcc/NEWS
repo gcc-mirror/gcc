@@ -212,28 +212,6 @@ New feature for Solaris systems:
     GCC installation no longer makes a copy of system include files,
     thus insulating GCC better from updates to the operating system.
 
-Changes in Objective-C:
-
-    The Objective-C Runtime Library has been made thread-safe.
-
-    The Objective-C Runtime Library contains an interface for creating
-    mutexes, condition mutexes, and threads; it requires a back-end
-    implementation for the specific platform and/or thread package.
-    Currently supported are DEC/OSF1, IRIX, Mach, OS/2, POSIX, PCThreads,
-    Solaris, and Windows32.  The --enable-threads parameter can be used
-    when configuring GCC to enable and select a thread back-end.
-
-    Objective-C is now configured as separate front-end language to GCC,
-    making it more convenient to conditionally build it.
-
-    The internal structures of the Objective-C Runtime Library have
-    changed sufficiently to warrant a new version number; now version 8.
-    Programs compiled with an older version must be recompiled.
-
-    The Objective-C Runtime Library can be built as a DLL on Windows 95
-    and Windows NT systems.
-    
-    The Objective-C Runtime Library implements +load.
 
 Noteworthy changes in GCC version 2.7.2
 ---------------------------------------
