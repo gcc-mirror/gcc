@@ -1,3 +1,9 @@
+Mon Feb  4 09:05:58 2002  Jeffrey A Law  (law@redhat.com)
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Remove associated
+	CODE_LABEL and jump table when replacing a table jump with a
+	simple jump.
+
 2002-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (legitimize_la_operand,
