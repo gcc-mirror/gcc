@@ -300,10 +300,11 @@ while (0)
 do									\
   {									\
     static int sym_lineno = 1;						\
-    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",			\
-	     line, sym_lineno, 						\
-	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), 	\
-	     sym_lineno);						\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-",				\
+	     line, sym_lineno);						\
+    assemble_name (file,						\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
+    fprintf (file, "\n.LM%d:\n", sym_lineno);				\
     sym_lineno += 1;							\
   }									\
 while (0)
