@@ -2326,8 +2326,11 @@ cse_rtx_addr_varies_p (x)
    with the "oldest" equivalent register.
 
    If INSN is non-zero and we are replacing a pseudo with a hard register
-   or vice versa, verify that INSN remains valid after we make our
-   substitution.  */
+   or vice versa, validate_change is used to ensure that INSN remains valid
+   after we make our substitution.  The calls are made with IN_GROUP non-zero
+   so apply_change_group must be called upon the outermost return from this
+   function (unless INSN is zero).  The result of apply_change_group can
+   generally be discarded since the changes we are making are optional.  */
 
 static rtx
 canon_reg (x, insn)
@@ -5584,7 +5587,8 @@ cse_insn (insn, in_libcall_block)
 	 The hard function value register is used only once, to copy to
 	 someplace else, so it isn't worth cse'ing (and on 80386 is unsafe)!
 	 Ensure we invalidate the destination register.  On the 80386 no
-	 other code would invalidate it since it is a fixed_reg.  */
+	 other code would invalidate it since it is a fixed_reg.
+	 We need not check the return of apply_change_group; see canon_reg. */
 
       else if (GET_CODE (SET_SRC (x)) == CALL)
 	{
@@ -5627,7 +5631,8 @@ cse_insn (insn, in_libcall_block)
 	  register rtx y = XVECEXP (x, 0, i);
 	  if (GET_CODE (y) == SET)
 	    {
-	      /* As above, we ignore unconditional jumps and call-insns. */
+	      /* As above, we ignore unconditional jumps and call-insns and
+		 ignore the result of apply_change_group.  */
 	      if (GET_CODE (SET_SRC (y)) == CALL)
 		{
 		  canon_reg (SET_SRC (y), insn);
@@ -5659,6 +5664,8 @@ cse_insn (insn, in_libcall_block)
 	    canon_reg (y, NULL_RTX);
 	  else if (GET_CODE (y) == CALL)
 	    {
+	      /* The result of apply_change_group can be ignored; see
+		 canon_reg.  */
 	      canon_reg (y, insn);
 	      apply_change_group ();
 	      fold_rtx (y, insn);
@@ -5681,6 +5688,7 @@ cse_insn (insn, in_libcall_block)
     canon_reg (XEXP (x, 0), NULL_RTX);
   else if (GET_CODE (x) == CALL)
     {
+      /* The result of apply_change_group can be ignored; see canon_reg.  */
       canon_reg (x, insn);
       apply_change_group ();
       fold_rtx (x, insn);
@@ -5740,7 +5748,9 @@ cse_insn (insn, in_libcall_block)
      group and see if they all work.  Note that this will cause some
      canonicalizations that would have worked individually not to be applied
      because some other canonicalization didn't work, but this should not
-     occur often.  */
+     occur often. 
+
+     The result of apply_change_group can be ignored; see canon_reg.  */
 
   apply_change_group ();
 
@@ -6201,7 +6211,12 @@ cse_insn (insn, in_libcall_block)
 	  /* Look for a substitution that makes a valid insn.  */
           else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
-	      SET_SRC (sets[i].rtl) = canon_reg (SET_SRC (sets[i].rtl), insn);
+	      /* The result of apply_change_group can be ignored; see
+		 canon_reg.  */
+
+	      validate_change (insn, &SET_SRC (sets[i].rtl),
+			       canon_reg (SET_SRC (sets[i].rtl), insn),
+			       1);
 	      apply_change_group ();
 	      break;
 	    }
