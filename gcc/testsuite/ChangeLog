@@ -1,3 +1,8 @@
+2005-03-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.c-torture/execute/20020720-1.x: XFAIL for all powerpc and
+	rs6000.
+
 2005-03-24  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/20095
