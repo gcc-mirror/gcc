@@ -1,5 +1,13 @@
 2003-10-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/generic/c_locale.cc: Add back <cmath> and
+	<cstdlib>.
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
+	Clean up.
+
+2003-10-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (time_put::put): Absolutely
 	avoid dereferencing end iterators; clean up.
 
