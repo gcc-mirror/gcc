@@ -1,3 +1,27 @@
+2004-06-27  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Formatting fixes.
+	* expr.c (class_has_finalize_method): Fix method name indentation.
+	(expand_java_call): Remove K&R style parameter declaration.
+	(expand_invoke): Fix statement indentation.
+	(expand_java_field_op): Likewise.
+	* parse-scan.y: Fix typo.
+	(reset_report): Fix method name indentation.
+	* parse.y (unresolved_type_p, build_expr_block): Remove extra blank
+	line. Fix typos.
+	* verify.c (verify_jvm_instructions): Document parameters, insert
+	page break.
+	* lang.c (lang_init_source): Fix method name indentation.
+	* class.c (common_enclosing_context_p): Likewise.
+	(emit_symbol_table): Fix parameter list indentation.
+	* decl.c (add_stmt_to_compound, java_add_stmt): Remove K&R style
+	parameter declaration.
+	* constants.c: Fix copyright notice indentation.
+	* typeck.c (find_method_in_superclasses): Fix parameter list
+	indentation.
+	(find_method_in_interfaces): Likewise.
+	* zextract.c (makelong): Fix method name indentation.
+
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/15715.
@@ -14697,7 +14721,7 @@
 	java.lang.Object.
 	(register_fields): Field initialization is now a MODIFY_EXPR
 	node. Chain initialization code to the matching lists (according
-	the the field declaration modifiers).
+	to the field declaration modifiers).
 	(maybe_generate_clinit): New function.
 	(method_header): Don't set method's DECL_NAME to a WFL when adding
 	methods to java.lang.Object.

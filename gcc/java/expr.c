@@ -112,7 +112,7 @@ int always_initialize_class_p = 1;
 
    If a variable is on the quick stack, it means the value of variable
    when the quick stack was last flushed.  Conceptually, flush_quick_stack
-   saves all the the quick_stack elements in parallel.  However, that is
+   saves all the quick_stack elements in parallel.  However, that is
    complicated, so it actually saves them (i.e. copies each stack value
    to is home virtual register) from low indexes.  This allows a quick_stack
    element at index i (counting from the bottom of stack the) to references
@@ -1141,7 +1141,8 @@ build_address_of (tree value)
   return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (value)), value);
 }
 
-bool class_has_finalize_method (tree type)
+bool
+class_has_finalize_method (tree type)
 {
   tree super = CLASSTYPE_SUPER (type);
 
@@ -1697,7 +1698,6 @@ expand_java_add_case (tree switch_expr, int match, int target_pc)
 #if 0
 static void
 expand_java_call (int target_pc, int return_address)
-     int target_pc, return_address;
 {
   tree target_label = lookup_label (target_pc);
   tree value = build_int_2 (return_address, return_address < 0 ? -1 : 0);
@@ -2041,10 +2041,13 @@ build_invokeinterface (tree dtable, tree method)
 static void
 expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
 {
-  tree method_signature = COMPONENT_REF_SIGNATURE(&current_jcf->cpool, method_ref_index);
+  tree method_signature
+    = COMPONENT_REF_SIGNATURE(&current_jcf->cpool, method_ref_index);
   tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool, method_ref_index);
-  tree self_type = get_class_constant
-    (current_jcf, COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool, method_ref_index));
+  tree self_type
+    = get_class_constant (current_jcf,
+                          COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool,
+                          method_ref_index));
   const char *const self_name
     = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
@@ -2363,11 +2366,12 @@ build_jni_stub (tree method)
 static void
 expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 {
-  tree self_type = 
-      get_class_constant (current_jcf, 
-			  COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, 
-						     field_ref_index));
-  const char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
+  tree self_type
+    = get_class_constant (current_jcf,
+                          COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool,
+                          field_ref_index));
+  const char *self_name
+    = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree field_name = COMPONENT_REF_NAME (&current_jcf->cpool, field_ref_index);
   tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, 
 						  field_ref_index);

@@ -687,7 +687,8 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
    2, function prototypes are fully resolved and can be printed when
    reporting errors.  */
 
-void lang_init_source (int level)
+void
+lang_init_source (int level)
 {
   inhibit_error_function_printing = (level == 1);
 }

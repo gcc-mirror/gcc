@@ -5014,7 +5014,6 @@ method_declarator (tree id, tree list)
 
 static int
 unresolved_type_p (tree wfl, tree *returned)
-
 {
   if (TREE_CODE (wfl) == EXPR_WITH_FILE_LOCATION)
     {
@@ -12229,8 +12228,8 @@ complete_function_arguments (tree node)
 	  flag = 1;
 	  continue;
 	}
-      /* If have a string literal that we haven't transformed yet or a
-	 crafted string buffer, as a result of use of the the String
+      /* If we have a string literal that we haven't transformed yet or a
+	 crafted string buffer, as a result of the use of the String
 	 `+' operator. Build `parm.toString()' and expand it. */
       if ((temp = patch_string (parm)))
 	parm = temp;
@@ -12259,7 +12258,6 @@ build_debugable_stmt (int location, tree stmt)
 
 static tree
 build_expr_block (tree body, tree decls)
-
 {
   tree node = make_node (BLOCK);
   BLOCK_EXPR_DECLS (node) = decls;

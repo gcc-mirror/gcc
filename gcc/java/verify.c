@@ -1,6 +1,6 @@
 /* Handle verification of bytecoded methods for the GNU compiler for 
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -238,7 +238,7 @@ merge_types (tree type1, tree type2)
 }
 
 /* Merge the current type state with that at LABEL.
-   Return -1 the the states are incompatible (i.e. on error),
+   Return -1 if the states are incompatible (i.e. on error),
    0 if there was no change, and 1 if there was a change. */
 
 int
@@ -408,8 +408,11 @@ pop_argument_types (tree arg_types)
 
 #define BCODE byte_ops
 
-/* Verify the bytecodes of the current method.
-   Return 1 on success, 0 on failure. */
+
+/* Verify the bytecodes of the current method, with the instructions
+   starting at BYTE_OPS and LENGTH in number, from the class file pointed to
+   by JCF.
+   Return 1 on success, 0 on failure.  */
 int
 verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 {

@@ -1,7 +1,7 @@
 /* Handle a .class file embedded in a .zip archive.
    This extracts a member from a .zip file, but does not handle
    uncompression (since that is not needed for classes.zip).
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -236,7 +236,8 @@ static ush makeword(const uch *b)
 /* Function makelong() */
 /***********************/
 
-static ulg makelong(const uch *sig)
+static ulg
+makelong (const uch *sig)
 {
     /*
      * Convert intel style 'long' variable to non-Intel non-16-bit

@@ -349,7 +349,8 @@ unmangle_classname (const char *name, int name_length)
 }
 
 
-/* Given a class, create the DECLs for all its associated indirect dispatch tables.  */
+/* Given a class, create the DECLs for all its associated indirect
+   dispatch tables.  */
 void
 gen_indirect_dispatch_tables (tree type)
 {
@@ -588,7 +589,8 @@ enclosing_context_p (tree type1, tree type2)
 /* Return 1 iff there exists a common enclosing context between TYPE1
    and TYPE2.  */
 
-int common_enclosing_context_p (tree type1, tree type2)
+int
+common_enclosing_context_p (tree type1, tree type2)
 {
   if (!PURE_INNER_CLASS_TYPE_P (type1) || !PURE_INNER_CLASS_TYPE_P (type2))
     return 0;
@@ -2358,8 +2360,8 @@ build_symbol_entry (tree decl)
 /* Emit a symbol table: used by -findirect-dispatch.  */
 
 tree
-emit_symbol_table (tree name, tree the_table, tree decl_list, tree the_syms_decl, 
-			  tree the_array_element_type)
+emit_symbol_table (tree name, tree the_table, tree decl_list,
+                   tree the_syms_decl, tree the_array_element_type)
 {
   tree method_list, method, table, list, null_symbol;
   tree table_size, the_array_type;
