@@ -603,8 +603,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	  stmt_ann_t ann = stmt_ann (stmt);
 	  use_optype uses = USE_OPS (ann);
 	  vuse_optype vuses = VUSE_OPS (ann);
-	  tree *uses_copy = xcalloc (NUM_USES (uses),  sizeof (tree));
-	  tree *vuses_copy = xcalloc (NUM_VUSES (vuses), sizeof (tree));
+	  tree *uses_copy = xmalloc (NUM_USES (uses) * sizeof (tree));
+	  tree *vuses_copy = xmalloc (NUM_VUSES (vuses) * sizeof (tree));
 	  unsigned int i;
 
 	  /* Make a copy of the uses into USES_COPY, then cprop into
@@ -3106,7 +3106,7 @@ lookup_avail_expr (tree stmt, bool insert)
   void **slot;
   tree lhs;
   tree temp;
-  struct expr_hash_elt *element = xcalloc (sizeof (struct expr_hash_elt), 1);
+  struct expr_hash_elt *element = xmalloc (sizeof (struct expr_hash_elt));
 
   lhs = TREE_CODE (stmt) == MODIFY_EXPR ? TREE_OPERAND (stmt, 0) : NULL;
 

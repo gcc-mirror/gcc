@@ -1,3 +1,8 @@
+2005-02-10  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (thread_across_edge): Use xmalloc, not xcalloc.
+	(lookup_avail_expr): Similarly.
+
 2005-02-10  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* builtins.c (fold_builtin_powi): New function.
