@@ -461,11 +461,12 @@ do {								\
 /* Boundary (in *bits*) on which stack pointer is always aligned;
    certain optimizations in combine depend on this.
 
-   GCC for the PA always rounds its stacks to a 8 * STACK_BOUNDARY
-   boundary, but that happens late in the compilation process.  */
+   The HP-UX runtime documents mandate 64-byte and 16-byte alignment for
+   the stack on the 32 and 64-bit ports, respectively.  However, we
+   are only guaranteed that the stack is aligned to BIGGEST_ALIGNMENT
+   in main.  Thus, we treat the former as the preferred alignment.  */
 #define STACK_BOUNDARY BIGGEST_ALIGNMENT
-
-#define PREFERRED_STACK_BOUNDARY (8 * STACK_BOUNDARY)
+#define PREFERRED_STACK_BOUNDARY (TARGET_64BIT ? 128 : 512)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY BITS_PER_WORD

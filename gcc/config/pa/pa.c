@@ -3148,7 +3148,8 @@ compute_frame_size (size, fregs_live)
   if (!current_function_is_leaf || fsize)
     fsize += TARGET_64BIT ? 16 : 32;
 
-  return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
+  return ((fsize + PREFERRED_STACK_BOUNDARY / 8 - 1)
+	  & ~(PREFERRED_STACK_BOUNDARY / 8 - 1));
 }
 
 /* Generate the assembly code for function entry.  FILE is a stdio
