@@ -9961,10 +9961,13 @@ get_last_value (x)
       /* Skip over USE insns.  They are not useful here, and they may have
 	 been made by combine, in which case they do not have a INSN_CUID
 	 value.  We can't use prev_real_insn, because that would incorrectly
-	 take us backwards across labels.  */
+	 take us backwards across labels.  Skip over BARRIERs also, since
+	 they could have been made by combine.  If we see one, we must be
+	 optimizing dead code, so it doesn't matter what we do.  */
       for (insn = prev_nonnote_insn (subst_insn);
 	   insn && ((GET_CODE (insn) == INSN
 		     && GET_CODE (PATTERN (insn)) == USE)
+		    || GET_CODE (insn) == BARRIER
 		    || INSN_CUID (insn) >= subst_low_cuid);
 	   insn = prev_nonnote_insn (insn))
 	;
@@ -10294,9 +10297,22 @@ move_deaths (x, from_cuid, to_insn, pnotes)
     {
       register int regno = REGNO (x);
       register rtx where_dead = reg_last_death[regno];
+      register rtx before_dead, after_dead;
 
-      if (where_dead && INSN_CUID (where_dead) >= from_cuid
-	  && INSN_CUID (where_dead) < INSN_CUID (to_insn))
+      /* WHERE_DEAD could be a USE insn made by combine, so first we
+	 make sure that we have insns with valid INSN_CUID values.  */
+      before_dead = where_dead;
+      while (before_dead && INSN_UID (before_dead) > max_uid_cuid)
+	before_dead = PREV_INSN (before_dead);
+      after_dead = where_dead;
+      while (after_dead && INSN_UID (after_dead) > max_uid_cuid)
+	after_dead = NEXT_INSN (after_dead);
+
+      if (before_dead && after_dead
+	  && INSN_CUID (before_dead) >= from_cuid
+	  && (INSN_CUID (after_dead) < INSN_CUID (to_insn)
+	      || (where_dead != after_dead
+		  && INSN_CUID (after_dead) == INSN_CUID (to_insn))))
 	{
 	  rtx note = remove_death (regno, where_dead);
 
