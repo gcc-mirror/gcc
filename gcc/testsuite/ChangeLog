@@ -1,3 +1,8 @@
+2004-10-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17906
+	* gcc.c-torture/compile/pr17906.c: New.
+
 2004-10-09  Stuart Hastings  <stuart@apple.com>
 	    Roger Sayle  <roger@eyesopen.com>
 

@@ -1,3 +1,9 @@
+2004-10-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17906
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Do not attempt to
+	copy non-gimple reg arguments.
+
 2004-10-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17853
