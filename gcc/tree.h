@@ -2460,8 +2460,10 @@ extern void expand_start_else			PARAMS ((void));
 extern void expand_start_elseif			PARAMS ((tree));
 extern struct nesting *expand_start_loop 	PARAMS ((int));
 extern struct nesting *expand_start_loop_continue_elsewhere 	PARAMS ((int));
+extern struct nesting *expand_start_null_loop 	PARAMS ((void));
 extern void expand_loop_continue_here		PARAMS ((void));
 extern void expand_end_loop			PARAMS ((void));
+extern void expand_end_null_loop		PARAMS ((void));
 extern int expand_continue_loop			PARAMS ((struct nesting *));
 extern int expand_exit_loop			PARAMS ((struct nesting *));
 extern int expand_exit_loop_if_false		PARAMS ((struct nesting *,

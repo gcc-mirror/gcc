@@ -487,7 +487,11 @@ genrtl_do_stmt (t)
      avoids cluttering the rtl with dummy loop notes, which can affect
      alignment of adjacent labels.  */
   if (integer_zerop (cond))
-    expand_stmt (DO_BODY (t));
+    {
+      expand_start_null_loop ();
+      expand_stmt (DO_BODY (t));
+      expand_end_null_loop ();
+    }
   else
     {
       emit_nop ();
