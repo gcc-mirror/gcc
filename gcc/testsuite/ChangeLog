@@ -1,6 +1,10 @@
+2003-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20030307-1.c: New test.
+
 2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	* gcc.c-torture/compile/20030305-1.c
+	* gcc.c-torture/compile/20030305-1.c: New test.
 
 2003-02-25  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 

@@ -1,3 +1,13 @@
+2003-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8726
+	Backport patch from mainline:
+
+	2003-01-08  Dale Johannesen  <dalej@apple.com>
+
+	* function.c (assign_parms):  Don't set pretend_args_size if
+	REG_PARM_STACK_SPACE.
+
 2003-03-06  Reinhard Jessich <reinhard.jessich@telering.at>
 
 	PR 9954/other
