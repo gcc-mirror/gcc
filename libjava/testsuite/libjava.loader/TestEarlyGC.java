@@ -2,6 +2,18 @@ public class TestEarlyGC extends ClassLoader {
 
   static TestEarlyGC[] a = new TestEarlyGC[10];
 
+  // Jeff Sturm writes:
+  // Reconstructed from bytecode (and memory).  The singleton pattern
+  // is used as a class finalizer.
+  // public class C {
+  //   private static C c;
+  //   public C() {
+  //     c = this;
+  //   }
+  //   protected void finalize() {
+  //     System.out.println("finalized");
+  //   }
+  // }
   byte[] code = {
     -54,-2,-70,-66,0,3,0,45,0,32,1,0,1,67,7,0,
     1,1,0,16,106,97,118,97,47,108,97,110,103,47,79,98,
