@@ -151,8 +151,32 @@ public:
 
   // multiset operations:
 
-  iterator find(const key_type& __x) const { return _M_t.find(__x); }
   size_type count(const key_type& __x) const { return _M_t.count(__x); }
+
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+//214.  set::find() missing const overload
+  iterator find(const key_type& __x) { return _M_t.find(__x); }
+  const_iterator find(const key_type& __x) const { return _M_t.find(__x); }
+  iterator lower_bound(const key_type& __x) {
+    return _M_t.lower_bound(__x);
+  }
+  const_iterator lower_bound(const key_type& __x) const {
+    return _M_t.lower_bound(__x);
+  }
+  iterator upper_bound(const key_type& __x) {
+    return _M_t.upper_bound(__x);
+  }
+  const_iterator upper_bound(const key_type& __x) const {
+    return _M_t.upper_bound(__x);
+  }
+  pair<iterator,iterator> equal_range(const key_type& __x) {
+    return _M_t.equal_range(__x);
+  }
+  pair<const_iterator,const_iterator> equal_range(const key_type& __x) const {
+    return _M_t.equal_range(__x);
+  }
+#else
+  iterator find(const key_type& __x) const { return _M_t.find(__x); }
   iterator lower_bound(const key_type& __x) const {
     return _M_t.lower_bound(__x);
   }
@@ -162,6 +186,7 @@ public:
   pair<iterator,iterator> equal_range(const key_type& __x) const {
     return _M_t.equal_range(__x);
   }
+#endif
 
   template <class _K1, class _C1, class _A1>
   friend bool operator== (const multiset<_K1,_C1,_A1>&,
