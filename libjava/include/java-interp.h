@@ -14,18 +14,6 @@ details.  */
 #include <jvm.h>
 #include <java-cpool.h>
 
-// Base class for method representations.  Subclasses are interpreted
-// and JNI methods.
-class _Jv_MethodBase
-{
-protected:
-  // The class which defined this method.
-  _Jv_InterpClass *defining_class;
-
-  // The method description.
-  _Jv_Method *self;
-};
-
 #ifdef INTERPRETER
 
 #pragma interface
@@ -76,6 +64,18 @@ class _Jv_InterpException {
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
+};
+
+// Base class for method representations.  Subclasses are interpreted
+// and JNI methods.
+class _Jv_MethodBase
+{
+protected:
+  // The class which defined this method.
+  _Jv_InterpClass *defining_class;
+
+  // The method description.
+  _Jv_Method *self;
 };
 
 class _Jv_InterpMethod : public _Jv_MethodBase
@@ -169,8 +169,6 @@ struct _Jv_ResolvedMethod {
   ffi_type *      arg_types[0];
 };
 
-#endif /* INTERPRETER */
-
 class _Jv_JNIMethod : public _Jv_MethodBase
 {
   // The underlying function.  If NULL we have to look for the
@@ -185,5 +183,7 @@ class _Jv_JNIMethod : public _Jv_MethodBase
   friend class _Jv_ClassReader;
   friend void _Jv_PrepareClass(jclass);
 };
+
+#endif /* INTERPRETER */
 
 #endif /* __JAVA_INTERP_H__ */

@@ -1,3 +1,12 @@
+2000-02-07  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (add_char): Conditional on INTERPRETER.
+	(mangled_name): Likewise.
+	(call): Likewise.
+	* include/java-interp.h (class _Jv_MethodBase): Conditional on
+	INTERPRETER.
+	(class _Jv_JNIMethod): Likewise.
+
 2000-02-04  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am: Added MPN.java and BigInteger.java.

@@ -8,12 +8,6 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-// Note: currently we take the approach of not checking most
-// arguments.  Instead we could do more checking conditionally (e.g.,
-// if DEBUG is defined).  That might be beneficial in some cases,
-// though to me it seems that one could just as easily use the
-// debugger.
-
 #include <config.h>
 
 #include <stddef.h>
@@ -1205,6 +1199,8 @@ _Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
 
 
 
+#ifdef INTERPRETER
+
 // Add a character to the buffer, encoding properly.
 static void
 add_char (char *buf, jchar c, int *here)
@@ -1347,6 +1343,7 @@ _Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
     }
 
   // The actual call to the JNI function.
+  // FIXME: if this is a static function we must include the class!
   ffi_raw_call (cif, (void (*) (...)) _this->function, ret, args);
 
   do
@@ -1358,6 +1355,8 @@ _Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
   if (env.ex)
     JvThrow (env.ex);
 }
+
+#endif /* INTERPRETER */
 
 
 
