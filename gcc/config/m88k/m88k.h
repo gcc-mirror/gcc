@@ -104,7 +104,6 @@ extern void m88k_handle_pragma_token ();
 
 extern void emit_bcnd ();
 extern void expand_block_move ();
-extern void check_float_value ();
 extern void m88k_layout_frame ();
 extern void m88k_output_prologue ();
 extern void m88k_output_epilogue ();
@@ -204,9 +203,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"19 May 1992"
+#define VERSION_INFO2	"29 May 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.1.11.5 19 May 1992 09:28:04"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.1.11.11 29 May 1992 13:20:31"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -425,10 +424,10 @@ extern char * reg_names[];
    replaces a BLKmode type. */
 /* #define MAX_FIXED_MODE_SIZE 0 */
 
-/* Report errors on floating point, if we are given NaN's, or such.  Leave
-   the number as is, though, since we output the number in hex, and the
-   assembler won't choke on it.  */
-#define CHECK_FLOAT_VALUE(MODE,VALUE) check_float_value (MODE, VALUE)
+/* Check a `double' value for validity for a particular machine mode.
+   This is defined to avoid crashes outputting certain constants.
+   Since we output the number in hex, the assembler won't choke on it.  */
+/* #define CHECK_FLOAT_VALUE(MODE,VALUE) */
 
 /* A code distinguishing the floating point format of the target machine.  */
 /* #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT */
@@ -571,7 +570,7 @@ extern char * reg_names[];
 	  that almost all registers be saved across calls anyway.  */
 
 #define FIXED_REGISTERS \
- {1, 1, 0, 0,  0, 0, 0, 0,   0, 0, 0, 0,  0, 0, 0, 0, \
+ {1, 0, 0, 0,  0, 0, 0, 0,   0, 0, 0, 0,  0, 0, 0, 0, \
   0, 0, 0, 0,  0, 0, 0, 0,   0, 0, 1, 1,  1, 1, 1, 1, \
   1, 0, 0, 0,  0, 0, 0, 0,   0, 0, 0, 0,  0, 0, 0, 0, \
   0, 0, 0, 0,  0, 0, 0, 0,   0, 0, 0, 0,  0, 0, 1, 1}
@@ -687,13 +686,36 @@ extern char * reg_names[];
 #define REG_ALLOC_ORDER		  \
  {				  \
   13, 12, 11, 10, 29, 28, 27, 26, \
-   1, 62, 63,  9,  8,  7,  6,  5, \
-   4,  3,  2, 53, 52, 51, 50, 49, \
+  62, 63,  9,  8,  7,  6,  5,  4, \
+   3,  2,  1, 53, 52, 51, 50, 49, \
   48, 47, 46, 45, 44, 43, 42, 41, \
   40, 39, 38, 37, 36, 35, 34, 33, \
   25, 24, 23, 22, 21, 20, 19, 18, \
   17, 16, 15, 14, 61, 60, 59, 58, \
   57, 56, 55, 54, 30, 31,  0, 32}
+
+/* Order for leaf functions.  */
+#define REG_LEAF_ALLOC_ORDER	  \
+ {				  \
+   9,  8,  7,  6, 13, 12, 11, 10, \
+  29, 28, 27, 26, 62, 63,  5,  4, \
+   3,  2,  0, 53, 52, 51, 50, 49, \
+  48, 47, 46, 45, 44, 43, 42, 41, \
+  40, 39, 38, 37, 36, 35, 34, 33, \
+  25, 24, 23, 22, 21, 20, 19, 18, \
+  17, 16, 15, 14, 61, 60, 59, 58, \
+  57, 56, 55, 54, 30, 31,  1, 32}
+
+/* Switch between the leaf and non-leaf orderings.  The purpose is to avoid
+   write-over scoreboard delays between caller and callee.  */
+#define ORDER_REGS_FOR_LOCAL_ALLOC				\
+{								\
+  static int leaf[] = REG_LEAF_ALLOC_ORDER;			\
+  static int nonleaf[] = REG_ALLOC_ORDER;			\
+								\
+  bcopy (regs_ever_live[1] ? nonleaf : leaf, reg_alloc_order,	\
+	 FIRST_PSEUDO_REGISTER * sizeof (int));			\
+}
 
 /*** Register Classes ***/
 
@@ -1365,6 +1387,11 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   {"equality_op", {EQ, NE}},						\
   {"pc_or_label_ref", {PC, LABEL_REF}},
 
+/* The case table contains either words or branch instructions.  This says
+   which.  We always claim that the vector is PC-relative.  It is position
+   independent when -fpic is used.  */
+#define CASE_VECTOR_INSNS (TARGET_88100 || flag_pic)
+
 /* An alias for a machine mode name.  This is the machine mode that
    elements of a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
@@ -1932,11 +1959,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)
-
-/* The case table contains either words or branch instructions.  This says
-   which.  We always claim that the vector is PC-relative.  It is position
-   independent when -fpic is used.  */
-#define CASE_VECTOR_INSNS (TARGET_88100 || flag_pic)
 
 /* Epilogue for case labels.  This jump instruction is called by casesi
    to transfer to the appropriate branch instruction within the table.
