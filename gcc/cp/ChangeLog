@@ -1,5 +1,9 @@
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* spew.c (read_token): Call yyerror on all unexpected tokens.
+
+2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* init.c (member_init_ok_or_else): Take a tree rather than
 	string for name.
 	(expand_member_init): Adjust.
