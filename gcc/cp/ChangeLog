@@ -1,3 +1,8 @@
+1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (lvalue_p_1): A NOP_EXPR can be an lvalue.
+	(build_cplus_new): Make sure that what we return is of the right type.
+
 1999-05-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (make_ptrmem_cst): New function.
