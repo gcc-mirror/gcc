@@ -28,19 +28,28 @@
 #	compiling with gcc.  The header files by default do not
 #	provide many essential definitions and declarations if
 #	__STDC__ is 1.  This script modifies the header files to check
-#	for __STRICT_ANSI__ being defined instead.  However the most 
-#	important modification is to change all occurrences of __stdcall
-#	and __cdecl to __attribute__((stdcall)) and __attribute__((cdecl)),
-#	respectively.  Once munged, the
+#	for __STRICT_ANSI__ being defined instead.  Once munged, the
 #	resulting new system include files are placed in a directory
-#	that GNU C will search *before* searching the /mstools/h
-#	directory.  This script should work properly for an /mstools/h
-#	directory dated 9/4/94 on the installation CDROM.
+#	that GNU C will search *before* searching the Include
+#	directory.
 #
 #	See README-fixinc for more information.
 
+ORIG_DIR=`pwd`
+
 # Directory containing the original header files.
-INPUT=${2-${INPUT-/mstools/h}}
+cd $2; SEDFILE=`${PWDCMD-pwd}`/fixinc-nt.sed
+echo $SEDFILE
+if [ ! -f $SEDFILE ]
+then echo fixincludes: sed script 'fixinc-nt.sed' not found
+exit 1
+fi
+echo 'Using sed script: ' ${SEDFILE}
+
+cd $ORIG_DIR
+
+INPUT=${INCLUDE}
+echo 'Using the Include environment variable to find header files to fix'
 
 # Fail if no arg to specify a directory for the output.
 if [ x$1 = x ]
