@@ -2628,7 +2628,7 @@ mangle_conv_op_name_for_type (const tree type)
     return TREE_VALUE ((tree) *slot);
 
   /* Create a unique name corresponding to TYPE.  */
-  sprintf (buffer, "operator %lu\n", 
+  sprintf (buffer, "operator %lu", 
 	   (unsigned long) htab_elements (conv_type_names));
   identifier = get_identifier (buffer);
   *slot = build_tree_list (type, identifier);

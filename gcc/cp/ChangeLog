@@ -1,3 +1,8 @@
+2003-06-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (mangle_conv_op_name_for_type): Correct sprintf format
+	string again.
+
 2003-06-17  Robert Abeles  <rabeles@archaelogic.com>
 
 	* optimize.c (dump_function): Form complete flag name by
