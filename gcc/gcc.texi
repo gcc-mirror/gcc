@@ -1698,50 +1698,52 @@ symbols any static data members that lack definitions.
 It is dangerous to use pointers or references to @emph{portions} of a
 temporary object.  The compiler may very well delete the object before
 you expect it to, leaving a pointer to garbage.  The most common place
-where this problem crops up is in classes like the libg++
-@code{String} class, that define a conversion function to type
-@code{char *} or @code{const char *}.  However, any class that returns
-a pointer to some internal structure is potentially subject to this
-problem.
+where this problem crops up is in classes like string classes,
+especially ones that define a conversion function to type @code{char *}
+or @code{const char *} -- which is one reason why the standard
+@code{string} class requires you to call the @code{c_str} member
+function.  However, any class that returns a pointer to some internal
+structure is potentially subject to this problem.
 
 For example, a program may use a function @code{strfunc} that returns
-@code{String} objects, and another function @code{charfunc} that
+@code{string} objects, and another function @code{charfunc} that
 operates on pointers to @code{char}:
 
 @example
-String strfunc ();
+string strfunc ();
 void charfunc (const char *);
+
+void 
+f ()
+@{
+  const char *p = strfunc().c_str();
+  ...
+  charfunc (p);
+  ...
+  charfunc (p);
+@}
 @end example
 
 @noindent
-In this situation, it may seem natural to write @w{@samp{charfunc
-(strfunc ());}} based on the knowledge that class @code{String} has an
-explicit conversion to @code{char} pointers.  However, what really
-happens is akin to @samp{charfunc (@w{strfunc ()}.@w{convert ()});},
-where the @code{convert} method is a function to do the same data
-conversion normally performed by a cast.  Since the last use of the
-temporary @code{String} object is the call to the conversion function,
-the compiler may delete that object before actually calling
-@code{charfunc}.  The compiler has no way of knowing that deleting the
-@code{String} object will invalidate the pointer.  The pointer then
-points to garbage, so that by the time @code{charfunc} is called, it
-gets an invalid argument.
+In this situation, it may seem reasonable to save a pointer to the C
+string returned by the @code{c_str} member function and use that rather
+than call @code{c_str} repeatedly.  However, the temporary string
+created by the call to @code{strfunc} is destroyed after @code{p} is
+initialized, at which point @code{p} is left pointing to freed memory.
 
 Code like this may run successfully under some other compilers,
-especially those that delete temporaries relatively late.  However, the
-GNU C++ behavior is also standard-conforming, so if your program depends
-on late destruction of temporaries it is not portable.
+particularly obsolete cfront-based compilers that delete temporaries
+along with normal local variables.  However, the GNU C++ behavior is
+standard-conforming, so if your program depends on late destruction of
+temporaries it is not portable.
 
-If you think this is surprising, you should be aware that the ANSI C++
-committee continues to debate the lifetime-of-temporaries problem.
-
-For now, at least, the safe way to write such code is to give the
-temporary a name, which forces it to remain until the end of the scope of
-the name.  For example:
+The safe way to write such code is to give the temporary a name, which
+forces it to remain until the end of the scope of the name.  For
+example:
 
 @example
-String& tmp = strfunc ();
-charfunc (tmp);
+string& tmp = strfunc ();
+charfunc (tmp.c_str ());
 @end example
 
 @node Protoize Caveats
