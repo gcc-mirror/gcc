@@ -1,5 +1,29 @@
 2000-01-06  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* protoize.c: Conditionally include unistd.h.
+	(IS_SAME_PATH_CHAR): New macro.
+	(IS_SAME_PATH): New macro.
+	(CPLUS_FILE_SUFFIX): New macro.
+	(cplus_suffix): New static variable.
+	(is_abspath): New static function.
+	(in_system_include_dir): Handle DOS style pathnames.
+	(file_could_be_converted): Likewise.
+	(file_normally_convertible): Likewise.
+	(directory_specified_p): Likewise.
+	(file_excluded_p): Likewise.
+	(abspath): Likewise.
+	(shortpath): Likewise.
+	(referenced_file_is_newer): Likewise.
+	(save_def_or_dec): Likewise.
+	(do_processing): Likewise.
+	(main): Likewise.
+	(edit_file): Likewise. Use rename instead of link.
+	(rename_c_file): Likewise. Don't rename syscalls file.
+	(munge_compile_params): Define null device for DOS based systems.
+	(process_aux_info_file): Use binary mode if appliable.
+	(edit_file): Likewise.
+	* invoke.texi (Running Protoize): Document C++ suffixes used. 
+  
 	* cccp.c: Delete PATH_SEPARATOR, DIR_SEPARATOR and
 	IS_DIR_SEPARATOR macros.
 	* collect2.c: Likewise.

@@ -24,10 +24,34 @@ Boston, MA 02111-1307, USA.  */
 
 #include <setjmp.h>
 #include <signal.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #undef abort
 
 /* Include getopt.h for the sake of getopt_long. */
 #include "getopt.h"
+
+/* Macro to see if the path elements match.  */
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#define IS_SAME_PATH_CHAR(a,b) (toupper (a) == toupper (b))
+#else
+#define IS_SAME_PATH_CHAR(a,b) ((a) == (b))
+#endif
+
+/* Macro to see if the paths match.  */
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#define IS_SAME_PATH(a,b) (strcasecmp (a, b) == 0)
+#else
+#define IS_SAME_PATH(a,b) (strcmp (a, b) == 0)
+#endif
+
+/* Suffix for renamed C++ files.  */
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#define CPLUS_FILE_SUFFIX "cc"
+#else
+#define CPLUS_FILE_SUFFIX "C"
+#endif
 
 extern char *version_string;
 
@@ -50,6 +74,7 @@ static int directory_specified_p PARAMS ((const char *));
 static int file_excluded_p PARAMS ((const char *));
 static char *unexpand_if_needed PARAMS ((const char *));
 static char *abspath PARAMS ((const char *, const char *));
+static int is_abspath PVPROTO ((const char *));
 static void check_aux_info PARAMS ((int));
 static const char *find_corresponding_lparen PARAMS ((const char *));
 static int referenced_file_is_newer PARAMS ((const char *, time_t));
@@ -98,6 +123,10 @@ static const char * const aux_info_suffix = ".X";
 /* String to attach to filenames for saved versions of original files.  */
 
 static const char * const save_suffix = ".save";
+
+/* String to attach to C filenames renamed to C++.  */
+
+static const char * const cplus_suffix = CPLUS_FILE_SUFFIX;
 
 #ifndef UNPROTOIZE
 
@@ -707,12 +736,12 @@ in_system_include_dir (path)
 {
   struct default_include *p;
 
-  if (path[0] != '/')
+  if (! is_abspath (path))
     abort ();		/* Must be an absolutized filename.  */
 
   for (p = include_defaults; p->fname; p++)
     if (!strncmp (path, p->fname, strlen (p->fname))
-	&& path[strlen (p->fname)] == '/')
+	&& IS_DIR_SEPARATOR (path[strlen (p->fname)]))
       return 1;
   return 0;
 }
@@ -734,7 +763,17 @@ file_could_be_converted (const char *path)
     char *dir_last_slash;
 
     strcpy (dir_name, path);
-    dir_last_slash = strrchr (dir_name, '/');
+    dir_last_slash = strrchr (dir_name, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+    {
+      char *slash;
+
+      slash = strrchr (dir_last_slash ? dir_last_slash : dir_name, 
+                       DIR_SEPARATOR_2);
+      if (slash)
+	dir_last_slash = slash;
+    }
+#endif
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
@@ -768,7 +807,17 @@ file_normally_convertible (const char *path)
     char *dir_last_slash;
 
     strcpy (dir_name, path);
-    dir_last_slash = strrchr (dir_name, '/');
+    dir_last_slash = strrchr (dir_name, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+    {
+      char *slash;
+
+      slash = strrchr (dir_last_slash ? dir_last_slash : dir_name, 
+                       DIR_SEPARATOR_2);
+      if (slash)
+	dir_last_slash = slash;
+    }
+#endif
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
@@ -875,14 +924,14 @@ directory_specified_p (name)
 
   for (p = directory_list; p; p = p->next)
     if (!strncmp (name, p->name, strlen (p->name))
-	&& name[strlen (p->name)] == '/')
+	&& IS_DIR_SEPARATOR (name[strlen (p->name)]))
       {
 	const char *q = name + strlen (p->name) + 1;
 
 	/* If there are more slashes, it's in a subdir, so
 	   this match doesn't count.  */
-	while (*q)
-	  if (*q++ == '/')
+	while (*q++)
+	  if (IS_DIR_SEPARATOR (*(q-1)))
 	    goto lose;
 	return 1;
 
@@ -903,7 +952,7 @@ file_excluded_p (name)
 
   for (p = exclude_list; p; p = p->next)
     if (!strcmp (name + len - strlen (p->name), p->name)
-	&& name[len - strlen (p->name) - 1] == '/')
+	&& IS_DIR_SEPARATOR (name[len - strlen (p->name) - 1]))
       return 1;
 
   return 0;
@@ -1107,6 +1156,20 @@ continue_outer: ;
   return (got_unexpanded ? savestring (line_buf, copy_p - line_buf) : 0);
 }
 
+/* Return 1 if pathname is absolute. */
+
+static int
+is_abspath (path)
+     const char *path;
+{
+  return (IS_DIR_SEPARATOR (path[0])
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+          /* Check for disk name on MS-DOS-based systems.  */
+          || (path[0] && path[1] == ':' && IS_DIR_SEPARATOR (path[2]))
+#endif
+          );
+}
+
 /* Return the absolutized filename for the given relative
    filename.  Note that if that filename is already absolute, it may
    still be returned in a modified form because this routine also
@@ -1135,13 +1198,24 @@ abspath (cwd, rel_filename)
   {
     const char *src_p;
 
-    if (rel_filename[0] != '/')
+    if (! is_abspath (rel_filename))
       {
         src_p = cwd2;
         while ((*endp++ = *src_p++))
           continue;
-        *(endp-1) = '/';        		/* overwrite null */
+        *(endp-1) = DIR_SEPARATOR;     		/* overwrite null */
       }
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+    else if (IS_DIR_SEPARATOR (rel_filename[0]))
+      {
+	/* A path starting with a directory separator is considered absolute 
+	   for dos based filesystems, but it's really not -- it's just the 
+	   convention used throughout GCC and it works. However, in this
+	   case, we still need to prepend the drive spec from cwd_buffer.  */
+	*endp++ = cwd2[0];
+	*endp++ = cwd2[1];
+      }
+#endif
     src_p = rel_filename;
     while ((*endp++ = *src_p++))
       continue;
@@ -1153,32 +1227,33 @@ abspath (cwd, rel_filename)
   outp = inp = abs_buffer;
   *outp++ = *inp++;        	/* copy first slash */
 #if defined (apollo) || defined (_WIN32) || defined (__INTERIX)
-  if (inp[0] == '/')
+  if (IS_DIR_SEPARATOR (inp[0]))
     *outp++ = *inp++;        	/* copy second slash */
 #endif
   for (;;)
     {
       if (!inp[0])
         break;
-      else if (inp[0] == '/' && outp[-1] == '/')
+      else if (IS_DIR_SEPARATOR (inp[0]) && IS_DIR_SEPARATOR (outp[-1]))
         {
           inp++;
           continue;
         }
-      else if (inp[0] == '.' && outp[-1] == '/')
+      else if (inp[0] == '.' && IS_DIR_SEPARATOR (outp[-1]))
         {
           if (!inp[1])
                   break;
-          else if (inp[1] == '/')
+          else if (IS_DIR_SEPARATOR (inp[1]))
             {
                     inp += 2;
                     continue;
             }
-          else if ((inp[1] == '.') && (inp[2] == 0 || inp[2] == '/'))
+          else if ((inp[1] == '.') && (inp[2] == 0 
+	                               || IS_DIR_SEPARATOR (inp[2])))
             {
-                    inp += (inp[2] == '/') ? 3 : 2;
+                    inp += (IS_DIR_SEPARATOR (inp[2])) ? 3 : 2;
                     outp -= 2;
-                    while (outp >= abs_buffer && *outp != '/')
+                    while (outp >= abs_buffer && ! IS_DIR_SEPARATOR (*outp))
               	outp--;
                     if (outp < abs_buffer)
 		      {
@@ -1201,7 +1276,7 @@ abspath (cwd, rel_filename)
      the last character of the returned string is *not* a slash.  */
 
   *outp = '\0';
-  if (outp[-1] == '/')
+  if (IS_DIR_SEPARATOR (outp[-1]))
     *--outp  = '\0';
 
   /* Make a copy (in the heap) of the stuff left in the absolutization
@@ -1239,13 +1314,14 @@ shortpath (cwd, filename)
   path_p = abspath (cwd, filename);
   rel_buf_p = rel_buffer = (char *) xmalloc (filename_len);
 
-  while (*cwd_p && (*cwd_p == *path_p))
+  while (*cwd_p && IS_SAME_PATH_CHAR (*cwd_p, *path_p))
     {
       cwd_p++;
       path_p++;
     }
-  if (!*cwd_p && (!*path_p || *path_p == '/'))	/* whole pwd matched */
+  if (!*cwd_p && (!*path_p || IS_DIR_SEPARATOR (*path_p)))
     {
+      /* whole pwd matched */
       if (!*path_p)        	/* input *is* the current path! */
         return ".";
       else
@@ -1257,7 +1333,7 @@ shortpath (cwd, filename)
         {
           --cwd_p;
           --path_p;
-          while (*cwd_p != '/')        	/* backup to last slash */
+          while (! IS_DIR_SEPARATOR (*cwd_p))     /* backup to last slash */
             {
               --cwd_p;
               --path_p;
@@ -1268,8 +1344,8 @@ shortpath (cwd, filename)
         }
 
       /* Find out how many directory levels in cwd were *not* matched.  */
-      while (*cwd_p)
-        if (*cwd_p++ == '/')
+      while (*cwd_p++)
+        if (IS_DIR_SEPARATOR (*(cwd_p-1)))
 	  unmatched_slash_count++;
 
       /* Now we know how long the "short name" will be.
@@ -1286,7 +1362,7 @@ shortpath (cwd, filename)
 	    return filename;
           *rel_buf_p++ = '.';
           *rel_buf_p++ = '.';
-          *rel_buf_p++ = '/';
+          *rel_buf_p++ = DIR_SEPARATOR;
         }
 
       /* Then tack on the unmatched part of the desired file's name.  */
@@ -1298,7 +1374,7 @@ shortpath (cwd, filename)
       while ((*rel_buf_p++ = *path_p++));
 
       --rel_buf_p;
-      if (*(rel_buf_p-1) == '/')
+      if (IS_DIR_SEPARATOR (*(rel_buf_p-1)))
         *--rel_buf_p = '\0';
       return rel_buffer;
     }
@@ -1421,7 +1497,11 @@ referenced_file_is_newer (l, aux_info_mtime)
   {
     const char *filename_start = p = l + 3;
 
-    while (*p != ':')
+    while (*p != ':'
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+           || (*p == ':' && *p && *(p+1) && IS_DIR_SEPARATOR (*(p+1)))
+#endif
+           )
       p++;
     filename = (char *) alloca ((size_t) (p - filename_start) + 1);
     strncpy (filename, filename_start, (size_t) (p - filename_start));
@@ -1479,7 +1559,11 @@ save_def_or_dec (l, is_syscalls)
     const char *filename_start = p = l + 3;
     char *filename;
 
-    while (*p != ':')
+    while (*p != ':'
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+           || (*p == ':' && *p && *(p+1) && IS_DIR_SEPARATOR (*(p+1)))
+#endif
+           )
       p++;
     filename = (char *) alloca ((size_t) (p - filename_start) + 1);
     strncpy (filename, filename_start, (size_t) (p - filename_start));
@@ -1506,7 +1590,11 @@ save_def_or_dec (l, is_syscalls)
     const char *line_number_start = ++p;
     char line_number[10];
 
-    while (*p != ':')
+    while (*p != ':'
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+           || (*p == ':' && *p && *(p+1) && IS_DIR_SEPARATOR (*(p+1)))
+#endif
+           )
       p++;
     strncpy (line_number, line_number_start, (size_t) (p - line_number_start));
     line_number[p-line_number_start] = '\0';
@@ -1896,7 +1984,11 @@ munge_compile_params (params_list)
 
   temp_params[param_count++] = "-S";
   temp_params[param_count++] = "-o";
+#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN))
+  temp_params[param_count++] = "NUL:";
+#else
   temp_params[param_count++] = "/dev/null";
+#endif
 
   /* Leave room for the input file name argument.  */
   input_file_name_index = param_count;
@@ -2116,10 +2208,16 @@ start_over: ;
 
   {
     int aux_info_file;
+    int fd_flags;
 
     /* Open the aux_info file.  */
   
-    if ((aux_info_file = open (aux_info_filename, O_RDONLY, 0444 )) == -1)
+    fd_flags = O_RDONLY;
+#ifdef O_BINARY
+    /* Use binary mode to avoid having to deal with different EOL characters. */
+    fd_flags |= O_BINARY;
+#endif
+    if ((aux_info_file = open (aux_info_filename, fd_flags, 0444 )) == -1)
       {
 	int errno_val = errno;
         notice ("%s: can't open aux info file `%s' for reading: %s\n",
@@ -2184,7 +2282,11 @@ start_over: ;
   {
     char *p = aux_info_base;
 
-    while (*p != ':')
+    while (*p != ':'
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+           || (*p == ':' && *p && *(p+1) && IS_DIR_SEPARATOR (*(p+1)))
+#endif
+           )
       p++;
     p++;
     while (*p == ' ')
@@ -2192,20 +2294,30 @@ start_over: ;
     invocation_filename = p;	/* Save a pointer to first byte of path.  */
     while (*p != ' ')
       p++;
-    *p++ = '/';
+    *p++ = DIR_SEPARATOR;
     *p++ = '\0';
     while (*p++ != '\n')
       continue;
     aux_info_second_line = p;
     aux_info_relocated_name = 0;
-    if (invocation_filename[0] != '/')
+    if (! is_abspath (invocation_filename))
       {
 	/* INVOCATION_FILENAME is relative;
 	   append it to BASE_SOURCE_FILENAME's dir.  */
 	char *dir_end;
 	aux_info_relocated_name = xmalloc (base_len + (p-invocation_filename));
 	strcpy (aux_info_relocated_name, base_source_filename);
-	dir_end = strrchr (aux_info_relocated_name, '/');
+	dir_end = strrchr (aux_info_relocated_name, DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+	{
+	  char *slash;
+
+	  slash = strrchr (dir_end ? dir_end : aux_info_relocated_name, 
+	                   DIR_SEPARATOR_2);
+	  if (slash)
+	    dir_end = slash;
+	}
+#endif
 	if (dir_end)
 	  dir_end++;
 	else
@@ -2297,35 +2409,28 @@ rename_c_file (hp)
 {
   const char *filename = hp->symbol;
   int last_char_index = strlen (filename) - 1;
-  char *const new_filename = (char *) alloca (strlen (filename) + 1);
+  char *const new_filename = (char *) alloca (strlen (filename) 
+                                              + strlen (cplus_suffix) + 1);
 
   /* Note that we don't care here if the given file was converted or not.  It
      is possible that the given file was *not* converted, simply because there
      was nothing in it which actually required conversion.  Even in this case,
      we want to do the renaming.  Note that we only rename files with the .c
-     suffix.  */
+     suffix (except for the syscalls file, which is left alone).  */
 
-  if (filename[last_char_index] != 'c' || filename[last_char_index-1] != '.')
+  if (filename[last_char_index] != 'c' || filename[last_char_index-1] != '.'
+      || IS_SAME_PATH (syscalls_absolute_filename, filename))
     return;
 
   strcpy (new_filename, filename);
-  new_filename[last_char_index] = 'C';
+  strcpy (&new_filename[last_char_index], cplus_suffix);
 
-  if (link (filename, new_filename) == -1)
+  if (rename (filename, new_filename) == -1)
     {
       int errno_val = errno;
-      notice ("%s: warning: can't link file `%s' to `%s': %s\n",
+      notice ("%s: warning: can't rename file `%s' to `%s': %s\n",
 	      pname, shortpath (NULL, filename),
 	      shortpath (NULL, new_filename), xstrerror (errno_val));
-      errors++;
-      return;
-    }
-
-  if (unlink (filename) == -1)
-    {
-      int errno_val = errno;
-      notice ("%s: warning: can't delete file `%s': %s\n",
-	      pname, shortpath (NULL, filename), xstrerror (errno_val));
       errors++;
       return;
     }
@@ -4057,10 +4162,16 @@ edit_file (hp)
 
   {
     int input_file;
+    int fd_flags;
 
     /* Open the file to be converted in READ ONLY mode.  */
 
-    if ((input_file = open (convert_filename, O_RDONLY, 0444)) == -1)
+    fd_flags = O_RDONLY;
+#ifdef O_BINARY
+    /* Use binary mode to avoid having to deal with different EOL characters. */
+    fd_flags |= O_BINARY;
+#endif
+    if ((input_file = open (convert_filename, fd_flags, 0444)) == -1)
       {
 	int errno_val = errno;
         notice ("%s: can't open file `%s' for reading: %s\n",
@@ -4207,36 +4318,39 @@ edit_file (hp)
   
       strcpy (new_filename, convert_filename);
       strcat (new_filename, save_suffix);
-      if (link (convert_filename, new_filename) == -1)
+
+      /* Don't overwrite existing file.  */
+      if (access (new_filename, F_OK) == 0)
+	{
+	  if (!quiet_flag)
+	    notice ("%s: warning: file `%s' already saved in `%s'\n",
+		    pname,
+		    shortpath (NULL, convert_filename),
+		    shortpath (NULL, new_filename));
+	}
+      else if (rename (convert_filename, new_filename) == -1)
         {
 	  int errno_val = errno;
-	  if (errno_val == EEXIST)
-            {
-              if (!quiet_flag)
-                notice ("%s: warning: file `%s' already saved in `%s'\n",
-			pname,
-			shortpath (NULL, convert_filename),
-			shortpath (NULL, new_filename));
-            }
-          else
-            {
-              notice ("%s: can't link file `%s' to `%s': %s\n",
-		      pname,
-		      shortpath (NULL, convert_filename),
-		      shortpath (NULL, new_filename),
-		      xstrerror (errno_val));
-              return;
-            }
+	  notice ("%s: can't link file `%s' to `%s': %s\n",
+		  pname,
+		  shortpath (NULL, convert_filename),
+		  shortpath (NULL, new_filename),
+		  xstrerror (errno_val));
+	  return;
         }
     }
 
   if (unlink (convert_filename) == -1)
     {
       int errno_val = errno;
-      notice ("%s: can't delete file `%s': %s\n",
-	      pname, shortpath (NULL, convert_filename),
-	      xstrerror (errno_val));
-      return;
+      /* The file may have already been renamed.  */
+      if (errno_val != ENOENT)
+        {
+	  notice ("%s: can't delete file `%s': %s\n",
+		  pname, shortpath (NULL, convert_filename),
+		  xstrerror (errno_val));
+	  return;
+	}
     }
 
   {
@@ -4252,6 +4366,10 @@ edit_file (hp)
 		xstrerror (errno_val));
         return;
       }
+#ifdef O_BINARY
+    /* Use binary mode to avoid changing the existing EOL character.  */
+    setmode (output_file, O_BINARY);
+#endif
   
     /* Write the output file.  */
   
@@ -4342,9 +4460,9 @@ do_processing ()
     }
 
   syscalls_len = strlen (syscalls_absolute_filename);
-  if (*(syscalls_absolute_filename + syscalls_len - 1) != '/')
+  if (! IS_DIR_SEPARATOR (*(syscalls_absolute_filename + syscalls_len - 1)))
     {
-      *(syscalls_absolute_filename + syscalls_len++) = '/';
+      *(syscalls_absolute_filename + syscalls_len++) = DIR_SEPARATOR;
       *(syscalls_absolute_filename + syscalls_len) = '\0';
     }
   strcat (syscalls_absolute_filename, syscalls_filename);
@@ -4428,7 +4546,16 @@ main (argc, argv)
   int c;
   const char *params = "";
 
-  pname = strrchr (argv[0], '/');
+  pname = strrchr (argv[0], DIR_SEPARATOR);
+#ifdef DIR_SEPARATOR_2
+  {
+    char *slash;
+
+    slash = strrchr (pname ? pname : argv[0], DIR_SEPARATOR_2);
+    if (slash)
+      pname = slash;
+  }
+#endif
   pname = pname ? pname+1 : argv[0];
 
 #ifdef HAVE_LC_MESSAGES
