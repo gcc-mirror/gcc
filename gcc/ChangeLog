@@ -1,3 +1,17 @@
+2002-04-03  Richard Henderson  <rth@redhat.com>
+
+	PR opt/4330
+	* langhooks.h (lang_hooks.decls.warn_unused_global): New.
+	* toplev.c (check_global_declarations): Use it.
+	* langhooks-def.h (lhd_warn_unused_global_decl): Declare.
+	(LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): New.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.c (lhd_warn_unused_global_decl): New.
+	* c-decl.c (LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): New.
+	* c-objc-common.c (c_warn_unused_global_decl): New.
+	* c-tree.h (c_warn_unused_global_decl): Declare.
+	* objc/objc-lang.c (LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): New.
+
 2002-04-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* langhooks-def.h (lhd_set_decl_assembler_name,

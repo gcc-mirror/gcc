@@ -1945,22 +1945,19 @@ check_global_declarations (vec, len)
 	  assemble_external (decl);
 	}
 
-      /* Warn about static fns or vars defined but not used,
-	 but not about inline functions or static consts
-	 since defining those in header files is normal practice.  */
-      if (((warn_unused_function
-	    && TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
-	   || (warn_unused_variable
-	       && TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
+      /* Warn about static fns or vars defined but not used.  */
+      if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
+	   || (warn_unused_variable && TREE_CODE (decl) == VAR_DECL))
+	  && ! TREE_USED (decl)
+	  /* The TREE_USED bit for file-scope decls is kept in the identifier,
+	     to handle multiple external decls in different scopes.  */
+	  && ! TREE_USED (DECL_NAME (decl))
 	  && ! DECL_EXTERNAL (decl)
 	  && ! TREE_PUBLIC (decl)
-	  && ! TREE_USED (decl)
-	  && (TREE_CODE (decl) == FUNCTION_DECL || ! DECL_REGISTER (decl))
-	  /* The TREE_USED bit for file-scope decls
-	     is kept in the identifier, to handle multiple
-	     external decls in different scopes.  */
-	  && ! TREE_USED (DECL_NAME (decl)))
+	  /* Global register variables must be declared to reserve them.  */
+	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+	  /* Otherwise, ask the language.  */
+	  && (*lang_hooks.decls.warn_unused_global) (decl))
 	warning_with_decl (decl, "`%s' defined but not used");
 
       timevar_push (TV_SYMOUT);

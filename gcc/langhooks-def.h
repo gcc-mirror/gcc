@@ -56,6 +56,7 @@ extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
 extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
 					      const char *));
 extern void lhd_set_decl_assembler_name PARAMS ((tree));
+extern bool lhd_warn_unused_global_decl PARAMS ((tree));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -176,6 +177,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
 #define LANG_HOOKS_SET_BLOCK	set_block
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_PUSHLEVEL, \
@@ -184,7 +186,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_INSERT_BLOCK, \
   LANG_HOOKS_SET_BLOCK, \
   LANG_HOOKS_PUSHDECL, \
-  LANG_HOOKS_GETDECLS \
+  LANG_HOOKS_GETDECLS, \
+  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL \
 }
 
 /* The whole thing.  The structure is defined in langhooks.h.  */

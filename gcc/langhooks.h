@@ -133,6 +133,10 @@ struct lang_hooks_for_decls
 
   /* Returns the chain of decls so far in the current scope level.  */
   tree (*getdecls) PARAMS ((void));
+
+  /* Returns true when we should warn for an unused global DECL.
+     We will already have checked that it has static binding.  */
+  bool (*warn_unused_global) PARAMS ((tree));
 };
 
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */

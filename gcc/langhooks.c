@@ -113,6 +113,25 @@ lhd_staticp (exp)
   return 0;
 }
 
+/* Called from check_global_declarations.  */
+
+bool
+lhd_warn_unused_global_decl (decl)
+     tree decl;
+{
+  /* This is what used to exist in check_global_declarations.  Probably
+     not many of these actually apply to non-C languages.  */
+
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
+    return false;
+  if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
+    return false;
+  if (DECL_IN_SYSTEM_HEADER (decl))
+    return false;
+
+  return true;
+}
+
 /* Called when -dy is given on the command line.  */
 
 void
