@@ -1,3 +1,7 @@
+2001-03-20  Alan Modra  <alan@linuxcare.com.au>
+
+	* Makefile.in (OBJS): Remove hashtab.o.
+
 2001-03-19  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c (init_gcc_specs): Fix comment.
