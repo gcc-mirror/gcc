@@ -1,3 +1,8 @@
+2001-07-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_decl): Set DECL_CONTEXT for namespace-scope
+	variables.
+
 2001-06-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* except.c (initialize_handler_parm): Expect __cxa_begin_catch to

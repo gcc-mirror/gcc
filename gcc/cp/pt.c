@@ -5959,12 +5959,13 @@ tsubst_decl (t, args, type)
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 				  /*complain=*/1,
 				  in_decl, /*entering_scope=*/1);
+	else if (DECL_NAMESPACE_SCOPE_P (t))
+	  ctx = DECL_CONTEXT (t);
 	else
 	  {
 	    /* Subsequent calls to pushdecl will fill this in.  */
 	    ctx = NULL_TREE;
-	    if (!DECL_NAMESPACE_SCOPE_P (t))
-	      local_p = 1;
+	    local_p = 1;
 	  }
 
 	/* Check to see if we already have this specialization.  */
