@@ -1,3 +1,7 @@
+2000-11-26  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/weirddecl.java: New file.
+
 Fri Nov 24 11:25:20 2000  Anthony Green  <green@redhat.com>
 
 	* lib/libjava.exp (bytecompile_file): Change default from javac to
