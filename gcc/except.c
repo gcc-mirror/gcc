@@ -1377,7 +1377,7 @@ start_dynamic_handler ()
 
   /* We are committed to this, so update the handler chain.  */
 
-  emit_move_insn (dhc, XEXP (arg, 0));
+  emit_move_insn (dhc, force_operand (XEXP (arg, 0), NULL_RTX));
 }
 
 /* Start an exception handling region for the given cleanup action.

@@ -1,3 +1,8 @@
+Mon Mar 29 15:05:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* except.c (start_dynamic_handler): Force jmp_buf address to 
+	and operand before moving to memory.
+
 Mon Mar 29 15:11:10 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* invoke.texi (Code Gen Options): Attempt to clarify
