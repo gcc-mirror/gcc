@@ -1986,6 +1986,8 @@ sjlj_find_directly_reachable_regions (lp_info)
 	    if (r->type == ERT_CLEANUP)
 	      {
 		rc = RNL_MAYBE_CAUGHT;
+		if (! region->label)
+		  region = r;
 		break;
 	      }
 	}
