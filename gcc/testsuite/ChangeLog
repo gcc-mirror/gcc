@@ -1,5 +1,7 @@
 2002-10-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/abi/mangle17.C: Adjust.
+
 	* g++.dg/init/array8.C: New test.
 
 2002-10-17  Richard Sandiford  <rsandifo@redhat.com>
