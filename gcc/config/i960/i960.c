@@ -75,6 +75,14 @@ char epilogue_string[1000];
 
 static int ret_label = 0;
 
+/* This is true if FNDECL is either a varargs or a stdarg function.
+   This is used to help identify functions that use an argument block.  */
+
+#define VARARGS_STDARG_FUNCTION(FNDECL)	\
+((TYPE_ARG_TYPES (TREE_TYPE (FNDECL)) != 0						      \
+  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))) != void_type_node))    \
+ || current_function_varargs)
+
 #if 0
 /* Handle pragmas for compatibility with Intel's compilers.  */
 
@@ -823,7 +831,7 @@ i960_function_name_declare (file, name, fndecl)
   /* Even if nobody uses extra parms, can't have leafroc or tail calls if
      argblock, because argblock uses g14 implicitly.  */
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || VARARGS_STDARG_FUNCTION (fndecl))
     {
       tail_call_ok = 0;
       leaf_proc_ok = 0;
@@ -960,8 +968,7 @@ compute_frame_size (size)
      int size;
 {
   int actual_fsize;
-  int outgoing_args_size
-    = current_function_outgoing_args_size + current_function_pretend_args_size;
+  int outgoing_args_size = current_function_outgoing_args_size;
 
   /* The STARTING_FRAME_OFFSET is totally hidden to us as far
      as size is concerned.  */
@@ -1158,6 +1165,8 @@ output_function_profiler (file, labelno)
   /* The last used parameter register.  */
   int last_parm_reg;
   int i, j, increment;
+  int varargs_stdarg_function
+    = VARARGS_STDARG_FUNCTION (current_function_decl);
 
   /* Figure out the last used parameter register.  The proper thing to do
      is to walk incoming args of the function.  A function might have live
@@ -1194,7 +1203,7 @@ output_function_profiler (file, labelno)
   /* If this function uses the arg pointer, then save it in r3 and then
      set it to zero.  */
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || varargs_stdarg_function)
     fprintf (file, "\tmov	g14,r3\n\tmov	0,g14\n");
 
   /* Load location address into g0 and call mcount.  */
@@ -1203,7 +1212,7 @@ output_function_profiler (file, labelno)
 
   /* If this function uses the arg pointer, restore it.  */
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || varargs_stdarg_function)
     fprintf (file, "\tmov	r3,g14\n");
 
   /* Restore parameter registers.  */
@@ -1280,7 +1289,8 @@ i960_function_epilogue (file, size)
 
   /* Must clear g14 on return.  */
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0
+      || VARARGS_STDARG_FUNCTION (current_function_decl))
     fprintf (file, "\tmov	0,g14\n");
 
   fprintf (file, "\tret\n");
@@ -1296,16 +1306,18 @@ i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
   int argsize = INTVAL (argsize_rtx);
   rtx nexti = next_real_insn (insn);
   rtx operands[2];
+  int varargs_stdarg_function
+    = VARARGS_STDARG_FUNCTION (current_function_decl);
 
   operands[0] = target;
   operands[1] = arg_pointer;
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || varargs_stdarg_function)
     output_asm_insn ("mov	g14,r3", operands);
 
   if (argsize > 48)
     output_asm_insn ("lda	%a1,g14", operands);
-  else if (current_function_args_size != 0)
+  else if (current_function_args_size != 0 || varargs_stdarg_function)
     output_asm_insn ("mov	0,g14", operands);
 
   /* The code used to assume that calls to SYMBOL_REFs could not be more
@@ -1326,7 +1338,7 @@ i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
 
   output_asm_insn ("callx	%0", operands);
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || varargs_stdarg_function)
     output_asm_insn ("mov	r3,g14", operands);
 
   return "";
@@ -1349,7 +1361,8 @@ i960_output_ret_insn (insn)
       return lbuf;
     }
 
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0
+      || VARARGS_STDARG_FUNCTION (current_function_decl))
     output_asm_insn ("mov	0,g14", 0);
 
   if (i960_leaf_ret_reg >= 0)
@@ -2045,7 +2058,7 @@ i960_function_arg_advance (cum, mode, type, named)
 
   i960_arg_size_and_align (mode, type, &size, &align);
 
-  if (named == 0 || size > 4 || cum->ca_nstackparms != 0
+  if (size > 4 || cum->ca_nstackparms != 0
       || (size + ROUND_PARM (cum->ca_nregparms, align)) > NPARM_REGS
       || MUST_PASS_IN_STACK (mode, type))
     cum->ca_nstackparms = ROUND_PARM (cum->ca_nstackparms, align) + size;
@@ -2068,7 +2081,7 @@ i960_function_arg (cum, mode, type, named)
 
   i960_arg_size_and_align (mode, type, &size, &align);
 
-  if (named == 0 || size > 4 || cum->ca_nstackparms != 0
+  if (size > 4 || cum->ca_nstackparms != 0
       || (size + ROUND_PARM (cum->ca_nregparms, align)) > NPARM_REGS
       || MUST_PASS_IN_STACK (mode, type))
     {
@@ -2184,14 +2197,17 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     {
       int first_reg_offset = cum->ca_nregparms;
 
-      if (first_reg_offset > NPARM_REGS)
-	first_reg_offset = NPARM_REGS;
-
-      if (! (no_rtl) && first_reg_offset != NPARM_REGS)
+      if (! (no_rtl))
 	{
 	  rtx label = gen_label_rtx ();
 	  rtx regblock;
 
+	  /* If arg_pointer_rtx == 0, no arguments were passed on the stack
+	     and we need to allocate a chunk to save the registers (if any
+	     arguments were passed on the stack the caller would allocate the
+	     48 bytes as well).  We must allocate all 48 bytes (12*4) because
+	     arg_pointer_rtx is saved at the front, the anonymous args are
+	     saved at the end.  */
 	  emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
 	  emit_jump_insn (gen_bne (label));
 	  emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
@@ -2202,15 +2218,19 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 							     48))));
 	  emit_label (label);
 
-	  regblock = gen_rtx (MEM, BLKmode,
-			      plus_constant (arg_pointer_rtx,
-					     first_reg_offset * 4));
-	  move_block_from_reg (first_reg_offset, regblock,
-			       NPARM_REGS - first_reg_offset,
-			       ((NPARM_REGS - first_reg_offset)
-				* UNITS_PER_WORD));
+	  /* Any anonymous args passed in regs?  */
+	  if (first_reg_offset + 1 < NPARM_REGS)
+	    {
+	      rtx regblock;
+	      regblock = gen_rtx (MEM, BLKmode,
+				  plus_constant (arg_pointer_rtx,
+						 (first_reg_offset + 1) * 4));
+	      move_block_from_reg (first_reg_offset + 1, regblock,
+				   NPARM_REGS - first_reg_offset - 1,
+				   ((NPARM_REGS - first_reg_offset - 1)
+				    * UNITS_PER_WORD));
+	    }
 	}
-      *pretend_size = (NPARM_REGS - first_reg_offset) * UNITS_PER_WORD;
     }
 }
 
@@ -2247,7 +2267,7 @@ i960_reg_parm_stack_space (fndecl)
 
   /* Otherwise, we have an arg block if the current function has more than
      48 bytes of parameters.  */
-  if (current_function_args_size != 0)
+  if (current_function_args_size != 0 || VARARGS_STDARG_FUNCTION (fndecl))
     return 48;
   else
     return 0;
