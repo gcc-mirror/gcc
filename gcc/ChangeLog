@@ -1,5 +1,9 @@
 2003-01-16  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/linux-elf.h (LIB_SPEC): Adjust inter-option spacing.
+
+2003-01-16  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (alpha_sr_alias_set): Mark GTY.
 	(alpha_next_sequence_number): Likewise.
 	(alpha_this_literal_sequence_number): Likewise.
