@@ -1,3 +1,8 @@
+2004-06-25  Devang Patel  <dpatel@apple.com>
+	
+	* config/rs6000/darwin.h (CC1_SPEC): Handle -gused and -gfull.
+	* config/i386/darwin.h (CC1_SPEC): Same.
+	
 2004-06-25  Mark G. Adams  <mark.g.adams@sympatico.ca>
 
 	* dbxout.h: Add include guards

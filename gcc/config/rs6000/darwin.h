@@ -94,7 +94,9 @@ do {									\
 
 
 #define CC1_SPEC "\
-%{gused: -feliminate-unused-debug-symbols %<gused }\
+%{gused: -g -feliminate-unused-debug-symbols %<gused }\
+%{gfull: -g -fno-eliminate-unused-debug-symbols %<gfull }\
+%{g: %{!gfull: -feliminate-unused-debug-symbols %<gfull }}\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
 %{!static:%{!mdynamic-no-pic:-fPIC}}"
 
