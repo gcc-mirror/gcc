@@ -56,7 +56,8 @@ namespace std
 #endif
 
   locale::locale(const locale& __other) throw()
-  { (_M_impl = __other._M_impl)->_M_add_reference(); }
+  : _M_impl(__other._M_impl)
+  { _M_impl->_M_add_reference(); }
 
   // This is used to initialize global and classic locales, and
   // assumes that the _Impl objects are constructed correctly.
@@ -218,10 +219,9 @@ namespace std
   // Clone existing _Impl object.
   locale::_Impl::
   _Impl(const _Impl& __imp, size_t __refs)
-  : _M_refcount(__refs), _M_facets_size(__imp._M_facets_size)
+  : _M_refcount(__refs), _M_facets(0), _M_facets_size(__imp._M_facets_size),
+  _M_caches(0), _M_names(0)
   {
-    _M_facets = _M_caches = 0;
-    _M_names = 0;
     try
       {
 	_M_facets = new const facet*[_M_facets_size];

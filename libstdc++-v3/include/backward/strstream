@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,6 +98,11 @@ namespace std
 			     = ios_base::in | ios_base::out);
 
   private:
+    strstreambuf&
+    operator=(const strstreambuf&);
+
+    strstreambuf(const strstreambuf&);
+
     // Dynamic allocation, possibly using _M_alloc_fun and _M_free_fun.
     char* _M_alloc(size_t);
     void  _M_free(char*);

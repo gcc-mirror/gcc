@@ -98,7 +98,7 @@ namespace std
 {
   using namespace __gnu_internal;
 
-  locale::locale() throw()
+  locale::locale() throw() : _M_impl(0)
   { 
     _S_initialize(); 
     __glibcxx_mutex_lock(__gnu_internal::locale_cons_mutex);
@@ -248,7 +248,8 @@ namespace std
   // Construct "C" _Impl.
   locale::_Impl::
   _Impl(size_t __refs) throw() 
-  : _M_refcount(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
+  : _M_refcount(__refs), _M_facets(0), _M_facets_size(_GLIBCXX_NUM_FACETS),
+  _M_caches(0), _M_names(0)    
   {
     _M_facets = new (&facet_vec) const facet*[_M_facets_size];
     _M_caches = new (&cache_vec) const facet*[_M_facets_size];

@@ -416,7 +416,7 @@ namespace std
 
     facet(const facet&);  // Not defined.
 
-    void
+    facet&
     operator=(const facet&);  // Not defined.
   };
 

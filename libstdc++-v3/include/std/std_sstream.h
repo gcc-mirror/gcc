@@ -1,6 +1,7 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2002, 2003, 2004
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -110,7 +111,7 @@ namespace std
       */
       explicit
       basic_stringbuf(ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_string()
+      : __streambuf_type(), _M_mode(), _M_string()
       { _M_stringbuf_init(__mode); }
 
       /**
@@ -124,7 +125,7 @@ namespace std
       explicit
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_string(__str.data(), __str.size())
+      : __streambuf_type(), _M_mode(), _M_string(__str.data(), __str.size())
       { _M_stringbuf_init(__mode); }
 
       // Get and set:

@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -254,7 +254,8 @@ namespace std
       */
       explicit
       basic_ios(basic_streambuf<_CharT, _Traits>* __sb)
-      : ios_base(), _M_ctype(0), _M_num_put(0), _M_num_get(0)
+      : ios_base(), _M_tie(0), _M_fill(), _M_fill_init(false), _M_streambuf(0),
+      _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { this->init(__sb); }
 
       /**
@@ -440,7 +441,9 @@ namespace std
        *  The default constructor does nothing and is not normally
        *  accessible to users.
       */
-      basic_ios() : ios_base(), _M_ctype(0), _M_num_put(0), _M_num_get(0)
+      basic_ios()
+      : ios_base(), _M_tie(0), _M_fill(char_type()), _M_fill_init(false), 
+      _M_streambuf(0), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { }
 
       /**

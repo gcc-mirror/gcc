@@ -45,13 +45,15 @@ namespace std
 
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)
-  : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_get_c_locale(); }
+  : __codecvt_abstract_base<char, char, mbstate_t>(__refs),
+  _M_c_locale_codecvt(_S_get_c_locale())
+  { }
 
   codecvt<char, char, mbstate_t>::
   codecvt(__c_locale __cloc, size_t __refs)
-  : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+  : __codecvt_abstract_base<char, char, mbstate_t>(__refs),
+  _M_c_locale_codecvt(_S_clone_c_locale(__cloc))
+  { }
 
   codecvt<char, char, mbstate_t>::
   ~codecvt()
@@ -123,13 +125,15 @@ namespace std
   // codecvt<wchar_t, char, mbstate_t> required specialization
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
-  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_get_c_locale(); }
+  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs),
+  _M_c_locale_codecvt(_S_get_c_locale())
+  { }
 
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(__c_locale __cloc, size_t __refs)
-  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs),
+  _M_c_locale_codecvt(_S_clone_c_locale(__cloc))
+  { }
 
   codecvt<wchar_t, char, mbstate_t>::
   ~codecvt()

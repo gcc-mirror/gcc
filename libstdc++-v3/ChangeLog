@@ -1,5 +1,51 @@
 2004-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/12854
+	Fixups for -Weffc++.	
+	* include/bits/basic_string.h (basic_string::operator=): Return
+	pointer to this instead of result of assign. Although redundant,
+	this doesn't impact resultant codegen.
+	
+	* include/bits/locale_facets.h (__numpunct_cache): Declare
+	assignment opxserator and copy constructor private.
+	(__timepunct_cache): Same.
+	(__moneypunct_cache): Same.
+	(collate): Use member initialization list for _M_c_locale_collate.
+	* config/locale/gnu/messages_members.h: Same.
+	* config/locale/gnu/time_members.h (__timepunct): Same.	
+	* src/codecvt.cc: Use member initialization list to initialize
+	_M_c_locale_codecvt.	
+	* src/ctype.cc: Same, with _M_c_locale_ctype and _M_narrow_ok.
+	* config/os/gnu-linux/ctype_noninline.h: Same.
+	* src/locale.cc (_Impl): Same.
+	* src/locale_init.cc: Same.
+	* src/localename.cc: Same.	
+
+	* include/bits/basic_ios.h (basic_ios): Complete member
+	initialization list.
+	* include/bits/istream.tcc (basic_istream::sentry): Same.
+	* include/bits/ostream.tcc (basic_ostream::sentry): Same.
+	* include/bits/fstream.tcc (basic_filebuf): Add _M_lock and
+	_M_pback to member initialization list.
+	* include/std/std_streambuf.h: Same.
+	* include/std/std_sstream.h: Same, for _M_mode.
+	* src/ios.cc (ios_base): Same.
+	
+	* include/ext/rope: Make derived classes match exception
+
+	 specifications. Add copy constructors and assignment operators.
+
+	* include/debug/safe_base.h (_Safe_sequence_base): Declare copy
+	constructor and assignment operator protected.
+	(_Safe_iterator_base): Same.
+	* include/debug/formatter.h (_Error_formatter): Define copy
+	constructor and assignment operator.
+
+	* include/backward/strstream: Declare assignment operator and copy
+	constructor private.
+
+2004-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/testsuite_hooks.h (func_callback): Declare copy
 	constructor and assignment operator private.	
 	* testsuite/23_containers/deque/cons/clear_allocator.cc: Match

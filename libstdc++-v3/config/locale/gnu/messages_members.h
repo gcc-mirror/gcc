@@ -36,26 +36,19 @@
   // Non-virtual member functions.
   template<typename _CharT>
      messages<_CharT>::messages(size_t __refs)
-     : facet(__refs)
-     {  
-#if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-       _M_name_messages = _S_get_c_name();
-#endif
-       _M_c_locale_messages = _S_get_c_locale(); 
-     }
+     : facet(__refs), _M_c_locale_messages(_S_get_c_locale()), 
+     _M_name_messages(_S_get_c_name())
+     { }
 
   template<typename _CharT>
-     messages<_CharT>::messages(__c_locale __cloc, 
-				const char* __s __attribute__ ((__unused__)), 
+     messages<_CharT>::messages(__c_locale __cloc, const char* __s, 
 				size_t __refs) 
-     : facet(__refs)
+     : facet(__refs), _M_c_locale_messages(_S_clone_c_locale(__cloc)),
+     _M_name_messages(__s)
      {
-#if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)) 
        char* __tmp = new char[std::strlen(__s) + 1];
        std::strcpy(__tmp, __s);
        _M_name_messages = __tmp;
-#endif
-       _M_c_locale_messages = _S_clone_c_locale(__cloc); 
      }
 
   template<typename _CharT>
@@ -71,10 +64,8 @@
   template<typename _CharT>
     messages<_CharT>::~messages()
     { 
-#if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
       if (_M_name_messages != _S_get_c_name())
 	delete [] _M_name_messages;
-#endif
       _S_destroy_c_locale(_M_c_locale_messages); 
     }
 
@@ -99,16 +90,15 @@
      messages_byname<_CharT>::messages_byname(const char* __s, size_t __refs)
      : messages<_CharT>(__refs) 
      { 
-#if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
        if (this->_M_name_messages != locale::facet::_S_get_c_name())
 	 delete [] this->_M_name_messages;
        char* __tmp = new char[std::strlen(__s) + 1];
        std::strcpy(__tmp, __s);
        this->_M_name_messages = __tmp;
-#endif
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
-	  {
-	    this->_S_destroy_c_locale(this->_M_c_locale_messages);
-	    this->_S_create_c_locale(this->_M_c_locale_messages, __s); 
-	  }
+
+       if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	 {
+	   this->_S_destroy_c_locale(this->_M_c_locale_messages);
+	   this->_S_create_c_locale(this->_M_c_locale_messages, __s); 
+	 }
      }
