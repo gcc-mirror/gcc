@@ -246,18 +246,6 @@ emit_local_var (tree decl)
       else
 	expand_decl (decl);
     }
-
-  if (DECL_INITIAL (decl))
-    {
-      /* Actually do the initialization.  */
-      if (stmts_are_full_exprs_p ())
-	expand_start_target_temps ();
-
-      expand_decl_init (decl);
-
-      if (stmts_are_full_exprs_p ())
-	expand_end_target_temps ();
-    }
 }
 
 /* Build the node for a return statement and return it.  */
