@@ -1,3 +1,8 @@
+2001-03-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi: Remove more obsolete documentation of bugs and
+	installation problems.
+
 2001-03-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (movsi_h8300hs): Split the 2nd alternative
