@@ -3,6 +3,9 @@
 	PR fortran/16433
 	* gfortran.dg/pr16433.f: New test.
 
+	PR fortran/17574
+	* gfortran.dg/pr15754.f90: New test.
+	
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR tree-optimization/16437
