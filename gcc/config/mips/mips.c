@@ -4211,9 +4211,9 @@ function_arg_advance (cum, mode, type, named)
       rtx reg = gen_rtx_REG (word_mode, GP_ARG_FIRST + info.reg_offset);
 
       if (TARGET_64BIT)
-	cum->adjust[cum->num_adjusts++] = gen_ashldi3 (reg, reg, amount);
+	cum->adjust[cum->num_adjusts++] = PATTERN (gen_ashldi3 (reg, reg, amount));
       else
-	cum->adjust[cum->num_adjusts++] = gen_ashlsi3 (reg, reg, amount);
+	cum->adjust[cum->num_adjusts++] = PATTERN (gen_ashlsi3 (reg, reg, amount));
     }
 
   if (!info.fpr_p)

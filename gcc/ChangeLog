@@ -1,4 +1,7 @@
-2002-06-11  Jeffrey Law <law@redhat.com
+2002-06-11  Jeffrey Law <law@redhat.com>
+
+	* mips.c (function_arg_advance): gen_ashldi3 returns an INSN now,
+	not the pattern.  So extract the pattern from the insn.
 
 	* mips.c (embedded_pic_fnaddr_reg): Fix typo.
 
