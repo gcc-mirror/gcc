@@ -1,3 +1,13 @@
+2002-06-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (TEXI_GCCINSTALL_FILES): Define.
+	($(docdir)/gccinstall.info): New target.
+	(info): Depend on it.
+	(gccinstall.dvi): New target.
+	(dvi): Depend on it.
+	* doc/.cvsignore: Ignore new info files.
+	* doc/install.texi (@setfilename): Reflect new info filename.
+
 Thu Jun  6 15:57:23 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (machine_dependent_reorg): Don't set RTX_UNCHANGING_P

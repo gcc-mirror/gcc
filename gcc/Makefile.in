@@ -2368,7 +2368,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 docdir = $(srcdir)/doc
 
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
-info: $(docdir)/cpp.info $(docdir)/gcc.info $(docdir)/gccint.info lang.info $(docdir)/cppinternals.info
+info: $(docdir)/cpp.info $(docdir)/gcc.info $(docdir)/gccint.info $(docdir)/gccinstall.info lang.info $(docdir)/cppinternals.info
 
 TEXI_CPP_FILES = $(docdir)/cpp.texi $(docdir)/include/fdl.texi \
   $(docdir)/cppenv.texi $(docdir)/cppopts.texi
@@ -2397,6 +2397,9 @@ TEXI_GCCINT_FILES = $(docdir)/gccint.texi \
 	 $(docdir)/languages.texi $(docdir)/sourcebuild.texi \
 	 $(docdir)/gty.texi
 
+TEXI_GCCINSTALL_FILES = $(docdir)/install.texi $(docdir)/install-old.texi \
+	 $(docdir)/include/fdl.texi
+
 TEXI_CPPINT_FILES = $(docdir)/cppinternals.texi
 
 $(docdir)/cpp.info: $(TEXI_CPP_FILES)
@@ -2408,11 +2411,14 @@ $(docdir)/gcc.info: $(TEXI_GCC_FILES)
 $(docdir)/gccint.info: $(TEXI_GCCINT_FILES)
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gccint.info doc/gccint.texi
 
+$(docdir)/gccinstall.info: $(TEXI_GCCINSTALL_FILES)
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gccinstall.info doc/install.texi
+
 $(docdir)/cppinternals.info: $(TEXI_CPPINT_FILES)
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cppinternals.info \
 		doc/cppinternals.texi
 
-dvi: gcc.dvi gccint.dvi cpp.dvi lang.dvi cppinternals.dvi
+dvi: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
 cpp.dvi: $(TEXI_CPP_FILES)
@@ -2423,6 +2429,9 @@ gcc.dvi: $(TEXI_GCC_FILES)
 
 gccint.dvi: $(TEXI_GCCINT_FILES)
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gccint.texi
+
+gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $(docdir)/install.texi
 
 cppinternals.dvi: $(TEXI_CPPINT_FILES)
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
