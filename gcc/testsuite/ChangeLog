@@ -1,3 +1,8 @@
+2003-04-05  Zack Weinberg  <zack@codesourcery.com>
+
+	PR optimization/10024
+	* gcc.c-torture/compile/20030405-1.c: New test.
+
 2003-04-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/static-3.c: New.
@@ -12,7 +17,7 @@
 2003-04-03  Mike Stump  <mrs@apple.com>
 
 	* lib/scanasm.exp (scan-assembler): Add xfail processing for
-        target arg.
+	target arg.
 	(scan-assembler-times, scan-assembler-not): Likewise.
 	(scan-assembler-dem, scan-assembler-dem-not): Likewise.
 
@@ -28,9 +33,9 @@
 
 2003-04-02  Aldy Hernandez  <aldyh@redhat.com>
 
-        * g++.dg/eh/simd-2.C (vecfunc): Fix typo.
+	* g++.dg/eh/simd-2.C (vecfunc): Fix typo.
 
-        * g++.dg/eh/simd-1.C (vecfunc): Same.
+	* g++.dg/eh/simd-1.C (vecfunc): Same.
 
 2003-04-01  Roger Sayle  <roger@eyesopen.com>
 
@@ -42,12 +47,12 @@
 
 2003-04-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * g++.dg/eh/simd-1.C: New.
-        * g++.dg/eh/simd-2.C: New.
+	* g++.dg/eh/simd-1.C: New.
+	* g++.dg/eh/simd-2.C: New.
 
 2003-03-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/simd-3.c: New.
+	* gcc.c-torture/execute/simd-3.c: New.
 
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
@@ -90,7 +95,7 @@
 
 2003-03-30  Glen Nakamura  <glen@imodulo.com>
 
-        * gcc.dg/20030324-1.c: Add comments and abort if test fails.
+	* gcc.dg/20030324-1.c: Add comments and abort if test fails.
 
 2003-03-28  Roger Sayle  <roger@eyesopen.com>
 
@@ -199,7 +204,7 @@
 
 	PR c++/9898, c++/383
 	* g++.dg/template/conv6.C: New test.
-	
+
 	PR c++/10119
 	* g++.dg/template/ptrmem5.C: New test.
 
