@@ -1,3 +1,8 @@
+2000-12-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* search.c (binfo_for_vtable): Return least derived class, not
+	most.  Handle secondary vtables.
+
 2000-12-22  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_binary_op): Fix pmf comparison logic.
