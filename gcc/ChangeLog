@@ -1,3 +1,7 @@
+1999-12-30  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
+
+        * genrecog.c (change_state) Corrected typo.
+
 1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (bcopy, bcmp, bzero, index, rindex, atof, atol, free,
