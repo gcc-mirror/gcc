@@ -100,6 +100,9 @@ extern int target_flags;
 
 #define	NO_DOLLAR_IN_LABEL
 
+/* Maybe it doesn't permit dot either.  */
+#define NO_DOT_IN_LABEL
+
 /* Never allow $ in identifiers */
 
 #define DOLLARS_IN_IDENTIFIERS 0
