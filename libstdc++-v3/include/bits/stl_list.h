@@ -406,7 +406,7 @@ namespace std
     _Node*
     _M_create_node(const value_type& __x)
     {
-      _Node* __p = _M_get_node();
+      _Node* __p = this->_M_get_node();
       try {
         std::_Construct(&__p->_M_data, __x);
       }
@@ -427,7 +427,7 @@ namespace std
     _Node*
     _M_create_node()
     {
-      _Node* __p = _M_get_node();
+      _Node* __p = this->_M_get_node();
       try {
         std::_Construct(&__p->_M_data);
       }

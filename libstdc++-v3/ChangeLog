@@ -1,3 +1,23 @@
+2003-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/locale/generic/c_locale.h: Include <cstdlib> and
+	<cstring>.
+	* include/bits/boost_concept_check.h: Add this-> to unqualified
+	method calls.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/locale_facets.h : Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/stdio_filebuf.h: Likewise.
+
 2003-07-11  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/basic_ios.h (copyfmt): Document.

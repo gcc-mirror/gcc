@@ -773,14 +773,14 @@ namespace std
       numpunct_byname(const char* __s, size_t __refs = 0)
       : numpunct<_CharT>(__refs)
       {
-	_S_create_c_locale(_M_c_locale_numpunct, __s);
-	_M_initialize_numpunct(_M_c_locale_numpunct);	
+	this->_S_create_c_locale(_M_c_locale_numpunct, __s);
+	this->_M_initialize_numpunct(_M_c_locale_numpunct);	
       }
 
     protected:
       virtual 
       ~numpunct_byname() 
-      { _S_destroy_c_locale(_M_c_locale_numpunct); }
+      { this->_S_destroy_c_locale(_M_c_locale_numpunct); }
     };
 
   template<typename _CharT, typename _InIter>
@@ -1134,8 +1134,8 @@ namespace std
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
       { 
-	_S_destroy_c_locale(this->_M_c_locale_collate);
-	_S_create_c_locale(this->_M_c_locale_collate, __s); 
+	this->_S_destroy_c_locale(this->_M_c_locale_collate);
+	this->_S_create_c_locale(this->_M_c_locale_collate, __s); 
       }
 
     protected:
@@ -1717,14 +1717,14 @@ namespace std
       moneypunct_byname(const char* __s, size_t __refs = 0)
       : moneypunct<_CharT, _Intl>(__refs)
       {
-	_S_create_c_locale(_M_c_locale_moneypunct, __s);
-	_M_initialize_moneypunct(_M_c_locale_moneypunct);	
+	this->_S_create_c_locale(_M_c_locale_moneypunct, __s);
+	this->_M_initialize_moneypunct(_M_c_locale_moneypunct);	
       }
 
     protected:
       virtual 
       ~moneypunct_byname() 
-      { _S_destroy_c_locale(_M_c_locale_moneypunct); }
+      { this->_S_destroy_c_locale(_M_c_locale_moneypunct); }
     };
 
   template<typename _CharT, bool _Intl>

@@ -336,7 +336,7 @@ namespace std
       _Link_type
       _M_create_node(const value_type& __x)
       {
-	_Link_type __tmp = _M_get_node();
+	_Link_type __tmp = this->_M_get_node();
 	try 
 	  { std::_Construct(&__tmp->_M_value_field, __x); }
 	catch(...)
