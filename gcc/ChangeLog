@@ -1,3 +1,8 @@
+2002-11-27  Krister Walfridsson  <cato@df.lth.se>
+
+	* config.gcc (*-*-netbsd[2-9]*, *-*-netbsdelf[2-9]*): Test for
+	correct version.
+
 2002-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (OK_FOR_U): Remove extra parentheses.
