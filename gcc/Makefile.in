@@ -2980,6 +2980,7 @@ install-info:: doc installdirs \
 	$(DESTDIR)$(infodir)/cpp.info \
 	$(DESTDIR)$(infodir)/gcc.info \
 	$(DESTDIR)$(infodir)/cppinternals.info \
+	$(DESTDIR)$(infodir)/gccinstall.info \
 	$(DESTDIR)$(infodir)/gccint.info
 
 $(DESTDIR)$(infodir)/%.info: $(docobjdir)/%.info installdirs

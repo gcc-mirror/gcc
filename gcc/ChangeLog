@@ -1,3 +1,7 @@
+2003-11-29  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (install-info): Install gccinstall.info too.
+
 2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("cmpint_di"): Fix incorrect instruction lengths.
