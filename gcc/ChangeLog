@@ -1,3 +1,8 @@
+1999-04-07 11:50 -0800  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/inclhack.tpl & fixincl.tpl:
+	Remove dynamic content from generated files
+
 Wed Apr  7 13:16:22 EDT 1999  John Wehle  (john@feith.com)
 
 	* i386.c (output_move_memory): Remove.
