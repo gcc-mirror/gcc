@@ -7331,7 +7331,11 @@ addrs_ok_for_quad_peep (addr1, addr2)
       offset1 = 0;
     }
 
-  /* Make sure the second address is a (mem (plus (reg) (const_int))).  */
+/* Make sure the second address is a (mem (plus (reg) (const_int)))
+    or if it is (mem (reg)) then make sure that offset1 is -8 and the same 
+    register as addr1.  */
+  if (offset1 == -8 && GET_CODE (addr2) == REG && reg1 == REGNO (addr2))
+   return 1;
   if (GET_CODE (addr2) != PLUS)
     return 0;
 
@@ -13744,8 +13748,8 @@ rs6000_rtx_costs (x, code, outer_code, total)
 	case PROCESSOR_POWER4:
 	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
 		    ? GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)
-		    : COSTS_N_INSNS (4));
+		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4)
+		    : COSTS_N_INSNS (2));
 	  return true;
 
 	default:
@@ -13807,7 +13811,6 @@ rs6000_rtx_costs (x, code, outer_code, total)
 
 	case PROCESSOR_PPC620:
 	case PROCESSOR_PPC630:
-	case PROCESSOR_POWER4:
 	  *total = (GET_MODE (XEXP (x, 1)) != DImode
 		    ? COSTS_N_INSNS (21)
 		    : COSTS_N_INSNS (37));
@@ -13821,6 +13824,12 @@ rs6000_rtx_costs (x, code, outer_code, total)
 
 	case PROCESSOR_PPC7450:
 	  *total = COSTS_N_INSNS (23);
+	  return true;
+
+	case PROCESSOR_POWER4:
+	  *total = (GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (18)
+		    : COSTS_N_INSNS (34));
 	  return true;
 
 	default:

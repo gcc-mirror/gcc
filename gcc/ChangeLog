@@ -1,3 +1,14 @@
+2003-04-05  Andrew Pinski  <apinski@apple.com>
+
+	* config/rs6000/rs6000.c (addrs_ok_for_quad_peep): Allow addr2
+	reg with reg1 == reg2 and offset1 = -8.
+
+2003-04-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Halve Power4
+	multiply costs.  Correct Power4 divide costs.
+	* config/rs6000/power4.md: Restore multiply and FP latency.
+
 2003-04-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* alias.c (find_base_term): Export.
