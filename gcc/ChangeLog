@@ -1,3 +1,10 @@
+Fri Jan  2 23:40:09 1998  Jim Wilson  (wilson@cygnus.com)
+                          Jeffrey A Law  (law@cygnus.com)
+
+        * crtstuff.c (__frame_dummy): New function for irix6.
+        (__do_global_ctors): Call __frame_dummy for irix6.
+	* iris6.h (LINK_SPEC): Hide __frame_dummy too.
+
 Fri Jan  2 04:57:57 1998  Weiwen Liu  <liu@hepmail.physics.yale.edu>
 
 	* alpha.c (vms_valid_decl_attribute_p): Move within #if OPEN_VMS.
