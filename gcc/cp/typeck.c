@@ -5349,6 +5349,13 @@ build_c_cast (type, expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
+  if (processing_template_decl)
+    {
+      tree t = build_min (CAST_EXPR, type,
+			  tree_cons (NULL_TREE, value, NULL_TREE));
+      return t;
+    }
+
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
   if (TREE_CODE (type) != REFERENCE_TYPE
@@ -5365,13 +5372,12 @@ build_c_cast (type, expr)
 	 NIHCL uses it. It is not valid ISO C++ however.  */
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	{
-	  if (pedantic)
-	    pedwarn ("ISO C++ forbids casting to an array type");
+	  cp_pedwarn ("ISO C++ forbids casting to an array type `%T'", type);
 	  type = build_pointer_type (TREE_TYPE (type));
 	}
       else
 	{
-	  error ("ISO C++ forbids casting to an array type");
+	  cp_error ("ISO C++ forbids casting to an array type `%T'", type);
 	  return error_mark_node;
 	}
     }
@@ -5381,13 +5387,6 @@ build_c_cast (type, expr)
     {
       cp_error ("invalid cast to function type `%T'", type);
       return error_mark_node;
-    }
-
-  if (processing_template_decl)
-    {
-      tree t = build_min (CAST_EXPR, type,
-			  tree_cons (NULL_TREE, value, NULL_TREE));
-      return t;
     }
 
   if (TREE_CODE (type) == VOID_TYPE)
