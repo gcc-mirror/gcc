@@ -19,3 +19,6 @@
 
 #if 4)		/* { dg-error "missing '\\('" "missing '(' no. 3" } */
 #endif
+
+#if (		/* { dg-error "missing '\\)'" "missing ')' no. 3" } */
+#endif
