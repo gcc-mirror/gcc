@@ -1,3 +1,11 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* acinclude.m4: Quote first argument of AC_DEFUNs.
+	* aclocal.m4: Regenerate with automake 1.8.
+	* Makefile.in: Likewise.
+	* configure: Regenerate.
+	* .cvsignore: New file.
+
 2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR bootstrap/14905
