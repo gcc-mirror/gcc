@@ -1,3 +1,11 @@
+2005-02-06  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+	    Paolo Bonzini  <paolo.bonzini@lu.unisi.ch>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Simplify
+	(ne:SI (zero_extract:SI FOO (const_int 1) BAR) (const_int 0))
+	into just (zero_extract:SI FOO (const_int 1) BAR).
+
 2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi: Include gcc-common.texi.  Don't define gcctabopt

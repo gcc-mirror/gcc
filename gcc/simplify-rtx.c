@@ -2880,6 +2880,18 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       return simplify_gen_relational (code, mode, cmp_mode, x, c);
     }
 
+  /* (ne:SI (zero_extract:SI FOO (const_int 1) BAR) (const_int 0))) is
+     the same as (zero_extract:SI FOO (const_int 1) BAR).  */
+  if (code == NE
+      && op1 == const0_rtx
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && cmp_mode != VOIDmode
+      && nonzero_bits (op0, cmp_mode) == 1
+      && STORE_FLAG_VALUE == 1)
+    return GET_MODE_SIZE (mode) > GET_MODE_SIZE (cmp_mode)
+	   ? simplify_gen_unary (ZERO_EXTEND, mode, op0, cmp_mode)
+	   : gen_lowpart (mode, op0);
+
   return NULL_RTX;
 }
 
