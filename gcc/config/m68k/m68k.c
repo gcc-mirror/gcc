@@ -3428,3 +3428,20 @@ m68k_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 {
   return gen_rtx_REG (Pmode, M68K_STRUCT_VALUE_REGNUM);
 }
+
+/* Return nonzero if register old_reg can be renamed to register new_reg.  */
+int
+m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
+			   unsigned int new_reg)
+{
+
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+
+  if (m68k_interrupt_function_p (current_function_decl)
+      && !regs_ever_live[new_reg])
+    return 0;
+
+  return 1;
+}
