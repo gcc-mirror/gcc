@@ -869,13 +869,13 @@ INCLUDE_FILE_PATTERNS  =
 ### The class_requires macros are kludges because SKIP_FUNCTION_MACROS is
 ### completely broken, and the presence of the macros confuses the parser.
 
-PREDEFINED             = _GLIBCPP_DEPRECATED              \
-                         _GLIBCPP_USE_WCHAR_T             \
-                         _GLIBCPP_USE_LONG_LONG           \
-                         __glibcpp_class_requires="//"    \
-                         __glibcpp_class_requires2="//"   \
-                         __glibcpp_class_requires3="//"   \
-                         __glibcpp_class_requires4="//"
+PREDEFINED             = _GLIBCXX_DEPRECATED              \
+                         _GLIBCXX_USE_WCHAR_T             \
+                         _GLIBCXX_USE_LONG_LONG           \
+                         __glibcxx_class_requires="//"    \
+                         __glibcxx_class_requires2="//"   \
+                         __glibcxx_class_requires3="//"   \
+                         __glibcxx_class_requires4="//"
 
 # If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded.

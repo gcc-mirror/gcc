@@ -1,5 +1,12 @@
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/user.cfg.in, docs/html/abi.txt, docs/html/debug.html,
+	docs/html/test.html, docs/html/17_intro/headers_cc.txt,
+	docs/html/17_intro/howto.html, docs/html/ext/howto.html:  Change
+	GLIBCPP to GLIBCXX (and explain as needed).
+
+2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
+
 	* README:  Update.
 
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>

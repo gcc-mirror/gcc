@@ -105,7 +105,7 @@
    there are different kinds of allocation schemes that can be used by
    <code> std::allocator </code>. For implementation details, see this
    <a href="ext/howto.html#3"> document</a> and look specifically for
-   <code>GLIBCPP_FORCE_NEW</code>. 
+   <code>GLIBCXX_FORCE_NEW</code>. 
 </p>
 
 <p>In a nutshell, the default allocator used by <code>
@@ -120,7 +120,7 @@
    C++ tools: the first that can do this is valgrind 1.0.4, but later
    versions should work at least as well. Second of all, use a
    completely unoptimized build to avoid confusing valgrind. Third,
-   use GLIBCPP_FORCE_NEW to keep extraneous pool allocation noise from
+   use GLIBCXX_FORCE_NEW to keep extraneous pool allocation noise from
    cluttering debug information. 
 </p>
 
