@@ -1,3 +1,7 @@
+2002-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/unordered-1.c: New test.
+
 2002-03-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.c-torture/execute/20020307-1.c: New test.
