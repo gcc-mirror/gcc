@@ -25,7 +25,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info, foo.dvi,
+# foo.info
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall, foo.distdir,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
@@ -132,6 +132,7 @@ f95.tags: force
 
 f95.info: doc/gfortran.info
 dvi:: doc/gfortran.dvi
+html:: $(htmldir)/gfortran/index.html
 
 F95_MANFILES = doc/gfortran.1
 
@@ -157,12 +158,17 @@ GFORTRAN_TEXI = \
 doc/gfortran.info: $(GFORTRAN_TEXI)
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f doc/gfortran.info-*; \
-	  $(MAKEINFO) -I$(srcdir)/doc/include -I$(srcdir)/fortran \
-	    -o doc/gfortran.info $(srcdir)/fortran/gfortran.texi; \
+	  $(MAKEINFO) -I $(srcdir)/doc/include -I $(srcdir)/fortran \
+	    -o $@ $<; \
 	else true; fi
 
 doc/gfortran.dvi: $(GFORTRAN_TEXI)
 	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
+
+$(htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(docdir)/include -I $(srcdir)/fortran -o $(@D) $<
 
 .INTERMEDIATE: gfortran.pod
 

@@ -149,15 +149,26 @@ treelang.srcinfo: doc/treelang.info
 
 dvi:: doc/treelang.dvi
 
-doc/treelang.info: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
-	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
+TEXI_TREELANG_FILES = treelang/treelang.texi \
+	 $(docdir)/include/gcc-common.texi \
+	 $(docdir)/include/gpl.texi \
+	 $(docdir)/include/fdl.texi \
 	 $(docdir)/include/funding.texi
+
+doc/treelang.info: $(TEXI_TREELANG_FILES)
 	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include -o $@ $<
 
-doc/treelang.dvi: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
-	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi
+doc/treelang.dvi: $(TEXI_TREELANG_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
+html:: $(htmldir)/treelang/index.html
+
+$(htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I$(docdir)/include -I$(srcdir)/treelang \
+	   --verbose --number-sections \
+	  -o $(@D) $<
 
 #
 # Install hooks:
@@ -294,11 +305,5 @@ treelang.check.fix: force
 	-rm -f t/*nofilename
 
 #
-
-.PHONY: treelang.html
-
-treelang.html:
-	cd $(srcdir)/treelang && texi2html -I ../doc/include -verbose -menu -split_chapter -number treelang.texi
-#	mv treelang*.html $(srcdir)/treelang
 
 config.status: treelang/config-lang.in

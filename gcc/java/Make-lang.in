@@ -174,6 +174,7 @@ java.srcinfo: doc/gcj.info
 	-cp -p $^ $(srcdir)/doc
 
 dvi:: doc/gcj.dvi
+html:: $(htmldir)/java/index.html
 JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1
 
@@ -373,17 +374,23 @@ java/java-tree-inline.o: tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	-DINLINER_FOR_JAVA=1 \
 	$(srcdir)/tree-inline.c -o $@
 
+TEXI_JAVA_FILES = java/gcj.texi $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
+	 $(docdir)/include/gcc-common.texi
+
 # Documentation
-doc/gcj.info: java/gcj.texi $(docdir)/include/fdl.texi \
-  $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi
+doc/gcj.info: $(TEXI_JAVA_FILES)
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/gcj.info*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<; \
 	else true; fi
 
-doc/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi
+doc/gcj.dvi: $(TEXI_JAVA_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
+$(htmldir)/java/index.html: $(TEXI_JAVA_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(docdir)/include -I $(srcdir)/java -o $(@D) $<
 
 .INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
   jv-convert.pod grmic.pod grmiregistry.pod

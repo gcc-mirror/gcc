@@ -1,3 +1,13 @@
+2004-11-12  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in: Add html support.
+	* java/Make-lang.in: Likewise.
+	* fortran/Make-lang.in: Likewise.
+	* treelang/Make-lang.in: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/makefile.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	
 2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-loop-manip.c: Fix a comment typo.

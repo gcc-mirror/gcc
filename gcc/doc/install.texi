@@ -2016,6 +2016,10 @@ printing with programs such as @command{dvips}.  You can also
 Free Software Foundation}, though such manuals may not be for the most
 recent version of GCC@.
 
+If you would like to generate online HTML documentation, do @samp{cd
+@var{objdir}; make html} and HTML will be generated for the manuals in
+@file{@var{objdir}/HTML}.
+
 @html
 <hr />
 <p>
