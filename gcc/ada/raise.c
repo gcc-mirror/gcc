@@ -852,8 +852,8 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 static void
 get_action_description_for (_Unwind_Context *uw_context,
                             _Unwind_Exception *uw_exception,
-                            region_descriptor *regionr,
-                            action_descriptor *actionr)
+                            region_descriptor *region,
+                            action_descriptor *action)
 {
   _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
 
