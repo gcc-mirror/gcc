@@ -3922,7 +3922,7 @@ fold (expr)
 	 where C1 % C3 == 0 or C3 % C1 == 0.  We can simplify these
 	 expressions, which often appear in the offsets or sizes of
 	 objects with a varying size.  Only deal with positive divisors
-	 and multiplicands. 
+	 and multiplicands.   If C2 is negative, we must have C2 % C3 == 0.
 
 	 Look for NOPs and SAVE_EXPRs inside.  */
 
@@ -3942,7 +3942,10 @@ fold (expr)
 	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
 	    c2 = TREE_OPERAND (xarg0, 1), xarg0 = TREE_OPERAND (xarg0, 0);
 	  else if (TREE_CODE (xarg0) == MINUS_EXPR
-		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
+		   /* If we are doing this computation unsigned, the negate
+		      is incorrect.  */
+		   && ! TREE_UNSIGNED (type))
 	    {
 	      c2 = fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (xarg0, 1)));
 	      xarg0 = TREE_OPERAND (xarg0, 0);
@@ -3959,7 +3962,10 @@ fold (expr)
 	      && (integer_zerop (const_binop (TRUNC_MOD_EXPR,
 					      TREE_OPERAND (xarg0, 1), arg1, 1))
 		  || integer_zerop (const_binop (TRUNC_MOD_EXPR, arg1,
-						 TREE_OPERAND (xarg0, 1), 1))))
+						 TREE_OPERAND (xarg0, 1), 1)))
+	      && (tree_int_cst_lt (integer_zero_node, c2)
+		  || integer_zerop (const_binop (TRUNC_MOD_EXPR, c2,
+						 arg1, 1))))
 	    {
 	      tree outer_div = integer_one_node;
 	      tree c1 = TREE_OPERAND (xarg0, 1);
@@ -4020,7 +4026,8 @@ fold (expr)
 	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
 	    c2 = TREE_OPERAND (xarg0, 1), xarg0 = TREE_OPERAND (xarg0, 0);
 	  else if (TREE_CODE (xarg0) == MINUS_EXPR
-		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
+		   && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
+		   && ! TREE_UNSIGNED (type))
 	    {
 	      c2 = fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (xarg0, 1)));
 	      xarg0 = TREE_OPERAND (xarg0, 0);
@@ -4032,7 +4039,8 @@ fold (expr)
 	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
 	      && integer_zerop (const_binop (TRUNC_MOD_EXPR,
 					     TREE_OPERAND (xarg0, 1),
-					     arg1, 1)))
+					     arg1, 1))
+	      && tree_int_cst_lt (integer_zero_node, c2))
 	    /* The result is (C2%C3).  */
 	    return omit_one_operand (type, const_binop (code, c2, arg1, 1),
 				     TREE_OPERAND (xarg0, 0));
