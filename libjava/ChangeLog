@@ -1,3 +1,9 @@
+2002-04-07  Mark Wielaard <mark@klomp.org>
+
+	* java/util/Hashtable.java (contains): Remove NullPointer check.
+	(containsValue): Add NullPointer check.
+	(remove): Always throw NullPointerException when key is null.
+
 2002-04-07  Adam King <aking@dreammechanics.com>
 
 	* java/lang/natSystem.cc (init_properties): Call new function

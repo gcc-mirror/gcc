@@ -322,10 +322,6 @@ public class Hashtable extends Dictionary
    * <code>containsValue()</code>, and is O(n).
    * <p>
    *
-   * Note: this is one of the <i>old</i> Hashtable methods which does
-   * not like null values; it throws NullPointerException if the
-   * supplied parameter is null.
-   *
    * @param value the value to search for in this Hashtable
    * @return true if at least one key maps to the value
    * @throws NullPointerException if <code>value</code> is null
@@ -334,19 +330,17 @@ public class Hashtable extends Dictionary
    */
   public synchronized boolean contains(Object value)
   {
-    // Check if value is null.
-    if (value == null)
-      throw new NullPointerException();
     return containsValue(value);
   }
 
   /**
    * Returns true if this Hashtable contains a value <code>o</code>, such that
    * <code>o.equals(value)</code>. This is the new API for the old
-   * <code>contains()</code>, except that it is forgiving of null.
+   * <code>contains()</code>.
    *
    * @param value the value to search for in this Hashtable
    * @return true if at least one key maps to the value
+   * @throws NullPointerException if <code>value</code> is null
    * @see #contains(Object)
    * @see #containsKey(Object)
    * @since 1.2
@@ -358,11 +352,16 @@ public class Hashtable extends Dictionary
         HashEntry e = buckets[i];
         while (e != null)
           {
-            if (AbstractCollection.equals(value, e.value))
+            if (value.equals(e.value))
               return true;
             e = e.next;
           }
       }
+
+    // Must throw on null argument even if the table is empty
+    if (value == null)
+      throw new NullPointerException();
+
     return false;
   }
 
@@ -468,17 +467,12 @@ public class Hashtable extends Dictionary
    * Removes from the table and returns the value which is mapped by the
    * supplied key. If the key maps to nothing, then the table remains
    * unchanged, and <code>null</code> is returned.
-   * <b>NOTE:</b>Map.remove and Dictionary.remove disagree whether null
-   * is a valid parameter; at the moment, this implementation obeys Map.remove,
-   * and silently ignores null.
    *
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
   public synchronized Object remove(Object key)
   {
-    if (key == null)
-      return null;
     int idx = hash(key);
     HashEntry e = buckets[idx];
     HashEntry last = null;
