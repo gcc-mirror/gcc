@@ -1,3 +1,7 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20030218-1.c: New.
+
 2003-02-18  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/20030218-1.c: New.

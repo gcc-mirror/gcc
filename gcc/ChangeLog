@@ -1,3 +1,9 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (general_operand_src): Always check
+	MODE.
+	(general_operand_dst): Likewise.
+
 2003-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	* convert.c (convert_to_real): Also optimize (float)log(x) into
