@@ -4128,7 +4128,11 @@ expand_assignment (to, from, want_value, suggest_reg)
 	}
 
       if (TREE_CODE (to) == COMPONENT_REF
-	  && TREE_READONLY (TREE_OPERAND (to, 1)))
+	  && TREE_READONLY (TREE_OPERAND (to, 1))
+	  /* We can't assert that a MEM won't be set more than once
+	     if the component is not addressable because another
+	     non-addressable component may be referenced by the same MEM.  */
+	  && ! (GET_CODE (to_rtx) == MEM && ! can_address_p (to)))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
