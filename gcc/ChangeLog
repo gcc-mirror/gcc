@@ -1,3 +1,7 @@
+Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (choose_function_section): Choose sections correctly.
+
 2003-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* reload1.c (first_label_num): New.
