@@ -1,3 +1,8 @@
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java:
+	Load native library for setWindowPeer method.
+
 2004-07-08  Randolph Chung  <tausq@debian.org>
 
 	* configure.in (SIGNAL_HANDLER): Use pa-signal.h for hppa.
