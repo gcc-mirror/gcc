@@ -3463,8 +3463,8 @@ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
     
         ctype_default=yes
 
-        echo $ac_n "checking for gnu-linux <ctype>""... $ac_c" 1>&6
-echo "configure:3468: checking for gnu-linux <ctype>" >&5
+        echo $ac_n "checking <ctype> for gnu-linux ""... $ac_c" 1>&6
+echo "configure:3468: checking <ctype> for gnu-linux " >&5
     cat > conftest.$ac_ext <<EOF
 #line 3470 "configure"
 #include "confdefs.h"
@@ -3495,8 +3495,8 @@ rm -f conftest*
     fi
 
         if test $ctype_default = "yes"; then
-    echo $ac_n "checking for solaris 2.6 or 2.7 <ctype>""... $ac_c" 1>&6
-echo "configure:3500: checking for solaris 2.6 or 2.7 <ctype>" >&5
+    echo $ac_n "checking <ctype> for solaris 2.6,7,8 ""... $ac_c" 1>&6
+echo "configure:3500: checking <ctype> for solaris 2.6,7,8 " >&5
     cat > conftest.$ac_ext <<EOF
 #line 3502 "configure"
 #include "confdefs.h"
@@ -3564,15 +3564,15 @@ cross_compiling=$ac_cv_prog_cc_cross
         ctype_default=no
       else
         ctype_include_dir="config/solaris/solaris2.7"
-        echo "$ac_t"""solaris2.7"" 1>&6
+        echo "$ac_t"""solaris2.6,7"" 1>&6
         ctype_default=no
       fi
     fi
     fi  
 
         if test $ctype_default = "yes"; then
-    echo $ac_n "checking for solaris 2.5.1 <ctype>""... $ac_c" 1>&6
-echo "configure:3576: checking for solaris 2.5.1 <ctype>" >&5
+    echo $ac_n "checking <ctype> for solaris 2.5.1 ""... $ac_c" 1>&6
+echo "configure:3576: checking <ctype> for solaris 2.5.1 " >&5
     cat > conftest.$ac_ext <<EOF
 #line 3578 "configure"
 #include "confdefs.h"
@@ -3603,8 +3603,8 @@ rm -f conftest*
     fi
 
         if test $ctype_default = "yes"; then
-    echo $ac_n "checking for aix <ctype>""... $ac_c" 1>&6
-echo "configure:3608: checking for aix <ctype>" >&5
+    echo $ac_n "checking <ctype> for aix ""... $ac_c" 1>&6
+echo "configure:3608: checking <ctype> for aix " >&5
     cat > conftest.$ac_ext <<EOF
 #line 3610 "configure"
 #include "confdefs.h"
@@ -3636,8 +3636,8 @@ rm -f conftest*
     fi
 
         if test $ctype_default = "yes"; then
-    echo $ac_n "checking for newlib <ctype>""... $ac_c" 1>&6
-echo "configure:3641: checking for newlib <ctype>" >&5
+    echo $ac_n "checking <ctype> for newlib ""... $ac_c" 1>&6
+echo "configure:3641: checking <ctype> for newlib " >&5
     cat > conftest.$ac_ext <<EOF
 #line 3643 "configure"
 #include "confdefs.h"

@@ -243,48 +243,27 @@ namespace std {
 
       static int 
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
-      { 
-	for (size_t __i = 0; __i < __n; ++__i)
-	  if (!eq(__s1[__i], __s2[__i]))
-	    return lt(__s1[__i], __s2[__i]) ? -1 : 1;
-	return 0; 
-      }
+      { return wmemcmp(__s1, __s2, __n); }
 
       static size_t
       length(const char_type* __s)
-      { 
-	const char_type* __p = __s; 
-	while (*__p) 
-	  ++__p; 
-	return (__p - __s); 
-      }
+      { return wcslen (__s); }
 
       static const char_type* 
       find(const char_type* __s, size_t __n, const char_type& __a)
-      { 
-	for (const char_type* __p = __s; size_t(__p - __s) < __n; ++__p)
-	  if (*__p == __a) 
-	    return __p;
-	return 0;
-      }
+      { return wmemchr(__s, __a, __n); }
 
       static char_type* 
       move(char_type* __s1, const char_type* __s2, int_type __n)
-      { return static_cast<wchar_t*>(memmove(__s1, __s2, 
-					     __n * sizeof(wchar_t))); }
+      { return wmemmove(__s1, __s2, __n); }
 
       static char_type* 
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { return static_cast<wchar_t*>(memcpy(__s1, __s2, 
-					    __n * sizeof(wchar_t))); }
+      { return wmemcpy(__s1, __s2, __n); }
 
       static char_type* 
       assign(char_type* __s, size_t __n, char_type __a)
-      { 
-	for (char_type* __p = __s; __p < __s + __n; ++__p) 
-	  assign(*__p, __a);
-        return __s; 
-      }
+      { return wmemset(__s, __a, __n); }
 
       static char_type 
       to_char_type(const int_type& __c) { return char_type(__c); }

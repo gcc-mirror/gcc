@@ -1,6 +1,6 @@
 // 1999-06-03 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -103,17 +103,102 @@ int test01(void)
   c2 = array1[0];
   test &= c1 != c2;
 
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
 
+int test02(void)
+{
+  bool test = true;
+  const std::wstring str_01(L"zuma beach");
+  const std::wstring str_02(L"montara and ocean beach");
+ 
+  // 21.1.1 character traits requirements
+
+  // Key for decoding what function signatures really mean:
+  // X                == char_traits<_CharT>
+  // [c,d]    == _CharT
+  // [p,q]    == const _CharT*
+  // s                == _CharT*
+  // [n,i,j]  == size_t
+  // f                == X::int_type
+  // pos      == X::pos_type
+  // state    == X::state_type
+
+  // void X::assign(wchar_t c, wchar_t d)
+  // assigns c = d;
+  wchar_t c1 = L'z';
+  wchar_t c2 = L'u';
+  test &= c1 != c2;
+  std::char_traits<wchar_t>::assign(c1,c2);
+  test &= c1 == L'u';
+
+  // char* X::move(char* s, const char* p, size_t n)
+  // for each i in [0,n) performs X::assign(s[i], p[i]). Copies
+  // correctly even where p is in [s, s + n), and yields s.   
+  wchar_t array1[] = {L'z', L'u', L'm', L'a', L' ', L'b', L'e', L'a', L'c', L'h',  0};
+  const wchar_t str_lit1[] = L"montara and ocean beach";
+  int len = sizeof(str_lit1) + sizeof(array1) - 1; // two terminating chars
+  wchar_t array2[len];
+
+  test &= str_lit1[0] == 'm';
+  c1 = array2[0];
+  c2 = str_lit1[0];
+  wchar_t c3 = array2[1];
+  wchar_t c4 = str_lit1[1];
+  std::char_traits<wchar_t>::move(array2, str_lit1, 0);
+  test &= array2[0] == c1;
+  test &= str_lit1[0] == c2;
+  std::char_traits<wchar_t>::move(array2, str_lit1, 1);
+  test &= array2[0] == c2;
+  test &= str_lit1[0] == c2;
+  test &= array2[1] == c3;
+  test &= str_lit1[1] == c4;
+  std::char_traits<wchar_t>::move(array2, str_lit1, 2);
+  test &= array2[0] == c2;
+  test &= str_lit1[0] == c2;
+  test &= array2[1] == c4;
+  test &= str_lit1[1] == c4;
+ 
+  wchar_t* pc1 = array1 + 1;
+  c1 = pc1[0];
+  c2 = array1[0];
+  test &= c1 != c2;
+  wchar_t* pc2 = std::char_traits<wchar_t>::move(array1, pc1, 0);
+  c3 = pc1[0];
+  c4 = array1[0];
+  test &= c1 == c3;
+  test &= c2 == c4;
+  test &= pc2 == array1;
+
+  c1 = pc1[0];
+  c2 = array1[0];
+  wchar_t* pc3 = pc1;
+  pc2 = std::char_traits<wchar_t>::move(array1, pc1, 10);
+  c3 = pc1[0];
+  c4 = array1[0];
+  test &= c1 != c3; // underlying wchar_t array changed.
+  test &= c4 != c3;
+  test &= pc2 == array1;
+  test &= pc3 == pc1; // but pointers o-tay
+  c1 = *(str_01.data());
+  c2 = array1[0];
+  test &= c1 != c2;
+ 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
   return test;
 }
+  
 
 int main()
 { 
   test01();
+  test02();
 }
 
 

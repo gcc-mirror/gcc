@@ -1,4 +1,13 @@
+2000-0508  Steven King  <sxking@uswest.net>
+
+        * bits/char_traits.h: use wchar_t utility functions for
+        char_traits<wchar_t> methods.
+        * testsuite/21_string/char_traits.cc: New (test02): test
+        char_traits<wchar_t>
+
 2000-05-08  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* acinclude.m4 (GLIBCPP_CXXFLAGS): Add bits for solaris2.8.
 
 	* bits/fstream.tcc (filebuf::_M_init_filebuf): Don't set
 	_M_buf_size based on macro, instead use _M_buf_size_opt.

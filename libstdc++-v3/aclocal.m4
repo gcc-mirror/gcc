@@ -309,7 +309,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_default=yes
 
     dnl Test for <ctype> functionality -- gnu-linux
-    AC_MSG_CHECKING([for gnu-linux <ctype>])
+    AC_MSG_CHECKING([<ctype> for gnu-linux ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -325,7 +325,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- solaris 2.6 and 2.7
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([for solaris 2.6 or 2.7 <ctype>])
+    AC_MSG_CHECKING([<ctype> for solaris 2.[6,7,8] ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -348,7 +348,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
         ctype_default=no
       else
         ctype_include_dir="config/solaris/solaris2.7"
-        AC_MSG_RESULT("solaris2.7")
+        AC_MSG_RESULT("solaris2.[6,7]")
         ctype_default=no
       fi
     fi
@@ -356,7 +356,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- solaris 2.5.1
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([for solaris 2.5.1 <ctype>])
+    AC_MSG_CHECKING([<ctype> for solaris 2.5.1 ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -372,7 +372,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- aix
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([for aix <ctype>])
+    AC_MSG_CHECKING([<ctype> for aix ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -389,7 +389,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- newlib
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([for newlib <ctype>])
+    AC_MSG_CHECKING([<ctype> for newlib ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
