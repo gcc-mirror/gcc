@@ -74,7 +74,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    combine anyway.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 
 /* Must precede rtl.h for FFS.  */
 #include <stdio.h>
@@ -398,7 +402,8 @@ static rtx simplify_shift_const	PROTO((rtx, enum rtx_code, enum machine_mode,
 				       rtx, int));
 static int recog_for_combine	PROTO((rtx *, rtx, rtx *));
 static rtx gen_lowpart_for_combine  PROTO((enum machine_mode, rtx));
-static rtx gen_rtx_combine ();  /* This is varargs.  */
+static rtx gen_rtx_combine PROTO((enum rtx_code code, enum machine_mode mode,
+				  ...));
 static rtx gen_binary		PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx));
 static rtx gen_unary		PROTO((enum rtx_code, enum machine_mode, rtx));
@@ -8293,21 +8298,26 @@ gen_lowpart_for_combine (mode, x)
 
 /*VARARGS2*/
 static rtx
-gen_rtx_combine (va_alist)
-     va_dcl
+gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-  va_list p;
+#ifndef __STDC__
   enum rtx_code code;
   enum machine_mode mode;
+#endif
+  va_list p;
   int n_args;
   rtx args[3];
   int i, j;
   char *fmt;
   rtx rt;
 
-  va_start (p);
+  VA_START (p, mode);
+
+#ifndef __STDC__
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
+#endif
+
   n_args = GET_RTX_LENGTH (code);
   fmt = GET_RTX_FORMAT (code);
 

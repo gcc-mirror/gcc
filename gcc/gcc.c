@@ -38,7 +38,11 @@ compilation is specified by a string called a "spec".  */
 
 #include "config.h"
 #include "obstack.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include <stdio.h>
 
 #ifndef R_OK
@@ -4178,14 +4182,19 @@ fancy_abort ()
 /* Output an error message and exit */
 
 static void
-fatal (va_alist)
-     va_dcl
+fatal VPROTO((char *format, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *format;
+#endif
+  va_list ap;
 
-  va_start (ap);
-  format = va_arg (ap, char *);
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char*);
+#endif
+
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, format, ap);
   va_end (ap);
@@ -4195,14 +4204,19 @@ fatal (va_alist)
 }
 
 static void
-error (va_alist)
-     va_dcl
+error VPROTO((char *format, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *format;
+#endif
+  va_list ap;
 
-  va_start (ap);
-  format = va_arg (ap, char *);
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char*);
+#endif
+
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, format, ap);
   va_end (ap);

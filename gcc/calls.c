@@ -22,7 +22,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "flags.h"
 #include "expr.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "insn-flags.h"
 
 /* Decide whether a function's arguments should be processed
@@ -2069,19 +2073,22 @@ expand_call (exp, target, ignore)
    move memory references across the non-const call.  */
 
 void
-emit_library_call (va_alist)
-     va_dcl
+emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
+			  int nargs, ...))
 {
+#ifndef __STDC__
+  rtx orgfun;
+  int no_queue;
+  enum machine_mode outmode;
+  int nargs;
+#endif
   va_list p;
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
   struct args_size original_args_size;
   register int argnum;
-  enum machine_mode outmode;
-  int nargs;
   rtx fun;
-  rtx orgfun;
   int inc;
   int count;
   rtx argblock = 0;
@@ -2090,16 +2097,20 @@ emit_library_call (va_alist)
 	       struct args_size offset; struct args_size size; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int no_queue = 0;
   rtx use_insns;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
 
-  va_start (p);
-  orgfun = fun = va_arg (p, rtx);
+  VA_START (p, nargs);
+
+#ifndef __STDC__
+  orgfun = va_arg (p, rtx);
   no_queue = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
   nargs = va_arg (p, int);
+#endif
+
+  fun = orgfun;
 
   /* Copy all the libcall-arguments out of the varargs data
      and into a vector ARGVEC.
@@ -2338,19 +2349,23 @@ emit_library_call (va_alist)
    If VALUE is nonzero, VALUE is returned.  */
 
 rtx
-emit_library_call_value (va_alist)
-     va_dcl
+emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
+				enum machine_mode outmode, int nargs, ...))
 {
+#ifndef __STDC__
+  rtx orgfun;
+  rtx value;
+  int no_queue;
+  enum machine_mode outmode;
+  int nargs;
+#endif
   va_list p;
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
   struct args_size original_args_size;
   register int argnum;
-  enum machine_mode outmode;
-  int nargs;
   rtx fun;
-  rtx orgfun;
   int inc;
   int count;
   rtx argblock = 0;
@@ -2359,21 +2374,24 @@ emit_library_call_value (va_alist)
 	       struct args_size offset; struct args_size size; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int no_queue = 0;
   rtx use_insns;
-  rtx value;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
 
-  va_start (p);
-  orgfun = fun = va_arg (p, rtx);
+  VA_START (p, nargs);
+
+#ifndef __STDC__
+  orgfun = va_arg (p, rtx);
   value = va_arg (p, rtx);
   no_queue = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
   nargs = va_arg (p, int);
+#endif
+
+  fun = orgfun;
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */

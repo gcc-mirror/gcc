@@ -1,5 +1,5 @@
 /* Output bytecodes for GNU C-compiler.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "config.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "machmode.h"
 #include "rtl.h"
 #include "real.h"
@@ -906,18 +910,21 @@ bc_emit_bytecode (bytecode)
    of literal values in the call.  First argument is the instruction, the
    remaining arguments are literals of size HOST_WIDE_INT or smaller. */
 void
-bc_emit_instruction (va_alist)
-     va_dcl
+bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
 {
-  va_list arguments;
+#ifndef __STDC__
   enum bytecode_opcode opcode;
+#endif
+  va_list arguments;
   int nliteral, instruction;
 
+  VA_START (arguments, opcode);
 
-  va_start (arguments);
+#ifndef __STDC__
+  opcode = va_arg (arguments, enum bytecode_opcode);
+#endif
 
   /* Emit instruction bytecode */
-  opcode = va_arg (arguments, enum bytecode_opcode);
   bc_emit_bytecode (opcode);
   instruction = (int) opcode;
 
