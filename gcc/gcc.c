@@ -2163,39 +2163,42 @@ pexecute (search_flag, program, argv, not_last)
 
 #ifdef WINNT
 
-char **
+/* This is a kludge to get around the Microsoft C spawn functions' propensity
+   to remove the outermost set of double quotes from all arguments.  */
+
+const char * const
 fix_argv (argvec)
-     char **argvec
+     char **argvec;
 {
-   int i;
+  int i;
 
-   for (i = 1; argvec[i] != 0; i++)
-     {
-       int len, j;
-       char *temp, *newtemp;
+  for (i = 1; argvec[i] != 0; i++)
+    {
+      int len, j;
+      char *temp, *newtemp;
 
-       temp = argvec[i];
-       len = strlen (temp);
-       for (j = 0; j < len; j++)
-	 {
-	   if (temp[j] == '"')
-	     {
-	       newtemp = xmalloc (len + 2);
-	       strncpy (newtemp, temp, j);
-	       newtemp [j] = '\\';
-	       strncpy (&newtemp [j+1], &temp [j], len-j);
-	       newtemp [len+1] = 0;
-	       free (temp);
-	       temp = newtemp;
-	       len++;
-	       j++;
-	     }
-	 }
+      temp = argvec[i];
+      len = strlen (temp);
+      for (j = 0; j < len; j++)
+        {
+          if (temp[j] == '"')
+            {
+              newtemp = xmalloc (len + 2);
+              strncpy (newtemp, temp, j);
+              newtemp [j] = '\\';
+              strncpy (&newtemp [j+1], &temp [j], len-j);
+              newtemp [len+1] = 0;
+              free (temp);
+              temp = newtemp;
+              len++;
+              j++;
+            }
+        }
 
-       argvec[i] = temp;
-     }
+        argvec[i] = temp;
+      }
 
-   return argvec;
+  return (const char* const*) argvec;
 }
 
 #define FIX_ARGV(a) fix_argv(a)
@@ -2204,7 +2207,7 @@ fix_argv (argvec)
 
 #define FIX_ARGV(a) a
 
-#endif /* OS2 or WINNT */
+#endif
 
 static int
 pexecute (search_flag, program, argv, not_last)
