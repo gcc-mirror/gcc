@@ -1181,7 +1181,7 @@ disassemble_method (JCF* jcf, const unsigned char *byte_ops, int len)
 #define VAR_INDEX_2 (saw_index = 1, IMMEDIATE_u2)
 
 #define CHECK_PC_IN_RANGE(PC) (PC < 0 || PC > len ? \
-  (fprintf(stderr, _("Bad byte codes.\n")), exit(-1)) : 1)
+  (fprintf(stderr, _("Bad byte codes.\n")), exit(-1), 0) : 1)
 
 /* Print out operand (if not implied by the opcode) for PUSCH opcodes.
    These all push a constant onto the opcode stack. */

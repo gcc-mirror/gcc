@@ -376,7 +376,8 @@ caching_stat (char *filename, struct stat *buf)
 	 particular, the type of the function pointer passed as the
 	 third argument sometimes takes a "const struct dirent *"
 	 parameter, and sometimes just a "struct dirent *".  We cast
-	 to (void *) so that either way it is quietly accepted.  */
+	 to (void *) so that either way it is quietly accepted.
+	 FIXME: scandir is not in POSIX.  */
       dent->num_files = scandir (filename, &dent->files, 
 				 (void *) java_or_class_file, 
 				 alphasort);

@@ -118,10 +118,14 @@ JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o intl.o
 
-# Use loose warnings for this front end.
-java-warn = $(WERROR)
+# Use strict warnings for this front end.
+java-warn = $(STRICT_WARN)
+
 # String length warnings
 jvspec.o-warn = -Wno-error
+
+# Use of non-standardized scandir
+java/jcf-io.o-warn = -Wno-error
 
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f $@
