@@ -1185,7 +1185,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
       unsigned int i;
-      rtx carry_tmp = gen_reg_rtx (word_mode);
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
       unsigned int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       rtx carry_in = NULL_RTX, carry_out = NULL_RTX;
@@ -1241,24 +1240,22 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  if (i > 0)
 	    {
+	      rtx newx;
+	      
 	      /* Add/subtract previous carry to main result.  */
-	      x = expand_binop (word_mode,
-				normalizep == 1 ? binoptab : otheroptab,
-				x, carry_in,
-				target_piece, 1, next_methods);
-	      if (x == 0)
-		break;
-	      else if (target_piece != x)
-		emit_move_insn (target_piece, x);
+	      newx = expand_binop (word_mode,
+				   normalizep == 1 ? binoptab : otheroptab,
+				   x, carry_in,
+				   NULL_RTX, 1, next_methods);
 
 	      if (i + 1 < nwords)
 		{
-		  /* THIS CODE HAS NOT BEEN TESTED.  */
 		  /* Get out carry from adding/subtracting carry in.  */
+		  rtx carry_tmp = gen_reg_rtx (word_mode);
 		  carry_tmp = emit_store_flag_force (carry_tmp,
-						     binoptab == add_optab
-						     ? LT : GT,
-						     x, carry_in,
+						     (binoptab == add_optab
+						      ? LT : GT),
+						     newx, x,
 						     word_mode, 1, normalizep);
 
 		  /* Logical-ior the two poss. carry together.  */
@@ -1268,6 +1265,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		  if (carry_out == 0)
 		    break;
 		}
+	      emit_move_insn (target_piece, newx);
 	    }
 
 	  carry_in = carry_out;
