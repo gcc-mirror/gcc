@@ -6,7 +6,7 @@ See also:  http://autogen.linuxbox.com/fixincludes
 
 The set of fixes required was distilled down to just the data required
 to specify what needed to happen for each fix.  Those data were edited
-into a new file named gcc/fixinc/inclhack.def.  A program called
+into a file named gcc/fixinc/inclhack.def.  A program called
 AutoGen (http://autogen.linuxbox.com) uses these definitions to
 instantiate several different templates (gcc/fixinc/*.tpl) that then
 produces a fixincludes replacement shell script (inclhack.sh), a
@@ -20,29 +20,8 @@ mkfixinc.sh determines that your system needs machine-specific fixes
 that have not yet been applied to inclhack.def, it will install and
 use the current fixinc.* for that system instead.
 
-Usually, the mkfixinc.sh script will be able to detect when
-the binary is not runable.  If you do have problems, however,
-please try configuring "--without-fast-fixincludes".  Thank you.
-
 Regards,
 	Bruce <autogen@linuxbox.com>
-
-
-
-POSSIBLE PROBLEMS
-=================
-
-There may be some systems on which the fixinc binary program appears
-to be functional, but fails to work.  If you are experiencing this
-problem, then copy the script ${src}/gcc/fixinc/inclhack.sh into
-${builddir}/gcc/fixinc.sh and run make again.
-
-And, *please* also report the problem with a description of
-the failure mode (symptoms) and the output from:
-
-        egcs/config.guess
-
-to me:  Bruce Korb <autogen@linuxbox.com>
 
 
 
@@ -93,11 +72,11 @@ Here are the rules for making fixes in the inclhack.def file:
         Please take advantage of the fact AutoGen will glue
         together string fragments.  It helps.  Also take note
         that double quote strings and single quote strings have
-        different formation rules.  Double quote strings are
-        a tiny superset of C string syntax.  Single quote strings
-        follow shell single quote string formation rules, except
-        that the backslash is processed before '\\', '\'' and '#'
-        characters (using C character syntax).
+        different formation rules.  Double quote strings are a
+        tiny superset of ANSI-C string syntax.  Single quote
+        strings follow shell single quote string formation
+        rules, except that the backslash is processed before
+        '\\', '\'' and '#' characters (using C character syntax).
 
     Examples of test specifications:
 
@@ -128,10 +107,14 @@ Here are the rules for making fixes in the inclhack.def file:
         discard the input.
 
     3.  A C language subroutine method for both tests and fixes.
+        See ``fixtests.c'' for instructions on writing C-language
+        applicability tests and ``fixfixes.c'' for C-language fixing.
 
-    4.  Replacement text.  If the replacement is empty, then
-        no fix is applied.  Otherwise, the replacement text is written
-        to the output file and no further fixes are applied.
+    4.  Replacement text.  If the replacement is empty, then no
+        fix is applied.  Otherwise, the replacement text is
+        written to the output file and no further fixes are
+        applied.  If you really want a no-op file, replace the
+        file with a comment.
 
         Replacement text "fixes" must be first in this file!!
 
@@ -204,3 +187,52 @@ Here are the rules for making fixes in the inclhack.def file:
     for documentation on how to include new functions into that
     module.
 
+5.  Testing fixes.
+
+    The brute force method is, of course, to configure and build
+    GCC.  There are easier ways, too.  You can run the compiled
+    binaries in isolation.  ``c_tests'' can be tested with
+    ``fixtests'', ``c_fixes'' with ``fixfixes'' and any fix or
+    test can be tested with ``fixincl''.
+
+    ``fixtests'' is invoked as follows:
+
+        fixtests filename.h your_test_name
+        if [ $? -ne 0 ]
+        then echo do not apply your_fix_name
+        else echo APPLY your_fix_name ; fi
+
+    and ``fixfixes'' is invoked thus:
+
+        fixfixes filename.h your_fix_name < filename.h > /tmp/fixed
+
+    The file name argument is required, but is only used as a hint
+    for use by ``your_fix_name'', it is not used for obtaining the
+    data.  Also, ``your_fix_name'' and ``your_test_name'' may be
+    the same, since fix names and test names are in different
+    "name spaces."
+
+    The ``fixincl'' program is a little harder to work with  :-}.
+    It was written with the expectation that it would be run
+    inside of the fixincl.sh script that handles everything.
+
+    Run it with no arguments to get usage hints, but here is what
+    you will need to do (approximately):
+
+        FI=${top_builddir}/gcc/fixinc/fixincl
+        TARGET_MACHINE=`sh ${top_srcdir}/config.guess`
+        SRCDIR=/usr/include
+        DESTDIR=/tmp/fixtest
+        VERBOSE=4
+        FIND_BASE="."
+        export TARGET_MACHINE SRCDIR DESTDIR VERBOSE FIND_BASE
+        rm -rf ${DESTDIR}
+        mkdir -p ${DESTDIR}
+        cd ${SRCDIR}
+        find * -follow -type f -name '*.h' > ${DESTDIR}/LIST
+        # you may edit this to the list you want
+        ${FI} ${DESTDIR}/LIST > /dev/null 2> ${DESTDIR}/LOG
+
+    Check your results in ${DESTDIR}/LOG.  The stdout output
+    is merely some shell commands that are relevant only to
+    the fixincl.sh shell script.

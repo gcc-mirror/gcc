@@ -1,3 +1,10 @@
+2000-03-01  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.tpl: remove unused symlinks
+	* fixinc/README: GCC Maintainer info
+	* fixinc/inclhack.sh: regen
+	* fixinc/fixincl.sh: regen
+
 2000-03-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (collect_expansion): Trim trailing white space
