@@ -2882,7 +2882,7 @@ while (0)
    pattern $L[a-z].*.  The machine independent portion of GCC creates
    labels matching:  $L[A-Z][0-9]+ and $L[0-9]+.
 
-	LM[0-9]+	Sillicon graphics/ECOFF stabs label before each stmt.
+	LM[0-9]+	Silicon Graphics/ECOFF stabs label before each stmt.
 	$Lb[0-9]+	Begin blocks for MIPS debug support
 	$Lc[0-9]+	Label for use in s<xx> operation.
 	$Le[0-9]+	End blocks for MIPS debug support
@@ -2939,7 +2939,7 @@ while (0)
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\
   mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (ROUNDED))
 
-/* This says how to define a local common symbol (ie, not visable to
+/* This says how to define a local common symbol (ie, not visible to
    linker).  */
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\

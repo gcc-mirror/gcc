@@ -124,7 +124,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HAVE_ATEXIT
 
 /* Define this macro meaning that gcc should find the library 'libgcc.a'
-   by hand, rather than passing the argeument '-lgcc' to tell the linker
+   by hand, rather than passing the argument '-lgcc' to tell the linker
    to do the search */
 #define LINK_LIBGCC_SPECIAL
 
