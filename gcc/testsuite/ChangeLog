@@ -1,5 +1,7 @@
 2004-11-11  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.misc-tests/linkage.exp: Handle biarch GCC for powerpc64.
+
 	* gcc.misc-tests/linkage.exp: Prepend directory name to pass/fail
 	message, delete generated files, use more descriptive name for
 	executable, and make the test unsupported when it cannot be run.
