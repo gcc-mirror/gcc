@@ -4005,6 +4005,13 @@ move\\t%0,%z4\\n\\
   if (GET_CODE (target) == SYMBOL_REF)
     return \"%*jal\\t%0\";
 
+  else if (GET_CODE (target) == CONST_INT)
+    {
+      operands[0] = target;
+      operands[1] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
+      return \"%*%[li\\t%@,%0\\n\\tjal\\t%1,%@%]\";
+    }
+
   else
     {
       operands[0] = target;
@@ -4047,6 +4054,13 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (target) == SYMBOL_REF)
     return \"%*jal\\t%1\";
+
+  else if (GET_CODE (target) == CONST_INT)
+    {
+      operands[1] = target;
+      operands[2] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
+      return \"%*%[li\\t%@,%1\\n\\tjal\\t%2,%@%]\";
+    }
 
   else
     {
