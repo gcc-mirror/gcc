@@ -1,3 +1,7 @@
+2003-12-16  James Lemke  <jim@wasabisystems.com>
+
+	* gcc.dg/arm-scd42-[123].c: New tests.
+
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9043
