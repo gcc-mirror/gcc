@@ -1,4 +1,4 @@
-2002-08-02 Danny Smith  <dannysmith@users.sourceforge.net>
+2002-08-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/os/newlib/ctype_inline.h (is): Don't offset _M_table.
 	(scan_is): Use this->is.
