@@ -219,11 +219,14 @@ gen_insn (insn)
 			break;
 
 		    if (*p == 0
-			&& (! force_int || mode_class[i] == MODE_INT)
+			&& (! force_int || mode_class[i] == MODE_INT 
+			    || mode_class[i] == MODE_VECTOR_INT)
 		        && (! force_partial_int
                             || mode_class[i] == MODE_INT
-                            || mode_class[i] == MODE_PARTIAL_INT)
-			&& (! force_float || mode_class[i] == MODE_FLOAT))
+                            || mode_class[i] == MODE_PARTIAL_INT
+			    || mode_class[i] == MODE_VECTOR_INT)
+			&& (! force_float || mode_class[i] == MODE_FLOAT 
+			    || mode_class[i] == MODE_VECTOR_FLOAT))
 		      break;
 		  }
 
