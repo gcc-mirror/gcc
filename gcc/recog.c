@@ -2735,14 +2735,16 @@ split_all_insns (upd_life)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx insn, next;
+      bool finish = false;
 
-      for (insn = bb->head; insn ; insn = next)
+      for (insn = bb->head; !finish ; insn = next)
 	{
 	  rtx last;
 
 	  /* Can't use `next_real_insn' because that might go across
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
+	  finish = (insn == bb->end);
 	  last = split_insn (insn);
 	  if (last)
 	    {
@@ -2756,13 +2758,7 @@ split_all_insns (upd_life)
 	      changed = 1;
 	      insn = last;
 	    }
-
-	  if (next == NEXT_INSN (bb->end))
-	    break;
 	}
-
-      if (insn == NULL)
-	abort ();
     }
 
   if (changed)
