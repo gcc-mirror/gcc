@@ -213,7 +213,7 @@ static const char *compiler_version;
 
 /* The target version specified with -V */
 
-static const char *spec_version = DEFAULT_TARGET_VERSION;
+static const char *const spec_version = DEFAULT_TARGET_VERSION;
 
 /* The target machine specified with -b.  */
 
@@ -3185,6 +3185,60 @@ process_command (argc, argv)
 	}
     }
 
+  /* If there is a -V or -b option (or both), process it now, before
+     trying to interpret the rest of the command line.  */
+  if (argc > 1 && argv[1][0] == '-'
+      && (argv[1][1] == 'V' || argv[1][1] == 'b'))
+    {
+      const char *new_version = DEFAULT_TARGET_VERSION;
+      const char *new_machine = DEFAULT_TARGET_MACHINE;
+      const char *const *new_argv = argv;
+      char *new_argv0;
+      int baselen;
+      
+      while (argc > 1 && new_argv[1][0] == '-'
+	     && (new_argv[1][1] == 'V' || new_argv[1][1] == 'b'))
+	{
+	  char opt = new_argv[1][1];
+	  const char *arg;
+	  if (new_argv[1][2] != '\0')
+	    {
+	      arg = new_argv[1] + 2;
+	      argc -= 1;
+	      new_argv += 1;
+	    }
+	  else if (argc > 2)
+	    {
+	      arg = new_argv[2];
+	      argc -= 2;
+	      new_argv += 2;
+	    }
+	  else
+	    fatal ("`-%c' option must have argument", opt);
+	  if (opt == 'V')
+	    new_version = arg;
+	  else
+	    new_machine = arg;
+	}
+
+      for (baselen = strlen (argv[0]); baselen > 0; baselen--)
+	if (IS_DIR_SEPARATOR (argv[0][baselen-1]))
+	  break;
+      new_argv0 = xmemdup (argv[0], baselen, 
+			   baselen + concat_length (new_version, new_machine,
+						    "-gcc-", NULL) + 1);
+      strcpy (new_argv0 + baselen, new_machine);
+      strcat (new_argv0, "-gcc-");
+      strcat (new_argv0, new_version);
+
+      new_argv = xmemdup (new_argv, (argc+1) * sizeof (new_argv0[0]),
+			   (argc+1) * sizeof (new_argv0[0]));
+      new_argv[0] = new_argv0;
+
+      execvp (new_argv0, new_argv);
+      fatal ("couldn't run `%s': %s", new_argv0, xstrerror(errno));
+    }
+
   /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
      see if we can create it from the pathname specified in argv[0].  */
 
@@ -3332,7 +3386,6 @@ process_command (argc, argv)
 
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
-     Also parse any switches that determine the configuration name, such as -b.
      Here we also parse the switches that cc itself uses (e.g. -v).  */
 
   for (i = 1; i < argc; i++)
@@ -3531,15 +3584,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  switch (c)
 	    {
 	    case 'b':
-	      n_switches++;
-	      if (p[1] == 0 && i + 1 == argc)
-		fatal ("argument to `-b' is missing");
-	      if (p[1] == 0)
-		spec_machine = argv[++i];
-	      else
-		spec_machine = p + 1;
-
-	      warn_std_ptr = &warn_std;
+	    case 'V':
+	      fatal ("`-%c' must come at the start of the command line", c);
 	      break;
 
 	    case 'B':
@@ -3972,7 +4018,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  else
 	    {
 	      char ch = switches[n_switches].part1[0];
-	      if (ch == 'b' || ch == 'B')
+	      if (ch == 'B')
 		switches[n_switches].validated = 1;
 	    }
 	  n_switches++;
