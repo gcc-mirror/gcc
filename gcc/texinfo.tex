@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.253 1998/07/13 20:58:11 karl Exp $
+% $Id: texinfo.tex,v 2.254 1998/07/16 19:33:37 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.253 $
+\deftexinfoversion$Revision: 2.254 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -3403,10 +3403,13 @@ width0pt\relax} \fi
   \iflinks \write\tocfile{#1{\folio}}\fi
 }
 
-% Finish up the main text and prepare to read what we've written
-% to \tocfile.
 \newskip\contentsrightmargin \contentsrightmargin=1in
 \newcount\savepageno
+\newcount\lastnegativepageno \lastnegativepageno = -1
+
+% Finish up the main text and prepare to read what we've written
+% to \tocfile.
+% 
 \def\startcontents#1{%
    % If @setchapternewpage on, and @headings double, the contents should
    % start on an odd page, unlike chapters.  Thus, we maintain
@@ -3428,7 +3431,7 @@ width0pt\relax} \fi
       \advance\hsize by -\contentsrightmargin % Don't use the full line length.
       %
       % Roman numerals for page numbers.
-      \ifnum \pageno>0 \pageno = -1 \fi
+      \ifnum \pageno>0 \pageno = \lastnegativepageno \fi
 }
 
 
@@ -3442,6 +3445,7 @@ width0pt\relax} \fi
      \fi
      \vfill \eject
    \endgroup
+   \lastnegativepageno = \pageno
    \pageno = \savepageno
 }
 
@@ -3470,6 +3474,7 @@ width0pt\relax} \fi
       \fi
      \vfill \eject
    \endgroup
+   \lastnegativepageno = \pageno
    \pageno = \savepageno
 }
 \let\shortcontents = \summarycontents
