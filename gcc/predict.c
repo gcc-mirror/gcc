@@ -449,14 +449,19 @@ estimate_probability (loops_info)
       if (simple_loop_p (loops_info, loop, &desc)
 	  && desc.const_iter)
 	{
+	  int prob;
 	  niter = desc.niter + 1;
 	  if (niter == 0)        /* We might overflow here.  */
 	    niter = desc.niter;
 
+	  prob = (REG_BR_PROB_BASE
+		  - (REG_BR_PROB_BASE + niter /2) / niter);
+	  /* Branch prediction algorithm gives 0 frequency for everything
+	     after the end of loop for loop having 0 probability to finish.  */
+	  if (prob == REG_BR_PROB_BASE)
+	    prob = REG_BR_PROB_BASE - 1;
 	  predict_edge (desc.in_edge, PRED_LOOP_ITERATIONS,
-			REG_BR_PROB_BASE
-			- (REG_BR_PROB_BASE + niter /2)
-			/ niter);
+			prob);
 	}
 
       bbs = get_loop_body (loop);
