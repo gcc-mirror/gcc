@@ -1,5 +1,7 @@
 Wed May 27 22:02:40 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* reload1.c: Revert accidental checkin.
+
 	* configure.lang: Fix thinko when adding a definition for
 	target_alias to the Makefile.
 
