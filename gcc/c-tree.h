@@ -271,6 +271,7 @@ extern void keep_next_level                     PROTO((void));
 extern int  kept_level_p                        PROTO((void));
 extern tree lookup_label                        PROTO((tree));
 extern tree lookup_name                         PROTO((tree));
+extern tree lookup_name_current_level		PROTO((tree));
 extern tree maybe_build_cleanup                 PROTO((tree));
 extern void parmlist_tags_warning               PROTO((void));
 extern void pending_xref_error                  PROTO((void));
@@ -321,6 +322,7 @@ extern tree common_type                         PROTO((tree, tree));
 extern tree default_conversion                  PROTO((tree));
 extern tree digest_init                         PROTO((tree, tree, tree *, int, int, char *));
 extern tree parser_build_binary_op              PROTO((enum tree_code, tree, tree));
+extern tree require_complete_type		PROTO((tree));
 extern void store_init_value                    PROTO((tree, tree));
 
 /* in c-iterate.c */
