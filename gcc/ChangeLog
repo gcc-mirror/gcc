@@ -1,3 +1,7 @@
+Fri May  4 13:10:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_initialize_trampoline): Fix mode of constant.
+
 2001-05-03  Geoff Keating  <geoffk@redhat.com>
 
 	* invoke.texi (i386 Options): Delete references to -malign-jumps,
