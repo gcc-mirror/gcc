@@ -1,5 +1,5 @@
 /* Proxy.java -- build a proxy class that implements reflected interfaces
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,16 @@ exception statement from your version. */
 
 package java.lang.reflect;
 
-import java.io.Serializable;
-import java.security.ProtectionDomain;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
 import gnu.classpath.Configuration;
 import gnu.java.lang.reflect.TypeSignature;
+
+import java.io.Serializable;
+import java.security.ProtectionDomain;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class allows you to dynamically create an instance of any (or
@@ -153,7 +154,7 @@ import gnu.java.lang.reflect.TypeSignature;
  * @see InvocationHandler
  * @see UndeclaredThrowableException
  * @see Class
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.3
  * @status updated to 1.4, except for the use of ProtectionDomain
  */
@@ -722,8 +723,8 @@ public class Proxy implements Serializable
   private static final class ProxyData
   {
     /**
-     * The package this class is in *including the trailing dot* or "" for
-     * the unnamed (aka default) package.
+     * The package this class is in <b>including the trailing dot</b>
+     * or an empty string for the unnamed (aka default) package.
      */
     String pack;
 
@@ -754,7 +755,7 @@ public class Proxy implements Serializable
     /**
      * For unique id's
      */
-    private static int count = 0;
+    private static int count;
 
     /**
      * The id of this proxy class
@@ -771,7 +772,7 @@ public class Proxy implements Serializable
     /**
      * Return the name of a package (including the trailing dot)
      * given the name of a class.
-     * Returns "" if no package.  We use this in preference to
+     * Returns an empty string if no package.  We use this in preference to
      * using Class.getPackage() to avoid problems with ClassLoaders
      * that don't set the package.
      */
@@ -1302,7 +1303,7 @@ public class Proxy implements Serializable
      *        implies the bootstrap class loader
      * @return the proxy class Class object
      */
-    final Class generate(ClassLoader loader)
+    Class generate(ClassLoader loader)
     {
       byte[] bytecode = new byte[pool.length() + stream.length()];
       // More efficient to bypass calling charAt() repetitively.
