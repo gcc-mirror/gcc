@@ -85,7 +85,9 @@ void
 __set_testsuite_memlimit(float __size = MEMLIMIT_MB)
 {
     struct rlimit r;
-    rlim_t limit = (rlim_t)(__size * 1048576);
+    // Cater to the absence of rlim_t.
+    __typeof__ (r.rlim_cur) limit
+      = (__typeof__ (r.rlim_cur))(__size * 1048576);
 
     // Heap size, seems to be common.
 #if _GLIBCPP_HAVE_MEMLIMIT_DATA

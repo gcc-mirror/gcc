@@ -1,3 +1,8 @@
+2002-11-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Use
+	__typeof__ (r.rlim_cur), not rlim_t in declaration of limit.
+
 2002-10-29  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8347
