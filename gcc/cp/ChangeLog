@@ -1,3 +1,9 @@
+2003-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9749
+	* decl.c (grokdeclarator): Do not allow parameters with variably
+	modified types.
+
 2003-02-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c (bfs_walk_grow): Remove. Fold into ...
