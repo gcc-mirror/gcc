@@ -1898,6 +1898,7 @@ ereal_inf (mode)
 
   rndsav = rndprc;
   rndprc = prec;
+  eclear (e);
   einfin (e);
   rndprc = rndsav;
 
