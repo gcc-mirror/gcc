@@ -1,5 +1,14 @@
 2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* g++.old-deja/g++.brendan/crash16.C,
+	g++.old-deja/g++.brendan/parse3.C,
+	g++.old-deja/g++.brendan/redecl1.C,
+	g++.old-deja/g++.ns/template13.C,
+	g++.old-deja/g++.other/decl4.C,
+	g++.old-deja/g++.pt/spec14.C: Mark as crash test, expected to fail.
+
+2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* lib/old-dejagnu.exp: Check for both "Internal compiler error"
 	and "Internal error".
 

@@ -1,4 +1,5 @@
 // Build don't link:
+// crash test - XFAIL *-*-*
 
 // Reported by Harri Porten <porten@tu-harburg.de>
 // Simplified for testsuite by Alexandre Oliva

@@ -1,3 +1,17 @@
+2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-tree.h: Use __FUNCTION__ not __PRETTY_FUNCTION__.
+	Define my_friendly_assert and my_friendly_abort as macros
+	which may call friendly_abort.  Prototype friendly abort, not
+	my_friendly_abort or my_friendly_assert.
+	* decl.c (signal_catch): Report the signal caught in the error
+	message.  Call fatal directly.
+	* typeck2.c (ack, my_friendly_assert): Delete.
+	(my_friendly_abort): Rename to friendly_abort.  Expect file,
+	line, and function parameters.  Report the abort code, then
+	call fancy_abort.  Do not mask an abort if errors have
+	already occurred.
+
 2000-07-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (comp_target_parms): Remove obsolete parameter.

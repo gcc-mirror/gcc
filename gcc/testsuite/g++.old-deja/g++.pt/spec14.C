@@ -1,3 +1,4 @@
+// crash test - XFAIL *-*-*
 class X
 {
 public:

@@ -1,5 +1,6 @@
 // Build don't link:
 // Templates defined outside must be declared inside
+// crash test - XFAIL *-*-*
 namespace bar
 {
   template<class T>
