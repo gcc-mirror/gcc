@@ -1,3 +1,36 @@
+Sat Nov  8 18:20:21 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (ENABLE_REGMOVE_PASS): Define.
+
+	Bring over from FSF:
+
+	Thu Oct 30 12:21:06 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* va-sh.h (__va_arg_sh1): Define.
+	(va_arg): Use it.
+	SH3E doesn't use any integer registers for subsequent arguments
+	once a non-float value was passed in the stack.
+	* sh.c (machine_dependent_reorg): If optimizing, put explicit
+	alignment in front label for ADDR_DIFF_VEC.
+	* sh.h (PASS_IN_REG_P): Fix SH3E case.
+	(ADJUST_INSN_LENGTH): If not optimizing, add two extra bytes length.
+
+	Tue Oct 28 15:06:44 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Undefine before including
+	svr4.h.
+
+	Mon Oct 27 16:11:52 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (machine_dependent_reorg): When -flag_delayed_branches,
+	put an use_sfunc_addr before each sfunc.
+	* sh.md (use_sfunc_addr, dummy_jump): New insns.
+	(casesi): For TARGET_SH2, emit a dummy_jump after LAB.
+
+	Tue Oct 21 07:12:28 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Don't redefine.
+
 Fri Nov  7 10:22:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* frame.c (add_fdes, count_fdes): Go back to checking pc_begin for
