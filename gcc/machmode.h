@@ -199,6 +199,12 @@ extern unsigned char mode_wider_mode[];
 
 extern enum machine_mode mode_for_size PROTO((unsigned int, enum mode_class, int));
 
+/* Similar, but find the smallest mode for a given width.  */
+
+extern enum machine_mode smallest_mode_for_size  PROTO((unsigned int,
+                                                        enum mode_class));
+
+
 /* Return an integer mode of the exact same size as the input mode,
    or BLKmode on failure.  */
 

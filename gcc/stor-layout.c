@@ -53,8 +53,6 @@ int maximum_field_alignment;
    May be overridden by front-ends.  */
 int set_alignment = 0;
 
-static enum machine_mode smallest_mode_for_size  PROTO((unsigned int,
-							enum mode_class));
 static tree layout_record	PROTO((tree));
 static void layout_union	PROTO((tree));
 
@@ -159,7 +157,7 @@ mode_for_size (size, class, limit)
 /* Similar, but never return BLKmode; return the narrowest mode that
    contains at least the requested number of bits.  */
 
-static enum machine_mode
+enum machine_mode
 smallest_mode_for_size (size, class)
      unsigned int size;
      enum mode_class class;
