@@ -281,10 +281,3 @@ namespace std {
 #endif
 
 #endif	/* _CPP_OSTREAM */
-
-
-
-
-
-
-
