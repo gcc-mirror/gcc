@@ -1,3 +1,8 @@
+Mon Dec  7 23:07:38 1998  Nathan Sidwell  <nathan@acm.org>
+
+	* reload1.c (eliminate_regs): Don't do anything, if we're not
+	generating code.
+
 Mon Dec  7 15:27:09 1998  DJ Delorie  <dj@cygnus.com>
 
 	* mips/mips.h (ENCODE_SECTION_INFO): Handle TARGET_EMBEDDED_DATA.
