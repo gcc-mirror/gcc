@@ -32,6 +32,8 @@ struct gcc_pt_regs
   unsigned long orig_gpr3;
   unsigned long ctr;
   unsigned long link;
+  unsigned long xer;
+  unsigned long ccr;
 };
 
 struct gcc_sigcontext
@@ -173,6 +175,10 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 	fs->regs.reg[i].loc.offset
 	  = (long)&(sc->regs->gpr[i]) - new_cfa;
       }
+
+  fs->regs.reg[CR2_REGNO].how = REG_SAVED_OFFSET;
+  fs->regs.reg[CR2_REGNO].loc.offset
+    = (long)&(sc->regs->ccr) - new_cfa;
 
   fs->regs.reg[LINK_REGISTER_REGNUM].how = REG_SAVED_OFFSET;
   fs->regs.reg[LINK_REGISTER_REGNUM].loc.offset

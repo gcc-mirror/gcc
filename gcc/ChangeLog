@@ -1,3 +1,9 @@
+2004-09-15  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux-unwind.h (struct gcc_pt_regs): Extend to
+	include ccr.
+	(ppc_fallback_frame_state): Save location of CR.
+
 2004-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (string_constant): Handle also read-only variables
