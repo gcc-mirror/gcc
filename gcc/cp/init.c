@@ -2248,7 +2248,7 @@ build_new (placement, decl, init, use_global_new)
 {
   tree type, true_type, size, rval;
   tree nelts;
-  tree alloc_expr;
+  tree alloc_expr, alloc_node;
   int has_array = 0;
   enum tree_code code = NEW_EXPR;
   int use_cookie, nothrow, check_new;
@@ -2527,17 +2527,11 @@ build_new (placement, decl, init, use_global_new)
     }
   check_new = flag_check_new || nothrow;
 
-  if (flag_exceptions && rval)
+  if ((check_new || flag_exceptions) && rval)
     {
-      /* This must last longer so we can use it in the cleanup.
-         The subexpressions don't need to last, because we won't look at
-	 them when expanding the cleanup.  */
-      int yes = suspend_momentary ();
-      alloc_expr = rval = save_expr (rval);
-      resume_momentary (yes);
+      alloc_expr = get_target_expr (rval);
+      alloc_node = rval = TREE_OPERAND (alloc_expr, 0);
     }
-  else if (check_new && rval)
-    alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;
 
@@ -2726,8 +2720,8 @@ build_new (placement, decl, init, use_global_new)
 	 the memory in which the object was being constructed.  */
       if (flag_exceptions && alloc_expr)
 	{
-	  enum tree_code dcode = has_array? VEC_DELETE_EXPR : DELETE_EXPR;
-	  tree cleanup, args = NULL_TREE;
+	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
+	  tree cleanup;
 	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
 	  /* All cleanups must last longer than normal.  */
@@ -2739,18 +2733,53 @@ build_new (placement, decl, init, use_global_new)
 	  /* Copy size to the saveable obstack.  */
 	  size = copy_node (size);
 
-	  cleanup = build_op_delete_call (dcode, alloc_expr, size, flags);
+	  /* If we have a new-placement, we need to pass the alloc TARGET_EXPR
+	     to build_op_delete_call so it can extract the args.  */
+	  cleanup = build_op_delete_call
+	    (dcode, placement ? alloc_expr : alloc_node, size, flags);
 
 	  resume_momentary (yes);
 
+	  /* Ack!  First we allocate the memory.  Then we set our sentry
+	     variable to true, and expand a cleanup that deletes the memory
+	     if sentry is true.  Then we run the constructor and store the
+	     returned pointer in buf.  Then we clear sentry and return buf.  */
+
 	  if (cleanup)
 	    {
+#if 0
+	      /* Disable this until flow is fixed so that it doesn't
+		 think the initialization of sentry is a dead write.  */
+	      tree end, sentry, begin, buf, t = TREE_TYPE (rval);
+
+	      begin = get_target_expr (boolean_true_node);
+	      sentry = TREE_OPERAND (begin, 0);
+
+	      yes = suspend_momentary ();
+	      TREE_OPERAND (begin, 2)
+		= build (COND_EXPR, void_type_node, sentry,
+			 cleanup, void_zero_node);
+	      resume_momentary (yes);
+
+	      rval = get_target_expr (rval);
+
+	      end = build (MODIFY_EXPR, TREE_TYPE (sentry),
+			   sentry, boolean_false_node);
+	      TREE_SIDE_EFFECTS (end) = 1;
+
+	      buf = TREE_OPERAND (rval, 0);
+
+	      rval = build (COMPOUND_EXPR, t, begin,
+			    build (COMPOUND_EXPR, t, rval,
+				   build (COMPOUND_EXPR, t, end, buf)));
+#else
 	      /* FIXME: this is a workaround for a crash due to overlapping
 		 exception regions.  Cleanups shouldn't really happen here.  */
 	      rval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (rval), rval);
 
 	      rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
 	      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+#endif
 	    }
 	}
     }
@@ -2759,13 +2788,22 @@ build_new (placement, decl, init, use_global_new)
 
  done:
 
-  if (check_new && alloc_expr && rval != alloc_expr)
+  if (alloc_expr && rval == alloc_node)
+    {
+      rval = TREE_OPERAND (alloc_expr, 1);
+      alloc_expr = NULL_TREE;
+    }
+
+  if (check_new && alloc_expr)
     {
       /* Did we modify the storage?  */
-      tree ifexp = build_binary_op (NE_EXPR, alloc_expr,
+      tree ifexp = build_binary_op (NE_EXPR, alloc_node,
 				    integer_zero_node, 1);
-      rval = build_conditional_expr (ifexp, rval, alloc_expr);
+      rval = build_conditional_expr (ifexp, rval, alloc_node);
     }
+
+  if (alloc_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
 
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))
     {
