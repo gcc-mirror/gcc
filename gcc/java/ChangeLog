@@ -1,3 +1,7 @@
+Sat Oct 30 21:35:13 1999  Todd T. Fries <todd@lighthouse.fries.net>
+
+	* check-init.c: Fix typo in comment.
+
 Fri Oct 29 14:35:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (add_method_1): Set DECL_INLINE to 1 for private, static
