@@ -759,6 +759,14 @@ unsigned_type (type)
     return long_unsigned_type_node;
   if (type1 == long_long_integer_type_node)
     return long_long_unsigned_type_node;
+  if (type1 == intDI_type_node)
+    return unsigned_intDI_type_node;
+  if (type1 == intSI_type_node)
+    return unsigned_intSI_type_node;
+  if (type1 == intHI_type_node)
+    return unsigned_intHI_type_node;
+  if (type1 == intQI_type_node)
+    return unsigned_intQI_type_node;
   return type;
 }
 
@@ -779,6 +787,14 @@ signed_type (type)
     return long_integer_type_node;
   if (type1 == long_long_unsigned_type_node)
     return long_long_integer_type_node;
+  if (type1 == unsigned_intDI_type_node)
+    return intDI_type_node;
+  if (type1 == unsigned_intSI_type_node)
+    return intSI_type_node;
+  if (type1 == unsigned_intHI_type_node)
+    return intHI_type_node;
+  if (type1 == unsigned_intQI_type_node)
+    return intQI_type_node;
   return type;
 }
 
