@@ -1522,8 +1522,7 @@ extern rtx emit_label (rtx);
 extern rtx emit_barrier (void);
 extern rtx emit_note (int);
 extern rtx emit_note_copy (rtx);
-extern rtx emit_line_note (const char *, int);
-extern rtx emit_line_note_force (const char *, int);
+extern rtx emit_line_note (location_t);
 extern rtx make_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx last_call_insn (void);
@@ -2092,7 +2091,7 @@ extern void purge_addressof (rtx);
 extern void purge_hard_subreg_sets (rtx);
 
 /* In stmt.c */
-extern void set_file_and_line_for_stmt (const char *, int);
+extern void set_file_and_line_for_stmt (location_t);
 extern void expand_null_return (void);
 extern void emit_jump (rtx);
 extern int preserve_subexpressions_p (void);

@@ -189,7 +189,7 @@ tree_code_if_start (tree exp, location_t loc)
                  TREE_TYPE (exp),
                  exp,
                  build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node));
-  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
+  emit_line_note (loc); /* Output the line number information.  */
   expand_start_cond (cond_exp, /* Exit-able if nonzero.  */ 0);
 }
 
@@ -199,7 +199,7 @@ tree_code_if_start (tree exp, location_t loc)
 void
 tree_code_if_else (location_t loc)
 {
-  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
+  emit_line_note (loc); /* Output the line number information.  */
   expand_start_else ();
 }
 
@@ -209,7 +209,7 @@ tree_code_if_else (location_t loc)
 void
 tree_code_if_end (location_t loc)
 {
-  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
+  emit_line_note (loc); /* Output the line number information.  */
   expand_end_cond ();
 }
 
@@ -428,7 +428,7 @@ tree_code_create_function_initial (tree prev_saved,
 
   expand_start_bindings (0);
 
-  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
+  emit_line_note (loc); /* Output the line number information.  */
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
@@ -440,7 +440,7 @@ tree_code_create_function_wrapup (location_t loc)
 
   fn_decl = current_function_decl;
 
-  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
+  emit_line_note (loc); /* Output the line number information.  */
 
   /* Get completely built level from debugger symbol table.  */
 
@@ -602,11 +602,10 @@ tree_code_generate_return (tree type, tree exp)
 
 
 void
-tree_code_output_expression_statement (tree code,
-                                       location_t loc)
+tree_code_output_expression_statement (tree code, location_t loc)
 {
   /* Output the line number information.  */
-  emit_line_note (loc.file, loc.line);
+  emit_line_note (loc);
   TREE_USED (code) = 1;
   TREE_SIDE_EFFECTS (code) = 1;
   expand_expr_stmt (code);

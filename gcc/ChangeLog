@@ -1,3 +1,26 @@
+2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtl.h (emit_line_note): Take a location_t.
+	(emit_line_note_force): Remove.
+	(set_file_and_line_for_statement): Take a location_t.
+	* tree.g (emit_line_note): Take a location_t.
+	* emit-rtl.c (emit_line_note): Take a location_t.
+	(emit_line_note_force): Remove.
+	* function.c (init_function_start): Adjust emit_line_note call.
+	(expand_function_end): Use force_next_line_note, not
+	emit_line_note_force.
+	* c-parse.in (maybe_type_qual): Adjust emit_line_note calls.
+	* c-semantics.c (genrtl_do_pushlevel, genrtl_goto_stmt,
+	genrtl_expr_stmt_value, genrtl_decl_stmt, genrtl_if_stmt,
+	genrtl_while_stmt, genrtl_do_stmt_1, genrtl_return_stmt,
+	genrtl_for_stmt, genrtl_break_stmt, genrtl_continue_stmt,
+	genrtl_continue_stmt, genrtl_switch_stmt,
+	genrtl_asm_stmt): Likewise.
+	* expr.c (expand_expr): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	* stmt.c (set_file_and_line_for_stmt): Take a location_t.
+	(expand_decl_init): Adjust emit_line_note call.
+
 2003-07-07  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/darwin-tramp.asm:  Fix trampolines.  PR 10900.

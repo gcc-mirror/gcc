@@ -6379,7 +6379,7 @@ init_function_start (tree subr)
      function prologue.  Note linenums could be missing, e.g. when
      compiling a Java .class file.  */
   if (DECL_SOURCE_LINE (subr))
-    emit_line_note (DECL_SOURCE_FILE (subr), DECL_SOURCE_LINE (subr));
+    emit_line_note (DECL_SOURCE_LOCATION (subr));
 
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.
@@ -6918,8 +6918,8 @@ expand_function_end (void)
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
-
-  emit_line_note_force (input_filename, input_line);
+  force_next_line_note ();
+  emit_line_note (input_location);
 
   /* Before the return label (if any), clobber the return
      registers so that they are not propagated live to the rest of

@@ -6920,7 +6920,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 	input_filename = EXPR_WFL_FILENAME (exp);
 	input_line = EXPR_WFL_LINENO (exp);
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
-	  emit_line_note (input_filename, input_line);
+	  emit_line_note (input_location);
 	/* Possibly avoid switching back and forth here.  */
 	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
 	input_location = saved_loc;

@@ -5341,7 +5341,7 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
 	    && TYPE_IS_PADDING_P (TREE_TYPE (lhs)))
 	  lhs = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (lhs))), lhs);
 
-	emit_line_note (input_filename, input_line);
+	emit_line_note (input_location);
 	expand_expr_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE,
 					   TREE_PURPOSE (gnu_elab_list),
 					   TREE_VALUE (gnu_elab_list)));
@@ -5407,7 +5407,7 @@ set_lineno (gnat_node, write_note_p)
   input_line = Get_Logical_Line_Number (source_location);
 
   if (write_note_p)
-    emit_line_note (input_filename, input_line);
+    emit_line_note (input_location);
 }
 
 /* Post an error message.  MSG is the error message, properly annotated.

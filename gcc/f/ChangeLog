@@ -1,3 +1,9 @@
+Mon Jul  7 18:13:22 2003  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* com.c (bison_rule_pushlevel_, bison_rule_compstmt_): Adjust
+	emit_line_note calls.
+	* ste.c (ffeste_emit_line_note_): Likewise.
+
 2003-07-06  Andreas Jaeger  <aj@suse.de>
 
 	* bad.c: Convert () to (void) in function definitions.

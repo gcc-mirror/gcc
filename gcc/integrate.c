@@ -986,8 +986,8 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 	  && ! (GET_CODE (XEXP (loc, 0)) == REG
 		&& REGNO (XEXP (loc, 0)) > LAST_VIRTUAL_REGISTER))
 	{
-	  rtx note = emit_line_note (DECL_SOURCE_FILE (formal),
-				     DECL_SOURCE_LINE (formal));
+	  rtx note = emit_line_note (DECL_SOURCE_LOCATION (formal));
+
 	  if (note)
 	    RTX_INTEGRATED_P (note) = 1;
 
@@ -1276,7 +1276,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
   if (flag_test_coverage)
     emit_note (NOTE_INSN_REPEATED_LINE_NUMBER);
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
 
   /* If the function returns a BLKmode object in a register, copy it
      out of the temp register into a BLKmode memory object.  */

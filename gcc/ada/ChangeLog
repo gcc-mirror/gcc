@@ -1,3 +1,8 @@
+2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* trans.c (build_unit_elab, set_lineno): Adjust emit_line_note
+	calls.
+
 2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* misc.c (gnat_handle_option): Don't handle filenames.

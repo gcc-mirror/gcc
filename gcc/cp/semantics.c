@@ -798,7 +798,7 @@ genrtl_try_block (tree t)
   else
     {
       if (!FN_TRY_BLOCK_P (t)) 
-	emit_line_note (input_filename, input_line);
+	emit_line_note (input_location);
 
       expand_eh_region_start ();
       expand_stmt (TRY_STMTS (t));

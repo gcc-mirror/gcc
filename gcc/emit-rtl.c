@@ -4665,35 +4665,31 @@ emit_barrier (void)
   return barrier;
 }
 
-/* Make an insn of code NOTE
-   with data-fields specified by FILE and LINE
-   and add it to the end of the doubly-linked list,
-   but only if line-numbers are desired for debugging info.  */
+/* Make line numbering NOTE insn for LOCATION add it to the end
+   of the doubly-linked list, but only if line-numbers are desired for
+   debugging info and it doesn't match the previous one.  */
 
 rtx
-emit_line_note (const char *file, int line)
+emit_line_note (location_t location)
 {
   rtx note;
-
-  if (line < 0)
-    abort ();
-
-  set_file_and_line_for_stmt (file, line);
-
-  if (file && last_location.file && !strcmp (file, last_location.file)
-      && line == last_location.line)
+  
+  set_file_and_line_for_stmt (location);
+  
+  if (location.file && last_location.file
+      && !strcmp (location.file, last_location.file)
+      && location.line == last_location.line)
     return NULL_RTX;
-  last_location.file = file;
-  last_location.line = line;
-
+  last_location = location;
+  
   if (no_line_numbers)
     {
       cur_insn_uid++;
       return NULL_RTX;
     }
 
-  note = emit_note (line);
-  NOTE_SOURCE_FILE (note) = file;
+  note = emit_note (location.line);
+  NOTE_SOURCE_FILE (note) = location.file;
   
   return note;
 }
@@ -4739,17 +4735,8 @@ emit_note (int note_no)
   return note;
 }
 
-/* Emit a NOTE, and don't omit it even if LINE is the previous note.  */
-
-rtx
-emit_line_note_force (const char *file, int line)
-{
-  last_location.line = -1;
-  return emit_line_note (file, line);
-}
-
 /* Cause next statement to emit a line note even if the line number
-   has not changed.  This is used at the beginning of a function.  */
+   has not changed.  */
 
 void
 force_next_line_note (void)
