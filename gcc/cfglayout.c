@@ -423,7 +423,7 @@ insn_scope (rtx insn)
      the first valid instruction in the function and when that first
      insn is part of an inlined function then the low_pc of that
      inlined function is messed up.  Likewise for the epilogue and
-     the last valid instruction. */
+     the last valid instruction.  */
   if (loc == prologue_locator || loc == epilogue_locator)
     return DECL_INITIAL (cfun->decl);
 

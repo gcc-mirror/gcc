@@ -407,7 +407,7 @@ struct gcc_target
 				    tree type, int *pretend_arg_size, int second_time);
     bool (*strict_argument_naming) (CUMULATIVE_ARGS *ca);
     /* Returns true if we should use SETUP_INCOMING_VARARGS and/or
-       STRICT_ARGUMENT_NAMING. */
+       STRICT_ARGUMENT_NAMING.  */
     bool (*pretend_outgoing_varargs_named) (CUMULATIVE_ARGS *ca);
   } calls;
 };

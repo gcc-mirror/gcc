@@ -1984,7 +1984,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
     fatal_error ("can't write PCH file: %m");
 
   /* If SIZE is not the same as OBJECT_SIZE(order), then we need to pad the
-     object out to OBJECT_SIZE(order).  This happens for strings. */
+     object out to OBJECT_SIZE(order).  This happens for strings.  */
 
   if (size != OBJECT_SIZE (order))
     {
@@ -1994,7 +1994,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
          than most padding requests as the source for our null bytes.  This
          permits us to do the padding with fwrite() rather than fseek(), and
          limits the chance the the OS may try to flush any outstanding
-         writes. */
+         writes.  */
       if (padding <= sizeof(emptyBytes))
         {
           if (fwrite (emptyBytes, 1, padding, f) != padding)
@@ -2002,7 +2002,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
         }
       else
         {
-          /* Larger than our buffer?  Just default to fseek. */
+          /* Larger than our buffer?  Just default to fseek.  */
           if (fseek (f, padding, SEEK_CUR) != 0)
             fatal_error ("can't write PCH file");
         }

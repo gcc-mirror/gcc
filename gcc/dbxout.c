@@ -541,7 +541,7 @@ dbxout_init (const char *input_file_name)
   dbxout_typedefs (syms);
 }
 
-/* Output any typedef names for types described by TYPE_DECLs in SYMS. */
+/* Output any typedef names for types described by TYPE_DECLs in SYMS.  */
 
 static void
 dbxout_typedefs (tree syms)
