@@ -3,6 +3,7 @@
 
 /* COFF does not support weak, and dg doesn't support UNSUPPORTED.  */
 /* { dg-do compile { xfail *-*-coff i?86-pc-cygwin h8300-*-hms } } */
+/* { dg-excess-errors "COFF does not support weak symbols" { target *-*-coff i?86-pc-cygwin h8300-*-hms } } */
 
 /* { dg-final { global target_triplet } } */
 /* { dg-final { if [string match h8300-*-hms $target_triplet ] {return} } } */
