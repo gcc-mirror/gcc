@@ -450,7 +450,7 @@ static int all_blocks		PROTO((tree, tree *));
 static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
 static void put_addressof_into_stack PROTO((rtx));
-static void purge_addressof_1	PROTO((rtx *, rtx));
+static void purge_addressof_1	PROTO((rtx *, rtx, int));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -2657,12 +2657,14 @@ put_addressof_into_stack (r)
 }
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
-   in INSN needs to be changed.  */
+   in INSN needs to be changed.  If FORCE, always put any ADDRESSOFs into
+   the stack.  */
 
 static void
-purge_addressof_1 (loc, insn)
+purge_addressof_1 (loc, insn, force)
      rtx *loc;
      rtx insn;
+     int force;
 {
   rtx x;
   RTX_CODE code;
@@ -2683,7 +2685,7 @@ purge_addressof_1 (loc, insn)
       *loc = XEXP (XEXP (x, 0), 0);
       goto restart;
     }
-  else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF)
+  else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
@@ -2707,10 +2709,10 @@ purge_addressof_1 (loc, insn)
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
-	purge_addressof_1 (&XEXP (x, i), insn);
+	purge_addressof_1 (&XEXP (x, i), insn, force);
       else if (*fmt == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  purge_addressof_1 (&XVECEXP (x, i, j), insn);
+	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force);
     }
 }
 
@@ -2727,8 +2729,9 @@ purge_addressof (insns)
     if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	|| GET_CODE (insn) == CALL_INSN)
       {
-	purge_addressof_1 (&PATTERN (insn), insn);
-	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX);
+	purge_addressof_1 (&PATTERN (insn), insn,
+			   asm_noperands (PATTERN (insn)) > 0);
+	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0);
       }
 }
 
