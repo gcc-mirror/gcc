@@ -766,11 +766,11 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	for arg in ${CC}; do
 	  case $arg in
 	  -[BIL]"${ML_POPDIR}"/*)
-	    CC_="${CC_} "`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\1/p"` ;;
+	    CC_="${CC_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
-	    CC_="${CC_} "`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p""`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	    CC_="${CC_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p""`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
-	    CC_="${CC_} ${arg}" ;;
+	    CC_="${CC_}${arg} " ;;
 	  esac
 	done
 
@@ -778,11 +778,11 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	for arg in ${CXX}; do
 	  case $arg in
 	  -[BIL]"${ML_POPDIR}"/*)
-	    CXX_="${CXX_} "`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	    CXX_="${CXX_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
-	    CXX_="${CXX_} "`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	    CXX_="${CXX_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
-	    CXX_="${CXX_} ${arg}" ;;
+	    CXX_="${CXX_}${arg} " ;;
 	  esac
 	done
 
