@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.23 $"
+#define VERSION_INFO2   "$Revision: 1.24 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL

@@ -179,13 +179,13 @@ make a difference.
 @cindex Objective C threads
 @cindex threads, Objective C
 @item --enable-objcthreads=@var{type}
-Certain systems, notably Linux, can't be relied on to supply a threads
-facility for the Objective C runtime and so will default to
-single-threaded runtime.  They may, however, have a library threads
-implementation available, in which case threads can be enabled with this
-option by supplying a suitable @var{type}, probably @samp{posix}.
-The possibilities for @var{type} are @samp{single}, @samp{posix},
-@samp{win32}, @samp{solaris}, @samp{irix} and @samp{mach}.
+Certain systems, notably Linux-based GNU systems, can't be relied on to
+supply a threads facility for the Objective C runtime and so will
+default to single-threaded runtime.  They may, however, have a library
+threads implementation available, in which case threads can be enabled
+with this option by supplying a suitable @var{type}, probably
+@samp{posix}.  The possibilities for @var{type} are @samp{single},
+@samp{posix}, @samp{win32}, @samp{solaris}, @samp{irix} and @samp{mach}.
 @end table
 
 The @file{configure} script searches subdirectories of the source
@@ -610,7 +610,7 @@ Here is a list of system types:
 
 @quotation
 386bsd, aix, acis, amigados, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
-dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, gnu/linux,
+dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux-gnu,
 hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
 netbsd, newsos, nindy, ns, osf, osfrose, ptx, riscix, riscos, rtu, sco, sim,
 solaris, sunos, sym, sysv, udi, ultrix, unicos, uniplus, unos, vms, vsta,
@@ -759,14 +759,21 @@ To avoid this behavior, specify @samp{-gstabs+} and use GDB instead of
 DBX.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
-@item arm
+@item arm-*-aout
 Advanced RISC Machines ARM-family processors.  These are often used in
 embedded applications.  There are no standard Unix configurations.
 This configuration corresponds to the basic instruction sequences and will
-produce a.out format object modules.
+produce @file{a.out} format object modules.
 
 You may need to make a variant of the file @file{arm.h} for your particular
 configuration.
+
+@item arm-*-linuxaout
+Any of the ARM family processors running the Linux-based GNU system with
+the @file{a.out} binary format (ELF is not yet supported).  You must use
+version 2.8.1.0.7 or later of the Linux binutils, which you can download
+from @file{sunsite.unc.edu:/pub/Linux/GCC} and other mirror sites for
+Linux-based GNU systems.
 
 @item arm-*-riscix
 The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.  If
@@ -880,19 +887,19 @@ option before building.
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
 
-@item i386-*-linuxoldld
-Use this configuration to generate a.out binaries on Linux if you do not
-have gas/binutils version 2.5.2 or later installed. This is an obsolete
-configuration.
+@item i386-*-linux-gnuoldld
+Use this configuration to generate @file{a.out} binaries on Linux-based
+GNU systems if you do not have gas/binutils version 2.5.2 or later
+installed. This is an obsolete configuration.
 
-@item i386-*-linuxaout
-Use this configuration to generate a.out binaries on Linux. This configuration
-is being superseded. You must use gas/binutils version 2.5.2 or
-later.
+@item i386-*-linux-gnuaout
+Use this configuration to generate @file{a.out} binaries on Linux-based
+GNU systems. This configuration is being superseded. You must use
+gas/binutils version 2.5.2 or later.
 
-@item i386-*-linux
-Use this configuration to generate ELF binaries on Linux.  You must
-use gas/binutils version 2.5.2 or later.
+@item i386-*-linux-gnu
+Use this configuration to generate ELF binaries on Linux-based GNU
+systems.  You must use gas/binutils version 2.5.2 or later.
 
 @item i386-*-sco
 Compilation with RCC is recommended.  Also, it may be a good idea to
@@ -1017,7 +1024,7 @@ LynxOS 2.2 and earlier comes with GNU CC 1.x already installed as
 You can tell GNU CC to use the GNU assembler and linker, by specifying
 @samp{--with-gnu-as --with-gnu-ld} when configuring.  These will produce
 COFF format object files and executables;  otherwise GNU CC will use the
-installed tools, which produce a.out format executables.
+installed tools, which produce @file{a.out} format executables.
 
 @item m32r-*-elf
 Embedded M32R system.
@@ -1378,8 +1385,8 @@ PowerPC system in big endian mode, running System V.4.
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
 
-@item powerpc-*-linux
-PowerPC system in big endian mode, running Linux.
+@item powerpc-*-linux-gnu
+PowerPC system in big endian mode, running the Linux-based GNU system.
 
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.

@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.5 $"
+#define VERSION_INFO2   "$Revision: 1.1 $"
 #endif
 
 #ifndef VERSION_STRING
