@@ -1,3 +1,9 @@
+2002-06-06  DJ Delorie  <dj@redhat.com>
+
+	* hashtab.h (htab): Rearrange new members for backward
+	compatibility.
+	(htab_create): Don't use a macro that requires other headers.
+
 2002-06-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* hashtab.h (htab_create): Restore prototype for backward
