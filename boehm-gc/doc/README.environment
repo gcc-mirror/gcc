@@ -30,7 +30,16 @@ GC_NPROCS=<n> - Linux w/threads only.  Explicitly sets the number of processors
 		correctness, but may lead to really horrible performance.
 
 GC_NO_BLACKLIST_WARNING - Prevents the collector from issuing
-		"Needed to allocate blacklisted block at ..." warnings.
+		warnings about allocations of very large blocks.
+		Deprecated.  Use GC_LARGE_ALLOC_WARN_INTERVAL instead.
+
+GC_LARGE_ALLOC_WARN_INTERVAL=<n> - Print every nth warning about very large
+		block allocations, starting with the nth one.  Small values
+		of n are generally benign, in that a bounded number of
+		such warnings generally indicate at most a bounded leak.
+		For best results it should be set at 1 during testing.
+		Default is 5.  Very large numbers effectively disable the
+		warning.
 
 GC_IGNORE_GCJ_INFO - Ignore the type descriptors implicitly supplied by
 		     GC_gcj_malloc and friends.  This is useful for debugging

@@ -529,13 +529,14 @@ GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
 
 # endif
 
+#ifdef __GNUC__
+# pragma weak _DYNAMIC
+#endif
+extern ElfW(Dyn) _DYNAMIC[];
+
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
-#   ifdef __GNUC__
-#     pragma weak _DYNAMIC
-#   endif
-    extern ElfW(Dyn) _DYNAMIC[];
     ElfW(Dyn) *dp;
     struct r_debug *r;
     static struct link_map *cachedResult = 0;
