@@ -176,6 +176,10 @@ proc g++_link_flags { paths } {
     # (SHLIB_PATH).
     # Doing this does cause trouble when testing cross-compilers.
     if {![is_remote target]} {
+	global env;
+	if { $env(LD_LIBRARY_PATH) != "" } {
+		append ld_library_path ":$env(LD_LIBRARY_PATH)";
+	}
 	setenv  LD_LIBRARY_PATH     $ld_library_path
 	setenv  SHLIB_PATH          $ld_library_path
 	setenv  LD_LIBRARYN32_PATH  $ld_library_path
