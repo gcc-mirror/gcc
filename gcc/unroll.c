@@ -1741,11 +1741,16 @@ final_reg_note_copy (notesp, map)
 	    {
 	      rtx insn = map->insn_map[INSN_UID (XEXP (note, 0))];
 
-	      /* If we failed to remap the note, something is awry.  */
+	      /* If we failed to remap the note, something is awry.
+		 Allow REG_LABEL as it may reference label outside
+		 the unrolled loop.  */
 	      if (!insn)
-		abort ();
-
-	      XEXP (note, 0) = insn;
+		{
+		  if (REG_NOTE_KIND (note) != REG_LABEL)
+		    abort ();
+		}
+	      else
+	        XEXP (note, 0) = insn;
 	    }
 	}
 
