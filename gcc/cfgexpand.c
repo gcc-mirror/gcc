@@ -311,12 +311,6 @@ construct_exit_block (void)
   basic_block exit_block;
   edge e, e2, next;
 
-  /* We hard-wired immediate_size_expand to zero above.
-     expand_function_end will decrement this variable.  So, we set the
-     variable to one here, so that after the decrement it will remain
-     zero.  */
-  immediate_size_expand = 1;
-
   /* Make sure the locus is set to the end of the function, so that 
      epilogue line numbers and warnings are set properly.  */
 #ifdef USE_MAPPED_LOCATION

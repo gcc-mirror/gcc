@@ -73,11 +73,6 @@ extern void debug_rli (record_layout_info);
 
 static GTY(()) tree pending_sizes;
 
-/* Nonzero means cannot safely call expand_expr now,
-   so put variable sizes onto `pending_sizes' instead.  */
-
-int immediate_size_expand;
-
 /* Show that REFERENCE_TYPES are internal and should be Pmode.  Called only
    by front end.  */
 
@@ -154,7 +149,7 @@ variable_size (tree size)
   if (TREE_CODE (save) == SAVE_EXPR)
     SAVE_EXPR_PERSISTENT_P (save) = 1;
 
-  if (!immediate_size_expand && cfun && cfun->x_dont_save_pending_sizes_p)
+  if (cfun && cfun->x_dont_save_pending_sizes_p)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  Trust it.  */
     return size;
@@ -169,10 +164,7 @@ variable_size (tree size)
       return size_one_node;
     }
 
-  if (immediate_size_expand)
-    expand_expr (save, const0_rtx, VOIDmode, 0);
-  else
-    put_pending_size (save);
+  put_pending_size (save);
 
   return size;
 }

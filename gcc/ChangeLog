@@ -1,5 +1,16 @@
 2004-06-30  Richard Henderson  <rth@redhat.com>
 
+	* tree.h (immediate_size_expand): Delete.
+	* stor-layout.c (immediate_size_expand): Delete.
+	(variable_size): Don't look at it.
+	* c-decl.c (push_parm_decl): Don't frob immediate_size_expand.
+	(start_function): Likewise.
+	* cfgexpand.c (construct_exit_block): Likewise.
+	* function.c (init_function_start, expand_function_end): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+
+2004-06-30  Richard Henderson  <rth@redhat.com>
+
 	* gimplify.c (gimplify_compound_lval): Take fallback argument
 	instead of want_lvalue.
 	(gimplify_call_expr): Take want_value argument instead of test

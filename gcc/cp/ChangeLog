@@ -1,3 +1,8 @@
+2004-06-30  Richard Henderson  (rth@redhat.com>
+
+	* decl.c (start_preparsed_function): Don't set immediate_size_expand.
+	* method.c (use_thunk): Likewise.
+
 2004-06-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* call.c (build_over_call), typeck.c (build_function_call): Call
