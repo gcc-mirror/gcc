@@ -2405,7 +2405,7 @@ rest_of_type_compilation (
 			  int toplev
 #else
 			  tree type ATTRIBUTE_UNUSED,
-			  int toplev ATTRIBUTE_UNUSED,
+			  int toplev ATTRIBUTE_UNUSED
 #endif
 			  )
 {
