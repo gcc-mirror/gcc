@@ -2563,7 +2563,7 @@ process_command (argc, argv)
   int have_o = 0;
   int lang_n_infiles = 0;
 
-  gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
+  GET_ENV_PATH_LIST (gcc_exec_prefix, "GCC_EXEC_PREFIX");
 
   n_switches = 0;
   n_infiles = 0;
