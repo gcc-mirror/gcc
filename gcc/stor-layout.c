@@ -50,10 +50,11 @@ unsigned int maximum_field_alignment;
    May be overridden by front-ends.  */
 unsigned int set_alignment = 0;
 
-static void layout_union	PARAMS ((tree));
 static void finalize_record_size PARAMS ((record_layout_info));
 static void compute_record_mode PARAMS ((tree));
 static void finalize_type_size PARAMS ((tree));
+static void layout_union_field PARAMS ((record_layout_info, tree));
+static void finish_union_layout PARAMS ((record_layout_info));
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
@@ -402,9 +403,9 @@ layout_decl (decl, known_align)
     }
 }
 
-/* Create a new record_layout_info for the RECORD_TYPE T.  It is the
-   responsibility of the caller to call `free' for the storage the
-   returned.  */
+/* Create a new record_layout_info for T, which may be a RECORD_TYPE,
+   UNION_TYPE, or QUAL_UNION_TYPE.  It is the responsibility of the
+   caller to call `free' for the storage the returned.  */
 
 record_layout_info
 new_record_layout_info (t)
@@ -427,6 +428,65 @@ new_record_layout_info (t)
 #endif
 
   return rli;
+}
+
+/* Like layout_field, but for unions.  */
+
+static void
+layout_union_field (rli, field)
+     record_layout_info rli;
+     tree field;
+{
+  tree dsize;
+      
+  /* This function should only be used for unions; use layout_field
+     for RECORD_TYPEs.  */
+  if (TREE_CODE (rli->t) != UNION_TYPE
+      && TREE_CODE (rli->t) != QUAL_UNION_TYPE)
+    abort ();
+
+  /* By now, we should only be seeing FIELD_DECLs.  */
+  if (TREE_CODE (field) != FIELD_DECL)
+    abort ();
+
+  layout_decl (field, 0);
+  DECL_FIELD_BITPOS (field) = bitsize_int (0);
+
+  /* Union must be at least as aligned as any field requires.  */
+  rli->record_align = MAX (rli->record_align, DECL_ALIGN (field));
+
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+  /* On the m88000, a bit field of declare type `int' forces the
+     entire union to have `int' alignment.  */
+  if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD_TYPE (field))
+    rli->record_align = MAX (rli->record_align, 
+			     TYPE_ALIGN (TREE_TYPE (field)));
+#endif
+
+  dsize = DECL_SIZE (field);
+  if (TREE_CODE (rli->t) == UNION_TYPE)
+    {
+      /* Set union_size to max (decl_size, union_size).  There are
+	 more and less general ways to do this.  Use only CONST_SIZE
+	 unless forced to use VAR_SIZE.  */
+
+      if (TREE_CODE (dsize) == INTEGER_CST
+	  && ! TREE_CONSTANT_OVERFLOW (dsize)
+	  && TREE_INT_CST_HIGH (dsize) == 0)
+	rli->const_size
+	  = MAX (rli->const_size, TREE_INT_CST_LOW (dsize));
+      else if (rli->var_size == 0)
+	rli->var_size = dsize;
+      else
+	rli->var_size = size_binop (MAX_EXPR, rli->var_size, dsize);
+    }
+  else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
+    rli->var_size = fold (build (COND_EXPR, bitsizetype, 
+				 DECL_QUALIFIER (field),
+				 DECL_SIZE (field),
+				 (rli->var_size
+				  ? rli->var_size 
+				  : bitsize_int (0))));
 }
 
 /* RLI contains information about the layout of a RECORD_TYPE.  FIELD
@@ -463,6 +523,13 @@ layout_field (rli, field)
      be laid out.  Likewise for initialized constant fields.  */
   else if (TREE_CODE (field) != FIELD_DECL)
     return;
+  /* This function should only be used for records; use
+     layout_union_field for unions.  */
+  else if (TREE_CODE (rli->t) != RECORD_TYPE)
+    {
+      layout_union_field (rli, field);
+      return;
+    }
 
   /* Work out the known alignment so far.  */
   known_align = rli->var_size ? rli->var_align : rli->const_size;
@@ -931,10 +998,17 @@ void
 finish_record_layout (rli)
      record_layout_info rli;
 {
-  /* Compute the final size.  */
-  finalize_record_size (rli);
-  /* Compute the TYPE_MODE for the record.  */
-  compute_record_mode (rli->t);
+  /* Use finish_union_layout for unions.  */
+  if (TREE_CODE (rli->t) != RECORD_TYPE)
+    finish_union_layout (rli);
+  else
+    {
+      /* Compute the final size.  */
+      finalize_record_size (rli);
+      /* Compute the TYPE_MODE for the record.  */
+      compute_record_mode (rli->t);
+    }
+
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
   while (rli->pending_statics)
@@ -942,118 +1016,86 @@ finish_record_layout (rli)
       layout_decl (TREE_VALUE (rli->pending_statics), 0);
       rli->pending_statics = TREE_CHAIN (rli->pending_statics);
     }
+
   /* Perform any last tweaks to the TYPE_SIZE, etc.  */
   finalize_type_size (rli->t);
   /* Clean up.  */
   free (rli);
 }
 
-
-/* Lay out a UNION_TYPE or QUAL_UNION_TYPE type.
-   Lay out all the fields, set their positions to zero,
-   and compute the size and alignment of the union (maximum of any field).
-   Note that if you set the TYPE_ALIGN before calling this
-   then the union align is aligned to at least that boundary.  */
+/* Like finish_record_layout, but for unions.  */
 
 static void
-layout_union (rec)
-     tree rec;
+finish_union_layout (rli)
+     record_layout_info rli;
 {
-  register tree field;
-  unsigned int union_align = BITS_PER_UNIT;
-
-  /* The size of the union, based on the fields scanned so far,
-     is max (CONST_SIZE, VAR_SIZE).
-     VAR_SIZE may be null; then CONST_SIZE by itself is the size.  */
-  unsigned HOST_WIDE_INT const_size = 0;
-  register tree var_size = 0;
-
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  /* Packed structures don't need to have minimum size.  */
-  if (! TYPE_PACKED (rec))
-    union_align = STRUCTURE_SIZE_BOUNDARY;
-#endif
-
-  /* If this is a QUAL_UNION_TYPE, we want to process the fields in
-     the reverse order in building the COND_EXPR that denotes its
-     size.  We reverse them again later.  */
-  if (TREE_CODE (rec) == QUAL_UNION_TYPE)
-    TYPE_FIELDS (rec) = nreverse (TYPE_FIELDS (rec));
-
-  for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
-    {
-      tree dsize;
-      
-      /* Enums which are local to this class need not be laid out.  */
-      if (TREE_CODE (field) == CONST_DECL || TREE_CODE (field) == TYPE_DECL)
-	continue;
-
-      layout_decl (field, 0);
-      DECL_FIELD_BITPOS (field) = bitsize_int (0);
-
-      /* Union must be at least as aligned as any field requires.  */
-
-      union_align = MAX (union_align, DECL_ALIGN (field));
-
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-      /* On the m88000, a bit field of declare type `int'
-	 forces the entire union to have `int' alignment.  */
-      if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD_TYPE (field))
-	union_align = MAX (union_align, TYPE_ALIGN (TREE_TYPE (field)));
-#endif
-
-      dsize = DECL_SIZE (field);
-      if (TREE_CODE (rec) == UNION_TYPE)
-	{
-	  /* Set union_size to max (decl_size, union_size).
-	     There are more and less general ways to do this.
-	     Use only CONST_SIZE unless forced to use VAR_SIZE.  */
-
-	  if (TREE_CODE (dsize) == INTEGER_CST
-              && ! TREE_CONSTANT_OVERFLOW (dsize)
-              && TREE_INT_CST_HIGH (dsize) == 0)
-	    const_size
-	      = MAX (const_size, TREE_INT_CST_LOW (dsize));
-	  else if (var_size == 0)
-	    var_size = dsize;
-	  else
-	    var_size = size_binop (MAX_EXPR, var_size, dsize);
-	}
-      else if (TREE_CODE (rec) == QUAL_UNION_TYPE)
-	var_size = fold (build (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
-				DECL_SIZE (field),
-				var_size ? var_size : bitsize_int (0)));
-      }
-
-  if (TREE_CODE (rec) == QUAL_UNION_TYPE)
-    TYPE_FIELDS (rec) = nreverse (TYPE_FIELDS (rec));
+  /* This function should only be used for unions; use
+     finish_record_layout for RECORD_TYPEs.  */
+  if (TREE_CODE (rli->t) != UNION_TYPE
+      && TREE_CODE (rli->t) != QUAL_UNION_TYPE)
+    abort ();
 
   /* Determine the ultimate size of the union (in bytes).  */
-  if (NULL == var_size)
-    TYPE_SIZE (rec)
-      = bitsize_int (CEIL (const_size, BITS_PER_UNIT) * BITS_PER_UNIT);
+  if (NULL == rli->var_size)
+    TYPE_SIZE (rli->t)
+      = bitsize_int (CEIL (rli->const_size, BITS_PER_UNIT) * BITS_PER_UNIT);
 
-  else if (const_size == 0)
-    TYPE_SIZE (rec) = var_size;
+  else if (rli->const_size == 0)
+    TYPE_SIZE (rli->t) = rli->var_size;
   else
-    TYPE_SIZE (rec) = size_binop (MAX_EXPR, var_size,
-				  round_up (bitsize_int (const_size),
-					    BITS_PER_UNIT));
+    TYPE_SIZE (rli->t) = size_binop (MAX_EXPR, rli->var_size,
+				     round_up (bitsize_int (rli->const_size),
+					       BITS_PER_UNIT));
 
   /* Determine the desired alignment.  */
 #ifdef ROUND_TYPE_ALIGN
-  TYPE_ALIGN (rec) = ROUND_TYPE_ALIGN (rec, TYPE_ALIGN (rec), union_align);
+  TYPE_ALIGN (rli->t) = ROUND_TYPE_ALIGN (rli->t, TYPE_ALIGN (rli->t), 
+					  rli->record_align);
 #else
-  TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), union_align);
+  TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
 
 #ifdef ROUND_TYPE_SIZE
-  TYPE_SIZE (rec) = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), TYPE_ALIGN (rec));
+  TYPE_SIZE (rli->t) = ROUND_TYPE_SIZE (rli->t, TYPE_SIZE (rli->t), 
+					TYPE_ALIGN (rli->t));
 #else
   /* Round the size up to be a multiple of the required alignment */
-  TYPE_SIZE (rec) = round_up (TYPE_SIZE (rec), TYPE_ALIGN (rec));
+  TYPE_SIZE (rli->t) = round_up (TYPE_SIZE (rli->t), 
+				 TYPE_ALIGN (rli->t));
 #endif
+
+  TYPE_MODE (rli->t) = BLKmode;
+  if (TREE_CODE (TYPE_SIZE (rli->t)) == INTEGER_CST
+      /* If structure's known alignment is less than
+	 what the scalar mode would need, and it matters,
+	 then stick with BLKmode.  */
+      && (! STRICT_ALIGNMENT
+	  || TYPE_ALIGN (rli->t) >= BIGGEST_ALIGNMENT
+	  || compare_tree_int (TYPE_SIZE (rli->t), 
+			       TYPE_ALIGN (rli->t)) <= 0))
+    {
+      tree field;
+
+      /* A union which has any BLKmode members must itself be BLKmode;
+	 it can't go in a register.
+	 Unless the member is BLKmode only because it isn't aligned.  */
+      for (field = TYPE_FIELDS (rli->t); 
+	   field; 
+	   field = TREE_CHAIN (field))
+	{
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  if (TYPE_MODE (TREE_TYPE (field)) == BLKmode
+	      && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field)))
+	    return;
+	}
+
+      TYPE_MODE (rli->t) 
+	= mode_for_size_tree (TYPE_SIZE (rli->t), MODE_INT, 1);
+    }
 }
+
 
 /* Calculate the mode, size, and alignment for TYPE.
    For an array type, calculate the element separation as well.
@@ -1287,52 +1329,27 @@ layout_type (type)
       }
 
     case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
       {
 	tree field;
 	record_layout_info rli;
 
 	/* Initialize the layout information.  */
 	rli = new_record_layout_info (type);
+	/* If this is a QUAL_UNION_TYPE, we want to process the fields
+	   in the reverse order in building the COND_EXPR that denotes
+	   its size.  We reverse them again later.  */
+	if (TREE_CODE (type) == QUAL_UNION_TYPE)
+	  TYPE_FIELDS (type) = nreverse (TYPE_FIELDS (type));
 	/* Layout all the fields.  */
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	  layout_field (rli, field);
+	if (TREE_CODE (type) == QUAL_UNION_TYPE)
+	  TYPE_FIELDS (type) = nreverse (TYPE_FIELDS (type));
 	/* Finish laying out the record.  */
 	finish_record_layout (rli);
       }
-      break;
-
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      layout_union (type);
-      TYPE_MODE (type) = BLKmode;
-      if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  /* If structure's known alignment is less than
-	     what the scalar mode would need, and it matters,
-	     then stick with BLKmode.  */
-	  && (! STRICT_ALIGNMENT
-	      || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	      || compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) <= 0))
-	{
-	  tree field;
-
-	  /* A union which has any BLKmode members must itself be BLKmode;
-	     it can't go in a register.
-	     Unless the member is BLKmode only because it isn't aligned.  */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	    {
-	      if (TREE_CODE (field) != FIELD_DECL)
-		continue;
-
-	      if (TYPE_MODE (TREE_TYPE (field)) == BLKmode
-		  && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field)))
-		goto union_lose;
-	    }
-
-	  TYPE_MODE (type)
-	    = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
-
-	union_lose: ;
-	}
       break;
 
     case SET_TYPE:  /* Used by Chill and Pascal. */
@@ -1376,8 +1393,11 @@ layout_type (type)
     }
 
   /* Compute the final TYPE_SIZE, TYPE_ALIGN, etc. for TYPE.  For
-     RECORD_TYPEs, finish_record_layout already called this function.  */
-  if (TREE_CODE (type) != RECORD_TYPE)
+     records and unions, finish_record_layout already called this
+     function.  */
+  if (TREE_CODE (type) != RECORD_TYPE 
+      && TREE_CODE (type) != UNION_TYPE
+      && TREE_CODE (type) != QUAL_UNION_TYPE)
     finalize_type_size (type);
 
   pop_obstacks ();

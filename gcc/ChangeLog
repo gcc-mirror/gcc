@@ -1,3 +1,13 @@
+2000-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (layout_union): Remove.
+	(layout_union_field): New function, split out from layout_union.
+	(finish_union_layout): Likewise.
+	(layout_field): Handle unions by calling layout_union_field.
+	(finish_record_layout): Handle unions.
+	(layout_type): Combine RECORD_TYPE, UNION_TYPE, and
+	QUAL_UNION_TYPE handling.
+
 Wed Feb 23 13:00:06 CET 2000  Jan Hubicka  <jh@suse.cz>
         * flow.c (fixup_reorder_chain): Avoid double labels in the basic block;
         end of basic block is jump_insn, not barrier; use create_basic_block
