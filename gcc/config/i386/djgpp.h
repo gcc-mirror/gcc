@@ -1,5 +1,5 @@
 /* Configuration for an i386 running MS-DOS with DJGPP.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -43,10 +43,34 @@ Boston, MA 02111-1307, USA.  */
 #undef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
+/* Define the name of the .ctor section.  */
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP "\t.section .ctor"
+
+/* Define the name of the .data section.  */
+#undef DATA_SECTION_ASM_OP
+#define DATA_SECTION_ASM_OP "\t.section .data"
+
+/* Define the name of the .dtor section.  */
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP "\t.section .dtor"
+
+/* Define the name of the .eh_frame section.  */
+#undef EH_FRAME_SECTION_ASM_OP
+#define EH_FRAME_SECTION_ASM_OP "\t.section .eh_frame"
+
+/* Define the name of the .ident op.  */
+#undef IDENT_ASM_OP
+#define IDENT_ASM_OP "\t.ident"
+
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set"
 #endif
+
+/* Define the name of the .text section.  */
+#undef TEXT_SECTION_ASM_OP
+#define TEXT_SECTION_ASM_OP "\t.section .text"
 
 /* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
 #define MD_EXEC_PREFIX "$DJDIR/bin/"
@@ -60,6 +84,11 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS \
   -Asystem(unix) -Asystem(msdos)"
 
+/* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
+#undef CPP_SPEC
+#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  -imacros %s../include/sys/version.h"
++
 /* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
    This cannot be done in LINK_SPECS as that LINK_SPECS is processed
    before library search directories are known by the linker.
@@ -105,7 +134,7 @@ ctor_section ()							\
 {								\
   if (in_section != in_ctor)					\
     {								\
-      fprintf (asm_out_file, "\t.section .ctor\n");		\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
       in_section = in_ctor;					\
     }								\
 }
@@ -116,7 +145,7 @@ dtor_section ()							\
 {								\
   if (in_section != in_dtor)					\
     {								\
-      fprintf (asm_out_file, "\t.section .dtor\n");		\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
       in_section = in_dtor;					\
     }								\
 }
@@ -168,3 +197,12 @@ dtor_section ()							\
 /* djgpp automatically calls its own version of __main, so don't define one
    in libgcc, nor call one in main().  */
 #define HAS_INIT_SECTION
+
+/* Definitions to set wchar_t type to 'unsigned short int' to help out
+   add-on Windows compilers for DJGPP. */
+#define WCHAR_UNSIGNED 1
+#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE "short unsigned int"
+
+/* Used to be defined in xm-djgpp.h, but moved here for cross-compilers.  */
+#define LIBSTDCXX "-lstdcxx"

@@ -1,3 +1,17 @@
+2000-02-16 Mark Elbrecht <snowball3@bigfoot.com>
+	* i386/xm-djgpp.h (LIBSTDCXX): Delete. Moved to config/i386/djgpp.h.
+	(XREF_FILE_NAME): Define.
+
+	* i386/djgpp.h (DATA_SECTION_ASM_OP): Define.
+	(EH_FRAME_SECTION_ASM_OP): Define.
+	(IDENT_ASM_OP): Define.
+	(TEXT_SECTION_ASM_OP): Define.
+	(CPP_SPEC): Define.
+	(CTORS_SECTION_ASM_OP): Define.
+	(CTOR_SECTION_FUNCTION): Use it.
+	(DTORS_SECTION_ASM_OP): Define.
+	(DTOR_SECTION_FUNCTION): Use it.
+
 2000-02-16  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* reg-stack.c (emit_swap_insn): Do not put a new insn before a
