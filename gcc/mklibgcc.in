@@ -459,8 +459,9 @@ for ml in $MULTILIBS; do
       fi
       shlib_so_name="$shlib_base_name"
       shlib_dir=
-      shlib_slibdir_qual=none
+      shlib_slibdir_qual=
       if [ -n "$SHLIB_SLIBDIR_SUFFIXES" ]; then
+	shlib_slibdir_qual=none
 	if [ "$dir" != . ]; then
 	  shlib_dir="$dir"/
 	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
