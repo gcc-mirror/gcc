@@ -1,3 +1,15 @@
+2001-06-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3045
+	* include/bits/basic_ios.tcc: Formatting tweaks.
+	* include/bits/ios_base.h: Formatting tweaks.
+	* src/ios.cc (ios_base::Init::_S_ios_create): Use filebufs here.
+	(ios_base::Init::_S_ios_destroy): ..and here. Explicitly call dtors.
+	* src/globals.cc: Allocate filebufs for standard streams here.
+	(buf_cout, buf_cin, buf_cerr): Like so.
+	(buf_wcout, buf_wcin, buf_wcerr): And so.
+	* testsuite/27_io/ios_init.cc: Add.
+	
 2001-06-04  Brendan Kehoe  <brendan@zen.org>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 	

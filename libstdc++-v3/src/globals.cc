@@ -25,37 +25,52 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// On AIX, and perhaps other systems, library initialization order
-// is not guaranteed.  For example, the static initializers for the 
-// main program might run before the static initializers for this
-// library.  That means that we cannot rely on static initialization in 
-// the library; there is no guarantee that things will get initialized
-// in time.  This file contains definitions of all global variables
-// that require initialization as arrays of characters.
-
+#include <fstream>
 #include <istream>
 #include <ostream>
 
-namespace std {
-  typedef char fake_istream[sizeof (istream)] 
-  __attribute__ ((aligned (__alignof__ (istream))));
-  typedef char fake_ostream[sizeof (ostream)] 
-  __attribute__ ((aligned (__alignof__ (ostream))));
+// On AIX, and perhaps other systems, library initialization order is
+// not guaranteed.  For example, the static initializers for the main
+// program might run before the static initializers for this library.
+// That means that we cannot rely on static initialization in the
+// library; there is no guarantee that things will get initialized in
+// time.  This file contains definitions of all global variables that
+// require initialization as arrays of characters.
 
+// Because <iostream> declares the standard streams to be [io]stream
+// types instead of say [io]fstream types, it is also necessary to
+// allocate the actual file buffers in this file.
+namespace std 
+{
+  typedef char fake_istream[sizeof(istream)]
+  __attribute__ ((aligned(__alignof__(istream))));
+  typedef char fake_ostream[sizeof(ostream)] 
+  __attribute__ ((aligned(__alignof__(ostream))));
   fake_istream cin;
   fake_ostream cout;
   fake_ostream cerr;
   fake_ostream clog;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
-  typedef char fake_wistream[sizeof (wistream)] 
-  __attribute__ ((aligned (__alignof__ (wistream))));
-  typedef char fake_wostream[sizeof (wostream)] 
-  __attribute__ ((aligned (__alignof__ (wostream))));
+  typedef char fake_filebuf[sizeof(filebuf)]
+  __attribute__ ((aligned(__alignof__(filebuf))));
+  fake_filebuf buf_cout;
+  fake_filebuf buf_cin;
+  fake_filebuf buf_cerr;
 
+#ifdef _GLIBCPP_USE_WCHAR_T
+  typedef char fake_wistream[sizeof(wistream)] 
+  __attribute__ ((aligned(__alignof__(wistream))));
+  typedef char fake_wostream[sizeof(wostream)] 
+  __attribute__ ((aligned(__alignof__(wostream))));
   fake_wistream wcin;
   fake_wostream wcout;
   fake_wostream wcerr;
   fake_wostream wclog;
+
+  typedef char fake_wfilebuf[sizeof(wfilebuf)]
+  __attribute__ ((aligned(__alignof__(wfilebuf))));
+  fake_wfilebuf buf_wcout;
+  fake_wfilebuf buf_wcin;
+  fake_wfilebuf buf_wcerr;
 #endif
 }
