@@ -5163,7 +5163,7 @@ output_cbranch (operands, nullify, length, negated, insn)
      is asking for a disaster.  This can happen when not optimizing and
      when jump optimization fails.
 
-     While it usually safe to emit nothing, this can fail if the preceding
+     While it is usually safe to emit nothing, this can fail if the preceding
      instruction is a nullified branch with an empty delay slot and the
      same branch target as this branch.  We could check for this but
      jump optimization should eliminate these jumps.  It is always
