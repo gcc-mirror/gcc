@@ -82,18 +82,6 @@ GLIBCPP_3.1 {
     _ZTv*;
     _ZTc*;
 
-    # std::_S_rb_tree_red
-    _ZSt14_S_rb_tree_red;
-
-    # std::_S_rb_tree_black
-    _ZSt16_S_rb_tree_black;
-
-    # std::__stl_threshold
-    _ZSt15__stl_threshold;
-
-    # std::__stl_chunk_size
-    _ZSt16__stl_chunk_size;
-
     # std::__convert_to_v
     _ZSt14__convert_to_v*;
 
