@@ -1,3 +1,13 @@
+2000-08-02  Tom Tromey  <tromey@cygnus.com>
+
+	* gc_priv.h (GC_generic_malloc_inner): Prototype.
+	(GC_generic_malloc): Likewise.
+	(GC_add_to_black_list_normal): Likewise.
+	(GC_find_header): Likewise.
+	(GC_ADD_TO_BLACK_LIST_NORMAL): Cast bits argument to word.
+	* gc_mark.h (GC_find_start): Prototype.
+	(GC_signal_mark_stack_overflow): Likewise.
+
 2000-07-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (THREADS): Don't --enable-threads on IRIX <= 5.*.

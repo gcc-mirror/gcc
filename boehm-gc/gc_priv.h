@@ -1597,23 +1597,23 @@ void GC_register_data_segments();
 /* Black listing: */
 void GC_bl_init(); 	
 # ifndef ALL_INTERIOR_POINTERS
-    void GC_add_to_black_list_normal(/* bits, maybe source */);
+    void GC_add_to_black_list_normal(word /* bits, maybe source */);
 			/* Register bits as a possible future false	*/
 			/* reference from the heap or static data	*/
 #   ifdef PRINT_BLACK_LIST
 #     define GC_ADD_TO_BLACK_LIST_NORMAL(bits, source) \
-			GC_add_to_black_list_normal(bits, source)
+			GC_add_to_black_list_normal((word) bits, source)
 #   else
 #     define GC_ADD_TO_BLACK_LIST_NORMAL(bits, source) \
-			GC_add_to_black_list_normal(bits)
+			GC_add_to_black_list_normal((word) bits)
 #   endif
 # else
 #   ifdef PRINT_BLACK_LIST
 #     define GC_ADD_TO_BLACK_LIST_NORMAL(bits, source) \
-			GC_add_to_black_list_stack(bits, source)
+			GC_add_to_black_list_stack((word) bits, source)
 #   else
 #     define GC_ADD_TO_BLACK_LIST_NORMAL(bits, source) \
-			GC_add_to_black_list_stack(bits)
+			GC_add_to_black_list_stack((word) bits)
 #   endif
 # endif
 
@@ -1713,7 +1713,7 @@ void GC_collect_a_little_inner(/* int n */);
 				/* collection work, if appropriate.	*/
 				/* A unit is an amount appropriate for  */
 				/* HBLKSIZE bytes of allocation.	*/
-ptr_t GC_generic_malloc(/* bytes, kind */);
+ptr_t GC_generic_malloc(word bytes, int kind);
 				/* Allocate an object of the given	*/
 				/* kind.  By default, there are only	*/
 				/* a few kinds: composite(pointerfree), */
@@ -1727,7 +1727,7 @@ ptr_t GC_generic_malloc_ignore_off_page(/* bytes, kind */);
 				/* As above, but pointers past the 	*/
 				/* first page of the resulting object	*/
 				/* are ignored.				*/
-ptr_t GC_generic_malloc_inner(/* bytes, kind */);
+ptr_t GC_generic_malloc_inner(word bytes, int kind);
 				/* Ditto, but I already hold lock, etc.	*/
 ptr_t GC_generic_malloc_words_small GC_PROTO((size_t words, int kind));
 				/* As above, but size in units of words */
@@ -1757,7 +1757,7 @@ void GC_remove_header(/*h*/);
 				/* Remove the header for block h.	*/
 void GC_remove_counts(/*h, sz*/);
 				/* Remove forwarding counts for h.	*/
-hdr * GC_find_header(/*p*/);	/* Debugging only.			*/
+hdr * GC_find_header(ptr_t /*p*/);	/* Debugging only.			*/
 
 void GC_finalize();	/* Perform all indicated finalization actions	*/
 			/* on unmarked objects.				*/
