@@ -6,7 +6,7 @@ class some_base
         {
 public:
         class base_func_args;
-        virtual void func(base_func_args &) = 0;
+        virtual void func(base_func_args &) = 0; // ERROR - referenced below
         };
 
 class some_base::base_func_args
