@@ -125,12 +125,12 @@ static HARD_REG_SET *after_insn_hard_regs;
 #define MARK_LIVE_AFTER(INSN,REGNO)  \
   SET_HARD_REG_BIT (after_insn_hard_regs[INSN_SUID (INSN)], (REGNO))
 
-static int stupid_reg_compare	PROTO((const PTR,const PTR));
-static int stupid_find_reg	PROTO((int, enum reg_class, enum machine_mode,
+static int stupid_reg_compare	PARAMS ((const PTR,const PTR));
+static int stupid_find_reg	PARAMS ((int, enum reg_class, enum machine_mode,
 				       int, int, int));
-static void stupid_mark_refs	PROTO((rtx, struct insn_chain *));
-static void find_clobbered_regs	PROTO((rtx, rtx, void *));
-static void mark_hard_ref	PROTO((rtx, int, struct insn_chain *));
+static void stupid_mark_refs	PARAMS ((rtx, struct insn_chain *));
+static void find_clobbered_regs	PARAMS ((rtx, rtx, void *));
+static void mark_hard_ref	PARAMS ((rtx, int, struct insn_chain *));
 
 /* For communication between stupid_life_analysis and find_clobbered_regs.  */
 static struct insn_chain *current_chain;

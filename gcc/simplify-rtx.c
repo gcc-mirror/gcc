@@ -89,9 +89,9 @@ Boston, MA 02111-1307, USA.  */
    || GET_CODE (X) == ADDRESSOF)
 
 
-static rtx simplify_plus_minus	PROTO((enum rtx_code, enum machine_mode,
+static rtx simplify_plus_minus	PARAMS ((enum rtx_code, enum machine_mode,
 				       rtx, rtx));
-static void check_fold_consts	PROTO((PTR));
+static void check_fold_consts	PARAMS ((PTR));
 
 /* Make a binary operation by properly ordering the operands and 
    seeing if the expression folds.  */

@@ -74,10 +74,10 @@ static HARD_REG_SET current_live_regs;
 
 static HARD_REG_SET pending_dead_regs;
 
-static void update_live_status		PROTO ((rtx, rtx, void *));
-static int find_basic_block		PROTO ((rtx));
-static rtx next_insn_no_annul		PROTO ((rtx));
-static rtx find_dead_or_set_registers	PROTO ((rtx, struct resources*,
+static void update_live_status		PARAMS ((rtx, rtx, void *));
+static int find_basic_block		PARAMS ((rtx));
+static rtx next_insn_no_annul		PARAMS ((rtx));
+static rtx find_dead_or_set_registers	PARAMS ((rtx, struct resources*,
 						rtx*, int, struct resources,
 						struct resources));
 

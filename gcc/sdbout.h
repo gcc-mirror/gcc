@@ -18,22 +18,22 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void sdbout_init			PROTO ((FILE *, char*, tree));
+extern void sdbout_init			PARAMS ((FILE *, char*, tree));
 
-extern void sdbout_begin_function	PROTO ((int));
-extern void sdbout_end_function		PROTO ((int));
+extern void sdbout_begin_function	PARAMS ((int));
+extern void sdbout_end_function		PARAMS ((int));
 
-extern void sdbout_begin_block		PROTO ((FILE *, int, int));
-extern void sdbout_end_block		PROTO ((FILE *, int, int));
+extern void sdbout_begin_block		PARAMS ((FILE *, int, int));
+extern void sdbout_end_block		PARAMS ((FILE *, int, int));
 
-extern void sdbout_label		PROTO ((rtx));
-extern void sdbout_symbol		PROTO ((tree, int));
-extern void sdbout_toplevel_data	PROTO ((tree));
-extern void sdbout_types		PROTO ((tree));
+extern void sdbout_label		PARAMS ((rtx));
+extern void sdbout_symbol		PARAMS ((tree, int));
+extern void sdbout_toplevel_data	PARAMS ((tree));
+extern void sdbout_types		PARAMS ((tree));
 
-extern void sdbout_end_epilogue		PROTO ((void));
+extern void sdbout_end_epilogue		PARAMS ((void));
 
-extern void sdbout_start_new_source_file 	PROTO ((char *));
-extern void sdbout_resume_previous_source_file	PROTO ((void));
-extern void sdbout_mark_begin_function	PROTO ((void));
+extern void sdbout_start_new_source_file 	PARAMS ((char *));
+extern void sdbout_resume_previous_source_file	PARAMS ((void));
+extern void sdbout_mark_begin_function	PARAMS ((void));
 

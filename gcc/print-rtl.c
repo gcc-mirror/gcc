@@ -52,7 +52,7 @@ static int sawclose = 0;
 
 static int indent;
 
-static void print_rtx		PROTO ((rtx));
+static void print_rtx		PARAMS ((rtx));
 
 /* Nonzero means suppress output of instruction numbers and line number
    notes in debugging dumps.

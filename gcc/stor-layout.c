@@ -43,8 +43,8 @@ int maximum_field_alignment;
    May be overridden by front-ends.  */
 int set_alignment = 0;
 
-static tree layout_record	PROTO((tree));
-static void layout_union	PROTO((tree));
+static tree layout_record	PARAMS ((tree));
+static void layout_union	PARAMS ((tree));
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
