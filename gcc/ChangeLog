@@ -1,3 +1,7 @@
+2001-10-10  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (can_reverse_comparison_p): Remove.
+
 2001-10-10  Christopher Faylor <cgf@redhat.com>
 
 	* config/i386/cygwin.h: Avoid adding include files if -nostdinc is
