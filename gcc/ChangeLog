@@ -1,3 +1,8 @@
+2000-11-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (sibcall, sibcall_value, sibcall_insn, sibcall_value_insn):
+	Add use of link register.
+
 2000-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* extend.texi: Update documentation for default format attributes.
