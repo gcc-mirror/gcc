@@ -3110,7 +3110,7 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
 	  if (TARGET_LDRD)
 	    return val > -256 && val < 256;
 	  else
-	    return val == 4 || val == -4 || val == -8;
+	    return val > -4096 && val < 4092;
 	}
 
       return TARGET_LDRD && arm_address_register_rtx_p (index, strict_p);
