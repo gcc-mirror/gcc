@@ -80,7 +80,7 @@ libf2c/libI77/stamp-h.in: libf2c/libI77/configure.in
 libf2c/libI77/config.h.in: libf2c/libI77/configure.in libf2c/libI77/stamp-h.in
 libf2c/libU77/configure: libf2c/libU77/configure.in
 libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
-libobjc/configure: libobjc/configure.in
+libobjc/configure: libobjc/configure.ac
 # fastjar
 fastjar/aclocal.m4: fastjar/configure.ac
 fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.ac fastjar/aclocal.m4

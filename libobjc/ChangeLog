@@ -1,5 +1,8 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Rename to configure.ac.
+	* Makefile.in: Update to match.
+
 	* Makefile.in: Remove toolexecdir, glibcpp_toolexecdir (unused).
 	Replace glibcpp_toolexeclibdir with toolexeclibdir.
 	* configure.in: Remove glibcpp_toolexecdir (unused).
