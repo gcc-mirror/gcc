@@ -9338,7 +9338,7 @@ bc_expand_address (exp)
 
       if (DECL_EXTERNAL (exp))
 	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp),
-			       BYTECODE_BC_OFFSET (DECL_RTL (exp)));
+			       (BYTECODE_BC_LABEL (DECL_RTL (exp)))->offset);
       else
 	bc_load_localaddr (DECL_RTL (exp));
 
