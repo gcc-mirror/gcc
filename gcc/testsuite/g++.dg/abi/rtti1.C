@@ -10,4 +10,4 @@ void f ()
   throw A();
 }
 
-// { dg-final { scan-assembler-dem-not {typeinfo for A[: \t\n]} } }
+// { dg-final { scan-assembler-dem-not {\ntypeinfo for A[: \t\n]} } }
