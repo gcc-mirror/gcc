@@ -71,6 +71,8 @@ static tree saved_trees;
 static varray_type inline_parm_levels;
 static size_t inline_parm_levels_used;
 
+tree current_tinst_level;
+
 /* A map from local variable declarations in the body of the template
    presently being instantiated to the corresponding instantiated
    local variables.  */
@@ -98,6 +100,7 @@ static int try_one_overload PARAMS ((tree, tree, tree, tree, tree,
 static int unify PARAMS ((tree, tree, tree, tree, int));
 static void add_pending_template PARAMS ((tree));
 static int push_tinst_level PARAMS ((tree));
+static void reopen_tinst_level PARAMS ((tree));
 static tree classtype_mangled_name PARAMS ((tree));
 static char *mangle_class_name_for_template PARAMS ((char *, tree, tree));
 static tree tsubst_expr_values PARAMS ((tree, tree));
@@ -172,6 +175,7 @@ init_pt ()
   ggc_add_tree_root (&pending_templates, 1);
   ggc_add_tree_root (&maybe_templates, 1);
   ggc_add_tree_root (&saved_trees, 1);
+  ggc_add_tree_root (&current_tinst_level, 1);
 }
 
 /* Do any processing required when DECL (a member template declaration
@@ -3619,14 +3623,28 @@ static void
 add_pending_template (d)
      tree d;
 {
-  tree ti = (TYPE_P (d)) ? CLASSTYPE_TEMPLATE_INFO (d) : DECL_TEMPLATE_INFO (d);
+  tree ti = (TYPE_P (d)
+	     ? CLASSTYPE_TEMPLATE_INFO (d)
+	     : DECL_TEMPLATE_INFO (d));
+  int level;
 
   if (TI_PENDING_TEMPLATE_FLAG (ti))
     return;
 
-  *template_tail = tree_cons (build_srcloc_here (), d, NULL_TREE);
+  /* We are called both from instantiate_decl, where we've already had a
+     tinst_level pushed, and instantiate_template, where we haven't.
+     Compensate.  */
+  level = !(current_tinst_level && TINST_DECL (current_tinst_level) == d);
+
+  if (level)
+    push_tinst_level (d);
+
+  *template_tail = tree_cons (current_tinst_level, d, NULL_TREE);
   template_tail = &TREE_CHAIN (*template_tail);
   TI_PENDING_TEMPLATE_FLAG (ti) = 1;
+
+  if (level)
+    pop_tinst_level ();
 }
 
 
@@ -4268,8 +4286,6 @@ uses_template_parms (t)
   return for_each_template_parm (t, 0, 0);
 }
 
-static struct tinst_level *current_tinst_level;
-static struct tinst_level *free_tinst_level;
 static int tinst_depth;
 extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
@@ -4286,38 +4302,40 @@ static void
 print_template_context (err)
      int err;
 {
-  struct tinst_level *p = current_tinst_level;
+  tree p = current_tinst_level;
   int line = lineno;
   const char *file = input_filename;
 
   if (err && p)
     {
-      if (current_function_decl != p->decl
+      if (current_function_decl != TINST_DECL (p)
 	  && current_function_decl != NULL_TREE)
 	/* We can get here during the processing of some synthesized
-	   method.  Then, p->decl will be the function that's causing
+	   method.  Then, TINST_DECL (p) will be the function that's causing
 	   the synthesis.  */
 	;
       else
 	{
-	  if (current_function_decl == p->decl)
+	  if (current_function_decl == TINST_DECL (p))
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else 
 	    fprintf (stderr, "%s: In instantiation of `%s':\n",
-		     file, decl_as_string (p->decl, TS_DECL_TYPE | TS_FUNC_NORETURN));
+		     file, decl_as_string (TINST_DECL (p),
+					   TS_DECL_TYPE | TS_FUNC_NORETURN));
 	  
-	  line = p->line;
-	  file = p->file;
-	  p = p->next;
+	  line = TINST_LINE (p);
+	  file = TINST_FILE (p);
+	  p = TREE_CHAIN (p);
 	}
     }
 
-  for (; p; p = p->next)
+  for (; p; p = TREE_CHAIN (p))
     {
       fprintf (stderr, "%s:%d:   instantiated from `%s'\n", file, line,
-	       decl_as_string (p->decl, TS_DECL_TYPE | TS_FUNC_NORETURN));
-      line = p->line;
-      file = p->file;
+	       decl_as_string (TINST_DECL (p),
+			       TS_DECL_TYPE | TS_FUNC_NORETURN));
+      line = TINST_LINE (p);
+      file = TINST_FILE (p);
     }
   fprintf (stderr, "%s:%d:   instantiated from here\n", file, line);
 }
@@ -4335,11 +4353,14 @@ maybe_print_template_context ()
   print_template_context (1);
 }
 
+/* We're starting to instantiate D; record the template instantiation context
+   for diagnostics and to restore it later.  */
+
 static int
 push_tinst_level (d)
      tree d;
 {
-  struct tinst_level *new;
+  tree new;
 
   if (tinst_depth >= max_tinst_depth)
     {
@@ -4358,18 +4379,8 @@ push_tinst_level (d)
       return 0;
     }
 
-  if (free_tinst_level)
-    {
-      new = free_tinst_level;
-      free_tinst_level = new->next;
-    }
-  else
-    new = (struct tinst_level *) xmalloc (sizeof (struct tinst_level));
-
-  new->decl = d;
-  new->line = lineno;
-  new->file = input_filename;
-  new->next = current_tinst_level;
+  new = build_expr_wfl (d, input_filename, lineno, 0);
+  TREE_CHAIN (new) = current_tinst_level;
   current_tinst_level = new;
 
   ++tinst_depth;
@@ -4382,31 +4393,53 @@ push_tinst_level (d)
   return 1;
 }
 
+/* We're done instantiating this template; return to the instantiation
+   context.  */
+
 void
 pop_tinst_level ()
 {
-  struct tinst_level *old = current_tinst_level;
+  tree old = current_tinst_level;
 
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
-  lineno = old->line;
-  input_filename = old->file;
+  lineno = TINST_LINE (old);
+  input_filename = TINST_FILE (old);
   extract_interface_info ();
   
-  current_tinst_level = old->next;
-  old->next = free_tinst_level;
-  free_tinst_level = old;
+  current_tinst_level = TREE_CHAIN (old);
   --tinst_depth;
   ++tinst_level_tick;
 }
 
-struct tinst_level *
+/* We're instantiating a deferred template; restore the template
+   instantiation context in which the instantiation was requested, which
+   is one step out from LEVEL.  */
+
+static void
+reopen_tinst_level (level)
+     tree level;
+{
+  tree t;
+
+  tinst_depth = 0;
+  for (t = level; t; t = TREE_CHAIN (t))
+    ++tinst_depth;
+
+  current_tinst_level = level;
+  pop_tinst_level ();
+}
+
+/* Return the outermost template instantiation context, for use with
+   -falt-external-templates.  */
+
+tree
 tinst_for_decl ()
 {
-  struct tinst_level *p = current_tinst_level;
+  tree p = current_tinst_level;
 
   if (p)
-    for (; p->next ; p = p->next )
+    for (; TREE_CHAIN (p) ; p = TREE_CHAIN (p))
       ;
   return p;
 }
@@ -8761,6 +8794,14 @@ mark_decl_instantiated (result, extern_p)
        set correctly by tsubst.  */
     TREE_PUBLIC (result) = 1;
 
+  /* We used to set this unconditionally; we moved that to
+     do_decl_instantiation so it wouldn't get set on members of
+     explicit class template instantiations.  But we still need to set
+     it here for the 'extern template' case in order to suppress
+     implicit instantiations.  */
+  if (extern_p)
+    SET_DECL_EXPLICIT_INSTANTIATION (result);
+
   if (! extern_p)
     {
       DECL_INTERFACE_KNOWN (result) = 1;
@@ -9753,11 +9794,9 @@ instantiate_pending_templates ()
       t = &pending_templates;
       while (*t)
 	{
-	  tree srcloc = TREE_PURPOSE (*t);
 	  tree instantiation = TREE_VALUE (*t);
 
-	  input_filename = SRCLOC_FILE (srcloc);
-	  lineno = SRCLOC_LINE (srcloc);
+	  reopen_tinst_level (TREE_PURPOSE (*t));
 
 	  if (TYPE_P (instantiation))
 	    {

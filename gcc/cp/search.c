@@ -2945,10 +2945,12 @@ maybe_suppress_debug_info (t)
 
   /* If we already know how we're handling this class, handle debug info
      the same way.  */
-  if (CLASSTYPE_INTERFACE_ONLY (t))
-    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
-  else if (CLASSTYPE_INTERFACE_KNOWN (t))
-    /* Don't set it.  */;
+  if (CLASSTYPE_INTERFACE_KNOWN (t))
+    {
+      if (CLASSTYPE_INTERFACE_ONLY (t))
+	TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
+      /* else don't set it.  */
+    }
   /* If the class has a vtable, write out the debug info along with
      the vtable.  */
   else if (TYPE_CONTAINS_VPTR_P (t))

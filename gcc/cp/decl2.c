@@ -911,14 +911,14 @@ warn_if_unknown_interface (decl)
 
   if (flag_alt_external_templates)
     {
-      struct tinst_level *til = tinst_for_decl ();
+      tree til = tinst_for_decl ();
       int sl = lineno;
       const char *sf = input_filename;
 
       if (til)
 	{
-	  lineno = til->line;
-	  input_filename = til->file;
+	  lineno = TINST_LINE (til);
+	  input_filename = TINST_FILE (til);
 	}
       cp_warning ("template `%#D' instantiated in file without #pragma interface",
 		  decl);

@@ -1,3 +1,25 @@
+2000-06-05  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* search.c (maybe_suppress_debug_info): Don't check
+	CLASSTYPE_INTERFACE_ONLY if CLASSTYPE_INTERFACE_KNOWN isn't set.
+
+	* pt.c (mark_decl_instantiated): Do SET_DECL_EXPLICIT_INSTANTIATION
+	here if extern_p.
+
+	Remember instantiation context in deferred instantiations.
+	* cp-tree.h (struct tinst_level): Remove.
+	(TINST_DECL, TINST_LINE, TINST_FILE): New macros.
+	* pt.c (current_tinst_level): Now a tree.
+	(print_template_context, push_tinst_level, pop_tinst_level,
+	tinst_for_decl): Adjust.
+	(reopen_tinst_level): New fn.
+	(init_pt): Register current_tinst_level as a root.
+	(add_pending_template): Put current_tinst_level in TREE_PURPOSE
+	of the pending templates list.
+	(instantiate_pending_templates): Adjust.  Call reopen_tinst_level.
+	* lex.c (extract_interface_info): Adjust.
+	* decl2.c (warn_if_unknown_interface): Adjust.
+
 2000-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (indirect_primary_base_p): New function.

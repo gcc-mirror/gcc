@@ -933,10 +933,10 @@ extract_interface_info ()
 
   if (flag_alt_external_templates)
     {
-      struct tinst_level *til = tinst_for_decl ();
+      tree til = tinst_for_decl ();
   
       if (til)
-	fileinfo = get_time_identifier (til->file);
+	fileinfo = get_time_identifier (TINST_FILE (til));
     }
   if (!fileinfo)
     fileinfo = get_time_identifier (input_filename);

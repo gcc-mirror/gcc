@@ -3392,15 +3392,12 @@ typedef enum unification_kind_t {
   DEDUCE_EXACT
 } unification_kind_t;
 
-/* The template currently being instantiated, and where the instantiation
-   was triggered.  */
-struct tinst_level
-{
-  tree decl;
-  int line;
-  const char *file;
-  struct tinst_level *next;
-};
+/* Macros for operating on a template instantation level node, represented
+   by an EXPR_WITH_FILE_LOCATION.  */
+
+#define TINST_DECL(NODE) EXPR_WFL_NODE (NODE)
+#define TINST_LINE(NODE) EXPR_WFL_LINENO (NODE)
+#define TINST_FILE(NODE) EXPR_WFL_FILENAME (NODE)
 
 extern void maybe_print_template_context	PARAMS ((void));
 
@@ -4349,7 +4346,7 @@ extern tree instantiate_class_template		PARAMS ((tree));
 extern tree instantiate_template		PARAMS ((tree, tree));
 extern void overload_template_name		PARAMS ((tree));
 extern int fn_type_unification                  PARAMS ((tree, tree, tree, tree, tree, unification_kind_t));
-struct tinst_level *tinst_for_decl		PARAMS ((void));
+extern tree tinst_for_decl			PARAMS ((void));
 extern void mark_decl_instantiated		PARAMS ((tree, int));
 extern int more_specialized			PARAMS ((tree, tree, tree));
 extern void mark_class_instantiated		PARAMS ((tree, int));
