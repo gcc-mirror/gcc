@@ -11811,7 +11811,8 @@ build_non_dependent_expr (tree expr)
 		  TREE_OPERAND (expr, 0),
 		  build_non_dependent_expr (TREE_OPERAND (expr, 1)),
 		  build_non_dependent_expr (TREE_OPERAND (expr, 2)));
-  if (TREE_CODE (expr) == COMPOUND_EXPR)
+  if (TREE_CODE (expr) == COMPOUND_EXPR
+      && !COMPOUND_EXPR_OVERLOADED (expr))
     return build (COMPOUND_EXPR,
 		  TREE_TYPE (expr),
 		  TREE_OPERAND (expr, 0),

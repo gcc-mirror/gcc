@@ -39,6 +39,7 @@ struct diagnostic_context;
       IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
+      COMPOUND_EXPR_OVERLOADED (in COMPOUND_EXPR).
       TREE_INDIRECT_USING (in NAMESPACE_DECL).
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
@@ -2294,6 +2295,10 @@ struct lang_decl GTY(())
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
 
+/* Indicates that this is a non-dependent COMPOUND_EXPR which will
+   resolve to a function call.  */
+#define COMPOUND_EXPR_OVERLOADED(NODE)	TREE_LANG_FLAG_0 (NODE)
+
 /* In a CALL_EXPR appearing in a template, true if Koenig lookup
    should be performed at instantiation time.  */
 #define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0(NODE)
@@ -4166,9 +4171,9 @@ extern tree canonical_type_variant              (tree);
 extern tree copy_base_binfos			(tree, tree, tree);
 extern int member_p				(tree);
 extern cp_lvalue_kind real_lvalue_p             (tree);
-extern tree build_min				(enum tree_code, tree,
-							 ...);
+extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt			(enum tree_code, ...);
+extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_cplus_new			(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree build_cplus_staticfn_type		(tree, tree, tree);

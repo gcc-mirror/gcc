@@ -1023,9 +1023,12 @@ build_x_arrow (tree expr)
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
     {
       if (processing_template_decl)
-	return build_min (ARROW_EXPR, 
-			  TREE_TYPE (TREE_TYPE (last_rval)), 
-			  orig_expr);
+	{
+	  expr = build_min_non_dep (ARROW_EXPR, last_rval, orig_expr);
+	  /* It will be dereferenced. */
+	  TREE_TYPE (expr) = TREE_TYPE (TREE_TYPE (last_rval));
+	  return expr;
+	}
 
       return build_indirect_ref (last_rval, NULL);
     }
@@ -1120,7 +1123,12 @@ build_functional_cast (tree exp, tree parms)
     type = exp;
 
   if (processing_template_decl)
-    return build_min (CAST_EXPR, type, parms);
+    {
+      tree t = build_min (CAST_EXPR, type, parms);
+      /* We don't know if it will or will not have side effects.  */
+      TREE_SIDE_EFFECTS (t) = 1;
+      return t;
+    }
 
   if (! IS_AGGR_TYPE (type))
     {

@@ -1265,11 +1265,8 @@ break_out_target_exprs (tree t)
   return t;
 }
 
-/* Obstack used for allocating nodes in template function and variable
-   definitions.  */
-
-/* Similar to `build_nt', except that we set TREE_COMPLEXITY to be the
-   current line number.  */
+/* Similar to `build_nt', but for template definitions of dependent
+   expressions  */
 
 tree
 build_min_nt (enum tree_code code, ...)
@@ -1295,8 +1292,7 @@ build_min_nt (enum tree_code code, ...)
   return t;
 }
 
-/* Similar to `build', except we set TREE_COMPLEXITY to the current
-   line-number.  */
+/* Similar to `build', but for template definitions.  */
 
 tree
 build_min (enum tree_code code, tree tt, ...)
@@ -1317,8 +1313,45 @@ build_min (enum tree_code code, tree tt, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
+      if (x && TREE_SIDE_EFFECTS (x))
+	TREE_SIDE_EFFECTS (t) = 1;
     }
 
+  va_end (p);
+  return t;
+}
+
+/* Similar to `build', but for template definitions of non-dependent
+   expressions. NON_DEP is the non-dependent expression that has been
+   built.  */
+
+tree
+build_min_non_dep (enum tree_code code, tree non_dep, ...)
+{
+  register tree t;
+  register int length;
+  register int i;
+  va_list p;
+
+  va_start (p, non_dep);
+
+  t = make_node (code);
+  length = TREE_CODE_LENGTH (code);
+  TREE_TYPE (t) = TREE_TYPE (non_dep);
+  TREE_COMPLEXITY (t) = input_line;
+  TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
+
+  for (i = 0; i < length; i++)
+    {
+      tree x = va_arg (p, tree);
+      TREE_OPERAND (t, i) = x;
+    }
+
+  if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
+    /* This should not be considered a COMPOUND_EXPR, because it
+       resolves to an overload. */
+    COMPOUND_EXPR_OVERLOADED (t) = 1;
+  
   va_end (p);
   return t;
 }

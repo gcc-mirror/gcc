@@ -652,6 +652,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 		   (NULL_TREE, ptrdiff_type_node, void_list_node))));
 	      tmp = build_function_type (ptr_type_node, tmp);
 	      dcast_fn = build_library_fn_ptr (name, tmp);
+	      DECL_IS_PURE (dcast_fn) = 1;
               pop_nested_namespace (ns);
               dynamic_cast_node = dcast_fn;
 	    }
@@ -686,7 +687,12 @@ build_dynamic_cast (tree type, tree expr)
     return error_mark_node;
   
   if (processing_template_decl)
-    return build_min (DYNAMIC_CAST_EXPR, type, expr);
+    {
+      expr = build_min (DYNAMIC_CAST_EXPR, type, expr);
+      TREE_SIDE_EFFECTS (expr) = 1;
+      
+      return expr;
+    }
 
   return convert_from_reference (build_dynamic_cast_1 (type, expr));
 }
