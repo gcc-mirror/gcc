@@ -13,6 +13,8 @@ Mon Nov 30 08:25:35 1998  Mark Mitchell  <mark@markmitchell.com>
 
 Mon Nov 30 06:57:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* po/POTFILES.in (dyn-string.[ch]): New files.
+
 	* sched.c (swap_sort): Fix typo in last change.
 
 Sun Nov 29 21:02:34 1998  Paul Eggert  <eggert@twinsun.com>
