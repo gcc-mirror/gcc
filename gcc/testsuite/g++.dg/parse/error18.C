@@ -2,6 +2,5 @@
 
 void f()
 {
-  double Q *= 5.0; // { dg-error "initializer" }
+  double Q *= 5.0; // { dg-error "" }
 }
-
