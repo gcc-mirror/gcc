@@ -1,5 +1,9 @@
 2002-01-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Canvas.java (serialVersionUID): New constant.
+	Updated copyright.  Added javadoc from Classpath.
+	* java/awt/ItemSelectable.java: Replaced with Classpath version.
+
 	* java/awt/CheckboxGroup.java: Merged with Classpath.
 	* java/awt/Checkbox.java: Merged with Classpath.
 
