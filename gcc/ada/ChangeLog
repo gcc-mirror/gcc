@@ -1,5 +1,31 @@
 2001-12-05  Ed Schonberg <schonber@gnat.com>
 
+	* sem_eval.adb (Eval_Concatenation): If left operand is a null string, 
+	get bounds from right operand.
+	
+	* sem_eval.adb: Minor reformatting
+	
+	* exp_util.adb (Make_Literal_Range): use bound of literal rather 
+	than Index'First, its lower bound may be different from 1.
+	
+	* exp_util.adb: Undo earlier change, fixes ACVC regressions C48009B 
+	and C48009J
+	
+2001-12-05  Vincent Celier <celier@gnat.com>
+
+	* prj-nmsc.adb Minor reformatting
+	
+	* prj-nmsc.adb (Language_Independent_Check): Reset Library flag if 
+	set and libraries are not supported.
+	
+2001-12-05  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): set Public status of 
+	private view explicitly, so the back-end can treat as a global 
+	when appropriate.
+
+2001-12-05  Ed Schonberg <schonber@gnat.com>
+
 	* sem_ch12.adb (Instantiate_Package_Body): if instance is a compilation
 	 unit, always replace instance node with new body, for ASIS use.
 

@@ -3827,6 +3827,7 @@ package body Sem_Ch3 is
             Set_Freeze_Node          (Full_Der, Empty);
             Set_Depends_On_Private   (Full_Der,
                                         Has_Private_Component    (Full_Der));
+            Set_Public_Status        (Full_Der);
          end if;
       end if;
 

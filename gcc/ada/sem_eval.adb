@@ -1045,11 +1045,11 @@ package body Sem_Eval is
    --  both operands are static (RM 4.9(7), 4.9(21)).
 
    procedure Eval_Concatenation (N : Node_Id) is
-      Left  : constant Node_Id := Left_Opnd (N);
-      Right : constant Node_Id := Right_Opnd (N);
+      Left  : constant Node_Id   := Left_Opnd (N);
+      Right : constant Node_Id   := Right_Opnd (N);
+      C_Typ : constant Entity_Id := Root_Type (Component_Type (Etype (N)));
       Stat  : Boolean;
       Fold  : Boolean;
-      C_Typ : constant Entity_Id := Root_Type (Component_Type (Etype (N)));
 
    begin
       --  Concatenation is never static in Ada 83, so if Ada 83
@@ -1090,6 +1090,7 @@ package body Sem_Eval is
 
       declare
          Left_Str  : constant Node_Id := Get_String_Val (Left);
+         Left_Len  : Nat;
          Right_Str : constant Node_Id := Get_String_Val (Right);
 
       begin
@@ -1101,10 +1102,12 @@ package body Sem_Eval is
          --  case of a concatenation of a series of string literals.
 
          if Nkind (Left_Str) = N_String_Literal then
+            Left_Len :=  String_Length (Strval (Left_Str));
             Start_String (Strval (Left_Str));
          else
             Start_String;
             Store_String_Char (Char_Literal_Value (Left_Str));
+            Left_Len := 1;
          end if;
 
          --  Now append the characters of the right operand
@@ -1125,6 +1128,17 @@ package body Sem_Eval is
          Set_Is_Static_Expression (N, Stat);
 
          if Stat then
+
+            --  If left operand is the empty string, the result is the
+            --  right operand, including its bounds if anomalous.
+
+            if Left_Len = 0
+              and then Is_Array_Type (Etype (Right))
+              and then Etype (Right) /= Any_String
+            then
+               Set_Etype (N, Etype (Right));
+            end if;
+
             Fold_Str (N, End_String);
          end if;
       end;

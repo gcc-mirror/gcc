@@ -125,11 +125,11 @@ package body Exp_Util is
 
    function Make_Literal_Range
      (Loc         : Source_Ptr;
-      Literal_Typ : Entity_Id;
-      Index_Typ   : Entity_Id)
+      Literal_Typ : Entity_Id)
       return        Node_Id;
    --  Produce a Range node whose bounds are:
-   --    Index_Typ'first .. Index_Typ'First + Length (Literal_Typ)
+   --    Low_Bound (Literal_Type) ..
+   --        Low_Bound (Literal_Type) + Length (Literal_Typ) - 1
    --  this is used for expanding declarations like X : String := "sdfgdfg";
 
    function New_Class_Wide_Subtype
@@ -1137,8 +1137,7 @@ package body Exp_Util is
                Make_Index_Or_Discriminant_Constraint (Loc,
                  Constraints => New_List (
                    Make_Literal_Range (Loc,
-                     Literal_Typ => Exp_Typ,
-                     Index_Typ   => Etype (First_Index (Unc_Type)))))));
+                     Literal_Typ => Exp_Typ)))));
 
       elsif Is_Constrained (Exp_Typ)
         and then not Is_Class_Wide_Type (Unc_Type)
@@ -2305,28 +2304,27 @@ package body Exp_Util is
 
    function Make_Literal_Range
      (Loc         : Source_Ptr;
-      Literal_Typ : Entity_Id;
-      Index_Typ   : Entity_Id)
+      Literal_Typ : Entity_Id)
       return        Node_Id
    is
+      Lo : Node_Id :=
+             New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
+
    begin
+      Set_Analyzed (Lo, False);
+
          return
            Make_Range (Loc,
-             Low_Bound =>
-               Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Index_Typ, Loc),
-                 Attribute_Name => Name_First),
+             Low_Bound => Lo,
 
              High_Bound =>
                Make_Op_Subtract (Loc,
                   Left_Opnd =>
                     Make_Op_Add (Loc,
-                      Left_Opnd =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix => New_Occurrence_Of (Index_Typ, Loc),
-                          Attribute_Name => Name_First),
-                      Right_Opnd => Make_Integer_Literal (Loc,
-                        String_Literal_Length (Literal_Typ))),
+                      Left_Opnd  => New_Copy_Tree (Lo),
+                      Right_Opnd =>
+                        Make_Integer_Literal (Loc,
+                          String_Literal_Length (Literal_Typ))),
                   Right_Opnd => Make_Integer_Literal (Loc, 1)));
    end Make_Literal_Range;
 
@@ -2867,7 +2865,8 @@ package body Exp_Util is
       --  regressions that are not fully understood yet.
 
       elsif Nkind (Exp) = N_Type_Conversion
-        and then not Name_Req
+        and then (not Is_Elementary_Type (Underlying_Type (Exp_Type))
+                   or else Nkind (Parent (Exp)) = N_Assignment_Statement)
       then
          Remove_Side_Effects (Expression (Exp), Variable_Ref);
          Scope_Suppress := Svg_Suppress;
