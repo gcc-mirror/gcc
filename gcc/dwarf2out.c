@@ -103,13 +103,6 @@ dwarf2out_do_frame ()
 	  );
 }
 
-/* The number of the current function definition for which debugging
-   information is being generated.  These numbers range from 1 up to the
-   maximum number of function definitions contained within the current
-   compilation unit.  These numbers are used to create unique label id's
-   unique to each function definition.  */
-unsigned current_funcdef_number = 0;
-
 /* The size of the target's pointer type.  */
 #ifndef PTR_SIZE
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
@@ -2115,12 +2108,11 @@ dwarf2out_begin_prologue (line, file)
     return;
 #endif
 
-  current_funcdef_number++;
   function_section (current_function_decl);
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
-			       current_funcdef_number);
+			       current_function_funcdef_no);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, FUNC_BEGIN_LABEL,
-			  current_funcdef_number);
+			  current_function_funcdef_no);
   current_function_func_begin_label = get_identifier (label);
 
 #ifdef IA64_UNWIND_INFO
@@ -2147,7 +2139,7 @@ dwarf2out_begin_prologue (line, file)
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
-  fde->funcdef_number = current_funcdef_number;
+  fde->funcdef_number = current_function_funcdef_no;
   fde->nothrow = current_function_nothrow;
   fde->uses_eh_lsda = cfun->uses_eh_lsda;
 
@@ -2173,7 +2165,8 @@ dwarf2out_end_epilogue ()
 
   /* Output a label to mark the endpoint of the code generated for this
      function.  */
-  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL, current_funcdef_number);
+  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
+			       current_function_funcdef_no);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_end = xstrdup (label);
@@ -10343,10 +10336,10 @@ gen_subprogram_die (decl, context_die)
 	equate_decl_number_to_die (decl, subr_die);
 
       ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
-				   current_funcdef_number);
+				   current_function_funcdef_no);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
       ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-				   current_funcdef_number);
+				   current_function_funcdef_no);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
 
       add_pubname (decl, subr_die);
@@ -11904,7 +11897,7 @@ dwarf2out_source_line (line, filename)
 	    = &separate_line_info_table[separate_line_info_table_in_use++];
 	  line_info->dw_file_num = lookup_filename (filename);
 	  line_info->dw_line_num = line;
-	  line_info->function = current_funcdef_number;
+	  line_info->function = current_function_funcdef_no;
 	}
       else
 	{

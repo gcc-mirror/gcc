@@ -1724,7 +1724,7 @@ profile_function (file)
 #ifndef NO_PROFILE_COUNTERS
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LP", current_function_profile_label_no);
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LP", current_function_funcdef_no);
   assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, align, 1);
 #endif
 
@@ -1754,7 +1754,7 @@ profile_function (file)
 #endif
 #endif
 
-  FUNCTION_PROFILER (file, current_function_profile_label_no);
+  FUNCTION_PROFILER (file, current_function_funcdef_no);
 
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)

@@ -1,3 +1,20 @@
+2002-06-17  Richard Henderson  <rth@redhat.com>
+
+	* function.h (struct function) [funcdef_no]: Rename profile_label_no.
+	(current_function_funcdef_no): Similarly.
+	* function.c (funcdef_no): Similarly.
+	(prepare_function_start): Set current_function_funcdef_no.
+	(expand_function_start): Don't set current_function_profile_label_no.
+	* dwarf2out.h (current_funcdef_number): Remove.
+	* dwarf2out.c (current_funcdef_number): Remove.  Replace with
+	current_function_funcdef_no throughout.
+	* dwarfout.c, vmsdbgout.c: Similarly.
+	* except.c (sjlj_funcdef_number): Remove.
+	(sjlj_emit_function_enter): Use current_function_funcdef_no instead.
+	(output_function_exception_table): Likewise.
+	* final.c (profile_function): Use current_function_funcdef_no
+	instead of current_function_profile_label_no.
+
 2002-06-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* sched-ebb.c (init_ready_list): Check INSN_P first.

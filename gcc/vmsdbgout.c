@@ -123,13 +123,6 @@ static unsigned int line_info_table_in_use;
 /* Size (in elements) of increments by which we may expand line_info_table.  */
 #define LINE_INFO_TABLE_INCREMENT 1024
 
-/* The number of the current function definition for which debugging
-   information is being generated.  These numbers range from 1 up to the
-   maximum number of function definitions contained within the current
-   compilation unit.  These numbers are used to create unique label id's unique
-   to each function definition.  */
-static unsigned int current_funcdef_number = 0;
-
 /* Forward declarations for functions defined in this file.  */
 static char *full_name 		PARAMS ((const char *));
 static unsigned int lookup_filename PARAMS ((const char *));
@@ -1290,9 +1283,8 @@ vmsdbgout_begin_prologue (line, file)
 
   if (debug_info_level > DINFO_LEVEL_NONE)
     {
-      current_funcdef_number++;
       ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
-				   current_funcdef_number);
+				   current_function_funcdef_no);
       ASM_OUTPUT_LABEL (asm_out_file, label);
     }
 }
@@ -1308,7 +1300,7 @@ vmsdbgout_after_prologue ()
   if (debug_info_level > DINFO_LEVEL_TERSE)
     {
       ASM_GENERATE_INTERNAL_LABEL (label, FUNC_PROLOG_LABEL,
-				   current_funcdef_number);
+				   current_function_funcdef_no);
       ASM_OUTPUT_LABEL (asm_out_file, label);
     }
 }
@@ -1330,7 +1322,7 @@ vmsdbgout_end_epilogue ()
       /* Output a label to mark the endpoint of the code generated for this
          function.  */
       ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
-				   current_funcdef_number);
+				   current_function_funcdef_no);
       ASM_OUTPUT_LABEL (asm_out_file, label);
     }
 }
