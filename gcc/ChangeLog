@@ -1,3 +1,8 @@
+2005-01-13  David O'Brien  <obrien@FreeBSD.org>
+
+	Backport from mainline:
+	* config/freebsd-spec.h:  Make KSE pthread lib logic the default.
+
 2005-01-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Change _XOPEN_SOURCE
