@@ -15016,6 +15016,9 @@ patch_if_else_statement (node)
      tree node;
 {
   tree expression = TREE_OPERAND (node, 0);
+  int can_complete_normally
+    = (CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1))
+       | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 2)));
 
   TREE_TYPE (node) = error_mark_node;
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
@@ -15031,11 +15034,22 @@ patch_if_else_statement (node)
       return error_mark_node;
     }
   
+  if (TREE_CODE (expression) == INTEGER_CST)
+    {
+      if (integer_zerop (expression))
+	node = TREE_OPERAND (node, 2);
+      else
+	node = TREE_OPERAND (node, 1);
+      if (CAN_COMPLETE_NORMALLY (node) != can_complete_normally)
+	{
+	  node = build (COMPOUND_EXPR, void_type_node, node, empty_stmt_node);
+	  CAN_COMPLETE_NORMALLY (node) = can_complete_normally;
+	}
+      return node;
+    }
   TREE_TYPE (node) = void_type_node;
   TREE_SIDE_EFFECTS (node) = 1;
-  CAN_COMPLETE_NORMALLY (node)
-    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1))
-    | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 2));
+  CAN_COMPLETE_NORMALLY (node) = can_complete_normally;
   return node;
 }
 

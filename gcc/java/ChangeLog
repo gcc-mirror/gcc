@@ -1,3 +1,8 @@
+2001-10-11  Per Bothner  <per@bothner.com>
+
+	* parse.y (patch_if_else_statement):  If the condition is constant,
+	optimize away the test.
+
 2001-10-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_cast): Call patch_string on the first operand of
