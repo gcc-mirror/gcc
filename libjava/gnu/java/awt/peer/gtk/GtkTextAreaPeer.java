@@ -105,8 +105,6 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
   public Dimension minimumSize (int rows, int cols)
   {
     TextArea ta = ((TextArea) awtComponent);
-    int hScrollbarHeight = 0;
-    int vScrollbarWidth = 0;
     int height = 0;
     int width = 0;
 
@@ -137,8 +135,6 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
   public Dimension preferredSize (int rows, int cols)
   {
     TextArea ta = ((TextArea) awtComponent);
-    int hScrollbarHeight = 0;
-    int vScrollbarWidth = 0;
     int height = 0;
     int width = 0;
 

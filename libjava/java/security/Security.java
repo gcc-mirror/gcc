@@ -150,7 +150,7 @@ public final class Security
 	result = false;
       }
 
-    return false;
+    return result;
   }
 
   /**

@@ -1,3 +1,12 @@
+2004-05-03  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java (minimumSize): Removed
+	unused variables hScrollbarHeight and vScrollbarWidth.
+	(preferredSize): Likewise.
+	* gnu/java/security/provider/DSAParameters.java (engineToString):
+	Removed unused call to System.getProperty("line.seperator");
+	* java/security/Security.java (loadProviders): Return result.
+
 2004-05-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/URLStreamHandler.java (toExternalForm): Removed
