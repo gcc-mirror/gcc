@@ -1,3 +1,8 @@
+2002-09-18  Richard Henderson  <rth@redhat.com>
+
+	* real.c (sticky_rshift_significand): Collect sticky as 
+	unsigned long, not bool.
+
 2002-09-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_address_cost): New function.

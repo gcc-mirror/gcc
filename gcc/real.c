@@ -239,7 +239,7 @@ sticky_rshift_significand (r, a, n)
      const struct real_value *a;
      unsigned int n;
 {
-  bool sticky = false;
+  unsigned long sticky = 0;
   unsigned int i, ofs = 0;
 
   if (n >= HOST_BITS_PER_LONG)
@@ -268,7 +268,7 @@ sticky_rshift_significand (r, a, n)
 	r->sig[i] = 0;
     }
 
-  r->sig[0] |= sticky;
+  r->sig[0] |= (sticky != 0);
 }
 
 /* Right-shift the significand of A by N bits; put the result in the
