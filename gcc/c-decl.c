@@ -330,6 +330,10 @@ int flag_traditional;
 
 int flag_isoc99 = 0;
 
+/* Nonzero means accept digraphs.  */
+
+int flag_digraphs = 1;
+
 /* Nonzero means that we have builtin functions, and main is an int */
 
 int flag_hosted = 1;
@@ -491,6 +495,7 @@ c_decode_option (argc, argv)
     {
       flag_traditional = 1;
       flag_writable_strings = 1;
+      flag_digraphs = 0;
     }
   else if (!strcmp (p, "-fallow-single-precision"))
     flag_allow_single_precision = 1;
@@ -511,6 +516,7 @@ c_decode_option (argc, argv)
     {
       flag_traditional = 0;
       flag_writable_strings = 0;
+      flag_digraphs = 1;
     }
   else if (!strncmp (p, "-std=", 5))
     {
@@ -530,6 +536,8 @@ c_decode_option (argc, argv)
 	  || !strcmp (argstart, "c89"))
 	{
 	iso_1990:
+	  flag_digraphs = 0;
+	iso_1990_digraphs:
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
@@ -538,8 +546,9 @@ c_decode_option (argc, argv)
 	}
       else if (!strcmp (argstart, "iso9899:199409"))
 	{
-	  /* ??? The changes since ISO C 1990 are not supported.  */
-	  goto iso_1990;
+	  flag_digraphs = 1;
+	  /* ??? The other changes since ISO C 1990 are not supported.  */
+	  goto iso_1990_digraphs;
 	}
       else if (!strcmp (argstart, "iso9899:199x")
 	       || !strcmp (argstart, "iso9899:1999")
@@ -551,6 +560,7 @@ c_decode_option (argc, argv)
 	  flag_no_asm = 1;
 	  flag_no_nonansi_builtin = 1;
 	  flag_isoc99 = 1;
+	  flag_digraphs = 1;
 	}
       else if (!strcmp (argstart, "gnu89"))
 	{
@@ -559,6 +569,7 @@ c_decode_option (argc, argv)
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
 	  flag_isoc99 = 0;
+	  flag_digraphs = 1;
 	}
       else if (!strcmp (argstart, "gnu9x") || !strcmp (argstart, "gnu99"))
 	{
@@ -567,6 +578,7 @@ c_decode_option (argc, argv)
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
 	  flag_isoc99 = 1;
+	  flag_digraphs = 1;
 	}
       else
 	error ("unknown C standard `%s'", argstart);
