@@ -298,6 +298,9 @@ extern "C" void
 _Jv_JNI_PopSystemFrame (JNIEnv *env)
 {
   _Jv_JNI_PopLocalFrame (env, NULL, MARK_SYSTEM);
+
+  if (env->ex)
+    throw env->ex;
 }
 
 // This function is used from other template functions.  It wraps the
@@ -1723,9 +1726,6 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
 		ret, real_args);
 
   _Jv_JNI_PopSystemFrame (env);
-
-  if (env->ex)
-    JvThrow (env->ex);
 }
 
 #endif /* INTERPRETER */
