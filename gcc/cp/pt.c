@@ -8090,18 +8090,9 @@ tsubst_copy_and_build (tree t,
 	bool koenig_p;
 
 	function = TREE_OPERAND (t, 0);
-	/* To determine whether or not we should perform Koenig lookup
-	   we must look at the form of the FUNCTION.  */
-	koenig_p = !(/* Koenig lookup does not apply to qualified
-			names.  */
-		     TREE_CODE (function) == SCOPE_REF
-		     /* Or to references to members of classes.  */
-		     || TREE_CODE (function) == COMPONENT_REF
-		     /* If it is a FUNCTION_DECL or a baselink, then
-			the name was already resolved when the
-			template was parsed.  */
-		     || TREE_CODE (function) == FUNCTION_DECL
-		     || TREE_CODE (function) == BASELINK);
+	/* When we parsed the expression,  we determined whether or
+	   not Koenig lookup should be performed.  */
+	koenig_p = KOENIG_LOOKUP_P (t);
 	if (TREE_CODE (function) == SCOPE_REF)
 	  {
 	    qualified_p = true;
@@ -8117,23 +8108,22 @@ tsubst_copy_and_build (tree t,
 	    function = tsubst_copy_and_build (function, args, complain, 
 					      in_decl,
 					      !qualified_p);
+	    if (BASELINK_P (function))
+	      qualified_p = true;
 	  }
 
 	call_args = RECUR (TREE_OPERAND (t, 1));
 	  
-	if (BASELINK_P (function))
-	  qualified_p = 1;
-
 	if (koenig_p
-	    && TREE_CODE (function) != TEMPLATE_ID_EXPR
 	    && (is_overloaded_fn (function)
 		|| DECL_P (function)
 		|| TREE_CODE (function) == IDENTIFIER_NODE))
+	  function = perform_koenig_lookup (function, call_args);
+
+	if (TREE_CODE (function) == IDENTIFIER_NODE)
 	  {
-	    if (call_args)
-	      function = perform_koenig_lookup (function, call_args);
-	    else if (TREE_CODE (function) == IDENTIFIER_NODE)
-	      function = unqualified_name_lookup_error (function);
+	    unqualified_name_lookup_error (function);
+	    return error_mark_node;
 	  }
 
 	/* Remember that there was a reference to this entity.  */
@@ -8151,7 +8141,8 @@ tsubst_copy_and_build (tree t,
 		   call_args, NULL_TREE, 
 		   qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL));
 	return finish_call_expr (function, call_args, 
-				 /*disallow_virtual=*/qualified_p);
+				 /*disallow_virtual=*/qualified_p,
+				 koenig_p);
       }
 
     case COND_EXPR:

@@ -46,6 +46,7 @@ struct diagnostic_context;
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
       PARMLIST_ELLIPSIS_P (in PARMLIST)
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
+      KOENIG_LOOKUP_P (in CALL_EXPR)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2293,6 +2294,10 @@ struct lang_decl GTY(())
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
 
+/* In a CALL_EXPR appearing in a template, true if Koenig lookup
+   should be performed at instantiation time.  */
+#define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0(NODE)
+
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
 #define AGGR_INIT_VIA_CTOR_P(NODE) \
@@ -4105,7 +4110,7 @@ extern tree begin_stmt_expr                     (void);
 extern tree finish_stmt_expr_expr 		(tree);
 extern tree finish_stmt_expr                    (tree, bool);
 extern tree perform_koenig_lookup               (tree, tree);
-extern tree finish_call_expr                    (tree, tree, bool);
+extern tree finish_call_expr                    (tree, tree, bool, bool);
 extern tree finish_increment_expr               (tree, enum tree_code);
 extern tree finish_this_expr                    (void);
 extern tree finish_object_call_expr             (tree, tree, tree);
