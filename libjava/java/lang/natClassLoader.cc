@@ -65,6 +65,17 @@ static int bootstrap_index;
 
 
 
+jclass
+java::lang::ClassLoader::loadClassFromSig(jstring name)
+{
+  int len = _Jv_GetStringUTFLength (name);
+  char sig[len + 1];
+  _Jv_GetStringUTFRegion (name, 0, name->length(), sig);
+  return _Jv_FindClassFromSignature(sig, this);
+}
+
+
+
 // This tries to find a class in our built-in cache.  This cache is
 // used only for classes which are linked in to the executable or
 // loaded via dlopen().
