@@ -1,3 +1,8 @@
+2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (mips*-*-netbsd*): Add mips/t-netbsd to ${tmake_file}.
+	* config/mips/t-netbsd: New file.
+
 2002-06-07  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in: Add --enable-__cxa_atexit.
