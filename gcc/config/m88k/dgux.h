@@ -18,7 +18,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
 
 /* You're not seeing double!  To transition to dwarf debugging, both are
    supported.  The option -msvr4 specifies elf.  With these combinations, 
@@ -29,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.16 $"
+#define VERSION_INFO2   "$Revision: 1.17 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
