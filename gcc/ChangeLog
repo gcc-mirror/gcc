@@ -1,3 +1,8 @@
+2001-08-13  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Don't capitalize
+	register %rip.
+
 2001-08-13  Kazu Hirata  <kazu@hxi.com>
 
 	* jump.c: Fix formatting.
@@ -140,26 +145,26 @@
 	(rs6000_elf_section_type_flags): Actually return a value.
 
 2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
- 
-	* s390.c, s390.h, s390.md, s390-protos.h, linux.h, t-linux: 
+
+	* s390.c, s390.h, s390.md, s390-protos.h, linux.h, t-linux:
 	Clean up code: add missing comments and prototypes, fix warnings,
         remove obsolete code, fix spacing to conform to coding style.
 
 2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
- 
- 	* config/s390/s390.c (targetm): Define TARGET_ASM_OPEN_PAREN
+
+	* config/s390/s390.c (targetm): Define TARGET_ASM_OPEN_PAREN
 	and TARGET_ASM_CLOSE_PAREN.
 	(regclass_map): CC register belongs to class NO_REGS.
-	(legitimize_pic_address): Don't generate unnecessary moves 
+	(legitimize_pic_address): Don't generate unnecessary moves
 	(to avoid confusing loop optimization).
- 	(check_and_change_labels): Replace jump_long by indirect_jump.
-	(s390_final_chunkify): Don't start a new literal pool on section 
+	(check_and_change_labels): Replace jump_long by indirect_jump.
+	(s390_final_chunkify): Don't start a new literal pool on section
 	switch in 64-bit code.
 	(s390_va_start, s390_va_arg): Fixed incorrect sizes for 64-bit.
-	
+
 	* config/s390/s390.h (TARGET_SWITCHES): Renamed debug_arg to debug.
 	(MAX_BITS_PER_WORD, MAX_LONG_TYPE_SIZE): Set to 64 (for 64-bit).
-	(HARD_REGNO_MODE_OK, RETURN_IN_MEMORY): Support complex integer 
+	(HARD_REGNO_MODE_OK, RETURN_IN_MEMORY): Support complex integer
 	modes correctly.
 	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Remove CC_REGS.
 	(EH_RETURN_HANDLER_RTX): Fixed incorrect offset for 64-bit.
@@ -167,7 +172,7 @@
 
 	* config/s390/s390.md (fixuns_trunc[sd]f[sd]i2, udivsi3, umodsi3):
 	Use emit_jump instead of emit_jump_insn (gen_jump).
-	(divsi3, modsi3): Clobber low word of divmoddisi3 before shifting 
+	(divsi3, modsi3): Clobber low word of divmoddisi3 before shifting
 	(to avoid confusing flow analysis).
 	(tablejump, tablejump1, tablejump2): Removed.  Replaced by casesi.
 	(casesi, casesi_jump): New.
@@ -219,10 +224,10 @@
 
 	* doc/install.texi (Specific, c4x): Fix cross-reference to the
 	main manual to work both for info and HTML versions.
-	
+
 2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    Matt Kraai <kraai@alumni.carnegiemellon.edu>
-	
+
 	* cpphash.c (_cpp_destroy_hashtable): Use ht_destroy.
 	* cpphash.h (CPP_IN_SYSTEM_HEADER): Fix.
 	(struct cpp_pool): New member first.
@@ -286,8 +291,8 @@
 	behavior of pointer/integer conversion.
 
 2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
- 
- 	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
+
+	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
 
 2001-08-10  Richard Henderson  <rth@redhat.com>
 

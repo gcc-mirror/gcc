@@ -1,5 +1,5 @@
 /* Definitions for Unix assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1994, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -128,7 +128,7 @@ do {									    \
     {									    \
       fprintf (FILE, "\tjmp *");					    \
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
-      fprintf (FILE, "@GOTPCREL(%%RIP)\n");				    \
+      fprintf (FILE, "@GOTPCREL(%%rip)\n");				    \
     }									    \
   else									    \
     {									    \
