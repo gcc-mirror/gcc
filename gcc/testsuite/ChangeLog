@@ -1,3 +1,7 @@
+2004-01-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c90-array-lval-7.c, gcc.dg/c99-array-lval-7.c: New tests.
+
 2004-01-23  Andrew Pinski  <apinski@apple.com>
 
 	* gcc.dg/20030121-1.c: Move to ..
