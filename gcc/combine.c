@@ -499,25 +499,22 @@ combine_instructions (f, nregs)
 
   combine_max_regno = nregs;
 
-  reg_nonzero_bits
-    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
-  reg_sign_bit_copies = (char *) alloca (nregs * sizeof (char));
+  reg_nonzero_bits = ((unsigned HOST_WIDE_INT *) 
+		      xcalloc (nregs, sizeof (unsigned HOST_WIDE_INT)));
+  reg_sign_bit_copies = (char *) xcalloc (nregs, sizeof (char));
 
-  bzero ((char *) reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
-  bzero (reg_sign_bit_copies, nregs * sizeof (char));
-
-  reg_last_death = (rtx *) alloca (nregs * sizeof (rtx));
-  reg_last_set = (rtx *) alloca (nregs * sizeof (rtx));
-  reg_last_set_value = (rtx *) alloca (nregs * sizeof (rtx));
-  reg_last_set_table_tick = (int *) alloca (nregs * sizeof (int));
-  reg_last_set_label = (int *) alloca (nregs * sizeof (int));
-  reg_last_set_invalid = (char *) alloca (nregs * sizeof (char));
+  reg_last_death = (rtx *) xmalloc (nregs * sizeof (rtx));
+  reg_last_set = (rtx *) xmalloc (nregs * sizeof (rtx));
+  reg_last_set_value = (rtx *) xmalloc (nregs * sizeof (rtx));
+  reg_last_set_table_tick = (int *) xmalloc (nregs * sizeof (int));
+  reg_last_set_label = (int *) xmalloc (nregs * sizeof (int));
+  reg_last_set_invalid = (char *) xmalloc (nregs * sizeof (char));
   reg_last_set_mode
-    = (enum machine_mode *) alloca (nregs * sizeof (enum machine_mode));
+    = (enum machine_mode *) xmalloc (nregs * sizeof (enum machine_mode));
   reg_last_set_nonzero_bits
-    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
+    = (unsigned HOST_WIDE_INT *) xmalloc (nregs * sizeof (HOST_WIDE_INT));
   reg_last_set_sign_bit_copies
-    = (char *) alloca (nregs * sizeof (char));
+    = (char *) xmalloc (nregs * sizeof (char));
 
   init_reg_last_arrays ();
 
@@ -529,7 +526,7 @@ combine_instructions (f, nregs)
     if (INSN_UID (insn) > i)
       i = INSN_UID (insn);
 
-  uid_cuid = (int *) alloca ((i + 1) * sizeof (int));
+  uid_cuid = (int *) xmalloc ((i + 1) * sizeof (int));
   max_uid_cuid = i;
 
   nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
@@ -704,7 +701,21 @@ combine_instructions (f, nregs)
       update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
 		        PROP_DEATH_NOTES);
     }
+
+  /* Clean up.  */
   sbitmap_free (refresh_blocks);
+  free (reg_nonzero_bits);
+  free (reg_sign_bit_copies);
+  free (reg_last_death);
+  free (reg_last_set);
+  free (reg_last_set_value);
+  free (reg_last_set_table_tick);
+  free (reg_last_set_label);
+  free (reg_last_set_invalid);
+  free (reg_last_set_mode);
+  free (reg_last_set_nonzero_bits);
+  free (reg_last_set_sign_bit_copies);
+  free (uid_cuid);
 
   total_attempts += combine_attempts;
   total_merges += combine_merges;
