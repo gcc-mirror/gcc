@@ -1,3 +1,8 @@
+2005-03-25  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Don't allow 0
+	sized objects.
+
 2005-03-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.md (UNSPEC constants): Add UNSPEC_STFIWX.
@@ -47,6 +52,7 @@
 	* emit-rtl.c (reverse_comparison): Remove.
 	* rtl.h: Remove the corresponding prototype.
 
+>>>>>>> 2.7995
 2005-03-24  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/install.texi (--enable-altivec): Delete docs.
