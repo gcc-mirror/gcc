@@ -37,6 +37,9 @@
 #ifdef __alpha__
 #include <va-alpha.h>
 #else
+#if defined (__H8300__) || defined (__H8300H__)
+#include <va-h8300.h>
+#else
 
 #ifdef __NeXT__
 
@@ -104,6 +107,7 @@ typedef void *__gnuc_va_list;
 					 : __va_rounded_size (TYPE))))))
 #endif /* big-endian */
 
+#endif /* not h8300 */
 #endif /* not alpha */
 #endif /* not i960 */
 #endif /* not hppa */
