@@ -1,5 +1,5 @@
 /* NumberFormat.java -- Formats and parses numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -794,7 +794,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    *
    * @since 1.4
    */
-  public void setCurreny(Currency currency)
+  public void setCurrency(Currency currency)
   {
     if (currency == null)
       throw new NullPointerException("currency may not be null");
