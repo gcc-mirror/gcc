@@ -1814,11 +1814,14 @@ readonly_data ()							\
 #define JUMP_TABLES_IN_TEXT_SECTION
 
 /* This is how to output an element of a case-vector that is relative.
-   (The HP-PA does not use such vectors,
-   but we must define this macro anyway.)  */
+   This must be defined correctly as it is used when generating PIC code.
+
+   I belive it safe to use the same definition as ASM_OUTPUT_ADDR_VEC_ELT
+   on the PA since ASM_OUTPUT_ADDR_VEC_ELT uses pc-relative jump instructions
+   rather than a table of absolute addresses.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\tword L%d-L%d\n", VALUE, REL)
+  fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* This is how to output an assembler line
    that says to advance the location counter
