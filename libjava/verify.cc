@@ -405,7 +405,7 @@ private:
 
       using namespace java::lang;
       java::lang::ClassLoader *loader
-	= verifier->current_class->getClassLoader();
+	= verifier->current_class->getClassLoaderInternal();
       // We might see either kind of name.  Sigh.
       if (data.name->data[0] == 'L'
 	  && data.name->data[data.name->length - 1] == ';')
@@ -571,7 +571,7 @@ private:
 
       if (key == reference_type)
 	return type (_Jv_GetArrayClass (data.klass,
-					data.klass->getClassLoader ()));
+					data.klass->getClassLoaderInternal()));
       else
 	verifier->verify_fail ("internal error in type::to_array()");
     }
@@ -695,7 +695,7 @@ private:
 		      while (arraycount > 0)
 			{
 			  java::lang::ClassLoader *loader
-			    = verifier->current_class->getClassLoader();
+			    = verifier->current_class->getClassLoaderInternal();
 			  k = _Jv_GetArrayClass (k, loader);
 			  --arraycount;
 			}

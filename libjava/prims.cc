@@ -458,8 +458,8 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   size_t size = (size_t) elements (obj);
   size += count * sizeof (jobject);
 
-  // FIXME: second argument should be "current loader"
-  jclass klass = _Jv_GetArrayClass (elementClass, 0);
+  jclass klass = _Jv_GetArrayClass (elementClass,
+				    elementClass->getClassLoaderInternal());
 
   obj = (jobjectArray) _Jv_AllocArray (size, klass);
   // Cast away const.
@@ -920,11 +920,11 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   arithexception = new java::lang::ArithmeticException
     (JvNewStringLatin1 ("/ by zero"));
 #endif
-
+  
   no_memory = new java::lang::OutOfMemoryError;
-
+  
   java::lang::VMThrowable::trace_enabled = 1;
-
+  
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif

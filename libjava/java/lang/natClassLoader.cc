@@ -326,6 +326,8 @@ _Jv_PrepareCompiledClass (jclass klass)
     _Jv_LinkOffsetTable(klass);
 
   klass->notifyAll ();
+
+  _Jv_PushClass (klass);
 }
 
 
@@ -587,6 +589,8 @@ _Jv_InitNewClassFields (jclass ret)
   ret->ancestors = NULL;
   ret->idt = NULL;
   ret->arrayclass = NULL;
+  ret->protectionDomain = NULL;
+  ret->chain = NULL;
 }
 
 jclass
@@ -731,4 +735,32 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
     _Jv_RegisterInitiatingLoader (array_class, loader);
 
   element->arrayclass = array_class;
+}
+
+static jclass stack_head;
+
+// These two functions form a stack of classes.   When a class is loaded
+// it is pushed onto the stack by the class loader; this is so that
+// StackTrace can quickly determine which classes have been loaded.
+
+jclass
+_Jv_PopClass (void)
+{
+  JvSynchronize sync (&java::lang::Class::class$);
+  if (stack_head)
+    {
+      jclass tmp = stack_head;
+      stack_head = tmp->chain;
+      return tmp;
+    }
+  return NULL;
+}
+
+void
+_Jv_PushClass (jclass k)
+{
+  JvSynchronize sync (&java::lang::Class::class$);
+  jclass tmp = stack_head;
+  stack_head = k;
+  k->chain = tmp;
 }

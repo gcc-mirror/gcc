@@ -20,6 +20,7 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/security/ProtectionDomain.h>
 #include <java/lang/Package.h>
+#include <gnu/gcj/runtime/StackTrace.h>
 
 // We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -137,6 +138,13 @@ public:
   JArray<jclass> *getClasses (void);
 
   java::lang::ClassLoader *getClassLoader (void);
+
+  // This is an internal method that circumvents the usual security
+  // checks when getting the class loader.
+  java::lang::ClassLoader *getClassLoaderInternal (void)
+  {
+    return loader;
+  }
 
   java::lang::reflect::Constructor *getConstructor (JArray<jclass> *);
   JArray<java::lang::reflect::Constructor *> *getConstructors (void);
@@ -296,6 +304,8 @@ private:
 			       java::lang::ClassLoader *loader);
   friend jclass _Jv_FindClassInCache (_Jv_Utf8Const *name,
 				      java::lang::ClassLoader *loader);
+  friend jclass _Jv_PopClass (void);
+  friend void _Jv_PushClass (jclass k);
   friend void _Jv_NewArrayClass (jclass element,
 				 java::lang::ClassLoader *loader,
 				 _Jv_VTable *array_vtable = 0);
@@ -349,6 +359,7 @@ private:
 #endif
 
   friend class _Jv_BytecodeVerifier;
+  friend class gnu::gcj::runtime::StackTrace;
 
   // Chain for class pool.
   jclass next;
@@ -403,6 +414,8 @@ private:
   jclass arrayclass;
   // Security Domain to which this class belongs (or null).
   java::security::ProtectionDomain *protectionDomain;
+  // Used by Jv_PopClass and _Jv_PushClass to communicate with StackTrace.
+  jclass chain;
 };
 
 #endif /* __JAVA_LANG_CLASS_H__ */
