@@ -1,6 +1,7 @@
 2001-05-19  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/genfixes: no need for two warnings
+	* fixinc/Makefile.in: open stdin for those building with a closed one.
 
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
