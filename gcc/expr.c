@@ -829,7 +829,10 @@ convert_move (to, from, unsignedp)
    Both X and MODE may be floating, or both integer.
    UNSIGNEDP is nonzero if X is an unsigned value.
    This can be done by referring to a part of X in place
-   or by copying to a new temporary with conversion.  */
+   or by copying to a new temporary with conversion.
+
+   This function *must not* call protect_from_queue
+   except when putting X into an insn (in which case convert_move does it).  */
 
 rtx
 convert_to_mode (mode, x, unsignedp)
@@ -838,8 +841,6 @@ convert_to_mode (mode, x, unsignedp)
      int unsignedp;
 {
   register rtx temp;
-
-  x = protect_from_queue (x, 0);
 
   if (mode == GET_MODE (x))
     return x;
@@ -1118,6 +1119,7 @@ emit_block_move (x, y, size, align)
 
   x = protect_from_queue (x, 1);
   y = protect_from_queue (y, 0);
+  size = protect_from_queue (size, 0);
 
   if (GET_CODE (x) != MEM)
     abort ();
@@ -1846,6 +1848,9 @@ emit_library_call (va_alist)
       if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
 	val = convert_to_mode (DFmode, val), mode = DFmode;
 #endif
+
+      /* There's no need to call protect_from_queue, because
+	 either emit_move_insn or emit_push_insn will do that.  */
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (GET_CODE (val) != REG && GET_CODE (val) != MEM
