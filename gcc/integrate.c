@@ -1083,6 +1083,31 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       else
 	map->reg_map[REGNO (loc)] = reg_to_map;
     }
+  else if (GET_CODE (loc) == CONCAT)
+    {
+      enum machine_mode departing_mode = TYPE_MODE (type);
+      enum machine_mode arriving_mode
+	= GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
+
+      if (departing_mode != arriving_mode)
+	abort ();
+      if (GET_CODE (XEXP (loc, 0)) != REG
+	  || GET_CODE (XEXP (loc, 1)) != REG)
+	abort ();
+
+      /* Don't use MEMs as direct targets because on some machines
+	 substituting a MEM for a REG makes invalid insns.
+	 Let the combiner substitute the MEM if that is valid.  */
+      if (target == 0 || GET_CODE (target) != REG
+	  || GET_MODE (target) != departing_mode)
+	target = gen_reg_rtx (departing_mode);
+
+      if (GET_CODE (target) != CONCAT)
+	abort ();
+
+      map->reg_map[REGNO (XEXP (loc, 0))] = XEXP (target, 0);
+      map->reg_map[REGNO (XEXP (loc, 1))] = XEXP (target, 1);
+    }
   else
     abort ();
 
