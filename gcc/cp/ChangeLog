@@ -1,5 +1,7 @@
 Thu Apr 16 17:47:30 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* pt.c (build_template_parm_index): Add prototype.
+
 	* search.c (my_tree_cons): Don't clear words outside the
 	newly allocated node.
 
