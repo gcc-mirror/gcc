@@ -3,7 +3,7 @@
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
 ;;  Brendan Eich, brendan@microunity.com.
-;;  Copyright (C) 1989, 90-5, 1996 Free Software Foundation, Inc.
+;;  Copyright (C) 1989, 90-96, 1997 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -6890,18 +6890,21 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
 
-(define_expand "probe"
-  [(set (match_dup 0)
-	(match_dup 1))]
-  ""
-  "
-{
-  operands[0] = gen_reg_rtx (SImode);
-  operands[1] = gen_rtx (MEM, SImode, stack_pointer_rtx);
-  MEM_VOLATILE_P (operands[1]) = TRUE;
-
-  /* fall through and generate default code */
-}")
+;; The MIPS chip does not seem to require stack probes.
+;;
+;; (define_expand "probe"
+;;   [(set (match_dup 0)
+;; 	(match_dup 1))]
+;;   ""
+;;   "
+;; {
+;;   operands[0] = gen_reg_rtx (SImode);
+;;   operands[1] = gen_rtx (MEM, SImode, stack_pointer_rtx);
+;;   MEM_VOLATILE_P (operands[1]) = TRUE;
+;; 
+;;   /* fall through and generate default code */
+;; }")
+;;
 
 ;;
 ;; MIPS4 Conditional move instructions.
