@@ -1982,7 +1982,7 @@ int hard_regno_mode_ok[] = {
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES};
 
 #ifdef __GNUC__
-inline
+__inline__
 #endif
 static int
 save_regs (file, low, high, base, offset, n_fregs)
@@ -2014,7 +2014,7 @@ save_regs (file, low, high, base, offset, n_fregs)
 }
 
 #ifdef __GNUC__
-inline
+__inline__
 #endif
 static int
 restore_regs (file, low, high, base, offset, n_fregs)
