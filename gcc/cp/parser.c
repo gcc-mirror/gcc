@@ -1296,9 +1296,9 @@ static bool cp_parser_translation_unit
 static tree cp_parser_primary_expression
   (cp_parser *, cp_id_kind *, tree *);
 static tree cp_parser_id_expression
-  (cp_parser *, bool, bool, bool *);
+  (cp_parser *, bool, bool, bool *, bool);
 static tree cp_parser_unqualified_id
-  (cp_parser *, bool, bool);
+  (cp_parser *, bool, bool, bool);
 static tree cp_parser_nested_name_specifier_opt
   (cp_parser *, bool, bool, bool);
 static tree cp_parser_nested_name_specifier
@@ -2398,7 +2398,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	  = cp_parser_id_expression (parser, 
 				     /*template_keyword_p=*/false,
 				     /*check_dependency_p=*/true,
-				     /*template_p=*/NULL);
+				     /*template_p=*/NULL,
+				     /*declarator_p=*/false);
 	if (id_expression == error_mark_node)
 	  return error_mark_node;
 	/* If we have a template-id, then no further lookup is
@@ -2495,13 +2496,17 @@ cp_parser_primary_expression (cp_parser *parser,
 
    If *TEMPLATE_P is non-NULL, it is set to true iff the
    `template' keyword is used to explicitly indicate that the entity
-   named is a template.  */
+   named is a template.  
+
+   If DECLARATOR_P is true, the id-expression is appearing as part of
+   a declarator, rather than as part of an exprsesion.  */
 
 static tree
 cp_parser_id_expression (cp_parser *parser,
 			 bool template_keyword_p,
 			 bool check_dependency_p,
-			 bool *template_p)
+			 bool *template_p,
+			 bool declarator_p)
 {
   bool global_scope_p;
   bool nested_name_specifier_p;
@@ -2542,7 +2547,8 @@ cp_parser_id_expression (cp_parser *parser,
       saved_qualifying_scope = parser->qualifying_scope;
       /* Process the final unqualified-id.  */
       unqualified_id = cp_parser_unqualified_id (parser, *template_p,
-						 check_dependency_p);
+						 check_dependency_p,
+						 declarator_p);
       /* Restore the SAVED_SCOPE for our caller.  */
       parser->scope = saved_scope;
       parser->object_scope = saved_object_scope;
@@ -2597,7 +2603,8 @@ cp_parser_id_expression (cp_parser *parser,
     }
   else
     return cp_parser_unqualified_id (parser, template_keyword_p,
-				     /*check_dependency_p=*/true);
+				     /*check_dependency_p=*/true,
+				     declarator_p);
 }
 
 /* Parse an unqualified-id.
@@ -2618,12 +2625,15 @@ cp_parser_id_expression (cp_parser *parser,
    BIT_NOT_EXPR is an IDENTIFIER_NODE for the class-name.  For the
    other productions, see the documentation accompanying the
    corresponding parsing functions.  If CHECK_DEPENDENCY_P is false,
-   names are looked up in uninstantiated templates.  */
+   names are looked up in uninstantiated templates.  If DECLARATOR_P
+   is true, the unqualified-id is appearing as part of a declarator,
+   rather than as part of an expression.  */
 
 static tree
 cp_parser_unqualified_id (cp_parser* parser, 
                           bool template_keyword_p,
-			  bool check_dependency_p)
+			  bool check_dependency_p,
+			  bool declarator_p)
 {
   cp_token *token;
 
@@ -2780,6 +2790,16 @@ cp_parser_unqualified_id (cp_parser* parser,
 	  return build_nt (BIT_NOT_EXPR, scope);
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
+
+	/* [class.dtor]
+
+	   A typedef-name that names a class shall not be used as the
+	   identifier in the declarator for a destructor declaration.  */
+	if (declarator_p 
+	    && !DECL_IMPLICIT_TYPEDEF_P (type_decl)
+	    && !DECL_SELF_REFERENCE_P (type_decl))
+	  error ("typedef-name `%D' used as destructor declarator",
+		 type_decl);
 
 	return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
       }
@@ -3625,7 +3645,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		name = cp_parser_id_expression (parser,
 						template_p,
 						/*check_dependency_p=*/true,
-						/*template_p=*/NULL);
+						/*template_p=*/NULL,
+						/*declarator_p=*/false);
 		/* In general, build a SCOPE_REF if the member name is
 		   qualified.  However, if the name was not dependent
 		   and has already been resolved; there is no need to
@@ -7386,7 +7407,8 @@ cp_parser_type_parameter (cp_parser* parser)
 	      = cp_parser_id_expression (parser,
 					 /*template_keyword_p=*/false,
 					 /*check_dependency_p=*/true,
-					 /*template_p=*/NULL);
+					 /*template_p=*/NULL,
+					 /*declarator_p=*/false);
 	    /* Look up the name.  */
 	    default_argument 
 	      = cp_parser_lookup_name_simple (parser, default_argument);
@@ -7805,7 +7827,8 @@ cp_parser_template_argument (cp_parser* parser)
   argument = cp_parser_id_expression (parser, 
 				      /*template_keyword_p=*/false,
 				      /*check_dependency_p=*/true,
-				      &template_p);
+				      &template_p,
+				      /*declarator_p=*/false);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */
   if (!cp_parser_next_token_ends_template_argument_p (parser))
@@ -8992,35 +9015,47 @@ cp_parser_using_declaration (cp_parser* parser)
   /* Parse the unqualified-id.  */
   identifier = cp_parser_unqualified_id (parser, 
 					 /*template_keyword_p=*/false,
-					 /*check_dependency_p=*/true);
+					 /*check_dependency_p=*/true,
+					 /*declarator_p=*/true);
 
   /* The function we call to handle a using-declaration is different
      depending on what scope we are in.  */
-  scope = current_scope ();
-  if (scope && TYPE_P (scope))
-    {
-      /* Create the USING_DECL.  */
-      decl = do_class_using_decl (build_nt (SCOPE_REF,
-					    parser->scope,
-					    identifier));
-      /* Add it to the list of members in this class.  */
-      finish_member_declaration (decl);
-    }
+  if (identifier == error_mark_node)
+    ;
+  else if (TREE_CODE (identifier) != IDENTIFIER_NODE
+	   && TREE_CODE (identifier) != BIT_NOT_EXPR)
+    /* [namespace.udecl]
+
+       A using declaration shall not name a template-id.  */
+    error ("a template-id may not appear in a using-declaration");
   else
     {
-      decl = cp_parser_lookup_name_simple (parser, identifier);
-      if (decl == error_mark_node)
+      scope = current_scope ();
+      if (scope && TYPE_P (scope))
 	{
-	  if (parser->scope && parser->scope != global_namespace)
-	    error ("`%D::%D' has not been declared", 
-		   parser->scope, identifier);
-	  else
-	    error ("`::%D' has not been declared", identifier);
+	  /* Create the USING_DECL.  */
+	  decl = do_class_using_decl (build_nt (SCOPE_REF,
+						parser->scope,
+						identifier));
+	  /* Add it to the list of members in this class.  */
+	  finish_member_declaration (decl);
 	}
-      else if (scope)
-	do_local_using_decl (decl);
       else
-	do_toplevel_using_decl (decl);
+	{
+	  decl = cp_parser_lookup_name_simple (parser, identifier);
+	  if (decl == error_mark_node)
+	    {
+	      if (parser->scope && parser->scope != global_namespace)
+		error ("`%D::%D' has not been declared", 
+		       parser->scope, identifier);
+	      else
+		error ("`::%D' has not been declared", identifier);
+	    }
+	  else if (scope)
+	    do_local_using_decl (decl);
+	  else
+	    do_toplevel_using_decl (decl);
+	}
     }
 
   /* Look for the final `;'.  */
@@ -10119,7 +10154,8 @@ cp_parser_declarator_id (cp_parser* parser)
   id_expression = cp_parser_id_expression (parser,
 					   /*template_keyword_p=*/false,
 					   /*check_dependency_p=*/false,
-					   /*template_p=*/NULL);
+					   /*template_p=*/NULL,
+					   /*declarator_p=*/true);
   /* If the name was qualified, create a SCOPE_REF to represent 
      that.  */
   if (parser->scope)

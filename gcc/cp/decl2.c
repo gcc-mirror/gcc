@@ -4091,27 +4091,13 @@ do_class_using_decl (tree decl)
       error ("using-declaration cannot name destructor");
       return NULL_TREE;
     }
-  else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-    {
-    template_id_error:;
-      
-      error ("a using-declaration cannot specify a template-id");
-      return NULL_TREE;
-    }
   if (TREE_CODE (name) == TYPE_DECL)
-    {
-      if (CLASSTYPE_USE_TEMPLATE (TREE_TYPE (name)))
-	goto template_id_error;
-      name = DECL_NAME (name);
-    }
+    name = DECL_NAME (name);
   else if (TREE_CODE (name) == TEMPLATE_DECL)
      name = DECL_NAME (name);
   else if (BASELINK_P (name))
     {
       tree fns = BASELINK_FUNCTIONS (name);
-      
-      if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-	goto template_id_error;
       name = DECL_NAME (get_first_fn (fns));
     }
 
