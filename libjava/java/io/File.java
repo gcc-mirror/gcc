@@ -86,7 +86,7 @@ public class File implements Serializable, Comparable
     int plen = p.length();
     
     // Special case: permit Windows UNC path prefix.
-    if (dupSeparator == "\\" && dupIndex == 0)
+    if (dupSeparator.equals("\\") && dupIndex == 0)
       dupIndex = p.indexOf(dupSeparator, 1);
 
     if (dupIndex == -1)
