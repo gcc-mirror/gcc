@@ -5683,7 +5683,7 @@ zero.  The hook should return @code{NULL} if there are no more nop
 insns with indexes greater than given index.
 @end deftypefn
 
-@deftypefn {Target Hook} bool IS_COSTLY_DEPENDENCE (rtx @var{insn1}, rtx @var{insn2}, rtx @var{dep_link}, int @var{dep_cost}, int @var{distance})
+@deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (rtx @var{insn1}, rtx @var{insn2}, rtx @var{dep_link}, int @var{dep_cost}, int @var{distance})
 This hook is used to define which dependences are considered costly by
 the target, so costly that it is not advisable to schedule the insns that
 are involved in the dependence too close to one another.  The parameters

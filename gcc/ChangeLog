@@ -1,3 +1,8 @@
+2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/tm.texi (IS_COSTLY_DEPENDENCE): Change to
+	TARGET_SCHED_IS_COSTLY_DEPENDENCE.
+
 2004-02-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/14229
