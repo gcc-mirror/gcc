@@ -486,8 +486,9 @@ do {									\
 
 #define READONLY_DATA_SECTION() const_section ()
 
-extern void text_section ();
+extern void text_section PARAMS ((void));
 
+extern void const_section PARAMS ((void));
 #define CONST_SECTION_FUNCTION						\
 void									\
 const_section ()							\
@@ -501,6 +502,7 @@ const_section ()							\
     }									\
 }
 
+extern void ctors_section PARAMS ((void));
 #define CTORS_SECTION_FUNCTION						\
 void									\
 ctors_section ()							\
@@ -512,6 +514,7 @@ ctors_section ()							\
     }									\
 }
 
+extern void dtors_section PARAMS ((void));
 #define DTORS_SECTION_FUNCTION						\
 void									\
 dtors_section ()							\
@@ -542,7 +545,7 @@ do {									\
       enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
     } *sections;							\
   struct section_info *s;						\
-  char *mode;								\
+  const char *mode;							\
   enum sect_enum type;							\
 									\
   for (s = sections; s; s = s->next)					\
@@ -580,7 +583,8 @@ do {									\
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
-  char *name, *string, *prefix;					\
+  const char *name, *prefix;					\
+  char *string;							\
 								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\
@@ -745,7 +749,7 @@ do {								\
 
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
-     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
@@ -832,7 +836,8 @@ do {									 \
 #define ASM_OUTPUT_LIMITED_STRING(FILE, STR)				\
   do									\
     {									\
-      register unsigned char *_limited_str = (unsigned char *) (STR);	\
+      register const unsigned char *_limited_str =			\
+	(const unsigned char *) (STR);					\
       register unsigned ch;						\
       fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);			\
       for (; (ch = *_limited_str); _limited_str++)			\
@@ -867,12 +872,13 @@ do {									 \
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
     {									\
-      register unsigned char *_ascii_bytes = (unsigned char *) (STR);	\
-      register unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      register const unsigned char *_ascii_bytes =			\
+	(const unsigned char *) (STR);					\
+      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
       register unsigned bytes_in_chunk = 0;				\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register unsigned char *p;					\
+	  register const unsigned char *p;				\
 	  if (bytes_in_chunk >= 60)					\
 	    {								\
 	      fprintf ((FILE), "\"\n");					\

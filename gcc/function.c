@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "flags.h"
 #include "except.h"
 #include "function.h"
@@ -59,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "hash.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY

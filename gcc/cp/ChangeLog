@@ -1,3 +1,7 @@
+1999-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c: Include tm_p.h.
+
 1999-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (SCOPE_PARTIAL_P): New macro.

@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "flags.h"
 #include "expr.h"
 #include "function.h"
@@ -30,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "toplev.h"
 #include "output.h"
+#include "tm_p.h"
 
 #if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY

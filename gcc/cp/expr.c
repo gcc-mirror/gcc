@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "toplev.h"
 #include "except.h"
+#include "tm_p.h"
 
 #if 0
 static tree extract_aggr_init PROTO((tree, tree));
