@@ -1089,17 +1089,6 @@ at_least_as_qualified_p (tree type1, tree type2)
   return (q1 & q2) == q2;
 }
 
-/* Returns 1 if TYPE1 is more qualified than TYPE2.  */
-
-bool
-more_qualified_p (tree type1, tree type2)
-{
-  int q1 = cp_type_quals (type1);
-  int q2 = cp_type_quals (type2);
-
-  return q1 != q2 && (q1 & q2) == q2;
-}
-
 /* Returns 1 if TYPE1 is more cv-qualified than TYPE2, -1 if TYPE2 is
    more cv-qualified that TYPE1, and 0 otherwise.  */
 
