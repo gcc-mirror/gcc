@@ -119,6 +119,8 @@ enum c_tree_index
     CTI_C_SIZE_TYPE, /* For format checking only.  */
     CTI_SIGNED_SIZE_TYPE, /* For format checking only.  */
     CTI_UNSIGNED_PTRDIFF_TYPE, /* For format checking only.  */
+    CTI_INTMAX_TYPE,
+    CTI_UINTMAX_TYPE,
     CTI_WIDEST_INT_LIT_TYPE,
     CTI_WIDEST_UINT_LIT_TYPE,
 
@@ -161,6 +163,8 @@ enum c_tree_index
 #define c_size_type_node		c_global_trees[CTI_C_SIZE_TYPE]
 #define signed_size_type_node		c_global_trees[CTI_SIGNED_SIZE_TYPE]
 #define unsigned_ptrdiff_type_node	c_global_trees[CTI_UNSIGNED_PTRDIFF_TYPE]
+#define intmax_type_node		c_global_trees[CTI_INTMAX_TYPE]
+#define uintmax_type_node		c_global_trees[CTI_UINTMAX_TYPE]
 #define widest_integer_literal_type_node c_global_trees[CTI_WIDEST_INT_LIT_TYPE]
 #define widest_unsigned_literal_type_node c_global_trees[CTI_WIDEST_UINT_LIT_TYPE]
 

@@ -761,6 +761,12 @@ decl_attributes (node, attributes, prefix_attributes)
 		error ("no data type for mode `%s'", p);
 	      else
 		{
+		  if (TYPE_PRECISION (typefm) > (TREE_UNSIGNED (type)
+						 ? TYPE_PRECISION(uintmax_type_node)
+						 : TYPE_PRECISION(intmax_type_node))
+		      && pedantic)
+		    pedwarn ("type with more precision than %s",
+			     TREE_UNSIGNED (type) ? "uintmax_t" : "intmax_t");
 		  TREE_TYPE (decl) = type = typefm;
 		  DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
 		  layout_decl (decl, 0);
@@ -1589,9 +1595,9 @@ static const format_flag_pair strftime_flag_pairs[] =
 #define T99_PD	{ STD_C99, "ptrdiff_t", T_PD }
 #define T_UPD   &unsigned_ptrdiff_type_node
 #define T99_UPD	{ STD_C99, "unsigned ptrdiff_t", T_UPD }
-#define T_IM    NULL /* intmax_t not yet implemented.  */
+#define T_IM    &intmax_type_node
 #define T99_IM	{ STD_C99, "intmax_t", T_IM }
-#define T_UIM   NULL /* uintmax_t not yet implemented.  */
+#define T_UIM   &uintmax_type_node
 #define T99_UIM	{ STD_C99, "uintmax_t", T_UIM }
 
 static const format_char_info print_char_table[] =

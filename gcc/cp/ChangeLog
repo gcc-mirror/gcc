@@ -1,3 +1,10 @@
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c (INTMAX_TYPE, UINTMAX_TYPE): Define if not already
+	defined.
+	(init_decl_processing): Initialize intmax_type_node and
+	uintmax_type_node.
+
 2000-10-06  Richard Henderson  <rth@cygnus.com>
 
 	* cp-tree.h (struct cp_language_function): Remove x_result_rtx.

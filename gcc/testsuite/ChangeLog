@@ -1,5 +1,12 @@
 2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/c99-printf-1.c, gcc.dg/c99-scanf-1.c,
+	gcc.dg/c90-printf-2.c, gcc.dg/c90-scanf-2.c: Define intmax_t and
+	uintmax_t using <limits.h> to emulate the compiler's internal
+	logic.  No longer XFAIL %j tests.
+
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c90-printf-1.c, gcc.dg/c90-scanf-1.c,
 	gcc.dg/c99-printf-1.c, gcc.dg/c99-scanf-1.c,
 	gcc.dg/c99-strftime-1.c, gcc.dg/format-ext-3.c: Adjust error
