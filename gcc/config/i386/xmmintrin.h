@@ -606,7 +606,7 @@ _mm_cvtps_pi16(__m128 __A)
   __v4sf __losf = __builtin_ia32_movhlps (__hisf, __hisf);
   __v2si __hisi = __builtin_ia32_cvtps2pi (__hisf);
   __v2si __losi = __builtin_ia32_cvtps2pi (__losf);
-  return (__m64) __builtin_ia32_packssdw (__losi, __hisi);
+  return (__m64) __builtin_ia32_packssdw (__hisi, __losi);
 }
 
 /* Convert the four SPFP values in A to four signed 8-bit integers.  */
@@ -1293,10 +1293,12 @@ _mm_sqrt_pd (__m128d __A)
   return (__m128d)__builtin_ia32_sqrtpd ((__v2df)__A);
 }
 
+/* Return pair {sqrt (A[0), B[1]}.  */
 static __inline __m128d
-_mm_sqrt_sd (__m128d __A)
+_mm_sqrt_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_sqrtsd ((__v2df)__A);
+  __v2df __tmp = __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
+  return (__m128d)__builtin_ia32_sqrtsd ((__v2df)__tmp);
 }
 
 static __inline __m128d
@@ -1320,7 +1322,7 @@ _mm_max_pd (__m128d __A, __m128d __B)
 static __inline __m128d
 _mm_max_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_minsd ((__v2df)__A, (__v2df)__B);
+  return (__m128d)__builtin_ia32_maxsd ((__v2df)__A, (__v2df)__B);
 }
 
 static __inline __m128d
@@ -1696,10 +1698,9 @@ _mm_loadh_pd (__m128d __A, double *__B)
 }
 
 static __inline void
-_mm_storeh_pd (__m128d *__A, double __B)
+_mm_storeh_pd (double *__A, __m128d __B)
 {
-  __v2df __tmp = __builtin_ia32_loadsd (&__B);
-  __builtin_ia32_storehpd ((__v2si *)__A, __tmp);
+  __builtin_ia32_storehpd ((__v2si *)__A, (__v2df)__B);
 }
 
 static __inline __m128d
@@ -1709,10 +1710,9 @@ _mm_loadl_pd (__m128d __A, double *__B)
 }
 
 static __inline void
-_mm_storel_pd (__m128d *__A, double __B)
+_mm_storel_pd (double *__A, __m128d __B)
 {
-  __v2df __tmp = __builtin_ia32_loadsd (&__B);
-  __builtin_ia32_storelpd ((__v2si *)__A, __tmp);
+  __builtin_ia32_storelpd ((__v2si *)__A, (__v2df)__B);
 }
 
 static __inline int
