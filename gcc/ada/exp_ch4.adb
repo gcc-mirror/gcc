@@ -4077,7 +4077,7 @@ package body Exp_Ch4 is
         (Typ : Node_Id) return Boolean
       is
          Tdef  : constant Node_Id :=
-                   Type_Definition (Declaration_Node (Typ));
+                   Type_Definition (Declaration_Node (Base_Type (Typ)));
          Clist : Node_Id;
          Vpart : Node_Id;
 

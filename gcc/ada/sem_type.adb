@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -585,6 +585,9 @@ package body Sem_Type is
 
    function Covers (T1, T2 : Entity_Id) return Boolean is
 
+      BT1 : Entity_Id;
+      BT2 : Entity_Id;
+
       function Full_View_Covers (Typ1, Typ2 : Entity_Id) return Boolean;
       --  In an instance the proper view may not always be correct for
       --  private types, but private and full view are compatible. This
@@ -619,6 +622,10 @@ package body Sem_Type is
          else
             raise Program_Error;
          end if;
+
+      else
+         BT1 := Base_Type (T1);
+         BT2 := Base_Type (T2);
       end if;
 
       --  Simplest case: same types are compatible, and types that have the
@@ -639,7 +646,10 @@ package body Sem_Type is
       if T1 = T2 then
          return True;
 
-      elsif Base_Type (T1) = Base_Type (T2) then
+      elsif  BT1 = BT2
+        or else BT1 = T2
+        or else BT2 = T1
+      then
          if not Is_Generic_Actual_Type (T1) then
             return True;
          else
@@ -712,9 +722,9 @@ package body Sem_Type is
       --  An Access_To_Subprogram is compatible with itself, or with an
       --  anonymous type created for an attribute reference Access.
 
-      elsif (Ekind (Base_Type (T1)) = E_Access_Subprogram_Type
+      elsif (Ekind (BT1) = E_Access_Subprogram_Type
                or else
-             Ekind (Base_Type (T1)) = E_Access_Protected_Subprogram_Type)
+             Ekind (BT1) = E_Access_Protected_Subprogram_Type)
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -732,9 +742,9 @@ package body Sem_Type is
       --  with itself, or with an anonymous type created for an attribute
       --  reference Access.
 
-      elsif (Ekind (Base_Type (T1)) = E_Anonymous_Access_Subprogram_Type
+      elsif (Ekind (BT1) = E_Anonymous_Access_Subprogram_Type
                or else
-             Ekind (Base_Type (T1))
+             Ekind (BT1)
                       = E_Anonymous_Access_Protected_Subprogram_Type)
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
@@ -768,14 +778,14 @@ package body Sem_Type is
          return Covers (Corresponding_Remote_Type (T2), T1);
 
       elsif Ekind (T2) = E_Access_Attribute_Type
-        and then (Ekind (Base_Type (T1)) = E_General_Access_Type
-              or else Ekind (Base_Type (T1)) = E_Access_Type)
+        and then (Ekind (BT1) = E_General_Access_Type
+                    or else Ekind (BT1) = E_Access_Type)
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
          --  If the target type is a RACW type while the source is an access
          --  attribute type, we are building a RACW that may be exported.
 
-         if Is_Remote_Access_To_Class_Wide_Type (Base_Type (T1)) then
+         if Is_Remote_Access_To_Class_Wide_Type (BT1) then
             Set_Has_RACW (Current_Sem_Unit);
          end if;
 
