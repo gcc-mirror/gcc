@@ -1,5 +1,10 @@
 2002-02-26  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (expand_expr) [MULT_EXPR]: Do not apply distributive law
+	in EXPAND_SUM case.  Use host_integerp/tree_low_cst.
+
+2002-02-26  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (nop_cycles_until): Do init_insn_group_barriers
 	if we emitted a stop bit.
 
