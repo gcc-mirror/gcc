@@ -1,3 +1,8 @@
+2005-03-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* charset.c (_cpp_valid_ucn): In identifiers, reject a partial
+	UCN rather than printing an error.
+
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* lex.c (forms_identifier_p): Disable UCNs in C89 mode.

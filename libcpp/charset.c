@@ -923,9 +923,8 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    program is ill-formed.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
-   buffer end is delimited by a non-hex digit.  Returns zero if UCNs
-   are not part of the relevant standard, or if the string beginning
-   at *PSTR doesn't syntactically match the form 'NNNN' or 'NNNNNNNN'.
+   buffer end is delimited by a non-hex digit.  Returns zero if the
+   UCN has not been consumed.
 
    Otherwise the nonzero value of the UCN, whether valid or invalid,
    is returned.  Diagnostics are emitted for invalid values.  PSTR
@@ -974,10 +973,15 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     }
   while (--length && str < limit);
 
+  /* Partial UCNs are not valid in strings, but decompose into
+     multiple tokens in identifiers, so we can't give a helpful
+     error message in that case.  */
+  if (length && identifier_pos)
+    return 0;
+  
   *pstr = str;
   if (length)
     {
-      /* We'll error when we try it out as the start of an identifier.  */
       cpp_error (pfile, CPP_DL_ERROR,
 		 "incomplete universal character name %.*s",
 		 (int) (str - base), base);
