@@ -806,11 +806,11 @@ static int
 final_addr_vec_align (addr_vec)
      rtx addr_vec;
 {
-  int align = exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec))));
+  int align = GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec)));
 
   if (align > BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-  return align;
+  return exact_log2 (align);
 
 }
 

@@ -1,3 +1,7 @@
+Wed Dec  6 21:03:41 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* final.c (final_addr_vec_align): Fix clipping to BIGGEST_ALIGNMENT.
+
 2000-12-06  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
 	  
         * cpplex.c (skip_escaped_newlines): Don't warn for spaces between
