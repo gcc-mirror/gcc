@@ -1,3 +1,7 @@
+2003-01-16  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixinc/inclhack.def(limits_ifndef): QNX needs a bypass, too.
+
 2003-01-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
         * config/sh/sh.c (sh_initialize_trampoline): Emit rotrdi3_mextr

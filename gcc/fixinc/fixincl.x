@@ -296,10 +296,10 @@ fix = {\n\
     replace  = <<-  _EndOfHeader_\n\
 #ifndef _SYS_BYTEORDER_H\n\
 #define _SYS_BYTEORDER_H\n\n\
-/* Functions to convert `short\\' and `long\\' quantities from host byte order\n\
+/* Functions to convert `short' and `long' quantities from host byte order\n\
    to (internet) network byte order (i.e. big-endian).\n\n\
    Written by Ron Guilmette (rfg@ncd.com).\n\n\
-   This isn\\'t actually used by GCC.  It is installed by fixinc.svr4.\n\n\
+   This isn't actually used by GCC.  It is installed by fixinc.svr4.\n\n\
    For big-endian machines these functions are essentially no-ops.\n\n\
    For little-endian machines, we define the functions using specialized\n\
    asm sequences in cases where doing so yields better code (e.g. i386).  */\n\n\
@@ -2423,7 +2423,7 @@ tSCC zLimits_IfndefsList[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zLimits_IfndefsBypass0[] =
-       "ifndef[ \t]+FLT_MIN";
+       "ifndef[ \t]+FLT_(MIN|MAX)";
 
 #define    LIMITS_IFNDEFS_TEST_CT  1
 static tTestDesc aLimits_IfndefsTests[] = {
