@@ -1,3 +1,8 @@
+2001-03-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
+        before reload_cse_noop_set_p.
+
 Sat Mar 10 23:21:34 2001  kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/sh.h (LEGITIMATE_PIC_OPERAND_P): Defined.

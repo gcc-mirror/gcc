@@ -8041,7 +8041,15 @@ reload_cse_simplify (insn)
   if (GET_CODE (body) == SET)
     {
       int count = 0;
-      if (reload_cse_noop_set_p (body))
+
+      /* Simplify even if we may think it is a no-op.
+         We may think a memory load of a value smaller than WORD_SIZE
+         is redundant because we haven't taken into account possible
+         implicit extension.  reload_cse_simplify_set() will bring
+         this out, so it's safer to simplify before we delete.  */
+      count += reload_cse_simplify_set (body, insn);
+
+      if (!count && reload_cse_noop_set_p (body))
 	{
 	  rtx value = SET_DEST (body);
 	  if (! REG_FUNCTION_VALUE_P (SET_DEST (body)))
@@ -8049,9 +8057,6 @@ reload_cse_simplify (insn)
 	  reload_cse_delete_noop_set (insn, value);
 	  return;
 	}
-
-      /* It's not a no-op, but we can try to simplify it.  */
-      count += reload_cse_simplify_set (body, insn);
 
       if (count > 0)
 	apply_change_group ();
