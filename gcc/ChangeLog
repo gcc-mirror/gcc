@@ -12,6 +12,9 @@ Wed Jun  9 15:57:57 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 Wed Jun  9 13:12:24 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fixinc/inclhack.def (no_double_slash): Fix quoting for test.
+	* fixinc/inclhack.sh, fixinc/fixincl.x, fixinc/fixincl.sh; Rebuilt.
+
         * varasm.c (remove_from_pending_weak_list): Verify t->name
         is non-NULL before passing it to strcmp.
 
