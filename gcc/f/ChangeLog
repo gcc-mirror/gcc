@@ -1,3 +1,8 @@
+2001-01-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* com.c: Don't explicitly include any time headers, the right ones are
+	already included by proj.h.
+
 2001-01-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_lookup_label): Set DECL_CONTEXT for FORMAT
