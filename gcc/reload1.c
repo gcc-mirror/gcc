@@ -5291,6 +5291,10 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
      int ignore_address_reloads;
 {
   int time1;
+  /* Set if we see an input reload that must not share its reload register
+     with any new earlyclobber, but might otherwise share the reload
+     register with an output or input-output reload.  */
+  int check_earlyclobber = 0;
   int i;
   int copy = 0;
 
@@ -5372,7 +5376,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	  if (! rld[i].in || ! rtx_equal_p (rld[i].in, value)
 	      || rld[i].out || out)
 	    {
-	      int j, time2;
+	      int time2;
 	      switch (rld[i].when_needed)
 		{
 		case RELOAD_FOR_OTHER_ADDRESS:
@@ -5411,6 +5415,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  break;
 		case RELOAD_FOR_INPUT:
 		  time2 = rld[i].opnum * 4 + 4;
+		  check_earlyclobber = 1;
 		  break;
 		  /* rld[i].opnum * 4 + 4 <= (MAX_RECOG_OPERAND - 1) * 4 + 4
 		     == MAX_RECOG_OPERAND * 4  */
@@ -5423,6 +5428,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  break;
 		case RELOAD_FOR_OPERAND_ADDRESS:
 		  time2 = MAX_RECOG_OPERANDS * 4 + 2;
+		  check_earlyclobber = 1;
 		  break;
 		case RELOAD_FOR_INSN:
 		  time2 = MAX_RECOG_OPERANDS * 4 + 3;
@@ -5452,9 +5458,8 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		    {
 		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
 		      /* Earlyclobbered outputs must conflict with inputs.  */
-		      for (j = 0; j < n_earlyclobbers; j++)
-			if (rld[i].out == reload_earlyclobbers[j])
-			  time2 = MAX_RECOG_OPERANDS * 4 + 3;
+		      if (earlyclobber_operand_p (rld[i].out))
+			time2 = MAX_RECOG_OPERANDS * 4 + 3;
 			  
 		      break;
 		    }
@@ -5478,6 +5483,11 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	    }
 	}
     }
+
+  /* Earlyclobbered outputs must conflict with inputs.  */
+  if (check_earlyclobber && out && earlyclobber_operand_p (out))
+    return 0;
+
   return 1;
 }
 

@@ -1,3 +1,11 @@
+Wed Oct 27 03:09:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.h (earlyclobber_operand_p): Declare.
+	* reload.c (earlyclobber_operand_p): Don't declare.  No longer static.
+	* reload1.c (reload_reg_free_for_value_p):  RELOAD_OTHER reloads with
+	an earlyclobbered output conflict with RELOAD_INPUT reloads - handle
+	case where the RELOAD_OTHER reload is new.  Use earlyclobber_operand_p.
+
 Tue Oct 26 18:23:38 1999  Jan Hubicka  <hubicka@freesoft.cz>
 			  Richard Henderson  <rth@cygnus.com>
 
