@@ -9383,6 +9383,11 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	    return false;
 	  code = (code == GTU ? GEU : LTU);
 	}
+      else if (!nonimmediate_operand (op1, mode)
+	       || !general_operand (op0, mode))
+	/* Swapping operands in this case would generate an
+	   unrecognizable insn.  */
+	return false;
       else
 	{
 	  rtx tmp = op1;
