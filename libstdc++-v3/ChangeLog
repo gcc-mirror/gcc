@@ -1,3 +1,16 @@
+2004-07-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (__copy_trivial): Remove.
+	(__copy_aux2): Rewrite as __copy_aux to use __is_pointer,
+	__is_trivially_copyable, __are_same and __copy::copy.
+	(__copy): Rewrite as a class template and two specializations.
+	(__copy_ni2): Simplify, just call __copy_aux.
+	
+	* include/bits/stl_algobase.h (__copy_backward_aux): Add __are_same
+	check.
+	* testsuite/25_algorithms/copy/1.cc, 2.cc, 3.cc, 4.cc: Test also
+	for destination value type != source value type.
+
 2004-07-01  Benjamin Kosnik  <bkoz@redhat.com>
             Per Bothner  <per@bothner.com>
 	    Mohan Embar  <gnustuff@thisiscool.com>
