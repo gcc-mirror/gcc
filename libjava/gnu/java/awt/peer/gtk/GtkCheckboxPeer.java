@@ -1,5 +1,5 @@
 /* GtkCheckboxPeer.java -- Implements CheckboxPeer with GTK
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,8 +48,11 @@ public class GtkCheckboxPeer extends GtkComponentPeer
 {
   // Group from last time it was set.
   public GtkCheckboxGroupPeer old_group;
+  // The current state of the GTK checkbox.
+  private boolean currentState;  
 
-  public native void nativeCreate (GtkCheckboxGroupPeer group);
+  public native void nativeCreate (GtkCheckboxGroupPeer group,
+                                   boolean state);
   public native void nativeSetCheckboxGroup (GtkCheckboxGroupPeer group);
   public native void connectHooks ();
 
@@ -66,12 +69,14 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   {
     CheckboxGroup g = ((Checkbox) awtComponent).getCheckboxGroup ();
     old_group = GtkCheckboxGroupPeer.getCheckboxGroupPeer (g);
-    nativeCreate (old_group);
+    currentState = ((Checkbox)awtComponent).getState();
+    nativeCreate (old_group, currentState);
   }
 
   public void setState (boolean state)
   {
-    set ("active", state);
+    if (currentState != state)
+      set ("active", state);
   }
 
   public void setLabel (String label)
@@ -103,7 +108,19 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   // need information that we have.
   public void postItemEvent (Object item, int stateChange)
   {
-    super.postItemEvent (awtComponent, stateChange);
+    Checkbox currentCheckBox = ((Checkbox)awtComponent);
+    // A firing of the event is only desired if the state has changed due to a 
+    // button press. The currentCheckBox's state must be different from the 
+    // one that the stateChange is changing to. 
+    // stateChange = 1 if it goes from false -> true
+    // stateChange = 2 if it goes from true -> false
+    if (( !currentCheckBox.getState() && stateChange == 1)
+        || (currentCheckBox.getState() && stateChange == 2))
+    {
+      super.postItemEvent (awtComponent, stateChange);
+      currentState = !currentCheckBox.getState();
+      currentCheckBox.setState(currentState);
+    }
   }
 
   public void dispose ()
