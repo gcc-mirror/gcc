@@ -876,6 +876,7 @@ gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
+gnu/gcj/text/LocaleData.java	\
 gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
@@ -1493,7 +1494,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/runtime/natFirstThread.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \
 .deps/gnu/gcj/text/CharacterBreakIterator.P \
-.deps/gnu/gcj/text/LineBreakIterator.P \
+.deps/gnu/gcj/text/LineBreakIterator.P .deps/gnu/gcj/text/LocaleData.P \
 .deps/gnu/gcj/text/LocaleData_en.P \
 .deps/gnu/gcj/text/LocaleData_en_US.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
