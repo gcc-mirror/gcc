@@ -2307,7 +2307,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
        and require special code to handle code a reloaded PLUS operand.
 
        Also consider backends where the flags register is clobbered by a
-       MINUS, but we can emit a PLUS that does not clobber flags (ia32,
+       MINUS, but we can emit a PLUS that does not clobber flags (IA-32,
        lea instruction comes to mind).  If we try to reload a MINUS, we
        may kill the flags register that was holding a useful value.
 

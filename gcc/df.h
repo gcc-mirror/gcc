@@ -55,7 +55,7 @@ enum df_ref_flags
     /* This flag is set on register references inside a subreg on
        machines which have CANNOT_CHANGE_MODE_CLASS.
        Note, that this flag can also be set on df_refs representing
-       the REG itself (i.e., one might not see the subreg anyore).
+       the REG itself (i.e., one might not see the subreg anymore).
        Also note, that this flag is set also for hardreg refs, i.e.,
        you must check yourself if it's a pseudo.  */
     DF_REF_MODE_CHANGE = 2,

@@ -540,7 +540,7 @@ pp_c_declaration_specifiers (c_pretty_printer *pp, tree t)
       direct-declarator [ static type-qualifier-list(opt) assignment-expression(opt)]
       direct-declarator [ type-qualifier-list static assignment-expression ]
       direct-declarator [ type-qualifier-list * ]
-      direct-declaratpr ( parameter-type-list )
+      direct-declarator ( parameter-type-list )
       direct-declarator ( identifier-list(opt) )  */
 
 void
