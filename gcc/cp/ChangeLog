@@ -1,3 +1,8 @@
+2000-04-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (grokfield): Issue error on illegal data member
+	declaration.
+
 Mon Apr 17 17:11:16 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* method.c (make_thunk): Set DECL_CONTEXT for a THUNK_DECL.
