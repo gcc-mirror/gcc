@@ -375,8 +375,7 @@ alloc_mem (df)
   ra_build_realloc (df);
   if (!live_at_end)
     {
-      live_at_end = (bitmap *) xmalloc ((last_basic_block + 2)
-					* sizeof (bitmap));
+      live_at_end = xmalloc ((last_basic_block + 2) * sizeof (bitmap));
       for (i = 0; i < last_basic_block + 2; i++)
 	live_at_end[i] = BITMAP_XMALLOC ();
       live_at_end += 2;
@@ -907,7 +906,7 @@ reg_alloc ()
 			 "after allocation/spilling, before reload", NULL);
 
   /* Allocate the reg_equiv_memory_loc array for reload.  */
-  reg_equiv_memory_loc = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_memory_loc = xcalloc (max_regno, sizeof (rtx));
   /* And possibly initialize it.  */
   allocate_initial_values (reg_equiv_memory_loc);
   /* And one last regclass pass just before reload.  */

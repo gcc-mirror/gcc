@@ -3587,7 +3587,7 @@ dbr_schedule (rtx first, FILE *file)
 	epilogue_insn = insn;
     }
 
-  uid_to_ruid = (int *) xmalloc ((max_uid + 1) * sizeof (int));
+  uid_to_ruid = xmalloc ((max_uid + 1) * sizeof (int));
   for (i = 0, insn = first; insn; i++, insn = NEXT_INSN (insn))
     uid_to_ruid[INSN_UID (insn)] = i;
 
@@ -3595,7 +3595,7 @@ dbr_schedule (rtx first, FILE *file)
   if (unfilled_firstobj == 0)
     {
       gcc_obstack_init (&unfilled_slots_obstack);
-      unfilled_firstobj = (rtx *) obstack_alloc (&unfilled_slots_obstack, 0);
+      unfilled_firstobj = obstack_alloc (&unfilled_slots_obstack, 0);
     }
 
   for (insn = next_active_insn (first); insn; insn = next_active_insn (insn))
@@ -3629,8 +3629,8 @@ dbr_schedule (rtx first, FILE *file)
   end_of_function_label = 0;
 
   /* Initialize the statistics for this function.  */
-  memset ((char *) num_insns_needing_delays, 0, sizeof num_insns_needing_delays);
-  memset ((char *) num_filled_delays, 0, sizeof num_filled_delays);
+  memset (num_insns_needing_delays, 0, sizeof num_insns_needing_delays);
+  memset (num_filled_delays, 0, sizeof num_filled_delays);
 
   /* Now do the delay slot filling.  Try everything twice in case earlier
      changes make more slots fillable.  */
@@ -3670,7 +3670,7 @@ dbr_schedule (rtx first, FILE *file)
   obstack_free (&unfilled_slots_obstack, unfilled_firstobj);
 
   /* It is not clear why the line below is needed, but it does seem to be.  */
-  unfilled_firstobj = (rtx *) obstack_alloc (&unfilled_slots_obstack, 0);
+  unfilled_firstobj = obstack_alloc (&unfilled_slots_obstack, 0);
 
   if (file)
     {
@@ -3703,8 +3703,8 @@ dbr_schedule (rtx first, FILE *file)
 	      fprintf (file, "\n");
 	    }
 	}
-      memset ((char *) total_delay_slots, 0, sizeof total_delay_slots);
-      memset ((char *) total_annul_slots, 0, sizeof total_annul_slots);
+      memset (total_delay_slots, 0, sizeof total_delay_slots);
+      memset (total_annul_slots, 0, sizeof total_annul_slots);
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_DELETED_P (insn)

@@ -884,7 +884,7 @@ print_symbol (SYMR *sym_ptr, int number, const char *strbase, AUXU *aux_base,
 	if (want_scope)
 	  {
 	    if (free_scope == (scope_t *) 0)
-	      scope_ptr = (scope_t *) xmalloc (sizeof (scope_t));
+	      scope_ptr = xmalloc (sizeof (scope_t));
 	    else
 	      {
 		scope_ptr = free_scope;
@@ -938,7 +938,7 @@ print_symbol (SYMR *sym_ptr, int number, const char *strbase, AUXU *aux_base,
 	if (want_scope)
 	  {
 	    if (free_scope == (scope_t *) 0)
-	      scope_ptr = (scope_t *) xmalloc (sizeof (scope_t));
+	      scope_ptr = xmalloc (sizeof (scope_t));
 	    else
 	      {
 		scope_ptr = free_scope;
@@ -1324,13 +1324,12 @@ read_tfile (void)
   short magic;
   off_t sym_hdr_offset = 0;
 
-  (void) read_seek (&magic, sizeof (magic), (off_t) 0, "Magic number");
+  read_seek (&magic, sizeof (magic), 0, "Magic number");
   if (!tfile)
     {
       /* Print out the global header, since this is not a T-file.  */
 
-      (void) read_seek (&global_hdr, sizeof (global_hdr), (off_t) 0,
-			"Global file header");
+      read_seek (&global_hdr, sizeof (global_hdr), 0, "Global file header");
 
       print_global_hdr (&global_hdr);
 
@@ -1343,70 +1342,45 @@ read_tfile (void)
       sym_hdr_offset = global_hdr.f_symptr;
     }
 
-  (void) read_seek (&sym_hdr,
-		    sizeof (sym_hdr),
-		    sym_hdr_offset,
-		    "Symbolic header");
+  read_seek (&sym_hdr, sizeof (sym_hdr), sym_hdr_offset, "Symbolic header");
 
   print_sym_hdr (&sym_hdr);
 
-  lines = (LINER *) read_seek (NULL,
-			       sym_hdr.cbLine,
-			       sym_hdr.cbLineOffset,
-			       "Line numbers");
+  lines = read_seek (NULL, sym_hdr.cbLine, sym_hdr.cbLineOffset,
+		     "Line numbers");
 
-  dense_nums = (DNR *) read_seek (NULL,
-				  sym_hdr.idnMax * sizeof (DNR),
-				  sym_hdr.cbDnOffset,
-				  "Dense numbers");
+  dense_nums = read_seek (NULL, sym_hdr.idnMax * sizeof (DNR),
+			  sym_hdr.cbDnOffset, "Dense numbers");
 
-  proc_desc = (PDR *) read_seek (NULL,
-				 sym_hdr.ipdMax * sizeof (PDR),
-				 sym_hdr.cbPdOffset,
-				 "Procedure tables");
+  proc_desc = read_seek (NULL, sym_hdr.ipdMax * sizeof (PDR),
+			 sym_hdr.cbPdOffset, "Procedure tables");
 
-  l_symbols = (SYMR *) read_seek (NULL,
-				  sym_hdr.isymMax * sizeof (SYMR),
-				  sym_hdr.cbSymOffset,
-				  "Local symbols");
+  l_symbols = read_seek (NULL, sym_hdr.isymMax * sizeof (SYMR),
+			 sym_hdr.cbSymOffset, "Local symbols");
 
-  opt_symbols = (OPTR *) read_seek (NULL,
-				    sym_hdr.ioptMax * sizeof (OPTR),
-				    sym_hdr.cbOptOffset,
-				    "Optimization symbols");
+  opt_symbols = read_seek (NULL, sym_hdr.ioptMax * sizeof (OPTR),
+			   sym_hdr.cbOptOffset, "Optimization symbols");
 
-  aux_symbols = (AUXU *) read_seek (NULL,
-				    sym_hdr.iauxMax * sizeof (AUXU),
-				    sym_hdr.cbAuxOffset,
-				    "Auxiliary symbols");
+  aux_symbols = read_seek (NULL, sym_hdr.iauxMax * sizeof (AUXU),
+			   sym_hdr.cbAuxOffset, "Auxiliary symbols");
 
   if (sym_hdr.iauxMax > 0)
     aux_used = xcalloc (sym_hdr.iauxMax, 1);
 
-  l_strings = (char *) read_seek (NULL,
-				  sym_hdr.issMax,
-				  sym_hdr.cbSsOffset,
-				  "Local string table");
+  l_strings = read_seek (NULL, sym_hdr.issMax,
+			 sym_hdr.cbSsOffset, "Local string table");
 
-  e_strings = (char *) read_seek (NULL,
-				  sym_hdr.issExtMax,
-				  sym_hdr.cbSsExtOffset,
-				  "External string table");
+  e_strings = read_seek (NULL, sym_hdr.issExtMax,
+			 sym_hdr.cbSsExtOffset, "External string table");
 
-  file_desc = (FDR *) read_seek (NULL,
-				 sym_hdr.ifdMax * sizeof (FDR),
-				 sym_hdr.cbFdOffset,
-				 "File tables");
+  file_desc = read_seek (NULL, sym_hdr.ifdMax * sizeof (FDR),
+			 sym_hdr.cbFdOffset, "File tables");
 
-  rfile_desc = (ulong *) read_seek (NULL,
-				    sym_hdr.crfd * sizeof (ulong),
-				    sym_hdr.cbRfdOffset,
-				    "Relative file tables");
+  rfile_desc = read_seek (NULL, sym_hdr.crfd * sizeof (ulong),
+			  sym_hdr.cbRfdOffset, "Relative file tables");
 
-  e_symbols = (EXTR *) read_seek (NULL,
-				  sym_hdr.iextMax * sizeof (EXTR),
-				  sym_hdr.cbExtOffset,
-				  "External symbols");
+  e_symbols = read_seek (NULL, sym_hdr.iextMax * sizeof (EXTR),
+			 sym_hdr.cbExtOffset, "External symbols");
 }
 
 

@@ -544,8 +544,7 @@ recognized_function (const cpp_token *fname, unsigned int line, int kind,
   /* We only have a partial function declaration,
      so remember that we have to add a complete prototype.  */
   partial_count++;
-  partial = (struct partial_proto *)
-    obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
+  partial = obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
   partial->line_seen = line;
   partial->fn = fn;
   fn->partial = partial;
@@ -1169,7 +1168,7 @@ main (int argc, char **argv)
       exit (FATAL_EXIT_CODE);
     }
   inf_size = sbuf.st_size;
-  inf_buffer = (char *) xmalloc (inf_size + 2);
+  inf_buffer = xmalloc (inf_size + 2);
   inf_ptr = inf_buffer;
 
   to_read = inf_size;

@@ -147,7 +147,7 @@ new_elt_list (struct elt_list *next, cselib_val *elt)
   if (el)
     empty_elt_lists = el->next;
   else
-    el = (struct elt_list *) ggc_alloc (sizeof (struct elt_list));
+    el = ggc_alloc (sizeof (struct elt_list));
   el->next = next;
   el->elt = elt;
   return el;
@@ -164,7 +164,7 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
   if (el)
     empty_elt_loc_lists = el->next;
   else
-    el = (struct elt_loc_list *) ggc_alloc (sizeof (struct elt_loc_list));
+    el = ggc_alloc (sizeof (struct elt_loc_list));
   el->next = next;
   el->loc = loc;
   el->setting_insn = cselib_current_insn;
@@ -704,7 +704,7 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
   if (e)
     empty_vals = e->u.next_free;
   else
-    e = (cselib_val *) ggc_alloc (sizeof (cselib_val));
+    e = ggc_alloc (sizeof (cselib_val));
 
   if (value == 0)
     abort ();

@@ -875,12 +875,12 @@ c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
   if (if_stack_space == 0)
     {
       if_stack_space = 10;
-      if_stack = (if_elt *) xmalloc (10 * sizeof (if_elt));
+      if_stack = xmalloc (10 * sizeof (if_elt));
     }
   else if (if_stack_space == if_stack_pointer)
     {
       if_stack_space += 10;
-      if_stack = (if_elt *) xrealloc (if_stack, if_stack_space * sizeof (if_elt));
+      if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
 
   IF_COND (if_stmt) = cond;
@@ -1354,7 +1354,7 @@ static struct tlist *
 new_tlist (struct tlist *next, tree t, tree writer)
 {
   struct tlist *l;
-  l = (struct tlist *) obstack_alloc (&tlist_obstack, sizeof *l);
+  l = obstack_alloc (&tlist_obstack, sizeof *l);
   l->next = next;
   l->expr = t;
   l->writer = writer;
@@ -1624,8 +1624,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 
 	if (! t)
 	  {
-	    t = (struct tlist_cache *) obstack_alloc (&tlist_obstack,
-						      sizeof *t);
+	    t = obstack_alloc (&tlist_obstack, sizeof *t);
 	    t->next = save_expr_cache;
 	    t->expr = x;
 	    save_expr_cache = t;
@@ -4313,7 +4312,7 @@ c_expand_builtin_printf (tree arglist, rtx target, enum machine_mode tmode,
 	  /* Create a NULL-terminated string that's one char shorter
 	     than the original, stripping off the trailing '\n'.  */
 	  const int newlen = TREE_STRING_LENGTH (stripped_string) - 1;
-	  char *newstr = (char *) alloca (newlen);
+	  char *newstr = alloca (newlen);
 	  memcpy (newstr, TREE_STRING_POINTER (stripped_string), newlen - 1);
 	  newstr[newlen - 1] = 0;
 
@@ -4877,7 +4876,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
       if (len > 4 && p[0] == '_' && p[1] == '_'
 	  && p[len - 1] == '_' && p[len - 2] == '_')
 	{
-	  char *newp = (char *) alloca (len - 1);
+	  char *newp = alloca (len - 1);
 
 	  strcpy (newp, &p[2]);
 	  newp[len - 4] = '\0';

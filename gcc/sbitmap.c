@@ -41,7 +41,7 @@ sbitmap_alloc (unsigned int n_elms)
   bytes = size * sizeof (SBITMAP_ELT_TYPE);
   amt = (sizeof (struct simple_bitmap_def)
 	 + bytes - sizeof (SBITMAP_ELT_TYPE));
-  bmap = (sbitmap) xmalloc (amt);
+  bmap = xmalloc (amt);
   bmap->n_bits = n_elms;
   bmap->size = size;
   bmap->bytes = bytes;
@@ -64,7 +64,7 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
     {
       amt = (sizeof (struct simple_bitmap_def)
 	    + bytes - sizeof (SBITMAP_ELT_TYPE));
-      bmap = (sbitmap) xrealloc (bmap, amt);
+      bmap = xrealloc (bmap, amt);
     }
 
   if (n_elms > bmap->n_bits)
@@ -130,7 +130,7 @@ sbitmap_vector_alloc (unsigned int n_vecs, unsigned int n_elms)
   }
 
   amt = vector_bytes + (n_vecs * elm_bytes);
-  bitmap_vector = (sbitmap *) xmalloc (amt);
+  bitmap_vector = xmalloc (amt);
 
   for (i = 0, offset = vector_bytes; i < n_vecs; i++, offset += elm_bytes)
     {

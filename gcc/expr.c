@@ -339,7 +339,7 @@ init_expr_once (void)
 void
 init_expr (void)
 {
-  cfun->expr = (struct expr_status *) ggc_alloc (sizeof (struct expr_status));
+  cfun->expr = ggc_alloc (sizeof (struct expr_status));
 
   pending_chain = 0;
   pending_stack_adjust = 0;
@@ -2224,7 +2224,7 @@ gen_group_rtx (rtx orig)
     abort ();
 
   length = XVECLEN (orig, 0);
-  tmps = (rtx *) alloca (sizeof (rtx) * length);
+  tmps = alloca (sizeof (rtx) * length);
 
   /* Skip a NULL entry in first slot.  */
   i = XEXP (XVECEXP (orig, 0, 0), 0) ? 0 : 1;
@@ -2264,7 +2264,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
   else
     start = 1;
 
-  tmps = (rtx *) alloca (sizeof (rtx) * XVECLEN (dst, 0));
+  tmps = alloca (sizeof (rtx) * XVECLEN (dst, 0));
 
   /* Process the pieces.  */
   for (i = start; i < XVECLEN (dst, 0); i++)
@@ -2421,7 +2421,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
   else
     start = 1;
 
-  tmps = (rtx *) alloca (sizeof (rtx) * XVECLEN (src, 0));
+  tmps = alloca (sizeof (rtx) * XVECLEN (src, 0));
 
   /* Copy the (probable) hard regs into pseudos.  */
   for (i = start; i < XVECLEN (src, 0); i++)
@@ -5388,7 +5388,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	{
 	  unsigned int set_word_size = TYPE_ALIGN (TREE_TYPE (exp));
 	  enum machine_mode mode = mode_for_size (set_word_size, MODE_INT, 1);
-	  char *bit_buffer = (char *) alloca (nbits);
+	  char *bit_buffer = alloca (nbits);
 	  HOST_WIDE_INT word = 0;
 	  unsigned int bit_pos = 0;
 	  unsigned int ibit = 0;

@@ -313,7 +313,7 @@ mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
 
-  memset ((char *) prod, 0, sizeof prod);
+  memset (prod, 0, sizeof prod);
 
   for (i = 0; i < 4; i++)
     {
@@ -591,10 +591,10 @@ div_and_round_double (enum tree_code code, int uns,
       goto finish_up;
     }
 
-  memset ((char *) quo, 0, sizeof quo);
+  memset (quo, 0, sizeof quo);
 
-  memset ((char *) num, 0, sizeof num);	/* to zero 9th element */
-  memset ((char *) den, 0, sizeof den);
+  memset (num, 0, sizeof num);	/* to zero 9th element */
+  memset (den, 0, sizeof den);
 
   encode (num, lnum, hnum);
   encode (den, lden, hden);

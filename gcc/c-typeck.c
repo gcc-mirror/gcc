@@ -3617,9 +3617,8 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	    {
 	      /* Function name is known; supply it.  */
 	      const char *const argstring = _("passing arg of `%s'");
-	      new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
-					    + strlen (argstring) + 1
-					    + 1);
+	      new_opname = alloca (IDENTIFIER_LENGTH (function)
+				   + strlen (argstring) + 1 + 1);
 	      sprintf (new_opname, argstring,
 		       IDENTIFIER_POINTER (function));
 	    }
@@ -3627,7 +3626,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	    {
 	      /* Function name unknown (call through ptr).  */
 	      const char *const argnofun = _("passing arg of pointer to function");
-	      new_opname = (char *) alloca (strlen (argnofun) + 1 + 1);
+	      new_opname = alloca (strlen (argnofun) + 1 + 1);
 	      sprintf (new_opname, argnofun);
 	    }
 	}
@@ -3635,9 +3634,8 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	{
 	  /* Function name is known; supply it.  */
 	  const char *const argstring = _("passing arg %d of `%s'");
-	  new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
-					+ strlen (argstring) + 1 + 25
-					/*%d*/ + 1);
+	  new_opname = alloca (IDENTIFIER_LENGTH (function)
+			       + strlen (argstring) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argstring, argnum,
 		   IDENTIFIER_POINTER (function));
 	}
@@ -3645,7 +3643,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	{
 	  /* Function name unknown (call through ptr); just give arg number.  */
 	  const char *const argnofun = _("passing arg %d of pointer to function");
-	  new_opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
+	  new_opname = alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argnofun, argnum);
 	}
       opname = new_opname;
@@ -3777,12 +3775,10 @@ static int spelling_size;		/* Size of the spelling stack.  */
     {									\
       spelling_size += 10;						\
       if (spelling_base == 0)						\
-	spelling_base							\
-	  = (struct spelling *) xmalloc (spelling_size * sizeof (struct spelling));	\
+	spelling_base = xmalloc (spelling_size * sizeof (struct spelling)); \
       else								\
-        spelling_base							\
-	  = (struct spelling *) xrealloc (spelling_base,		\
-					  spelling_size * sizeof (struct spelling));	\
+        spelling_base = xrealloc (spelling_base,		\
+				  spelling_size * sizeof (struct spelling)); \
       RESTORE_SPELLING_DEPTH (depth);					\
     }									\
 									\
@@ -3872,7 +3868,7 @@ error_init (const char *msgid)
   char *ofwhat;
 
   error ("%s", _(msgid));
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  ofwhat = print_spelling (alloca (spelling_length () + 1));
   if (*ofwhat)
     error ("(near initialization for `%s')", ofwhat);
 }
@@ -3887,7 +3883,7 @@ pedwarn_init (const char *msgid)
   char *ofwhat;
 
   pedwarn ("%s", _(msgid));
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  ofwhat = print_spelling (alloca (spelling_length () + 1));
   if (*ofwhat)
     pedwarn ("(near initialization for `%s')", ofwhat);
 }
@@ -3902,7 +3898,7 @@ warning_init (const char *msgid)
   char *ofwhat;
 
   warning ("%s", _(msgid));
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  ofwhat = print_spelling (alloca (spelling_length () + 1));
   if (*ofwhat)
     warning ("(near initialization for `%s')", ofwhat);
 }
@@ -4286,8 +4282,7 @@ void
 start_init (tree decl, tree asmspec_tree, int top_level)
 {
   const char *locus;
-  struct initializer_stack *p
-    = (struct initializer_stack *) xmalloc (sizeof (struct initializer_stack));
+  struct initializer_stack *p = xmalloc (sizeof (struct initializer_stack));
   const char *asmspec = 0;
 
   if (asmspec_tree)
@@ -4387,8 +4382,7 @@ finish_init (void)
 void
 really_start_incremental_init (tree type)
 {
-  struct constructor_stack *p
-    = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
+  struct constructor_stack *p = xmalloc (sizeof (struct constructor_stack));
 
   if (type == 0)
     type = TREE_TYPE (constructor_decl);
@@ -4524,7 +4518,7 @@ push_init_level (int implicit)
 	value = find_init_member (constructor_index);
     }
 
-  p = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
+  p = xmalloc (sizeof (struct constructor_stack));
   p->type = constructor_type;
   p->fields = constructor_fields;
   p->index = constructor_index;
@@ -4908,8 +4902,7 @@ push_range_stack (tree range_end)
 {
   struct constructor_range_stack *p;
 
-  p = (struct constructor_range_stack *)
-      ggc_alloc (sizeof (struct constructor_range_stack));
+  p = ggc_alloc (sizeof (struct constructor_range_stack));
   p->prev = constructor_range_stack;
   p->next = 0;
   p->fields = constructor_fields;
@@ -5081,7 +5074,7 @@ add_pending_init (tree purpose, tree value)
 	}
     }
 
-  r = (struct init_node *) ggc_alloc (sizeof (struct init_node));
+  r = ggc_alloc (sizeof (struct init_node));
   r->purpose = purpose;
   r->value = value;
 
@@ -6183,7 +6176,7 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs,
   int noutputs = list_length (outputs);
   int i;
   /* o[I] is the place that output number I should be written.  */
-  tree *o = (tree *) alloca (noutputs * sizeof (tree));
+  tree *o = alloca (noutputs * sizeof (tree));
   tree tail;
 
   /* Record the contents of OUTPUTS before it is modified.  */
@@ -6381,7 +6374,7 @@ c_start_case (tree exp)
     }
 
   /* Add this new SWITCH_STMT to the stack.  */
-  cs = (struct c_switch *) xmalloc (sizeof (*cs));
+  cs = xmalloc (sizeof (*cs));
   cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = switch_stack;

@@ -129,7 +129,7 @@ gen_insn (rtx insn)
 	walk_rtx (XVECEXP (insn, 1, i), path);
       }
 
-  link = (struct code_ptr *) xmalloc (sizeof (struct code_ptr));
+  link = xmalloc (sizeof (struct code_ptr));
   link->insn_code = insn_code_number;
 
   /* See if we find something that already had this extraction method.  */
@@ -164,7 +164,7 @@ gen_insn (rtx insn)
 
   /* Otherwise, make a new extraction method.  */
 
-  p = (struct extraction *) xmalloc (sizeof (struct extraction));
+  p = xmalloc (sizeof (struct extraction));
   p->op_count = op_count;
   p->dup_count = dup_count;
   p->next = extractions;
@@ -220,7 +220,7 @@ walk_rtx (rtx x, const char *path)
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
 
-      newpath = (char *) xmalloc (depth + 2);
+      newpath = xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
 
@@ -236,7 +236,7 @@ walk_rtx (rtx x, const char *path)
       oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
-      newpath = (char *) xmalloc (depth + 2);
+      newpath = xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
 
@@ -252,7 +252,7 @@ walk_rtx (rtx x, const char *path)
       oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
-      newpath = (char *) xmalloc (depth + 2);
+      newpath = xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
 
@@ -272,7 +272,7 @@ walk_rtx (rtx x, const char *path)
       break;
     }
 
-  newpath = (char *) xmalloc (depth + 2);
+  newpath = xmalloc (depth + 2);
   strcpy (newpath, path);
   newpath[depth + 1] = 0;
 
@@ -412,8 +412,7 @@ from the machine description file `md'.  */\n\n");
 
       else if (GET_CODE (desc) == DEFINE_PEEPHOLE)
 	{
-	  struct code_ptr *link
-	    = (struct code_ptr *) xmalloc (sizeof (struct code_ptr));
+	  struct code_ptr *link = xmalloc (sizeof (struct code_ptr));
 
 	  link->insn_code = insn_code_number;
 	  link->next = peepholes;
@@ -509,8 +508,7 @@ record_insn_name (int code, const char *name)
     {
       int new_size;
       new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
-      insn_name_ptr =
-	(char **) xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+      insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
       memset (insn_name_ptr + insn_name_ptr_size, 0,
 	      sizeof(char *) * (new_size - insn_name_ptr_size));
       insn_name_ptr_size = new_size;

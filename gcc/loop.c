@@ -460,13 +460,11 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
      Leave some space for labels allocated by find_and_verify_loops.  */
   max_uid_for_loop = get_max_uid () + 1 + max_loop_num * 32;
 
-  uid_luid = (int *) xcalloc (max_uid_for_loop, sizeof (int));
-  uid_loop = (struct loop **) xcalloc (max_uid_for_loop,
-				       sizeof (struct loop *));
+  uid_luid = xcalloc (max_uid_for_loop, sizeof (int));
+  uid_loop = xcalloc (max_uid_for_loop, sizeof (struct loop *));
 
   /* Allocate storage for array of loops.  */
-  loops->array = (struct loop *)
-    xcalloc (loops->num, sizeof (struct loop));
+  loops->array = xcalloc (loops->num, sizeof (struct loop));
 
   /* Find and process each loop.
      First, find them, and record them in order of their beginnings.  */
@@ -908,7 +906,7 @@ scan_loop (struct loop *loop, int flags)
 		      continue;
 		    }
 
-		  m = (struct movable *) xmalloc (sizeof (struct movable));
+		  m = xmalloc (sizeof (struct movable));
 		  m->next = 0;
 		  m->insn = p;
 		  m->set_src = src;
@@ -996,7 +994,7 @@ scan_loop (struct loop *loop, int flags)
 		  if (regs->array[regno].set_in_loop == 2)
 		    {
 		      struct movable *m;
-		      m = (struct movable *) xmalloc (sizeof (struct movable));
+		      m = xmalloc (sizeof (struct movable));
 		      m->next = 0;
 		      m->insn = p;
 		      m->set_dest = SET_DEST (set);
@@ -1440,7 +1438,7 @@ static void
 combine_movables (struct loop_movables *movables, struct loop_regs *regs)
 {
   struct movable *m;
-  char *matched_regs = (char *) xmalloc (regs->num);
+  char *matched_regs = xmalloc (regs->num);
   enum machine_mode mode;
 
   /* Regs that are set more than once are not allowed to match
@@ -1775,8 +1773,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
   /* Map of pseudo-register replacements to handle combining
      when we move several insns that load the same value
      into different pseudo-registers.  */
-  rtx *reg_map = (rtx *) xcalloc (nregs, sizeof (rtx));
-  char *already_moved = (char *) xcalloc (nregs, sizeof (char));
+  rtx *reg_map = xcalloc (nregs, sizeof (rtx));
+  char *already_moved = xcalloc (nregs, sizeof (char));
 
   for (m = movables->head; m; m = m->next)
     {
@@ -2120,8 +2118,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			}
 		      else if (m->insert_temp)
 			{
-			  rtx *reg_map2 = (rtx *) xcalloc (REGNO (newreg),
-				sizeof(rtx));
+			  rtx *reg_map2 = xcalloc (REGNO (newreg),
+						   sizeof(rtx));
 			  reg_map2 [m->regno] = newreg;
 
 			  i1 = loop_insn_hoist (loop, copy_rtx (PATTERN (p)));
@@ -5068,7 +5066,7 @@ strength_reduce (struct loop *loop, int flags)
   addr_placeholder = gen_reg_rtx (Pmode);
 
   ivs->n_regs = max_reg_before_loop;
-  ivs->regs = (struct iv *) xcalloc (ivs->n_regs, sizeof (struct iv));
+  ivs->regs = xcalloc (ivs->n_regs, sizeof (struct iv));
 
   /* Find all BIVs in loop.  */
   loop_bivs_find (loop);
@@ -5122,7 +5120,7 @@ strength_reduce (struct loop *loop, int flags)
      Some givs might have been made from biv increments, so look at
      ivs->reg_iv_type for a suitable size.  */
   reg_map_size = ivs->n_regs;
-  reg_map = (rtx *) xcalloc (reg_map_size, sizeof (rtx));
+  reg_map = xcalloc (reg_map_size, sizeof (rtx));
 
   /* Examine each iv class for feasibility of strength reduction/induction
      variable elimination.  */
@@ -5385,8 +5383,7 @@ check_insn_for_bivs (struct loop *loop, rtx p, int not_every_iteration,
 	      /* It is a possible basic induction variable.
 	         Create and initialize an induction structure for it.  */
 
-	      struct induction *v
-		= (struct induction *) xmalloc (sizeof (struct induction));
+	      struct induction *v = xmalloc (sizeof (struct induction));
 
 	      record_biv (loop, v, p, dest_reg, inc_val, mult_val, location,
 			  not_every_iteration, maybe_multiple);
@@ -5449,8 +5446,7 @@ check_insn_for_givs (struct loop *loop, rtx p, int not_every_iteration,
 					     &add_val, &mult_val, &ext_val,
 					     &last_consec_insn))))
 	{
-	  struct induction *v
-	    = (struct induction *) xmalloc (sizeof (struct induction));
+	  struct induction *v = xmalloc (sizeof (struct induction));
 
 	  /* If this is a library call, increase benefit.  */
 	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
@@ -5567,8 +5563,7 @@ find_mem_givs (const struct loop *loop, rtx x, rtx insn,
 				   GET_MODE (x)))
 	  {
 	    /* Found one; record it.  */
-	    struct induction *v
-	      = (struct induction *) xmalloc (sizeof (struct induction));
+	    struct induction *v = xmalloc (sizeof (struct induction));
 
 	    record_giv (loop, v, insn, src_reg, addr_placeholder, mult_val,
 			add_val, ext_val, benefit, DEST_ADDR,
@@ -5641,7 +5636,7 @@ record_biv (struct loop *loop, struct induction *v, rtx insn, rtx dest_reg,
     {
       /* Create and initialize new iv_class.  */
 
-      bl = (struct iv_class *) xmalloc (sizeof (struct iv_class));
+      bl = xmalloc (sizeof (struct iv_class));
 
       bl->regno = REGNO (dest_reg);
       bl->biv = 0;
@@ -7008,7 +7003,7 @@ consec_sets_giv (const struct loop *loop, int first_benefit, rtx p,
   if (REG_IV_TYPE (ivs, REGNO (dest_reg)) != UNKNOWN_INDUCT)
     return 0;
 
-  v = (struct induction *) alloca (sizeof (struct induction));
+  v = alloca (sizeof (struct induction));
   v->src_reg = src_reg;
   v->mult_val = *mult_val;
   v->add_val = *add_val;
@@ -7564,15 +7559,14 @@ combine_givs (struct loop_regs *regs, struct iv_class *bl)
     if (!g1->ignore)
       giv_count++;
 
-  giv_array
-    = (struct induction **) alloca (giv_count * sizeof (struct induction *));
+  giv_array = alloca (giv_count * sizeof (struct induction *));
   i = 0;
   for (g1 = bl->giv; g1; g1 = g1->next_iv)
     if (!g1->ignore)
       giv_array[i++] = g1;
 
-  stats = (struct combine_givs_stats *) xcalloc (giv_count, sizeof (*stats));
-  can_combine = (rtx *) xcalloc (giv_count, giv_count * sizeof (rtx));
+  stats = xcalloc (giv_count, sizeof (*stats));
+  can_combine = xcalloc (giv_count, giv_count * sizeof (rtx));
 
   for (i = 0; i < giv_count; i++)
     {
@@ -9520,9 +9514,8 @@ insert_loop_mem (rtx *mem, void *data ATTRIBUTE_UNUSED)
       else
 	loop_info->mems_allocated = 32;
 
-      loop_info->mems = (loop_mem_info *)
-	xrealloc (loop_info->mems,
-		  loop_info->mems_allocated * sizeof (loop_mem_info));
+      loop_info->mems = xrealloc (loop_info->mems,
+				  loop_info->mems_allocated * sizeof (loop_mem_info));
     }
 
   /* Actually insert the MEM.  */
@@ -9573,8 +9566,7 @@ loop_regs_scan (const struct loop *loop, int extra_size)
     {
       regs->size = regs->num + extra_size;
 
-      regs->array = (struct loop_reg *)
-	xrealloc (regs->array, regs->size * sizeof (*regs->array));
+      regs->array = xrealloc (regs->array, regs->size * sizeof (*regs->array));
 
       /* Zero the new elements.  */
       memset (regs->array + old_nregs, 0,
@@ -9589,7 +9581,7 @@ loop_regs_scan (const struct loop *loop, int extra_size)
       regs->array[i].single_usage = NULL_RTX;
     }
 
-  last_set = (rtx *) xcalloc (regs->num, sizeof (rtx));
+  last_set = xcalloc (regs->num, sizeof (rtx));
 
   /* Scan the loop, recording register usage.  */
   for (insn = loop->top ? loop->top : loop->start; insn != loop->end;

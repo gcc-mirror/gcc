@@ -2096,8 +2096,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 
   /* We'll be needing a couple extra algorithm structures now.  */
 
-  alg_in = (struct algorithm *)alloca (sizeof (struct algorithm));
-  best_alg = (struct algorithm *)alloca (sizeof (struct algorithm));
+  alg_in = alloca (sizeof (struct algorithm));
+  best_alg = alloca (sizeof (struct algorithm));
 
   /* If we have a group of zero bits at the low-order part of T, try
      multiplying by the remaining bits and then doing a shift.  */

@@ -277,9 +277,8 @@ find_btr_def_group (btr_def_group *all_btr_def_groups, btr_def def)
 
       if (!this_group)
 	{
-	  this_group = (btr_def_group)
-	    obstack_alloc (&migrate_btrl_obstack,
-			   sizeof (struct btr_def_group_s));
+	  this_group = obstack_alloc (&migrate_btrl_obstack,
+				      sizeof (struct btr_def_group_s));
 	  this_group->src = def_src;
 	  this_group->members = NULL;
 	  this_group->next = *all_btr_def_groups;
@@ -301,8 +300,8 @@ add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
 	     unsigned int dest_reg, int other_btr_uses_before_def,
 	     btr_def_group *all_btr_def_groups)
 {
-  btr_def this = (btr_def)
-    obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_def_s));
+  btr_def this
+    = obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_def_s));
   this->bb = bb;
   this->luid = insn_luid;
   this->insn = insn;
@@ -353,8 +352,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx insn)
 	usep = NULL;
     }
   use = usep ? *usep : NULL_RTX;
-  user = (btr_user)
-    obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_user_s));
+  user = obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_user_s));
   user->bb = bb;
   user->luid = insn_luid;
   user->insn = insn;
@@ -736,8 +734,7 @@ build_btr_def_use_webs (fibheap_t all_btr_defs)
   sbitmap *btr_defset   = sbitmap_vector_alloc (
 			   (last_btr - first_btr) + 1, max_uid);
   sbitmap *bb_gen      = sbitmap_vector_alloc (n_basic_blocks, max_uid);
-  HARD_REG_SET *btrs_written = (HARD_REG_SET *) xcalloc (
-			       n_basic_blocks, sizeof (HARD_REG_SET));
+  HARD_REG_SET *btrs_written = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
   sbitmap *bb_kill;
   sbitmap *bb_out;
 
@@ -841,8 +838,7 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 {
   basic_block *worklist, *tos;
 
-  tos = worklist =
-    (basic_block *) xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+  tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   if (dominated_by_p (dom, new_bb, head_bb))
     *tos++ = new_bb;
@@ -1318,8 +1314,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	  first_btr = reg;
       }
 
-  btrs_live =
-    (HARD_REG_SET *) xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
+  btrs_live = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
 
   build_btr_def_use_webs (all_btr_defs);
 

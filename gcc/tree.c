@@ -494,7 +494,7 @@ real_value_from_int_cst (tree type ATTRIBUTE_UNUSED, tree i)
 
   /* Clear all bits of the real value type so that we can later do
      bitwise comparisons to see if two values are the same.  */
-  memset ((char *) &d, 0, sizeof d);
+  memset (&d, 0, sizeof d);
 
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
     REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
@@ -2985,7 +2985,7 @@ type_hash_add (unsigned int hashcode, tree type)
   struct type_hash *h;
   void **loc;
 
-  h = (struct type_hash *) ggc_alloc (sizeof (struct type_hash));
+  h = ggc_alloc (sizeof (struct type_hash));
   h->hash = hashcode;
   h->type = type;
   loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
@@ -4517,7 +4517,7 @@ get_file_function_name_long (const char *type)
 	file = input_filename;
 
       len = strlen (file);
-      q = (char *) alloca (9 * 2 + len);
+      q = alloca (9 * 2 + len);
       memcpy (q, file, len + 1);
       clean_symbol_name (q);
 
@@ -4527,8 +4527,7 @@ get_file_function_name_long (const char *type)
       p = q;
     }
 
-  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p)
-			 + strlen (type));
+  buf = alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p) + strlen (type));
 
   /* Set up the name of the file-level functions we may need.
      Use a global object (which is already required to be unique over
@@ -4623,7 +4622,7 @@ get_set_constructor_bytes (tree init, unsigned char *buffer, int wd_size)
   int bit_size = wd_size * set_word_size;
   int bit_pos = 0;
   unsigned char *bytep = buffer;
-  char *bit_buffer = (char *) alloca (bit_size);
+  char *bit_buffer = alloca (bit_size);
   tree non_const_bits = get_set_constructor_bits (init, bit_buffer, bit_size);
 
   for (i = 0; i < wd_size; i++)

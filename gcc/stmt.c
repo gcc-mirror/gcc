@@ -252,8 +252,7 @@ struct nesting GTY(())
 
 /* Allocate and return a new `struct nesting'.  */
 
-#define ALLOC_NESTING() \
- (struct nesting *) ggc_alloc (sizeof (struct nesting))
+#define ALLOC_NESTING() ggc_alloc (sizeof (struct nesting))
 
 /* Pop the nesting stack element by element until we pop off
    the element which is at the top of STACK.
@@ -434,7 +433,7 @@ using_eh_for_cleanups (void)
 void
 init_stmt_for_function (void)
 {
-  cfun->stmt = ((struct stmt_status *)ggc_alloc (sizeof (struct stmt_status)));
+  cfun->stmt =ggc_alloc (sizeof (struct stmt_status));
 
   /* We are not currently within any block, conditional, loop or case.  */
   block_stack = 0;
@@ -588,7 +587,7 @@ expand_label (tree label)
 
   if (stack_block_stack != 0)
     {
-      p = (struct label_chain *) ggc_alloc (sizeof (struct label_chain));
+      p = ggc_alloc (sizeof (struct label_chain));
       p->next = stack_block_stack->data.block.label_chain;
       stack_block_stack->data.block.label_chain = p;
       p->label = label;
@@ -851,8 +850,7 @@ expand_fixup (tree tree_label, rtx rtl_label, rtx last_insn)
   if (block != end_block)
     {
       /* Ok, a fixup is needed.  Add a fixup to the list of such.  */
-      struct goto_fixup *fixup
-	= (struct goto_fixup *) ggc_alloc (sizeof (struct goto_fixup));
+      struct goto_fixup *fixup = ggc_alloc (sizeof (struct goto_fixup));
       /* In case an old stack level is restored, make sure that comes
 	 after any pending stack adjust.  */
       /* ?? If the fixup isn't to come at the present position,
@@ -1471,13 +1469,13 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   tree t;
   int i;
   /* Vector of RTX's of evaluated output operands.  */
-  rtx *output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
-  int *inout_opnum = (int *) alloca (noutputs * sizeof (int));
-  rtx *real_output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
+  rtx *output_rtx = alloca (noutputs * sizeof (rtx));
+  int *inout_opnum = alloca (noutputs * sizeof (int));
+  rtx *real_output_rtx = alloca (noutputs * sizeof (rtx));
   enum machine_mode *inout_mode
-    = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
+    = alloca (noutputs * sizeof (enum machine_mode));
   const char **constraints
-    = (const char **) alloca ((noutputs + ninputs) * sizeof (const char *));
+    = alloca ((noutputs + ninputs) * sizeof (const char *));
   int old_generating_concat_p = generating_concat_p;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
@@ -3082,7 +3080,7 @@ expand_return (tree retval)
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       unsigned int bitsize
 	= MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)), BITS_PER_WORD);
-      rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
+      rtx *result_pseudos = alloca (sizeof (rtx) * n_regs);
       rtx result_reg, src = NULL_RTX, dst = NULL_RTX;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
       enum machine_mode tmpmode, result_reg_mode;
@@ -3257,7 +3255,7 @@ tail_recursion_args (tree actuals, tree formals)
 
   /* Compute all the actuals.  */
 
-  argvec = (rtx *) alloca (i * sizeof (rtx));
+  argvec = alloca (i * sizeof (rtx));
 
   for (a = actuals, i = 0; a; a = TREE_CHAIN (a), i++)
     argvec[i] = expand_expr (TREE_VALUE (a), NULL_RTX, VOIDmode, 0);
@@ -4592,7 +4590,7 @@ add_case_node (tree low, tree high, tree label, tree *duplicate)
 
   /* Add this label to the chain, and succeed.  */
 
-  r = (struct case_node *) ggc_alloc (sizeof (struct case_node));
+  r = ggc_alloc (sizeof (struct case_node));
   r->low = low;
 
   /* If the bounds are equal, turn this into the one-value case.  */
@@ -5025,8 +5023,7 @@ check_for_full_enumeration_handling (tree type)
       /* We deliberately use calloc here, not cmalloc, so that we can suppress
 	 this optimization if we don't have enough memory rather than
 	 aborting, as xmalloc would do.  */
-      && (cases_seen =
-	  (unsigned char *) really_call_calloc (bytes_needed, 1)) != NULL)
+      && (cases_seen = really_call_calloc (bytes_needed, 1)) != NULL)
     {
       HOST_WIDE_INT i;
       tree v = TYPE_VALUES (type);
@@ -5540,8 +5537,8 @@ expand_end_case_type (tree orig_index, tree orig_type)
 	  /* Get table of labels to jump to, in order of case index.  */
 
 	  ncases = tree_low_cst (range, 0) + 1;
-	  labelvec = (rtx *) alloca (ncases * sizeof (rtx));
-	  memset ((char *) labelvec, 0, ncases * sizeof (rtx));
+	  labelvec = alloca (ncases * sizeof (rtx));
+	  memset (labelvec, 0, ncases * sizeof (rtx));
 
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {

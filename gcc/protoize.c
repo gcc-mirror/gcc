@@ -521,7 +521,7 @@ notice (const char *msgid, ...)
 static char *
 savestring (const char *input, unsigned int size)
 {
-  char *output = (char *) xmalloc (size + 1);
+  char *output = xmalloc (size + 1);
   strcpy (output, input);
   return output;
 }
@@ -542,7 +542,7 @@ fancy_abort (void)
 static char *
 dupnstr (const char *s, size_t n)
 {
-  char *ret_val = (char *) xmalloc (n + 1);
+  char *ret_val = xmalloc (n + 1);
 
   strncpy (ret_val, s, n);
   ret_val[n] = '\0';
@@ -692,7 +692,7 @@ in_system_include_dir (const char *path)
 static int
 file_could_be_converted (const char *path)
 {
-  char *const dir_name = (char *) alloca (strlen (path) + 1);
+  char *const dir_name = alloca (strlen (path) + 1);
 
   if (access (path, R_OK))
     return 0;
@@ -898,8 +898,7 @@ file_excluded_p (const char *name)
 static struct string_list *
 string_list_cons (const char *string, struct string_list *rest)
 {
-  struct string_list *temp
-    = (struct string_list *) xmalloc (sizeof (struct string_list));
+  struct string_list *temp = xmalloc (sizeof (struct string_list));
 
   temp->next = rest;
   temp->name = string;
@@ -973,7 +972,7 @@ lookup (hash_table_entry *hash_tab_p, const char *search_symbol)
       if (!strcmp (p->symbol, search_symbol))
 	return p;
     }
-  p->hash_next = (hash_table_entry *) xmalloc (sizeof (hash_table_entry));
+  p->hash_next = xmalloc (sizeof (hash_table_entry));
   p = p->hash_next;
   return add_symbol (p, search_symbol);
 }
@@ -1022,7 +1021,7 @@ unexpand_if_needed (const char *aux_info_line)
   if (line_buf == 0)
     {
       line_buf_size = 1024;
-      line_buf = (char *) xmalloc (line_buf_size);
+      line_buf = xmalloc (line_buf_size);
     }
 
   copy_p = line_buf;
@@ -1045,7 +1044,7 @@ unexpand_if_needed (const char *aux_info_line)
 		  int offset = copy_p - line_buf;
 		  line_buf_size *= 2;
 		  line_buf_size += size;
-		  line_buf = (char *) xrealloc (line_buf, line_buf_size);
+		  line_buf = xrealloc (line_buf, line_buf_size);
 		  copy_p = line_buf + offset;
 		}
 	      strcpy (copy_p, unexp_p->contracted);
@@ -1062,7 +1061,7 @@ unexpand_if_needed (const char *aux_info_line)
 	{
 	  int offset = copy_p - line_buf;
 	  line_buf_size *= 2;
-	  line_buf = (char *) xrealloc (line_buf, line_buf_size);
+	  line_buf = xrealloc (line_buf, line_buf_size);
 	  copy_p = line_buf + offset;
 	}
       *copy_p++ = *s++;
@@ -1072,7 +1071,7 @@ continue_outer: ;
     {
       int offset = copy_p - line_buf;
       line_buf_size *= 2;
-      line_buf = (char *) xrealloc (line_buf, line_buf_size);
+      line_buf = xrealloc (line_buf, line_buf_size);
       copy_p = line_buf + offset;
     }
   *copy_p++ = '\n';
@@ -1096,8 +1095,7 @@ abspath (const char *cwd, const char *rel_filename)
 {
   /* Setup the current working directory as needed.  */
   const char *const cwd2 = (cwd) ? cwd : cwd_buffer;
-  char *const abs_buffer
-    = (char *) alloca (strlen (cwd2) + strlen (rel_filename) + 2);
+  char *const abs_buffer = alloca (strlen (cwd2) + strlen (rel_filename) + 2);
   char *endp = abs_buffer;
   char *outp, *inp;
 
@@ -1219,7 +1217,7 @@ shortpath (const char *cwd, const char *filename)
   size_t filename_len = strlen (filename);
 
   path_p = abspath (cwd, filename);
-  rel_buf_p = rel_buffer = (char *) xmalloc (filename_len);
+  rel_buf_p = rel_buffer = xmalloc (filename_len);
 
   while (*cwd_p && IS_SAME_PATH_CHAR (*cwd_p, *path_p))
     {
@@ -1306,7 +1304,7 @@ find_file (const char *filename, int do_not_stat)
   else
     {
       struct stat stat_buf;
-      file_info *file_p = (file_info *) xmalloc (sizeof (file_info));
+      file_info *file_p = xmalloc (sizeof (file_info));
 
       /* If we cannot get status on any given source file, give a warning
 	 and then just set its time of last modification to infinity.  */
@@ -1404,7 +1402,7 @@ referenced_file_is_newer (const char *l, time_t aux_info_mtime)
 #endif
 	   )
       p++;
-    filename = (char *) alloca ((size_t) (p - filename_start) + 1);
+    filename = alloca ((size_t) (p - filename_start) + 1);
     strncpy (filename, filename_start, (size_t) (p - filename_start));
     filename[p-filename_start] = '\0';
   }
@@ -1439,7 +1437,7 @@ save_def_or_dec (const char *l, int is_syscalls)
 {
   const char *p;
   const char *semicolon_p;
-  def_dec_info *def_dec_p = (def_dec_info *) xmalloc (sizeof (def_dec_info));
+  def_dec_info *def_dec_p = xmalloc (sizeof (def_dec_info));
 
 #ifndef UNPROTOIZE
   def_dec_p->written = 0;
@@ -1464,7 +1462,7 @@ save_def_or_dec (const char *l, int is_syscalls)
 #endif
 	   )
       p++;
-    filename = (char *) alloca ((size_t) (p - filename_start) + 1);
+    filename = alloca ((size_t) (p - filename_start) + 1);
     strncpy (filename, filename_start, (size_t) (p - filename_start));
     filename[p-filename_start] = '\0';
 
@@ -1594,8 +1592,7 @@ save_def_or_dec (const char *l, int is_syscalls)
       const char *left_paren_p = find_corresponding_lparen (p);
 #ifndef UNPROTOIZE
       {
-	f_list_chain_item *cip
-	  = (f_list_chain_item *) xmalloc (sizeof (f_list_chain_item));
+	f_list_chain_item *cip = xmalloc (sizeof (f_list_chain_item));
 
 	cip->formals_list
 	  = dupnstr (left_paren_p + 1, (size_t) (p - (left_paren_p+1)));
@@ -1637,7 +1634,7 @@ save_def_or_dec (const char *l, int is_syscalls)
     /* p now points to the leftmost character of the function name.  */
 
     {
-      char *fn_string = (char *) alloca (past_fn - p + 1);
+      char *fn_string = alloca (past_fn - p + 1);
 
       strncpy (fn_string, p, (size_t) (past_fn - p));
       fn_string[past_fn-p] = '\0';
@@ -1833,7 +1830,7 @@ munge_compile_params (const char *params_list)
   /* Build up the contents in a temporary vector
      that is so big that to has to be big enough.  */
   const char **temp_params
-    = (const char **) alloca ((strlen (params_list) + 8) * sizeof (char *));
+    = alloca ((strlen (params_list) + 8) * sizeof (char *));
   int param_count = 0;
   const char *param;
   struct stat st;
@@ -1902,8 +1899,7 @@ munge_compile_params (const char *params_list)
 
   /* Make a copy of the compile_params in heap space.  */
 
-  compile_params
-    = (const char **) xmalloc (sizeof (char *) * (param_count+1));
+  compile_params = xmalloc (sizeof (char *) * (param_count+1));
   memcpy (compile_params, temp_params, sizeof (char *) * param_count);
 }
 
@@ -1979,8 +1975,7 @@ process_aux_info_file (const char *base_source_filename, int keep_it,
 		       int is_syscalls)
 {
   size_t base_len = strlen (base_source_filename);
-  char * aux_info_filename
-    = (char *) alloca (base_len + strlen (aux_info_suffix) + 1);
+  char * aux_info_filename = alloca (base_len + strlen (aux_info_suffix) + 1);
   char *aux_info_base;
   char *aux_info_limit;
   char *aux_info_relocated_name;
@@ -2309,8 +2304,8 @@ rename_c_file (const hash_table_entry *hp)
 {
   const char *filename = hp->symbol;
   int last_char_index = strlen (filename) - 1;
-  char *const new_filename = (char *) alloca (strlen (filename)
-	                                      + strlen (cplus_suffix) + 1);
+  char *const new_filename = alloca (strlen (filename)
+				     + strlen (cplus_suffix) + 1);
 
   /* Note that we don't care here if the given file was converted or not.  It
      is possible that the given file was *not* converted, simply because there
@@ -2517,7 +2512,7 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
 	      {
 		/* Why copy this string into `needed' at all?
 		   Why not just use user->ansi_decl without copying?  */
-		char *needed = (char *) alloca (strlen (user->ansi_decl) + 1);
+		char *needed = alloca (strlen (user->ansi_decl) + 1);
 	        char *p;
 
 	        strcpy (needed, user->ansi_decl);
@@ -2815,7 +2810,7 @@ output_bytes (const char *str, size_t len)
   if ((repl_write_ptr + 1) + len >= repl_text_limit)
     {
       size_t new_size = (repl_text_limit - repl_text_base) << 1;
-      char *new_buf = (char *) xrealloc (repl_text_base, new_size);
+      char *new_buf = xrealloc (repl_text_base, new_size);
 
       repl_write_ptr = new_buf + (repl_write_ptr - repl_text_base);
       repl_text_base = new_buf;
@@ -3887,7 +3882,7 @@ scan_for_missed_items (const file_info *file_p)
 		    goto not_missed;
 
 		  {
-		    char *func_name = (char *) alloca (id_length + 1);
+		    char *func_name = alloca (id_length + 1);
 		    static const char * const stmt_keywords[]
 		      = { "if", "else", "do", "while", "for", "switch", "case", "return", 0 };
 		    const char * const *stmt_keyword;
@@ -4010,12 +4005,12 @@ edit_file (const hash_table_entry *hp)
 
   /* Allocate a buffer to hold the original text.  */
 
-  orig_text_base = new_orig_text_base = (char *) xmalloc (orig_size + 2);
+  orig_text_base = new_orig_text_base = xmalloc (orig_size + 2);
   orig_text_limit = new_orig_text_limit = new_orig_text_base + orig_size;
 
   /* Allocate a buffer to hold the cleaned-up version of the original text.  */
 
-  clean_text_base = new_clean_text_base = (char *) xmalloc (orig_size + 2);
+  clean_text_base = new_clean_text_base = xmalloc (orig_size + 2);
   clean_text_limit = new_clean_text_limit = new_clean_text_base + orig_size;
   clean_read_ptr = clean_text_base - 1;
 
@@ -4025,7 +4020,7 @@ edit_file (const hash_table_entry *hp)
      buffer can be expanded later as needed.  */
 
   repl_size = orig_size + (orig_size >> 2) + 4096;
-  repl_text_base = (char *) xmalloc (repl_size + 2);
+  repl_text_base = xmalloc (repl_size + 2);
   repl_text_limit = repl_text_base + repl_size - 1;
   repl_write_ptr = repl_text_base - 1;
 
@@ -4083,7 +4078,7 @@ edit_file (const hash_table_entry *hp)
   {
     int clean_file;
     size_t clean_size = orig_text_limit - orig_text_base;
-    char *const clean_filename = (char *) alloca (strlen (convert_filename) + 6 + 1);
+    char *const clean_filename = alloca (strlen (convert_filename) + 6 + 1);
 
     /* Open (and create) the clean file.  */
 
@@ -4183,7 +4178,7 @@ edit_file (const hash_table_entry *hp)
   if (!nosave_flag)
     {
       char *new_filename
-	= (char *) xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
+	= xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
 
       strcpy (new_filename, convert_filename);
 #ifdef __MSDOS__
@@ -4310,8 +4305,8 @@ do_processing (void)
   if (nondefault_syscalls_dir)
     {
       syscalls_absolute_filename
-	= (char *) xmalloc (strlen (nondefault_syscalls_dir) + 1
-	                    + sizeof (syscalls_filename));
+	= xmalloc (strlen (nondefault_syscalls_dir) + 1
+		   + sizeof (syscalls_filename));
       strcpy (syscalls_absolute_filename, nondefault_syscalls_dir);
     }
   else
@@ -4322,10 +4317,10 @@ do_processing (void)
 	  default_syscalls_dir = standard_exec_prefix;
 	}
       syscalls_absolute_filename
-	= (char *) xmalloc (strlen (default_syscalls_dir) + 0
-			    + strlen (target_machine) + 1
-			    + strlen (target_version) + 1
-	                    + sizeof (syscalls_filename));
+	= xmalloc (strlen (default_syscalls_dir) + 0
+		   + strlen (target_machine) + 1
+		   + strlen (target_version) + 1
+		   + sizeof (syscalls_filename));
       strcpy (syscalls_absolute_filename, default_syscalls_dir);
       strcat (syscalls_absolute_filename, target_machine);
       strcat (syscalls_absolute_filename, "/");
@@ -4528,7 +4523,7 @@ main (int argc, char **const argv)
   /* Now actually make a list of the base source filenames.  */
 
   base_source_filenames
-    = (const char **) xmalloc ((n_base_source_files + 1) * sizeof (char *));
+    = xmalloc ((n_base_source_files + 1) * sizeof (char *));
   n_base_source_files = 0;
   for (; optind < argc; optind++)
     {

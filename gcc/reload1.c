@@ -475,7 +475,7 @@ init_reload (void)
 
   /* Initialize obstack for our rtl allocation.  */
   gcc_obstack_init (&reload_obstack);
-  reload_startobj = (char *) obstack_alloc (&reload_obstack, 0);
+  reload_startobj = obstack_alloc (&reload_obstack, 0);
 
   INIT_REG_SET (&spilled_pseudos);
   INIT_REG_SET (&pseudos_counted);
@@ -492,8 +492,7 @@ new_insn_chain (void)
 
   if (unused_insn_chains == 0)
     {
-      c = (struct insn_chain *)
-	obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
+      c = obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
       INIT_REG_SET (&c->live_throughout);
       INIT_REG_SET (&c->dead_or_set);
     }
@@ -638,7 +637,7 @@ reload (rtx first, int global)
 
   failure = 0;
 
-  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+  reload_firstobj = obstack_alloc (&reload_obstack, 0);
 
   /* Make sure that the last insn in the chain
      is not something that needs reloading.  */
@@ -653,8 +652,8 @@ reload (rtx first, int global)
 #endif
 
   /* We don't have a stack slot for any spill reg yet.  */
-  memset ((char *) spill_stack_slot, 0, sizeof spill_stack_slot);
-  memset ((char *) spill_stack_slot_width, 0, sizeof spill_stack_slot_width);
+  memset (spill_stack_slot, 0, sizeof spill_stack_slot);
+  memset (spill_stack_slot_width, 0, sizeof spill_stack_slot_width);
 
   /* Initialize the save area information for caller-save, in case some
      are needed.  */
@@ -684,17 +683,15 @@ reload (rtx first, int global)
      Record memory equivalents in reg_mem_equiv so they can
      be substituted eventually by altering the REG-rtx's.  */
 
-  reg_equiv_constant = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_equiv_mem = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_equiv_init = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_equiv_address = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_max_ref_width = (unsigned int *) xcalloc (max_regno, sizeof (int));
-  reg_old_renumber = (short *) xcalloc (max_regno, sizeof (short));
+  reg_equiv_constant = xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_mem = xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_init = xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_address = xcalloc (max_regno, sizeof (rtx));
+  reg_max_ref_width = xcalloc (max_regno, sizeof (int));
+  reg_old_renumber = xcalloc (max_regno, sizeof (short));
   memcpy (reg_old_renumber, reg_renumber, max_regno * sizeof (short));
-  pseudo_forbidden_regs
-    = (HARD_REG_SET *) xmalloc (max_regno * sizeof (HARD_REG_SET));
-  pseudo_previous_regs
-    = (HARD_REG_SET *) xcalloc (max_regno, sizeof (HARD_REG_SET));
+  pseudo_forbidden_regs = xmalloc (max_regno * sizeof (HARD_REG_SET));
+  pseudo_previous_regs = xcalloc (max_regno, sizeof (HARD_REG_SET));
 
   CLEAR_HARD_REG_SET (bad_spill_regs_global);
 
@@ -819,9 +816,7 @@ reload (rtx first, int global)
      allocate would occasionally cause it to exceed the stack limit and
      cause a core dump.  */
   offsets_known_at = xmalloc (num_labels);
-  offsets_at
-    = (int (*)[NUM_ELIMINABLE_REGS])
-    xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (int));
+  offsets_at = xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (int));
 
   /* Alter each pseudo-reg rtx to contain its hard reg number.
      Assign stack slots to the pseudos that lack hard regs or equivalents.
@@ -953,7 +948,7 @@ reload (rtx first, int global)
 	{
 	  save_call_clobbered_regs ();
 	  /* That might have allocated new insn_chain structures.  */
-	  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+	  reload_firstobj = obstack_alloc (&reload_obstack, 0);
 	}
 
       calculate_needs_all_insns (global);
@@ -1381,11 +1376,10 @@ static void
 copy_reloads (struct insn_chain *chain)
 {
   chain->n_reloads = n_reloads;
-  chain->rld
-    = (struct reload *) obstack_alloc (&reload_obstack,
-				       n_reloads * sizeof (struct reload));
+  chain->rld = obstack_alloc (&reload_obstack,
+			      n_reloads * sizeof (struct reload));
   memcpy (chain->rld, rld, n_reloads * sizeof (struct reload));
-  reload_insn_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+  reload_insn_firstobj = obstack_alloc (&reload_obstack, 0);
 }
 
 /* Walk the chain of insns, and determine for each whether it needs reloads
@@ -1399,7 +1393,7 @@ calculate_needs_all_insns (int global)
 
   something_needs_elimination = 0;
 
-  reload_insn_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+  reload_insn_firstobj = obstack_alloc (&reload_obstack, 0);
   for (chain = reload_insn_chain; chain != 0; chain = next)
     {
       rtx insn = chain->insn;
@@ -3442,8 +3436,7 @@ init_elim_table (void)
 #endif
 
   if (!reg_eliminate)
-    reg_eliminate = (struct elim_table *)
-      xcalloc (sizeof (struct elim_table), NUM_ELIMINABLE_REGS);
+    reg_eliminate = xcalloc (sizeof (struct elim_table), NUM_ELIMINABLE_REGS);
 
   /* Does this function require a frame pointer?  */
 
@@ -3589,7 +3582,7 @@ finish_spills (int global)
   /* Retry global register allocation if possible.  */
   if (global)
     {
-      memset ((char *) pseudo_forbidden_regs, 0, max_regno * sizeof (HARD_REG_SET));
+      memset (pseudo_forbidden_regs, 0, max_regno * sizeof (HARD_REG_SET));
       /* For every insn that needs reloads, set the registers used as spill
 	 regs in pseudo_forbidden_regs for every pseudo live across the
 	 insn.  */
@@ -3759,10 +3752,10 @@ reload_as_needed (int live_known)
 #endif
   rtx x;
 
-  memset ((char *) spill_reg_rtx, 0, sizeof spill_reg_rtx);
-  memset ((char *) spill_reg_store, 0, sizeof spill_reg_store);
-  reg_last_reload_reg = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_has_output_reload = (char *) xmalloc (max_regno);
+  memset (spill_reg_rtx, 0, sizeof spill_reg_rtx);
+  memset (spill_reg_store, 0, sizeof spill_reg_store);
+  reg_last_reload_reg = xcalloc (max_regno, sizeof (rtx));
+  reg_has_output_reload = xmalloc (max_regno);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
   set_initial_elim_offsets ();
@@ -5156,8 +5149,8 @@ choose_reload_regs_init (struct insn_chain *chain, rtx *save_reload_reg_rtx)
     rld[i].reg_rtx = save_reload_reg_rtx[i];
 
   memset (reload_inherited, 0, MAX_RELOADS);
-  memset ((char *) reload_inheritance_insn, 0, MAX_RELOADS * sizeof (rtx));
-  memset ((char *) reload_override_in, 0, MAX_RELOADS * sizeof (rtx));
+  memset (reload_inheritance_insn, 0, MAX_RELOADS * sizeof (rtx));
+  memset (reload_override_in, 0, MAX_RELOADS * sizeof (rtx));
 
   CLEAR_HARD_REG_SET (reload_reg_used);
   CLEAR_HARD_REG_SET (reload_reg_used_at_all);

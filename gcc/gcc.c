@@ -1107,8 +1107,7 @@ translate_options (int *argcp, const char *const **argvp)
   int argc = *argcp;
   const char *const *argv = *argvp;
   int newvsize = (argc + 2) * 2 * sizeof (const char *);
-  const char **newv =
-    (const char **) xmalloc (newvsize);
+  const char **newv = xmalloc (newvsize);
   int newindex = 0;
 
   i = 0;
@@ -1138,7 +1137,7 @@ translate_options (int *argcp, const char *const **argvp)
 		}
 
 	      newvsize += spaces * sizeof (const char *);
-	      newv = (const char **) xrealloc (newv, newvsize);
+	      newv =  xrealloc (newv, newvsize);
 
 	      sp = target_option_translations[tott_idx].replacements;
 	      np = xstrdup (sp);
@@ -1574,8 +1573,8 @@ init_spec (void)
     notice ("Using built-in specs.\n");
 
 #ifdef EXTRA_SPECS
-  extra_specs = (struct spec_list *)
-    xcalloc (sizeof (struct spec_list), ARRAY_SIZE (extra_specs_1));
+  extra_specs = xcalloc (sizeof (struct spec_list),
+			 ARRAY_SIZE (extra_specs_1));
 
   for (i = ARRAY_SIZE (extra_specs_1) - 1; i >= 0; i--)
     {
@@ -1733,7 +1732,7 @@ set_spec (const char *name, const char *spec)
   if (!sl)
     {
       /* Not found - make it.  */
-      sl = (struct spec_list *) xmalloc (sizeof (struct spec_list));
+      sl = xmalloc (sizeof (struct spec_list));
       sl->name = xstrdup (name);
       sl->name_len = name_len;
       sl->ptr_spec = &sl->ptr;
@@ -1805,7 +1804,7 @@ static void
 alloc_args (void)
 {
   argbuf_length = 10;
-  argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
+  argbuf = xmalloc (argbuf_length * sizeof (const char *));
 }
 
 /* Clear out the vector of arguments (after a command is executed).  */
@@ -1827,9 +1826,7 @@ static void
 store_arg (const char *arg, int delete_always, int delete_failure)
 {
   if (argbuf_index + 1 == argbuf_length)
-    argbuf
-      = (const char **) xrealloc (argbuf,
-				  (argbuf_length *= 2) * sizeof (const char *));
+    argbuf = xrealloc (argbuf, (argbuf_length *= 2) * sizeof (const char *));
 
   argbuf[argbuf_index++] = arg;
   argbuf[argbuf_index] = 0;
@@ -2119,9 +2116,8 @@ read_specs (const char *filename, int main_p)
 	{
 	  /* Add this pair to the vector.  */
 	  compilers
-	    = ((struct compiler *)
-	       xrealloc (compilers,
-			 (n_compilers + 2) * sizeof (struct compiler)));
+	    = xrealloc (compilers,
+			(n_compilers + 2) * sizeof (struct compiler));
 
 	  compilers[n_compilers].suffix = suffix;
 	  compilers[n_compilers].spec = spec;
@@ -2188,7 +2184,7 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
 	if (! strcmp (name, temp->name))
 	  goto already1;
 
-      temp = (struct temp_file *) xmalloc (sizeof (struct temp_file));
+      temp = xmalloc (sizeof (struct temp_file));
       temp->next = always_delete_queue;
       temp->name = name;
       always_delete_queue = temp;
@@ -2203,7 +2199,7 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
 	if (! strcmp (name, temp->name))
 	  goto already2;
 
-      temp = (struct temp_file *) xmalloc (sizeof (struct temp_file));
+      temp = xmalloc (sizeof (struct temp_file));
       temp->next = failure_delete_queue;
       temp->name = name;
       failure_delete_queue = temp;
@@ -2553,7 +2549,7 @@ add_prefix (struct path_prefix *pprefix, const char *prefix,
   if (len > pprefix->max_len)
     pprefix->max_len = len;
 
-  pl = (struct prefix_list *) xmalloc (sizeof (struct prefix_list));
+  pl = xmalloc (sizeof (struct prefix_list));
   pl->prefix = prefix;
   pl->require_machine_suffix = require_machine_suffix;
   pl->used_flag_ptr = warn;
@@ -2622,7 +2618,7 @@ execute (void)
       n_commands++;
 
   /* Get storage for each command.  */
-  commands = (struct command *) alloca (n_commands * sizeof (struct command));
+  commands = alloca (n_commands * sizeof (struct command));
 
   /* Split argbuf into its separate piped processes,
      and record info about each one.
@@ -3034,12 +3030,10 @@ add_preprocessor_option (const char *option, int len)
   n_preprocessor_options++;
 
   if (! preprocessor_options)
-    preprocessor_options
-      = (char **) xmalloc (n_preprocessor_options * sizeof (char *));
+    preprocessor_options = xmalloc (n_preprocessor_options * sizeof (char *));
   else
-    preprocessor_options
-      = (char **) xrealloc (preprocessor_options,
-			    n_preprocessor_options * sizeof (char *));
+    preprocessor_options = xrealloc (preprocessor_options,
+				     n_preprocessor_options * sizeof (char *));
 
   preprocessor_options [n_preprocessor_options - 1] =
     save_string (option, len);
@@ -3051,12 +3045,10 @@ add_assembler_option (const char *option, int len)
   n_assembler_options++;
 
   if (! assembler_options)
-    assembler_options
-      = (char **) xmalloc (n_assembler_options * sizeof (char *));
+    assembler_options = xmalloc (n_assembler_options * sizeof (char *));
   else
-    assembler_options
-      = (char **) xrealloc (assembler_options,
-			    n_assembler_options * sizeof (char *));
+    assembler_options = xrealloc (assembler_options,
+				  n_assembler_options * sizeof (char *));
 
   assembler_options [n_assembler_options - 1] = save_string (option, len);
 }
@@ -3067,12 +3059,10 @@ add_linker_option (const char *option, int len)
   n_linker_options++;
 
   if (! linker_options)
-    linker_options
-      = (char **) xmalloc (n_linker_options * sizeof (char *));
+    linker_options = xmalloc (n_linker_options * sizeof (char *));
   else
-    linker_options
-      = (char **) xrealloc (linker_options,
-			    n_linker_options * sizeof (char *));
+    linker_options = xrealloc (linker_options,
+			       n_linker_options * sizeof (char *));
 
   linker_options [n_linker_options - 1] = save_string (option, len);
 }
@@ -3213,7 +3203,7 @@ process_command (int argc, const char *const *argv)
   if (temp)
     {
       const char *startp, *endp;
-      char *nstore = (char *) alloca (strlen (temp) + 3);
+      char *nstore = alloca (strlen (temp) + 3);
 
       startp = endp = temp;
       while (1)
@@ -3248,7 +3238,7 @@ process_command (int argc, const char *const *argv)
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;
-      char *nstore = (char *) alloca (strlen (temp) + 3);
+      char *nstore = alloca (strlen (temp) + 3);
 
       startp = endp = temp;
       while (1)
@@ -3281,7 +3271,7 @@ process_command (int argc, const char *const *argv)
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;
-      char *nstore = (char *) alloca (strlen (temp) + 3);
+      char *nstore = alloca (strlen (temp) + 3);
 
       startp = endp = temp;
       while (1)
@@ -3484,8 +3474,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	}
       else if (strcmp (argv[i], "-specs") == 0)
 	{
-	  struct user_specs *user = (struct user_specs *)
-	    xmalloc (sizeof (struct user_specs));
+	  struct user_specs *user = xmalloc (sizeof (struct user_specs));
 	  if (++i >= argc)
 	    fatal ("argument to `-specs' is missing");
 
@@ -3499,8 +3488,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	}
       else if (strncmp (argv[i], "-specs=", 7) == 0)
 	{
-	  struct user_specs *user = (struct user_specs *)
-	    xmalloc (sizeof (struct user_specs));
+	  struct user_specs *user = xmalloc (sizeof (struct user_specs));
 	  if (strlen (argv[i]) == 7)
 	    fatal ("argument to `-specs=' is missing");
 
@@ -3673,9 +3661,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
 		if (! strcmp (argv[i], modify_target[j].sw))
 		  {
-		    char *new_name
-		      = (char *) xmalloc (strlen (modify_target[j].str)
-					  + strlen (spec_machine));
+		    char *new_name = xmalloc (strlen (modify_target[j].str)
+					      + strlen (spec_machine));
 		    const char *p, *r;
 		    char *q;
 		    int made_addition = 0;
@@ -3818,9 +3805,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
   /* Then create the space for the vectors and scan again.  */
 
-  switches = ((struct switchstr *)
-	      xmalloc ((n_switches + 1) * sizeof (struct switchstr)));
-  infiles = (struct infile *) xmalloc ((n_infiles + 1) * sizeof (struct infile));
+  switches = xmalloc ((n_switches + 1) * sizeof (struct switchstr));
+  infiles = xmalloc ((n_infiles + 1) * sizeof (struct infile));
   n_switches = 0;
   n_infiles = 0;
   last_language_n_infiles = -1;
@@ -3969,7 +3955,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      if (i + n_args >= argc)
 		fatal ("argument to `-%s' is missing", p);
 	      switches[n_switches].args
-		= (const char **) xmalloc ((n_args + 1) * sizeof(const char *));
+		= xmalloc ((n_args + 1) * sizeof(const char *));
 	      while (j < n_args)
 		switches[n_switches].args[j++] = argv[++i];
 	      /* Null-terminate the vector.  */
@@ -3979,13 +3965,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    {
 	      /* On some systems, ld cannot handle some options without
 		 a space.  So split the option from its argument.  */
-	      char *part1 = (char *) xmalloc (2);
+	      char *part1 = xmalloc (2);
 	      part1[0] = c;
 	      part1[1] = '\0';
 
 	      switches[n_switches].part1 = part1;
-	      switches[n_switches].args
-		= (const char **) xmalloc (2 * sizeof (const char *));
+	      switches[n_switches].args = xmalloc (2 * sizeof (const char *));
 	      switches[n_switches].args[0] = xstrdup (p+1);
 	      switches[n_switches].args[1] = 0;
 	    }
@@ -4453,7 +4438,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    {
 	      struct prefix_list *pl = startfile_prefixes.plist;
 	      size_t bufsize = 100;
-	      char *buffer = (char *) xmalloc (bufsize);
+	      char *buffer = xmalloc (bufsize);
 	      int idx;
 
 	      for (; pl; pl = pl->next)
@@ -4481,7 +4466,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			      >= bufsize)
 			    bufsize = (strlen (pl->prefix)
 				       + strlen (machine_suffix)) * 2 + 1;
-			  buffer = (char *) xrealloc (buffer, bufsize);
+			  buffer = xrealloc (buffer, bufsize);
 			  strcpy (buffer, pl->prefix);
 			  strcat (buffer, machine_suffix);
 			  if (is_directory (buffer, multilib_dir, 1))
@@ -4523,7 +4508,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			  /* Remove slash from machine_suffix.  */
 			  if (strlen (machine_suffix) >= bufsize)
 			    bufsize = strlen (machine_suffix) * 2 + 1;
-			  buffer = (char *) xrealloc (buffer, bufsize);
+			  buffer = xrealloc (buffer, bufsize);
 			  strcpy (buffer, machine_suffix);
 			  idx = strlen (buffer);
 			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
@@ -4544,7 +4529,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			  /* Remove slash from pl->prefix.  */
 			  if (strlen (pl->prefix) >= bufsize)
 			    bufsize = strlen (pl->prefix) * 2 + 1;
-			  buffer = (char *) xrealloc (buffer, bufsize);
+			  buffer = xrealloc (buffer, bufsize);
 			  strcpy (buffer, pl->prefix);
 			  idx = strlen (buffer);
 			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
@@ -4567,7 +4552,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      char *buf;
 	      while (*p != 0 && *p != '\n')
 		p++;
-	      buf = (char *) alloca (p - q + 1);
+	      buf = alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
 	      error ("%s", buf);
@@ -4581,7 +4566,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      char *buf;
 	      while (*p != 0 && *p != '\n')
 		p++;
-	      buf = (char *) alloca (p - q + 1);
+	      buf = alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
 	      notice ("%s\n", buf);
@@ -4663,8 +4648,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    else
 		      {
 			saved_suffix
-			  = (char *) xmalloc (suffix_length
-					      + strlen (TARGET_OBJECT_SUFFIX));
+			  = xmalloc (suffix_length
+				     + strlen (TARGET_OBJECT_SUFFIX));
 			strncpy (saved_suffix, suffix, suffix_length);
 			strcpy (saved_suffix + suffix_length,
 				TARGET_OBJECT_SUFFIX);
@@ -4735,7 +4720,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  {
 		    if (t == 0)
 		      {
-			t = (struct temp_name *) xmalloc (sizeof (struct temp_name));
+			t = xmalloc (sizeof (struct temp_name));
 			t->next = temp_names;
 			temp_names = t;
 		      }
@@ -5131,7 +5116,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    }
 		  else
 		    {
-		      char *x = (char *) alloca (strlen (name) * 2 + 1);
+		      char *x = alloca (strlen (name) * 2 + 1);
 		      char *buf = x;
 		      const char *y = name;
 		      int flag = 0;
@@ -5812,7 +5797,7 @@ is_directory (const char *path1, const char *path2, int linker)
 {
   int len1 = strlen (path1);
   int len2 = strlen (path2);
-  char *path = (char *) alloca (3 + len1 + len2);
+  char *path = alloca (3 + len1 + len2);
   char *cp;
   struct stat st;
 
@@ -6016,9 +6001,8 @@ main (int argc, const char *const *argv)
   /* Initialize the vector of specs to just the default.
      This means one element containing 0s, as a terminator.  */
 
-  compilers = (struct compiler *) xmalloc (sizeof default_compilers);
-  memcpy ((char *) compilers, (char *) default_compilers,
-	  sizeof default_compilers);
+  compilers = xmalloc (sizeof default_compilers);
+  memcpy (compilers, default_compilers, sizeof default_compilers);
   n_compilers = n_default_compilers;
 
   /* Read specs from a file if there is one.  */
@@ -6036,9 +6020,8 @@ main (int argc, const char *const *argv)
 
   /* We need to check standard_exec_prefix/just_machine_suffix/specs
      for any override of as, ld and libraries.  */
-  specs_file = (char *) alloca (strlen (standard_exec_prefix)
-				+ strlen (just_machine_suffix)
-				+ sizeof ("specs"));
+  specs_file = alloca (strlen (standard_exec_prefix)
+		       + strlen (just_machine_suffix) + sizeof ("specs"));
 
   strcpy (specs_file, standard_exec_prefix);
   strcat (specs_file, just_machine_suffix);
@@ -6297,7 +6280,7 @@ main (int argc, const char *const *argv)
 
   i = n_infiles;
   i += lang_specific_extra_outfiles;
-  outfiles = (const char **) xcalloc (i, sizeof (char *));
+  outfiles = xcalloc (i, sizeof (char *));
 
   /* Record which files were specified explicitly as link input.  */
 
@@ -6751,8 +6734,7 @@ used_arg (const char *p, int len)
 	if (*q == ';')
 	  cnt++;
 
-      matches =
-	(struct mswitchstr *) alloca ((sizeof (struct mswitchstr)) * cnt);
+      matches = alloca ((sizeof (struct mswitchstr)) * cnt);
       i = 0;
       q = multilib_matches;
       while (*q != '\0')
@@ -6784,8 +6766,7 @@ used_arg (const char *p, int len)
 	 xmalloc from calling fatal, and prevents us from re-executing this
 	 block of code.  */
       mswitches
-	= (struct mswitchstr *)
-	  xmalloc (sizeof (struct mswitchstr)
+	= xmalloc (sizeof (struct mswitchstr)
 		   * (n_mdswitches + (n_switches ? n_switches : 1)));
       for (i = 0; i < n_switches; i++)
 	{
@@ -6912,9 +6893,7 @@ set_multilib_dir (void)
     {
       int i = 0;
 
-      mdswitches
-        = (struct mdswitchstr *) xmalloc (sizeof (struct mdswitchstr)
-					  * n_mdswitches);
+      mdswitches = xmalloc (sizeof (struct mdswitchstr) * n_mdswitches);
       for (start = multilib_defaults; *start != '\0'; start = end + 1)
 	{
 	  while (*start == ' ' || *start == '\t')

@@ -386,7 +386,7 @@ duplicate_loop_exit_test (rtx loop_start)
 	    /* We can do the replacement.  Allocate reg_map if this is the
 	       first replacement we found.  */
 	    if (reg_map == 0)
-	      reg_map = (rtx *) xcalloc (max_reg, sizeof (rtx));
+	      reg_map = xcalloc (max_reg, sizeof (rtx));
 
 	    REG_LOOP_TEST_P (reg) = 1;
 

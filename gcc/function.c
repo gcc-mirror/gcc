@@ -692,7 +692,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
-	      p = (struct temp_slot *) ggc_alloc (sizeof (struct temp_slot));
+	      p = ggc_alloc (sizeof (struct temp_slot));
 	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
@@ -723,7 +723,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
     {
       HOST_WIDE_INT frame_offset_old = frame_offset;
 
-      p = (struct temp_slot *) ggc_alloc (sizeof (struct temp_slot));
+      p = ggc_alloc (sizeof (struct temp_slot));
 
       /* We are passing an explicit alignment request to assign_stack_local.
 	 One side effect of that is assign_stack_local will not round SIZE
@@ -1477,8 +1477,7 @@ schedule_fixup_var_refs (struct function *function, rtx reg, tree type,
     {
       struct var_refs_queue *temp;
 
-      temp
-	= (struct var_refs_queue *) ggc_alloc (sizeof (struct var_refs_queue));
+      temp = ggc_alloc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
       temp->unsignedp = unsigned_p;
@@ -1553,7 +1552,7 @@ find_fixup_replacement (struct fixup_replacement **replacements, rtx x)
 
   if (p == 0)
     {
-      p = (struct fixup_replacement *) xmalloc (sizeof (struct fixup_replacement));
+      p = xmalloc (sizeof (struct fixup_replacement));
       p->old = x;
       p->new = 0;
       p->next = *replacements;
@@ -1627,7 +1626,7 @@ fixup_var_refs_insns_with_hash (htab_t ht, rtx var, enum machine_mode promoted_m
   rtx insn_list;
 
   tmp.key = var;
-  ime = (struct insns_for_mem_entry *) htab_find (ht, &tmp);
+  ime = htab_find (ht, &tmp);
   for (insn_list = ime->insns; insn_list != 0; insn_list = XEXP (insn_list, 1))
     if (INSN_P (XEXP (insn_list, 0)))
       fixup_var_refs_insn (XEXP (insn_list, 0), var, promoted_mode,
@@ -3295,7 +3294,7 @@ insns_for_mem_walk (rtx *r, void *data)
     {
       struct insns_for_mem_entry *ifme;
       tmp.key = *r;
-      ifme = (struct insns_for_mem_entry *) htab_find (ifmwi->ht, &tmp);
+      ifme = htab_find (ifmwi->ht, &tmp);
 
       /* If we have not already recorded this INSN, do so now.  Since
 	 we process the INSNs in order, we know that if we have
@@ -4281,7 +4280,7 @@ assign_parms (tree fndecl)
   orig_fnargs = fnargs;
 
   max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
-  parm_reg_stack_loc = (rtx *) ggc_alloc_cleared (max_parm_reg * sizeof (rtx));
+  parm_reg_stack_loc = ggc_alloc_cleared (max_parm_reg * sizeof (rtx));
 
   if (SPLIT_COMPLEX_ARGS)
     fnargs = split_complex_args (fnargs);
@@ -4944,10 +4943,10 @@ assign_parms (tree fndecl)
 		 but it's also rare and we need max_parm_reg to be
 		 precisely correct.  */
 	      max_parm_reg = regno + 1;
-	      new = (rtx *) ggc_realloc (parm_reg_stack_loc,
-				      max_parm_reg * sizeof (rtx));
-	      memset ((char *) (new + old_max_parm_reg), 0,
-		     (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
+	      new = ggc_realloc (parm_reg_stack_loc,
+				 max_parm_reg * sizeof (rtx));
+	      memset (new + old_max_parm_reg, 0,
+		      (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }
 
@@ -5885,7 +5884,7 @@ identify_blocks (void)
   /* Fill the BLOCK_VECTOR with all of the BLOCKs in this function, in
      depth-first order.  */
   block_vector = get_block_vector (block, &n_blocks);
-  block_stack = (tree *) xmalloc (n_blocks * sizeof (tree));
+  block_stack = xmalloc (n_blocks * sizeof (tree));
 
   last_block_vector = identify_blocks_1 (get_insns (),
 					 block_vector + 1,
@@ -6189,7 +6188,7 @@ get_block_vector (tree block, int *n_blocks_p)
   tree *block_vector;
 
   *n_blocks_p = all_blocks (block, NULL);
-  block_vector = (tree *) xmalloc (*n_blocks_p * sizeof (tree));
+  block_vector = xmalloc (*n_blocks_p * sizeof (tree));
   all_blocks (block, block_vector);
 
   return block_vector;
@@ -6252,7 +6251,7 @@ debug_find_var_in_block_tree (tree var, tree block)
 static void
 prepare_function_start (void)
 {
-  cfun = (struct function *) ggc_alloc_cleared (sizeof (struct function));
+  cfun = ggc_alloc_cleared (sizeof (struct function));
 
   init_stmt_for_function ();
   init_eh_for_function ();

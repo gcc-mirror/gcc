@@ -306,7 +306,7 @@ add_path (char *path, int chain, int cxx_aware)
 {
   struct cpp_path *p;
 
-  p = (struct cpp_path *) xmalloc (sizeof (struct cpp_path));
+  p = xmalloc (sizeof (struct cpp_path));
   p->next = NULL;
   p->name = path;
   if (chain == SYSTEM || chain == AFTER)

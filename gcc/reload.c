@@ -651,7 +651,7 @@ get_secondary_mem (rtx x ATTRIBUTE_UNUSED, enum machine_mode mode,
 void
 clear_secondary_mem (void)
 {
-  memset ((char *) secondary_memlocs, 0, sizeof secondary_memlocs);
+  memset (secondary_memlocs, 0, sizeof secondary_memlocs);
 }
 #endif /* SECONDARY_MEMORY_NEEDED */
 
@@ -2539,7 +2539,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   /* The eliminated forms of any secondary memory locations are per-insn, so
      clear them out here.  */
 
-  memset ((char *) secondary_memlocs_elim, 0, sizeof secondary_memlocs_elim);
+  memset (secondary_memlocs_elim, 0, sizeof secondary_memlocs_elim);
 #endif
 
   /* Dispose quickly of (set (reg..) (reg..)) if both have hard regs and it

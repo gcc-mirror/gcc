@@ -1637,7 +1637,7 @@ add_varray_page (varray_t *vp)
 
 #ifdef MALLOC_CHECK
   if (vp->object_size > 1)
-    new_links->datum = (page_t *) xcalloc (1, vp->object_size);
+    new_links->datum = xcalloc (1, vp->object_size);
   else
 #endif
     new_links->datum = allocate_page ();
@@ -2353,7 +2353,7 @@ add_procedure (const char *func_start,  /* 1st byte of func name */
 STATIC void
 initialize_init_file (void)
 {
-  memset ((void*) &init_file, 0, sizeof (init_file));
+  memset (&init_file, 0, sizeof (init_file));
 
   init_file.fdr.lang = langC;
   init_file.fdr.fMerge = 1;
@@ -4257,7 +4257,7 @@ read_seek (Size_t size,		/* # bytes to read */
 #ifndef MALLOC_CHECK
   ptr = allocate_multiple_pages ((size + PAGE_USIZE - 1) / PAGE_USIZE);
 #else
-  ptr = (page_t *) xcalloc (1, size);
+  ptr = xcalloc (1, size);
 #endif
 
   /* If we need to seek, and the distance is nearby, just do some reads,
@@ -4379,61 +4379,61 @@ copy_object (void)
   file_offset =  orig_file_header.f_symptr + sizeof (struct filehdr);
 
   if (orig_sym_hdr.cbLine > 0)			/* line numbers */
-    orig_linenum = (char *) read_seek ((Size_t) orig_sym_hdr.cbLine,
+    orig_linenum = (char *) read_seek (orig_sym_hdr.cbLine,
 				       orig_sym_hdr.cbLineOffset,
 				       "Line numbers");
 
   if (orig_sym_hdr.ipdMax > 0)			/* procedure tables */
-    orig_procs = (PDR *) read_seek ((Size_t) orig_sym_hdr.ipdMax * sizeof (PDR),
+    orig_procs = (PDR *) read_seek (orig_sym_hdr.ipdMax * sizeof (PDR),
 				    orig_sym_hdr.cbPdOffset,
 				    "Procedure tables");
 
   if (orig_sym_hdr.isymMax > 0)			/* local symbols */
-    orig_local_syms = (SYMR *) read_seek ((Size_t) orig_sym_hdr.isymMax * sizeof (SYMR),
+    orig_local_syms = (SYMR *) read_seek (orig_sym_hdr.isymMax * sizeof (SYMR),
 					  orig_sym_hdr.cbSymOffset,
 					  "Local symbols");
 
   if (orig_sym_hdr.iauxMax > 0)			/* aux symbols */
-    orig_aux_syms = (AUXU *) read_seek ((Size_t) orig_sym_hdr.iauxMax * sizeof (AUXU),
+    orig_aux_syms = (AUXU *) read_seek (orig_sym_hdr.iauxMax * sizeof (AUXU),
 					orig_sym_hdr.cbAuxOffset,
 					"Aux. symbols");
 
   if (orig_sym_hdr.issMax > 0)			/* local strings */
-    orig_local_strs = (char *) read_seek ((Size_t) orig_sym_hdr.issMax,
+    orig_local_strs = (char *) read_seek (orig_sym_hdr.issMax,
 					  orig_sym_hdr.cbSsOffset,
 					  "Local strings");
 
   if (orig_sym_hdr.issExtMax > 0)		/* external strings */
-    orig_ext_strs = (char *) read_seek ((Size_t) orig_sym_hdr.issExtMax,
+    orig_ext_strs = (char *) read_seek (orig_sym_hdr.issExtMax,
 					orig_sym_hdr.cbSsExtOffset,
 					"External strings");
 
   if (orig_sym_hdr.ifdMax > 0)			/* file tables */
-    orig_files = (FDR *) read_seek ((Size_t) orig_sym_hdr.ifdMax * sizeof (FDR),
+    orig_files = (FDR *) read_seek (orig_sym_hdr.ifdMax * sizeof (FDR),
 				    orig_sym_hdr.cbFdOffset,
 				    "File tables");
 
   if (orig_sym_hdr.crfd > 0)			/* relative file descriptors */
-    orig_rfds = (symint_t *) read_seek ((Size_t) orig_sym_hdr.crfd * sizeof (symint_t),
+    orig_rfds = (symint_t *) read_seek (orig_sym_hdr.crfd * sizeof (symint_t),
 					orig_sym_hdr.cbRfdOffset,
 					"Relative file descriptors");
 
   if (orig_sym_hdr.issExtMax > 0)		/* external symbols */
-    orig_ext_syms = (EXTR *) read_seek ((Size_t) orig_sym_hdr.iextMax * sizeof (EXTR),
+    orig_ext_syms = (EXTR *) read_seek (orig_sym_hdr.iextMax * sizeof (EXTR),
 					orig_sym_hdr.cbExtOffset,
 					"External symbols");
 
   if (orig_sym_hdr.idnMax > 0)			/* dense numbers */
     {
-      orig_dense = (DNR *) read_seek ((Size_t) orig_sym_hdr.idnMax * sizeof (DNR),
+      orig_dense = (DNR *) read_seek (orig_sym_hdr.idnMax * sizeof (DNR),
 				      orig_sym_hdr.cbDnOffset,
 				      "Dense numbers");
 
-      add_bytes (&dense_num, (char *) orig_dense, (Size_t) orig_sym_hdr.idnMax);
+      add_bytes (&dense_num, (char *) orig_dense, orig_sym_hdr.idnMax);
     }
 
   if (orig_sym_hdr.ioptMax > 0)			/* opt symbols */
-    orig_opt_syms = (OPTR *) read_seek ((Size_t) orig_sym_hdr.ioptMax * sizeof (OPTR),
+    orig_opt_syms = (OPTR *) read_seek (orig_sym_hdr.ioptMax * sizeof (OPTR),
 					orig_sym_hdr.cbOptOffset,
 					"Optimizer symbols");
 
@@ -4464,7 +4464,7 @@ copy_object (void)
      (in case there are duplicate filenames, we collapse them into one
      file section, the MIPS assembler may or may not collapse them).  */
 
-  remap_file_number = (int *) alloca (sizeof (int) * orig_sym_hdr.ifdMax);
+  remap_file_number = alloca (sizeof (int) * orig_sym_hdr.ifdMax);
 
   for (fd = delete_ifd; fd < orig_sym_hdr.ifdMax; fd++)
     {
@@ -4972,7 +4972,7 @@ out_of_bounds (symint_t indx,	/* index that is out of bounds */
 STATIC page_t *
 allocate_cluster (Size_t npages)
 {
-  page_t *value = (page_t *) xcalloc (npages, PAGE_USIZE);
+  page_t *value = xcalloc (npages, PAGE_USIZE);
 
   if (debug > 3)
     fprintf (stderr, "\talloc\tnpages = %d, value = 0x%.8x\n", npages, value);
@@ -5038,7 +5038,7 @@ allocate_multiple_pages (Size_t npages)
   return allocate_cluster (npages);
 
 #else	/* MALLOC_CHECK */
-  return (page_t *) xcalloc (npages, PAGE_SIZE);
+  return xcalloc (npages, PAGE_SIZE);
 
 #endif	/* MALLOC_CHECK */
 }
@@ -5089,7 +5089,7 @@ allocate_page (void)
   return cluster_ptr++;
 
 #else	/* MALLOC_CHECK */
-  return (page_t *) xcalloc (1, PAGE_SIZE);
+  return xcalloc (1, PAGE_SIZE);
 
 #endif	/* MALLOC_CHECK */
 }
@@ -5125,7 +5125,7 @@ allocate_scope (void)
     }
 
 #else
-  ptr = (scope_t *) xmalloc (sizeof (scope_t));
+  ptr = xmalloc (sizeof (scope_t));
 
 #endif
 
@@ -5175,7 +5175,7 @@ allocate_vlinks (void)
   alloc_counts[ (int) alloc_type_vlinks ].unallocated = unallocated;
 
 #else
-  ptr = (vlinks_t *) xmalloc (sizeof (vlinks_t));
+  ptr = xmalloc (sizeof (vlinks_t));
 
 #endif
 
@@ -5208,7 +5208,7 @@ allocate_shash (void)
   alloc_counts[ (int) alloc_type_shash ].unallocated = unallocated;
 
 #else
-  ptr = (shash_t *) xmalloc (sizeof (shash_t));
+  ptr = xmalloc (sizeof (shash_t));
 
 #endif
 
@@ -5241,7 +5241,7 @@ allocate_thash (void)
   alloc_counts[ (int) alloc_type_thash ].unallocated = unallocated;
 
 #else
-  ptr = (thash_t *) xmalloc (sizeof (thash_t));
+  ptr = xmalloc (sizeof (thash_t));
 
 #endif
 
@@ -5281,7 +5281,7 @@ allocate_tag (void)
     }
 
 #else
-  ptr = (tag_t *) xmalloc (sizeof (tag_t));
+  ptr = xmalloc (sizeof (tag_t));
 
 #endif
 
@@ -5338,7 +5338,7 @@ allocate_forward (void)
     }
 
 #else
-  ptr = (forward_t *) xmalloc (sizeof (forward_t));
+  ptr = xmalloc (sizeof (forward_t));
 
 #endif
 
@@ -5395,7 +5395,7 @@ allocate_thead (void)
     }
 
 #else
-  ptr = (thead_t *) xmalloc (sizeof (thead_t));
+  ptr = xmalloc (sizeof (thead_t));
 
 #endif
 

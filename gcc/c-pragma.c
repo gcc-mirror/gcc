@@ -74,7 +74,7 @@ push_alignment (int alignment, tree id)
     {
       align_stack * entry;
 
-      entry = (align_stack *) ggc_alloc (sizeof (* entry));
+      entry = ggc_alloc (sizeof (* entry));
 
       entry->alignment  = alignment;
       entry->num_pushes = 1;

@@ -671,14 +671,14 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
      without initializing fields within the map structure.
 
      To be safe, we use xcalloc to zero the memory.  */
-  map = (struct inline_remap *) xcalloc (1, sizeof (struct inline_remap));
+  map = xcalloc (1, sizeof (struct inline_remap));
 
   /* Allocate the label map.  */
 
   if (max_labelno > 0)
     {
-      map->label_map = (rtx *) xcalloc (max_labelno, sizeof (rtx));
-      local_label = (char *) xcalloc (max_labelno, sizeof (char));
+      map->label_map = xcalloc (max_labelno, sizeof (rtx));
+      local_label = xcalloc (max_labelno, sizeof (char));
     }
 
   /* Search the loop and mark all local labels, i.e. the ones which have to
@@ -722,7 +722,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
   /* Allocate space for the insn map.  */
 
-  map->insn_map = (rtx *) xmalloc (max_insnno * sizeof (rtx));
+  map->insn_map = xmalloc (max_insnno * sizeof (rtx));
 
   /* Set this to zero, to indicate that we are doing loop unrolling,
      not function inlining.  */
@@ -748,11 +748,10 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
      preconditioning code and find_splittable_regs will never be used
      to access the splittable_regs[] and addr_combined_regs[] arrays.  */
 
-  splittable_regs = (rtx *) xcalloc (maxregnum, sizeof (rtx));
-  splittable_regs_updates = (int *) xcalloc (maxregnum, sizeof (int));
-  addr_combined_regs
-    = (struct induction **) xcalloc (maxregnum, sizeof (struct induction *));
-  local_regno = (char *) xcalloc (maxregnum, sizeof (char));
+  splittable_regs = xcalloc (maxregnum, sizeof (rtx));
+  splittable_regs_updates = xcalloc (maxregnum, sizeof (int));
+  addr_combined_regs = xcalloc (maxregnum, sizeof (struct induction *));
+  local_regno = xcalloc (maxregnum, sizeof (char));
 
   /* Mark all local registers, i.e. the ones which are referenced only
      inside the loop.  */
@@ -854,7 +853,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	  int less_p     = (cc == LE  || cc == LEU || cc == LT  || cc == LTU);
 	  int unsigned_p = (cc == LEU || cc == GEU || cc == LTU || cc == GTU);
 
-	  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
+	  map->reg_map = xmalloc (maxregnum * sizeof (rtx));
 
 	  VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray, maxregnum,
 				   "unroll_loop_precondition");
@@ -921,7 +920,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	  /* Now emit a sequence of branches to jump to the proper precond
 	     loop entry point.  */
 
-	  labels = (rtx *) xmalloc (sizeof (rtx) * unroll_number);
+	  labels = xmalloc (sizeof (rtx) * unroll_number);
 	  for (i = 0; i < unroll_number; i++)
 	    labels[i] = gen_label_rtx ();
 
@@ -1054,8 +1053,8 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	      emit_label_after (labels[unroll_number - i],
 				PREV_INSN (loop_start));
 
-	      memset ((char *) map->insn_map, 0, max_insnno * sizeof (rtx));
-	      memset ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
+	      memset (map->insn_map, 0, max_insnno * sizeof (rtx));
+	      memset (&VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
 		      0, (VARRAY_SIZE (map->const_equiv_varray)
 			  * sizeof (struct const_equiv_data)));
 	      map->const_age = 0;
@@ -1158,7 +1157,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
      the constant maps also.  */
 
   maxregnum = max_reg_num ();
-  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
+  map->reg_map = xmalloc (maxregnum * sizeof (rtx));
 
   init_reg_map (map, maxregnum);
 
@@ -1206,8 +1205,8 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
   for (i = 0; i < unroll_number; i++)
     {
-      memset ((char *) map->insn_map, 0, max_insnno * sizeof (rtx));
-      memset ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0), 0,
+      memset (map->insn_map, 0, max_insnno * sizeof (rtx));
+      memset (&VARRAY_CONST_EQUIV (map->const_equiv_varray, 0), 0,
 	      VARRAY_SIZE (map->const_equiv_varray) * sizeof (struct const_equiv_data));
       map->const_age = 0;
 

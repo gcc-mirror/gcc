@@ -57,10 +57,10 @@ queue (dump_info_p di, tree t, int flags)
       di->free_list = dq->next;
     }
   else
-    dq = (dump_queue_p) xmalloc (sizeof (struct dump_queue));
+    dq = xmalloc (sizeof (struct dump_queue));
 
   /* Create a new entry in the splay-tree.  */
-  dni = (dump_node_info_p) xmalloc (sizeof (struct dump_node_info));
+  dni = xmalloc (sizeof (struct dump_node_info));
   dni->index = index;
   dni->binfo_p = ((flags & DUMP_BINFO) != 0);
   dq->node = splay_tree_insert (di->nodes, (splay_tree_key) t,

@@ -5201,7 +5201,7 @@ static optab
 new_optab (void)
 {
   int i;
-  optab op = (optab) ggc_alloc (sizeof (struct optab));
+  optab op = ggc_alloc (sizeof (struct optab));
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       op->handlers[i].insn_code = CODE_FOR_nothing;

@@ -253,8 +253,7 @@ ssa_rename_from_lookup (int reg)
   ssa_rename_from_pair *answer;
   srfp.reg = reg;
   srfp.original = NULL_RTX;
-  answer = (ssa_rename_from_pair *)
-    htab_find_with_hash (ssa_rename_from_ht, (void *) &srfp, reg);
+  answer = htab_find_with_hash (ssa_rename_from_ht, (void *) &srfp, reg);
   return (answer == 0 ? NULL_RTX : answer->original);
 }
 
@@ -673,7 +672,7 @@ static void
 create_delayed_rename (struct rename_context *c, rtx *reg_loc)
 {
   struct rename_set_data *r;
-  r = (struct rename_set_data *) xmalloc (sizeof(*r));
+  r = xmalloc (sizeof(*r));
 
   if (GET_CODE (*reg_loc) != REG
       || !CONVERT_REGISTER_TO_SSA_P (REGNO (*reg_loc)))
@@ -1064,10 +1063,10 @@ rename_registers (int nregs, dominance_info idom)
   VARRAY_RTX_INIT (ssa_definition, nregs * 3, "ssa_definition");
   ssa_rename_from_initialize ();
 
-  ssa_rename_to_pseudo = (rtx *) alloca (nregs * sizeof(rtx));
-  memset ((char *) ssa_rename_to_pseudo, 0, nregs * sizeof(rtx));
-  memset ((char *) ssa_rename_to_hard, 0,
-	 FIRST_PSEUDO_REGISTER * NUM_MACHINE_MODES * sizeof (rtx));
+  ssa_rename_to_pseudo = alloca (nregs * sizeof(rtx));
+  memset (ssa_rename_to_pseudo, 0, nregs * sizeof(rtx));
+  memset (ssa_rename_to_hard, 0,
+	  FIRST_PSEUDO_REGISTER * NUM_MACHINE_MODES * sizeof (rtx));
 
   rename_block (0, idom);
 
@@ -1313,7 +1312,7 @@ eliminate_phi (edge e, partition reg_partition)
      present in Phi(B).  There is an edge from FIND(T0)->FIND(T1) for
      each T0 = PHI(...,T1,...), where T1 is for the edge from block C.  */
 
-  nodes = (rtx *) alloca (n_nodes * sizeof(rtx));
+  nodes = alloca (n_nodes * sizeof(rtx));
   pred = sbitmap_vector_alloc (n_nodes, n_nodes);
   succ = sbitmap_vector_alloc (n_nodes, n_nodes);
   sbitmap_vector_zero (pred, n_nodes);
@@ -1362,7 +1361,7 @@ eliminate_phi (edge e, partition reg_partition)
   visited = sbitmap_alloc (n_nodes);
   sbitmap_zero (visited);
 
-  tstack = stack = (int *) alloca (n_nodes * sizeof (int));
+  tstack = stack = alloca (n_nodes * sizeof (int));
 
   for (i = 0; i < n_nodes; ++i)
     if (! TEST_BIT (visited, i))

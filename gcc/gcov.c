@@ -520,7 +520,7 @@ process_file (const char *file_name)
   for (fn = functions; fn; fn = fn->next)
     solve_flow_graph (fn);
   for (src = sources; src; src = src->next)
-    src->lines = (line_t *) xcalloc (src->num_lines, sizeof (line_t));
+    src->lines = xcalloc (src->num_lines, sizeof (line_t));
   for (fn = functions; fn; fn = fn->next)
     {
       coverage_t coverage;
@@ -682,7 +682,7 @@ find_source (const char *file_name)
     if (!strcmp (file_name, src->name))
       return src;
 
-  src = (source_t *)xcalloc (1, sizeof (source_t));
+  src = xcalloc (1, sizeof (source_t));
   src->name = xstrdup (file_name);
   src->coverage.name = src->name;
   src->index = sources ? sources->index + 1 : 1;
@@ -748,7 +748,7 @@ read_graph_file (void)
 	  src = find_source (gcov_read_string ());
 	  lineno = gcov_read_unsigned ();
 
-	  fn = (function_t *)xcalloc (1, sizeof (function_t));
+	  fn = xcalloc (1, sizeof (function_t));
 	  fn->name = function_name;
 	  fn->ident = ident;
 	  fn->checksum = checksum;
@@ -784,8 +784,7 @@ read_graph_file (void)
 	      unsigned ix, num_blocks = GCOV_TAG_BLOCKS_NUM (length);
 	      fn->num_blocks = num_blocks;
 
-	      fn->blocks
-		= (block_t *)xcalloc (fn->num_blocks, sizeof (block_t));
+	      fn->blocks = xcalloc (fn->num_blocks, sizeof (block_t));
 	      for (ix = 0; ix != num_blocks; ix++)
 		fn->blocks[ix].flags = gcov_read_unsigned ();
 	    }
@@ -806,7 +805,7 @@ read_graph_file (void)
 
 	      if (dest >= fn->num_blocks)
 		goto corrupt;
-	      arc = (arc_t *) xcalloc (1, sizeof (arc_t));
+	      arc = xcalloc (1, sizeof (arc_t));
 
 	      arc->dst = &fn->blocks[dest];
 	      arc->src = &fn->blocks[src];
@@ -851,8 +850,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_LINES)
 	{
 	  unsigned blockno = gcov_read_unsigned ();
-	  unsigned *line_nos
-	    = (unsigned *)xcalloc (length - 1, sizeof (unsigned));
+	  unsigned *line_nos = xcalloc (length - 1, sizeof (unsigned));
 
 	  if (blockno >= fn->num_blocks || fn->blocks[blockno].u.line.encoding)
 	    goto corrupt;
@@ -1047,8 +1045,7 @@ read_count_file (void)
 	    goto mismatch;
 
 	  if (!fn->counts)
-	    fn->counts
-	      = (gcov_type *)xcalloc (fn->num_counts, sizeof (gcov_type));
+	    fn->counts = xcalloc (fn->num_counts, sizeof (gcov_type));
 
 	  for (ix = 0; ix != fn->num_counts; ix++)
 	    fn->counts[ix] += gcov_read_counter ();

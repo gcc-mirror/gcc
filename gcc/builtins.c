@@ -1082,7 +1082,7 @@ result_vector (int savep, rtx result)
   int regno, size, align, nelts;
   enum machine_mode mode;
   rtx reg, mem;
-  rtx *savevec = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
+  rtx *savevec = alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   size = nelts = 0;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)

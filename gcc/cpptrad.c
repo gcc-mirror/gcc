@@ -107,8 +107,7 @@ check_output_buffer (cpp_reader *pfile, size_t n)
       size_t size = pfile->out.cur - pfile->out.base;
       size_t new_size = (size + n) * 3 / 2;
 
-      pfile->out.base
-	= (uchar *) xrealloc (pfile->out.base, new_size);
+      pfile->out.base = xrealloc (pfile->out.base, new_size);
       pfile->out.limit = pfile->out.base + new_size;
       pfile->out.cur = pfile->out.base + size;
     }

@@ -130,7 +130,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
   /* Initialize this instance of the library if it hasn't been already.  */
   init_library ();
 
-  pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
+  pfile = xcalloc (1, sizeof (cpp_reader));
 
   cpp_set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;

@@ -1055,10 +1055,10 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
      can suppress some optimizations in those zones.  */
   mark_flags_life_zones (discover_flags_reg ());
 
-  regno_src_regno = (int *) xmalloc (sizeof *regno_src_regno * nregs);
+  regno_src_regno = xmalloc (sizeof *regno_src_regno * nregs);
   for (i = nregs; --i >= 0; ) regno_src_regno[i] = -1;
 
-  regmove_bb_head = (int *) xmalloc (sizeof (int) * (old_max_uid + 1));
+  regmove_bb_head = xmalloc (sizeof (int) * (old_max_uid + 1));
   for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
   FOR_EACH_BB (bb)
     regmove_bb_head[INSN_UID (bb->head)] = bb->index;
@@ -2198,7 +2198,7 @@ record_one_stack_memref (rtx insn, rtx *mem, struct csa_memlist *next_memlist)
 {
   struct csa_memlist *ml;
 
-  ml = (struct csa_memlist *) xmalloc (sizeof (*ml));
+  ml = xmalloc (sizeof (*ml));
 
   if (XEXP (*mem, 0) == stack_pointer_rtx)
     ml->sp_offset = 0;

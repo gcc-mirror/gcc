@@ -220,8 +220,7 @@ c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
   flag_exceptions = c_dialect_cxx ();
   warn_pointer_arith = c_dialect_cxx ();
 
-  deferred_opts = (struct deferred_opt *)
-    xmalloc (argc * sizeof (struct deferred_opt));
+  deferred_opts = xmalloc (argc * sizeof (struct deferred_opt));
 
   result = lang_flags[c_language];
 

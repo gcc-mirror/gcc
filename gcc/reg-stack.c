@@ -630,7 +630,7 @@ check_asm_stack_operands (rtx insn)
 
   if (GET_CODE (body) == PARALLEL)
     {
-      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx));
+      clobber_reg = alloca (XVECLEN (body, 0) * sizeof (rtx));
 
       for (i = 0; i < XVECLEN (body, 0); i++)
 	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
@@ -1946,9 +1946,9 @@ subst_asm_stack_regs (rtx insn, stack regstack)
   for (i = 0, note = REG_NOTES (insn); note; note = XEXP (note, 1))
     i++;
 
-  note_reg = (rtx *) alloca (i * sizeof (rtx));
-  note_loc = (rtx **) alloca (i * sizeof (rtx *));
-  note_kind = (enum reg_note *) alloca (i * sizeof (enum reg_note));
+  note_reg = alloca (i * sizeof (rtx));
+  note_loc = alloca (i * sizeof (rtx *));
+  note_kind = alloca (i * sizeof (enum reg_note));
 
   n_notes = 0;
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
@@ -1979,8 +1979,8 @@ subst_asm_stack_regs (rtx insn, stack regstack)
 
   if (GET_CODE (body) == PARALLEL)
     {
-      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx));
-      clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx *));
+      clobber_reg = alloca (XVECLEN (body, 0) * sizeof (rtx));
+      clobber_loc = alloca (XVECLEN (body, 0) * sizeof (rtx *));
 
       for (i = 0; i < XVECLEN (body, 0); i++)
 	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
@@ -2800,7 +2800,7 @@ convert_regs_2 (FILE *file, basic_block block)
   basic_block *stack, *sp;
   int inserted;
 
-  stack = (basic_block *) xmalloc (sizeof (*stack) * n_basic_blocks);
+  stack = xmalloc (sizeof (*stack) * n_basic_blocks);
   sp = stack;
 
   *sp++ = block;

@@ -192,7 +192,7 @@ struct file_stack_entry *file_stack;
 static void
 symbol_push (symbol *p)
 {
-  struct symbol_stack_entry *ep = (struct symbol_stack_entry *) obstack_alloc
+  struct symbol_stack_entry *ep = obstack_alloc
     (&symbol_stack_obstack, sizeof (struct symbol_stack_entry));
   ep->value = p;
   ep->next = symbol_stack;
@@ -220,7 +220,7 @@ file_push (file *p)
   if (p->tweaking)
     return;
 
-  ep = (struct file_stack_entry *) obstack_alloc
+  ep = obstack_alloc
     (&file_stack_obstack, sizeof (struct file_stack_entry));
   ep->value = p;
   ep->next = file_stack;

@@ -115,7 +115,7 @@ __register_frame (void *begin)
   if (*(uword *) begin == 0)
     return;
 
-  ob = (struct object *) malloc (sizeof (struct object));
+  ob = malloc (sizeof (struct object));
   __register_frame_info (begin, ob);
 }
 
@@ -153,7 +153,7 @@ __register_frame_info_table (void *begin, struct object *ob)
 void
 __register_frame_table (void *begin)
 {
-  struct object *ob = (struct object *) malloc (sizeof (struct object));
+  struct object *ob = malloc (sizeof (struct object));
   __register_frame_info_table (begin, ob);
 }
 
@@ -395,10 +395,10 @@ start_fde_sort (struct fde_accumulator *accu, size_t count)
     return 0;
 
   size = sizeof (struct fde_vector) + sizeof (fde *) * count;
-  if ((accu->linear = (struct fde_vector *) malloc (size)))
+  if ((accu->linear = malloc (size)))
     {
       accu->linear->count = 0;
-      if ((accu->erratic = (struct fde_vector *) malloc (size)))
+      if ((accu->erratic = malloc (size)))
 	accu->erratic->count = 0;
       return 1;
     }

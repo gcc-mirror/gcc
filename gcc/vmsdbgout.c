@@ -1362,8 +1362,8 @@ vmsdbgout_begin_function (tree decl)
   if (func_table_in_use == func_table_allocated)
     {
       func_table_allocated += FUNC_TABLE_INCREMENT;
-      func_table = (char **) xrealloc (func_table,
-				       func_table_allocated * sizeof (char *));
+      func_table = xrealloc (func_table,
+			     func_table_allocated * sizeof (char *));
     }
 
   /* Add the new entry to the end of the function name table.  */
@@ -1481,10 +1481,9 @@ lookup_filename (const char *file_name)
     {
 
       file_info_table_allocated += FILE_TABLE_INCREMENT;
-      file_info_table
-	= (dst_file_info_ref) xrealloc (file_info_table,
-					(file_info_table_allocated
-					 * sizeof (dst_file_info_entry)));
+      file_info_table = xrealloc (file_info_table,
+				  (file_info_table_allocated
+				   * sizeof (dst_file_info_entry)));
     }
 
   /* Add the new entry to the end of the filename table.  */
@@ -1521,10 +1520,9 @@ vmsdbgout_source_line (register unsigned line, register const char *filename)
       if (line_info_table_in_use == line_info_table_allocated)
 	{
 	  line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	  line_info_table
-	    = (dst_line_info_ref) xrealloc (line_info_table,
-					    (line_info_table_allocated
-					     * sizeof (dst_line_info_entry)));
+	  line_info_table = xrealloc (line_info_table,
+				      (line_info_table_allocated
+				       * sizeof (dst_line_info_entry)));
 	}
 
       /* Add the new entry at the end of the line_info_table.  */
@@ -1574,21 +1572,19 @@ vmsdbgout_init (const char *main_input_filename)
 
   /* Allocate the initial hunk of the file_info_table.  */
   file_info_table
-    = (dst_file_info_ref) xcalloc (FILE_TABLE_INCREMENT,
-				   sizeof (dst_file_info_entry));
+    = xcalloc (FILE_TABLE_INCREMENT, sizeof (dst_file_info_entry));
   file_info_table_allocated = FILE_TABLE_INCREMENT;
 
   /* Skip the first entry - file numbers begin at 1 */
   file_info_table_in_use = 1;
 
-  func_table = (char **) xcalloc (FUNC_TABLE_INCREMENT, sizeof (char *));
+  func_table = xcalloc (FUNC_TABLE_INCREMENT, sizeof (char *));
   func_table_allocated = FUNC_TABLE_INCREMENT;
   func_table_in_use = 1;
 
   /* Allocate the initial hunk of the line_info_table.  */
   line_info_table
-    = (dst_line_info_ref) xcalloc (LINE_INFO_TABLE_INCREMENT,
-				   sizeof (dst_line_info_entry));
+    = xcalloc (LINE_INFO_TABLE_INCREMENT, sizeof (dst_line_info_entry));
   line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
   /* zero-th entry is allocated, but unused */
   line_info_table_in_use = 1;

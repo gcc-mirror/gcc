@@ -73,7 +73,7 @@ lang_specific_driver (int *in_argc ATTRIBUTE_UNUSED,
   if  (shared_libgcc)
     {
       /* Make sure to have room for the trailing NULL argument.  */
-      arglist = (const char **) xmalloc ((argc+2) * sizeof (char *));
+      arglist = xmalloc ((argc+2) * sizeof (char *));
 
       i = 0;
       do

@@ -311,7 +311,7 @@ init_reg_sets_1 (void)
 
   /* Compute number of hard regs in each class.  */
 
-  memset ((char *) reg_class_size, 0, sizeof reg_class_size);
+  memset (reg_class_size, 0, sizeof reg_class_size);
   for (i = 0; i < N_REG_CLASSES; i++)
     for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
       if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
@@ -1202,11 +1202,11 @@ regclass (rtx f, int nregs, FILE *dump)
 
   init_recog ();
 
-  costs = (struct costs *) xmalloc (nregs * sizeof (struct costs));
+  costs = xmalloc (nregs * sizeof (struct costs));
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
-  in_inc_dec = (char *) xmalloc (nregs);
+  in_inc_dec = xmalloc (nregs);
 
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
 
@@ -1223,7 +1223,7 @@ regclass (rtx f, int nregs, FILE *dump)
 	fprintf (dump, "\n\nPass %i\n\n",pass);
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
-      memset ((char *) costs, 0, nregs * sizeof (struct costs));
+      memset (costs, 0, nregs * sizeof (struct costs));
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
       memset (in_inc_dec, 0, nregs);
@@ -1423,7 +1423,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  if (*p == 0)
 	    {
 	      if (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		memset ((char *) &this_op_costs[i], 0, sizeof this_op_costs[i]);
+		memset (&this_op_costs[i], 0, sizeof this_op_costs[i]);
 
 	      continue;
 	    }
@@ -2162,9 +2162,9 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
       if (!reg_n_info)
 	{
 	  VARRAY_REG_INIT (reg_n_info, regno_allocated, "reg_n_info");
-	  renumber = (short *) xmalloc (size_renumber);
-	  reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated
-					      * sizeof (struct reg_pref));
+	  renumber = xmalloc (size_renumber);
+	  reg_pref_buffer = xmalloc (regno_allocated
+				     * sizeof (struct reg_pref));
 	}
 
       else
@@ -2175,23 +2175,23 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	    {
 	      free ((char *) renumber);
 	      free ((char *) reg_pref);
-	      renumber = (short *) xmalloc (size_renumber);
-	      reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated
-						  * sizeof (struct reg_pref));
+	      renumber = xmalloc (size_renumber);
+	      reg_pref_buffer = xmalloc (regno_allocated
+					 * sizeof (struct reg_pref));
 	    }
 
 	  else
 	    {
-	      renumber = (short *) xrealloc ((char *) renumber, size_renumber);
-	      reg_pref_buffer = (struct reg_pref *) xrealloc ((char *) reg_pref_buffer,
-						   regno_allocated
-						   * sizeof (struct reg_pref));
+	      renumber = xrealloc (renumber, size_renumber);
+	      reg_pref_buffer = xrealloc (reg_pref_buffer,
+					  regno_allocated
+					  * sizeof (struct reg_pref));
 	    }
 	}
 
       size_info = (regno_allocated - old_allocated) * sizeof (reg_info)
 	+ sizeof (struct reg_info_data) - sizeof (reg_info);
-      reg_data = (struct reg_info_data *) xcalloc (size_info, 1);
+      reg_data = xcalloc (size_info, 1);
       reg_data->min_index = old_allocated;
       reg_data->max_index = regno_allocated - 1;
       reg_data->next = reg_info_head;
@@ -2221,8 +2221,8 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	  if (!reg_data->used_p)	/* page just allocated with calloc */
 	    reg_data->used_p = 1;	/* no need to zero */
 	  else
-	    memset ((char *) &reg_data->data[local_min], 0,
-		   sizeof (reg_info) * (max - min_index - local_min + 1));
+	    memset (&reg_data->data[local_min], 0,
+		    sizeof (reg_info) * (max - min_index - local_min + 1));
 
 	  for (i = min_index+local_min; i <= max; i++)
 	    {

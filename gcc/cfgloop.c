@@ -241,7 +241,7 @@ flow_loop_entry_edges_find (struct loop *loop)
   if (! num_entries)
     abort ();
 
-  loop->entry_edges = (edge *) xmalloc (num_entries * sizeof (edge *));
+  loop->entry_edges = xmalloc (num_entries * sizeof (edge *));
 
   num_entries = 0;
   for (e = loop->header->pred; e; e = e->pred_next)
@@ -288,7 +288,7 @@ flow_loop_exit_edges_find (struct loop *loop)
       return;
     }
 
-  loop->exit_edges = (edge *) xmalloc (num_exits * sizeof (edge *));
+  loop->exit_edges = xmalloc (num_exits * sizeof (edge *));
 
   /* Store all exiting edges into an array.  */
   num_exits = 0;
@@ -322,7 +322,7 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
 
   if (loop->latch->loop_father != loop)
     {
-      stack = (basic_block *) xmalloc (n_basic_blocks * sizeof (basic_block));
+      stack = xmalloc (n_basic_blocks * sizeof (basic_block));
       sp = 0;
       num_nodes++;
       stack[sp++] = loop->latch;
@@ -380,7 +380,7 @@ flow_loop_pre_header_scan (struct loop *loop)
        num++)
     ebb = ebb->pred->src;
 
-  loop->pre_header_edges = (edge *) xmalloc (num * sizeof (edge));
+  loop->pre_header_edges = xmalloc (num * sizeof (edge));
   loop->num_pre_header_edges = num;
 
   /* Store edges in order that they are followed.  The source of the first edge
@@ -817,7 +817,7 @@ flow_loops_find (struct loops *loops, int flags)
     }
 
   /* Allocate loop structures.  */
-  loops->parray = (struct loop **) xcalloc (num_loops + 1, sizeof (struct loop *));
+  loops->parray = xcalloc (num_loops + 1, sizeof (struct loop *));
 
   /* Dummy loop containing whole function.  */
   loops->parray[0] = xcalloc (1, sizeof (struct loop));
@@ -844,8 +844,8 @@ flow_loops_find (struct loops *loops, int flags)
     {
       /* Compute depth first search order of the CFG so that outer
 	 natural loops will be found before inner natural loops.  */
-      dfs_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
-      rc_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
+      dfs_order = xmalloc (n_basic_blocks * sizeof (int));
+      rc_order = xmalloc (n_basic_blocks * sizeof (int));
       flow_depth_first_order_compute (dfs_order, rc_order);
 
       /* Save CFG derived information to avoid recomputing it.  */

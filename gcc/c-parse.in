@@ -75,15 +75,13 @@ do {									\
   newsize = *(YYSSZ) *= 2;						\
   if (malloced_yyss)							\
     {									\
-      newss = (short *)							\
-	really_call_realloc (*(SS), newsize * sizeof (short));		\
-      newvs = (YYSTYPE *)						\
-	really_call_realloc (*(VS), newsize * sizeof (YYSTYPE));	\
+      newss = really_call_realloc (*(SS), newsize * sizeof (short));	\
+      newvs = really_call_realloc (*(VS), newsize * sizeof (YYSTYPE));	\
     }									\
   else									\
     {									\
-      newss = (short *) really_call_malloc (newsize * sizeof (short));	\
-      newvs = (YYSTYPE *) really_call_malloc (newsize * sizeof (YYSTYPE)); \
+      newss = really_call_malloc (newsize * sizeof (short));		\
+      newvs = really_call_malloc (newsize * sizeof (YYSTYPE));		\
       if (newss)							\
         memcpy (newss, *(SS), (SSSIZE));				\
       if (newvs)							\
@@ -3524,7 +3522,7 @@ init_reswords (void)
   if (!c_dialect_objc ())
      mask |= D_OBJC;
 
-  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = ggc_calloc ((int) RID_MAX, sizeof (tree));
   for (i = 0; i < N_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table

@@ -155,7 +155,7 @@ init_flow (void)
   if (!initialized)
     {
       gcc_obstack_init (&flow_obstack);
-      flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
+      flow_firstobj = obstack_alloc (&flow_obstack, 0);
       initialized = 1;
     }
   else
@@ -163,7 +163,7 @@ init_flow (void)
       free_alloc_pool (bb_pool);
       free_alloc_pool (edge_pool);
       obstack_free (&flow_obstack, flow_firstobj);
-      flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
+      flow_firstobj = obstack_alloc (&flow_obstack, 0);
     }
   bb_pool = create_alloc_pool ("Basic block pool",
 			       sizeof (struct basic_block_def), 100);
@@ -697,7 +697,7 @@ alloc_aux_for_blocks (int size)
   /* Check whether AUX data are still allocated.  */
   else if (first_block_aux_obj)
     abort ();
-  first_block_aux_obj = (char *) obstack_alloc (&block_aux_obstack, 0);
+  first_block_aux_obj = obstack_alloc (&block_aux_obstack, 0);
   if (size)
     {
       basic_block bb;
@@ -763,7 +763,7 @@ alloc_aux_for_edges (int size)
   else if (first_edge_aux_obj)
     abort ();
 
-  first_edge_aux_obj = (char *) obstack_alloc (&edge_aux_obstack, 0);
+  first_edge_aux_obj = obstack_alloc (&edge_aux_obstack, 0);
   if (size)
     {
       basic_block bb;
@@ -819,9 +819,8 @@ verify_flow_info (void)
   basic_block bb, last_bb_seen;
   basic_block *last_visited;
 
-  last_visited = (basic_block *) xcalloc (last_basic_block + 2,
-					  sizeof (basic_block));
-  edge_checksum = (size_t *) xcalloc (last_basic_block + 2, sizeof (size_t));
+  last_visited = xcalloc (last_basic_block + 2, sizeof (basic_block));
+  edge_checksum = xcalloc (last_basic_block + 2, sizeof (size_t));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;

@@ -133,10 +133,10 @@ void debug_dominance_info (dominance_info);
     {								\
       unsigned int i = 1;    /* Catch content == i.  */		\
       if (! (content))						\
-	(var) = (type *) xcalloc ((num), sizeof (type));	\
+	(var) = xcalloc ((num), sizeof (type));			\
       else							\
 	{							\
-	  (var) = (type *) xmalloc ((num) * sizeof (type));	\
+	  (var) = xmalloc ((num) * sizeof (type));		\
 	  for (i = 0; i < num; i++)				\
 	    (var)[i] = (content);				\
 	}							\
@@ -212,7 +212,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, enum cdi_direction re
   /* Ending block.  */
   basic_block ex_block;
 
-  stack = (edge *) xmalloc ((n_basic_blocks + 3) * sizeof (edge));
+  stack = xmalloc ((n_basic_blocks + 3) * sizeof (edge));
   sp = 0;
 
   /* Initialize our border blocks, and the first edge.  */

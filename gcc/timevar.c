@@ -226,7 +226,7 @@ timevar_init (void)
   timevar_enable = true;
 
   /* Zero all elapsed times.  */
-  memset ((void *) timevars, 0, sizeof (timevars));
+  memset (timevars, 0, sizeof (timevars));
 
   /* Initialize the names of timing variables.  */
 #define DEFTIMEVAR(identifier__, name__) \
@@ -286,8 +286,7 @@ timevar_push (timevar_id_t timevar)
       unused_stack_instances = unused_stack_instances->next;
     }
   else
-    context = (struct timevar_stack_def *)
-      xmalloc (sizeof (struct timevar_stack_def));
+    context = xmalloc (sizeof (struct timevar_stack_def));
 
   /* Fill it in and put it on the stack.  */
   context->timevar = tv;

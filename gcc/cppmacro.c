@@ -414,7 +414,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 
   lhs = *plhs;
   len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
-  buf = (unsigned char *) alloca (len);
+  buf = alloca (len);
   end = cpp_spell_token (pfile, lhs, buf);
 
   /* Avoid comment headers, since they are still processed in stage 3.
@@ -991,8 +991,7 @@ expand_arg (cpp_reader *pfile, macro_arg *arg)
 
   /* Loop, reading in the arguments.  */
   capacity = 256;
-  arg->expanded = (const cpp_token **)
-    xmalloc (capacity * sizeof (cpp_token *));
+  arg->expanded = xmalloc (capacity * sizeof (cpp_token *));
 
   push_ptoken_context (pfile, NULL, NULL, arg->first, arg->count + 1);
   for (;;)
@@ -1002,8 +1001,8 @@ expand_arg (cpp_reader *pfile, macro_arg *arg)
       if (arg->expanded_count + 1 >= capacity)
 	{
 	  capacity *= 2;
-	  arg->expanded = (const cpp_token **)
-	    xrealloc (arg->expanded, capacity * sizeof (cpp_token *));
+	  arg->expanded = xrealloc (arg->expanded,
+				    capacity * sizeof (cpp_token *));
 	}
 
       token = cpp_get_token (pfile);
@@ -1257,7 +1256,7 @@ _cpp_save_parameter (cpp_reader *pfile, cpp_macro *macro, cpp_hashnode *node)
   len = macro->paramc * sizeof (union _cpp_hashnode_value);
   if (len > pfile->macro_buffer_len)
     {
-      pfile->macro_buffer = (uchar *) xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer = xrealloc (pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
   ((union _cpp_hashnode_value *) pfile->macro_buffer)[macro->paramc - 1]
@@ -1648,7 +1647,7 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 
   if (len > pfile->macro_buffer_len)
     {
-      pfile->macro_buffer = (uchar *) xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer = xrealloc (pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
 
