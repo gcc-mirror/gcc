@@ -32,11 +32,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 struct directive
 {
-  int (*func)			/* Function to handle directive */
-    PARAMS ((cpp_reader *));
-  const char *name;		/* Name of directive */
-  unsigned short length;	/* Length of name */
-  unsigned short origin;	/* Origin of this directive */
+  directive_handler func;	/* Function to handle directive.  */
+  const char *name;		/* Name of directive.  */
+  unsigned short length;	/* Length of name.  */
+  unsigned short flags;	        /* Flags describing this directive.  */
 };
 
 /* Stack of conditionals currently in progress
@@ -68,14 +67,20 @@ static int consider_directive_while_skipping
 					PARAMS ((cpp_reader *, IF_STACK *));
 static int get_macro_name		PARAMS ((cpp_reader *));
 
-/* Values for the "origin" field of the table below.  KANDR and COND
+/* Values for the flags field of the table below.  KANDR and COND
    directives come from traditional (K&R) C.  The difference is, if we
    care about it while skipping a failed conditional block, its origin
    is COND.  STDC89 directives come from the 1989 C standard.
    EXTENSION directives are extensions, with origins noted below.  */
-enum { KANDR = 0, COND, STDC89, EXTENSION };
 
-#define TRAD_DIRECT_P(x) ((x) == KANDR || (x) == COND)
+#define KANDR       0
+#define COND        1
+#define STDC89      2
+#define EXTENSION   3
+
+#define ORIGIN_MASK 3
+#define ORIGIN(f) ((f) & ORIGIN_MASK)
+#define TRAD_DIRECT_P(f) (ORIGIN (f) == KANDR || ORIGIN (f) == COND)
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -94,25 +99,25 @@ enum { KANDR = 0, COND, STDC89, EXTENSION };
 # define SCCS_ENTRY /* nothing */
 #endif
 
-#define DIRECTIVE_TABLE							\
-D(define,	T_DEFINE = 0,	KANDR)		/* 270554 */		\
-D(include,	T_INCLUDE,	KANDR)		/*  52262 */		\
-D(endif,	T_ENDIF,	COND)		/*  45855 */		\
-D(ifdef,	T_IFDEF,	COND)		/*  22000 */		\
-D(if,		T_IF,		COND)		/*  18162 */		\
-D(else,		T_ELSE,		COND)		/*   9863 */		\
-D(ifndef,	T_IFNDEF,	COND)		/*   9675 */		\
-D(undef,	T_UNDEF,	KANDR)		/*   4837 */		\
-D(line,		T_LINE,		KANDR)		/*   2465 */		\
-D(elif,		T_ELIF,		COND)		/*    610 */		\
-D(error,	T_ERROR,	STDC89)		/*    475 */		\
-D(pragma,	T_PRAGMA,	STDC89)		/*    195 */		\
-D(warning,	T_WARNING,	EXTENSION)	/*     22 - GNU   */	\
-D(include_next,	T_INCLUDE_NEXT,	EXTENSION)	/*     19 - GNU   */	\
-D(ident,	T_IDENT,	EXTENSION)	/*     11 - SVR4  */	\
-D(import,	T_IMPORT,	EXTENSION)	/*      0 - ObjC  */	\
-D(assert,	T_ASSERT,	EXTENSION)	/*      0 - SVR4  */	\
-D(unassert,	T_UNASSERT,	EXTENSION)	/*      0 - SVR4  */	\
+#define DIRECTIVE_TABLE							 \
+D(define,	T_DEFINE = 0,	KANDR)		           /* 270554 */ \
+D(include,	T_INCLUDE,	KANDR | SYNTAX_INCLUDE)    /*  52262 */ \
+D(endif,	T_ENDIF,	COND)		           /*  45855 */ \
+D(ifdef,	T_IFDEF,	COND)			   /*  22000 */ \
+D(if,		T_IF,		COND)			   /*  18162 */ \
+D(else,		T_ELSE,		COND)			    /*  9863 */ \
+D(ifndef,	T_IFNDEF,	COND)			    /*  9675 */ \
+D(undef,	T_UNDEF,	KANDR)			    /*  4837 */ \
+D(line,		T_LINE,		KANDR)			    /*  2465 */ \
+D(elif,		T_ELIF,		COND)			    /*   610 */ \
+D(error,	T_ERROR,	STDC89)			    /*   475 */ \
+D(pragma,	T_PRAGMA,	STDC89)			    /*   195 */ \
+D(warning,	T_WARNING,	EXTENSION)		    /*    22 GNU */ \
+D(include_next,	T_INCLUDE_NEXT,	EXTENSION | SYNTAX_INCLUDE) /*    19 GNU */ \
+D(ident,	T_IDENT,	EXTENSION)		    /*    11 SVR4 */ \
+D(import,	T_IMPORT,	EXTENSION | SYNTAX_INCLUDE) /*     0 ObjC */ \
+D(assert,	T_ASSERT,	EXTENSION | SYNTAX_ASSERT)  /*     0 SVR4 */ \
+D(unassert,	T_UNASSERT,	EXTENSION | SYNTAX_ASSERT)  /*     0 SVR4 */ \
 SCCS_ENTRY
 
 /* Use the table to generate a series of prototypes, an enum for the
@@ -123,11 +128,11 @@ SCCS_ENTRY
    pointers to functions returning void.  */
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
-#define D(name, t, o) static int CONCAT2(do_,name) PARAMS ((cpp_reader *));
+#define D(name, t, f) static int CONCAT2(do_,name) PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
 
-#define D(n, tag, o) tag,
+#define D(n, tag, f) tag,
 enum
 {
   DIRECTIVE_TABLE
@@ -136,8 +141,8 @@ enum
 #undef D
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
-#define D(name, t, origin) \
-{ CONCAT2(do_,name), STRINGX(name), sizeof STRINGX(name) - 1, origin },
+#define D(name, t, flags) \
+{ CONCAT2(do_,name), STRINGX(name), sizeof STRINGX(name) - 1, flags },
 static const struct directive dtable[] =
 {
 DIRECTIVE_TABLE
@@ -249,17 +254,17 @@ _cpp_handle_directive (pfile)
     }
 
   /* Issue -pedantic warnings for extended directives.   */
-  if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
+  if (CPP_PEDANTIC (pfile) && ORIGIN (dtable[i].flags) == EXTENSION)
     cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
 
   /* -Wtraditional gives warnings about directives with inappropriate
      indentation of #.  */
   if (CPP_WTRADITIONAL (pfile))
     {
-      if (!hash_at_bol && TRAD_DIRECT_P (dtable[i].origin))
+      if (!hash_at_bol && TRAD_DIRECT_P (dtable[i].flags))
 	cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		     dtable[i].name);
-      else if (hash_at_bol && ! TRAD_DIRECT_P (dtable[i].origin))
+      else if (hash_at_bol && ! TRAD_DIRECT_P (dtable[i].flags))
 	cpp_warning (pfile,
 		"suggest hiding #%s from traditional C with an indented #",
 		     dtable[i].name);
@@ -1331,7 +1336,7 @@ consider_directive_while_skipping (pfile, stack)
  real_directive:
 
   /* If it's not a directive of interest to us, return now.  */
-  if (dtable[i].origin != COND)
+  if (ORIGIN (dtable[i].flags) != COND)
     return 0;
 
   /* First, deal with -traditional and -Wtraditional.

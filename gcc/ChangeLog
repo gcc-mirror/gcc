@@ -1,3 +1,9 @@
+2004-04-16  Neil Booth  <NeilB@earthling.net>
+
+        * cpphash.h (SYNTAX_INCLUDE, SYNTAX_ASSERT, directive_handler): new.
+        * cpplib.c: Add new syntax flags to directive table, and
+        supporting macros.
+
 2000-04-15  Ulrich Drepper  <drepper@redhat.com>
 
 	* i386.c (ix86_expand_epilogue): Yes, the x86 can pop 64k at once

@@ -120,6 +120,12 @@ struct hashnode
   enum node_type type;		/* type of special token */
 };
 
+/* Directive flags.  */
+
+#define SYNTAX_INCLUDE (1 << 8)
+#define SYNTAX_ASSERT  (1 << 9)
+typedef int (* directive_handler) PARAMS ((cpp_reader *));
+
 /* List of directories to look for include files in. */
 struct file_name_list
 {
