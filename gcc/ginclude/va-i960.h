@@ -30,6 +30,11 @@ typedef unsigned __gnuc_va_list[2];
 #define __vpad(I, T) ((((I) + __vali (T) - 1) / __vali (T)) \
 		       * __vali (T) + __vsiz (T))
 
+/* Avoid errors if compiling GCC v2 with GCC v1.  */
+#if __GNUC__ == 1
+#define __extension__
+#endif
+
 #ifdef _STDARG_H
 #define va_start(AP, LASTARG)				\
 __extension__						\
