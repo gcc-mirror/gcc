@@ -1,3 +1,9 @@
+2004-06-22  Andrew Haley  <aph@redhat.com>
+            Ranjit Mathew  <rmathew@hotmail.com>
+	
+	Fixes PR java/16113.
+	* decl.c (force_poplevels): Remove call to expand_end_bindings.
+
 2004-06-22  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* parse.y (create_class): Correct diagnostic message about
