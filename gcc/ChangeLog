@@ -1,3 +1,7 @@
+2002-09-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (TARGET_MIPS4100): Add missing bracket.
+
 2002-09-24  Denis Chertykov  <denisc@overta.ru>
 
 	* config/ip2k/ip2k.c (function_epilogue): Fix wrong numbers in
