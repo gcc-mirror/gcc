@@ -1,3 +1,12 @@
+2002-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* longlong.h: Partially synchronize with GMP-4.1 version:
+	Use i370 definitions also for s390.
+	Add generic definition of umul_ppmm in terms of smul_ppmm.
+	[s390] (umul_ppmm): Remove.
+	[s390] (smul_ppmm): Fix incorrect assembler constraints.
+	[s390] (smul_ppmm, sdiv_qrnnd): Rename __xx to __x.
+
 2002-09-30  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (REG_CLASS_NAMES, REG_CLASS_CONTENTS):
