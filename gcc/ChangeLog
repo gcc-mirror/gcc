@@ -1,3 +1,8 @@
+2004-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align):
+	Check for NULL in the chain and remove repeated code.
+
 2004-01-18  Jan Hubicka  <jh@suse.cz>
 
 	* coverage.c (checksum_string): Rename to ...
