@@ -680,7 +680,7 @@ struct option_map option_map[] =
    {"--no-line-commands", "-P", 0},
    {"--assemble", "-S", 0},
    {"--undefine-macro", "-U", "a"},
-   {"--version", "-V", "a"},
+   {"--use-version", "-V", "a"},
    {"--for-assembler", "-Wa", "a"},
    {"--extra-warnings", "-W", 0},
    {"--all-warnings", "-Wall", 0},
