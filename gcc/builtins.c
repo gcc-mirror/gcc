@@ -87,6 +87,7 @@ static int apply_result_size		PARAMS ((void));
 static rtx result_vector		PARAMS ((int, rtx));
 #endif
 static rtx expand_builtin_setjmp	PARAMS ((tree, rtx));
+static void expand_builtin_prefetch	PARAMS ((tree));
 static rtx expand_builtin_apply_args	PARAMS ((void));
 static rtx expand_builtin_apply_args_1	PARAMS ((void));
 static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
@@ -713,6 +714,69 @@ expand_builtin_longjmp (buf_addr, value)
       else if (GET_CODE (insn) == CALL_INSN)
         break;
     }
+}
+
+/* Expand a call to __builtin_prefetch.  For a target that does not support
+   data prefetch, evaluate the memory address argument in case it has side
+   effects.  */
+
+static void
+expand_builtin_prefetch (arglist)
+     tree arglist;
+{
+  tree arg0, arg1, arg2;
+  rtx op0, op1, op2;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* Argument 0 is an address.  */
+  op0 = expand_expr (arg0, NULL_RTX, Pmode, EXPAND_NORMAL);
+
+  /* Argument 1 (read/write flag) must be a compile-time constant int.  */
+  if (TREE_CODE (arg1) != INTEGER_CST)
+    {
+       error ("second arg to `__builtin_prefetch' must be a constant");
+       arg1 = integer_zero_node;
+    }
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0); 
+  /* Argument 1 must be either zero or one.  */
+  if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
+    {
+      warning ("invalid second arg to __builtin_prefetch; using zero");
+      op1 = const0_rtx;
+    }
+
+  /* Argument 2 (locality) must be a compile-time constant int.  */
+  if (TREE_CODE (arg2) != INTEGER_CST)
+    {
+      error ("third arg to `__builtin_prefetch' must be a constant");
+      arg2 = integer_zero_node;
+    }
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0); 
+  /* Argument 2 must be 0, 1, 2, or 3.  */
+  if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
+    {
+      warning ("invalid third arg to __builtin_prefetch; using zero");
+      op2 = const0_rtx;
+    }
+
+#ifdef HAVE_prefetch
+  if (HAVE_prefetch)
+    {
+      if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
+	    (op0, Pmode))
+        op0 = force_reg (Pmode, op0);
+      emit_insn (gen_prefetch (op0, op1, op2));
+    }
+  else
+#endif
+    op0 = protect_from_queue (op0, 0);
+    /* Don't do anything with direct references to volatile memory, but
+       generate code to handle other side effects.  */
+    if (GET_CODE (op0) != MEM && side_effects_p (op0))
+      emit_insn (op0);
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
@@ -3809,6 +3873,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return expand_builtin_va_copy (arglist);
     case BUILT_IN_EXPECT:
       return expand_builtin_expect (arglist, target);
+    case BUILT_IN_PREFETCH:
+      expand_builtin_prefetch (arglist);
+      return const0_rtx;
+
 
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",
