@@ -1,3 +1,8 @@
+2003-04-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (expand_inline_function): Don't inline if would
+	lose /u on a BLKmode TARGET.
+
 2003-04-14  Joel Brobecker  <brobecker@gnat.com>
 
         * dwarf2out.c (gen_compile_unit_die): Emit DW_LANG_Ada95 instead
