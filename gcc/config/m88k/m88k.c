@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 16, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -2585,7 +2585,7 @@ struct rtx_def *
 m88k_builtin_saveregs (arglist)
      tree arglist;
 {
-  rtx block, addr, argsize;
+  rtx block, addr, argsize, dest;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
 		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -2635,12 +2635,27 @@ m88k_builtin_saveregs (arglist)
 
   /* Now store the incoming registers.  */
   if (fixed < 8)
-      move_block_from_reg
-	(2 + fixed,
-	 change_address (addr, Pmode,
-			 plus_constant (XEXP (addr, 0),
-					fixed * UNITS_PER_WORD)),
-	 8 - fixed, UNITS_PER_WORD * (8 - fixed));
+    {
+      dest = change_address (addr, Pmode,
+			     plus_constant (XEXP (addr, 0),
+					    fixed * UNITS_PER_WORD));
+      move_block_from_reg (2 + fixed, dest, 8 - fixed,
+			   UNITS_PER_WORD * (8 - fixed));
+    }
+
+  if (flag_check_memory_usage)
+    {
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 block, ptr_mode,
+			 GEN_INT (3 * UNITS_PER_WORD), TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW), QImode);
+      if (fixed < 8)
+	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			   dest, ptr_mode,
+			   GEN_INT (UNITS_PER_WORD * (8 - fixed)),
+			   TYPE_MODE (sizetype),
+			   GEN_INT (MEMORY_USE_RW), QImode);
+    }
 
   /* Return the address of the va_list constructor, but don't put it in a
      register.  This fails when not optimizing and produces worse code when
