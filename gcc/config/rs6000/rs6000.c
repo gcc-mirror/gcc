@@ -4555,7 +4555,7 @@ vrsave_operation (op, mode)
   if (count <= 1
       || GET_CODE (XVECEXP (op, 0, 0)) != SET
       || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC)
+      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC_VOLATILE)
     return 0;
 
   dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
@@ -7831,8 +7831,14 @@ generate_set_vrsave (reg, info, epiloguep)
 {
   int nclobs, i;
   rtx insn, clobs[TOTAL_ALTIVEC_REGS + 1];
+  rtx vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
 
-  clobs[0] = gen_set_vrsave (reg);
+  clobs[0]
+    = gen_rtx_SET (VOIDmode,
+		   vrsave,
+		   gen_rtx_UNSPEC_VOLATILE (SImode,
+					    gen_rtvec (2, reg, vrsave),
+					    30));
 
   nclobs = 1;
 
@@ -7859,12 +7865,12 @@ generate_set_vrsave (reg, info, epiloguep)
 	else
 	  {
 	    rtx reg = gen_rtx_REG (V4SImode, i);
-	    rtvec r = rtvec_alloc (1);
-
-	    RTVEC_ELT (r, 0) = reg;
 
 	    clobs[nclobs++]
-	      = gen_rtx_SET (VOIDmode, reg, gen_rtx_UNSPEC (V4SImode, r, 27));
+	      = gen_rtx_SET (VOIDmode,
+			     reg,
+			     gen_rtx_UNSPEC (V4SImode,
+					     gen_rtvec (1, reg), 27));
 	  }
       }
 
@@ -7958,12 +7964,13 @@ rs6000_emit_prologue ()
 
   if (TARGET_ALTIVEC && info->vrsave_mask != 0)
     {
-      rtx reg, mem;
+      rtx reg, mem, vrsave;
       int offset;
 
       /* Get VRSAVE onto a GPR.  */
       reg = gen_rtx_REG (SImode, 12);
-      emit_insn (gen_get_vrsave (reg));
+      vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
+      emit_insn (gen_rtx_SET (VOIDmode, reg, vrsave));
 
       /* Save VRSAVE.  */
       offset = info->vrsave_save_offset + sp_offset;
