@@ -1,3 +1,11 @@
+2001-06-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* update_web_docs (WWWBASE_PREFORMATTED, PREPROCESS): New
+	variables.
+	Fix a comment and add another one.
+	Generate the installation documentation in HTML format from
+	gcc/doc/install.texi.
+
 2001-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Don't generate HTML from gxxint.texi.  Don't

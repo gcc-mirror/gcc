@@ -5,7 +5,10 @@ CVSROOT=/cvs/gcc
 export CVSROOT
 
 PATH=/usr/local/bin:$PATH
+
 WWWBASE=/www/gcc/htdocs
+WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
+PREPROCESS=/www/gcc/bin/preprocess
 
 # Process options -rrelease and -ddirectory
 RELEASE=""
@@ -87,10 +90,10 @@ find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc
 # Checkout all the texi files and get them into a single directory.
 # If we ever have texi files with the same name we'll have to do this
 # differently.
-cvs -Q co -r$RELEASE `cat FILES`
+cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html
 mv `find . -name \*.texi -print` .
 
-# Now convert the relavent files from texi to html 
+# Now convert the relevant files from texi to html.
 for file in c-tree cpp chill cppinternals gcc gcj g77 objc-features porting; do
   if [ -e ${file}.texi ]; then
     /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
@@ -146,5 +149,19 @@ if [ "$DO_THANKS_HTML" = y ]; then
   ln onlinedocs/$contrib_file thanks.html
   ln onlinedocs/${contrib_file}.gz thanks.html.gz
 fi
+
+# Finally, generate the installation documentation.
+SOURCEDIR=$WORKDIR
+DESTDIR=$WWWBASE_PREFORMATTED/install
+export SOURCEDIR
+export DESTDIR
+$WORKDIR/gcc/gcc/doc/install.texi2html
+
+for file in `ls $DESTDIR`
+do
+  $PREPROCESS install/$file
+done 
+
+# Clean up behind us.
 
 rm -rf $WORKDIR
