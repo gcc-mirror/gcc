@@ -1,5 +1,28 @@
 2002-03-15  Richard Henderson  <rth@redhat.com>
 
+	* c-decl.c: Include c-pragma.h.
+	(start_decl, start_function): Invoke maybe_apply_pragma_weak.
+	(finish_function): Tidy.
+	* c-pragma.c: Include c-common.h.
+	(pending_weaks, apply_pragma_weak, maybe_apply_pragma_weak): New.
+	(handle_pragma_weak): Use them.
+	(init_pragma): Register pending_weaks.
+	* c-pragma.h (maybe_apply_pragma_weak): Declare.
+	* print-tree.c (print_node): Print DECL_WEAK.
+	* varasm.c (mark_weak_decls): Remove.
+	(remove_from_pending_weak_list): Remove.
+	(add_weak): Remove.
+	(asm_emit_uninitialised): Call globalize_decl for weak commons.
+	(weak_decls): Make a tree_list.
+	(declare_weak): Cons weak_decls directly.
+	(globalize_decl): Remove weak_decls elements directly.
+	(weak_finish): Simplify weak_decls walk.  Don't weaken unused
+	symbols.  Don't pretend to handle aliases.
+	(init_varasm_once): Update weak_decls registry.
+	* Makefile.in: Update dependencies.
+
+2002-03-15  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (alpha_va_arg): Manipulate the type
 	size as a tree.
 

@@ -54,4 +54,6 @@ extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 void (*) PARAMS ((cpp_reader *))));
 #endif
 
+extern void maybe_apply_pragma_weak PARAMS ((tree));
+
 #endif /* GCC_C_PRAGMA_H */

@@ -166,9 +166,6 @@ static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
 static void output_constructor		PARAMS ((tree, HOST_WIDE_INT,
 						 unsigned int));
-#ifdef ASM_WEAKEN_LABEL
-static void remove_from_pending_weak_list	PARAMS ((const char *));
-#endif
 static void globalize_decl		PARAMS ((tree));
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
@@ -1397,6 +1394,17 @@ asm_emit_uninitialised (decl, name, size, rounded)
 	destination = asm_dest_common;
     }
 
+  switch (destination)
+    {
+    case asm_dest_common:
+      if (! DECL_WEAK (decl))
+	break;
+    case asm_dest_bss:
+      globalize_decl (decl);
+    default:
+      break;
+    }
+
   if (flag_shared_data)
     {
       switch (destination)
@@ -1427,7 +1435,6 @@ asm_emit_uninitialised (decl, name, size, rounded)
     {
 #ifdef ASM_EMIT_BSS
     case asm_dest_bss:
-      globalize_decl (decl);
       ASM_EMIT_BSS (decl, name, size, rounded);
       break;
 #endif
@@ -4984,40 +4991,9 @@ output_constructor (exp, size, align)
     assemble_zeros (size - total_bytes);
 }
 
-
-/* This structure contains any weak symbol declarations waiting
+/* This TREE_LIST contains any weak symbol declarations waiting
    to be emitted.  */
-struct weak_syms
-{
-  struct weak_syms * next;
-  const char * name;
-  const char * value;
-};
-
-static struct weak_syms * weak_decls;
-
-/* Add function NAME to the weak symbols list.  VALUE is a weak alias
-   associated with NAME.  */
-
-int
-add_weak (name, value)
-     const char *name;
-     const char *value;
-{
-  struct weak_syms *weak;
-
-  weak = (struct weak_syms *) xmalloc (sizeof (struct weak_syms));
-
-  if (weak == NULL)
-    return 0;
-
-  weak->next = weak_decls;
-  weak->name = name;
-  weak->value = value;
-  weak_decls = weak;
-
-  return 1;
-}
+static tree weak_decls;
 
 /* Declare DECL to be a weak symbol.  */
 
@@ -5030,7 +5006,10 @@ declare_weak (decl)
   else if (TREE_ASM_WRITTEN (decl))
     error_with_decl (decl, "weak declaration of `%s' must precede definition");
   else if (SUPPORTS_WEAK)
-    add_weak (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), NULL);
+    {
+      if (! DECL_WEAK (decl))
+	weak_decls = tree_cons (NULL, decl, weak_decls);
+    }
   else
     warning_with_decl (decl, "weak declaration of `%s' not supported");
 
@@ -5042,48 +5021,30 @@ declare_weak (decl)
 void
 weak_finish ()
 {
-  if (SUPPORTS_WEAK)
+  tree t;
+
+  for (t = weak_decls; t ; t = TREE_CHAIN (t))
     {
-      struct weak_syms *t;
-      for (t = weak_decls; t; t = t->next)
-	{
-#ifdef ASM_OUTPUT_WEAK_ALIAS
-	  ASM_OUTPUT_WEAK_ALIAS (asm_out_file, t->name, t->value);
+      tree decl = TREE_VALUE (t);
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+      if (! TREE_USED (decl))
+	continue;
+
+#ifdef ASM_WEAKEN_DECL
+      ASM_WEAKEN_DECL (asm_out_file, decl, name, NULL);
 #else
 #ifdef ASM_WEAKEN_LABEL
-	  if (t->value)
-	    abort ();
-	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
+      ASM_WEAKEN_LABEL (asm_out_file, name);
+#else
+#ifdef ASM_OUTPUT_WEAK_ALIAS
+      warning ("only weak aliases are supported in this configuration");
+      return;
 #endif
 #endif
-	}
+#endif
     }
 }
-
-/* Remove NAME from the pending list of weak symbols.  This prevents
-   the compiler from emitting multiple .weak directives which confuses
-   some assemblers.  */
-#ifdef ASM_WEAKEN_LABEL
-static void
-remove_from_pending_weak_list (name)
-     const char *name;
-{
-  struct weak_syms *t;
-  struct weak_syms **p;
-
-  for (p = &weak_decls; *p; )
-    {
-      t = *p;
-      if (strcmp (name, t->name) == 0)
-        {
-          *p = t->next;
-          free (t);
-        }
-      else
-        p = &(t->next);
-    }
-}
-#endif /* ASM_WEAKEN_LABEL */
 
 /* Emit the assembly bits to indicate that DECL is globally visible.  */
 
@@ -5096,18 +5057,26 @@ globalize_decl (decl)
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
   if (DECL_WEAK (decl))
     {
+      tree *p, t;
+
 #ifdef ASM_WEAKEN_DECL
       ASM_WEAKEN_DECL (asm_out_file, decl, name, 0);
 #else
       ASM_WEAKEN_LABEL (asm_out_file, name);
 #endif
+
       /* Remove this function from the pending weak list so that
 	 we do not emit multiple .weak directives for it.  */
-      remove_from_pending_weak_list (name);
+      for (p = &weak_decls; (t = *p) ; p = &TREE_CHAIN (t))
+	if (TREE_VALUE (t) == decl)
+	  {
+	    *p = TREE_CHAIN (t);
+	    break;
+	  }
       return;
     }
-  /* else */
 #endif
+
   ASM_GLOBALIZE_LABEL (asm_out_file, name);
 }
 
@@ -5203,6 +5172,7 @@ init_varasm_once ()
 		mark_const_hash_entry);
   ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
 		mark_const_str_htab);
+  ggc_add_tree_root (&weak_decls, 1);
 
   const_alias_set = new_alias_set ();
 }

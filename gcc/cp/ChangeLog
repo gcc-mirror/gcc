@@ -1,3 +1,9 @@
+2002-03-15  Richard Henderson  <rth@redhat.com>
+
+	* decl.c: Include c-pragma.h.
+	(start_decl, start_function): Invoke maybe_apply_pragma_weak.
+	* Make-lang.in: Update dependencies.
+
 2002-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5857
@@ -125,10 +131,10 @@
 
 2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * cp/decl.c (duplicate_decls): Merge always_inline attribute.
+	* cp/decl.c (duplicate_decls): Merge always_inline attribute.
 
-        * cp/tree.c (cp_cannot_inline_tree_fn): Do not inline at -O0
-        unless DECL_ALWAYS_INLINE.
+	* cp/tree.c (cp_cannot_inline_tree_fn): Do not inline at -O0
+	unless DECL_ALWAYS_INLINE.
 
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 

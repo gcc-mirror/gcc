@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "ggc.h"
 #include "c-lex.h"
+#include "c-common.h"
 #include "output.h"
 #include "tm_p.h"
 
@@ -55,9 +56,9 @@ static struct align_stack * alignment_stack = NULL;
    maximum_field_alignment in effect.  When the final pop_alignment() 
    happens, we restore the value to this, not to a value of 0 for
    maximum_field_alignment.  Value is in bits.  */
-static int  default_alignment;
+static int default_alignment;
 #define SET_GLOBAL_ALIGNMENT(ALIGN) \
-(default_alignment = maximum_field_alignment = (ALIGN))
+  (default_alignment = maximum_field_alignment = (ALIGN))
 
 static void push_alignment PARAMS ((int, tree));
 static void pop_alignment  PARAMS ((tree));
@@ -69,7 +70,6 @@ push_alignment (alignment, id)
      int alignment;
      tree id;
 {
-  
   if (alignment_stack == NULL
       || alignment_stack->alignment != alignment
       || id != NULL_TREE)
@@ -274,14 +274,53 @@ handle_pragma_pack (dummy)
 #endif  /* HANDLE_PRAGMA_PACK */
 
 #ifdef HANDLE_PRAGMA_WEAK
+static void apply_pragma_weak PARAMS ((tree, tree));
 static void handle_pragma_weak PARAMS ((cpp_reader *));
+
+static tree pending_weaks;
+
+static void
+apply_pragma_weak (decl, value)
+     tree decl, value;
+{
+  if (value)
+    decl_attributes (&decl, build_tree_list (get_identifier ("alias"),
+				             build_tree_list (NULL, value)),
+		     0);
+  declare_weak (decl);
+}
+
+void
+maybe_apply_pragma_weak (decl)
+     tree decl;
+{
+  tree *p, t, id;
+
+  /* Copied from the check in set_decl_assembler_name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == VAR_DECL 
+          && (TREE_STATIC (decl) 
+              || DECL_EXTERNAL (decl) 
+              || TREE_PUBLIC (decl))))
+    id = DECL_ASSEMBLER_NAME (decl);
+  else
+    return;
+
+  for (p = &pending_weaks; (t = *p) ; p = &TREE_CHAIN (t))
+    if (id == TREE_PURPOSE (t))
+      {
+	apply_pragma_weak (decl, TREE_VALUE (t));
+	*p = TREE_CHAIN (t);
+	break;
+      }
+}
 
 /* #pragma weak name [= value] */
 static void
 handle_pragma_weak (dummy)
      cpp_reader *dummy ATTRIBUTE_UNUSED;
 {
-  tree name, value, x;
+  tree name, value, x, decl;
   enum cpp_ttype t;
 
   value = 0;
@@ -298,9 +337,19 @@ handle_pragma_weak (dummy)
   if (t != CPP_EOF)
     warning ("junk at end of #pragma weak");
 
-  add_weak (IDENTIFIER_POINTER (name), value ? IDENTIFIER_POINTER (value) : 0);
+  decl = identifier_global_value (name);
+  if (decl && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+    apply_pragma_weak (decl, value);
+  else
+    pending_weaks = tree_cons (name, value, pending_weaks);
 }
-#endif
+#else
+void
+maybe_apply_pragma_weak (decl)
+     tree decl ATTRIBUTE_UNUSED;
+{
+}
+#endif /* HANDLE_PRAGMA_WEAK */
 
 void
 init_pragma ()
@@ -310,6 +359,7 @@ init_pragma ()
 #endif
 #ifdef HANDLE_PRAGMA_WEAK
   cpp_register_pragma (parse_in, 0, "weak", handle_pragma_weak);
+  ggc_add_tree_root (&pending_weaks, 1);
 #endif
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS (parse_in);
