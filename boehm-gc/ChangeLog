@@ -1,3 +1,8 @@
+2002-07-18  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (machdep): Don't add mips_sgi_mach_dep.lo for
+	Linux/mips.
+
 2002-06-28  Hans Boehm <Hans_Boehm@hp.com>
             Jonathan Clark
 
