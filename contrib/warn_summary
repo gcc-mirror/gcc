@@ -7,7 +7,7 @@
 # 	[-pass|-wpass] [file(s)]
 #
 # -llf
-# Filter out long lines from the bootstap output before any other
+# Filter out long lines from the bootstrap output before any other
 # action.  This is useful for systems with broken awks/greps which choke
 # on long lines.  It is not done by default as it sometimes slows things
 # down.
