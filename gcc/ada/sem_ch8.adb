@@ -471,7 +471,7 @@ package body Sem_Ch8 is
    --  to one of these types.
 
    procedure Premature_Usage (N : Node_Id);
-   --  Diagnose usage of an entity before it is visible.
+   --  Diagnose usage of an entity before it is visible
 
    procedure Use_One_Package (P : Entity_Id; N : Node_Id);
    --  Make visible entities declared in package P potentially use-visible
@@ -754,7 +754,7 @@ package body Sem_Ch8 is
                   and then Is_Function_Attribute_Name
                     (Attribute_Name (Original_Node (Nam))))
 
-            --  Weird but legal, equivalent to renaming a function call.
+            --  Weird but legal, equivalent to renaming a function call
 
         or else (Is_Entity_Name (Nam)
                   and then Ekind (Entity (Nam)) = E_Enumeration_Literal)
@@ -842,7 +842,7 @@ package body Sem_Ch8 is
                Name (N), Old_P);
          end if;
 
-         --  Set basic attributes to minimize cascaded errors.
+         --  Set basic attributes to minimize cascaded errors
 
          Set_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
@@ -1016,7 +1016,7 @@ package body Sem_Ch8 is
    begin
       if Entity (Sel) = Any_Id then
 
-         --  Selector is undefined on prefix. Error emitted already.
+         --  Selector is undefined on prefix. Error emitted already
 
          Set_Has_Completion (New_S);
          return;
@@ -1142,7 +1142,7 @@ package body Sem_Ch8 is
 
                if Orig_Subp = Rename_Spec then
 
-                  --  Circularity detected.
+                  --  Circularity detected
 
                   return Orig_Subp;
 
@@ -1587,7 +1587,7 @@ package body Sem_Ch8 is
          Error_Msg_N ("use clause not allowed in predefined spec", N);
       end if;
 
-      --  Chain clause to list of use clauses in current scope.
+      --  Chain clause to list of use clauses in current scope
 
       if Nkind (Parent (N)) /= N_Compilation_Unit then
          Chain_Use_Clause (N);
@@ -1669,7 +1669,7 @@ package body Sem_Ch8 is
    begin
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
-      --  Chain clause to list of use clauses in current scope.
+      --  Chain clause to list of use clauses in current scope
 
       if Nkind (Parent (N)) /= N_Compilation_Unit then
          Chain_Use_Clause (N);
@@ -2012,7 +2012,7 @@ package body Sem_Ch8 is
          then
             Par := Nam;
 
-            --  Find root library unit in with_clause.
+            --  Find root library unit in with_clause
 
             while Nkind (Par) = N_Expanded_Name loop
                Par := Prefix (Par);
@@ -2415,7 +2415,7 @@ package body Sem_Ch8 is
       Msg  : Boolean;
 
       Inst : Entity_Id := Empty;
-      --  Enclosing instance, if any.
+      --  Enclosing instance, if any
 
       Homonyms : Entity_Id;
       --  Saves start of homonym chain
@@ -3023,7 +3023,7 @@ package body Sem_Ch8 is
             --      V2 : Integer := B;
             --    end C;
 
-            --  V1 resolves to A.B, but V2 resolves to library unit B.
+            --  V1 resolves to A.B, but V2 resolves to library unit B
 
             elsif Ekind (E2) = E_Function
               and then Scope (E2) = Standard_Standard
@@ -3061,7 +3061,7 @@ package body Sem_Ch8 is
             if In_Instance then
                Inst := Current_Scope;
 
-               --  Find current instance.
+               --  Find current instance
 
                while Present (Inst)
                  and then Inst /= Standard_Standard
@@ -3199,7 +3199,7 @@ package body Sem_Ch8 is
          then
             Collect_Interps (N);
 
-            --  If no homonyms were visible, the entity is unambiguous.
+            --  If no homonyms were visible, the entity is unambiguous
 
             if not Is_Overloaded (N) then
                Generate_Reference (E, N);
@@ -3227,7 +3227,7 @@ package body Sem_Ch8 is
                   Set_Referenced (E, R);
                end;
 
-            --  Normal case, not a label. Generate reference.
+            --  Normal case, not a label. Generate reference
 
             else
                Generate_Reference (E, N);
@@ -3357,16 +3357,15 @@ package body Sem_Ch8 is
          --  the formals, which is declared in the enclosing wrapper package.
 
          P_Name := Scope (P_Name);
-         Id := Current_Entity (Selector);
 
+         Id := Current_Entity (Selector);
          while Present (Id) loop
-            exit when  Scope (Id) = P_Name;
+            exit when Scope (Id) = P_Name;
             Id := Homonym (Id);
          end loop;
       end if;
 
-      if No (Id) or else Chars (Id) /=  Chars (Selector) then
-
+      if No (Id) or else Chars (Id) /= Chars (Selector) then
          Set_Etype (N, Any_Type);
 
          --  If we are looking for an entity defined in System, try to
@@ -3488,7 +3487,7 @@ package body Sem_Ch8 is
 
                   Error_Msg_NE ("& not declared in&", N, Selector);
 
-                  --  Check for misspelling of some entity in prefix.
+                  --  Check for misspelling of some entity in prefix
 
                   Id := First_Entity (P_Name);
                   Get_Name_String (Chars (Selector));
@@ -4102,7 +4101,7 @@ package body Sem_Ch8 is
 
             if Is_Overloaded (P) then
 
-               --  The prefix must resolve to a unique enclosing construct.
+               --  The prefix must resolve to a unique enclosing construct
 
                declare
                   Found : Boolean := False;
@@ -4345,7 +4344,8 @@ package body Sem_Ch8 is
                  and then not Is_Generic_Type (Typ)
                then
                   Error_Msg_N
-                    ("prefix of Base attribute must be scalar type", Typ);
+                    ("prefix of Base attribute must be scalar type",
+                      Prefix (N));
 
                elsif Sloc (Typ) = Standard_Location
                  and then Base_Type (Typ) = Typ
@@ -4637,7 +4637,7 @@ package body Sem_Ch8 is
                Next_Entity (Id);
             end loop;
 
-         --  Equality: look for any non-limited type. Result is Boolean.
+         --  Equality: look for any non-limited type (result is Boolean)
 
          when Name_Op_Eq | Name_Op_Ne =>
 
@@ -4654,7 +4654,7 @@ package body Sem_Ch8 is
                Next_Entity (Id);
             end loop;
 
-         --  Comparison operators: scalar type, or array of scalar.
+         --  Comparison operators: scalar type, or array of scalar
 
          when Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge =>
 
@@ -5160,7 +5160,7 @@ package body Sem_Ch8 is
    --  Start of processing for Present_System_Aux
 
    begin
-      --  The child unit may have been loaded and analyzed already.
+      --  The child unit may have been loaded and analyzed already
 
       if Present (System_Aux_Id) then
          return True;
@@ -5278,7 +5278,7 @@ package body Sem_Ch8 is
       SS_Last   : constant Int := Scope_Stack.Last;
 
    begin
-      --  Restore visibility of previous scope stack, if any.
+      --  Restore visibility of previous scope stack, if any
 
       for J in reverse 0 .. Scope_Stack.Last loop
          exit when  Scope_Stack.Table (J).Entity = Standard_Standard
@@ -5488,7 +5488,7 @@ package body Sem_Ch8 is
          Error_Msg_N ("limited withed package cannot appear in use clause", N);
       end if;
 
-      --  Find enclosing instance, if any.
+      --  Find enclosing instance, if any
 
       if In_Instance then
          Current_Instance := Current_Scope;
@@ -5597,7 +5597,7 @@ package body Sem_Ch8 is
             Prev := Homonym (Prev);
          end loop;
 
-         --  On exit, we know entity is not hidden, unless it is private.
+         --  On exit, we know entity is not hidden, unless it is private
 
          if not Is_Hidden (Id)
            and then ((not Is_Child_Unit (Id))
