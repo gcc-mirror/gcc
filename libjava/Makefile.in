@@ -75,12 +75,14 @@ DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
 EXCEPTIONSPEC = @EXCEPTIONSPEC@
 EXEEXT = @EXEEXT@
+FORCELIBGCCSPEC = @FORCELIBGCCSPEC@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 LD = @LD@
+LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
@@ -88,7 +90,6 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
@@ -98,6 +99,7 @@ THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
+USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
@@ -121,6 +123,11 @@ AUTOMAKE_OPTIONS = foreign no-installinfo
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
+
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.c
 
 @NATIVE_TRUE@bin_PROGRAMS = \
 @NATIVE_TRUE@jv-convert gij
@@ -679,13 +686,17 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ./include/config.h
 CONFIG_CLEAN_FILES =  libgcj.spec
-LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
+LIBRARIES =  $(toolexeclib_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I./include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libgcjdata_a_LIBADD = 
+@NEEDS_DATA_START_TRUE@libgcjdata_a_OBJECTS =  libgcjdata.o
+LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
+
 libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
 defineclass.lo interpret.lo
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
@@ -715,7 +726,7 @@ THANKS acinclude.m4 aclocal.m4 configure configure.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  testsuite gcj include gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -910,10 +921,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipConstants.P .deps/java/util/zip/ZipEntry.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
-.deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/no-threads.P \
-.deps/nogc.P .deps/posix-threads.P .deps/prims.P .deps/resolve.P
-SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
+.deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/libgcjdata.P \
+.deps/no-threads.P .deps/nogc.P .deps/posix-threads.P .deps/prims.P \
+.deps/resolve.P
+SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -935,29 +947,36 @@ $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) 
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-mostlyclean-toolexeclibLTLIBRARIES:
+mostlyclean-toolexeclibLIBRARIES:
 
-clean-toolexeclibLTLIBRARIES:
-	-test -z "$(toolexeclib_LTLIBRARIES)" || rm -f $(toolexeclib_LTLIBRARIES)
+clean-toolexeclibLIBRARIES:
+	-test -z "$(toolexeclib_LIBRARIES)" || rm -f $(toolexeclib_LIBRARIES)
 
-distclean-toolexeclibLTLIBRARIES:
+distclean-toolexeclibLIBRARIES:
 
-maintainer-clean-toolexeclibLTLIBRARIES:
+maintainer-clean-toolexeclibLIBRARIES:
 
-install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
+install-toolexeclibLIBRARIES: $(toolexeclib_LIBRARIES)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
-	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
+	@list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
-	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  else :; fi; \
+	done
+	@$(POST_INSTALL)
+	@list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(RANLIB) $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(RANLIB) $(DESTDIR)$(toolexeclibdir)/$$p; \
 	  else :; fi; \
 	done
 
-uninstall-toolexeclibLTLIBRARIES:
+uninstall-toolexeclibLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
+	list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
 .s.o:
@@ -991,6 +1010,36 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
+
+libgcjdata.a: $(libgcjdata_a_OBJECTS) $(libgcjdata_a_DEPENDENCIES)
+	-rm -f libgcjdata.a
+	$(AR) cru libgcjdata.a $(libgcjdata_a_OBJECTS) $(libgcjdata_a_LIBADD)
+	$(RANLIB) libgcjdata.a
+
+mostlyclean-toolexeclibLTLIBRARIES:
+
+clean-toolexeclibLTLIBRARIES:
+	-test -z "$(toolexeclib_LTLIBRARIES)" || rm -f $(toolexeclib_LTLIBRARIES)
+
+distclean-toolexeclibLTLIBRARIES:
+
+maintainer-clean-toolexeclibLTLIBRARIES:
+
+install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
+	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-toolexeclibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
+	done
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
@@ -1218,7 +1267,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1296,7 +1345,8 @@ installcheck-am:
 installcheck: installcheck-recursive
 install-info-am: 
 install-info: install-info-recursive
-install-exec-am: install-toolexeclibLTLIBRARIES install-binPROGRAMS \
+install-exec-am: install-toolexeclibLIBRARIES \
+		install-toolexeclibLTLIBRARIES install-binPROGRAMS \
 		install-toolexeclibDATA
 install-exec: install-exec-recursive
 
@@ -1306,16 +1356,18 @@ install-data: install-data-recursive
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am: uninstall-toolexeclibLTLIBRARIES uninstall-binPROGRAMS \
+uninstall-am: uninstall-toolexeclibLIBRARIES \
+		uninstall-toolexeclibLTLIBRARIES uninstall-binPROGRAMS \
 		uninstall-dataDATA uninstall-toolexeclibDATA
 uninstall: uninstall-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 all-redirect: all-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
+	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) \
+		$(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
 		$(DESTDIR)$(datadir) $(DESTDIR)$(toolexeclibdir)
 
 
@@ -1330,30 +1382,33 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-binPROGRAMS \
-		mostlyclean-noinstPROGRAMS mostlyclean-tags \
-		mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
+		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
-		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
-		clean-depend clean-generic mostlyclean-am clean-local
+clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
+		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
+		clean-noinstPROGRAMS clean-tags clean-depend \
+		clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
-		distclean-libtool distclean-binPROGRAMS \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
+		distclean-libtool distclean-toolexeclibLTLIBRARIES \
+		distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
 		maintainer-clean-depend maintainer-clean-generic \
@@ -1364,18 +1419,20 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-toolexeclibLTLIBRARIES \
-distclean-toolexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
-maintainer-clean-toolexeclibLTLIBRARIES \
-uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
+uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool mostlyclean-binPROGRAMS \
-distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
-uninstall-binPROGRAMS install-binPROGRAMS mostlyclean-noinstPROGRAMS \
-distclean-noinstPROGRAMS clean-noinstPROGRAMS \
-maintainer-clean-noinstPROGRAMS uninstall-dataDATA install-dataDATA \
-uninstall-toolexeclibDATA install-toolexeclibDATA \
+clean-libtool maintainer-clean-libtool \
+mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
+clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
+uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
+mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
+maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS uninstall-dataDATA \
+install-dataDATA uninstall-toolexeclibDATA install-toolexeclibDATA \
 install-data-recursive uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \

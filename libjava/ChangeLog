@@ -1,3 +1,18 @@
+1999-12-19  Anthony Green  <green@cygnus.com>
+
+	* libgcjdata.c: New file.
+	* libgcj.spec.in: Use @LIBDATASTARTSPEC@ in startfile.
+	* configure: Rebuilt.
+	* configure.in (LIBDATASTARTSPEC): Force data with a known name
+	into the program.
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Build libgcjdata.a.
+
+	* libgcj.spec.in: Use @FORCELIBGCCSPEC@ in startfile.
+	* configure: Rebuilt.
+	* configure.in (FORCELIBGCCSPEC): Force important parts of libgcc
+	into every program.
+
 1999-12-17  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/Method.java (toString): Call getType if
