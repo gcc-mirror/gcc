@@ -1687,14 +1687,21 @@ set_pt_malloc (tree ptr)
 }
 
 
-/* Given two pointers DEST and ORIG.  Merge the points-to information in
-   ORIG into DEST.  AI is as in collect_points_to_info.  */
+/* Given two different pointers DEST and ORIG.  Merge the points-to
+   information in ORIG into DEST.  AI is as in
+   collect_points_to_info.  */
 
 static void
 merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 {
   struct ptr_info_def *dest_pi, *orig_pi;
 
+  /* FIXME: It is erroneous to call this function with identical
+     nodes, however that currently occurs during bootstrap.  This check
+     stops further breakage.  PR 18307 documents the issue.  */
+  if (dest == orig)
+    return;
+  
   /* Make sure we have points-to information for ORIG.  */
   collect_points_to_info_for (ai, orig);
 
@@ -1725,6 +1732,8 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 	 smart enough to determine that the two come from the same
 	 malloc call.  Copy propagation before aliasing should cure
 	 this.  */
+      gcc_assert (orig_pi != dest_pi);
+      
       dest_pi->pt_malloc = 0;
 
       if (orig_pi->pt_malloc || orig_pi->pt_anything)
