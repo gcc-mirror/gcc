@@ -131,7 +131,7 @@ static int java_double_finite PARAMS ((jdouble));
 static void print_name PARAMS ((FILE *, JCF *, int));
 static void print_base_classname PARAMS ((FILE *, JCF *, int));
 static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
-static const char *cxx_keyword_subst PARAMS ((const unsigned char *, int));
+static char *cxx_keyword_subst PARAMS ((const unsigned char *, int));
 static void generate_access PARAMS ((FILE *, JCF_u2));
 static int name_is_method_p PARAMS ((const unsigned char *, int));
 static char *get_field_name PARAMS ((JCF *, int, JCF_u2));
@@ -336,7 +336,8 @@ print_base_classname (stream, jcf, index)
     }
 }
 
-/* Return 0 if NAME is equal to STR, nonzero otherwise.  */
+/* Return 0 if NAME is equal to STR, -1 if STR is "less" than NAME,
+   and 1 if STR is "greater" than NAME.  */
 
 static int
 utf8_cmp (str, length, name)
@@ -351,26 +352,79 @@ utf8_cmp (str, length, name)
     {
       int ch = UTF8_GET (str, limit);
       if (ch != name[i])
-	return 1;
+	return ch - name[i];
     }
 
-  return str != limit;
+  return str == limit ? 0 : 1;
 }
+
+/* This is a sorted list of all C++ keywords.  */
+
+static const char *cxx_keywords[] =
+{
+  "asm",
+  "auto",
+  "bool",
+  "const_cast",
+  "delete",
+  "dynamic_cast",
+  "enum",
+  "explicit",
+  "extern",
+  "friend",
+  "inline",
+  "mutable",
+  "namespace",
+  "overload",
+  "register",
+  "reinterpret_cast",
+  "signed",
+  "sizeof",
+  "static_cast",
+  "struct",
+  "template",
+  "typedef",
+  "typeid",
+  "typename",
+  "typenameopt",
+  "union",
+  "unsigned",
+  "using",
+  "virtual",
+  "volatile",
+  "wchar_t"
+};
+
 
 /* If NAME is the name of a C++ keyword, then return an override name.
    This is a name that can be used in place of the keyword.
-   Otherwise, return NULL.  FIXME: for now, we only handle those
-   keywords we know to be a problem for libgcj.  */
+   Otherwise, return NULL.  The return value is malloc()d.  */
 
-static const char *
+static char *
 cxx_keyword_subst (str, length)
      const unsigned char *str;
      int length;
 {
-  if (! utf8_cmp (str, length, "delete"))
-    return "__dummy_delete";
-  else if (! utf8_cmp (str, length, "enum"))
-    return "__dummy_enum";
+  int last = sizeof (cxx_keywords) / sizeof (const char *);
+  int first = 0;
+  int mid, r;
+
+  while (last != first)
+    {
+      mid = (last + first) / 2;
+      r = utf8_cmp (str, length, cxx_keywords[mid]);
+      if (r == 0)
+	{
+	  char *str = xmalloc (9 + strlen (cxx_keywords[mid]));
+	  strcpy (str, "__dummy_");
+	  strcat (str, cxx_keywords[mid]);
+	  return str;
+	}
+      else if (r < 0)
+	last = mid;
+      else
+	first = mid;
+    }
   return NULL;
 }
 
@@ -455,7 +509,6 @@ get_field_name (jcf, name_index, flags)
   unsigned char *name = JPOOL_UTF_DATA (jcf, name_index);
   int length = JPOOL_UTF_LENGTH (jcf, name_index);
   char *override;
-  const char *tmpconstptr;
 
   if (name_is_method_p (name, length))
     {
@@ -474,14 +527,9 @@ get_field_name (jcf, name_index, flags)
       memcpy (override, name, length);
       strcpy (override + length, "__");
     }
-  else if ((tmpconstptr = cxx_keyword_subst (name, length)) != NULL)
-    {
-      /* Must malloc OVERRIDE.  */
-      override = xstrdup (tmpconstptr);
-    }
   else
-    override = NULL;
-  
+    override = cxx_keyword_subst (name, length);
+
   return override;
 }
 
@@ -621,7 +669,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 {
   const unsigned char *str;
   int length, is_init = 0;
-  const char *override = NULL;
+  char *override = NULL;
 
   method_declared = 0;
   method_access = flags;
@@ -687,7 +735,10 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	     mangling will be wrong.  FIXME.  */
 	  if (METHOD_IS_FINAL (jcf->access_flags, flags)
 	      || (flags & ACC_STATIC))
-	    return;
+	    {
+	      free (override);
+	      return;
+	    }
 	}
     }
 
@@ -722,6 +773,9 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 			     is_init, override, flags);
 	}
     }
+
+  if (override)
+    free (override);
 }
 
 /* Try to decompile a method body.  Right now we just try to handle a

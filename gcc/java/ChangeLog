@@ -1,3 +1,13 @@
+2000-04-18  Tom Tromey  <tromey@cygnus.com>
+
+	PR gcj/211:
+	* gjavah.c (utf8_cmp): Changed return value.
+	(cxx_keyword_subst): Handle all C++ keywords.  Allocate new return
+	result.
+	(cxx_keywords): New global.
+	(get_field_name): Handle new result of cxx_keyword_subst.
+	(print_method_info): Likewise.
+
 2000-04-17  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gjavah.c (print_name_for_stub_or_jni): Don't prefix method names 
