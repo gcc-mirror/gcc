@@ -1917,7 +1917,7 @@ m32r_load_pic_register (void)
 {
   global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
   emit_insn (gen_get_pc (pic_offset_table_rtx, global_offset_table,
-                         gen_rtx_CONST_INT(SImode, TARGET_MODEL_SMALL)));
+                         GEN_INT (TARGET_MODEL_SMALL)));
                                                                                 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
