@@ -1,3 +1,7 @@
+2001-03-05  Stephen M. Webb  <stephen.webb@cybersafe.com>
+
+	* libsupc++/vec.cc (__cxxa_vec_new2): Qualify size_t.
+
 2001-03-05  Laurynas Biveinis  <lauras@softhome.net>
 
         * config/os/djgpp/ctype_base.h (ctype_base): fix __to_type
@@ -13,7 +17,7 @@
 	(ctype<char>::do_toupper(char *, const char *)): likewise.
 	(ctype<char>::do_tolower(char)): likewise.
 	(ctype<char>::do_tolower(char *, const char *)): likewise.
-											
+
 2001-03-04  Phil Edwards  <pme@sources.redhat.com>
 
 	http://gcc.gnu.org/ml/libstdc++/2001-03/msg00015.html

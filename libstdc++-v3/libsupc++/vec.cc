@@ -69,7 +69,7 @@ namespace __cxxabiv1
 		 std::size_t padding_size,
 		 void (*constructor) (void *),
 		 void (*destructor) (void *),
-		 void *(*alloc) (size_t),
+		 void *(*alloc) (std::size_t),
 		 void (*dealloc) (void *))
   {
     std::size_t size = element_count * element_size + padding_size;
