@@ -1,3 +1,8 @@
+2001-11-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68k/linux.h: Include <linux.h> not "linux.h" to avoid infinite
+	recursion.
+
 2001-11-14  Roger Sayle <roger@eyesopen.com>
 
 	* fold-const.c (fold): Optimize strlen comparisons against zero.
