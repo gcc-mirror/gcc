@@ -173,6 +173,8 @@ const char * const language_string = "GNU C";
 %type <ttype> parmlist_or_identifiers parmlist_or_identifiers_1
 %type <ttype> identifiers_or_typenames
 
+%type <itype> extension
+
 %type <itype> setspecs
 
 %type <ends_in_label> lineno_stmt_or_label lineno_stmt_or_labels stmt_or_label
@@ -201,6 +203,15 @@ static tree declspec_stack;
 
 /* 1 if we explained undeclared var errors.  */
 static int undeclared_variable_notice;
+
+/* For __extension__, save/restore the warning flags which are
+   controlled by __extension__.  */
+#define SAVE_WARN_FLAGS() (pedantic | (warn_pointer_arith << 1))
+#define RESTORE_WARN_FLAGS(val) \
+  do {                                     \
+    pedantic = val & 1;                    \
+    warn_pointer_arith = (val >> 1) & 1;   \
+  } while (0)
 
 
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
@@ -256,7 +267,7 @@ extdef:
 		  else
 		    error ("argument of `asm' is not a constant string"); }
 	| extension extdef
-		{ pedantic = $<itype>1; }
+		{ RESTORE_WARN_FLAGS ($1); }
 	;
 
 datadef:
@@ -393,7 +404,7 @@ unary_expr:
 	/* __extension__ turns off -pedantic for following primary.  */
 	| extension cast_expr	  %prec UNARY
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  RESTORE_WARN_FLAGS ($1); }
 	| unop cast_expr  %prec UNARY
 		{ $$ = build_unary_op ($1, $2, 0);
 		  overflow_warning ($$); }
@@ -847,7 +858,7 @@ decl:
 	| declmods ';'
 		{ pedwarn ("empty declaration"); }
 	| extension decl
-		{ pedantic = $<itype>1; }
+		{ RESTORE_WARN_FLAGS ($1); }
 	;
 
 /* Declspecs which contain at least one type specifier or typedef name.
@@ -1416,7 +1427,7 @@ component_decl:
 		{ $$ = NULL_TREE; }
 	| extension component_decl
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  RESTORE_WARN_FLAGS ($1); }
 	;
 
 components:
@@ -2246,8 +2257,9 @@ identifiers_or_typenames:
 
 extension:
 	EXTENSION
-		{ $<itype>$ = pedantic;
-		  pedantic = 0; }
+		{ $$ = SAVE_WARN_FLAGS();
+		  pedantic = 0;
+		  warn_pointer_arith = 0; }
 	;
 
 %%
