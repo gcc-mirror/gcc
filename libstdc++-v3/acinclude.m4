@@ -1874,7 +1874,7 @@ AC_DEFUN(GLIBCPP_EXPORT_FLAGS, [
   OPTIMIZE_CXXFLAGS=
   AC_SUBST(OPTIMIZE_CXXFLAGS)
 
-  WARN_FLAGS='-Wall -Wno-format -W -Wwrite-strings -Winline'
+  WARN_FLAGS='-Wall -Wno-format -W -Wwrite-strings'
   AC_SUBST(WARN_FLAGS)
 ])
 
