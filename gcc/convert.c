@@ -26,9 +26,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "convert.h"
 
-/* Convert EXPR to some pointer type TYPE.
+/* Convert EXPR to some pointer or reference type TYPE.
 
-   EXPR must be pointer, integer, enumeral, or literal zero;
+   EXPR must be pointer, reference, integer, enumeral, or literal zero;
    in other cases error is called. */
 
 tree
@@ -45,7 +45,7 @@ convert_to_pointer (type, expr)
       return expr;
     }
 
-  if (form == POINTER_TYPE)
+  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     return build1 (NOP_EXPR, type, expr);
 
 
@@ -92,7 +92,7 @@ convert_to_real (type, expr)
     return convert (type, fold (build1 (REALPART_EXPR,
 					TREE_TYPE (TREE_TYPE (expr)), expr)));
 
-  if (form == POINTER_TYPE)
+  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     error ("pointer value used where a floating point value was expected");
   else
     error ("aggregate value used where a float was expected");
@@ -120,7 +120,7 @@ convert_to_integer (type, expr)
   register tree intype = TREE_TYPE (expr);
   register enum tree_code form = TREE_CODE (intype);
 
-  if (form == POINTER_TYPE)
+  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     {
       if (integer_zerop (expr))
 	expr = integer_zero_node;
@@ -449,7 +449,7 @@ convert_to_complex (type, expr)
 	}
     }
 
-  if (form == POINTER_TYPE)
+  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     error ("pointer value used where a complex was expected");
   else
     error ("aggregate value used where a complex was expected");
