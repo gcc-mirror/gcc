@@ -2982,7 +2982,7 @@ push_class_decls (type)
   /* Build up all the relevant bindings and such on the cache
      obstack.  That way no memory is wasted when we throw away the
      cache later.  */
-  maybe_push_cache_obstack ();
+  push_cache_obstack ();
 
   /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
@@ -2990,7 +2990,7 @@ push_class_decls (type)
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
 
-  /* Undo the call to maybe_push_cache_obstack above.  */
+  /* Undo the call to push_cache_obstack above.  */
   pop_obstacks ();
 
   current_obstack = ambient_obstack;
