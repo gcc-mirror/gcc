@@ -8,6 +8,7 @@ details.  */
 
 #include <config.h>
 
+#ifndef DISABLE_JAVA_NET
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -19,6 +20,7 @@ details.  */
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#endif /* DISABLE_JAVA_NET */
 
 #if HAVE_BSTRING_H
 // Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 

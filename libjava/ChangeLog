@@ -1,5 +1,8 @@
 1999-10-04  Tom Tromey  <tromey@cygnus.com>
 
+	* java/net/natPlainSocketImpl.cc: Don't include headers if
+	java.net is disabled.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (ZINCS): Removed.  This is defined in configure.in
 	when needed, and must be left empty when not needed.
