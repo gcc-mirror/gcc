@@ -4,6 +4,8 @@ Wed Feb 25 19:50:01 1998  Mikael Pettersson <Mikael.Pettersson@sophia.inria.fr>
 
 Wed Feb 25 07:24:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* vax.md (call insns): Second operand to CALL rtl is SImode.
+
 	* configure.in (i[34567]86-*-mingw32): Support msv and crt suffix.
 	* i386/crtdll.h: New file.
 
