@@ -1,3 +1,21 @@
+2004-06-22  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (legitimate_offset_address_p): Make
+	global, rename rs6000_legitimate_offset_address_p.
+	(rs6000_legitimate_address_p): Adjust calls to it.
+	(lmw_operation): Ditto.
+	(stmw_operation): Ditto.
+	* config/rs6000/rs6000-protos.h: Declare it.
+	* config/rs6000/rs6000.md (*movdf_hardfloat32): Use it
+	instead of offsettable_memref_p.
+
+2004-06-22  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
+	[reg+reg] mode for TFmode memory accesses.
+	(rs6000_eliminate_indexed_memrefs): New.
+	(rs6000_emit_move): Call preceding for TImode and TFmode.
+
 2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-cfg.c (pass_warn_function_return): It needs
