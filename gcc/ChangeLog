@@ -1,3 +1,9 @@
+Fri Jul 14 18:13:53 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* INSTALL: Give special instructions for building GCC on Irix 6.
+	* config/mips/x-iris6 (CC): Don't set it.
+	(OLDCC): Likewise.
+
 2000-07-14  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr): If we store the CFA 
