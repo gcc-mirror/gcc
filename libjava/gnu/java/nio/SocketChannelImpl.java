@@ -66,7 +66,7 @@ public final class SocketChannelImpl extends SocketChannel
   private PlainSocketImpl impl;
   private NIOSocket socket;
   private boolean blocking = true;
-  private boolean connectionPending = false;
+  private boolean connectionPending;
 
   SocketChannelImpl (SelectorProvider provider)
     throws IOException

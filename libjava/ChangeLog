@@ -1,5 +1,20 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(blocking): Initialize with true by default.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(serverSocket): Made private.
+	(blocking): Likewise.
+	(connected): Likewise.
+	* gnu/java/nio/SocketChannelImpl.java
+	(connectionPending): Made private.
+	* gnu/java/nio/FileLockImpl.java
+	(static): Load native library (needed for classpath).
+	* gnu/java/nio/SelectorImpl.java
+	(static): Load native library (needed for classpath).
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/file/Connection.java
 	(getLastModified): Implement for file connections.
 	(getContentLength): Likewise.

@@ -54,9 +54,9 @@ import java.nio.channels.spi.SelectorProvider;
 
 public final class ServerSocketChannelImpl extends ServerSocketChannel
 {
-  NIOServerSocket serverSocket;
-  boolean blocking = true;
-  boolean connected = false;
+  private NIOServerSocket serverSocket;
+  private boolean blocking = true;
+  private boolean connected;
 
   protected ServerSocketChannelImpl (SelectorProvider provider)
     throws IOException

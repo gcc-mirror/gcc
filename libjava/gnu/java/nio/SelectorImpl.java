@@ -49,9 +49,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import gnu.classpath.Configuration;
 
 public class SelectorImpl extends AbstractSelector
 {
+  static
+  {
+    // load the shared library needed for native methods.
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanio");
+      }
+  }
+  
   private Set keys;
   private Set selected;
 
