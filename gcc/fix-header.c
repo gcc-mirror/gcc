@@ -1,6 +1,6 @@
 /* fix-header.c - Make C header file suitable for C++.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -78,6 +78,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"
+#include "c-incpath.h"
 
 static void v_fatal PARAMS ((const char *, va_list)) ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
 static void fatal PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
@@ -616,7 +617,7 @@ read_scan_file (in_fname, argc, argv)
   cpp_callbacks *cb;
   cpp_options *options;
   struct fn_decl *fn;
-  int i;
+  int i, strings_processed;
   struct symbol_list *cur_symbols;
 
   obstack_init (&scan_file_obstack);
@@ -624,6 +625,7 @@ read_scan_file (in_fname, argc, argv)
   scan_in = cpp_create_reader (CLK_GNUC89);
   cb = cpp_get_callbacks (scan_in);
   cb->file_change = cb_file_change;
+  cb->simplify_path = simplify_path;
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
@@ -631,12 +633,32 @@ read_scan_file (in_fname, argc, argv)
   options->inhibit_warnings = 1;
   options->inhibit_errors = 1;
 
-  i = cpp_handle_options (scan_in, argc, argv);
+  for (i = 0; i < argc; i += strings_processed)
+    {
+      if (argv[i][0] == 'I')
+	{
+	  if (argv[i][1] != '\0')
+	    strings_processed = 1, add_path (argv[i] + 1, BRACKET, false);
+	  else if (i + 1 == argc)
+	    strings_processed = 0;
+	  else
+	    strings_processed = 2, add_path (argv[i + 1], BRACKET, false);
+	}
+      else
+	strings_processed = cpp_handle_option (scan_in, argc - i, argv + i);
+
+      if (strings_processed == 0)
+	break;
+    }
+
   if (i < argc)
     cpp_error (scan_in, DL_ERROR, "invalid option `%s'", argv[i]);
   if (cpp_errors (scan_in))
     exit (FATAL_EXIT_CODE);
 
+  register_include_chains (scan_in, NULL /* sysroot */, NULL /* iprefix */,
+			   true /* stdinc */, false /* cxx_stdinc */,
+			   false /* verbose */);
   if (! cpp_read_main_file (scan_in, in_fname, NULL))
     exit (FATAL_EXIT_CODE);
 

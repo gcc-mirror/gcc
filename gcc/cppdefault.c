@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -19,14 +19,27 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* This file contains data definitions shared between cpplib and
-   tradcpp.  */
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "cppdefault.h"
+
+#ifndef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/include"
+#endif
+
+#ifndef STANDARD_INCLUDE_COMPONENT
+#define STANDARD_INCLUDE_COMPONENT 0
+#endif
+
+#if defined (CROSS_COMPILE) && !defined (TARGET_SYSTEM_ROOT)
+# undef LOCAL_INCLUDE_DIR
+# undef SYSTEM_INCLUDE_DIR
+# undef STANDARD_INCLUDE_DIR
+#else
+# undef CROSS_INCLUDE_DIR
+#endif
 
 const struct default_include cpp_include_defaults[]
 #ifdef INCLUDE_DEFAULTS

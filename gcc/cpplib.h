@@ -39,6 +39,7 @@ typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_callbacks cpp_callbacks;
+typedef struct cpp_path cpp_path;
 
 struct answer;
 struct file_name_map_list;
@@ -224,28 +225,12 @@ struct cpp_options
   /* Pending options - -D, -U, -A, -I, -ixxx.  */
   struct cpp_pending *pending;
 
-  /* Search paths for include files.  */
-  struct search_path *quote_include;	/* "" */
-  struct search_path *bracket_include;  /* <> */
-
   /* Map between header names and file names, used only on DOS where
      file names are limited in length.  */
   struct file_name_map_list *map_list;
 
-  /* Directory prefix that should replace `/usr/lib/gcc-lib/TARGET/VERSION'
-     in the standard include file directories.  */
-  const char *include_prefix;
-  unsigned int include_prefix_len;
-
-  /* Directory prefix for system include directories in the standard search
-     path.  */
-  const char *sysroot;
-
   /* The language we're preprocessing.  */
   enum c_lang lang;
-
-  /* Non-0 means -v, so print the full set of include dirs.  */
-  unsigned char verbose;
 
   /* Nonzero means use extra default include directories for C++.  */
   unsigned char cplusplus;
@@ -332,10 +317,6 @@ struct cpp_options
   /* Nonzero means don't output line number information.  */
   unsigned char no_line_commands;
 
-  /* Nonzero means -I- has been seen, so don't look for #include "foo"
-     the source-file directory.  */
-  unsigned char ignore_srcdir;
-
   /* Zero means dollar signs are punctuation.  */
   unsigned char dollars_in_ident;
 
@@ -357,12 +338,6 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
-
-  /* Nonzero disables all the standard directories for headers.  */
-  unsigned char no_standard_includes;
-
-  /* Nonzero disables the C++-specific standard directories for headers.  */
-  unsigned char no_standard_cplusplus_includes;
 
   /* Nonzero means dump macros in some fashion - see above.  */
   unsigned char dump_macros;
@@ -427,11 +402,36 @@ struct cpp_callbacks
   void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
   void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
+  void (*simplify_path) PARAMS ((char *));
   /* Called when the client has a chance to properly register
      built-ins with cpp_define() and cpp_assert().  */
   void (*register_builtins) PARAMS ((cpp_reader *));
   int (*valid_pch) PARAMS ((cpp_reader *, const char *, int));
   void (*read_pch) PARAMS ((cpp_reader *, const char *, int, const char *));
+};
+
+/* Chain of directories to look for include files in.  */
+struct cpp_path
+{
+  /* NULL-terminated singly-linked list.  */
+  struct cpp_path *next;
+
+  /* NAME need not be NUL-terminated once inside cpplib.  */
+  char *name;
+  unsigned int len;
+
+  /* One if a system header, two if a system header that has extern
+     "C" guards for C++.  */
+  unsigned char sysp;
+
+  /* Mapping of file names for this directory for MS-DOS and
+     related platforms.  */
+  struct file_name_map *name_map;
+    
+  /* The C front end uses these to recognize duplicated
+     directories in the search path.  */
+  ino_t ino;
+  dev_t dev;
 };
 
 /* Name under which this program was invoked.  */
@@ -526,6 +526,10 @@ extern void cpp_add_dependency_target PARAMS ((cpp_reader *,
 					       const char * target,
 					       int quote));
 
+/* Set the include paths.  */
+extern void cpp_set_include_chains PARAMS ((cpp_reader *, cpp_path *,
+					    cpp_path *, int));
+
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
    cpp_finish on that reader.  You can either edit the callbacks
@@ -536,12 +540,9 @@ extern const struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
 extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
 extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
 
-/* Now call cpp_handle_option[s] to handle 1[or more] switches.  The
-   return value is the number of arguments used.  If
-   cpp_handle_options returns without using all arguments, it couldn't
-   understand the next switch.  Options processing is not completed
+/* Now call cpp_handle_option to handle 1 switch.  The return value is
+   the number of arguments used.  Options processing is not completed
    until you call cpp_finish_options.  */
-extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 
 /* This function reads the file, but does not start preprocessing.  It
