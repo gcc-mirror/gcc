@@ -1,3 +1,8 @@
+2003-01-20  Roger Sayle  <roger@eyesopen.com>
+
+	* cse.c (cse_insn): Avoid RTL sharing when updating the RETVAL
+	insn's notes following a substitution inside a libcall.
+
 2003-01-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Check for system-provided 'uchar' type.
