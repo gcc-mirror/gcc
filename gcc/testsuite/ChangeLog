@@ -1,3 +1,10 @@
+2004-07-25  Daniel Jacobowitz  <dan@debian.org>
+
+	* gcc.dg/pragma-align-2.c: New test.
+	* gcc.dg/pragma-init-fini.c: New test.
+	* gcc.dg/pragma-align.c: Change from compile to run.  Run on Solaris
+	targets.
+
 2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/init-string-2.c: New test.
