@@ -57,6 +57,50 @@
 #define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
+static void predict_insn	PARAMS ((rtx, int));
+static void predict_edge	PARAMS ((edge, int));
+
+static void
+predict_insn (insn, probability)
+     rtx insn;
+     int probability;
+{
+  rtx note = find_reg_note (insn, REG_BR_PROB, 0);
+
+  /* Implement "first match" heruistics.  In case we already predicted
+     insn somehow, keep it predicted that way.  In future we would like
+     to rather store all predictions and then combine them.  */
+  if (note)
+    return;
+
+  if (!any_condjump_p (insn))
+    abort ();
+  REG_NOTES (insn)
+    = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			 GEN_INT (probability), REG_NOTES (insn));
+}
+
+/* Predict edge E with given probability if possible.  */
+static void
+predict_edge (e, probability)
+     edge e;
+     int probability;
+{
+  rtx last_insn;
+  last_insn = e->src->end;
+
+  /* We can store the branch prediction information only about
+     conditional jumps.  */
+  if (!any_condjump_p (last_insn))
+    return;
+
+  /* We always store probability of branching.  */
+  if (e->flags & EDGE_FALLTHRU)
+    probability = REG_BR_PROB_BASE - probability;
+
+  predict_insn (last_insn, probability);
+}
+
 /* Statically estimate the probability that a branch will be taken.
    ??? In the next revision there will be a number of other predictors added
    from the above references. Further, each heuristic will be factored out
@@ -79,27 +123,27 @@ estimate_probability (loops_info)
 	   j <= loops_info->array[i].last->index;
 	   ++j)
 	{
-	  edge e;
+	  if (TEST_BIT (loops_info->array[i].nodes, j))
+	    {
+	      int header_found = 0;
+	      edge e;
 	  
-	  if (! TEST_BIT (loops_info->array[i].nodes, j))
-	    for (e = BASIC_BLOCK(j)->pred; e; e = e->pred_next)
-	      if (TEST_BIT (loops_info->array[i].nodes, e->src->index))
-		{
-		  rtx last_insn = BLOCK_END (e->src->index);
-		  rtx cond, earliest;
-
-		  if (GET_CODE (last_insn) != JUMP_INSN
-		      || ! condjump_p (last_insn) || simplejump_p (last_insn))
-		    continue;
-		  cond = get_condition (last_insn, &earliest);
-		  if (! cond)
-		    continue;
-		  if (! find_reg_note (last_insn, REG_BR_PROB, 0))
-		    REG_NOTES (last_insn)
-		      = gen_rtx_EXPR_LIST (REG_BR_PROB,
-					   GEN_INT (PROB_VERY_LIKELY),
-					   REG_NOTES (last_insn));
-		}
+	      /* Loop branch heruistics - predict as taken an edge back to
+	         a loop's head.  */
+	      for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
+		if (e->dest == loops_info->array[i].header)
+		  {
+		    header_found = 1;
+		    predict_edge (e, PROB_VERY_LIKELY);
+		  }
+	      /* Loop exit heruistics - predict as not taken an edge exiting
+	         the loop if the conditinal has no loop header successors  */
+	      if (!header_found)
+		for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
+		  if (e->dest->index <= 0
+		      || !TEST_BIT (loops_info->array[i].nodes, e->dest->index))
+		    predict_edge (e, PROB_UNLIKELY);
+	    }
 	}
     }
 
@@ -111,18 +155,13 @@ estimate_probability (loops_info)
     {
       rtx last_insn = BLOCK_END (i);
       rtx cond, earliest;
-      int prob;
       edge e;
 
       if (GET_CODE (last_insn) != JUMP_INSN
-	  || ! condjump_p (last_insn) || simplejump_p (last_insn))
+	  || ! any_condjump_p (last_insn))
 	continue;
 
       if (find_reg_note (last_insn, REG_BR_PROB, 0))
-	continue;
-
-      cond = get_condition (last_insn, &earliest);
-      if (! cond)
 	continue;
 
       /* If one of the successor blocks has no successors, predict
@@ -130,13 +169,11 @@ estimate_probability (loops_info)
       /* ??? Ought to do the same for any subgraph with no exit.  */
       for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
 	if (e->dest->succ == NULL)
-	  {
-	    if (e->flags & EDGE_FALLTHRU)
-	      prob = PROB_ALWAYS;
-	    else
-	      prob = PROB_NEVER;
-	    goto emitnote;
-	  }
+	  predict_edge (e, PROB_NEVER);
+
+      cond = get_condition (last_insn, &earliest);
+      if (! cond)
+	continue;
 
       /* Try "pointer heuristic."
 	 A comparison ptr == 0 is predicted as false.
@@ -149,10 +186,8 @@ estimate_probability (loops_info)
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REG_POINTER (XEXP (cond, 1)))))
-	    {
-	      prob = PROB_UNLIKELY;
-	      goto emitnote;
-	    }
+	    
+	    predict_insn (last_insn, PROB_UNLIKELY);
 	  break;
 	case NE:
 	  if (GET_CODE (XEXP (cond, 0)) == REG
@@ -160,10 +195,7 @@ estimate_probability (loops_info)
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REG_POINTER (XEXP (cond, 1)))))
-	    {
-	      prob = PROB_LIKELY;
-	      goto emitnote;
-	    }
+	    predict_insn (last_insn, PROB_LIKELY);
 	  break;
 
 	default:
@@ -178,53 +210,40 @@ estimate_probability (loops_info)
 	{
 	case CONST_INT:
 	  /* Unconditional branch.  */
-	  prob = (cond == const0_rtx ? PROB_NEVER : PROB_ALWAYS);
-	  goto emitnote;
+	  predict_insn (last_insn,
+			cond == const0_rtx ? PROB_NEVER : PROB_ALWAYS);
+	  break;
 
 	case EQ:
 	case UNEQ:
-	  prob = PROB_UNLIKELY;
-	  goto emitnote;
+	  predict_insn (last_insn, PROB_UNLIKELY);
+	  break;
 	case NE:
 	case LTGT:
-	  prob = PROB_LIKELY;
-	  goto emitnote;
+	  predict_insn (last_insn, PROB_LIKELY);
+	  break;
 	case ORDERED:
-	  prob = PROB_LIKELY;
-	  goto emitnote;
+	  predict_insn (last_insn, PROB_LIKELY);
+	  break;
 	case UNORDERED:
-	  prob = PROB_UNLIKELY;
-	  goto emitnote;
+	  predict_insn (last_insn, PROB_UNLIKELY);
+	  break;
 	case LE:
 	case LT:
 	  if (XEXP (cond, 1) == const0_rtx)
-	    {
-	      prob = PROB_UNLIKELY;
-	      goto emitnote;
-	    }
+	    predict_insn (last_insn, PROB_UNLIKELY);
 	  break;
 	case GE:
 	case GT:
 	  if (XEXP (cond, 1) == const0_rtx
 	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
 		  && INTVAL (XEXP (cond, 1)) == -1))
-	    {
-	      prob = PROB_LIKELY;
-	      goto emitnote;
-	    }
+	    predict_insn (last_insn, PROB_LIKELY);
 	  break;
 
 	default:
 	  break;
 	}
-
-      /* If we havn't chosen something by now, predict 50-50.  */
-      prob = PROB_EVEN;
-
-    emitnote:
-      REG_NOTES (last_insn)
-	= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-			     REG_NOTES (last_insn));
     }
 }
 
@@ -295,12 +314,9 @@ expected_value_to_br_prob ()
       cond = simplify_rtx (cond);
 
       /* Turn the condition into a scaled branch probability.  */
-      if (cond == const1_rtx)
-	cond = GEN_INT (PROB_VERY_LIKELY);
-      else if (cond == const0_rtx)
-	cond = GEN_INT (PROB_VERY_UNLIKELY);
-      else
+      if (cond != const1_rtx && cond != const0_rtx)
 	abort ();
-      REG_NOTES (insn) = alloc_EXPR_LIST (REG_BR_PROB, cond, REG_NOTES (insn));
+      predict_insn (insn,
+		    cond == const1_rtx ? PROB_VERY_LIKELY : PROB_VERY_UNLIKELY);
     }
 }
