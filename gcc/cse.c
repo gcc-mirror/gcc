@@ -2249,10 +2249,11 @@ canon_hash (x, mode)
     case REG:
       {
 	unsigned int regno = REGNO (x);
+	bool record;
 
 	/* On some machines, we can't record any non-fixed hard register,
 	   because extending its life will cause reload problems.  We
-	   consider ap, fp, and sp to be fixed for this purpose.
+	   consider ap, fp, sp, gp to be fixed for this purpose.
 
 	   We also consider CCmode registers to be fixed for this purpose;
 	   failure to do so leads to failure to simplify 0<100 type of
@@ -2262,16 +2263,28 @@ canon_hash (x, mode)
 	   Nor should we record any register that is in a small
 	   class, as defined by CLASS_LIKELY_SPILLED_P.  */
 
-	if (regno < FIRST_PSEUDO_REGISTER
-	    && (global_regs[regno]
-		|| CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno))
-		|| (SMALL_REGISTER_CLASSES
-		    && ! fixed_regs[regno]
-		    && x != frame_pointer_rtx
-		    && x != hard_frame_pointer_rtx
-		    && x != arg_pointer_rtx
-		    && x != stack_pointer_rtx
-		    && GET_MODE_CLASS (GET_MODE (x)) != MODE_CC)))
+	if (regno >= FIRST_PSEUDO_REGISTER)
+	  record = true;
+	else if (x == frame_pointer_rtx
+		 || x == hard_frame_pointer_rtx
+		 || x == arg_pointer_rtx
+		 || x == stack_pointer_rtx
+		 || x == pic_offset_table_rtx)
+	  record = true;
+	else if (global_regs[regno])
+	  record = false;
+	else if (fixed_regs[regno])
+	  record = true;
+	else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
+	  record = true;
+	else if (SMALL_REGISTER_CLASSES)
+	  record = false;
+	else if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno)))
+	  record = false;
+	else
+	  record = true;
+	    
+	if (!record)
 	  {
 	    do_not_record = 1;
 	    return 0;
