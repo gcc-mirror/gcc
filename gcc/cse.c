@@ -6706,8 +6706,6 @@ cse_main (rtx f, int nregs, FILE *file)
 	INSN_CUID (insn) = i;
     }
 
-  ggc_push_context ();
-
   /* Loop over basic blocks.
      Compute the maximum number of qty's needed for each basic block
      (which is 2 for each SET).  */
@@ -6772,8 +6770,6 @@ cse_main (rtx f, int nregs, FILE *file)
       alloca (0);
 #endif
     }
-
-  ggc_pop_context ();
 
   if (max_elements_made < n_elements_made)
     max_elements_made = n_elements_made;
