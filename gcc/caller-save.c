@@ -473,7 +473,14 @@ save_call_clobbered_regs (insn_mode)
 		      n_regs_saved++;
 		}
 	      else
-		note_stores (PATTERN (insn), set_reg_live);
+		{
+		  note_stores (PATTERN (insn), set_reg_live);
+#ifdef AUTO_INC_DEC
+		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_INC)
+		      set_reg_live (XEXP (link, 0), NULL_RTX);
+#endif
+		}
 
 	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_UNUSED)
