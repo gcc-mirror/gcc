@@ -301,7 +301,7 @@ pragma Preelaborate (Regpat);
    --  byte-compiled version of regular expressions.
 
    Max_Program_Size : constant := 2**15 - 1;
-   --  Maximum size that can be allocated for a program.
+   --  Maximum size that can be allocated for a program
 
    Max_Curly_Repeat : constant := 32767;
    --  Maximum number of repetition for the curly operator.
@@ -380,8 +380,7 @@ pragma Preelaborate (Regpat);
 
    function Compile
      (Expression : String;
-      Flags      : Regexp_Flags := No_Flags)
-      return       Pattern_Matcher;
+      Flags      : Regexp_Flags := No_Flags) return Pattern_Matcher;
    --  Compile a regular expression into internal code.
    --  Raises Expression_Error if Expression is not a legal regular expression.
    --  The appropriate size is calculated automatically, but this means that
@@ -476,8 +475,7 @@ pragma Preelaborate (Regpat);
       Data       : String;
       Size       : Program_Size := 0;
       Data_First : Integer  := -1;
-      Data_Last  : Positive := Positive'Last)
-      return       Natural;
+      Data_Last  : Positive := Positive'Last) return Natural;
    --  Return the position where Data matches, or (Data'First - 1) if
    --  there is no match.
    --
@@ -493,8 +491,7 @@ pragma Preelaborate (Regpat);
       Data       : String;
       Size       : Program_Size := 0;
       Data_First : Integer  := -1;
-      Data_Last  : Positive := Positive'Last)
-      return       Boolean;
+      Data_Last  : Positive := Positive'Last) return Boolean;
    --  Return True if Data matches Expression. Match raises Storage_Error
    --  if Size is too small for Expression, or Expression_Error if Expression
    --  is not a legal regular expression.
@@ -516,8 +513,7 @@ pragma Preelaborate (Regpat);
      (Self       : Pattern_Matcher;
       Data       : String;
       Data_First : Integer  := -1;
-      Data_Last  : Positive := Positive'Last)
-     return Natural;
+      Data_Last  : Positive := Positive'Last) return Natural;
    --  Match Data using the given pattern matcher.
    --  Return the position where Data matches, or (Data'First - 1) if there is
    --  no match.
@@ -528,14 +524,13 @@ pragma Preelaborate (Regpat);
      (Self       : Pattern_Matcher;
       Data       : String;
       Data_First : Integer  := -1;
-      Data_Last  : Positive := Positive'Last)
-     return Boolean;
+      Data_Last  : Positive := Positive'Last) return Boolean;
    --  Return True if Data matches using the given pattern matcher.
    --
    --  See description of Data_First and Data_Last above.
 
    pragma Inline (Match);
-   --  All except the last one below.
+   --  All except the last one below
 
    procedure Match
      (Self       : Pattern_Matcher;
@@ -555,7 +550,7 @@ pragma Preelaborate (Regpat);
    -----------
 
    procedure Dump (Self : Pattern_Matcher);
-   --  Dump the compiled version of the regular expression matched by Self.
+   --  Dump the compiled version of the regular expression matched by Self
 
 --------------------------
 -- Private Declarations --

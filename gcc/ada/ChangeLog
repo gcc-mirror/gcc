@@ -1,3 +1,35 @@
+2003-10-23  Thomas Quinot  <quinot@act-europe.fr>
+
+	PR ada/11978:
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Do not consider inherited
+	External_Tag attribute definition clauses.
+
+2003-10-23  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/7613:
+	* exp_dbug.adb (Debug_Renaming_Declaration): For the renaming of a
+	child unit, generate a fully qualified name to avoid spurious errors
+	when the context contains renamings of different child units with
+	the same simple name.
+
+	* exp_dbug.ads: Add documentation on name qualification for renamings
+	of child units.
+
+2003-10-23  Robert Dewar  <dewar@gnat.com>
+
+	* g-regpat.ads, g-regpat.adb: Minor reformatting
+
+2003-10-23  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* Makefile.in: Use the file 1atags.ads with the ZFP and cert run-times.
+
+2003-10-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c: (tree_transform, case N_Real_Literal): Add extra arg to
+	Machine call.
+
+	* urealp.h: (Machine): Update to proper definition.
+
 2003-10-23  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* init.c, adaint.c: Minor reformatting.

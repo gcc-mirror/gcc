@@ -600,6 +600,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   a-taside.adb<1ataside.adb \
 
   CERT_LEVEL_B_TARGET_PAIRS=\
+  a-tags.ads<1atags.ads     \
   a-tags.adb<1atags.adb     \
   a-except.adb<2aexcept.adb \
   a-except.ads<2aexcept.ads \
@@ -694,6 +695,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   a-taside.adb<1ataside.adb \
 
   CERT_LEVEL_B_TARGET_PAIRS=\
+  a-tags.ads<1atags.ads     \
   a-tags.adb<1atags.adb     \
   a-except.adb<2aexcept.adb \
   a-except.ads<2aexcept.ads \
@@ -1969,6 +1971,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 HIE_NONE_TARGET_PAIRS=\
  a-except.ads<1aexcept.ads \
  a-except.adb<1aexcept.adb \
+ a-tags.ads<1atags.ads \
  a-tags.adb<1atags.adb \
  s-secsta.ads<1ssecsta.ads \
  s-secsta.adb<1ssecsta.adb \

@@ -237,8 +237,7 @@ package body GNAT.Regpat is
 
    function Get_From_Class
      (Bitmap : Character_Class;
-      C      : Character)
-      return   Boolean;
+      C      : Character) return Boolean;
    --  Return True if the entry is set for C in the class Bitmap.
 
    procedure Reset_Class (Bitmap : out Character_Class);
@@ -268,8 +267,7 @@ package body GNAT.Regpat is
 
    function String_Length
      (Program : Program_Data;
-      P       : Pointer)
-      return    Program_Size;
+      P       : Pointer) return Program_Size;
    --  Return the length of the string argument of the node at P
 
    function String_Operand (P : Pointer) return Pointer;
@@ -283,14 +281,12 @@ package body GNAT.Regpat is
 
    function Get_Next_Offset
      (Program : Program_Data;
-      IP      : Pointer)
-      return    Pointer;
+      IP      : Pointer) return Pointer;
    --  Get the offset field of a node. Used by Get_Next.
 
    function Get_Next
      (Program : Program_Data;
-      IP      : Pointer)
-      return    Pointer;
+      IP      : Pointer) return Pointer;
    --  Dig the next instruction pointer out of a node
 
    procedure Optimize (Self : in out Pattern_Matcher);
@@ -298,8 +294,7 @@ package body GNAT.Regpat is
 
    function Read_Natural
      (Program : Program_Data;
-      IP      : Pointer)
-      return    Natural;
+      IP      : Pointer) return Natural;
    --  Return the 2-byte natural coded at position IP.
 
    --  All of the subprograms above are tiny and should be inlined
@@ -2052,8 +2047,7 @@ package body GNAT.Regpat is
 
    function Compile
      (Expression : String;
-      Flags      : Regexp_Flags := No_Flags)
-      return       Pattern_Matcher
+      Flags      : Regexp_Flags := No_Flags) return Pattern_Matcher
    is
       Size  : Program_Size;
       Dummy : Pattern_Matcher (0);
@@ -2296,8 +2290,7 @@ package body GNAT.Regpat is
 
    function Get_From_Class
      (Bitmap : Character_Class;
-      C      : Character)
-      return   Boolean
+      C      : Character) return Boolean
    is
       Value : constant Class_Byte := Character'Pos (C);
 
@@ -2327,8 +2320,7 @@ package body GNAT.Regpat is
 
    function Get_Next_Offset
      (Program : Program_Data;
-      IP      : Pointer)
-      return    Pointer
+      IP      : Pointer) return Pointer
    is
    begin
       return Pointer (Read_Natural (Program, IP + 1));
@@ -2432,9 +2424,8 @@ package body GNAT.Regpat is
       --  Find character C in Data starting at Start and return position
 
       function Repeat
-        (IP   : Pointer;
-         Max  : Natural := Natural'Last)
-         return Natural;
+        (IP  : Pointer;
+         Max : Natural := Natural'Last) return Natural;
       --  Repeatedly match something simple, report how many
       --  It only matches on things of length 1.
       --  Starting from Input_Pos, it matches at most Max CURLY.
@@ -2468,8 +2459,7 @@ package body GNAT.Regpat is
         (Op     : Opcode;
          Scan   : Pointer;
          Next   : Pointer;
-         Greedy : Boolean)
-         return   Boolean;
+         Greedy : Boolean) return Boolean;
       --  Return True it the simple operator (possibly non-greedy) matches
 
       pragma Inline (Index);
@@ -2484,11 +2474,7 @@ package body GNAT.Regpat is
       -- Index --
       -----------
 
-      function Index
-        (Start : Positive;
-         C     : Character)
-         return  Natural
-      is
+      function Index (Start : Positive; C : Character) return Natural is
       begin
          for J in Start .. Last_In_Data loop
             if Data (J) = C then
@@ -2529,7 +2515,7 @@ package body GNAT.Regpat is
       -- Match --
       -----------
 
-      function Match (IP   : Pointer) return Boolean is
+      function Match (IP : Pointer) return Boolean is
          Scan   : Pointer := IP;
          Next   : Pointer;
          Op     : Opcode;
@@ -2835,8 +2821,7 @@ package body GNAT.Regpat is
         (Op     : Opcode;
          Scan   : Pointer;
          Next   : Pointer;
-         Greedy : Boolean)
-         return   Boolean
+         Greedy : Boolean) return Boolean
       is
          Next_Char       : Character := ASCII.Nul;
          Next_Char_Known : Boolean := False;
@@ -3137,9 +3122,8 @@ package body GNAT.Regpat is
       ------------
 
       function Repeat
-        (IP   : Pointer;
-         Max  : Natural := Natural'Last)
-         return Natural
+        (IP  : Pointer;
+         Max : Natural := Natural'Last) return Natural
       is
          Scan  : Natural := Input_Pos;
          Last  : Natural;
@@ -3384,12 +3368,15 @@ package body GNAT.Regpat is
       return;
    end Match;
 
-   function  Match
-     (Self : Pattern_Matcher;
-      Data : String;
+   -----------
+   -- Match --
+   -----------
+
+   function Match
+     (Self       : Pattern_Matcher;
+      Data       : String;
       Data_First : Integer := -1;
-      Data_Last  : Positive := Positive'Last)
-      return Natural
+      Data_Last  : Positive := Positive'Last) return Natural
    is
       Matches : Match_Array (0 .. 0);
 
@@ -3402,12 +3389,11 @@ package body GNAT.Regpat is
       end if;
    end Match;
 
-   function  Match
+   function Match
      (Self       : Pattern_Matcher;
       Data       : String;
       Data_First : Integer  := -1;
-      Data_Last  : Positive := Positive'Last)
-     return Boolean
+      Data_Last  : Positive := Positive'Last) return Boolean
    is
       Matches : Match_Array (0 .. 0);
 
@@ -3436,13 +3422,16 @@ package body GNAT.Regpat is
       end if;
    end Match;
 
+   -----------
+   -- Match --
+   -----------
+
    function  Match
      (Expression : String;
       Data       : String;
       Size       : Program_Size := 0;
       Data_First : Integer := -1;
-      Data_Last  : Positive := Positive'Last)
-      return       Natural
+      Data_Last  : Positive := Positive'Last) return Natural
    is
       PM         : Pattern_Matcher (Size);
       Final_Size : Program_Size; -- unused
@@ -3456,13 +3445,16 @@ package body GNAT.Regpat is
       end if;
    end Match;
 
+   -----------
+   -- Match --
+   -----------
+
    function  Match
      (Expression : String;
       Data       : String;
       Size       : Program_Size := 0;
       Data_First : Integer := -1;
-      Data_Last  : Positive := Positive'Last)
-      return       Boolean
+      Data_Last  : Positive := Positive'Last) return Boolean
    is
       Matches    : Match_Array (0 .. 0);
       PM         : Pattern_Matcher (Size);
@@ -3592,8 +3584,7 @@ package body GNAT.Regpat is
 
    function Read_Natural
      (Program : Program_Data;
-      IP      : Pointer)
-      return    Natural
+      IP      : Pointer) return Natural
    is
    begin
       return Character'Pos (Program (IP)) +
@@ -3618,7 +3609,6 @@ package body GNAT.Regpat is
       C      : Character)
    is
       Value : constant Class_Byte := Character'Pos (C);
-
    begin
       Bitmap (Value / 8) := Bitmap (Value / 8)
         or Bit_Conversion (Value mod 8);
@@ -3630,8 +3620,7 @@ package body GNAT.Regpat is
 
    function String_Length
      (Program : Program_Data;
-      P       : Pointer)
-      return    Program_Size
+      P       : Pointer) return Program_Size
    is
    begin
       pragma Assert (Program (P) = EXACT or else Program (P) = EXACTF);

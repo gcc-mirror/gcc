@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -47,4 +47,5 @@ extern Boolean UR_Is_Zero	(Ureal);
 enum Rounding_Mode {Floor = 0, Ceiling = 1, Round = 2, Round_Even = 3};
 
 #define Machine eval_fat__machine
-extern Ureal Machine		(Entity_Id, Ureal, enum Rounding_Mode);
+extern Ureal Machine		(Entity_Id, Ureal, enum Rounding_Mode,
+				 Node_Id);
