@@ -1859,6 +1859,18 @@
     return \"adjspb %$-4\";
 }")
 
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "=g<")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "g")
+			 (match_operand:SI 2 "const_int_operand" "i")
+			 (match_operand:SI 3 "general_operand" "rK")))]
+  ""
+  "*
+{ if (GET_CODE (operands[3]) == CONST_INT)
+    return \"extsd %1,%0,%3,%2\";
+  else return \"extd %3,%1,%0,%2\";
+}")
+
 (define_insn "extzv"
   [(set (match_operand:SI 0 "general_operand" "=g<")
 	(zero_extract:SI (match_operand:QI 1 "general_operand" "g")
