@@ -1,3 +1,7 @@
+Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (addqi_low_1): Remove.
+
 2000-06-27  Philipp Thomas  <pthomas@suse.de>
 
 	* 1750a.h: Mark help strings for options/switches for translation.
