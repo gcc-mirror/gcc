@@ -1,3 +1,8 @@
+2003-05-12  Neil Booth  <neil@cat.daikokuya.co.uk>
+
+	* Makefile.in (stage2_build, stage3_build, stage4_build):
+	Set BUILD_CC to the same as CC.
+
 2003-05-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* alloc-pool.c (last_id): Put in ENABLE_CHECKING guards.
