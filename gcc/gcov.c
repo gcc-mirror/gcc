@@ -1391,7 +1391,7 @@ function_summary (const coverage_t *coverage, const char *title)
 	     format_gcov (coverage->lines_executed, coverage->lines, 2),
 	     coverage->lines);
   else
-    fnotice (stdout, "No executable lines");
+    fnotice (stdout, "No executable lines\n");
 
   if (flag_branches)
     {
