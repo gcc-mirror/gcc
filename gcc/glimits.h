@@ -1,3 +1,10 @@
+#ifndef _LIMITS_H_
+#ifndef _MACH_MACHLIMITS_H_
+
+/* _MACH_MACHLIMITS.H_ is used on OSF/1.  */
+#define _LIMITS_H
+#define _MACH_MACHLIMITS_H_
+
 /* Number of bits in a `char'.  */
 #undef CHAR_BIT
 #define CHAR_BIT 8
@@ -59,3 +66,6 @@
 /* Maximum value an `unsigned long int' can hold.  (Minimum is 0).  */
 #undef ULONG_MAX
 #define ULONG_MAX 4294967295UL
+
+#endif /* _MACH_MACHLIMITS_H_ */
+#endif /* _LIMITS_H */
