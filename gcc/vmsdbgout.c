@@ -231,11 +231,6 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    : (NUMBYTES(OFFSET) == 2 ? UNALIGNED_SHORT_ASM_OP : ASM_BYTE_OP))
 #endif
 
-/* Pseudo-op for defining a new section.  */
-#ifndef SECTION_ASM_OP
-#define SECTION_ASM_OP	".section"
-#endif
-
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
    options is used and VMS_DEBUGGING_INFO is in effect.  If necessary, these
