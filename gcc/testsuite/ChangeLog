@@ -1,3 +1,8 @@
+2004-02-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/parse/attr-ctor1.C: XFAIL on hppa.
+	* g++.dg/opt/template1.C: Robustify assembler regexp
+
 2004-02-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/simd-4.x: Remove.
