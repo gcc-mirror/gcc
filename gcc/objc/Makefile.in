@@ -55,7 +55,7 @@ all:
 	cd ..; $(MAKE) sublibobjc.a
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
-         selector.o objects.o misc.o Object.o Protocol.o
+         selector.o objects.o misc.o NXConstantString.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -64,7 +64,7 @@ libobjc.a: $(OBJC_O)
 
 OBJC_H = hash.h list.h sarray.h objc.h \
          objc-api.h \
-	 Object.h Protocol.h encoding.h typedstream.h
+	 NXConstantString.h Object.h Protocol.h encoding.h typedstream.h
 
 # copy objc headers to installation include directory
 copy-headers: 
@@ -94,5 +94,6 @@ encoding.o: encoding.c
 selector.o: selector.c
 objects.o: objects.c
 misc.o: misc.c
+NXConstantString.o: NXConstantString.m
 Object.o: Object.m
 Protocol.o: Protocol.m
