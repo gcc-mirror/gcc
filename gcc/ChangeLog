@@ -1,3 +1,12 @@
+2002-05-08  Robert Spier <rspier@pobox.com>
+	    Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/6521
+	* cppfiles.c (handle_missing_header): Don't do anything
+	different for <> includes.
+doc:
+	* cppopts.texi: Update documentation for -MG.
+
 2002-05-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (cpp_interpret_charconst): Truncate as well as
