@@ -1,5 +1,8 @@
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/host-darwin.c (segv_handler): When -dH is used,
+	call abort() after running out of stack space.
+
 	* c-typeck.c (function_types_compatible_p): Ignore incompatible
 	'volatile' qualifiers on a function's return type in GNU mode.
 

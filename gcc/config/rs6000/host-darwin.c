@@ -26,6 +26,7 @@
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 static void segv_crash_handler PARAMS ((int));
 static void segv_handler PARAMS ((int, siginfo_t *, void *));
@@ -105,6 +106,9 @@ segv_handler (sig, sip, scp)
 	      }
 	}
       
+      if (global_dc->abort_on_error)
+	abort ();
+
       exit (FATAL_EXIT_CODE);
     }
 
