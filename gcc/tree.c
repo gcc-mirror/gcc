@@ -1107,7 +1107,7 @@ real_value_from_int_cst (i)
 #ifdef REAL_ARITHMETIC
   REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
 #else /* not REAL_ARITHMETIC */
-  if (TREE_INT_CST_HIGH (i) < 0)
+  if (TREE_INT_CST_HIGH (i) < 0 && ! TREE_UNSIGNED (TREE_TYPE (i)))
     {
       d = (double) (~ TREE_INT_CST_HIGH (i));
       d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
@@ -1117,7 +1117,7 @@ real_value_from_int_cst (i)
     }
   else
     {
-      d = (double) TREE_INT_CST_HIGH (i);
+      d = (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (i);
       d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
       d += (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (i);
@@ -1140,7 +1140,7 @@ build_real_from_int_cst (type, i)
   v = make_node (REAL_CST);
   TREE_TYPE (v) = type;
 
-  d = real_value_from_int_cst (i);
+  d = REAL_VALUE_TRUNCATE (TYPE_MODE (type), real_value_from_int_cst (i));
   /* Check for valid float value for this type on this target machine;
      if not, can print error message and store a valid value in D.  */
 #ifdef CHECK_FLOAT_VALUE
