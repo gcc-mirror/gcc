@@ -1,3 +1,8 @@
+2002-08-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (GCC_FOR_TARGET): Prepend STAGE_CC_WRAPPER.
+	(stage2_build, stage3_build, stage4_build): Likewise, to CC.
+
 2002-08-19  Geoffrey Keating  <geoffk@redhat.com>
 	    Steve Ellcey  <sje@cup.hp.com>
 
