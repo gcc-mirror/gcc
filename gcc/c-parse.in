@@ -1543,7 +1543,12 @@ compstmt: '{' '}'
 
 /* Value is number of statements counted as of the closeparen.  */
 simple_if:
-	  if_prefix lineno_labeled_stmt
+	  if_prefix
+		{ $<itype>1 = stmt_count; }
+	  lineno_labeled_stmt
+		{ if (extra_warnings && stmt_count == $<itype>1)
+		    warning_with_file_and_line (if_stmt_file, if_stmt_line,
+						"empty body in an if-statement"); }
 /* Make sure expand_end_cond is run once
    for each call to expand_start_cond.
    Otherwise a crash is likely.  */
@@ -1554,7 +1559,6 @@ if_prefix:
 	  IF '(' expr ')'
 		{ emit_line_note ($<filename>-1, $<lineno>0);
 		  expand_start_cond (truthvalue_conversion ($3), 0);
-		  $<itype>1 = stmt_count;
 		  if_stmt_file = $<filename>-1;
 		  if_stmt_line = $<lineno>0;
 		  position_after_white_space (); }
@@ -1629,10 +1633,7 @@ stmt:
 		  if (extra_warnings && stmt_count == $<itype>1)
 		    warning ("empty body in an else-statement"); }
 	| simple_if %prec IF
-		{ expand_end_cond ();
-		  if (extra_warnings && stmt_count == $<itype>1)
-		    warning_with_file_and_line (if_stmt_file, if_stmt_line,
-						"empty body in an if-statement"); }
+		{ expand_end_cond (); }
 /* Make sure expand_end_cond is run once
    for each call to expand_start_cond.
    Otherwise a crash is likely.  */
