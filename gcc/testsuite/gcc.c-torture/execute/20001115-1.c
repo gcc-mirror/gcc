@@ -1,28 +1,32 @@
 extern void abort (void);
 extern void exit (int);
 
-struct iso_directory_record {
+union iso_directory_record {
+   char carr[4];
+   struct {
            unsigned char name_len [1];
            char name [0];
+   } u;
 } entry;
 
-void set(struct iso_directory_record *);
+void set(union iso_directory_record *);
 
 int main (void)
 {
-   struct iso_directory_record *de;
+   union iso_directory_record *de;
 
    de = &entry;
    set(de);
 
-   if (de->name_len[0] == 1 && de->name[0] == 0)
+   if (de->u.name_len[0] == 1 && de->u.name[0] == 0)
      exit (0);
    else
      abort ();
 }
 
-void set (struct iso_directory_record *p)
+void set (union iso_directory_record *p)
 {
-   p->name_len[0] = 1;
+   p->carr[0] = 1;
+   p->carr[1] = 0;
    return;
 }
