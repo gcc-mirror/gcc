@@ -1,0 +1,12 @@
+RANLIB=true
+
+#None of the Apollo compilers can compile gas or binutils.  The preprocessor
+# chokes on bfd, the compiler won't let you assign integers to enums, and
+# other problems.  Defining CC to gcc is a questionable way to say "don't use
+# the apollo compiler" (the preferred version of GCC could be called cc,
+# or whatever), but I'm not sure leaving CC as cc is any better...
+
+#CC=cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DNO_STDARG
+CC=gcc
+
+BISON=yacc

@@ -1,0 +1,105 @@
+# Makefile for GNU Texindex and other utilities.
+# $Id: Makefile.in,v 1.1 1997/08/21 22:58:12 jason Exp $
+# 
+# Copyright (C) 1990, 91, 92, 96 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#### Start of system configuration section. ####
+
+srcdir = @srcdir@
+VPATH  = $(srcdir):$(common)
+
+common = $(srcdir)/../libtxi
+
+EXEEXT = @EXEEXT@
+CC = @CC@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
+LN	= ln
+RM	= rm -f
+MKDIR	= mkdir
+
+DEFS = @DEFS@
+LIBS = -L../libtxi -ltxi @LIBS@
+LOADLIBES = $(LIBS)
+
+SHELL = /bin/sh
+
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+# Prefix for each installed program, normally empty or `g'.
+binprefix = 
+# Prefix for each installed man page, normally empty or `g'.
+manprefix = 
+mandir = @mandir@/man1
+manext = 1
+infodir = @infodir@
+
+#### End of system configuration section. ####
+
+all: texindex$(EXEEXT) install-info$(EXEEXT)
+sub-all: all
+
+.c.o:
+	$(CC) -c $(CPPFLAGS) $(DEFS) -I. -I$(srcdir) -I$(common) $(CFLAGS) $<
+
+
+install: all
+	$(INSTALL_PROGRAM) texindex$(EXEEXT) $(bindir)/texindex$(EXEEXT)
+	$(INSTALL_PROGRAM) $(srcdir)/texi2dvi $(bindir)/texi2dvi
+	$(INSTALL_PROGRAM) install-info$(EXEEXT) $(bindir)/install-info$(EXEEXT)
+
+install-info:
+dvi:
+
+uninstall:
+	rm -f $(bindir)/texindex$(EXEEXT) $(bindir)/texi2dvi $(bindir)/install-info$(EXEEXT)
+
+Makefile: Makefile.in ../config.status
+	cd ..; $(SHELL) config.status
+
+TAGS:
+	etags *.c *.h $(common)/getopt*.c $(common)/getopt.h
+
+clean:
+	rm -f *.o a.out core core.* texindex install-info
+
+mostlyclean: clean
+
+distclean: clean
+	rm -f Makefile config.status
+
+realclean: distclean
+	rm -f TAGS
+
+texindex: texindex.o ../libtxi/libtxi.a
+	$(CC) $(LDFLAGS) -o texindex texindex.o $(LOADLIBES)
+
+texindex.o: texindex.c $(common)/getopt.h
+
+install-info: install-info.o
+	$(CC) $(LDFLAGS) -o install-info install-info.o $(LOADLIBES)
+
+install-info.o: install-info.c $(common)/getopt.h
+
+# Prevent GNU make v3 from overflowing arg limit on SysV.
+.NOEXPORT:

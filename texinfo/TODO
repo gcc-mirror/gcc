@@ -1,0 +1,35 @@
+If you are interested in working on any of these,
+email bug-texinfo@prep.ai.mit.edu.
+
+* Use Automake.
+
+* Use a config header file instead of @DEFS@.
+
+* A detexinfo program, like detex or delatex.  This command would
+  strip all the texinfo commands out, and would be used as a filter on
+  the way to a speller.  An option would be to NOT strip comments out.
+  makeinfo --no-headers come close.
+
+* Change bars.  This is difficult or impossible in TeX,
+  unfortunately.  To do it right requires device driver support.
+
+* The dark corner symbol for the gawk manual.
+
+* Better i18n support, including support for 8-bit input
+  characters.  Requires fonts, and the DC fonts are not (as of this
+  writing) free.
+
+* @exercise/@answer command for, e.g., gawk.
+
+* @figure.
+
+* HTML output in makeinfo.
+
+* Include a complete functional summary, a la a reference card, in the manual.
+
+* Use @ as the escape character, and Texinfo syntax generally, in the
+  table of contents, aux, and index files.  Eliminate all the crazy
+  redefinitions of every Texinfo command (which lists always seem to be
+  incomplete).
+
+* Improve the manuals for makeinfo, standalone info, etc.

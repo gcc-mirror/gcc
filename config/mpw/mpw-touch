@@ -1,0 +1,7 @@
+# "Touch" command.
+
+If "`Exists "{1}"`" != ""
+	SetFile -m . "{1}"
+Else
+	Echo ' ' > "{1}"
+End If

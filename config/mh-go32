@@ -1,0 +1,4 @@
+# We don't want to use debugging information on DOS.  Unfortunately,
+# this requires that we set CFLAGS.
+# This used to set -fno-omit-frame-pointer.
+CFLAGS=-O2

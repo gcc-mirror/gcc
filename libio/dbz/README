@@ -1,0 +1,25 @@
+The dbz package was "liberated" from C News.
+It is included with the GNU libio because it provides
+a fairly good work-out for a stdio implementation.
+The Makefile.in, configure.in, and stdio.h have been
+set up to test libio.
+
+------
+
+This is the new, improved, lemon-freshened :-) dbz.
+
+Just "make" will get you dbz.o and the dbz program.  "make r" runs an
+extensive set of regression tests; most of the mysterious oddments lying
+around here are to do with that.  "make rclean" cleans up after "make r".
+
+You probably want to inspect the #ifdef list early in dbz.c before
+compiling, although the defaults should work all right on most systems.
+
+If you are not building this as part of C News, you will need to change
+the -I option in FLAGS in the Makefile to "-I.", and delete the DBMLIBS
+and RFC lines entirely.  That will break some of the regression tests;
+at some point I'll fix this.
+
+If you are using this independently from C News, you probably still want
+to look through ../notebook/problems, as some of the portability problems
+described in there can affect dbz.

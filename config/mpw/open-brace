@@ -1,0 +1,4 @@
+# MPW makefiles seem not to have any way to get a literal open
+# brace into a rule anywhere, so this does the job.
+
+Echo '{'

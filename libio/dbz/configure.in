@@ -1,0 +1,17 @@
+# This file is a shell script fragment that supplies the information
+# necessary for a configure script to process the program in
+# this directory.  For more information, look at ../configure.
+
+configdirs=
+srctrigger=dbzmain.c
+srcname="libio dbz test"
+
+# per-host:
+
+# per-target:
+
+files="dbz.c dbzmain.c"
+links="rdbz.c rdbzmain.c"
+
+# post-target:
+

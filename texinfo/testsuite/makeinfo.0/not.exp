@@ -1,0 +1,15 @@
+# lessons:
+# 1) ALL expected args to a cmd on one line!
+# 2) `*' at end of string match pattern essential---match *complete* string!
+# 3) $srcdir (at least when .) expanded in dir where runtest invoked---
+#    NOT dir where test lives!
+# 4) stderr already folded into stdout; no need for 2>&1 or such things
+
+catch "exec $MAKEINFO $srcdir/text/not.texi" maki_out
+verbose "Makeinfo output: $maki_out" 1
+
+if [string match "No*setfilename*found*in*" "$maki_out"] then {
+	pass "@setfilename required"
+} else {
+	fail "@setfilename required"
+}

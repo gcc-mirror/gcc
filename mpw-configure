@@ -1,0 +1,448 @@
+# Configuration script
+# Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+### WARNING
+### This script must NOT use any 8-bit chars!
+### WARNING
+
+# This is an MPW Shell script that sets everything up for compilation,
+# mainly creating directories, and editing copies of files.
+
+Set savedir "`Directory`"
+
+#Set Echo 1
+
+Set ThisScript "{0}"
+
+Set srcroot "--------"
+
+Set srcdir ":"
+
+Set objdir ":"
+
+Set prefix "{MPW}":GNUTools:
+
+Set exec_prefix ""
+
+Set bindir ""
+
+Set host_alias "m68k-apple-mpw"
+
+Set target_alias {host_alias}
+
+Set host_cc "mpwc"
+
+Set with_gnu_ld 0
+
+Set helpoutput 0
+
+Set recurse 1
+
+Set verify 0
+Set verifystr ""
+
+Set enable_options ""
+Set disable_options ""
+
+# Parse arguments.
+
+Loop
+	Break If {#} == 0
+	If "{1}" =~ /--cc/
+		Set host_cc "{2}"
+		Shift 1
+	Else If "{1}" =~ /--bindir/
+		Set bindir "{2}"
+		Shift 1
+	Else If "{1}" =~ /--disable-?+/
+		Set `Echo {1} | sed -e 's/--disable-/enable_/'` no
+		Set disable_options "{disable_options} '{1}'"
+	Else If "{1}" =~ /--enable-?+/
+		Set `Echo {1} | sed -e 's/--enable-/enable_/'` yes
+		Set enable_options "{enable_options} '{1}'"
+	Else If "{1}" =~ /--exec-prefix/
+		Set exec_prefix "{2}"
+		Shift 1
+	Else If "{1}" =~ /--help/
+		Set helpoutput 1
+	Else If "{1}" =~ /--host/
+		Set host_alias "{2}"
+		Shift 1
+	Else If "{1}" =~ /--norecursion/
+		Set recurse 0
+	Else If "{1}" =~ /--prefix/
+		Set prefix "{2}"
+		Shift 1
+	Else If "{1}" =~ /--srcdir/
+		Set srcdir "{2}"
+		Shift 1
+	Else If "{1}" =~ /--srcroot/
+		Set srcroot "{2}"
+		Shift 1
+	Else If "{1}" =~ /--target/
+		Set target_alias "{2}"
+		Shift 1
+	Else If "{1}" =~ /-v/
+		Set verify 1
+		Set verifystr "-v"
+	Else If "{1}" =~ /--with-gnu-ld/
+		Set with_gnu_ld 1
+	Else
+		Echo -n 'mpw-configure: Unrecognized option: "'
+		Echo -n "{1}"
+		Echo '"; use --help for usage.'
+		Exit 1
+	End If
+	Shift 1
+End Loop
+
+If {helpoutput} == 1
+	Echo "Usage: mpw-configure [OPTIONS]"
+	Echo ""
+	Echo "Options: [defaults in brackets]"
+	Echo "--bindir DIR      directory for binaries []"
+	Echo "--cc CC           use C compiler CC [mpwc]"
+	Echo "--disable-FOO     do not include feature FOO"
+	Echo "--enable-FOO      include feature FOO"
+	Echo "--exec-prefix DIR install host-dependent files into DIR []"
+	Echo "--help            print this message"
+	Echo "--host HOST       configure for HOST [m68k-apple-mpw]"
+	Echo "--norecursion     configure this directory only [recurse]"
+	Echo "--prefix DIR      install into DIR [{MPW}:GNUTools:]"
+	Echo "--srcdir DIR      find the sources in DIR [:]"
+	Echo "--srcroot DIR     find the toplevel sources in DIR [:]"
+	Echo "--target TARGET   configure for TARGET [TARGET=HOST]"
+	Echo "-v                verbose"
+	Echo "--with-gnu-ld     link using GNU ld [no]"
+	Exit 0
+End If
+
+Set Exit 0
+
+# Default exec_prefix from prefix.
+
+If "{exec_prefix}" == ""
+	Set exec_prefix "{prefix}"
+End If
+
+If "{bindir}" == ""
+	Set bindir "{prefix}"bin:
+End If
+
+# Point to the correct set of tools to use with the chosen compiler.
+
+If "{host_cc}" =~ /mpwc/
+	Set host_alias "m68k-apple-mpw"
+	Set cc_name '{CC_MPW_C}'
+	Set segment_flag '-s '
+	Set ar_name '{AR_LIB}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_LINK}'
+	Set prog_ext_name '{PROG_EXT_68K}'
+	Set extralibs_name '{EXTRALIBS_C}'
+	Set makepef_name '{MAKEPEF_NULL}'
+	Set rez_name '{REZ_68K}'
+Else If "{host_cc}" =~ /sc68k/
+	Set host_alias "m68k-apple-mpw"
+	Set cc_name '{CC_SC}'
+	Set segment_flag '-s '
+	Set ar_name '{AR_LIB}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_LINK}'
+	Set prog_ext_name '{PROG_EXT_68K}'
+	Set extralibs_name '{EXTRALIBS_C}'
+	Set makepef_name '{MAKEPEF_NULL}'
+	Set rez_name '{REZ_68K}'
+Else If "{host_cc}" =~ /mwc68k/
+	Set host_alias "m68k-apple-mpw"
+	Set cc_name '{CC_MWC68K}'
+	Set segment_flag '-s '
+	Set ar_name '{AR_MWLINK68K}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_MWLINK68K}'
+	Set prog_ext_name '{PROG_EXT_68K}'
+	Set extralibs_name '{EXTRALIBS_MWC68K}'
+	Set makepef_name '{MAKEPEF_NULL}'
+	Set rez_name '{REZ_68K}'
+Else If "{host_cc}" =~ /gcc68k/
+	Set host_alias "m68k-apple-mpw"
+	Set cc_name '{CC_68K_GCC}'
+	Set segment_flag '-s '
+	Set ar_name '{AR_68K_AR}'
+	Set ranlib_name '{RANLIB_RANLIB}'
+	Set cc_ld_name '{CC_68K_GCC}'
+	Set prog_ext_name '{PROG_EXT_68K}'
+	Set extralibs_name '{EXTRALIBS_C}'
+	Set makepef_name '{MAKEPEF_NULL}'
+	Set rez_name '{REZ_68K}'
+Else If "{host_cc}" =~ /ppcc/
+	Set host_alias "powerpc-apple-mpw"
+	Set cc_name '{CC_PPCC}'
+	Set segment_flag '-d ___s_e_g___='
+	Set ar_name '{AR_PPCLINK}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_PPCLINK}'
+	Set prog_ext_name '{PROG_EXT_XCOFF}'
+	Set extralibs_name '{EXTRALIBS_PPC}'
+	Set makepef_name '{MAKEPEF_PPC}'
+	Set rez_name '{REZ_PPC}'
+Else If "{host_cc}" =~ /mrc/
+	Set host_alias "powerpc-apple-mpw"
+	Set cc_name '{CC_MRC}'
+	Set segment_flag '-d ___s_e_g___='
+	Set ar_name '{AR_PPCLINK}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_PPCLINK}'
+	Set prog_ext_name '{PROG_EXT_XCOFF}'
+	Set extralibs_name '{EXTRALIBS_PPC}'
+	Set makepef_name '{MAKEPEF_PPC}'
+	Set rez_name '{REZ_PPC}'
+Else If "{host_cc}" =~ /scppc/
+	Set host_alias "powerpc-apple-mpw"
+	Set cc_name '{CC_SC}'
+	Set segment_flag '-d ___s_e_g___='
+	Set ar_name '{AR_PPCLINK}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_PPCLINK}'
+	Set prog_ext_name '{PROG_EXT_XCOFF}'
+	Set extralibs_name '{EXTRALIBS_PPC}'
+	Set makepef_name '{MAKEPEF_PPC}'
+	Set rez_name '{REZ_PPC}'
+Else If "{host_cc}" =~ /mwcppc/
+	Set host_alias "powerpc-apple-mpw"
+	Set cc_name '{CC_MWCPPC}'
+	Set segment_flag '-d ___s_e_g___='
+	Set ar_name '{AR_MWLINKPPC}'
+	Set ranlib_name '{RANLIB_NULL}'
+	Set cc_ld_name '{CC_LD_MWLINKPPC}'
+	# Misleading, but we don't need a PEF step.
+	Set prog_ext_name '{PROG_EXT_68K}'
+	Set extralibs_name '{EXTRALIBS_MWCPPC}'
+	Set makepef_name '{MAKEPEF_NULL}'
+	Set rez_name '{REZ_PPC}'
+Else If "{host_cc}" =~ /gccppc/
+	Set host_alias "powerpc-apple-mpw"
+	Set cc_name '{CC_PPC_GCC}'
+	Set segment_flag '-d ___s_e_g___='
+	Set ar_name '{AR_PPCLINK}'
+	If {with_gnu_ld} == 1
+		Set ranlib_name '{RANLIB_RANLIB}'
+		Set cc_ld_name '{CC_LD_GLD}'
+	Else
+		Set ranlib_name '{RANLIB_NULL}'
+		Set cc_ld_name '{CC_LD_PPCLINK}'
+	End If
+	Set prog_ext_name '{PROG_EXT_XCOFF}'
+	Set extralibs_name '{EXTRALIBS_PPC}'
+	Set makepef_name '{MAKEPEF_PPC}'
+	Set rez_name '{REZ_PPC}'
+Else
+	Echo "{host_cc}" is not a known MPW compiler type
+End If
+
+Set dash_c_flag ''
+If "{host_cc}" =~ /gcc68k/
+	Set dash_c_flag '-c'
+Else If "{host_cc}" =~ /gccppc/
+	Set dash_c_flag '-c'
+End If
+
+# (should interpret aliases if not in canonical form)
+
+Set host_canonical "{host_alias}"
+
+Set target_canonical "{target_alias}"
+
+Set configdirs ""
+
+If "{srcroot}" =~ /--------/
+	Set srcroot "{srcdir}"
+End If
+If "`Exists "{srcdir}"`" == ""
+	Echo Source directory {srcdir} does not exist!
+	Exit 1
+End If
+If "`Exists "{srcroot}"`" == ""
+	Echo Top-level source directory {srcroot} does not exist!
+	Exit 1
+End If
+
+Set target_cpu "`echo {target_canonical} | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\1/'`"
+Set target_vendor "`echo {target_canonical} | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\2/'`"
+Set target_os "`echo {target_canonical} | sed 's/^\(.*\)-\(.*\)-\(.*\)$/\3/'`"
+
+# Create a file that is guaranteed to be older than any other here.
+
+If "`Exists "{objdir}"_oldest`" == ""
+	mpw-touch _oldest
+End If
+
+# Record this before creating any files, makefiles sometimes mention
+# dependencies on config.status.
+
+Echo "# This directory was configured as follows:" >config.new
+Echo "{ThisScript} --host {host_alias} --target {target_alias} --srcdir {srcdir}  --srcroot {srcroot}  --prefix {prefix} --cc {host_cc} {verifystr} {enable_options} {disable_options} --norecursion" >>config.new
+MoveIfChange config.new config.status
+
+If "`Exists "{srcdir}"mpw-config.in`" != ""
+	tr-7to8 "{srcdir}"mpw-config.in >"{objdir}"mpw-config.in
+	Execute "{objdir}"mpw-config.in
+End If
+
+# Start Makefile construction by defining all the variables chosen by
+# configuration.
+
+Echo "# This Makefile produced by mpw-configure.  Changes may get lost!" > "{objdir}"Makefile.tem
+Echo "srcroot = " {srcroot}			>> "{objdir}"Makefile.tem
+Echo "topsrcdir = " {srcroot}			>> "{objdir}"Makefile.tem
+Echo "srcdir = " {srcdir}			>> "{objdir}"Makefile.tem
+Echo "mpw_prefix = " {prefix}			>> "{objdir}"Makefile.tem
+Echo "mpw_exec_prefix = " {exec_prefix}		>> "{objdir}"Makefile.tem
+Echo "mpw_bindir = " {bindir}			>> "{objdir}"Makefile.tem
+Echo "host_alias = " {host_alias}		>> "{objdir}"Makefile.tem
+Echo "target_alias = " {target_alias}		>> "{objdir}"Makefile.tem
+Echo "target_cpu = " {target_cpu}		>> "{objdir}"Makefile.tem
+Echo "target_vendor = " {target_vendor}		>> "{objdir}"Makefile.tem
+Echo "target_os = " {target_os}			>> "{objdir}"Makefile.tem
+Echo "target_canonical = " {target_canonical}	>> "{objdir}"Makefile.tem
+Echo "host_makefile_frag = "			>> "{objdir}"Makefile.tem
+Echo "target_makefile_frag = "			>> "{objdir}"Makefile.tem
+Echo "CC = " {cc_name}				>> "{objdir}"Makefile.tem
+Echo "AR = " {ar_name}				>> "{objdir}"Makefile.tem
+Echo "RANLIB = " {ranlib_name}			>> "{objdir}"Makefile.tem
+Echo "CC_LD = " {cc_ld_name}			>> "{objdir}"Makefile.tem
+Echo "PROG_EXT = " {prog_ext_name}		>> "{objdir}"Makefile.tem
+Echo "EXTRALIBS = " {extralibs_name}		>> "{objdir}"Makefile.tem
+Echo "MAKEPEF = " {makepef_name}		>> "{objdir}"Makefile.tem
+Echo "REZ = " {rez_name}			>> "{objdir}"Makefile.tem
+
+If {host_cc} =~ /gccppc/
+	Echo -n "dq =\Option-d\Option-d\Option-d" > "{objdir}"Makefile.tem0
+	Echo '"' 				 >> "{objdir}"Makefile.tem0
+	tr-7to8  "{objdir}"Makefile.tem0	>>"{objdir}"Makefile.tem
+Else
+	Echo -n "dq ='" 			>> "{objdir}"Makefile.tem
+	Echo -n '"' 				>> "{objdir}"Makefile.tem
+	Echo    "'" 				>> "{objdir}"Makefile.tem
+End If
+
+# Append the master set of definitions for the various compilers.
+
+If "`Exists "{srcdir}"config:mpw-mh-mpw`" != ""
+	tr-7to8 "{srcdir}"config:mpw-mh-mpw >>"{objdir}"Makefile.tem
+Else If "`Exists "{srcroot}"config:mpw-mh-mpw`" != ""
+	tr-7to8 "{srcroot}"config:mpw-mh-mpw >>"{objdir}"Makefile.tem
+Else
+	Echo "can't find a host config file!"
+	Exit 0
+End If
+
+# Append anything produced by the directory's mpw-config.in.
+
+If "`Exists "{objdir}"mk.tmp`" != ""
+	Catenate "{objdir}"mk.tmp >>"{objdir}"Makefile.tem
+	# An mpw-config.in might change so as not to create this
+	# anymore, so get rid of it now to be safe.
+	Delete -i -y "{objdir}"mk.tmp
+End If
+
+# If there are sed scripts to edit the Unix Makefile.in, use them; otherwise
+# use an mpw-make.in if present.
+
+If "`Exists "{srcdir}"mpw-make.sed`" != ""
+	If "`Exists "{objdir}"hacked_Makefile.in`" != ""
+		Set MakefileIn "{objdir}"hacked_Makefile.in
+	Else
+		Set MakefileIn "{srcdir}"Makefile.in
+	End If
+	# Find the generic makefile editing script.
+	If "`Exists "{srcroot}"config:mpw:g-mpw-make.sed`" != ""
+		sed -f "{srcroot}"config:mpw:g-mpw-make.sed "{MakefileIn}" >"{objdir}"Makefile.tem1
+	Else If "`Exists "{srcroot}"utils:mpw:g-mpw-make.sed`" != ""
+		sed -f "{srcroot}"utils:mpw:g-mpw-make.sed "{MakefileIn}" >"{objdir}"Makefile.tem1
+	Else If "`Exists "{srcdir}"g-mpw-make.sed`" != ""
+		sed -f "{srcdir}"g-mpw-make.sed "{MakefileIn}" >"{objdir}"Makefile.tem1
+	Else
+		Echo Warning: g-mpw-make.sed not found, copying "{MakefileIn}" verbatim...
+		Catenate "{MakefileIn}" >"{objdir}"Makefile.tem1
+	End If
+	sed -f "{srcdir}"mpw-make.sed "{objdir}"Makefile.tem1 >"{objdir}"Makefile.tem2
+	sed -e 's/^prefix = .*$/prefix = {mpw_prefix}/g' -e 's/^exec_prefix = .*$/exec_prefix = {mpw_exec_prefix}/g' -e 's/^bindir = @bindir@/bindir = {mpw_bindir}/g' "{objdir}"Makefile.tem2 >"{objdir}"Makefile.tem3
+	sed -e "s/@DASH_C_FLAG@/{dash_c_flag}/" -e "s/@SEGMENT_FLAG(\([^)]*\))@/{segment_flag}\1/" "{objdir}"Makefile.tem3 >"{objdir}"mpw-make.in
+	tr-7to8 "{objdir}"mpw-make.in >>"{objdir}"Makefile.tem
+	If "`Exists "{objdir}"mk.sed`" != ""
+		sed -f "{objdir}"mk.sed "{objdir}"Makefile.tem >"{objdir}"Makefile.tem2
+		Rename -y "{objdir}"Makefile.tem2 "{objdir}"Makefile.tem
+	End If
+	MoveIfChange "{objdir}"Makefile.tem "{objdir}"Makefile
+	Delete -i -y "{objdir}"Makefile.tem[12]
+	If {verify} == 1
+		Echo Created Makefile in "`Directory`"
+	End If
+Else If "`Exists "{srcdir}"mpw-make.in`" != ""
+	sed -e 's/^prefix = .*$/prefix = {mpw_prefix}/g' "{srcdir}"mpw-make.in >"{objdir}"Makefile.tem1
+	sed -e "s/@DASH_C_FLAG@/{dash_c_flag}/" -e "s/@SEGMENT_FLAG(\([^)]*\))@/{segment_flag}}\1/" "{objdir}"Makefile.tem1 >"{objdir}"Makefile.tem2
+	tr-7to8 "{objdir}"Makefile.tem2 >>"{objdir}"Makefile.tem
+	If "`Exists "{objdir}"mk.sed`" != ""
+		sed -f "{objdir}"mk.sed "{objdir}"Makefile.tem >"{objdir}"Makefile.tem2
+		Rename -y "{objdir}"Makefile.tem2 "{objdir}"Makefile.tem
+	End If
+	MoveIfChange "{objdir}"Makefile.tem "{objdir}"Makefile
+	Delete -i -y "{objdir}"Makefile.tem[12]
+	If {verify} == 1
+		Echo Created Makefile in "`Directory`"
+	End If
+End If
+
+# Produce a build script if the source is defined.
+
+If "`Exists "{srcdir}"mpw-build.in`" != ""
+	Echo "Set srcroot " {srcroot} > "{objdir}"mpw-build.tem
+	Echo "Set srcdir " {srcdir} >> "{objdir}"mpw-build.tem
+	Echo "Set target_canonical " {target_canonical} >> "{objdir}"mpw-build.tem
+	Echo "Set prefix " {prefix} >> "{objdir}"mpw-build.tem
+	tr-7to8 "{srcdir}"mpw-build.in >>"{objdir}"mpw-build.tem
+	MoveIfChange "{objdir}"mpw-build.tem "{objdir}"mpw-build
+	If {verify} == 1
+		Echo Created mpw-build in "`Directory`"
+	End If
+End If
+
+# Apply ourselves recursively to the list of subdirectories to configure.
+
+If {recurse} == 1
+	For subdir In {configdirs}
+		Set savedir "`Directory`"
+		If "`Exists "{srcdir}{subdir}:"`" == ""
+			If {verify} == 1
+				Echo No "{srcdir}{subdir}:" found, skipping
+			End If
+			Continue
+		End If
+		If {verify} == 1
+			Echo Configuring {subdir}...
+		End If
+		If "`Exists "{objdir}{subdir}:"`" == ""
+			NewFolder "{objdir}{subdir}"
+		End If
+		SetDirectory "{objdir}{subdir}:"
+		"{ThisScript}" --target "{target_canonical}" --srcdir "{srcdir}{subdir}:" --srcroot "{srcroot}" --prefix "{prefix}" --cc "{host_cc}" {verifystr} {enable_options} {disable_options}
+		SetDirectory "{savedir}"
+	End For
+End If
+
+SetDirectory "{savedir}"

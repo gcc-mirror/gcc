@@ -1,0 +1,244 @@
+# Makefile for Texinfo distribution.
+# $Id: Makefile.in,v 1.11 1996/10/04 18:40:33 karl Exp $
+# 
+# Copyright (C) 1993, 96 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#### Start of system configuration section. ####
+
+srcdir = @srcdir@
+VPATH  = $(srcdir):$(common)
+
+common = $(srcdir)/libtxi
+
+EXEEXT = @EXEEXT@
+CC = @CC@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
+LN	= ln
+RM	= rm -f
+TAR	= tar
+MKDIR	= mkdir
+
+DEFS = @DEFS@
+LIBS = @LIBS@
+LOADLIBES = $(LIBS)
+
+ALLOCA = @ALLOCA@
+
+SHELL = /bin/sh
+
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+# Prefix for each installed program, normally empty or `g'.
+binprefix = 
+# Prefix for each installed man page, normally empty or `g'.
+manprefix = 
+mandir = @mandir@/man$(manext)
+manext = 1
+infodir = @infodir@
+
+# For info program. 
+DEFAULT_INFOPATH = $(infodir):.
+
+#### End of system configuration section. ####
+
+VERSION = 3.9
+DISTNAME = texinfo-$(VERSION)
+
+# Subdirectories that have makefiles
+SUBDIRS =  libtxi makeinfo info util emacs
+
+# All subdirectories that go into a distribution
+ALL_SUBDIRS = $(SUBDIRS) makeinfo/macros
+
+MDEFINES = bindir='$(bindir)' mandir='$(mandir)' manext='$(manext)' \
+	prefix='$(prefix)' binprefix='$(binprefix)' \
+	manprefix='$(manprefix)' infodir='$(infodir)' CFLAGS='$(CFLAGS)' \
+	CC='$(CC)' ALLOCA='$(ALLOCA)' LDFLAGS='$(LDFLAGS)' \
+	DEFAULT_INFOPATH='$(DEFAULT_INFOPATH)' \
+	INSTALL='$(INSTALL)' INSTALL_DATA='$(INSTALL_DATA)' \
+	INSTALL_PROGRAM='$(INSTALL_PROGRAM)'
+
+all: sub-all texinfo
+
+check:
+installcheck:
+dvi: texinfo.dvi license.dvi lgpl.dvi
+	@for dir in $(SUBDIRS); do cd $$dir; $(MAKE) $(FLAGS_TO_PASS) $@; cd ..; done
+
+install: all installdirs
+	test -f $(infodir)/dir || $(INSTALL_DATA) $(srcdir)/dir $(infodir)  
+	for dir in $(SUBDIRS); do \
+	   echo making $@ in $$dir; \
+	   (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+	d=$(srcdir); test -f ./texinfo && d=.; \
+	(cd $$d && for f in texinfo* ; do \
+	    $(INSTALL_DATA) $$f $(infodir)/$$f; done)
+	$(POST_INSTALL)
+	./util/install-info --info-dir=$(infodir) $(infodir)/texinfo
+	@echo Please install $(srcdir)/texinfo.tex manually.
+
+installdirs:
+	-$(SHELL) $(srcdir)/util/mkinstalldirs $(bindir) $(datadir) $(infodir) $(mandir)
+
+.PHONY: install-info
+install-info: info
+	for dir in $(SUBDIRS); do \
+	   echo making $@ in $$dir; \
+	   (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+	d=$(srcdir); test -f ./texinfo && d=.; \
+	(cd $$d; \
+	  for f in texinfo* ; do \
+	    $(INSTALL_DATA) $$f $(infodir)/$$f; \
+	  done)
+
+uninstall:
+	for dir in $(SUBDIRS); do \
+	  echo making $@ in $$dir; \
+	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+	$(RM) $(infodir)/texinfo $(infodir)/texinfo-*
+
+Makefile: Makefile.in config.status
+	$(SHELL) ./config.status
+
+config.status: configure
+	$(SHELL) ./config.status --recheck
+
+#configure: configure.in
+#	cd $(srcdir) && autoconf
+
+sub-all TAGS:
+	for dir in $(SUBDIRS); do \
+	  echo making $@ in $$dir; \
+	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+.PHONY: sub-all
+
+clean mostlyclean:
+	for dir in $(SUBDIRS); do \
+	  echo making $@ in $$dir; \
+	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+
+distclean: clean texclean
+	for dir in $(SUBDIRS); do \
+	  echo making $@ in $$dir; \
+	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
+	done
+	$(RM) Makefile *.status *.cache *.log texinfo texinfo-?	texinfo-??
+
+texclean:
+	$(RM) *.aux *.cp *.cps *.dvi *.fn *.fns *.ky *.kys *.pg *.pgs
+	$(RM) *.toc *.tp *.tps *.vr *.vrs
+
+realclean: distclean
+
+# Let's hope we weren't cross-compiling.
+# If we depend on sub-all, this always gets remade.  Annoying.
+info texinfo: texinfo.texi
+	./makeinfo/makeinfo$(EXEEXT) -I$(srcdir) texinfo.texi
+.PHONY: info
+
+texinfo.dvi:
+	PATH="$(srcdir)/util:$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/texinfo.texi
+.PHONY: dvi
+
+license.info: $(srcdir)/license.texi
+	$(MAKEINFO) -I$(srcdir) -o license.info $(srcdir)/license.texi
+
+license.dvi: $(srcdir)/license.texi
+	PATH="$(srcdir)/util:$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/license.texi
+
+lgpl.info: $(srcdir)/liblic.texi
+	$(MAKEINFO) -I$(srcdir) -o lgpl.info $(srcdir)/liblic.texi
+
+lgpl.dvi: $(srcdir)/liblic.texi
+	PATH="$(srcdir)/util:$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/liblic.texi
+	mv liblic.dvi lgpl.dvi
+
+dist: DISTFILES
+	$(RM) -r $(DISTNAME)
+	$(MKDIR) $(DISTNAME)
+	for d in `find . -type d ! -name RCS -print`; do \
+	  d=`echo $$d | grep -v '[@=]'`; \
+	  test -z "$$d" || test "$$d" = . || test "$$d" = "./$(DISTNAME)" \
+	  || mkdir $(DISTNAME)/$$d; done
+	for f in `cat DISTFILES`; do \
+	   $(LN) $(srcdir)/$$f $(DISTNAME)/$$f || \
+		{ echo copying $$f; cp -p $(srcdir)/$$f $(DISTNAME)/$$f ; } \
+	done
+	(cd $(DISTNAME); $(MAKE) $(MFLAGS) distclean)
+	$(TAR) chvf - $(DISTNAME) | gzip >$(DISTNAME).tar.gz
+	$(RM) -r $(DISTNAME)
+
+# Gets rid of most of the unwanted files.  Verify manually (if necessary)
+# that this produces a list of all the files desired in the distribution. 
+DISTFILES: force
+	(cd $(srcdir); find . ! -type d -print) \
+	| sed '/\/RCS\//d; \
+	       /\/EMACS-BACKUPS\//d; \
+	       /\.tar.*/d; \
+	       /~$$/d; /\.o$$/d; \
+	       /\.gdbinit$$/d; \
+	       /\.orig$$/d; \
+	       /\#$$/d; \
+	       /\/info\/info$$/d; \
+	       /\.info$$/d; \
+	       /\.elc/d; \
+	       /\/makeinfo\/makeinfo$$/d; \
+	       /\/$(DISTNAME)\/.*$$/d; \
+	       /\/util\/texindex$$/d; \
+	       /texinfo$$/d; \
+	       /texinfo-[0-9]+$$/d; \
+	       /\/.*\.BAK$$/d; \
+	       /\/.*\.a$$/d; \
+	       /\/core$$/d; \
+	       /\/*\.core$$/d; \
+	       /\/core\..*$$/d; \
+	       /\/a.out$$/d; \
+	       /\/[=@]/d; \
+	       /\/conftest\.c$$/d; \
+	       /\/DISTFILES$$/d; \
+	       /\/foo$$/d; \
+	       /\/bar$$/d; \
+	       /\.toc$$/d; \
+	       /\.bak$$/d; \
+	       /\.aux$$/d; /\.log$$/d; \
+	       /\.cps$$/d; /\.cp$$/d; \
+	       /\.fns$$/d; /\.fn$$/d; \
+	       /\.tps$$/d; /\.tp$$/d; \
+	       /\.vrs$$/d; /\.vr$$/d; \
+	       /\.pgs$$/d; /\.pg$$/d; \
+	       /\.kys$$/d; /\.ky$$/d; \
+	       /\.ops$$/d; /\.op$$/d; \
+	       s/^.\///; /^\.$$/d;' \
+	| sort | uniq > DISTFILES
+
+force:
+
+# Prevent GNU make v3 from overflowing arg limit on SysV.
+.NOEXPORT:

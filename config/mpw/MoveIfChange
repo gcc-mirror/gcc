@@ -1,0 +1,19 @@
+# Rename a file only if it is different from a previously existing
+# file of the same name.  This is useful for keeping make from doing
+# too much work if the contents of a file haven't changed.
+
+# This is an MPW translation of the standard GNU sh script move-if-change.
+
+Set exit 0
+
+If "`exists -f "{2}"`"
+  Compare "{1}" "{2}" >dev:null
+  If {status} != 0
+    Rename -y "{1}" "{2}"
+  Else
+    Echo "{2}" is unchanged
+    Delete -i -y "{1}"
+  End
+Else
+  Rename -y "{1}" "{2}"
+End

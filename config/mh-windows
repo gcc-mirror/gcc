@@ -1,0 +1,16 @@
+CC=cc
+CFLAGS=
+RANLIB=true
+AR_FLAGS=
+
+.PHONY: windows
+windows: nmake.mak
+	@echo "Don't forget to setup setvars.mak!"
+
+nmake.mak: to-be-built
+	@echo Building nmake files
+	@$(srcdir)/gdb/mswin/genmakes
+
+to-be-built:
+	@echo Recording commands
+	@$(srcdir)/gdb/mswin/recordit

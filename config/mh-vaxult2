@@ -1,0 +1,2 @@
+# The old BSD pcc isn't up to compiling parts of gdb so use gcc
+CC = gcc

@@ -1,0 +1,23 @@
+srcdir = .
+
+#### package, host, target, and site dependent Makefile fragments come in here.
+##
+
+# These are compiled from the corresponding ../ioFOO.c files.
+STDIO_RENAMED_OBJECTS = ... filled in by configure ...
+# These are the files that a libc would want.
+STDIO_OBJECTS = $(STDIO_RENAMED_OBJECTS) \
+  clearerr.o fdopen.o feof.o ferror.o fgetc.o fileno.o \
+  fputc.o freopen.o fseek.o getc.o getchar.o getline.o getw.o \
+  popen.o putc.o putchar.o putw.o rewind.o \
+  setbuf.o setfileno.o setlinebuf.o snprintf.o \
+  vfprintf.o vfscanf.o vprintf.o vscanf.o vsnprintf.o
+
+CC_FOR_STDIO=$(CC)
+CINCLUDES = -I. -I$(srcdir) -I.. -I$(srcdir)/.. -D__USE_GNU
+
+nothing:
+
+stdio.list: stamp-picdir $(STDIO_OBJECTS)
+	@echo "$(STDIO_OBJECTS)" >stdio.list
+

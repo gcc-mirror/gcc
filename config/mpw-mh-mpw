@@ -1,0 +1,157 @@
+# This is an MPW makefile fragment.
+
+# Since there are a multiplicity of Mac compilers and two different
+# processors, this file is primarily a library of options for each
+# compiler.  Somebody else (such as a configure or build script) will
+# make the actual choice.
+
+# Compiler to use for compiling.
+
+CC_MPW_C = C -d MPW_C -d ALMOST_STDC -d ANSI_PROTOTYPES -d MPW -mc68020 -model far -b -w
+
+CC_SC = SC -d ALMOST_STDC -d ANSI_PROTOTYPES -d MPW -mc68020 -model far -b -i '' -i :
+
+CC_MWC68K = MWC68K -d MPW -enum int -mpw_chars -sym on -w off -mc68020 -model far
+
+CC_PPCC = PPCC -d powerc=1 -d pascal= -d ALMOST_STDC -d ANSI_PROTOTYPES -d MPW -w
+
+CC_MRC = MrC -d powerc=1 -d pascal= -d ALMOST_STDC -d ANSI_PROTOTYPES -d MPW -i '' -i : -jm
+
+CC_SMrC = SMrC -d MPW
+
+# "-mpw_chars" is necessary because GNU sources often mix signed and
+# unsigned casually.
+# "-w off" is not a great idea, but CW7 is complaining about enum
+# assignments.
+# "-opt global,peep,l4,speed" is sometimes good, and sometimes bad.
+# We must use {CIncludes} so that MPW tools will work; {MWCIncludes}
+# defines stdout, islower, etc, in ways that are incompatible with MPW's
+# runtime.  However, this cannot be done via  -i "{CIncludes}", since
+# that does not affect how <>-type includes happen; instead, the variable
+# MWCIncludes must be set to point at {CIncludes}.
+
+CC_MWCPPC = MWCPPC -d MPW -enum int -mpw_chars -sym on -w off
+
+# Note that GCC does *not* wire in a definition of "pascal", so that
+# it can be handled in another way if desired.
+
+CC_68K_GCC = gC -Dpascal= -DANSI_PROTOTYPES -DMPW
+
+CC_PPC_GCC = gC -Dpowerc=1 -Dpascal= -DANSI_PROTOTYPES -DMPW
+
+# Nothing for the default CFLAGS.
+
+CFLAGS = 
+
+# Tool to use for making libraries/archives.
+
+AR_LIB = Lib
+
+AR_MWLINK68K = MWLink68K -xm library
+
+AR_PPCLINK = PPCLink -xm library
+
+AR_MWLINKPPC = MWLinkPPC -xm library
+
+AR_AR = ar
+
+AR_FLAGS = -o
+
+RANLIB_NULL = null-command
+
+RANLIB_RANLIB = ranlib
+
+# Compiler and/or linker to use for linking.
+
+CC_LD_LINK = Link -w -d -model far {CC_LD_TOOL_FLAGS}
+
+CC_LD_MWLINK68K = MWLink68K -w {CC_LD_TOOL_FLAGS} -sym on -model far
+
+CC_LD_PPCLINK = PPCLink -main __start -outputformat xcoff
+
+CC_LD_MWLINKPPC = MWLinkPPC -w {CC_LD_TOOL_FLAGS} -sym on
+
+CC_LD_GLD = gC
+
+# Extension for linker output.
+
+PROG_EXT_68K =
+
+PROG_EXT_XCOFF = .xcoff
+
+# Nothing for the default LDFLAGS.
+
+LDFLAGS = -w
+
+CC_LD_TOOL_FLAGS = -c 'MPS ' -t MPST
+
+# Libraries to link against.
+
+# It would appear that the math libraries are not
+# needed except to provide a definition for scalb,
+# which is called from ldexp, which is referenced
+# in the m68k opcodes library.
+
+EXTRALIBS_C = \Option-d
+	"{CLibraries}"StdClib.o \Option-d
+	"{CLibraries}"Math.o \Option-d
+	"{CLibraries}"CSANELib.o \Option-d
+	"{Libraries}"Stubs.o \Option-d
+	"{Libraries}"Runtime.o \Option-d
+	"{Libraries}"Interface.o \Option-d
+	"{Libraries}"ToolLibs.o
+
+EXTRALIBS_MWC68K = \Option-d
+	"{CLibraries}"StdClib.o \Option-d
+	"{CLibraries}"Math.o \Option-d
+	"{CLibraries}"CSANELib.o \Option-d
+	"{Libraries}"Stubs.o \Option-d
+	"{Libraries}"Runtime.o \Option-d
+	"{Libraries}"Interface.o \Option-d
+	"{Libraries}"ToolLibs.o \Option-d
+	"{MW68KLibraries}MPW ANSI (4i) C.68K.Lib"
+
+EXTRALIBS_PPC_XCOFF = \Option-d
+	"{PPCLibraries}"StdCRuntime.o \Option-d
+	"{PPCLibraries}"InterfaceLib.xcoff \Option-d
+	"{PPCLibraries}"MathLib.xcoff \Option-d
+	"{PPCLibraries}"StdCLib.xcoff \Option-d
+	"{PPCLibraries}"PPCToolLibs.o \Option-d
+	"{PPCLibraries}"PPCCRuntime.o \Option-d
+	"{GCCPPCLibraries}"libgcc.xcoff
+
+EXTRALIBS_PPC = \Option-d
+	"{PPCLibraries}"StdCRuntime.o \Option-d
+	"{SharedLibraries}"InterfaceLib \Option-d
+	"{SharedLibraries}"MathLib \Option-d
+	"{SharedLibraries}"StdCLib \Option-d
+	"{PPCLibraries}"PPCToolLibs.o \Option-d
+	"{PPCLibraries}"PPCCRuntime.o \Option-d
+	"{GCCPPCLibraries}"libgcc.xcoff
+
+EXTRALIBS_MWCPPC = \Option-d
+	"{MWPPCLibraries}"MWStdCRuntime.Lib \Option-d
+	"{MWPPCLibraries}"InterfaceLib \Option-d
+	"{MWPPCLibraries}"StdCLib \Option-d
+	"{MWPPCLibraries}"MathLib \Option-d
+	"{MWPPCLibraries}"PPCToolLibs.o
+
+# Tool to make PEF with, if needed.
+
+MAKEPEF_NULL = null-command
+
+MAKEPEF_PPC = MakePEF
+
+MAKEPEF_FLAGS = \Option-d
+	-l InterfaceLib.xcoff=InterfaceLib \Option-d
+	-l MathLib.xcoff=MathLib \Option-d
+	-l StdCLib.xcoff=StdCLib
+
+MAKEPEF_TOOL_FLAGS = -ft MPST -fc 'MPS '
+
+# Resource compiler to use.
+
+REZ_68K = Rez
+
+REZ_PPC = Rez -d WANT_CFRG
+
