@@ -1,3 +1,8 @@
+2003-04-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/sparc/sol2-bi.h (ASM_CPU64_DEFAULT_SPEC): Add -TSO.
+        (DEF_ARCH64_SPEC): Likewise.
+
 Thu Apr  3 09:53:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (constant_address_p): Use legitimate_constant_p.
