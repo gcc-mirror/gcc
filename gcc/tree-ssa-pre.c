@@ -922,22 +922,21 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
     case tcc_exceptional:
       {
 	tree phi = NULL;
-	int i;
+	edge e;
 	gcc_assert (TREE_CODE (expr) == SSA_NAME);
 	if (TREE_CODE (SSA_NAME_DEF_STMT (expr)) == PHI_NODE)
 	  phi = SSA_NAME_DEF_STMT (expr);
 	else
 	  return expr;
 	
-	for (i = 0; i < PHI_NUM_ARGS (phi); i++)
-	  if (PHI_ARG_EDGE (phi, i)->src == pred)
-	    {
-	      tree val;
-	      if (is_undefined_value (PHI_ARG_DEF (phi, i)))
-		return NULL;
-	      val = vn_lookup_or_add (PHI_ARG_DEF (phi, i), NULL);
-	      return PHI_ARG_DEF (phi, i);
-	    }
+	e = find_edge (pred, bb_for_stmt (phi));
+	if (e)
+	  {
+	    if (is_undefined_value (PHI_ARG_DEF (phi, e->dest_idx)))
+	      return NULL;
+	    vn_lookup_or_add (PHI_ARG_DEF (phi, e->dest_idx), NULL);
+	    return PHI_ARG_DEF (phi, e->dest_idx);
+	  }
       }
       return expr;
 
