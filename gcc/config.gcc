@@ -702,7 +702,7 @@ arm*-*-kaos*)
 	;;
 avr-*-rtems*)
 	tm_file="avr/avr.h dbxelf.h avr/rtems.h rtems.h"
-	tmake_files="avr/t-avr t-rtems avr/t-rtems"
+	tmake_file="avr/t-avr t-rtems avr/t-rtems"
 	;;
 avr-*-*)
 	tm_file="avr/avr.h dbxelf.h"
