@@ -1677,6 +1677,16 @@ some instances, but would require considerable additional work and would
 be quite different from @samp{-pedantic}.  We don't have plans to
 support such a feature in the near future.
 
+Where the standard specified with @option{-std} represents a GNU
+extended dialect of C, such as @samp{gnu89} or @samp{gnu99}, there is a
+corresponding @dfn{base standard}, the version of ISO C on which the GNU
+extended dialect is based.  Warnings from @option{-pedantic} are given
+where they are required by the base standard.  (It would not make sense
+for such warnings to be given only for features not in the specified GNU
+C dialect, since by definition the GNU dialects of C include all
+features the compiler supports with the given option, and there would be
+nothing to warn about.)
+
 @item -pedantic-errors
 Like @samp{-pedantic}, except that errors are produced rather than
 warnings.
