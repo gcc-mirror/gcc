@@ -96,11 +96,10 @@ package Prj.Attr is
    procedure Register_New_Package
      (Name       : String;
       Attributes : Attribute_Data_Array);
-   --  Add a new package with its attributes.
-   --  This procedure can only be called after Initialize, but before any
-   --  other call to a service of the Project Managers.
-   --  Fail if the name of the package is empty or not unique, or if the names
-   --  of the attributes are not different.
+   --  Add a new package with its attributes. This procedure can only be
+   --  called after Initialize, but before any other call to a service of
+   --  the Project Manager. Fail if the name of the package is empty or not
+   --  unique, or if the names of the attributes are not different.
 
    ----------------
    -- Attributes --

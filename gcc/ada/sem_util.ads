@@ -544,7 +544,8 @@ package Sem_Util is
    function Is_Statement (N : Node_Id) return Boolean;
    --  Check if the node N is a statement node. Note that this includes
    --  the case of procedure call statements (unlike the direct use of
-   --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo)
+   --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
+   --  Note that a label is *not* a statement, and will return False.
 
    function Is_Transfer (N : Node_Id) return Boolean;
    --  Returns True if the node N is a statement which is known to cause
