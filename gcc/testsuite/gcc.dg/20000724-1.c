@@ -51,7 +51,7 @@ NT	"ret"
 
 extern inline void do_asm(struct s * x)
 {
-  asm volatile("call ___checkme" : : "c" (x) : "esp", "memory");
+  asm volatile("call ___checkme" : : "c" (x) : "memory");
 }
 
 int foo(void)
