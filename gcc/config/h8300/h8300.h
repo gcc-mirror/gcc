@@ -1134,17 +1134,17 @@ readonly_data ()							\
 /* If we are referencing a function that is supposed to be called
    through the function vector, the SYMBOL_REF_FLAG in the rtl
    so the call patterns can generate the correct code.  */
-#define ENCODE_SECTION_INFO(DECL)			\
-  if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && h8300_funcvec_function_p (DECL))		\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-  else if (TREE_CODE (DECL) == VAR_DECL			\
-	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
-	   && h8300_eightbit_data_p (DECL))		\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-  else if (TREE_CODE (DECL) == VAR_DECL			\
-	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
-	   && h8300_tiny_data_p (DECL))			\
+#define ENCODE_SECTION_INFO(DECL)				\
+  if (TREE_CODE (DECL) == FUNCTION_DECL				\
+      && h8300_funcvec_function_p (DECL))			\
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
+  else if (TREE_CODE (DECL) == VAR_DECL				\
+	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
+	   && h8300_eightbit_data_p (DECL))			\
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
+  else if (TREE_CODE (DECL) == VAR_DECL				\
+	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
+	   && h8300_tiny_data_p (DECL))				\
     h8300_encode_label (DECL);
 
 /* Store the user-specified part of SYMBOL_NAME in VAR.
@@ -1250,7 +1250,8 @@ readonly_data ()							\
       char dstr[30];						\
       REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
       fprintf (FILE, "\t.double %s\n", dstr);			\
-    } while (0)
+    }								\
+  while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 #define ASM_OUTPUT_FLOAT(FILE, VALUE)				\
@@ -1259,7 +1260,8 @@ readonly_data ()							\
       char dstr[30];						\
       REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
       fprintf (FILE, "\t.float %s\n", dstr);			\
-    } while (0)
+    }								\
+  while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
