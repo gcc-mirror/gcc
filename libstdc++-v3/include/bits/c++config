@@ -57,6 +57,9 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
 
+// The remainder of the prewritten config is automatic; all the
+// user hooks are listed above.
+
 // Create a boolean flag to be used to determine if --fast-math is set.
 #ifdef __FAST_MATH__
 # define _GLIBCXX_FAST_MATH 1
@@ -70,5 +73,4 @@
 // for something else under certain OSes (see BADNAMES).
 #define __N(msgid)     (msgid)
 
-// The remainder of the prewritten config is mostly automatic; all the
-// user hooks are listed above: the discovered settings follow.
+// End of prewritten config; the discovered settings follow.
