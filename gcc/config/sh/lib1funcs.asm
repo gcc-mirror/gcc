@@ -1089,7 +1089,7 @@ trivial:
 
 	.align 2
 L1:
-#ifdef __LITTLE_ENDIAN__
+#if defined (__LITTLE_ENDIAN__) || ! defined (FMOVD_WORKS)
 	.long 0x80000
 #else
 	.long 0x180000

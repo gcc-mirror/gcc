@@ -1,3 +1,8 @@
+Wed Nov 25 22:05:28 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* config/sh/lib1funcs.asm (___udivsi3_i4): Don't switch to sz == 1
+	unless FMOVD_WORKS is defined.
+
 Wed Nov 25 20:11:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regclass.c (init_reg_sets): Move code that calculates tables
