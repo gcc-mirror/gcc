@@ -1,5 +1,6 @@
 /* Target definitions for GCC for Intel 80386 running Interix
-   Parts Copyright (C) 1991, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Parts Copyright (C) 1991, 1999, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
    Parts:
      by Douglas B. Rupp (drupp@cs.washington.edu).

@@ -1,5 +1,5 @@
 /* Configuration for an OpenBSD i386 target.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,3 +1,38 @@
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	alloc-pool.c, alloc-pool.h, c-lex.c, c-pragma.h,
+	tree-optimize.c, config/alpha/alpha.c, config/alpha/alpha.h,
+	config/alpha/alpha.md, config/alpha/vms.h, config/arm/arm.h,
+	config/arm/linux-elf.h, config/avr/avr.c, config/c4x/c4x.c,
+	config/c4x/c4x.md, config/d30v/d30v.h,
+	config/frv/frv-protos.h, config/frv/frv.c, config/frv/frv.h,
+	config/frv/frv.md, config/frv/frvbegin.c, config/frv/frvend.c,
+	config/i386/cygming.h, config/i386/djgpp.h,
+	config/i386/emmintrin.h, config/i386/gthr-win32.c,
+	config/i386/i386-interix.h, config/i386/i386-protos.h,
+	config/i386/i386.c, config/i386/i386.h, config/i386/openbsd.h,
+	config/i386/winnt.c, config/i386/xm-mingw32.h,
+	config/i386/xmmintrin.h, config/ia64/ia64-protos.h,
+	config/ia64/ia64.c, config/ia64/ia64.md, config/ip2k/ip2k.c,
+	config/iq2000/iq2000-protos.h, config/iq2000/iq2000.c,
+	config/iq2000/iq2000.md, config/m32r/m32r-protos.h,
+	config/m32r/m32r.c, config/m32r/m32r.md, config/m68k/m68k.md,
+	config/m68k/netbsd-elf.h, config/mcore/mcore-elf.h,
+	config/mcore/mcore.c, config/mcore/mcore.h,
+	config/mcore/mcore.md, config/mips/elf.h, config/mips/elf64.h,
+	config/mips/iris5gas.h, config/mips/iris6.h,
+	config/mips/iris6gas.h, config/mips/linux.h,
+	config/mips/mips.md, config/mips/netbsd.h,
+	config/mips/openbsd.h, config/mips/windiss.h,
+	config/mn10300/mn10300.c, config/mn10300/mn10300.h,
+	config/pdp11/pdp11.c, config/rs6000/aix.h,
+	config/rs6000/altivec.h, config/rs6000/darwin.h,
+	config/rs6000/xcoff.h, config/s390/s390-protos.h,
+	config/s390/s390.c, config/s390/s390.h, config/s390/s390.md,
+	config/sh/netbsd-elf.h, config/sh/sh.h, config/sh/vxworks.h,
+	config/sparc/sol2.h, config/stormy16/stormy16.h: Update
+	copyright.
+
 2004-01-30  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	PR bootstrap/9249

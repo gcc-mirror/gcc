@@ -1,5 +1,5 @@
 /* Support for GCC on MIPS using WindISS simulator.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC. 
 
 This file is part of GCC.
