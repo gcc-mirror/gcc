@@ -155,6 +155,7 @@ static void clear_by_pieces	PARAMS ((rtx, int, unsigned int));
 static void clear_by_pieces_1	PARAMS ((rtx (*) (rtx, ...),
 					 enum machine_mode,
 					 struct clear_by_pieces *));
+static rtx get_subtarget	PARAMS ((rtx));
 static int is_zeros_p		PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
 static void store_constructor_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
@@ -335,6 +336,7 @@ free_expr_status (f)
 }
 
 /* Small sanity check that the queue is empty at the end of a function.  */
+
 void
 finish_expr_for_function ()
 {
@@ -2177,7 +2179,6 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
   return tgtblk;
 }
 
-
 /* Add a USE expression for REG to the (possibly empty) list pointed
    to by CALL_FUSAGE.  REG must denote a hard register.  */
 
@@ -3324,6 +3325,26 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
     anti_adjust_stack (alignment_pad);
 }
 
+/* Return X if X can be used as a subtarget in a sequence of arithmetic
+   operations.  */
+
+static rtx
+get_subtarget (x)
+     rtx x;
+{
+  return ((x == 0
+	   /* Only registers can be subtargets.  */
+	   || GET_CODE (x) != REG
+	   /* If the register is readonly, it can't be set more than once.  */
+	   || RTX_UNCHANGING_P (x)
+	   /* Don't use hard regs to avoid extending their life.  */
+	   || REGNO (x) < FIRST_PSEUDO_REGISTER
+	   /* Avoid subtargets inside loops,
+	      since they hide some invariant expressions.  */
+	   || preserve_subexpressions_p ())
+	  ? 0 : x);
+}
+
 /* Expand an assignment that stores the value of FROM into TO.
    If WANT_VALUE is nonzero, return an rtx for the value of TO.
    (This may contain a QUEUED rtx;
@@ -5164,7 +5185,7 @@ force_operand (value, target)
   rtx tmp;
   register rtx op2;
   /* Use subtarget as the target for operand 0 of a binary operation.  */
-  register rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
+  register rtx subtarget = get_subtarget (target);
 
   /* Check for a PIC address load.  */
   if (flag_pic
@@ -5707,7 +5728,7 @@ expand_expr (exp, target, tmode, modifier)
 
   mode = TYPE_MODE (type);
   /* Use subtarget as the target for operand 0 of a binary operation.  */
-  subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
+  subtarget = get_subtarget (target);
   original_target = target;
   ignore = (target == const0_rtx
 	    || ((code == NON_LVALUE_EXPR || code == NOP_EXPR
@@ -5721,15 +5742,6 @@ expand_expr (exp, target, tmode, modifier)
     ro_modifier = modifier;
   else
     ro_modifier = EXPAND_NORMAL;
-
-  /* Don't use hard regs as subtargets, because the combiner
-     can only handle pseudo regs.  */
-  if (subtarget && REGNO (subtarget) < FIRST_PSEUDO_REGISTER)
-    subtarget = 0;
-  /* Avoid subtargets inside loops,
-     since they hide some invariant expressions.  */
-  if (preserve_subexpressions_p ())
-    subtarget = 0;
 
   /* If we are going to ignore this result, we need only do something
      if there is a side-effect somewhere in the expression.  If there
@@ -10244,8 +10256,7 @@ do_store_flag (exp, target, mode, only_cheap)
 #endif
 		       );
 
-      if (subtarget == 0 || GET_CODE (subtarget) != REG
-	  || GET_MODE (subtarget) != operand_mode
+      if (! get_subtarget (subtarget)
 	  || ! safe_from_p (subtarget, inner, 1))
 	subtarget = 0;
 
@@ -10295,8 +10306,7 @@ do_store_flag (exp, target, mode, only_cheap)
     }
       
   preexpand_calls (exp);
-  if (subtarget == 0 || GET_CODE (subtarget) != REG
-      || GET_MODE (subtarget) != operand_mode
+  if (! get_subtarget (target)
       || ! safe_from_p (subtarget, arg1, 1))
     subtarget = 0;
 

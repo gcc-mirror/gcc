@@ -2124,8 +2124,9 @@ compile_file (name)
 #endif
     }
 
-  if (ggc_p)
+  if (ggc_p && name != 0)
     name = ggc_alloc_string (name, strlen (name));
+
   input_filename = name;
 
   /* Put an entry on the input file stack for the main input file.  */
