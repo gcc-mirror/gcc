@@ -1,3 +1,7 @@
+2003-01-14  Tom Tromey  <tromey@redhat.com>
+
+	* config.h.in: Rebuilt.
+
 2002-12-30  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.am (jar.1, grepjar.1): Protect against
