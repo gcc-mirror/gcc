@@ -1610,7 +1610,7 @@
   [(set_attr "type" "multi")
    (set_attr "length" "16")])		; 12 or 16
 
-(define_insn "pic2_highpart"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (match_operand:SI 1 "register_operand" "r")
 		 (high:SI (match_operand 2 "" ""))))]
@@ -1624,11 +1624,12 @@
 ; We need this to make sure CSE doesn't simplify a memory load with a
 ; symbolic address, whose content it think it knows.  For PIC, what CSE
 ; think is the real value will be the address of that value.
-(define_insn "pic2_lo_sum"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-			   (unspec:SI [(match_operand:SI 2 "symbolic_operand" "")] 0))))]
-  ""
+	(mem:SI
+	  (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
+		     (unspec:SI
+			[(match_operand:SI 2 "symbolic_operand" "")] 0))))]
   "*
 {
   if (flag_pic != 2)
@@ -1637,7 +1638,6 @@
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
-
 
 ;; Always use addil rather than ldil;add sequences.  This allows the
 ;; HP linker to eliminate the dp relocation if the symbolic operand
