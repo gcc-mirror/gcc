@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -275,6 +275,9 @@ walk_rtx (x, path)
     case ADDRESS:
       walk_rtx (XEXP (x, 0), path);
       return;
+
+    default:
+      break;
     }
 
   newpath = (char *) alloca (depth + 2);
