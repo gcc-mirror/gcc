@@ -182,6 +182,9 @@ case "${host}" in
   *-cygwin32*)
     host_makefile_frag="${host_makefile_frag} config/mh-cygwin32"
     ;;
+  *-mingw32*)
+    host_makefile_frag="${host_makefile_frag} config/mh-mingw32"
+    ;;
   *-windows*)
     host_makefile_frag="${host_makefile_frag} config/mh-windows"
     ;;
@@ -462,6 +465,8 @@ done
 case "${host}" in
 	i[3456]86-*-go32*)
 	  configdirs="$configdirs dosrel" ;;
+	i[3456]86-*-mingw32*)
+	  configdirs="$configdirs dosrel" ;;
 	*-cygwin32*)
 	  configdirs="$configdirs dosrel" ;;
 esac
@@ -478,6 +483,10 @@ case "${host}" in
     ;;
   i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
     noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db sn gnuserv"
+	;;
+  i[3456]86-*-mingw32*)
+    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db sn gnuserv"
+     noconfigdirs="expect dejagnu cvs autoconf automake send-pr gprof rcs guile perl texinfo apache inet"
 	;;
   *-*-cygwin32)
      noconfigdirs="expect dejagnu cvs autoconf automake bison send-pr gprof rcs guile perl texinfo apache inet"
@@ -564,6 +573,17 @@ case "${target}" in
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
+  i[3456]86-*-mingw32*)
+    target_configdirs="$target_configdirs target-mingw"
+    noconfigdirs="$noconfigdirs expect target-libgloss"
+
+    # Can't build gdb for cygwin32 if not native.
+    case "${host}" in
+      i[3456]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db sn gnuserv"
+         ;;
+    esac
+    ;;    
   *-*-cygwin32)
     target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs expect target-libgloss"
@@ -956,10 +976,10 @@ if [ "${shared}" = "yes" ]; then
   esac
 fi
 
-# If we are building for a cygwin32 host, then set INSTALL_PROGRAM_ARGS to
+# If we are building for a win32 host, then set INSTALL_PROGRAM_ARGS to
 # -x.  This will cause programs to be installed with .exe extensions.
 case "${host}" in
-*-*-cygwin32*)
+*-*-cygwin32* | i[3456]86-*-mingw32)
     sed -e 's/^INSTALL_PROGRAM_ARGS[ 	]*=.*$/INSTALL_PROGRAM_ARGS = -x/' \
 	Makefile > Makefile.tem
     rm -f Makefile

@@ -462,6 +462,10 @@ case $basic_machine in
 		basic_machine=i386-unknown
 		os=-go32
 		;;
+	i386-mingw32 | mingw32)
+		basic_machine=i386-unknown
+		os=-mingw32
+		;;
 	iris | iris4d)
 		basic_machine=mips-sgi
 		case $os in
