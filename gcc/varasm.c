@@ -101,7 +101,7 @@ struct varasm_status
      so each function gets its own constants-pool that comes right before
      it.  */
   struct constant_descriptor **x_const_rtx_hash_table;
-  struct pool_sym **x_const_rtx_sym_hash_table;
+  struct pool_constant **x_const_rtx_sym_hash_table;
 
   /* Pointers to first and last constant in pool.  */
   struct pool_constant *x_first_pool, *x_last_pool;
@@ -184,7 +184,6 @@ static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_pool_constant          PARAMS ((struct pool_constant *));
-static void mark_pool_sym_hash_table	PARAMS ((struct pool_sym **));
 static void mark_const_hash_entry	PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 
@@ -3220,23 +3219,14 @@ output_constant_def_contents (exp, reloc, labelno)
 struct pool_constant
 {
   struct constant_descriptor *desc;
-  struct pool_constant *next;
-  enum machine_mode mode;
+  struct pool_constant *next, *next_sym;
+  char *label;
   rtx constant;
+  enum machine_mode mode;
   int labelno;
   int align;
   int offset;
   int mark;
-};
-
-/* Structure used to maintain hash table mapping symbols used to their
-   corresponding constants.  */
-
-struct pool_sym
-{
-  char *label;
-  struct pool_constant *pool;
-  struct pool_sym *next;
 };
 
 /* Hash code for a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true.
@@ -3258,8 +3248,8 @@ init_varasm_status (f)
     = ((struct constant_descriptor **)
        xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct constant_descriptor *)));
   p->x_const_rtx_sym_hash_table
-    = ((struct pool_sym **)
-       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct pool_sym *)));
+    = ((struct pool_constant **)
+       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct pool_constant *)));
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
@@ -3276,22 +3266,9 @@ mark_pool_constant (pc)
     {
       ggc_mark (pc);
       ggc_mark_rtx (pc->constant);
+      ggc_mark_string (pc->label);
       pc = pc->next;
     }
-}
-
-/* Mark PPS for GC.  */
-
-static void
-mark_pool_sym_hash_table (pps)
-     struct pool_sym **pps;
-{
-  struct pool_sym *ps;
-  int i;
-
-  for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
-    for (ps = pps[i]; ps ; ps = ps->next)
-      ggc_mark_string (ps->label);
 }
 
 /* Mark P for GC.  */
@@ -3304,7 +3281,6 @@ mark_varasm_status (p)
     return;
 
   mark_pool_constant (p->x_first_pool);
-  mark_pool_sym_hash_table (p->x_const_rtx_sym_hash_table);
   ggc_mark_rtx (p->x_const_double_chain);
 }
 
@@ -3325,20 +3301,12 @@ free_varasm_status (f)
   for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
     {
       struct constant_descriptor* cd;
-      struct pool_sym *ps;
 
       cd = p->x_const_rtx_hash_table[i];
       while (cd) {
 	struct constant_descriptor* next = cd->next;
 	free (cd);
 	cd = next;
-      }
-
-      ps = p->x_const_rtx_sym_hash_table[i];
-      while (ps) {
-	struct pool_sym *next = ps->next;
-	free (ps);
-	ps = next;
       }
     }
 
@@ -3562,7 +3530,6 @@ force_const_mem (mode, x)
   if (found == 0)
     {
       register struct pool_constant *pool;
-      register struct pool_sym *sym;
       int align;
 
       /* No constant equal to X is known to have been output.
@@ -3615,11 +3582,9 @@ force_const_mem (mode, x)
 
       /* Add label to symbol hash table.  */
       hash = SYMHASH (found);
-      sym = (struct pool_sym *) xmalloc (sizeof (struct pool_sym));
-      sym->label = found;
-      sym->pool = pool;
-      sym->next = const_rtx_sym_hash_table[hash];
-      const_rtx_sym_hash_table[hash] = sym;
+      pool->label = found;
+      pool->next_sym = const_rtx_sym_hash_table[hash];
+      const_rtx_sym_hash_table[hash] = pool;
     }
 
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
@@ -3653,13 +3618,13 @@ find_pool_constant (f, addr)
      struct function *f;
      rtx addr;
 {
-  struct pool_sym *sym;
+  struct pool_constant *pool;
   const char *label = XSTR (addr, 0);
 
-  for (sym = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; sym;
-       sym = sym->next)
-    if (sym->label == label)
-      return sym->pool;
+  for (pool = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; pool;
+       pool = pool->next_sym)
+    if (pool->label == label)
+      return pool;
 
   abort ();
 }
@@ -3866,7 +3831,7 @@ mark_constant_pool ()
      not clear that 2'd level references can happen. */
   for (pool = first_pool; pool; pool = pool->next)
     {
-      struct pool_sym *sym;
+      struct pool_constant *tem;
       const char *label;
 
       /* skip unmarked entries; no insn refers to them. */
@@ -3879,10 +3844,10 @@ mark_constant_pool ()
       label = XSTR (pool->constant, 0);
 
       /* Be sure the symbol's value is marked. */
-      for (sym = const_rtx_sym_hash_table[SYMHASH (label)]; sym; 
-           sym = sym->next)
-	  if (sym->label == label)
-	    sym->pool->mark = 1;
+      for (tem = const_rtx_sym_hash_table[SYMHASH (label)]; tem; 
+           tem = tem->next)
+	  if (tem->label == label)
+	    tem->mark = 1;
       /* If we didn't find it, there's something truly wrong here, but it
 	 will be announced by the assembler. */
     }

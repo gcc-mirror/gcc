@@ -1,5 +1,21 @@
 2000-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* varasm.c (struct varasm_status): Change x_const_rtx_sym_hash_table
+	to array of pool_constnat pointers.
+	(struct pool_constant): Add next_sym and label members.
+	(struct pool_sym): Remove.
+	(init_varasm_status): Change pool_sym into pool_constant.
+	(mark_pool_constant): Mark pc->label string as well.
+	(mark_pool_sym_hash_table): Remove.
+	(mark_varasm_status): Remove it from caller as well.
+	(free_varasm_status): Don't free pool_sym structures.
+	(force_const_mem): Don't allocate pool_sym structure, instead
+	fill pool->label and chain it into rtx_sym hash table.
+	(find_pool_constant, mark_constant_pool): Use pool_constant instead
+	of pool_sym.
+
+2000-11-14  Jakub Jelinek  <jakub@redhat.com>
+
 	* reload1.c (emit_input_reload_insns): Honour forcing of constants
 	into memory by PREFERRED_RELOAD_CLASS NO_REGS.
 
