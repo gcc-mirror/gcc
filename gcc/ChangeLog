@@ -1,3 +1,20 @@
+2000-05-18  Richard Henderson  <rth@cygnus.com>
+
+	* config/h8300/h8300.c (ok_for_bclr): Take a HOST_WIDE_INT.
+	(small_power_of_two): Likewise; use exact_log2.
+	(adds_subs_operand, one_insn_adds_subs_operand): Remove.
+	(output_adds_subs): Remove.
+	(two_insn_adds_subs_operand): New.
+	(split_adds_subs): New.
+	* config/h8300/h8300-protos.h: Update.
+	* config/h8300/h8300.h (CONST_OK_FOR_J): Cast to uns HOST_WIDE_INT.
+	(CONST_OK_FOR_L): Match strict adds operands.
+	(CONST_OK_FOR_N): Match struct subs operands.
+	* config/h8300/h8300.md (adds_subs insns): Remove.
+	(addhi patterns): Output adds/subs directly.
+	(addsi_h8300h): Likewise.
+	(addhi/addsi splitters): New.  Decompose two_insn_adds_subs_operand.
+
 2000-05-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c (parse_assertion): New.
