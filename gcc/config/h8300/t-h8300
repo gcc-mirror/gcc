@@ -1,5 +1,26 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
-T_CFLAGS = -DDONT_HAVE_STDIO -DDONT_HAVE_SETJMP 
-# we do not have DF or DI types, so fake out the libgcc2 compilation
-LIBGCC2_CFLAGS=-O -DDF=SF -DDI=SI $(GCC_CFLAGS) 
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = h8300/lib1funcs.asm
+LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3
+
+# We do not have DF or DI types, so fake out the libgcc2 compilation.
+LIBGCC2_CFLAGS = -g -O2 -DDF=SF -DDI=SI $(GCC_CFLAGS) $(LIBGCC2_INCLUDES)
+
+LIB2FUNCS_EXTRA = fp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#define FLOAT_ONLY' >> fp-bit.c
+	echo '#define SMALL_MACHINE' >> fp-bit.c
+	echo '#ifdef __H8300__' >> fp-bit.c
+	echo '#define CMPtype HItype' >> fp-bit.c
+	echo '#else' >> fp-bit.c
+	echo '#define CMPtype SItype' >> fp-bit.c
+	echo '#endif' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+MULTILIB_OPTIONS = mh
+MULTILIB_DIRNAMES = h8300h
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
