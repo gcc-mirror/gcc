@@ -1,3 +1,13 @@
+Tue Mar 10 13:56:12 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/abi64.h (LONG_MAX_SPEC): Check MIPS_ABI_DEFAULT and
+	TARGET_DEFAULT and define __LONG_MAX__ appropriately.
+	Add support for -mabi=X, -mlong64, and -mgp{32,64} options.
+	* mips.c (mips_abi): Change type to int.
+	* mips.h (enum mips_abi_type): Delete.
+	(ABI_32, ABI_N32, ABI_64, ABI_EABI): Define as constants.
+	(mips_abi): Change type to int.
+
 Mon Mar  2 08:06:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.8.1 released.
