@@ -8743,7 +8743,10 @@ compute_array_index_type (name, size)
       && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE
       && TREE_CODE (TREE_TYPE (size)) != BOOLEAN_TYPE)
     {
-      cp_error ("size of array `%D' has non-integer type", name);
+      if (name)
+	cp_error ("size of array `%D' has non-integer type", name);
+      else
+	cp_error ("size of array has non-integer type");
       size = integer_one_node;
     }
 
@@ -8762,14 +8765,22 @@ compute_array_index_type (name, size)
       /* An array must have a positive number of elements.  */
       if (INT_CST_LT (size, integer_zero_node))
 	{
-	  cp_error ("size of array `%D' is negative", name);
+	  if (name)
+	    cp_error ("size of array `%D' is negative", name);
+	  else
+	    cp_error ("size of array is negative");
 	  size = integer_one_node;
 	}
       /* Except that an extension we allow zero-sized arrays.  We
 	 always allow them in system headers because glibc uses 
 	 them.  */
       else if (integer_zerop (size) && pedantic && !in_system_header)
-	cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", name);
+	{
+	  if (name)
+	    cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", name);
+	  else
+	    cp_pedwarn ("ANSI C++ forbids zero-size array");
+	}
     }
 
   /* Compute the index of the largest element in the array.  It is

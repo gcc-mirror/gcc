@@ -2458,9 +2458,10 @@ import_export_class (ctype)
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
   /* FIXME this should really use some sort of target-independent macro.  */
   if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
-    import_export = -1;
+    /* Use -2 so we survive the MULTIPLE_SYMBOL_SPACES check below.  */
+    import_export = -2;
   else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
-    import_export = 1;
+    import_export = 2;
 #endif
 
   /* If we got -fno-implicit-templates, we import template classes that
@@ -4264,7 +4265,7 @@ ambiguous_decl (name, old, new, flags)
 		}
               cp_error_at ("  also declared as `%#D' here", val);
             }
-	  return error_mark_node;
+	  BINDING_VALUE (old) = error_mark_node;
 	}
     }
   /* ... and copy the type. */
@@ -4312,7 +4313,7 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
 	/* Resolve ambiguities. */
 	val = ambiguous_decl (name, val, val1, flags);
       }
-  return val != error_mark_node;
+  return BINDING_VALUE (val) != error_mark_node;
 }
 
 /* [namespace.qual]

@@ -945,7 +945,7 @@ dump_decl (t, flags)
 	else if (IDENTIFIER_OPNAME_P (t))
 	  {
 	    const char *name_string = operator_name_string (t);
-	    OB_PUTS ("operator ");
+	    OB_PUTS ("operator");
 	    OB_PUTCP (name_string);
 	  }
 	else
@@ -1276,7 +1276,7 @@ dump_function_name (t, flags)
   else if (IDENTIFIER_OPNAME_P (name))
     {
       const char *name_string = operator_name_string (name);
-      OB_PUTS ("operator ");
+      OB_PUTS ("operator");
       OB_PUTCP (name_string);
     }
   else
@@ -2205,7 +2205,7 @@ decl_to_string (decl, verbose)
      int verbose;
 {
   enum tree_string_flags flags = 0;
-  
+
   if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == RECORD_TYPE
       || TREE_CODE (decl) == UNION_TYPE || TREE_CODE (decl) == ENUMERAL_TYPE)
     flags = TS_AGGR_TAGS;
@@ -2312,7 +2312,7 @@ op_to_string (p, v)
   if (p == 0)
     return "{unknown}";
   
-  strcpy (buf + 9, opname_tab [p]);
+  strcpy (buf + 8, opname_tab [p]);
   return buf;
 }
 
