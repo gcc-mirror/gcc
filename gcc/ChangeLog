@@ -1,5 +1,7 @@
 2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* po/gcc.pot: Regenerate.
+
 	* configure.in (all_diff_excludes, diff_excludes): Remove.
 	* configure: Regenerate.
 	* Makefile.in (LANG_DIFF_EXCLUDES): Remove.
