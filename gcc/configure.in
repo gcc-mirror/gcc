@@ -1304,12 +1304,14 @@ for machine in $build $host $target; do
 			tm_file="${tm_file} m68k/auxas.h"
 		fi
 		tm_file="${tm_file} m68k/a-ux.h"
+		float_format=m68k
 		;;
 	m68k-apollo-*)
 		tm_file=m68k/apollo68.h
 		xmake_file=m68k/x-apollo68
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-altos-sysv*)		   # Altos 3068
 		if [[ x$gas = xyes ]]
@@ -1347,6 +1349,7 @@ for machine in $build $host $target; do
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-motorola-sysv*)
 		tm_file=m68k/mot3300.h
@@ -1375,6 +1378,7 @@ for machine in $build $host $target; do
 		gdb_needs_out_file_path=yes
 		extra_parts="crt0.o mcrt0.o"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 		tm_file=m68k/tower-as.h
@@ -1412,23 +1416,27 @@ for machine in $build $host $target; do
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-ccur-rtu)
 		tm_file=m68k/ccur-GAS.h
 		xmake_file=m68k/x-ccur
 		extra_headers=math-68881.h
 		use_collect2=yes
+		float_format=m68k
 		;;
 	m68k-hp-bsd4.4*)		# HP 9000/3xx running 4.4bsd
 		tm_file=m68k/hp3bsd44.h
 		xmake_file=m68k/x-hp3bsd44
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-hp-bsd*)			# HP 9000/3xx running Berkeley Unix
 		tm_file=m68k/hp3bsd.h
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-isi-bsd*)
 		if [[ x$with_fp = xno ]]
@@ -1436,6 +1444,7 @@ for machine in $build $host $target; do
 			tm_file=m68k/isi-nfp.h
 		else
 			tm_file=m68k/isi.h
+			float_format=m68k
 		fi
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1454,6 +1463,7 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-hp-hpux*)	# HP 9000 series 300
 		xm_file="xm_alloca.h ${xm_file}"
@@ -1469,11 +1479,13 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-sun-mach*)
 		tm_file=m68k/sun3mach.h
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-sony-newsos3*)
 		if [[ x$gas = xyes ]]
@@ -1484,6 +1496,7 @@ for machine in $build $host $target; do
 		fi
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-sony-bsd* | m68k-sony-newsos*)
 		if [[ x$gas = xyes ]]
@@ -1494,6 +1507,7 @@ for machine in $build $host $target; do
 		fi
 		use_collect2=yes
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-next-nextstep2*)
 		tm_file=m68k/next21.h
@@ -1503,6 +1517,7 @@ for machine in $build $host $target; do
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
 		use_collect2=yes
+		float_format=m68k
                 ;;
 	m68k-next-nextstep3*)
 		tm_file=m68k/next.h
@@ -1511,6 +1526,7 @@ for machine in $build $host $target; do
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
+		float_format=m68k
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='mach'
 		fi
@@ -1521,6 +1537,7 @@ for machine in $build $host $target; do
 			tm_file=m68k/sun3n3.h
 		else
 			tm_file=m68k/sun3o3.h
+			float_format=m68k
 		fi
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1531,6 +1548,7 @@ for machine in $build $host $target; do
 			tm_file=m68k/sun3n.h
 		else
 			tm_file=m68k/sun3.h
+			float_format=m68k
 		fi
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1540,16 +1558,19 @@ for machine in $build $host $target; do
 		tmake_file=m68k/t-vxworks68
 		extra_headers=math-68881.h
 		thread_file='vxworks'
+		float_format=m68k
 		;;
 	m68k-*-aout*)
 		tmake_file=m68k/t-m68kbare
 		tm_file="m68k/m68k-aout.h libgloss.h"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-coff*)
 		tmake_file=m68k/t-m68kbare
 		tm_file="m68k/m68k-coff.h dbx.h libgloss.h"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-lynxos*)
 		if [[ x$gas = xyes ]]
@@ -1562,12 +1583,14 @@ for machine in $build $host $target; do
 		xmake_file=x-lynx
 		tmake_file=m68k/t-lynx
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
+		float_format=m68k
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
 		xm_file="xm-alloca.h ${xm_file}"
@@ -1575,6 +1598,7 @@ for machine in $build $host $target; do
 		xmake_file=m68k/x-m68kv
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-sysv4*)			# Motorola m68k's running system V.4
 		tm_file=m68k/m68kv4.h
@@ -1583,6 +1607,7 @@ for machine in $build $host $target; do
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-linux-gnuaout*)		# Motorola m68k's running GNU/Linux
 					# with a.out format
@@ -1591,6 +1616,7 @@ for machine in $build $host $target; do
 		tmake_file="t-linux-aout m68k/t-linux-aout"
 		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
+		float_format=m68k
 		gnu_ld=yes
 		;;
 	m68k-*-linux-gnulibc1)		# Motorola m68k's running GNU/Linux
@@ -1602,6 +1628,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
+		float_format=m68k
 		gnu_ld=yes
 		;;
 	m68k-*-linux-gnu*)		# Motorola m68k's running GNU/Linux
@@ -1613,6 +1640,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
+		float_format=m68k
 		gnu_ld=yes
 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='posix'
@@ -1622,11 +1650,13 @@ for machine in $build $host $target; do
 		tmake_file=m68k/t-m68kbare
 		tm_file=m68k/m68k-psos.h
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 	m68k-*-rtems*)
 		tmake_file="m68k/t-m68kbare t-rtems"
 		tm_file=m68k/rtems.h
 		extra_headers=math-68881.h
+		float_format=m68k
 		;;
 
 	m88k-dg-dgux*)
