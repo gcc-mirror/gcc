@@ -35,13 +35,33 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
-
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 
 public class EmptyBorder extends AbstractBorder
 {
+  protected int left;
+  protected int right;
+  protected int bottom;
+  protected int top;
+
+  public EmptyBorder (Insets borderInsets)
+  {
+    this (borderInsets.left, borderInsets.right,
+          borderInsets.top, borderInsets.bottom);
+  }
+
+  public EmptyBorder (int left, int right, int top, int bottom)
+  {
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+  }
     
     protected int l,r,b,t;
 

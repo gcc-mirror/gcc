@@ -37,17 +37,42 @@ exception statement from your version. */
 
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 
-public class BevelBorder extends EmptyBorder
+public class BevelBorder extends AbstractBorder
 {
-    Color c;
-
-    public BevelBorder()
-    {
-    }
-
+  public static final int LOWERED = 1;
+  public static final int RAISED = 0;
     
+  protected int bevelType;
+  protected Color highlightOuter;
+  protected Color highlightInner;
+  protected Color shadowOuter;
+  protected Color shadowInner;
+
+  public BevelBorder (int bevelType)
+  {
+    this (bevelType, null, null, null, null);
+  }
+
+  public BevelBorder(int bevelType, Color highlight, Color shadow)
+  {
+    this (bevelType, highlight, highlight, shadow, shadow);
+  }
+
+  public BevelBorder (int bevelType, Color highlightOuter,
+                      Color highlightInner, Color shadowOuter,
+                      Color shadowInner)
+  {
+    this.bevelType = bevelType;
+    this.highlightOuter = highlightOuter;
+    this.highlightInner = highlightInner;
+    this.shadowOuter = shadowOuter;
+    this.shadowInner = shadowInner;
+  }
+
     public BevelBorder(int top,
 		int left,
 		int bottom, 

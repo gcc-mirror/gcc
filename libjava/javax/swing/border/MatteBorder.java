@@ -35,18 +35,49 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.Icon;
 
 public class MatteBorder extends EmptyBorder
 {
-    Color c;
+  protected Color color;
+  protected Icon tileIcon;
 
-    public MatteBorder()
-    {
-    }
+  public MatteBorder (Icon tileIcon)
+  {
+    // FIXME: implement this
+    this (null, tileIcon);
+  }
 
+  public MatteBorder (Insets borderInsets, Color color)
+  {
+    this (borderInsets.top, borderInsets.left, borderInsets.bottom,
+          borderInsets.right, color);
+  }
+
+  public MatteBorder (Insets borderInsets, Icon tileIcon)
+  {
+    this (borderInsets.top, borderInsets.left, borderInsets.bottom,
+          borderInsets.right, tileIcon);
+  }
+
+  public MatteBorder (int top, int left, int bottom, int right, Icon tileIcon)
+  {
+    super (top, left, bottom, right);
+    this.tileIcon = tileIcon;
+  }
+
+  public MatteBorder (int top, int left, int bottom, int right, Color color)
+  {
+    super (top, left, bottom, right);
+    this.color = color;
+  }
     
     public MatteBorder(int top,
 		int left,
