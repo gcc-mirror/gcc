@@ -1,3 +1,8 @@
+Sun Aug 29 23:17:54 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (ASM_FILE_START): Specify complete filename, including
+	path, in .file directive. 
+
 Sun Aug 29 05:06:43 1999  Russ Allbery  <rra@stanford.edu>
 
 	* gcc.texi (External Bugs): Remove obsolete note about Perl on
