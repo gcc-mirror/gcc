@@ -3788,6 +3788,8 @@ start_decl (tree declarator,
 
   if (processing_template_decl)
     tem = push_template_decl (tem);
+  if (tem == error_mark_node)
+    return error_mark_node;
 
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   /* Tell the back-end to use or not use .common as appropriate.  If we say
