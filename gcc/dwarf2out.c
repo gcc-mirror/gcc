@@ -41,8 +41,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "except.h"
 #include "dwarf2.h"
 
-/* #define NDEBUG 1 */
-#include "assert.h"
+/* We cannot use <assert.h> in GCC source, since that would include
+   GCC's assert.h, which may not be compatible with the host compiler.  */
+#undef assert
+#ifdef NDEBUG
+# define assert(e)
+#else
+# define assert(e) do { if (! (e)) abort (); } while (0)
+#endif
 
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
