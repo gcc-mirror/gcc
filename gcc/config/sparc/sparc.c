@@ -2734,7 +2734,7 @@ output_scc_insn (operands, insn)
   /* operands[3] is an unused slot.  */
   operands[3] = label;
 
-  strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0));
+  strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0, 0));
   strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
 
   if (need_label)
