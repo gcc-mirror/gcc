@@ -1,3 +1,7 @@
+Tue Aug 24 02:50:45 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* strtoul.c (strtoul): Add parentheses around && within ||.
+
 Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
