@@ -864,7 +864,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    For the m88000, the following constants are used:
    `I' requires a non-negative 16-bit value.
    `J' requires a non-positive 16-bit value.
-   `K' is unused.
+   `K' requires a non-negative value < 32.
    `L' requires a constant with only the upper 16-bits set.
    `M' requires constant values that can be formed with `set'.
    `N' requires a negative value.
@@ -882,6 +882,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define CONST_OK_FOR_LETTER_P(VALUE, C)			\
   ((C) == 'I' ? SMALL_INTVAL (VALUE)			\
    : (C) == 'J' ? SMALL_INTVAL (-(VALUE))		\
+   : (C) == 'K' ? (unsigned)(VALUE) < 32		\
    : (C) == 'L' ? ((VALUE) & 0xffff) == 0		\
    : (C) == 'M' ? integer_ok_for_set (VALUE)		\
    : (C) == 'N' ? (VALUE) < 0				\
