@@ -118,9 +118,6 @@ extern int flag_unroll_loops;
 extern int flag_unroll_all_loops;
 extern int flag_unswitch_loops;
 extern int flag_cprop_registers;
-extern int flag_ssa;
-extern int flag_ssa_ccp;
-extern int flag_ssa_dce;
 extern int time_report;
 extern int flag_new_regalloc;
 

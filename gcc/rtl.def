@@ -1208,20 +1208,6 @@ DEF_RTL_EXPR(SS_TRUNCATE, "ss_truncate", "e", '1')
 /* Unsigned saturating truncate.  */
 DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", '1')
 
-/* The SSA phi operator. 
-
-   The argument is a vector of 2N rtxes.  Element 2N+1 is a CONST_INT
-   containing the block number of the predecessor through which control
-   has passed when the register at element 2N is used.
-
-   Note that PHI may only appear at the beginning of a basic block.
-
-   ??? There may be multiple PHI insns, but they are all evaluated
-   in parallel.  This probably ought to be changed to use a real
-   PARALLEL, as that would be less confusing and more in the spirit
-   of canonical RTL.  It is, however, easier to manipulate this way.  */
-DEF_RTL_EXPR(PHI, "phi", "E", 'x')
-
 
 /*
 Local variables:

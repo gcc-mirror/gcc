@@ -237,57 +237,6 @@ the second conditional test.  The source code for this pass is in
 @file{jump.c}.  This optimization is only performed if
 @option{-fthread-jumps} is enabled.
 
-@cindex SSA optimizations
-@cindex Single Static Assignment optimizations
-@opindex fssa
-@item
-Static Single Assignment (SSA) based optimization passes.  The
-SSA conversion passes (to/from) are turned on by the @option{-fssa}
-option (it is also done automatically if you enable an SSA optimization pass).
-These passes utilize a form called Static Single Assignment.  In SSA form,
-each variable (pseudo register) is only set once, giving you def-use
-and use-def chains for free, and enabling a lot more optimization
-passes to be run in linear time.
-Conversion to and from SSA form is handled by functions in
-@file{ssa.c}.
-
-@opindex de
-The option @option{-de} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.ssa} to
-the input file name.
-@itemize @bullet
-@cindex SSA Conditional Constant Propagation
-@cindex Conditional Constant Propagation, SSA based
-@cindex conditional constant propagation
-@opindex fssa-ccp
-@item
-SSA Conditional Constant Propagation.  Turned on by the @option{-fssa-ccp}
-option.  This pass performs conditional constant propagation to simplify
-instructions including conditional branches.  This pass is more aggressive
-than the constant propagation done by the CSE and GCSE passes, but operates
-in linear time.
-
-@opindex dW
-The option @option{-dW} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.ssaccp} to
-the input file name.
-
-@cindex SSA DCE
-@cindex DCE, SSA based
-@cindex dead code elimination
-@opindex fssa-dce
-@item
-SSA Aggressive Dead Code Elimination.  Turned on by the @option{-fssa-dce}
-option.  This pass performs elimination of code considered unnecessary because
-it has no externally visible effects on the program.  It operates in
-linear time.
-
-@opindex dX
-The option @option{-dX} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.ssadce} to
-the input file name.
-@end itemize
-
 @cindex common subexpression elimination
 @cindex constant propagation
 @item

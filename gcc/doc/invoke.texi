@@ -291,7 +291,7 @@ in the following sections.
 -fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces  -fsignaling-nans @gol
--fsingle-precision-constant  -fssa  -fssa-ccp  -fssa-dce @gol
+-fsingle-precision-constant  @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
@@ -4674,23 +4674,6 @@ You will not be able to use @code{gprof} on all systems if you
 specify this option and you may have problems with debugging if
 you specify both this option and @option{-g}.
 
-@item -fssa
-@opindex fssa
-Perform optimizations in static single assignment form.  Each function's
-flow graph is translated into SSA form, optimizations are performed, and
-the flow graph is translated back from SSA form.  Users should not
-specify this option, since it is not yet ready for production use.
-
-@item -fssa-ccp
-@opindex fssa-ccp
-Perform Sparse Conditional Constant Propagation in SSA form.  Requires
-@option{-fssa}.  Like @option{-fssa}, this is an experimental feature.
-
-@item -fssa-dce
-@opindex fssa-dce
-Perform aggressive dead-code elimination in SSA form.  Requires @option{-fssa}.
-Like @option{-fssa}, this is an experimental feature.
-
 @item -fbranch-target-load-optimize
 @opindex fbranch-target-load-optimize
 Perform branch target register load optimization before prologue / epilogue
@@ -4703,9 +4686,6 @@ a separate optimization pass.
 @opindex fbranch-target-load-optimize2
 Perform branch target register load optimization after prologue / epilogue
 threading.
-
-
-
 
 @item --param @var{name}=@var{value}
 @opindex param

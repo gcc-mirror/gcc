@@ -136,7 +136,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "recog.h"
 #include "expr.h"
-#include "ssa.h"
 #include "timevar.h"
 
 #include "obstack.h"
@@ -293,7 +292,6 @@ static void notice_stack_pointer_modification_1 (rtx, rtx, void *);
 static void notice_stack_pointer_modification (rtx);
 static void mark_reg (rtx, void *);
 static void mark_regs_live_at_end (regset);
-static int set_phi_alternative_reg (rtx, int, int, void *);
 static void calculate_global_regs_live (sbitmap, sbitmap, int);
 static void propagate_block_delete_insn (rtx);
 static rtx propagate_block_delete_libcall (rtx, rtx);
@@ -1033,20 +1031,6 @@ mark_regs_live_at_end (regset set)
   diddle_return_value (mark_reg, set);
 }
 
-/* Callback function for for_each_successor_phi.  DATA is a regset.
-   Sets the SRC_REGNO, the regno of the phi alternative for phi node
-   INSN, in the regset.  */
-
-static int
-set_phi_alternative_reg (rtx insn ATTRIBUTE_UNUSED,
-			 int dest_regno ATTRIBUTE_UNUSED, int src_regno,
-			 void *data)
-{
-  regset live = (regset) data;
-  SET_REGNO_REG_SET (live, src_regno);
-  return 0;
-}
-
 /* Propagate global life info around the graph of basic blocks.  Begin
    considering blocks with their corresponding bit set in BLOCKS_IN.
    If BLOCKS_IN is null, consider it the universal set.
@@ -1207,14 +1191,6 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	      && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
 	    SET_REGNO_REG_SET (new_live_at_end, PIC_OFFSET_TABLE_REGNUM);
 	}
-
-      /* Regs used in phi nodes are not included in
-	 global_live_at_start, since they are live only along a
-	 particular edge.  Set those regs that are live because of a
-	 phi node alternative corresponding to this particular block.  */
-      if (in_ssa_form)
-	for_each_successor_phi (bb, &set_phi_alternative_reg,
-				new_live_at_end);
 
       if (bb == ENTRY_BLOCK_PTR)
 	{
@@ -3907,14 +3883,6 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
       cond = COND_EXEC_TEST (x);
       x = COND_EXEC_CODE (x);
       goto retry;
-
-    case PHI:
-      /* We _do_not_ want to scan operands of phi nodes.  Operands of
-	 a phi function are evaluated only when control reaches this
-	 block along a particular edge.  Therefore, regs that appear
-	 as arguments to phi should not be added to the global live at
-	 start.  */
-      return;
 
     default:
       break;

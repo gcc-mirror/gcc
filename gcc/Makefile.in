@@ -865,15 +865,15 @@ OBJS-common = \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
- print-rtl.o print-tree.o value-prof.o 								   \
+ print-rtl.o print-tree.o value-prof.o					   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
- sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
- stor-layout.o stringpool.o targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
- unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o		   \
- alloc-pool.o et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o
+ sibcall.o simplify-rtx.o sreal.o stmt.o stor-layout.o stringpool.o 	   \
+ targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o unroll.o	   \
+ varasm.o varray.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
+ et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o
 
 OBJS-md = $(out_object_file)
 OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) hashtable.o tree-inline.o	   \
@@ -1467,7 +1467,7 @@ version.o: version.c version.h
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h \
 	$(HASHTAB_H) $(TREE_H) $(RTL_H) function.h insn-config.h $(EXPR_H) $(OPTABS_H) \
 	libfuncs.h debug.h $(GGC_H) bitmap.h $(BASIC_BLOCK_H) hard-reg-set.h \
-	ssa.h cselib.h insn-addr.h
+	cselib.h insn-addr.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(HASHTAB_H) toplev.h $(PARAMS_H) hosthooks.h
@@ -1533,7 +1533,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) value-prof.h \
-   ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
+   $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
    langhooks.h insn-flags.h cfglayout.h real.h cfgloop.h \
    hosthooks.h $(LANGHOOKS_DEF_H) cgraph.h $(COVERAGE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1669,14 +1669,6 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h $(SYSTEM_H) coretype
 lcm.o : lcm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(TM_P_H) df.h function.h
-ssa.o : ssa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) varray.h \
-   $(EXPR_H) hard-reg-set.h flags.h function.h real.h insn-config.h $(RECOG_H) \
-   $(BASIC_BLOCK_H) output.h ssa.h
-ssa-dce.o : ssa-dce.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) hard-reg-set.h \
-   $(BASIC_BLOCK_H) ssa.h insn-config.h $(RECOG_H) output.h
-ssa-ccp.o : ssa-ccp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) hard-reg-set.h \
-    $(BASIC_BLOCK_H) ssa.h insn-config.h $(RECOG_H) output.h \
-    errors.h $(GGC_H) df.h function.h
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
    $(BASIC_BLOCK_H) df.h $(FIBHEAP_H)
@@ -1702,7 +1694,7 @@ unroll.o : unroll.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) insn-co
 alloc-pool.o : alloc-pool.c $(CONFIG_H) $(SYSTEM_H) alloc-pool.h
 flow.o : flow.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
-   $(RECOG_H) function.h except.h $(EXPR_H) ssa.h $(GGC_H) $(TM_P_H)
+   $(RECOG_H) function.h except.h $(EXPR_H) $(GGC_H) $(TM_P_H)
 cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H) alloc-pool.h
@@ -2068,7 +2060,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h $(srcdir)/cpplib.h \
   $(host_xm_file_list) $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) \
   $(srcdir)/bitmap.h $(srcdir)/coverage.c $(srcdir)/function.h  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h \
-  $(srcdir)/real.h $(srcdir)/varray.h $(srcdir)/ssa.h $(srcdir)/insn-addr.h \
+  $(srcdir)/real.h $(srcdir)/varray.h $(srcdir)/insn-addr.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/cgraph.h \
   $(srcdir)/c-common.h $(srcdir)/c-tree.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \

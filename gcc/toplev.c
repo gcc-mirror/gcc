@@ -63,7 +63,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "regs.h"
 #include "timevar.h"
 #include "diagnostic.h"
-#include "ssa.h"
 #include "params.h"
 #include "reload.h"
 #include "dwarf2asm.h"
@@ -125,7 +124,6 @@ static void print_switch_values (FILE *, int, int, const char *,
 
 /* Rest of compilation helper functions.  */
 static bool rest_of_handle_inlining (tree);
-static rtx rest_of_handle_ssa (tree, rtx);
 static void rest_of_handle_cse (tree, rtx);
 static void rest_of_handle_cse2 (tree, rtx);
 static void rest_of_handle_gcse (tree, rtx);
@@ -254,10 +252,6 @@ enum dump_file_index
   DFI_sibling,
   DFI_eh,
   DFI_jump,
-  DFI_ssa,
-  DFI_ssa_ccp,
-  DFI_ssa_dce,
-  DFI_ussa,
   DFI_null,
   DFI_cse,
   DFI_addressof,
@@ -298,8 +292,8 @@ enum dump_file_index
 
    Remaining -d letters:
 
-	"            m   q         "
-	"         JK   O Q       Y "
+	"   e        m   q         "
+	"         JK   O Q     WXY "
 */
 
 static struct dump_file_info dump_file[DFI_MAX] =
@@ -309,10 +303,6 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "sibling",  'i', 0, 0, 0 },
   { "eh",	'h', 0, 0, 0 },
   { "jump",	'j', 0, 0, 0 },
-  { "ssa",	'e', 1, 0, 0 },
-  { "ssaccp",	'W', 1, 0, 0 },
-  { "ssadce",	'X', 1, 0, 0 },
-  { "ussa",	'e', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "null",	'u', 0, 0, 0 },
   { "cse",	's', 0, 0, 0 },
   { "addressof", 'F', 0, 0, 0 },
@@ -904,15 +894,6 @@ int flag_gnu_linker = 1;
 /* Nonzero means put zero initialized data in the bss section.  */
 int flag_zero_initialized_in_bss = 1;
 
-/* Enable SSA.  */
-int flag_ssa = 0;
-
-/* Enable ssa conditional constant propagation.  */
-int flag_ssa_ccp = 0;
-
-/* Enable ssa aggressive dead code elimination.  */
-int flag_ssa_dce = 0;
-
 /* Tag all structures with __attribute__(packed).  */
 int flag_pack_struct = 0;
 
@@ -1149,9 +1130,6 @@ static const lang_independent_options f_options[] =
   {"dump-unnumbered", &flag_dump_unnumbered, 1 },
   {"instrument-functions", &flag_instrument_function_entry_exit, 1 },
   {"zero-initialized-in-bss", &flag_zero_initialized_in_bss, 1 },
-  {"ssa", &flag_ssa, 1 },
-  {"ssa-ccp", &flag_ssa_ccp, 1 },
-  {"ssa-dce", &flag_ssa_dce, 1 },
   {"leading-underscore", &flag_leading_underscore, 1 },
   {"ident", &flag_no_ident, 0 },
   { "peephole2", &flag_peephole2, 1 },
@@ -2750,71 +2728,6 @@ rest_of_handle_inlining (tree decl)
   return (bool) DECL_EXTERNAL (decl);
 }
 
-/* Rest of compilation helper to convert the rtl to SSA form.  */
-static rtx
-rest_of_handle_ssa (tree decl, rtx insns)
-{
-  timevar_push (TV_TO_SSA);
-  open_dump_file (DFI_ssa, decl);
-
-  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-  convert_to_ssa ();
-
-  close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
-  timevar_pop (TV_TO_SSA);
-
-  /* Perform sparse conditional constant propagation, if requested.  */
-  if (flag_ssa_ccp)
-    {
-      timevar_push (TV_SSA_CCP);
-      open_dump_file (DFI_ssa_ccp, decl);
-
-      ssa_const_prop ();
-
-      close_dump_file (DFI_ssa_ccp, print_rtl_with_bb, get_insns ());
-      timevar_pop (TV_SSA_CCP);
-    }
-
-  /* It would be useful to cleanup the CFG at this point, but block
-     merging and possibly other transformations might leave a PHI
-     node in the middle of a basic block, which is a strict no-no.  */
-
-  /* The SSA implementation uses basic block numbers in its phi
-     nodes.  Thus, changing the control-flow graph or the basic
-     blocks, e.g., calling find_basic_blocks () or cleanup_cfg (),
-     may cause problems.  */
-
-  if (flag_ssa_dce)
-    {
-      /* Remove dead code.  */
-
-      timevar_push (TV_SSA_DCE);
-      open_dump_file (DFI_ssa_dce, decl);
-
-      insns = get_insns ();
-      ssa_eliminate_dead_code ();
-
-      close_dump_file (DFI_ssa_dce, print_rtl_with_bb, insns);
-      timevar_pop (TV_SSA_DCE);
-    }
-
-  /* Convert from SSA form.  */
-
-  timevar_push (TV_FROM_SSA);
-  open_dump_file (DFI_ussa, decl);
-
-  convert_from_ssa ();
-  /* New registers have been created.  Rescan their usage.  */
-  reg_scan (insns, max_reg_num (), 1);
-
-  close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
-  timevar_pop (TV_FROM_SSA);
-
-  ggc_collect ();
-
-  return insns;
-}
-
 /* Try to identify useless null pointer tests and delete them.  */
 static void
 rest_of_handle_null_pointer (tree decl, rtx insns)
@@ -3324,12 +3237,6 @@ rest_of_compilation (tree decl)
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
     goto exit_rest_of_compilation;
-
-  /* Long term, this should probably move before the jump optimizer too,
-     but I didn't want to disturb the rtl_dump_and_exit and related
-     stuff at this time.  */
-  if (optimize > 0 && flag_ssa)
-    insns = rest_of_handle_ssa (decl, insns);
 
   timevar_push (TV_JUMP);
 
