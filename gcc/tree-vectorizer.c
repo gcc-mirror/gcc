@@ -164,10 +164,11 @@ static struct loop *slpeel_tree_duplicate_loop_to_edge_cfg
   (struct loop *, struct loops *, edge);
 static void slpeel_update_phis_for_duplicate_loop 
   (struct loop *, struct loop *, bool after);
-static void slpeel_update_phi_nodes_for_guard (edge, struct loop *);
+static void slpeel_update_phi_nodes_for_guard (edge, struct loop *, bool, bool);
 static void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
-static edge slpeel_add_loop_guard (basic_block, tree, basic_block);
+static edge slpeel_add_loop_guard (basic_block, tree, basic_block, basic_block);
 static bool slpeel_can_duplicate_loop_p (struct loop *, edge);
+static void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
 static void allocate_new_names (bitmap);
 static void rename_use_op (use_operand_p);
 static void rename_def_op (def_operand_p, tree);
@@ -249,7 +250,7 @@ static void vect_finish_stmt_generation
 static void vect_generate_tmps_on_preheader 
   (loop_vec_info, tree *, tree *, tree *);
 static tree vect_build_loop_niters (loop_vec_info);
-static void vect_update_ivs_after_vectorizer (struct loop *, tree); 
+static void vect_update_ivs_after_vectorizer (struct loop *, tree, edge); 
 static tree vect_gen_niters_for_prolog_loop (loop_vec_info, tree);
 static void vect_update_inits_of_dr 
   (struct data_reference *, struct loop *, tree niters);
@@ -360,6 +361,7 @@ rename_variables_in_bb (basic_block bb)
   unsigned i;
   edge e;
   edge_iterator ei;
+  struct loop *loop = bb->loop_father;
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     rename_def_op (PHI_RESULT_PTR (phi), phi);
@@ -398,8 +400,12 @@ rename_variables_in_bb (basic_block bb)
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-      rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e));
+    {
+      if (!flow_bb_inside_loop_p (loop, e->dest))
+	continue;
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+        rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e));
+    }
 }
 
 
@@ -441,165 +447,204 @@ rename_variables_in_loop (struct loop *loop)
 }
 
 
-/* This function copies phis from LOOP header to
-   NEW_LOOP header. AFTER is as
-   in update_phis_for_duplicate_loop function.  */
+/* Update the PHI nodes of NEW_LOOP.
+
+   NEW_LOOP is a duplicate of ORIG_LOOP.
+   AFTER indicates whether NEW_LOOP executes before or after ORIG_LOOP:
+   AFTER is true if NEW_LOOP executes after ORIG_LOOP, and false if it
+   executes before it.  */
 
 static void
-copy_phi_nodes (struct loop *loop, struct loop *new_loop,
-		      bool after)
-{
-  tree phi, new_phi, def;
-  edge new_e;
-  edge e = (after ? loop_latch_edge (loop) : loop_preheader_edge (loop));
-
-  /* Second add arguments to newly created phi nodes.  */
-  for (phi = phi_nodes (loop->header),
-	 new_phi = phi_nodes (new_loop->header);
-       phi;
-       phi = PHI_CHAIN (phi),
-	 new_phi = PHI_CHAIN (new_phi))
-    {
-      new_e = loop_preheader_edge (new_loop);
-      def = PHI_ARG_DEF_FROM_EDGE (phi, e);
-      add_phi_arg (&new_phi, def, new_e);
-    }
-}
-
-
-/* Update the PHI nodes of the NEW_LOOP. AFTER is true if the NEW_LOOP
-   executes after LOOP, and false if it executes before it.  */
-
-static void
-slpeel_update_phis_for_duplicate_loop (struct loop *loop,
+slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 				       struct loop *new_loop, bool after)
 {
-  edge old_latch;
   tree *new_name_ptr, new_ssa_name;
-  tree phi_new, phi_old, def;
-  edge orig_entry_e = loop_preheader_edge (loop);
+  tree phi_new, phi_orig;
+  tree def;
+  edge orig_loop_latch = loop_latch_edge (orig_loop);
+  edge orig_entry_e = loop_preheader_edge (orig_loop);
+  edge new_loop_exit_e = new_loop->exit_edges[0];
+  edge new_loop_entry_e = loop_preheader_edge (new_loop);
+  edge entry_arg_e = (after ? orig_loop_latch : orig_entry_e);
 
-  /* Copy phis from loop->header to new_loop->header.  */
-  copy_phi_nodes (loop, new_loop, after);
+  /*
+     step 1. For each loop-header-phi:
+             Add the first phi argument for the phi in NEW_LOOP
+            (the one associated with the entry of NEW_LOOP)
 
-  old_latch = loop_latch_edge (loop);
+     step 2. For each loop-header-phi:
+             Add the second phi argument for the phi in NEW_LOOP
+            (the one associated with the latch of NEW_LOOP)
 
-  /* Update PHI args for the new loop latch edge, and
-     the old loop preheader edge, we know that the PHI nodes
-     are ordered appropriately in copy_phi_nodes.  */
+     step 3. Update the phis in the successor block of NEW_LOOP.
+
+        case 1: NEW_LOOP was placed before ORIG_LOOP:
+                The successor block of NEW_LOOP is the header of ORIG_LOOP.
+                Updating the phis in the successor block can therefore be done
+                along with the scanning of the loop header phis, because the
+                header blocks of ORIG_LOOP and NEW_LOOP have exactly the same
+                phi nodes, organized in the same order.
+
+        case 2: NEW_LOOP was placed after ORIG_LOOP:
+                The successor block of NEW_LOOP is the original exit block of 
+                ORIG_LOOP - the phis to be updated are the loop-closed-ssa phis.
+                We postpone updating these phis to a later stage (when
+                loop guards are added).
+   */
+
+
+  /* Scan the phis in the headers of the old and new loops
+     (they are organized in exactly the same order).  */
+
   for (phi_new = phi_nodes (new_loop->header),
-       phi_old = phi_nodes (loop->header);
-       phi_new && phi_old;
-       phi_new = PHI_CHAIN (phi_new), phi_old = PHI_CHAIN (phi_old))
+       phi_orig = phi_nodes (orig_loop->header);
+       phi_new && phi_orig;
+       phi_new = PHI_CHAIN (phi_new), phi_orig = PHI_CHAIN (phi_orig))
     {
-      def = PHI_ARG_DEF_FROM_EDGE (phi_old, old_latch);
+      /* step 1.  */
+      def = PHI_ARG_DEF_FROM_EDGE (phi_orig, entry_arg_e);
+      add_phi_arg (&phi_new, def, new_loop_entry_e);
 
+      /* step 2.  */
+      def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_loop_latch);
       if (TREE_CODE (def) != SSA_NAME)
-	continue;
+        continue;
 
       new_name_ptr = SSA_NAME_AUX (def);
-
-      /* Something defined outside of the loop.  */
       if (!new_name_ptr)
-	continue;
+        /* Something defined outside of the loop.  */
+        continue;
 
       /* An ordinary ssa name defined in the loop.  */
       new_ssa_name = *new_name_ptr;
+      add_phi_arg (&phi_new, new_ssa_name, loop_latch_edge (new_loop));
 
-      add_phi_arg (&phi_new, new_ssa_name, loop_latch_edge(new_loop));
-
-      /* Update PHI args for the original loop pre-header edge.  */
-      if (! after)
-        SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi_old, orig_entry_e),
-	         new_ssa_name);
+      /* step 3 (case 1).  */
+      if (!after)
+        {
+          gcc_assert (new_loop_exit_e == orig_entry_e);
+          SET_PHI_ARG_DEF (phi_orig,
+                           phi_arg_from_edge (phi_orig, new_loop_exit_e),
+                           new_ssa_name);
+        }
     }
 }
 
 
 /* Update PHI nodes for a guard of the LOOP.
 
-   LOOP is supposed to have a preheader bb at which a guard condition is 
-   located.  The true edge of this condition skips the LOOP and ends
-   at the destination of the (unique) LOOP exit.  The loop exit bb is supposed 
-   to be an empty bb (created by this transformation) with one successor.
+   Input:
+   - LOOP, GUARD_EDGE: LOOP is a loop for which we added guard code that
+        controls whether LOOP is to be executed.  GUARD_EDGE is the edge that
+        originates from the guard-bb, skips LOOP and reaches the (unique) exit
+        bb of LOOP.  This loop-exit-bb is an empty bb with one successor.
+        We denote this bb NEW_MERGE_BB because it had a single predecessor (the
+        LOOP header) before the guard code was added, and now it became a merge
+        point of two paths - the path that ends with the LOOP exit-edge, and
+        the path that ends with GUARD_EDGE.
 
-   This function creates phi nodes at the LOOP exit bb.  These phis need to be
-   created as a result of adding true edge coming from guard.
+        This function creates and updates the relevant phi nodes to account for
+        the new incoming edge (GUARD_EDGE) into NEW_MERGE_BB:
+        1. Create phi nodes at NEW_MERGE_BB.
+        2. Update the phi nodes at the successor of NEW_MERGE_BB (denoted
+           UPDATE_BB).  UPDATE_BB was the exit-bb of LOOP before NEW_MERGE_BB
+           was added:
 
-   FORNOW: Only phis which have corresponding phi nodes at the header of the
-   LOOP are created.  Here we use the assumption that after the LOOP there
-   are no uses of defs generated in LOOP.
+        ===> The CFG before the guard-code was added:
+        LOOP_header_bb:
+          if (exit_loop) goto update_bb : LOOP_header_bb
+        update_bb:
 
-   After the phis creation, the function updates the values of phi nodes at
-   the LOOP exit successor bb:
+        ==> The CFG after the guard-code was added:
+        guard_bb: 
+          if (LOOP_guard_condition) goto new_merge_bb : LOOP_header_bb
+        LOOP_header_bb:
+          if (exit_loop_condition) goto new_merge_bb : LOOP_header_bb
+        new_merge_bb:
+          goto update_bb
+        update_bb:
 
-   Original loop:
+   - ENTRY_PHIS: If ENTRY_PHIS is TRUE, this indicates that the phis in 
+        UPDATE_BB are loop entry phis, like the phis in the LOOP header,
+        organized in the same order. 
+        If ENTRY_PHIs is FALSE, this indicates that the phis in UPDATE_BB are
+        loop exit phis.
 
-   bb0: loop preheader
-        goto bb1
-   bb1: loop header
-        if (exit_cond) goto bb3 else goto bb2
-   bb2: loop latch
-        goto bb1
-   bb3:
-
-
-   After guard creation (the loop before this function):
-
-   bb0: loop preheader
-        if (guard_condition) goto bb4 else goto bb1
-   bb1: loop header
-        if (exit_cond) goto bb4 else goto bb2
-   bb2: loop latch
-        goto bb1
-   bb4: loop exit       
-        (new empty bb)
-        goto bb3
-   bb3:
-
-   This function updates the phi nodes in bb4 and in bb3, to account for the 
-   new edge from bb0 to bb4.  */
+   - IS_NEW_LOOP: TRUE if LOOP is a new loop (a duplicated copy of another
+        "original" loop).  FALSE if LOOP is an original loop (not a newly 
+        created copy).  The SSA_NAME_AUX fields of the defs in the origianl
+        loop are the corresponding new ssa-names used in the new duplicated
+        loop copy.  IS_NEW_LOOP indicates which of the two args of the phi 
+        nodes in UPDATE_BB takes the original ssa-name, and which takes the 
+        new name: If IS_NEW_LOOP is TRUE, the phi-arg that is associated with
+        the LOOP-exit-edge takes the new-name, and the phi-arg that is 
+        associated with GUARD_EDGE takes the original name.  If IS_NEW_LOOP is
+        FALSE, it's the other way around.
+  */
 
 static void
-slpeel_update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
+slpeel_update_phi_nodes_for_guard (edge guard_edge, 
+				   struct loop *loop,
+				   bool entry_phis,
+				   bool is_new_loop)
 {
-  tree phi, phi1;
-  basic_block bb = loop->exit_edges[0]->dest;
+  tree orig_phi, new_phi, update_phi;
+  tree guard_arg, loop_arg;
+  basic_block new_merge_bb = guard_edge->dest;
+  edge e = EDGE_SUCC (new_merge_bb, 0);
+  basic_block update_bb = e->dest;
+  basic_block orig_bb = (entry_phis ? loop->header : update_bb);
 
-  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
-      {
-	tree new_phi;
-	tree phi_arg;
+  for (orig_phi = phi_nodes (orig_bb), update_phi = phi_nodes (update_bb);
+       orig_phi && update_phi;
+       orig_phi = PHI_CHAIN (orig_phi), update_phi = PHI_CHAIN (update_phi))
+    {
+      /* 1. Generate new phi node in NEW_MERGE_BB:  */
+      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
+                                 new_merge_bb);
 
-	/* Generate new phi node.  */
-	new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)), bb);
+      /* 2. NEW_MERGE_BB has two incoming edges: GUARD_EDGE and the exit-edge
+            of LOOP. Set the two phi args in NEW_PHI for these edges:  */
+      if (entry_phis)
+        {
+          loop_arg = PHI_ARG_DEF_FROM_EDGE (orig_phi,
+                                            EDGE_SUCC (loop->latch, 0));
+          guard_arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, loop->entry_edges[0]);
+        }
+      else /* exit phis */
+        {
+          tree orig_def = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
+          tree *new_name_ptr = SSA_NAME_AUX (orig_def);
+          tree new_name;
 
-	/* Add argument coming from guard true edge.  */
-	phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, loop->entry_edges[0]);
-	add_phi_arg (&new_phi, phi_arg, guard_true_edge);
+          if (new_name_ptr)
+            new_name = *new_name_ptr;
+          else
+            /* Something defined outside of the loop  */
+            new_name = orig_def;
 
-	/* Add argument coming from loop exit edge.  */
-	phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0));			           
-	add_phi_arg (&new_phi, phi_arg, loop->exit_edges[0]);
-      
-	/* Update all phi nodes at the loop exit successor.  */
-	for (phi1 = phi_nodes (EDGE_SUCC (bb, 0)->dest); 
-	     phi1; 
-	     phi1 = PHI_CHAIN (phi1))
-	  {
-	    tree old_arg = PHI_ARG_DEF_FROM_EDGE (phi1, EDGE_SUCC (bb, 0));
-	    if (old_arg == phi_arg)
-	      {	
-		edge e = EDGE_SUCC (bb, 0);
+          if (is_new_loop)
+            {
+              guard_arg = orig_def;
+              loop_arg = new_name;
+            }
+          else
+            {
+              guard_arg = new_name;
+              loop_arg = orig_def;
+            }
+        }
+      add_phi_arg (&new_phi, loop_arg, loop->exit_edges[0]);
+      add_phi_arg (&new_phi, guard_arg, guard_edge);
 
-		SET_PHI_ARG_DEF (phi1, 
-				 phi_arg_from_edge (phi1, e),
-				 PHI_RESULT (new_phi)); 
-	      }
-	  }
-      }       
+      /* 3. Update phi in successor block.  */
+      gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi, e) == loop_arg
+                  || PHI_ARG_DEF_FROM_EDGE (update_phi, e) == guard_arg);
+      SET_PHI_ARG_DEF (update_phi, phi_arg_from_edge (update_phi, e),
+                       PHI_RESULT (new_phi));
+    }
 
-  set_phi_nodes (bb, phi_reverse (phi_nodes (bb)));
+  set_phi_nodes (new_merge_bb, phi_reverse (phi_nodes (new_merge_bb)));
 }
 
 
@@ -618,8 +663,6 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   tree begin_label = tree_block_label (loop->latch);
   tree exit_label = tree_block_label (loop->single_exit->dest);
 
-  /* Flow loop scan does not update loop->single_exit field.  */
-  loop->single_exit = loop->exit_edges[0];
   orig_cond = get_loop_exit_condition (loop);
   gcc_assert (orig_cond);
   create_iv (integer_zero_node, integer_one_node, NULL_TREE, loop,
@@ -629,7 +672,6 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
      back to the exit condition statement.  */
   bsi_next (&loop_exit_bsi);
   gcc_assert (bsi_stmt (loop_exit_bsi) == orig_cond);
-
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
     cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
@@ -670,8 +712,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
   if (!at_exit && e != loop_preheader_edge (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	  fprintf (dump_file,
-		   "Edge is not an entry nor an exit edge.\n");
+	  fprintf (dump_file, "Edge is not an entry nor an exit edge.\n");
       return NULL;
     }
 
@@ -681,8 +722,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
   if (!can_copy_bbs_p (bbs, loop->num_nodes))
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "Cannot copy basic blocks.\n");
+	  fprintf (dump_file, "Cannot copy basic blocks.\n");
       free (bbs);
       return NULL;
     }
@@ -692,8 +732,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
   if (!new_loop)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "The duplicate_loop returns NULL.\n");
+	  fprintf (dump_file, "duplicate_loop returns NULL.\n");
       free (bbs);
       return NULL;
     }
@@ -776,7 +815,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
    Returns the skip edge.  */
 
 static edge
-slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
+slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
+		        basic_block dom_bb)
 {
   block_stmt_iterator bsi;
   edge new_e, enter_e;
@@ -796,7 +836,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
   bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
   /* Add new edge to connect entry block to the second loop.  */
   new_e = make_edge (guard_bb, exit_bb, EDGE_TRUE_VALUE);
-  set_immediate_dominator (CDI_DOMINATORS, exit_bb, guard_bb);
+  set_immediate_dominator (CDI_DOMINATORS, exit_bb, dom_bb);
   return new_e;
 }
 
@@ -837,61 +877,77 @@ slpeel_can_duplicate_loop_p (struct loop *loop, edge e)
 }
 
 
-/* Given LOOP this function duplicates it to the edge E. 
+static void
+slpeel_verify_cfg_after_peeling (struct loop *first_loop,
+                                 struct loop *second_loop)
+{
+  basic_block loop1_exit_bb = first_loop->exit_edges[0]->dest;
+  basic_block loop2_entry_bb = second_loop->pre_header;
+  basic_block loop1_entry_bb = loop_preheader_edge (first_loop)->src;
 
-   This transformation takes place before the loop is vectorized. 
-   For now, there are two main cases when it's used 
-   by the vectorizer: to support loops with unknown loop bounds 
-   (or loop bounds indivisible by vectorization factor) and to force the 
-   alignment of data references in the loop. In the first case, LOOP is 
-   duplicated to the exit edge, producing epilog loop. In the second case, LOOP 
-   is duplicated to the preheader edge thus generating prolog loop. In both 
-   cases, the original loop will be vectorized after the transformation. 
-
-   The edge E is supposed to be either preheader edge of the LOOP or  
-   its exit edge. If preheader edge is specified, the LOOP copy 
-   will precede the original one. Otherwise the copy will be located 
-   at the exit of the LOOP.
+  /* A guard that controls whether the second_loop is to be executed or skipped
+     is placed in first_loop->exit.  first_loopt->exit therefore has two
+     successors - one is the preheader of second_loop, and the other is a bb
+     after second_loop.
+   */
+  gcc_assert (EDGE_COUNT (loop1_exit_bb->succs) == 2);
    
-   FIRST_NITERS (SSA_NAME) parameter specifies how many times to iterate 
-   the first loop. If UPDATE_FIRST_LOOP_COUNT parameter is false, the first 
-   loop will be iterated FIRST_NITERS times by introducing additional 
-   induction variable and replacing loop exit condition. If 
-   UPDATE_FIRST_LOOP_COUNT is true no change to the first loop is made and 
-   the caller to tree_duplicate_loop_to_edge is responsible for updating 
-   the first loop count.
    
-   NITERS (also SSA_NAME) parameter defines the number of iteration the
-   original loop iterated. The function generates two if-then guards: 
-   one prior to the first loop and the other prior to the second loop. 
-   The first guard will be:
-
-   if (FIRST_NITERS == 0) then skip the first loop
+  /* 1. Verify that one of the successors of first_loopt->exit is the preheader
+        of second_loop.  */
    
-   The second guard will be:
+  /* The preheader of new_loop is expected to have two predessors:
+     first_loop->exit and the block that precedes first_loop.  */
 
-   if (FIRST_NITERS == NITERS) then skip the second loop
+  gcc_assert (EDGE_COUNT (loop2_entry_bb->preds) == 2 
+              && ((EDGE_PRED (loop2_entry_bb, 0)->src == loop1_exit_bb
+                   && EDGE_PRED (loop2_entry_bb, 1)->src == loop1_entry_bb)
+               || (EDGE_PRED (loop2_entry_bb, 1)->src ==  loop1_exit_bb
+                   && EDGE_PRED (loop2_entry_bb, 0)->src == loop1_entry_bb)));
+  
+  /* Verify that the other successor of first_loopt->exit is after the
+     second_loop.  */
+  /* TODO */
+}
 
-   Thus the equivalence to the original code is guaranteed by correct values 
-   of NITERS and FIRST_NITERS and generation of if-then loop guards.
 
-   For now this function supports only loop forms that are candidate for 
-   vectorization. Such types are the following: 
+/* Function slpeel_tree_peel_loop_to_edge.
 
-   (1) only innermost loops 
-   (2) loops built from 2 basic blocks 
-   (3) loops with one entry and one exit
-   (4) loops without function calls
-   (5) loops without defs that are used after the loop 
+   Peel the first (last) iterations of LOOP into a new prolog (epilog) loop
+   that is placed on the entry (exit) edge E of LOOP. After this transformation
+   we have two loops one after the other - first-loop iterates FIRST_NITERS
+   times, and second-loop iterates the remainder NITERS - FIRST_NITERS times.
 
-   (1), (3) are checked in this function; (2) - in function 
-   vect_analyze_loop_form; (4) - in function vect_analyze_data_refs;
-   (5) is checked as part of the function vect_mark_stmts_to_be_vectorized, 
-   when excluding induction/reduction support.   
+   Input:
+   - LOOP: the loop to be peeled.
+   - E: the exit or entry edge of LOOP.
+        If it is the entry edge, we peel the first iterations of LOOP. In this
+        case first-loop is LOOP, and second-loop is the newly created loop.
+        If it is the exit edge, we peel the last iterations of LOOP. In this
+        case, first-loop is the newly created loop, and second-loop is LOOP.
+   - NITERS: the number of iterations that LOOP iterates.
+   - FIRST_NITERS: the number of iterations that the first-loop should iterate.
+   - UPDATE_FIRST_LOOP_COUNT:  specified whether this function is responssible
+        for updating the loop bound of the first-loop to FIRST_NITERS.  If it
+        is false, the caller of this function may want to take care of this
+        (this can be usefull is we don't want new stmts added to first-loop).
 
-   The function returns NULL in case one of these checks or 
-   transformations failed.  */
-   
+   Output:
+   The function returns a pointer to the new loop-copy, or NULL if it failed
+   to perform the trabsformation.
+
+   The function generates two if-then-else guards: one before the first loop,
+   and the other before the second loop:
+   The first guard is:
+     if (FIRST_NITERS == 0) then skip the first loop,
+     and go directly to the second loop.
+   The second guard is:
+     if (FIRST_NITERS == NITERS) then skip the second loop.
+
+   FORNOW only simple loops are supported (see slpeel_can_duplicate_loop_p).
+   FORNOW the resulting code will not be in loop-closed-ssa form.
+*/
+
 struct loop*
 slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops, 
 			       edge e, tree first_niters, 
@@ -901,116 +957,150 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
   edge skip_e;
   tree pre_condition;
   bitmap definitions;
-  basic_block first_exit_bb, second_exit_bb;
-  basic_block pre_header_bb;
+  basic_block bb_before_second_loop, bb_after_second_loop;
+  basic_block bb_before_first_loop;
+  basic_block bb_between_loops;
   edge exit_e = loop->exit_edges [0];
-
+  
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
-
-  /* We have to initialize cfg_hooks. Then, when calling 
+  
+  /* We have to initialize cfg_hooks. Then, when calling
    cfg_hooks->split_edge, the function tree_split_edge 
-   is actually called and, when calling cfg_hooks->duplicate_block, 
+   is actually called and, when calling cfg_hooks->duplicate_block,
    the function tree_duplicate_bb is called.  */
   tree_register_cfg_hooks ();
 
-  /* 1. Generate a copy of LOOP and put it on E (entry or exit).  */
+
+  /* 1. Generate a copy of LOOP and put it on E (E is the entry/exit of LOOP).
+        Resulting CFG would be:
+
+        first_loop:
+        do {
+        } while ...
+
+        second_loop:
+        do {
+        } while ...
+
+        orig_exit_bb:
+   */
+  
   if (!(new_loop = slpeel_tree_duplicate_loop_to_edge_cfg (loop, loops, e)))
     {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	fprintf (dump_file,
-		 "The tree_duplicate_loop_to_edge_cfg failed.\n");
+      if (vect_debug_stats (loop) || vect_debug_details (loop))
+        fprintf (dump_file, "tree_duplicate_loop_to_edge_cfg failed.\n");
       return NULL;
+    }
+  
+  if (e == exit_e)
+    {
+      /* NEW_LOOP was placed after LOOP.  */
+      first_loop = loop;
+      second_loop = new_loop;
+    }
+  else
+    {
+      /* NEW_LOOP was placed before LOOP.  */
+      first_loop = new_loop;
+      second_loop = loop;
     }
 
   definitions = marked_ssa_names ();
   allocate_new_names (definitions);
   slpeel_update_phis_for_duplicate_loop (loop, new_loop, e == exit_e);
-  /* Here, using assumption (5), we do not propagate new names further 
-     than on phis of the exit from the second loop.  */
   rename_variables_in_loop (new_loop);
-  free_new_names (definitions);
 
-  if (e == exit_e)
-    {
-      first_loop = loop;
-      second_loop = new_loop;
-    }
-  else 
-    {
-      first_loop = new_loop;
-      second_loop = loop;
-    }
 
-  /* 2. Generate bb between the loops.  */
-  first_exit_bb = split_edge (first_loop->exit_edges[0]);
-  add_bb_to_loop (first_exit_bb, first_loop->outer);
+  /* 2. Add the guard that controls whether the first loop is executed.
+        Resulting CFG would be:
 
-  /* We need to update here first loop exit edge 
-     and second loop preheader edge.  */
+        bb_before_first_loop:
+        if (FIRST_NITERS == 0) GOTO bb_before_second_loop
+                               GOTO first-loop
+
+        first_loop:
+        do {
+        } while ...
+
+        bb_before_second_loop:
+
+        second_loop:
+        do {
+        } while ...
+
+        orig_exit_bb:
+   */
+
+  bb_before_first_loop = split_edge (loop_preheader_edge (first_loop));
+  add_bb_to_loop (bb_before_first_loop, first_loop->outer);
+  bb_before_second_loop = split_edge (first_loop->exit_edges[0]);
+  add_bb_to_loop (bb_before_second_loop, first_loop->outer);
   flow_loop_scan (first_loop, LOOP_ALL);
-  flow_loop_scan (second_loop, LOOP_ALL);  
+  flow_loop_scan (second_loop, LOOP_ALL);
+
+  pre_condition =
+        build (LE_EXPR, boolean_type_node, first_niters, integer_zero_node);
+  skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
+                                  bb_before_second_loop, bb_before_first_loop);
+  slpeel_update_phi_nodes_for_guard (skip_e, first_loop, true /* entry-phis */,
+                                     first_loop == new_loop);
+
+
+  /* 3. Add the guard that controls whether the second loop is executed.
+        Resulting CFG would be:
+
+        bb_before_first_loop:
+        if (FIRST_NITERS == 0) GOTO bb_before_second_loop (skip first loop)
+                               GOTO first-loop
+
+        first_loop:
+        do {
+        } while ...
+
+        bb_between_loops:
+        if (FIRST_NITERS == NITERS) GOTO bb_after_second_loop (skip second loop)
+                                    GOTO bb_before_second_loop
+
+        bb_before_second_loop:
+
+        second_loop:
+        do {
+        } while ...
+
+        bb_after_second_loop:
+
+        orig_exit_bb:
+   */
+
+  bb_between_loops = split_edge (first_loop->exit_edges[0]);
+  add_bb_to_loop (bb_between_loops, first_loop->outer);
+  bb_after_second_loop = split_edge (second_loop->exit_edges[0]);
+  add_bb_to_loop (bb_after_second_loop, second_loop->outer);
+  flow_loop_scan (first_loop, LOOP_ALL);
+  flow_loop_scan (second_loop, LOOP_ALL);
+
+  pre_condition = build (EQ_EXPR, boolean_type_node, first_niters, niters);
+  skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition,
+                                  bb_after_second_loop, bb_before_first_loop);
+  slpeel_update_phi_nodes_for_guard (skip_e, second_loop, false /* exit-phis */,
+                                     second_loop == new_loop);
+
   /* Flow loop scan does not update loop->single_exit field.  */
   first_loop->single_exit = first_loop->exit_edges[0];
   second_loop->single_exit = second_loop->exit_edges[0];
 
-  /* 3. Make first loop iterate FIRST_NITERS times, if needed.  */
-  if (!update_first_loop_count)
+  /* 4. Make first-loop iterate FIRST_NITERS times, if requested.
+   */
+  if (update_first_loop_count)
     slpeel_make_loop_iterate_ntimes (first_loop, first_niters);
-  
-  /* 4. Add the guard before first loop:
 
-     if FIRST_NITERS == 0 
-       skip first loop
-     else 
-       enter first loop  */
-
-  /* 4a. Generate bb before first loop.  */
-  pre_header_bb = split_edge (loop_preheader_edge (first_loop));
-  add_bb_to_loop (pre_header_bb, first_loop->outer);
-
-  /* First loop preheader edge is changed.  */
-  flow_loop_scan (first_loop, LOOP_ALL);
-
-  /* 4b. Generate guard condition.  */
-  pre_condition = build (LE_EXPR, boolean_type_node,
-			   first_niters, integer_zero_node);
-
-  /* 4c. Add condition at the end of preheader bb.  */
-  skip_e = slpeel_add_loop_guard (pre_header_bb, pre_condition, first_exit_bb);
-
-  /* 4d. Update phis at first loop exit and propagate changes 
-     to the phis of second loop.  */
-  slpeel_update_phi_nodes_for_guard (skip_e, first_loop);
-
-  /* 5. Add the guard before second loop:
-
-     if FIRST_NITERS == NITERS SKIP
-       skip second loop
-     else 
-       enter second loop  */
-
-  /* 5a. Generate empty bb at the exit from the second loop.  */
-  second_exit_bb = split_edge (second_loop->exit_edges[0]);
-  add_bb_to_loop (second_exit_bb, second_loop->outer);
-
-  /* Second loop preheader edge is changed.  */
-  flow_loop_scan (second_loop, LOOP_ALL);
-
-  /* 5b. Generate guard condition.  */
-  pre_condition = build (EQ_EXPR, boolean_type_node,
-			   first_niters, niters);
-
-  /* 5c. Add condition at the end of preheader bb.  */
-  skip_e = slpeel_add_loop_guard (first_exit_bb, pre_condition, second_exit_bb);
-  slpeel_update_phi_nodes_for_guard (skip_e, second_loop);
-
+  free_new_names (definitions);
   BITMAP_XFREE (definitions);
   unmark_all_for_rewrite ();
-  
+
   return new_loop;
 }
-
 
 
 /* Here the proper Vectorizer starts.  */
@@ -2094,7 +2184,8 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt, block_stmt_iterator *bsi)
   /* Make sure bsi points to the stmt that is being vectorized.  */
 
   /* Assumption: any stmts created for the vectorization of stmt S were
-     inserted before S. BSI is expected to point to S or some new stmt before S.  */
+     inserted before S. BSI is expected to point to S or some new stmt before S.
+   */
 
   while (stmt != bsi_stmt (*bsi) && !bsi_end_p (*bsi))
     bsi_next (bsi);
@@ -2837,24 +2928,13 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
               of LOOP were peeled.
      - NITERS - the number of iterations that LOOP executes (before it is
                 vectorized). i.e, the number of times the ivs should be bumped.
+     - UPDATE_E - a successor edge of LOOP->exit that is on the (only) path
+                  coming out from LOOP on which there are uses of the LOOP ivs
+		  (this is the path from LOOP->exit to epilog_loop->preheader).
 
-     We have:
-
-        bb_before_loop:
-          if (guard-cond) GOTO bb_before_epilog_loop
-          else            GOTO loop
-
-        loop:
-          do {
-          } while ...
-
-        bb_before_epilog_loop:
-
-     bb_before_epilog_loop has edges coming in form the loop exit and
-     from bb_before_loop.  New definitions for ivs will be placed on the edge
-     from loop->exit to bb_before_epilog_loop.  This also requires that we update
-     the phis in bb_before_epilog_loop. (In the code this bb is denoted 
-     "update_bb").
+                  The new definitions of the ivs are placed in LOOP->exit.
+                  The phi args associated with the edge UPDATE_E in the bb
+                  UPDATE_E->dest are updated accordingly.
 
      Assumption 1: Like the rest of the vectorizer, this function assumes
      a single loop exit that has a single predecessor.
@@ -2864,23 +2944,26 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 
      Assumption 3: The access function of the ivs is simple enough (see
      vect_can_advance_ivs_p).  This assumption will be relaxed in the future.
+
+     Assumption 4: Exactly one of the successors of LOOP exit-bb is on a path
+     coming out of LOOP on which the ivs of LOOP are used (this is the path 
+     that leads to the epilog loop; other paths skip the epilog loop).  This
+     path starts with the edge UPDATE_E, and its destination (denoted update_bb)
+     needs to have its phis updated.
  */
 
 static void
-vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
+vect_update_ivs_after_vectorizer (struct loop *loop, tree niters, edge update_e)
 {
-  edge exit = loop->exit_edges[0];
+  basic_block exit_bb = loop->exit_edges[0]->dest;
   tree phi, phi1;
-  basic_block update_bb = exit->dest;
-  edge update_e;
+  basic_block update_bb = update_e->dest;
 
-  /* Generate basic block at the exit from the loop.  */
-  basic_block new_bb = split_edge (exit);
+  /* gcc_assert (vect_can_advance_ivs_p (loop)); */
 
-  add_bb_to_loop (new_bb, EDGE_SUCC (new_bb, 0)->dest->loop_father);
-  loop->exit_edges[0] = EDGE_PRED (new_bb, 0);
-  update_e = EDGE_SUCC (new_bb, 0);
-  
+  /* Make sure there exists a single-predecessor exit bb:  */
+  gcc_assert (EDGE_COUNT (exit_bb->preds) == 1);
+
   for (phi = phi_nodes (loop->header), phi1 = phi_nodes (update_bb); 
        phi && phi1; 
        phi = PHI_CHAIN (phi), phi1 = PHI_CHAIN (phi1))
@@ -2892,9 +2975,7 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
       tree var, stmt, ni, ni_name;
       block_stmt_iterator last_bsi;
 
-      /* Skip virtual phi's. The data dependences that are associated with
-         virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
-
+      /* Skip virtual phi's.  */
       if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
 	{
 	  if (vect_debug_details (NULL))
@@ -2906,10 +2987,10 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
       gcc_assert (access_fn);
       evolution_part =
 	 unshare_expr (evolution_part_in_loop_num (access_fn, loop->num));
+      gcc_assert (evolution_part != NULL_TREE);
       
-      /* FORNOW: We do not transform initial conditions of IVs 
-	 which evolution functions are a polynomial of degree >= 2 or
-	 exponential.  */
+      /* FORNOW: We do not support IVs whose evolution function is a polynomial
+         of degree >= 2 or exponential.  */
       gcc_assert (!tree_is_chrec (evolution_part));
 
       step_expr = evolution_part;
@@ -2924,12 +3005,12 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
 
       ni_name = force_gimple_operand (ni, &stmt, false, var);
       
-      /* Insert stmt into new_bb.  */
-      last_bsi = bsi_last (new_bb);
+      /* Insert stmt into exit_bb.  */
+      last_bsi = bsi_last (exit_bb);
       if (stmt)
-        bsi_insert_after (&last_bsi, stmt, BSI_NEW_STMT);   
+        bsi_insert_before (&last_bsi, stmt, BSI_SAME_STMT);   
 
-      /* Fix phi expressions in duplicated loop.  */
+      /* Fix phi expressions in the successor bb.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (phi1, update_e) ==
                   PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0)));
       SET_PHI_ARG_DEF (phi1, phi_arg_from_edge (phi1, update_e), ni_name);
@@ -2937,21 +3018,28 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
 }
 
 
-/* This function is the main driver of transformation 
-   to be done for loop before vectorizing it in case of 
-   unknown loop bound.  */
+/* Function vect_do_peeling_for_loop_bound
+
+   Peel the last iterations of the loop represented by LOOP_VINFO.
+   The peeled iterations form a new epilog loop.  Given that the loop now 
+   iterates NITERS times, the new epilog loop iterates
+   NITERS % VECTORIZATION_FACTOR times.
+   
+   The original loop will later be made to iterate 
+   NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).  */
 
 static void 
-vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree * ratio,
+vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 				struct loops *loops)
 {
 
   tree ni_name, ratio_mult_vf_name;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct loop *new_loop;
+  edge update_e;
 #ifdef ENABLE_CHECKING
   int loop_num;
 #endif
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  struct loop *new_loop;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_transtorm_for_unknown_loop_bound>>\n");
@@ -2972,23 +3060,32 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree * ratio,
   loop_num  = loop->num; 
 #endif
   new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, loop->exit_edges[0],
-					    ratio_mult_vf_name, ni_name, true); 
+					    ratio_mult_vf_name, ni_name, false);
 #ifdef ENABLE_CHECKING
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
+  slpeel_verify_cfg_after_peeling (loop, new_loop);
 #endif
+
+  /* A guard that controls whether the new_loop is to be executed or skipped
+     is placed in LOOP->exit.  LOOP->exit therefore has two successors - one
+     is the preheader of NEW_LOOP, where the IVs from LOOP are used.  The other
+     is a bb after NEW_LOOP, where these IVs are not used.  Find the edge that
+     is on the path where the LOOP IVs are used and need to be updated.  */
+
+  if (EDGE_PRED (new_loop->pre_header, 0)->src == loop->exit_edges[0]->dest)
+    update_e = EDGE_PRED (new_loop->pre_header, 0);
+  else
+    update_e = EDGE_PRED (new_loop->pre_header, 1);
 
   /* Update IVs of original loop as if they were advanced 
      by ratio_mult_vf_name steps.  */
+  vect_update_ivs_after_vectorizer (loop, ratio_mult_vf_name, update_e); 
 
-#ifdef ENABLE_CHECKING
-  /* Check existence of intermediate bb.  */
-  gcc_assert (loop->exit_edges[0]->dest == new_loop->pre_header);
-#endif
-  vect_update_ivs_after_vectorizer (loop, ratio_mult_vf_name); 
+  /* After peeling we have to reset scalar evolution analyzer.  */
+  scev_reset ();
 
   return;
-
 }
 
 
@@ -3133,6 +3230,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop, ni_name;
   tree n_iters;
+  struct loop *new_loop;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_do_peeling_for_alignment>>\n");
@@ -3140,17 +3238,21 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   ni_name = vect_build_loop_niters (loop_vinfo);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name);
   
-
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
-  slpeel_tree_peel_loop_to_edge (loop, loops, loop_preheader_edge(loop), 
-				 niters_of_prolog_loop, ni_name, false); 
+  new_loop = 
+	slpeel_tree_peel_loop_to_edge (loop, loops, loop_preheader_edge (loop), 
+				       niters_of_prolog_loop, ni_name, true); 
+#ifdef ENABLE_CHECKING
+  gcc_assert (new_loop);
+  slpeel_verify_cfg_after_peeling (new_loop, loop);
+#endif
 
   /* Update number of times loop executes.  */
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) =
     build (MINUS_EXPR, integer_type_node, n_iters, niters_of_prolog_loop);
 
-  /* Update all inits of access functions of all data refs.  */
+  /* Update the init conditions of the access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);
 
   /* After peeling we have to reset scalar evolution analyzer.  */

@@ -1,5 +1,33 @@
 2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
 
+	PR tree-opt/18181
+	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Peeling scheme
+	changed to suppoer uses-after-loop and to void creating flow paths
+	that shouldn't exist.
+	(slpeel_update_phi_nodes_for_guard): Takes additional two arguments.
+	Modified to fit the new peeling scheme. Avoid quadratic behavior.
+	(slpeel_add_loop_guard): Takes additional argument.
+	(slpeel_verify_cfg_after_peeling): New function.
+	(vect_update_ivs_after_vectorizer): Takes additional argument. Updated
+	documentation. Use 'exit-bb' instead of creating 'new-bb'.
+	(rename_variables_in_bb): Don't update phis for BBs out of loop, to fit
+	the new peeling scheme.
+	(copy_phi_nodes): Function removed. Its functionality moved to
+	update_phis_for_duplicate_loop.
+	(slpeel_update_phis_for_duplicate_loop): Functionality of copy_phi_nodes
+	moved here. Added documentation. Modified to fit the new peeling scheme.
+	(slpeel_make_loop_iterate_ntimes): Setting loop->single_exit not not
+	needed - done in slpeel_tree_peel_loop_to_edge.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Debug printouts compacted.
+	(vect_do_peeling_for_loop_bound): Add documentation. Call
+	slpeel_verify_cfg_after_peeling. Call vect_update_ivs_after_vectorizer
+	with additional argument.
+	(vect_do_peeling_for_alignment): Call slpeel_verify_cfg_after_peeling.
+
+	(vect_finish_stmt_generation): Avoid 80 column oveflow.
+
+2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
+
 	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Last two
 	arguments removed.
 	(slpeel_tree_peel_loop_to_edge): Call slpeel_make_loop_iterate_ntimes
