@@ -1,3 +1,8 @@
+2003-12-07  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/lookup/java1.C: New test.
+	* g++.dg/lookup/java2.C: New test.
+
 2003-12-07  Falk Hueffner  <falk@debian.org>
 
 	* g++.dg/opt/noreturn-1.C: New test.
