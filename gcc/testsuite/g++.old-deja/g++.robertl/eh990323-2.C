@@ -1,4 +1,6 @@
 // check MI and VBC offsets on throw
+extern "C" void abort ();
+extern "C" void exit (int);
 
 struct A {
 	int x[23];

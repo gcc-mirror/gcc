@@ -5,6 +5,7 @@
 // friend function, the non-template function does
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <iostream.h>
 
 template <class T>

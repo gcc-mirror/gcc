@@ -2,6 +2,7 @@
 // excess errors test - XFAIL a29k-*-* sparc64-*-elf sh-*-* arm-*-pe**-*
 
 #include <exception>
+#include <stdlib.h>
 
 void my_terminate_handler() {
   exit(0);

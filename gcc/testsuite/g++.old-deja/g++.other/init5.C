@@ -2,6 +2,8 @@
 // Original test attributed to James Kanze <jkanze@otelo.ibmmail.com>
 // execution test - XFAIL *-*-*
 
+extern "C" void abort ();
+
 static int cnt;
 
 class A {

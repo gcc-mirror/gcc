@@ -6,6 +6,7 @@
 // Subject:  Access to private constructor.
 // Message-ID: <9308060023.AA10283@neptune.caere.com>
 #include <iostream.h>
+#include <string.h>
 
 class Base
 {

@@ -4,6 +4,7 @@
 // #include <streambuf.h>
 #include <libio.h>
 #include <strstream.h>
+#include <string.h>
 
 extern bool foo2 (ostream &out, istream &in);
 

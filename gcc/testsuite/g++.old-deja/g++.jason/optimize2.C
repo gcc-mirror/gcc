@@ -1,6 +1,8 @@
 // Used to crash on the alpha with optimization.
 // Special g++ Options: -w
 
+extern "C" void abort (void);
+
 struct Fix {
   unsigned short l;
 };

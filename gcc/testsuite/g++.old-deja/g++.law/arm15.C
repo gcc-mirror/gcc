@@ -6,6 +6,7 @@
 // Message-ID: <9310211510.AA14943@holden.lulea.trab.se>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int state = 0;
 

@@ -1,3 +1,27 @@
+2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	Relative to g++.dg/special:
+	* conpr-1.C, conpr-2.C, conpr-3.C: Include stdlib.h.
+
+	Relative to g++.old-deja:
+	* g++.brendan/complex1.C, g++.jason/optimize2.C,
+	g++.mike/p9732b.C, g++.other/addrof1.C, g++.other/dyncast5.C,
+	g++.other/init5.C, g++.other/init7.C, g++.other/union2.C,
+	g++.pt/vbase1.C, g++.robertl/eb14.C, g++.robertl/eh990323-1.C,
+	g++.robertl/eh990323-2.C, g++.robertl/eh990323-3.C, 
+	g++.robertl/eh990323-4.C, g++.robertl/eh990323-5.C,
+	g++.robertl/ice990323-2.C: Prototype exit and/or abort.
+
+	* g++.brendan/nest21.C, g++.eh/rethrow3.C, g++.jason/init3.C,
+	g++.law/arm15.C, g++.law/cvt2.C, g++.law/visibility17.C,
+	g++.mike/eh23.C, g++.mike/eh25.C, g++.mike/eh34.C,
+	g++.mike/eh48.C, g++.mike/eh55.C, g++.mike/p2736.C,
+	g++.oliva/new1.C, g++.other/align.C, g++.robertl/eb39.C,
+	g++.robertl/eb54.C, g++.robertl/eb63.C: Include stdlib.h
+	and/or string.h.
+
+	* g++.other/goto1.C: Update expectations for error messages.
+
 2000-05-25  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* gcc.c-torture/compile/20000523-1.c: New test.

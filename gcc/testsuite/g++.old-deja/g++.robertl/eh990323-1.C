@@ -1,4 +1,6 @@
 // check cleanup of template temporaries
+extern "C" void abort ();
+extern "C" void exit (int);
 
 int ctor = 0;
 int dtor = 0;

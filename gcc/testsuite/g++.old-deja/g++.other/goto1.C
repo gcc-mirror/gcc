@@ -10,12 +10,12 @@ struct S
 void f ()
 {
   {
-    S s1;
+    S s1; // ERROR - skips initialization
   
-  t:
+  t:	  // ERROR - jump to label
     S s2;
     ;
   }
 
-  goto t; // ERROR - jump avoids initialization of `s1'
+  goto t; // ERROR - from here
 }

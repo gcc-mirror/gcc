@@ -1,4 +1,6 @@
 // check EH with templates
+extern "C" void abort ();
+extern "C" void exit (int);
 
 template <class T, int n, class U> struct A {
 	A() {}

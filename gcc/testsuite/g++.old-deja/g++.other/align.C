@@ -1,4 +1,5 @@
 // Build don't link:
+#include <string.h>
 
 class bar {
 public:

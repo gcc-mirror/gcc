@@ -1,12 +1,9 @@
 // GROUPS passed conversions
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <iostream.h>
 #include <fstream.h>
-
-extern "C" {
-int strncmp (const char *, const char *, size_t);
-}
 
 class cvec {
 public:

@@ -2,6 +2,8 @@
 // Bug: gcc and g++ didn't zero unions with empty initializers.
 // Submitted by J"orn Rennecke <amylaar@cygnus.co.uk>
 
+extern "C" void exit (int);
+
 typedef union u
 {
   union u *up;

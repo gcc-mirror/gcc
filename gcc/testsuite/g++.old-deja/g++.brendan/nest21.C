@@ -1,6 +1,7 @@
 // GROUPS passed nested-classes
 #include <iostream.h>
 #include <stdio.h>
+#include <string.h>
 
 static char output[1024];
 
