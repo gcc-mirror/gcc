@@ -3693,7 +3693,9 @@ EOF
 			if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
 				$gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
 				$gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
-				if ! cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
+				if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
+					:
+				else
 					gcc_cv_as_subsections="working .subsection -1"
 					AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING)
 				fi
