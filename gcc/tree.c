@@ -2841,7 +2841,6 @@ build_array_type (elt_type, index_type)
 
 #if 0 /* This led to crashes, because it could put a temporary node
 	 on the TYPE_NEXT_VARIANT chain of a permanent one.  */
-  */
   /* The main variant of an array type should always
      be an array whose element type is the main variant.  */
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
