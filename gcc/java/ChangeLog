@@ -1,3 +1,9 @@
+2004-01-27  Andrew Haley  <aph@redhat.com>
+
+	java/13273
+	* parse.y (check_interface_throws_clauses): Make sure class_decl
+	has been loaded.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.
