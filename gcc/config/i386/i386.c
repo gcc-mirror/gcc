@@ -3467,6 +3467,11 @@ aligned_operand (op, mode)
   if (! ix86_decompose_address (op, &parts))
     abort ();
 
+  if (parts.base && GET_CODE (parts.base) == SUBREG)
+    parts.base = SUBREG_REG (parts.base);
+  if (parts.index && GET_CODE (parts.index) == SUBREG)
+    parts.index = SUBREG_REG (parts.index);
+
   /* Look for some component that isn't known to be aligned.  */
   if (parts.index)
     {
@@ -4404,7 +4409,7 @@ ix86_decompose_address (addr, out)
   rtx scale_rtx = NULL_RTX;
   int retval = 1;
 
-  if (GET_CODE (addr) == REG || GET_CODE (addr) == SUBREG)
+  if (REG_P (addr) || GET_CODE (addr) == SUBREG)
     base = addr;
   else if (GET_CODE (addr) == PLUS)
     {
@@ -4530,6 +4535,11 @@ ix86_address_cost (x)
 
   if (!ix86_decompose_address (x, &parts))
     abort ();
+
+  if (parts.base && GET_CODE (parts.base) == SUBREG)
+    parts.base = SUBREG_REG (parts.base);
+  if (parts.index && GET_CODE (parts.index) == SUBREG)
+    parts.index = SUBREG_REG (parts.index);
 
   /* More complex memory references are better.  */
   if (parts.disp && parts.disp != const0_rtx)
@@ -4745,9 +4755,15 @@ legitimate_address_p (mode, addr, strict)
 
   if (base)
     {
+      rtx reg;
       reason_rtx = base;
 
-      if (GET_CODE (base) != REG)
+      if (GET_CODE (base) == SUBREG)
+	reg = SUBREG_REG (base);
+      else
+	reg = base;
+
+      if (GET_CODE (reg) != REG)
 	{
 	  reason = "base is not a register";
 	  goto report_error;
@@ -4759,8 +4775,8 @@ legitimate_address_p (mode, addr, strict)
 	  goto report_error;
 	}
 
-      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (base))
-	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (base)))
+      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
+	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (reg)))
 	{
 	  reason = "base is not valid";
 	  goto report_error;
@@ -4775,9 +4791,15 @@ legitimate_address_p (mode, addr, strict)
 
   if (index)
     {
+      rtx reg;
       reason_rtx = index;
 
-      if (GET_CODE (index) != REG)
+      if (GET_CODE (index) == SUBREG)
+	reg = SUBREG_REG (index);
+      else
+	reg = index;
+
+      if (GET_CODE (reg) != REG)
 	{
 	  reason = "index is not a register";
 	  goto report_error;
@@ -4789,8 +4811,8 @@ legitimate_address_p (mode, addr, strict)
 	  goto report_error;
 	}
 
-      if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (index))
-	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (index)))
+      if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
+	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (reg)))
 	{
 	  reason = "index is not valid";
 	  goto report_error;

@@ -2856,7 +2856,8 @@ rest_of_compilation (decl)
 
      life_analyzis rarely eliminates modification of external memory.
    */
-  mark_constant_function ();
+  if (optimize)
+    mark_constant_function ();
 
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 
