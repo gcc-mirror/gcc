@@ -569,20 +569,28 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
 	continue;
 
       mode = reg_raw_mode[i];
+
       /* CCmode is arbitrarily given a size of 4 bytes.  It is more useful
 	 to use the same size as word_mode, since that reduces the number
 	 of ranges we need.  It should not matter, since the result should
 	 never be used for a condition code register anyways.  */
-      if (mode == CCmode)
+      if (GET_MODE_CLASS (mode) == MODE_CC)
 	mode = word_mode;
+
       size = GET_MODE_SIZE (mode);
+
+      /* If this register is not valid in the specified mode and
+	 we have a previous size, use that for the size of this
+	 register to avoid making junk tiny ranges.  */
+      if (! HARD_REGNO_MODE_OK (i, mode) && last_size != -1)
+	size = last_size;
 
       if (size != last_size)
 	{
 	  ranges[n_ranges].beg = i;
-	  ranges[n_ranges].size = last_size = GET_MODE_SIZE (reg_raw_mode[i]);
+	  ranges[n_ranges].size = last_size = size;
 	  ++n_ranges;
-	  assert (n_ranges < 5);
+	  assert (n_ranges <= 5);
 	}
       ranges[n_ranges-1].end = i;
     }
