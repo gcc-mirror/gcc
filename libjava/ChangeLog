@@ -1,5 +1,29 @@
 2002-11-18  Michael Koch <konqueror@gmx.de>
 
+	* gnu/java/nio/ByteBufferImpl.java,
+	gnu/java/nio/CharBufferImpl.java,
+	gnu/java/nio/DatagramChannelImpl.java,
+	gnu/java/nio/DoubleBufferImpl.java,
+	gnu/java/nio/FileChannelImpl.java,
+	gnu/java/nio/FloatBufferImpl.java,
+	gnu/java/nio/IntBufferImpl.java,
+	gnu/java/nio/LongBufferImpl.java,
+	gnu/java/nio/PipeImpl.java,
+	gnu/java/nio/SelectionKeyImpl.java,
+	gnu/java/nio/SelectorImpl.java,
+	gnu/java/nio/SelectorProviderImpl.java,
+	gnu/java/nio/ServerSocketChannelImpl.java,
+	gnu/java/nio/ShortBufferImpl.java,
+	gnu/java/nio/SocketChannelImpl.java,
+	java/nio/DoubleBuffer.java,
+	java/nio/FloatBuffer.java,
+	java/nio/IntBuffer.java,
+	java/nio/LongBuffer.java,
+	java/nio/ShortBuffer.java,
+	java/nio/channels/FileChannel.java: New files.
+
+2002-11-18  Michael Koch <konqueror@gmx.de>
+
 	* Makefile.am (ordinary_java_source_files):
 	Added java/nio/ReadOnlyBufferException.java and
 	java/nio/channels/ClosedSelectorException.java.
