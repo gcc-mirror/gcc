@@ -1,3 +1,12 @@
+Mon Aug 25 14:30:02 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Tweak message.
+
+Sat Aug 23 18:02:59 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* error.c (type_as_string): Put const/volatile on template type
+	parameters where appropriate.
+
 Sat Aug 23 17:47:22 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* call.c (strictly_better): Make arguments unsigned ints.
