@@ -688,12 +688,15 @@ round_push (size)
    Any required stack pointer alignment is preserved.
 
    SIZE is an rtx representing the size of the area.
-   TARGET is a place in which the address can be placed.  */
+   TARGET is a place in which the address can be placed.
+
+   KNOWN_ALIGN is the alignment (in bits) that we know SIZE has.  */
 
 rtx
-allocate_dynamic_stack_space (size, target)
+allocate_dynamic_stack_space (size, target, known_align)
      rtx size;
      rtx target;
+     int known_align;
 {
   /* Ensure the size is in the proper mode.  */
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
@@ -761,11 +764,14 @@ allocate_dynamic_stack_space (size, target)
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
 
-  size = round_push (size);
+  if (known_align % STACK_BOUNDARY != 0)
+    size = round_push (size);
 
   do_pending_stack_adjust ();
 
-  if (target == 0)
+  /* Don't use a TARGET that isn't a pseudo.  */
+  if (target == 0 || GET_CODE (target) != REG
+      || REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = gen_reg_rtx (Pmode);
 
 #ifndef STACK_GROWS_DOWNWARD
@@ -797,15 +803,18 @@ allocate_dynamic_stack_space (size, target)
 #endif
 
 #ifdef MUST_ALIGN
-  target = expand_divmod (0, CEIL_DIV_EXPR, Pmode, target,
-			  gen_rtx (CONST_INT, VOIDmode,
-				   BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			  0, 1);
+  if (known_align % BIGGEST_ALIGNMENT != 0)
+    {
+      target = expand_divmod (0, CEIL_DIV_EXPR, Pmode, target,
+			      gen_rtx (CONST_INT, VOIDmode,
+				       BIGGEST_ALIGNMENT / BITS_PER_UNIT),
+			      0, 1);
 
-  target = expand_mult (Pmode, target,
-			gen_rtx (CONST_INT, VOIDmode,
-				 BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			0, 1);
+      target = expand_mult (Pmode, target,
+			    gen_rtx (CONST_INT, VOIDmode,
+				     BIGGEST_ALIGNMENT / BITS_PER_UNIT),
+			    0, 1);
+    }
 #endif
   
   /* Some systems require a particular insn to refer to the stack
