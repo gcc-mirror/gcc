@@ -1,3 +1,7 @@
+2002-03-07  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in: Enable gprof for mips*-*-linux*.
+
 2002-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (libstdcxx_flags): Don't add libstdc++-v3 flags for
