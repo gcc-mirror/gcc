@@ -1,3 +1,17 @@
+2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, mips*-sgi-irix4): Split from IRIX 5
+	section.
+	(Specific, mips*-sgi-irix5): Note IDO download.
+	Reworded MIPS C hints.
+	Use GNU as instead of GAS.
+	Markup fixes.
+	Removed SGI Freeware reference, IRIX 6 only.
+	(Specific, mips*-sgi-irix6): Removed ranlib caveats, obsolete.
+	Note N64 library requirement/workaround.
+	Update O32 hints.
+	Complete list of structure passing bug victims.
+
 2001-07-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi: Remove CVS Id.
