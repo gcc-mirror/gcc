@@ -230,7 +230,7 @@ retry:
       if (!TYPE_TEMPLATE_INFO (type))
 	(*p_msg_at) ("forward declaration of `%#T'", type);
       else
-	(*p_msg_at) ("forward declaration of `%#T'", type);
+	(*p_msg_at) ("declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:
