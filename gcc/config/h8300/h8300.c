@@ -2151,7 +2151,9 @@ output_logical_op (mode, operands)
 	  && ((det & 0x0000ffff) != 0)
 	  && ((det & 0xffff0000) != 0)
 	  && (code == IOR || det != 0xffffff00)
-	  && (code == IOR || det != 0xffff00ff))
+	  && (code == IOR || det != 0xffff00ff)
+	  && (code != AND || det != 0xff00ff00)
+	  && (code != AND || det != 0xff0000ff))
 	{
 	  sprintf (insn_buf, "%s.l\t%%S2,%%S0", opname);
 	  output_asm_insn (insn_buf, operands);
@@ -2195,6 +2197,13 @@ output_logical_op (mode, operands)
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%e0,%e0" : "not.w\t%e0",
 			     operands);
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && code == AND
+		   && (det & 0xffff0000) == 0xff000000)
+	    {
+	      sprintf (insn_buf, "extu.w\t%%e0", opname);
+	      output_asm_insn (insn_buf, operands);
+	    }
 	  else if (TARGET_H8300H || TARGET_H8300S)
 	    {
 	      if ((det & 0xffff0000) != 0)
@@ -2275,7 +2284,9 @@ compute_logical_op_length (mode, operands)
 	  && ((det & 0x0000ffff) != 0)
 	  && ((det & 0xffff0000) != 0)
 	  && (code == IOR || det != 0xffffff00)
-	  && (code == IOR || det != 0xffff00ff))
+	  && (code == IOR || det != 0xffff00ff)
+	  && (code != AND || det != 0xff00ff00)
+	  && (code != AND || det != 0xff0000ff))
 	{
 	  if (REG_P (operands[2]))
 	    length += 4;
@@ -2312,6 +2323,12 @@ compute_logical_op_length (mode, operands)
 
 	  if ((det & 0xffff0000) == 0xffff0000
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
+	    {
+	      length += 2;
+	    }
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && code == AND
+		   && (det & 0xffff0000) == 0xff000000)
 	    {
 	      length += 2;
 	    }
@@ -2374,7 +2391,9 @@ compute_logical_op_cc (mode, operands)
 	  && ((det & 0x0000ffff) != 0)
 	  && ((det & 0xffff0000) != 0)
 	  && (code == IOR || det != 0xffffff00)
-	  && (code == IOR || det != 0xffff00ff))
+	  && (code == IOR || det != 0xffff00ff)
+	  && (code != AND || det != 0xff00ff00)
+	  && (code != AND || det != 0xff0000ff))
 	{
 	  cc = CC_SET_ZNV;
 	}
