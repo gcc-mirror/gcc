@@ -333,8 +333,12 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       if (defined && MACHO_DYNAMIC_NO_PIC_P)
 	{
 #if defined (TARGET_TOC)
-	  emit_insn (gen_macho_high (reg, orig));
-	  emit_insn (gen_macho_low (reg, reg, orig));
+ 	  emit_insn (GET_MODE (orig) == DImode
+		     ? gen_macho_high_di (reg, orig)
+		     : gen_macho_high (reg, orig));
+ 	  emit_insn (GET_MODE (orig) == DImode
+		     ? gen_macho_low_di (reg, reg, orig)
+		     : gen_macho_low (reg, reg, orig));
 #else
 	   /* some other cpu -- writeme!  */
 	   abort ();
@@ -529,7 +533,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      rtx asym = XEXP (orig, 0);
 	      rtx mem;
 
-	      emit_insn (gen_macho_high (temp_reg, asym));
+	      emit_insn (mode == DImode
+			 ? gen_macho_high_di (temp_reg, asym)
+			 : gen_macho_high (temp_reg, asym));
 	      mem = gen_rtx_MEM (GET_MODE (orig),
 				 gen_rtx_LO_SUM (Pmode, temp_reg, asym));
 	      MEM_READONLY_P (mem) = 1;

@@ -145,55 +145,10 @@ Boston, MA 02111-1307, USA.  */
 	(match_dup 2))]
   "")
 
-(define_insn ""
-  [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand" "b,r")
-			 (match_operand:DI 1 "gpc_reg_operand" "r,b")))
-	(match_operand:V4SI 2 "register_operand" "v,v"))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "@
-   stvx %2,%0,%1
-   stvx %2,%1,%0"
-  [(set_attr "type" "vecstore")])
-
-(define_insn ""
-  [(set (mem:V4SI (match_operand:DI 0 "gpc_reg_operand" "r"))
-	(match_operand:V4SI 1 "register_operand" "v"))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "stvx %1,0,%0"
-  [(set_attr "type" "vecstore")])
-
-(define_split
-  [(set (match_operand:V4SI 0 "register_operand" "")
-	(mem:V4SI (plus:DI (match_operand:DI 1 "gpc_reg_operand" "")
-			 (match_operand:DI 2 "short_cint_operand" ""))))
-   (clobber (match_operand:DI 3 "gpc_reg_operand" ""))]
-  "TARGET_MACHO && TARGET_64BIT"
-  [(set (match_dup 3) (plus:DI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0)
-	(mem:V4SI (match_dup 3)))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:V4SI 0 "register_operand" "=v,v")
-	(mem:V4SI (plus:DI (match_operand:DI 1 "gpc_reg_operand" "b,r")
-			 (match_operand:DI 2 "gpc_reg_operand" "r,b"))))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "@
-   lvx %0,%1,%2
-   lvx %0,%2,%1"
-  [(set_attr "type" "vecload")])
-
-(define_insn ""
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (mem:V4SI (match_operand:DI 1 "gpc_reg_operand" "r")))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "lvx %0,0,%1"
-  [(set_attr "type" "vecload")])
-
 (define_insn "load_macho_picbase_di"
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(unspec:DI [(match_operand:DI 1 "immediate_operand" "s")] 15))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
+  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
   "bcl 20,31,%1\\n%1:"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
@@ -204,7 +159,7 @@ Boston, MA 02111-1307, USA.  */
 		 (unspec:DI [(match_operand:DI 2 "immediate_operand" "s")
 			     (match_operand:DI 3 "immediate_operand" "s")]
 			    16)))]
-  "DEFAULT_ABI == ABI_DARWIN"
+  "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
   "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
   [(set_attr "length" "8")])
 
@@ -213,7 +168,7 @@ Boston, MA 02111-1307, USA.  */
 	 (match_operand 1 "" "g,g,g,g"))
    (use (match_operand:SI 2 "immediate_operand" "O,O,n,n"))
    (clobber (match_scratch:SI 3 "=l,l,l,l"))]
-  "DEFAULT_ABI == ABI_DARWIN"
+  "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
 {
   return "b%T0l";
 }
@@ -338,59 +293,3 @@ Boston, MA 02111-1307, USA.  */
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
-(define_insn "*save_fpregs_with_label_di"
- [(match_parallel 0 "any_operand"
-                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
-		   (use (match_operand:DI 2 "call_operand" "s"))
-		   (use (match_operand:DI 3 "" ""))
-		   (set (match_operand:DF 4 "memory_operand" "=m")
-			(match_operand:DF 5 "gpc_reg_operand" "f"))])]
- "TARGET_64BIT"
- "*
-#if TARGET_MACHO
-  const char *picbase = machopic_function_base_name ();
-  operands[3] = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
-#endif
-  return \"bl %z2\\n%3:\";
-"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
-
-(define_insn "*save_vregs_di"
- [(match_parallel 0 "any_operand"
-                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
-		   (use (match_operand:DI 2 "call_operand" "s"))
-		   (set (match_operand:V4SI 3 "any_operand" "=m")
-			(match_operand:V4SI 4 "register_operand" "v"))])]
- "TARGET_64BIT"
- "bl %z2"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
-
-(define_insn "*restore_vregs_di"
- [(match_parallel 0 "any_operand"
-                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
-		   (use (match_operand:DI 2 "call_operand" "s"))
-		   (clobber (match_operand:DI 3 "gpc_reg_operand" "=r"))
-		   (set (match_operand:V4SI 4 "register_operand" "=v")
-			(match_operand:V4SI 5 "any_operand" "m"))])]
- "TARGET_64BIT"
- "bl %z2")
-
-(define_insn "*save_vregs_with_label_di"
- [(match_parallel 0 "any_operand"
-                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
-		   (use (match_operand:DI 2 "call_operand" "s"))
-		   (use (match_operand:DI 3 "" ""))
-		   (set (match_operand:V4SI 4 "any_operand" "=m")
-			(match_operand:V4SI 5 "register_operand" "v"))])]
- "TARGET_64BIT"
- "*
-#if TARGET_MACHO
-  const char *picbase = machopic_function_base_name ();
-  operands[3] = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
-#endif
-  return \"bl %z2\\n%3:\";
-"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
