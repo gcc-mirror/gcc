@@ -1783,6 +1783,7 @@ rs6000_emit_move (dest, source, mode)
 				  XEXP (operands[1], 0));
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  return;
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -6910,10 +6911,15 @@ output_toc (file, x, labelno, mode)
 	 integer constants in the TOC we have to pad them.
 	 (This is still a win over putting the constants in
 	 a separate constant pool, because then we'd have
-	 to have both a TOC entry _and_ the actual constant.)  */
-      if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
+	 to have both a TOC entry _and_ the actual constant.)
+
+	 For a 32-bit target, CONST_INT values are loaded and shifted
+	 entirely within `low' and can be stored in one TOC entry.  */
+
+      if (TARGET_64BIT && POINTER_SIZE < GET_MODE_BITSIZE (mode))
 	abort ();/* It would be easy to make this work, but it doesn't now.  */
-      if (mode != Pmode)
+
+      if (POINTER_SIZE > GET_MODE_BITSIZE (mode))
 	lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
 		       POINTER_SIZE, &low, &high, 0);
 
@@ -6928,12 +6934,24 @@ output_toc (file, x, labelno, mode)
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n",
-		     (long)high, (long)low);
+	  if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
+	    {
+	      if (TARGET_MINIMAL_TOC)
+		fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n",
+			 (long)high, (long)low);
+	      else
+		fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx,0x%lx\n",
+			 (long)high, (long)low, (long)high, (long)low);
+	    }
 	  else
-	    fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx,0x%lx\n",
-		     (long)high, (long)low, (long)high, (long)low);
+	    {
+	      if (TARGET_MINIMAL_TOC)
+		fprintf (file, "\t.long 0x%lx\n",
+			 (long)low);
+	      else
+		fprintf (file, "\t.tc IS_%lx[TC],0x%lx\n",
+			 (long)low, (long)low);
+	    }
 	  return;
 	}
     }
