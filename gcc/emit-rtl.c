@@ -912,7 +912,7 @@ set_decl_rtl (tree t, rtx x)
 
   if (!x)
     return;
-  /* For register, we maitain the reverse information too.  */
+  /* For register, we maintain the reverse information too.  */
   if (GET_CODE (x) == REG)
     REG_ATTRS (x) = get_reg_attrs (t, 0);
   else if (GET_CODE (x) == SUBREG)
@@ -2241,7 +2241,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
   new = simplify_gen_binary (PLUS, Pmode, addr, offset);
 
   /* At this point we don't know _why_ the address is invalid.  It
-     could have secondary memory refereces, multiplies or anything.
+     could have secondary memory references, multiplies or anything.
 
      However, if we did go and rearrange things, we can wind up not
      being able to recognize the magic around pic_offset_table_rtx.

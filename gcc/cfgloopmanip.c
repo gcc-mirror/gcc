@@ -169,7 +169,7 @@ fix_bb_placement (struct loops *loops, basic_block bb)
    his placement no longer has to be correct, and iteratively fix placement of
    its predecessors that may change if placement of FROM changed.  Also fix
    placement of subloops of FROM->loop_father, that might also be altered due
-   to this change; the condition for them is simmilar, except that instead of
+   to this change; the condition for them is similar, except that instead of
    successors we consider edges coming out of the loops.  */
 static void
 fix_bb_placements (struct loops *loops, basic_block from)

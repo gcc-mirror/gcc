@@ -4398,7 +4398,7 @@ store_expr (tree exp, rtx target, int want_value)
     {
       /* C++ can generate ?: expressions with a throw expression in one
 	 branch and an rvalue in the other. Here, we resolve attempts to
-	 store the throw expression's nonexistant result.  */
+	 store the throw expression's nonexistent result.  */
       if (want_value)
 	abort ();
       expand_expr (exp, const0_rtx, VOIDmode, 0);

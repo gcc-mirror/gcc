@@ -5327,7 +5327,7 @@ insert_insn_end_bb (expr, bb, pre)
     pat_end = NEXT_INSN (pat_end);
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
-     handle cc0, etc. properly].  Similary we need to care trapping
+     handle cc0, etc. properly].  Similarly we need to care trapping
      instructions in presence of non-call exceptions.  */
 
   if (GET_CODE (insn) == JUMP_INSN

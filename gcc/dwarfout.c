@@ -2182,7 +2182,7 @@ output_loc_descriptor (rtx rtl)
 
 /* Given a tree node describing an array bound (either lower or upper)
    output a representation for that bound.  DIM_NUM is used for
-   multi-dimensional arrays and U_OR_L disgnates upper or lower
+   multi-dimensional arrays and U_OR_L designates upper or lower
    bound.  */
 
 static void

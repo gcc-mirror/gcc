@@ -34,7 +34,7 @@ typedef struct
   int err_no;  /* for %m */
 } text_info;
 
-/* Contants used to discriminate diagnostics.  */
+/* Constants used to discriminate diagnostics.  */
 typedef enum
 {
 #define DEFINE_DIAGNOSTIC_KIND(K, M) K,  

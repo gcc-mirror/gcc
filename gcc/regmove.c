@@ -2070,7 +2070,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 }
 
 
-/* return nonzero if X is stable and mentions no regsiters but for
+/* return nonzero if X is stable and mentions no registers but for
    mentioning SRC or mentioning / changing DST .  If in doubt, presume
    it is unstable.
    The rationale is that we want to check if we can move an insn easily

@@ -769,7 +769,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 
    It may be good idea to return basic block before C in the case
    C has been moved after B and originally appeared earlier in the
-   insn seqeunce, but we have no infromation available about the
+   insn sequence, but we have no information available about the
    relative ordering of these two.  Hopefully it is not too common.  */
 
 static basic_block

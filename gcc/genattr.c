@@ -165,7 +165,7 @@ write_units (int num_units, struct range *multiplicity, struct range *simultanei
   printf ("#define BLOCKAGE_BITS %d\n", i + 1);
 
   /* INSN_QUEUE_SIZE is a power of two larger than MAX_BLOCKAGE and
-     MAX_READY_COST.  This is the longest time an isnsn may be queued.  */
+     MAX_READY_COST.  This is the longest time an insn may be queued.  */
   i = MAX (blockage->max, ready_cost->max);
   for (q_size = 1; q_size <= i; q_size <<= 1)
     ;

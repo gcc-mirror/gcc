@@ -2897,7 +2897,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	    return NULL_RTX;
 	}
 
-      /* Recurse for futher possible simplifications.  */
+      /* Recurse for further possible simplifications.  */
       new = simplify_subreg (outermode, SUBREG_REG (op),
 			     GET_MODE (SUBREG_REG (op)),
 			     final_offset);

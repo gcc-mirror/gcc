@@ -410,7 +410,7 @@ unswitch_loop (loops, loop, unswitch_on)
   remove_path (loops, unswitch_on_alt->succ);
 
   /* One of created loops do not have to be subloop of the outer loop now,
-     so fix its placement in loop datastructure.  */
+     so fix its placement in loop data structure.  */
   fix_loop_placement (loop);
   fix_loop_placement (nloop);
 

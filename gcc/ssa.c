@@ -142,7 +142,7 @@ static void ssa_rename_from_free
 typedef int (*srf_trav) PARAMS ((int regno, rtx r, sbitmap canonical_elements, partition reg_partition));
 static void ssa_rename_from_traverse
   PARAMS ((htab_trav callback_function, sbitmap canonical_elements, partition reg_partition));
-/*static Avoid warnign message.  */ void ssa_rename_from_print
+/*static Avoid warning message.  */ void ssa_rename_from_print
   PARAMS ((void));
 static int ssa_rename_from_print_1
   PARAMS ((void **slot, void *data));
@@ -360,7 +360,7 @@ ssa_rename_from_print ()
 }
 
 /* Print the contents of the hash table entry SLOT, passing the unused
-   sttribute DATA.  Used as a callback function with htab_traverse ().  */
+   attribute DATA.  Used as a callback function with htab_traverse ().  */
 
 static int
 ssa_rename_from_print_1 (slot, data)
@@ -1568,7 +1568,7 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 }
 
 /* Consider phi insns in basic block BB pairwise.  If the set target
-   of both isns are equivalent pseudos, make the corresponding phi
+   of both insns are equivalent pseudos, make the corresponding phi
    alternatives in each phi corresponding equivalent.
 
    Return nonzero if any new register classes were unioned.  */
