@@ -947,13 +947,6 @@ struct tree_type
    alternative would be passed.  */
 #define DECL_TRANSPARENT_UNION(NODE) ((NODE)->decl.transparent_union)
 
-/* In a FUNCTION_DECL, zero means it is a nested function that needs
-   a trampoline (closure).  If nonzero, it is a normal function.
-   (A nested function can be static if it doesn't need to reference
-   stack variables in a surrounding function.)
-   This is unrelated to whether a function is static in the C sense.  */
-#define FUNCTION_NEEDS_STATIC_CHAIN(NODE) ((NODE)->decl.transparent_union)
-
 /* Used in FUNCTION_DECLs to indicate that they should be run automatically
    at the beginning or end of execution.  */
 #define DECL_STATIC_CONSTRUCTOR(NODE) ((NODE)->decl.static_ctor_flag)
