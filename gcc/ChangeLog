@@ -1,3 +1,9 @@
+Thu Apr  1 02:17:18 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc/inclhack.def (zzz_ki_syscalls, zzz_time): Fix trigger
+	string to only match on hpux11.
+	* fixinc/fixincl.x, fixinc/inclhack.sh, fixinc/fixinc.sh: Rebuilt.
+
 Thu Apr  1 01:09:27 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* fixinc/hackshell.tpl: Complete transition to fixinc.tmp.

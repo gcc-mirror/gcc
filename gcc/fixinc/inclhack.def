@@ -2287,7 +2287,7 @@ fix = {
 fix = {
     hackname = zzz_ki_calls;
     files    = sys/ki_calls.h;
-    select   = 'KI_MAX_PROCS is an arbitrary number';
+    select   = 'kthread_create_caller_t';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
          "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
@@ -2332,7 +2332,7 @@ fix = {
 fix = {
     hackname = zzz_time;
     files    = sys/time.h;
-    select   = 'For CASPEC, look in';
+    select   = '11.0 and later representation of ki time';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
          "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
