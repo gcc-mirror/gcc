@@ -1,5 +1,6 @@
 LIBGCC1=libgcc1.null
 CROSS_LIBGCC1=libgcc1.null
+LIBGCC1_TEST=
 
 # Don't run fixproto
 STMP_FIXPROTO =

@@ -108,5 +108,5 @@ Boston, MA 02111-1307, USA.
 
 /* Until they use ELF or something that handles dwarf2 unwinds
    and initialization stuff better.  */
-#define DWARF2_UNWIND_INFO 0
+#undefine DWARF2_UNWIND_INFO
 
