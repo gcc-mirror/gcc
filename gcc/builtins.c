@@ -7461,6 +7461,7 @@ fold_builtin_fabs (tree arglist, tree type)
     return 0;
 
   arg = TREE_VALUE (arglist);
+  arg = fold_convert (type, arg);
   if (TREE_CODE (arg) == REAL_CST)
     return fold_abs_const (arg, type);
   return fold (build1 (ABS_EXPR, type, arg));
@@ -7477,6 +7478,7 @@ fold_builtin_abs (tree arglist, tree type)
     return 0;
 
   arg = TREE_VALUE (arglist);
+  arg = fold_convert (type, arg);
   if (TREE_CODE (arg) == INTEGER_CST)
     return fold_abs_const (arg, type);
   return fold (build1 (ABS_EXPR, type, arg));

@@ -1,3 +1,9 @@
+2005-01-11  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_fabs): Convert argument to the appropriate
+	type as args of unprototyped builtins aren't automatically promoted.
+	(fold_builtin_abs): Likewise.
+
 2005-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in: Set a `build-warn' variable.
