@@ -877,10 +877,7 @@ comptypes (type1, type2, strict)
 
    NPTRS is the number of pointers we can strip off and keep cool.
    This is used to permit (for aggr A, aggr B) A, B* to convert to A*,
-   but to not permit B** to convert to A**.
-
-   This should go away.  Callers should use can_convert or something
-   similar instead.  (jason 17 Apr 1997)  */
+   but to not permit B** to convert to A**.  */
 
 int
 comp_target_types (ttl, ttr, nptrs)
@@ -895,13 +892,12 @@ comp_target_types (ttl, ttr, nptrs)
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
     return 0;
 
-  if (TREE_CODE (ttr) == POINTER_TYPE
-      || (TREE_CODE (ttr) == REFERENCE_TYPE))
+  if (TREE_CODE (ttr) == POINTER_TYPE)
     {
       ttl = TREE_TYPE (ttl);
       ttr = TREE_TYPE (ttr);
 
-      if (nptrs > 0 && TREE_CODE (ttr) == POINTER_TYPE)
+      if (nptrs > 0)
 	{
 	  if (TREE_CODE (ttl) == UNKNOWN_TYPE
 	      || TREE_CODE (ttr) == UNKNOWN_TYPE)
@@ -953,23 +949,27 @@ comp_target_types (ttl, ttr, nptrs)
       }
     }
 
+  if (TREE_CODE (ttr) == REFERENCE_TYPE)
+    return comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs);
   if (TREE_CODE (ttr) == ARRAY_TYPE)
     return comp_array_types (comp_target_types, ttl, ttr, 0);
   else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
     {
-      if (pedantic)
-	{
-	  if (comptypes (TREE_TYPE (ttl), TREE_TYPE (ttr), 1) == 0)
+      if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
+	switch (comp_target_parms (TYPE_ARG_TYPES (ttl),
+				   TYPE_ARG_TYPES (ttr), 1))
+	  {
+	  case 0:
 	    return 0;
-	}
+	  case 1:
+	    return 1;
+	  case 2:
+	    return -1;
+	  default:
+	    my_friendly_abort (112);
+	  }
       else
-	{
-	  if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1) == 0)
-	    return 0;
-	}
-
-      return comp_target_parms (TYPE_ARG_TYPES (ttl),
-				TYPE_ARG_TYPES (ttr), 1);
+	return 0;
     }
   /* for C++ */
   else if (TREE_CODE (ttr) == OFFSET_TYPE)
@@ -1059,9 +1059,9 @@ common_base_type (tt1, tt2)
    If either list is empty, we win.
    Otherwise, the two lists must be equivalent, element by element.
 
-   C++: See comment above about TYPE1, TYPE2.
-
-   STRICT is no longer used.  */
+   C++: See comment above about TYPE1, TYPE2, STRICT.
+   If STRICT == 3, it means checking is strict, but do not compare
+   default parameter values.  */
 
 int
 compparms (parms1, parms2, strict)
@@ -1073,16 +1073,34 @@ compparms (parms1, parms2, strict)
   /* An unspecified parmlist matches any specified parmlist
      whose argument types don't need default promotions.  */
 
+  if (strict <= 0 && t1 == 0)
+	return self_promoting_args_p (t2);
+  if (strict < 0 && t2 == 0)
+	return self_promoting_args_p (t1);
+
   while (1)
     {
       if (t1 == 0 && t2 == 0)
 	return 1;
       /* If one parmlist is shorter than the other,
-	 they fail to match.  */
+	 they fail to match, unless STRICT is <= 0.  */
       if (t1 == 0 || t2 == 0)
-	return 0;
-      if (! comptypes (TREE_VALUE (t2), TREE_VALUE (t1), 1))
-	return 0;
+	{
+	  if (strict > 0)
+	    return 0;
+	  if (strict < 0)
+	    return 1;
+	  if (strict == 0)
+	    return t1 && TREE_PURPOSE (t1);
+	}
+      if (! comptypes (TREE_VALUE (t2), TREE_VALUE (t1), strict))
+	{
+	  if (strict > 0)
+	    return 0;
+	  if (strict == 0)
+	    return t2 == void_list_node && TREE_PURPOSE (t1);
+	  return TREE_PURPOSE (t1) || TREE_PURPOSE (t2);
+	}
 
       t1 = TREE_CHAIN (t1);
       t2 = TREE_CHAIN (t2);
@@ -1090,13 +1108,7 @@ compparms (parms1, parms2, strict)
 }
 
 /* This really wants return whether or not parameter type lists
-   would make their owning functions assignment compatible or not.
-
-   The return value is like for comp_target_types.
-
-   This should go away, possibly with the exception of the empty parmlist
-   conversion; there are no conversions between function types in C++.
-   (jason 17 Apr 1997)  */
+   would make their owning functions assignment compatible or not.  */
 
 static int
 comp_target_parms (parms1, parms2, strict)
@@ -1106,9 +1118,9 @@ comp_target_parms (parms1, parms2, strict)
   register tree t1 = parms1, t2 = parms2;
   int warn_contravariance = 0;
 
-  /* In C, an unspecified parmlist matches any specified parmlist
-     whose argument types don't need default promotions.  This is not
-     true for C++, but let's do it anyway for unfixed headers.  */
+  /* An unspecified parmlist matches any specified parmlist
+     whose argument types don't need default promotions.
+     @@@ see 13.3.3 for a counterexample...  */
 
   if (t1 == 0 && t2 != 0)
     {
@@ -1135,11 +1147,8 @@ comp_target_parms (parms1, parms2, strict)
 	}
       p1 = TREE_VALUE (t1);
       p2 = TREE_VALUE (t2);
-      if (comptypes (p1, p2, 1))
+      if (p1 == p2)
 	continue;
-
-      if (pedantic)
-	return 0;
 
       if ((TREE_CODE (p1) == POINTER_TYPE && TREE_CODE (p2) == POINTER_TYPE)
 	  || (TREE_CODE (p1) == REFERENCE_TYPE
@@ -1161,15 +1170,20 @@ comp_target_parms (parms1, parms2, strict)
 	    }
 	  if (IS_AGGR_TYPE (TREE_TYPE (p1)))
 	    {
-	      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (p1)),
-			     TYPE_MAIN_VARIANT (TREE_TYPE (p2)), 1) == 0)
-		return 0;
+	      if (comptypes (p2, p1, 0) == 0)
+		{
+		  if (comptypes (p1, p2, 0) != 0)
+		    warn_contravariance = 1;
+		  else
+		    return 0;
+		}
+	      continue;
 	    }
 	}
       /* Note backwards order due to contravariance.  */
-      if (comp_target_types (p2, p1, 1) <= 0)
+      if (comp_target_types (p2, p1, 1) == 0)
 	{
-	  if (comp_target_types (p1, p2, 1) > 0)
+	  if (comp_target_types (p1, p2, 1))
 	    {
 	      warn_contravariance = 1;
 	      continue;
@@ -1177,8 +1191,31 @@ comp_target_parms (parms1, parms2, strict)
 	  if (strict != 0)
 	    return 0;
 	}
+      /* Target types are compatible--just make sure that if
+	 we use parameter lists, that they are ok as well.  */
+      if (TREE_CODE (p1) == FUNCTION_TYPE || TREE_CODE (p1) == METHOD_TYPE)
+	switch (comp_target_parms (TYPE_ARG_TYPES (p1),
+				   TYPE_ARG_TYPES (p2),
+				   strict))
+	  {
+	  case 0:
+	    return 0;
+	  case 1:
+	    break;
+	  case 2:
+	    warn_contravariance = 1;
+	  }
+
+      if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
+	{
+	  int cmp = simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2));
+	  if (cmp < 0)
+	    my_friendly_abort (114);
+	  if (cmp == 0)
+	    return 0;
+	}
     }
-  return warn_contravariance ? -1 : 1;
+  return 1 + warn_contravariance;
 }
 
 /* Return 1 if PARMS specifies a fixed number of parameters
@@ -6839,7 +6876,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     {
       tree ttl = TYPE_PTRMEMFUNC_FN_TYPE (type);
       tree ttr = (TREE_CODE (rhstype) == POINTER_TYPE ? rhstype
-		  : TYPE_PTRMEMFUNC_FN_TYPE (rhstype));
+		    : TYPE_PTRMEMFUNC_FN_TYPE (type));
       int ctt = comp_target_types (ttl, ttr, 1);
 
       if (ctt < 0)
