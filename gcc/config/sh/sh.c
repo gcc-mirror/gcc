@@ -1213,13 +1213,10 @@ find_barrier (from)
      before the table.  This gives 1020.  */
   while (from && count_si < 1020 && count_hi < 512)
     {
-      int inc;
+      int inc = get_attr_length (from);
 
       if (GET_CODE (from) == BARRIER)
 	found_barrier = from;
-
-      /* Count the length of this insn - we assume that all moves will
-	 be 2 bytes long, except the DImode/DFmode movess.  */
 
       if (broken_move (from))
 	{
@@ -1237,10 +1234,7 @@ find_barrier (from)
 	    }
 	  else
 	    found_si = 1;
-	  inc = (GET_MODE_SIZE (GET_MODE (src)) > 4) ? 4 : 2;
 	}
-      else
-	inc = get_attr_length (from);
 
       if (GET_CODE (from) == INSN
 	  && GET_CODE (PATTERN (from)) == SET
@@ -1270,8 +1264,14 @@ find_barrier (from)
 	 so we'll make one.  */
       rtx label = gen_label_rtx ();
 
-      /* We went one instruction too far above.  */
-      from = PREV_INSN (from);
+      /* If we exceeded the range, then we must back up over the last
+	 instruction we looked at.  Otherwise, we just need to undo the
+	 NEXT_INSN at the end of the loop.  */
+      if (count_hi > 512 || count_si > 1020)
+	from = PREV_INSN (PREV_INSN (from));
+      else
+	from = PREV_INSN (from);
+
       /* Walk back to be just before any jump or label.
 	 Putting it before a label reduces the number of times the branch
 	 around the constant pool table will be hit.  Putting it before
