@@ -215,6 +215,7 @@ thread_file=
 gas="$gas_flag"
 gnu_ld="$gnu_ld_flag"
 enable_threads=$enable_threads_flag
+target_gtfiles=
 
 # Obsolete configurations.
 case $machine in
