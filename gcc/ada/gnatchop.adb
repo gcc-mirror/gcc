@@ -521,17 +521,19 @@ procedure Gnatchop is
 
    function Locate_Executable
      (Program_Name    : String;
-      Look_For_Prefix : Boolean := True)
-     return             String_Access
+      Look_For_Prefix : Boolean := True) return String_Access
    is
-      Current_Command : constant String := Command_Name;
-      End_Of_Prefix   : Natural  := Current_Command'First - 1;
-      Start_Of_Prefix : Positive := Current_Command'First;
+      Current_Command : constant String := Normalize_Pathname (Command_Name);
+      End_Of_Prefix   : Natural;
+      Start_Of_Prefix : Positive;
       Result          : String_Access;
 
    begin
+      Start_Of_Prefix := Current_Command'First;
+      End_Of_Prefix   := Start_Of_Prefix - 1;
 
       if Look_For_Prefix then
+
          --  Find Start_Of_Prefix
 
          for J in reverse Current_Command'Range loop
@@ -545,8 +547,6 @@ procedure Gnatchop is
          end loop;
 
          --  Find End_Of_Prefix
-
-         End_Of_Prefix := Start_Of_Prefix - 1;
 
          for J in reverse Start_Of_Prefix .. Current_Command'Last loop
             if Current_Command (J) = '-' then
