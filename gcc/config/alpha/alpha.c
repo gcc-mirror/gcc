@@ -1933,6 +1933,24 @@ alpha_sa_size ()
 
 #endif /* ! OPEN_VMS */
 
+/* Returns 1 if OP is a register which is not eliminable (i.e., not SP or FP).
+
+   This is used in the patterns used for the integer multiply-add
+   insn to avoid creating complex expressions that will cause trouble
+   during reload and need numerous additional patterns to be 
+   recognized.  */
+
+int
+reg_not_elim_operand (op, mode)
+      register rtx op;
+      enum machine_mode mode;
+{
+  if (op == frame_pointer_rtx || op == arg_pointer_rtx)
+    return 0;
+
+  return register_operand (op, mode);
+}
+
 /* Return 1 if this function can directly return via $26.  */
 
 int
