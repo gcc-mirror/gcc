@@ -19,19 +19,27 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define DEFAULT_VR_ARCH "vr4130"
+#define DEFAULT_VR_ARCH "mfix-vr4130"
 #define MIPS_ABI_DEFAULT ABI_EABI
 #define MIPS_MARCH_CONTROLS_SOFT_FLOAT 1
 #define MULTILIB_DEFAULTS \
 	{ MULTILIB_ENDIAN_DEFAULT,		\
 	  MULTILIB_ABI_DEFAULT,			\
-	  "march=" DEFAULT_VR_ARCH }
+	  DEFAULT_VR_ARCH }
 
 #define DRIVER_SELF_SPECS \
+	/* Enforce the default architecture.  This is mostly for	\
+	   the assembler's benefit.  */					\
+	"%{!march=*:%{!mfix-vr4120:%{!mfix-vr4130:"			\
+	"-" DEFAULT_VR_ARCH "}}}",					\
+									\
 	/* Make -mfix-vr4120 imply -march=vr4120.  This cuts down	\
 	   on command-line tautology and makes it easier for t-vr to	\
 	   provide a -mfix-vr4120 multilib.  */				\
 	"%{mfix-vr4120:%{!march=*:-march=vr4120}}",			\
+									\
+	/* Same idea for -mfix-vr4130.  */				\
+	"%{mfix-vr4130:%{!march=*:-march=vr4130}}",			\
 									\
 	/* Make -mabi=eabi -mlong32 the default.  */			\
 	"%{!mabi=*:-mabi=eabi %{!mlong*:-mlong32}}",			\
@@ -41,8 +49,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}",			\
 									\
 	/* Remove -mgp32 if it is redundant.  */			\
-	"%{mabi=32:%<mgp32}",						\
-									\
-	/* Enforce the default architecture.  This is mostly for	\
-	   the assembler's benefit.  */					\
-	"%{!march=*:-march=" DEFAULT_VR_ARCH "}"
+	"%{mabi=32:%<mgp32}"
