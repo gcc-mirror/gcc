@@ -31,24 +31,24 @@
 // * __STL_NO_BOOL: defined if the compiler doesn't have bool as a builtin
 //   type.
 // * __STL_HAS_WCHAR_T: defined if the compier has wchar_t as a builtin type.
-// * __STL_NO_DRAND48: defined if the compiler doesn't have the drand48 
+// * __STL_NO_DRAND48: defined if the compiler doesn't have the drand48
 //   function.
 // * __STL_STATIC_TEMPLATE_MEMBER_BUG: defined if the compiler can't handle
 //   static members of template classes.
 // * __STL_CLASS_PARTIAL_SPECIALIZATION: defined if the compiler supports
 //   partial specialization of template classes.
-// * __STL_PARTIAL_SPECIALIZATION_SYNTAX: defined if the compiler 
+// * __STL_PARTIAL_SPECIALIZATION_SYNTAX: defined if the compiler
 //   supports partial specialization syntax for full specialization of
-//   class templates.  (Even if it doesn't actually support partial 
+//   class templates.  (Even if it doesn't actually support partial
 //   specialization itself.)
 // * __STL_FUNCTION_TMPL_PARTIAL_ORDER: defined if the compiler supports
 //   partial ordering of function templates.  (a.k.a partial specialization
 //   of function templates.)
 // * __STL_MEMBER_TEMPLATES: defined if the compiler supports template
 //   member functions of classes.
-// * __STL_MEMBER_TEMPLATE_CLASSES: defined if the compiler supports 
+// * __STL_MEMBER_TEMPLATE_CLASSES: defined if the compiler supports
 //   nested classes that are member templates of other classes.
-// * __STL_EXPLICIT_FUNCTION_TMPL_ARGS: defined if the compiler 
+// * __STL_EXPLICIT_FUNCTION_TMPL_ARGS: defined if the compiler
 //   supports calling a function template by providing its template
 //   arguments explicitly.
 // * __STL_LIMITED_DEFAULT_TEMPLATES: defined if the compiler is unable
@@ -65,12 +65,12 @@
 // * __STL_NO_EXCEPTION_HEADER: defined if the compiler does not have a
 //   standard-conforming header <exception>.
 // * __STL_SGI_THREADS: defined if this is being compiled for an SGI IRIX
-//   system in multithreaded mode, using native SGI threads instead of 
+//   system in multithreaded mode, using native SGI threads instead of
 //   pthreads.
 // * __STL_WIN32THREADS: defined if this is being compiled on a WIN32
 //   compiler in multithreaded mode.
 // * __STL_LONG_LONG if the compiler has long long and unsigned long long
-//   types.  (They're not in the C++ standard, but they are expected to be 
+//   types.  (They're not in the C++ standard, but they are expected to be
 //   included in the forthcoming C9X standard.)
 
 
@@ -84,7 +84,7 @@
 // * __STL_ASSERTIONS: if defined, then enable runtime checking through the
 //   __stl_assert macro.
 // * _PTHREADS: if defined, use Posix threads for multithreading support.
-// * _NOTHREADS: if defined, don't use any multithreading support.  
+// * _NOTHREADS: if defined, don't use any multithreading support.
 
 
 // Other macros defined by this file:
@@ -100,13 +100,16 @@
 #ifdef _PTHREADS
 #   define __STL_PTHREADS
 #endif
+#ifdef _SOLTHREADS
+#   define __STL_SOLTHREADS
+#endif
 
 # if defined(__sgi) && !defined(__GNUC__)
 #   if !defined(_BOOL)
 #     define __STL_NO_BOOL
 #   endif
 #   if defined(_WCHAR_T_IS_KEYWORD)
-#     define __STL_HAS_WCHAR_T 
+#     define __STL_HAS_WCHAR_T
 #   endif
 #   if !defined(_TYPENAME_IS_KEYWORD)
 #     define __STL_NEED_TYPENAME
@@ -132,7 +135,7 @@
 #   endif
 #   if (_COMPILER_VERSION >= 721) && defined(_NAMESPACES)
 #     define __STL_HAS_NAMESPACES
-#   endif 
+#   endif
 #   if (_COMPILER_VERSION < 721)
 #     define __STL_NO_EXCEPTION_HEADER
 #   endif
@@ -179,7 +182,7 @@
 #   endif
 # endif
 
-# if defined(__SUNPRO_CC) 
+# if defined(__SUNPRO_CC)
 #   define __STL_NO_BOOL
 #   define __STL_NEED_TYPENAME
 #   define __STL_NEED_EXPLICIT
@@ -268,7 +271,7 @@
 # endif
 
 // Use standard-conforming allocators if we have the necessary language
-// features.  __STL_USE_SGI_ALLOCATORS is a hook so that users can 
+// features.  __STL_USE_SGI_ALLOCATORS is a hook so that users can
 // disable new-style allocators, and continue to use the same kind of
 // allocators as before, without having to edit library headers.
 # if defined(__STL_CLASS_PARTIAL_SPECIALIZATION) && \
@@ -277,7 +280,7 @@
     !defined(__STL_NO_BOOL) && \
     !defined(__STL_NON_TYPE_TMPL_PARAM_BUG) && \
     !defined(__STL_LIMITED_DEFAULT_TEMPLATES) && \
-    !defined(__STL_USE_SGI_ALLOCATORS) 
+    !defined(__STL_USE_SGI_ALLOCATORS)
 #   define __STL_USE_STD_ALLOCATORS
 # endif
 
@@ -301,13 +304,13 @@
 #   define __STD_RELOPS std
 #   define __STL_USE_NAMESPACES
 # else
-#   define __STD 
-#   define __STL_BEGIN_NAMESPACE 
-#   define __STL_END_NAMESPACE 
+#   define __STD
+#   define __STL_BEGIN_NAMESPACE
+#   define __STL_END_NAMESPACE
 #   undef  __STL_USE_NAMESPACE_FOR_RELOPS
-#   define __STL_BEGIN_RELOPS_NAMESPACE 
-#   define __STL_END_RELOPS_NAMESPACE 
-#   define __STD_RELOPS 
+#   define __STL_BEGIN_RELOPS_NAMESPACE
+#   define __STL_END_RELOPS_NAMESPACE
+#   define __STD_RELOPS
 #   undef  __STL_USE_NAMESPACES
 # endif
 
@@ -319,12 +322,12 @@
 #   define __STL_NOTHROW throw()
 #   define __STL_UNWIND(action) catch(...) { action; throw; }
 # else
-#   define __STL_TRY 
+#   define __STL_TRY
 #   define __STL_CATCH_ALL if (false)
-#   define __STL_THROW(x) 
-#   define __STL_RETHROW 
-#   define __STL_NOTHROW 
-#   define __STL_UNWIND(action) 
+#   define __STL_THROW(x)
+#   define __STL_RETHROW
+#   define __STL_NOTHROW
+#   define __STL_UNWIND(action)
 # endif
 
 #ifdef __STL_ASSERTIONS
