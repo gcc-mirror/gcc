@@ -2171,20 +2171,10 @@ mark_target_live_regs (target, res)
 	  if (GET_CODE (PATTERN (insn)) == USE)
 	    {
 	      /* If INSN is a USE made by update_block, we care about the
-		 underlying insn.  Any registers set or referenced by the
-		 underlying insn should be treated as if the insn were
-		 located here without the USE.  */
+		 underlying insn.  Any registers set by the underlying insn
+		 are live since the insn is being done somewhere else.  */
 	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
-		{
-		  rtx inner = XEXP (PATTERN (insn), 0);
-
-		  mark_referenced_resources (inner, &needed, 1);
-		  mark_set_resources (inner, &set, 0, 1);
-
-		  COPY_HARD_REG_SET (scratch, set.regs);
-		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-		  AND_COMPL_HARD_REG_SET (res->regs, scratch);
-		}
+		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0, 1);
 
 	      /* All other USE insns are to be ignored.  */
 	      continue;
