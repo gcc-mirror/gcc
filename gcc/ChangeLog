@@ -1,3 +1,8 @@
+Mon Feb  9 17:52:36 1998  John Carr  <jfc@mit.edu>
+
+	* mips.c (print_operand, function_prologue): Make printf format
+	match argument type.
+
 Mon Feb  9 02:37:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * alpha.c (alpha_return_addr): Remove unused variable `first'.
