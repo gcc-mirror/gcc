@@ -1,3 +1,8 @@
+2003-03-15  Andreas Jaeger  <aj@suse.de>
+
+	* g77spec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
+
 2003-02-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Document fixing PR fortran/9038.
@@ -102,7 +107,7 @@ Mon Dec 16 13:55:24 2002  Mark Mitchell  <mark@codesourcery.com>
 
 2002-10-15  Richard Henderson  <rth@redhat.com>
 
-	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use 
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use
 	real_to_decimal directly, and with the new arguments.
 
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>
