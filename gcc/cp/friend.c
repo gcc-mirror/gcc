@@ -64,7 +64,7 @@ is_friend (type, supplicant)
 	      tree friends = TREE_VALUE (list);
 	      for (; friends ; friends = TREE_CHAIN (friends))
 		{
-		  if (ctype == TREE_PURPOSE (friends))
+		  if (comptypes (ctype, TREE_PURPOSE (friends), 1))
 		    return 1;
 
 		  if (TREE_VALUE (friends) == NULL_TREE)
@@ -102,10 +102,9 @@ is_friend (type, supplicant)
 	{
 	  tree t = TREE_VALUE (list);
 
-	  if (supplicant == t
-	      || (CLASSTYPE_IS_TEMPLATE (t)
-		  && is_specialization_of (TYPE_MAIN_DECL (supplicant),
-					   CLASSTYPE_TI_TEMPLATE (t))))
+	  if (TREE_CODE (t) == TEMPLATE_DECL ? 
+	      is_specialization_of (TYPE_MAIN_DECL (supplicant), t) :
+	      comptypes (supplicant, t, 1))
 	    return 1;
 	}
     }      
@@ -241,6 +240,7 @@ make_friend_class (type, friend_type)
      tree type, friend_type;
 {
   tree classes;
+  int is_template_friend;
 
   if (IS_SIGNATURE (type))
     {
@@ -253,25 +253,36 @@ make_friend_class (type, friend_type)
 	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
       return;
     }
-  /* If the TYPE is a template then it makes sense for it to be
-     friends with itself; this means that each instantiation is
-     friends with all other instantiations.  */
-  if (type == friend_type && !CLASSTYPE_IS_TEMPLATE (type))
+  if (processing_template_decl > template_class_depth (type))
+    /* If the TYPE is a template then it makes sense for it to be
+       friends with itself; this means that each instantiation is
+       friends with all other instantiations.  */
+    is_template_friend = 1;
+  else if (comptypes (type, friend_type, 1))
     {
       pedwarn ("class `%s' is implicitly friends with itself",
 	       TYPE_NAME_STRING (type));
       return;
     }
+  else
+    is_template_friend = 0;
 
   GNU_xref_hier (TYPE_NAME_STRING (type),
 		 TYPE_NAME_STRING (friend_type), 0, 0, 1);
 
+  if (is_template_friend)
+    friend_type = CLASSTYPE_TI_TEMPLATE (friend_type);
+
   classes = CLASSTYPE_FRIEND_CLASSES (type);
-  while (classes && TREE_VALUE (classes) != friend_type)
+  while (classes 
+	 /* Stop if we find the same type on the list.  */
+	 && !(TREE_CODE (TREE_VALUE (classes)) == TEMPLATE_DECL ?
+	      friend_type == TREE_VALUE (classes) :
+	      comptypes (TREE_VALUE (classes), friend_type, 1)))
     classes = TREE_CHAIN (classes);
-  if (classes)
-    warning ("class `%s' is already friends with class `%s'",
-	     TYPE_NAME_STRING (TREE_VALUE (classes)), TYPE_NAME_STRING (type));
+  if (classes) 
+    cp_warning ("`%T' is already a friend of `%T'",
+		TREE_VALUE (classes), type);
   else
     {
       CLASSTYPE_FRIEND_CLASSES (type)

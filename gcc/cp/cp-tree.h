@@ -905,7 +905,9 @@ struct lang_type
 /* Same, but cache a list whose value is the binfo of this type.  */
 #define CLASSTYPE_BINFO_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->binfo_as_list)
 
-/* A list of class types with which this type is a friend.  */
+/* A list of class types with which this type is a friend.  The
+   TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
+   case of a template friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->friend_classes)
 
 #ifdef MI_MATRIX
