@@ -3192,7 +3192,6 @@ while (0)
   {"reg_or_0_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
-  {"complemented_arith_operand",{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
