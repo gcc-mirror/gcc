@@ -1,5 +1,8 @@
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
+	* except.c (can_throw_internal): Rename from can_throw.
+	* except.h, resource.c: Update references.
+
 	* integrate.c (copy_insn_list): Use returnjump_p.
 	(copy_insn_notes): Recurse for CALL_PLACEHOLDER.
 

@@ -2690,7 +2690,7 @@ free_eh_status (f)
 /* Determine if the given INSN can throw an exception.  */
 
 int
-can_throw (insn)
+can_throw_internal (insn)
      rtx insn;
 {
   if (GET_CODE (insn) == INSN
@@ -2728,11 +2728,11 @@ nothrow_function_p ()
     return 1;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (can_throw (insn))
+    if (can_throw_internal (insn))
       return 0;
   for (insn = current_function_epilogue_delay_list; insn;
        insn = XEXP (insn, 1))
-    if (can_throw (insn))
+    if (can_throw_internal (insn))
       return 0;
 
   return 1;
@@ -2744,8 +2744,8 @@ nothrow_function_p ()
    region can throw.
 
    Regions are removed if they cannot possibly catch an exception.
-   This is determined by invoking can_throw on each insn within the
-   region; if can_throw returns true for any of the instructions, the
+   This is determined by invoking can_throw_internal on each insn within the
+   region; if can_throw_internal returns true for any of the instructions, the
    region can catch an exception, since there is an insn within the
    region that is capable of throwing an exception.
 
@@ -2784,7 +2784,7 @@ scan_region (insn, n, delete_outer)
 	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
     {
       /* If anything can throw, we can't remove the region.  */
-      if (delete && can_throw (insn))
+      if (delete && can_throw_internal (insn))
 	{
 	  delete = 0;
 	}
