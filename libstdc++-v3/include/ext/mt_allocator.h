@@ -36,6 +36,7 @@
 #define _MT_ALLOCATOR_H 1
 
 #include <new>
+#include <cstdlib>
 #include <bits/functexcept.h>
 #include <bits/gthr.h>
 #include <bits/atomicity.h>
@@ -188,7 +189,9 @@ namespace __gnu_cxx
         /*
          * The thread id of the thread which has requested this block.
          */
+#ifdef __GTHREADS
         size_t thread_id;
+#endif
       };
 
       struct bin_record
