@@ -128,7 +128,8 @@ extern double (atof) ();
 
 #ifndef REAL_VALUE_TRUNCATE
 #define REAL_VALUE_TRUNCATE(mode, x) \
- (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (SFmode) ? (float) (x) : (x))
+ (GET_MODE_BITSIZE (mode) == sizeof (float) * HOST_BITS_PER_CHAR	\
+  ? (float) (x) : (x))
 #endif
 
 /* Determine whether a floating-point value X is infinite. */
