@@ -4413,7 +4413,9 @@ fold (expr)
       return t;
 
     case COMPOUND_EXPR:
-      if (TREE_SIDE_EFFECTS (arg0))
+      /* When pedantic, a compound expression can be neither an lvalue
+	 nor an integer constant expression.  */
+      if (TREE_SIDE_EFFECTS (arg0) || pedantic)
 	return t;
       /* Don't let (0, 0) be null pointer constant.  */
       if (integer_zerop (arg1))
