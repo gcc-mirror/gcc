@@ -1,17 +1,21 @@
+2001-12-04  Andreas Jaeger  <aj@suse.de>
+
+	* trans.c (tree_transform): Adjust call of expand_start_stmt_expr.
+
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
-	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not 
+	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not
         have Associated_Node.
 
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
 	* prj-proc.adb: Minor reformatting
-	
+
 	* make.adb: Minor reformatting
 
 2001-12-03  Geert Bosch <bosch@gnat.com>
 
- 	* make.adb: Minor reformatting.
+	* make.adb: Minor reformatting.
 
 2001-12-03   <dewar@gnat.com>
 
@@ -19,15 +23,15 @@
 
 2001-12-03  Ed Schonberg <schonber@gnat.com>
 
-	* sem_ch12.adb (Inline_Instance_Body): Use Save_Scope_Stack and 
-	push Standard on the stack before analyzing the instance body, 
+	* sem_ch12.adb (Inline_Instance_Body): Use Save_Scope_Stack and
+	push Standard on the stack before analyzing the instance body,
 	in order to have a clean visibility environment.
-	
-	* sem_ch12.adb (Inline_Instance_Body): Remove redundant code. 
+
+	* sem_ch12.adb (Inline_Instance_Body): Remove redundant code.
 
 2001-12-03  Ed Schonberg <schonber@gnat.com>
 
-	* sem_ch12.adb (Instantiate_Package_Body): Protect against double 
+	* sem_ch12.adb (Instantiate_Package_Body): Protect against double
 	instantiation of a body that contains an inlined body.
 
 2001-12-03  Ed Schonberg <schonber@gnat.com>
@@ -62,8 +66,8 @@
 
 2001-11-29  Ed Schonberg <schonber@gnat.com>
 
-	* g-os_lib.adb (Add_To_Command): use explicit loop to move string 
-	into Command, an array conversion is illegal here. Uncovered by 
+	* g-os_lib.adb (Add_To_Command): use explicit loop to move string
+	into Command, an array conversion is illegal here. Uncovered by
 	ACATS B460005.
 
 2001/11/28  Geert Bosch <bosch@gnat.com>
@@ -72,7 +76,7 @@
 
 2001-11-28  Doug Rupp <rupp@gnat.com>
 
-	* init.c: (__gnat_install_handler,VMS): Increase size of alternate 
+	* init.c: (__gnat_install_handler,VMS): Increase size of alternate
 	signal stack.
 
 2001-11-28  Zack Weinberg  <zack@codesourcery.com>
