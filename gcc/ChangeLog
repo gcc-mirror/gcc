@@ -1,5 +1,13 @@
 2001-04-26  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/sparc/sparc.md (movsf_no_f_insn): Add more alternatives
+	common to other movsf patterns.  Move up so that in future
+	people who change the other patterns will change it too.
+	(movsf_lo_sum): Allow even for soft-float; add appropriate
+	constraints.
+	(movsf_high): Likewise.
+	(movsf_high+1): Allow even for soft-float.
+
 	* function.c (expand_function_end): Always clobber the
 	return registers, even if there is no return label.
 
@@ -82,7 +90,6 @@ Thu Apr 26 19:20:28 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config/i386/i386.h (CC1_CPU_SPEC): Fix deprecation warnings for
 	-m386 and -m486.
 
->>>>>>> 1.9867
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (configargs.h): Define thread_model.
@@ -167,7 +174,6 @@ Wed Apr 25 17:09:50 2001  J"orn Rennecke <amylaar@redhat.com>
 	(get_exception_filter): New fn.
 	(finish_eh_generation): Use it.
 
->>>>>>> 1.9859
 2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
 
 	* c-semantics.c (add_scope_stmt): Don't call
