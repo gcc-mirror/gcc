@@ -7655,6 +7655,7 @@ maybe_commonize_var (decl)
 	 inlining of such functions.  */
       current_function_cannot_inline
 	= "function with static variable cannot be inline";
+      DECL_UNINLINABLE (current_function_decl) = 1;
 
       /* If flag_weak, we don't need to mess with this, as we can just
 	 make the function weak, and let it refer to its unique local
