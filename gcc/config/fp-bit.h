@@ -521,6 +521,7 @@ extern TFtype df_to_tf (DFtype);
 #endif /* ! FLOAT */
 
 #ifdef TMODES
+extern DFtype __make_dp (fp_class_type, unsigned int, int, UDItype);
 extern TFtype __make_tp (fp_class_type, unsigned int, int, UTItype);
 #ifdef TFLOAT
 #if defined(L_tf_to_sf)
