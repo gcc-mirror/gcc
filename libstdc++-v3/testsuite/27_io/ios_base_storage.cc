@@ -55,10 +55,15 @@ void test02()
   std::stringbuf        strbuf;
   std::ios              ios(&strbuf);
 
+  ios.exceptions(std::ios::badbit);
+
   long l = 0;
   void* v = 0;
 
   // pword
+  ios.pword(1) = v;
+  VERIFY( ios.pword(1) == v );
+  
   try 
     {
       v = ios.pword(max);
@@ -74,7 +79,29 @@ void test02()
     }
   VERIFY( v == 0 );
 
+  VERIFY( ios.pword(1) == v );
+  
+  // max is different code path from max-1
+  v = &test;
+  try 
+    {
+      v = ios.pword(std::numeric_limits<int>::max());
+    }
+  catch(std::ios_base::failure& obj)
+    {
+      // Ok.
+      VERIFY( ios.bad() );
+    }
+  catch(...)
+    {
+      VERIFY( test = false );
+    }
+  VERIFY( v == &test );
+
   // iword
+  ios.iword(1) = 1;
+  VERIFY( ios.iword(1) == 1 );
+  
   try 
     {
       l = ios.iword(max);
@@ -89,6 +116,26 @@ void test02()
       VERIFY( test = false );
     }
   VERIFY( l == 0 );
+
+  VERIFY( ios.iword(1) == 1 );
+
+  // max is different code path from max-1
+  l = 1;
+  try 
+    {
+      l = ios.iword(std::numeric_limits<int>::max());
+    }
+  catch(std::ios_base::failure& obj)
+    {
+      // Ok.
+      VERIFY( ios.bad() );
+    }
+  catch(...)
+    {
+      VERIFY( test = false );
+    }
+  VERIFY( l == 1 );
+
 }
 
 int main(void)
