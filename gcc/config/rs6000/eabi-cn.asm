@@ -69,13 +69,6 @@ __CTOR_END__:
 	.type	__DTOR_END__,@object
 __DTOR_END__:
 
-# Put a blrl instruction in the special .got.blrl section, which
-# the GNU linker puts at _GLOBAL_OFFSET_TABLE-4, so that a program
-# can find the _GLOBAL_OFFSET_TABLE_ address in a painless fashion.
-
-	.section ".got.blrl","awx"
-	blrl
-
 	.section ".sdata","aw"
 	.globl	__SDATA_END__
 	.type	__SDATA_END__,@object
