@@ -1,3 +1,9 @@
+2005-03-10  Steven Bosscher  <stevenb@suse.de>
+
+	* expr.c (expand_expr_real_1): If possible, use a conditional
+	move for expanding MIN_EXPR and MAX_EXPR.
+	Use temp for moving around rtx-en.
+
 2005-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-opt/20412
@@ -18,7 +24,7 @@
 
 2005-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
+	* doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
 
 2005-03-10  Kazu Hirata  <kazu@cs.umass.edu>
 
