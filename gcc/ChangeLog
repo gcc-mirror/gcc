@@ -1,3 +1,8 @@
+2004-01-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_load_call_address): Make the call insn
+	use $gp if it could be calling a lazy binding stub.
+
 2004-01-20  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.h (BASE_REG_CLASS): Don't permit to use X
