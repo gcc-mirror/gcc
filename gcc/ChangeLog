@@ -1,3 +1,7 @@
+Tue Dec 22 13:55:44 1998  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* halfpic.c (half_pic_encode): Delete redundant code.
+
 Tue Dec 22 13:02:22 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* toplev.c (main): Delete handling of -dM as a preprocessor
