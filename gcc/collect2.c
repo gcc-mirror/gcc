@@ -2,7 +2,7 @@
    that can be traversed by C++ initialization and finalization
    routines.
 
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -955,7 +955,11 @@ main (argc, argv)
   vflag = 1;
 #endif
 
+#ifndef DEFAULT_A_OUT_NAME
   output_file = "a.out";
+#else
+  output_file = DEFAULT_A_OUT_NAME;
+#endif
 
   obstack_begin (&temporary_obstack, 0);
   obstack_begin (&permanent_obstack, 0);
