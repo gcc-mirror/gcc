@@ -8012,7 +8012,6 @@ struct argdata {
   int stringified_length;
   U_CHAR *free1, *free2;
   char newlines;
-  char comments;
   char use_count;
 };
 
@@ -8492,7 +8491,6 @@ macarg (argptr, rest_args)
       argptr->raw_length = bufsize;
       argptr->free1 = buffer;
       argptr->newlines = newlines;
-      argptr->comments = comments;
       if ((newlines || comments) && ip->fname != 0)
 	argptr->raw_length
 	  = final_start +
