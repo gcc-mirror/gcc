@@ -81,14 +81,6 @@ DEFTREECODE (LABEL_STMT, "label_stmt", 'e', 1)
 /* Used to represent an inline assembly statement.  */
 DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 4)
 
-/* A SCOPE_STMT marks the beginning or end of a scope.  If
-   SCOPE_BEGIN_P holds, then this is the start of a scope.  If
-   SCOPE_END_P holds, then this is the end of a scope.  If
-   SCOPE_NULLIFIED_P holds then there turned out to be no variables in
-   this scope.  The SCOPE_STMT_BLOCK is the BLOCK containing the
-   variables declared in this scope.  */
-DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 1)
-
 /* Used to represent a CASE_LABEL. The operands are CASE_LOW and
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
    'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case
@@ -107,9 +99,9 @@ DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
 DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", 'e', 1)
 
 /* A CLEANUP_STMT marks the point at which a declaration is fully
-   constructed.  If, after this point, the CLEANUP_DECL goes out of
-   scope, the CLEANUP_EXPR must be run.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 2)
+   constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL
+   when CLEANUP_BODY completes.  */
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 3)
 
 /*
 Local variables:

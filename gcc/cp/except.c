@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "tree-inline.h"
+#include "tree-iterator.h"
 
 static void push_eh_cleanup (tree);
 static tree prepare_eh_type (tree);
@@ -51,7 +52,6 @@ static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand (tree);
 static int can_convert_eh (tree, tree);
-static void check_handlers_1 (tree, tree);
 static tree cp_protect_cleanup_actions (void);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
@@ -462,6 +462,7 @@ begin_eh_spec_block (void)
 {
   tree r = build_stmt (EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
   add_stmt (r);
+  EH_SPEC_STMTS (r) = push_stmt_list ();
   return r;
 }
 
@@ -470,7 +471,7 @@ finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
 {
   tree raises;
 
-  RECHAIN_STMTS (eh_spec_block, EH_SPEC_STMTS (eh_spec_block));
+  EH_SPEC_STMTS (eh_spec_block) = pop_stmt_list (EH_SPEC_STMTS (eh_spec_block));
 
   /* Strip cv quals, etc, from the specification types.  */
   for (raises = NULL_TREE;
@@ -874,47 +875,57 @@ can_convert_eh (tree to, tree from)
   return 0;
 }
 
-/* Check whether any of HANDLERS are shadowed by another handler accepting
-   TYPE.  Note that the shadowing may not be complete; even if an exception
-   of type B would be caught by a handler for A, there could be a derived
-   class C for which A is an ambiguous base but B is not, so the handler
-   for B would catch an exception of type C.  */
+/* Check whether any of the handlers in I are shadowed by another handler
+   accepting TYPE.  Note that the shadowing may not be complete; even if
+   an exception of type B would be caught by a handler for A, there could
+   be a derived class C for which A is an ambiguous base but B is not, so
+   the handler for B would catch an exception of type C.  */
 
 static void
-check_handlers_1 (tree master, tree handlers)
+check_handlers_1 (tree master, tree_stmt_iterator i)
 {
   tree type = TREE_TYPE (master);
-  tree handler;
 
-  for (handler = handlers; handler; handler = TREE_CHAIN (handler))
-    if (TREE_TYPE (handler)
-	&& can_convert_eh (type, TREE_TYPE (handler)))
-      {
-	warning ("%Hexception of type `%T' will be caught",
-		 EXPR_LOCUS (handler), TREE_TYPE (handler));
-	warning ("%H   by earlier handler for `%T'",
-		 EXPR_LOCUS (master), type);
-	break;
-      }
+  for (; !tsi_end_p (i); tsi_next (&i))
+    {
+      tree handler = tsi_stmt (i);
+      if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
+	{
+	  warning ("%Hexception of type `%T' will be caught",
+		   EXPR_LOCUS (handler), TREE_TYPE (handler));
+	  warning ("%H   by earlier handler for `%T'",
+		   EXPR_LOCUS (master), type);
+	  break;
+        }
+    }
 }
 
-/* Given a chain of HANDLERs, make sure that they're OK.  */
+/* Given a STATEMENT_LIST of HANDLERs, make sure that they're OK.  */
 
 void
 check_handlers (tree handlers)
 {
-  tree handler;
-  int save_line = input_line;
-  
-  for (handler = handlers; handler; handler = TREE_CHAIN (handler))
-    {
-      if (TREE_CHAIN (handler) == NULL_TREE)
-	/* No more handlers; nothing to shadow.  */;
-      else if (TREE_TYPE (handler) == NULL_TREE)
-	pedwarn ("%H`...' handler must be the last handler for"
-		 " its try block", EXPR_LOCUS (handler));
-      else
-	check_handlers_1 (handler, TREE_CHAIN (handler));
-    }
-  input_line = save_line;
+  tree_stmt_iterator i;
+
+  /* If we don't have a STATEMENT_LIST, then we've just got one
+     handler, and thus nothing to warn about.  */
+  if (TREE_CODE (handlers) != STATEMENT_LIST)
+    return;
+
+  i = tsi_start (handlers);
+  if (!tsi_end_p (i))
+    while (1)
+      {
+        tree handler = tsi_stmt (i);
+	tsi_next (&i);
+
+	/* No more handlers; nothing to shadow.  */
+	if (tsi_end_p (i))
+	  break;
+	if (TREE_TYPE (handler) == NULL_TREE)
+	  pedwarn ("%H`...' handler must be the last handler for"
+		   " its try block", EXPR_LOCUS (handler));
+	else
+	  check_handlers_1 (handler, i);
+      }
 }

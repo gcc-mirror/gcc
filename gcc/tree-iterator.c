@@ -40,14 +40,12 @@ alloc_stmt_list (void)
   if (list)
     {
       stmt_list_cache = TREE_CHAIN (list);
-      TREE_CHAIN (list) = NULL;
-      TREE_SIDE_EFFECTS (list) = 0;
+      memset (list, 0, sizeof(struct tree_common));
+      TREE_SET_CODE (list, STATEMENT_LIST);
     }
   else
-    {
-      list = make_node (STATEMENT_LIST);
-      TREE_TYPE (list) = void_type_node;
-    }
+    list = make_node (STATEMENT_LIST);
+  TREE_TYPE (list) = void_type_node;
   return list;
 }
 
@@ -72,8 +70,6 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
   /* Die on looping.  */
   if (t == i->container)
     abort ();
-
-  TREE_SIDE_EFFECTS (i->container) = 1;
 
   if (TREE_CODE (t) == STATEMENT_LIST)
     {
@@ -100,6 +96,8 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
       head->stmt = t;
       tail = head;
     }
+
+  TREE_SIDE_EFFECTS (i->container) = 1;
 
   cur = i->ptr;
 
@@ -151,8 +149,6 @@ tsi_link_after (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
   if (t == i->container)
     abort ();
 
-  TREE_SIDE_EFFECTS (i->container) = 1;
-
   if (TREE_CODE (t) == STATEMENT_LIST)
     {
       head = STATEMENT_LIST_HEAD (t);
@@ -178,6 +174,8 @@ tsi_link_after (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
       head->stmt = t;
       tail = head;
     }
+
+  TREE_SIDE_EFFECTS (i->container) = 1;
 
   cur = i->ptr;
 

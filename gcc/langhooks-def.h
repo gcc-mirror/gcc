@@ -78,7 +78,6 @@ extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (tree);
 extern tree lhd_tree_inlining_add_pending_fn_decls (void *, tree);
-extern int lhd_tree_inlining_tree_chain_matters_p (tree);
 extern int lhd_tree_inlining_auto_var_in_fn_p (tree, tree);
 extern tree lhd_tree_inlining_copy_res_decl_for_inlining (tree, tree, tree,
 							  void *, int *, tree);
@@ -151,8 +150,6 @@ extern int lhd_gimplify_expr (tree *, tree *, tree *);
   lhd_tree_inlining_disregard_inline_limits
 #define LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS \
   lhd_tree_inlining_add_pending_fn_decls
-#define LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P \
-  lhd_tree_inlining_tree_chain_matters_p
 #define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
   lhd_tree_inlining_auto_var_in_fn_p
 #define LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING \
@@ -175,7 +172,6 @@ extern int lhd_gimplify_expr (tree *, tree *, tree *);
   LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN, \
   LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
   LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS, \
-  LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P, \
   LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \
   LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING, \
   LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P, \

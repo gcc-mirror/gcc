@@ -138,9 +138,6 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #undef LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS
 #define LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS \
   cp_add_pending_fn_decls
-#undef LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P
-#define LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P \
-  cp_tree_chain_matters_p
 #undef LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P
 #define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
   cp_auto_var_in_fn_p
@@ -290,12 +287,6 @@ cp_expr_size (tree exp)
   else
     /* Use the default code.  */
     return lhd_expr_size (exp);
-}
-
-int
-cp_tree_chain_matters_p (tree t)
-{
-  return cp_is_overload_p (t) || c_tree_chain_matters_p (t);
 }
 
 /* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */

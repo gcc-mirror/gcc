@@ -9015,7 +9015,7 @@ tree_expr_nonnegative_p (tree t)
     case MODIFY_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
     case BIND_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+      return tree_expr_nonnegative_p (expr_last (TREE_OPERAND (t, 1)));
     case SAVE_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case NON_LVALUE_EXPR:

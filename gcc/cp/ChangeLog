@@ -1,3 +1,63 @@
+2004-06-15  Richard Henderson  <rth@redhat.com>
+
+	* call.c (initialize_reference): Don't build CLEANUP_STMT here.
+	* cp-gimplify.c (cp_gimplify_stmt): Remove next_p argument.
+	(genericize_try_block): Use gimplify_stmt.
+	(genericize_catch_block, genericize_eh_spec_block): Likewise.
+	(cp_gimplify_init_expr): Remove STMT_EXPR special case.
+	(gimplify_must_not_throw_expr): Update voidify_wrapper_expr call.
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P): Remove.
+	(cp_tree_chain_matters_p): Remove.
+	* cp-tree.h (COMPOUND_STMT_TRY_BLOCK): New.
+	(COMPOUND_STMT_BODY_BLOCK): New.
+	(STATEMENT_LIST_NO_SCOPE, STATEMENT_LIST_TRY_BLOCK): New.
+	(EXPR_STMT_STMT_EXPR_RESULT): New.
+	(building_stmt_tree): Check cur_stmt_list.
+	(tf_stmt_expr_cmpd, tf_stmt_expr_body): Remove.
+	(BCS_NO_SCOPE, BCS_TRY_BLOCK, BCS_FN_BODY): New.
+	* decl.c (poplevel): Use pop_stmt_list for minding cleanups.
+	(cp_finish_decl): Use push_cleanup.
+	(start_function, finish_function): Use statement lists.
+	(finish_stmt): Do nothing.
+	* except.c (begin_eh_spec_block): Use statement lists.
+	(check_handlers_1, check_handlers): Likewise.
+	* init.c (construct_virtual_base): Don't add extra compound stmts.
+	(build_vec_init): Likewise.
+	* name-lookup.c (maybe_push_cleanup_level): Use statement lists.
+	* name-lookup.h (struct cp_binding_level): Add statement_list.
+	* parser.c (cp_parser_statement): Take the STMT_EXPR node, not a bool.
+	(cp_parser_labeled_statement, cp_parser_expression_statement,
+	cp_parser_statement_seq_opt): Likewise.
+	(cp_parser_compound_statement): Likewise.  Take bool for try block.
+	(cp_parser_selection_statement): Tidy if processing.
+	(cp_parser_already_scoped_statement): Rewrite to do what it says.
+	* pt.c (tsubst_copy): Move STMT_EXPR to tsubst_expr.
+	(tsubst_expr): Rewrite STMT_EXPR processing.  Handle STATEMENT_LIST.
+	Mind COMPOUND_STMT_TRY_BLOCK, EXPR_STMT_STMT_EXPR_RESULT.
+	* semantics.c (do_poplevel, do_pushlevel): Use statement lists.
+	(finish_cond): New, rewritten from FINISH_COND.
+	(simplify_loop_decl_cond): New.
+	(finish_expr_stmt): Avoid nested EXPR_STMTs.
+	(begin_if_stmt, finish_if_stmt_cond, finish_then_clause,
+	begin_else_clause, finish_else_clause, finish_if_stmt,
+	begin_while_stmt, finish_while_stmt_cond, finish_while_stmt,
+	begin_do_stmt, finish_do_body, begin_for_stmt, finish_for_init_stmt,
+	finish_for_cond, finish_for_stmt, begin_switch_stmt,
+	finish_switch_cond, finish_switch_stmt, begin_try_block,
+	finish_try_block, finish_cleanup_try_block, finish_function_try_block,
+	finish_handler_sequence, finish_function_handler_sequence,
+	begin_handler, finish_handler_parms, finish_handler,
+	begin_stmt_expr, finish_stmt_expr_expr, finish_stmt_expr): Rewrite
+	using statement lists.
+	(begin_compound_stmt): Replace has_no_scope argument with flags.
+	Update all callers.  Use statement lists.
+	(finish_compound_stmt): Likewise.
+	(finish_decl_cleanup, finish_eh_cleanup): Use push_cleanup.
+	(current_scope_stmt_stack): Remove.
+	(simplify_aggr_init_expr): Don't muck with TREE_CHAIN.
+	* typeck2.c (split_nonconstant_init_1, split_nonconstant_init):
+	Rewrite with statement lists.
+
 2004-06-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* parser.c: Change all assignments of c_lex_string_translate

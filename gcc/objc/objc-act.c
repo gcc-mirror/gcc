@@ -1875,7 +1875,7 @@ build_module_descriptor (void)
 
   {
     tree parms, execclass_decl, decelerator, void_list_node_1;
-    tree init_function_name, init_function_decl;
+    tree init_function_name, init_function_decl, compound;
 
     /* Declare void __objc_execClass (void *); */
 
@@ -1903,6 +1903,7 @@ build_module_descriptor (void)
 			      NULL_TREE),
 		    NULL_TREE);
     store_parm_decls ();
+    compound = c_begin_compound_stmt (true);
 
     init_function_decl = current_function_decl;
     TREE_PUBLIC (init_function_decl) = ! targetm.have_ctors_dtors;
@@ -1917,6 +1918,7 @@ build_module_descriptor (void)
     decelerator = build_function_call (execclass_decl, parms);
 
     c_expand_expr_stmt (decelerator);
+    add_stmt (c_end_compound_stmt (compound, true));
 
     finish_function ();
 
@@ -2687,10 +2689,7 @@ objc_enter_block (void)
 #ifdef OBJCPLUS
   block = begin_compound_stmt (0);
 #else
-  block = c_begin_compound_stmt ();
-  push_scope ();
-  clear_last_expr ();
-  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
+  block = c_begin_compound_stmt (1);
 #endif
 
   objc_exception_block_stack = tree_cons (NULL_TREE, block,
@@ -2704,24 +2703,14 @@ static tree
 objc_exit_block (void)
 {
   tree block = TREE_VALUE (objc_exception_block_stack);
-#ifndef OBJCPLUS
-  tree scope_stmt, inner;
-#endif
+  objc_exception_block_stack = TREE_CHAIN (objc_exception_block_stack);	
 
   objc_clear_super_receiver ();
 #ifdef OBJCPLUS
-  finish_compound_stmt (0, block);
+  finish_compound_stmt (block);
 #else
-  scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  inner = pop_scope ();
-
-  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt))
-	= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
-	= inner;
-  RECHAIN_STMTS (block, COMPOUND_BODY (block));
+  block = c_end_compound_stmt (block, 1);
 #endif
-  last_expr_type = NULL_TREE;
-  objc_exception_block_stack = TREE_CHAIN (objc_exception_block_stack);	
 
   blk_nesting_count--;
   return block;
@@ -2804,6 +2793,15 @@ objc_build_try_enter_fragment (void)
   c_expand_expr_stmt (build_function_call
 		      (objc_exception_try_enter_decl, func_params));
 
+#ifdef OBJCPLUS
+  /* Um, C and C++ have very different statement construction functions.
+     Partly because different scoping rules are in effect, but partly 
+     because of how their parsers are constructed.  I highly recommend
+     simply constructing the statements by hand here.  You don't need
+     any of the ancilliary tracking necessary for user parsing bits anyway.  */
+#error
+#endif
+
   if_stmt = c_begin_if_stmt ();
   if_nesting_count++;
   /* If <setjmp.h> has been included, the _setjmp prototype has
@@ -2865,8 +2863,7 @@ objc_build_extract_fragment (void)
       _rethrowException = objc_exception_extract(&_stackExceptionData);
      }  */
 
-  objc_exit_block ();
-  c_finish_then ();
+  c_finish_then (objc_exit_block ());
 
   c_expand_start_else ();
   objc_enter_block ();
@@ -2874,8 +2871,7 @@ objc_build_extract_fragment (void)
 		      (TREE_VALUE (objc_rethrow_exception),
 		       NOP_EXPR,
 		       objc_build_extract_expr ()));
-  objc_exit_block ();
-  c_finish_else ();
+  c_finish_else (objc_exit_block ());
   c_expand_end_cond ();
   if_nesting_count--;
 }
@@ -2934,8 +2930,7 @@ objc_build_try_epilogue (int also_catch_prologue)
 
       tree if_stmt;
 
-      objc_exit_block ();
-      c_finish_then ();
+      c_finish_then (objc_exit_block ());
     		
       c_expand_start_else ();
       objc_enter_block ();
@@ -3017,8 +3012,7 @@ objc_build_catch_stmt (tree catch_expr)
 
   objc_catch_type = tree_cons (NULL_TREE, var_type, objc_catch_type);
 
-  objc_exit_block ();
-  c_finish_then ();
+  c_finish_then (objc_exit_block ());
 
   c_expand_start_else ();
   catch_count_stack->val++;
@@ -3061,8 +3055,7 @@ objc_build_catch_epilogue (void)
    } // end TRY-CATCH scope
   */
 
-  objc_exit_block ();
-  c_finish_then ();
+  c_finish_then (objc_exit_block ());
 
   c_expand_start_else ();
   objc_enter_block ();
@@ -3075,7 +3068,8 @@ objc_build_catch_epilogue (void)
   objc_exit_block ();
   while (catch_count_stack->val--)
     {
-      c_finish_else ();		/* close off all the nested ifs ! */
+      /* FIXME.  Need to have the block of each else that was opened.  */
+      c_finish_else ((abort (), NULL)); /* close off all the nested ifs ! */
       c_expand_end_cond ();
       if_nesting_count--;
     }
@@ -3084,8 +3078,7 @@ objc_build_catch_epilogue (void)
 
   objc_build_extract_fragment ();
 
-  objc_exit_block ();
-  c_finish_else ();
+  c_finish_else (objc_exit_block ());
   c_expand_end_cond ();
   if_nesting_count--;
   objc_exit_block ();
@@ -3116,8 +3109,7 @@ objc_build_finally_prologue (void)
 		       0, if_stmt);
   objc_enter_block ();
   objc_build_try_exit_fragment ();
-  objc_exit_block ();
-  c_finish_then ();
+  c_finish_then (objc_exit_block ());
   c_expand_end_cond ();
   if_nesting_count--;
 
@@ -3141,8 +3133,7 @@ objc_build_finally_epilogue (void)
      0, if_stmt);
   objc_enter_block ();
   objc_build_throw_stmt (TREE_VALUE (objc_rethrow_exception));
-  objc_exit_block ();
-  c_finish_then ();
+  c_finish_then (objc_exit_block ());
   c_expand_end_cond ();
   if_nesting_count--;
 

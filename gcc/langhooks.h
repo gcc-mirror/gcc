@@ -39,7 +39,6 @@ struct lang_hooks_for_tree_inlining
   int (*cannot_inline_tree_fn) (tree *);
   int (*disregard_inline_limits) (tree);
   tree (*add_pending_fn_decls) (void *, tree);
-  int (*tree_chain_matters_p) (tree);
   int (*auto_var_in_fn_p) (tree, tree);
   tree (*copy_res_decl_for_inlining) (tree, tree, tree,
 				      void *, int *, tree);

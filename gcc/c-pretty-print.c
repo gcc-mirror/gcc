@@ -26,6 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "c-pretty-print.h"
 #include "c-tree.h"
+#include "tree-iterator.h"
 #include "diagnostic.h"
 
 /* The pretty-printer code is primarily designed to closely follow
@@ -1892,6 +1893,22 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
   code = TREE_CODE (stmt);
   switch (code)
     {
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator tsi;
+
+        if (pp_needs_newline (pp))
+          pp_newline_and_indent (pp, 0);
+        pp_c_left_brace (pp);
+        pp_newline_and_indent (pp, 3);
+	for (tsi = tsi_start (stmt); !tsi_end_p (tsi); tsi_next (&tsi))
+          pp_statement (pp, tsi_stmt (tsi));
+        pp_newline_and_indent (pp, -3);
+        pp_c_right_brace (pp);
+        pp_needs_newline (pp) = true;
+      }
+      break;
+
        /* labeled-statement:
              identifier : statement
              case constant-expression : statement
@@ -1940,8 +1957,7 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
         pp_newline_and_indent (pp, 0);
       pp_c_left_brace (pp);
       pp_newline_and_indent (pp, 3);
-      for (stmt = COMPOUND_BODY (stmt); stmt; stmt = TREE_CHAIN (stmt))
-	pp_statement (pp, stmt);
+      pp_statement (pp, COMPOUND_BODY (stmt));
       pp_newline_and_indent (pp, -3);
       pp_c_right_brace (pp);
       pp_needs_newline (pp) = true;
@@ -2101,27 +2117,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
 	pp_c_semicolon (pp);
 	pp_needs_newline (pp) = true;
       }
-      break;
-
-    case SCOPE_STMT:
-      if (!SCOPE_NULLIFIED_P (stmt) && SCOPE_NO_CLEANUPS_P (stmt))
-        {
-          int i = 0;
-          if (pp_needs_newline (pp))
-            pp_newline_and_indent (pp, 0);
-          if (SCOPE_BEGIN_P (stmt))
-            {
-              pp_left_brace (pp);
-              i = 3;
-            }
-          else if (SCOPE_END_P (stmt))
-            {
-              pp_right_brace (pp);
-              i = -3;
-            }
-          pp_indentation (pp) += i;
-          pp_needs_newline (pp) = true;
-        }
       break;
 
     case DECL_STMT:

@@ -205,6 +205,10 @@ struct cp_binding_level GTY(())
        TREE_LIST; the TREE_VALUE is the actual declaration.  */
     tree dead_vars_from_for;
 
+    /* STATEMENT_LIST for statements in this binding contour.
+       Only used at present for SK_CLEANUP temporary bindings.  */
+    tree statement_list;
+
     /* Binding depth at which this level began.  */
     int binding_depth;
 

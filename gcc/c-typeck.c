@@ -45,6 +45,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "ggc.h"
 #include "target.h"
+#include "tree-iterator.h"
+
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
@@ -2206,16 +2208,7 @@ int
 c_tree_expr_nonnegative_p (tree t)
 {
   if (TREE_CODE (t) == STMT_EXPR)
-    {
-      t = COMPOUND_BODY (STMT_EXPR_STMT (t));
-
-      /* Find the last statement in the chain, ignoring the final
-	     * scope statement */
-      while (TREE_CHAIN (t) != NULL_TREE
-             && TREE_CODE (TREE_CHAIN (t)) != SCOPE_STMT)
-        t = TREE_CHAIN (t);
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
-    }
+    t = expr_last (COMPOUND_BODY (STMT_EXPR_STMT (t)));
   return tree_expr_nonnegative_p (t);
 }
 
@@ -6435,19 +6428,11 @@ do_case (tree low_value, tree high_value)
 
   if (switch_stack)
     {
-      bool switch_was_empty_p = (SWITCH_BODY (switch_stack->switch_stmt) == NULL_TREE);
-
       label = c_add_case_label (switch_stack->cases,
 				SWITCH_COND (switch_stack->switch_stmt),
 				low_value, high_value);
       if (label == error_mark_node)
 	label = NULL_TREE;
-      else if (switch_was_empty_p)
-	{
-	  /* Attach the first case label to the SWITCH_BODY.  */
-	  SWITCH_BODY (switch_stack->switch_stmt) = TREE_CHAIN (switch_stack->switch_stmt);
-	  TREE_CHAIN (switch_stack->switch_stmt) = NULL_TREE;
-	}
     }
   else if (low_value)
     error ("case label not within a switch statement");
@@ -6460,22 +6445,325 @@ do_case (tree low_value, tree high_value)
 /* Finish the switch statement.  */
 
 void
-c_finish_case (void)
+c_finish_case (tree body)
 {
   struct c_switch *cs = switch_stack;
 
+  SWITCH_BODY (cs->switch_stmt) = body;
+
   /* Emit warnings as needed.  */
   c_do_switch_warnings (cs->cases, cs->switch_stmt);
-
-  /* Rechain the next statements to the SWITCH_STMT.  */
-  last_tree = cs->switch_stmt;
 
   /* Pop the stack.  */
   switch_stack = switch_stack->next;
   splay_tree_delete (cs->cases);
   free (cs);
 }
+
+/* Keep a stack of if statements.  We record the number of compound
+   statements seen up to the if keyword, as well as the line number
+   and file of the if.  If a potentially ambiguous else is seen, that
+   fact is recorded; the warning is issued when we can be sure that
+   the enclosing if statement does not have an else branch.  */
+typedef struct
+{
+  int compstmt_count;
+  location_t locus;
+  int needs_warning;
+  tree if_stmt;
+} if_elt;
 
+static if_elt *if_stack;
+
+/* Amount of space in the if statement stack.  */
+static int if_stack_space = 0;
+
+/* Stack pointer.  */
+static int if_stack_pointer = 0;
+
+/* Begin an if-statement.  Returns a newly created IF_STMT if
+   appropriate.  */
+
+tree
+c_begin_if_stmt (void)
+{
+  tree r;
+  r = add_stmt (build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE));
+  return r;
+}
+
+/* Record the start of an if-then, and record the start of it
+   for ambiguous else detection.
+
+   COND is the condition for the if-then statement.
+
+   IF_STMT is the statement node that has already been created for
+   this if-then statement.  It is created before parsing the
+   condition to keep line number information accurate.  */
+
+void
+c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
+{
+  /* Make sure there is enough space on the stack.  */
+  if (if_stack_space == 0)
+    {
+      if_stack_space = 10;
+      if_stack = xmalloc (10 * sizeof (if_elt));
+    }
+  else if (if_stack_space == if_stack_pointer)
+    {
+      if_stack_space += 10;
+      if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
+    }
+
+  IF_COND (if_stmt) = cond;
+
+  /* Record this if statement.  */
+  if_stack[if_stack_pointer].compstmt_count = compstmt_count;
+  if_stack[if_stack_pointer].locus = input_location;
+  if_stack[if_stack_pointer].needs_warning = 0;
+  if_stack[if_stack_pointer].if_stmt = if_stmt;
+  if_stack_pointer++;
+}
+
+/* Called after the then-clause for an if-statement is processed.  */
+
+void
+c_finish_then (tree then_stmt)
+{
+  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
+  THEN_CLAUSE (if_stmt) = then_stmt;
+}
+
+/* Record the end of an if-then.  Optionally warn if a nested
+   if statement had an ambiguous else clause.  */
+
+void
+c_expand_end_cond (void)
+{
+  if_stack_pointer--;
+  if (if_stack[if_stack_pointer].needs_warning)
+    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
+	     &if_stack[if_stack_pointer].locus);
+}
+
+/* Called between the then-clause and the else-clause
+   of an if-then-else.  */
+
+void
+c_expand_start_else (void)
+{
+  /* An ambiguous else warning must be generated for the enclosing if
+     statement, unless we see an else branch for that one, too.  */
+  if (warn_parentheses
+      && if_stack_pointer > 1
+      && (if_stack[if_stack_pointer - 1].compstmt_count
+	  == if_stack[if_stack_pointer - 2].compstmt_count))
+    if_stack[if_stack_pointer - 2].needs_warning = 1;
+
+  /* Even if a nested if statement had an else branch, it can't be
+     ambiguous if this one also has an else.  So don't warn in that
+     case.  Also don't warn for any if statements nested in this else.  */
+  if_stack[if_stack_pointer - 1].needs_warning = 0;
+  if_stack[if_stack_pointer - 1].compstmt_count--;
+}
+
+/* Called after the else-clause for an if-statement is processed.  */
+
+void
+c_finish_else (tree else_stmt)
+{
+  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
+  ELSE_CLAUSE (if_stmt) = else_stmt;
+}
+
+/* Begin a while statement.  Returns a newly created WHILE_STMT if
+   appropriate.  */
+
+tree
+c_begin_while_stmt (void)
+{
+  tree r;
+  r = add_stmt (build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE));
+  return r;
+}
+
+void
+c_finish_while_stmt_cond (tree cond, tree while_stmt)
+{
+  WHILE_COND (while_stmt) = (*lang_hooks.truthvalue_conversion) (cond);
+}
+
+void
+c_finish_while_stmt (tree body, tree while_stmt)
+{
+  WHILE_BODY (while_stmt) = body;
+}
+
+/* Create a for statement.  */
+
+tree
+c_begin_for_stmt (void)
+{
+  tree r;
+  r = add_stmt (build_stmt (FOR_STMT, NULL_TREE, NULL_TREE,
+			    NULL_TREE, NULL_TREE));
+  FOR_INIT_STMT (r) = push_stmt_list ();
+  return r;
+}
+
+void
+c_finish_for_stmt_init (tree for_stmt)
+{
+  FOR_INIT_STMT (for_stmt) = pop_stmt_list (FOR_INIT_STMT (for_stmt));
+}
+
+void
+c_finish_for_stmt_cond (tree cond, tree for_stmt)
+{
+  if (cond)
+    FOR_COND (for_stmt) = lang_hooks.truthvalue_conversion (cond);
+}
+
+void
+c_finish_for_stmt_incr (tree expr, tree for_stmt)
+{
+  FOR_EXPR (for_stmt) = expr;
+}
+
+void
+c_finish_for_stmt (tree body, tree for_stmt)
+{
+  FOR_BODY (for_stmt) = body;
+}
+
+/* Create a statement expression.  */
+
+tree
+c_begin_stmt_expr (void)
+{
+  tree ret;
+
+  /* We must force a BLOCK for this level so that, if it is not expanded
+     later, there is a way to turn off the entire subtree of blocks that
+     are contained in it.  */
+  keep_next_level ();
+  ret = c_begin_compound_stmt (true);
+
+  /* Mark the current statement list as belonging to a statement list.  */
+  STATEMENT_LIST_STMT_EXPR (ret) = 1;
+
+  return ret;
+}
+
+tree
+c_finish_stmt_expr (tree body)
+{
+  tree ret, last, type;
+  tree *last_p;
+
+  body = c_end_compound_stmt (body, true);
+
+  /* Locate the last statement in BODY.  */
+  last = body, last_p = &body;
+  if (TREE_CODE (last) == BIND_EXPR)
+    {
+      last_p = &BIND_EXPR_BODY (last);
+      last = BIND_EXPR_BODY (last);
+    }
+  if (TREE_CODE (last) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i = tsi_last (last);
+      if (tsi_end_p (i))
+	{
+	  type = void_type_node;
+	  /* ??? Warn */
+	  goto no_expr;
+	}
+      else
+	{
+	  last_p = tsi_stmt_ptr (i);
+	  last = *last_p;
+	}
+    }
+
+  /* If the last statement is an EXPR_STMT, then unwrap it.  Otherwise
+     voidify_wrapper_expr will stuff it inside a MODIFY_EXPR and we'll
+     fail gimplification.  */
+  /* ??? Should we go ahead and perform voidify_wrapper_expr here?
+     We've got about all the information we need here.  All we'd have
+     to do even for proper type safety is to create, in effect,
+	( ({ ...; tmp = last; }), tmp )
+     I.e. a COMPOUND_EXPR with the rhs being the compiler temporary.
+     Not going to try this now, since it's not clear what should
+     happen (wrt bindings) with new temporaries at this stage.  It's
+     easier once we begin gimplification.  */
+  if (TREE_CODE (last) == EXPR_STMT)
+    *last_p = last = EXPR_STMT_EXPR (last);
+
+  /* Extract the type of said expression.  */
+  type = TREE_TYPE (last);
+  if (!type)
+    type = void_type_node;
+
+ no_expr:
+  /* If what's left is compound, make sure we've got a BIND_EXPR, and
+     that it has the proper type.  */
+  ret = body;
+  if (TREE_CODE (ret) == STATEMENT_LIST)
+    ret = build (BIND_EXPR, type, NULL, ret, NULL);
+  else if (TREE_CODE (ret) == BIND_EXPR)
+    TREE_TYPE (ret) = type;
+
+  return ret;
+}
+
+/* Begin and end compound statements.  This is as simple as pushing
+   and popping new statement lists from the tree.  */
+
+tree
+c_begin_compound_stmt (bool do_scope)
+{
+  tree stmt = push_stmt_list ();
+  if (do_scope)
+    {
+      push_scope ();
+      clear_last_expr ();
+    }
+  return stmt;
+}
+
+tree
+c_end_compound_stmt (tree stmt, bool do_scope)
+{
+  tree block = NULL;
+
+  if (do_scope)
+    {
+      if (c_dialect_objc ())
+	objc_clear_super_receiver ();
+      block = pop_scope ();
+    }
+
+  stmt = pop_stmt_list (stmt);
+  stmt = c_build_bind_expr (block, stmt);
+
+  /* If this compound statement is nested immediately inside a statement
+     expression, then force a BIND_EXPR to be created.  Otherwise we'll
+     do the wrong thing for ({ { 1; } }) or ({ 1; { } }).  In particular,
+     STATEMENT_LISTs merge, and thus we can lose track of what statement
+     was really last.  */
+  if (cur_stmt_list
+      && STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
+      && TREE_CODE (stmt) != BIND_EXPR)
+    {
+      stmt = build (BIND_EXPR, void_type_node, NULL, stmt, NULL);
+      TREE_SIDE_EFFECTS (stmt) = 1;
+    }
+
+  return stmt;
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    This function differs from `build' in several ways:

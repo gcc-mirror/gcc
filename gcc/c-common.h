@@ -27,20 +27,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 
 /* Usage of TREE_LANG_FLAG_?:
-   0: COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
-      TREE_NEGATED_INT (in INTEGER_CST).
+   0: TREE_NEGATED_INT (in INTEGER_CST).
       IDENTIFIER_MARKED (used by search routines).
-      SCOPE_BEGIN_P (in SCOPE_STMT)
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
-      NEW_FOR_SCOPE_P (in FOR_STMT)
       ASM_INPUT_P (in ASM_STMT)
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
+      STATEMENT_LIST_STMT_EXPR (in STATEMENT_LIST)
    2: unused
-   3: SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
-      COMPOUND_STMT_BODY_BLOCK (in COMPOUND_STMT)
-   4: SCOPE_PARTIAL_P (in SCOPE_STMT)
+   3: unused
+   4: unused
 */
 
 /* Reserved identifiers.  This is the union of all the keywords for C,
@@ -245,13 +242,9 @@ extern c_language_kind c_language;
 /* Information about a statement tree.  */
 
 struct stmt_tree_s GTY(()) {
-  /* The last statement added to the tree.  */
-  tree x_last_stmt;
-  /* The type of the last expression statement.  (This information is
-     needed to implement the statement-expression extension.)  */
-  tree x_last_expr_type;
-  /* The last filename we recorded.  */
-  const char *x_last_expr_filename;
+  /* The current statment list being collected.  */
+  tree x_cur_stmt_list;
+
   /* In C++, Nonzero if we should treat statements as full
      expressions.  In particular, this variable is no-zero if at the
      end of a statement we should destroy any temporaries created
@@ -278,38 +271,17 @@ struct c_language_function GTY(()) {
   /* While we are parsing the function, this contains information
      about the statement-tree that we are building.  */
   struct stmt_tree_s x_stmt_tree;
-  /* The stack of SCOPE_STMTs for the current function.  */
-  tree x_scope_stmt_stack;
 };
 
-/* When building a statement-tree, this is the last statement added to
-   the tree.  */
+/* When building a statement-tree, this is the current statment list
+   being collected.  It's TREE_CHAIN is a back-pointer to the previous
+   statment list.  */
 
-#define last_tree (current_stmt_tree ()->x_last_stmt)
-
-/* The type of the last expression-statement we have seen.  */
-
-#define last_expr_type (current_stmt_tree ()->x_last_expr_type)
-
-/* The name of the last file we have seen.  */
-
-#define last_expr_filename (current_stmt_tree ()->x_last_expr_filename)
-
-/* LAST_TREE contains the last statement parsed.  These are chained
-   together through the TREE_CHAIN field, but often need to be
-   re-organized since the parse is performed bottom-up.  This macro
-   makes LAST_TREE the indicated SUBSTMT of STMT.  */
-
-#define RECHAIN_STMTS(stmt, substmt)		\
-  do {						\
-    substmt = TREE_CHAIN (stmt);		\
-    TREE_CHAIN (stmt) = NULL_TREE;		\
-    last_tree = stmt;				\
-  } while (0)
+#define cur_stmt_list (current_stmt_tree ()->x_cur_stmt_list)
 
 /* Language-specific hooks.  */
 
-extern int (*lang_gimplify_stmt) (tree *, tree *);
+extern int (*lang_gimplify_stmt) (tree *);
 extern void (*lang_expand_function_end) (void);
 
 /* Callback that determines if it's ok for a function to have no
@@ -320,12 +292,12 @@ extern void push_file_scope (void);
 extern void pop_file_scope (void);
 extern int yyparse (void);
 extern stmt_tree current_stmt_tree (void);
-extern tree *current_scope_stmt_stack (void);
-extern void begin_stmt_tree (tree *);
+extern tree push_stmt_list (void);
+extern tree re_push_stmt_list (tree);
+extern tree pop_stmt_list (tree);
 extern tree add_stmt (tree);
 extern void add_decl_stmt (tree);
-extern tree add_scope_stmt (int, int);
-extern void finish_stmt_tree (tree *);
+extern void push_cleanup (tree, tree, bool);
 
 extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);
 extern void prep_stmt (tree);
@@ -891,11 +863,6 @@ extern void binary_op_error (enum tree_code);
  (((EXP) == 0) ? (fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0) : 0)
 
 extern tree c_expand_expr_stmt (tree);
-extern void c_expand_start_cond (tree, int, tree);
-extern void c_finish_then (void);
-extern void c_expand_start_else (void);
-extern void c_finish_else (void);
-extern void c_expand_end_cond (void);
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value (tree);
 extern tree fix_string_type (tree);
@@ -951,6 +918,11 @@ extern void finish_file	(void);
    their destructors run at the end of this statement.  (In C, this
    will always be false, since there are no destructors.)  */
 #define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
+
+/* Nonzero if a given STATEMENT_LIST represents the outermost binding
+   if a statement expression.  */
+#define STATEMENT_LIST_STMT_EXPR(NODE) \
+  TREE_LANG_FLAG_1 (STATEMENT_LIST_CHECK (NODE))
 
 /* IF_STMT accessors. These give access to the condition of the if
    statement, the then block of the if statement, and the else block
@@ -1019,53 +991,15 @@ extern void finish_file	(void);
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_STMT_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
 
-/* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
-#define SCOPE_BEGIN_P(NODE) \
-  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE)))
-
-/* Nonzero if this SCOPE_STMT is for the end of a scope.  */
-#define SCOPE_END_P(NODE) \
-  (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
-
-/* The BLOCK containing the declarations contained in this scope.  */
-#define SCOPE_STMT_BLOCK(NODE) \
-  (TREE_OPERAND (SCOPE_STMT_CHECK (NODE), 0))
-
-/* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
-#define SCOPE_NULLIFIED_P(NODE) \
-  (SCOPE_STMT_BLOCK ((NODE)) == NULL_TREE)
-
-/* Nonzero for a SCOPE_STMT which represents a lexical scope, but
-   which should be treated as non-existent from the point of view of
-   running cleanup actions.  */
-#define SCOPE_NO_CLEANUPS_P(NODE) \
-  (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
-
-/* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
-   For example, in:
-
-     S s;
-     l:
-     S s2;
-     goto l;
-
-   there is (implicitly) a new scope after `l', even though there are
-   no curly braces.  In particular, when we hit the goto, we must
-   destroy s2 and then re-construct it.  For the implicit scope,
-   SCOPE_PARTIAL_P will be set.  */
-#define SCOPE_PARTIAL_P(NODE) \
-  (TREE_LANG_FLAG_4 (SCOPE_STMT_CHECK (NODE)))
-
-/* The VAR_DECL to clean up in a CLEANUP_STMT.  */
-#define CLEANUP_DECL(NODE) \
+/* The body of the CLEANUP_STMT.  */
+#define CLEANUP_BODY(NODE) \
   TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
 /* The cleanup to run in a CLEANUP_STMT.  */
 #define CLEANUP_EXPR(NODE) \
   TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
-
-/* Nonzero if we want the new ISO rules for pushing a new scope for `for'
-   initialization variables.  */
-#define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
+/* The VAR_DECL to clean up in a CLEANUP_STMT.  */
+#define CLEANUP_DECL(NODE) \
+  TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 2)
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
@@ -1081,7 +1015,7 @@ enum c_tree_code {
    CLEANUP_STMT,	EXPR_STMT,	COMPOUND_STMT,	\
    DECL_STMT,		IF_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
-   BREAK_STMT,		CONTINUE_STMT,	SCOPE_STMT,	\
+   BREAK_STMT,		CONTINUE_STMT,			\
    SWITCH_STMT,		GOTO_STMT,	LABEL_STMT,	\
    ASM_STMT,		CASE_LABEL
 
@@ -1123,12 +1057,6 @@ extern tree build_case_label (tree, tree, tree);
 extern tree build_continue_stmt (void);
 extern tree build_break_stmt (void);
 extern tree build_return_stmt (tree);
-
-#define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
-
-/* Used by the C++ frontend to mark the block around the member
-   initializers and cleanups.  */
-#define COMPOUND_STMT_BODY_BLOCK(NODE)	TREE_LANG_FLAG_3 (NODE)
 
 extern void c_expand_asm_operands (tree, tree, tree, tree, int, location_t);
 
@@ -1204,14 +1132,13 @@ extern bool c_dump_tree (void *, tree);
 
 extern int c_gimplify_expr (tree *, tree *, tree *);
 extern tree c_walk_subtrees (tree*, int*, walk_tree_fn, void*, void*);
-extern int c_tree_chain_matters_p (tree);
 
 extern void c_warn_unused_result (tree *);
 
 /* In c-simplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_stmt (tree *);
-extern tree stmt_expr_last_stmt (tree);
+extern tree c_build_bind_expr (tree, tree);
 
 extern void pch_init (void);
 extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
@@ -1236,6 +1163,7 @@ extern tree objc_message_selector (void);
 extern tree lookup_objc_ivar (tree);
 extern void *get_current_scope (void);
 extern void objc_mark_locals_volatile (void *);
+extern void objc_clear_super_receiver (void);
 extern int objc_is_public (tree, tree);
 
 /* In c-ppoutput.c  */

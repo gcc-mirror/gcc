@@ -621,7 +621,7 @@ do_build_assign_ref (tree fndecl)
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree compound_stmt;
 
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+  compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
 
   if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type)
@@ -778,7 +778,7 @@ synthesize_method (tree fndecl)
   if (need_body)
     {
       tree compound_stmt;
-      compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+      compound_stmt = begin_compound_stmt (BCS_FN_BODY);
       finish_compound_stmt (compound_stmt);
     }
 

@@ -67,7 +67,7 @@ mflang_lookup_decl (const char* name)
 void
 mflang_flush_calls (tree enqueued_call_stmt_chain)
 {
-  tree fnname, t1, t2, body, block, scope;
+  tree fnname, t1, t2, cs;
 
   /* Short-circuit!  */
   if (enqueued_call_stmt_chain == NULL_TREE)
@@ -84,17 +84,9 @@ mflang_flush_calls (tree enqueued_call_stmt_chain)
   TREE_USED (current_function_decl) = 1;
   mf_mark (current_function_decl);
 
-  body = c_begin_compound_stmt ();
-  push_scope ();
-  clear_last_expr ();
-  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-
+  cs = c_begin_compound_stmt (true);
   c_expand_expr_stmt (enqueued_call_stmt_chain);
+  add_stmt (c_end_compound_stmt (cs, true));
 
-  scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  block = pop_scope ();
-  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
-  SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
-  RECHAIN_STMTS (body, COMPOUND_BODY (body));
   finish_function ();
 }

@@ -1970,7 +1970,7 @@ start_objects (int method_type, int initp)
     DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
   DECL_LANG_SPECIFIC (current_function_decl)->decl_flags.u2sel = 1;
 
-  body = begin_compound_stmt (/*has_no_scope=*/false);
+  body = begin_compound_stmt (BCS_FN_BODY);
 
   /* We cannot allow these functions to be elided, even if they do not
      have external linkage.  And, there's no point in deferring
@@ -2127,7 +2127,7 @@ start_static_storage_duration_function (unsigned count)
 		  SF_PRE_PARSED);
 
   /* Set up the scope of the outermost block in the function.  */
-  body = begin_compound_stmt (/*has_no_scope=*/false);
+  body = begin_compound_stmt (BCS_FN_BODY);
 
   /* This function must not be deferred because we are depending on
      its compilation to tell us what is TREE_SYMBOL_REFERENCED.  */
@@ -2307,7 +2307,7 @@ static void
 finish_static_initialization_or_destruction (tree guard_if_stmt)
 {
   finish_then_clause (guard_if_stmt);
-  finish_if_stmt ();
+  finish_if_stmt (guard_if_stmt);
 
   /* Now that we're done with DECL we don't need to pretend to be a
      member of its class any longer.  */

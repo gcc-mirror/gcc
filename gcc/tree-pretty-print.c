@@ -741,10 +741,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case TARGET_EXPR:
-      dump_generic_node (buffer, TYPE_NAME (TREE_TYPE (node)), spc, flags, false);
-      pp_character (buffer, '(');
+      pp_string (buffer, "TARGET_EXPR <");
+      dump_generic_node (buffer, TARGET_EXPR_SLOT (node), spc, flags, false);
+      pp_character (buffer, ',');
+      pp_space (buffer);
       dump_generic_node (buffer, TARGET_EXPR_INITIAL (node), spc, flags, false);
-      pp_character (buffer, ')');
+      pp_character (buffer, '>');
       break;
 
     case COND_EXPR:

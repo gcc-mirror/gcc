@@ -188,9 +188,7 @@ static void
 build_cdtor (int method_type, tree cdtors)
 {
   tree fnname = get_file_function_name (method_type);
-  tree body;
-  tree scope;
-  tree block;
+  tree cs;
 
   start_function (void_list_node,
 		  build_nt (CALL_EXPR, fnname,
@@ -199,20 +197,12 @@ build_cdtor (int method_type, tree cdtors)
 		  NULL_TREE);
   store_parm_decls ();
 
-  body = c_begin_compound_stmt ();
-  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
+  cs = c_begin_compound_stmt (true);
 
   for (; cdtors; cdtors = TREE_CHAIN (cdtors))
-    add_stmt (build_stmt (EXPR_STMT,
-			  build_function_call (TREE_VALUE (cdtors), 0)));
+    add_stmt (build_function_call (TREE_VALUE (cdtors), 0));
 
-  scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-
-  block = make_node (BLOCK);
-  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
-  SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
-
-  RECHAIN_STMTS (body, COMPOUND_BODY (body));
+  add_stmt (c_end_compound_stmt (cs, true));
 
   finish_function ();
 }
