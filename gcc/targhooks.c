@@ -55,6 +55,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "tree.h"
 #include "expr.h"
+#include "output.h"
 #include "toplev.h"
 #include "function.h"
 #include "target.h"
