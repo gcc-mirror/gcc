@@ -569,12 +569,17 @@ namespace __gnu_debug
 	  {
 	    // [__start, __end) denotes the next word
 	    __end = __start;
-	    while (isalnum(*__end)) ++__end;
-	    if (__start == __end) ++__end;
-	    if (isspace(*__end)) ++__end;
+	    while (isalnum(*__end))
+	      ++__end;
+	    if (__start == __end)
+	      ++__end;
+	    if (isspace(*__end))
+	      ++__end;
 	    
-	    assert(__end - __start + 1< __bufsize);
-	    _M_format_word(__buf, __end - __start + 1, "%s", __start);
+	    const ptrdiff_t __len = __end - __start;
+	    assert(__len < __bufsize);
+	    memmove(__buf, __start, __len);
+	    __buf[__len] = '\0';
 	    _M_print_word(__buf);
 	    __start = __end;
 	    

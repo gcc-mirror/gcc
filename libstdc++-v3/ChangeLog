@@ -1,3 +1,11 @@
+2004-08-07  Jonathan Wakely  <redi@gcc.gnu.org>
+	    Paolo Carlini  <pcarlini@suse.de>
+	
+	* src/debug.cc (_Error_formatter::_M_print_string): In order
+	to print individual words from __string, _M_format_word can't
+	be called since may be just sprintf, thus ignoring completely
+	__n: instead, use memmove and append '\0' by hand.
+
 2004-08-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/c_locale.h (__convert_from_v): Don't
