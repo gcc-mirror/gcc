@@ -8,6 +8,8 @@ Sun Feb 22 16:23:46 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.d
 
 Sun Mar  1 18:06:21 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* ginclude/va-ppc.h (va_arg): Fix typo in long long support.
+
 	* i386.c (reg_mentioned_in_mem): Fix dangling else statement.
 
 	* fold-const.c (fold_range_test): Always return a value.

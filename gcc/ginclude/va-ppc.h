@@ -134,7 +134,7 @@ __extension__ (*({							\
   else if (!__va_float_p (TYPE) && !__va_aggregate_p (TYPE)		\
 	   && (AP)->gpr + __va_size(TYPE) <= 8				\
 	   && (!__va_longlong_p(TYPE)					\
-	       || (AP)->gpr + __va_size(TYPE) <= 7))			\
+	       || (AP)->gpr + __va_size(TYPE) <= 8))			\
     {									\
       if (__va_longlong_p(TYPE) && ((AP)->gpr & 1) != 0)		\
 	(AP)->gpr++;							\
