@@ -17287,8 +17287,7 @@ clean-target-libgcc:
 # Check target.
 
 .PHONY: check do-check
-check:
-	$(MAKE) do-check
+check: do-check
 
 # Only include modules actually being configured and built.
 do-check: maybe-check-gcc  \
@@ -17605,74 +17604,6 @@ TAGS: do-TAGS
 # --------------------------------------
 # Modules which run on the build machine
 # --------------------------------------
-
-.PHONY: configure-build-fixincludes maybe-configure-build-fixincludes
-maybe-configure-build-fixincludes:
-configure-build-fixincludes:
-	@test ! -f $(BUILD_SUBDIR)/fixincludes/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/fixincludes ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	AR="$(AR_FOR_BUILD)"; export AR; \
-	AS="$(AS_FOR_BUILD)"; export AS; \
-	CC="$(CC_FOR_BUILD)"; export CC; \
-	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
-	CXX="$(CXX_FOR_BUILD)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
-	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
-	LD="$(LD_FOR_BUILD)"; export LD; \
-	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
-	NM="$(NM_FOR_BUILD)"; export NM; \
-	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
-	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
-	echo Configuring in $(BUILD_SUBDIR)/fixincludes; \
-	cd "$(BUILD_SUBDIR)/fixincludes" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
-	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/fixincludes "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
-	  srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	  libsrcdir="$$s/fixincludes"; \
-	fi; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)" \
-	  || exit 1
-
-.PHONY: all-build-fixincludes maybe-all-build-fixincludes
-maybe-all-build-fixincludes:
-all-build-fixincludes: configure-build-fixincludes
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	(cd $(BUILD_SUBDIR)/fixincludes && $(MAKE) all)
 
 .PHONY: configure-build-libiberty maybe-configure-build-libiberty
 maybe-configure-build-libiberty:
@@ -23722,8 +23653,7 @@ check-gcc-c++:
 	fi
 
 .PHONY: check-c++
-check-c++:
-	$(MAKE) check-target-libstdc++-v3 check-gcc-c++
+check-c++: check-target-libstdc++-v3 check-gcc-c++
 
 .PHONY: install-gcc maybe-install-gcc
 maybe-install-gcc:

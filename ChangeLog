@@ -1,3 +1,9 @@
+2003-08-01  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Makefile.tpl (check, check-c++): Express dependencies using
+	dependencies rather than commands.
+	* Makefile.in: Regenerate.
+
 2003-08-01  Andrew Cagney  <cagney@redhat.com>
 
 	* configure.in (noconfigdirs): Do not add GDB when m32r-*-*.
