@@ -1067,11 +1067,17 @@ demangle_template (work, mangled, tname, trawname)
 		{
 		  char *p = xmalloc (symbol_len + 1), *q;
 		  strncpy (p, *mangled, symbol_len);
+		  p [symbol_len] = '\0';
 		  q = cplus_demangle (p, work->options);
 		  string_appendn (tname, "&", 1);
-		  string_append (tname, q);
+		  if (q)
+		    {
+		      string_append (tname, q);
+		      free (q);
+		    }
+		  else
+		    string_append (tname, p);
 		  free (p);
-		  free (q);
 		}
 	      *mangled += symbol_len;
 	    }
