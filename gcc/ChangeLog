@@ -1,8 +1,27 @@
+Thu Mar 11 10:29:50 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (add_AT_lbl_offset): Rename from add_AT_section_offset.
+	(print_die, size_of_die, value_format, output_die): Adjust.
+
+Thu Mar 11 10:27:42 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* dwarf2out.c (TEXT_SECTION_LAABEL, DEBUG_LINE_SECTION_LABEL,
+	DEBUG_INFO_SECTION_LABEL, ABBREV_SECTION_LABEL, 
+	text_section_laabel, debug_line_section_label,
+	debug_info_section_label, abbrev_section_label): New.
+	(output_compilation_unit_header):  Emit label associated
+	with section instead of section name itself.
+	(out_pubnames, output_aranges, output_line_info, 
+	dwarf2out_finish): Likewise.
+	(dwarf2out_init): Build internal label names for sections
+	from static labels.
+
 Thu Mar 11 17:28:32 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (mulsi3): End mul.l sequence with a no-op move.
 
 Thu Mar 11 08:52:02 1999  Bruce Korb <korb@datadesign.com>
+
 	* Makefile.in: activated fixinc/mkfixinc.sh
 	* configure.in: activated fixinc/mkfixinc.sh
 
