@@ -1,3 +1,9 @@
+2000-11-01  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.ext/namedret1.C: New.
+	* g++.old-deja/g++.ext/namedret2.C: New.
+	* g++.old-deja/g++.ext/namedret3.C: New.
+
 2000-10-31  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* gcc.c-torture/compile/920501-7.c: Remove 'CYGNUS LOCAL' markers.
