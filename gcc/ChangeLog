@@ -1,3 +1,8 @@
+2001-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (assign_parms): Set last_named only for last named
+	argument.
+
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Use the GFDL.  Include years from old install

@@ -4307,16 +4307,25 @@ assign_parms (fndecl)
       tree passed_type = DECL_ARG_TYPE (parm);
       tree nominal_type = TREE_TYPE (parm);
       int pretend_named;
+      int last_named = 0, named_arg;
 
-      /* Set LAST_NAMED if this is last named arg before some
+      /* Set LAST_NAMED if this is last named arg before last
 	 anonymous args.  */
-      int last_named = ((TREE_CHAIN (parm) == 0
-			 || DECL_NAME (TREE_CHAIN (parm)) == 0)
-			&& (stdarg || current_function_varargs));
+      if (stdarg || current_function_varargs)
+	{
+	  tree tem;
+
+	  for (tem = TREE_CHAIN (parm); tem; tem = TREE_CHAIN (tem))
+	    if (DECL_NAME (tem))
+	      break;
+
+	  if (tem == 0)
+	    last_named = 1;
+	}
       /* Set NAMED_ARG if this arg should be treated as a named arg.  For
 	 most machines, if this is a varargs/stdarg function, then we treat
 	 the last named arg as if it were anonymous too.  */
-      int named_arg = STRICT_ARGUMENT_NAMING ? 1 : ! last_named;
+      named_arg = STRICT_ARGUMENT_NAMING ? 1 : ! last_named;
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors

@@ -1,3 +1,7 @@
+2001-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/other/stdarg1.C: New test.
+
 2001-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.c-torture/execute/builtin-prefetch-1.c: New test.
