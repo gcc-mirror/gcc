@@ -7355,14 +7355,14 @@ sh_initialize_trampoline (tramp, fnaddr, cxt)
       emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, quad0, 0),
 				 gen_rtx_SUBREG (V2HImode, fnaddr, 0),
 				 movishori));
-      emit_insn (gen_rotldi3_mextr (quad0, quad0,
+      emit_insn (gen_rotrdi3_mextr (quad0, quad0,
 				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
       emit_insn (gen_ashldi3_media (quad0, quad0, GEN_INT (2)));
       emit_move_insn (gen_rtx_MEM (DImode, tramp), quad0);
       emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, cxtload, 0),
 				 gen_rtx_SUBREG (V2HImode, cxt, 0),
 				 movishori));
-      emit_insn (gen_rotldi3_mextr (cxtload, cxtload,
+      emit_insn (gen_rotrdi3_mextr (cxtload, cxtload,
 				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
       emit_insn (gen_ashldi3_media (cxtload, cxtload, GEN_INT (2)));
       if (TARGET_LITTLE_ENDIAN)
