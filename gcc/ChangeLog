@@ -1,3 +1,7 @@
+2000-09-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gthr-dce.h (__gthread_objc_mutex_deallocate): Free mutex->backend.
+
 2000-09-05  Jason Merrill  <jason@redhat.com>
 
 	* c-decl.c (finish_incomplete_decl): Don't call complete_array_type
