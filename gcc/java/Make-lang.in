@@ -394,14 +394,16 @@ rmiregistry.pod: java/gcj.texi
 # Install the man pages.
 java.install-man: installdirs \
                   $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext) \
-                  $(DESTDIR)$(man1dir)/gcjh$(man1ext) \
-                  $(DESTDIR)$(man1dir)/jv-scan$(man1ext) \
-                  $(DESTDIR)$(man1dir)/jcf-dump$(man1ext) \
-                  $(DESTDIR)$(man1dir)/gij$(man1ext) \
-                  $(DESTDIR)$(man1dir)/jv-convert$(man1ext) \
-                  $(DESTDIR)$(man1dir)/jv-convert$(man1ext) \
-                  $(DESTDIR)$(man1dir)/rmic$(man1ext) \
-                  $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
+		  $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS:%=doc/%.1) \
+		  doc/gij.1 doc/jv-convert.1 doc/rmic.1 doc/rmiregistry.1
+	for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS) \
+		gij jv-convert rmic rmiregistry ; do \
+	  tool_transformed_name=`echo $$tool|sed '$(program_transform_name)'`; \
+	  man_name=$(DESTDIR)$(man1dir)/$${tool_transformed_name}$(man1ext); \
+	  rm -f $$man_name ; \
+	  $(INSTALL_DATA) doc/$${tool}.1 $$man_name; \
+	  chmod a-x $$man_name ; \
+	done
 
 $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext): doc/gcj.1
 	-rm -f $@

@@ -1,3 +1,16 @@
+2004-02-22  Matthias Klose  <doko@debian.org>
+
+	Taken from mainline:
+
+	2004-02-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in: Install man pages under the same names
+	(possibly transformed) as the program they document.
+
+	2004-02-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (java.install-man): Add extra dependencies.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* typeck.c: Update copyright.
@@ -8,7 +21,7 @@
 
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir). 
+	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir).
 
 2004-01-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -30,11 +43,11 @@
 	* Make-lang.in: Replace $(docdir) with doc.
 	(java.info, java.srcinfo, java.man, java.srcman): New rules.
 	(java.install-man): Revamp rule.
-	
+
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_TARGET_INSTALL_NAME, 
-	GCJH_TARGET_INSTALL_NAME): Define via a immediate $(shell) 
+	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_TARGET_INSTALL_NAME,
+	GCJH_TARGET_INSTALL_NAME): Define via a immediate $(shell)
 	instead of deferred backquote.
 
 2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -90,7 +103,7 @@
 	using indirect dis[atch.
 	(java_decl_ok_for_sibcall): Use output_class, not current_class.
 	(java_get_callee_fndecl): Use class local atable.
-	* jcf-parse.c 
+	* jcf-parse.c
 	(always_initialize_class_p): Decl moved to java-tree.h.
 	(HANDLE_CLASS_INFO): Set output_class.
 	(read_class): Likewise.
@@ -138,13 +151,13 @@
 	Make otable, atable, and ctable class local rather than global.
 	(emit_catch_table): Make otable, atable, and ctable class local
 	rather than global.
-		
+
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parse.y (catch_clause_parameter): Fix typo.
 
 	PR java/13404
-	* parse.y: (catch_clause_parameter): Return early if $3, aka 
+	* parse.y: (catch_clause_parameter): Return early if $3, aka
 	formal_parameter, is null.
 
 2003-12-20  Kazu Hirata  <kazu@cs.umass.edu>
