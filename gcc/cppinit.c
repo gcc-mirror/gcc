@@ -87,7 +87,6 @@ struct cpp_pending
   } while (0)
 #endif
 
-static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
 static void init_library		PARAMS ((void));
@@ -1136,14 +1135,8 @@ new_pending_directive (pend, text, handler)
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
 #define COMMAND_LINE_OPTIONS                                                  \
-  DEF_OPT("-help",                    0,      OPT__help)                      \
-  DEF_OPT("-target-help",             0,      OPT_target__help)               \
-  DEF_OPT("-version",                 0,      OPT__version)                   \
   DEF_OPT("A",                        no_ass, OPT_A)                          \
-  DEF_OPT("C",                        0,      OPT_C)                          \
-  DEF_OPT("CC",                       0,      OPT_CC)                         \
   DEF_OPT("D",                        no_mac, OPT_D)                          \
-  DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("M",                        0,      OPT_M)                          \
   DEF_OPT("MD",                       no_fil, OPT_MD)                         \
@@ -1154,10 +1147,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
-  DEF_OPT("P",                        0,      OPT_P)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
-  DEF_OPT("d",                        no_arg, OPT_d)                          \
-  DEF_OPT("h",                        0,      OPT_h)                          \
   DEF_OPT("idirafter",                no_dir, OPT_idirafter)                  \
   DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
   DEF_OPT("include",                  no_fil, OPT_include)                    \
@@ -1170,8 +1160,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("lang-c++",                 0,      OPT_lang_cplusplus)             \
   DEF_OPT("lang-c89",                 0,      OPT_lang_c89)                   \
   DEF_OPT("lang-objc",                0,      OPT_lang_objc)                  \
-  DEF_OPT("nostdinc",                 0,      OPT_nostdinc)                   \
-  DEF_OPT("nostdinc++",               0,      OPT_nostdincplusplus)           \
   DEF_OPT("o",                        no_fil, OPT_o)                          \
   DEF_OPT("remap",                    0,      OPT_remap)                      \
   DEF_OPT("std=c++98",                0,      OPT_std_cplusplus98)            \
@@ -1184,11 +1172,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("std=iso9899:1990",         0,      OPT_std_iso9899_1990)           \
   DEF_OPT("std=iso9899:199409",       0,      OPT_std_iso9899_199409)         \
   DEF_OPT("std=iso9899:1999",         0,      OPT_std_iso9899_1999)           \
-  DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)           \
-  DEF_OPT("traditional-cpp",	      0,      OPT_traditional_cpp)            \
-  DEF_OPT("trigraphs",                0,      OPT_trigraphs)                  \
-  DEF_OPT("v",                        0,      OPT_v)                          \
-  DEF_OPT("w",                        0,      OPT_w)
+  DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)
 
 #define DEF_OPT(text, msg, code) code,
 enum opt_code
@@ -1334,47 +1318,12 @@ cpp_handle_option (pfile, argc, argv)
 	{
 	case N_OPTS: /* Shut GCC up.  */
 	  break;
-	case OPT_w:
-	  CPP_OPTION (pfile, inhibit_warnings) = 1;
-	  break;
-	case OPT_h:
-	case OPT__help:
-	  print_help ();
-	  /* fall through */
-	case OPT_target__help:
-	case OPT__version:
-	  /* Nothing to do for these cases, but we need to be sure
-	     help_only is set.  */
-	  CPP_OPTION (pfile, help_only) = 1;
-	  break;
-	case OPT_v:
-	  CPP_OPTION (pfile, verbose) = 1;
-	  break;
 
-	case OPT_C:
-	  CPP_OPTION (pfile, discard_comments) = 0;
-	  break;
-	case OPT_CC:
-	  CPP_OPTION (pfile, discard_comments) = 0;
-	  CPP_OPTION (pfile, discard_comments_in_macro_exp) = 0;
-	  break;
-	case OPT_P:
-	  CPP_OPTION (pfile, no_line_commands) = 1;
-	  break;
-	case OPT_H:
-	  CPP_OPTION (pfile, print_include_names) = 1;
-	  break;
 	case OPT_D:
 	  new_pending_directive (pend, arg, cpp_define);
 	  break;
-	case OPT_trigraphs:
-	  CPP_OPTION (pfile, trigraphs) = 1;
-	  break;
 	case OPT_remap:
 	  CPP_OPTION (pfile, remap) = 1;
-	  break;
-	case OPT_traditional_cpp:
-	  CPP_OPTION (pfile, traditional) = 1;
 	  break;
 	case OPT_iprefix:
 	  CPP_OPTION (pfile, include_prefix) = arg;
@@ -1416,15 +1365,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_std_c99:
 	  set_lang (pfile, CLK_STDC99);
 	  break;
-	case OPT_nostdinc:
-	  /* -nostdinc causes no default include directories.
-	     You must specify all include-file directories with -I.  */
-	  CPP_OPTION (pfile, no_standard_includes) = 1;
-	  break;
-	case OPT_nostdincplusplus:
-	  /* -nostdinc++ causes no default C++-specific include directories.  */
-	  CPP_OPTION (pfile, no_standard_cplusplus_includes) = 1;
-	  break;
 	case OPT_o:
 	  if (CPP_OPTION (pfile, out_fname) == NULL)
 	    CPP_OPTION (pfile, out_fname) = arg;
@@ -1433,31 +1373,6 @@ cpp_handle_option (pfile, argc, argv)
 	      cpp_error (pfile, DL_ERROR, "output filename specified twice");
 	      return argc;
 	    }
-	  break;
-	case OPT_d:
-	  /* Args to -d specify what parts of macros to dump.
-	     Silently ignore unrecognised options; they may
-	     be aimed at the compiler proper.  */
-	  {
-	    char c;
-
-	    while ((c = *arg++) != '\0')
-	      switch (c)
-		{
-		case 'M':
-		  CPP_OPTION (pfile, dump_macros) = dump_only;
-		  break;
-		case 'N':
-		  CPP_OPTION (pfile, dump_macros) = dump_names;
-		  break;
-		case 'D':
-		  CPP_OPTION (pfile, dump_macros) = dump_definitions;
-		  break;
-		case 'I':
-		  CPP_OPTION (pfile, dump_includes) = 1;
-		  break;
-		}
-	  }
 	  break;
 
 	case OPT_MG:
@@ -1750,104 +1665,4 @@ init_dependency_output (pfile)
     /* If -M or -MM was seen without -MF, default output to wherever
        was specified with -o.  out_fname is non-NULL here.  */
     CPP_OPTION (pfile, deps_file) = CPP_OPTION (pfile, out_fname);
-}
-
-/* Handle --help output.  */
-static void
-print_help ()
-{
-  /* To keep the lines from getting too long for some compilers, limit
-     to about 500 characters (6 lines) per chunk.  */
-  fputs (_("\
-Switches:\n\
-  -include <file>           Include the contents of <file> before other files\n\
-  -imacros <file>           Accept definition of macros in <file>\n\
-  -iprefix <path>           Specify <path> as a prefix for next two options\n\
-  -iwithprefix <dir>        Add <dir> to the end of the system include path\n\
-  -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n\
-  -isystem <dir>            Add <dir> to the start of the system include path\n\
-"), stdout);
-  fputs (_("\
-  -idirafter <dir>          Add <dir> to the end of the system include path\n\
-  -I <dir>                  Add <dir> to the end of the main include path\n\
-  -I-                       Fine-grained include path control; see info docs\n\
-  -nostdinc                 Do not search system include directories\n\
-                             (dirs specified with -isystem will still be used)\n\
-  -nostdinc++               Do not search system include directories for C++\n\
-  -o <file>                 Put output into <file>\n\
-"), stdout);
-  fputs (_("\
-  -pedantic                 Issue all warnings demanded by strict ISO C\n\
-  -pedantic-errors          Issue -pedantic warnings as errors instead\n\
-  -trigraphs                Support ISO C trigraphs\n\
-  -lang-c                   Assume that the input sources are in C\n\
-  -lang-c89                 Assume that the input sources are in C89\n\
-"), stdout);
-  fputs (_("\
-  -lang-c++                 Assume that the input sources are in C++\n\
-  -lang-objc                Assume that the input sources are in ObjectiveC\n\
-  -lang-asm                 Assume that the input sources are in assembler\n\
-"), stdout);
-  fputs (_("\
-  -std=<std name>           Specify the conformance standard; one of:\n\
-                            gnu89, gnu99, c89, c99, iso9899:1990,\n\
-                            iso9899:199409, iso9899:1999\n\
-  -w                        Inhibit warning messages\n\
-  -Wtrigraphs               Warn if trigraphs are encountered\n\
-  -Wno-trigraphs            Do not warn about trigraphs\n\
-  -Wcomment{s}              Warn if one comment starts inside another\n\
-"), stdout);
-  fputs (_("\
-  -Wno-comment{s}           Do not warn about comments\n\
-  -Wtraditional             Warn about features not present in traditional C\n\
-  -Wno-traditional          Do not warn about traditional C\n\
-  -Wundef                   Warn if an undefined macro is used by #if\n\
-  -Wno-undef                Do not warn about testing undefined macros\n\
-  -Wimport                  Warn about the use of the #import directive\n\
-"), stdout);
-  fputs (_("\
-  -Wno-import               Do not warn about the use of #import\n\
-  -Werror                   Treat all warnings as errors\n\
-  -Wno-error                Do not treat warnings as errors\n\
-  -Wsystem-headers          Do not suppress warnings from system headers\n\
-  -Wno-system-headers       Suppress warnings from system headers\n\
-  -Wall                     Enable all preprocessor warnings\n\
-"), stdout);
-  fputs (_("\
-  -M                        Generate make dependencies\n\
-  -MM                       As -M, but ignore system header files\n\
-  -MD                       Generate make dependencies and compile\n\
-  -MMD                      As -MD, but ignore system header files\n\
-  -MF <file>                Write dependency output to the given file\n\
-  -MG                       Treat missing header file as generated files\n\
-"), stdout);
-  fputs (_("\
-  -MP			    Generate phony targets for all headers\n\
-  -MQ <target>              Add a MAKE-quoted target\n\
-  -MT <target>              Add an unquoted target\n\
-"), stdout);
-  fputs (_("\
-  -D<macro>                 Define a <macro> with string '1' as its value\n\
-  -D<macro>=<val>           Define a <macro> with <val> as its value\n\
-  -A<question>=<answer>     Assert the <answer> to <question>\n\
-  -A-<question>=<answer>    Disable the <answer> to <question>\n\
-  -U<macro>                 Undefine <macro> \n\
-  -v                        Display the version number\n\
-"), stdout);
-  fputs (_("\
-  -H                        Print the name of header files as they are used\n\
-  -C                        Do not discard comments\n\
-  -dM                       Display a list of macro definitions active at end\n\
-  -dD                       Preserve macro definitions in output\n\
-  -dN                       As -dD except that only the names are preserved\n\
-  -dI                       Include #include directives in the output\n\
-"), stdout);
-  fputs (_("\
-  -fpreprocessed            Treat the input file as already preprocessed\n\
-  -ftabstop=<number>        Distance between tab stops for column reporting\n\
-  -P                        Do not generate #line directives\n\
-  -remap                    Remap file names when including files\n\
-  --version                 Display version information\n\
-  -h or --help              Display this information\n\
-"), stdout);
 }

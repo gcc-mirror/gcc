@@ -395,11 +395,6 @@ struct cpp_options
   /* Nonzero means handle C++ alternate operator names.  */
   unsigned char operator_names;
 
-  /* True if --help, --version or --target-help appeared in the
-     options.  Stand-alone CPP should then bail out after option
-     parsing; drivers might want to continue printing help.  */
-  unsigned char help_only;
-
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
