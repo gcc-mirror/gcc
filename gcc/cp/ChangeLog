@@ -1,3 +1,7 @@
+Wed May  6 19:27:09 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Don't tsubst the type of an IDENTIFIER_NODE.
+
 Wed May  6 16:49:48 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (call.o, class.o, decl.o, decl2.o, errfn.o, error.o,
