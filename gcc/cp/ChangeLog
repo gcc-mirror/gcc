@@ -1,3 +1,10 @@
+1999-11-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (finish_file): Call expand_body for inline functions
+	that will be written out but that do not yet have RTL.
+	* semantics.c (expand_body): Do not generate RTL For inline
+	functions that do not yet need to be written out.
+
 1999-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (CXX_SRCS): Add optimize.c.  

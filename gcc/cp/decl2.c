@@ -3531,6 +3531,36 @@ finish_file ()
 	      && DECL_INITIAL (decl)
 	      && (DECL_NEEDED_P (decl) || !DECL_COMDAT (decl)))
 	    DECL_EXTERNAL (decl) = 0;
+
+	  /* If we're going to need to write this function out, and
+	     there's already a body for it, create RTL for it now.
+	     (There might be no body if this is a method we haven't
+	     gotten around to synthesizing yet.)  */
+	  if (!DECL_EXTERNAL (decl)
+	      && (DECL_NEEDED_P (decl) || !DECL_COMDAT (decl))
+	      && DECL_SAVED_TREE (decl)
+	      && !DECL_SAVED_INSNS (decl)
+	      && !TREE_ASM_WRITTEN (decl))
+	    {
+	      int saved_not_really_extern;
+
+	      /* When we call finish_function in expand_body, it will
+		 try to reset DECL_NOT_REALLY_EXTERN so we save and
+		 restore it here.  */
+	      saved_not_really = DECL_NOT_REALLY_EXTERN (decl);
+	      /* Generate RTL for this function now that we know we
+		 need it.  */
+	      expand_body (decl);
+	      /* Undo the damage done by finish_function.  */
+	      DECL_EXTERNAL (decl) = 0;
+	      DECL_NOT_REALLY_EXTERN (decl) = saved_not_really_extern;
+	      /* If we're compiling -fsyntax-only pretend that this
+		 function has been written out so that we don't try to
+		 expand it again.  */
+	      if (flag_syntax_only)
+		TREE_ASM_WRITTEN (decl) = 1;
+	      reconsider = 1;
+	    }
 	}
 
       if (saved_inlines_used
