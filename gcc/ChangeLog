@@ -1,3 +1,14 @@
+2004-08-19  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.c (arm_gen_load_multiple): Use
+	adjust_automodify_address.  Take base memory and offset instead
+	of unchanging/struct/scalar bits.
+	(arm_gen_store_multiple): Likewise.
+	(arm_gen_movmemqi): Use adjust_automodify_address.
+	* config/arm/arm-protos.h: Update decls.
+	* config/arm/arm.md (load_multiple): Update arm_gen_load_multiple call.
+	(store_multiple): Similarly.
+
 2004-08-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regclass.c (globalize_reg): Update call_really_used_regs.
