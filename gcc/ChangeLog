@@ -1,3 +1,9 @@
+Tue Jun 30 06:02:07 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (count_cond): New function.
+	(fold): Don't try to build COND_EXPR from binary op when both sides
+	are COND_EXPR unless not nested too deeply.
+
 Thu Jun 25 09:54:55 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* arm.h (REG_ALLOC_ORDER): Add ARG_POINTER_REGNUM, noticed by
