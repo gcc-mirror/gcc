@@ -1,3 +1,8 @@
+2005-02-23  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR libffi/20104
+	* testsuite/libffi.call/return_ll1.c: New test case.
+
 2005-02-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/libffi.call/cls_align_longdouble.c: Remove dg-options.
