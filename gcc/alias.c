@@ -1002,12 +1002,6 @@ init_alias_analysis ()
       /* Assume nothing will change this iteration of the loop.  */
       changed = 0;
 
-      /* Wipe the potential alias information clean for this pass.  */
-      bzero ((char *) new_reg_base_value, reg_base_value_size * sizeof (rtx));
-
-      /* Wipe the reg_seen array clean.  */
-      bzero ((char *) reg_seen, reg_base_value_size);
-
       /* We want to assign the same IDs each iteration of this loop, so
 	 start counting from zero each iteration of the loop.  */
       unique_id = 0;
@@ -1016,43 +1010,56 @@ init_alias_analysis ()
 	 loop, so we're copying arguments.  */
       copying_arguments = 1;
 
-      /* Mark all hard registers which may contain an address.
-	 The stack, frame and argument pointers may contain an address.
-	 An argument register which can hold a Pmode value may contain
-	 an address even if it is not in BASE_REGS.
+      /* Only perform initialization of the arrays if we're actually
+	 performing alias analysis. */
+      if (flag_alias_check)
+	{
+	  /* Wipe the potential alias information clean for this pass.  */
+	  bzero ((char *) new_reg_base_value,
+		 reg_base_value_size * sizeof (rtx));
 
-	 The address expression is VOIDmode for an argument and
-	 Pmode for other registers.  */
+	  /* Wipe the reg_seen array clean.  */
+	  bzero ((char *) reg_seen, reg_base_value_size);
+
+	  /* Mark all hard registers which may contain an address.
+	     The stack, frame and argument pointers may contain an address.
+	     An argument register which can hold a Pmode value may contain
+	     an address even if it is not in BASE_REGS.
+
+	     The address expression is VOIDmode for an argument and
+	     Pmode for other registers.  */
 #ifndef OUTGOING_REGNO
 #define OUTGOING_REGNO(N) N
 #endif
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	/* Check whether this register can hold an incoming pointer
-	   argument.  FUNCTION_ARG_REGNO_P tests outgoing register
-	   numbers, so translate if necessary due to register windows. */
-	if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i)) && HARD_REGNO_MODE_OK (i, Pmode))
-	  new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
-					   gen_rtx (REG, Pmode, i));
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    /* Check whether this register can hold an incoming pointer
+	       argument.  FUNCTION_ARG_REGNO_P tests outgoing register
+	       numbers, so translate if necessary due to register windows. */
+	    if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
+		&& HARD_REGNO_MODE_OK (i, Pmode))
+	      new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
+					       gen_rtx (REG, Pmode, i));
 
-      new_reg_base_value[STACK_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
-      new_reg_base_value[ARG_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
-      new_reg_base_value[FRAME_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
+	  new_reg_base_value[STACK_POINTER_REGNUM]
+	    = gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
+	  new_reg_base_value[ARG_POINTER_REGNUM]
+	    = gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
+	  new_reg_base_value[FRAME_POINTER_REGNUM]
+	    = gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
+	  new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+	    = gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
 #endif
-      if (struct_value_incoming_rtx
-	  && GET_CODE (struct_value_incoming_rtx) == REG)
-      new_reg_base_value[REGNO (struct_value_incoming_rtx)]
-	= gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
+	  if (struct_value_incoming_rtx
+	      && GET_CODE (struct_value_incoming_rtx) == REG)
+	    new_reg_base_value[REGNO (struct_value_incoming_rtx)]
+	      = gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
 
-      if (static_chain_rtx
-	  && GET_CODE (static_chain_rtx) == REG)
-      new_reg_base_value[REGNO (static_chain_rtx)]
-	= gen_rtx (ADDRESS, Pmode, static_chain_rtx);
+	  if (static_chain_rtx
+	      && GET_CODE (static_chain_rtx) == REG)
+	    new_reg_base_value[REGNO (static_chain_rtx)]
+	      = gen_rtx (ADDRESS, Pmode, static_chain_rtx);
+	}
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -1089,16 +1096,17 @@ init_alias_analysis ()
 	}
 
       /* Now propagate values from new_reg_base_value to reg_base_value.  */
-      for (i = 0; i < reg_base_value_size; i++)
-	{
-	  if (new_reg_base_value[i]
-	      && new_reg_base_value[i] != reg_base_value[i]
-	      && !rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
-	    {
-	      reg_base_value[i] = new_reg_base_value[i];
-	      changed = 1;
-	    }
-	}
+      if (flag_alias_check)
+	for (i = 0; i < reg_base_value_size; i++)
+	  {
+	    if (new_reg_base_value[i]
+	        && new_reg_base_value[i] != reg_base_value[i]
+	        && !rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
+	      {
+	        reg_base_value[i] = new_reg_base_value[i];
+	        changed = 1;
+	      }
+	  }
     }
 
   /* Fill in the remaining entries.  */

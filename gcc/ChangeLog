@@ -9,6 +9,9 @@ Sat Nov  1 21:43:00 1997  Mike Stump  (mrs@wrs.com)
 
 Sat Nov  1 19:15:28 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* alias.c (init_alias_analysis): Handle -fno-alias-check when
+	optimizing correctly.
+
 	* expr.c (expand_builtin_setjmp): Don't emit a SETJMP note
 	or set current_function_calls_setjmp anymore.
 
