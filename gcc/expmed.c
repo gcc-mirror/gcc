@@ -4559,11 +4559,28 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
       comparison
 	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX);
-      if (GET_CODE (comparison) == CONST_INT)
-	return (comparison == const0_rtx ? const0_rtx
-		: normalizep == 1 ? const1_rtx
-		: normalizep == -1 ? constm1_rtx
-		: const_true_rtx);
+      if (CONSTANT_P (comparison))
+	{
+	  if (GET_CODE (comparison) == CONST_INT)
+	    {
+	      if (comparison == const0_rtx)
+		return const0_rtx;
+	    }
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  else if (GET_CODE (comparison) == CONST_DOUBLE)
+	    {
+	      if (comparison == CONST0_RTX (GET_MODE (comparison)))
+		return const0_rtx;
+	    }
+#endif
+	  else
+	    abort ();
+	  if (normalizep == 1)
+	    return const1_rtx;
+	  if (normalizep == -1)
+	    return constm1_rtx;
+	  return const_true_rtx;
+	}
 
       /* The code of COMPARISON may not match CODE if compare_from_rtx
 	 decided to swap its operands and reverse the original code.
