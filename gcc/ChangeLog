@@ -1,3 +1,10 @@
+Mon Jun 21 06:22:21 1999  Mark Elbrecht <snowball3@bigfoot.com>
+
+	* i386/djgpp.h (LIB_SPEC): New.
+	(STARTFILE_SPEC): New.
+
+	* i386/xm-djgpp.h (NO_SYS_SIGLIST): Deleted. Now obsolete.
+
 Mon Jun 21 06:19:33 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* fixinc/Makefile.in (gnu-regex.o): Do not define STDC_HEADERS in
