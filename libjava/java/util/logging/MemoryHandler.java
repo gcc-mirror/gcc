@@ -1,7 +1,5 @@
-/* MemoryHandler.java
-   -- a class for buffering log messages in a memory buffer
-
-Copyright (C) 2002 Free Software Foundation, Inc.
+/* MemoryHandler.java -- a class for buffering log messages in a memory buffer
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 

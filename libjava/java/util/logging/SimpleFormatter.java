@@ -1,7 +1,6 @@
-/* SimpleFormatter.java
-   -- a class for formatting log records into short human-readable messages
-
-Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* SimpleFormatter.java --
+   A class for formatting log records into short human-readable messages
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,9 +34,7 @@ module.  An independent module is a module which is not derived from
 or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version.
-
-*/
+exception statement from your version. */
 
 
 package java.util.logging;
