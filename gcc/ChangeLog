@@ -1,3 +1,8 @@
+2005-01-06  Roger Sayle  <roger@eyesopen.com>
+
+	* cfgrtl.c (rtl_delete_block): A basic block may be followed by
+	more than one barrier, in which case we should delete them all.
+
 2005-01-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gcc.c (process_command): Change year in 'gcc --version' to 2005.
