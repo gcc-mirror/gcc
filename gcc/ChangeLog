@@ -1,3 +1,7 @@
+2002-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* stmt.c: Fix typo in comment.
+
 Mon Oct 14 11:35:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-common.c (c_common_type_for_mode): Add V2HImode case.
