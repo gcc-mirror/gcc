@@ -3394,7 +3394,16 @@ subst (x, from, to, in_dest, unique_copy)
 	    }
 	  else if (fmt[i] == 'e')
 	    {
-	      if (COMBINE_RTX_EQUAL_P (XEXP (x, i), from))
+	      /* If this is a register being set, ignore it.  */
+	      new = XEXP (x, i);
+	      if (in_dest
+		  && (code == SUBREG || code == STRICT_LOW_PART
+		      || code == ZERO_EXTRACT)
+		  && i == 0
+		  && GET_CODE (new) == REG)
+		;
+
+	      else if (COMBINE_RTX_EQUAL_P (XEXP (x, i), from))
 		{
 		  /* In general, don't install a subreg involving two
 		     modes not tieable.  It can worsen register
