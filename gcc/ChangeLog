@@ -184,6 +184,22 @@
 	PR other/1963
 	* config/alpha/osf.h (SWITCHES_NEED_SPACES): Define.
 
+2004-04-30  Brian Ford  <ford@vss.fsi.com>
+            DJ Delorie  <dj@redhat.com>
+
+        * config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
+        (DWARF2_DEBUGGING_INFO): Define to enable.
+        (DBX_REGISTER_NUMBER): Define to use the svr4 register map for
+        DWARF2.
+        * configure.ac (Target-specific assembler checks)
+        <i[34567]86-*-[cygwin*|pe|mingw32*]>: New test for .secrel32
+        relocs.
+        * configure: Regenerate.
+        * config.in: Likewise.
+
+        * config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
+        (ASM_OUPUT_DWARF_OFFSET): Define.
+
 2004-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_emit_epilogue): Parameter added.
