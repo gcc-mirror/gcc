@@ -1135,7 +1135,9 @@ find_reg_note (insn, kind, datum)
 }
 
 /* Return the reg-note of kind KIND in insn INSN which applies to register
-   number REGNO, if any.  Return 0 if there is no such reg-note.  */
+   number REGNO, if any.  Return 0 if there is no such reg-note.  Note that
+   the REGNO of this NOTE need not be REGNO if REGNO is a hard register;
+   it might be the case that the note overlaps REGNO.  */
 
 rtx
 find_regno_note (insn, kind, regno)
@@ -1150,7 +1152,12 @@ find_regno_note (insn, kind, regno)
 	/* Verify that it is a register, so that scratch and MEM won't cause a
 	   problem here.  */
 	&& GET_CODE (XEXP (link, 0)) == REG
-	&& REGNO (XEXP (link, 0)) == regno)
+	&& REGNO (XEXP (link, 0)) <= regno
+	&& ((REGNO (XEXP (link, 0))
+	     + (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
+		: HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
+				    GET_MODE (XEXP (link, 0)))))
+	    > regno))
       return link;
   return 0;
 }
