@@ -1363,7 +1363,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
 main.o : main.c toplev.h
 
 rtl-error.o: rtl-error.c system.h $(RTL_H) $(INSN_ATTR_H) insn-config.h \
-   input.h toplev.h intl.h diagnostic.h
+   input.h toplev.h intl.h diagnostic.h $(CONFIG_H)
 
 rtl.o : rtl.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) real.h $(GGC_H) errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
