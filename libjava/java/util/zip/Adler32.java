@@ -81,7 +81,7 @@ package java.util.zip;
  * @since JDK 1.1
  *
  * @see InflaterInputStream
- * @see InflaterOutputStream
+ * @see DeflaterOutputStream
  */
 public class Adler32 implements Checksum
 {
