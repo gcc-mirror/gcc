@@ -97,7 +97,7 @@ extern const char *current_function_original_name;
     fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED));	\
   } while (0)
 
-/* The routine used to output string literals.
+/* The routine used to output string literals.  */
 
 #define ASCII_DATA_ASM_OP	"\t.byte\t"
 

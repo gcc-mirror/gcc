@@ -236,7 +236,7 @@ x86_64-*-*)
 hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
 	;;
-m68000-*-*)
+m680[02]0-*-*)
 	cpu_type=m68k
 	;;
 mips*-*-*)
@@ -1528,6 +1528,7 @@ i960-*-rtems)
 	;;
 i960-*-*)			# Default i960 environment.
 	use_collect2=yes
+	tmake_file=i960/t-960bare
 	c_target_objs="i960-c.o"
 	cxx_target_objs="i960-c.o"
 	;;
@@ -3149,7 +3150,7 @@ sparc86x-*-aout*)
 	tmake_file=sparc/t-sp86x
 	;;
 sparc86x-*-elf*)
-	tm_file="sparc/sol2.h sparc./elf.h sparc/sp86x-elf.h"
+	tm_file="sparc/sol2.h sparc/elf.h sparc/sp86x-elf.h"
 	tmake_file=sparc/t-sp86x
         extra_parts="crtbegin.o crtend.o"
 	;;
