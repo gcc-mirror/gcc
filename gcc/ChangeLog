@@ -1,3 +1,8 @@
+Wed Oct 21 09:58:51 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* c-common.c (c_apply_type_quals_to_decl): Don't crash when
+	`restrict' is applied to a non-pointer variable.
+
 Wed Oct 21 09:18:58 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* invoke.texi: Document -flang-isoc9x.
