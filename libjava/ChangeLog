@@ -1,4 +1,40 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
+ 
+	* gnu/java/util/prefs/FileBasedFactory.java,
+	gnu/java/util/prefs/MemmoryBasedFactory.java,
+	gnu/java/util/prefs/MemoryBasedPreferences.java,
+	gnu/java/util/prefs/NodeReader.java,
+	gnu/java/util/prefs/NodeWriter.java,
+	java/util/prefs/AbstractPreferences.java,
+	java/util/prefs/BackingStoreException.java,
+	java/util/prefs/InvalidPreferencesFormatException.java,
+	java/util/prefs/NodeChangeEvent.java,
+	java/util/prefs/NodeChangeListener.java,
+	java/util/prefs/PreferenceChangeEvent.java,
+	java/util/prefs/PreferenceChangeListener.java,
+	java/util/prefs/Preferences.java,
+	java/util/prefs/PreferencesFactory.java:
+	New files, all merged from classpath.
+	* Makefile.am
+	(ordinary_java_source_files): Added the following files:
+	gnu/java/util/prefs/FileBasedFactory.java,
+	gnu/java/util/prefs/MemmoryBasedFactory.java,
+	gnu/java/util/prefs/MemoryBasedPreferences.java,
+	gnu/java/util/prefs/NodeReader.java,
+	gnu/java/util/prefs/NodeWriter.java,
+	(core_java_source_files): Added the following files:
+	java/util/prefs/AbstractPreferences.java,
+	java/util/prefs/BackingStoreException.java,
+	java/util/prefs/InvalidPreferencesFormatException.java,
+	java/util/prefs/NodeChangeEvent.java,
+	java/util/prefs/NodeChangeListener.java,
+	java/util/prefs/PreferenceChangeEvent.java,
+	java/util/prefs/PreferenceChangeListener.java,
+	java/util/prefs/Preferences.java,
+	java/util/prefs/PreferencesFactory.java
+	* Makefile.in: Regenerated.
+ 
+2003-02-13  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetPermission.java
 	(NetPermission): Make doucmentation match the method declaration.

@@ -1620,6 +1620,15 @@ java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/WeakHashMap.java \
+java/util/prefs/NodeChangeListener.java \
+java/util/prefs/Preferences.java \
+java/util/prefs/PreferenceChangeListener.java \
+java/util/prefs/NodeChangeEvent.java \
+java/util/prefs/InvalidPreferencesFormatException.java \
+java/util/prefs/AbstractPreferences.java \
+java/util/prefs/BackingStoreException.java \
+java/util/prefs/PreferenceChangeEvent.java \
+java/util/prefs/PreferencesFactory.java \
 java/util/regex/Matcher.java \
 java/util/regex/Pattern.java \
 java/util/regex/PatternSyntaxException.java
@@ -1835,6 +1844,11 @@ gnu/java/text/SentenceBreakIterator.java \
 gnu/java/text/WordBreakIterator.java \
 gnu/java/util/DoubleEnumeration.java \
 gnu/java/util/EmptyEnumeration.java \
+gnu/java/util/prefs/MemoryBasedFactory.java \
+gnu/java/util/prefs/NodeReader.java \
+gnu/java/util/prefs/MemoryBasedPreferences.java \
+gnu/java/util/prefs/FileBasedFactory.java \
+gnu/java/util/prefs/NodeWriter.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -2912,7 +2926,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/text/SentenceBreakIterator.P \
 .deps/gnu/java/text/WordBreakIterator.P \
 .deps/gnu/java/util/DoubleEnumeration.P \
-.deps/gnu/java/util/EmptyEnumeration.P .deps/interpret.P \
+.deps/gnu/java/util/EmptyEnumeration.P \
+.deps/gnu/java/util/prefs/FileBasedFactory.P \
+.deps/gnu/java/util/prefs/MemoryBasedFactory.P \
+.deps/gnu/java/util/prefs/MemoryBasedPreferences.P \
+.deps/gnu/java/util/prefs/NodeReader.P \
+.deps/gnu/java/util/prefs/NodeWriter.P .deps/interpret.P \
 .deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
@@ -3604,6 +3623,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
 .deps/java/util/natResourceBundle.P .deps/java/util/natTimeZone.P \
+.deps/java/util/prefs/AbstractPreferences.P \
+.deps/java/util/prefs/BackingStoreException.P \
+.deps/java/util/prefs/InvalidPreferencesFormatException.P \
+.deps/java/util/prefs/NodeChangeEvent.P \
+.deps/java/util/prefs/NodeChangeListener.P \
+.deps/java/util/prefs/PreferenceChangeEvent.P \
+.deps/java/util/prefs/PreferenceChangeListener.P \
+.deps/java/util/prefs/Preferences.P \
+.deps/java/util/prefs/PreferencesFactory.P \
 .deps/java/util/regex/Matcher.P .deps/java/util/regex/Pattern.P \
 .deps/java/util/regex/PatternSyntaxException.P \
 .deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
