@@ -1,3 +1,8 @@
+2003-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* MAINTAINERS: Move self from write-after-approval to
+	build machinery (*.in).
+
 2003-07-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/11273
