@@ -1,3 +1,25 @@
+Sat Sep  4 20:40:19 1999  Richard Henderson  <rth@cygnus.com>
+	                  Bernd Schmidt <bernds@cygnus.co.uk>
+	                  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (stor-layout.o): Depend on ggc.h.
+	(expr.o): Depend on ggc.h.
+	(profile.o): Depend on ggc.h.
+	(stor-layout.o): Depend on ggc.h.
+	* emit-rtl.c (init_emit_once): Add gc roots.
+	* expr.c: Include ggc.h.
+	(emit_block_move): Add gc roots.
+	(clear_storage): Likewise.
+	* expr.h (init_stor_layout_once): New function.
+	* profile.c: Include ggc.h.
+	(init_arc_profiler): profiler_label is a root.
+	* scan.c (make_sstring_space): Trust xrealloc to function
+	correctly with first parameter NULL.
+	* stor-layout.c: Include ggc.h.
+	(set_sizetype): Add gc root.
+	(init_stor_layout_once): New function.
+	* toplev.c (compile_file): Call it.
+	
 Sat Sep  4 19:26:25 1999  Richard Henderson  <rth@cygnus.com>
 	                  Bernd Schmidt <bernds@cygnus.co.uk>
 			  Mark Mitchell  <mark@codesourcery.com>

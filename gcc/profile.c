@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "gcov-io.h"
 #include "toplev.h"
+#include "ggc.h"
 
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */
@@ -1544,6 +1545,7 @@ init_arc_profiler ()
   char *name = xmalloc (20);
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
   profiler_label = gen_rtx_SYMBOL_REF (Pmode, name);
+  ggc_add_rtx_root (&profiler_label, 1);
 }
 
 /* Output instructions as RTL to increment the arc execution count.  */
