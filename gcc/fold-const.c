@@ -3070,6 +3070,10 @@ fold (expr)
 
   int wins = 1;
 
+  /* Don't try to process an RTL_EXPR since its operands aren't trees.  */
+  if (code == RTL_EXPR)
+    return t;
+
   /* Return right away if already constant.  */
   if (TREE_CONSTANT (t))
     {
