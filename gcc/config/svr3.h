@@ -159,7 +159,7 @@ Boston, MA 02111-1307, USA.
 #undef ASM_BYTE_OP
 #define ASM_BYTE_OP "\t.byte"
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.
 
    For System V Release 3 the convention is to prepend a leading
    underscore onto user-level symbol names.  */
