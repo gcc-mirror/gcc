@@ -1451,12 +1451,13 @@ namespace std
 	    __sign = __lc->_M_positive_sign;
 	    __sign_size = __lc->_M_positive_sign_size;
 	  }
-	else if (__digits.size())
+	else
 	  {
 	    __p = __lc->_M_neg_format;
 	    __sign = __lc->_M_negative_sign;
 	    __sign_size = __lc->_M_negative_sign_size;
-	    ++__beg;
+	    if (__digits.size())
+	      ++__beg;
 	  }
        
 	// Look for valid numbers in the ctype facet within input digits.
