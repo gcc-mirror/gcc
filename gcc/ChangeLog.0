@@ -17,12 +17,12 @@ Mon Jul 13 23:57:21 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 	* m68k/m68k.h (TARGET_SWITCHES): Clear MASK_68040_ONLY for
 	-m68020-40, -m68020-60 and -m5200.
 
-Mon Jul 13 23:52:05 1998  Weiwen Liu <weiwen.liu@yale.edu>
+Mon Jul 13 23:52:05 1998  Weiwen Liu  <weiwen.liu@yale.edu>
 
 	* gcc.c (do_spec_1): Fix %O handling for secure temporary file
 	creation.
 
-Mon Jul 13 23:42:36 1998  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+Mon Jul 13 23:42:36 1998  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	* sh/elf.h (MAX_OFILE_ALIGNMENT): Undefine before including svr4.h.
 
@@ -54,7 +54,7 @@ Mon Jul 13 23:18:39 1998  Craig Burley  <burley@gnu.org>
 	value to last_expr_value, zero it, so old garbage
 	doesn't get dereferenced.
 
-Mon Jul 13 23:06:55 1998  Henning.Petersen@t-online.de (Henning Petersen)
+Mon Jul 13 23:06:55 1998  Henning.Petersen@t-online.de  (Henning Petersen)
 
 	* gcse.c (hash_scan_insn): Add missing argument declaration.
 
@@ -97,7 +97,7 @@ Mon Jul 13 15:10:09 1998  Philippe De Muyter  <phdm@macqel.be>
 	* invoke.texi(-fno-builtin): Explain that the names of built-in
 	functions begin with `__builtin_', not `__'.
 
-Mon Jul 13 19:01:52 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Jul 13 19:01:52 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_before_p): Abort for RELOAD_FOR_OUTPUT.
 
@@ -205,7 +205,7 @@ Fri Jul 10 12:53:58 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	* jump.c (jump_optimize): If after_regscan and our transformations
 	generate new REGs, rerun reg_scan.
 
-Fri Jul 10 11:50:43 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Fri Jul 10 11:50:43 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* config/i960/i960.c (i960_address_cost): MEMA operands with
 	positive offsets < 4096 are free.
@@ -220,19 +220,19 @@ Thu Jul  9 22:58:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (alias.o): Depend on $(EXPR_H).
 
-Thu Jul  9 18:24:56 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jul  9 18:24:56 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): If using an equivalence from
 	find_equiv_reg and reg_reloaded_valid is not set for this register,
 	clear the associated spill_reg_store.
 
-Thu Jul  9 18:12:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jul  9 18:12:49 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (emit_reload_insns): If an output reload copies only
 	to a secondary reload register, indicate that the secondary reload
 	does the actual store.
 
-Thu Jul  9 18:01:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jul  9 18:01:05 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_equiv_reg): If need_stable_sp is set,
 	check if stack pointer is changed directly in a PARALLEL.
@@ -242,7 +242,7 @@ Thu Jul  9 10:38:14 1998  Jeffrey A Law  (law@cygnus.com)
 	* jump.c (duplicate_loop_exit_test): Fix thinko.
 
 Thu Jul  9 01:30:37 1998  Joel Sherrill  <joel@OARcorp.com>
-			  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+			  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	* config/i386/rtemself.h: Updated to keep in sync with
 	config/i386/linux.h.
@@ -311,7 +311,7 @@ Wed Jul  8 02:43:34 1998  Jeffrey A Law  (law@cygnus.com)
 	* configure.in: Also look at $srcdir/gas/configure to find a
 	gas version #.
 
-Wed Jul  8 00:28:22 1998  Carlo Wood <carlo@runaway.xs4all.nl>
+Wed Jul  8 00:28:22 1998  Carlo Wood  <carlo@runaway.xs4all.nl>
 
 	* dsp16xx.h : Clean up of macro OPTIMIZATION_OPTIONS
 
@@ -320,17 +320,17 @@ Tue Jul  7 21:18:14 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 	* i386/cygwin32.h (ASM_DECLARE_FUNCTION_NAME): Merge duplicate
 	definitions from last two patches.
 
-Tue Jul  7 23:03:34 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Jul  7 23:03:34 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): Don't set reload_override_in
 	if EQUIV is clobbered in INSN and the reload is done after INSN.
 
-Tue Jul  7 21:23:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Jul  7 21:23:36 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* expr.c (emit_queue): If emitting a SEQUENCE, set QUEUED_INSN
 	to the first insn of the sequence.
 
-Tue Jul  7 21:05:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Jul  7 21:05:25 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* cse.c (cse_insn): Don't make change without validation.
 
@@ -339,7 +339,7 @@ Tue Jul  7 11:40:05 1998  Jeffrey A Law  (law@cygnus.com)
 	* mn10200.md (various zero/sign extension patterns): Zero and sign
 	extensions which use "sub" clobber cc0.
 
-Tue Jul 7 09:12:08 PDT 1998 Jeff Law  (law@cygnus.com)
+Tue Jul  7 09:12:08 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -352,11 +352,11 @@ Tue Jul  7 08:41:27 1998  Richard Henderson  (rth@cygnus.com)
 	* print-rtl.c (print_rtx): Only print fp values when REAL_VALUE_TYPE
 	is a double.
 
-Tue Jul 7 00:31:58 PDT 1998 Jeff Law  (law@cygnus.com)
+Tue Jul  7 00:31:58 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Tue Jul  7 01:03:03 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Tue Jul  7 01:03:03 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	Support for dllimport and dllexport attributes for i386-pe.
 
@@ -404,18 +404,18 @@ Tue Jul  7 00:50:17 1998  Manfred Hollstein  (manfred@s-direktnet.de)
 	* libgcc2.c (L_exit): Provide a fake for atexit on systems which
 	define ON_EXIT but not HAVE_ATEXIT.
 
-Tue Jul  7 00:44:35 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Tue Jul  7 00:44:35 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* m68k.md (zero_extend QI to HI): Correctly handle TARGET_5200.
 
-Tue Jul  7 00:36:41 1998  Ulrich Drepper <drepper@cygnus.com>
+Tue Jul  7 00:36:41 1998  Ulrich Drepper  <drepper@cygnus.com>
 
 	* i386.c: Remove random whitespace at end of lines.
 
 	* i386.c (ix86_epilogue): For pentium processors, try to deallocate
 	4 or 8 byte stacks with pop instructions instead of an add instruction.
 
-Tue Jul  7 00:30:08 1998  Klaus Kaempf <kkaempf@rmi.de>
+Tue Jul  7 00:30:08 1998  Klaus Kaempf  <kkaempf@rmi.de>
 
 	* alpha.c: Include tree.h before expr.h.
 
@@ -432,7 +432,7 @@ Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* toplev.c (lang_options): Add it.
 	* invoke.texi: Document it.
 
-Mon Jul  6 22:47:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Jul  6 22:47:55 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_equiv_reg): When looking for stack pointer + const,
 	make sure we don't use a stack adjust.
@@ -457,11 +457,11 @@ Mon Jul  6 22:21:56 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 	* m68k.c (output_scc_di): Use cmpw #0 instead of tstl when
 	testing address registers on the 68000.
 
-Mon Jul  6 22:17:19 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
+Mon Jul  6 22:17:19 1998  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* i386.c (is_fp_test): Fix thinko.
 
-	* jump.c (jump_optimize) Check for CONST_INT before using INTVAL.
+	* jump.c (jump_optimize): Check for CONST_INT before using INTVAL.
 
 Mon Jul  6 22:14:31 1998  Richard Henderson  (rth@cygnus.com)
 
@@ -653,7 +653,7 @@ Thu Jul  2 10:11:47 1998  Robert Lipe  <robertl@dgii.com>
 	* config/i386/t-sco5gas: New file.
 	* configure.in (ix86-sco3.2v5*): Use new files if --with-gnu-as
 
-Thu Jul 2 08:20:00 1998  Catherine Moore  <clm@cygnus.com>
+Thu Jul  2 08:20:00 1998  Catherine Moore  <clm@cygnus.com>
 
 	* haifa-sched.c (alloc_EXPR_LIST): Change to use
 	unused_expr_list.
@@ -663,7 +663,7 @@ Thu Jul  2 14:13:28 1998  Dave Love  <d.love@dl.ac.uk>
 	* Makefile.in (install-info): Don't use $realfile.  Ignore
 	possible errors from the install-info program.
 
-Thu Jul  2 01:53:32 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
+Thu Jul  2 01:53:32 1998  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* combine.c (simplify_comparison): Apply SUBREG_REG to SUBREGs.
 
@@ -687,12 +687,12 @@ Wed Jul  1 23:12:58 1998  Ken Raeburn  <raeburn@cygnus.com>
 	* h8300.md (branch_true, branch_false): Use %= with a prefix
 	instead of %L for local branch labels.
 
-Wed Jul  1 21:27:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Jul  1 21:27:13 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (emit_reload_insns): Use proper register classes for
 	SECONDARY_INPUT_RELOAD_CLASS / SECONDARY_MEMORY_NEEDED code.
 
-Wed Jul  1 21:17:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Jul  1 21:17:36 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): If there are multiple
 	RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_OUTPUT_ADDRESS reloads for
@@ -700,7 +700,7 @@ Wed Jul  1 21:17:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	RELOAD_FOR_OUTADDR_ADDRESS for all but the first
 	RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_OUTPUT_ADDRESS reloads.
 
-Wed Jul  1 17:23:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Jul  1 17:23:23 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* regmove.c (fixup_match_2): Check that P has RTX_CLASS 'i' before
 	using its PATTERN.
@@ -747,7 +747,7 @@ Wed Jul  1 02:12:33 1998  Robert Lipe  <robertl@dgii.com>
 	* i386.c (asm_output_function_prefix): Make 686 function
 	prologues not issue .types for non-global labels.
 
-Tue Jun 30 23:46:53 1998  Dmitrij Tejblum <tejblum@arc.hq.cti.ru>
+Tue Jun 30 23:46:53 1998  Dmitrij Tejblum  <tejblum@arc.hq.cti.ru>
 
 	* i386/freebsd.h (WCHAR_TYPE): Chagne to an "int".
 	(WCHAR_TYPE_SIZE): Update appropriately.
@@ -804,7 +804,7 @@ Tue Jun 30 13:11:42 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000/sysv4.h (asm output): Add tabs for asm directives.
 
-Tue Jun 30 13:11:42 1998  David Edelsohn <edelsohn@mhpcc.edu>
+Tue Jun 30 13:11:42 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* Makefile.in (FLAGS_TO_PASS): Set AR_FLAGS to AR_FOR_TARGET_FLAGS.
 
@@ -835,12 +835,12 @@ Tue Jun 30 02:34:02 1998  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c (make_temp_file): Update prototype.
 	(do_spec_1): Put proper suffixes on temporary files.
 
-Tue Jun 30 00:56:19 1998  Bruno Haible <haible@ilog.fr>
+Tue Jun 30 00:56:19 1998  Bruno Haible  <haible@ilog.fr>
 
 	* invoke.texi: Document new implicit structure initialization
 	warning.
 
-Mon Jun 29 21:40:15 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Jun 29 21:40:15 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* toplev.c (flag_dump_unnumbered): Declare.
 	(f_options): Add dump-unnumbered.
@@ -958,7 +958,7 @@ Sun Jun 28 08:57:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* getpwd.c: Remove decls for getwd and getcwd.
 
-Sun Jun 28 02:11:16 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun Jun 28 02:11:16 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -1095,7 +1095,7 @@ Fri Jun 26 11:54:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(sparc_builtin_saveregs): Likewise for arglist.
 	(sparc_flat_eligible_for_epilogue_delay): Likewise for slot.
 
-Fri Jun 26 06:58:54 1998  Richard Earnshaw (rearnsha@arm.com)
+Fri Jun 26 06:58:54 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Only need a secondary reload
 	if reloading a MEM.
@@ -1216,7 +1216,7 @@ Thu Jun 25 15:08:16 1998  Mark Mitchell  <mark@markmitchell.com>
 	* reload1.c (reload): Clear MEM_ALIAS_SET for new MEMs about which
 	we have no alias information.
 	
-Thu Jun 25 16:59:18 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu Jun 25 16:59:18 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (CATCH_ALL_TYPE): Definition moved to eh-common.h.
 	(find_all_handler_type_matches): Add function prototype.
@@ -1313,7 +1313,7 @@ Thu Jun 25 01:18:47 1998  John Wehle  (john@feith.com)
 
 	* i386/freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
 
-1998-06-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+1998-06-25  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* expr.c (expand_assignment): Rework address calculation for structure
 	field members to expose more invariant computations to the loop
@@ -1348,7 +1348,7 @@ Wed Jun 24 15:13:01 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* README.gnat: Add patch for new lang_decode_options interface.
 
-Wed Jun 24 09:14:04 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Wed Jun 24 09:14:04 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (start_catch_handler): Do nothing if EH is not on.
 
@@ -1375,7 +1375,7 @@ Tue Jun 23 16:44:21 1998  Dave Brolley  <brolley@cygnus.com>
 	(cpp_error_from_errno): Call cpp_message_from_errno.
 	* cpplib.h (cpp_message_from_errno): New function.
 
-Tue Jun 23 13:38:18 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Tue Jun 23 13:38:18 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* libgcc2.c (__get_eh_table_version, __get_eh_table_language): New
 	functions to return exception descriptor information.
@@ -1387,7 +1387,7 @@ Tue Jun 23 09:30:58 1998  Dave Love  <d.love@dl.ac.uk>
 	* cpp.texi, gcc.texi: Add @dircategory, @direntry meant to
 	accompany previous Makefile.in (install-info) change.
 
-Tue Jun 23 10:06:07 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Tue Jun 23 10:06:07 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h (struct __eh_info): Remove coerced value field.
 	* libgcc2.c (find_exception_handler): Don't set coerced_value field.
@@ -1400,7 +1400,7 @@ Tue Jun 23 06:45:00 1998  Catherine Moore  <clm@cygnus.com>
 
 	* varasm.c (assemble_variable): Remove reference to warn_bss_align.
 
-Mon Jun 22 23:57:31 1998  David S. Miller <davem@pierdol.cobaltmicro.com>
+Mon Jun 22 23:57:31 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (zero_extendhidi2, extendhisi2,
 	extendqihi2, extendqisi2, extendqidi2, extendhidi2, adddi3,
@@ -1553,7 +1553,7 @@ Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
 	* loop.c (oballoc): Remove declaration.
 	(replace_call_address): Add prototype.
 
-Sun Jun 21 01:08:17 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun Jun 21 01:08:17 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -1737,7 +1737,7 @@ Fri Jun 19 10:43:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	expression when splitting a complex value.
 	* fold-const.c (fold): Likewise.
 
-Fri Jun 19 02:31:16 1998  Klaus Kaempf (kkaempf@progis.de)
+Fri Jun 19 02:31:16 1998  Klaus Kaempf  (kkaempf@progis.de)
 
 	* cccp.c (hack_vms_include_specification): Rewrite to handle
 	'#include <dir/file.h>' correctly.
@@ -1791,7 +1791,7 @@ Thu Jun 18 11:43:54 1998  Nick Clifton  <nickc@cygnus.com>
 	addressing when one register is the frame pointer or stack
 	pointer.  Disallow REG+CONST addressing in HI mode.
 
-Thu Jun 18 17:30:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jun 18 17:30:39 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Don't narrow scope of RELOAD_OTHER to
 	RELOAD_FOR_INSN.
@@ -1878,7 +1878,7 @@ Wed Jun 17 20:20:48 1998  Mark Mitchell  <mark@markmitchell.com>
 	that is used to decide whether or not it is time to erase the
 	equivalence table.
 
-Wed Jun 17 18:30:43 1998 Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Wed Jun 17 18:30:43 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h (JUMP_TABLES_IN_TEXT_SECTION): Define to zero.
 
@@ -1915,25 +1915,25 @@ Wed Jun 17 19:05:03 1998  John Carr  <jfc@mit.edu>
 	* expr.c (expand_builtin): Error if __builtin_longjmp second argument
 	is not 1.
 
-Wed Jun 17 15:20:00 PDT 1998  Catherine Moore  <clm@cygnus.com>
+Wed Jun 17 15:20:00 1998  Catherine Moore  <clm@cygnus.com>
 
 	 * reload1.c (spill_hard_reg): Check mode of register when
 	 spilling from scratch_list.
 
-Wed Jun 17 16:25:38 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+Wed Jun 17 16:25:38 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* except.c (add_new_handler): Fix bug in finding last region handler.
 	* libgcc2.c (find_exception_handler): Pass exception table pointer
 	to runtime type matcher, not the match info field.
 
-Wed Jun 17 15:57:48 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+Wed Jun 17 15:57:48 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* eh-common.h (struct eh_context): Add comment for hidden use of
 	field dynamic_handler_chain.
 	* except.c (get_dynamic_handler_chain): Comment on, and use the
 	correct offset of the dynamic_handler_chain field.
 
-1998-06-17 12:46:56 1998  Jim Wilson  <wilson@cygnus.com>
+1998-06-17  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/iris6.h (LINK_SPEC): Add -woff 131.
 
@@ -1984,7 +1984,7 @@ Tue Jun 16 16:49:26 1998  Richard Henderson  <rth@cygnus.com>
 	(LOOP_ALIGN, ALIGN_LABEL_AFTER_BARRIER): Align to octaword.
 	(FUNCTION_END_PROLOGUE): New macro.
 	* alpha.md (attribute length): New.  Mark all insns.
-	(return_internal, prologue_stack_probe_loop) New patterns.
+	(return_internal, prologue_stack_probe_loop): New patterns.
 	(prologue, init_fp, epilogue): New patterns.
 	Disable peepholes.
 	* linux.h (TARGET_CAN_FAULT_IN_PROLOGUE): Define.
@@ -1993,7 +1993,7 @@ Tue Jun 16 17:36:35 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* toplev.c (lang_options): Add -trigraphs option for cpplib.
 
-Tue Jun 16 23:33:24 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Jun 16 23:33:24 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_before_p): RELOAD_FOR_OUTADDR_ADDRESS
 	is earlier than RELOAD_FOR_OUTPUT_ADDRESS; RELOAD_FOR_INPADDR_ADDRESS
@@ -2027,11 +2027,11 @@ Mon Jun 15 13:20:33 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* c-decl.c (shadow_tag_warned): Use specs not declspecs in for loop.
 
-Mon Jun 15 07:16:29 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon Jun 15 07:16:29 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Sat Jun 13 13:10:40 1998  Krister Walfridsson <cato@df.lth.se>
+Sat Jun 13 13:10:40 1998  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/sparc/netbsd.h (DEFAULT_PCC_STRUCT_RETURN): Undefine before
 	redefining it.
@@ -2092,7 +2092,7 @@ Fri Jun 12 14:57:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.md (mul_acc_si): Remove unused variable `macc'.
 
-Fri Jun 12 09:33:44 1998  Richard Henderson <rth@cygnus.com>
+Fri Jun 12 09:33:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* fold-const.c (fold): Revert last change.  It breaks constant
 	expressions somehow.
@@ -2102,7 +2102,7 @@ Fri Jun 12 10:23:36 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	* expr.c (do_jump, case EQ_EXPR, NE_EXPR): When comparing complex
 	prevent operands from being evaluated twice.
 
-Fri Jun 12 00:50:27 1998  Sergey Okhapkin <sos@prospect.com.ru>
+Fri Jun 12 00:50:27 1998  Sergey Okhapkin  <sos@prospect.com.ru>
 
 	* toplev.c (lang_options): Add -remap as a preprocessor option.
 
@@ -2198,7 +2198,7 @@ Wed Jun 10 13:07:02 1998  Dave Brolley  <brolley@cygnus.com>
 	(c_decode_option): Call cpp_handle_option.
 	(c_decode_option): Now returns number of strings processed.
 
-Wed Jun 10 09:47:13 1998  Richard Earnshaw (rearnsha@arm.com)
+Wed Jun 10 09:47:13 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* unroll.c (verify_addresses): Use validate_replace_rtx to undo the
 	changes.  Abort if the undo fails.
@@ -2228,7 +2228,7 @@ Wed Jun 10 02:11:55 1998  Jeffrey A Law  (law@cygnus.com)
 	between constant representations when we have (SUBREG (REG)) with
 	REG equivalent to a constant.
 
-Wed Jun 10 01:39:00 1998  Juha Sarlin <juha@c3l.tyreso.se>
+Wed Jun 10 01:39:00 1998  Juha Sarlin  <juha@c3l.tyreso.se>
 
 	* h8300.c (get_shift_alg): Add special cases for shifts of 8 and 24.
 
@@ -2237,7 +2237,7 @@ Tue Jun  9 22:05:34 1998  Richard Henderson  <rth@cygnus.com>
 	* fold-const.c (fold): Even with otherwise constant trees, look for
 	opportunities to combine integer constants.
 
-Wed Jun  3 23:41:24 EDT 1998  John Wehle  (john@feith.com)
+Wed Jun  3 23:41:24 1998  John Wehle  (john@feith.com)
 
 	* i386.c (notice_update_cc): Clear cc_status.value2 in the
 	case of UNSPEC 5 (bsf).
@@ -2255,7 +2255,7 @@ Tue Jun  9 14:31:19 1998  Nick Clifton  <nickc@cygnus.com>
 	16,sp,sp' ratehr than 'add 16,sp'.  Patch courtesy of Biomedin
 	<glctr@abc.it>.
 
-Tue Jun  9 16:23:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Tue Jun  9 16:23:13 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (expand_start_catch): Rename to start_catch_handler.
 	(expand_end_catch): Delete function.
@@ -2268,7 +2268,7 @@ Tue Jun  9 12:57:32 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* invoke.texi: Add documentation for -mips4 and -mabi=*.
 
-Tue Jun  9 12:12:34 1998  Klaus Kaempf (kkaempf@progis.de)
+Tue Jun  9 12:12:34 1998  Klaus Kaempf  (kkaempf@progis.de)
 
 	* alpha/vms.h (EXTRA_SECTIONS): Add in_ctors and in_dtors.
 	(EXTRA_SECTION_FUNCTIONS): Add ctors_section and dtors_section.
@@ -2307,7 +2307,7 @@ Tue Jun  9 01:08:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (flag_new_exceptions): Remove extraneous `extern'.
 
-Mon Jun 8 23:24:48 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon Jun  8 23:24:48 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -2403,7 +2403,7 @@ Mon Jun  8 16:54:12 1998  Ken Raeburn   <raeburn@cygnus.com>
 	(maddi patterns): Delete.  Replace with:
 	(mul_acc_di, mul-acc_64bit_di): New patterns.
 
-Mon Jun  8 14:16:15 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Mon Jun  8 14:16:15 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h: Remove NEW_EH_MODEL compile time flag, and replace with
 	flag_new_exceptions runtime flag.
@@ -2448,7 +2448,7 @@ Mon Jun  8 10:43:15 1998  Richard Henderson  <rth@cygnus.com>
 	* expr.c (force_operand): Detect PIC address loads before
 	splitting arithmetic.
 
-Mon Jun 8 09:22:38 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon Jun  8 09:22:38 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -2673,7 +2673,7 @@ Thu Jun  4 00:54:21 1998  Graham  <grahams@rcp.co.uk>
 	* loop.c (check_dbra_loop): Initialise final_value before
 	normalizing the loop.
 
-Wed Jun  3 20:00:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Jun  3 20:00:04 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): New arguments out and
 	reloadnum.  Changed all callers.
@@ -2715,7 +2715,7 @@ Tue Jun  2 22:50:10 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	or VAR-- == CONST construct a proper mask if VAR is a bitfield.
 	Cope with CONST being out of range for the bitfield.
 
-Tue Jun  2 22:28:31 1998  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+Tue Jun  2 22:28:31 1998  Bernd Schmidt  <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* expr.c (emit_move_insn_1): When moving complex values in several
 	steps, emit a CLOBBER to show the destination dies.
@@ -2746,7 +2746,7 @@ Tue Jun  2 13:02:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* vax/netbsd.h (DWARF2_UNWIND_INFO): Must be undef, not defined 0.
 
-Mon Jun  1 03:44:03 1998  Catherine Moore <clm@cygnus.com>
+Mon Jun  1 03:44:03 1998  Catherine Moore  <clm@cygnus.com>
 
 	* config/sh/sh.h (MAX_OFILE_ALIGNMENT): Define.
 
@@ -2768,11 +2768,11 @@ Sun May 31 16:11:41 1998  John Wehle  (john@feith.com)
 	(movsicc, movhicc, movsfcc, movdfcc, movxfcc, movdicc): Rewrite
 	based on suggestions from Jim Wilson.
 
-Sun May 31 00:44:02 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun May 31 00:44:02 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Sun May 31 00:34:17 1998  Bruce Korb <korbb@datadesign.com>
+Sun May 31 00:34:17 1998  Bruce Korb  <korbb@datadesign.com>
 
 	* Makefile.in (fixinc.sh): Update rules again.
 
@@ -2793,12 +2793,12 @@ Fri May 29 01:48:25 1998  Jeffrey A Law  (law@cygnus.com)
 	* gcse.c (pre_delete): Fix code to determine the mode of
 	the reaching pseudo register.
 
-Fri May 29 01:07:28 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+Fri May 29 01:07:28 1998  Bernd Schmidt  <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* Makefile.in (GEN): Add gencheck.
 	(STAGESTUFF): Add tree-check.h and gencheck.
 
-Fri May 29 00:57:37 1998  Bruce Korb <korbb@datadesign.com>
+Fri May 29 00:57:37 1998  Bruce Korb  <korbb@datadesign.com>
 
 	* Makefile.in (cstamp-h.in): Remove before trying to recreate.
 	(fixinc.sh): Set some additional environment variables before
@@ -2808,7 +2808,7 @@ Thu May 28 12:57:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (find_reloads): Do not force a reloads of match_operators.
 
-Thu May 28 10:22:22 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu May 28 10:22:22 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (remove_handler): Add new prototype.
 	* except.c (remove_handler): New function to remove handlers
@@ -2837,12 +2837,12 @@ Wed May 27 22:02:40 1998  Jeffrey A Law  (law@cygnus.com)
 	* configure.lang: Fix thinko when adding a definition for
 	target_alias to the Makefile.
 
-Wed May 27 02:50:00 1998  Catherine Moore (clm@cygnus.com)
+Wed May 27 02:50:00 1998  Catherine Moore  (clm@cygnus.com)
 
 	* config/sparc/lb1spc.asm (.rem and .urem): Replace
 	routines.
 
-Wed May 27 02:48:31 1998  Richard Earnshaw (rearnsha@arm.com)
+Wed May 27 02:48:31 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (arm_gen_constant): Rework to eliminate uninitialized
 	variable warnings.  Don't generate scratch registers if only
@@ -2854,13 +2854,13 @@ Wed May 27 02:48:31 1998  Richard Earnshaw (rearnsha@arm.com)
 	* toplev.h (rtx_def): Provide global declaration to avoid
 	`limited scope' warnings.
 
-Tue May 26 23:47:52 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Tue May 26 23:47:52 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* Makefile.in (gencheck.o): Use HOST_CC.
 	* i386/t-mingw32: New file.
 	* configure.in (i386-*-mingw32*): Use.
 
-Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
+Tue May 26 07:31:04 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (bad_signed_byte_operand): New predicate function.
 	* arm.h (PREDICATE_CODES): Add it to the list.
@@ -2883,11 +2883,11 @@ Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
 	(arm_reorg): Move unused REGNO declaration into the dead code.
 	* arm.h (CANONICALIZE_COMPARISON): Ensure OP1 is updated.
 
-Mon May 25 22:49:56 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon May 25 22:49:56 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Mon May 25 11:56:24 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon May 25 11:56:24 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -2898,11 +2898,11 @@ Mon May 25 14:00:13 1998  Dave Brolley  <brolley@cygnus.com>
 	* cpplib.h (v_cpp_message): Add protoptype.
 	(stdarg.h,varargs.h): Needed for v_cpp_message prototype.
 
-Sun May 24 20:36:15 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun May 24 20:36:15 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Sun May 24 02:08:57 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun May 24 02:08:57 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -2923,7 +2923,7 @@ Sun May 24 02:08:57 PDT 1998 Jeff Law  (law@cygnus.com)
 	* real.c: Comment out unused functions eabs, eround,
 	e{24,53,64,113}toasc and eiinfin.
 
-Sat May 23 23:44:53 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+Sat May 23 23:44:53 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (boostrap2-lean, bootstrap3-lean,
 	bootstrap4-lean): New targets.
@@ -2971,7 +2971,7 @@ Sat May 23 23:23:35 1998  Robert Lipe  <robertl@dgii.com>
 	* fold-const.c (ssize_binop): New fn.
 	* tree.h: Declare it.
 
-Fri May 22 03:42:05 1998  Richard Earnshaw (rearnsha@arm.com)
+Fri May 22 03:42:05 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* genextract.c (print_path): Handle zero-length path as a special
 	case.
@@ -2980,7 +2980,7 @@ Fri May 22 01:38:07 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* cplus-dem.c (MBUF_SIZE): Bumped from 512 to 32767.
 
-Fri May 22 00:57:00 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
+Fri May 22 00:57:00 1998  Bernd Schmidt  (crux@pool.informatik.rwth-aachen.de>
 
 	* final.c (JUMP_TABLES_IN_TEXT_SECTION): Provide a default value.
 	(shorten_branches, final_scan_insn): Test value of
@@ -3004,7 +3004,7 @@ Fri May 22 00:57:00 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
 	* rs6000/sysv4.h: Define JUMP_TABLES_IN_TEXT_SECTION to 0.
 	* i386/linux.h: Define JUMP_TABLES_IN_TEXT_SECTION to (flag_pic).
 
-Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu May 21 19:50:13 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* regmove.c (gen_add3_insn): New function.
 	(fixup_match_2): Use it instead of calling gen_addsi3.
@@ -3026,7 +3026,7 @@ Thu May 21 20:18:13 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 	(TYPE_CHECK, DECL_CHECK): Define.
 	Modify all access macros to use generated checking macros.
 
-Wed May 20 23:44:28 EDT 1998  John Wehle  (john@feith.com)
+Wed May 20 23:44:28 1998  John Wehle  (john@feith.com)
 
 	* acconfig.h (HAVE_GAS_MAX_SKIP_P2ALIGN): New tag.
 	* configure.in: Check for it.
@@ -3056,12 +3056,12 @@ Thu May 21 12:23:17 1998  Per Bothner  <bothner@cygnus.com>
 	* function.c (init_function_start): Don't call emit_line_note if
 	lineno is 0.  (Can happen when compiling Java .class files.)
 
-Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu May 21 19:50:13 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): Fix RELOAD_FOR_INPUT
 	end of lifetime and RELOAD_FOR_OUTPUT start of lifetime.
 
-Thu May 21 19:32:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu May 21 19:32:27 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* combine.c (nonzero_bits): For paradoxical subregs, take
 	LOAD_EXTENDED_OP into account.
@@ -3099,8 +3099,8 @@ Wed May 20 22:28:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* dwarf2out.c (base_type_die): Use int_size_in_bytes.
 
-Wed May 20 01:11:02 1998  Doug Evans (devans@cygnus.com)
-			  Jeff Law (law@cygnus.com)
+Wed May 20 01:11:02 1998  Doug Evans  (devans@cygnus.com)
+			  Jeff Law  (law@cygnus.com)
 
 	* Global CSE and constant/copy propagation.
 	* Makefile.in (OBJS): Add gcse.o.
@@ -3155,12 +3155,12 @@ Tue May 19 15:07:54 1998  Todd Vierling  <tv@netbsd.org>
 
 	* arm/netbsd.h: Ensure DWARF2_UNWIND_INFO is undefined.
 
-Tue May 19 17:19:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue May 19 17:19:16 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): New function.
 	(allocate_reload_reg, choose_reload_regs): Use it.
 
-Tue May 19 11:51:00 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+Tue May 19 11:51:00 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* except.c (expand_start_catch): Correct logic for when to
 	generate a new handler label, and when to use the old one.
@@ -3430,7 +3430,7 @@ Mon May 18 13:20:23 1998  Richard Henderson  <rth@cygnus.com>
 	* expr.c (get_inner_reference) [ARRAY_REF]: Use it.
 	* tree.c (size_in_bytes, int_size_in_bytes): Likewise.
 
-Mon May 18 12:07:37 1998  Richard Earnshaw (rearnsha@arm.com)
+Mon May 18 12:07:37 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* stor-layout.c (layout_record): Fix off-by-one error when checking
 	length of the TYPE_BINFO vector.
@@ -3503,11 +3503,11 @@ Sun May 17 13:44:32 1998  Jim Wilson  <wilson@cygnus.com>
 	(true_dependence, anti_dependence, output_dependence): Revert April 21
 	change.
 
-Sun May 17 08:45:21 1998  Krister Walfridsson <cato@df.lth.se>
+Sun May 17 08:45:21 1998  Krister Walfridsson  <cato@df.lth.se>
 
 	* toplev.c (output_lang_identify): Enable prototype and definition.
 
-Sun May 17 01:12:27 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun May 17 01:12:27 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -3546,7 +3546,7 @@ Fri May 15 17:42:52 1998  Bob Manson  <manson@charmed.cygnus.com>
 	* config/rs6000/rs6000.c (rs6000_stack_info): Align the stack bottom
 	to an 8-byte boundary if info_ptr->fpmem_p.
 
-Fri May 15 17:36:11 1998  Bill Moyer <ttk@cygnus.com>
+Fri May 15 17:36:11 1998  Bill Moyer  <ttk@cygnus.com>
 
 	* loop.c (basic_induction_var): Added test preventing
 	CCmode parameter passed to convert_modes().
@@ -3566,7 +3566,7 @@ Fri May 15 07:20:03 1998  Mark Mitchell  <mmitchell@usa.net>
 	* fold-const.c (constant_boolean_node): New function.
 	(fold): Use it.
 
-Fri May 15 11:21:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri May 15 11:21:16 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_shl_and): Don't sign extend constant for kind two.
 	Abort if trying to split kind 3 or 4 outside of combine.
@@ -3575,7 +3575,7 @@ Fri May 15 01:47:37 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.c (print_operand, case 'x'): Use HOST_WIDE_INT_PRINT_HEX.
 
-Fri May 15 01:42:45 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Fri May 15 01:42:45 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* objc/Make-lang.in (OBJC_O): Add missing exeext.
 	(libobjc.a, runtime-info.h): Likewise.
@@ -3584,7 +3584,7 @@ Fri May 15 01:29:39 1998  John Wehle  (john@feith.com)
 
 	* i386.h (DATA_ALIGNMENT): Define.
 
-Fri May 15 05:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri May 15 05:35:37 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (delete_output_reload): Ignore single USE that
 	was emitted for the pseudo use of this INSN.
@@ -3599,7 +3599,7 @@ Thu May 14 15:10:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (expr.o): Remove dependency on deleted modemap.def file.
 
-Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu May 14 16:30:47 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h: New file for basic EH data structures.
 	* except.h: Various prototypes and structures for NEW_EH_MODEL.
@@ -3669,14 +3669,14 @@ Thu May 14 12:58:21 1998  Jim Wilson  <wilson@cygnus.com>
 	* i960.c (hard_regno_mode_ok): Changed to function from array of
 	unsigned.
 
-Thu May 14 08:41:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu May 14 08:41:46 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (remove_replacements): New function.
 	* reload.h (remove_replacements): Declare.
 	* reload1.c (choose_reload_regs): Disable some reloads that
 	belong to inherited reloads.
 
-Thu May 14 02:17:17 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu May 14 02:17:17 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* loop.c (scan_loop): Don't call move_movables for optimize_size.
 
@@ -3703,7 +3703,7 @@ Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
 	TARGET_CMOVE support.
 
 Wed May 13 15:28:59 1998  Michael Meissner  <meissner@cygnus.com>
-			  Jeff Law <law@cygnus.com>
+			  Jeff Law  <law@cygnus.com>
 
 	* rtlanal.c (find_reg_note): Ignore notes that are not on on
 	insns of class 'i'.
@@ -3927,12 +3927,12 @@ Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 	(REG_N_CHANGES_SIZE, REG_N_CALLS_CROSSED, REG_LIVE_LENGTH): Likewise.
 	(REGNO_FIRST_UID, REGNO_LAST_UID, REGNO_LAST_NOTE_UID): Likewise.
 
-Wed May 13 12:54:19 1998  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+Wed May 13 12:54:19 1998  Martin von Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* acconfig.h (ENABLE_CHECKING): Undefine.
 	* configure.in (--enable-checking): New option.
 
-Wed May 13 08:52:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed May 13 08:52:08 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (merge_assigned_reloads): Can merge
 	RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_OTHER_ADDRESS even
@@ -3942,11 +3942,11 @@ Tue May 12 20:05:57 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* collect2.c (main): Ignore do_collecting when COLLECT_EXPORT_LIST.
 
-Wed May 13 03:23:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed May 13 03:23:45 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (gen_reload): Create REG_EQUIV notes.
 
-Tue May 12 22:21:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue May 12 22:21:07 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload): Fix check for USEs to use code of pattern.
 	(choose_reload_regs): Remove dead variable use_insn.
@@ -4022,7 +4022,7 @@ Mon May 11 09:14:41 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-*-linux-gnu): Undo lossage from gcc2 merge.
 
-Mon May 11 08:24:18 1998  Richard Henderson <rth@cygnus.com>
+Mon May 11 08:24:18 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '`'.
 	* alpha.c (print_operand): Handle it.
@@ -4077,7 +4077,7 @@ Sat May  9 01:53:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (print_exp): Fix typo.
 
-Fri May 8 21:48:50 PDT 1998 Jeff Law  (law@cygnus.com)
+Fri May  8 21:48:50 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -4151,7 +4151,7 @@ Fri May  8 10:57:33 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	* config/m68k/t-linux: Remove extra stuff already included in
 	config/t-linux.
 
-Fri May  8 09:53:24  Paul Eggert  <eggert@twinsun.com>
+Fri May  8 09:53:24 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
 	curses.h if it contains `typedef char bool;', as suggested by
@@ -4219,9 +4219,9 @@ Thu May  7 10:55:59 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	* config/m68k/m68k.md (adddi3, subdi3): Properly negate the DImode
 	constant.
 
-Wed May  6 22:32:37 CDT 1998 Robert Lipe  <robertl@dgii.com>
+Wed May  6 22:32:37 1998  Robert Lipe  <robertl@dgii.com>
 
-	* Makefile.in (dwarfout.o) Add toplev.h dependency.
+	* Makefile.in (dwarfout.o): Add toplev.h dependency.
 	* dwarfout.c, i386.c: Include toplev.h.
 	* toplev.h (pfatal_with_name): Add prototype.
 
@@ -4229,7 +4229,7 @@ Wed May  6 19:02:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in: Fix .SUFFIXES.
 
-Wed May  6 19:31:32 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
+Wed May  6 19:31:32 1998  Alan Modra  <alan@spri.levels.unisa.edu.au>
 
 	* config/linux.h (ASM_COMMENT_START): Define as "#".
 	* config/linux-aout.h (ASM_COMMENT_START): Likewise.
@@ -4331,7 +4331,7 @@ Wed May  6 10:52:49 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c, cpplib.c, fix-header.c, gcc.c, protoize.c: Not here.
 
-1998-05-06 Mark Mitchell  <mmitchell@usa.net>
+1998-05-06  Mark Mitchell  <mmitchell@usa.net>
 
 	* tree.h (IS_EXPR_CODE_CLASS): Remove bogus '3'.
 
@@ -4347,7 +4347,7 @@ Wed May  6 06:35:38 1998  Robert Lipe  <robertl@dgii.com>
 	varasm.c: Include it.
 
 Wed May  6 01:09:01 1998  Jeffrey A Law  (law@cygnus.com)
-			  Jim Wilson (wilson@cygnus.com)
+			  Jim Wilson  (wilson@cygnus.com)
 
 	* haifa-sched.c (find_rgns): In no_loops case, fix test for leaf
 	blocks.  Check for 1 successor which is the EXIT_BLOCK.
@@ -4433,7 +4433,7 @@ Sun May  3 23:57:25 1998  Robert Lipe  <robertl@dgii.com>
 	(xm_defines): Add USG so dbxout will build.
 	* configure: Regenerate.
 
-Sun May  3 13:51:34 PDT 1998  Richard Henderson  <rth@cygnus.com>
+Sun May  3 13:51:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	Support for official Sparc V9 ABI:
 	* sparc.c (sparc_override_options): Force stack bias off for !arch64.
@@ -4471,11 +4471,11 @@ Sun May  3 13:51:34 PDT 1998  Richard Henderson  <rth@cygnus.com>
 	(ASM_OUTPUT_DWARF2_ADDR_CONST): New.
 	* sparc/sysv4.h (SIZE_TYPE, PTRDIFF_TYPE): Undo svr4.h's changes.
 
-Sat May 2 17:47:17 PDT 1998 Jeff Law  (law@cygnus.com)
+Sat May  2 17:47:17 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Sat May  2 01:37:29 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Sat May  2 01:37:29 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Emit USEs to mark where a pseudo
 	is reloaded with the MEM of its stack slot.
@@ -4503,7 +4503,7 @@ Thu Apr 30 16:57:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* haifa-sched.c (alloc_{INSN,EXPR}_LIST): Make static to agree
 	with the prototype.
 
-Wed Apr 29 21:45:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Apr 29 21:45:16 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sched.c (new_insn_dead_notes): Check if the register was
 	used in the original instruction.
@@ -4632,21 +4632,21 @@ Mon Apr 27 18:36:28 1998  Jim Wilson  <wilson@cygnus.com>
 	Replace PREV_INSN (PREV_INSN (loop_end)) with first_compare.
 	Replace '2' with compare_and_branch.
 
-Mon Apr 27 15:53:30 EDT 1998 Andrew MacLeod <amacleod@cygnus.com>
+Mon Apr 27 15:53:30 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_qualified): Replace missing else.
 
-Mon Apr 27 20:22:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr 27 20:22:08 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_ashift_hi): Don't make SUBREG of a SUBREG.
 
-Mon Apr 27 18:23:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr 27 18:23:51 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (sh_expand_prologue, sh_expand_epilogue):
 	If TARGET_DOUBLE_ALIGN, preserve 64 bit stack alignment.
 	* sh.h (STACK_BOUNDARY): Likewise.
 
-Mon Apr 27 17:22:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr 27 17:22:48 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
 
@@ -4681,7 +4681,7 @@ Sun Apr 26 01:21:06 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (print_operand): Don't add 'v' suffix for ALPHA_FPTM_N.
 
-Sat Apr 25 22:11:38 PDT 1998 Jeff Law  (law@cygnus.com)
+Sat Apr 25 22:11:38 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -4717,7 +4717,7 @@ Fri Apr 24 16:11:47 1998  John Carr  <jfc@mit.edu>
 
 	* configure.in: Enable Haifa scheduler by default for SPARC.
 
-Fri Apr 24 20:55:47 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Apr 24 20:55:47 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* cse.c (cse_set_around_loop): Don't do optimization when
 	new pseudos are created.
@@ -4731,7 +4731,7 @@ Fri Apr 24 11:00:18 1998  Jeffrey A Law  (law@cygnus.com)
 	(dbxout_type): Fix check for when to print a type range in
 	octal vs decimal.
 
-Fri Apr 24 16:45:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Apr 24 16:45:03 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* (gen_shl_and, in case 1): Fix comparison with mask.
 
@@ -4751,7 +4751,7 @@ Fri Apr 24 08:02:30 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	$(STMP_FIXPROTO) to ensure all necessary include files have
 	been created and to guarantee proper parallel builds.
 
-Fri Apr 24 04:42:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Apr 24 04:42:35 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (sh_expand_prologue, in !SH3E code): Don't push an extra
 	register for stdarg functions.
@@ -4777,7 +4777,7 @@ Thu Apr 23 15:01:13 1998  Nick Clifton  <nickc@cygnus.com>
 	found, rather than at end of the loop, after the insn has been
 	changed.
 
-Thu Apr 23 20:21:06 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Apr 23 20:21:06 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_ashift_hi): Implement right shifts via gen_ashift.
 	* sh.md (ashrhi3_k, lshrhi3_k, lshrhi3_m, lshrhi3, lshrhi3+1): Delete.
@@ -4801,7 +4801,7 @@ Wed Apr 22 10:42:45 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.c (compute_frame_size): Change only argument to a HOST_WIDE_INT.
 
-Wed Apr 22 10:53:49 EDT 1998 Andrew MacLeod  <amacleod@cygnus.com>
+Wed Apr 22 10:53:49 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (struct work stuff): Add field for B and K mangle codes.
 	(cplus_demangle_opname): Call mop_up_squangle.
@@ -4888,7 +4888,7 @@ Mon Apr 20 15:04:14 1998  John Wehle  (john@feith.com)
 	* i386.md (movsf_push, movdf_push, movxf_push): Allow memory
 	operands during and after reload.
 
-Mon Apr 20 22:37:50 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr 20 22:37:50 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches, init_insn_lengths): Move code
 	to free label_align, uid_shuid, insn_lengths, insn_addresses
@@ -4918,7 +4918,7 @@ Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 	the simple AND and OR operations, rather just split each word, and
 	let the normal movsi define split handle it further.
 
-Mon Apr 20 18:19:40 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr 20 18:19:40 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (find_barrier): Fix bug in ADDR_DIFF_VEC handling.
 	(split_branches): Call init_insn_lengths.
@@ -4947,7 +4947,7 @@ Sun Apr 19 02:42:06 1998  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (queue_to_ready): Fix typo in prototype.
 
-Sat Apr 18 23:52:35 PDT 1998 Jeff Law  (law@cygnus.com)
+Sat Apr 18 23:52:35 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -5006,7 +5006,7 @@ Fri Apr 17 16:35:35 1998  Greg McGary  <gkm@gnu.org>
 
 	* emit-rtl.c (gen_highpart): Initialize `word' properly for pseudo.
 
-Fri Apr 17 14:30:37 1998  John Carr <jfc@mit.edu>
+Fri Apr 17 14:30:37 1998  John Carr  <jfc@mit.edu>
 
 	* emit-rtl.c (operand_subword_force): If a register can not be
 	accessed by words, copy it to a pseudo register.
@@ -5192,7 +5192,7 @@ Tue Apr 14 23:39:13 1998  Richard Henderson  <rth@cygnus.com>
 	Nov 8 find_replacement change.  Move decls of get_unaligned_address
 	* alpha.h: ... here.
 
-Tue Apr 14 22:00:39 1998  John Carr <jfc@mit.edu>
+Tue Apr 14 22:00:39 1998  John Carr  <jfc@mit.edu>
 
 	* function.c (assign_parms): Initialize unsignedp before passing
 	its pointer to promote_mode.
@@ -5200,7 +5200,7 @@ Tue Apr 14 22:00:39 1998  John Carr <jfc@mit.edu>
 	* genattrtab.c (check_attr_test): Handle MATCH_INSN like MATCH_OPERAND.
 	(write_test_expr): Allow MATCH_INSN.
 
-Tue Apr 14 21:57:57 1998  Paul Eggert <eggert@twinsun.com>
+Tue Apr 14 21:57:57 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* install.texi: Update section on warnings that can be safely ignored.
 
@@ -5214,7 +5214,7 @@ Tue Apr 14 16:19:03 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* expr.c (MOVE_RATIO): Set to 3 if optimizing for space.
 
-Tue Apr 14 11:31:28 1998  Krister Walfridsson <cato@df.lth.se>
+Tue Apr 14 11:31:28 1998  Krister Walfridsson  <cato@df.lth.se>
 
 	* i386/bsd386.h (ASM_OUTPUT_ALIGN): Redefine.
 
@@ -5239,9 +5239,9 @@ Mon Apr 13 11:31:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h (BINFO_OFFSET_ZEROP): Use integer_zerop.
 
-Sun Apr 12 20:55:32 1998  Catherine Moore <clm@cygnus.com>
+Sun Apr 12 20:55:32 1998  Catherine Moore  <clm@cygnus.com>
 
-	* invoke.texi (ld options)  Include memset requirements
+	* invoke.texi (ld options): Include memset requirements
 	for options -nodstdlib and -nodefaultlibs.
 
 1998-04-12  Paul Eggert  <eggert@twinsun.com>
@@ -5274,7 +5274,7 @@ Sun Apr 12 20:23:03 1998  Jeffrey A Law  (law@cygnus.com)
 	* configure.in (mips-*-ecoff): Do not mention mips/mips.h in tm_files.
 	* mips/ecoff.h: Include "mips/mips.h".
 
-Sat Apr 11 22:42:54 PDT 1998 Jeff Law  (law@cygnus.com)
+Sat Apr 11 22:42:54 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -5396,11 +5396,11 @@ Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 	* c-lex.h (is_class_name): Fix arg type to be tree, not void.
 	(make_pointer_declarator, reinit_parse_for_function): Fix typo.
 
-Wed Apr  8 06:16:45 1998  Richard Earnshaw (rearnsha@arm.com)
+Wed Apr  8 06:16:45 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
 
-Wed Apr  8 00:44:18 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
+Wed Apr  8 00:44:18 1998  Bernd Schmidt  (crux@pool.informatik.rwth-aachen.de>
 
 	* c-lex.c (is_class_name): Delete declaration.
 	(whitespace_cr): Make static and add prototype.
@@ -5463,11 +5463,11 @@ Mon Apr  6 23:36:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* tree.h (sizetype_tab): Fix previous change for K&R.
 
-Mon Apr 6 22:23:29 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon Apr  6 22:23:29 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Mon Apr  6 23:16:10 1998  Richard Earnshaw (rearnsha@arm.com)
+Mon Apr  6 23:16:10 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* configure.in (sparc-*-solaris2*): Add xm-siglist.h to xm_file.
 	Add USG and POSIX to xm_defines.
@@ -5480,7 +5480,7 @@ Mon Apr  6 21:49:57 1998  Bob Manson  <manson@charmed.cygnus.com>
 	if not, use ld instead.
 
 	* Makefile.in (USE_COLLECT2): It's named collect2 now, not ld.
-	(ld:) Deleted.
+	(ld): Deleted.
 	(install-collect2): Install as collect2, not ld.
 
 	* configure.in(will_use_collect2): It's named collect2 now.
@@ -5520,7 +5520,7 @@ Mon Apr  6 07:17:52 1998  Catherine Moore  <clm@cygnus.com>
 
 	* combine.c (can_combine_p): Include successor in volatile test.
 
-Mon Apr  6 14:16:33 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Apr  6 14:16:33 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.h (CASE_VECTOR_SHORTEN_MODE): Fix logic when to set
 	offset_unsigned.
@@ -5530,7 +5530,7 @@ Mon Apr  6 02:03:29 1998  Jeffrey A Law  (law@cygnus.com)
 	* objc/objc-act.c (encode_aggregate_within): Avoid GNU extensions
 	in prototype and definition.
 
-Mon Apr 6 00:48:56 PDT 1998 Jeff Law  (law@cygnus.com)
+Mon Apr  6 00:48:56 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -5551,7 +5551,7 @@ Sun Apr  5 21:31:24 1998  John Wehle  (john@feith.com)
 	(movsf_normal): Change to unnamed pattern.
 	Likewise for movdf, movxf, and friends.
 
-Sun Apr 5 18:45:51 PDT 1998 Jeff Law  (law@cygnus.com)
+Sun Apr  5 18:45:51 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -5559,11 +5559,11 @@ Sun Apr  5 16:31:10 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-dec-osf*): Match osf1.3 correctly.
 
-Sun Apr  5 16:53:37 1998  Don Bowman <don@pixsci.com>
+Sun Apr  5 16:53:37 1998  Don Bowman  <don@pixsci.com>
 
 	* configure.in (mips-wrs-vxworks): New target.
 
-Sat Apr 4 23:34:32 PST 1998 Jeff Law  (law@cygnus.com)
+Sat Apr  4 23:34:32 1998  Jeff Law  (law@cygnus.com)
 
 	* expmed.c (synth_mult): The value -1, has no zeros, so it can
 	never have the form ...011.
@@ -5848,7 +5848,7 @@ Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* tree.h (lang_print_xnode): Provide prototype.
 
-Sat Mar 28 23:50:44 PST 1998 Jeff Law  (law@cygnus.com)
+Sat Mar 28 23:50:44 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -5893,7 +5893,7 @@ Sat Mar 28 01:37:33 1998  Craig Burley  <burley@gnu.ai.mit.edu>
 	statements within an expression (gcc's `({ ... )}')
 	even if -fsyntax-only.
 
-Sat Mar 28 01:06:12 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+Sat Mar 28 01:06:12 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 			  Jeffrey A Law  (law@cygnus.com)
 
 	* basic-block.h (basic_block_computed_jump_target): Declare.
@@ -5936,7 +5936,7 @@ Fri Mar 27 16:04:49 1998  Michael Meissner  <meissner@cygnus.com>
 	(get_key_value): Release allocated scratch storage.
 	(set_std_prefix): New function to reset the standard prefix.
 
-Fri Mar 27 18:08:21 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Mar 27 18:08:21 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (find_barrier): Fix calculations for alignment increase.
 
@@ -5954,7 +5954,7 @@ Fri Mar 27 00:49:46 1998  Jeffrey A Law  (law@cygnus.com)
 	* regclass.c (reg_scan_mark_refs): Be more selective about
 	when we mark a register with REGNO_POINTER_FLAG.
 
-Thu Mar 26 23:00:11 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Mar 26 23:00:11 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	reload inheritance improvement:
 	* reload1.c (reg_reloaded_contents, reg_reloaded_insn):
@@ -5965,7 +5965,7 @@ Thu Mar 26 23:00:11 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(forget_old_reloads_1, allocate_reload_reg): Likewise.
 	(choose_reload_regs, emit_reload_insns): Likewise.
 
-Thu Mar 26 18:34:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Mar 26 18:34:13 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* regclass.c (record_reg_classes): '?' increases cost by two.
 
@@ -5978,7 +5978,7 @@ Thu Mar 26 18:34:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* reload.c (find_equiv_reg): Also consider a goal offset from the
 	frame pointer to be constant.
 
-Thu Mar 26 17:34:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Mar 26 17:34:46 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.h (OPTIMIZATION_OPTIONS): Define.
 
@@ -6048,7 +6048,7 @@ Wed Mar 25 10:30:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (scan_loop): Initialize move_insn_first to zero.
 
-Wed Mar 25 01:06:49 1998  Joel Sherrill (joel@OARcorp.com)
+Wed Mar 25 01:06:49 1998  Joel Sherrill  (joel@OARcorp.com)
 
 	* config/i386/go32-rtems.h: Defined TARGET_MEM_FUNCTIONS.
 	* config/i386/rtems.h: Likewise.
@@ -6147,15 +6147,15 @@ Mon Mar 23 23:18:48 1998  Jeffrey A Law  (law@cygnus.com)
 	* h8300.h (CONST_COSTS): Remove definition.
 	(DEFAULT_RTX_COSTS): Define.
 
-Mon Mar 23 22:58:22 1998  Joel Sherrill (joel@OARcorp.com)
+Mon Mar 23 22:58:22 1998  Joel Sherrill  (joel@OARcorp.com)
 
 	* config/sh/rtems.h: Switched from ELF to COFF.
 
-Mon Mar 23 14:14:20 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Mar 23 14:14:20 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* freebsd.h (ASM_OUTPUT_ALIGN): Redefine.
 
-Sat Mar 21 23:52:56 PST 1998 Jeff Law  (law@cygnus.com)
+Sat Mar 21 23:52:56 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -6282,7 +6282,7 @@ Wed Mar 18 13:42:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* expr.c (expand_expr, case COND_EXPR): If have conditional move,
 	don't use ORIGINAL_TARGET unless REG.
 
-Wed Mar 18 16:53:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Mar 18 16:53:19 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* netbsd.h (ASM_OUTPUT_ALIGN): Redefine.
 
@@ -6357,7 +6357,7 @@ Wed Mar 18 09:56:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* scan-decls.c (scan_decls): Remove unused variable `old_written'.
 
-Tue Mar 17 00:45:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Mar 17 00:45:48 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* vax.h (ADDR_VEC_ALIGN): Define.
 
@@ -6374,7 +6374,7 @@ Mon Mar 16 12:55:15 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* config/m68k/netbsd.h (ASM_SPEC): Add %{m68060}.
 
-Mon Mar 16 15:50:20 EST 1998 Andrew MacLeod <amacleod@cygnus.com>
+Mon Mar 16 15:50:20 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (in_same_eh_region): New prototype.
 	(free_insn_eh_region, init_insn_eh_region): New prototypes.
@@ -6411,7 +6411,7 @@ Mon Mar 16 11:14:20 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 	config/m68k/m68k.h: Replace gen_rtx (XXX, ...) with gen_rtx_XXX
 	(...).  Use GEN_INT instead of gen_rtx_CONST_INT.
 
-Sun Mar 15 22:30:44 PST 1998 Jeff Law  (law@cygnus.com)
+Sun Mar 15 22:30:44 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -6425,7 +6425,7 @@ Thu Mar 12 14:47:14 1998  Jim Wilson  <wilson@cygnus.com>
 	* cccp.c (create_definition): If pedantic, call pedwarn for macro
 	varargs feature.
 
-Thu Mar 12 13:43:25 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+Thu Mar 12 13:43:25 1998  Bernd Schmidt  <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* i386.c (ix86_logical_operator): New function.
 	(split_di): Ensure that when a MEM is split, the resulting MEMs have
@@ -6434,7 +6434,7 @@ Thu Mar 12 13:43:25 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 	to implement them.
 
 Thu Mar 12 15:13:16 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-			  Richard Earnshaw <rearnsha@arm.com>
+			  Richard Earnshaw  <rearnsha@arm.com>
 			  Nick Clifton  <nickc@cygnus.com>
 
 	* tm.texi (DEFAULT_RTX_COSTS): Document new macro.
@@ -6579,13 +6579,13 @@ Wed Mar 11 12:05:20 1998  Teemu Torma  <tot@trema.com>
 	value from __gthread_once.
 	Check that the value of get_eh_context was really changed.
 
-Wed Mar 11 18:26:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Mar 11 18:26:25 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.h (LOOP_ALIGN): Only align when optimizing.
 	* sh.c (find_barrier): Clear inc for CODE_LABELs.
 	When not optimizing, calculate alignment for BARRIERs directly.
 
-Wed Mar 11 15:07:18 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Mar 11 15:07:18 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Remove conditionalizing on
 	SHORTEN_WITH_ADJUST_INSN_LENGTH.
@@ -6609,11 +6609,11 @@ Mon Mar  9 12:02:23 1998  Jim Wilson  <wilson@cygnus.com>
 	* function.c (put_reg_into_stack): Copy MEM_IN_STRUCT_P from new.
 	(assign_parms): Set aggregate if hide_last_arg and last_named.
 
-Mon Mar  9 19:57:56 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Mar  9 19:57:56 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Initialize insn_addresses.
 
-Mon Mar  9 14:10:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Mar  9 14:10:23 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.h (MUST_PASS_IN_STACK): Define.
 
@@ -6622,7 +6622,7 @@ Sun Mar  8 13:01:56 1998  Jeffrey A Law  (law@cygnus.com)
 	* final.c (shorten_branches): Fix minor logic error in
 	ADDR_DIFF_VEC shortening support.
 
-Sun Mar 8 02:17:42 PST 1998 Jeff Law  (law@cygnus.com)
+Sun Mar  8 02:17:42 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -6646,7 +6646,7 @@ Sat Mar  7 00:54:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (main): Fix dumb mistakes in last change.
 
-Fri Mar  6 21:28:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Mar  6 21:28:45 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* rtl.h (addr_diff_vec_flags): New typedef.
 	(union rtunion_def): New member rt_addr_diff_vec_flags.
@@ -6745,7 +6745,7 @@ Thu Mar  5 23:24:50 1998  Jeffrey A Law  (law@cygnus.com)
 	* toplev.c (rest_of_compilation): Call find_basic_blocks, then
 	life_analysis instead of flow_analysis.
 
-Thu Mar  5 23:06:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Mar  5 23:06:26 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* jump.c (jump_optimize): Call mark_jump_label also for deleted
 	insns.
@@ -6801,7 +6801,7 @@ Thu Mar  5 00:05:40 1998  Jeffrey A Law  (law@cygnus.com)
 	* cccp.c (main): Avoid undefined behavior when setting pend_includes
 	and pend_files.
 
-Wed Mar  4 21:58:25 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+Wed Mar  4 21:58:25 1998  Franz Sirl  <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h: Don't define DEFAULT_VTABLE_THUNKS to 1 if
 	USE_GNULIBC_1 is defined.
@@ -6812,17 +6812,17 @@ Wed Mar  4 12:11:36 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (movdf_internal1a): Fix misplaced parenthesis in condition.
 
-Wed Mar  4 18:47:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Mar  4 18:47:48 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (final_scan_insn, case CODE_LABEL: Cleanup.
 
-Wed Mar  4 15:51:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Mar  4 15:51:19 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Tag the loop alignment onto the
 	first label after NOTE_INSN_LOOP_BEG even if there is an
 	intervening insn.
 
-Tue Mar  3 21:48:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Mar  3 21:48:35 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (insn_current_reference_address):
 	Use SEQ instead of BRANCH as argument to align_fuzz, to get a
@@ -6856,7 +6856,7 @@ Mon Mar  2 13:45:03 1998  Richard Henderson  <rth@cygnus.com>
 	* alpha/linux.h (CPP_PREDEFINES): Correct connecting whitespace
 	to SUB_CPP_PREDEFINES.  Reported by asun@saul4.u.washington.edu.
 
-Mon Mar  2 22:59:28 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Mar  2 22:59:28 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (insn_last_address, insn_current_align, uid_align):
 	New variables.
@@ -6885,11 +6885,11 @@ Mon Mar  2 22:59:28 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* i386.md (casesi+1): Use ASM_OUTPUT_ALIGN instead of
 	ASM_OUTPUT_ALIGN_CODE.
 
-Mon Mar 2 01:05:50 PST 1998 Jeff Law  (law@cygnus.com)
+Mon Mar  2 01:05:50 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Mon Mar 2 00:52:18 PST 1998 Jeff Law  (law@cygnus.com)
+Mon Mar  2 00:52:18 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -6902,7 +6902,7 @@ Sun Mar  1 18:25:49 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 	opposite_needed thread.  Return delay_list even when cannot get
 	any more delay insns from end of subroutine.
 
-Sun Mar  1 18:26:21 1998  Ken Rose (rose@acm.org)
+Sun Mar  1 18:26:21 1998  Ken Rose  (rose@acm.org)
 
 	* reorg.c (fill_slots_from_thread): New parameter, delay_list.
 	All callers changed.
@@ -6923,7 +6923,7 @@ Sun Mar  1 18:06:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* fold-const.c (fold_range_test): Always return a value.
 
-Sun Mar  1 17:57:34 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Sun Mar  1 17:57:34 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config/i386/winnt.c (i386_pe_unique_section): Put read-only
 	data in the text section unless READONLY_DATA_SECTION is defined.
@@ -6933,7 +6933,7 @@ Sun Mar  1 17:48:46 1998  Jeffrey A Law  (law@cygnus.com)
 	* c-parse.in (undeclared variable error): Tweak error message to
 	be clearer.
 
-Sun Mar 1 10:22:36 PST 1998 Jeff Law  (law@cygnus.com)
+Sun Mar  1 10:22:36 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -7116,7 +7116,7 @@ Tue Feb 24 23:54:07 1998  Richard Henderson  <rth@cygnus.com>
 	(SELECT_SECTION): Use sdata when small enough.
 	* alpha/linux.h (ASM_SPEC): Remove.
 
-Mon Feb 23 15:09:18 1998  Bruno Haible <bruno@linuix.mathematik.uni-karlsruhe.de>
+Mon Feb 23 15:09:18 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 	* config.sub (sco5): Fix typo.
 
 Mon Feb 23 18:19:31 1998  Manfred Hollstein  <manfred@s-direktnet.de>
@@ -7265,7 +7265,7 @@ Thu Feb 19 00:46:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (force_movables): Fix typo.
 
-Thu Feb 19 08:26:30 1998  Manfred Hollstein <manfred@s-direktnet.de>
+Thu Feb 19 08:26:30 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* m88k.h: Change file pattern to match reality.
 
@@ -7299,11 +7299,11 @@ Wed Feb 18 09:09:50 1998  Jeffrey A Law  (law@cygnus.com)
 	* collect2.c: Bracket declaration of 'exportf' and
 	'full_real_ld_suffix'.
 
-Wed Feb 18 08:44:25 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+Wed Feb 18 08:44:25 1998  Bernd Schmidt  <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* Makefile.in (STAGESTUFF): Add genrtl.c, genrtl.h and gengenrtl.
 
-Tue Feb 17 23:30:20 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+Tue Feb 17 23:30:20 1998  Bernd Schmidt  <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* c-common.c (c_expand_start_cond, c_expand_end_cond,
 	c_expand_start_else): Don't warn about non-ambiguous else even if
@@ -7359,7 +7359,7 @@ Tue Feb 17 21:28:12 1998  Gavin Koch  <gavin@cygnus.com>
 	* mips/mips.h (CAN_ELIMINATE): Don't eliminate the frame
 	pointer for the stack pointer in MIPS16 and 64BIT.
 
-Tue Feb 17 21:17:30 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Feb 17 21:17:30 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* rtl.h (force_line_numbers, restore_line_number_status): Declare.
 	* emit-rtl.c (force_line_numbers, restore_line_number_status):
@@ -7369,7 +7369,7 @@ Tue Feb 17 21:17:30 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(check_seenlabel): New function.
 	(pushcase, pushcase_range, expand_endcase): Use it.
 
-Tue Feb 17 10:14:32 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Feb 17 10:14:32 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* i386.md (adddi3): Add =!r,0,0,X alternative.
 
@@ -7432,11 +7432,11 @@ Sun Feb 15 15:23:15 1998  John Carr  <jfc@mit.edu>
 	* alias.c: Include <stdlib.h> and <string.h>.
 	(init_alias_analysis): Pass NULL_RTX instead of 0 to record_set.
 
-Sat Feb 14 11:23:09 PST 1998 Jeff Law  (law@cygnus.com)
+Sat Feb 14 11:23:09 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Sat Feb 14 05:08:21 1998  Richard Earnshaw (rearnsha@arm.com)
+Sat Feb 14 05:08:21 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.md (movsfcc): Also validate operands[3] when compiling hard
 	float.
@@ -7503,7 +7503,7 @@ Fri Feb 13 14:38:34 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* except.c (emit_throw): Lose throw_used.
 
-Fri Feb 13 20:36:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Feb 13 20:36:05 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sched.c (update_flow_info, REG_WAS_0): Ignore if setting insn
 	was deleted.
@@ -7513,7 +7513,7 @@ Fri Feb 13 12:18:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* genextract.c (main): Fix typo.
 
-Fri Feb 13 08:41:49 1998  Robert Lipe	<robertl@dgii.com>
+Fri Feb 13 08:41:49 1998  Robert Lipe  <robertl@dgii.com>
 
 	* c-lang.c (finish_file): Bracket declaration of static_ctors,
 	static_dtors.
@@ -7583,7 +7583,7 @@ Fri Feb 13 08:41:49 1998  Robert Lipe	<robertl@dgii.com>
 	* i386/sco5.h (ASM_OUTPUT_ASCII): Add parens for assignment used
 	as truth.
 
-Fri Feb 13 10:21:41 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Feb 13 10:21:41 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* combine.c (can_combine_p): Handle USEs in PARALLELs.
 
@@ -7598,7 +7598,7 @@ Fri Feb 13 01:34:14 1998  H.J. Lu  (hjl@gnu.org)
 	* config/alpha/linux-elf.h (LIB_SPEC): New. Defined if
 	USE_GNULIBC_1 is not defined.
 
-Fri Feb 13 01:29:29 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+Fri Feb 13 01:29:29 1998  Franz Sirl  <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/sysv4.h (ENDFILE_SPEC): Add missing %(endfile_linux)
 	for -mcall-linux.
@@ -7645,7 +7645,7 @@ Thu Feb 12 11:18:37 1998  Gavin Koch  <gavin@cygnus.com>
 	* mips.md (extendsidi2): Allow extension to/from a non-mips16
 	register.
 
-Thu Feb 12 00:04:16 1998  Marc Lehmann <pcg@goof.com>
+Thu Feb 12 00:04:16 1998  Marc Lehmann  <pcg@goof.com>
 
 	* i386.c: Conditionally include <stdlib.h>, <string.h>, and
 	<strings.h>.
@@ -7688,7 +7688,7 @@ Wed Feb 11 01:35:55 1998  Robert Lipe  <robertl@dgii.com>
 	(expand_builtin_eh_stub): Remove unused variable 'temp'.
 	(copy_eh_entry): Deleted.  Dead function.
 
-	* expr.c (move_block_to_reg) Bracket declaration of 'pat' and
+	* expr.c (move_block_to_reg): Bracket declaration of 'pat' and
 	'last' with same #if HAVE_load_multiple as use of it.
 	(move_block_from_reg): Likewise.
 	(emit_move_insn_1): Remove unused variable 'insns'.
@@ -7702,7 +7702,7 @@ Wed Feb 11 01:35:55 1998  Robert Lipe  <robertl@dgii.com>
 	(emit_queue): Add parens for assignment used as conditional.
 	(expand_expr): Case TARGET_EXPR: Remove unused variable 'temp'.
 
-Wed Feb 11 01:30:49 1998  Marc Lehmann <pcg@goof.com>
+Wed Feb 11 01:30:49 1998  Marc Lehmann  <pcg@goof.com>
 
 	* i386.c: Added include for recog.h.
 	(override_options): Removed unused variable p. Initialized regno to
@@ -7737,7 +7737,7 @@ Tue Feb 10 09:02:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rs6000.c (setup_incoming_varargs): Always set rs6000_sysv_varargs_p.
 
-Tue Feb 10 03:35:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Feb 10 03:35:43 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads_toplev): Handle arbitrary non-paradoxical
 	SUBREGs of CONST_INTs.
@@ -7769,7 +7769,7 @@ Sun Feb  8 13:21:38 1998  John Carr  <jfc@mit.edu>
 	* genattrtab.c (RTL_HASH): Cast pointer to long, not HOST_WIDE_INT.
 
 Sun Feb  8 12:04:24 1998  Jim Wilson  (wilson@cygnus.com)
-			  Jeff Law (law@cygnus.com)
+			  Jeff Law  (law@cygnus.com)
 
 	* regmove.c: Fix various minor formatting problems.
 	(optimize_reg_copy_1): Stop search at CALL_INSNs if flag_exceptions
@@ -7893,7 +7893,7 @@ Thu Feb  5 21:56:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 	* toplev.c (main): Don't disable flag_inline_functions anymore when
 	-Os is in effect.
 
-Fri Feb  6 00:27:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Feb  6 00:27:36 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* regmove.c: Update.
 	* flags.h (flag_regmove): Declare.
@@ -7903,13 +7903,13 @@ Fri Feb  6 00:27:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* toplev.c (rest_of_compilation): Call regmove_optimize also for
 	expensive_optimizations.
 
-Thu Feb 5 13:38:42 PST 1998 Jeff Law  (law@cygnus.com)
+Thu Feb  5 13:38:42 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Thu Feb  5 01:45:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Feb  5 01:45:19 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 	Undo this change (the problem was actually in reload):
-	Fri Jan 23 23:28:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Fri Jan 23 23:28:59 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	  * sh.md (movqi_i+1): New peephole.
 
@@ -7980,7 +7980,7 @@ Mon Feb  2 02:08:04 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 	* jump.c (jump_optimize): Allow conditional loading of floating point
 	constants and constants from memory.  Reinstalled modified_in_p tests.
 
-Mon Feb  2 01:38:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Feb  2 01:38:39 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* loop.c (get_condition): Handle sign-extended constants.
 
@@ -7997,7 +7997,7 @@ Mon Feb  2 00:09:52 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
 	the directories to fixinclude - /usr/include is a link
 	to it and hence its contents are fixed by default.
 
-Sun Feb  1 14:15:33 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+Sun Feb  1 14:15:33 1998  Franz Sirl  <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h: Define JUMP_TABLES_IN_TEXT_SECTION.
 
@@ -8005,7 +8005,7 @@ Sun Feb  1 13:01:15 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* cccp.c (main): Predefine __VMS_VER on VMS.
 
-Sun Feb  1 12:39:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Sun Feb  1 12:39:53 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* expr.c (get_inner_reference): Use sbitsizetype for type sizes.
 	* fold-const.c (size_int): Replace with
@@ -8132,7 +8132,7 @@ Thu Jan 29 20:26:12 1998  Jeffrey A Law  (law@cygnus.com)
 	* genattrtab.c (optimize): Define in case PRESERVE_DEATH_INFO_REGNO_P
 	uses it.
 
-Thu Jan 29 09:27:56 PST 1998 Jeff Law  (law@cygnus.com)
+Thu Jan 29 09:27:56 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -8190,7 +8190,7 @@ Thu Jan 29 00:24:29 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c: Fix typos in Jan27 changes.
 
-Thu Jan 29 00:07:49 1998  Ollivier Robert <roberto@keltia.freenix.fr>
+Thu Jan 29 00:07:49 1998  Ollivier Robert  <roberto@keltia.freenix.fr>
 
 	* i386/freebsd.h (LIB_SPEC): Correctly handle -shared, -p and friends.
 	(LINK_SPEC): Likewise.
@@ -8205,7 +8205,7 @@ Thu Jan 29 00:07:49 1998  Ollivier Robert <roberto@keltia.freenix.fr>
 	* m32r.md, mips.md, mn10200.md, mn10300.md, pyr.md: Remove obsolete
 	comments.
 
-Wed Jan 28 20:11:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Wed Jan 28 20:11:06 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* reload.c (push_reload): If WORD_REGISTER_OPERATIONS, reload the
 	SUBREG_REG if the word count is unchanged, also in the input reload
@@ -8342,7 +8342,7 @@ Tue Jan 27 23:11:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(output_asm_insn): Move variable `i' inside macro conditional
 	where it is used.  Add parentheses around assignment used as truth
 	value.
-	(asm_fprintf) Likewise, likewise.
+	(asm_fprintf): Likewise, likewise.
 
 	* fix-header.c (main): Remove unused variable `done'.  Protect
 	declaration of `i' with FIXPROTO_IGNORE_LIST.
@@ -8393,12 +8393,12 @@ Tue Jan 27 23:11:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	Protect variables `i', `total_nodes', and `total_bytes' with the
 	GATHER_STATISTICS macro.
 
-Tue Jan 27 23:01:55 1998  Mike Stump  (mrs@wrs.com)
+Tue Jan 27 23:01:55 1998  Mike Stump  <mrs@wrs.com>
 
 	* m32r.md, mips.md, mn10200.md, mn10300.md, pyr.md: Add
 	some comments regarding use of dead_or_set_p.
 
-Tue Jan 27 22:14:48 1998  Todd Vierling <tv@pobox.com>
+Tue Jan 27 22:14:48 1998  Todd Vierling  <tv@pobox.com>
 
 	* fixincludes: Tweak fix for struct exception in math.h
 
@@ -8464,7 +8464,7 @@ Mon Jan 26 23:57:39 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	* libgcc2.c (__clear_insn_cache): On sysV68 enable the memctl
 	stuff only if MCT_TEXT is #define'd.
 
-Mon Jan 26 23:52:51 1998  Markus F.X.J. Oberhumer <k3040e4@c210.edvz.uni-linz.ac.at>
+Mon Jan 26 23:52:51 1998  Markus F.X.J. Oberhumer  <k3040e4@c210.edvz.uni-linz.ac.at>
 
 	* configure.in (i*86-pc-msdosdjgpp): Treat like msdos & go32
 	configurations.
@@ -8485,7 +8485,7 @@ Mon Jan 26 18:17:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sparc.c (pic_setup_code): Don't set LABEL_PRESERVE_P.
 
-Mon Jan 26 18:11:30 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Jan 26 18:11:30 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* c-decl.c (grokdeclarator): Get parameter tags from
 	last_function_parm_tags.
@@ -8514,7 +8514,7 @@ Sun Jan 25 22:10:21 1998  Richard Henderson  <rth@cygnus.com>
 	(build_xm_file_list): Likewise.
 	* configure: Rebuild.
 
-Sun Jan 25 22:00:25 1998  Alasdair Baird <alasdair@wildcat.demon.co.uk>
+Sun Jan 25 22:00:25 1998  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* recog.c (validate_replace_rtx_1): Only perform substitutions
 	of arguments to commutative and comparison operators once.
@@ -8561,7 +8561,7 @@ Fri Jan 23 22:48:24 1998  Jeffrey A Law  (law@cygnus.com)
 	* crtstuff.c (init_dummy): Keep the epilogue in the init
 	section for non-ELF systems.
 
-Fri Jan 23 23:28:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Jan 23 23:28:59 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.md (movqi_i+1): New peephole.
 
@@ -8593,7 +8593,7 @@ Fri Jan 23 00:19:36 1998  Gavin Koch  (gavin@cygnus.com)
 	* mips.c (function_prologue): Use HARD_FRAME_POINTER_REGNUM in
 	.frame directive instead of FRAME_POINTER_REGNUM.
 
-Fri Jan 23 00:08:55 1998  Robin Kirkham	<rjk@mlb.dmt.csiro.au>
+Fri Jan 23 00:08:55 1998  Robin Kirkham  <rjk@mlb.dmt.csiro.au>
 
 	* m68k.h (TARGET_SWITCHES): -mcpu32 now clears MASK_68881.
 	(MACHINE_STATE_m68010_up): Replaced __mc68332__ with __mcpu32__.
@@ -8606,7 +8606,7 @@ Fri Jan 23 00:08:55 1998  Robin Kirkham	<rjk@mlb.dmt.csiro.au>
 	mcpu32 or m5200.
 	* longlong.h: Replace __mc68332__ with __mcpu32__.
 
-Thu Jan 22 19:55:40 PST 1998 Jeff Law  (law@cygnus.com)
+Thu Jan 22 19:55:40 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
@@ -8698,7 +8698,7 @@ Sun Jan 18 01:54:27 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* alpha/xm-winnt.h (HAS_INIT_SECTION): Undefine.
 
-Sun Jan 18 00:57:35 1998  Mike Stump  (mrs@wrs.com)
+Sun Jan 18 00:57:35 1998  Mike Stump  <mrs@wrs.com>
 
 	* configure.in (i960-wrs-vxworks): Default to latest vxworks release.
 
@@ -8737,8 +8737,8 @@ Sat Jan 17 23:22:59 1998  John Wehle  (john@feith.com)
 	Don't bother checking for TARGET_PUSH_MEMORY when
 	pushing constants or registers.
 
-Sat Jan 17 22:35:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
-			  J.J VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
+Sat Jan 17 22:35:39 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+			  J.J VanderHeijden  <J.J.vanderHeijden@student.utwente.nl>
 
 	* pexecute.c (pexecute): New function for mingw32. Supports pipes.
 	(pwait): New function for mingw32.
@@ -8757,12 +8757,12 @@ Sat Jan 17 22:35:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
 	* reorg.c: #include "expr.h" for rtx prototypes.
 	* Makefile.in (reorg.o): Depend on expr.h
 
-Sat Jan 17 21:28:08 1998  Pieter Nagel <pnagel@epiuse.co.za>
+Sat Jan 17 21:28:08 1998  Pieter Nagel  <pnagel@epiuse.co.za>
 
 	* Makefile.in (FLAGS_TO_PASS): Pass down gcc_include_dir and
 	local_prefix to sub-make invocations.
 
-Sat Jan 17 21:24:16 1998  David T. McWherter <dtm@waterw.com>
+Sat Jan 17 21:24:16 1998  David T. McWherter  <dtm@waterw.com>
 
 	* objc-parse.c: Recognize protocol qualifiers in class definitions.
 
@@ -8839,7 +8839,7 @@ Tue Jan 13 23:27:54 1998  Robert Lipe  (robertl@dgii.com)
 
 	* sco5.h (ASM_OUTPUT_SECTION_NAME): Refresh from ../svr4.h.
 
-Tue Jan 13 22:47:02 1998  Herman ten Brugge <herman@htbrug.net.HCC.nl>
+Tue Jan 13 22:47:02 1998  Herman ten Brugge  <herman@htbrug.net.HCC.nl>
 
 	* cppexp.c: Include gansidecl.h
 
@@ -8857,11 +8857,11 @@ Tue Jan 13 22:39:40 1998  Richard Henderson  (rth@cygnus.com)
 	* haifa-sched.c (schedule_insns): Correctly remove inter-block
 	dependencies after reload.
 
-Tue Jan 13 22:22:31 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+Tue Jan 13 22:22:31 1998  Franz Sirl  <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h (CPP_PREDEFINES): Add -D__ELF__.
 
-Tue Jan 13 22:14:57 1998  Klaus Kaempf <kkaempf@progis.de>
+Tue Jan 13 22:14:57 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* alpha/vms.h (DIR_SEPARATOR): Define.
 
@@ -8871,7 +8871,7 @@ Tue Jan 13 22:13:04 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.d
 	(protoize.o, unprotoize.o): Straightforward compile.
 	* unprotoize.c: Define UNPROTOIZE here, not in the Makefile.
 
-Tue Jan 13 21:59:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Tue Jan 13 21:59:39 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (STRIP_NAME_ENCODING): Define for Win32 to strip
 	off the trailing @[NUM] added by ENCODE_SECTION_INFO.
@@ -8882,7 +8882,7 @@ Tue Jan 13 21:55:06 1998  Jeffrey A Law  (law@cygnus.com)
 	* i386/netbsd.h, m68k/netbsd.h, ns32k/netbsd.h: Likewise.
 	* sparc/netbsd.h, vax/netbsd.h: Likewise.
 
-Tue Jan 13 21:37:07 1998  Shigeya Suzuki <shigeya@foretune.co.jp>
+Tue Jan 13 21:37:07 1998  Shigeya Suzuki  <shigeya@foretune.co.jp>
 
 	* i386/bsd386.h (DWARF2_UNWIND_INFO): Define as zero for now.
 
@@ -8898,12 +8898,12 @@ Tue Jan 13 09:07:44 1998  John Carr  <jfc@mit.edu>
 	to allocate rtx.
 	(gendef): Call obstack_alloc_rtx.
 
-Tue Jan 13 01:16:36 1998  Robert Lipe (robertl@dgii.com)
+Tue Jan 13 01:16:36 1998  Robert Lipe  (robertl@dgii.com)
 
 	* configure.in (i[3456]86-UnixWare7-sysv5): Treat much like SVR4
 	for now.
 
-Thu Dec 18 18:40:17 1997  Mumit Khan <khan@xraylith.wisc.edu>
+Thu Dec 18 18:40:17 1997  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/mingw32.h (INCOMING_RETURN_ADDR_RTX): Delete. Use the value
 	of DWARF2_UNWIND_INFO, if any, from i386/cygwin32.h instead.
@@ -8923,7 +8923,7 @@ Sat Jan 10 22:04:15 1998  Stan Cox  <scox@equinox.cygnus.com>
 	* i386.md (movsicc_1, movhicc_1): For alternate 3 set the opcode
 	suffix from operand 3.
 
-Sat Jan 10 21:50:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Sat Jan 10 21:50:16 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 			  Jeffrey A Law  (law@cygnus.com)
 
 	* regmove.c: New implementation of regmove pass.
@@ -9168,7 +9168,7 @@ Wed Dec 24 22:34:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* tree.c (restore_tree_status): Do not dereference a null pointer.
 
-Tue Dec 23 12:56:46 1997 Paul Eggert <eggert@twinsun.com>:
+Tue Dec 23 12:56:46 1997  Paul Eggert  <eggert@twinsun.com>
 
 	* genattrtab.c (main): Check HAVE_{G,S}ETRLIMIT in addition to
 	RLIMIT_STACK.  This maintains consistency with the recent, similar
@@ -9261,7 +9261,7 @@ Mon Dec 22 09:18:37 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* c-pragma.c: Include flags.h.
 
-Sun Dec 21 22:10:59 1997  Mumit Khan <khan@xraylith.wisc.edu>
+Sun Dec 21 22:10:59 1997  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (NO_IMPLICIT_EXTERN_C): Don't assume anything
 	about system headers.
@@ -9437,12 +9437,13 @@ Thu Dec 18 14:57:29 1997  Gavin Koch  <gavin@cygnus.com>
 	* dwarf2out.c (dwarf2out_frame_debug): Handle adjustments of the
 	frame pointer in the prologue.
 
-Thu Dec 18 00:19:38 1997  Robert Lipe <robertl@dgii.com>
+Thu Dec 18 00:19:38 1997  Robert Lipe  <robertl@dgii.com>
 
-	* i386/x-sco5 (CLIB) Deleted.  (ALLOCA) Added.
-	* i386/xm-sco5.h  (USE_C_ALLOCA) Added.
+	* i386/x-sco5 (CLIB): Deleted.
+	(ALLOCA): Added.
+	* i386/xm-sco5.h (USE_C_ALLOCA): Added.
 
-Tue Dec 16 18:51:00 1997  Bill Moyer <billm@cygnus.com>
+Tue Dec 16 18:51:00 1997  Bill Moyer  <billm@cygnus.com>
 
 	* config/m68k/m68k.c (output_function_prologue): Typecast
 	dwarf2out_cfi_label to (char *).
@@ -9453,7 +9454,7 @@ Wed Dec 17 15:06:04 1997  Richard Henderson  <rth@cygnus.com>
 	* sparc.md (jump): Don't use the annul bit around an empty loop.
 	Patch from Kevin.Kelly@East.Sun.COM.
 
-Wed Dec 17 00:51:36 1997  Stan Cox (scox@cygnus.com)
+Wed Dec 17 00:51:36 1997  Stan Cox  (scox@cygnus.com)
 
 	* jump.c (jump_optimize): Don't use the return register as a
 	source1 of a conditional move.
@@ -9590,7 +9591,7 @@ Thu Dec 11 23:33:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* integrate.c (expand_inline_function): Adjust.
 	* toplev.c (rest_of_compilation): Don't call emit_unwinder.
 
-Fri Oct 10 17:58:31 CEST 1997  Marc Lehmann <pcg@goof.com>
+Fri Oct 10 17:58:31 1997  Marc Lehmann  <pcg@goof.com>
 
 	* i386/xm-go32.h (EXECUTABLE_SUFFIX): Define.
 	(DIR_SEPARATOR, NO_SYS_SIGLIST): Likewise.
@@ -9755,7 +9756,7 @@ Thu Dec 11 17:23:48 1997  John F. Carr  <jfc@mit.edu>
 	* emit-rtl.c: Update for new rtl data structures.
 	* genattrtab.c: Define global_rtl.
 
-Thu Dec 11 15:50:29 1997 David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Dec 11 15:50:29 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* configure.in ({rs6000,powerpc}-*-*): Enable Haifa scheduler by
 	default.
@@ -9801,7 +9802,7 @@ Tue Dec  9 00:57:38 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 	* cccp.c (main): Check HAVE_GETRLIMIT and HAVE_SETRLIMIT in addition
 	to RLIMIT_STACK to see if we can call getrlimit and setrlimit.
 
-Mon Dec  8 23:53:26 1997  Jay Sachs <sachs@bull.cs.williams.edu>
+Mon Dec  8 23:53:26 1997  Jay Sachs  <sachs@bull.cs.williams.edu>
 
 	* Makefile.in (compare*): Handle losing behavior from 4.4bsd make.
 
@@ -9822,7 +9823,7 @@ Mon Dec  8 18:15:00 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE): Fix backported gcc-2.8 bug.
 
-Mon Dec  8 21:17:28 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Mon Dec  8 21:17:28 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* cstamp-h, auto-config.h: Delete.
 
@@ -9853,14 +9854,14 @@ Sat Dec  6 01:01:02 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
 
 	* cse.c (cse_insn): Check for invalid entries when taking references.
 
-Fri Dec  5 18:26:25 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Dec  5 18:26:25 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* loop.c (invariant_p): Don't test flag_rerun_loop_opt.
 	(loop_optimize, scan_loop, strength_reduce): New argument unroll_p.
 	* toplev.c (rest_of_compilation): Pass it.  Remove code to
 	save / clear / restore flag_unroll_{,all_}loops.
 
-Fri Dec  5 16:26:03 1997  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+Fri Dec  5 16:26:03 1997  Bernd Schmidt  <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* i386.c (notice_update_cc): Remove bogus pentium GCC code.
 
@@ -9875,7 +9876,7 @@ Thu Dec  4 11:51:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_end_all_catch): Fix for sjlj exceptions.
 
-Thu Dec  4 12:30:40 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Dec  4 12:30:40 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (final_prescan_insn): Use local label prefix
 	when emitting .uses pseudo-ops.
@@ -10015,7 +10016,7 @@ Tue Nov 25 10:00:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* crtstuff.c (do_global_dtors_aux): Handle multiple calls better.
 
-Tue Nov 25 01:26:55 1997  Bruno Haible <haible@ilog.fr>:
+Tue Nov 25 01:26:55 1997  Bruno Haible  <haible@ilog.fr>
 
 	* dwarf2out.c (ASM_OUTPUT_DWARF_DELTA1): Implement.
 
@@ -10054,7 +10055,7 @@ Fri Nov 21 12:18:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	onto outer_context_label_stack.
 	(expand_end_all_catch): Use it and pop it.
 
-Fri Nov 21 10:13:11 1997  Robert Lipe (robertl@dgii.com)
+Fri Nov 21 10:13:11 1997  Robert Lipe  (robertl@dgii.com)
 
 	* i386/sco5.h (HAVE_ATEXIT): Revert last change.
 
@@ -10105,7 +10106,7 @@ Wed Nov 19 12:03:04 1997  Philippe De Muyter  <phdm@macqel.be>
 	if ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL is defined.
 	* m68k/mot3300.h (SET_ASM_OP): Define when not using gas.
 
-Tue Nov 18 23:03:30 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Nov 18 23:03:30 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.md (attribute "type"): Add nil.
 	(movsi_ie): y/y alternative is type nil.
@@ -10129,7 +10130,7 @@ Mon Nov 17 13:21:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* t-h8300 (MULTILIB_EXCEPTIONS): Define.
 
-Fri Nov  7 15:33:11 1997  Robert Lipe (robertl@dgii.com)
+Fri Nov  7 15:33:11 1997  Robert Lipe  (robertl@dgii.com)
 
 	* i386/sco5.h (HAVE_ATEXIT): Delete definition.
 
@@ -10239,7 +10240,7 @@ Thu Nov 13 18:41:02 1997  Michael Meissner  <meissner@cygnus.com>
 	* cpplib.c (compare_defs): Accept pfile as new arg.
 	All callers changed.
 
-Thu Nov 13 23:33:50 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Nov 13 23:33:50 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* fold-const.c (fold_truthop): Fix bug in last change.
 
@@ -10291,7 +10292,7 @@ Thu Nov 13 11:07:41 1997  Michael Meissner  <meissner@cygnus.com>
 	REAL_VALUE_* interface to pick apart DF floating point constants in
 	a machine independent fashion.
 
-Thu Nov 13 00:06:58 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Nov 13 00:06:58 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* fold-const.c (fold_truthop): When changing a one-bit comparison
 	against zero into a comparison against mask, do a proper sign
@@ -10325,7 +10326,7 @@ Wed Nov 12 09:37:01 1997  Jeffrey A Law  (law@cygnus.com)
 	gotos, and other non-trivial cases.  Call abort if an inaccuracy
 	is detected in the cfg.
 
-Tue Nov 11 21:47:27 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Nov 11 21:47:27 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* glimits.h (SHRT_MIN): Define in a way suitable for 16 bit hosts.
 
@@ -10368,7 +10369,7 @@ Sun Nov  9 02:07:16 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc.svr4 (__STDC__): Add another case.
 
-Sun Nov  9 02:00:29 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Sun Nov  9 02:00:29 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* a29k.h (ELIGIBLE_FOR_EPILOGUE_DELAY): Avoid loads from varying
 	addresses in the epilogue delay slot.
@@ -10384,11 +10385,11 @@ Sun Nov  9 01:37:11 1997  Jim Wilson  (wilson@cygnus.com)
 	* loop.c (invariant_p, case LABEL_REF): Check flag_rerun_loop_opt.
 	* toplev.c (flag_rerum_loop_opt): Delete static.
 
-Sat Nov  8 18:20:21 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Sat Nov  8 18:20:21 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	Bring over from FSF:
 
-	Thu Oct 30 12:21:06 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Thu Oct 30 12:21:06 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* va-sh.h (__va_arg_sh1): Define.
 	(va_arg): Use it.
@@ -10399,19 +10400,19 @@ Sat Nov  8 18:20:21 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* sh.h (PASS_IN_REG_P): Fix SH3E case.
 	(ADJUST_INSN_LENGTH): If not optimizing, add two extra bytes length.
 
-	Tue Oct 28 15:06:44 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Tue Oct 28 15:06:44 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Undefine before including
 	svr4.h.
 
-	Mon Oct 27 16:11:52 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Mon Oct 27 16:11:52 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh.c (machine_dependent_reorg): When -flag_delayed_branches,
 	put an use_sfunc_addr before each sfunc.
 	* sh.md (use_sfunc_addr, dummy_jump): New insns.
 	(casesi): For TARGET_SH2, emit a dummy_jump after LAB.
 
-	Tue Oct 21 07:12:28 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Tue Oct 21 07:12:28 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Don't redefine.
 
@@ -10497,7 +10498,7 @@ Tue Nov  4 13:13:12 1997  Jeffrey A Law  (law@cygnus.com)
 	* v850.h (ASM_OUTPUT_BSS): Delete.
 	(ASM_OUTPUT_ALIGNED_BSS): New macro.
 
-Tue Nov  4 00:55:48 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Nov  4 00:55:48 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* profile.c (branch_prob): Insert an insn after a NOTE_INSN_SETJMP.
 
@@ -10511,7 +10512,7 @@ Sun Nov  2 23:31:43 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 	14 char length.
 	* configure: Rebuild.
 
-Sun Nov  2 19:44:00 1997  Robert Lipe (robertl@dgii.com)
+Sun Nov  2 19:44:00 1997  Robert Lipe  (robertl@dgii.com)
 
 	* i386/sco5.h: Enable -gstabs once again.
 
@@ -10519,7 +10520,7 @@ Sun Nov  2 19:27:21 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* arm.c (output_move_double): Allocate 3 entries in otherops array.
 
-Sat Nov  1 21:43:00 1997  Mike Stump  (mrs@wrs.com)
+Sat Nov  1 21:43:00 1997  Mike Stump  <mrs@wrs.com>
 
 	* except.c (expand_eh_region_start_for_decl): Emit EH_REGION_BEG
 	notes for sjlj exceptions too.
@@ -10585,12 +10586,12 @@ Fri Oct 31 01:45:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* libgcc2.c (L_eh): Define __eh_pc.
 	Replace __eh_type with generic pointer __eh_info.
 
-Fri Oct 31 00:34:55 1996  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Oct 31 00:34:55 1996  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* expr.c (expand_increment): When enqueing a postincrement for a MEM,
 	use copy_to_reg if address is not a general_operand.
 
-Fri Oct 31 00:16:55 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Oct 31 00:16:55 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* profile.c (output_func_start_profiler): Clear flag_inline_functions
 	for the duration of the call to rest_of_compilation.
@@ -10779,7 +10780,7 @@ Thu Oct 23 09:35:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
-Thu Oct 23 08:03:59 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Oct 23 08:03:59 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* dbxout.c (dbxout_start_new_source_file): Use output_quoted_string
 	for FILENAME.
@@ -10929,9 +10930,9 @@ Mon Oct 20 12:28:17 1997  Doug Evans  <devans@canuck.cygnus.com>
 	(sethi_di_embmedany_{data,text}): Renamed from sethi_di_medany_....
 	(sethi_di_fullany): Delete.
 
-Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
-			  Jeff Law <law@cygnus.com>
-			  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
+Mon Oct 20 02:00:18 1997  Klaus Kaempf  <kkaempf@progis.de>
+			  Jeff Law  <law@cygnus.com>
+			  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alpha/vms.h (DIVSI3_LIBCALL): OTS$ functions are upper case.
 	(DIVDI3_LIBCALL, UDIVSI3_LIBCALL, UDIVDI3_LIBVALL): Likewise.
@@ -10948,7 +10949,7 @@ Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
 
 	* vmsconfig.com: Fix to work on openVMS/Alpha and openVMS/VAX.
 
-Sun Oct 19 19:00:35 1997 J"orn Rennecke <amylaar@cygnus.co.uk>
+Sun Oct 19 19:00:35 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* longlong.h (count_leading_zeros): Add missing casts to USItype.
 
@@ -11026,7 +11027,7 @@ Fri Oct 17 23:33:20 1997  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (LIBGCC2_CFLAGS): Avoid a backslash then an
 	empty line if @inhibit_libc@ is empty.
 
-Fri Oct 17 23:24:40 1997  Robert Lipe (robertl@dgii.com)
+Fri Oct 17 23:24:40 1997  Robert Lipe  (robertl@dgii.com)
 
 	* i386/sco5.h: Let ELF use dwarf2 unwinding.  COFF uses sjlj.
 	(EH_FRAME_SECTION_ASM_OP, EH_FRAME_SECTION_ASM_OP_ELF): Defined.
@@ -11103,7 +11104,7 @@ Thu Oct 16 15:07:51 1997  Richard Henderson  <rth@cygnus.com>
 	* combine.c (can_combine_p): Don't combine with an asm whose
 	output is a hard register.
 
-Thu Oct 16 15:43:26 1997  Mike Stump  (mrs@wrs.com)
+Thu Oct 16 15:43:26 1997  Mike Stump  <mrs@wrs.com>
 
 	* c-decl.c (start_struct): Ensure that structs with forward
 	declarations are in fact packed when -fpack-struct is given.
@@ -11242,7 +11243,7 @@ Tue Oct  7 10:55:34 1997  Richard Henderson  <rth@cygnus.com>
 	* haifa-sched.c (print_block_visualization): Call fprintf directly,
 	don't sprintf through an alloca'ed buffer.
 
-Tue Oct  7 10:52:29 1997  Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+Tue Oct  7 10:52:29 1997  Thomas Koenig  (ig25@rz.uni-karlsruhe.de)
 
 	* reload.c (decompose): Always initialize val.base.
 
@@ -11262,7 +11263,7 @@ Tue Oct  7 11:41:21 1997  Michael Meissner  <meissner@cygnus.com>
 	declaration.
 	* c-lang.c (finish_file): Likewise.
 
-Tue Oct  7 10:01:45 1997  Chip Salzenberg <chip@rio.atlantic.net>
+Tue Oct  7 10:01:45 1997  Chip Salzenberg  <chip@rio.atlantic.net>
 
 	* Makefile.in (program_transform_name): Let autoconf substitute
 	the correct value.
@@ -11323,7 +11324,7 @@ Tue Sep 30 23:48:57 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (this_insn_cc0_mode): Initialize.
 
-Tue Sep 30 23:09:40 1997  Thomas Koenig <ig25@mvmap66.ciw.uni-karlsruhe.de>
+Tue Sep 30 23:09:40 1997  Thomas Koenig  <ig25@mvmap66.ciw.uni-karlsruhe.de>
 
 	* cccp.c (expand_to_temp_buffer): Initialize all members of obuf.
 
@@ -11358,7 +11359,7 @@ Mon Sep 29 09:58:06 1997  Jeffrey A Law  (law@cygnus.com)
 	* configure.in: Substitute for "install" too.
 	* configure: Rebuilt.
 
-Mon Sep 29 00:38:42 1997 Aaron Jackson <jackson@negril.msrce.howard.edu>
+Mon Sep 29 00:38:42 1997  Aaron Jackson  <jackson@negril.msrce.howard.edu>
 
 	* Makefile.in (bootstrap-lean, compare-lean): New targets.
 
@@ -11664,7 +11665,7 @@ Fri Sep 19 20:51:03 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* alpha/linux.h (HANDLE_SYSV_PRAGMA): Defined.
 
-Fri Sep 19 18:53:50 1997 J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Sep 19 18:53:50 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* jump.c (thread_jumps): Check can_reverse_comparison_p before
 	threading a reversed-condition jump.
@@ -12028,7 +12029,7 @@ Wed Sep 10 11:49:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(add_eh_table_entry): Use xrealloc.
 	* toplev.c (compile_file): Just call output_exception_table.
 
-Wed Sep 10  11:30:36 1997  Jason Merrill  <jason@cygnus.com>
+Wed Sep 10 11:30:36 1997  Jason Merrill  <jason@cygnus.com>
 
 	* i386.c (ix86_prologue): Add dwarf2 support for !do_rtl case.
 
@@ -12060,7 +12061,7 @@ Wed Sep 10 01:32:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
-	* m88k/sysv3.h (INITIALIZE_TRAMPOLINE) Define.
+	* m88k/sysv3.h (INITIALIZE_TRAMPOLINE): Define.
 	* libgcc2.c (__enable_execute_stack): Provide for sysV88 too.
 
 	* xm-m88k.h (USG): Only define if it hasn't already been defined.
@@ -12180,7 +12181,7 @@ Sun Sep  7 13:16:06 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 	to have a defined value for configure.lang.
 	* configure: Re-built.
 
-Sun Sep  7 09:59:08 1997  Jan-Jaap van der Heijden (J.J.vanderHeijden@student.utwente.nl)
+Sun Sep  7 09:59:08 1997  Jan-Jaap van der Heijden  (J.J.vanderHeijden@student.utwente.nl)
 
 	* configure.in: Make symlink to as-new rather than as.new.  Similarly
 	for ld-new.
@@ -12201,9 +12202,9 @@ Fri Sep  5 14:04:59 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
 	as initial value for real_label_map.
 	(copy_for_inline): Likewise.
 
-Fri Sep  5 13:36:44 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Fri Sep  5 13:36:44 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
-	* sched.c (update_flow_info) When looking if to set found_split_dest
+	* sched.c (update_flow_info): When looking if to set found_split_dest
 	or found_orig_dest, look at all parts of a PARALLEL.
 	* haifa-sched.c (update_flow_info): Likewise.
 
@@ -12287,7 +12288,7 @@ Thu Sep  4 09:53:20 1997  Jim Wilson  (wilson@cygnus.com)
 	* profile.c (output_arc_profiler): Verify next_insert_after is an
 	INSN before and after skipping a stack pop.
 
-Thu Sep  4 07:39:19 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Sep  4 07:39:19 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Don't count the lengths of deleted
 	instructions.
@@ -12320,7 +12321,7 @@ Wed Sep  3 10:39:42 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* alias.c (true_dependence): Test x for BLKmode, in addition to mem.
 
-Wed Sep  3 09:28:50 CDT 1997  Joel Sherrill (joel@OARcorp.com)
+Wed Sep  3 09:28:50 1997  Joel Sherrill  (joel@OARcorp.com)
 
 	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h, m68k/rtems.h,
 	  mips/rtems64.h, pa/rtems.h, rs6000/rtems.h, sh/rtems.h,
@@ -12437,7 +12438,7 @@ Mon Sep  1 08:29:46 1997  Jeffrey A Law  (law@cygnus.com)
 	* configure.in: Check for sys_siglist declaration.
 	* configure, config.in: Rebuilt.
 
-Mon Sep  1 08:04:07 1997  Joel Sherrill (joel@OARcorp.com)
+Mon Sep  1 08:04:07 1997  Joel Sherrill  (joel@OARcorp.com)
 
 	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h,
 	m68k/rtems.h, mips/rtems64.h, pa/rtems.h, rs6000/rtems.h,
@@ -12611,7 +12612,7 @@ Mon Aug 25 23:27:10 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* objc/Make-lang.in ($(OBJC_O)): Also depend on cc1obj.
 
-Mon Aug 25 23:27:10 1997  Jim Meyering <meyering@eng.ascend.com>
+Mon Aug 25 23:27:10 1997  Jim Meyering  <meyering@eng.ascend.com>
 
 	* objc/Make-lang.in ($(OBJC_O)): Also depend on $(GCC_PASSES).
 
