@@ -5199,8 +5199,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* Record presence of `inline', if it is reasonable.  */
 	if (inlinep)
 	  {
-	    tree last = tree_last (TYPE_ARG_TYPES (type));
-
 	    if (! strcmp (IDENTIFIER_POINTER (declarator), "main"))
 	      warning ("cannot inline function `main'");
 	    else

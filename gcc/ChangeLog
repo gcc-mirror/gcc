@@ -2,6 +2,8 @@ Wed Jun 10 23:23:17 1998  Graham  <grahams@rcp.co.uk>
 
 	* c-decl.c (start_decl): Correct test for -Wmain.
 
+	* c-decl.c (grokdeclarator): Remove unused variable "last".
+
 Wed Jun 10 14:52:27 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (expand_builtin_setjmp): Store const1_rtx in target.
