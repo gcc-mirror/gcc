@@ -56,6 +56,9 @@ The Ada runtime library.
 @item libbanshee
 The @code{libbanshee} library, used for Andersen-style points-to analysis.
 
+@item libcpp
+The C preprocessor library.
+
 @item libgfortran
 The Fortran runtime library.
 
