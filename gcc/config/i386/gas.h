@@ -94,9 +94,10 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
 #  define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP) \
-     if ((LOG) != 0) \
+     if ((LOG) != 0) {\
        if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG)); \
-       else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP))
+       else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)) \
+     }
 #endif
 
 /* A C statement or statements which output an assembler instruction
