@@ -18,7 +18,7 @@
 @set version-patch 2.5
 @set version-sed 2.05
 @set version-tar 1.12
-@set version-texinfo 3.11
+@set version-texinfo 3.12
 
 @ifclear INSTALLONLY
 @node Installation
@@ -121,9 +121,19 @@ and use @code{g77} depends on the type of system you're
 using, how you build @code{g77}, and how much of it you
 install (primarily, which languages you install).
 
-The sizes shown below assume all languages distributed
-in @code{gcc-@value{version-gcc}}, plus @code{g77}, will be built
-and installed.
+The sizes shown below assume all languages distributed in
+@c As of `Version 2.249', texinfo.tex loses on a construction like
+@c @code{...@value{...-...}...} since the hyphen is expanded as
+@c -@discretionary{}{}{}, even though @value resets its catcode.
+@c Fortunately this is currently the only instance.  Kluge, kluge.
+@iftex
+@begingroup @let@codedash=@realdash
+@end iftex
+@code{gcc-@value{version-gcc}},
+@iftex
+@endgroup
+@end iftex
+plus @code{g77}, will be built and installed.
 These sizes are indicative of GNU/Linux systems on
 Intel x86 running COFF and on Digital Alpha (AXP) systems
 running ELF.
