@@ -35,23 +35,63 @@ Boston, MA 02111-1307, USA.  */
 
 	.file "larith.asm"
 
+#ifdef __HAVE_SHORT_INT__
+	.mode mshort
+#else
+	.mode mlong
+#endif
+
+#if defined(__USE_RTC__) && defined(mc68hc12)
+# define ARG(N) N+1
+
+	.macro ret
+	rtc
+	.endm
+
+	.macro declare name
+	.globl \name
+	.type  \name,@function
+	.size  \name,.Lend-\name
+	.far   \name
+\name:
+	.endm
+
+	.macro farsym name
+	.far NAME
+	.endm
+
+#else
+# define ARG(N) N
+
+	.macro ret
+	rts
+	.endm
+
+	.macro farsym name
+	.endm
+
+	.macro declare name
+	.globl \name
+	.type  \name,@function
+	.size  \name,.Lend-\name
+\name:
+	.endm
+
+#endif
+
 	.sect .text
 	
 
 #define REG(NAME)			\
-NAME:	.word 0;			\
+NAME:	.dc.w	1;			\
 	.type NAME,@object ;		\
 	.size NAME,2
 
 #ifdef L_regs_min
 /* Pseudo hard registers used by gcc.
-   They must be located in page0. 
-   They will normally appear at the end of .page0 section.  */
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+   They should be located in page0.  */
+
+	.sect .softregs
 	.globl _.tmp
 	.globl _.z,_.xy
 REG(_.tmp)
@@ -61,54 +101,34 @@ REG(_.xy)
 #endif
 
 #ifdef L_regs_frame
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+	.sect .softregs
 	.globl _.frame
 REG(_.frame)
 #endif
 
 #ifdef L_regs_d1_2
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+	.sect .softregs
 	.globl _.d1,_.d2
 REG(_.d1)
 REG(_.d2)
 #endif
 
 #ifdef L_regs_d3_4
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+	.sect .softregs
 	.globl _.d3,_.d4
 REG(_.d3)
 REG(_.d4)
 #endif
 
 #ifdef L_regs_d5_6
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+	.sect .softregs
 	.globl _.d5,_.d6
 REG(_.d5)
 REG(_.d6)
 #endif
 
 #ifdef L_regs_d7_8
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+	.sect .softregs
 	.globl _.d7,_.d8
 REG(_.d7)
 REG(_.d8)
@@ -116,9 +136,8 @@ REG(_.d8)
 
 #ifdef L_regs_d9_16
 /* Pseudo hard registers used by gcc.
-   They must be located in page0. 
-   They will normally appear at the end of .page0 section.  */
-	.sect .page0
+   They should be located in page0.  */
+	.sect .softregs
 	.globl _.d9,_.d10,_.d11,_.d12,_.d13,_.d14
 	.globl _.d15,_.d16
 REG(_.d9)
@@ -134,13 +153,8 @@ REG(_.d16)
 
 #ifdef L_regs_d17_32
 /* Pseudo hard registers used by gcc.
-   They must be located in page0. 
-   They will normally appear at the end of .page0 section.  */
-#ifdef mc68hc12
-	.sect .bss
-#else
-	.sect .page0
-#endif
+   They should be located in page0.  */
+	.sect .softregs
 	.globl _.d17,_.d18,_.d19,_.d20,_.d21,_.d22
 	.globl _.d23,_.d24,_.d25,_.d26,_.d27,_.d28
 	.globl _.d29,_.d30,_.d31,_.d32
@@ -167,12 +181,10 @@ REG(_.d32)
 ;; Specific initialization for 68hc11 before the main.
 ;; Nothing special for a generic routine; Just enable interrupts.
 ;;
-	.sect .text
-	.globl __premain
-__premain:
+	declare	__premain
 	clra
 	tap	; Clear both I and X.
-	rts
+	ret
 #endif
 
 #ifdef L__exit
@@ -195,6 +207,8 @@ __premain:
 	.globl _exit
 	.globl exit
 	.weak  exit
+	farsym  exit
+	farsym  _exit
 exit:
 _exit:
 
@@ -209,9 +223,8 @@ fatal:
 ;;
 ;; Abort operation.  This is defined for the GCC testsuite.
 ;;
-	.sect .text
-	.globl abort
-abort:
+	declare	abort
+
 	ldd	#255		; 
 #ifdef mc68hc12
 	trap	#0x30
@@ -226,20 +239,19 @@ abort:
 ;;
 ;; Cleanup operation used by exit().
 ;;
-	.sect .text
-	.globl _cleanup
-_cleanup:
-	rts
+	declare	_cleanup
+
+	ret
 #endif
 
 ;-----------------------------------------
 ; required gcclib code
 ;-----------------------------------------
 #ifdef L_memcpy
-	.sect .text
+       declare	memcpy
+       declare	__memcpy
+
 	.weak memcpy
-	.globl memcpy
-	.globl __memcpy
 ;;;
 ;;; void* memcpy(void*, const void*, size_t)
 ;;; 
@@ -247,11 +259,9 @@ _cleanup:
 ;;; 2,sp = src	Pmode
 ;;; 4,sp = size	HImode (size_t)
 ;;; 
-__memcpy:
-memcpy:
 #ifdef mc68hc12
-	ldx	2,sp
-	ldy	4,sp
+	ldx	ARG(2),sp
+	ldy	ARG(4),sp
 	pshd
 	xgdy
 	lsrd
@@ -264,7 +274,7 @@ Loop:
 	dbne	d,Loop
 Done:
 	puld
-	rts
+	ret
 #else
 	xgdy
 	tsx
@@ -294,9 +304,8 @@ End:
 #endif
 
 #ifdef L_memset
-	.sect .text
-	.globl memset
-	.globl __memset
+       declare	memset
+       declare	__memset
 ;;;
 ;;; void* memset(void*, int value, size_t)
 ;;; 
@@ -304,17 +313,15 @@ End:
 ;;; D    = dst	Pmode
 ;;; 2,sp = src	SImode
 ;;; 6,sp = size	HImode (size_t)
-	val  = 5
-	size = 6
+	val  = ARG(5)
+	size = ARG(6)
 #else
 ;;; D    = dst	Pmode
 ;;; 2,sp = src	SImode
 ;;; 6,sp = size	HImode (size_t)
-	val  = 3
-	size = 4
+	val  = ARG(3)
+	size = ARG(4)
 #endif
-__memset:
-memset:
 #ifdef mc68hc12
 	xgdx
 	ldab	val,sp
@@ -326,7 +333,7 @@ Loop:
 	dbne	y,Loop
 End:
 	puld
-	rts
+	ret
 #else
 	xgdx
 	tsy
@@ -345,95 +352,89 @@ End:
 	rts
 #endif
 #endif
-		
-#ifdef L_adddi3
-	.sect .text
-	.globl ___adddi3
 
-___adddi3:
+#ifdef L_adddi3
+       declare	___adddi3
+
 	tsx
 	xgdy
-	ldd	8,x		; Add LSB
-	addd	16,x
-	std	6,y		; Save (carry preserved)
+	ldd	ARG(8),x		; Add LSB
+	addd	ARG(16),x
+	std	ARG(6),y		; Save (carry preserved)
 
-	ldd	6,x
-	adcb	15,x
-	adca	14,x
-	std	4,y
+	ldd	ARG(6),x
+	adcb	ARG(15),x
+	adca	ARG(14),x
+	std	ARG(4),y
 
-	ldd	4,x
-	adcb	13,x
-	adca	12,x
-	std	2,y
+	ldd	ARG(4),x
+	adcb	ARG(13),x
+	adca	ARG(12),x
+	std	ARG(2),y
 	
-	ldd	2,x
-	adcb	11,x		; Add MSB
-	adca	10,x
-	std	0,y
+	ldd	ARG(2),x
+	adcb	ARG(11),x		; Add MSB
+	adca	ARG(10),x
+	std	ARG(0),y
 
 	xgdy
-	rts
+	ret
 #endif
 
 #ifdef L_subdi3
-	.sect .text
-	.globl ___subdi3
+       declare	___subdi3
 
-___subdi3:
 	tsx
 	xgdy
-	ldd	8,x		; Subtract LSB
-	subd	16,x
-	std	6,y		; Save, borrow preserved
+	ldd	ARG(8),x		; Subtract LSB
+	subd	ARG(16),x
+	std	ARG(6),y		; Save, borrow preserved
 
-	ldd	6,x
-	sbcb	15,x
-	sbca	14,x
-	std	4,y
+	ldd	ARG(6),x
+	sbcb	ARG(15),x
+	sbca	ARG(14),x
+	std	ARG(4),y
 
-	ldd	4,x
-	sbcb	13,x
-	sbca	12,x
-	std	2,y
+	ldd	ARG(4),x
+	sbcb	ARG(13),x
+	sbca	ARG(12),x
+	std	ARG(2),y
 	
-	ldd	2,x		; Subtract MSB
-	sbcb	11,x
-	sbca	10,x
-	std	0,y
+	ldd	ARG(2),x		; Subtract MSB
+	sbcb	ARG(11),x
+	sbca	ARG(10),x
+	std	ARG(0),y
 
 	xgdy			;
-	rts
+	ret
 #endif
 	
 #ifdef L_notdi2
-	.sect .text
-	.globl ___notdi2
+        declare	___notdi2
 
-___notdi2:
 	tsy
 	xgdx
-	ldd	8,y
+	ldd	ARG(8),y
 	coma
 	comb
-	std	6,x
+	std	ARG(6),x
 	
-	ldd	6,y
+	ldd	ARG(6),y
 	coma
 	comb
-	std	4,x
+	std	ARG(4),x
 
-	ldd	4,y
+	ldd	ARG(4),y
 	coma
 	comb
-	std	2,x
+	std	ARG(2),x
 
-	ldd	2,y
+	ldd	ARG(2),y
 	coma
 	comb
-	std	0,x
+	std	ARG(0),x
 	xgdx
-	rts
+	ret
 #endif
 	
 #ifdef L_negsi2
@@ -845,8 +846,6 @@ ___mulhi3:
 #endif
 
 #ifdef L_mulhi32
-	.sect .text
-	.globl __mulhi32
 
 ;
 ;
@@ -880,12 +879,13 @@ ___mulhi3:
 ;      <A-low>    1,x
 ;      <A-high>   0,x
 ;
-__mulhi32:
+	declare	__mulhi32
+
 #ifdef mc68hc12
-	ldy	2,sp
+	ldy	ARG(2),sp
 	emul
 	exg	x,y
-	rts
+	ret
 #else
 	pshx			; Room for temp value
 	pshb
@@ -925,8 +925,6 @@ Ret:
 #endif
 
 #ifdef L_mulsi3
-	.sect .text
-	.globl __mulsi3
 
 ;
 ;      <B-low>    8,y
@@ -945,22 +943,23 @@ Ret:
 ;
 ;
 
-__mulsi3:
+	declare	__mulsi3
+
 #ifdef mc68hc12
 	pshd				; Save A.low
-	ldy	4,sp
+	ldy	ARG(4),sp
 	emul				; A.low * B.high
-	ldy	6,sp
+	ldy	ARG(6),sp
 	exg	x,d
 	emul				; A.high * B.low
 	leax	d,x
-	ldy	6,sp
+	ldy	ARG(6),sp
 	puld
 	emul				; A.low * B.low
 	exg	d,y
 	leax	d,x
 	exg	d,y
-	rts
+	ret
 #else
 B_low	=	8
 B_high	=	6
@@ -1186,6 +1185,39 @@ dtors_done:
 
 #endif
 
+#ifdef L_far_tramp
+#ifdef mc68hc12
+	.sect	.text
+	.globl	__far_trampoline
+
+;; This is a trampoline used by the linker to invoke a function
+;; using rtc to return and being called with jsr/bsr.
+;; The trampoline generated is:
+;;
+;;	foo_tramp:
+;;		ldy	#foo
+;;		call	__far_trampoline,page(foo)
+;;
+;; The linker transforms:
+;;
+;;		jsr	foo
+;;
+;; into
+;;		jsr	foo_tramp
+;;
+;; The linker generated trampoline and _far_trampoline must be in 
+;; non-banked memory.
+;;
+__far_trampoline:
+	movb	0,sp, 2,sp	; Copy page register below the caller's return
+	leas	2,sp		; address.
+	jmp	0,y		; We have a 'call/rtc' stack layout now
+				; and can jump to the far handler
+				; (whose memory bank is mapped due to the
+				; call to the trampoline).
+#endif
+#endif
+.Lend:
 ;-----------------------------------------
 ; end required gcclib code
 ;-----------------------------------------
