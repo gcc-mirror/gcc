@@ -1098,15 +1098,15 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    are put in this structure to save space.  */
 struct lang_type_header GTY(())
 {
-  unsigned is_lang_type_class : 1;
+  unsigned char is_lang_type_class : 1;
 
-  unsigned has_type_conversion : 1;
-  unsigned has_init_ref : 1;
-  unsigned has_default_ctor : 1;
-  unsigned uses_multiple_inheritance : 1;
-  unsigned const_needs_init : 1;
-  unsigned ref_needs_init : 1;
-  unsigned has_const_assign_ref : 1;
+  unsigned char has_type_conversion : 1;
+  unsigned char has_init_ref : 1;
+  unsigned char has_default_ctor : 1;
+  unsigned char uses_multiple_inheritance : 1;
+  unsigned char const_needs_init : 1;
+  unsigned char ref_needs_init : 1;
+  unsigned char has_const_assign_ref : 1;
 };
 
 /* This structure provides additional information above and beyond
