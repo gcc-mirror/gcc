@@ -1,3 +1,8 @@
+2000-02-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config.guess: Synchronize with master repository.
+	* config.sub: Likewise.
+
 2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure (gcc_version): When setting, narrow search to
