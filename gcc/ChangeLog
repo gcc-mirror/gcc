@@ -1,3 +1,13 @@
+2002-10-14  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+	* config/alpha/alpha.md (extendsidi2_nofix, extendsidi2_fix):
+	Swap zero extension arguments.
+	(umaxhi3): Fix instruction class.
+	PR target/7211
+	(prefetch): Fix prefetch instructions.
+	PR target/7238
+	(pkwb): Fix output constraint.
+
 2002-10-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.c (print_operand): Increase buffer size for
