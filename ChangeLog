@@ -1,3 +1,10 @@
+2000-07-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (CC_FOR_TARGET, CHILL_FOR_TARGET, CXX_FOR_TARGET):
+	Do not override if already set in the environment or in configure.
+	Don't duplicate $(FLAGS_FOR_TARGET) if it already appears in them.
+	(FLAGS_FOR_TARGET): Don't use host directories on Canadian crosses.
+
 2000-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libtool.m4, ltcf-c.sh, ltcf-cxx.sh, ltcf-gcj.sh: New files from

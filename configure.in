@@ -1228,24 +1228,38 @@ if test -d ${topsrcdir}/gcc; then
   # below), and we want gcc/include to be searched first.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/gcc/'
 fi
+
 case " $skipdirs " in
 *" target-newlib "*) ;;
 *)
    case "$target" in
-   i[3456]86-*-cygwin*)
+   *-cygwin*)
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include -isystem $$s/newlib/libc/sys/cygwin -isystem $$s/newlib/libc/sys/cygwin32' ;;
    esac
+
+   # If we're using a pre-built compiler (which is the case for
+   # Canadian crosses or when gcc isn't being built), don't discard
+   # standard headers.
+   if test "${build}" = "${host}" && test ! -d ${topsrcdir}/gcc; then
+     FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc'
+   fi
 
    # If we're building newlib, use its generic headers last, but search
    # for any libc-related directories first (so make it the last -B
    # switch).
-   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
+   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
    ;;
 esac
-if test -d ${topsrcdir}/gcc; then
+
+# On Canadian crosses, we'll be searching the right directories for
+# the previously-installed cross compiler, so don't bother to add
+# flags for directories within the install tree of the compiler
+# being built; programs in there won't even run.
+if test "${build}" = "${host}" && test -d ${topsrcdir}/gcc; then
   # Search for pre-installed headers if nothing else fits.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include'
 fi
+
 if test "x${use_gnu_ld}" = x && test "x${with_gnu_ld}" != xno &&
    echo " ${configdirs} " | grep " ld " > /dev/null &&
    test -d ${srcdir}/ld; then
@@ -1253,16 +1267,25 @@ if test "x${use_gnu_ld}" = x && test "x${with_gnu_ld}" != xno &&
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/ld'
 fi
 
-if test -d ${topsrcdir}/gcc; then
+if test "x${CC_FOR_TARGET+set}" = xset; then
+  :
+elif test -d ${topsrcdir}/gcc; then
   CC_FOR_TARGET='$$r/gcc/xgcc'
 elif test "$host" = "$target"; then
   CC_FOR_TARGET='$(CC)'
 else
   CC_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
 fi
-CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+# On Canadian crosses, configure reads CC_FOR_TARGET from Makefile,
+# if Makefile exists.  Prevent $(FLAGS_FOR_TARGET) from being duplicated.
+case $CC_FOR_TARGET in
+*' $(FLAGS_FOR_TARGET)') ;;
+*) CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
+esac
 
-if test -d ${topsrcdir}/gcc &&
+if test "x${CHILL_FOR_TARGET+set}" = xset; then
+  :
+elif test -d ${topsrcdir}/gcc &&
    echo ",${enable_languages-${LANGUAGES-CHILL}}," |
    grep ,CHILL, > /dev/null ; then
   CHILL_FOR_TARGET='$$r/gcc/xgcc -L$$r/gcc/ch/runtime/'
@@ -1271,9 +1294,14 @@ elif test "$host" = "$target"; then
 else
   CHILL_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
 fi
-CHILL_FOR_TARGET=$CHILL_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+case $CHILL_FOR_TARGET in
+*' $(FLAGS_FOR_TARGET)') ;;
+*) CHILL_FOR_TARGET=$CHILL_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
+esac
 
-if test -d ${topsrcdir}/gcc &&
+if test "x${CXX_FOR_TARGET+set}" = xset; then
+  :
+elif test -d ${topsrcdir}/gcc &&
    echo ",${enable_languages-${LANGUAGES-c++}}," |
    grep ',c[+][+],' > /dev/null ; then
   CXX_FOR_TARGET='$$r/gcc/g++ -nostdinc++ '$libstdcxx_flags
@@ -1282,7 +1310,10 @@ elif test "$host" = "$target"; then
 else
   CXX_FOR_TARGET=`echo c++ | sed -e 's/x/x/' ${program_transform_name}`
 fi
-CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+case $CXX_FOR_TARGET in
+*' $(FLAGS_FOR_TARGET)') ;;
+*) CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
+esac
 
 targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
