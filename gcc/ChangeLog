@@ -383,7 +383,6 @@ Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	arrays.
 	Fixes PR c/461.
 
->>>>>>> 1.11778
 2001-11-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4: (AM_WITH_NLS): Don't look at ALL_LINGUAS.
