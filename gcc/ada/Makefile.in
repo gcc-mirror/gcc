@@ -1403,7 +1403,7 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
   endif
 endif
 
-ifeq ($(strip $(filter-out rtems,$(osys))),)
+ifeq ($(strip $(filter-out rtems rtemself rtemsaout rtemscoff,$(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<4rintnam.ads \
   s-inmaop.adb<7sinmaop.adb \
@@ -1414,7 +1414,7 @@ ifeq ($(strip $(filter-out rtems,$(osys))),)
   s-parame.adb<5rparame.adb \
   s-taprop.adb<7staprop.adb \
   s-taspri.ads<7staspri.ads \
-  s-tpopsp.adb<5atpopsp.adb
+  s-tpopsp.adb<5rtpopsp.adb
 endif
 
 ifeq ($(strip $(filter-out go32 msdos,$(osys))),)
@@ -2181,7 +2181,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 #	../xgcc -B../ -dD -E ../tconfig.h $(INCLUDES) > rts/tconfig.h
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
-                CFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -DIN_RTS" \
+                CFLAGS="$(GNATLIBCFLAGS) $(LIBGCC2_CFLAGS) -DIN_RTS" \
 		ADA_CFLAGS="$(GNATLIBCFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
@@ -2279,14 +2279,14 @@ ravenppclib:
 gnatlib-shared-default:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
+	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(LIBGCC2_CFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
-	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(LIBGCC2_CFLAGS) \
 		-o libgnat-$(LIBRARY_VERSION)$(soext) $(SO_OPTS)libgnat-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) $(MISCLIB) -lm
-	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(LIBGCC2_CFLAGS) \
 		-o libgnarl-$(LIBRARY_VERSION)$(soext) $(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) $(THREADSLIB)
 	cd rts; $(LN) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)

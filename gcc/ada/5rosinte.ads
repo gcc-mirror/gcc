@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision: 1.1.16.1 $
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -107,6 +107,7 @@ package System.OS_Interface is
    SIGTERM     : constant := 15; --  software termination signal from kill
    SIGUSR1     : constant := 16; --  user defined signal 1
    SIGUSR2     : constant := 17; --  user defined signal 2
+   SIGXCPU     : constant := 0; --  XCPU
 
    SIGADAABORT : constant := SIGABRT;
 

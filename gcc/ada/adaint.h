@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision: 1.5 $
+ *                            $Revision: 1.5.2.1 $
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
@@ -31,6 +31,10 @@
  * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
+
+#if defined(__rtems__)
+#include <stdio.h>
+#endif
 
 #include <dirent.h>
 
