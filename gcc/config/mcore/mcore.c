@@ -3520,7 +3520,7 @@ mcore_unique_section (decl, reloc)
      (everything from the $ on is stripped).  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     prefix = ".text$";
-  /* For compatability with EPOC, we ignore the fact that the
+  /* For compatibility with EPOC, we ignore the fact that the
      section might have relocs against it.  */
   else if (DECL_READONLY_SECTION (decl, 0))
     prefix = ".rdata$";

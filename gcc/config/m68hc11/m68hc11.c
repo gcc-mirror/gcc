@@ -5060,7 +5060,7 @@ m68hc11_shift_cost (mode, x, shift)
     total *= GET_MODE_SIZE (mode) / 2;
 
   /* When optimizing for size, make shift more costly so that
-     multiplications are prefered.  */
+     multiplications are preferred.  */
   if (optimize_size && (shift % 8) != 0)
     total *= 2;
   

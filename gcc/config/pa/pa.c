@@ -4855,7 +4855,7 @@ hppa_builtin_saveregs ()
 			gen_rtx_REG (word_mode, i));
 
       /* The incoming args pointer points just beyond the flushback area;
-	 normally this is not a serious concern.  Howver, when we are doing
+	 normally this is not a serious concern.  However, when we are doing
 	 varargs/stdargs we want to make the arg pointer point to the start
 	 of the incoming argument area.  */
       emit_move_insn (virtual_incoming_args_rtx,

@@ -5100,7 +5100,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 /* Some stabs encapsulation formats (in particular ECOFF), cannot
    handle the `.stabs "",N_FUN,,0,0,Lscope-function-1' gdb dbx
-   extention construct.  On those machines, define this macro to turn
+   extension construct.  On those machines, define this macro to turn
    this feature off without disturbing the rest of the gdb extensions.  */
 /* #define NO_DBX_FUNCTION_END */
 

@@ -184,7 +184,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 #define EMPTY_FIELD_BOUNDARY 32
 
-/* Alignment on even adresses for LARL instruction.  */
+/* Alignment on even addresses for LARL instruction.  */
 
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 

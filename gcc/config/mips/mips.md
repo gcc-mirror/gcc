@@ -4230,10 +4230,10 @@ move\\t%0,%z4\\n\\
 ;; operand zero, because then the address in the move instruction will be
 ;; clobbered.  We mark the scratch register as early clobbered to prevent this.
 
-;; We need the ?X in alternative 1 so that it will be choosen only if the
+;; We need the ?X in alternative 1 so that it will be chosen only if the
 ;; destination is a floating point register.  Otherwise, alternative 1 can
 ;; have lower cost than alternative 0 (because there is one less loser), and
-;; can be choosen when it won't work (because integral reloads into FP
+;; can be chosen when it won't work (because integral reloads into FP
 ;; registers are not supported).
 
 (define_insn "fix_truncdfsi2"

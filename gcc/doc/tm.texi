@@ -7251,7 +7251,7 @@ This describes commands for alignment.
 @findex JUMP_ALIGN
 @item JUMP_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which is
-a common destination of jumps and has no fallthru incomming edge.
+a common destination of jumps and has no fallthru incoming edge.
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently

@@ -7509,7 +7509,7 @@ ultra_fpmode_conflict_exists (fpmode)
 	    continue;
 
 	  /* If it is not FMOV, FABS, FNEG, FDIV, or FSQRT then
-	     we will get a stall.  Loads and stores are independant
+	     we will get a stall.  Loads and stores are independent
 	     of these rules.  */
 	  if (GET_CODE (SET_SRC (pat)) != ABS
 	      && GET_CODE (SET_SRC (pat)) != NEG

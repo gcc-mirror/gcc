@@ -102,7 +102,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP_ELF		"\t.section\t.init"
-/* Rename these for COFF becuase crt1.o will try to run them. */
+/* Rename these for COFF because crt1.o will try to run them. */
 #define INIT_SECTION_ASM_OP_COFF	"\t.section\t.ctor ,\"x\""
 #define INIT_SECTION_ASM_OP	\
   ((TARGET_ELF) ? INIT_SECTION_ASM_OP_ELF : INIT_SECTION_ASM_OP_COFF)
@@ -658,7 +658,7 @@ init_section ()								\
 
 #if USE_GAS
   /* Leave ASM_SPEC undefined so we pick up the master copy from gcc.c 
-   * Undef MD_EXEC_PREFIX becuase we don't know where GAS is, but it's not
+   * Undef MD_EXEC_PREFIX because we don't know where GAS is, but it's not
    * likely in /usr/ccs/bin/ 
    */
 #undef MD_EXEC_PREFIX 

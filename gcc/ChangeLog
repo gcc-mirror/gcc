@@ -1,5 +1,17 @@
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* config/alpha/alpha.md, config/arm/arm.c, config/arm/arm.h,
+	config/d30v/d30v.h, config/fr30/fr30.c, config/i370/x-oe,
+	config/i386/i386.c, config/i386/i386-interix.h,
+	config/i386/i386.md, config/i386/i386.h, config/i386/sco5.h,
+	config/i860/i860.h, config/i860/i860.md, config/m68k/aux-exit.c,
+	config/m68k/m68k.c, config/mcore/mcore.c, config/mips/mips.md,
+	config/ns32k/ns32k.h, config/pa/pa.c, config/rs6000/rs6000.c,
+	config/sparc/sparc.c, config/m68hc11/m68hc11.c,
+	config/cris/cris.c, config/cris/cris.h, config/s390/s390.c,
+	config/s390/s390.h, config/stormy16/stormy16.h, doc/tm.texi: Fix
+	spelling errors.
+
 	* ChangeLog.0, ChangeLog.1, ChangeLog.2, ChangeLog.3, ChangeLog.4,
 	ChangeLog.5, ChangeLog, ChangeLog.lib, FSFChangeLog.10, ONEWS,
 	c-common.c, caller-save.c, cfg.c, cfgcleanup.c, cfgrtl.c,

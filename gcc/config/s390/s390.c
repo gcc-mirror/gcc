@@ -3074,7 +3074,7 @@ s390_build_va_list ()
    false if implementing __builtin_varargs_va_start.  NEXTARG
    points to the first anonymous stack argument.
 
-   The following global variables are used to initalize
+   The following global variables are used to initialize
    the va_list structure:
 
      current_function_args_info:

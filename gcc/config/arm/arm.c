@@ -3057,7 +3057,7 @@ arm_reload_memory_operand (op, mode)
 
 /* Return 1 if OP is a valid memory address, but not valid for a signed byte
    memory access (architecture V4).
-   MODE is QImode if called when computing contraints, or VOIDmode when
+   MODE is QImode if called when computing constraints, or VOIDmode when
    emitting patterns.  In this latter case we cannot use memory_operand()
    because it will fail on badly formed MEMs, which is precisly what we are
    trying to catch.  */
