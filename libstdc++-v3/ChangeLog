@@ -1,3 +1,8 @@
+2003-06-20  Matthias Klose  <doko@debian.org>
+
+	* configure.target: Set try_cpu to target_cpu for existing
+ 	baseline files.
+
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Pass MULTISUBDIR to testsuite/Makefile.
