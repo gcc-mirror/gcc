@@ -376,8 +376,8 @@ htab_expand (htab)
   /* Resize only when table after removal of unused elements is either
      too full or too empty.  */
   if ((htab->n_elements - htab->n_deleted) * 2 > htab->size
-      || (htab->n_elements - htab->n_deleted) * 8 < htab->size
-    && htab->size > 32)
+      || ((htab->n_elements - htab->n_deleted) * 8 < htab->size
+	  && htab->size > 32))
     nsize = higher_prime_number ((htab->n_elements - htab->n_deleted) * 2);
   else
     nsize = htab->size;
