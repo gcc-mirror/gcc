@@ -1,3 +1,7 @@
+Wed May 26 19:30:00 1999  Mark Klein <mklein@dis.com>
+        
+	* makeinfo/makeinfo.c: Add HAVE_LC_MESSAGES around setlocale call.
+
 1999-02-24  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* lib/Makefile.in: Regen dependencies.
