@@ -21,7 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_PROFILE_H
 #define GCC_PROFILE_H
 
-struct
+struct profile_info
   {
     /* Used by final, for allocating the proper amount of storage for the
        instrumented arc execution counts.  */
@@ -47,6 +47,8 @@ struct
        function.  */
     int count_profiles_merged;
 
-  } profile_info;
+  };
+
+extern struct profile_info profile_info;
 
 #endif

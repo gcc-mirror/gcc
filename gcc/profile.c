@@ -79,6 +79,10 @@ struct bb_info
 			       : ((bb) == EXIT_BLOCK_PTR		\
 				  ? n_basic_blocks + 1 : (bb)->index + 1))
 
+/* Instantiate the profile info structure.  */
+
+struct profile_info profile_info;
+
 /* Name and file pointer of the output file for the basic block graph.  */
 
 static FILE *bbg_file;
