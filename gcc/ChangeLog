@@ -1,3 +1,10 @@
+2002-11-10  Joel Sherrill <joel@gcc.gnu.org>
+
+	* config/m68k/t-crtstuff (crti.o): Use this...
+	($(T)crti.o): ... instead.
+	(crtn.o): Use this...
+	($(T)crtn.o): ... instead.
+
 2002-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8439
