@@ -192,6 +192,8 @@ ${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
 
 f2c.h: $(srcdir)/f2c.h.in
 
+info install-info clean-info check dvi:
+
 install:
 	$(INSTALL_DATA) $(lib) $(libdir)/$(lib).n
 	( cd $(libdir) ; $(RANLIB) $(lib).n )
