@@ -1094,7 +1094,9 @@ life_analysis (f, nregs)
   if (n_basic_blocks > 0)
 #ifdef EXIT_IGNORE_STACK
     if (! EXIT_IGNORE_STACK
-	|| (! FRAME_POINTER_REQUIRED && flag_omit_frame_pointer))
+	|| (! FRAME_POINTER_REQUIRED
+	    && ! current_function_calls_alloca
+	    && flag_omit_frame_pointer))
 #endif
       {
 	/* If exiting needs the right stack value,
@@ -2656,7 +2658,9 @@ mark_used_regs (needed, live, x, final, insn)
 
 #ifdef EXIT_IGNORE_STACK
       if (! EXIT_IGNORE_STACK
-	  || (! FRAME_POINTER_REQUIRED && flag_omit_frame_pointer))
+	  || (! FRAME_POINTER_REQUIRED
+	      && ! current_function_calls_alloca
+	      && flag_omit_frame_pointer))
 #endif
 	SET_REGNO_REG_SET (live, STACK_POINTER_REGNUM);
 
