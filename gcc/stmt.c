@@ -2634,7 +2634,93 @@ expand_return (retval)
     }
 #endif /* HAVE_return */
 
-  if (cleanups
+  /* If the result is an aggregate that is being returned in one (or more)
+     registers, load the registers here.  The compiler currently can't handle
+     copying a BLKmode value into registers.  We could put this code in a
+     more general area (for use by everyone instead of just function
+     call/return), but until this feature is generally usable it is kept here
+     (and in expand_call).  */
+
+  if (retval_rhs != 0
+      && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
+      && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
+    {
+      int i;
+      int big_endian_correction = 0;
+      int bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
+      int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+      rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
+      rtx result_reg = DECL_RTL (DECL_RESULT (current_function_decl));
+      rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
+      enum machine_mode tmpmode;
+
+      /* Structures smaller than a word are aligned to the least significant
+	 byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
+	 must skip the empty high order bytes when calculating the bit
+	 offset.  */
+      if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
+	big_endian_correction = (BITS_PER_WORD - (bytes * BITS_PER_UNIT));
+
+      for (i = 0; i < n_regs; i++)
+	{
+	  rtx reg = gen_reg_rtx (word_mode);
+	  rtx word = operand_subword_force (result_val, i, BLKmode);
+	  int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),BITS_PER_WORD);
+	  int bitpos;
+
+	  result_pseudos[i] = reg;
+
+	  /* Clobber REG and move each partword into it.  Ensure we don't
+	     go past the end of the structure.  Note that the loop below
+	     works because we've already verified that padding and
+	     endianness are compatable.  */
+	  emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
+
+	  for (bitpos = 0;
+	       bitpos < BITS_PER_WORD && bytes > 0;
+	       bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
+	    {
+	      int xbitpos = bitpos + big_endian_correction;
+
+	      store_bit_field (reg, bitsize, xbitpos, word_mode,
+			       extract_bit_field (word, bitsize, bitpos, 1,
+						  NULL_RTX, word_mode,
+						  word_mode,
+						  bitsize / BITS_PER_UNIT,
+						  BITS_PER_WORD),
+			       bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+	    }
+	}
+
+      /* Now that the value is in pseudos, copy it to the result reg(s).  */
+      emit_queue ();
+      free_temp_slots ();
+      for (i = 0; i < n_regs; i++)
+	emit_move_insn (gen_rtx (REG, word_mode, REGNO (result_reg) + i),
+			result_pseudos[i]);
+
+      /* Find the smallest integer mode large enough to hold the
+	 entire structure and use that mode instead of BLKmode
+	 on the USE insn for the return register.   */
+      bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
+      for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmpmode != MAX_MACHINE_MODE;
+	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+      {
+	/* Have we found a large enough mode?  */
+	if (GET_MODE_SIZE (tmpmode) >= bytes)
+	  break;
+      }
+
+      /* No suitable mode found.  */
+      if (tmpmode == MAX_MACHINE_MODE)
+      abort ();
+
+      PUT_MODE (result_reg, tmpmode);
+
+      expand_value_return (result_reg);
+    }
+  else if (cleanups
       && retval_rhs != 0
       && TREE_TYPE (retval_rhs) != void_type_node
       && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
