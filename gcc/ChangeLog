@@ -1,3 +1,14 @@
+2000-04-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.h: Move struct reflist, struct definition, and the
+	DEFINITION typedef to cpphash.c.  Use 'struct definition *' in
+	union hashval.  _cpp_free_definition takes a HASHNODE pointer.
+	* cpphash.c (_cpp_free_definition): Free data pointed to by
+	MCONST, XCONST, MACRO, and FMACRO nodes properly.
+	(_cpp_create_definition, del_HASHNODE): Just call
+	_cpp_free_definition to clear out a hashnode.
+	* cpplib.c (do_pragma_poison): Likewise.
+
 Sat Apr 29 12:25:17 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (FIRST_DATA_REGNUM,
