@@ -1,3 +1,8 @@
+2002-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-demangle.c (demangle_v3_with_details): Wrap in
+	!defined IN_GLIBCPP_V3. 
+
 2002-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-demangle.c (demangle_operator_name): Add type_arg parameter.

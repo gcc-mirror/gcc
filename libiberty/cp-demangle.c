@@ -3880,6 +3880,7 @@ java_demangle_v3 (mangled)
 #endif /* IN_LIBGCC2 || IN_GLIBCPP_V3 */
 
 
+#ifndef IN_GLIBCPP_V3
 /* Demangle NAME in the G++ V3 ABI demangling style, and return either
    zero, indicating that some error occurred, or a demangling_t
    holding the results.  */
@@ -3917,7 +3918,6 @@ demangle_v3_with_details (name)
 }
 
 
-#ifndef IN_GLIBCPP_V3
 /* Return non-zero iff NAME is the mangled form of a constructor name
    in the G++ V3 ABI demangling style.  Specifically, return:
    - '1' if NAME is a complete object constructor,
