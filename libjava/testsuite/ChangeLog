@@ -1,3 +1,7 @@
+2003-04-16  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.mauve/xfails: Added some more failing tests.
+
 2003-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR middle-end/8866
