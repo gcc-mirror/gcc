@@ -94,7 +94,7 @@ static tree delete_duplicate_fields_1 PROTO((tree, tree));
 static void delete_duplicate_fields PROTO((tree));
 static void finish_struct_bits PROTO((tree, int));
 static int alter_access PROTO((tree, tree, tree, tree));
-static void handle_using_decl PROTO((tree, tree, tree, tree));
+static void handle_using_decl PROTO((tree, tree));
 static int overrides PROTO((tree, tree));
 static int strictly_overrides PROTO((tree, tree));
 static void merge_overrides PROTO((tree, tree, int, tree));
@@ -125,6 +125,10 @@ static void check_bitfield_decl PROTO((tree));
 static void check_field_decl PROTO((tree, tree, int *, int *, int *, int *));
 static tree* check_field_decls PROTO((tree, tree *, int *, int *, int *, 
 				      int *));
+static tree build_vbase_pointer_fields PROTO((tree, int *));
+static tree build_vtbl_or_vbase_field PROTO((tree, tree, tree, tree, int *));
+static void check_methods PROTO((tree));
+static void remove_zero_width_bit_fields PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -1049,9 +1053,9 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
     {
       /* Need an entry in some other virtual function table.
          Deal with this after we have laid out our virtual base classes.  */
-      pending_hard_virtuals = temp_tree_cons (NULL_TREE, 
-					      fndecl, 
-					      pending_hard_virtuals);
+      pending_hard_virtuals = tree_cons (NULL_TREE, 
+					 fndecl, 
+					 pending_hard_virtuals);
     }
   *pv = pending_virtuals;
   *phv = pending_hard_virtuals;
@@ -1289,43 +1293,46 @@ delete_duplicate_fields_1 (field, fields)
 		    TREE_CHAIN (prev) = TREE_CHAIN (x);
 		}
 	    }
-	  else
+	  else if (TREE_CODE (field) == USING_DECL)
+	    /* A using declaration may is allowed to appear more than
+	       once.  We'll prune these from the field list later, and
+	       handle_using_decl will complain about invalid multiple
+	       uses.  */
+	    ;
+	  else if (DECL_NAME (field) == DECL_NAME (x))
 	    {
-	      if (DECL_NAME (field) == DECL_NAME (x))
+	      if (TREE_CODE (field) == CONST_DECL
+		  && TREE_CODE (x) == CONST_DECL)
+		cp_error_at ("duplicate enum value `%D'", x);
+	      else if (TREE_CODE (field) == CONST_DECL
+		       || TREE_CODE (x) == CONST_DECL)
+		cp_error_at ("duplicate field `%D' (as enum and non-enum)",
+			     x);
+	      else if (DECL_DECLARES_TYPE_P (field)
+		       && DECL_DECLARES_TYPE_P (x))
 		{
-		  if (TREE_CODE (field) == CONST_DECL
-		      && TREE_CODE (x) == CONST_DECL)
-		    cp_error_at ("duplicate enum value `%D'", x);
-		  else if (TREE_CODE (field) == CONST_DECL
-			   || TREE_CODE (x) == CONST_DECL)
-		    cp_error_at ("duplicate field `%D' (as enum and non-enum)",
-				x);
-		  else if (DECL_DECLARES_TYPE_P (field)
-			   && DECL_DECLARES_TYPE_P (x))
-		    {
-		      if (same_type_p (TREE_TYPE (field), TREE_TYPE (x)))
-			continue;
-		      cp_error_at ("duplicate nested type `%D'", x);
-		    }
-		  else if (DECL_DECLARES_TYPE_P (field)
-			   || DECL_DECLARES_TYPE_P (x))
-		    {
-		      /* Hide tag decls.  */
-		      if ((TREE_CODE (field) == TYPE_DECL
-			   && DECL_ARTIFICIAL (field))
-			  || (TREE_CODE (x) == TYPE_DECL
-			      && DECL_ARTIFICIAL (x)))
-			continue;
-		      cp_error_at ("duplicate field `%D' (as type and non-type)",
-				   x);
-		    }
-		  else
-		    cp_error_at ("duplicate member `%D'", x);
-		  if (prev == 0)
-		    fields = TREE_CHAIN (fields);
-		  else
-		    TREE_CHAIN (prev) = TREE_CHAIN (x);
+		  if (same_type_p (TREE_TYPE (field), TREE_TYPE (x)))
+		    continue;
+		  cp_error_at ("duplicate nested type `%D'", x);
 		}
+	      else if (DECL_DECLARES_TYPE_P (field)
+		       || DECL_DECLARES_TYPE_P (x))
+		{
+		  /* Hide tag decls.  */
+		  if ((TREE_CODE (field) == TYPE_DECL
+		       && DECL_ARTIFICIAL (field))
+		      || (TREE_CODE (x) == TYPE_DECL
+			  && DECL_ARTIFICIAL (x)))
+		    continue;
+		  cp_error_at ("duplicate field `%D' (as type and non-type)",
+			       x);
+		}
+	      else
+		cp_error_at ("duplicate member `%D'", x);
+	      if (prev == 0)
+		fields = TREE_CHAIN (fields);
+	      else
+		TREE_CHAIN (prev) = TREE_CHAIN (x);
 	    }
 	}
     }
@@ -1379,15 +1386,12 @@ alter_access (t, binfo, fdecl, access)
   return 0;
 }
 
-/* Process the USING_DECL, which is a member of T.  The METHOD_VEC, if
-   non-NULL, is the methods of T.  The FIELDS are the fields of T.  */
+/* Process the USING_DECL, which is a member of T.  */
 
 static void
-handle_using_decl (using_decl, t, method_vec, fields)
+handle_using_decl (using_decl, t)
      tree using_decl;
      tree t;
-     tree method_vec;
-     tree fields;
 {
   tree ctype = DECL_INITIAL (using_decl);
   tree name = DECL_NAME (using_decl);
@@ -1397,6 +1401,8 @@ handle_using_decl (using_decl, t, method_vec, fields)
     : access_public_node;
   tree fdecl, binfo;
   tree flist = NULL_TREE;
+  tree fields = TYPE_FIELDS (t);
+  tree method_vec = CLASSTYPE_METHOD_VEC (t);
   tree tmp;
   int i;
   int n_methods;
@@ -1989,9 +1995,23 @@ finish_struct_methods (t)
      tree t;
 {
   tree fn_fields;
-  tree method_vec = CLASSTYPE_METHOD_VEC (t);
+  tree method_vec;
   tree ctor_name = constructor_name (t);
-  int slot, len = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
+  int slot, len;
+
+  if (!TYPE_METHODS (t))
+    {
+      /* Clear these for safety; perhaps some parsing error could set
+	 these incorrectly.  */
+      TYPE_HAS_CONSTRUCTOR (t) = 0;
+      TYPE_HAS_DESTRUCTOR (t) = 0;
+      CLASSTYPE_METHOD_VEC (t) = NULL_TREE;
+      return;
+    }
+
+  my_friendly_assert (method_vec != NULL_TREE, 19991215);
+  method_vec = CLASSTYPE_METHOD_VEC (t);
+  len = TREE_VEC_LENGTH (method_vec);
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
      and the next few with type conversion operators (if any).  */
@@ -2050,9 +2070,6 @@ finish_struct_methods (t)
   /* Issue warnings about private constructors and such.  If there are
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
-
-  if (method_vec == NULL_TREE)
-    return;
 
   /* Now sort the methods.  */
   while (len > 2 && TREE_VEC_ELT (method_vec, len-1) == NULL_TREE)
@@ -2812,7 +2829,7 @@ get_basefndecls (fndecl, t)
       if (TREE_CODE (methods) == FUNCTION_DECL
 	  && DECL_VINDEX (methods) != NULL_TREE
 	  && DECL_NAME (fndecl) == DECL_NAME (methods))
-	base_fndecls = temp_tree_cons (fndecl, methods, base_fndecls);
+	base_fndecls = tree_cons (fndecl, methods, base_fndecls);
 
       methods = TREE_CHAIN (methods);
     }
@@ -3386,6 +3403,9 @@ check_field_decls (t, access_decls, empty_p,
   int has_pointers;
   int any_default_members;
 
+  /* First, delete any duplicate fields.  */
+  delete_duplicate_fields (TYPE_FIELDS (t));
+
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
   /* Assume this class has no pointer members.  */
@@ -3594,6 +3614,192 @@ check_field_decls (t, access_decls, empty_p,
   return field;
 }
 
+/* Return a FIELD_DECL for a pointer-to-virtual-table or
+   pointer-to-virtual-base.  The NAME, ASSEMBLER_NAME, and TYPE of the
+   field are as indicated.  The CLASS_TYPE in which this field occurs
+   is also indicated.  *EMPTY_P is set to a non-zero value by this
+   function to indicate that a class containing this field is
+   non-empty.  */
+
+static tree
+build_vtbl_or_vbase_field (name, assembler_name, type, class_type, 
+			   empty_p)
+     tree name;
+     tree assembler_name;
+     tree type;
+     tree class_type;
+     int *empty_p;
+{
+  tree field;
+
+  /* This class is non-empty.  */
+  *empty_p = 0;
+
+  /* Build the FIELD_DECL.  */
+  field = build_lang_decl (FIELD_DECL, name, type);
+  DECL_ASSEMBLER_NAME (field) = assembler_name;
+  DECL_VIRTUAL_P (field) = 1;
+  DECL_ARTIFICIAL (field) = 1;
+  DECL_FIELD_CONTEXT (field) = class_type;
+  DECL_CLASS_CONTEXT (field) = class_type;
+  DECL_FCONTEXT (field) = class_type;
+  DECL_SAVED_INSNS (field) = 0;
+  DECL_FIELD_SIZE (field) = 0;
+  DECL_ALIGN (field) = TYPE_ALIGN (type);
+
+  /* Return it.  */
+  return field;
+}
+
+/* Returns list of virtual base class pointers in a FIELD_DECL chain.  */
+
+static tree
+build_vbase_pointer_fields (rec, empty_p)
+     tree rec;
+     int *empty_p;
+{
+  /* Chain to hold all the new FIELD_DECLs which point at virtual
+     base classes.  */
+  tree vbase_decls = NULL_TREE;
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree decl;
+  int i;
+
+  /* Handle basetypes almost like fields, but record their
+     offsets differently.  */
+
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      register tree base_binfo = TREE_VEC_ELT (binfos, i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+
+      if (TYPE_SIZE (basetype) == 0)
+	/* This error is now reported in xref_tag, thus giving better
+	   location information.  */
+	continue;
+
+      /* All basetypes are recorded in the association list of the
+	 derived type.  */
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	{
+	  int j;
+	  const char *name;
+
+	  /* The offset for a virtual base class is only used in computing
+	     virtual function tables and for initializing virtual base
+	     pointers.  It is built once `get_vbase_types' is called.  */
+
+	  /* If this basetype can come from another vbase pointer
+	     without an additional indirection, we will share
+	     that pointer.  If an indirection is involved, we
+	     make our own pointer.  */
+	  for (j = 0; j < n_baseclasses; j++)
+	    {
+	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
+	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
+		  && binfo_member (basetype,
+				   CLASSTYPE_VBASECLASSES (BINFO_TYPE
+							   (other_base_binfo))
+				   ))
+		goto got_it;
+	    }
+	  FORMAT_VBASE_NAME (name, basetype);
+	  decl = build_vtbl_or_vbase_field (get_identifier (name), 
+					    get_identifier (VTABLE_BASE),
+					    build_pointer_type (basetype),
+					    rec,
+					    empty_p);
+	  BINFO_VPTR_FIELD (base_binfo) = decl;
+	  TREE_CHAIN (decl) = vbase_decls;
+	  vbase_decls = decl;
+	  *empty_p = 0;
+
+	got_it:
+	  /* The space this decl occupies has already been accounted for.  */
+	  ;
+	}
+    }
+
+  return vbase_decls;
+}
+
+/* Go through the TYPE_METHODS of T issuing any appropriate
+   diagnostics, figuring out which methods override which other
+   methods, and so forth.  Returns non-zero if this class has any
+   virtual methods.  */
+
+static void
+check_methods (t)
+     tree t;
+{
+  tree x;
+  int has_virtual;
+
+  /* Assume there are no virtual methods.  */
+  has_virtual = 0;
+
+  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+    {
+      GNU_xref_member (current_class_name, x);
+
+      /* If this was an evil function, don't keep it in class.  */
+      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
+	continue;
+
+      /* Do both of these, even though they're in the same union;
+	 if the insn `r' member and the size `i' member are
+	 different sizes, as on the alpha, the larger of the two
+	 will end up with garbage in it.  */
+      DECL_SAVED_INSNS (x) = 0;
+      DECL_FIELD_SIZE (x) = 0;
+
+      check_for_override (x, t);
+      if (DECL_ABSTRACT_VIRTUAL_P (x) && ! DECL_VINDEX (x))
+	cp_error_at ("initializer specified for non-virtual method `%D'", x);
+
+      /* The name of the field is the original field name
+	 Save this in auxiliary field for later overloading.  */
+      if (DECL_VINDEX (x))
+	{
+	  has_virtual = 1;
+	  if (DECL_ABSTRACT_VIRTUAL_P (x))
+	    CLASSTYPE_ABSTRACT_VIRTUALS (t)
+	      = tree_cons (NULL_TREE, x, CLASSTYPE_ABSTRACT_VIRTUALS (t));
+	}
+    }
+
+  /* A class with virtual functions needs constructing because, if
+     nothing else, the vtable pointer must be initialized.  */
+  TYPE_HAS_COMPLEX_INIT_REF (t) |= has_virtual;
+  TYPE_NEEDS_CONSTRUCTING (t) |= has_virtual;
+  /* [dcl.init.aggr]
+
+     An aggregate is a ... class ... with ... no virtual functions.  */
+  CLASSTYPE_NON_AGGREGATE (t) |= has_virtual;
+}
+
+/* Remove all zero-width bit-fields from T.  */
+
+static void
+remove_zero_width_bit_fields (t)
+     tree t;
+{
+  tree *fieldsp;
+
+  fieldsp = &TYPE_FIELDS (t); 
+  while (*fieldsp)
+    {
+      if (TREE_CODE (*fieldsp) == FIELD_DECL
+	  && DECL_C_BIT_FIELD (*fieldsp) 
+	  && DECL_INITIAL (*fieldsp))
+	*fieldsp = TREE_CHAIN (*fieldsp);
+      else
+	fieldsp = &TREE_CHAIN (*fieldsp);
+    }
+}
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3626,13 +3832,12 @@ finish_struct_1 (t)
      tree t;
 {
   tree fields;
-  tree x, method_vec;
+  tree x;
   tree *next_field;
   int has_virtual;
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
   tree pending_hard_virtuals = NULL_TREE;
-  tree abstract_virtuals = NULL_TREE;
   tree vfield;
   tree vfields;
   tree virtual_dtor;
@@ -3646,7 +3851,6 @@ finish_struct_1 (t)
   int first_vfn_base_index;
 
   int n_baseclasses;
-  int const_sans_init = 0;
   tree access_decls;
   int aggregate = 1;
   int empty = 1;
@@ -3670,17 +3874,7 @@ finish_struct_1 (t)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
-  /* Install struct as DECL_FIELD_CONTEXT of each field decl.
-     Also process specified field sizes.
-     Set DECL_FIELD_SIZE to the specified size, or 0 if none specified.
-     The specified size is found in the DECL_INITIAL.
-     Store 0 there, except for ": 0" fields (so we can find them
-     and delete them, below).  */
-
-  if (TYPE_BINFO_BASETYPES (t))
-    n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (t));
-  else
-    n_baseclasses = 0;
+  n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
   if (n_baseclasses > 0)
     {
@@ -3692,7 +3886,9 @@ finish_struct_1 (t)
       has_virtual = base_info.has_virtual;
       max_has_virtual = base_info.max_has_virtual;
       vfield = base_info.vfield;
+      TYPE_VFIELD (t) = vfield;
       vfields = base_info.vfields;
+      CLASSTYPE_VFIELDS (t) = vfields;
       CLASSTYPE_RTTI (t) = base_info.rtti;
       cant_have_default_ctor = base_info.cant_have_default_ctor;
       cant_have_const_ctor = base_info.cant_have_const_ctor;
@@ -3703,7 +3899,7 @@ finish_struct_1 (t)
     {
       first_vfn_base_index = -1;
       has_virtual = 0;
-      max_has_virtual = has_virtual;
+      max_has_virtual = 0;
       vfield = NULL_TREE;
       vfields = NULL_TREE;
       CLASSTYPE_RTTI (t) = NULL_TREE;
@@ -3712,75 +3908,42 @@ finish_struct_1 (t)
       no_const_asn_ref = 0;
     }
 
-  /* The three of these are approximations which may later be
-     modified.  Needed at this point to make add_virtual_function
-     and modify_vtable_entries work.  */
-  CLASSTYPE_VFIELDS (t) = vfields;
-  TYPE_VFIELD (t) = vfield;
-
-  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
-    {
-      GNU_xref_member (current_class_name, x);
-
-      /* If this was an evil function, don't keep it in class.  */
-      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
-	continue;
-
-      /* Do both of these, even though they're in the same union;
-	 if the insn `r' member and the size `i' member are
-	 different sizes, as on the alpha, the larger of the two
-	 will end up with garbage in it.  */
-      DECL_SAVED_INSNS (x) = 0;
-      DECL_FIELD_SIZE (x) = 0;
-
-      check_for_override (x, t);
-      if (DECL_ABSTRACT_VIRTUAL_P (x) && ! DECL_VINDEX (x))
-	cp_error_at ("initializer specified for non-virtual method `%D'", x);
-
-      /* The name of the field is the original field name
-	 Save this in auxiliary field for later overloading.  */
-      if (DECL_VINDEX (x))
-	{
-	  add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
-				&has_virtual, x, t);
-	  if (DECL_ABSTRACT_VIRTUAL_P (x))
-	    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
-#if 0
-	  /* XXX Why did I comment this out?  (jason) */
-	  else
-	    TREE_USED (x) = 1;
-#endif
-	}
-    }
-
-  if (n_baseclasses)
-    TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t),
-			       TYPE_FIELDS (t));
-
-  /* Check all the data member declarations for legality.  */
+  /* Check all the data member declarations.  */
   next_field = check_field_decls (t, &access_decls, &empty,
 				  &cant_have_default_ctor,
 				  &cant_have_const_ctor,
 				  &no_const_asn_ref);
-  fields = TYPE_FIELDS (t);
 
-  /* If this type has any constant members which did not come
-     with their own initialization, mark that fact here.  It is
-     not an error here, since such types can be saved either by their
-     constructors, or by fortuitous initialization.  */
-  CLASSTYPE_READONLY_FIELDS_NEED_INIT (t) = const_sans_init;
-  CLASSTYPE_ABSTRACT_VIRTUALS (t) = abstract_virtuals;
-  
+  /* Add pointers to all of our virtual base-classes.  */
+  if (n_baseclasses)
+    TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, &empty),
+			       TYPE_FIELDS (t));
+
+  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
+  fields = TYPE_FIELDS (t);
+  if (n_baseclasses)
+    {
+      TYPE_FIELDS (t) = chainon (build_base_fields (t), TYPE_FIELDS (t));
+
+      /* If any base is non-empty, then we are non-empty.  */
+      for (x = TYPE_FIELDS (t); empty && x != fields; x = TREE_CHAIN (x))
+	if (DECL_SIZE (x) != integer_zero_node)
+	  empty = 0;
+
+      fields = TYPE_FIELDS (t);
+    }
+
+  /* Check all the method declarations.  */
+  check_methods (t);
+
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
-    |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual);
+    |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
   TYPE_NEEDS_CONSTRUCTING (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual);
+    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
   CLASSTYPE_NON_AGGREGATE (t)
-      = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
+      = ! aggregate || TYPE_HAS_CONSTRUCTOR (t);
   CLASSTYPE_NON_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
 	|| TYPE_HAS_ASSIGN_REF (t));
@@ -3794,29 +3957,21 @@ finish_struct_1 (t)
     = add_implicitly_declared_members (t, cant_have_default_ctor,
 				       cant_have_const_ctor,
 				       no_const_asn_ref);
-  if (virtual_dtor)
-    add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
-			  &has_virtual, virtual_dtor, t);
 
-  if (TYPE_METHODS (t))
-    {
-      finish_struct_methods (t);
-      method_vec = CLASSTYPE_METHOD_VEC (t);
-    }
-  else
-    {
-      method_vec = 0;
+  /* Loop over the virtual functions, adding them to our various
+     vtables.  */
+  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+    if (DECL_VINDEX (x))
+      add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
+			    &has_virtual, x, t);
 
-      /* Just in case these got accidentally
-	 filled in by syntax errors.  */
-      TYPE_HAS_CONSTRUCTOR (t) = 0;
-      TYPE_HAS_DESTRUCTOR (t) = 0;
-    }
+  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
+  finish_struct_methods (t);
 
   /* Process the access-declarations.  */
   while (access_decls)
     {
-      handle_using_decl (TREE_VALUE (access_decls), t, method_vec, fields); 
+      handle_using_decl (TREE_VALUE (access_decls), t);
       access_decls = TREE_CHAIN (access_decls);
     }
 
@@ -3841,46 +3996,14 @@ finish_struct_1 (t)
 	 bounds.  That's better than using `void*' or some such; it's
 	 cleaner, and it let's the alias analysis code know that these
 	 stores cannot alias stores to void*!  */
-      vfield = build_lang_decl (FIELD_DECL, get_vfield_name (t),
-				      vtbl_ptr_type_node);
-      /* If you change any of the below, take a look at all the
-	 other VFIELD_BASEs and VTABLE_BASEs in the code, and change
-	 them too.  */
-      DECL_ASSEMBLER_NAME (vfield) = get_identifier (VFIELD_BASE);
+      vfield = build_vtbl_or_vbase_field (get_vfield_name (t),
+					  get_identifier (VFIELD_BASE),
+					  vtbl_ptr_type_node,
+					  t,
+					  &empty);
       TYPE_VFIELD (t) = vfield;
-      DECL_VIRTUAL_P (vfield) = 1;
-      DECL_ARTIFICIAL (vfield) = 1;
-      DECL_FIELD_CONTEXT (vfield) = t;
-      DECL_CLASS_CONTEXT (vfield) = t;
-      DECL_FCONTEXT (vfield) = t;
-      DECL_SAVED_INSNS (vfield) = 0;
-      DECL_FIELD_SIZE (vfield) = 0;
-      DECL_ALIGN (vfield) = TYPE_ALIGN (ptr_type_node);
       *next_field = vfield;
-      empty = 0;
       vfields = chainon (vfields, build_tree_list (NULL_TREE, t));
-    }
-
-  /* Now DECL_INITIAL is null on all members except for zero-width bit-fields.
-
-     C++: maybe we will support default field initialization some day...  */
-
-  /* Delete all duplicate fields from the fields */
-  delete_duplicate_fields (fields);
-
-  /* Now we have the nearly final fieldlist for the data fields.  Record it,
-     then lay out the structure or union (including the fields).  */
-
-  TYPE_FIELDS (t) = fields;
-
-  if (n_baseclasses)
-    {
-      TYPE_FIELDS (t) = chainon (build_base_fields (t), TYPE_FIELDS (t));
-
-      /* If all our bases are empty, we can be empty too.  */
-      for (x = TYPE_FIELDS (t); empty && x != fields; x = TREE_CHAIN (x))
-	if (DECL_SIZE (x) != integer_zero_node)
-	  empty = 0;
     }
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
@@ -3889,12 +4012,16 @@ finish_struct_1 (t)
   inline_friends = CLASSTYPE_INLINE_FRIENDS (t);
   CLASSTYPE_INLINE_FRIENDS (t) = NULL_TREE;
 
+  /* We make all structures have at least one element, so that they
+     have non-zero size.  The field that we add here is fake, in the
+     sense that, for example, we don't want people to be able to
+     initialize it later.  So, we add it just long enough to let the
+     back-end lay out the type, and then remove it.  */
   if (empty)
     {
-      /* C++: do not let empty structures exist.  */
       tree decl = build_lang_decl
 	(FIELD_DECL, NULL_TREE, char_type_node);
-      TREE_CHAIN (decl) = fields;
+      TREE_CHAIN (decl) = TYPE_FIELDS (t);
       TYPE_FIELDS (t) = decl;
       TYPE_NONCOPIED_PARTS (t) 
 	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
@@ -3902,6 +4029,11 @@ finish_struct_1 (t)
     }
 
   layout_type (t);
+
+  /* If we added an extra field to make this class non-empty, remove
+     it now.  */
+  if (empty)
+    TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
 
   /* Remember the size and alignment of the class before adding
      the virtual bases.  */
@@ -3930,22 +4062,10 @@ finish_struct_1 (t)
   if (n_baseclasses)
     /* layout_basetypes will remove the base subobject fields.  */
     max_has_virtual = layout_basetypes (t, max_has_virtual);
-  if (empty)
-    TYPE_FIELDS (t) = fields;
 
-  my_friendly_assert (TYPE_FIELDS (t) == fields, 981117);
-
-  /* Delete all zero-width bit-fields from the fieldlist */
-  {
-    tree *fieldsp = &fields;
-    while (*fieldsp)
-      if (TREE_CODE (*fieldsp) == FIELD_DECL
-	  && DECL_C_BIT_FIELD (*fieldsp) && DECL_INITIAL (*fieldsp))
-	*fieldsp = TREE_CHAIN (*fieldsp);
-      else
-	fieldsp = &TREE_CHAIN (*fieldsp);
-  }
-  TYPE_FIELDS (t) = fields;
+  /* Delete all zero-width bit-fields from the list of fields.  Now
+     that we have layed out the type they are no longer important.  */
+  remove_zero_width_bit_fields (t);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -3998,10 +4118,6 @@ finish_struct_1 (t)
       TYPE_VFIELD (t) = vfield;
     }
     
-#ifdef NOTQUITE
-  cp_warning ("Doing hard virtuals for %T...", t);
-#endif
-
   if (has_virtual > max_has_virtual)
     max_has_virtual = has_virtual;
   if (max_has_virtual > 0)
@@ -4141,7 +4257,7 @@ finish_struct_1 (t)
 
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
-  for (x = fields; x; x = TREE_CHAIN (x))
+  for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
     {
       if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
 	  && TREE_TYPE (x) == t)
@@ -4152,20 +4268,18 @@ finish_struct_1 (t)
     }
 
   /* Done with FIELDS...now decide whether to sort these for
-     faster lookups later.  Don't worry about optimizing
-     for structs only declared in inline functions...they're
-     not going to be referenced anywhere else.
+     faster lookups later.
 
      The C front-end only does this when n_fields > 15.  We use
      a smaller number because most searches fail (succeeding
      ultimately as the search bores through the inheritance
      hierarchy), and we want this failure to occur quickly.  */
 
-  n_fields = count_fields (fields);
-  if (n_fields > 7 && !allocation_temporary_p ())
+  n_fields = count_fields (TYPE_FIELDS (t));
+  if (n_fields > 7)
     {
       tree field_vec = make_tree_vec (n_fields);
-      add_fields_to_vec (fields, field_vec, 0);
+      add_fields_to_vec (TYPE_FIELDS (t), field_vec, 0);
       qsort (&TREE_VEC_ELT (field_vec, 0), n_fields, sizeof (tree),
 	     (int (*)(const void *, const void *))field_decl_cmp);
       if (! DECL_LANG_SPECIFIC (TYPE_MAIN_DECL (t)))
@@ -4201,7 +4315,7 @@ finish_struct_1 (t)
 		     vfield, TYPE_NONCOPIED_PARTS (t));
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
-	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 1)) == NULL_TREE)
+	  && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
 	cp_warning ("`%#T' has virtual functions but non-virtual destructor",
 		    t);
     }
@@ -4210,11 +4324,6 @@ finish_struct_1 (t)
      the base types we marked.  */
   finish_vtbls (TYPE_BINFO (t), 1, t);
   hack_incomplete_structures (t);
-
-#if 0
-  if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
-    undo_template_name_overload (TYPE_IDENTIFIER (t), 1);
-#endif
 
   if (warn_overloaded_virtual)
     warn_hidden (t);

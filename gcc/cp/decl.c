@@ -9293,8 +9293,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* Avoid giving two errors for this.  */
 	    IDENTIFIER_CLASS_VALUE (dname) = NULL_TREE;
 
-	    declspecs = temp_tree_cons (NULL_TREE, integer_type_node,
-					declspecs);
+	    declspecs = tree_cons (NULL_TREE, integer_type_node, declspecs);
 	    *next = dname;
 	    next = 0;
 	    break;
