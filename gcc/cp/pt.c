@@ -2742,9 +2742,8 @@ convert_nontype_argument (type, expr)
 
       if (TREE_CODE (referent) == STRING_CST)
 	{
-	  cp_error ("string literal %E is not a valid template argument", 
+	  cp_error ("string literal %E is not a valid template argument because it is the address of an object with static linkage", 
 		    referent);
-	  error ("because it is the address of an object with static linkage");
 	  return NULL_TREE;
 	}
 
@@ -3160,8 +3159,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
   if (requires_type && ! is_type && TREE_CODE (arg) == SCOPE_REF
       && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
     {
-      cp_pedwarn ("to refer to a type member of a template parameter,");
-      cp_pedwarn ("  use `typename %E'", arg);
+      cp_pedwarn ("to refer to a type member of a template parameter, use `typename %E'", arg);
       
       arg = make_typename_type (TREE_OPERAND (arg, 0),
 				TREE_OPERAND (arg, 1),
@@ -4300,10 +4298,8 @@ push_tinst_level (d)
 	return 0;
 
       last_template_error_tick = tinst_level_tick;
-      error ("template instantiation depth exceeds maximum of %d",
-	     max_tinst_depth);
-      error (" (use -ftemplate-depth-NN to increase the maximum)");
-      cp_error ("  instantiating `%D'", d);
+      cp_error ("template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating `%D'",
+	     max_tinst_depth, d);
 
       print_template_context (0);
 

@@ -1,3 +1,11 @@
+2000-03-11  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lex.c (whitespace_cr): Compress consecutive calls to warning().
+	(do_identifier): Ditto for error().
+
+	* pt.c (convert_nontype_argument): Ditto for cp_error().
+	(convert_template_argument): Ditto for cp_pedwarn().
+
 2000-03-11  Jason Merrill  <jason@casey.cygnus.com>
 
 	* exception.cc (__check_null_eh_spec): New fn.
@@ -1240,7 +1248,7 @@ Wed Jan 26 22:19:14 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(__class_type_info::do_find_public_subobj): Likewise.
 	* tinfo2.cc (__dynamic_cast): Remap BOFF parameter.	
 
-2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.coom>
+2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* typeck.c (build_unary_op): Use cp_pedwarn, not pedwarn.
 
@@ -1252,7 +1260,7 @@ Wed Jan 26 22:19:14 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* class.c (dump_class_hierarchy): Make format agree with argument;
 	cast pointer to unsigned long and print with %lx.
 	
-2000-01-19  Gabriel Dos Reis  <gdr@codesourcery>
+2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* decl2.c (lang_decode_option): Set default line-wrap length to 72.
 	
