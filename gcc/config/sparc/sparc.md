@@ -7309,15 +7309,6 @@
   "jmp\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
-;; This pattern recognizes the "instruction" that appears in 
-;; a function call that wants a structure value, 
-;; to inform the called function if compiled with Sun CC.
-;(define_insn "*unimp_insn"
-;  [(match_operand:SI 0 "immediate_operand" "")]
-;  "GET_CODE (operands[0]) == CONST_INT && INTVAL (operands[0]) > 0"
-;  "unimp\t%0"
-;  [(set_attr "type" "marker")])
-
 ;;- jump to subroutine
 (define_expand "call"
   ;; Note that this expression is not used for generating RTL.
@@ -7328,7 +7319,7 @@
   ;; operands[3] is struct_value_size_rtx.
   ""
 {
-  rtx fn_rtx, nregs_rtx;
+  rtx fn_rtx;
 
    if (GET_MODE (operands[0]) != FUNCTION_MODE)
     abort ();
@@ -7362,42 +7353,21 @@
 
   fn_rtx = operands[0];
 
-  /* Count the number of parameter registers being used by this call.
-     if that argument is NULL, it means we are using them all, which
-     means 6 on the sparc.  */
-#if 0
-  if (operands[2])
-    nregs_rtx = GEN_INT (REGNO (operands[2]) - 8);
-  else
-    nregs_rtx = GEN_INT (6);
-#else
-  nregs_rtx = const0_rtx;
-#endif
-
   if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
     emit_call_insn
       (gen_rtx_PARALLEL
        (VOIDmode,
-	gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
+	gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, const0_rtx),
 		   operands[3],
 		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
   else
     emit_call_insn
       (gen_rtx_PARALLEL
        (VOIDmode,
-	gen_rtvec (2, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
+	gen_rtvec (2, gen_rtx_CALL (VOIDmode, fn_rtx, const0_rtx),
 		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
 
  finish_call:
-#if 0
-  /* If this call wants a structure value,
-     emit an unimp insn to let the called function know about this.  */
-  if (! TARGET_ARCH64 && INTVAL (operands[3]) > 0)
-    {
-      rtx insn = emit_insn (operands[3]);
-      SCHED_GROUP_P (insn) = 1;
-    }
-#endif
 
   DONE;
 })
@@ -7502,7 +7472,7 @@
   ;; operand 3 is next_arg_register
   ""
 {
-  rtx fn_rtx, nregs_rtx;
+  rtx fn_rtx;
   rtvec vec;
 
   if (GET_MODE (operands[1]) != FUNCTION_MODE)
@@ -7510,18 +7480,9 @@
 
   fn_rtx = operands[1];
 
-#if 0
-  if (operands[3])
-    nregs_rtx = GEN_INT (REGNO (operands[3]) - 8);
-  else
-    nregs_rtx = GEN_INT (6);
-#else
-  nregs_rtx = const0_rtx;
-#endif
-
   vec = gen_rtvec (2,
 		   gen_rtx_SET (VOIDmode, operands[0],
-				gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx)),
+				gen_rtx_CALL (VOIDmode, fn_rtx, const0_rtx)),
 		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)));
 
   emit_call_insn (gen_rtx_PARALLEL (VOIDmode, vec));

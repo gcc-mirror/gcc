@@ -1,3 +1,17 @@
+2004-03-26  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+	* config.gcc: Remove sparc-tti-*.
+	* config/sparc/pbd.h: Delete.
+
+	* config/sparc/sol2.h: Remove note about Sun OS 4.x.
+	* config/sparc/aout.h: Likewise.
+
+	* config/sparc/sparc.h: Remove if 0'd code.
+	* config/sparc/sparc.md (call): Remove if 0'd code.
+	(call_value): Likewise.
+	(nonlocal_goto): Likewise.
+	(unimp_insn): Delete.
+
 2004-03-25  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (tree_expr_nonnegative_p): Handle BIT_XOR_EXPR like
