@@ -1,3 +1,7 @@
+2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c (__GXX_ABI_VERSION): Correct spelling.
+
 2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* c-common.c (cb_register_builtins): Set __GXX_ABI_VERSION__ to 102.

@@ -4732,7 +4732,7 @@ cb_register_builtins (pfile)
 	cpp_define (pfile, "__EXCEPTIONS");
       if (warn_deprecated)
 	cpp_define (pfile, "__DEPRECATED");
-      cpp_define (pfile, "__GXX_ABI_VERSION__=102");
+      cpp_define (pfile, "__GXX_ABI_VERSION=102");
     }
 
   /* libgcc needs to know this.  */
