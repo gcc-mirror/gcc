@@ -1,3 +1,10 @@
+2000-01-30  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (find_position): Drop 'colp' argument, return the
+	new line base.
+	(read_and_prescan): Adjust to match.  Don't ever manipulate
+	line or line_base except via find_position.
+
 2000-01-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-parse.in: Apply Ulrich's changes from c-parse.y.

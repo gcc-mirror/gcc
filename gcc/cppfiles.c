@@ -34,23 +34,22 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 static struct include_hash *redundant_include_p
 					PARAMS ((cpp_reader *,
-						struct include_hash *,
-						struct file_name_list *));
-static struct file_name_map *read_name_map	PARAMS ((cpp_reader *,
-							const char *));
+						 struct include_hash *,
+						 struct file_name_list *));
+static struct file_name_map *read_name_map
+					PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string	PARAMS ((int, FILE *));
 static char *remap_filename 		PARAMS ((cpp_reader *, char *,
-						struct file_name_list *));
+						 struct file_name_list *));
 static long read_and_prescan		PARAMS ((cpp_reader *, cpp_buffer *,
-						int, size_t));
-static struct file_name_list *actual_directory PARAMS ((cpp_reader *,
-						       const char *));
+						 int, size_t));
+static struct file_name_list *actual_directory
+					PARAMS ((cpp_reader *, const char *));
 static void initialize_input_buffer	PARAMS ((cpp_reader *, int,
-						struct stat *));
+						 struct stat *));
 static int file_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
-static void find_position		PARAMS ((U_CHAR *, U_CHAR *,
-						unsigned long *,
-						unsigned long *));
+static U_CHAR *find_position		PARAMS ((U_CHAR *, U_CHAR *,
+						 unsigned long *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -772,23 +771,25 @@ actual_directory (pfile, fname)
 }
 
 /* Determine the current line and column.  Used only by read_and_prescan. */
-static void
-find_position (start, limit, linep, colp)
+static U_CHAR *
+find_position (start, limit, linep)
      U_CHAR *start;
      U_CHAR *limit;
      unsigned long *linep;
-     unsigned long *colp;
 {
-  unsigned long line = *linep, col = 0;
+  unsigned long line = *linep;
+  U_CHAR *lbase = start;
   while (start < limit)
     {
       U_CHAR ch = *start++;
       if (ch == '\n' || ch == '\r')
-	line++, col = 1;
-      else
-	col++;
+	{
+	  line++;
+	  lbase = start;
+	}
     }
-  *linep = line, *colp = col;
+  *linep = line;
+  return lbase;
 }
 
 /* Read the entire contents of file DESC into buffer BUF.  LEN is how
@@ -950,8 +951,6 @@ read_and_prescan (pfile, fp, desc, len)
 		    *op++ = '\r';
 		  else
 		    deferred_newlines++;
-		  line++;
-		  line_base = op;
 		}
 	      else if (*ip == '\r')
 		{
@@ -967,8 +966,6 @@ read_and_prescan (pfile, fp, desc, len)
 		    *op++ = '\r';
 		  else
 		    deferred_newlines++;
-		  line++;
-		  line_base = op;
 		}
 	      else
 		*op++ = '\\';
@@ -1023,10 +1020,14 @@ read_and_prescan (pfile, fp, desc, len)
 		if (CPP_OPTIONS (pfile)->warn_trigraphs)
 		  {
 		    unsigned long col;
-		    find_position (line_base, op, &line, &col);
-		    line_base = op - col;
-		    cpp_warning_with_line (pfile, line, col,
-					   "trigraph ??%c encountered", d);
+		    line_base = find_position (line_base, op, &line);
+		    col = op - line_base + 1;
+		    if (CPP_OPTIONS (pfile)->trigraphs)
+		      cpp_warning_with_line (pfile, line, col,
+			     "trigraph ??%c converted to %c", d, t);
+		    else
+		      cpp_warning_with_line (pfile, line, col,
+			     "trigraph ??%c ignored", d);
 		  }
 		if (CPP_OPTIONS (pfile)->trigraphs)
 		  {
@@ -1075,7 +1076,8 @@ read_and_prescan (pfile, fp, desc, len)
   if (op[-1] != '\n')
     {
       unsigned long col;
-      find_position (line_base, op, &line, &col);
+      line_base = find_position (line_base, op, &line);
+      col = op - line_base + 1;
       cpp_warning_with_line (pfile, line, col, "no newline at end of file\n");
       if (offset + 1 > len)
 	{
