@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
    Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
-   Coptributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
+   Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
 
@@ -173,8 +173,9 @@ output_file_directive ((FILE), main_input_filename)
 
 /* This will return small structs in d0.  */
 #define RETURN_IN_MEMORY(type) \
-  (AGGREGATE_TYPE_P (type) \
-   && GET_MODE_SIZE (TYPE_MODE (type)) > UNITS_PER_WORD)
+  ((TYPE_MODE (type) == BLKmode) \
+   || (AGGREGATE_TYPE_P (type) \
+       && GET_MODE_SIZE (TYPE_MODE (type)) > UNITS_PER_WORD))
 
 /* Don't default to pcc-struct-return, because we have already specified
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */
