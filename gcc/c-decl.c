@@ -3735,7 +3735,8 @@ finish_decl (decl, init, asmspec_tree)
 		SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
 	    }
 
-	  add_decl_stmt (decl);
+	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	    add_decl_stmt (decl);
 	}
 
       if (DECL_CONTEXT (decl) != 0)
