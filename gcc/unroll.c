@@ -3577,6 +3577,13 @@ loop_iterations (loop)
       /* Grab initial value, only useful if it is a constant.  */
       bl = REG_IV_CLASS (ivs, REGNO (iteration_var));
       initial_value = bl->initial_value;
+      if (!bl->biv->always_executed || bl->biv->maybe_multiple)
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "Loop iterations: Basic induction var not set once in each iteration.\n");
+	  return 0;
+	}
 
       increment = biv_total_increment (bl);
     }
@@ -3588,6 +3595,14 @@ loop_iterations (loop)
 
       if (REGNO (v->src_reg) >= ivs->n_regs)
 	abort ();
+
+      if (!v->always_executed || v->maybe_multiple)
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "Loop iterations: General induction var not set once in each iteration.\n");
+	  return 0;
+	}
 
       bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
