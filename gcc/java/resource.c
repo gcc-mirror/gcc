@@ -129,6 +129,9 @@ write_resource_constructor (void)
      to scan the object file to find its ctor/dtor routine.  */
   TREE_PUBLIC (init_decl) = ! targetm.have_ctors_dtors;
 
+  /* Suppress spurious warnings.  */
+  TREE_USED (init_decl) = 1;
+
   pushlevel (0);
   make_decl_rtl (init_decl, NULL);
   init_function_start (init_decl);
@@ -156,8 +159,9 @@ write_resource_constructor (void)
     flag_inline_functions = saved_flag;
   }
   current_function_decl = NULL_TREE;
-  (* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
-				   DEFAULT_INIT_PRIORITY);
+  if (targetm.have_ctors_dtors)
+    targetm.asm_out.constructor (XEXP (DECL_RTL (init_decl), 0),
+				 DEFAULT_INIT_PRIORITY);
   input_location = saved_loc;
 }
 

@@ -1,3 +1,8 @@
+2004-04-22  Roger Sayle  <roger@eyesopen.com>
+
+	* resource.c (write_resource_constructor): Guard call to possibly
+	NULL targetm.asm_out.constructor with targetm.have_ctors_dtors.
+
 2004-04-19  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* class.c (make_class_data): Add new field aux_info.
