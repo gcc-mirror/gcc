@@ -188,7 +188,7 @@ if test x${gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
     gxx_include_dir='${libsubdir}/include/g++'
   else
-    topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
+    . ${topsrcdir}/config.if
     gxx_include_dir='${prefix}/include/g++'-${libstdcxx_interface}
   fi
 fi

@@ -1,3 +1,7 @@
+Mon Jun 28 09:25:23 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (post-target): Use "$(topsrcdir)", not "$(srcdir)/..".
+
 1999-05-20  Angela Marie Thomas <angela@cygnus.com>
 
 	* configure.in: Test for ${compiler_name}.exe as well.
