@@ -1,3 +1,14 @@
+2004-11-28  Theodore A. Roth  <troth@openavr.org>
+
+	* config/avr/avr.c (avr_mcu_types): Add entries for atmega48,
+	atmega88, atmega168, attiny13, attiny2313, at90can128, atmega165,
+	atmega325, atmega3250, atmega645 and atmega6450.
+	* config/avr/avr.h (LINK_SPEC): Ditto.
+	(LIB_SPEC): Ditto.
+	(LIBGCC_SPEC): Ditto.
+	(CRT_BINUTILS_SPECS): Ditto.
+	* config/avr/t-avr (MULTILIB_MATCHES): Ditto.
+
 2004-11-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR preprocessor/17610

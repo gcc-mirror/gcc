@@ -50,13 +50,18 @@ MULTILIB_MATCHES = \
 	mmcu?avr3=mmcu?at43usb320 mmcu?avr3=mmcu?at43usb355 \
 	mmcu?avr3=mmcu?at76c711 \
 	mmcu?avr4=mmcu?atmega8515 mmcu?avr4=mmcu?atmega8535 \
-	mmcu?avr4=mmcu?atmega8 \
+	mmcu?avr4=mmcu?attiny13 mmcu?avr4=mmcu?attiny2313 \
+	mmcu?avr4=mmcu?atmega8 mmcu?avr4=mmcu?atmega48 \
+	mmcu?avr4=mmcu?atmega88 \
 	mmcu?avr5=mmcu?atmega161 mmcu?avr5=mmcu?atmega162 \
 	mmcu?avr5=mmcu?atmega163 mmcu?avr5=mmcu?atmega169 \
-	mmcu?avr5=mmcu?atmega16 \
+	mmcu?avr5=mmcu?atmega16 mmcu?avr5=mmcu?atmega168 \
+	mmcu?avr5=mmcu?atmega165 \
 	mmcu?avr5=mmcu?atmega323 mmcu?avr5=mmcu?atmega32 \
+	mmcu?avr5=mmcu?atmega325 mmcu?avr5=mmcu?atmega3250 \
 	mmcu?avr5=mmcu?atmega64  mmcu?avr5=mmcu?atmega128 \
-	mmcu?avr5=mmcu?at94k
+	mmcu?avr5=mmcu?atmega645 mmcu?avr5=mmcu?atmega6450 \
+	mmcu?avr5=mmcu?at94k mmcu?avr5=mmcu?at90can128
 
 MULTILIB_EXCEPTIONS =
 
