@@ -1,3 +1,7 @@
+2002-10-03  Richard Henderson  <rth@redhat.com>
+
+	* config/i960/i960.md (call, call_value): Use emit_call_insn.
+
 2002-10-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/pa64-hpux.h (INIT_ENVIRONMENT): New.
