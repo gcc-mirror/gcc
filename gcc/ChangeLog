@@ -1,3 +1,19 @@
+2003-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* dwarf2out.c (dw_cfi_oprnd_struct): Offset is HOST_WIDE_INT.
+	(cfa_loc): Likewise.
+	(reg_save, stack_adjust_offset, queue_reg_save): Replace long by
+	HOST_WIDE_INT.
+	(args_size, old_args_size): change type to HOST_WIDE_INT.
+	(dwarf2out_def_cfa, dwarf2out_args_size,
+	dwarf2out_reg_save, new_loc_descr): offset is HOST_WIDE_INT.
+	(dw_val_struct): integers, unsigneds and offsets are HOST_WIDE_INT.
+	(add_AT_int, add_AT_unsigned, att_AT_offset, AT_int, AT_unsigned,
+	AT_offset): Use HOST_WIDE_INT.
+	(based_loc_descr): offset is HOST_WIDE_INT.
+	(add_data_member): Likewise.
+	(add_const_value_attribute): Simplify.
+
 2003-10-25  Richard Henderson  <rth@redhat.com>
 
         * config/i386/i386.c (ix86_eax_live_at_start_p): New.
