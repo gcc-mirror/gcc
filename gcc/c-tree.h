@@ -152,6 +152,8 @@ extern int maybe_objc_comptypes                 PARAMS ((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PARAMS ((void));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
+/* in c-lang.c and objc/objc-act.c */
+extern int defer_fn				PARAMS ((tree));
 
 /* in c-parse.in */
 extern void c_parse_init			PARAMS ((void));
@@ -219,6 +221,7 @@ extern tree start_struct                        PARAMS ((enum tree_code, tree));
 extern void store_parm_decls                    PARAMS ((void));
 extern tree xref_tag                            PARAMS ((enum tree_code, tree));
 extern tree c_begin_compound_stmt               PARAMS ((void));
+extern void c_expand_deferred_function          PARAMS ((tree));
 extern void c_expand_decl_stmt                  PARAMS ((tree));
 
 /* in c-typeck.c */

@@ -1169,7 +1169,7 @@ c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(C_TREE_H) \
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
-    $(GGC_H)  c-lex.h toplev.h diagnostic.h output.h function.h \
+    $(GGC_H) c-lex.h toplev.h diagnostic.h output.h function.h $(VARRAY_H) \
     $(RTL_H) $(EXPR_H) tree-inline.h insn-config.h integrate.h langhooks.h \
     langhooks-def.h
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) c-lex.h \
