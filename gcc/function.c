@@ -239,19 +239,19 @@ static void put_reg_into_stack	PARAMS ((struct function *, rtx, tree,
 static void schedule_fixup_var_refs PARAMS ((struct function *, rtx, tree,
 					     enum machine_mode,
 					     struct hash_table *));
-static void fixup_var_refs	PARAMS ((rtx, enum machine_mode, int,
+static void fixup_var_refs	PARAMS ((rtx, enum machine_mode, int, rtx,
 					 struct hash_table *));
 static struct fixup_replacement
   *find_fixup_replacement	PARAMS ((struct fixup_replacement **, rtx));
 static void fixup_var_refs_insns PARAMS ((rtx, rtx, enum machine_mode,
-					  int, int));
+					  int, int, rtx));
 static void fixup_var_refs_insns_with_hash
 				PARAMS ((struct hash_table *, rtx,
-					 enum machine_mode, int));
+					 enum machine_mode, int, rtx));
 static void fixup_var_refs_insn PARAMS ((rtx, rtx, enum machine_mode,
-					 int, int));
+					 int, int, rtx));
 static void fixup_var_refs_1	PARAMS ((rtx, enum machine_mode, rtx *, rtx,
-					 struct fixup_replacement **));
+					 struct fixup_replacement **, rtx));
 static rtx fixup_memory_subreg	PARAMS ((rtx, rtx, int));
 static rtx walk_fixup_memory_subreg  PARAMS ((rtx, rtx, int));
 static rtx fixup_stack_1	PARAMS ((rtx, rtx));
@@ -389,11 +389,29 @@ pop_function_context_from (context)
   if (restore_lang_status)
     (*restore_lang_status) (p);
 
-  /* Finish doing put_var_into_stack for any of our variables
-     which became addressable during the nested function.  */
-  for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
-    fixup_var_refs (queue->modified, queue->promoted_mode,
-		    queue->unsignedp, 0);
+  /* Finish doing put_var_into_stack for any of our variables which became
+     addressable during the nested function.  If only one entry has to be
+     fixed up, just do that one.  Otherwise, first make a list of MEMs that
+     are not to be unshared.  */
+  if (p->fixup_var_refs_queue == 0)
+    ;
+  else if (p->fixup_var_refs_queue->next == 0)
+    fixup_var_refs (p->fixup_var_refs_queue->modified,
+		    p->fixup_var_refs_queue->promoted_mode,
+		    p->fixup_var_refs_queue->unsignedp,
+		    p->fixup_var_refs_queue->modified, 0);
+  else
+    {
+      rtx list = 0;
+
+      for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
+	list = gen_rtx_EXPR_LIST (VOIDmode, queue->modified, list);
+
+      for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
+	fixup_var_refs (queue->modified, queue->promoted_mode,
+			queue->unsignedp, list, 0);
+
+    }
 
   p->fixup_var_refs_queue = 0;
 
@@ -1525,15 +1543,16 @@ schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
     }
   else
     /* Variable is local; fix it up now.  */
-    fixup_var_refs (reg, promoted_mode, unsigned_p, ht);
+    fixup_var_refs (reg, promoted_mode, unsigned_p, reg, ht);
 }
 
 static void
-fixup_var_refs (var, promoted_mode, unsignedp, ht)
+fixup_var_refs (var, promoted_mode, unsignedp, may_share, ht)
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
      struct hash_table *ht;
+     rtx may_share;
 {
   tree pending;
   rtx first_insn = get_insns ();
@@ -1545,19 +1564,20 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
     {
       if (stack != 0)
 	abort ();
-      fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp);
+      fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp,
+				      may_share);
       return;
     }
 
   fixup_var_refs_insns (first_insn, var, promoted_mode, unsignedp,
-			stack == 0);
+			stack == 0, may_share);
 
   /* Scan all pending sequences too.  */
   for (; stack; stack = stack->next)
     {
       push_to_full_sequence (stack->first, stack->last);
       fixup_var_refs_insns (stack->first, var, promoted_mode, unsignedp,
-			    stack->next != 0);
+			    stack->next != 0, may_share);
       /* Update remembered end of sequence
 	 in case we added an insn at the end.  */
       stack->last = get_last_insn ();
@@ -1571,7 +1591,8 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
       if (seq != const0_rtx && seq != 0)
 	{
 	  push_to_sequence (seq);
-	  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0);
+	  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0,
+				may_share);
 	  end_sequence ();
 	}
     }
@@ -1604,17 +1625,19 @@ find_fixup_replacement (replacements, x)
   return p;
 }
 
-/* Scan the insn-chain starting with INSN for refs to VAR
-   and fix them up.  TOPLEVEL is nonzero if this chain is the
-   main chain of insns for the current function.  */
+/* Scan the insn-chain starting with INSN for refs to VAR and fix them
+   up.  TOPLEVEL is nonzero if this chain is the main chain of insns
+   for the current function.  MAY_SHARE is either a MEM that is not
+   to be unshared or a list of them.  */
 
 static void
-fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel)
+fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel, may_share)
      rtx insn;
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
      int toplevel;
+     rtx may_share;
 {
   while (insn)
     {
@@ -1639,7 +1662,8 @@ fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel)
 	      if (seq)
 		{
 		  push_to_sequence (seq);
-		  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0);
+		  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0,
+					may_share);
 		  XEXP (PATTERN (insn), i) = get_insns ();
 		  end_sequence ();
 		}
@@ -1647,7 +1671,8 @@ fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel)
 	}
 
       else if (INSN_P (insn))
-	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel);
+	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel,
+			     may_share);
 
       insn = next;
     }
@@ -1661,25 +1686,22 @@ fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel)
    (inside the CALL_PLACEHOLDER).  */
 
 static void
-fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp)
+fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp, may_share)
      struct hash_table *ht;
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
+     rtx may_share;
 {
-  struct insns_for_mem_entry *ime = (struct insns_for_mem_entry *)
-    hash_lookup (ht, var, /*create=*/0, /*copy=*/0);
-  rtx insn_list = ime->insns;
+  struct insns_for_mem_entry *ime
+    = (struct insns_for_mem_entry *) hash_lookup (ht, var,
+						  /*create=*/0, /*copy=*/0);
+  rtx insn_list;
 
-  while (insn_list)
-    {
-      rtx insn = XEXP (insn_list, 0);
-	
-      if (INSN_P (insn))
-	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, 1);
-
-      insn_list = XEXP (insn_list, 1);
-    }
+  for (insn_list = ime->insns; insn_list != 0; insn_list = XEXP (insn_list, 1))
+    if (INSN_P (XEXP (insn_list, 0)))
+      fixup_var_refs_insn (XEXP (insn_list, 0), var, promoted_mode,
+			   unsignedp, 1, may_share);
 }
 
 
@@ -1690,12 +1712,13 @@ fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp)
    function.  */
 
 static void
-fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
+fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel, no_share)
      rtx insn;
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
      int toplevel;
+     rtx no_share;
 {
   rtx call_dest = 0;
   rtx set, prev, prev_set;
@@ -1800,7 +1823,7 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
 	 it here.  */
 
       fixup_var_refs_1 (var, promoted_mode, &PATTERN (insn), insn,
-			&replacements);
+			&replacements, no_share);
 
       /* If this is last_parm_insn, and any instructions were output
 	 after it to fix it up, then we must set last_parm_insn to
@@ -1877,12 +1900,13 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
    or the SUBREG, as appropriate, to the pseudo.  */
 
 static void
-fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
+fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
      rtx var;
      enum machine_mode promoted_mode;
      rtx *loc;
      rtx insn;
      struct fixup_replacement **replacements;
+     rtx no_share;
 {
   int i;
   rtx x = *loc;
@@ -1979,7 +2003,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	{
 	  replacement = find_fixup_replacement (replacements, x);
 	  if (replacement->new == 0)
-	    replacement->new = copy_most_rtx (x, var);
+	    replacement->new = copy_most_rtx (x, no_share);
 
 	  *loc = x = replacement->new;
 	  code = GET_CODE (x);
@@ -2116,7 +2140,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  if (SUBREG_PROMOTED_VAR_P (x))
 	    {
 	      *loc = var;
-	      fixup_var_refs_1 (var, GET_MODE (var), loc, insn, replacements);
+	      fixup_var_refs_1 (var, GET_MODE (var), loc, insn, replacements,
+				no_share);
 	      return;
 	    }
 
@@ -2222,11 +2247,11 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    /* Since this case will return, ensure we fixup all the
 	       operands here.  */
 	    fixup_var_refs_1 (var, promoted_mode, &XEXP (outerdest, 1),
-			      insn, replacements);
+			      insn, replacements, no_share);
 	    fixup_var_refs_1 (var, promoted_mode, &XEXP (outerdest, 2),
-			      insn, replacements);
+			      insn, replacements, no_share);
 	    fixup_var_refs_1 (var, promoted_mode, &SET_SRC (x),
-			      insn, replacements);
+			      insn, replacements, no_share);
 
 	    tem = XEXP (outerdest, 0);
 
@@ -2455,13 +2480,14 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	fixup_var_refs_1 (var, promoted_mode, &XEXP (x, i), insn, replacements);
+	fixup_var_refs_1 (var, promoted_mode, &XEXP (x, i), insn, replacements,
+			  no_share);
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    fixup_var_refs_1 (var, promoted_mode, &XVECEXP (x, i, j),
-			      insn, replacements);
+			      insn, replacements, no_share);
 	}
     }
 }
@@ -2869,10 +2895,10 @@ gen_mem_addressof (reg, decl)
 	SET_DECL_RTL (decl, reg);
 
       if (TREE_USED (decl) || (DECL_P (decl) && DECL_INITIAL (decl) != 0))
-	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
+	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), reg, 0);
     }
   else
-    fixup_var_refs (reg, GET_MODE (reg), 0, 0);
+    fixup_var_refs (reg, GET_MODE (reg), 0, reg, 0);
 
   return reg;
 }

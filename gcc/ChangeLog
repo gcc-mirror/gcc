@@ -1,5 +1,14 @@
 Sat Mar  9 07:20:01 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* emit-rtl.c (copy_most_rtx): Accept EXPR_LIST for may_share.
+	* function.c (fixup_var_refs): Add MAY_SHARE parameter.
+	(fixup_var_refs_insns, fixup_var_refs_insns_with_has): Likewise.
+	(fixup_var_refs_insn, fixup_var_refs_1): Likewise.
+	(pop_function_context): Compute MAY_SHARE parameter for
+	fixup_var_refs.
+	(fixup_var_refs_1, case MEM): Pass MAY_SHARE to copy_most_rtx, not VAR.
+	(gen_mem_addressof): Call fixup_var_refs with new parm.
+
 	* combine.c (make_extraction): Don't make extension of CONST_INT.
 
 2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
