@@ -2361,6 +2361,7 @@ alter_reg (i, from_reg)
 	  /* Compute maximum size needed, both for inherent size
 	     and for total size.  */
 	  enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
+	  rtx stack_slot;
 	  if (spill_stack_slot[from_reg])
 	    {
 	      if (GET_MODE_SIZE (GET_MODE (spill_stack_slot[from_reg]))
@@ -2371,6 +2372,7 @@ alter_reg (i, from_reg)
 	    }
 	  /* Make a slot with that size.  */
 	  x = assign_stack_local (mode, total_size, -1);
+	  stack_slot = x;
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      /* Cancel the  big-endian correction done in assign_stack_local.
@@ -2378,8 +2380,17 @@ alter_reg (i, from_reg)
 		 This is so we can do a big-endian correction unconditionally
 		 below.  */
 	      adjust = GET_MODE_SIZE (mode) - total_size;
+	      if (adjust)
+		{
+		  stack_slot = gen_rtx (MEM, mode_for_size (total_size
+							    * BITS_PER_UNIT,
+							    MODE_INT, 1),
+					plus_constant (XEXP (x, 0), adjust));
+		  RTX_UNCHANGING_P (stack_slot)
+		    = RTX_UNCHANGING_P (regno_reg_rtx[i]);
+		}
 	    }
-	  spill_stack_slot[from_reg] = x;
+	  spill_stack_slot[from_reg] = stack_slot;
 	  spill_stack_slot_width[from_reg] = total_size;
 	}
 
