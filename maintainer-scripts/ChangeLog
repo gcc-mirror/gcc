@@ -1,3 +1,8 @@
+2001-03-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_version, update_branch_version: Check out with gcc
+	directory instead of using egcs link.
+
 2001-03-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Don't strip leading -r from argument following
