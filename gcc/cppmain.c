@@ -34,6 +34,7 @@ char *progname;
 cpp_reader parse_in;
 cpp_options options;
 
+#ifdef abort
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
 
@@ -42,6 +43,7 @@ fancy_abort ()
 {
   fatal ("Internal gcc abort.");
 }
+#endif
 
 
 int
@@ -64,10 +66,10 @@ main (argc, argv)
   cpp_options_init (opts);
   
   argi += cpp_handle_options (&parse_in, argc - argi , argv + argi);
+  if (argi < argc && ! CPP_FATAL_ERRORS (&parse_in))
+    cpp_fatal (&parse_in, "Invalid option `%s'", argv[argi]);
   if (CPP_FATAL_ERRORS (&parse_in))
     exit (FATAL_EXIT_CODE);
-  if (argi < argc)
-    cpp_fatal (&parse_in, "Invalid option `%s'", argv[argi]);
       
   parse_in.show_column = 1;
 
