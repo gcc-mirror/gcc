@@ -1,5 +1,8 @@
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
+	* stringpool.c (xxx, yyy): Remove.
+	(get_identifier): Don't set them.
+
 	* Makefile.in (STAMP): New macro.
 	Replace all uses of `touch' with $(STAMP).
 	* fixinc/Makefile.in: Likewise.

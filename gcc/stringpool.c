@@ -276,8 +276,6 @@ ggc_alloc_string (contents, length)
   return str->ptr;
 }
 
-int xxx, yyy;
-
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
    If an identifier with that name has previously been referred to,
    the same node is returned this time.  */
@@ -312,11 +310,6 @@ get_identifier (text)
 		}
 	    }
 	}
-
-      if (strncmp (text, "_Z", 2) == 0)
-	++xxx;
-      else
-	++yyy;
 
       idp = make_node (IDENTIFIER_NODE);
       IDENTIFIER_LENGTH (idp) = length;
