@@ -1683,6 +1683,10 @@ expand_prologue ()
   else
     scratch = ix_reg;
 
+  /* Save current stack frame.  */
+  if (frame_pointer_needed)
+    emit_move_after_reload (stack_push_word, hard_frame_pointer_rtx, scratch);
+
   /* For an interrupt handler, we must preserve _.tmp, _.z and _.xy.
      Other soft registers in page0 need not to be saved because they
      will be restored by C functions.  For a trap handler, we don't
@@ -1696,10 +1700,6 @@ expand_prologue ()
 			      gen_rtx (REG, HImode, SOFT_SAVED_XY_REGNUM),
 			      scratch);
     }
-
-  /* Save current stack frame.  */
-  if (frame_pointer_needed)
-    emit_move_after_reload (stack_push_word, hard_frame_pointer_rtx, scratch);
 
   /* Allocate local variables.  */
   if (TARGET_M6812 && (size > 4 || size == 3))
@@ -1774,7 +1774,7 @@ expand_epilogue ()
   else
     return_size = GET_MODE_SIZE (GET_MODE (current_function_return_rtx));
 
-  if (return_size > HARD_REG_SIZE)
+  if (return_size > HARD_REG_SIZE && return_size <= 2 * HARD_REG_SIZE)
     scratch = iy_reg;
   else
     scratch = ix_reg;
@@ -1821,10 +1821,6 @@ expand_epilogue ()
 			       stack_pointer_rtx, GEN_INT (1)));
     }
 
-  /* Restore previous frame pointer.  */
-  if (frame_pointer_needed)
-    emit_move_after_reload (hard_frame_pointer_rtx, stack_pop_word, scratch);
-
   /* For an interrupt handler, restore ZTMP, ZREG and XYREG.  */
   if (current_function_interrupt)
     {
@@ -1834,6 +1830,10 @@ expand_epilogue ()
 			      stack_pop_word, scratch);
       emit_move_after_reload (m68hc11_soft_tmp_reg, stack_pop_word, scratch);
     }
+
+  /* Restore previous frame pointer.  */
+  if (frame_pointer_needed)
+    emit_move_after_reload (hard_frame_pointer_rtx, stack_pop_word, scratch);
 
   /* If the trap handler returns some value, copy the value
      in D, X onto the stack so that the rti will pop the return value
