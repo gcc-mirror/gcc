@@ -1148,12 +1148,12 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      && (after_label == 0
 		  || INSN_UID (first_insn) < INSN_UID (after_label))
 	      && INSN_UID (first_insn) > INSN_UID (f->before_jump)
-	      && ! DECL_REGISTER (f->target))
+	      && ! DECL_ERROR_ISSUED (f->target))
 	    {
 	      error_with_decl (f->target,
 			       "label `%s' used before containing binding contour");
 	      /* Prevent multiple errors for one label.  */
-	      DECL_REGISTER (f->target) = 1;
+	      DECL_ERROR_ISSUED (f->target) = 1;
 	    }
 
 	  /* We will expand the cleanups into a sequence of their own and
