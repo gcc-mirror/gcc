@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #ifndef GCC_BASIC_BLOCK_H
-#define GCC_BASIC_BLOCK_H 
+#define GCC_BASIC_BLOCK_H
 
 #include "bitmap.h"
 #include "sbitmap.h"
@@ -114,7 +114,7 @@ do {									\
 /* Grow any tables needed when the number of registers is calculated
    or extended.  For the linked list allocation, nothing needs to
    be done, other than zero the statistics on the first allocation.  */
-#define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P) 
+#define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P)
 
 /* Type we use to hold basic block counters.  Should be at least 64bit.  */
 typedef HOST_WIDEST_INT gcov_type;
@@ -215,11 +215,11 @@ typedef struct basic_block_def {
 
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
- 
+
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
 } *basic_block;
- 
+
 #define BB_FREQ_MAX 10000
 
 /* Number of basic blocks in the current function.  */
@@ -290,7 +290,7 @@ extern void commit_edge_insertions	PARAMS ((void));
 extern void remove_fake_edges		PARAMS ((void));
 extern void add_noreturn_fake_exit_edges	PARAMS ((void));
 extern void connect_infinite_loops_to_exit	PARAMS ((void));
-extern int flow_call_edges_add 		PARAMS ((sbitmap));
+extern int flow_call_edges_add		PARAMS ((sbitmap));
 extern rtx flow_delete_insn		PARAMS ((rtx));
 extern void flow_delete_insn_chain	PARAMS ((rtx, rtx));
 extern void make_edge			PARAMS ((sbitmap *, basic_block,
@@ -325,7 +325,7 @@ struct loop
   /* Basic block of loop pre-header or NULL if it does not exist.  */
   basic_block pre_header;
 
-  /* Array of edges along the pre-header extended basic block trace. 
+  /* Array of edges along the pre-header extended basic block trace.
      The source of the first edge is the root node of pre-header
      extended basic block, if it exists.  */
   edge *pre_header_edges;
@@ -419,7 +419,7 @@ struct loop
   /* List of all LABEL_REFs which refer to code labels outside the
      loop.  Used by routines that need to know all loop exits, such as
      final_biv_value and final_giv_value.
-     
+
      This does not include loop exits due to return instructions.
      This is because all bivs and givs are pseudos, and hence must be
      dead after a return, so the presense of a return does not affect
@@ -479,7 +479,7 @@ extern void flow_loop_dump PARAMS ((const struct loop *, FILE *,
 extern int flow_loop_scan PARAMS ((struct loops *, struct loop *, int));
 
 /* This structure maintains an edge list vector.  */
-struct edge_list 
+struct edge_list
 {
   int num_blocks;
   int num_edges;
@@ -522,7 +522,7 @@ struct edge_list * create_edge_list	PARAMS ((void));
 void free_edge_list			PARAMS ((struct edge_list *));
 void print_edge_list			PARAMS ((FILE *, struct edge_list *));
 void verify_edge_list			PARAMS ((FILE *, struct edge_list *));
-int find_edge_index			PARAMS ((struct edge_list *, 
+int find_edge_index			PARAMS ((struct edge_list *,
 						 basic_block, basic_block));
 
 
@@ -556,13 +556,13 @@ enum update_life_extent
 					   notes.  */
 /* Flags for loop discovery.  */
 
-#define LOOP_TREE		1 	/* Build loop hierarchy tree.  */
+#define LOOP_TREE		1	/* Build loop hierarchy tree.  */
 #define LOOP_PRE_HEADER		2	/* Analyse loop pre-header.  */
-#define LOOP_ENTRY_EDGES	4 	/* Find entry edges.  */
-#define LOOP_EXIT_EDGES		8 	/* Find exit edges.  */
+#define LOOP_ENTRY_EDGES	4	/* Find entry edges.  */
+#define LOOP_EXIT_EDGES		8	/* Find exit edges.  */
 #define LOOP_EDGES		(LOOP_ENTRY_EDGES | LOOP_EXIT_EDGES)
-#define LOOP_EXITS_DOMS	       16 	/* Find nodes that dom. all exits.  */
-#define LOOP_ALL	       31 	/* All of the above  */
+#define LOOP_EXITS_DOMS	       16	/* Find nodes that dom. all exits.  */
+#define LOOP_ALL	       31	/* All of the above  */
 
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
@@ -578,13 +578,13 @@ extern struct propagate_block_info *init_propagate_block_info
 extern void free_propagate_block_info PARAMS ((struct propagate_block_info *));
 
 /* In lcm.c */
-extern struct edge_list *pre_edge_lcm 	PARAMS ((FILE *, int, sbitmap *,
-						 sbitmap *, sbitmap *, 
+extern struct edge_list *pre_edge_lcm	PARAMS ((FILE *, int, sbitmap *,
+						 sbitmap *, sbitmap *,
 						 sbitmap *, sbitmap **,
 						 sbitmap **));
 extern struct edge_list *pre_edge_rev_lcm PARAMS ((FILE *, int, sbitmap *,
-						   sbitmap *, sbitmap *, 
-						   sbitmap *, sbitmap **, 
+						   sbitmap *, sbitmap *,
+						   sbitmap *, sbitmap **,
 						   sbitmap **));
 extern void compute_available		PARAMS ((sbitmap *, sbitmap *,
 						 sbitmap *, sbitmap *));
@@ -610,6 +610,7 @@ extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern void delete_noop_moves		PARAMS ((rtx));
+extern rtx last_loop_beg_note		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
 extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
 extern rtx block_label			PARAMS ((basic_block));
@@ -635,20 +636,20 @@ typedef int (*conflict_graph_enum_fn) PARAMS ((int, int, void *));
 
 /* Prototypes of operations on conflict graphs.  */
 
-extern conflict_graph conflict_graph_new 
+extern conflict_graph conflict_graph_new
                                         PARAMS ((int));
 extern void conflict_graph_delete       PARAMS ((conflict_graph));
-extern int conflict_graph_add           PARAMS ((conflict_graph, 
+extern int conflict_graph_add           PARAMS ((conflict_graph,
 						 int, int));
-extern int conflict_graph_conflict_p    PARAMS ((conflict_graph, 
+extern int conflict_graph_conflict_p    PARAMS ((conflict_graph,
 						 int, int));
-extern void conflict_graph_enum         PARAMS ((conflict_graph, int, 
-						 conflict_graph_enum_fn, 
+extern void conflict_graph_enum         PARAMS ((conflict_graph, int,
+						 conflict_graph_enum_fn,
 						 void *));
 extern void conflict_graph_merge_regs   PARAMS ((conflict_graph, int,
 						 int));
 extern void conflict_graph_print        PARAMS ((conflict_graph, FILE*));
-extern conflict_graph conflict_graph_compute 
+extern conflict_graph conflict_graph_compute
                                         PARAMS ((regset,
 						 partition));
 extern bool mark_dfs_back_edges		PARAMS ((void));

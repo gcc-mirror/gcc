@@ -1,3 +1,7 @@
+2001-08-01  Andreas Jaeger  <aj@suse.de>
+
+	* basic-block.h: Add prototype for last_loop_beg_note.
+
 2001-07-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* expr.c (safe_from_p): Use WITH_CLEANUP_EXPR_RTL instead of
@@ -12,7 +16,7 @@
 	operand while calling simple_cst_equal.
 	* tree.def (WITH_CLEANUP_EXPR): Switched operands: the second
 	operand is the cleanup expression, the third is the RTL_EXPR.
-	* tree.h (WITH_CLEANUP_EXPR_RTL): New macro.	
+	* tree.h (WITH_CLEANUP_EXPR_RTL): New macro.
 
 2001-07-31  Jeff Sturm  <jsturm@one-point.com>
 
@@ -34,12 +38,12 @@
 
 	Also fixes emitting of constants on 32 bit and 64 bit
 	platforms.
-	
+
 	* config.gcc: powerpc64-*-linux* is a new target.
-	Things that needed aix.h now also include xcoff.h	
+	Things that needed aix.h now also include xcoff.h
 
 	* config/rs6000/rs6000.h: Split XCOFF specific stuff into
-	xcoff.h. 
+	xcoff.h.
 	Move AIX specific stuff into aix.h.
 	(TARGET_AIX): Renamed to TARGET_XCOFF, since the AIX ABI is used
 	with more than just XCOFF now.
