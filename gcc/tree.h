@@ -869,7 +869,7 @@ struct tree_type
 
 /* In a TYPE_DECL
    nonzero means the detail info about this type is not dumped into stabs.
-   In stead, it will generate cross reference ('x') of names. 
+   Instead it will generate cross reference ('x') of names. 
    This uses the same flag as DECL_EXTERNAL. */
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) ((NODE)->decl.external_flag)
    
