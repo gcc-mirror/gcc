@@ -1171,6 +1171,79 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
 
 
 dnl
+dnl Check for which std::allocator base class to use.  The choice is
+dnl mapped from a subdirectory of include/ext.
+dnl
+dnl Default is new.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
+  AC_MSG_CHECKING([for std::allocator base class to use])
+  GLIBCXX_ENABLE(libstdcxx-allocator,auto,[=KIND],
+    [use KIND for target std::allocator base],
+    [permit new|malloc|mt|bitmap|yes|no|auto])
+  # If they didn't use this option switch, or if they specified --enable
+  # with no specific model, we'll have to look for one.  If they
+  # specified --disable (???), do likewise.
+  if test $enable_libstdcxx_allocator = no || test $enable_libstdcxx_allocator = yes; then
+     enable_libstdcxx_allocator=auto
+  fi
+
+  # Either a known package, or "auto"
+  enable_libstdcxx_allocator_flag=$enable_libstdcxx_allocator
+
+  # Probe for host-specific support if no specific model is specified.
+  # Default to "new".
+  if test $enable_libstdcxx_allocator_flag = auto; then
+    case ${target_os} in
+      freebsd*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      hpux11*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      irix6*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      solaris*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      *)
+        enable_libstdcxx_allocator_flag=new
+        ;;
+    esac
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_allocator_flag)
+  
+
+  # Set configure bits for specified locale package
+  case ${enable_libstdcxx_allocator_flag} in
+    bitmap)
+      ALLOCATOR_H=config/allocator/bitmap_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::bitmap_allocator
+      ;;
+    malloc)
+      ALLOCATOR_H=config/allocator/malloc_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::malloc_allocator
+      ;;
+    mt)
+      ALLOCATOR_H=config/allocator/mt_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::__mt_alloc
+      ;;
+    new)
+      ALLOCATOR_H=config/allocator/new_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::new_allocator
+      ;;
+  esac
+
+  AC_SUBST(ALLOCATOR_H)
+  AC_SUBST(ALLOCATOR_NAME)
+])
+
+
+dnl
 dnl Check for whether the Boost-derived checks should be turned on.
 dnl
 dnl --enable-concept-checks turns them on.
