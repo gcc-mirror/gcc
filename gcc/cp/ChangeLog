@@ -1,5 +1,10 @@
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (type_unification_real): Replace switch with if.
+	(unify): Tsubst non-type parms before comparing.
+
+2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* error.c (dump_typename): New function, broken out of ...
 	(dump_type): ... here. Use it.
 	* typeck.c (same_type_p): Use cp_tree_equal for TYPENAME_TYPE.
