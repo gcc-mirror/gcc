@@ -55,6 +55,16 @@ extern int target_flags;
 #define MASK_PROLOG_FUNCTION	0x00000008
 #define MASK_DEBUG		0x40000000
 
+#define MASK_CPU                0x00000030
+#define MASK_V850               0x00000010
+
+#ifndef MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850
+#endif
+
+#define TARGET_V850    		((target_flags & MASK_CPU) == MASK_V850)
+
+
 /* Macros used in the machine description to test the flags.  */
 
 /* The GHS calling convention support doesn't really work,
@@ -117,7 +127,7 @@ extern int target_flags;
 #endif
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_DEFAULT
+#define TARGET_DEFAULT 		MASK_DEFAULT
 #endif
 
 /* Information about the various small memory areas.  */
@@ -458,17 +468,22 @@ enum reg_class {
 
 #define INT_7_BITS(VALUE) ((unsigned) (VALUE) + 0x40 < 0x80)
 #define INT_8_BITS(VALUE) ((unsigned) (VALUE) + 0x80 < 0x100)
+/* 0 bits */
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
+/* 4 bits */
 #define CONST_OK_FOR_J(VALUE) ((unsigned) (VALUE) + 0x10 < 0x20)
+/* 15 bits */
 #define CONST_OK_FOR_K(VALUE) ((unsigned) (VALUE) + 0x8000 < 0x10000)
 #define CONST_OK_FOR_L(VALUE) \
   (((unsigned) ((int) (VALUE) >> 16) + 0x8000 < 0x10000) \
    && CONST_OK_FOR_I ((VALUE & 0xffff)))
-#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000)
+/* 16 bits */
+#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000
 
 #define CONST_OK_FOR_N(VALUE) ((unsigned) VALUE >= 0 && (unsigned) VALUE <= 31) /* 5 bit signed immediate in shift instructions */
 #define CONST_OK_FOR_O(VALUE) 0
 #define CONST_OK_FOR_P(VALUE) 0
+
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) : \
@@ -1390,6 +1405,9 @@ do {									\
 				  REG, SUBREG }},			\
 { "special_symbolref_operand",	{ SYMBOL_REF }},			\
 { "power_of_two_operand",	{ CONST_INT }},				\
+{ "pattern_is_ok_for_prologue",	{ PARALLEL }},				\
+{ "pattern_is_ok_for_epilogue",	{ PARALLEL }},				\
+{ "register_is_ok_for_epilogue",{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
 
 extern void override_options ();
@@ -1415,3 +1433,11 @@ extern void expand_epilogue ();
 extern void notice_update_cc ();
 extern int v850_valid_machine_decl_attribute ();
 extern int v850_interrupt_function_p ();
+
+extern int pattern_is_ok_for_prologue();
+extern int pattern_is_ok_for_epilogue();
+extern int register_is_ok_for_epilogue ();
+extern char *construct_save_jarl ();
+extern char *construct_restore_jr ();
+
+
