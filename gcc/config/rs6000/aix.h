@@ -21,8 +21,25 @@ Boston, MA 02111-1307, USA.  */
 
 /* Yes!  We are AIX!  */
 #define DEFAULT_ABI ABI_AIX
-#undef TARGET_AIX
+#undef  TARGET_AIX
 #define TARGET_AIX 1
+
+/* AIX always has a TOC.  */
+#define TARGET_NO_TOC 0
+#define TARGET_TOC 1
+#define FIXED_R2 1
+
+/* AIX allows r13 to be used in 32-bit mode.  */
+#define FIXED_R13 0
+
+/* AIX does not support Altivec.  */
+#undef  TARGET_ALTIVEC
+#define TARGET_ALTIVEC 0
+#undef  TARGET_ALTIVEC_ABI
+#define TARGET_ALTIVEC_ABI 0
+#undef  TARGET_ALTIVEC_VRSAVE
+#define TARGET_ALTIVEC_VRSAVE 0
+
 /* The AIX linker will discard static constructors in object files before
    collect has a chance to see them, so scan the object files directly.  */
 #define COLLECT_EXPORT_LIST
@@ -122,8 +139,6 @@ Boston, MA 02111-1307, USA.  */
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 64)		\
    : MAX ((COMPUTED), (SPECIFIED)))
 
-
-
 /* Indicate that jump tables go in the text section.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
@@ -176,14 +191,6 @@ Boston, MA 02111-1307, USA.  */
 	  = init_one_libfunc (DIVTF3_LIBCALL);				\
       }									\
   } while (0)
-
-/* AIX always has a TOC.  */
-#define TARGET_NO_TOC		0
-#define	TARGET_TOC		1
-
-#define FIXED_R2 1
-/* AIX allows r13 to be used.  */
-#define FIXED_R13 0
 
 /* __throw will restore its own return address to be the same as the
    return address of the function that the throw is being made to.

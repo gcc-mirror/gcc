@@ -1,3 +1,12 @@
+2002-08-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (TARGET_ALTIVEC): Define to 0.
+	(TARGET_ALTIVEC_ABI): Same.
+	(TARGET_ALTIVEC_VRSAVE): Same.
+
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Check
+	icode not CODE_FOR_nothing.  Change switch to if.
+
 2002-08-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Pass -mpower4 when cpu=power4.
