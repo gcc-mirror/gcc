@@ -1027,6 +1027,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "&=r")
 	(mem:SI (plus:SI (plus:SI
@@ -1258,6 +1263,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=&r")
 	(mem:HI (plus:SI (plus:SI
@@ -1473,6 +1483,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
@@ -1507,6 +1522,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
@@ -1516,14 +1536,14 @@
 			      (const_int 8))
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:DF 0 "register_operand" "=fx"))]
+	(match_operand:DF 0 "register_operand" "fx"))]
   "! TARGET_DISABLE_INDEXING && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh3add %1,%2,%1\;fstds %3(0,%1),%0\";
+    return \"sh3add %1,%2,%1\;fstds %0,%3(0,%1)\";
   else
-    return \"sh3add %1,%2,%1\;fstdx %3(0,%1),%0\";
+    return \"sh3add %1,%2,%1\;fstdx %0,%3(0,%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
@@ -1703,6 +1723,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
@@ -1737,6 +1762,11 @@
 ;; This variant of the above insn can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
@@ -1746,14 +1776,14 @@
 			      (const_int 4))
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:SF 0 "register_operand" "=fx"))]
+	(match_operand:SF 0 "register_operand" "fx"))]
   "! TARGET_DISABLE_INDEXING && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2add %1,%2,%1\;fstds %3(0,%1),%0\";
+    return \"sh2add %1,%2,%1\;fstws %0,%3(0,%1)\";
   else
-    return \"sh2add %1,%2,%1\;fstdx %3(0,%1),%0\";
+    return \"sh2add %1,%2,%1\;fstwx %0,%3(0,%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
@@ -2589,6 +2619,11 @@
 ;; This variant of the above insn can occur if the first operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
+;; Note how operand 3 uses a predicate of "const_int_operand", but 
+;; has constraints allowing a register.  I don't know how this works,
+;; but it somehow makes sure that out-of-range constants are placed
+;; in a register which somehow magically is a "const_int_operand".
+;; (this was stolen from alpha.md, I'm not going to try and change it.
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=&r")
