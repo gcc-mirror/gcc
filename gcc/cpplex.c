@@ -1687,6 +1687,12 @@ maybe_macroexpand (pfile, written)
 	not_macro_call:
 	  if (macbuf_whitespace)
 	    CPP_PUTC (pfile, ' ');
+
+	  /* K+R treated this as a hard error.  */
+	  if (CPP_OPTION (pfile, warn_traditional))
+	    cpp_warning (pfile,
+	 "traditional C rejects function macro %s in non-function context",
+			 hp->name);
 	  return 0;
 	}
     }
