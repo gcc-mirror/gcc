@@ -1938,6 +1938,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
 	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
+	  DECL_NO_CHECK_MEMORY_USAGE (newdecl)
+	    |= DECL_NO_CHECK_MEMORY_USAGE (olddecl);
 	}
 
       pop_obstacks ();

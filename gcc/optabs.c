@@ -4390,17 +4390,17 @@ init_optabs ()
   fixunstfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunstfti");
 
   /* For check-memory-usage.  */
-  chkr_check_addr_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_check_addr");
-  chkr_set_right_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_set_right");
-  chkr_copy_bitmap_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_copy_bitmap");
-  chkr_check_exec_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_check_exec");
-  chkr_check_str_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_check_str");
+  chkr_check_addr_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_addr");
+  chkr_set_right_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_set_right");
+  chkr_copy_bitmap_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_copy_bitmap");
+  chkr_check_exec_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_exec");
+  chkr_check_str_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_str");
 
   /* For function entry/exit instrumentation.  */
   profile_function_entry_libfunc
-    = gen_rtx_SYMBOL_REF (VOIDmode, "__cyg_profile_func_enter");
+    = gen_rtx_SYMBOL_REF (Pmode, "__cyg_profile_func_enter");
   profile_function_exit_libfunc
-    = gen_rtx_SYMBOL_REF (VOIDmode, "__cyg_profile_func_exit");
+    = gen_rtx_SYMBOL_REF (Pmode, "__cyg_profile_func_exit");
 
 #ifdef HAVE_conditional_trap
   init_traps ();

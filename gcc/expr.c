@@ -110,8 +110,8 @@ static rtx apply_args_value;
 static int can_handle_constant_p;
 
 /* Don't check memory usage, since code is being emitted to check a memory
-   usage.  Used when flag_check_memory_usage is true, to avoid infinite
-   recursion.  */
+   usage.  Used when current_function_check_memory_usage is true, to avoid
+   infinite recursion.  */
 static int in_check_memory_usage;
 
 /* This structure is used by move_by_pieces to describe the move to
@@ -2865,7 +2865,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  move_by_pieces (gen_rtx_MEM (BLKmode, gen_push_operand ()), xinner,
 			  INTVAL (size) - used, align);
 
-	  if (flag_check_memory_usage && ! in_check_memory_usage)
+	  if (current_function_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx temp;
 	      
@@ -2922,7 +2922,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 								args_addr,
 								args_so_far),
 						  skip));
-	  if (flag_check_memory_usage && ! in_check_memory_usage)
+	  if (current_function_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx target;
 	      
@@ -3122,7 +3122,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
       emit_move_insn (gen_rtx_MEM (mode, addr), x);
 
-      if (flag_check_memory_usage && ! in_check_memory_usage)
+      if (current_function_check_memory_usage && ! in_check_memory_usage)
 	{
 	  in_check_memory_usage = 1;
 	  if (target == 0)
@@ -3290,7 +3290,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	}
 
       /* Check the access.  */
-      if (flag_check_memory_usage && GET_CODE (to_rtx) == MEM)
+      if (current_function_check_memory_usage && GET_CODE (to_rtx) == MEM)
 	{
 	  rtx to_addr;
 	  int size;
@@ -3416,7 +3416,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 			      EXPAND_MEMORY_USE_DONT);
 
       /* Copy the rights of the bitmap.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 			   XEXP (to_rtx, 0), ptr_mode,
 			   XEXP (from_rtx, 0), ptr_mode,
@@ -3638,7 +3638,7 @@ store_expr (exp, target, want_value)
     temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
 			  temp, TREE_UNSIGNED (TREE_TYPE (exp)));
 
-  if (flag_check_memory_usage
+  if (current_function_check_memory_usage
       && GET_CODE (target) == MEM
       && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
     {
@@ -3742,7 +3742,7 @@ store_expr (exp, target, want_value)
 	      if (size != const0_rtx)
 		{
 		  /* Be sure we can write on ADDR.  */
-		  if (flag_check_memory_usage)
+		  if (current_function_check_memory_usage)
 		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				       addr, ptr_mode,
 				       size, TYPE_MODE (sizetype),
@@ -5584,13 +5584,16 @@ expand_expr (exp, target, tmode, modifier)
 	  pop_obstacks ();
 	}
 
-      /* Only check automatic variables.  Currently, function arguments are
-         not checked (this can be done at compile-time with prototypes).
-         Aggregates are not checked.  */
-      if (flag_check_memory_usage && code == VAR_DECL
+      /* Although static-storage variables start off initialized, according to
+	 ANSI C, a memcpy could overwrite them with uninitialized values.  So
+	 we check them too.  This also lets us check for read-only variables
+	 accessed via a non-const declaration, in case it won't be detected
+	 any other way (e.g., in an embedded system or OS kernel without
+	 memory protection).
+
+	 Aggregates are not checked here; they're handled elsewhere.  */
+      if (current_function_check_memory_usage && code == VAR_DECL
 	  && GET_CODE (DECL_RTL (exp)) == MEM
-	  && DECL_CONTEXT (exp) != NULL_TREE
-	  && ! TREE_STATIC (exp)
 	  && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
 	{
 	  enum memory_use_mode memory_usage;
@@ -6107,7 +6110,7 @@ expand_expr (exp, target, tmode, modifier)
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
 
-	if (flag_check_memory_usage && !AGGREGATE_TYPE_P (TREE_TYPE (exp)))
+	if (current_function_check_memory_usage && !AGGREGATE_TYPE_P (TREE_TYPE (exp)))
 	  {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);
@@ -6411,7 +6414,7 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	/* Check the access.  */
-	if (flag_check_memory_usage && GET_CODE (op0) == MEM)
+	if (current_function_check_memory_usage && GET_CODE (op0) == MEM)
           {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);
@@ -9163,7 +9166,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    src_rtx = copy_to_mode_reg (Pmode, src_rtx);
 
 	  /* Check the string is readable and has an end.  */
-	  if (flag_check_memory_usage)
+	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
 			       src_rtx, ptr_mode,
 			       GEN_INT (MEMORY_USE_RO),
@@ -9256,7 +9259,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
 	  /* Just copy the rights of SRC to the rights of DEST.  */
-	  if (flag_check_memory_usage)
+	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 			       XEXP (dest_mem, 0), ptr_mode,
 			       XEXP (src_mem, 0), ptr_mode,
@@ -9327,7 +9330,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  dest_mem = get_memory_rtx (dest);
 	   
 	  /* Just check DST is writable and mark it as readable.  */
-	  if (flag_check_memory_usage)
+	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       XEXP (dest_mem, 0), ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype),
@@ -9353,7 +9356,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
 
       /* If we need to check memory accesses, call the library function.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	break;
 
       if (arglist == 0
@@ -9409,7 +9412,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
 
       /* If we need to check memory accesses, call the library function.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	break;
 
       if (arglist == 0
@@ -10238,7 +10241,7 @@ expand_increment (exp, post, ignore)
 
   /* Increment however we can.  */
   op1 = expand_binop (mode, this_optab, value, op1,
-  		      flag_check_memory_usage ? NULL_RTX : op0,
+  		      current_function_check_memory_usage ? NULL_RTX : op0,
 		      TREE_UNSIGNED (TREE_TYPE (exp)), OPTAB_LIB_WIDEN);
   /* Make sure the value is stored into OP0.  */
   if (op1 != op0)

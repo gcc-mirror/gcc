@@ -438,7 +438,7 @@ clipper_builtin_saveregs (arglist)
 		  scratch);
 
 
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     {
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 addr, ptr_mode,

@@ -1,3 +1,32 @@
+Sun Oct 11 05:03:41 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* tree.h (DECL_NO_CHECK_MEMORY_USAGE): New macros.
+	(struct tree_decl): New fields no_check_memory_usage.
+	* c-common.c (enum attrs): Add A_NO_CHECK_MEMORY_USAGE.
+	(init_attributes): Register it as a new attribute.
+	(decl_attributes): Set flags on functions given that attribute.
+	* c-decl.c (duplicate_decls): Merge new attribute.
+	* expr.h (current_function_check_memory_usage): Declare new var.
+	* calls.c, expr.c, function.c, stmt.c, alpha.c, clipper.c, m88k.c,
+	pa.c, sparc.c: Replace uses of flag_check_memory_usage with
+	current_function_check_memory_usage.
+	* function.h: Add field to struct function.
+	* function.c (current_function_check_memory_usage): Define it.
+	(push_function_context_to, pop_function_context_from): Save and
+	restore it.
+	(expand_function_start): Set it, based on global flag and function
+	attribute.
+
+	* expr.c (expand_expr, case VAR_DECL): In memory-checking code, do
+	check non-automatic variables, to permit detection of writes to
+	read-only locations in embedded systems without memory management.
+	* calls.c (store_one_arg): Use ARGS_SIZE_RTX to get size of argument
+	when emitting chkr_set_right_libfunc call, even if the argument is
+	BLKmode or variable-sized; don't abort.
+
+	* optabs.c (init_optabs): Create Checker and __cyg_profile_*
+	symbols in Pmode, not VOIDmode.
+
 Sun Oct 11 01:03:05 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cppexp.c: When forcing unsigned comparisons, cast both sides
