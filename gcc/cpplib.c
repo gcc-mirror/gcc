@@ -842,7 +842,7 @@ void
 init_parse_options (opts)
      struct cpp_options *opts;
 {
-  bzero (opts, sizeof *opts);
+  bzero ((char *) opts, sizeof *opts);
   opts->in_fname = NULL;
   opts->out_fname = NULL;
 
@@ -5374,7 +5374,7 @@ cpp_reader *pfile;
     while (i) {
       /* Compare the inode and the device.
 	 Supposedly on some systems the inode is not a scalar.  */
-      if (!bcmp (&i->inode, &sb.st_ino, sizeof (sb.st_ino))
+      if (!bcmp ((char *) &i->inode, (char *) &sb.st_ino, sizeof (sb.st_ino))
 	  && i->dev == sb.st_dev) {
         close (fd);
         return -2;		/* return found */
@@ -5402,7 +5402,7 @@ add_import (pfile, fd, fname)
   i = (struct import_file *)xmalloc (sizeof (struct import_file));
   i->name = (char *)xmalloc (strlen (fname)+1);
   strcpy (i->name, fname);
-  bcopy (&sb.st_ino, &i->inode, sizeof (sb.st_ino));
+  bcopy ((char *) &sb.st_ino, (char *) &i->inode, sizeof (sb.st_ino));
   i->dev = sb.st_dev;
   i->next = pfile->import_hash_table[hashval];
   pfile->import_hash_table[hashval] = i;
@@ -5957,7 +5957,8 @@ push_parse_file (pfile, fname)
 	  endp++;
       }
       /* Put the usual defaults back in at the end.  */
-      bcopy (include_defaults_array, &include_defaults[num_dirs],
+      bcopy ((char *) include_defaults_array,
+	     (char *) &include_defaults[num_dirs],
 	     sizeof (include_defaults_array));
     }
   }
@@ -6251,7 +6252,7 @@ void
 init_parse_file (pfile)
      cpp_reader *pfile;
 {
-  bzero (pfile, sizeof (cpp_reader));
+  bzero ((char *) pfile, sizeof (cpp_reader));
   pfile->get_token = cpp_get_token;
 
   pfile->token_buffer_size = 200;
