@@ -1,3 +1,9 @@
+2003-12-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.c (frv_ifcvt_modify_insn): Don't leave alone
+	scratch insns of the then branch that clobber regs needed by the
+	else branch.
+
 2003-12-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c (expand_call): Update comments.
