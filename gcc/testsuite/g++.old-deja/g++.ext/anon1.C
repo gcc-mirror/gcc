@@ -1,3 +1,5 @@
+// Special g++ Options:
+
 union U {
   struct { int i; int j; };
   int a[2];
