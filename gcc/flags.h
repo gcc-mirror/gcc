@@ -495,6 +495,11 @@ extern int flag_bounded_pointers;
    For Fortran: defaults to off.
    For CHILL: defaults to off.  */
 extern int flag_bounds_check;
+
+/* If one, renumber instruction UIDs to reduce the number of
+   unused UIDs if there are a lot of instructions.  If greater than
+   one, unconditionally renumber instruction UIDs.  */
+extern int flag_renumber_insns;
 
 /* Other basic status info about current function.  */
 
