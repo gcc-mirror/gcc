@@ -2706,10 +2706,6 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (&decl, attributes, 0);
 
-  /* If #pragma weak was used, mark the decl weak now.  */
-  if (current_binding_level == global_binding_level)
-    maybe_apply_pragma_weak (decl);
-
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
@@ -2889,6 +2885,10 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       SET_DECL_RTL (decl, NULL_RTX);
       SET_DECL_ASSEMBLER_NAME (decl, get_identifier (starred));
     }
+
+  /* If #pragma weak was used, mark the decl weak now.  */
+  if (current_binding_level == global_binding_level)
+    maybe_apply_pragma_weak (decl);
 
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
@@ -4466,6 +4466,13 @@ grokdeclarator (tree declarator, tree declspecs,
     if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (decl)))
       c_mark_addressable (decl);
 
+#ifdef ENABLE_CHECKING
+  /* This is the earliest point at which we might know the assembler
+     name of a variable.  Thus, if it's known before this, die horribly.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    abort ();
+#endif
+
     decl_attributes (&decl, returned_attrs, 0);
 
     return decl;
@@ -5540,10 +5547,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
 
   decl_attributes (&decl1, attributes, 0);
 
-  /* If #pragma weak was used, mark the decl weak now.  */
-  if (current_binding_level == global_binding_level)
-    maybe_apply_pragma_weak (decl1);
-
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
@@ -5634,6 +5637,17 @@ start_function (tree declspecs, tree declarator, tree attributes)
   /* A nested function is not global.  */
   if (current_function_decl != 0)
     TREE_PUBLIC (decl1) = 0;
+
+#ifdef ENABLE_CHECKING
+  /* This is the earliest point at which we might know the assembler
+     name of the function.  Thus, if it's set before this, die horribly.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl1))
+    abort ();
+#endif
+
+  /* If #pragma weak was used, mark the decl weak now.  */
+  if (current_binding_level == global_binding_level)
+    maybe_apply_pragma_weak (decl1);
 
   /* Warn for unlikely, improbable, or stupid declarations of `main'.  */
   if (warn_main > 0 && MAIN_NAME_P (DECL_NAME (decl1)))
