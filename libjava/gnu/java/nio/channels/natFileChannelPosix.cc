@@ -457,7 +457,7 @@ FileChannelImpl::lock
 {
   struct flock lockdata;
 
-  lockdata.l_type = shared ? F_WRLCK : F_RDLCK;
+  lockdata.l_type = shared ? F_RDLCK : F_WRLCK;
   lockdata.l_whence = SEEK_SET;
   lockdata.l_start = pos;
   lockdata.l_len = len;

@@ -1,3 +1,10 @@
+2004-11-11  Casey Marshall  <csm@gnu.org>
+
+	* gnu/java/nio/FileLock.java (isValid): locks are valid if the
+	channel is open.
+	* gnu/java/nio/channels/natFileChannelPosix.cc (lock): use
+	'F_RDLCK' for shared locks, 'F_WRLCK' for exclusive locks.
+
 2004-11-11  Robert Schuster <thebohemian@gmx.net>
   
   	Fixed regression:
