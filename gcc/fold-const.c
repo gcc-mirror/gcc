@@ -27,7 +27,8 @@ Boston, MA 02111-1307, USA.  */
   @@ for cross-compilers.  */
 
 
-/* The entry points in this file are fold, size_int and size_binop.
+/* The entry points in this file are fold, size_int, size_binop
+   and force_fit_type.
 
    fold takes a tree as argument and returns a simplified tree.
 
@@ -36,8 +37,11 @@ Boston, MA 02111-1307, USA.  */
    result, assuming the type comes from `sizetype'.
 
    size_int takes an integer value, and creates a tree constant
-   with type from `sizetype'.  */
-   
+   with type from `sizetype'.
+
+   force_fit_type takes a constant and prior overflow indicator, and
+   forces the value to fit the type.  It returns an overflow indicator.  */
+
 #include <stdio.h>
 #include <setjmp.h>
 #include "config.h"
