@@ -1,3 +1,10 @@
+2005-01-18  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (LIBGNAT_TARGET_PAIRS, TOOLS_TARGET_PAIRS, MISCLIB,
+	THREADSLIB, GNATLIB_SHARED, PREFIX_OBJS, LIBRARY_VERSION): Specialize
+	for alpha-linux.
+	* s-osinte-linux-alpha.ads, a-intnam-linux-alpha.ads: New files.
+
 2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* system-darwin-ppc.ads (ZCX_By_Default): Change to True.
