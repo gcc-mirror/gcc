@@ -969,7 +969,9 @@ lang_independent_options f_options[] =
   {"ident", &flag_no_ident, 0,
    "Process #ident directives"},
   { "peephole2", &flag_peephole2, 1,
-    "Enables an rtl peephole pass run before sched2" }
+    "Enables an rtl peephole pass run before sched2" },
+  {"math-errno", &flag_errno_math, 1,
+   "Set errno after built-in math functions"}
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))

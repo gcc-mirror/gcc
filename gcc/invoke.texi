@@ -154,7 +154,7 @@ in the following sections.
 -falign-jumps=@var{n}  -fbranch-probabilities  
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
--ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
+-ffast-math  -ffloat-store  -fforce-addr  -fforce-mem -fno-math-errno
 -fdata-sections  -ffunction-sections  -fgcse 
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop
@@ -2409,6 +2409,15 @@ This option should never be turned on by any @samp{-O} option since
 it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ANSI rules/specifications for
 math functions.
+
+@item -fno-math-errno
+Do not set ERRNO after calling math functions that are executed
+with a single instruction, e.g., sqrt.  A program that relies on
+IEEE exceptions for math error handling may want to use this flag
+for speed while maintaining IEEE arithmetic compatibility.
+
+The default is @samp{-fmath-errno}.  The @samp{-ffast-math} option
+sets @samp{-fno-math-errno}.
 @end table
 
 @c following causes underfulls.. they don't look great, but we deal.
