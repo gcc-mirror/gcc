@@ -1,3 +1,8 @@
+2002-01-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Binaries): Make link to ftp.writtenword.com
+	more generic.
+
 Sun Jan 13 07:23:01 2002  Douglas B Rupp  <rupp@gnat.com>
 
 	* Makefile.in (LIB2FUNCS): Split into LIB2FUNCS_1 and LIB2FUNCS_2.
