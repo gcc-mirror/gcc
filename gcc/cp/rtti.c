@@ -1413,11 +1413,13 @@ unemitted_tinfo_decl_p (t, data)
       TREE_CODE (t) == VAR_DECL
       /* whos name points back to itself */
       && IDENTIFIER_GLOBAL_VALUE (DECL_NAME (t)) == t
-      /* whos name's type is non-null */
+      /* whose name's type is non-null */
       && TREE_TYPE (DECL_NAME (t))
-      /* and whos type is a struct */
+      /* and whose type is a struct */
       && TREE_CODE (TREE_TYPE (t)) == RECORD_TYPE
-      /* with a first field of our pseudo type info */
+      /* with a field */
+      && TYPE_FIELDS (TREE_TYPE (t))
+      /* which is our pseudo type info */
       && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (t))) == ti_desc_type_node)
     return 1;
   return 0;
