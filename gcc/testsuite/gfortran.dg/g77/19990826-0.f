@@ -16,5 +16,5 @@ c { dg-do run }
 * It seems to work fine if I change it to the generic NINT().  Probably
 * a name pollution problem in the new C library, but it seems bad. no?
 
-* 	Thanks,
-* 	Rick Niles.
+* Thanks,
+* Rick Niles.

@@ -1,6 +1,6 @@
 INTEGER         :: I = 1
 SELECT CASE (I)
-   CASE (-3:-5)	! Can never be matched
+   CASE (-3:-5)  ! Can never be matched
       CALL abort
    CASE (1)
       CONTINUE

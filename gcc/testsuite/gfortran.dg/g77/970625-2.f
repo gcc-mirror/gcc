@@ -5,7 +5,7 @@
 * Subject: Re: testing 970624.
 * In-Reply-To: <199706251027.GAA07892@churchy.gnu.ai.mit.edu>
 * References: <199706251018.MAA21538@nu>
-* 	<199706251027.GAA07892@churchy.gnu.ai.mit.edu>
+* <199706251027.GAA07892@churchy.gnu.ai.mit.edu>
 * X-Mailer: VM 6.30 under Emacs 19.34.1
 * Content-Type: text/plain; charset=US-ASCII
 * 
@@ -24,7 +24,7 @@
 * 
 * Regards,
 * -- 
-* =====       R.Hooft@EuroMail.com   http://www.Sander.EMBL-Heidelberg.DE/rob/ ==
+* ===== R.Hooft@EuroMail.com   http://www.Sander.EMBL-Heidelberg.DE/rob/ ==
 * ==== In need of protein modeling?  http://www.Sander.EMBL-Heidelberg.DE/whatif/
 * Validation of protein structures?  http://biotech.EMBL-Heidelberg.DE:8400/ ====
 * == PGPid 0xFA19277D == Use Linux!  Free Software Rules The World! =============

@@ -19,8 +19,8 @@ C  at this point!
 !
 !if { [ishost "i\[34567\]86-*-*"] } {
 !    if { [istarget "mmix-knuth-mmixware"]
-!	 || [istarget "powerpc-*-*"] } {
-!	set torture_compile_xfail [istarget]
+! || [istarget "powerpc-*-*"] } {
+!    set torture_compile_xfail [istarget]
 !    }
 !}
 !

@@ -1,6 +1,6 @@
 c { dg-do run }
         integer *8 foo, bar
-	double complex c
+        double complex c
         data c/(4d10,0)/
         foo = 4d10
         bar = c
