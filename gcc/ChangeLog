@@ -1,3 +1,7 @@
+2001-04-01  Richard Henderson  <rth@redhat.com>
+
+	* except.h (expand_builtin_dwarf_fp_regnum): Declare.
+
 Sun Apr  1 11:49:05 CEST 2001  Jan Hubicka  <jH@suse.cz>
 
 	* i386.md: remove obsoleted comments.
