@@ -28,7 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 #include <stdio.h>
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
@@ -142,29 +144,22 @@ vasprintf (result, format, args)
 }
 
 #ifdef TEST
-static void checkit PARAMS ((const char *, ...));
-
-static void
-checkit VPARAMS ((const char* format, ...))
+static void ATTRIBUTE_PRINTF_1
+checkit VPARAMS ((const char *format, ...))
 {
-  va_list args;
   char *result;
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-
-  VA_START (args, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (args, const char *);
-#endif
-
+  VA_OPEN (args, format);
+  VA_FIXEDARG (args, const char *, format);
   vasprintf (&result, format, args);
+  VA_CLOSE (args);
+
   if (strlen (result) < (size_t) global_total_width)
     printf ("PASS: ");
   else
     printf ("FAIL: ");
   printf ("%d %s\n", global_total_width, result);
+
+  free (result);
 }
 
 extern int main PARAMS ((void));

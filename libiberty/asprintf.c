@@ -22,36 +22,20 @@ Boston, MA 02111-1307, USA.  */
 #include "ansidecl.h"
 #include "libiberty.h"
 
-#if defined (ANSI_PROTOTYPES) || defined (ALMOST_STDC)
-#define USE_STDARG
-#endif
-
-#ifdef USE_STDARG
+#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
-/* VARARGS */
-#ifdef USE_STDARG
 int
-asprintf (char **buf, const char *fmt, ...)
-#else
-int
-asprintf (buf, fmt, va_alist)
-     char **buf;
-     const char *fmt;
-     va_dcl
-#endif
+asprintf VPARAMS ((char **buf, const char *fmt, ...))
 {
   int status;
-  va_list ap;
-#ifdef USE_STDARG
-  va_start (ap, fmt);
-#else
-  va_start (ap);
-#endif
+  VA_OPEN (ap, fmt);
+  VA_FIXEDARG (ap, char **, buf);
+  VA_FIXEDARG (ap, const char *, fmt);
   status = vasprintf (buf, fmt, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   return status;
 }
