@@ -1431,6 +1431,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
   rtx insn, b0;
 
   addr = XEXP (addr, 0);
+  addr = convert_memory_address (DImode, addr);
   b0 = gen_rtx_REG (DImode, R_BR (0));
 
   /* ??? Should do this for functions known to bind local too.  */
@@ -7880,13 +7881,14 @@ ia64_expand_fetch_and_op (binoptab, mode, arglist, target)
     }
 
   tmp = gen_reg_rtx (mode);
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  /* ar.ccv must always be loaded with a zero-extended DImode value.  */
+  ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
   emit_move_insn (tmp, mem);
 
   label = gen_label_rtx ();
   emit_label (label);
   emit_move_insn (ret, tmp);
-  emit_move_insn (ccv, tmp);
+  convert_move (ccv, tmp, /*unsignedp=*/1);
 
   /* Perform the specific operation.  Special case NAND by noticing
      one_cmpl_optab instead.  */
@@ -7949,14 +7951,15 @@ ia64_expand_op_and_fetch (binoptab, mode, arglist, target)
   emit_insn (gen_mf ());
   tmp = gen_reg_rtx (mode);
   old = gen_reg_rtx (mode);
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  /* ar.ccv must always be loaded with a zero-extended DImode value.  */        
+  ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
 
   emit_move_insn (tmp, mem);
 
   label = gen_label_rtx ();
   emit_label (label);
   emit_move_insn (old, tmp);
-  emit_move_insn (ccv, tmp);
+  convert_move (ccv, tmp, /*unsignedp=*/1);
 
   /* Perform the specific operation.  Special case NAND by noticing
      one_cmpl_optab instead.  */
@@ -8009,6 +8012,11 @@ ia64_expand_compare_and_swap (rmode, mode, boolp, arglist, target)
   mem = gen_rtx_MEM (mode, force_reg (ptr_mode, mem));
   MEM_VOLATILE_P (mem) = 1;
 
+  if (GET_MODE (old) != mode)
+    old = convert_to_mode (mode, old, /*unsignedp=*/1);
+  if (GET_MODE (new) != mode)
+    new = convert_to_mode (mode, new, /*unsignedp=*/1);
+
   if (! register_operand (old, mode))
     old = copy_to_mode_reg (mode, old);
   if (! register_operand (new, mode))
@@ -8020,14 +8028,7 @@ ia64_expand_compare_and_swap (rmode, mode, boolp, arglist, target)
     tmp = gen_reg_rtx (mode);
 
   ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
-  if (mode == DImode)
-    emit_move_insn (ccv, old);
-  else
-    {
-      rtx ccvtmp = gen_reg_rtx (DImode);
-      emit_insn (gen_zero_extendsidi2 (ccvtmp, old));
-      emit_move_insn (ccv, ccvtmp);
-    }
+  convert_move (ccv, old, /*unsignedp=*/1);
   emit_insn (gen_mf ());
   if (mode == SImode)
     insn = gen_cmpxchg_acq_si (tmp, mem, new, ccv);

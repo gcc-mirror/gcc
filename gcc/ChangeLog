@@ -1,3 +1,42 @@
+2003-12-16  Zack Weinberg  <zack@codesourcery.com>
+
+	Backport the following patches from mainline.
+
+    2003-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/ia64/ia64.h (MUST_PASS_IN_STACK): Define.
+
+    2003-12-01  James E Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.h (FUNCTION_ARG_REGNO_P): Use AR_REG_FIRST not
+	GR_ARG_FIRST.
+
+    2003-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.md (cmpxchg_acq_si): Mark operand 3 as DImode.
+	* config/ia64/ia64.c (ia64_expand_fetch_and_op,
+	ia64_expand_op_and_fetch): Make sure the REG for ar.ccv is
+	DImode.   Use convert_move to load ar.ccv.
+	(ia64_expand_compare_and_swap): Likewise.
+	If expand_expr doesn't put 'old' and 'new' in the proper
+	modes, run them through convert_to_mode.
+
+    2003-10-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_expand_call): Force function address
+	to DImode.
+	* config/ia64/ia64.md (call_gp): Put DImode on operand 0.
+
+    2003-06-11  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.md (call_gp): Fix memory mode.
+
+    2003-05-14  Eric Christopher  <echristo@redhat.com>
+
+	* combine.c: Fix header comments.
+	(distribute_notes): Remove usage of elim_i1, elim_i2. Propagate
+	to all calls and prototype.
+
 2003-12-16  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/alpha/freebsd.h (FBSD_TARGET_CPU_CPP_BUILTINS): Add __LP64__.
@@ -9,7 +48,7 @@
 
 	* altivec.h (vec_cmple, vec_all_numeric): Fix typo.
 	* testsuite/gcc.dg/altivec-10.c: Test for above.
-	
+
 2003-12-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/13122
@@ -127,8 +166,8 @@
 	    Graham Reed <greed@pobox.com>
 
 	PR target/13150
-        * collect2.c (GCC_OK_SYMBOL): Add support for AIX C_WEAKEXT.
-        (GCC_UNDEF_SYMBOL): Same.
+	* collect2.c (GCC_OK_SYMBOL): Add support for AIX C_WEAKEXT.
+	(GCC_UNDEF_SYMBOL): Same.
 
 2003-12-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -189,7 +228,7 @@
        (SHLIB_LC): Define.
        * unwind-libunwind.c (_Unwind_GetCFA): Implement.
        (_Unwind_GetBSP) [UNW_TARGET_IA64]: New function.
-	
+
 2003-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_constructor): Only set RTX_UNCHANGING_P for
@@ -235,7 +274,7 @@
 	2002-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config.gcc (sh*-*-linux*): Add t-slibgcc-elf-ver and t-linux.
-        to tmake_file.
+	to tmake_file.
 	* config/sh/libgcc-glibc.ver: New file.
 
 	Backport from mainline
