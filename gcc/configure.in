@@ -490,7 +490,7 @@ AC_ARG_WITH(sysroot,
 [  --with-sysroot[=DIR] Search for usr/lib, usr/include, et al, within DIR.],
 [
  case ${with_sysroot} in
- yes) TARGET_SYSTEM_ROOT='${gcc_tooldir}/sys-root' ;;
+ yes) TARGET_SYSTEM_ROOT='${exec_prefix}/${target_alias}/sys-root' ;;
  *) TARGET_SYSTEM_ROOT=$with_sysroot ;;
  esac
    
@@ -507,7 +507,8 @@ AC_ARG_WITH(sysroot,
   test_prefix=$exec_prefix
  fi
  case ${TARGET_SYSTEM_ROOT} in
- ${test_prefix}*)
+ "${test_prefix}"|"${test_prefix}/"*|\
+ '${exec_prefix}'|'${exec_prefix}/'*)
    t="$TARGET_SYSTEM_ROOT_DEFINE -DTARGET_SYSTEM_ROOT_RELOCATABLE"
    TARGET_SYSTEM_ROOT_DEFINE="$t"
    ;;

@@ -1,3 +1,11 @@
+2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (TARGET_SYSTEM_ROOT): Set default to
+	${exec_prefix}/${target_alias}/sys-root.  Match explicit
+	'${exec_prefix}' (in addition to the expansion thereof) as
+	relocatable.
+	* configure: Rebuilt.
+
 2003-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (addhi3_incdec): Change the name to
