@@ -1,5 +1,5 @@
 /* Base configuration file for all NetBSD targets.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -38,7 +38,9 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 
 /* CPP_SPEC parts common to all NetBSD targets.  */
-#define NETBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+#define NETBSD_CPP_SPEC				\
+  "%{posix:-D_POSIX_SOURCE} \
+   %{pthread:-D_REENTRANT -D_PTHREADS}"
 
 /* NETBSD_NATIVE is defined when gcc is integrated into the NetBSD
    source tree so it can be configured appropriately without using

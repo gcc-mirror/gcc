@@ -1,3 +1,9 @@
+2003-02-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd.h: Update copyright years.
+	(NETBSD_CPP_SPEC): Define _REENTRANT and _PTHREADS if
+	-pthread is specified on the command line.
+
 2003-02-28  Bob Wilson  <bob.wilson@acm.org>
 
 	Backport following patch:
