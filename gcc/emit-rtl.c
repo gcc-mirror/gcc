@@ -3284,7 +3284,13 @@ emit (x)
     abort ();
 }
 
-/* Begin emitting insns to a sequence which can be packaged in an RTL_EXPR.  */
+/* Begin emitting insns to a sequence which can be packaged in an
+   RTL_EXPR.  If this sequence will contain something that might cause
+   the compiler to pop arguments to function calls (because those
+   pops have previously been deferred; see INHIBIT_DEFER_POP for more
+   details), use do_pending_stack_adjust before calling this function.
+   That will ensure that the deferred pops are not accidentally
+   emitted in the middel of this sequence.  */
 
 void
 start_sequence ()
@@ -3311,8 +3317,9 @@ start_sequence ()
   last_insn = 0;
 }
 
-/* Similarly, but indicate that this sequence will be placed in 
-   T, an RTL_EXPR.  */
+/* Similarly, but indicate that this sequence will be placed in T, an
+   RTL_EXPR.  See the documentation for start_sequence for more
+   information about how to use this function.  */
 
 void
 start_sequence_for_rtl_expr (t)
@@ -3323,8 +3330,9 @@ start_sequence_for_rtl_expr (t)
   sequence_rtl_expr = t;
 }
 
-/* Set up the insn chain starting with FIRST
-   as the current sequence, saving the previously current one.  */
+/* Set up the insn chain starting with FIRST as the current sequence,
+   saving the previously current one.  See the documentation for
+   start_sequence for more information about how to use this function.  */
 
 void
 push_to_sequence (first)
@@ -3378,8 +3386,16 @@ pop_topmost_sequence ()
 
 /* After emitting to a sequence, restore previous saved state.
 
-   To get the contents of the sequence just made,
-   you must call `gen_sequence' *before* calling here.  */
+   To get the contents of the sequence just made, you must call
+   `gen_sequence' *before* calling here.  
+
+   If the compiler might have deferred popping arguments while
+   generating this sequence, and this sequence will not be immediately
+   inserted into the instruction stream, use do_pending_stack_adjust
+   before calling gen_sequence.  That will ensure that the deferred
+   pops are inserted into this sequence, and not into some random
+   location in the instruction stream.  See INHIBIT_DEFER_POP for more
+   information about deferred popping of arguments.  */
 
 void
 end_sequence ()

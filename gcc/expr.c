@@ -87,10 +87,21 @@ int do_preexpand_calls = 1;
    These are the arguments to function calls that have already returned.  */
 int pending_stack_adjust;
 
-/* Nonzero means stack pops must not be deferred, and deferred stack
-   pops must not be output.  It is nonzero inside a function call,
-   inside a conditional expression, inside a statement expression,
-   and in other cases as well.  */
+/* Under some ABIs, it is the caller's responsibility to pop arguments
+   pushed for function calls.  A naive implementation would simply pop
+   the arguments immediately after each call.  However, if several
+   function calls are made in a row, it is typically cheaper to pop
+   all the arguments after all of the calls are complete since a
+   single pop instruction can be used.  Therefore, GCC attempts to
+   defer popping the arguments until absolutely necessary.  (For
+   example, at the end of a conditional, the arguments must be popped,
+   since code outside the conditional won't know whether or not the
+   arguments need to be popped.)
+
+   When INHIBIT_DEFER_POP is non-zero, however, the compiler does not
+   attempt to defer pops.  Instead, the stack is popped immediately
+   after each call.  Rather then setting this variable directly, use
+   NO_DEFER_POP and OK_DEFER_POP.  */
 int inhibit_defer_pop;
 
 /* Nonzero means __builtin_saveregs has already been done in this function.

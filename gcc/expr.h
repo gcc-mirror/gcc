@@ -95,11 +95,30 @@ extern rtx current_function_internal_arg_pointer;
    function.  */
 extern int current_function_check_memory_usage;
 
-/* Nonzero means stack pops must not be deferred, and deferred stack
-   pops must not be output.  It is nonzero inside a function call,
-   inside a conditional expression, inside a statement expression,
-   and in other cases as well.  */
+/* Under some ABIs, it is the caller's responsibility to pop arguments
+   pushed for function calls.  A naive implementation would simply pop
+   the arguments immediately after each call.  However, if several
+   function calls are made in a row, it is typically cheaper to pop
+   all the arguments after all of the calls are complete since a
+   single pop instruction can be used.  Therefore, GCC attempts to
+   defer popping the arguments until absolutely necessary.  (For
+   example, at the end of a conditional, the arguments must be popped,
+   since code outside the conditional won't know whether or not the
+   arguments need to be popped.)
+
+   When INHIBIT_DEFER_POP is non-zero, however, the compiler does not
+   attempt to defer pops.  Instead, the stack is popped immediately
+   after each call.  Rather then setting this variable directly, use
+   NO_DEFER_POP and OK_DEFER_POP.  */
 extern int inhibit_defer_pop;
+
+/* Prevent the compiler from deferring stack pops.  See
+   inhibit_defer_pop for more information.  */
+#define NO_DEFER_POP (inhibit_defer_pop += 1)
+
+/* Allow the compiler to defer stack pops.  See inhibit_defer_pop for
+   more information.  */
+#define OK_DEFER_POP (inhibit_defer_pop -= 1)
 
 /* Number of function calls seen so far in current function.  */
 
@@ -125,9 +144,6 @@ extern rtx nonlocal_goto_stack_level;
 #ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
 extern tree nonlocal_labels;
 #endif
-
-#define NO_DEFER_POP (inhibit_defer_pop += 1)
-#define OK_DEFER_POP (inhibit_defer_pop -= 1)
 
 /* Number of units that we should eventually pop off the stack.
    These are the arguments to function calls that have already returned.  */
