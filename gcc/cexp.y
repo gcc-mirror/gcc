@@ -396,13 +396,6 @@ parse_number (olen)
   register int digit, largest_digit = 0;
   int spec_long = 0;
 
-  for (c = 0; c < len; c++)
-    if (p[c] == '.') {
-      /* It's a float since it contains a point.  */
-      yyerror ("floating point numbers not allowed in #if expressions");
-      return ERROR;
-    }
-
   yylval.integer.unsignedp = 0;
 
   if (len >= 3 && (!strncmp (p, "0x", 2) || !strncmp (p, "0X", 2))) {
@@ -439,8 +432,16 @@ parse_number (olen)
 	      yyerror ("two `u's in integer constant");
 	    yylval.integer.unsignedp = 1;
 	  }
-	else
-	  break;
+	else {
+	  if (c == '.' || c == 'e' || c == 'E')
+	    yyerror ("Floating point numbers not allowed in #if expressions");
+	  else {
+	    char *buf = (char *) alloca (p - lexptr + 40);
+	    sprintf (buf, "missing white space after number `%.*s'",
+		     (int) (p - lexptr - 1), lexptr);
+	    yyerror (buf);
+	  }
+	}
 
 	if (--len == 0)
 	  break;
@@ -454,11 +455,6 @@ parse_number (olen)
     nd = n * base + digit;
     overflow |= ULONG_MAX_over_base < n | nd < n;
     n = nd;
-  }
-
-  if (len != 0) {
-    yyerror ("Invalid number in #if expression");
-    return ERROR;
   }
 
   if (base <= largest_digit)
@@ -733,10 +729,14 @@ yylex ()
 
   if (c >= '0' && c <= '9' && !keyword_parsing) {
     /* It's a number */
-    for (namelen = 0;
-	 c = tokstart[namelen], is_idchar[c] || c == '.'; 
-	 namelen++)
-      ;
+    for (namelen = 1; ; namelen++) {
+      int d = tokstart[namelen];
+      if (! ((is_idchar[d] || d == '.')
+	     || ((d == '-' || d == '+') && (c == 'e' || c == 'E')
+		 && ! traditional)))
+	break;
+      c = d;
+    }
     return parse_number (namelen);
   }
 
