@@ -4516,6 +4516,10 @@ ix86_expand_prologue ()
       CALL_INSN_FUNCTION_USAGE (insn)
 	= gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, arg0),
 			     CALL_INSN_FUNCTION_USAGE (insn));
+
+      /* Don't allow scheduling pass to move insns across __alloca
+         call.  */
+      emit_insn (gen_blockage (const0_rtx));
     }
   if (use_mov)
     {
