@@ -187,9 +187,7 @@ static void vsorry PROTO((char *, va_list));
 static void v_really_sorry PROTO((char *, va_list));
 static void float_signal PROTO((int));
 static void pipe_closed PROTO((int));
-#if 0
 static void output_lang_identify PROTO((FILE *));
-#endif
 static void open_dump_file PROTO((char *, char *));
 static void close_dump_file PROTO((void (*) (FILE *, rtx), rtx));
 static void dump_rtl PROTO((char *, tree, void (*) (FILE *, rtx), rtx));
@@ -2138,7 +2136,6 @@ output_file_directive (asm_file, input_name)
 
 /* Routine to build language identifier for object file.  */
 
-#if 0
 static void
 output_lang_identify (asm_out_file)
      FILE *asm_out_file;
@@ -2148,7 +2145,6 @@ output_lang_identify (asm_out_file)
   sprintf (s, "__gnu_compiled_%s", lang_identify ());
   ASM_OUTPUT_LABEL (asm_out_file, s);
 }
-#endif
 
 /* Routine to open a dump file.  */
 static void
