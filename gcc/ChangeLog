@@ -1,3 +1,16 @@
+2003-10-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Define a vpath for %.texi.  Remove explicit $(docdir)
+	and $(docdir)/include from any *.texi dependencies.
+	($(docobjdir)/%.dvi): Depend on stmp-docobjdir.
+	($(docobjdir)/%.1): Depend on .pod instead of .texi.
+	($(docobjdir)/%.7): Likewise.
+	(%.pod): New implicit rule.
+	(cpp.pod): New dependency only rule.	
+	(gcc.pod): New intermediate rule with dependencies and commands.
+	(gfdl.pod): Likewise.
+	(fsf-funding.pod): Likewise.
+
 2003-10-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/mkfixinc.sh: Remove special cases for svr4 and ptx, and
