@@ -1,3 +1,26 @@
+2004-12-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Add stamp file for building libada, to avoid
+	duplicate builds every time all-gnattools is called.
+
+2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Build gcc/ada/Makefile (by running gcc/ada/configure)
+	here.
+
+2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Replace AC_CANONICAL_SYSTEM with _BUILD, _HOST,
+	_TARGET.
+	* configure: Regenerate.
+
+2004-07-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac, Makefile.in: Remove gnattools-specific code
+	(see gnattools directory).
+	* Makefile.in: Remove dead rts-* targets.
+	* configure: Regenerate.
+
 2004-05-25  Daniel Jacobowitz  <drow@false.org>
 
 	* Makefile.in: Add .NOEXPORT.

@@ -1,0 +1,44 @@
+2005-02-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+        * Makefile.in: Remove use of cc_set_by_configure; just use
+        plain old CC from the top level in this case.
+
+2005-01-30  Nathanael Nerode  <neroden@gcc.gnu.org>
+	Merge from mainline at tag libada-gnattools-merge-20050129:
+	* configure.ac: Changes propagated from gcc/ada/Makefile.in.
+	* Makefile.in: Changes relocated from gcc/ada/Makefile.in.
+
+2004-12-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+        * Makefile.in: Reinstate stamp-gnatlib check.
+
+2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Inline gnattools{1,1-re,2,3,4} targets from
+	gcc/ada/configure.ac into gnattools-native and gnattools-cross
+	targets, collecting flags as appropriate from here,
+	gcc/ada/Makefile.in, gcc/ada/configure.ac, etc.  Attempt to retain
+	identical behavior.
+	* configure.ac: Add necessary configure bits from
+	gcc/ada/configure.ac.
+	* configure: Regenerate.
+
+2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Replace AC_CANONICAL_SYSTEM with _BUILD, _HOST,
+	_TARGET.  Replace _GCC_TOPLEV_NONCANONICAL_TARGET with
+	ACX_NONCANONICAL_TARGET, and replace now-redundant AC_SUBST.
+	* configure: Regenerate.
+
+2004-07-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in, configure.ac: Remove libada-specific targets and
+	variables.
+	* configure: Regenerate.
+	* New directory, cloned from libada.
+
+Copyright 2004, 2005 Free Software Foundation, Inc.
+
+This ChangeLog is free software; the Free Software Foundation gives
+unlimited permission to copy, distribute, and modify it.
+

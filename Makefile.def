@@ -111,6 +111,7 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=distclean;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
+host_modules= { module= gnattools; };
 
 target_modules = { module= libstdc++-v3; raw_cxx=true; };
 target_modules = { module= libmudflap; };
@@ -272,6 +273,8 @@ dependencies = { module=all-libcpp; on=all-libiberty; hard=true; };
 dependencies = { module=all-libcpp; on=all-intl; };
 
 dependencies = { module=all-fixincludes; on=all-libiberty; };
+
+dependencies = { module=all-gnattools; on=all-target-libada; };
 
 // Host modules specific to gdb.
 dependencies = { module=configure-gdb; on=configure-itcl; };

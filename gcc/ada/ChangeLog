@@ -1,3 +1,13 @@
+2005-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+	Partial merge from libada-gnattools-branch:
+
+	2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+        * Makefile.in: Move gnattools{1,1re,2,3,4} and corresponding flags
+        into code in gnattools/Makefile.in.  Remove direct dependencies on
+        stamp-tools by tools clauses.
+	2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+        * config-lang.in: Add gnattools to $lang_dirs.
+
 2005-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR ada/19942

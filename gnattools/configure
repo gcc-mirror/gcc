@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="Makefile.in"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MAINT enable_shared build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LN_S x_ada_cflags default_gnatlib_target LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MAINT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S x_ada_cflags default_gnattools_target TOOLS_TARGET_PAIRS EXTRA_GNATTOOLS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -791,7 +791,6 @@ Optional Features:
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
-  --disable-shared        don't provide a shared libgnat
 
 _ACEOF
 fi
@@ -1249,30 +1248,6 @@ else
   MAINT='#'
 fi;
 
-# Check whether --enable-shared or --disable-shared was given.
-if test "${enable_shared+set}" = set; then
-  enableval="$enable_shared"
-
-case $enable_shared in
-  yes | no) ;;
-  *)
-    enable_shared=no
-    IFS="${IFS=         }"; ac_save_ifs="$IFS"; IFS="${IFS}:,"
-    for pkg in $enableval; do
-      case $pkg in
-        ada | libada)
-          enable_shared=yes ;;
-      esac
-    done
-    IFS="$ac_save_ifs"
-    ;;
-esac
-
-else
-  enable_shared=yes
-fi;
-
-
 # Start of actual configure tests
 
 ac_aux_dir=
@@ -1299,6 +1274,86 @@ fi
 ac_config_guess="$SHELL $ac_aux_dir/config.guess"
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"
 ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
+
+# Find a good install program.  We prefer a C program (faster),
+# so one script is as good as another.  But avoid the broken or
+# incompatible versions:
+# SysV /etc/install, /usr/sbin/install
+# SunOS /usr/etc/install
+# IRIX /sbin/install
+# AIX /bin/install
+# AmigaOS /C/install, which installs bootblocks on floppy discs
+# AIX 4 /usr/bin/installbsd, which doesn't work without a -g flag
+# AFS /usr/afsws/bin/install, which mishandles nonexistent args
+# SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
+# OS/2's system install, which has a completely different semantic
+# ./install, which can be erroneously created by make from ./install.sh.
+echo "$as_me:$LINENO: checking for a BSD-compatible install" >&5
+echo $ECHO_N "checking for a BSD-compatible install... $ECHO_C" >&6
+if test -z "$INSTALL"; then
+if test "${ac_cv_path_install+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  # Account for people who put trailing slashes in PATH elements.
+case $as_dir/ in
+  ./ | .// | /cC/* | \
+  /etc/* | /usr/sbin/* | /usr/etc/* | /sbin/* | /usr/afsws/bin/* | \
+  ?:\\/os2\\/install\\/* | ?:\\/OS2\\/INSTALL\\/* | \
+  /usr/ucb/* ) ;;
+  *)
+    # OSF1 and SCO ODT 3.0 have their own names for install.
+    # Don't use installbsd from OSF since it installs stuff as root
+    # by default.
+    for ac_prog in ginstall scoinst install; do
+      for ac_exec_ext in '' $ac_executable_extensions; do
+	if $as_executable_p "$as_dir/$ac_prog$ac_exec_ext"; then
+	  if test $ac_prog = install &&
+	    grep dspmsg "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
+	    # AIX install.  It has an incompatible calling convention.
+	    :
+	  elif test $ac_prog = install &&
+	    grep pwplus "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
+	    # program-specific install script used by HP pwplus--don't use.
+	    :
+	  else
+	    ac_cv_path_install="$as_dir/$ac_prog$ac_exec_ext -c"
+	    break 3
+	  fi
+	fi
+      done
+    done
+    ;;
+esac
+done
+
+
+fi
+  if test "${ac_cv_path_install+set}" = set; then
+    INSTALL=$ac_cv_path_install
+  else
+    # As a last resort, use the slow shell script.  We don't cache a
+    # path for INSTALL within a source directory, because that will
+    # break other packages using the cache if that directory is
+    # removed, or if the path is relative.
+    INSTALL=$ac_install_sh
+  fi
+fi
+echo "$as_me:$LINENO: result: $INSTALL" >&5
+echo "${ECHO_T}$INSTALL" >&6
+
+# Use test -z because SunOS4 sh mishandles braces in ${var-val}.
+# It thinks the first close brace ends the variable substitution.
+test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
+
+test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
+
+test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
+
 
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
@@ -1383,6 +1438,87 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
+# Autoconf M4 include file defining utility macros for complex Canadian
+# cross builds.
+
+
+
+
+
+
+
+
+
+####
+# _NCN_TOOL_PREFIXES:  Some stuff that oughtta be done in AC_CANONICAL_SYSTEM
+# or AC_INIT.
+# These demand that AC_CANONICAL_SYSTEM be called beforehand.
+
+####
+# NCN_CHECK_TARGET_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
+# Like AC_CHECK_TOOL, but tries a prefix of the target, not the host.
+# Code is pretty much lifted from autoconf2.53.
+
+
+
+####
+# NCN_STRICT_CHECK_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
+# Like AC_CHECK_TOOL, but requires the prefix if build!=host.
+
+
+
+####
+# NCN_STRICT_CHECK_TARGET_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
+# Like NCN_CHECK_TARGET_TOOL, but requires the prefix if build!=target.
+
+
+###
+# AC_PROG_CPP_WERROR
+# Used for autoconf 2.5x to force AC_PREPROC_IFELSE to reject code which
+# triggers warnings from the preprocessor.  Will be in autoconf 2.58.
+# For now, using this also overrides header checks to use only the
+# preprocessor (matches 2.13 behavior; matching 2.58's behavior is a
+# bit harder from here).
+# Eventually autoconf will default to checking headers with the compiler
+# instead, and we'll have to do this differently.
+
+# AC_PROG_CPP_WERROR
+
+# Test for GNAT.
+# We require the gnatbind program, and a compiler driver that
+# understands Ada.  We use the user's CC setting, already found.
+#
+# Sets the shell variable have_gnat to yes or no as appropriate, and
+# substitutes GNATBIND.
+
+
+
+
+
+
+
+
+
+
+
+ case ${build_alias} in
+  "") build_noncanonical=${build} ;;
+  *) build_noncanonical=${build_alias} ;;
+esac
+
+ case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+
+ case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
+
+
+
+
 # Need to pass this down for now :-P
 echo "$as_me:$LINENO: checking whether ln -s works" >&5
 echo $ECHO_N "checking whether ln -s works... $ECHO_C" >&6
@@ -1403,15 +1539,106 @@ case $host in
 esac
 
 
-# Determine what to build for 'gnatlib'
-if test $build = $target \
-   && test ${enable_shared} = yes ; then
+# Determine what to build for 'gnattools'
+if test $build = $target ; then
   # Note that build=target is almost certainly the wrong test; FIXME
-  default_gnatlib_target="gnatlib-shared"
+  default_gnattools_target="gnattools-native"
 else
-  default_gnatlib_target="gnatlib-plain"
+  default_gnattools_target="gnattools-cross"
 fi
 
+
+# Target-specific stuff (defaults)
+TOOLS_TARGET_PAIRS=
+
+EXTRA_GNATTOOLS=
+
+
+# Per-target case statement
+# -------------------------
+case "${target}" in
+  alpha*-dec-vx*) # Unlike all other Vxworks
+    ;;
+  m68k*-wrs-vx* \
+  | powerpc*-wrs-vxworks \
+  | sparc*-wrs-vx* \
+  | *86-wrs-vxworks \
+  | xscale*-wrs-vx* \
+  | xscale*-wrs-coff \
+  | mips*-wrs-vx*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-vxworks.adb"
+    ;;
+  sparc-sun-solaris*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-solaris.adb"
+    ;;
+  *86-*-solaris2*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-solaris.adb"
+    ;;
+  *86-*-linux* \
+  | powerpc*-*-linux*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-linux.adb"
+    ;;
+  *ia64-*-linux* \
+  | alpha*-*-linux )
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-linux.adb"
+    ;;
+  *x86_64-*-linux* \
+  | s390*-*-linux*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-linux.adb"
+    ;;
+  *86-*-freebsd*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-linux.adb"
+    ;;
+  mips-sgi-irix*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-irix.adb"
+    ;;
+  hppa*-hp-hpux10*) # Unlike hpux11
+    ;;
+  hppa*-hp-hpux11*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-hpux.adb"
+    ;;
+  *-ibm-aix*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-aix.adb \
+    indepsw.adb<indepsw-aix.adb"
+    ;;
+  alpha*-dec-osf*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-tru64.adb"
+    ;;
+  alpha*-dec-vms* | alpha*-dec-openvms* | alpha*-dec-vms* \
+  | alpha*-hp-vms* | alpha*-hp-openvms* | alpha*-hp-vms*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-vms-alpha.adb \
+    symbols.adb<symbols-vms-alpha.adb"
+
+    EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
+    ;;
+  ia64*-dec-vms* | ia64*-dec-openvms* | ia64*-dec-vms* \
+  | ia64*-hp-vms* | ia64*-hp-openvms* | ia64*-hp-vms*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-vms-ia64.adb \
+    symbols.adb<symbols-vms-ia64.adb"
+
+    EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
+    ;;
+  *-*-cygwin32* | *-*-mingw32* | *-*-pe)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-mingw.adb \
+    indepsw.adb<indepsw-mingw.adb"
+    EXTRA_GNATTOOLS='../../gnatdll$(exeext)'
+    ;;
+  powerpc-*-darwin*)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-darwin.adb"
+    ;;
+  *-*-lynxos)
+    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-lynxos.adb"
+    ;;
+esac
 
 # Output: create a Makefile.
           ac_config_files="$ac_config_files Makefile"
@@ -1873,6 +2100,7 @@ Copyright (C) 2003 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 srcdir=$srcdir
+INSTALL="$INSTALL"
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF
@@ -2052,7 +2280,9 @@ s,@ECHO_N@,$ECHO_N,;t t
 s,@ECHO_T@,$ECHO_T,;t t
 s,@LIBS@,$LIBS,;t t
 s,@MAINT@,$MAINT,;t t
-s,@enable_shared@,$enable_shared,;t t
+s,@INSTALL_PROGRAM@,$INSTALL_PROGRAM,;t t
+s,@INSTALL_SCRIPT@,$INSTALL_SCRIPT,;t t
+s,@INSTALL_DATA@,$INSTALL_DATA,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
@@ -2065,9 +2295,12 @@ s,@target@,$target,;t t
 s,@target_cpu@,$target_cpu,;t t
 s,@target_vendor@,$target_vendor,;t t
 s,@target_os@,$target_os,;t t
+s,@target_noncanonical@,$target_noncanonical,;t t
 s,@LN_S@,$LN_S,;t t
 s,@x_ada_cflags@,$x_ada_cflags,;t t
-s,@default_gnatlib_target@,$default_gnatlib_target,;t t
+s,@default_gnattools_target@,$default_gnattools_target,;t t
+s,@TOOLS_TARGET_PAIRS@,$TOOLS_TARGET_PAIRS,;t t
+s,@EXTRA_GNATTOOLS@,$EXTRA_GNATTOOLS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
@@ -2231,6 +2464,10 @@ case $ac_abs_builddir in
 esac
 
 
+  case $INSTALL in
+  [\\/$]* | ?:[\\/]* ) ac_INSTALL=$INSTALL ;;
+  *) ac_INSTALL=$ac_top_builddir$INSTALL ;;
+  esac
 
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
@@ -2293,6 +2530,7 @@ s,@builddir@,$ac_builddir,;t t
 s,@abs_builddir@,$ac_abs_builddir,;t t
 s,@top_builddir@,$ac_top_builddir,;t t
 s,@abs_top_builddir@,$ac_abs_top_builddir,;t t
+s,@INSTALL@,$ac_INSTALL,;t t
 " $ac_file_inputs | (eval "$ac_sed_cmds") >$tmp/out
   rm -f $tmp/stdin
   if test x"$ac_file" != x-; then

@@ -715,7 +715,8 @@ configure-host:  \
     maybe-configure-guile \
     maybe-configure-tk \
     maybe-configure-libtermcap \
-    maybe-configure-utils
+    maybe-configure-utils \
+    maybe-configure-gnattools
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -817,7 +818,8 @@ all-host:  \
     maybe-all-guile \
     maybe-all-tk \
     maybe-all-libtermcap \
-    maybe-all-utils
+    maybe-all-utils \
+    maybe-all-gnattools
 .PHONY: all-target
 all-target:  \
     maybe-all-target-libstdc++-v3 \
@@ -914,7 +916,8 @@ info-host:  \
     maybe-info-guile \
     maybe-info-tk \
     maybe-info-libtermcap \
-    maybe-info-utils
+    maybe-info-utils \
+    maybe-info-gnattools
 
 .PHONY: info-target
 info-target:  \
@@ -1007,7 +1010,8 @@ dvi-host:  \
     maybe-dvi-guile \
     maybe-dvi-tk \
     maybe-dvi-libtermcap \
-    maybe-dvi-utils
+    maybe-dvi-utils \
+    maybe-dvi-gnattools
 
 .PHONY: dvi-target
 dvi-target:  \
@@ -1100,7 +1104,8 @@ html-host:  \
     maybe-html-guile \
     maybe-html-tk \
     maybe-html-libtermcap \
-    maybe-html-utils
+    maybe-html-utils \
+    maybe-html-gnattools
 
 .PHONY: html-target
 html-target:  \
@@ -1193,7 +1198,8 @@ TAGS-host:  \
     maybe-TAGS-guile \
     maybe-TAGS-tk \
     maybe-TAGS-libtermcap \
-    maybe-TAGS-utils
+    maybe-TAGS-utils \
+    maybe-TAGS-gnattools
 
 .PHONY: TAGS-target
 TAGS-target:  \
@@ -1286,7 +1292,8 @@ install-info-host:  \
     maybe-install-info-guile \
     maybe-install-info-tk \
     maybe-install-info-libtermcap \
-    maybe-install-info-utils
+    maybe-install-info-utils \
+    maybe-install-info-gnattools
 
 .PHONY: install-info-target
 install-info-target:  \
@@ -1379,7 +1386,8 @@ installcheck-host:  \
     maybe-installcheck-guile \
     maybe-installcheck-tk \
     maybe-installcheck-libtermcap \
-    maybe-installcheck-utils
+    maybe-installcheck-utils \
+    maybe-installcheck-gnattools
 
 .PHONY: installcheck-target
 installcheck-target:  \
@@ -1472,7 +1480,8 @@ mostlyclean-host:  \
     maybe-mostlyclean-guile \
     maybe-mostlyclean-tk \
     maybe-mostlyclean-libtermcap \
-    maybe-mostlyclean-utils
+    maybe-mostlyclean-utils \
+    maybe-mostlyclean-gnattools
 
 .PHONY: mostlyclean-target
 mostlyclean-target:  \
@@ -1565,7 +1574,8 @@ clean-host:  \
     maybe-clean-guile \
     maybe-clean-tk \
     maybe-clean-libtermcap \
-    maybe-clean-utils
+    maybe-clean-utils \
+    maybe-clean-gnattools
 
 .PHONY: clean-target
 clean-target:  \
@@ -1658,7 +1668,8 @@ distclean-host:  \
     maybe-distclean-guile \
     maybe-distclean-tk \
     maybe-distclean-libtermcap \
-    maybe-distclean-utils
+    maybe-distclean-utils \
+    maybe-distclean-gnattools
 
 .PHONY: distclean-target
 distclean-target:  \
@@ -1751,7 +1762,8 @@ maintainer-clean-host:  \
     maybe-maintainer-clean-guile \
     maybe-maintainer-clean-tk \
     maybe-maintainer-clean-libtermcap \
-    maybe-maintainer-clean-utils
+    maybe-maintainer-clean-utils \
+    maybe-maintainer-clean-gnattools
 
 .PHONY: maintainer-clean-target
 maintainer-clean-target:  \
@@ -1904,6 +1916,7 @@ do-check: unstage  \
     maybe-check-tk \
     maybe-check-libtermcap \
     maybe-check-utils \
+    maybe-check-gnattools \
     maybe-check-target-libstdc++-v3 \
     maybe-check-target-libmudflap \
     maybe-check-target-newlib \
@@ -2015,7 +2028,8 @@ install-host-nogcc:  \
     maybe-install-guile \
     maybe-install-tk \
     maybe-install-libtermcap \
-    maybe-install-utils
+    maybe-install-utils \
+    maybe-install-gnattools
 
 .PHONY: install-host
 install-host:  \
@@ -2084,7 +2098,8 @@ install-host:  \
     maybe-install-guile \
     maybe-install-tk \
     maybe-install-libtermcap \
-    maybe-install-utils
+    maybe-install-utils \
+    maybe-install-gnattools
 
 .PHONY: install-target
 install-target:  \
@@ -24236,6 +24251,336 @@ maintainer-clean-utils:
 @endif utils
 
 
+.PHONY: configure-gnattools maybe-configure-gnattools
+maybe-configure-gnattools:
+@if gnattools
+maybe-configure-gnattools: configure-gnattools
+configure-gnattools:
+	@test ! -f gnattools/Makefile || exit 0; \
+	[ -d gnattools ] || mkdir gnattools; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	echo Configuring in gnattools; \
+	cd gnattools || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/gnattools"; \
+	    libsrcdir="$$s/gnattools";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/gnattools"; \
+	    libsrcdir="$$s/gnattools";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif gnattools
+
+.PHONY: all-gnattools maybe-all-gnattools
+maybe-all-gnattools:
+@if gnattools
+TARGET-gnattools=all
+maybe-all-gnattools: all-gnattools
+all-gnattools: configure-gnattools
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS)  \
+	  $(TARGET-gnattools))
+@endif gnattools
+
+.PHONY: check-gnattools maybe-check-gnattools
+maybe-check-gnattools:
+@if gnattools
+maybe-check-gnattools: check-gnattools
+
+check-gnattools:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS) check)
+
+@endif gnattools
+
+.PHONY: install-gnattools maybe-install-gnattools
+maybe-install-gnattools:
+@if gnattools
+maybe-install-gnattools: install-gnattools
+
+install-gnattools: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS) install)
+
+@endif gnattools
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-gnattools info-gnattools
+maybe-info-gnattools:
+@if gnattools
+maybe-info-gnattools: info-gnattools
+
+info-gnattools: \
+    configure-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-dvi-gnattools dvi-gnattools
+maybe-dvi-gnattools:
+@if gnattools
+maybe-dvi-gnattools: dvi-gnattools
+
+dvi-gnattools: \
+    configure-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-html-gnattools html-gnattools
+maybe-html-gnattools:
+@if gnattools
+maybe-html-gnattools: html-gnattools
+
+html-gnattools: \
+    configure-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          html) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-TAGS-gnattools TAGS-gnattools
+maybe-TAGS-gnattools:
+@if gnattools
+maybe-TAGS-gnattools: TAGS-gnattools
+
+TAGS-gnattools: \
+    configure-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-install-info-gnattools install-info-gnattools
+maybe-install-info-gnattools:
+@if gnattools
+maybe-install-info-gnattools: install-info-gnattools
+
+install-info-gnattools: \
+    configure-gnattools \
+    info-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-installcheck-gnattools installcheck-gnattools
+maybe-installcheck-gnattools:
+@if gnattools
+maybe-installcheck-gnattools: installcheck-gnattools
+
+installcheck-gnattools: \
+    configure-gnattools 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-mostlyclean-gnattools mostlyclean-gnattools
+maybe-mostlyclean-gnattools:
+@if gnattools
+maybe-mostlyclean-gnattools: mostlyclean-gnattools
+
+mostlyclean-gnattools: 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-clean-gnattools clean-gnattools
+maybe-clean-gnattools:
+@if gnattools
+maybe-clean-gnattools: clean-gnattools
+
+clean-gnattools: 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-distclean-gnattools distclean-gnattools
+maybe-distclean-gnattools:
+@if gnattools
+maybe-distclean-gnattools: distclean-gnattools
+
+distclean-gnattools: 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-maintainer-clean-gnattools maintainer-clean-gnattools
+maybe-maintainer-clean-gnattools:
+@if gnattools
+maybe-maintainer-clean-gnattools: maintainer-clean-gnattools
+
+maintainer-clean-gnattools: 
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gnattools" ; \
+	(cd gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif gnattools
+
+
 
 # ---------------------------------------
 # Modules which run on the target machine
@@ -30657,7 +31002,7 @@ all-stage1:     \
   maybe-all-stage1-ld \
   maybe-all-stage1-libcpp  \
   maybe-all-stage1-libiberty                        \
-  maybe-all-stage1-zlib       
+  maybe-all-stage1-zlib        
 
 do-clean: clean-stage1
 clean-stage1:     \
@@ -30670,7 +31015,7 @@ clean-stage1:     \
   maybe-clean-stage1-ld \
   maybe-clean-stage1-libcpp  \
   maybe-clean-stage1-libiberty                        \
-  maybe-clean-stage1-zlib       
+  maybe-clean-stage1-zlib        
 
 
 .PHONY: configure-stage1-bfd maybe-configure-stage1-bfd
@@ -31354,7 +31699,7 @@ all-stage2:     \
   maybe-all-stage2-ld \
   maybe-all-stage2-libcpp  \
   maybe-all-stage2-libiberty                        \
-  maybe-all-stage2-zlib       
+  maybe-all-stage2-zlib        
 
 do-clean: clean-stage2
 clean-stage2:     \
@@ -31367,7 +31712,7 @@ clean-stage2:     \
   maybe-clean-stage2-ld \
   maybe-clean-stage2-libcpp  \
   maybe-clean-stage2-libiberty                        \
-  maybe-clean-stage2-zlib       
+  maybe-clean-stage2-zlib        
 
 
 .PHONY: configure-stage2-bfd maybe-configure-stage2-bfd
@@ -32075,7 +32420,7 @@ all-stage3:     \
   maybe-all-stage3-ld \
   maybe-all-stage3-libcpp  \
   maybe-all-stage3-libiberty                        \
-  maybe-all-stage3-zlib       
+  maybe-all-stage3-zlib        
 
 do-clean: clean-stage3
 clean-stage3:     \
@@ -32088,7 +32433,7 @@ clean-stage3:     \
   maybe-clean-stage3-ld \
   maybe-clean-stage3-libcpp  \
   maybe-clean-stage3-libiberty                        \
-  maybe-clean-stage3-zlib       
+  maybe-clean-stage3-zlib        
 
 
 .PHONY: configure-stage3-bfd maybe-configure-stage3-bfd
@@ -32826,7 +33171,7 @@ all-stage4:     \
   maybe-all-stage4-ld \
   maybe-all-stage4-libcpp  \
   maybe-all-stage4-libiberty                        \
-  maybe-all-stage4-zlib       
+  maybe-all-stage4-zlib        
 
 do-clean: clean-stage4
 clean-stage4:     \
@@ -32839,7 +33184,7 @@ clean-stage4:     \
   maybe-clean-stage4-ld \
   maybe-clean-stage4-libcpp  \
   maybe-clean-stage4-libiberty                        \
-  maybe-clean-stage4-zlib       
+  maybe-clean-stage4-zlib        
 
 
 .PHONY: configure-stage4-bfd maybe-configure-stage4-bfd
@@ -33573,7 +33918,7 @@ all-stageprofile:     \
   maybe-all-stageprofile-ld \
   maybe-all-stageprofile-libcpp  \
   maybe-all-stageprofile-libiberty                        \
-  maybe-all-stageprofile-zlib       
+  maybe-all-stageprofile-zlib        
 
 do-clean: clean-stageprofile
 clean-stageprofile:     \
@@ -33586,7 +33931,7 @@ clean-stageprofile:     \
   maybe-clean-stageprofile-ld \
   maybe-clean-stageprofile-libcpp  \
   maybe-clean-stageprofile-libiberty                        \
-  maybe-clean-stageprofile-zlib       
+  maybe-clean-stageprofile-zlib        
 
 
 .PHONY: configure-stageprofile-bfd maybe-configure-stageprofile-bfd
@@ -34290,7 +34635,7 @@ all-stagefeedback:     \
   maybe-all-stagefeedback-ld \
   maybe-all-stagefeedback-libcpp  \
   maybe-all-stagefeedback-libiberty                        \
-  maybe-all-stagefeedback-zlib       
+  maybe-all-stagefeedback-zlib        
 
 do-clean: clean-stagefeedback
 clean-stagefeedback:     \
@@ -34303,7 +34648,7 @@ clean-stagefeedback:     \
   maybe-clean-stagefeedback-ld \
   maybe-clean-stagefeedback-libcpp  \
   maybe-clean-stagefeedback-libiberty                        \
-  maybe-clean-stagefeedback-zlib       
+  maybe-clean-stagefeedback-zlib        
 
 
 .PHONY: configure-stagefeedback-bfd maybe-configure-stagefeedback-bfd
@@ -35207,6 +35552,7 @@ all-stage4-libcpp: maybe-all-stage4-intl
 all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
+all-gnattools: maybe-all-target-libada
 configure-gdb: maybe-configure-itcl
 configure-gdb: maybe-configure-tcl
 configure-gdb: maybe-configure-tk

@@ -1,3 +1,10 @@
+2005-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Rename cc_for_cross_gnattools to host_cc_for_libada.
+	* configure: Regenerate.
+        * libada-mk.in: Remove CC; rename
+	cc_for_cross_gnattools / cc_set_by_configure to host_cc_for_libada.
+
 2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/20188

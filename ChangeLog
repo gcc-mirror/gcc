@@ -1,3 +1,15 @@
+2005-02-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	Merged from libada-gnattools-branch:
+	2004-11-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* gnattools: New directory.
+	* Makefile.def: Add gnattools as a module, depending on target-libada.
+	* Makefile.in: Regenerate.
+	* configure.in: Include gnattools in host_tools; disable it if ada
+	is disabled.
+	* configure: Regenerate.
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	* MAINTAINERS (Language Front Ends Maintainers): Add myself as
