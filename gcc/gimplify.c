@@ -3576,7 +3576,14 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case CONST_DECL:
-	  *expr_p = DECL_INITIAL (*expr_p);
+	  /* If we require an lvalue, such as for ADDR_EXPR, retain the
+	     CONST_DECL node.  Otherwise the decl is replacable by its
+	     value.  */
+	  /* ??? Should be == fb_lvalue, but ADDR_EXPR passes fb_either.  */
+	  if (fallback & fb_lvalue)
+	    ret = GS_ALL_DONE;
+	  else
+	    *expr_p = DECL_INITIAL (*expr_p);
 	  break;
 
 	case DECL_EXPR:

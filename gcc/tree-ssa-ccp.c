@@ -1868,6 +1868,11 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
       /* Strip the ADDR_EXPR.  */
       base = TREE_OPERAND (base, 0);
 
+      /* Fold away CONST_DECL to its value, if the type is scalar.  */
+      if (TREE_CODE (base) == CONST_DECL
+	  && is_gimple_min_invariant (DECL_INITIAL (base)))
+	return DECL_INITIAL (base);
+
       /* Try folding *(&B+O) to B[X].  */
       t = maybe_fold_offset_to_array_ref (base, offset, TREE_TYPE (expr));
       if (t)

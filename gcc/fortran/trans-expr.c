@@ -1612,8 +1612,17 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
   gfc_conv_expr (se, expr);
 
   /* Create a temporary var to hold the value.  */
-  var = gfc_create_var (TREE_TYPE (se->expr), NULL);
-  gfc_add_modify_expr (&se->pre, var, se->expr);
+  if (TREE_CONSTANT (se->expr))
+    {
+      var = build_decl (CONST_DECL, NULL, TREE_TYPE (se->expr));
+      DECL_INITIAL (var) = se->expr;
+      pushdecl (var);
+    }
+  else
+    {
+      var = gfc_create_var (TREE_TYPE (se->expr), NULL);
+      gfc_add_modify_expr (&se->pre, var, se->expr);
+    }
   gfc_add_block_to_block (&se->pre, &se->post);
 
   /* Take the address of that value.  */

@@ -1,5 +1,11 @@
 2004-07-30  Richard Henderson  <rth@redhat.com>
 
+	* gfortran.fortran-torture/execute/intrinsic_rrspacing.f90: Fix
+	write to constant argument.
+	* gfortran.fortran-torture/execute/intrinsic_scale.f90: Likewise.
+
+2004-07-30  Richard Henderson  <rth@redhat.com>
+
         * gfortran.fortran-torture/execute/intrinsic_nearest.f90: Disable
         tests of nearest around zero.
 

@@ -413,6 +413,7 @@ is_gimple_id (tree t)
   return (is_gimple_variable (t)
 	  || TREE_CODE (t) == FUNCTION_DECL
 	  || TREE_CODE (t) == LABEL_DECL
+	  || TREE_CODE (t) == CONST_DECL
 	  /* Allow string constants, since they are addressable.  */
 	  || TREE_CODE (t) == STRING_CST);
 }
