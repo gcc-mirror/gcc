@@ -1,5 +1,8 @@
 1998-10-09  Mark Mitchell  <mark@markmitchell.com>
 
+	* search.c (expand_upcast_fixups): Tweak to match 1998-10-07
+	change to vtable types.
+
 	* cvt.c (ocp_convert): Avoid infinite recursion caused by
 	1998-10-03 change.
 
