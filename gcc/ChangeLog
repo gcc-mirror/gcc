@@ -1,5 +1,10 @@
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
+	* jump.c (simplejump_p): Recognize any single_set jump
+	of the proper form.
+
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
 	* configure.in (slibdir): Accept an --with-slibdir option.
 	Use "test" not "[" in configure.  Default to $(libdir).
 
