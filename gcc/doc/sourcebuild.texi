@@ -692,9 +692,8 @@ enumerated in the manual.
 Documentation in @file{gcc/doc/extend.texi} for any target-specific
 pragmas supported.
 @item
-Documentation of any target-specific built-in functions supported.
-FIXME: where should this documentation be?  For MMX built-in functions
-it is currently in @file{gcc/doc/invoke.texi}.
+Documentation in @file{gcc/doc/extend.texi} of any target-specific
+built-in functions supported.
 @item
 Documentation in @file{gcc/doc/md.texi} of any target-specific
 constraint letters (@pxref{Machine Constraints, , Constraints for
