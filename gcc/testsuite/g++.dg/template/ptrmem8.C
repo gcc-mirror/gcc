@@ -15,6 +15,6 @@ template <int (D::*fun)() const> int Get();
 
 int main () 
 {
-  Get<&B::I>();   // { dg-error "no matching function" }
-  Get<&D::I>();   // { dg-error "no matching function" }
+  Get<&B::I>();   // { dg-error "" }
+  Get<&D::I>();   // { dg-error "" }
 }

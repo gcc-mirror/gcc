@@ -2398,18 +2398,29 @@ struct lang_decl GTY(())
 /* Returns true if NODE is a pointer-to-data-member.  */
 #define TYPE_PTRMEM_P(NODE)			\
   (TREE_CODE (NODE) == OFFSET_TYPE)
+/* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE)			\
   (TREE_CODE (NODE) == POINTER_TYPE)
+/* Returns true if NODE is a pointer to an object.  */
 #define TYPE_PTROB_P(NODE)				\
   (TYPE_PTR_P (NODE) 					\
    && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
    && TREE_CODE (TREE_TYPE (NODE)) != METHOD_TYPE	\
    && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
+/* Returns true if NODE is a reference to an object.  */
+#define TYPE_REF_OBJ_P(NODE)				\
+  (TREE_CODE (NODE) == REFERENCE_TYPE			\
+   && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
+   && TREE_CODE (TREE_TYPE (NODE)) != METHOD_TYPE	\
+   && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
+/* Returns true if NODE is a pointer to an object, or a pointer to void.  */
 #define TYPE_PTROBV_P(NODE)						\
   (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE)
+/* Returns true if NODE is a pointer to function.  */
 #define TYPE_PTRFN_P(NODE)				\
   (TREE_CODE (NODE) == POINTER_TYPE			\
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
+/* Returns true if NODE is a reference to function.  */
 #define TYPE_REFFN_P(NODE)				\
   (TREE_CODE (NODE) == REFERENCE_TYPE			\
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
@@ -3976,6 +3987,7 @@ extern tree build_non_dependent_expr            (tree);
 extern tree build_non_dependent_args            (tree);
 extern bool reregister_specialization           (tree, tree, tree);
 extern tree fold_non_dependent_expr             (tree);
+extern tree fold_decl_constant_value            (tree);
 
 /* in repo.c */
 extern void init_repo (void);

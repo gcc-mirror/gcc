@@ -1,3 +1,19 @@
+2004-11-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	DR 49, 100
+	* cp-tree.h (TYPE_REF_OBJ_P): New macro.
+	(TYPE_PTR_P, TYPE_PTROB_P, TYPE_PTROBV_P, TYPE_PTRFN_P,
+	TYPE_REFFN_P): Document.
+	(fold_decl_constant_value): New prototype.
+	* pt.c (convert_nontype_argument_function): Rewrite and extract
+	parts into...
+	(fold_decl_constant_value, convert_nontype_argument_function): New.
+	(lookup_template_class): Add comment about useless double call.
+	* mangle.c (write_expression): Strip conversions before lowering
+	pointer to members.
+	* cvt.c (ocp_convert): Check LOOKUP_COMPLAIN for a pedwarn. Disallow
+	enum to enum conversion.
+
 2004-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18124

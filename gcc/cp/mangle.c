@@ -1969,6 +1969,16 @@ write_expression (tree expr)
 
   code = TREE_CODE (expr);
 
+  /* Skip NOP_EXPRs.  They can occur when (say) a pointer argument
+     is converted (via qualification conversions) to another
+     type.  */
+  while (TREE_CODE (expr) == NOP_EXPR
+	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
+    {
+      expr = TREE_OPERAND (expr, 0);
+      code = TREE_CODE (expr);
+    }
+
   /* Handle pointers-to-members by making them look like expression
      nodes.  */
   if (code == PTRMEM_CST)
@@ -1977,16 +1987,6 @@ write_expression (tree expr)
 		       build_nt (SCOPE_REF,
 				 PTRMEM_CST_CLASS (expr),
 				 PTRMEM_CST_MEMBER (expr)));
-      code = TREE_CODE (expr);
-    }
-
-  /* Skip NOP_EXPRs.  They can occur when (say) a pointer argument
-     is converted (via qualification conversions) to another
-     type.  */
-  while (TREE_CODE (expr) == NOP_EXPR
-	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
-    {
-      expr = TREE_OPERAND (expr, 0);
       code = TREE_CODE (expr);
     }
 

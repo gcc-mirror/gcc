@@ -662,10 +662,13 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       /* enum = enum, enum = int, enum = float, (enum)pointer are all
          errors.  */
       if (TREE_CODE (type) == ENUMERAL_TYPE
-	  && ((ARITHMETIC_TYPE_P (intype) && ! (convtype & CONV_STATIC))
-	      || (TREE_CODE (intype) == POINTER_TYPE)))
+	  && (((INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
+	        || TREE_CODE (intype) == REAL_TYPE)
+	       && ! (convtype & CONV_STATIC))
+	      || TREE_CODE (intype) == POINTER_TYPE))
 	{
-	  pedwarn ("conversion from %q#T to %q#T", intype, type);
+	  if (flags & LOOKUP_COMPLAIN)
+	    pedwarn ("conversion from %q#T to %q#T", intype, type);
 
 	  if (flag_pedantic_errors)
 	    return error_mark_node;
