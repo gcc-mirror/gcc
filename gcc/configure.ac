@@ -2357,6 +2357,14 @@ case "$target" in
   [Define if your assembler supports explicit relocations.])])
     ;;
 
+  cris-*-*)
+    gcc_GAS_CHECK_FEATURE([-no-mul-bug-abort option],
+      gcc_cv_as_cris_no_mul_bug,[2,15,91],
+      [-no-mul-bug-abort], [.text],,
+      [AC_DEFINE(HAVE_AS_NO_MUL_BUG_ABORT_OPTION, 1,
+		[Define if your assembler supports the -no-mul-bug-abort option.])])
+    ;;
+
   sparc*-*-*)
     gcc_GAS_CHECK_FEATURE([.register], gcc_cv_as_sparc_register_op,,,
       [.register %g2, #scratch],,
