@@ -281,7 +281,7 @@ dw2_asm_output_nstring VPARAMS ((const char *str, size_t orig_len,
 
   VA_OPEN (ap, comment);
   VA_FIXEDARG (ap, const char *, str);
-  VA_FIXEDARG (ap, size_t, len);
+  VA_FIXEDARG (ap, size_t, orig_len);
   VA_FIXEDARG (ap, const char *, comment);
 
   len = orig_len;
