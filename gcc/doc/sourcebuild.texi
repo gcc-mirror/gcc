@@ -788,13 +788,21 @@ here; FIXME: document the others.
 @node Test Idioms
 @subsection Idioms Used in Test Suite Code
 
-In the @file{gcc.c-torture} test suites, test cases are commonly named
-after the date on which they were added.  This allows people to tell
-at a glance whether a test failure is because of a recently found bug
-that has not yet been fixed, or whether it may be a regression.  In
-other test suites, more descriptive names are used.  In general C test
-cases have a trailing @file{-@var{n}.c}, starting with @file{-1.c}, in
-case other test cases with similar names are added later.
+In general C testcases have a trailing @file{-@var{n}.c}, starting
+with @file{-1.c}, in case other testcases with similar names are added
+later.  If the test is a test of some well-defined feature, it should
+have a name referring to that feature such as
+@file{@var{feature}-1.c}.  If it does not test a well-defined feature
+but just happens to exercise a bug somewhere in the compiler, and a
+bug report has been filed for this bug in the GCC bug database,
+@file{pr@var{bug-number}-1.c} is the appropriate form of name.
+Otherwise (for miscellaneous bugs not filed in the GCC bug database),
+and previously more generally, test cases are named after the date on
+which they were added.  This allows people to tell at a glance whether
+a test failure is because of a recently found bug that has not yet
+been fixed, or whether it may be a regression, but does not give any
+other information about the bug or where discussion of it may be
+found.  Some other language testsuites follow similar conventions.
 
 Test cases should use @code{abort ()} to indicate failure and
 @code{exit (0)} for success; on some targets these may be redefined to
