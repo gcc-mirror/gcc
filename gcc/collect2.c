@@ -1222,7 +1222,7 @@ main (argc, argv)
 	}
       else if ((p = rindex (arg, '.')) != (char *) 0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0
-		   || strcmp (p, ".so") == 0))
+		   || strcmp (p, ".so") == 0 || strcmp (p, ".lo") == 0))
 	{
 	  if (first_file)
 	    {
@@ -1237,7 +1237,7 @@ main (argc, argv)
 		  *ld2++ = arg;
 		}
 	    }
-	  if (p[1] == 'o')
+	  if (p[1] == 'o' || p[1] == 'l')
 	    *object++ = arg;
 #ifdef COLLECT_EXPORT_LIST
 	  /* libraries can be specified directly, i.e. without -l flag.  */
