@@ -24,8 +24,8 @@
 # foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall, foo.distdir,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean, foo.realclean,
-# foo.stage1, foo.stage2, foo.stage3, foo.stage4
+# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
 #
@@ -154,7 +154,7 @@ c++.distclean:
 	-rm -f cp/config.status cp/Makefile
 	-rm -f cp/parse.output
 c++.extraclean:
-c++.realclean:
+c++.maintainer-clean:
 	-rm -f cp/parse.c cp/parse.h
 
 # Stage hooks:

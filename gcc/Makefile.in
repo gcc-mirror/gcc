@@ -19,7 +19,7 @@
 
 # The targets for external use include:
 # all, doc, proto, install, install-cross, install-cross-rest,
-# uninstall, TAGS, mostlyclean, clean, distclean, realclean,
+# uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean,
 # stage1, stage2, stage3, stage4.
 
 # Suppress smart makes who think they know how to automake Yacc files
@@ -566,7 +566,7 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 # info, dvi,
 # install-normal, install-common, install-info, install-man,
 # uninstall, distdir,
-# mostlyclean, clean, distclean, extraclean, realclean,
+# mostlyclean, clean, distclean, extraclean, maintainer-clean,
 # stage1, stage2, stage3, stage4
 #
 # Each language is linked in with a series of hooks (since we can't use `::'
@@ -1541,7 +1541,7 @@ bytecode.mostlyclean:
 bytecode.distclean bytecode.clean:	bytecode.mostlyclean
 	-rm -f bi-arity bi-opcode bi-opname bi-lexer
 
-bytecode.realclean: bytecode.clean
+bytecode.maintainer-clean: bytecode.clean
 	-rm -f bi-parser.c bi-parser.h
 
 
@@ -1822,14 +1822,14 @@ $(srcdir)/INSTALL: install1.texi install.texi
 
 # Deletion of files made during compilation.
 # There are four levels of this:
-#   `mostlyclean', `clean', `distclean' and `realclean'.
+#   `mostlyclean', `clean', `distclean' and `maintainer-clean'.
 # `mostlyclean' is useful while working on a particular type of machine.
 # It deletes most, but not all, of the files made by compilation.
 # It does not delete libgcc.a or its parts, so it won't have to be recompiled.
 # `clean' deletes everything made by running `make all'.
 # `distclean' also deletes the files made by config.
-# `realclean' also deletes everything that could be regenerated automatically.
-# We remove as much from the language subdirectories as we can
+# `maintainer-clean' also deletes everything that could be regenerated
+# automatically.  We remove as much from the language subdirectories as we can
 # (less duplicated code).
 
 
@@ -1934,7 +1934,7 @@ extraclean: distclean lang.extraclean
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
-realclean: distclean bytecode.realclean lang.realclean
+maintainer-clean: distclean bytecode.maintainer-clean lang.maintainer-clean
 	-rm -f c-parse.y c-gperf.h objc-parse.y
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
@@ -2514,7 +2514,7 @@ risky-stage4: force
 	-make clean
 
 #In GNU Make, ignore whether `stage*' exists.
-.PHONY: stage1 stage2 stage3 stage4 clean realclean TAGS bootstrap
+.PHONY: stage1 stage2 stage3 stage4 clean maintainer-clean TAGS bootstrap
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
 
 force:
