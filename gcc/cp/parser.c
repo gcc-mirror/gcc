@@ -1019,17 +1019,17 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
 static cp_declarator *make_id_declarator 
   (tree);
 static cp_declarator *make_call_declarator	
-  (cp_declarator *, cp_parameter_declarator *, tree, tree);
+  (cp_declarator *, cp_parameter_declarator *, cp_cv_quals, tree);
 static cp_declarator *make_array_declarator	
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator	
-  (tree, cp_declarator *);
+  (cp_cv_quals, cp_declarator *);
 static cp_declarator *make_reference_declarator	
-  (tree, cp_declarator *);
+  (cp_cv_quals, cp_declarator *);
 static cp_parameter_declarator *make_parameter_declarator 
   (cp_decl_specifier_seq *, cp_declarator *, tree);
 static cp_declarator *make_ptrmem_declarator	
-  (tree, tree, cp_declarator *);
+  (cp_cv_quals, tree, cp_declarator *);
 
 cp_declarator *cp_error_declarator;
 
@@ -1080,7 +1080,7 @@ make_id_declarator (tree id)
    type, represented as identifiers.  */
 
 cp_declarator *
-make_pointer_declarator (tree cv_qualifiers, cp_declarator *target)
+make_pointer_declarator (cp_cv_quals cv_qualifiers, cp_declarator *target)
 {
   cp_declarator *declarator;
 
@@ -1095,7 +1095,7 @@ make_pointer_declarator (tree cv_qualifiers, cp_declarator *target)
 /* Like make_pointer_declarator -- but for references.  */
 
 cp_declarator *
-make_reference_declarator (tree cv_qualifiers, cp_declarator *target)
+make_reference_declarator (cp_cv_quals cv_qualifiers, cp_declarator *target)
 {
   cp_declarator *declarator;
 
@@ -1111,7 +1111,7 @@ make_reference_declarator (tree cv_qualifiers, cp_declarator *target)
    member of CLASS_TYPE.  */
 
 cp_declarator *
-make_ptrmem_declarator (tree cv_qualifiers, tree class_type,
+make_ptrmem_declarator (cp_cv_quals cv_qualifiers, tree class_type,
 			cp_declarator *pointee)
 {
   cp_declarator *declarator;
@@ -1132,7 +1132,7 @@ make_ptrmem_declarator (tree cv_qualifiers, tree class_type,
 cp_declarator *
 make_call_declarator (cp_declarator *target, 
 		      cp_parameter_declarator *parms,
-		      tree cv_qualifiers, 
+		      cp_cv_quals cv_qualifiers,
                       tree exception_specification)
 {
   cp_declarator *declarator;
@@ -1693,10 +1693,8 @@ static cp_declarator *cp_parser_declarator
 static cp_declarator *cp_parser_direct_declarator
   (cp_parser *, cp_parser_declarator_kind, int *);
 static enum tree_code cp_parser_ptr_operator
-  (cp_parser *, tree *, tree *);
-static tree cp_parser_cv_qualifier_seq_opt
-  (cp_parser *);
-static tree cp_parser_cv_qualifier_opt
+  (cp_parser *, tree *, cp_cv_quals *);
+static cp_cv_quals cp_parser_cv_qualifier_seq_opt
   (cp_parser *);
 static tree cp_parser_declarator_id
   (cp_parser *);
@@ -4956,12 +4954,12 @@ cp_parser_new_declarator_opt (cp_parser* parser)
 {
   enum tree_code code;
   tree type;
-  tree cv_qualifier_seq;
+  cp_cv_quals cv_quals;
 
   /* We don't know if there's a ptr-operator next, or not.  */
   cp_parser_parse_tentatively (parser);
   /* Look for a ptr-operator.  */
-  code = cp_parser_ptr_operator (parser, &type, &cv_qualifier_seq);
+  code = cp_parser_ptr_operator (parser, &type, &cv_quals);
   /* If that worked, look for more new-declarators.  */
   if (cp_parser_parse_definitely (parser))
     {
@@ -4972,15 +4970,11 @@ cp_parser_new_declarator_opt (cp_parser* parser)
 
       /* Create the representation of the declarator.  */
       if (type)
-	declarator = make_ptrmem_declarator (cv_qualifier_seq,
-					     type,
-					     declarator);
+	declarator = make_ptrmem_declarator (cv_quals, type, declarator);
       else if (code == INDIRECT_REF)
-	declarator = make_pointer_declarator (cv_qualifier_seq,
-					      declarator);
+	declarator = make_pointer_declarator (cv_quals, declarator);
       else
-	declarator = make_reference_declarator (cv_qualifier_seq,
-						declarator);
+	declarator = make_reference_declarator (cv_quals, declarator);
 
       return declarator;
     }
@@ -7570,13 +7564,12 @@ cp_parser_conversion_declarator_opt (cp_parser* parser)
 {
   enum tree_code code;
   tree class_type;
-  tree cv_qualifier_seq;
+  cp_cv_quals cv_quals;
 
   /* We don't know if there's a ptr-operator next, or not.  */
   cp_parser_parse_tentatively (parser);
   /* Try the ptr-operator.  */
-  code = cp_parser_ptr_operator (parser, &class_type,
-				 &cv_qualifier_seq);
+  code = cp_parser_ptr_operator (parser, &class_type, &cv_quals);
   /* If it worked, look for more conversion-declarators.  */
   if (cp_parser_parse_definitely (parser))
     {
@@ -7587,15 +7580,12 @@ cp_parser_conversion_declarator_opt (cp_parser* parser)
       
       /* Create the representation of the declarator.  */
       if (class_type)
-	declarator = make_ptrmem_declarator (cv_qualifier_seq,
-					     class_type,
+	declarator = make_ptrmem_declarator (cv_quals, class_type,
 					     declarator);
       else if (code == INDIRECT_REF)
-	declarator = make_pointer_declarator (cv_qualifier_seq,
-					      declarator);
+	declarator = make_pointer_declarator (cv_quals, declarator);
       else
-	declarator = make_reference_declarator (cv_qualifier_seq,
-						declarator);
+	declarator = make_reference_declarator (cv_quals, declarator);
       
       return declarator;
    }
@@ -10779,7 +10769,7 @@ cp_parser_declarator (cp_parser* parser,
   cp_token *token;
   cp_declarator *declarator;
   enum tree_code code;
-  tree cv_qualifier_seq;
+  cp_cv_quals cv_quals;
   tree class_type;
   tree attributes = NULL_TREE;
 
@@ -10799,7 +10789,7 @@ cp_parser_declarator (cp_parser* parser,
   /* Parse the ptr-operator.  */
   code = cp_parser_ptr_operator (parser,
 				 &class_type,
-				 &cv_qualifier_seq);
+				 &cv_quals);
   /* If that worked, then we have a ptr-operator.  */
   if (cp_parser_parse_definitely (parser))
     {
@@ -10825,15 +10815,13 @@ cp_parser_declarator (cp_parser* parser,
 
       /* Build the representation of the ptr-operator.  */
       if (class_type)
-	declarator = make_ptrmem_declarator (cv_qualifier_seq,
+	declarator = make_ptrmem_declarator (cv_quals,
 					     class_type,
 					     declarator);
       else if (code == INDIRECT_REF)
-	declarator = make_pointer_declarator (cv_qualifier_seq,
-					      declarator);
+	declarator = make_pointer_declarator (cv_quals, declarator);
       else
-	declarator = make_reference_declarator (cv_qualifier_seq,
-						declarator);
+	declarator = make_reference_declarator (cv_quals, declarator);
     }
   /* Everything else is a direct-declarator.  */
   else
@@ -10968,7 +10956,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	     	 exception-specification.  */
 	      if (cp_parser_parse_definitely (parser))
 		{
-		  tree cv_qualifiers;
+		  cp_cv_quals cv_quals;
 		  tree exception_specification;
 
 		  if (ctor_dtor_or_conv_p)
@@ -10978,7 +10966,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
 		  /* Parse the cv-qualifier-seq.  */
-		  cv_qualifiers = cp_parser_cv_qualifier_seq_opt (parser);
+		  cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
@@ -10986,7 +10974,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,
 						     params,
-						     cv_qualifiers,
+						     cv_quals,
 						     exception_specification);
 		  /* Any subsequent parameter lists are to do with
 	 	     return type, so are not those of the declared
@@ -11226,17 +11214,17 @@ cp_parser_direct_declarator (cp_parser* parser,
    ptr-operator:
      & cv-qualifier-seq [opt]
 
-   Returns INDIRECT_REF if a pointer, or pointer-to-member, was
-   used.  Returns ADDR_EXPR if a reference was used.  In the
-   case of a pointer-to-member, *TYPE is filled in with the
-   TYPE containing the member.  *CV_QUALIFIER_SEQ is filled in
-   with the cv-qualifier-seq, or NULL_TREE, if there are no
-   cv-qualifiers.  Returns ERROR_MARK if an error occurred.  */
+   Returns INDIRECT_REF if a pointer, or pointer-to-member, was used.
+   Returns ADDR_EXPR if a reference was used.  In the case of a
+   pointer-to-member, *TYPE is filled in with the TYPE containing the
+   member.  *CV_QUALS is filled in with the cv-qualifier-seq, or
+   TYPE_UNQUALIFIED, if there are no cv-qualifiers.  Returns
+   ERROR_MARK if an error occurred.  */
 
 static enum tree_code
 cp_parser_ptr_operator (cp_parser* parser,
                         tree* type,
-                        tree* cv_qualifier_seq)
+			cp_cv_quals *cv_quals)
 {
   enum tree_code code = ERROR_MARK;
   cp_token *token;
@@ -11244,7 +11232,7 @@ cp_parser_ptr_operator (cp_parser* parser,
   /* Assume that it's not a pointer-to-member.  */
   *type = NULL_TREE;
   /* And that there are no cv-qualifiers.  */
-  *cv_qualifier_seq = NULL_TREE;
+  *cv_quals = TYPE_UNQUALIFIED;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -11263,7 +11251,7 @@ cp_parser_ptr_operator (cp_parser* parser,
 	 enforced during semantic analysis.  */
       if (code == INDIRECT_REF
 	  || cp_parser_allow_gnu_extensions_p (parser))
-	*cv_qualifier_seq = cp_parser_cv_qualifier_seq_opt (parser);
+	*cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
     }
   else
     {
@@ -11293,7 +11281,7 @@ cp_parser_ptr_operator (cp_parser* parser,
 	  /* Indicate that the `*' operator was used.  */
 	  code = INDIRECT_REF;
 	  /* Look for the optional cv-qualifier-seq.  */
-	  *cv_qualifier_seq = cp_parser_cv_qualifier_seq_opt (parser);
+	  *cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
 	}
       /* If that didn't work we don't have a ptr-operator.  */
       if (!cp_parser_parse_definitely (parser))
@@ -11308,35 +11296,6 @@ cp_parser_ptr_operator (cp_parser* parser,
    cv-qualifier-seq:
      cv-qualifier cv-qualifier-seq [opt]
 
-   Returns a TREE_LIST.  The TREE_VALUE of each node is the
-   representation of a cv-qualifier.  */
-
-static tree
-cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
-{
-  tree cv_qualifiers = NULL_TREE;
-
-  while (true)
-    {
-      tree cv_qualifier;
-
-      /* Look for the next cv-qualifier.  */
-      cv_qualifier = cp_parser_cv_qualifier_opt (parser);
-      /* If we didn't find one, we're done.  */
-      if (!cv_qualifier)
-	break;
-
-      /* Add this cv-qualifier to the list.  */
-      cv_qualifiers
-	= tree_cons (NULL_TREE, cv_qualifier, cv_qualifiers);
-    }
-
-  /* We built up the list in reverse order.  */
-  return nreverse (cv_qualifiers);
-}
-
-/* Parse an (optional) cv-qualifier.
-
    cv-qualifier:
      const
      volatile
@@ -11344,33 +11303,58 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
    GNU Extension:
 
    cv-qualifier:
-     __restrict__ */
+     __restrict__ 
 
-static tree
-cp_parser_cv_qualifier_opt (cp_parser* parser)
+   Returns a bitmask representing the cv-qualifiers.  */
+
+static cp_cv_quals
+cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 {
-  cp_token *token;
-  tree cv_qualifier = NULL_TREE;
+  cp_cv_quals cv_quals = TYPE_UNQUALIFIED;
 
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  /* See if it's a cv-qualifier.  */
-  switch (token->keyword)
+  while (true)
     {
-    case RID_CONST:
-    case RID_VOLATILE:
-    case RID_RESTRICT:
-      /* Save the value of the token.  */
-      cv_qualifier = token->value;
-      /* Consume the token.  */
-      cp_lexer_consume_token (parser->lexer);
-      break;
+      cp_token *token;
+      cp_cv_quals cv_qualifier;
+      
+      /* Peek at the next token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+      /* See if it's a cv-qualifier.  */
+      switch (token->keyword)
+	{
+	case RID_CONST:
+	  cv_qualifier = TYPE_QUAL_CONST;
+	  break;
+	  
+	case RID_VOLATILE:
+	  cv_qualifier = TYPE_QUAL_VOLATILE;
+	  break;
+	  
+	case RID_RESTRICT:
+	  cv_qualifier = TYPE_QUAL_RESTRICT;
+	  break;
+	  
+	default:
+	  cv_qualifier = TYPE_UNQUALIFIED;
+	  break;
+	}
+      
+      if (!cv_qualifier)
+	break;
 
-    default:
-      break;
+      if (cv_quals & cv_qualifier)
+	{
+	  error ("duplicate cv-qualifier");
+	  cp_lexer_purge_token (parser->lexer);
+	}
+      else
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cv_quals |= cv_qualifier;
+	}
     }
 
-  return cv_qualifier;
+  return cv_quals;
 }
 
 /* Parse a declarator-id.
