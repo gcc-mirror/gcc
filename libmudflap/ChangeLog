@@ -1,3 +1,19 @@
+2004-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Handle multilibs, support
+	--enable-version-specific-runtime-libs.
+	* Makefile.am (lib_LTLIBRARIES): Rename to ...
+        (toolexeclib_LTLIBRARIES): this for multilib support.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* aclocal.m4: Regenerated.
+
+2004-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Handle
+	multilibs, using multilib directory instead of hardcoded path.
+	Set LD_RUN_PATH.
+
 2004-05-21  Frank Ch. Eigler  <fche@redhat.com>
 
 	* Makefile.am (AM_MAKEFLAGS): Pass RUNTESTFLAGS.
@@ -112,7 +128,7 @@
 
 	* configure.in: Reorganize check for <pthread.h>.
 	* configure: Regenerated.
-	
+
 2003-11-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* mf-runtime.c (_ALL_SOURCE): Define for AIX.
@@ -217,7 +233,7 @@
 2003-06-19  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-hooks.c (struct pthread_info): Add "thread_errno" field.
-	(__mf_pthread_spawner, __mf_pthread_cleanup): Use it with GUESS 
+	(__mf_pthread_spawner, __mf_pthread_cleanup): Use it with GUESS
 	libmudflap object type.
 	* mf-runtime.c (__mfu_unregister): Correct cemetary logic to avoid
 	crashes on unregistering STATIC objects.
@@ -248,12 +264,12 @@
 
 2003-06-11  Frank Ch. Eigler  <fche@redhat.com>
 
-	* mf-heuristics.c (__mf_heuristic_check): Disable stack_bounds 
+	* mf-heuristics.c (__mf_heuristic_check): Disable stack_bounds
 	heuristic for threaded case, and for non-x86-linux targets.
 	* mf-hooks.c (__mf_0fn_calloc): Provide a working dummy implementation
 	for use during pre-main() program startup.
 	(__mf_0fn_*): Make these functions non-static.
-	* mf-impl.h (DECLARE, CALL_REAL): Support calls to 0fn backup hook 
+	* mf-impl.h (DECLARE, CALL_REAL): Support calls to 0fn backup hook
 	functions.
 	* mf-runtime.c (__mf_state): Set initial state to "starting".
 	(__mf_resolve_single_dynamic): Tolerate repeated calls for same symbol.
@@ -263,8 +279,8 @@
 
 	* testsuite/libmudflap.c/pass38-frag.c: New test case.
 	* testsuite/libmudflap.cth/pass37-frag.c: Improved test.
-	
-	* acinclude.m4: Add comments with aoliva's concerns about x86_64 
+
+	* acinclude.m4: Add comments with aoliva's concerns about x86_64
 	pass_all.
 	* aclocal.m4, configure: Regenerated.
 
@@ -331,7 +347,7 @@
 	(__mfu_report): Print the two new counts.
 	* testsuite/lib/libmudflap.exp:	Filter out junk ld/pthreads messages.
 	* testsuite/libmudfap.cth/cthfrags.exp: New test driver.
-	* testsuite/libmudflap.cth/pass37-frag.c: New pthreads test. 
+	* testsuite/libmudflap.cth/pass37-frag.c: New pthreads test.
 	* testsuite/libmudfap.cth/cfrags.exp: Adapt to new libmudflap
 	option defaults.
 
@@ -371,7 +387,7 @@
 	(__mf_usage): Check for -lpthread presence.
 	(__mf_unregister): Confirm matching unregistration base.
 	(__mf_find_objects_rec): Reduce unnecessary recursion.
-	* mf-runtime.h.in: Add "nothrow" attribute to functions.  Add 
+	* mf-runtime.h.in: Add "nothrow" attribute to functions.  Add
 	#defines for new hook functions.
 	* mf-impl.h: Corresponding changes.
 	* config.h.in, configure, Makefile.in: Regenerated.
@@ -593,7 +609,7 @@
 	* mf-hooks.c: Don't include <execinfo.h> any more.
 	* mf-runtime.c (__mf_set_options): Call more stdlib functions
 	via CALL_REAL.
-	(__mf_backtrace): Provide alternate baby implementation in 
+	(__mf_backtrace): Provide alternate baby implementation in
 	absence of glibc.
 	* test/mf-driver.c: Portability tweaks.
 	* acinclude.m4: New file, containing top level libtool.m4.
@@ -604,19 +620,19 @@
 	* mf-runtime.h.in (HAVE_UINTPTR_T): Define unconditionally.
 
 2002-11-08  Frank Ch. Eigler  <fche@redhat.com>
-	
+
 	* mf-runtime.c (options): Add new "wipe-heap", "wipe-stack"
 	options.
 	(__mf_unregister): Implement stack/heap object wiping.
 	(__mf_set_options): Renamed from __mf_process_opts.
-	(__mf_uncache_object): Change arg type, correct callers. 
+	(__mf_uncache_object): Change arg type, correct callers.
 	* mf-impl.h: Corresponding changes.
 	* mf-hooks.c (realloc): Save/restore heap-wiping flag.
 	* mf-runtime.h.in (__mf_set_options): Extend public API.
 	* test/pass26-frag.c: New test for stack wiping.
 	* Makefile.am (TESTS): Run it.
 	* Makefile.in: Regenerated.
-	
+
 2002-11-07  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-runtime.h.in (__mf_watch, __mf_unwatch): Extend public API.
@@ -631,7 +647,7 @@
 	(__mf_unregister): Unlink object explicitly before uncaching.
 	* test/fail21-frag.c, pass25-frag.c: New tests.
 	* Makefile.in, aclocal.m4: Regenerated.
-	
+
 2002-11-05  Frank Ch. Eigler  <fche@redhat.com>
 
 	* test/fail20-frag.c: New test for NULL pointer dereferencing.
@@ -641,8 +657,8 @@
 	build tree from config.h and new file mf-runtime.h.in.
 	* mf-runtime.h.in: Renamed from mf-runtime.h.  Tweak uintptr_t decl.
 	* Makefile.in, configure, config.h.in: Regenerated.
-	* mf-hooks.c: Add #undef for wrapped glibc str*/mem* macros.	
-	* mf-runtime.c (options, __mf_set_default_options): Support new 
+	* mf-hooks.c: Add #undef for wrapped glibc str*/mem* macros.
+	* mf-runtime.c (options, __mf_set_default_options): Support new
 	default "abbreviate" option.
 	(__mf_object.description_epoch): New field.
 	(__mf_describe_object): Conditionally abbreviate objects already
@@ -732,7 +748,7 @@
 	entries to avoid repeat registration.
 	* mf-runtime.c (__mf_object_cemetary): Don't bother bury GUESS regions.
 	(__mf_register, __mf_unregister): Rewrite GUESS handling logic.
-	
+
 2002-09-09  Frank Ch. Eigler  <fche@redhat.com>
 
 	* Makefile.am: Create test sources with #include, not cat>>.
@@ -752,7 +768,7 @@
 	overlapping object search.
 	(__mf_violation): Likewise for nearby objects.
 	Improve nearby-object listing.
-	
+
 	cleanup:
 	* mf-runtime.c, mf-hooks.c: Remove "{{{"/"}}}" folding marks.
 	* mf-heuristics.c (__mf_heuristic_check): Tweak message.
@@ -794,7 +810,7 @@
 	* Makefile.in: Regenerated.
 
 	Heuristics reorganization:
-	* mf-heuristics.c (__mf_register_ro_sections, __mf_init_heuristics): 
+	* mf-heuristics.c (__mf_register_ro_sections, __mf_init_heuristics):
 	Remove these functions.  Update callers.
 	(__mf_heuristic_check): Incorporate all the various heuristics.
 	Encode cacheability/retry judgement into trinary return value.
@@ -870,10 +886,10 @@
 
 2002-08-20  Graydon Hoare  <graydon@redhat.com>
 
-	* mf-runtime.h: New option: stack_bound (heuristic). 
+	* mf-runtime.h: New option: stack_bound (heuristic).
 	Move some macros out of implementation files.
 	* mf-runtime.c: New option string: -stack-bound.
-	Unify recursion protection with hooks. 
+	Unify recursion protection with hooks.
 	Add more logging.
 	(__mf_check): Call __mf_heuristic_check.
 	(__mf_process_opts): Fix "no-" processing.
@@ -911,7 +927,7 @@
 	(__mf_register): Handle guessed regions, splitting
 	guesses when new registrations arrive.
 	(__mf_unregister): Do not unregister guesses.
-	* mf-runtime.h: Move convenience macros around, 
+	* mf-runtime.h: Move convenience macros around,
 	declare new option fields. Add __MF_TYPE_GUESS.
 	* mf-hooks.c (__wrap_*alloc): Use crumple zones.
 	(__wrap_free): Call __real_free for deferred frees.
@@ -974,4 +990,3 @@
 	* mf-hooks.c: New file: interposed libc functions.
 	* mf-runtime.c: New file: bulk of runtime.
 	* mf-runtime.h: New file: public functions.
-

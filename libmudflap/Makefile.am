@@ -16,7 +16,7 @@ else
 libmudflapth =
 endif
 
-lib_LTLIBRARIES = libmudflap.la $(libmudflapth)
+toolexeclib_LTLIBRARIES = libmudflap.la $(libmudflapth)
 include_HEADERS = mf-runtime.h
 
 libmudflap_la_SOURCES = \

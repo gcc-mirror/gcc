@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ proc libmudflap-init { language } {
     }
     append ld_library_path ":${blddir}/.libs"
 
-    set libs "-L../.libs -L../../../gcc"
+    set libs "-L${blddir}/.libs"
     set cxxflags "-ggdb3 -DDEBUG_ASSERT"
     set includes "-I${srcdir} -I.."
 
@@ -87,7 +87,7 @@ proc libmudflap-init { language } {
             # c++ libs are included by --build-cxx below
             set cxx "[exec sh $cxxflags_file --build-cxx]"
         } else {
-            lappend libs "-L../../libstdc++-v3/src/.libs"
+            lappend libs "-L${cxxblddir}src/.libs"
             lappend includes "-I../../libstdc++-v3/include"
         }
     }
@@ -95,6 +95,7 @@ proc libmudflap-init { language } {
     verbose -log "ld_library_path=$ld_library_path"
     setenv  LD_LIBRARY_PATH     $ld_library_path
     setenv  SHLIB_PATH          $ld_library_path
+    setenv  LD_RUN_PATH         $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
 
