@@ -4390,6 +4390,68 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  }
 	break;
 
+      case 20:
+	/* Very long branch.  Right now we only handle these when not
+	   optimizing.  See "jump" pattern in pa.md for details.  */
+	if (optimize)
+	  abort ();
+
+	/* Create a reversed conditional branch which branches around
+	   the following insns.  */
+	if (negated)
+	  strcpy (buf, "com%I2b,%S3,n %2,%1,.+20");
+	else
+	  strcpy (buf, "com%I2b,%B3,n %2,%1,.+20");
+	output_asm_insn (buf, operands);
+
+	/* Output an insn to save %r1.  */
+	output_asm_insn ("stw %%r1,-16(%%r30)", operands);
+
+	/* Now output a very long branch to the original target.  */
+	output_asm_insn ("ldil L'%l0,%%r1\n\tbe R'%l0(%%sr4,%%r1)", operands);
+
+	/* Now restore the value of %r1 in the delay slot.  We're not
+	   optimizing so we know nothing else can be in the delay slot.  */
+	return "ldw -16(%%r30),%%r1";
+
+      case 28:
+	/* Very long branch when generating PIC code.  Right now we only
+	   handle these when not optimizing.  See "jump" pattern in pa.md
+	   for details.  */
+	if (optimize)
+	  abort ();
+
+	/* Create a reversed conditional branch which branches around
+	   the following insns.  */
+	if (negated)
+	  strcpy (buf, "com%I2b,%S3,n %2,%1,.+28");
+	else
+	  strcpy (buf, "com%I2b,%B3,n %2,%1,.+28");
+	output_asm_insn (buf, operands);
+
+	/* Output an insn to save %r1.  */
+	output_asm_insn ("stw %%r1,-16(%%r30)", operands);
+
+	/* Now output a very long PIC branch to the original target.  */
+	{
+	  rtx xoperands[5];
+
+	  xoperands[0] = operands[0];
+	  xoperands[1] = operands[1];
+	  xoperands[2] = operands[2];
+	  xoperands[3] = operands[3];
+	  xoperands[4] = gen_label_rtx ();
+
+	  output_asm_insn ("bl .+8,%%r1\n\taddil L'%l0-%l4,%%r1", xoperands);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				     CODE_LABEL_NUMBER (xoperands[4]));
+	  output_asm_insn ("ldo R'%l0-%l4(%%r1),%%r1\n\tbv 0(%%r1)", xoperands);
+	}
+
+	/* Now restore the value of %r1 in the delay slot.  We're not
+	   optimizing so we know nothing else can be in the delay slot.  */
+	return "ldw -16(%%r30),%%r1";
+	
       default:
 	abort();
     }
