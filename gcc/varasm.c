@@ -2568,12 +2568,18 @@ copy_constant (exp)
 {
   switch (TREE_CODE (exp))
     {
+    case ADDR_EXPR:
+      /* For ADDR_EXPR, we do not want to copy the decl whose address
+	 is requested.  We do want to copy constants though.  */
+      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == 'c')
+	return build1 (TREE_CODE (exp), TREE_TYPE (exp),
+		       copy_constant (TREE_OPERAND (exp, 0)));
+      else
+	return copy_node (exp);
+
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
-    case ADDR_EXPR:
-      /* For ADDR_EXPR, we do not want to copy the decl
-	 whose address is requested.  */
       return copy_node (exp);
 
     case COMPLEX_CST:
