@@ -666,16 +666,11 @@ num_insns_constant_wide (value)
   if (((unsigned HOST_WIDE_INT)value + 0x8000) < 0x10000)
     return 1;
 
-#if HOST_BITS_PER_WIDE_INT == 32
   /* constant loadable with {cau|addis} */
-  else if ((value & 0xffff) == 0)
+  else if (CONST_OK_FOR_LETTER_P (value, 'L'))
     return 1;
 
-#else
-  /* constant loadable with {cau|addis} */
-  else if ((value & 0xffff) == 0 && (value & ~0xffffffff) == 0)
-    return 1;
-
+#if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_64BIT)
     {
       HOST_WIDE_INT low  = value & 0xffffffff;
@@ -880,7 +875,7 @@ mem_or_easy_const_operand (op, mode)
 }
 
 /* Return 1 if the operand is either a non-special register or an item
-   that can be used as the operand of an SI add insn.  */
+   that can be used as the operand of a `mode' add insn.  */
 
 int
 add_operand (op, mode)
@@ -889,7 +884,7 @@ add_operand (op, mode)
 {
   return (reg_or_short_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
-	      && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0));
+	      && CONST_OK_FOR_LETTER_P (INTVAL(op), 'L')));
 }
 
 /* Return 1 if OP is a constant but not a valid add_operand.  */
@@ -901,7 +896,7 @@ non_add_cint_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
+	  && ! CONST_OK_FOR_LETTER_P (INTVAL(op), 'L'));
 }
 
 /* Return 1 if the operand is a non-special register or a constant that
@@ -914,8 +909,10 @@ logical_operand (op, mode)
 {
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
-	      && ((INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0)));
+	      && ((INTVAL (op) & GET_MODE_MASK (mode)
+		   & (~ (HOST_WIDE_INT) 0xffff)) == 0
+		  || (INTVAL (op) & GET_MODE_MASK (mode)
+		      & (~ (HOST_WIDE_INT) 0xffff0000)) == 0)));
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -924,11 +921,13 @@ logical_operand (op, mode)
 int
 non_logical_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
+	  && (INTVAL (op) & GET_MODE_MASK (mode) &
+	      (~ (HOST_WIDE_INT) 0xffff)) != 0
+	  && (INTVAL (op) & GET_MODE_MASK (mode) &
+	      (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
 }
 
 /* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
@@ -1198,7 +1197,7 @@ small_data_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
 #if TARGET_ELF
-  rtx sym_ref, const_part;
+  rtx sym_ref;
 
   if (rs6000_sdata == SDATA_NONE || rs6000_sdata == SDATA_DATA)
     return 0;
@@ -2474,7 +2473,7 @@ ccr_bit (op, scc_p)
 
 struct rtx_def *
 rs6000_got_register (value)
-     rtx value;
+     rtx value ATTRIBUTE_UNUSED;
 {
   /* The second flow pass currently (June 1999) can't update regs_ever_live
      without disturbing other parts of the compiler, so update it here to
@@ -2627,7 +2626,7 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%b value");
 
-      fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
       return;
 
     case 'B':
@@ -2713,7 +2712,7 @@ print_operand (file, x, code)
       /* If constant, output low-order five bits.  Otherwise,
 	 write normally. */
       if (INT_P (x))
-	fprintf (file, "%d", INT_LOWPART (x) & 31);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 31);
       else
 	print_operand (file, x, 0);
       return;
@@ -2722,7 +2721,7 @@ print_operand (file, x, code)
       /* If constant, output low-order six bits.  Otherwise,
 	 write normally. */
       if (INT_P (x))
-	fprintf (file, "%d", INT_LOWPART (x) & 63);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 63);
       else
 	print_operand (file, x, 0);
       return;
@@ -2759,7 +2758,7 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%k value");
 
-      fprintf (file, "%d", ~ INT_LOWPART (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INT_LOWPART (x));
       return;
 
     case 'L':
@@ -2903,7 +2902,7 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%s value");
 
-      fprintf (file, "%d", (32 - INT_LOWPART (x)) & 31);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INT_LOWPART (x)) & 31);
       return;
 
     case 'S':
@@ -3006,7 +3005,8 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%u value");
 
-      fprintf (file, "0x%x", (INT_LOWPART (x) >> 16) & 0xffff);
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, 
+	       (INT_LOWPART (x) >> 16) & 0xffff);
       return;
 
     case 'v':
@@ -3076,7 +3076,8 @@ print_operand (file, x, code)
       /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, "%d", ((INT_LOWPART (x) & 0xffff) ^ 0x8000) - 0x8000);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+		 ((INT_LOWPART (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	print_operand (file, x, 0);
       return;
@@ -3085,7 +3086,7 @@ print_operand (file, x, code)
       /* If constant, low-order 16 bits of constant, unsigned.
 	 Otherwise, write normally.  */
       if (INT_P (x))
-	fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
       else
 	print_operand (file, x, 0);
       return;
@@ -3221,7 +3222,10 @@ print_operand_address (file, x)
 		 reg_names[ REGNO (XEXP (x, 1)) ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    fprintf (file, "%d(%s)", INTVAL (XEXP (x, 1)), reg_names[ REGNO (XEXP (x, 0)) ]);
+    {
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (XEXP (x, 1)));
+      fprintf (file, "(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
+    }
 #if TARGET_ELF
   else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
            && CONSTANT_P (XEXP (x, 1)))
@@ -5649,7 +5653,7 @@ rs6000_longcall_ref (call_ref)
 
 void
 rs6000_select_rtx_section (mode, x)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx x;
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x))
