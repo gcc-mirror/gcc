@@ -1,4 +1,7 @@
 2004-03-04  Stuart Hastings  <stuart@apple.com>
+	* gcc/doc/invoke.texi: Document -mlongcall for Darwin/PPC.
+
+2004-03-04  Stuart Hastings  <stuart@apple.com>
 	* gcc/config/i386/darwin.h: Darwin/x86 doesn't support CPUs before
 	686, tell Darwin assembler to allow prefetch insns, non-empty def
 	of SUBTARGET_OPTION_TRANSLATE_TABLE.
