@@ -1145,6 +1145,11 @@ do_pragma (cpp_reader *pfile)
   const cpp_token *token, *pragma_token = pfile->cur_token;
   unsigned int count = 1;
 
+  /* Save the current position so that defer_pragmas mode can
+     copy the entire current line to a string.  It will not work
+     to use _cpp_backup_tokens as that does not reverse buffer->cur.  */
+  const uchar *line_start = CPP_BUFFER (pfile)->cur;
+
   pfile->state.prevent_expansion++;
 
   token = cpp_get_token (pfile);
@@ -1174,13 +1179,11 @@ do_pragma (cpp_reader *pfile)
   else if (CPP_OPTION (pfile, defer_pragmas))
     {
       /* Squirrel away the pragma text.  Pragmas are newline-terminated. */
-      const uchar *line_start, *line_end;
+      const uchar *line_end;
       uchar *s;
       cpp_string body;
       cpp_token *ptok;
 
-      _cpp_backup_tokens (pfile, count);
-      line_start = CPP_BUFFER (pfile)->cur;
       line_end = ustrchr (line_start, '\n');
 
       body.len = (line_end - line_start) + 1;
