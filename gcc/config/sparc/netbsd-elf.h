@@ -336,3 +336,7 @@ Boston, MA 02111-1307, USA.  */
 	|| TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc */
 
 #endif	/* SPARC_BI_ARCH */
+
+/* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP

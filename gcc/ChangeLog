@@ -1,3 +1,25 @@
+2002-04-08  David S. Miller  <davem@redhat.com>
+
+	PR target/6082
+	* config/sparc/freebsd.h (SPARC_DEFAULT_CMODEL): Set to CM_MEDLOW
+
+	Make init_priority work on Sparc when using GNU ld.
+	* config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/netbsd-elf.h, config/sparc/freebsd.h
+	(CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Undefine.
+	* config/sparc/sol2-gld.h: New file to do the same.
+	* config.gcc (sparc*-*-solaris2*): If gnu_ld=yes add
+	sparc/sol2-gld.h to tm_file.
+
+	PR optimization/4328
+	* config/sparc/sparc.h (EXTRA_CONSTRAINT): Add new constraint 'W'.
+	* doc/md.texi: Document it.
+	* config/sparc/sparc.md (movdi_insn_sp64_novis,
+	movdi_insn_sp64_vis, movdf_insn_sp32, movdf_insn_v9only_novis,
+	movdf_insn_v9only_vis, movdf_insn_sp64_novis,
+	movdf_insn_sp64_vis): Use it as MEM constraing with 'e' registers.
+	* config/sparc/sparc.c (mem_min_alignment): Fix comment.
+
 2002-04-08  Andreas Jaeger  <aj@suse.de>
 
 	* stmt.c (expand_asm_operands): Revert last patch from Richard
