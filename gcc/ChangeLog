@@ -1,3 +1,8 @@
+2002-04-24  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (HAVE_GAS_HIDDEN): Detect sparc binutils 2.12
+	linker bug.
+
 2002-04-24  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2.h (enum dwarf_attribute): Add DW_AT_GNU_vector.

@@ -1494,6 +1494,94 @@ elif test x$gcc_cv_as != x; then
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
 fi
+
+# Sparc binutils 2.12.0 has broken .hidden support in the linker.
+# I've no idea how to check for this non-native...
+if test x"$gcc_cv_as_hidden" = xyes \
+   && test "$target" = "$host" \
+   && test "$target" = "$build"; then
+  case "$target" in
+    sparc*-*-*)
+	# Compiled from 
+	#	void func1 (void) { }
+	#	void * func2 (void) { return (void *) func1; }
+	#	int main() { return func2() ? 0 : 1; }
+	#	asm(".hidden func1");
+	# but we don't know what the bootstrap compiler is, whether
+	# it can handle asm(), what the option for pic code is.
+	# In addition, the code has been tweaked slightly to run in
+	# both 32 and 64-bit mode.
+changequote(,)dnl
+	cat > conftest.s <<'EOF'
+	.section ".text"
+	.align 4
+	.global func1
+	.type	 func1,#function
+	.proc	020
+func1:
+	retl
+	nop
+.LLfe1:
+	.size	 func1,.LLfe1-func1
+	.align 4
+.LLGETPC0:
+	retl
+	add %o7,%l7,%l7
+	.align 4
+	.global func2
+	.type	 func2,#function
+	.proc	0120
+func2:
+	save	%sp, -192, %sp
+	sethi	%hi(func1), %o0
+	sethi	%hi(_GLOBAL_OFFSET_TABLE_-4), %l7
+	call	.LLGETPC0
+	add	%l7, %lo(_GLOBAL_OFFSET_TABLE_+4), %l7
+	or	%o0, %lo(func1), %o0
+	ldn	[%l7+%o0], %i0
+	ret
+	restore
+.LLfe2:
+	.size	 func2,.LLfe2-func2
+	.align 4
+	.global main
+	.type	 main,#function
+	.proc	04
+main:
+	!#PROLOGUE# 0
+	save	%sp, -192, %sp
+	call	func2, 0
+	 nop
+	subcc	%g0, %o0, %g0
+	subx	%g0, -1, %i0
+	ret
+	restore
+.LLfe3:
+	.size	 main,.LLfe3-main
+	.hidden func1
+EOF
+	$gcc_cv_as -o conftest.o -KPIC conftest.s
+	$CC -o conftest conftest.o -v 2> conftest-ld1
+	if grep collect2 conftest-ld1 > conftest-ld2; then
+	   :
+	elif grep /usr/ccs/bin/ld conftest-ld1 2> conftest-ld2; then
+	   :
+	else
+	   AC_MSG_ERROR([internal error -- confused about linking])
+	   exit 1
+	fi
+	$gcc_cv_ld `sed 's/^ *[^ ]* //' conftest-ld2` > /dev/null 2>&1
+	if (./conftest) >/dev/null 2>&1 ; then
+	   :
+	else
+	   gcc_cv_as_hidden=no
+	fi
+	rm -f conftest*
+changequote([,])dnl
+	;;
+  esac
+fi
+
 if test x"$gcc_cv_as_hidden" = xyes; then
 	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
 		[Define if your assembler supports .hidden.])
