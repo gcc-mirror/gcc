@@ -9869,7 +9869,14 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	    }
 
 	  if (not_accessible_p (TREE_TYPE (decl), decl, type, 0))
- 	    return not_accessible_field_error (qual_wfl, decl);
+	    {
+	      parse_error_context
+		(qual_wfl, "Can't access %s class '%s' from '%s'",
+		 java_accstring_lookup (get_access_flags_from_decl (decl)),
+		 IDENTIFIER_POINTER (DECL_NAME (decl)),
+		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
+	      return 1;
+	    }
 	  check_deprecation (qual_wfl, decl);
 
 	  type = TREE_TYPE (decl);
