@@ -1,3 +1,9 @@
+2003-11-21  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (has_return_type): Skip qualifiers when checking
+	whether we have a template.
+	* testsuite/demangle-expected: Add four new tests.
+
 2003-11-20  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* testsuite/demangle-expected: Minor changes to match output of
