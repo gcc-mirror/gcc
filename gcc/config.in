@@ -297,12 +297,6 @@
 /* Define to enable the use of a default assembler. */
 #undef DEFAULT_ASSEMBLER
 
-/* Define if your compiler understands volatile. */
-#undef HAVE_VOLATILE
-
-/* Define if your compiler supports the `long double' type. */
-#undef HAVE_LONG_DOUBLE
-
 /* Define if your compiler supports the `long long' type. */
 #undef HAVE_LONG_LONG
 

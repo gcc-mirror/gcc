@@ -86,11 +86,7 @@ struct ggc_mem
   /* Make sure the data is reasonably aligned.  */
   union {
     HOST_WIDEST_INT i;
-#ifdef HAVE_LONG_DOUBLE
     long double d;
-#else
-    double d;
-#endif
   } u;
 };
 

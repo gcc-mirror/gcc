@@ -312,15 +312,4 @@ So instead we use the macro below and test it against specific values.  */
 #define __extension__
 #endif
 
-/* Bootstrap support:  Adjust certain macros defined by Autoconf,
-   which are only valid for the stage1 compiler.  If we detect
-   a modern version of GCC, we are probably in stage2 or beyond,
-   so unconditionally reset the values.  Note that const, inline,
-   etc. have been dealt with above.  */
-#if (GCC_VERSION >= 2007)
-# ifndef HAVE_LONG_DOUBLE
-#  define HAVE_LONG_DOUBLE 1
-# endif
-#endif /* GCC >= 2.7 */
-
 #endif	/* ansidecl.h	*/

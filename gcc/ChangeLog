@@ -1,3 +1,16 @@
+2003-06-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alloc-pool.c: Don't check HAVE_LONG_DOUBLE.
+	* fixinc/gnu-regex.c: Don't define `volatile'.
+	* ggc-page.c: Don't check HAVE_LONG_DOUBLE.
+	* ggc-simple.c: Likewise.
+	* system.h: Don't define `volatile'.
+
+	* aclocal.m4 (gcc_AC_C_VOLATILE, gcc_AC_C_LONG_DOUBLE): Delete.
+	* configure.in (gcc_AC_C_VOLATILE, gcc_AC_C_LONG_DOUBLE): Don't
+	call these macros.
+	* config.in, configure: Regenerated.
+
 2003-06-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/ia64/ia64.c (ia64_expand_builtin, case IA64_BUILTIN_BSP):
