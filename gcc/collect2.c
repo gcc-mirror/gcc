@@ -79,6 +79,19 @@ extern int sys_nerr;
 #define X_OK 1
 #endif
 
+#ifndef WIFSIGNALED
+#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
+#endif
+#ifndef WTERMSIG
+#define WTERMSIG(S) ((S) & 0x7f)
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(S) (((S) & 0xff) == 0)
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
+#endif
+
 /* On MSDOS, write temp files in current dir
    because there's no place else we can expect to use.  */
 #ifdef __MSDOS__
@@ -1254,11 +1267,9 @@ do_wait (prog)
   wait (&status);
   if (status)
     {
-      int sig = status & 0x7F;
-      int ret;
-
-      if (sig != -1 && sig != 0)
+      if (WIFSIGNALED (status))
 	{
+	  int sig = WTERMSIG (status);
 #ifdef NO_SYS_SIGLIST
 	  error ("%s terminated with signal %d %s",
 		 prog,
@@ -1275,11 +1286,14 @@ do_wait (prog)
 	  my_exit (127);
 	}
 
-      ret = ((status & 0xFF00) >> 8);
-      if (ret != -1 && ret != 0)
+      if (WIFEXITED (status))
 	{
-	  error ("%s returned %d exit status", prog, ret);
-	  my_exit (ret);
+	  int ret = WEXITSTATUS (status);
+	  if (ret != 0)
+	    {
+	      error ("%s returned %d exit status", prog, ret);
+	      my_exit (ret);
+	    }
 	}
     }
 }

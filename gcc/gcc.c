@@ -60,6 +60,19 @@ compilation is specified by a string called a "spec".  */
 #define X_OK 1
 #endif
 
+#ifndef WIFSIGNALED
+#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
+#endif
+#ifndef WTERMSIG
+#define WTERMSIG(S) ((S) & 0x7f)
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(S) (((S) & 0xff) == 0)
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
+#endif
+
 /* Add prototype support.  */
 #ifndef PROTO
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
@@ -2262,13 +2275,15 @@ execute ()
 	      if (commands[j].pid == pid)
 		prog = commands[j].prog;
 
-	    if ((status & 0x7F) != 0)
+	    if (WIFSIGNALED (status))
 	      {
 		fatal ("Internal compiler error: program %s got fatal signal %d",
-		       prog, (status & 0x7F));
+		       prog, WTERMSIG (status));
 		signal_count++;
+		ret_code = -1;
 	      }
-	    if (((status & 0xFF00) >> 8) >= MIN_FATAL_STATUS)
+	    else if (WIFEXITED (status)
+		     && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
 	      ret_code = -1;
 	  }
       }

@@ -132,6 +132,19 @@ typedef char * const_pointer_type;
 #define O_RDONLY        0
 #define O_WRONLY        1
 
+#ifndef WIFSIGNALED
+#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
+#endif
+#ifndef WTERMSIG
+#define WTERMSIG(S) ((S) & 0x7f)
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(S) (((S) & 0xff) == 0)
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
+#endif
+
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
 
@@ -2090,16 +2103,16 @@ gen_aux_info_file (base_filename)
 		     pname, sys_errlist[errno]);
             return 0;
           }
-	if ((wait_status & 0x7F) != 0)
+	if (WIFSIGNALED (wait_status))
 	  {
 	    fprintf (stderr, "%s: subprocess got fatal signal %d",
-		     pname, (wait_status & 0x7F));
+		     pname, WTERMSIG (wait_status));
 	    return 0;
 	  }
-	if (((wait_status & 0xFF00) >> 8) != 0)
+	if (WIFEXITED (wait_status) && WEXITSTATUS (wait_status) != 0)
 	  {
 	    fprintf (stderr, "%s: %s exited with status %d\n",
-		     pname, base_filename, ((wait_status & 0xFF00) >> 8));
+		     pname, base_filename, WEXITSTATUS (wait_status));
 	    return 0;
 	  }
 	return 1;
