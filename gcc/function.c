@@ -252,7 +252,6 @@ static rtx instantiate_new_reg (rtx, HOST_WIDE_INT *);
 static int instantiate_virtual_regs_1 (rtx *, rtx, int);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, enum machine_mode, tree);
-static tree *identify_blocks_1 (rtx, tree *, tree *, tree *);
 static void reorder_blocks_1 (rtx, tree, varray_type *);
 static void reorder_fix_fragments (tree);
 static int all_blocks (tree, tree *);
@@ -5823,93 +5822,6 @@ fix_lexical_addr (rtx addr, tree var)
   return plus_constant (base, displacement);
 }
 
-/* Put all this function's BLOCK nodes including those that are chained
-   onto the first block into a vector, and return it.
-   Also store in each NOTE for the beginning or end of a block
-   the index of that block in the vector.
-   The arguments are BLOCK, the chain of top-level blocks of the function,
-   and INSNS, the insn chain of the function.  */
-
-void
-identify_blocks (void)
-{
-  int n_blocks;
-  tree *block_vector, *last_block_vector;
-  tree *block_stack;
-  tree block = DECL_INITIAL (current_function_decl);
-
-  if (block == 0)
-    return;
-
-  /* Fill the BLOCK_VECTOR with all of the BLOCKs in this function, in
-     depth-first order.  */
-  block_vector = get_block_vector (block, &n_blocks);
-  block_stack = xmalloc (n_blocks * sizeof (tree));
-
-  last_block_vector = identify_blocks_1 (get_insns (),
-					 block_vector + 1,
-					 block_vector + n_blocks,
-					 block_stack);
-
-  /* If we didn't use all of the subblocks, we've misplaced block notes.  */
-  /* ??? This appears to happen all the time.  Latent bugs elsewhere?  */
-  if (0 && last_block_vector != block_vector + n_blocks)
-    abort ();
-
-  free (block_vector);
-  free (block_stack);
-}
-
-/* Subroutine of identify_blocks.  Do the block substitution on the
-   insn chain beginning with INSNS.
-
-   BLOCK_STACK is pushed and popped for each BLOCK_BEGIN/BLOCK_END pair.
-   BLOCK_VECTOR is incremented for each block seen.  */
-
-static tree *
-identify_blocks_1 (rtx insns, tree *block_vector, tree *end_block_vector,
-		   tree *orig_block_stack)
-{
-  rtx insn;
-  tree *block_stack = orig_block_stack;
-
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
-    {
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-	    {
-	      tree b;
-
-	      /* If there are more block notes than BLOCKs, something
-		 is badly wrong.  */
-	      if (block_vector == end_block_vector)
-		abort ();
-
-	      b = *block_vector++;
-	      NOTE_BLOCK (insn) = b;
-	      *block_stack++ = b;
-	    }
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	    {
-	      /* If there are more NOTE_INSN_BLOCK_ENDs than
-		 NOTE_INSN_BLOCK_BEGs, something is badly wrong.  */
-	      if (block_stack == orig_block_stack)
-		abort ();
-
-	      NOTE_BLOCK (insn) = *--block_stack;
-	    }
-	}
-    }
-
-  /* If there are more NOTE_INSN_BLOCK_BEGINs than NOTE_INSN_BLOCK_ENDs,
-     something is badly wrong.  */
-  if (block_stack != orig_block_stack)
-    abort ();
-
-  return block_vector;
-}
-
 /* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
    and create duplicate blocks.  */
 /* ??? Need an option to either create block fragments or to create

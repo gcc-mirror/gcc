@@ -546,9 +546,6 @@ extern int trampolines_created;
    return the `struct function' for it.  */
 struct function *find_function_data (tree);
 
-/* Set NOTE_BLOCK for each block note in the current function.  */
-extern void identify_blocks (void);
-
 /* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
    and create duplicate blocks.  */
 extern void reorder_blocks (void);

@@ -981,7 +981,7 @@ enum insn_note
   NOTE_INSN_DELETED,
 
   /* These are used to mark the beginning and end of a lexical block.
-     See NOTE_BLOCK, identify_blocks and reorder_blocks.  */
+     See NOTE_BLOCK and reorder_blocks.  */
   NOTE_INSN_BLOCK_BEG,
   NOTE_INSN_BLOCK_END,
 
