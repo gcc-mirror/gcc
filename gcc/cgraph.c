@@ -235,6 +235,9 @@ cgraph_remove_node (struct cgraph_node *node)
   if (node->next)
     node->next->previous = node->previous;
   DECL_SAVED_TREE (node->decl) = NULL;
+  DECL_SAVED_INSNS (node->decl) = NULL;
+  DECL_ARGUMENTS (node->decl) = NULL;
+  DECL_INITIAL (node->decl) = error_mark_node;
   slot = 
     htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (node->decl),
 			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
