@@ -458,11 +458,6 @@ private:
       if (key < reference_type || k.key < reference_type)
 	return key == k.key;
 
-      // An initialized type and an uninitialized type are not
-      // compatible.
-      if (isinitialized () != k.isinitialized ())
-	return false;
-
       // The `null' type is convertible to any reference type.
       if (key == null_type || k.key == null_type)
 	return true;
@@ -472,6 +467,11 @@ private:
       if (key == reference_type
 	  && data.klass == &java::lang::Object::class$)
 	return true;
+
+      // An initialized type and an uninitialized type are not
+      // compatible.
+      if (isinitialized () != k.isinitialized ())
+	return false;
 
       // Two uninitialized objects are compatible if either:
       // * The PCs are identical, or
