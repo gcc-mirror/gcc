@@ -2967,9 +2967,6 @@ const char **outfiles;
 /* Used to track if none of the -B paths are used.  */
 static int warn_B;
 
-/* Used to track if standard path isn't used and -b or -V is specified.  */
-static int warn_std;
-
 /* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
 static int *warn_std_ptr = 0;
 
