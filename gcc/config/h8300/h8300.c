@@ -935,7 +935,6 @@ const_costs (r, c)
        'X' handling.
    'S' print operand as a long word
    'T' print operand as a word
-   'U' if operand is incing/decing sp, print l, otherwise nothing.
    'V' find the set bit, and print its number.
    'W' find the clear bit, and print its number.
    'X' print operand as a byte
@@ -999,9 +998,6 @@ print_operand (file, x, code)
      rtx x;
      int code;
 {
-  /* This is used for communication between the 'P' and 'U' codes.  */
-  static const char *last_p;
-
   /* This is used for communication between codes V,W,Z and Y.  */
   static int bitint;
 
@@ -1055,9 +1051,6 @@ print_operand (file, x, code)
 	fprintf (file, "%s", names_big[REGNO (x)]);
       else
 	goto def;
-      break;
-    case 'U':
-      fprintf (file, "%s%s", names_big[REGNO (x)], last_p);
       break;
     case 'V':
       bitint = exact_log2 (INTVAL (x));
