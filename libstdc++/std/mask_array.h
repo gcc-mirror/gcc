@@ -34,54 +34,54 @@
 
 extern "C++" {
 
-template <class _T> class mask_array
+template <class _Tp> class mask_array
 { 
 public:
-    typedef _T value_type;
+    typedef _Tp value_type;
     
-    void operator=  (const valarray<_T>&) const;
-    void operator*= (const valarray<_T>&) const;
-    void operator/= (const valarray<_T>&) const;
-    void operator%= (const valarray<_T>&) const;
-    void operator+= (const valarray<_T>&) const; 
-    void operator-= (const valarray<_T>&) const;
-    void operator^= (const valarray<_T>&) const;  
-    void operator&= (const valarray<_T>&) const;
-    void operator|= (const valarray<_T>&) const;
-    void operator<<=(const valarray<_T>&) const;  
-    void operator>>=(const valarray<_T>&) const; 
-    void operator= (const _T&);
+    void operator=  (const valarray<_Tp>&) const;
+    void operator*= (const valarray<_Tp>&) const;
+    void operator/= (const valarray<_Tp>&) const;
+    void operator%= (const valarray<_Tp>&) const;
+    void operator+= (const valarray<_Tp>&) const; 
+    void operator-= (const valarray<_Tp>&) const;
+    void operator^= (const valarray<_Tp>&) const;  
+    void operator&= (const valarray<_Tp>&) const;
+    void operator|= (const valarray<_Tp>&) const;
+    void operator<<=(const valarray<_Tp>&) const;  
+    void operator>>=(const valarray<_Tp>&) const; 
+    void operator= (const _Tp&);
     
     template<class _Dom>
-    void operator=  (const _Expr<_Dom,_T>&) const;
+    void operator=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator*= (const _Expr<_Dom,_T>&) const;
+    void operator*= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator/= (const _Expr<_Dom,_T>&) const;
+    void operator/= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator%= (const _Expr<_Dom,_T>&) const;
+    void operator%= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator+= (const _Expr<_Dom,_T>&) const;
+    void operator+= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator-= (const _Expr<_Dom,_T>&) const;
+    void operator-= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator^= (const _Expr<_Dom,_T>&) const;
+    void operator^= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator&= (const _Expr<_Dom,_T>&) const;
+    void operator&= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator|= (const _Expr<_Dom,_T>&) const;
+    void operator|= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator<<=(const _Expr<_Dom,_T>&) const;
+    void operator<<=(const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator>>=(const _Expr<_Dom,_T>&) const; 
+    void operator>>=(const _Expr<_Dom,_Tp>&) const; 
     
 private:
-    mask_array (_Array<_T>, size_t, _Array<bool>);
-    friend class valarray<_T>;
+    mask_array (_Array<_Tp>, size_t, _Array<bool>);
+    friend class valarray<_Tp>;
     
     const size_t       _M_sz;
     const _Array<bool> _M_mask;
-    const _Array<_T>   _M_array;
+    const _Array<_Tp>   _M_array;
     
     mask_array (const mask_array&);
     
@@ -94,40 +94,40 @@ template<typename _Tp>
 inline mask_array<_Tp>::mask_array (const mask_array<_Tp>& a)
         : _M_sz (a._M_sz), _M_mask (a._M_mask), _M_array (a._M_array) {}
 
-template<typename _T>
+template<typename _Tp>
 inline 
-mask_array<_T>::mask_array (_Array<_T> __a, size_t __s, _Array<bool> __m)
+mask_array<_Tp>::mask_array (_Array<_Tp> __a, size_t __s, _Array<bool> __m)
         : _M_sz (__s), _M_mask (__m), _M_array (__a) {}
 
-template<typename _T>
+template<typename _Tp>
 inline void
-mask_array<_T>::operator= (const _T& __t)
+mask_array<_Tp>::operator= (const _Tp& __t)
 { __valarray_fill (_M_array, _M_sz, _M_mask, __t); }
     
-template<typename _T>
+template<typename _Tp>
 inline void
-mask_array<_T>::operator= (const valarray<_T>& __v) const
-{ __valarray_copy (_Array<_T> (__v), __v.size (), _M_array, _M_mask); }
+mask_array<_Tp>::operator= (const valarray<_Tp>& __v) const
+{ __valarray_copy (_Array<_Tp> (__v), __v.size (), _M_array, _M_mask); }
 
-template<typename _T>
+template<typename _Tp>
 template<class E>
 inline void
-mask_array<_T>::operator= (const _Expr<E, _T>& __e) const
+mask_array<_Tp>::operator= (const _Expr<E, _Tp>& __e) const
 { __valarray_copy (__e, __e.size (), _M_array, _M_mask); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
-template<typename _T>							\
+template<typename _Tp>							\
 inline void								\
-mask_array<_T>::operator op##= (const valarray<_T>& __v) const		\
+mask_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const		\
 {									\
   _Array_augmented_##name (_M_array, _M_mask, 				\
-                           _Array<_T> (__v), __v.size ());		\
+                           _Array<_Tp> (__v), __v.size ());		\
 }									\
 									\
-template<typename _T> template<class E>					\
+template<typename _Tp> template<class E>					\
 inline void								\
-mask_array<_T>::operator op##= (const _Expr<E, _T>& __e) const		\
+mask_array<_Tp>::operator op##= (const _Expr<E, _Tp>& __e) const		\
 {									\
   _Array_augmented_##name (_M_array, _M_mask, __e, __e.size ());	\
 }
