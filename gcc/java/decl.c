@@ -110,13 +110,13 @@ push_jvm_slot (index, decl)
   while (tmp != NULL_TREE)
     {
       if (TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
-	rtl = DECL_RTL (tmp);
+	rtl = DECL_RTL_IF_SET (tmp);
       if (rtl != NULL)
 	break;
      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
     }
   if (rtl != NULL)
-    DECL_RTL (decl) = rtl;
+    SET_DECL_RTL (decl, rtl);
   else
     {
       if (index >= DECL_MAX_LOCALS (current_function_decl))

@@ -4617,8 +4617,7 @@ tsubst_friend_function (decl, args)
   if (TREE_CODE (new_friend) != TEMPLATE_DECL)
     {
       set_mangled_name_for_decl (new_friend);
-      DECL_RTL (new_friend) = 0;
-      make_decl_rtl (new_friend, NULL_PTR);
+      SET_DECL_RTL (new_friend, NULL_RTX);
     }
       
   if (DECL_NAMESPACE_SCOPE_P (new_friend))
@@ -5870,8 +5869,7 @@ tsubst_decl (t, args, type)
 		  set_mangled_name_for_template_decl (r);
 	      }
 	    
-	    DECL_RTL (r) = 0;
-	    make_decl_rtl (r, NULL_PTR);
+	    SET_DECL_RTL (r, NULL_RTX);
 	    
 	    /* Like grokfndecl.  If we don't do this, pushdecl will
 	       mess up our TREE_CHAIN because it doesn't find a
@@ -6038,7 +6036,7 @@ tsubst_decl (t, args, type)
 	/* Don't try to expand the initializer until someone tries to use
 	   this variable; otherwise we run into circular dependencies.  */
 	DECL_INITIAL (r) = NULL_TREE;
-	DECL_RTL (r) = 0;
+	SET_DECL_RTL (r, NULL_RTX);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
@@ -9765,7 +9763,7 @@ regenerate_decl_from_template (decl, tmpl)
      details.  */
   DECL_TI_TEMPLATE (new_decl) = DECL_TI_TEMPLATE (decl);
   DECL_ASSEMBLER_NAME (new_decl) = DECL_ASSEMBLER_NAME (decl);
-  DECL_RTL (new_decl) = DECL_RTL (decl);
+  COPY_DECL_RTL (decl, new_decl);
   DECL_USE_TEMPLATE (new_decl) = DECL_USE_TEMPLATE (decl);
 
   /* Call duplicate decls to merge the old and new declarations.  */

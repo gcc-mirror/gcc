@@ -413,7 +413,6 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	    }
 	}
 
-      make_decl_rtl (decl, NULL_PTR);
       add_friend (current_class_type, 
 		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl);
       DECL_FRIEND_P (decl) = 1;

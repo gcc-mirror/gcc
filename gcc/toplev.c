@@ -2007,7 +2007,7 @@ check_global_declarations (vec, len)
 	/* Cancel the RTL for this decl so that, if debugging info
 	   output for global variables is still to come,
 	   this one will be omitted.  */
-	DECL_RTL (decl) = NULL;
+	SET_DECL_RTL (decl, NULL_RTX);
 
       /* Warn about any function
 	 declared static but not defined.
@@ -2578,7 +2578,8 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       || TREE_CODE (decl) == FUNCTION_DECL)
     {
       timevar_push (TV_VARCONST);
-      make_decl_rtl (decl, asmspec);
+      if (asmspec)
+	make_decl_rtl (decl, asmspec);
       /* Don't output anything
 	 when a tentative file-scope definition is seen.
 	 But at end of compilation, do output code for them.  */
@@ -2595,14 +2596,15 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
     {
       if (decode_reg_name (asmspec) >= 0)
 	{
-	  DECL_RTL (decl) = 0;
+	  SET_DECL_RTL (decl, NULL_RTX);
 	  make_decl_rtl (decl, asmspec);
 	}
       else
 	{
 	  error ("invalid register name `%s' for register variable", asmspec);
 	  DECL_REGISTER (decl) = 0;
-	  make_decl_rtl (decl, NULL);
+	  if (!top_level)
+	    expand_decl (decl);
 	}
     }
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)

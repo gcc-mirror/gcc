@@ -1845,7 +1845,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	}
 
       /* Keep the old rtl since we can safely use it.  */
-      DECL_RTL (newdecl) = DECL_RTL (olddecl);
+      COPY_DECL_RTL (olddecl, newdecl);
 
       /* Merge the type qualifiers.  */
       if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -3455,7 +3455,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       /* But not if this is a duplicate decl
 	 and we preserved the rtl from the previous one
 	 (which may or may not happen).  */
-      && DECL_RTL (tem) == 0
+      && !DECL_RTL_SET_P (tem)
       && !DECL_CONTEXT (tem))
     {
       if (TREE_TYPE (tem) != error_mark_node
@@ -3598,7 +3598,7 @@ finish_decl (decl, init, asmspec_tree)
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {
       DECL_BUILT_IN_CLASS (decl) = NOT_BUILT_IN;
-      DECL_RTL (decl) = 0;
+      SET_DECL_RTL (decl, NULL_RTX);
       DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
     }
 

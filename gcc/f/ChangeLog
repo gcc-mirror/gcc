@@ -1,3 +1,10 @@
+Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_member_phase_2): Use COPY_DECL_RTL,
+	DECL_RTL_SET_P, etc.
+	(duplicate_decls): Likewise.
+	(start_decl): Likewise.
+	
 Fri Mar  9 22:52:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fini.c (main): Use really_call_malloc, not malloc.

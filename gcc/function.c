@@ -1338,7 +1338,9 @@ put_var_into_stack (decl)
   context = decl_function_context (decl);
 
   /* Get the current rtl used for this object and its original mode.  */
-  reg = TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl) : DECL_RTL (decl);
+  reg = (TREE_CODE (decl) == SAVE_EXPR 
+	 ? SAVE_EXPR_RTL (decl) 
+	 : DECL_RTL_IF_SET (decl));
 
   /* No need to do anything if decl has no rtx yet
      since in that case caller is setting TREE_ADDRESSABLE
@@ -3606,8 +3608,10 @@ instantiate_decls_1 (let, valid_only)
   tree t;
 
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    instantiate_decl (DECL_RTL (t), int_size_in_bytes (TREE_TYPE (t)),
-		      valid_only);
+    if (DECL_RTL_SET_P (t))
+      instantiate_decl (DECL_RTL (t), 
+			int_size_in_bytes (TREE_TYPE (t)),
+			valid_only);
 
   /* Process all subblocks.  */
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
@@ -4353,8 +4357,8 @@ assign_parms (fndecl)
 	  || TREE_CODE (parm) != PARM_DECL
 	  || passed_type == NULL)
 	{
-	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm)
-	    = gen_rtx_MEM (BLKmode, const0_rtx);
+	  SET_DECL_RTL (parm, gen_rtx_MEM (BLKmode, const0_rtx));
+	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm);
 	  TREE_USED (parm) = 1;
 	  continue;
 	}
@@ -4373,7 +4377,8 @@ assign_parms (fndecl)
 	 and avoid the usual things like emit_move_insn that could crash.  */
       if (nominal_mode == VOIDmode)
 	{
-	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm) = const0_rtx;
+	  SET_DECL_RTL (parm, const0_rtx);
+	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm);
 	  continue;
 	}
 
@@ -4669,7 +4674,7 @@ assign_parms (fndecl)
 				     size_stored / UNITS_PER_WORD,
 				     int_size_in_bytes (TREE_TYPE (parm)));
 	    }
-	  DECL_RTL (parm) = stack_parm;
+	  SET_DECL_RTL (parm, stack_parm);
 	}
       else if (! ((! optimize
 		   && ! DECL_REGISTER (parm)
@@ -4701,13 +4706,14 @@ assign_parms (fndecl)
 	     appropriately.  */
 	  if (passed_pointer)
 	    {
-	      DECL_RTL (parm)
-		= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)), parmreg);
+	      SET_DECL_RTL (parm,
+			    gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)), 
+					 parmreg));
 	      set_mem_attributes (DECL_RTL (parm), parm, 1);
 	    }
 	  else
 	    {
-	      DECL_RTL (parm) = parmreg;
+	      SET_DECL_RTL (parm, parmreg);
 	      maybe_set_unchanging (DECL_RTL (parm), parm);
 	    }
 	      
@@ -4773,12 +4779,13 @@ assign_parms (fndecl)
 	      if (GET_MODE (parmreg) != GET_MODE (DECL_RTL (parm)))
 		{
 		  rtx tempreg = gen_reg_rtx (GET_MODE (DECL_RTL (parm)));
-
+		  int unsigned_p = TREE_UNSIGNED (TREE_TYPE (parm));
 		  push_to_sequence (conversion_insns);
 		  emit_move_insn (tempreg, DECL_RTL (parm));
-		  DECL_RTL (parm)
-		    = convert_to_mode (GET_MODE (parmreg), tempreg,
-				       TREE_UNSIGNED (TREE_TYPE (parm)));
+		  SET_DECL_RTL (parm,
+				convert_to_mode (GET_MODE (parmreg), 
+						 tempreg,
+						 unsigned_p));
 		  emit_move_insn (parmreg, DECL_RTL (parm));
 		  conversion_insns = get_insns();
 		  did_conversion = 1;
@@ -4786,7 +4793,7 @@ assign_parms (fndecl)
 		}
 	      else
 		emit_move_insn (parmreg, DECL_RTL (parm));
-	      DECL_RTL (parm) = parmreg;
+	      SET_DECL_RTL (parm, parmreg);
 	      /* STACK_PARM is the pointer, not the parm, and PARMREG is
 		 now the parm.  */
 	      stack_parm = 0;
@@ -5021,7 +5028,7 @@ assign_parms (fndecl)
 	      conversion_insns = get_insns ();
 	      end_sequence ();
 	    }
-	  DECL_RTL (parm) = stack_parm;
+	  SET_DECL_RTL (parm, stack_parm);
 	}
 
       /* If this "parameter" was the place where we are receiving the
@@ -5030,8 +5037,8 @@ assign_parms (fndecl)
 	{
 	  tree result = DECL_RESULT (fndecl);
 
-	  DECL_RTL (result)
-	    = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
+	  SET_DECL_RTL (result,
+			gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm)));
 
 	  set_mem_attributes (DECL_RTL (result), result, 1);
 	}
@@ -5090,7 +5097,9 @@ assign_parms (fndecl)
      to include tree.h.  Do this here so it gets done when an inlined
      function gets output.  */
 
-  current_function_return_rtx = DECL_RTL (DECL_RESULT (fndecl));
+  current_function_return_rtx
+    = (DECL_RTL_SET_P (DECL_RESULT (fndecl))
+       ? DECL_RTL (DECL_RESULT (fndecl)) : NULL_RTX);
 }
 
 /* Indicate whether REGNO is an incoming argument to the current function
@@ -6357,15 +6366,16 @@ expand_function_start (subr, parms_have_cleanups)
 	}
       if (value_address)
 	{
-	  DECL_RTL (DECL_RESULT (subr))
-	    = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), value_address);
+	  SET_DECL_RTL (DECL_RESULT (subr),
+			gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), 
+				     value_address));
 	  set_mem_attributes (DECL_RTL (DECL_RESULT (subr)),
 			      DECL_RESULT (subr), 1);
 	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
-    DECL_RTL (DECL_RESULT (subr)) = 0;
+    SET_DECL_RTL (DECL_RESULT (subr), NULL_RTX);
   else if (parms_have_cleanups || current_function_instrument_entry_exit)
     {
       /* If function will end with cleanup code for parms,
@@ -6382,13 +6392,14 @@ expand_function_start (subr, parms_have_cleanups)
       mode = promote_mode (type, mode, &unsignedp, 1);
 #endif
 
-      DECL_RTL (DECL_RESULT (subr)) = gen_reg_rtx (mode);
+      SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (mode));
     }
   else
     /* Scalar, returned in a register.  */
     {
-      DECL_RTL (DECL_RESULT (subr))
-	= hard_function_value (TREE_TYPE (DECL_RESULT (subr)), subr, 1);
+      SET_DECL_RTL (DECL_RESULT (subr),
+		    hard_function_value (TREE_TYPE (DECL_RESULT (subr)), 
+					 subr, 1));
 
       /* Mark this reg as the function's return value.  */
       if (GET_CODE (DECL_RTL (DECL_RESULT (subr))) == REG)
@@ -6846,7 +6857,7 @@ expand_function_end (filename, line, end_bindings)
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
-  if (DECL_RTL (DECL_RESULT (current_function_decl)) != 0)
+  if (DECL_RTL_SET_P (DECL_RESULT (current_function_decl)))
     {
       tree decl_result = DECL_RESULT (current_function_decl);
       rtx decl_rtl = DECL_RTL (decl_result);

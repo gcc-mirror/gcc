@@ -373,8 +373,6 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       DECL_DEFERRED_FN (thunk) = 0;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
-      /* Create RTL for this thunk so that its address can be taken.  */
-      make_decl_rtl (thunk, NULL);
     }
   return thunk;
 }
