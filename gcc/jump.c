@@ -2857,7 +2857,9 @@ delete_insn (insn)
   /* Likewise for an ordinary INSN / CALL_INSN with a REG_LABEL note.  */
   if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
     for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-      if (REG_NOTE_KIND (note) == REG_LABEL)
+      if (REG_NOTE_KIND (note) == REG_LABEL
+	  /* This could also be a NOTE_INSN_DELETED_LABEL note.  */
+	  && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
 	if (--LABEL_NUSES (XEXP (note, 0)) == 0)
 	  delete_insn (XEXP (note, 0));
 
