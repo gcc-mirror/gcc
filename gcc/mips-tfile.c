@@ -3729,16 +3729,37 @@ parse_stabs_common (string_start, string_end, rest)
       else
 	{
 	  SYMR *sym_ptr;
-	  shash_t *shash_ptr = hash_string (p,
-					    strlen (p) - 1,
-					    &orig_str_hash[0],
-					    (symint_t *)0);
+	  shash_t *shash_ptr;
+	  const char *start, *end_p1;
+
+	  start = p;
+	  if ((end_p1 = strchr (start, '+')) == (char *)0)
+	    {
+	      if ((end_p1 = strchr (start, '-')) == (char *)0)
+		end_p1 = start + strlen(start) - 1;
+	    }
+
+	  shash_ptr = hash_string (start,
+				   end_p1 - start,
+				   &orig_str_hash[0],
+				   (symint_t *)0);
 
 	  if (shash_ptr == (shash_t *)0
 	      || (sym_ptr = shash_ptr->sym_ptr) == (SYMR *)0)
 	    {
-	      error ("Illegal .stabs/.stabn directive, value not found");
-	      return;
+	      shash_ptr = hash_string (start,
+				       end_p1 - start,
+				       &ext_str_hash[0],
+				       (symint_t *)0);
+
+	      if (shash_ptr == (shash_t *)0
+		  || shash_ptr->esym_ptr == (EXTR *)0)
+		{
+		  error ("Illegal .stabs/.stabn directive, value not found");
+		  return;
+		}
+	      else
+		sym_ptr = &(shash_ptr->esym_ptr->asym);
 	    }
 
 	  /* Traditionally, N_LBRAC and N_RBRAC are *not* relocated. */
@@ -3753,6 +3774,27 @@ parse_stabs_common (string_start, string_end, rest)
 	      st = (st_t) sym_ptr->st;
 	    }
 	  value = sym_ptr->value;
+
+	  ch = *end_p1++;
+	  if (ch != '\n')
+	    {
+	      if (((!isdigit (*end_p1)) && (*end_p1 != '-'))
+		  || ((ch != '+') && (ch != '-')))
+		{
+		  error ("Illegal .stabs/.stabn directive, badly formed value");
+		  return;
+		}
+	      if (ch == '+')
+		value += strtol (end_p1, &p, 0);
+	      else if (ch == '-')
+		value -= strtol (end_p1, &p, 0);
+
+	      if (*p != '\n')
+		{
+		  error ("Illegal .stabs/.stabn directive, stuff after numeric value");
+		  return;
+		}
+	    }
 	}
       code = MIPS_MARK_STAB(code);
     }
