@@ -1,3 +1,13 @@
+2000-02-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (deps_output): Count spacers in deps_column.
+
+2000-02-07  Neil Booth  <NeilB@earthling.net>
+
+	* cppinit.c (initialize_dependency_output): If there is no
+	suffix, don't try to look for known suffixes.  Use strrchr.
+	(cpp_start_read): Remove duplicate initialization.
+
 Mon Feb  7 18:36:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (compute_argument_block_size): New argument
