@@ -22,7 +22,9 @@ Boston, MA 02111-1307, USA.  */
 #if HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
+#include <sys/types.h>
 #include <sys/times.h>
+#include <sys/param.h>
 #if HAVE_GETRUSAGE
 #  include <sys/time.h>
 #  include <sys/resource.h>
@@ -70,6 +72,8 @@ double G77_dtime_0 (real tarray[2])
   if (! clk_tck) clk_tck = CLOCKS_PER_SECOND;
 #  elif defined CLK_TCK
   if (! clk_tck) clk_tck = CLK_TCK;
+#  elif defined HZ
+  if (! clk_tck) clk_tck = HZ;
 #  elif defined HAVE_GETRUSAGE
 #  else
   #error Dont know clock tick length

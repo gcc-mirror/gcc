@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #if HAVE_STDLIB_H
 #  include <stdlib.h>
 #else
-#  include <stdio.h>		/* for NULL */
+#  include <stdio.h>
 #endif
 
 #include "f2c.h"
@@ -62,7 +62,7 @@ integer G77_chmod_0 (/* const */ char *name, /* const */ char *mode, const ftnle
   char chmod_path [] = CHMOD_PATH;
   l = strlen (chmod_path);
   buff = malloc (Lname+Lmode+l+3+13+1);
-  if (buff == NULL) return -1;
+  if (!buff) return -1;
   ii[0] = l; a[0] = chmod_path;
   ii[1] = 1; a[1] = " ";
   ii[2] = Lmode; a[2] = mode;
