@@ -1,4 +1,9 @@
-2002-10-08  Michael Koch  <konqueror@gmx.de>
+2002-10-10  Michael Koch  <konqueror@gmx.de>
+
+	* gcj/.cvsignore: New file to ignore files generated during build.
+	* include/.cvsignore: New file to ignore files generated during build.
+
+2002-10-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/HttpURLConnection.java
 	(getPermission): New method.
