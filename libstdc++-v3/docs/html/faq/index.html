@@ -62,6 +62,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
          <li><a href="#4_3">Bugs in the C++ language/lib specification</a>
          <li><a href="#4_4">Things in libstdc++ that look like bugs</a>
            <ul>
+             <li><a href="#4_4_iostreamclear">reopening a stream fails</a>
              <li><a href="#4_4_Weff">-Weffc++ complains too much</a>
              <li><a href="#4_4_rel_ops">&quot;ambiguous overloads&quot;
                                  after including an old-style header</a>
@@ -455,6 +456,7 @@ to the list</a>, Nathan Myers announced that he has started a list of
          (i.e., nearly all of us needing to read this page in the first
          place :-), a public list of the library defects is occasionally
          published <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/">here</a>.
+         Some of these have resulted in <a href="#5_2">code changes</a>.
       </p>
 
 <hr>
@@ -472,6 +474,32 @@ to the list</a>, Nathan Myers announced that he has started a list of
            object-oriented programming, while the Standard Library isn't
            necessarily trying to be OO.  There are multiple solutions
            under discussion.
+        </p>
+      </a>
+      <a name="4_4_iostreamclear">
+        <p><strong>reopening a stream fails</strong>
+           Did I just say that -Weffc++ was our biggest false-bug report?  I
+           lied.  (It used to be.)  Today it seems to be reports that after
+           executing a sequence like
+           <pre>
+    #include &lt;fstream&gt;
+    ...
+    std::fstream  fs(&quot;a_file&quot;);
+    // .
+    // . do things with fs...
+    // .
+    fs.close();
+    fs.open(&quot;a_new_file&quot;);</pre>
+           all operations on the re-opened <code>fs</code> will fail, or at
+           least act very strangely.  Yes, they often will, especially if
+           <code>fs</code> reached the EOF state on the previous file.  The
+           reason is that the state flags are <strong>not</strong> cleared
+           on a successful call to open().  The standard unfortunately did
+           not specify behavior in this case, and to everybody's great sorrow,
+           the <a href="../ext/howto.html#5">proposed LWG resolution</a> (see
+           DR #22) is to leave the flags unchanged.  You must insert a call
+           to <code>fs.clear()</code> between the calls to close() and open(),
+           and then everything will work like we all expect it to work.
         </p>
       </a>
       <a name="4_4_rel_ops">

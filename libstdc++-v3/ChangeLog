@@ -1,5 +1,10 @@
 2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/html/faq/index.html:  Describe DR #22, and a workaround.
+	* docs/html/faq/index.txt:  Regenerate.
+
+2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/html/17_intro/COPYING.DOC:  New file, GFDL v1.1 from the FSF.
 	* docs/html/17_intro/license.html:  New file.  Explain the licenses
 	in use.
