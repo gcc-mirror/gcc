@@ -9,10 +9,12 @@
 
 
 template <typename T> void Foo (T const **);
+template <typename T> void Bar (T const * const *);
 void Foo (int);       // ERROR - candidate
 void Foo (float);     // ERROR - candidate
 
 void baz (int **p1)
 {
   Foo (p1);   // ERROR - no such function
+  Bar (p1);   // OK
 }

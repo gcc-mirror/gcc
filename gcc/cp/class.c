@@ -2567,32 +2567,44 @@ dfs_find_final_overrider (binfo, data)
 	      ffod->overriding_fn = method;
 	      ffod->overriding_base = TREE_VALUE (path);
 	    }
-	  /* If we found the same overrider we already have, then
-	     we just need to check that we're finding it in the same
-	     place.  */
-	  else if (ffod->overriding_fn == method)
+	  else if (ffod->overriding_fn)
 	    {
-	      if (ffod->overriding_base
-		  && (!tree_int_cst_equal 
+	      /* We had a best overrider; let's see how this compares.  */
+
+	      if (ffod->overriding_fn == method
+		  && (tree_int_cst_equal 
 		      (BINFO_OFFSET (TREE_VALUE (path)),
 		       BINFO_OFFSET (ffod->overriding_base))))
+		/* We found the same overrider we already have, and in the
+		   same place; it's still the best.  */;
+	      else if (strictly_overrides (ffod->overriding_fn, method))
+		/* The old function overrides this function; it's still the
+		   best.  */;
+	      else if (strictly_overrides (method, ffod->overriding_fn))
 		{
+		  /* The new function overrides the old; it's now the
+		     best.  */
+		  ffod->overriding_fn = method;
+		  ffod->overriding_base = TREE_VALUE (path);
+		}
+	      else
+		{
+		  /* Ambiguous.  */
 		  ffod->candidates 
 		    = build_tree_list (NULL_TREE,
 				       ffod->overriding_fn);
+		  if (method != ffod->overriding_fn)
+		    ffod->candidates 
+		      = tree_cons (NULL_TREE, method, ffod->candidates);
 		  ffod->overriding_fn = NULL_TREE;
 		  ffod->overriding_base = NULL_TREE;
 		}
 	    }
-	  /* If there was already an overrider, and it overrides this
-	     function, then the old overrider is still the best
-	     candidate.  */
-	  else if (ffod->overriding_fn
-		   && strictly_overrides (ffod->overriding_fn,
-					  method))
-	    ;
 	  else
 	    {
+	      /* We had a list of ambiguous overrides; let's see how this
+		 new one compares.  */
+
 	      tree candidates;
 	      bool incomparable = false;
 
@@ -2692,7 +2704,6 @@ find_final_overrider (t, binfo, fn)
   return build_tree_list (ffod.overriding_fn, ffod.overriding_base);
 }
 
-#if 0
 /* Returns the function from the BINFO_VIRTUALS entry in T which matches
    the signature of FUNCTION_DECL FN, or NULL_TREE if none.  In other words,
    the function that the slot in T's primary vtable points to.  */
@@ -2709,7 +2720,6 @@ get_matching_virtual (t, fn)
       return BV_FN (f);
   return NULL_TREE;
 }
-#endif
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
    dominated by T.  FN has been overriden in BINFO; VIRTUALS points to the
@@ -2784,10 +2794,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
       delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)),
 			   BINFO_OFFSET (binfo));
 
-#if 0
-      /* Disable this optimization pending an ABI change, or until
-	 we can force emission of the non-virtual thunk even if we don't
-	 use it.  */
       if (! integer_zerop (delta))
 	{
 	  /* We'll need a thunk.  But if we have a (perhaps formerly)
@@ -2810,7 +2816,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 		}
 	    }
 	}
-#endif
     }
 
   modify_vtable_entry (t, 
