@@ -255,7 +255,7 @@ void test03()
   bool test = true;
 
   // Check money_get works with other iterators besides streambuf
-  // output iterators.
+  // input iterators.
   typedef string::const_iterator iter_type;
   typedef money_get<char, iter_type> mon_get_type;
   const ios_base::iostate goodbit = ios_base::goodbit;

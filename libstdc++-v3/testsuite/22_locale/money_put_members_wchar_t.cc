@@ -1,6 +1,6 @@
 // 2001-09-09 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001-2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -240,6 +240,48 @@ void test02()
   VERIFY( result3 != result1 );
   VERIFY( result4 != result2 );
 }
+
+void test03()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check money_put works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
+  typedef wstring::iterator iter_type;
+  typedef money_put<wchar_t, iter_type> mon_put_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = goodbit;
+  const locale loc_c = locale::classic();
+  // woman, art, thief (stole the blues)
+  const wstring str(L"1943 Janis Joplin");
+  const long double ld = 1943;
+  const wstring x(str.size(), 'x'); // have to have allocated string!
+  wstring res;
+
+  wostringstream oss; 
+  oss.imbue(locale(loc_c, new mon_put_type));
+
+  // Iterator advanced, state, output.
+  const mon_put_type& mp = use_facet<mon_put_type>(oss.getloc());
+
+  // 01 string
+  res = x;
+  iter_type ret1 = mp.put(res.begin(), false, oss, ' ', str);
+  wstring sanity1(res.begin(), ret1);
+  VERIFY( err == goodbit );
+  VERIFY( res == L"1943xxxxxxxxxxxxx" );
+  VERIFY( sanity1 == L"1943" );
+
+  // 02 long double
+  res = x;
+  iter_type ret2 = mp.put(res.begin(), false, oss, ' ', ld);
+  wstring sanity2(res.begin(), ret2);
+  VERIFY( err == goodbit );
+  VERIFY( res == L"1943xxxxxxxxxxxxx" );
+  VERIFY( sanity2 == L"1943" );
+}
 #endif
 
 int main()
@@ -247,6 +289,7 @@ int main()
 #ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+  test03();
 #endif
   return 0;
 }

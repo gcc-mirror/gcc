@@ -1,6 +1,6 @@
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001-2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -161,7 +161,7 @@ void test01()
   VERIFY( result11 == "-,01****************");
 }
 
-// test double/string versions
+// test double version
 void test02()
 {
   using namespace std;
@@ -241,9 +241,53 @@ void test02()
   VERIFY( result4 != result2 );
 }
 
+void test03()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check money_put works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
+  typedef string::iterator iter_type;
+  typedef money_put<char, iter_type> mon_put_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = goodbit;
+  const locale loc_c = locale::classic();
+  // woman, art, thief (stole the blues)
+  const string str("1943 Janis Joplin");
+  const long double ld = 1943;
+  const string x(str.size(), 'x'); // have to have allocated string!
+  string res;
+
+  ostringstream oss; 
+  oss.imbue(locale(loc_c, new mon_put_type));
+
+  // Iterator advanced, state, output.
+  const mon_put_type& mp = use_facet<mon_put_type>(oss.getloc());
+
+  // 01 string
+  res = x;
+  iter_type ret1 = mp.put(res.begin(), false, oss, ' ', str);
+  string sanity1(res.begin(), ret1);
+  VERIFY( err == goodbit );
+  VERIFY( res == "1943xxxxxxxxxxxxx" );
+  VERIFY( sanity1 == "1943" );
+
+  // 02 long double
+  res = x;
+  iter_type ret2 = mp.put(res.begin(), false, oss, ' ', ld);
+  string sanity2(res.begin(), ret2);
+  VERIFY( err == goodbit );
+  VERIFY( res == "1943xxxxxxxxxxxxx" );
+  VERIFY( sanity2 == "1943" );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
+
