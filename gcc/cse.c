@@ -3865,6 +3865,10 @@ fold_rtx (rtx x, rtx insn)
 	 constant, set CONST_ARG0 and CONST_ARG1 appropriately.  We needn't
 	 do anything if both operands are already known to be constant.  */
 
+      /* ??? Vector mode comparisons are not supported yet.  */
+      if (VECTOR_MODE_P (mode))
+	break;
+
       if (const_arg0 == 0 || const_arg1 == 0)
 	{
 	  struct table_elt *p0, *p1;

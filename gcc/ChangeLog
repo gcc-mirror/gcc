@@ -1,8 +1,14 @@
+2005-01-04  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/17767
+	* cse.c (fold_rtx) [RTX_COMPARE, RTX_COMM_COMPARE]: Don't attempt
+	any simplifications of vector mode comparison operators.
+	* simplify-rtx.c (simplify_relational_operation): Fix variable name.
+
 2005-01-04  Paolo Bonzini  <bonzini@gnu.org>
 	    Devang Patel  <dpatel@apple.com>
 
 	PR tree-optimization/18308
-
 	* tree-if-conv.c (add_to_dst_predicate_list): Gimplify
 	the operands before creating a new expression.
 	* dojump.c (do_jump): Make drop_through_label available
