@@ -1,3 +1,8 @@
+2003-12-02  David Ung  <davidu@mips.com>
+
+	* gcc.dg/compat/vector-check.h: Corrected type for var 
+	g_##TMODE
+
 2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/10126

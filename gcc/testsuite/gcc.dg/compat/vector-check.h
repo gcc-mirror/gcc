@@ -1,6 +1,6 @@
 #define TEST(NUM,TMODE,VAL)				\
 extern v##NUM##TMODE g_v##NUM##TMODE;			\
-extern int g_##TMODE;					\
+extern TMODE g_##TMODE;					\
 							\
 extern void pass_v##NUM##TMODE (v##NUM##TMODE);		\
 extern v##NUM##TMODE return_v##NUM##TMODE (void);	\
