@@ -197,7 +197,15 @@ find_methodref_index (cpool, decl)
      CPool *cpool;
      tree decl;
 {
-  tree mclass = DECL_CONTEXT (decl);
+  return find_methodref_with_class_index (cpool, decl, DECL_CONTEXT (decl));
+}
+
+int
+find_methodref_with_class_index (cpool, decl, mclass)
+     CPool *cpool;
+     tree decl;
+     tree mclass;
+{
   int class_index = find_class_constant (cpool, mclass);
   tree name = DECL_CONSTRUCTOR_P (decl) ? init_identifier_node
     : DECL_NAME (decl);

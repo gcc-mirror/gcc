@@ -1721,7 +1721,7 @@ generate_bytecode_insns (exp, target, state)
 	      {
 		push_int_const (sw_state.cases->offset, state);
 		emit_if (sw_state.cases->label,
-			 OPCODE_ifeq, OPCODE_ifne, state);
+			 OPCODE_if_icmpeq, OPCODE_if_icmpne, state);
 	      }
 	    emit_goto (sw_state.default_label, state);
 	  }
@@ -2550,7 +2550,7 @@ generate_bytecode_insns (exp, target, state)
 	  NOTE_POP (1);  /* Pop implicit this. */
 	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
 	  {
-	    tree saved_context = NULL_TREE;
+	    tree context = DECL_CONTEXT (f);
 	    int index, interface = 0;
 	    RESERVE (5);
 	    if (METHOD_STATIC (f))
@@ -2558,24 +2558,24 @@ generate_bytecode_insns (exp, target, state)
 	    else if (DECL_CONSTRUCTOR_P (f) || CALL_USING_SUPER (exp)
 		|| METHOD_PRIVATE (f))
 	      OP1 (OPCODE_invokespecial);
-	    else if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (f))))
-	      {
-		OP1 (OPCODE_invokeinterface);
-		interface = 1;
-	      }
 	    else
-	      OP1 (OPCODE_invokevirtual);
-	    if (interface)
 	      {
-		saved_context = DECL_CONTEXT (f);
-		DECL_CONTEXT (f) = 
-		  TREE_TYPE (TREE_TYPE (TREE_VALUE (TREE_OPERAND (exp, 1))));
+		if (CLASS_INTERFACE (TYPE_NAME (context)))
+		  {
+		    tree arg1 = TREE_VALUE (TREE_OPERAND (exp, 1));
+		    context = TREE_TYPE (TREE_TYPE (arg1));
+		    if (CLASS_INTERFACE (TYPE_NAME (context)))
+		      interface = 1;
+		  }
+		if (interface)
+		  OP1 (OPCODE_invokeinterface);
+		else
+		  OP1 (OPCODE_invokevirtual);
 	      }
-	    index = find_methodref_index (&state->cpool, f);
+	    index = find_methodref_with_class_index (&state->cpool, f, context);
 	    OP2 (index);
 	    if (interface)
 	      {
-		DECL_CONTEXT (f) = saved_context;
 		if (nargs <= 0)
 		  abort ();
 
