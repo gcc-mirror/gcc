@@ -1,3 +1,15 @@
+2005-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/18828
+	* builtins.c (expand_builtin_next_arg): Remove argument and all
+	the argument checking.
+	(expand_builtin): Adjust caller.
+	(expand_builtin_va_start): Likewise.  Remove error for too many
+	arguments.
+	(fold_builtin_next_arg): Issue error for too many arguments.
+	After checking arguments, replace them with magic arguments that
+	prevent further checking of the args.
+
 2005-01-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (STARTFILE_SPEC): Fix typo in spec.
