@@ -2747,7 +2747,7 @@ rest_of_compilation (decl)
      it only computes whether control can drop off the end of the function.  */
 
   if (optimize > 0 || extra_warnings || warn_return_type
-      /* If function is `volatile', we should warn if it tries to return.  */
+      /* If function is `noreturn', we should warn if it tries to return.  */
       || TREE_THIS_VOLATILE (decl))
     {
       TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
