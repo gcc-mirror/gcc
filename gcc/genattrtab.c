@@ -239,7 +239,7 @@ static char *alternative_name;
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
 #define SIMPLIFY_TEST_EXP(EXP,INSN_CODE,INSN_INDEX)	\
-  (RTX_UNCHANGING_P (EXP) ? (EXP)			\
+  (RTX_UNCHANGING_P (EXP) || MEM_IN_STRUCT_P (EXP) ? (EXP)		\
    : simplify_test_exp (EXP, INSN_CODE, INSN_INDEX))
   
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
@@ -2080,7 +2080,8 @@ insert_right_side (code, exp, term, insn_code, insn_index)
    If so, we can optimize.  Similarly for IOR's of EQ_ATTR.
 
    This routine is passed an expression and either AND or IOR.  It returns a
-   bitmask indicating which alternatives are present.  */
+   bitmask indicating which alternatives are present.
+   ??? What does "present" mean?  */
 
 static int
 compute_alternative_mask (exp, code)
@@ -2448,7 +2449,7 @@ simplify_test_exp (exp, insn_code, insn_index)
     do_nothing ();
 
   /* Don't re-simplify something we already simplified.  */
-  if (RTX_UNCHANGING_P (exp))
+  if (RTX_UNCHANGING_P (exp) || MEM_IN_STRUCT_P (exp))
     return exp;
 
   switch (GET_CODE (exp))
@@ -2490,15 +2491,12 @@ simplify_test_exp (exp, insn_code, insn_index)
 	}
       else if (left == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
+	  return right;
 	}
       else if (right == true_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
+	  return left;
 	}
-
       /* See if all or all but one of the insn's alternatives are specified
 	 in this tree.  Optimize if so.  */
 
@@ -2557,13 +2555,11 @@ simplify_test_exp (exp, insn_code, insn_index)
 	}
       else if (left == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
+	  return right;
 	}
       else if (right == false_rtx)
 	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
+	  return left;
 	}
 
       /* Test for simple cases where the distributive law is useful.  I.e.,
@@ -2705,36 +2701,130 @@ optimize_attrs ()
   struct insn_ent *ie, *nextie;
   rtx newexp;
   int something_changed = 1;
+  int i;
+  struct attr_value_list { struct attr_value *av;
+			   struct insn_ent *ie;
+			   struct attr_desc * attr;
+			   struct attr_value_list *next; };
+  struct attr_value_list **insn_code_values;
+  struct attr_value_list *iv;
+
+  /* For each insn code, make a list of all the insn_ent's for it,
+     for all values for all attributes.  */
+
+  /* Make 2 extra elements, for "code" values -2 and -1.  */
+  insn_code_values
+    = (struct attr_value_list **) alloca ((insn_code_number + 2)
+					  * sizeof (struct attr_value_list *));
+  bzero (insn_code_values,
+	 (insn_code_number + 2) * sizeof (struct attr_value_list *));
+  /* Offset the table address so we can index by -2 or -1.  */
+  insn_code_values += 2;
+
+  for (attr = attrs; attr; attr = attr->next)
+    for (av = attr->first_value; av; av = av->next)
+      for (ie = av->first_insn; ie; ie = ie->next)
+	{
+	  iv = ((struct attr_value_list *)
+		alloca (sizeof (struct attr_value_list)));
+	  iv->attr = attr;
+	  iv->av = av;
+	  iv->ie = ie;
+	  iv->next = insn_code_values[ie->insn_code];
+	  insn_code_values[ie->insn_code] = iv;
+	}
 
   /* Loop until nothing changes for one iteration.  */
   while (something_changed)
     {
       something_changed = 0;
-      for (attr = attrs; attr; attr = attr->next)
-	for (av = attr->first_value; av; av = av->next)
-	    for (ie = av->first_insn; ie; ie = nextie)
-	      {
-		struct obstack *old = rtl_obstack;
-		char *spacer = (char *) obstack_finish (temp_obstack);
+      /* Process one insn code at a time.  */
+      for (i = -2; i < insn_code_number; i++)
+	{
+	  /* Clear the MEM_IN_STRUCT_P flag everywhere relevant.
+	     We use it to mean "already simplified for this insn".  */
+	  for (iv = insn_code_values[i]; iv; iv = iv->next)
+	    clear_struct_flag (iv->av->value);
+		  
+	  for (iv = insn_code_values[i]; iv; iv = iv->next)
+	    {
+	      struct obstack *old = rtl_obstack;
+	      char *spacer = (char *) obstack_finish (temp_obstack);
 
-		nextie = ie->next;
-		if (GET_CODE (av->value) != COND)
-		  continue;
+	      attr = iv->attr;
+	      av = iv->av;
+	      ie = iv->ie;
+	      if (GET_CODE (av->value) != COND)
+		continue;
 
-		rtl_obstack = temp_obstack;
-		newexp = simplify_cond (av->value, ie->insn_code,
-					ie->insn_index);
-		rtl_obstack = old;
-		if (newexp != av->value)
-		  {
-		    newexp = attr_copy_rtx (newexp);
-		    remove_insn_ent (av, ie);
-		    insert_insn_ent (get_attr_value (newexp, attr,
-						     ie->insn_code), ie);
-		    something_changed = 1;
-		  }
-		obstack_free (temp_obstack, spacer);
-	      }
+	      rtl_obstack = temp_obstack;
+	      newexp = simplify_cond (av->value, ie->insn_code,
+				      ie->insn_index);
+	      rtl_obstack = old;
+	      if (newexp != av->value)
+		{
+		  newexp = attr_copy_rtx (newexp);
+		  remove_insn_ent (av, ie);
+		  av = get_attr_value (newexp, attr, ie->insn_code);
+		  iv->av = av;
+		  insert_insn_ent (av, ie);
+		  something_changed = 1;
+		}
+	      obstack_free (temp_obstack, spacer);
+	    }
+	}
+    }
+}
+
+/* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
+
+clear_struct_flag (x)
+     rtx x;
+{
+  register int i;
+  register int j;
+  register enum rtx_code code;
+  register char *fmt;
+
+  MEM_IN_STRUCT_P (x) = 0;
+  if (RTX_UNCHANGING_P (x))
+    return;
+
+  code = GET_CODE (x);
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case EQ_ATTR:
+      return;
+    }
+
+  /* Compare the elements.  If any pair of corresponding elements
+     fail to match, return 0 for the whole things.  */
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'V':
+	case 'E':
+	  /* And the corresponding elements must match.  */
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    clear_struct_flag (XVECEXP (x, i, j));
+	  break;
+
+	case 'e':
+	  clear_struct_flag (XEXP (x, i));
+	  break;
+	}
     }
 }
 
@@ -4118,11 +4208,14 @@ copy_rtx_unchanging (orig)
   register rtx copy;
   register RTX_CODE code;
 
-  if (RTX_UNCHANGING_P (orig))
+  if (RTX_UNCHANGING_P (orig) || MEM_IN_STRUCT_P (orig))
     return orig;
 
-  code = GET_CODE (orig);
+  MEM_IN_STRUCT_P (orig) = 1;
+  return orig;
 
+#if 0
+  code = GET_CODE (orig);
   switch (code)
     {
     case CONST_INT:
@@ -4139,6 +4232,7 @@ copy_rtx_unchanging (orig)
   bcopy (&XEXP (orig, 0), &XEXP (copy, 0),
 	 GET_RTX_LENGTH (GET_CODE (copy)) * sizeof (rtx));
   return copy;
+#endif
 }
 
 static void
