@@ -1,3 +1,13 @@
+2005-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20622
+	* cgraph.h (struct cgraph_varpool_node): Add alias field.
+	* cgraph.c (cgraph_varpool_assemble_pending_decls): Don't call
+	assemble_variable on aliases.
+	* varasm.c (assemble_alias): Set node->alias.
+	* toplev.c (wrapup_global_declarations): Don't call
+	rest_of_decl_compilation on aliases again.
+
 2005-03-29  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_dbx_register_number): Add prototype.
