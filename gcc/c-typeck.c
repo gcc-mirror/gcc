@@ -5105,6 +5105,9 @@ static tree constructor_pending_elts;
 /* The SPELLING_DEPTH of this constructor.  */
 static int constructor_depth;
 
+/* 0 if implicitly pushing constructor levels is allowed.  */
+int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages. */
+
 /* 1 if this constructor level was entered implicitly.  */
 static int constructor_implicit;
 
@@ -6127,7 +6130,7 @@ process_init_element (value)
 	    value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value != 0
+	  else if (value != 0 && !constructor_no_implicit
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE))
@@ -6184,7 +6187,7 @@ process_init_element (value)
 	    value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value != 0
+	  else if (value != 0 && !constructor_no_implicit
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE))
@@ -6221,7 +6224,7 @@ process_init_element (value)
 	    value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value != 0
+	  else if (value != 0 && !constructor_no_implicit
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != elttype
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
 		       || eltcode == UNION_TYPE))
