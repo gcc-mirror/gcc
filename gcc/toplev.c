@@ -835,11 +835,11 @@ int flag_schedule_speculative_load_dangerous = 0;
 
    flag_sched_stalled_insns means that insns can be moved prematurely from the queue
    of stalled insns into the ready list.
-  
+
    flag_sched_stalled_insns_dep controls how many insn groups will be examined
    for a dependency on a stalled insn that is candidate for premature removal
    from the queue of stalled insns into the ready list (has an effect only if
-   the flag 'sched_stalled_insns' is set).  */ 
+   the flag 'sched_stalled_insns' is set).  */
 
 int flag_sched_stalled_insns = 0;
 int flag_sched_stalled_insns_dep = 1;
@@ -1237,12 +1237,12 @@ randomize (void)
     {
       unsigned HOST_WIDE_INT value;
       static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
-      
+
       /* Get some more or less random data.  */
 #ifdef HAVE_GETTIMEOFDAY
       {
  	struct timeval tv;
- 	
+
  	gettimeofday (&tv, NULL);
 	local_tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
       }
@@ -1255,7 +1255,7 @@ randomize (void)
       }
 #endif
       value = local_tick ^ getpid ();
-      
+
       sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
       flag_random_seed = random_seed;
     }
@@ -1410,7 +1410,7 @@ output_file_directive (FILE *asm_file, const char *input_name)
 {
   int len;
   const char *na;
-  
+
   if (input_name == NULL)
     input_name = "<stdin>";
 
@@ -2512,7 +2512,12 @@ rest_of_handle_cfg (tree decl, rtx insns)
      life_analysis rarely eliminates modification of external memory.
    */
   if (optimize)
-    mark_constant_function ();
+    {
+      /* Alias analysis depends on this information and mark_constant_function
+       depends on alias analysis.  */
+      reg_scan (insns, max_reg_num (), 1);
+      mark_constant_function ();
+    }
 
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 }
@@ -3061,7 +3066,7 @@ rest_of_compilation (tree decl)
 
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
-  
+
   /* Now that we're out of the frontend, we shouldn't have any more
      CONCATs anywhere.  */
   generating_concat_p = 0;
@@ -3629,7 +3634,7 @@ rest_of_compilation (tree decl)
 }
 
 /* Display help for target options.  */
-void 
+void
 display_target_options (void)
 {
   int undoc, i;
@@ -4011,7 +4016,7 @@ default_get_pch_validity (size_t *len)
   size_t i;
 #endif
   char *result, *r;
-  
+
   *len = sizeof (target_flags) + 2;
 #ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
@@ -4028,7 +4033,7 @@ default_get_pch_validity (size_t *len)
   r += 2;
   memcpy (r, &target_flags, sizeof (target_flags));
   r += sizeof (target_flags);
-  
+
 #ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
     {
@@ -4053,7 +4058,7 @@ default_pch_valid_p (const void *data_p, size_t len)
   const char *data = (const char *)data_p;
   const char *flag_that_differs = NULL;
   size_t i;
-  
+
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
     return _("created and used with different settings of -fpic");
@@ -4084,7 +4089,7 @@ default_pch_valid_p (const void *data_p, size_t len)
     }
   data += sizeof (target_flags);
   len -= sizeof (target_flags);
-  
+
   /* Check string options.  */
 #ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
@@ -4105,7 +4110,7 @@ default_pch_valid_p (const void *data_p, size_t len)
 #endif
 
   return NULL;
-  
+
  make_message:
   {
     char *r;
