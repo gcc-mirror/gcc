@@ -140,8 +140,8 @@ static tree access_in_type PARAMS ((tree, tree));
 static tree dfs_canonical_queue PARAMS ((tree, void *));
 static tree dfs_assert_unmarked_p PARAMS ((tree, void *));
 static void assert_canonical_unmarked PARAMS ((tree));
-static int protected_accessible_p PARAMS ((tree, tree, tree, tree));
-static int friend_accessible_p PARAMS ((tree, tree, tree, tree));
+static int protected_accessible_p PARAMS ((tree, tree, tree));
+static int friend_accessible_p PARAMS ((tree, tree, tree));
 static void setup_class_bindings PARAMS ((tree, int));
 static int template_self_reference_p PARAMS ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PARAMS ((tree, tree));
@@ -969,12 +969,11 @@ dfs_accessible_p (binfo, data)
   return NULL_TREE;
 }
 
-/* Returns non-zero if it is OK to access DECL when named in TYPE
-   through an object indiated by BINFO in the context of DERIVED.  */
+/* Returns non-zero if it is OK to access DECL through an object
+   indiated by BINFO in the context of DERIVED.  */
 
 static int
-protected_accessible_p (type, decl, derived, binfo)
-     tree type;
+protected_accessible_p (decl, derived, binfo)
      tree decl;
      tree derived;
      tree binfo;
@@ -988,19 +987,23 @@ protected_accessible_p (type, decl, derived, binfo)
        class P derived from N, where m as a member of P is private or
        protected.  
 
-    If DERIVED isn't derived from TYPE, then it certainly does not
-    apply.  */
-  if (!DERIVED_FROM_P (type, derived))
+    Here DERIVED is a possible P and DECL is m.  accessible_p will
+    iterate over various values of N, but the access to m in DERIVED
+    does not change.
+
+    Note that I believe that the passage above is wrong, and should read
+    "...is private or protected or public"; otherwise you get bizarre results
+    whereby a public using-decl can prevent you from accessing a protected
+    member of a base.  (jason 2000/02/28)  */
+
+  /* If DERIVED isn't derived from m's class, then it can't be a P.  */
+  if (!DERIVED_FROM_P (DECL_CONTEXT (decl), derived))
     return 0;
 
   access = access_in_type (derived, decl);
-  if (same_type_p (derived, type))
-    {
-      if (access != access_private_node)
-	return 0;
-    }
-  else if (access != access_private_node
-	   && access != access_protected_node)
+
+  /* If m is inaccessible in DERIVED, then it's not a P.  */
+  if (access == NULL_TREE)
     return 0;
   
   /* [class.protected]
@@ -1008,7 +1011,7 @@ protected_accessible_p (type, decl, derived, binfo)
      When a friend or a member function of a derived class references
      a protected nonstatic member of a base class, an access check
      applies in addition to those described earlier in clause
-     _class.access_.4) Except when forming a pointer to member
+     _class.access_) Except when forming a pointer to member
      (_expr.unary.op_), the access must be through a pointer to,
      reference to, or object of the derived class itself (or any class
      derived from that class) (_expr.ref_).  If the access is to form
@@ -1030,13 +1033,11 @@ protected_accessible_p (type, decl, derived, binfo)
 }
 
 /* Returns non-zero if SCOPE is a friend of a type which would be able
-   to acces DECL, named in TYPE, through the object indicated by
-   BINFO.  */
+   to access DECL through the object indicated by BINFO.  */
 
 static int
-friend_accessible_p (scope, type, decl, binfo)
+friend_accessible_p (scope, decl, binfo)
      tree scope;
-     tree type;
      tree decl;
      tree binfo;
 {
@@ -1055,14 +1056,14 @@ friend_accessible_p (scope, type, decl, binfo)
     return 0;
 
   for (t = befriending_classes; t; t = TREE_CHAIN (t))
-    if (protected_accessible_p (type, decl, TREE_VALUE (t), binfo))
+    if (protected_accessible_p (decl, TREE_VALUE (t), binfo))
       return 1;
 
   /* Nested classes are implicitly friends of their enclosing types, as
      per core issue 45 (this is a change from the standard).  */
   if (TYPE_P (scope))
     for (t = TYPE_CONTEXT (scope); t && TYPE_P (t); t = TYPE_CONTEXT (t))
-      if (protected_accessible_p (type, decl, t, binfo))
+      if (protected_accessible_p (decl, t, binfo))
 	return 1;
 
   if (TREE_CODE (scope) == FUNCTION_DECL
@@ -1071,18 +1072,15 @@ friend_accessible_p (scope, type, decl, binfo)
       /* Perhaps this SCOPE is a member of a class which is a 
 	 friend.  */ 
       if (DECL_CLASS_SCOPE_P (decl)
-	  && friend_accessible_p (DECL_CONTEXT (scope), type,
-				  decl, binfo))
+	  && friend_accessible_p (DECL_CONTEXT (scope), decl, binfo))
 	return 1;
 
       /* Or an instantiation of something which is a friend.  */
       if (DECL_TEMPLATE_INFO (scope))
-	return friend_accessible_p (DECL_TI_TEMPLATE (scope),
-				    type, decl, binfo);
+	return friend_accessible_p (DECL_TI_TEMPLATE (scope), decl, binfo);
     }
   else if (CLASSTYPE_TEMPLATE_INFO (scope))
-    return friend_accessible_p (CLASSTYPE_TI_TEMPLATE (scope),
-				type, decl, binfo);
+    return friend_accessible_p (CLASSTYPE_TI_TEMPLATE (scope), decl, binfo);
 
   return 0;
 }
@@ -1178,16 +1176,13 @@ accessible_p (type, decl)
 
   /* Figure out where the reference is occurring.  Check to see if
      DECL is private or protected in this scope, since that will
-     determine whether protected access in TYPE allowed.  */
+     determine whether protected access is allowed.  */
   if (current_class_type)
-    protected_ok 
-      = protected_accessible_p (type, decl, current_class_type,
-				binfo);
+    protected_ok = protected_accessible_p (decl, current_class_type, binfo);
 
   /* Now, loop through the classes of which we are a friend.  */
   if (!protected_ok)
-    protected_ok = friend_accessible_p (current_scope (),
-					type, decl, binfo);
+    protected_ok = friend_accessible_p (current_scope (), decl, binfo);
 
   /* Standardize the binfo that access_in_type will use.  We don't
      need to know what path was chosen from this point onwards.  */
