@@ -3,34 +3,22 @@
    Copyright (C) 1991, 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
+along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-
-   To use this file, make up a file with a name like:
-
-	?????svr3.h
-
-   where ????? is replaced by the name of the basic hardware that you
-   are targeting for.  Then, in the file ?????svr3.h, put something
-   like:
-
-	#include "?????.h"
-	#include "svr3.h"
-*/
+Boston, MA 02111-1307, USA. */
 
 /* Define a symbol indicating that we are using svr3.h.  */
 #define USING_SVR3_H
@@ -76,23 +64,6 @@ Boston, MA 02111-1307, USA.
     ASM_OUTPUT_LABEL ((FILE), (NAME));			\
     fprintf ((FILE), "\t.set .,.+%u\n", (int)(ROUNDED));	\
   } while (0)
-
-#if 0 /* For now, let's leave these machine-specific.  */
-/* Use crt1.o as a startup file and crtn.o as a closing file.  */
-
-#define STARTFILE_SPEC  \
-  "%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
-
-#ifdef CROSS_COMPILE
-#define LIB_SPEC "-lc crtn.o%s"
-#else
-#define LIB_SPEC "%{p:-L/usr/lib/libp}%{pg:-L/usr/lib/libp} -lc crtn.o%s"
-#endif
-
-/* Special flags for the linker.  I don't know what they do.  */
-
-#define LINK_SPEC "%{T*} %{z:-lm}"
-#endif
 
 /* Output #ident as a .ident.  */
 

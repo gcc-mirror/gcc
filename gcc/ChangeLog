@@ -1,3 +1,8 @@
+2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/svr3.h: Remove #if 0 code, misleading comments.  
+	GNU CC -> GCC.
+
 2003-06-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* vmsdbgout.c (vmsdbgout_finish): Rename parameter to
