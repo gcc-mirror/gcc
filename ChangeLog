@@ -1,3 +1,8 @@
+Sat Sep  5 13:56:52 1998  John Hughes  <john@Calva.COM>
+
+	* configure.in: Do not assume x86-svr4 or x86-unixware can handle
+	stabs.
+
 Sat Sep  5 02:12:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (TARGET_CONFIGDIRS): Add libchill.
