@@ -1,3 +1,8 @@
+2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/2294
+        * g++.dg/lookup/using9.c: New test.
+
 2003-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12762
