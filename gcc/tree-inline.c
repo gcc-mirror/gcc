@@ -1324,6 +1324,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case LTGT_EXPR:
 
     case CONVERT_EXPR:
 

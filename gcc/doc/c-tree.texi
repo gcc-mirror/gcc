@@ -1745,6 +1745,12 @@ This macro returns the attributes on the type @var{type}.
 @tindex GE_EXPR
 @tindex EQ_EXPR
 @tindex NE_EXPR
+@tindex UNLT_EXPR
+@tindex UNLE_EXPR
+@tindex UNGT_EXPR
+@tindex UNGE_EXPR
+@tindex UNEQ_EXPR
+@tindex LTGT_EXPR
 @tindex INIT_EXPR
 @tindex MODIFY_EXPR
 @tindex COMPONENT_REF
@@ -2105,6 +2111,39 @@ than, greater than or equal to, equal, and not equal comparison
 operators.  The first and second operand with either be both of integral
 type or both of floating type.  The result type of these expressions
 will always be of integral or boolean type.
+
+Floating-point comparison may have a fourth possible outcome for a
+comparison, other than less, greater or equal: this is @dfn{unordered},
+and two floating-point values are unordered if one of them is
+a @dfn{not-a-number} (@dfn{NaN}) value.  In this case, all of these
+nodes will be false but @code{NE_EXPR}, and the first four of these
+nodes will also raise an invalid operation trap.
+
+@item ORDERED_EXPR
+@itemx UNORDERED_EXPR
+@item UNLT_EXPR
+@itemx UNLE_EXPR
+@itemx UNGT_EXPR
+@itemx UNGE_EXPR
+@itemx UNEQ_EXPR
+@itemx LTGT_EXPR
+
+These nodes represent other relational operations that are only used
+with floating types.
+
+If the outcome of the comparison is unordered, all of these special
+comparisons will be true but @code{ORDERED_EXPR} and @code{LTGT_EXPR}.
+Only @code{LTGT_EXPR} is expected to generate an invalid floating-point
+operation trap when the outcome is unordered.
+
+@code{ORDERED_EXPR} is true if neither of its operands is a NaN,
+while its negation @code{UNORDERED_EXPR} is true if at least one of
+its operands is a NaN.
+
+For floating operations, inverting one of the standard comparison nodes 
+will result in one of these nodes, with its name prefixed by
+@code{UN}---the only exception is @code{NE_EXPR}, whose negation is
+@code{LTGT_EXPR}.
 
 @item MODIFY_EXPR
 These nodes represent assignment.  The left-hand side is the first

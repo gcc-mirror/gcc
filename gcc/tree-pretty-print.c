@@ -905,6 +905,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case LTGT_EXPR:
+    case ORDERED_EXPR:
+    case UNORDERED_EXPR:
       {
 	const char *op = op_symbol (node);
 	op0 = TREE_OPERAND (node, 0);
@@ -997,14 +1000,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "ABS_EXPR <");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_character (buffer, '>');
-      break;
-
-    case UNORDERED_EXPR:
-      NIY;
-      break;
-
-    case ORDERED_EXPR:
-      NIY;
       break;
 
     case IN_EXPR:
@@ -1681,6 +1676,14 @@ op_prio (tree op)
     case NE_EXPR:
       return 9;
 
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
+    case ORDERED_EXPR:
+    case UNORDERED_EXPR:
     case LT_EXPR:
     case LE_EXPR:
     case GT_EXPR:
@@ -1786,28 +1789,41 @@ op_symbol (tree op)
     case BIT_AND_EXPR:
       return "&";
 
+    case ORDERED_EXPR:
+      return "ord";
+    case UNORDERED_EXPR:
+      return "unord";
+
     case EQ_EXPR:
-    case UNEQ_EXPR:
       return "==";
+    case UNEQ_EXPR:
+      return "u==";
 
     case NE_EXPR:
       return "!=";
 
     case LT_EXPR:
-    case UNLT_EXPR:
       return "<";
+    case UNLT_EXPR:
+      return "u<";
 
     case LE_EXPR:
-    case UNLE_EXPR:
       return "<=";
+    case UNLE_EXPR:
+      return "u<=";
 
     case GT_EXPR:
-    case UNGT_EXPR:
       return ">";
+    case UNGT_EXPR:
+      return "u>";
 
     case GE_EXPR:
-    case UNGE_EXPR:
       return ">=";
+    case UNGE_EXPR:
+      return "u>=";
+
+    case LTGT_EXPR:
+      return "<>";
 
     case LSHIFT_EXPR:
       return "<<";

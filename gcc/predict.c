@@ -865,6 +865,7 @@ tree_predict_by_opcode (basic_block bb)
 	break;
 
       case NE_EXPR:
+      case LTGT_EXPR:
 	/* Floating point comparisons appears to behave in a very
 	   unpredictable way because of special role of = tests in
 	   FP code.  */

@@ -58,6 +58,28 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "md5.h"
 
+/* The following constants represent a bit based encoding of GCC's
+   comparison operators.  This encoding simplifies transformations
+   on relational comparison operators, such as AND and OR.  */
+enum comparison_code {
+  COMPCODE_FALSE = 0,
+  COMPCODE_LT = 1,
+  COMPCODE_EQ = 2,
+  COMPCODE_LE = 3,
+  COMPCODE_GT = 4,
+  COMPCODE_LTGT = 5,
+  COMPCODE_GE = 6,
+  COMPCODE_ORD = 7,
+  COMPCODE_UNORD = 8,
+  COMPCODE_UNLT = 9,
+  COMPCODE_UNEQ = 10,
+  COMPCODE_UNLE = 11,
+  COMPCODE_UNGT = 12,
+  COMPCODE_NE = 13,
+  COMPCODE_UNGE = 14,
+  COMPCODE_TRUE = 15
+};
+
 static void encode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 static void decode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
 static bool negate_mathfn_p (enum built_in_function);
@@ -69,10 +91,12 @@ static tree const_binop (enum tree_code, tree, tree, int);
 static hashval_t size_htab_hash (const void *);
 static int size_htab_eq (const void *, const void *);
 static tree fold_convert_const (enum tree_code, tree, tree);
-static enum tree_code invert_tree_comparison (enum tree_code);
+static enum tree_code invert_tree_comparison (enum tree_code, bool);
 static enum tree_code swap_tree_comparison (enum tree_code);
-static int comparison_to_compcode (enum tree_code);
-static enum tree_code compcode_to_comparison (int);
+static enum comparison_code comparison_to_compcode (enum tree_code);
+static enum tree_code compcode_to_comparison (enum comparison_code);
+static tree combine_comparisons (enum tree_code, enum tree_code,
+				 enum tree_code, tree, tree, tree);
 static int truth_value_p (enum tree_code);
 static int operand_equal_for_comparison_p (tree, tree, tree);
 static int twoval_comparison_p (tree, tree *, tree *, int *);
@@ -114,18 +138,6 @@ static tree fold_negate_const (tree, tree);
 static tree fold_abs_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_relational_hi_lo (enum tree_code *, const tree, tree *, tree *);
-
-/* The following constants represent a bit based encoding of GCC's
-   comparison operators.  This encoding simplifies transformations
-   on relational comparison operators, such as AND and OR.  */
-#define COMPCODE_FALSE   0
-#define COMPCODE_LT      1
-#define COMPCODE_EQ      2
-#define COMPCODE_LE      3
-#define COMPCODE_GT      4
-#define COMPCODE_NE      5
-#define COMPCODE_GE      6
-#define COMPCODE_TRUE    7
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -2057,11 +2069,15 @@ pedantic_non_lvalue (tree x)
 
 /* Given a tree comparison code, return the code that is the logical inverse
    of the given code.  It is not safe to do this for floating-point
-   comparisons, except for NE_EXPR and EQ_EXPR.  */
+   comparisons, except for NE_EXPR and EQ_EXPR, so we receive a machine mode
+   as well: if reversing the comparison is unsafe, return ERROR_MARK.  */
 
 static enum tree_code
-invert_tree_comparison (enum tree_code code)
+invert_tree_comparison (enum tree_code code, bool honor_nans)
 {
+  if (honor_nans && flag_trapping_math)
+    return ERROR_MARK;
+
   switch (code)
     {
     case EQ_EXPR:
@@ -2069,13 +2085,29 @@ invert_tree_comparison (enum tree_code code)
     case NE_EXPR:
       return EQ_EXPR;
     case GT_EXPR:
-      return LE_EXPR;
+      return honor_nans ? UNLE_EXPR : LE_EXPR;
     case GE_EXPR:
-      return LT_EXPR;
+      return honor_nans ? UNLT_EXPR : LT_EXPR;
     case LT_EXPR:
-      return GE_EXPR;
+      return honor_nans ? UNGE_EXPR : GE_EXPR;
     case LE_EXPR:
+      return honor_nans ? UNGT_EXPR : GT_EXPR;
+    case LTGT_EXPR:
+      return UNEQ_EXPR;
+    case UNEQ_EXPR:
+      return LTGT_EXPR;
+    case UNGT_EXPR:
+      return LE_EXPR;
+    case UNGE_EXPR:
+      return LT_EXPR;
+    case UNLT_EXPR:
+      return GE_EXPR;
+    case UNLE_EXPR:
       return GT_EXPR;
+    case ORDERED_EXPR:
+      return UNORDERED_EXPR;
+    case UNORDERED_EXPR:
+      return ORDERED_EXPR;
     default:
       abort ();
     }
@@ -2110,7 +2142,7 @@ swap_tree_comparison (enum tree_code code)
    into a compcode bit-based encoding.  This function is the inverse of
    compcode_to_comparison.  */
 
-static int
+static enum comparison_code
 comparison_to_compcode (enum tree_code code)
 {
   switch (code)
@@ -2127,6 +2159,22 @@ comparison_to_compcode (enum tree_code code)
       return COMPCODE_NE;
     case GE_EXPR:
       return COMPCODE_GE;
+    case ORDERED_EXPR:
+      return COMPCODE_ORD;
+    case UNORDERED_EXPR:
+      return COMPCODE_UNORD;
+    case UNLT_EXPR:
+      return COMPCODE_UNLT;
+    case UNEQ_EXPR:
+      return COMPCODE_UNEQ;
+    case UNLE_EXPR:
+      return COMPCODE_UNLE;
+    case UNGT_EXPR:
+      return COMPCODE_UNGT;
+    case LTGT_EXPR:
+      return COMPCODE_LTGT;
+    case UNGE_EXPR:
+      return COMPCODE_UNGE;
     default:
       abort ();
     }
@@ -2137,7 +2185,7 @@ comparison_to_compcode (enum tree_code code)
    inverse of comparison_to_compcode.  */
 
 static enum tree_code
-compcode_to_comparison (int code)
+compcode_to_comparison (enum comparison_code code)
 {
   switch (code)
     {
@@ -2153,9 +2201,109 @@ compcode_to_comparison (int code)
       return NE_EXPR;
     case COMPCODE_GE:
       return GE_EXPR;
+    case COMPCODE_ORD:
+      return ORDERED_EXPR;
+    case COMPCODE_UNORD:
+      return UNORDERED_EXPR;
+    case COMPCODE_UNLT:
+      return UNLT_EXPR;
+    case COMPCODE_UNEQ:
+      return UNEQ_EXPR;
+    case COMPCODE_UNLE:
+      return UNLE_EXPR;
+    case COMPCODE_UNGT:
+      return UNGT_EXPR;
+    case COMPCODE_LTGT:
+      return LTGT_EXPR;
+    case COMPCODE_UNGE:
+      return UNGE_EXPR;
     default:
       abort ();
     }
+}
+
+/* Return a tree for the comparison which is the combination of
+   doing the AND or OR (depending on CODE) of the two operations LCODE
+   and RCODE on the identical operands LL_ARG and LR_ARG.  Take into account
+   the possibility of trapping if the mode has NaNs, and return NULL_TREE
+   if this makes the transformation invalid.  */
+
+tree
+combine_comparisons (enum tree_code code, enum tree_code lcode,
+		     enum tree_code rcode, tree truth_type,
+		     tree ll_arg, tree lr_arg)
+{
+  bool honor_nans = HONOR_NANS (TYPE_MODE (TREE_TYPE (ll_arg)));
+  enum comparison_code lcompcode = comparison_to_compcode (lcode);
+  enum comparison_code rcompcode = comparison_to_compcode (rcode);
+  enum comparison_code compcode;
+
+  switch (code)
+    {
+    case TRUTH_AND_EXPR: case TRUTH_ANDIF_EXPR:
+      compcode = lcompcode & rcompcode;
+      break;
+
+    case TRUTH_OR_EXPR: case TRUTH_ORIF_EXPR:
+      compcode = lcompcode | rcompcode;
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  if (!honor_nans)
+    {
+      /* Eliminate unordered comparisons, as well as LTGT and ORD
+	 which are not used unless the mode has NaNs.  */
+      compcode &= ~COMPCODE_UNORD;
+      if (compcode == COMPCODE_LTGT)
+	compcode = COMPCODE_NE;
+      else if (compcode == COMPCODE_ORD)
+	compcode = COMPCODE_TRUE;
+    }
+   else if (flag_trapping_math)
+     {
+	/* Check that the original operation and the optimized ones will trap 
+	   under the same condition.  */
+	bool ltrap = (lcompcode & COMPCODE_UNORD) == 0
+		     && (lcompcode != COMPCODE_EQ)
+		     && (lcompcode != COMPCODE_ORD);
+	bool rtrap = (rcompcode & COMPCODE_UNORD) == 0
+		     && (rcompcode != COMPCODE_EQ)
+		     && (rcompcode != COMPCODE_ORD);
+	bool trap = (compcode & COMPCODE_UNORD) == 0
+		    && (compcode != COMPCODE_EQ)
+		    && (compcode != COMPCODE_ORD);
+
+        /* In a short-circuited boolean expression the LHS might be
+	   such that the RHS, if evaluated, will never trap.  For
+	   example, in ORD (x, y) && (x < y), we evaluate the RHS only
+	   if neither x nor y is NaN.  (This is a mixed blessing: for
+	   example, the expression above will never trap, hence
+	   optimizing it to x < y would be invalid).  */
+        if ((code == TRUTH_ORIF_EXPR && (lcompcode & COMPCODE_UNORD))
+            || (code == TRUTH_ANDIF_EXPR && !(lcompcode & COMPCODE_UNORD)))
+          rtrap = false;
+
+        /* If the comparison was short-circuited, and only the RHS
+	   trapped, we may now generate a spurious trap.  */
+	if (rtrap && !ltrap
+	    && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR))
+	  return NULL_TREE;
+
+	/* If we changed the conditions that cause a trap, we lose.  */
+	if ((ltrap || rtrap) != trap)
+	  return NULL_TREE;
+      }
+
+  if (compcode == COMPCODE_TRUE)
+    return fold_convert (truth_type, integer_one_node);
+  else if (compcode == COMPCODE_FALSE)
+    return fold_convert (truth_type, integer_zero_node);
+  else
+    return fold (build2 (compcode_to_comparison (compcode),
+			 truth_type, ll_arg, lr_arg));
 }
 
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
@@ -2680,8 +2828,10 @@ pedantic_omit_one_operand (tree type, tree result, tree omitted)
 
 /* Return a simplified tree node for the truth-negation of ARG.  This
    never alters ARG itself.  We assume that ARG is an operation that
-   returns a truth value (0 or 1).  */
+   returns a truth value (0 or 1).
 
+   FIXME: one would think we would fold the result, but it causes
+   problems with the dominator optimizer.  */
 tree
 invert_truthvalue (tree arg)
 {
@@ -2697,22 +2847,22 @@ invert_truthvalue (tree arg)
 
   if (TREE_CODE_CLASS (code) == '<')
     {
-      if (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
-	  && !flag_unsafe_math_optimizations
-	  && code != NE_EXPR
-	  && code != EQ_EXPR)
-	return build1 (TRUTH_NOT_EXPR, type, arg);
-      else if (code == UNORDERED_EXPR
-	       || code == ORDERED_EXPR
-	       || code == UNEQ_EXPR
-	       || code == UNLT_EXPR
-	       || code == UNLE_EXPR
-	       || code == UNGT_EXPR
-	       || code == UNGE_EXPR)
+      tree op_type = TREE_TYPE (TREE_OPERAND (arg, 0));
+      if (FLOAT_TYPE_P (op_type)
+	  && flag_trapping_math
+	  && code != ORDERED_EXPR && code != UNORDERED_EXPR
+	  && code != NE_EXPR && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
-	return build2 (invert_tree_comparison (code), type,
-		       TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
+	{
+	  code = invert_tree_comparison (code,
+					 HONOR_NANS (TYPE_MODE (op_type)));
+	  if (code == ERROR_MARK)
+	    return build1 (TRUTH_NOT_EXPR, type, arg);
+	  else
+	    return build2 (code, type,
+			   TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
+	}
     }
 
   switch (code)
@@ -4011,9 +4161,6 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
   if (TREE_CODE_CLASS (lcode) != '<' || TREE_CODE_CLASS (rcode) != '<')
     return 0;
 
-  code = ((code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR)
-	  ? TRUTH_AND_EXPR : TRUTH_OR_EXPR);
-
   ll_arg = TREE_OPERAND (lhs, 0);
   lr_arg = TREE_OPERAND (lhs, 1);
   rl_arg = TREE_OPERAND (rhs, 0);
@@ -4021,45 +4168,30 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 
   /* Simplify (x<y) && (x==y) into (x<=y) and related optimizations.  */
   if (simple_operand_p (ll_arg)
-      && simple_operand_p (lr_arg)
-      && !FLOAT_TYPE_P (TREE_TYPE (ll_arg)))
+      && simple_operand_p (lr_arg))
     {
-      int compcode;
-
+      tree result;
       if (operand_equal_p (ll_arg, rl_arg, 0)
           && operand_equal_p (lr_arg, rr_arg, 0))
-        {
-          int lcompcode, rcompcode;
-
-          lcompcode = comparison_to_compcode (lcode);
-          rcompcode = comparison_to_compcode (rcode);
-          compcode = (code == TRUTH_AND_EXPR)
-                     ? lcompcode & rcompcode
-                     : lcompcode | rcompcode;
-        }
+	{
+          result = combine_comparisons (code, lcode, rcode,
+					truth_type, ll_arg, lr_arg);
+	  if (result)
+	    return result;
+	}
       else if (operand_equal_p (ll_arg, rr_arg, 0)
                && operand_equal_p (lr_arg, rl_arg, 0))
-        {
-          int lcompcode, rcompcode;
-
-          rcode = swap_tree_comparison (rcode);
-          lcompcode = comparison_to_compcode (lcode);
-          rcompcode = comparison_to_compcode (rcode);
-          compcode = (code == TRUTH_AND_EXPR)
-                     ? lcompcode & rcompcode
-                     : lcompcode | rcompcode;
-        }
-      else
-	compcode = -1;
-
-      if (compcode == COMPCODE_TRUE)
-	return fold_convert (truth_type, integer_one_node);
-      else if (compcode == COMPCODE_FALSE)
-	return fold_convert (truth_type, integer_zero_node);
-      else if (compcode != -1)
-	return build2 (compcode_to_comparison (compcode),
-		       truth_type, ll_arg, lr_arg);
+	{
+          result = combine_comparisons (code, lcode,
+					swap_tree_comparison (rcode),
+					truth_type, ll_arg, lr_arg);
+	  if (result)
+	    return result;
+	}
     }
+
+  code = ((code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR)
+	  ? TRUTH_AND_EXPR : TRUTH_OR_EXPR);
 
   /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines
@@ -9856,7 +9988,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   if (code == NE_EXPR || code == GE_EXPR)
     {
       invert = 1;
-      code = invert_tree_comparison (code);
+      code = invert_tree_comparison (code, false);
     }
 
   /* Compute a result for LT or EQ if args permit;

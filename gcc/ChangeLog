@@ -1,3 +1,43 @@
+2004-05-28  Paolo Bonzini  <bonzini@gnu.org>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/15649
+	Add LTGT_EXPR and improve pretty-printing of unordered
+	comparisons.
+	* c-common.c (c_common_truthvalue_conversion):
+	Handle LTGT_EXPR.
+	* c-typeck.c (build_binary_op): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* expr.c (expand_expr_real_1, do_store_flag): Likewise.
+	* predict.c (tree_predict_by_opcode): Likewise.
+	* real.c (real_compare): Likewise.
+	* tree-cfg.c (verify_expr): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	Handle ORDERED_EXPR, UNORDERED_EXPR.
+	(op_symbol): Print unordered comparisons differently
+	than ordered ones.
+	* tree.def (LTGT_EXPR): New '<' tree code.
+	* doc/c-tree.texi (Expressions): Document floating-point
+	comparison nodes.
+
+	Fold comparisons between floating point values.
+	* fold-const.c (enum comparison_code): New, from
+	#define'd constants.  Define compcodes for unordered
+	comparisons and for invalid transformations.
+	(invert_tree_comparison): Add "honor_nans" parameter.
+	(fold_truthop): Revamp to work on floating-point types too.
+	(comparison_to_compcode): Support unordered comparisons.
+	Use new enum comparison_code.
+	(compcode_to_comparison): Likewise.
+	(combine_compcodes): New function.
+	(invert_truthvalue): Let invert_tree_comparison decide
+	whether it is valid to fold the comparison.  Fold ORDERED
+	and UNORDERED even if flag_unsafe_math_optimizations is off,
+	and the remaining even if flag_unsafe_math_optimizations
+	is off but we are under -fno-trapping-math.
+	(fold_relational_const): Integer modes do not honor NaNs.
+	
 2004-05-28  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_output_epilogue): Remove redundant code.
