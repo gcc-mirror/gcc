@@ -6045,9 +6045,10 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       else
 	{
 	  tree type = TREE_TYPE (o[i]);
-	  if (CP_TYPE_CONST_P (type)
-	      || (IS_AGGR_TYPE_CODE (TREE_CODE (type))
-		  && C_TYPE_FIELDS_READONLY (type)))
+	  if (type != error_mark_node
+	      && (CP_TYPE_CONST_P (type)
+		  || (IS_AGGR_TYPE_CODE (TREE_CODE (type))
+		      && C_TYPE_FIELDS_READONLY (type))))
 	    readonly_error (o[i], "modification by `asm'", 1);
 	}
     }
