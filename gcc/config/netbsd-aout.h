@@ -19,6 +19,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* TARGET_OS_CPP_BUILTINS() common to all NetBSD a.out targets.  */
+#define NETBSD_OS_CPP_BUILTINS_AOUT()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_COMMON();		\
+    }						\
+  while (0)
+
 /* This defines which switch letters take arguments. */
 
 #undef SWITCH_TAKES_ARG
