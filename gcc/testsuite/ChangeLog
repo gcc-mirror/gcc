@@ -1,3 +1,8 @@
+2004-01-21  Andrew Pinski  <apinski@apple.com>
+
+	PR target/13785
+	* gcc.dg/20030121-1.c: New test.
+
 2004-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20030123-1.c: Add -fno-omit-frame-pointer option.  Do not
