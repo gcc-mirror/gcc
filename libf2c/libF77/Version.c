@@ -1,4 +1,4 @@
-        static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
+                static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 
 /*
 */
