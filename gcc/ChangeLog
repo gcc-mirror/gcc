@@ -1,3 +1,8 @@
+2002-03-14  David Mosberger <davidm@hpl.hp.com>, Hans Boehm <Hans_Boehm@hp.com>
+
+	* config/ia64/unwind-ia64.c: Handle copy_state and label_state
+	  descriptors correctly.
+
 2002-03-14  Michael Meissner  <meissner@redhat.com>
 
 	* params.def (PARAM_MAX_UNROLLED_INSNS): New macro, default to
