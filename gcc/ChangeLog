@@ -1,5 +1,14 @@
 Sat Mar 14 05:45:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* xm-siglist.h, xm-alloca.h: New files.
+	* i386/xm-sysv4.h (i386/xm-i386.h, xm-svr4.h): Don't include.
+	(USE_C_ALLOCA, SMALL_ARG_MAX): Don't define.
+	* i386/xm-sco5.h (i386/xm-sysv3.h): Don't include.
+	(SYS_SIGLIST_DECLARED, USE_C_ALLOCA): Don't define.
+	* rs6000/xm-sysv4.h, sparc/xm-sysv4.h: Don't include xm-svr4.h.
+	* i386/xm-dgux.h, mips/xm-news.h, mips/xm-sysv4.h: Deleted.
+	* configure.in: Reflect above changes.
+
 	* configure.in ({,host_,build_}xm_defines): New variables.
 	Set to USG instead of including xm-usg.h.
 	Write #define lines in config.h files from xm_defines vars.
