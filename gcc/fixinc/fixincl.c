@@ -405,7 +405,7 @@ run_compiles ()
 
   /*  Allow machine name tests to be ignored (testing, mainly) */
 
-  if ((*pz_machine == '\0') || (*pz_machine == '*'))
+  if (pz_machine && ((*pz_machine == '\0') || (*pz_machine == '*')))
     pz_machine = (char*)NULL;
 
   /* FOR every fixup, ...  */
