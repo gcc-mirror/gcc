@@ -1,3 +1,12 @@
+Mon Feb 19 20:30:16 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (move_operand): Accept code to load the address of a
+	symbol out of the DLT as a valid move operand.
+	(print_operand, case 'A'): New to handle generating a DLT
+	reference for a LO_SUM expression.
+	* pa.h (EXTRA_CONSTRAINT): Handle 'A' for DLT LO_SUM references.
+	* pa.md (movsi, movdi patterns): Allow DLT LO_SUM references.
+
 2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* README, cpp.texi, gcc.texi, version.c: Update version number to
