@@ -5294,6 +5294,7 @@ tweak:
   if (!pedantic)
     {
       int rank1 = IDENTITY_RANK, rank2 = IDENTITY_RANK;
+      struct z_candidate *w, *l;
 
       for (i = 0; i < len; ++i)
 	{
@@ -5302,11 +5303,22 @@ tweak:
 	  if (ICS_RANK (TREE_VEC_ELT (cand2->convs, i+off2)) > rank2)
 	    rank2 = ICS_RANK (TREE_VEC_ELT (cand2->convs, i+off2));
 	}
-
       if (rank1 < rank2)
-	return 1;
+	winner = 1, w = cand1, l = cand2;
       if (rank1 > rank2)
-	return -1;
+	winner = -1, w = cand2, l = cand1;
+      if (winner)
+        {
+	  if (warn)
+	    {
+	      cp_pedwarn ("choosing `%D' over `%D'", w->fn, l->fn);
+	      cp_pedwarn (
+"  because worst conversion for the former is better than worst conversion for the latter");
+	    }
+	  else
+	    add_warning (w, l);
+          return winner;
+        }
     }
 
   my_friendly_assert (!winner, 20010121);

@@ -1,3 +1,8 @@
+2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (joust): cp_pedwarn when using gnu extension concerning
+	worst conversion sequences.
+
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Implement using decls inside template functions.

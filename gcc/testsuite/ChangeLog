@@ -1,3 +1,7 @@
+2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.ext/overload1.C: New test.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* objc/execute/bycopy-3.m: New test.
