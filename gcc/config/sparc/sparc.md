@@ -1840,7 +1840,7 @@
 (define_expand "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
-		 (zero_extend:DI (match_operand:SI 2 "arith_operand" ""))))]
+		 (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" ""))))]
   "TARGET_V8 || TARGET_SPARCLITE"
   "
 {
@@ -1864,7 +1864,7 @@
 (define_insn "const_umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 2 "small_int" "I")))]
+		 (match_operand:SI 2 "uns_small_int" "")))]
   "TARGET_V8 || TARGET_SPARCLITE"
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
@@ -2528,6 +2528,25 @@
 		   (match_operand:SI 2 "shift_operand" "rI")))]
   ""
   "sll %1,%2,%0")
+
+(define_insn ""
+  [(set (reg:CC_NOOV 0)
+	(compare:CC_NOOV (ashift:SI (match_operand:SI 0 "register_operand" "r")
+				    (const_int 1))
+			 (const_int 0)))]
+  ""
+  "addcc %0,%0,%%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn ""
+  [(set (reg:CC_NOOV 0)
+	(compare:CC_NOOV (ashift:SI (match_operand:SI 1 "register_operand" "r")
+				    (const_int 1))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI (match_dup 1) (const_int 1)))]
+  ""
+  "addcc %1,%1,%0")
 
 (define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
