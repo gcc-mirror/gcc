@@ -128,7 +128,8 @@ struct eh_region
   /* Each region does exactly one thing.  */
   enum eh_region_type
   {
-    ERT_CLEANUP = 1,
+    ERT_UNKNOWN = 0,
+    ERT_CLEANUP,
     ERT_TRY,
     ERT_CATCH,
     ERT_ALLOWED_EXCEPTIONS,
@@ -478,6 +479,10 @@ mark_eh_region (region)
 
   switch (region->type)
     {
+    case ERT_UNKNOWN:
+      /* This can happen if a nested function is inside the body of a region
+	 and we do a GC as part of processing it.  */
+      break;
     case ERT_CLEANUP:
       ggc_mark_tree (region->u.cleanup.exp);
       break;
