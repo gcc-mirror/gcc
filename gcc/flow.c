@@ -1707,12 +1707,18 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
 	   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx
 	   && GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 1)) == CONST_INT)
-    /* We have an insn to pop a constant amount off the stack.
-       (Such insns use PLUS regardless of the direction of the stack,
-       and any insn to adjust the stack by a constant is always a pop.)
-       These insns, if not dead stores, have no effect on life, though
-       they do have an effect on the memory stores we are tracking.  */
-    invalidate_mems_from_set (pbi, stack_pointer_rtx);
+    {
+      /* We have an insn to pop a constant amount off the stack.
+         (Such insns use PLUS regardless of the direction of the stack,
+         and any insn to adjust the stack by a constant is always a pop
+	 or part of a push.)
+         These insns, if not dead stores, have no effect on life, though
+         they do have an effect on the memory stores we are tracking.  */
+      invalidate_mems_from_set (pbi, stack_pointer_rtx);
+      /* Still, we need to update local_set, lest ifcvt.c:dead_or_predicable
+	 concludes that the stack pointer is not modified.  */
+      mark_set_regs (pbi, PATTERN (insn), insn);
+    }
   else
     {
       rtx note;
