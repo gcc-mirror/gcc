@@ -352,9 +352,10 @@ m68k_compute_frame_layout (void)
   current_frame.reg_mask = mask;
   current_frame.reg_rev_mask = rmask;
 
+  current_frame.foffset = 0;
+  mask = rmask = saved = 0;
   if (TARGET_68881 /* || TARGET_CFV4E */)
     {
-      mask = rmask = saved = 0;
       for (regno = 16; regno < 24; regno++)
 	if (m68k_save_reg (regno, interrupt_handler))
 	  {
@@ -364,10 +365,10 @@ m68k_compute_frame_layout (void)
 	  }
       current_frame.foffset = saved * 12 /* (TARGET_CFV4E ? 8 : 12) */;
       current_frame.offset += current_frame.foffset;
-      current_frame.fpu_no = saved;
-      current_frame.fpu_mask = mask;
-      current_frame.fpu_rev_mask = rmask;
     }
+  current_frame.fpu_no = saved;
+  current_frame.fpu_mask = mask;
+  current_frame.fpu_rev_mask = rmask;
 
   /* Remember what function this frame refers to.  */
   current_frame.funcdef_no = current_function_funcdef_no;
@@ -603,28 +604,24 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	}
     } /* !frame_pointer_needed */
 
-  if (TARGET_68881)
+  if (current_frame.fpu_mask)
     {
-      if (current_frame.fpu_mask)
-	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm %I0x%x,-(%Rsp)\n", current_frame.fpu_mask);
+      asm_fprintf (stream, "\tfmovm %I0x%x,-(%Rsp)\n", current_frame.fpu_mask);
 #else
-	  asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", current_frame.fpu_mask);
+      asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", current_frame.fpu_mask);
 #endif
-	  if (dwarf2out_do_frame ())
-	    {
-	      char *l = (char *) dwarf2out_cfi_label ();
-	      int n_regs, regno;
+      if (dwarf2out_do_frame ())
+	{
+	  char *l = (char *) dwarf2out_cfi_label ();
+	  int n_regs, regno;
 
-	      cfa_offset += current_frame.fpu_no * 12;
-	      if (! frame_pointer_needed)
-		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-	      for (regno = 16, n_regs = 0; regno < 24; regno++)
-		if (current_frame.fpu_mask & (1 << (regno - 16)))
-		  dwarf2out_reg_save (l, regno,
-				      -cfa_offset + n_regs++ * 12);
-	    }
+	  cfa_offset += current_frame.fpu_no * 12;
+	  if (! frame_pointer_needed)
+	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+	  for (regno = 16, n_regs = 0; regno < 24; regno++)
+	    if (current_frame.fpu_mask & (1 << (regno - 16)))
+	      dwarf2out_reg_save (l, regno, -cfa_offset + n_regs++ * 12);
 	}
     }
 
@@ -710,8 +707,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
 	  for (regno = 0, n_regs = 0; regno < 16; regno++)
 	    if (current_frame.reg_mask & (1 << regno))
-	      dwarf2out_reg_save (l, regno,
-				  -cfa_offset + n_regs++ * 4);
+	      dwarf2out_reg_save (l, regno, -cfa_offset + n_regs++ * 4);
 	}
     }
   if (!TARGET_SEP_DATA && flag_pic &&
