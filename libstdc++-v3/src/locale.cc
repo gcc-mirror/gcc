@@ -37,7 +37,9 @@
 #include <bits/std_ostream.h>
 #include <bits/std_vector.h>
 #include <bits/std_memory.h>      // for auto_ptr
-
+#ifdef _GLIBCPP_USE_WCHAR_T  
+  #include <bits/std_cwctype.h>     // for towupper, etc.
+#endif
 namespace std {
 
   // locale::_Impl
@@ -641,76 +643,104 @@ namespace std {
   ctype<wchar_t>::
   ~ctype() { }
 
-  bool
-  ctype<wchar_t>::
-  do_is(mask __m, char_type __c) const
-  { 
-    return ((static_cast<__table_type>(__c) < _S_table_size) 
-	    && (_M_ctable[__c] & __m)); 
-  }
-  
-  const wchar_t* 
-  ctype<wchar_t>::
-  do_is(const wchar_t* __low, const wchar_t* __high, mask* __vec) const
+  // NB: These ctype<wchar_t> methods are not configuration-specific,
+  // unlike the ctype<char> bits.
+  ctype<wchar_t>::ctype(size_t /*__refs*/) throw() { }
+
+  wchar_t
+  ctype<wchar_t>::do_toupper(wchar_t __c) const
+  { return ::towupper(__c); }
+
+  const wchar_t*
+  ctype<wchar_t>::do_toupper(wchar_t* __low, const wchar_t* __high) const
   {
-    for (; __low < __high; ++__low, ++__vec)
-      *__vec = ((static_cast<__table_type>(*__low) < _S_table_size) 
-		? _M_ctable[*__low] : mask(0));
+    while (__low < __high)
+      {
+        *__low = ::towupper(*__low);
+        ++__low;
+      }
     return __high;
   }
   
+  wchar_t
+  ctype<wchar_t>::do_tolower(wchar_t __c) const
+  { return ::towlower(__c); }
+  
+  const wchar_t*
+  ctype<wchar_t>::do_tolower(wchar_t* __low, const wchar_t* __high) const
+  {
+    while (__low < __high)
+      {
+        *__low = ::towlower(*__low);
+        ++__low;
+      }
+    return __high;
+  }
+
+  bool
+  ctype<wchar_t>::
+  do_is(mask /*__m*/, char_type /*__c*/) const
+  { 
+    // XXX
+    return false;
+  }
+  
   const wchar_t* 
   ctype<wchar_t>::
-  do_scan_is(mask __m, const wchar_t* __low, const wchar_t* __high) const
+  do_is(const wchar_t* __low, const wchar_t* /*__high*/, mask* /*__vec*/) const
   {
-    while (__low < __high 
-	   && (_S_table_size < static_cast<__table_type>(*__low) 
-	       || !(_M_ctable[*__low] & __m)))
-      ++__low;
+    // XXX
+    return __low;
+  }
+  
+  const wchar_t* 
+  ctype<wchar_t>::
+  do_scan_is(mask /*__m*/, const wchar_t* __low, const wchar_t* /*__high*/) const
+  {
+    // XXX
     return __low;
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_scan_not(mask __m, const char_type* __low, const char_type* __high) const
+  do_scan_not(mask /*__m*/, const char_type* __low, 
+	      const char_type* /*__high*/) const
   {
-    while (__low < __high 
-	   && static_cast<__table_type>(*__low) < _S_table_size 
-	   && (_M_ctable[*__low] & __m))
-      ++__low;
+    // XXX
     return __low;
   }
 
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  { return static_cast<wchar_t>((unsigned char)__c); }
+  { 
+    // XXX
+    return static_cast<wchar_t>((unsigned char)__c); 
+  }
   
   const char* 
   ctype<wchar_t>::
-  do_widen(const char* __low, const char* __high, wchar_t* __dest) const
+  do_widen(const char* /*__low*/, const char* __high, 
+	   wchar_t* /*__dest*/) const
   {
-    while (__low < __high)
-      *__dest++ = static_cast<wchar_t>((unsigned char)*__low++);
+    // XXX
     return __high;
   }
 
   char
   ctype<wchar_t>::
-  do_narrow(wchar_t __c, char __dfault) const
+  do_narrow(wchar_t /*__c*/, char __dfault) const
   { 
-    return ((static_cast<__table_type>(__c) < _S_table_size) 
-	    ? static_cast<char>(__c) : __dfault); 
+    // XXX
+    return __dfault; 
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_narrow(const wchar_t* __low, const wchar_t* __high, 
-	    char __dfault, char* __dest) const
+  do_narrow(const wchar_t* /*__low*/, const wchar_t* __high, 
+	    char /*__dfault*/, char* /*__dest*/) const
   {
-    for (; __low < __high; ++__dest, ++__low)
-      *__dest = (static_cast<__table_type>(*__low) < _S_table_size) 
-		? static_cast<char>(*__low) : __dfault;
+    // XXX
     return __high;
   }
 

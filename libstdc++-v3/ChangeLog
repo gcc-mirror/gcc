@@ -1,5 +1,24 @@
 2000-06-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* bits/locale_facets.h (ctype<wchar_t>): Remove unnecessary data
+	members.
+	* src/locale.cc: Add cwchar include here. Remove incorrect
+	definitions, and stub them out.
+	* config/generic/ctype.cc (ctype): Remove ctype<wchar_t> bits.
+	* config/solaris/solaris2.7/ctype.cc (ctype): Same.
+	* config/solaris/solaris2.5/ctype.cc (ctype): Same.
+	* config/newlib/ctype.cc: Same.
+	* config/gnu-linux/ctype.cc: Same.
+	* config/bsd/ctype.cc: Same.
+	* config/aix/ctype.cc: Same.
+
+2000-06-12  Branko Cibej  <branko.cibej@hermes.si>
+
+        * config/solaris/solaris2.6/ctype.cc (do_toupper, do_tolower): Use
+        towupper and towlower to convert wide characters.
+
+2000-06-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
 	* mkcheck.in: Clean up confusion regarding NAME, PRE_NAME.
 
 2000-06-08  Branko Cibej  <branko.cibej@hermes.si>

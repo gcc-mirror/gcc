@@ -69,39 +69,3 @@
       }
     return __high;
   }
-
-#ifdef _GLIBCPP_USE_WCHAR_T  
-  ctype<wchar_t>::ctype(size_t /*__refs*/) throw()
-    : _M_toupper(__trans_upper), _M_tolower(__trans_lower),
-      _M_ctable(__ctype_mask)
-    { }
-
-  wchar_t
-  ctype<wchar_t>::do_toupper(wchar_t __c) const
-  { return (__c < _S_table_size) ? _M_toupper[__c] : __c; }
-  
-  const wchar_t*
-  ctype<wchar_t>::do_toupper(wchar_t* low, const wchar_t* high) const
-  {
-    for (;low < high; ++low)
-      if (*low < _S_table_size)
-        *low = _M_toupper[*low];
-    return high;
-  }
-  
-  wchar_t
-  ctype<wchar_t>::do_tolower(wchar_t __c) const
-  { return (__c < _S_table_size) ? _M_tolower[__c] : __c; }
-  
-  const wchar_t*
-  ctype<wchar_t>::do_tolower(wchar_t* __low, const wchar_t* __high) const
-  {
-    for (; __low < __high; ++__low)
-      if (*__low < _S_table_size)
-        *__low = _M_toupper[*__low];
-    return __high;
-  }
-#endif
-
-
-
