@@ -11713,7 +11713,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
 
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
       if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
 	op1 = copy_to_mode_reg (mode1, op1);
