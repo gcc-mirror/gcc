@@ -1,3 +1,10 @@
+2005-03-10  Steve Ellcey  <sje@cup.hp.com>
+
+	* g++.dg/eh/forced1.C: Fix comment.
+	* g++.dg/eh/forced2.C: Ditto.
+	* g++.dg/eh/forced3.C: Ditto.
+	* g++.dg/eh/forced4.C: Ditto.
+
 2005-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-opt/20412

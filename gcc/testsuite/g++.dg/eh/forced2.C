@@ -1,4 +1,4 @@
-// HP-UX libunwind.so doesn't provide _Unwind_ForcedUnwind.
+// HP-UX libunwind.so doesn't provide _UA_END_OF_STACK.
 // { dg-do run { xfail "ia64-hp-hpux11.*" } }
 
 // Test that leaving the catch block without rethrowing
