@@ -1,3 +1,10 @@
+2004-11-26  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/16356
+	* config/rs6000/rs6000.md (floatdisf2_internal2): Rewrite with
+	separate output register and one less jump.  Enable for powerpc64.
+	(floatdisf2): Adjust for above.
+
 2004-11-25  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config.gcc (avr-*-rtems*): Fix typo.
@@ -13,7 +20,7 @@
 
 	Backport from mainline:
 	2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
-                    Roger Sayle  <roger@eyesopen.com>
+	            Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17813
 	* dojump.c (discard_pending_stack_adjust): New function.
@@ -864,10 +871,10 @@
 	2004-03-20  Ziemowit Laski  <zlaski@apple.com>
 	2004-03-24  Ziemowit Laski  <zlaski@apple.com>
 	2004-05-11  Fariborz Jahanian <fjahanian@apple.com>
- 	2004-07-23  Janis Johnson  <janis187@us.ibm.com>
- 	2004-08-12  Janis Johnson  <janis187@us.ibm.com>
+	2004-07-23  Janis Johnson  <janis187@us.ibm.com>
+	2004-08-12  Janis Johnson  <janis187@us.ibm.com>
 	2004-08-12  Ben Elliston <bje@au.ibm.com>
- 	2004-08-16  Janis Johnson  <janis187@us.ibm.com>
+	2004-08-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* c-common.c (vector_size_helper): Remove; call
 	reconstruct_complex_type() instead.
