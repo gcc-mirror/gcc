@@ -1,3 +1,10 @@
+2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
+            John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/19328
+	* gcc.dg/attr-alias-2.c: dg-require-alias takes an
+	argument.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19263
