@@ -377,6 +377,7 @@ static struct default_include {
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
 				   C++.  */
+  int included;                 /* Set if the directory is acceptable.  */
 } include_defaults_array[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;
@@ -2018,6 +2019,7 @@ main (argc, argv)
 	      append_include_chain (new, new);
 	      if (first_system_include == 0)
 		first_system_include = new;
+	      p->included = 1;
 	    }
 	  }
 	}
@@ -2033,6 +2035,7 @@ main (argc, argv)
 	  append_include_chain (new, new);
 	  if (first_system_include == 0)
 	    first_system_include = new;
+	  p->included = 1;
 	}
       }
     }
@@ -2059,6 +2062,14 @@ main (argc, argv)
 	fprintf (stderr, " %.*s\n", (int) strlen (p->fname) - 1, p->fname);
     }
     notice ("End of search list.\n");
+    {
+      struct default_include * d;
+      notice ("The following default directories have been omitted from the search path:\n");
+      for (d = include_defaults; d->fname; d++)
+	if (! d->included)
+	  fprintf (stderr, " %s\n", d->fname);
+      notice ("End of omitted list.\n");
+    }
   }
 
   /* -MG doesn't select the form of output and must be specified with one of
