@@ -6197,7 +6197,7 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 {
   enum rtx_code code;
   rtx *argp, arg;
-  rtx insn, set = 0;
+  rtx insn, set = 0, last, inc;
 
   code = GET_CODE (x);
   *location = NULL;
@@ -6225,7 +6225,26 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
       if (loop_invariant_p (loop, arg) != 1)
 	return 0;
 
-      *inc_val = convert_modes (GET_MODE (dest_reg), GET_MODE (x), arg, 0);
+      /* convert_modes can emit new instructions, e.g. when arg is a loop
+	 invariant MEM and dest_reg has a different mode.
+	 These instructions would be emitted after the end of the function
+	 and then *inc_val would be an unitialized pseudo.
+	 Detect this and bail in this case.
+	 Other alternatives to solve this can be introducing a convert_modes
+	 variant which is allowed to fail but not allowed to emit new
+	 instructions, emit these instructions before loop start and let
+	 it be garbage collected if *inc_val is never used or saving the
+	 *inc_val initialization sequence generated here and when *inc_val
+	 is going to be actually used, emit it at some suitable place.  */
+      last = get_last_insn ();
+      inc = convert_modes (GET_MODE (dest_reg), GET_MODE (x), arg, 0);
+      if (get_last_insn () != last)
+	{
+	  delete_insns_since (last);
+	  return 0;
+	}
+
+      *inc_val = inc;
       *mult_val = const1_rtx;
       *location = argp;
       return 1;
@@ -6306,7 +6325,15 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	{
 	  /* Possible bug here?  Perhaps we don't know the mode of X.  */
-	  *inc_val = convert_modes (GET_MODE (dest_reg), mode, x, 0);
+	  last = get_last_insn ();
+	  inc = convert_modes (GET_MODE (dest_reg), mode, x, 0);
+	  if (get_last_insn () != last)
+	    {
+	      delete_insns_since (last);
+	      return 0;
+	    }
+
+	  *inc_val = inc;
 	  *mult_val = const0_rtx;
 	  return 1;
 	}
