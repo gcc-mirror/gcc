@@ -1,3 +1,27 @@
+2004-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtable): Do not set DECL_VISIBILITY here.
+	(check_field_decls): Or here.
+	(check_methods): Or here.
+	(initialize_array): Don't mess with DECL_CONTEXT.
+	* cp-tree.h (start_decl): Adjust prototype.
+	(determine_visibility): New function.
+	* decl.c (duplicate_decls): Remove checks for hidden "operator
+	new".
+	(build_library_fn_1): Give all library functions default
+	visibility.
+	(start_decl): Add pop_scope_p parameter.  Tidy.
+	(cp_finish_decl): Do not pop scopes here.  Call
+	determine_visibility for variable definitions.
+	(start_preparsed_function): Call determine_visibility.
+	* decl2.c (determine_visibility): New function.
+	* method.c (use_thunk): Fix formatting.
+	* parser.c (cp_parser_condition): Adjust calls to start_decl.
+	(cp_parser_init_declarator): Likewise.
+	* pt.c (instantiate_decl): Always call pop_nested_class.
+	* rtti.c (get_tinfo_decl): Do not set DECL_VISIBILITY.
+	(tinfo_base_init): Likewise.
+
 2004-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16707

@@ -346,6 +346,8 @@ get_tinfo_decl (tree type)
 
       d = build_lang_decl (VAR_DECL, name, TINFO_PSEUDO_TYPE (var_desc));
       SET_DECL_ASSEMBLER_NAME (d, name);
+      /* Remember the type it is for.  */
+      TREE_TYPE (name) = type;
       DECL_TINFO_P (d) = 1;
       DECL_ARTIFICIAL (d) = 1;
       TREE_READONLY (d) = 1;
@@ -354,19 +356,10 @@ get_tinfo_decl (tree type)
 	 define it later if we need to do so.  */
       DECL_EXTERNAL (d) = 1;
       DECL_NOT_REALLY_EXTERN (d) = 1;
-      set_linkage_according_to_type (type, d);
-
-      pushdecl_top_level_and_finish (d, NULL_TREE);
-
       if (CLASS_TYPE_P (type))
-	{
-	  CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
-	  DECL_VISIBILITY (d) = CLASSTYPE_VISIBILITY (type);
-	  DECL_VISIBILITY_SPECIFIED (d) = CLASSTYPE_VISIBILITY_SPECIFIED (type);
-	}
-
-      /* Remember the type it is for.  */
-      TREE_TYPE (name) = type;
+	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
+      set_linkage_according_to_type (type, d);
+      pushdecl_top_level_and_finish (d, NULL_TREE);
 
       /* Add decl to the global array of tinfo decls.  */
       my_friendly_assert (unemitted_tinfo_decls != 0, 20030312);
@@ -791,18 +784,12 @@ tinfo_base_init (tree desc, tree target)
     TREE_TYPE (name_name) = target;
 
     name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
-    
+    SET_DECL_ASSEMBLER_NAME (name_decl, name_name);
     DECL_ARTIFICIAL (name_decl) = 1;
     TREE_READONLY (name_decl) = 1;
     TREE_STATIC (name_decl) = 1;
     DECL_EXTERNAL (name_decl) = 0;
     DECL_TINFO_P (name_decl) = 1;
-    if (CLASS_TYPE_P (target))
-      {
-        DECL_VISIBILITY (name_decl) = CLASSTYPE_VISIBILITY (target);
-        DECL_VISIBILITY_SPECIFIED (name_decl) 
-	  = CLASSTYPE_VISIBILITY_SPECIFIED (target);
-      }
     if (involves_incomplete_p (target))
       {
 	TREE_PUBLIC (name_decl) = 0;
@@ -811,10 +798,6 @@ tinfo_base_init (tree desc, tree target)
     else
       set_linkage_according_to_type (target, name_decl);
     import_export_decl (name_decl);
-    /* External name of the string containing the type's name has a
-       special name.  */
-    SET_DECL_ASSEMBLER_NAME (name_decl,
-			     mangle_typeinfo_string_for_type (target));
     DECL_INITIAL (name_decl) = name_string;
     mark_used (name_decl);
     pushdecl_top_level_and_finish (name_decl, name_string);

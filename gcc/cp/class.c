@@ -659,11 +659,6 @@ build_vtable (tree class_type, tree name, tree vtable_type)
        require more intrusive changes to the g++ front end.  */
     DECL_IGNORED_P (decl) = 1;
 
-  /* The vtable's visibility is the class visibility.  There is no way
-     to override the visibility for just the vtable. */
-  DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
-  DECL_VISIBILITY_SPECIFIED (decl) = CLASSTYPE_VISIBILITY_SPECIFIED (class_type);
-
   return decl;
 }
 
@@ -2971,25 +2966,7 @@ check_field_decls (tree t, tree *access_decls,
 	continue;
 	  
       if (TREE_CODE (x) == CONST_DECL || TREE_CODE (x) == VAR_DECL)
-	{
-	  /* Apply the class's visibility attribute to static members
-	     which do not have a visibility attribute. */
-	  if (! lookup_attribute ("visibility", DECL_ATTRIBUTES (x)))
-            {
-              if (visibility_options.inlines_hidden && DECL_INLINE (x))
-                {
-                  DECL_VISIBILITY (x) = VISIBILITY_HIDDEN;
-                  DECL_VISIBILITY_SPECIFIED (x) = 1;
-                }
-              else
-                {
-                  DECL_VISIBILITY (x) = CLASSTYPE_VISIBILITY (current_class_type);
-                  DECL_VISIBILITY_SPECIFIED (x) = CLASSTYPE_VISIBILITY_SPECIFIED (current_class_type);
-                }
-            }
-
-	  continue;
-	}
+	continue;
 
       /* Now it can only be a FIELD_DECL.  */
 
@@ -3744,23 +3721,6 @@ check_methods (tree t)
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
 	cp_error_at ("initializer specified for non-virtual method `%D'", x);
- 
-      /* Apply the class's visibility attribute to methods which do
-	 not have a visibility attribute. */
-      if (! lookup_attribute ("visibility", DECL_ATTRIBUTES (x)))
-        {
-          if (visibility_options.inlines_hidden && DECL_INLINE (x))
-            {
-              DECL_VISIBILITY (x) = VISIBILITY_HIDDEN;
-              DECL_VISIBILITY_SPECIFIED (x) = 1;
-            }
-          else
-            {
-              DECL_VISIBILITY (x) = CLASSTYPE_VISIBILITY (current_class_type);
-              DECL_VISIBILITY_SPECIFIED (x) = CLASSTYPE_VISIBILITY_SPECIFIED (current_class_type);
-            }
-        }
-
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
       if (DECL_VINDEX (x))
@@ -6740,13 +6700,8 @@ initialize_vtable (tree binfo, tree inits)
 static void
 initialize_array (tree decl, tree inits)
 {
-  tree context;
-
-  context = DECL_CONTEXT (decl);
-  DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = build_constructor (NULL_TREE, inits);
   cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
-  DECL_CONTEXT (decl) = context;
 }
 
 /* Build the VTT (virtual table table) for T.

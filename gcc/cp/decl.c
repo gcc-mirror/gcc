@@ -1881,11 +1881,12 @@ duplicate_decls (tree newdecl, tree olddecl)
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
   /* Warn about conflicting visibility specifications.  */
-  if (DECL_VISIBILITY_SPECIFIED (olddecl) && DECL_VISIBILITY_SPECIFIED (newdecl)
+  if (DECL_VISIBILITY_SPECIFIED (olddecl) 
+      && DECL_VISIBILITY_SPECIFIED (newdecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
       warning ("%J'%D': visibility attribute ignored because it",
-        newdecl, newdecl);
+	       newdecl, newdecl);
       warning ("%Jconflicts with previous declaration here", olddecl);
     }
   /* Choose the declaration which specified visibility.  */
@@ -1893,21 +1894,6 @@ duplicate_decls (tree newdecl, tree olddecl)
     {
       DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
       DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
-    }
-  /* If it's a definition of a global operator new or operator
-     delete, it must be default visibility.  */
-  if (NEW_DELETE_OPNAME_P (DECL_NAME (newdecl)) && DECL_INITIAL (newdecl) != NULL_TREE)
-    {
-      if (!DECL_FUNCTION_MEMBER_P (newdecl) && VISIBILITY_DEFAULT != DECL_VISIBILITY (newdecl))
-        {
-          warning ("%J`%D': ignoring non-default symbol",
-            newdecl, newdecl);
-          warning ("%Jvisibility on global operator new or delete", newdecl);
-          DECL_VISIBILITY (olddecl) = VISIBILITY_DEFAULT;
-          DECL_VISIBILITY_SPECIFIED (olddecl) = 1;
-          DECL_VISIBILITY (newdecl) = VISIBILITY_DEFAULT;
-          DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
-        }
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -3276,6 +3262,10 @@ build_library_fn_1 (tree name, enum tree_code operator_code, tree type)
   TREE_NOTHROW (fn) = 1;
   SET_OVERLOADED_OPERATOR_CODE (fn, operator_code);
   SET_DECL_LANGUAGE (fn, lang_c);
+  /* Runtime library routines are, by definition, available in an
+     external shared object.  */
+  DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
+  DECL_VISIBILITY_SPECIFIED (fn) = 1;
   return fn;
 }
 
@@ -3607,7 +3597,8 @@ start_decl (const cp_declarator *declarator,
 	    cp_decl_specifier_seq *declspecs,
             int initialized,
             tree attributes,
-            tree prefix_attributes)
+            tree prefix_attributes, 
+	    bool *pop_scope_p)
 {
   tree decl;
   tree type, tem;
@@ -3642,14 +3633,11 @@ start_decl (const cp_declarator *declarator,
 
   context = DECL_CONTEXT (decl);
 
-  if (initialized && context && TREE_CODE (context) == NAMESPACE_DECL
-      && context != current_namespace && TREE_CODE (decl) == VAR_DECL)
-    {
-      /* When parsing the initializer, lookup should use the object's
-	 namespace.  */
-      push_decl_namespace (context);
-    }
-
+  if (context)
+    *pop_scope_p = push_scope (context);
+  else
+    *pop_scope_p = false;
+  
   /* We are only interested in class contexts, later.  */
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
     context = NULL_TREE;
@@ -3705,8 +3693,6 @@ start_decl (const cp_declarator *declarator,
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
-      push_nested_class (context);
-
       if (TREE_CODE (decl) == VAR_DECL)
 	{
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, false);
@@ -4715,20 +4701,10 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
       && (DECL_INITIAL (decl) || init))
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_CONTEXT (decl)
-      && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL
-      && DECL_CONTEXT (decl) != current_namespace
-      && init)
-    {
-      /* Leave the namespace of the object.  */
-      pop_decl_namespace ();
-    }
-
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    goto finish_end0;
+    goto finish_end;
 
   if (TYPE_HAS_MUTABLE_P (type))
     TREE_READONLY (decl) = 0;
@@ -4745,7 +4721,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  && !DECL_PRETTY_FUNCTION_P (decl)
 	  && !dependent_type_p (TREE_TYPE (decl)))
 	maybe_deduce_size_from_array_init (decl, init);
-      goto finish_end0;
+      goto finish_end;
     }
 
   /* Parameters are handled by store_parm_decls, not cp_finish_decl.  */
@@ -4833,6 +4809,9 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  /* Remember that the initialization for this variable has
 	     taken place.  */
 	  DECL_INITIALIZED_P (decl) = 1;
+	  /* The variable is being defined, so determine its
+	     visibility.  */
+	  determine_visibility (decl);
 	}
       /* If the variable has an array type, lay out the type, even if
 	 there is no initializer.  It is valid to index through the
@@ -4899,26 +4878,6 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  if (TREE_STATIC (decl))
 	    expand_static_init (decl, init);
 	}
-    finish_end0:
-
-      /* Undo call to `pushclass' that was done in `start_decl'
-	 due to initialization of qualified member variable.
-	 I.e., Foo::x = 10;  */
-      {
-	tree context = CP_DECL_CONTEXT (decl);
-	if (context
-	    && TYPE_P (context)
-	    && (TREE_CODE (decl) == VAR_DECL
-		/* We also have a pushclass done that we need to undo here
-		   if we're at top level and declare a method.  */
-		|| TREE_CODE (decl) == FUNCTION_DECL)
-	    /* If size hasn't been set, we're still defining it,
-	       and therefore inside the class body; don't pop
-	       the binding level..  */
-	    && COMPLETE_TYPE_P (context)
-	    && context == current_class_type)
-	  pop_nested_class ();
-      }
     }
 
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
@@ -9662,6 +9621,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
     warning ("%Jinline function '%D' given attribute noinline", decl1, decl1);
+
+  /* Determine the ELF visibility attribute for the function.  */
+  determine_visibility (decl1);
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args

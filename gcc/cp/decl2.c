@@ -1616,6 +1616,59 @@ maybe_emit_vtables (tree ctype)
   return true;
 }
 
+/* Determine the ELF symbol visibility for DECL.  */
+
+void
+determine_visibility (tree decl)
+{
+  tree class_type;
+
+  /* Cloned constructors and destructors get the same visibility as
+     the underlying function.  That should be set up in
+     maybe_clone_body.  */
+  if (DECL_CLONED_FUNCTION_P (decl))
+    return;
+
+  if (DECL_CLASS_SCOPE_P (decl))
+    class_type = DECL_CONTEXT (decl);
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && DECL_TINFO_P (decl)
+	   && CLASS_TYPE_P (TREE_TYPE (DECL_NAME (decl))))
+    class_type = TREE_TYPE (DECL_NAME (decl));
+  else
+    {
+      /* Virtual tables have DECL_CONTEXT set to their associated class,
+	 so they are automatically handled above.  */
+      my_friendly_assert (!(TREE_CODE (decl) == VAR_DECL
+			    && DECL_VTABLE_OR_VTT_P (decl)), 20040803);
+      /* Entities not associated with any class just get the
+	 visibility specified by their attributes.  */
+      return;
+    }
+
+  /* By default, static data members and function members receive
+     the visibility of their containing class.  */
+  if (class_type
+      && (TREE_CODE (decl) == VAR_DECL 
+	  || TREE_CODE (decl) == FUNCTION_DECL)
+      && !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
+    {
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_DECLARED_INLINE_P (decl)
+	  && visibility_options.inlines_hidden)
+	{
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	}
+      else
+	{
+	  DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
+	  DECL_VISIBILITY_SPECIFIED (decl)
+	    = CLASSTYPE_VISIBILITY_SPECIFIED (class_type);
+	}
+    }
+}
+
 /* DECL is a FUNCTION_DECL or VAR_DECL.  If the object file linkage
    for DECL has not already been determined, do so now by setting
    DECL_EXTERNAL, DECL_COMDAT and other related flags.  Until this

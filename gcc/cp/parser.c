@@ -6312,10 +6312,13 @@ cp_parser_condition (cp_parser* parser)
 	 for sure.  */
       if (cp_parser_parse_definitely (parser))
 	{
+	  bool pop_p;
+
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
-			     attributes, /*prefix_attributes=*/NULL_TREE);
+			     attributes, /*prefix_attributes=*/NULL_TREE,
+			     &pop_p);
 	  /* Parse the assignment-expression.  */
 	  initializer = cp_parser_assignment_expression (parser);
 
@@ -6324,6 +6327,8 @@ cp_parser_condition (cp_parser* parser)
 			  initializer,
 			  asm_specification,
 			  LOOKUP_ONLYCONVERTING);
+	  if (pop_p)
+	    pop_scope (DECL_CONTEXT (decl));
 
 	  return convert_from_reference (decl);
 	}
@@ -10630,12 +10635,12 @@ cp_parser_init_declarator (cp_parser* parser,
 	  have_extern_spec = false;
 	}
       decl = start_decl (declarator, decl_specifiers,
-			 is_initialized, attributes, prefix_attributes);
+			 is_initialized, attributes, prefix_attributes,
+			 &pop_p);
     }
-
-  /* Enter the SCOPE.  That way unqualified names appearing in the
-     initializer will be looked up in SCOPE.  */
-  if (scope)
+  else if (scope)
+    /* Enter the SCOPE.  That way unqualified names appearing in the
+       initializer will be looked up in SCOPE.  */
     pop_p = push_scope (scope);
 
   /* Perform deferred access control checks, now that we know in which
@@ -10682,17 +10687,12 @@ cp_parser_init_declarator (cp_parser* parser,
     if (cp_parser_attributes_opt (parser))
       warning ("attributes after parenthesized initializer ignored");
 
-  /* Leave the SCOPE, now that we have processed the initializer.  It
-     is important to do this before calling cp_finish_decl because it
-     makes decisions about whether to create DECL_EXPRs or not based
-     on the current scope.  */
-  if (pop_p)
-    pop_scope (scope);
-
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
   if (member_p)
     {
+      if (pop_p)
+	pop_scope (scope);
       decl = grokfield (declarator, decl_specifiers,
 			initializer, /*asmspec=*/NULL_TREE,
 			/*attributes=*/NULL_TREE);
@@ -10703,15 +10703,19 @@ cp_parser_init_declarator (cp_parser* parser,
   /* Finish processing the declaration.  But, skip friend
      declarations.  */
   if (!friend_p && decl)
-    cp_finish_decl (decl,
-		    initializer,
-		    asm_specification,
-		    /* If the initializer is in parentheses, then this is
-		       a direct-initialization, which means that an
-		       `explicit' constructor is OK.  Otherwise, an
-		       `explicit' constructor cannot be used.  */
-		    ((is_parenthesized_init || !is_initialized)
+    {
+      cp_finish_decl (decl,
+		      initializer,
+		      asm_specification,
+		      /* If the initializer is in parentheses, then this is
+			 a direct-initialization, which means that an
+			 `explicit' constructor is OK.  Otherwise, an
+			 `explicit' constructor cannot be used.  */
+		      ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
+      if (pop_p)
+	pop_scope (DECL_CONTEXT (decl));
+    }
 
   /* Remember whether or not variables were initialized by
      constant-expressions.  */
