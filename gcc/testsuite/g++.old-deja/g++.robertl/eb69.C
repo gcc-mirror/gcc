@@ -1,9 +1,20 @@
-        #include <iostream.h>
-        struct foo {
-                foo(int x) { cerr << "foo's int constructor (" << x << ")\n"; };
-        };
-        struct bar : foo {
-                typedef int an_int;
-                bar() : bar::an_int(3) {};  // will call foo::foo(3)
-        };
-int main() { bar b; }
+// Test that g++ complains about referring to a builtin type in a
+// mem-initializer.
+// Contributed by Kevin Buhr <buhr@stat.wisc.edu>
+
+int r = 0;
+
+struct foo {
+  foo(int x) { r = 1; }		// ERROR - candidate
+};				// ERROR - candidate
+
+struct bar : foo {
+  typedef int an_int;
+  bar() : bar::an_int(3) {}	// ERROR - not a base
+};
+
+int
+main() {
+  bar b;
+  return r;
+}

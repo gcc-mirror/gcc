@@ -6,7 +6,7 @@ struct E
   int f(int);
 };
 
-int ha()
+void ha()
 {
   enum {X = 0};
 

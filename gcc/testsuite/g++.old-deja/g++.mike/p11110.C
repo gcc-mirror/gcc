@@ -17,4 +17,4 @@ private:
 
 data* user::data1() const {
   return (_c.contents (_c.first));	// ERROR - 
-}                                       // ERROR - control reaches end
+}

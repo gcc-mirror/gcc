@@ -7,7 +7,7 @@ inline unsigned int asize(ARRY &a)
   return sizeof(a) / sizeof(a[0]);
 }
 
-int f(unsigned int n) {
+void f(unsigned int n) {
   int x[n];
 
   asize(x); // ERROR - no matching function

@@ -7889,7 +7889,6 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
 }
 
-
 /* The old ARM scoping rules injected variables declared in the
    initialization statement of a for-statement into the surrounding
    scope.  We support this usage, in order to be backward-compatible.
@@ -8033,7 +8032,6 @@ destroy_local_var (decl)
       && cleanup)
     finish_decl_cleanup (decl, cleanup);
 }
-
 
 /* Finish processing of a declaration;
    install its line number and initial value.
@@ -14484,30 +14482,24 @@ finish_function (flags)
 	note_debug_info_needed (ctype);
 #endif
 
-      returns_null |= can_reach_end;
-
-      /* Since we don't normally go through c_expand_return for constructors,
-	 this normally gets the wrong value.
-	 Also, named return values have their return codes emitted after
-	 NOTE_INSN_FUNCTION_END, confusing jump.c.  */
-      if (DECL_CONSTRUCTOR_P (fndecl)
-	  || DECL_NAME (DECL_RESULT (fndecl)) != NULL_TREE)
-	returns_null = 0;
+      if (DECL_NAME (DECL_RESULT (fndecl)))
+	returns_value |= can_reach_end;
+      else
+	returns_null |= can_reach_end;
 
       if (TREE_THIS_VOLATILE (fndecl) && returns_null)
-	cp_warning ("`noreturn' function `%D' does return", fndecl);
-      else if ((warn_return_type || pedantic)
-	       && returns_null
+	warning ("`noreturn' function does return");
+      else if (returns_null
 	       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE)
 	{
-	  /* If this function returns non-void and control can drop through,
-	     complain.  */
-	  cp_warning ("control reaches end of non-void function `%D'", fndecl);
+	  /* Always complain if there's just no return statement.  */
+	  if (!returns_value)
+	    warning ("no return statement in function returning non-void");
+	  else if (warn_return_type || pedantic)
+	    /* If this function returns non-void and control can drop through,
+	       complain.  */
+	    warning ("control reaches end of non-void function");
 	}
-      /* With just -W, complain only if function returns both with
-	 and without a value.  */
-      else if (extra_warnings && returns_value && returns_null)
-	warning ("this function may return with or without a value");
     }
   else
     {

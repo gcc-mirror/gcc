@@ -12,9 +12,9 @@ protected:
 class ccBgaInspection : public ccInspection
 {
 public:
-  int reinspect (unsigned long diagFlags);
+  void reinspect (unsigned long diagFlags);
 };
-int
+void
 ccBgaInspection::reinspect (unsigned long diag_flags) 
 {
   ct2d_rigid physTdev;		 

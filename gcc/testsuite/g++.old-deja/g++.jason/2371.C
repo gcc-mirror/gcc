@@ -502,7 +502,7 @@ operator<<(ostream& o, const SLS& s)
 SLS gsls;
 const SLS gcsls;
 
-int foo()
+void foo()
 {
     const unsigned SIZE = 20;
 

@@ -1,3 +1,24 @@
+2000-07-04  scott snyder  <snyder@fnal.gov>
+	    Jason Merrill  <jason@redhat.com>
+
+	* repo.c (repo_get_id): Handle the case where a class with virtual 
+	bases has a null TYPE_BINFO_VTABLE.
+
+2000-07-04  Kevin Buhr  <buhr@stat.wisc.edu>
+	    Jason Merrill  <jason@redhat.com>
+
+	* parse.y (member_init): Just pass in the type.
+	* init.c (expand_member_init): Handle getting a type.
+
+2000-07-04  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+	    Jason Merrill  <jason@redhat.com>
+
+	* decl.c (finish_function): Warn if a function has no return
+	statement.
+	Suggested by Andrew Koenig.
+	* typeck.c (check_return_expr): Do set current_function_returns_value
+	if we got an error_mark_node.
+
 2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl2.c (push_decl_namespace): Push the original namespace.

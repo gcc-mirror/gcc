@@ -107,7 +107,7 @@ warn_return_1 ()
 {
   foo f;
   printf ("returning 1\n");
-}
+}                              // WARNING - no return statement
 
 int
 warn_return_arg (int arg)
@@ -115,7 +115,7 @@ warn_return_arg (int arg)
   foo f;
   printf ("returning %d\n", arg);
   arg;
-}
+}                              // WARNING - no return statement
 
 int
 warn_return_sum (int x, int y)
@@ -123,14 +123,14 @@ warn_return_sum (int x, int y)
   foo f;
   printf ("returning %d+%d\n", x, y);
   x + y;
-}
+}                              // WARNING - no return statement
 
 foo
 warn_return_foo ()
 {
   foo f;
   printf ("returning foo\n");
-}
+}                              // WARNING - no return statement
 
 foo
 nowarn_return_named_foo () return f
@@ -142,7 +142,7 @@ foo
 warn_foo_parm_returns_foo (foo f)
 {
   f;
-}
+}                              // WARNING - no return statement
 
 main ()
 {

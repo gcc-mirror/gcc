@@ -1,5 +1,5 @@
 // Origin: Bryan Scattergood <bryan@fsel.com>
-// Special g++ Options: -O -fno-exceptions
+// Special g++ Options: -O -fno-exceptions -w
 
 extern "C" void abort();
 

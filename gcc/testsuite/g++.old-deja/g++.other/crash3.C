@@ -6,7 +6,7 @@ inline void f() {
   S s;
 }
 
-int g()
+void g()
 {
   for (int i = 0; i < 2; ++i)
     f();

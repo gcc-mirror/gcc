@@ -10,7 +10,7 @@ typedef int (*fptr)(A *);
 typedef void* vptr;
 typedef int (A::*pmf)();
 
-int foo (A* ap, pmf fp, int A::* ip)
+void foo (A* ap, pmf fp, int A::* ip)
 {
   fptr p;
   vptr q;
