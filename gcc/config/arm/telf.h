@@ -140,6 +140,26 @@ extern int arm_structure_size_boundary;
     }						\
   while (0)
 
+/* For aliases of functions we use .thumb_set instead.  */
+#define ASM_OUTPUT_DEF_FROM_DECLS(FILE,DECL1,DECL2)		\
+  do						   		\
+    {								\
+      char * LABEL1 = XSTR (XEXP (DECL_RTL (decl), 0), 0);	\
+      char * LABEL2 = IDENTIFIER_POINTER (DECL2);		\
+								\
+      if (TREE_CODE (DECL1) == FUNCTION_DECL)			\
+	{							\
+	  fprintf (FILE, "\t.thumb_set ");			\
+	  assemble_name (FILE, LABEL1);			   	\
+	  fprintf (FILE, ",");			   		\
+	  assemble_name (FILE, LABEL2);		   		\
+	  fprintf (FILE, "\n");					\
+	}							\
+      else							\
+	ASM_OUTPUT_DEF (FILE, LABEL1, LABEL2);			\
+    }								\
+  while (0)
+
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
 #undef  EXTRA_SECTIONS
