@@ -103,7 +103,6 @@ bits_headers = \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/concurrence.h \
 	${bits_srcdir}/cpp_type_traits.h \
-	${bits_srcdir}/demangle.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
@@ -204,6 +203,7 @@ ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
 	${ext_srcdir}/debug_allocator.h \
+	${ext_srcdir}/demangle.h \
 	${ext_srcdir}/enc_filebuf.h \
 	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/stdio_sync_filebuf.h \

@@ -1,6 +1,6 @@
 // C++ IA64 / g++ v3 demangler  -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 // Written by Carlo Wood <carlo@alinoe.com>
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -37,6 +37,7 @@
 
 #include <vector>
 #include <string>
+#include <ext/new_allocator.h>
 
 #ifndef _GLIBCXX_DEMANGLER_DEBUG
 #define _GLIBCXX_DEMANGLER_CWDEBUG 0
@@ -58,7 +59,6 @@ namespace __gnu_cxx
 {
   namespace demangler
   {
-
     enum substitution_nt
     {
       type,
@@ -73,7 +73,7 @@ namespace __gnu_cxx
       int M_start_pos;
       substitution_nt M_type;
       int M_number_of_prefixes;
-      
+
       substitution_st(int start_pos,
 		      substitution_nt type,
 		      int number_of_prefixes)
@@ -101,16 +101,16 @@ namespace __gnu_cxx
       pointer_to_member = 'M'
     };
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator = __gnu_cxx::new_allocator<Tp> >
       class qualifier;
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator = __gnu_cxx::new_allocator<Tp> >
       class qualifier_list;
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator = __gnu_cxx::new_allocator<Tp> >
       class session;
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       class qualifier
       {
 	typedef typename Allocator::template rebind<char>::other
@@ -205,28 +205,28 @@ namespace __gnu_cxx
 #endif
       };
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       class qualifier_list
       {
 	typedef typename Allocator::template rebind<char>::other
-  	  char_Allocator;
+	  char_Allocator;
 	typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	  string_type;
 
       private:
 	mutable bool M_printing_suppressed;
-	typedef qualifier<Allocator> qual;
+	typedef qualifier<Tp, Allocator> qual;
         typedef typename Allocator::template rebind<qual>::other qual_Allocator;
 	typedef std::vector<qual, qual_Allocator> qual_vector;
 	qual_vector M_qualifier_starts;
-	session<Allocator>& M_demangler;
+	session<Tp, Allocator>& M_demangler;
 
 	void decode_KVrA(string_type& prefix, string_type& postfix, int cvq,
 			 typename qual_vector::
 			   const_reverse_iterator const& iter_array) const;
 
       public:
-	qualifier_list(session<Allocator>& demangler_obj)
+	qualifier_list(session<Tp, Allocator>& demangler_obj)
 	: M_printing_suppressed(false), M_demangler(demangler_obj)
 	{ }
 
@@ -235,7 +235,7 @@ namespace __gnu_cxx
 			    int start_pos,
 			    int inside_substitution)
 	{ M_qualifier_starts.
-	      push_back(qualifier<Allocator>(start_pos,
+	      push_back(qualifier<Tp, Allocator>(start_pos,
 		  simple_qualifier, inside_substitution)); }
 
 	void
@@ -244,22 +244,22 @@ namespace __gnu_cxx
 			    int count,
 			    int inside_substitution)
 	{ M_qualifier_starts.
-	      push_back(qualifier<Allocator>(start_pos,
+	      push_back(qualifier<Tp, Allocator>(start_pos,
 		    cv_qualifier, &M_demangler.M_str[start_pos],
 		    count, inside_substitution)); }
 
 	void
 	add_qualifier_start(param_qualifier_nt param_qualifier,
-	    		    int start_pos,
+			    int start_pos,
 			    string_type optional_type,
 			    int inside_substitution)
 	{ M_qualifier_starts.
-	      push_back(qualifier<Allocator>(start_pos,
+	      push_back(qualifier<Tp, Allocator>(start_pos,
 		    param_qualifier, optional_type, inside_substitution)); }
 
 	void
 	decode_qualifiers(string_type& prefix,
-	    		  string_type& postfix,
+			  string_type& postfix,
 			  bool member_function_pointer_qualifiers) const;
 
 	bool
@@ -307,7 +307,7 @@ namespace __gnu_cxx
 	// Use (void) instead of ():			int f(void)
 
         static unsigned int const style_literal = 2;
-	// Default behaviour:				(long)13, 
+	// Default behaviour:				(long)13,
 	//						(unsigned long long)19
 	// Use extensions 'u', 'l' and 'll' for integral
 	// literals (as in template arguments):		13l, 19ull
@@ -347,12 +347,13 @@ namespace __gnu_cxx
             { return false; }
     };
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       class session
       {
-	friend class qualifier_list<Allocator>;
+      public:
+	friend class qualifier_list<Tp, Allocator>;
 	typedef typename Allocator::template rebind<char>::other
-    	    char_Allocator;
+	    char_Allocator;
 	typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	    string_type;
 
@@ -406,7 +407,7 @@ namespace __gnu_cxx
 
 	bool
 	decode_type(string_type& output,
-	            qualifier_list<Allocator>* qualifiers = NULL)
+	            qualifier_list<Tp, Allocator>* qualifiers = NULL)
 	{
 	  string_type postfix;
 	  bool res = decode_type_with_postfix(output, postfix, qualifiers);
@@ -449,7 +450,7 @@ namespace __gnu_cxx
 			 int number_of_prefixes);
 
 	bool decode_type_with_postfix(string_type& prefix,
-	    string_type& postfix, qualifier_list<Allocator>* qualifiers = NULL);
+	    string_type& postfix, qualifier_list<Tp, Allocator>* qualifiers = NULL);
 	bool decode_bare_function_type(string_type& output);
 	bool decode_builtin_type(string_type& output);
 	bool decode_call_offset(string_type& output);
@@ -465,10 +466,10 @@ namespace __gnu_cxx
 	bool decode_operator_name(string_type& output);
 	bool decode_source_name(string_type& output);
 	bool decode_substitution(string_type& output,
-	    qualifier_list<Allocator>* qualifiers = NULL);
+	    qualifier_list<Tp, Allocator>* qualifiers = NULL);
 	bool decode_template_args(string_type& output);
 	bool decode_template_param(string_type& output,
-	    qualifier_list<Allocator>* qualifiers = NULL);
+	    qualifier_list<Tp, Allocator>* qualifiers = NULL);
 	bool decode_unqualified_name(string_type& output);
 	bool decode_unscoped_name(string_type& output);
 	bool decode_non_negative_decimal_integer(string_type& output);
@@ -476,12 +477,12 @@ namespace __gnu_cxx
         bool decode_real(string_type& output, size_t size_of_real);
       };
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
 #if !_GLIBCXX_DEMANGLER_CWDEBUG
       inline
 #endif
       void
-      session<Allocator>::add_substitution(int start_pos,
+      session<Tp, Allocator>::add_substitution(int start_pos,
 					   substitution_nt sub_type,
 					   int number_of_prefixes = 0)
       {
@@ -501,7 +502,7 @@ namespace __gnu_cxx
 	  int n = M_substitutions_pos.size() - 1;
 	  if (n > 0)
 	    substitution_name += (n <= 10) ? (char)(n + '0' - 1)
-	      				   : (char)(n + 'A' - 11);
+					   : (char)(n + 'A' - 11);
 	  substitution_name += '_';
 	  string_type subst;
 	  int saved_pos = M_pos;
@@ -572,9 +573,9 @@ namespace __gnu_cxx
     //                                ::= 1|2|3|4|5|6|7|8|9 [<digit>+]
     // <digit>                        ::= 0|1|2|3|4|5|6|7|8|9
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::
+      session<Tp, Allocator>::
 	  decode_non_negative_decimal_integer(string_type& output)
       {
 	char c = current();
@@ -598,9 +599,9 @@ namespace __gnu_cxx
 
     // <number> ::= [n] <non-negative decimal integer>
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_number(string_type& output)
+      session<Tp, Allocator>::decode_number(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_number");
 	if (current() != 'n')
@@ -668,9 +669,9 @@ namespace __gnu_cxx
     };
 
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_builtin_type(string_type& output)
+      session<Tp, Allocator>::decode_builtin_type(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_builtin_type");
 	char const* bt;
@@ -683,9 +684,9 @@ namespace __gnu_cxx
 
     // <class-enum-type> ::= <name>
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_class_enum_type(string_type& output)
+      session<Tp, Allocator>::decode_class_enum_type(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_class_enum_type");
 	string_type nested_name_qualifiers;
@@ -711,10 +712,10 @@ namespace __gnu_cxx
     //   0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
     //       [<seq-id>]	# Base 36 number
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_substitution(string_type& output,
-	  qualifier_list<Allocator>* qualifiers)
+      session<Tp, Allocator>::decode_substitution(string_type& output,
+	  qualifier_list<Tp, Allocator>* qualifiers)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_substitution");
 	unsigned int value = 0;
@@ -885,10 +886,10 @@ namespace __gnu_cxx
     // <template-param> ::= T_			# first template parameter
     //                  ::= T <parameter-2 non-negative number> _
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_template_param(string_type& output,
-	  qualifier_list<Allocator>* qualifiers)
+      session<Tp, Allocator>::decode_template_param(string_type& output,
+	  qualifier_list<Tp, Allocator>* qualifiers)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_template_parameter");
 	if (current() != 'T')
@@ -928,9 +929,9 @@ namespace __gnu_cxx
 	_GLIBCXX_DEMANGLER_RETURN;
       }
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_real(string_type& output, size_t size_of_real)
+      session<Tp, Allocator>::decode_real(string_type& output, size_t size_of_real)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_real");
 
@@ -988,9 +989,9 @@ namespace __gnu_cxx
 	_GLIBCXX_DEMANGLER_RETURN;
       }
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_literal(string_type& output)
+      session<Tp, Allocator>::decode_literal(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_literal");
 	eat_current();	// Eat the 'L'.
@@ -1054,56 +1055,56 @@ namespace __gnu_cxx
       }
 
     // <operator-name> ::=
-    //   nw				# new           
+    //   nw				# new
     //   na				# new[]
-    //   dl				# delete        
-    //   da				# delete[]      
+    //   dl				# delete
+    //   da				# delete[]
     //   ps				# + (unary)
-    //   ng				# - (unary)     
-    //   ad				# & (unary)     
-    //   de				# * (unary)     
-    //   co				# ~             
-    //   pl				# +             
-    //   mi				# -             
-    //   ml				# *             
-    //   dv				# /             
-    //   rm				# %             
-    //   an				# &             
-    //   or				# |             
-    //   eo				# ^             
-    //   aS				# =             
-    //   pL				# +=            
-    //   mI				# -=            
-    //   mL				# *=            
-    //   dV				# /=            
-    //   rM				# %=            
-    //   aN				# &=            
-    //   oR				# |=            
-    //   eO				# ^=            
-    //   ls				# <<            
-    //   rs				# >>            
-    //   lS				# <<=           
-    //   rS				# >>=           
-    //   eq				# ==            
-    //   ne				# !=            
-    //   lt				# <             
-    //   gt				# >             
-    //   le				# <=            
-    //   ge				# >=            
-    //   nt				# !             
-    //   aa				# &&            
-    //   oo				# ||            
-    //   pp				# ++            
-    //   mm				# --            
-    //   cm				# ,             
-    //   pm				# ->*           
-    //   pt				# ->            
-    //   cl				# ()            
-    //   ix				# []            
+    //   ng				# - (unary)
+    //   ad				# & (unary)
+    //   de				# * (unary)
+    //   co				# ~
+    //   pl				# +
+    //   mi				# -
+    //   ml				# *
+    //   dv				# /
+    //   rm				# %
+    //   an				# &
+    //   or				# |
+    //   eo				# ^
+    //   aS				# =
+    //   pL				# +=
+    //   mI				# -=
+    //   mL				# *=
+    //   dV				# /=
+    //   rM				# %=
+    //   aN				# &=
+    //   oR				# |=
+    //   eO				# ^=
+    //   ls				# <<
+    //   rs				# >>
+    //   lS				# <<=
+    //   rS				# >>=
+    //   eq				# ==
+    //   ne				# !=
+    //   lt				# <
+    //   gt				# >
+    //   le				# <=
+    //   ge				# >=
+    //   nt				# !
+    //   aa				# &&
+    //   oo				# ||
+    //   pp				# ++
+    //   mm				# --
+    //   cm				# ,
+    //   pm				# ->*
+    //   pt				# ->
+    //   cl				# ()
+    //   ix				# []
     //   qu				# ?
     //   st				# sizeof (a type)
     //   sz				# sizeof (an expression)
-    //   cv <type>			# (cast)        
+    //   cv <type>			# (cast)
     //   v <digit> <source-name>	# vendor extended operator
     //
     // Symbol operator codes exist of two characters, we need to find a
@@ -1222,9 +1223,9 @@ namespace __gnu_cxx
       { "ix",  "operator[]", unary }
     };
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_operator_name(string_type& output)
+      session<Tp, Allocator>::decode_operator_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_operator_name");
 
@@ -1292,9 +1293,9 @@ namespace __gnu_cxx
     //                ::= L <type> <value float> E	# floating literal
     //                ::= L <mangled-name> E		# external name
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_expression(string_type& output)
+      session<Tp, Allocator>::decode_expression(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_expression");
 	if (current() == 'T')
@@ -1479,9 +1480,9 @@ namespace __gnu_cxx
     //                ::= L <type> <value float> E	# floating literal
     //                ::= L <mangled-name> E		# external name
     //                ::= X <expression> E		# expression
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_template_args(string_type& output)
+      session<Tp, Allocator>::decode_template_args(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_template_args");
 	if (eat_current() != 'I')
@@ -1542,9 +1543,9 @@ namespace __gnu_cxx
     // our <bare-function-type> slightly different from the one in
     // the C++-ABI description.
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_bare_function_type(string_type& output)
+      session<Tp, Allocator>::decode_bare_function_type(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_bare_function_type");
 	if (M_saw_destructor)
@@ -1582,15 +1583,15 @@ namespace __gnu_cxx
     //   <builtin-type>		# Starts with a lower case character != r.
     //   <function-type>	# Starts with F
     //   <class-enum-type>	# Starts with N, S, C, D, Z, a digit or a lower
-    //   			# case character.  Since a lower case character
-    //   			# would be an operator name, that would be an
-    //   			# error.  The S is a substitution or St
-    //   			# (::std::).  A 'C' would be a constructor and
-    //   			# thus also an error.
+    //				# case character.  Since a lower case character
+    //				# would be an operator name, that would be an
+    //				# error.  The S is a substitution or St
+    //				# (::std::).  A 'C' would be a constructor and
+    //				# thus also an error.
     //   <template-param>	# Starts with T
     //   <substitution>         # Starts with S
     //   <template-template-param> <template-args>  # Starts with T or S,
-    //   					    # equivalent with the above.
+    //						    # equivalent with the above.
     //
     //   <array-type>			# Starts with A
     //   <pointer-to-member-type>	# Starts with M
@@ -1599,8 +1600,8 @@ namespace __gnu_cxx
     //   R <type>   # reference-to	# Starts with R
     //   C <type>   # complex (C 2000)	# Starts with C
     //   G <type>   # imaginary (C 2000)# Starts with G
-    //   U <source-name> <type>     	# vendor extended type qualifier,
-    //   				# starts with U
+    //   U <source-name> <type>		# vendor extended type qualifier,
+    //					# starts with U
     //
     // <template-template-param> ::= <template-param>
     //                           ::= <substitution>
@@ -1616,9 +1617,9 @@ namespace __gnu_cxx
     // <I> is the array index.
     //						Substitutions:
     // <Q>M<C><Q2>F<R><B>E  ==> R (C::*Q)B Q2	"<C>", "F<R><B>E"
-    // 						    (<R> and <B> recursive),
-    // 						    "M<C><Q2>F<R><B>E".
-    // <Q>F<R><B>E 	    ==> R (Q)B		"<R>", "<B>" (<B> recursive)
+    //						    (<R> and <B> recursive),
+    //						    "M<C><Q2>F<R><B>E".
+    // <Q>F<R><B>E	    ==> R (Q)B		"<R>", "<B>" (<B> recursive)
     //                                              and "F<R><B>E".
     //
     // Note that if <R> has postfix qualifiers (an array or function), then
@@ -1626,14 +1627,14 @@ namespace __gnu_cxx
     // <Q>FPA<R><B>E ==> R (*(Q)B) [], where the PA added the prefix
     // "(*" and the postfix ") []".
     //
-    // <Q>G<T>     	    ==> imaginary T Q	"<T>", "G<T>" (<T> recursive).
-    // <Q>C<T>     	    ==> complex T Q	"<T>", "C<T>" (<T> recursive).
-    // <Q><T>      	    ==> T Q		"<T>" (<T> recursive).
+    // <Q>G<T>		    ==> imaginary T Q	"<T>", "G<T>" (<T> recursive).
+    // <Q>C<T>		    ==> complex T Q	"<T>", "C<T>" (<T> recursive).
+    // <Q><T>		    ==> T Q		"<T>" (<T> recursive).
     //
     // where <Q> is any of:
     //
-    // <Q>P   		==> *Q				"P..."
-    // <Q>R   		==> &Q				"R..."
+    // <Q>P		==> *Q				"P..."
+    // <Q>R		==> &Q				"R..."
     // <Q>[K|V|r]+	==> [ const| volatile| restrict]+Q	"KVr..."
     // <Q>U<S>		==>  SQ				"U<S>..."
     // <Q>M<C>		==> C::*Q			"M<C>..." (<C> recurs.)
@@ -1644,7 +1645,7 @@ namespace __gnu_cxx
     //   A<I2>A<I>	==>  [I2][I]
     //   If <Q> ends on [KVr]+, which can happen in combination with
     //   substitutions only, then special handling is required, see below.
-    //  
+    //
     // A <substitution> is handled with an input position switch during which
     // new substitutions are turned off.  Because recursive handling of types
     // (and therefore the order in which substitutions must be generated) must
@@ -1656,7 +1657,7 @@ namespace __gnu_cxx
     //
     // The following comment was for the demangling of g++ version 3.0.x.  The
     // mangling (and I believe even the ABI description) have been fixed now
-    // (as of g++ version 3.1).	
+    // (as of g++ version 3.1).
     //
     // g++ 3.0.x only:
     // The ABI specifies for pointer-to-member function types the format
@@ -1699,12 +1700,12 @@ namespace __gnu_cxx
     static int const cvq_A = 8;		// Saw at least one A
     static int const cvq_last = 16;	// No remaining qualifiers.
     static int const cvq_A_cnt = 32;	// Bit 5 and higher represent the
-    					//   number of A's in the series.
+					//   number of A's in the series.
     // In the function below, iter_array points to the first (right most)
     // A in the series, if any.
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       void
-      qualifier_list<Allocator>::decode_KVrA(
+      qualifier_list<Tp, Allocator>::decode_KVrA(
           string_type& prefix, string_type& postfix, int cvq,
           typename qual_vector::const_reverse_iterator const& iter_array) const
 	{
@@ -1750,9 +1751,9 @@ namespace __gnu_cxx
 	  _GLIBCXX_DEMANGLER_RETURN3;
 	}
 
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       void
-      qualifier_list<Allocator>::decode_qualifiers(
+      qualifier_list<Tp, Allocator>::decode_qualifiers(
 	  string_type& prefix,
 	  string_type& postfix,
 	  bool member_function_pointer_qualifiers = false) const
@@ -1842,11 +1843,11 @@ namespace __gnu_cxx
       }
 
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_type_with_postfix(
+      session<Tp, Allocator>::decode_type_with_postfix(
 	  string_type& prefix, string_type& postfix,
-	  qualifier_list<Allocator>* qualifiers)
+	  qualifier_list<Tp, Allocator>* qualifiers)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING2("decode_type");
 	++M_inside_type;
@@ -1953,7 +1954,7 @@ namespace __gnu_cxx
 		  ++count;
 		  c = next();
 		}
-		qualifier_list<Allocator> class_type_qualifiers(*this);
+		qualifier_list<Tp, Allocator> class_type_qualifiers(*this);
 		if (count)
 		  class_type_qualifiers.
 		      add_qualifier_start(cv_qualifier, Q2_start_pos,
@@ -2017,9 +2018,9 @@ namespace __gnu_cxx
 	}
 	if (!failure)
 	{
-	  // <Q>G<T>     		==> imaginary T Q
+	  // <Q>G<T>			==> imaginary T Q
 	  //     substitutions: "<T>", "G<T>" (<T> recursive).
-	  // <Q>C<T>     		==> complex T Q
+	  // <Q>C<T>			==> complex T Q
 	  //     substitutions: "<T>", "C<T>" (<T> recursive).
 	  if (current() == 'C' || current() == 'G')
 	  {
@@ -2040,8 +2041,8 @@ namespace __gnu_cxx
 	      bool extern_C = (next() == 'Y');
 	      if (extern_C)
 		eat_current();
-	        
-	      // <Q>F<R><B>E 		==> R (Q)B
+
+	      // <Q>F<R><B>E		==> R (Q)B
 	      //     substitution: "<R>", "<B>" (<B> recursive) and "F<R><B>E".
 
 	      // Return type.
@@ -2149,7 +2150,7 @@ namespace __gnu_cxx
 	    case '7':
 	    case '8':
 	    case '9':
-	      // <Q><T>      		==> T Q
+	      // <Q><T>			==> T Q
 	      //     substitutions: "<T>" (<T> recursive).
 	      if (!decode_class_enum_type(prefix))
 	      {
@@ -2167,7 +2168,7 @@ namespace __gnu_cxx
 		qualifiers->printing_suppressed();
 	      break;
 	    default:
-	      // <Q><T>      		==> T Q
+	      // <Q><T>			==> T Q
 	      //     substitutions: "<T>" (<T> recursive).
 	      if (!decode_builtin_type(prefix))
 	      {
@@ -2209,9 +2210,9 @@ namespace __gnu_cxx
     //                   ::= <template-param>
     //                   ::= <substitution>
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_nested_name(string_type& output,
+      session<Tp, Allocator>::decode_nested_name(string_type& output,
 					     string_type& qualifiers)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_nested_name");
@@ -2255,7 +2256,7 @@ namespace __gnu_cxx
 	    {
 	      // substitution: "<template-prefix> <template-args>".
 	      add_substitution(substitution_start, nested_name_prefix,
-		  	       number_of_prefixes);
+			       number_of_prefixes);
 	    }
 	  }
 	  else
@@ -2295,9 +2296,9 @@ namespace __gnu_cxx
     //              := Z <function encoding> E s [<discriminator>]
     // <discriminator> := _ <non-negative number>
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_local_name(string_type& output)
+      session<Tp, Allocator>::decode_local_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_local_name");
 	if (current() != 'Z' || M_pos >= M_maxpos)
@@ -2327,9 +2328,9 @@ namespace __gnu_cxx
 
     // <source-name> ::= <positive length number> <identifier>
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_source_name(string_type& output)
+      session<Tp, Allocator>::decode_source_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_source_name");
 	int length = current() - '0';
@@ -2357,11 +2358,11 @@ namespace __gnu_cxx
 
     // <unqualified-name> ::= <operator-name>	# Starts with lower case.
     //                    ::= <ctor-dtor-name>  # Starts with 'C' or 'D'.
-    //                    ::= <source-name>   	# Starts with a digit.
+    //                    ::= <source-name>	# Starts with a digit.
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_unqualified_name(string_type& output)
+      session<Tp, Allocator>::decode_unqualified_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_unqualified_name");
 	if (M_inside_template_args)
@@ -2434,9 +2435,9 @@ namespace __gnu_cxx
     //   <unqualified-name>		# Starts not with an 'S'
     //   St <unqualified-name>		# ::std::
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_unscoped_name(string_type& output)
+      session<Tp, Allocator>::decode_unscoped_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_unscoped_name");
 	if (current() == 'S')
@@ -2455,14 +2456,14 @@ namespace __gnu_cxx
     //   <unscoped-template-name> <template-args> # idem
     //   <local-name>				# Starts with 'Z'
     //   <unscoped-name>			# Starts with 'S', 'C', 'D',
-    //   					# a digit or a lower case
-    //   					# character.
+    //						# a digit or a lower case
+    //						# character.
     //
     // <unscoped-template-name> ::= <unscoped-name>
     //                          ::= <substitution>
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_name(string_type& output,
+      session<Tp, Allocator>::decode_name(string_type& output,
 				      string_type& nested_name_qualifiers)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_name");
@@ -2497,14 +2498,14 @@ namespace __gnu_cxx
 
     // <call-offset> ::= h <nv-offset> _
     //               ::= v <v-offset> _
-    // <nv-offset>   ::= <offset number> 
+    // <nv-offset>   ::= <offset number>
     //     non-virtual base override
     //
     // <v-offset>    ::= <offset number> _ <virtual offset number>
     //     virtual base override, with vcall offset
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_call_offset(string_type&
+      session<Tp, Allocator>::decode_call_offset(string_type&
 #if _GLIBCXX_DEMANGLER_CWDEBUG
 	  output
 #endif
@@ -2547,19 +2548,19 @@ namespace __gnu_cxx
     //   TS <type>			# typeinfo name (null-terminated
     //                                    byte string).
     //   GV <object name>		# Guard variable for one-time
-    //   				  initialization of static objects in
-    //   				  a local scope.
+    //					  initialization of static objects in
+    //					  a local scope.
     //   T <call-offset> <base encoding># base is the nominal target function
-    //   				  of thunk.
+    //					  of thunk.
     //   Tc <call-offset> <call-offset> <base encoding> # base is the nominal
     //                                    target function of thunk; first
     //                                    call-offset is 'this' adjustment;
     //					  second call-offset is result
     //					  adjustment
     //
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       bool
-      session<Allocator>::decode_special_name(string_type& output)
+      session<Tp, Allocator>::decode_special_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_special_name");
 	if (current() == 'G')
@@ -2638,13 +2639,13 @@ namespace __gnu_cxx
 
     // <encoding> ::=
     //   <function name> <bare-function-type>	# Starts with 'C', 'D', 'N',
-    //                                        	  'S', a digit or a lower case
-    //                                        	  character.
+    //						  'S', a digit or a lower case
+    //						  character.
     //   <data name>				# Idem.
     //   <special-name>				# Starts with 'T' or 'G'.
-    template<typename Allocator>
+    template<typename Tp, typename Allocator>
       int
-      session<Allocator>::decode_encoding(string_type& output,
+      session<Tp, Allocator>::decode_encoding(string_type& output,
           char const* in, int len, implementation_details const& id)
       {
 #if _GLIBCXX_DEMANGLER_CWDEBUG
@@ -2656,7 +2657,7 @@ namespace __gnu_cxx
 #endif
 	if (len <= 0)
 	  return INT_MIN;
-	session<Allocator> demangler_session(in, len, id);
+	session<Tp, Allocator> demangler_session(in, len, id);
 	string_type nested_name_qualifiers;
 	int saved_pos;
 	demangler_session.store(saved_pos);
@@ -2696,11 +2697,11 @@ namespace __gnu_cxx
     } // namespace demangler
 
   // Public interface
-  template<typename Allocator>
+  template<typename Tp, typename Allocator>
     struct demangle
     {
       typedef typename Allocator::template rebind<char>::other char_Allocator;
-      typedef std::basic_string<char, std::char_traits<char>, char_Allocator> 
+      typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	  string_type;
       static string_type symbol(char const* in,
                                 demangler::implementation_details const& id);
@@ -2712,15 +2713,15 @@ namespace __gnu_cxx
   //
   // Demangle `input' which should be a mangled function name as for
   // instance returned by nm(1).
-  template<typename Allocator>
-    typename demangle<Allocator>::string_type
-    demangle<Allocator>::symbol(char const* input,
+  template<typename Tp, typename Allocator>
+    typename demangle<Tp, Allocator>::string_type
+    demangle<Tp, Allocator>::symbol(char const* input,
                                 demangler::implementation_details const& id)
     {
       // <mangled-name> ::= _Z <encoding>
       // <mangled-name> ::= _GLOBAL_ _<type>_ <disambiguation part>
       //                    <type> can be I or D (GNU extension)
-      typedef demangler::session<Allocator> demangler_type;
+      typedef demangler::session<Tp, Allocator> demangler_type;
       string_type result;
       bool failure = (input[0] != '_');
 
@@ -2763,9 +2764,9 @@ namespace __gnu_cxx
   // demangle::type()
   // Demangle `input' which must be a zero terminated mangled type
   // name as for instance returned by std::type_info::name().
-  template<typename Allocator>
-    typename demangle<Allocator>::string_type
-    demangle<Allocator>::type(char const* input,
+  template<typename Tp, typename Allocator>
+    typename demangle<Tp, Allocator>::string_type
+    demangle<Tp, Allocator>::type(char const* input,
                               demangler::implementation_details const& id)
     {
       std::basic_string<char, std::char_traits<char>, Allocator> result;
@@ -2773,17 +2774,16 @@ namespace __gnu_cxx
 	result = "(null)";
       else
       {
-	demangler::session<Allocator> demangler_session(input, INT_MAX, id);
+	demangler::session<Tp, Allocator> demangler_session(input, INT_MAX, id);
 	if (!demangler_session.decode_type(result)
 	    || demangler_session.remaining_input_characters())
 	{
 	  // Failure to demangle, return the mangled name.
-	  result = input;				
+	  result = input;
 	}
       }
       return result;
     }
-
 } // namespace __gnu_cxx
 
 #endif // __DEMANGLE_H
