@@ -43,6 +43,11 @@
       if (GET_CODE (operands[0]) != REG)
 	operands[1] = force_reg (SImode, operands[1]);
     }
+  if (CONSTANT_P (operands[1]) && flag_pic)
+    operands[1] = legitimize_pic_address (operands[1], SImode,
+					  ((reload_in_progress
+					    || reload_completed)
+					   ? operands[0] : 0));
 ")
 
 (define_insn "*movsi_insn"
@@ -1051,7 +1056,7 @@
 
 
 (define_insn "*call_insn"
-  [(call (mem:SI (match_operand:SI 0 "" "i"))
+  [(call (mem:SI (match_operand:SI 0 "" "X"))
 	 (match_operand:SI 1 "" ""))]
   "GET_CODE (operands[0]) == SYMBOL_REF"
   "bl\\t%a0"
@@ -1059,7 +1064,7 @@
 
 (define_insn "*call_value_insn"
   [(set (match_operand 0 "register_operand" "=l")
-	(call (mem:SI (match_operand 1 "" "i"))
+	(call (mem:SI (match_operand 1 "" "X"))
 	      (match_operand 2 "" "")))]
   "GET_CODE (operands[1]) == SYMBOL_REF"
   "bl\\t%a1"
@@ -1110,6 +1115,7 @@
  ""
  "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -1132,6 +1138,7 @@
  ""
  "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -1153,7 +1160,7 @@
   [(unspec_volatile [(const_int 0)] 4)]
   ""
   "*
-  /* Nothing to do (currently).  */
+  making_const_table = FALSE;
   return \"\";
 ")
 
@@ -1164,3 +1171,26 @@
    assemble_align (32);
    return \"\";
 ")
+
+/* When generating pic, we need to load the symbol offset into a register.
+   So that the optimizer does not confuse this with a normal symbol load
+   we use an unspec.  The offset will be loaded from a constant pool entry,
+   since that is the only type of relocation we can use.  */
+
+(define_insn "pic_load_addr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand 1 "" "")] 3))]
+  "flag_pic"
+  "ldr\\t%0, %a1")
+
+(define_insn "pic_add_dot_plus_four"
+  [(set (match_operand 0 "register_operand" "+r")
+	(plus:SI (match_dup 0) (const (plus:SI (pc) (const_int 4)))))
+   (use (label_ref (match_operand 1 "" "")))]
+  "flag_pic"
+  "*
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (operands[1]));
+  return \"add\\t%0, %|pc\";
+")
+
