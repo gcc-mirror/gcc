@@ -1,5 +1,10 @@
 Sat Feb 28 07:54:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* pa.h (CONST_COSTS): When checking the CONST_DOUBLE enumerated
+ 	case, add parentheses to specify the proper order of precedence in
+ 	the if-statement.
+	
+
 	* c-aux-info.c: Include string.h/strings.h.
 
 	* pa.c: Include stdlib.h.

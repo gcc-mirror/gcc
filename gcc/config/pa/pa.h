@@ -1826,20 +1826,20 @@ while (0)
    return it with a return statement.  Otherwise, break from the switch.  */
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:						\
-    if (INTVAL (RTX) == 0) return 0;				\
-    if (INT_14_BITS (RTX)) return 1;				\
-  case HIGH:							\
-    return 2;							\
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    return 4;							\
-  case CONST_DOUBLE:						\
-    if (RTX == CONST0_RTX (DFmode) || RTX == CONST0_RTX (SFmode)\
-	&& OUTER_CODE != SET)					\
-      return 0;							\
-    else							\
+  case CONST_INT:							\
+    if (INTVAL (RTX) == 0) return 0;					\
+    if (INT_14_BITS (RTX)) return 1;					\
+  case HIGH:								\
+    return 2;								\
+  case CONST:								\
+  case LABEL_REF:							\
+  case SYMBOL_REF:							\
+    return 4;								\
+  case CONST_DOUBLE:							\
+    if ((RTX == CONST0_RTX (DFmode) || RTX == CONST0_RTX (SFmode))	\
+	&& OUTER_CODE != SET)						\
+      return 0;								\
+    else								\
       return 8;
 
 #define ADDRESS_COST(RTX) \
