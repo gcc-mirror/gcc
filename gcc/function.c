@@ -801,6 +801,11 @@ assign_stack_temp (mode, size, keep)
 {
   struct temp_slot *p, *best_p = 0;
 
+  /* If SIZE is -1 it means that somebody tried to allocate a temporary
+     of a variable size.  */
+  if (size == -1)
+    abort ();
+
   /* First try to find an available, already-allocated temporary that is the
      exact size we require.  */
   for (p = temp_slots; p; p = p->next)
