@@ -1090,7 +1090,6 @@ extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
 
 /* Make (or fake) .linkage entry for function call.
-
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 extern void alpha_need_linkage ();
 
@@ -1098,29 +1097,25 @@ extern void alpha_need_linkage ();
 
 #define ASM_COMMENT_START " #"
 
-/* This macro produces the initial definition of a function name.  On the
-   Alpha, we need to save the function name for the prologue and epilogue.  */
+/* This macro produces the initial definition of a function.  */
 
-extern char *alpha_function_name;
+#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL) \
+  alpha_start_function(FILE,NAME,DECL);
+extern void alpha_start_function ();
 
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)	\
-{							\
-   alpha_function_name = NAME;				\
-}
+/* This macro closes up a function definition for the assembler.  */
+
+#define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
+  alpha_end_function(FILE,NAME,DECL)
+extern void alpha_end_function ();
    
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)  output_prologue (FILE, SIZE)
-
 /* This macro notes the end of the prologue.  */
 
 #define FUNCTION_END_PROLOGUE(FILE)  output_end_prologue (FILE)
+
+/* Output any profiling code before the prologue.  */
+
+#define PROFILE_BEFORE_PROLOGUE 1
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under OSF/1, profiling is enabled
@@ -1170,19 +1165,6 @@ extern char *alpha_function_name;
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE)	output_epilogue (FILE, SIZE)
-
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
@@ -2124,16 +2106,8 @@ literal_section ()						\
 do {									\
   char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
 									\
-  fprintf (FILE, "\t.ent ");						\
-  assemble_name (FILE, alpha_function_name);				\
-  fputc ('\n', FILE);							\
-  ASM_OUTPUT_LABEL (FILE, alpha_function_name);				\
-  fprintf (FILE, "\tldgp $29,0($27)\n");				\
-  fputc ('$', FILE);							\
-  assemble_name (FILE, alpha_function_name);				\
-  fprintf (FILE, "..ng:\n");						\
-  fprintf (FILE, "\t.frame $30,0,$26,0\n");				\
-  fprintf (FILE, "\t.prologue 1\n");					\
+  /* Mark end of prologue.  */						\
+  output_end_prologue (FILE);						\
 									\
   /* Rely on the assembler to macro expand a large delta.  */		\
   fprintf (FILE, "\tlda $16,%ld($16)\n", (long)(DELTA));		\
@@ -2146,18 +2120,11 @@ do {									\
     }									\
   else									\
     {									\
-      fprintf (FILE, "\tlda $27,");					\
-      assemble_name (FILE, fn_name);					\
-      fprintf (FILE, "\n\tjmp $31,($27),");				\
+      fprintf (FILE, "\tjmp $31,");					\
       assemble_name (FILE, fn_name);					\
       fputc ('\n', FILE);						\
     }									\
-									\
-  fprintf (FILE, "\t.end ");						\
-  assemble_name (FILE, alpha_function_name);				\
-  fputc ('\n', FILE);							\
 } while (0)
-
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007

@@ -1,3 +1,17 @@
+Thu Jun 25 01:00:48 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_function_name): Delete.
+	(alpha_ra_ever_killed): Notice current_function_is_thunk.
+	(alpha_sa_mask, alpha_sa_size, alpha_does_function_need_gp): Likewise.
+	(alpha_start_function): Reorg from output_prologue.
+	(alpha_end_function): Reorg from output_epilogue.
+	* alpha.h (ASM_DECLARE_FUNCTION_NAME): Call alpha_start_function.
+	(ASM_DECLARE_FUNCTION_SIZE): New.
+	(FUNCTION_PROLOGUE, FUNCTION_EPILOGUE): Delete.
+	(PROFILE_BEFORE_PROLOGUE): Set.
+	(ASM_OUTPUT_MI_THUNK): Remove bits now output by start/end_function.
+	* alpha/win-nt.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
 Thu Jun 25 01:18:47 1998  John Wehle  (john@feith.com)
 
 	* i386/freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
