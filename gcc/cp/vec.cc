@@ -27,6 +27,12 @@
 
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 #include <cxxabi.h>
+#include <new>
+#include <exception>
+
+// Exception handling hook, to mark current exception as not caught --
+// generally because we're about to rethrow it after some cleanup.
+extern "C" void __uncatch_exception (void);
 
 namespace __cxxabiv1
 {
@@ -54,6 +60,7 @@ __cxa_vec_new (size_t element_count,
     }
   catch (...)
     {
+      // operator delete [] cannot throw, so no need to protect it
       operator delete[] (base - padding_size);
       throw;
     }
@@ -79,18 +86,8 @@ __cxa_vec_ctor (void *array_address,
     }
   catch (...)
     {
-      try
-        {
-          if (destructor)
-            for (; ix--; ptr -= element_size)
-              destructor (ptr);
-        }
-      catch (...)
-        {
-          // [except.ctor]/3 If a destructor called during stack unwinding
-          // exists with an exception, terminate is called.
-          std::terminate ();
-        }
+      __uncatch_exception ();
+      __cxa_vec_dtor (array_address, ix, element_size, destructor);
       throw;
     }
 }
@@ -105,13 +102,28 @@ __cxa_vec_dtor (void *array_address,
   if (destructor)
     {
       char *ptr = static_cast <char *> (array_address);
+      size_t ix = element_count;
+      bool unwinding = std::uncaught_exception ();
       
       ptr += element_count * element_size;
       
-      for (size_t ix = element_count; ix--;)
+      try
         {
-          ptr -= element_size;
-          destructor (ptr);
+          while (ix--)
+            {
+              ptr -= element_size;
+              destructor (ptr);
+            }
+        }
+      catch (...)
+        {
+          if (unwinding)
+            // [except.ctor]/3 If a destructor called during stack unwinding
+            // exists with an exception, terminate is called.
+            std::terminate ();
+          __uncatch_exception ();
+          __cxa_vec_dtor (array_address, ix, element_size, destructor);
+          throw;
         }
     }
 }
@@ -128,9 +140,18 @@ __cxa_vec_delete (void *array_address,
   if (padding_size)
     {
       size_t element_count = reinterpret_cast <size_t *> (base)[-1];
-      
-      __cxa_vec_dtor (base, element_count, element_size, destructor);
       base -= padding_size;
+      try
+        {
+          __cxa_vec_dtor (array_address, element_count, element_size,
+                          destructor);
+        }
+      catch (...)
+        {
+          // operator delete [] cannot throw, so no need to protect it
+          operator delete[] (base);
+          throw;
+        }
     }
   operator delete[] (base);
 }
