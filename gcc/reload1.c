@@ -5508,9 +5508,15 @@ choose_reload_regs (chain)
 		      if (k == nr)
 			{
 			  int i1;
+			  int bad_for_class;
 
 			  last_reg = (GET_MODE (last_reg) == mode
 				      ? last_reg : gen_rtx_REG (mode, i));
+
+			  bad_for_class = 0;
+			  for (k = 0; k < nr; k++)
+			    bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
+								  i+k);
 
 			  /* We found a register that contains the
 			     value we need.  If this register is the
@@ -5541,8 +5547,7 @@ choose_reload_regs (chain)
 				 if we need it wider than we've got it.  */
 			      || (GET_MODE_SIZE (rld[r].mode)
 				  > GET_MODE_SIZE (mode))
-			      || ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
-						      i)
+			      || bad_for_class
 
 			      /* If find_reloads chose reload_out as reload
 				 register, stay with it - that leaves the
