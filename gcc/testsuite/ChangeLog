@@ -1,3 +1,7 @@
+2003-09-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/unroll1.C: Change unsigned to __SIZE_TYPE__.
+
 2003-09-28  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/friend19.C: Fix typo.
