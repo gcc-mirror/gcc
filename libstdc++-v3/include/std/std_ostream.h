@@ -1,6 +1,7 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +51,6 @@ namespace std
     class basic_ostream : virtual public basic_ios<_CharT, _Traits>
     {
     public:
-
       // Types (inherited from basic_ios (27.4.4)):
       typedef _CharT                     		char_type;
       typedef typename _Traits::int_type 		int_type;

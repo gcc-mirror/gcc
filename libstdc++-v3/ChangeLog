@@ -1,5 +1,9 @@
 2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* config/locale/c_locale_generic.cc: Fix.
+
+2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* docs/html/22_locale/messages.html: Remove angle brackets.
 	* docs/html/17_intro/TODO: Add.
 	
