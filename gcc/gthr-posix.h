@@ -68,6 +68,11 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
 #pragma weak sched_yield
+#pragma weak pthread_attr_destroy
+#pragma weak pthread_attr_init
+#pragma weak pthread_attr_setdetachstate
+#pragma weak pthread_getschedparam
+#pragma weak pthread_setschedparam
 #endif
 
 static void *__gthread_active_ptr = &pthread_create;
