@@ -1,3 +1,12 @@
+2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* libgfortran/libgfortran.h (GFC_UINTEGER_1, GFC_UINTEGER_2): 
+	Define.
+	* intrinsics/ishftc.c: Update copyright years.
+	(ishftc8): Change 'shift' and 'size' to GFC_INTEGER_4.
+	* intrinsics/mvbits.c: Correcty non-ASCII character in my name.
+	Add implementations for GFC_INTEGER_1 and GFC_INTEGER_2.
+
 2004-12-23  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/19071

@@ -1,5 +1,5 @@
 /* Implementation of ishftc intrinsic.
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2004 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfor).
@@ -41,11 +41,11 @@ ishftc4 (GFC_INTEGER_4 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
   return (i & mask) | (bits >> (size - shift)) | ((i << shift) & ~mask);
 }
 
-extern GFC_INTEGER_8 ishftc8 (GFC_INTEGER_8, GFC_INTEGER_8, GFC_INTEGER_8);
+extern GFC_INTEGER_8 ishftc8 (GFC_INTEGER_8, GFC_INTEGER_4, GFC_INTEGER_4);
 export_proto(ishftc8);
 
 GFC_INTEGER_8
-ishftc8 (GFC_INTEGER_8 i, GFC_INTEGER_8 shift, GFC_INTEGER_8 size)
+ishftc8 (GFC_INTEGER_8 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
 {
   GFC_INTEGER_8 mask;
   GFC_UINTEGER_8 bits;

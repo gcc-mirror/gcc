@@ -1,3 +1,7 @@
+2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/g77/f90-intrinsic-bit.f: New.
+
 2004-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19148
