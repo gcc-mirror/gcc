@@ -38,7 +38,8 @@
 	* doc/invoke.texi (Option Summary, Xtensa Options): Remove documention
 	for the options listed above.
 	
-2003-09-12  Dale Johannesen  <dale@apple.com>
+2003-09-12  Dale Johannesen  <dalej@apple.com>
+
 	* config/rs6000/rs6000-protos.h:  Use C90 prototypes.
 	* config/rs6000/rs6000-c.c:  Ditto. 
 	* config/rs6000/rs6000.c:  Ditto.
