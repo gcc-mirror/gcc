@@ -1,3 +1,9 @@
+1999-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/inclhack.def (math_gcc_ifndefs): Insert whitespace
+	between sed's -e flag, and the open-quote following it.
+	* fixinc/fixincl.x, fixinc/fixincl.sh: Rebuilt.
+
 Mon Jun  7 20:34:20 1999  Robert Lipe <robertlipe@usa.net>
 			  Jeffrey A Law  (law@cygnus.com)
 
