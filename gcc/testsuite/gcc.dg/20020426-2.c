@@ -171,3 +171,4 @@ main (void)
   A *e = 0;
   foo (a, 19, 19, 0, 0, &e, &b, h, &c, d);
   exit (0);
+}
