@@ -440,7 +440,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	 doesn't work for varargs.  */
 
       if (varargs_function_p (function))
-	error ("generic thunk code fails for method `%#D' which uses `...'",
+	error ("generic thunk code fails for method %q#D which uses %<...%>",
 	       function);
 
       DECL_RESULT (thunk_fndecl) = NULL_TREE;
@@ -649,12 +649,14 @@ do_build_assign_ref (tree fndecl)
 
 	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
 	    {
-              error ("non-static const member `%#D', can't use default assignment operator", field);
+              error ("non-static const member %q#D, can't use default "
+                     "assignment operator", field);
 	      continue;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
 	    {
-	      error ("non-static reference member `%#D', can't use default assignment operator", field);
+	      error ("non-static reference member %q#D, can't use "
+                     "default assignment operator", field);
 	      continue;
 	    }
 

@@ -574,8 +574,8 @@ supplement_binding (cxx_binding *binding, tree decl)
     ok = false;
   else
     {
-      error ("declaration of `%#D'", decl);
-      cp_error_at ("conflicts with previous declaration `%#D'", bval);
+      error ("declaration of %q#D", decl);
+      cp_error_at ("conflicts with previous declaration %q#D", bval);
       ok = false;
     }
 
@@ -759,8 +759,8 @@ pushdecl (tree x)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (pedantic && ! DECL_IN_SYSTEM_HEADER (x))
-		pedwarn ("redeclaration of `wchar_t' as `%T'",
-			    TREE_TYPE (x));
+		pedwarn ("redeclaration of %<wchar_t%> as %qT",
+                         TREE_TYPE (x));
 
 	      /* Throw away the redeclaration.  */
 	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
@@ -791,8 +791,8 @@ pushdecl (tree x)
 		     [basic.start.main]
 		     
 		     This function shall not be overloaded.  */
-		  cp_error_at ("invalid redeclaration of `%D'", t);
-		  error ("as `%D'", x);
+		  cp_error_at ("invalid redeclaration of %qD", t);
+		  error ("as %qD", x);
 		  /* We don't try to push this declaration since that
 		     causes a crash.  */
 		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
@@ -880,8 +880,8 @@ pushdecl (tree x)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      pedwarn ("type mismatch with previous external decl of `%#D'", x);
-	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
+	      pedwarn ("type mismatch with previous external decl of %q#D", x);
+	      cp_pedwarn_at ("previous external decl of %q#D", decl);
 	    }
 	}
 
@@ -963,8 +963,8 @@ pushdecl (tree x)
 		/* OK */;
 	      else
 		{
-		  warning ("extern declaration of `%#D' doesn't match", x);
-		  cp_warning_at ("global declaration `%#D'", oldglobal);
+		  warning ("extern declaration of %q#D doesn't match", x);
+		  cp_warning_at ("global declaration %q#D", oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
@@ -1000,14 +1000,14 @@ pushdecl (tree x)
 		  /* ARM $8.3 */
 		  if (b->kind == sk_function_parms)
 		    {
-		      error ("declaration of '%#D' shadows a parameter", x);
+		      error ("declaration of %q#D shadows a parameter", x);
 		      err = true;
 		    }
 		}
 
 	      if (warn_shadow && !err)
 		{
-		  warning ("declaration of '%#D' shadows a parameter", x);
+		  warning ("declaration of %q#D shadows a parameter", x);
 		  warning ("%Jshadowed declaration is here", oldlocal);
 		}
 	    }
@@ -1032,20 +1032,20 @@ pushdecl (tree x)
 	      if (member && !TREE_STATIC (member))
 		{
 		  /* Location of previous decl is not useful in this case.  */
-		  warning ("declaration of '%D' shadows a member of 'this'",
+		  warning ("declaration of %qD shadows a member of 'this'",
 			   x);
 		}
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
 		{
-		  warning ("declaration of '%D' shadows a previous local", x);
+		  warning ("declaration of %qD shadows a previous local", x);
 		  warning ("%Jshadowed declaration is here", oldlocal);
 		}
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
 		{
-		  warning ("declaration of '%D' shadows a global declaration",
+		  warning ("declaration of %qD shadows a global declaration",
 			   x);
 		  warning ("%Jshadowed declaration is here", oldglobal);
 		}
@@ -1161,11 +1161,10 @@ check_for_out_of_scope_variable (tree decl)
     {
       if (!DECL_ERROR_REPORTED (decl))
 	{
-	  warning ("name lookup of `%D' changed",
-		      DECL_NAME (decl));
-	  cp_warning_at ("  matches this `%D' under ISO standard rules",
+	  warning ("name lookup of %qD changed", DECL_NAME (decl));
+	  cp_warning_at ("  matches this %qD under ISO standard rules",
 			 shadowed);
-	  cp_warning_at ("  matches this `%D' under old rules", decl);
+	  cp_warning_at ("  matches this %qD under old rules", decl);
 	  DECL_ERROR_REPORTED (decl) = 1;
 	}
       return shadowed;
@@ -1183,16 +1182,17 @@ check_for_out_of_scope_variable (tree decl)
 
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     {
-      error ("name lookup of `%D' changed for new ISO `for' scoping",
+      error ("name lookup of %qD changed for new ISO %<for%> scoping",
 	     DECL_NAME (decl));
-      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", decl);
+      cp_error_at ("  cannot use obsolete binding at %qD because "
+                   "it has a destructor", decl);
       return error_mark_node;
     }
   else
     {
-      pedwarn ("name lookup of `%D' changed for new ISO `for' scoping",
+      pedwarn ("name lookup of %qD changed for new ISO %<for%> scoping",
 	       DECL_NAME (decl));
-      cp_pedwarn_at ("  using obsolete binding at `%D'", decl);
+      cp_pedwarn_at ("  using obsolete binding at %qD", decl);
     }
 
   return decl;
@@ -2023,8 +2023,8 @@ push_overloaded_decl (tree decl, int flags)
 		  && !(flags & PUSH_USING)
 		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 				TYPE_ARG_TYPES (TREE_TYPE (decl))))
-		error ("`%#D' conflicts with previous using declaration `%#D'",
-			  decl, fn);
+		error ("%q#D conflicts with previous using declaration %q#D",
+                       decl, fn);
 
 	      if (duplicate_decls (decl, fn) == fn)
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, fn);
@@ -2035,8 +2035,8 @@ push_overloaded_decl (tree decl, int flags)
 	old = NULL_TREE;
       else
 	{
-	  cp_error_at ("previous non-function declaration `%#D'", old);
-	  error ("conflicts with function declaration `%#D'", decl);
+	  cp_error_at ("previous non-function declaration %q#D", old);
+	  error ("conflicts with function declaration %q#D", decl);
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 	}
     }
@@ -2114,7 +2114,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
        member-declaration.  */
   if (TYPE_P (scope))
     {
-      error ("`%T' is not a namespace", scope);
+      error ("%qT is not a namespace", scope);
       return NULL_TREE;
     }
   else if (scope == error_mark_node)
@@ -2124,13 +2124,14 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
     {
       /* 7.3.3/5
 	   A using-declaration shall not name a template-id.  */
-      error ("a using-declaration cannot specify a template-id.  Try `using %D'", name);
+      error ("a using-declaration cannot specify a template-id.  "
+             "Try %<using %D%>", name);
       return NULL_TREE;
     }
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     {
-      error ("namespace `%D' not allowed in using-declaration", decl);
+      error ("namespace %qD not allowed in using-declaration", decl);
       return NULL_TREE;
     }
 
@@ -2138,7 +2139,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
     {
       /* It's a nested name with template parameter dependent scope.
 	 This can only be using-declaration for class member.  */
-      error ("`%T' is not a namespace", TREE_OPERAND (decl, 0));
+      error ("%qT is not a namespace", TREE_OPERAND (decl, 0));
       return NULL_TREE;
     }
 
@@ -2166,7 +2167,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 
   if (!decls.value && !decls.type)
     {
-      error ("`%D' not declared", name);
+      error ("%qD not declared", name);
       return;
     }
 
@@ -2178,7 +2179,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       if (oldval && !is_overloaded_fn (oldval))
 	{
 	  if (!DECL_IMPLICIT_TYPEDEF_P (oldval))
-	    error ("`%D' is already declared in this scope", name);
+	    error ("%qD is already declared in this scope", name);
 	  oldval = NULL_TREE;
 	}
 
@@ -2220,7 +2221,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		    {
 		      /* If the OLD_FN was really declared, the
 			 declarations don't match.  */
-		      error ("`%D' is already declared in this scope", name);
+		      error ("%qD is already declared in this scope", name);
 		      break;
 		    }
 
@@ -2257,14 +2258,14 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
     {
       *newval = decls.value;
       if (oldval && !decls_match (*newval, oldval))
-	error ("`%D' is already declared in this scope", name);
+	error ("%qD is already declared in this scope", name);
     }
 
   *newtype = decls.type;
   if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
     {
-      error ("using declaration `%D' introduced ambiguous type `%T'",
-		name, oldtype);
+      error ("using declaration %qD introduced ambiguous type %qT",
+             name, oldtype);
       return;
     }
 }
@@ -2431,7 +2432,7 @@ lookup_tag (enum tree_code form, tree name,
 		    && (form == ENUMERAL_TYPE
 			|| TREE_CODE (old) == ENUMERAL_TYPE))
 		  {
-		    error ("`%#D' redeclared as %C", old, form);
+		    error ("%q#D redeclared as %C", old, form);
 		    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
 		  }
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old);
@@ -2450,7 +2451,7 @@ lookup_tag (enum tree_code form, tree name,
                   && (form == ENUMERAL_TYPE || code == ENUMERAL_TYPE))
                 {
                   /* Definition isn't the kind we were looking for.  */
-                  error ("`%#D' redeclared as %C", entry->type, form);
+                  error ("%q#D redeclared as %C", entry->type, form);
                   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
                 }
               POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->type);
@@ -2818,7 +2819,7 @@ push_class_level_binding (tree name, tree x)
       tree scope = context_for_name_lookup (x);
       if (TYPE_P (scope) && same_type_p (scope, current_class_type))
 	{
-	  error ("`%D' has the same name as the class in which it is "
+	  error ("%qD has the same name as the class in which it is "
 		 "declared",
 		 x);
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
@@ -3039,8 +3040,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   else
     return;
  complain:
-  error ("`%D' should have been declared inside `%D'",
-	    decl, scope);
+  error ("%qD should have been declared inside %qD", decl, scope);
 } 
 
 /* Return the namespace where the current declaration is declared.  */
@@ -3102,8 +3102,8 @@ push_namespace (tree name)
           need_new = 0;
           if (DECL_NAMESPACE_ALIAS (d))
             {
-              error ("namespace alias `%D' not allowed here, assuming `%D'",
-                        d, DECL_NAMESPACE_ALIAS (d));
+              error ("namespace alias %qD not allowed here, assuming %qD",
+                     d, DECL_NAMESPACE_ALIAS (d));
               d = DECL_NAMESPACE_ALIAS (d);
             }
         }
@@ -3217,7 +3217,7 @@ do_namespace_alias (tree alias, tree namespace)
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       /* The parser did not find it, so it's not there.  */
-      error ("unknown namespace `%D'", namespace);
+      error ("unknown namespace %qD", namespace);
       return;
     }
 
@@ -3377,13 +3377,13 @@ do_using_directive (tree namespace)
     {
       /* Lookup in lexer did not find a namespace.  */
       if (!processing_template_decl)
-	error ("namespace `%T' undeclared", namespace);
+	error ("namespace %qT undeclared", namespace);
       return;
     }
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       if (!processing_template_decl)
-	error ("`%T' is not a namespace", namespace);
+	error ("%qT is not a namespace", namespace);
       return;
     }
   namespace = ORIGINAL_NAMESPACE (namespace);
@@ -3428,7 +3428,7 @@ parse_using_directive (tree namespace, tree attribs)
 			   DECL_NAMESPACE_ASSOCIATIONS (namespace));
 	}
       else
-	warning ("`%D' attribute directive ignored", name);
+	warning ("%qD attribute directive ignored", name);
     }
 }
 
@@ -3562,11 +3562,10 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
 		 repeat ourselves.  */
 	      if (old->value != error_mark_node)
 		{
-		  error ("use of `%D' is ambiguous", name);
-		  cp_error_at ("  first declared as `%#D' here",
-			       old->value);
+		  error ("use of %qD is ambiguous", name);
+		  cp_error_at ("  first declared as %q#D here", old->value);
 		}
-              cp_error_at ("  also declared as `%#D' here", val);
+              cp_error_at ("  also declared as %q#D here", val);
             }
 	  old->value = error_mark_node;
 	}
@@ -3581,7 +3580,7 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
     {
       if (flags & LOOKUP_COMPLAIN)
         {
-          error ("`%D' denotes an ambiguous type",name);
+          error ("%qD denotes an ambiguous type",name);
           error ("%J  first type here", TYPE_MAIN_DECL (old->type));
           error ("%J  other type here", TYPE_MAIN_DECL (type));
         }
@@ -3647,7 +3646,7 @@ lookup_namespace_name (tree namespace, tree name)
     {
       /* This happens for A::B where B is a template, and there are no
 	 template arguments.  */
-      error ("invalid use of `%D'", name);
+      error ("invalid use of %qD", name);
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
@@ -3687,8 +3686,7 @@ lookup_namespace_name (tree namespace, tree name)
 					    TREE_OPERAND (template_id, 1));
 	  else
 	    {
-	      error ("`%D::%D' is not a template",
-			namespace, name);
+	      error ("%<%D::%D%> is not a template", namespace, name);
 	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	    }
 	}
@@ -3704,7 +3702,7 @@ lookup_namespace_name (tree namespace, tree name)
         POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
     }
 
-  error ("`%D' undeclared in namespace `%D'", name, namespace);
+  error ("%qD undeclared in namespace %qD", name, namespace);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 }
 
@@ -4241,9 +4239,9 @@ add_function (struct arg_lookup *k, tree fn)
 	{
 	  fn = f1; f1 = f2; f2 = fn;
 	}
-      cp_error_at ("`%D' is not a function,", f1);
-      cp_error_at ("  conflict with `%D'", f2);
-      error ("  in call to `%D'", k->name);
+      cp_error_at ("%qD is not a function,", f1);
+      cp_error_at ("  conflict with %qD", f2);
+      error ("  in call to %qD", k->name);
       return true;
     }
 

@@ -1,6 +1,35 @@
 2004-10-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert diagnostics to use quoting flag q 4/n
+	* parser.c (cp_parser_name_lookup_error, 
+	cp_parser_diagnose_invalid_type_name, 
+	cp_parser_primary_expression, cp_parser_unqualified_id, 
+	cp_parser_nested_name_specifier_opt, cp_parser_labeled_statement, 
+	cp_parser_jump_statement, cp_parser_simple_declaration, 
+	cp_parser_decl_specifier_seq, cp_parser_mem_initializer_id, 
+	cp_parser_type_parameter, cp_parser_template_id, 
+	cp_parser_template_name, cp_parser_direct_declarator, 
+	cp_parser_parameter_declaration_list, cp_parser_class_head, 
+	cp_parser_base_specifier, cp_parser_lookup_name, 
+	cp_parser_late_parsing_default_args, 
+	cp_parser_optional_template_keyword 
+	cp_parser_elaborated_type_specifier, cp_parser_check_class_key, 
+	cp_parser_check_access_in_redeclaration): Use quoting marks.
+
+	* name-lookup.c (supplement_binding, pushdecl, 
+	check_for_out_of_scope_variable, validate_nonmember_using_decl, 
+	do_nonmember_using_decl, lookup_tag, set_decl_namespace, 
+	push_namespace, do_namespace_alias, do_using_directive, 
+	ambiguous_decl, lookup_namespace_name, add_function): Likewise.
+
+	* method.c (use_thunk): Likewise.
+
+	* lex.c (unqualified_name_lookup_error, 
+	unqualified_fn_lookup_error): Likewise.
+
+2004-10-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert diagnostics to use quoting flag q 4/n
 	* except.c (decl_is_java_type, build_throw, 
 	is_admissible_throw_operand, check_handlers_1, check_handlers): 
 	Use quoting formats.
