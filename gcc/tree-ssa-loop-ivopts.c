@@ -2047,8 +2047,7 @@ set_use_iv_cost (struct ivopts_data *data,
 
   if (cost == INFTY)
     {
-      if (depends_on)
-	BITMAP_XFREE (depends_on);
+      BITMAP_XFREE (depends_on);
       return;
     }
 

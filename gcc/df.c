@@ -580,12 +580,10 @@ df_free (struct df *df)
   df->regs = 0;
   df->reg_size = 0;
 
-  if (df->bbs_modified)
-    BITMAP_XFREE (df->bbs_modified);
+  BITMAP_XFREE (df->bbs_modified);
   df->bbs_modified = 0;
 
-  if (df->insns_modified)
-    BITMAP_XFREE (df->insns_modified);
+  BITMAP_XFREE (df->insns_modified);
   df->insns_modified = 0;
 
   BITMAP_XFREE (df->all_blocks);

@@ -1,5 +1,10 @@
 2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bt-load.c (migrate_btr_defs): Remove unneeded NULL check.
+	* df.c (df_free): Likewise.
+	* ra-build.c (ra_build_free, ra_build_free_all): Likewise.
+	* tree-ssa-loop-ivopts.c (set_use_iv_cost): Likewise.
+
 	* basic-block.h (OBSTACK_ALLOC_REG_SET): Rename to ...
 	(ALLOC_REG_SET): ... here.
 	(FREE_REG_SET): Adjust.

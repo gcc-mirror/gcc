@@ -3125,10 +3125,7 @@ ra_build_free (void)
     {
       struct tagged_conflict *cl;
       for (cl = web_parts[i].sub_conflicts; cl; cl = cl->next)
-	{
-	  if (cl->conflicts)
-	    BITMAP_XFREE (cl->conflicts);
-	}
+	BITMAP_XFREE (cl->conflicts);
       web_parts[i].sub_conflicts = NULL;
     }
 
@@ -3154,10 +3151,7 @@ ra_build_free_all (struct df *df)
     {
       struct tagged_conflict *cl;
       for (cl = web_parts[i].sub_conflicts; cl; cl = cl->next)
-	{
-	  if (cl->conflicts)
-	    BITMAP_XFREE (cl->conflicts);
-	}
+	BITMAP_XFREE (cl->conflicts);
       web_parts[i].sub_conflicts = NULL;
     }
   sbitmap_free (live_over_abnormal);
