@@ -1,3 +1,7 @@
+2001-02-06  Tom Tromey  <tromey@redhat.com>
+
+	* lex.c (java_new_lexer): Longer error message.
+
 2001-02-05  Jeff Sturm  <jeff.sturm@commerceone.com>
 	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
