@@ -661,8 +661,9 @@ fn.def1:
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
 	| declmods notype_declarator exception_specification_opt
-		{ tree specs = strip_attrs ($1);
-		  if (! start_function (specs, $2, $3, NULL_TREE, 0))
+		{ tree specs, attrs;
+		  split_specs_attrs ($1, &specs, &attrs);
+		  if (! start_function (specs, $2, $3, attrs, 0))
 		    YYERROR1;
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
@@ -1306,18 +1307,6 @@ primary:
 		{
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
-		  else if (IDENTIFIER_OPNAME_P ($$))
-		    {
-		      tree op = $$;
-		      $$ = lookup_name (op, 0);
-		      if ($$ == NULL_TREE)
-			{
-			  if (op != ansi_opname[ERROR_MARK])
-			    error ("operator %s not defined",
-				   operator_name_string (op));
-			  $$ = error_mark_node;
-			}
-		    }
 		  else
 		    $$ = do_identifier ($$);
 		}		
@@ -1531,10 +1520,9 @@ primary:
 		  else
 		    {
 		      if (TREE_CODE ($$) == ADDR_EXPR)
-			assemble_external (TREE_OPERAND ($$, 0));
+			mark_used (TREE_OPERAND ($$, 0));
 		      else
-			assemble_external ($$);
-		      TREE_USED ($$) = 1;
+			mark_used ($$);
 		    }
 		  if (TREE_CODE ($$) == CONST_DECL)
 		    {
@@ -3545,6 +3533,9 @@ for.init.statement:
 		{ if ($1) cplus_expand_expr_stmt ($1); }
 	| decl
 	| '{' compstmtend
+		{ if (pedantic)
+		    pedwarn ("ANSI C++ forbids compound statements inside for initializations");
+		}
 	;
 
 /* Either a type-qualifier or nothing.  First thing in an `asm' statement.  */

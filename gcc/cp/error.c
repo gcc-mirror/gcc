@@ -950,12 +950,12 @@ dump_expr (t, nop)
 	  }
 	else if (type == boolean_type_node)
 	  {
-	    if (t == boolean_false_node)
+	    if (t == boolean_false_node
+		|| (TREE_INT_CST_LOW (t) == 0
+		    && TREE_INT_CST_HIGH (t) == 0))
 	      OB_PUTS ("false");
 	    else if (t == boolean_true_node)
 	      OB_PUTS ("true");
-	    else
-	      my_friendly_abort (366);
 	  }
 	else if (type == char_type_node)
 	  {

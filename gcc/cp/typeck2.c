@@ -569,8 +569,6 @@ store_init_value (decl, init)
       if (TREE_CODE (init) == CONSTRUCTOR)
 	{
 	  tree field;
-	  tree funcs;
-	  int func;
 
 	  /* Check that we're really an aggregate as ARM 8.4.1 defines it.  */
 	  if (CLASSTYPE_N_BASECLASSES (type))
@@ -588,16 +586,11 @@ store_init_value (decl, init)
 		cp_error_at ("initializer list construction invalid for `%D'", decl);
 		cp_error_at ("due to non-public access of member `%D'", field);
 	      }
-	  funcs = TYPE_METHODS (type);
-	  if (funcs)
-	    for (func = 0; func < TREE_VEC_LENGTH (funcs); func++)
+	  for (field = TYPE_METHODS (type); field; field = TREE_CHAIN (field))
+	    if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
 	      {
-		field = TREE_VEC_ELT (funcs, func);
-		if (field && (TREE_PRIVATE (field) || TREE_PROTECTED (field)))
-		  {
-		    cp_error_at ("initializer list construction invalid for `%D'", decl);
-		    cp_error_at ("due to non-public access of member `%D'", field);
-		  }
+		cp_error_at ("initializer list construction invalid for `%D'", decl);
+		cp_error_at ("due to non-public access of member `%D'", field);
 	      }
 	}
 #endif
@@ -894,10 +887,16 @@ digest_init (type, init, tail)
 	return process_init_constructor (type, init, (tree *)0);
       else if (TYPE_NON_AGGREGATE_CLASS (type))
 	{
+#if 0
+	  /* This isn't true.  */
 	  /* This can only be reached when caller is initializing
 	     ARRAY_TYPE.  In that case, we don't want to convert
 	     INIT to TYPE.  We will let `expand_vec_init' do it.  */
 	  return init;
+#else
+	  return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+					     "initialization", NULL_TREE, 0);
+#endif
 	}
       else if (tail != 0)
 	{

@@ -3507,11 +3507,17 @@ static void
 add_conversions (binfo)
      tree binfo;
 {
-  tree tmp = CLASSTYPE_FIRST_CONVERSION (BINFO_TYPE (binfo));
-  for (; tmp && IDENTIFIER_TYPENAME_P (DECL_NAME (tmp));
-       tmp = TREE_CHAIN (tmp))
-    conversions = tree_cons (DECL_NAME (tmp), TREE_TYPE (TREE_TYPE (tmp)),
-			     conversions);
+  int i;
+  tree vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+
+  for (i = 1; i < TREE_VEC_LENGTH (vec); ++i)
+    {
+      tree tmp = TREE_VEC_ELT (vec, i);
+      if (! IDENTIFIER_TYPENAME_P (DECL_NAME (tmp)))
+	break;
+      conversions = tree_cons (DECL_NAME (tmp), TREE_TYPE (TREE_TYPE (tmp)),
+			       conversions);
+    }
 }
 
 tree

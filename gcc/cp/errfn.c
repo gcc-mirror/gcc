@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
    
 #include "config.h"
 #include "tree.h"
+#include <stdio.h>
 #include <ctype.h>
 
 /* cp_printer is the type of a function which converts an argument into
@@ -195,8 +196,7 @@ cp_sprintf (format, arglist)
      char *format;
      arglist_dcl
 {
-  extern errorfn sprintf;
-  cp_thing (sprintf, 0, format, arglist);
+  cp_thing ((errorfn *) sprintf, 0, format, arglist);
 }
 
 void

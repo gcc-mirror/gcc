@@ -178,8 +178,13 @@ report_type_mismatch (cp, parmtypes, name_kind)
       /* Happens when the implicit object parameter is rejected.  */
       my_friendly_assert (! TYPE_READONLY (TREE_TYPE (TREE_VALUE (parmtypes))),
 			  241);
-      cp_error ("call to non-const %s `%#D' with const object",
-		name_kind, cp->function);
+      if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (TREE_VALUE (parmtypes))))
+	  && ! TYPE_VOLATILE (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (cp->function))))))
+	cp_error ("call to non-volatile %s `%#D' with volatile object",
+		  name_kind, cp->function);
+      else
+	cp_error ("call to non-const %s `%#D' with const object",
+		  name_kind, cp->function);
       return;
     }
 
@@ -1547,6 +1552,7 @@ hack_identifier (value, name, yychar)
 
   if (really_overloaded_fn (value))
     {
+#if 0
       tree t = get_first_fn (value);
       for (; t; t = DECL_CHAIN (t))
 	{
@@ -1556,22 +1562,20 @@ hack_identifier (value, name, yychar)
 	  assemble_external (t);
 	  TREE_USED (t) = 1;
 	}
+#endif
     }
   else if (TREE_CODE (value) == TREE_LIST)
     {
+      /* Ambiguous reference to base members, possibly other cases?.  */
       tree t = value;
       while (t && TREE_CODE (t) == TREE_LIST)
 	{
-	  assemble_external (TREE_VALUE (t));
-	  TREE_USED (t) = 1;
+	  mark_used (TREE_VALUE (t));
 	  t = TREE_CHAIN (t);
 	}
     }
   else
-    {
-      assemble_external (value);
-      TREE_USED (value) = 1;
-    }
+    mark_used (value);
 
   if (TREE_CODE_CLASS (TREE_CODE (value)) == 'd' && DECL_NONLOCAL (value))
     {
@@ -1800,14 +1804,17 @@ make_thunk (function, delta)
     }
   if (thunk == NULL_TREE)
     {
-      thunk = build_decl (THUNK_DECL, thunk_id, TREE_TYPE (func_decl));
+      thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
       DECL_RESULT (thunk)
 	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (vtable_entry_type)));
       TREE_READONLY (thunk) = TYPE_READONLY (TREE_TYPE (vtable_entry_type));
       TREE_THIS_VOLATILE (thunk) = TYPE_VOLATILE (TREE_TYPE (vtable_entry_type));
       make_function_rtl (thunk);
+      TREE_SET_CODE (thunk, THUNK_DECL);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
+      DECL_EXTERNAL (thunk) = 1;
+      TREE_PUBLIC (thunk) = 1;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
@@ -1845,16 +1852,11 @@ emit_thunk (thunk_fndecl)
 
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
 
-  if (TREE_PUBLIC (function))
-    {
-      TREE_PUBLIC (thunk_fndecl) = 1;
-      if (DECL_EXTERNAL (function))
-	{
-	  DECL_EXTERNAL (thunk_fndecl) = 1;
-	  assemble_external (thunk_fndecl);
-	  return;
-	}
-    }
+  if (! TREE_PUBLIC (function))
+    TREE_PUBLIC (thunk_fndecl) = 0;
+  if (DECL_EXTERNAL (function))
+    return;
+  DECL_EXTERNAL (thunk_fndecl) = 0;
 
   decl_printable_name = thunk_printable_name;
   if (current_function_decl)

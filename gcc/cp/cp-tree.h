@@ -636,10 +636,6 @@ struct lang_type
 /* The is the VAR_DECL that contains NODE's rtti.  */
 #define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC(NODE)->rtti)
 
-/* List of all explicit methods (chained using DECL_NEXT_METHOD),
-   in order they were parsed. */
-#define CLASSTYPE_METHODS(NODE) (TYPE_LANG_SPECIFIC(NODE)->methods)
-
 /* Nonzero means that this _CLASSTYPE node overloads operator().  */
 #define TYPE_OVERLOADS_CALL_EXPR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_call_overloaded)
 
@@ -660,7 +656,7 @@ struct lang_type
 #define TYPE_USES_VIRTUAL_BASECLASSES(NODE) (TREE_LANG_FLAG_3(NODE))
 
 /* List of lists of member functions defined in this class.  */
-#define CLASSTYPE_METHOD_VEC(NODE) TYPE_METHODS(NODE)
+#define CLASSTYPE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->methods)
 
 /* The first type conversion operator in the class (the others can be
    searched with TREE_CHAIN), or the first non-constructor function if
@@ -924,7 +920,7 @@ struct lang_type
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
 /* The binding level associated with the namespace. */
-#define NAMESPACE_LEVEL(NODE) ((NODE)->decl.arguments)
+#define NAMESPACE_LEVEL(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.level)
 
 struct lang_decl_flags
 {
@@ -960,6 +956,7 @@ struct lang_decl_flags
   tree access;
   tree context;
   tree memfunc_pointer_to;
+  struct binding_level *level;
 };
 
 struct lang_decl
@@ -969,7 +966,6 @@ struct lang_decl
   struct template_info *template_info;
   tree main_decl_variant;
   struct pending_inline *pending_inline_info;
-  tree next_method;
   tree chain;
 };
 
@@ -1067,9 +1063,6 @@ struct lang_decl
 #else
 #define DECL_CHAIN(NODE) (TREE_CHAIN (NODE))
 #endif
-
-/* Next method in CLASSTYPE_METHODS list. */
-#define DECL_NEXT_METHOD(NODE) (DECL_LANG_SPECIFIC(NODE)->next_method)
 
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed variable. */
@@ -1400,6 +1393,9 @@ extern int flag_new_for_scope;
 /* ...and for unexpanded-parameterized-type nodes.  */
 #define UPT_TEMPLATE(NODE)      TREE_PURPOSE(TYPE_VALUES(NODE))
 #define UPT_PARMS(NODE)         TREE_VALUE(TYPE_VALUES(NODE))
+
+#define builtin_function(NAME, TYPE, CODE, LIBNAME) \
+  define_function (NAME, TYPE, CODE, (void (*)())pushdecl, LIBNAME)
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types { record_type, class_type, union_type, enum_type,
@@ -1809,6 +1805,12 @@ extern int flag_alt_external_templates;
 
 extern int flag_implicit_templates;
 
+/* Nonzero if we want to emit defined symbols with common-like linkage as
+   weak symbols where possible, in order to conform to C++ semantics.
+   Otherwise, emit them as local symbols.  */
+
+extern int flag_weak;
+
 /* Current end of entries in the gc obstack for stack pointer variables.  */
 
 extern int current_function_obstack_index;
@@ -1844,6 +1846,9 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
      in the parameter list.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
+   INDIRECT_BIND means that if a temporary is created, it should be created so
+     that it lives only as long as WITH_CLEANUP_EXPRs live, else if a temporary
+     is created then it should live as long as the current variable bindings.
    LOOKUP_SPECULATIVELY means return NULL_TREE if we cannot find what we are
      after.  Note, LOOKUP_COMPLAIN is checked and error messages printed
      before LOOKUP_SPECULATIVELY is checked.
@@ -1860,7 +1865,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_HAS_IN_CHARGE (32)
 #define LOOKUP_SPECULATIVELY (64)
 #define LOOKUP_ONLYCONVERTING (128)
-/* 256 is free */
+#define INDIRECT_BIND (256)
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
 
@@ -2131,6 +2136,8 @@ extern void init_exception_processing		PROTO((void));
 extern void expand_builtin_throw		PROTO((void));
 extern void expand_start_eh_spec		PROTO((void));
 extern void expand_end_eh_spec			PROTO((tree));
+extern tree build_cleanup			PROTO((tree));
+extern tree start_anon_func			PROTO((void));
 
 /* in expr.c */
 /* skip cplus_expand_expr */
@@ -2395,6 +2402,7 @@ extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 extern tree break_out_target_exprs		PROTO((tree));
 extern tree build_unsave_expr			PROTO((tree));
+extern tree unsave_expr				PROTO((tree));
 extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 
 /* in typeck.c */
