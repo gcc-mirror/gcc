@@ -1,3 +1,8 @@
+Mon Jan 26 23:57:39 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* libgcc2.c (__clear_insn_cache): On sysV68 enable the memctl
+	stuff only if MCT_TEXT is #define'd.
+
 Mon Jan 26 23:52:51 1998  Markus F.X.J. Oberhumer <k3040e4@c210.edvz.uni-linz.ac.at>
 
 	* configure.in (i*86-pc-msdosdjgpp): Treat like msdos & go32
