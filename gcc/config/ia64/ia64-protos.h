@@ -134,3 +134,8 @@ extern void sdata_section PARAMS ((void));
 #ifdef SBSS_SECTION_ASM_OP
 extern void sbss_section PARAMS ((void));
 #endif
+
+#ifdef ARGS_SIZE_RTX
+/* expr.h defines ARGS_SIZE_RTX and `enum direction'.  */
+extern enum direction ia64_hpux_function_arg_padding PARAMS ((enum machine_mode, tree));
+#endif /* ARGS_SIZE_RTX */
