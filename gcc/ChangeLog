@@ -1,5 +1,7 @@
 2001-08-07  Jason Merrill  <jason_merrill@redhat.com>
 
+	* c-semantics.c (make_rtl_for_local_static): Use DECL_RTL_SET_P.
+
 	* alias.c (get_alias_set): Return a previously calculated
 	alias set for a VAR_DECL.
 
