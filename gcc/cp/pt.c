@@ -1599,22 +1599,38 @@ check_template_shadow (decl)
 {
   tree olddecl;
 
+  /* If we're not in a template, we can't possibly shadow a template
+     parameter.  */
+  if (!current_template_parms)
+    return;
+
+  /* Figure out what we're shadowing.  */
   if (TREE_CODE (decl) == OVERLOAD)
     decl = OVL_CURRENT (decl);
   olddecl = IDENTIFIER_VALUE (DECL_NAME (decl));
 
-  if (current_template_parms && olddecl)
-    {
-      /* We check for decl != olddecl to avoid bogus errors for using a
-	 name inside a class.  We check TPFI to avoid duplicate errors for
-	 inline member templates.  */
-      if (decl != olddecl && DECL_TEMPLATE_PARM_P (olddecl)
-	  && ! TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
-	{
-	  cp_error_at ("declaration of `%#D'", decl);
-	  cp_error_at (" shadows template parm `%#D'", olddecl);
-	}
-    }
+  /* If there's no previous binding for this name, we're not shadowing
+     anything, let alone a template parameter.  */
+  if (!olddecl)
+    return;
+
+  /* If we're not shadowing a template parameter, we're done.  Note
+     that OLDDECL might be an OVERLOAD (or perhaps even an
+     ERROR_MARK), so we can't just blithely assume it to be a _DECL
+     node.  */
+  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) != 'd'
+      || !DECL_TEMPLATE_PARM_P (olddecl))
+    return;
+
+  /* We check for decl != olddecl to avoid bogus errors for using a
+     name inside a class.  We check TPFI to avoid duplicate errors for
+     inline member templates.  */
+  if (decl == olddecl 
+      || TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
+    return;
+
+  cp_error_at ("declaration of `%#D'", decl);
+  cp_error_at (" shadows template parm `%#D'", olddecl);
 }
 
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
