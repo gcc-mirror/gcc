@@ -1932,6 +1932,17 @@ expand_start_else ()
   cond_stack->data.cond.next_label = 0;  /* No more _else or _elseif calls. */
 }
 
+/* After calling expand_start_else, turn this "else" into an "else if"
+   by providing another condition.  */
+
+void
+expand_elseif (cond)
+     tree cond;
+{
+  cond_stack->data.cond.next_label = gen_label_rtx ();
+  do_jump (cond, cond_stack->data.cond.next_label, NULL_RTX);
+}
+
 /* Generate RTL for the end of an if-then.
    Pop the record for it off of cond_stack.  */
 
