@@ -2113,6 +2113,7 @@ emit_group_store (orig_dst, src, ssize)
       HOST_WIDE_INT bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
       enum machine_mode mode = GET_MODE (tmps[i]);
       unsigned int bytelen = GET_MODE_SIZE (mode);
+      rtx dest = dst;
 
       /* Handle trailing fragments that run over the size of the struct.  */
       if (ssize >= 0 && bytepos + (HOST_WIDE_INT) bytelen > ssize)
@@ -2126,14 +2127,27 @@ emit_group_store (orig_dst, src, ssize)
 	  bytelen = ssize - bytepos;
 	}
 
+      if (GET_CODE (dst) == CONCAT)
+	{
+	  if (bytepos + bytelen <= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0))))
+	    dest = XEXP (dst, 0);
+	  else if (bytepos >= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0))))
+	    {
+	      bytepos -= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)));
+	      dest = XEXP (dst, 1);
+	    }
+	  else
+	    abort ();
+	}
+
       /* Optimize the access just a bit.  */
-      if (GET_CODE (dst) == MEM
-	  && MEM_ALIGN (dst) >= GET_MODE_ALIGNMENT (mode)
+      if (GET_CODE (dest) == MEM
+	  && MEM_ALIGN (dest) >= GET_MODE_ALIGNMENT (mode)
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
-	emit_move_insn (adjust_address (dst, mode, bytepos), tmps[i]);
+	emit_move_insn (adjust_address (dest, mode, bytepos), tmps[i]);
       else
-	store_bit_field (dst, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
+	store_bit_field (dest, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
 			 mode, tmps[i], ssize);
     }
 
