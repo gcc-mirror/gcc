@@ -51,6 +51,7 @@ c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
 *c-torture		Torbjorn Granlund	tege@pdc.kth.se
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 sco5 & unixware		Robert Lipe		robertl@dgii.com
+new fixincludes		Bruce Korbb		korbb@datadesign.com
 
 
 			
