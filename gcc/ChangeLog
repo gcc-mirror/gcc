@@ -1,5 +1,11 @@
 2000-08-11  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.md (addsi3): Remove expander.
+	(subsi3, mulsi3, negsi2, one_cmplsi2): Likewise.
+	(*addsi3_shladd): New.
+
+2000-08-11  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.c (do_spill): Pass cfa offset to move expander.
 	(do_restore): Likewise.
 	(gen_movdi_x, gen_fr_spill_x, gen_fr_restore_x): New.
