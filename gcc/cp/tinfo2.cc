@@ -166,11 +166,11 @@ __do_catch (const type_info *thr_type,
   const __pbase_type_info *thrown_type =
     static_cast <const __pbase_type_info *> (thr_type);
   
-  if (thrown_type->quals & ~quals)
+  if (thrown_type->__qualifier_flags & ~__qualifier_flags)
     // We're less qualified.
     return false;
   
-  if (!(quals & const_mask))
+  if (!(__qualifier_flags & __const_mask))
     outer &= ~1;
   
   return __pointer_catch (thrown_type, thr_obj, outer);
@@ -181,7 +181,7 @@ __pointer_catch (const __pbase_type_info *thrown_type,
                  void **thr_obj,
                  unsigned outer) const
 {
-  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
+  return __pointee->__do_catch (thrown_type->__pointee, thr_obj, outer + 2);
 }
 
 bool __pointer_type_info::
@@ -189,10 +189,10 @@ __pointer_catch (const __pbase_type_info *thrown_type,
                  void **thr_obj,
                  unsigned outer) const
 {
-  if (outer < 2 && *type == typeid (void))
+  if (outer < 2 && *__pointee == typeid (void))
     {
       // conversion to void
-      return !thrown_type->type->__is_function_p ();
+      return !thrown_type->__pointee->__is_function_p ();
     }
   
   return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
@@ -208,7 +208,7 @@ __pointer_catch (const __pbase_type_info *thr_type,
   const __pointer_to_member_type_info *thrown_type =
     static_cast <const __pointer_to_member_type_info *> (thr_type);
   
-  if (*klass != *thrown_type->klass)
+  if (*__context_class != *thrown_type->__context_class)
     return false;     // not pointers to member of same class
   
   return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
