@@ -1,3 +1,7 @@
+2002-06-17  Jeff Law <law@redha.com>
+
+	* libgcc2.c: Do not include symcat.h or machmode.h.
+
 2002-06-17  Richard Henderson  <rth@redhat.com>
 
 	PR target/6922
