@@ -89,6 +89,9 @@ libffi/aclocal.m4: libffi/configure.ac libffi/acinclude.m4
 libffi/Makefile.in: libffi/Makefile.am libffi/configure.ac libffi/aclocal.m4
 libffi/configure: libffi/configure.ac libffi/aclocal.m4
 libffi/fficonfig.h.in: libffi/configure.ac libffi/aclocal.m4
+libgfortran/aclocal.m4: libgfortran/configure.ac libgfortran/acinclude.m4
+libgfortran/Makefile.in: libgfortran/Makefile.am libgfortran/configure.ac libgfortran/aclocal.m4
+libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
 libjava/aclocal.m4: libjava/configure.in libjava/acinclude.m4
 libjava/Makefile.in: libjava/Makefile.am libjava/configure.in libjava/aclocal.m4
 libjava/configure: libjava/configure.in libjava/aclocal.m4

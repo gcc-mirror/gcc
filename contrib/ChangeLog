@@ -1,3 +1,7 @@
+2004-06-10  Andreas Jaeger  <aj@suse.de>
+
+	* gcc_update: Add libgfortran.
+
 2004-05-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc_update (libbanshee/configure): Depend on
