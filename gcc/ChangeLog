@@ -1,3 +1,39 @@
+Sun Oct  3 12:24:52 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplib.c (if_directive_nameo): Add static prototype.
+
+	* cse.c (cse_insn): Remove unused variable `p'.
+
+	* except.c (create_rethrow_ref, push_entry,
+	receive_exception_label, new_eh_region_entry, find_func_region,
+	clear_function_eh_region, process_nestinfo): Add static prototypes.
+	(get_reg_for_handler): Hide definition.
+	(process_nestinfo): Initialize variable `extra_handlers'.
+
+	* expr.h (expand_builtin_longjmp): Add extern prototype.
+
+	* final.c (final_addr_vec_align, align_fuzz): Add static prototypes.
+
+	* function.c (prepare_function_start): Likewise.
+	(pop_function_context_from): Mark parameter `context' with
+	ATTRIBUTE_UNUSED.
+	(push_temp_slots_for_block, flush_addressof): Hide definition.
+	
+	* gcov.c (init_arc, reverse_arcs, create_program_flow_graph,
+	solve_program_flow_graph, calculate_branch_probs,
+	function_summary, main, fancy_abort): Add prototypes.
+
+	* gen-protos.c (add_hash, parse_fn_proto, main): Likewise.
+	(add_hash): Constify a char*.
+
+	* ggc-common.c (ggc_mark_rtx_ptr, ggc_mark_tree_ptr,
+	ggc_mark_tree_varray_ptr, ggc_mark_tree_hash_table_ptr,
+	ggc_mark_string_ptr, ggc_mark_tree_hash_table_entry): Add prototypes.
+
+	* integrate.c (expand_inline_function_eh_labelmap): Likewise.
+
+	* lists.c (free_list, zap_lists): Likewise.
+
 Sun Oct  3 12:05:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (nonlocal_reference_p): Add static prototype.

@@ -220,6 +220,15 @@ static void read_files PROTO ((void));
 static void scan_for_source_files PROTO ((void));
 static void output_data PROTO ((void));
 static void print_usage PROTO ((void)) ATTRIBUTE_NORETURN;
+static void init_arc PROTO ((struct adj_list *, int, int, struct bb_info *));
+static struct adj_list *reverse_arcs PROTO ((struct adj_list *));
+static void create_program_flow_graph PROTO ((struct bb_info_list *));
+static void solve_program_flow_graph PROTO ((struct bb_info_list *));
+static void calculate_branch_probs PROTO ((struct bb_info_list *, int,
+					   struct arcdata **, int));
+static void function_summary PROTO ((void));
+
+extern int main PROTO ((int, char **));
 
 int
 main (argc, argv)
@@ -269,6 +278,7 @@ fnotice VPROTO ((FILE *file, const char *msgid, ...))
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
+extern void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 
 void
 fancy_abort ()

@@ -472,7 +472,14 @@ static void mark_eh_node        PROTO((struct eh_node *));
 static void mark_eh_stack       PROTO((struct eh_stack *));
 static void mark_eh_queue       PROTO((struct eh_queue *));
 static void mark_tree_label_node PROTO ((struct label_node *));
-static void mark_func_eh_entry PROTO ((void *));
+static void mark_func_eh_entry	PROTO ((void *));
+static rtx create_rethrow_ref	PROTO ((int));
+static void push_entry		PROTO ((struct eh_stack *, struct eh_entry*));
+static void receive_exception_label PROTO ((rtx));
+static int new_eh_region_entry	PROTO ((int, rtx));
+static int find_func_region	PROTO ((int));
+static void clear_function_eh_region PROTO ((void));
+static void process_nestinfo	PROTO ((int, eh_nesting_info *, int *));
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -877,7 +884,7 @@ get_new_handler (handler, typeinfo)
 /* Find the index in function_eh_regions associated with a NOTE region. If
    the region cannot be found, a -1 is returned. This should never happen! */
 
-int 
+static int 
 find_func_region (insn_region)
      int insn_region;
 {
@@ -2842,6 +2849,7 @@ eh_regs (pcontext, psp, pra, outgoing)
 /* Retrieve the register which contains the pointer to the eh_context
    structure set the __throw. */
 
+#if 0
 rtx 
 get_reg_for_handler ()
 {
@@ -2850,6 +2858,7 @@ get_reg_for_handler ()
 			   current_function_decl);
   return reg1;
 }
+#endif
 
 /* Set up the epilogue with the magic bits we'll need to return to the
    exception handler.  */
@@ -3064,7 +3073,7 @@ process_nestinfo (block, info, nested_eh_region)
   handler_info *ptr, *last_ptr = NULL;
   int x, y, count = 0;
   int extra = 0;
-  handler_info **extra_handlers;
+  handler_info **extra_handlers = 0;
   int index = info->region_index[block];
 
   /* If we've already processed this block, simply return. */

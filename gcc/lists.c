@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "ggc.h"
 
+static void free_list PARAMS ((rtx *, rtx *));
+static void zap_lists PARAMS ((void *));
+
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
 /* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */

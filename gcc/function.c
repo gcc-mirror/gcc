@@ -280,6 +280,7 @@ static void compute_insns_for_mem PROTO ((rtx, rtx, struct hash_table *));
 static void mark_temp_slot PROTO ((struct temp_slot *));
 static void mark_function_status PROTO ((struct function *));
 static void mark_function_chain PROTO ((void *));
+static void prepare_function_start PROTO ((void));
 
 
 /* Pointer to chain of `struct function' for containing functions.  */
@@ -349,7 +350,7 @@ push_function_context ()
 
 void
 pop_function_context_from (context)
-     tree context;
+     tree context ATTRIBUTE_UNUSED;
 {
   struct function *p = outer_function_chain;
   struct var_refs_queue *queue;
@@ -1148,6 +1149,7 @@ push_temp_slots ()
 /* Likewise, but save the new level as the place to allocate variables
    for blocks.  */
 
+#if 0
 void
 push_temp_slots_for_block ()
 {
@@ -1182,6 +1184,7 @@ set_target_temp_slot_level (level)
 {
   target_temp_slot_level = level;
 }
+#endif
 
 /* Pop a temporary nesting level.  All slots in use in the current level
    are freed.  */
@@ -2680,6 +2683,7 @@ gen_mem_addressof (reg, decl)
 
 /* If DECL has an RTL that is an ADDRESSOF rtx, put it into the stack.  */
 
+#if 0
 void
 flush_addressof (decl)
      tree decl;
@@ -2691,6 +2695,7 @@ flush_addressof (decl)
       && GET_CODE (XEXP (XEXP (DECL_RTL (decl), 0), 0)) == REG)
     put_addressof_into_stack (XEXP (DECL_RTL (decl), 0), 0);
 }
+#endif
 
 /* Force the register pointed to by R, an ADDRESSOF rtx, into the stack.  */
 

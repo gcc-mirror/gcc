@@ -29,6 +29,13 @@
 #include "tree.h"
 #include "varray.h"
 
+static void ggc_mark_rtx_ptr PARAMS ((void *));
+static void ggc_mark_tree_ptr PARAMS ((void *));
+static void ggc_mark_tree_varray_ptr PARAMS ((void *));
+static void ggc_mark_tree_hash_table_ptr PARAMS ((void *));
+static void ggc_mark_string_ptr PARAMS ((void *));
+static boolean ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
+						       hash_table_key));
 
 /* Maintain global roots that are preserved during GC.  */
 

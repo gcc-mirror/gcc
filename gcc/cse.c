@@ -7404,8 +7404,6 @@ cse_insn (insn, libcall_insn)
 	 it.  If it was a computed branch, delete it and re-emit.  */
       else if (dest == pc_rtx && GET_CODE (src) == LABEL_REF)
 	{
-	  rtx p;
-
 	  /* If this is not in the format for a simple branch and
 	     we are the only SET in it, re-emit it.  */
 	  if (! simplejump_p (insn) && n_sets == 1)

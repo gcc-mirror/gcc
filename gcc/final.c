@@ -310,6 +310,10 @@ static void leaf_renumber_regs	PROTO((rtx));
 #ifdef HAVE_cc0
 static int alter_cond		PROTO((rtx));
 #endif
+#ifndef ADDR_VEC_ALIGN
+static int final_addr_vec_align PROTO ((rtx));
+#endif
+static int align_fuzz		PROTO ((rtx, rtx, int, unsigned));
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -824,7 +828,7 @@ get_attr_length (insn)
 #endif
 
 #ifndef ADDR_VEC_ALIGN
-int
+static int
 final_addr_vec_align (addr_vec)
      rtx addr_vec;
 {
@@ -889,7 +893,7 @@ label_to_alignment (label)
    GROWTH should be ~0 if the objective is to compute potential code size
    increase, and 0 if the objective is to compute potential shrink.
    The return value is undefined for any other value of GROWTH.  */
-int
+static int
 align_fuzz (start, end, known_align_log, growth)
      rtx start, end;
      int known_align_log;
