@@ -3225,6 +3225,7 @@ cases, the feature might be gone already.
 While the list below is not exhaustive, it documents some of the options
 that are now deprecated:
 
+@table @code
 @item -fexternal-templates
 @itemx -falt-external-templates
 These are two of the many ways for g++ to implement template
