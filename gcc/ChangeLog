@@ -1,3 +1,7 @@
+Wed Dec 25 20:30:53 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (memory attribute): Fix setcc attribute.
+
 2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* output.h: Fix comment typos.
