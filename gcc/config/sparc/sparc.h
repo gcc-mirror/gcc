@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 /* TARGET_ARCH{32,64} are the main macros to decide which of the two
    architectures to compile for.  We allow targets to choose compile time or
    runtime selection.  */
-#ifdef SPARC_BI_ARCH
 #ifdef IN_LIBGCC2
 #if defined(__sparcv9) || defined(__arch64__)
 #define TARGET_ARCH32 0
@@ -41,11 +40,12 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_ARCH32 1
 #endif /* sparc64 */
 #else
+#ifdef SPARC_BI_ARCH
 #define TARGET_ARCH32 (! TARGET_64BIT)
-#endif /* IN_LIBGCC2 */
 #else
 #define TARGET_ARCH32 (DEFAULT_ARCH32_P)
 #endif /* SPARC_BI_ARCH */
+#endif /* IN_LIBGCC2 */
 #define TARGET_ARCH64 (! TARGET_ARCH32)
 
 /* Code model selection.
