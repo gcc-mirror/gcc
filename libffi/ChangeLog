@@ -1,5 +1,14 @@
 2004-09-05  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* testsuite/libffi.call/many_win32.c: Remove whitespaces.
+	* testsuite/libffi.call/promotion.c: Likewise.
+	* testsuite/libffi.call/return_ll.c: Remove unused var. Cleanup
+	whitespaces.
+	* testsuite/libffi.call/return_sc.c: Likewise.
+	* testsuite/libffi.call/return_uc.c: Likewise.
+
+2004-09-05  Andreas Tobler  <a.tobler@schweiz.ch>
+
 	* src/powerpc/darwin.S: Fix comments and identation.
 	* src/powerpc/darwin_closure.S: Likewise.
 

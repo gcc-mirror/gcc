@@ -18,7 +18,6 @@ int main (void)
   void *values[MAX_ARGS];
   ffi_arg rint;
   signed char sc;
-  unsigned long ul;
 
   args[0] = &ffi_type_schar;
   values[0] = &sc;
@@ -30,7 +29,6 @@ int main (void)
   for (sc = (signed char) -127;
        sc < (signed char) 127; sc++)
     {
-      ul++;
       ffi_call(&cif, FFI_FN(return_sc), &rint, values);
       CHECK(rint == (ffi_arg) sc);
     }
