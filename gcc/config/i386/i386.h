@@ -2882,7 +2882,8 @@ do {									\
    If CODE is 'k', pretend the mode is SImode.
    If CODE is 'q', pretend the mode is DImode.
    If CODE is 'h', pretend the reg is the `high' byte register.
-   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.  */
+   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
+   If CODE is -1, it is not an error for X to be a virtual register.  */
 
 #define PRINT_REG(X, CODE, FILE)  \
   print_reg ((X), (CODE), (FILE))
@@ -2898,70 +2899,6 @@ do {						\
   if (! output_addr_const_extra (FILE, (X)))	\
     goto FAIL;					\
 } while (0);
-
-/* Print the name of a register for based on its machine mode and number.
-   This macro is used to print debugging output.
-   This macro is different from PRINT_REG in that it may be used in
-   programs that are not linked with aux-output.o.  */
-
-#define DEBUG_PRINT_REG(X, CODE, FILE)			\
-  do { static const char * const hi_name[] = HI_REGISTER_NAMES;	\
-       static const char * const qi_name[] = QI_REGISTER_NAMES;	\
-       fprintf ((FILE), "%d ", REGNO (X));		\
-       if (REGNO (X) == FLAGS_REG)			\
-	 { fputs ("flags", (FILE)); break; }		\
-       if (REGNO (X) == DIRFLAG_REG)			\
-	 { fputs ("dirflag", (FILE)); break; }		\
-       if (REGNO (X) == FPSR_REG)			\
-	 { fputs ("fpsr", (FILE)); break; }		\
-       if (REGNO (X) == ARG_POINTER_REGNUM)		\
-	 { fputs ("argp", (FILE)); break; }		\
-       if (REGNO (X) == FRAME_POINTER_REGNUM)		\
-	 { fputs ("frame", (FILE)); break; }		\
-       if (STACK_TOP_P (X))				\
-	 { fputs ("st(0)", (FILE)); break; }		\
-       if (FP_REG_P (X))				\
-	 { fputs (hi_name[REGNO(X)], (FILE)); break; }	\
-       if (REX_INT_REG_P (X))				\
-	 {						\
-	   switch (GET_MODE_SIZE (GET_MODE (X)))	\
-	     {						\
-	     default:					\
-	     case 8:					\
-	       fprintf ((FILE), "r%i", REGNO (X)	\
-			- FIRST_REX_INT_REG + 8);	\
-	       break;					\
-	     case 4:					\
-	       fprintf ((FILE), "r%id", REGNO (X)	\
-			- FIRST_REX_INT_REG + 8);	\
-	       break;					\
-	     case 2:					\
-	       fprintf ((FILE), "r%iw", REGNO (X)	\
-			- FIRST_REX_INT_REG + 8);	\
-	       break;					\
-	     case 1:					\
-	       fprintf ((FILE), "r%ib", REGNO (X)	\
-			- FIRST_REX_INT_REG + 8);	\
-	       break;					\
-	     }						\
-	   break;					\
-	 }						\
-       switch (GET_MODE_SIZE (GET_MODE (X)))		\
-	 {						\
-	 case 8:					\
-	   fputs ("r", (FILE));				\
-	   fputs (hi_name[REGNO (X)], (FILE));		\
-	   break;					\
-	 default:					\
-	   fputs ("e", (FILE));				\
-	 case 2:					\
-	   fputs (hi_name[REGNO (X)], (FILE));		\
-	   break;					\
-	 case 1:					\
-	   fputs (qi_name[REGNO (X)], (FILE));		\
-	   break;					\
-	 }						\
-     } while (0)
 
 /* a letter which is not needed by the normal asm syntax, which
    we can use for operand syntax in the extended asm */
