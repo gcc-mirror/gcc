@@ -1,6 +1,6 @@
 // RandomAccessFile.java
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -161,12 +161,12 @@ public class RandomAccessFile implements DataOutput, DataInput
 
   public void seek (long pos) throws IOException
   {
-    fd.seek(pos, FileDescriptor.SET);
+    fd.seek(pos, FileDescriptor.SET, false);
   }
 
   public int skipBytes (int count) throws IOException
   {
-    return fd.seek(count, FileDescriptor.CUR);
+    return count <= 0 ? 0 : fd.seek(count, FileDescriptor.CUR, true);
   }
 
   public void write (int oneByte) throws IOException
