@@ -1,3 +1,11 @@
+Mon Jun 28 05:32:09 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * m68k.h (FINALIZE_PIC): Delete.
+        * m68k.c (finalize_pic): Delete.
+
+	* m68k.h (CONDITIONAL_REGISTER_USAGE): Make the PIC register fixed
+	when -fpic/-fPIC.
+
 Mon Jun 28 05:16:35 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m68k.h (PREFERRED_RELOAD_CLASS): Don't force any FP const_doubles

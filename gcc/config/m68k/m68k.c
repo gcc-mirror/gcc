@@ -126,24 +126,6 @@ override_options ()
     m68k_align_funcs = def_align;
 }
 
-/* Emit a (use pic_offset_table_rtx) if we used PIC relocation in the 
-   function at any time during the compilation process.  In the future 
-   we should try and eliminate the USE if we can easily determine that 
-   all PIC references were deleted from the current function.  That would 
-   save an address register */
-   
-void
-finalize_pic ()
-{
-  if (flag_pic && current_function_uses_pic_offset_table)
-    {
-      rtx insn = gen_rtx_USE (VOIDmode, pic_offset_table_rtx);
-      emit_insn_after (insn, get_insns ());
-      emit_insn (insn);
-    }
-}
-
-
 /* This function generates the assembly code for function entry.
    STREAM is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
