@@ -91,6 +91,7 @@ extern bool chrec_contains_undetermined (tree);
 extern bool tree_contains_chrecs (tree);
 extern bool evolution_function_is_affine_multivariate_p (tree);
 extern bool evolution_function_is_univariate_p (tree);
+extern unsigned nb_vars_in_chrec (tree);
 
 
 

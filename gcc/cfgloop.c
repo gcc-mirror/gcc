@@ -780,6 +780,20 @@ canonicalize_loop_headers (void)
 #endif
 }
 
+/* Initialize all the parallel_p fields of the loops structure to true.  */
+
+static void
+initialize_loops_parallel_p (struct loops *loops)
+{
+  unsigned int i;
+
+  for (i = 0; i < loops->num; i++)
+    {
+      struct loop *loop = loops->parray[i];
+      loop->parallel_p = true;
+    }
+}
+
 /* Find all the natural loops in the function and save in LOOPS structure and
    recalculate loop_depth information in basic block structures.  FLAGS
    controls which loop information is collected.  Return the number of natural
@@ -945,6 +959,7 @@ flow_loops_find (struct loops *loops, int flags)
 	flow_loop_scan (loops->parray[i], flags);
 
       loops->num = num_loops;
+      initialize_loops_parallel_p (loops);
     }
 
   sbitmap_free (headers);

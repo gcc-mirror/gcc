@@ -636,7 +636,7 @@ chrec_component_in_loop_num (tree chrec,
 }
 
 /* Returns the evolution part in LOOP_NUM.  Example: the call
-   evolution_part_in_loop_num (1, {{0, +, 1}_1, +, 2}_1) returns 
+   evolution_part_in_loop_num ({{0, +, 1}_1, +, 2}_1, 1) returns 
    {1, +, 2}_1  */
 
 tree 
@@ -647,7 +647,7 @@ evolution_part_in_loop_num (tree chrec,
 }
 
 /* Returns the initial condition in LOOP_NUM.  Example: the call
-   initial_condition_in_loop_num ({{0, +, 1}_1, +, 2}_2, 1) returns 
+   initial_condition_in_loop_num ({{0, +, 1}_1, +, 2}_2, 2) returns 
    {0, +, 1}_1  */
 
 tree 
@@ -929,6 +929,26 @@ evolution_function_is_univariate_p (tree chrec)
       
     default:
       return true;
+    }
+}
+
+/* Returns the number of variables of CHREC.  Example: the call
+   nb_vars_in_chrec ({{0, +, 1}_5, +, 2}_6) returns 2.  */
+
+unsigned 
+nb_vars_in_chrec (tree chrec)
+{
+  if (chrec == NULL_TREE)
+    return 0;
+
+  switch (TREE_CODE (chrec))
+    {
+    case POLYNOMIAL_CHREC:
+      return 1 + nb_vars_in_chrec 
+	(initial_condition_in_loop_num (chrec, CHREC_VARIABLE (chrec)));
+
+    default:
+      return 0;
     }
 }
 
