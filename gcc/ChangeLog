@@ -1,5 +1,8 @@
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (output_call_frame_info): No need to output EH
+	unwind information if all_throwers_are_sibcalls.
+
 	* c-semantics.c (expand_unreachable_stmt): Return a tree.
 	(expand_stmt): Update for change to expand_unreachable_stmt.
 	(expand_unreachable_if_stmt): Likewise.

@@ -1940,7 +1940,8 @@ output_call_frame_info (for_eh)
       for (i = 0; i < fde_table_in_use; i++)
 	if (fde_table[i].uses_eh_lsda)
 	  any_eh_needed = any_lsda_needed = true;
-	else if (! fde_table[i].nothrow)
+	else if (! fde_table[i].nothrow
+		 && ! fde_table[i].all_throwers_are_sibcalls)
 	  any_eh_needed = true;
 
       if (! any_eh_needed)
