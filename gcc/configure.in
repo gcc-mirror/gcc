@@ -4260,11 +4260,12 @@ changequote(<<, >>)dnl
 #   /foo/       /foo/bar/         ../
 #   /foo        /foo/bar/ugg      ../../
 #
-    gcc_tooldir="$(libsubdir)/$(unlibsubdir)/\`echo \$(exec_prefix) |
-sed -e 's|^\$(prefix)||' -e 's|/$||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`$(target_alias)"
+    dollar='$$'
+    gcc_tooldir="\$(libsubdir)/\$(unlibsubdir)/\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/\$(dollar)||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`\$(target_alias)"
 changequote([, ])dnl
 fi
 AC_SUBST(gcc_tooldir)
+AC_SUBST(dollar)
 
 # Warn if using init_priority.
 AC_MSG_CHECKING(whether to enable init_priority by default)

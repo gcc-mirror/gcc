@@ -269,6 +269,7 @@ libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # Directory in which to find other cross-compilation tools and headers.
+dollar = @dollar@
 # Used in install-cross.
 gcc_tooldir = @gcc_tooldir@
 # Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/

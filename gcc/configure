@@ -8372,8 +8372,8 @@ else
 #   /foo/       /foo/bar/         ../
 #   /foo        /foo/bar/ugg      ../../
 #
-    gcc_tooldir="$(libsubdir)/$(unlibsubdir)/\`echo \$(exec_prefix) |
-sed -e 's|^\$(prefix)||' -e 's|/$||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`$(target_alias)"
+    dollar='$$'
+    gcc_tooldir="\$(libsubdir)/\$(unlibsubdir)/\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/\$(dollar)||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`\$(target_alias)"
 fi
 
 
@@ -8687,6 +8687,7 @@ s%@inhibit_libc@%$inhibit_libc%g
 s%@sched_prefix@%$sched_prefix%g
 s%@sched_cflags@%$sched_cflags%g
 s%@gcc_tooldir@%$gcc_tooldir%g
+s%@dollar@%$dollar%g
 s%@objdir@%$objdir%g
 s%@subdirs@%$subdirs%g
 s%@all_languages@%$all_languages%g
