@@ -2,6 +2,8 @@
 
 	* config/alpha/unicosmk.h (TARGET_OS_CPP_BUILTINS): Fix typo.
 
+	* config/ia64/ia64.c (saveable_obstack): Do not declare.
+
 2002-05-16  Richard Henderson  <rth@redhat.com>
 
 	* basic-block.h, bb-reorder.c, cfg.c, cfganal.c, cfgbuild.c,
