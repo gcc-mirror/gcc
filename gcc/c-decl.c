@@ -2657,9 +2657,11 @@ init_decl_processing ()
     = build_pointer_type (build_type_variant (char_type_node, 1, 0));
 
   /* Make a type to be the domain of a few array types
-     whose domains don`t really matter.
-     10 is small enough that it always fits in size_t.  */
-  array_domain_type = build_index_type (build_int_2 (10, 0));
+     whose domains don't really matter.
+     200 is small enough that it always fits in size_t
+     and large enough that it can hold most function names for the
+     initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  array_domain_type = build_index_type (build_int_2 (200, 0));
 
   /* make a type for arrays of characters.
      With luck nothing will ever really depend on the length of this
