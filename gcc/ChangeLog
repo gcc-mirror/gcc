@@ -1,3 +1,11 @@
+2001-02-03  Michael Hayes  <m.hayes@elec.canterbury.ac.nz)
+
+	* c4x.h (IS_INT_CALL_SAVED_REG, IS_FLOAT_CALL_SAVED_REG): Define.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Use IS_FLOAT_CALL_SAVED_REG.
+	(INITIAL_FRAME_POINTER_OFFSET, INITIAL_ELIMINATION_OFFSET): Likewise.
+	* c4x.c (c4x_hard_regno_rename_ok): Use IS_XXX_CALL_SAVED_REG.
+	(c4x_expand_prologue, c4x_expand_epilogue): Likewise.
+
 2001-02-03  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.c (group1_reg_operand, group1_mem_operand, arx_reg_operand,
