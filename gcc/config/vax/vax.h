@@ -677,7 +677,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 { register rtx xfoob = (X);						\
   if (GET_CODE (xfoob) == REG)						\
     {									\
-      extern rtx *reg_equiv_mem;					\ 
+      extern rtx *reg_equiv_mem;					\
       if (! reload_in_progress						\
 	  || reg_equiv_mem[REGNO (xfoob)] == 0				\
 	  || INDIRECTABLE_ADDRESS_P (reg_equiv_mem[REGNO (xfoob)]))	\
