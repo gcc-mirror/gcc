@@ -1,3 +1,7 @@
+Mon Mar 23 22:58:22 1998  Joel Sherrill (joel@OARcorp.com)
+
+	* config/sh/rtems.h: Switched from ELF to COFF.
+
 Mon Mar 23 14:14:20 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* freebsd.h (ASM_OUTPUT_ALIGN): Redefine.
