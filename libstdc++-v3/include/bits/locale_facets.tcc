@@ -175,8 +175,7 @@ namespace std
 	  const char_type __c = *__beg;
           const char_type* __p = __traits_type::find(__lit + _S_izero, 10, 
 						     __c);
-          // NB: strchr returns true for __c == 0x0
-          if (__p && !__traits_type::eq(__c, char_type()))
+          if (__p)
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc += _S_atoms_in[__p - __lit];
@@ -352,8 +351,7 @@ namespace std
 	  const char_type __c = *__beg;
           const char_type* __p = __traits_type::find(__lit + _S_izero,
 						     __len, __c);
-          // NB: strchr returns true for __c == 0x0
-          if (__p && !__traits_type::eq(__c, char_type()))
+          if (__p)
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc += _S_atoms_in[__p - __lit];
