@@ -86,6 +86,7 @@ public abstract class Dimension2D implements Cloneable
    * may occur.
    *
    * @param d the dimension containing the new values
+   *
    * @throws NullPointerException if d is null
    */
   public void setSize(Dimension2D d)
@@ -98,6 +99,10 @@ public abstract class Dimension2D implements Cloneable
    * as this one.
    *
    * @return the clone
+   *
+   * @exception OutOfMemoryError If there is not enough memory available.
+   *
+   * @since 1.2
    */
   public Object clone()
   {

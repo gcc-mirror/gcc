@@ -81,9 +81,18 @@ public class ImageFilter implements ImageConsumer, Cloneable
      *
      * @see java.lang.Object#clone ()
      */
-    public Object clone() throws CloneNotSupportedException
+    public Object clone()
     {
-	return (super.clone());
+      try
+        {
+          return super.clone();
+        }
+      catch (CloneNotSupportedException e)
+        {
+          // This should never happen as this class implements the
+          // Cloneable interface.
+          throw new InternalError ();
+        }
     }
 
     /**

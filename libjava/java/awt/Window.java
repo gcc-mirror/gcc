@@ -86,32 +86,56 @@ public class Window extends Container
    * parent.  The window will initially be invisible.
    *
    * @param parent The owning <code>Frame</code> of this window.
+   *
+   * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+   * is not from a screen device, or if owner is null; this exception is always
+   * thrown when GraphicsEnvironment.isHeadless returns true.
    */
   public Window(Frame owner)
   {
-    this((Window) owner);
+    this (owner, owner.getGraphicsConfiguration ());
   }
 
-  /** @since 1.2 */
+  /**
+   * Initializes a new instance of <code>Window</code> with the specified
+   * parent.  The window will initially be invisible.   
+   *
+   * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+   * is not from a screen device, or if owner is null; this exception is always
+   * thrown when GraphicsEnvironment.isHeadless returns true.
+   *
+   * @since 1.2
+   */
   public Window(Window owner)
   {
-    this();
-    if (owner == null)
-      throw new IllegalArgumentException("owner must not be null");
-    
-    this.parent = owner;
-
-    // FIXME: add to owner's "owned window" list
-    //owner.owned.add(this); // this should be a weak reference
+    this (owner, owner.getGraphicsConfiguration ());
   }
   
-  /** @since 1.3 */
+  /**
+   * Initializes a new instance of <code>Window</code> with the specified
+   * parent.  The window will initially be invisible.   
+   *
+   * @exception IllegalArgumentException If owner is null or if gc is not from a
+   * screen device; this exception is always thrown when
+   * GraphicsEnvironment.isHeadless returns true.
+   *
+   * @since 1.3
+   */
   public Window(Window owner, GraphicsConfiguration gc)
   {
-    this(owner);
+    this ();
 
+    if (owner == null)
+      throw new IllegalArgumentException ("owner must not be null");
+
+    this.parent = owner;
+    
+    // FIXME: add to owner's "owned window" list
+    //owner.owned.add(this); // this should be a weak reference
+    
     /*  FIXME: Security check
     SecurityManager.checkTopLevelWindow(...)
+    */
 
     if (gc != null
         && gc.getDevice().getType() != GraphicsDevice.TYPE_RASTER_SCREEN)
@@ -119,11 +143,10 @@ public class Window extends Container
 
     if (gc == null)
       graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
-			     .getDefaultScreenDevice()
-			     .getDefaultConfiguration();
+        .getDefaultScreenDevice()
+        .getDefaultConfiguration();
     else
-    */    
-    graphicsConfiguration = gc;
+      graphicsConfiguration = gc;
   }
 
   GraphicsConfiguration getGraphicsConfigurationImpl()
@@ -134,6 +157,12 @@ public class Window extends Container
     return super.getGraphicsConfigurationImpl();
   }
 
+  /**
+   * Disposes of the input methods and context, and removes the WeakReference
+   * which formerly pointed to this Window from the parent's owned Window list.
+   *
+   * @exception Throwable The Exception raised by this method.
+   */
   protected void finalize() throws Throwable
   {
     // FIXME: remove from owner's "owned window" list (Weak References)
@@ -185,7 +214,7 @@ public class Window extends Container
 
   public void hide()
   {
-    // FIXME: call hide() on amy "owned" children here.
+    // FIXME: call hide() on any "owned" children here.
     super.hide();
   }
 
@@ -233,8 +262,8 @@ public class Window extends Container
   {
     if (peer != null)
       {
-	WindowPeer wp = (WindowPeer) peer;
-	wp.toFront();
+        WindowPeer wp = (WindowPeer) peer;
+        wp.toFront();
       }
   }
 
@@ -265,12 +294,12 @@ public class Window extends Container
     if (!secure)
       {
         if (warningString != null)
-	  return warningString;
-	else
-	  {
-	    String warning = System.getProperty("awt.appletWarning");
-	    return warning;
-	  }
+          return warningString;
+        else
+          {
+            String warning = System.getProperty("awt.appletWarning");
+            return warning;
+          }
       }
     return null;
   }
@@ -338,6 +367,11 @@ public class Window extends Container
     windowListener = AWTEventMulticaster.remove(windowListener, listener);
   }
 
+  /**
+   * Returns an array of all the window listeners registered on this window.
+   *
+   * @since 1.4
+   */
   public synchronized WindowListener[] getWindowListeners()
   {
     return (WindowListener[])
@@ -345,7 +379,16 @@ public class Window extends Container
                                        WindowListener.class);
   }
 
-  /** @since 1.3 */
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this Window. FooListeners are registered using the addFooListener
+   * method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   *
+   * @since 1.3
+   */
   public EventListener[] getListeners(Class listenerType)
   {
     if (listenerType == WindowListener.class)
