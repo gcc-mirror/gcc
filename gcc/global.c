@@ -642,36 +642,21 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	register int offset;
-	REGSET_ELT_TYPE bit;
 	register regset old = basic_block_live_at_start[b];
 	int ax = 0;
 
-#ifdef HARD_REG_SET
-	hard_regs_live = old[0];
-#else
-	COPY_HARD_REG_SET (hard_regs_live, old);
-#endif
-	for (offset = 0, i = 0; offset < regset_size; offset++)
-	  if (old[offset] == 0)
-	    i += REGSET_ELT_BITS;
-	  else
-	    for (bit = 1; bit; bit <<= 1, i++)
-	      {
-		if (i >= max_regno)
-		  break;
-		if (old[offset] & bit)
-		  {
-		    register int a = reg_allocno[i];
-		    if (a >= 0)
-		      {
-			SET_ALLOCNO_LIVE (a);
-			block_start_allocnos[ax++] = a;
-		      }
-		    else if ((a = reg_renumber[i]) >= 0)
-		      mark_reg_live_nc (a, PSEUDO_REGNO_MODE (i));
-		  }
-	      }
+	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
+	EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
+				   {
+				     register int a = reg_allocno[i];
+				     if (a >= 0)
+				       {
+					 SET_ALLOCNO_LIVE (a);
+					 block_start_allocnos[ax++] = a;
+				       }
+				     else if ((a = reg_renumber[i]) >= 0)
+				       mark_reg_live_nc (a, PSEUDO_REGNO_MODE (i));
+				   });
 
 	/* Record that each allocno now live conflicts with each other
 	   allocno now live, and with each hard reg now live.  */
@@ -1640,13 +1625,10 @@ mark_elimination (from, to)
   int i;
 
   for (i = 0; i < n_basic_blocks; i++)
-    if ((basic_block_live_at_start[i][from / REGSET_ELT_BITS]
-	 & ((REGSET_ELT_TYPE) 1 << (from % REGSET_ELT_BITS))) != 0)
+    if (REGNO_REG_SET_P (basic_block_live_at_start[i], from))
       {
-	basic_block_live_at_start[i][from / REGSET_ELT_BITS]
-	  &= ~ ((REGSET_ELT_TYPE) 1 << (from % REGSET_ELT_BITS));
-	basic_block_live_at_start[i][to / REGSET_ELT_BITS]
-	  |= ((REGSET_ELT_TYPE) 1 << (to % REGSET_ELT_BITS));
+	CLEAR_REGNO_REG_SET (basic_block_live_at_start[i], from);
+	SET_REGNO_REG_SET (basic_block_live_at_start[i], to);
       }
 }
 
