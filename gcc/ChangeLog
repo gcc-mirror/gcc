@@ -1,3 +1,8 @@
+2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-decl.c (pushdecl): If no global declaration is found for an
+	extern declaration in block scope, try a limbo one.
+
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/4401
