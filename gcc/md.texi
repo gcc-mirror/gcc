@@ -1376,20 +1376,20 @@ Constant greater than 0, less than 0x10000
 Constant whose high 24 bits are on (1)
 
 @item L
-16 bit constant whose high 8 bits are on (1)
+16-bit constant whose high 8 bits are on (1)
 
 @item M
-32 bit constant whose high 16 bits are on (1)
+32-bit constant whose high 16 bits are on (1)
 
 @item N
-32 bit negative constant that fits in 8 bits
+32-bit negative constant that fits in 8 bits
 
 @item O
-The constant 0x80000000 or, on the 29050, any 32 bit constant
+The constant 0x80000000 or, on the 29050, any 32-bit constant
 whose low 16 bits are 0.
 
 @item P
-16 bit negative constant that fits in 8 bits
+16-bit negative constant that fits in 8 bits
 
 @item G
 @itemx H
@@ -1490,17 +1490,17 @@ Floating point register
 @samp{FPMEM} stack memory for FPR-GPR transfers
 
 @item I
-Signed 16 bit constant
+Signed 16-bit constant
 
 @item J
-Unsigned 16 bit constant shifted left 16 bits (use @samp{L} instead for 
+Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for 
 @code{SImode} constants)
 
 @item K
-Unsigned 16 bit constant
+Unsigned 16-bit constant
 
 @item L
-Signed 16 bit constant shifted left 16 bits
+Signed 16-bit constant shifted left 16 bits
 
 @item M
 Constant larger than 31
@@ -1512,7 +1512,7 @@ Exact power of 2
 Zero
 
 @item P
-Constant whose negation is a signed 16 bit constant
+Constant whose negation is a signed 16-bit constant
 
 @item G
 Floating point constant that can be loaded into a register with one
@@ -1540,8 +1540,11 @@ System V Release 4 small data area reference
 @item q
 @samp{a}, @code{b}, @code{c}, or @code{d} register
 
-@item A
-@samp{a}, or @code{d} register (for 64-bit ints)
+@item A 
+Specifies the @samp{a} or @samp{d} registers.  This is primarily useful
+for 64-bit integer values intended to be returned with the @samp{d}
+register holding the most significant bits and the @samp{a} register
+holding the least significant bits.
 
 @item f
 Floating point register
@@ -1571,10 +1574,10 @@ Second floating point register
 @samp{si} register
 
 @item I
-Constant in range 0 to 31 (for 32 bit shifts)
+Constant in range 0 to 31 (for 32-bit shifts)
 
 @item J
-Constant in range 0 to 63 (for 64 bit shifts)
+Constant in range 0 to 63 (for 64-bit shifts)
 
 @item K
 @samp{0xff}
@@ -1646,7 +1649,7 @@ General-purpose integer register
 Floating-point status register
 
 @item I
-Signed 16 bit constant (for arithmetic instructions)
+Signed 16-bit constant (for arithmetic instructions)
 
 @item J
 Zero
@@ -1658,17 +1661,17 @@ Zero-extended 16-bit constant (for logic instructions)
 Constant with low 16 bits zero (can be loaded with @code{lui})
 
 @item M
-32 bit constant which requires two instructions to load (a constant
+32-bit constant which requires two instructions to load (a constant
 which is not @samp{I}, @samp{K}, or @samp{L})
 
 @item N
-Negative 16 bit constant
+Negative 16-bit constant
 
 @item O
 Exact power of two
 
 @item P
-Positive 16 bit constant
+Positive 16-bit constant
 
 @item G
 Floating point zero
@@ -1707,7 +1710,7 @@ First 16 Sun FPA registers, if available
 Integer in the range 1 to 8
 
 @item J
-16 bit signed number
+16-bit signed number
 
 @item K
 Signed number whose magnitude is greater than 0x80
@@ -1787,26 +1790,26 @@ Constants in the range -8 to 2
 @item SPARC---@file{sparc.h}
 @table @code
 @item f
-Floating-point register that can hold 32 or 64 bit values.
+Floating-point register that can hold 32- or 64-bit values.
 
 @item e
-Floating-point register that can hold 64 or 128 bit values.
+Floating-point register that can hold 64- or 128-bit values.
 
 @item I
-Signed 13 bit constant
+Signed 13-bit constant
 
 @item J
 Zero
 
 @item K
-32 bit constant with the low 12 bits clear (a constant that can be
+32-bit constant with the low 12 bits clear (a constant that can be
 loaded with the @code{sethi} instruction)
 
 @item G
 Floating-point zero
 
 @item H
-Signed 13 bit constant, sign-extended to 32 or 64 bits
+Signed 13-bit constant, sign-extended to 32 or 64 bits
 
 @item Q
 Floating-point constant whose integral representation can
@@ -1840,22 +1843,22 @@ Auxiliary (address) register (ar0-ar7)
 Stack pointer register (sp)
 
 @item c
-Standard (32 bit) precision integer register
+Standard (32-bit) precision integer register
 
 @item f
-Extended (40 bit) precision register (r0-r11)
+Extended (40-bit) precision register (r0-r11)
 
 @item k
 Block count register (bk)
 
 @item q
-Extended (40 bit) precision low register (r0-r7)
+Extended (40-bit) precision low register (r0-r7)
 
 @item t
-Extended (40 bit) precision register (r0-r1)
+Extended (40-bit) precision register (r0-r1)
 
 @item u
-Extended (40 bit) precision register (r2-r3)
+Extended (40-bit) precision register (r2-r3)
 
 @item v
 Repeat count register (rc)
@@ -1873,34 +1876,34 @@ Data page register (dp)
 Floating-point zero
 
 @item H
-Immediate 16 bit floating-point constant
+Immediate 16-bit floating-point constant
 
 @item I
-Signed 16 bit constant
+Signed 16-bit constant
 
 @item J
-Signed 8 bit constant
+Signed 8-bit constant
 
 @item K
-Signed 5 bit constant
+Signed 5-bit constant
 
 @item L
-Unsigned 16 bit constant
+Unsigned 16-bit constant
 
 @item M
-Unsigned 8 bit constant
+Unsigned 8-bit constant
 
 @item N
-Ones complement of unsigned 16 bit constant
+Ones complement of unsigned 16-bit constant
 
 @item O
-High 16 bit constant (32 bit constant with 16 LSBs zero)
+High 16-bit constant (32-bit constant with 16 LSBs zero)
 
 @item Q
-Indirect memory reference with signed 8 bit or index register displacement 
+Indirect memory reference with signed 8-bit or index register displacement 
 
 @item R
-Indirect memory reference with unsigned 5 bit displacement
+Indirect memory reference with unsigned 5-bit displacement
 
 @item S
 Indirect memory reference with 1 bit or index register displacement 
