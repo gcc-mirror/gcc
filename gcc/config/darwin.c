@@ -304,17 +304,17 @@ machopic_non_lazy_ptr_name (const char *name)
     bufferlen = 2;
     if (name[0] == '*')
       {
-        memcpy (buffer + bufferlen +1, name+1, namelen-1+1);
+        memcpy (buffer + bufferlen, name+1, namelen-1+1);
         bufferlen += namelen-1;
       }
     else
       {
 	buffer[bufferlen] = '_';
-	memcpy (buffer + bufferlen+1 +1, name, namelen+1);
+	memcpy (buffer + bufferlen +1, name, namelen+1);
         bufferlen += namelen;
       }
 
-    memcpy (buffer + bufferlen +1, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
+    memcpy (buffer + bufferlen, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
     bufferlen += strlen("$non_lazy_ptr");
     ptr_name = get_identifier (buffer);
 
@@ -379,24 +379,24 @@ machopic_stub_name (const char *name)
     
     if (name[0] == '*')
       {
-	memcpy (buffer + bufferlen +1, name+1, namelen - 1 +1);
+	memcpy (buffer + bufferlen, name+1, namelen - 1 +1);
         bufferlen += namelen - 1;
       }
     else
       {
 	buffer[bufferlen] = '_';
-	memcpy (buffer + bufferlen+1 +1, name, namelen+1);
+	memcpy (buffer + bufferlen +1, name, namelen+1);
         bufferlen += namelen;
       }
 
     if (needs_quotes)
       {
-        memcpy (buffer + bufferlen +1, "$stub\"", strlen("$stub\"")+1);
+        memcpy (buffer + bufferlen, "$stub\"", strlen("$stub\"")+1);
         bufferlen += strlen("$stub\"");
       }
     else
       {
-        memcpy (buffer + bufferlen +1, "$stub", strlen("$stub")+1);
+        memcpy (buffer + bufferlen, "$stub", strlen("$stub")+1);
         bufferlen += strlen("$stub");
       }
     ptr_name = get_identifier (buffer);
