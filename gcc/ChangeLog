@@ -1,3 +1,10 @@
+2004-11-05  Richard Henderson  <rth@redhat.com>
+
+	* ia64.md (UNSPEC_SHRP): New.
+	(dshift_count_operand): New.
+	(ashrti3, ashrti3_internal, lshrti3, lshrti3_internal, shrp): New.
+	* ia64.c (rtx_needs_barrier): Handle UNSPEC_SHRP.
+
 2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (output_init_element): Return early if value is
