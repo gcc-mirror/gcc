@@ -989,7 +989,10 @@ main (argc, argv)
 
   signal (SIGPIPE, pipe_closed);
 
-  progname = argv[0];
+  p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && p[-1] != '/') --p;
+  progname = p;
+
 #ifdef VMS
   {
     /* Remove directories from PROGNAME.  */
