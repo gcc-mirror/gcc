@@ -1,6 +1,7 @@
 /* Definitions for parsing and type checking for the GNU compiler for
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1056,7 +1057,7 @@ extern tree build_dtable_decl PARAMS ((tree));
 extern tree build_internal_class_name PARAMS ((tree));
 extern tree build_constants_constructor PARAMS ((void));
 extern tree build_ref_from_constant_pool PARAMS ((int));
-void compile_resource_file PARAMS ((char *, char *));
+extern void compile_resource_file PARAMS ((char *, const char *));
 extern tree build_utf8_ref PARAMS ((tree));
 extern tree ident_subst PARAMS ((const char*, int,
 				const char*, int, int, const char*));

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -853,7 +853,7 @@ hashUtf8String (str, len)
 void
 compile_resource_file (name, filename)
      char *name;
-     char *filename;
+     const char *filename;
 {
   struct stat stat_buf;
   int fd;
