@@ -1,3 +1,8 @@
+Tue Jul 25 23:08:33 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (cmpgtdi_t): Must be split.
+	(cmpgtdi_t+1): New splitter.
+
 2000-07-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (_cpp_check_directive): Issue -Wtraditional
