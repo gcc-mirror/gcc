@@ -1,3 +1,15 @@
+1999-02-08  Michael Meissner  <meissner@cygnus.com>
+
+	This is being installed only to get it into the repository to help
+	with the revert, resubmit & review process for the massive rs6000.md
+	changes.
+        * rs6000.md (andsi3_internal1 splitter): Don't split if using the
+        rlwinm instruction.
+        (anddi3_internal1): Ditto.
+        (andsi3_internal{2,3}): Correct some insn lengths.
+        (anddi3*): Restore missing TARGET_POWERPC64, and don't emit old
+        mnemonics.
+
 Mon Feb  8 21:31:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (reg_single_usage): New file-scope variable ...
