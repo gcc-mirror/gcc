@@ -364,7 +364,7 @@ java::lang::reflect::Array::set (jobject array, jint index,
 {
   // We don't have to call getElementType here, or check INDEX,
   // because it was already done in the Java wrapper.
-  if (! _Jv_IsInstanceOf (value, elType))
+  if (value != NULL && ! _Jv_IsInstanceOf (value, elType))
     throw new java::lang::IllegalArgumentException;
   elements ((jobjectArray) array) [index] = value;
 }

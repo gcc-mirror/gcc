@@ -1,5 +1,8 @@
 2003-08-26  Tom Tromey  <tromey@redhat.com>
 
+	PR java/12058:
+	* java/lang/reflect/natArray.cc (set): Allow null as argument.
+
 	* java/lang/reflect/Proxy.java (ProxyData): `pack' now a String.
 	(ProxyData.getPackage): New method.
 	(ProxyData.getProxyData): Use package name, not Package.
