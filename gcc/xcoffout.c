@@ -134,7 +134,8 @@ assign_type_number (syms, name, number)
   tree decl;
 
   for (decl = syms; decl; decl = TREE_CHAIN (decl))
-    if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), name))
+    if (DECL_NAME (decl)
+	&& strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), name) == 0)
       {
 	TREE_ASM_WRITTEN (decl) = 1;
 	TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = number;
