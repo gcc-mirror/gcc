@@ -1,3 +1,8 @@
+2000-07-08  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Fix conditions for
+	emitting aux_truncdfsf2.
+
 2000-07-03  Donn Terry  (donnte@microsoft.com)
 
 	* cppinit.c (print_help): split overlong line into ISO C89
