@@ -751,7 +751,7 @@ objc_read_string (struct objc_typed_stream* stream,
       case _B_SSTR:
 	{
 	  int length = buf[0]&_B_VALUE;
-	  (*string) = (char*)__objc_xmalloc(length+1);
+	  (*string) = (char*)objc_malloc(length+1);
 	  if (key)
 	    hash_add (&stream->stream_table, LONG2PTR(key), *string);
 	  len = (*stream->read)(stream->physical, *string, length);
@@ -764,7 +764,7 @@ objc_read_string (struct objc_typed_stream* stream,
 	  char *tmp;
 	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
 	  tmp = hash_value_for_key (stream->stream_table, LONG2PTR (key));
-	  *string = __objc_xmalloc (strlen(tmp) + 1);
+	  *string = objc_malloc (strlen(tmp) + 1);
 	  strcpy (*string, tmp);
 	}
 	break;
@@ -774,7 +774,7 @@ objc_read_string (struct objc_typed_stream* stream,
 	  unsigned int nbytes = buf[0]&_B_VALUE;
 	  len = __objc_read_nbyte_uint(stream, nbytes, &nbytes);
 	  if (len) {
-	    (*string) = (char*)__objc_xmalloc(nbytes+1);
+	    (*string) = (char*)objc_malloc(nbytes+1);
 	    if (key)
 	      hash_add (&stream->stream_table, LONG2PTR(key), *string);
 	    len = (*stream->read)(stream->physical, *string, nbytes);
@@ -887,7 +887,7 @@ objc_read_class (struct objc_typed_stream* stream, Class* class)
 	  /* get class */
 	  len = objc_read_string (stream, &class_name);
 	  (*class) = objc_get_class(class_name);
-	  free (class_name);
+	  objc_free(class_name);
 
 	  /* register */
 	  if (key)
@@ -942,7 +942,7 @@ objc_read_selector (struct objc_typed_stream* stream, SEL* selector)
 	    }
 	  else 
 	    (*selector) = sel_get_any_uid(selector_name);
-	  free (selector_name);
+	  objc_free(selector_name);
 
 	  /* register */
 	  if (key)
@@ -1393,12 +1393,6 @@ objc_read_array (TypedStream* stream, const char* type,
   return 1;
 }
 
-static void
-__objc_free (void* p)
-{
-  free (p);
-}
-
 static int 
 __objc_fread(FILE* file, char* data, int len)
 {
@@ -1484,7 +1478,7 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 	  reflist = reflist->tail;
 	}
     }
-  list_mapcar (free_list, __objc_free);
+  list_mapcar (free_list, objc_free);
   list_free (free_list);
 
   /* empty object reference table */
@@ -1518,7 +1512,7 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 TypedStream* 
 objc_open_typed_stream (FILE* physical, int mode)
 {
-  TypedStream* s = (TypedStream*)__objc_xmalloc(sizeof(TypedStream));
+  TypedStream* s = (TypedStream*)objc_malloc(sizeof(TypedStream));
 
   s->mode = mode;
   s->physical = physical;
@@ -1605,7 +1599,7 @@ objc_close_typed_stream (TypedStream* stream)
   if (stream->type == (OBJC_MANAGED_STREAM | OBJC_FILE_STREAM))
     fclose ((FILE*)stream->physical);
 
-  free (stream);
+  objc_free(stream);
 }
 
 BOOL
