@@ -8922,7 +8922,8 @@ gen_struct_or_union_type_die (type, context_die)
   register dw_die_ref scope_die = 0;
   register int nested = 0;
   int complete = (TYPE_SIZE (type)
-		  && ! TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type)));
+		  && (! TYPE_STUB_DECL (type)
+		      || ! TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type))));
 
   if (type_die && ! complete)
     return;
