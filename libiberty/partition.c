@@ -34,7 +34,7 @@
 #include "libiberty.h"
 #include "partition.h"
 
-static int elem_compare PARAMS ((const void *, const void *));
+static int elem_compare (const void *, const void *);
 
 /* Creates a partition of NUM_ELEMENTS elements.  Initially each
    element is in a class by itself.  */
