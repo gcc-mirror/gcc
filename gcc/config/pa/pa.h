@@ -1981,22 +1981,22 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA %s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", \
-	       NAME);						\
+	       "\t.SUBSPA %s%s%s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n",\
+	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
     }								\
   else if (DECL && TREE_READONLY (DECL))			\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA %s,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
-	       NAME);						\
+	       "\t.SUBSPA %s%s%s,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
+	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
     }								\
   else								\
     {								\
       fputs ("\t.SPACE $PRIVATE$\n", FILE);			\
       fprintf (FILE,						\
 	       "\t.SUBSPA %s,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
-	       NAME);						\
+	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
     }
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
