@@ -3301,13 +3301,16 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
     = ((TREE_CODE (arg) == TEMPLATE_DECL
 	&& TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
        || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+       || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE
        || (TREE_CODE (arg) == RECORD_TYPE
 	   && CLASSTYPE_TEMPLATE_INFO (arg)
 	   && TREE_CODE (TYPE_NAME (arg)) == TYPE_DECL
 	   && DECL_ARTIFICIAL (TYPE_NAME (arg))
 	   && requires_tmpl_type
 	   && is_base_of_enclosing_class (arg, current_class_type)));
-  if (is_tmpl_type && TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+  if (is_tmpl_type
+      && (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+	  || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE))
     arg = TYPE_STUB_DECL (arg);
   else if (is_tmpl_type && TREE_CODE (arg) == RECORD_TYPE)
     arg = CLASSTYPE_TI_TEMPLATE (arg);
@@ -3360,30 +3363,38 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
     {
       if (requires_tmpl_type)
 	{
-	  tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
-	  tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
-
-	  if (coerce_template_template_parms (parmparm, argparm, complain,
-					      in_decl, inner_args))
-	    {
-	      val = arg;
-		  
-	      /* TEMPLATE_TEMPLATE_PARM node is preferred over 
-		 TEMPLATE_DECL.  */
-	      if (val != error_mark_node 
-		  && DECL_TEMPLATE_TEMPLATE_PARM_P (val))
-		val = TREE_TYPE (val);
-	    }
+	  if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
+	    /* The number of argument required is not known yet.
+	       Just accept it for now.  */
+	    val = TREE_TYPE (arg);
 	  else
 	    {
-	      if (in_decl && complain)
+	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
+	      tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+
+	      if (coerce_template_template_parms (parmparm, argparm,
+						  complain, in_decl,
+						  inner_args))
 		{
-		  cp_error ("type/value mismatch at argument %d in template parameter list for `%D'",
-			    i + 1, in_decl);
-		  cp_error ("  expected a template of type `%D', got `%D'", parm, arg);
-		}
+		  val = arg;
 		  
-	      val = error_mark_node;
+		  /* TEMPLATE_TEMPLATE_PARM node is preferred over 
+		     TEMPLATE_DECL.  */
+		  if (val != error_mark_node 
+		      && DECL_TEMPLATE_TEMPLATE_PARM_P (val))
+		    val = TREE_TYPE (val);
+		}
+	      else
+		{
+		  if (in_decl && complain)
+		    {
+		      cp_error ("type/value mismatch at argument %d in template parameter list for `%D'",
+				i + 1, in_decl);
+		      cp_error ("  expected a template of type `%D', got `%D'", parm, arg);
+		    }
+		  
+		  val = error_mark_node;
+		}
 	    }
 	}
       else
@@ -6750,6 +6761,18 @@ tsubst (t, args, complain, in_decl)
 					     complain);
       }
 
+    case UNBOUND_CLASS_TEMPLATE:
+      {
+	tree ctx = tsubst_aggr_type (TYPE_CONTEXT (t), args, complain,
+				     in_decl, /*entering_scope=*/1);
+	tree name = TYPE_IDENTIFIER (t);
+
+	if (ctx == error_mark_node || name == error_mark_node)
+	  return error_mark_node;
+
+	return make_unbound_class_template (ctx, name, complain);
+      }
+
     case INDIRECT_REF:
       {
 	tree e = tsubst (TREE_OPERAND (t, 0), args, complain,
@@ -7150,6 +7173,7 @@ tsubst_copy (t, args, complain, in_decl)
     case METHOD_TYPE:
     case ARRAY_TYPE:
     case TYPENAME_TYPE:
+    case UNBOUND_CLASS_TEMPLATE:
     case TYPE_DECL:
       return tsubst (t, args, complain, in_decl);
 
@@ -8542,6 +8566,7 @@ unify (tparms, targs, parm, arg, strict)
   switch (TREE_CODE (parm))
     {
     case TYPENAME_TYPE:
+    case UNBOUND_CLASS_TEMPLATE:
       /* In a type which contains a nested-name-specifier, template
 	 argument values cannot be deduced for template parameters used
 	 within the nested-name-specifier.  */

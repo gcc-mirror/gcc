@@ -1393,7 +1393,9 @@ write_type (type)
 	  break;
 
 	case TYPENAME_TYPE:
-	  /* We handle TYPENAME_TYPEs like ordinary nested names.  */
+	case UNBOUND_CLASS_TEMPLATE:
+	  /* We handle TYPENAME_TYPEs and UNBOUND_CLASS_TEMPLATEs like
+	     ordinary nested names.  */
 	  write_nested_name (TYPE_STUB_DECL (type));
 	  break;
 

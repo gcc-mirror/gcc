@@ -669,7 +669,8 @@ template_parm:
 		{
 		  if (TREE_CODE ($3) != TEMPLATE_DECL
 		      && TREE_CODE ($3) != TEMPLATE_TEMPLATE_PARM
-		      && TREE_CODE ($3) != TYPE_DECL)
+		      && TREE_CODE ($3) != TYPE_DECL
+		      && TREE_CODE ($3) != UNBOUND_CLASS_TEMPLATE)
 		    {
 		      error ("invalid default template argument");
 		      $3 = error_mark_node;
@@ -1100,6 +1101,16 @@ template_arg:
 		    $$ = TREE_TYPE ($$);
 		}
 	| expr_no_comma_rangle
+	| nested_name_specifier TEMPLATE identifier
+		{
+		  if (!processing_template_decl)
+		    {
+		      cp_error ("use of template qualifier outside template");
+		      $$ = error_mark_node;
+		    }
+		  else
+		    $$ = make_unbound_class_template ($1, $3, 1);
+		}
 	;
 
 unop:

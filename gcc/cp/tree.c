@@ -2079,6 +2079,7 @@ cp_walk_subtrees (tp, walk_subtrees_p, func, data, htab)
     case DEFAULT_ARG:
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
+    case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TYPE_PARM:
     case TYPENAME_TYPE:

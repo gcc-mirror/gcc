@@ -458,6 +458,13 @@ dump_type (t, flags)
       dump_typename (t, flags);
       break;
 
+    case UNBOUND_CLASS_TEMPLATE:
+      dump_type (TYPE_CONTEXT (t), flags);
+      print_scope_operator (scratch_buffer);
+      print_identifier (scratch_buffer, "template ");
+      dump_type (DECL_NAME (TYPE_NAME (t)), flags);
+      break;
+
     case TYPEOF_TYPE:
       output_add_string (scratch_buffer, "__typeof (");
       dump_expr (TYPE_FIELDS (t), flags & ~TFF_EXPR_IN_PARENS);
