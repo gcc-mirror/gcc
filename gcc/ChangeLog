@@ -1,3 +1,14 @@
+Sat Apr 10 03:50:12 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.h (local_alloc): Returns an integer now.
+	* local-alloc.c (recorded_label_ref): New file scoped variable.
+	(local_alloc): Initialize recorded_label_ref to zero.  Return its
+	value when local allocation has completed.
+	(update_equiv_regs); If we create an equivalence for a LABEL_REF,
+	set recorded_label_ref.
+	* toplev.c (rest_of_compilation): Run the loop optimizer after
+	register allocation and reloading if needed.
+
 Fri Apr  9 21:02:57 1999  Krister Walfridsson (cato@df.lth.se)
 
         * i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Fix typo.
