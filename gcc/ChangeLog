@@ -1,5 +1,8 @@
 Tue Apr 14 09:02:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* svr4.h (ASM_DECLARE_OBJECT_NAME): Use HOST_WIDE_INT_PRINT_DEC.
+	(ASM_FINISH_DECLARE_OBJECT): Likewise.
+
 	* Idea and part of the patch from HJ.
         * Makefile.in: auto-host.h renamed from auto-config.h.  All references
         changed.
