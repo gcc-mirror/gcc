@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -474,8 +474,7 @@ build_eh_type (exp)
    if it is, it avoids destroying the object on rethrow.  */
 
 static tree
-do_pop_exception (handler)
-     tree handler;
+do_pop_exception ()
 {
   tree fn, cleanup;
   fn = get_identifier ("__cp_pop_exception");
@@ -490,9 +489,7 @@ do_pop_exception (handler)
       fn = build_lang_decl
 	(FUNCTION_DECL, fn,
 	 build_function_type (void_type_node, tree_cons
-			      (NULL_TREE, ptr_type_node, tree_cons
-			       (NULL_TREE, boolean_type_node,
-				void_list_node))));
+			      (NULL_TREE, ptr_type_node, void_list_node)));
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
@@ -505,8 +502,7 @@ do_pop_exception (handler)
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
   cleanup = lookup_name (get_identifier ("__exception_info"), 0);
   cleanup = build_function_call (fn, expr_tree_cons
-				 (NULL_TREE, cleanup, expr_tree_cons
-				  (NULL_TREE, handler, NULL_TREE)));
+				 (NULL_TREE, cleanup, NULL_TREE));
   return cleanup;
 }
 
@@ -515,17 +511,15 @@ do_pop_exception (handler)
 static void
 push_eh_cleanup ()
 {
-  /* All cleanups must last longer than normal.  */
-  int yes = suspend_momentary ();
-  expand_decl_cleanup_no_eh (NULL_TREE, do_pop_exception (boolean_false_node));
-  resume_momentary (yes);
+  int yes;
 
   expand_expr (build_unary_op (PREINCREMENT_EXPR, get_eh_handlers (), 1),
 	       const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  /* We don't destroy the exception object on rethrow, so we can't use
-     the normal cleanup mechanism for it.  */
-  expand_eh_region_start ();
+  yes = suspend_momentary ();
+  /* All cleanups must last longer than normal.  */
+  expand_decl_cleanup (NULL_TREE, do_pop_exception ());
+  resume_momentary (yes);
 }
 
 /* call this to start a catch block. Typename is the typename, and identifier
@@ -695,9 +689,6 @@ expand_end_catch_block ()
   expand_end_bindings (getdecls (), kept_level_p (), 0);
   poplevel (kept_level_p (), 1, 0);
       
-  /* Matches push_eh_cleanup.  */
-  expand_eh_region_end (do_pop_exception (boolean_true_node));
-
   /* Cleanup the EH object.  */
   expand_end_bindings (getdecls (), kept_level_p (), 0);
   poplevel (kept_level_p (), 1, 0);
