@@ -247,6 +247,7 @@ int kind;
 	    ABORT("HBLK SZ inconsistency");
         }
 #   endif
+  if (GC_debugging_started) clear = TRUE;
 
   /* Allocate a new heap block */
     h = GC_allochblk(sz, kind, 0);

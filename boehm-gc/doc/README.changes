@@ -1360,7 +1360,7 @@ Since 6.0alpha8:
    it on untested platforms.
  - Integrated initial GNU HURD port. (Thanks to Chris Lingard and Igor
    Khavkine.)
- - A few more fixes for Digital Mars compiler.
+ - A few more fixes for Digital Mars compiler (Walter Bright).
  - Fixed gcc version recognition.  Renamed OPERATOR_NEW_ARRAY to
    GC_OPERATOR_NEW_ARRAY.  Changed GC_OPERATOR_NEW_ARRAY to be the default.
    It can be overridden with -DGC_NO_OPERATOR_NEW_ARRAY.  (Thanks to
@@ -1378,16 +1378,47 @@ Since 6.0alpha9:
  - Fixed a stack clearing problem that resulted in SIGILL with a
    misaligned stack pointer for multithreaded SPARC builds.
  - Integrated another HURD patch (thanks to Igor Khavkine).
+
+Since 6.0:
+ - Non-debug, atomic allocations could result in bogus smashed object
+   reports with debugging on.  (Thanks to Patrick Doyle for the small
+   test case.)
+ - Fixed GC_get_register_stack_base (Itanium only) to work around a glibc
+   2.2.4 bug.
+ - Initial port to HP/UX on Itanium.  Thread support and both 32 and 64
+   bit ABIs appear to work.  Parallel mark support doesn't yet, due to
+   some inline assembly code issues.  Thread local allocation does appear
+   to work.
+ - ifdef'ed out glibc2.1/Itanium workaround.  I suspect nobody is using
+   that combination anymore.
+ - Added a patch to make new_gc_alloc.h usable with gcc3.0.  (Thanks to
+   Dimitris Vyzovitis for the patch.)
+ - Debugged 64-bit support on HP/UX PA-RISC.
+ - Turned on dynamic loading support for FreeBSD/ELF.  (Thanks to Peter
+   Housel.)
+ - Unregistering of finalizers with debugging allocation was broken.
+   (Thanks to Jani Kajala for the test case.)
+ - Old finalizers were not returned correctly from GC_debug_register_finalizer.
+ - Disabled MPROTECT_VDB for Linux/M68K based on a report that it doesn't work.
+ - Cleaned up some statistics gathering code in reclaim.c (Thanks to Walter
+   Bright.)
+ - Added some support for OpenBSD/ELF/Linux.  (Thanks to Suzuki Toshiya.)
+ - Added Jakub Jelinek's patch to use dl_iterate_phdr for dynamic library
+   traversal to dyn_load.c.  Changed it to weakly reference dl_iterate_phdr,
+   so that the old code is stilll used with old versions of glibc.
+ - Cleaned up feature test macros for various threads packages and
+   integrated (partially functional) FreeBSD threads code from Loren Rittle.
+   It's likely that the cleanup broke something, since it touched lots of
+   code.  It's also likelly that it fixed some unreported bugs in the
+   less common thread implementations, since some of the original code
+   didn't stand up to close scrutiny.  Support for the next pthreads
+   implementation should be easier to add.
  
 
 To do:
  - There seem to be outstanding issues on Solaris/X86, possibly with
    finding the data segment starting address.  Information/patches would
-   ne appreciated.
- - New_gc_alloc.h is apparently no longer compatible with the latest C++
-   standard library in gcc3.0.  (This isn't technically a bug, since it only
-   claimed compatibility with the SGI STL.  But we may need a new C++ STL
-   allocator interface.)
+   be appreciated.
  - Very large root set sizes (> 16 MB or so) could cause the collector
    to abort with an unexpected mark stack overflow.  (Thanks again to
    Peter Chubb.)  NOT YET FIXED.  Workaround is to increase the initial

@@ -59,16 +59,16 @@
 #   define GC_printf1 printf
 # endif
 
-# ifdef SOLARIS_THREADS
+# if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
 #   include <thread.h>
 #   include <synch.h>
 # endif
 
-# if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
+# if defined(GC_PTHREADS)
 #   include <pthread.h>
 # endif
 
-# ifdef WIN32_THREADS
+# ifdef GC_WIN32_THREADS
 #   ifndef MSWINCE
 #     include <process.h>
 #     define GC_CreateThread(a,b,c,d,e,f) ((HANDLE) _beginthreadex(a,b,c,d,e,f))
@@ -447,7 +447,7 @@ struct {
  */
 #ifdef THREADS
 
-# ifdef WIN32_THREADS
+# ifdef GC_WIN32_THREADS
     unsigned __stdcall tiny_reverse_test(void * arg)
 # else
     void * tiny_reverse_test(void * arg)
@@ -457,8 +457,7 @@ struct {
     return 0;
 }
 
-# if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-     || defined(SOLARIS_PTHREADS) || defined(HPUX_THREADS)
+# if defined(GC_PTHREADS)
     void fork_a_thread()
     {
       pthread_t t;
@@ -475,7 +474,7 @@ struct {
       }
     }
 
-# elif defined(WIN32_THREADS)
+# elif defined(GC_WIN32_THREADS)
     void fork_a_thread()
     {
   	unsigned thread_id;
@@ -493,7 +492,7 @@ struct {
     	}
     }
 
-/* # elif defined(SOLARIS_THREADS) */
+/* # elif defined(GC_SOLARIS_THREADS) */
 
 # else
 
@@ -649,15 +648,15 @@ VOLATILE int dropped_something = 0;
 # ifdef PCR
      PCR_ThCrSec_EnterSys();
 # endif
-# ifdef SOLARIS_THREADS
+# if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
     static mutex_t incr_lock;
     mutex_lock(&incr_lock);
 # endif
-# if  defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
+# if  defined(GC_PTHREADS)
     static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_lock(&incr_lock);
 # endif
-# ifdef WIN32_THREADS
+# ifdef GC_WIN32_THREADS
     EnterCriticalSection(&incr_cs);
 # endif
   if ((int)(GC_word)client_data != t -> level) {
@@ -668,13 +667,13 @@ VOLATILE int dropped_something = 0;
 # ifdef PCR
     PCR_ThCrSec_ExitSys();
 # endif
-# ifdef SOLARIS_THREADS
+# if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
     mutex_unlock(&incr_lock);
 # endif
-# if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
+# if defined(GC_PTHREADS)
     pthread_mutex_unlock(&incr_lock);
 # endif
-# ifdef WIN32_THREADS
+# ifdef GC_WIN32_THREADS
     LeaveCriticalSection(&incr_cs);
 # endif
 }
@@ -740,16 +739,15 @@ int n;
 #	  ifdef PCR
  	    PCR_ThCrSec_EnterSys();
 #	  endif
-#	  ifdef SOLARIS_THREADS
+#	  if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
 	    static mutex_t incr_lock;
 	    mutex_lock(&incr_lock);
 #	  endif
-#         if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-	     || defined(HPUX_THREADS)
+#         if defined(GC_PTHREADS)
             static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&incr_lock);
 #         endif
-#         ifdef WIN32_THREADS
+#         ifdef GC_WIN32_THREADS
             EnterCriticalSection(&incr_cs);
 #         endif
 		/* Losing a count here causes erroneous report of failure. */
@@ -758,14 +756,13 @@ int n;
 #	  ifdef PCR
  	    PCR_ThCrSec_ExitSys();
 #	  endif
-#	  ifdef SOLARIS_THREADS
+#	  if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
 	    mutex_unlock(&incr_lock);
 #	  endif
-#	  if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-	     || defined(HPUX_THREADS)
+#	  if defined(GC_PTHREADS)
 	    pthread_mutex_unlock(&incr_lock);
 #	  endif
-#         ifdef WIN32_THREADS
+#         ifdef GC_WIN32_THREADS
             LeaveCriticalSection(&incr_cs);
 #         endif
 	}
@@ -825,7 +822,7 @@ int n;
     chktree(t -> rchild, n-1);
 }
 
-# if defined(SOLARIS_THREADS) && !defined(_SOLARIS_PTHREADS)
+# if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
 thread_key_t fl_key;
 
 void * alloc8bytes()
@@ -866,9 +863,7 @@ void * alloc8bytes()
 
 #else
 
-# if defined(GC_SOLARIS_PTHREADS) || defined(GC_IRIX_THREADS) \
-     || defined(GC_LINUX_THREADS) || defined(GC_HPUX_THREADS) \
-     || defined(GC_SOLARIS_THREADS)
+# if defined(GC_PTHREADS)
 pthread_key_t fl_key;
 
 void * alloc8bytes()
@@ -1319,9 +1314,8 @@ void SetMinimumStack(long minSize)
 
 
 #if !defined(PCR) && !defined(GC_SOLARIS_THREADS) \
-    && !defined(GC_WIN32_THREADS) \
-    && !defined(GC_IRIX_THREADS) && !defined(GC_LINUX_THREADS) \
-    && !defined(GC_HPUX_THREADS) || defined(LINT)
+    && !defined(GC_WIN32_THREADS) && !defined(GC_PTHREADS) \
+    || defined(LINT)
 #if defined(MSWIN32) && !defined(__MINGW32__)
   int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPTSTR cmd, int n)
 #else
@@ -1557,8 +1551,7 @@ test()
 }
 #endif
 
-#if defined(GC_SOLARIS_THREADS) || defined(GC_IRIX_THREADS) \
- || defined(GC_HPUX_THREADS) || defined(GC_LINUX_THREADS)
+#if defined(GC_SOLARIS_THREADS) || defined(GC_PTHREADS)
 void * thr_run_one_test(void * arg)
 {
     run_one_test();
@@ -1569,7 +1562,7 @@ void * thr_run_one_test(void * arg)
 #  define GC_free GC_debug_free
 #endif
 
-#ifdef GC_SOLARIS_THREADS
+#if defined(GC_SOLARIS_THREADS) && !defined(GC_SOLARIS_PTHREADS)
 main()
 {
     thread_t th1;
@@ -1606,6 +1599,11 @@ main()
     return(0);
 }
 #else /* pthreads */
+
+#ifndef GC_PTHREADS
+  --> bad news
+#endif
+
 main()
 {
     pthread_t th1;
@@ -1618,8 +1616,15 @@ main()
 	/* Since the initial cant always grow later.	*/
 	*((volatile char *)&code - 1024*1024) = 0;      /* Require 1 Mb */
 #   endif /* GC_IRIX_THREADS */
+#   if defined(GC_HPUX_THREADS)
+	/* Default stack size is too small, especially with the 64 bit ABI */
+	/* Increase it.							   */
+	if (pthread_default_stacksize_np(1024*1024, 0) != 0) {
+          (void)GC_printf0("pthread_default_stacksize_np failed.\n");
+	}
+#   endif	/* GC_HPUX_THREADS */
     pthread_attr_init(&attr);
-#   if defined(GC_IRIX_THREADS) || defined(GC_HPUX_THREADS)
+#   if defined(GC_IRIX_THREADS)
     	pthread_attr_setstacksize(&attr, 1000000);
 #   endif
     n_tests = 0;
@@ -1656,5 +1661,5 @@ main()
     GC_printf1("Completed %d collections\n", GC_gc_no);
     return(0);
 }
-#endif /* pthreads */
-#endif /* SOLARIS_THREADS || IRIX_THREADS || LINUX_THREADS || HPUX_THREADS */
+#endif /* GC_PTHREADS */
+#endif /* GC_SOLARIS_THREADS || GC_PTHREADS */

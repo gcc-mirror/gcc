@@ -774,6 +774,7 @@ signed_word size;
       if (HBLK_IS_FREE(hhdr)) {
         GC_printf1("Duplicate large block deallocation of 0x%lx\n",
         	   (unsigned long) hbp);
+	ABORT("Duplicate large block deallocation");
       }
 
     GC_ASSERT(IS_MAPPED(hhdr));

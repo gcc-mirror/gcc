@@ -91,7 +91,7 @@ case "$THREADS" in
 	;;
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
-	AC_DEFINE(FREEBSD_THREADS)
+	AC_DEFINE(GC_FREEBSD_THREADS)
 	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread
       	;;
@@ -153,6 +153,12 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
+ alpha-*-openbsd*)
+    if test x"${ac_cv_lib_dl_dlopen}" != xyes ; then
+       AC_MSG_WARN(OpenBSD/Alpha without dlopen(). Shared library support is disabled)
+       AM_DISABLE_SHARED
+    fi
+    ;;
  i?86-*-solaris2.[[89]]*)
     AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED)
     ;;
@@ -170,6 +176,9 @@ case "$host" in
     ;;
  sparc-sun-solaris2.3*)
     AC_DEFINE(SUNOS53_SHARED_LIB)
+    ;;
+ ia64-*-hpux*)
+    machdep="mach_dep.lo ia64_save_regs_in_stack.lo"
     ;;
 esac
 if test x"$machdep" = x; then

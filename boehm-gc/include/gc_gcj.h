@@ -47,8 +47,6 @@
 /* The following allocators signal an out of memory condition with	*/
 /* return GC_oom_fn(bytes);						*/
 
-extern void * (*GC_oom_action)(void);
-
 /* The following function must be called before the gcj allocators	*/
 /* can be invoked.							*/
 /* mp_index and mp are the index and mark_proc (see gc_mark.h)		*/

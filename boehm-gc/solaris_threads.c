@@ -16,7 +16,7 @@
  */
 /* Boehm, September 14, 1994 4:44 pm PDT */
 
-# if defined(GC_SOLARIS_THREADS) || defined(SOLARIS_THREADS)
+# if defined(GC_SOLARIS_THREADS)
 
 # include "private/gc_priv.h"
 # include "private/solaris_threads.h"
@@ -949,7 +949,7 @@ GC_thr_create(void *stack_base, size_t stack_size,
     return(result);
 }
 
-# else /* SOLARIS_THREADS */
+# else /* !GC_SOLARIS_THREADS */
 
 #ifndef LINT
   int GC_no_sunOS_threads;

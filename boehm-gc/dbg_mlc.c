@@ -40,7 +40,7 @@ ptr_t p;
     register word sz = GC_size((ptr_t) ohdr);
     
     if (HBLKPTR((ptr_t)ohdr) != HBLKPTR((ptr_t)body)
-        || sz < sizeof (oh)) {
+        || sz < DEBUG_BYTES + EXTRA_BYTES) {
         return(FALSE);
     }
     if (ohdr -> oh_sz == sz) {
@@ -890,6 +890,28 @@ struct closure {
     (*(cl -> cl_fn))((GC_PTR)((char *)obj + sizeof(oh)), cl -> cl_data);
 } 
 
+/* Set ofn and ocd to reflect the values we got back.	*/
+static void store_old (obj, my_old_fn, my_old_cd, ofn, ocd)
+GC_PTR obj;
+GC_finalization_proc my_old_fn;
+struct closure * my_old_cd;
+GC_finalization_proc *ofn;
+GC_PTR *ocd;
+{
+    if (0 != my_old_fn) {
+      if (my_old_fn != GC_debug_invoke_finalizer) {
+        GC_err_printf1("Debuggable object at 0x%lx had non-debug finalizer.\n",
+		       obj);
+        /* This should probably be fatal. */
+      } else {
+        if (ofn) *ofn = my_old_cd -> cl_fn;
+        if (ocd) *ocd = my_old_cd -> cl_data;
+      }
+    } else {
+      if (ofn) *ofn = 0;
+      if (ocd) *ocd = 0;
+    }
+}
 
 # ifdef __STDC__
     void GC_debug_register_finalizer(GC_PTR obj, GC_finalization_proc fn,
@@ -904,14 +926,21 @@ struct closure {
     GC_PTR *ocd;
 # endif
 {
+    GC_finalization_proc my_old_fn;
+    GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
     if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	    "GC_register_finalizer called with non-base-pointer 0x%lx\n",
 	    obj);
     }
-    GC_register_finalizer(base, GC_debug_invoke_finalizer,
-    			  GC_make_closure(fn,cd), ofn, ocd);
+    if (0 == fn) {
+      GC_register_finalizer(base, 0, 0, &my_old_fn, &my_old_cd);
+    } else {
+      GC_register_finalizer(base, GC_debug_invoke_finalizer,
+    			    GC_make_closure(fn,cd), &my_old_fn, &my_old_cd);
+    }
+    store_old(obj, my_old_fn, (struct closure *)my_old_cd, ofn, ocd);
 }
 
 # ifdef __STDC__
@@ -929,14 +958,22 @@ struct closure {
     GC_PTR *ocd;
 # endif
 {
+    GC_finalization_proc my_old_fn;
+    GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
     if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	  "GC_register_finalizer_no_order called with non-base-pointer 0x%lx\n",
 	  obj);
     }
-    GC_register_finalizer_no_order(base, GC_debug_invoke_finalizer,
-     			  	      GC_make_closure(fn,cd), ofn, ocd);
+    if (0 == fn) {
+      GC_register_finalizer_no_order(base, 0, 0, &my_old_fn, &my_old_cd);
+    } else {
+      GC_register_finalizer_no_order(base, GC_debug_invoke_finalizer,
+    			    	     GC_make_closure(fn,cd), &my_old_fn,
+				     &my_old_cd);
+    }
+    store_old(obj, my_old_fn, (struct closure *)my_old_cd, ofn, ocd);
  }
 
 # ifdef __STDC__
@@ -954,14 +991,22 @@ struct closure {
     GC_PTR *ocd;
 # endif
 {
+    GC_finalization_proc my_old_fn;
+    GC_PTR my_old_cd;
     ptr_t base = GC_base(obj);
     if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
 	    "GC_register_finalizer_ignore_self called with non-base-pointer 0x%lx\n",
 	    obj);
     }
-    GC_register_finalizer_ignore_self(base, GC_debug_invoke_finalizer,
-    			  	      GC_make_closure(fn,cd), ofn, ocd);
+    if (0 == fn) {
+      GC_register_finalizer_ignore_self(base, 0, 0, &my_old_fn, &my_old_cd);
+    } else {
+      GC_register_finalizer_ignore_self(base, GC_debug_invoke_finalizer,
+    			    	     GC_make_closure(fn,cd), &my_old_fn,
+				     &my_old_cd);
+    }
+    store_old(obj, my_old_fn, (struct closure *)my_old_cd, ofn, ocd);
 }
 
 #ifdef GC_ADD_CALLER

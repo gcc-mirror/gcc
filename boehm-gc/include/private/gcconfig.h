@@ -33,6 +33,11 @@
 #    define NETBSD
 # endif
 
+/* And one for OpenBSD: */
+# if defined(__OpenBSD__)
+#    define OPENBSD
+# endif
+
 /* Determine the machine type: */
 # if defined(sun) && defined(mc68000)
 #    define M68K
@@ -44,25 +49,23 @@
 #    define HP
 #    define mach_type_known
 # endif
-# if defined(__OpenBSD__) && defined(m68k)
+# if defined(OPENBSD) && defined(m68k)
 #    define M68K
-#    define OPENBSD
 #    define mach_type_known
 # endif
-# if defined(__OpenBSD__) && defined(__sparc__)
+# if defined(OPENBSD) && defined(__sparc__)
 #    define SPARC
-#    define OPENBSD
 #    define mach_type_known
 # endif
-# if defined(__NetBSD__) && defined(m68k)
+# if defined(NETBSD) && defined(m68k)
 #    define M68K
 #    define mach_type_known
 # endif
-# if defined(__NetBSD__) && defined(__powerpc__)
+# if defined(NETBSD) && defined(__powerpc__)
 #    define POWERPC
 #    define mach_type_known
 # endif
-# if defined(__NetBSD__) && defined(__arm32__)
+# if defined(NETBSD) && defined(__arm32__)
 #    define ARM32
 #    define mach_type_known
 # endif
@@ -161,6 +164,11 @@
 #   endif
 #   define mach_type_known
 # endif
+# if defined(__ia64) && defined(_HPUX_SOURCE)
+#   define IA64
+#   define HPUX
+#   define mach_type_known
+# endif
 # if defined(__BEOS__) && defined(_X86_)
 #    define I386
 #    define BEOS
@@ -196,7 +204,7 @@
 # endif
 # if defined(__alpha) || defined(__alpha__)
 #   define ALPHA
-#   if !defined(LINUX) && !defined(NETBSD)
+#   if !defined(LINUX) && !defined(NETBSD) && !defined(OPENBSD)
 #     define OSF1	/* a.k.a Digital Unix */
 #   endif
 #   define mach_type_known
@@ -386,7 +394,7 @@
                     /*		   RS6000     ==> IBM RS/6000 AIX3.X	*/
                     /*		   RT	      ==> IBM PC/RT		*/
                     /*		   HP_PA      ==> HP9000/700 & /800	*/
-                    /*				  HP/UX, LINUX			*/
+                    /*				  HP/UX, LINUX		*/
 		    /*		   SPARC      ==> SPARC	v7/v8/v9	*/
 		    /*			(SUNOS4, SUNOS5, LINUX,		*/
 		    /*			 DRSNX variants)		*/
@@ -398,8 +406,11 @@
 		    /* 			running Amdahl UTS4		*/
 		    /*			or a 390 running LINUX		*/
 		    /* 		   ARM32      ==> Intel StrongARM	*/
-		    /* 		   IA64	      ==> Intel IA64		*/
+		    /* 		   IA64	      ==> Intel IPF		*/
 		    /*				  (e.g. Itanium)	*/
+		    /*			(LINUX and HPUX)	        */
+		    /* 		   IA64_32    ==> IA64 w/32 bit ABI	*/
+		    /* 			(HPUX)				*/
 		    /*		   SH	      ==> Hitachi SuperH	*/
 		    /* 			(LINUX & MSWINCE)		*/
 
@@ -533,7 +544,7 @@
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define STACKBOTTOM ((ptr_t)0xf0000000)
-#       define MPROTECT_VDB
+/* #       define MPROTECT_VDB - Reported to not work  9/17/01 */
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
 #	     include <features.h>
@@ -891,7 +902,7 @@
 	  /* with 2GB physical memory will usually move the user	*/
 	  /* address space limit, and hence initial SP to 0x80000000.	*/
 #       endif
-#       if !defined(LINUX_THREADS) || !defined(REDIRECT_MALLOC)
+#       if !defined(GC_LINUX_THREADS) || !defined(REDIRECT_MALLOC)
 #	    define MPROTECT_VDB
 #	else
 	    /* We seem to get random errors in incremental mode,	*/
@@ -1008,6 +1019,9 @@
 #	define OS_TYPE "FREEBSD"
 #	define MPROTECT_VDB
 #	define FREEBSD_STACKBOTTOM
+#	ifdef __ELF__
+#	    define DYNAMIC_LOADING
+#	endif
 #   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
@@ -1164,7 +1178,6 @@
 
 # ifdef HP_PA
 #   define MACH_TYPE "HP_PA"
-#   define OS_TYPE "HPUX"
 #   ifdef __LP64__
 #     define CPP_WORDSZ 64
 #     define ALIGNMENT 8
@@ -1173,8 +1186,7 @@
 #     define ALIGNMENT 4
 #     define ALIGN_DOUBLE
 #   endif
-#   if !defined(GC_HPUX_THREADS) && !defined(HPUX_THREADS) \
-       && !defined(GC_LINUX_THREADS) && !defined(LINUX_THREADS)
+#   if !defined(GC_HPUX_THREADS) && !defined(GC_LINUX_THREADS)
 #     ifndef LINUX /* For now. */
 #       define MPROTECT_VDB
 #     endif
@@ -1189,6 +1201,7 @@
 #   endif
 #   define STACK_GROWS_UP
 #   ifdef HPUX
+#     define OS_TYPE "HPUX"
       extern int __data_start;
 #     define DATASTART ((ptr_t)(&__data_start))
 #     if 0
@@ -1240,6 +1253,19 @@
 #   	define CPP_WORDSZ 64
 #       define DYNAMIC_LOADING
 #   endif
+#   ifdef OPENBSD
+#	define OS_TYPE "OPENBSD"
+#	define HEURISTIC2
+#   	define CPP_WORDSZ 64
+#   	ifdef __ELF__	/* since OpenBSD/Alpha 2.9 */
+#	   define DATASTART GC_data_start
+#   	   define ELFCLASS32 32
+#   	   define ELFCLASS64 64
+#   	   define ELF_CLASS ELFCLASS64
+#       else		/* ECOFF, until OpenBSD/Alpha 2.7 */
+#   	   define DATASTART ((ptr_t) 0x140000000)
+#   	endif
+#   endif
 #   ifdef OSF1
 #	define OS_TYPE "OSF1"
 #   	define DATASTART ((ptr_t) 0x140000000)
@@ -1282,9 +1308,6 @@
 
 # ifdef IA64
 #   define MACH_TYPE "IA64"
-#   define ALIGN_DOUBLE
-	/* Requires 16 byte alignment for malloc */
-#   define ALIGNMENT 8
 #   define USE_GENERIC_PUSH_REGS
 	/* We need to get preserved registers in addition to register   */
 	/* windows.   That's easiest to do with setjmp.			*/
@@ -1294,11 +1317,47 @@
 	    /* setting mark bits.					*/
 #   endif
 #   ifdef HPUX
-	--> needs work
+#	ifdef _ILP32
+#	  define CPP_WORDSZ 32
+#         define ALIGN_DOUBLE
+	    /* Requires 8 byte alignment for malloc */
+#   	  define ALIGNMENT 4
+#       else
+#	  ifndef _LP64
+		---> unknown ABI
+#         endif
+#	  define CPP_WORDSZ 64
+#   	  define ALIGN_DOUBLE
+	    /* Requires 16 byte alignment for malloc */
+#         define ALIGNMENT 8
+#       endif
+#       define OS_TYPE "HPUX"	
+        extern int __data_start;
+#       define DATASTART ((ptr_t)(&__data_start))
+        /* Gustavo Rodriguez-Rivera suggested changing HEURISTIC2	*/
+        /* to this.  Note that the GC must be initialized before the	*/
+    	/* first putenv call.						*/
+	extern char ** environ;
+#       define STACKBOTTOM ((ptr_t)environ)
+#       define DYNAMIC_LOADING
+#       include <unistd.h>
+#       define GETPAGESIZE() sysconf(_SC_PAGE_SIZE)
+ 	/* The following was empirically determined, and is probably	*/
+	/* not very robust.						*/
+	/* Note that the backing store base seems to be at a nice 	*/
+	/* address minus one page.					*/
+#	define BACKING_STORE_DISPLACEMENT 0x1000000
+#	define BACKING_STORE_ALIGNMENT 0x1000
+#       define BACKING_STORE_BASE \
+	  (ptr_t)(((word)GC_stackbottom - BACKING_STORE_DISPLACEMENT - 1) \
+			& ~(BACKING_STORE_ALIGNMENT - 1))
 #   endif
 #   ifdef LINUX
+#   	define CPP_WORDSZ 64
+#   	define ALIGN_DOUBLE
+	  /* Requires 16 byte alignment for malloc */
+#   	define ALIGNMENT 8
 #       define OS_TYPE "LINUX"
-#       define CPP_WORDSZ 64
 	/* The following works on NUE and older kernels:	*/
 /* #       define STACKBOTTOM ((ptr_t) 0xa000000000000000l)	*/
 	/* This does not work on NUE:				*/
@@ -1579,57 +1638,33 @@
 	((word*)x)[1] = 0;
 # endif /* CLEAR_DOUBLE */
 
-/* Internally to the collector we test only the XXX_THREADS macros	*/
-/* not the GC_XXX_THREADS versions.  Here we make sure the latter	*/
-/* are treated as equivalent.						*/
-#if defined(GC_SOLARIS_THREADS) && !defined(_SOLARIS_THREADS)
-#   define _SOLARIS_THREADS
-#endif
-#if defined(GC_SOLARIS_THREADS) && !defined(_SOLARIS_PTHREADS)
-#   define _SOLARIS_PTHREADS
-#endif
-#if defined(GC_IRIX_THREADS) && !defined(IRIX_THREADS)
-#   define IRIX_THREADS
-#endif
-#if defined(GC_LINUX_THREADS) && !defined(LINUX_THREADS)
-#   define LINUX_THREADS
-#endif
-#if defined(GC_WIN32_THREADS) && !defined(WIN32_THREADS)
-#   define WIN32_THREADS
-#endif
-#if defined(GC_HPUX_THREADS) && !defined(HPUX_THREADS)
-#   define HPUX_THREADS
-#endif
-#if defined(GC_OSF1_THREADS) && !defined(OSF1_THREADS)
-#   define OSF1_THREADS
-#endif
+/* Internally we use GC_SOLARIS_THREADS to test for either old or pthreads. */
+# if defined(GC_SOLARIS_PTHREADS) && !defined(GC_SOLARIS_THREADS)
+#   define GC_SOLARIS_THREADS
+# endif
 
-/* Internally we use SOLARIS_THREADS to test for either old or pthreads. */
-# if defined(_SOLARIS_PTHREADS) && !defined(SOLARIS_THREADS)
-#   define SOLARIS_THREADS
-# endif
-# if defined(IRIX_THREADS) && !defined(IRIX5)
+# if defined(GC_IRIX_THREADS) && !defined(IRIX5)
 --> inconsistent configuration
 # endif
-# if defined(LINUX_THREADS) && !defined(LINUX)
+# if defined(GC_LINUX_THREADS) && !defined(LINUX)
 --> inconsistent configuration
 # endif
-# if defined(SOLARIS_THREADS) && !defined(SUNOS5)
+# if defined(GC_SOLARIS_THREADS) && !defined(SUNOS5)
 --> inconsistent configuration
 # endif
-# if defined(HPUX_THREADS) && !defined(HPUX)
+# if defined(GC_HPUX_THREADS) && !defined(HPUX)
 --> inconsistent configuration
 # endif
-# if defined(WIN32_THREADS) && !defined(MSWIN32)
-    /* Ideally CYGWIN32 should work, in addition to MSWIN32.  I suspect the necessary code	*/
-    /* is mostly there, but nobody has actually made sure the right combination of pieces is	*/
-    /* compiled in, etc.									*/
+# if defined(GC_WIN32_THREADS) && !defined(MSWIN32)
+    /* Ideally CYGWIN32 should work, in addition to MSWIN32.  I suspect	*/
+    /* the necessary code is mostly there, but nobody has actually made */
+    /* sure the right combination of pieces is compiled in, etc.	*/
 --> inconsistent configuration
 # endif
+
 # if defined(PCR) || defined(SRC_M3) || \
-	defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
-	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
-	defined(HPUX_THREADS) || defined(OSF1_THREADS)
+	defined(GC_SOLARIS_THREADS) || defined(GC_WIN32_THREADS) || \
+	defined(GC_PTHREADS)
 #   define THREADS
 # endif
 

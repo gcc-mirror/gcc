@@ -568,11 +568,11 @@ ptr_t cold_gc_frame;
      */
 #   if !defined(USE_GENERIC_PUSH_REGS)
 	GC_push_current_stack(cold_gc_frame);
-	/* IN the threads case, this only pushes collector frames.      */
+	/* In the threads case, this only pushes collector frames.      */
 	/* In the USE_GENERIC_PUSH_REGS case, this is done inside	*/
 	/* GC_push_regs, so that we catch callee-save registers saved	*/
 	/* inside the GC_push_regs frame.				*/
-	/* In the case of linux threads on Ia64, the hot section of	*/
+	/* In the case of linux threads on IA64, the hot section of	*/
 	/* the main stack is marked here, but the register stack	*/
 	/* backing store is handled in the threads-specific code.	*/
 #   endif

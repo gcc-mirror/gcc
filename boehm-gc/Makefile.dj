@@ -5,6 +5,8 @@
 # Primary targets:
 # gc.a - builds basic library
 # libgc.a - builds library for use with g++ "-fgc-keyword" extension
+#	    -fgc-keyword was never really available.  Historical
+#	    interest only.
 # c++ - adds C++ interface to library
 # cords - adds cords (heavyweight strings) to library
 # test - prints porting information, then builds basic version of gc.a,

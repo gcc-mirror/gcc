@@ -50,7 +50,20 @@
 #ifndef GC_ALLOC_H
 
 #include "gc.h"
-#include <stack>  // A more portable way to get stl_alloc.h .
+
+#if (__GNUC__ < 3)
+# include <stack>  // A more portable way to get stl_alloc.h .
+#else
+# include <bits/stl_alloc.h>
+# ifndef __STL_BEGIN_NAMESPACE
+# define __STL_BEGIN_NAMESPACE namespace std {
+# define __STL_END_NAMESPACE };
+# endif
+#ifndef __STL_USE_STD_ALLOCATORS
+#define __STL_USE_STD_ALLOCATORS
+#endif
+#endif
+
 
 #define GC_ALLOC_H
 
