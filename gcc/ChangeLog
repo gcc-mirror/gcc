@@ -1,3 +1,16 @@
+2004-10-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17657
+	* stmt.c (add_case_node): Add additional type argument.  Declare
+	as static to match prototype.  Convert the upper and lower bounds
+	to the specified index type.  Optimize away case ranges/values 
+	that are outside the index type's bounds.  Truncate case ranges
+	that span the index type's bounds.
+	(expand_case): Avoid unnessary computation and memory allocation
+	when index type is error_mark_node.  Pass index_type as required
+	by change to add_case_node API.  No need to convert case range
+	bounds to index_type, this is now done by add_case_node.
+
 2004-10-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_offset_p): Add prototype.

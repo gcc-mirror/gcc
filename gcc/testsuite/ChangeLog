@@ -1,3 +1,8 @@
+2004-10-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17657
+	* gcc.dg/switch-4.c: New test case.
+
 2004-10-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20041011-1.c: New test.
