@@ -1453,6 +1453,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		 5) if (...) x = b; if jumps are even more expensive.  */
 
 	      if (GET_MODE_CLASS (GET_MODE (temp1)) == MODE_INT
+		  /* We will be passing this as operand into expand_and.  No
+		     good if it's not valid as an operand.  */
+		  && general_operand (temp2, GET_MODE (temp2))
 		  && ((GET_CODE (temp3) == CONST_INT)
 		      /* Make the latter case look like
 			 x = x; if (...) x = 0;  */
