@@ -4922,9 +4922,12 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
   rtx set = single_set (insn);
   rtx temp;
 
-  /* Attempt to prove constantness of the values.  */
+  /* Attempt to prove constantness of the values.  Don't let simplity_rtx
+     undo the MULT canonicalization that we performed earlier.  */
   temp = simplify_rtx (add_val);
-  if (temp)
+  if (temp
+      && ! (GET_CODE (add_val) == MULT
+	    && GET_CODE (temp) == ASHIFT))
     add_val = temp;
 
   v->insn = insn;
@@ -6371,7 +6374,10 @@ express_from_1 (a, b, mult)
     }
   else if (CONSTANT_P (a))
     {
-      return simplify_gen_binary (MINUS, GET_MODE (b) != VOIDmode ? GET_MODE (b) : GET_MODE (a), b, a);
+      enum machine_mode mode_a = GET_MODE (a);
+      enum machine_mode mode_b = GET_MODE (b);
+      enum machine_mode mode = mode_b == VOIDmode ? mode_a : mode_b;
+      return simplify_gen_binary (MINUS, mode, b, a);
     }
   else if (GET_CODE (b) == PLUS)
     {

@@ -1,3 +1,18 @@
+2001-09-07  Richard Henderson  <rth@redhat.com>
+
+	* loop.c (record_giv): Avoid simplifying MULT to ASHIFT.
+	(express_from_1): Wrap lines.
+	* rtlanal.c (commutative_operand_precedence): Rename from
+	operand_preference; export.
+	* rtl.h: Declare it.
+	* simplify-rtx.c (simplify_gen_binary): Tidy +/- const_int handling.
+	(simplify_binary_operation): Invoke simplify_plus_minus on
+	(CONST (PLUS ...)) as well.
+	(struct simplify_plus_minus_op_data): New.
+	(simplify_plus_minus_op_data_cmp): New.
+	(simplify_plus_minus): Use them.  Avoid infinite recursion with
+	simplify_binary_operation wrt CONST.
+
 Fri Sep  7 11:52:30 2001   Kazu Hirata  <kazu@hxi.com>
 
 	* h8300-protos.h (general_operand_dst_push): Remove.
