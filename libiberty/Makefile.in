@@ -141,7 +141,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 memset.c mkstemps.c						\
 	objalloc.c obstack.c						\
 	partition.c							\
-	 pex-cygwin.c pex-djgpp.c pex-mpw.c pex-msdos.c pex-os2.c	\
+	 pex-djgpp.c pex-mpw.c pex-msdos.c pex-os2.c			\
 	 pex-unix.c pex-win32.c						\
          putenv.c							\
 	random.c regex.c rename.c rindex.c				\
@@ -184,7 +184,7 @@ CONFIGURED_OFILES = asprintf.o atexit.o					\
 	getcwd.o getpagesize.o						\
 	index.o insque.o						\
 	memchr.o memcmp.o memcpy.o memmove.o memset.o mkstemps.o	\
-	pex-cygwin.o pex-djgpp.o pex-mpw.o pex-msdos.o pex-os2.o	\
+	pex-djgpp.o pex-mpw.o pex-msdos.o pex-os2.o			\
 	 pex-unix.o pex-win32.o						\
 	 putenv.o							\
 	random.o rename.o rindex.o					\
@@ -455,7 +455,6 @@ objalloc.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/partition.h
-pex-cygwin.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 pex-djgpp.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 pex-mpw.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 pex-msdos.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
