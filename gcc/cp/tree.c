@@ -2680,3 +2680,36 @@ is_dummy_object (ob)
   return (TREE_CODE (ob) == NOP_EXPR
 	  && TREE_OPERAND (ob, 0) == error_mark_node);
 }
+
+/* Returns 1 iff type T is a POD type, as defined in [basic.types].  */
+
+int
+pod_type_p (t)
+     tree t;
+{
+  tree f;
+
+  while (TREE_CODE (t) == ARRAY_TYPE)
+    t = TREE_TYPE (t);
+
+  if (! IS_AGGR_TYPE (t))
+    return 1;
+
+  if (CLASSTYPE_NON_AGGREGATE (t)
+      || TYPE_HAS_COMPLEX_ASSIGN_REF (t)
+      || TYPE_HAS_DESTRUCTOR (t))
+    return 0;
+
+  for (f = TYPE_FIELDS (t); f; f = TREE_CHAIN (f))
+    {
+      if (TREE_CODE (f) != FIELD_DECL)
+	continue;
+
+      if (TREE_CODE (TREE_TYPE (f)) == REFERENCE_TYPE
+	  || TYPE_PTRMEMFUNC_P (TREE_TYPE (f))
+	  || TYPE_PTRMEM_P (TREE_TYPE (f)))
+	return 0;
+    }
+
+  return 1;
+}

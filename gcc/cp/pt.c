@@ -4786,6 +4786,8 @@ instantiate_class_template (type)
   type = finish_struct_1 (type, 0);
   CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
+  /* Clear this now so repo_template_used is happy.  */
+  TYPE_BEING_DEFINED (type) = 0;
   repo_template_used (type);
 
  end:

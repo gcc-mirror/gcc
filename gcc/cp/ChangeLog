@@ -1,3 +1,18 @@
+1998-11-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (struct cp_function): Add named_label_uses.
+	(push_cp_function_context): Save it.
+	(pop_cp_function_context): Restore it.
+	(define_label): Also complain about jumping into the scope of 
+	non-POD objects that don't have constructors.
+	* tree.c (pod_type_p): New fn.
+
+	* pt.c (instantiate_class_template): Clear TYPE_BEING_DEFINED sooner.
+	* rtti.c (synthesize_tinfo_fn): Call import_export_decl here.
+	(get_tinfo_fn): Not here.
+	* repo.c (repo_get_id): Abort if we get called for an incomplete
+	type.
+
 1998-11-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* except.c (expand_throw): Make sure first argument to
