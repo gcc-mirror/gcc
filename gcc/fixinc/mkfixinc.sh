@@ -45,6 +45,10 @@ case $machine in
 		fixincludes=fixinc.ptx
 		;;
 
+	i?86-*-msdosdjgpp* )
+		MAKE="${MAKE} -f ${srcdir}/Makefile.DOS srcdir=${srcdir}"
+		;;
+
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
@@ -62,7 +66,7 @@ case $machine in
 	i?86-*-win32 | \
 	i?86-*-pe | i?86-*-cygwin* | \
 	i?86-*-mingw32* | \
-	i?86-*-uwin* | i?86-*-msdosdjgpp* | \
+	i?86-*-uwin* | \
 	mips-sgi-irix5cross64 | \
 	powerpc-*-eabiaix* | \
 	powerpc-*-eabisim* | \
@@ -101,6 +105,7 @@ fi
 #  OK.  We gotta make the thing.
 #  make and install either the binary or the default script
 
-cmd="$MAKE SHELL=\"$SHELL\" CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\" install-bin"
+defs="SHELL=\"$SHELL\" CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\""
+cmd="$MAKE ${defs} install-bin"
 echo $cmd
 eval $cmd
