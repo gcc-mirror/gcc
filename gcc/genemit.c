@@ -587,13 +587,13 @@ gen_split (rtx split)
     {
       printf ("extern rtx gen_%s_%d (rtx, rtx *);\n",
 	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands)\n",
-	      name, insn_code_number);
+      printf ("rtx\ngen_%s_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+	      name, insn_code_number, unused);
     }
   else
     {
       printf ("extern rtx gen_split_%d (rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx *operands)\n", name, insn_code_number);
+      printf ("rtx\ngen_%s_%d (rtx *operands%s)\n", name, insn_code_number, unused);
     }
   printf ("{\n");
 
