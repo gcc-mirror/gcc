@@ -1653,38 +1653,35 @@ mathfn_built_in (tree type, enum built_in_function fn)
 static void
 expand_errno_check (tree exp, rtx target)
 {
-  rtx lab;
+  rtx lab = gen_label_rtx ();
 
-  if (flag_errno_math && HONOR_NANS (GET_MODE (target)))
-    {
-      lab = gen_label_rtx ();
-
-      /* Test the result; if it is NaN, set errno=EDOM because
-	 the argument was not in the domain.  */
-      emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
-			       0, lab);
+  /* Test the result; if it is NaN, set errno=EDOM because
+     the argument was not in the domain.  */
+  emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
+			   0, lab);
 
 #ifdef TARGET_EDOM
-      {
+  /* If this built-in doesn't throw an exception, set errno directly.  */
+  if (TREE_NOTHROW (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
+    {
 #ifdef GEN_ERRNO_RTX
-	rtx errno_rtx = GEN_ERRNO_RTX;
+      rtx errno_rtx = GEN_ERRNO_RTX;
 #else
-	rtx errno_rtx
+      rtx errno_rtx
 	  = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
 #endif
-
-	emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
-      }
-#else
-      /* We can't set errno=EDOM directly; let the library call do it.
-	 Pop the arguments right away in case the call gets deleted.  */
-      NO_DEFER_POP;
-      expand_call (exp, target, 0);
-      OK_DEFER_POP;
+      emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
+      emit_label (lab);
+      return;
+    }
 #endif
 
-      emit_label (lab);
-    }
+  /* We can't set errno=EDOM directly; let the library call do it.
+     Pop the arguments right away in case the call gets deleted.  */
+  NO_DEFER_POP;
+  expand_call (exp, target, 0);
+  OK_DEFER_POP;
+  emit_label (lab);
 }
 
 
@@ -1701,35 +1698,14 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   rtx op0, insns;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  enum machine_mode argmode;
+  enum machine_mode mode;
   bool errno_set = false;
+  tree arg;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
 
-  /* Stabilize and compute the argument.  */
-  if (TREE_CODE (TREE_VALUE (arglist)) != VAR_DECL
-      && TREE_CODE (TREE_VALUE (arglist)) != PARM_DECL)
-    {
-      exp = copy_node (exp);
-      TREE_OPERAND (exp, 1) = arglist;
-      /* Wrap the computation of the argument in a SAVE_EXPR.  That
-	 way, if we need to expand the argument again (as in the
-	 flag_errno_math case below where we cannot directly set
-	 errno), we will not perform side-effects more than once.
-	 Note that here we're mutating the original EXP as well as the
-	 copy; that's the right thing to do in case the original EXP
-	 is expanded later.  */
-      TREE_VALUE (arglist) = save_expr (TREE_VALUE (arglist));
-      arglist = copy_node (arglist);
-    }
-  op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
-
-  /* Make a suitable register to place result in.  */
-  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-
-  emit_queue ();
-  start_sequence ();
+  arg = TREE_VALUE (arglist);
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -1744,7 +1720,9 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
-      errno_set = true; builtin_optab = sqrt_optab; break;
+      errno_set = ! tree_expr_nonnegative_p (arg);
+      builtin_optab = sqrt_optab;
+      break;
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
@@ -1785,10 +1763,41 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
       abort ();
     }
 
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+  target = gen_reg_rtx (mode);
+
+  if (! flag_errno_math || ! HONOR_NANS (mode))
+    errno_set = false;
+
+  /* Stabilize and compute the argument.  */
+  if (errno_set)
+    switch (TREE_CODE (arg))
+      {
+      case VAR_DECL:
+      case PARM_DECL:
+      case SAVE_EXPR:
+      case REAL_CST:
+	break;
+
+      default:
+	/* Wrap the computation of the argument in a SAVE_EXPR, as we
+	   need to expand the argument again in expand_errno_check.  This
+	   way, we will not perform side-effects more the once.  */
+	arg = save_expr (arg);
+	arglist = build_tree_list (NULL_TREE, arg);
+	exp = build_function_call_expr (fndecl, arglist);
+	break;
+      }
+
+  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+  emit_queue ();
+  start_sequence ();
+
   /* Compute into TARGET.
      Set TARGET to wherever the result comes back.  */
-  argmode = TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist)));
-  target = expand_unop (argmode, builtin_optab, op0, target, 0);
+  target = expand_unop (mode, builtin_optab, op0, target, 0);
 
   /* If we were unable to expand via the builtin, stop the
      sequence (without outputting the insns) and return 0, causing
@@ -1824,8 +1833,8 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   rtx op0, op1, insns;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1;
-  enum machine_mode argmode;
+  tree arg0, arg1, temp;
+  enum machine_mode mode;
   bool errno_set = true;
   bool stable = true;
 
@@ -1834,37 +1843,6 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-
-  /* Stabilize the arguments.  */
-  if (TREE_CODE (arg0) != VAR_DECL && TREE_CODE (arg0) != PARM_DECL)
-    {
-      arg0 = save_expr (arg0);
-      TREE_VALUE (arglist) = arg0;
-      stable = false;
-    }
-  if (TREE_CODE (arg1) != VAR_DECL && TREE_CODE (arg1) != PARM_DECL)
-    {
-      arg1 = save_expr (arg1);
-      TREE_VALUE (TREE_CHAIN (arglist)) = arg1;
-      stable = false;
-    }
-
-  if (! stable)
-    {
-      exp = copy_node (exp);
-      arglist = tree_cons (NULL_TREE, arg0,
-			   build_tree_list (NULL_TREE, arg1));
-      TREE_OPERAND (exp, 1) = arglist;
-    }
-
-  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
-  op1 = expand_expr (arg1, 0, VOIDmode, 0);
-
-  /* Make a suitable register to place result in.  */
-  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-
-  emit_queue ();
-  start_sequence ();
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -1880,10 +1858,62 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
       abort ();
     }
 
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+  target = gen_reg_rtx (mode);
+
+  if (! flag_errno_math || ! HONOR_NANS (mode))
+    errno_set = false;
+
+  /* Stabilize the arguments.  */
+  if (errno_set)
+    {
+      switch (TREE_CODE (arg1))
+	{
+	case VAR_DECL:
+	case PARM_DECL:
+	case SAVE_EXPR:
+	case REAL_CST:
+	  temp = TREE_CHAIN (arglist);
+	  break;
+
+	default:
+	  stable = false;
+	  arg1 = save_expr (arg1);
+	  temp = build_tree_list (NULL_TREE, arg1);
+	  break;
+        }
+
+      switch (TREE_CODE (arg0))
+	{
+	case VAR_DECL:
+	case PARM_DECL:
+	case SAVE_EXPR:
+	case REAL_CST:
+	  if (! stable)
+	    arglist = build_tree_list (temp, arg0);
+	  break;
+
+	default:
+	  stable = false;
+	  arg0 = save_expr (arg0);
+	  arglist = build_tree_list (temp, arg0);
+	  break;
+	}
+
+      if (! stable)
+	exp = build_function_call_expr (fndecl, arglist);
+    }
+
+  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
+  op1 = expand_expr (arg1, 0, VOIDmode, 0);
+
+  emit_queue ();
+  start_sequence ();
+
   /* Compute into TARGET.
      Set TARGET to wherever the result comes back.  */
-  argmode = TYPE_MODE (TREE_TYPE (arg0));
-  target = expand_binop (argmode, builtin_optab, op0, op1,
+  target = expand_binop (mode, builtin_optab, op0, op1,
 			 target, 0, OPTAB_DIRECT);
 
   /* If we were unable to expand via the builtin, stop the

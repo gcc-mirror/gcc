@@ -1,3 +1,15 @@
+2003-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_errno_check): Assume that flag_errno_math
+	and HONOR_NANS have been tested before calling here.  Only try
+	to set errno ourselves if the decl can't throw an exception.
+	(expand_builtin_mathfn): Move the code to stabilize the arg
+	after the main switch, so that that its only done when needed.
+	BUILT_IN_SQRT{,F,L} doesn't set errno if its arg is nonnegative.
+	Don't modify the original expr when stabilizing the argument.
+	(expand_builtin_mathfn_2): Likewise, move the code to stabilize
+	the args after the main switch, and don't modify the orginal exp.
+
 2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
  
         * expr.c (const_vector_from_tree): Initialize remaining elements
