@@ -1,3 +1,8 @@
+2004-03-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* typeck.c (build_c_cast): Only look at TREE_CONSTANT_OVERFLOW
+	for INTEGER_CST.
+
 2004-03-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.c (pp_cxx_parameter_declaration_clause): Declare.
