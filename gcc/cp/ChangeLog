@@ -1,3 +1,7 @@
+Fri May 15 15:34:02 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+        * decl.c (duplicate_decls): Clean up, add DECL_DATA_AREA bits.
+
 Fri May 15 00:46:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_1): Use BINFO_SIZE.
