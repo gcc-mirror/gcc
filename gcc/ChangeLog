@@ -1,3 +1,13 @@
+2002-03-15  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md (movdf_internal2): Add two new move constraints.
+	Fix register preference on last change.
+	* config/mips/mips.c (mips_return_in_memory): New function.
+	* config/mips/mips.h (RETURN_IN_MEMORY): Use.
+	* config/mips/mips-protos.h: Declare.
+	* config/mips/abi64.h (RETURN_IN_MEMORY): Remove. Add to above.
+	* config/mips/elf64.h: Add #ifndef/#endif brackets around defaults.
+
 2002-03-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.md (andsi3) [TARGET_MIPS16]: Force operand 1 to
@@ -45,7 +55,7 @@
 	* config/arm/coff.h (JUMP_TABLES_IN_TEXT_SECTION): Likewise.
 	* arm.c (get_jump_table_size): If the table is not in the text
 	section, return zero.
-	
+
 2002-03-18  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/arm/arm.c (arm_gen_movstrqi): Use gen_lowpart instead
@@ -188,6 +198,7 @@ Sat Mar 16 12:57:28 CET 2002  Jan HUbicka  <jh@suse.cz>
 	(COMMAND_LINE_OPTIONS): Remove OPT_MD, OPT_MMD.
 	(cpp_handle_option): Update.
 
+>>>>>>> 1.13408
 2002-03-15  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Provide an
