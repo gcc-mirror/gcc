@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -70,7 +70,6 @@ AWK = @AWK@
 BASIC_FILE_CC = @BASIC_FILE_CC@
 BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
-CCODECVT_C = @CCODECVT_C@
 CCODECVT_CC = @CCODECVT_CC@
 CCODECVT_H = @CCODECVT_H@
 CCOLLATE_CC = @CCOLLATE_CC@
@@ -97,7 +96,6 @@ GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
-LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
@@ -127,6 +125,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
+glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
 glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
@@ -138,7 +137,6 @@ glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
-libio_la = @libio_la@
 libtool_VERSION = @libtool_VERSION@
 toplevel_srcdir = @toplevel_srcdir@
 

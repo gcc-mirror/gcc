@@ -218,8 +218,6 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   need_libmath=no
   enable_wchar_t=no
   #enable_debug=no
-  #need_libio=no
-  #need_wlibio=no
   #glibcpp_pch_comp=no
   #enable_cheaders=c
   #c_compatibility=no
@@ -1343,10 +1341,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
 
 dnl
-dnl Check for which I/O library to use:  libio, or something specific.
+dnl Check for which I/O library to use:  stdio, or something specific.
 dnl
 dnl GLIBCPP_ENABLE_CSTDIO
-dnl --enable-cstdio=libio sets config/io/c_io_libio.h and friends
 dnl
 dnl default is stdio
 dnl
@@ -1365,72 +1362,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
   dnl Check if a valid I/O package
   case x${enable_cstdio_flag} in
-    xlibio)
-      CSTDIO_H=config/io/c_io_libio.h
-      BASIC_FILE_H=config/io/basic_file_libio.h
-      BASIC_FILE_CC=config/io/basic_file_libio.cc
-      AC_MSG_RESULT(libio)
-
-      # see if we are on a system with libio native (ie, linux)
-      AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
-
-      # Need to check and see what version of glibc is being used. If
-      # it's not glibc-2.2 or higher, then we'll need to go ahead and
-      # compile most of libio for linux systems.
-      if test x$has_libio = x"yes"; then
-        case "$target" in
-          *-*-linux*)
-              AC_MSG_CHECKING([for glibc version >= 2.2])
-              AC_EGREP_CPP([ok], [
-            #include <features.h>
-              #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
-                    ok
-              #endif
-              ], glibc_satisfactory=yes, glibc_satisfactory=no)
-              AC_MSG_RESULT($glibc_satisfactory)
-            ;;
-        esac
-
-        # XXX at the moment, admit defeat and force the recompilation
-        # XXX of glibc even on glibc-2.2 systems, because libio is not synched.
-        glibc_satisfactory=no
-
-        if test x$glibc_satisfactory = x"yes"; then
-           need_libio=no
-           need_wlibio=no
-        else
-           need_libio=yes
-           # bkoz XXX need to add checks to enable this
-           # pme XXX here's a first pass at such a check
-           if test x$enable_c_mbchar != xno; then
-              need_wlibio=yes
-           else
-              need_wlibio=no
-           fi
-        fi
-
-      else
-         # Using libio, but <libio.h> doesn't exist on the target system. . .
-         need_libio=yes
-         # bkoz XXX need to add checks to enable this
-         # pme XXX here's a first pass at such a check
-         if test x$enable_c_mbchar != xno; then
-             need_wlibio=yes
-         else
-             need_wlibio=no
-         fi
-      fi
-      ;;
     xstdio | x | xno | xnone | xyes)
       # default
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
       AC_MSG_RESULT(stdio)
-
-      # We're not using stdio.
-      need_libio=no
-      need_wlibio=no
       ;;
     *)
       echo "$enable_cstdio is an unknown io package" 1>&2
@@ -1440,22 +1377,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_SUBST(CSTDIO_H)
   AC_SUBST(BASIC_FILE_H)
   AC_SUBST(BASIC_FILE_CC)
-
-  # 2000-08-04 bkoz hack
-  CCODECVT_C=config/io/c_io_libio_codecvt.c
-  AC_SUBST(CCODECVT_C)
-  # 2000-08-04 bkoz hack
-
-  AM_CONDITIONAL(GLIBCPP_BUILD_LIBIO,
-                 test "$need_libio" = yes || test "$need_wlibio" = yes)
-  AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
-  AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
-  if test "$need_libio" = yes || test "$need_wlibio" = yes; then
-    libio_la=../libio/libio.la
-  else
-    libio_la=
-  fi
-  AC_SUBST(libio_la)
 ])
 
 
@@ -1871,7 +1792,6 @@ dnl
 dnl TOPLEVEL_INCLUDES
 dnl LIBMATH_INCLUDES
 dnl LIBSUPCXX_INCLUDES
-dnl LIBIO_INCLUDES
 dnl
 dnl GLIBCPP_EXPORT_INCLUDES
 AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
@@ -1886,11 +1806,6 @@ AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
   LIBMATH_INCLUDES='-I$(top_srcdir)/libmath'
 
   LIBSUPCXX_INCLUDES='-I$(top_srcdir)/libsupc++'
-
-  if test x"$need_libio" = xyes; then
-    LIBIO_INCLUDES='-I$(top_builddir)/libio -I$(top_srcdir)/libio'
-    AC_SUBST(LIBIO_INCLUDES)
-  fi
 
   # Now, export this to all the little Makefiles....
   AC_SUBST(GLIBCPP_INCLUDES)

@@ -1,5 +1,23 @@
 2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Simplify.
+	* aclocal.m4: Regenerate.
+	* Makefile.am (SUBDIRS): Remove libio.
+	* Makefile.in: Regenerate.
+	* configure.in: Same.
+	* configure: Regenerate.
+	* config/io/basic_file_libio.cc: Remove.
+	* config/io/basic_file_libio.h: Remove.	
+	* config/io/c_io_libio_codecvt.c: Remove.
+	* config/io/c_io_libio.h: Remove.	
+	* libio/*: Remove.
+	* src/Makefile.am: Same.
+	* src/Makefile.in: Regenerate.
+	* docs/html/configopts.html: Edits.	
+	* docs/html/explanations.html: Edits.
+	
+2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/stl_alloc.h (__debug_alloc): Move out.
 	(__malloc_alloc): Same.
 	(__pool_alloc): Same.

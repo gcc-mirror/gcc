@@ -25,7 +25,7 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
-SUBDIRS = include libio libmath libsupc++ src po testsuite 
+SUBDIRS = include libmath libsupc++ src po testsuite 
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
