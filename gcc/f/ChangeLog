@@ -1,3 +1,8 @@
+2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_stabilize_aggregate_) case RTL_EXPR:
+	Abort.
+
 2000-11-10  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in (f/fini.o, f/proj-h.o): Remove pointless sed

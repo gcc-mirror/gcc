@@ -1082,11 +1082,7 @@ ffecom_stabilize_aggregate_ (tree ref)
       break;
 
     case RTL_EXPR:
-      result = build1 (INDIRECT_REF, TREE_TYPE (ref),
-		       save_expr (build1 (ADDR_EXPR,
-					  build_pointer_type (TREE_TYPE (ref)),
-					  ref)));
-      break;
+      abort ();
 
 
     default:
