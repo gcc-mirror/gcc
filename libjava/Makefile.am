@@ -93,7 +93,9 @@ libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS)
-libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) -release $(VERSION)
+libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
+## The mysterious backslash is consumed by make.
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,

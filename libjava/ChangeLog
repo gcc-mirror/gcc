@@ -1,5 +1,10 @@
 1999-05-07  Tom Tromey  <tromey@cygnus.com>
 
+	* libtool-version: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj_la_LDFLAGS): Use -version-info, not
+	-release.
+
 	* mauve-libgcj: Don't omit Utf8Encoding or StringTest.
 	Comment out FieldPosition, ParsePosition, and SimpleDateFormat
 	again (oops).
