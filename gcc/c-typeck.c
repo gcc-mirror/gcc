@@ -6211,7 +6211,7 @@ c_expand_return (tree retval)
 	      while (TREE_CODE_CLASS (TREE_CODE (inner)) == 'r')
 		inner = TREE_OPERAND (inner, 0);
 
-	      if (TREE_CODE (inner) == VAR_DECL
+	      if (DECL_P (inner)
 		  && ! DECL_EXTERNAL (inner)
 		  && ! TREE_STATIC (inner)
 		  && DECL_CONTEXT (inner) == current_function_decl)
