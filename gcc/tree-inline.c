@@ -122,6 +122,8 @@ static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
 static tree initialize_inlined_parameters PARAMS ((inline_data *, tree, tree, tree));
 static void remap_block PARAMS ((tree *, tree, inline_data *));
 static tree add_stmt_to_compound PARAMS ((tree, tree, tree));
+static tree find_alloca_call_1 PARAMS ((tree *, int *, void *));
+static tree find_alloca_call PARAMS ((tree));
 #endif /* INLINER_FOR_JAVA */
 
 /* The approximate number of instructions per statement.  This number
@@ -857,6 +859,27 @@ tree_inlinable_function_p (fn)
   return inlinable_function_p (fn, NULL);
 }
 
+/* if *TP is possibly call to alloca, return nonzero.  */
+static tree
+find_alloca_call_1 (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  if (alloca_call_p (*tp))
+    return *tp;
+  return NULL;
+}
+
+/* Return subexpression representing possible alloca call,
+   if any.  */
+static tree
+find_alloca_call (exp)
+     tree exp;
+{
+  return walk_tree (&exp, find_alloca_call_1, NULL, NULL);
+}
+
 /* Returns nonzero if FN is a function that can be inlined into the
    inlining context ID_.  If ID_ is NULL, check whether the function
    can be inlined at all.  */
@@ -896,6 +919,13 @@ inlinable_function_p (fn, id)
      allowance for extern inline functions, though.  */
   else if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
 	   && currfn_insns > MAX_INLINE_INSNS_SINGLE)
+    ;
+  /* Refuse to inline alloca call unless user explicitly forced so as this may
+     change program's memory overhead drastically when the function using alloca
+     is called in loop.  In GCC present in SPEC2000 inlining into schedule_block
+     cause it to require 2GB of ram instead of 256MB.  */
+  else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL
+	   && find_alloca_call (DECL_SAVED_TREE (fn)))
     ;
   /* All is well.  We can inline this function.  Traditionally, GCC
      has refused to inline functions using alloca, or functions whose
