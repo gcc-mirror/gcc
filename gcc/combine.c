@@ -1845,10 +1845,15 @@ try_combine (i3, i2, i1)
 		     || GET_CODE (new_i3_dest) == SUBREG)
 		new_i3_dest = XEXP (new_i3_dest, 0);
 
+	      while (GET_CODE (new_i2_dest) == ZERO_EXTRACT
+		     || GET_CODE (new_i2_dest) == STRICT_LOW_PART
+		     || GET_CODE (new_i2_dest) == SUBREG)
+		new_i2_dest = XEXP (new_i2_dest, 0);
+
 	      if (GET_CODE (new_i3_dest) == REG
 		  && GET_CODE (new_i2_dest) == REG
 		  && REGNO (new_i3_dest) == REGNO (new_i2_dest))
-		reg_n_sets[REGNO (SET_DEST (i2set))]++;
+		reg_n_sets[REGNO (new_i2_dest)]++;
 	    }
 	}
 
