@@ -1,3 +1,7 @@
+2004-05-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/cris/cris.h: Revert my "fix comment typos" patch.
+
 2004-05-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (TUNE_MACC_CHAINS): Fix comment.
