@@ -1,3 +1,8 @@
+Wed Sep 22 16:10:21 1999  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* install.texi (Configurations): Remove pyramid. Add fr30, i686,
+	i786, mn10200, mn10300, pdp11, v850.
+
 Thu Sep 23 07:37:13 1999  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* libgcc2.c (num_digits): Add prototype with 
