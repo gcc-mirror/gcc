@@ -1,5 +1,11 @@
 2004-11-10  Paul Brook  <paul@codesourcery.com>
 
+	PR fortran/18375
+	* trans-expr.c (gfc_trans_subarray_assign): Free shape before ss.
+	* trans-io.c (transfer_array_component): Ditto.
+
+2004-11-10  Paul Brook  <paul@codesourcery.com>
+
 	* invoke.texi: Fix typo.
 
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
