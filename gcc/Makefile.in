@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 88, 90-96, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-97, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -1262,7 +1262,8 @@ print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) flags.h function.h
 fold-const.o : fold-const.c $(CONFIG_H) $(TREE_H) flags.h 
 toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) bytecode.h bc-emit.h \
-   flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
+   flags.h input.h insn-attr.h insn-codes.h insn-config.h recog.h xcoffout.h \
+   defaults.h output.h \
    $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
