@@ -3424,7 +3424,7 @@ find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
                   /* match info but no matcher is NOT a match */
                   if (matcher) 
                     {
-                      ret = (*matcher)(eh_info, tab[pos].match_info, table);
+                      ret = (*matcher)(eh_info, &tab[pos], table);
                       if (ret)
                         {
                           ((__eh_info *)eh_info)->coerced_value = ret;
