@@ -1,3 +1,11 @@
+1999-02-16  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+	* decl.c (pushdecl): Remove dead code.
+
+1999-02-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_objects): Fix code I missed in previous change.
+
 1999-02-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Return NULL_TREE instead of error_mark_node.
