@@ -1,4 +1,4 @@
-/* ET-trees datastructure implementation.
+/* ET-trees data structure implementation.
    Contributed by Pavel Nejedly
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 

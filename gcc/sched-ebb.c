@@ -290,7 +290,7 @@ fix_basic_block_boundaries (bb, last, head, tail)
 	         it by splitting the edge and repositioning the block.
 	         This is somewhat hackish, but at least avoid cut&paste 
 
-	         Safter sollution can be to bring the code into sequence,
+	         A safer solution can be to bring the code into sequence,
 	         do the split and re-emit it back in case this will ever
 	         trigger problem.  */
 	      f = bb->prev_bb->succ;
@@ -410,7 +410,7 @@ earliest_block_with_similiar_load (last_block, load_insn)
   return earliest_block;
 }
 
-/* The following function adds dependecies between jumps and risky
+/* The following function adds dependencies between jumps and risky
    insns in given ebb.  */
 
 static void

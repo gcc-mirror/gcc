@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    optimizations on innermost loops (with single exception) because
    the impact on performance is greatest here, and we want to avoid
    unnecessary code size growth.  The gain is caused by greater sequentiality
-   of code, better code to optimize for futher passes and in some cases
+   of code, better code to optimize for further passes and in some cases
    by fewer testings of exit conditions.  The main problem is code growth,
    that impacts performance negatively due to effect of caches.
 

@@ -1157,7 +1157,7 @@ can_move_up (basic_block bb, rtx insn, int n_insns)
    MIN_COST is the lower bound on the cost of the DEF after migration.
    If we migrate DEF so that its cost falls below MIN_COST,
    then we do not attempt to migrate further.  The idea is that
-   we migrate defintions in a priority order based on their cost,
+   we migrate definitions in a priority order based on their cost,
    when the cost of this definition falls below MIN_COST, then
    there is another definition with cost == MIN_COST which now
    has a higher priority than this definition.

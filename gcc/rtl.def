@@ -528,7 +528,7 @@ DEF_RTL_EXPR(DEFINE_RESERVATION, "define_reservation", "ss", 'x')
        first regular expression *and* the reservation described by the
        second regular expression *and* etc.
 
-       4. "*" is used for convinience and simply means sequence in
+       4. "*" is used for convenience and simply means sequence in
        which the regular expression are repeated NUMBER times with
        cycle advancing (see ",").
 

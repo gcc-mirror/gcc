@@ -1828,7 +1828,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
      we may want to adjust the cost of that register class to -1.
 
      Avoid the adjustment if the source does not die to avoid stressing of
-     register allocator by preferrencing two coliding registers into single
+     register allocator by preferrencing two colliding registers into single
      class.
 
      Also avoid the adjustment if a copy between registers of the class

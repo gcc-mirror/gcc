@@ -1340,7 +1340,7 @@ rtl_split_edge (edge edge_in)
 
   make_single_succ_edge (bb, edge_in->dest, EDGE_FALLTHRU);
 
-  /* For non-fallthry edges, we must adjust the predecessor's
+  /* For non-fallthru edges, we must adjust the predecessor's
      jump instruction to target our new block.  */
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {

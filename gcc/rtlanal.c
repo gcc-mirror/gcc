@@ -3693,7 +3693,7 @@ can_hoist_insn_p (insn, val, live)
 	      break;
 	    case USE:
 	      /* We need to fix callers to really ensure availability
-	         of all values inisn uses, but for now it is safe to prohibit
+	         of all values insn uses, but for now it is safe to prohibit
 		 hoisting of any insn having such a hidden uses.  */
 	      return false;
 	      break;

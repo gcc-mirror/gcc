@@ -681,7 +681,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
     case NE:
     case EQ:
       /* It is always safe to reverse EQ and NE, even for the floating
-	 point.  Similary the unsigned comparisons are never used for
+	 point.  Similarly the unsigned comparisons are never used for
 	 floating point so we can reverse them in the default way.  */
       return reverse_condition (code);
     case ORDERED:

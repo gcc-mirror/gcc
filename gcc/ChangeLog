@@ -1,3 +1,37 @@
+2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bt-load.c: Fix comment typos.
+	* c-incpath.c: Likewise.
+	* cfg.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfgloop.h: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* diagnostic.h: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* et-forest.c: Likewise.
+	* et-forest.h: Likewise.
+	* expr.c: Likewise.
+	* gcse.c: Likewise.
+	* genattr.c: Likewise.
+	* jump.c: Likewise.
+	* langhooks.h: Likewise.
+	* local-alloc.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* loop-unswitch.c: Likewise.
+	* ra-build.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* rtl.def: Likewise.
+	* rtlanal.c: Likewise.
+	* sched-ebb.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* ssa.c: Likewise.
+	* tracer.c: Likewise.
+	* tree.c: Likewise.
+
 2003-07-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppcharset.c: Use the correct return type for the fallback iconv

@@ -5080,7 +5080,7 @@ build_common_tree_nodes_2 (short_double)
     tree t;
     BUILD_VA_LIST_TYPE (t);
 
-    /* Many back-ends define record types without seting TYPE_NAME.
+    /* Many back-ends define record types without setting TYPE_NAME.
        If we copied the record type here, we'd keep the original
        record type without a name.  This breaks name mangling.  So,
        don't copy record types and let c_common_nodes_and_builtins()

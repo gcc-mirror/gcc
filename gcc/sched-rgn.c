@@ -142,7 +142,7 @@ static int *rgn_bb_table;
 /* Topological order of blocks in the region (if b2 is reachable from
    b1, block_to_bb[b2] > block_to_bb[b1]).  Note: A basic block is
    always referred to by either block or b, while its topological
-   order name (in the region) is refered to by bb.  */
+   order name (in the region) is referred to by bb.  */
 static int *block_to_bb;
 
 /* The number of the region containing a block.  */

@@ -208,7 +208,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_path *head,
 
 	  if (!tmp)
 	    {
-	      /* Dupicate of something earlier in the same chain?  */
+	      /* Duplicate of something earlier in the same chain?  */
 	      reason = REASON_DUP;
 	      for (tmp = head; tmp != cur; tmp = tmp->next)
 		if (INO_T_EQ (cur->ino, tmp->ino) && cur->dev == tmp->dev)

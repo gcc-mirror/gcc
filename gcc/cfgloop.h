@@ -266,7 +266,7 @@ extern int flow_loop_scan (struct loops *, struct loop *, int);
 extern void flow_loop_free (struct loop *);
 void mark_irreducible_loops (struct loops *);
 
-/* Loop datastructure manipulation/querying.  */
+/* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
 extern bool flow_loop_outside_edge_p (const struct loop *, edge);

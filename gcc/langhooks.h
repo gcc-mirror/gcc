@@ -211,7 +211,7 @@ struct lang_hooks
 
   /* Handle the switch CODE, which has real type enum opt_code from
      options.h.  If the switch takes an argument, it is passed in ARG
-     which points to permanent storage.  The handler is resonsible for
+     which points to permanent storage.  The handler is responsible for
      checking whether ARG is NULL, which indicates that no argument
      was in fact supplied.  For -f and -W switches, VALUE is 1 or 0
      for the positive and negative forms respectively.

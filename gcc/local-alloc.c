@@ -922,7 +922,7 @@ update_equiv_regs ()
 	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
 		  && GET_CODE (src) == MEM))
 	    {
-	      /* This might be seting a SUBREG of a pseudo, a pseudo that is
+	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
 	      note_stores (set, no_equiv, NULL);
 	      continue;
@@ -1035,7 +1035,7 @@ update_equiv_regs ()
      registers only used that once.  If so, see if we can replace the
      reference with the equivalent from.  If we can, delete the
      initializing reference and this register will go away.  If we
-     can't replace the reference, and the initialzing reference is
+     can't replace the reference, and the initializing reference is
      within the same loop (or in an inner loop), then move the register
      initialization just before the use, so that they are in the same
      basic block.  */

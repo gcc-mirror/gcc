@@ -316,7 +316,7 @@ tail_duplicate ()
   fibheap_delete (heap);
 }
 
-/* Connect the superblocks into linear seuqence.  At the moment we attempt to keep
+/* Connect the superblocks into linear sequence.  At the moment we attempt to keep
    the original order as much as possible, but the algorithm may be made smarter
    later if needed.  BB reordering pass should void most of the benefits of such
    change though.  */

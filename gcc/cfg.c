@@ -20,7 +20,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* This file contains low level functions to manipulate the CFG and
-   analyze it.  All other modules should not transform the datastructure
+   analyze it.  All other modules should not transform the data structure
    directly and use abstraction instead.  The file is supposed to be
    ordered bottom-up and should not contain any code dependent on a
    particular intermediate language (RTL or trees).
