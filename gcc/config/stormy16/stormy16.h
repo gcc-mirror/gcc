@@ -3894,8 +3894,8 @@ do {									\
   {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT }},	\
   {"equality_operator", {EQ, NE }},			\
   {"inequality_operator", {GE, GT, LE, LT, GEU, GTU, LEU, LTU }}, \
-  {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }},
-
+  {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }}, \
+  {"nonimmediate_nonstack_operand", {REG, MEM}},
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
