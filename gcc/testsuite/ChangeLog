@@ -1,3 +1,7 @@
+2003-08-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/overload/operator1.C: New test.
+
 2003-07-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/init/enum2.C: New.

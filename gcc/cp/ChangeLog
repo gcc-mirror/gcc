@@ -1,3 +1,9 @@
+2003-08-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11713
+	* search.c (setup_class_bindings): Handle conversion operators
+	specially.
+
 2003-07-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/10796
