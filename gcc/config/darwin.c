@@ -1001,6 +1001,9 @@ darwin_encode_section_info (decl)
 {
   char code = '\0';
   int defined = 0;
+  rtx sym_ref;
+  char *orig_str, *new_str;
+  size_t len, new_len;
 
   if ((TREE_CODE (decl) == FUNCTION_DECL
        || TREE_CODE (decl) == VAR_DECL)
@@ -1014,30 +1017,38 @@ darwin_encode_section_info (decl)
   else if (TREE_CODE (decl) == VAR_DECL)
     code = (defined ? 'D' : 'd');
 
-  if (code != '\0')
+  if (code == '\0')
+    return;
+
+  sym_ref = XEXP (DECL_RTL (decl), 0);
+  orig_str = XSTR (sym_ref, 0);
+  len = strlen (orig_str) + 1;
+
+  if (orig_str[0] == '!')
     {
-      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-
-      if (*(XSTR (sym_ref, 0)) == '!')
-	{
-	  (XSTR(sym_ref, 0))[1] = code;
-	  update_non_lazy_ptrs (XSTR (sym_ref, 0));
-	  return;
-	}
-
-      {
-	size_t len = strlen (XSTR (sym_ref, 0));
-	size_t newlen = len + 4;
-	char *str = alloca (newlen);
-
-	str[0] = '!';
-	str[1] = code;
-	str[2] = '_';
-	str[3] = '_';
-	memcpy (str + 4, XSTR (sym_ref, 0), len + 1);
-
-	XSTR (sym_ref, 0) = ggc_alloc_string (str, newlen);
-      }
+      /* Already encoded; see if we need to change it.  */
+      if (code == orig_str[1])
+	return;
+      /* Yes, tweak a copy of the name and put it in a new string.  */
+      new_str = alloca (len);
+      memcpy (new_str, orig_str, len);
+      new_str[1] = code;
+      XSTR (sym_ref, 0) = ggc_alloc_string (new_str, len);
+      /* The non-lazy pointer list may have captured references to the
+	 old encoded name, change them.  */
+      update_non_lazy_ptrs (XSTR (sym_ref, 0));
+    }
+  else
+    {
+      /* Add the encoding.  */
+      new_len = len + 4;
+      new_str = alloca (new_len);
+      new_str[0] = '!';
+      new_str[1] = code;
+      new_str[2] = '_';
+      new_str[3] = '_';
+      memcpy (new_str + 4, orig_str, len);
+      XSTR (sym_ref, 0) = ggc_alloc_string (new_str, new_len);
     }
 }
 
