@@ -5581,11 +5581,17 @@ fold_rtx (x, insn)
 	  /* If second operand is a register equivalent to a negative
 	     CONST_INT, see if we can find a register equivalent to the
 	     positive constant.  Make a MINUS if so.  Don't do this for
-	     a negative constant since we might then alternate between
+	     a non-negative constant since we might then alternate between
 	     chosing positive and negative constants.  Having the positive
-	     constant previously-used is the more common case.  */
-	  if (const_arg1 && GET_CODE (const_arg1) == CONST_INT
-	      && INTVAL (const_arg1) < 0 && GET_CODE (folded_arg1) == REG)
+	     constant previously-used is the more common case.  Be sure
+	     the resulting constant is non-negative; if const_arg1 were
+	     the smallest negative number this would overflow: depending
+	     on the mode, this would either just be the same value (and
+	     hence not save anything) or be incorrect.  */
+	  if (const_arg1 != 0 && GET_CODE (const_arg1) == CONST_INT
+	      && INTVAL (const_arg1) < 0
+	      && - INTVAL (const_arg1) >= 0
+	      && GET_CODE (folded_arg1) == REG)
 	    {
 	      rtx new_const = GEN_INT (- INTVAL (const_arg1));
 	      struct table_elt *p
