@@ -59,7 +59,7 @@ extern enum demangling_styles
   arm_demangling = DMGL_ARM,
   hp_demangling = DMGL_HP,
   edg_demangling = DMGL_EDG,
-  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI,
+  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI
 } current_demangling_style;
 
 /* Define string names for the various demangling styles. */

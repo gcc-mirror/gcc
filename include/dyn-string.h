@@ -58,7 +58,7 @@ extern dyn_string_t dyn_string_append   PARAMS ((dyn_string_t, dyn_string_t));
 extern dyn_string_t dyn_string_append_cstr   
                                         PARAMS ((dyn_string_t, const char *));
 extern dyn_string_t dyn_string_append_char
-                                        PARAMS ((dyn_string_t, char));
+                                        PARAMS ((dyn_string_t, int));
 extern void dyn_string_substring        PARAMS ((dyn_string_t, 
 						 dyn_string_t, int, int));
 extern int dyn_string_eq                PARAMS ((dyn_string_t, dyn_string_t));

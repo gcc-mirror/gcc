@@ -1,5 +1,28 @@
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in (ac_libiberty_warn_cflags): Add -pedantic.
+	
+	* choose-temp.c (try, choose_temp_base, make_temp_file): Constify.
+
+	* cp-demangle.c (demangle_char): Change parameter from char to int.
+	(demangle_expression, demangle_expr_primary): Remove extra
+	semi-colon in prototype.
+
+	* dyn-string.c (dyn_string_append_char): Change parameter from
+	char to int.
+
+	* memcmp.c (memcmp): Constify.
+
+	* mkstemps.c (gcc_uint64_t): Mark GNUC `long long' case with
+	__extension__.
+
+	* partition.c (elem_compare): Prototype.  Don't cast away
+	const-ness.
+
+	* setenv.c (setenv): Use braces to avoid ambiguous `else'.
+	
+2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (cp-demangle.o): Depend on $(INCDIR)/demangle.h.
 
 	* cp-demangle.c: Include demangle.h.

@@ -713,7 +713,7 @@ demangling_delete (dm)
    structure.  */
 
 static status_t demangle_char
-  PARAMS ((demangling_t, char));
+  PARAMS ((demangling_t, int));
 static status_t demangle_mangled_name 
   PARAMS ((demangling_t));
 static status_t demangle_encoding
@@ -765,11 +765,11 @@ static status_t demangle_literal
 static status_t demangle_template_arg
   PARAMS ((demangling_t));
 static status_t demangle_expression
-  PARAMS ((demangling_t));;
+  PARAMS ((demangling_t));
 static status_t demangle_scope_expression
   PARAMS ((demangling_t));
 static status_t demangle_expr_primary
-  PARAMS ((demangling_t));;
+  PARAMS ((demangling_t));
 static status_t demangle_substitution
   PARAMS ((demangling_t, int *, int *));
 static status_t demangle_local_name
@@ -789,7 +789,7 @@ static status_t cp_demangle
 static status_t
 demangle_char (dm, c)
      demangling_t dm;
-     char c;
+     int c;
 {
   static char *error_message = NULL;
 

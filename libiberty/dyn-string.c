@@ -275,7 +275,7 @@ dyn_string_append_cstr (ds, s)
 dyn_string_t 
 dyn_string_append_char (ds, c)
      dyn_string_t ds;
-     char c;
+     int c;
 {
   /* Make room for the extra character.  */
   dyn_string_resize (ds, ds->length + 1);
