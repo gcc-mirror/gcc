@@ -1961,8 +1961,8 @@ static const char *const rotate_two[3][3] =
     }
 };
 
-static enum shift_alg get_shift_alg PARAMS ((enum attr_cpu, enum shift_type,
-					     enum machine_mode, int,
+static enum shift_alg get_shift_alg PARAMS ((enum shift_type,
+					     enum shift_mode, int,
 					     const char **, const char **,
 					     int *));
 
@@ -1980,47 +1980,23 @@ static enum shift_alg get_shift_alg PARAMS ((enum attr_cpu, enum shift_type,
    1,2,3,4 will be inlined (1,2 for SI).  */
 
 static enum shift_alg
-get_shift_alg (cpu, shift_type, mode, count, assembler_p,
+get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	       assembler2_p, cc_valid_p)
-     enum attr_cpu cpu;
      enum shift_type shift_type;
-     enum machine_mode mode;
+     enum shift_mode shift_mode;
      int count;
      const char **assembler_p;
      const char **assembler2_p;
      int *cc_valid_p;
 {
-  enum shift_mode shift_mode;
-
-  /* We don't handle negative shifts or shifts greater than the word size,
-     they should have been handled already.  */
-
-  if (count < 0 || (unsigned int) count > GET_MODE_BITSIZE (mode))
-    abort ();
-
-  switch (mode)
-    {
-    case QImode:
-      shift_mode = QIshift;
-      break;
-    case HImode:
-      shift_mode = HIshift;
-      break;
-    case SImode:
-      shift_mode = SIshift;
-      break;
-    default:
-      abort ();
-    }
-
   /* Assume either SHIFT_LOOP or SHIFT_INLINE.
      It is up to the caller to know that looping clobbers cc.  */
-  *assembler_p = shift_one[cpu][shift_type][shift_mode].assembler;
+  *assembler_p = shift_one[cpu_type][shift_type][shift_mode].assembler;
   if (TARGET_H8300S)
     *assembler2_p = shift_two[shift_type][shift_mode].assembler;
   else
     *assembler2_p = NULL;
-  *cc_valid_p = shift_one[cpu][shift_type][shift_mode].cc_valid;
+  *cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
 
   /* Now look for cases we want to optimize.  */
 
@@ -2050,7 +2026,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	    return SHIFT_LOOP;
 
 	  /* Other shifts by 5, 6, or 7 bits use SHIFT_ROT_AND.  */
-	  *assembler_p = rotate_one[cpu][shift_type][shift_mode];
+	  *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
 	  if (TARGET_H8300S)
 	    *assembler2_p = rotate_two[shift_type][shift_mode];
 	  *cc_valid_p = 0;
@@ -2239,7 +2215,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	    }
 	  else if (shift_type != SHIFT_ASHIFTRT)
 	    {
-	      *assembler_p = rotate_one[cpu][shift_type][shift_mode];
+	      *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
 	      if (TARGET_H8300S)
 	        *assembler2_p = rotate_two[shift_type][shift_mode];
 	      else
@@ -2428,7 +2404,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	    }
 	  else
 	    {
-	      *assembler_p = rotate_one[cpu][shift_type][shift_mode];
+	      *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
 	      if (TARGET_H8300S)
 		*assembler2_p = rotate_two[shift_type][shift_mode];
 	      else
@@ -2461,7 +2437,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 		}
 	      else
 		{
-		  *assembler_p = rotate_one[cpu][shift_type][shift_mode];
+		  *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
 		  if (TARGET_H8300S)
 		    *assembler2_p = rotate_two[shift_type][shift_mode];
 		  else
@@ -2537,7 +2513,7 @@ emit_a_shift (insn, operands)
       fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
 
       /* Get the assembler code to do one shift.  */
-      get_shift_alg (cpu_type, shift_type, mode, 1, &assembler,
+      get_shift_alg (shift_type, shift_mode, 1, &assembler,
 		     &assembler2, &cc_valid);
 
       fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
@@ -2562,7 +2538,7 @@ emit_a_shift (insn, operands)
       else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
 	n = GET_MODE_BITSIZE (mode);
 
-      alg = get_shift_alg (cpu_type, shift_type, mode, n, &assembler,
+      alg = get_shift_alg (shift_type, shift_mode, n, &assembler,
 			   &assembler2, &cc_valid);
 
       switch (alg)
