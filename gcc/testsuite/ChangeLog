@@ -1,3 +1,7 @@
+2002-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20020307-2.c: New test.
+
 Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 
 	* g77.f-torture/compile/20020307-1.f: New test.
