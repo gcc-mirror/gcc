@@ -226,14 +226,6 @@ static const struct processor_costs m6812_cost = {
   /* divSI */
   COSTS_N_INSNS (100)
 };
-
-/* Machine specific options */
-
-const char *m68hc11_regparm_string;
-const char *m68hc11_reg_alloc_order;
-const char *m68hc11_soft_reg_count;
-
-static int nb_soft_regs;
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -249,6 +241,9 @@ static int nb_soft_regs;
 #define TARGET_ASM_FILE_START m68hc11_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  m68hc11_encode_section_info
@@ -302,13 +297,7 @@ m68hc11_override_options (void)
   /* Configure for a 68hc11 processor.  */
   if (TARGET_M6811)
     {
-      /* If gcc was built for a 68hc12, invalidate that because
-         a -m68hc11 option was specified on the command line.  */
-      if (TARGET_DEFAULT != MASK_M6811)
-        target_flags &= ~TARGET_DEFAULT;
-
-      if (!TARGET_M6812)
-        target_flags &= ~(TARGET_AUTO_INC_DEC | TARGET_MIN_MAX);
+      target_flags &= ~(TARGET_AUTO_INC_DEC | TARGET_MIN_MAX);
       m68hc11_cost = &m6811_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 256;
@@ -321,8 +310,8 @@ m68hc11_override_options (void)
       m68hc11_tmp_regs_class = D_REGS;
       m68hc11_addr_mode = ADDR_OFFSET;
       m68hc11_mov_addr_mode = 0;
-      if (m68hc11_soft_reg_count == 0 && !TARGET_M6812)
-	m68hc11_soft_reg_count = "4";
+      if (m68hc11_soft_reg_count < 0)
+	m68hc11_soft_reg_count = 4;
     }
 
   /* Configure for a 68hc12 processor.  */
@@ -344,10 +333,9 @@ m68hc11_override_options (void)
         | (TARGET_AUTO_INC_DEC ? ADDR_INCDEC : 0);
       m68hc11_mov_addr_mode = ADDR_OFFSET | ADDR_CONST
         | (TARGET_AUTO_INC_DEC ? ADDR_INCDEC : 0);
-      target_flags &= ~MASK_M6811;
       target_flags |= MASK_NO_DIRECT_MODE;
-      if (m68hc11_soft_reg_count == 0)
-	m68hc11_soft_reg_count = "0";
+      if (m68hc11_soft_reg_count < 0)
+	m68hc11_soft_reg_count = 0;
 
       if (TARGET_LONG_CALLS)
         current_function_far = 1;
@@ -360,15 +348,11 @@ void
 m68hc11_conditional_register_usage (void)
 {
   int i;
-  int cnt = atoi (m68hc11_soft_reg_count);
 
-  if (cnt < 0)
-    cnt = 0;
-  if (cnt > SOFT_REG_LAST - SOFT_REG_FIRST)
-    cnt = SOFT_REG_LAST - SOFT_REG_FIRST;
+  if (m68hc11_soft_reg_count > SOFT_REG_LAST - SOFT_REG_FIRST)
+    m68hc11_soft_reg_count = SOFT_REG_LAST - SOFT_REG_FIRST;
 
-  nb_soft_regs = cnt;
-  for (i = SOFT_REG_FIRST + cnt; i < SOFT_REG_LAST; i++)
+  for (i = SOFT_REG_FIRST + m68hc11_soft_reg_count; i < SOFT_REG_LAST; i++)
     {
       fixed_regs[i] = 1;
       call_used_regs[i] = 1;
@@ -419,10 +403,11 @@ hard_regno_mode_ok (int regno, enum machine_mode mode)
   switch (GET_MODE_SIZE (mode))
     {
     case 8:
-      return S_REGNO_P (regno) && nb_soft_regs >= 4;
+      return S_REGNO_P (regno) && m68hc11_soft_reg_count >= 4;
 
     case 4:
-      return X_REGNO_P (regno) || (S_REGNO_P (regno) && nb_soft_regs >= 2);
+      return (X_REGNO_P (regno)
+	      || (S_REGNO_P (regno) && m68hc11_soft_reg_count >= 2));
 
     case 2:
       return G_REGNO_P (regno);
