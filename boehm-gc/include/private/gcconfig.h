@@ -722,8 +722,7 @@
 #       define ALIGNMENT 8
 #       define CPP_WORDSZ 64
 #     else
-#       define ALIGNMENT 4	/* Guess.  Can someone verify?	*/
-				/* This was 2, but that didn't sound right. */
+#       define ALIGNMENT 4
 #     endif
 #     define OS_TYPE "LINUX"
       /* HEURISTIC1 has been reliably reported to fail for a 32-bit	*/
