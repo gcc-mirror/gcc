@@ -791,12 +791,6 @@ hppa_legitimize_address (x, oldx, mode)
       if (GET_CODE (reg2) != REG)
         reg2 = force_reg (Pmode, force_operand (reg2, 0));
 
-      if (INTVAL (XEXP (XEXP (x, 0), 1)) != GET_MODE_SIZE (mode))
-	{
-	  reg2 = force_reg (Pmode, gen_rtx (MULT, Pmode, reg2, GEN_INT (val)));
-	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, reg1, reg2));
-	}
-	
       return force_reg (Pmode, gen_rtx (PLUS, Pmode,
 					gen_rtx (MULT, Pmode,
 						 reg2, GEN_INT (val)),
