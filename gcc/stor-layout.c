@@ -450,20 +450,26 @@ layout_decl (tree decl, unsigned int known_align)
 	}
       else if (DECL_PACKED (decl) && DECL_USER_ALIGN (decl))
 	/* Don't touch DECL_ALIGN.  For other packed fields, go ahead and
-	   round up; we'll reduce it again below.  */;
+	   round up; we'll reduce it again below.  We want packing to
+	   supercede USER_ALIGN inherited from the type, but defer to
+	   alignment explicitly specified on the field decl.  */;
       else
-	do_type_align (type, decl);
+	{
+	  do_type_align (type, decl);
 
-      /* If the field is of variable size, we can't misalign it since we
-	 have no way to make a temporary to align the result.  But this
-	 isn't an issue if the decl is not addressable.  Likewise if it
-	 is of unknown size.  */
-      if (DECL_PACKED (decl)
-	  && !DECL_USER_ALIGN (decl)
-	  && (DECL_NONADDRESSABLE_P (decl)
-	      || DECL_SIZE_UNIT (decl) == 0
-	      || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+	  /* If the field is of variable size, we can't misalign it since we
+	     have no way to make a temporary to align the result.  But this
+	     isn't an issue if the decl is not addressable.  Likewise if it
+	     is of unknown size.
+
+	     Note that do_type_align may set DECL_USER_ALIGN, so we don't
+	     want to check it again here.  */
+	  if (DECL_PACKED (decl)
+	      && (DECL_NONADDRESSABLE_P (decl)
+		  || DECL_SIZE_UNIT (decl) == 0
+		  || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
+	    DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+	}
 
       /* Should this be controlled by DECL_USER_ALIGN, too?  */
       if (maximum_field_alignment != 0)
