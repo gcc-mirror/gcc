@@ -809,7 +809,9 @@ struct lang_type
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 14;
+      unsigned dummy : 6;
+      
+      unsigned char align;
     } type_flags;
 
   int vsize;
@@ -821,9 +823,6 @@ struct lang_type
   union tree_node *tags;
 
   union tree_node *search_slot;
-
-  unsigned char align;
-  /* Room for another three unsigned chars.  */
 
   union tree_node *size;
 
@@ -999,7 +998,7 @@ struct lang_type
 /* These are the size, mode and alignment of the type without its
    virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
-#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
+#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.align)
 
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
