@@ -5,6 +5,18 @@
 
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14360
+	* parser.c (cp_parser_postfix_expression): Do not perform Koenig
+	lookup if ordinary name-lookup finds a non-function.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
+	PR c++/14361
+	* parser.c (cp_parser_late_parsing_default_args): Check that there
+	are no extra tokens after the end of the default-argument
+	expression.
+	
+2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/14324
 	* lex.c (retrofit_lang_decl): Treat entities with no linkage as
 	having C++ linkage for name-mangling purposes.

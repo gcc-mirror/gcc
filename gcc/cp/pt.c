@@ -8361,10 +8361,12 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	call_args = RECUR (TREE_OPERAND (t, 1));
-	  
+
+	/* We do not perform argument-dependent lookup if normal
+	   lookup finds a non-function, in accordance with the
+	   expected resolution of DR 218.  */
 	if (koenig_p
 	    && (is_overloaded_fn (function)
-		|| DECL_P (function)
 		|| TREE_CODE (function) == IDENTIFIER_NODE))
 	  function = perform_koenig_lookup (function, call_args);
 
