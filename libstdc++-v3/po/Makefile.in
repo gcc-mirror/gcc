@@ -164,9 +164,7 @@ LOCALE_OUT = @glibcpp_MOFILES@
 MSGFMT = msgfmt
 
 # Necessary files.
-DISTFILES = \
-	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot \
-	$(LOCALE_IN) 
+DISTFILES =  	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot 	$(LOCALE_IN) 
 
 
 # Specify what gets cleaned up on a 'make clean'

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.8 2001/08/28 06:19:33 bkoz Exp $
+## $Id: Makefile.am,v 1.9 2001/08/29 00:32:49 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -332,7 +332,7 @@ stamp-${target_alias}:
 stamp-target: ${target_headers} ${target_builddir}
 	@cd ${target_builddir} ;\
 	if [ ! -f stamp-target ]; then \
-	  @LN_S@ $? . ;\
+	  @LN_S@ ${target_headers} . ;\
 	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h ;\
