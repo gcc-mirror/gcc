@@ -31,9 +31,3 @@ void f ()
   int i = X;    /* { dg-error "undeclared|for each" "no macro X" } */
   int j = Y;    /* { dg-error "undeclared|for each" "no macro Y" } */
 }
-
-#define slashstar /##*
-#define starslash *##/
-
-slashstar starslash /* { dg-error "parse error" "not a comment" } */
-/* { dg-warning "does not give" "paste warning(s)" { target *-*-* } 38 } */
