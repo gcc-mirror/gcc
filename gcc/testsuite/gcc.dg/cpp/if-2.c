@@ -5,8 +5,12 @@
 #error a,1,0x12 /* { dg-bogus "#error" "basic charconst recognition" } */
 #endif
 
-#if 'a' != L'a' || L'\xfeed' != 0xfeed
-#error L'a',0xfeed /* { dg-bogus "#error" "wide charconst recognition" } */
+#if 'a' != L'a'
+#error L'a'	/* { dg-bogus "error" "wide charconst recognition 1" } */
+#endif
+
+#if L'\xfeed' != 0xfeed
+#error 0xfeed	/* { dg-bogus "error" "wide charconst recognition 2" } */
 #endif
 
 #if 'abcd' /* { dg-warning "multi-character character constant" "multi-character charconst" } */

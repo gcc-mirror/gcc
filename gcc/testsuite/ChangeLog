@@ -1,3 +1,7 @@
+2000-12-11  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/cpp/if-2.c: Separate tests so that which failed is obvious.
+
 2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-miss-2.c: New test.
