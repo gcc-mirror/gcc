@@ -1926,9 +1926,10 @@ mkdeps.o: mkdeps.c $(CONFIG_H) system.h mkdeps.h
 
 # The traditional mode preprocessor, a separate program for ease of
 # maintenance.  Some code is shared with the ISO-C cpp.
-tradcpp0$(exeext): tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBDEPS)
+tradcpp0$(exeext): tradcpp.o tradcif.o cppdefault.o version.o intl.o \
+        mkdeps.h $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o tradcpp0$(exeext) \
-	tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBS)
+	tradcpp.o tradcif.o mkdeps.o cppdefault.o version.o intl.o $(LIBS)
 
 tradcpp.o: tradcpp.c $(CONFIG_H) system.h version.h cppdefault.h tradcpp.h
 tradcif.o: $(srcdir)/tradcif.c $(CONFIG_H) system.h defaults.h tradcpp.h
