@@ -1,3 +1,7 @@
+2001-08-14  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_limits.h: Fix thinko.
+
 2001-08-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am: Consolidate target rules. Don't clean stamp
