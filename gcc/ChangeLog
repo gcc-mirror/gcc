@@ -1,6 +1,8 @@
-2002-05-14  Release Manager
+2002-05-08  Jason Merrill  <jason@redhat.com>
 
-	* GCC 3.1 Released.
+	PR c++/6381
+	* dwarf2out.c (rtl_for_decl_location): Only expand INTEGER_CST and
+	REAL_CST.
 
 2002-05-14  Release Manager
 

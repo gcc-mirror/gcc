@@ -8941,21 +8941,18 @@ rtl_for_decl_location (decl)
 		  == strlen (TREE_STRING_POINTER (init)) + 1))
 	    rtl = gen_rtx_CONST_STRING (VOIDmode, TREE_STRING_POINTER (init));
 	}
-
-#if 0
-      /* We mustn't actually emit anything here, as we might not get a
-         chance to emit any symbols we refer to.  For the release, don't
-         try to get this right.  */
-      if (rtl == NULL)
+      /* If the initializer is something that we know will expand into an
+	 immediate RTL constant, expand it now.  Expanding anything else
+	 tends to produce unresolved symbols; see debug/5770 and c++/6381.  */
+      else if (TREE_CODE (DECL_INITIAL (decl)) == INTEGER_CST
+	       || TREE_CODE (DECL_INITIAL (decl)) == REAL_CST)
 	{
 	  rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
 			     EXPAND_INITIALIZER);
-	  /* If expand_expr returned a MEM, we cannot use it, since
-	     it won't be output, leading to unresolved symbol.  */
+	  /* If expand_expr returns a MEM, it wasn't immediate.  */
 	  if (rtl && GET_CODE (rtl) == MEM)
-	    rtl = NULL;
+	    abort ();
 	}
-#endif
     }
 
 #ifdef ASM_SIMPLIFY_DWARF_ADDR
