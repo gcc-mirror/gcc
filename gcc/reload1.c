@@ -614,8 +614,7 @@ reload (first, global, dumpfile)
     {
       ep->can_eliminate = ep->can_eliminate_previous
 	= (CAN_ELIMINATE (ep->from, ep->to)
-	   && (ep->from != HARD_FRAME_POINTER_REGNUM 
-	       || ! frame_pointer_needed));
+	   && ! (ep->to == STACK_POINTER_REGNUM && frame_pointer_needed));
     }
 #else
   reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
@@ -703,10 +702,12 @@ reload (first, global, dumpfile)
   /* Spill any hard regs that we know we can't eliminate.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (! ep->can_eliminate)
-      {
-	spill_hard_reg (ep->from, global, dumpfile, 1);
-	regs_ever_live[ep->from] = 1;
-      }
+      spill_hard_reg (ep->from, global, dumpfile, 1);
+
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+  if (frame_pointer_needed)
+    spill_hard_reg (HARD_FRAME_POINTER_REGNUM, global, dumpfile, 1);
+#endif
 
   if (global)
     for (i = 0; i < N_REG_CLASSES; i++)
@@ -760,6 +761,7 @@ reload (first, global, dumpfile)
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
       int starting_frame_size = get_frame_size ();
+      int previous_frame_pointer_needed = frame_pointer_needed;
       static char *reg_class_names[] = REG_CLASS_NAMES;
 
       something_changed = 0;
@@ -1504,11 +1506,20 @@ reload (first, global, dumpfile)
 	    {
 	      ep->can_eliminate_previous = 0;
 	      spill_hard_reg (ep->from, global, dumpfile, 1);
-	      regs_ever_live[ep->from] = 1;
 	      something_changed = 1;
 	      num_eliminable--;
 	    }
 	}
+
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+      /* If we didn't need a frame pointer last time, but we do now, spill
+	 the hard frame pointer.  */
+      if (frame_pointer_needed && ! previous_frame_pointer_needed)
+	{
+	  spill_hard_reg (HARD_FRAME_POINTER_REGNUM, global, dumpfile, 1);
+	  something_changed = 1;
+	}
+#endif
 
       /* If all needs are met, we win.  */
 
@@ -3354,6 +3365,9 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
   register int i;
 
   SET_HARD_REG_BIT (forbidden_regs, regno);
+
+  if (cant_eliminate)
+    regs_ever_live[regno] = 1;
 
   /* Spill every pseudo reg that was allocated to this reg
      or to something that overlaps this reg.  */
