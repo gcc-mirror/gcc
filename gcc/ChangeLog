@@ -1,3 +1,13 @@
+2000-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (select_dominance_cc_mode): Handle new way that combine
+	canonicalizes conditional compares.
+	(arm_select_cc_mode): Likewise.
+	* arm.md: Garbage collect some dead code.
+ 	(cmp_and, cmp_ior): New patterns.
+	(splitter for conditional move with inverted false): Use cond_exec
+	and handle unordered comparisons.
+
 Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_force_to_memory, ix86_free_from_memory): New.
