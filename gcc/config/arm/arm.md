@@ -5229,51 +5229,97 @@
 
 ;; Load multiple with write-back
 
-(define_insn "*ldmsi_postinc"
+(define_insn "*ldmsi_postinc4"
   [(match_parallel 0 "load_multiple_operation"
     [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (match_operand:SI 3 "const_int_operand" "n")))
+		   (const_int 16)))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (match_dup 2)))
      (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (match_dup 2)))])]
-  "TARGET_ARM && (INTVAL (operands[3])  == 4 * (XVECLEN (operands[0], 0) - 1))"
-  "*
-  {
-    rtx ops[3];
-    int count = XVECLEN (operands[0], 0);
+	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))
+     (set (match_operand:SI 5 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 2) (const_int 8))))
+     (set (match_operand:SI 6 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 2) (const_int 12))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 5"
+  "ldm%?ia\\t%1!, {%3, %4, %5, %6}"
+  [(set_attr "type" "load")
+   (set_attr "predicable" "yes")]
+)
 
-    ops[0] = XEXP (SET_SRC (XVECEXP (operands[0], 0, 0)), 0);
-    ops[1] = SET_DEST (XVECEXP (operands[0], 0, 1));
-    ops[2] = SET_DEST (XVECEXP (operands[0], 0, count - 1));
+(define_insn "*ldmsi_postinc3"
+  [(match_parallel 0 "load_multiple_operation"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (const_int 12)))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (match_dup 2)))
+     (set (match_operand:SI 4 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))
+     (set (match_operand:SI 5 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 2) (const_int 8))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 4"
+  "ldm%?ia\\t%1!, {%3, %4, %5}"
+  [(set_attr "type" "load")
+   (set_attr "predicable" "yes")]
+)
 
-    output_asm_insn (\"ldm%?ia\\t%0!, {%1-%2}\\t%@ load multiple\", ops);
-    return \"\";
-  }
-  "
+(define_insn "*ldmsi_postinc2"
+  [(match_parallel 0 "load_multiple_operation"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (const_int 8)))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (match_dup 2)))
+     (set (match_operand:SI 4 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 3"
+  "ldm%?ia\\t%1!, {%3, %4}"
   [(set_attr "type" "load")
    (set_attr "predicable" "yes")]
 )
 
 ;; Ordinary load multiple
 
-(define_insn "*ldmsi"
+(define_insn "*ldmsi4"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "arm_hard_register_operand" "")
-	  (mem:SI (match_operand:SI 2 "s_register_operand" "r")))])]
-  "TARGET_ARM"
-  "*
-  {
-    rtx ops[3];
-    int count = XVECLEN (operands[0], 0);
+    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
+	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))
+     (set (match_operand:SI 4 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 8))))
+     (set (match_operand:SI 5 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 12))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 4"
+  "ldm%?ia\\t%1, {%2, %3, %4, %5}"
+  [(set_attr "type" "load")
+   (set_attr "predicable" "yes")]
+)
 
-    ops[0] = XEXP (SET_SRC (XVECEXP (operands[0], 0, 0)), 0);
-    ops[1] = SET_DEST (XVECEXP (operands[0], 0, 0));
-    ops[2] = SET_DEST (XVECEXP (operands[0], 0, count - 1));
+(define_insn "*ldmsi3"
+  [(match_parallel 0 "load_multiple_operation"
+    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
+	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))
+     (set (match_operand:SI 4 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 8))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 3"
+  "ldm%?ia\\t%1, {%2, %3, %4}"
+  [(set_attr "type" "load")
+   (set_attr "predicable" "yes")]
+)
 
-    output_asm_insn (\"ldm%?ia\\t%0, {%1-%2}\\t%@ load multiple\", ops);
-    return \"\";
-  }
-  "
+(define_insn "*ldmsi2"
+  [(match_parallel 0 "load_multiple_operation"
+    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
+	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
+     (set (match_operand:SI 3 "arm_hard_register_operand" "")
+	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "ldm%?ia\\t%1, {%2, %3}"
   [(set_attr "type" "load")
    (set_attr "predicable" "yes")]
 )
@@ -5305,63 +5351,99 @@
 
 ;; Store multiple with write-back
 
-(define_insn "*stmsi_postinc"
+(define_insn "*stmsi_postinc4"
   [(match_parallel 0 "store_multiple_operation"
     [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (match_operand:SI 3 "const_int_operand" "n")))
+		   (const_int 16)))
      (set (mem:SI (match_dup 2))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
-  "TARGET_ARM && (INTVAL (operands[3]) == 4 * (XVECLEN (operands[0], 0) - 1))"
-  "*
-  {
-    rtx ops[3];
-    int count = XVECLEN (operands[0], 0);
-
-    ops[0] = XEXP (SET_SRC (XVECEXP (operands[0], 0, 0)), 0);
-    ops[1] = SET_SRC (XVECEXP (operands[0], 0, 1));
-    ops[2] = SET_SRC (XVECEXP (operands[0], 0, count - 1));
-
-    output_asm_insn (\"stm%?ia\\t%0!, {%1-%2}\\t%@ str multiple\", ops);
-    return \"\";
-  }
-  "
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
+	  (match_operand:SI 5 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 12)))
+	  (match_operand:SI 6 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 5"
+  "stm%?ia\\t%1!, {%3, %4, %5, %6}"
   [(set_attr "predicable" "yes")
-   (set (attr "type")
-        (cond [(eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 3))
-	  	   (const_string "store2")
-	       (eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 4))
-		   (const_string "store3")]
-	       (const_string "store4")))]
+   (set_attr "type" "store4")]
+)
+
+(define_insn "*stmsi_postinc3"
+  [(match_parallel 0 "store_multiple_operation"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (const_int 12)))
+     (set (mem:SI (match_dup 2))
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
+	  (match_operand:SI 5 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 4"
+  "stm%?ia\\t%1!, {%3, %4, %5}"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store3")]
+)
+
+(define_insn "*stmsi_postinc2"
+  [(match_parallel 0 "store_multiple_operation"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (const_int 8)))
+     (set (mem:SI (match_dup 2))
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 3"
+  "stm%?ia\\t%1!, {%3, %4}"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store2")]
 )
 
 ;; Ordinary store multiple
 
-(define_insn "*stmsi"
+(define_insn "*stmsi4"
   [(match_parallel 0 "store_multiple_operation"
     [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
-	  (match_operand:SI 2 "arm_hard_register_operand" ""))])]
-  "TARGET_ARM"
-  "*
-  {
-    rtx ops[3];
-    int count = XVECLEN (operands[0], 0);
-
-    ops[0] = XEXP (SET_DEST (XVECEXP (operands[0], 0, 0)), 0);
-    ops[1] = SET_SRC (XVECEXP (operands[0], 0, 0));
-    ops[2] = SET_SRC (XVECEXP (operands[0], 0, count - 1));
-
-    output_asm_insn (\"stm%?ia\\t%0, {%1-%2}\\t%@ str multiple\", ops);
-    return \"\";
-  }
-  "
+	  (match_operand:SI 2 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 8)))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 12)))
+	  (match_operand:SI 5 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 4"
+  "stm%?ia\\t%1, {%2, %3, %4, %5}"
   [(set_attr "predicable" "yes")
-   (set (attr "type")
-        (cond [(eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 3))
-		   (const_string "store2")
-	       (eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 4))
-		   (const_string "store3")]
-	       (const_string "store4")))]
+   (set_attr "type" "store4")]
+)
+
+(define_insn "*stmsi3"
+  [(match_parallel 0 "store_multiple_operation"
+    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
+	  (match_operand:SI 2 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 8)))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 3"
+  "stm%?ia\\t%1, {%2, %3, %4}"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store3")]
+)
+
+(define_insn "*stmsi2"
+  [(match_parallel 0 "store_multiple_operation"
+    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
+	  (match_operand:SI 2 "arm_hard_register_operand" ""))
+     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
+	  (match_operand:SI 3 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "stm%?ia\\t%1, {%2, %3}"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store2")]
 )
 
 ;; Move a block of memory if it is word aligned and MORE than 2 words long.
@@ -5393,7 +5475,7 @@
   "
 )
 
-;; Block-move insns
+;; Thumb block-move insns
 
 (define_insn "movmem12b"
   [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
