@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
-%{msvr4:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
+%{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
 %{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
@@ -47,6 +47,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mkeep-coff:,-keep-coff}\
 %{mexternal-legend:,-external}\
 %{mocs-frame-position:,-ocs}}"
+
+/* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
+   Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
+   -traditional, or restricting include files to one specific source
+   target, specify full DG/UX features.  */
+#undef	CPP_SPEC
+#define	CPP_SPEC "%{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
+		  %{!m88000:%{!m88110:%{m88100:-D__m88100__}}} \
+		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}} \
+		  %{!msvr4:-D_M88KBCS_TARGET} %{msvr4:-D_DGUX_TARGET}"
 
 /* Linker and library spec's.
    -msvr3 is the default if -msvr4 is not specified. */
