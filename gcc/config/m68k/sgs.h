@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for m68k targets using
    assemblers derived from AT&T "SGS" releases.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1996 Free Software Foundation, Inc.
    Written by Fred Fish (fnf@cygnus.com)
 
 This file is part of GNU CC.
@@ -419,10 +419,10 @@ do {								\
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
 { if (switch_table_difference_label_flag)		\
     asm_fprintf (FILE, "\t%s %LLD%d,%LL%d-%LLI%d-2.b\n",\
-		 SET_ASM_OP, (NUM), (NUM), (NUM))	\
+		 SET_ASM_OP, (NUM), (NUM), (NUM));	\
   switch_table_difference_label_flag = 0; }
 
-int switch_table_difference_label_flag;
+extern int switch_table_difference_label_flag;
 
 /* This is how to output an element of a case-vector that is relative.  */
 
