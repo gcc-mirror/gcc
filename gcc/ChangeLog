@@ -1,3 +1,13 @@
+2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	PR other/3782
+	* toplev.c (process_options): If flag_detailed_statistics is set,
+	then set time_report as well.
+
+	PR c/8828
+	* jump.c (never_reached_warning): Don't fall through BARRRIER
+	insns.  Update comments to reflect what the function really does.
+
 2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/invoke.texi (ggc-min-expand, ggc-min-heapsize): Update
@@ -383,9 +393,9 @@ Tue Feb  4 21:49:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_autoinc): New function.
 	(regclass): Move initialization of forbidden_inc_dec_class from
- 	here...
+	here...
 	(init_regs): to here.  Avoids reinitialization for each function,
- 	saving compilation time.
+	saving compilation time.
 
 2003-02-04  Phil Edwards  <pme@gcc.gnu.org>
 
