@@ -63,6 +63,7 @@ INSTALL = install -c
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
 SYMLINK = ln -s
+MAKEINFO = makeinfo
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -1247,14 +1248,14 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 doc: $(srcdir)/cpp.info $(srcdir)/gcc.info
 
 $(srcdir)/cpp.info: cpp.texi
-	makeinfo `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
+	$(MAKEINFO) `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
 
 #$(srcdir)/gplus.info: gplus.texi
-#	makeinfo `echo $(srcdir)/gplus.texi | sed 's,^\./,,'`
+#	$(MAKEINFO) `echo $(srcdir)/gplus.texi | sed 's,^\./,,'`
 
 $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
-	makeinfo `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
+	$(MAKEINFO) `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
 
 # This works with GNU Make's default rule.
 $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
@@ -1264,7 +1265,7 @@ $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
 $(srcdir)/cpp.dvi: cpp.texi
 
 $(srcdir)/INSTALL: install1.texi install.texi
-	makeinfo -D INSTALLONLY --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
+	$(MAKEINFO) -D INSTALLONLY --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
 
 # Deletion of files made during compilation.
 # There are four levels of this:
