@@ -1,3 +1,8 @@
+2005-04-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	PR target/17824
+	* config/c4x/c4x.h (ASM_PROG, LD_PROG): Remove.
+
 2005-04-06  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_analyze_loop_form): Call
