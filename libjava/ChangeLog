@@ -1,3 +1,8 @@
+2003-09-25  Ingo Proetel  <proetel@aicas.com>
+
+	* java/io/ObjectOutputStream.java:
+	Allow putFields be called more than once.
+
 2003-09-25  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/image/Raster.java(Raster): Interpret null origin as (0,0).

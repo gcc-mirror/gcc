@@ -361,7 +361,7 @@ public class ObjectOutputStream extends OutputStream
 	  }
 	catch (IOException ioe)
 	  {
-	    throw new StreamCorruptedException ("Exception " + ioe + " thrown while exception was being written to stream.");
+	    throw new StreamCorruptedException ("Exception " + ioe + " thrown while exception ("+e+") was being written to stream.");
 	  }
 
 	reset (true);
@@ -443,7 +443,7 @@ public class ObjectOutputStream extends OutputStream
       throw new NotActiveException ("defaultWriteObject called by non-active class and/or object");
 
     if (fieldsAlreadyWritten)
-      throw new IOException ("Only one of putFields and defaultWriteObject may be called, and it may only be called once");
+      throw new IOException ("Only one of writeFields and defaultWriteObject may be called, and it may only be called once");
 
     fieldsAlreadyWritten = true;
   }
@@ -866,8 +866,8 @@ public class ObjectOutputStream extends OutputStream
 
   public PutField putFields () throws IOException
   {
-    markFieldsWritten ();
-
+    if (currentPutField == null)
+      {
     currentPutField = new PutField ()
       {
 	private byte[] prim_field_data
@@ -1002,6 +1002,7 @@ public class ObjectOutputStream extends OutputStream
 	}
       };
     // end PutFieldImpl
+      }
 
     return currentPutField;
   }
@@ -1012,7 +1013,12 @@ public class ObjectOutputStream extends OutputStream
     if (currentPutField == null)
       throw new NotActiveException ("writeFields can only be called after putFields has been called");
 
+	// moved here from putFields since putFields 
+	// may be called more than once, but not writeFields
+	markFieldsWritten();
+	
     currentPutField.write (this);
+    currentPutField = null;
   }
 
 
@@ -1248,7 +1254,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1263,7 +1269,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1278,7 +1284,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1293,7 +1299,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1308,7 +1314,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1323,7 +1329,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1338,7 +1344,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1353,7 +1359,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
@@ -1369,7 +1375,7 @@ public class ObjectOutputStream extends OutputStream
       }
     catch (Exception _)
       {
-	throw new IOException ();
+	throw new IOException ("Unexpected Exception "+_);
       }    
   }
 
