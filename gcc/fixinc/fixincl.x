@@ -1104,7 +1104,7 @@ tSCC zIoctl_Fix_CtrlName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIoctl_Fix_CtrlSelect0[] =
-       "CTRL[ \t]";
+       "CTRL[ \t]*\\(";
 
 #define    IOCTL_FIX_CTRL_TEST_CT  1
 #define    IOCTL_FIX_CTRL_RE_CT    1
@@ -2619,16 +2619,9 @@ tSCC zSun_Auth_ProtoList[] =
 tSCC zSun_Auth_ProtoSelect0[] =
        "\\(\\*[a-z][a-z_]*\\)\\(\\)";
 
-/*
- *  content bypass pattern - skip fix if pattern found
- */
-tSCC zSun_Auth_ProtoBypass0[] =
-       "^[a-zA-Z0-9_ \t]*\\(\\*[a-z][a-z_]*\\)\\([ \t]*[a-zA-Z.].*\\)";
-
-#define    SUN_AUTH_PROTO_TEST_CT  2
-#define    SUN_AUTH_PROTO_RE_CT    2
+#define    SUN_AUTH_PROTO_TEST_CT  1
+#define    SUN_AUTH_PROTO_RE_CT    1
 tTestDesc aSun_Auth_ProtoTests[] = {
-  { TT_NEGREP, zSun_Auth_ProtoBypass0,   (regex_t*)NULL },
   { TT_EGREP,  zSun_Auth_ProtoSelect0,   (regex_t*)NULL }, };
 
 /*
@@ -3815,7 +3808,7 @@ cat > /dev/null",
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  75
+#define  REGEX_COUNT  74
 #define  FIX_COUNT    104
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAix_SyswaitName,    zAix_SyswaitList,

@@ -8,6 +8,10 @@ Thu Jun 10 20:37:57 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 Thu Jun 10 14:47:59 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
+        * fixinc/inclhack.def(sun_auth_proto): We do not know how to
+        test for the presence of valid prototypes.  Delete bypass expr.
+        (ioctl_fix_ctrl): Correct the selection expression.
+
 	* fixinc/inclhack.def(no_double_slash): fixed quoting rules
 	* fixinc/inclhack.sh: regen
 	* fixinc/fixincl.x: regen

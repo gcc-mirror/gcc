@@ -350,7 +350,7 @@ fix = {
      *  Also, only accept double slashes that are not part of URL's
      *  and are not the end of a quoted string.
      */
-    test   = ' -z "`echo ${file} | egrep \'(CC|cxx|\+\+)/\' `"';
+    test   = ' -z "`echo ${file} | egrep \'(CC|cxx|\+\+)/\'`"';
     select = '(^|[^:])//[^"*]';
     sed    = 's,^//.*$,,';
     sed    = 's,[^:]//[^"].*$,,';
@@ -587,10 +587,20 @@ fix = {
 
 /*
  *  Fix CTRL macros
+ *
+ * Basically, what is supposed to be happening is that every
+ * _invocation_ of the "_CTRL()" or "CTRL()" macros is supposed to have
+ * its argument inserted into single quotes.  We _must_ do this because
+ * ANSI macro substitution rules prohibit looking inside quoted strings
+ * for the substitution names.  A side effect is that the quotes are
+ * inserted in the definitions of those macros as well.  So, the last
+ * three sed expressions are supposed to clean up the definitions, as
+ * long as those definitions are using "c", "g" or "x" as the macro
+ * argument :).  Yuck.
  */
 fix = {
     hackname = ioctl_fix_ctrl;
-    select = "CTRL[ \t]";
+    select = "CTRL[ \t]*\\(";
 
     sed = "/[^A-Z0-9_]CTRL[ \t]*(/"
               "s/\\([^']\\))/'\\1')/";
@@ -1507,13 +1517,9 @@ fix = {
     files    = rpc/svc.h;
     files    = rpc/xdr.h;
     /*
-     *  Select those files containing '(*name)()' but *not*
-     *  containing '(*name)(junk)'.  The change would be innocuous
-     *  but there is no point bothering if the fix is not needed.
+     *  Select those files containing '(*name)()'.
      */
     select   = '\(\*[a-z][a-z_]*\)\(\)';
-    bypass   = "^[a-zA-Z0-9_ \t]*" '\(\*[a-z][a-z_]*\)\('
-               "[ \t]*[a-zA-Z.].*" '\)';
     sed      = 's'
                 '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
                 "/\\\n"
