@@ -460,7 +460,7 @@ thread_target_headers = \
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target stamp-std-precompile
+	stamp-backward stamp-ext stamp-target 
 
 
 # Target includes for threads
