@@ -4051,7 +4051,7 @@ fold (expr)
 	  tree c2 = integer_zero_node;
 	  tree xarg0 = arg0;
 
-	  if (TREE_CODE (xarg0) == SAVE_EXPR)
+	  if (TREE_CODE (xarg0) == SAVE_EXPR && SAVE_EXPR_RTL (xarg0) == 0)
 	    have_save_expr = 1, xarg0 = TREE_OPERAND (xarg0, 0);
 
 	  STRIP_NOPS (xarg0);
@@ -4069,7 +4069,7 @@ fold (expr)
 	      xarg0 = TREE_OPERAND (xarg0, 0);
 	    }
 
-	  if (TREE_CODE (xarg0) == SAVE_EXPR)
+	  if (TREE_CODE (xarg0) == SAVE_EXPR && SAVE_EXPR_RTL (xarg0) == 0)
 	    have_save_expr = 1, xarg0 = TREE_OPERAND (xarg0, 0);
 
 	  STRIP_NOPS (xarg0);
