@@ -104,15 +104,13 @@ static void mips_arg_info		PARAMS ((const CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int,
 						 struct mips_arg_info *));
-static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT,
-							 FILE *));
+static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT));
 static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
 static rtx mips_frame_set			PARAMS ((enum machine_mode,
 							 int, int));
 static void mips_emit_frame_related_store	PARAMS ((rtx, rtx,
 							 HOST_WIDE_INT));
-static void save_restore_insns			PARAMS ((int, rtx,
-							long, FILE *));
+static void save_restore_insns			PARAMS ((int, rtx, long));
 static void mips16_output_gp_offset		PARAMS ((FILE *, rtx));
 static void mips16_fp_args			PARAMS ((FILE *, int, int));
 static void build_mips16_function_stub		PARAMS ((FILE *));
@@ -6719,40 +6717,23 @@ compute_frame_size (size)
 #define BITSET_P(VALUE,BIT) (((VALUE) & (1L << (BIT))) != 0)
 
 /* Emit instructions to load the value (SP + OFFSET) into MIPS_TEMP2_REGNUM
-   and return an rtl expression for the register.  Write the assembly
-   instructions directly to FILE if it is not null, otherwise emit them as
-   rtl.
+   and return an rtl expression for the register.
 
    This function is a subroutine of save_restore_insns.  It is used when
    OFFSET is too large to add in a single instruction.  */
 
 static rtx
-mips_add_large_offset_to_sp (offset, file)
+mips_add_large_offset_to_sp (offset)
      HOST_WIDE_INT offset;
-     FILE *file;
 {
   rtx reg = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
-  if (file == 0)
-    {
-      rtx offset_rtx = GEN_INT (offset);
+  rtx offset_rtx = GEN_INT (offset);
 
-      emit_move_insn (reg, offset_rtx);
-      if (Pmode == DImode)
-	emit_insn (gen_adddi3 (reg, reg, stack_pointer_rtx));
-      else
-	emit_insn (gen_addsi3 (reg, reg, stack_pointer_rtx));
-    }
+  emit_move_insn (reg, offset_rtx);
+  if (Pmode == DImode)
+    emit_insn (gen_adddi3 (reg, reg, stack_pointer_rtx));
   else
-    {
-      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
-	       reg_names[MIPS_TEMP2_REGNUM], (long) offset);
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
-      fprintf (file, "\n\t%s\t%s,%s,%s\n",
-	       Pmode == DImode ? "daddu" : "addu",
-	       reg_names[MIPS_TEMP2_REGNUM],
-	       reg_names[MIPS_TEMP2_REGNUM],
-	       reg_names[STACK_POINTER_REGNUM]);
-    }
+    emit_insn (gen_addsi3 (reg, reg, stack_pointer_rtx));
   return reg;
 }
 
@@ -6818,11 +6799,10 @@ mips_emit_frame_related_store (mem, reg, offset)
 }
 
 static void
-save_restore_insns (store_p, large_reg, large_offset, file)
+save_restore_insns (store_p, large_reg, large_offset)
      int store_p;	/* true if this is prologue */
      rtx large_reg;	/* register holding large offset constant or NULL */
      long large_offset;	/* large constant offset value */
-     FILE *file;	/* file to write instructions instead of making RTL */
 {
   long mask = current_frame_info.mask;
   long fmask = current_frame_info.fmask;
@@ -6886,26 +6866,17 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	{
 	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = large_offset;
-	  if (file == 0)
-	    {
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg,
-					      stack_pointer_rtx));
-	      else
-		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
-					      stack_pointer_rtx));
-	    }
+	  if (Pmode == DImode)
+	    insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg,
+					  stack_pointer_rtx));
 	  else
-	    fprintf (file, "\t%s\t%s,%s,%s\n",
-		     Pmode == DImode ? "daddu" : "addu",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[REGNO (large_reg)],
-		     reg_names[STACK_POINTER_REGNUM]);
+	    insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
+					  stack_pointer_rtx));
 	}
       else
 	{
 	  base_offset = gp_offset;
-	  base_reg_rtx = mips_add_large_offset_to_sp (base_offset, file);
+	  base_reg_rtx = mips_add_large_offset_to_sp (base_offset);
 	}
 
       /* When we restore the registers in MIPS16 mode, then if we are
@@ -6922,99 +6893,57 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	base_offset += current_function_outgoing_args_size;
 
       for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
-	if (BITSET_P (mask, regno - GP_REG_FIRST))
-	  {
-	    if (file == 0)
-	      {
-		rtx reg_rtx;
-		rtx mem_rtx
-		  = gen_rtx (MEM, gpr_mode,
-			     gen_rtx (PLUS, Pmode, base_reg_rtx,
-				      GEN_INT (gp_offset - base_offset)));
+	{
+	  if (BITSET_P (mask, regno - GP_REG_FIRST))
+	    {
+	      rtx reg_rtx;
+	      rtx mem_rtx
+		= gen_rtx (MEM, gpr_mode,
+			   gen_rtx (PLUS, Pmode, base_reg_rtx,
+				    GEN_INT (gp_offset - base_offset)));
 
-		if (! current_function_calls_eh_return)
-		  RTX_UNCHANGING_P (mem_rtx) = 1;
+	      if (! current_function_calls_eh_return)
+		RTX_UNCHANGING_P (mem_rtx) = 1;
 
-		/* The mips16 does not have an instruction to load
-                   $31, so we load $7 instead, and work things out
-                   in mips_expand_epilogue.  */
-		if (TARGET_MIPS16 && ! store_p && regno == GP_REG_FIRST + 31)
-		  reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 7);
-		/* The mips16 sometimes needs to save $18.  */
-		else if (TARGET_MIPS16
-			 && regno != GP_REG_FIRST + 31
-			 && ! M16_REG_P (regno))
-		  {
-		    if (! store_p)
-		      reg_rtx = gen_rtx (REG, gpr_mode, 6);
-		    else
-		      {
-			reg_rtx = gen_rtx (REG, gpr_mode, 3);
-			emit_move_insn (reg_rtx,
-					gen_rtx (REG, gpr_mode, regno));
-		      }
-		  }
-		else
-		  reg_rtx = gen_rtx (REG, gpr_mode, regno);
+	      /* The mips16 does not have an instruction to load
+		 $31, so we load $7 instead, and work things out
+		 in mips_expand_epilogue.  */
+	      if (TARGET_MIPS16 && ! store_p && regno == GP_REG_FIRST + 31)
+		reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 7);
+	      /* The mips16 sometimes needs to save $18.  */
+	      else if (TARGET_MIPS16
+		       && regno != GP_REG_FIRST + 31
+		       && ! M16_REG_P (regno))
+		{
+		  if (! store_p)
+		    reg_rtx = gen_rtx (REG, gpr_mode, 6);
+		  else
+		    {
+		      reg_rtx = gen_rtx (REG, gpr_mode, 3);
+		      emit_move_insn (reg_rtx,
+				      gen_rtx (REG, gpr_mode, regno));
+		    }
+		}
+	      else
+		reg_rtx = gen_rtx (REG, gpr_mode, regno);
 
-		if (store_p)
-		  mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
-		else
-		  {
-		    emit_move_insn (reg_rtx, mem_rtx);
-		    if (TARGET_MIPS16
-			&& regno != GP_REG_FIRST + 31
-			&& ! M16_REG_P (regno))
-		      emit_move_insn (gen_rtx (REG, gpr_mode, regno),
-				      reg_rtx);
-		  }
-	      }
-	    else
-	      {
-		int r = regno;
-
-		/* The mips16 does not have an instruction to
-		   load $31, so we load $7 instead, and work
-		   things out in the caller.  */
-		if (TARGET_MIPS16 && ! store_p && r == GP_REG_FIRST + 31)
-		  r = GP_REG_FIRST + 7;
-		/* The mips16 sometimes needs to save $18.  */
-		if (TARGET_MIPS16
-		    && regno != GP_REG_FIRST + 31
-		    && ! M16_REG_P (regno))
-		  {
-		    if (! store_p)
-		      r = GP_REG_FIRST + 6;
-		    else
-		      {
-			r = GP_REG_FIRST + 3;
-			fprintf (file, "\tmove\t%s,%s\n",
-				 reg_names[r], reg_names[regno]);
-		      }
-		  }
-		fprintf (file, "\t%s\t%s,",
-			 (TARGET_64BIT
-			  ? (store_p) ? "sd" : "ld"
-			  : (store_p) ? "sw" : "lw"),
-			 reg_names[r]);
-		fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-			 gp_offset - base_offset);
-		fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
-		if (! store_p
-		    && TARGET_MIPS16
-		    && regno != GP_REG_FIRST + 31
-		    && ! M16_REG_P (regno))
-		  fprintf (file, "\tmove\t%s,%s\n",
-			   reg_names[regno], reg_names[r]);
-	      }
+	      if (store_p)
+		mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
+	      else
+		{
+		  emit_move_insn (reg_rtx, mem_rtx);
+		  if (TARGET_MIPS16
+		      && regno != GP_REG_FIRST + 31
+		      && ! M16_REG_P (regno))
+		    emit_move_insn (gen_rtx (REG, gpr_mode, regno),
+				    reg_rtx);
+		}
+	    }
+	  /* If the restore is being supressed, still take into account
+	     the offset at which it is stored.  */
+	  if (BITSET_P (real_mask, regno - GP_REG_FIRST))
 	    gp_offset -= GET_MODE_SIZE (gpr_mode);
-	  }
-        /* If the restore is being supressed, still take into account
-	   the offset at which it is stored.  */
- 	else if (BITSET_P (real_mask, regno - GP_REG_FIRST))
- 	  {
-	    gp_offset -= GET_MODE_SIZE (gpr_mode);
-	  }
+	}
     }
   else
     base_reg_rtx = 0, base_offset  = 0;
@@ -7046,27 +6975,17 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	{
 	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = large_offset;
-	  if (file == 0)
-	    {
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg,
-					      stack_pointer_rtx));
-	      else
-		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
-					      stack_pointer_rtx));
-	    }
-
+	  if (Pmode == DImode)
+	    insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg,
+					  stack_pointer_rtx));
 	  else
-	    fprintf (file, "\t%s\t%s,%s,%s\n",
-		     Pmode == DImode ? "daddu" : "addu",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[REGNO (large_reg)],
-		     reg_names[STACK_POINTER_REGNUM]);
+	    insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
+					  stack_pointer_rtx));
 	}
       else
 	{
 	  base_offset = fp_offset;
-	  base_reg_rtx = mips_add_large_offset_to_sp (fp_offset, file);
+	  base_reg_rtx = mips_add_large_offset_to_sp (fp_offset);
 	}
 
       /* This loop must iterate over the same space as its companion in
@@ -7076,34 +6995,19 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	   regno -= FP_INC)
 	if (BITSET_P (fmask, regno - FP_REG_FIRST))
 	  {
-	    if (file == 0)
-	      {
-		enum machine_mode sz
-		  = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
-		rtx reg_rtx = gen_rtx (REG, sz, regno);
-		rtx mem_rtx = gen_rtx (MEM, sz,
-				       gen_rtx (PLUS, Pmode, base_reg_rtx,
-						GEN_INT (fp_offset
-							 - base_offset)));
-		if (! current_function_calls_eh_return)
-		  RTX_UNCHANGING_P (mem_rtx) = 1;
+	    enum machine_mode sz = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
+	    rtx reg_rtx = gen_rtx (REG, sz, regno);
+	    rtx mem_rtx = gen_rtx (MEM, sz,
+				   gen_rtx (PLUS, Pmode, base_reg_rtx,
+					    GEN_INT (fp_offset
+						     - base_offset)));
+	    if (! current_function_calls_eh_return)
+	      RTX_UNCHANGING_P (mem_rtx) = 1;
 
-		if (store_p)
-		  mips_emit_frame_related_store (mem_rtx, reg_rtx, fp_offset);
-		else
-		  emit_move_insn (reg_rtx, mem_rtx);
-	      }
+	    if (store_p)
+	      mips_emit_frame_related_store (mem_rtx, reg_rtx, fp_offset);
 	    else
-	      {
-		fprintf (file, "\t%s\t%s,",
-			 (TARGET_SINGLE_FLOAT
-			  ? (store_p ? "s.s" : "l.s")
-			  : (store_p ? "s.d" : "l.d")),
-			 reg_names[regno]);
-		fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-			 fp_offset - base_offset);
-		fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
-	      }
+	      emit_move_insn (reg_rtx, mem_rtx);
 
 	    fp_offset -= UNITS_PER_FPVALUE;
 	  }
@@ -7593,7 +7497,7 @@ mips_expand_prologue ()
 	}
 
       if (! mips_entry)
-	save_restore_insns (1, tmp_rtx, tsize, (FILE *)0);
+	save_restore_insns (1, tmp_rtx, tsize);
       else if (reg_18_save != NULL_RTX)
 	emit_insn (reg_18_save);
 
@@ -7862,7 +7766,7 @@ mips_expand_epilogue ()
 		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
 	emit_insn (gen_blockage ());
 
-      save_restore_insns (0, tmp_rtx, orig_tsize, (FILE *)0);
+      save_restore_insns (0, tmp_rtx, orig_tsize);
 
       /* In mips16 mode with a large frame, we adjust the stack
          pointer before restoring the registers.  In this case, we
@@ -9743,7 +9647,7 @@ highpart_shift_operator (x, mode)
 
 int
 mips_register_move_cost (mode, to, from)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      enum reg_class to, from;
 {
   if (from == M16_REGS && GR_REG_CLASS_P (to))

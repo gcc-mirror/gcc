@@ -1,3 +1,10 @@
+2002-05-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_add_large_offset_to_sp): Remove FILE arg.
+	(save_restore_insns): Likewise.
+	(mips_expand_prologue, mips_expand_epilogue): Update callers.
+	(highpart_shift_operator): Attach ATTRIBUTE_UNUSED to mode argument.
+
 Thu May  9 11:50:09 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (type attribute): Add "rotate" for rotate insns.
