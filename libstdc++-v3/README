@@ -1,12 +1,12 @@
 file: libstdc++-v3/README
 
-New users may wish to point their web browsers to the file index.html
-in the 'docs' subdirectory.  It contains brief building instructions
-and notes on how to configure the library in interesting ways.
+New users may wish to point their web browsers to the file documentation.html
+in the 'docs/html' subdirectory.  It contains brief building instructions and
+notes on how to configure the library in interesting ways.
 
 
 Instructions for configuring and building this snapshot appear
-in install.html.
+in docs/html/install.html.
 
 This directory contains the files needed to create [a still broken
 subset of] an ISO Standard C++ Library.
