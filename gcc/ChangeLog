@@ -1,3 +1,11 @@
+2000-08-20  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (emit_insn_group_barriers): Stop if ar.lc
+	assigned before a loop.
+
+	* config/ia64/ia64.md (ashlsi3): Zero extend the shift count.
+	(ashrsi3, lshrsi3): Likewise.
+
 2000-08-20  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* c-lang.c: #include diagnostic.h

@@ -3934,6 +3934,21 @@ emit_insn_group_barriers (insns)
       switch (GET_CODE (insn))
 	{
 	case NOTE:
+	  /* For very small loops we can wind up with extra stop bits
+	     inside the loop because of not putting a stop after the
+	     assignment to ar.lc before the loop label.  */
+	  /* ??? Ideally we'd do this for any register used in the first
+	     insn group that's been written recently.  */
+          if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	    {
+	      need_barrier = rws_access_regno (AR_LC_REGNUM, flags, 0);
+	      if (need_barrier)
+		{
+		  emit_insn_after (gen_insn_group_barrier (), insn);
+		  memset (rws_sum, 0, sizeof(rws_sum));
+		  prev_insn = NULL_RTX;
+		}
+	    }
 	  break;
 
 	case CALL_INSN:
