@@ -190,7 +190,7 @@ finish_member_template_decl (decl)
       /* Assume that the class is the only declspec.  */
       decl = TREE_VALUE (decl);
       if (IS_AGGR_TYPE (decl) && CLASSTYPE_TEMPLATE_INFO (decl)
-	  && ! CLASSTYPE_PARTIAL_SPECIALIZATION (decl))
+	  && ! CLASSTYPE_TEMPLATE_SPECIALIZATION (decl))
 	{
 	  tree tmpl = CLASSTYPE_TI_TEMPLATE (decl);
 	  check_member_template (tmpl);
@@ -252,7 +252,7 @@ template_class_depth_real (type, count_specializations)
 	  if (CLASSTYPE_TEMPLATE_INFO (type)
 	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
 	      && ((count_specializations
-		   && CLASSTYPE_PARTIAL_SPECIALIZATION (type))
+		   && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
 		  || uses_template_parms (CLASSTYPE_TI_ARGS (type))))
 	    ++depth;
 	}
@@ -666,7 +666,7 @@ maybe_process_partial_specialization (type)
 	      cp_pedwarn_at ("  from definition of `%#D'",
 			     CLASSTYPE_TI_TEMPLATE (type));
 	    }
-	  SET_CLASSTYPE_PARTIAL_SPECIALIZATION (type);
+	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
 	  if (processing_template_decl)
 	    push_template_decl (TYPE_MAIN_DECL (type));
 	}
@@ -2359,7 +2359,7 @@ push_template_decl_real (decl, is_friend)
   /* See if this is a partial specialization.  */
   is_partial = (DECL_IMPLICIT_TYPEDEF_P (decl)
 		&& TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
-		&& CLASSTYPE_PARTIAL_SPECIALIZATION (TREE_TYPE (decl)));
+		&& CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)));
 
   is_friend |= (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl));
 
@@ -3548,7 +3548,7 @@ classtype_mangled_name (t)
   if (CLASSTYPE_TEMPLATE_INFO (t)
       /* Specializations have already had their names set up in
 	 lookup_template_class.  */
-      && !CLASSTYPE_PARTIAL_SPECIALIZATION (t))
+      && !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
       tree tmpl = most_general_template (CLASSTYPE_TI_TEMPLATE (t));
 
@@ -3963,7 +3963,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
 	      /* We only want partial instantiations, here, not
 		 specializations or full instantiations.  */
-	      if (CLASSTYPE_PARTIAL_SPECIALIZATION (TREE_VALUE (found))
+	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_VALUE (found))
 		  || !uses_template_parms (TREE_VALUE (found)))
 		continue;
 
@@ -9194,7 +9194,7 @@ do_type_instantiation (t, storage)
 	}
     }
 
-  if (CLASSTYPE_PARTIAL_SPECIALIZATION (t))
+  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
       /* [temp.spec]
 

@@ -609,7 +609,6 @@ dequeue_and_dump (di)
       break;
 
     case TEMPLATE_DECL:
-      dump_child ("rslt", DECL_TEMPLATE_RESULT (t));
       dump_child ("inst", DECL_TEMPLATE_INSTANTIATIONS (t));
       dump_child ("spcs", DECL_TEMPLATE_SPECIALIZATIONS (t));
       break;
