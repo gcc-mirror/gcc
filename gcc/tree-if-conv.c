@@ -1078,7 +1078,7 @@ main_tree_if_conversion (void)
 static bool
 gate_tree_if_conversion (void)
 {
-  return true;
+  return flag_tree_vectorize != 0;
 }
 
 struct tree_opt_pass pass_if_conversion =

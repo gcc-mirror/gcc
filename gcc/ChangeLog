@@ -1,3 +1,8 @@
+2004-09-05  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-if-conv.c (gate_tree_if_conversion): Enable only if the
+	vectorizer is enabled.
+
 2004-09-05  Andreas Jaeger  <aj@suse.de>
 
 	* tree-if-conv.c: Spell check comments and clean up whitespace.
