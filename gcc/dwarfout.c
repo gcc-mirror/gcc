@@ -1,8 +1,9 @@
-/* This file contains code written by Ron Guilmette (rfg@ncd.com) for
-   Network Computing Devices, August, September, October, November 1990.
-
-   Output Dwarf format symbol table information from the GNU C compiler.
+/* Output Dwarf format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+
+   Written by Ron Guilmette (rfg@netcom.com) for
+   Network Computing Devices, August, September, October, November 1990.
+   Generously contributed by NCD to the Free Software Foundation.
 
 This file is part of GNU CC.
 

@@ -1,7 +1,7 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
    Copyright (C) 1991 Free Software Foundation, Inc.
 
-   Based upon original work of Ron Guilmette (rfg@ncd.com).
+   Based upon original work of Ron Guilmette (rfg@netcom.com).
    Whacked into submission by Andy Pfiffer (andyp@ssd.intel.com).
    Partially inspired by
 	Pete Beckman @ Indiana University (beckman@cs.indiana.edu)

@@ -3,7 +3,7 @@
    will get included either by libgcc2.c (for systems that don't support
    a .init section) or by crtstuff.c (for those that do).
 
-   Written by Ron Guilmette (rfg@ncd.com)
+   Written by Ron Guilmette (rfg@netcom.com)
 
 Copyright (C) 1991 Free Software Foundation, Inc.
 

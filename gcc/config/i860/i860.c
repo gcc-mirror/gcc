@@ -4,7 +4,7 @@
 
    Written by Richard Stallman (rms@ai.mit.edu).
 
-   Hacked substantially by Ron Guilmette (rfg@ncd.com) to cater
+   Hacked substantially by Ron Guilmette (rfg@netcom.com) to cater
    to the whims of the System V Release 4 assembler.
 
 This file is part of GNU CC.
