@@ -1,3 +1,15 @@
+2004-08-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (force_fit_type): Return a tree, take three flags.
+	* fold-const.c (force_fit_type): Set TREE_OVERFLOW and
+	TREE_CONSTANT_OVERFLOW here.
+	(int_const_binop, const_binop): Adjust.
+	(size_int_type): Do sign extension here.
+	(fold_convert_const, optimize_bit_field_compare,
+	decode_field_reference, all_ones_mask_p, fold_div_compare, fold,
+	fold_negate_const, fold_abs_const, fold_not_const): Adjust.
+	* tree.c (size_in_bytes, int_fits_type_p): Adjust.
+
 2004-08-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/16864
@@ -268,7 +280,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

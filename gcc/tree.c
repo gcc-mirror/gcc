@@ -1130,7 +1130,7 @@ size_in_bytes (tree type)
     }
 
   if (TREE_CODE (t) == INTEGER_CST)
-    force_fit_type (t, 0);
+    t = force_fit_type (t, 0, false, false);
 
   return t;
 }
@@ -4563,7 +4563,8 @@ int_fits_type_p (tree c, tree type)
     {
       c = copy_node (c);
       TREE_TYPE (c) = type;
-      return !force_fit_type (c, 0);
+      c = force_fit_type (c, -1, false, false);
+      return !TREE_OVERFLOW (c);
     }
 }
 

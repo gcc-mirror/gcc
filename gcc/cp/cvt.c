@@ -267,8 +267,10 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
       else
 	expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;
+      
       /* Fix up the representation of -1 if appropriate.  */
-      force_fit_type (expr, 0);
+      expr = force_fit_type (expr, 0, false, false);
+      
       return expr;
     }
   else if (TYPE_PTR_TO_MEMBER_P (type) && INTEGRAL_CODE_P (form))
