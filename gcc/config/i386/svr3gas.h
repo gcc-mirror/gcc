@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V, using gas.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -139,28 +139,16 @@ do {								\
 
 #endif /* STACK_GROWS_DOWNWARD */
 
-/* Add extra sections .init and .fini, in addition to .bss from att386.h. */
+/* Add extra sections .rodata, .init and .fini.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_bss, in_init, in_fini
+#define EXTRA_SECTIONS in_const, in_init, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
   CONST_SECTION_FUNCTION					\
-  BSS_SECTION_FUNCTION						\
   INIT_SECTION_FUNCTION						\
   FINI_SECTION_FUNCTION
-
-#define BSS_SECTION_FUNCTION					\
-void								\
-bss_section ()							\
-{								\
-  if (in_section != in_bss)					\
-    {								\
-      fprintf (asm_out_file, "\t%s\n", BSS_SECTION_ASM_OP);	\
-      in_section = in_bss;					\
-    }								\
-}
 
 #define INIT_SECTION_FUNCTION					\
 void								\
