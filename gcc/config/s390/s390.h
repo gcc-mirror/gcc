@@ -1301,10 +1301,10 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 #ifndef __s390x__
 #define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
     asm (SECTION_OP "\n\
-	bras\t%%r2,1f\n\
+	bras\t%r2,1f\n\
 0:	.long\t" USER_LABEL_PREFIX #FUNC " - 0b\n\
-1:	l\t%%r3,0(%%r2)\n\
-	bas\t%%r14,0(%%r3,%%r2)\n\
+1:	l\t%r3,0(%r2)\n\
+	bas\t%r14,0(%r3,%r2)\n\
 	.previous");
 #endif
 
