@@ -4392,7 +4392,8 @@ assign_parms (tree fndecl)
       /* Set NAMED_ARG if this arg should be treated as a named arg.  For
 	 most machines, if this is a varargs/stdarg function, then we treat
 	 the last named arg as if it were anonymous too.  */
-      named_arg = targetm.calls.strict_argument_naming (&args_so_far) ? 1 : ! last_named;
+      named_arg = (targetm.calls.strict_argument_naming (&args_so_far)
+		   ? 1 : !last_named);
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors

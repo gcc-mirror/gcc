@@ -1,3 +1,7 @@
+2004-02-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* function.c (assign_parms): Fix formatting.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* default.h (PROMOTE_PROTOTYPES): Remove.
