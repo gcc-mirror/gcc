@@ -976,6 +976,21 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  operands[1] = force_const_mem (mode, operand1);
 		  emit_move_sequence (operands, mode, temp);
 		}
+	      /* Likewise for (const (plus (symbol) (const_int)) when generating
+		 pic code during or after reload and const_int will not fit
+		 in 14 bits.  */
+	      else if (GET_CODE (operand1) == CONST
+		       && GET_CODE (XEXP (operand1, 0)) == PLUS
+		       && GET_CODE (XEXP (XEXP (operand1, 0), 1)) == CONST_INT
+		       && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1))
+		       && (reload_completed || reload_in_progress)
+		       && flag_pic)
+		{
+		  operands[1] = force_const_mem (mode, operand1);
+		  operands[1] = legitimize_pic_address (XEXP (operands[1], 0),
+							mode, temp);
+		  emit_move_sequence (operands, mode, temp);
+		}
 	      else
 		{
 		  operands[1] = legitimize_pic_address (operand1, mode, temp);
