@@ -1,5 +1,10 @@
 2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* haifa-sched.c (sched_emit_insn): Remove.
+	* sched-int.h: Remove the corresponding prototype.
+
+2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	Revert:
 	2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 	* opts.c (decode_options): Don't use DEFAULT_SHORT_ENUMS.
