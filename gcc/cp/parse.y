@@ -318,8 +318,8 @@ parse_decl(declarator, specs_attrs, attributes, initialized, decl)
       used_extern_spec = 1;
     }
   sm = suspend_momentary ();
-  *decl = start_decl (declarator, current_declspecs, initialized);
-  cplus_decl_attributes (*decl, attributes, prefix_attributes);
+  *decl = start_decl (declarator, current_declspecs, initialized,
+		      attributes, prefix_attributes);
   return sm;
 }
 %}
@@ -942,9 +942,8 @@ condition:
 		  }
 		  current_declspecs = $1.t;
 		  $<itype>5 = suspend_momentary ();
-		  $<ttype>$ = start_decl ($<ttype>2, current_declspecs, 1);
-		  cplus_decl_attributes ($<ttype>$, $4,
-					 /*prefix_attributes*/ NULL_TREE);
+		  $<ttype>$ = start_decl ($<ttype>2, current_declspecs, 1,
+					  $4, /*prefix_attributes*/ NULL_TREE);
 		}
 	  init
 		{ 
@@ -1769,14 +1768,14 @@ maybeasm:
 
 initdcl:
 	  declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1);
-		  cplus_decl_attributes ($<ttype>$, $3, prefix_attributes); }
+		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1,
+					  $3, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ cp_finish_decl ($<ttype>5, $6, $2, 1, LOOKUP_ONLYCONVERTING); }
 	| declarator maybeasm maybe_attribute
-		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0);
-		  cplus_decl_attributes ($<ttype>$, $3, prefix_attributes);
+		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0,
+					  $3, prefix_attributes);
 		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 1, 0); }
 	;
 

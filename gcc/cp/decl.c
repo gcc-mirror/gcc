@@ -3286,22 +3286,25 @@ pushdecl (x)
       else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_CONTEXT (x) == NULL_TREE)
 	return push_overloaded_decl (x, 0);
 
-      /* If declaring a type as a typedef, and the type has no known
-	 typedef name, install this TYPE_DECL as its typedef name.  */
+      /* If declaring a type as a typedef, copy the type (unless we're
+	 at line 0), and install this TYPE_DECL as the new type's typedef
+	 name.  See the extensive comment in ../c-decl.c (pushdecl). */
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (x);
-	  tree name = (type != error_mark_node) ? TYPE_NAME (type) : x;
-
-	  if (name == NULL_TREE || TREE_CODE (name) != TYPE_DECL)
-	    {
-	      /* If these are different names, and we're at the global
-		 binding level, make two equivalent definitions.  */
-              name = x;
-              if (global_bindings_p ())
-                TYPE_NAME (type) = x;
-	    }
-	  my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 140);
+          if (DECL_SOURCE_LINE (x) == 0)
+            {
+	      if (TYPE_NAME (type) == 0)
+	        TYPE_NAME (type) = x;
+            }
+          else if (type != error_mark_node && TYPE_NAME (type) != x)
+            {
+	      DECL_ORIGINAL_TYPE (x) = type;
+              type = build_type_copy (type);
+	      TYPE_STUB_DECL (type) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
+              TYPE_NAME (type) = x;
+              TREE_TYPE (x) = type;
+            }
 
 	  if (type != error_mark_node
 	      && TYPE_NAME (type)
@@ -4615,7 +4618,7 @@ lookup_name_real (name, prefer_type, nonclass)
 
 	  type = complete_type (type);
 
-	  if (type == void_type_node)
+	  if (TREE_CODE (type) == VOID_TYPE)
 	    val = IDENTIFIER_GLOBAL_VALUE (name);
 	  else if (TREE_CODE (type) == NAMESPACE_DECL)
 	    {
@@ -4954,6 +4957,7 @@ init_decl_processing ()
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
   lang_name_c = get_identifier ("C");
+  lang_name_java = get_identifier ("Java");
 
   /* enter the global namespace */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
@@ -5862,9 +5866,10 @@ groktypename (typename)
 int debug_temp_inits = 1;
 
 tree
-start_decl (declarator, declspecs, initialized)
+start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      tree declarator, declspecs;
      int initialized;
+     tree attributes, prefix_attributes;
 {
   register tree decl;
   register tree type, tem;
@@ -5887,7 +5892,7 @@ start_decl (declarator, declspecs, initialized)
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 NULL_TREE);
-  if (decl == NULL_TREE || decl == void_type_node)
+  if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE)
     return NULL_TREE;
 
   type = TREE_TYPE (decl);
@@ -6028,6 +6033,9 @@ start_decl (declarator, declspecs, initialized)
 
       pushclass (context, 2);
     }
+
+  /* Set attributes here so if duplicate decl, will have proper attributes.  */
+  cplus_decl_attributes (decl, attributes, prefix_attributes);
 
   /* Add this decl to the current binding level, but not if it
      comes from another scope, e.g. a static member variable.
@@ -7825,7 +7833,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		*next = TREE_OPERAND (decl, 0);
 		init = TREE_OPERAND (decl, 1);
 
-		decl = start_decl (declarator, declspecs, 1);
+		decl = start_decl (declarator, declspecs, 1, NULL_TREE, NULL_TREE);
 		/* Look for __unused__ attribute */
 		if (TREE_USED (TREE_TYPE (decl)))
 		  TREE_USED (decl) = 1;
@@ -8387,7 +8395,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   constp = !! RIDBIT_SETP (RID_CONST, specbits) + TYPE_READONLY (type);
   volatilep = !! RIDBIT_SETP (RID_VOLATILE, specbits) + TYPE_VOLATILE (type);
-  type = TYPE_MAIN_VARIANT (type);
+  type = build_type_variant (type, 0, 0);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
@@ -8642,7 +8650,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* Check for some types that there cannot be arrays of.  */
 
-	    if (TYPE_MAIN_VARIANT (type) == void_type_node)
+	    if (TREE_CODE (type) == VOID_TYPE)
 	      {
 		cp_error ("declaration of `%D' as array of voids", dname);
 		type = error_mark_node;
@@ -9081,7 +9089,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		}
 	      else
 		{
-		  if (TYPE_MAIN_VARIANT (type) == void_type_node)
+		  if (TREE_CODE (type) == VOID_TYPE)
 		    error ("invalid type: `void &'");
 		  else
 		    type = build_reference_type (type);
@@ -9354,6 +9362,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
 	    SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
 	}
+      else if (current_lang_name == lang_name_java)
+	decl = build_lang_decl (TYPE_DECL, declarator, type);
       else
 	decl = build_decl (TYPE_DECL, declarator, type);
 
@@ -9495,7 +9505,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      We don't complain about parms either, but that is because
      a better error message can be made later.  */
 
-  if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM)
+  if (TREE_CODE (type) == VOID_TYPE && decl_context != PARM)
     {
       if (! declarator)
 	error ("unnamed variable or field declared void");
@@ -9537,7 +9547,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  type = build_pointer_type (type);
 	else if (TREE_CODE (type) == OFFSET_TYPE)
 	  type = build_pointer_type (type);
-	else if (type == void_type_node && declarator)
+	else if (TREE_CODE (type) == VOID_TYPE && declarator)
 	  {
 	    error ("declaration of `%s' as void", name);
 	    return NULL_TREE;
@@ -10116,7 +10126,7 @@ grokparms (first_parm, funcdef_flag)
     }
   else if (first_parm != NULL_TREE
 	   && TREE_CODE (TREE_VALUE (first_parm)) != TREE_LIST
-	   && TREE_VALUE (first_parm) != void_type_node)
+	   && TREE_CODE (TREE_VALUE (first_parm)) != VOID_TYPE)
     my_friendly_abort (145);
   else
     {
@@ -10138,7 +10148,8 @@ grokparms (first_parm, funcdef_flag)
 
 	      chain = TREE_CHAIN (parm);
 	      /* @@ weak defense against parse errors.  */
-	      if (decl != void_type_node && TREE_CODE (decl) != TREE_LIST)
+	      if (TREE_CODE (decl) != VOID_TYPE 
+		  && TREE_CODE (decl) != TREE_LIST)
 		{
 		  /* Give various messages as the need arises.  */
 		  if (TREE_CODE (decl) == STRING_CST)
@@ -10148,7 +10159,7 @@ grokparms (first_parm, funcdef_flag)
 		  continue;
 		}
 
-	      if (decl != void_type_node)
+	      if (TREE_CODE (decl) != VOID_TYPE)
 		{
 		  decl = grokdeclarator (TREE_VALUE (decl),
 					 TREE_PURPOSE (decl),
@@ -10157,7 +10168,7 @@ grokparms (first_parm, funcdef_flag)
 		  if (! decl)
 		    continue;
 		  type = TREE_TYPE (decl);
-		  if (TYPE_MAIN_VARIANT (type) == void_type_node)
+		  if (TREE_CODE (type) == VOID_TYPE)
 		    decl = void_type_node;
 		  else if (TREE_CODE (type) == METHOD_TYPE)
 		    {
@@ -10197,7 +10208,7 @@ grokparms (first_parm, funcdef_flag)
                     }
 		}
 
-	      if (decl == void_type_node)
+	      if (TREE_CODE (decl) == VOID_TYPE)
 		{
 		  if (result == NULL_TREE)
 		    {
@@ -10516,7 +10527,7 @@ grok_op_properties (decl, virtualp, friendp)
 		cp_error ("`%D' must be either a non-static member function or a non-member function", decl);
 
 	      if (p)
-		for (; TREE_VALUE (p) != void_type_node ; p = TREE_CHAIN (p))
+		for (; TREE_CODE (TREE_VALUE (p)) != VOID_TYPE ; p = TREE_CHAIN (p))
 		  {
 		    tree arg = TREE_VALUE (p);
 		    if (TREE_CODE (arg) == REFERENCE_TYPE)
@@ -11364,7 +11375,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   int doing_friend = 0;
 
   /* Sanity check.  */
-  my_friendly_assert (TREE_VALUE (void_list_node) == void_type_node, 160);
+  my_friendly_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE, 160);
   my_friendly_assert (TREE_CHAIN (void_list_node) == NULL_TREE, 161);
 
   /* Assume, until we see it does.  */
@@ -11539,7 +11550,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   /* Effective C++ rule 15.  See also c_expand_return.  */
   if (warn_ecpp
       && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
-      && TREE_TYPE (fntype) == void_type_node)
+      && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
     cp_warning ("`operator=' should return a reference to `*this'");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
@@ -11797,7 +11808,7 @@ store_parm_decls ()
 		{
 		  pushdecl (parm);
 		}
-	      else if (TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == void_type_node)
+	      else if (TREE_CODE (TREE_TYPE (parm)) == VOID_TYPE)
 		cp_error ("parameter `%D' declared void", parm);
 	      else
 		{
@@ -12250,8 +12261,7 @@ finish_function (lineno, call_poplevel, nested)
 		}
 	      c_expand_return (current_class_ptr);
 	    }
-	  else if (TYPE_MAIN_VARIANT (TREE_TYPE (
-						 DECL_RESULT (current_function_decl))) != void_type_node
+	  else if (TREE_CODE (TREE_TYPE (DECL_RESULT (current_function_decl))) != VOID_TYPE
 		   && return_label != NULL_RTX)
 	    no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
@@ -12490,7 +12500,7 @@ finish_function (lineno, call_poplevel, nested)
 	cp_warning ("`noreturn' function `%D' does return", fndecl);
       else if ((warn_return_type || pedantic)
 	       && current_function_returns_null
-	       && TYPE_MAIN_VARIANT (TREE_TYPE (fntype)) != void_type_node)
+	       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE)
 	{
 	  /* If this function returns non-void and control can drop through,
 	     complain.  */
@@ -12582,7 +12592,7 @@ start_method (declspecs, declarator)
     return NULL_TREE;
 
   /* Pass friends other than inline friend functions back.  */
-  if (TYPE_MAIN_VARIANT (fndecl) == void_type_node)
+  if (fndecl == void_type_node)
     return fndecl;
 
   if (TREE_CODE (fndecl) != FUNCTION_DECL)
@@ -12673,7 +12683,7 @@ finish_method (decl)
 
   register tree link;
 
-  if (TYPE_MAIN_VARIANT (decl) == void_type_node)
+  if (decl == void_type_node)
     return decl;
 
   old_initial = DECL_INITIAL (fndecl);

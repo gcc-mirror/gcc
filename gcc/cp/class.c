@@ -131,7 +131,7 @@ tree *current_lang_base, *current_lang_stack;
 int current_lang_stacksize;
 
 /* Names of languages we recognize.  */
-tree lang_name_c, lang_name_cplusplus;
+tree lang_name_c, lang_name_cplusplus, lang_name_java;
 tree current_lang_name;
 
 /* When layout out an aggregate type, the size of the
@@ -4886,7 +4886,7 @@ push_lang_context (name)
       current_lang_stacksize += 10;
     }
 
-  if (name == lang_name_cplusplus)
+  if (name == lang_name_cplusplus || name == lang_name_java)
     {
       strict_prototype = strict_prototypes_lang_cplusplus;
       current_lang_name = name;

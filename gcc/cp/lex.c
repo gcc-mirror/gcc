@@ -4373,6 +4373,8 @@ build_lang_decl (code, name, type)
     DECL_LANGUAGE (t) = lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     DECL_LANGUAGE (t) = lang_c;
+  else if (current_lang_name == lang_name_java)
+    DECL_LANGUAGE (t) = lang_java;
   else my_friendly_abort (64);
 
   SET_DECL_NAMESPACE (t, current_namespace);
