@@ -151,6 +151,15 @@ AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I .
 @TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
 @TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+
+# write_entries_to_file - writes each entry in a list
+# to the specified file. Each entry is written individually
+# to accomodate systems with severe command-line-length
+# limitations.
+# Parameters:
+# $(1): variable containing entries to iterate over
+# $(2): output file
+write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach object,$(1),$(shell echo $(object) >> $(2)))
 @XLIB_AWT_TRUE@cond_x_ltlibrary = @XLIB_AWT_TRUE@lib-gnu-awt-xlib.la
 @XLIB_AWT_FALSE@cond_x_ltlibrary = 
 @XLIB_AWT_TRUE@xlib_includes = @XLIB_AWT_TRUE@-I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
@@ -417,8 +426,6 @@ all_java_source_files = \
     $(gtk_awt_peer_sources) \
     $(x_java_source_files)
 
-
-all_java_class_files = $(all_java_source_files:.java=.class)
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
 CLEANFILES = libgcj-@gcc_version@.jar
@@ -4851,12 +4858,11 @@ $(gtk_c_headers): $(gtk_awt_peer_sources)
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 
-.java.class:
-	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) \
-             -d $(here) $<
-
-libgcj-@gcc_version@.jar: $(all_java_class_files)
+libgcj-@gcc_version@.jar: $(all_java_source_files)
 	-@rm -f libgcj-@gcc_version@.jar
+	@echo Compiling Java sourcefiles...
+	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
+	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
 	find java gnu javax org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
@@ -4896,13 +4902,15 @@ $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
 	$(GCJCOMPILE) -fjni -o $@ $<
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
-	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcj.objectlist || :) $(shell touch libgcj.objectlist) $(foreach object,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),$(shell echo $(object) >> libgcj.objectlist))
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),libgcj.objectlist)
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
 	@GCLIBS@ @LIBFFI@ @ZLIBS@ \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
-	@: $(shell echo Creating list of files to link...) $(shell rm -f lib_gnu_awt_xlib.objectlist || :) $(shell touch lib_gnu_awt_xlib.objectlist) $(foreach object,$(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_LIBADD),$(shell echo $(object) >> lib_gnu_awt_xlib.objectlist))
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_LIBADD),lib_gnu_awt_xlib.objectlist)
 	$(lib_gnu_awt_xlib_la_LINK) -objectlist lib_gnu_awt_xlib.objectlist \
 	-rpath $(toolexeclibdir) $(lib_gnu_awt_xlib_la_LDFLAGS) $(LIBS)
 
@@ -4993,7 +5001,8 @@ $(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 
 install-data-local:
 	$(PRE_INSTALL)
-	@: $(shell echo Creating list of headers to install...) $(shell rm -f tmp-ilist || :) $(shell touch tmp-ilist) $(foreach hdr,$(nat_headers) $(extra_headers),$(shell echo $(hdr) >> tmp-ilist))
+	@echo Creating list of headers to install...
+	@: $(call write_entries_to_file,$(nat_headers) $(extra_headers),tmp-ilist)
 	@cat tmp-ilist | while read f; do \
 	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
 	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$d; \
@@ -5028,6 +5037,10 @@ class-check: libgcj-@gcc_version@.jar
 	  if $(GCJ_WITH_FLAGS) --syntax-only $$f; then \
 	  :; else ok=1; fi; \
 	done; exit $$ok
+
+write-entries-to-file-check:
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),libgcj.objectlist)
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
@@ -5113,7 +5126,7 @@ texinfo: TexinfoDoclet.class
 
 -include deps.mk
 
-all-recursive: $(all_java_class_files) $(nat_headers) $(x_nat_headers)
+all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(x_nat_headers)
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
