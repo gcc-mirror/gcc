@@ -10710,13 +10710,19 @@ simplify_comparison (code, pop0, pop1)
 		  && (STORE_FLAG_VALUE
 		      & (((HOST_WIDE_INT) 1
 			  << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
-		  && (code == LT || (code == GE))))
+		  && (code == LT || code == GE)))
 	    {
-	      code = (code == LT || code == NE
-		      ? GET_CODE (op0) : combine_reversed_comparison_code (op0));
-	      if (code != UNKNOWN)
+	      enum rtx_code new_code;
+	      if (code == LT || code == NE)
+		new_code = GET_CODE (op0);
+	      else
+		new_code = combine_reversed_comparison_code (op0);
+	  
+	      if (new_code != UNKNOWN)
 		{
-		  op0 = tem, op1 = tem1;
+		  code = new_code;
+		  op0 = tem;
+		  op1 = tem1;
 		  continue;
 		}
 	    }
