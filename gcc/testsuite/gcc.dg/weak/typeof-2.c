@@ -32,5 +32,5 @@ int bar3 (int x)
 // { dg-final { if [string match sh-*-* $target_triplet ] {return} } }
 // { dg-final { if [string match {sh[elb1-9]*-*-*} $target_triplet ] {return} } }
 // Likewise for S/390 targets
-// { dg-final { if [string match s390-*-* $target_triplet ] {return} } }
+// { dg-final { if [string match s390*-*-* $target_triplet ] {return} } }
 // { dg-final { scan-assembler "baz3.*baz3.*baz3.*baz3.*baz3.*baz3" } }
