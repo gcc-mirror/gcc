@@ -174,7 +174,8 @@ public:
 
   jboolean isAssignableFrom (jclass cls);
   jboolean isInstance (jobject obj);
-  jboolean isInterface (void)
+
+  inline jboolean isInterface (void)
   {
     return (accflags & java::lang::reflect::Modifier::INTERFACE) != 0;
   }
@@ -196,16 +197,17 @@ public:
   // finalization
   void finalize ();
 
+  Class () {};
+
   // This constructor is used to create Class object for the primitive
-  // types.
-  Class (jobject cname, jbyte sig, jint len, jobject array_vtable) {
-    
+  // types. See prims.cc.
+  Class (jobject cname, jbyte sig, jint len, jobject array_vtable)
+  {    
     using namespace java::lang::reflect;
     _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
 
-    // C++ ctors are fixing the vtbl in a way that doesn't fit Java.
-    // We can fix the C++ compiler, or we can hack our runtime. What's
-    // below fix the vtable so that it starts at -2.
+    // C++ ctors set the vtbl pointer to point at an offset inside the vtable
+    // object. That doesn't work for Java, so this hack adjusts it back.
     void *p =  ((void **)this)[0];
     ((void **)this)[0] = (void *)((char *)p-2*sizeof (void *));
 

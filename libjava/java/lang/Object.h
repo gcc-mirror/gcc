@@ -16,15 +16,13 @@ details.  */
 #include <gcj/javaprims.h>
 
 // This class is mainly here as a kludge to get G++ to allocate two
-// extra entries in the vtable. We will use them to store data.  This
-// allows us to support the new C++ ABI.
-
+// extra entries in each vtable.
 struct _JvObjectPrefix
 {
 protected:
   // New ABI Compatibility Dummy, #1 and 2.
-  virtual void nacd_1 (void) {};
-  virtual void nacd_2 (void) {};
+  virtual void nacd_1 (void) {};  // This slot really contains the Class pointer.
+  virtual void nacd_2 (void) {};  // Actually the GC bitmap marking descriptor.
 };
 
 class java::lang::Object : public _JvObjectPrefix
