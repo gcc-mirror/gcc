@@ -121,7 +121,7 @@
 
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
-(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_is_xscale")))
+(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
 (define_attr "shift" "" (const_int 0))
 
 ; Floating Point Unit.  If we only have floating point emulation, then there
@@ -1082,7 +1082,7 @@
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(mult:SI (match_dup 2) (match_dup 1)))]
-  "TARGET_ARM && !arm_is_xscale"
+  "TARGET_ARM && !arm_arch_xscale"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1095,7 +1095,7 @@
 			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r"))]
-  "TARGET_ARM && !arm_is_xscale"
+  "TARGET_ARM && !arm_arch_xscale"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1126,7 +1126,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
 	(plus:SI (mult:SI (match_dup 2) (match_dup 1))
 		 (match_dup 3)))]
-  "TARGET_ARM && !arm_is_xscale"
+  "TARGET_ARM && !arm_arch_xscale"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1141,7 +1141,7 @@
 		  (match_operand:SI 3 "s_register_operand" "?r,r,0,0"))
 	 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r,&r,&r"))]
-  "TARGET_ARM && !arm_is_xscale"
+  "TARGET_ARM && !arm_arch_xscale"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
