@@ -766,6 +766,33 @@ symbolic_operand (op, mode)
       return 0;
     }
 }
+
+/* Check for sign_extend or zero_extend.  Used for bit-count operands. */
+
+int
+extend_operator(x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+    if (GET_MODE(x) != SImode)
+	return 0;
+    switch (GET_CODE(x))
+	{
+	case SIGN_EXTEND :
+	case ZERO_EXTEND :
+	    break;
+	default :
+	    return 0;
+	}
+    switch (GET_MODE(XEXP(x, 0)))
+	{
+	case HImode :
+	case QImode :
+	    return 1;
+	default :
+	    return 0;
+	}
+}
 
 
 /* Legitimize PIC addresses.  If the address is already
