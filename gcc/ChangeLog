@@ -1,3 +1,9 @@
+2000-03-20  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* c-parse.in (SAVE_WARN_FLAGS): Use size_int.
+	* c-parse.y, c-parse.c, objc/objc-parse.y, objc/objc-parse.c:
+	Regenerated.
+
 Mon Mar 20 11:43:15 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (delete_noop_moves): Remove code attempting to

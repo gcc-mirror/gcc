@@ -232,10 +232,10 @@ static int undeclared_variable_notice;
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
 #define SAVE_WARN_FLAGS()	\
-	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
+	size_int (pedantic | (warn_pointer_arith << 1))
 #define RESTORE_WARN_FLAGS(tval) \
   do {                                     \
-    int val = tree_low_cst (tval, 0);     \
+    int val = tree_low_cst (tval, 0);      \
     pedantic = val & 1;                    \
     warn_pointer_arith = (val >> 1) & 1;   \
   } while (0)
