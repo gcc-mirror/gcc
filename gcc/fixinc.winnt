@@ -106,7 +106,7 @@ while [ $# != 0 ]; do
   echo 'Checking header files:'
   for file in $files; do
     echo $file
-    if egrep "!__STDC__|__stdcall|__cdecl" $file >NUL; then
+    if egrep "!__STDC__" $file >NUL; then
       if [ -r $file ]; then
 	cp $file $2/$file >NUL 2>&1 || echo "Can't copy $file"
 	chmod +w,a+r $2/$file
@@ -119,8 +119,6 @@ while [ $# != 0 ]; do
 
 	sed -e '
 	  s/!__STDC__/!defined (__STRICT_ANSI__)/g
-	  s/__stdcall/__attribute__((stdcall))/g
-	  s/__cdecl/__attribute__((cdecl))/g
 	' $2/$file > $2/$file.sed
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >NUL 2>&1; then
