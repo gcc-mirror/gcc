@@ -1,3 +1,13 @@
+2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_complex.h (norm): Forward declare.
+	(complex<>): Comment out friend declaration of conj<>.
+	(conj<>): Comment out specialization.
+	(exp, log, log10): Define primary templates.
+
+	* src/complex.cc (exp<>, log<>, log10<>): Comment out
+	specializations. 
+
 2000-10-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* include/bits/std_complex.h: Remove duplicate definition of conj.

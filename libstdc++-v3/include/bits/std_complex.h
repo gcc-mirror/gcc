@@ -51,6 +51,7 @@ namespace std
 
   template<typename _Tp> _Tp abs(const complex<_Tp>&);
   template<typename _Tp>  _Tp arg(const complex<_Tp>&);
+  template<typename _Tp> _Tp norm(const complex<_Tp>&);
 
   template<typename _Tp> complex<_Tp> conj(const complex<_Tp>&);
   template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp&);
@@ -177,7 +178,8 @@ namespace std
     friend class complex<long double>;
 
     // friend float abs<>(const complex<float>&);
-    friend complex<float> conj<>(const complex<float>&);
+    //friend complex<float> conj<>(const complex<float>&);
+
     friend complex<float> cos<>(const complex<float>&);
     friend complex<float> cosh<>(const complex<float>&);
     friend complex<float> exp<>(const complex<float>&);
@@ -251,7 +253,7 @@ namespace std
     friend class complex<long double>;
 
     // friend double abs<>(const complex<double>&);
-    friend complex<double> conj<>(const complex<double>&);
+    // friend complex<double> conj<>(const complex<double>&);
     friend complex<double> cos<>(const complex<double>&);
     friend complex<double> cosh<>(const complex<double>&);
     friend complex<double> exp<>(const complex<double>&);
@@ -326,7 +328,7 @@ namespace std
     friend class complex<double>;
 
     // friend long double abs<>(const complex<long double>&);
-    friend complex<long double> conj<>(const complex<long double>&);
+    //friend complex<long double> conj<>(const complex<long double>&);
     friend complex<long double> cos<>(const complex<long double>&);
     friend complex<long double> cosh<>(const complex<long double>&);
     friend complex<long double> exp<>(const complex<long double>&);
@@ -939,35 +941,40 @@ namespace std
     polar(const _Tp& __rho, const _Tp& __theta)
     { return complex<_Tp>(__rho * cos(__theta), __rho * sin(__theta)); }
 
-  // 26.2.7/6
+//    // We use here a few more specializations.
+//    template<>
+//      inline complex<float>
+//      conj(const complex<float> &__x)
+//  #ifdef _GLIBCPP_BUGGY_FLOAT_COMPLEX
+//      {
+//        complex<float> __tmpf(~__x._M_value);
+//        return __tmpf;
+//      }
+//  #else
+//    { return complex<float>(~__x._M_value); }
+//  #endif
+
+//    template<>
+//      inline complex<double>
+//      conj(const complex<double> &__x)
+//      {  return complex<double> (~__x._M_value); }
+
+  // Transcendentals:
   template<typename _Tp>
     inline complex<_Tp>
-    conj(const complex<_Tp>& __z)
-    { return complex<_Tp>(__z.real(), -__z.imag()); }
+    exp(const complex<_Tp>& __z)
+    { return polar(exp(__z.real()), __z.imag()); }
 
-  // We use here a few more specializations.
-  template<>
-    inline complex<float>
-    conj(const complex<float> &__x)
-#ifdef _GLIBCPP_BUGGY_FLOAT_COMPLEX
-    {
-      complex<float> __tmpf(~__x._M_value);
-      return __tmpf;
-    }
-#else
-  { return complex<float>(~__x._M_value); }
-#endif
+  template<typename _Tp>
+    inline complex<_Tp>
+    log(const complex<_Tp>& __z)
+    { return complex<_Tp>(log(abs(__z)), arg(__z)); }
 
-  template<>
-    inline complex<double>
-    conj(const complex<double> &__x)
-    {  return complex<double> (~__x._M_value); }
-
-  template<>
-    inline complex<long double>
-    conj(const complex<long double> &__x)
-    { return complex<long double> (~__x._M_value); }
-
+  template<typename _Tp>
+    inline complex<_Tp>
+    log10(const complex<_Tp>& __z)
+    { return log(__z) / log(_Tp(10.0)); }
+  
 } // namespace std
 
 #endif	/* _CPP_COMPLEX */
