@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Hitachi Super-H.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
    Contributed by Steve Chamberlain (sac@cygnus.com)
 
@@ -36,24 +36,48 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
+
+
+#define CONDITIONAL_REGISTER_USAGE				\
+  /* Experimental calling convention with fewer saved registers */	\
+  if (TARGET_NOSAVE)						\
+    {								\
+      call_used_regs[8] = 1;					\
+      call_used_regs[9] = 1;					\
+      call_used_regs[10] = 1;					\
+      call_used_regs[11] = 1;					\
+    }    							\
+  /* Hitachi saves and restores mac registers on call */        \
+  if (TARGET_HITACHI)						\
+   {								\
+     call_used_regs[MACH_REG] = 0;				\
+     call_used_regs[MACL_REG] = 0;				\
+  }					
+
 
 /* Run-time compilation parameters selecting different hardware subsets. */
 
 extern int target_flags;
-#define ISIZE_BIT  1
-#define FAST_BIT   2
-
-#define MAC_BIT    8
-#define RTL_BIT    16
-#define DT_BIT     32
-#define DALIGN_BIT 64
-#define SH0_BIT	128
-#define SH1_BIT	256
-#define SH2_BIT	512
-#define SH3_BIT	1024
-#define C_BIT	2048
-#define R_BIT     (1<<12)
-#define SPACE_BIT (1<<13)
+#define ISIZE_BIT      	(1<<1)
+#define FAST_BIT       	(1<<2)
+#define MAC_BIT        	(1<<3)
+#define RTL_BIT        	(1<<4)
+#define DT_BIT         	(1<<5)
+#define DALIGN_BIT     	(1<<6)
+#define SH0_BIT	       	(1<<7)
+#define SH1_BIT	       	(1<<8)
+#define SH2_BIT	       	(1<<9)
+#define SH3_BIT	       	(1<<10)
+#define C_BIT	       	(1<<11)
+#define R_BIT     	(1<<12)
+#define SPACE_BIT 	(1<<13)
+#define BIGTABLE_BIT  	(1<<14)
+#define TRYR0_BIT  	(1<<15)
+#define NOSAVE_BIT  	(1<<16)
+#define SMALLCALL_BIT  	(1<<17)
+#define CONSTLEN_2_BIT  (1<<20)
+#define CONSTLEN_3_BIT  (1<<21)
+#define HITACHI_BIT     (1<<22)
 
 /* Nonzero if we should generate code using type 0 insns */
 #define TARGET_SH0 (target_flags & SH0_BIT)
@@ -88,28 +112,81 @@ extern int target_flags;
 /* Nonzero to align doubles on 64 bit boundaries */
 #define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
 
+/* Nonzero to use long jump tables */
+#define TARGET_BIGTABLE     (target_flags & BIGTABLE_BIT)
 
-/* Nonzero if Combine dumping wanted */
+/* Nonzero if combine dumping wanted */
 #define TARGET_CDUMP (target_flags & C_BIT)
 
-#define TARGET_SWITCHES  	\
-{ {"isize", 	( ISIZE_BIT)  },\
-  {"space", 	( SPACE_BIT)   },\
-  {"0",	        ( SH0_BIT) },\
-  {"1",	        ( SH1_BIT) },\
-  {"2",	        ( SH2_BIT) },\
-  {"3",	        ( SH3_BIT) },\
-  {"ac",  	( MAC_BIT)    },\
-  {"dalign",  	( DALIGN_BIT) },\
-  {"c",  	( C_BIT) },\
-  {"r",  	( RTL_BIT) },\
-  {"R",  	( R_BIT) },\
-  {"",   	TARGET_DEFAULT} \
+/* Nonzero if trying to use reg+disp for QIs and HIs.  This
+   doesn't work yet.*/
+#define TARGET_TRYR0 (target_flags & TRYR0_BIT)
+
+/* Nonzero if using no save calling convention */
+#define TARGET_NOSAVE (target_flags & NOSAVE_BIT)
+
+/* Nonzero if using no save calling convention */
+#define TARGET_SMALLCALL (target_flags & SMALLCALL_BIT)
+
+/* Select max size of computed constant code sequences to be 3 insns */
+#define TARGET_CLEN3 (target_flags & CONSTLEN_3_BIT)
+
+/* Nonzero if using Hitachi's calling convention */
+#define TARGET_HITACHI (target_flags & HITACHI_BIT)
+
+#define TARGET_SWITCHES  		\
+{ {"isize", 	( ISIZE_BIT) },		\
+  {"space", 	( SPACE_BIT) },		\
+  {"0",	        ( SH0_BIT) },		\
+  {"1",	        ( SH1_BIT) },		\
+  {"2",	        ( SH2_BIT) },		\
+  {"3",	        ( SH3_BIT) },		\
+  {"ac",  	( MAC_BIT) },		\
+  {"dalign",  	( DALIGN_BIT) },	\
+  {"c",  	( C_BIT) },		\
+  {"r",  	( RTL_BIT) },		\
+  {"bigtable", 	( BIGTABLE_BIT)},	\
+  {"try-r0", 	( TRYR0_BIT)},		\
+  {"R",  	( R_BIT) },		\
+  {"nosave",  	( NOSAVE_BIT) },	\
+  {"clen3",     ( CONSTLEN_3_BIT) },    \
+  {"smallcall",	( SMALLCALL_BIT) },	\
+  {"hitachi",	( HITACHI_BIT) },	\
+  {"",   	TARGET_DEFAULT} 	\
 }
 
-#define TARGET_DEFAULT  FAST_BIT
+#define TARGET_DEFAULT  (FAST_BIT)
 
-#define OVERRIDE_OPTIONS override_options();
+/* Macro to define table for command options with values.  */
+#define TARGET_OPTIONS \
+	{ { "maxsi-", &max_si}, \
+	  { "maxhi-", &max_hi} }
+
+#define OVERRIDE_OPTIONS 					\
+do {								\
+  sh_cpu = CPU_SH0;						\
+  if (TARGET_SH1)						\
+    sh_cpu = CPU_SH1;						\
+  if (TARGET_SH2)						\
+    sh_cpu = CPU_SH2;						\
+  if (TARGET_SH3)						\
+    sh_cpu = CPU_SH3;						\
+								\
+  /*  We *MUST* always define optimize since we *HAVE* to run   \
+      shorten branches to get correct code. */                  \
+                                                                \
+  optimize = 1;                                                 \
+  flag_delayed_branch = 1;					\
+								\
+  if (max_si)							\
+    max_count_si = atoi (max_si);				\
+  else                                                          \
+    max_count_si = 1010;                                        \
+  if (max_hi)							\
+    max_count_hi = atoi (max_hi);				\
+  else      							\
+    max_count_hi = 505;				                \
+} while (0)
 
 
 /* Target machine storage Layout.  */
@@ -171,7 +248,7 @@ extern int target_flags;
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
   ((TREE_CODE (EXP) == STRING_CST	\
     && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
+    ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -186,13 +263,13 @@ extern int target_flags;
 
 /* Standard register usage.  */
 
-/* Register allocation for our first guess 
+/* Register allocation for the Hitachi calling convention:
 
-	r0-r3		scratch
-	r4-r7		args in and out
-	r8-r12		call saved
-	r13		assembler temp
-	r14		frame pointer
+        r0		arg return
+	r1..r3          scratch
+	r4-r7		args in
+	r8..r13		call saved
+	r14		frame pointer/call saved
 	r15		stack pointer
 	ap		arg pointer (doesn't really exist, always eliminated)
 	pr		subroutine return address
@@ -207,23 +284,33 @@ extern int target_flags;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.
 
-   SH has 16 integer registers and 4 control registers + the arg
-   pointer */
+*/
 
-#define FIRST_PSEUDO_REGISTER 22
-
+#define AP_REG   16  
 #define PR_REG   17
 #define T_REG    18
 #define GBR_REG  19
 #define MACH_REG 20
 #define MACL_REG 21
 
+#define FIRST_PSEUDO_REGISTER 22
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
- /*  r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh   ml */
-#define FIXED_REGISTERS  \
-   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  1,  1,  0,  1,  1, 1,   1}
+ /*  r0  r1  r2  r3 
+     r4  r5  r6  r7
+     r8  r9  r10 r11
+     r12 r13 r14 r15
+     ap  pr  t   gbr
+     mh   ml */
+
+#define FIXED_REGISTERS  	\
+  { 0,  0,  0,  0, 		\
+    0,  0,  0,  0, 		\
+    0,  0,  0,  0, 		\
+    0,  0,  0,  1, 		\
+    1,  1,  1,  1, 		\
+    1,  1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -232,9 +319,20 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
- /*  r0  r1  r2  r3  r4  r5  r6  r7  r8 r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh  ml */
-#define CALL_USED_REGISTERS \
-   { 1,  1,  1,  1,  1,  1,  1,  1,  0, 0,  0,  0,  0,  1,  0,  1,  1,  0,  1,  1, 1, 1}
+ /*  r0  r1  r2  r3  
+     r4  r5  r6  r7 
+     r8  r9  r10 r11
+     r12 r13 r14 r15
+     ap  pr  t   gbr 
+     mh  ml */
+
+#define CALL_USED_REGISTERS 	\
+   { 1,  1,  1,  1,		\
+     1,  1,  1,  1, 		\
+     0,  0,  0,  0,		\
+     0,  0,  0,  1,		\
+     1,  0,  1,  1,		\
+     1,  1}	
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -242,14 +340,16 @@ extern int target_flags;
    but can be less for certain modes in special long registers.
 
    On the SH regs are UNITS_PER_WORD bits wide; */
+
 #define HARD_REGNO_NREGS(REGNO, MODE)  \
    (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    We may keep double values in even registers */
 
+extern int hard_regno_mode_ok[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE)  \
-  ((TARGET_ALIGN_DOUBLE && GET_MODE_SIZE(MODE) > 4) ? (((REGNO)&1)==0) : 1)
+  (hard_regno_mode_ok[REGNO] & (1<<(int)MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -275,8 +375,7 @@ extern int target_flags;
    Zero means the frame pointer need not be set up (and parms may be accessed
    via the stack pointer) in functions that seem suitable.  */
 
-
-#define FRAME_POINTER_REQUIRED	(get_frame_size() > 1000)
+#define FRAME_POINTER_REQUIRED	0
 
 /* Definitions for register eliminations.
 
@@ -290,10 +389,16 @@ extern int target_flags;
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.  */
 
+/* This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.  */
+
 #define ELIMINABLE_REGS				\
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},}
+
 
 /* Given FROM and TO register numbers, say whether this elimination
    is allowed.  */
@@ -314,8 +419,20 @@ extern int target_flags;
 
 /* The register in which a struct value address is passed */
 
-#define STRUCT_VALUE_REGNUM 3
+#define STRUCT_VALUE_REGNUM 2
 
+/* If the structure value address is not passed in a register, define
+   `STRUCT_VALUE' as an expression returning an RTX for the place
+   where the address is passed.  If it returns 0, the address is
+   passed as an "invisible" first argument.  */
+
+/*#define STRUCT_VALUE ((rtx)0)*/
+
+
+/* Don't default to pcc-struct-return, because we have already specified
+   exactly how to return structures in the RETURN_IN_MEMORY macro.  */
+
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 
 /* Define the classes of registers for register constraints in the
@@ -347,10 +464,10 @@ enum reg_class
 {
   NO_REGS,
   R0_REGS,
-  GENERAL_REGS,
   PR_REGS,
   T_REGS,
   MAC_REGS,
+  GENERAL_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -362,10 +479,10 @@ enum reg_class
 {			\
   "NO_REGS",		\
   "R0_REGS",		\
-  "GENERAL_REGS",	\
   "PR_REGS",		\
   "T_REGS",		\
   "MAC_REGS",		\
+  "GENERAL_REGS",	\
   "ALL_REGS",		\
 }
 
@@ -377,10 +494,10 @@ enum reg_class
 {				\
   0x000000,  /* NO_REGS      */	\
   0x000001,  /* R0_REGS      */	\
-  0x01FFFF,  /* GENERAL_REGS */	\
   0x020000,  /* PR_REGS      */	\
   0x040000,  /* T_REGS       */	\
   0x300000,  /* MAC_REGS     */	\
+  0x01FFFF,  /* GENERAL_REGS */	\
   0x37FFFF   /* ALL_REGS     */	\
 }
 
@@ -392,9 +509,15 @@ enum reg_class
 extern int regno_reg_class[];
 #define REGNO_REG_CLASS(REGNO) regno_reg_class[REGNO]
 
+/* When defined, the compiler allows registers explicitly used in the
+   rtl to be used as spill registers but prevents the compiler from
+   extending the lifetime of these registers. */
+
+#define SMALL_REGISTER_CLASSES
+
 /* The order in which register should be allocated.  */
 #define REG_ALLOC_ORDER  \
-  { 1,2,3,7,4,5,6,0,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
+  { 1,2,3,7,6,5,4,0,8,9,10,11,12,13,14,15,16,17,18,19,20,21 }
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  R0_REGS
@@ -415,20 +538,22 @@ extern enum reg_class reg_class_from_letter[];
    Return 1 if VALUE is in the range specified by C.
 	I: arithmetic operand -127..128, as used in add, sub, etc
 	L: logical operand 0..255, as used in and, or, etc.
+	J: something ok as a move source - so it must be easy to make
 	M: constant 1
+	N: constant 0
 	K: shift operand 1,2,8 or 16 */
 
 
 #define CONST_OK_FOR_I(VALUE) (((int)(VALUE))>= -128 && ((int)(VALUE)) <= 127)
 #define CONST_OK_FOR_L(VALUE) (((int)(VALUE))>=    0 && ((int)(VALUE)) <= 255)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
+#define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
 #define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
-
 #define CONST_OK_FOR_LETTER_P(VALUE, C)     \
      ((C) == 'I' ? CONST_OK_FOR_I (VALUE)   \
+    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)   \
     : (C) == 'L' ? CONST_OK_FOR_L (VALUE)   \
     : (C) == 'M' ? CONST_OK_FOR_M (VALUE)   \
-    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)   \
     : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -444,13 +569,12 @@ extern enum reg_class reg_class_from_letter[];
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS)  CLASS
+#define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
 
-#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) NO_REGS
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS. 
@@ -459,6 +583,7 @@ extern enum reg_class reg_class_from_letter[];
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
      ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -466,22 +591,21 @@ extern enum reg_class reg_class_from_letter[];
    These two macros are used only in other macro definitions below.  */
 #define NPARM_REGS 4
 #define FIRST_PARM_REG 4
-#define FIRST_RET_REG 4
+#define FIRST_RET_REG 0
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD  
 
-/* Define this if the nominal address of the stack frame
-   is at the high-address end of the local variables;
-   that is, each additional local variable allocated
-   goes at a more negative offset in the frame.  */
-#define FRAME_GROWS_DOWNWARD 
+/*  Define this macro if the addresses of local variable slots are at
+    negative offsets from the frame pointer.
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
+    The SH only has positive indexes, so grow the frame up 
+*/
+/* #define FRAME_GROWS_DOWNWARD */
+
+/* Offset from the frame pointer to the first local variable slot to
+   be allocated. */
 #define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
@@ -505,8 +629,11 @@ extern enum reg_class reg_class_from_letter[];
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-    gen_rtx (REG, TYPE_MODE (VALTYPE), FIRST_RET_REG)
+
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  gen_rtx (REG, \
+	   TYPE_MODE (VALTYPE) == BLKmode ? SImode : TYPE_MODE (VALTYPE), \
+	   FIRST_RET_REG)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -514,7 +641,7 @@ extern enum reg_class reg_class_from_letter[];
     gen_rtx (REG, MODE, FIRST_RET_REG)
 
 /* 1 if N is a possible register number for a function value.
-   On the SH, only r4 can return results.  */
+   On the SH, only r0 can return results.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
 	  ((REGNO) == FIRST_RET_REG)
 
@@ -593,6 +720,7 @@ extern enum reg_class reg_class_from_letter[];
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)			\
   (NAMED && ROUND_REG ((CUM), (MODE)) < NPARM_REGS		\
+   && (MODE) != BLKmode 					\
    && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))		\
    && ((TYPE)==0 || (MODE) != BLKmode				\
        || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))		\
@@ -603,20 +731,10 @@ extern enum reg_class reg_class_from_letter[];
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.
-   Any arg that starts in the first NPARM_REGS regs but won't entirely
-   fit in them needs partial registers on the SH.  */
+   
+   We never split args */
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 		\
-  ((ROUND_REG ((CUM), (MODE)) < NPARM_REGS				\
-    && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))			\
-    && ((TYPE)==0 || (MODE) != BLKmode					\
-	|| (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))			\
-    && (ROUND_REG ((CUM), (MODE))					\
-	+ ((MODE) == BLKmode						\
-	   ? ROUND_ADVANCE (int_size_in_bytes (TYPE))			\
-	   : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))) - NPARM_REGS > 0)	\
-   ? (NPARM_REGS - ROUND_REG ((CUM), (MODE)))				\
-   : 0)
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
 extern int current_function_anonymous_args;
 
@@ -647,8 +765,8 @@ extern int current_function_anonymous_args;
 /* Generate the assembly code for function exit 
    Just dump out any accumulated constant table.*/
 
-#define FUNCTION_EPILOGUE(STREAM, SIZE)  \
-  dump_constants(0);  
+#define FUNCTION_EPILOGUE(STREAM, SIZE)  function_epilogue (STREAM, SIZE)
+
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
@@ -691,7 +809,6 @@ extern int current_function_anonymous_args;
 
 
 /* Addressing modes, and classification of registers for them.  */
-
 /*#define HAVE_POST_INCREMENT  1*/
 /*#define HAVE_PRE_INCREMENT   1*/
 /*#define HAVE_POST_DECREMENT  1*/
@@ -706,27 +823,27 @@ extern int current_function_anonymous_args;
    has been allocated, which happens in local-alloc.c.
 
 */
+
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) < PR_REG || (unsigned) reg_renumber[(REGNO)] < PR_REG)
-
-#define REGNO_OK_FOR_INDEX_P(REGNO)   ((REGNO)==0)
+#define REGNO_OK_FOR_INDEX_P(REGNO)   \
+  ((REGNO) == 0 || (unsigned) reg_renumber[(REGNO)] == 0)
 
 /* Maximum number of registers that can appear in a valid memory 
    address. */
 
-#define MAX_REGS_PER_ADDRESS 4
+#define MAX_REGS_PER_ADDRESS 2
 
 /* Recognize any constant value that is a valid address.  */
 
 #define CONSTANT_ADDRESS_P(X) 	\
   (GET_CODE (X) == LABEL_REF)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
+/* Nonzero if the constant value X is a legitimate general operand. */
 
-   On the SH, allow anything but a double */
+#define LEGITIMATE_CONSTANT_P(X) \
+  (GET_CODE(X) != CONST_DOUBLE && GET_CODE(X) != LABEL_REF)
 
-#define LEGITIMATE_CONSTANT_P(X)  (GET_CODE(X) != CONST_DOUBLE)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -735,23 +852,27 @@ extern int current_function_anonymous_args;
    them unless they have been allocated suitable hard regs.
    The symbol REG_OK_STRICT causes the latter definition to be used.  */
 
+#define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64))
+#define MODE_DISP_OK_2(X,MODE) ((GET_MODE_SIZE(MODE)==2) && ((unsigned)INTVAL(X)<32) && TARGET_TRYR0)
+#define MODE_DISP_OK_1(X,MODE) ((GET_MODE_SIZE(MODE)==1) && ((unsigned)INTVAL(X)<16) && TARGET_TRYR0)
+
 #ifndef REG_OK_STRICT
+
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-    	(REGNO (X) <= 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-
+  (REGNO (X) <= 16 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
+
 #define REG_OK_FOR_INDEX_P(X) \
-    	(REGNO (X) == 0 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) == 0 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
 
 #define REG_OK_FOR_PRE_POST_P(X) \
   	(REGNO (X) <= 16)
 
 #else
-
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X)	\
 	REGNO_OK_FOR_BASE_P (REGNO (X))
@@ -761,8 +882,29 @@ extern int current_function_anonymous_args;
   	REGNO_OK_FOR_INDEX_P (REGNO (X))
 
 #define REG_OK_FOR_PRE_POST_P(X)  \
-	(REGNO (X) <= 16 || (unsigned) reg_renumber[REGNO (X)] <=16)
+	(REGNO (X) <= 16)
 #endif
+
+/* The Q is a pc relative load operand */
+#define EXTRA_CONSTRAINT_Q(OP)    \
+   (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP,0)) == LABEL_REF)
+
+/* The U is a label ref */
+#define EXTRA_CONSTRAINT_U(OP)    \
+   (GET_CODE (OP) == LABEL_REF)
+
+#define IS_INDEX(OP) 								\
+  ((GET_CODE(OP) == PLUS && 							\
+    (INDEX_REGISTER_RTX_P(XEXP(OP,0)) && BASE_REGISTER_RTX_P(XEXP(OP,1))) ||	\
+    (INDEX_REGISTER_RTX_P(XEXP(OP,1)) && BASE_REGISTER_RTX_P(XEXP(OP,0)))))
+
+
+
+#define EXTRA_CONSTRAINT(OP, C)   \
+     ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)   \
+    : (C) == 'U' ? EXTRA_CONSTRAINT_U (OP)   \
+    : 0)
+
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -796,18 +938,14 @@ extern int current_function_anonymous_args;
    A legitimate index for a QI or HI is 0, SI and above can be any 
    number 0..63 */
 
-#define GO_IF_LEGITIMATE_INDEX(MODE, REGNO, OP, LABEL)  \
-  do {							\
-    if (GET_CODE (OP) == CONST_INT) 			\
-      {							\
-	if (0&&GET_MODE_SIZE (MODE) == 2 && ((unsigned)INTVAL(OP)) <=30)\
-	  goto LABEL;					\
-	if (0&&GET_MODE_SIZE (MODE) == 1 && ((unsigned)INTVAL(OP)) <=15)\
-	  goto LABEL;					\
-	if (GET_MODE_SIZE (MODE) >=4 			\
-	    && ((unsigned)INTVAL(OP)) < 64)		\
-	  goto LABEL;					\
-      }							\
+#define GO_IF_LEGITIMATE_INDEX(MODE, REGNO, OP, LABEL)  		\
+  do {									\
+    if (GET_CODE (OP) == CONST_INT) 					\
+      {									\
+	if (MODE_DISP_OK_4 (OP, MODE))  goto LABEL;		      	\
+	if (MODE_DISP_OK_2 (OP, MODE))  goto LABEL;		      	\
+	if (MODE_DISP_OK_1 (OP, MODE))  goto LABEL;		      	\
+      }									\
   } while(0)
 
 
@@ -819,13 +957,13 @@ extern int current_function_anonymous_args;
 	   && GET_CODE (XEXP (X, 0)) == REG			  \
 	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
     goto LABEL;							  \
-  else if (GET_CODE (X) == PLUS || GET_CODE(X) == LO_SUM) 	  \
+  else if (GET_CODE (X) == PLUS) 	  			  \
     {								  \
       rtx xop0 = XEXP(X,0);					  \
       rtx xop1 = XEXP(X,1);					  \
-      if (GET_MODE_SIZE(MODE) >= 4 && BASE_REGISTER_RTX_P (xop0)) \
+      if (GET_MODE_SIZE(MODE) <= 4 && BASE_REGISTER_RTX_P (xop0)) \
 	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL); \
-      if (GET_MODE_SIZE(MODE) >= 4 && BASE_REGISTER_RTX_P (xop1)) \
+      if (GET_MODE_SIZE(MODE) <= 4 && BASE_REGISTER_RTX_P (xop1)) \
 	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL); \
       if (GET_MODE_SIZE(MODE)<=4) {				  \
 	if(BASE_REGISTER_RTX_P(xop1) &&			 	  \
@@ -869,12 +1007,12 @@ extern int current_function_anonymous_args;
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE SImode
+#define CASE_VECTOR_MODE (TARGET_BIGTABLE ? SImode : HImode)
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
    Do not define this if the table should contain absolute addresses.  */
-/* #define CASE_VECTOR_PC_RELATIVE */
+#define CASE_VECTOR_PC_RELATIVE 
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
@@ -889,7 +1027,7 @@ extern int current_function_anonymous_args;
 #define SIZE_TYPE "unsigned int"
 
 /* Don't cse the address of the function being compiled.  */
-#define NO_RECURSIVE_FUNCTION_CSE 1
+/*#define NO_RECURSIVE_FUNCTION_CSE 1*/
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
@@ -940,15 +1078,12 @@ extern int current_function_anonymous_args;
 #define Pmode  SImode
 #define FUNCTION_MODE  Pmode
 
-/* The structure type of the machine dependent info field of insns
-   No uses for this yet.  */
-/* #define INSN_MACHINE_INFO  struct machine_info  */
-
 /* The relative costs of various types of constants.  Note that cse.c defines
    REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
 
 #define CONST_COSTS(RTX, CODE, OUTER_CODE)      \
   case CONST_INT:				\
+  if (INTVAL(RTX)==0) return 0; \
     if (CONST_OK_FOR_I (INTVAL(RTX)))           \
       return 1;					\
     else					\
@@ -961,6 +1096,8 @@ extern int current_function_anonymous_args;
       return 10;
 
 #define RTX_COSTS(X, CODE, OUTER_CODE)			\
+  case AND:						\
+    return COSTS_N_INSNS (andcosts (X));                \
   case MULT:						\
     return COSTS_N_INSNS (multcosts (X));		\
   case ASHIFT:						\
@@ -976,6 +1113,34 @@ extern int current_function_anonymous_args;
   case FIX:						\
     return 100;
 
+
+/* The multiply and divide insns on the SH are actually function calls
+   with some special constraints on arguments and register usage.
+
+   These macros tell reorg that the references to arguments and 
+   register clobbers for insns of type sfunc do not appear to happen 
+   until after the millicode call.  This allows reorg to put insns
+   which set the argument registers into the delay slot of the millicode
+   call -- thus they act more like traditional CALL_INSNs.
+
+   get_attr_type will try to recognize the given insn, so make sure to
+   filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
+   in particular.  */
+
+#define INSN_SETS_ARE_DELAYED(X) 		\
+  ((GET_CODE (X) == INSN			\
+    && GET_CODE (PATTERN (X)) != SEQUENCE	\
+    && GET_CODE (PATTERN (X)) != USE		\
+    && GET_CODE (PATTERN (X)) != CLOBBER	\
+    && get_attr_type (X) == TYPE_SFUNC))
+
+#define INSN_REFERENCES_ARE_DELAYED(X) 		\
+  ((GET_CODE (X) == INSN			\
+    && GET_CODE (PATTERN (X)) != SEQUENCE	\
+    && GET_CODE (PATTERN (X)) != USE		\
+    && GET_CODE (PATTERN (X)) != CLOBBER	\
+    && get_attr_type (X) == TYPE_SFUNC))	
+
 /* Compute extra cost of moving data between one register class
    and another.  
 
@@ -984,7 +1149,7 @@ extern int current_function_anonymous_args;
 */
 
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS)  \
-	((DSTCLASS == T_REGS) ? 10 : 1)
+	(((DSTCLASS == T_REGS) || (DSTCLASS == PR_REG)) ? 10 : 1)
 
 /* Assembler output control */
 
@@ -994,23 +1159,23 @@ extern int current_function_anonymous_args;
 		     W_options, sizeof W_options / sizeof W_options[0]); 	
 
 
-#define ASM_FILE_END(STREAM) \
-  dump_constants(0);  
-
-#define ASM_APP_ON  ""
-#define ASM_APP_OFF  ""
-
-#define FILE_ASM_OP "\t.file\n"
-#define IDENT_ASM_OP "\t.ident\n"
+#define ASM_FILE_END(STREAM) 
 
 
-/* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  "\t.text"
-#define DATA_SECTION_ASM_OP  "\t.data"
-#define CTORS_SECTION_ASM_OP "\t.section\t.ctors\n"
-#define DTORS_SECTION_ASM_OP "\t.section\t.dtors\n"
+#define ASM_APP_ON  		""
+#define ASM_APP_OFF  		""
+#define FILE_ASM_OP 		"\t.file\n"
+#define IDENT_ASM_OP 		"\t.ident\n"
 
-#define EXTRA_SECTIONS in_ctors, in_dtors
+/* How to change between sections. */
+
+#define TEXT_SECTION_ASM_OP  	"\t.text"
+#define DATA_SECTION_ASM_OP  	"\t.data"
+#define CTORS_SECTION_ASM_OP 	"\t.section\t.ctors\n"
+#define DTORS_SECTION_ASM_OP 	"\t.section\t.dtors\n"
+#define INIT_SECTION_ASM_OP  	"\t.section\t.init\n"
+#define EXTRA_SECTIONS 		in_ctors, in_dtors
+
 #define EXTRA_SECTION_FUNCTIONS                              \
 void							     \
 ctors_section() 					     \
@@ -1040,8 +1205,8 @@ dtors_section() 					     \
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
    do {  dtors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
 
-
 #undef DO_GLOBAL_CTORS_BODY                     
+
 #define DO_GLOBAL_CTORS_BODY			\
 {						\
   typedef (*pfunc)();				\
@@ -1068,13 +1233,11 @@ dtors_section() 					     \
 }						 
 
 
-
 #define ASM_OUTPUT_REG_PUSH(file, v) \
   fprintf (file, "\tmov.l	r%s,-@r15\n", v);
 
 #define ASM_OUTPUT_REG_POP(file, v) \
   fprintf (file, "\tmov.l	@r15+,r%s\n", v);
-
 
   
 /* The assembler's names for the registers.  RFP need not always be used as
@@ -1133,18 +1296,25 @@ dtors_section() 					     \
   ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
-/* Jump tables must be 32 bit aligned. */
+/* Jump tables must be 32 bit aligned, no matter the size of the element */
 #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \
-  fprintf (STREAM, "\t.align 2\n%s%d:\n", PREFIX, NUM);
+    fprintf (STREAM, "\t.align 2\n%s%d:\n",  PREFIX, NUM);
 
-/* Output a relative address. Not needed since jump tables are absolute
-   but we must define it anyway.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  \
-  fputs ("- - - ASM_OUTPUT_ADDR_DIFF_ELT called!\n", STREAM)
+/* Output a relative address table. */
 
-/* Output an element of a dispatch table.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  \
-    fprintf (STREAM, "\t.long\tL%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  			\
+  if (TARGET_BIGTABLE) 							\
+	fprintf (STREAM, "\t.long	L%d-L%d\n", VALUE,REL); 	\
+  else									\
+	fprintf (STREAM, "\t.word	L%d-L%d\n", VALUE,REL); 	\
+
+/* Output an absolute table element */
+
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
+  if (TARGET_BIGTABLE) 							\
+	fprintf (STREAM, "\t.long	L%d\n", VALUE); 		\
+  else									\
+        fprintf (STREAM, "\t.word	L%d\n", VALUE); 		\
 
 /* Output various types of constants.  */
 
@@ -1164,7 +1334,6 @@ do { char dstr[30];					\
      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
      fprintf (FILE, "\t.float %s\n", dstr);		\
    } while (0)
-
 
 #define ASM_OUTPUT_INT(STREAM, EXP)  	\
   (fprintf (STREAM, "\t.long\t"),      	\
@@ -1237,16 +1406,13 @@ do { char dstr[30];					\
 #define PRINT_OPERAND_ADDRESS(STREAM,X)  print_operand_address (STREAM, X)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '!')
+  ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR)=='!')
 
 
-/* Define the information needed to generate branch insns.  This is stored
-   from the compare operation.  Note that we can't use "rtx" here since it
-   hasn't been defined!  */
-
 extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
 extern struct rtx_def *prepare_scc_operands();
+extern struct rtx_def *table_lab;
 
 extern enum attr_cpu sh_cpu;	/* target cpu */
 
@@ -1256,12 +1422,24 @@ extern char *output_branch();
 extern char *output_shift();
 extern char *output_movedouble();
 extern char *output_movepcrel();
+extern char *output_jump_label_table();
+extern char *output_far_jump();
 
 
-#define ADJUST_INSN_LENGTH(insn, length) \
-  adjust_insn_length (insn, insn_lengths)
+#define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg(X)
 
+/* Generate calls to memcpy, memcmp and memset.  */
 
+#define TARGET_MEM_FUNCTIONS
 
+#define HANDLE_PRAGMA(finput) handle_pragma (finput)
 
+/* Set when processing a function with pragma interrupt turned on. */
 
+extern int pragma_interrupt;
+#define MOVE_RATIO 16
+
+char *max_si;
+char *max_hi;
+int max_count_si;
+int max_count_hi;
