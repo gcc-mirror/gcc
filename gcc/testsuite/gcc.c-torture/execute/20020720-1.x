@@ -9,21 +9,16 @@
 #     for example the comparison insn takes 0.0 as an operand, the
 #     combiner is able to see all intermediate instructions simultaneously
 #     and can make the optimization.
-if { [istarget "mips*-*-*"] || [istarget "xtensa-*-*"] \
-     || [istarget "sh-*-*"] || [istarget "arm*-*-*"] \
-     || [istarget "strongarm*-*-*"] || [istarget "xscale*-*-*"] \
-     || [istarget "sparc64-*-*"] || [istarget "sparcv9-*-*"] } {
-    set torture_execute_xfail [istarget]
-}
 
-# sparc-*-* also fails with -m64.
-set torture_eval_before_execute {
+# Don't XFAIL at -O0, that should never fail.
+set torture_eval_before_compile {
     global compiler_conditional_xfail_data
     set compiler_conditional_xfail_data {
-        "This test fails on sparc -m64, see PR8087." \
-        { "sparc-*-*" } \
-        { "-m64" } \
-        { "" }
+        "This test fails to optimize completely on certain platforms." \
+        { "mips*-*-*" "xtensa-*-*" "sh-*-*" "arm*-*-*" "strongarm*-*-*" \
+          "xscale*-*-*" } \
+        { "*" } \
+        { "-O0" }
     }
 }
 
