@@ -2319,7 +2319,12 @@
     {
       extern int optimize;
       rtx mem = force_const_mem (SFmode, operands[1]);
-      rtx addr = gen_reg_rtx (SImode);
+      rtx addr;
+
+      if (reload_in_progress || reload_completed)
+	addr = gen_rtx (REG, SImode, REGNO (operands[0]));
+      else
+        addr = gen_reg_rtx (SImode);
       if (optimize == 0)
 	{
 	  rtx ptr = force_const_mem (SImode, XEXP (mem, 0));
@@ -2364,7 +2369,12 @@
     {
       extern int optimize;
       rtx mem = force_const_mem (DFmode, operands[1]);
-      rtx addr = gen_reg_rtx (SImode);
+      rtx addr;
+
+      if (reload_in_progress || reload_completed)
+	addr = gen_rtx (REG, SImode, REGNO (operands[0]));
+      else
+	addr = gen_reg_rtx (SImode);
       if (optimize == 0)
 	{
 	  rtx ptr = force_const_mem (SImode, XEXP (mem, 0));
