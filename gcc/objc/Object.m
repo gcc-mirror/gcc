@@ -213,7 +213,7 @@ extern int errno;
       }
     }
 
-  if (parent = [self superClass])
+  if ((parent = [self superClass]))
     return [parent conformsTo: aProtocol];
   else
     return NO;
@@ -335,7 +335,7 @@ extern size_t strlen(const char*);
                     object_is_instance(self)?"instance":"class",
                     (aString!=NULL)?aString:"");
   va_start(ap, aString);
-  objc_error(self, OBJC_ERR_UNKNOWN, fmt, ap);
+  objc_verror(self, OBJC_ERR_UNKNOWN, fmt, ap);
   va_end(ap);
   return nil;
 #undef FMT

@@ -1,3 +1,7 @@
+Sun Feb 22 15:29:48 1998  Richard Henderson  <rth@cygnus.com>
+
+	* objc/Object.m (-error): Call objc_verror with our va_list.
+
 Sun Feb 22 09:45:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (scan_prog_file): Completely cover uses of variable
