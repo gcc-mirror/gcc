@@ -10185,7 +10185,7 @@ reg_dead_at_p (reg, insn)
 
   /* Scan backwards until we find a REG_DEAD note, SET, CLOBBER, label, or
      beginning of function.  */
-  for (; insn && GET_CODE (insn) != CODE_LABEL;
+  for (; insn && GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != BARRIER;
        insn = prev_nonnote_insn (insn))
     {
       note_stores (PATTERN (insn), reg_dead_at_p_1);
