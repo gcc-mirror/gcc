@@ -40,7 +40,7 @@ SUBDIRS =@subdirs@
 # Selection of languages to be made.
 # This is overridden by configure.
 CONFIG_LANGUAGES = @all_languages@
-LANGUAGES = c proto gcov$(exeext) $(CONFIG_LANGUAGES)
+LANGUAGES = c gcov$(exeext) $(CONFIG_LANGUAGES)
 
 # Languages should create dependencies of $(INTL_TARGETS) on generated
 # sources in Make-lang.in.  Example:
@@ -2350,10 +2350,6 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-# It may not be quite desirable to delete unprotoize.c here,
-# but the spec for `make clean' requires it.
-# Using unprotoize.c is not quite right in the first place,
-# but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc1-asm.a libgcc2.a libgcc2.ready
 	-rm -f libgcc1.null
 	-rm -f *.dvi
