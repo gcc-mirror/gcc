@@ -50,27 +50,19 @@ Boston, MA 02111-1307, USA.  */
 
 /* Target specific preprocessor settings.  */
 
-#define NO_BUILTIN_SIZE_TYPE
-#define NO_BUILTIN_PTRDIFF_TYPE
-
 #define CPP_PREDEFINES \
   "-Dunix -Asystem(unix) -D__gnu_linux__ -Dlinux -Asystem(linux) -D__ELF__ \
    -Acpu(s390) -Amachine(s390) -D__s390__"
 
-#define CPP_ARCH31_SPEC \
-  "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=int"
-#define CPP_ARCH64_SPEC \
-  "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
-   -D__s390x__ -D__LONG_MAX__=9223372036854775807L"
+#define CPP_ARCH31_SPEC ""
+#define CPP_ARCH64_SPEC "-D__s390x__ -D__LONG_MAX__=9223372036854775807L"
 
+#undef  CPP_SPEC
 #ifdef DEFAULT_TARGET_64BIT
-#undef  CPP_SPEC
-#define CPP_SPEC "%{m31:%(cpp_arch31)} %{!m31:%(cpp_arch64)}"
+#define CPP_SPEC "%{!m31:%(cpp_arch64)}"
 #else
-#undef  CPP_SPEC
-#define CPP_SPEC "%{m64:%(cpp_arch64)} %{!m64:%(cpp_arch31)}"
+#define CPP_SPEC "%{m64:%(cpp_arch64)}"
 #endif
-
 
 /* Target specific compiler settings.  */
 

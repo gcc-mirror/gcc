@@ -1,3 +1,37 @@
+2002-05-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-parse.in (MODIFIED_WCHAR_TYPE): New macro.
+	(c_common_nodes_and_builtins): Use it.
+	(builtin_define_with_value): New function.
+	(cb_register_builtins): Define __SIZE_TYPE__,
+	__PTRDIFF_TYPE__, __WCHAR_TYPE__, and __WINT_TYPE__ here,
+	using builtin_define_with_value.  Use consistent notation when
+	defining __GXX_WEAK__.
+	(WCHAR_TYPE_SIZE): Don't redefine.
+	(combine_strings): Don't use WCHAR_TYPE_SIZE.
+
+	* cppdefault.h: Don't provide defaults for SIZE_TYPE,
+	PTRDIFF_TYPE, WCHAR_TYPE, or WINT_TYPE.
+	* cppinit.c (builtin_array): Remove entries for __SIZE_TYPE__ etc.
+	* tradcpp.c (initialize_builtins): Likewise.
+	* gcc.c (cpp_unique_options): Don't muck with __WCHAR_TYPE__.
+
+	* c-lex.h (builtin_define_with_value): Prototype.
+	* system.h: Poison NO_BUILTIN_SIZE_TYPE, NO_BUILTIN_WCHAR_TYPE,
+	NO_BUILTIN_PTRDIFF_TYPE, and NO_BUILTIN_WINT_TYPE.
+	* doc/tm.texi: Remove mention of NO_BUILTIN_SIZE_TYPE etc.
+
+	* config/avr/avr.h, config/h8300/h8300.h, config/i386/i386.h,
+	config/ia64/ia64.h, config/mips/dec-osf1.h, config/mips/iris6.h,
+	config/mips/linux.h, config/mips/mips.h, config/mips/netbsd.h,
+	config/mips/osfrose.h, config/mips/sni-svr4.h, config/rs6000/aix51.h,
+	config/s390/linux.h, config/sh/sh.h, config/sh/sh64.h,
+	config/sparc/linux64.h, config/sparc/netbsd-elf.h,
+	config/sparc/sol2-bi.h, config/sparc/sparc.h:
+	Do not define NO_BUILTIN_SIZE_TYPE etc.  Remove all references
+	to __SIZE_TYPE__ etc from all spec strings. When this makes
+	extra specs empty, delete them.
+
 2002-05-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (override_options): Override TARGET_JUMP_IN_DELAY when scheduling

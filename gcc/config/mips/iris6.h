@@ -44,8 +44,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* wchar_t is defined differently with and without -mabi=64.  */
 
-#define NO_BUILTIN_WCHAR_TYPE
-
 #undef WCHAR_TYPE
 #define WCHAR_TYPE (Pmode == DImode ? "int" : "long int")
 
@@ -53,8 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 /* Same for wint_t.  */
-
-#define NO_BUILTIN_WINT_TYPE
 
 #undef WINT_TYPE
 #define WINT_TYPE (Pmode == DImode ? "int" : "long int")
@@ -78,15 +74,6 @@ Boston, MA 02111-1307, USA.  */
   -D_LONGLONG -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
   -Asystem=unix -Asystem=svr4 -Acpu=mips -Amachine=sgi"
 
-#undef SUBTARGET_CPP_SIZE_SPEC
-#define SUBTARGET_CPP_SIZE_SPEC "\
-%{mabi=32|mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__WCHAR_TYPE__=long\\ int -D__WINT_TYPE__=long\\ int} \
-%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
--D__WCHAR_TYPE__=int -D__WINT_TYPE__=int} \
-%{!mabi*: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__WCHAR_TYPE__=long\\ int -D__WINT_TYPE__=long\\ int}"
-
 /* We must make -mips3 do what -mlong64 used to do.  */
 /* ??? If no mipsX option given, but a mabi=X option is, then should set
    _MIPS_ISA based on the mabi=X option.  */
@@ -94,7 +81,6 @@ Boston, MA 02111-1307, USA.  */
    _MIPS_SIM based on the mipsX option.  */
 /* ??? Same for _MIPS_SZINT.  */
 /* ??? Same for _MIPS_SZPTR.  */
-/* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} \

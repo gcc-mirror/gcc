@@ -48,30 +48,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    it would be best to do something here to figure out automatically
    from other information what type to use.  */
 
-/* The string value for __SIZE_TYPE__.  */
-
-#ifndef SIZE_TYPE
-#define SIZE_TYPE "long unsigned int"
-#endif
-
-/* The string value for __PTRDIFF_TYPE__.  */
-
-#ifndef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long int"
-#endif
-
-/* The string value for __WCHAR_TYPE__.  */
-
-#ifndef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-#endif
-
-/* The string value for __WINT_TYPE__.  */
-
-#ifndef WINT_TYPE
-#define WINT_TYPE "unsigned int"
-#endif
-
 /* The string value for __USER_LABEL_PREFIX__ */
 
 #ifndef USER_LABEL_PREFIX

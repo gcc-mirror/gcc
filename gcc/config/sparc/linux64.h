@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_ARCH32_SPEC
 #define CPP_ARCH32_SPEC "%{mlong-double-128:-D__LONG_DOUBLE_128__} \
--D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
 -D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 
 #endif

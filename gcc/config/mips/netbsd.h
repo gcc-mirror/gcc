@@ -109,26 +109,14 @@ Boston, MA 02111-1307, USA.  */
    %{EL:-U__MIPSEB__ -D__MIPSEL__}					\
    %(subtarget_cpp_spec) "
 
-
-/* Provide a SUBTARGET_CPP_SIZE_SPEC appropriate for NetBSD.  In
-   addition to the normal work done by this spec, we also define
-   __LONG64 or not (so that <machine/ansi.h> can tell).  */
-
-#undef SUBTARGET_CPP_SIZE_SPEC
-#define SUBTARGET_CPP_SIZE_SPEC						\
-  "%{mlong64:								\
-     %{!mips1:								\
-       %{!mips2:							\
-	 %{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int -D__LONG64}}}} \
-   %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int -U__LONG64}"
-
-
 /* Provide a SUBTARGET_CPP_SPEC appropriate for NetBSD.  Currently,
-   we just deal with the GCC option '-posix'.  */
+   we just deal with the GCC option '-posix', and define __LONG64
+   as appropriate for <machine/ansi.h>.  */
 
 #undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
-
+#define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE}    \
+   %{mlong64:%{!mips1:%{!mips2:%{!mips32:-D__LONG64}}}} \
+   %{!mlong64:-U__LONG64}"
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/mips target.
    This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for

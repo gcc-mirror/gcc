@@ -43,11 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE	"short unsigned int"
 #define WCHAR_TYPE_SIZE SHORT_TYPE_SIZE
 
-#undef SUBTARGET_CPP_SIZE_SPEC
-#define SUBTARGET_CPP_SIZE_SPEC "\
-%{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__PTRDIFF_TYPE__=int}"
-
 /* turn off collect2 COFF support, since ldfcn now has elf declaration */
 #undef OBJECT_FORMAT_COFF
 

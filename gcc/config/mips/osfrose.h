@@ -34,10 +34,6 @@ Boston, MA 02111-1307, USA.  */
 -DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD \
 -Asystem=unix -Asystem=xpg4 -Acpu=mips -Amachine=mips"
 
-#define SUBTARGET_CPP_SIZE_SPEC "\
-%{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__PTRDIFF_TYPE__=int}"
-
 #define SUBTARGET_CPP_SPEC "\
 %{.S:	%{!ansi:%{!traditional-cpp: -traditional}}}"
 
