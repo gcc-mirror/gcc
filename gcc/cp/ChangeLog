@@ -1,3 +1,8 @@
+Tue Jun 24 15:30:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* method.c (thunk_labelno): Move outside ifdef block to make garbage
+	collector happy.
+
 Tue Jun 24 13:52:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (build_vtable): Make vtables.
