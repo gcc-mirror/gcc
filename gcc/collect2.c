@@ -2490,7 +2490,7 @@ scan_prog_file (prog_name, which_pass)
 	      /* All AIX function names have a duplicate entry beginning
 		 with a dot. */
 	      if (*name == '.')
-		continue;
+		++name;
 #endif
 
 	      switch (is_ctor_dtor (name))
