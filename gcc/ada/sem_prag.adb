@@ -55,6 +55,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
+with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
@@ -4605,13 +4606,20 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("pragma% cannot be applied to function", Arg1);
 
-            elsif Ekind (Nm) = E_Record_Type
-              and then Present (Corresponding_Remote_Type (Nm))
-            then
-               --  A record type that is the Equivalent_Type for
-               --  a remote access-to-subprogram type.
+            elsif Is_Remote_Access_To_Subprogram_Type (Nm) then
 
-               N := Declaration_Node (Corresponding_Remote_Type (Nm));
+               if Is_Record_Type (Nm) then
+                  --  A record type that is the Equivalent_Type for
+                  --  a remote access-to-subprogram type.
+
+                  N := Declaration_Node (Corresponding_Remote_Type (Nm));
+
+               else
+                  --  A non-expanded RAS type (case where distribution is
+                  --  not enabled).
+
+                  N := Declaration_Node (Nm);
+               end if;
 
                if Nkind (N) = N_Full_Type_Declaration
                  and then Nkind (Type_Definition (N)) =
@@ -4622,9 +4630,9 @@ package body Sem_Prag is
 
                   if Is_Asynchronous (Nm)
                     and then Expander_Active
+                    and then Get_PCS_Name /= Name_No_DSA
                   then
-                     RACW_Type_Is_Asynchronous (
-                       Underlying_RACW_Type (Nm));
+                     RACW_Type_Is_Asynchronous (Underlying_RACW_Type (Nm));
                   end if;
 
                else
