@@ -1,3 +1,8 @@
+Thu Oct 14 02:18:19 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* combine.c (simplify_logical): Recognize xor pattern that encodes
+	rotation.
+
 Wed Oct 13 23:23:45 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.c (expand_block_move): Use INTVAL, not XINT to access
