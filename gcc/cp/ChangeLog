@@ -1,3 +1,9 @@
+2002-11-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8214
+	* typeck.c (convert_for_assignment): Do not use
+	decl_constant_value on the operand.
+
 2002-11-19  Release Manager
 
 	* GCC 3.2.1 Released.
