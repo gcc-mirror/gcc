@@ -2016,7 +2016,7 @@ compiler: ../gnat1$(exeext)
 
 tools: ../gnatbl$(exeext) ../gnatchop$(exeext) ../gnatcmd$(exeext)\
 	../gnatkr$(exeext) ../gnatlink$(exeext) ../gnatlbr$(exeext) \
-	../gnatls$(exeext) ../gnatmake$(exeext) ../gnatmem$(exeext) \
+	../gnatls$(exeext) ../gnatmake$(exeext) \
 	../gnatprep$(exeext) ../gnatpsta$(exeext) ../gnatpsys$(exeext) \
 	../gnatxref$(exeext) ../gnatfind$(exeext)
 
@@ -2094,7 +2094,7 @@ gnatbl.o: gnatbl.c adaint.h
 
 gnattools: ../gnatbl$(exeext) ../gnatchop$(exeext) ../gnatcmd$(exeext) \
 	   ../gnatkr$(exeext) ../gnatlink$(exeext) \
-	   ../gnatls$(exeext) ../gnatmake$(exeext) ../gnatmem$(exeext) \
+	   ../gnatls$(exeext) ../gnatmake$(exeext) \
 	   ../gnatprep$(exeext) ../gnatpsta$(exeext) ../gnatpsys$(exeext) \
        ../gnatxref$(exeext) ../gnatfind$(exeext) $(EXTRA_GNATTOOLS)
 
