@@ -280,6 +280,30 @@ reg_or_cint_operand (op, mode)
      return GET_CODE (op) == CONST_INT || register_operand (op, mode);
 }
 
+/* Return 1 if OP is something that can be reloaded into a register;
+   if it is a MEM, it need not be valid.  */
+
+int
+some_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case REG:  case MEM:  case CONST_DOUBLE:
+    case CONST_INT:  case LABEL_REF:  case SYMBOL_REF:  case CONST:
+      return 1;
+
+    case SUBREG:
+      return some_operand (SUBREG_REG (op), VOIDmode);
+    }
+
+  return 0;
+}
+
 /* Return 1 if OP is a valid operand for the source of a move insn.  */
 
 int
