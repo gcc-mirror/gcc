@@ -230,7 +230,6 @@ preprocessor is canonicalized.  @var{path} is a malloc-ed path to be
 canonicalized.  If the C statement does canonicalize @var{path} into a
 different buffer, the old path should be freed and the new buffer should
 have been allocated with malloc.
-@end table
 
 @findex DUMPFILE_FORMAT
 @item DUMPFILE_FORMAT
@@ -240,6 +239,7 @@ If you do not define this macro, GCC will use @samp{.%02d.}.  The full
 filename will be the prefix of the assembler file name concatenated with
 the string resulting from applying this format concatenated with a string
 unique to each dump file kind, e.g. @samp{rtl}.
+@end table
 
 @findex bzero
 @findex bcmp
