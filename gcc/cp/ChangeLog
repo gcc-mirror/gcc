@@ -1,3 +1,14 @@
+1999-01-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_type): Added has_mutable flag.
+	(CLASSTYPE_HAS_MUTABLE): New macro to access it.
+	(TYPE_HAS_MUTABLE_P): New macro to read it.
+	(cp_has_mutable_p): Prototype for new function.
+	* class.c (finish_struct_1): Set has_mutable from members.
+	* decl.c (cp_finish_decl): Clear decl's TREE_READONLY flag, if
+	it contains a mutable.
+	* typeck.c (cp_has_mutable_p): New function.
+
 1999-01-15  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (process_template_parm): Ignore top-level qualifiers on

@@ -7369,6 +7369,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       return;
     }
 
+  if (TYPE_HAS_MUTABLE_P (type))
+    TREE_READONLY (decl) = 0;
+  
   if (processing_template_decl)
     {
       if (init && DECL_INITIAL (decl))

@@ -7471,3 +7471,15 @@ cp_type_quals (type)
 
   return TYPE_QUALS (type);
 }
+
+/* Returns non-zero if the TYPE contains a mutable member */
+
+int
+cp_has_mutable_p (type)
+     tree type;
+{
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return CLASS_TYPE_P (type) && CLASSTYPE_HAS_MUTABLE (type);
+}

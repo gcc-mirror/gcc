@@ -3316,6 +3316,7 @@ finish_struct_1 (t, warn_anon)
   int cant_have_default_ctor;
   int cant_have_const_ctor;
   int no_const_asn_ref;
+  int has_mutable = 0;
 
   /* The index of the first base class which has virtual
      functions.  Only applied to non-virtual baseclasses.  */
@@ -3578,6 +3579,9 @@ finish_struct_1 (t, warn_anon)
       if (TREE_CODE (TREE_TYPE (x)) == POINTER_TYPE)
 	has_pointers = 1;
 
+      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (TREE_TYPE (x)))
+        has_mutable = 1;
+
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
 	{
@@ -3794,6 +3798,7 @@ finish_struct_1 (t, warn_anon)
   CLASSTYPE_READONLY_FIELDS_NEED_INIT (t) = const_sans_init;
   CLASSTYPE_REF_FIELDS_NEED_INIT (t) = ref_sans_init;
   CLASSTYPE_ABSTRACT_VIRTUALS (t) = abstract_virtuals;
+  CLASSTYPE_HAS_MUTABLE (t) = has_mutable;
 
   /* Effective C++ rule 11.  */
   if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
