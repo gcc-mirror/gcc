@@ -1,3 +1,7 @@
+Mon Aug  2 19:18:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
 1999-08-04 Mark Elbrecht <snowball3@bigfoot.com> 
 
 	* config/i386/djgpp.h  (BSS_SECTION_ASM_OP): Define. 

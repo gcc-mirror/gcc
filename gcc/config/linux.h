@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems with ELF format
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -113,3 +113,6 @@ Boston, MA 02111-1307, USA.  */
      %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
        %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
 #endif
+
+/* Define this so we can compile MS code for use with WINE.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
