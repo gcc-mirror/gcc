@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,22 +31,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;    use Alloc;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Table;    use Table;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
+with Alloc;  use Alloc;
+with Atree;  use Atree;
+with Casing; use Casing;
+with Debug;  use Debug;
+with Einfo;  use Einfo;
+with Lib;    use Lib;
+with Namet;  use Namet;
+with Opt;    use Opt;
+with Output; use Output;
+with Sinfo;  use Sinfo;
+with Sinput; use Sinput;
+with Snames; use Snames;
+with Stand;  use Stand;
+with Table;  use Table;
+with Uname;  use Uname;
+with Urealp; use Urealp;
 
 package body Repinfo is
 
@@ -199,13 +199,9 @@ package body Repinfo is
    -- Create_Discrim_Ref --
    ------------------------
 
-   function Create_Discrim_Ref
-     (Discr : Entity_Id)
-      return  Node_Ref
-   is
+   function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref is
       N : constant Uint := Discriminant_Number (Discr);
       T : Nat;
-
    begin
       Rep_Table.Increment_Last;
       T := Rep_Table.Last;
@@ -220,12 +216,8 @@ package body Repinfo is
    -- Create_Dynamic_SO_Ref --
    ---------------------------
 
-   function Create_Dynamic_SO_Ref
-     (E    : Entity_Id)
-      return Dynamic_SO_Ref
-   is
+   function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref is
       T : Nat;
-
    begin
       Dynamic_SO_Entity_Table.Increment_Last;
       T := Dynamic_SO_Entity_Table.Last;
@@ -241,11 +233,9 @@ package body Repinfo is
      (Expr : TCode;
       Op1  : Node_Ref_Or_Val;
       Op2  : Node_Ref_Or_Val := No_Uint;
-      Op3  : Node_Ref_Or_Val := No_Uint)
-      return  Node_Ref
+      Op3  : Node_Ref_Or_Val := No_Uint) return Node_Ref
    is
       T : Nat;
-
    begin
       Rep_Table.Increment_Last;
       T := Rep_Table.Last;
@@ -253,7 +243,6 @@ package body Repinfo is
       Rep_Table.Table (T).Op1  := Op1;
       Rep_Table.Table (T).Op2  := Op2;
       Rep_Table.Table (T).Op3  := Op3;
-
       return UI_From_Int (-T);
    end Create_Node;
 
@@ -261,10 +250,7 @@ package body Repinfo is
    -- Get_Dynamic_SO_Entity --
    ---------------------------
 
-   function Get_Dynamic_SO_Entity
-     (U    : Dynamic_SO_Ref)
-      return Entity_Id
-   is
+   function Get_Dynamic_SO_Entity (U : Dynamic_SO_Ref) return Entity_Id is
    begin
       return Dynamic_SO_Entity_Table.Table (-UI_To_Int (U));
    end Get_Dynamic_SO_Entity;
@@ -304,7 +290,6 @@ package body Repinfo is
    procedure List_Array_Info (Ent : Entity_Id) is
    begin
       List_Type_Info (Ent);
-
       Write_Str ("for ");
       List_Name (Ent);
       Write_Str ("'Component_Size use ");
@@ -330,9 +315,9 @@ package body Repinfo is
 
       function Find_Declaration (E : Entity_Id) return Node_Id is
          Decl : Node_Id;
+
       begin
          Decl := Parent (E);
-
          while Present (Decl)
            and then  Nkind (Decl) /= N_Package_Body
            and then Nkind (Decl) /= N_Subprogram_Declaration
@@ -972,11 +957,6 @@ package body Repinfo is
       Col : Nat;
 
    begin
-      if Debug_Flag_AA then
-         List_Representation_Info := 3;
-         List_Representation_Info_Mechanisms := True;
-      end if;
-
       if List_Representation_Info /= 0
         or else List_Representation_Info_Mechanisms
       then
@@ -1094,9 +1074,8 @@ package body Repinfo is
    ---------------
 
    function Rep_Value
-     (Val  : Node_Ref_Or_Val;
-      D    : Discrim_List)
-      return Uint
+     (Val : Node_Ref_Or_Val;
+      D   : Discrim_List) return Uint
    is
       function B (Val : Boolean) return Uint;
       --  Returns Uint_0 for False, Uint_1 for True

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,7 @@ package Repinfo is
    -- Back-Annotation by Gigi --
    -----------------------------
 
-   --  The following interface is used by gigi if Backend_Layout is True.
+   --  The following interface is used by gigi if Backend_Layout is True
 
    --  As part of the processing in gigi, the types are laid out and
    --  appropriate values computed for the sizes and component positions
@@ -177,20 +177,17 @@ package Repinfo is
    --  The following declarations are for use by gigi for back annotation
 
    function Create_Node
-     (Expr  : TCode;
-      Op1   : Node_Ref_Or_Val;
-      Op2   : Node_Ref_Or_Val := No_Uint;
-      Op3   : Node_Ref_Or_Val := No_Uint)
-      return  Node_Ref;
+     (Expr : TCode;
+      Op1  : Node_Ref_Or_Val;
+      Op2  : Node_Ref_Or_Val := No_Uint;
+      Op3  : Node_Ref_Or_Val := No_Uint) return Node_Ref;
    --  Creates a node with using the tree code defined by Expr and from
    --  1-3 operands as required (unused operands set as shown to No_Uint)
    --  Note that this call can be used to create a discriminant reference
    --  by using (Expr => Discrim_Val, Op1 => discriminant_number).
 
-   function Create_Discrim_Ref
-     (Discr : Entity_Id)
-      return  Node_Ref;
-   --  Creates a refrerence to the discriminant whose entity is Discr.
+   function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref;
+   --  Creates a refrerence to the discriminant whose entity is Discr
 
    --------------------------------------------------------
    -- Front-End Interface for Dynamic Size/Offset Values --
@@ -249,17 +246,13 @@ package Repinfo is
    --  Given a SO_Ref (Uint) value, returns True iff the SO_Ref value
    --  represents a static Size/Offset value (i.e. it is non-negative).
 
-   function Create_Dynamic_SO_Ref
-     (E    : Entity_Id)
-      return Dynamic_SO_Ref;
+   function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref;
    --  Given the Entity_Id for a constant (case 1), the Node_Id for an
    --  expression (case 2), or the Entity_Id for a function (case 3),
    --  this function returns a (negative) Uint value that can be used
    --  to retrieve the entity or expression for later use.
 
-   function Get_Dynamic_SO_Entity
-     (U    : Dynamic_SO_Ref)
-      return Entity_Id;
+   function Get_Dynamic_SO_Entity (U : Dynamic_SO_Ref) return Entity_Id;
    --  Retrieve the Node_Id or Entity_Id stored by a previous call to
    --  Create_Dynamic_SO_Ref. The approach is that the front end makes
    --  the necessary Create_Dynamic_SO_Ref calls to associate the node
@@ -274,9 +267,8 @@ package Repinfo is
    --  Type used to represent list of discriminant values
 
    function Rep_Value
-     (Val  : Node_Ref_Or_Val;
-      D    : Discrim_List)
-      return Uint;
+     (Val : Node_Ref_Or_Val;
+      D   : Discrim_List) return Uint;
    --  Given the contents of a First_Bit_Position or Esize field containing
    --  a node reference (i.e. a negative Uint value) and D, the list of
    --  discriminant values, returns the interpreted value of this field.
