@@ -13,6 +13,7 @@
    incompatible with our later declaration, perhaps by using const
    attributes.  So we hide the declaration in errno.h (if any) using a
    macro. */
+#define sys_nerr sys_nerr__
 #define sys_errlist sys_errlist__
 #endif
 
@@ -20,6 +21,7 @@
 #include <errno.h>
 
 #ifdef HAVE_SYS_ERRLIST
+#undef sys_nerr
 #undef sys_errlist
 #endif
 

@@ -1,3 +1,8 @@
+2001-06-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* strerror.c (sys_nerr): Hide the OS header version.
+	* strsignal.c (sys_nsig): Likewise.
+
 2001-06-10  Richard Henderson  <rth@redhat.com>
 
 	* concat.c: Include string.h.  Fix int vs size_t usage.
