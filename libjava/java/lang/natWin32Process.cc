@@ -173,7 +173,7 @@ ChildProcessPipe::ChildProcessPipe(EType eType):
     {
       DWORD dwErrorCode = GetLastError ();
       throw new java::io::IOException (
-        _Jv_WinStrError ("Error creating pipe", dwErrorCode));
+        _Jv_WinStrError (_T("Error creating pipe"), dwErrorCode));
     }
 
   // If this is the read end of the child, we need
@@ -220,48 +220,53 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   int cmdLineLen = 0;
 
   for (int i = 0; i < progarray->length; ++i)
-    cmdLineLen += (_Jv_GetStringUTFLength (elts[i]) + 1);
+    cmdLineLen += (elts[i]->length() + 1);
 
-  char *cmdLine = (char *) _Jv_Malloc (cmdLineLen + 1);
-  char *cmdLineCurPos = cmdLine;
+  LPTSTR cmdLine = (LPTSTR) _Jv_Malloc ((cmdLineLen + 1) * sizeof(TCHAR));
+  LPTSTR cmdLineCurPos = cmdLine;
 
   for (int i = 0; i < progarray->length; ++i)
     {
       if (i > 0)
-        *cmdLineCurPos++ = ' ';
-      jsize s = _Jv_GetStringUTFLength (elts[i]);
-      _Jv_GetStringUTFRegion (elts[i], 0, elts[i]->length(), cmdLineCurPos);
-      cmdLineCurPos += s;
+        *cmdLineCurPos++ = _T(' ');
+        
+      jint len = elts[i]->length();
+      JV_TEMP_STRING_WIN32(thiselt, elts[i]);
+      _tcscpy(cmdLineCurPos, thiselt);
+      cmdLineCurPos += len;
     }
-  *cmdLineCurPos = '\0';
+  *cmdLineCurPos = _T('\0');
 
   // Get the environment, if any.
-  char *env = NULL;
+  LPTSTR env = NULL;
   if (envp)
     {
       elts = elements (envp);
 
       int envLen = 0;
       for (int i = 0; i < envp->length; ++i)
-        envLen += (_Jv_GetStringUTFLength (elts[i]) + 1);
+        envLen += (elts[i]->length() + 1);
 
-      env = (char *) _Jv_Malloc (envLen + 1);
+      env = (LPTSTR) _Jv_Malloc ((envLen + 1) * sizeof(TCHAR));
 
       int j = 0;
       for (int i = 0; i < envp->length; ++i)
         {
-          jsize s = _Jv_GetStringUTFLength (elts[i]);
-          _Jv_GetStringUTFRegion (elts[i], 0, elts[i]->length(), (env + j));
-
-          j += s;
-          *(env + j) = '\0';
+          jint len = elts[i]->length();
+          
+          JV_TEMP_STRING_WIN32(thiselt, elts[i]);
+          _tcscpy(env + j, thiselt);
+          
+          j += len;
+          
+          // Skip past the null terminator that _tcscpy just inserted.
           j++;
         }
-      *(env + j) = '\0';
+      *(env + j) = _T('\0');
     }
 
   // Get the working directory path, if specified.
-  JV_TEMP_UTF_STRING (wdir, dir ? dir->getPath () : 0);
+  JV_TEMP_STRING_WIN32 (wdir, dir ? dir->getPath () : 0);
 
   errorStream = NULL;
   inputStream = NULL;
@@ -304,12 +309,13 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       // starting a console application; it suppresses the
       // creation of a console window. This flag is ignored on
       // Win9X.
+      
       if (CreateProcess (NULL,
                          cmdLine,
                          NULL,
                          NULL,
                          1,
-                         CREATE_NO_WINDOW,
+                         CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
                          env,
                          wdir,
                          &si,
@@ -317,7 +323,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
         {
           DWORD dwErrorCode = GetLastError ();
           throw new IOException (
-            _Jv_WinStrError ("Error creating child process", dwErrorCode));
+            _Jv_WinStrError (_T("Error creating child process"), dwErrorCode));
         }
 
       procHandle = (jint ) pi.hProcess;

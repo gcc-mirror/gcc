@@ -87,7 +87,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
   DWORD access = 0;
   DWORD create = OPEN_EXISTING;
   
-  JV_TEMP_UTF_STRING(cpath, path)
+  JV_TEMP_STRING_WIN32(cpath, path)
 
   JvAssert((jflags & READ) || (jflags & WRITE));
 
@@ -115,7 +115,8 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
         create = CREATE_ALWAYS;
     }
 
-  handle = CreateFile(cpath, access, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, create, 0, NULL);
+  handle = CreateFile(cpath, access, FILE_SHARE_READ | FILE_SHARE_WRITE,
+    NULL, create, 0, NULL);
 
   if (handle == INVALID_HANDLE_VALUE)
     {
@@ -174,13 +175,14 @@ java::io::FileDescriptor::write(jbyteArray b, jint offset, jint len)
 
   jbyte *buf = elements (b) + offset;
   DWORD bytesWritten;
+
   if (WriteFile ((HANDLE)fd, buf, len, &bytesWritten, NULL))
     {
       if (java::lang::Thread::interrupted())
         {
           InterruptedIOException *iioe = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
           iioe->bytesTransferred = bytesWritten;
-    throw iioe;
+          throw iioe;
         }
     }
   else

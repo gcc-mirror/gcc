@@ -97,6 +97,26 @@ AC_ARG_ENABLE(libgcj-multifile,
 esac],[enable_libgcj_multifile=no])
 AM_CONDITIONAL(ONESTEP, test "$enable_libgcj_multifile" = yes)
 
+# What is the native OS API for MinGW?
+AC_ARG_WITH(win32-nlsapi,
+changequote(<<,>>)dnl
+<<  --with-win32-nlsapi=ansi, unicows or unicode
+                          native MinGW libgcj Win32 OS API [ansi]>>,
+changequote([,])
+[case "${withval}" in
+  ansi) with_win32_nlsapi=ansi ;;
+  unicows) with_win32_nlsapi=unicows ;;
+  unicode) with_win32_nlsapi=unicode ;;
+  *) AC_MSG_ERROR(Bad value ${withval} for --with-win32-nlsapi.) ;;
+esac],[with_win32_nlsapi=ansi])
+
+case "${with_win32_nlsapi}" in
+  unicows | unicode) 
+    AC_DEFINE(MINGW_LIBGCJ_UNICODE, 1,
+      [Define if MinGW libgcj uses the Windows UNICODE OS API.])
+    ;;
+esac
+
 dnl configure.host sets slow_pthread_self if the synchronization code should 
 dnl try to avoid pthread_self calls by caching thread IDs in a hashtable.
 if test "${slow_pthread_self}" = "yes"; then
@@ -313,6 +333,9 @@ AC_LINK_FILES(gnu/java/nio/natSelectorImpl${PLATFORM}.cc, gnu/java/nio/natSelect
 case "${host}" in
     *mingw*)
       SYSTEMSPEC="-lgdi32 -lwsock32 -lws2_32"
+      if test "${with_win32_nlsapi}" = "unicows"; then
+        SYSTEMSPEC="-lunicows $SYSTEMSPEC"
+      fi
     ;;
     *)
       SYSTEMSPEC=
