@@ -289,6 +289,8 @@ Most statements will be assignment statements, represented by
 @code{MODIFY_EXPR}.  A @code{CALL_EXPR} whose value is ignored can
 also be a statement.  No other C expressions can appear at statement level;
 a reference to a volatile object is converted into a @code{MODIFY_EXPR}.
+In GIMPLE form, type of @code{MODIFY_EXPR} is not meaningful. Instead, use type 
+of LHS or RHS.
 
 There are also several varieties of complex statements.
 
