@@ -1082,6 +1082,7 @@ print_operand (file, x, code)
       else if (a29k_last_prologue_insn)
 	{
 	  fprintf (file, "\n\t%s", a29k_last_prologue_insn);
+	  free (a29k_last_prologue_insn);
 	  a29k_last_prologue_insn = 0;
 	}
       else if (optimize && flag_delayed_branch
@@ -1105,6 +1106,7 @@ print_operand (file, x, code)
 	  if (a29k_last_prologue_insn)
 	    {
 	      fprintf (file, "\n\t%s", a29k_last_prologue_insn);
+	      free (a29k_last_prologue_insn);
 	      a29k_last_prologue_insn = 0;
 	    }
 	  else if (GET_CODE (x) == SYMBOL_REF
@@ -1159,6 +1161,7 @@ print_operand (file, x, code)
 	  if (a29k_last_prologue_insn)
 	    {
 	      fprintf (file, "\n\t%s", a29k_last_prologue_insn);
+	      free (a29k_last_prologue_insn);
 	      a29k_last_prologue_insn = 0;
 	    }
 	  else
@@ -1387,7 +1390,7 @@ output_prolog (file, size)
 
 		if (num_delay_slots (insn) > 0)
 		  {
-		    a29k_last_prologue_insn = (char *) oballoc (100);
+		    a29k_last_prologue_insn = (char *) xmalloc (100);
 		    sprintf (a29k_last_prologue_insn, "add lr1,gr1,%d", i);
 		    break;
 		  }
@@ -1404,7 +1407,7 @@ output_prolog (file, size)
   if (size == 0 && a29k_regstack_size == 0 && ! frame_pointer_needed)
     a29k_first_epilogue_insn = 0;
   else
-    a29k_first_epilogue_insn = (char *) oballoc (100);
+    a29k_first_epilogue_insn = (char *) xmalloc (100);
 
   if (frame_pointer_needed)
     sprintf (a29k_first_epilogue_insn, "sll %s,%s,0",
@@ -1547,4 +1550,8 @@ output_epilog (file, size)
 		     file, 1, -2, 1);
   else
     fprintf (file, "\tnop\n");
+  
+  if (a29k_first_epilogue_insn)
+    free (a29k_first_epilogue_insn);
+  a29k_first_epilogue_insn = 0;
 }
