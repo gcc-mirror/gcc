@@ -98,7 +98,6 @@ static int is_back_referenceable_type PROTO((tree));
 static int check_btype PROTO((tree));
 static void build_mangled_name_for_type PROTO((tree));
 static void build_mangled_name_for_type_with_Gcode PROTO((tree, int));
-static void fixup_pending_inline PROTO((struct pending_inline *));
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -143,57 +142,6 @@ init_method ()
    value.  */
 static char digit_buffer[128];
 
-/* Fixup the inline function given by INFO now that the class is
-   complete.  */
-
-static void
-fixup_pending_inline (info)
-     struct pending_inline *info;
-{
-  if (info)
-    {
-      tree args;
-      tree fn = info->fndecl;
-
-      args = DECL_ARGUMENTS (fn);
-      while (args)
-	{
-	  DECL_CONTEXT (args) = fn;
-	  args = TREE_CHAIN (args);
-	}
-    }
-}
-
-/* Move inline function definitions out of structure so that they
-   can be processed normally.  CNAME is the name of the class
-   we are working from, METHOD_LIST is the list of method lists
-   of the structure.  We delete friend methods here, after
-   saving away their inline function definitions (if any).  */
-
-void
-do_inline_function_hair (type, friend_list)
-     tree type, friend_list;
-{
-  tree method = TYPE_METHODS (type);
-
-  if (method && TREE_CODE (method) == TREE_VEC)
-    {
-      if (TREE_VEC_ELT (method, 1))
-	method = TREE_VEC_ELT (method, 1);
-      else if (TREE_VEC_ELT (method, 0))
-	method = TREE_VEC_ELT (method, 0);
-      else
-	method = TREE_VEC_ELT (method, 2);
-    }
-
-  /* Do inline member functions.  */
-  for (; method; method = TREE_CHAIN (method))
-    fixup_pending_inline (DECL_PENDING_INLINE_INFO (method));
-
-  /* Do friends.  */
-  for (; friend_list; friend_list = TREE_CHAIN (friend_list))
-    fixup_pending_inline (DECL_PENDING_INLINE_INFO (TREE_VALUE (friend_list)));
-}
 
 /* Here is where overload code starts.  */
 

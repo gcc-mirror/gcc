@@ -72,7 +72,10 @@ int ggc_p = 1;
 
 #ifndef BOOL_TYPE_SIZE
 #ifdef SLOW_BYTE_ACCESS
-#define BOOL_TYPE_SIZE ((SLOW_BYTE_ACCESS) ? (POINTER_SIZE) : (CHAR_TYPE_SIZE))
+/* In the new ABI, `bool' has size and alignment `1', on all
+   platforms.  */
+#define BOOL_TYPE_SIZE \
+  ((SLOW_BYTE_ACCESS && !flag_new_abi) ? (POINTER_SIZE) : (CHAR_TYPE_SIZE))
 #else
 #define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
 #endif

@@ -3757,7 +3757,6 @@ extern int cp_type_qual_from_rid                PROTO((tree));
 
 /* in method.c */
 extern void init_method				PROTO((void));
-extern void do_inline_function_hair		PROTO((tree, tree));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));

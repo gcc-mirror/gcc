@@ -1,5 +1,16 @@
 1999-12-28  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (do_inline_function_hair): Remove.
+	* class.c (layout_class_type): New function, split out from
+	finish_struct_1.
+	(fixup_pending_inline): Likewise.
+	(fixup_inline_methods): New function.
+	* method.c (fixup_pending_inline): Remove.
+	(do_inline_function_hair): Likewise.
+	
+	* decl.c (BOOL_TYPE_SIZE): Bools always have size `1' under the
+	new ABI.
+	
 	* cp-tree.h (lang_type): Replace abstract_virtuals with pure_virtuals.
 	(CLASSTYPE_ABSTRACT_VIRTUALS): Rename to ...
 	(CLASSTYPE_PURE_VIRTUALS): ... this.
@@ -17,6 +28,7 @@
 	(build_vtbl_initializer): Likewise.
 	(override_one_vtable): Likewise.
 	(check_methods): Likewise.
+
 	* decl.c (duplicate_decls): Likewise.
 	(redeclaration_error_message): Likewise.
 	(lang_mark_tree): Likewise.

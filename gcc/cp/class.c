@@ -134,6 +134,9 @@ static void remove_zero_width_bit_fields PROTO((tree));
 static void check_bases PROTO((tree, int *, int *, int *));
 static void check_bases_and_members PROTO((tree, int *));
 static void create_vtable_ptr PROTO((tree, int *, int *, int *, tree *, tree *));
+static void layout_class_type PROTO((tree, int *, int *, int *, tree *, tree *));
+static void fixup_pending_inline PROTO((struct pending_inline *));
+static void fixup_inline_methods PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -4112,6 +4115,143 @@ create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
     }
 }
 
+/* Fixup the inline function given by INFO now that the class is
+   complete.  */
+
+static void
+fixup_pending_inline (info)
+     struct pending_inline *info;
+{
+  if (info)
+    {
+      tree args;
+      tree fn = info->fndecl;
+
+      args = DECL_ARGUMENTS (fn);
+      while (args)
+	{
+	  DECL_CONTEXT (args) = fn;
+	  args = TREE_CHAIN (args);
+	}
+    }
+}
+
+/* Fixup the inline methods and friends in TYPE now that TYPE is
+   complete.  */
+
+static void
+fixup_inline_methods (type)
+     tree type;
+{
+  tree method = TYPE_METHODS (type);
+
+  if (method && TREE_CODE (method) == TREE_VEC)
+    {
+      if (TREE_VEC_ELT (method, 1))
+	method = TREE_VEC_ELT (method, 1);
+      else if (TREE_VEC_ELT (method, 0))
+	method = TREE_VEC_ELT (method, 0);
+      else
+	method = TREE_VEC_ELT (method, 2);
+    }
+
+  /* Do inline member functions.  */
+  for (; method; method = TREE_CHAIN (method))
+    fixup_pending_inline (DECL_PENDING_INLINE_INFO (method));
+
+  /* Do friends.  */
+  for (method = CLASSTYPE_INLINE_FRIENDS (type); 
+       method; 
+       method = TREE_CHAIN (method))
+    fixup_pending_inline (DECL_PENDING_INLINE_INFO (TREE_VALUE (method)));
+}
+
+/* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
+   BINFO_OFFSETs for all of the base-classes.  Position the vtable
+   pointer.  */
+
+static void
+layout_class_type (t, empty_p, has_virtual_p, max_has_virtual_p,
+		   pending_virtuals_p, pending_hard_virtuals_p)
+     tree t;
+     int *empty_p;
+     int *has_virtual_p;
+     int *max_has_virtual_p;
+     tree *pending_virtuals_p;
+     tree *pending_hard_virtuals_p;
+{
+  /* Add pointers to all of our virtual base-classes.  */
+  TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, empty_p),
+			     TYPE_FIELDS (t));
+  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
+  TYPE_FIELDS (t) = chainon (build_base_fields (t, empty_p), 
+			     TYPE_FIELDS (t));
+
+  /* Create a pointer to our virtual function table.  */
+  create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
+		     pending_virtuals_p, pending_hard_virtuals_p);
+
+  /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
+     we have to save this before we start modifying
+     TYPE_NONCOPIED_PARTS.  */
+  fixup_inline_methods (t);
+
+  /* We make all structures have at least one element, so that they
+     have non-zero size.  The field that we add here is fake, in the
+     sense that, for example, we don't want people to be able to
+     initialize it later.  So, we add it just long enough to let the
+     back-end lay out the type, and then remove it.  */
+  if (*empty_p)
+    {
+      tree decl = build_lang_decl
+	(FIELD_DECL, NULL_TREE, char_type_node);
+      TREE_CHAIN (decl) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = decl;
+      TYPE_NONCOPIED_PARTS (t) 
+	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
+      TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
+    }
+
+  /* Let the back-end lay out the type. Note that at this point we
+     have only included non-virtual base-classes; we will lay out the
+     virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after
+     this call are not necessarily correct; they are just the size and
+     alignment when no virtual base clases are used.  */
+  layout_type (t);
+
+  /* If we added an extra field to make this class non-empty, remove
+     it now.  */
+  if (*empty_p)
+    TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
+
+  /* Delete all zero-width bit-fields from the list of fields.  Now
+     that the type is laid out they are no longer important.  */
+  remove_zero_width_bit_fields (t);
+
+  /* Remember the size and alignment of the class before adding
+     the virtual bases.  */
+  if (*empty_p && flag_new_abi)
+    CLASSTYPE_SIZE (t) = integer_zero_node;
+  else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
+	   && TYPE_HAS_COMPLEX_ASSIGN_REF (t))
+    CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
+  else
+    CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+  CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
+
+  /* Set the TYPE_DECL for this type to contain the right
+     value for DECL_OFFSET, so that we can use it as part
+     of a COMPONENT_REF for multiple inheritance.  */
+  layout_decl (TYPE_MAIN_DECL (t), 0);
+
+  /* Now fix up any virtual base class types that we left lying
+     around.  We must get these done before we try to lay out the
+     virtual function table.  */
+  if (CLASSTYPE_N_BASECLASSES (t))
+    /* layout_basetypes will remove the base subobject fields.  */
+    *max_has_virtual_p = layout_basetypes (t, *max_has_virtual_p);
+}
+     
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -4152,7 +4292,6 @@ finish_struct_1 (t)
   tree vfield;
   int n_baseclasses;
   int empty = 1;
-  tree inline_friends;
 
   if (TYPE_SIZE (t))
     {
@@ -4182,79 +4321,9 @@ finish_struct_1 (t)
      bases and members and adding implicitly generated methods.  */
   check_bases_and_members (t, &empty);
 
-  /* Add pointers to all of our virtual base-classes.  */
-  TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, &empty),
-			     TYPE_FIELDS (t));
-  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
-  TYPE_FIELDS (t) = chainon (build_base_fields (t, &empty), 
-			     TYPE_FIELDS (t));
-
-  /* Create a pointer to our virtual function table.  */
-  create_vtable_ptr (t, &empty, &has_virtual, &max_has_virtual,
+  /* Layout the class itself.  */
+  layout_class_type (t, &empty, &has_virtual, &max_has_virtual,
 		     &pending_virtuals, &pending_hard_virtuals);
-
-  /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
-     we have to save this before we start modifying
-     TYPE_NONCOPIED_PARTS.  */
-  inline_friends = CLASSTYPE_INLINE_FRIENDS (t);
-  CLASSTYPE_INLINE_FRIENDS (t) = NULL_TREE;
-
-  /* We make all structures have at least one element, so that they
-     have non-zero size.  The field that we add here is fake, in the
-     sense that, for example, we don't want people to be able to
-     initialize it later.  So, we add it just long enough to let the
-     back-end lay out the type, and then remove it.  */
-  if (empty)
-    {
-      tree decl = build_lang_decl
-	(FIELD_DECL, NULL_TREE, char_type_node);
-      TREE_CHAIN (decl) = TYPE_FIELDS (t);
-      TYPE_FIELDS (t) = decl;
-      TYPE_NONCOPIED_PARTS (t) 
-	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
-      TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
-    }
-
-  /* Let the back-end lay out the type. Note that at this point we
-     have only included non-virtual base-classes; we will lay out the
-     virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after
-     this call are not necessarily correct; they are just the size and
-     alignment when no virtual base clases are used.  */
-  layout_type (t);
-
-  /* If we added an extra field to make this class non-empty, remove
-     it now.  */
-  if (empty)
-    TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
-
-  /* Delete all zero-width bit-fields from the list of fields.  Now
-     that the type is laid out they are no longer important.  */
-  remove_zero_width_bit_fields (t);
-
-  /* Remember the size and alignment of the class before adding
-     the virtual bases.  */
-  if (empty && flag_new_abi)
-    CLASSTYPE_SIZE (t) = integer_zero_node;
-  else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
-	   && TYPE_HAS_COMPLEX_ASSIGN_REF (t))
-    CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
-  else
-    CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
-  CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
-
-  /* Set the TYPE_DECL for this type to contain the right
-     value for DECL_OFFSET, so that we can use it as part
-     of a COMPONENT_REF for multiple inheritance.  */
-
-  layout_decl (TYPE_MAIN_DECL (t), 0);
-
-  /* Now fix up any virtual base class types that we left lying
-     around.  We must get these done before we try to lay out the
-     virtual function table.  */
-
-  if (n_baseclasses)
-    /* layout_basetypes will remove the base subobject fields.  */
-    max_has_virtual = layout_basetypes (t, max_has_virtual);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -4491,9 +4560,6 @@ finish_struct_1 (t)
 	  vfields = TREE_CHAIN (vfields);
 	}
     }
-
-  /* Write out inline function definitions.  */
-  do_inline_function_hair (t, inline_friends);
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
