@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -134,6 +134,12 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
       p = (ptr_t) c->methods;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c6label);
 
+      // The vtable might have been set, but the rest of the class
+      // could still be uninitialized.  If this is the case, then
+      // c.isArray will SEGV.  We check for this, and if it is the
+      // case we just return.
+      if (__builtin_expect (c->name == NULL, false))
+	return mark_stack_ptr;
 
       if (! c->isArray() && ! c->isPrimitive())
 	{

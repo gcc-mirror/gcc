@@ -1,3 +1,8 @@
+2002-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* boehm.cc (_Jv_MarkObj): Don't fail if class object has been
+	allocated but not initialized.
+
 2002-09-25  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	Fix for PR libgcj/7766:
