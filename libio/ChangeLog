@@ -1,3 +1,10 @@
+2000-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* iostream.cc (ostream::operator<<(double n)) [__GLIBC_MINOR__ >= 2]:
+	Initialize new fields wide and i18n of struct printf_info.
+	(ostream::operator<<(long double n)) [__GLIBC_MINOR__ >= 2]:
+	Likewise.
+
 2000-09-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* stdstreams.cc: Include <libio.h>, not "libio.h".
