@@ -2384,9 +2384,16 @@ subst_constants (loc, insn, map, memonly)
 					       XEXP (x, 0), XEXP (x, 1));
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	  new = ((new == const0_rtx) ? CONST0_RTX (GET_MODE (x))
-		 : CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
-						 GET_MODE (x)));
+	    {
+	      enum machine_mode mode = GET_MODE (x);
+	      if (new == const0_rtx)
+		new = CONST0_RTX (mode);
+	      else
+		{
+		  REAL_VALUE_TYPE val = FLOAT_STORE_FLAG_VALUE (mode);
+		  new = CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
+		}
+	    }
 #endif
 	  break;
       }

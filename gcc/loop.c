@@ -9103,7 +9103,8 @@ get_condition (jump, earliest)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == LT
 			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-			 && FLOAT_STORE_FLAG_VALUE < 0)
+			 && (REAL_VALUE_NEGATIVE
+			     (FLOAT_STORE_FLAG_VALUE (inner_mode))))
 #endif
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'))
@@ -9122,7 +9123,8 @@ get_condition (jump, earliest)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == GE
 			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-			 && FLOAT_STORE_FLAG_VALUE < 0)
+			 && (REAL_VALUE_NEGATIVE
+			     (FLOAT_STORE_FLAG_VALUE (inner_mode))))
 #endif
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'

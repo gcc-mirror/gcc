@@ -7485,8 +7485,8 @@ You need not define @code{STORE_FLAG_VALUE} if the machine has no store-flag
 instructions.
 
 @findex FLOAT_STORE_FLAG_VALUE
-@item FLOAT_STORE_FLAG_VALUE
-A C expression that gives a non-zero floating point value that is
+@item FLOAT_STORE_FLAG_VALUE (@var{mode})
+A C expression that gives a non-zero @code{REAL_VALUE_TYPE} value that is
 returned when comparison operators with floating-point results are true.
 Define this macro on machine that have comparison operations that return
 floating-point values.  If there are no such operations, do not define

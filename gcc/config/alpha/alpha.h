@@ -1674,7 +1674,8 @@ do {									\
 
 /* Define the value returned by a floating-point comparison instruction.  */
 
-#define FLOAT_STORE_FLAG_VALUE (TARGET_FLOAT_VAX ? 0.5 : 2.0)
+#define FLOAT_STORE_FLAG_VALUE(MODE) \
+  REAL_VALUE_ATOF ((TARGET_FLOAT_VAX ? "0.5" : "2.0"), (MODE))
 
 /* Canonicalize a comparison from one we don't have to one we do have.  */
 

@@ -3555,9 +3555,13 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       temp = simplify_relational_operation (code, op0_mode,
 					    XEXP (x, 0), XEXP (x, 1));
 #ifdef FLOAT_STORE_FLAG_VALUE
-      if (temp != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	temp = ((temp == const0_rtx) ? CONST0_RTX (GET_MODE (x))
-		: immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, GET_MODE (x)));
+      if (temp != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  if (temp == const0_rtx)
+	    temp = CONST0_RTX (mode);
+	  else
+	    temp = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE (mode), mode);
+	}
 #endif
       break;
     case 'c':
