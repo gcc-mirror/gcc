@@ -237,6 +237,18 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 #endif
 
+/* Determines whether explicit template instantiations should
+   be given link-once semantics. The C++ ABI requires this 
+   macro to be nonzero; see the documentation. */
+#ifndef TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+# define TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY 1
+#endif
+
+/* This determines whether or not we need linkonce unwind information */
+#ifndef TARGET_USES_WEAK_UNWIND_INFO
+#define TARGET_USES_WEAK_UNWIND_INFO 0
+#endif
+
 /* By default, there is no prefix on user-defined symbols.  */
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
@@ -257,6 +269,24 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #  define TARGET_ATTRIBUTE_WEAK
 # endif
 #endif
+
+/* This determines whether this target supports hidden visibility.
+   This is a weaker condition than HAVE_GAS_HIDDEN, which probes for
+   specific assembler syntax. */
+#ifndef TARGET_SUPPORTS_HIDDEN
+# ifdef HAVE_GAS_HIDDEN
+#  define TARGET_SUPPORTS_HIDDEN 1
+# else
+#  define TARGET_SUPPORTS_HIDDEN 0
+# endif
+#endif
+
+/* Determines whether we may use common symbols to represent one-only
+   semantics (a.k.a. "vague linkage"). */
+#ifndef USE_COMMON_FOR_ONE_ONLY
+# define USE_COMMON_FOR_ONE_ONLY 1
+#endif
+
 
 /* If the target supports init_priority C++ attribute, give
    SUPPORTS_INIT_PRIORITY a nonzero value.  */

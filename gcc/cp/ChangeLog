@@ -1,3 +1,14 @@
+2004-03-12  Matt Austern  <austern@apple.com>
+
+	* decl2.c (maybe_make_one_only): Look at
+	TARGET_EXPLICIT_INSTANTIATION_ONE_ONLY when deciding whether
+	to make an explicit instantiation weak.
+	* method.c (use_thunk): Make sure we call comdat_linkage
+	when appropriate.
+	* pt.c (do_type_instantiation): On systems where weak symbols
+	don't go in a static archive's TOC, explicit instantiation of a
+	class must imply *explicit* instantiation of its memeber.
+	
 2004-03-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c, cp-tree.h, pt.c: Fix comment typos.

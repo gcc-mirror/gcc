@@ -1004,6 +1004,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   if ((TREE_CODE (decl) == FUNCTION_DECL
        || TREE_CODE (decl) == VAR_DECL)
       && !DECL_EXTERNAL (decl)
+      && (!TREE_PUBLIC (decl) || (!DECL_ONE_ONLY (decl) && !DECL_WEAK (decl)))
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
 	  || (DECL_INITIAL (decl)
@@ -1121,6 +1122,20 @@ update_stubs (const char *name)
 	    }
 	}
     }
+}
+
+void
+darwin_make_decl_one_only (tree decl)
+{
+  static const char *text_section = "__TEXT,__textcoal_nt,coalesced,no_toc";
+  static const char *data_section = "__DATA,__datacoal_nt,coalesced,no_toc";
+
+  const char *sec = TREE_CODE (decl) == FUNCTION_DECL
+    ? text_section
+    : data_section;
+  TREE_PUBLIC (decl) = 1;
+  DECL_ONE_ONLY (decl) = 1;
+  DECL_SECTION_NAME (decl) = build_string (strlen (sec), sec);
 }
 
 void
@@ -1289,6 +1304,103 @@ darwin_globalize_label (FILE *stream, const char *name)
     default_globalize_label (stream, name);
 }
 
+void
+darwin_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
+{
+  fprintf (asm_out_file, ".section %s\n", name);
+}
+
+unsigned int
+darwin_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+ 
+  /* Weak or linkonce variables live in a writable section.  */
+  if (decl != 0 && TREE_CODE (decl) != FUNCTION_DECL
+      && (DECL_WEAK (decl) || DECL_ONE_ONLY (decl)))
+    flags |= SECTION_WRITE;
+  
+  return flags;
+}              
+
+void 
+darwin_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
+{
+  /* Darwin does not use unique sections.  However, the target's
+     unique_section hook is called for linkonce symbols.  We need
+     to set an appropriate section for such symbols. */
+  if (DECL_ONE_ONLY (decl) && !DECL_SECTION_NAME (decl))
+    darwin_make_decl_one_only (decl);
+}
+
+/* Emit a label for an FDE, making it global and/or weak if appropriate. 
+   The third parameter is nonzero if this is just a placeholder for an
+   FDE that we are omitting. */
+void 
+darwin_emit_unwind_label(FILE *file, tree decl, int empty)
+{
+  tree id = DECL_ASSEMBLER_NAME (decl)
+    ? DECL_ASSEMBLER_NAME (decl)
+    : DECL_NAME (decl);
+
+  const char *prefix = "_";
+  const int prefix_len = 1;
+
+  const char *base = IDENTIFIER_POINTER (id);
+  unsigned int base_len = IDENTIFIER_LENGTH (id);
+
+  const char *suffix = ".eh";
+  unsigned int suffix_len = 3;
+
+  int need_quotes = name_needs_quotes (base);
+  int quotes_len = need_quotes ? 2 : 0;
+
+  char *lab = xmalloc (prefix_len + base_len + suffix_len + quotes_len + 1);
+  lab[0] = '\0';
+
+  if (need_quotes)
+    strcat(lab, "\"");
+  strcat(lab, prefix);
+  strcat(lab, base);
+  strcat(lab, suffix);
+  if (need_quotes)
+    strcat(lab, "\"");
+
+  if (TREE_PUBLIC (decl))
+    fprintf (file, "%s %s\n",
+	     (DECL_VISIBILITY (decl) != VISIBILITY_HIDDEN
+	      ? ".globl"
+	      : ".private_extern"),
+	     lab);
+
+  if (DECL_ONE_ONLY (decl) && TREE_PUBLIC (decl))
+    fprintf (file, ".weak_definition %s\n", lab);
+
+  if (empty)
+    fprintf (file, "%s = 0\n", lab);
+  else
+    fprintf (file, "%s:\n", lab);
+
+  free (lab);
+}
+
+/* Generate a PC-relative reference to a Mach-O non-lazy-symbol.  */ 
+void
+darwin_non_lazy_pcrel (FILE *file, rtx addr)
+{
+  const char *str;
+  const char *nlp_name;
+
+  if (GET_CODE (addr) != SYMBOL_REF)
+    abort ();
+
+  str = darwin_strip_name_encoding (XSTR (addr, 0));
+  nlp_name = machopic_non_lazy_ptr_name (str);
+  fputs ("\t.long\t", file);
+  ASM_OUTPUT_LABELREF (file, nlp_name);
+  fputs ("-.", file);
+}
+
 /* Emit an assembler directive to set visibility for a symbol.  The
    only supported visibilities are VISIBILITY_DEFAULT and
    VISIBILITY_HIDDEN; the latter corresponds to Darwin's "private
@@ -1325,8 +1437,8 @@ void
 darwin_asm_output_dwarf_delta (FILE *file, int size ATTRIBUTE_UNUSED,
 			       const char *lab1, const char *lab2)
 {
-  const char *p = lab1 + (lab1[0] == '*');
-  int islocaldiff = (p[0] == 'L');
+  int islocaldiff = (lab1[0] == '*' && lab1[1] == 'L'
+		     && lab2[0] == '*' && lab2[1] == 'L');
 
   if (islocaldiff)
     fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);

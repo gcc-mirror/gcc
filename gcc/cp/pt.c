@@ -10661,6 +10661,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
   int extern_p = 0;
   int nomem_p = 0;
   int static_p = 0;
+  int previous_instantiation_extern_p = 0;
 
   if (TREE_CODE (t) == TYPE_DECL)
     t = TREE_TYPE (t);
@@ -10722,11 +10723,16 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	 No program shall explicitly instantiate any template more
 	 than once.  
 
-         If CLASSTYPE_INTERFACE_ONLY, then the first explicit instantiation
-	 was `extern'.  If EXTERN_P then the second is.  If -frepo, chances
-	 are we already got marked as an explicit instantiation because of the
-	 repo file.  All these cases are OK.  */
-      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p && !flag_use_repository
+         If PREVIOUS_INSTANTIATION_EXTERN_P, then the first explicit
+	 instantiation was `extern'.  If EXTERN_P then the second is.
+	 If -frepo, chances are we already got marked as an explicit
+	 instantiation because of the repo file.  All these cases are
+	 OK.  */
+
+      previous_instantiation_extern_p = CLASSTYPE_INTERFACE_ONLY (t);
+
+      if (!previous_instantiation_extern_p && !extern_p
+	  && !flag_use_repository
 	  && (complain & tf_error))
 	pedwarn ("duplicate explicit instantiation of `%#T'", t);
       
@@ -10743,6 +10749,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 
   {
     tree tmp;
+    int explicitly_instantiate_members = 0;
 
     /* In contrast to implicit instantiation, where only the
        declarations, and not the definitions, of members are
@@ -10761,26 +10768,46 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
        *explicit* instantiations or not.  We choose to be generous,
        and not set DECL_EXPLICIT_INSTANTIATION.  Therefore, we allow
        the explicit instantiation of a class where some of the members
-       have no definition in the current translation unit.  */
+       have no definition in the current translation unit.  Exception:
+       on some targets (e.g. Darwin), weak symbols do not get put in 
+       a static archive's TOC.  The problematic case is if we're doing
+       a non-extern explicit instantiation of an extern template: we
+       have to put member functions in the TOC in that case, or we'll
+       get unresolved symbols at link time. */
+
+    explicitly_instantiate_members =
+      TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+      && previous_instantiation_extern_p && ! extern_p
+      && ! TYPE_FOR_JAVA (t);
 
     if (! static_p)
       for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
 	if (TREE_CODE (tmp) == FUNCTION_DECL
 	    && DECL_TEMPLATE_INSTANTIATION (tmp))
 	  {
-	    mark_decl_instantiated (tmp, extern_p);
-	    repo_template_instantiated (tmp, extern_p);
-	    if (! extern_p)
-	      instantiate_decl (tmp, /*defer_ok=*/1);
+	    if (explicitly_instantiate_members)
+	      do_decl_instantiation (tmp, NULL_TREE);
+	    else
+	      {
+		mark_decl_instantiated (tmp, extern_p);
+		repo_template_instantiated (tmp, extern_p);
+		if (! extern_p)
+		  instantiate_decl (tmp, /*defer_ok=*/1);
+	      }
 	  }
 
     for (tmp = TYPE_FIELDS (t); tmp; tmp = TREE_CHAIN (tmp))
       if (TREE_CODE (tmp) == VAR_DECL && DECL_TEMPLATE_INSTANTIATION (tmp))
 	{
-	  mark_decl_instantiated (tmp, extern_p);
-	  repo_template_instantiated (tmp, extern_p);
-	  if (! extern_p)
-	    instantiate_decl (tmp, /*defer_ok=*/1);
+	  if (explicitly_instantiate_members)
+	    do_decl_instantiation (tmp, NULL_TREE);
+	  else
+	    {
+	      mark_decl_instantiated (tmp, extern_p);
+	      repo_template_instantiated (tmp, extern_p);
+	      if (! extern_p)
+		instantiate_decl (tmp, /*defer_ok=*/1);
+	    }
 	}
 
     if (CLASSTYPE_NESTED_UTDS (t))

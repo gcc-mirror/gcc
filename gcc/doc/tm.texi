@@ -3072,6 +3072,12 @@ for the abi and context in the @code{.unwabi} directive.  If the
 be updated in @var{fs}.
 @end defmac
 
+@defmac TARGET_USES_WEAK_UNWIND_INFO
+A C expression that evaluates to true if the target requires unwind
+info to be given comdat linkage.  Define it to be @code{1} if comdat
+linkage is necessary.  The default is @code{0}.
+@end defmac
+
 @node Stack Checking
 @subsection Specifying How Stack Checking is Done
 
@@ -6705,6 +6711,24 @@ commands that will make the symbol(s) associated with @var{decl} have
 hidden, protected or internal visibility as specified by @var{visibility}.
 @end deftypefn
 
+@defmac TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+A C expression that evaluates to true if the target's linker expects
+explicit template specializations, as well as implicit, to be given
+linkonce semantics.  The default is @code{1}.  The C++ ABI requires
+this macro to be nonzero.  Define this macro for targets where full
+C++ ABI compliance is impossible and where explicit and implicit 
+template specialization must be treated differently.
+@end defmac
+
+@defmac TARGET_SUPPORTS_HIDDEN
+A C expression that evaluates to true if the target supports hidden
+visibility.  By default this expression is true if and only if
+@code{HAS_GAS_HIDDEN} is defined.  Set this macro if the
+@code{HAS_GAS_HIDDEN} macro gives the wrong answer for this
+target.  (For example, if the target's mechanism for supporting
+hidden visibility is not the same as GAS's.)
+@end defmac
+
 @defmac ASM_OUTPUT_EXTERNAL (@var{stream}, @var{decl}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} any text necessary for declaring the name of an external
@@ -7426,6 +7450,17 @@ of the preceding label.
 If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end defmac
+
+@deftypefn {Target Hook} void TARGET_ASM_EMIT_UNWIND_LABEL (@var{stream}, @var{decl}, @var{empty})
+This target hook emits a label at the beginning of each FDE.  It
+should be defined on targets where FDEs need special labels, and it
+should write the appropriate label, for the FDE associated with the
+function declaration @var{decl}, to the stdio stream @var{stream}.
+The third argument, @var{empty}, is a boolean: true if this is a
+placeholder label for an omitted FDE.
+
+The default is that FDEs are not given nonlocal labels.
+@end deftypefn
 
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions

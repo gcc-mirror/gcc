@@ -243,6 +243,7 @@ typedef struct cfa_loc GTY(())
 
 typedef struct dw_fde_struct GTY(())
 {
+  tree decl;
   const char *dw_fde_begin;
   const char *dw_fde_current_label;
   const char *dw_fde_end;
@@ -391,7 +392,9 @@ static void def_cfa_1 (const char *, dw_cfa_location *);
 #define FUNC_END_LABEL		"LFE"
 #endif
 
+#ifndef FRAME_BEGIN_LABEL
 #define FRAME_BEGIN_LABEL	"Lframe"
+#endif
 #define CIE_AFTER_SIZE_LABEL	"LSCIE"
 #define CIE_END_LABEL		"LECIE"
 #define FDE_LABEL		"LSFDE"
@@ -1942,6 +1945,22 @@ output_call_frame_info (int for_eh)
   if (fde_table_in_use == 0)
     return;
 
+  /* If we make FDEs linkonce, we may have to emit an empty label for
+     an FDE that wouldn't otherwise be emitted.  We want to avoid
+     having an FDE kept around when the function it refers to is
+     discarded. (Example where this matters: a primary function
+     template in C++ requires EH information, but an explicit
+     specialization doesn't. */
+  if (TARGET_USES_WEAK_UNWIND_INFO
+      && ! flag_asynchronous_unwind_tables
+      && for_eh)
+    for (i = 0; i < fde_table_in_use; i++)
+      if ((fde_table[i].nothrow || fde_table[i].all_throwers_are_sibcalls)
+          && !fde_table[i].uses_eh_lsda
+	  && ! DECL_ONE_ONLY (fde_table[i].decl))
+	(*targetm.asm_out.unwind_label) (asm_out_file, fde_table[i].decl,
+					 /* empty */ 1);
+
   /* If we don't have any functions we'll want to unwind out of, don't
      emit any EH unwind information.  Note that if exceptions aren't
      enabled, we won't have collected nothrow information, and if we
@@ -1953,6 +1972,9 @@ output_call_frame_info (int for_eh)
       for (i = 0; i < fde_table_in_use; i++)
 	if (fde_table[i].uses_eh_lsda)
 	  any_eh_needed = any_lsda_needed = true;
+        else if (TARGET_USES_WEAK_UNWIND_INFO
+		 && DECL_ONE_ONLY (fde_table[i].decl))
+	  any_eh_needed = 1;
 	else if (! fde_table[i].nothrow
 		 && ! fde_table[i].all_throwers_are_sibcalls)
 	  any_eh_needed = true;
@@ -2004,7 +2026,9 @@ output_call_frame_info (int for_eh)
 	 P	Indicates the presence of an encoding + language
 		personality routine in the CIE augmentation.  */
 
-      fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
+      fde_encoding = TARGET_USES_WEAK_UNWIND_INFO
+	? ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1)
+	: ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
       per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
       lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
 
@@ -2095,9 +2119,11 @@ output_call_frame_info (int for_eh)
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
       if (for_eh && !flag_asynchronous_unwind_tables && flag_exceptions
 	  && (fde->nothrow || fde->all_throwers_are_sibcalls)
+	  && (! TARGET_USES_WEAK_UNWIND_INFO || ! DECL_ONE_ONLY (fde->decl))
 	  && !fde->uses_eh_lsda)
 	continue;
 
+      (*targetm.asm_out.unwind_label) (asm_out_file, fde->decl, /* empty */ 0);
       (*targetm.asm_out.internal_label) (asm_out_file, FDE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i * 2);
@@ -2113,9 +2139,16 @@ output_call_frame_info (int for_eh)
 
       if (for_eh)
 	{
-	  dw2_asm_output_encoded_addr_rtx (fde_encoding,
-		   gen_rtx_SYMBOL_REF (Pmode, fde->dw_fde_begin),
-		   "FDE initial location");
+	  if (TARGET_USES_WEAK_UNWIND_INFO
+	      && DECL_ONE_ONLY (fde->decl))
+	    dw2_asm_output_encoded_addr_rtx (fde_encoding,
+		     gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER
+					          (DECL_ASSEMBLER_NAME (fde->decl))),
+		     "FDE initial location");
+	  else
+	    dw2_asm_output_encoded_addr_rtx (fde_encoding,
+		     gen_rtx_SYMBOL_REF (Pmode, fde->dw_fde_begin),
+		     "FDE initial location");
 	  dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
 				fde->dw_fde_end, fde->dw_fde_begin,
 				"FDE address range");
@@ -2248,6 +2281,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 
   /* Add the new FDE at the end of the fde_table.  */
   fde = &fde_table[fde_table_in_use++];
+  fde->decl = current_function_decl;
   fde->dw_fde_begin = xstrdup (label);
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;

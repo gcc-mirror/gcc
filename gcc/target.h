@@ -74,6 +74,12 @@ struct gcc_target
     /* Output code that will globalize a label.  */
     void (* globalize_label) (FILE *, const char *);
 
+    /* Output code that will emit a label for unwind info, if this
+       target requires such labels.  Second argument is the decl the
+       unwind info is associated with, third is is a boolean: true if
+       this is only a placeholder for an omitted FDE. */
+    void (* unwind_label ) (FILE *, tree, int);
+
     /* Output an internal label.  */
     void (* internal_label) (FILE *, const char *, unsigned long);
 
