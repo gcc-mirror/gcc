@@ -1828,7 +1828,7 @@ pushdecl (x)
       int line;
 
       if (DECL_EXTERNAL (x) && TREE_PUBLIC (x))
-	t = lookup_name (name);
+	t = lookup_name_current_level_global (name);
       else
 	t = lookup_name_current_level (name);
       if (t != 0 && t == error_mark_node)
@@ -1869,7 +1869,12 @@ pushdecl (x)
 					  IDENTIFIER_POINTER (name));
 	    }
 
-	  return t;
+	  /* If this is a global decl, and there exists a conflicting local
+	     decl in a parent block, then we can't return as yet, because we
+	     need to register this decl in the current binding block.  */
+	  if (! DECL_EXTERNAL (x) || ! TREE_PUBLIC (x)
+	      || lookup_name (name) == t)
+	    return t;
 	}
 
       /* If we are processing a typedef statement, generate a whole new
@@ -2606,6 +2611,29 @@ lookup_name_current_level (name)
   for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
     if (DECL_NAME (t) == name)
       break;
+
+  return t;
+}
+
+/* Similar to `lookup_name_current_level' but also look at the global binding
+   level.  */
+
+tree
+lookup_name_current_level_global (name)
+     tree name;
+{
+  register tree t = 0;
+
+  if (current_binding_level == global_binding_level)
+    return IDENTIFIER_GLOBAL_VALUE (name);
+
+  if (IDENTIFIER_LOCAL_VALUE (name) != 0)
+    for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+      if (DECL_NAME (t) == name)
+	break;
+
+  if (t == 0)
+    t = IDENTIFIER_GLOBAL_VALUE (name);
 
   return t;
 }
