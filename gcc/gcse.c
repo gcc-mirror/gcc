@@ -2545,10 +2545,12 @@ compute_hash_table (set_p)
 	if (INSN_P (insn))
 	  {
 	    if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	      in_libcall_block = 1;
-	    else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	      in_libcall_block = 0;
-	    hash_scan_insn (insn, set_p, in_libcall_block);
+              in_libcall_block = 1;
+            else if (set_p && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+              in_libcall_block = 0;
+            hash_scan_insn (insn, set_p, in_libcall_block);
+            if (!set_p && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+              in_libcall_block = 0;
 	}
     }
 
