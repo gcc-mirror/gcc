@@ -1871,7 +1871,7 @@
 (define_insn "abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "@
    cmp\\t%0, #0\;rsblt\\t%0, %0, #0
@@ -1882,7 +1882,7 @@
 (define_insn "*neg_abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(neg:SI (abs:SI (match_operand:SI 1 "s_register_operand" "0,r"))))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "@
    cmp\\t%0, #0\;rsbgt\\t%0, %0, #0
@@ -4650,7 +4650,7 @@
 	(match_operator 1 "comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
@@ -4708,7 +4708,7 @@
            [(match_operand:SI 2 "s_register_operand" "r,r")
 	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])
           (match_operand:SI 1 "s_register_operand" "0,?r")]))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   if (GET_CODE (operands[4]) == LT && operands[3] == const0_rtx)
@@ -4732,7 +4732,7 @@
 		  (match_operator:SI 4 "comparison_operator"
                    [(match_operand:SI 2 "s_register_operand" "r,r")
 		    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   output_asm_insn (\"cmp\\t%2, %3\", operands);
@@ -4813,7 +4813,7 @@
 	(neg:SI (match_operator 3 "comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   if (GET_CODE (operands[3]) == LT && operands[3] == const0_rtx)
@@ -4840,7 +4840,7 @@
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL,rIL")])
 	 (match_operand:SI 1 "arm_rhs_operand" "0,rI,?rI")
 	 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   if (GET_CODE (operands[5]) == LT
@@ -4903,7 +4903,7 @@
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 3 "arm_add_operand" "rIL,rIL"))
 			 (match_operand:SI 1 "arm_rhsm_operand" "0,?rIm")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -4939,7 +4939,7 @@
 			 (plus:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 3 "arm_add_operand" "rIL,rIL"))))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -4977,7 +4977,7 @@
 			 (match_operator:SI 7 "shiftable_operator"
 			  [(match_operand:SI 3 "s_register_operand" "r")
 			   (match_operand:SI 4 "arm_rhs_operand" "rI")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5007,7 +5007,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r,r")
 			   (match_operand:SI 5 "arm_rhs_operand" "rI,rI")])
 			 (match_operand:SI 1 "arm_rhsm_operand" "0,?rIm")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   /* If we have an operation where (op x 0) is the identity operation and
@@ -5069,7 +5069,7 @@
 			 (match_operator:SI 7 "shiftable_operator"
 			  [(match_operand:SI 2 "s_register_operand" "r,r")
 			   (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "*
   /* If we have an operation where (op x 0) is the identity operation and
@@ -5133,7 +5133,7 @@
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
 	 (not:SI
 	  (match_operand:SI 2 "s_register_operand" "r,r"))))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5163,7 +5163,7 @@
 	 (not:SI
 	  (match_operand:SI 2 "s_register_operand" "r,r"))
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5194,7 +5194,7 @@
 	  [(match_operand:SI 2 "s_register_operand" "r,r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rM,rM")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5227,7 +5227,7 @@
 	 (match_operator:SI 7 "shift_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r,r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rM,rM")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5262,7 +5262,7 @@
 	 (match_operator:SI 9 "shift_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r")
 	   (match_operand:SI 4 "arm_rhs_operand" "rM")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5294,7 +5294,7 @@
 	 (match_operator:SI 7 "shiftable_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rI")])))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -5324,7 +5324,7 @@
 	  [(match_operand:SI 2 "s_register_operand" "r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rI")])
 	 (not:SI (match_operand:SI 1 "s_register_operand" "r"))))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   ""
   "#"
 [(set_attr "conds" "clob")
@@ -6118,7 +6118,7 @@
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
-   (clobber (reg 24))]
+   (clobber (reg:CC 24))]
   "reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0) 
