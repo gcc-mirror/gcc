@@ -1,5 +1,9 @@
 2001-03-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* update_web_docs: Don't strip leading -r from argument following
+	-r, or leading -d from argument following -d.  Bug pointed out by
+	Matt Kraai.
+
 	* update_web_docs: Handle -r and -d options to generate docs for a
 	release or branch in a subdirectory.  Determine names of G77 news
 	and bugs files and contributors file after updated docs have been

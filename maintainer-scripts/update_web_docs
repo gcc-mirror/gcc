@@ -21,7 +21,7 @@ while [ $# -gt 0 ]; do
       RELEASE="${1#-r}"
       if [ -z "$RELEASE" ]; then
 	shift
-	RELEASE="${1#-r}"
+	RELEASE="$1"
 	if [ -z "$RELEASE" ]; then
 	  echo "No release specified with -r" >&2
 	  exit 1
@@ -36,7 +36,7 @@ while [ $# -gt 0 ]; do
       SUBDIR="${1#-d}"
       if [ -z "$SUBDIR" ]; then
 	shift
-	SUBDIR="${1#-d}"
+	SUBDIR="$1"
 	if [ -z "$SUBDIR" ]; then
 	  echo "No subdirectory specified with -d" >&2
 	  exit 1
