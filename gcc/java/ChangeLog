@@ -1,3 +1,7 @@
+Sun Feb 21 14:56:11 1999  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-write.c (generate_classfile):  Emit "Exceptions" attribute.
+
 Fri Feb 19 15:35:01 1999  Per Bothner  <bothner@cygnus.com>
 
 	Force left-to-right evaluation of binary operations etc.
