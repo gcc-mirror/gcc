@@ -375,7 +375,7 @@ static void find_reload_regs		PROTO((struct insn_chain *, FILE *));
 static void select_reload_regs		PROTO((FILE *));
 static void delete_caller_save_insns	PROTO((void));
 
-static void spill_failure		PROTO((rtx));
+static void spill_failure		PROTO((rtx, enum reg_class));
 static void count_spilled_pseudo	PROTO((int, int, int));
 static void delete_dead_insn		PROTO((rtx));
 static void alter_reg  			PROTO((int, int));
@@ -1720,7 +1720,7 @@ find_reload_regs (chain, dumpfile)
 	  && rld[r].regno == -1)
 	if (! find_reg (chain, i, dumpfile))
 	  {
-	    spill_failure (chain->insn);
+	    spill_failure (chain->insn, rld[r].class);
 	    failure = 1;
 	    return;
 	  }
@@ -1787,13 +1787,20 @@ delete_caller_save_insns ()
    INSN should be one of the insns which needed this particular spill reg.  */
 
 static void
-spill_failure (insn)
+spill_failure (insn, class)
      rtx insn;
+     enum reg_class class;
 {
+  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
-    error_for_asm (insn, "`asm' needs too many reloads");
+    error_for_asm (insn, "Can't find a register in class `%s' while reloading `asm'.",
+		   reg_class_names[class]);
   else
-    fatal_insn ("Unable to find a register to spill.", insn);
+    {
+      error ("Unable to find a register to spill in class `%s'.",
+	     reg_class_names[class]);
+      fatal_insn ("This is the insn:", insn);
+    }
 }
 
 /* Delete an unneeded INSN and any previous insns who sole purpose is loading
