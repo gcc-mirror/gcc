@@ -1,5 +1,9 @@
 2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* basic-block.h (conflict_graph_enum_fn): K&R fix.
+
+2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* tree.c (tree_expr_nonnegative_p): New function.
 
 	* tree.h (tree_expr_nonnegative_p): Declare.
