@@ -2,12 +2,12 @@
 
 struct A {
   operator int ();
-  A& operator= (int);		// WARNING - not used below
+  A& operator= (int);
 };
 
 main()
 {
   A a, b;
 
-  a = b;			// WARNING - uses synthesized op=
+  a = b;
 }

@@ -1,3 +1,8 @@
+2005-04-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/18644
+	* g++.old-deja/g++.jason/warning9.C (struct A, main): Adjust.
+
 2005-01-22  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/18402

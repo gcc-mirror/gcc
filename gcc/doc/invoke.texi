@@ -188,7 +188,7 @@ in the following sections.
 -Weffc++  -Wno-deprecated @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
--Wsign-promo  -Wsynth}
+-Wsign-promo}
 
 @item Objective-C Language Options
 @xref{Objective-C Dialect Options,,Options Controlling Objective-C Dialect}.
@@ -1716,29 +1716,6 @@ Warn when overload resolution chooses a promotion from unsigned or
 enumeral type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ would try to preserve
 unsignedness, but the standard mandates the current behavior.
-
-@item -Wsynth @r{(C++ only)}
-@opindex Wsynth
-@cindex warning for synthesized methods
-@cindex synthesized methods, warning
-Warn when G++'s synthesis behavior does not match that of cfront.  For
-instance:
-
-@smallexample
-struct A @{
-  operator int ();
-  A& operator = (int);
-@};
-
-main ()
-@{
-  A a,b;
-  a = b;
-@}
-@end smallexample
-
-In this example, G++ will synthesize a default @samp{A& operator =
-(const A&);}, while cfront will use the user-defined @samp{operator =}.
 @end table
 
 @node Objective-C Dialect Options

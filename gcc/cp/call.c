@@ -3762,28 +3762,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
     }
 
   if (TREE_CODE (cand->fn) == FUNCTION_DECL)
-    {
-      extern int warn_synth;
-      if (warn_synth
-	  && fnname == ansi_assopname (NOP_EXPR)
-	  && DECL_ARTIFICIAL (cand->fn)
-	  && candidates->next
-	  && ! candidates->next->next)
-	{
-	  warning ("using synthesized `%#D' for copy assignment",
-		      cand->fn);
-	  cp_warning_at ("  where cfront would use `%#D'",
-			 cand == candidates
-			 ? candidates->next->fn
-			 : candidates->fn);
-	}
-
-      return build_over_call
-	(cand,
-	 TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
-	 ? mem_arglist : arglist,
-	 LOOKUP_NORMAL);
-    }
+    return build_over_call
+      (cand,
+       TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
+       ? mem_arglist : arglist,
+       LOOKUP_NORMAL);
 
   /* Check for comparison of different enum types.  */
   switch (code)
