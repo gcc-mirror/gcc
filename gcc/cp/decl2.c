@@ -1655,18 +1655,8 @@ determine_visibility (tree decl)
      the visibility of their containing class.  */
   if (class_type)
     {
-      if (TREE_CODE (decl) == VAR_DECL
-	  && targetm.cxx.export_class_data ()
-	  && (DECL_TINFO_P (decl)
-	      || (DECL_VTABLE_OR_VTT_P (decl)
-		  /* Construction virtual tables are not emitted
-		     because they cannot be referred to from other
-		     object files; their name is not standardized by
-		     the ABI.  */
-		  && !DECL_CONSTRUCTION_VTABLE_P (decl))))
-	DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
-      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	       && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (class_type)))
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (class_type)))
 	{
 	  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
 	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
@@ -1678,11 +1668,28 @@ determine_visibility (tree decl)
 	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
 	}
+      else if (CLASSTYPE_VISIBILITY_SPECIFIED (class_type))
+	{
+	  DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
+	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	}
+      /* If no explicit visibility information has been provided for
+	 this class, some targets require that class data be
+	 exported.  */
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && targetm.cxx.export_class_data ()
+	       && (DECL_TINFO_P (decl)
+		   || (DECL_VTABLE_OR_VTT_P (decl)
+		       /* Construction virtual tables are not emitted
+			  because they cannot be referred to from other
+			  object files; their name is not standardized by
+			  the ABI.  */
+		       && !DECL_CONSTRUCTION_VTABLE_P (decl))))
+	DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       else
 	{
 	  DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
-	  DECL_VISIBILITY_SPECIFIED (decl)
-	    = CLASSTYPE_VISIBILITY_SPECIFIED (class_type);
+	  DECL_VISIBILITY_SPECIFIED (decl) = 0;
 	}
     }
 }

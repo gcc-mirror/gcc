@@ -1,3 +1,8 @@
+2004-09-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (determine_visibility): Allow class visibility
+	directives to override targetm.cxx.export_class_data.
+
 2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c, semantics.c: Follow spelling conventions.
